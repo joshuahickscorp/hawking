@@ -4,13 +4,13 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T03:04:35Z",
+  "recorded_at": "2026-09-02T09:39:20Z",
   "recorded_by": "tools/future/scar_reevaluator.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
- "branch": "grok/c3-law-scar-registry-20260901-223842",
- "census_share_source": "UNTESTED",
+ "branch": "grok/s4-tools-future-under-10s-20260902-045214",
+ "census_share_source": "receipts/future/MLP_BYTE_CENSUS.json",
  "cited_campaign_fidelity_bars": {
   "organ_cosine": {
    "note": "Cited as campaign context. Not written onto a scar that did not name this bar.",
@@ -1142,6 +1142,46 @@
   },
   {
    "class": "STRUCTURALLY_REFUTED",
+   "died_at_threshold": "Does a high draft acceptance rate imply a speedup for self-speculative decoding on this machine?",
+   "hypothesis_family": "spec_decode",
+   "method": "non_fidelity",
+   "organ": "whole_model",
+   "scar_id": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json#self speculative decoding acceptance rate",
+   "source_path": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json",
+   "tolerance_change_reopens": false
+  },
+  {
+   "class": "STRUCTURALLY_REFUTED",
+   "died_at_threshold": "Is there a coherent shared-basis MLP executable below q2f's 2.25 bpw that also beats q2f's complete-token time on the full 64-layer model?",
+   "hypothesis_family": "shared_basis",
+   "method": "non_fidelity",
+   "organ": "mlp",
+   "scar_id": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json#shared basis mlp below q2f",
+   "source_path": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json",
+   "tolerance_change_reopens": false
+  },
+  {
+   "class": "STRUCTURALLY_REFUTED",
+   "died_at_threshold": "Does weight-space cosine predict real-activation error, so a representation can be screened without ever touching real activations?",
+   "hypothesis_family": "weight_space_cosine_as_a_proxy_for_real_activation_error",
+   "method": "non_fidelity",
+   "organ": "attention",
+   "scar_id": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json#weight space cosine as a proxy for real activation error",
+   "source_path": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json",
+   "tolerance_change_reopens": false
+  },
+  {
+   "class": "STRUCTURALLY_REFUTED",
+   "died_at_threshold": "Does a per-tensor codec that is locally adequate on every MLP tensor compose into a whole model that still emits the teacher's next token?",
+   "hypothesis_family": "whole_model_composition_of_locally_adequate_mlp_codec",
+   "method": "non_fidelity",
+   "organ": "mlp",
+   "scar_id": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json#whole_model_composition_of_locally_adequate_mlp_codec",
+   "source_path": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json",
+   "tolerance_change_reopens": false
+  },
+  {
+   "class": "STRUCTURALLY_REFUTED",
    "died_at_threshold": "The 24% did not follow the catalog indirection. Isolating host catalog lookup off the GPU addr-probe timestamp left the gap in place. What the 24% tracks instead is dispatch topology and mixed organ sizes: the marginal cost of a dispatch (~",
    "hypothesis_family": "catalog_addressing_not_primary_703_530_cause",
    "method": "non_fidelity",
@@ -1532,6 +1572,16 @@
   },
   {
    "class": "STRUCTURALLY_REFUTED",
+   "died_at_threshold": "UNRECORDED",
+   "hypothesis_family": "receipts_sovereign_g014_negative_science_json",
+   "method": "non_fidelity",
+   "organ": "unrecorded",
+   "scar_id": "receipts/sovereign/G014_negative_science.json#g014_negative_science",
+   "source_path": "receipts/sovereign/G014_negative_science.json",
+   "tolerance_change_reopens": false
+  },
+  {
+   "class": "STRUCTURALLY_REFUTED",
    "died_at_threshold": "at 88 tokens the median routing split is only 63.6 percent stable and 26.1 percent of cells never route at all",
    "hypothesis_family": "calibration_88_tokens_routing_frequency_allocation_calibrated_on_88_tokens",
    "method": "non_fidelity",
@@ -1768,6 +1818,16 @@
    "organ": "unrecorded",
    "scar_id": "tools/headless/noetic_negative_science.py#UNPARSED",
    "source_path": "tools/headless/noetic_negative_science.py",
+   "tolerance_change_reopens": false
+  },
+  {
+   "class": "METHOD_UNRECORDED",
+   "died_at_threshold": "UNRECORDED",
+   "hypothesis_family": "unrecorded",
+   "method": "unparsed",
+   "organ": "unrecorded",
+   "scar_id": "tools/sovereign/g014_negative_science.py#UNPARSED",
+   "source_path": "tools/sovereign/g014_negative_science.py",
    "tolerance_change_reopens": false
   },
   {
@@ -6873,21 +6933,21 @@
  ],
  "counts": {
   "by_class": {
-   "METHOD_UNRECORDED": 14,
+   "METHOD_UNRECORDED": 15,
    "NOT_A_REFUTATION": 22,
    "POSSIBLY_REOPENABLE": 426,
-   "STRUCTURALLY_REFUTED": 223
+   "STRUCTURALLY_REFUTED": 228
   },
-  "n_method_unrecorded": 14,
+  "n_method_unrecorded": 15,
   "n_not_a_refutation": 22,
   "n_possibly_reopenable": 426,
-  "n_scars": 685,
-  "n_structurally_refuted": 223
+  "n_scars": 691,
+  "n_structurally_refuted": 228
  },
  "evidence_class": "STATIC_ONLY",
  "gpu_authority": false,
- "head": "54ee66285af5d86f07e4742ae8e33d8a9a41c5f3",
- "n_scars_ingested": 685,
+ "head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
+ "n_scars_ingested": 691,
  "nothing_relaunched": true,
  "nothing_relaunched_statement": "This module classified existing scars and ranked POSSIBLY_REOPENABLE ones by theoretical EBPW-cut rank, token_ns opportunity rank, and implementation cost rank. It did not relaunch, reschedule, admit, or run any candidate. The resident owning SUB2_EBPW decides.",
  "probe_tolerance": {
@@ -8249,18 +8309,18 @@
       "code_and_build_identity": {
        "binary_sha256_pin": "d34044cffae8f320",
        "dirty_source_label": "DIRTY_SOURCE_DIAGNOSTIC",
-       "git_head": "7f3f1ffc5bce328d4fa3e2cdf84cb369d8033e39",
-       "git_head_short": "7f3f1ffc5",
+       "git_head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
+       "git_head_short": "4448974cc",
        "source": "git rev-parse HEAD + RESIDENT_IDENTITY executable_hash pin"
       },
       "laws_scars_version": {
-       "digest": "2c9a44bf096ca5f7c3e5f75dff2cbd803ce5df8ce0d1ceed4cf082ac335bbd1a",
+       "digest": "fc31cf67c83a20658dbfee448b07a5395a6797f2b893229788f63f3ad30e6574",
        "missing": [],
        "pins": {
-        "receipts/future/CAMPAIGN_SCARS.json": "c2ee58385c35fe62c020f0efca1e143b54ad18285c44c5df046ae4640d61a08d",
-        "receipts/future/MLP_STRUCTURED_OPERATOR.json": "69065a69aa7bc9cc96976355721a8798a1b71cd6d4d12e3d1ac715eae9527952",
-        "receipts/future/NEGATIVE_SCIENCE_INDEX.json": "df676cdd03c4ba7a56c379b8b4adbb441633a93b99780cc37a9e731bfcec39b4",
-        "receipts/future/ODYSSEY2_LAW_STORE.json": "9237c434463d1a91f100d7225491203fb14891002a94cc0632b989adc41791f3"
+        "receipts/future/CAMPAIGN_SCARS.json": "8b537f1017fb6cfb5dbc0d7c02b82dea65148be77a22f306b53c53f83b8cde3b",
+        "receipts/future/MLP_STRUCTURED_OPERATOR.json": "67024233707e71aec2694e1e57a9bfd4be2362ac3f95573e1e1d9f876f759393",
+        "receipts/future/NEGATIVE_SCIENCE_INDEX.json": "00676a045d92e7c2368623caffc8be2224a959c9733259c23ee9e575483e41dc",
+        "receipts/future/ODYSSEY2_LAW_STORE.json": "4409e588a7c58684a99afac7c554f9533820ec88064d3a5d204af3d9c953e9ed"
        },
        "rule": "an experiment is judged against a named laws/scars version; a later scar does not silently rewrite an earlier verdict"
       },
@@ -8293,12 +8353,11 @@
        "source": "receipts/future/RESIDENT_IDENTITY.json"
       },
       "specimen_seal": {
-       "kind": "authorized_external_specimen",
-       "n_files": 31,
+       "error": "EXTERNAL_SPECIMEN_SEAL is not SEALED",
        "source": "receipts/future/EXTERNAL_SPECIMEN_SEAL.json",
        "specimen": "qwen3.8-27b-abliterated-bf16@local",
-       "status": "SEALED",
-       "tree_digest": "c7c81652283f9324994e0e1a60e52b0a8bf92f9a0d2167d2af2ab341d3073750"
+       "status": "UNAVAILABLE",
+       "tree_digest": null
       }
      },
      "falsifier": "The ALU-roofline receipt's own verdict is MIXED, not ALU_BOUND. Quoting ARM A's 1.51x jump as a generic MLP-is-ALU-bound law silently widens ORGAN, MODEL, and MACHINE. Narrowed to the measured organ/parent/machine. Citation, not a new measurement.",
@@ -8351,18 +8410,18 @@
       "code_and_build_identity": {
        "binary_sha256_pin": "d34044cffae8f320",
        "dirty_source_label": "DIRTY_SOURCE_DIAGNOSTIC",
-       "git_head": "7f3f1ffc5bce328d4fa3e2cdf84cb369d8033e39",
-       "git_head_short": "7f3f1ffc5",
+       "git_head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
+       "git_head_short": "4448974cc",
        "source": "git rev-parse HEAD + RESIDENT_IDENTITY executable_hash pin"
       },
       "laws_scars_version": {
-       "digest": "2c9a44bf096ca5f7c3e5f75dff2cbd803ce5df8ce0d1ceed4cf082ac335bbd1a",
+       "digest": "fc31cf67c83a20658dbfee448b07a5395a6797f2b893229788f63f3ad30e6574",
        "missing": [],
        "pins": {
-        "receipts/future/CAMPAIGN_SCARS.json": "c2ee58385c35fe62c020f0efca1e143b54ad18285c44c5df046ae4640d61a08d",
-        "receipts/future/MLP_STRUCTURED_OPERATOR.json": "69065a69aa7bc9cc96976355721a8798a1b71cd6d4d12e3d1ac715eae9527952",
-        "receipts/future/NEGATIVE_SCIENCE_INDEX.json": "df676cdd03c4ba7a56c379b8b4adbb441633a93b99780cc37a9e731bfcec39b4",
-        "receipts/future/ODYSSEY2_LAW_STORE.json": "9237c434463d1a91f100d7225491203fb14891002a94cc0632b989adc41791f3"
+        "receipts/future/CAMPAIGN_SCARS.json": "8b537f1017fb6cfb5dbc0d7c02b82dea65148be77a22f306b53c53f83b8cde3b",
+        "receipts/future/MLP_STRUCTURED_OPERATOR.json": "67024233707e71aec2694e1e57a9bfd4be2362ac3f95573e1e1d9f876f759393",
+        "receipts/future/NEGATIVE_SCIENCE_INDEX.json": "00676a045d92e7c2368623caffc8be2224a959c9733259c23ee9e575483e41dc",
+        "receipts/future/ODYSSEY2_LAW_STORE.json": "4409e588a7c58684a99afac7c554f9533820ec88064d3a5d204af3d9c953e9ed"
        },
        "rule": "an experiment is judged against a named laws/scars version; a later scar does not silently rewrite an earlier verdict"
       },
@@ -8395,12 +8454,11 @@
        "source": "receipts/future/RESIDENT_IDENTITY.json"
       },
       "specimen_seal": {
-       "kind": "authorized_external_specimen",
-       "n_files": 31,
+       "error": "EXTERNAL_SPECIMEN_SEAL is not SEALED",
        "source": "receipts/future/EXTERNAL_SPECIMEN_SEAL.json",
        "specimen": "qwen3.8-27b-abliterated-bf16@local",
-       "status": "SEALED",
-       "tree_digest": "c7c81652283f9324994e0e1a60e52b0a8bf92f9a0d2167d2af2ab341d3073750"
+       "status": "UNAVAILABLE",
+       "tree_digest": null
       }
      },
      "falsifier": "EXECUTABLE_ECONOMICS applies this calibration as a stream-class rate. The measurement is one layer of one parent on one machine. Billing-by-stream-class is the method; the zero-rate is MODEL_LOCAL / ORGAN_LOCAL / MACHINE_LOCAL until a named specimen replicates it.",
@@ -8453,18 +8511,18 @@
       "code_and_build_identity": {
        "binary_sha256_pin": "d34044cffae8f320",
        "dirty_source_label": "DIRTY_SOURCE_DIAGNOSTIC",
-       "git_head": "7f3f1ffc5bce328d4fa3e2cdf84cb369d8033e39",
-       "git_head_short": "7f3f1ffc5",
+       "git_head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
+       "git_head_short": "4448974cc",
        "source": "git rev-parse HEAD + RESIDENT_IDENTITY executable_hash pin"
       },
       "laws_scars_version": {
-       "digest": "2c9a44bf096ca5f7c3e5f75dff2cbd803ce5df8ce0d1ceed4cf082ac335bbd1a",
+       "digest": "fc31cf67c83a20658dbfee448b07a5395a6797f2b893229788f63f3ad30e6574",
        "missing": [],
        "pins": {
-        "receipts/future/CAMPAIGN_SCARS.json": "c2ee58385c35fe62c020f0efca1e143b54ad18285c44c5df046ae4640d61a08d",
-        "receipts/future/MLP_STRUCTURED_OPERATOR.json": "69065a69aa7bc9cc96976355721a8798a1b71cd6d4d12e3d1ac715eae9527952",
-        "receipts/future/NEGATIVE_SCIENCE_INDEX.json": "df676cdd03c4ba7a56c379b8b4adbb441633a93b99780cc37a9e731bfcec39b4",
-        "receipts/future/ODYSSEY2_LAW_STORE.json": "9237c434463d1a91f100d7225491203fb14891002a94cc0632b989adc41791f3"
+        "receipts/future/CAMPAIGN_SCARS.json": "8b537f1017fb6cfb5dbc0d7c02b82dea65148be77a22f306b53c53f83b8cde3b",
+        "receipts/future/MLP_STRUCTURED_OPERATOR.json": "67024233707e71aec2694e1e57a9bfd4be2362ac3f95573e1e1d9f876f759393",
+        "receipts/future/NEGATIVE_SCIENCE_INDEX.json": "00676a045d92e7c2368623caffc8be2224a959c9733259c23ee9e575483e41dc",
+        "receipts/future/ODYSSEY2_LAW_STORE.json": "4409e588a7c58684a99afac7c554f9533820ec88064d3a5d204af3d9c953e9ed"
        },
        "rule": "an experiment is judged against a named laws/scars version; a later scar does not silently rewrite an earlier verdict"
       },
@@ -8497,12 +8555,11 @@
        "source": "receipts/future/RESIDENT_IDENTITY.json"
       },
       "specimen_seal": {
-       "kind": "authorized_external_specimen",
-       "n_files": 31,
+       "error": "EXTERNAL_SPECIMEN_SEAL is not SEALED",
        "source": "receipts/future/EXTERNAL_SPECIMEN_SEAL.json",
        "specimen": "qwen3.8-27b-abliterated-bf16@local",
-       "status": "SEALED",
-       "tree_digest": "c7c81652283f9324994e0e1a60e52b0a8bf92f9a0d2167d2af2ab341d3073750"
+       "status": "UNAVAILABLE",
+       "tree_digest": null
       }
      },
      "falsifier": "The short form 'is_function_replacement_closed: YES' drops the parent, the organ, the four layers, and the 45,076-row corpus. That is the over-broad statement. Narrowed back to the evidence. The scar remains; the universe is named.",
@@ -8556,18 +8613,18 @@
       "code_and_build_identity": {
        "binary_sha256_pin": "d34044cffae8f320",
        "dirty_source_label": "DIRTY_SOURCE_DIAGNOSTIC",
-       "git_head": "7f3f1ffc5bce328d4fa3e2cdf84cb369d8033e39",
-       "git_head_short": "7f3f1ffc5",
+       "git_head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
+       "git_head_short": "4448974cc",
        "source": "git rev-parse HEAD + RESIDENT_IDENTITY executable_hash pin"
       },
       "laws_scars_version": {
-       "digest": "2c9a44bf096ca5f7c3e5f75dff2cbd803ce5df8ce0d1ceed4cf082ac335bbd1a",
+       "digest": "fc31cf67c83a20658dbfee448b07a5395a6797f2b893229788f63f3ad30e6574",
        "missing": [],
        "pins": {
-        "receipts/future/CAMPAIGN_SCARS.json": "c2ee58385c35fe62c020f0efca1e143b54ad18285c44c5df046ae4640d61a08d",
-        "receipts/future/MLP_STRUCTURED_OPERATOR.json": "69065a69aa7bc9cc96976355721a8798a1b71cd6d4d12e3d1ac715eae9527952",
-        "receipts/future/NEGATIVE_SCIENCE_INDEX.json": "df676cdd03c4ba7a56c379b8b4adbb441633a93b99780cc37a9e731bfcec39b4",
-        "receipts/future/ODYSSEY2_LAW_STORE.json": "9237c434463d1a91f100d7225491203fb14891002a94cc0632b989adc41791f3"
+        "receipts/future/CAMPAIGN_SCARS.json": "8b537f1017fb6cfb5dbc0d7c02b82dea65148be77a22f306b53c53f83b8cde3b",
+        "receipts/future/MLP_STRUCTURED_OPERATOR.json": "67024233707e71aec2694e1e57a9bfd4be2362ac3f95573e1e1d9f876f759393",
+        "receipts/future/NEGATIVE_SCIENCE_INDEX.json": "00676a045d92e7c2368623caffc8be2224a959c9733259c23ee9e575483e41dc",
+        "receipts/future/ODYSSEY2_LAW_STORE.json": "4409e588a7c58684a99afac7c554f9533820ec88064d3a5d204af3d9c953e9ed"
        },
        "rule": "an experiment is judged against a named laws/scars version; a later scar does not silently rewrite an earlier verdict"
       },
@@ -8600,12 +8657,11 @@
        "source": "receipts/future/RESIDENT_IDENTITY.json"
       },
       "specimen_seal": {
-       "kind": "authorized_external_specimen",
-       "n_files": 31,
+       "error": "EXTERNAL_SPECIMEN_SEAL is not SEALED",
        "source": "receipts/future/EXTERNAL_SPECIMEN_SEAL.json",
        "specimen": "qwen3.8-27b-abliterated-bf16@local",
-       "status": "SEALED",
-       "tree_digest": "c7c81652283f9324994e0e1a60e52b0a8bf92f9a0d2167d2af2ab341d3073750"
+       "status": "UNAVAILABLE",
+       "tree_digest": null
       }
      },
      "falsifier": "Generalising one lever's probe/token disagreement into 'probes undersell tokens' would let a later specimen inherit a magnitude it never earned. Narrowed to fold_addqx / sealed-3.14 / this machine.",
@@ -8658,18 +8714,18 @@
       "code_and_build_identity": {
        "binary_sha256_pin": "d34044cffae8f320",
        "dirty_source_label": "DIRTY_SOURCE_DIAGNOSTIC",
-       "git_head": "7f3f1ffc5bce328d4fa3e2cdf84cb369d8033e39",
-       "git_head_short": "7f3f1ffc5",
+       "git_head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
+       "git_head_short": "4448974cc",
        "source": "git rev-parse HEAD + RESIDENT_IDENTITY executable_hash pin"
       },
       "laws_scars_version": {
-       "digest": "2c9a44bf096ca5f7c3e5f75dff2cbd803ce5df8ce0d1ceed4cf082ac335bbd1a",
+       "digest": "fc31cf67c83a20658dbfee448b07a5395a6797f2b893229788f63f3ad30e6574",
        "missing": [],
        "pins": {
-        "receipts/future/CAMPAIGN_SCARS.json": "c2ee58385c35fe62c020f0efca1e143b54ad18285c44c5df046ae4640d61a08d",
-        "receipts/future/MLP_STRUCTURED_OPERATOR.json": "69065a69aa7bc9cc96976355721a8798a1b71cd6d4d12e3d1ac715eae9527952",
-        "receipts/future/NEGATIVE_SCIENCE_INDEX.json": "df676cdd03c4ba7a56c379b8b4adbb441633a93b99780cc37a9e731bfcec39b4",
-        "receipts/future/ODYSSEY2_LAW_STORE.json": "9237c434463d1a91f100d7225491203fb14891002a94cc0632b989adc41791f3"
+        "receipts/future/CAMPAIGN_SCARS.json": "8b537f1017fb6cfb5dbc0d7c02b82dea65148be77a22f306b53c53f83b8cde3b",
+        "receipts/future/MLP_STRUCTURED_OPERATOR.json": "67024233707e71aec2694e1e57a9bfd4be2362ac3f95573e1e1d9f876f759393",
+        "receipts/future/NEGATIVE_SCIENCE_INDEX.json": "00676a045d92e7c2368623caffc8be2224a959c9733259c23ee9e575483e41dc",
+        "receipts/future/ODYSSEY2_LAW_STORE.json": "4409e588a7c58684a99afac7c554f9533820ec88064d3a5d204af3d9c953e9ed"
        },
        "rule": "an experiment is judged against a named laws/scars version; a later scar does not silently rewrite an earlier verdict"
       },
@@ -8702,12 +8758,11 @@
        "source": "receipts/future/RESIDENT_IDENTITY.json"
       },
       "specimen_seal": {
-       "kind": "authorized_external_specimen",
-       "n_files": 31,
+       "error": "EXTERNAL_SPECIMEN_SEAL is not SEALED",
        "source": "receipts/future/EXTERNAL_SPECIMEN_SEAL.json",
        "specimen": "qwen3.8-27b-abliterated-bf16@local",
-       "status": "SEALED",
-       "tree_digest": "c7c81652283f9324994e0e1a60e52b0a8bf92f9a0d2167d2af2ab341d3073750"
+       "status": "UNAVAILABLE",
+       "tree_digest": null
       }
      },
      "falsifier": "roof_anchor correctly named 497.4 and refused 595.9/703.5 as the production roof. 'Every organ at 497.4' still over-reaches ORGAN. Treating 497.4 as the machine's DRAM property over-reaches the f32-triad genome and this parent's MLP/LM-head measurements. Narrowed to MODEL_LOCAL / ORGAN_LOCAL (mlp, with lm_head as a same-parent coincidence not a replication) / MACHINE_LOCAL.",
@@ -8819,7 +8874,7 @@
    }
   ]
  },
- "seal_sha256": "39e16729b41ea32712f15c3096ef83be916ca0648006aa0d4013fe3ae6c4c346",
+ "seal_sha256": "a194cb60a21e9cb72c0ee7bbff40b96a6702733a53a801ec6a1f0e20f72edfed",
  "top_reopenable_families": [
   {
    "died_at": {
@@ -9929,7 +9984,7 @@
    "token_ns_opportunity_rank": 5
   },
   {
-   "cited_organ_share_of_active_bytes": "UNTESTED",
+   "cited_organ_share_of_active_bytes": 0.5413350839712261,
    "died_at": {
     "bar": null,
     "gate_name": "component_sensitive_organ_gate",
@@ -9957,7 +10012,7 @@
    "token_ns_opportunity_rank": 5
   },
   {
-   "cited_organ_share_of_active_bytes": "UNTESTED",
+   "cited_organ_share_of_active_bytes": 0.5413350839712261,
    "died_at": {
     "bar": null,
     "gate_name": "component_sensitive_organ_gate",

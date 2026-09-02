@@ -32,6 +32,9 @@ markers = ["slow: real hardware/compile evidence; deselected by default"]
 # the Framework python that runs tools/odyssey has no xdist -- it failed with
 # "unrecognized arguments: -n". Parallelism is opt-in per invocation instead:
 #     python3 -m pytest hcli/ -n auto      # 77.82s -> ~3.0s on this host
+#     python3 tools/run_tools_pytest.py tools/future
+# tools/future session artifacts (HEAD ls-tree + receipts/future blobs) live
+# in tools/future/conftest.py, not here: addopts cannot carry -n.
 addopts = "-m 'not slow'"
 testpaths = ["tools/haider"]
 pythonpath = [

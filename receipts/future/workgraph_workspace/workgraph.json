@@ -197,7 +197,7 @@
       "accelerator.qwen27-stationary-packed-weight"
     ],
     "starvation": [],
-    "tick": 337
+    "tick": 84
   },
   "rejected": [],
   "schema": "hawking.future.workgraph.durable.v1",
@@ -276,7 +276,7 @@
     ]
   },
   "starvation_reports": [],
-  "tick": 337,
+  "tick": 84,
   "units": {
     "accelerator.ane-regular-island-probe": {
       "assigned_tick": null,

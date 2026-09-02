@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:08:46Z",
+  "recorded_at": "2026-09-02T09:44:11Z",
   "recorded_by": "tools/future/odyssey_tool_driver.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -21,7 +21,7 @@
   "isolation": "cli_out",
   "receipt": "receipts/future/DOCTOR_SEAL_DRIVEN.json",
   "refused": false,
-  "wall_seconds": 0.124
+  "wall_seconds": 0.466
  },
  "gaps_closed": [
   "no sidecar module actually invoked Doctor/Gravity; this one does",
@@ -117,7 +117,7 @@
   }
  },
  "schema": "hawking.future.odyssey_tool_driver.v1",
- "seal_sha256": "1f199875bf5e9604fec065c55c4b2c2c3b950921e6ac06a98469895181d2034b",
+ "seal_sha256": "acd0eea9f3f9e1153658aeb2e68563ec71daa3dac43911148be32356337651a2",
  "sleeping": [
   {
    "id": "doctor_tournament",
@@ -145,7 +145,7 @@
   },
   {
    "id": "gravity_package",
-   "why": "gravity_package is a package marker, not an invocable tool"
+   "why": "hcli/gravity/__init__.py is not materialized in this checkout"
   }
  ],
  "tools": [
@@ -408,7 +408,7 @@
    "gpu_authority": false,
    "id": "gravity_package",
    "missing_modules": [],
-   "on_disk": true,
+   "on_disk": false,
    "output_policy": {
     "cli_flags": [],
     "env_keys": [],
@@ -416,7 +416,7 @@
     "has_main": false,
     "headless_receipt": null,
     "isolatable": false,
-    "kind": "package_marker",
+    "kind": "unmaterialized",
     "requires_gpu": false,
     "writes_ascent_literal": false,
     "writes_headless_literal": false
@@ -472,7 +472,7 @@
    "status": "sleeping"
   },
   {
-   "blocked_reason": "gravity_package is a package marker, not an invocable tool",
+   "blocked_reason": "hcli/gravity/__init__.py is not materialized in this checkout",
    "classification": "SLEEPING",
    "id": "WU.ODYSSEY.gravity_package",
    "status": "sleeping"

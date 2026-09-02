@@ -3,29 +3,29 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:28:12Z",
+  "recorded_at": "2026-09-02T09:38:57Z",
   "recorded_by": "tools/future/tps_budget.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
  "claim_boundary": "Static sidecar artifact. No hardware measurement. Dispatch counts are re-derived from encode/dispatch call sites in crates/hawking-core (decode path), not copied from a receipt as the answer. Byte counts and GB/s roofs are copied from named prior receipts or from the lane's established facts; arithmetic over those copies is DERIVED, not a new experiment. UNKNOWN categories stay the string UNKNOWN and are never coerced to 0 to close the 28.17 ms sum. gpu_authority is false. evidence_class is STATIC_ONLY. This module refuses to emit a hardware measurement claim it did not derive.",
  "decode_ms_decomposition": {
-  "atlas_q4_bytes_cited": 4520517800,
+  "atlas_q4_bytes_cited": null,
   "categories": {
    "attention_bytes": {
-    "bytes": 3845079040,
+    "bytes": "UNKNOWN",
     "coerced_to_number": false,
     "id": "attention_bytes",
-    "implied_ms_at_clean_roof": 5.46564184790334,
+    "implied_ms_at_clean_roof": "UNKNOWN",
     "ms": "UNKNOWN",
     "nested_inside": "necessary_weight_bytes",
     "not_a_hardware_measurement": true,
     "source": "receipts/future/CATALOG_ADDRESSING.json",
-    "status": "CITED_FROM_NAMED_RECEIPT",
-    "why": "DeltaNet + GQA organ payload_bytes_total from receipts/future/CATALOG_ADDRESSING.json (production shapes, uniform-Q4 catalog encoding). Matches the production q4 class minus lm_head. Not a stopwatch."
+    "status": "UNKNOWN",
+    "why": "receipts/future/CATALOG_ADDRESSING.json organ census absent; not inferred"
    },
    "command_encoder_cost": {
-    "cited_command_construction_median_ms": 0.7263885428571428,
+    "cited_command_construction_median_ms": "UNKNOWN",
     "coerced_to_number": false,
     "id": "command_encoder_cost",
     "ms": "UNKNOWN",
@@ -33,7 +33,7 @@
     "serial_encoder_separated": false,
     "source": "receipts/future/DISPATCH_CEREMONY.json",
     "status": "UNKNOWN",
-    "why": "GPU_IDLE_GAP classified command construction at 0.7263885428571428 ms/token of complete-wall; serial encoder 580\u21921 did not separate. That figure is complete-wall, not the 35.5 decode clock, and the ceremony attack did not isolate it. Not a 28.17 slice."
+    "why": "GPU_IDLE_GAP classified command construction at UNKNOWN ms/token of complete-wall; serial encoder 580\u21921 did not separate. That figure is complete-wall, not the 35.5 decode clock, and the ceremony attack did not isolate it. Not a 28.17 slice."
    },
    "cpu_submission": {
     "coerced_to_number": false,
@@ -58,15 +58,15 @@
    },
    "final_head_sampling": {
     "argmax_two_pass_default": "off",
-    "bytes": 675430400,
+    "bytes": "UNKNOWN",
     "coerced_to_number": false,
     "id": "final_head_sampling",
-    "implied_ms_at_clean_roof": 0.9601000710732054,
+    "implied_ms_at_clean_roof": "UNKNOWN",
     "ms": "UNKNOWN",
     "nested_inside": "necessary_weight_bytes",
     "not_a_hardware_measurement": true,
     "source": "receipts/future/CATALOG_ADDRESSING.json",
-    "status": "CITED_FROM_NAMED_RECEIPT",
+    "status": "UNKNOWN",
     "why": "lm_head is one matvec + sample_argmax_f32_tcb (one dispatch, two-pass default Off). Isolated two-pass 0.3395\u21920.0131 ms is a cited comment in encode_argmax, not a 28.17 slice. End-to-end the same comment says the saving did not reach the token."
    },
    "low_bit_decode_cost": {
@@ -91,7 +91,7 @@
     "why": "No named category is a stopwatch slice of 28.17. The 14.04 ms clean-roof byte bound is a lower bound, not a measured bucket. The leftover above that bound is UNATTRIBUTED: catalog addressing was FALSIFIED as the primary 703\u2192530 cause, tested kernel geometry was FALSIFIED as the primary 530\u2192337 cause, and the ~25% complete-vs-decode gap is prefill accounting P/(P+N-1), not runtime ceremony. UNKNOWN categories are not zeroed to make 14.04 + named extras = 28.17."
    },
    "mlp_bytes": {
-    "atlas_affine_bytes_cited": 5347795776,
+    "atlas_affine_bytes_cited": null,
     "bytes": 5334606613,
     "coerced_to_number": false,
     "fraction_established": 0.54,
@@ -122,17 +122,17 @@
     "why": "active_weight_bytes_per_token / 703.5 GB/s is a lower bound on weight-move time IF those bytes must be read at the clean GEMV roof. It is not a stopwatch slice of the 35.5-clock token. `ms` stays UNKNOWN so this bound is not double-counted as a measured category of 28.17."
    },
    "other_model_bytes": {
-    "atlas_other_562_share": 0.0010717345840639547,
-    "bytes": 10587560,
+    "atlas_other_562_share": null,
+    "bytes": "UNKNOWN",
     "coerced_to_number": false,
     "id": "other_model_bytes",
-    "implied_ms_at_clean_roof": 0.015049836531627576,
+    "implied_ms_at_clean_roof": "UNKNOWN",
     "ms": "UNKNOWN",
     "nested_inside": "necessary_weight_bytes",
     "not_a_hardware_measurement": true,
     "source": "receipts/future/KERNEL_GEOMETRY.json",
-    "status": "CITED_FROM_NAMED_RECEIPT",
-    "why": "KERNEL_GEOMETRY quoted other-562 share of production bytes (rmsnorm/conv/A_log/swiglu scales, not packed GEMV)."
+    "status": "UNKNOWN",
+    "why": "other-562 share not in KERNEL_GEOMETRY quote; not inferred"
    },
    "state_bytes": {
     "coerced_to_number": false,
@@ -242,12 +242,7 @@
    "total": 756
   },
   "not_copied_from_a_receipt": true,
-  "sealed_fusion_env_cited": {
-   "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
-   "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
-   "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
-   "HAWKING_QWEN38_FUSE_MLP": "swiglu"
-  },
+  "sealed_fusion_env_cited": null,
   "sealed_fusion_env_source": "receipts/future/TPS_GAP.json",
   "sealed_resident_fusion": {
    "by_kind": {
@@ -430,19 +425,19 @@
   },
   "catalog_addressing": {
    "rel": "receipts/future/CATALOG_ADDRESSING.json",
-   "status": "LOADED"
+   "status": "REFUSED"
   },
   "dispatch_ceremony": {
    "rel": "receipts/future/DISPATCH_CEREMONY.json",
-   "status": "LOADED"
+   "status": "REFUSED"
   },
   "kernel_geometry": {
    "rel": "receipts/future/KERNEL_GEOMETRY.json",
-   "status": "LOADED"
+   "status": "REFUSED"
   },
   "tps_gap": {
    "rel": "receipts/future/TPS_GAP.json",
-   "status": "LOADED"
+   "status": "REFUSED"
   }
  },
  "milestone_ladder": {
@@ -555,10 +550,10 @@
   "receipt": "receipts/future/RESIDENT_71TPS_BUDGET_STATIC.json"
  },
  "schema": "hawking.future.tps_budget.v1",
- "seal_sha256": "f3a2a18512115ed745546cb4399484b599fd5a7b9ab6e9f8e3e83bb2881fdaf1",
+ "seal_sha256": "35ef02d35c5dbfb286e4f79ef96692194cab23e4fcf5f795a8829e081528776e",
  "self_timing": {
   "class": "SELF_MEASURED_DIRTY",
-  "cpu_parse_s": 0.0070028339978307486,
+  "cpu_parse_s": 0.0017978749237954617,
   "not": "a GPU measurement, a lease, a qualified TPS, a roof, or evidence the cited probes still hold on this host",
   "numbers_decide_nothing": true
  },

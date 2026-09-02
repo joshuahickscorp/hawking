@@ -3,22 +3,22 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T21:17:50Z",
+  "recorded_at": "2026-09-02T09:25:35Z",
   "recorded_by": "tools/future/flash_organ_workgraphs.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
  "claim_boundary": "Static sidecar artifact. One WorkGraph per Flash Gravity school over the real funnel. No hardware measurement. Gate 2 (real teacher fit) SLEEPS until a Flash teacher corpus exists on disk; nodes past a sleeper are UNREACHABLE, not pending. COMPLETE is refused without a receipt on disk.",
- "correct_answer": "14 of 14 schools emitted an 11-node graph. Gate 2 (real_teacher_fit) is SLEEPING on every emitted graph because the Flash teacher corpus is NOT_BUILT. 112 nodes are UNREACHABLE (not pending) past that sleeper. 14 nodes are READY in the live prefix (analytic structure, tiny synthetic sanity). 14 nodes are COMPLETE. That is the correct answer.",
+ "correct_answer": "14 of 14 schools emitted an 11-node graph. Gate 2 (real_teacher_fit) is SLEEPING on every emitted graph because the Flash teacher corpus is NOT_BUILT. 112 nodes are UNREACHABLE (not pending) past that sleeper. 28 nodes are READY in the live prefix (analytic structure, tiny synthetic sanity). 0 nodes are COMPLETE. That is the correct answer.",
  "counts": {
-  "complete": 14,
+  "complete": 0,
   "cross_school_edges": 0,
   "edges": 140,
   "funnel_stages": 11,
   "graphs_emitted": 14,
   "graphs_empty_census": 0,
   "nodes": 154,
-  "ready": 14,
+  "ready": 28,
   "schools_in_catalog": 14,
   "sleeping": 14,
   "unreachable": 112
@@ -235,10 +235,9 @@
   {
    "by_status": {
     "AWAITING_PREDECESSOR": [],
-    "COMPLETE": [
-     "ROUTED_EXPERTS:analytic_structure"
-    ],
+    "COMPLETE": [],
     "READY": [
+     "ROUTED_EXPERTS:analytic_structure",
      "ROUTED_EXPERTS:tiny_synthetic_sanity"
     ],
     "SLEEPING": [
@@ -256,21 +255,16 @@
     ]
    },
    "census": {
-    "census_source": "pinned_snapshot",
+    "census_source": "unavailable",
     "declared_families": [
      "routed_experts"
     ],
     "empty_census_family": false,
     "graph_emitted": true,
-    "kind": "weight_organ",
+    "kind": "census_unreachable",
     "looks_complete": false,
-    "present_families": [
-     "routed_experts"
-    ],
-    "present_with_bytes": [
-     "routed_experts"
-    ],
-    "reason": "ROUTED_EXPERTS census families present: ['routed_experts']",
+    "present_families": [],
+    "reason": "FLASH_ORGAN_CENSUS is unreachable in this checkout; unreachability is not an empty family. Graph still emitted.",
     "school": "ROUTED_EXPERTS"
    },
    "claim_boundary": "Static sidecar artifact. One WorkGraph per Flash Gravity school over the real funnel. No hardware measurement. Gate 2 (real teacher fit) SLEEPS until a Flash teacher corpus exists on disk; nodes past a sleeper are UNREACHABLE, not pending. COMPLETE is refused without a receipt on disk.",
@@ -335,8 +329,8 @@
    "live_prefix": [
     {
      "id": "ROUTED_EXPERTS:analytic_structure",
-     "schedulable_now": false,
-     "status": "COMPLETE"
+     "schedulable_now": true,
+     "status": "READY"
     },
     {
      "id": "ROUTED_EXPERTS:tiny_synthetic_sanity",
@@ -345,16 +339,16 @@
     }
    ],
    "looks_complete": false,
-   "n_complete": 1,
+   "n_complete": 0,
    "n_edges": 10,
    "n_nodes": 11,
-   "n_ready": 1,
+   "n_ready": 2,
    "n_sleeping": 1,
    "n_unreachable": 8,
    "nodes": [
     {
      "blocked_reason": null,
-     "completion_receipt": "receipts/future/FLASH_ORGAN_SCHOOLS.json",
+     "completion_receipt": null,
      "cost_class": "CHEAP_ANALYTICAL",
      "dependencies": [],
      "evidence_class": "STATIC_ONLY",
@@ -378,11 +372,11 @@
      "passing_proves": "The hypothesis is a well-formed allocation of TOTAL EXECUTABLE INFORMATION.",
      "required_input": "allocation_plan",
      "resource_lane": "CPU_ANALYSIS",
-     "schedulable_now": false,
+     "schedulable_now": true,
      "school": "ROUTED_EXPERTS",
      "sleeps_when": "the school cannot emit an allocation plan (unknown school, or empty census family on a weight organ)",
      "stage": "analytic_structure",
-     "status": "COMPLETE",
+     "status": "READY",
      "title": "analytic structure",
      "unreachable_because": null,
      "verifier": "tools.future.meta_funnel._eval_analytical + flash_schools.schedule_school",
@@ -515,17 +509,17 @@
      "id": "ROUTED_EXPERTS:route_stability",
      "index": 5,
      "input_detail": {
-      "input_state": "PRESENT",
-      "present": true,
-      "reason": "input receipt on disk: receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
-      "receipts_on_disk": [
+      "input_state": "NOT_ON_DISK",
+      "present": false,
+      "reason": "required input 'route_traces' has no on-disk receipt (in_head=['receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json', 'receipts/future/evidence/FLASH_NOETIC_ROUTER_SELECTION.json']); COMPLETE authority is on-disk",
+      "receipts_in_head_not_on_disk": [
        "receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
        "receipts/future/evidence/FLASH_NOETIC_ROUTER_SELECTION.json"
       ],
-      "sleeps": false,
-      "wake_condition": null
+      "sleeps": true,
+      "wake_condition": "route-trace receipt on disk with teacher top-k identity after a passed teacher fit"
      },
-     "input_state": "PRESENT",
+     "input_state": "NOT_ON_DISK",
      "inputs": [
       "route_traces"
      ],
@@ -557,16 +551,16 @@
      "id": "ROUTED_EXPERTS:state_stability",
      "index": 6,
      "input_detail": {
-      "input_state": "PRESENT",
-      "present": true,
-      "reason": "input receipt on disk: receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
-      "receipts_on_disk": [
+      "input_state": "NOT_ON_DISK",
+      "present": false,
+      "reason": "required input 'state_traces' has no on-disk receipt (in_head=['receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json']); COMPLETE authority is on-disk",
+      "receipts_in_head_not_on_disk": [
        "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json"
       ],
-      "sleeps": false,
-      "wake_condition": null
+      "sleeps": true,
+      "wake_condition": "state-trace receipt on disk showing source-approved recurrent/KV/HC semantics after route stability"
      },
-     "input_state": "PRESENT",
+     "input_state": "NOT_ON_DISK",
      "inputs": [
       "state_traces"
      ],
@@ -598,16 +592,16 @@
      "id": "ROUTED_EXPERTS:logit_token",
      "index": 7,
      "input_detail": {
-      "input_state": "PRESENT",
-      "present": true,
-      "reason": "input receipt on disk: receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
-      "receipts_on_disk": [
+      "input_state": "NOT_ON_DISK",
+      "present": false,
+      "reason": "required input 'logit_token' has no on-disk receipt (in_head=['receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json']); COMPLETE authority is on-disk",
+      "receipts_in_head_not_on_disk": [
        "receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json"
       ],
-      "sleeps": false,
-      "wake_condition": null
+      "sleeps": true,
+      "wake_condition": "logit/token receipt on disk with argmax agreement after state stability"
      },
-     "input_state": "PRESENT",
+     "input_state": "NOT_ON_DISK",
      "inputs": [
       "logit_token"
      ],
@@ -682,8 +676,7 @@
       "present": true,
       "reason": "input receipt on disk: receipts/future/FLASH_NR_COMPLETE.json",
       "receipts_on_disk": [
-       "receipts/future/FLASH_NR_COMPLETE.json",
-       "receipts/headless/FLASH_COMPLETE_V2.nr.json"
+       "receipts/future/FLASH_NR_COMPLETE.json"
       ],
       "sleeps": false,
       "wake_condition": null
@@ -724,9 +717,7 @@
       "present": true,
       "reason": "input receipt on disk: receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
       "receipts_on_disk": [
-       "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
-       "receipts/headless/FLASH_COMPLETE_V0.nx.json",
-       "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json"
+       "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json"
       ],
       "sleeps": false,
       "wake_condition": null
@@ -767,8 +758,7 @@
       "present": true,
       "reason": "input receipt on disk: receipts/future/EBPW_CATEGORY_VALIDATOR.json",
       "receipts_on_disk": [
-       "receipts/future/EBPW_CATEGORY_VALIDATOR.json",
-       "receipts/headless/FLASH_EBPW_BUDGET.json"
+       "receipts/future/EBPW_CATEGORY_VALIDATOR.json"
       ],
       "sleeps": false,
       "wake_condition": null
@@ -817,10 +807,9 @@
   {
    "by_status": {
     "AWAITING_PREDECESSOR": [],
-    "COMPLETE": [
-     "SHARED_EXPERTS:analytic_structure"
-    ],
+    "COMPLETE": [],
     "READY": [
+     "SHARED_EXPERTS:analytic_structure",
      "SHARED_EXPERTS:tiny_synthetic_sanity"
     ],
     "SLEEPING": [
@@ -838,21 +827,16 @@
     ]
    },
    "census": {
-    "census_source": "pinned_snapshot",
+    "census_source": "unavailable",
     "declared_families": [
      "shared_expert"
     ],
     "empty_census_family": false,
     "graph_emitted": true,
-    "kind": "weight_organ",
+    "kind": "census_unreachable",
     "looks_complete": false,
-    "present_families": [
-     "shared_expert"
-    ],
-    "present_with_bytes": [
-     "shared_expert"
-    ],
-    "reason": "SHARED_EXPERTS census families present: ['shared_expert']",
+    "present_families": [],
+    "reason": "FLASH_ORGAN_CENSUS is unreachable in this checkout; unreachability is not an empty family. Graph still emitted.",
     "school": "SHARED_EXPERTS"
    },
    "claim_boundary": "Static sidecar artifact. One WorkGraph per Flash Gravity school over the real funnel. No hardware measurement. Gate 2 (real teacher fit) SLEEPS until a Flash teacher corpus exists on disk; nodes past a sleeper are UNREACHABLE, not pending. COMPLETE is refused without a receipt on disk.",
@@ -917,8 +901,8 @@
    "live_prefix": [
     {
      "id": "SHARED_EXPERTS:analytic_structure",
-     "schedulable_now": false,
-     "status": "COMPLETE"
+     "schedulable_now": true,
+     "status": "READY"
     },
     {
      "id": "SHARED_EXPERTS:tiny_synthetic_sanity",
@@ -927,16 +911,16 @@
     }
    ],
    "looks_complete": false,
-   "n_complete": 1,
+   "n_complete": 0,
    "n_edges": 10,
    "n_nodes": 11,
-   "n_ready": 1,
+   "n_ready": 2,
    "n_sleeping": 1,
    "n_unreachable": 8,
    "nodes": [
     {
      "blocked_reason": null,
-     "completion_receipt": "receipts/future/FLASH_ORGAN_SCHOOLS.json",
+     "completion_receipt": null,
      "cost_class": "CHEAP_ANALYTICAL",
      "dependencies": [],
      "evidence_class": "STATIC_ONLY",
@@ -960,11 +944,11 @@
      "passing_proves": "The hypothesis is a well-formed allocation of TOTAL EXECUTABLE INFORMATION.",
      "required_input": "allocation_plan",
      "resource_lane": "CPU_ANALYSIS",
-     "schedulable_now": false,
+     "schedulable_now": true,
      "school": "SHARED_EXPERTS",
      "sleeps_when": "the school cannot emit an allocation plan (unknown school, or empty census family on a weight organ)",
      "stage": "analytic_structure",
-     "status": "COMPLETE",
+     "status": "READY",
      "title": "analytic structure",
      "unreachable_because": null,
      "verifier": "tools.future.meta_funnel._eval_analytical + flash_schools.schedule_school",
@@ -1097,17 +1081,17 @@
      "id": "SHARED_EXPERTS:route_stability",
      "index": 5,
      "input_detail": {
-      "input_state": "PRESENT",
-      "present": true,
-      "reason": "input receipt on disk: receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
-      "receipts_on_disk": [
+      "input_state": "NOT_ON_DISK",
+      "present": false,
+      "reason": "required input 'route_traces' has no on-disk receipt (in_head=['receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json', 'receipts/future/evidence/FLASH_NOETIC_ROUTER_SELECTION.json']); COMPLETE authority is on-disk",
+      "receipts_in_head_not_on_disk": [
        "receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
        "receipts/future/evidence/FLASH_NOETIC_ROUTER_SELECTION.json"
       ],
-      "sleeps": false,
-      "wake_condition": null
+      "sleeps": true,
+      "wake_condition": "route-trace receipt on disk with teacher top-k identity after a passed teacher fit"
      },
-     "input_state": "PRESENT",
+     "input_state": "NOT_ON_DISK",
      "inputs": [
       "route_traces"
      ],
@@ -1139,16 +1123,16 @@
      "id": "SHARED_EXPERTS:state_stability",
      "index": 6,
      "input_detail": {
-      "input_state": "PRESENT",
-      "present": true,
-      "reason": "input receipt on disk: receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
-      "receipts_on_disk": [
+      "input_state": "NOT_ON_DISK",
+      "present": false,
+      "reason": "required input 'state_traces' has no on-disk receipt (in_head=['receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json']); COMPLETE authority is on-disk",
+      "receipts_in_head_not_on_disk": [
        "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json"
       ],
-      "sleeps": false,
-      "wake_condition": null
+      "sleeps": true,
+      "wake_condition": "state-trace receipt on disk showing source-approved recurrent/KV/HC semantics after route stability"
      },
-     "input_state": "PRESENT",
+     "input_state": "NOT_ON_DISK",
      "inputs": [
       "state_traces"
      ],
@@ -1180,16 +1164,16 @@
      "id": "SHARED_EXPERTS:logit_token",
      "index": 7,
      "input_detail": {
-      "input_state": "PRESENT",
-      "present": true,
-      "reason": "input receipt on disk: receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
-      "receipts_on_disk": [
+      "input_state": "NOT_ON_DISK",
+      "present": false,
+      "reason": "required input 'logit_token' has no on-disk receipt (in_head=['receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json']); COMPLETE authority is on-disk",
+      "receipts_in_head_not_on_disk": [
        "receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json"
       ],
-      "sleeps": false,
-      "wake_condition": null
+      "sleeps": true,
+      "wake_condition": "logit/token receipt on disk with argmax agreement after state stability"
      },
-     "input_state": "PRESENT",
+     "input_state": "NOT_ON_DISK",
      "inputs": [
       "logit_token"
      ],
@@ -1264,8 +1248,7 @@
       "present": true,
       "reason": "input receipt on disk: receipts/future/FLASH_NR_COMPLETE.json",
       "receipts_on_disk": [
-       "receipts/future/FLASH_NR_COMPLETE.json",
-       "receipts/headless/FLASH_COMPLETE_V2.nr.json"
+       "receipts/future/FLASH_NR_COMPLETE.json"
       ],
       "sleeps": false,
       "wake_condition": null
@@ -1306,9 +1289,7 @@
       "present": true,
       "reason": "input receipt on disk: receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
       "receipts_on_disk": [
-       "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
-       "receipts/headless/FLASH_COMPLETE_V0.nx.json",
-       "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json"
+       "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json"
       ],
       "sleeps": false,
       "wake_condition": null
@@ -1349,8 +1330,7 @@
       "present": true,
       "reason": "input receipt on disk: receipts/future/EBPW_CATEGORY_VALIDATOR.json",
       "receipts_on_disk": [
-       "receipts/future/EBPW_CATEGORY_VALIDATOR.json",
-       "receipts/headless/FLASH_EBPW_BUDGET.json"
+       "receipts/future/EBPW_CATEGORY_VALIDATOR.json"
       ],
       "sleeps": false,
       "wake_condition": null
@@ -1399,10 +1379,9 @@
   {
    "by_status": {
     "AWAITING_PREDECESSOR": [],
-    "COMPLETE": [
-     "ROUTER:analytic_structure"
-    ],
+    "COMPLETE": [],
     "READY": [
+     "ROUTER:analytic_structure",
      "ROUTER:tiny_synthetic_sanity"
     ],
     "SLEEPING": [
@@ -1420,7 +1399,7 @@
     ]
    },
    "census": {
-    "census_source": "pinned_snapshot",
+    "census_source": "unavailable",
     "declared_families": [],
     "empty_census_family": false,
     "graph_emitted": true,
@@ -1492,8 +1471,8 @@
    "live_prefix": [
     {
      "id": "ROUTER:analytic_structure",
-     "schedulable_now": false,
-     "status": "COMPLETE"
+     "schedulable_now": true,
+     "status": "READY"
     },
     {
      "id": "ROUTER:tiny_synthetic_sanity",
@@ -1502,16 +1481,16 @@
     }
    ],
    "looks_complete": false,
-   "n_complete": 1,
+   "n_complete": 0,
    "n_edges": 10,
    "n_nodes": 11,
-   "n_ready": 1,
+   "n_ready": 2,
    "n_sleeping": 1,
    "n_unreachable": 8,
    "nodes": [
     {
      "blocked_reason": null,
-     "completion_receipt": "receipts/future/FLASH_ORGAN_SCHOOLS.json",
+     "completion_receipt": null,
      "cost_class": "CHEAP_ANALYTICAL",
      "dependencies": [],
      "evidence_class": "STATIC_ONLY",
@@ -1535,11 +1514,11 @@
      "passing_proves": "The hypothesis is a well-formed allocation of TOTAL EXECUTABLE INFORMATION.",
      "required_input": "allocation_plan",
      "resource_lane": "CPU_ANALYSIS",
-     "schedulable_now": false,
+     "schedulable_now": true,
      "school": "ROUTER",
      "sleeps_when": "the school cannot emit an allocation plan (unknown school, or empty census family on a weight organ)",
      "stage": "analytic_structure",
-     "status": "COMPLETE",
+     "status": "READY",
      "title": "analytic structure",
      "unreachable_because": null,
      "verifier": "tools.future.meta_funnel._eval_analytical + flash_schools.schedule_school",
@@ -1672,17 +1651,17 @@
      "id": "ROUTER:route_stability",
      "index": 5,
      "input_detail": {
-      "input_state": "PRESENT",
-      "present": true,
-      "reason": "input receipt on disk: receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
-      "receipts_on_disk": [
+      "input_state": "NOT_ON_DISK",
+      "present": false,
+      "reason": "required input 'route_traces' has no on-disk receipt (in_head=['receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json', 'receipts/future/evidence/FLASH_NOETIC_ROUTER_SELECTION.json']); COMPLETE authority is on-disk",
+      "receipts_in_head_not_on_disk": [
        "receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
        "receipts/future/evidence/FLASH_NOETIC_ROUTER_SELECTION.json"
       ],
-      "sleeps": false,
-      "wake_condition": null
+      "sleeps": true,
+      "wake_condition": "route-trace receipt on disk with teacher top-k identity after a passed teacher fit"
      },
-     "input_state": "PRESENT",
+     "input_state": "NOT_ON_DISK",
      "inputs": [
       "route_traces"
      ],
@@ -1714,16 +1693,16 @@
      "id": "ROUTER:state_stability",
      "index": 6,
      "input_detail": {
-      "input_state": "PRESENT",
-      "present": true,
-      "reason": "input receipt on disk: receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
-      "receipts_on_disk": [
+      "input_state": "NOT_ON_DISK",
+      "present": false,
+      "reason": "required input 'state_traces' has no on-disk receipt (in_head=['receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json']); COMPLETE authority is on-disk",
+      "receipts_in_head_not_on_disk": [
        "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json"
       ],
-      "sleeps": false,
-      "wake_condition": null
+      "sleeps": true,
+      "wake_condition": "state-trace receipt on disk showing source-approved recurrent/KV/HC semantics after route stability"
      },
-     "input_state": "PRESENT",
+     "input_state": "NOT_ON_DISK",
      "inputs": [
       "state_traces"
      ],
@@ -1755,16 +1734,16 @@
      "id": "ROUTER:logit_token",
      "index": 7,
      "input_detail": {
-      "input_state": "PRESENT",
-      "present": true,
-      "reason": "input receipt on disk: receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
-      "receipts_on_disk": [
+      "input_state": "NOT_ON_DISK",
+      "present": false,
+      "reason": "required input 'logit_token' has no on-disk receipt (in_head=['receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json']); COMPLETE authority is on-disk",
+      "receipts_in_head_not_on_disk": [
        "receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json"
       ],
-      "sleeps": false,
-      "wake_condition": null
+      "sleeps": true,
+      "wake_condition": "logit/token receipt on disk with argmax agreement after state stability"
      },
-     "input_state": "PRESENT",
+     "input_state": "NOT_ON_DISK",
      "inputs": [
       "logit_token"
      ],
@@ -1839,8 +1818,7 @@
       "present": true,
       "reason": "input receipt on disk: receipts/future/FLASH_NR_COMPLETE.json",
       "receipts_on_disk": [
-       "receipts/future/FLASH_NR_COMPLETE.json",
-       "receipts/headless/FLASH_COMPLETE_V2.nr.json"
+       "receipts/future/FLASH_NR_COMPLETE.json"
       ],
       "sleeps": false,
       "wake_condition": null
@@ -1881,9 +1859,7 @@
       "present": true,
       "reason": "input receipt on disk: receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
       "receipts_on_disk": [
-       "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
-       "receipts/headless/FLASH_COMPLETE_V0.nx.json",
-       "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json"
+       "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json"
       ],
       "sleeps": false,
       "wake_condition": null
@@ -1924,8 +1900,7 @@
       "present": true,
       "reason": "input receipt on disk: receipts/future/EBPW_CATEGORY_VALIDATOR.json",
       "receipts_on_disk": [
-       "receipts/future/EBPW_CATEGORY_VALIDATOR.json",
-       "receipts/headless/FLASH_EBPW_BUDGET.json"
+       "receipts/future/EBPW_CATEGORY_VALIDATOR.json"
       ],
       "sleeps": false,
       "wake_condition": null
@@ -1974,10 +1949,9 @@
   {
    "by_status": {
     "AWAITING_PREDECESSOR": [],
-    "COMPLETE": [
-     "HC_HYPERCONNECTION:analytic_structure"
-    ],
+    "COMPLETE": [],
     "READY": [
+     "HC_HYPERCONNECTION:analytic_structure",
      "HC_HYPERCONNECTION:tiny_synthetic_sanity"
     ],
     "SLEEPING": [
@@ -1995,21 +1969,16 @@
     ]
    },
    "census": {
-    "census_source": "pinned_snapshot",
+    "census_source": "unavailable",
     "declared_families": [
      "mlp_hyperconnection"
     ],
     "empty_census_family": false,
     "graph_emitted": true,
-    "kind": "weight_organ",
+    "kind": "census_unreachable",
     "looks_complete": false,
-    "present_families": [
-     "mlp_hyperconnection"
-    ],
-    "present_with_bytes": [
-     "mlp_hyperconnection"
-    ],
-    "reason": "HC_HYPERCONNECTION census families present: ['mlp_hyperconnection']",
+    "present_families": [],
+    "reason": "FLASH_ORGAN_CENSUS is unreachable in this checkout; unreachability is not an empty family. Graph still emitted.",
     "school": "HC_HYPERCONNECTION"
    },
    "claim_boundary": "Static sidecar artifact. One WorkGraph per Flash Gravity school over the real funnel. No hardware measurement. Gate 2 (real teacher fit) SLEEPS until a Flash teacher corpus exists on disk; nodes past a sleeper are UNREACHABLE, not pending. COMPLETE is refused without a receipt on disk.",
@@ -2074,8 +2043,8 @@
    "live_prefix": [
     {
      "id": "HC_HYPERCONNECTION:analytic_structure",
-     "schedulable_now": false,
-     "status": "COMPLETE"
+     "schedulable_now": true,
+     "status": "READY"
     },
     {
      "id": "HC_HYPERCONNECTION:tiny_synthetic_sanity",
@@ -2084,16 +2053,16 @@
     }
    ],
    "looks_complete": false,
-   "n_complete": 1,
+   "n_complete": 0,
    "n_edges": 10,
    "n_nodes": 11,
-   "n_ready": 1,
+   "n_ready": 2,
    "n_sleeping": 1,
    "n_unreachable": 8,
    "nodes": [
     {
      "blocked_reason": null,
-     "completion_receipt": "receipts/future/FLASH_ORGAN_SCHOOLS.json",
+     "completion_receipt": null,
      "cost_class": "CHEAP_ANALYTICAL",
      "dependencies": [],
      "evidence_class": "STATIC_ONLY",
@@ -2117,11 +2086,11 @@
      "passing_proves": "The hypothesis is a well-formed allocation of TOTAL EXECUTABLE INFORMATION.",
      "required_input": "allocation_plan",
      "resource_lane": "CPU_ANALYSIS",
-     "schedulable_now": false,
+     "schedulable_now": true,
      "school": "HC_HYPERCONNECTION",
      "sleeps_when": "the school cannot emit an allocation plan (unknown school, or empty census family on a weight organ)",
      "stage": "analytic_structure",
-     "status": "COMPLETE",
+     "status": "READY",
      "title": "analytic structure",
      "unreachable_because": null,
      "verifier": "tools.future.meta_funnel._eval_analytical + flash_schools.schedule_school",
@@ -2254,17 +2223,17 @@
      "id": "HC_HYPERCONNECTION:route_stability",
      "index": 5,
      "input_detail": {
-      "input_state": "PRESENT",
-      "present": true,
-      "reason": "input receipt on disk: receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
-      "receipts_on_disk": [
+      "input_state": "NOT_ON_DISK",
+      "present": false,
+      "reason": "required input 'route_traces' has no on-disk receipt (in_head=['receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json', 'receipts/future/evidence/FLASH_NOETIC_ROUTER_SELECTION.json']); COMPLETE authority is on-disk",
+      "receipts_in_head_not_on_disk": [
        "receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
        "receipts/future/evidence/FLASH_NOETIC_ROUTER_SELECTION.json"
       ],
-      "sleeps": false,
-      "wake_condition": null
+      "sleeps": true,
+      "wake_condition": "route-trace receipt on disk with teacher top-k identity after a passed teacher fit"
      },
-     "input_state": "PRESENT",
+     "input_state": "NOT_ON_DISK",
      "inputs": [
       "route_traces"
      ],
@@ -2296,16 +2265,16 @@
      "id": "HC_HYPERCONNECTION:state_stability",
      "index": 6,
      "input_detail": {
-      "input_state": "PRESENT",
-      "present": true,
-      "reason": "input receipt on disk: receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
-      "receipts_on_disk": [
+      "input_state": "NOT_ON_DISK",
+      "present": false,
+      "reason": "required input 'state_traces' has no on-disk receipt (in_head=['receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json']); COMPLETE authority is on-disk",
+      "receipts_in_head_not_on_disk": [
        "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json"
       ],
-      "sleeps": false,
-      "wake_condition": null
+      "sleeps": true,
+      "wake_condition": "state-trace receipt on disk showing source-approved recurrent/KV/HC semantics after route stability"
      },
-     "input_state": "PRESENT",
+     "input_state": "NOT_ON_DISK",
      "inputs": [
       "state_traces"
      ],
@@ -2337,16 +2306,16 @@
      "id": "HC_HYPERCONNECTION:logit_token",
      "index": 7,
      "input_detail": {
-      "input_state": "PRESENT",
-      "present": true,
-      "reason": "input receipt on disk: receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
-      "receipts_on_disk": [
+      "input_state": "NOT_ON_DISK",
+      "present": false,
+      "reason": "required input 'logit_token' has no on-disk receipt (in_head=['receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json']); COMPLETE authority is on-disk",
+      "receipts_in_head_not_on_disk": [
        "receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json"
       ],
-      "sleeps": false,
-      "wake_condition": null
+      "sleeps": true,
+      "wake_condition": "logit/token receipt on disk with argmax agreement after state stability"
      },
-     "input_state": "PRESENT",
+     "input_state": "NOT_ON_DISK",
      "inputs": [
       "logit_token"
      ],
@@ -2421,8 +2390,7 @@
       "present": true,
       "reason": "input receipt on disk: receipts/future/FLASH_NR_COMPLETE.json",
       "receipts_on_disk": [
-       "receipts/future/FLASH_NR_COMPLETE.json",
-       "receipts/headless/FLASH_COMPLETE_V2.nr.json"
+       "receipts/future/FLASH_NR_COMPLETE.json"
       ],
       "sleeps": false,
       "wake_condition": null
@@ -2463,9 +2431,7 @@
       "present": true,
       "reason": "input receipt on disk: receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
       "receipts_on_disk": [
-       "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
-       "receipts/headless/FLASH_COMPLETE_V0.nx.json",
-       "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json"
+       "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json"
       ],
       "sleeps": false,
       "wake_condition": null
@@ -2506,8 +2472,7 @@
       "present": true,
       "reason": "input receipt on disk: receipts/future/EBPW_CATEGORY_VALIDATOR.json",
       "receipts_on_disk": [
-       "receipts/future/EBPW_CATEGORY_VALIDATOR.json",
-       "receipts/headless/FLASH_EBPW_BUDGET.json"
+       "receipts/future/EBPW_CATEGORY_VALIDATOR.json"
       ],
       "sleeps": false,
       "wake_condition": null
@@ -2556,10 +2521,9 @@
   {
    "by_status": {
     "AWAITING_PREDECESSOR": [],
-    "COMPLETE": [
-     "DELTANET_RECURRENT_STATE:analytic_structure"
-    ],
+    "COMPLETE": [],
     "READY": [
+     "DELTANET_RECURRENT_STATE:analytic_structure",
      "DELTANET_RECURRENT_STATE:tiny_synthetic_sanity"
     ],
     "SLEEPING": [
@@ -2577,21 +2541,16 @@
     ]
    },
    "census": {
-    "census_source": "pinned_snapshot",
+    "census_source": "unavailable",
     "declared_families": [
      "linear_attention_hyperconnection"
     ],
     "empty_census_family": false,
     "graph_emitted": true,
-    "kind": "weight_organ",
+    "kind": "census_unreachable",
     "looks_complete": false,
-    "present_families": [
-     "linear_attention_hyperconnection"
-    ],
-    "present_with_bytes": [
-     "linear_attention_hyperconnection"
-    ],
-    "reason": "DELTANET_RECURRENT_STATE census families present: ['linear_attention_hyperconnection']",
+    "present_families": [],
+    "reason": "FLASH_ORGAN_CENSUS is unreachable in this checkout; unreachability is not an empty family. Graph still emitted.",
     "school": "DELTANET_RECURRENT_STATE"
    },
    "claim_boundary": "Static sidecar artifact. One WorkGraph per Flash Gravity school over the real funnel. No hardware measurement. Gate 2 (real teacher fit) SLEEPS until a Flash teacher corpus exists on disk; nodes past a sleeper are UNREACHABLE, not pending. COMPLETE is refused without a receipt on disk.",
@@ -2656,8 +2615,8 @@
    "live_prefix": [
     {
      "id": "DELTANET_RECURRENT_STATE:analytic_structure",
-     "schedulable_now": false,
-     "status": "COMPLETE"
+     "schedulable_now": true,
+     "status": "READY"
     },
     {
      "id": "DELTANET_RECURRENT_STATE:tiny_synthetic_sanity",
@@ -2666,16 +2625,16 @@
     }
    ],
    "looks_complete": false,
-   "n_complete": 1,
+   "n_complete": 0,
    "n_edges": 10,
    "n_nodes": 11,
-   "n_ready": 1,
+   "n_ready": 2,
    "n_sleeping": 1,
    "n_unreachable": 8,
    "nodes": [
     {
      "blocked_reason": null,
-     "completion_receipt": "receipts/future/FLASH_ORGAN_SCHOOLS.json",
+     "completion_receipt": null,
      "cost_class": "CHEAP_ANALYTICAL",
      "dependencies": [],
      "evidence_class": "STATIC_ONLY",
@@ -2699,11 +2658,11 @@
      "passing_proves": "The hypothesis is a well-formed allocation of TOTAL EXECUTABLE INFORMATION.",
      "required_input": "allocation_plan",
      "resource_lane": "CPU_ANALYSIS",
-     "schedulable_now": false,
+     "schedulable_now": true,
      "school": "DELTANET_RECURRENT_STATE",
      "sleeps_when": "the school cannot emit an allocation plan (unknown school, or empty census family on a weight organ)",
      "stage": "analytic_structure",
-     "status": "COMPLETE",
+     "status": "READY",
      "title": "analytic structure",
      "unreachable_because": null,
      "verifier": "tools.future.meta_funnel._eval_analytical + flash_schools.schedule_school",
@@ -2836,17 +2795,17 @@
      "id": "DELTANET_RECURRENT_STATE:route_stability",
      "index": 5,
      "input_detail": {
-      "input_state": "PRESENT",
-      "present": true,
-      "reason": "input receipt on disk: receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
-      "receipts_on_disk": [
+      "input_state": "NOT_ON_DISK",
+      "present": false,
+      "reason": "required input 'route_traces' has no on-disk receipt (in_head=['receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json', 'receipts/future/evidence/FLASH_NOETIC_ROUTER_SELECTION.json']); COMPLETE authority is on-disk",
+      "receipts_in_head_not_on_disk": [
        "receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
        "receipts/future/evidence/FLASH_NOETIC_ROUTER_SELECTION.json"
       ],
-      "sleeps": false,
-      "wake_condition": null
+      "sleeps": true,
+      "wake_condition": "route-trace receipt on disk with teacher top-k identity after a passed teacher fit"
      },
-     "input_state": "PRESENT",
+     "input_state": "NOT_ON_DISK",
      "inputs": [
       "route_traces"
      ],
@@ -2878,16 +2837,16 @@
      "id": "DELTANET_RECURRENT_STATE:state_stability",
      "index": 6,
      "input_detail": {
-      "input_state": "PRESENT",
-      "present": true,
-      "reason": "input receipt on disk: receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
-      "receipts_on_disk": [
+      "input_state": "NOT_ON_DISK",
+      "present": false,
+      "reason": "required input 'state_traces' has no on-disk receipt (in_head=['receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json']); COMPLETE authority is on-disk",
+      "receipts_in_head_not_on_disk": [
        "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json"
       ],
-      "sleeps": false,
-      "wake_condition": null
+      "sleeps": true,
+      "wake_condition": "state-trace receipt on disk showing source-approved recurrent/KV/HC semantics after route stability"
      },
-     "input_state": "PRESENT",
+     "input_state": "NOT_ON_DISK",
      "inputs": [
       "state_traces"
      ],
@@ -2919,16 +2878,16 @@
      "id": "DELTANET_RECURRENT_STATE:logit_token",
      "index": 7,
      "input_detail": {
-      "input_state": "PRESENT",
-      "present": true,
-      "reason": "input receipt on disk: receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
-      "receipts_on_disk": [
+      "input_state": "NOT_ON_DISK",
+      "present": false,
+      "reason": "required input 'logit_token' has no on-disk receipt (in_head=['receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json']); COMPLETE authority is on-disk",
+      "receipts_in_head_not_on_disk": [
        "receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json"
       ],
-      "sleeps": false,
-      "wake_condition": null
+      "sleeps": true,
+      "wake_condition": "logit/token receipt on disk with argmax agreement after state stability"
      },
-     "input_state": "PRESENT",
+     "input_state": "NOT_ON_DISK",
      "inputs": [
       "logit_token"
      ],
@@ -3003,8 +2962,7 @@
       "present": true,
       "reason": "input receipt on disk: receipts/future/FLASH_NR_COMPLETE.json",
       "receipts_on_disk": [
-       "receipts/future/FLASH_NR_COMPLETE.json",
-       "receipts/headless/FLASH_COMPLETE_V2.nr.json"
+       "receipts/future/FLASH_NR_COMPLETE.json"
       ],
       "sleeps": false,
       "wake_condition": null
@@ -3045,9 +3003,7 @@
       "present": true,
       "reason": "input receipt on disk: receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
       "receipts_on_disk": [
-       "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
-       "receipts/headless/FLASH_COMPLETE_V0.nx.json",
-       "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json"
+       "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json"
       ],
       "sleeps": false,
       "wake_condition": null
@@ -3088,8 +3044,7 @@
       "present": true,
       "reason": "input receipt on disk: receipts/future/EBPW_CATEGORY_VALIDATOR.json",
       "receipts_on_disk": [
-       "receipts/future/EBPW_CATEGORY_VALIDATOR.json",
-       "receipts/headless/FLASH_EBPW_BUDGET.json"
+       "receipts/future/EBPW_CATEGORY_VALIDATOR.json"
       ],
       "sleeps": false,
       "wake_condition": null
@@ -3138,10 +3093,9 @@
   {
    "by_status": {
     "AWAITING_PREDECESSOR": [],
-    "COMPLETE": [
-     "FULL_ATTENTION:analytic_structure"
-    ],
+    "COMPLETE": [],
     "READY": [
+     "FULL_ATTENTION:analytic_structure",
      "FULL_ATTENTION:tiny_synthetic_sanity"
     ],
     "SLEEPING": [
@@ -3159,21 +3113,16 @@
     ]
    },
    "census": {
-    "census_source": "pinned_snapshot",
+    "census_source": "unavailable",
     "declared_families": [
      "full_attention"
     ],
     "empty_census_family": false,
     "graph_emitted": true,
-    "kind": "weight_organ",
+    "kind": "census_unreachable",
     "looks_complete": false,
-    "present_families": [
-     "full_attention"
-    ],
-    "present_with_bytes": [
-     "full_attention"
-    ],
-    "reason": "FULL_ATTENTION census families present: ['full_attention']",
+    "present_families": [],
+    "reason": "FLASH_ORGAN_CENSUS is unreachable in this checkout; unreachability is not an empty family. Graph still emitted.",
     "school": "FULL_ATTENTION"
    },
    "claim_boundary": "Static sidecar artifact. One WorkGraph per Flash Gravity school over the real funnel. No hardware measurement. Gate 2 (real teacher fit) SLEEPS until a Flash teacher corpus exists on disk; nodes past a sleeper are UNREACHABLE, not pending. COMPLETE is refused without a receipt on disk.",
@@ -3238,8 +3187,8 @@
    "live_prefix": [
     {
      "id": "FULL_ATTENTION:analytic_structure",
-     "schedulable_now": false,
-     "status": "COMPLETE"
+     "schedulable_now": true,
+     "status": "READY"
     },
     {
      "id": "FULL_ATTENTION:tiny_synthetic_sanity",
@@ -3248,16 +3197,16 @@
     }
    ],
    "looks_complete": false,
-   "n_complete": 1,
+   "n_complete": 0,
    "n_edges": 10,
    "n_nodes": 11,
-   "n_ready": 1,
+   "n_ready": 2,
    "n_sleeping": 1,
    "n_unreachable": 8,
    "nodes": [
     {
      "blocked_reason": null,
-     "completion_receipt": "receipts/future/FLASH_ORGAN_SCHOOLS.json",
+     "completion_receipt": null,
      "cost_class": "CHEAP_ANALYTICAL",
      "dependencies": [],
      "evidence_class": "STATIC_ONLY",
@@ -3281,11 +3230,11 @@
      "passing_proves": "The hypothesis is a well-formed allocation of TOTAL EXECUTABLE INFORMATION.",
      "required_input": "allocation_plan",
      "resource_lane": "CPU_ANALYSIS",
-     "schedulable_now": false,
+     "schedulable_now": true,
      "school": "FULL_ATTENTION",
      "sleeps_when": "the school cannot emit an allocation plan (unknown school, or empty census family on a weight organ)",
      "stage": "analytic_structure",
-     "status": "COMPLETE",
+     "status": "READY",
      "title": "analytic structure",
      "unreachable_because": null,
      "verifier": "tools.future.meta_funnel._eval_analytical + flash_schools.schedule_school",
@@ -3418,17 +3367,17 @@
      "id": "FULL_ATTENTION:route_stability",
      "index": 5,
      "input_detail": {
-      "input_state": "PRESENT",
-      "present": true,
-      "reason": "input receipt on disk: receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
-      "receipts_on_disk": [
+      "input_state": "NOT_ON_DISK",
+      "present": false,
+      "reason": "required input 'route_traces' has no on-disk receipt (in_head=['receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json', 'receipts/future/evidence/FLASH_NOETIC_ROUTER_SELECTION.json']); COMPLETE authority is on-disk",
+      "receipts_in_head_not_on_disk": [
        "receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
        "receipts/future/evidence/FLASH_NOETIC_ROUTER_SELECTION.json"
       ],
-      "sleeps": false,
-      "wake_condition": null
+      "sleeps": true,
+      "wake_condition": "route-trace receipt on disk with teacher top-k identity after a passed teacher fit"
      },
-     "input_state": "PRESENT",
+     "input_state": "NOT_ON_DISK",
      "inputs": [
       "route_traces"
      ],
@@ -3460,16 +3409,16 @@
      "id": "FULL_ATTENTION:state_stability",
      "index": 6,
      "input_detail": {
-      "input_state": "PRESENT",
-      "present": true,
-      "reason": "input receipt on disk: receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
-      "receipts_on_disk": [
+      "input_state": "NOT_ON_DISK",
+      "present": false,
+      "reason": "required input 'state_traces' has no on-disk receipt (in_head=['receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json']); COMPLETE authority is on-disk",
+      "receipts_in_head_not_on_disk": [
        "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json"
       ],
-      "sleeps": false,
-      "wake_condition": null
+      "sleeps": true,
+      "wake_condition": "state-trace receipt on disk showing source-approved recurrent/KV/HC semantics after route stability"
      },
-     "input_state": "PRESENT",
+     "input_state": "NOT_ON_DISK",
      "inputs": [
       "state_traces"
      ],
@@ -3501,16 +3450,16 @@
      "id": "FULL_ATTENTION:logit_token",
      "index": 7,
      "input_detail": {
-      "input_state": "PRESENT",
-      "present": true,
-      "reason": "input receipt on disk: receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
-      "receipts_on_disk": [
+      "input_state": "NOT_ON_DISK",
+      "present": false,
+      "reason": "required input 'logit_token' has no on-disk receipt (in_head=['receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json']); COMPLETE authority is on-disk",
+      "receipts_in_head_not_on_disk": [
        "receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json"
       ],
-      "sleeps": false,
-      "wake_condition": null
+      "sleeps": true,
+      "wake_condition": "logit/token receipt on disk with argmax agreement after state stability"
      },
-     "input_state": "PRESENT",
+     "input_state": "NOT_ON_DISK",
      "inputs": [
       "logit_token"
      ],
@@ -3585,8 +3534,7 @@
       "present": true,
       "reason": "input receipt on disk: receipts/future/FLASH_NR_COMPLETE.json",
       "receipts_on_disk": [
-       "receipts/future/FLASH_NR_COMPLETE.json",
-       "receipts/headless/FLASH_COMPLETE_V2.nr.json"
+       "receipts/future/FLASH_NR_COMPLETE.json"
       ],
       "sleeps": false,
       "wake_condition": null
@@ -3627,9 +3575,7 @@
       "present": true,
       "reason": "input receipt on disk: receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
       "receipts_on_disk": [
-       "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
-       "receipts/headless/FLASH_COMPLETE_V0.nx.json",
-       "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json"
+       "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json"
       ],
       "sleeps": false,
       "wake_condition": null
@@ -3670,8 +3616,7 @@
       "present": true,
       "reason": "input receipt on disk: receipts/future/EBPW_CATEGORY_VALIDATOR.json",
       "receipts_on_disk": [
-       "receipts/future/EBPW_CATEGORY_VALIDATOR.json",
-       "receipts/headless/FLASH_EBPW_BUDGET.json"
+       "receipts/future/EBPW_CATEGORY_VALIDATOR.json"
       ],
       "sleeps": false,
       "wake_condition": null
@@ -3720,10 +3665,9 @@
   {
    "by_status": {
     "AWAITING_PREDECESSOR": [],
-    "COMPLETE": [
-     "KV_STATE:analytic_structure"
-    ],
+    "COMPLETE": [],
     "READY": [
+     "KV_STATE:analytic_structure",
      "KV_STATE:tiny_synthetic_sanity"
     ],
     "SLEEPING": [
@@ -3741,7 +3685,7 @@
     ]
    },
    "census": {
-    "census_source": "pinned_snapshot",
+    "census_source": "unavailable",
     "declared_families": [],
     "empty_census_family": false,
     "graph_emitted": true,
@@ -3813,8 +3757,8 @@
    "live_prefix": [
     {
      "id": "KV_STATE:analytic_structure",
-     "schedulable_now": false,
-     "status": "COMPLETE"
+     "schedulable_now": true,
+     "status": "READY"
     },
     {
      "id": "KV_STATE:tiny_synthetic_sanity",
@@ -3823,16 +3767,16 @@
     }
    ],
    "looks_complete": false,
-   "n_complete": 1,
+   "n_complete": 0,
    "n_edges": 10,
    "n_nodes": 11,
-   "n_ready": 1,
+   "n_ready": 2,
    "n_sleeping": 1,
    "n_unreachable": 8,
    "nodes": [
     {
      "blocked_reason": null,
-     "completion_receipt": "receipts/future/FLASH_ORGAN_SCHOOLS.json",
+     "completion_receipt": null,
      "cost_class": "CHEAP_ANALYTICAL",
      "dependencies": [],
      "evidence_class": "STATIC_ONLY",
@@ -3856,11 +3800,11 @@
      "passing_proves": "The hypothesis is a well-formed allocation of TOTAL EXECUTABLE INFORMATION.",
      "required_input": "allocation_plan",
      "resource_lane": "CPU_ANALYSIS",
-     "schedulable_now": false,
+     "schedulable_now": true,
      "school": "KV_STATE",
      "sleeps_when": "the school cannot emit an allocation plan (unknown school, or empty census family on a weight organ)",
      "stage": "analytic_structure",
-     "status": "COMPLETE",
+     "status": "READY",
      "title": "analytic structure",
      "unreachable_because": null,
      "verifier": "tools.future.meta_funnel._eval_analytical + flash_schools.schedule_school",
@@ -3993,17 +3937,17 @@
      "id": "KV_STATE:route_stability",
      "index": 5,
      "input_detail": {
-      "input_state": "PRESENT",
-      "present": true,
-      "reason": "input receipt on disk: receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
-      "receipts_on_disk": [
+      "input_state": "NOT_ON_DISK",
+      "present": false,
+      "reason": "required input 'route_traces' has no on-disk receipt (in_head=['receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json', 'receipts/future/evidence/FLASH_NOETIC_ROUTER_SELECTION.json']); COMPLETE authority is on-disk",
+      "receipts_in_head_not_on_disk": [
        "receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
        "receipts/future/evidence/FLASH_NOETIC_ROUTER_SELECTION.json"
       ],
-      "sleeps": false,
-      "wake_condition": null
+      "sleeps": true,
+      "wake_condition": "route-trace receipt on disk with teacher top-k identity after a passed teacher fit"
      },
-     "input_state": "PRESENT",
+     "input_state": "NOT_ON_DISK",
      "inputs": [
       "route_traces"
      ],
@@ -4035,16 +3979,16 @@
      "id": "KV_STATE:state_stability",
      "index": 6,
      "input_detail": {
-      "input_state": "PRESENT",
-      "present": true,
-      "reason": "input receipt on disk: receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
-      "receipts_on_disk": [
+      "input_state": "NOT_ON_DISK",
+      "present": false,
+      "reason": "required input 'state_traces' has no on-disk receipt (in_head=['receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json']); COMPLETE authority is on-disk",
+      "receipts_in_head_not_on_disk": [
        "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json"
       ],
-      "sleeps": false,
-      "wake_condition": null
+      "sleeps": true,
+      "wake_condition": "state-trace receipt on disk showing source-approved recurrent/KV/HC semantics after route stability"
      },
-     "input_state": "PRESENT",
+     "input_state": "NOT_ON_DISK",
      "inputs": [
       "state_traces"
      ],
@@ -4076,16 +4020,16 @@
      "id": "KV_STATE:logit_token",
      "index": 7,
      "input_detail": {
-      "input_state": "PRESENT",
-      "present": true,
-      "reason": "input receipt on disk: receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
-      "receipts_on_disk": [
+      "input_state": "NOT_ON_DISK",
+      "present": false,
+      "reason": "required input 'logit_token' has no on-disk receipt (in_head=['receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json']); COMPLETE authority is on-disk",
+      "receipts_in_head_not_on_disk": [
        "receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json"
       ],
-      "sleeps": false,
-      "wake_condition": null
+      "sleeps": true,
+      "wake_condition": "logit/token receipt on disk with argmax agreement after state stability"
      },
-     "input_state": "PRESENT",
+     "input_state": "NOT_ON_DISK",
      "inputs": [
       "logit_token"
      ],
@@ -4160,8 +4104,7 @@
       "present": true,
       "reason": "input receipt on disk: receipts/future/FLASH_NR_COMPLETE.json",
       "receipts_on_disk": [
-       "receipts/future/FLASH_NR_COMPLETE.json",
-       "receipts/headless/FLASH_COMPLETE_V2.nr.json"
+       "receipts/future/FLASH_NR_COMPLETE.json"
       ],
       "sleeps": false,
       "wake_condition": null
@@ -4202,9 +4145,7 @@
       "present": true,
       "reason": "input receipt on disk: receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
       "receipts_on_disk": [
-       "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
-       "receipts/headless/FLASH_COMPLETE_V0.nx.json",
-       "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json"
+       "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json"
       ],
       "sleeps": false,
       "wake_condition": null
@@ -4245,8 +4186,7 @@
       "present": true,
       "reason": "input receipt on disk: receipts/future/EBPW_CATEGORY_VALIDATOR.json",
       "receipts_on_disk": [
-       "receipts/future/EBPW_CATEGORY_VALIDATOR.json",
-       "receipts/headless/FLASH_EBPW_BUDGET.json"
+       "receipts/future/EBPW_CATEGORY_VALIDATOR.json"
       ],
       "sleeps": false,
       "wake_condition": null
@@ -4295,10 +4235,9 @@
   {
    "by_status": {
     "AWAITING_PREDECESSOR": [],
-    "COMPLETE": [
-     "NGRAM:analytic_structure"
-    ],
+    "COMPLETE": [],
     "READY": [
+     "NGRAM:analytic_structure",
      "NGRAM:tiny_synthetic_sanity"
     ],
     "SLEEPING": [
@@ -4316,21 +4255,16 @@
     ]
    },
    "census": {
-    "census_source": "pinned_snapshot",
+    "census_source": "unavailable",
     "declared_families": [
      "ngram_embedding"
     ],
     "empty_census_family": false,
     "graph_emitted": true,
-    "kind": "weight_organ",
+    "kind": "census_unreachable",
     "looks_complete": false,
-    "present_families": [
-     "ngram_embedding"
-    ],
-    "present_with_bytes": [
-     "ngram_embedding"
-    ],
-    "reason": "NGRAM census families present: ['ngram_embedding']",
+    "present_families": [],
+    "reason": "FLASH_ORGAN_CENSUS is unreachable in this checkout; unreachability is not an empty family. Graph still emitted.",
     "school": "NGRAM"
    },
    "claim_boundary": "Static sidecar artifact. One WorkGraph per Flash Gravity school over the real funnel. No hardware measurement. Gate 2 (real teacher fit) SLEEPS until a Flash teacher corpus exists on disk; nodes past a sleeper are UNREACHABLE, not pending. COMPLETE is refused without a receipt on disk.",
@@ -4395,8 +4329,8 @@
    "live_prefix": [
     {
      "id": "NGRAM:analytic_structure",
-     "schedulable_now": false,
-     "status": "COMPLETE"
+     "schedulable_now": true,
+     "status": "READY"
     },
     {
      "id": "NGRAM:tiny_synthetic_sanity",
@@ -4405,16 +4339,16 @@
     }
    ],
    "looks_complete": false,
-   "n_complete": 1,
+   "n_complete": 0,
    "n_edges": 10,
    "n_nodes": 11,
-   "n_ready": 1,
+   "n_ready": 2,
    "n_sleeping": 1,
    "n_unreachable": 8,
    "nodes": [
     {
      "blocked_reason": null,
-     "completion_receipt": "receipts/future/FLASH_ORGAN_SCHOOLS.json",
+     "completion_receipt": null,
      "cost_class": "CHEAP_ANALYTICAL",
      "dependencies": [],
      "evidence_class": "STATIC_ONLY",
@@ -4438,11 +4372,11 @@
      "passing_proves": "The hypothesis is a well-formed allocation of TOTAL EXECUTABLE INFORMATION.",
      "required_input": "allocation_plan",
      "resource_lane": "CPU_ANALYSIS",
-     "schedulable_now": false,
+     "schedulable_now": true,
      "school": "NGRAM",
      "sleeps_when": "the school cannot emit an allocation plan (unknown school, or empty census family on a weight organ)",
      "stage": "analytic_structure",
-     "status": "COMPLETE",
+     "status": "READY",
      "title": "analytic structure",
      "unreachable_because": null,
      "verifier": "tools.future.meta_funnel._eval_analytical + flash_schools.schedule_school",
@@ -4575,17 +4509,17 @@
      "id": "NGRAM:route_stability",
      "index": 5,
      "input_detail": {
-      "input_state": "PRESENT",
-      "present": true,
-      "reason": "input receipt on disk: receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
-      "receipts_on_disk": [
+      "input_state": "NOT_ON_DISK",
+      "present": false,
+      "reason": "required input 'route_traces' has no on-disk receipt (in_head=['receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json', 'receipts/future/evidence/FLASH_NOETIC_ROUTER_SELECTION.json']); COMPLETE authority is on-disk",
+      "receipts_in_head_not_on_disk": [
        "receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
        "receipts/future/evidence/FLASH_NOETIC_ROUTER_SELECTION.json"
       ],
-      "sleeps": false,
-      "wake_condition": null
+      "sleeps": true,
+      "wake_condition": "route-trace receipt on disk with teacher top-k identity after a passed teacher fit"
      },
-     "input_state": "PRESENT",
+     "input_state": "NOT_ON_DISK",
      "inputs": [
       "route_traces"
      ],
@@ -4617,16 +4551,16 @@
      "id": "NGRAM:state_stability",
      "index": 6,
      "input_detail": {
-      "input_state": "PRESENT",
-      "present": true,
-      "reason": "input receipt on disk: receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
-      "receipts_on_disk": [
+      "input_state": "NOT_ON_DISK",
+      "present": false,
+      "reason": "required input 'state_traces' has no on-disk receipt (in_head=['receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json']); COMPLETE authority is on-disk",
+      "receipts_in_head_not_on_disk": [
        "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json"
       ],
-      "sleeps": false,
-      "wake_condition": null
+      "sleeps": true,
+      "wake_condition": "state-trace receipt on disk showing source-approved recurrent/KV/HC semantics after route stability"
      },
-     "input_state": "PRESENT",
+     "input_state": "NOT_ON_DISK",
      "inputs": [
       "state_traces"
      ],
@@ -4658,16 +4592,16 @@
      "id": "NGRAM:logit_token",
      "index": 7,
      "input_detail": {
-      "input_state": "PRESENT",
-      "present": true,
-      "reason": "input receipt on disk: receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
-      "receipts_on_disk": [
+      "input_state": "NOT_ON_DISK",
+      "present": false,
+      "reason": "required input 'logit_token' has no on-disk receipt (in_head=['receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json']); COMPLETE authority is on-disk",
+      "receipts_in_head_not_on_disk": [
        "receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json"
       ],
-      "sleeps": false,
-      "wake_condition": null
+      "sleeps": true,
+      "wake_condition": "logit/token receipt on disk with argmax agreement after state stability"
      },
-     "input_state": "PRESENT",
+     "input_state": "NOT_ON_DISK",
      "inputs": [
       "logit_token"
      ],
@@ -4742,8 +4676,7 @@
       "present": true,
       "reason": "input receipt on disk: receipts/future/FLASH_NR_COMPLETE.json",
       "receipts_on_disk": [
-       "receipts/future/FLASH_NR_COMPLETE.json",
-       "receipts/headless/FLASH_COMPLETE_V2.nr.json"
+       "receipts/future/FLASH_NR_COMPLETE.json"
       ],
       "sleeps": false,
       "wake_condition": null
@@ -4784,9 +4717,7 @@
       "present": true,
       "reason": "input receipt on disk: receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
       "receipts_on_disk": [
-       "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
-       "receipts/headless/FLASH_COMPLETE_V0.nx.json",
-       "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json"
+       "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json"
       ],
       "sleeps": false,
       "wake_condition": null
@@ -4827,8 +4758,7 @@
       "present": true,
       "reason": "input receipt on disk: receipts/future/EBPW_CATEGORY_VALIDATOR.json",
       "receipts_on_disk": [
-       "receipts/future/EBPW_CATEGORY_VALIDATOR.json",
-       "receipts/headless/FLASH_EBPW_BUDGET.json"
+       "receipts/future/EBPW_CATEGORY_VALIDATOR.json"
       ],
       "sleeps": false,
       "wake_condition": null
@@ -4877,10 +4807,9 @@
   {
    "by_status": {
     "AWAITING_PREDECESSOR": [],
-    "COMPLETE": [
-     "EMBEDDING:analytic_structure"
-    ],
+    "COMPLETE": [],
     "READY": [
+     "EMBEDDING:analytic_structure",
      "EMBEDDING:tiny_synthetic_sanity"
     ],
     "SLEEPING": [
@@ -4898,21 +4827,16 @@
     ]
    },
    "census": {
-    "census_source": "pinned_snapshot",
+    "census_source": "unavailable",
     "declared_families": [
      "embedding_lm_head"
     ],
     "empty_census_family": false,
     "graph_emitted": true,
-    "kind": "weight_organ",
+    "kind": "census_unreachable",
     "looks_complete": false,
-    "present_families": [
-     "embedding_lm_head"
-    ],
-    "present_with_bytes": [
-     "embedding_lm_head"
-    ],
-    "reason": "EMBEDDING census families present: ['embedding_lm_head']",
+    "present_families": [],
+    "reason": "FLASH_ORGAN_CENSUS is unreachable in this checkout; unreachability is not an empty family. Graph still emitted.",
     "school": "EMBEDDING"
    },
    "claim_boundary": "Static sidecar artifact. One WorkGraph per Flash Gravity school over the real funnel. No hardware measurement. Gate 2 (real teacher fit) SLEEPS until a Flash teacher corpus exists on disk; nodes past a sleeper are UNREACHABLE, not pending. COMPLETE is refused without a receipt on disk.",
@@ -4977,8 +4901,8 @@
    "live_prefix": [
     {
      "id": "EMBEDDING:analytic_structure",
-     "schedulable_now": false,
-     "status": "COMPLETE"
+     "schedulable_now": true,
+     "status": "READY"
     },
     {
      "id": "EMBEDDING:tiny_synthetic_sanity",
@@ -4987,16 +4911,16 @@
     }
    ],
    "looks_complete": false,
-   "n_complete": 1,
+   "n_complete": 0,
    "n_edges": 10,
    "n_nodes": 11,
-   "n_ready": 1,
+   "n_ready": 2,
    "n_sleeping": 1,
    "n_unreachable": 8,
    "nodes": [
     {
      "blocked_reason": null,
-     "completion_receipt": "receipts/future/FLASH_ORGAN_SCHOOLS.json",
+     "completion_receipt": null,
      "cost_class": "CHEAP_ANALYTICAL",
      "dependencies": [],
      "evidence_class": "STATIC_ONLY",
@@ -5020,11 +4944,11 @@
      "passing_proves": "The hypothesis is a well-formed allocation of TOTAL EXECUTABLE INFORMATION.",
      "required_input": "allocation_plan",
      "resource_lane": "CPU_ANALYSIS",
-     "schedulable_now": false,
+     "schedulable_now": true,
      "school": "EMBEDDING",
      "sleeps_when": "the school cannot emit an allocation plan (unknown school, or empty census family on a weight organ)",
      "stage": "analytic_structure",
-     "status": "COMPLETE",
+     "status": "READY",
      "title": "analytic structure",
      "unreachable_because": null,
      "verifier": "tools.future.meta_funnel._eval_analytical + flash_schools.schedule_school",
@@ -5157,17 +5081,17 @@
      "id": "EMBEDDING:route_stability",
      "index": 5,
      "input_detail": {
-      "input_state": "PRESENT",
-      "present": true,
-      "reason": "input receipt on disk: receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
-      "receipts_on_disk": [
+      "input_state": "NOT_ON_DISK",
+      "present": false,
+      "reason": "required input 'route_traces' has no on-disk receipt (in_head=['receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json', 'receipts/future/evidence/FLASH_NOETIC_ROUTER_SELECTION.json']); COMPLETE authority is on-disk",
+      "receipts_in_head_not_on_disk": [
        "receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
        "receipts/future/evidence/FLASH_NOETIC_ROUTER_SELECTION.json"
       ],
-      "sleeps": false,
-      "wake_condition": null
+      "sleeps": true,
+      "wake_condition": "route-trace receipt on disk with teacher top-k identity after a passed teacher fit"
      },
-     "input_state": "PRESENT",
+     "input_state": "NOT_ON_DISK",
      "inputs": [
       "route_traces"
      ],
@@ -5199,16 +5123,16 @@
      "id": "EMBEDDING:state_stability",
      "index": 6,
      "input_detail": {
-      "input_state": "PRESENT",
-      "present": true,
-      "reason": "input receipt on disk: receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
-      "receipts_on_disk": [
+      "input_state": "NOT_ON_DISK",
+      "present": false,
+      "reason": "required input 'state_traces' has no on-disk receipt (in_head=['receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json']); COMPLETE authority is on-disk",
+      "receipts_in_head_not_on_disk": [
        "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json"
       ],
-      "sleeps": false,
-      "wake_condition": null
+      "sleeps": true,
+      "wake_condition": "state-trace receipt on disk showing source-approved recurrent/KV/HC semantics after route stability"
      },
-     "input_state": "PRESENT",
+     "input_state": "NOT_ON_DISK",
      "inputs": [
       "state_traces"
      ],
@@ -5240,16 +5164,16 @@
      "id": "EMBEDDING:logit_token",
      "index": 7,
      "input_detail": {
-      "input_state": "PRESENT",
-      "present": true,
-      "reason": "input receipt on disk: receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
-      "receipts_on_disk": [
+      "input_state": "NOT_ON_DISK",
+      "present": false,
+      "reason": "required input 'logit_token' has no on-disk receipt (in_head=['receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json']); COMPLETE authority is on-disk",
+      "receipts_in_head_not_on_disk": [
        "receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json"
       ],
-      "sleeps": false,
-      "wake_condition": null
+      "sleeps": true,
+      "wake_condition": "logit/token receipt on disk with argmax agreement after state stability"
      },
-     "input_state": "PRESENT",
+     "input_state": "NOT_ON_DISK",
      "inputs": [
       "logit_token"
      ],
@@ -5324,8 +5248,7 @@
       "present": true,
       "reason": "input receipt on disk: receipts/future/FLASH_NR_COMPLETE.json",
       "receipts_on_disk": [
-       "receipts/future/FLASH_NR_COMPLETE.json",
-       "receipts/headless/FLASH_COMPLETE_V2.nr.json"
+       "receipts/future/FLASH_NR_COMPLETE.json"
       ],
       "sleeps": false,
       "wake_condition": null
@@ -5366,9 +5289,7 @@
       "present": true,
       "reason": "input receipt on disk: receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
       "receipts_on_disk": [
-       "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
-       "receipts/headless/FLASH_COMPLETE_V0.nx.json",
-       "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json"
+       "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json"
       ],
       "sleeps": false,
       "wake_condition": null
@@ -5409,8 +5330,7 @@
       "present": true,
       "reason": "input receipt on disk: receipts/future/EBPW_CATEGORY_VALIDATOR.json",
       "receipts_on_disk": [
-       "receipts/future/EBPW_CATEGORY_VALIDATOR.json",
-       "receipts/headless/FLASH_EBPW_BUDGET.json"
+       "receipts/future/EBPW_CATEGORY_VALIDATOR.json"
       ],
       "sleeps": false,
       "wake_condition": null
@@ -5459,10 +5379,9 @@
   {
    "by_status": {
     "AWAITING_PREDECESSOR": [],
-    "COMPLETE": [
-     "LM_HEAD:analytic_structure"
-    ],
+    "COMPLETE": [],
     "READY": [
+     "LM_HEAD:analytic_structure",
      "LM_HEAD:tiny_synthetic_sanity"
     ],
     "SLEEPING": [
@@ -5480,21 +5399,16 @@
     ]
    },
    "census": {
-    "census_source": "pinned_snapshot",
+    "census_source": "unavailable",
     "declared_families": [
      "embedding_lm_head"
     ],
     "empty_census_family": false,
     "graph_emitted": true,
-    "kind": "weight_organ",
+    "kind": "census_unreachable",
     "looks_complete": false,
-    "present_families": [
-     "embedding_lm_head"
-    ],
-    "present_with_bytes": [
-     "embedding_lm_head"
-    ],
-    "reason": "LM_HEAD census families present: ['embedding_lm_head']",
+    "present_families": [],
+    "reason": "FLASH_ORGAN_CENSUS is unreachable in this checkout; unreachability is not an empty family. Graph still emitted.",
     "school": "LM_HEAD"
    },
    "claim_boundary": "Static sidecar artifact. One WorkGraph per Flash Gravity school over the real funnel. No hardware measurement. Gate 2 (real teacher fit) SLEEPS until a Flash teacher corpus exists on disk; nodes past a sleeper are UNREACHABLE, not pending. COMPLETE is refused without a receipt on disk.",
@@ -5559,8 +5473,8 @@
    "live_prefix": [
     {
      "id": "LM_HEAD:analytic_structure",
-     "schedulable_now": false,
-     "status": "COMPLETE"
+     "schedulable_now": true,
+     "status": "READY"
     },
     {
      "id": "LM_HEAD:tiny_synthetic_sanity",
@@ -5569,16 +5483,16 @@
     }
    ],
    "looks_complete": false,
-   "n_complete": 1,
+   "n_complete": 0,
    "n_edges": 10,
    "n_nodes": 11,
-   "n_ready": 1,
+   "n_ready": 2,
    "n_sleeping": 1,
    "n_unreachable": 8,
    "nodes": [
     {
      "blocked_reason": null,
-     "completion_receipt": "receipts/future/FLASH_ORGAN_SCHOOLS.json",
+     "completion_receipt": null,
      "cost_class": "CHEAP_ANALYTICAL",
      "dependencies": [],
      "evidence_class": "STATIC_ONLY",
@@ -5602,11 +5516,11 @@
      "passing_proves": "The hypothesis is a well-formed allocation of TOTAL EXECUTABLE INFORMATION.",
      "required_input": "allocation_plan",
      "resource_lane": "CPU_ANALYSIS",
-     "schedulable_now": false,
+     "schedulable_now": true,
      "school": "LM_HEAD",
      "sleeps_when": "the school cannot emit an allocation plan (unknown school, or empty census family on a weight organ)",
      "stage": "analytic_structure",
-     "status": "COMPLETE",
+     "status": "READY",
      "title": "analytic structure",
      "unreachable_because": null,
      "verifier": "tools.future.meta_funnel._eval_analytical + flash_schools.schedule_school",
@@ -5739,17 +5653,17 @@
      "id": "LM_HEAD:route_stability",
      "index": 5,
      "input_detail": {
-      "input_state": "PRESENT",
-      "present": true,
-      "reason": "input receipt on disk: receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
-      "receipts_on_disk": [
+      "input_state": "NOT_ON_DISK",
+      "present": false,
+      "reason": "required input 'route_traces' has no on-disk receipt (in_head=['receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json', 'receipts/future/evidence/FLASH_NOETIC_ROUTER_SELECTION.json']); COMPLETE authority is on-disk",
+      "receipts_in_head_not_on_disk": [
        "receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
        "receipts/future/evidence/FLASH_NOETIC_ROUTER_SELECTION.json"
       ],
-      "sleeps": false,
-      "wake_condition": null
+      "sleeps": true,
+      "wake_condition": "route-trace receipt on disk with teacher top-k identity after a passed teacher fit"
      },
-     "input_state": "PRESENT",
+     "input_state": "NOT_ON_DISK",
      "inputs": [
       "route_traces"
      ],
@@ -5781,16 +5695,16 @@
      "id": "LM_HEAD:state_stability",
      "index": 6,
      "input_detail": {
-      "input_state": "PRESENT",
-      "present": true,
-      "reason": "input receipt on disk: receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
-      "receipts_on_disk": [
+      "input_state": "NOT_ON_DISK",
+      "present": false,
+      "reason": "required input 'state_traces' has no on-disk receipt (in_head=['receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json']); COMPLETE authority is on-disk",
+      "receipts_in_head_not_on_disk": [
        "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json"
       ],
-      "sleeps": false,
-      "wake_condition": null
+      "sleeps": true,
+      "wake_condition": "state-trace receipt on disk showing source-approved recurrent/KV/HC semantics after route stability"
      },
-     "input_state": "PRESENT",
+     "input_state": "NOT_ON_DISK",
      "inputs": [
       "state_traces"
      ],
@@ -5822,16 +5736,16 @@
      "id": "LM_HEAD:logit_token",
      "index": 7,
      "input_detail": {
-      "input_state": "PRESENT",
-      "present": true,
-      "reason": "input receipt on disk: receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
-      "receipts_on_disk": [
+      "input_state": "NOT_ON_DISK",
+      "present": false,
+      "reason": "required input 'logit_token' has no on-disk receipt (in_head=['receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json']); COMPLETE authority is on-disk",
+      "receipts_in_head_not_on_disk": [
        "receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json"
       ],
-      "sleeps": false,
-      "wake_condition": null
+      "sleeps": true,
+      "wake_condition": "logit/token receipt on disk with argmax agreement after state stability"
      },
-     "input_state": "PRESENT",
+     "input_state": "NOT_ON_DISK",
      "inputs": [
       "logit_token"
      ],
@@ -5906,8 +5820,7 @@
       "present": true,
       "reason": "input receipt on disk: receipts/future/FLASH_NR_COMPLETE.json",
       "receipts_on_disk": [
-       "receipts/future/FLASH_NR_COMPLETE.json",
-       "receipts/headless/FLASH_COMPLETE_V2.nr.json"
+       "receipts/future/FLASH_NR_COMPLETE.json"
       ],
       "sleeps": false,
       "wake_condition": null
@@ -5948,9 +5861,7 @@
       "present": true,
       "reason": "input receipt on disk: receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
       "receipts_on_disk": [
-       "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
-       "receipts/headless/FLASH_COMPLETE_V0.nx.json",
-       "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json"
+       "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json"
       ],
       "sleeps": false,
       "wake_condition": null
@@ -5991,8 +5902,7 @@
       "present": true,
       "reason": "input receipt on disk: receipts/future/EBPW_CATEGORY_VALIDATOR.json",
       "receipts_on_disk": [
-       "receipts/future/EBPW_CATEGORY_VALIDATOR.json",
-       "receipts/headless/FLASH_EBPW_BUDGET.json"
+       "receipts/future/EBPW_CATEGORY_VALIDATOR.json"
       ],
       "sleeps": false,
       "wake_condition": null
@@ -6041,10 +5951,9 @@
   {
    "by_status": {
     "AWAITING_PREDECESSOR": [],
-    "COMPLETE": [
-     "NORMALIZATION:analytic_structure"
-    ],
+    "COMPLETE": [],
     "READY": [
+     "NORMALIZATION:analytic_structure",
      "NORMALIZATION:tiny_synthetic_sanity"
     ],
     "SLEEPING": [
@@ -6062,21 +5971,16 @@
     ]
    },
    "census": {
-    "census_source": "pinned_snapshot",
+    "census_source": "unavailable",
     "declared_families": [
      "norm"
     ],
     "empty_census_family": false,
     "graph_emitted": true,
-    "kind": "weight_organ",
+    "kind": "census_unreachable",
     "looks_complete": false,
-    "present_families": [
-     "norm"
-    ],
-    "present_with_bytes": [
-     "norm"
-    ],
-    "reason": "NORMALIZATION census families present: ['norm']",
+    "present_families": [],
+    "reason": "FLASH_ORGAN_CENSUS is unreachable in this checkout; unreachability is not an empty family. Graph still emitted.",
     "school": "NORMALIZATION"
    },
    "claim_boundary": "Static sidecar artifact. One WorkGraph per Flash Gravity school over the real funnel. No hardware measurement. Gate 2 (real teacher fit) SLEEPS until a Flash teacher corpus exists on disk; nodes past a sleeper are UNREACHABLE, not pending. COMPLETE is refused without a receipt on disk.",
@@ -6141,8 +6045,8 @@
    "live_prefix": [
     {
      "id": "NORMALIZATION:analytic_structure",
-     "schedulable_now": false,
-     "status": "COMPLETE"
+     "schedulable_now": true,
+     "status": "READY"
     },
     {
      "id": "NORMALIZATION:tiny_synthetic_sanity",
@@ -6151,16 +6055,16 @@
     }
    ],
    "looks_complete": false,
-   "n_complete": 1,
+   "n_complete": 0,
    "n_edges": 10,
    "n_nodes": 11,
-   "n_ready": 1,
+   "n_ready": 2,
    "n_sleeping": 1,
    "n_unreachable": 8,
    "nodes": [
     {
      "blocked_reason": null,
-     "completion_receipt": "receipts/future/FLASH_ORGAN_SCHOOLS.json",
+     "completion_receipt": null,
      "cost_class": "CHEAP_ANALYTICAL",
      "dependencies": [],
      "evidence_class": "STATIC_ONLY",
@@ -6184,11 +6088,11 @@
      "passing_proves": "The hypothesis is a well-formed allocation of TOTAL EXECUTABLE INFORMATION.",
      "required_input": "allocation_plan",
      "resource_lane": "CPU_ANALYSIS",
-     "schedulable_now": false,
+     "schedulable_now": true,
      "school": "NORMALIZATION",
      "sleeps_when": "the school cannot emit an allocation plan (unknown school, or empty census family on a weight organ)",
      "stage": "analytic_structure",
-     "status": "COMPLETE",
+     "status": "READY",
      "title": "analytic structure",
      "unreachable_because": null,
      "verifier": "tools.future.meta_funnel._eval_analytical + flash_schools.schedule_school",
@@ -6321,17 +6225,17 @@
      "id": "NORMALIZATION:route_stability",
      "index": 5,
      "input_detail": {
-      "input_state": "PRESENT",
-      "present": true,
-      "reason": "input receipt on disk: receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
-      "receipts_on_disk": [
+      "input_state": "NOT_ON_DISK",
+      "present": false,
+      "reason": "required input 'route_traces' has no on-disk receipt (in_head=['receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json', 'receipts/future/evidence/FLASH_NOETIC_ROUTER_SELECTION.json']); COMPLETE authority is on-disk",
+      "receipts_in_head_not_on_disk": [
        "receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
        "receipts/future/evidence/FLASH_NOETIC_ROUTER_SELECTION.json"
       ],
-      "sleeps": false,
-      "wake_condition": null
+      "sleeps": true,
+      "wake_condition": "route-trace receipt on disk with teacher top-k identity after a passed teacher fit"
      },
-     "input_state": "PRESENT",
+     "input_state": "NOT_ON_DISK",
      "inputs": [
       "route_traces"
      ],
@@ -6363,16 +6267,16 @@
      "id": "NORMALIZATION:state_stability",
      "index": 6,
      "input_detail": {
-      "input_state": "PRESENT",
-      "present": true,
-      "reason": "input receipt on disk: receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
-      "receipts_on_disk": [
+      "input_state": "NOT_ON_DISK",
+      "present": false,
+      "reason": "required input 'state_traces' has no on-disk receipt (in_head=['receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json']); COMPLETE authority is on-disk",
+      "receipts_in_head_not_on_disk": [
        "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json"
       ],
-      "sleeps": false,
-      "wake_condition": null
+      "sleeps": true,
+      "wake_condition": "state-trace receipt on disk showing source-approved recurrent/KV/HC semantics after route stability"
      },
-     "input_state": "PRESENT",
+     "input_state": "NOT_ON_DISK",
      "inputs": [
       "state_traces"
      ],
@@ -6404,16 +6308,16 @@
      "id": "NORMALIZATION:logit_token",
      "index": 7,
      "input_detail": {
-      "input_state": "PRESENT",
-      "present": true,
-      "reason": "input receipt on disk: receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
-      "receipts_on_disk": [
+      "input_state": "NOT_ON_DISK",
+      "present": false,
+      "reason": "required input 'logit_token' has no on-disk receipt (in_head=['receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json']); COMPLETE authority is on-disk",
+      "receipts_in_head_not_on_disk": [
        "receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json"
       ],
-      "sleeps": false,
-      "wake_condition": null
+      "sleeps": true,
+      "wake_condition": "logit/token receipt on disk with argmax agreement after state stability"
      },
-     "input_state": "PRESENT",
+     "input_state": "NOT_ON_DISK",
      "inputs": [
       "logit_token"
      ],
@@ -6488,8 +6392,7 @@
       "present": true,
       "reason": "input receipt on disk: receipts/future/FLASH_NR_COMPLETE.json",
       "receipts_on_disk": [
-       "receipts/future/FLASH_NR_COMPLETE.json",
-       "receipts/headless/FLASH_COMPLETE_V2.nr.json"
+       "receipts/future/FLASH_NR_COMPLETE.json"
       ],
       "sleeps": false,
       "wake_condition": null
@@ -6530,9 +6433,7 @@
       "present": true,
       "reason": "input receipt on disk: receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
       "receipts_on_disk": [
-       "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
-       "receipts/headless/FLASH_COMPLETE_V0.nx.json",
-       "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json"
+       "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json"
       ],
       "sleeps": false,
       "wake_condition": null
@@ -6573,8 +6474,7 @@
       "present": true,
       "reason": "input receipt on disk: receipts/future/EBPW_CATEGORY_VALIDATOR.json",
       "receipts_on_disk": [
-       "receipts/future/EBPW_CATEGORY_VALIDATOR.json",
-       "receipts/headless/FLASH_EBPW_BUDGET.json"
+       "receipts/future/EBPW_CATEGORY_VALIDATOR.json"
       ],
       "sleeps": false,
       "wake_condition": null
@@ -6623,10 +6523,9 @@
   {
    "by_status": {
     "AWAITING_PREDECESSOR": [],
-    "COMPLETE": [
-     "POSITIONAL_STRUCTURE:analytic_structure"
-    ],
+    "COMPLETE": [],
     "READY": [
+     "POSITIONAL_STRUCTURE:analytic_structure",
      "POSITIONAL_STRUCTURE:tiny_synthetic_sanity"
     ],
     "SLEEPING": [
@@ -6644,21 +6543,16 @@
     ]
    },
    "census": {
-    "census_source": "pinned_snapshot",
+    "census_source": "unavailable",
     "declared_families": [
      "other"
     ],
     "empty_census_family": false,
     "graph_emitted": true,
-    "kind": "weight_organ",
+    "kind": "census_unreachable",
     "looks_complete": false,
-    "present_families": [
-     "other"
-    ],
-    "present_with_bytes": [
-     "other"
-    ],
-    "reason": "POSITIONAL_STRUCTURE census families present: ['other']",
+    "present_families": [],
+    "reason": "FLASH_ORGAN_CENSUS is unreachable in this checkout; unreachability is not an empty family. Graph still emitted.",
     "school": "POSITIONAL_STRUCTURE"
    },
    "claim_boundary": "Static sidecar artifact. One WorkGraph per Flash Gravity school over the real funnel. No hardware measurement. Gate 2 (real teacher fit) SLEEPS until a Flash teacher corpus exists on disk; nodes past a sleeper are UNREACHABLE, not pending. COMPLETE is refused without a receipt on disk.",
@@ -6723,8 +6617,8 @@
    "live_prefix": [
     {
      "id": "POSITIONAL_STRUCTURE:analytic_structure",
-     "schedulable_now": false,
-     "status": "COMPLETE"
+     "schedulable_now": true,
+     "status": "READY"
     },
     {
      "id": "POSITIONAL_STRUCTURE:tiny_synthetic_sanity",
@@ -6733,16 +6627,16 @@
     }
    ],
    "looks_complete": false,
-   "n_complete": 1,
+   "n_complete": 0,
    "n_edges": 10,
    "n_nodes": 11,
-   "n_ready": 1,
+   "n_ready": 2,
    "n_sleeping": 1,
    "n_unreachable": 8,
    "nodes": [
     {
      "blocked_reason": null,
-     "completion_receipt": "receipts/future/FLASH_ORGAN_SCHOOLS.json",
+     "completion_receipt": null,
      "cost_class": "CHEAP_ANALYTICAL",
      "dependencies": [],
      "evidence_class": "STATIC_ONLY",
@@ -6766,11 +6660,11 @@
      "passing_proves": "The hypothesis is a well-formed allocation of TOTAL EXECUTABLE INFORMATION.",
      "required_input": "allocation_plan",
      "resource_lane": "CPU_ANALYSIS",
-     "schedulable_now": false,
+     "schedulable_now": true,
      "school": "POSITIONAL_STRUCTURE",
      "sleeps_when": "the school cannot emit an allocation plan (unknown school, or empty census family on a weight organ)",
      "stage": "analytic_structure",
-     "status": "COMPLETE",
+     "status": "READY",
      "title": "analytic structure",
      "unreachable_because": null,
      "verifier": "tools.future.meta_funnel._eval_analytical + flash_schools.schedule_school",
@@ -6903,17 +6797,17 @@
      "id": "POSITIONAL_STRUCTURE:route_stability",
      "index": 5,
      "input_detail": {
-      "input_state": "PRESENT",
-      "present": true,
-      "reason": "input receipt on disk: receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
-      "receipts_on_disk": [
+      "input_state": "NOT_ON_DISK",
+      "present": false,
+      "reason": "required input 'route_traces' has no on-disk receipt (in_head=['receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json', 'receipts/future/evidence/FLASH_NOETIC_ROUTER_SELECTION.json']); COMPLETE authority is on-disk",
+      "receipts_in_head_not_on_disk": [
        "receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
        "receipts/future/evidence/FLASH_NOETIC_ROUTER_SELECTION.json"
       ],
-      "sleeps": false,
-      "wake_condition": null
+      "sleeps": true,
+      "wake_condition": "route-trace receipt on disk with teacher top-k identity after a passed teacher fit"
      },
-     "input_state": "PRESENT",
+     "input_state": "NOT_ON_DISK",
      "inputs": [
       "route_traces"
      ],
@@ -6945,16 +6839,16 @@
      "id": "POSITIONAL_STRUCTURE:state_stability",
      "index": 6,
      "input_detail": {
-      "input_state": "PRESENT",
-      "present": true,
-      "reason": "input receipt on disk: receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
-      "receipts_on_disk": [
+      "input_state": "NOT_ON_DISK",
+      "present": false,
+      "reason": "required input 'state_traces' has no on-disk receipt (in_head=['receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json']); COMPLETE authority is on-disk",
+      "receipts_in_head_not_on_disk": [
        "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json"
       ],
-      "sleeps": false,
-      "wake_condition": null
+      "sleeps": true,
+      "wake_condition": "state-trace receipt on disk showing source-approved recurrent/KV/HC semantics after route stability"
      },
-     "input_state": "PRESENT",
+     "input_state": "NOT_ON_DISK",
      "inputs": [
       "state_traces"
      ],
@@ -6986,16 +6880,16 @@
      "id": "POSITIONAL_STRUCTURE:logit_token",
      "index": 7,
      "input_detail": {
-      "input_state": "PRESENT",
-      "present": true,
-      "reason": "input receipt on disk: receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
-      "receipts_on_disk": [
+      "input_state": "NOT_ON_DISK",
+      "present": false,
+      "reason": "required input 'logit_token' has no on-disk receipt (in_head=['receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json']); COMPLETE authority is on-disk",
+      "receipts_in_head_not_on_disk": [
        "receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json"
       ],
-      "sleeps": false,
-      "wake_condition": null
+      "sleeps": true,
+      "wake_condition": "logit/token receipt on disk with argmax agreement after state stability"
      },
-     "input_state": "PRESENT",
+     "input_state": "NOT_ON_DISK",
      "inputs": [
       "logit_token"
      ],
@@ -7070,8 +6964,7 @@
       "present": true,
       "reason": "input receipt on disk: receipts/future/FLASH_NR_COMPLETE.json",
       "receipts_on_disk": [
-       "receipts/future/FLASH_NR_COMPLETE.json",
-       "receipts/headless/FLASH_COMPLETE_V2.nr.json"
+       "receipts/future/FLASH_NR_COMPLETE.json"
       ],
       "sleeps": false,
       "wake_condition": null
@@ -7112,9 +7005,7 @@
       "present": true,
       "reason": "input receipt on disk: receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
       "receipts_on_disk": [
-       "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
-       "receipts/headless/FLASH_COMPLETE_V0.nx.json",
-       "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json"
+       "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json"
       ],
       "sleeps": false,
       "wake_condition": null
@@ -7155,8 +7046,7 @@
       "present": true,
       "reason": "input receipt on disk: receipts/future/EBPW_CATEGORY_VALIDATOR.json",
       "receipts_on_disk": [
-       "receipts/future/EBPW_CATEGORY_VALIDATOR.json",
-       "receipts/headless/FLASH_EBPW_BUDGET.json"
+       "receipts/future/EBPW_CATEGORY_VALIDATOR.json"
       ],
       "sleeps": false,
       "wake_condition": null
@@ -7205,10 +7095,9 @@
   {
    "by_status": {
     "AWAITING_PREDECESSOR": [],
-    "COMPLETE": [
-     "DECODING:analytic_structure"
-    ],
+    "COMPLETE": [],
     "READY": [
+     "DECODING:analytic_structure",
      "DECODING:tiny_synthetic_sanity"
     ],
     "SLEEPING": [
@@ -7226,7 +7115,7 @@
     ]
    },
    "census": {
-    "census_source": "pinned_snapshot",
+    "census_source": "unavailable",
     "declared_families": [],
     "empty_census_family": false,
     "graph_emitted": true,
@@ -7298,8 +7187,8 @@
    "live_prefix": [
     {
      "id": "DECODING:analytic_structure",
-     "schedulable_now": false,
-     "status": "COMPLETE"
+     "schedulable_now": true,
+     "status": "READY"
     },
     {
      "id": "DECODING:tiny_synthetic_sanity",
@@ -7308,16 +7197,16 @@
     }
    ],
    "looks_complete": false,
-   "n_complete": 1,
+   "n_complete": 0,
    "n_edges": 10,
    "n_nodes": 11,
-   "n_ready": 1,
+   "n_ready": 2,
    "n_sleeping": 1,
    "n_unreachable": 8,
    "nodes": [
     {
      "blocked_reason": null,
-     "completion_receipt": "receipts/future/FLASH_ORGAN_SCHOOLS.json",
+     "completion_receipt": null,
      "cost_class": "CHEAP_ANALYTICAL",
      "dependencies": [],
      "evidence_class": "STATIC_ONLY",
@@ -7341,11 +7230,11 @@
      "passing_proves": "The hypothesis is a well-formed allocation of TOTAL EXECUTABLE INFORMATION.",
      "required_input": "allocation_plan",
      "resource_lane": "CPU_ANALYSIS",
-     "schedulable_now": false,
+     "schedulable_now": true,
      "school": "DECODING",
      "sleeps_when": "the school cannot emit an allocation plan (unknown school, or empty census family on a weight organ)",
      "stage": "analytic_structure",
-     "status": "COMPLETE",
+     "status": "READY",
      "title": "analytic structure",
      "unreachable_because": null,
      "verifier": "tools.future.meta_funnel._eval_analytical + flash_schools.schedule_school",
@@ -7478,17 +7367,17 @@
      "id": "DECODING:route_stability",
      "index": 5,
      "input_detail": {
-      "input_state": "PRESENT",
-      "present": true,
-      "reason": "input receipt on disk: receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
-      "receipts_on_disk": [
+      "input_state": "NOT_ON_DISK",
+      "present": false,
+      "reason": "required input 'route_traces' has no on-disk receipt (in_head=['receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json', 'receipts/future/evidence/FLASH_NOETIC_ROUTER_SELECTION.json']); COMPLETE authority is on-disk",
+      "receipts_in_head_not_on_disk": [
        "receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
        "receipts/future/evidence/FLASH_NOETIC_ROUTER_SELECTION.json"
       ],
-      "sleeps": false,
-      "wake_condition": null
+      "sleeps": true,
+      "wake_condition": "route-trace receipt on disk with teacher top-k identity after a passed teacher fit"
      },
-     "input_state": "PRESENT",
+     "input_state": "NOT_ON_DISK",
      "inputs": [
       "route_traces"
      ],
@@ -7520,16 +7409,16 @@
      "id": "DECODING:state_stability",
      "index": 6,
      "input_detail": {
-      "input_state": "PRESENT",
-      "present": true,
-      "reason": "input receipt on disk: receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
-      "receipts_on_disk": [
+      "input_state": "NOT_ON_DISK",
+      "present": false,
+      "reason": "required input 'state_traces' has no on-disk receipt (in_head=['receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json']); COMPLETE authority is on-disk",
+      "receipts_in_head_not_on_disk": [
        "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json"
       ],
-      "sleeps": false,
-      "wake_condition": null
+      "sleeps": true,
+      "wake_condition": "state-trace receipt on disk showing source-approved recurrent/KV/HC semantics after route stability"
      },
-     "input_state": "PRESENT",
+     "input_state": "NOT_ON_DISK",
      "inputs": [
       "state_traces"
      ],
@@ -7561,16 +7450,16 @@
      "id": "DECODING:logit_token",
      "index": 7,
      "input_detail": {
-      "input_state": "PRESENT",
-      "present": true,
-      "reason": "input receipt on disk: receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
-      "receipts_on_disk": [
+      "input_state": "NOT_ON_DISK",
+      "present": false,
+      "reason": "required input 'logit_token' has no on-disk receipt (in_head=['receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json']); COMPLETE authority is on-disk",
+      "receipts_in_head_not_on_disk": [
        "receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json"
       ],
-      "sleeps": false,
-      "wake_condition": null
+      "sleeps": true,
+      "wake_condition": "logit/token receipt on disk with argmax agreement after state stability"
      },
-     "input_state": "PRESENT",
+     "input_state": "NOT_ON_DISK",
      "inputs": [
       "logit_token"
      ],
@@ -7645,8 +7534,7 @@
       "present": true,
       "reason": "input receipt on disk: receipts/future/FLASH_NR_COMPLETE.json",
       "receipts_on_disk": [
-       "receipts/future/FLASH_NR_COMPLETE.json",
-       "receipts/headless/FLASH_COMPLETE_V2.nr.json"
+       "receipts/future/FLASH_NR_COMPLETE.json"
       ],
       "sleeps": false,
       "wake_condition": null
@@ -7687,9 +7575,7 @@
       "present": true,
       "reason": "input receipt on disk: receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
       "receipts_on_disk": [
-       "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
-       "receipts/headless/FLASH_COMPLETE_V0.nx.json",
-       "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json"
+       "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json"
       ],
       "sleeps": false,
       "wake_condition": null
@@ -7730,8 +7616,7 @@
       "present": true,
       "reason": "input receipt on disk: receipts/future/EBPW_CATEGORY_VALIDATOR.json",
       "receipts_on_disk": [
-       "receipts/future/EBPW_CATEGORY_VALIDATOR.json",
-       "receipts/headless/FLASH_EBPW_BUDGET.json"
+       "receipts/future/EBPW_CATEGORY_VALIDATOR.json"
       ],
       "sleeps": false,
       "wake_condition": null
@@ -7780,10 +7665,9 @@
   {
    "by_status": {
     "AWAITING_PREDECESSOR": [],
-    "COMPLETE": [
-     "MTP_SPECULATION:analytic_structure"
-    ],
+    "COMPLETE": [],
     "READY": [
+     "MTP_SPECULATION:analytic_structure",
      "MTP_SPECULATION:tiny_synthetic_sanity"
     ],
     "SLEEPING": [
@@ -7801,7 +7685,7 @@
     ]
    },
    "census": {
-    "census_source": "pinned_snapshot",
+    "census_source": "unavailable",
     "declared_families": [],
     "empty_census_family": false,
     "graph_emitted": true,
@@ -7873,8 +7757,8 @@
    "live_prefix": [
     {
      "id": "MTP_SPECULATION:analytic_structure",
-     "schedulable_now": false,
-     "status": "COMPLETE"
+     "schedulable_now": true,
+     "status": "READY"
     },
     {
      "id": "MTP_SPECULATION:tiny_synthetic_sanity",
@@ -7883,16 +7767,16 @@
     }
    ],
    "looks_complete": false,
-   "n_complete": 1,
+   "n_complete": 0,
    "n_edges": 10,
    "n_nodes": 11,
-   "n_ready": 1,
+   "n_ready": 2,
    "n_sleeping": 1,
    "n_unreachable": 8,
    "nodes": [
     {
      "blocked_reason": null,
-     "completion_receipt": "receipts/future/FLASH_ORGAN_SCHOOLS.json",
+     "completion_receipt": null,
      "cost_class": "CHEAP_ANALYTICAL",
      "dependencies": [],
      "evidence_class": "STATIC_ONLY",
@@ -7916,11 +7800,11 @@
      "passing_proves": "The hypothesis is a well-formed allocation of TOTAL EXECUTABLE INFORMATION.",
      "required_input": "allocation_plan",
      "resource_lane": "CPU_ANALYSIS",
-     "schedulable_now": false,
+     "schedulable_now": true,
      "school": "MTP_SPECULATION",
      "sleeps_when": "the school cannot emit an allocation plan (unknown school, or empty census family on a weight organ)",
      "stage": "analytic_structure",
-     "status": "COMPLETE",
+     "status": "READY",
      "title": "analytic structure",
      "unreachable_because": null,
      "verifier": "tools.future.meta_funnel._eval_analytical + flash_schools.schedule_school",
@@ -8053,17 +7937,17 @@
      "id": "MTP_SPECULATION:route_stability",
      "index": 5,
      "input_detail": {
-      "input_state": "PRESENT",
-      "present": true,
-      "reason": "input receipt on disk: receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
-      "receipts_on_disk": [
+      "input_state": "NOT_ON_DISK",
+      "present": false,
+      "reason": "required input 'route_traces' has no on-disk receipt (in_head=['receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json', 'receipts/future/evidence/FLASH_NOETIC_ROUTER_SELECTION.json']); COMPLETE authority is on-disk",
+      "receipts_in_head_not_on_disk": [
        "receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
        "receipts/future/evidence/FLASH_NOETIC_ROUTER_SELECTION.json"
       ],
-      "sleeps": false,
-      "wake_condition": null
+      "sleeps": true,
+      "wake_condition": "route-trace receipt on disk with teacher top-k identity after a passed teacher fit"
      },
-     "input_state": "PRESENT",
+     "input_state": "NOT_ON_DISK",
      "inputs": [
       "route_traces"
      ],
@@ -8095,16 +7979,16 @@
      "id": "MTP_SPECULATION:state_stability",
      "index": 6,
      "input_detail": {
-      "input_state": "PRESENT",
-      "present": true,
-      "reason": "input receipt on disk: receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
-      "receipts_on_disk": [
+      "input_state": "NOT_ON_DISK",
+      "present": false,
+      "reason": "required input 'state_traces' has no on-disk receipt (in_head=['receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json']); COMPLETE authority is on-disk",
+      "receipts_in_head_not_on_disk": [
        "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json"
       ],
-      "sleeps": false,
-      "wake_condition": null
+      "sleeps": true,
+      "wake_condition": "state-trace receipt on disk showing source-approved recurrent/KV/HC semantics after route stability"
      },
-     "input_state": "PRESENT",
+     "input_state": "NOT_ON_DISK",
      "inputs": [
       "state_traces"
      ],
@@ -8136,16 +8020,16 @@
      "id": "MTP_SPECULATION:logit_token",
      "index": 7,
      "input_detail": {
-      "input_state": "PRESENT",
-      "present": true,
-      "reason": "input receipt on disk: receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
-      "receipts_on_disk": [
+      "input_state": "NOT_ON_DISK",
+      "present": false,
+      "reason": "required input 'logit_token' has no on-disk receipt (in_head=['receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json']); COMPLETE authority is on-disk",
+      "receipts_in_head_not_on_disk": [
        "receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json"
       ],
-      "sleeps": false,
-      "wake_condition": null
+      "sleeps": true,
+      "wake_condition": "logit/token receipt on disk with argmax agreement after state stability"
      },
-     "input_state": "PRESENT",
+     "input_state": "NOT_ON_DISK",
      "inputs": [
       "logit_token"
      ],
@@ -8220,8 +8104,7 @@
       "present": true,
       "reason": "input receipt on disk: receipts/future/FLASH_NR_COMPLETE.json",
       "receipts_on_disk": [
-       "receipts/future/FLASH_NR_COMPLETE.json",
-       "receipts/headless/FLASH_COMPLETE_V2.nr.json"
+       "receipts/future/FLASH_NR_COMPLETE.json"
       ],
       "sleeps": false,
       "wake_condition": null
@@ -8262,9 +8145,7 @@
       "present": true,
       "reason": "input receipt on disk: receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
       "receipts_on_disk": [
-       "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
-       "receipts/headless/FLASH_COMPLETE_V0.nx.json",
-       "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json"
+       "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json"
       ],
       "sleeps": false,
       "wake_condition": null
@@ -8305,8 +8186,7 @@
       "present": true,
       "reason": "input receipt on disk: receipts/future/EBPW_CATEGORY_VALIDATOR.json",
       "receipts_on_disk": [
-       "receipts/future/EBPW_CATEGORY_VALIDATOR.json",
-       "receipts/headless/FLASH_EBPW_BUDGET.json"
+       "receipts/future/EBPW_CATEGORY_VALIDATOR.json"
       ],
       "sleeps": false,
       "wake_condition": null
@@ -8370,8 +8250,8 @@
   "all_fired": true,
   "complete_without_receipt_refused": {
    "fired": true,
-   "node_id": "ROUTED_EXPERTS:tiny_synthetic_sanity",
-   "reason": "ROUTED_EXPERTS:tiny_synthetic_sanity: refusing COMPLETE; /Users/scammermike/Downloads/hawking/receipts/future/DOES_NOT_EXIST_ORGAN_WG.json is not a file on disk"
+   "node_id": "ROUTED_EXPERTS:analytic_structure",
+   "reason": "ROUTED_EXPERTS:analytic_structure: refusing COMPLETE; /Users/scammermike/.claude-grok/worktrees/s4-tools-future-under-10s-20260902-045214/receipts/future/DOES_NOT_EXIST_ORGAN_WG.json is not a file on disk"
   },
   "empty_census_family_reported": {
    "fired": true,
@@ -8394,7 +8274,7 @@
  },
  "negative_findings": [
   "Flash teacher corpus is NOT_BUILT: Flash teacher-forced / captured-activation corpus is NOT_BUILT on disk. teacher_corpus.py is a validator; its fixtures are not a Flash corpus. GLM teacher-forced captures are a different specimen.",
-  "14 school graphs emitted; 14 COMPLETE nodes (on-disk receipt required).",
+  "14 school graphs emitted; 0 COMPLETE nodes (on-disk receipt required).",
   "Did not fit any candidate to the 350GB Flash specimen.",
   "Did not take a hardware measurement. evidence_class STATIC_ONLY, gpu_authority false.",
   "Did not mark any node past real_teacher_fit COMPLETE or READY; they are UNREACHABLE.",
@@ -8406,42 +8286,56 @@
  "purpose": "One WorkGraph per Flash Gravity organ school over the real funnel, independently schedulable, honestly asleep at Gate 2 until a Flash teacher corpus exists, and UNREACHABLE after that sleeper.",
  "ready_prefix_workgraph": {
   "admitted_ids": [
+   "ROUTED_EXPERTS:analytic_structure",
    "ROUTED_EXPERTS:tiny_synthetic_sanity",
+   "SHARED_EXPERTS:analytic_structure",
    "SHARED_EXPERTS:tiny_synthetic_sanity",
+   "ROUTER:analytic_structure",
    "ROUTER:tiny_synthetic_sanity",
+   "HC_HYPERCONNECTION:analytic_structure",
    "HC_HYPERCONNECTION:tiny_synthetic_sanity",
+   "DELTANET_RECURRENT_STATE:analytic_structure",
    "DELTANET_RECURRENT_STATE:tiny_synthetic_sanity",
+   "FULL_ATTENTION:analytic_structure",
    "FULL_ATTENTION:tiny_synthetic_sanity",
+   "KV_STATE:analytic_structure",
    "KV_STATE:tiny_synthetic_sanity",
+   "NGRAM:analytic_structure",
    "NGRAM:tiny_synthetic_sanity",
+   "EMBEDDING:analytic_structure",
    "EMBEDDING:tiny_synthetic_sanity",
+   "LM_HEAD:analytic_structure",
    "LM_HEAD:tiny_synthetic_sanity",
+   "NORMALIZATION:analytic_structure",
    "NORMALIZATION:tiny_synthetic_sanity",
+   "POSITIONAL_STRUCTURE:analytic_structure",
    "POSITIONAL_STRUCTURE:tiny_synthetic_sanity",
+   "DECODING:analytic_structure",
    "DECODING:tiny_synthetic_sanity",
+   "MTP_SPECULATION:analytic_structure",
    "MTP_SPECULATION:tiny_synthetic_sanity"
   ],
   "cross_school_ready_deps": [],
   "evidence_class": "STATIC_ONLY",
   "gpu_authority": false,
-  "n_admitted": 14,
+  "n_admitted": 28,
   "n_ready": 14,
   "note": "Only READY organ-funnel nodes are admitted. SLEEPING teacher-fit nodes stay in the organ graph; workgraph.make_unit reserves SLEEPING for unqualified hardware.",
   "ready_ids": [
-   "DECODING:tiny_synthetic_sanity",
-   "DELTANET_RECURRENT_STATE:tiny_synthetic_sanity",
-   "EMBEDDING:tiny_synthetic_sanity",
-   "FULL_ATTENTION:tiny_synthetic_sanity",
-   "HC_HYPERCONNECTION:tiny_synthetic_sanity",
-   "KV_STATE:tiny_synthetic_sanity",
-   "LM_HEAD:tiny_synthetic_sanity",
-   "MTP_SPECULATION:tiny_synthetic_sanity",
-   "NGRAM:tiny_synthetic_sanity",
-   "NORMALIZATION:tiny_synthetic_sanity",
-   "POSITIONAL_STRUCTURE:tiny_synthetic_sanity",
-   "ROUTED_EXPERTS:tiny_synthetic_sanity",
-   "ROUTER:tiny_synthetic_sanity",
-   "SHARED_EXPERTS:tiny_synthetic_sanity"
+   "DECODING:analytic_structure",
+   "DELTANET_RECURRENT_STATE:analytic_structure",
+   "EMBEDDING:analytic_structure",
+   "FULL_ATTENTION:analytic_structure",
+   "HC_HYPERCONNECTION:analytic_structure",
+   "KV_STATE:analytic_structure",
+   "LM_HEAD:analytic_structure",
+   "MTP_SPECULATION:analytic_structure",
+   "NGRAM:analytic_structure",
+   "NORMALIZATION:analytic_structure",
+   "POSITIONAL_STRUCTURE:analytic_structure",
+   "ROUTED_EXPERTS:analytic_structure",
+   "ROUTER:analytic_structure",
+   "SHARED_EXPERTS:analytic_structure"
   ],
   "sleeping_organ_nodes_converted": 0,
   "workgraph_executes": false
@@ -8582,13 +8476,13 @@
   "DECODING",
   "MTP_SPECULATION"
  ],
- "seal_sha256": "ea595a980d2456270cb6ef7f81a7dff22d1796539d18034b02fe9483c8a11d8d",
+ "seal_sha256": "e345e8a7de92a2af61428c9522bf4bae3758334347b821daa9d57c7f0df5da78",
  "teacher_corpus": {
   "contract_is_not_a_corpus": true,
   "contract_receipt": {
    "complete_authority": "on_disk",
    "in_head": true,
-   "on_disk": true,
+   "on_disk": false,
    "path": "receipts/future/TEACHER_CORPUS_CONTRACT.json"
   },
   "glm_probe": {

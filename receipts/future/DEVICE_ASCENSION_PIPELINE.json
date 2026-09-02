@@ -30,12 +30,12 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T07:07:39Z",
+  "recorded_at": "2026-09-02T09:38:58Z",
   "recorded_by": "tools/future/device_ascension_pipeline.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
- "branch": "odyssey-i",
+ "branch": "grok/s4-tools-future-under-10s-20260902-045214",
  "claim_boundary": "Static sidecar artifact. No hardware measurement.",
  "eras": [
   "I Genesis of the Laboratory",
@@ -63,7 +63,7 @@
   "stage 8 refuses to emit VERIFIED performance laws when stage 7 is UNAVAILABLE",
   "Odyssey II field names (law_id, scope, evidence_strength) without importing a sibling law store"
  ],
- "head": "36691aa32412e3cc38b3f9f7d2575e1d59e9cff4",
+ "head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
  "negative_findings": [
   "receipts/headless/APPLE_ANE_DEVICE_PROFILE.json is not in HEAD; ANE is present-unprofiled at best",
   "no Odyssey II scoped law store on disk (frontier F010); field names used locally",
@@ -621,6 +621,6 @@
   "SOC_FAMILY",
   "GENERIC_VERIFIED"
  ],
- "seal_sha256": "cae16715ea3d3fb01311fff3bbac8ed2f91450696f8e7abbb2434c96bae0a7e1",
+ "seal_sha256": "2f49506067662f5df55f2b2b8119f90f49ad13698b8d602e2f671b42d104fa18",
  "version": 1
 }

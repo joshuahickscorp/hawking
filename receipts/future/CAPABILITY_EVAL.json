@@ -13,9 +13,9 @@
   "heterogeneous"
  ],
  "artifact_identity": {
-  "commit": "36691aa32412e3cc38b3f9f7d2575e1d59e9cff4",
+  "commit": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
   "content_sha256": "775f8dab960b15fd8c95027bd2ab6e5333ff0150a70be497736909f633c7d312",
-  "identity_key": "e9222339b3b634c5a75ea807d890f270177835a0aad9cbfd67016ccc66e7da3e",
+  "identity_key": "0c4d2058fb27a6ef7a2f08b1eed4e7e2b42af8e8a2c1c53a28a0abc21974ecb1",
   "inputs": [],
   "kind": "experiment_receipt",
   "location": "receipts/future/CAPABILITY_EVAL.json",
@@ -28,12 +28,12 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T07:07:45Z",
+  "recorded_at": "2026-09-02T09:52:03Z",
   "recorded_by": "tools/future/capability_eval.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
- "branch": "odyssey-i",
+ "branch": "grok/s4-tools-future-under-10s-20260902-045214",
  "call_sites": [
   "CapabilityEvalRegistry.run -> ReasoningPredicateEvaluator.evaluate",
   "CapabilityEvalRegistry.run -> CodingExecuteEvaluator.evaluate",
@@ -166,9 +166,9 @@
  "experiment_receipt": {
   "artifacts": [
    {
-    "commit": "36691aa32412e3cc38b3f9f7d2575e1d59e9cff4",
+    "commit": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
     "content_sha256": "775f8dab960b15fd8c95027bd2ab6e5333ff0150a70be497736909f633c7d312",
-    "identity_key": "e9222339b3b634c5a75ea807d890f270177835a0aad9cbfd67016ccc66e7da3e",
+    "identity_key": "0c4d2058fb27a6ef7a2f08b1eed4e7e2b42af8e8a2c1c53a28a0abc21974ecb1",
     "inputs": [],
     "kind": "experiment_receipt",
     "location": "receipts/future/CAPABILITY_EVAL.json",
@@ -208,14 +208,14 @@
    },
    {
     "kind": "identity_key",
-    "value": "e9222339b3b634c5a75ea807d890f270177835a0aad9cbfd67016ccc66e7da3e"
+    "value": "0c4d2058fb27a6ef7a2f08b1eed4e7e2b42af8e8a2c1c53a28a0abc21974ecb1"
    }
   ],
   "hypotheses": [],
   "identity": {
-   "commit": "36691aa32412e3cc38b3f9f7d2575e1d59e9cff4",
+   "commit": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
    "content_sha256": "775f8dab960b15fd8c95027bd2ab6e5333ff0150a70be497736909f633c7d312",
-   "identity_key": "e9222339b3b634c5a75ea807d890f270177835a0aad9cbfd67016ccc66e7da3e",
+   "identity_key": "0c4d2058fb27a6ef7a2f08b1eed4e7e2b42af8e8a2c1c53a28a0abc21974ecb1",
    "inputs": [],
    "kind": "experiment_receipt",
    "location": "receipts/future/CAPABILITY_EVAL.json",
@@ -329,7 +329,7 @@
   "version": 1
  },
  "hardcoded_benchmark": null,
- "head": "36691aa32412e3cc38b3f9f7d2575e1d59e9cff4",
+ "head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
  "live_resident_refusal_fired": true,
  "live_resident_refused": true,
  "negative_control_failing_source": {
@@ -560,6 +560,6 @@
   }
  ],
  "schema": "hawking.future.capability_eval.v1",
- "seal_sha256": "e4f1c06a7de96db497ba80bae7b6cc6f08099798a28b5c2ae1194901a75e90c3",
+ "seal_sha256": "442530b0485f1b56884c339e00af6235ec85ec5c2247b917777b6f892529ac72",
  "version": 1
 }

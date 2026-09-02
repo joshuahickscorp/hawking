@@ -3,442 +3,90 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T06:56:43Z",
+  "recorded_at": "2026-09-02T09:16:23Z",
   "recorded_by": "tools/future/evidence_snapshot.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
  "captured": [
   {
-   "bytes": 251800,
-   "name": "ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
-   "sha256": "3d4291b2cacfe823ac5556268efe0814c24dd0daefee8894226070a48ade02eb",
-   "snapshot_path": "receipts/future/evidence/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
-   "source_mtime_epoch": 1788065771.569,
-   "source_mtime_utc": "2026-08-30T04:56:11Z",
-   "source_path": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
-  },
-  {
-   "bytes": 68876,
-   "name": "ACCELERATOR_SCOREBOARD.json",
-   "sha256": "8e4d50aa9898ebdd93b0404b0e7b9f73731c25280c2056220dfd85017a835369",
-   "snapshot_path": "receipts/future/evidence/ACCELERATOR_SCOREBOARD.json",
-   "source_mtime_epoch": 1787984713.618,
-   "source_mtime_utc": "2026-08-29T06:25:13Z",
-   "source_path": "receipts/headless/ACCELERATOR_SCOREBOARD.json"
-  },
-  {
-   "bytes": 60109,
-   "name": "ACCELERATOR_REPATRIATION_QUEUE.json",
-   "sha256": "7fe5eba1709bb2d2210f9fa4097a348a36a7040a5da2ca9ff35845f5dfefd94e",
-   "snapshot_path": "receipts/future/evidence/ACCELERATOR_REPATRIATION_QUEUE.json",
-   "source_mtime_epoch": 1787984095.405,
-   "source_mtime_utc": "2026-08-29T06:14:55Z",
-   "source_path": "receipts/headless/ACCELERATOR_REPATRIATION_QUEUE.json"
-  },
-  {
-   "bytes": 11344,
-   "name": "ACCELERATOR_REPATRIATION_AUDIT.json",
-   "sha256": "c5b77fb1e3a6a167e38911e9c6cd5c460c39043d32494ae5ebb1e3fe714b8915",
-   "snapshot_path": "receipts/future/evidence/ACCELERATOR_REPATRIATION_AUDIT.json",
-   "source_mtime_epoch": 1788065925.529,
-   "source_mtime_utc": "2026-08-30T04:58:45Z",
-   "source_path": "receipts/headless/ACCELERATOR_REPATRIATION_AUDIT.json"
-  },
-  {
-   "bytes": 91202,
-   "name": "ACCELERATOR_ARCHITECTURE_ATLAS.json",
-   "sha256": "2711382665157b79dba2268aa290ce5c3d8397ac6fb95a409b8f2f1868b0a1e4",
-   "snapshot_path": "receipts/future/evidence/ACCELERATOR_ARCHITECTURE_ATLAS.json",
-   "source_mtime_epoch": 1787983648.084,
-   "source_mtime_utc": "2026-08-29T06:07:28Z",
-   "source_path": "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json"
-  },
-  {
-   "bytes": 39601,
-   "name": "ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json",
-   "sha256": "f627ce102b1257d4f939827d22f069bcd5f31d6631899e84a16e511e51107339",
-   "snapshot_path": "receipts/future/evidence/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json",
-   "source_mtime_epoch": 1788331891.867,
-   "source_mtime_utc": "2026-09-02T06:51:31Z",
-   "source_path": "receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json"
-  },
-  {
-   "bytes": 7241,
-   "name": "ACCELERATOR_TRANSFER_VERIFIED.json",
-   "sha256": "17b6bb49a211a9345701e17e0dfddb86c5950135d7e5a4096476177e2e77f4db",
-   "snapshot_path": "receipts/future/evidence/ACCELERATOR_TRANSFER_VERIFIED.json",
-   "source_mtime_epoch": 1787666245.079,
-   "source_mtime_utc": "2026-08-25T13:57:25Z",
-   "source_path": "receipts/headless/ACCELERATOR_TRANSFER_VERIFIED.json"
-  },
-  {
-   "bytes": 6337,
-   "name": "ACCELERATOR_FRONT_F_ODYSSEY_PASS.json",
-   "sha256": "447247d2f48ce7d983a2d6de37b82cd9ae9b520f1415b439b659b0dd80ff4214",
-   "snapshot_path": "receipts/future/evidence/ACCELERATOR_FRONT_F_ODYSSEY_PASS.json",
-   "source_mtime_epoch": 1787696731.996,
-   "source_mtime_utc": "2026-08-25T22:25:31Z",
-   "source_path": "receipts/headless/ACCELERATOR_FRONT_F_ODYSSEY_PASS.json"
-  },
-  {
-   "bytes": 15141,
-   "name": "FLASH_COMPLETE_V0.nx.json",
-   "sha256": "0eee8f82b1adf97087f995b7d645a210c6ec5ea975d25bd96450956db75345a9",
-   "snapshot_path": "receipts/future/evidence/FLASH_COMPLETE_V0.nx.json",
-   "source_mtime_epoch": 1787949951.933,
-   "source_mtime_utc": "2026-08-28T20:45:51Z",
-   "source_path": "receipts/headless/FLASH_COMPLETE_V0.nx.json"
-  },
-  {
-   "bytes": 7718,
-   "name": "FLASH_COMPLETE_V2.nr.json",
-   "sha256": "ebadbf2a038138c43064112e48a779f5ec7167a97ba1c44bf6c442867ef6c3a6",
-   "snapshot_path": "receipts/future/evidence/FLASH_COMPLETE_V2.nr.json",
-   "source_mtime_epoch": 1787952353.555,
-   "source_mtime_utc": "2026-08-28T21:25:53Z",
-   "source_path": "receipts/headless/FLASH_COMPLETE_V2.nr.json"
-  },
-  {
-   "bytes": 14601,
-   "name": "FLASH_NEXT_MACHINE.nx.json",
-   "sha256": "a644ca2407ec65af2bffc5a1fba15c63cbce7a492e70334fb9eb96535f47f3f1",
-   "snapshot_path": "receipts/future/evidence/FLASH_NEXT_MACHINE.nx.json",
-   "source_mtime_epoch": 1787949165.951,
-   "source_mtime_utc": "2026-08-28T20:32:45Z",
-   "source_path": "receipts/headless/FLASH_NEXT_MACHINE.nx.json"
-  },
-  {
-   "bytes": 15016,
-   "name": "FLASH_META_REPRESENTATION_SUB1.json",
-   "sha256": "993e62421f1ffd77009dbab5c501cfd9f7fda1555c24bd46b309f171cb5849d9",
-   "snapshot_path": "receipts/future/evidence/FLASH_META_REPRESENTATION_SUB1.json",
-   "source_mtime_epoch": 1788037557.125,
-   "source_mtime_utc": "2026-08-29T21:05:57Z",
-   "source_path": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json"
-  },
-  {
-   "bytes": 4733,
-   "name": "FLASH_META_COHERENCE_SCREEN_L4.json",
-   "sha256": "f4de5744f9e1a7cb275cb6347a17069cee261052f9f823020e7b908d800ea588",
-   "snapshot_path": "receipts/future/evidence/FLASH_META_COHERENCE_SCREEN_L4.json",
-   "source_mtime_epoch": 1788022958.324,
-   "source_mtime_utc": "2026-08-29T17:02:38Z",
-   "source_path": "receipts/headless/FLASH_META_COHERENCE_SCREEN_L4.json"
-  },
-  {
-   "bytes": 19541,
-   "name": "FLASH_ORGAN_CENSUS.json",
-   "sha256": "5ff766e18f7316005ece2808b43d938c1c728139b2c335556f71dbf344d4555d",
-   "snapshot_path": "receipts/future/evidence/FLASH_ORGAN_CENSUS.json",
-   "source_mtime_epoch": 1787949822.963,
-   "source_mtime_utc": "2026-08-28T20:43:42Z",
-   "source_path": "receipts/headless/FLASH_ORGAN_CENSUS.json"
-  },
-  {
-   "bytes": 7761,
-   "name": "FLASH_ROUTER_SENSITIVITY_MAP_L3_L4.json",
-   "sha256": "4dc9bf25ea300f7c41e9623827a81fae29567c533e11c7c1f2ee85ba0614fa28",
-   "snapshot_path": "receipts/future/evidence/FLASH_ROUTER_SENSITIVITY_MAP_L3_L4.json",
-   "source_mtime_epoch": 1787970682.536,
-   "source_mtime_utc": "2026-08-29T02:31:22Z",
-   "source_path": "receipts/headless/FLASH_ROUTER_SENSITIVITY_MAP_L3_L4.json"
-  },
-  {
-   "bytes": 14955,
-   "name": "FLASH_NOETIC_ROUTER_SELECTION.json",
-   "sha256": "3f405e0b4339a28f13e74676e297c3a78cf7be32d1502ad41721fe54f0d7b6fa",
-   "snapshot_path": "receipts/future/evidence/FLASH_NOETIC_ROUTER_SELECTION.json",
-   "source_mtime_epoch": 1788227625.36,
-   "source_mtime_utc": "2026-09-01T01:53:45Z",
-   "source_path": "receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json"
-  },
-  {
-   "bytes": 23653,
-   "name": "FLASH_DOCTOR_EXPERT_BANK_SCREEN_FULL_L44.json",
-   "sha256": "5b86c8a01c28c794bfa3804918236fae87d90320fd81626a92fb33cf1f912851",
-   "snapshot_path": "receipts/future/evidence/FLASH_DOCTOR_EXPERT_BANK_SCREEN_FULL_L44.json",
-   "source_mtime_epoch": 1787976011.197,
-   "source_mtime_utc": "2026-08-29T04:00:11Z",
-   "source_path": "receipts/headless/FLASH_DOCTOR_EXPERT_BANK_SCREEN_FULL_L44.json"
-  },
-  {
-   "bytes": 4015,
-   "name": "FLASH_LAYER30_CRITICAL_PATH.json",
-   "sha256": "017c7d990b4bb92280a388a5ea13e2fbe693997d9c051685ac8f3cd51a82a3c7",
-   "snapshot_path": "receipts/future/evidence/FLASH_LAYER30_CRITICAL_PATH.json",
-   "source_mtime_epoch": 1787904622.777,
-   "source_mtime_utc": "2026-08-28T08:10:22Z",
-   "source_path": "receipts/headless/FLASH_LAYER30_CRITICAL_PATH.json"
-  },
-  {
-   "bytes": 4015,
-   "name": "FLASH_LAYER10_CRITICAL_PATH.json",
-   "sha256": "20c3684de53a6e682d74dbdd65a2fb7833db53f2520e1de10df94542ce7fe37e",
-   "snapshot_path": "receipts/future/evidence/FLASH_LAYER10_CRITICAL_PATH.json",
-   "source_mtime_epoch": 1787899199.719,
-   "source_mtime_utc": "2026-08-28T06:39:59Z",
-   "source_path": "receipts/headless/FLASH_LAYER10_CRITICAL_PATH.json"
-  },
-  {
-   "bytes": 15506,
-   "name": "FLASH_LAYER46_DISPATCH_LEDGER.json",
-   "sha256": "2c65c1cf0ac8da4966a8d70b7779333e5a7d21f2fb48034b97416a9162458017",
-   "snapshot_path": "receipts/future/evidence/FLASH_LAYER46_DISPATCH_LEDGER.json",
-   "source_mtime_epoch": 1787909075.966,
-   "source_mtime_utc": "2026-08-28T09:24:35Z",
-   "source_path": "receipts/headless/FLASH_LAYER46_DISPATCH_LEDGER.json"
-  },
-  {
-   "bytes": 8631,
-   "name": "FLASH_STATEFUL_TPS_GATE_V14.json",
-   "sha256": "57ead5d81c1974a8152deb8350876be362be33f3013d7e3c4015f90d3c7dcf8c",
-   "snapshot_path": "receipts/future/evidence/FLASH_STATEFUL_TPS_GATE_V14.json",
-   "source_mtime_epoch": 1787978241.74,
-   "source_mtime_utc": "2026-08-29T04:37:21Z",
-   "source_path": "receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json"
-  },
-  {
-   "bytes": 38430,
-   "name": "FLASH_NEXT_FPGA_ORGAN_MAP.json",
-   "sha256": "fb7ca577696f3dbbd783e6a3d7b5986a30e7f1cbec7a30ed522fc45b3cf88011",
-   "snapshot_path": "receipts/future/evidence/FLASH_NEXT_FPGA_ORGAN_MAP.json",
-   "source_mtime_epoch": 1788308192.229,
-   "source_mtime_utc": "2026-09-02T00:16:32Z",
-   "source_path": "receipts/headless/FLASH_NEXT_FPGA_ORGAN_MAP.json"
-  },
-  {
-   "bytes": 2379,
-   "name": "FLASH_ATTENTION_ROUTE_UNION_PARITY.json",
-   "sha256": "a403ed8eb3d5b2d1d4c38996809da93f72ea0ddb30cc321a613b8e7f01e4589b",
-   "snapshot_path": "receipts/future/evidence/FLASH_ATTENTION_ROUTE_UNION_PARITY.json",
-   "source_mtime_epoch": 1787966437.144,
-   "source_mtime_utc": "2026-08-29T01:20:37Z",
-   "source_path": "receipts/headless/FLASH_ATTENTION_ROUTE_UNION_PARITY.json"
-  },
-  {
-   "bytes": 24788,
-   "name": "QWEN27_TOKEN_NS_BUDGET.json",
-   "sha256": "64253f9de400d83854826629eca19102c2593e0bcfbeeeecdfff47146474c3a1",
-   "snapshot_path": "receipts/future/evidence/QWEN27_TOKEN_NS_BUDGET.json",
-   "source_mtime_epoch": 1788015607.445,
-   "source_mtime_utc": "2026-08-29T15:00:07Z",
-   "source_path": "receipts/headless/QWEN27_TOKEN_NS_BUDGET.json"
-  },
-  {
-   "bytes": 31585,
-   "name": "QWEN27_FPGA_ORGAN_MAP.json",
-   "sha256": "66a606e5ce0319ef828bfed3ec4a49f2904289692bd447bbffcb1f1cbf841aec",
-   "snapshot_path": "receipts/future/evidence/QWEN27_FPGA_ORGAN_MAP.json",
-   "source_mtime_epoch": 1788308192.229,
-   "source_mtime_utc": "2026-09-02T00:16:32Z",
-   "source_path": "receipts/headless/QWEN27_FPGA_ORGAN_MAP.json"
-  },
-  {
-   "bytes": 7423,
-   "name": "QWEN38_ACCELERATOR_TRANSFER_MAP.json",
-   "sha256": "d45413916025ccef9e8d178da9bc52d3423efbea7f614735d62fce770cba4c62",
-   "snapshot_path": "receipts/future/evidence/QWEN38_ACCELERATOR_TRANSFER_MAP.json",
-   "source_mtime_epoch": 1788227625.371,
-   "source_mtime_utc": "2026-09-01T01:53:45Z",
-   "source_path": "receipts/headless/QWEN38_ACCELERATOR_TRANSFER_MAP.json"
-  },
-  {
-   "bytes": 13081,
-   "name": "APPLE_ANE_ATLAS.json",
-   "sha256": "f591a8eedf93b071d222c13103bbc750523dffe854981532785126d2c37a9d81",
-   "snapshot_path": "receipts/future/evidence/APPLE_ANE_ATLAS.json",
-   "source_mtime_epoch": 1788046158.8,
-   "source_mtime_utc": "2026-08-29T23:29:18Z",
-   "source_path": "receipts/headless/APPLE_ANE_ATLAS.json"
-  },
-  {
-   "bytes": 1335,
-   "name": "APPLE_ANE_DEVICE_PROFILE.json",
-   "sha256": "0f25b8bfc36dd7538b4121dfe491773ceb6c855d0ac61b7ab49feca8f6c6fecd",
-   "snapshot_path": "receipts/future/evidence/APPLE_ANE_DEVICE_PROFILE.json",
-   "source_mtime_epoch": 1788046158.336,
-   "source_mtime_utc": "2026-08-29T23:29:18Z",
-   "source_path": "receipts/headless/APPLE_ANE_DEVICE_PROFILE.json"
-  },
-  {
-   "bytes": 15352,
-   "name": "HCLI_FPGA_PREBOARD.json",
-   "sha256": "554108a5652e94778af03c6eb566c95548d4ffe5260df005639e46684914020d",
-   "snapshot_path": "receipts/future/evidence/HCLI_FPGA_PREBOARD.json",
-   "source_mtime_epoch": 1788227625.366,
-   "source_mtime_utc": "2026-09-01T01:53:45Z",
-   "source_path": "receipts/headless/HCLI_FPGA_PREBOARD.json"
-  },
-  {
-   "bytes": 10902,
-   "name": "FLASH_FPGA_PREBOARD_CURRENT.json",
-   "sha256": "5bbd75c24f78965b3f8094df5e4fbeda5faa8d2af5888650033e0feef2b981b9",
-   "snapshot_path": "receipts/future/evidence/FLASH_FPGA_PREBOARD_CURRENT.json",
-   "source_mtime_epoch": 1787863204.281,
-   "source_mtime_utc": "2026-08-27T20:40:04Z",
-   "source_path": "receipts/headless/FLASH_FPGA_PREBOARD_CURRENT.json"
-  },
-  {
-   "bytes": 10112,
-   "name": "ODYSSEY_TRANSFER_PROVEN.json",
-   "sha256": "b1827e68aac976c87afd940858cd3ad949fb16715c709b8ca29d0f8e90b8797a",
-   "snapshot_path": "receipts/future/evidence/ODYSSEY_TRANSFER_PROVEN.json",
-   "source_mtime_epoch": 1787736939.365,
-   "source_mtime_utc": "2026-08-26T09:35:39Z",
-   "source_path": "receipts/headless/ODYSSEY_TRANSFER_PROVEN.json"
-  },
-  {
-   "bytes": 42941,
-   "name": "ODYSSEY_ADVERSARIAL_SWEEP.json",
-   "sha256": "0e4e20dd5714660eea78122db71331874a1746799ddc6043d03680dcdabc0125",
-   "snapshot_path": "receipts/future/evidence/ODYSSEY_ADVERSARIAL_SWEEP.json",
-   "source_mtime_epoch": 1787631286.377,
-   "source_mtime_utc": "2026-08-25T04:14:46Z",
-   "source_path": "receipts/headless/ODYSSEY_ADVERSARIAL_SWEEP.json"
-  },
-  {
-   "bytes": 11278,
-   "name": "ODYSSEY_LEARNING_CURVE.json",
-   "sha256": "11cc13bb93164d2c992718d17a71e3809482ebcd20260a86b7bfbcf89ceb2e70",
-   "snapshot_path": "receipts/future/evidence/ODYSSEY_LEARNING_CURVE.json",
-   "source_mtime_epoch": 1787736939.364,
-   "source_mtime_utc": "2026-08-26T09:35:39Z",
-   "source_path": "receipts/headless/ODYSSEY_LEARNING_CURVE.json"
-  },
-  {
-   "bytes": 106368,
-   "name": "NOETIC_NEGATIVE_SCIENCE.json",
-   "sha256": "ba01d42d6e04952a56e5e56e1a36fcfbaddcab7cecc163efb9236bd8ebaf7015",
-   "snapshot_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
-   "source_mtime_epoch": 1787824317.272,
-   "source_mtime_utc": "2026-08-27T09:51:57Z",
-   "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
-  },
-  {
-   "bytes": 53543,
-   "name": "DOCTOR_TRANSFER.json",
-   "sha256": "de73716bd0cad1b460ad867214bd2f91a7610fa11a0febb8b6df84cec50594ea",
-   "snapshot_path": "receipts/future/evidence/DOCTOR_TRANSFER.json",
-   "source_mtime_epoch": 1787621447.303,
-   "source_mtime_utc": "2026-08-25T01:30:47Z",
-   "source_path": "receipts/headless/DOCTOR_TRANSFER.json"
-  },
-  {
-   "bytes": 180846,
-   "name": "DENSE_SUBBIT_TRANSFER.json",
-   "sha256": "a8a6398caed0520147b1966167b6540ab6f50d072ad2bb5c11a9e6944ec7fb32",
-   "snapshot_path": "receipts/future/evidence/DENSE_SUBBIT_TRANSFER.json",
-   "source_mtime_epoch": 1787736939.332,
-   "source_mtime_utc": "2026-08-26T09:35:39Z",
-   "source_path": "receipts/headless/DENSE_SUBBIT_TRANSFER.json"
-  },
-  {
-   "bytes": 31263,
-   "name": "HCLI_ACCELERATOR_REGRESSION.json",
-   "sha256": "5401696f43732a052a5935e2aa4ccce56e638a64b2737be739afc5c8ac2530d3",
-   "snapshot_path": "receipts/future/evidence/HCLI_ACCELERATOR_REGRESSION.json",
-   "source_mtime_epoch": 1788227625.361,
-   "source_mtime_utc": "2026-09-01T01:53:45Z",
-   "source_path": "receipts/headless/HCLI_ACCELERATOR_REGRESSION.json"
-  },
-  {
-   "bytes": 189647,
-   "name": "HCLI_MODELLAKE_FLASH_CENSUS.json",
-   "sha256": "b96700c2360e75e75bc5789c0c9b4354a807771a45dce2418c78de2b1b9bb4cb",
-   "snapshot_path": "receipts/future/evidence/HCLI_MODELLAKE_FLASH_CENSUS.json",
-   "source_mtime_epoch": 1788332164.111,
-   "source_mtime_utc": "2026-09-02T06:56:04Z",
-   "source_path": "receipts/headless/HCLI_MODELLAKE_FLASH_CENSUS.json"
-  },
-  {
-   "bytes": 658,
-   "name": "QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE.json",
-   "sha256": "f13e78c9f1568c66af5feec01017b02bb479d07a0fd42a36a461437e70348b05",
-   "snapshot_path": "receipts/future/evidence/QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE.json",
-   "source_mtime_epoch": 1786852867.586,
-   "source_mtime_utc": "2026-08-16T04:01:07Z",
-   "source_path": "receipts/QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE.json"
-  },
-  {
-   "bytes": 56206,
-   "name": "NEGATIVE_SCIENCE_REGISTER.json",
-   "sha256": "8d6b507c219fee45f808a54e5833834c3f980ec40e8ecf57c3890c7480f0ab1a",
-   "snapshot_path": "receipts/future/evidence/NEGATIVE_SCIENCE_REGISTER.json",
-   "source_mtime_epoch": 1786910322.86,
-   "source_mtime_utc": "2026-08-16T19:58:42Z",
-   "source_path": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json"
-  },
-  {
    "bytes": 13271,
    "name": "NEGATIVE_TRANSFER_ATLAS.json",
    "sha256": "fe218618db0b2398a636271846915ddc9daf3affe1d54f53e57985a2938933f0",
    "snapshot_path": "receipts/future/evidence/NEGATIVE_TRANSFER_ATLAS.json",
-   "source_mtime_epoch": 1784812680.809,
-   "source_mtime_utc": "2026-07-23T13:18:00Z",
+   "source_mtime_epoch": 1788339145.893,
+   "source_mtime_utc": "2026-09-02T08:52:25Z",
    "source_path": "tools/foundry/NEGATIVE_TRANSFER_ATLAS.json"
-  },
-  {
-   "bytes": 13619,
-   "name": "NEGATIVE_SCIENCE.json",
-   "sha256": "b1ac537b66276f7b6d752e6ab891e195669348e7c1b9803c238a1b770f0dfd83",
-   "snapshot_path": "receipts/future/evidence/NEGATIVE_SCIENCE.json",
-   "source_mtime_epoch": 1787116236.999,
-   "source_mtime_utc": "2026-08-19T05:10:36Z",
-   "source_path": "workspace/campaign/odyssey/NEGATIVE_SCIENCE.json"
-  },
-  {
-   "bytes": 51318,
-   "name": "ACCELERATOR_REPATRIATION_EFFECTS.json",
-   "sha256": "6c318342c0f934daa38b36383299f0e258d8cf4cf74f4be2c8235efc1f766e53",
-   "snapshot_path": "receipts/future/evidence/ACCELERATOR_REPATRIATION_EFFECTS.json",
-   "source_mtime_epoch": 1788065771.88,
-   "source_mtime_utc": "2026-08-30T04:56:11Z",
-   "source_path": "receipts/headless/ACCELERATOR_REPATRIATION_EFFECTS.json"
-  },
-  {
-   "bytes": 1032,
-   "name": "FLASH_META_TEACHER_L4_CAPTURE_BOUNDARY.json",
-   "sha256": "40e580c6b68cafaecbb2cf1f5c8ab4da5cde53a5822a9580dcd36bd8fa8b97af",
-   "snapshot_path": "receipts/future/evidence/FLASH_META_TEACHER_L4_CAPTURE_BOUNDARY.json",
-   "source_mtime_epoch": 1788046889.732,
-   "source_mtime_utc": "2026-08-29T23:41:29Z",
-   "source_path": "receipts/headless/FLASH_META_TEACHER_L4_CAPTURE_BOUNDARY.json"
-  },
-  {
-   "bytes": 5112,
-   "name": "ACCELERATOR_FRONT_G_P6.json",
-   "sha256": "07d949a2eaab00e08f6dc092e07d1d462b5ae1aa2836da7ccc91858bb00cb597",
-   "snapshot_path": "receipts/future/evidence/ACCELERATOR_FRONT_G_P6.json",
-   "source_mtime_epoch": 1787736939.313,
-   "source_mtime_utc": "2026-08-26T09:35:39Z",
-   "source_path": "receipts/headless/ACCELERATOR_FRONT_G_P6.json"
   },
   {
    "bytes": 120752,
    "name": "CODEX_ACCELERATOR_HANDOFF.json",
    "sha256": "2d37d971bf470bd236f0fffb80c7ccfb9420b30012a9bc236fa2460f9069e482",
    "snapshot_path": "receipts/future/evidence/CODEX_ACCELERATOR_HANDOFF.json",
-   "source_mtime_epoch": 1788066585.383,
-   "source_mtime_utc": "2026-08-30T05:09:45Z",
+   "source_mtime_epoch": 1788339145.628,
+   "source_mtime_utc": "2026-09-02T08:52:25Z",
    "source_path": "CODEX_ACCELERATOR_HANDOFF.json"
   }
  ],
  "claim_boundary": "Static sidecar artifact. No hardware measurement.",
  "counts": {
-  "captured": 46,
-  "missing": 2,
+  "captured": 2,
+  "missing": 46,
   "wanted": 48
  },
  "missing": [
+  "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+  "receipts/headless/ACCELERATOR_SCOREBOARD.json",
+  "receipts/headless/ACCELERATOR_REPATRIATION_QUEUE.json",
+  "receipts/headless/ACCELERATOR_REPATRIATION_AUDIT.json",
+  "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+  "receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json",
+  "receipts/headless/ACCELERATOR_TRANSFER_VERIFIED.json",
+  "receipts/headless/ACCELERATOR_FRONT_F_ODYSSEY_PASS.json",
+  "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+  "receipts/headless/FLASH_COMPLETE_V2.nr.json",
+  "receipts/headless/FLASH_NEXT_MACHINE.nx.json",
+  "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+  "receipts/headless/FLASH_META_COHERENCE_SCREEN_L4.json",
+  "receipts/headless/FLASH_ORGAN_CENSUS.json",
+  "receipts/headless/FLASH_ROUTER_SENSITIVITY_MAP_L3_L4.json",
   "receipts/headless/FLASH_ROUTE_STABILITY.json",
-  "receipts/headless/QWEN80_BIT_BUDGET_LEDGER.json"
+  "receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
+  "receipts/headless/FLASH_DOCTOR_EXPERT_BANK_SCREEN_FULL_L44.json",
+  "receipts/headless/FLASH_LAYER30_CRITICAL_PATH.json",
+  "receipts/headless/FLASH_LAYER10_CRITICAL_PATH.json",
+  "receipts/headless/FLASH_LAYER46_DISPATCH_LEDGER.json",
+  "receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
+  "receipts/headless/FLASH_NEXT_FPGA_ORGAN_MAP.json",
+  "receipts/headless/FLASH_ATTENTION_ROUTE_UNION_PARITY.json",
+  "receipts/headless/QWEN27_TOKEN_NS_BUDGET.json",
+  "receipts/headless/QWEN27_FPGA_ORGAN_MAP.json",
+  "receipts/headless/QWEN38_ACCELERATOR_TRANSFER_MAP.json",
+  "receipts/headless/QWEN80_BIT_BUDGET_LEDGER.json",
+  "receipts/headless/APPLE_ANE_ATLAS.json",
+  "receipts/headless/APPLE_ANE_DEVICE_PROFILE.json",
+  "receipts/headless/HCLI_FPGA_PREBOARD.json",
+  "receipts/headless/FLASH_FPGA_PREBOARD_CURRENT.json",
+  "receipts/headless/ODYSSEY_TRANSFER_PROVEN.json",
+  "receipts/headless/ODYSSEY_ADVERSARIAL_SWEEP.json",
+  "receipts/headless/ODYSSEY_LEARNING_CURVE.json",
+  "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+  "receipts/headless/DOCTOR_TRANSFER.json",
+  "receipts/headless/DENSE_SUBBIT_TRANSFER.json",
+  "receipts/headless/HCLI_ACCELERATOR_REGRESSION.json",
+  "receipts/headless/HCLI_MODELLAKE_FLASH_CENSUS.json",
+  "receipts/QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE.json",
+  "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json",
+  "workspace/campaign/odyssey/NEGATIVE_SCIENCE.json",
+  "receipts/headless/ACCELERATOR_REPATRIATION_EFFECTS.json",
+  "receipts/headless/FLASH_META_TEACHER_L4_CAPTURE_BOUNDARY.json",
+  "receipts/headless/ACCELERATOR_FRONT_G_P6.json"
  ],
  "missing_meaning": "A wanted receipt absent from disk. That is a real negative finding about the project's evidence, not a snapshot bug.",
  "pinning_rationale": "Pinned bytes are better than a live read even when a live read is possible: Codex keeps writing, and a conclusion must stay attached to the exact evidence that produced it.",
  "purpose": "Pinned copy of the Codex receipts sidecar lanes read. Lanes run in sparse git worktrees where the live, uncommitted receipts are invisible; without this snapshot a lane would silently fall back to a fixture and its conclusions would be attached to nothing.",
  "read_only_guarantee": "Codex originals are opened read-only and never modified.",
  "schema": "hawking.future.evidence_snapshot.v1",
- "seal_sha256": "ec9a44ab2f4700596bc2d4d1dc09834ba9df35cdf871dde3ef79fadc5f2025c2",
+ "seal_sha256": "6908f6a5c166159e1cf04adefc4f66b021c7d781327a7aff31b9c3be7a6fbd18",
  "version": 1
 }

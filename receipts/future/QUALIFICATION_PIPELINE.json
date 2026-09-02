@@ -1,11 +1,4 @@
 {
- "alternatives": [
-  {
-   "consistent_with_claim": true,
-   "consistent_with_observation": true,
-   "hypothetical": "the named flags were measured and have these values"
-  }
- ],
  "authority_boundary": {
   "even_then": "sidecar has no GPU authority and still raises",
   "execute_requires": [
@@ -25,24 +18,16 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:09:58Z",
+  "recorded_at": "2026-09-02T09:45:24Z",
   "recorded_by": "tools.future.qualification_pipeline.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
- "branch": "odyssey-i",
- "causality_verdict": "SUPPORTED",
+ "branch": "grok/s4-tools-future-under-10s-20260902-045214",
  "claim_boundary": "Static sidecar artifact. No hardware measurement.",
- "confidence": {
-  "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
-  "level": "HIGH",
-  "would_lower": "a demonstration that the observation is consistent with the claim being false",
-  "would_raise": "independent replication of the same probe"
- },
- "direct_observation": "blocking_defect_count=None; would_waste_a_protected_window=None; dry_run_stop={'honest_on_this_machine': 'stops at the lease check: no existing HCLI lease. later stages are still walked as STATIC_ONLY specs so a human does not have to assemble the run by hand when a window opens', 'reason': \"lock file exists but no holder could be proven without flock (lsof status='OK' reason=None). fail closed: present=false. flock would be a seizure\", 'stage_id': 'identify_lease_availability', 'stage_index': 1}",
  "dry_run_stop": {
   "honest_on_this_machine": "stops at the lease check: no existing HCLI lease. later stages are still walked as STATIC_ONLY specs so a human does not have to assemble the run by hand when a window opens",
-  "reason": "lock file exists but no holder could be proven without flock (lsof status='OK' reason=None). fail closed: present=false. flock would be a seizure",
+  "reason": "no existing HCLI lease: .hcli/locks/protected-accelerator-bench.lock is absent. queue_policy.protected_start_requires_existing_hcli_lease. sidecar will not create .hcli/locks or call _try_lock",
   "stage_id": "identify_lease_availability",
   "stage_index": 1
  },
@@ -53,7 +38,6 @@
   "IV Synthetic Machine Civilization",
   "V Released Hawking Civilization"
  ],
- "falsifier": "an independent probe of the same object the status names, not a reread of the status",
  "fpga": "FPGA is part of Accelerator / Physical Compiler / Fusion. It is not its own civilization and this module does not build an FPGA backend.",
  "frontier_entry": {
   "classification": "BLOCKED",
@@ -72,14 +56,13 @@
   "stages 10-12 emit REQUEST/SPEC only; scoreboard and HCLI lock are not written",
   "next WorkUnits derived from survivors + drops + a blocked lease-request proposal"
  ],
- "head": "0a844ee1a34f9be97a1c0b2a49beeaadfedb2b5b",
+ "head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
  "integration": {
   "admit_checkpoint": "admit_checkpoint(doc) -> dict  # raises FailClosed on corrupt/partial",
   "execute": "execute(*, explicit_execute=False, lease=None, contamination_class=None) -> None  # always raises ExecuteRefused",
   "read_hcli_lease_state": "read_hcli_lease_state(repo=None) -> dict  # present True only with a proven holder; never flock",
   "run_pipeline": "run_pipeline(*, dry_run=True, live=False, queue=None, plan=None, snap=None, klass=None, preflight=None, lease=None, interrupt_after=None, resume_from=None, on_stage=None) -> dict"
  },
- "interpretation": "lock file exists but no holder could be proven without flock (lsof status='OK' reason=None). fail closed: present=false. flock would be a seizure",
  "n_stages": 13,
  "negative_findings": [
   "no .hcli/locks/protected-accelerator-bench.lock in this worktree; lease present is fail-closed false",
@@ -116,7 +99,7 @@
   ],
   "dry_run": true,
   "execution_stop": {
-   "reason": "lock file exists but no holder could be proven without flock (lsof status='OK' reason=None). fail closed: present=false. flock would be a seizure",
+   "reason": "no existing HCLI lease: .hcli/locks/protected-accelerator-bench.lock is absent. queue_policy.protected_start_requires_existing_hcli_lease. sidecar will not create .hcli/locks or call _try_lock",
    "stage_id": "identify_lease_availability",
    "stage_index": 1,
    "status": "COMPLETED"
@@ -141,13 +124,13 @@
      "gpu_authority": false,
      "holders": {
       "pids": [],
-      "reason": null,
-      "status": "OK"
+      "reason": "lock file absent",
+      "status": "SKIPPED"
      },
      "kind": "READ",
-     "lock_file_exists": true,
+     "lock_file_exists": false,
      "lock_name": "protected-accelerator-bench.lock",
-     "lock_path": "/Users/scammermike/Downloads/hawking/.hcli/locks/protected-accelerator-bench.lock",
+     "lock_path": "/Users/scammermike/.claude-grok/worktrees/s4-tools-future-under-10s-20260902-045214/.hcli/locks/protected-accelerator-bench.lock",
      "lock_rel": ".hcli/locks/protected-accelerator-bench.lock",
      "not_called": [
       "hcli.agentos.protected_accelerator_benchmark._try_lock",
@@ -157,11 +140,11 @@
      "present": false,
      "probe": "lsof -t on existing path only; never fcntl.LOCK_EX, never mkdir",
      "quiesces_worker": false,
-     "reason": "lock file exists but no holder could be proven without flock (lsof status='OK' reason=None). fail closed: present=false. flock would be a seizure",
+     "reason": "no existing HCLI lease: .hcli/locks/protected-accelerator-bench.lock is absent. queue_policy.protected_start_requires_existing_hcli_lease. sidecar will not create .hcli/locks or call _try_lock",
      "recovered_from": "hcli/agentos/protected_accelerator_benchmark.py LOCK_NAME / _lock_path",
      "signals_process": false
     },
-    "reason": "lock file exists but no holder could be proven without flock (lsof status='OK' reason=None). fail closed: present=false. flock would be a seizure",
+    "reason": "no existing HCLI lease: .hcli/locks/protected-accelerator-bench.lock is absent. queue_policy.protected_start_requires_existing_hcli_lease. sidecar will not create .hcli/locks or call _try_lock",
     "status": "COMPLETED"
    },
    {
@@ -175,20 +158,20 @@
      "executes_benchmark": false,
      "execution_ok": false,
      "gpu_authority": false,
-     "n_competing_workloads": 7,
+     "n_competing_workloads": 5,
      "quiesces_worker": false,
      "reason": "machine is HEAVY; queue_policy.protected_start_requires_machine_quiescence. sidecar will not quiesce a worker to make it so",
      "required_probes": {
       "loadavg": true,
       "memory": true,
-      "processes_cpu_pct": true
+      "processes_cpu_pct": false
      },
      "resident_local_model": {
-      "cpu_pct": 96.6,
-      "name": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
+      "cpu_pct": null,
+      "name": "python3.12",
       "note": "largest RSS neighbour over the quiet threshold; not a model-name guess",
-      "pid": 14779,
-      "rss_gib": 12.38
+      "pid": 81199,
+      "rss_gib": 7.83
      },
      "signals_process": false,
      "source": "tools.future.contamination.snapshot + classify_contamination"
@@ -204,7 +187,7 @@
      "acquires_lease": false,
      "executes_benchmark": false,
      "gpu_authority": false,
-     "n_over_threshold": 7,
+     "n_over_threshold": 5,
      "pausable_patterns": [
       "hf download",
       "lake_filler.py"
@@ -212,92 +195,72 @@
      "policy_source": "tools/odyssey/gpu_cleanliness.py PAUSE_PATTERN (recovered, not imported)",
      "primary": {
       "class": "STANDING",
-      "cpu_pct": 96.6,
-      "name": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
-      "pid": 14779,
+      "cpu_pct": null,
+      "name": "python3.12",
+      "pid": 81199,
       "policy_would_permit_quiesce": false,
       "reason": "STANDING (or unidentified) neighbour: pausing it would forge a speedup. queue_policy.protected_start_requires_machine_quiescence is a requirement on the machine, not permission for this sidecar to quiesce a worker",
-      "rss_gib": 12.38,
+      "rss_gib": 7.83,
       "sidecar_will_quiesce": false
      },
      "quiesces_worker": false,
-     "reason": "primary='/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python' pid=14779 class=STANDING; policy_would_permit_quiesce=False; sidecar_will_quiesce=false",
+     "reason": "primary='python3.12' pid=81199 class=STANDING; policy_would_permit_quiesce=False; sidecar_will_quiesce=false",
      "sidecar_will_quiesce_any": false,
      "signals_process": false,
      "workers": [
       {
        "class": "STANDING",
-       "cpu_pct": 96.6,
-       "name": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
-       "pid": 14779,
+       "cpu_pct": null,
+       "name": "python3.12",
+       "pid": 81199,
        "policy_would_permit_quiesce": false,
        "reason": "STANDING (or unidentified) neighbour: pausing it would forge a speedup. queue_policy.protected_start_requires_machine_quiescence is a requirement on the machine, not permission for this sidecar to quiesce a worker",
-       "rss_gib": 12.38,
+       "rss_gib": 7.83,
        "sidecar_will_quiesce": false
       },
       {
        "class": "STANDING",
-       "cpu_pct": 67.5,
-       "name": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
-       "pid": 18232,
+       "cpu_pct": null,
+       "name": "Python",
+       "pid": 84162,
        "policy_would_permit_quiesce": false,
        "reason": "STANDING (or unidentified) neighbour: pausing it would forge a speedup. queue_policy.protected_start_requires_machine_quiescence is a requirement on the machine, not permission for this sidecar to quiesce a worker",
-       "rss_gib": 3.66,
+       "rss_gib": 6.08,
        "sidecar_will_quiesce": false
       },
       {
        "class": "STANDING",
-       "cpu_pct": 23.0,
-       "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
-       "pid": 31178,
+       "cpu_pct": null,
+       "name": "python3.12",
+       "pid": 81228,
        "policy_would_permit_quiesce": false,
        "reason": "STANDING (or unidentified) neighbour: pausing it would forge a speedup. queue_policy.protected_start_requires_machine_quiescence is a requirement on the machine, not permission for this sidecar to quiesce a worker",
-       "rss_gib": 3.04,
+       "rss_gib": 4.66,
        "sidecar_will_quiesce": false
       },
       {
        "class": "STANDING",
-       "cpu_pct": 209.4,
-       "name": "/Users/scammermike/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.6.darwin-arm64/pkg/tool/darwin_arm64/compile",
-       "pid": 19224,
+       "cpu_pct": null,
+       "name": "python3.12",
+       "pid": 81168,
        "policy_would_permit_quiesce": false,
        "reason": "STANDING (or unidentified) neighbour: pausing it would forge a speedup. queue_policy.protected_start_requires_machine_quiescence is a requirement on the machine, not permission for this sidecar to quiesce a worker",
-       "rss_gib": 1.29,
+       "rss_gib": 4.52,
        "sidecar_will_quiesce": false
       },
       {
        "class": "STANDING",
-       "cpu_pct": 21.2,
-       "name": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
-       "pid": 180,
+       "cpu_pct": null,
+       "name": "ascension_qwen38_resident",
+       "pid": 9374,
        "policy_would_permit_quiesce": false,
        "reason": "STANDING (or unidentified) neighbour: pausing it would forge a speedup. queue_policy.protected_start_requires_machine_quiescence is a requirement on the machine, not permission for this sidecar to quiesce a worker",
-       "rss_gib": 0.07,
-       "sidecar_will_quiesce": false
-      },
-      {
-       "class": "STANDING",
-       "cpu_pct": 69.8,
-       "name": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/StorageManagementService",
-       "pid": 77296,
-       "policy_would_permit_quiesce": false,
-       "reason": "STANDING (or unidentified) neighbour: pausing it would forge a speedup. queue_policy.protected_start_requires_machine_quiescence is a requirement on the machine, not permission for this sidecar to quiesce a worker",
-       "rss_gib": 0.03,
-       "sidecar_will_quiesce": false
-      },
-      {
-       "class": "STANDING",
-       "cpu_pct": 99.1,
-       "name": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/ApplicationsStorageExtension.appex/Contents/MacOS/ApplicationsStorageExtension",
-       "pid": 77305,
-       "policy_would_permit_quiesce": false,
-       "reason": "STANDING (or unidentified) neighbour: pausing it would forge a speedup. queue_policy.protected_start_requires_machine_quiescence is a requirement on the machine, not permission for this sidecar to quiesce a worker",
-       "rss_gib": 0.02,
+       "rss_gib": 2.37,
        "sidecar_will_quiesce": false
       }
      ]
     },
-    "reason": "primary='/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python' pid=14779 class=STANDING; policy_would_permit_quiesce=False; sidecar_will_quiesce=false",
+    "reason": "primary='python3.12' pid=81199 class=STANDING; policy_would_permit_quiesce=False; sidecar_will_quiesce=false",
     "status": "COMPLETED"
    },
    {
@@ -358,7 +321,7 @@
     "name": "static_preflight_drop",
     "payload": {
      "acquires_lease": false,
-     "blocking_defect_count": 2,
+     "blocking_defect_count": 5,
      "does_not_substitute_for_protected_measurement": true,
      "dropped": [
       {
@@ -469,7 +432,29 @@
       "qwen27-encoder-label-elision",
       "qwen27-pipeline-state-elision"
      ],
-     "unmapped_blocking_defects": [],
+     "unmapped_blocking_defects": [
+      {
+       "check": "kernel_existence",
+       "host": "crates/hawking-core/src/static_kernel_verify.rs:2589",
+       "kernel": "demo_k",
+       "message": "host references kernel 'demo_k' but no shader defines `kernel void demo_k(`",
+       "shader": null
+      },
+      {
+       "check": "kernel_existence",
+       "host": "crates/hawking-core/src/static_kernel_verify.rs:2654",
+       "kernel": "no_such_kernel",
+       "message": "host references kernel 'no_such_kernel' but no shader defines `kernel void no_such_kernel(`",
+       "shader": null
+      },
+      {
+       "check": "kernel_existence",
+       "host": "crates/hawking-core/src/static_kernel_verify.rs:2717",
+       "kernel": "pack_k",
+       "message": "host references kernel 'pack_k' but no shader defines `kernel void pack_k(`",
+       "shader": null
+      }
+     ],
      "would_waste_a_protected_window": true
     },
     "status": "COMPLETED"
@@ -1284,7 +1269,6 @@
    "qwen27-pipeline-state-elision"
   ]
  },
- "probe_performed": "static_kernel_verify.scan(): host/shader ABI analysis of .metal sources and Rust hosts; blocking_defect_count from ERROR findings; zero GPU, no lease",
  "purpose": "Sequence the existing qualification pieces into one resumable pipeline that is structurally incapable of taking GPU authority. FIVE ERAS, THREE ODYSSEYS. FPGA stays inside Accelerator / Physical Compiler / Fusion. DISK STATE IS AUTHORITY.",
  "queue_policy_binding": {
   "diagnostic_results_do_not_promote": true,
@@ -1328,7 +1312,7 @@
   },
   {
    "composed_as": "lock path cited read-only; runner NOT imported and NOT called",
-   "on_disk_in_this_worktree": true,
+   "on_disk_in_this_worktree": false,
    "path": "hcli/agentos/protected_accelerator_benchmark.py",
    "role": "the real protected lease (LOCK_NAME, _try_lock, run_protected_accelerator_benchmark)"
   },
@@ -1376,7 +1360,7 @@
   }
  ],
  "schema": "hawking.future.qualification_pipeline.v1",
- "seal_sha256": "db1fe5d1a642aa1d70c3efdce177215d0e0e9be176f32c5e72699528840fd574",
+ "seal_sha256": "2092fd703e3b50f9bcefb8a0a0b28b6ad2c77e6f210d69253b57686e0abb90a8",
  "stages_declared": [
   "identify_lease_availability",
   "assess_machine_quiescence",

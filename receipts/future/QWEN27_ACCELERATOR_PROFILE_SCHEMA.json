@@ -1,15 +1,15 @@
 {
  "authority_sources": {
-  "atlas": "ON_DISK",
-  "budget": "ON_DISK",
-  "capability": "ON_DISK",
-  "sealed": "ON_DISK"
+  "atlas": "GIT_HEAD",
+  "budget": "GIT_HEAD",
+  "capability": "GIT_HEAD",
+  "sealed": "GIT_HEAD"
  },
  "bench": {
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:09:59Z",
+  "recorded_at": "2026-09-02T09:45:26Z",
   "recorded_by": "tools/future/qwen27_profile_schema.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -868,7 +868,7 @@
   }
  },
  "negative_findings": [
-  "receipts/headless/QWEN27_TOKEN_NS_BUDGET.json is ABSENT from this worktree disk and from git HEAD (load=ON_DISK). It exists untracked in the campaign working tree. Coverage below is from live load when present, else RECEIPT_ABSENT. Structural gaps were also inspected during recover-before-build.",
+  "receipts/headless/QWEN27_TOKEN_NS_BUDGET.json is ABSENT from this worktree disk and from git HEAD (load=GIT_HEAD). It exists untracked in the campaign working tree. Coverage below is from live load when present, else RECEIPT_ABSENT. Structural gaps were also inspected during recover-before-build.",
   "tools/accelerator/qwen27_token_budget.py is not in git HEAD of this worktree (untracked in the campaign tree).",
   "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json is not in git HEAD (untracked in the campaign tree).",
   "hcli/agentos is not materialized in this sparse checkout; identity/mlp modules were read via git show.",
@@ -918,9 +918,9 @@
   "note": "12 READY_PROTECTED candidates recovered from the untracked qualification queue. This schema exists so those candidates become comparable rather than informally ranked.",
   "presence": {
    "in_git_head": true,
-   "on_disk": true,
+   "on_disk": false,
    "path": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
-   "source": "ON_DISK"
+   "source": "GIT_HEAD"
   },
   "source": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
  },
@@ -928,10 +928,10 @@
   "paths": [
    {
     "in_git_head": true,
-    "on_disk": true,
+    "on_disk": false,
     "path": "receipts/headless/QWEN27_TOKEN_NS_BUDGET.json",
     "role": "token_ns_budget",
-    "source": "ON_DISK"
+    "source": "GIT_HEAD"
    },
    {
     "in_git_head": true,
@@ -949,73 +949,73 @@
    },
    {
     "in_git_head": true,
-    "on_disk": true,
+    "on_disk": false,
     "path": "receipts/headless/ACCELERATOR_TOKEN_BYTES_ATLAS.json",
     "role": "byte_atlas",
-    "source": "ON_DISK"
+    "source": "GIT_HEAD"
    },
    {
     "in_git_head": true,
-    "on_disk": true,
+    "on_disk": false,
     "path": "hcli/hawking-native.sealed-3.14.json",
     "role": "sealed_profile",
-    "source": "ON_DISK"
+    "source": "GIT_HEAD"
    },
    {
     "in_git_head": true,
-    "on_disk": true,
+    "on_disk": false,
     "path": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
     "role": "qualification_queue",
-    "source": "ON_DISK"
+    "source": "GIT_HEAD"
    },
    {
     "in_git_head": true,
-    "on_disk": true,
+    "on_disk": false,
     "path": "hcli/agentos/qwen27_runtime_identity.py",
     "role": "runtime_identity_py",
-    "source": "ON_DISK"
+    "source": "GIT_HEAD"
    },
    {
     "in_git_head": true,
-    "on_disk": true,
+    "on_disk": false,
     "path": "hcli/agentos/qwen27_mlp_diagnostic.py",
     "role": "mlp_diagnostic_py",
-    "source": "ON_DISK"
+    "source": "GIT_HEAD"
    },
    {
     "in_git_head": true,
-    "on_disk": true,
+    "on_disk": false,
     "path": "receipts/headless/QWEN27_HISTORICAL_RUNTIME_IDENTITY.json",
     "role": "historical_identity",
-    "source": "ON_DISK"
+    "source": "GIT_HEAD"
    },
    {
     "in_git_head": true,
-    "on_disk": true,
+    "on_disk": false,
     "path": "receipts/headless/QWEN27_FPGA_ORGAN_MAP.json",
     "role": "fpga_organ_map",
-    "source": "ON_DISK"
+    "source": "GIT_HEAD"
    },
    {
     "in_git_head": true,
-    "on_disk": true,
+    "on_disk": false,
     "path": "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
     "role": "capability_sealed",
-    "source": "ON_DISK"
+    "source": "GIT_HEAD"
    },
    {
     "in_git_head": true,
-    "on_disk": true,
+    "on_disk": false,
     "path": "receipts/headless/QWEN_CAPABILITY_QUALIFICATION.json",
     "role": "capability_contract",
-    "source": "ON_DISK"
+    "source": "GIT_HEAD"
    },
    {
     "in_git_head": true,
-    "on_disk": true,
+    "on_disk": false,
     "path": "receipts/headless/TOKEN_EXECUTION_ATLAS.json",
     "role": "token_execution_atlas",
-    "source": "ON_DISK"
+    "source": "GIT_HEAD"
    }
   ],
   "summary": "No Qwen27 accelerator profile schema existed. tools/accelerator/qwen27_token_budget.py (untracked in HEAD) already emits the token-ns ledger scaffold; this module consumes that shape as one required section instead of forking it. Byte atlas, sealed-3.14 identity, capability 30/43, MLP diagnostic, and the qualification queue are recovered inputs. The gap closed is the comparable-profile contract around them: hard rejection, transfer-law tags, incumbent-as-control."
@@ -1065,7 +1065,7 @@
   "EXPERIMENT"
  ],
  "schema": "hawking.future.qwen27_profile.v1",
- "seal_sha256": "5c66d851727a3d5d07518d5b1a9a78e0db71a1306c73afe01ee007018ba1aacf",
+ "seal_sha256": "b8688a47815cd01f27de0751cf655930f98abba6ad17bc428bb3722fb3bbbd5b",
  "section_fields": {
   "active_byte_model": [
    "active_weight_bytes_per_token",
@@ -1326,13 +1326,13 @@
     "transfer_law_tagging"
    ]
   },
-  "load": "ON_DISK",
+  "load": "GIT_HEAD",
   "path": "receipts/headless/QWEN27_TOKEN_NS_BUDGET.json",
   "presence": {
    "in_git_head": true,
-   "on_disk": true,
+   "on_disk": false,
    "path": "receipts/headless/QWEN27_TOKEN_NS_BUDGET.json",
-   "source": "ON_DISK"
+   "source": "GIT_HEAD"
   },
   "recovered_campaign_working_tree": {
    "assessment": {

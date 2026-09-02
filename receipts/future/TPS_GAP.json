@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:28:12Z",
+  "recorded_at": "2026-09-02T09:38:58Z",
   "recorded_by": "tools/future/tps_gap.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -156,7 +156,7 @@
     "recorded_tokens_per_second": 34.0,
     "role": "HISTORICAL_RECORD"
    },
-   "loaded_from": "ON_DISK",
+   "loaded_from": "GIT_HEAD",
    "max_seq_len": 8192,
    "prompt_contract": {
     "fallback_template": "qwen_closed_think",
@@ -250,7 +250,7 @@
   ],
   "fused_graph_identity": {
    "baseline_source_derived": 964,
-   "loaded_from": "ON_DISK",
+   "loaded_from": "GIT_HEAD",
    "selected_source_derived": 628,
    "source": "receipts/headless/QWEN27_HISTORICAL_RUNTIME_IDENTITY.json"
   },
@@ -285,7 +285,7 @@
     ]
    },
    "git_head": "509784d5d2f16df27048d5baed9dfd1c2ce36a90",
-   "loaded_from": "ON_DISK",
+   "loaded_from": "GIT_HEAD",
    "matches_sealed_34": true,
    "max_new_tokens_default": 24,
    "n_new_tokens_observed": [
@@ -321,7 +321,7 @@
     "this_module_did_not_remeasure": true
    },
    "lease_taken": false,
-   "loaded_from": "ON_DISK",
+   "loaded_from": "GIT_HEAD",
    "r2_generated_tokens": 40,
    "r2_prompt": "Name one reason a status label can be wrong. One sentence.",
    "reason_if_no_clocks": "RESIDENT_LIVE_PROBE.json records generated_text and generated_tokens only; prefill_wall_ns / decode_wall_ns / generation_wall_ns / wall_ns are absent. The lane brief's ~35.5 / ~27.2 are a citation, not this receipt.",
@@ -331,7 +331,7 @@
   },
   "native_smoke": {
    "completion_tokens": 9,
-   "loaded_from": "ON_DISK",
+   "loaded_from": "GIT_HEAD",
    "note": "native smoke recorded a complete_tokens_per_second on a 9-token completion; performance_claim=NONE. Not 24.4086 and not 34.0.",
    "performance_claim": "NONE",
    "prompt_tokens": 23,
@@ -376,7 +376,7 @@
   "workunit": "WU.PROFILE_HOST_CEREMONY.tps_gap; one CPU_ANALYSIS unit; then stop"
  },
  "schema": "hawking.future.tps_gap.v1",
- "seal_sha256": "b53fcbd657bf0cac65107015c72645b179612939f659f9586a89053f160ba52d",
+ "seal_sha256": "597f7a188d45de58920cce7cd5e819d44a6db38443624b7fd3b42a7e7a930441",
  "self_timing": {
   "cited_generation_clocks": {
    "complete_ns": null,

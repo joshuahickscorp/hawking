@@ -10,12 +10,21 @@ import hashlib
 import json
 import os
 import subprocess
+import tempfile
 import time
 from pathlib import Path
 from typing import Iterable, Sequence,  Any
 
 REPO = Path(__file__).resolve().parents[2]
 RECEIPTS = REPO / "receipts" / "future"
+
+# Same override the lock script honors. Tests point this at a private path
+# so they do not wait 25 minutes on a live GPU-lane holder (the daemon).
+_DEFAULT_GPU_LANE_LOCK = "/tmp/hawking-gpu-lane.lock"
+
+
+def gpu_lane_lock_path() -> Path:
+    return Path(os.environ.get("HAWKING_GPU_LANE_LOCK", _DEFAULT_GPU_LANE_LOCK))
 
 # Anything the sidecar could accidentally claim without hardware authority.
 HARDWARE_FIELDS = frozenset(
@@ -288,6 +297,202 @@ def load_json(path: str | Path) -> dict[str, Any]:
 # can hang a caller forever.
 GIT_TIMEOUT_S = 120
 
+# Per-(REPO, argv) cache of read-only queries. Keyed by REPO so a test that
+# points REPO at a tmpdir cannot inherit the live tree's ls-tree. Status/diff
+# are not cached: those are the queries whose answer moves when a test writes.
+_GIT_CACHE: dict[tuple[str, tuple[str, ...]], str] = {}
+_HEAD_PATHS: dict[str, tuple[str, ...]] = {}
+_HEAD_PATH_SET: dict[str, frozenset[str]] = {}
+# (REPO, "commit:rel") -> blob text. Missing blobs are "".
+_BLOB_CACHE: dict[tuple[str, str], str] = {}
+
+_UNCACHED_GIT = frozenset({
+    "status", "diff", "add", "commit", "apply", "update-index",
+    "stash", "reset", "checkout", "merge", "rebase", "worktree",
+})
+
+
+def clear_git_cache() -> None:
+    """Drop every memo. Tests that re-point REPO at a tmpdir do not need this
+    (the key includes REPO); tests that rewrite HEAD in place do."""
+    _GIT_CACHE.clear()
+    _HEAD_PATHS.clear()
+    _HEAD_PATH_SET.clear()
+    _BLOB_CACHE.clear()
+
+
+def _git_uncached(*args: str) -> str:
+    try:
+        return subprocess.run(
+            ["git", "--no-optional-locks", *args],
+            cwd=REPO, capture_output=True, text=True, check=False,
+            timeout=GIT_TIMEOUT_S,
+        ).stdout.strip()
+    except (subprocess.TimeoutExpired, OSError):
+        return ""
+
+
+def _parse_cat_file_batch(data: bytes, specs: Sequence[str]) -> dict[str, str]:
+    out: dict[str, str] = {}
+    idx = 0
+    for spec in specs:
+        if idx >= len(data):
+            out[spec] = ""
+            continue
+        nl = data.find(b"\n", idx)
+        if nl < 0:
+            out[spec] = ""
+            break
+        header = data[idx:nl].decode("utf-8", errors="replace")
+        idx = nl + 1
+        if " missing" in header:
+            out[spec] = ""
+            continue
+        parts = header.split()
+        if len(parts) < 3 or parts[1] != "blob":
+            out[spec] = ""
+            continue
+        try:
+            size = int(parts[2])
+        except ValueError:
+            out[spec] = ""
+            continue
+        blob = data[idx : idx + size]
+        idx = idx + size
+        if idx < len(data) and data[idx : idx + 1] == b"\n":
+            idx += 1
+        out[spec] = blob.decode("utf-8", errors="replace")
+    return out
+
+
+def prefetch_blobs(specs: Sequence[str]) -> None:
+    """One `git cat-file --batch` for many `commit:rel` specs. Missing -> ''."""
+    repo = str(REPO)
+    pending: list[str] = []
+    seen: set[str] = set()
+    for spec in specs:
+        if not spec or spec in seen:
+            continue
+        seen.add(spec)
+        if (repo, spec) not in _BLOB_CACHE:
+            pending.append(spec)
+    if not pending:
+        return
+    try:
+        proc = subprocess.run(
+            ["git", "--no-optional-locks", "cat-file", "--batch"],
+            cwd=str(REPO),
+            input=("\n".join(pending) + "\n").encode("utf-8"),
+            capture_output=True,
+            timeout=GIT_TIMEOUT_S,
+        )
+    except (subprocess.TimeoutExpired, OSError):
+        for spec in pending:
+            _BLOB_CACHE.setdefault((repo, spec), "")
+        return
+    parsed = _parse_cat_file_batch(proc.stdout or b"", pending)
+    for spec, text in parsed.items():
+        _BLOB_CACHE[(repo, spec)] = text
+
+
+def blob_text(spec: str) -> str:
+    """`git show <spec>` via the blob cache. Empty string if missing."""
+    if not spec:
+        return ""
+    key = (str(REPO), spec)
+    cached = _BLOB_CACHE.get(key)
+    if cached is not None:
+        return cached
+    prefetch_blobs([spec])
+    return _BLOB_CACHE.get(key, "")
+
+
+def head_paths_ordered() -> tuple[str, ...]:
+    """Every path in HEAD, git-ls-tree order. One subprocess per REPO."""
+    repo = str(REPO)
+    cached = _HEAD_PATHS.get(repo)
+    if cached is not None:
+        return cached
+    # Uncached: git() would call _ls_tree_from_head which calls us.
+    raw = _git_uncached("ls-tree", "-r", "--name-only", "HEAD")
+    ordered = tuple(p for p in raw.splitlines() if p)
+    _HEAD_PATHS[repo] = ordered
+    _HEAD_PATH_SET[repo] = frozenset(ordered)
+    _GIT_CACHE[(repo, ("ls-tree", "-r", "--name-only", "HEAD"))] = raw
+    return ordered
+
+
+def head_path_set() -> frozenset[str]:
+    repo = str(REPO)
+    cached = _HEAD_PATH_SET.get(repo)
+    if cached is not None:
+        return cached
+    head_paths_ordered()
+    return _HEAD_PATH_SET.get(repo, frozenset())
+
+
+def _ls_tree_from_head(args: tuple[str, ...]) -> str | None:
+    """Answer a HEAD `--name-only` ls-tree from the cached path list.
+
+    Returns None when the argv is not a HEAD name-only listing we can
+    reconstruct (other revisions, unknown flags).
+    """
+    if "ls-tree" not in args or "--name-only" not in args or "HEAD" not in args:
+        return None
+    recursive = False
+    pathspecs: list[str] = []
+    for a in args:
+        if a in {"ls-tree", "--name-only", "--", "HEAD"}:
+            continue
+        if a == "-r":
+            recursive = True
+            continue
+        if a.startswith("-"):
+            return None
+        pathspecs.append(a)
+    ordered = head_paths_ordered()
+    if not pathspecs:
+        return "\n".join(ordered)
+    hp = head_path_set()
+    out: list[str] = []
+    seen: set[str] = set()
+    for spec in pathspecs:
+        if spec in hp:
+            if spec not in seen:
+                out.append(spec)
+                seen.add(spec)
+            continue
+        prefix = spec.rstrip("/") + "/"
+        if recursive:
+            for p in ordered:
+                if p.startswith(prefix) and p not in seen:
+                    out.append(p)
+                    seen.add(p)
+        else:
+            # Immediate children only, matching `git ls-tree --name-only HEAD dir`.
+            for p in ordered:
+                if not p.startswith(prefix):
+                    continue
+                rest = p[len(prefix):]
+                child = prefix + rest.split("/", 1)[0]
+                if child not in seen:
+                    out.append(child)
+                    seen.add(child)
+    return "\n".join(out)
+
+
+def prefetch_session_artifacts() -> None:
+    """One ls-tree + one cat-file batch of receipts/future. Call from conftest.
+
+    This worktree is sparse: receipts/future is in HEAD and not on disk, so
+    every producer that `git show`s a receipt would otherwise spawn a
+    subprocess per file. Building the blob cache once is the same evidence
+    (HEAD bytes), not a fixture standing in for a run.
+    """
+    ordered = head_paths_ordered()
+    specs = [f"HEAD:{p}" for p in ordered if p.startswith("receipts/future/")]
+    prefetch_blobs(specs)
+
 
 def git(*args: str) -> str:
     """A READ-ONLY git query that cannot take, or strand, the index lock.
@@ -301,15 +506,72 @@ def git(*args: str) -> str:
     --no-optional-locks tells git not to take that lock for a query that does
     not need it. The timeout stops a slow query becoming a hung caller. A
     timeout returns empty, which every caller already treats as "not found".
+
+    Read-only answers are memoized per (REPO, argv) for the process. The
+    suite was spawning one `git show` / `git ls-tree` per producer per test
+    against the same HEAD; the bytes do not change mid-session.
     """
-    try:
-        return subprocess.run(
-            ["git", "--no-optional-locks", *args],
-            cwd=REPO, capture_output=True, text=True, check=False,
-            timeout=GIT_TIMEOUT_S,
-        ).stdout.strip()
-    except (subprocess.TimeoutExpired, OSError):
+    if not args:
         return ""
+    repo = str(REPO)
+    key = (repo, args)
+    cached = _GIT_CACHE.get(key)
+    if cached is not None:
+        return cached
+
+    if args[0] == "show" and len(args) == 2 and ":" in args[1]:
+        result = blob_text(args[1])
+        _GIT_CACHE[key] = result
+        return result
+
+    if args[0] == "ls-tree":
+        rebuilt = _ls_tree_from_head(args)
+        if rebuilt is not None:
+            _GIT_CACHE[key] = rebuilt
+            return rebuilt
+
+    result = _git_uncached(*args)
+    if args[0] not in _UNCACHED_GIT:
+        _GIT_CACHE[key] = result
+    return result
+
+
+_SWIFT_BIN: dict[tuple[str, tuple[str, ...]], Path] = {}
+
+
+def compile_swift(
+    source: str,
+    extra_args: Sequence[str] = ("-O", "-framework", "CoreML"),
+) -> tuple[Path | None, str]:
+    """Compile a Swift snippet once per (source, flags) this process.
+
+    ANE probe lab and the preboard inspector were each `xcrun swiftc`ing the
+    same enumerator on every build() (~0.9s). The binary is a function of the
+    source text; a mutated .swift string is a new key.
+    """
+    digest = hashlib.sha256(source.encode("utf-8")).hexdigest()
+    key = (digest, tuple(extra_args))
+    cached = _SWIFT_BIN.get(key)
+    if cached is not None and cached.is_file():
+        return cached, ""
+    tmp = Path(tempfile.mkdtemp(prefix="hawking-swiftc-"))
+    src = tmp / "a.swift"
+    binary = tmp / "a"
+    src.write_text(source)
+    try:
+        proc = subprocess.run(
+            ["xcrun", "swiftc", *extra_args, "-o", str(binary), str(src)],
+            capture_output=True,
+            text=True,
+            timeout=GIT_TIMEOUT_S,
+        )
+    except (subprocess.TimeoutExpired, OSError) as exc:
+        return None, f"{type(exc).__name__}: {exc}"
+    if proc.returncode != 0 or not binary.is_file():
+        err = (proc.stderr or proc.stdout or "swiftc produced no binary").strip()
+        return None, err
+    _SWIFT_BIN[key] = binary
+    return binary, ""
 
 
 def sha256_file(path: str | Path) -> str:

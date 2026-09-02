@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:10:41Z",
+  "recorded_at": "2026-09-02T09:39:00Z",
   "recorded_by": "tools/future/resident_code_tools.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -12,7 +12,7 @@
  "claim_boundary": "Static sidecar artifact. No hardware measurement. The hermetic proof is a real git worktree of a fixture repo, not of live Hawking and not a mock of git.",
  "does_not_choose_science": true,
  "gpu_authority": false,
- "head": "0a844ee1a34f9be97a1c0b2a49beeaadfedb2b5b",
+ "head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
  "hermetic_proof": {
   "create": {
    "not_sibling": true,
@@ -74,12 +74,12 @@
  "recovered_implementation": [
   {
    "path": "hcli/tool_registry.py",
-   "present": true,
+   "present": false,
    "what": "fs.search / fs.read / git.diff / tests.run"
   },
   {
    "path": "hcli/mutation.py",
-   "present": true,
+   "present": false,
    "what": "apply_mutation_operations, rollback_mutation, compile_python_file"
   },
   {
@@ -110,7 +110,7 @@
   "ROLLBACK RAISE rather than git worktree remove a dirty tree"
  ],
  "schema": "hawking.future.resident_code_tools.v1",
- "seal_sha256": "412971278fc982219fbc517aa59c5a8121fd6c5bd6d8ed23cc21d7b54fa5fcb9",
+ "seal_sha256": "648ed2c16e5fff0089bce63d02e7964c6af3974b546ea5970927d33c44e029de",
  "uniform_result": "every operation returns {ok, op, status, error, ...}; a failed build or test is a result, not an exception",
  "version": 1,
  "wraps": {

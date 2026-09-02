@@ -31,7 +31,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T07:10:50Z",
+  "recorded_at": "2026-09-02T09:47:54Z",
   "recorded_by": "tools/future/addressing_gap.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -397,49 +397,49 @@
    "reason": null,
    "rel": "receipts/headless/BANDWIDTH_ASCENT.json",
    "status": "LOADED",
-   "via": "disk:receipts/headless/BANDWIDTH_ASCENT.json"
+   "via": "git:HEAD:receipts/headless/BANDWIDTH_ASCENT.json"
   },
   "atlas": {
    "reason": null,
    "rel": "receipts/headless/ACCELERATOR_TOKEN_BYTES_ATLAS.json",
    "status": "LOADED",
-   "via": "disk:receipts/headless/ACCELERATOR_TOKEN_BYTES_ATLAS.json"
+   "via": "git:HEAD:receipts/headless/ACCELERATOR_TOKEN_BYTES_ATLAS.json"
   },
   "census": {
    "reason": null,
    "rel": "receipts/headless/NOETIC_ORGAN_CENSUS.json",
    "status": "LOADED",
-   "via": "disk:receipts/headless/NOETIC_ORGAN_CENSUS.json"
+   "via": "git:HEAD:receipts/headless/NOETIC_ORGAN_CENSUS.json"
   },
   "g044": {
    "reason": null,
    "rel": "receipts/ascent-2026-08-16/G044_ROOFLINE_KNEE.json",
    "status": "LOADED",
-   "via": "disk:receipts/ascent-2026-08-16/G044_ROOFLINE_KNEE.json"
+   "via": "git:HEAD:receipts/ascent-2026-08-16/G044_ROOFLINE_KNEE.json"
   },
   "g072": {
    "reason": null,
    "rel": "receipts/ascent-2026-08-16/G072_MULTI_PLANE_GEMV.json",
    "status": "LOADED",
-   "via": "disk:receipts/ascent-2026-08-16/G072_MULTI_PLANE_GEMV.json"
+   "via": "git:HEAD:receipts/ascent-2026-08-16/G072_MULTI_PLANE_GEMV.json"
   },
   "genome": {
    "reason": null,
    "rel": "receipts/headless/MACHINE_GENOME.json",
    "status": "LOADED",
-   "via": "disk:receipts/headless/MACHINE_GENOME.json"
+   "via": "git:HEAD:receipts/headless/MACHINE_GENOME.json"
   },
   "honest": {
    "reason": null,
    "rel": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
    "status": "LOADED",
-   "via": "disk:receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json"
+   "via": "git:HEAD:receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json"
   },
   "honest_reduced": {
    "reason": null,
    "rel": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.reduced.json",
    "status": "LOADED",
-   "via": "disk:receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.reduced.json"
+   "via": "git:HEAD:receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.reduced.json"
   },
   "lane_g044": {
    "reason": "unseen_in_this_checkout_and_HEAD",
@@ -463,19 +463,19 @@
    "reason": null,
    "rel": "receipts/headless/ORGAN_ROOF_LEDGER.json",
    "status": "LOADED",
-   "via": "disk:receipts/headless/ORGAN_ROOF_LEDGER.json"
+   "via": "git:HEAD:receipts/headless/ORGAN_ROOF_LEDGER.json"
   },
   "organ_bw": {
    "reason": null,
    "rel": "receipts/headless/ORGAN_BANDWIDTH.json",
    "status": "LOADED",
-   "via": "disk:receipts/headless/ORGAN_BANDWIDTH.json"
+   "via": "git:HEAD:receipts/headless/ORGAN_BANDWIDTH.json"
   },
   "unpack": {
    "reason": null,
    "rel": "receipts/headless/ACCELERATOR_UNPACK_IS_THE_WALL.json",
    "status": "LOADED",
-   "via": "disk:receipts/headless/ACCELERATOR_UNPACK_IS_THE_WALL.json"
+   "via": "git:HEAD:receipts/headless/ACCELERATOR_UNPACK_IS_THE_WALL.json"
   }
  },
  "loss_chain_closure": {
@@ -552,13 +552,13 @@
    "reason": null,
    "rel": "receipts/ascent-2026-08-16/G044_ROOFLINE_KNEE.json",
    "status": "LOADED",
-   "via": "disk:receipts/ascent-2026-08-16/G044_ROOFLINE_KNEE.json"
+   "via": "git:HEAD:receipts/ascent-2026-08-16/G044_ROOFLINE_KNEE.json"
   },
   "recovered_honest_ascent": {
    "reason": null,
    "rel": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
    "status": "LOADED",
-   "via": "disk:receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json"
+   "via": "git:HEAD:receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json"
   },
   "rule": "the lane named receipts/headless/HONEST_ROOF_WEIGHT_ADDRESSING.json; HEAD has it under receipts/ascent-2026-08-16/. Substituting without recording the miss would repeat the 595.9 hop."
  },
@@ -880,10 +880,10 @@
   }
  ],
  "schema": "hawking.future.addressing_gap.v1",
- "seal_sha256": "2bf2482a53812f424f52eb0579057b559b45c1b0eab31fe98c36c59f8fe854a8",
+ "seal_sha256": "ac07e6a35b815727fec78265447db4823c9501090669310e60c962522e0e1459",
  "self_timing": {
   "class": "SELF_MEASURED_DIRTY",
-  "cpu_parse_s": 0.051492667058482766,
+  "cpu_parse_s": 0.0015620419289916754,
   "not": "a GPU measurement, a lease, a TPS, a roof, or evidence the cited probes still hold on this contaminated host"
  },
  "silicon_vs_datasheet": {

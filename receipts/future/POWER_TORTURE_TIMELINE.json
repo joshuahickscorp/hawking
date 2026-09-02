@@ -4,27 +4,27 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:09:08Z",
+  "recorded_at": "2026-09-02T09:44:52Z",
   "recorded_by": "tools/future/power_torture.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
  "claim_boundary": "Static sidecar artifact. No hardware measurement.",
- "elapsed_s": 4.198165,
+ "elapsed_s": 6.041876,
  "events": [
   {
    "kind": "substrate_hashed",
    "payload": {
-    "digest": "aa938a5d6f1a8f5403abdfd779f9135a015e97ba1a39fddd72e96f1024afa98a",
+    "digest": "ee620affc0ffa65f92eebe069759cc5e169f70f3ce051892b8d1495dc3bca307",
     "id": "WU.TORTURE.substrate.before",
-    "n_files": 67,
+    "n_files": 69,
     "n_shaders": 1,
     "unit_id": "WU.TORTURE.substrate.before",
     "when": "before"
    },
    "seq": 0,
-   "t_s": 0.64856,
-   "t_unix": 1788242945.1797628
+   "t_s": 1.213153,
+   "t_unix": 1788342288.03683
   },
   {
    "kind": "gpu_lane_lock_parked",
@@ -41,17 +41,17 @@
     "waited_for": null
    },
    "seq": 1,
-   "t_s": 0.648571,
-   "t_unix": 1788242945.179772
+   "t_s": 1.213163,
+   "t_unix": 1788342288.0368361
   },
   {
    "kind": "detached_started",
    "payload": {
     "detached": true,
     "id": "WU.TORTURE.NO_WAIT.child",
-    "job_id": "WU-TORTURE-NO_WAIT-child-559d0516",
+    "job_id": "WU-TORTURE-NO_WAIT-child-ce70a110",
     "no_wait": true,
-    "pid": 18250,
+    "pid": 95037,
     "power": "NO_WAIT",
     "runnable_now": [
      {
@@ -66,8 +66,8 @@
     "unit_id": "WU.TORTURE.NO_WAIT.child"
    },
    "seq": 2,
-   "t_s": 0.729647,
-   "t_unix": 1788242945.26085
+   "t_s": 1.32888,
+   "t_unix": 1788342288.152558
   },
   {
    "kind": "WORK_LAUNCHED",
@@ -75,7 +75,7 @@
     "blocking": false,
     "detached": false,
     "id": "WU.TORTURE.NO_WAIT.ind",
-    "pid": 18253,
+    "pid": 95039,
     "power": "NO_WAIT",
     "status": "EXERCISED",
     "unit": {
@@ -85,36 +85,36 @@
     "unit_id": "WU.TORTURE.NO_WAIT.ind"
    },
    "seq": 3,
-   "t_s": 0.804765,
-   "t_unix": 1788242945.335968
+   "t_s": 1.42538,
+   "t_unix": 1788342288.249057
   },
   {
    "kind": "workunit_progressed",
    "payload": {
     "id": "WU.TORTURE.NO_WAIT.ind",
     "power": "NO_WAIT",
-    "progress_at": 1788242945.3814662,
+    "progress_at": 1788342288.299742,
     "slow_still_open": true,
     "unit_id": "WU.TORTURE.NO_WAIT.ind"
    },
    "seq": 4,
-   "t_s": 0.850268,
-   "t_unix": 1788242945.381471
+   "t_s": 1.476074,
+   "t_unix": 1788342288.2997508
   },
   {
    "kind": "WORK_LAUNCHED",
    "payload": {
     "correct_refusal": false,
     "id": "WU.TORTURE.NO_WAIT",
-    "pid": 18250,
+    "pid": 95037,
     "power": "NO_WAIT",
     "status": "EXERCISED",
     "unit_id": "WU.TORTURE.NO_WAIT",
-    "why": "detached pid 18250 stayed open while WU.TORTURE.NO_WAIT.ind started, progressed and ingested; idle_runnable was not a wait"
+    "why": "detached pid 95037 stayed open while WU.TORTURE.NO_WAIT.ind started, progressed and ingested; idle_runnable was not a wait"
    },
    "seq": 5,
-   "t_s": 1.087697,
-   "t_unix": 1788242945.6189
+   "t_s": 1.695518,
+   "t_unix": 1788342288.5191958
   },
   {
    "kind": "WORK_REFILLED",
@@ -134,8 +134,8 @@
     "why": "replan_after_scar_and_invalidation returned 2 id(s) not already offered"
    },
    "seq": 6,
-   "t_s": 1.927668,
-   "t_unix": 1788242946.458872
+   "t_s": 2.600532,
+   "t_unix": 1788342289.4242182
   },
   {
    "kind": "WORK_REFILLED",
@@ -152,14 +152,14 @@
     "why": "second refill set differs from the first; consecutive identical sets are the 1h scar"
    },
    "seq": 7,
-   "t_s": 1.927675,
-   "t_unix": 1788242946.458876
+   "t_s": 2.600552,
+   "t_unix": 1788342289.424225
   },
   {
    "cites": [
     "receipts/future/STATUS_CAUSALITY_CHALLENGE.json",
     "receipts/future/DETACHED_WORK_TRIAL.json",
-    "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/pytest-of-scammermike/pytest-2217/power_torture_run0/nowait/results/fast.json"
+    "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/pytest-of-scammermike/pytest-3306/power_torture_run0/nowait/results/fast.json"
    ],
    "kind": "RESULT_INGESTED",
    "payload": {
@@ -171,8 +171,8 @@
     "why": "ok"
    },
    "seq": 8,
-   "t_s": 1.92779,
-   "t_unix": 1788242946.458991
+   "t_s": 2.60073,
+   "t_unix": 1788342289.424404
   },
   {
    "kind": "IDEA_REJECTED",
@@ -188,8 +188,8 @@
     "why": "candidate refused by scar receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json#NS-010; replacement admitted"
    },
    "seq": 9,
-   "t_s": 1.944154,
-   "t_unix": 1788242946.4753568
+   "t_s": 2.617386,
+   "t_unix": 1788342289.441064
   },
   {
    "kind": "NEGATIVE_SCIENCE_REFUSAL",
@@ -202,8 +202,8 @@
     "unit_id": "WU.TORTURE.SCAR_PRUNING.ni"
    },
    "seq": 10,
-   "t_s": 1.944164,
-   "t_unix": 1788242946.4753642
+   "t_s": 2.617407,
+   "t_unix": 1788342289.4410791
   },
   {
    "kind": "status_challenged",
@@ -211,8 +211,8 @@
     "claim_kind": "host_hardware_absence",
     "emit_verdict": "OVERREACHING",
     "id": "WU.TORTURE.STATUS_CAUSALITY",
-    "n_gates_named_gap": 1,
-    "n_gates_recording": 17,
+    "n_gates_named_gap": 2,
+    "n_gates_recording": 16,
     "power": "STATUS_CAUSALITY",
     "probe_kind": "process_error",
     "status": "EXERCISED",
@@ -221,8 +221,8 @@
     "why": "challenged 'BLOCKED_NO_METAL_GPU' with probe_kind='process_error'; verdict=OVERREACHING"
    },
    "seq": 11,
-   "t_s": 1.950768,
-   "t_unix": 1788242946.4819698
+   "t_s": 2.99618,
+   "t_unix": 1788342289.819857
   },
   {
    "kind": "workunit_sleeping",
@@ -253,8 +253,8 @@
     "why": "GPU_EXCLUSIVE parked BLOCKED_ON_PROTECTED_WINDOW; scheduler stays CAPABLE"
    },
    "seq": 12,
-   "t_s": 3.314802,
-   "t_unix": 1788242947.846007
+   "t_s": 4.559505,
+   "t_unix": 1788342291.3831859
   },
   {
    "kind": "blocked_resource_reroute",
@@ -302,25 +302,30 @@
     "why": "protected unit parked; continue_with returned 33 CPU units"
    },
    "seq": 13,
-   "t_s": 3.314813,
-   "t_unix": 1788242947.846014
+   "t_s": 4.559521,
+   "t_unix": 1788342291.3831942
   },
   {
    "kind": "nr_nx_stage",
    "payload": {
-    "callable": true,
-    "correct_refusal": false,
-    "first_failing_stage": {},
+    "callable": false,
+    "correct_refusal": true,
+    "first_failing_stage": {
+     "error": "MTLCreateSystemDefaultDevice returned nil; MTLCopyAllDevices n=0. This process cannot see a Metal device, so it cannot mint an MTLComputePipelineState. That is a process property, not a claim that the host has no GPU.",
+     "stage": "DeviceCompiler",
+     "status": "FAILED",
+     "why": "DeviceCompiler callable ran (tools.future.device_compiler.lower_plan) and lowered 0/6 organ(s) to an MTLComputePipelineState. 6 remain NATIVE_UNMEASURED; placeholder_refused=0. lowered 0/6 organ(s) to MTLComputePipelineState; 6 remain NATIVE_UNMEASURED; placeholder_refused=0. QWEN3_DENSE_GGUF_MATCH_ARM_ABSENT holds=True; metal=MTLCreateSystemDefaultDevice returned nil; MTLCopyAllDevices n=0. This process cannot see a Metal device, so it cannot mint an MTLComputePipelineState. That is a process property, not a claim that the host has no GPU.. Native GGUF match arms are ['llama', 'llama', 'llama2', 'llama3', 'llama3.1', 'llama3.2', 'mistral', 'deepseek2', 'deepseek-v2', 'deepseek2-lite', 'qwen2', 'qwen2.5', 'qwen', 'qwen2moe', 'qwen3moe', 'qwen-moe', 'rwkv7', 'rwkv-7']; qwen3 dense is absent (qwen3moe is a different family; dense was not mapped onto the moe arm). adapted family='dense_swiglu_transformer'."
+    },
     "id": "WU.TORTURE.GENERIC_NR_NX",
     "n_compiled_organs": null,
     "power": "GENERIC_NR_NX",
-    "status": "EXERCISED",
+    "status": "EXERCISED_REFUSAL",
     "unit_id": "WU.TORTURE.GENERIC_NR_NX",
-    "why": "every named stage ran and PASSED"
+    "why": "first failing stage DeviceCompiler: DeviceCompiler callable ran (tools.future.device_compiler.lower_plan) and lowered 0/6 organ(s) to an MTLComputePipelineState. 6 remain NATIVE_UNMEASURED; placeholder_refused=0. lowered 0/6 organ(s) to MTLComputePipelineState; 6 remain NATIVE_UNMEASURED; placeholder_refused=0. QWEN3_DENSE_GGUF_MATCH_ARM_ABSENT holds=True; metal=MTLCreateSystemDefaultDevice returned nil; MTLCopyAllDevices n=0. This process cannot see a Metal device, so it cannot mint an MTLComputePipelineState. That is a process property, not a claim that the host has no GPU.. Native GGUF match arms are ['llama', 'llama', 'llama2', 'llama3', 'llama3.1', 'llama3.2', 'mistral', 'deepseek2', 'deepseek-v2', 'deepseek2-lite', 'qwen2', 'qwen2.5', 'qwen', 'qwen2moe', 'qwen3moe', 'qwen-moe', 'rwkv7', 'rwkv-7']; qwen3 dense is absent (qwen3moe is a different family; dense was not mapped onto the moe arm). adapted family='dense_swiglu_transformer'."
    },
    "seq": 14,
-   "t_s": 3.314977,
-   "t_unix": 1788242947.846178
+   "t_s": 4.559748,
+   "t_unix": 1788342291.383421
   },
   {
    "kind": "mutation_applied",
@@ -336,8 +341,8 @@
     "why": "proposal applied in reversible scope; rollback digest matched"
    },
    "seq": 15,
-   "t_s": 3.316397,
-   "t_unix": 1788242947.847599
+   "t_s": 4.56191,
+   "t_unix": 1788342291.385587
   },
   {
    "kind": "mutation_rolled_back",
@@ -350,8 +355,8 @@
     "unit_id": "WU.TORTURE.MUTATION.rollback"
    },
    "seq": 16,
-   "t_s": 3.316401,
-   "t_unix": 1788242947.847601
+   "t_s": 4.561918,
+   "t_unix": 1788342291.385591
   },
   {
    "kind": "subagent_state_persisted",
@@ -365,8 +370,8 @@
     "why": "two WorkGraph documents, distinct unit sets, reload preserved identity and did not leak state"
    },
    "seq": 17,
-   "t_s": 3.318708,
-   "t_unix": 1788242947.849909
+   "t_s": 4.56539,
+   "t_unix": 1788342291.389067
   },
   {
    "kind": "concurrency_doctor_decided",
@@ -389,8 +394,8 @@
     "why": "doctor REFUSED a verdict without observations and is SLEEPING with blocked_reason=\"resident presence is 'UNDECLARED', not PRESENT; will not invent a pid from the largest RSS neighbour; sidecar has no GPU authority and will not take a lease; no protected GPU lease is held; quiescence is 'UNKNOWN', not QUIESCENT; a DIAGNOSTIC_RELATIVE number on a busy machine is not this experiment; this sidecar is structurally unable to execute the protected ladder; a process with PROTECTED_ABSOLUTE authority must run observe() on hardware\"; that is the exercise"
    },
    "seq": 18,
-   "t_s": 3.480173,
-   "t_unix": 1788242948.0113778
+   "t_s": 4.823278,
+   "t_unix": 1788342291.646962
   },
   {
    "kind": "restatement_refused",
@@ -404,8 +409,8 @@
     "why": "REFUSED WU.TORTURE.invalidate.gate_up.shared_input_latent: restatement of killed family shared_input_latent_plus_expert_local_output_readout (receipts/future/RIVAL_CODEC_SCREEN.json): nearby restatement of shared_input_latent_plus_expert_local_output_readout on layer_4.routed_experts.gate_up_proj (split=None); more ranks of a killed family on the exhausted surface are refused. The scar does not generalise, and this candidate did not leave the surface."
    },
    "seq": 19,
-   "t_s": 3.482051,
-   "t_unix": 1788242948.013252
+   "t_s": 4.826011,
+   "t_unix": 1788342291.649693
   },
   {
    "kind": "replan_emitted",
@@ -421,8 +426,8 @@
     "why": "result scar_pruning changes what runs next"
    },
    "seq": 20,
-   "t_s": 3.487072,
-   "t_unix": 1788242948.018272
+   "t_s": 4.836392,
+   "t_unix": 1788342291.660065
   },
   {
    "kind": "replan_emitted",
@@ -438,8 +443,8 @@
     "why": "result status_causality changes what runs next"
    },
    "seq": 21,
-   "t_s": 3.487076,
-   "t_unix": 1788242948.0182762
+   "t_s": 4.8364,
+   "t_unix": 1788342291.660073
   },
   {
    "kind": "replan_emitted",
@@ -455,8 +460,8 @@
     "why": "result frontier_invalidation changes what runs next"
    },
    "seq": 22,
-   "t_s": 3.48708,
-   "t_unix": 1788242948.01828
+   "t_s": 4.836404,
+   "t_unix": 1788342291.6600761
   },
   {
    "kind": "replan_emitted",
@@ -472,8 +477,8 @@
     "why": "result flash_meta_replan changes what runs next"
    },
    "seq": 23,
-   "t_s": 3.487081,
-   "t_unix": 1788242948.018281
+   "t_s": 4.836405,
+   "t_unix": 1788342291.660078
   },
   {
    "kind": "tabula_callable",
@@ -492,8 +497,8 @@
     "why": "Tabula floor is callable: recover, evaluate, rank, catalog, resident_callable; apply_to_weights is WeightsFrozen (the floor, not a stubbed model); zero-refusal scoring is refused"
    },
    "seq": 24,
-   "t_s": 3.51549,
-   "t_unix": 1788242948.0466938
+   "t_s": 4.851158,
+   "t_unix": 1788342291.674834
   },
   {
    "kind": "cognition_state",
@@ -507,13 +512,13 @@
     "why": "PASS means new power integration, not resident cognition"
    },
    "seq": 25,
-   "t_s": 3.51556,
-   "t_unix": 1788242948.046761
+   "t_s": 4.85123,
+   "t_unix": 1788342291.674902
   },
   {
    "kind": "substrate_hashed",
    "payload": {
-    "digest": "aa938a5d6f1a8f5403abdfd779f9135a015e97ba1a39fddd72e96f1024afa98a",
+    "digest": "ee620affc0ffa65f92eebe069759cc5e169f70f3ce051892b8d1495dc3bca307",
     "equal": true,
     "id": "WU.TORTURE.substrate.after",
     "moved": [],
@@ -522,20 +527,20 @@
     "when": "after"
    },
    "seq": 26,
-   "t_s": 4.198165,
-   "t_unix": 1788242948.729368
+   "t_s": 6.041876,
+   "t_unix": 1788342292.865553
   }
  ],
- "events_sha256": "4e9a74088568d9a3a63777ef97f9f67004ebf976a1a2d94e91a123c19c8d34ad",
+ "events_sha256": "3a1cce325d46e9a4ae9491f0e88b8e19d7748a79ab11fe47db8b61ca4a4ca714",
  "evidence_class": "STATIC_ONLY",
  "gpu_authority": false,
  "n_events": 27,
  "purpose": "Sealed append-only timeline of the 30-minute power torture. The judge reads this document, not the runner's summary.",
  "schema": "hawking.future.power_torture.timeline.v1",
- "seal_sha256": "e495f7a60ba8c0c99cbeebd35107f0bb4b1df3ee71787231fb19a7f9fd123fd7",
+ "seal_sha256": "5b75945a7d22a27ef80b284244c72e83cab521c03fa936e486768f1c40e6324e",
  "sealed": true,
- "sealed_at": "2026-09-01T06:09:08Z",
- "t0_unix": 1788242944.5312,
+ "sealed_at": "2026-09-02T09:44:52Z",
+ "t0_unix": 1788342286.823672,
  "trial_id": "30m",
  "version": 1
 }

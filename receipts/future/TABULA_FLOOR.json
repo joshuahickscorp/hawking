@@ -62,7 +62,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T03:33:04Z",
+  "recorded_at": "2026-09-02T08:55:51Z",
   "recorded_by": "tools/future/tabula.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -129,7 +129,7 @@
     "status": "sleeping",
     "symbol": "tools.future.tabula.apply_to_weights",
     "wake": {
-     "blocker": "MetalContext reports NO Metal-capable GPU on this host; xcrun cannot locate the Metal compiler under CommandLineTools; protected bench lock files exist; holder pids unproven, and flock would be a seizure; the qualification pipeline classifies the machine HEAVY and will not quiesce standing workers; Flash source-independent NX is SCAFFOLD_ONLY, not qualified; teacher capture executed_units=0 of units=12 target_row_counts=[256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256] (path_taken=worktree)",
+     "blocker": "MetalContext reports NO Metal-capable GPU on this host; xcrun cannot locate the Metal compiler under CommandLineTools; protected bench lock files exist; holder pids unproven, and flock would be a seizure; the qualification pipeline classifies the machine HEAVY and will not quiesce standing workers; Flash source-independent NX is SCAFFOLD_ONLY, not qualified; teacher capture executed_units=0 of units=12 target_row_counts=[256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256] (path_taken=git:HEAD)",
      "condition": {
       "flash_nx": "Flash source-independent NX is QUALIFIED, not SCAFFOLD_ONLY",
       "machine_class": "qualification pipeline does not classify the machine HEAVY, or standing workers are legitimately absent \u2014 never SIGSTOP",
@@ -149,7 +149,7 @@
       "teacher_capture": {
        "complete": false,
        "executed_units": 0,
-       "path_taken": "worktree",
+       "path_taken": "git:HEAD",
        "receipt": "receipts/future/TEACHER_CORPUS_CONTRACT.json",
        "rule": "wake only when executed_units == units and units > 0",
        "target_row_counts": [
@@ -904,7 +904,7 @@
   }
  ],
  "gpu_authority": false,
- "head": "f3e4676f0172dda190eaed5878783fc02ef1788b",
+ "head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
  "independent_evaluation": {
   "behavioral_target": 0.5,
   "demo_failure": {
@@ -1080,7 +1080,7 @@
   "tools/future/succession.py is a this-wave sibling and is not imported; lineage schema is local until that swap",
   "this lane produces neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE; bench is UNKNOWN",
   "Tabula cannot widen the HCLI authority lattice; security policy is not a model personality trait",
-  "teacher capture path_taken=worktree executed_units=0 of units=12"
+  "teacher capture path_taken=git:HEAD executed_units=0 of units=12"
  ],
  "promote_exists": false,
  "promoted": false,
@@ -1144,16 +1144,16 @@
   },
   {
    "in_head": true,
-   "on_disk": true,
+   "on_disk": false,
    "path": "receipts/ascent-2026-08-16/G123_TABULA_DRIFT.json",
-   "path_taken": "worktree",
+   "path_taken": "git:HEAD",
    "what": "sealed G123 ladder; does not reproduce the recorded range (constant ~2.5x)"
   },
   {
    "in_head": true,
-   "on_disk": true,
+   "on_disk": false,
    "path": "receipts/ascent-2026-08-18/TABULA_PATIENT.json",
-   "path_taken": "worktree",
+   "path_taken": "git:HEAD",
    "what": "patient Tabula cell: 0/8 refusals treated as behavioural authority \u2014 the collapse this floor refuses"
   },
   {
@@ -1355,7 +1355,7 @@
   "reasoning",
   "instruction_following"
  ],
- "seal_sha256": "7ca91ed04f9e062980a777d238d2e6652fe5491d7c9022e4f85f3e05fdce39cf",
+ "seal_sha256": "bdf7baab257dbd5b8e2e849aa5af41e21d1349363db666d64376d37db0bb494f",
  "sleeping_fit": {
   "ready": false,
   "status": "sleeping",
@@ -1364,7 +1364,7 @@
    "executed_units": 0,
    "note": "derive completed/target from this receipt; do not hard-code 256",
    "path": "receipts/future/TEACHER_CORPUS_CONTRACT.json",
-   "path_taken": "worktree",
+   "path_taken": "git:HEAD",
    "present": true,
    "target_row_counts": [
     256,
@@ -1401,7 +1401,7 @@
    "teacher_capture": {
     "complete": false,
     "executed_units": 0,
-    "path_taken": "worktree",
+    "path_taken": "git:HEAD",
     "receipt": "receipts/future/TEACHER_CORPUS_CONTRACT.json",
     "rule": "wake only when executed_units == units and units > 0",
     "target_row_counts": [
@@ -1545,7 +1545,7 @@
    "assigned_runtime": null,
    "attempts": 0,
    "backend_task_id": null,
-   "blocked_reason": "MetalContext reports NO Metal-capable GPU on this host; xcrun cannot locate the Metal compiler under CommandLineTools; protected bench lock files exist; holder pids unproven, and flock would be a seizure; the qualification pipeline classifies the machine HEAVY and will not quiesce standing workers; Flash source-independent NX is SCAFFOLD_ONLY, not qualified; teacher capture executed_units=0 of units=12 target_row_counts=[256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256] (path_taken=worktree)",
+   "blocked_reason": "MetalContext reports NO Metal-capable GPU on this host; xcrun cannot locate the Metal compiler under CommandLineTools; protected bench lock files exist; holder pids unproven, and flock would be a seizure; the qualification pipeline classifies the machine HEAVY and will not quiesce standing workers; Flash source-independent NX is SCAFFOLD_ONLY, not qualified; teacher capture executed_units=0 of units=12 target_row_counts=[256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256] (path_taken=git:HEAD)",
    "claim_boundary": "Static sidecar artifact. No hardware measurement. No weight write. Tabula cannot widen authority, cannot promote, and cannot take a GPU lease. Independent evaluation is a vector; zero refusal is never the only score.",
    "classification": "SLEEPING",
    "content_hash": "349014b41f37704fdd5b8d287aac035f5d9f22725406431ec36ada37224f7fbc",
@@ -1599,7 +1599,7 @@
     "teacher_capture": {
      "complete": false,
      "executed_units": 0,
-     "path_taken": "worktree",
+     "path_taken": "git:HEAD",
      "receipt": "receipts/future/TEACHER_CORPUS_CONTRACT.json",
      "rule": "wake only when executed_units == units and units > 0",
      "target_row_counts": [

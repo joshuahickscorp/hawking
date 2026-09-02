@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:10:55Z",
+  "recorded_at": "2026-09-02T09:46:58Z",
   "recorded_by": "tools/future/resident_provider.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -16,14 +16,14 @@
   "path": "/Users/scammermike/noetic/NOETIC_PARENT_A/chat_template.jinja",
   "present": true,
   "sha256": "c3cf9e34abf4f9e36c2d72165aa9c132d3e2a725b6c2586aaa3a8af9d7a81041",
-  "source": "sealed:ON_DISK",
+  "source": "sealed:GIT_HEAD",
   "tokenizer_config_chat_template_match": true,
   "tokenizer_config_path": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer_config.json",
   "tokenizer_config_reason": null,
   "tried": [
    {
     "path": "/Users/scammermike/noetic/NOETIC_PARENT_A/chat_template.jinja",
-    "source": "sealed:ON_DISK"
+    "source": "sealed:GIT_HEAD"
    }
   ]
  },
@@ -66,14 +66,14 @@
   "present": true,
   "protocol": "hawking.qwen38.resident.v1",
   "reason": null,
-  "source": "sealed:ON_DISK+probe:receipts/future/evidence/RESIDENT_LIVE_PROBE.json",
+  "source": "sealed:GIT_HEAD+probe:HEAD:receipts/future/evidence/RESIDENT_LIVE_PROBE.json",
   "started_model_process": false,
   "stdin": "PIPE",
   "stdin_why": "the first live probe died because nohup gave it /dev/null on stdin; a request-driven resident reaching EOF is not a resident that failed to start"
  },
  "live_probe": {
   "reached_ready": true,
-  "source": "receipts/future/evidence/RESIDENT_LIVE_PROBE.json",
+  "source": "HEAD:receipts/future/evidence/RESIDENT_LIVE_PROBE.json",
   "verdict": "RESIDENT_STARTS_AND_GENERATES"
  },
  "negative_findings": [
@@ -167,7 +167,7 @@
      "identity": "sealed-3.14",
      "in_flight": null,
      "model_open_count": 1,
-     "pid": 24136,
+     "pid": 97793,
      "presence": "ABSENT",
      "queue_depth": 0,
      "ready": false,
@@ -190,7 +190,7 @@
      "requests_served": 0,
      "rss_bytes": null,
      "sessions": 0,
-     "start_token": "1788243054.732087",
+     "start_token": "1788342417.707863",
      "waiters": 0,
      "weight_upload_count": 1
     },
@@ -279,15 +279,15 @@
    },
    "restart_reaches_ready_and_serves": {
     "detail": {
-     "new": 24072,
-     "old": 24068,
+     "new": 97782,
+     "old": 97781,
      "text": "ok"
     },
     "fires": true
    },
    "reuse_same_pid": {
     "detail": {
-     "pid": 24068,
+     "pid": 97781,
      "served": 2
     },
     "fires": true
@@ -329,13 +329,13 @@
    "start_reaches_ready": {
     "detail": {
      "open": 1,
-     "pid": 24068
+     "pid": 97781
     },
     "fires": true
    },
    "stop_kills": {
     "detail": {
-     "pid": 24072
+     "pid": 97782
     },
     "fires": true
    },
@@ -377,20 +377,20 @@
      "concatenated": false,
      "generation": 1,
      "n": 2,
-     "pid": 24068,
+     "pid": 97781,
      "same_process": true,
      "second_model_body": false,
      "sessions": [
       {
        "id": "s1",
-       "last_request_id": "38ffc741e41d40d588e0ea4c1c5de292",
+       "last_request_id": "9675847596d142ee93470065d825849b",
        "n_turns": 2,
        "process_generation": 1,
        "templated": true
       },
       {
        "id": "s2",
-       "last_request_id": "b4cc4bce22b341b0b9f617aa1be68a49",
+       "last_request_id": "88fdbaaa263d4f47905dcafbde586d84",
        "n_turns": 1,
        "process_generation": 1,
        "templated": true
@@ -492,7 +492,7 @@
   "workunit": "one CPU_ANALYSIS unit; protocol-double start/templated-ask/stop+quality/sessions/health/stop/restart; does not take a GPU lease"
  },
  "schema": "hawking.future.resident_provider.v1",
- "seal_sha256": "29ed6bbcbf98e68a2d2a11db1243d3fb7519b2145f23c7404fb6c67b32b4df40",
+ "seal_sha256": "2f46f7b9e5cc6528c85789c7de4779fa8b0bb366c80a5d0e01899d4fe8800547",
  "started_model_process": false,
  "started_protocol_double": true,
  "started_sealed_resident": false,

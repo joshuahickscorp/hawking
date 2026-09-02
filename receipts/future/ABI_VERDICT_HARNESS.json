@@ -5,63 +5,17 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T06:31:44Z",
+  "recorded_at": "2026-09-02T09:19:48Z",
   "recorded_by": "tools/future/abi_verdicts.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
- "branch": "odyssey-i",
+ "branch": "grok/s4-tools-future-under-10s-20260902-045214",
  "claim_boundary": "Static sidecar artifact. No hardware measurement.",
  "codex_adjudication": {
-  "available": true,
-  "recorded": [],
-  "refused": [
-   {
-    "error": "VerdictRefused: unknown finding_id 'claude-abi-01-kv-append-q8'",
-    "finding_id": "claude-abi-01-kv-append-q8",
-    "verdict": "CONFIRMED_BUG"
-   },
-   {
-    "error": "VerdictRefused: unknown finding_id 'claude-abi-02-qwen-generated-k1'",
-    "finding_id": "claude-abi-02-qwen-generated-k1",
-    "verdict": "GENERATED_KERNEL"
-   },
-   {
-    "error": "VerdictRefused: unknown finding_id 'claude-abi-03-gemv-attn-command-batch'",
-    "finding_id": "claude-abi-03-gemv-attn-command-batch",
-    "verdict": "CONFIRMED_BUG"
-   },
-   {
-    "error": "VerdictRefused: unknown finding_id 'claude-abi-04-gemv-attn-arena'",
-    "finding_id": "claude-abi-04-gemv-attn-arena",
-    "verdict": "CONFIRMED_BUG"
-   },
-   {
-    "error": "VerdictRefused: unknown finding_id 'claude-abi-05-moe-silu'",
-    "finding_id": "claude-abi-05-moe-silu",
-    "verdict": "CONFIRMED_BUG"
-   },
-   {
-    "error": "VerdictRefused: unknown finding_id 'claude-abi-06-moe-route-accumulate'",
-    "finding_id": "claude-abi-06-moe-route-accumulate",
-    "verdict": "CONFIRMED_BUG"
-   }
-  ],
-  "source": "receipts/future/CLAUDE_SIDECAR_ABI_ADJUDICATION.json",
-  "summary": {
-   "blocked_by_generation_resolved": 1,
-   "dead_paths": 0,
-   "intentional_aliases": 0,
-   "outstanding_confirmed_defects": 0,
-   "real_defects_fixed": 5,
-   "reported_findings": 6
-  },
-  "unmapped": [],
-  "verifier_feedback": {
-   "constant_struct_abi": "A Metal constant struct at buffer(N) requires one contiguous host binding with the matching layout; adjacent set_u32 calls at N/N+1 are not equivalent.",
-   "kernel_existence": "Recognize token-pasted entry points only from explicit macro invocation and preserve generated-body ABI as a compiler/runtime boundary.",
-   "physical_gate": "Static resolution clears a protected-window correctness blocker; it does not promote Flash or produce qualified physical EBPW."
-  }
+  "available": false,
+  "reason": "receipts/future/CLAUDE_SIDECAR_ABI_ADJUDICATION.json not present",
+  "recorded": []
  },
  "codex_files_untouched": true,
  "does_not_substitute_for_protected_measurement": true,
@@ -947,7 +901,7 @@
  ],
  "generator_seams": [],
  "gpu_authority": false,
- "head": "c8f7ab8de9031bf44a85f99820a465cd395c9e71",
+ "head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
  "measurement_states_we_are_not": [
   "DIAGNOSTIC_RELATIVE",
   "PROTECTED_ABSOLUTE"
@@ -1031,8 +985,8 @@
  "rulings_issued_by_this_sidecar": 0,
  "rulings_recorded_from_external_authority": 0,
  "schema": "hawking.future.abi_verdicts.v1",
- "seal_sha256": "a28dd7dacddaf8952f910926a642aa9b5e715cd149f5ab49893b08ce51b75f30",
- "snapshot_captured_count": 46,
+ "seal_sha256": "4b70cecc2d6fe752d1b2c700596f568779505db2fad30c346215cd9f8729398d",
+ "snapshot_captured_count": 2,
  "snapshot_manifest": "receipts/future/EVIDENCE_SNAPSHOT.json",
  "snapshot_path_taken": "present",
  "store": {

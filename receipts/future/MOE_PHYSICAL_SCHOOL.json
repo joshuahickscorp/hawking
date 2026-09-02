@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:06:46Z",
+  "recorded_at": "2026-09-02T09:39:00Z",
   "recorded_by": "tools/future/moe_physical_school.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -11,104 +11,21 @@
  "ceremony_vs_work": {
   "arithmetic": {
    "meaning": "genuine expert / shared-expert FLOPs on activations and weights that produce the MoE output.",
-   "rows": [
-    {
-     "fusion_candidate": "fuse with down after parity",
-     "index": 23,
-     "kernel": "qwen_next_bf16_expert_gate_up_swiglu",
-     "output": "routed_activation"
-    },
-    {
-     "fusion_candidate": "fuse gate/up/down after parity",
-     "index": 24,
-     "kernel": "qwen_next_bf16_expert_down",
-     "output": "routed_outputs"
-    },
-    {
-     "fusion_candidate": "fuse shared gate/up",
-     "index": 26,
-     "kernel": "gemv_native_bf16_seq",
-     "output": "shared_gate_output"
-    },
-    {
-     "fusion_candidate": "fuse shared gate/up",
-     "index": 27,
-     "kernel": "gemv_native_bf16_seq",
-     "output": "shared_up_output"
-    },
-    {
-     "fusion_candidate": "fuse into shared down",
-     "index": 28,
-     "kernel": "moe_batched_silu_mul",
-     "output": "shared_activation"
-    },
-    {
-     "fusion_candidate": "fuse shared expert body",
-     "index": 29,
-     "kernel": "gemv_native_bf16_seq",
-     "output": "shared_output"
-    },
-    {
-     "fusion_candidate": "fuse scalar gate",
-     "index": 30,
-     "kernel": "gemv_native_bf16_seq",
-     "output": "shared_scalar"
-    },
-    {
-     "fusion_candidate": "fuse shared gate",
-     "index": 31,
-     "kernel": "qwen_next_shared_expert_sigmoid_gate",
-     "output": "shared_gated_output"
-    }
-   ]
+   "rows": []
   },
-  "barriers_observed": [
-   "ordered within one TokenCommandBuffer"
-  ],
+  "barriers_observed": null,
   "combine": {
    "meaning": "linear weighted sum of routed outputs and the routed-plus-shared add. algebra, not ceremony.",
-   "rows": [
-    {
-     "fusion_candidate": "fuse MoE combine",
-     "index": 25,
-     "kernel": "qwen_next_moe_weighted_sum",
-     "output": "routed_sum"
-    },
-    {
-     "fusion_candidate": "eliminate intermediate MoE output after parity",
-     "index": 32,
-     "kernel": "qwen_next_moe_add_shared",
-     "output": "moe_output"
-    }
-   ]
+   "rows": []
   },
   "control": {
    "meaning": "route decision: router logits and device-resident top-k. this is necessary control-flow arithmetic, not scheduling overhead. it produces the EXPERT_ID slot bind.",
-   "rows": [
-    {
-     "fusion_candidate": "fuse with routing only after authority",
-     "index": 21,
-     "kernel": "gemv_native_bf16_seq",
-     "output": "router_logits"
-    },
-    {
-     "fusion_candidate": "fuse router select after parity",
-     "index": 22,
-     "kernel": "moe_topk_gate",
-     "output": "route_ids + route_weights"
-    }
-   ]
+   "rows": []
   },
-  "law_cited": "a dispatch is not a unit of cost",
-  "law_implication": "ceremony vs work is not a dispatch-count ranking. a fusion candidate is a hypothesis about eliminated arithmetic or movement, not about subtracting launches.",
-  "ledger_dispatch_count": {
-   "field": "dispatch_count",
-   "not_a_measurement": true,
-   "provenance": "read_from_receipt",
-   "receipt": "FLASH_LAYER46_DISPATCH_LEDGER.json",
-   "value": 35
-  },
-  "ledger_layer": 46,
+  "law_cited": null,
+  "law_implication": null,
+  "ledger_dispatch_count": null,
+  "ledger_layer": null,
   "not_routed_path": {
    "meaning": "attention / DeltaNet / HyperConnection rows in the same layer ledger.",
    "row_count": {
@@ -116,7 +33,7 @@
     "not_a_measurement": true,
     "provenance": "read_from_receipt",
     "receipt": "FLASH_LAYER46_DISPATCH_LEDGER.json",
-    "value": 23
+    "value": 0
    }
   },
   "routed_path_row_count": {
@@ -124,82 +41,15 @@
    "not_a_measurement": true,
    "provenance": "read_from_receipt",
    "receipt": "FLASH_LAYER46_DISPATCH_LEDGER.json",
-   "value": 12
+   "value": 0
   },
   "scheduling_overhead": {
    "critical_path_ceremony_owners": {
-    "layer10": [
-     "synchronization",
-     "command submission"
-    ],
-    "layer30": [
-     "synchronization",
-     "command submission"
-    ],
+    "layer10": [],
+    "layer30": [],
     "note": "owners 'synchronization' (TokenCommandBuffer commit_and_wait) and 'command submission' (Metal command buffer). per-owner GPU ns is unpopulated while trace mode is off; this school does not fill it."
    },
-   "fusion_candidates_still_open_on_routed_path": [
-    {
-     "fusion_candidate": "fuse with routing only after authority",
-     "index": 21,
-     "kernel": "gemv_native_bf16_seq"
-    },
-    {
-     "fusion_candidate": "fuse router select after parity",
-     "index": 22,
-     "kernel": "moe_topk_gate"
-    },
-    {
-     "fusion_candidate": "fuse with down after parity",
-     "index": 23,
-     "kernel": "qwen_next_bf16_expert_gate_up_swiglu"
-    },
-    {
-     "fusion_candidate": "fuse gate/up/down after parity",
-     "index": 24,
-     "kernel": "qwen_next_bf16_expert_down"
-    },
-    {
-     "fusion_candidate": "fuse MoE combine",
-     "index": 25,
-     "kernel": "qwen_next_moe_weighted_sum"
-    },
-    {
-     "fusion_candidate": "fuse shared gate/up",
-     "index": 26,
-     "kernel": "gemv_native_bf16_seq"
-    },
-    {
-     "fusion_candidate": "fuse shared gate/up",
-     "index": 27,
-     "kernel": "gemv_native_bf16_seq"
-    },
-    {
-     "fusion_candidate": "fuse into shared down",
-     "index": 28,
-     "kernel": "moe_batched_silu_mul"
-    },
-    {
-     "fusion_candidate": "fuse shared expert body",
-     "index": 29,
-     "kernel": "gemv_native_bf16_seq"
-    },
-    {
-     "fusion_candidate": "fuse scalar gate",
-     "index": 30,
-     "kernel": "gemv_native_bf16_seq"
-    },
-    {
-     "fusion_candidate": "fuse shared gate",
-     "index": 31,
-     "kernel": "qwen_next_shared_expert_sigmoid_gate"
-    },
-    {
-     "fusion_candidate": "eliminate intermediate MoE output after parity",
-     "index": 32,
-     "kernel": "qwen_next_moe_add_shared"
-    }
-   ],
+   "fusion_candidates_still_open_on_routed_path": [],
    "meaning": "what is still split only to meet the current Metal encoder / kernel ABI, as named by each row's fusion_candidate, plus the command-buffer model. not a measured cost: a dispatch is not a unit of cost.",
    "not_in_the_ledger_but_named_by_the_queue": [
     "P6 dual command-buffer host commit/wait",
@@ -276,7 +126,7 @@
   "physical_invariants": 8,
   "refusal_controls_fired": 3,
   "repeated_work_items": 9,
-  "routed_candidates": 20,
+  "routed_candidates": 0,
   "taxonomy_forms": 9
  },
  "era_vocabulary": {
@@ -300,58 +150,58 @@
   "overall": "pinned_snapshot",
   "per_input": {
    "ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json": {
-    "evidence_source": "pinned_snapshot",
-    "path": "receipts/future/evidence/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json",
-    "reachable": true,
-    "sha256": "f627ce102b1257d4f939827d22f069bcd5f31d6631899e84a16e511e51107339"
+    "evidence_source": "unavailable",
+    "path": null,
+    "reachable": false,
+    "sha256": null
    },
    "ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json": {
-    "evidence_source": "pinned_snapshot",
-    "path": "receipts/future/evidence/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
-    "reachable": true,
-    "sha256": "3d4291b2cacfe823ac5556268efe0814c24dd0daefee8894226070a48ade02eb"
+    "evidence_source": "unavailable",
+    "path": null,
+    "reachable": false,
+    "sha256": null
    },
    "FLASH_DOCTOR_EXPERT_BANK_SCREEN_FULL_L44.json": {
-    "evidence_source": "pinned_snapshot",
-    "path": "receipts/future/evidence/FLASH_DOCTOR_EXPERT_BANK_SCREEN_FULL_L44.json",
-    "reachable": true,
-    "sha256": "5b86c8a01c28c794bfa3804918236fae87d90320fd81626a92fb33cf1f912851"
+    "evidence_source": "unavailable",
+    "path": null,
+    "reachable": false,
+    "sha256": null
    },
    "FLASH_LAYER10_CRITICAL_PATH.json": {
-    "evidence_source": "pinned_snapshot",
-    "path": "receipts/future/evidence/FLASH_LAYER10_CRITICAL_PATH.json",
-    "reachable": true,
-    "sha256": "20c3684de53a6e682d74dbdd65a2fb7833db53f2520e1de10df94542ce7fe37e"
+    "evidence_source": "unavailable",
+    "path": null,
+    "reachable": false,
+    "sha256": null
    },
    "FLASH_LAYER30_CRITICAL_PATH.json": {
-    "evidence_source": "pinned_snapshot",
-    "path": "receipts/future/evidence/FLASH_LAYER30_CRITICAL_PATH.json",
-    "reachable": true,
-    "sha256": "017c7d990b4bb92280a388a5ea13e2fbe693997d9c051685ac8f3cd51a82a3c7"
+    "evidence_source": "unavailable",
+    "path": null,
+    "reachable": false,
+    "sha256": null
    },
    "FLASH_LAYER46_DISPATCH_LEDGER.json": {
-    "evidence_source": "pinned_snapshot",
-    "path": "receipts/future/evidence/FLASH_LAYER46_DISPATCH_LEDGER.json",
-    "reachable": true,
-    "sha256": "2c65c1cf0ac8da4966a8d70b7779333e5a7d21f2fb48034b97416a9162458017"
+    "evidence_source": "unavailable",
+    "path": null,
+    "reachable": false,
+    "sha256": null
    },
    "FLASH_META_REPRESENTATION_SUB1.json": {
-    "evidence_source": "pinned_snapshot",
-    "path": "receipts/future/evidence/FLASH_META_REPRESENTATION_SUB1.json",
-    "reachable": true,
-    "sha256": "993e62421f1ffd77009dbab5c501cfd9f7fda1555c24bd46b309f171cb5849d9"
+    "evidence_source": "unavailable",
+    "path": null,
+    "reachable": false,
+    "sha256": null
    },
    "FLASH_NOETIC_ROUTER_SELECTION.json": {
-    "evidence_source": "pinned_snapshot",
-    "path": "receipts/future/evidence/FLASH_NOETIC_ROUTER_SELECTION.json",
-    "reachable": true,
-    "sha256": "3f405e0b4339a28f13e74676e297c3a78cf7be32d1502ad41721fe54f0d7b6fa"
+    "evidence_source": "unavailable",
+    "path": null,
+    "reachable": false,
+    "sha256": null
    },
    "FLASH_ORGAN_CENSUS.json": {
-    "evidence_source": "pinned_snapshot",
-    "path": "receipts/future/evidence/FLASH_ORGAN_CENSUS.json",
-    "reachable": true,
-    "sha256": "5ff766e18f7316005ece2808b43d938c1c728139b2c335556f71dbf344d4555d"
+    "evidence_source": "unavailable",
+    "path": null,
+    "reachable": false,
+    "sha256": null
    }
   }
  },
@@ -513,804 +363,39 @@
  ],
  "grounding": {
   "critical_path_layer10": {
-   "ceremony_owners": [
-    "synchronization",
-    "command submission"
-   ],
-   "evidence_source": "pinned_snapshot",
-   "layer": 10,
+   "evidence_source": "unavailable",
    "layer_name": "FLASH_LAYER10_CRITICAL_PATH.json",
-   "owners": [
-    {
-     "kernels": "qwen_next_hyperconnection_grouped_rmsnorm",
-     "measurement_note": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
-     "ns_populated": false,
-     "owner": "norm"
-    },
-    {
-     "kernels": "gemv_native_bf16_seq",
-     "measurement_note": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
-     "ns_populated": false,
-     "owner": "projections"
-    },
-    {
-     "kernels": "qwen_next_gated_delta_decode_single",
-     "measurement_note": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
-     "ns_populated": false,
-     "owner": "DeltaNet state"
-    },
-    {
-     "kernels": "qwen_next_gated_delta_decode_single",
-     "measurement_note": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
-     "ns_populated": false,
-     "owner": "recurrence"
-    },
-    {
-     "kernels": "qwen_next_deltanet_source_bf16_gated_rmsnorm + out_proj",
-     "measurement_note": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
-     "ns_populated": false,
-     "owner": "attention"
-    },
-    {
-     "kernels": "gemv_native_bf16_seq + moe_topk_gate",
-     "measurement_note": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
-     "ns_populated": false,
-     "owner": "routing"
-    },
-    {
-     "kernels": "qwen_next_bf16_expert_gate_up_swiglu + qwen_next_bf16_expert_down",
-     "measurement_note": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
-     "ns_populated": false,
-     "owner": "selected experts"
-    },
-    {
-     "kernels": "gemv_native_bf16_seq + moe_batched_silu_mul",
-     "measurement_note": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
-     "ns_populated": false,
-     "owner": "shared expert"
-    },
-    {
-     "kernels": "qwen_next_hyperconnection_combine",
-     "measurement_note": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
-     "ns_populated": false,
-     "owner": "residual"
-    },
-    {
-     "kernels": "TokenCommandBuffer commit_and_wait",
-     "measurement_note": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
-     "ns_populated": false,
-     "owner": "synchronization"
-    },
-    {
-     "kernels": "Metal command buffer",
-     "measurement_note": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
-     "ns_populated": false,
-     "owner": "command submission"
-    },
-    {
-     "kernels": "none; source BF16 remains resident",
-     "measurement_note": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
-     "ns_populated": false,
-     "owner": "representation conversion"
-    }
-   ],
-   "promotion_allowed": false,
-   "reachable": true,
-   "routed_owners": [
-    "routing",
-    "selected experts",
-    "shared expert"
-   ],
-   "schema": "hawking.flash_layer0_critical_path.v1",
-   "status": "PASSED"
+   "reachable": false
   },
   "critical_path_layer30": {
-   "ceremony_owners": [
-    "synchronization",
-    "command submission"
-   ],
-   "evidence_source": "pinned_snapshot",
-   "layer": 30,
+   "evidence_source": "unavailable",
    "layer_name": "FLASH_LAYER30_CRITICAL_PATH.json",
-   "owners": [
-    {
-     "kernels": "qwen_next_hyperconnection_grouped_rmsnorm",
-     "measurement_note": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
-     "ns_populated": false,
-     "owner": "norm"
-    },
-    {
-     "kernels": "gemv_native_bf16_seq",
-     "measurement_note": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
-     "ns_populated": false,
-     "owner": "projections"
-    },
-    {
-     "kernels": "qwen_next_gated_delta_decode_single",
-     "measurement_note": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
-     "ns_populated": false,
-     "owner": "DeltaNet state"
-    },
-    {
-     "kernels": "qwen_next_gated_delta_decode_single",
-     "measurement_note": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
-     "ns_populated": false,
-     "owner": "recurrence"
-    },
-    {
-     "kernels": "qwen_next_deltanet_source_bf16_gated_rmsnorm + out_proj",
-     "measurement_note": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
-     "ns_populated": false,
-     "owner": "attention"
-    },
-    {
-     "kernels": "gemv_native_bf16_seq + moe_topk_gate",
-     "measurement_note": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
-     "ns_populated": false,
-     "owner": "routing"
-    },
-    {
-     "kernels": "qwen_next_bf16_expert_gate_up_swiglu + qwen_next_bf16_expert_down",
-     "measurement_note": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
-     "ns_populated": false,
-     "owner": "selected experts"
-    },
-    {
-     "kernels": "gemv_native_bf16_seq + moe_batched_silu_mul",
-     "measurement_note": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
-     "ns_populated": false,
-     "owner": "shared expert"
-    },
-    {
-     "kernels": "qwen_next_hyperconnection_combine",
-     "measurement_note": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
-     "ns_populated": false,
-     "owner": "residual"
-    },
-    {
-     "kernels": "TokenCommandBuffer commit_and_wait",
-     "measurement_note": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
-     "ns_populated": false,
-     "owner": "synchronization"
-    },
-    {
-     "kernels": "Metal command buffer",
-     "measurement_note": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
-     "ns_populated": false,
-     "owner": "command submission"
-    },
-    {
-     "kernels": "none; source BF16 remains resident",
-     "measurement_note": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
-     "ns_populated": false,
-     "owner": "representation conversion"
-    }
-   ],
-   "promotion_allowed": false,
-   "reachable": true,
-   "routed_owners": [
-    "routing",
-    "selected experts",
-    "shared expert"
-   ],
-   "schema": "hawking.flash_layer0_critical_path.v1",
-   "status": "PASSED"
+   "reachable": false
   },
   "dispatch_cost_law": {
-   "evidence_source": "pinned_snapshot",
-   "headline_finding_present": true,
-   "instance_note": "the source receipt is a Qwen3.8 Metal measurement on one prompt length. this school cites the qualitative law only; magnitudes are not restated and are not Flash authority.",
-   "law": "a dispatch is not a unit of cost",
-   "reachable": true,
-   "receipt": "ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json",
-   "so_this_school": "ceremony vs work is not a dispatch-count ranking. a fusion candidate is a hypothesis about eliminated arithmetic or movement, not about subtracting launches."
+   "evidence_source": "unavailable",
+   "reachable": false
   },
   "doctor_screen": {
-   "cross_expert_gate_up_mean_cosine": 0.003834665467747213,
-   "cross_expert_gate_up_min_cosine": -0.020706258714199066,
-   "early_rejection": "any candidate below 0.99 sampled cosine or requiring dense rematerialization is not promoted",
-   "evidence_source": "pinned_snapshot",
-   "expert_count": {
-    "field": "source.expert_count",
-    "not_a_measurement": true,
-    "provenance": "read_from_receipt",
-    "receipt": "FLASH_DOCTOR_EXPERT_BANK_SCREEN_FULL_L44.json",
-    "value": 512
-   },
-   "experts_sampled_count": {
-    "field": "len(source.experts_sampled)",
-    "not_a_measurement": true,
-    "provenance": "read_from_receipt",
-    "receipt": "FLASH_DOCTOR_EXPERT_BANK_SCREEN_FULL_L44.json",
-    "value": 512
-   },
-   "layer": 44,
-   "rank_1_energy": 0.002715124050155282,
-   "reachable": true,
-   "schema": "hawking.flash.doctor_expert_bank_screen.v1",
-   "status": "REAL_WEIGHT_STAGE_A_SCREEN"
+   "evidence_source": "unavailable",
+   "reachable": false
   },
   "family_budget": {
-   "accelerator_contract": {
-    "dense_rematerialization": false,
-    "fused_boundaries": [
-     "route -> expert code fetch -> generated tile -> gate/up/SwiGLU -> down accumulation",
-     "n-gram key -> generated embedding -> residual add",
-     "MoE output -> HyperConnection/residual write"
-    ],
-    "measured_now": false,
-    "resident_shared_program": true,
-    "route_before_payload": true
-   },
-   "evidence_source": "pinned_snapshot",
-   "expert_bank_program": {
-    "direct_consumer": "fused generated-tile GEMV / route accumulation",
-    "kind": "expert_local_teacher_distilled_generator",
-    "per_expert_code": "latent symbols plus small learned residual codes",
-    "why_not_global_sharing": "existing Flash route-conditioned shared/output basis screens are unhealthy; share the decoder program, not a single expert basis"
-   },
-   "reachable": true,
-   "routed_experts": {
-    "family": "routed_experts",
-    "ledger": {
-     "expert_latent_symbols": 0.54,
-     "format_and_seed": 0.09,
-     "router_margin_guard": 0.14,
-     "shared_decoder_amortized": 0.11
-    },
-    "meta_bpw_target": 0.88,
-    "program": "expert-local latent code + shared tile decoder + route-margin repair",
-    "runtime_shape": "route -> latent decode -> fused gate/up/SwiGLU/down accumulation",
-    "source_bytes": {
-     "field": "family_budget.source_bytes",
-     "not_a_measurement": true,
-     "provenance": "read_from_receipt",
-     "receipt": "FLASH_META_REPRESENTATION_SUB1.json",
-     "value": 246625075200
-    },
-    "source_fraction": {
-     "field": "family_budget.source_fraction",
-     "not_a_measurement": true,
-     "provenance": "read_from_receipt",
-     "receipt": "FLASH_META_REPRESENTATION_SUB1.json",
-     "value": 0.6850697234996967
-    }
-   },
-   "schema": "hawking.flash.meta_representation.v1"
+   "evidence_source": "unavailable",
+   "reachable": false
   },
   "layer46_ledger": {
-   "barriers_observed": [
-    "ordered within one TokenCommandBuffer"
-   ],
-   "dispatch_count": {
-    "field": "dispatch_count",
-    "not_a_measurement": true,
-    "provenance": "read_from_receipt",
-    "receipt": "FLASH_LAYER46_DISPATCH_LEDGER.json",
-    "value": 35
-   },
-   "evidence_source": "pinned_snapshot",
-   "integrated_graph": true,
-   "layer": 46,
-   "promotion_allowed": false,
-   "reachable": true,
-   "row_count": {
-    "field": "len(rows)",
-    "not_a_measurement": true,
-    "provenance": "read_from_receipt",
-    "receipt": "FLASH_LAYER46_DISPATCH_LEDGER.json",
-    "value": 35
-   },
-   "schema": "hawking.flash_layer0_dispatch_ledger.v1",
-   "status": "PASSED",
-   "trace_mode": "off"
+   "evidence_source": "unavailable",
+   "reachable": false
   },
-  "layer46_routed_rows": [
-   {
-    "barrier_or_dependency": "ordered within one TokenCommandBuffer",
-    "classification_in_ledger": "NECESSARY",
-    "fusion_candidate": "fuse with routing only after authority",
-    "index": 21,
-    "input": "mlp_input + router",
-    "kernel": "gemv_native_bf16_seq",
-    "on_routed_path": true,
-    "output": "router_logits",
-    "why_it_exists": "source router logits",
-    "work_class": "CONTROL"
-   },
-   {
-    "barrier_or_dependency": "ordered within one TokenCommandBuffer",
-    "classification_in_ledger": "NECESSARY",
-    "fusion_candidate": "fuse router select after parity",
-    "index": 22,
-    "input": "router_logits",
-    "kernel": "moe_topk_gate",
-    "on_routed_path": true,
-    "output": "route_ids + route_weights",
-    "why_it_exists": "device-resident normalized top-10 authority",
-    "work_class": "CONTROL"
-   },
-   {
-    "barrier_or_dependency": "ordered within one TokenCommandBuffer",
-    "classification_in_ledger": "NECESSARY",
-    "fusion_candidate": "fuse with down after parity",
-    "index": 23,
-    "input": "route_ids + mlp_input + expert_gate_up",
-    "kernel": "qwen_next_bf16_expert_gate_up_swiglu",
-    "on_routed_path": true,
-    "output": "routed_activation",
-    "why_it_exists": "selected source BF16 expert gate/up wave",
-    "work_class": "ARITHMETIC"
-   },
-   {
-    "barrier_or_dependency": "ordered within one TokenCommandBuffer",
-    "classification_in_ledger": "NECESSARY",
-    "fusion_candidate": "fuse gate/up/down after parity",
-    "index": 24,
-    "input": "route_ids + routed_activation + expert_down",
-    "kernel": "qwen_next_bf16_expert_down",
-    "on_routed_path": true,
-    "output": "routed_outputs",
-    "why_it_exists": "selected source BF16 expert down wave",
-    "work_class": "ARITHMETIC"
-   },
-   {
-    "barrier_or_dependency": "ordered within one TokenCommandBuffer",
-    "classification_in_ledger": "NECESSARY",
-    "fusion_candidate": "fuse MoE combine",
-    "index": 25,
-    "input": "routed_outputs + route_weights",
-    "kernel": "qwen_next_moe_weighted_sum",
-    "on_routed_path": true,
-    "output": "routed_sum",
-    "why_it_exists": "device-resident weighted route sum",
-    "work_class": "COMBINE"
-   },
-   {
-    "barrier_or_dependency": "ordered within one TokenCommandBuffer",
-    "classification_in_ledger": "NECESSARY",
-    "fusion_candidate": "fuse shared gate/up",
-    "index": 26,
-    "input": "mlp_input + shared_gate",
-    "kernel": "gemv_native_bf16_seq",
-    "on_routed_path": true,
-    "output": "shared_gate_output",
-    "why_it_exists": "shared expert gate projection",
-    "work_class": "SHARED_ARITHMETIC"
-   },
-   {
-    "barrier_or_dependency": "ordered within one TokenCommandBuffer",
-    "classification_in_ledger": "NECESSARY",
-    "fusion_candidate": "fuse shared gate/up",
-    "index": 27,
-    "input": "mlp_input + shared_up",
-    "kernel": "gemv_native_bf16_seq",
-    "on_routed_path": true,
-    "output": "shared_up_output",
-    "why_it_exists": "shared expert up projection",
-    "work_class": "SHARED_ARITHMETIC"
-   },
-   {
-    "barrier_or_dependency": "ordered within one TokenCommandBuffer",
-    "classification_in_ledger": "NECESSARY",
-    "fusion_candidate": "fuse into shared down",
-    "index": 28,
-    "input": "shared_gate_output + shared_up_output",
-    "kernel": "moe_batched_silu_mul",
-    "on_routed_path": true,
-    "output": "shared_activation",
-    "why_it_exists": "source SwiGLU",
-    "work_class": "SHARED_ARITHMETIC"
-   },
-   {
-    "barrier_or_dependency": "ordered within one TokenCommandBuffer",
-    "classification_in_ledger": "NECESSARY",
-    "fusion_candidate": "fuse shared expert body",
-    "index": 29,
-    "input": "shared_activation + shared_down",
-    "kernel": "gemv_native_bf16_seq",
-    "on_routed_path": true,
-    "output": "shared_output",
-    "why_it_exists": "shared expert down projection",
-    "work_class": "SHARED_ARITHMETIC"
-   },
-   {
-    "barrier_or_dependency": "ordered within one TokenCommandBuffer",
-    "classification_in_ledger": "NECESSARY",
-    "fusion_candidate": "fuse scalar gate",
-    "index": 30,
-    "input": "mlp_input + shared_scalar",
-    "kernel": "gemv_native_bf16_seq",
-    "on_routed_path": true,
-    "output": "shared_scalar",
-    "why_it_exists": "shared expert scalar gate logit",
-    "work_class": "SHARED_ARITHMETIC"
-   },
-   {
-    "barrier_or_dependency": "ordered within one TokenCommandBuffer",
-    "classification_in_ledger": "NECESSARY",
-    "fusion_candidate": "fuse shared gate",
-    "index": 31,
-    "input": "shared_output + shared_scalar",
-    "kernel": "qwen_next_shared_expert_sigmoid_gate",
-    "on_routed_path": true,
-    "output": "shared_gated_output",
-    "why_it_exists": "source sigmoid shared gate",
-    "work_class": "SHARED_ARITHMETIC"
-   },
-   {
-    "barrier_or_dependency": "ordered within one TokenCommandBuffer",
-    "classification_in_ledger": "NECESSARY",
-    "fusion_candidate": "eliminate intermediate MoE output after parity",
-    "index": 32,
-    "input": "routed_sum + shared_gated_output",
-    "kernel": "qwen_next_moe_add_shared",
-    "on_routed_path": true,
-    "output": "moe_output",
-    "why_it_exists": "source routed-plus-shared combine",
-    "work_class": "COMBINE"
-   }
-  ],
+  "layer46_routed_rows": [],
   "organ_census": {
-   "doctor_priority_head": [
-    {
-     "family": "routed_experts",
-     "reason": "largest mutable byte family; test shared basis/archetype/sparse residual and route-conditioned generation"
-    },
-    {
-     "family": "linear_attention_hyperconnection",
-     "reason": "recurrent state and projection fusion; test state/program sharing across layers"
-    },
-    {
-     "family": "full_attention",
-     "reason": "KV-sensitive; test fused QKV/SDPA and compact cache without host ceremony"
-    }
-   ],
-   "evidence_source": "pinned_snapshot",
-   "family_summary": [
-    {
-     "bytes": {
-      "field": "family_summary.bytes",
-      "not_a_measurement": true,
-      "provenance": "read_from_receipt",
-      "receipt": "FLASH_ORGAN_CENSUS.json",
-      "value": 246625075200
-     },
-     "family": "routed_experts",
-     "fraction": {
-      "field": "family_summary.fraction",
-      "not_a_measurement": true,
-      "provenance": "read_from_receipt",
-      "receipt": "FLASH_ORGAN_CENSUS.json",
-      "value": 0.6850697234996967
-     },
-     "tensor_count": {
-      "field": "family_summary.tensor_count",
-      "not_a_measurement": true,
-      "provenance": "read_from_receipt",
-      "receipt": "FLASH_ORGAN_CENSUS.json",
-      "value": 98
-     }
-    },
-    {
-     "bytes": {
-      "field": "family_summary.bytes",
-      "not_a_measurement": true,
-      "provenance": "read_from_receipt",
-      "receipt": "FLASH_ORGAN_CENSUS.json",
-      "value": 102400491520
-     },
-     "family": "ngram_embedding",
-     "fraction": {
-      "field": "family_summary.fraction",
-      "not_a_measurement": true,
-      "provenance": "read_from_receipt",
-      "receipt": "FLASH_ORGAN_CENSUS.json",
-      "value": 0.2844458389113527
-     },
-     "tensor_count": {
-      "field": "family_summary.tensor_count",
-      "not_a_measurement": true,
-      "provenance": "read_from_receipt",
-      "receipt": "FLASH_ORGAN_CENSUS.json",
-      "value": 128
-     }
-    },
-    {
-     "bytes": {
-      "field": "family_summary.bytes",
-      "not_a_measurement": true,
-      "provenance": "read_from_receipt",
-      "receipt": "FLASH_ORGAN_CENSUS.json",
-      "value": 4820291328
-     },
-     "family": "linear_attention_hyperconnection",
-     "fraction": {
-      "field": "family_summary.fraction",
-      "not_a_measurement": true,
-      "provenance": "read_from_receipt",
-      "receipt": "FLASH_ORGAN_CENSUS.json",
-      "value": 0.013389699504736112
-     },
-     "tensor_count": {
-      "field": "family_summary.tensor_count",
-      "not_a_measurement": true,
-      "provenance": "read_from_receipt",
-      "receipt": "FLASH_ORGAN_CENSUS.json",
-      "value": 520
-     }
-    },
-    {
-     "bytes": {
-      "field": "family_summary.bytes",
-      "not_a_measurement": true,
-      "provenance": "read_from_receipt",
-      "receipt": "FLASH_ORGAN_CENSUS.json",
-      "value": 2564759064
-     },
-     "family": "embedding_lm_head",
-     "fraction": {
-      "field": "family_summary.fraction",
-      "not_a_measurement": true,
-      "provenance": "read_from_receipt",
-      "receipt": "FLASH_ORGAN_CENSUS.json",
-      "value": 0.007124331463023194
-     },
-     "tensor_count": {
-      "field": "family_summary.tensor_count",
-      "not_a_measurement": true,
-      "provenance": "read_from_receipt",
-      "receipt": "FLASH_ORGAN_CENSUS.json",
-      "value": 10
-     }
-    },
-    {
-     "bytes": {
-      "field": "family_summary.bytes",
-      "not_a_measurement": true,
-      "provenance": "read_from_receipt",
-      "receipt": "FLASH_ORGAN_CENSUS.json",
-      "value": 1337609728
-     },
-     "family": "full_attention",
-     "fraction": {
-      "field": "family_summary.fraction",
-      "not_a_measurement": true,
-      "provenance": "read_from_receipt",
-      "receipt": "FLASH_ORGAN_CENSUS.json",
-      "value": 0.0037155829583360414
-     },
-     "tensor_count": {
-      "field": "family_summary.tensor_count",
-      "not_a_measurement": true,
-      "provenance": "read_from_receipt",
-      "receipt": "FLASH_ORGAN_CENSUS.json",
-      "value": 117
-     }
-    },
-    {
-     "bytes": {
-      "field": "family_summary.bytes",
-      "not_a_measurement": true,
-      "provenance": "read_from_receipt",
-      "receipt": "FLASH_ORGAN_CENSUS.json",
-      "value": 1311502048
-     },
-     "family": "mlp_hyperconnection",
-     "fraction": {
-      "field": "family_summary.fraction",
-      "not_a_measurement": true,
-      "provenance": "read_from_receipt",
-      "receipt": "FLASH_ORGAN_CENSUS.json",
-      "value": 0.003643061617574911
-     },
-     "tensor_count": {
-      "field": "family_summary.tensor_count",
-      "not_a_measurement": true,
-      "provenance": "read_from_receipt",
-      "receipt": "FLASH_ORGAN_CENSUS.json",
-      "value": 353
-     }
-    },
-    {
-     "bytes": {
-      "field": "family_summary.bytes",
-      "not_a_measurement": true,
-      "provenance": "read_from_receipt",
-      "receipt": "FLASH_ORGAN_CENSUS.json",
-      "value": 481940480
-     },
-     "family": "shared_expert",
-     "fraction": {
-      "field": "family_summary.fraction",
-      "not_a_measurement": true,
-      "provenance": "read_from_receipt",
-      "receipt": "FLASH_ORGAN_CENSUS.json",
-      "value": 0.0013387236926706112
-     },
-     "tensor_count": {
-      "field": "family_summary.tensor_count",
-      "not_a_measurement": true,
-      "provenance": "read_from_receipt",
-      "receipt": "FLASH_ORGAN_CENSUS.json",
-      "value": 196
-     }
-    },
-    {
-     "bytes": {
-      "field": "family_summary.bytes",
-      "not_a_measurement": true,
-      "provenance": "read_from_receipt",
-      "receipt": "FLASH_ORGAN_CENSUS.json",
-      "value": 457917440
-     },
-     "family": "other",
-     "fraction": {
-      "field": "family_summary.fraction",
-      "not_a_measurement": true,
-      "provenance": "read_from_receipt",
-      "receipt": "FLASH_ORGAN_CENSUS.json",
-      "value": 0.0012719930191692405
-     },
-     "tensor_count": {
-      "field": "family_summary.tensor_count",
-      "not_a_measurement": true,
-      "provenance": "read_from_receipt",
-      "receipt": "FLASH_ORGAN_CENSUS.json",
-      "value": 120
-     }
-    },
-    {
-     "bytes": {
-      "field": "family_summary.bytes",
-      "not_a_measurement": true,
-      "provenance": "read_from_receipt",
-      "receipt": "FLASH_ORGAN_CENSUS.json",
-      "value": 376320
-     },
-     "family": "norm",
-     "fraction": {
-      "field": "family_summary.fraction",
-      "not_a_measurement": true,
-      "provenance": "read_from_receipt",
-      "receipt": "FLASH_ORGAN_CENSUS.json",
-      "value": 1.0453334403987072e-06
-     },
-     "tensor_count": {
-      "field": "family_summary.tensor_count",
-      "not_a_measurement": true,
-      "provenance": "read_from_receipt",
-      "receipt": "FLASH_ORGAN_CENSUS.json",
-      "value": 116
-     }
-    }
-   ],
-   "largest_routed_tensors_head": [
-    {
-     "bytes": {
-      "field": "largest_tensors.bytes",
-      "not_a_measurement": true,
-      "provenance": "read_from_receipt",
-      "receipt": "FLASH_ORGAN_CENSUS.json",
-      "value": 3355443200
-     },
-     "dtype": "BF16",
-     "layer": 0,
-     "name": "model.language_model.layers.0.mlp.experts.gate_up_proj",
-     "shape": [
-      512,
-      1280,
-      2560
-     ]
-    },
-    {
-     "bytes": {
-      "field": "largest_tensors.bytes",
-      "not_a_measurement": true,
-      "provenance": "read_from_receipt",
-      "receipt": "FLASH_ORGAN_CENSUS.json",
-      "value": 3355443200
-     },
-     "dtype": "BF16",
-     "layer": 1,
-     "name": "model.language_model.layers.1.mlp.experts.gate_up_proj",
-     "shape": [
-      512,
-      1280,
-      2560
-     ]
-    },
-    {
-     "bytes": {
-      "field": "largest_tensors.bytes",
-      "not_a_measurement": true,
-      "provenance": "read_from_receipt",
-      "receipt": "FLASH_ORGAN_CENSUS.json",
-      "value": 3355443200
-     },
-     "dtype": "BF16",
-     "layer": 10,
-     "name": "model.language_model.layers.10.mlp.experts.gate_up_proj",
-     "shape": [
-      512,
-      1280,
-      2560
-     ]
-    }
-   ],
-   "layer_count_observed": {
-    "field": "layer_count_observed",
-    "not_a_measurement": true,
-    "provenance": "read_from_receipt",
-    "receipt": "FLASH_ORGAN_CENSUS.json",
-    "value": 48
-   },
-   "model": "Qwen/Qwen3.8-Flash-Next",
-   "reachable": true,
-   "routed_experts": {
-    "bytes": {
-     "field": "family_summary.bytes",
-     "not_a_measurement": true,
-     "provenance": "read_from_receipt",
-     "receipt": "FLASH_ORGAN_CENSUS.json",
-     "value": 246625075200
-    },
-    "family": "routed_experts",
-    "fraction": {
-     "field": "family_summary.fraction",
-     "not_a_measurement": true,
-     "provenance": "read_from_receipt",
-     "receipt": "FLASH_ORGAN_CENSUS.json",
-     "value": 0.6850697234996967
-    },
-    "tensor_count": {
-     "field": "family_summary.tensor_count",
-     "not_a_measurement": true,
-     "provenance": "read_from_receipt",
-     "receipt": "FLASH_ORGAN_CENSUS.json",
-     "value": 98
-    }
-   },
-   "schema": "hawking.flash.organ_census.v1",
-   "source_parameter_bytes_indexed": {
-    "field": "source_parameter_bytes_indexed",
-    "not_a_measurement": true,
-    "provenance": "read_from_receipt",
-    "receipt": "FLASH_ORGAN_CENSUS.json",
-    "value": 359999963128
-   },
-   "status": "STRUCTURAL_METADATA_SCREEN",
-   "tensor_count": {
-    "field": "tensor_count",
-    "not_a_measurement": true,
-    "provenance": "read_from_receipt",
-    "receipt": "FLASH_ORGAN_CENSUS.json",
-    "value": 1658
-   }
+   "evidence_source": "unavailable",
+   "reachable": false
   },
   "router_config": {
-   "evidence_source": "pinned_snapshot",
-   "norm_topk_prob": true,
-   "num_experts": {
-    "field": "config.router.num_experts",
-    "not_a_measurement": true,
-    "provenance": "read_from_receipt",
-    "receipt": "FLASH_NOETIC_ROUTER_SELECTION.json",
-    "value": 512
-   },
-   "num_experts_per_tok": {
-    "field": "config.router.num_experts_per_tok",
-    "not_a_measurement": true,
-    "provenance": "read_from_receipt",
-    "receipt": "FLASH_NOETIC_ROUTER_SELECTION.json",
-    "value": 10
-   },
-   "reachable": true,
-   "router_logits": "F.linear(hidden_states, gate.weight)",
-   "router_probability": "softmax(router_logits, dtype=float32, dim=-1)",
-   "schema": "hcli.agentos.flash_noetic_router_selection.v1",
-   "selection": "topk(router_probs, num_experts_per_tok)",
-   "shared_expert_sigmoid_is_not_router_selection": true
+   "evidence_source": "unavailable",
+   "reachable": false
   }
  },
  "measurement_classes": {
@@ -1331,11 +416,11 @@
    "megakernel",
    "router_distill"
   ],
-  "hit_count": 19,
+  "hit_count": 20,
   "implication": "Flash L44 gate_up mean cosine is ~0.0038 (doctor screen). Experts are not similar, so repeated work is structural (same x, same SwiGLU shape, independent W_e), not a license to merge experts or to reopen a trivial shared basis. Megakernel-as-TPS-lever is recorded-dead; fused routed-organ dispatch is a different object from a full-layer megakernel.",
   "index_reachable": true,
   "path": "receipts/future/NEGATIVE_SCIENCE_INDEX.json",
-  "refuse_eligible_count": 18,
+  "refuse_eligible_count": 19,
   "sample_scar_ids": [
    "hawking-experiments/superwave/g1/g1-arch-negative.md#shared_cross_expert_basis_shared_codebook",
    "receipts/QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE.json#cross_expert_structure",
@@ -1357,7 +442,8 @@
   "Did not fit weights or reopen expert-bank STORAGE candidates. Doctor L44 cosine is cited as a structure metric already on disk.",
   "Did not treat dispatch-count reductions in the qualification queue as measurements; they are candidate hypotheses labelled expected_*.",
   "Did not reopen megakernel-as-TPS-lever (negative index). Organ fusion is a different object.",
-  "Did not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE evidence. Everything here is STATIC_ONLY."
+  "Did not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE evidence. Everything here is STATIC_ONLY.",
+  "Evidence files not reachable in this checkout (coped; not treated as absent from the campaign): ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json, ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json, FLASH_DOCTOR_EXPERT_BANK_SCREEN_FULL_L44.json, FLASH_LAYER10_CRITICAL_PATH.json, FLASH_LAYER30_CRITICAL_PATH.json, FLASH_LAYER46_DISPATCH_LEDGER.json, FLASH_META_REPRESENTATION_SUB1.json, FLASH_NOETIC_ROUTER_SELECTION.json, FLASH_ORGAN_CENSUS.json"
  ],
  "observations": [
   {
@@ -1621,29 +707,16 @@
   "geometry": "gather_scatter",
   "launch": "fused_routed_dispatch",
   "launch_qualifier": "two static expert kernels (gate_up_swiglu, down) plus a static shared-expert path; not per-expert launches, not dense-with-mask.",
-  "meta_dense_rematerialization": false,
-  "meta_route_before_payload": true,
-  "meta_runtime_shape": "route -> latent decode -> fused gate/up/SwiGLU/down accumulation",
+  "meta_dense_rematerialization": null,
+  "meta_route_before_payload": null,
+  "meta_runtime_shape": null,
   "order": "route_before_payload",
   "p6_hash_graph_is_a_different_observed_form": {
    "launch": "per_expert_dispatch",
    "source": "qualification queue flash-p6-* exact_mutation / expected_eliminated_work",
    "synchronization": "dual_command_buffer_host_wait"
   },
-  "routed_path_kernels": [
-   "gemv_native_bf16_seq",
-   "moe_topk_gate",
-   "qwen_next_bf16_expert_gate_up_swiglu",
-   "qwen_next_bf16_expert_down",
-   "qwen_next_moe_weighted_sum",
-   "gemv_native_bf16_seq",
-   "gemv_native_bf16_seq",
-   "moe_batched_silu_mul",
-   "gemv_native_bf16_seq",
-   "gemv_native_bf16_seq",
-   "qwen_next_shared_expert_sigmoid_gate",
-   "qwen_next_moe_add_shared"
-  ],
+  "routed_path_kernels": [],
   "shared_expert": "static_always_on",
   "skeleton": "static_skeleton_expert_id"
  },
@@ -1681,31 +754,31 @@
   },
   {
    "adequate": "as the source-oracle graph this school reads",
-   "evidence_source": "pinned_snapshot",
+   "evidence_source": "unavailable",
    "path": "receipts/future/evidence/FLASH_LAYER46_DISPATCH_LEDGER.json",
    "role": "real dispatch topology for one Flash layer (35 rows, trace off)."
   },
   {
    "adequate": "as the byte ground",
-   "evidence_source": "pinned_snapshot",
+   "evidence_source": "unavailable",
    "path": "receipts/future/evidence/FLASH_ORGAN_CENSUS.json",
    "role": "routed_experts is the dominant byte family."
   },
   {
    "adequate": "as the intended runtime_shape",
-   "evidence_source": "pinned_snapshot",
+   "evidence_source": "unavailable",
    "path": "receipts/future/evidence/FLASH_META_REPRESENTATION_SUB1.json",
    "role": "family_budget + accelerator_contract.route_before_payload."
   },
   {
    "adequate": "as the live candidate list (count derived, not pinned)",
-   "evidence_source": "pinned_snapshot",
+   "evidence_source": "unavailable",
    "path": "receipts/future/evidence/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
    "role": "flash-p6-*, flash-routed-*, flash-compact-moe-*, flash-hc-*, flash-router-topk-fusion."
   },
   {
    "adequate": "as a law citation; magnitudes are Qwen3.8 Metal and are not restated",
-   "evidence_source": "pinned_snapshot",
+   "evidence_source": "unavailable",
    "path": "receipts/future/evidence/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json",
    "role": "qualitative law: a dispatch is not a unit of cost."
   }
@@ -1732,12 +805,8 @@
    "already_named_by": "tools/future/expert_bank_school.py STORAGE axis",
    "grounding": {
     "census_family": "routed_experts",
-    "cosine_mean": 0.003834665467747213,
-    "shape_from_largest_tensor": [
-     512,
-     1280,
-     2560
-    ]
+    "cosine_mean": null,
+    "shape_from_largest_tensor": null
    },
    "id": "RW-INDEPENDENT-W-E",
    "layer46_status": "not a dispatch repeat: layer-46 gathers selected tiles inside two kernels. the independence that remains is the payload.",
@@ -1747,20 +816,7 @@
   {
    "already_named_by": "COMPUTE-ONE-X-MANY-EXPERTS",
    "grounding": {
-    "kernels_on_routed_path": [
-     "gemv_native_bf16_seq",
-     "moe_topk_gate",
-     "qwen_next_bf16_expert_gate_up_swiglu",
-     "qwen_next_bf16_expert_down",
-     "qwen_next_moe_weighted_sum",
-     "gemv_native_bf16_seq",
-     "gemv_native_bf16_seq",
-     "moe_batched_silu_mul",
-     "gemv_native_bf16_seq",
-     "gemv_native_bf16_seq",
-     "qwen_next_shared_expert_sigmoid_gate",
-     "qwen_next_moe_add_shared"
-    ]
+    "kernels_on_routed_path": []
    },
    "id": "RW-SAME-X-MANY-EXPERTS",
    "layer46_status": "DISPATCH FUSED: qwen_next_bf16_expert_gate_up_swiglu takes route_ids + mlp_input + expert_gate_up as one kernel. remaining repeat is k independent weight streams, not k launches.",
@@ -1794,7 +850,7 @@
    "already_named_by": "static_skeleton shared_expert STATIC; router config shared_expert_sigmoid_is_not_router_selection",
    "grounding": {
     "census_family": "shared_expert",
-    "router_flag": true
+    "router_flag": null
    },
    "id": "RW-SHARED-EXPERT-NOT-A-REPEAT-OF-THE-BANK",
    "layer46_status": "six kernels (gate, up, silu_mul, down, scalar, sigmoid) plus qwen_next_moe_add_shared. always present in the ledger, independent of route_ids.",
@@ -1824,7 +880,7 @@
   {
    "already_named_by": "COMPUTE-CROSS-LAYER-REUSED-TRANSFORM",
    "grounding": {
-    "ledger_layer": 46
+    "ledger_layer": null
    },
    "id": "RW-CROSS-LAYER-PROJECT-X-AGAIN",
    "layer46_status": "NOT VISIBLE in a single-layer ledger. named so it is not mistaken for a layer-46 dispatch split.",
@@ -1834,9 +890,9 @@
   {
    "already_named_by": "FLASH_META expert_bank.why_not_global_sharing",
    "grounding": {
-    "cosine_mean": 0.003834665467747213,
-    "meta_program": "existing Flash route-conditioned shared/output basis screens are unhealthy; share the decoder program, not a single expert basis",
-    "rank_1_energy": 0.002715124050155282
+    "cosine_mean": null,
+    "meta_program": null,
+    "rank_1_energy": null
    },
    "id": "RW-WHAT-IS-NOT-REPEATED",
    "layer46_status": "do not read independent W_e as 'the same computation ran 512 times'. cosine ~0 and rank-1 energy ~0.003 say the operators are not copies. the repeated object is the *schedule shape* (SwiGLU against one x, then linear combine), not the values.",
@@ -1845,7 +901,7 @@
   }
  ],
  "routed_candidates": {
-  "count": 20,
+  "count": 0,
   "count_is_derived": true,
   "prefixes": [
    "flash-p6-",
@@ -1859,406 +915,12 @@
    "not_a_measurement": true,
    "provenance": "read_from_receipt",
    "receipt": "ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
-   "value": 49
+   "value": 0
   },
-  "rows": [
-   {
-    "affected_physical_region": "Flash compact source-BF16 routed/shared MoE epilogue",
-    "blocked_reason": "source-independent Flash NX and protected complete-token capability are not qualified",
-    "candidate_id": "flash-compact-moe-bf16-vec4",
-    "exact_mutation": {
-     "source_oracle_controls": {
-      "HAWKING_FLASH_MOE_VEC4": "1"
-     }
-    },
-    "expected_active_byte_change": "unchanged compact source-BF16 weights and activation bytes",
-    "expected_dispatch_reduction": "0; gate/up and down-to-HC topology is unchanged",
-    "expected_eliminated_work": "scalar BF16/FP32 load and pointer overhead in compact gate/up and direct down-to-HC reductions",
-    "expected_gpu_ns_mechanism": "exact-order vec4 loads preserve scalar accumulation while improving contiguous source traffic",
-    "expected_intermediate_byte_reduction": "0; diagnostic outputs and the resident activation contract are unchanged",
-    "scope_tags": [
-     "MODEL_LOCAL"
-    ],
-    "status": "BLOCKED"
-   },
-   {
-    "affected_physical_region": "Flash routed/shared expert output epilogue",
-    "blocked_reason": "Flash source-independent compact expert consumer is not yet qualified",
-    "candidate_id": "flash-compact-moe-epilogue",
-    "exact_mutation": {
-     "source_oracle_controls": {
-      "HAWKING_FLASH_MOE_GEO": "compact"
-     }
-    },
-    "expected_active_byte_change": "reduce only if route-conditioned compact body is independently verified",
-    "expected_dispatch_reduction": "measure compact organ ledger; no assumed reduction",
-    "expected_eliminated_work": "dense expert materialization and routed/shared output staging",
-    "expected_gpu_ns_mechanism": "direct compact expert accumulation into residual/final-state output",
-    "expected_intermediate_byte_reduction": "remove compact routed/shared accumulator materialization",
-    "scope_tags": [
-     "MODEL_LOCAL"
-    ],
-    "status": "BLOCKED"
-   },
-   {
-    "affected_physical_region": "Flash HC output, block projection, router, shared scalar, top-K",
-    "blocked_reason": "source-independent Flash NX and protected capability are not qualified",
-    "candidate_id": "flash-hc-router-topk-fusion",
-    "exact_mutation": {
-     "source_oracle_controls": {
-      "HAWKING_FLASH_HC_ROUTER_FUSED": "1"
-     }
-    },
-    "expected_active_byte_change": "unchanged source BF16; compact NX active bytes remain unqualified",
-    "expected_dispatch_reduction": "reduce by two in the layer organ; verify graph ledger",
-    "expected_eliminated_work": "MLP-HC intermediate plus two routing dispatch boundaries",
-    "expected_gpu_ns_mechanism": "reuse one staged HC output across block logits, router logits, scalar, and top-K",
-    "expected_intermediate_byte_reduction": "remove staged MLP input and router preparation intermediates",
-    "scope_tags": [
-     "MODEL_LOCAL"
-    ],
-    "status": "STATIC_ONLY"
-   },
-   {
-    "affected_physical_region": "Flash HyperConnection shared reduction",
-    "blocked_reason": "Flash complete source-independent NX executable is not qualified",
-    "candidate_id": "flash-hc-staged-threadgroup",
-    "exact_mutation": {
-     "source_oracle_controls": {
-      "HAWKING_FLASH_HC_STAGED": "1"
-     }
-    },
-    "expected_active_byte_change": "unchanged source BF16 footprint; NX active bytes unqualified",
-    "expected_dispatch_reduction": "0; organ-level staging candidate",
-    "expected_eliminated_work": "repeated 2,560-wide norm recomputation per output element",
-    "expected_gpu_ns_mechanism": "one threadgroup reduction consumed by all HC output streams",
-    "expected_intermediate_byte_reduction": "remove redundant HC norm reads/writes",
-    "scope_tags": [
-     "MODEL_LOCAL"
-    ],
-    "status": "BLOCKED"
-   },
-   {
-    "affected_physical_region": "Flash P6 BF16-to-E4M3FN activation quantization",
-    "blocked_reason": "Flash complete source-independent NX is not qualified and the P6 quantizer candidate has no byte-exact parity/coherence and protected-latency receipt",
-    "candidate_id": "flash-p6-act-quant-simdgroup",
-    "exact_mutation": {
-     "source_oracle_controls": {
-      "HAWKING_DSV4F_P6_ACT_QUANT_SIMD": "1"
-     }
-    },
-    "expected_active_byte_change": "unchanged source BF16 reads and E4M3FN/UE8M0 output bytes; NX active bytes unqualified",
-    "expected_dispatch_reduction": "0; the quantizer remains one dispatch per source activation, with wider block ownership",
-    "expected_eliminated_work": "one serial thread per 128-wide activation block across the routed/shared MoE projections",
-    "expected_gpu_ns_mechanism": "one SIMD-group owns each 128-wide block with packed BF16/uchar4 loads and the same finite-table RNE encoding",
-    "expected_intermediate_byte_reduction": "0; quantized bytes and UE8M0 scale bytes retain the existing buffers",
-    "scope_tags": [
-     "MODEL_LOCAL"
-    ],
-    "status": "BLOCKED"
-   },
-   {
-    "affected_physical_region": "Flash P6 fixed-seven down activation quantization wave",
-    "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
-    "candidate_id": "flash-p6-batched-down-qat",
-    "exact_mutation": {
-     "source_oracle_controls": {
-      "HAWKING_DSV4F_P6_BATCHED_DOWN_QAT": "1"
-     }
-    },
-    "expected_active_byte_change": "unchanged BF16 SwiGLU inputs, E4M3FN quantized outputs, and E8M0FNU scale bytes",
-    "expected_dispatch_reduction": "replace seven down-QAT dispatches with one fixed-seven indirect dispatch; P6 structural topology falls from 60 to 54 while compute-encoder count is unchanged",
-    "expected_eliminated_work": "six routed and one shared independent BF16-to-E4M3FN/E8M0 activation-quantization launch boundaries",
-    "expected_gpu_ns_mechanism": "one logical source 128-value block per thread reads one of six routed or one shared scratch tensor through a fixed indirect record; block arithmetic and byte order match the authority quantizer",
-    "expected_intermediate_byte_reduction": "same seven quantized activation buffers and seven E8M0FNU scale buffers remain the downstream ABI; only pointer binding is packed",
-    "scope_tags": [
-     "MODEL_LOCAL"
-    ],
-    "status": "BLOCKED"
-   },
-   {
-    "affected_physical_region": "Flash P6 routed FP4 W2 plus shared FP8 W2 and BF16 combine",
-    "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified; this full composition still requires matched parity/coherence and protected latency",
-    "candidate_id": "flash-p6-fused-down-shared-combine",
-    "exact_mutation": {
-     "source_oracle_controls": {
-      "HAWKING_DSV4F_P6_FP4_DOWN_BF16_FUSED": "1",
-      "HAWKING_DSV4F_P6_FP4_DOWN_SHARED_COMBINE_FUSED": "1"
-     }
-    },
-    "expected_active_byte_change": "unchanged routed FP4 weights, shared FP8 weights, E8M0 scales, and seven activation-quantized input buffers; inactive scratch allocation is reduced by 344022 structural bytes and transient down traffic is reduced",
-    "expected_dispatch_reduction": "replace the fifteen downstream W2/cast/combine dispatches with one source-order fused launch; fixed-hash P6 structural topology falls from 60 to 46 while the seven authoritative QAT launches remain",
-    "expected_eliminated_work": "six routed FP4 W2 dispatches, one shared FP8 W2 dispatch, seven FP32-to-BF16 cast dispatches, one final combine dispatch, and the routed/shared down intermediates",
-    "expected_gpu_ns_mechanism": "one 256-thread row launch reads six resident indirect FP4 records, computes source-order FP4 rows with BF16 round-trips, computes the shared FP8 row with 128-value blocks, then performs the fixed-six numeric-order BF16 combine directly into output",
-    "expected_intermediate_byte_reduction": "bypass six routed down_f32/down_bf16 buffers and the shared down FP32/BF16 staging at the consumer; inactive authority scratch is one-byte guarded storage, while QAT bytes and final caller-owned BF16 output remain explicit",
-    "scope_tags": [
-     "MODEL_LOCAL"
-    ],
-    "status": "BLOCKED"
-   },
-   {
-    "affected_physical_region": "Flash reusable P6 composed latency stack",
-    "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified; composition interactions require a fresh parity/coherence and latency receipt",
-    "candidate_id": "flash-p6-fused-epilogue-stack",
-    "exact_mutation": {
-     "source_oracle_controls": {
-      "HAWKING_DSV4F_FP4_GATE_UP_SWIGLU_FUSED": "1",
-      "HAWKING_DSV4F_FP8_SHARED_GATE_UP_SWIGLU_FUSED": "1",
-      "HAWKING_DSV4F_P6_BATCHED_DOWN_QAT": "1",
-      "HAWKING_DSV4F_P6_FP4_DOWN_BF16_FUSED": "1",
-      "HAWKING_DSV4F_P6_FP4_DOWN_BF16_SIMD": "0",
-      "HAWKING_DSV4F_P6_FP4_DOWN_SHARED_COMBINE_FUSED": "1",
-      "HAWKING_DSV4F_P6_FP4_GATE_UP_SWIGLU_SIMD": "0",
-      "HAWKING_DSV4F_P6_PREFIX_CONCURRENT": "1",
-      "HAWKING_DSV4F_P6_SINGLE_CB": "1"
-     }
-    },
-    "expected_active_byte_change": "unchanged source FP4/FP8 weights, E8M0 scales, route IDs/weights, and BF16 final output contract",
-    "expected_dispatch_reduction": "P6 structural target is 60 to 7 dispatches, 10 to 4 compute encoders, and 2 to 1 command buffer on the hash path; the fixed-seven QAT producer and full down fusion share one serial dependency encoder, so measure interaction rather than summing isolated wins",
-    "expected_eliminated_work": "the independently bounded routed/shared gate-up epilogues, seven-to-one down activation-quantization wave, full routed FP4/shared FP8 down-and-combine tail, one prefix encoder, and one hash-route command-buffer wait",
-    "expected_gpu_ns_mechanism": "compose the existing guarded primitives with explicit dependency waves; no new arithmetic or representation is introduced by the stack row",
-    "expected_intermediate_byte_reduction": "retain only the output buffers required by the fixed-six combine contract; the full down fusion bypasses routed/shared down staging while dormant authority scratch remains allocated for matched A/B compatibility",
-    "scope_tags": [
-     "MODEL_LOCAL"
-    ],
-    "status": "BLOCKED"
-   },
-   {
-    "affected_physical_region": "Flash P6 command-buffer topology after route resolution",
-    "blocked_reason": "Flash complete source-independent NX is not qualified and the single-command-buffer path has no matched parity/coherence and protected-latency receipt",
-    "candidate_id": "flash-p6-hash-single-command-buffer",
-    "exact_mutation": {
-     "source_oracle_controls": {
-      "HAWKING_DSV4F_P6_SINGLE_CB": "1"
-     }
-    },
-    "expected_active_byte_change": "unchanged source BF16/FP4/FP8 bytes; NX active bytes unqualified",
-    "expected_dispatch_reduction": "hash path: 1 command buffer and wait instead of historical 2; learned path: 2 instead of 3; 60 dispatches remain unchanged",
-    "expected_eliminated_work": "one CPU-visible commit/wait between the device-resident up/SwiGLU wave and down/combine wave; on learned layers the same switch removes the post-residency phase fence",
-    "expected_gpu_ns_mechanism": "append dependency-ordered down/combine waves to the first P6 command buffer while preserving the route/readback residency boundary, explicit wave boundaries, and Metal hazards",
-    "expected_intermediate_byte_reduction": "0; all routed/shared BF16 and route-control buffers remain resident",
-    "scope_tags": [
-     "MODEL_LOCAL"
-    ],
-    "status": "BLOCKED"
-   },
-   {
-    "affected_physical_region": "Flash P6 learned-route bounded expert source cache",
-    "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
-    "candidate_id": "flash-p6-learned-expert-cache-reuse",
-    "exact_mutation": {
-     "source_oracle_controls": {
-      "HAWKING_DSV4F_P6_LEARNED_EXPERT_CACHE_REUSE": "1",
-      "HAWKING_DSV4F_P6_LEARNED_READER_REUSE": "1"
-     }
-    },
-    "expected_active_byte_change": "unchanged source FP4/FP8 and activation bytes; overlapping routes reuse existing GPU weight buffers rather than uploading a second copy",
-    "expected_dispatch_reduction": "0; device dispatch topology, route-ID readback, and GPU upload boundaries are unchanged",
-    "expected_eliminated_work": "repeated source chunk materialization and GPU re-upload of expert bundles that overlap successive learned routes",
-    "expected_gpu_ns_mechanism": "avoid repeated host source reads and GPU buffer uploads before the expert wave when route overlap exists; route overlap, allocation bytes, and complete-token wall time are the falsifiers",
-    "expected_intermediate_byte_reduction": "retain at most the exact six-bundle hot capacity plus the same six-entry GPU weight handle cache; pre-route FP4 placeholders are one byte per pointer component, and no dense or decoded representation is added",
-    "scope_tags": [
-     "MODEL_LOCAL"
-    ],
-    "status": "BLOCKED"
-   },
-   {
-    "affected_physical_region": "Flash P6 learned-route source admission boundary",
-    "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
-    "candidate_id": "flash-p6-learned-reader-reuse",
-    "exact_mutation": {
-     "source_oracle_controls": {
-      "HAWKING_DSV4F_P6_LEARNED_READER_REUSE": "1"
-     }
-    },
-    "expected_active_byte_change": "unchanged source FP4/FP8 and activation bytes; no decoded weights are retained by the reader",
-    "expected_dispatch_reduction": "0; device dispatch topology and the selected-ID residency boundary are unchanged",
-    "expected_eliminated_work": "repeated sealed-reader manifest/index admission and metadata-map construction on each changed learned route",
-    "expected_gpu_ns_mechanism": "remove repeated host admission ceremony before the second GPU wave while preserving the manifest-seal guard, source reads, uploads, and route-ID readback",
-    "expected_intermediate_byte_reduction": "0; the candidate retains a metadata-only reader and still creates a fresh bounded six-expert cache",
-    "scope_tags": [
-     "MODEL_LOCAL"
-    ],
-    "status": "BLOCKED"
-   },
-   {
-    "affected_physical_region": "Flash P6 Gate and activation-quantization prefix",
-    "blocked_reason": "Flash complete source-independent NX is not qualified and the shared prefix has no matched parity/coherence and protected-latency receipt",
-    "candidate_id": "flash-p6-prefix-concurrent-wave",
-    "exact_mutation": {
-     "source_oracle_controls": {
-      "HAWKING_DSV4F_P6_PREFIX_CONCURRENT": "1"
-     }
-    },
-    "expected_active_byte_change": "unchanged source BF16 input, Gate BF16 weights, and quantizer output bytes",
-    "expected_dispatch_reduction": "0; Gate, QAT, and route dispatches remain unchanged",
-    "expected_eliminated_work": "one compute-encoder boundary between the independent Gate reduction and activation quantization",
-    "expected_gpu_ns_mechanism": "place Gate and activation quantization in one concurrent encoder because both only read the shared input and write disjoint outputs, then retain a separate route dependency boundary",
-    "expected_intermediate_byte_reduction": "0; Gate logits and E4M3FN/UE8M0 quantized buffers remain separate and source-visible",
-    "scope_tags": [
-     "MODEL_LOCAL"
-    ],
-    "status": "BLOCKED"
-   },
-   {
-    "affected_physical_region": "Flash P6A routed FP4 W2/down projection and BF16 boundary",
-    "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
-    "candidate_id": "flash-p6-routed-fp4-down-bf16-fused",
-    "exact_mutation": {
-     "source_oracle_controls": {
-      "HAWKING_DSV4F_P6_FP4_DOWN_BF16_FUSED": "1"
-     }
-    },
-    "expected_active_byte_change": "unchanged six routed FP4 W2 weight/scale buffers, per-expert QAT outputs, and final BF16 combine bytes; inactive routed down_f32 scratch is reduced by 98298 structural bytes",
-    "expected_dispatch_reduction": "reduce the fixed hash graph from 60 to 49 dispatches; P6 batch 2 falls from 22 to 11",
-    "expected_eliminated_work": "six routed W2 launches and six routed FP32-to-BF16 cast launches",
-    "expected_gpu_ns_mechanism": "one fixed-six indirect launch consumes the already-authoritative per-expert E4M3FN/UE8M0 QAT buffers, preserves FP4 block accumulation, and writes exact BF16 W2 outputs",
-    "expected_intermediate_byte_reduction": "routed down FP32 staging is bypassed; the existing six per-expert BF16 outputs remain the combine contract",
-    "scope_tags": [
-     "MODEL_LOCAL"
-    ],
-    "status": "BLOCKED"
-   },
-   {
-    "affected_physical_region": "Flash P6A fused routed FP4 W2/down occupancy",
-    "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
-    "candidate_id": "flash-p6-routed-fp4-down-bf16-simd",
-    "exact_mutation": {
-     "source_oracle_controls": {
-      "HAWKING_DSV4F_P6_FP4_DOWN_BF16_FUSED": "1",
-      "HAWKING_DSV4F_P6_FP4_DOWN_BF16_SIMD": "1"
-     }
-    },
-    "expected_active_byte_change": "unchanged routed FP4 W2 weights, E8M0 scales, per-expert QAT bytes, and BF16 output bytes",
-    "expected_dispatch_reduction": "0 relative to scalar fusion; one fixed-six indirect launch remains",
-    "expected_eliminated_work": "the same six routed W2 launches and six routed FP32-to-BF16 cast launches as scalar fusion while changing only row-reduction geometry",
-    "expected_gpu_ns_mechanism": "eight SIMDgroups per 256-threadgroup split each 32-value FP4 block across lanes, preserving source block order while isolating intra-block reduction association for an A/B",
-    "expected_intermediate_byte_reduction": "0 relative to scalar fusion; existing six per-expert BF16 combine buffers remain the contract",
-    "scope_tags": [
-     "MODEL_LOCAL"
-    ],
-    "status": "BLOCKED"
-   },
-   {
-    "affected_physical_region": "Flash P6A fixed-six routed FP4 gate/up/SwiGLU epilogue",
-    "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
-    "candidate_id": "flash-p6-routed-fp4-gate-up-swiglu-fused",
-    "exact_mutation": {
-     "source_oracle_controls": {
-      "HAWKING_DSV4F_FP4_GATE_UP_SWIGLU_FUSED": "1",
-      "HAWKING_DSV4F_P6_FP4_GATE_UP_SWIGLU_SIMD": "0"
-     }
-    },
-    "expected_active_byte_change": "unchanged six routed FP4 weight/scale buffers and activation bytes; inactive gate/up scratch allocation is reduced by 147432 structural bytes",
-    "expected_dispatch_reduction": "reduce P6 batch 1 from 38 to 9 and the fixed hash graph from 60 to 31 dispatches",
-    "expected_eliminated_work": "six routed W1 launches, six routed W3 launches, twelve routed FP32-to-BF16 casts, and six routed SwiGLU launches",
-    "expected_gpu_ns_mechanism": "one fixed-six indirect-address launch performs paired source-order FP4 reductions, exact BF16 round-trips, clamp/SwiGLU, and device route weighting; explicit read/write residency covers every indirect buffer",
-    "expected_intermediate_byte_reduction": "routed gate/up FP32 and BF16 staging is replaced by one-byte guarded placeholders; the live per-expert BF16 SwiGLU output contract remains explicit",
-    "scope_tags": [
-     "MODEL_LOCAL"
-    ],
-    "status": "BLOCKED"
-   },
-   {
-    "affected_physical_region": "Flash P6A fused routed FP4 gate/up/SwiGLU occupancy",
-    "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
-    "candidate_id": "flash-p6-routed-fp4-gate-up-swiglu-simd",
-    "exact_mutation": {
-     "source_oracle_controls": {
-      "HAWKING_DSV4F_FP4_GATE_UP_SWIGLU_FUSED": "1",
-      "HAWKING_DSV4F_P6_FP4_GATE_UP_SWIGLU_SIMD": "1"
-     }
-    },
-    "expected_active_byte_change": "unchanged FP4 source bytes and routed output bytes",
-    "expected_dispatch_reduction": "0 relative to scalar fusion; one fixed-six launch remains",
-    "expected_eliminated_work": "the same routed P6 epilogue dispatch and staging work as the scalar-fused candidate while changing only row reduction geometry",
-    "expected_gpu_ns_mechanism": "eight SIMDgroups per threadgroup split each 32-value FP4 block across lanes, with an explicit independent A/B against scalar fusion",
-    "expected_intermediate_byte_reduction": "0 relative to scalar fusion; per-expert BF16 output pointers and source route slots remain unchanged",
-    "scope_tags": [
-     "MODEL_LOCAL"
-    ],
-    "status": "BLOCKED"
-   },
-   {
-    "affected_physical_region": "Flash P6 routed-expert FP4 matvec",
-    "blocked_reason": "Flash complete source-independent NX is not qualified and the P6 FP4 candidate has no NumericParity/coherence and protected-latency receipt",
-    "candidate_id": "flash-p6-routed-fp4-simdgroup",
-    "exact_mutation": {
-     "source_oracle_controls": {
-      "HAWKING_DSV4F_P6_FP4_SIMD": "1"
-     }
-    },
-    "expected_active_byte_change": "unchanged source FP4/FP8 bytes; NX active bytes unqualified",
-    "expected_dispatch_reduction": "0; six expert waves remain concurrent and the 18 matvec dispatches remain unchanged",
-    "expected_eliminated_work": "one serial thread per routed-expert output row across the 18 W1/W3/W2 FP4 projections per full MoE layer",
-    "expected_gpu_ns_mechanism": "one 64-lane-x-4-row threadgroup uses packed uchar4 loads and SIMDgroup split-K partials before a deterministic row reduction",
-    "expected_intermediate_byte_reduction": "0; packed FP4 weights, E8M0 scales, activation bytes, and output buffers retain their existing ABI",
-    "scope_tags": [
-     "MODEL_LOCAL"
-    ],
-    "status": "BLOCKED"
-   },
-   {
-    "affected_physical_region": "Flash P6 shared-expert FP8 matvec",
-    "blocked_reason": "Flash complete source-independent NX is not qualified and the P6 FP8 candidate has no NumericParity/coherence and protected-latency receipt",
-    "candidate_id": "flash-p6-shared-fp8-simdgroup",
-    "exact_mutation": {
-     "source_oracle_controls": {
-      "HAWKING_DSV4F_P6_FP8_SIMD": "1"
-     }
-    },
-    "expected_active_byte_change": "unchanged source FP8 bytes; NX active bytes unqualified",
-    "expected_dispatch_reduction": "0; the shared W1/W3/W2 matvec dispatches remain unchanged",
-    "expected_eliminated_work": "one serial thread per shared-expert output row across the three W1/W3/W2 FP8 projections per full MoE layer",
-    "expected_gpu_ns_mechanism": "one 256-threadgroup assigns eight SIMDgroups to the source 128-wide blocks and combines block partials in source block order",
-    "expected_intermediate_byte_reduction": "0; FP8 weights, E8M0 scales, activation bytes, and output buffers retain their existing ABI",
-    "scope_tags": [
-     "MODEL_LOCAL"
-    ],
-    "status": "BLOCKED"
-   },
-   {
-    "affected_physical_region": "Flash routed FP4 gate/up/SwiGLU epilogue",
-    "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
-    "candidate_id": "flash-routed-fp4-gate-up-swiglu-fused",
-    "exact_mutation": {
-     "source_oracle_controls": {
-      "HAWKING_DSV4F_FP4_GATE_UP_SWIGLU_FUSED": "1"
-     }
-    },
-    "expected_active_byte_change": "unchanged FP4 weight and activation reads; lower transient intermediate footprint",
-    "expected_dispatch_reduction": "reduce the routed gate/up/SwiGLU sequence from five dispatches to one",
-    "expected_eliminated_work": "two FP32-to-BF16 staging dispatches and one standalone routed SwiGLU dispatch per layer",
-    "expected_gpu_ns_mechanism": "pair the two source-order FP4 reductions and consume their explicit BF16 round-trips in one kernel",
-    "expected_intermediate_byte_reduction": "remove routed gate/up FP32 and BF16 staging; retain the BF16 SwiGLU output contract",
-    "scope_tags": [
-     "MODEL_LOCAL"
-    ],
-    "status": "BLOCKED"
-   },
-   {
-    "affected_physical_region": "Flash router logits, top-K, and route weights",
-    "blocked_reason": "source-independent Flash route consumer and protected capability are not qualified",
-    "candidate_id": "flash-router-topk-fusion",
-    "exact_mutation": {
-     "source_oracle_controls": {
-      "HAWKING_FLASH_ROUTER_TOPK_FUSED": "1"
-     }
-    },
-    "expected_active_byte_change": "route metadata remains dynamic; expert active bytes unchanged until NX closes",
-    "expected_dispatch_reduction": "reduce by one in the layer organ; verify graph ledger",
-    "expected_eliminated_work": "one router/top-K dispatch boundary and router intermediate",
-    "expected_gpu_ns_mechanism": "fuse route selection while preserving exact tie and top-K contract",
-    "expected_intermediate_byte_reduction": "remove router logits/selection staging where outputs remain observable",
-    "scope_tags": [
-     "MODEL_LOCAL"
-    ],
-    "status": "BLOCKED"
-   }
-  ]
+  "rows": []
  },
  "schema": "hawking.future.moe_physical.v1",
- "seal_sha256": "89a04612a160252857096fdfd22230798f201978a9826953f8ab86bf5664b1f2",
+ "seal_sha256": "f3fbb3a93fee94708d62c006642fa5a0d2ce1f8494d355343a45c53f835633d5",
  "skeleton_cross_reference": {
   "expert_id_is_permitted": true,
   "flash_moe_component": "tools/future/static_skeleton.py::flash_moe_component_skeleton already models Flash router STATIC + expert bank SLOT_INDEXED on EXPERT_ID + shared expert STATIC. this school does not fork it.",

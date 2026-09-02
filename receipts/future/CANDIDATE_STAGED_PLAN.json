@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T05:17:50Z",
+  "recorded_at": "2026-09-02T09:19:25Z",
   "recorded_by": "tools/future/candidate_planner.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -11229,7 +11229,7 @@
     "pairing": "ABAB interleaving within one protected lease",
     "warmup_requests": 2
    },
-   "repo_root": "/Users/scammermike/Downloads/hawking",
+   "repo_root": "/Users/scammermike/.claude-grok/worktrees/s4-tools-future-under-10s-20260902-045214",
    "static_preflight": {
     "error_count": 0,
     "physical_correctness_proven": false
@@ -14396,7 +14396,7 @@
    "path": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
    "role": "live physical qualification queue (disk authority)",
    "schema": "hawking.accelerator.physical_qualification_queue.v1",
-   "visible_in_this_worktree": true
+   "visible_in_this_worktree": false
   },
   {
    "adequate_as": "scoreboard of already-run receipts",
@@ -14775,7 +14775,7 @@
   }
  ],
  "schema": "hawking.future.candidate_planner.v1",
- "seal_sha256": "0177593d39f73f52b191094e0dce3d092d7802a75e79968c3ca220c398376521",
+ "seal_sha256": "7b0a3948ea98bb6d9a66fbba490e4a05a868e9271d8d887d8a44f1ffb6f1a0fd",
  "staged_factorial_plan": {
   "blocked_unscheduled": [
    {

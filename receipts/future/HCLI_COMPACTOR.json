@@ -6,7 +6,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T21:20:06Z",
+  "recorded_at": "2026-09-02T09:26:04Z",
   "recorded_by": "tools/future/hcli_compactor.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -6736,7 +6736,7 @@
  "evidence_class": "STATIC_ONLY",
  "gpu_authority": false,
  "grade_is_not": "textual similarity",
- "kernel_resolved_to": "/Users/scammermike/Downloads/hawking/receipts/future/HCLI_MISSION_KERNEL.json",
+ "kernel_resolved_to": "/Users/scammermike/.claude-grok/worktrees/x1-physicalgraph-heterogeneous-depth-20260902-045606/receipts/future/HCLI_MISSION_KERNEL.json",
  "n_iterations_after": 172,
  "n_iterations_before": 861,
  "negative_controls": {
@@ -6985,6 +6985,6 @@
  },
  "question": "Can mission state be compacted without the resident losing what it knows?",
  "schema": "hawking.future.hcli_compactor.v1",
- "seal_sha256": "f7ff3a6ae849adec024f6b1a64f0f9a58c068f254e5b129bc121d19b7084db45",
+ "seal_sha256": "aa196debf28e7faa0216cfb379f8e9e104b2fa98ab3e19d0abf8be9467c9fa45",
  "what_this_module_does_not_do": "choose the next hypothesis, representation, or experiment. The resident owns those. Compaction copies load-bearing state and discards repeated prose, obsolete deliberation, and degenerate tails."
 }

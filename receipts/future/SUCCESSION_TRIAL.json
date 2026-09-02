@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:27:59Z",
+  "recorded_at": "2026-09-02T09:38:59Z",
   "recorded_by": "tools/future/succession_trial.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -17,10 +17,10 @@
   "census": {
    "census_path": "receipts/future/evidence/HCLI_MODELLAKE_FLASH_CENSUS.json",
    "census_present": true,
-   "in_specimens_entries": false,
+   "in_specimens_entries": true,
    "in_verified_receipts": true,
-   "n_specimens_entries": 5,
-   "note": "the Flash census specimens.entries list is a short snapshot and does not include this slug; verified_receipts names the manifest",
+   "n_specimens_entries": 49,
+   "note": null,
    "specimens_entries_truncated": false,
    "verified_receipt": {
     "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3-0.6B@c1899de289a0.json",
@@ -63,10 +63,10 @@
    },
    {
     "chosen": false,
-    "in_partial": [
+    "in_partial": [],
+    "in_specimens": [
      "Qwen--Qwen3-Coder-30B-A3B-Instruct@b2cff646eb4b"
     ],
-    "in_specimens": [],
     "slug_prefix": "Qwen--Qwen3-Coder-30B-A3B",
     "why_not": "Qwen3-Coder-30B-A3B is downloading into ModelLake partial/; it is not a published specimens/ body this trial can load."
    }
@@ -202,7 +202,7 @@
   "Flash-Next and Coder-30B inspected and rejected with disk reasons"
  ],
  "gpu_authority": false,
- "head": "d777f6dccc3ded44142823f5e1cfb3a8ad031528",
+ "head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
  "incumbent": {
   "artifact_path": "/Users/scammermike/noetic/NOETIC_PARENT_A",
   "config_digest": "2979da8f8d30d0965ef6629b6df47e82cf5a7bb99c9ffc6531fb308292c4cf7e",
@@ -588,9 +588,9 @@
   },
   {
    "path": "hcli/hawking-native.sealed-3.14.json",
-   "path_taken": "disk",
+   "path_taken": "git_head",
    "present_in_head": true,
-   "present_on_disk": true,
+   "present_on_disk": false,
    "reused": true,
    "what": "sealed Qwen27 identity consumed via fallback_resident"
   }
@@ -627,7 +627,7 @@
   "workunit": "one CPU_ANALYSIS unit; real ModelLake child; independent judge; Qwen27 restorable; PROMOTE unreachable"
  },
  "schema": "hawking.future.succession_trial.v1",
- "seal_sha256": "23e810827c1886035a35127ca5da94f467dc45b5c6d68136741e7052016ae28f",
+ "seal_sha256": "34d78288f7c4aa57a0cd56b41f50db364b18e56a842b289aa37ef88addf9fd7f",
  "shadow": {
   "bound_exceeded_on_real_units": {
    "error": "child.different_specimen.Qwen--Qwen3-0.6B@c1899de289a0: cloned workunits 26 exceed bound.max_cloned_workunits 1",

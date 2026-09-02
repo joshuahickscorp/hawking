@@ -13,7 +13,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:27:21Z",
+  "recorded_at": "2026-09-02T09:38:58Z",
   "recorded_by": "tools/future/status_causality.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -349,7 +349,7 @@
    {
     "calls_emit": true,
     "emit_fn": "run_static_preflight",
-    "gap": "emits a campaign-consequential status without probe_performed, direct_observation, interpretation, confidence, and alternatives on the stamped row",
+    "gap": null,
     "in_this_lane_write_scope": false,
     "module": "tools/future/qualification_pipeline.py",
     "name": "qualification_pipeline",
@@ -359,9 +359,9 @@
      "STATIC_ONLY"
     ],
     "receipt": "receipts/future/QUALIFICATION_PIPELINE.json",
-    "receipt_has_five_fields": false,
+    "receipt_has_five_fields": true,
     "receipt_state": "readable",
-    "records_five_fields": false,
+    "records_five_fields": true,
     "selection": "verdict decides whether physical work proceeds",
     "source_state": "readable",
     "unreadable": false,
@@ -411,11 +411,10 @@
    }
   ],
   "n_gates": 18,
-  "n_not_recording": 2,
-  "n_recording": 16,
+  "n_not_recording": 1,
+  "n_recording": 17,
   "n_unreadable": 0,
   "not_recording_five_fields": [
-   "qualification_pipeline",
    "flash_meta_teacher_capture_boundary"
   ],
   "odyssey_launch_criteria": [
@@ -567,14 +566,10 @@
    "flash_nx_audit",
    "odyssey2_law_store",
    "contamination",
+   "qualification_pipeline",
    "protected_scheduler"
   ],
   "remainder": [
-   {
-    "module": "tools/future/qualification_pipeline.py",
-    "name": "qualification_pipeline",
-    "why_not_wired": "emits a campaign-consequential status without probe_performed, direct_observation, interpretation, confidence, and alternatives on the stamped row"
-   },
    {
     "module": "crates/hawking-core/examples/flash_meta_teacher_trace.rs",
     "name": "flash_meta_teacher_capture_boundary",
@@ -626,7 +621,6 @@
   "the routine only scanned receipts on demand; emit() is the emit-time entry point a gate calls as it stamps a status"
  ],
  "gates_not_recording_five_fields": [
-  "qualification_pipeline",
   "flash_meta_teacher_capture_boundary"
  ],
  "gates_recording_five_fields": [
@@ -645,6 +639,7 @@
   "flash_nx_audit",
   "odyssey2_law_store",
   "contamination",
+  "qualification_pipeline",
   "protected_scheduler"
  ],
  "gates_unreadable": [],
@@ -866,7 +861,6 @@
   "known receipts unreadable in this checkout: 0",
   "a status whose probe is not recorded is UNTESTED, not OVERREACHING",
   "coverage is a list of names, not a percentage; gates that do not record the five fields are named gaps",
-  "qualification_pipeline does not record the five fields at emit time",
   "flash_meta_teacher_capture_boundary does not record the five fields at emit time"
  ],
  "odyssey_iii": {
@@ -999,7 +993,7 @@
    "schema": "hawking.future.flash_nx_audit.v1"
   },
   {
-   "n_keys": 17,
+   "n_keys": 18,
    "rel": "receipts/future/AUTONOMY_SCARS.json",
    "schema": "hawking.future.autonomy_scars.v1"
   },
@@ -1032,19 +1026,14 @@
  },
  "scan": {
   "n_overreaching": 5,
-  "n_rows": 24,
-  "n_supported": 19,
+  "n_rows": 23,
+  "n_supported": 18,
   "n_untested": 0,
   "statuses": [
    {
     "source": "receipts/future/evidence/FLASH_META_TEACHER_L4_CAPTURE_BOUNDARY.json",
     "status": "BLOCKED_NO_METAL_GPU",
     "verdict": "OVERREACHING"
-   },
-   {
-    "source": "receipts/future/METAL_REACHABILITY.json",
-    "status": "HOST_HAS_METAL_GPU",
-    "verdict": "SUPPORTED"
    },
    {
     "source": "receipts/future/SPECIMEN_VERIFICATION.json",
@@ -1160,7 +1149,7 @@
  },
  "scar": "STATUS_LABEL_LAUNDERED_AS_CAUSAL_CLAIM",
  "schema": "hawking.future.status_causality.v1",
- "seal_sha256": "b5c1f4268dc25ba9bda66c7c287c09ac20570ff37fc679a2455b2304834b55e3",
+ "seal_sha256": "965eafe7cb56cd2332599e6a89936d5bd49f051339897a831cd5682075d57774",
  "supported_fixtures": [
   {
    "alternatives": [

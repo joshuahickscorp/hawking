@@ -3,12 +3,12 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T05:26:54Z",
+  "recorded_at": "2026-09-02T09:25:34Z",
   "recorded_by": "tools/future/flash_nr_complete.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
- "branch": "odyssey-i",
+ "branch": "grok/s4-tools-future-under-10s-20260902-045214",
  "can_promote": false,
  "can_promote_reason": "prospective_meta_bpw is RESEARCH_TARGET and is never a promotion predicate; qualified_complete_physical_ebpw is UNKNOWN on this host; no self-contained executable byte ledger; no capability-preserving runtime; production path does not prove direct representation consumption (dense rematerialization unknown)",
  "claim_boundary": "Static sidecar artifact. No hardware measurement.",
@@ -881,14 +881,14 @@
   "census": {
    "filename": "FLASH_ORGAN_CENSUS.json",
    "present": true,
-   "resolved": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_ORGAN_CENSUS.json",
-   "resolved_via": "pinned"
+   "resolved": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_ORGAN_CENSUS.json",
+   "resolved_via": "primary_worktree"
   },
   "ebpw": {
    "filename": "FLASH_EBPW_BUDGET.json",
    "present": true,
    "resolved": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_EBPW_BUDGET.json",
-   "resolved_via": "headless"
+   "resolved_via": "primary_worktree"
   },
   "handoff": {
    "filename": "CODEX_ACCELERATOR_HANDOFF.json",
@@ -899,31 +899,31 @@
    "filename": "FLASH_COMPLETE_V0.BYTE_LEDGER.json",
    "present": true,
    "resolved": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json",
-   "resolved_via": "headless"
+   "resolved_via": "primary_worktree"
   },
   "meta": {
    "filename": "FLASH_META_REPRESENTATION_SUB1.json",
    "present": true,
-   "resolved": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_META_REPRESENTATION_SUB1.json",
-   "resolved_via": "pinned"
+   "resolved": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+   "resolved_via": "primary_worktree"
   },
   "nr_v2": {
    "filename": "FLASH_COMPLETE_V2.nr.json",
    "present": true,
-   "resolved": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_COMPLETE_V2.nr.json",
-   "resolved_via": "pinned"
+   "resolved": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V2.nr.json",
+   "resolved_via": "primary_worktree"
   },
   "nx_next": {
    "filename": "FLASH_NEXT_MACHINE.nx.json",
    "present": true,
-   "resolved": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_NEXT_MACHINE.nx.json",
-   "resolved_via": "pinned"
+   "resolved": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NEXT_MACHINE.nx.json",
+   "resolved_via": "primary_worktree"
   },
   "nx_v0": {
    "filename": "FLASH_COMPLETE_V0.nx.json",
    "present": true,
-   "resolved": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_COMPLETE_V0.nx.json",
-   "resolved_via": "pinned"
+   "resolved": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.nx.json",
+   "resolved_via": "primary_worktree"
   }
  },
  "gaps_closed": [
@@ -937,7 +937,7 @@
   "SLEEPING GPU WorkUnit for the physical measurement; STATIC_ANALYSIS WorkUnit for --build. Fail closed: no synthetic physical EBPW."
  ],
  "gpu_authority": false,
- "head": "7f3f1ffc5bce328d4fa3e2cdf84cb369d8033e39",
+ "head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
  "integration_points": [
   "tools/future/ebpw_categories.py (Quantity, can_promote, judge_dense_rematerialization) \u2014 imported, not forked",
   "tools/future/flash_nx_audit.py \u2014 NX completeness; not imported at runtime to avoid missing-ledger raises",
@@ -1015,28 +1015,28 @@
    "adequate": false,
    "gap": "composition snapshot, not a continuously rebuilt complete NR with derived per-organ promotion status and typed EBPW",
    "path": "receipts/future/evidence/FLASH_COMPLETE_V2.nr.json",
-   "resolved_via": "pinned",
+   "resolved_via": "primary_worktree",
    "what": "status=COMPLETE_HETEROGENEOUS_CANDIDATE_NOT_FOR_PROMOTION; COMPLETE_HETEROGENEOUS_CANDIDATE_NOT_FOR_PROMOTION; parts cover census families; compact routed/ngram not runtime_ready."
   },
   {
    "adequate": false,
    "gap": "metadata seal, not a billed runtime NX and not a type system",
    "path": "receipts/future/evidence/FLASH_COMPLETE_V0.nx.json",
-   "resolved_via": "pinned",
+   "resolved_via": "primary_worktree",
    "what": "status=SEALED_METADATA_ONLY_NOT_FOR_PROMOTION; SEALED_METADATA_ONLY; complete_system_ebpw null; lowers_nr at compile time."
   },
   {
    "adequate": false,
    "gap": "honest RESEARCH_TARGET; not typed against the other six quantities",
    "path": "receipts/future/evidence/FLASH_META_REPRESENTATION_SUB1.json",
-   "resolved_via": "pinned",
+   "resolved_via": "primary_worktree",
    "what": "status=PROSPECTIVE_META_ONLY; prospective_target is a description budget; physical_ebpw NULL_BY_RULE."
   },
   {
    "adequate": false,
    "gap": "census, not a candidate-per-organ NR",
    "path": "receipts/future/evidence/FLASH_ORGAN_CENSUS.json",
-   "resolved_via": "pinned",
+   "resolved_via": "primary_worktree",
    "what": "STRUCTURAL_METADATA_SCREEN; family_summary is the organ authority."
   },
   {
@@ -1087,7 +1087,7 @@
   ]
  },
  "schema": "hawking.future.flash_nr_complete.v1",
- "seal_sha256": "fd5d6f28d3605c7488abda9fc96b88d0b93dd48b77ed3d448e7450da6aa1835e",
+ "seal_sha256": "70d8fb87fe6c25e2d847d0ec70020a0c6ce20a8457590d5978e05ab1183a32ba",
  "selftest": {
   "billed_runtime_nr_accepted": true,
   "cross_category_arithmetic_message": "refused source_control_ebpw + prospective_meta_bpw: EBPW categories are not interchangeable",
@@ -1130,9 +1130,9 @@
   },
   "serialized_nr_information": {
    "category": "serialized_nr_information",
-   "evidence": "packed NR information payload is NOT_BUILT; composition document resolved_via=pinned path=/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_COMPLETE_V2.nr.json; document bytes are not serialized_nr_information",
+   "evidence": "packed NR information payload is NOT_BUILT; composition document resolved_via=primary_worktree path=/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V2.nr.json; document bytes are not serialized_nr_information",
    "present": false,
-   "source": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_COMPLETE_V2.nr.json",
+   "source": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V2.nr.json",
    "unit": "bytes of a packed NR information payload (not a composition document; not source-control EBPW)",
    "value": null
   },

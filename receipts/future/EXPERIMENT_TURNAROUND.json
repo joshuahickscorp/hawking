@@ -3,13 +3,13 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:29:33Z",
+  "recorded_at": "2026-09-02T09:27:10Z",
   "recorded_by": "tools/future/turnaround.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
  "cargo_evidence": {
-  "cargo_config_in_this_worktree": true,
+  "cargo_config_in_this_worktree": false,
   "default_members": [
    "crates/hawking",
    "crates/hawking-core",
@@ -18,6 +18,7 @@
    "crates/hawking-speculate",
    "crates/hawking-context",
    "crates/hawking-index",
+   "crates/hawking-index-query",
    "crates/hawking-orch",
    "crates/hawking-research",
    "crates/hawking-eval",
@@ -60,6 +61,7 @@
    "crates/hide-fleet",
    "crates/hawking-context",
    "crates/hawking-index",
+   "crates/hawking-index-query",
    "crates/hawking-orch",
    "crates/hawking-research",
    "crates/hawking-eval",
@@ -88,7 +90,7 @@
  "dominant_cost": {
   "among_measured_cpu_side": {
    "evidence": "largest median_ms among MEASURED_CPU_SIDE phases; process timings, not a GPU measurement",
-   "median_ms": 1895.537,
+   "median_ms": 1655.758,
    "phase": "verify"
   },
   "full_experiment_loop": {
@@ -96,7 +98,7 @@
    "not_a_measurement": true,
    "state": "UNKNOWN",
    "static_evidence": [
-    "inventory: 1021 .rs files, 529 in crates/hawking-core, 58 .metal files",
+    "inventory: 1030 .rs files, 531 in crates/hawking-core, 58 .metal files",
     "profile.release: lto='fat' codegen-units=1 incremental=None (None means cargo's release default: incremental off)",
     "profile.release-fast already exists for iteration (incremental=True, lto=False, codegen-units=16) and Cargo.toml forbids using it for TPS",
     "shared target-dir workspace/ops/build/rust is why this lane must not cargo build: it contends with the live campaign",
@@ -134,44 +136,56 @@
   "Did not touch hcli/ledger.py; ledger timing is a tempfile JSONL analog"
  ],
  "phase_wall_ms_cpu_side": {
-  "ledger": 0.353,
-  "next_decision": 0.016,
-  "receipt": 0.686,
-  "source_discovery": 55.872,
-  "transform": 50.383,
-  "verify": 1895.537
+  "ledger": 0.366,
+  "next_decision": 0.003,
+  "receipt": 0.705,
+  "source_discovery": 22.266,
+  "transform": 46.082,
+  "verify": 1655.758
  },
  "phases": [
   {
-   "max_ms": 56.197,
+   "iqr_ms": 0.223,
+   "max_ms": 52.203,
    "measurement_kind": "git_ls_tree_full_inventory",
-   "median_ms": 55.872,
-   "min_ms": 55.547,
-   "n": 2,
+   "median_ms": 22.266,
+   "min_ms": 22.14,
+   "n": 5,
    "name": "source_discovery",
-   "phase_wall_ms_cpu_side": 55.872,
-   "range_ms": 0.65,
+   "phase_wall_ms_cpu_side": 22.266,
+   "q1_ms": 22.231,
+   "q3_ms": 22.454,
+   "range_ms": 30.063,
    "reason": null,
    "samples_ms": [
-    56.197,
-    55.547
+    52.203,
+    22.454,
+    22.14,
+    22.266,
+    22.231
    ],
    "scoreboard_field": null,
    "state": "MEASURED_CPU_SIDE"
   },
   {
-   "max_ms": 51.122,
+   "iqr_ms": 0.755,
+   "max_ms": 46.784,
    "measurement_kind": "python_import_tools.future._common",
-   "median_ms": 50.383,
-   "min_ms": 49.644,
-   "n": 2,
+   "median_ms": 46.082,
+   "min_ms": 43.797,
+   "n": 5,
    "name": "transform",
-   "phase_wall_ms_cpu_side": 50.383,
-   "range_ms": 1.478,
+   "phase_wall_ms_cpu_side": 46.082,
+   "q1_ms": 45.839,
+   "q3_ms": 46.594,
+   "range_ms": 2.987,
    "reason": null,
    "samples_ms": [
-    51.122,
-    49.644
+    46.784,
+    43.797,
+    46.082,
+    45.839,
+    46.594
    ],
    "scoreboard_field": "transform_ns",
    "state": "MEASURED_CPU_SIDE"
@@ -247,69 +261,93 @@
    "state": "UNKNOWN"
   },
   {
-   "max_ms": 1910.093,
+   "iqr_ms": 10.417,
+   "max_ms": 1671.174,
    "measurement_kind": "pytest_collect_only_tools.future",
-   "median_ms": 1895.537,
-   "min_ms": 1880.982,
-   "n": 2,
+   "median_ms": 1655.758,
+   "min_ms": 1609.894,
+   "n": 5,
    "name": "verify",
-   "phase_wall_ms_cpu_side": 1895.537,
-   "range_ms": 29.111,
+   "phase_wall_ms_cpu_side": 1655.758,
+   "q1_ms": 1646.563,
+   "q3_ms": 1656.98,
+   "range_ms": 61.28,
    "reason": null,
    "samples_ms": [
-    1910.093,
-    1880.982
+    1655.758,
+    1609.894,
+    1656.98,
+    1646.563,
+    1671.174
    ],
    "scoreboard_field": "verification_ns",
    "state": "MEASURED_CPU_SIDE"
   },
   {
-   "max_ms": 0.702,
+   "iqr_ms": 0.066,
+   "max_ms": 1.017,
    "measurement_kind": "serialize_seal_fsync_tempfile",
-   "median_ms": 0.686,
-   "min_ms": 0.669,
-   "n": 2,
+   "median_ms": 0.705,
+   "min_ms": 0.551,
+   "n": 5,
    "name": "receipt",
-   "phase_wall_ms_cpu_side": 0.686,
-   "range_ms": 0.033,
+   "phase_wall_ms_cpu_side": 0.705,
+   "q1_ms": 0.678,
+   "q3_ms": 0.744,
+   "range_ms": 0.466,
    "reason": null,
    "samples_ms": [
-    0.702,
-    0.669
+    1.017,
+    0.678,
+    0.705,
+    0.551,
+    0.744
    ],
    "scoreboard_field": "receipt_ns",
    "state": "MEASURED_CPU_SIDE"
   },
   {
-   "max_ms": 0.445,
+   "iqr_ms": 0.082,
+   "max_ms": 0.441,
    "measurement_kind": "jsonl_append_fsync_tempfile",
-   "median_ms": 0.353,
-   "min_ms": 0.26,
-   "n": 2,
+   "median_ms": 0.366,
+   "min_ms": 0.311,
+   "n": 5,
    "name": "ledger",
-   "phase_wall_ms_cpu_side": 0.353,
-   "range_ms": 0.185,
+   "phase_wall_ms_cpu_side": 0.366,
+   "q1_ms": 0.321,
+   "q3_ms": 0.403,
+   "range_ms": 0.13,
    "reason": null,
    "samples_ms": [
-    0.445,
-    0.26
+    0.321,
+    0.441,
+    0.311,
+    0.403,
+    0.366
    ],
    "scoreboard_field": null,
    "state": "MEASURED_CPU_SIDE"
   },
   {
-   "max_ms": 0.027,
+   "iqr_ms": 0.002,
+   "max_ms": 0.03,
    "measurement_kind": "dominant_cost_and_lever_selection",
-   "median_ms": 0.016,
-   "min_ms": 0.005,
-   "n": 2,
+   "median_ms": 0.003,
+   "min_ms": 0.002,
+   "n": 5,
    "name": "next_decision",
-   "phase_wall_ms_cpu_side": 0.016,
-   "range_ms": 0.022,
+   "phase_wall_ms_cpu_side": 0.003,
+   "q1_ms": 0.003,
+   "q3_ms": 0.005,
+   "range_ms": 0.028,
    "reason": null,
    "samples_ms": [
-    0.027,
-    0.005
+    0.03,
+    0.005,
+    0.003,
+    0.003,
+    0.002
    ],
    "scoreboard_field": null,
    "state": "MEASURED_CPU_SIDE"
@@ -319,7 +357,7 @@
  "recovered_implementation": [
   {
    "path": "receipts/headless/ACCELERATOR_SCOREBOARD.json",
-   "present_here": true,
+   "present_here": false,
    "what": "Already defines experiment_turnaround_ns, total_experiment_turnaround_ns, and development_phases (transform_ns, compile_ns, load_ns, benchmark_ns, verification_ns, receipt_ns, total_experiment_turnaround_ns), currently all null. Disk is authority: those are the scoreboard names. The 11 lane names are a finer split."
   },
   {
@@ -344,33 +382,15 @@
   },
   {
    "path": ".cargo/config.toml",
-   "present_here": true,
+   "present_here": false,
    "what": "gitignored. On the parent checkout it sets build.target-dir = workspace/ops/build/rust. Shared cache is the contention this lane is forbidden from joining."
   }
  ],
- "repeats": 2,
+ "repeats": 5,
  "schema": "hawking.future.turnaround.v1",
  "scoreboard_presence": {
-  "development_phases_keys": [
-   "transform_ns",
-   "compile_ns",
-   "load_ns",
-   "benchmark_ns",
-   "verification_ns",
-   "receipt_ns",
-   "total_experiment_turnaround_ns"
-  ],
-  "present_in_this_worktree": true,
-  "sample_development_phases": {
-   "benchmark_ns": null,
-   "compile_ns": null,
-   "load_ns": null,
-   "receipt_ns": null,
-   "total_experiment_turnaround_ns": null,
-   "transform_ns": null,
-   "verification_ns": null
-  },
-  "schema": "hawking.accelerator.scoreboard.v1"
+  "present_in_this_worktree": false,
+  "reason": "sparse checkout; file is also untracked in git HEAD"
  },
  "scoreboard_schema": {
   "keys": [
@@ -392,7 +412,7 @@
   },
   "values_in_this_receipt": "all null \u2014 CPU timings are not ns GPU/build quantities"
  },
- "seal_sha256": "026cd5dd9ddd01e62deb0ff05c15bc68818378259aa760b2a981bb91c5b69478",
+ "seal_sha256": "e624b206ef2a743a723727710d8dc14842d82fa2ad1b4e85a47246d08a7ad319",
  "source_inventory": {
   "by_suffix": {
    ".bash": 1,
@@ -419,13 +439,13 @@
    ".ico": 1,
    ".journal": 12,
    ".js": 1,
-   ".json": 8879,
-   ".jsonl": 137,
+   ".json": 8937,
+   ".jsonl": 142,
    ".lean": 2,
    ".lock": 24,
    ".log": 5,
    ".m": 2,
-   ".md": 579,
+   ".md": 581,
    ".metal": 58,
    ".mjs": 2,
    ".npy": 79,
@@ -441,10 +461,10 @@
    ".pre-truncation-fix": 1,
    ".prompt_ids": 3,
    ".pt": 99,
-   ".py": 2241,
+   ".py": 2391,
    ".raw_module": 1,
    ".ref": 48,
-   ".rs": 1021,
+   ".rs": 1030,
    ".seconds": 8,
    ".sh": 47,
    ".sha256": 4,
@@ -452,10 +472,10 @@
    ".stderr": 126,
    ".stdout": 114,
    ".svg": 1,
-   ".swift": 1,
+   ".swift": 2,
    ".tag": 1,
    ".tgz": 1,
-   ".toml": 32,
+   ".toml": 33,
    ".ts": 38,
    ".tsx": 34,
    ".txt": 39,
@@ -465,18 +485,18 @@
    ".yaml": 2,
    ".yml": 1,
    ".zsh": 1,
-   "<none>": 95
+   "<none>": 94
   },
-  "file_count": 15456,
+  "file_count": 15681,
   "hawking_core_metal": 55,
-  "hawking_core_rs": 529,
+  "hawking_core_rs": 531,
   "metal": 58,
   "note": "git ls-tree sees the full committed tree; os.walk of this worktree would undercount because of sparse checkout",
-  "python": 2241,
-  "rust_rs": 1021,
+  "python": 2391,
+  "rust_rs": 1030,
   "scan": "git ls-tree -r --name-only HEAD",
   "sparse_checkout": true,
-  "toml": 32
+  "toml": 33
  },
  "total_experiment_turnaround_ns": null,
  "version": 1

@@ -3,31 +3,10 @@
   "nx_status": "SEALED_METADATA_ONLY_NOT_FOR_PROMOTION",
   "refused": false,
   "seven_all_met": false,
-  "via": "/Users/scammermike/Downloads/hawking/receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
+  "via": "/Users/scammermike/.claude-grok/worktrees/s4-tools-future-under-10s-20260902-045214/receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
   "why": null
  },
  "audit_disagreements": [
-  {
-   "audit_text": "sidecar has no GPU; all numbers that would require a lease remain unclaimed here",
-   "id": "audit_negative_finding_sidecar_has_no_gpu",
-   "kind": "causal_label",
-   "looked_for": "hardware measurement",
-   "resolution": "REPORTED_NOT_RESOLVED",
-   "today": "METAL_REACHABILITY verdict=FALSIFIED_AS_A_HOST_PROPERTY; device='Apple M3 Ultra'; gpu_authority remains false",
-   "verdict": "STATUS_LABEL_LAUNDERED_AS_CAUSAL_CLAIM",
-   "what_is_false": "this host has no Metal-capable GPU",
-   "what_remains_true": "sidecar has no GPU authority; no PROTECTED_ABSOLUTE NX measurement exists"
-  },
-  {
-   "audit_text": "handoff current_qualified_physical_ebpw='UNKNOWN'; UNKNOWN; this sidecar has no GPU authority; MetalContext reports no Metal-capable GPU on the host of record; no PROTECTED_ABSOLUTE complete-token measurement exists for a source-independent Flash NX",
-   "id": "flash_nr_complete_host_of_record_has_no_gpu",
-   "kind": "causal_label",
-   "resolution": "REPORTED_NOT_RESOLVED",
-   "today": "METAL_REACHABILITY verdict=FALSIFIED_AS_A_HOST_PROPERTY; device='Apple M3 Ultra'; gpu_authority remains false",
-   "verdict": "STATUS_LABEL_LAUNDERED_AS_CAUSAL_CLAIM",
-   "what_is_false": "this host has no Metal-capable GPU",
-   "what_remains_true": "sidecar has no GPU authority; no PROTECTED_ABSOLUTE NX measurement exists"
-  },
   {
    "capture_rows": 1024,
    "capture_status": "CAPTURED_SOURCE_MLP_INPUT_NOT_CAPABILITY_PROVEN",
@@ -44,7 +23,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T08:38:11Z",
+  "recorded_at": "2026-09-02T09:42:47Z",
   "recorded_by": "tools/future/nr_nx_path.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -150,119 +129,119 @@
   "kernel_catalog": {
    "built_count": 4,
    "dense_rematerialization_policy": "FORBIDDEN_BY_FINAL_RUNTIME_POLICY",
-   "metal_compile_is_a_host_wall": false,
+   "metal_compile_is_a_host_wall": true,
    "native_kernels_status": "PLAN_ONLY",
    "not_built_count": 11,
    "organs": [
     {
      "built": false,
      "kernel": "partitioned_embedding_lookup",
-     "metal_compile_is_a_host_wall": false,
+     "metal_compile_is_a_host_wall": null,
      "organ": "embeddings",
      "status": "NOT_IMPLEMENTED"
     },
     {
      "built": true,
      "kernel": "native_nf_expert_gemv",
-     "metal_compile_is_a_host_wall": false,
+     "metal_compile_is_a_host_wall": null,
      "organ": "routed_experts",
      "status": "BOUNDED_LAYER0_SELECTED_TOP10_COMPOSITION_ONLY"
     },
     {
      "built": true,
      "kernel": "qwen_uniform_q4_group64_matvec_gate_up_swiglu + qwen_uniform_q4_group64_matvec + qwen_next_shared_expert_sigmoid_gate",
-     "metal_compile_is_a_host_wall": false,
+     "metal_compile_is_a_host_wall": null,
      "organ": "shared_expert",
      "status": "BOUNDED_LAYER0_COMPOSITION_ONLY"
     },
     {
      "built": true,
      "kernel": "qwen_next_moe_weighted_sum + qwen_next_moe_add_shared",
-     "metal_compile_is_a_host_wall": false,
+     "metal_compile_is_a_host_wall": null,
      "organ": "moe_join",
      "status": "BOUNDED_LAYER0_EXACT_MOE_JOIN"
     },
     {
      "built": false,
      "kernel": "router_topk_gather",
-     "metal_compile_is_a_host_wall": false,
+     "metal_compile_is_a_host_wall": null,
      "organ": "router",
      "status": "NOT_IMPLEMENTED"
     },
     {
      "built": false,
      "kernel": "persistent_state_update",
-     "metal_compile_is_a_host_wall": false,
+     "metal_compile_is_a_host_wall": null,
      "organ": "deltanet",
      "status": "NOT_IMPLEMENTED"
     },
     {
      "built": false,
      "kernel": "resident_state_read_modify_write",
-     "metal_compile_is_a_host_wall": false,
+     "metal_compile_is_a_host_wall": null,
      "organ": "recurrent_state",
      "status": "NOT_IMPLEMENTED"
     },
     {
      "built": false,
      "kernel": "budgeted_sparse_gather_reduce",
-     "metal_compile_is_a_host_wall": false,
+     "metal_compile_is_a_host_wall": null,
      "organ": "sparse_attention",
      "status": "NOT_IMPLEMENTED"
     },
     {
      "built": false,
      "kernel": "lookup_or_compositional_generator",
-     "metal_compile_is_a_host_wall": false,
+     "metal_compile_is_a_host_wall": null,
      "organ": "ngram_engine",
      "status": "NOT_IMPLEMENTED"
     },
     {
      "built": false,
      "kernel": "draft_verify_rollback",
-     "metal_compile_is_a_host_wall": false,
+     "metal_compile_is_a_host_wall": null,
      "organ": "mtp",
      "status": "NOT_IMPLEMENTED"
     },
     {
      "built": false,
      "kernel": "fused_norm_epilogue",
-     "metal_compile_is_a_host_wall": false,
+     "metal_compile_is_a_host_wall": null,
      "organ": "norms",
      "status": "NOT_IMPLEMENTED"
     },
     {
      "built": false,
      "kernel": "vocabulary_projection_and_reduce",
-     "metal_compile_is_a_host_wall": false,
+     "metal_compile_is_a_host_wall": null,
      "organ": "lm_head",
      "status": "NOT_IMPLEMENTED"
     },
     {
      "built": false,
      "kernel": "conditional_multimodal_vision_path",
-     "metal_compile_is_a_host_wall": false,
+     "metal_compile_is_a_host_wall": null,
      "organ": "vision_backbone",
      "status": "NOT_IMPLEMENTED"
     },
     {
      "built": true,
      "kernel": "qwen_next_expand_shared_to_hyper_state + qwen_uniform_q4_group64_matvec + qwen_next_hyperconnection_residual_mix_candidate",
-     "metal_compile_is_a_host_wall": false,
+     "metal_compile_is_a_host_wall": null,
      "organ": "residual_hyperconnections",
      "status": "BOUNDED_LAYER0_CANDIDATE_ONLY"
     },
     {
      "built": false,
      "kernel": "ownership_audit_required",
-     "metal_compile_is_a_host_wall": false,
+     "metal_compile_is_a_host_wall": null,
      "organ": "support_misc",
      "status": "UNRESOLVED"
     }
    ],
-   "source_compile_today": "OK",
+   "source_compile_today": null,
    "still_plan_only": true,
-   "why_compile_is_not_the_wall": "metal crate source compile returned OK on this host; load_or_compile_shader_library falls back to new_library_with_source; the missing xcrun precompile path is a cost"
+   "why_compile_is_not_the_wall": "source compile was not OK in METAL_REACHABILITY; compile remains a possible wall"
   },
   "reproducibility_closure": {
    "all_digests_present": false,
@@ -320,8 +299,12 @@
  ],
  "gpu_authority": false,
  "is_a_measurement": false,
- "launch_gate_unmet": [],
- "launch_via": "/Users/scammermike/Downloads/hawking/receipts/future/ODYSSEY_LAUNCH_GATE.json",
+ "launch_gate_unmet": [
+  "resident_autonomy_trial_pass",
+  "specimen_curriculum_ready",
+  "nr_nx_path_callable"
+ ],
+ "launch_via": "/Users/scammermike/.claude-grok/worktrees/s4-tools-future-under-10s-20260902-045214/receipts/future/ODYSSEY_LAUNCH_GATE.json",
  "live_nx": {
   "error": null,
   "failed_requirements": [
@@ -371,6 +354,8 @@
    "requirement": "accepted_generation",
    "schedule": "SLEEPING",
    "wake_unmet": [
+    "metal_gpu_present",
+    "metal_source_compile",
     "source_independent_nx_on_disk",
     "gpu_lease_proven_holder",
     "machine_quiesced"
@@ -382,6 +367,8 @@
    "requirement": "capability",
    "schedule": "SLEEPING",
    "wake_unmet": [
+    "metal_gpu_present",
+    "metal_source_compile",
     "source_independent_nx_on_disk",
     "gpu_lease_proven_holder",
     "machine_quiesced"
@@ -401,6 +388,8 @@
    "requirement": "protected_performance",
    "schedule": "SLEEPING",
    "wake_unmet": [
+    "metal_gpu_present",
+    "metal_source_compile",
     "source_independent_nx_on_disk",
     "gpu_lease_proven_holder",
     "machine_quiesced"
@@ -416,7 +405,7 @@
    "still_open": "metadata NX / source-oracle path is the runtime; missing fallback_count is not zero, and stamping 0 would hide the fallback"
   }
  ],
- "nr_complete_via": "/Users/scammermike/Downloads/hawking/receipts/future/FLASH_NR_COMPLETE.json",
+ "nr_complete_via": "/Users/scammermike/.claude-grok/worktrees/s4-tools-future-under-10s-20260902-045214/receipts/future/FLASH_NR_COMPLETE.json",
  "physical_ebpw": null,
  "physical_ebpw_written": false,
  "purpose": "Map each of the seven Flash NX completeness requirements onto WORK_NOT_DONE vs PHYSICAL_AUTHORITY using today's Metal and teacher evidence, advance the CPU contracts that do not require packing an NX, and emit SLEEPING WorkUnits with wake conditions for the rest.",
@@ -438,7 +427,7 @@
   "workunit": "one CPU_ANALYSIS unit; classification + CPU contracts; no GPU authority"
  },
  "schema": "hawking.future.nr_nx_path.v1",
- "seal_sha256": "ef1149ab1e5446a34fd44e1ba343491276b8a5b7ded6f967d4bda0e5fd99c22c",
+ "seal_sha256": "ed69004913beb9e043ad8793586fd410f8f702cc9f99311c62071d8d98fa5d14",
  "seven": [
   {
    "audit_cited": [
@@ -594,7 +583,7 @@
     "cpu_work": true,
     "gpu_authority": false,
     "metal_compile": true,
-    "metal_compile_is_a_host_wall": false,
+    "metal_compile_is_a_host_wall": true,
     "teacher_corpus": false
    },
    "ok": false,
@@ -664,7 +653,8 @@
    "audit_why": "no multi-token accepted generation; a single terminal argmax is not accepted generation",
    "blocker_classes": [
     "PRIOR_ARTIFACT",
-    "PHYSICAL_AUTHORITY"
+    "PHYSICAL_AUTHORITY",
+    "HOST_GPU_ABSENT_CONFIRMED"
    ],
    "cpu_work_done_this_lane": "wake conditions split into already-holding (Metal GPU, source compile) and unmet (packed NX, lease, QUIESCED); teacher capture refused as a substitute",
    "judge": {
@@ -678,7 +668,7 @@
     "cpu_work": true,
     "gpu_authority": true,
     "metal_compile": true,
-    "metal_compile_is_a_host_wall": false,
+    "metal_compile_is_a_host_wall": true,
     "teacher_corpus": false
    },
    "ok": false,
@@ -703,6 +693,8 @@
     "synthetic_result_forbidden": true,
     "verifier": "future.nr_nx_path.wakeup:accepted_generation",
     "wake_unmet": [
+     "metal_gpu_present",
+     "metal_source_compile",
      "source_independent_nx_on_disk",
      "gpu_lease_proven_holder",
      "machine_quiesced"
@@ -711,18 +703,18 @@
    "state_agreement": "AGREE",
    "wake_conditions": [
     {
-     "evidence": "METAL_REACHABILITY verdict='FALSIFIED_AS_A_HOST_PROPERTY' device='Apple M3 Ultra'",
-     "holds": true,
+     "evidence": "METAL_REACHABILITY verdict='CONFIRMED' device=None",
+     "holds": false,
      "id": "metal_gpu_present",
      "never_pending": true,
-     "schedule_if_this_were_the_only_gate": "MET_PRECONDITION"
+     "schedule_if_this_were_the_only_gate": "SLEEPING"
     },
     {
-     "evidence": "runtime_source_compile='OK'",
-     "holds": true,
+     "evidence": "runtime_source_compile=None",
+     "holds": false,
      "id": "metal_source_compile",
      "never_pending": true,
-     "schedule_if_this_were_the_only_gate": "MET_PRECONDITION"
+     "schedule_if_this_were_the_only_gate": "SLEEPING"
     },
     {
      "evidence": "FLASH_COMPLETE_V0.nx is SEALED_METADATA_ONLY_NOT_FOR_PROMOTION",
@@ -732,7 +724,7 @@
      "schedule_if_this_were_the_only_gate": "SLEEPING"
     },
     {
-     "evidence": "lock file exists but no holder could be proven without flock (lsof status='OK' reason=None). fail closed: present=false. flock would be a seizure",
+     "evidence": "no existing HCLI lease: .hcli/locks/protected-accelerator-bench.lock is absent. queue_policy.protected_start_requires_existing_hcli_lease. sidecar will not create .hcli/locks or call _try_lock",
      "holds": false,
      "id": "gpu_lease_proven_holder",
      "never_pending": true,
@@ -783,7 +775,8 @@
    "audit_why": "no capability suite result on the NX",
    "blocker_classes": [
     "PRIOR_ARTIFACT",
-    "PHYSICAL_AUTHORITY"
+    "PHYSICAL_AUTHORITY",
+    "HOST_GPU_ABSENT_CONFIRMED"
    ],
    "cpu_work_done_this_lane": "wake conditions split into already-holding (Metal GPU, source compile) and unmet (packed NX, lease, QUIESCED); teacher capture refused as a substitute",
    "judge": {
@@ -797,7 +790,7 @@
     "cpu_work": true,
     "gpu_authority": true,
     "metal_compile": true,
-    "metal_compile_is_a_host_wall": false,
+    "metal_compile_is_a_host_wall": true,
     "teacher_corpus": false
    },
    "ok": false,
@@ -821,6 +814,8 @@
     "synthetic_result_forbidden": true,
     "verifier": "future.nr_nx_path.wakeup:capability",
     "wake_unmet": [
+     "metal_gpu_present",
+     "metal_source_compile",
      "source_independent_nx_on_disk",
      "gpu_lease_proven_holder",
      "machine_quiesced"
@@ -829,18 +824,18 @@
    "state_agreement": "AGREE",
    "wake_conditions": [
     {
-     "evidence": "METAL_REACHABILITY verdict='FALSIFIED_AS_A_HOST_PROPERTY' device='Apple M3 Ultra'",
-     "holds": true,
+     "evidence": "METAL_REACHABILITY verdict='CONFIRMED' device=None",
+     "holds": false,
      "id": "metal_gpu_present",
      "never_pending": true,
-     "schedule_if_this_were_the_only_gate": "MET_PRECONDITION"
+     "schedule_if_this_were_the_only_gate": "SLEEPING"
     },
     {
-     "evidence": "runtime_source_compile='OK'",
-     "holds": true,
+     "evidence": "runtime_source_compile=None",
+     "holds": false,
      "id": "metal_source_compile",
      "never_pending": true,
-     "schedule_if_this_were_the_only_gate": "MET_PRECONDITION"
+     "schedule_if_this_were_the_only_gate": "SLEEPING"
     },
     {
      "evidence": "FLASH_COMPLETE_V0.nx is SEALED_METADATA_ONLY_NOT_FOR_PROMOTION",
@@ -850,7 +845,7 @@
      "schedule_if_this_were_the_only_gate": "SLEEPING"
     },
     {
-     "evidence": "lock file exists but no holder could be proven without flock (lsof status='OK' reason=None). fail closed: present=false. flock would be a seizure",
+     "evidence": "no existing HCLI lease: .hcli/locks/protected-accelerator-bench.lock is absent. queue_policy.protected_start_requires_existing_hcli_lease. sidecar will not create .hcli/locks or call _try_lock",
      "holds": false,
      "id": "gpu_lease_proven_holder",
      "never_pending": true,
@@ -920,7 +915,7 @@
     "cpu_work": true,
     "gpu_authority": false,
     "metal_compile": true,
-    "metal_compile_is_a_host_wall": false,
+    "metal_compile_is_a_host_wall": true,
     "teacher_corpus": false
    },
    "ok": false,
@@ -984,7 +979,8 @@
    "audit_why": "bench.state is UNKNOWN; DIAGNOSTIC_RELATIVE and metadata seals do not decide",
    "blocker_classes": [
     "PRIOR_ARTIFACT",
-    "PHYSICAL_AUTHORITY"
+    "PHYSICAL_AUTHORITY",
+    "HOST_GPU_ABSENT_CONFIRMED"
    ],
    "cpu_work_done_this_lane": "wake conditions split into already-holding (Metal GPU, source compile) and unmet (packed NX, lease, QUIESCED); teacher capture refused as a substitute",
    "judge": {
@@ -998,7 +994,7 @@
     "cpu_work": true,
     "gpu_authority": true,
     "metal_compile": true,
-    "metal_compile_is_a_host_wall": false,
+    "metal_compile_is_a_host_wall": true,
     "teacher_corpus": false
    },
    "ok": false,
@@ -1025,6 +1021,8 @@
     "synthetic_result_forbidden": true,
     "verifier": "future.nr_nx_path.wakeup:protected_performance",
     "wake_unmet": [
+     "metal_gpu_present",
+     "metal_source_compile",
      "source_independent_nx_on_disk",
      "gpu_lease_proven_holder",
      "machine_quiesced"
@@ -1033,18 +1031,18 @@
    "state_agreement": "AGREE",
    "wake_conditions": [
     {
-     "evidence": "METAL_REACHABILITY verdict='FALSIFIED_AS_A_HOST_PROPERTY' device='Apple M3 Ultra'",
-     "holds": true,
+     "evidence": "METAL_REACHABILITY verdict='CONFIRMED' device=None",
+     "holds": false,
      "id": "metal_gpu_present",
      "never_pending": true,
-     "schedule_if_this_were_the_only_gate": "MET_PRECONDITION"
+     "schedule_if_this_were_the_only_gate": "SLEEPING"
     },
     {
-     "evidence": "runtime_source_compile='OK'",
-     "holds": true,
+     "evidence": "runtime_source_compile=None",
+     "holds": false,
      "id": "metal_source_compile",
      "never_pending": true,
-     "schedule_if_this_were_the_only_gate": "MET_PRECONDITION"
+     "schedule_if_this_were_the_only_gate": "SLEEPING"
     },
     {
      "evidence": "FLASH_COMPLETE_V0.nx is SEALED_METADATA_ONLY_NOT_FOR_PROMOTION",
@@ -1054,7 +1052,7 @@
      "schedule_if_this_were_the_only_gate": "SLEEPING"
     },
     {
-     "evidence": "lock file exists but no holder could be proven without flock (lsof status='OK' reason=None). fail closed: present=false. flock would be a seizure",
+     "evidence": "no existing HCLI lease: .hcli/locks/protected-accelerator-bench.lock is absent. queue_policy.protected_start_requires_existing_hcli_lease. sidecar will not create .hcli/locks or call _try_lock",
      "holds": false,
      "id": "gpu_lease_proven_holder",
      "never_pending": true,
@@ -1154,23 +1152,20 @@
  "seven_all_met": false,
  "today": {
   "host": {
-   "device_name": "Apple M3 Ultra",
+   "device_name": null,
    "gpu_authority": false,
-   "gpu_present": true,
-   "gpu_present_state": "PRESENT",
+   "gpu_present": false,
+   "gpu_present_state": "ABSENT_IN_RECEIPT",
    "is_a_measurement": false,
    "metal_crate_version": "0.29.0",
    "metal_receipt": "receipts/future/METAL_REACHABILITY.json",
-   "metal_via": "/Users/scammermike/Downloads/hawking/receipts/future/METAL_REACHABILITY.json",
-   "n_devices": 1,
-   "runtime_binding_device": "Apple M3 Ultra",
-   "source_compile": "OK",
-   "verdict": "FALSIFIED_AS_A_HOST_PROPERTY",
-   "what_this_does_not_establish": [
-    "that the blocked capture will now succeed; that binary was not run here",
-    "the cause of the process-side failure; sandbox, launch context and build target are all consistent with what was observed and nothing here distinguishes them"
-   ],
-   "why": "MTLCreateSystemDefaultDevice() returned 'Apple M3 Ultra' from an ordinary command-line process on this host, and MTLCopyAllDevices() reports 1 device(s). A Rust Device::system_default() returning None is therefore a property of that process, not of the machine.",
+   "metal_via": "/Users/scammermike/.claude-grok/worktrees/s4-tools-future-under-10s-20260902-045214/receipts/future/METAL_REACHABILITY.json",
+   "n_devices": 0,
+   "runtime_binding_device": null,
+   "source_compile": null,
+   "verdict": "CONFIRMED",
+   "what_this_does_not_establish": null,
+   "why": "MTLCreateSystemDefaultDevice() returned nil from an ordinary process here",
    "xcrun_metal": {
     "found": false,
     "path": null,
@@ -1180,13 +1175,13 @@
   },
   "lease": {
    "contamination_class": "HEAVY",
-   "contamination_via": "/Users/scammermike/Downloads/hawking/receipts/future/CONTAMINATION_SCIENCE.json",
-   "dry_run_stop_reason": "lock file exists but no holder could be proven without flock (lsof status='OK' reason=None). fail closed: present=false. flock would be a seizure",
+   "contamination_via": "/Users/scammermike/.claude-grok/worktrees/s4-tools-future-under-10s-20260902-045214/receipts/future/CONTAMINATION_SCIENCE.json",
+   "dry_run_stop_reason": "no existing HCLI lease: .hcli/locks/protected-accelerator-bench.lock is absent. queue_policy.protected_start_requires_existing_hcli_lease. sidecar will not create .hcli/locks or call _try_lock",
    "dry_run_stop_stage": "identify_lease_availability",
    "lease_proven": false,
    "machine_quiesced": false,
-   "qualification_via": "/Users/scammermike/Downloads/hawking/receipts/future/QUALIFICATION_PIPELINE.json",
-   "why_lease_not_proven": "lock file exists but no holder could be proven without flock (lsof status='OK' reason=None). fail closed: present=false. flock would be a seizure",
+   "qualification_via": "/Users/scammermike/.claude-grok/worktrees/s4-tools-future-under-10s-20260902-045214/receipts/future/QUALIFICATION_PIPELINE.json",
+   "why_lease_not_proven": "no existing HCLI lease: .hcli/locks/protected-accelerator-bench.lock is absent. queue_policy.protected_start_requires_existing_hcli_lease. sidecar will not create .hcli/locks or call _try_lock",
    "why_not_quiesced": "contamination_class='HEAVY'; HEAVY or unknown is not a protected window; sidecar will not SIGSTOP standing workers"
   },
   "teacher": {
@@ -1195,7 +1190,7 @@
    "capture_status": "CAPTURED_SOURCE_MLP_INPUT_NOT_CAPABILITY_PROVEN",
    "complete_token_on_screen": "NOT_MEASURED",
    "contract_executed": 0,
-   "contract_via": "/Users/scammermike/Downloads/hawking/receipts/future/TEACHER_CORPUS_CONTRACT.json",
+   "contract_via": "/Users/scammermike/.claude-grok/worktrees/s4-tools-future-under-10s-20260902-045214/receipts/future/TEACHER_CORPUS_CONTRACT.json",
    "contract_workunits": 12,
    "declared_vs_executed": "TEACHER_CORPUS_CONTRACT.capture_workunits executed=0/12; a source-BF16 L4 capture receipt is on disk. Naming the workunit is not evidence it ran; the capture receipt is.",
    "physical_ebpw_on_screen": null,

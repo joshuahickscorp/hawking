@@ -1,13 +1,13 @@
 {
  "base_head": {
-  "sha": "36691aa32412e3cc38b3f9f7d2575e1d59e9cff4",
-  "subject": "Merge branch 'grok/r6-reconcile-rust-python-source-of-truth-20260902-021211' into odyssey-i"
+  "sha": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
+  "subject": "refactor(hcli): the daemon gets its own name, hawkingd"
  },
  "bench": {
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T07:07:43Z",
+  "recorded_at": "2026-09-02T09:25:31Z",
   "recorded_by": "tools/future/dirty_source_seal.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -223,7 +223,7 @@
   "total": 0,
   "untracked": []
  },
- "dirty_crate_root": "/Users/scammermike/Downloads/hawking",
+ "dirty_crate_root": "/Users/scammermike/.claude-grok/worktrees/s4-tools-future-under-10s-20260902-045214",
  "evidence_class": "STATIC_ONLY",
  "gaps_closed": [
   "the dirty crate work is a patch with a sha256, against a recorded base HEAD",
@@ -514,7 +514,7 @@
   "land": "P-Q30, P-Q80, P-CACHE, P-INSTRUMENT, P-WORKLIST, P-FAST. P-CACHE changes production default (opt-out). Landing it does not promote the TPS numbers."
  },
  "schema": "hawking.future.dirty_source_seal.v1",
- "seal_sha256": "ead1c9a57ac1e2da4fc12b53442cdcbdcfa6fc86fa28713256636ef07b37c8e8",
+ "seal_sha256": "874a34cb9e3bfeb3aa257bf06fe33c8d80f7e541fe46c2221a8fbc5e05e47d91",
  "sealed_fusion_env": {
   "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
   "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",

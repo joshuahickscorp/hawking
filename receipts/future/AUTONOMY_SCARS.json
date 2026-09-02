@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T03:04:32Z",
+  "recorded_at": "2026-09-02T09:19:15Z",
   "recorded_by": "tools/future/autonomy_scars.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -143,7 +143,7 @@
  ],
  "scars_without_a_regression_test": [],
  "schema": "hawking.future.autonomy_scars.v1",
- "seal_sha256": "099c415914cef2b1fa93b8d3474d16561de39ad50aada313c903618859cbac8c",
+ "seal_sha256": "d58d8b4909c8b85e94c0d9fdbd79293a669253ed25658692ab2795ebd69675b5",
  "sister_symptoms": [
   "\"model missing\" may be a stale hardcoded path -- three Odyssey tools pointed at a directory that had moved, while the 52GB parent sat on another volume",
   "\"no work\" may be a scheduler taxonomy mismatch",

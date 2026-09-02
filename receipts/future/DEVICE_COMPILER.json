@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T07:07:40Z",
+  "recorded_at": "2026-09-02T09:25:28Z",
   "recorded_by": "tools/future/device_compiler.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -39,57 +39,31 @@
   "rmsnorm"
  ],
  "lowering": {
-  "error": null,
+  "error": "MTLCreateSystemDefaultDevice returned nil; MTLCopyAllDevices n=0. This process cannot see a Metal device, so it cannot mint an MTLComputePipelineState. That is a process property, not a claim that the host has no GPU.",
   "metal": {
    "backend": "live_metal",
    "created_command_queue": false,
-   "device": "Apple M3 Ultra",
+   "device": null,
    "dispatched": false,
-   "error": null,
-   "n_devices": 1,
-   "ok": true
+   "error": "MTLCreateSystemDefaultDevice returned nil; MTLCopyAllDevices n=0. This process cannot see a Metal device, so it cannot mint an MTLComputePipelineState. That is a process property, not a claim that the host has no GPU.",
+   "n_devices": 0,
+   "ok": false
   },
-  "n_compiled": 6,
-  "n_native_unmeasured": 0,
+  "n_compiled": 0,
+  "n_native_unmeasured": 6,
   "n_organs": 6,
   "n_placeholder_refused": 0,
-  "ok": true,
+  "ok": false,
   "plan": [
    {
-    "compiled_identity": {
-     "archive_bytes": 15888,
-     "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-mndhpa3d/embed.mtlarchive",
-     "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
-     "device": null,
-     "entry_point": "organ_embed_gather",
-     "kind": "METAL_PIPELINE",
-     "pipeline": {
-      "created": true,
-      "created_command_queue": false,
-      "dispatched": false,
-      "function_found": true,
-      "max_total_threads_per_threadgroup": 1024,
-      "object": "MTLComputePipelineState",
-      "thread_execution_width": 32
-     },
-     "shader_hash": "0c2a13c9645b98bf7951628c8f804f6afe2b91300e324986570bf4ed0a24a257",
-     "source_sha256": "7e7a44804195f31e0aefe0043f2552f1f342bed6df45a9fc99394024caa8be70",
-     "unit": "mtl_binary_archive_sha256",
-     "value": "0c2a13c9645b98bf7951628c8f804f6afe2b91300e324986570bf4ed0a24a257"
-    },
-    "entry_point": "organ_embed_gather",
-    "extents": [
-     151936,
-     1024
-    ],
-    "name_is_not_a_compiled_kernel": false,
+    "compiled_identity": null,
+    "name_is_not_a_compiled_kernel": true,
     "occupying": {
-     "compiled_kernel": "organ_embed_gather",
-     "kind": "COMPILED",
+     "compiled_kernel": null,
+     "kind": "NATIVE_UNMEASURED",
      "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
     },
     "organ": "embed",
-    "shader_hash": "0c2a13c9645b98bf7951628c8f804f6afe2b91300e324986570bf4ed0a24a257",
     "specimen_shape": {
      "cols": 1024,
      "extents": [
@@ -98,45 +72,18 @@
      ],
      "rows": 151936
     },
-    "status": "COMPILED",
-    "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_embed_gather; shader_hash=0c2a13c9645b98bf7951628c8f804f6afe2b91300e324986570bf4ed0a24a257. embedding gather table 151936x1024"
+    "status": "NATIVE_UNMEASURED",
+    "why": "NATIVE_UNMEASURED: Metal compile did not produce a pipeline for embed. MTLCreateSystemDefaultDevice returned nil; MTLCopyAllDevices n=0. This process cannot see a Metal device, so it cannot mint an MTLComputePipelineState. That is a process property, not a claim that the host has no GPU."
    },
    {
-    "compiled_identity": {
-     "archive_bytes": 19952,
-     "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-mndhpa3d/gqa_attention.mtlarchive",
-     "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
-     "device": null,
-     "entry_point": "organ_gqa_decode",
-     "kind": "METAL_PIPELINE",
-     "pipeline": {
-      "created": true,
-      "created_command_queue": false,
-      "dispatched": false,
-      "function_found": true,
-      "max_total_threads_per_threadgroup": 1024,
-      "object": "MTLComputePipelineState",
-      "thread_execution_width": 32
-     },
-     "shader_hash": "63f7946a88da304c4a3d8f3de6e7ec09d72ad78478f93a9a80aeb62a23ea32b5",
-     "source_sha256": "9f56e1b18596b19d855ad1b3464ea4b08e01b4ccf7c71d7f172c9e51eab82d27",
-     "unit": "mtl_binary_archive_sha256",
-     "value": "63f7946a88da304c4a3d8f3de6e7ec09d72ad78478f93a9a80aeb62a23ea32b5"
-    },
-    "entry_point": "organ_gqa_decode",
-    "extents": [
-     16,
-     8,
-     128
-    ],
-    "name_is_not_a_compiled_kernel": false,
+    "compiled_identity": null,
+    "name_is_not_a_compiled_kernel": true,
     "occupying": {
-     "compiled_kernel": "organ_gqa_decode",
-     "kind": "COMPILED",
+     "compiled_kernel": null,
+     "kind": "NATIVE_UNMEASURED",
      "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
     },
     "organ": "gqa_attention",
-    "shader_hash": "63f7946a88da304c4a3d8f3de6e7ec09d72ad78478f93a9a80aeb62a23ea32b5",
     "specimen_shape": {
      "cols": 1024,
      "extents": [
@@ -148,44 +95,18 @@
      "kv_rows": 1024,
      "q_rows": 2048
     },
-    "status": "COMPILED",
-    "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_gqa_decode; shader_hash=63f7946a88da304c4a3d8f3de6e7ec09d72ad78478f93a9a80aeb62a23ea32b5. GQA decode n_q=16 n_kv=8 head_dim=128"
+    "status": "NATIVE_UNMEASURED",
+    "why": "NATIVE_UNMEASURED: Metal compile did not produce a pipeline for gqa_attention. MTLCreateSystemDefaultDevice returned nil; MTLCopyAllDevices n=0. This process cannot see a Metal device, so it cannot mint an MTLComputePipelineState. That is a process property, not a claim that the host has no GPU."
    },
    {
-    "compiled_identity": {
-     "archive_bytes": 15888,
-     "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-mndhpa3d/lm_head.mtlarchive",
-     "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
-     "device": null,
-     "entry_point": "organ_lm_head_gemv",
-     "kind": "METAL_PIPELINE",
-     "pipeline": {
-      "created": true,
-      "created_command_queue": false,
-      "dispatched": false,
-      "function_found": true,
-      "max_total_threads_per_threadgroup": 1024,
-      "object": "MTLComputePipelineState",
-      "thread_execution_width": 32
-     },
-     "shader_hash": "c00f7816d3cea7c30ae07414a5d2adc8f860f30a2d981b6744a530de5a074b11",
-     "source_sha256": "8c619792891a89b97076db8f257e3f40c1ba1328f5f2a1f24518b50787c7d3cf",
-     "unit": "mtl_binary_archive_sha256",
-     "value": "c00f7816d3cea7c30ae07414a5d2adc8f860f30a2d981b6744a530de5a074b11"
-    },
-    "entry_point": "organ_lm_head_gemv",
-    "extents": [
-     151936,
-     1024
-    ],
-    "name_is_not_a_compiled_kernel": false,
+    "compiled_identity": null,
+    "name_is_not_a_compiled_kernel": true,
     "occupying": {
-     "compiled_kernel": "organ_lm_head_gemv",
-     "kind": "COMPILED",
+     "compiled_kernel": null,
+     "kind": "NATIVE_UNMEASURED",
      "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
     },
     "organ": "lm_head",
-    "shader_hash": "c00f7816d3cea7c30ae07414a5d2adc8f860f30a2d981b6744a530de5a074b11",
     "specimen_shape": {
      "cols": 1024,
      "extents": [
@@ -194,44 +115,18 @@
      ],
      "rows": 151936
     },
-    "status": "COMPILED",
-    "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_lm_head_gemv; shader_hash=c00f7816d3cea7c30ae07414a5d2adc8f860f30a2d981b6744a530de5a074b11. native f32 GEMV for lm_head at 151936x1024"
+    "status": "NATIVE_UNMEASURED",
+    "why": "NATIVE_UNMEASURED: Metal compile did not produce a pipeline for lm_head. MTLCreateSystemDefaultDevice returned nil; MTLCopyAllDevices n=0. This process cannot see a Metal device, so it cannot mint an MTLComputePipelineState. That is a process property, not a claim that the host has no GPU."
    },
    {
-    "compiled_identity": {
-     "archive_bytes": 15888,
-     "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-mndhpa3d/mlp_down.mtlarchive",
-     "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
-     "device": null,
-     "entry_point": "organ_mlp_down_gemv",
-     "kind": "METAL_PIPELINE",
-     "pipeline": {
-      "created": true,
-      "created_command_queue": false,
-      "dispatched": false,
-      "function_found": true,
-      "max_total_threads_per_threadgroup": 1024,
-      "object": "MTLComputePipelineState",
-      "thread_execution_width": 32
-     },
-     "shader_hash": "58f31ab7b77ac4bf7cae01febccb7f609b608698dd0111277d1548788baf69da",
-     "source_sha256": "6387c6788565c447920734ffe9dce54e4eefa90762717a3853838aecc0e3a544",
-     "unit": "mtl_binary_archive_sha256",
-     "value": "58f31ab7b77ac4bf7cae01febccb7f609b608698dd0111277d1548788baf69da"
-    },
-    "entry_point": "organ_mlp_down_gemv",
-    "extents": [
-     1024,
-     3072
-    ],
-    "name_is_not_a_compiled_kernel": false,
+    "compiled_identity": null,
+    "name_is_not_a_compiled_kernel": true,
     "occupying": {
-     "compiled_kernel": "organ_mlp_down_gemv",
-     "kind": "COMPILED",
+     "compiled_kernel": null,
+     "kind": "NATIVE_UNMEASURED",
      "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
     },
     "organ": "mlp_down",
-    "shader_hash": "58f31ab7b77ac4bf7cae01febccb7f609b608698dd0111277d1548788baf69da",
     "specimen_shape": {
      "cols": 3072,
      "extents": [
@@ -240,44 +135,18 @@
      ],
      "rows": 1024
     },
-    "status": "COMPILED",
-    "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_mlp_down_gemv; shader_hash=58f31ab7b77ac4bf7cae01febccb7f609b608698dd0111277d1548788baf69da. native f32 GEMV for mlp_down at 1024x3072"
+    "status": "NATIVE_UNMEASURED",
+    "why": "NATIVE_UNMEASURED: Metal compile did not produce a pipeline for mlp_down. MTLCreateSystemDefaultDevice returned nil; MTLCopyAllDevices n=0. This process cannot see a Metal device, so it cannot mint an MTLComputePipelineState. That is a process property, not a claim that the host has no GPU."
    },
    {
-    "compiled_identity": {
-     "archive_bytes": 16944,
-     "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-mndhpa3d/mlp_gate_up.mtlarchive",
-     "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
-     "device": null,
-     "entry_point": "organ_mlp_gate_up_swiglu",
-     "kind": "METAL_PIPELINE",
-     "pipeline": {
-      "created": true,
-      "created_command_queue": false,
-      "dispatched": false,
-      "function_found": true,
-      "max_total_threads_per_threadgroup": 1024,
-      "object": "MTLComputePipelineState",
-      "thread_execution_width": 32
-     },
-     "shader_hash": "2294023e007649b0dbb2453c826389456bfd3bc12586846883f4460fa0287649",
-     "source_sha256": "44c2825d006d200f87d4e28afe8634e571d81e689b01b07fda307551d19f6a5f",
-     "unit": "mtl_binary_archive_sha256",
-     "value": "2294023e007649b0dbb2453c826389456bfd3bc12586846883f4460fa0287649"
-    },
-    "entry_point": "organ_mlp_gate_up_swiglu",
-    "extents": [
-     3072,
-     1024
-    ],
-    "name_is_not_a_compiled_kernel": false,
+    "compiled_identity": null,
+    "name_is_not_a_compiled_kernel": true,
     "occupying": {
-     "compiled_kernel": "organ_mlp_gate_up_swiglu",
-     "kind": "COMPILED",
+     "compiled_kernel": null,
+     "kind": "NATIVE_UNMEASURED",
      "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
     },
     "organ": "mlp_gate_up",
-    "shader_hash": "2294023e007649b0dbb2453c826389456bfd3bc12586846883f4460fa0287649",
     "specimen_shape": {
      "cols": 1024,
      "extents": [
@@ -286,54 +155,29 @@
      ],
      "rows": 3072
     },
-    "status": "COMPILED",
-    "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_mlp_gate_up_swiglu; shader_hash=2294023e007649b0dbb2453c826389456bfd3bc12586846883f4460fa0287649. fused gate-up SwiGLU GEMV for mlp_gate_up at 3072x1024"
+    "status": "NATIVE_UNMEASURED",
+    "why": "NATIVE_UNMEASURED: Metal compile did not produce a pipeline for mlp_gate_up. MTLCreateSystemDefaultDevice returned nil; MTLCopyAllDevices n=0. This process cannot see a Metal device, so it cannot mint an MTLComputePipelineState. That is a process property, not a claim that the host has no GPU."
    },
    {
-    "compiled_identity": {
-     "archive_bytes": 16480,
-     "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-mndhpa3d/rmsnorm.mtlarchive",
-     "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
-     "device": null,
-     "entry_point": "organ_rmsnorm",
-     "kind": "METAL_PIPELINE",
-     "pipeline": {
-      "created": true,
-      "created_command_queue": false,
-      "dispatched": false,
-      "function_found": true,
-      "max_total_threads_per_threadgroup": 1024,
-      "object": "MTLComputePipelineState",
-      "thread_execution_width": 32
-     },
-     "shader_hash": "7fcad78e7b8fb6d995ee9f6427c9790af6beba4ee7920fdcf6cefe189096bcf4",
-     "source_sha256": "25aef5898db60554a1301771bb9f26882f02ad88ba3028a885b69b822a05cf1e",
-     "unit": "mtl_binary_archive_sha256",
-     "value": "7fcad78e7b8fb6d995ee9f6427c9790af6beba4ee7920fdcf6cefe189096bcf4"
-    },
-    "entry_point": "organ_rmsnorm",
-    "extents": [
-     1024
-    ],
-    "name_is_not_a_compiled_kernel": false,
+    "compiled_identity": null,
+    "name_is_not_a_compiled_kernel": true,
     "occupying": {
-     "compiled_kernel": "organ_rmsnorm",
-     "kind": "COMPILED",
+     "compiled_kernel": null,
+     "kind": "NATIVE_UNMEASURED",
      "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
     },
     "organ": "rmsnorm",
-    "shader_hash": "7fcad78e7b8fb6d995ee9f6427c9790af6beba4ee7920fdcf6cefe189096bcf4",
     "specimen_shape": {
      "cols": 1024,
      "extents": [
       1024
      ]
     },
-    "status": "COMPILED",
-    "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_rmsnorm; shader_hash=7fcad78e7b8fb6d995ee9f6427c9790af6beba4ee7920fdcf6cefe189096bcf4. RMSNorm over hidden=1024"
+    "status": "NATIVE_UNMEASURED",
+    "why": "NATIVE_UNMEASURED: Metal compile did not produce a pipeline for rmsnorm. MTLCreateSystemDefaultDevice returned nil; MTLCopyAllDevices n=0. This process cannot see a Metal device, so it cannot mint an MTLComputePipelineState. That is a process property, not a claim that the host has no GPU."
    }
   ],
-  "why": "lowered 6/6 organ(s) to MTLComputePipelineState; 0 remain NATIVE_UNMEASURED; placeholder_refused=0. QWEN3_DENSE_GGUF_MATCH_ARM_ABSENT holds=True"
+  "why": "lowered 0/6 organ(s) to MTLComputePipelineState; 6 remain NATIVE_UNMEASURED; placeholder_refused=0. QWEN3_DENSE_GGUF_MATCH_ARM_ABSENT holds=True; metal=MTLCreateSystemDefaultDevice returned nil; MTLCopyAllDevices n=0. This process cannot see a Metal device, so it cannot mint an MTLComputePipelineState. That is a process property, not a claim that the host has no GPU."
  },
  "measurement_class": "STATIC_ONLY",
  "negative_findings": [
@@ -343,17 +187,101 @@
   "this module does not pack a source-independent NX; NoeticExecutable is a later stage",
   "no physical EBPW, no GPU lease, no dispatch"
  ],
- "nx_compiled_organs": [
-  "embed",
-  "gqa_attention",
-  "lm_head",
-  "mlp_down",
-  "mlp_gate_up",
-  "rmsnorm"
- ],
+ "nx_compiled_organs": [],
  "nx_fragment": {
   "claim_boundary": "compiled Metal pipelines for organs that lowered; not a packed NX; not source-independent; not a hardware measurement",
-  "compiled_organs": [
+  "compiled_organs": [],
+  "family": "dense_swiglu_transformer",
+  "native_kernel": {
+   "n_compiled": 0,
+   "organs": [],
+   "status": "ABSENT"
+  },
+  "physical_program": {
+   "kernels": [
+    {
+     "compiled_identity": null,
+     "entry_point": null,
+     "occupying": {
+      "compiled_kernel": null,
+      "kind": "NATIVE_UNMEASURED",
+      "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+     },
+     "organ": "embed",
+     "shader_hash": null,
+     "status": "NATIVE_UNMEASURED",
+     "why": "NATIVE_UNMEASURED: Metal compile did not produce a pipeline for embed. MTLCreateSystemDefaultDevice returned nil; MTLCopyAllDevices n=0. This process cannot see a Metal device, so it cannot mint an MTLComputePipelineState. That is a process property, not a claim that the host has no GPU."
+    },
+    {
+     "compiled_identity": null,
+     "entry_point": null,
+     "occupying": {
+      "compiled_kernel": null,
+      "kind": "NATIVE_UNMEASURED",
+      "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+     },
+     "organ": "gqa_attention",
+     "shader_hash": null,
+     "status": "NATIVE_UNMEASURED",
+     "why": "NATIVE_UNMEASURED: Metal compile did not produce a pipeline for gqa_attention. MTLCreateSystemDefaultDevice returned nil; MTLCopyAllDevices n=0. This process cannot see a Metal device, so it cannot mint an MTLComputePipelineState. That is a process property, not a claim that the host has no GPU."
+    },
+    {
+     "compiled_identity": null,
+     "entry_point": null,
+     "occupying": {
+      "compiled_kernel": null,
+      "kind": "NATIVE_UNMEASURED",
+      "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+     },
+     "organ": "lm_head",
+     "shader_hash": null,
+     "status": "NATIVE_UNMEASURED",
+     "why": "NATIVE_UNMEASURED: Metal compile did not produce a pipeline for lm_head. MTLCreateSystemDefaultDevice returned nil; MTLCopyAllDevices n=0. This process cannot see a Metal device, so it cannot mint an MTLComputePipelineState. That is a process property, not a claim that the host has no GPU."
+    },
+    {
+     "compiled_identity": null,
+     "entry_point": null,
+     "occupying": {
+      "compiled_kernel": null,
+      "kind": "NATIVE_UNMEASURED",
+      "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+     },
+     "organ": "mlp_down",
+     "shader_hash": null,
+     "status": "NATIVE_UNMEASURED",
+     "why": "NATIVE_UNMEASURED: Metal compile did not produce a pipeline for mlp_down. MTLCreateSystemDefaultDevice returned nil; MTLCopyAllDevices n=0. This process cannot see a Metal device, so it cannot mint an MTLComputePipelineState. That is a process property, not a claim that the host has no GPU."
+    },
+    {
+     "compiled_identity": null,
+     "entry_point": null,
+     "occupying": {
+      "compiled_kernel": null,
+      "kind": "NATIVE_UNMEASURED",
+      "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+     },
+     "organ": "mlp_gate_up",
+     "shader_hash": null,
+     "status": "NATIVE_UNMEASURED",
+     "why": "NATIVE_UNMEASURED: Metal compile did not produce a pipeline for mlp_gate_up. MTLCreateSystemDefaultDevice returned nil; MTLCopyAllDevices n=0. This process cannot see a Metal device, so it cannot mint an MTLComputePipelineState. That is a process property, not a claim that the host has no GPU."
+    },
+    {
+     "compiled_identity": null,
+     "entry_point": null,
+     "occupying": {
+      "compiled_kernel": null,
+      "kind": "NATIVE_UNMEASURED",
+      "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+     },
+     "organ": "rmsnorm",
+     "shader_hash": null,
+     "status": "NATIVE_UNMEASURED",
+     "why": "NATIVE_UNMEASURED: Metal compile did not produce a pipeline for rmsnorm. MTLCreateSystemDefaultDevice returned nil; MTLCopyAllDevices n=0. This process cannot see a Metal device, so it cannot mint an MTLComputePipelineState. That is a process property, not a claim that the host has no GPU."
+    }
+   ],
+   "n_compiled": 0,
+   "n_planned": 6
+  },
+  "planned_organs": [
    "embed",
    "gqa_attention",
    "lm_head",
@@ -361,224 +289,6 @@
    "mlp_gate_up",
    "rmsnorm"
   ],
-  "family": "dense_swiglu_transformer",
-  "native_kernel": {
-   "n_compiled": 6,
-   "organs": [
-    "embed",
-    "gqa_attention",
-    "lm_head",
-    "mlp_down",
-    "mlp_gate_up",
-    "rmsnorm"
-   ],
-   "status": "BOUND"
-  },
-  "physical_program": {
-   "kernels": [
-    {
-     "compiled_identity": {
-      "archive_bytes": 15888,
-      "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-mndhpa3d/embed.mtlarchive",
-      "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
-      "device": null,
-      "entry_point": "organ_embed_gather",
-      "kind": "METAL_PIPELINE",
-      "pipeline": {
-       "created": true,
-       "created_command_queue": false,
-       "dispatched": false,
-       "function_found": true,
-       "max_total_threads_per_threadgroup": 1024,
-       "object": "MTLComputePipelineState",
-       "thread_execution_width": 32
-      },
-      "shader_hash": "0c2a13c9645b98bf7951628c8f804f6afe2b91300e324986570bf4ed0a24a257",
-      "source_sha256": "7e7a44804195f31e0aefe0043f2552f1f342bed6df45a9fc99394024caa8be70",
-      "unit": "mtl_binary_archive_sha256",
-      "value": "0c2a13c9645b98bf7951628c8f804f6afe2b91300e324986570bf4ed0a24a257"
-     },
-     "entry_point": "organ_embed_gather",
-     "occupying": {
-      "compiled_kernel": "organ_embed_gather",
-      "kind": "COMPILED",
-      "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
-     },
-     "organ": "embed",
-     "shader_hash": "0c2a13c9645b98bf7951628c8f804f6afe2b91300e324986570bf4ed0a24a257",
-     "status": "COMPILED",
-     "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_embed_gather; shader_hash=0c2a13c9645b98bf7951628c8f804f6afe2b91300e324986570bf4ed0a24a257. embedding gather table 151936x1024"
-    },
-    {
-     "compiled_identity": {
-      "archive_bytes": 19952,
-      "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-mndhpa3d/gqa_attention.mtlarchive",
-      "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
-      "device": null,
-      "entry_point": "organ_gqa_decode",
-      "kind": "METAL_PIPELINE",
-      "pipeline": {
-       "created": true,
-       "created_command_queue": false,
-       "dispatched": false,
-       "function_found": true,
-       "max_total_threads_per_threadgroup": 1024,
-       "object": "MTLComputePipelineState",
-       "thread_execution_width": 32
-      },
-      "shader_hash": "63f7946a88da304c4a3d8f3de6e7ec09d72ad78478f93a9a80aeb62a23ea32b5",
-      "source_sha256": "9f56e1b18596b19d855ad1b3464ea4b08e01b4ccf7c71d7f172c9e51eab82d27",
-      "unit": "mtl_binary_archive_sha256",
-      "value": "63f7946a88da304c4a3d8f3de6e7ec09d72ad78478f93a9a80aeb62a23ea32b5"
-     },
-     "entry_point": "organ_gqa_decode",
-     "occupying": {
-      "compiled_kernel": "organ_gqa_decode",
-      "kind": "COMPILED",
-      "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
-     },
-     "organ": "gqa_attention",
-     "shader_hash": "63f7946a88da304c4a3d8f3de6e7ec09d72ad78478f93a9a80aeb62a23ea32b5",
-     "status": "COMPILED",
-     "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_gqa_decode; shader_hash=63f7946a88da304c4a3d8f3de6e7ec09d72ad78478f93a9a80aeb62a23ea32b5. GQA decode n_q=16 n_kv=8 head_dim=128"
-    },
-    {
-     "compiled_identity": {
-      "archive_bytes": 15888,
-      "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-mndhpa3d/lm_head.mtlarchive",
-      "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
-      "device": null,
-      "entry_point": "organ_lm_head_gemv",
-      "kind": "METAL_PIPELINE",
-      "pipeline": {
-       "created": true,
-       "created_command_queue": false,
-       "dispatched": false,
-       "function_found": true,
-       "max_total_threads_per_threadgroup": 1024,
-       "object": "MTLComputePipelineState",
-       "thread_execution_width": 32
-      },
-      "shader_hash": "c00f7816d3cea7c30ae07414a5d2adc8f860f30a2d981b6744a530de5a074b11",
-      "source_sha256": "8c619792891a89b97076db8f257e3f40c1ba1328f5f2a1f24518b50787c7d3cf",
-      "unit": "mtl_binary_archive_sha256",
-      "value": "c00f7816d3cea7c30ae07414a5d2adc8f860f30a2d981b6744a530de5a074b11"
-     },
-     "entry_point": "organ_lm_head_gemv",
-     "occupying": {
-      "compiled_kernel": "organ_lm_head_gemv",
-      "kind": "COMPILED",
-      "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
-     },
-     "organ": "lm_head",
-     "shader_hash": "c00f7816d3cea7c30ae07414a5d2adc8f860f30a2d981b6744a530de5a074b11",
-     "status": "COMPILED",
-     "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_lm_head_gemv; shader_hash=c00f7816d3cea7c30ae07414a5d2adc8f860f30a2d981b6744a530de5a074b11. native f32 GEMV for lm_head at 151936x1024"
-    },
-    {
-     "compiled_identity": {
-      "archive_bytes": 15888,
-      "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-mndhpa3d/mlp_down.mtlarchive",
-      "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
-      "device": null,
-      "entry_point": "organ_mlp_down_gemv",
-      "kind": "METAL_PIPELINE",
-      "pipeline": {
-       "created": true,
-       "created_command_queue": false,
-       "dispatched": false,
-       "function_found": true,
-       "max_total_threads_per_threadgroup": 1024,
-       "object": "MTLComputePipelineState",
-       "thread_execution_width": 32
-      },
-      "shader_hash": "58f31ab7b77ac4bf7cae01febccb7f609b608698dd0111277d1548788baf69da",
-      "source_sha256": "6387c6788565c447920734ffe9dce54e4eefa90762717a3853838aecc0e3a544",
-      "unit": "mtl_binary_archive_sha256",
-      "value": "58f31ab7b77ac4bf7cae01febccb7f609b608698dd0111277d1548788baf69da"
-     },
-     "entry_point": "organ_mlp_down_gemv",
-     "occupying": {
-      "compiled_kernel": "organ_mlp_down_gemv",
-      "kind": "COMPILED",
-      "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
-     },
-     "organ": "mlp_down",
-     "shader_hash": "58f31ab7b77ac4bf7cae01febccb7f609b608698dd0111277d1548788baf69da",
-     "status": "COMPILED",
-     "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_mlp_down_gemv; shader_hash=58f31ab7b77ac4bf7cae01febccb7f609b608698dd0111277d1548788baf69da. native f32 GEMV for mlp_down at 1024x3072"
-    },
-    {
-     "compiled_identity": {
-      "archive_bytes": 16944,
-      "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-mndhpa3d/mlp_gate_up.mtlarchive",
-      "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
-      "device": null,
-      "entry_point": "organ_mlp_gate_up_swiglu",
-      "kind": "METAL_PIPELINE",
-      "pipeline": {
-       "created": true,
-       "created_command_queue": false,
-       "dispatched": false,
-       "function_found": true,
-       "max_total_threads_per_threadgroup": 1024,
-       "object": "MTLComputePipelineState",
-       "thread_execution_width": 32
-      },
-      "shader_hash": "2294023e007649b0dbb2453c826389456bfd3bc12586846883f4460fa0287649",
-      "source_sha256": "44c2825d006d200f87d4e28afe8634e571d81e689b01b07fda307551d19f6a5f",
-      "unit": "mtl_binary_archive_sha256",
-      "value": "2294023e007649b0dbb2453c826389456bfd3bc12586846883f4460fa0287649"
-     },
-     "entry_point": "organ_mlp_gate_up_swiglu",
-     "occupying": {
-      "compiled_kernel": "organ_mlp_gate_up_swiglu",
-      "kind": "COMPILED",
-      "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
-     },
-     "organ": "mlp_gate_up",
-     "shader_hash": "2294023e007649b0dbb2453c826389456bfd3bc12586846883f4460fa0287649",
-     "status": "COMPILED",
-     "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_mlp_gate_up_swiglu; shader_hash=2294023e007649b0dbb2453c826389456bfd3bc12586846883f4460fa0287649. fused gate-up SwiGLU GEMV for mlp_gate_up at 3072x1024"
-    },
-    {
-     "compiled_identity": {
-      "archive_bytes": 16480,
-      "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-mndhpa3d/rmsnorm.mtlarchive",
-      "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
-      "device": null,
-      "entry_point": "organ_rmsnorm",
-      "kind": "METAL_PIPELINE",
-      "pipeline": {
-       "created": true,
-       "created_command_queue": false,
-       "dispatched": false,
-       "function_found": true,
-       "max_total_threads_per_threadgroup": 1024,
-       "object": "MTLComputePipelineState",
-       "thread_execution_width": 32
-      },
-      "shader_hash": "7fcad78e7b8fb6d995ee9f6427c9790af6beba4ee7920fdcf6cefe189096bcf4",
-      "source_sha256": "25aef5898db60554a1301771bb9f26882f02ad88ba3028a885b69b822a05cf1e",
-      "unit": "mtl_binary_archive_sha256",
-      "value": "7fcad78e7b8fb6d995ee9f6427c9790af6beba4ee7920fdcf6cefe189096bcf4"
-     },
-     "entry_point": "organ_rmsnorm",
-     "occupying": {
-      "compiled_kernel": "organ_rmsnorm",
-      "kind": "COMPILED",
-      "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
-     },
-     "organ": "rmsnorm",
-     "shader_hash": "7fcad78e7b8fb6d995ee9f6427c9790af6beba4ee7920fdcf6cefe189096bcf4",
-     "status": "COMPILED",
-     "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_rmsnorm; shader_hash=7fcad78e7b8fb6d995ee9f6427c9790af6beba4ee7920fdcf6cefe189096bcf4. RMSNorm over hidden=1024"
-    }
-   ],
-   "n_compiled": 6,
-   "n_planned": 0
-  },
-  "planned_organs": [],
   "qwen3_dense_gguf_blocker": {
    "applies_to_this_specimen": true,
    "architectures": [
@@ -623,7 +333,14 @@
   "specimen_id": "Qwen--Qwen3-0.6B@c1899de289a0",
   "status": "COMPILED_KERNELS_NOT_PACKED"
  },
- "nx_planned_organs": [],
+ "nx_planned_organs": [
+  "embed",
+  "gqa_attention",
+  "lm_head",
+  "mlp_down",
+  "mlp_gate_up",
+  "rmsnorm"
+ ],
  "placeholder_negative_control": {
   "caught": true,
   "raise": "kind='PLACEHOLDER' is not METAL_PIPELINE; shader_hash is not a sha256 of compiled archive bytes; shader_hash is a hardcoded placeholder digest",
@@ -676,7 +393,7 @@
   "receipt": "receipts/future/DEVICE_COMPILER.json"
  },
  "schema": "hawking.future.device_compiler.v1",
- "seal_sha256": "4f7ab90e7e9e64ed71c865138c42c32459ee483b2b46284933fa3d08c02f1c81",
+ "seal_sha256": "f43b2fdbc9bc5c7b0f1fa75a6c493ec7ab739f81fa621092b72a59c4f2809f4a",
  "version": 1,
  "what_this_cannot_establish": [
   "protected complete-token performance or physical EBPW",

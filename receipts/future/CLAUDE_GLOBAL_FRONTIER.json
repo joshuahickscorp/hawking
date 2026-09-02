@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T06:34:45Z",
+  "recorded_at": "2026-09-02T09:38:59Z",
   "recorded_by": "tools/future/global_frontier.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -16,9 +16,9 @@
    "MISSING": 8,
    "WEAK": 4
   },
-  "probes_holding": 14,
+  "probes_holding": 8,
   "probes_resolved_by_sidecar": 5,
-  "probes_stale": 1,
+  "probes_stale": 7,
   "total": 20
  },
  "entries": [
@@ -38,10 +38,10 @@
     "path": "receipts/headless/FLASH_COMPLETE_V0.nx.json"
    },
    "probe_result": {
-    "actual": "SEALED_METADATA_ONLY_NOT_FOR_PROMOTION",
+    "actual": "<file missing>",
     "expect": "SEALED_METADATA_ONLY_NOT_FOR_PROMOTION",
     "field": "status",
-    "holds": true,
+    "holds": false,
     "kind": "field",
     "path": "receipts/headless/FLASH_COMPLETE_V0.nx.json"
    },
@@ -62,10 +62,8 @@
     "path": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
    },
    "probe_result": {
-    "hits": [
-     "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
-    ],
-    "holds": true,
+    "hits": [],
+    "holds": false,
     "kind": "present",
     "path": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
    },
@@ -340,10 +338,8 @@
     "path": "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json"
    },
    "probe_result": {
-    "hits": [
-     "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json"
-    ],
-    "holds": true,
+    "hits": [],
+    "holds": false,
     "kind": "present",
     "path": "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json"
    },
@@ -392,9 +388,7 @@
      "./tools/future/static_kernel_verify_parity.py",
      "./tools/future/static_kernel_verify.py",
      "./tools/future/test_static_kernel_verify.py",
-     "./crates/hawking-core/src/static_kernel_verify.rs",
-     "./workspace/ops/build/rust/release/deps/hawking_static_kernel_verify-22ab1681c35da344.d",
-     "./workspace/ops/build/rust/release/deps/hawking_static_kernel_verify-22ab1681c35da344"
+     "./crates/hawking-core/src/static_kernel_verify.rs"
     ],
     "holds": false,
     "kind": "absent",
@@ -423,10 +417,8 @@
     "path": "receipts/headless/ACCELERATOR_SCOREBOARD.json"
    },
    "probe_result": {
-    "hits": [
-     "receipts/headless/ACCELERATOR_SCOREBOARD.json"
-    ],
-    "holds": true,
+    "hits": [],
+    "holds": false,
     "kind": "present",
     "path": "receipts/headless/ACCELERATOR_SCOREBOARD.json"
    },
@@ -521,10 +513,10 @@
     "path": "receipts/headless/FLASH_META_TEACHER_L4_CAPTURE_BOUNDARY.json"
    },
    "probe_result": {
-    "actual": "BLOCKED_NO_METAL_GPU",
+    "actual": "<file missing>",
     "expect": "BLOCKED_NO_METAL_GPU",
     "field": "status",
-    "holds": true,
+    "holds": false,
     "kind": "field",
     "path": "receipts/headless/FLASH_META_TEACHER_L4_CAPTURE_BOUNDARY.json"
    },
@@ -545,10 +537,8 @@
     "path": "receipts/headless/ACCELERATOR_FRONT_G_P6.json"
    },
    "probe_result": {
-    "hits": [
-     "receipts/headless/ACCELERATOR_FRONT_G_P6.json"
-    ],
-    "holds": true,
+    "hits": [],
+    "holds": false,
     "kind": "present",
     "path": "receipts/headless/ACCELERATOR_FRONT_G_P6.json"
    },
@@ -567,9 +557,15 @@
  ],
  "resolved_meaning": "A MISSING claim whose probe now finds ONLY sidecar files: this campaign closed the gap. The entry is retired, not refuted.",
  "schema": "hawking.future.claude_global_frontier.v1",
- "seal_sha256": "29275e41dacc3b3d49af5a32366acd915f4cc4813fa54f1d31855fce2243b826",
+ "seal_sha256": "97e679175d9616eaa1fb97a89761fad3440730d47a4df579966902a7ffa59a28",
  "stale_entries": [
-  "F014"
+  "F001",
+  "F002",
+  "F012",
+  "F014",
+  "F015",
+  "F019",
+  "F020"
  ],
  "stale_meaning": "A stale probe means the claim no longer matches disk -- usually because Codex or a sidecar lane built the thing. Retire or reclassify the entry; do not silently keep it.",
  "version": 1

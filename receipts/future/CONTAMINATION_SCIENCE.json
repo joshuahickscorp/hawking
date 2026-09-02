@@ -44,7 +44,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T07:03:25Z",
+  "recorded_at": "2026-09-02T09:50:43Z",
   "recorded_by": "tools/future/contamination.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -63,25 +63,31 @@
  "contamination_evidence": [
   {
    "contributes": "HEAVY",
-   "finding": "device_utilization_pct=98 >= 20.0",
-   "kind": "heavy",
-   "probe": "gpu_occupancy"
-  },
-  {
-   "contributes": "HEAVY",
-   "finding": "max_rss_gib=26.33 >= 8.0",
+   "finding": "max_rss_gib=11.92 >= 8.0",
    "kind": "heavy",
    "probe": "rss"
+  },
+  {
+   "contributes": "LIGHT",
+   "finding": "load_1m=22.33984375 > 0.5*ncpu=28",
+   "kind": "light",
+   "probe": "load"
   },
   {
    "contributes": "LIGHT",
    "finding": "pressure_level=1 (warn)",
    "kind": "light",
    "probe": "memory"
+  },
+  {
+   "contributes": "blocks QUIESCENT",
+   "finding": "ps failed (PermissionError: [Errno 1] Operation not permitted: 'ps'); RSS enumerated via libproc; %cpu is unavailable so QUIESCENT cannot be earned",
+   "kind": "probe_partial",
+   "probe": "processes"
   }
  ],
  "contamination_reason": "at least one HEAVY probe fired",
- "direct_observation": "contamination_class=HEAVY; required_probes={'processes_cpu_pct': True, 'loadavg': True, 'memory': True}; n_evidence=3; probes_run=['gpu_occupancy', 'load', 'memory', 'processes', 'thermal']",
+ "direct_observation": "contamination_class=HEAVY; required_probes={'processes_cpu_pct': False, 'loadavg': True, 'memory': True}; n_evidence=4; probes_run=['gpu_occupancy', 'load', 'memory', 'processes', 'thermal']",
  "falsifier": "f",
  "frontier_entry": {
   "classification": "WEAK",
@@ -182,19 +188,19 @@
   },
   {
    "adequate_for_this_lane": false,
-   "on_disk_in_this_worktree": true,
+   "on_disk_in_this_worktree": false,
    "path": "hcli/agentos/benchmark_boundary.py",
    "role": "QUALIFIED_PROTECTED vs DIAGNOSTIC_CONTAMINATED from before/after machine_quiescence. Vocabulary is not DIAGNOSTIC_RELATIVE / PROTECTED_ABSOLUTE; default NOT_FOR_PROMOTION."
   },
   {
    "adequate_for_this_lane": false,
-   "on_disk_in_this_worktree": true,
+   "on_disk_in_this_worktree": false,
    "path": "hcli/agentos/protected_accelerator_benchmark.py",
    "role": "Protected resident window that calls classify_window. Codex/HCLI surface."
   },
   {
    "adequate_for_this_lane": false,
-   "on_disk_in_this_worktree": true,
+   "on_disk_in_this_worktree": false,
    "path": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
    "role": "Not in this worktree HEAD. Recovered from git object a4e11a2c: queue_policy.protected_start_requires_machine_quiescence=true, diagnostic_results_do_not_promote=true, bench.state=UNKNOWN, measurement_contract lists physical fields that stay null here."
   }
@@ -202,113 +208,69 @@
  "required_probes": {
   "loadavg": true,
   "memory": true,
-  "processes_cpu_pct": true
+  "processes_cpu_pct": false
  },
  "schema": "hawking.future.contamination.v1",
- "seal_sha256": "ed23496124688c5b10deb38b6b506698db385e0220079c1d80f0fb36e10d25b1",
+ "seal_sha256": "651bdc9522a943d7216c3dd6ccd447f8f5b2fadf155c8303ec8ca4a2e7a2fbf6",
  "snapshot": {
   "benchmark_ordinal": null,
   "competing_workloads": [
    {
-    "cpu_pct": 68.2,
-    "name": "/Users/scammermike/.venvs/hawking-aider/bin/python3",
-    "pid": 67830,
-    "rss_gib": 26.33
+    "cpu_pct": null,
+    "name": "python3.12",
+    "pid": 81199,
+    "rss_gib": 11.92
    },
    {
-    "cpu_pct": 2.2,
-    "name": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
-    "pid": 6090,
-    "rss_gib": 11.12
+    "cpu_pct": null,
+    "name": "Python",
+    "pid": 96261,
+    "rss_gib": 7.59
    },
    {
-    "cpu_pct": 310.3,
-    "name": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
-    "pid": 22015,
-    "rss_gib": 9.31
+    "cpu_pct": null,
+    "name": "Python",
+    "pid": 84162,
+    "rss_gib": 6.42
    },
    {
-    "cpu_pct": 41.7,
-    "name": "/Users/scammermike/.venvs/hawking-aider/bin/python3",
-    "pid": 7592,
-    "rss_gib": 0.32
-   },
-   {
-    "cpu_pct": 81.7,
-    "name": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores",
-    "pid": 292,
-    "rss_gib": 0.16
-   },
-   {
-    "cpu_pct": 30.5,
-    "name": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
-    "pid": 180,
-    "rss_gib": 0.06
-   },
-   {
-    "cpu_pct": 22.0,
-    "name": "/System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/MacOS/ScreensharingAgent",
-    "pid": 57364,
-    "rss_gib": 0.03
-   },
-   {
-    "cpu_pct": 100.0,
-    "name": ".venv/bin/python",
-    "pid": 17887,
-    "rss_gib": 0.0
+    "cpu_pct": null,
+    "name": "Python",
+    "pid": 62965,
+    "rss_gib": 5.53
    }
   ],
   "gpu_processes": {
    "attribution": "enumerated by CPU% and/or RSS; PID-level GPU occupancy is not available without a protected lease. On Apple Silicon RSS is the Metal working-set dimension (ACCELERATOR_QUIESCENCE_INSTRUMENT).",
-   "cpu_pct_available": true,
-   "method": "ps_enumerate",
-   "n_enumerated": 606,
-   "n_over_threshold": 8,
+   "cpu_pct_available": false,
+   "method": "libproc_enumerate_rss",
+   "n_enumerated": 396,
+   "n_over_threshold": 4,
    "no_name_filter": true,
    "processes": [
     {
-     "cpu_pct": 68.2,
-     "name": "/Users/scammermike/.venvs/hawking-aider/bin/python3",
-     "pid": 67830
+     "cpu_pct": null,
+     "name": "python3.12",
+     "pid": 81199
     },
     {
-     "cpu_pct": 2.2,
-     "name": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
-     "pid": 6090
+     "cpu_pct": null,
+     "name": "Python",
+     "pid": 96261
     },
     {
-     "cpu_pct": 310.3,
-     "name": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
-     "pid": 22015
+     "cpu_pct": null,
+     "name": "Python",
+     "pid": 84162
     },
     {
-     "cpu_pct": 41.7,
-     "name": "/Users/scammermike/.venvs/hawking-aider/bin/python3",
-     "pid": 7592
-    },
-    {
-     "cpu_pct": 81.7,
-     "name": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores",
-     "pid": 292
-    },
-    {
-     "cpu_pct": 30.5,
-     "name": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
-     "pid": 180
-    },
-    {
-     "cpu_pct": 22.0,
-     "name": "/System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/MacOS/ScreensharingAgent",
-     "pid": 57364
-    },
-    {
-     "cpu_pct": 100.0,
-     "name": ".venv/bin/python",
-     "pid": 17887
+     "cpu_pct": null,
+     "name": "Python",
+     "pid": 62965
     }
    ],
-   "reason": null,
-   "status": "OK",
+   "reason": "ps failed (PermissionError: [Errno 1] Operation not permitted: 'ps'); RSS enumerated via libproc; %cpu is unavailable so QUIESCENT cannot be earned",
+   "status": "PARTIAL",
    "thresholds": {
     "cpu_pct": 20.0,
     "rss_gib": 2.0
@@ -328,35 +290,35 @@
   },
   "memory_pressure": {
    "bytes": {
-    "active": 30417354752,
-    "compressor": 20386824192,
-    "free": 328335360,
-    "inactive": 30418763776,
-    "wired": 20647084032
+    "active": 29697097728,
+    "compressor": 28100231168,
+    "free": 5368709120,
+    "inactive": 29641064448,
+    "wired": 9380331520
    },
    "pages": {
-    "\"Translation faults\"": 26476055672,
-    "Anonymous pages": 2879047,
-    "Compressions": 2324703445,
-    "Decompressions": 759567420,
-    "File-backed pages": 834374,
-    "Pageins": 932069385,
-    "Pageouts": 687915,
-    "Pages active": 1856528,
-    "Pages copy-on-write": 2095646319,
-    "Pages free": 20040,
-    "Pages inactive": 1856614,
-    "Pages occupied by compressor": 1244313,
-    "Pages purgeable": 38004,
-    "Pages purged": 92310192,
-    "Pages reactivated": 514342862,
-    "Pages speculative": 279,
-    "Pages stored in compressor": 1340609,
+    "\"Translation faults\"": 28918072683,
+    "Anonymous pages": 2716978,
+    "Compressions": 2467674488,
+    "Decompressions": 858552681,
+    "File-backed pages": 905427,
+    "Pageins": 954249668,
+    "Pageouts": 693119,
+    "Pages active": 1812567,
+    "Pages copy-on-write": 2159368046,
+    "Pages free": 327680,
+    "Pages inactive": 1809147,
+    "Pages occupied by compressor": 1715102,
+    "Pages purgeable": 753,
+    "Pages purged": 98531760,
+    "Pages reactivated": 576277413,
+    "Pages speculative": 691,
+    "Pages stored in compressor": 3180441,
     "Pages throttled": 0,
-    "Pages wired down": 1260198,
-    "Pages zero filled": 37089492278,
-    "Swapins": 124188437,
-    "Swapouts": 236657153
+    "Pages wired down": 572530,
+    "Pages zero filled": 39138046130,
+    "Swapins": 134545321,
+    "Swapouts": 257487489
    },
    "pressure_level": 1,
    "pressure_name": "warn",
@@ -365,53 +327,53 @@
   },
   "probes": {
    "gpu_occupancy": {
-    "device_utilization_pct": 98,
+    "device_utilization_pct": 0,
     "gpu_core_count": 60,
     "method": "ioreg_IOGPU_PerformanceStatistics",
     "no_gpu_lease": true,
     "note": "device occupancy percent, not a kernel timing and not a throughput claim; PID-level GPU attribution is unavailable without a protected lease",
-    "renderer_utilization_pct": 91,
+    "renderer_utilization_pct": 0,
     "status": "OK",
-    "tiler_utilization_pct": 91
+    "tiler_utilization_pct": 0
    },
    "load": {
-    "load_15m": 7.552734375,
-    "load_1m": 5.19921875,
-    "load_5m": 6.7431640625,
+    "load_15m": 16.67724609375,
+    "load_1m": 22.33984375,
+    "load_5m": 23.0830078125,
     "ncpu": 28,
     "status": "OK"
    },
    "memory": {
     "bytes": {
-     "active": 30417354752,
-     "compressor": 20386824192,
-     "free": 328335360,
-     "inactive": 30418763776,
-     "wired": 20647084032
+     "active": 29697097728,
+     "compressor": 28100231168,
+     "free": 5368709120,
+     "inactive": 29641064448,
+     "wired": 9380331520
     },
     "pages": {
-     "\"Translation faults\"": 26476055672,
-     "Anonymous pages": 2879047,
-     "Compressions": 2324703445,
-     "Decompressions": 759567420,
-     "File-backed pages": 834374,
-     "Pageins": 932069385,
-     "Pageouts": 687915,
-     "Pages active": 1856528,
-     "Pages copy-on-write": 2095646319,
-     "Pages free": 20040,
-     "Pages inactive": 1856614,
-     "Pages occupied by compressor": 1244313,
-     "Pages purgeable": 38004,
-     "Pages purged": 92310192,
-     "Pages reactivated": 514342862,
-     "Pages speculative": 279,
-     "Pages stored in compressor": 1340609,
+     "\"Translation faults\"": 28918072683,
+     "Anonymous pages": 2716978,
+     "Compressions": 2467674488,
+     "Decompressions": 858552681,
+     "File-backed pages": 905427,
+     "Pageins": 954249668,
+     "Pageouts": 693119,
+     "Pages active": 1812567,
+     "Pages copy-on-write": 2159368046,
+     "Pages free": 327680,
+     "Pages inactive": 1809147,
+     "Pages occupied by compressor": 1715102,
+     "Pages purgeable": 753,
+     "Pages purged": 98531760,
+     "Pages reactivated": 576277413,
+     "Pages speculative": 691,
+     "Pages stored in compressor": 3180441,
      "Pages throttled": 0,
-     "Pages wired down": 1260198,
-     "Pages zero filled": 37089492278,
-     "Swapins": 124188437,
-     "Swapouts": 236657153
+     "Pages wired down": 572530,
+     "Pages zero filled": 39138046130,
+     "Swapins": 134545321,
+     "Swapouts": 257487489
     },
     "pressure_level": 1,
     "pressure_name": "warn",
@@ -419,11 +381,12 @@
     "status": "OK"
    },
    "processes": {
-    "cpu_pct_available": true,
-    "method": "ps_enumerate",
-    "n_enumerated": 606,
+    "cpu_pct_available": false,
+    "method": "libproc_enumerate_rss",
+    "n_enumerated": 396,
     "no_name_filter": true,
-    "status": "OK"
+    "reason": "ps failed (PermissionError: [Errno 1] Operation not permitted: 'ps'); RSS enumerated via libproc; %cpu is unavailable so QUIESCENT cannot be earned",
+    "status": "PARTIAL"
    },
    "thermal": {
     "method": null,
@@ -432,11 +395,11 @@
    }
   },
   "resident_local_model": {
-   "cpu_pct": 68.2,
-   "name": "/Users/scammermike/.venvs/hawking-aider/bin/python3",
+   "cpu_pct": null,
+   "name": "python3.12",
    "note": "largest RSS neighbour over the quiet threshold; not a model-name guess",
-   "pid": 67830,
-   "rss_gib": 26.33
+   "pid": 81199,
+   "rss_gib": 11.92
   },
   "thermal_state": "UNKNOWN"
  },

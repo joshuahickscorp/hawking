@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:09:08Z",
+  "recorded_at": "2026-09-02T09:44:52Z",
   "recorded_by": "tools/future/power_torture.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -18,6 +18,7 @@
  },
  "correct_refusal_counts_as_exercised": true,
  "correct_refusals": [
+  "GENERIC_NR_NX",
   "CONCURRENCY"
  ],
  "credit_rules": {
@@ -264,7 +265,7 @@
   ],
   "degenerate_axes": [],
   "instrument": "tools.future.autonomy_degeneracy.measure",
-  "instrument_path": "/Users/scammermike/Downloads/hawking/tools/future/autonomy_degeneracy.py",
+  "instrument_path": "/Users/scammermike/.claude-grok/worktrees/s4-tools-future-under-10s-20260902-045214/tools/future/autonomy_degeneracy.py",
   "n_argv0_labelled": 0,
   "n_unlabelled": 0,
   "named_axes": [
@@ -280,7 +281,7 @@
   "verdict": "PASS"
  },
  "duration_s_budget": 1800,
- "elapsed_s": 4.1986870765686035,
+ "elapsed_s": 6.0428080558776855,
  "evidence_class": "STATIC_ONLY",
  "exercised": [
   "NO_WAIT",
@@ -314,12 +315,13 @@
  "integration_ok": true,
  "judge": {
   "append_only": true,
-  "claimed_sha256": "4e9a74088568d9a3a63777ef97f9f67004ebf976a1a2d94e91a123c19c8d34ad",
+  "claimed_sha256": "3a1cce325d46e9a4ae9491f0e88b8e19d7748a79ab11fe47db8b61ca4a4ca714",
   "correct_refusal_counts_as_exercised": true,
   "correct_refusals": [
+   "GENERIC_NR_NX",
    "CONCURRENCY"
   ],
-  "events_sha256": "4e9a74088568d9a3a63777ef97f9f67004ebf976a1a2d94e91a123c19c8d34ad",
+  "events_sha256": "3a1cce325d46e9a4ae9491f0e88b8e19d7748a79ab11fe47db8b61ca4a4ca714",
   "evidence_class": "STATIC_ONLY",
   "exercised": [
    "NO_WAIT",
@@ -345,7 +347,7 @@
    "proofs",
    "summary"
   ],
-  "n_correct_refusals": 1,
+  "n_correct_refusals": 2,
   "n_events": 27,
   "n_exercised": 14,
   "n_failed": 0,
@@ -378,12 +380,12 @@
     "why": "REFUSED WU.TORTURE.invalidate.gate_up.shared_input_latent: restatement of killed family shared_input_latent_plus_expert_local_output_readout (receipts/future/RIVAL_CODEC_SCREEN.json): nearby restatement of shared_input_latent_plus_expert_local_output_readout on layer_4.routed_experts.gate_up_proj (split=None); more ranks of a killed family on the exhausted surface are refused. The scar does not generalise, and this candidate did not leave the surface."
    },
    "GENERIC_NR_NX": {
-    "correct_refusal": false,
+    "correct_refusal": true,
     "kind": "nr_nx_stage",
     "power": "GENERIC_NR_NX",
     "seq": 14,
-    "status": "EXERCISED",
-    "why": "every named stage ran and PASSED"
+    "status": "EXERCISED_REFUSAL",
+    "why": "first failing stage DeviceCompiler: DeviceCompiler callable ran (tools.future.device_compiler.lower_plan) and lowered 0/6 organ(s) to an MTLComputePipelineState. 6 remain NATIVE_UNMEASURED; placeholder_refused=0. lowered 0/6 organ(s) to MTLComputePipelineState; 6 remain NATIVE_UNMEASURED; placeholder_refused=0. QWEN3_DENSE_GGUF_MATCH_ARM_ABSENT holds=True; metal=MTLCreateSystemDefaultDevice returned nil; MTLCopyAllDevices n=0. This process cannot see a Metal device, so it cannot mint an MTLComputePipelineState. That is a process property, not a claim that the host has no GPU.. Native GGUF match arms are ['llama', 'llama', 'llama2', 'llama3', 'llama3.1', 'llama3.2', 'mistral', 'deepseek2', 'deepseek-v2', 'deepseek2-lite', 'qwen2', 'qwen2.5', 'qwen', 'qwen2moe', 'qwen3moe', 'qwen-moe', 'rwkv7', 'rwkv-7']; qwen3 dense is absent (qwen3moe is a different family; dense was not mapped onto the moe arm). adapted family='dense_swiglu_transformer'."
    },
    "MUTATION": {
     "correct_refusal": false,
@@ -399,7 +401,7 @@
     "power": "NO_WAIT",
     "seq": 5,
     "status": "EXERCISED",
-    "why": "detached pid 18250 stayed open while WU.TORTURE.NO_WAIT.ind started, progressed and ingested; idle_runnable was not a wait"
+    "why": "detached pid 95037 stayed open while WU.TORTURE.NO_WAIT.ind started, progressed and ingested; idle_runnable was not a wait"
    },
    "PROTECTED_PARKING": {
     "correct_refusal": false,
@@ -472,9 +474,9 @@
   "skipped_do_not_count_toward_pass": true,
   "timestamps_monotonic": true,
   "verdict": "PASS",
-  "why": "14 exercised (including 1 correct refusals), 0 skipped"
+  "why": "14 exercised (including 2 correct refusals), 0 skipped"
  },
- "n_correct_refusals": 1,
+ "n_correct_refusals": 2,
  "n_exercised": 14,
  "n_failed": 0,
  "n_skipped": 0,
@@ -567,17 +569,24 @@
    "why": "queued restatement refused; next school is NGRAM"
   },
   "GENERIC_NR_NX": {
-   "correct_refusal": false,
+   "correct_refusal": true,
    "counts_toward_pass": true,
    "evidence": {
-    "callable": true
+    "callable": false,
+    "first_failing_stage": {
+     "error": "MTLCreateSystemDefaultDevice returned nil; MTLCopyAllDevices n=0. This process cannot see a Metal device, so it cannot mint an MTLComputePipelineState. That is a process property, not a claim that the host has no GPU.",
+     "stage": "DeviceCompiler",
+     "status": "FAILED",
+     "why": "DeviceCompiler callable ran (tools.future.device_compiler.lower_plan) and lowered 0/6 organ(s) to an MTLComputePipelineState. 6 remain NATIVE_UNMEASURED; placeholder_refused=0. lowered 0/6 organ(s) to MTLComputePipelineState; 6 remain NATIVE_UNMEASURED; placeholder_refused=0. QWEN3_DENSE_GGUF_MATCH_ARM_ABSENT holds=True; metal=MTLCreateSystemDefaultDevice returned nil; MTLCopyAllDevices n=0. This process cannot see a Metal device, so it cannot mint an MTLComputePipelineState. That is a process property, not a claim that the host has no GPU.. Native GGUF match arms are ['llama', 'llama', 'llama2', 'llama3', 'llama3.1', 'llama3.2', 'mistral', 'deepseek2', 'deepseek-v2', 'deepseek2-lite', 'qwen2', 'qwen2.5', 'qwen', 'qwen2moe', 'qwen3moe', 'qwen-moe', 'rwkv7', 'rwkv-7']; qwen3 dense is absent (qwen3moe is a different family; dense was not mapped onto the moe arm). adapted family='dense_swiglu_transformer'."
+    },
+    "n_compiled_organs": null
    },
    "exercised": true,
    "failed": false,
    "power": "GENERIC_NR_NX",
    "skipped": false,
-   "status": "EXERCISED",
-   "why": "every named NR\u2192NX stage ran and PASSED"
+   "status": "EXERCISED_REFUSAL",
+   "why": "pipeline ran; first failing stage DeviceCompiler is FAILED (not SKIPPED): DeviceCompiler callable ran (tools.future.device_compiler.lower_plan) and lowered 0/6 organ(s) to an MTLComputePipelineState. 6 remain NATIVE_UNMEASURED; placeholder_refused=0. lowered 0/6 organ(s) to MTLComputePipelineState; 6 remain NATIVE_UNMEASURED; placeholder_refused=0. QWEN3_DENSE_GGUF_MATCH_ARM_ABSENT holds=True; metal=MTLCreateSystemDefaultDevice returned nil; MTLCopyAllDevices n=0. This process cannot see a Metal device, so it cannot mint an MTLComputePipelineState. That is a process property, not a claim that the host has no GPU.. Native GGUF match arms are ['llama', 'llama', 'llama2', 'llama3', 'llama3.1', 'llama3.2', 'mistral', 'deepseek2', 'deepseek-v2', 'deepseek2-lite', 'qwen2', 'qwen2.5', 'qwen', 'qwen2moe', 'qwen3moe', 'qwen-moe', 'rwkv7', 'rwkv-7']; qwen3 dense is absent (qwen3moe is a different family; dense was not mapped onto the moe arm). adapted family='dense_swiglu_transformer'."
   },
   "MUTATION": {
    "correct_refusal": false,
@@ -609,18 +618,18 @@
    "counts_toward_pass": true,
    "evidence": {
     "detector_verdict": "NO_WAIT_OK",
-    "fast_finished_at": 1788242945.523886,
+    "fast_finished_at": 1788342288.4326808,
     "fast_ingest": "ingested",
-    "pid": 18250,
+    "pid": 95037,
     "runnable_while_open": "RUNNABLE",
-    "slow_launched_at": 1788242945.1812632
+    "slow_launched_at": 1788342288.038291
    },
    "exercised": true,
    "failed": false,
    "power": "NO_WAIT",
    "skipped": false,
    "status": "EXERCISED",
-   "why": "detached pid 18250 stayed open while WU.TORTURE.NO_WAIT.ind started, progressed and ingested; idle_runnable was not a wait"
+   "why": "detached pid 95037 stayed open while WU.TORTURE.NO_WAIT.ind started, progressed and ingested; idle_runnable was not a wait"
   },
   "PROTECTED_PARKING": {
    "correct_refusal": false,
@@ -658,7 +667,7 @@
     "cites": [
      "receipts/future/STATUS_CAUSALITY_CHALLENGE.json",
      "receipts/future/DETACHED_WORK_TRIAL.json",
-     "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/pytest-of-scammermike/pytest-2217/power_torture_run0/nowait/results/fast.json"
+     "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/pytest-of-scammermike/pytest-3306/power_torture_run0/nowait/results/fast.json"
     ]
    },
    "exercised": true,
@@ -721,8 +730,8 @@
    "counts_toward_pass": true,
    "evidence": {
     "emit_entry": "emit",
-    "n_gates_named_gap": 1,
-    "n_gates_recording": 17,
+    "n_gates_named_gap": 2,
+    "n_gates_recording": 16,
     "probe_kind": "process_error",
     "verdict": "OVERREACHING"
    },
@@ -767,12 +776,12 @@
  "purpose": "30-minute power torture on a frozen build. Judged independently from the sealed timeline against a substrate verified unchanged.",
  "resident_model_attached": false,
  "schema": "hawking.future.power_torture.v2",
- "seal_sha256": "00632bb9865ded9762971203c541038f87ee02cfea9272bef64214cc41d645c1",
+ "seal_sha256": "536933be570a3c1c23dbe761d2d503815c68ca01c9ab75dd4687d9663806f859",
  "skipped": [],
  "skipped_do_not_count_toward_pass": true,
  "substrate": {
-  "after_digest": "aa938a5d6f1a8f5403abdfd779f9135a015e97ba1a39fddd72e96f1024afa98a",
-  "before_digest": "aa938a5d6f1a8f5403abdfd779f9135a015e97ba1a39fddd72e96f1024afa98a",
+  "after_digest": "ee620affc0ffa65f92eebe069759cc5e169f70f3ce051892b8d1495dc3bca307",
+  "before_digest": "ee620affc0ffa65f92eebe069759cc5e169f70f3ce051892b8d1495dc3bca307",
   "equal": true,
   "files": [
    {
@@ -782,9 +791,9 @@
     "state": "HASHED"
    },
    {
-    "bytes": 13414,
+    "bytes": 23340,
     "path": "tools/future/_common.py",
-    "sha256": "e3299f8acbe7c02c77d52d50d911abddca114e8ab7f51dc2b7cf79a2e79018b8",
+    "sha256": "3e2c6efe54cba73e4c1b6aab442acf5c66723278897b4c3bbcb43ca01b63ded3",
     "state": "HASHED"
    },
    {
@@ -812,9 +821,9 @@
     "state": "HASHED"
    },
    {
-    "bytes": 156931,
+    "bytes": 156937,
     "path": "tools/future/autonomy_trial.py",
-    "sha256": "a4dd3902c8d721f960d537babda2a59232248e9905eeeab1bb18369af72c9feb",
+    "sha256": "1b4a5ab254ffd3722ac840accb90c8b2eabcc0f17213156fa9887230cbe55b34",
     "state": "HASHED"
    },
    {
@@ -938,9 +947,9 @@
     "state": "HASHED"
    },
    {
-    "bytes": 63130,
+    "bytes": 63420,
     "path": "tools/future/negative_index.py",
-    "sha256": "1a89c8c123f5fd954bea3fc28e3594832bf229ed6cfaa481f1420301086b1dee",
+    "sha256": "c89cf428e8926637db2c4c5f38f0c2355fe2e9bdd8e9204246597284494eeedf",
     "state": "HASHED"
    },
    {
@@ -962,9 +971,9 @@
     "state": "HASHED"
    },
    {
-    "bytes": 134745,
+    "bytes": 135849,
     "path": "tools/future/nr_nx_generic.py",
-    "sha256": "554f12de4ea2635b20fbcf5aee5955a86054553d5563aa10b9afd96606d047d2",
+    "sha256": "724edfef2ce33ee681cf9160d991d89c17ee0c784d94798bc3a0f69824b1b553",
     "state": "HASHED"
    },
    {
@@ -1010,9 +1019,9 @@
     "state": "HASHED"
    },
    {
-    "bytes": 132533,
+    "bytes": 132543,
     "path": "tools/future/power_torture.py",
-    "sha256": "68e2b8e8bf44d9d31a37482bc7e0b5b4cb48f301960e040f22fc38c359bbf9bd",
+    "sha256": "ca7af67708bdfca539e6a1525c5a116b6ff832d139a7653718332826261fe9f6",
     "state": "HASHED"
    },
    {
@@ -1100,9 +1109,21 @@
     "state": "HASHED"
    },
    {
+    "bytes": 32590,
+    "path": "tools/future/sleeping_specimens.py",
+    "sha256": "973ab57e5614faceaf0dd2fb4a61b8277a148142e89809321872e974089b832a",
+    "state": "HASHED"
+   },
+   {
     "bytes": 42640,
     "path": "tools/future/specimen_curriculum.py",
     "sha256": "11c50ed5c06323d6d1fe97e7ed98d7124b5cc52b179e312f88f6d9b384632562",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 64321,
+    "path": "tools/future/specimen_events.py",
+    "sha256": "81f2f7a74795176cdd02fa163058e3a69e120ce63d9f72c58d6ba92489d2424d",
     "state": "HASHED"
    },
    {
@@ -1112,9 +1133,9 @@
     "state": "HASHED"
    },
    {
-    "bytes": 78968,
+    "bytes": 81418,
     "path": "tools/future/static_kernel_verify.py",
-    "sha256": "fdd2dd474737b2207af3d1e0d1ae2758166bcf76ed0cedaf9fabfb85d60b62f6",
+    "sha256": "fc681e18feecb064faa38cfd371388d9d1a803732ac92265c8ff3d4943423d62",
     "state": "HASHED"
    },
    {
@@ -1130,9 +1151,9 @@
     "state": "HASHED"
    },
    {
-    "bytes": 67115,
+    "bytes": 77047,
     "path": "tools/future/tabula.py",
-    "sha256": "efd2c4693adeb13b1cb8dddb27f45d932e1a64bb4a1c04a312aa461530a5e7a6",
+    "sha256": "4cc43a2f20fb713754124e0372b5332ecc4289c71da4949a7d094bb95b6c8cce",
     "state": "HASHED"
    },
    {
@@ -1154,9 +1175,9 @@
     "state": "HASHED"
    },
    {
-    "bytes": 55737,
+    "bytes": 57136,
     "path": "tools/future/wakeup.py",
-    "sha256": "5c9b0cedfe9f15f5566770de9b23f46d694fce6d5743c6ee81e8a388fcc7108c",
+    "sha256": "6223f69abcc1168b23fd246e25589e08a63c9aa3c963c06a9afe6fd34294e635",
     "state": "HASHED"
    },
    {
@@ -1179,7 +1200,7 @@
    }
   ],
   "moved": [],
-  "n_files": 67,
+  "n_files": 69,
   "n_shaders": 1,
   "shaders": [
    {
@@ -1193,8 +1214,8 @@
  },
  "timeline": {
   "append_only": true,
-  "elapsed_s": 4.198165,
-  "events_sha256": "4e9a74088568d9a3a63777ef97f9f67004ebf976a1a2d94e91a123c19c8d34ad",
+  "elapsed_s": 6.041876,
+  "events_sha256": "3a1cce325d46e9a4ae9491f0e88b8e19d7748a79ab11fe47db8b61ca4a4ca714",
   "n_events": 27,
   "path": "receipts/future/POWER_TORTURE_TIMELINE.json",
   "receipt": "receipts/future/POWER_TORTURE_TIMELINE.json",
@@ -1204,6 +1225,6 @@
  "trial_id": "30m",
  "verdict": "PASS",
  "version": 2,
- "why": "frozen substrate unchanged; judge read the sealed timeline; degeneracy PASS; 14 exercised (1 correct refusals), 0 skipped",
+ "why": "frozen substrate unchanged; judge read the sealed timeline; degeneracy PASS; 14 exercised (2 correct refusals), 0 skipped",
  "within_budget": true
 }

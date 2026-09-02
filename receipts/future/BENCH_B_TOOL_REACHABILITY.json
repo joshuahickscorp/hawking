@@ -24,6 +24,7 @@
   "architecture.inspect",
   "benchmark.inspect",
   "benchmark.run",
+  "context.recall",
   "doctor.inspect",
   "doctor.query",
   "filesystem.list",
@@ -67,6 +68,9 @@
   "odyssey.record_scar",
   "odyssey.status",
   "odyssey.value",
+  "processes.list",
+  "processes.orphaned",
+  "processes.summary",
   "receipt.inspect",
   "receipt.read",
   "roadmap.inspect",
@@ -84,8 +88,8 @@
   "web.search"
  ],
  "negative_control": "register ghost.no_handler, snapshot discover(), delete it from the handler map, then assert check_discovered_tools raises because invoke returns UNKNOWN_TOOL for that name",
- "recorded_at": "2026-09-02T00:10:10Z",
+ "recorded_at": "2026-09-02T09:38:57Z",
  "test_path": "tools/future/test_tool_reachability.py",
- "tools_checked": 64,
+ "tools_checked": 68,
  "unknown_tool_failures": []
 }

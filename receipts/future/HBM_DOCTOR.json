@@ -249,12 +249,12 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T21:03:26Z",
+  "recorded_at": "2026-09-02T09:49:11Z",
   "recorded_by": "tools/future/hbm_doctor.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
- "branch": "odyssey-i",
+ "branch": "grok/s4-tools-future-under-10s-20260902-045214",
  "bytes_atlas_consumed": {
   "active_weight_bytes_per_token": 9878901136,
   "catalog_total_bytes": 10554328856,
@@ -814,7 +814,7 @@
   "Flash candidates joined from science organ_graph + EBPW + FPGA map without inventing latency.",
   "bytes_atlas consumed as byte ranking, not forked and not re-emitted as a TPS claim."
  ],
- "head": "dd7640a72f2569b0bd2c0c433dab329f9a9248b5",
+ "head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
  "headline": {
   "budget_bytes": 8589934592,
   "candidate_count": 14,
@@ -836,49 +836,49 @@
   },
   "bytes_atlas_receipt": {
    "in_git": true,
-   "on_disk": true,
+   "on_disk": false,
    "path": "receipts/headless/ACCELERATOR_TOKEN_BYTES_ATLAS.json",
    "present": true
   },
   "flash_ebpw_budget": {
    "in_git": true,
-   "on_disk": true,
+   "on_disk": false,
    "path": "receipts/headless/FLASH_EBPW_BUDGET.json",
    "present": true
   },
   "flash_fpga_organ_map": {
    "in_git": true,
-   "on_disk": true,
+   "on_disk": false,
    "path": "receipts/headless/FLASH_NEXT_FPGA_ORGAN_MAP.json",
    "present": true
   },
   "flash_layer10_critical_path": {
    "in_git": true,
-   "on_disk": true,
+   "on_disk": false,
    "path": "receipts/headless/FLASH_LAYER10_CRITICAL_PATH.json",
    "present": true
   },
   "flash_layer30_critical_path": {
    "in_git": true,
-   "on_disk": true,
+   "on_disk": false,
    "path": "receipts/headless/FLASH_LAYER30_CRITICAL_PATH.json",
    "present": true
   },
   "flash_organ_census": {
    "in_git": true,
-   "on_disk": true,
+   "on_disk": false,
    "path": "receipts/headless/FLASH_ORGAN_CENSUS.json",
    "present": true
   },
   "flash_science": {
    "in_git": true,
-   "on_disk": true,
+   "on_disk": false,
    "path": "receipts/headless/HCLI_FLASH_NEXT_PRE_RUNTIME_SCIENCE.json",
    "present": true
   },
   "flash_token_ns_budget": {
    "in_git": true,
-   "on_disk": true,
+   "on_disk": false,
    "path": "receipts/headless/FLASH_TOKEN_NS_BUDGET.json",
    "present": true
   },
@@ -890,13 +890,13 @@
   },
   "noetic_organ_census": {
    "in_git": true,
-   "on_disk": true,
+   "on_disk": false,
    "path": "receipts/headless/NOETIC_ORGAN_CENSUS.json",
    "present": true
   },
   "qwen27_token_ns_budget": {
    "in_git": true,
-   "on_disk": true,
+   "on_disk": false,
    "path": "receipts/headless/QWEN27_TOKEN_NS_BUDGET.json",
    "present": true
   }
@@ -980,7 +980,7 @@
   }
  ],
  "schema": "hawking.future.hbm_doctor.v1",
- "seal_sha256": "0949a46c0768765ae956f92cfc3902b8444a62bdc5e5d67f3513a7ac2578e821",
+ "seal_sha256": "f84cc9f31f50455f92fc45116da4e239527b6ac05dfe0ed38e634fc4a89e1b70",
  "solution": {
   "budget_bytes": 8589934592,
   "counts": {

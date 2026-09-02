@@ -2,9 +2,7 @@
  "atlas_source": {
   "fingerprint": "e763623e8a4ddcfc8350d6b5f680284a23db68f8bfbca53428e258d24adfc2ab",
   "live_disk": {
-   "fingerprint_match": true,
-   "names_match": true,
-   "present": true
+   "present": false
   },
   "path": "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
   "schema": "hawking.accelerator.architecture_atlas.v1"
@@ -16,13 +14,13 @@
   "entry": "lower_physical_graph_to_backend(graph, backend)",
   "fpga": {
    "availability": "PLANNED",
-   "fingerprint": "ec1f50164a8fdb8bcbe93fcb429f05705889f5a092844748b6c8fb1def92c7f1",
+   "fingerprint": "b41a51821f23e148df28add9bfabfffa67d77ef3b06d74a6e84f1519aea1cc5b",
    "not_a_civilization": "FPGA is part of Accelerator / Physical Compiler / Fusion. This seam is a declared interface plus an availability flag. It is not an FPGA backend.",
    "qualification": "PLAN_ONLY"
   },
   "metal": {
    "availability": "PLANNED",
-   "fingerprint": "66db1b411fc574b1ff287daaf54fd4fb4fa56141855124feed263adea9db67f9",
+   "fingerprint": "182a2d46b877fcf0b0d893c1736b0092e6a788702b3e1e2d4e80eaf71b121dcc",
    "qualification": "PLAN_ONLY"
   }
  },
@@ -79,7 +77,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:08:51Z",
+  "recorded_at": "2026-09-02T09:44:30Z",
   "recorded_by": "tools/future/physical_primitives.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -163,7 +161,7 @@
   "REMOTE"
  ],
  "negative_findings": [
-  "atlas present in this worktree and live-reconciled",
+  "ACCELERATOR_ARCHITECTURE_ATLAS.json is not in this worktree (untracked in the parent); names/contracts were recovered and embedded rather than live-read at runtime",
   "FLASH_COMPLETE_V2.nr.json is not in this worktree; family names recovered into FLASH_NR_FIXTURE, numeric payloads omitted",
   "hcli/physical_graph.py is not in this sparse checkout; lowering emits a compatible shape but cannot call compile_physical_graph",
   "tools/odyssey/physical_graph_compiler.py and noetic_compiler.py are not in this sparse checkout (read via git show)",
@@ -175,7 +173,7 @@
  ],
  "nr_to_physical_graph": {
   "entry": "lower_nr_to_physical_graph(nr, memory_tier=..., backend=...)",
-  "example_fingerprint": "7955d8b5aec6c6447e5048af9695c39a946cd267106ef0f3300864298867c2ec",
+  "example_fingerprint": "f114688edd7b27d81ef65422ce3186cf827e9b79d8e0015555462c38ed4df282",
   "example_memory_tier": "UMA",
   "example_model_id": "Qwen/Qwen3.8-Flash-Next",
   "example_nr_families": [
@@ -1362,12 +1360,12 @@
    "n_entries": 15,
    "note": "Untracked in the parent working tree (~91 KB, 17 primitives, 21-behavior taxonomy, 15 entries, 15 HWIR hypotheses). Not in this sparse snapshot's git tree. Primitive names and entry contracts were recovered from that file and embedded.",
    "path": "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
-   "present_in_this_worktree": true,
+   "present_in_this_worktree": false,
    "schema": "hawking.accelerator.architecture_atlas.v1"
   },
   "cuda_census": {
    "path": "receipts/headless/CUDA_CAPABILITY_CENSUS.json",
-   "present_in_this_worktree": true,
+   "present_in_this_worktree": false,
    "used_for": "named missing dependency of the CUDA seam"
   },
   "existing_sidecar": {
@@ -1388,7 +1386,7 @@
    ],
    "note": "Untracked in the parent working tree. Family names recovered and embedded as FLASH_NR_FIXTURE; numeric payloads omitted.",
    "path": "receipts/headless/FLASH_COMPLETE_V2.nr.json",
-   "present_in_this_worktree": true,
+   "present_in_this_worktree": false,
    "schema": "hawking.flash.complete_nr.v2",
    "status": "COMPLETE_HETEROGENEOUS_CANDIDATE_NOT_FOR_PROMOTION"
   },
@@ -1407,7 +1405,7 @@
    "committed_schema": "hcli.physical_graph.v1",
    "parent_working_tree_additions": "apply_architecture_atlas, score_physical_candidates, execution_policy.memory_tier_is_executable_identity, NR_PRIMITIVES representation-operator vocabulary, verification L0-L3 policy. Not imported here (hcli is Codex-owned and not in this sparse checkout).",
    "path": "hcli/physical_graph.py",
-   "present_in_this_worktree": true
+   "present_in_this_worktree": false
   },
   "physical_graph_compiler": {
    "path": "tools/odyssey/physical_graph_compiler.py",
@@ -1416,7 +1414,7 @@
   }
  },
  "schema": "hawking.future.physical_primitives.v1",
- "seal_sha256": "23f49d5e038daa264d89b410737a3dd07e9231d750f76c8fc1768c0f9f7f1917",
+ "seal_sha256": "6171efa5300666641a92c0323e7b7c81be42798dea463a6179f51710f668baa7",
  "version": 1,
  "vocabulary": {
   "disk_state_is_authority": true,

@@ -345,15 +345,10 @@ def enumerate_compute_devices(*, force: bool = False) -> dict[str, Any]:
         _DEVICE_CACHE = result
         return dict(result)
 
-    tmp = Path(tempfile.mkdtemp(prefix="hawking-ane-probe-lab-"))
-    src = tmp / "enum.swift"
-    binary = tmp / "enum"
-    src.write_text(SWIFT_DEVICE_ENUM)
-    compiled = _run(
-        ["xcrun", "swiftc", "-O", "-framework", "CoreML", "-o", str(binary), str(src)]
-    )
-    if compiled.returncode != 0 or not binary.is_file():
-        err = (compiled.stderr or compiled.stdout or "swiftc produced no binary").strip()
+    from tools.future._common import compile_swift
+
+    binary, err = compile_swift(SWIFT_DEVICE_ENUM)
+    if binary is None:
         result = {
             "status": "UNTESTED",
             "api": "MLModel.availableComputeDevices",
@@ -623,15 +618,10 @@ def _ensure_mlmodelc(path: str) -> str:
     src = Path(path)
     if src.suffix == ".mlmodelc" and src.is_dir():
         return str(src)
-    tmp = Path(tempfile.mkdtemp(prefix="hawking-ane-probe-lab-compile-"))
-    swift = tmp / "compile.swift"
-    binary = tmp / "compile"
-    swift.write_text(SWIFT_COMPILE_MODEL)
-    compiled = _run(
-        ["xcrun", "swiftc", "-O", "-framework", "CoreML", "-o", str(binary), str(swift)]
-    )
-    if compiled.returncode != 0 or not binary.is_file():
-        err = (compiled.stderr or compiled.stdout or "swiftc failed").strip()
+    from tools.future._common import compile_swift
+
+    binary, err = compile_swift(SWIFT_COMPILE_MODEL)
+    if binary is None:
         raise ProbeLabRefused(f"MLModel.compileModel authoring helper failed: {err[:400]}")
     ran = _run([str(binary), str(src)])
     if ran.returncode != 0:
@@ -895,7 +885,7 @@ def execution_entry_points() -> tuple[tuple[str, Any], ...]:
 def probe_lab() -> dict[str, Any]:
     """Capability and runnability snapshot. No graph is chosen or timed."""
     coreml = coremltools_status()
-    devices = enumerate_compute_devices(force=True)
+    devices = enumerate_compute_devices()
     runnability = mode_runnability(devices=devices, coremltools=coreml)
     runnable_now = {mode: bool(runnability[mode]["runnable_now"]) for mode in MODES}
     preboard_probe = preboard.probe_toolchain()

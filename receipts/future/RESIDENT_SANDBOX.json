@@ -168,7 +168,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:25:50Z",
+  "recorded_at": "2026-09-02T09:38:59Z",
   "recorded_by": "tools/future/sandbox.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -183,19 +183,19 @@
   "mechanism": "BoundedFS.resolve_writable walks components and refuses escape by kind",
   "proofs": [
    {
-    "error": "absolute escape refused for '/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-hj3yxjkv/outside.txt': absolute path /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-hj3yxjkv/outside.txt is outside /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-hj3yxjkv/canonical/.worktrees/resident/writable",
+    "error": "absolute escape refused for '/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-_a7wvtt9/outside.txt': absolute path /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-_a7wvtt9/outside.txt is outside /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-_a7wvtt9/canonical/.worktrees/resident/writable",
     "kind": "absolute",
-    "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-hj3yxjkv/outside.txt",
+    "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-_a7wvtt9/outside.txt",
     "refused": true
    },
    {
-    "error": "dotdot escape refused for '../ESCAPE_DOTDOT.txt': path /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-hj3yxjkv/canonical/.worktrees/resident/ESCAPE_DOTDOT.txt leaves /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-hj3yxjkv/canonical/.worktrees/resident/writable via .. traversal",
+    "error": "dotdot escape refused for '../ESCAPE_DOTDOT.txt': path /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-_a7wvtt9/canonical/.worktrees/resident/ESCAPE_DOTDOT.txt leaves /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-_a7wvtt9/canonical/.worktrees/resident/writable via .. traversal",
     "kind": "dotdot",
     "path": "../ESCAPE_DOTDOT.txt",
     "refused": true
    },
    {
-    "error": "symlink escape refused for 'escape_link': /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-hj3yxjkv/canonical/.worktrees/resident/writable/escape_link -> /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-hj3yxjkv/outside.txt leaves /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-hj3yxjkv/canonical/.worktrees/resident/writable",
+    "error": "symlink escape refused for 'escape_link': /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-_a7wvtt9/canonical/.worktrees/resident/writable/escape_link -> /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-_a7wvtt9/outside.txt leaves /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-_a7wvtt9/canonical/.worktrees/resident/writable",
     "kind": "symlink",
     "path": "escape_link",
     "refused": true
@@ -208,7 +208,7 @@
   ],
   "write_root": "writable"
  },
- "branch": "odyssey-i",
+ "branch": "grok/s4-tools-future-under-10s-20260902-045214",
  "built": true,
  "canonical_mutation": {
   "composed": "tools.future.mutation_surface.check_disjoint / intersects_codex",
@@ -231,7 +231,7 @@
   "layout_dirs": 5,
   "permitted_autonomous": 10,
   "refused_higher": 9,
-  "source_index_files": 1825
+  "source_index_files": 654
  },
  "gaps_closed": [
   "isolated git worktree under the canonical repo's own .worktrees/",
@@ -246,7 +246,7 @@
   "HCLI WorkUnit emitted for provision; verifier is not the proposer"
  ],
  "gpu_authority": false,
- "head": "d777f6dccc3ded44142823f5e1cfb3a8ad031528",
+ "head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
  "hermetic_source_index": {
   "copes_with_sparse_checkout": true,
   "entries": [
@@ -316,7 +316,7 @@
   }
  ],
  "longevity": {
-  "identity_sha256": "466e1394eafb65240a50835efce001a8e7373d22a81452009f2b538404e27cd6",
+  "identity_sha256": "8630b8c9fdacbf71af8b6c8de19ad1d45b1f1430cd8bc224066d2f788d5dba2b",
   "reentry_same_identity": true,
   "second_provision_creates_second_sandbox": false,
   "state_survives_process_restart": true
@@ -342,7 +342,7 @@
  "provision": {
   "default_sandbox_id": "resident",
   "git_worktree": "git worktree add --detach --no-checkout --lock (reason: resident-sandbox preserve-artifacts)",
-  "hermetic_proof_worktree": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-hj3yxjkv/canonical/.worktrees/resident",
+  "hermetic_proof_worktree": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-_a7wvtt9/canonical/.worktrees/resident",
   "idempotent": true,
   "layout_dirs": [
    "build",
@@ -352,7 +352,7 @@
    "source_index"
   ],
   "path_taken": true,
-  "production_worktrees_root": "/Users/scammermike/Downloads/hawking/.worktrees",
+  "production_worktrees_root": "/Users/scammermike/.claude-grok/worktrees/s4-tools-future-under-10s-20260902-045214/.worktrees",
   "registry_name": "INDEX.json",
   "state_name": "SANDBOX.json",
   "teardown_preserves_artifacts": true,
@@ -363,37 +363,37 @@
  "recovered_implementation": [
   {
    "path": "hcli/workspace.py",
-   "present": true,
+   "present": false,
    "what": "Workspace.realpath root + git-toplevel detect; too thin to bound writes, reused as the writable Workspace"
   },
   {
    "path": "hcli/mutation.py",
-   "present": true,
+   "present": false,
    "what": "bounded reversible mutations, snapshots, rollback_mutation; recovered as the model for local_reversible_experiment"
   },
   {
    "path": "hcli/agentos/autonomy_gate.py",
-   "present": true,
+   "present": false,
    "what": "A1-A5 autonomy qualification; not invoked (would start a resident)"
   },
   {
    "path": "hcli/agentos/resident_gate.py",
-   "present": true,
+   "present": false,
    "what": "LIVE_RESIDENT_SEQUENTIAL_PROOF; lifecycle owner; this sandbox does not start it"
   },
   {
    "path": "hcli/agentos/resident.py",
-   "present": true,
+   "present": false,
    "what": "does not exist in HEAD; resident_gate.py is the live boundary"
   },
   {
    "path": "hcli/persist.py",
-   "present": true,
+   "present": false,
    "what": "atomic_write_text / atomic_write_json; used for SANDBOX.json, INDEX.json, bounded writes"
   },
   {
    "path": "hcli/workunit.py",
-   "present": true,
+   "present": false,
    "what": "WorkUnit constructor + repair budgets; provision emits through it"
   },
   {
@@ -413,7 +413,7 @@
   },
   {
    "path": "lab/operators/ascension_sandbox.py",
-   "present": true,
+   "present": false,
    "what": "detached research-sandbox controller; never loads a model; recovered via git show"
   },
   {
@@ -428,7 +428,7 @@
   },
   {
    "path": "workspace/campaign/governance/odyssey/program/sandbox/POLICY.json",
-   "present": true,
+   "present": false,
    "what": "Odyssey sandbox POLICY (deny-by-default fs/network); recovered via git show"
   }
  ],
@@ -462,7 +462,7 @@
   }
  },
  "schema": "hawking.future.sandbox.v1",
- "seal_sha256": "87dc5b42695f6757c6453999ec59af48cc9630fc64f698f9d0fba837d873ca34",
+ "seal_sha256": "560adfe48e6b7e0bfcfe2e19bfc47ff2bcbc1b2a7df4c1b89abe95ed8f471214",
  "sleeping_physical_blockers": [
   "MetalContext reports no Metal-capable GPU on this host",
   "xcrun cannot locate the Metal compiler under CommandLineTools",
@@ -475,7 +475,7 @@
   "copes_with_sparse_checkout": true,
   "entries": [
    {
-    "file_count": 516,
+    "file_count": 538,
     "files_head": [
      "tools/future/__init__.py",
      "tools/future/_common.py",
@@ -506,97 +506,65 @@
      "tools/future/candidate_planner.py",
      "tools/future/capability_byte_elimination.py",
      "tools/future/capability_curve.py",
+     "tools/future/capability_eval.py",
      "tools/future/capability_information_map.py",
-     "tools/future/capability_stages.py",
-     "tools/future/capacity_inference_rule.py"
+     "tools/future/capability_reachability.py"
     ],
     "present": true,
     "root": "tools/future"
    },
    {
-    "file_count": 117,
-    "files_head": [
-     "hcli/__init__.py",
-     "hcli/__main__.py",
-     "hcli/agentos_cli.py",
-     "hcli/ane_provider.py",
-     "hcli/app.py",
-     "hcli/architecture.py",
-     "hcli/backends.py",
-     "hcli/cli.py",
-     "hcli/command_registry.py",
-     "hcli/commands.py",
-     "hcli/config.py",
-     "hcli/connectivity.py",
-     "hcli/context.py",
-     "hcli/context_budget.py",
-     "hcli/controller.py",
-     "hcli/dag_store.py",
-     "hcli/delegate.py",
-     "hcli/engine.py",
-     "hcli/events.py",
-     "hcli/executors.py",
-     "hcli/flash_next.py",
-     "hcli/goal.py",
-     "hcli/grok_bridge.py",
-     "hcli/hawking-native.sealed-3.14.json",
-     "hcli/hawking_native.py",
-     "hcli/ledger.py",
-     "hcli/machine.py",
-     "hcli/max_policy.py",
-     "hcli/mission.py",
-     "hcli/models.py",
-     "hcli/mutation.py",
-     "hcli/nomenclature.py"
-    ],
-    "present": true,
+    "file_count": 0,
+    "files_head": [],
+    "present": false,
     "root": "hcli"
    },
    {
-    "file_count": 1192,
+    "file_count": 116,
     "files_head": [
      "receipts/future/ABI_VERDICT_HARNESS.json",
      "receipts/future/ABLITERATION.json",
-     "receipts/future/ABLITERATION_RUN.json",
      "receipts/future/ACCELERATOR_WORKUNITS.json",
      "receipts/future/ADAPTIVE_VERIFICATION.json",
-     "receipts/future/ADDRESSING_ATTRIBUTION.json",
      "receipts/future/ADDRESSING_GAP.json",
      "receipts/future/ANE_PREBOARD.json",
      "receipts/future/ANE_PROBE_LAB.json",
      "receipts/future/ARTIFACT_IDENTITY.json",
-     "receipts/future/ATTRIBUTION_AUDIT.json",
      "receipts/future/AUTONOMY_DEGENERACY.json",
      "receipts/future/AUTONOMY_MISSION_STATE.json",
      "receipts/future/AUTONOMY_RUN.json",
      "receipts/future/AUTONOMY_SCARS.json",
-     "receipts/future/AUTONOMY_TIMELINE_15m.json",
-     "receipts/future/AUTONOMY_TIMELINE_1h.json",
-     "receipts/future/AUTONOMY_TIMELINE_30m.json",
      "receipts/future/AUTONOMY_TRIALS.json",
-     "receipts/future/AUX_CAPABILITY_SCREEN.json",
-     "receipts/future/AUX_U8_LUT.json",
-     "receipts/future/AUX_U8_NATIVE.json",
-     "receipts/future/BASELINE_STALENESS.json",
-     "receipts/future/BA_DELTA_AB.json",
-     "receipts/future/BITCAST_DEQUANT_AB.json",
+     "receipts/future/BENCH_B_TOOL_REACHABILITY.json",
      "receipts/future/CAMPAIGN_SCARS.json",
      "receipts/future/CANDIDATE_STAGED_PLAN.json",
-     "receipts/future/CAPABILITY_BYTE_ELIMINATION.json",
      "receipts/future/CAPABILITY_CURVE.json",
+     "receipts/future/CAPABILITY_EVAL.json",
      "receipts/future/CAPABILITY_INFORMATION_MAP.json",
      "receipts/future/CAPABILITY_STAGES.json",
-     "receipts/future/CAPACITY_INFERENCE_RULE.json"
+     "receipts/future/CLAIM_SCOPE.json",
+     "receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
+     "receipts/future/CODEX_INGEST_STATE.json",
+     "receipts/future/CODEX_WORKUNIT_SPECIES.json",
+     "receipts/future/COMPLETE_EBPW.json",
+     "receipts/future/CONTAMINATION_SCIENCE.json",
+     "receipts/future/CUDA_LOWBIT_HYPOTHESES.json",
+     "receipts/future/DEBUGGER_LAB.json",
+     "receipts/future/DECODE_CIVILIZATION.json",
+     "receipts/future/DELTANET_QKVZ_PRECISION.json",
+     "receipts/future/DELTANET_REPRESENTATION.json",
+     "receipts/future/DELTANET_STATE_FUNCTION.json"
     ],
     "present": true,
     "root": "receipts/future"
    }
   ],
-  "file_count_total": 1825,
-  "missing_roots": [],
+  "file_count_total": 654,
+  "missing_roots": [
+   "hcli"
+  ],
   "present_roots": [
    "tools/future",
-   "hcli",
    "receipts/future"
   ],
   "roots": [

@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T07:11:00Z",
+  "recorded_at": "2026-09-02T09:47:58Z",
   "recorded_by": "tools/future/ane_probe_lab.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -27,15 +27,11 @@
   "cpu_listed": true,
   "devices": [
    {
-    "description": "<MLNeuralEngineComputeDevice: 0x100b3b320>",
+    "description": "<MLNeuralEngineComputeDevice: 0x103346580>",
     "kind": "NEURAL_ENGINE"
    },
    {
-    "description": "<MLGPUComputeDevice: 0x100b46f50> Apple M3 Ultra",
-    "kind": "GPU"
-   },
-   {
-    "description": "<MLCPUComputeDevice: 0x100b477f0>",
+    "description": "<MLCPUComputeDevice: 0x10333ff50>",
     "kind": "CPU"
    }
   ],
@@ -45,16 +41,15 @@
   ],
   "error": null,
   "evidence_class": "PUBLIC_API_OBSERVED",
-  "gpu_listed": true,
+  "gpu_listed": false,
   "is_inference": false,
   "is_observation": true,
   "kinds": [
    "CPU",
-   "GPU",
    "NEURAL_ENGINE"
   ],
   "macos": "Version 27.0 (Build 26A5416b)",
-  "n_devices": 3,
+  "n_devices": 2,
   "status": "OBSERVED"
  },
  "coremltools": {
@@ -232,7 +227,8 @@
    "needed_device": "GPU",
    "runnable_now": false,
    "why": [
-    "coremltools is not importable; cannot materialize a graph (ModuleNotFoundError: No module named 'coremltools')"
+    "coremltools is not importable; cannot materialize a graph (ModuleNotFoundError: No module named 'coremltools')",
+    "MLModel.availableComputeDevices did not list GPU; listed=['CPU', 'NEURAL_ENGINE']"
    ]
   },
   "SERIAL": {
@@ -271,8 +267,8 @@
  ],
  "negative_findings": [
   "coremltools is absent; authoring/run/time refuse",
-  "MLModel.availableComputeDevices listed ['CPU', 'GPU', 'NEURAL_ENGINE']",
-  "GPU listing as reported by availableComputeDevices",
+  "MLModel.availableComputeDevices listed ['CPU', 'NEURAL_ENGINE']",
+  "GPU is not a Core ML compute device on this host according to MLModel.availableComputeDevices; GPU_ONLY is not runnable",
   "this --build compiled no caller graph and timed no predict",
   "Flash/Qwen27 corpus stays in the preboard; this lab has no campaign"
  ],
@@ -280,7 +276,7 @@
   "PUBLICLY_DOCUMENTED",
   "PUBLIC_API_OBSERVED"
  ],
- "preboard_path": "/Users/scammermike/Downloads/hawking/tools/future/ane_preboard.py",
+ "preboard_path": "/Users/scammermike/.claude-grok/worktrees/s4-tools-future-under-10s-20260902-045214/tools/future/ane_preboard.py",
  "public_dtypes": [
   "float16",
   "float32",
@@ -296,7 +292,7 @@
  },
  "runnable_now_plain": "GPU_ONLY=False ANE_ONLY=False SERIAL=False CONCURRENT=False",
  "schema": "hawking.future.ane_probe_lab.v1",
- "seal_sha256": "f33c868d081342cd44793c9beb2d8eec117b624ac740371a1ccd9b04e4410993",
+ "seal_sha256": "3258ce8fa459b24c8d24466a4aecb2b751921298fe7bc165340981e0e47af0eb",
  "supported_specs": [
   "add/elementwise",
   "matmul/linear",

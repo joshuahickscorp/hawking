@@ -26,7 +26,7 @@ from __future__ import annotations
 import os as _os, sys as _sys
 _sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))))
 
-from tools.future._common import write_receipt, load_json, REPO, RECEIPTS, sha256_file
+from tools.future._common import write_receipt, load_json, REPO, RECEIPTS, sha256_file, gpu_lane_lock_path
 
 import argparse
 import hashlib
@@ -158,7 +158,7 @@ CAMPAIGN_SCIENCE_SCARS: tuple[str, ...] = (
 
 NEG_INDEX_REL = "receipts/future/NEGATIVE_SCIENCE_INDEX.json"
 TIMELINE_30M_REL = "receipts/future/AUTONOMY_TIMELINE_30m.json"
-GPU_LANE_LOCK = Path("/tmp/hawking-gpu-lane.lock")
+GPU_LANE_LOCK = gpu_lane_lock_path()
 
 # Real call sites in the driver. Quoted by the independent 30m judgement.
 # Line numbers drift; the function is the site.

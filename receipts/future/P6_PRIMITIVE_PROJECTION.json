@@ -33,12 +33,12 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T06:52:33Z",
+  "recorded_at": "2026-09-02T09:16:31Z",
   "recorded_by": "tools.future.p6_projection.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
- "branch": "odyssey-i",
+ "branch": "grok/s4-tools-future-under-10s-20260902-045214",
  "claim_boundary": "Static sidecar artifact. No hardware measurement.",
  "counts": {
   "by_scope": {
@@ -65,10 +65,12 @@
  "evidence_inputs": {
   "architecture_atlas": {
    "consulted": [
-    "receipts/future/evidence/ACCELERATOR_ARCHITECTURE_ATLAS.json"
+    "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+    "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/3ecaaf4a-e397-42f6-bda8-00a804414541/scratchpad/basecheck/receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+    "/Users/scammermike/.claude-grok/worktrees/d1-doctor-depth-20260902-045450/receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json"
    ],
-   "evidence_source": "pinned_snapshot",
-   "path": "receipts/future/evidence/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+   "evidence_source": "live_headless",
+   "path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
    "present": true
   },
   "evidence_snapshot_manifest": {
@@ -78,24 +80,24 @@
   },
   "front_g_p6": {
    "consulted": [
-    "receipts/headless/ACCELERATOR_FRONT_G_P6.json",
+    "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_FRONT_G_P6.json",
     "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/3ecaaf4a-e397-42f6-bda8-00a804414541/scratchpad/basecheck/receipts/headless/ACCELERATOR_FRONT_G_P6.json",
-    "receipts/future/evidence/ACCELERATOR_FRONT_G_P6.json"
+    "/Users/scammermike/.claude-grok/worktrees/d1-doctor-depth-20260902-045450/receipts/headless/ACCELERATOR_FRONT_G_P6.json"
    ],
    "evidence_source": "live_headless",
-   "path": "receipts/headless/ACCELERATOR_FRONT_G_P6.json",
+   "path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_FRONT_G_P6.json",
    "present": true
   },
   "qualification_queue": {
    "consulted": [
-    "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+    "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
     "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/3ecaaf4a-e397-42f6-bda8-00a804414541/scratchpad/basecheck/receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
-    "receipts/future/evidence/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
+    "/Users/scammermike/.claude-grok/worktrees/d1-doctor-depth-20260902-045450/receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
    ],
    "evidence_source": "live_headless",
    "n_candidates_in_queue": 49,
    "n_p6_p7": 15,
-   "path": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+   "path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
    "present": true
   }
  },
@@ -117,13 +119,14 @@
   "FPGA form cites fpga_engines functional references; no HDL, no backend."
  ],
  "gpu_authority": false,
- "head": "36691aa32412e3cc38b3f9f7d2575e1d59e9cff4",
+ "head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
  "negative_findings": [
   "No protected GPU lease: every hardware quantity remains UNKNOWN.",
   "No FPGA board, bitstream, or cycle-accurate model; FPGA forms are hypotheses.",
   "fpga_engines has no SwiGLU/silu golden; fused gate/up/SwiGLU cites qgemv + routed_expert_accumulate only.",
   "Nothing here is GENERIC_VERIFIED; candidates are BLOCKED and unmeasured.",
-  "Sidecar produces neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE."
+  "Sidecar produces neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE.",
+  "FRONT_G_P6 is not in receipts/future/evidence/ (snapshot did not capture it)."
  ],
  "not_an_fpga_backend": true,
  "odysseys": [
@@ -5120,7 +5123,7 @@
   "p6_projection_module_existed": false
  },
  "schema": "hawking.future.p6_projection.v1",
- "seal_sha256": "66d5f53a3774ec8f879c79ace6cd3bb2f15a1be254fd3476ed98be92c6f95493",
+ "seal_sha256": "41bd3740d97f8289b670aefe70d4e05ffd310b61723eeade1579d4054249d45f",
  "spatially_not_meaningful_ids": [
   "flash-p6-hash-single-command-buffer",
   "flash-p6-learned-reader-reuse"

@@ -3,12 +3,12 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T07:05:19Z",
+  "recorded_at": "2026-09-02T09:23:07Z",
   "recorded_by": "tools/future/detached.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
- "branch": "odyssey-i",
+ "branch": "grok/s4-tools-future-under-10s-20260902-045214",
  "claim_boundary": "Static sidecar artifact. No hardware measurement. Neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE. A supervision record is identity and lifecycle, not a bench.",
  "eras": [
   "I Genesis of the Laboratory",
@@ -29,7 +29,7 @@
   "killed mid-flight classifies crashed (exit observed) and does not hang the caller"
  ],
  "gpu_authority": false,
- "head": "36691aa32412e3cc38b3f9f7d2575e1d59e9cff4",
+ "head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
  "identity_states": [
   "dead",
   "match",
@@ -197,8 +197,8 @@
    "claim_boundary": "Static sidecar artifact. No hardware measurement. Neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE. A supervision record is identity and lifecycle, not a bench.",
    "classification": "STATIC_ONLY",
    "command": [
-    "/Users/scammermike/.venvs/hawking-aider/bin/python3",
-    "/Users/scammermike/Downloads/hawking/tools/future/detached.py",
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/.claude-grok/worktrees/s4-tools-future-under-10s-20260902-045214/tools/future/detached.py",
     "--selftest"
    ],
    "content_hash": "1dd307b06749008ffe303e80972339bf12267838c30b8b9c5ec16fdca1f681c8",
@@ -211,7 +211,7 @@
    "id": "future.detached.supervise-safe-work",
    "may_modify_verifier": false,
    "may_promote": false,
-   "output_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/DETACHED_EXECUTION.json",
+   "output_receipt_path": "/Users/scammermike/.claude-grok/worktrees/s4-tools-future-under-10s-20260902-045214/receipts/future/DETACHED_EXECUTION.json",
    "preferred_backend": null,
    "provider": "future.detached",
    "ready_at": null,
@@ -279,7 +279,7 @@
   ]
  },
  "schema": "hawking.future.detached.v1",
- "seal_sha256": "d828bba4ad9e2cb41d274702e9bb263e6576281090319ce519219758dda86fdd",
+ "seal_sha256": "af68824669614efe8a5380982f2efbae1bad74e2ddd685c8a18bd8b48d09237a",
  "supervision_record": {
   "fields": [
    "pid",
@@ -345,7 +345,7 @@
    "spawned": false
   },
   {
-   "argv0": "/Users/scammermike/.venvs/hawking-aider/bin/python3",
+   "argv0": "/opt/homebrew/opt/python@3.14/bin/python3.14",
    "reason": "command touches GPU/accelerator (protected-accelerator-bench); refuse launch",
    "refused": true,
    "resource_class": "LIGHT_CONTROL",

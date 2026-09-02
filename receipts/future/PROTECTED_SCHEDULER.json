@@ -10,7 +10,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:09:39Z",
+  "recorded_at": "2026-09-02T09:39:11Z",
   "recorded_by": "tools/future/protected_scheduler.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -37,7 +37,7 @@
    "contamination_reason": "at least one HEAVY probe fired",
    "injected_input": false,
    "live": true,
-   "source": "/Users/scammermike/Downloads/hawking/receipts/future/CONTAMINATION_SCIENCE.json"
+   "source": "/Users/scammermike/.claude-grok/worktrees/s4-tools-future-under-10s-20260902-045214/receipts/future/CONTAMINATION_SCIENCE.json"
   },
   "continue_with": {
    "failed_closed": false,
@@ -140,7 +140,7 @@
    "fabricated": false,
    "holders": {
     "pids": [],
-    "status": "OK"
+    "status": "SKIPPED"
    },
    "injected_input": false,
    "live": true,
@@ -354,7 +354,7 @@
   "workunit": "one CPU_ANALYSIS unit; recognize/decide/park/continue_with against declared GPU_EXCLUSIVE without opening a window"
  },
  "schema": "hawking.future.protected_scheduler.v1",
- "seal_sha256": "0668b9ee9749ecf4bcff8e550e891ea6b767f88d24c71b298dc09994d9e940ba",
+ "seal_sha256": "6a8225f18af912afc9580f77226a0242060c8a2de197da13e3c77d5568f4a19a",
  "version": 1,
  "vocabulary": {
   "BLOCKED_ON_PROTECTED_WINDOW": "protected-required, and the window is not available",

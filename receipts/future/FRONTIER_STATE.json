@@ -3,13 +3,13 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T07:08:32Z",
+  "recorded_at": "2026-09-02T09:36:12Z",
   "recorded_by": "tools/future/frontiers.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
  "bench_state": "UNKNOWN",
- "branch": "odyssey-i",
+ "branch": "grok/s4-tools-future-under-10s-20260902-045214",
  "busywork": {
   "admission_refusals_during_next_work": [],
   "rule": "score by expected information gain, redundancy against already-queued work, and overlap with recorded scars; a flood of low-value units is REFUSED at admission",
@@ -2266,11 +2266,17 @@
   ],
   "schema": "hawking.future.claude_global_frontier.v1",
   "stale_entries": [
-   "F014"
+   "F001",
+   "F002",
+   "F012",
+   "F014",
+   "F015",
+   "F019",
+   "F020"
   ]
  },
  "gpu_authority": false,
- "head": "36691aa32412e3cc38b3f9f7d2575e1d59e9cff4",
+ "head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
  "idle_proof": {
   "active": [
    "ACTIVE_BYTES",
@@ -4324,10 +4330,10 @@
   "odyssey2_n_laws": 24,
   "odyssey3_n_attacks": 36,
   "paths_taken": {
-   "CODEX_ACCELERATOR_HANDOFF.json": "disk:/Users/scammermike/Downloads/hawking/CODEX_ACCELERATOR_HANDOFF.json",
-   "receipts/future/CLAUDE_GLOBAL_FRONTIER.json": "disk:/Users/scammermike/Downloads/hawking/receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
-   "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json": "disk:/Users/scammermike/Downloads/hawking/receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
-   "receipts/future/NEGATIVE_SCIENCE_INDEX.json": "disk:/Users/scammermike/Downloads/hawking/receipts/future/NEGATIVE_SCIENCE_INDEX.json",
+   "CODEX_ACCELERATOR_HANDOFF.json": "disk:/Users/scammermike/.claude-grok/worktrees/s4-tools-future-under-10s-20260902-045214/CODEX_ACCELERATOR_HANDOFF.json",
+   "receipts/future/CLAUDE_GLOBAL_FRONTIER.json": "disk:/Users/scammermike/.claude-grok/worktrees/s4-tools-future-under-10s-20260902-045214/receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
+   "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json": "disk:/Users/scammermike/.claude-grok/worktrees/s4-tools-future-under-10s-20260902-045214/receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
+   "receipts/future/NEGATIVE_SCIENCE_INDEX.json": "disk:/Users/scammermike/.claude-grok/worktrees/s4-tools-future-under-10s-20260902-045214/receipts/future/NEGATIVE_SCIENCE_INDEX.json",
    "receipts/future/ODYSSEY2_LAW_STORE.json": "disk:/Users/scammermike/Downloads/hawking/receipts/future/ODYSSEY2_LAW_STORE.json",
    "receipts/future/ODYSSEY3_ADVERSARY.json": "disk:/Users/scammermike/Downloads/hawking/receipts/future/ODYSSEY3_ADVERSARY.json",
    "receipts/future/PROPAGATION_STATE.json": "disk:/Users/scammermike/Downloads/hawking/receipts/future/PROPAGATION_STATE.json",
@@ -4368,7 +4374,7 @@
   "workunit_emitted": "HCLI WorkUnit via tools.future.workunit_species.emit_hcli_workunit; extras: frontier, required_lanes, wake_condition, redundancy_key, expected_information_gain, hypothesis_family"
  },
  "schema": "hawking.future.frontiers.v1",
- "seal_sha256": "3a67144435058b446f18ab30759a30b34d3b7b1c11f72ad24453489040ba400e",
+ "seal_sha256": "c2e25225008d4d55f0b6a2d6096405a62f355985cec39b8244c6897607ea5ad1",
  "sleeping": [
   {
    "assigned_backend": null,

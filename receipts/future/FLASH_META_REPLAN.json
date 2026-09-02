@@ -4,7 +4,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T21:17:42Z",
+  "recorded_at": "2026-09-02T09:36:03Z",
   "recorded_by": "tools/future/flash_meta_replan.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -14,7 +14,7 @@
    "path": "receipts/future/NEGATIVE_SCIENCE_INDEX.json",
    "present": true,
    "schema": "hawking.future.negative_index.v1",
-   "seal_sha256": "d10002f5ac1884dced76c4ae2db38a9921752d355fb61e713e5c83b1aeb03b65",
+   "seal_sha256": "00676a045d92e7c2368623caffc8be2224a959c9733259c23ee9e575483e41dc",
    "status": null
   },
   "screen": {
@@ -709,7 +709,7 @@
   "workunit": "one CPU_ANALYSIS unit; cite the real-256 screen, apply NS-014, extrapolate or refuse a rank, re-rank nine SUB1 families; no GPU"
  },
  "schema": "hawking.future.flash_meta_replan.v1",
- "seal_sha256": "3af130176febca503cb574ded2a76e860acab7054fe50659e81dc72eea114a98",
+ "seal_sha256": "cbe927d60e5f938260b221e714e93456fdb7f0644dd2839a4a6827514c2ea250",
  "underdetermination": {
   "claimed_full_dim": false,
   "index_consulted": true,

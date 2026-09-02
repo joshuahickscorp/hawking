@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:10:48Z",
+  "recorded_at": "2026-09-02T09:46:47Z",
   "recorded_by": "tools/future/resident_identity.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -335,10 +335,10 @@
   "authority_sources": {
    "capability": {
     "in_git_head": true,
-    "load": "ON_DISK",
-    "on_disk": true,
+    "load": "GIT_HEAD",
+    "on_disk": false,
     "path": "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
-    "source": "ON_DISK"
+    "source": "GIT_HEAD"
    },
    "codex_accelerator_handoff": {
     "in_git_head": true,
@@ -348,37 +348,37 @@
    },
    "machine_genome": {
     "in_git_head": true,
-    "on_disk": true,
+    "on_disk": false,
     "path": "receipts/headless/MACHINE_GENOME.json",
-    "source": "ON_DISK"
+    "source": "GIT_HEAD"
    },
    "qualification_queue": [
     {
      "in_git_head": true,
-     "on_disk": true,
+     "on_disk": false,
      "path": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
-     "source": "ON_DISK"
+     "source": "GIT_HEAD"
     },
     {
      "in_git_head": true,
-     "on_disk": true,
+     "on_disk": false,
      "path": "receipts/future/evidence/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
-     "source": "ON_DISK"
+     "source": "GIT_HEAD"
     }
    ],
    "sealed_profile": {
     "in_git_head": true,
-    "load": "ON_DISK",
-    "on_disk": true,
+    "load": "GIT_HEAD",
+    "on_disk": false,
     "path": "hcli/hawking-native.sealed-3.14.json",
     "sha256": "d0ccab6562eebde05f81fbc9e7d40698f4aa9a83ae8e19606a7372a1f3abb7ce",
-    "source": "ON_DISK"
+    "source": "GIT_HEAD"
    },
    "teacher_capture": {
     "in_git_head": true,
-    "on_disk": true,
+    "on_disk": false,
     "path": "receipts/headless/FLASH_META_TEACHER_L4_CAPTURE_BOUNDARY.json",
-    "source": "ON_DISK"
+    "source": "GIT_HEAD"
    }
   },
   "blocked_workunits": {
@@ -679,7 +679,7 @@
     "capability receipt identity_sufficient is not true; the score does not identify which body earned it"
    ],
    "note": "30/43 is a historical CONTROL record. identity_sufficient is false (UNIDENTIFIED). This sidecar does not re-run the suite.",
-   "source_state": "ON_DISK",
+   "source_state": "GIT_HEAD",
    "value": {
     "bench_state_on_receipt": "UNKNOWN",
     "identity_sufficient": false,
@@ -750,9 +750,9 @@
      "MISSING": 8,
      "WEAK": 4
     },
-    "probes_holding": 14,
-    "probes_resolved_by_sidecar": 6,
-    "probes_stale": 0,
+    "probes_holding": 8,
+    "probes_resolved_by_sidecar": 5,
+    "probes_stale": 7,
     "total": 20
    },
    "evidence": [
@@ -878,13 +878,13 @@
     "gpu_authority": false,
     "lease_present_on_qualification_receipt": false,
     "lock_file": {
-     "on_disk": true,
+     "on_disk": false,
      "path": ".hcli/locks/protected-accelerator-bench.lock",
      "probe": "pathlib is_file only; never flock"
     },
     "qualification_stop": {
      "honest_on_this_machine": "stops at the lease check: no existing HCLI lease. later stages are still walked as STATIC_ONLY specs so a human does not have to assemble the run by hand when a window opens",
-     "reason": "lock file exists but no holder could be proven without flock (lsof status='OK' reason=None). fail closed: present=false. flock would be a seizure",
+     "reason": "no existing HCLI lease: .hcli/locks/protected-accelerator-bench.lock is absent. queue_policy.protected_start_requires_existing_hcli_lease. sidecar will not create .hcli/locks or call _try_lock",
      "stage_id": "identify_lease_availability",
      "stage_index": 1
     }
@@ -1218,7 +1218,7 @@
      "representation.physical_ebpw"
     ],
     "path": "hcli/hawking-native.sealed-3.14.json",
-    "sealed_source": "ON_DISK"
+    "sealed_source": "GIT_HEAD"
    },
    "evidence": [
     "hcli/hawking-native.sealed-3.14.json",
@@ -2021,6 +2021,10 @@
       "n": 1
      },
      {
+      "family": "receipts_sovereign_g014_negative_science_json",
+      "n": 1
+     },
+     {
       "family": "recompute_immutable_identity_sha_256_st_dev_geometry_parse_manifest_scan_inside_the_token_loop",
       "n": 1
      },
@@ -2078,7 +2082,7 @@
      },
      {
       "family": "shared_basis",
-      "n": 1
+      "n": 2
      },
      {
       "family": "shared_index_bare_commit_sweeps_foreign_stage",
@@ -2094,7 +2098,7 @@
      },
      {
       "family": "spec_decode",
-      "n": 2
+      "n": 3
      },
      {
       "family": "spec_exactshared_as_is",
@@ -2213,6 +2217,14 @@
       "n": 1
      },
      {
+      "family": "weight_space_cosine_as_a_proxy_for_real_activation_error",
+      "n": 1
+     },
+     {
+      "family": "whole_model_composition_of_locally_adequate_mlp_codec",
+      "n": 1
+     },
+     {
       "family": "widening_the_calibration_corpus_to_fix_under_fitted_organs",
       "n": 1
      },
@@ -2252,19 +2264,19 @@
      },
      {
       "model": "qwen3-30b-a3b",
-      "n": 126
+      "n": 127
      },
      {
       "model": "qwen3-80b",
-      "n": 380
+      "n": 381
      },
      {
       "model": "qwen3.8-27b",
-      "n": 55
+      "n": 57
      },
      {
       "model": "unrecorded",
-      "n": 87
+      "n": 88
      }
     ],
     "by_source": [
@@ -2272,70 +2284,70 @@
       "n_parsed": 40,
       "n_scars": 40,
       "n_unparsed": 0,
-      "origin": "disk",
+      "origin": "git",
       "path": "hawking-experiments/superwave/g1/g1-arch-negative.md"
      },
      {
       "n_parsed": 0,
       "n_scars": 1,
       "n_unparsed": 1,
-      "origin": "disk",
+      "origin": "git",
       "path": "lab/operators/ascension_graveyard.py"
      },
      {
       "n_parsed": 1,
       "n_scars": 1,
       "n_unparsed": 0,
-      "origin": "disk",
+      "origin": "git",
       "path": "receipts/QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE.json"
      },
      {
       "n_parsed": 38,
       "n_scars": 38,
       "n_unparsed": 0,
-      "origin": "disk",
+      "origin": "git",
       "path": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json"
      },
      {
       "n_parsed": 1,
       "n_scars": 1,
       "n_unparsed": 0,
-      "origin": "disk",
+      "origin": "git",
       "path": "receipts/ascent-2026-08-16/Q80_GK_SIMD_NEGATIVE.json"
      },
      {
       "n_parsed": 1,
       "n_scars": 1,
       "n_unparsed": 0,
-      "origin": "disk",
+      "origin": "git",
       "path": "receipts/ascent-2026-08-16/Q80_LM_HEAD_NEGATIVE.json"
      },
      {
       "n_parsed": 1,
       "n_scars": 1,
       "n_unparsed": 0,
-      "origin": "disk",
+      "origin": "git",
       "path": "receipts/ascent-2026-08-18/PHASE_B_HYBRID_REFUTED.json"
      },
      {
       "n_parsed": 0,
       "n_scars": 1,
       "n_unparsed": 1,
-      "origin": "disk",
+      "origin": "git",
       "path": "receipts/future/AUX_CAPABILITY_SCREEN.json"
      },
      {
       "n_parsed": 0,
       "n_scars": 1,
       "n_unparsed": 1,
-      "origin": "disk",
+      "origin": "git",
       "path": "receipts/future/AUX_U8_LUT.json"
      },
      {
       "n_parsed": 0,
       "n_scars": 1,
       "n_unparsed": 1,
-      "origin": "disk",
+      "origin": "git",
       "path": "receipts/future/AUX_U8_NATIVE.json"
      },
      {
@@ -2349,106 +2361,120 @@
       "n_parsed": 0,
       "n_scars": 1,
       "n_unparsed": 1,
-      "origin": "disk",
+      "origin": "git",
       "path": "receipts/future/DELTANET_GENERATED_TRANSITION.json"
      },
      {
       "n_parsed": 2,
       "n_scars": 2,
       "n_unparsed": 0,
-      "origin": "disk",
+      "origin": "git",
       "path": "receipts/future/ECONOMICS_CALIBRATION.json"
      },
      {
       "n_parsed": 0,
       "n_scars": 1,
       "n_unparsed": 1,
-      "origin": "disk",
+      "origin": "git",
       "path": "receipts/future/MLP_FUNCTIONAL_RANK.json"
      },
      {
       "n_parsed": 1,
       "n_scars": 1,
       "n_unparsed": 0,
-      "origin": "disk",
+      "origin": "git",
       "path": "receipts/future/MLP_ISSUE_RATE_LADDER.json"
      },
      {
       "n_parsed": 6,
       "n_scars": 6,
       "n_unparsed": 0,
-      "origin": "disk",
+      "origin": "git",
       "path": "receipts/future/MLP_NONLINEAR_PROGRAM.json"
      },
      {
       "n_parsed": 0,
       "n_scars": 1,
       "n_unparsed": 1,
-      "origin": "disk",
+      "origin": "git",
       "path": "receipts/future/MLP_SHARED_PROGRAM.json"
      },
      {
       "n_parsed": 0,
       "n_scars": 1,
       "n_unparsed": 1,
-      "origin": "disk",
+      "origin": "git",
       "path": "receipts/future/MLP_SPARSE_RESIDUAL.json"
      },
      {
       "n_parsed": 1,
       "n_scars": 1,
       "n_unparsed": 0,
-      "origin": "disk",
+      "origin": "git",
       "path": "receipts/future/MLP_STREAM_COUNT.json"
      },
      {
       "n_parsed": 5,
       "n_scars": 5,
       "n_unparsed": 0,
-      "origin": "disk",
+      "origin": "git",
       "path": "receipts/future/MLP_STRUCTURED_OPERATOR.json"
+     },
+     {
+      "n_parsed": 4,
+      "n_scars": 4,
+      "n_unparsed": 0,
+      "origin": "git",
+      "path": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json"
      },
      {
       "n_parsed": 3,
       "n_scars": 3,
       "n_unparsed": 0,
-      "origin": "disk",
+      "origin": "git",
       "path": "receipts/future/TPS_FALSIFICATIONS.jsonl"
      },
      {
       "n_parsed": 1,
       "n_scars": 1,
       "n_unparsed": 0,
-      "origin": "disk",
+      "origin": "git",
       "path": "receipts/headless/ACCELERATOR_ATTENTION_SIMDGROUP_REFUTED.json"
      },
      {
       "n_parsed": 1,
       "n_scars": 1,
       "n_unparsed": 0,
-      "origin": "disk",
+      "origin": "git",
       "path": "receipts/headless/ACCELERATOR_LM_HEAD_EXACT_BOUNDS_REFUTED.json"
      },
      {
       "n_parsed": 1,
       "n_scars": 1,
       "n_unparsed": 0,
-      "origin": "disk",
+      "origin": "git",
       "path": "receipts/headless/ACCELERATOR_MLP_OPERAND_REUSE_REFUTED.json"
      },
      {
       "n_parsed": 1,
       "n_scars": 1,
       "n_unparsed": 0,
-      "origin": "disk",
+      "origin": "git",
       "path": "receipts/headless/ACCELERATOR_SPAN_IS_REFUTED_COALESCING_IS_NOT.json"
      },
      {
       "n_parsed": 32,
       "n_scars": 32,
       "n_unparsed": 0,
-      "origin": "disk",
+      "origin": "git",
       "path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+     },
+     {
+      "n_parsed": 1,
+      "n_scars": 1,
+      "n_unparsed": 0,
+      "origin": "git",
+      "path": "receipts/sovereign/G014_negative_science.json"
      },
      {
       "n_parsed": 14,
@@ -2472,115 +2498,122 @@
       "path": "tools/headless/noetic_negative_science.py"
      },
      {
+      "n_parsed": 0,
+      "n_scars": 1,
+      "n_unparsed": 1,
+      "origin": "disk",
+      "path": "tools/sovereign/g014_negative_science.py"
+     },
+     {
       "n_parsed": 7,
       "n_scars": 7,
       "n_unparsed": 0,
-      "origin": "disk",
+      "origin": "git",
       "path": "workspace/campaign/evidence/research/doctor/DOCTOR_NEGATIVE_TRANSFER_ATLAS.json"
      },
      {
       "n_parsed": 1,
       "n_scars": 1,
       "n_unparsed": 0,
-      "origin": "disk",
+      "origin": "git",
       "path": "workspace/campaign/evidence/systems/hawking/HAWKING_EXPERT_WAVE_NEGATIVE.json"
      },
      {
       "n_parsed": 1,
       "n_scars": 1,
       "n_unparsed": 0,
-      "origin": "disk",
+      "origin": "git",
       "path": "workspace/campaign/evidence/systems/hawking/HAWKING_RESIDENT_STATE_NEGATIVE.json"
      },
      {
       "n_parsed": 0,
       "n_scars": 1,
       "n_unparsed": 1,
-      "origin": "disk",
+      "origin": "git",
       "path": "workspace/campaign/governance/odyssey/state/graveyard/.gitkeep"
      },
      {
       "n_parsed": 0,
       "n_scars": 1,
       "n_unparsed": 1,
-      "origin": "disk",
+      "origin": "git",
       "path": "workspace/campaign/governance/odyssey/state/graveyard/GRAVEYARD.json"
      },
      {
       "n_parsed": 16,
       "n_scars": 16,
       "n_unparsed": 0,
-      "origin": "disk",
+      "origin": "git",
       "path": "workspace/campaign/odyssey/NEGATIVE_SCIENCE.json"
      },
      {
       "n_parsed": 18,
       "n_scars": 18,
       "n_unparsed": 0,
-      "origin": "disk",
+      "origin": "git",
       "path": "workspace/campaign/records/ascension-sandbox/knowledge-plane/ASCENSION_NEGATIVE_SCIENCE.jsonl"
      },
      {
       "n_parsed": 0,
       "n_scars": 1,
       "n_unparsed": 1,
-      "origin": "disk",
+      "origin": "git",
       "path": "workspace/campaign/records/ascension-sandbox/physical/qwen-family/dual-gravity/.ASCENSION_NEGATIVE_SCIENCE.jsonl.lock"
      },
      {
       "n_parsed": 256,
       "n_scars": 256,
       "n_unparsed": 0,
-      "origin": "disk",
+      "origin": "git",
       "path": "workspace/campaign/records/ascension-sandbox/physical/qwen-family/dual-gravity/ASCENSION_NEGATIVE_SCIENCE.jsonl"
      },
      {
       "n_parsed": 1,
       "n_scars": 1,
       "n_unparsed": 0,
-      "origin": "disk",
+      "origin": "git",
       "path": "workspace/campaign/records/ascension-sandbox/physical/qwen30/tps-gate/negative-science/QWEN30_HCLI_COHERENCE_544bebf4e9263d9ae56f917c05405cb397dbaddcf9a29356739d519783fc71b0.json"
      },
      {
       "n_parsed": 1,
       "n_scars": 1,
       "n_unparsed": 0,
-      "origin": "disk",
+      "origin": "git",
       "path": "workspace/campaign/records/ascension-sandbox/physical/qwen30/tps-gate/negative-science/QWEN30_HCLI_COHERENCE_6719d889329e3c0ec8eea9714aa1b8e9a053ca2d32a6fe0f6371bf3a32b3a7c0.json"
      },
      {
       "n_parsed": 1,
       "n_scars": 1,
       "n_unparsed": 0,
-      "origin": "disk",
+      "origin": "git",
       "path": "workspace/campaign/records/ascension-sandbox/physical/qwen30/tps-gate/negative-science/QWEN30_HCLI_COHERENCE_6959979797825d3cedf17b073e7c7a6071b23292c6b490c439daa41a0afda79e.json"
      },
      {
       "n_parsed": 0,
       "n_scars": 1,
       "n_unparsed": 1,
-      "origin": "disk",
+      "origin": "git",
       "path": "workspace/campaign/records/ascension-sandbox/physical/qwen80/evolution/.NEGATIVE_SCIENCE.jsonl.lock"
      },
      {
       "n_parsed": 157,
       "n_scars": 157,
       "n_unparsed": 0,
-      "origin": "disk",
+      "origin": "git",
       "path": "workspace/campaign/records/ascension-sandbox/physical/qwen80/evolution/NEGATIVE_SCIENCE.jsonl"
      },
      {
       "n_parsed": 46,
       "n_scars": 46,
       "n_unparsed": 0,
-      "origin": "disk",
+      "origin": "git",
       "path": "workspace/docs/guides/dead_levers.md"
      },
      {
       "n_parsed": 0,
       "n_scars": 1,
       "n_unparsed": 1,
-      "origin": "disk",
+      "origin": "git",
       "path": "workspace/docs/plans/ascension/ASCENSION_GRAVEYARD_PLAN.md"
      }
     ],
@@ -2593,15 +2626,15 @@
      "ramanujan.scaffold.core.stores Graveyard (in-process bury/revive, not a corpus index).",
      "Worktrees and grok/* branches the noetic sweeper walked; this index is HEAD + disk only."
     ],
-    "n_parsed": 671,
-    "n_refuse_eligible": 599,
-    "n_scars": 685,
-    "n_sources": 45,
-    "n_unparsed": 14
+    "n_parsed": 676,
+    "n_refuse_eligible": 603,
+    "n_scars": 691,
+    "n_sources": 48,
+    "n_unparsed": 15
    },
    "missing_evidence": [],
-   "n": 62,
-   "n_refuse_eligible": 47,
+   "n": 64,
+   "n_refuse_eligible": 49,
    "note": "compact projection of NEGATIVE_SCIENCE_INDEX; not the full corpus dump",
    "query": {
     "model": "qwen3.8-27b"
@@ -2870,6 +2903,22 @@
      "refuse_eligible": true,
      "scar_id": "receipts/future/MLP_STRUCTURED_OPERATOR.json#MONARCH",
      "source_path": "receipts/future/MLP_STRUCTURED_OPERATOR.json",
+     "verdict": "MEASURED_NEGATIVE"
+    },
+    {
+     "hypothesis_family": "shared_basis",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json#shared basis mlp below q2f",
+     "source_path": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json",
+     "verdict": "MEASURED_NEGATIVE"
+    },
+    {
+     "hypothesis_family": "whole_model_composition_of_locally_adequate_mlp_codec",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json#whole_model_composition_of_locally_adequate_mlp_codec",
+     "source_path": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json",
      "verdict": "MEASURED_NEGATIVE"
     },
     {
@@ -3207,7 +3256,7 @@
       "receipts/future/QUALIFICATION_PIPELINE.json"
      ],
      "id": "W-LEASE-UNPROVEN",
-     "statement": "Protected bench lock: lock file exists but no holder could be proven without flock (lsof status='OK' reason=None). fail closed: present=false. flock would be a seizure"
+     "statement": "Protected bench lock: no existing HCLI lease: .hcli/locks/protected-accelerator-bench.lock is absent. queue_policy.protected_start_requires_existing_hcli_lease. sidecar will not create .hcli/locks or call _try_lock"
     },
     {
      "blocks": [
@@ -3299,7 +3348,7 @@
    "missing_evidence": [],
    "note": "Cited prior genome identity (soc/cores/memory/toolchain). tools/accelerator/machine_genome.py was not executed.",
    "read_only": true,
-   "source_state": "ON_DISK",
+   "source_state": "GIT_HEAD",
    "value": {
     "arch": "arm64",
     "bench_state_on_receipt": "UNKNOWN",
@@ -3348,7 +3397,7 @@
     "hcli/hawking-native.sealed-3.14.json#family"
    ],
    "missing_evidence": [],
-   "source_state": "ON_DISK",
+   "source_state": "GIT_HEAD",
    "value": "qwen3.8"
   },
   "nx_id": {
@@ -3359,7 +3408,7 @@
    ],
    "missing_evidence": [],
    "profile_sha256": "d0ccab6562eebde05f81fbc9e7d40698f4aa9a83ae8e19606a7372a1f3abb7ce",
-   "source_state": "ON_DISK",
+   "source_state": "GIT_HEAD",
    "value": {
     "model_id": "qwen3.8-27b-sealed-3.14",
     "profile_schema": "hcli.provider.profile.v1",
@@ -3384,9 +3433,9 @@
     "family": "qwen3.8",
     "historical_runtime_identity": {
      "in_git_head": true,
-     "on_disk": true,
+     "on_disk": false,
      "path": "receipts/headless/QWEN27_HISTORICAL_RUNTIME_IDENTITY.json",
-     "source": "ON_DISK"
+     "source": "GIT_HEAD"
     },
     "mix_id": "mix_all_mlp_affine_g64_ls",
     "mix_report_state": "ON_DISK",
@@ -3642,9 +3691,9 @@
  "recovered_implementation": {
   "capability_receipt": {
    "in_git_head": true,
-   "on_disk": true,
+   "on_disk": false,
    "path": "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
-   "source": "ON_DISK"
+   "source": "GIT_HEAD"
   },
   "codex_accelerator_handoff": {
    "in_git_head": true,
@@ -3657,16 +3706,16 @@
   "gap_closed": "Persist the full named identity to receipts/future/RESIDENT_IDENTITY.json; load() reconstructs it in a fresh process from disk alone.",
   "hcli_resident_seal": {
    "in_git_head": true,
-   "on_disk": true,
+   "on_disk": false,
    "path": "receipts/headless/HCLI_RESIDENT_SEAL.json",
-   "source": "ON_DISK"
+   "source": "GIT_HEAD"
   },
   "incumbent_sealed_profile": {
    "in_git_head": true,
-   "on_disk": true,
+   "on_disk": false,
    "path": "hcli/hawking-native.sealed-3.14.json",
    "role": "real shape of the Qwen27 resident as it exists today",
-   "source": "ON_DISK"
+   "source": "GIT_HEAD"
   },
   "machine_genome_module": {
    "in_git_head": true,
@@ -3677,16 +3726,16 @@
   },
   "machine_genome_receipt": {
    "in_git_head": true,
-   "on_disk": true,
+   "on_disk": false,
    "path": "receipts/headless/MACHINE_GENOME.json",
-   "source": "ON_DISK"
+   "source": "GIT_HEAD"
   },
   "machine_prior": {
    "in_git_head": true,
-   "on_disk": true,
+   "on_disk": false,
    "path": "hcli/machine.py",
    "role": "genome is a PRIOR; STALE genomes are not used as live numbers",
-   "source": "ON_DISK"
+   "source": "GIT_HEAD"
   },
   "qwen27_profile_schema": {
    "path": "receipts/future/QWEN27_ACCELERATOR_PROFILE_SCHEMA.json",
@@ -3698,17 +3747,17 @@
   },
   "resident_lifecycle": {
    "in_git_head": true,
-   "on_disk": true,
+   "on_disk": false,
    "path": "hcli/agentos/resident_gate.py",
    "role": "live resident_gate; hcli/agentos/resident.py is not a git blob (gate is)",
-   "source": "ON_DISK"
+   "source": "GIT_HEAD"
   },
   "runtime_identity_module": {
    "in_git_head": true,
-   "on_disk": true,
+   "on_disk": false,
    "path": "hcli/agentos/qwen27_runtime_identity.py",
    "role": "historical vs current dispatch-fusion archaeology; not restart identity",
-   "source": "ON_DISK"
+   "source": "GIT_HEAD"
   }
  },
  "residency_status": "CURRENT_NONFINAL_HCLI_WORKER",
@@ -3751,7 +3800,7 @@
   }
  },
  "schema": "hawking.future.resident_identity.v1",
- "seal_sha256": "980f4e918e87ad093d1ec85da46de65fad559c9ece8aa6b3cace22e553f619a0",
+ "seal_sha256": "dab952abdb8d1b4fe381dbbcacc36aeb5cf249992edbfdd94ccf6941ccdeac2e",
  "status": "ACCEPTED",
  "version": 1,
  "work_unit": {

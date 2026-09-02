@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:10:38Z",
+  "recorded_at": "2026-09-02T09:45:33Z",
   "recorded_by": "tools/future/resident_api.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -11,14 +11,14 @@
  "bench_state": "UNKNOWN",
  "claim_boundary": "Static sidecar artifact. No hardware measurement.",
  "counts": {
-  "capabilities": 277,
-  "discovered_python": 512,
-  "human_cli_only": 249,
+  "capabilities": 254,
+  "discovered_python": 535,
+  "human_cli_only": 256,
   "import_failures": 0,
-  "not_operational": 147,
+  "not_operational": 157,
   "operational": 104,
-  "scored": 251,
-  "tests": 261,
+  "scored": 261,
+  "tests": 274,
   "work_units": 6
  },
  "five_questions": [
@@ -731,7 +731,9 @@
    "campaign_scars",
    "capability_byte_elimination",
    "capability_curve",
+   "capability_eval",
    "capability_information_map",
+   "capability_reachability",
    "capacity_inference_rule",
    "causal_budget_71",
    "causal_pattern_library",
@@ -740,6 +742,7 @@
    "claude_interventions",
    "complete_ebpw",
    "concurrency_measure",
+   "conftest",
    "decode_tax_target",
    "deltanet_generated_transition",
    "deltanet_multistep",
@@ -759,6 +762,8 @@
    "dispatch_size_sweep",
    "exam_a_option_tree",
    "executable_economics",
+   "experiment_policy",
+   "experiment_receipt",
    "fast_thought",
    "fidelity_hierarchy",
    "fold_addqx_ab",
@@ -768,6 +773,7 @@
    "handoff",
    "harness_reconciliation",
    "hcli_compactor",
+   "hcli_self_hosting_launch",
    "hcli_sovereign",
    "index_provenance",
    "integration_attack",
@@ -813,6 +819,7 @@
    "path_to_71",
    "per_generated_token_inflation",
    "perturbation_workunit",
+   "physical_compiler_predict",
    "productive_search",
    "protected_bench_lease",
    "protected_bitcast_absolute",
@@ -829,6 +836,7 @@
    "roof_anchor",
    "runnability_snapshot",
    "scar_reevaluator",
+   "science_corpus",
    "sealed_default_absolute",
    "sealed_default_verified",
    "single_token_dag",
@@ -840,6 +848,7 @@
    "specimen_load_cost",
    "specimen_registry",
    "specimen_scheduler",
+   "static_kernel_verify_parity",
    "sub2_unified_plan",
    "terminal_speed_artifact",
    "token_ns_objective",
@@ -849,6 +858,7 @@
    "tps_metrics",
    "trial_negative_controls",
    "uma_resource_ledger",
+   "vmcp",
    "wall_gpu_reconciliation"
   ],
   "does_not_produce_receipt": [
@@ -860,13 +870,17 @@
    "bitcast_dequant_ab",
    "causal_budget_71",
    "concurrency_measure",
+   "conftest",
    "deltanet_organ_decompose",
    "deltanet_widen_ab",
    "dequant_hoist_ab",
    "dispatch_size_sweep",
+   "experiment_policy",
+   "experiment_receipt",
    "fold_addqx_ab",
    "gap_ledger_60",
    "geometry_table",
+   "hcli_self_hosting_launch",
    "index_provenance",
    "integration_gate",
    "intra_token_concurrency_ab",
@@ -894,6 +908,7 @@
    "resident_token_budget",
    "sealed_default_absolute",
    "specimen_load_cost",
+   "static_kernel_verify_parity",
    "token_ns_objective",
    "tps_falsifications",
    "trial_negative_controls",
@@ -903,6 +918,7 @@
   "does_not_raise_on_invalid": [
    "__init__",
    "ba_delta_ab",
+   "conftest",
    "index_provenance",
    "legacy_driver_retirement",
    "measurement_provenance",
@@ -915,7 +931,12 @@
   ],
   "no_callable_entry_point_only_main_or_absent": [
    "__init__",
-   "_common"
+   "_common",
+   "conftest",
+   "experiment_policy",
+   "experiment_receipt",
+   "hcli_self_hosting_launch",
+   "static_kernel_verify_parity"
   ],
   "result_does_not_feed_a_named_frontier": [
    "__init__",
@@ -938,7 +959,9 @@
    "campaign_scars",
    "capability_byte_elimination",
    "capability_curve",
+   "capability_eval",
    "capability_information_map",
+   "capability_reachability",
    "capability_stages",
    "capacity_inference_rule",
    "causal_budget_71",
@@ -948,6 +971,7 @@
    "claude_interventions",
    "complete_ebpw",
    "concurrency_measure",
+   "conftest",
    "decode_tax_target",
    "deltanet_generated_transition",
    "deltanet_multistep",
@@ -968,6 +992,8 @@
    "dispatch_size_sweep",
    "exam_a_option_tree",
    "executable_economics",
+   "experiment_policy",
+   "experiment_receipt",
    "fast_thought",
    "fidelity_hierarchy",
    "fold_addqx_ab",
@@ -977,6 +1003,7 @@
    "handoff",
    "harness_reconciliation",
    "hcli_compactor",
+   "hcli_self_hosting_launch",
    "hcli_sovereign",
    "improvement_metabolism",
    "improvement_trial",
@@ -1024,6 +1051,7 @@
    "path_to_71",
    "per_generated_token_inflation",
    "perturbation_workunit",
+   "physical_compiler_predict",
    "productive_search",
    "protected_bench_lease",
    "protected_bitcast_absolute",
@@ -1041,6 +1069,7 @@
    "roof_anchor",
    "runnability_snapshot",
    "scar_reevaluator",
+   "science_corpus",
    "sealed_default_absolute",
    "sealed_default_verified",
    "single_token_dag",
@@ -1053,6 +1082,7 @@
    "specimen_load_cost",
    "specimen_registry",
    "specimen_scheduler",
+   "static_kernel_verify_parity",
    "sub2_unified_plan",
    "succession_trial",
    "terminal_speed_artifact",
@@ -1064,6 +1094,7 @@
    "tps_metrics",
    "trial_negative_controls",
    "uma_resource_ledger",
+   "vmcp",
    "wall_gpu_reconciliation"
   ]
  },
@@ -1080,106 +1111,23 @@
  "handoff": {
   "load_error": null,
   "path": "receipts/future/FUTURE_SUBSTRATE_HANDOFF.json",
-  "present": true,
-  "system_keys": [
-   "abi_verdict_harness",
-   "ane_preboard",
-   "autonomous_reproducible_science",
-   "candidate_queue_planner",
-   "codex_mutation_surface",
-   "codex_receipt_ingestion",
-   "contamination_science",
-   "cuda_lowbit_hypotheses",
-   "decode_civilization",
-   "derived_freshness",
-   "developer_platform",
-   "device_ascension",
-   "ebpw_category_validator",
-   "evidence_snapshot",
-   "experiment_turnaround",
-   "expert_bank_school",
-   "flash_nx_audit",
-   "fpga_engine_school",
-   "fpga_multifidelity",
-   "fusion",
-   "git_lock_durability",
-   "global_frontier",
-   "green_machine",
-   "hardware_doctor",
-   "hbm_doctor",
-   "hcli_future_workunits",
-   "hmf_hgvas",
-   "hwir",
-   "integration_attack",
-   "learned_physical_compiler",
-   "meta_downstream_ready",
-   "meta_experiment_funnel",
-   "moe_physical_school",
-   "negative_science_index",
-   "ngram_school",
-   "odyssey_ii_law_store",
-   "odyssey_iii_adversary",
-   "p6_primitive_projection",
-   "physical_primitive_library",
-   "propagation_engine",
-   "qualification_automation",
-   "qwen27_profile_schema",
-   "resident_install",
-   "resident_optimizer",
-   "router_science",
-   "static_kernel_preflight",
-   "static_skeleton",
-   "teacher_corpus",
-   "tournament"
-  ]
+  "present": false,
+  "system_keys": []
  },
  "hcli": {
-  "agentos_runtime_present": true,
+  "agentos_runtime_present": false,
   "future_source_refs": [],
   "future_tools": [],
   "hcli_invoke_raises_on_unknown": false,
-  "hcli_invoke_returns_toolresult": true,
+  "hcli_invoke_returns_toolresult": false,
   "hcli_unknown_tool_is_fail_open": true,
   "meaning": "Resident-callable means AgentOS.tools.discover() lists a ToolSpec and AgentOS.invoke_tool dispatches it. tools/future is not in that registry; this sidecar exposes invoke() as the stand-in.",
-  "providers_present": true,
-  "runtime_iface_present": true,
-  "tool_names": [
-   "accelerator.benchmark",
-   "architecture.inspect",
-   "benchmark.inspect",
-   "benchmark.run",
-   "doctor.query",
-   "filesystem.read",
-   "filesystem.search",
-   "filesystem.write",
-   "fs.read",
-   "fs.search",
-   "git.diff",
-   "git.log",
-   "git.status",
-   "github.fetch",
-   "github.search",
-   "gravity.experiment",
-   "huggingface.download",
-   "huggingface.fetch_file",
-   "huggingface.history",
-   "huggingface.manifest",
-   "huggingface.resolve",
-   "receipt.inspect",
-   "receipt.read",
-   "roadmap.inspect",
-   "shell.exec",
-   "shell.readonly",
-   "tests.list",
-   "tests.run",
-   "vmcp.inspect",
-   "vmcp.query",
-   "web.fetch",
-   "web.search"
-  ],
-  "tool_registry_present": true
+  "providers_present": false,
+  "runtime_iface_present": false,
+  "tool_names": [],
+  "tool_registry_present": false
  },
- "honest_scoring": "104 operational / 147 not operational / 251 scored. A human CLI is not an operational subsystem.",
+ "honest_scoring": "104 operational / 157 not operational / 261 scored. A human CLI is not an operational subsystem.",
  "law": "A subsystem is not operational until the RESIDENT can discover it, invoke it, schedule it and verify it; its result changes a frontier; the result persists; and next work refills. 'It has a CLI a human can run' is NOT enough.",
  "measurement_class": "STATIC_ONLY",
  "modules": [
@@ -1239,7 +1187,7 @@
       "has_if_main": false,
       "has_main": false,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -1288,13 +1236,21 @@
    "kind": "infra",
    "preferred_callable": null,
    "public_callables": [
+    "gpu_lane_lock_path",
     "bench_block",
     "seal",
     "write_receipt",
     "measurement_provenance",
     "write_measured_receipt",
     "load_json",
+    "clear_git_cache",
+    "prefetch_blobs",
+    "blob_text",
+    "head_paths_ordered",
+    "head_path_set",
+    "prefetch_session_artifacts",
     "git",
+    "compile_swift",
     "sha256_file",
     "newest_mtime",
     "require_known_flags"
@@ -1331,19 +1287,27 @@
       "has_if_main": false,
       "has_main": false,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
       "preferred_callable": null,
       "public_callables": [
+       "gpu_lane_lock_path",
        "bench_block",
        "seal",
        "write_receipt",
        "measurement_provenance",
        "write_measured_receipt",
        "load_json",
+       "clear_git_cache",
+       "prefetch_blobs",
+       "blob_text",
+       "head_paths_ordered",
+       "head_path_set",
+       "prefetch_session_artifacts",
        "git",
+       "compile_swift",
        "sha256_file",
        "newest_mtime",
        "require_known_flags"
@@ -1371,8 +1335,7 @@
   },
   {
    "capabilities": [
-    "future.abi_verdicts",
-    "future.abi_verdict_harness"
+    "future.abi_verdicts"
    ],
    "cli_flags": [
     [
@@ -1456,7 +1419,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -1587,7 +1550,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -1725,7 +1688,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -1874,7 +1837,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -2004,7 +1967,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -2114,7 +2077,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -2222,7 +2185,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -2361,7 +2324,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -2500,7 +2463,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -2630,7 +2593,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -2732,7 +2695,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -2837,7 +2800,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -2954,7 +2917,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -3016,6 +2979,21 @@
    "kind": "production",
    "preferred_callable": "build",
    "public_callables": [
+    "scope_covers",
+    "scope_from_candidate",
+    "scar_blocks_candidate",
+    "retrieve_law",
+    "scar_from_noetic_entry",
+    "law_from_odyssey2_record",
+    "law_from_claim_scope_record",
+    "scar_from_autonomy_dict",
+    "scar_from_campaign_dict",
+    "scar_from_atlas_entry",
+    "law_from_autonomy_scar",
+    "load_registry",
+    "consult",
+    "round_trip_scar",
+    "round_trip_law",
     "scars",
     "missing_regression_tests",
     "build",
@@ -3031,7 +3009,7 @@
     },
     "fail_closed": {
      "evidence": {
-      "raise_count": 1,
+      "raise_count": 3,
       "rule": "fail closed means raise (or write_receipt's HardwareClaimError) rather than returning a silent default",
       "uses_write_receipt": true
      },
@@ -3055,12 +3033,27 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
       "preferred_callable": "build",
       "public_callables": [
+       "scope_covers",
+       "scope_from_candidate",
+       "scar_blocks_candidate",
+       "retrieve_law",
+       "scar_from_noetic_entry",
+       "law_from_odyssey2_record",
+       "law_from_claim_scope_record",
+       "scar_from_autonomy_dict",
+       "scar_from_campaign_dict",
+       "scar_from_atlas_entry",
+       "law_from_autonomy_scar",
+       "load_registry",
+       "consult",
+       "round_trip_scar",
+       "round_trip_law",
        "scars",
        "missing_regression_tests",
        "build",
@@ -3080,7 +3073,7 @@
      "pass": true
     }
    },
-   "raise_count": 1,
+   "raise_count": 3,
    "receipt": "AUTONOMY_SCARS.json",
    "relpath": "tools/future/autonomy_scars.py",
    "status": "OPERATIONAL",
@@ -3250,7 +3243,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -3469,7 +3462,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -3644,7 +3637,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -3819,7 +3812,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -3939,7 +3932,7 @@
       "has_if_main": true,
       "has_main": false,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -4032,7 +4025,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -4131,7 +4124,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -4249,7 +4242,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -4359,7 +4352,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -4394,8 +4387,7 @@
   },
   {
    "capabilities": [
-    "future.candidate_planner",
-    "future.candidate_queue_planner"
+    "future.candidate_planner"
    ],
    "cli_flags": [
     [
@@ -4486,7 +4478,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -4633,7 +4625,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -4757,7 +4749,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -4792,6 +4784,103 @@
    "relpath": "tools/future/capability_curve.py",
    "status": "NOT_OPERATIONAL",
    "stem": "capability_curve",
+   "workunit_constructs": []
+  },
+  {
+   "capabilities": [
+    "future.capability_eval"
+   ],
+   "cli_flags": [
+    [
+     "--build"
+    ]
+   ],
+   "docstring": "Generic capability evaluation \u2014 no single hardcoded benchmark. Roadmap \u00a748 territory: one interface usable for the current resident, a future NX, representation experiments, and heterogeneous execution. A capability does not exist until so\u2026",
+   "filename": "capability_eval.py",
+   "gaps": [
+    "does_not_emit_workunit",
+    "result_does_not_feed_a_named_frontier"
+   ],
+   "has_if_main": true,
+   "has_main": true,
+   "hcli_tool_registered": false,
+   "human_cli_only": true,
+   "import_error": null,
+   "import_ok": true,
+   "kind": "production",
+   "preferred_callable": "build",
+   "public_callables": [
+    "passing_scripted_source",
+    "failing_scripted_source",
+    "default_registry",
+    "recover_implementation",
+    "build",
+    "main"
+   ],
+   "questions": {
+    "emits_workunit": {
+     "evidence": {
+      "constructs": [],
+      "emitted_by_orchestration_connector": false
+     },
+     "gap": "does_not_emit_workunit",
+     "pass": false
+    },
+    "fail_closed": {
+     "evidence": {
+      "raise_count": 12,
+      "rule": "fail closed means raise (or write_receipt's HardwareClaimError) rather than returning a silent default",
+      "uses_write_receipt": true
+     },
+     "pass": true
+    },
+    "feeds_named_frontier": {
+     "evidence": {
+      "frontier_present": true,
+      "named_as_integration_target": [],
+      "receipt_is_frontier_probe": [],
+      "writes_frontier_document": false
+     },
+     "gap": "result_does_not_feed_a_named_frontier",
+     "pass": false
+    },
+    "hcli_invoke": {
+     "evidence": {
+      "has_if_main": true,
+      "has_main": true,
+      "hcli_future_tools": [],
+      "hcli_tool_count": 0,
+      "hcli_tool_registered": false,
+      "import_error": null,
+      "import_ok": true,
+      "preferred_callable": "build",
+      "public_callables": [
+       "passing_scripted_source",
+       "failing_scripted_source",
+       "default_registry",
+       "recover_implementation",
+       "build",
+       "main"
+      ]
+     },
+     "pass": true
+    },
+    "produces_receipt": {
+     "evidence": {
+      "receipt": "CAPABILITY_EVAL.json",
+      "uses_write_receipt": true,
+      "write_receipt_names": [
+       "CAPABILITY_EVAL.json"
+      ]
+     },
+     "pass": true
+    }
+   },
+   "raise_count": 12,
+   "receipt": "CAPABILITY_EVAL.json",
+   "relpath": "tools/future/capability_eval.py",
+   "status": "NOT_OPERATIONAL",
+   "stem": "capability_eval",
    "workunit_constructs": []
   },
   {
@@ -4893,7 +4982,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -4955,6 +5044,164 @@
    "relpath": "tools/future/capability_information_map.py",
    "status": "NOT_OPERATIONAL",
    "stem": "capability_information_map",
+   "workunit_constructs": []
+  },
+  {
+   "capabilities": [
+    "future.capability_reachability"
+   ],
+   "cli_flags": [
+    [
+     "--build"
+    ],
+    [
+     "--audit"
+    ],
+    [
+     "--selftest"
+    ],
+    [
+     "--parity"
+    ]
+   ],
+   "docstring": "Capability reachability -- what exists but nothing calls. A definition is not a capability. A typed tool, a class, a module, or a function is only a live capability if something OTHER than its own definition and its own test actually reach\u2026",
+   "filename": "capability_reachability.py",
+   "gaps": [
+    "does_not_emit_workunit",
+    "result_does_not_feed_a_named_frontier"
+   ],
+   "has_if_main": true,
+   "has_main": true,
+   "hcli_tool_registered": false,
+   "human_cli_only": true,
+   "import_error": null,
+   "import_ok": true,
+   "kind": "production",
+   "preferred_callable": "build",
+   "public_callables": [
+    "current_source",
+    "using_source",
+    "using_reader",
+    "repo_is_git_checkout",
+    "repo_py_files",
+    "tracked_py_set",
+    "source_exists",
+    "prefetch_texts",
+    "read_text",
+    "is_test_path",
+    "rel",
+    "module_name_of",
+    "build_repo_index",
+    "find_symbol_call_sites",
+    "find_symbol_instantiation_sites",
+    "find_literal_sites",
+    "find_module_import_sites",
+    "build_capability",
+    "recover_tool_registrations",
+    "build_tool_capabilities",
+    "build_tool_registry_capability",
+    "build_named_capabilities",
+    "discover_future_modules",
+    "build_sidecar_sweep",
+    "recover_registered_future_tool_names",
+    "repo_index_from_facts",
+    "assemble",
+    "build",
+    "selftest",
+    "compare_capability_maps",
+    "run_parity",
+    "main"
+   ],
+   "questions": {
+    "emits_workunit": {
+     "evidence": {
+      "constructs": [],
+      "emitted_by_orchestration_connector": false
+     },
+     "gap": "does_not_emit_workunit",
+     "pass": false
+    },
+    "fail_closed": {
+     "evidence": {
+      "raise_count": 11,
+      "rule": "fail closed means raise (or write_receipt's HardwareClaimError) rather than returning a silent default",
+      "uses_write_receipt": true
+     },
+     "pass": true
+    },
+    "feeds_named_frontier": {
+     "evidence": {
+      "frontier_present": true,
+      "named_as_integration_target": [],
+      "receipt_is_frontier_probe": [],
+      "writes_frontier_document": false
+     },
+     "gap": "result_does_not_feed_a_named_frontier",
+     "pass": false
+    },
+    "hcli_invoke": {
+     "evidence": {
+      "has_if_main": true,
+      "has_main": true,
+      "hcli_future_tools": [],
+      "hcli_tool_count": 0,
+      "hcli_tool_registered": false,
+      "import_error": null,
+      "import_ok": true,
+      "preferred_callable": "build",
+      "public_callables": [
+       "current_source",
+       "using_source",
+       "using_reader",
+       "repo_is_git_checkout",
+       "repo_py_files",
+       "tracked_py_set",
+       "source_exists",
+       "prefetch_texts",
+       "read_text",
+       "is_test_path",
+       "rel",
+       "module_name_of",
+       "build_repo_index",
+       "find_symbol_call_sites",
+       "find_symbol_instantiation_sites",
+       "find_literal_sites",
+       "find_module_import_sites",
+       "build_capability",
+       "recover_tool_registrations",
+       "build_tool_capabilities",
+       "build_tool_registry_capability",
+       "build_named_capabilities",
+       "discover_future_modules",
+       "build_sidecar_sweep",
+       "recover_registered_future_tool_names",
+       "repo_index_from_facts",
+       "assemble",
+       "build",
+       "selftest",
+       "compare_capability_maps",
+       "run_parity",
+       "main"
+      ]
+     },
+     "pass": true
+    },
+    "produces_receipt": {
+     "evidence": {
+      "receipt": "HCLI_CAPABILITY_REACHABILITY.json",
+      "uses_write_receipt": true,
+      "write_receipt_names": [
+       "HCLI_CAPABILITY_REACHABILITY.json"
+      ]
+     },
+     "pass": true
+    }
+   },
+   "raise_count": 11,
+   "receipt": "HCLI_CAPABILITY_REACHABILITY.json",
+   "relpath": "tools/future/capability_reachability.py",
+   "status": "NOT_OPERATIONAL",
+   "stem": "capability_reachability",
    "workunit_constructs": []
   },
   {
@@ -5034,7 +5281,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -5147,7 +5394,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -5245,7 +5492,7 @@
       "has_if_main": true,
       "has_main": false,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -5344,7 +5591,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -5483,7 +5730,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -5631,7 +5878,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -5739,7 +5986,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -5833,7 +6080,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -5946,7 +6193,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -5997,8 +6244,7 @@
   },
   {
    "capabilities": [
-    "future.codex_ingest",
-    "future.codex_receipt_ingestion"
+    "future.codex_ingest"
    ],
    "cli_flags": [
     [
@@ -6077,7 +6323,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -6146,6 +6392,7 @@
     "mix_report",
     "stream_rates",
     "packed_bytes",
+    "refuse_unbilled_components",
     "incumbent_candidate",
     "cost",
     "build",
@@ -6162,7 +6409,7 @@
     },
     "fail_closed": {
      "evidence": {
-      "raise_count": 43,
+      "raise_count": 46,
       "rule": "fail closed means raise (or write_receipt's HardwareClaimError) rather than returning a silent default",
       "uses_write_receipt": true
      },
@@ -6183,7 +6430,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -6192,6 +6439,7 @@
        "mix_report",
        "stream_rates",
        "packed_bytes",
+       "refuse_unbilled_components",
        "incumbent_candidate",
        "cost",
        "build",
@@ -6211,7 +6459,7 @@
      "pass": true
     }
    },
-   "raise_count": 43,
+   "raise_count": 46,
    "receipt": "COMPLETE_EBPW.json",
    "relpath": "tools/future/complete_ebpw.py",
    "status": "NOT_OPERATIONAL",
@@ -6298,7 +6546,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -6418,7 +6666,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -6447,6 +6695,95 @@
    "relpath": "tools/future/concurrency_measure.py",
    "status": "NOT_OPERATIONAL",
    "stem": "concurrency_measure",
+   "workunit_constructs": []
+  },
+  {
+   "capabilities": [
+    "future.conftest"
+   ],
+   "cli_flags": [],
+   "docstring": "Sparse-checkout collection guard and session git artifacts. ``pytest tools/future`` imports every test module before ``-k`` runs. Two modules fail at import when receipts/ or hcli/ are not materialized. Ignore them only while those paths a\u2026",
+   "filename": "conftest.py",
+   "gaps": [
+    "no_callable_entry_point_only_main_or_absent",
+    "does_not_emit_workunit",
+    "does_not_produce_receipt",
+    "result_does_not_feed_a_named_frontier",
+    "does_not_raise_on_invalid"
+   ],
+   "has_if_main": false,
+   "has_main": false,
+   "hcli_tool_registered": false,
+   "human_cli_only": false,
+   "import_error": null,
+   "import_ok": true,
+   "kind": "production",
+   "preferred_callable": null,
+   "public_callables": [
+    "pytest_configure",
+    "pytest_ignore_collect"
+   ],
+   "questions": {
+    "emits_workunit": {
+     "evidence": {
+      "constructs": [],
+      "emitted_by_orchestration_connector": false
+     },
+     "gap": "does_not_emit_workunit",
+     "pass": false
+    },
+    "fail_closed": {
+     "evidence": {
+      "raise_count": 0,
+      "rule": "fail closed means raise (or write_receipt's HardwareClaimError) rather than returning a silent default",
+      "uses_write_receipt": false
+     },
+     "gap": "does_not_raise_on_invalid",
+     "pass": false
+    },
+    "feeds_named_frontier": {
+     "evidence": {
+      "frontier_present": true,
+      "named_as_integration_target": [],
+      "receipt_is_frontier_probe": [],
+      "writes_frontier_document": false
+     },
+     "gap": "result_does_not_feed_a_named_frontier",
+     "pass": false
+    },
+    "hcli_invoke": {
+     "evidence": {
+      "has_if_main": false,
+      "has_main": false,
+      "hcli_future_tools": [],
+      "hcli_tool_count": 0,
+      "hcli_tool_registered": false,
+      "import_error": null,
+      "import_ok": true,
+      "preferred_callable": null,
+      "public_callables": [
+       "pytest_configure",
+       "pytest_ignore_collect"
+      ]
+     },
+     "gap": "no_callable_entry_point_only_main_or_absent",
+     "pass": false
+    },
+    "produces_receipt": {
+     "evidence": {
+      "receipt": null,
+      "uses_write_receipt": false,
+      "write_receipt_names": []
+     },
+     "gap": "does_not_produce_receipt",
+     "pass": false
+    }
+   },
+   "raise_count": 0,
+   "receipt": null,
+   "relpath": "tools/future/conftest.py",
+   "status": "NOT_OPERATIONAL",
+   "stem": "conftest",
    "workunit_constructs": []
   },
   {
@@ -6535,7 +6872,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -6595,8 +6932,7 @@
   },
   {
    "capabilities": [
-    "future.contamination",
-    "future.contamination_science"
+    "future.contamination"
    ],
    "cli_flags": [
     [
@@ -6672,7 +7008,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -6788,7 +7124,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -6931,7 +7267,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -7087,7 +7423,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -7207,7 +7543,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -7328,7 +7664,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -7472,7 +7808,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -7636,7 +7972,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -7762,7 +8098,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -7897,7 +8233,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -8024,7 +8360,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -8165,7 +8501,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -8283,7 +8619,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -8393,7 +8729,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -8534,7 +8870,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -8636,7 +8972,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -8731,7 +9067,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -8861,7 +9197,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -9005,7 +9341,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -9050,8 +9386,7 @@
   },
   {
    "capabilities": [
-    "future.device_ascension_pipeline",
-    "future.device_ascension"
+    "future.device_ascension_pipeline"
    ],
    "cli_flags": [
     [
@@ -9130,7 +9465,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -9253,7 +9588,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -9299,8 +9634,7 @@
   },
   {
    "capabilities": [
-    "future.devplatform",
-    "future.developer_platform"
+    "future.devplatform"
    ],
    "cli_flags": [
     [
@@ -9388,7 +9722,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -9533,7 +9867,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -9668,7 +10002,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -9795,7 +10129,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -9925,7 +10259,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -9965,8 +10299,7 @@
   },
   {
    "capabilities": [
-    "future.ebpw_categories",
-    "future.ebpw_category_validator"
+    "future.ebpw_categories"
    ],
    "cli_flags": [
     [
@@ -10037,7 +10370,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -10183,7 +10516,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -10312,7 +10645,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -10414,7 +10747,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -10528,7 +10861,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -10571,6 +10904,224 @@
    "relpath": "tools/future/executable_economics.py",
    "status": "NOT_OPERATIONAL",
    "stem": "executable_economics",
+   "workunit_constructs": []
+  },
+  {
+   "capabilities": [
+    "future.experiment_policy"
+   ],
+   "cli_flags": [],
+   "docstring": "Typed experiment-policy representation. This ENABLES a future learned policy. It does not select experiments. The current deterministic / resident policy remains the authority. A bandit, posterior sampler or ranking head is not present and\u2026",
+   "filename": "experiment_policy.py",
+   "gaps": [
+    "no_callable_entry_point_only_main_or_absent",
+    "does_not_emit_workunit",
+    "does_not_produce_receipt",
+    "result_does_not_feed_a_named_frontier"
+   ],
+   "has_if_main": false,
+   "has_main": false,
+   "hcli_tool_registered": false,
+   "human_cli_only": false,
+   "import_error": null,
+   "import_ok": true,
+   "kind": "production",
+   "preferred_callable": null,
+   "public_callables": [
+    "expected_payoff",
+    "information_gain",
+    "discriminator",
+    "cost",
+    "outcome",
+    "option",
+    "option_from_hypothesis",
+    "option_from_ebpw_bill",
+    "apply_deterministic_belief_update",
+    "refuse_to_select"
+   ],
+   "questions": {
+    "emits_workunit": {
+     "evidence": {
+      "constructs": [],
+      "emitted_by_orchestration_connector": false
+     },
+     "gap": "does_not_emit_workunit",
+     "pass": false
+    },
+    "fail_closed": {
+     "evidence": {
+      "raise_count": 6,
+      "rule": "fail closed means raise (or write_receipt's HardwareClaimError) rather than returning a silent default",
+      "uses_write_receipt": false
+     },
+     "pass": true
+    },
+    "feeds_named_frontier": {
+     "evidence": {
+      "frontier_present": true,
+      "named_as_integration_target": [],
+      "receipt_is_frontier_probe": [],
+      "writes_frontier_document": false
+     },
+     "gap": "result_does_not_feed_a_named_frontier",
+     "pass": false
+    },
+    "hcli_invoke": {
+     "evidence": {
+      "has_if_main": false,
+      "has_main": false,
+      "hcli_future_tools": [],
+      "hcli_tool_count": 0,
+      "hcli_tool_registered": false,
+      "import_error": null,
+      "import_ok": true,
+      "preferred_callable": null,
+      "public_callables": [
+       "expected_payoff",
+       "information_gain",
+       "discriminator",
+       "cost",
+       "outcome",
+       "option",
+       "option_from_hypothesis",
+       "option_from_ebpw_bill",
+       "apply_deterministic_belief_update",
+       "refuse_to_select"
+      ]
+     },
+     "gap": "no_callable_entry_point_only_main_or_absent",
+     "pass": false
+    },
+    "produces_receipt": {
+     "evidence": {
+      "receipt": null,
+      "uses_write_receipt": false,
+      "write_receipt_names": []
+     },
+     "gap": "does_not_produce_receipt",
+     "pass": false
+    }
+   },
+   "raise_count": 6,
+   "receipt": null,
+   "relpath": "tools/future/experiment_policy.py",
+   "status": "NOT_OPERATIONAL",
+   "stem": "experiment_policy",
+   "workunit_constructs": []
+  },
+  {
+   "capabilities": [
+    "future.experiment_receipt"
+   ],
+   "cli_flags": [],
+   "docstring": "Shared ArtifactIdentity + ExperimentReceipt emission contract. Hawking has many receipt shapes and no shared identity. Path is a location; identity is a fact (kind, producer, input seals, machine, commit, content seal). ExperimentReceipt i\u2026",
+   "filename": "experiment_receipt.py",
+   "gaps": [
+    "no_callable_entry_point_only_main_or_absent",
+    "does_not_emit_workunit",
+    "does_not_produce_receipt",
+    "result_does_not_feed_a_named_frontier"
+   ],
+   "has_if_main": false,
+   "has_main": false,
+   "hcli_tool_registered": false,
+   "human_cli_only": false,
+   "import_error": null,
+   "import_ok": true,
+   "kind": "production",
+   "preferred_callable": null,
+   "public_callables": [
+    "canonical_dumps",
+    "sha256_text",
+    "content_seal",
+    "canonicalize_inputs",
+    "input_ref",
+    "current_commit",
+    "current_machine",
+    "identity_material",
+    "identity_key",
+    "artifact_identity",
+    "validate_artifact_identity",
+    "experiment_receipt",
+    "validate_experiment_receipt",
+    "attach",
+    "extract_receipt",
+    "emit_named_producers"
+   ],
+   "questions": {
+    "emits_workunit": {
+     "evidence": {
+      "constructs": [],
+      "emitted_by_orchestration_connector": false
+     },
+     "gap": "does_not_emit_workunit",
+     "pass": false
+    },
+    "fail_closed": {
+     "evidence": {
+      "raise_count": 23,
+      "rule": "fail closed means raise (or write_receipt's HardwareClaimError) rather than returning a silent default",
+      "uses_write_receipt": false
+     },
+     "pass": true
+    },
+    "feeds_named_frontier": {
+     "evidence": {
+      "frontier_present": true,
+      "named_as_integration_target": [],
+      "receipt_is_frontier_probe": [],
+      "writes_frontier_document": false
+     },
+     "gap": "result_does_not_feed_a_named_frontier",
+     "pass": false
+    },
+    "hcli_invoke": {
+     "evidence": {
+      "has_if_main": false,
+      "has_main": false,
+      "hcli_future_tools": [],
+      "hcli_tool_count": 0,
+      "hcli_tool_registered": false,
+      "import_error": null,
+      "import_ok": true,
+      "preferred_callable": null,
+      "public_callables": [
+       "canonical_dumps",
+       "sha256_text",
+       "content_seal",
+       "canonicalize_inputs",
+       "input_ref",
+       "current_commit",
+       "current_machine",
+       "identity_material",
+       "identity_key",
+       "artifact_identity",
+       "validate_artifact_identity",
+       "experiment_receipt",
+       "validate_experiment_receipt",
+       "attach",
+       "extract_receipt",
+       "emit_named_producers"
+      ]
+     },
+     "gap": "no_callable_entry_point_only_main_or_absent",
+     "pass": false
+    },
+    "produces_receipt": {
+     "evidence": {
+      "receipt": null,
+      "uses_write_receipt": false,
+      "write_receipt_names": []
+     },
+     "gap": "does_not_produce_receipt",
+     "pass": false
+    }
+   },
+   "raise_count": 23,
+   "receipt": null,
+   "relpath": "tools/future/experiment_receipt.py",
+   "status": "NOT_OPERATIONAL",
+   "stem": "experiment_receipt",
    "workunit_constructs": []
   },
   {
@@ -10648,7 +11199,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -10764,7 +11315,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -10881,7 +11432,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -10987,7 +11538,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -11085,7 +11636,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -11203,7 +11754,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -11334,7 +11885,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -11473,7 +12024,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -11618,7 +12169,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -11746,7 +12297,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -11892,7 +12443,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -12047,7 +12598,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -12211,7 +12762,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -12256,8 +12807,7 @@
   },
   {
    "capabilities": [
-    "future.fpga_engines",
-    "future.fpga_engine_school"
+    "future.fpga_engines"
    ],
    "cli_flags": [
     [
@@ -12343,7 +12893,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -12402,8 +12952,7 @@
   },
   {
    "capabilities": [
-    "future.fpga_fidelity",
-    "future.fpga_multifidelity"
+    "future.fpga_fidelity"
    ],
    "cli_flags": [
     [
@@ -12480,7 +13029,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -12530,8 +13079,7 @@
   },
   {
    "capabilities": [
-    "future.freshness",
-    "future.derived_freshness"
+    "future.freshness"
    ],
    "cli_flags": [
     [
@@ -12617,7 +13165,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -12744,7 +13292,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -12848,7 +13396,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -12885,8 +13433,7 @@
   },
   {
    "capabilities": [
-    "future.fusion_sim",
-    "future.fusion"
+    "future.fusion_sim"
    ],
    "cli_flags": [
     [
@@ -12966,7 +13513,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -13087,7 +13634,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -13226,7 +13773,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -13276,8 +13823,7 @@
   },
   {
    "capabilities": [
-    "future.git_lock_doctor",
-    "future.git_lock_durability"
+    "future.git_lock_doctor"
    ],
    "cli_flags": [
     [
@@ -13363,7 +13909,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -13474,7 +14020,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -13521,7 +14067,7 @@
      "--selftest"
     ]
    ],
-   "docstring": "GREEN_MACHINE \u2014 energy accounting that says UNKNOWN. Energy is a missing axis of the dominance scoreboard. This sidecar defines the metric contract, probes what THIS Mac can measure without root and without a GPU lease, and exposes an ener\u2026",
+   "docstring": "GREEN_MACHINE \u2014 II-E / H-ROADMAP \u00a724, with per-value evidence tiers. Roadmap \u00a724: Green Machine becomes real only where power is measured. Utilization is not energy efficiency. Report J/token or J/accepted WorkUnit only when instrumentatio\u2026",
    "filename": "green_machine.py",
    "gaps": [],
    "has_if_main": true,
@@ -13548,6 +14094,14 @@
     "probe_ioreport_subscription",
     "probe_ioreg_power_telemetry",
     "run_probes",
+    "measure_idle_vs_active_cpu",
+    "measure_host_identity",
+    "sample_energy_rails",
+    "cite_token_interval",
+    "decide_power_cap",
+    "collect_evidence_tiers",
+    "assert_tier_honesty",
+    "roadmap_categories",
     "recover_implementation",
     "build",
     "selftest",
@@ -13564,7 +14118,7 @@
     },
     "fail_closed": {
      "evidence": {
-      "raise_count": 12,
+      "raise_count": 20,
       "rule": "fail closed means raise (or write_receipt's HardwareClaimError) rather than returning a silent default",
       "uses_write_receipt": true
      },
@@ -13589,7 +14143,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -13610,6 +14164,14 @@
        "probe_ioreport_subscription",
        "probe_ioreg_power_telemetry",
        "run_probes",
+       "measure_idle_vs_active_cpu",
+       "measure_host_identity",
+       "sample_energy_rails",
+       "cite_token_interval",
+       "decide_power_cap",
+       "collect_evidence_tiers",
+       "assert_tier_honesty",
+       "roadmap_categories",
        "recover_implementation",
        "build",
        "selftest",
@@ -13630,7 +14192,7 @@
      "pass": true
     }
    },
-   "raise_count": 12,
+   "raise_count": 20,
    "receipt": "GREEN_MACHINE.json",
    "relpath": "tools/future/green_machine.py",
    "status": "OPERATIONAL",
@@ -13699,7 +14261,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -13810,7 +14372,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -13919,7 +14481,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -14028,7 +14590,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -14154,7 +14716,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -14207,6 +14769,119 @@
    "relpath": "tools/future/hcli_compactor.py",
    "status": "NOT_OPERATIONAL",
    "stem": "hcli_compactor",
+   "workunit_constructs": []
+  },
+  {
+   "capabilities": [
+    "future.hcli_self_hosting_launch"
+   ],
+   "cli_flags": [],
+   "docstring": "Write HCLI_SELF_HOSTING_LAUNCH.json from live probes, never from assertions. The point of this receipt is that it cannot be written optimistically. Every field is the observed result of a command run at the moment of writing. A capability \u2026",
+   "filename": "hcli_self_hosting_launch.py",
+   "gaps": [
+    "no_callable_entry_point_only_main_or_absent",
+    "does_not_emit_workunit",
+    "does_not_produce_receipt",
+    "result_does_not_feed_a_named_frontier"
+   ],
+   "has_if_main": true,
+   "has_main": true,
+   "hcli_tool_registered": false,
+   "human_cli_only": true,
+   "import_error": null,
+   "import_ok": true,
+   "kind": "production",
+   "preferred_callable": null,
+   "public_callables": [
+    "probe_cli_launch",
+    "probe_neutral_cwd_discovery",
+    "probe_resident",
+    "probe_typed_tools",
+    "probe_test_suite",
+    "probe_paste_cache",
+    "probe_git_identity",
+    "probe_modellake",
+    "probe_roadmap",
+    "probe_memory_admission",
+    "probe_landing_authority",
+    "probe_processes",
+    "probe_new_verbs",
+    "probe_sovereign_mission",
+    "main"
+   ],
+   "questions": {
+    "emits_workunit": {
+     "evidence": {
+      "constructs": [],
+      "emitted_by_orchestration_connector": false
+     },
+     "gap": "does_not_emit_workunit",
+     "pass": false
+    },
+    "fail_closed": {
+     "evidence": {
+      "raise_count": 1,
+      "rule": "fail closed means raise (or write_receipt's HardwareClaimError) rather than returning a silent default",
+      "uses_write_receipt": false
+     },
+     "pass": true
+    },
+    "feeds_named_frontier": {
+     "evidence": {
+      "frontier_present": true,
+      "named_as_integration_target": [],
+      "receipt_is_frontier_probe": [],
+      "writes_frontier_document": false
+     },
+     "gap": "result_does_not_feed_a_named_frontier",
+     "pass": false
+    },
+    "hcli_invoke": {
+     "evidence": {
+      "has_if_main": true,
+      "has_main": true,
+      "hcli_future_tools": [],
+      "hcli_tool_count": 0,
+      "hcli_tool_registered": false,
+      "import_error": null,
+      "import_ok": true,
+      "preferred_callable": null,
+      "public_callables": [
+       "probe_cli_launch",
+       "probe_neutral_cwd_discovery",
+       "probe_resident",
+       "probe_typed_tools",
+       "probe_test_suite",
+       "probe_paste_cache",
+       "probe_git_identity",
+       "probe_modellake",
+       "probe_roadmap",
+       "probe_memory_admission",
+       "probe_landing_authority",
+       "probe_processes",
+       "probe_new_verbs",
+       "probe_sovereign_mission",
+       "main"
+      ]
+     },
+     "gap": "no_callable_entry_point_only_main_or_absent",
+     "pass": false
+    },
+    "produces_receipt": {
+     "evidence": {
+      "receipt": null,
+      "uses_write_receipt": false,
+      "write_receipt_names": []
+     },
+     "gap": "does_not_produce_receipt",
+     "pass": false
+    }
+   },
+   "raise_count": 1,
+   "receipt": null,
+   "relpath": "tools/future/hcli_self_hosting_launch.py",
+   "status": "NOT_OPERATIONAL",
+   "stem": "hcli_self_hosting_launch",
    "workunit_constructs": []
   },
   {
@@ -14286,7 +14961,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -14376,6 +15051,9 @@
     "context_pack",
     "validate",
     "execute",
+    "escalation_level",
+    "progress_signals",
+    "deterministic_stuck",
     "run",
     "build",
     "main"
@@ -14412,7 +15090,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -14426,6 +15104,9 @@
        "context_pack",
        "validate",
        "execute",
+       "escalation_level",
+       "progress_signals",
+       "deterministic_stuck",
        "run",
        "build",
        "main"
@@ -14453,8 +15134,7 @@
   },
   {
    "capabilities": [
-    "future.hmf_objects",
-    "future.hmf_hgvas"
+    "future.hmf_objects"
    ],
    "cli_flags": [
     [
@@ -14530,7 +15210,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -14593,9 +15273,24 @@
     ],
     [
      "--organ"
+    ],
+    [
+     "--qgemv"
+    ],
+    [
+     "--seal-predictions"
+    ],
+    [
+     "--rehearse"
+    ],
+    [
+     "--device"
+    ],
+    [
+     "--carrier"
     ]
    ],
-   "docstring": "HWIR v1 \u2014 hardware intermediate representation. The FPGA/spatial school compiles into this IR. It consumes Noetic/PhysicalGraph semantics and real FPGA organ-map receipts. A graph that assumes it is multiplying original dense source weight\u2026",
+   "docstring": "HWIR v1 \u2014 hardware intermediate representation plus the pre-board stack. The FPGA/spatial school compiles into this IR. It consumes Noetic/PhysicalGraph semantics and real FPGA organ-map receipts. A graph that assumes it is multiplying ori\u2026",
    "filename": "hwir.py",
    "gaps": [],
    "has_if_main": true,
@@ -14612,6 +15307,9 @@
     "canon_frame",
     "canon_transform",
     "apply_transform",
+    "emit_evidence",
+    "assert_no_hardware_measured",
+    "collect_evidence_tiers",
     "recovered_hypotheses",
     "load_atlas_hypotheses",
     "to_json",
@@ -14623,6 +15321,55 @@
     "graph_state_without_owner",
     "graph_over_budget",
     "graph_type_mismatch",
+    "synthetic_u50_class",
+    "synthetic_device",
+    "sourced_field",
+    "unpinned_field",
+    "assert_variant_provenance",
+    "pcie_payload_beat",
+    "u50_family_profile",
+    "list_u50_family_profiles",
+    "select_device_profile",
+    "chestnut_theoretical",
+    "chestnut_current_firmware",
+    "chestnut_hawking_optimized",
+    "residency_ratio",
+    "constrain_device_profile",
+    "example_full_airflow_server_slot",
+    "example_constrained_low_power_slot",
+    "unpinned_real_carrier",
+    "select_carrier_envelope",
+    "admissible_plan",
+    "canonical_qgemv_kernel",
+    "planning_qgemv_kernel",
+    "canonical_qgemv_operands",
+    "overflow_probe_kernel",
+    "brochure_fit_kernel",
+    "estimate_qgemv_resources",
+    "resource_overflow",
+    "fit_kernel_to_device",
+    "from_qgemv",
+    "simulate_qgemv_functional",
+    "simulate_functional",
+    "model_hbm_traffic",
+    "model_host_device_transfer",
+    "approximate_cycles",
+    "cycles_to_seconds",
+    "floorplan_hints",
+    "partition_qgemv",
+    "run_qgemv_preboard",
+    "prediction_content_sha256",
+    "verify_prediction_seal",
+    "declared_planning_coefficients",
+    "seal_prediction",
+    "prediction_set_digest",
+    "load_u50_wake_condition",
+    "inbound_board_predictions",
+    "grade_prediction",
+    "score_prediction_set",
+    "synthetic_rehearsal_observations",
+    "write_sealed_predictions_receipt",
+    "run_synthetic_arrival_rehearsal",
     "build",
     "selftest",
     "main"
@@ -14637,7 +15384,7 @@
     },
     "fail_closed": {
      "evidence": {
-      "raise_count": 10,
+      "raise_count": 100,
       "rule": "fail closed means raise (or write_receipt's HardwareClaimError) rather than returning a silent default",
       "uses_write_receipt": true
      },
@@ -14663,7 +15410,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -14674,6 +15421,9 @@
        "canon_frame",
        "canon_transform",
        "apply_transform",
+       "emit_evidence",
+       "assert_no_hardware_measured",
+       "collect_evidence_tiers",
        "recovered_hypotheses",
        "load_atlas_hypotheses",
        "to_json",
@@ -14685,6 +15435,55 @@
        "graph_state_without_owner",
        "graph_over_budget",
        "graph_type_mismatch",
+       "synthetic_u50_class",
+       "synthetic_device",
+       "sourced_field",
+       "unpinned_field",
+       "assert_variant_provenance",
+       "pcie_payload_beat",
+       "u50_family_profile",
+       "list_u50_family_profiles",
+       "select_device_profile",
+       "chestnut_theoretical",
+       "chestnut_current_firmware",
+       "chestnut_hawking_optimized",
+       "residency_ratio",
+       "constrain_device_profile",
+       "example_full_airflow_server_slot",
+       "example_constrained_low_power_slot",
+       "unpinned_real_carrier",
+       "select_carrier_envelope",
+       "admissible_plan",
+       "canonical_qgemv_kernel",
+       "planning_qgemv_kernel",
+       "canonical_qgemv_operands",
+       "overflow_probe_kernel",
+       "brochure_fit_kernel",
+       "estimate_qgemv_resources",
+       "resource_overflow",
+       "fit_kernel_to_device",
+       "from_qgemv",
+       "simulate_qgemv_functional",
+       "simulate_functional",
+       "model_hbm_traffic",
+       "model_host_device_transfer",
+       "approximate_cycles",
+       "cycles_to_seconds",
+       "floorplan_hints",
+       "partition_qgemv",
+       "run_qgemv_preboard",
+       "prediction_content_sha256",
+       "verify_prediction_seal",
+       "declared_planning_coefficients",
+       "seal_prediction",
+       "prediction_set_digest",
+       "load_u50_wake_condition",
+       "inbound_board_predictions",
+       "grade_prediction",
+       "score_prediction_set",
+       "synthetic_rehearsal_observations",
+       "write_sealed_predictions_receipt",
+       "run_synthetic_arrival_rehearsal",
        "build",
        "selftest",
        "main"
@@ -14697,13 +15496,15 @@
       "receipt": "HWIR_V1.json",
       "uses_write_receipt": true,
       "write_receipt_names": [
-       "HWIR_V1.json"
+       "HWIR_V1.json",
+       "PREDICTION_RECEIPT",
+       "REHEARSAL_RECEIPT"
       ]
      },
      "pass": true
     }
    },
-   "raise_count": 10,
+   "raise_count": 100,
    "receipt": "HWIR_V1.json",
    "relpath": "tools/future/hwir.py",
    "status": "OPERATIONAL",
@@ -14787,7 +15588,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -14932,7 +15733,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -15058,7 +15859,7 @@
       "has_if_main": true,
       "has_main": false,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -15160,7 +15961,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -15281,7 +16082,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -15379,7 +16180,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -15470,7 +16271,7 @@
       "has_if_main": true,
       "has_main": false,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -15563,7 +16364,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -15665,7 +16466,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -15707,8 +16508,7 @@
   },
   {
    "capabilities": [
-    "future.lpc_dataset",
-    "future.learned_physical_compiler"
+    "future.lpc_dataset"
    ],
    "cli_flags": [
     [
@@ -15784,7 +16584,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -15888,7 +16688,7 @@
       "has_if_main": true,
       "has_main": false,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -15989,7 +16789,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -16028,8 +16828,7 @@
   },
   {
    "capabilities": [
-    "future.meta_funnel",
-    "future.meta_experiment_funnel"
+    "future.meta_funnel"
    ],
    "cli_flags": [
     [
@@ -16099,7 +16898,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -16142,8 +16941,7 @@
   },
   {
    "capabilities": [
-    "future.meta_ready",
-    "future.meta_downstream_ready"
+    "future.meta_ready"
    ],
    "cli_flags": [
     [
@@ -16231,7 +17029,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -16350,7 +17148,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -16448,7 +17246,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -16572,7 +17370,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -16710,7 +17508,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -16831,7 +17629,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -16949,7 +17747,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -17064,7 +17862,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -17204,7 +18002,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -17349,7 +18147,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -17512,7 +18310,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -17679,7 +18477,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -17828,7 +18626,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -17979,7 +18777,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -18104,7 +18902,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -18258,7 +19056,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -18419,7 +19217,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -18562,7 +19360,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -18736,7 +19534,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -18881,7 +19679,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -19035,7 +19833,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -19167,7 +19965,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -19267,7 +20065,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -19393,7 +20191,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -19525,7 +20323,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -19617,7 +20415,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -19721,7 +20519,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -19767,8 +20565,7 @@
   },
   {
    "capabilities": [
-    "future.mutation_surface",
-    "future.codex_mutation_surface"
+    "future.mutation_surface"
    ],
    "cli_flags": [
     [
@@ -19830,7 +20627,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -19943,7 +20740,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -19991,8 +20788,7 @@
   },
   {
    "capabilities": [
-    "future.negative_index",
-    "future.negative_science_index"
+    "future.negative_index"
    ],
    "cli_flags": [
     [
@@ -20096,7 +20892,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -20242,7 +21038,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -20381,7 +21177,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -20497,7 +21293,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -20640,7 +21436,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -20791,7 +21587,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -20914,7 +21710,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -20956,8 +21752,7 @@
   },
   {
    "capabilities": [
-    "future.odyssey2_law_store",
-    "future.odyssey_ii_law_store"
+    "future.odyssey2_law_store"
    ],
    "cli_flags": [
     [
@@ -21038,7 +21833,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -21175,7 +21970,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -21231,8 +22026,7 @@
   },
   {
    "capabilities": [
-    "future.odyssey3_adversary",
-    "future.odyssey_iii_adversary"
+    "future.odyssey3_adversary"
    ],
    "cli_flags": [
     [
@@ -21310,7 +22104,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -21430,7 +22224,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -21559,7 +22353,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -21674,7 +22468,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -21786,7 +22580,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -21893,7 +22687,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -21996,7 +22790,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -22091,7 +22885,7 @@
       "has_if_main": true,
       "has_main": false,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -22185,7 +22979,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -22220,8 +23014,7 @@
   },
   {
    "capabilities": [
-    "future.p6_projection",
-    "future.p6_primitive_projection"
+    "future.p6_projection"
    ],
    "cli_flags": [
     [
@@ -22301,7 +23094,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -22466,7 +23259,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -22591,7 +23384,7 @@
       "has_if_main": true,
       "has_main": false,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -22685,7 +23478,7 @@
       "has_if_main": true,
       "has_main": false,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -22797,7 +23590,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -22910,7 +23703,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -22961,8 +23754,118 @@
   },
   {
    "capabilities": [
-    "future.physical_primitives",
-    "future.physical_primitive_library"
+    "future.physical_compiler_predict"
+   ],
+   "cli_flags": [
+    [
+     "--build"
+    ]
+   ],
+   "docstring": "Foundation for a learned physical compiler. This is NOT a learned compiler. A schema is not a learned compiler. This module loads REAL historical physical observations, graph features, backend costs and actual outcomes from receipts/, expo\u2026",
+   "filename": "physical_compiler_predict.py",
+   "gaps": [
+    "does_not_emit_workunit",
+    "result_does_not_feed_a_named_frontier"
+   ],
+   "has_if_main": true,
+   "has_main": true,
+   "hcli_tool_registered": false,
+   "human_cli_only": true,
+   "import_error": null,
+   "import_ok": true,
+   "kind": "production",
+   "preferred_callable": "build",
+   "public_callables": [
+    "observations_from_lpc_ingest",
+    "observations_from_organ_bandwidth",
+    "observations_from_ba_delta",
+    "backend_costs_from_economics",
+    "graph_features_from_device_compiler",
+    "graph_features_from_primitives",
+    "load_physical_observations",
+    "train_eval_split",
+    "predict",
+    "require_numeric_prediction",
+    "baseline_predict",
+    "build",
+    "main"
+   ],
+   "questions": {
+    "emits_workunit": {
+     "evidence": {
+      "constructs": [],
+      "emitted_by_orchestration_connector": false
+     },
+     "gap": "does_not_emit_workunit",
+     "pass": false
+    },
+    "fail_closed": {
+     "evidence": {
+      "raise_count": 6,
+      "rule": "fail closed means raise (or write_receipt's HardwareClaimError) rather than returning a silent default",
+      "uses_write_receipt": true
+     },
+     "pass": true
+    },
+    "feeds_named_frontier": {
+     "evidence": {
+      "frontier_present": true,
+      "named_as_integration_target": [],
+      "receipt_is_frontier_probe": [],
+      "writes_frontier_document": false
+     },
+     "gap": "result_does_not_feed_a_named_frontier",
+     "pass": false
+    },
+    "hcli_invoke": {
+     "evidence": {
+      "has_if_main": true,
+      "has_main": true,
+      "hcli_future_tools": [],
+      "hcli_tool_count": 0,
+      "hcli_tool_registered": false,
+      "import_error": null,
+      "import_ok": true,
+      "preferred_callable": "build",
+      "public_callables": [
+       "observations_from_lpc_ingest",
+       "observations_from_organ_bandwidth",
+       "observations_from_ba_delta",
+       "backend_costs_from_economics",
+       "graph_features_from_device_compiler",
+       "graph_features_from_primitives",
+       "load_physical_observations",
+       "train_eval_split",
+       "predict",
+       "require_numeric_prediction",
+       "baseline_predict",
+       "build",
+       "main"
+      ]
+     },
+     "pass": true
+    },
+    "produces_receipt": {
+     "evidence": {
+      "receipt": "PHYSICAL_COMPILER_FOUNDATION.json",
+      "uses_write_receipt": true,
+      "write_receipt_names": [
+       "PHYSICAL_COMPILER_FOUNDATION.json"
+      ]
+     },
+     "pass": true
+    }
+   },
+   "raise_count": 6,
+   "receipt": "PHYSICAL_COMPILER_FOUNDATION.json",
+   "relpath": "tools/future/physical_compiler_predict.py",
+   "status": "NOT_OPERATIONAL",
+   "stem": "physical_compiler_predict",
+   "workunit_constructs": []
+  },
+  {
+   "capabilities": [
+    "future.physical_primitives"
    ],
    "cli_flags": [
     [
@@ -23037,7 +23940,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -23172,7 +24075,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -23288,7 +24191,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -23326,8 +24229,7 @@
   },
   {
    "capabilities": [
-    "future.propagate",
-    "future.propagation_engine"
+    "future.propagate"
    ],
    "cli_flags": [
     [
@@ -23410,7 +24312,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -23529,7 +24431,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -23628,7 +24530,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -23740,7 +24642,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -23890,7 +24792,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -24017,7 +24919,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -24053,8 +24955,7 @@
   },
   {
    "capabilities": [
-    "future.qualification_pipeline",
-    "future.qualification_automation"
+    "future.qualification_pipeline"
    ],
    "cli_flags": [
     [
@@ -24152,7 +25053,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -24287,7 +25188,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -24390,7 +25291,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -24507,7 +25408,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -24630,7 +25531,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -24675,8 +25576,7 @@
   },
   {
    "capabilities": [
-    "future.repro_science",
-    "future.autonomous_reproducible_science"
+    "future.repro_science"
    ],
    "cli_flags": [
     [
@@ -24776,7 +25676,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -24932,7 +25832,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -25042,7 +25942,7 @@
       "has_if_main": true,
       "has_main": false,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -25146,7 +26046,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -25270,7 +26170,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -25397,7 +26297,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -25513,7 +26413,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -25623,7 +26523,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -25733,7 +26633,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -25852,7 +26752,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -25969,7 +26869,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -26071,7 +26971,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -26193,7 +27093,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -26301,7 +27201,7 @@
       "has_if_main": true,
       "has_main": false,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -26411,7 +27311,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -26562,7 +27462,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -26706,7 +27606,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -26834,7 +27734,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -26956,7 +27856,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -27073,7 +27973,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -27142,6 +28042,7 @@
    "preferred_callable": "build",
    "public_callables": [
     "probe_tolerance",
+    "consult_candidate",
     "classify",
     "load_source_evidence",
     "classify_corpus",
@@ -27182,13 +28083,14 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
       "preferred_callable": "build",
       "public_callables": [
        "probe_tolerance",
+       "consult_candidate",
        "classify",
        "load_source_evidence",
        "classify_corpus",
@@ -27305,7 +28207,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -27350,6 +28252,135 @@
    "relpath": "tools/future/scar_scheduling.py",
    "status": "OPERATIONAL",
    "stem": "scar_scheduling",
+   "workunit_constructs": []
+  },
+  {
+   "capabilities": [
+    "future.science_corpus"
+   ],
+   "cli_flags": [
+    [
+     "--build"
+    ]
+   ],
+   "docstring": "Science-dataset corpus: make historical Hawking records legible. Hawking already produces hypotheses, experiments, scars, measurements, WorkUnits, outcomes and laws. This module is the adapter layer that projects REAL historical receipts o\u2026",
+   "filename": "science_corpus.py",
+   "gaps": [
+    "does_not_emit_workunit",
+    "result_does_not_feed_a_named_frontier"
+   ],
+   "has_if_main": true,
+   "has_main": true,
+   "hcli_tool_registered": false,
+   "human_cli_only": true,
+   "import_error": null,
+   "import_ok": true,
+   "kind": "production",
+   "preferred_callable": "build",
+   "public_callables": [
+    "schema_family",
+    "round_trip",
+    "key_fields_preserved",
+    "adapt_cuda_hypotheses",
+    "adapt_mission_kernel",
+    "adapt_scars",
+    "adapt_negative_index",
+    "adapt_laws",
+    "adapt_work_units",
+    "adapt_ba_delta",
+    "adapt_organ_bandwidth",
+    "adapt_complete_ebpw",
+    "adapt_economics",
+    "adapt_token_budget",
+    "adapt_turnaround",
+    "adapt_experiment_receipt",
+    "adapt_meta_funnel",
+    "adapt_document",
+    "measurement_from_ebpw_bill",
+    "load_historical_corpus",
+    "build",
+    "main"
+   ],
+   "questions": {
+    "emits_workunit": {
+     "evidence": {
+      "constructs": [],
+      "emitted_by_orchestration_connector": false
+     },
+     "gap": "does_not_emit_workunit",
+     "pass": false
+    },
+    "fail_closed": {
+     "evidence": {
+      "raise_count": 8,
+      "rule": "fail closed means raise (or write_receipt's HardwareClaimError) rather than returning a silent default",
+      "uses_write_receipt": true
+     },
+     "pass": true
+    },
+    "feeds_named_frontier": {
+     "evidence": {
+      "frontier_present": true,
+      "named_as_integration_target": [],
+      "receipt_is_frontier_probe": [],
+      "writes_frontier_document": false
+     },
+     "gap": "result_does_not_feed_a_named_frontier",
+     "pass": false
+    },
+    "hcli_invoke": {
+     "evidence": {
+      "has_if_main": true,
+      "has_main": true,
+      "hcli_future_tools": [],
+      "hcli_tool_count": 0,
+      "hcli_tool_registered": false,
+      "import_error": null,
+      "import_ok": true,
+      "preferred_callable": "build",
+      "public_callables": [
+       "schema_family",
+       "round_trip",
+       "key_fields_preserved",
+       "adapt_cuda_hypotheses",
+       "adapt_mission_kernel",
+       "adapt_scars",
+       "adapt_negative_index",
+       "adapt_laws",
+       "adapt_work_units",
+       "adapt_ba_delta",
+       "adapt_organ_bandwidth",
+       "adapt_complete_ebpw",
+       "adapt_economics",
+       "adapt_token_budget",
+       "adapt_turnaround",
+       "adapt_experiment_receipt",
+       "adapt_meta_funnel",
+       "adapt_document",
+       "measurement_from_ebpw_bill",
+       "load_historical_corpus",
+       "build",
+       "main"
+      ]
+     },
+     "pass": true
+    },
+    "produces_receipt": {
+     "evidence": {
+      "receipt": "SCIENCE_CORPUS.json",
+      "uses_write_receipt": true,
+      "write_receipt_names": [
+       "SCIENCE_CORPUS.json"
+      ]
+     },
+     "pass": true
+    }
+   },
+   "raise_count": 8,
+   "receipt": "SCIENCE_CORPUS.json",
+   "relpath": "tools/future/science_corpus.py",
+   "status": "NOT_OPERATIONAL",
+   "stem": "science_corpus",
    "workunit_constructs": []
   },
   {
@@ -27417,7 +28448,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -27516,7 +28547,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -27614,7 +28645,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -27686,6 +28717,9 @@
     "launch_allowed_under_dependency_classes",
     "synthetic_results",
     "emit_sleeping_specimen_wu",
+    "default_specimen_root",
+    "sealed_source_ready",
+    "notify_sealed_source_ready",
     "pending_from_watcher_sample",
     "sleeping_units_from_live_watcher",
     "build",
@@ -27724,7 +28758,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -27744,6 +28778,9 @@
        "launch_allowed_under_dependency_classes",
        "synthetic_results",
        "emit_sleeping_specimen_wu",
+       "default_specimen_root",
+       "sealed_source_ready",
+       "notify_sealed_source_ready",
        "pending_from_watcher_sample",
        "sleeping_units_from_live_watcher",
        "build",
@@ -27838,7 +28875,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -27950,7 +28987,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -28064,7 +29101,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -28162,7 +29199,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -28285,7 +29322,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -28411,7 +29448,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -28509,7 +29546,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -28609,7 +29646,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -28720,7 +29757,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -28831,7 +29868,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -28877,8 +29914,7 @@
   },
   {
    "capabilities": [
-    "future.static_kernel_verify",
-    "future.static_kernel_preflight"
+    "future.static_kernel_verify"
    ],
    "cli_flags": [
     [
@@ -28954,7 +29990,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -28996,6 +30032,104 @@
    "relpath": "tools/future/static_kernel_verify.py",
    "status": "OPERATIONAL",
    "stem": "static_kernel_verify",
+   "workunit_constructs": []
+  },
+  {
+   "capabilities": [
+    "future.static_kernel_verify_parity"
+   ],
+   "cli_flags": [
+    [
+     "--repo"
+    ],
+    [
+     "--rust-bin"
+    ]
+   ],
+   "docstring": "Parity gate: Rust static_kernel_verify vs Python on real hawking-core sources. A fast path that silently changes a verdict is worse than a slow one. This harness forces the Python analyzer and the Rust binary to scan the same repo and comp\u2026",
+   "filename": "static_kernel_verify_parity.py",
+   "gaps": [
+    "no_callable_entry_point_only_main_or_absent",
+    "does_not_emit_workunit",
+    "does_not_produce_receipt",
+    "result_does_not_feed_a_named_frontier"
+   ],
+   "has_if_main": true,
+   "has_main": true,
+   "hcli_tool_registered": false,
+   "human_cli_only": true,
+   "import_error": null,
+   "import_ok": true,
+   "kind": "production",
+   "preferred_callable": null,
+   "public_callables": [
+    "canonical",
+    "python_scan",
+    "rust_scan",
+    "main"
+   ],
+   "questions": {
+    "emits_workunit": {
+     "evidence": {
+      "constructs": [],
+      "emitted_by_orchestration_connector": false
+     },
+     "gap": "does_not_emit_workunit",
+     "pass": false
+    },
+    "fail_closed": {
+     "evidence": {
+      "raise_count": 3,
+      "rule": "fail closed means raise (or write_receipt's HardwareClaimError) rather than returning a silent default",
+      "uses_write_receipt": false
+     },
+     "pass": true
+    },
+    "feeds_named_frontier": {
+     "evidence": {
+      "frontier_present": true,
+      "named_as_integration_target": [],
+      "receipt_is_frontier_probe": [],
+      "writes_frontier_document": false
+     },
+     "gap": "result_does_not_feed_a_named_frontier",
+     "pass": false
+    },
+    "hcli_invoke": {
+     "evidence": {
+      "has_if_main": true,
+      "has_main": true,
+      "hcli_future_tools": [],
+      "hcli_tool_count": 0,
+      "hcli_tool_registered": false,
+      "import_error": null,
+      "import_ok": true,
+      "preferred_callable": null,
+      "public_callables": [
+       "canonical",
+       "python_scan",
+       "rust_scan",
+       "main"
+      ]
+     },
+     "gap": "no_callable_entry_point_only_main_or_absent",
+     "pass": false
+    },
+    "produces_receipt": {
+     "evidence": {
+      "receipt": null,
+      "uses_write_receipt": false,
+      "write_receipt_names": []
+     },
+     "gap": "does_not_produce_receipt",
+     "pass": false
+    }
+   },
+   "raise_count": 3,
+   "receipt": null,
+   "relpath": "tools/future/static_kernel_verify_parity.py",
+   "status": "NOT_OPERATIONAL",
+   "stem": "static_kernel_verify_parity",
    "workunit_constructs": []
   },
   {
@@ -29072,7 +30206,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -29216,7 +30350,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -29328,7 +30462,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -29450,7 +30584,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -29588,7 +30722,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -29717,7 +30851,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -29772,6 +30906,9 @@
     ],
     [
      "--selftest"
+    ],
+    [
+     "--disposition"
     ]
    ],
    "docstring": "TABULA_FLOOR \u2014 behavioral surgery evaluated independently, not by refusal rate. Tabula is already a Doctor axis in this repository: recover the abliterated direction as a left-null vector, measure how much a codec puts back, and count refu\u2026",
@@ -29812,6 +30949,7 @@
     "resident_callable",
     "gaps_closed",
     "negative_findings",
+    "disposition",
     "build",
     "selftest",
     "main"
@@ -29828,7 +30966,7 @@
     },
     "fail_closed": {
      "evidence": {
-      "raise_count": 43,
+      "raise_count": 47,
       "rule": "fail closed means raise (or write_receipt's HardwareClaimError) rather than returning a silent default",
       "uses_write_receipt": true
      },
@@ -29852,7 +30990,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -29884,6 +31022,7 @@
        "resident_callable",
        "gaps_closed",
        "negative_findings",
+       "disposition",
        "build",
        "selftest",
        "main"
@@ -29902,7 +31041,7 @@
      "pass": true
     }
    },
-   "raise_count": 43,
+   "raise_count": 47,
    "receipt": "TABULA_FLOOR.json",
    "relpath": "tools/future/tabula.py",
    "status": "OPERATIONAL",
@@ -29994,7 +31133,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -30122,7 +31261,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -30239,7 +31378,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -30355,7 +31494,7 @@
       "has_if_main": true,
       "has_main": false,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -30465,7 +31604,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -30583,7 +31722,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -30704,7 +31843,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -30809,7 +31948,7 @@
       "has_if_main": true,
       "has_main": false,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -30915,7 +32054,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -31026,7 +32165,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -31126,7 +32265,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -31215,7 +32354,7 @@
       "has_if_main": true,
       "has_main": false,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -31322,7 +32461,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -31368,8 +32507,7 @@
   },
   {
    "capabilities": [
-    "future.turnaround",
-    "future.experiment_turnaround"
+    "future.turnaround"
    ],
    "cli_flags": [
     [
@@ -31442,7 +32580,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -31545,7 +32683,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -31581,6 +32719,125 @@
   },
   {
    "capabilities": [
+    "future.vmcp"
+   ],
+   "cli_flags": [
+    [
+     "--build"
+    ],
+    [
+     "--selftest"
+    ],
+    [
+     "--disposition"
+    ],
+    [
+     "--act"
+    ],
+    [
+     "--path"
+    ]
+   ],
+   "docstring": "VMCP disposition \u2014 what of the All-Seeing Eye exists, and a compact invoke. Roadmap \u00a78 / APPENDIX E: VMCP is Hawking's perception + visual / 3D / application-generation organ. Nine Acts: SEE HOLD OPEN KNOW MAKE CHECK FIX KEEP PROVE. It is \u2026",
+   "filename": "vmcp.py",
+   "gaps": [
+    "does_not_emit_workunit",
+    "result_does_not_feed_a_named_frontier"
+   ],
+   "has_if_main": true,
+   "has_main": true,
+   "hcli_tool_registered": false,
+   "human_cli_only": true,
+   "import_error": null,
+   "import_ok": true,
+   "kind": "production",
+   "preferred_callable": "build",
+   "public_callables": [
+    "locate_visionmcp",
+    "disposition",
+    "see",
+    "hold",
+    "know",
+    "check",
+    "prove",
+    "compact_surface",
+    "selftest",
+    "build",
+    "main"
+   ],
+   "questions": {
+    "emits_workunit": {
+     "evidence": {
+      "constructs": [],
+      "emitted_by_orchestration_connector": false
+     },
+     "gap": "does_not_emit_workunit",
+     "pass": false
+    },
+    "fail_closed": {
+     "evidence": {
+      "raise_count": 14,
+      "rule": "fail closed means raise (or write_receipt's HardwareClaimError) rather than returning a silent default",
+      "uses_write_receipt": true
+     },
+     "pass": true
+    },
+    "feeds_named_frontier": {
+     "evidence": {
+      "frontier_present": true,
+      "named_as_integration_target": [],
+      "receipt_is_frontier_probe": [],
+      "writes_frontier_document": false
+     },
+     "gap": "result_does_not_feed_a_named_frontier",
+     "pass": false
+    },
+    "hcli_invoke": {
+     "evidence": {
+      "has_if_main": true,
+      "has_main": true,
+      "hcli_future_tools": [],
+      "hcli_tool_count": 0,
+      "hcli_tool_registered": false,
+      "import_error": null,
+      "import_ok": true,
+      "preferred_callable": "build",
+      "public_callables": [
+       "locate_visionmcp",
+       "disposition",
+       "see",
+       "hold",
+       "know",
+       "check",
+       "prove",
+       "compact_surface",
+       "selftest",
+       "build",
+       "main"
+      ]
+     },
+     "pass": true
+    },
+    "produces_receipt": {
+     "evidence": {
+      "receipt": "VMCP_DISPOSITION.json",
+      "uses_write_receipt": true,
+      "write_receipt_names": [
+       "VMCP_DISPOSITION.json"
+      ]
+     },
+     "pass": true
+    }
+   },
+   "raise_count": 14,
+   "receipt": "VMCP_DISPOSITION.json",
+   "relpath": "tools/future/vmcp.py",
+   "status": "NOT_OPERATIONAL",
+   "stem": "vmcp",
+   "workunit_constructs": []
+  },
+  {
+   "capabilities": [
     "future.wakeup"
    ],
    "cli_flags": [
@@ -31610,6 +32867,7 @@
     "classify_receipt_bytes",
     "dispatch",
     "run_once",
+    "harvest_sealed_specimens",
     "emit_wakeup_workunits",
     "recovered_implementation",
     "gaps_closed",
@@ -31656,7 +32914,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -31669,6 +32927,7 @@
        "classify_receipt_bytes",
        "dispatch",
        "run_once",
+       "harvest_sealed_specimens",
        "emit_wakeup_workunits",
        "recovered_implementation",
        "gaps_closed",
@@ -31761,7 +33020,7 @@
       "has_if_main": true,
       "has_main": false,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -31855,7 +33114,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -31981,7 +33240,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -32036,8 +33295,7 @@
   },
   {
    "capabilities": [
-    "future.workunit_species",
-    "future.hcli_future_workunits"
+    "future.workunit_species"
    ],
    "cli_flags": [
     [
@@ -32107,7 +33365,7 @@
       "has_if_main": true,
       "has_main": true,
       "hcli_future_tools": [],
-      "hcli_tool_count": 32,
+      "hcli_tool_count": 0,
       "hcli_tool_registered": false,
       "import_error": null,
       "import_ok": true,
@@ -32150,9 +33408,9 @@
   }
  ],
  "negative_findings": [
-  "147 of 251 scored modules are NOT_OPERATIONAL; operational=104. Not rounded up.",
-  "249 scored modules are human-CLI-callable (argparse / __main__) and are not registered in HCLI ToolRegistry.",
-  "hcli/tool_registry.py default_tool_registry lists 32 tools and 0 future.* tools. AgentOS cannot discover the sidecar.",
+  "157 of 261 scored modules are NOT_OPERATIONAL; operational=104. Not rounded up.",
+  "256 scored modules are human-CLI-callable (argparse / __main__) and are not registered in HCLI ToolRegistry.",
+  "hcli/tool_registry.py default_tool_registry lists 0 tools and 0 future.* tools. AgentOS cannot discover the sidecar.",
   "HCLI ToolRegistry.invoke returns ToolResult(ok=False, UNKNOWN_TOOL) instead of raising; resident_api.invoke raises. Fail-closed is this surface, not HCLI's.",
   "Most modules persist a receipt a human can regenerate with `python3 tools/future/<mod>.py --build` but do not emit a WorkUnit and do not feed CLAUDE_GLOBAL_FRONTIER.json.",
   "Named as integration_target is not credited as feeding a frontier. Only a frontier probe on the module's receipt, or writing the frontier document, counts.",
@@ -32182,7 +33440,9 @@
   "campaign_scars",
   "capability_byte_elimination",
   "capability_curve",
+  "capability_eval",
   "capability_information_map",
+  "capability_reachability",
   "capability_stages",
   "capacity_inference_rule",
   "causal_budget_71",
@@ -32192,6 +33452,7 @@
   "claude_interventions",
   "complete_ebpw",
   "concurrency_measure",
+  "conftest",
   "decode_tax_target",
   "deltanet_generated_transition",
   "deltanet_multistep",
@@ -32212,6 +33473,8 @@
   "dispatch_size_sweep",
   "exam_a_option_tree",
   "executable_economics",
+  "experiment_policy",
+  "experiment_receipt",
   "fast_thought",
   "fidelity_hierarchy",
   "fold_addqx_ab",
@@ -32221,6 +33484,7 @@
   "handoff",
   "harness_reconciliation",
   "hcli_compactor",
+  "hcli_self_hosting_launch",
   "hcli_sovereign",
   "improvement_metabolism",
   "improvement_trial",
@@ -32268,6 +33532,7 @@
   "path_to_71",
   "per_generated_token_inflation",
   "perturbation_workunit",
+  "physical_compiler_predict",
   "productive_search",
   "protected_bench_lease",
   "protected_bitcast_absolute",
@@ -32285,6 +33550,7 @@
   "roof_anchor",
   "runnability_snapshot",
   "scar_reevaluator",
+  "science_corpus",
   "sealed_default_absolute",
   "sealed_default_verified",
   "single_token_dag",
@@ -32297,6 +33563,7 @@
   "specimen_load_cost",
   "specimen_registry",
   "specimen_scheduler",
+  "static_kernel_verify_parity",
   "sub2_unified_plan",
   "succession_trial",
   "terminal_speed_artifact",
@@ -32308,6 +33575,7 @@
   "tps_metrics",
   "trial_negative_controls",
   "uma_resource_ledger",
+  "vmcp",
   "wall_gpu_reconciliation"
  ],
  "operational_stems": [
@@ -32421,7 +33689,7 @@
   "hcli.agentos.runtime.AgentOS.invoke_tool": "hcli/agentos/runtime.py \u2014 the resident-facing dispatch. Persists a tool receipt under .hcli/receipts/tools/. Does not import tools.future.",
   "hcli.providers": "hcli/providers.py \u2014 provider/role/capability contracts. Roles are generalist/science/verifier/vision/frontier, not future.* tools.",
   "hcli.runtime_iface": "hcli/runtime_iface.py \u2014 six planes (model semantics, backend, session, context, health, performance profile). Not a sidecar capability bus.",
-  "hcli.tool_registry.ToolRegistry": "hcli/tool_registry.py \u2014 typed ToolSpec, discover(), invoke() returns ToolResult (UNKNOWN_TOOL is fail-open). default_tool_registry lists 32 tools; future_tools=[].",
+  "hcli.tool_registry.ToolRegistry": "hcli/tool_registry.py \u2014 typed ToolSpec, discover(), invoke() returns ToolResult (UNKNOWN_TOOL is fail-open). default_tool_registry lists 0 tools; future_tools=[].",
   "tools.future._common.write_receipt": "Seals STATIC_ONLY receipts and raises HardwareClaimError on a numeric hardware field. Not caught here.",
   "tools.future.devplatform": "Existing contract surface (IR, receipt API, WorkUnit envelope, compat suite). Extended in spirit: this module is the missing resident invocation bus, not a second IR.",
   "tools.future.global_frontier": "CLAUDE_GLOBAL_FRONTIER.json is the named frontier. Probe paths and integration_target strings are evidence; this lane does not rewrite it.",
@@ -32429,51 +33697,9 @@
   "tools.future.workunit_species.emit_hcli_workunit": "Landed sibling used to emit next-work proposals through the real HCLI WorkUnit constructor. Not a scheduler."
  },
  "registry": {
-  "future.abi_verdict_harness": {
-   "aliases": [
-    "future.abi_verdicts",
-    "future.abi_verdict_harness"
-   ],
-   "argument_contract": {
-    "bindable": true,
-    "cli_flags": [
-     {
-      "dest": null,
-      "flags": [
-       "--pending"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--build"
-      ]
-     }
-    ],
-    "params": [
-     {
-      "has_default": true,
-      "kind": "POSITIONAL_OR_KEYWORD",
-      "name": "st",
-      "required": false
-     }
-    ]
-   },
-   "callable": "build",
-   "frontier": [
-    "F018",
-    "FT.GPU_KERNELS.static-warnings"
-   ],
-   "gaps": [],
-   "import_error": null,
-   "module": "tools/future/abi_verdicts.py",
-   "receipt": "ABI_VERDICT_HARNESS.json",
-   "status": "OPERATIONAL"
-  },
   "future.abi_verdicts": {
    "aliases": [
-    "future.abi_verdicts",
-    "future.abi_verdict_harness"
+    "future.abi_verdicts"
    ],
    "argument_contract": {
     "bindable": true,
@@ -32874,40 +34100,6 @@
    "module": "tools/future/attribution_audit.py",
    "receipt": null,
    "status": "NOT_OPERATIONAL"
-  },
-  "future.autonomous_reproducible_science": {
-   "aliases": [
-    "future.repro_science",
-    "future.autonomous_reproducible_science"
-   ],
-   "argument_contract": {
-    "bindable": true,
-    "cli_flags": [
-     {
-      "dest": null,
-      "flags": [
-       "--selftest"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--build"
-      ]
-     }
-    ],
-    "params": []
-   },
-   "callable": "build",
-   "frontier": [
-    "F008",
-    "FT.VERIFICATION.repro"
-   ],
-   "gaps": [],
-   "import_error": null,
-   "module": "tools/future/repro_science.py",
-   "receipt": "REPRO_SCIENCE.json",
-   "status": "OPERATIONAL"
   },
   "future.autonomy_degeneracy": {
    "aliases": [
@@ -33500,50 +34692,7 @@
   },
   "future.candidate_planner": {
    "aliases": [
-    "future.candidate_planner",
-    "future.candidate_queue_planner"
-   ],
-   "argument_contract": {
-    "bindable": true,
-    "cli_flags": [
-     {
-      "dest": null,
-      "flags": [
-       "--build"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--selftest"
-      ]
-     }
-    ],
-    "params": [
-     {
-      "has_default": true,
-      "kind": "POSITIONAL_OR_KEYWORD",
-      "name": "queue_path",
-      "required": false
-     }
-    ]
-   },
-   "callable": "build",
-   "frontier": [
-    "F002",
-    "F017",
-    "FT.GPU_KERNELS.ready-protected"
-   ],
-   "gaps": [],
-   "import_error": null,
-   "module": "tools/future/candidate_planner.py",
-   "receipt": "CANDIDATE_STAGED_PLAN.json",
-   "status": "OPERATIONAL"
-  },
-  "future.candidate_queue_planner": {
-   "aliases": [
-    "future.candidate_planner",
-    "future.candidate_queue_planner"
+    "future.candidate_planner"
    ],
    "argument_contract": {
     "bindable": true,
@@ -33643,6 +34792,33 @@
    "receipt": null,
    "status": "NOT_OPERATIONAL"
   },
+  "future.capability_eval": {
+   "aliases": [
+    "future.capability_eval"
+   ],
+   "argument_contract": {
+    "bindable": true,
+    "cli_flags": [
+     {
+      "dest": null,
+      "flags": [
+       "--build"
+      ]
+     }
+    ],
+    "params": []
+   },
+   "callable": "build",
+   "frontier": [],
+   "gaps": [
+    "does_not_emit_workunit",
+    "result_does_not_feed_a_named_frontier"
+   ],
+   "import_error": null,
+   "module": "tools/future/capability_eval.py",
+   "receipt": "CAPABILITY_EVAL.json",
+   "status": "NOT_OPERATIONAL"
+  },
   "future.capability_information_map": {
    "aliases": [
     "future.capability_information_map"
@@ -33687,6 +34863,51 @@
    "import_error": null,
    "module": "tools/future/capability_information_map.py",
    "receipt": "CAPABILITY_INFORMATION_MAP.json",
+   "status": "NOT_OPERATIONAL"
+  },
+  "future.capability_reachability": {
+   "aliases": [
+    "future.capability_reachability"
+   ],
+   "argument_contract": {
+    "bindable": true,
+    "cli_flags": [
+     {
+      "dest": null,
+      "flags": [
+       "--build"
+      ]
+     },
+     {
+      "dest": null,
+      "flags": [
+       "--audit"
+      ]
+     },
+     {
+      "dest": null,
+      "flags": [
+       "--selftest"
+      ]
+     },
+     {
+      "dest": null,
+      "flags": [
+       "--parity"
+      ]
+     }
+    ],
+    "params": []
+   },
+   "callable": "build",
+   "frontier": [],
+   "gaps": [
+    "does_not_emit_workunit",
+    "result_does_not_feed_a_named_frontier"
+   ],
+   "import_error": null,
+   "module": "tools/future/capability_reachability.py",
+   "receipt": "HCLI_CAPABILITY_REACHABILITY.json",
    "status": "NOT_OPERATIONAL"
   },
   "future.capability_stages": {
@@ -33960,107 +35181,7 @@
   },
   "future.codex_ingest": {
    "aliases": [
-    "future.codex_ingest",
-    "future.codex_receipt_ingestion"
-   ],
-   "argument_contract": {
-    "bindable": true,
-    "cli_flags": [
-     {
-      "dest": null,
-      "flags": [
-       "--once"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--assert-idempotent"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--selftest"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--root"
-      ]
-     }
-    ],
-    "params": [
-     {
-      "has_default": true,
-      "kind": "POSITIONAL_OR_KEYWORD",
-      "name": "root",
-      "required": false
-     },
-     {
-      "has_default": true,
-      "kind": "KEYWORD_ONLY",
-      "name": "previous",
-      "required": false
-     },
-     {
-      "has_default": true,
-      "kind": "KEYWORD_ONLY",
-      "name": "now",
-      "required": false
-     }
-    ]
-   },
-   "callable": "build",
-   "frontier": [
-    "F015",
-    "F016",
-    "FT.TOOLS.propagate-skips"
-   ],
-   "gaps": [],
-   "import_error": null,
-   "module": "tools/future/codex_ingest.py",
-   "receipt": "CODEX_INGEST_STATE.json",
-   "status": "OPERATIONAL"
-  },
-  "future.codex_mutation_surface": {
-   "aliases": [
-    "future.mutation_surface",
-    "future.codex_mutation_surface"
-   ],
-   "argument_contract": {
-    "bindable": true,
-    "cli_flags": [
-     {
-      "dest": null,
-      "flags": [
-       "--build"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--check-disjoint"
-      ]
-     }
-    ],
-    "params": []
-   },
-   "callable": "build",
-   "frontier": [
-    "FT.CONTEXT.disk-authority"
-   ],
-   "gaps": [],
-   "import_error": null,
-   "module": "tools/future/mutation_surface.py",
-   "receipt": "CODEX_MUTATION_SURFACE.json",
-   "status": "OPERATIONAL"
-  },
-  "future.codex_receipt_ingestion": {
-   "aliases": [
-    "future.codex_ingest",
-    "future.codex_receipt_ingestion"
+    "future.codex_ingest"
    ],
    "argument_contract": {
     "bindable": true,
@@ -34251,48 +35372,7 @@
   },
   "future.contamination": {
    "aliases": [
-    "future.contamination",
-    "future.contamination_science"
-   ],
-   "argument_contract": {
-    "bindable": true,
-    "cli_flags": [
-     {
-      "dest": null,
-      "flags": [
-       "--snapshot"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--build"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--selftest"
-      ]
-     }
-    ],
-    "params": []
-   },
-   "callable": "build",
-   "frontier": [
-    "F011",
-    "FT.VERIFICATION.contamination"
-   ],
-   "gaps": [],
-   "import_error": null,
-   "module": "tools/future/contamination.py",
-   "receipt": "CONTAMINATION_SCIENCE.json",
-   "status": "OPERATIONAL"
-  },
-  "future.contamination_science": {
-   "aliases": [
-    "future.contamination",
-    "future.contamination_science"
+    "future.contamination"
    ],
    "argument_contract": {
     "bindable": true,
@@ -35051,65 +36131,6 @@
    "receipt": null,
    "status": "NOT_OPERATIONAL"
   },
-  "future.derived_freshness": {
-   "aliases": [
-    "future.freshness",
-    "future.derived_freshness"
-   ],
-   "argument_contract": {
-    "bindable": true,
-    "cli_flags": [
-     {
-      "dest": null,
-      "flags": [
-       "--check"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--report"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--refresh"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--selftest"
-      ]
-     }
-    ],
-    "params": [
-     {
-      "has_default": true,
-      "kind": "KEYWORD_ONLY",
-      "name": "refresh",
-      "required": false
-     },
-     {
-      "has_default": true,
-      "kind": "KEYWORD_ONLY",
-      "name": "registry",
-      "required": false
-     }
-    ]
-   },
-   "callable": "build",
-   "frontier": [
-    "F017",
-    "FT.EXPERIMENT_TURNAROUND.refresh"
-   ],
-   "gaps": [],
-   "import_error": null,
-   "module": "tools/future/freshness.py",
-   "receipt": "DERIVED_FRESHNESS.json",
-   "status": "OPERATIONAL"
-  },
   "future.detached": {
    "aliases": [
     "future.detached"
@@ -35253,96 +36274,9 @@
    "receipt": "DETACHED_WORK_TRIAL.json",
    "status": "NOT_OPERATIONAL"
   },
-  "future.developer_platform": {
-   "aliases": [
-    "future.devplatform",
-    "future.developer_platform"
-   ],
-   "argument_contract": {
-    "bindable": true,
-    "cli_flags": [
-     {
-      "dest": null,
-      "flags": [
-       "--selftest"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--build"
-      ]
-     }
-    ],
-    "params": [
-     {
-      "has_default": true,
-      "kind": "POSITIONAL_OR_KEYWORD",
-      "name": "selftest_results",
-      "required": false
-     }
-    ]
-   },
-   "callable": "build",
-   "frontier": [
-    "FT.TOOLS.freshness"
-   ],
-   "gaps": [],
-   "import_error": null,
-   "module": "tools/future/devplatform.py",
-   "receipt": "DEVELOPER_PLATFORM.json",
-   "status": "OPERATIONAL"
-  },
-  "future.device_ascension": {
-   "aliases": [
-    "future.device_ascension_pipeline",
-    "future.device_ascension"
-   ],
-   "argument_contract": {
-    "bindable": true,
-    "cli_flags": [
-     {
-      "dest": null,
-      "flags": [
-       "--dry-run"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--build"
-      ]
-     }
-    ],
-    "params": [
-     {
-      "has_default": true,
-      "kind": "POSITIONAL_OR_KEYWORD",
-      "name": "pipeline",
-      "required": false
-     },
-     {
-      "has_default": true,
-      "kind": "KEYWORD_ONLY",
-      "name": "dry_run",
-      "required": false
-     }
-    ]
-   },
-   "callable": "build",
-   "frontier": [
-    "FT.ARCHITECTURE_REPATRIATION.device-run"
-   ],
-   "gaps": [],
-   "import_error": null,
-   "module": "tools/future/device_ascension_pipeline.py",
-   "receipt": "DEVICE_ASCENSION_PIPELINE.json",
-   "status": "OPERATIONAL"
-  },
   "future.device_ascension_pipeline": {
    "aliases": [
-    "future.device_ascension_pipeline",
-    "future.device_ascension"
+    "future.device_ascension_pipeline"
    ],
    "argument_contract": {
     "bindable": true,
@@ -35414,8 +36348,7 @@
   },
   "future.devplatform": {
    "aliases": [
-    "future.devplatform",
-    "future.developer_platform"
+    "future.devplatform"
    ],
    "argument_contract": {
     "bindable": true,
@@ -35636,47 +36569,7 @@
   },
   "future.ebpw_categories": {
    "aliases": [
-    "future.ebpw_categories",
-    "future.ebpw_category_validator"
-   ],
-   "argument_contract": {
-    "bindable": true,
-    "cli_flags": [
-     {
-      "dest": null,
-      "flags": [
-       "--build"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--selftest"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--validate"
-      ]
-     }
-    ],
-    "params": []
-   },
-   "callable": "build",
-   "frontier": [
-    "FT.MODEL_REPRESENTATION.meta-gates-3-9"
-   ],
-   "gaps": [],
-   "import_error": null,
-   "module": "tools/future/ebpw_categories.py",
-   "receipt": "EBPW_CATEGORY_VALIDATOR.json",
-   "status": "OPERATIONAL"
-  },
-  "future.ebpw_category_validator": {
-   "aliases": [
-    "future.ebpw_categories",
-    "future.ebpw_category_validator"
+    "future.ebpw_categories"
    ],
    "argument_contract": {
     "bindable": true,
@@ -35871,58 +36764,6 @@
    "module": "tools/future/executable_economics.py",
    "receipt": "EXECUTABLE_ECONOMICS.json",
    "status": "NOT_OPERATIONAL"
-  },
-  "future.experiment_turnaround": {
-   "aliases": [
-    "future.turnaround",
-    "future.experiment_turnaround"
-   ],
-   "argument_contract": {
-    "bindable": true,
-    "cli_flags": [
-     {
-      "dest": null,
-      "flags": [
-       "--measure"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--build"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--selftest"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--repeats"
-      ]
-     }
-    ],
-    "params": [
-     {
-      "has_default": true,
-      "kind": "KEYWORD_ONLY",
-      "name": "repeats",
-      "required": false
-     }
-    ]
-   },
-   "callable": "build",
-   "frontier": [
-    "FT.LATENCY.cpu-turnaround"
-   ],
-   "gaps": [],
-   "import_error": null,
-   "module": "tools/future/turnaround.py",
-   "receipt": "EXPERIMENT_TURNAROUND.json",
-   "status": "OPERATIONAL"
   },
   "future.expert_bank_school": {
    "aliases": [
@@ -36414,43 +37255,9 @@
    "receipt": null,
    "status": "NOT_OPERATIONAL"
   },
-  "future.fpga_engine_school": {
-   "aliases": [
-    "future.fpga_engines",
-    "future.fpga_engine_school"
-   ],
-   "argument_contract": {
-    "bindable": true,
-    "cli_flags": [
-     {
-      "dest": null,
-      "flags": [
-       "--selftest"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--build"
-      ]
-     }
-    ],
-    "params": []
-   },
-   "callable": "build",
-   "frontier": [
-    "FT.FPGA.engine-sim"
-   ],
-   "gaps": [],
-   "import_error": null,
-   "module": "tools/future/fpga_engines.py",
-   "receipt": "FPGA_ENGINE_SCHOOL.json",
-   "status": "OPERATIONAL"
-  },
   "future.fpga_engines": {
    "aliases": [
-    "future.fpga_engines",
-    "future.fpga_engine_school"
+    "future.fpga_engines"
    ],
    "argument_contract": {
     "bindable": true,
@@ -36482,41 +37289,7 @@
   },
   "future.fpga_fidelity": {
    "aliases": [
-    "future.fpga_fidelity",
-    "future.fpga_multifidelity"
-   ],
-   "argument_contract": {
-    "bindable": true,
-    "cli_flags": [
-     {
-      "dest": null,
-      "flags": [
-       "--selftest"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--build"
-      ]
-     }
-    ],
-    "params": []
-   },
-   "callable": "build",
-   "frontier": [
-    "FT.FPGA.engine-sim"
-   ],
-   "gaps": [],
-   "import_error": null,
-   "module": "tools/future/fpga_fidelity.py",
-   "receipt": "FPGA_MULTIFIDELITY.json",
-   "status": "OPERATIONAL"
-  },
-  "future.fpga_multifidelity": {
-   "aliases": [
-    "future.fpga_fidelity",
-    "future.fpga_multifidelity"
+    "future.fpga_fidelity"
    ],
    "argument_contract": {
     "bindable": true,
@@ -36548,8 +37321,7 @@
   },
   "future.freshness": {
    "aliases": [
-    "future.freshness",
-    "future.derived_freshness"
+    "future.freshness"
    ],
    "argument_contract": {
     "bindable": true,
@@ -36689,43 +37461,9 @@
    "receipt": null,
    "status": "NOT_OPERATIONAL"
   },
-  "future.fusion": {
-   "aliases": [
-    "future.fusion_sim",
-    "future.fusion"
-   ],
-   "argument_contract": {
-    "bindable": true,
-    "cli_flags": [
-     {
-      "dest": null,
-      "flags": [
-       "--build"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--selftest"
-      ]
-     }
-    ],
-    "params": []
-   },
-   "callable": "build",
-   "frontier": [
-    "FT.MODEL_EXECUTION.fusion-sim"
-   ],
-   "gaps": [],
-   "import_error": null,
-   "module": "tools/future/fusion_sim.py",
-   "receipt": "FUSION_SIMULATION.json",
-   "status": "OPERATIONAL"
-  },
   "future.fusion_sim": {
    "aliases": [
-    "future.fusion_sim",
-    "future.fusion"
+    "future.fusion_sim"
    ],
    "argument_contract": {
     "bindable": true,
@@ -36862,108 +37600,7 @@
   },
   "future.git_lock_doctor": {
    "aliases": [
-    "future.git_lock_doctor",
-    "future.git_lock_durability"
-   ],
-   "argument_contract": {
-    "bindable": true,
-    "cli_flags": [
-     {
-      "dest": null,
-      "flags": [
-       "--report"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--rename-aside"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--repo"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--age-seconds"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--tag"
-      ]
-     }
-    ],
-    "params": [
-     {
-      "has_default": true,
-      "kind": "KEYWORD_ONLY",
-      "name": "repo",
-      "required": false
-     },
-     {
-      "has_default": true,
-      "kind": "KEYWORD_ONLY",
-      "name": "now",
-      "required": false
-     },
-     {
-      "has_default": true,
-      "kind": "KEYWORD_ONLY",
-      "name": "age_threshold_s",
-      "required": false
-     },
-     {
-      "has_default": true,
-      "kind": "KEYWORD_ONLY",
-      "name": "apply",
-      "required": false
-     },
-     {
-      "has_default": true,
-      "kind": "KEYWORD_ONLY",
-      "name": "tag",
-      "required": false
-     },
-     {
-      "has_default": true,
-      "kind": "KEYWORD_ONLY",
-      "name": "holders_fn",
-      "required": false
-     },
-     {
-      "has_default": true,
-      "kind": "KEYWORD_ONLY",
-      "name": "git_procs_fn",
-      "required": false
-     },
-     {
-      "has_default": true,
-      "kind": "KEYWORD_ONLY",
-      "name": "recorded_by",
-      "required": false
-     }
-    ]
-   },
-   "callable": "build",
-   "frontier": [
-    "FT.HCLI_SELF.no-launch"
-   ],
-   "gaps": [],
-   "import_error": null,
-   "module": "tools/future/git_lock_doctor.py",
-   "receipt": "GIT_LOCK_DURABILITY_REPORT.json",
-   "status": "OPERATIONAL"
-  },
-  "future.git_lock_durability": {
-   "aliases": [
-    "future.git_lock_doctor",
-    "future.git_lock_durability"
+    "future.git_lock_doctor"
    ],
    "argument_contract": {
     "bindable": true,
@@ -37298,39 +37935,6 @@
    "receipt": null,
    "status": "NOT_OPERATIONAL"
   },
-  "future.hcli_future_workunits": {
-   "aliases": [
-    "future.workunit_species",
-    "future.hcli_future_workunits"
-   ],
-   "argument_contract": {
-    "bindable": true,
-    "cli_flags": [
-     {
-      "dest": null,
-      "flags": [
-       "--build"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--selftest"
-      ]
-     }
-    ],
-    "params": []
-   },
-   "callable": "build",
-   "frontier": [
-    "FT.HCLI_SELF.emit-workunits"
-   ],
-   "gaps": [],
-   "import_error": null,
-   "module": "tools/future/workunit_species.py",
-   "receipt": "HCLI_FUTURE_WORKUNITS.json",
-   "status": "OPERATIONAL"
-  },
   "future.hcli_self_profile": {
    "aliases": [
     "future.hcli_self_profile"
@@ -37421,43 +38025,9 @@
    "receipt": null,
    "status": "NOT_OPERATIONAL"
   },
-  "future.hmf_hgvas": {
-   "aliases": [
-    "future.hmf_objects",
-    "future.hmf_hgvas"
-   ],
-   "argument_contract": {
-    "bindable": true,
-    "cli_flags": [
-     {
-      "dest": null,
-      "flags": [
-       "--selftest"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--build"
-      ]
-     }
-    ],
-    "params": []
-   },
-   "callable": "build",
-   "frontier": [
-    "FT.MEMORY.hmf"
-   ],
-   "gaps": [],
-   "import_error": null,
-   "module": "tools/future/hmf_objects.py",
-   "receipt": "HMF_MANAGED_OBJECTS.json",
-   "status": "OPERATIONAL"
-  },
   "future.hmf_objects": {
    "aliases": [
-    "future.hmf_objects",
-    "future.hmf_hgvas"
+    "future.hmf_objects"
    ],
    "argument_contract": {
     "bindable": true,
@@ -37516,6 +38086,36 @@
       "dest": null,
       "flags": [
        "--organ"
+      ]
+     },
+     {
+      "dest": null,
+      "flags": [
+       "--qgemv"
+      ]
+     },
+     {
+      "dest": null,
+      "flags": [
+       "--seal-predictions"
+      ]
+     },
+     {
+      "dest": null,
+      "flags": [
+       "--rehearse"
+      ]
+     },
+     {
+      "dest": null,
+      "flags": [
+       "--device"
+      ]
+     },
+     {
+      "dest": null,
+      "flags": [
+       "--carrier"
       ]
      }
     ],
@@ -37765,40 +38365,6 @@
    "receipt": null,
    "status": "NOT_OPERATIONAL"
   },
-  "future.learned_physical_compiler": {
-   "aliases": [
-    "future.lpc_dataset",
-    "future.learned_physical_compiler"
-   ],
-   "argument_contract": {
-    "bindable": true,
-    "cli_flags": [
-     {
-      "dest": null,
-      "flags": [
-       "--build"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--selftest"
-      ]
-     }
-    ],
-    "params": []
-   },
-   "callable": "build",
-   "frontier": [
-    "F007",
-    "FT.VERIFICATION.repro"
-   ],
-   "gaps": [],
-   "import_error": null,
-   "module": "tools/future/lpc_dataset.py",
-   "receipt": "LPC_DATASET.json",
-   "status": "OPERATIONAL"
-  },
   "future.legacy_driver_retirement": {
    "aliases": [
     "future.legacy_driver_retirement"
@@ -37889,8 +38455,7 @@
   },
   "future.lpc_dataset": {
    "aliases": [
-    "future.lpc_dataset",
-    "future.learned_physical_compiler"
+    "future.lpc_dataset"
    ],
    "argument_contract": {
     "bindable": true,
@@ -37989,89 +38554,9 @@
    "receipt": "MEMORY_TRAFFIC_PROBE.json",
    "status": "NOT_OPERATIONAL"
   },
-  "future.meta_downstream_ready": {
-   "aliases": [
-    "future.meta_ready",
-    "future.meta_downstream_ready"
-   ],
-   "argument_contract": {
-    "bindable": true,
-    "cli_flags": [
-     {
-      "dest": null,
-      "flags": [
-       "--build"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--selftest"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--simulate-arrival"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--corpus"
-      ]
-     }
-    ],
-    "params": []
-   },
-   "callable": "build",
-   "frontier": [
-    "F019",
-    "FT.MODEL_REPRESENTATION.meta-gates-3-9"
-   ],
-   "gaps": [],
-   "import_error": null,
-   "module": "tools/future/meta_ready.py",
-   "receipt": "META_DOWNSTREAM_READY.json",
-   "status": "OPERATIONAL"
-  },
-  "future.meta_experiment_funnel": {
-   "aliases": [
-    "future.meta_funnel",
-    "future.meta_experiment_funnel"
-   ],
-   "argument_contract": {
-    "bindable": true,
-    "cli_flags": [
-     {
-      "dest": null,
-      "flags": [
-       "--build"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--selftest"
-      ]
-     }
-    ],
-    "params": []
-   },
-   "callable": "build",
-   "frontier": [
-    "FT.MODEL_REPRESENTATION.meta-gates-3-9"
-   ],
-   "gaps": [],
-   "import_error": null,
-   "module": "tools/future/meta_funnel.py",
-   "receipt": "META_EXPERIMENT_FUNNEL.json",
-   "status": "OPERATIONAL"
-  },
   "future.meta_funnel": {
    "aliases": [
-    "future.meta_funnel",
-    "future.meta_experiment_funnel"
+    "future.meta_funnel"
    ],
    "argument_contract": {
     "bindable": true,
@@ -38103,8 +38588,7 @@
   },
   "future.meta_ready": {
    "aliases": [
-    "future.meta_ready",
-    "future.meta_downstream_ready"
+    "future.meta_ready"
    ],
    "argument_contract": {
     "bindable": true,
@@ -39385,8 +39869,7 @@
   },
   "future.mutation_surface": {
    "aliases": [
-    "future.mutation_surface",
-    "future.codex_mutation_surface"
+    "future.mutation_surface"
    ],
    "argument_contract": {
     "bindable": true,
@@ -39464,91 +39947,7 @@
   },
   "future.negative_index": {
    "aliases": [
-    "future.negative_index",
-    "future.negative_science_index"
-   ],
-   "argument_contract": {
-    "bindable": true,
-    "cli_flags": [
-     {
-      "dest": null,
-      "flags": [
-       "--build"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--selftest"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--query"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--model"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--organ"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--representation"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--hypothesis-family"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--machine"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--refuse"
-      ]
-     }
-    ],
-    "params": [
-     {
-      "has_default": true,
-      "kind": "POSITIONAL_OR_KEYWORD",
-      "name": "scars",
-      "required": false
-     }
-    ]
-   },
-   "callable": "build",
-   "frontier": [
-    "F009",
-    "FT.VERIFICATION.negative-index"
-   ],
-   "gaps": [],
-   "import_error": null,
-   "module": "tools/future/negative_index.py",
-   "receipt": "NEGATIVE_SCIENCE_INDEX.json",
-   "status": "OPERATIONAL"
-  },
-  "future.negative_science_index": {
-   "aliases": [
-    "future.negative_index",
-    "future.negative_science_index"
+    "future.negative_index"
    ],
    "argument_contract": {
     "bindable": true,
@@ -39806,8 +40205,7 @@
   },
   "future.odyssey2_law_store": {
    "aliases": [
-    "future.odyssey2_law_store",
-    "future.odyssey_ii_law_store"
+    "future.odyssey2_law_store"
    ],
    "argument_contract": {
     "bindable": true,
@@ -39873,8 +40271,7 @@
   },
   "future.odyssey3_adversary": {
    "aliases": [
-    "future.odyssey3_adversary",
-    "future.odyssey_iii_adversary"
+    "future.odyssey3_adversary"
    ],
    "argument_contract": {
     "bindable": true,
@@ -39942,79 +40339,6 @@
    "module": "tools/future/odyssey3_attack.py",
    "receipt": "ODYSSEY3_ATTACK.json",
    "status": "NOT_OPERATIONAL"
-  },
-  "future.odyssey_ii_law_store": {
-   "aliases": [
-    "future.odyssey2_law_store",
-    "future.odyssey_ii_law_store"
-   ],
-   "argument_contract": {
-    "bindable": true,
-    "cli_flags": [
-     {
-      "dest": null,
-      "flags": [
-       "--build"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--selftest"
-      ]
-     }
-    ],
-    "params": []
-   },
-   "callable": "build",
-   "frontier": [
-    "F010",
-    "FT.ODYSSEY_TRANSFER.flash-qwen27"
-   ],
-   "gaps": [],
-   "import_error": null,
-   "module": "tools/future/odyssey2_law_store.py",
-   "receipt": "ODYSSEY2_LAW_STORE.json",
-   "status": "OPERATIONAL"
-  },
-  "future.odyssey_iii_adversary": {
-   "aliases": [
-    "future.odyssey3_adversary",
-    "future.odyssey_iii_adversary"
-   ],
-   "argument_contract": {
-    "bindable": true,
-    "cli_flags": [
-     {
-      "dest": null,
-      "flags": [
-       "--build"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--selftest"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--replay-attack"
-      ]
-     }
-    ],
-    "params": []
-   },
-   "callable": "build",
-   "frontier": [
-    "FT.ODYSSEY_ADVERSARY.attacks"
-   ],
-   "gaps": [],
-   "import_error": null,
-   "module": "tools/future/odyssey3_adversary.py",
-   "receipt": "ODYSSEY3_ADVERSARY.json",
-   "status": "OPERATIONAL"
   },
   "future.odyssey_launch": {
    "aliases": [
@@ -40236,57 +40560,9 @@
    "receipt": null,
    "status": "NOT_OPERATIONAL"
   },
-  "future.p6_primitive_projection": {
-   "aliases": [
-    "future.p6_projection",
-    "future.p6_primitive_projection"
-   ],
-   "argument_contract": {
-    "bindable": true,
-    "cli_flags": [
-     {
-      "dest": null,
-      "flags": [
-       "--build"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--selftest"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--queue"
-      ]
-     }
-    ],
-    "params": [
-     {
-      "has_default": true,
-      "kind": "POSITIONAL_OR_KEYWORD",
-      "name": "path",
-      "required": false
-     }
-    ]
-   },
-   "callable": "build",
-   "frontier": [
-    "F020",
-    "FT.PHYSICAL_GRAPH.p6-projection"
-   ],
-   "gaps": [],
-   "import_error": null,
-   "module": "tools/future/p6_projection.py",
-   "receipt": "P6_PRIMITIVE_PROJECTION.json",
-   "status": "OPERATIONAL"
-  },
   "future.p6_projection": {
    "aliases": [
-    "future.p6_projection",
-    "future.p6_primitive_projection"
+    "future.p6_projection"
    ],
    "argument_contract": {
     "bindable": true,
@@ -40606,20 +40882,13 @@
    "receipt": "PHASE_LISTENERS.json",
    "status": "OPERATIONAL"
   },
-  "future.physical_primitive_library": {
+  "future.physical_compiler_predict": {
    "aliases": [
-    "future.physical_primitives",
-    "future.physical_primitive_library"
+    "future.physical_compiler_predict"
    ],
    "argument_contract": {
     "bindable": true,
     "cli_flags": [
-     {
-      "dest": null,
-      "flags": [
-       "--selftest"
-      ]
-     },
      {
       "dest": null,
       "flags": [
@@ -40630,20 +40899,19 @@
     "params": []
    },
    "callable": "build",
-   "frontier": [
-    "F012",
-    "FT.MODEL_EXECUTION.static-skeleton"
+   "frontier": [],
+   "gaps": [
+    "does_not_emit_workunit",
+    "result_does_not_feed_a_named_frontier"
    ],
-   "gaps": [],
    "import_error": null,
-   "module": "tools/future/physical_primitives.py",
-   "receipt": "PHYSICAL_PRIMITIVES.json",
-   "status": "OPERATIONAL"
+   "module": "tools/future/physical_compiler_predict.py",
+   "receipt": "PHYSICAL_COMPILER_FOUNDATION.json",
+   "status": "NOT_OPERATIONAL"
   },
   "future.physical_primitives": {
    "aliases": [
-    "future.physical_primitives",
-    "future.physical_primitive_library"
+    "future.physical_primitives"
    ],
    "argument_contract": {
     "bindable": true,
@@ -40753,61 +41021,7 @@
   },
   "future.propagate": {
    "aliases": [
-    "future.propagate",
-    "future.propagation_engine"
-   ],
-   "argument_contract": {
-    "bindable": true,
-    "cli_flags": [
-     {
-      "dest": null,
-      "flags": [
-       "--dry-run"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--apply"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--selftest"
-      ]
-     }
-    ],
-    "params": [
-     {
-      "has_default": true,
-      "kind": "KEYWORD_ONLY",
-      "name": "apply",
-      "required": false
-     },
-     {
-      "has_default": true,
-      "kind": "KEYWORD_ONLY",
-      "name": "deltas",
-      "required": false
-     }
-    ]
-   },
-   "callable": "build",
-   "frontier": [
-    "F016",
-    "FT.TOOLS.propagate-skips"
-   ],
-   "gaps": [],
-   "import_error": null,
-   "module": "tools/future/propagate.py",
-   "receipt": "PROPAGATION_STATE.json",
-   "status": "OPERATIONAL"
-  },
-  "future.propagation_engine": {
-   "aliases": [
-    "future.propagate",
-    "future.propagation_engine"
+    "future.propagate"
    ],
    "argument_contract": {
     "bindable": true,
@@ -41031,62 +41245,9 @@
    "receipt": null,
    "status": "NOT_OPERATIONAL"
   },
-  "future.qualification_automation": {
-   "aliases": [
-    "future.qualification_pipeline",
-    "future.qualification_automation"
-   ],
-   "argument_contract": {
-    "bindable": true,
-    "cli_flags": [
-     {
-      "dest": null,
-      "flags": [
-       "--dry-run"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--build"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--selftest"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--execute"
-      ]
-     }
-    ],
-    "params": [
-     {
-      "has_default": true,
-      "kind": "POSITIONAL_OR_KEYWORD",
-      "name": "pipeline",
-      "required": false
-     }
-    ]
-   },
-   "callable": "build",
-   "frontier": [
-    "FT.GPU_KERNELS.ready-protected"
-   ],
-   "gaps": [],
-   "import_error": null,
-   "module": "tools/future/qualification_pipeline.py",
-   "receipt": "QUALIFICATION_PIPELINE.json",
-   "status": "OPERATIONAL"
-  },
   "future.qualification_pipeline": {
    "aliases": [
-    "future.qualification_pipeline",
-    "future.qualification_automation"
+    "future.qualification_pipeline"
    ],
    "argument_contract": {
     "bindable": true,
@@ -41263,8 +41424,7 @@
   },
   "future.repro_science": {
    "aliases": [
-    "future.repro_science",
-    "future.autonomous_reproducible_science"
+    "future.repro_science"
    ],
    "argument_contract": {
     "bindable": true,
@@ -42030,6 +42190,33 @@
    "receipt": "SCAR_SCHEDULING.json",
    "status": "OPERATIONAL"
   },
+  "future.science_corpus": {
+   "aliases": [
+    "future.science_corpus"
+   ],
+   "argument_contract": {
+    "bindable": true,
+    "cli_flags": [
+     {
+      "dest": null,
+      "flags": [
+       "--build"
+      ]
+     }
+    ],
+    "params": []
+   },
+   "callable": "build",
+   "frontier": [],
+   "gaps": [
+    "does_not_emit_workunit",
+    "result_does_not_feed_a_named_frontier"
+   ],
+   "import_error": null,
+   "module": "tools/future/science_corpus.py",
+   "receipt": "SCIENCE_CORPUS.json",
+   "status": "NOT_OPERATIONAL"
+  },
   "future.sealed_default_absolute": {
    "aliases": [
     "future.sealed_default_absolute"
@@ -42463,46 +42650,9 @@
    "receipt": "ODYSSEY_LAUNCH_SPRINT_PROFILE.json",
    "status": "OPERATIONAL"
   },
-  "future.static_kernel_preflight": {
-   "aliases": [
-    "future.static_kernel_verify",
-    "future.static_kernel_preflight"
-   ],
-   "argument_contract": {
-    "bindable": true,
-    "cli_flags": [
-     {
-      "dest": null,
-      "flags": [
-       "--scan"
-      ]
-     },
-     {
-      "dest": null,
-      "flags": [
-       "--build"
-      ]
-     }
-    ],
-    "params": []
-   },
-   "callable": "build",
-   "frontier": [
-    "F002",
-    "F014",
-    "F018",
-    "FT.GPU_KERNELS.static-warnings"
-   ],
-   "gaps": [],
-   "import_error": null,
-   "module": "tools/future/static_kernel_verify.py",
-   "receipt": "STATIC_KERNEL_PREFLIGHT.json",
-   "status": "OPERATIONAL"
-  },
   "future.static_kernel_verify": {
    "aliases": [
-    "future.static_kernel_verify",
-    "future.static_kernel_preflight"
+    "future.static_kernel_verify"
    ],
    "argument_contract": {
     "bindable": true,
@@ -42794,6 +42944,12 @@
       "dest": null,
       "flags": [
        "--selftest"
+      ]
+     },
+     {
+      "dest": null,
+      "flags": [
+       "--disposition"
       ]
      }
     ],
@@ -43227,8 +43383,7 @@
   },
   "future.turnaround": {
    "aliases": [
-    "future.turnaround",
-    "future.experiment_turnaround"
+    "future.turnaround"
    ],
    "argument_contract": {
     "bindable": true,
@@ -43303,6 +43458,57 @@
    "import_error": null,
    "module": "tools/future/uma_resource_ledger.py",
    "receipt": null,
+   "status": "NOT_OPERATIONAL"
+  },
+  "future.vmcp": {
+   "aliases": [
+    "future.vmcp"
+   ],
+   "argument_contract": {
+    "bindable": true,
+    "cli_flags": [
+     {
+      "dest": null,
+      "flags": [
+       "--build"
+      ]
+     },
+     {
+      "dest": null,
+      "flags": [
+       "--selftest"
+      ]
+     },
+     {
+      "dest": null,
+      "flags": [
+       "--disposition"
+      ]
+     },
+     {
+      "dest": null,
+      "flags": [
+       "--act"
+      ]
+     },
+     {
+      "dest": null,
+      "flags": [
+       "--path"
+      ]
+     }
+    ],
+    "params": []
+   },
+   "callable": "build",
+   "frontier": [],
+   "gaps": [
+    "does_not_emit_workunit",
+    "result_does_not_feed_a_named_frontier"
+   ],
+   "import_error": null,
+   "module": "tools/future/vmcp.py",
+   "receipt": "VMCP_DISPOSITION.json",
    "status": "NOT_OPERATIONAL"
   },
   "future.wakeup": {
@@ -43451,8 +43657,7 @@
   },
   "future.workunit_species": {
    "aliases": [
-    "future.workunit_species",
-    "future.hcli_future_workunits"
+    "future.workunit_species"
    ],
    "argument_contract": {
     "bindable": true,
@@ -43502,7 +43707,7 @@
   ]
  },
  "schema": "hawking.future.resident_api.v1",
- "seal_sha256": "ee5d57a6905569147276879a32ebc6b8084a90d2d79a569f39197c04319a0ef8",
+ "seal_sha256": "f7d95d7e791a142ef7675a7c594895e2b6ba60fcc2535be52c81f9fd2256b287",
  "version": 1,
  "work_units": [
   {
@@ -43512,15 +43717,15 @@
    "backend_task_id": null,
    "claim_boundary": "Proposal only. Sidecar cannot register HCLI tools or rewrite CLAUDE_GLOBAL_FRONTIER.json.",
    "classification": "STATIC_ONLY",
-   "content_hash": "499497d4ef8fe096992804eb70d3a1ce0b88785064a4be72f651dda0340ca2bf",
+   "content_hash": "d475ef8051f31b08f7960c29274d5c0b2cbb70a54fb56c7b20ae19d848079238",
    "dependencies": [],
-   "description": "Close resident-callability gap 'does_not_emit_workunit' for 139 sidecar module(s).",
+   "description": "Close resident-callability gap 'does_not_emit_workunit' for 149 sidecar module(s).",
    "effect_class": "READ_ONLY",
    "failure_context": null,
    "finished_at": null,
    "gap": "does_not_emit_workunit",
    "id": "future.resident_api.close.does_not_emit_workunit",
-   "module_count": 139,
+   "module_count": 149,
    "module_stems": [
     "__init__",
     "_common",
@@ -43542,7 +43747,9 @@
     "campaign_scars",
     "capability_byte_elimination",
     "capability_curve",
+    "capability_eval",
     "capability_information_map",
+    "capability_reachability",
     "capacity_inference_rule",
     "causal_budget_71",
     "causal_pattern_library",
@@ -43551,6 +43758,7 @@
     "claude_interventions",
     "complete_ebpw",
     "concurrency_measure",
+    "conftest",
     "decode_tax_target",
     "deltanet_generated_transition",
     "deltanet_multistep",
@@ -43570,6 +43778,8 @@
     "dispatch_size_sweep",
     "exam_a_option_tree",
     "executable_economics",
+    "experiment_policy",
+    "experiment_receipt",
     "fast_thought",
     "fidelity_hierarchy",
     "fold_addqx_ab",
@@ -43579,6 +43789,7 @@
     "handoff",
     "harness_reconciliation",
     "hcli_compactor",
+    "hcli_self_hosting_launch",
     "hcli_sovereign",
     "index_provenance",
     "integration_attack",
@@ -43624,6 +43835,7 @@
     "path_to_71",
     "per_generated_token_inflation",
     "perturbation_workunit",
+    "physical_compiler_predict",
     "productive_search",
     "protected_bench_lease",
     "protected_bitcast_absolute",
@@ -43640,6 +43852,7 @@
     "roof_anchor",
     "runnability_snapshot",
     "scar_reevaluator",
+    "science_corpus",
     "sealed_default_absolute",
     "sealed_default_verified",
     "single_token_dag",
@@ -43651,6 +43864,7 @@
     "specimen_load_cost",
     "specimen_registry",
     "specimen_scheduler",
+    "static_kernel_verify_parity",
     "sub2_unified_plan",
     "terminal_speed_artifact",
     "token_ns_objective",
@@ -43660,6 +43874,7 @@
     "tps_metrics",
     "trial_negative_controls",
     "uma_resource_ledger",
+    "vmcp",
     "wall_gpu_reconciliation"
    ],
    "preferred_backend": null,
@@ -43686,15 +43901,15 @@
    "backend_task_id": null,
    "claim_boundary": "Proposal only. Sidecar cannot register HCLI tools or rewrite CLAUDE_GLOBAL_FRONTIER.json.",
    "classification": "STATIC_ONLY",
-   "content_hash": "e82722a09fdfe176b3f8de07c7a5bdd75a4e60148d6a0fc9c06d32bc790feeb3",
+   "content_hash": "51f8f84382a282e4a327278597a8edde8df357be28d4d639a693561dc07ae6ae",
    "dependencies": [],
-   "description": "Close resident-callability gap 'does_not_produce_receipt' for 47 sidecar module(s).",
+   "description": "Close resident-callability gap 'does_not_produce_receipt' for 52 sidecar module(s).",
    "effect_class": "READ_ONLY",
    "failure_context": null,
    "finished_at": null,
    "gap": "does_not_produce_receipt",
    "id": "future.resident_api.close.does_not_produce_receipt",
-   "module_count": 47,
+   "module_count": 52,
    "module_stems": [
     "__init__",
     "_common",
@@ -43704,13 +43919,17 @@
     "bitcast_dequant_ab",
     "causal_budget_71",
     "concurrency_measure",
+    "conftest",
     "deltanet_organ_decompose",
     "deltanet_widen_ab",
     "dequant_hoist_ab",
     "dispatch_size_sweep",
+    "experiment_policy",
+    "experiment_receipt",
     "fold_addqx_ab",
     "gap_ledger_60",
     "geometry_table",
+    "hcli_self_hosting_launch",
     "index_provenance",
     "integration_gate",
     "intra_token_concurrency_ab",
@@ -43738,6 +43957,7 @@
     "resident_token_budget",
     "sealed_default_absolute",
     "specimen_load_cost",
+    "static_kernel_verify_parity",
     "token_ns_objective",
     "tps_falsifications",
     "trial_negative_controls",
@@ -43768,18 +43988,19 @@
    "backend_task_id": null,
    "claim_boundary": "Proposal only. Sidecar cannot register HCLI tools or rewrite CLAUDE_GLOBAL_FRONTIER.json.",
    "classification": "STATIC_ONLY",
-   "content_hash": "9ac7c352e09fda05a50b69847eb65731acd14eb0fe265f6f21cdf6f61cf03ea8",
+   "content_hash": "6ba9ecab8f6808113adffe9b61ddc11c57163e00ec7dda09dc910b00b7c1702e",
    "dependencies": [],
-   "description": "Close resident-callability gap 'does_not_raise_on_invalid' for 11 sidecar module(s).",
+   "description": "Close resident-callability gap 'does_not_raise_on_invalid' for 12 sidecar module(s).",
    "effect_class": "READ_ONLY",
    "failure_context": null,
    "finished_at": null,
    "gap": "does_not_raise_on_invalid",
    "id": "future.resident_api.close.does_not_raise_on_invalid",
-   "module_count": 11,
+   "module_count": 12,
    "module_stems": [
     "__init__",
     "ba_delta_ab",
+    "conftest",
     "index_provenance",
     "legacy_driver_retirement",
     "measurement_provenance",
@@ -43814,18 +44035,23 @@
    "backend_task_id": null,
    "claim_boundary": "Proposal only. Sidecar cannot register HCLI tools or rewrite CLAUDE_GLOBAL_FRONTIER.json.",
    "classification": "STATIC_ONLY",
-   "content_hash": "220db3290747a75eb43247195d04561a78bae9840bd76bd8635ff313744823d2",
+   "content_hash": "a700024c60a74d07081c306389bd994d528047991bba47dd6162ff919e556455",
    "dependencies": [],
-   "description": "Close resident-callability gap 'no_callable_entry_point_only_main_or_absent' for 2 sidecar module(s).",
+   "description": "Close resident-callability gap 'no_callable_entry_point_only_main_or_absent' for 7 sidecar module(s).",
    "effect_class": "READ_ONLY",
    "failure_context": null,
    "finished_at": null,
    "gap": "no_callable_entry_point_only_main_or_absent",
    "id": "future.resident_api.close.no_callable_entry_point_only_main_or_absent",
-   "module_count": 2,
+   "module_count": 7,
    "module_stems": [
     "__init__",
-    "_common"
+    "_common",
+    "conftest",
+    "experiment_policy",
+    "experiment_receipt",
+    "hcli_self_hosting_launch",
+    "static_kernel_verify_parity"
    ],
    "preferred_backend": null,
    "provider": "future.resident_api",
@@ -43851,15 +44077,15 @@
    "backend_task_id": null,
    "claim_boundary": "Proposal only. Sidecar cannot register HCLI tools or rewrite CLAUDE_GLOBAL_FRONTIER.json.",
    "classification": "STATIC_ONLY",
-   "content_hash": "3b2216fcac2f8086a5a3cb44cc4f93e41bf9f7585ce730fd9354cf971170aeef",
+   "content_hash": "d0b40ca84116046a61a9f64cc6114bf4012a27b0cff75167ff0ba19002e312af",
    "dependencies": [],
-   "description": "Close resident-callability gap 'result_does_not_feed_a_named_frontier' for 147 sidecar module(s).",
+   "description": "Close resident-callability gap 'result_does_not_feed_a_named_frontier' for 157 sidecar module(s).",
    "effect_class": "READ_ONLY",
    "failure_context": null,
    "finished_at": null,
    "gap": "result_does_not_feed_a_named_frontier",
    "id": "future.resident_api.close.result_does_not_feed_a_named_frontier",
-   "module_count": 147,
+   "module_count": 157,
    "module_stems": [
     "__init__",
     "_common",
@@ -43881,7 +44107,9 @@
     "campaign_scars",
     "capability_byte_elimination",
     "capability_curve",
+    "capability_eval",
     "capability_information_map",
+    "capability_reachability",
     "capability_stages",
     "capacity_inference_rule",
     "causal_budget_71",
@@ -43891,6 +44119,7 @@
     "claude_interventions",
     "complete_ebpw",
     "concurrency_measure",
+    "conftest",
     "decode_tax_target",
     "deltanet_generated_transition",
     "deltanet_multistep",
@@ -43911,6 +44140,8 @@
     "dispatch_size_sweep",
     "exam_a_option_tree",
     "executable_economics",
+    "experiment_policy",
+    "experiment_receipt",
     "fast_thought",
     "fidelity_hierarchy",
     "fold_addqx_ab",
@@ -43920,6 +44151,7 @@
     "handoff",
     "harness_reconciliation",
     "hcli_compactor",
+    "hcli_self_hosting_launch",
     "hcli_sovereign",
     "improvement_metabolism",
     "improvement_trial",
@@ -43967,6 +44199,7 @@
     "path_to_71",
     "per_generated_token_inflation",
     "perturbation_workunit",
+    "physical_compiler_predict",
     "productive_search",
     "protected_bench_lease",
     "protected_bitcast_absolute",
@@ -43984,6 +44217,7 @@
     "roof_anchor",
     "runnability_snapshot",
     "scar_reevaluator",
+    "science_corpus",
     "sealed_default_absolute",
     "sealed_default_verified",
     "single_token_dag",
@@ -43996,6 +44230,7 @@
     "specimen_load_cost",
     "specimen_registry",
     "specimen_scheduler",
+    "static_kernel_verify_parity",
     "sub2_unified_plan",
     "succession_trial",
     "terminal_speed_artifact",
@@ -44007,6 +44242,7 @@
     "tps_metrics",
     "trial_negative_controls",
     "uma_resource_ledger",
+    "vmcp",
     "wall_gpu_reconciliation"
    ],
    "preferred_backend": null,

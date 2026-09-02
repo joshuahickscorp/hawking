@@ -5,7 +5,7 @@
    "must": "a source-independent complete NX whose status is not SEALED_METADATA_ONLY / NOT_FOR_PROMOTION",
    "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V2.nx.json",
    "reason": "NX status='SEALED_METADATA_ONLY_NOT_FOR_PROMOTION'; metadata seal is not a complete executable",
-   "resolved_via": "headless",
+   "resolved_via": "primary_worktree",
    "state": "PRESENT_NOT_MET"
   },
   {
@@ -13,7 +13,7 @@
    "must": "self_contained and for_this_executable with positive complete_storage_bytes; exact-control 16.0 identity is not this ledger",
    "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json",
    "reason": "ledger present but not a closed packed-NX ledger (self_contained=None, for_this_executable=None, status='MEASURED_EXACT_CONTROL_WITH_ROUTE_IO_PROFILE')",
-   "resolved_via": "headless",
+   "resolved_via": "primary_worktree",
    "state": "PRESENT_NOT_MET"
   },
   {
@@ -21,7 +21,7 @@
    "must": "capability preserved on an accepted complete-token runtime",
    "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
    "reason": "capability not preserved (status='PASSED_STATEFUL_COMPLETE_TOKEN_ACCEPTED')",
-   "resolved_via": "headless",
+   "resolved_via": "primary_worktree",
    "state": "PRESENT_NOT_MET"
   },
   {
@@ -29,7 +29,7 @@
    "must": "PROTECTED_ABSOLUTE complete-token measurement; DIAGNOSTIC_RELATIVE and STATIC_ONLY cannot back a rung",
    "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
    "reason": "complete-token receipt is not PROTECTED_ABSOLUTE (bench.state='UNKNOWN', authority=None)",
-   "resolved_via": "headless",
+   "resolved_via": "primary_worktree",
    "state": "PRESENT_NOT_MET"
   },
   {
@@ -43,7 +43,7 @@
   {
    "id": "direct_production_consume",
    "must": "production consumes the representation directly; decompress-then-ordinary-kernels / dense-parent rematerialization is refused",
-   "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_COMPLETE_V0.nx.json",
+   "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.nx.json",
    "reason": "NX status='SEALED_METADATA_ONLY_NOT_FOR_PROMOTION' is not a production consumer; direct consume is unproven",
    "state": "PRESENT_NOT_MET"
   },
@@ -59,12 +59,12 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T07:08:04Z",
+  "recorded_at": "2026-09-02T09:38:58Z",
   "recorded_by": "tools/future/flash_bpw_ladder.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
- "branch": "odyssey-i",
+ "branch": "grok/s4-tools-future-under-10s-20260902-045214",
  "budgets": [
   {
    "allocation_kind": "SEARCH_PRESSURE_PROPOSAL",
@@ -1645,7 +1645,7 @@
      "must": "a source-independent complete NX whose status is not SEALED_METADATA_ONLY / NOT_FOR_PROMOTION",
      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V2.nx.json",
      "reason": "NX status='SEALED_METADATA_ONLY_NOT_FOR_PROMOTION'; metadata seal is not a complete executable",
-     "resolved_via": "headless",
+     "resolved_via": "primary_worktree",
      "state": "PRESENT_NOT_MET"
     },
     {
@@ -1653,7 +1653,7 @@
      "must": "self_contained and for_this_executable with positive complete_storage_bytes; exact-control 16.0 identity is not this ledger",
      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json",
      "reason": "ledger present but not a closed packed-NX ledger (self_contained=None, for_this_executable=None, status='MEASURED_EXACT_CONTROL_WITH_ROUTE_IO_PROFILE')",
-     "resolved_via": "headless",
+     "resolved_via": "primary_worktree",
      "state": "PRESENT_NOT_MET"
     },
     {
@@ -1661,7 +1661,7 @@
      "must": "capability preserved on an accepted complete-token runtime",
      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
      "reason": "capability not preserved (status='PASSED_STATEFUL_COMPLETE_TOKEN_ACCEPTED')",
-     "resolved_via": "headless",
+     "resolved_via": "primary_worktree",
      "state": "PRESENT_NOT_MET"
     },
     {
@@ -1669,7 +1669,7 @@
      "must": "PROTECTED_ABSOLUTE complete-token measurement; DIAGNOSTIC_RELATIVE and STATIC_ONLY cannot back a rung",
      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
      "reason": "complete-token receipt is not PROTECTED_ABSOLUTE (bench.state='UNKNOWN', authority=None)",
-     "resolved_via": "headless",
+     "resolved_via": "primary_worktree",
      "state": "PRESENT_NOT_MET"
     },
     {
@@ -1683,7 +1683,7 @@
     {
      "id": "direct_production_consume",
      "must": "production consumes the representation directly; decompress-then-ordinary-kernels / dense-parent rematerialization is refused",
-     "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_COMPLETE_V0.nx.json",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.nx.json",
      "reason": "NX status='SEALED_METADATA_ONLY_NOT_FOR_PROMOTION' is not a production consumer; direct consume is unproven",
      "state": "PRESENT_NOT_MET"
     },
@@ -1726,7 +1726,7 @@
      "must": "a source-independent complete NX whose status is not SEALED_METADATA_ONLY / NOT_FOR_PROMOTION",
      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V2.nx.json",
      "reason": "NX status='SEALED_METADATA_ONLY_NOT_FOR_PROMOTION'; metadata seal is not a complete executable",
-     "resolved_via": "headless",
+     "resolved_via": "primary_worktree",
      "state": "PRESENT_NOT_MET"
     },
     {
@@ -1734,7 +1734,7 @@
      "must": "self_contained and for_this_executable with positive complete_storage_bytes; exact-control 16.0 identity is not this ledger",
      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json",
      "reason": "ledger present but not a closed packed-NX ledger (self_contained=None, for_this_executable=None, status='MEASURED_EXACT_CONTROL_WITH_ROUTE_IO_PROFILE')",
-     "resolved_via": "headless",
+     "resolved_via": "primary_worktree",
      "state": "PRESENT_NOT_MET"
     },
     {
@@ -1742,7 +1742,7 @@
      "must": "capability preserved on an accepted complete-token runtime",
      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
      "reason": "capability not preserved (status='PASSED_STATEFUL_COMPLETE_TOKEN_ACCEPTED')",
-     "resolved_via": "headless",
+     "resolved_via": "primary_worktree",
      "state": "PRESENT_NOT_MET"
     },
     {
@@ -1750,7 +1750,7 @@
      "must": "PROTECTED_ABSOLUTE complete-token measurement; DIAGNOSTIC_RELATIVE and STATIC_ONLY cannot back a rung",
      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
      "reason": "complete-token receipt is not PROTECTED_ABSOLUTE (bench.state='UNKNOWN', authority=None)",
-     "resolved_via": "headless",
+     "resolved_via": "primary_worktree",
      "state": "PRESENT_NOT_MET"
     },
     {
@@ -1764,7 +1764,7 @@
     {
      "id": "direct_production_consume",
      "must": "production consumes the representation directly; decompress-then-ordinary-kernels / dense-parent rematerialization is refused",
-     "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_COMPLETE_V0.nx.json",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.nx.json",
      "reason": "NX status='SEALED_METADATA_ONLY_NOT_FOR_PROMOTION' is not a production consumer; direct consume is unproven",
      "state": "PRESENT_NOT_MET"
     },
@@ -1807,7 +1807,7 @@
      "must": "a source-independent complete NX whose status is not SEALED_METADATA_ONLY / NOT_FOR_PROMOTION",
      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V2.nx.json",
      "reason": "NX status='SEALED_METADATA_ONLY_NOT_FOR_PROMOTION'; metadata seal is not a complete executable",
-     "resolved_via": "headless",
+     "resolved_via": "primary_worktree",
      "state": "PRESENT_NOT_MET"
     },
     {
@@ -1815,7 +1815,7 @@
      "must": "self_contained and for_this_executable with positive complete_storage_bytes; exact-control 16.0 identity is not this ledger",
      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json",
      "reason": "ledger present but not a closed packed-NX ledger (self_contained=None, for_this_executable=None, status='MEASURED_EXACT_CONTROL_WITH_ROUTE_IO_PROFILE')",
-     "resolved_via": "headless",
+     "resolved_via": "primary_worktree",
      "state": "PRESENT_NOT_MET"
     },
     {
@@ -1823,7 +1823,7 @@
      "must": "capability preserved on an accepted complete-token runtime",
      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
      "reason": "capability not preserved (status='PASSED_STATEFUL_COMPLETE_TOKEN_ACCEPTED')",
-     "resolved_via": "headless",
+     "resolved_via": "primary_worktree",
      "state": "PRESENT_NOT_MET"
     },
     {
@@ -1831,7 +1831,7 @@
      "must": "PROTECTED_ABSOLUTE complete-token measurement; DIAGNOSTIC_RELATIVE and STATIC_ONLY cannot back a rung",
      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
      "reason": "complete-token receipt is not PROTECTED_ABSOLUTE (bench.state='UNKNOWN', authority=None)",
-     "resolved_via": "headless",
+     "resolved_via": "primary_worktree",
      "state": "PRESENT_NOT_MET"
     },
     {
@@ -1845,7 +1845,7 @@
     {
      "id": "direct_production_consume",
      "must": "production consumes the representation directly; decompress-then-ordinary-kernels / dense-parent rematerialization is refused",
-     "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_COMPLETE_V0.nx.json",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.nx.json",
      "reason": "NX status='SEALED_METADATA_ONLY_NOT_FOR_PROMOTION' is not a production consumer; direct consume is unproven",
      "state": "PRESENT_NOT_MET"
     },
@@ -1888,7 +1888,7 @@
      "must": "a source-independent complete NX whose status is not SEALED_METADATA_ONLY / NOT_FOR_PROMOTION",
      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V2.nx.json",
      "reason": "NX status='SEALED_METADATA_ONLY_NOT_FOR_PROMOTION'; metadata seal is not a complete executable",
-     "resolved_via": "headless",
+     "resolved_via": "primary_worktree",
      "state": "PRESENT_NOT_MET"
     },
     {
@@ -1896,7 +1896,7 @@
      "must": "self_contained and for_this_executable with positive complete_storage_bytes; exact-control 16.0 identity is not this ledger",
      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json",
      "reason": "ledger present but not a closed packed-NX ledger (self_contained=None, for_this_executable=None, status='MEASURED_EXACT_CONTROL_WITH_ROUTE_IO_PROFILE')",
-     "resolved_via": "headless",
+     "resolved_via": "primary_worktree",
      "state": "PRESENT_NOT_MET"
     },
     {
@@ -1904,7 +1904,7 @@
      "must": "capability preserved on an accepted complete-token runtime",
      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
      "reason": "capability not preserved (status='PASSED_STATEFUL_COMPLETE_TOKEN_ACCEPTED')",
-     "resolved_via": "headless",
+     "resolved_via": "primary_worktree",
      "state": "PRESENT_NOT_MET"
     },
     {
@@ -1912,7 +1912,7 @@
      "must": "PROTECTED_ABSOLUTE complete-token measurement; DIAGNOSTIC_RELATIVE and STATIC_ONLY cannot back a rung",
      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
      "reason": "complete-token receipt is not PROTECTED_ABSOLUTE (bench.state='UNKNOWN', authority=None)",
-     "resolved_via": "headless",
+     "resolved_via": "primary_worktree",
      "state": "PRESENT_NOT_MET"
     },
     {
@@ -1926,7 +1926,7 @@
     {
      "id": "direct_production_consume",
      "must": "production consumes the representation directly; decompress-then-ordinary-kernels / dense-parent rematerialization is refused",
-     "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_COMPLETE_V0.nx.json",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.nx.json",
      "reason": "NX status='SEALED_METADATA_ONLY_NOT_FOR_PROMOTION' is not a production consumer; direct consume is unproven",
      "state": "PRESENT_NOT_MET"
     },
@@ -1969,7 +1969,7 @@
      "must": "a source-independent complete NX whose status is not SEALED_METADATA_ONLY / NOT_FOR_PROMOTION",
      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V2.nx.json",
      "reason": "NX status='SEALED_METADATA_ONLY_NOT_FOR_PROMOTION'; metadata seal is not a complete executable",
-     "resolved_via": "headless",
+     "resolved_via": "primary_worktree",
      "state": "PRESENT_NOT_MET"
     },
     {
@@ -1977,7 +1977,7 @@
      "must": "self_contained and for_this_executable with positive complete_storage_bytes; exact-control 16.0 identity is not this ledger",
      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json",
      "reason": "ledger present but not a closed packed-NX ledger (self_contained=None, for_this_executable=None, status='MEASURED_EXACT_CONTROL_WITH_ROUTE_IO_PROFILE')",
-     "resolved_via": "headless",
+     "resolved_via": "primary_worktree",
      "state": "PRESENT_NOT_MET"
     },
     {
@@ -1985,7 +1985,7 @@
      "must": "capability preserved on an accepted complete-token runtime",
      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
      "reason": "capability not preserved (status='PASSED_STATEFUL_COMPLETE_TOKEN_ACCEPTED')",
-     "resolved_via": "headless",
+     "resolved_via": "primary_worktree",
      "state": "PRESENT_NOT_MET"
     },
     {
@@ -1993,7 +1993,7 @@
      "must": "PROTECTED_ABSOLUTE complete-token measurement; DIAGNOSTIC_RELATIVE and STATIC_ONLY cannot back a rung",
      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
      "reason": "complete-token receipt is not PROTECTED_ABSOLUTE (bench.state='UNKNOWN', authority=None)",
-     "resolved_via": "headless",
+     "resolved_via": "primary_worktree",
      "state": "PRESENT_NOT_MET"
     },
     {
@@ -2007,7 +2007,7 @@
     {
      "id": "direct_production_consume",
      "must": "production consumes the representation directly; decompress-then-ordinary-kernels / dense-parent rematerialization is refused",
-     "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_COMPLETE_V0.nx.json",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.nx.json",
      "reason": "NX status='SEALED_METADATA_ONLY_NOT_FOR_PROMOTION' is not a production consumer; direct consume is unproven",
      "state": "PRESENT_NOT_MET"
     },
@@ -2050,7 +2050,7 @@
      "must": "a source-independent complete NX whose status is not SEALED_METADATA_ONLY / NOT_FOR_PROMOTION",
      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V2.nx.json",
      "reason": "NX status='SEALED_METADATA_ONLY_NOT_FOR_PROMOTION'; metadata seal is not a complete executable",
-     "resolved_via": "headless",
+     "resolved_via": "primary_worktree",
      "state": "PRESENT_NOT_MET"
     },
     {
@@ -2058,7 +2058,7 @@
      "must": "self_contained and for_this_executable with positive complete_storage_bytes; exact-control 16.0 identity is not this ledger",
      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json",
      "reason": "ledger present but not a closed packed-NX ledger (self_contained=None, for_this_executable=None, status='MEASURED_EXACT_CONTROL_WITH_ROUTE_IO_PROFILE')",
-     "resolved_via": "headless",
+     "resolved_via": "primary_worktree",
      "state": "PRESENT_NOT_MET"
     },
     {
@@ -2066,7 +2066,7 @@
      "must": "capability preserved on an accepted complete-token runtime",
      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
      "reason": "capability not preserved (status='PASSED_STATEFUL_COMPLETE_TOKEN_ACCEPTED')",
-     "resolved_via": "headless",
+     "resolved_via": "primary_worktree",
      "state": "PRESENT_NOT_MET"
     },
     {
@@ -2074,7 +2074,7 @@
      "must": "PROTECTED_ABSOLUTE complete-token measurement; DIAGNOSTIC_RELATIVE and STATIC_ONLY cannot back a rung",
      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
      "reason": "complete-token receipt is not PROTECTED_ABSOLUTE (bench.state='UNKNOWN', authority=None)",
-     "resolved_via": "headless",
+     "resolved_via": "primary_worktree",
      "state": "PRESENT_NOT_MET"
     },
     {
@@ -2088,7 +2088,7 @@
     {
      "id": "direct_production_consume",
      "must": "production consumes the representation directly; decompress-then-ordinary-kernels / dense-parent rematerialization is refused",
-     "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_COMPLETE_V0.nx.json",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.nx.json",
      "reason": "NX status='SEALED_METADATA_ONLY_NOT_FOR_PROMOTION' is not a production consumer; direct consume is unproven",
      "state": "PRESENT_NOT_MET"
     },
@@ -2131,7 +2131,7 @@
      "must": "a source-independent complete NX whose status is not SEALED_METADATA_ONLY / NOT_FOR_PROMOTION",
      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V2.nx.json",
      "reason": "NX status='SEALED_METADATA_ONLY_NOT_FOR_PROMOTION'; metadata seal is not a complete executable",
-     "resolved_via": "headless",
+     "resolved_via": "primary_worktree",
      "state": "PRESENT_NOT_MET"
     },
     {
@@ -2139,7 +2139,7 @@
      "must": "self_contained and for_this_executable with positive complete_storage_bytes; exact-control 16.0 identity is not this ledger",
      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json",
      "reason": "ledger present but not a closed packed-NX ledger (self_contained=None, for_this_executable=None, status='MEASURED_EXACT_CONTROL_WITH_ROUTE_IO_PROFILE')",
-     "resolved_via": "headless",
+     "resolved_via": "primary_worktree",
      "state": "PRESENT_NOT_MET"
     },
     {
@@ -2147,7 +2147,7 @@
      "must": "capability preserved on an accepted complete-token runtime",
      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
      "reason": "capability not preserved (status='PASSED_STATEFUL_COMPLETE_TOKEN_ACCEPTED')",
-     "resolved_via": "headless",
+     "resolved_via": "primary_worktree",
      "state": "PRESENT_NOT_MET"
     },
     {
@@ -2155,7 +2155,7 @@
      "must": "PROTECTED_ABSOLUTE complete-token measurement; DIAGNOSTIC_RELATIVE and STATIC_ONLY cannot back a rung",
      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
      "reason": "complete-token receipt is not PROTECTED_ABSOLUTE (bench.state='UNKNOWN', authority=None)",
-     "resolved_via": "headless",
+     "resolved_via": "primary_worktree",
      "state": "PRESENT_NOT_MET"
     },
     {
@@ -2169,7 +2169,7 @@
     {
      "id": "direct_production_consume",
      "must": "production consumes the representation directly; decompress-then-ordinary-kernels / dense-parent rematerialization is refused",
-     "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_COMPLETE_V0.nx.json",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.nx.json",
      "reason": "NX status='SEALED_METADATA_ONLY_NOT_FOR_PROMOTION' is not a production consumer; direct consume is unproven",
      "state": "PRESENT_NOT_MET"
     },
@@ -2221,7 +2221,7 @@
   "Seven EBPW types imported from flash_nr_complete; mixed arithmetic still raises CategoryError; none redefined here."
  ],
  "gpu_authority": false,
- "head": "36691aa32412e3cc38b3f9f7d2575e1d59e9cff4",
+ "head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
  "measurement_class": "STATIC_ONLY",
  "negative_findings": [
   {
@@ -2230,7 +2230,7 @@
    "value": null
   },
   {
-   "found": "nx_v0 resolved_via=pinned; metadata seals are not complete executables",
+   "found": "nx_v0 resolved_via=primary_worktree; metadata seals are not complete executables",
    "looked_for": "a source-independent complete NX"
   },
   {
@@ -2890,12 +2890,12 @@
   "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_META_COHERENCE_SCREEN_L4_REAL256.json",
   "physical_ebpw": null,
   "reachable": true,
-  "resolved_via": "pinned",
+  "resolved_via": "primary_worktree",
   "status": "OFFLINE_META_SURFACE_GATE_FAILED",
   "surface_gate_pass": false,
   "why_this_is_not_a_win": "A diagnostic factor bpw below 1 sat alongside a held-out error far above contract. Smaller number, representation that does not work."
  },
- "seal_sha256": "93b6862829460fedcd2175716eef62235abd3663ee8dc69c13936c61db6c06b8",
+ "seal_sha256": "07c38531af856d2b7a37d8f310144f9d2bfb5a9131c89fec6db7f63e3913eb28",
  "selftest": {
   "above_target_verdict": "REFUSED",
   "all_six_wrong_classes_refused": true,
@@ -2965,9 +2965,9 @@
   },
   "serialized_nr_information": {
    "category": "serialized_nr_information",
-   "evidence": "packed NR information payload is NOT_BUILT; composition document resolved_via=pinned path=/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_COMPLETE_V2.nr.json; document bytes are not serialized_nr_information",
+   "evidence": "packed NR information payload is NOT_BUILT; composition document resolved_via=primary_worktree path=/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V2.nr.json; document bytes are not serialized_nr_information",
    "present": false,
-   "source": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_COMPLETE_V2.nr.json",
+   "source": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V2.nr.json",
    "unit": "bytes of a packed NR information payload (not a composition document; not source-control EBPW)",
    "value": null
   },

@@ -10,12 +10,12 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T05:26:33Z",
+  "recorded_at": "2026-09-02T09:25:32Z",
   "recorded_by": "tools/future/ebpw_categories.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
- "branch": "odyssey-i",
+ "branch": "grok/s4-tools-future-under-10s-20260902-045214",
  "categories": {
   "compile_time_nr_bytes": {
    "interchangeable": false,
@@ -56,7 +56,7 @@
   "Active-bytes accounting is five separate fields; collapsing them raises.",
   "Validator is GREEN on honest FLASH_META_REPRESENTATION_SUB1 and REFUSED on a synthetic promotion variant."
  ],
- "head": "7f3f1ffc5bce328d4fa3e2cdf84cb369d8033e39",
+ "head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
  "integration": {
   "can_promote": "can_promote(ledger: PromotionLedger | Mapping) -> tuple[bool, str]",
   "extract_ledger": "extract_ledger(doc: Mapping, source_path: str | None = None) -> PromotionLedger",
@@ -108,7 +108,7 @@
      "value": null
     }
    },
-   "resolved_via": "local",
+   "resolved_via": "primary_worktree",
    "schema": "hawking.flash.meta_representation.v1",
    "status": "PROSPECTIVE_META_ONLY",
    "verdict": "GREEN"
@@ -156,7 +156,7 @@
      "value": null
     }
    },
-   "resolved_via": "local",
+   "resolved_via": "primary_worktree",
    "schema": "hawking.flash.complete_nr.v2",
    "status": "COMPLETE_HETEROGENEOUS_CANDIDATE_NOT_FOR_PROMOTION",
    "verdict": "GREEN"
@@ -205,7 +205,7 @@
      "value": null
     }
    },
-   "resolved_via": "local",
+   "resolved_via": "primary_worktree",
    "schema": "hawking.flash.nx_genome.v1",
    "status": "SEALED_METADATA_ONLY_NOT_FOR_PROMOTION",
    "verdict": "GREEN"
@@ -253,7 +253,7 @@
      "value": null
     }
    },
-   "resolved_via": "local",
+   "resolved_via": "primary_worktree",
    "schema": "hawking.flash.complete_byte_ledger.v1",
    "status": "MEASURED_EXACT_CONTROL_WITH_ROUTE_IO_PROFILE",
    "verdict": "GREEN"
@@ -301,7 +301,7 @@
      "value": null
     }
    },
-   "resolved_via": "local",
+   "resolved_via": "primary_worktree",
    "schema": "hcli.agentos.flash_ebpw_budget.v1",
    "status": "PLANNED_UNTIL_VERIFIED_BODY",
    "verdict": "GREEN"
@@ -349,7 +349,7 @@
      "value": null
     }
    },
-   "resolved_via": "local",
+   "resolved_via": "primary_worktree",
    "schema": "hawking.odyssey.ebpw_namespace_separation.v1",
    "status": null,
    "verdict": "GREEN"
@@ -397,7 +397,7 @@
      "value": null
     }
    },
-   "resolved_via": "local",
+   "resolved_via": "primary_worktree",
    "schema": "hawking.ascension.qwen80_bit_budget_ledger.v1",
    "status": "BUDGET_ENVELOPE_ONLY_NO_ARTIFACT_PACKED_YET",
    "verdict": "GREEN"
@@ -475,7 +475,7 @@
   }
  ],
  "schema": "hawking.future.ebpw_categories.v1",
- "seal_sha256": "028137c31d879ad94449ad645e806f0b2b694fc01fed0ff21e0bde5bdf6ce6b1",
+ "seal_sha256": "de306f037a93e50e5f3b3e87f39ad0bad3f77ca04791cd83ad81b801a0f035a6",
  "selftest": {
   "cross_category_arithmetic_message": "refused prospective_meta_bpw + complete_physical_ebpw: EBPW categories are not interchangeable",
   "cross_category_arithmetic_raises": true,
@@ -490,7 +490,7 @@
     "prospective_meta_bpw": true,
     "serialized_meta_bytes": false
    },
-   "resolved_via": "local",
+   "resolved_via": "primary_worktree",
    "verdict": "GREEN"
   },
   "honest_flash_meta_green": true,

@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:08:05Z",
+  "recorded_at": "2026-09-02T09:38:57Z",
   "recorded_by": "tools/future/nx_packer.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -26,122 +26,7 @@
  "evidence_class": "STATIC_ONLY",
  "gpu_authority": false,
  "is_a_measurement": false,
- "live_packed_nx": {
-  "billing": {
-   "all_required_bytes_included": true,
-   "categories": {
-    "generators": {
-     "bytes": 0,
-     "n_parts": 1,
-     "parts": [
-      "parts/generators/ABSENT"
-     ],
-     "runtime_required": false
-    },
-    "metadata": {
-     "bytes": 10697,
-     "n_parts": 3,
-     "parts": [
-      "parts/metadata/tokenizer_config.json",
-      "parts/metadata/config.json",
-      "parts/metadata/generation_config.json"
-     ],
-     "runtime_required": true
-    },
-    "model_specific_code": {
-     "bytes": 101024,
-     "n_parts": 6,
-     "parts": [
-      "parts/model_specific_code/embed.762d07047de9d713.mtlarchive",
-      "parts/model_specific_code/gqa_attention.4db31146e49c1ed3.mtlarchive",
-      "parts/model_specific_code/lm_head.e8463decefa97cf0.mtlarchive",
-      "parts/model_specific_code/mlp_down.78d8cb856a6d8e6e.mtlarchive",
-      "parts/model_specific_code/mlp_gate_up.9a2e9787c132ef32.mtlarchive",
-      "parts/model_specific_code/rmsnorm.f76e5d8e8d84e03b.mtlarchive"
-     ],
-     "runtime_required": true
-    },
-    "nr": {
-     "bytes": 0,
-     "n_parts": 1,
-     "parts": [
-      "parts/nr/ABSENT"
-     ],
-     "runtime_required": false
-    },
-    "representation": {
-     "bytes": 1503300328,
-     "n_parts": 1,
-     "parts": [
-      "parts/representation/model.safetensors"
-     ],
-     "runtime_required": true
-    },
-    "residuals": {
-     "bytes": 0,
-     "n_parts": 1,
-     "parts": [
-      "parts/residuals/ABSENT"
-     ],
-     "runtime_required": false
-    },
-    "state_auxiliaries": {
-     "bytes": 0,
-     "n_parts": 1,
-     "parts": [
-      "parts/state_auxiliaries/ABSENT"
-     ],
-     "runtime_required": false
-    },
-    "tables": {
-     "bytes": 15871340,
-     "n_parts": 3,
-     "parts": [
-      "parts/tables/tokenizer.json",
-      "parts/tables/merges.txt",
-      "parts/tables/vocab.json"
-     ],
-     "runtime_required": true
-    }
-   },
-   "complete_system": true,
-   "n_parts": 17,
-   "parts_sum_bytes": 1519283389,
-   "reconciles": true,
-   "status": "CLOSED",
-   "total_bytes": 1519283389
-  },
-  "closure_sha256": "36e5555e200eadb47f10b3d1f70623a74818faac39588f854b77f19352fb6122",
-  "compiled_organs": [
-   "embed",
-   "gqa_attention",
-   "lm_head",
-   "mlp_down",
-   "mlp_gate_up",
-   "rmsnorm"
-  ],
-  "n_compiled_organs": 6,
-  "part_hashes": {
-   "parts/metadata/config.json": "660db3b73d788119c04535e48cf9be5f55bc3100841a718637ae695b442f27dd",
-   "parts/metadata/generation_config.json": "2325da0f15bb848e018c5ae071b7943332e9f871d6b60e2ed22ca97d4cb993d2",
-   "parts/metadata/tokenizer_config.json": "d5d09f07b48c3086c508b30d1c9114bd1189145b74e982a265350c923acd8101",
-   "parts/model_specific_code/embed.762d07047de9d713.mtlarchive": "762d07047de9d71339dd04f321830a493a719925a79adae3ecacdc54e7244bcb",
-   "parts/model_specific_code/gqa_attention.4db31146e49c1ed3.mtlarchive": "4db31146e49c1ed3b7d8d7e5e5962bd43d180c466a28455d4ecd1b15fc8a745f",
-   "parts/model_specific_code/lm_head.e8463decefa97cf0.mtlarchive": "e8463decefa97cf0f0f1d34f555fbcd72a92c8081ef40af23d3fd0b6c929c025",
-   "parts/model_specific_code/mlp_down.78d8cb856a6d8e6e.mtlarchive": "78d8cb856a6d8e6e895829c32c77d0381e7cd9e7fcc68785c85ea912e4838980",
-   "parts/model_specific_code/mlp_gate_up.9a2e9787c132ef32.mtlarchive": "9a2e9787c132ef329c8a392110591d194866b13e9a330e3324bba0ac168929a3",
-   "parts/model_specific_code/rmsnorm.f76e5d8e8d84e03b.mtlarchive": "f76e5d8e8d84e03b3c03086931b9ab5d3786452462f01754089ff54ca779e426",
-   "parts/representation/model.safetensors": "f47f71177f32bcd101b7573ec9171e6a57f4f4d31148d38e382306f42996874b",
-   "parts/tables/merges.txt": "8831e4f1a044471340f7c0a83d7bd71306a5b867e95fd870f74d0c5308a904d5",
-   "parts/tables/tokenizer.json": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
-   "parts/tables/vocab.json": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910"
-  },
-  "root": "/Users/scammermike/Downloads/hawking/artifacts/nx/Qwen--Qwen3-0.6B@c1899de289a0",
-  "source_independent": true,
-  "specimen_id": "Qwen--Qwen3-0.6B@c1899de289a0",
-  "status": "SOURCE_INDEPENDENT_COMPLETE",
-  "total_bytes": 1519283389
- },
+ "live_packed_nx": null,
  "measurement_class": "STATIC_ONLY",
  "packer_callable": true,
  "purpose": "Generic NX packer: copy every runtime-required byte out of an arbitrary specimen's compiled fragment into a source-independent packed NX, bill them, and refuse a renamed source pointer / placeholder organ / missing metallib / billing mismatch",
@@ -153,6 +38,6 @@
  ],
  "replaces": "tools/headless/first_noetic_executable.py (Qwen3.8-27B hardlink mix)",
  "schema": "hawking.future.nx_packer.v1",
- "seal_sha256": "313fcf624704ac6466f9787647ef9bbd62c44422f3b2c9edfd409f4603d119eb",
+ "seal_sha256": "62a1b9e3d46c7c534eca414c79351075617edbca96be6faeb70f1febfc4bd78d",
  "version": 1
 }

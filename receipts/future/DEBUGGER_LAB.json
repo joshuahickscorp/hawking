@@ -26,7 +26,7 @@
    "xcodebuild: /Applications/Xcode.app is absent",
    "xcodebuild: active developer directory is CommandLineTools (/Library/Developer/CommandLineTools); full Xcode is required for xcodebuild",
    "xcodebuild: xcodebuild unavailable: xcode-select: error: tool 'xcodebuild' requires Xcode, but active developer directory '/Library/Developer/CommandLineTools' is a command line tools instance",
-   "lldb: lldb cannot launch a process: error: process exited with status -1 (attach failed (Not allowed to attach to process.  Look in the console messages (Console.app), near the debugserver entries, when the attach failed.  The subsystem that denied the attach permission will likely have logged an informative message about why it was denied.)) (SIP/sandbox; matches receipts/headless NOETIC_EXECUTABLE_CLOSURE)",
+   "lldb: lldb cannot launch a process: error: Operation not permitted (SIP/sandbox; matches receipts/headless NOETIC_EXECUTABLE_CLOSURE)",
    "metal_compilation: Metal compiler absent: xcrun: error: unable to find utility \"metal\", not a developer tool or in PATH",
    "metal_compilation: metallib absent: xcrun: error: unable to find utility \"metallib\", not a developer tool or in PATH",
    "metal_compilation: metal-source absent: xcrun: error: unable to find utility \"metal-source\", not a developer tool or in PATH",
@@ -138,7 +138,7 @@
      ],
      "ok": false,
      "returncode": 1,
-     "stderr": "error: process exited with status -1 (attach failed (Not allowed to attach to process.  Look in the console messages (Console.app), near the debugserver entries, when the attach failed.  The subsystem that denied the attach permission will likely have logged an informative message about why it was denied.))",
+     "stderr": "error: Operation not permitted",
      "stdout": "(lldb) target create \"/bin/echo\"\nCurrent executable set to '/bin/echo' (arm64e).\n(lldb) settings set -- target.run-args  \"hawking-debugger-lab-probe\"\n(lldb) process launch --stop-at-entry"
     },
     "locator": {
@@ -151,7 +151,7 @@
      "xcrun_stderr": null
     },
     "missing": [
-     "lldb cannot launch a process: error: process exited with status -1 (attach failed (Not allowed to attach to process.  Look in the console messages (Console.app), near the debugserver entries, when the attach failed.  The subsystem that denied the attach permission will likely have logged an informative message about why it was denied.)) (SIP/sandbox; matches receipts/headless NOETIC_EXECUTABLE_CLOSURE)"
+     "lldb cannot launch a process: error: Operation not permitted (SIP/sandbox; matches receipts/headless NOETIC_EXECUTABLE_CLOSURE)"
     ],
     "name": "lldb",
     "present": [
@@ -385,7 +385,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T07:03:35Z",
+  "recorded_at": "2026-09-02T09:50:45Z",
   "recorded_by": "tools/future/debugger.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -478,7 +478,7 @@
   "missing: xcodebuild: /Applications/Xcode.app is absent",
   "missing: xcodebuild: active developer directory is CommandLineTools (/Library/Developer/CommandLineTools); full Xcode is required for xcodebuild",
   "missing: xcodebuild: xcodebuild unavailable: xcode-select: error: tool 'xcodebuild' requires Xcode, but active developer directory '/Library/Developer/CommandLineTools' is a command line tools instance",
-  "missing: lldb: lldb cannot launch a process: error: process exited with status -1 (attach failed (Not allowed to attach to process.  Look in the console messages (Console.app), near the debugserver entries, when the attach failed.  The subsystem that denied the attach permission will likely have logged an informative message about why it was denied.)) (SIP/sandbox; matches receipts/headless NOETIC_EXECUTABLE_CLOSURE)",
+  "missing: lldb: lldb cannot launch a process: error: Operation not permitted (SIP/sandbox; matches receipts/headless NOETIC_EXECUTABLE_CLOSURE)",
   "missing: metal_compilation: Metal compiler absent: xcrun: error: unable to find utility \"metal\", not a developer tool or in PATH",
   "missing: metal_compilation: metallib absent: xcrun: error: unable to find utility \"metallib\", not a developer tool or in PATH",
   "missing: metal_compilation: metal-source absent: xcrun: error: unable to find utility \"metal-source\", not a developer tool or in PATH",
@@ -581,52 +581,52 @@
   },
   {
    "in_git_head": true,
-   "on_disk": true,
+   "on_disk": false,
    "path": "hcli/tool_registry.py",
    "role": "AgentOS typed tools; no debugger operations registered. HCLI_TOOL_DESCRIPTOR is the integration swap, not a write into hcli/",
-   "source": "ON_DISK"
+   "source": "GIT_HEAD"
   },
   {
    "in_git_head": true,
-   "on_disk": true,
+   "on_disk": false,
    "path": "hcli/providers.py",
    "role": "model-provider contract; not a process debugger",
-   "source": "ON_DISK"
+   "source": "GIT_HEAD"
   },
   {
    "in_git_head": true,
-   "on_disk": true,
+   "on_disk": false,
    "path": "hcli/vmcp_adapter.py",
    "role": "VisionMCP adapter; no debugger surface",
-   "source": "ON_DISK"
+   "source": "GIT_HEAD"
   },
   {
    "in_git_head": true,
-   "on_disk": true,
+   "on_disk": false,
    "path": "hcli/vmcp/__init__.py",
    "role": "VisionMCP package marker",
-   "source": "ON_DISK"
+   "source": "GIT_HEAD"
   },
   {
    "in_git_head": true,
-   "on_disk": true,
+   "on_disk": false,
    "path": "hcli/workunit.py",
    "role": "HCLI WorkUnit field set this module emits into",
-   "source": "ON_DISK"
+   "source": "GIT_HEAD"
   },
   {
    "in_git_head": true,
-   "on_disk": true,
+   "on_disk": false,
    "path": "hcli/agentos/preboard.py",
    "role": "AgentOS preboard analog; not an XDebugger",
-   "source": "ON_DISK"
+   "source": "GIT_HEAD"
   },
   {
    "in_git_head": true,
-   "on_disk": true,
+   "on_disk": false,
    "path": "hcli/agentos/runtime.py",
    "role": "AgentOS runtime; not a debugger provider",
-   "source": "ON_DISK"
+   "source": "GIT_HEAD"
   },
   {
    "in_git_head": true,
@@ -637,17 +637,17 @@
   },
   {
    "in_git_head": true,
-   "on_disk": true,
+   "on_disk": false,
    "path": "receipts/headless/NOETIC_EXECUTABLE_CLOSURE.json",
    "role": "pinned lldb SIP/sandbox finding",
-   "source": "ON_DISK"
+   "source": "GIT_HEAD"
   },
   {
    "in_git_head": true,
-   "on_disk": true,
+   "on_disk": false,
    "path": "receipts/headless/GPU_LEDGER.json",
    "role": "Xcode GPU debugger is out of band; Apple Metal does not report register file pressure",
-   "source": "ON_DISK"
+   "source": "GIT_HEAD"
   },
   {
    "in_git_head": true,
@@ -665,10 +665,10 @@
   },
   {
    "in_git_head": true,
-   "on_disk": true,
+   "on_disk": false,
    "path": "receipts/future/FUTURE_SUBSTRATE_HANDOFF.json",
    "role": "sidecar inventory + active_processes used as Codex pid denylist seed",
-   "source": "ON_DISK"
+   "source": "GIT_HEAD"
   },
   {
    "in_git_head": true,
@@ -939,7 +939,7 @@
     "assigned_runtime": null,
     "attempts": 0,
     "backend_task_id": null,
-    "blocked_reason": "lldb cannot launch a process: error: process exited with status -1 (attach failed (Not allowed to attach to process.  Look in the console messages (Console.app), near the debugserver entries, when the attach failed.  The subsystem that denied the attach permission will likely have logged an informative message about why it was denied.)) (SIP/sandbox; matches receipts/headless NOETIC_EXECUTABLE_CLOSURE)",
+    "blocked_reason": "lldb cannot launch a process: error: Operation not permitted (SIP/sandbox; matches receipts/headless NOETIC_EXECUTABLE_CLOSURE)",
     "candidate_status": "SLEEPING",
     "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative. SLEEPING units wake when the named Apple tool becomes available. They never become a synthetic debugger result.",
     "classification": "SLEEPING",
@@ -948,9 +948,9 @@
      "tools/future/debugger.py",
      "--probe"
     ],
-    "content_hash": "bdafcbf36adad4786ee66558a554e1c078bae860fa7ad1a707b5aaddaa7d48aa",
+    "content_hash": "926f3045fe0416acde0393f5435c9118174539541884f3ef9614b210ee14b4fe",
     "dependencies": [],
-    "description": "SLEEPING: lldb lab work. Wakes when the Apple toolchain qualifies. Never becomes a synthetic result. Missing: lldb cannot launch a process: error: process exited with status -1 (attach failed (Not allowed to attach to process.  Look in the console messages (Console.app), near the debugserver entries, when the attach failed.  The subsystem that denied the attach permission will likely have logged an informative message about why it was denied.)) (SIP/sandbox; matches receipts/headless NOETIC_EXECUTABLE_CLOSURE)",
+    "description": "SLEEPING: lldb lab work. Wakes when the Apple toolchain qualifies. Never becomes a synthetic result. Missing: lldb cannot launch a process: error: Operation not permitted (SIP/sandbox; matches receipts/headless NOETIC_EXECUTABLE_CLOSURE)",
     "effect_class": "READ_ONLY",
     "failure_context": null,
     "finished_at": null,
@@ -1230,17 +1230,11 @@
    "accelerator_runner",
    "tools/accelerator"
   ],
-  "codex_pids_from_handoff": [
-   1131,
-   16941,
-   21666,
-   22436,
-   98220
-  ],
+  "codex_pids_from_handoff": [],
   "memory_inspection": "read-only"
  },
  "schema": "hawking.future.debugger.v1",
- "seal_sha256": "3ff44cd9f01b019db2255d1609d7f5a69da49acefb845077540cfb91ac1bc98c",
+ "seal_sha256": "aab386fcfa2c98495ffd63c165dcce8aad95cc57cedef9a3c18c611637f353b9",
  "stub_provider_available": false,
  "version": 1,
  "workunits": [
@@ -1368,7 +1362,7 @@
    "assigned_runtime": null,
    "attempts": 0,
    "backend_task_id": null,
-   "blocked_reason": "lldb cannot launch a process: error: process exited with status -1 (attach failed (Not allowed to attach to process.  Look in the console messages (Console.app), near the debugserver entries, when the attach failed.  The subsystem that denied the attach permission will likely have logged an informative message about why it was denied.)) (SIP/sandbox; matches receipts/headless NOETIC_EXECUTABLE_CLOSURE)",
+   "blocked_reason": "lldb cannot launch a process: error: Operation not permitted (SIP/sandbox; matches receipts/headless NOETIC_EXECUTABLE_CLOSURE)",
    "candidate_status": "SLEEPING",
    "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative. SLEEPING units wake when the named Apple tool becomes available. They never become a synthetic debugger result.",
    "classification": "SLEEPING",
@@ -1377,9 +1371,9 @@
     "tools/future/debugger.py",
     "--probe"
    ],
-   "content_hash": "bdafcbf36adad4786ee66558a554e1c078bae860fa7ad1a707b5aaddaa7d48aa",
+   "content_hash": "926f3045fe0416acde0393f5435c9118174539541884f3ef9614b210ee14b4fe",
    "dependencies": [],
-   "description": "SLEEPING: lldb lab work. Wakes when the Apple toolchain qualifies. Never becomes a synthetic result. Missing: lldb cannot launch a process: error: process exited with status -1 (attach failed (Not allowed to attach to process.  Look in the console messages (Console.app), near the debugserver entries, when the attach failed.  The subsystem that denied the attach permission will likely have logged an informative message about why it was denied.)) (SIP/sandbox; matches receipts/headless NOETIC_EXECUTABLE_CLOSURE)",
+   "description": "SLEEPING: lldb lab work. Wakes when the Apple toolchain qualifies. Never becomes a synthetic result. Missing: lldb cannot launch a process: error: Operation not permitted (SIP/sandbox; matches receipts/headless NOETIC_EXECUTABLE_CLOSURE)",
    "effect_class": "READ_ONLY",
    "failure_context": null,
    "finished_at": null,

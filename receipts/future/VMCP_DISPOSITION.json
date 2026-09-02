@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T03:33:04Z",
+  "recorded_at": "2026-09-02T09:39:05Z",
   "recorded_by": "tools/future/vmcp.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -217,7 +217,7 @@
     {
      "has_bus": false,
      "on_disk": false,
-     "path": "/Users/scammermike/.claude-grok/worktrees/d1-vmcp-tabula-disposition-20260901-231744/visionmcp/src"
+     "path": "/Users/scammermike/.claude-grok/worktrees/s4-tools-future-under-10s-20260902-045214/visionmcp/src"
     },
     {
      "has_bus": true,
@@ -916,17 +916,17 @@
   "receipts": {
    "census": {
     "path": "receipts/headless/VMCP_CENSUS.json",
-    "path_taken": "worktree",
+    "path_taken": "git:HEAD",
     "present": true
    },
    "integration": {
     "path": "receipts/headless/VMCP_AGENTOS_INTEGRATION.json",
-    "path_taken": "worktree",
+    "path_taken": "git:HEAD",
     "present": true
    },
    "lattice": {
     "path": "receipts/headless/VMCP_LATTICE_DISPOSITION.json",
-    "path_taken": "worktree",
+    "path_taken": "git:HEAD",
     "present": true
    }
   },
@@ -959,7 +959,7 @@
   "symbol": "tools.future.vmcp.compact_surface"
  },
  "schema": "hawking.future.vmcp.v1",
- "seal_sha256": "c43a8bac8cd18eb5a695dc55779f90c88590e21627c3c50a0704a3ba1abd1dfc",
+ "seal_sha256": "0a9f859995bee679d04d49cb0e844cc9cd9574e5bae2236e8de805681040167a",
  "selftest": {
   "n_connected_acts": 5,
   "n_organs": 10,

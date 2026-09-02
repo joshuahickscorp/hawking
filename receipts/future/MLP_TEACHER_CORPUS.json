@@ -21,9 +21,9 @@
  },
  "bench": {
   "gpu_authority": false,
-  "machine": "Apple host; CPU/MPS affine-Q2 F(X), no GPU lease",
-  "measurement_state": "DIAGNOSTIC_RELATIVE",
-  "recorded_at": "2026-09-01T06:06:06Z",
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-02T09:39:00Z",
   "recorded_by": "tools/future/mlp_teacher_corpus.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -36,267 +36,9 @@
   "plain-prose"
  ],
  "capture": {
-  "beats_nns007_scar": true,
-  "capture_elapsed_s": 13.599116292025428,
-  "claim_boundary": "DIAGNOSTIC_RELATIVE sidecar. X is real post_attn_norm from teacher-forced prefill (capture_diverse2; named Qwen3.8 teacher under NNS-006). Y is F(X)=down(silu(gate(X))*up(X)) reconstructed from the sealed-3.14 HGRAVF01 affine-Q2 tensors the resident fused-SwiGLU kernel consumes (w = float(q)*scale+bias). Y is exact for that arithmetic. X is not claimed to be the sealed residual stream: the JSONL resident does not dump hidden states, and this module refuses to substitute Gaussian X (NNS-001) or the wrong norm (CORRECTION_MLP_INPUT_TENSOR). capture_elapsed_s is process elapsed, not a GPU-lease measurement. bench.gpu_authority is false.",
-  "fusion_env": {
-   "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
-   "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
-   "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
-   "HAWKING_QWEN38_FUSE_MLP": "swiglu"
-  },
-  "layers": [
-   {
-    "layer": 3,
-    "n_rows": 11269,
-    "x_path": "workspace/ops/local/scratch/mlp_teacher_corpus/L03_x.f32",
-    "x_sha256": "00baa0e5b0193b703c8238702e1af2243a101593ea80a5b29eed8d0c5ec388ec",
-    "x_source_f16": "/Users/scammermike/Downloads/hawking/workspace/campaign/phaseB/capture_diverse2/L03.f16",
-    "x_source_f16_sha256": "55a3169b2f58cd8843c5a2e4111d4ac30dad760ae105fa260c2f1f14cbec1b74",
-    "y_path": "workspace/ops/local/scratch/mlp_teacher_corpus/L03_y.f32",
-    "y_sha256": "6a581bdc2464990df26a9e6b0807e3c73b20decef71949d9462342bf3fcb86db"
-   },
-   {
-    "layer": 31,
-    "n_rows": 11269,
-    "x_path": "workspace/ops/local/scratch/mlp_teacher_corpus/L31_x.f32",
-    "x_sha256": "94b4efa60f33ff37e83a093a656d035d966de3a93bd000b9cd924ef3726ccf15",
-    "x_source_f16": "/Users/scammermike/Downloads/hawking/workspace/campaign/phaseB/capture_diverse2/L31.f16",
-    "x_source_f16_sha256": "710a64062fb4649589fcc3d506d98d32036efaadb3ee598010cb954b091383a5",
-    "y_path": "workspace/ops/local/scratch/mlp_teacher_corpus/L31_y.f32",
-    "y_sha256": "d4b58791e9cc2dfea6f9f9b2195d60f878db3e9a9ed5122b578811260d013094"
-   },
-   {
-    "layer": 38,
-    "n_rows": 11269,
-    "x_path": "workspace/ops/local/scratch/mlp_teacher_corpus/L38_x.f32",
-    "x_sha256": "ac92446ecb711ef84dd2fda04c249b185da523d714f77e879efc82834b04f8d9",
-    "x_source_f16": "/Users/scammermike/Downloads/hawking/workspace/campaign/phaseB/capture_diverse2/L38.f16",
-    "x_source_f16_sha256": "f09b4d2fccb69ff7735516108a6578ba59bbd60b485c4fe01cf8b219f4222d8d",
-    "y_path": "workspace/ops/local/scratch/mlp_teacher_corpus/L38_y.f32",
-    "y_sha256": "53928f933050d25522991d884f531bc37f567ec1cd92d106bfef7c1a4e742fe2"
-   },
-   {
-    "layer": 63,
-    "n_rows": 11269,
-    "x_path": "workspace/ops/local/scratch/mlp_teacher_corpus/L63_x.f32",
-    "x_sha256": "70c1d60eb12d99a357ed3ed8a559c62886514f6ee775768dfbf859408f7fd81c",
-    "x_source_f16": "/Users/scammermike/Downloads/hawking/workspace/campaign/phaseB/capture_diverse2/L63.f16",
-    "x_source_f16_sha256": "c52202bcf5dc86e52bedf72e6e8909b22c268e24a8402dff57ff175dc7328d21",
-    "y_path": "workspace/ops/local/scratch/mlp_teacher_corpus/L63_y.f32",
-    "y_sha256": "8ce5c5f8e544b4c259465bd3bb951459275bf10f03810f7a484dd07f933ab15e"
-   }
-  ],
-  "n_hold_rows": 10044,
-  "n_prompts_per_domain": {
-   "code": 18,
-   "long-horizon-coherence": 8,
-   "plain-prose": 20,
-   "reasoning": 10,
-   "tool-calling": 8
-  },
-  "n_rows": 45076,
-  "n_rows_per_domain": {
-   "code": 32556,
-   "long-horizon-coherence": 2380,
-   "plain-prose": 6048,
-   "reasoning": 2464,
-   "tool-calling": 1628
-  },
-  "n_train_rows": 35032,
-  "n_train_rows_per_layer": {
-   "3": 8758,
-   "31": 8758,
-   "38": 8758,
-   "63": 8758
-  },
+  "note": "Fingerprint and guards are in this receipt. Activation payloads are written by --capture into the gitignored payload_dir. pytest does not run the GEMM.",
   "payload_dir": "workspace/ops/local/scratch/mlp_teacher_corpus",
-  "position_bands": {
-   "early": 15120,
-   "late": 15032,
-   "middle": 14924
-  },
-  "rank32_overdetermined": true,
-  "representatives": {
-   "chosen": [
-    {
-     "H_q_down": 1.8732330611763028,
-     "H_q_gate": 1.873613129372985,
-     "H_q_mean": 1.873333582066703,
-     "H_q_up": 1.873154555650821,
-     "delta_from_global_mean": 0.0031713318766357634,
-     "layer": 3,
-     "mixer": "full_attention",
-     "role": "first_full_attention",
-     "why": "First full-attention (GQA) layer. Mixer-class contrast against the 48 linear-attention MLPs; independently the stack entropy maximum (H_q_mean=1.873334)."
-    },
-    {
-     "H_q_down": 1.8677754979112966,
-     "H_q_gate": 1.8681617723539965,
-     "H_q_mean": 1.8673360209824894,
-     "H_q_up": 1.8660707926821751,
-     "delta_from_global_mean": -0.0028262292075778017,
-     "layer": 31,
-     "mixer": "full_attention",
-     "role": "nns015_mid_full",
-     "why": "Layer 31 is the NNS-015 named surface (down_proj L31, real post_swiglu X). Mid-depth full-attention; H(q) sits below the global mean (delta=-0.002826)."
-    },
-    {
-     "H_q_down": 1.8706447767676493,
-     "H_q_gate": 1.8709887748369747,
-     "H_q_mean": 1.8701870292370277,
-     "H_q_up": 1.8689275361064592,
-     "delta_from_global_mean": 2.4779046960521356e-05,
-     "layer": 38,
-     "mixer": "linear_attention",
-     "role": "typical",
-     "why": "Closest H(q) to the 64-layer mean (1.870162 bits) among layers other than 0. Layer 0 is a high-entropy outlier (H_q_mean=1.873140, delta=+0.002978) and is not typical."
-    },
-    {
-     "H_q_down": 1.8502978255791103,
-     "H_q_gate": 1.8691888211143635,
-     "H_q_mean": 1.8633490107269008,
-     "H_q_up": 1.8705603854872295,
-     "delta_from_global_mean": -0.006813239463166365,
-     "layer": 63,
-     "mixer": "full_attention",
-     "role": "last_layer_entropy_min",
-     "why": "Last layer. Depth-axis pole. Independently the stack entropy minimum (H_q_mean=1.863349, driven by mlp.down H_q=1.850298)."
-    }
-   ],
-   "chosen_layers": [
-    3,
-    31,
-    38,
-    63
-   ],
-   "global_H_q_mean": 1.8701622501900672,
-   "layer0": {
-    "H_q_mean": 1.8731400426538949,
-    "delta_from_global_mean": 0.0029777924638276776,
-    "layer": 0,
-    "mixer": "linear_attention",
-    "typical": false,
-    "why_not_typical": "Layer 0 mean H(q) is above the later-layer mean (MLP_CODE_INFORMATION answers.are_some_rows_or_layers_lower_entropy). Using it as 'the MLP' is the default this corpus exists to refuse."
-   },
-   "n_full_attention": 16,
-   "n_linear_attention": 48
-  },
-  "rows_jsonl": "workspace/ops/local/scratch/mlp_teacher_corpus/rows.jsonl",
-  "rows_jsonl_sha256": "1072d78380b0bec634f0b981ff2e445dfeeb264bf8f77ae112bcda2b89200dba",
-  "rows_per_dimension_all": 8.80390625,
-  "rows_per_dimension_train": 1.710546875,
-  "rows_per_dimension_train_per_layer": {
-   "3": 1.710546875,
-   "31": 1.710546875,
-   "38": 1.710546875,
-   "63": 1.710546875
-  },
-  "rows_per_dimension_train_pooled": 6.8421875,
-  "schema": "hawking.future.mlp_teacher_corpus.capture.v1",
-  "specimen": {
-   "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
-   "fusion_env": {
-    "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
-    "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
-    "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
-    "HAWKING_QWEN38_FUSE_MLP": "swiglu"
-   },
-   "geometry": {
-    "hidden_size": 5120,
-    "intermediate_size": 17408,
-    "num_hidden_layers": 64
-   },
-   "model_id": "qwen3.8-27b-sealed-3.14",
-   "pinned_revision": "b087a0606c9a5f45b0468f91c017aed36a53931c",
-   "protocol": "hawking.qwen38.resident.v1",
-   "require_fusion_env": true,
-   "resident_binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release/examples/ascension_qwen38_resident",
-   "resident_binary_sha256": "6a548bb54a092c77dcedbf15ead67120aa39b7961cfa5c0758a0af465936119d",
-   "resident_identity": "sealed-3.14",
-   "seal_source": "hcli/hawking-native.sealed-3.14.json",
-   "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json"
-  },
-  "split": {
-   "disjoint": true,
-   "hold_frac": 0.25,
-   "hold_prompt_ids": [
-    "code:14",
-    "code:15",
-    "code:16",
-    "code:17",
-    "dialogue:06",
-    "dialogue:07",
-    "instruction:06",
-    "instruction:07",
-    "math:08",
-    "math:09",
-    "prose:07",
-    "prose:08",
-    "prose:09",
-    "prose:10",
-    "prose:11"
-   ],
-   "n_hold_prompts": 15,
-   "n_train_prompts": 49,
-   "train_prompt_ids": [
-    "code:00",
-    "code:01",
-    "code:02",
-    "code:03",
-    "code:04",
-    "code:05",
-    "code:06",
-    "code:07",
-    "code:08",
-    "code:09",
-    "code:10",
-    "code:11",
-    "code:12",
-    "code:13",
-    "dialogue:00",
-    "dialogue:01",
-    "dialogue:02",
-    "dialogue:03",
-    "dialogue:04",
-    "dialogue:05",
-    "instruction:00",
-    "instruction:01",
-    "instruction:02",
-    "instruction:03",
-    "instruction:04",
-    "instruction:05",
-    "math:00",
-    "math:01",
-    "math:02",
-    "math:03",
-    "math:04",
-    "math:05",
-    "math:06",
-    "math:07",
-    "multilingual:00",
-    "multilingual:01",
-    "multilingual:02",
-    "multilingual:03",
-    "multilingual:04",
-    "multilingual:05",
-    "multilingual:06",
-    "multilingual:07",
-    "prose:00",
-    "prose:01",
-    "prose:02",
-    "prose:03",
-    "prose:04",
-    "prose:05",
-    "prose:06"
-   ],
-   "unit": "prompt_id"
-  },
-  "status": "captured",
-  "x_capture_dir": "/Users/scammermike/Downloads/hawking/workspace/campaign/phaseB/capture_diverse2",
-  "x_input": "post_attn_norm",
-  "x_manifest_sha256": "8dd9de6b6dc76673e70936f5e316e7c386affd64dc1fc8ddc6c6bdb82e5209db",
-  "y_function": "down(silu(gate(x))*up(x)) affine-Q2 HGRAVF01"
+  "status": "not_run"
  },
  "claim_boundary": "DIAGNOSTIC_RELATIVE sidecar. X is real post_attn_norm from teacher-forced prefill (capture_diverse2; named Qwen3.8 teacher under NNS-006). Y is F(X)=down(silu(gate(X))*up(X)) reconstructed from the sealed-3.14 HGRAVF01 affine-Q2 tensors the resident fused-SwiGLU kernel consumes (w = float(q)*scale+bias). Y is exact for that arithmetic. X is not claimed to be the sealed residual stream: the JSONL resident does not dump hidden states, and this module refuses to substitute Gaussian X (NNS-001) or the wrong norm (CORRECTION_MLP_INPUT_TENSOR). capture_elapsed_s is process elapsed, not a GPU-lease measurement. bench.gpu_authority is false.",
  "era_vocabulary": {
@@ -1063,7 +805,7 @@
   "NNS-015": "Layer 31 down_proj is the named distillation surface; included."
  },
  "schema": "hawking.future.mlp_teacher_corpus.v1",
- "seal_sha256": "14ff22d6d66a00918b86989e5872c648eabcb5291940d27729f9a6e4f52d0496",
+ "seal_sha256": "d28a900d6c83dcd530870c0bb1456d2b6ce4138bfd1d9654c73ec1e3a33bc280",
  "selftest": {
   "chosen_layers": [
    3,
@@ -1114,7 +856,7 @@
    "num_hidden_layers": 64
   },
   "model_id": "qwen3.8-27b-sealed-3.14",
-  "pinned_revision": "b087a0606c9a5f45b0468f91c017aed36a53931c",
+  "pinned_revision": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
   "protocol": "hawking.qwen38.resident.v1",
   "require_fusion_env": true,
   "resident_binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release/examples/ascension_qwen38_resident",
