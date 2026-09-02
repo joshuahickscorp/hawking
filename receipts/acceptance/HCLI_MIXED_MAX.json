@@ -27,12 +27,12 @@
   "grok_pool_snapshot": {
     "admitted": 1,
     "admitted_source": "fallback",
-    "active": 17,
+    "active": 0,
     "queued": 0,
-    "done": 537,
+    "done": 554,
     "failed": 14,
     "stale": 14,
-    "latency_s": 786.8256587982178,
+    "latency_s": null,
     "throttle": "   \"input_tokens\": 242957,\n    \"cache_read_input_tokens\": 10197504,\n    \"cache_creation_input_tokens\": 0,\n    \"output_tokens\": 53323,\n    \"reasoning_tokens\": 48425,\n    \"total_tokens\": 10493784\n  },\n "
   },
   "llama_ports_socket": {
@@ -54,13 +54,13 @@
   "verdict": "BLOCKED",
   "blocker": "no llama-server is listening (socket probe {8080: False, 8081: False, 52484: False, 8088: False, 8090: False}, lsof_port=None, lsof_error=None). A mixed campaign without a cognition backend is the CPU-only campaign again; tools/headless/hcli_true_mixed_max.py refuses that substitution and so does this lane. Failure isolation is recorded under BACKEND_FAILURE_ISOLATION, not here.",
   "output": {
-    "grok_active": 17,
+    "grok_active": 0,
     "grok_admitted": 1,
     "grok_failed": 14
   },
   "schema": "hawking.acceptance.gate.v1",
   "gate": "HCLI_MIXED_MAX",
-  "generated_at": "2026-09-02T09:05:33Z",
-  "git_head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
+  "generated_at": "2026-09-02T18:17:24Z",
+  "git_head": "07edb2c2f03078f72b6cd151094e39089e817200",
   "criterion_altered": false
 }

@@ -105,21 +105,21 @@
     "weakened": false
   },
   "criterion_weakened": false,
-  "elapsed_ms": 1.907,
+  "elapsed_ms": 2.033,
   "evidence_tier": "FUNCTIONAL_SIM",
   "gate": "VMCP_VISUAL_DIFF",
-  "generated_at": "2026-09-02T09:12:16Z",
+  "generated_at": "2026-09-02T18:17:31Z",
   "gpu_authority": false,
   "invoked_symbols": [
     {
-      "elapsed_ms": 0.794,
+      "elapsed_ms": 1.303,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "tools.acceptance.vmcp.gates._pixel_metrics"
     },
     {
-      "elapsed_ms": 0.376,
+      "elapsed_ms": 0.252,
       "error": null,
       "kind": "call",
       "raised": false,

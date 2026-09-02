@@ -1,224 +1,24 @@
 {
-  "blocker": null,
-  "command": "python3 -m pytest tools/acceptance/agentos/test_agentos_acceptance.py::test_persistence_single_authority -o addopts=''",
+  "blocker": "harness exception: TimeoutExpired: Command '['/opt/homebrew/opt/python@3.14/bin/python3.14', '-c', \"import os, sys, time\\nfrom hcli.resources import MutationLock\\nws = '/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-persist-hs0wooga/race'\\nos.makedirs(ws, exist_ok=True)\\ndef worker(name):\\n    return MutationLock(ws).acquire(name)\\nimport multiprocessing as mp\\nctx = mp.get_context('spawn')\\nwith ctx.Pool(2) as pool:\\n    got = pool.map(worker, ['p1', 'p2'])\\nprint('RACE', got, 'wins', sum(1 for x in got if x))\\n\"]' timed out after 30 seconds",
+  "command": "python3 -m pytest tools/acceptance -o addopts=''",
   "criterion_altered": false,
-  "criterion_quoted": "For every durable field record FIELD / WRITER / CANONICAL STORE / GENERATION / CHECKSUM / CHECKPOINT ORDER / READER / RESTART PATH / RECONCILIATION RULE / CANARY. A crash must recover one coherent generation or the previous coherent generation, never a random hybrid.\n\n## D.3 Persistence authority audit\n\n```text\nFor every durable field record:\n\nFIELD\nWRITER\nCANONICAL STORE\nGENERATION / CHECKSUM\nCHECKPOINT ORDER\nREADER\nRESTART PATH\nRECONCILIATION RULE\nCANARY\n\nAudit at minimum:\nWorkUnit state\nGoal/DAG\nbackend_task_id\nprovider/runtime provenance\ndependencies\nverifier result\nrepair lineage\nretry state\nmutation lease\nsteering\ncontext calibration\nMAX calibration\nbackend health\ncheckpoint generation\nbackground jobs\nVMCP evidence references\nModelLake worker identity\n```\n\nA crash must recover one coherent generation or the previous coherent generation, never a random hybrid. Use atomic replacement/generation IDs/checksums as appropriate.",
+  "criterion_quoted": "<harness raised before a verdict for AGENTOS_PERSISTENCE_SINGLE_AUTHORITY>",
   "criterion_source": {
-    "end_line": 7417,
+    "end_line": 0,
     "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
-    "start_line": 7382
+    "start_line": 0
   },
   "evidence_tier": "FUNCTIONAL_SIM",
   "gate": "AGENTOS_PERSISTENCE_SINGLE_AUTHORITY",
-  "generated_at": "2026-09-02T09:09:21Z",
-  "git_head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
+  "generated_at": "2026-09-02T18:17:19Z",
+  "git_head": "07edb2c2f03078f72b6cd151094e39089e817200",
   "hcli_file": "/Users/scammermike/Downloads/hawking/hcli/__init__.py",
   "measured": {
-    "acquire_after_release": true,
-    "atomic_write_json": "hcli.persist.atomic_write_json",
-    "audit": {
-      "Goal/DAG": {
-        "canary": true,
-        "canonical_store": ".hcli/dag.json plus mission/state.json compiled",
-        "generation_checksum": "61c83abf-f803-45fe-b240-c2bc8bd03f47:1788340161.685674",
-        "reader": "Mission.from_workspace",
-        "reconciliation_rule": "same checkpoint_id on both files",
-        "restart_path": "Mission.from_workspace",
-        "writer": "DagStore.save / Mission.checkpoint"
-      },
-      "MAX calibration": {
-        "canary": true,
-        "canonical_store": ".hcli/max-equilibrium.json",
-        "reader": "load_equilibrium",
-        "reconciliation_rule": "atomic_write_json single file",
-        "restart_path": "load_equilibrium",
-        "writer": "hcli.max_policy.save_equilibrium"
-      },
-      "ModelLake worker identity": {
-        "canary": "module present",
-        "canonical_store": "receipts named in CENSUS_RECEIPT_NAMES / SUPERVISION_RECEIPT_NAMES",
-        "reader": "program checkpoint inventory",
-        "reconciliation_rule": "worker identity is a receipt, not a WorkUnit field",
-        "restart_path": "receipt reread",
-        "writer": "hcli.agentos.modellake_supervisor / modellake_receipts"
-      },
-      "VMCP evidence references": {
-        "canary": "module present",
-        "canonical_store": "workspace .hcli/receipts VMCP_* (gate-owned)",
-        "reader": "vmcp_gate report loader",
-        "reconciliation_rule": "VMCP is evidence, not work identity",
-        "restart_path": "receipt reread, not reconstructed from model output",
-        "writer": "hcli.agentos.vmcp_gate (atomic_write_json receipts)"
-      },
-      "WorkUnit state": {
-        "canary": "units.u.id == 'u' and checkpoint_id shared",
-        "canonical_store": ".hcli/dag.json",
-        "checkpoint_order": "DAG first, then mission/state.json",
-        "generation_checksum": "61c83abf-f803-45fe-b240-c2bc8bd03f47:1788340161.685674",
-        "reader": "Scheduler.from_workspace / DagStore.load",
-        "reconciliation_rule": "DAG is authoritative; state.json is the fallback copy",
-        "restart_path": "DagStore.load(recover_running=True)",
-        "writer": "Scheduler._persist -> DagStore.save"
-      },
-      "backend health": {
-        "canary": "file exists only after record_failure",
-        "canonical_store": ".hcli/backend_health.json",
-        "reader": "BackendHealth.snapshot",
-        "reconciliation_rule": "stale open older than HEALTH_STALE_AFTER_SECONDS does not refuse work",
-        "restart_path": "BackendHealth __init__ reloads the file",
-        "writer": "BackendHealth.record_failure/record_success (library; no hcli caller)"
-      },
-      "backend_task_id": {
-        "canary": "field present on WorkUnit.to_dict",
-        "canonical_store": ".hcli/dag.json units.*.backend_task_id",
-        "reader": "DagStore.load",
-        "reconciliation_rule": "adopt if live, fail if terminal, else interrupt",
-        "restart_path": "_grok_recovery_decision uses the persisted id",
-        "writer": "WorkUnit field persisted by DagStore.save"
-      },
-      "background jobs": {
-        "canary": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-persist-2aohydys/m/.hcli/background/jobs",
-        "canonical_store": ".hcli/background/jobs/job-*.json",
-        "reader": "BackgroundJobStore.inspect/list",
-        "reconciliation_rule": "same job_id, never a silent second supervisor",
-        "restart_path": "dead pid -> INTERRUPTED",
-        "writer": "BackgroundJobStore._write -> atomic_write_json"
-      },
-      "checkpoint generation": {
-        "canary": true,
-        "canonical_store": ".hcli/dag.json and .hcli/mission/state.json",
-        "checkpoint_order": "DAG then state; same checkpoint_id",
-        "generation_checksum": "61c83abf-f803-45fe-b240-c2bc8bd03f47:1788340161.685674",
-        "reader": "Mission.from_workspace prefers DAG",
-        "reconciliation_rule": "crash between writes: recover the DAG generation, never a zip of both",
-        "restart_path": "from_workspace",
-        "writer": "Mission.checkpoint"
-      },
-      "context calibration": {
-        "canary": true,
-        "canonical_store": "not a dedicated durable file; compiled IR is in mission/state.json",
-        "reader": "Mission._unit_context",
-        "reconciliation_rule": "no second writer of usable_request_context",
-        "restart_path": "compiled IR reloaded from state.json",
-        "writer": "Mission.context_memory is in-process; unit context is compiled at dispatch"
-      },
-      "dependencies": {
-        "canary": true,
-        "canonical_store": ".hcli/dag.json",
-        "reader": "identify_ready",
-        "reconciliation_rule": "content identity includes dependencies",
-        "restart_path": "WorkUnit.from_dict",
-        "writer": "WorkUnit.dependencies via DagStore.save"
-      },
-      "mutation lease": {
-        "canary": true,
-        "canonical_store": ".hcli/mutation.lock",
-        "reader": "MutationLock.read / holder_is_live",
-        "reconciliation_rule": "exactly one live holder; dead pid is breakable",
-        "restart_path": "try_break_stale if holder pid is dead",
-        "writer": "MutationLock.acquire (os.link exclusive)"
-      },
-      "provider/runtime provenance": {
-        "canary": "WorkUnit.to_dict includes provider and assigned_backend",
-        "canonical_store": ".hcli/dag.json",
-        "reader": "DagStore.load",
-        "reconciliation_rule": "provider is execution policy, persisted so restart does not reroute",
-        "restart_path": "WorkUnit.from_dict",
-        "writer": "WorkUnit.provider / assigned_backend / assigned_runtime"
-      },
-      "repair lineage": {
-        "canary": "repair_budget key on dag.json",
-        "canonical_store": ".hcli/dag.json repair_budget + unit repair_* fields",
-        "reader": "rebuild_repair_budget",
-        "reconciliation_rule": "disk floor wins over in-process maps",
-        "restart_path": "Scheduler.from_workspace rebuilds counts/signatures from disk",
-        "writer": "workunit.emit_repair + DagStore.repair_budget"
-      },
-      "retry state": {
-        "canary": true,
-        "canonical_store": ".hcli/dag.json",
-        "reader": "is_ready (DEFAULT_RETRY_BUDGET)",
-        "reconciliation_rule": "interrupted does not consume attempts",
-        "restart_path": "WorkUnit.from_dict",
-        "writer": "WorkUnit.attempts"
-      },
-      "steering": {
-        "canary": true,
-        "canonical_store": ".hcli/steering/61c83abf-f803-45fe-b240-c2bc8bd03f47.json",
-        "reader": "SteeringQueue._load",
-        "reconciliation_rule": "steer changes future work, not verified history",
-        "restart_path": "Mission.from_workspace reconstructs the queue",
-        "writer": "SteeringQueue.enqueue -> atomic_write_json"
-      },
-      "verifier result": {
-        "canary": true,
-        "canonical_store": ".hcli/dag.json units.*.verification",
-        "reader": "Scheduler.complete / Mission._accepted",
-        "reconciliation_rule": "ok:true is the only completing outcome",
-        "restart_path": "WorkUnit.from_dict.verification",
-        "writer": "Scheduler.complete (refuses UnverifiedCompletion)"
-      }
-    },
-    "checkpoint_id": "61c83abf-f803-45fe-b240-c2bc8bd03f47:1788340161.685674",
-    "child_acquired_while_held": false,
-    "d3_fields_audited": [
-      "Goal/DAG",
-      "MAX calibration",
-      "ModelLake worker identity",
-      "VMCP evidence references",
-      "WorkUnit state",
-      "backend health",
-      "backend_task_id",
-      "background jobs",
-      "checkpoint generation",
-      "context calibration",
-      "dependencies",
-      "mutation lease",
-      "provider/runtime provenance",
-      "repair lineage",
-      "retry state",
-      "steering",
-      "verifier result"
-    ],
-    "d3_fields_missing": [],
-    "d3_fields_required": [
-      "WorkUnit state",
-      "Goal/DAG",
-      "backend_task_id",
-      "provider/runtime provenance",
-      "dependencies",
-      "verifier result",
-      "repair lineage",
-      "retry state",
-      "mutation lease",
-      "steering",
-      "context calibration",
-      "MAX calibration",
-      "backend health",
-      "checkpoint generation",
-      "background jobs",
-      "VMCP evidence references",
-      "ModelLake worker identity"
-    ],
-    "dag_filename": "dag.json",
-    "lock_filename": "mutation.lock",
-    "parent_acquired": true,
-    "race_wins": null,
-    "shared_checkpoint_id": true
+    "error": "TimeoutExpired: Command '['/opt/homebrew/opt/python@3.14/bin/python3.14', '-c', \"import os, sys, time\\nfrom hcli.resources import MutationLock\\nws = '/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-persist-hs0wooga/race'\\nos.makedirs(ws, exist_ok=True)\\ndef worker(name):\\n    return MutationLock(ws).acquire(name)\\nimport multiprocessing as mp\\nctx = mp.get_context('spawn')\\nwith ctx.Pool(2) as pool:\\n    got = pool.map(worker, ['p1', 'p2'])\\nprint('RACE', got, 'wins', sum(1 for x in got if x))\\n\"]' timed out after 30 seconds"
   },
-  "notes": [
-    "Catalog symbol MutationLock: O_EXCL+os.link exclusive create. Two processes cannot both hold it (measured).",
-    "hcli.persist.atomic_write_text is the crash-safe writer (tmp + fsync + os.replace).",
-    "WorkUnit state has one authoritative store (dag.json); state.json is a stamped copy."
-  ],
-  "output": "parent acquire=True child_stdout='CHILD False\\n' child_got=False\nacquire after release=True\nrace rc=1 out='' err=eworks/Python.framework/Versions/3.14/lib/python3.14/multiprocessing/synchronize.py\", line 56, in __init__\n    sl = self._semlock = _multiprocessing.SemLock(\n                         ~~~~~~~~~~~~~~~~~~~~~~~~^\n        kind, value, maxvalue, self._make_name(),\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        unlink_now)\n        ^^^^^^^^^^^\nPermissionError: [Errno 1] Operation not permitted\n\ncheckpoint /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-persist-2aohydys/m/.hcli/mission/state.json shared_id=True id=61c83abf-f803-45fe-b240-c2bc8bd03f47:1788340161.685674",
+  "notes": [],
+  "output": "Traceback (most recent call last):\n  File \"/Users/scammermike/Downloads/hawking/tools/acceptance/agentos/harness.py\", line 1920, in run_gate\n    payload = fn()\n  File \"/Users/scammermike/Downloads/hawking/tools/acceptance/agentos/harness.py\", line 1088, in demo_persistence_single_authority\n    race = subprocess.run(\n        [\n    ...<18 lines>...\n        timeout=30,\n    )\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py\", line 557, in run\n    stdout, stderr = process.communicate(input, timeout=timeout)\n                     ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py\", line 1221, in communicate\n    stdout, stderr = self._communicate(input, endtime, timeout)\n                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py\", line 2154, in _communicate\n    self._check_timeout(endtime, orig_timeout, stdout, stderr)\n    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py\", line 1268, in _check_timeout\n    raise TimeoutExpired(\n    ...<2 lines>...\n            stderr=b''.join(stderr_seq) if stderr_seq else None)\nsubprocess.TimeoutExpired: Command '['/opt/homebrew/opt/python@3.14/bin/python3.14', '-c', \"import os, sys, time\\nfrom hcli.resources import MutationLock\\nws = '/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-persist-hs0wooga/race'\\nos.makedirs(ws, exist_ok=True)\\ndef worker(name):\\n    return MutationLock(ws).acquire(name)\\nimport multiprocessing as mp\\nctx = mp.get_context('spawn')\\nwith ctx.Pool(2) as pool:\\n    got = pool.map(worker, ['p1', 'p2'])\\nprint('RACE', got, 'wins', sum(1 for x in got if x))\\n\"]' timed out after 30 seconds\n",
   "schema": "hawking.acceptance.gate.v1",
-  "symbols_invoked": [
-    {
-      "module": "hcli.resources",
-      "symbol": "MutationLock",
-      "via": "acquire in two processes"
-    }
-  ],
-  "verdict": "ACCEPTED"
+  "symbols_invoked": [],
+  "verdict": "BLOCKED"
 }

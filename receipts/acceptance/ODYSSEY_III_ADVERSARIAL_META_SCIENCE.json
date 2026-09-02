@@ -14,7 +14,7 @@
   "criterion_altered": false,
   "evidence_tier": "FUNCTIONAL_SIM",
   "gate": "ODYSSEY_III_ADVERSARIAL_META_SCIENCE",
-  "generated_at": "2026-09-02T09:08:38Z",
+  "generated_at": "2026-09-02T18:17:26Z",
   "generated_by": "tools.acceptance.odyssey.run",
   "invoked_symbol": {
     "file": "tools/future/autonomy_scars.py",
@@ -24,7 +24,7 @@
   },
   "note": "CPU measurement traps (scale_invariance, skip_counted_as_pass) fired in this process on a synthetic vector explicitly labelled 'not a model organ'. That demonstrates trap machinery, not an independent law falsification. selftest() does not write receipts.",
   "numeric_comparisons": [],
-  "repo": "/Users/scammermike/.claude-grok/worktrees/acc6-odyssey-green-fusion-acceptance-20260902-045121",
+  "repo": "/Users/scammermike/Downloads/hawking",
   "run": {
     "adversary_selftest": {
       "cpu_observation": {
@@ -112,10 +112,10 @@
         }
       ]
     },
-    "wall_s": 0.057
+    "wall_s": 0.131
   },
   "schema": "hawking.acceptance.gate.v1",
-  "seal_sha256": "7708bbf21f7cbe48d8bef878e9b6eb15fc324c9b66590a62f04177fc2065db58",
+  "seal_sha256": "e38d8c722a925710d58172452904163ea0bb2b17541eed3e0b35693b5d340e37",
   "section_6_output": "broken laws, corrected priors, stronger verifiers, causal robustness",
   "verdict": "BLOCKED"
 }

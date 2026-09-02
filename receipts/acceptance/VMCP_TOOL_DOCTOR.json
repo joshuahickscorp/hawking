@@ -27,17 +27,6 @@
     },
     {
       "detail": {
-        "PTY capture": {
-          "available": false,
-          "detail": {
-            "available": false,
-            "error": "PermissionError: [Errno 1] Operation not permitted: '/dev/ttys003'",
-            "grantpt": true,
-            "ptsname": "/dev/ttys003"
-          },
-          "fallback": "PermissionError: [Errno 1] Operation not permitted: '/dev/ttys003'",
-          "symbol": "os.posix_openpt"
-        },
         "browser/CDP": {
           "available": false,
           "detail": {
@@ -92,35 +81,35 @@
     "weakened": false
   },
   "criterion_weakened": false,
-  "elapsed_ms": 158.871,
+  "elapsed_ms": 148.137,
   "evidence_tier": "FUNCTIONAL_SIM",
   "gate": "VMCP_TOOL_DOCTOR",
-  "generated_at": "2026-09-02T09:12:16Z",
+  "generated_at": "2026-09-02T18:17:31Z",
   "gpu_authority": false,
   "invoked_symbols": [
     {
-      "elapsed_ms": 21.659,
+      "elapsed_ms": 1.38,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "visionmcp.capabilities.core_doctor_report"
     },
     {
-      "elapsed_ms": 0.069,
+      "elapsed_ms": 0.023,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "visionmcp.acquisition.quarantine._sniff"
     },
     {
-      "elapsed_ms": 0.088,
+      "elapsed_ms": 0.052,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "visionmcp.worlds.spatial.io.obj.obj_file_counts"
     },
     {
-      "elapsed_ms": 0.115,
+      "elapsed_ms": 0.105,
       "error": null,
       "kind": "call",
       "raised": false,
@@ -128,7 +117,7 @@
     }
   ],
   "measured": {
-    "core_doctor_elapsed_ms": 21.63529093377292,
+    "core_doctor_elapsed_ms": 1.375915999233257,
     "core_doctor_ok": true,
     "required": {
       "CSS parser": {
@@ -154,14 +143,14 @@
         "symbol": "visionmcp.worlds.spatial.io.obj.obj_file_counts"
       },
       "PTY capture": {
-        "available": false,
+        "available": true,
         "detail": {
-          "available": false,
-          "error": "PermissionError: [Errno 1] Operation not permitted: '/dev/ttys003'",
+          "available": true,
+          "error": null,
           "grantpt": true,
-          "ptsname": "/dev/ttys003"
+          "ptsname": "/dev/ttys002"
         },
-        "fallback": "PermissionError: [Errno 1] Operation not permitted: '/dev/ttys003'",
+        "fallback": null,
         "symbol": "os.posix_openpt"
       },
       "archive/compression": {
@@ -278,7 +267,7 @@
           "present": false
         }
       ],
-      "elapsed_ms": 21.63529093377292,
+      "elapsed_ms": 1.375915999233257,
       "network_used": false,
       "ok": true,
       "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",

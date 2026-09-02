@@ -21,7 +21,7 @@
   "criterion_altered": false,
   "evidence_tier": "STATIC",
   "gate": "HMF_DEVICE_VISIBLE_TRUST",
-  "generated_at": "2026-09-02T09:08:38Z",
+  "generated_at": "2026-09-02T18:17:26Z",
   "generated_by": "tools.acceptance.odyssey.run",
   "invoked_symbol": {
     "also_called": [
@@ -36,7 +36,7 @@
     "symbol": "is_coherent"
   },
   "numeric_comparisons": [],
-  "repo": "/Users/scammermike/.claude-grok/worktrees/acc6-odyssey-green-fusion-acceptance-20260902-045121",
+  "repo": "/Users/scammermike/Downloads/hawking",
   "run": {
     "hardware_probe": {
       "description": "HMF/HGVAS managed-memory device visible (CXL expander / HBM appliance enumerated; identity contains HMF, HGVAS, or CXL memory device).",
@@ -53,10 +53,10 @@
       "evidence_tier": "FUNCTIONAL_SIM",
       "note": "Apple UMA overlay. PRESENT on UMA is not HMF device-visible trust. Roadmap 16.2: Hawking targets coherence ladder 2-5; never falsely claim 6."
     },
-    "wall_s": 0.229
+    "wall_s": 0.003
   },
   "schema": "hawking.acceptance.gate.v1",
-  "seal_sha256": "b995fff402b80f557ebf58b4aa7ffc57b5c00d18807a0cf4786d7c6884bea458",
+  "seal_sha256": "54e2ecfc4ebe949f5e2696ef6a969d57b804da71c44db4126c06f1826c8a42ad",
   "trust_law": "PRESENT != VALID != TRUSTED. UNKNOWN != LOST. READBACK CORRECTNESS DOES NOT PROVE DEVICE-COMPUTE VISIBILITY.",
   "verdict": "BLOCKED"
 }

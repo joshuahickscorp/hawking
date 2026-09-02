@@ -162,28 +162,14 @@
     "weakened": false
   },
   "criterion_weakened": false,
-  "elapsed_ms": 2.411,
+  "elapsed_ms": 1.571,
   "evidence_tier": "FUNCTIONAL_SIM",
   "gate": "VMCP_COMPACT_SURFACE",
-  "generated_at": "2026-09-02T09:12:16Z",
+  "generated_at": "2026-09-02T18:17:31Z",
   "gpu_authority": false,
   "invoked_symbols": [
     {
-      "elapsed_ms": 0.135,
-      "error": null,
-      "kind": "call",
-      "raised": false,
-      "symbol": "tools.future.vmcp.compact_surface"
-    },
-    {
-      "elapsed_ms": 0.077,
-      "error": null,
-      "kind": "call",
-      "raised": false,
-      "symbol": "tools.future.vmcp.compact_surface"
-    },
-    {
-      "elapsed_ms": 0.014,
+      "elapsed_ms": 0.171,
       "error": null,
       "kind": "call",
       "raised": false,
@@ -197,21 +183,28 @@
       "symbol": "tools.future.vmcp.compact_surface"
     },
     {
-      "elapsed_ms": 0.005,
+      "elapsed_ms": 0.012,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "tools.future.vmcp.compact_surface"
     },
     {
-      "elapsed_ms": 0.068,
+      "elapsed_ms": 0.061,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "tools.future.vmcp.compact_surface"
     },
     {
-      "elapsed_ms": 0.002,
+      "elapsed_ms": 0.004,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "tools.future.vmcp.compact_surface"
+    },
+    {
+      "elapsed_ms": 0.058,
       "error": null,
       "kind": "call",
       "raised": false,
@@ -225,7 +218,14 @@
       "symbol": "tools.future.vmcp.compact_surface"
     },
     {
-      "elapsed_ms": 1.1,
+      "elapsed_ms": 0.002,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "tools.future.vmcp.compact_surface"
+    },
+    {
+      "elapsed_ms": 0.687,
       "error": null,
       "kind": "call",
       "raised": false,
@@ -237,7 +237,7 @@
       "check": {
         "artifacts": [
           {
-            "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-e14-363uqxpn/s.txt",
+            "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-e14-0oxcdq0g/s.txt",
             "sha256": "024586c04ed5fa1d2ae0cbe737af33ed192033ba551752e734b9a098e442bb95",
             "size": 24
           }
@@ -250,8 +250,8 @@
           }
         ],
         "next_actions": [],
-        "note": "check compact surface",
-        "performance_ms": 0.068,
+        "note": "stdlib magic/header classification of a real local file; not CaptureBus, not Ghidra, not a GPU measurement",
+        "performance_ms": 0.058,
         "residuals": [],
         "status": "CONNECTED"
       },
@@ -263,7 +263,7 @@
           "VISIONMCP_SRC importable and a residual from CHECK"
         ],
         "note": "fix is not implemented in this repo. Returning PARKED with a wake rather than an empty collection a verifier could accept.",
-        "performance_ms": 0.002,
+        "performance_ms": 0.003,
         "residuals": [
           "production AST Call of the visionmcp repair ledger / residual loop from an HCLI entry after a CHECK residual exists"
         ],
@@ -272,7 +272,7 @@
       "hold": {
         "artifacts": [
           {
-            "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-e14-363uqxpn/s.txt",
+            "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-e14-0oxcdq0g/s.txt",
             "sha256": "024586c04ed5fa1d2ae0cbe737af33ed192033ba551752e734b9a098e442bb95",
             "size": 24
           }
@@ -285,8 +285,8 @@
           }
         ],
         "next_actions": [],
-        "note": "hold compact surface",
-        "performance_ms": 0.077,
+        "note": "stdlib magic/header classification of a real local file; not CaptureBus, not Ghidra, not a GPU measurement",
+        "performance_ms": 0.073,
         "residuals": [],
         "status": "CONNECTED"
       },
@@ -298,7 +298,7 @@
           "VISIONMCP_SRC importable; profile='core' only (LABORATORY is a second AgentOS and is refused)"
         ],
         "note": "keep is not implemented in this repo. Returning PARKED with a wake rather than an empty collection a verifier could accept.",
-        "performance_ms": 0.003,
+        "performance_ms": 0.002,
         "residuals": [
           "production AST Call of ProjectStore.create / CaptureBus.observe that persists CAS artifacts from an HCLI entry"
         ],
@@ -307,7 +307,7 @@
       "know": {
         "artifacts": [
           {
-            "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-e14-363uqxpn/s.txt",
+            "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-e14-0oxcdq0g/s.txt",
             "sha256": "024586c04ed5fa1d2ae0cbe737af33ed192033ba551752e734b9a098e442bb95",
             "size": 24
           }
@@ -320,8 +320,8 @@
           }
         ],
         "next_actions": [],
-        "note": "know compact surface",
-        "performance_ms": 0.073,
+        "note": "stdlib magic/header classification of a real local file; not CaptureBus, not Ghidra, not a GPU measurement",
+        "performance_ms": 0.061,
         "residuals": [],
         "status": "CONNECTED"
       },
@@ -333,7 +333,7 @@
           "VISIONMCP_SRC with the compiler extra; do not build a parallel VisualProgramIR in hawking/"
         ],
         "note": "make is not implemented in this repo. Returning PARKED with a wake rather than an empty collection a verifier could accept.",
-        "performance_ms": 0.005,
+        "performance_ms": 0.004,
         "residuals": [
           "production AST Call of visionmcp compiler surface (vision.compile / VisualProgramIR emit) from an HCLI entry with profile='compiler'"
         ],
@@ -347,7 +347,7 @@
           "VISIONMCP_SRC pointing at visionmcp 0.8.0a2 src/ (parent of the visionmcp package) plus the format-specific opener"
         ],
         "note": "open is not implemented in this repo. Returning PARKED with a wake rather than an empty collection a verifier could accept.",
-        "performance_ms": 0.014,
+        "performance_ms": 0.012,
         "residuals": [
           "production AST Call of CaptureBus.observe (or an authorized opener) on a compressed / encoded / minified / binary target from an HCLI entry after VISIONMCP_SRC is importable"
         ],
@@ -365,14 +365,14 @@
         ],
         "next_actions": [],
         "note": "controlled mutation of a temp copy. RED is a digest change; GREEN is restoration. A always-GREEN canary is a failure.",
-        "performance_ms": 1.1,
+        "performance_ms": 0.687,
         "residuals": [],
         "status": "CONNECTED"
       },
       "see": {
         "artifacts": [
           {
-            "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-e14-363uqxpn/s.txt",
+            "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-e14-0oxcdq0g/s.txt",
             "sha256": "024586c04ed5fa1d2ae0cbe737af33ed192033ba551752e734b9a098e442bb95",
             "size": 24
           }
@@ -385,8 +385,8 @@
           }
         ],
         "next_actions": [],
-        "note": "see compact surface",
-        "performance_ms": 0.135,
+        "note": "stdlib magic/header classification of a real local file; not CaptureBus, not Ghidra, not a GPU measurement",
+        "performance_ms": 0.171,
         "residuals": [],
         "status": "CONNECTED"
       }
@@ -397,7 +397,7 @@
       "act": "check",
       "artifacts": [
         {
-          "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-e14-363uqxpn/s.txt",
+          "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-e14-0oxcdq0g/s.txt",
           "sha256": "024586c04ed5fa1d2ae0cbe737af33ed192033ba551752e734b9a098e442bb95",
           "size": 24
         }
@@ -412,8 +412,8 @@
       ],
       "looked": true,
       "next_actions": [],
-      "note": "check compact surface",
-      "performance_ms": 0.068,
+      "note": "stdlib magic/header classification of a real local file; not CaptureBus, not Ghidra, not a GPU measurement",
+      "performance_ms": 0.058,
       "residuals": [],
       "status": "CONNECTED"
     },
@@ -428,7 +428,7 @@
         "VISIONMCP_SRC importable and a residual from CHECK"
       ],
       "note": "fix is not implemented in this repo. Returning PARKED with a wake rather than an empty collection a verifier could accept.",
-      "performance_ms": 0.002,
+      "performance_ms": 0.003,
       "residuals": [
         "production AST Call of the visionmcp repair ledger / residual loop from an HCLI entry after a CHECK residual exists"
       ],
@@ -438,7 +438,7 @@
       "act": "hold",
       "artifacts": [
         {
-          "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-e14-363uqxpn/s.txt",
+          "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-e14-0oxcdq0g/s.txt",
           "sha256": "024586c04ed5fa1d2ae0cbe737af33ed192033ba551752e734b9a098e442bb95",
           "size": 24
         }
@@ -453,8 +453,8 @@
       ],
       "looked": true,
       "next_actions": [],
-      "note": "hold compact surface",
-      "performance_ms": 0.077,
+      "note": "stdlib magic/header classification of a real local file; not CaptureBus, not Ghidra, not a GPU measurement",
+      "performance_ms": 0.073,
       "residuals": [],
       "status": "CONNECTED"
     },
@@ -469,7 +469,7 @@
         "VISIONMCP_SRC importable; profile='core' only (LABORATORY is a second AgentOS and is refused)"
       ],
       "note": "keep is not implemented in this repo. Returning PARKED with a wake rather than an empty collection a verifier could accept.",
-      "performance_ms": 0.003,
+      "performance_ms": 0.002,
       "residuals": [
         "production AST Call of ProjectStore.create / CaptureBus.observe that persists CAS artifacts from an HCLI entry"
       ],
@@ -479,7 +479,7 @@
       "act": "know",
       "artifacts": [
         {
-          "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-e14-363uqxpn/s.txt",
+          "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-e14-0oxcdq0g/s.txt",
           "sha256": "024586c04ed5fa1d2ae0cbe737af33ed192033ba551752e734b9a098e442bb95",
           "size": 24
         }
@@ -494,8 +494,8 @@
       ],
       "looked": true,
       "next_actions": [],
-      "note": "know compact surface",
-      "performance_ms": 0.073,
+      "note": "stdlib magic/header classification of a real local file; not CaptureBus, not Ghidra, not a GPU measurement",
+      "performance_ms": 0.061,
       "residuals": [],
       "status": "CONNECTED"
     },
@@ -510,7 +510,7 @@
         "VISIONMCP_SRC with the compiler extra; do not build a parallel VisualProgramIR in hawking/"
       ],
       "note": "make is not implemented in this repo. Returning PARKED with a wake rather than an empty collection a verifier could accept.",
-      "performance_ms": 0.005,
+      "performance_ms": 0.004,
       "residuals": [
         "production AST Call of visionmcp compiler surface (vision.compile / VisualProgramIR emit) from an HCLI entry with profile='compiler'"
       ],
@@ -527,7 +527,7 @@
         "VISIONMCP_SRC pointing at visionmcp 0.8.0a2 src/ (parent of the visionmcp package) plus the format-specific opener"
       ],
       "note": "open is not implemented in this repo. Returning PARKED with a wake rather than an empty collection a verifier could accept.",
-      "performance_ms": 0.014,
+      "performance_ms": 0.012,
       "residuals": [
         "production AST Call of CaptureBus.observe (or an authorized opener) on a compressed / encoded / minified / binary target from an HCLI entry after VISIONMCP_SRC is importable"
       ],
@@ -548,7 +548,7 @@
       "looked": true,
       "next_actions": [],
       "note": "controlled mutation of a temp copy. RED is a digest change; GREEN is restoration. A always-GREEN canary is a failure.",
-      "performance_ms": 1.1,
+      "performance_ms": 0.687,
       "residuals": [],
       "status": "CONNECTED"
     },
@@ -556,7 +556,7 @@
       "act": "see",
       "artifacts": [
         {
-          "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-e14-363uqxpn/s.txt",
+          "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-e14-0oxcdq0g/s.txt",
           "sha256": "024586c04ed5fa1d2ae0cbe737af33ed192033ba551752e734b9a098e442bb95",
           "size": 24
         }
@@ -571,8 +571,8 @@
       ],
       "looked": true,
       "next_actions": [],
-      "note": "see compact surface",
-      "performance_ms": 0.135,
+      "note": "stdlib magic/header classification of a real local file; not CaptureBus, not Ghidra, not a GPU measurement",
+      "performance_ms": 0.171,
       "residuals": [],
       "status": "CONNECTED"
     }

@@ -136,7 +136,7 @@
       "verdict": "BLOCKED"
     }
   ],
-  "generated_at": "2026-09-02T09:12:16Z",
+  "generated_at": "2026-09-02T18:17:31Z",
   "gpu_authority": false,
   "lane": "acc3-vmcp-acceptance",
   "recorded_by": "tools/acceptance/vmcp/run.py",

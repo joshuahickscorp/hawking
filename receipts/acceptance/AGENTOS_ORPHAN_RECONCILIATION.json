@@ -10,8 +10,8 @@
   },
   "evidence_tier": "FUNCTIONAL_SIM",
   "gate": "AGENTOS_ORPHAN_RECONCILIATION",
-  "generated_at": "2026-09-02T09:09:21Z",
-  "git_head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
+  "generated_at": "2026-09-02T18:16:49Z",
+  "git_head": "07edb2c2f03078f72b6cd151094e39089e817200",
   "hcli_file": "/Users/scammermike/Downloads/hawking/hcli/__init__.py",
   "measured": {
     "adopted_running": [
@@ -28,7 +28,7 @@
       "live-grok": "running"
     },
     "duplicate_ids": [],
-    "job_id": "job-44f0a960-dd25-4346-804a-468a09508b1c",
+    "job_id": "job-5d4b1c9a-bfcb-4c91-b4b5-4533a2efe0cb",
     "jobs_after_kill": 1,
     "live_state": "RUNNING",
     "n_units_after_recover": 3,
@@ -39,7 +39,7 @@
       "live-grok": "running"
     },
     "second_store_ids": [
-      "job-44f0a960-dd25-4346-804a-468a09508b1c"
+      "job-5d4b1c9a-bfcb-4c91-b4b5-4533a2efe0cb"
     ]
   },
   "notes": [
@@ -47,7 +47,7 @@
     "DagStore.load(recover_running=True): live Grok is adopted (status stays running), dead local work is interrupted (not a verifier failure), terminal Grok is failed. No extra unit is created.",
     "Scheduler.from_workspace is the production caller of this reconciliation."
   ],
-  "output": "started job-44f0a960-dd25-4346-804a-468a09508b1c pid=31406 state=RUNNING\ninspect-live state=RUNNING pid=31406\nsecond store list=['job-44f0a960-dd25-4346-804a-468a09508b1c'] duplicates=[]\nafter SIGKILL+reap state=INTERRUPTED pid=31406 error=owner process closed or child exited before status was persisted returncode=None\ndag recover statuses={'dead-local': 'interrupted', 'grok-failed': 'failed', 'live-grok': 'running'} adopted=[{'unit_id': 'live-grok', 'backend_task_id': 'task-live', 'grok_state': 'running'}] n=3\nScheduler.from_workspace statuses={'dead-local': 'interrupted', 'grok-failed': 'failed', 'live-grok': 'running'}",
+  "output": "started job-5d4b1c9a-bfcb-4c91-b4b5-4533a2efe0cb pid=9182 state=RUNNING\ninspect-live state=RUNNING pid=9182\nsecond store list=['job-5d4b1c9a-bfcb-4c91-b4b5-4533a2efe0cb'] duplicates=[]\nafter SIGKILL+reap state=INTERRUPTED pid=9182 error=owner process closed or child exited before status was persisted returncode=None\ndag recover statuses={'dead-local': 'interrupted', 'grok-failed': 'failed', 'live-grok': 'running'} adopted=[{'unit_id': 'live-grok', 'backend_task_id': 'task-live', 'grok_state': 'running'}] n=3\nScheduler.from_workspace statuses={'dead-local': 'interrupted', 'grok-failed': 'failed', 'live-grok': 'running'}",
   "schema": "hawking.acceptance.gate.v1",
   "symbols_invoked": [
     {

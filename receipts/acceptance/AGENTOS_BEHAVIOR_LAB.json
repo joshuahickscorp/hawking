@@ -5,13 +5,17 @@
     ],
     "fixtures_implemented": 0,
     "missing": "BHV-01..BHV-23 fixture runner",
-    "why": "E.11 requires every fixture to record initial/final repo hash, diff, WorkUnit trace, tool trace, terminal trace, tests, timing and receipt. The catalog lists no code_paths for this gate (status ABSENT). hcli/workunit.py is not materialized in this sparse checkout, so WorkUnit traces cannot be recorded. git-tracked BHV/behavior_lab paths: none."
+    "why": "E.11 requires every fixture to record initial/final repo hash, diff, WorkUnit trace, tool trace, terminal trace, tests, timing and receipt. The catalog lists no code_paths for this gate (status ABSENT). hcli/workunit.py is not materialized in this sparse checkout, so WorkUnit traces cannot be recorded. git-tracked BHV/behavior_lab paths: ['receipts/acceptance/AGENTOS_BEHAVIOR_LAB.json', 'tools/vmcp/behavior_lab.py', 'tools/vmcp/test_behavior_lab.py']."
   },
   "checks": [
     {
       "detail": {
-        "git_bhv_paths": [],
-        "on_disk_workunit": false
+        "git_bhv_paths": [
+          "receipts/acceptance/AGENTOS_BEHAVIOR_LAB.json",
+          "tools/vmcp/behavior_lab.py",
+          "tools/vmcp/test_behavior_lab.py"
+        ],
+        "on_disk_workunit": true
       },
       "id": "fixture_runner_absent",
       "ok": false
@@ -33,10 +37,10 @@
     "weakened": false
   },
   "criterion_weakened": false,
-  "elapsed_ms": 31.719,
+  "elapsed_ms": 24.016,
   "evidence_tier": "STATIC",
   "gate": "AGENTOS_BEHAVIOR_LAB",
-  "generated_at": "2026-09-02T09:12:16Z",
+  "generated_at": "2026-09-02T18:17:31Z",
   "gpu_authority": false,
   "invoked_symbols": [],
   "measured": {

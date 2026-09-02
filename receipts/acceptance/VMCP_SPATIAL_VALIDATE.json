@@ -99,56 +99,56 @@
     "weakened": false
   },
   "criterion_weakened": false,
-  "elapsed_ms": 2.514,
+  "elapsed_ms": 1.329,
   "evidence_tier": "FUNCTIONAL_SIM",
   "gate": "VMCP_SPATIAL_VALIDATE",
-  "generated_at": "2026-09-02T09:12:16Z",
+  "generated_at": "2026-09-02T18:17:31Z",
   "gpu_authority": false,
   "invoked_symbols": [
     {
-      "elapsed_ms": 0.107,
+      "elapsed_ms": 0.063,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "visionmcp.worlds.spatial.io.obj.obj_file_counts"
     },
     {
-      "elapsed_ms": 0.079,
+      "elapsed_ms": 0.049,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "visionmcp.worlds.spatial.io.obj.obj_file_counts"
     },
     {
-      "elapsed_ms": 0.068,
+      "elapsed_ms": 0.045,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "visionmcp.worlds.spatial.io.obj.obj_file_counts"
     },
     {
-      "elapsed_ms": 0.145,
+      "elapsed_ms": 0.08,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "tools.acceptance.vmcp.gates._raster_obj"
     },
     {
-      "elapsed_ms": 0.067,
+      "elapsed_ms": 0.037,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "tools.acceptance.vmcp.gates._raster_obj"
     },
     {
-      "elapsed_ms": 0.354,
+      "elapsed_ms": 0.213,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "tools.acceptance.vmcp.gates._pixel_metrics"
     },
     {
-      "elapsed_ms": 0.071,
+      "elapsed_ms": 0.058,
       "error": null,
       "kind": "call",
       "raised": false,

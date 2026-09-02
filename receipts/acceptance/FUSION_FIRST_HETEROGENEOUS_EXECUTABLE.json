@@ -22,7 +22,7 @@
   "evidence_tier": "STATIC",
   "fusion_law": "The target is not to make alien memory domains literally become Apple UMA. A first heterogeneous executable requires a second qualified domain (FPGA/eGPU/DGX) plus HMF/HGVAS object trust.",
   "gate": "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE",
-  "generated_at": "2026-09-02T09:08:38Z",
+  "generated_at": "2026-09-02T18:17:26Z",
   "generated_by": "tools.acceptance.odyssey.run",
   "invoked_symbol": {
     "also_called": [
@@ -36,7 +36,7 @@
     "symbol": "topology_apple_alone"
   },
   "numeric_comparisons": [],
-  "repo": "/Users/scammermike/.claude-grok/worktrees/acc6-odyssey-green-fusion-acceptance-20260902-045121",
+  "repo": "/Users/scammermike/Downloads/hawking",
   "run": {
     "fusion_planner_apple_alone": {
       "domains": [
@@ -98,9 +98,9 @@
       "speedup": null,
       "timing_decidable": false
     },
-    "wall_s": 0.496
+    "wall_s": 0.009
   },
   "schema": "hawking.acceptance.gate.v1",
-  "seal_sha256": "a55dc7364d7696a76e5b04c058c97809bd44eab1225400920bb303f5c031248f",
+  "seal_sha256": "48ead90ed95c92d8299a48c67304740c1910467917060bc4d9257d3171065578",
   "verdict": "BLOCKED"
 }

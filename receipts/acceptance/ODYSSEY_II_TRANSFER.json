@@ -14,7 +14,7 @@
   "criterion_altered": false,
   "evidence_tier": "STATIC",
   "gate": "ODYSSEY_II_TRANSFER",
-  "generated_at": "2026-09-02T09:08:38Z",
+  "generated_at": "2026-09-02T18:17:26Z",
   "generated_by": "tools.acceptance.odyssey.run",
   "invoked_symbol": {
     "file": "tools/future/qualification_pipeline.py",
@@ -33,7 +33,7 @@
       "threshold": 0
     }
   ],
-  "repo": "/Users/scammermike/.claude-grok/worktrees/acc6-odyssey-green-fusion-acceptance-20260902-045121",
+  "repo": "/Users/scammermike/Downloads/hawking",
   "run": {
     "load_qualification_queue": {
       "candidate_ids_head": [
@@ -51,7 +51,7 @@
         "path": "/Users/scammermike/Downloads/hawking/hcli/__init__.py",
         "source": "sys.path"
       },
-      "loaded_from": "/Users/scammermike/.claude-grok/worktrees/acc6-odyssey-green-fusion-acceptance-20260902-045121/receipts/acceptance/_queue_snapshot.json",
+      "loaded_from": "/Users/scammermike/Downloads/hawking/receipts/acceptance/_queue_snapshot.json",
       "n_candidates": 49,
       "ok": true,
       "schema": "hawking.accelerator.physical_qualification_queue.v1",
@@ -79,10 +79,10 @@
       "specimen": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-30B-A3B@ad44e777bcd1",
       "transfer_evaluations": 10
     },
-    "wall_s": 0.113
+    "wall_s": 0.036
   },
   "schema": "hawking.acceptance.gate.v1",
-  "seal_sha256": "bd4be26d419c99293719c27b41a2927846699896c41581f381304c970156d2e7",
+  "seal_sha256": "43608326111241d0396f5543b13debbd3a6dfc1619d93e5c4e924e72009b44b9",
   "section_6_output": "measurable reduction in experiments/time/cost on unseen models and devices",
   "verdict": "BLOCKED"
 }

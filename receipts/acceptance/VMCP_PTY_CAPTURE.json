@@ -1,30 +1,30 @@
 {
   "blocker": {
-    "error": "PermissionError: [Errno 1] Operation not permitted: '/dev/ttys003'",
+    "error": null,
     "missing": "PTY slave open (os.open(ptsname))",
-    "ptsname": "/dev/ttys003",
+    "ptsname": "/dev/ttys002",
     "why": "posix_openpt/grantpt/unlockpt/ptsname succeed in this process, but opening the slave node raises PermissionError. script(1) reports openpty: Operation not permitted. E.10 terminal text, ANSI, resize/layout and screenshot-state require a real PTY. A pipe subprocess is process inspection, not PTY capture."
   },
   "checks": [
     {
       "detail": {
-        "available": false,
-        "error": "PermissionError: [Errno 1] Operation not permitted: '/dev/ttys003'",
+        "available": true,
+        "error": null,
         "grantpt": true,
-        "ptsname": "/dev/ttys003"
+        "ptsname": "/dev/ttys002"
       },
       "id": "pty_slave_openable",
       "ok": false
     },
     {
       "detail": {
-        "available": false,
-        "error": "PermissionError: [Errno 1] Operation not permitted: '/dev/ttys003'",
+        "available": true,
+        "error": null,
         "grantpt": true,
-        "ptsname": "/dev/ttys003"
+        "ptsname": "/dev/ttys002"
       },
       "id": "not_empty_look",
-      "ok": true
+      "ok": "/dev/ttys002"
     }
   ],
   "claim_boundary": "FUNCTIONAL_SIM / STATIC acceptance evidence. No claim that VisionMCP web/3d extras, Blender, Chrome, FPGA, DGX or eGPU ran unless a check records that binary on PATH. An empty collection is not evidence of absence.",
@@ -43,14 +43,14 @@
     "weakened": false
   },
   "criterion_weakened": false,
-  "elapsed_ms": 32.694,
+  "elapsed_ms": 27.18,
   "evidence_tier": "STATIC",
   "gate": "VMCP_PTY_CAPTURE",
-  "generated_at": "2026-09-02T09:12:16Z",
+  "generated_at": "2026-09-02T18:17:31Z",
   "gpu_authority": false,
   "invoked_symbols": [
     {
-      "elapsed_ms": 0.54,
+      "elapsed_ms": 0.52,
       "error": null,
       "kind": "call",
       "raised": false,
@@ -74,11 +74,11 @@
         "-c",
         "<script>"
       ],
-      "cwd": "/Users/scammermike/.claude-grok/worktrees/acc3-vmcp-acceptance-20260902-045046",
+      "cwd": "/Users/scammermike/Downloads/hawking",
       "diff/test markers": null,
       "exit code/signal": 3,
       "input/output event boundaries": {
-        "stdout_bytes": 92
+        "stdout_bytes": 50
       },
       "note": "pipe subprocess is NOT a PTY; listed only so the blocker is not an empty look",
       "process identity": "/opt/homebrew/opt/python@3.14/bin/python3.14",
@@ -86,18 +86,18 @@
       "screenshot state where useful": null,
       "terminal text": null,
       "timestamps": {
-        "finished_at": 1788340336.256835,
-        "started_at": 1788340336.224698
+        "finished_at": 1788373051.8881102,
+        "started_at": 1788373051.861469
       },
       "tool/subprocess events where observable": [
         "subprocess.run"
       ]
     },
     "pty_probe": {
-      "available": false,
-      "error": "PermissionError: [Errno 1] Operation not permitted: '/dev/ttys003'",
+      "available": true,
+      "error": null,
       "grantpt": true,
-      "ptsname": "/dev/ttys003"
+      "ptsname": "/dev/ttys002"
     }
   },
   "output": {
