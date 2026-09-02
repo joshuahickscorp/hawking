@@ -61,3 +61,25 @@ def test_the_failure_reason_is_carried_on_the_event():
 
 def test_the_event_reason_is_bounded():
     assert 0 < Engine.TOOL_ERROR_EVENT_CHARS <= 2000
+
+
+def test_fs_list_works_with_no_arguments(ctx):
+    """"List the repo" must be expressible.
+
+    The schema demanded `path` while the handler already defaulted to the
+    workspace root, so a bare `fs.list` was rejected for a missing property the
+    tool did not actually need. Measured live: the model called it with no
+    arguments, read the rejection, and burned the round.
+    """
+    from hcli.tool_registry import _list_files
+
+    out = _list_files(ctx, {})
+    assert out["files"], "a bare fs.list must list the workspace root"
+
+
+def test_fs_list_still_refuses_a_path_outside_the_read_roots(ctx):
+    """Negative control: making the argument optional is not making it unsafe."""
+    from hcli.tool_registry import _list_files
+
+    with pytest.raises(PermissionError):
+        _list_files(ctx, {"path": "/etc"})

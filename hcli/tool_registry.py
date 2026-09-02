@@ -1777,8 +1777,13 @@ def default_tool_registry(
          "properties": {"pattern": {"type": "string"}, "root": {"type": "string"}, "glob": {"type": "string"}, "max_results": {"type": "integer"}}},
         handler=_search_files,
     ))
+    # `path` is NOT required: the handler already defaults to the workspace root
+    # and the read-root check still applies, so demanding it bought no safety and
+    # cost real calls. Measured: the model called fs.list with no arguments,
+    # got "missing required property 'path'", and burned the round. "List the
+    # repo" is the common intent and must be expressible.
     list_schema = {
-        "type": "object", "required": ["path"], "additionalProperties": False,
+        "type": "object", "required": [], "additionalProperties": False,
         "properties": {
             "path": {"type": "string"}, "glob": {"type": "string"},
             "recursive": {"type": "boolean"}, "max_results": {"type": "integer"},
