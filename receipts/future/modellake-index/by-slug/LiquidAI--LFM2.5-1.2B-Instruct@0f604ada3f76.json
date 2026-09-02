@@ -1,0 +1,225 @@
+{
+ "architecture_family": "lfm2",
+ "architecture_fingerprint": {
+  "architectures": [
+   "Lfm2ForCausalLM"
+  ],
+  "hidden_size": 2048,
+  "loaded_weights": false,
+  "model_type": "lfm2",
+  "n_tensors": 148,
+  "num_attention_heads": 32,
+  "num_hidden_layers": 16,
+  "num_key_value_heads": 8,
+  "organs": [
+   {
+    "confidence": 0.32,
+    "example": [
+     "model.embed_tokens.weight"
+    ],
+    "n_layers": 0,
+    "n_tensors": 1,
+    "organ": "embed",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.836,
+    "example": [
+     "model.layers.10.self_attn.k_proj.weight",
+     "model.layers.10.self_attn.q_proj.weight"
+    ],
+    "n_layers": 6,
+    "n_tensors": 18,
+    "organ": "gqa_attention",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.layers.0.feed_forward.w2.weight",
+     "model.layers.1.feed_forward.w2.weight"
+    ],
+    "n_layers": 16,
+    "n_tensors": 16,
+    "organ": "mlp_down",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.layers.0.feed_forward.w1.weight",
+     "model.layers.0.feed_forward.w3.weight"
+    ],
+    "n_layers": 16,
+    "n_tensors": 32,
+    "organ": "mlp_gate_up",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.layers.0.conv.in_proj.weight",
+     "model.layers.0.conv.out_proj.weight"
+    ],
+    "n_layers": 16,
+    "n_tensors": 26,
+    "organ": "recurrent_state",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.embedding_norm.weight",
+     "model.layers.0.ffn_norm.weight"
+    ],
+    "n_layers": 16,
+    "n_tensors": 45,
+    "organ": "rmsnorm",
+    "status": "NOVEL"
+   }
+  ],
+  "strength": "ORGAN_FINGERPRINT",
+  "vocab_size": 65536
+ },
+ "bytes": 2345559281,
+ "dir_mtime_ns": 1788303232792324018,
+ "evidence_tier": "STATIC",
+ "files": [
+  {
+   "bytes": 1519,
+   "mtime_ns": 1788302758824011821,
+   "path": ".gitattributes",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1519
+   }
+  },
+  {
+   "bytes": 10644,
+   "mtime_ns": 1788302760009998136,
+   "path": "LICENSE",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 10644
+   }
+  },
+  {
+   "bytes": 16291,
+   "mtime_ns": 1788302758918893801,
+   "path": "README.md",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 16291
+   }
+  },
+  {
+   "bytes": 5487,
+   "mtime_ns": 1788302759081620315,
+   "path": "chat_template.jinja",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5487
+   }
+  },
+  {
+   "bytes": 1224,
+   "mtime_ns": 1788302758861161903,
+   "path": "config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1224
+   }
+  },
+  {
+   "bytes": 132,
+   "mtime_ns": 1788302758846991013,
+   "path": "generation_config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 132
+   }
+  },
+  {
+   "bytes": 2340697936,
+   "mtime_ns": 1788303232593138839,
+   "path": "model.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 2340697936
+   }
+  },
+  {
+   "bytes": 434,
+   "mtime_ns": 1788302758846979930,
+   "path": "special_tokens_map.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 434
+   }
+  },
+  {
+   "bytes": 4733389,
+   "mtime_ns": 1788302759577028989,
+   "path": "tokenizer.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 4733389
+   }
+  },
+  {
+   "bytes": 92225,
+   "mtime_ns": 1788302758824000029,
+   "path": "tokenizer_config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 92225
+   }
+  }
+ ],
+ "has_lake_manifest": false,
+ "has_watch_manifest": true,
+ "lifecycle": "CENSUSED",
+ "lifecycle_derived_from": "sealed source plus an architecture fingerprint",
+ "loaded_weights": false,
+ "location": "specimens",
+ "manifest_bytes": null,
+ "n_files": 10,
+ "n_shards": 1,
+ "path": "/Volumes/corpdrive/hawking-modellake/specimens/LiquidAI--LFM2.5-1.2B-Instruct@0f604ada3f76",
+ "repo": "LiquidAI/LFM2.5-1.2B-Instruct",
+ "resolved_sha": "0f604ada3f766f9f257460c4c9f0b5d6f69d431b",
+ "revision": "0f604ada3f766f9f257460c4c9f0b5d6f69d431b",
+ "role": {
+  "evidence_tier": "STATIC",
+  "primary": "hybrid recurrent/state-space",
+  "roles": [
+   "hybrid recurrent/state-space",
+   "state-heavy architecture",
+   "long-context"
+  ]
+ },
+ "scanned_at": "2026-09-02T09:13:30Z",
+ "schema": "hawking.modellake.index.specimen.v1",
+ "seal_status": "SEALED",
+ "shards": {
+  "check_strength": "WEIGHTS_PRESENT_ONLY",
+  "complete": true,
+  "expected": null,
+  "n_shards": 1,
+  "present": 1
+ },
+ "slug": "LiquidAI--LFM2.5-1.2B-Instruct@0f604ada3f76",
+ "storage_role": "TIER2_COLD",
+ "watch_expected_bytes": 2345559281,
+ "wrote_specimen": false
+}

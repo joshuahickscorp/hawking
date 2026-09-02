@@ -1,0 +1,428 @@
+{
+ "architecture_family": "kimi_vl",
+ "architecture_fingerprint": {
+  "architectures": [
+   "KimiVLForConditionalGeneration"
+  ],
+  "hidden_size": 2048,
+  "loaded_weights": false,
+  "model_type": "kimi_vl",
+  "n_tensors": 5679,
+  "num_attention_heads": 16,
+  "num_hidden_layers": 27,
+  "num_key_value_heads": 16,
+  "organs": [
+   {
+    "confidence": 0.32,
+    "example": [
+     "language_model.model.embed_tokens.weight"
+    ],
+    "n_layers": 0,
+    "n_tensors": 1,
+    "organ": "embed",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "language_model.model.layers.0.self_attn.kv_a_layernorm.weight",
+     "language_model.model.layers.0.self_attn.kv_a_proj_with_mqa.weight"
+    ],
+    "n_layers": 27,
+    "n_tensors": 135,
+    "organ": "latent_attention",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.32,
+    "example": [
+     "language_model.lm_head.weight"
+    ],
+    "n_layers": 0,
+    "n_tensors": 1,
+    "organ": "lm_head",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.552,
+    "example": [
+     "language_model.model.layers.0.mlp.down_proj.weight"
+    ],
+    "n_layers": 1,
+    "n_tensors": 1,
+    "organ": "mlp_down",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.554,
+    "example": [
+     "language_model.model.layers.0.mlp.gate_proj.weight",
+     "language_model.model.layers.0.mlp.up_proj.weight"
+    ],
+    "n_layers": 1,
+    "n_tensors": 2,
+    "organ": "mlp_gate_up",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.4,
+    "example": [
+     "multi_modal_projector.linear_1.bias",
+     "multi_modal_projector.linear_1.weight"
+    ],
+    "n_layers": 0,
+    "n_tensors": 5,
+    "organ": "mm_projector",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "language_model.model.layers.1.mlp.experts.0.down_proj.weight",
+     "language_model.model.layers.1.mlp.experts.0.gate_proj.weight"
+    ],
+    "n_layers": 26,
+    "n_tensors": 4992,
+    "organ": "moe_expert",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "language_model.model.layers.1.mlp.gate.weight",
+     "language_model.model.layers.10.mlp.gate.weight"
+    ],
+    "n_layers": 26,
+    "n_tensors": 26,
+    "organ": "moe_router",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "language_model.model.layers.0.input_layernorm.weight",
+     "language_model.model.layers.0.post_attention_layernorm.weight"
+    ],
+    "n_layers": 27,
+    "n_tensors": 57,
+    "organ": "rmsnorm",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "language_model.model.layers.1.mlp.shared_experts.down_proj.weight",
+     "language_model.model.layers.1.mlp.shared_experts.gate_proj.weight"
+    ],
+    "n_layers": 26,
+    "n_tensors": 78,
+    "organ": "shared_expert",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "vision_tower.encoder.blocks.0.mlp.fc0.bias",
+     "vision_tower.encoder.blocks.0.mlp.fc0.weight"
+    ],
+    "n_layers": 27,
+    "n_tensors": 328,
+    "organ": "vision_encoder",
+    "status": "NOVEL"
+   }
+  ],
+  "strength": "ORGAN_FINGERPRINT",
+  "vocab_size": 163840
+ },
+ "bytes": 32823063084,
+ "dir_mtime_ns": 1787643736452238704,
+ "evidence_tier": "STATIC",
+ "files": [
+  {
+   "bytes": 1722,
+   "mtime_ns": 1787632854107345105,
+   "path": ".gitattributes",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 14619,
+   "mtime_ns": 1787632854166422972,
+   "path": "README.md",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1032,
+   "mtime_ns": 1787632854109177858,
+   "path": "chat_template.jinja",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 2005,
+   "mtime_ns": 1787632854149490396,
+   "path": "config.json",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 13151,
+   "mtime_ns": 1787632854111881739,
+   "path": "configuration_kimi_vl.py",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 641358,
+   "mtime_ns": 1787632855273232834,
+   "path": "figures/arch.png",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 525038,
+   "mtime_ns": 1787632855037859909,
+   "path": "figures/demo.png",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 2235806,
+   "mtime_ns": 1787632855869027307,
+   "path": "figures/instruct_perf.png",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 13101,
+   "mtime_ns": 1787632854450016868,
+   "path": "figures/logo.png",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 149,
+   "mtime_ns": 1787632854191821356,
+   "path": "generation_config.json",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 4680,
+   "mtime_ns": 1787632854189824810,
+   "path": "image_processing_kimi_vl.py",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 4994390288,
+   "mtime_ns": 1787643669320495711,
+   "path": "model-00001-of-00007.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 4995061424,
+   "mtime_ns": 1787643374968876634,
+   "path": "model-00002-of-00007.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 4996100112,
+   "mtime_ns": 1787643409193402134,
+   "path": "model-00003-of-00007.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 4996100320,
+   "mtime_ns": 1787643556528628401,
+   "path": "model-00004-of-00007.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 4998185720,
+   "mtime_ns": 1787643646377747936,
+   "path": "model-00005-of-00007.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 4996099448,
+   "mtime_ns": 1787643016689004661,
+   "path": "model-00006-of-00007.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 2840161216,
+   "mtime_ns": 1787640840206802882,
+   "path": "model-00007-of-00007.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 588207,
+   "mtime_ns": 1787632856011704965,
+   "path": "model.safetensors.index.json",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 105649,
+   "mtime_ns": 1787632856328733594,
+   "path": "modeling_kimi_vl.py",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 401,
+   "mtime_ns": 1787632856405953788,
+   "path": "preprocessor_config.json",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 7537,
+   "mtime_ns": 1787632856516713216,
+   "path": "processing_kimi_vl.py",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 2795286,
+   "mtime_ns": 1787632857217698690,
+   "path": "tiktoken.model",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 10958,
+   "mtime_ns": 1787632857456685289,
+   "path": "tokenization_moonshot.py",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3857,
+   "mtime_ns": 1787632857535785154,
+   "path": "tokenizer_config.json",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  }
+ ],
+ "has_lake_manifest": true,
+ "has_watch_manifest": false,
+ "lifecycle": "CENSUSED",
+ "lifecycle_derived_from": "sealed source plus an architecture fingerprint",
+ "loaded_weights": false,
+ "location": "specimens",
+ "manifest_bytes": 32823230464,
+ "n_files": 25,
+ "n_shards": 7,
+ "path": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+ "repo": "moonshotai/Kimi-VL-A3B-Instruct",
+ "resolved_sha": "398eede0903cd983a2bfa0cc634e9ac1d843f375",
+ "revision": "398eede0903cd983a2bfa0cc634e9ac1d843f375",
+ "role": {
+  "evidence_tier": "STATIC",
+  "primary": "multimodal",
+  "roles": [
+   "multimodal",
+   "MoE",
+   "alternative tokenizer"
+  ]
+ },
+ "scanned_at": "2026-09-02T09:13:33Z",
+ "schema": "hawking.modellake.index.specimen.v1",
+ "seal_status": "UNSEALED",
+ "shards": {
+  "check_strength": "INDEX_MATCHED",
+  "complete": true,
+  "expected": 7,
+  "n_shards": 7,
+  "present": 7
+ },
+ "slug": "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+ "storage_role": "TIER2_COLD",
+ "watch_expected_bytes": null,
+ "wrote_specimen": false
+}

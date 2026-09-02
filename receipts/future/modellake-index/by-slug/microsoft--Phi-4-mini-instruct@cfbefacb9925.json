@@ -1,0 +1,323 @@
+{
+ "architecture_family": "phi3",
+ "architecture_fingerprint": {
+  "architectures": [
+   "Phi3ForCausalLM"
+  ],
+  "hidden_size": 3072,
+  "loaded_weights": false,
+  "model_type": "phi3",
+  "n_tensors": 194,
+  "num_attention_heads": 24,
+  "num_hidden_layers": 32,
+  "num_key_value_heads": 8,
+  "organs": [
+   {
+    "confidence": 0.32,
+    "example": [
+     "model.embed_tokens.weight"
+    ],
+    "n_layers": 0,
+    "n_tensors": 1,
+    "organ": "embed",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.layers.0.self_attn.o_proj.weight",
+     "model.layers.1.self_attn.o_proj.weight"
+    ],
+    "n_layers": 32,
+    "n_tensors": 32,
+    "organ": "gqa_attention",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.layers.0.mlp.down_proj.weight",
+     "model.layers.1.mlp.down_proj.weight"
+    ],
+    "n_layers": 32,
+    "n_tensors": 32,
+    "organ": "mlp_down",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.layers.0.mlp.gate_up_proj.weight",
+     "model.layers.1.mlp.gate_up_proj.weight"
+    ],
+    "n_layers": 32,
+    "n_tensors": 32,
+    "organ": "mlp_gate_up",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.layers.0.input_layernorm.weight",
+     "model.layers.0.post_attention_layernorm.weight"
+    ],
+    "n_layers": 32,
+    "n_tensors": 65,
+    "organ": "rmsnorm",
+    "status": "NOVEL"
+   }
+  ],
+  "strength": "ORGAN_FINGERPRINT",
+  "vocab_size": 200064
+ },
+ "bytes": 7694054130,
+ "dir_mtime_ns": 1788310012875857308,
+ "evidence_tier": "STATIC",
+ "files": [
+  {
+   "bytes": 1570,
+   "mtime_ns": 1788303314024286276,
+   "path": ".gitattributes",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1570
+   }
+  },
+  {
+   "bytes": 453,
+   "mtime_ns": 1788303314087068345,
+   "path": "CODE_OF_CONDUCT.md",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 453
+   }
+  },
+  {
+   "bytes": 1084,
+   "mtime_ns": 1788303313912647277,
+   "path": "LICENSE",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1084
+   }
+  },
+  {
+   "bytes": 1809,
+   "mtime_ns": 1788303314087128220,
+   "path": "NOTICE.md",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1809
+   }
+  },
+  {
+   "bytes": 29246,
+   "mtime_ns": 1788303314087102470,
+   "path": "README.md",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 29246
+   }
+  },
+  {
+   "bytes": 2656,
+   "mtime_ns": 1788303314024129734,
+   "path": "SECURITY.md",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 2656
+   }
+  },
+  {
+   "bytes": 249,
+   "mtime_ns": 1788303313813586667,
+   "path": "added_tokens.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 249
+   }
+  },
+  {
+   "bytes": 2504,
+   "mtime_ns": 1788303313606006395,
+   "path": "config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 2504
+   }
+  },
+  {
+   "bytes": 10875,
+   "mtime_ns": 1788303314024197942,
+   "path": "configuration_phi3.py",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 10875
+   }
+  },
+  {
+   "bytes": 4320,
+   "mtime_ns": 1788303313813567625,
+   "path": "data_summary_card.md",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 4320
+   }
+  },
+  {
+   "bytes": 168,
+   "mtime_ns": 1788303314024105025,
+   "path": "generation_config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 168
+   }
+  },
+  {
+   "bytes": 2418348,
+   "mtime_ns": 1788303313987313943,
+   "path": "merges.txt",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 2418348
+   }
+  },
+  {
+   "bytes": 4903637712,
+   "mtime_ns": 1788310012501137904,
+   "path": "model-00001-of-00002.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 4903637712
+   }
+  },
+  {
+   "bytes": 2768428504,
+   "mtime_ns": 1788306354729605511,
+   "path": "model-00002-of-00002.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 2768428504
+   }
+  },
+  {
+   "bytes": 16273,
+   "mtime_ns": 1788303314087066262,
+   "path": "model.safetensors.index.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 16273
+   }
+  },
+  {
+   "bytes": 54268,
+   "mtime_ns": 1788303313912849652,
+   "path": "modeling_phi3.py",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 54268
+   }
+  },
+  {
+   "bytes": 6167,
+   "mtime_ns": 1788303314087149179,
+   "path": "sample_finetune.py",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 6167
+   }
+  },
+  {
+   "bytes": 587,
+   "mtime_ns": 1788303314432178603,
+   "path": "special_tokens_map.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 587
+   }
+  },
+  {
+   "bytes": 15524095,
+   "mtime_ns": 1788303323735366379,
+   "path": "tokenizer.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 15524095
+   }
+  },
+  {
+   "bytes": 2932,
+   "mtime_ns": 1788303314319400395,
+   "path": "tokenizer_config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 2932
+   }
+  },
+  {
+   "bytes": 3910310,
+   "mtime_ns": 1788303314716396168,
+   "path": "vocab.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 3910310
+   }
+  }
+ ],
+ "has_lake_manifest": false,
+ "has_watch_manifest": true,
+ "lifecycle": "CENSUSED",
+ "lifecycle_derived_from": "sealed source plus an architecture fingerprint",
+ "loaded_weights": false,
+ "location": "specimens",
+ "manifest_bytes": null,
+ "n_files": 21,
+ "n_shards": 2,
+ "path": "/Volumes/corpdrive/hawking-modellake/specimens/microsoft--Phi-4-mini-instruct@cfbefacb9925",
+ "repo": "microsoft/Phi-4-mini-instruct",
+ "resolved_sha": "cfbefacb99257ffa30c83adab238a50856ac3083",
+ "revision": "cfbefacb99257ffa30c83adab238a50856ac3083",
+ "role": {
+  "evidence_tier": "STATIC",
+  "primary": "dense decoder",
+  "roles": [
+   "dense decoder",
+   "long-context"
+  ]
+ },
+ "scanned_at": "2026-09-02T09:13:31Z",
+ "schema": "hawking.modellake.index.specimen.v1",
+ "seal_status": "SEALED",
+ "shards": {
+  "check_strength": "INDEX_MATCHED",
+  "complete": true,
+  "expected": 2,
+  "n_shards": 2,
+  "present": 2
+ },
+ "slug": "microsoft--Phi-4-mini-instruct@cfbefacb9925",
+ "storage_role": "TIER2_COLD",
+ "watch_expected_bytes": 7694054130,
+ "wrote_specimen": false
+}

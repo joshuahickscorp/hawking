@@ -1,0 +1,142 @@
+{
+ "architecture_family": "timesfm",
+ "architecture_fingerprint": {
+  "architectures": [
+   "TimesFmModelForPrediction"
+  ],
+  "hidden_size": 1280,
+  "loaded_weights": false,
+  "model_type": "timesfm",
+  "n_tensors": 813,
+  "num_attention_heads": 16,
+  "num_hidden_layers": 50,
+  "num_key_value_heads": null,
+  "organs": [
+   {
+    "confidence": 0.98,
+    "example": [
+     "decoder.layers.0.self_attn.k_proj.weight",
+     "decoder.layers.0.self_attn.o_proj.weight"
+    ],
+    "n_layers": 50,
+    "n_tensors": 200,
+    "organ": "gqa_attention",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "decoder.layers.0.mlp.down_proj.weight",
+     "decoder.layers.1.mlp.down_proj.weight"
+    ],
+    "n_layers": 50,
+    "n_tensors": 50,
+    "organ": "mlp_down",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "decoder.layers.0.mlp.gate_proj.weight",
+     "decoder.layers.1.mlp.gate_proj.weight"
+    ],
+    "n_layers": 50,
+    "n_tensors": 50,
+    "organ": "mlp_gate_up",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "decoder.layers.0.input_layernorm.weight",
+     "decoder.layers.0.mlp.layer_norm.weight"
+    ],
+    "n_layers": 50,
+    "n_tensors": 100,
+    "organ": "rmsnorm",
+    "status": "NOVEL"
+   }
+  ],
+  "strength": "ORGAN_FINGERPRINT",
+  "vocab_size": null
+ },
+ "bytes": 1995416592,
+ "dir_mtime_ns": 1787950652940644181,
+ "evidence_tier": "STATIC",
+ "files": [
+  {
+   "bytes": 1572,
+   "mtime_ns": 1787949925242753805,
+   "path": ".gitattributes",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1572
+   }
+  },
+  {
+   "bytes": 7352,
+   "mtime_ns": 1787949924845307857,
+   "path": "README.md",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 7352
+   }
+  },
+  {
+   "bytes": 692,
+   "mtime_ns": 1787949924805594213,
+   "path": "config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 692
+   }
+  },
+  {
+   "bytes": 1995406976,
+   "mtime_ns": 1787950648779225279,
+   "path": "model.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1995406976
+   }
+  }
+ ],
+ "has_lake_manifest": false,
+ "has_watch_manifest": true,
+ "lifecycle": "CENSUSED",
+ "lifecycle_derived_from": "sealed source plus an architecture fingerprint",
+ "loaded_weights": false,
+ "location": "specimens",
+ "manifest_bytes": null,
+ "n_files": 4,
+ "n_shards": 1,
+ "path": "/Volumes/corpdrive/hawking-modellake/specimens/google--timesfm-2.0-500m-pytorch@dc2443792ce5",
+ "repo": "google/timesfm-2.0-500m-pytorch",
+ "resolved_sha": "dc2443792ce5516872b89b37cf1bc058c3bf0c10",
+ "revision": "dc2443792ce5516872b89b37cf1bc058c3bf0c10",
+ "role": {
+  "evidence_tier": "STATIC",
+  "primary": "dense decoder",
+  "roles": [
+   "dense decoder"
+  ]
+ },
+ "scanned_at": "2026-09-02T09:13:31Z",
+ "schema": "hawking.modellake.index.specimen.v1",
+ "seal_status": "SEALED",
+ "shards": {
+  "check_strength": "WEIGHTS_PRESENT_ONLY",
+  "complete": true,
+  "expected": null,
+  "n_shards": 1,
+  "present": 1
+ },
+ "slug": "google--timesfm-2.0-500m-pytorch@dc2443792ce5",
+ "storage_role": "TIER2_COLD",
+ "watch_expected_bytes": 1995416592,
+ "wrote_specimen": false
+}

@@ -1,0 +1,1606 @@
+{
+ "architecture_family": "qwen4_exp",
+ "architecture_fingerprint": {
+  "architectures": [
+   "Qwen4ExpForConditionalGeneration"
+  ],
+  "hidden_size": 2560,
+  "loaded_weights": false,
+  "model_type": "qwen4_exp",
+  "n_tensors": 1658,
+  "num_attention_heads": 24,
+  "num_hidden_layers": 48,
+  "num_key_value_heads": 2,
+  "organs": [
+   {
+    "confidence": 0.32,
+    "example": [
+     "model.language_model.embed_tokens.weight"
+    ],
+    "n_layers": 0,
+    "n_tensors": 1,
+    "organ": "embed",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.language_model.layers.11.self_attn.k_proj.weight",
+     "model.language_model.layers.11.self_attn.o_proj.weight"
+    ],
+    "n_layers": 13,
+    "n_tensors": 52,
+    "organ": "gqa_attention",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.32,
+    "example": [
+     "lm_head.weight"
+    ],
+    "n_layers": 0,
+    "n_tensors": 1,
+    "organ": "lm_head",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.4,
+    "example": [
+     "model.visual.merger.linear_fc1.bias",
+     "model.visual.merger.linear_fc1.weight"
+    ],
+    "n_layers": 0,
+    "n_tensors": 5,
+    "organ": "mm_projector",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.language_model.layers.0.mlp.experts.down_proj",
+     "model.language_model.layers.0.mlp.experts.gate_up_proj"
+    ],
+    "n_layers": 48,
+    "n_tensors": 98,
+    "organ": "moe_expert",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.language_model.layers.0.mlp.gate.weight",
+     "model.language_model.layers.0.mlp.shared_expert_gate.weight"
+    ],
+    "n_layers": 48,
+    "n_tensors": 98,
+    "organ": "moe_router",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.language_model.layers.0.linear_attn.A_log",
+     "model.language_model.layers.0.linear_attn.conv1d.weight"
+    ],
+    "n_layers": 36,
+    "n_tensors": 325,
+    "organ": "recurrent_state",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.language_model.hyper_connection_mixer.hc_norm.weight",
+     "model.language_model.layers.0.attn_hyper_connection.hc_norm.weight"
+    ],
+    "n_layers": 48,
+    "n_tensors": 153,
+    "organ": "rmsnorm",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.language_model.layers.0.mlp.shared_expert.down_proj.weight",
+     "model.language_model.layers.0.mlp.shared_expert.gate_proj.weight"
+    ],
+    "n_layers": 48,
+    "n_tensors": 147,
+    "organ": "shared_expert",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.visual.blocks.0.attn.proj.bias",
+     "model.visual.blocks.0.attn.proj.weight"
+    ],
+    "n_layers": 27,
+    "n_tensors": 327,
+    "organ": "vision_encoder",
+    "status": "NOVEL"
+   }
+  ],
+  "strength": "ORGAN_FINGERPRINT",
+  "vocab_size": 248320
+ },
+ "bytes": 360023286454,
+ "dir_mtime_ns": 1787803443667790621,
+ "evidence_tier": "STATIC",
+ "files": [
+  {
+   "bytes": 1570,
+   "mtime_ns": 1787799183365146863,
+   "path": ".gitattributes",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3235,
+   "mtime_ns": 1787799183365472697,
+   "path": "LICENSE",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 95,
+   "mtime_ns": 1787799183370117542,
+   "path": "README.md",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 8952,
+   "mtime_ns": 1787799183521769524,
+   "path": "chat_template.jinja",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 4745,
+   "mtime_ns": 1787799183556534782,
+   "path": "config.json",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 202,
+   "mtime_ns": 1787799183373291926,
+   "path": "generation_config.json",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3353259,
+   "mtime_ns": 1787799183836898769,
+   "path": "merges.txt",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1040155944,
+   "mtime_ns": 1787799273794045826,
+   "path": "model-00001-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443368,
+   "mtime_ns": 1787799518478403890,
+   "path": "model-00002-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1832518264,
+   "mtime_ns": 1787799363367188179,
+   "path": "model-00003-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443368,
+   "mtime_ns": 1787799518714503968,
+   "path": "model-00004-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355888504,
+   "mtime_ns": 1787799529581537048,
+   "path": "model-00005-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3200016032,
+   "mtime_ns": 1787799510289134466,
+   "path": "model-00006-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3200016032,
+   "mtime_ns": 1787799494864876794,
+   "path": "model-00007-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3200016032,
+   "mtime_ns": 1787799513983174209,
+   "path": "model-00008-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3200016032,
+   "mtime_ns": 1787799560235166080,
+   "path": "model-00009-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3200016032,
+   "mtime_ns": 1787799691493675675,
+   "path": "model-00010-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3200016032,
+   "mtime_ns": 1787799751902224827,
+   "path": "model-00011-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3200016032,
+   "mtime_ns": 1787799794597046677,
+   "path": "model-00012-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3200016032,
+   "mtime_ns": 1787799818595320980,
+   "path": "model-00013-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3200016032,
+   "mtime_ns": 1787799825715201465,
+   "path": "model-00014-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3200016032,
+   "mtime_ns": 1787799801988741460,
+   "path": "model-00015-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3200016032,
+   "mtime_ns": 1787799822044133452,
+   "path": "model-00016-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3200016032,
+   "mtime_ns": 1787799859461538279,
+   "path": "model-00017-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3200016032,
+   "mtime_ns": 1787800004057627685,
+   "path": "model-00018-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3200016032,
+   "mtime_ns": 1787800039383674853,
+   "path": "model-00019-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3200016032,
+   "mtime_ns": 1787800056720415332,
+   "path": "model-00020-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3200016032,
+   "mtime_ns": 1787800072607781880,
+   "path": "model-00021-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3200016032,
+   "mtime_ns": 1787800115278225749,
+   "path": "model-00022-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3200016032,
+   "mtime_ns": 1787800125066776826,
+   "path": "model-00023-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3200016032,
+   "mtime_ns": 1787800141647566277,
+   "path": "model-00024-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3200016032,
+   "mtime_ns": 1787800154645845989,
+   "path": "model-00025-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3200016032,
+   "mtime_ns": 1787800276315419739,
+   "path": "model-00026-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3200016032,
+   "mtime_ns": 1787800342625403261,
+   "path": "model-00027-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3200016032,
+   "mtime_ns": 1787800353595866566,
+   "path": "model-00028-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3200016032,
+   "mtime_ns": 1787800375656252280,
+   "path": "model-00029-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3200016032,
+   "mtime_ns": 1787800373515465575,
+   "path": "model-00030-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3200016040,
+   "mtime_ns": 1787800426879235522,
+   "path": "model-00031-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3200016040,
+   "mtime_ns": 1787800407845509964,
+   "path": "model-00032-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3200016040,
+   "mtime_ns": 1787800483621012005,
+   "path": "model-00033-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3200016040,
+   "mtime_ns": 1787800589413816485,
+   "path": "model-00034-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3200016040,
+   "mtime_ns": 1787800644135669956,
+   "path": "model-00035-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3200016040,
+   "mtime_ns": 1787800657180261123,
+   "path": "model-00036-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1742347160,
+   "mtime_ns": 1787800553677723406,
+   "path": "model-00037-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443376,
+   "mtime_ns": 1787800711317562392,
+   "path": "model-00038-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1716599840,
+   "mtime_ns": 1787800611017358959,
+   "path": "model-00039-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443376,
+   "mtime_ns": 1787800718124455682,
+   "path": "model-00040-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1941966288,
+   "mtime_ns": 1787800672951008823,
+   "path": "model-00041-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443376,
+   "mtime_ns": 1787800870640200339,
+   "path": "model-00042-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1839072016,
+   "mtime_ns": 1787800795097458534,
+   "path": "model-00043-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443376,
+   "mtime_ns": 1787800936455497354,
+   "path": "model-00044-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1832518280,
+   "mtime_ns": 1787800804768766177,
+   "path": "model-00045-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443376,
+   "mtime_ns": 1787800970937939142,
+   "path": "model-00046-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1716681904,
+   "mtime_ns": 1787800847045834056,
+   "path": "model-00047-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443376,
+   "mtime_ns": 1787801026851779576,
+   "path": "model-00048-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1935433152,
+   "mtime_ns": 1787800906164720904,
+   "path": "model-00049-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443376,
+   "mtime_ns": 1787801109687945754,
+   "path": "model-00050-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1832518280,
+   "mtime_ns": 1787801001883292685,
+   "path": "model-00051-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443376,
+   "mtime_ns": 1787801172554308688,
+   "path": "model-00052-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1839072024,
+   "mtime_ns": 1787801044809181918,
+   "path": "model-00053-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443376,
+   "mtime_ns": 1787801237756053664,
+   "path": "model-00054-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1716599840,
+   "mtime_ns": 1787801118918501784,
+   "path": "model-00055-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443376,
+   "mtime_ns": 1787801303486929965,
+   "path": "model-00056-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1941966280,
+   "mtime_ns": 1787801171804413006,
+   "path": "model-00057-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443368,
+   "mtime_ns": 1787801349797275941,
+   "path": "model-00058-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1716600048,
+   "mtime_ns": 1787801187562544351,
+   "path": "model-00059-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3471361528,
+   "mtime_ns": 1787801444648432557,
+   "path": "model-00060-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443376,
+   "mtime_ns": 1787801432203614453,
+   "path": "model-00061-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3510240000,
+   "mtime_ns": 1787801482380788475,
+   "path": "model-00062-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443376,
+   "mtime_ns": 1787801493760660501,
+   "path": "model-00063-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1832518280,
+   "mtime_ns": 1787801371401250808,
+   "path": "model-00064-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443376,
+   "mtime_ns": 1787801556874018060,
+   "path": "model-00065-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1719221392,
+   "mtime_ns": 1787801480867443618,
+   "path": "model-00066-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443376,
+   "mtime_ns": 1787801628516376883,
+   "path": "model-00067-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1935412552,
+   "mtime_ns": 1787801548740269854,
+   "path": "model-00068-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443376,
+   "mtime_ns": 1787801750267557803,
+   "path": "model-00069-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1832523520,
+   "mtime_ns": 1787801621519870483,
+   "path": "model-00070-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443376,
+   "mtime_ns": 1787801784535185712,
+   "path": "model-00071-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1839072128,
+   "mtime_ns": 1787801675340155433,
+   "path": "model-00072-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443376,
+   "mtime_ns": 1787801792421878906,
+   "path": "model-00073-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1716599840,
+   "mtime_ns": 1787801698338118224,
+   "path": "model-00074-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443376,
+   "mtime_ns": 1787801865636257863,
+   "path": "model-00075-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1938689480,
+   "mtime_ns": 1787801796355824624,
+   "path": "model-00076-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443376,
+   "mtime_ns": 1787801946769134012,
+   "path": "model-00077-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1832600344,
+   "mtime_ns": 1787801861380826649,
+   "path": "model-00078-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443376,
+   "mtime_ns": 1787801982799758046,
+   "path": "model-00079-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1716599840,
+   "mtime_ns": 1787801893447307471,
+   "path": "model-00080-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443368,
+   "mtime_ns": 1787802061750086406,
+   "path": "model-00081-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1935433136,
+   "mtime_ns": 1787801969351192482,
+   "path": "model-00082-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443376,
+   "mtime_ns": 1787802123250489975,
+   "path": "model-00083-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1716599840,
+   "mtime_ns": 1787802064670005220,
+   "path": "model-00084-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443376,
+   "mtime_ns": 1787802187962748195,
+   "path": "model-00085-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1941966296,
+   "mtime_ns": 1787802073517029721,
+   "path": "model-00086-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443376,
+   "mtime_ns": 1787802234506214480,
+   "path": "model-00087-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1839072024,
+   "mtime_ns": 1787802128973106385,
+   "path": "model-00088-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443376,
+   "mtime_ns": 1787802271550767669,
+   "path": "model-00089-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1835795216,
+   "mtime_ns": 1787802238859244195,
+   "path": "model-00090-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443376,
+   "mtime_ns": 1787802414931660314,
+   "path": "model-00091-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1716599840,
+   "mtime_ns": 1787802244512229843,
+   "path": "model-00092-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443376,
+   "mtime_ns": 1787802430997795205,
+   "path": "model-00093-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1935412928,
+   "mtime_ns": 1787802307497390446,
+   "path": "model-00094-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443376,
+   "mtime_ns": 1787802480586790921,
+   "path": "model-00095-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1832518280,
+   "mtime_ns": 1787802428340802943,
+   "path": "model-00096-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443376,
+   "mtime_ns": 1787802580499246285,
+   "path": "model-00097-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1832518280,
+   "mtime_ns": 1787802436220695661,
+   "path": "model-00098-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443376,
+   "mtime_ns": 1787802589352727928,
+   "path": "model-00099-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1716600224,
+   "mtime_ns": 1787802463928130003,
+   "path": "model-00100-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443376,
+   "mtime_ns": 1787802746110169118,
+   "path": "model-00101-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1935413160,
+   "mtime_ns": 1787802585823676544,
+   "path": "model-00102-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443368,
+   "mtime_ns": 1787802740618558803,
+   "path": "model-00103-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1832518272,
+   "mtime_ns": 1787802635358859371,
+   "path": "model-00104-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443376,
+   "mtime_ns": 1787802797421080728,
+   "path": "model-00105-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1863975680,
+   "mtime_ns": 1787802661404979057,
+   "path": "model-00106-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443376,
+   "mtime_ns": 1787802865923931047,
+   "path": "model-00107-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1900676064,
+   "mtime_ns": 1787802748093274144,
+   "path": "model-00108-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443376,
+   "mtime_ns": 1787802916689592950,
+   "path": "model-00109-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1716599840,
+   "mtime_ns": 1787802793852824368,
+   "path": "model-00110-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443376,
+   "mtime_ns": 1787802974759262660,
+   "path": "model-00111-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1935413176,
+   "mtime_ns": 1787802920452486107,
+   "path": "model-00112-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443376,
+   "mtime_ns": 1787803042887717063,
+   "path": "model-00113-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1832523512,
+   "mtime_ns": 1787802905247016804,
+   "path": "model-00114-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443376,
+   "mtime_ns": 1787803131578745808,
+   "path": "model-00115-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1832518280,
+   "mtime_ns": 1787802971727820469,
+   "path": "model-00116-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443376,
+   "mtime_ns": 1787803198412539899,
+   "path": "model-00117-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1716620424,
+   "mtime_ns": 1787803053882484577,
+   "path": "model-00118-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443376,
+   "mtime_ns": 1787803205709821245,
+   "path": "model-00119-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1948519840,
+   "mtime_ns": 1787803097594569052,
+   "path": "model-00120-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443368,
+   "mtime_ns": 1787803279133601940,
+   "path": "model-00121-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1832518264,
+   "mtime_ns": 1787803155009951801,
+   "path": "model-00122-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443368,
+   "mtime_ns": 1787803356830128915,
+   "path": "model-00123-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1729707128,
+   "mtime_ns": 1787803227867388072,
+   "path": "model-00124-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443368,
+   "mtime_ns": 1787803395855116430,
+   "path": "model-00125-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1935412520,
+   "mtime_ns": 1787803313902554958,
+   "path": "model-00126-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443368,
+   "mtime_ns": 1787803404578450497,
+   "path": "model-00127-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1832518264,
+   "mtime_ns": 1787803361354182038,
+   "path": "model-00128-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3355443368,
+   "mtime_ns": 1787803443360756391,
+   "path": "model-00129-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 2974788136,
+   "mtime_ns": 1787803442774013683,
+   "path": "model-00130-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1271398528,
+   "mtime_ns": 1787803397203828852,
+   "path": "model-00131-of-00131.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 170726,
+   "mtime_ns": 1787803316224478745,
+   "path": "model.safetensors.index.json",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 390,
+   "mtime_ns": 1787803321480817409,
+   "path": "preprocessor_config.json",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 12809320,
+   "mtime_ns": 1787803327025585020,
+   "path": "tokenizer.json",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 17928,
+   "mtime_ns": 1787803329964839110,
+   "path": "tokenizer_config.json",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 385,
+   "mtime_ns": 1787803330229926936,
+   "path": "video_preprocessor_config.json",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 6722759,
+   "mtime_ns": 1787803331244051289,
+   "path": "vocab.json",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  }
+ ],
+ "has_lake_manifest": true,
+ "has_watch_manifest": false,
+ "lifecycle": "CENSUSED",
+ "lifecycle_derived_from": "sealed source plus an architecture fingerprint",
+ "loaded_weights": false,
+ "location": "specimens",
+ "manifest_bytes": 360053432320,
+ "n_files": 144,
+ "n_shards": 131,
+ "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+ "repo": "Qwen/Qwen3.8-Flash-Next",
+ "resolved_sha": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+ "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+ "role": {
+  "evidence_tier": "STATIC",
+  "primary": "dense decoder",
+  "roles": [
+   "dense decoder"
+  ]
+ },
+ "scanned_at": "2026-09-02T09:13:30Z",
+ "schema": "hawking.modellake.index.specimen.v1",
+ "seal_status": "UNSEALED",
+ "shards": {
+  "check_strength": "INDEX_MATCHED",
+  "complete": true,
+  "expected": 131,
+  "n_shards": 131,
+  "present": 131
+ },
+ "slug": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+ "storage_role": "TIER2_COLD",
+ "watch_expected_bytes": null,
+ "wrote_specimen": false
+}

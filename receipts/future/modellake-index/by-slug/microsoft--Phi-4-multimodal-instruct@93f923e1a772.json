@@ -1,0 +1,674 @@
+{
+ "architecture_family": "phi4mm",
+ "architecture_fingerprint": {
+  "architectures": [
+   "Phi4MMForCausalLM"
+  ],
+  "hidden_size": 3072,
+  "loaded_weights": false,
+  "model_type": "phi4mm",
+  "n_tensors": 2047,
+  "num_attention_heads": 24,
+  "num_hidden_layers": 32,
+  "num_key_value_heads": 8,
+  "organs": [
+   {
+    "confidence": 0.32,
+    "example": [
+     "model.embed_tokens.weight"
+    ],
+    "n_layers": 0,
+    "n_tensors": 1,
+    "organ": "embed",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.embed_tokens_extend.image_embed.img_processor.encoder.layers.0.self_attn.k_proj.weight",
+     "model.embed_tokens_extend.image_embed.img_processor.encoder.layers.0.self_attn.q_proj.weight"
+    ],
+    "n_layers": 32,
+    "n_tensors": 241,
+    "organ": "gqa_attention",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.layers.0.mlp.down_proj.base_layer.weight",
+     "model.layers.0.mlp.down_proj.lora_A.speech.weight"
+    ],
+    "n_layers": 32,
+    "n_tensors": 160,
+    "organ": "mlp_down",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.layers.0.mlp.gate_up_proj.base_layer.weight",
+     "model.layers.0.mlp.gate_up_proj.lora_A.speech.weight"
+    ],
+    "n_layers": 32,
+    "n_tensors": 160,
+    "organ": "mlp_gate_up",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.embed_tokens_extend.image_embed.img_processor.encoder.layers.0.self_attn.out_proj.bias",
+     "model.embed_tokens_extend.image_embed.img_processor.encoder.layers.0.self_attn.out_proj.weight"
+    ],
+    "n_layers": 27,
+    "n_tensors": 56,
+    "organ": "recurrent_state",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.embed_tokens_extend.audio_embed.encoder.encoders.0.conv.layer_norm.weight",
+     "model.embed_tokens_extend.audio_embed.encoder.encoders.0.feed_forward_in.layer_norm.weight"
+    ],
+    "n_layers": 32,
+    "n_tensors": 163,
+    "organ": "rmsnorm",
+    "status": "NOVEL"
+   }
+  ],
+  "strength": "ORGAN_FINGERPRINT",
+  "vocab_size": 200064
+ },
+ "bytes": 12878588835,
+ "dir_mtime_ns": 1788014513958790670,
+ "evidence_tier": "STATIC",
+ "files": [
+  {
+   "bytes": 1612,
+   "mtime_ns": 1788013904911043717,
+   "path": ".gitattributes",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1612
+   }
+  },
+  {
+   "bytes": 444,
+   "mtime_ns": 1788013899637868986,
+   "path": "CODE_OF_CONDUCT.md",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 444
+   }
+  },
+  {
+   "bytes": 1141,
+   "mtime_ns": 1788013904911076675,
+   "path": "LICENSE",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1141
+   }
+  },
+  {
+   "bytes": 65395,
+   "mtime_ns": 1788013903570545830,
+   "path": "README.md",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 65395
+   }
+  },
+  {
+   "bytes": 2656,
+   "mtime_ns": 1788013900882521570,
+   "path": "SECURITY.md",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 2656
+   }
+  },
+  {
+   "bytes": 1244,
+   "mtime_ns": 1788013904910429547,
+   "path": "SUPPORT.md",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1244
+   }
+  },
+  {
+   "bytes": 249,
+   "mtime_ns": 1788013899674774359,
+   "path": "added_tokens.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 249
+   }
+  },
+  {
+   "bytes": 4631,
+   "mtime_ns": 1788013901559257750,
+   "path": "config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 4631
+   }
+  },
+  {
+   "bytes": 11014,
+   "mtime_ns": 1788013900882135402,
+   "path": "configuration_phi4mm.py",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 11014
+   }
+  },
+  {
+   "bytes": 4619,
+   "mtime_ns": 1788013903841829664,
+   "path": "data_summary_card.md",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 4619
+   }
+  },
+  {
+   "bytes": 112844,
+   "mtime_ns": 1788013903841871581,
+   "path": "examples/what_is_shown_in_this_image.wav",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 112844
+   }
+  },
+  {
+   "bytes": 741454,
+   "mtime_ns": 1788013901589898136,
+   "path": "examples/what_is_the_traffic_sign_in_the_image.wav",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 741454
+   }
+  },
+  {
+   "bytes": 42645,
+   "mtime_ns": 1788013903031511347,
+   "path": "figures/audio_understand.png",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 42645
+   }
+  },
+  {
+   "bytes": 191950,
+   "mtime_ns": 1788013901589985470,
+   "path": "figures/multi_image.png",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 191950
+   }
+  },
+  {
+   "bytes": 46754,
+   "mtime_ns": 1788013904656396999,
+   "path": "figures/speech_qa.png",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 46754
+   }
+  },
+  {
+   "bytes": 90697,
+   "mtime_ns": 1788013903786504126,
+   "path": "figures/speech_recog_by_lang.png",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 90697
+   }
+  },
+  {
+   "bytes": 63547,
+   "mtime_ns": 1788013905820370599,
+   "path": "figures/speech_recognition.png",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 63547
+   }
+  },
+  {
+   "bytes": 40951,
+   "mtime_ns": 1788013905758841825,
+   "path": "figures/speech_summarization.png",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 40951
+   }
+  },
+  {
+   "bytes": 47677,
+   "mtime_ns": 1788013905604662930,
+   "path": "figures/speech_translate.png",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 47677
+   }
+  },
+  {
+   "bytes": 46342,
+   "mtime_ns": 1788013905820860101,
+   "path": "figures/speech_translate_2.png",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 46342
+   }
+  },
+  {
+   "bytes": 173821,
+   "mtime_ns": 1788013904911141592,
+   "path": "figures/vision_radar.png",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 173821
+   }
+  },
+  {
+   "bytes": 190,
+   "mtime_ns": 1788013905820974643,
+   "path": "generation_config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 190
+   }
+  },
+  {
+   "bytes": 2418348,
+   "mtime_ns": 1788013905540801604,
+   "path": "merges.txt",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 2418348
+   }
+  },
+  {
+   "bytes": 4997504848,
+   "mtime_ns": 1788014459534588706,
+   "path": "model-00001-of-00003.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 4997504848
+   }
+  },
+  {
+   "bytes": 4952333128,
+   "mtime_ns": 1788014512679343639,
+   "path": "model-00002-of-00003.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 4952333128
+   }
+  },
+  {
+   "bytes": 1199389232,
+   "mtime_ns": 1788014042239203084,
+   "path": "model-00003-of-00003.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1199389232
+   }
+  },
+  {
+   "bytes": 239890,
+   "mtime_ns": 1788013905915782649,
+   "path": "model.safetensors.index.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 239890
+   }
+  },
+  {
+   "bytes": 116057,
+   "mtime_ns": 1788013906632528090,
+   "path": "modeling_phi4mm.py",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 116057
+   }
+  },
+  {
+   "bytes": 5295165,
+   "mtime_ns": 1788013910467008206,
+   "path": "phi_4_mm.tech_report.02252025.pdf",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5295165
+   }
+  },
+  {
+   "bytes": 482,
+   "mtime_ns": 1788013906460397699,
+   "path": "preprocessor_config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 482
+   }
+  },
+  {
+   "bytes": 32775,
+   "mtime_ns": 1788013906955056110,
+   "path": "processing_phi4mm.py",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 32775
+   }
+  },
+  {
+   "bytes": 121,
+   "mtime_ns": 1788013906584152624,
+   "path": "processor_config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 121
+   }
+  },
+  {
+   "bytes": 16669,
+   "mtime_ns": 1788013906771674126,
+   "path": "sample_finetune_speech.py",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 16669
+   }
+  },
+  {
+   "bytes": 19617,
+   "mtime_ns": 1788013906771699876,
+   "path": "sample_finetune_vision.py",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 19617
+   }
+  },
+  {
+   "bytes": 10498,
+   "mtime_ns": 1788013906955102277,
+   "path": "sample_inference_phi4mm.py",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 10498
+   }
+  },
+  {
+   "bytes": 473,
+   "mtime_ns": 1788013906955130860,
+   "path": "special_tokens_map.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 473
+   }
+  },
+  {
+   "bytes": 465,
+   "mtime_ns": 1788013907434953164,
+   "path": "speech-lora/adapter_config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 465
+   }
+  },
+  {
+   "bytes": 922782296,
+   "mtime_ns": 1788014048046884527,
+   "path": "speech-lora/adapter_model.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 922782296
+   }
+  },
+  {
+   "bytes": 249,
+   "mtime_ns": 1788013907434949330,
+   "path": "speech-lora/added_tokens.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 249
+   }
+  },
+  {
+   "bytes": 473,
+   "mtime_ns": 1788013907434953039,
+   "path": "speech-lora/special_tokens_map.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 473
+   }
+  },
+  {
+   "bytes": 15524095,
+   "mtime_ns": 1788013910916979543,
+   "path": "speech-lora/tokenizer.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 15524095
+   }
+  },
+  {
+   "bytes": 3248,
+   "mtime_ns": 1788013907674252562,
+   "path": "speech-lora/tokenizer_config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 3248
+   }
+  },
+  {
+   "bytes": 3910310,
+   "mtime_ns": 1788013910466753455,
+   "path": "speech-lora/vocab.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 3910310
+   }
+  },
+  {
+   "bytes": 110521,
+   "mtime_ns": 1788013910465853326,
+   "path": "speech_conformer_encoder.py",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 110521
+   }
+  },
+  {
+   "bytes": 15524479,
+   "mtime_ns": 1788013910555060431,
+   "path": "tokenizer.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 15524479
+   }
+  },
+  {
+   "bytes": 3248,
+   "mtime_ns": 1788013907700752347,
+   "path": "tokenizer_config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 3248
+   }
+  },
+  {
+   "bytes": 464,
+   "mtime_ns": 1788013907676210737,
+   "path": "vision-lora/adapter_config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 464
+   }
+  },
+  {
+   "bytes": 738232904,
+   "mtime_ns": 1788014018762330254,
+   "path": "vision-lora/adapter_model.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 738232904
+   }
+  },
+  {
+   "bytes": 249,
+   "mtime_ns": 1788013907708372381,
+   "path": "vision-lora/added_tokens.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 249
+   }
+  },
+  {
+   "bytes": 473,
+   "mtime_ns": 1788013910527859935,
+   "path": "vision-lora/special_tokens_map.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 473
+   }
+  },
+  {
+   "bytes": 15524095,
+   "mtime_ns": 1788013914970901261,
+   "path": "vision-lora/tokenizer.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 15524095
+   }
+  },
+  {
+   "bytes": 3248,
+   "mtime_ns": 1788013910539179277,
+   "path": "vision-lora/tokenizer_config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 3248
+   }
+  },
+  {
+   "bytes": 3910310,
+   "mtime_ns": 1788013910745000652,
+   "path": "vision-lora/vocab.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 3910310
+   }
+  },
+  {
+   "bytes": 78218,
+   "mtime_ns": 1788013910904252070,
+   "path": "vision_siglip_navit.py",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 78218
+   }
+  },
+  {
+   "bytes": 3910310,
+   "mtime_ns": 1788013910985272139,
+   "path": "vocab.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 3910310
+   }
+  }
+ ],
+ "has_lake_manifest": false,
+ "has_watch_manifest": true,
+ "lifecycle": "CENSUSED",
+ "lifecycle_derived_from": "sealed source plus an architecture fingerprint",
+ "loaded_weights": false,
+ "location": "specimens",
+ "manifest_bytes": null,
+ "n_files": 55,
+ "n_shards": 3,
+ "path": "/Volumes/corpdrive/hawking-modellake/specimens/microsoft--Phi-4-multimodal-instruct@93f923e1a772",
+ "repo": "microsoft/Phi-4-multimodal-instruct",
+ "resolved_sha": "93f923e1a7727d1c4f446756212d9d3e8fcc5d81",
+ "revision": "93f923e1a7727d1c4f446756212d9d3e8fcc5d81",
+ "role": {
+  "evidence_tier": "STATIC",
+  "primary": "multimodal",
+  "roles": [
+   "multimodal",
+   "long-context"
+  ]
+ },
+ "scanned_at": "2026-09-02T09:13:31Z",
+ "schema": "hawking.modellake.index.specimen.v1",
+ "seal_status": "SEALED",
+ "shards": {
+  "check_strength": "INDEX_MATCHED",
+  "complete": false,
+  "expected": 3,
+  "n_shards": 3,
+  "present": 5
+ },
+ "slug": "microsoft--Phi-4-multimodal-instruct@93f923e1a772",
+ "storage_role": "TIER2_COLD",
+ "watch_expected_bytes": 12878588835,
+ "wrote_specimen": false
+}

@@ -9,9 +9,17 @@ A capability does not exist until something CALLS it. express_lineage()
 calls load_watch_manifest, role_metadata, architecture_fingerprint (which
 calls arch_recognizer.recognize), artifact_lineage and storage_tier_for.
 
-Does not write /Volumes/corpdrive. Does not restart an acquisition worker.
+The live-volume catalog is tools.odyssey.modellake_index. build_lake_index,
+query_lake_specimen, update_lake_specimen and lake_index CALL that module;
+registry_index still does not scan the volume.
+
+Does not write /Volumes/corpdrive from lineage itself. Does not restart an
+acquisition worker. The index writes only under <lake>/index/, never under
+specimens/.
 
     python3 tools/odyssey/modellake.py lineage --slug Qwen--Qwen3-0.6B@c1899de289a0
+    python3 tools/odyssey/modellake.py index
+    python3 tools/odyssey/modellake.py query --slug Qwen--Qwen3-0.6B@c1899de289a0
 """
 from __future__ import annotations
 
@@ -357,12 +365,14 @@ def derive_lifecycle(
         return "SSD_STAGED", "specimen directory exists under the configured SSD stage"
     if nr_present:
         return "TRANSFER_READY", "an NR artifact is present beside the source body"
-    if fingerprinted and lake_man and source_dir is not None and source_dir.is_dir():
+    if fingerprinted and source_dir is not None and source_dir.is_dir():
         return "CENSUSED", "sealed source plus an architecture fingerprint"
     if lake_man and lake_man.get("resolved_sha") and source_dir is not None and source_dir.is_dir():
         return "READY_COLD", "lake manifest records resolved_sha and the specimen directory exists"
     if lake_man and source_dir is not None and source_dir.is_dir():
         return "VERIFYING", "specimen directory exists but the lake manifest has no resolved_sha"
+    if source_dir is not None and source_dir.is_dir():
+        return "READY_COLD", "specimen directory exists under the configured specimens root"
     if partial_dir is not None and partial_dir.is_dir():
         return "DOWNLOADING", "sits under partial/"
     if watch and watch.get("files") and watch.get("resolved_sha"):
@@ -506,3 +516,40 @@ def registry_index(
         "n": len(rows),
         "specimens": rows,
     }
+
+
+def build_lake_index(**kwargs: Any) -> dict[str, Any]:
+    """CALL modellake_index.build. Durable catalog outside specimens/."""
+    from tools.odyssey.modellake_index import build
+    return build(**kwargs)
+
+
+def query_lake_specimen(slug: str, **kwargs: Any) -> dict[str, Any]:
+    """CALL modellake_index.query_specimen. One JSON read; no lake walk."""
+    from tools.odyssey.modellake_index import query_specimen
+    return query_specimen(slug, **kwargs)
+
+
+def update_lake_specimen(slug: str, **kwargs: Any) -> dict[str, Any]:
+    """CALL modellake_index.update_specimen. Walks that specimen only."""
+    from tools.odyssey.modellake_index import update_specimen
+    return update_specimen(slug, **kwargs)
+
+
+def lake_index(**kwargs: Any) -> dict[str, Any]:
+    """CALL modellake_index.load_catalog. Missing index is reported, not built."""
+    from tools.odyssey.modellake_index import load_catalog
+    cat = load_catalog(**kwargs)
+    if cat is None:
+        return {
+            "present": False,
+            "error": "index missing; run: python3 tools/odyssey/modellake.py index",
+        }
+    cat["present"] = True
+    return cat
+
+
+def lake_layout(**kwargs: Any) -> dict[str, Any]:
+    """CALL modellake_index.layout. §14.1 storage roles as a queryable object."""
+    from tools.odyssey.modellake_index import layout
+    return layout(**kwargs)

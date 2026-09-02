@@ -1,0 +1,313 @@
+{
+ "architecture_family": "phi3",
+ "architecture_fingerprint": {
+  "architectures": [
+   "Phi3ForCausalLM"
+  ],
+  "hidden_size": 5120,
+  "loaded_weights": false,
+  "model_type": "phi3",
+  "n_tensors": 243,
+  "num_attention_heads": 40,
+  "num_hidden_layers": 40,
+  "num_key_value_heads": 10,
+  "organs": [
+   {
+    "confidence": 0.32,
+    "example": [
+     "model.embed_tokens.weight"
+    ],
+    "n_layers": 0,
+    "n_tensors": 1,
+    "organ": "embed",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.layers.0.self_attn.o_proj.weight",
+     "model.layers.1.self_attn.o_proj.weight"
+    ],
+    "n_layers": 40,
+    "n_tensors": 40,
+    "organ": "gqa_attention",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.32,
+    "example": [
+     "lm_head.weight"
+    ],
+    "n_layers": 0,
+    "n_tensors": 1,
+    "organ": "lm_head",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.layers.0.mlp.down_proj.weight",
+     "model.layers.1.mlp.down_proj.weight"
+    ],
+    "n_layers": 40,
+    "n_tensors": 40,
+    "organ": "mlp_down",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.layers.0.mlp.gate_up_proj.weight",
+     "model.layers.1.mlp.gate_up_proj.weight"
+    ],
+    "n_layers": 40,
+    "n_tensors": 40,
+    "organ": "mlp_gate_up",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.layers.0.input_layernorm.weight",
+     "model.layers.0.post_attention_layernorm.weight"
+    ],
+    "n_layers": 40,
+    "n_tensors": 81,
+    "organ": "rmsnorm",
+    "status": "NOVEL"
+   }
+  ],
+  "strength": "ORGAN_FINGERPRINT",
+  "vocab_size": 100352
+ },
+ "bytes": 29327880349,
+ "dir_mtime_ns": 1787986268426744380,
+ "evidence_tier": "STATIC",
+ "files": [
+  {
+   "bytes": 1519,
+   "mtime_ns": 1787981917566948483,
+   "path": ".gitattributes",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1519
+   }
+  },
+  {
+   "bytes": 453,
+   "mtime_ns": 1787970949226117789,
+   "path": "CODE_OF_CONDUCT.md",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 453
+   }
+  },
+  {
+   "bytes": 1105,
+   "mtime_ns": 1787981917566761524,
+   "path": "LICENSE",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1105
+   }
+  },
+  {
+   "bytes": 20928,
+   "mtime_ns": 1787981917568025195,
+   "path": "README.md",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 20928
+   }
+  },
+  {
+   "bytes": 2697,
+   "mtime_ns": 1787981918172966337,
+   "path": "SECURITY.md",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 2697
+   }
+  },
+  {
+   "bytes": 796,
+   "mtime_ns": 1787981917566798566,
+   "path": "config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 796
+   }
+  },
+  {
+   "bytes": 4159,
+   "mtime_ns": 1787981917567940903,
+   "path": "data_summary_card.md",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 4159
+   }
+  },
+  {
+   "bytes": 222,
+   "mtime_ns": 1787981917566792525,
+   "path": "generation_config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 222
+   }
+  },
+  {
+   "bytes": 4933656472,
+   "mtime_ns": 1787986256580581375,
+   "path": "model-00001-of-00006.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 4933656472
+   }
+  },
+  {
+   "bytes": 4954690712,
+   "mtime_ns": 1787986267361666275,
+   "path": "model-00002-of-00006.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 4954690712
+   }
+  },
+  {
+   "bytes": 4902241352,
+   "mtime_ns": 1787986228221499194,
+   "path": "model-00003-of-00006.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 4902241352
+   }
+  },
+  {
+   "bytes": 4771169120,
+   "mtime_ns": 1787986216278350330,
+   "path": "model-00004-of-00006.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 4771169120
+   }
+  },
+  {
+   "bytes": 4771169120,
+   "mtime_ns": 1787986235810280459,
+   "path": "model-00005-of-00006.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 4771169120
+   }
+  },
+  {
+   "bytes": 4986116216,
+   "mtime_ns": 1787986259759140084,
+   "path": "model-00006-of-00006.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 4986116216
+   }
+  },
+  {
+   "bytes": 20364,
+   "mtime_ns": 1787981916900126983,
+   "path": "model.safetensors.index.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 20364
+   }
+  },
+  {
+   "bytes": 431,
+   "mtime_ns": 1787981917566785691,
+   "path": "special_tokens_map.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 431
+   }
+  },
+  {
+   "bytes": 7153070,
+   "mtime_ns": 1787981918707260012,
+   "path": "tokenizer.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 7153070
+   }
+  },
+  {
+   "bytes": 18985,
+   "mtime_ns": 1787981924589450628,
+   "path": "tokenizer_config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 18985
+   }
+  },
+  {
+   "bytes": 1612628,
+   "mtime_ns": 1787981922719658260,
+   "path": "vocab.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1612628
+   }
+  }
+ ],
+ "has_lake_manifest": false,
+ "has_watch_manifest": true,
+ "lifecycle": "CENSUSED",
+ "lifecycle_derived_from": "sealed source plus an architecture fingerprint",
+ "loaded_weights": false,
+ "location": "specimens",
+ "manifest_bytes": null,
+ "n_files": 19,
+ "n_shards": 6,
+ "path": "/Volumes/corpdrive/hawking-modellake/specimens/microsoft--Phi-4-reasoning-plus@69baf8528e1b",
+ "repo": "microsoft/Phi-4-reasoning-plus",
+ "resolved_sha": "69baf8528e1bcf05f475034d9e5dd32875ed125f",
+ "revision": "69baf8528e1bcf05f475034d9e5dd32875ed125f",
+ "role": {
+  "evidence_tier": "STATIC",
+  "primary": "dense decoder",
+  "roles": [
+   "dense decoder",
+   "long-context"
+  ]
+ },
+ "scanned_at": "2026-09-02T09:13:31Z",
+ "schema": "hawking.modellake.index.specimen.v1",
+ "seal_status": "SEALED",
+ "shards": {
+  "check_strength": "INDEX_MATCHED",
+  "complete": true,
+  "expected": 6,
+  "n_shards": 6,
+  "present": 6
+ },
+ "slug": "microsoft--Phi-4-reasoning-plus@69baf8528e1b",
+ "storage_role": "TIER2_COLD",
+ "watch_expected_bytes": 29327880349,
+ "wrote_specimen": false
+}

@@ -1,0 +1,394 @@
+{
+ "architecture_family": "mistral3",
+ "architecture_fingerprint": {
+  "architectures": [
+   "Mistral3ForConditionalGeneration"
+  ],
+  "hidden_size": 5120,
+  "loaded_weights": false,
+  "model_type": "mistral3",
+  "n_tensors": 585,
+  "num_attention_heads": 32,
+  "num_hidden_layers": 40,
+  "num_key_value_heads": 8,
+  "organs": [
+   {
+    "confidence": 0.32,
+    "example": [
+     "language_model.model.embed_tokens.weight"
+    ],
+    "n_layers": 0,
+    "n_tensors": 1,
+    "organ": "embed",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "language_model.model.layers.0.self_attn.k_proj.weight",
+     "language_model.model.layers.0.self_attn.o_proj.weight"
+    ],
+    "n_layers": 40,
+    "n_tensors": 160,
+    "organ": "gqa_attention",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.32,
+    "example": [
+     "language_model.lm_head.weight"
+    ],
+    "n_layers": 0,
+    "n_tensors": 1,
+    "organ": "lm_head",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "language_model.model.layers.0.mlp.down_proj.weight",
+     "language_model.model.layers.1.mlp.down_proj.weight"
+    ],
+    "n_layers": 40,
+    "n_tensors": 64,
+    "organ": "mlp_down",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "language_model.model.layers.0.mlp.gate_proj.weight",
+     "language_model.model.layers.0.mlp.up_proj.weight"
+    ],
+    "n_layers": 40,
+    "n_tensors": 128,
+    "organ": "mlp_gate_up",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.36,
+    "example": [
+     "multi_modal_projector.linear_1.weight",
+     "multi_modal_projector.linear_2.weight"
+    ],
+    "n_layers": 0,
+    "n_tensors": 3,
+    "organ": "mm_projector",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "language_model.model.layers.0.input_layernorm.weight",
+     "language_model.model.layers.0.post_attention_layernorm.weight"
+    ],
+    "n_layers": 40,
+    "n_tensors": 130,
+    "organ": "rmsnorm",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "vision_tower.ln_pre.weight",
+     "vision_tower.patch_conv.weight"
+    ],
+    "n_layers": 24,
+    "n_tensors": 98,
+    "organ": "vision_encoder",
+    "status": "NOVEL"
+   }
+  ],
+  "strength": "ORGAN_FINGERPRINT",
+  "vocab_size": 131072
+ },
+ "bytes": 96077777512,
+ "dir_mtime_ns": 1787836421839754401,
+ "evidence_tier": "STATIC",
+ "files": [
+  {
+   "bytes": 1618,
+   "mtime_ns": 1787632853860034114,
+   "path": ".gitattributes",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1618
+   }
+  },
+  {
+   "bytes": 19022,
+   "mtime_ns": 1787632853837122402,
+   "path": "README.md",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 19022
+   }
+  },
+  {
+   "bytes": 1494,
+   "mtime_ns": 1787632853822704915,
+   "path": "SYSTEM_PROMPT.txt",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1494
+   }
+  },
+  {
+   "bytes": 2772,
+   "mtime_ns": 1787632853834921231,
+   "path": "chat_template.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 2772
+   }
+  },
+  {
+   "bytes": 1177,
+   "mtime_ns": 1787632853862986620,
+   "path": "config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1177
+   }
+  },
+  {
+   "bytes": 48022792280,
+   "mtime_ns": 1787836421467306150,
+   "path": "consolidated.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 48022792280
+   }
+  },
+  {
+   "bytes": 116,
+   "mtime_ns": 1787632853841694661,
+   "path": "generation_config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 116
+   }
+  },
+  {
+   "bytes": 4883550696,
+   "mtime_ns": 1787646352069653639,
+   "path": "model-00001-of-00010.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 4883550696
+   }
+  },
+  {
+   "bytes": 4781593336,
+   "mtime_ns": 1787650407353974139,
+   "path": "model-00002-of-00010.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 4781593336
+   }
+  },
+  {
+   "bytes": 4886472224,
+   "mtime_ns": 1787649766929978006,
+   "path": "model-00003-of-00010.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 4886472224
+   }
+  },
+  {
+   "bytes": 4781593376,
+   "mtime_ns": 1787645773007818502,
+   "path": "model-00004-of-00010.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 4781593376
+   }
+  },
+  {
+   "bytes": 4781593368,
+   "mtime_ns": 1787667522701464687,
+   "path": "model-00005-of-00010.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 4781593368
+   }
+  },
+  {
+   "bytes": 4886472248,
+   "mtime_ns": 1787647065468043009,
+   "path": "model-00006-of-00010.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 4886472248
+   }
+  },
+  {
+   "bytes": 4781593376,
+   "mtime_ns": 1787650632334490844,
+   "path": "model-00007-of-00010.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 4781593376
+   }
+  },
+  {
+   "bytes": 4781593368,
+   "mtime_ns": 1787654015975913145,
+   "path": "model-00008-of-00010.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 4781593368
+   }
+  },
+  {
+   "bytes": 4886472248,
+   "mtime_ns": 1787655423989978625,
+   "path": "model-00009-of-00010.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 4886472248
+   }
+  },
+  {
+   "bytes": 4571866320,
+   "mtime_ns": 1787652660396021068,
+   "path": "model-00010-of-00010.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 4571866320
+   }
+  },
+  {
+   "bytes": 57907,
+   "mtime_ns": 1787649795704517300,
+   "path": "model.safetensors.index.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 57907
+   }
+  },
+  {
+   "bytes": 807,
+   "mtime_ns": 1787649798460139638,
+   "path": "params.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 807
+   }
+  },
+  {
+   "bytes": 634,
+   "mtime_ns": 1787649798563662362,
+   "path": "preprocessor_config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 634
+   }
+  },
+  {
+   "bytes": 189,
+   "mtime_ns": 1787649798702382202,
+   "path": "processor_config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 189
+   }
+  },
+  {
+   "bytes": 21449,
+   "mtime_ns": 1787649802288644250,
+   "path": "special_tokens_map.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 21449
+   }
+  },
+  {
+   "bytes": 14801330,
+   "mtime_ns": 1787649828217687411,
+   "path": "tekken.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 14801330
+   }
+  },
+  {
+   "bytes": 17078037,
+   "mtime_ns": 1787649870437838870,
+   "path": "tokenizer.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 17078037
+   }
+  },
+  {
+   "bytes": 198120,
+   "mtime_ns": 1787649888434688211,
+   "path": "tokenizer_config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 198120
+   }
+  }
+ ],
+ "has_lake_manifest": true,
+ "has_watch_manifest": true,
+ "lifecycle": "CENSUSED",
+ "lifecycle_derived_from": "sealed source plus an architecture fingerprint",
+ "loaded_weights": false,
+ "location": "specimens",
+ "manifest_bytes": 96077959168,
+ "n_files": 25,
+ "n_shards": 10,
+ "path": "/Volumes/corpdrive/hawking-modellake/specimens/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+ "repo": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+ "resolved_sha": "68faf511d618ef198fef186659617cfd2eb8e33a",
+ "revision": "68faf511d618ef198fef186659617cfd2eb8e33a",
+ "role": {
+  "evidence_tier": "STATIC",
+  "primary": "dense decoder",
+  "roles": [
+   "dense decoder"
+  ]
+ },
+ "scanned_at": "2026-09-02T09:13:31Z",
+ "schema": "hawking.modellake.index.specimen.v1",
+ "seal_status": "SEALED",
+ "shards": {
+  "check_strength": "INDEX_MATCHED",
+  "complete": false,
+  "expected": 10,
+  "n_shards": 10,
+  "present": 11
+ },
+ "slug": "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+ "storage_role": "TIER2_COLD",
+ "watch_expected_bytes": 96077777512,
+ "wrote_specimen": false
+}

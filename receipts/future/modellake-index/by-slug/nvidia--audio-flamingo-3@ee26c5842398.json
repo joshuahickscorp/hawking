@@ -1,0 +1,347 @@
+{
+ "architecture_family": "llava_llama",
+ "architecture_fingerprint": {
+  "architectures": [
+   "LlavaLlamaModel"
+  ],
+  "hidden_size": 3584,
+  "loaded_weights": false,
+  "model_type": "llava_llama",
+  "n_tensors": null,
+  "num_attention_heads": null,
+  "num_hidden_layers": null,
+  "num_key_value_heads": null,
+  "organs": [],
+  "strength": "CONFIG_ONLY",
+  "vocab_size": null
+ },
+ "bytes": 17961809773,
+ "dir_mtime_ns": 1787981867065785912,
+ "evidence_tier": "STATIC",
+ "files": [
+  {
+   "bytes": 1802,
+   "mtime_ns": 1787970977659995531,
+   "path": ".gitattributes",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1802
+   }
+  },
+  {
+   "bytes": 24612,
+   "mtime_ns": 1787970977782097882,
+   "path": "README.md",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 24612
+   }
+  },
+  {
+   "bytes": 11198,
+   "mtime_ns": 1787971643904538789,
+   "path": "config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 11198
+   }
+  },
+  {
+   "bytes": 762,
+   "mtime_ns": 1787971644425730254,
+   "path": "llm/added_tokens.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 762
+   }
+  },
+  {
+   "bytes": 747,
+   "mtime_ns": 1787971644987964017,
+   "path": "llm/config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 747
+   }
+  },
+  {
+   "bytes": 243,
+   "mtime_ns": 1787971643865264829,
+   "path": "llm/generation_config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 243
+   }
+  },
+  {
+   "bytes": 1671853,
+   "mtime_ns": 1787971628195544981,
+   "path": "llm/merges.txt",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1671853
+   }
+  },
+  {
+   "bytes": 4874850920,
+   "mtime_ns": 1787981865826895494,
+   "path": "llm/model-00001-of-00004.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 4874850920
+   }
+  },
+  {
+   "bytes": 4932751008,
+   "mtime_ns": 1787981857873985750,
+   "path": "llm/model-00002-of-00004.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 4932751008
+   }
+  },
+  {
+   "bytes": 4330865200,
+   "mtime_ns": 1787981779472123652,
+   "path": "llm/model-00003-of-00004.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 4330865200
+   }
+  },
+  {
+   "bytes": 1087185024,
+   "mtime_ns": 1787971786793037479,
+   "path": "llm/model-00004-of-00004.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1087185024
+   }
+  },
+  {
+   "bytes": 27752,
+   "mtime_ns": 1787971644425751545,
+   "path": "llm/model.safetensors.index.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 27752
+   }
+  },
+  {
+   "bytes": 743,
+   "mtime_ns": 1787971643822802901,
+   "path": "llm/special_tokens_map.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 743
+   }
+  },
+  {
+   "bytes": 11423194,
+   "mtime_ns": 1787971645280956333,
+   "path": "llm/tokenizer.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 11423194
+   }
+  },
+  {
+   "bytes": 6305,
+   "mtime_ns": 1787971643828115668,
+   "path": "llm/tokenizer_config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 6305
+   }
+  },
+  {
+   "bytes": 2776833,
+   "mtime_ns": 1787971645439761176,
+   "path": "llm/vocab.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 2776833
+   }
+  },
+  {
+   "bytes": 247,
+   "mtime_ns": 1787971644804993721,
+   "path": "sound_mm_projector/config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 247
+   }
+  },
+  {
+   "bytes": 34879856,
+   "mtime_ns": 1787971645281278542,
+   "path": "sound_mm_projector/model.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 34879856
+   }
+  },
+  {
+   "bytes": 1364,
+   "mtime_ns": 1787971645391098103,
+   "path": "sound_tower/config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1364
+   }
+  },
+  {
+   "bytes": 1273988176,
+   "mtime_ns": 1787981317462642409,
+   "path": "sound_tower/model.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1273988176
+   }
+  },
+  {
+   "bytes": 4121,
+   "mtime_ns": 1787971645722068540,
+   "path": "stage35/adapter_config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 4121
+   }
+  },
+  {
+   "bytes": 323016128,
+   "mtime_ns": 1787971852651183370,
+   "path": "stage35/adapter_model.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 323016128
+   }
+  },
+  {
+   "bytes": 10485,
+   "mtime_ns": 1787971645868443385,
+   "path": "stage35/config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 10485
+   }
+  },
+  {
+   "bytes": 1087186200,
+   "mtime_ns": 1787981312906758643,
+   "path": "stage35/non_lora_trainables.bin",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1087186200
+   }
+  },
+  {
+   "bytes": 20620,
+   "mtime_ns": 1787971644925826109,
+   "path": "static/NVIDIA_OneWay_Noncommercial_License.docx",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 20620
+   }
+  },
+  {
+   "bytes": 229099,
+   "mtime_ns": 1787971647562469616,
+   "path": "static/af3_main_diagram-1.png",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 229099
+   }
+  },
+  {
+   "bytes": 144906,
+   "mtime_ns": 1787971646500294789,
+   "path": "static/af3_radial-1.png",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 144906
+   }
+  },
+  {
+   "bytes": 266220,
+   "mtime_ns": 1787971648589177953,
+   "path": "static/af3_sota.png",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 266220
+   }
+  },
+  {
+   "bytes": 464155,
+   "mtime_ns": 1787971649691572826,
+   "path": "static/logo-no-bg.png",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 464155
+   }
+  }
+ ],
+ "has_lake_manifest": false,
+ "has_watch_manifest": true,
+ "lifecycle": "READY_COLD",
+ "lifecycle_derived_from": "specimen directory exists under the configured specimens root",
+ "loaded_weights": false,
+ "location": "specimens",
+ "manifest_bytes": null,
+ "n_files": 29,
+ "n_shards": 8,
+ "path": "/Volumes/corpdrive/hawking-modellake/specimens/nvidia--audio-flamingo-3@ee26c5842398",
+ "repo": "nvidia/audio-flamingo-3",
+ "resolved_sha": "ee26c58423988d7d7cda7b85dd3ce5d97ee8753d",
+ "revision": "ee26c58423988d7d7cda7b85dd3ce5d97ee8753d",
+ "role": {
+  "evidence_tier": "STATIC",
+  "primary": "dense decoder",
+  "roles": [
+   "dense decoder"
+  ]
+ },
+ "scanned_at": "2026-09-02T09:13:33Z",
+ "schema": "hawking.modellake.index.specimen.v1",
+ "seal_status": "SEALED",
+ "shards": {
+  "check_strength": "WEIGHTS_PRESENT_ONLY",
+  "complete": true,
+  "expected": null,
+  "n_shards": 8,
+  "present": 8
+ },
+ "slug": "nvidia--audio-flamingo-3@ee26c5842398",
+ "storage_role": "TIER2_COLD",
+ "watch_expected_bytes": 17961809773,
+ "wrote_specimen": false
+}

@@ -1,0 +1,139 @@
+{
+ "architecture_family": "modernbert",
+ "architecture_fingerprint": {
+  "architectures": [
+   "ModernBertForMaskedLM"
+  ],
+  "hidden_size": 1024,
+  "loaded_weights": false,
+  "model_type": "modernbert",
+  "n_tensors": 173,
+  "num_attention_heads": 16,
+  "num_hidden_layers": 28,
+  "num_key_value_heads": null,
+  "organs": [
+   {
+    "confidence": 0.98,
+    "example": [
+     "head.norm.weight",
+     "model.embeddings.norm.weight"
+    ],
+    "n_layers": 28,
+    "n_tensors": 58,
+    "organ": "rmsnorm",
+    "status": "NOVEL"
+   }
+  ],
+  "strength": "ORGAN_FINGERPRINT",
+  "vocab_size": 50368
+ },
+ "bytes": 1585710451,
+ "dir_mtime_ns": 1787953094587017459,
+ "evidence_tier": "STATIC",
+ "files": [
+  {
+   "bytes": 1519,
+   "mtime_ns": 1787949369451000703,
+   "path": ".gitattributes",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1519
+   }
+  },
+  {
+   "bytes": 8427,
+   "mtime_ns": 1787949369426138617,
+   "path": "README.md",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 8427
+   }
+  },
+  {
+   "bytes": 1194,
+   "mtime_ns": 1787949369450992245,
+   "path": "config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1194
+   }
+  },
+  {
+   "bytes": 1583544840,
+   "mtime_ns": 1787953092714887332,
+   "path": "model.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1583544840
+   }
+  },
+  {
+   "bytes": 694,
+   "mtime_ns": 1787949369489996172,
+   "path": "special_tokens_map.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 694
+   }
+  },
+  {
+   "bytes": 2132967,
+   "mtime_ns": 1787949369533394906,
+   "path": "tokenizer.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 2132967
+   }
+  },
+  {
+   "bytes": 20810,
+   "mtime_ns": 1787949369382548425,
+   "path": "tokenizer_config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 20810
+   }
+  }
+ ],
+ "has_lake_manifest": false,
+ "has_watch_manifest": true,
+ "lifecycle": "CENSUSED",
+ "lifecycle_derived_from": "sealed source plus an architecture fingerprint",
+ "loaded_weights": false,
+ "location": "specimens",
+ "manifest_bytes": null,
+ "n_files": 7,
+ "n_shards": 1,
+ "path": "/Volumes/corpdrive/hawking-modellake/specimens/answerdotai--ModernBERT-large@45bb4654a4d5",
+ "repo": "answerdotai/ModernBERT-large",
+ "resolved_sha": "45bb4654a4d5aaff24dd11d4781fa46d39bf8c13",
+ "revision": "45bb4654a4d5aaff24dd11d4781fa46d39bf8c13",
+ "role": {
+  "evidence_tier": "STATIC",
+  "primary": "dense decoder",
+  "roles": [
+   "dense decoder"
+  ]
+ },
+ "scanned_at": "2026-09-02T09:13:30Z",
+ "schema": "hawking.modellake.index.specimen.v1",
+ "seal_status": "SEALED",
+ "shards": {
+  "check_strength": "WEIGHTS_PRESENT_ONLY",
+  "complete": true,
+  "expected": null,
+  "n_shards": 1,
+  "present": 1
+ },
+ "slug": "answerdotai--ModernBERT-large@45bb4654a4d5",
+ "storage_role": "TIER2_COLD",
+ "watch_expected_bytes": 1585710451,
+ "wrote_specimen": false
+}

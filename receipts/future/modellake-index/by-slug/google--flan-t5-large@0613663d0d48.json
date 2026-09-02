@@ -1,0 +1,169 @@
+{
+ "architecture_family": "t5",
+ "architecture_fingerprint": {
+  "architectures": [
+   "T5ForConditionalGeneration"
+  ],
+  "hidden_size": null,
+  "loaded_weights": false,
+  "model_type": "t5",
+  "n_tensors": 558,
+  "num_attention_heads": null,
+  "num_hidden_layers": null,
+  "num_key_value_heads": null,
+  "organs": [
+   {
+    "confidence": 0.32,
+    "example": [
+     "lm_head.weight"
+    ],
+    "n_layers": 0,
+    "n_tensors": 1,
+    "organ": "lm_head",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.894,
+    "example": [
+     "decoder.block.0.layer.0.layer_norm.weight",
+     "decoder.block.0.layer.1.layer_norm.weight"
+    ],
+    "n_layers": 3,
+    "n_tensors": 122,
+    "organ": "rmsnorm",
+    "status": "NOVEL"
+   }
+  ],
+  "strength": "ORGAN_FINGERPRINT",
+  "vocab_size": 32128
+ },
+ "bytes": 3135902327,
+ "dir_mtime_ns": 1787951488889275434,
+ "evidence_tier": "STATIC",
+ "files": [
+  {
+   "bytes": 1434,
+   "mtime_ns": 1787951068286518404,
+   "path": ".gitattributes",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1434
+   }
+  },
+  {
+   "bytes": 10820,
+   "mtime_ns": 1787951068328816599,
+   "path": "README.md",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 10820
+   }
+  },
+  {
+   "bytes": 662,
+   "mtime_ns": 1787951068357275578,
+   "path": "config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 662
+   }
+  },
+  {
+   "bytes": 147,
+   "mtime_ns": 1787951068341600229,
+   "path": "generation_config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 147
+   }
+  },
+  {
+   "bytes": 3132668804,
+   "mtime_ns": 1787951486794527141,
+   "path": "model.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 3132668804
+   }
+  },
+  {
+   "bytes": 2201,
+   "mtime_ns": 1787951068260262850,
+   "path": "special_tokens_map.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 2201
+   }
+  },
+  {
+   "bytes": 791656,
+   "mtime_ns": 1787951069065885659,
+   "path": "spiece.model",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 791656
+   }
+  },
+  {
+   "bytes": 2424064,
+   "mtime_ns": 1787951068449032454,
+   "path": "tokenizer.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 2424064
+   }
+  },
+  {
+   "bytes": 2539,
+   "mtime_ns": 1787951068242292493,
+   "path": "tokenizer_config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 2539
+   }
+  }
+ ],
+ "has_lake_manifest": false,
+ "has_watch_manifest": true,
+ "lifecycle": "CENSUSED",
+ "lifecycle_derived_from": "sealed source plus an architecture fingerprint",
+ "loaded_weights": false,
+ "location": "specimens",
+ "manifest_bytes": null,
+ "n_files": 9,
+ "n_shards": 1,
+ "path": "/Volumes/corpdrive/hawking-modellake/specimens/google--flan-t5-large@0613663d0d48",
+ "repo": "google/flan-t5-large",
+ "resolved_sha": "0613663d0d48ea86ba8cb3d7a44f0f65dc596a2a",
+ "revision": "0613663d0d48ea86ba8cb3d7a44f0f65dc596a2a",
+ "role": {
+  "evidence_tier": "STATIC",
+  "primary": "dense decoder",
+  "roles": [
+   "dense decoder"
+  ]
+ },
+ "scanned_at": "2026-09-02T09:13:31Z",
+ "schema": "hawking.modellake.index.specimen.v1",
+ "seal_status": "SEALED",
+ "shards": {
+  "check_strength": "WEIGHTS_PRESENT_ONLY",
+  "complete": true,
+  "expected": null,
+  "n_shards": 1,
+  "present": 1
+ },
+ "slug": "google--flan-t5-large@0613663d0d48",
+ "storage_role": "TIER2_COLD",
+ "watch_expected_bytes": 3135902327,
+ "wrote_specimen": false
+}

@@ -1,0 +1,160 @@
+{
+ "architecture_family": "sam2_video",
+ "architecture_fingerprint": {
+  "architectures": [
+   "Sam2VideoModel"
+  ],
+  "hidden_size": null,
+  "loaded_weights": false,
+  "model_type": "sam2_video",
+  "n_tensors": 901,
+  "num_attention_heads": null,
+  "num_hidden_layers": null,
+  "num_key_value_heads": null,
+  "organs": [
+   {
+    "confidence": 0.748,
+    "example": [
+     "mask_decoder.transformer.layers.0.self_attn.k_proj.weight",
+     "mask_decoder.transformer.layers.0.self_attn.o_proj.weight"
+    ],
+    "n_layers": 4,
+    "n_tensors": 24,
+    "organ": "gqa_attention",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.716,
+    "example": [
+     "mask_decoder.upscale_layer_norm.weight",
+     "memory_attention.layer_norm.weight"
+    ],
+    "n_layers": 4,
+    "n_tensors": 8,
+    "organ": "rmsnorm",
+    "status": "NOVEL"
+   }
+  ],
+  "strength": "ORGAN_FINGERPRINT",
+  "vocab_size": null
+ },
+ "bytes": 897929900,
+ "dir_mtime_ns": 1787949729990576402,
+ "evidence_tier": "STATIC",
+ "files": [
+  {
+   "bytes": 1519,
+   "mtime_ns": 1787949558306199964,
+   "path": ".gitattributes",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1519
+   }
+  },
+  {
+   "bytes": 19979,
+   "mtime_ns": 1787949558280468208,
+   "path": "README.md",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 19979
+   }
+  },
+  {
+   "bytes": 5705,
+   "mtime_ns": 1787949558328738042,
+   "path": "config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5705
+   }
+  },
+  {
+   "bytes": 897897416,
+   "mtime_ns": 1787949728673868129,
+   "path": "model.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 897897416
+   }
+  },
+  {
+   "bytes": 683,
+   "mtime_ns": 1787949558328906418,
+   "path": "preprocessor_config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 683
+   }
+  },
+  {
+   "bytes": 95,
+   "mtime_ns": 1787949558328856751,
+   "path": "processor_config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 95
+   }
+  },
+  {
+   "bytes": 3798,
+   "mtime_ns": 1787949558328811043,
+   "path": "sam2.1_hiera_l.yaml",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 3798
+   }
+  },
+  {
+   "bytes": 705,
+   "mtime_ns": 1787949558280465708,
+   "path": "video_preprocessor_config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 705
+   }
+  }
+ ],
+ "has_lake_manifest": false,
+ "has_watch_manifest": true,
+ "lifecycle": "CENSUSED",
+ "lifecycle_derived_from": "sealed source plus an architecture fingerprint",
+ "loaded_weights": false,
+ "location": "specimens",
+ "manifest_bytes": null,
+ "n_files": 8,
+ "n_shards": 1,
+ "path": "/Volumes/corpdrive/hawking-modellake/specimens/facebook--sam2.1-hiera-large@665f8e2ad61c",
+ "repo": "facebook/sam2.1-hiera-large",
+ "resolved_sha": "665f8e2ad61cf5f53d65644ff27c8ee525124610",
+ "revision": "665f8e2ad61cf5f53d65644ff27c8ee525124610",
+ "role": {
+  "evidence_tier": "STATIC",
+  "primary": "multimodal",
+  "roles": [
+   "multimodal"
+  ]
+ },
+ "scanned_at": "2026-09-02T09:13:31Z",
+ "schema": "hawking.modellake.index.specimen.v1",
+ "seal_status": "SEALED",
+ "shards": {
+  "check_strength": "WEIGHTS_PRESENT_ONLY",
+  "complete": true,
+  "expected": null,
+  "n_shards": 1,
+  "present": 1
+ },
+ "slug": "facebook--sam2.1-hiera-large@665f8e2ad61c",
+ "storage_role": "TIER2_COLD",
+ "watch_expected_bytes": 897929900,
+ "wrote_specimen": false
+}

@@ -1,0 +1,908 @@
+{
+ "architecture_family": "glm5_next",
+ "architecture_fingerprint": {
+  "architectures": [
+   "Glm5NextForConditionalGeneration"
+  ],
+  "hidden_size": 4096,
+  "loaded_weights": false,
+  "model_type": "glm5_next",
+  "n_tensors": 76108,
+  "num_attention_heads": 64,
+  "num_hidden_layers": 45,
+  "num_key_value_heads": 64,
+  "organs": [
+   {
+    "confidence": 0.32,
+    "example": [
+     "model.language_model.embed_tokens.weight"
+    ],
+    "n_layers": 0,
+    "n_tensors": 1,
+    "organ": "embed",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.language_model.layers.45.self_attn.kv_a_layernorm.weight",
+     "model.language_model.layers.45.self_attn.kv_a_proj_with_mqa.weight"
+    ],
+    "n_layers": 46,
+    "n_tensors": 256,
+    "organ": "latent_attention",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.32,
+    "example": [
+     "lm_head.weight"
+    ],
+    "n_layers": 0,
+    "n_tensors": 1,
+    "organ": "lm_head",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.language_model.layers.0.mlp.down_proj.weight",
+     "model.language_model.layers.0.mlp.down_proj.weight_scale_inv"
+    ],
+    "n_layers": 24,
+    "n_tensors": 30,
+    "organ": "mlp_down",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.language_model.layers.0.mlp.gate_proj.weight",
+     "model.language_model.layers.0.mlp.gate_proj.weight_scale_inv"
+    ],
+    "n_layers": 24,
+    "n_tensors": 60,
+    "organ": "mlp_gate_up",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.4,
+    "example": [
+     "model.visual.merger.down_proj.weight",
+     "model.visual.merger.gate_proj.weight"
+    ],
+    "n_layers": 0,
+    "n_tensors": 5,
+    "organ": "mm_projector",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.language_model.layers.45.mlp.experts.0.down_proj.weight",
+     "model.language_model.layers.45.mlp.experts.0.down_proj.weight_scale_inv"
+    ],
+    "n_layers": 43,
+    "n_tensors": 74304,
+    "organ": "moe_expert",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.language_model.layers.45.mlp.gate.weight",
+     "model.language_model.layers.10.mlp.gate.weight"
+    ],
+    "n_layers": 43,
+    "n_tensors": 43,
+    "organ": "moe_router",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.language_model.layers.0.self_attn.A_log",
+     "model.language_model.layers.0.self_attn.dt_bias"
+    ],
+    "n_layers": 34,
+    "n_tensors": 170,
+    "organ": "recurrent_state",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.language_model.layers.45.enorm.weight",
+     "model.language_model.layers.45.hnorm.weight"
+    ],
+    "n_layers": 46,
+    "n_tensors": 204,
+    "organ": "rmsnorm",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.language_model.layers.45.mlp.shared_experts.down_proj.weight",
+     "model.language_model.layers.45.mlp.shared_experts.down_proj.weight_scale_inv"
+    ],
+    "n_layers": 43,
+    "n_tensors": 258,
+    "organ": "shared_expert",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.visual.blocks.0.attn.proj.bias",
+     "model.visual.blocks.0.attn.proj.weight"
+    ],
+    "n_layers": 24,
+    "n_tensors": 220,
+    "organ": "vision_encoder",
+    "status": "NOVEL"
+   }
+  ],
+  "strength": "ORGAN_FINGERPRINT",
+  "vocab_size": 154880
+ },
+ "bytes": 328366172315,
+ "dir_mtime_ns": 1788327133400648690,
+ "evidence_tier": "STATIC",
+ "files": [
+  {
+   "bytes": 1570,
+   "mtime_ns": 1788006915624382206,
+   "path": ".gitattributes",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1570
+   }
+  },
+  {
+   "bytes": 1070,
+   "mtime_ns": 1788006915670500827,
+   "path": "LICENSE",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1070
+   }
+  },
+  {
+   "bytes": 8024,
+   "mtime_ns": 1788006915749798609,
+   "path": "README.md",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 8024
+   }
+  },
+  {
+   "bytes": 10644,
+   "mtime_ns": 1788006915764361243,
+   "path": "chat_template.jinja",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 10644
+   }
+  },
+  {
+   "bytes": 69416,
+   "mtime_ns": 1788006915764417577,
+   "path": "config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 69416
+   }
+  },
+  {
+   "bytes": 194,
+   "mtime_ns": 1788006915764409993,
+   "path": "generation_config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 194
+   }
+  },
+  {
+   "bytes": 5365306704,
+   "mtime_ns": 1788010181571003128,
+   "path": "model-00001-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5365306704
+   }
+  },
+  {
+   "bytes": 5320647824,
+   "mtime_ns": 1788272498194111857,
+   "path": "model-00002-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5320647824
+   }
+  },
+  {
+   "bytes": 5363467432,
+   "mtime_ns": 1788010172420248401,
+   "path": "model-00003-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5363467432
+   }
+  },
+  {
+   "bytes": 5364342296,
+   "mtime_ns": 1788010213305023076,
+   "path": "model-00004-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5364342296
+   }
+  },
+  {
+   "bytes": 5363915920,
+   "mtime_ns": 1788010251325708594,
+   "path": "model-00005-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5363915920
+   }
+  },
+  {
+   "bytes": 5361809384,
+   "mtime_ns": 1788272526427490857,
+   "path": "model-00006-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5361809384
+   }
+  },
+  {
+   "bytes": 5364342528,
+   "mtime_ns": 1788312278947271521,
+   "path": "model-00007-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5364342528
+   }
+  },
+  {
+   "bytes": 5364342304,
+   "mtime_ns": 1788272673945572202,
+   "path": "model-00008-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5364342304
+   }
+  },
+  {
+   "bytes": 5364169856,
+   "mtime_ns": 1788010153942289898,
+   "path": "model-00009-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5364169856
+   }
+  },
+  {
+   "bytes": 5361982080,
+   "mtime_ns": 1788010130794858153,
+   "path": "model-00010-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5361982080
+   }
+  },
+  {
+   "bytes": 5363915912,
+   "mtime_ns": 1788010153113962952,
+   "path": "model-00011-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5363915912
+   }
+  },
+  {
+   "bytes": 5364342288,
+   "mtime_ns": 1788010163914388420,
+   "path": "model-00012-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5364342288
+   }
+  },
+  {
+   "bytes": 5361809408,
+   "mtime_ns": 1788312275666937917,
+   "path": "model-00013-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5361809408
+   }
+  },
+  {
+   "bytes": 5364342504,
+   "mtime_ns": 1788314118822645564,
+   "path": "model-00014-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5364342504
+   }
+  },
+  {
+   "bytes": 5364342304,
+   "mtime_ns": 1788312289334414604,
+   "path": "model-00015-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5364342304
+   }
+  },
+  {
+   "bytes": 5361809176,
+   "mtime_ns": 1788312290775885111,
+   "path": "model-00016-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5361809176
+   }
+  },
+  {
+   "bytes": 5364084560,
+   "mtime_ns": 1788312320909849140,
+   "path": "model-00017-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5364084560
+   }
+  },
+  {
+   "bytes": 5364342304,
+   "mtime_ns": 1788314267233298705,
+   "path": "model-00018-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5364342304
+   }
+  },
+  {
+   "bytes": 5364342272,
+   "mtime_ns": 1788272529334261800,
+   "path": "model-00019-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5364342272
+   }
+  },
+  {
+   "bytes": 5361809528,
+   "mtime_ns": 1788272540633395301,
+   "path": "model-00020-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5361809528
+   }
+  },
+  {
+   "bytes": 5364342376,
+   "mtime_ns": 1788314173814768413,
+   "path": "model-00021-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5364342376
+   }
+  },
+  {
+   "bytes": 5363915936,
+   "mtime_ns": 1788272578760983159,
+   "path": "model-00022-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5363915936
+   }
+  },
+  {
+   "bytes": 5361809264,
+   "mtime_ns": 1788272748488284763,
+   "path": "model-00023-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5361809264
+   }
+  },
+  {
+   "bytes": 5364342640,
+   "mtime_ns": 1788312294590916926,
+   "path": "model-00024-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5364342640
+   }
+  },
+  {
+   "bytes": 5364342304,
+   "mtime_ns": 1788314193332136886,
+   "path": "model-00025-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5364342304
+   }
+  },
+  {
+   "bytes": 5364342272,
+   "mtime_ns": 1788312275670293882,
+   "path": "model-00026-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5364342272
+   }
+  },
+  {
+   "bytes": 5361809560,
+   "mtime_ns": 1788314231619385480,
+   "path": "model-00027-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5361809560
+   }
+  },
+  {
+   "bytes": 5363915976,
+   "mtime_ns": 1788314242405725456,
+   "path": "model-00028-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5363915976
+   }
+  },
+  {
+   "bytes": 5364342304,
+   "mtime_ns": 1788314259198291117,
+   "path": "model-00029-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5364342304
+   }
+  },
+  {
+   "bytes": 5361809296,
+   "mtime_ns": 1788314277685207452,
+   "path": "model-00030-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5361809296
+   }
+  },
+  {
+   "bytes": 5364341544,
+   "mtime_ns": 1788312293450387793,
+   "path": "model-00031-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5364341544
+   }
+  },
+  {
+   "bytes": 5363915232,
+   "mtime_ns": 1788322711902289692,
+   "path": "model-00032-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5363915232
+   }
+  },
+  {
+   "bytes": 5364342272,
+   "mtime_ns": 1788322660979063800,
+   "path": "model-00033-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5364342272
+   }
+  },
+  {
+   "bytes": 5361809552,
+   "mtime_ns": 1788322702802589746,
+   "path": "model-00034-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5361809552
+   }
+  },
+  {
+   "bytes": 5363915984,
+   "mtime_ns": 1788322702819859853,
+   "path": "model-00035-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5363915984
+   }
+  },
+  {
+   "bytes": 5364342304,
+   "mtime_ns": 1788322687468981705,
+   "path": "model-00036-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5364342304
+   }
+  },
+  {
+   "bytes": 5361809288,
+   "mtime_ns": 1788322758002215449,
+   "path": "model-00037-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5361809288
+   }
+  },
+  {
+   "bytes": 5364342624,
+   "mtime_ns": 1788323796727335686,
+   "path": "model-00038-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5364342624
+   }
+  },
+  {
+   "bytes": 5364342296,
+   "mtime_ns": 1788323797790539351,
+   "path": "model-00039-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5364342296
+   }
+  },
+  {
+   "bytes": 5363915912,
+   "mtime_ns": 1788323854339726422,
+   "path": "model-00040-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5363915912
+   }
+  },
+  {
+   "bytes": 5361809552,
+   "mtime_ns": 1788323820097982400,
+   "path": "model-00041-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5361809552
+   }
+  },
+  {
+   "bytes": 5364342368,
+   "mtime_ns": 1788323819698548244,
+   "path": "model-00042-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5364342368
+   }
+  },
+  {
+   "bytes": 5364342296,
+   "mtime_ns": 1788323825889266875,
+   "path": "model-00043-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5364342296
+   }
+  },
+  {
+   "bytes": 5361809312,
+   "mtime_ns": 1788324852723680693,
+   "path": "model-00044-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5361809312
+   }
+  },
+  {
+   "bytes": 5364342600,
+   "mtime_ns": 1788324790681383351,
+   "path": "model-00045-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5364342600
+   }
+  },
+  {
+   "bytes": 5363915368,
+   "mtime_ns": 1788324910213941597,
+   "path": "model-00046-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5363915368
+   }
+  },
+  {
+   "bytes": 5364341072,
+   "mtime_ns": 1788324895159625032,
+   "path": "model-00047-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5364341072
+   }
+  },
+  {
+   "bytes": 5361809576,
+   "mtime_ns": 1788324888667690867,
+   "path": "model-00048-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5361809576
+   }
+  },
+  {
+   "bytes": 5364342344,
+   "mtime_ns": 1788324952471131060,
+   "path": "model-00049-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5364342344
+   }
+  },
+  {
+   "bytes": 5364342312,
+   "mtime_ns": 1788325880697000430,
+   "path": "model-00050-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5364342312
+   }
+  },
+  {
+   "bytes": 5361809336,
+   "mtime_ns": 1788325941355860798,
+   "path": "model-00051-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5361809336
+   }
+  },
+  {
+   "bytes": 5364342576,
+   "mtime_ns": 1788325979478788482,
+   "path": "model-00052-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5364342576
+   }
+  },
+  {
+   "bytes": 5363915936,
+   "mtime_ns": 1788326000189970239,
+   "path": "model-00053-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5363915936
+   }
+  },
+  {
+   "bytes": 5364342272,
+   "mtime_ns": 1788326011846726086,
+   "path": "model-00054-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5364342272
+   }
+  },
+  {
+   "bytes": 5361808304,
+   "mtime_ns": 1788326006573428223,
+   "path": "model-00055-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5361808304
+   }
+  },
+  {
+   "bytes": 5364341080,
+   "mtime_ns": 1788326917495246172,
+   "path": "model-00056-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5364341080
+   }
+  },
+  {
+   "bytes": 5364341048,
+   "mtime_ns": 1788326976013848813,
+   "path": "model-00057-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5364341048
+   }
+  },
+  {
+   "bytes": 5361808088,
+   "mtime_ns": 1788327003549855691,
+   "path": "model-00058-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5361808088
+   }
+  },
+  {
+   "bytes": 5363914912,
+   "mtime_ns": 1788327095498702621,
+   "path": "model-00059-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5363914912
+   }
+  },
+  {
+   "bytes": 5364341064,
+   "mtime_ns": 1788327108956968869,
+   "path": "model-00060-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5364341064
+   }
+  },
+  {
+   "bytes": 5303993768,
+   "mtime_ns": 1788327108134209565,
+   "path": "model-00061-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 5303993768
+   }
+  },
+  {
+   "bytes": 1261584968,
+   "mtime_ns": 1788327131819102170,
+   "path": "model-00062-of-00062.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1261584968
+   }
+  },
+  {
+   "bytes": 8406613,
+   "mtime_ns": 1788326979887104061,
+   "path": "model.safetensors.index.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 8406613
+   }
+  },
+  {
+   "bytes": 909,
+   "mtime_ns": 1788326980332310263,
+   "path": "processor_config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 909
+   }
+  },
+  {
+   "bytes": 20217442,
+   "mtime_ns": 1788326985327657623,
+   "path": "tokenizer.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 20217442
+   }
+  },
+  {
+   "bytes": 761,
+   "mtime_ns": 1788326989067853137,
+   "path": "tokenizer_config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 761
+   }
+  }
+ ],
+ "has_lake_manifest": false,
+ "has_watch_manifest": true,
+ "lifecycle": "CENSUSED",
+ "lifecycle_derived_from": "sealed source plus an architecture fingerprint",
+ "loaded_weights": false,
+ "location": "specimens",
+ "manifest_bytes": null,
+ "n_files": 72,
+ "n_shards": 62,
+ "path": "/Volumes/corpdrive/hawking-modellake/specimens/zai-org--GLM-5.3-Flash@04c4e9e95c5d",
+ "repo": "zai-org/GLM-5.3-Flash",
+ "resolved_sha": "04c4e9e95c5da8862dced7e5056455116f83a7e0",
+ "revision": "04c4e9e95c5da8862dced7e5056455116f83a7e0",
+ "role": {
+  "evidence_tier": "STATIC",
+  "primary": "dense decoder",
+  "roles": [
+   "dense decoder"
+  ]
+ },
+ "scanned_at": "2026-09-02T09:13:33Z",
+ "schema": "hawking.modellake.index.specimen.v1",
+ "seal_status": "SEALED",
+ "shards": {
+  "check_strength": "INDEX_MATCHED",
+  "complete": true,
+  "expected": 62,
+  "n_shards": 62,
+  "present": 62
+ },
+ "slug": "zai-org--GLM-5.3-Flash@04c4e9e95c5d",
+ "storage_role": "TIER2_COLD",
+ "watch_expected_bytes": 328366172315,
+ "wrote_specimen": false
+}
