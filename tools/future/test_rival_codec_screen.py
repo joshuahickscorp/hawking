@@ -502,3 +502,40 @@ def test_threaded_expert_factoring_is_bit_identical_to_the_serial_path(monkeypat
     # assertions above would pass for a result reassembled in completion order.
     shuffled_u, _ = rcs.residual_factors_batch(residuals[::-1], 6)
     assert not np.array_equal(serial_u, shuffled_u)
+
+
+def test_rank_sweep_reuses_one_eigendecomposition_and_nothing_else(monkeypatch):
+    """The sweep must pay for the bank's eigenvectors once, and only for that bank.
+
+    right_basis() is asked for ranks 4, 8, 16, 32, 64 of the SAME stacked bank. The
+    gram and its eigendecomposition do not depend on the rank -- only the trailing
+    slice does -- so recomputing them per rank is pure waste. Reuse is only sound if
+    it is keyed on the identity of THIS bank: a different array of the same shape
+    must not be served the first one's eigenvectors.
+    """
+    rng = np.random.default_rng(11)
+    bank = rng.standard_normal((5, 7, 24), dtype=np.float32)
+
+    calls = []
+    real_eigh = np.linalg.eigh
+    monkeypatch.setattr(
+        np.linalg, "eigh", lambda g: (calls.append(g.shape), real_eigh(g))[1]
+    )
+
+    swept = {rank: rcs.right_basis(bank, rank) for rank in (4, 8, 16)}
+    assert len(calls) == 1, f"the rank sweep decomposed the same bank {len(calls)} times"
+
+    # Reuse must not change the answer: every rank is still the trailing slice.
+    full = swept[16]
+    for rank in (4, 8):
+        assert np.array_equal(swept[rank], full[-rank:]), f"rank {rank} drifted"
+
+    # A DIFFERENT bank of the same shape must be decomposed on its own terms.
+    other = rng.standard_normal((5, 7, 24), dtype=np.float32)
+    other_v = rcs.right_basis(other, 4)
+    assert len(calls) == 2, "a different bank was served the first bank's eigenvectors"
+    assert not np.array_equal(other_v, swept[4])
+
+    # And the original bank, asked again after eviction, still answers correctly.
+    monkeypatch.setattr(np.linalg, "eigh", real_eigh)
+    assert np.array_equal(rcs.right_basis(bank, 4), swept[4])

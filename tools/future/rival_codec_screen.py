@@ -661,15 +661,38 @@ def _top_eigh(gram: np.ndarray, rank: int) -> np.ndarray:
     return np.ascontiguousarray(evecs[:, -rank:].astype(np.float32, copy=False))
 
 
+# One bank's worth of right eigenvectors, held so a rank sweep pays for them once.
+# Deliberately a single entry: the sweep asks for ranks 4, 8, 16, 32, 64 of the SAME
+# stacked bank, and the gram and its eigendecomposition do not depend on the rank --
+# only the trailing slice does. Holding a strong reference to the bank is what makes
+# `id()` a sound key: an array that is still alive cannot have its address reused.
+_RIGHT_EIGVECS: tuple[int, np.ndarray, np.ndarray] | None = None
+
+
+def _bank_right_eigvecs(weights: np.ndarray) -> np.ndarray:
+    """Ascending-eigenvalue eigenvectors of the bank's right gram."""
+    global _RIGHT_EIGVECS
+    if _RIGHT_EIGVECS is not None:
+        key, held, evecs = _RIGHT_EIGVECS
+        if key == id(weights) and held is weights:
+            return evecs
+    flat = weights.reshape(-1, weights.shape[2])
+    gram = flat.T.astype(np.float64, copy=False) @ flat.astype(np.float64, copy=False)
+    _evals, evecs = np.linalg.eigh(gram)
+    _RIGHT_EIGVECS = (id(weights), weights, evecs)
+    return evecs
+
+
 def right_basis(weights: np.ndarray, rank: int) -> np.ndarray:
     """Shared right factor V[r, d_in] of the stacked bank (rows orthonormal)."""
     e, _o, d_in = weights.shape
     max_rank = min(d_in, e * weights.shape[1], rank)
     if max_rank < rank:
         raise ValueError(f"right rank {rank} exceeds stacked bank rank {max_rank}")
-    flat = weights.reshape(-1, d_in)
-    gram = flat.T.astype(np.float64, copy=False) @ flat.astype(np.float64, copy=False)
-    v_cols = _top_eigh(gram, rank)
+    if rank < 1 or rank > d_in:
+        raise ValueError(f"rank {rank} is not available for gram {d_in}")
+    evecs = _bank_right_eigvecs(weights)
+    v_cols = np.ascontiguousarray(evecs[:, -rank:].astype(np.float32, copy=False))
     return np.ascontiguousarray(v_cols.T)
 
 

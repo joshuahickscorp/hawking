@@ -269,3 +269,31 @@ def test_cli_audit_writes_receipt(monkeypatch, capsys):
     assert "RESIDENT_API_AUDIT.json" in captured.out
     assert "operational=" in captured.out
     assert (RECEIPTS / "RESIDENT_API_AUDIT.json").is_file()
+
+
+def test_a_file_that_vanishes_between_glob_and_read_is_recorded_not_fatal(tmp_path):
+    """The listing is a snapshot of a live tree, not a lock on it.
+
+    discover_python_files() globs and every read happens afterwards. Two of this
+    repo's own tests write a real `tools/future/test__*_probe_*.py` into the tree
+    and delete it in a finally, so a concurrent scan lists a probe and reads it
+    after its owner cleaned up. Aborting the whole survey on that made the audit a
+    coin flip under xdist. The file has to be recorded as unreadable, naming the
+    reason -- not skipped silently, and not fatal.
+    """
+    doomed = tmp_path / "test__vanishing_probe.py"
+    doomed.write_text("def test_x():\n    assert True\n")
+    listed = ra.discover_python_files(tmp_path)
+    assert doomed in listed, "the probe must be in the snapshot before it vanishes"
+
+    doomed.unlink()
+    row = ra.ast_inspect(doomed)
+
+    assert row["parse_ok"] is False
+    assert "FileNotFoundError" in row["parse_error"], row["parse_error"]
+    assert row["filename"] == "test__vanishing_probe.py"
+    assert row["kind"] == "test"
+    # Recorded, not invented: nothing may be claimed about a file nobody read.
+    assert row["public_callables"] == []
+    assert row["preferred_callable"] is None
+    assert row["receipt"] is None
