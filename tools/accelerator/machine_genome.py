@@ -77,6 +77,31 @@ KNOWN_DOMAIN_KINDS = (
     "EXTERNAL_ACCELERATOR",
 )
 
+# Cross-cutting axes the Hardware Doctor asks per device. Status is
+# orthogonal to evidence_tier: a STATIC brochure number is never a
+# HARDWARE_MEASURED bandwidth, even if both sit on the same domain record.
+AXES = (
+    "presence",
+    "identity",
+    "capacity",
+    "bandwidth",
+    "latency",
+    "energy",
+    "thermal",
+    "placement",
+    "transport",
+    "backend",
+)
+AXIS_STATUSES = (
+    "MEASURED",
+    "MODELLED",
+    "UNKNOWN",
+    "BLOCKED",
+    "ABSENT",
+    "UNRELIABLE",
+    "STATIC_IDENTITY",
+)
+
 CORPDRIVE = Path("/Volumes/corpdrive")
 # Live hf download workers write here. Genome probes never create, truncate,
 # or write any path under this prefix.
@@ -802,6 +827,7 @@ def _domain_fpga_declared() -> dict[str, Any]:
             "record; it does not require a schema change."
         ),
         "performance": "UNKNOWN",
+        "wake_condition": "U50_PRESENT",
         "note": "COST_MODEL interconnect knobs live in fusion_bridge; nothing here is a measurement",
     }
 
@@ -820,7 +846,818 @@ def _domain_external_declared() -> dict[str, Any]:
             "is declared so a future DGX slots in without a schema change."
         ),
         "performance": "UNKNOWN",
+        "wake_condition": "DGX_PRESENT",
         "note": "Anything about DGX/FPGA/eGPU on this machine is a model, never a measurement",
+    }
+
+
+def _domain_u50dd_declared() -> dict[str, Any]:
+    """Named U50DD slot. Brochure numbers live in hwir, not here.
+
+    Flipping present=True without a board census still leaves every
+    performance axis UNKNOWN. Presence is not bandwidth.
+    """
+    return {
+        "kind": "FPGA",
+        "name": "u50dd_0",
+        "present": False,
+        "maturity": "DECLARED",
+        "evidence_tier": "STATIC",
+        "physical": False,
+        "product": "Alveo U50DD",
+        "expected_sku": "A-U50DD-P00G-ES3-G",
+        "wake_condition": "U50_PRESENT",
+        "performance": "UNKNOWN",
+        "brochure_lives_in": "tools.future.hwir.u50_family_profile",
+        "reason": (
+            "no U50/U50DD is attached to this host. Expected SKU is a planning "
+            "name, not a local census. Vendor-literature LUT/DSP/HBM figures "
+            "live in hwir.u50_family_profile('u50dd') and are STATIC, not "
+            "HARDWARE_MEASURED."
+        ),
+        "note": "Anything about U50DD on this machine is a model, never a measurement",
+    }
+
+
+def _domain_egpu_declared() -> dict[str, Any]:
+    return {
+        "kind": "EXTERNAL_ACCELERATOR",
+        "name": "egpu_0",
+        "present": False,
+        "maturity": "DECLARED",
+        "evidence_tier": "STATIC",
+        "physical": False,
+        "product_family": "EGPU",
+        "wake_condition": "EGPU_PRESENT",
+        "performance": "UNKNOWN",
+        "reason": (
+            "no eGPU enclosure is attached to this host. The Apple SoC GPU "
+            "is not an eGPU."
+        ),
+        "note": "Anything about an eGPU on this machine is a model, never a measurement",
+    }
+
+
+def axis_record(
+    axis: str,
+    *,
+    status: str,
+    evidence_tier: str,
+    **facts: Any,
+) -> dict[str, Any]:
+    """One per-axis row. Tiers are never merged; status is not a tier."""
+    if axis not in AXES:
+        raise ValueError(f"axis {axis!r} is not one of {AXES}")
+    if status not in AXIS_STATUSES:
+        raise ValueError(f"status {status!r} is not one of {AXIS_STATUSES}")
+    if evidence_tier not in EVIDENCE_TIERS:
+        raise ValueError(f"evidence_tier {evidence_tier!r} is not one of {EVIDENCE_TIERS}")
+    rec = {
+        "axis": axis,
+        "status": status,
+        "evidence_tier": evidence_tier,
+        **facts,
+    }
+    # Presence of a device is not a performance number. Refuse a caller that
+    # tries to stamp HARDWARE_MEASURED onto an absent device's bandwidth.
+    if rec.get("device_present") is False and evidence_tier == "HARDWARE_MEASURED" and axis not in {"presence"}:
+        raise ValueError(
+            f"refusing HARDWARE_MEASURED on axis {axis!r} of an absent device; "
+            "that would fabricate a measurement"
+        )
+    return rec
+
+
+def _probe_status(probe: Any) -> tuple[str, str, str | None]:
+    """Map a genome probe dict onto (status, evidence_tier, reason)."""
+    if not isinstance(probe, dict):
+        return "UNKNOWN", "STATIC", "no probe record"
+    tier = probe.get("evidence_tier") if probe.get("evidence_tier") in EVIDENCE_TIERS else "STATIC"
+    st = probe.get("status")
+    reason = probe.get("reason")
+    if st in {"ABSENT", "BLOCKED"}:
+        return str(st), tier, reason
+    if st == "UNRELIABLE":
+        return "UNRELIABLE", tier, reason
+    if tier == "HARDWARE_MEASURED" and st not in {"ABSENT", "BLOCKED", "UNRELIABLE"}:
+        return "MEASURED", "HARDWARE_MEASURED", reason
+    if tier in {"COST_MODEL", "CYCLE_APPROX", "FUNCTIONAL_SIM"}:
+        return "MODELLED", tier, reason
+    if st == "UNKNOWN" or probe.get("performance") == "UNKNOWN":
+        return "UNKNOWN", tier, reason
+    return "STATIC_IDENTITY", tier, reason
+
+
+def _absent_axes(domain: Mapping[str, Any]) -> list[dict[str, Any]]:
+    """Every performance axis of an absent device is UNKNOWN/ABSENT, never measured."""
+    name = domain.get("name")
+    kind = domain.get("kind")
+    wake = domain.get("wake_condition")
+    reason = domain.get("reason") or f"{name} is not attached"
+    rows = [
+        axis_record(
+            "presence",
+            status="ABSENT",
+            evidence_tier="STATIC",
+            device=name,
+            kind=kind,
+            device_present=False,
+            wake_condition=wake,
+            reason=reason,
+        )
+    ]
+    for axis in AXES:
+        if axis == "presence":
+            continue
+        rows.append(
+            axis_record(
+                axis,
+                status="ABSENT" if axis != "identity" else "UNKNOWN",
+                evidence_tier="STATIC",
+                device=name,
+                kind=kind,
+                device_present=False,
+                wake_condition=wake,
+                reason=(
+                    f"{axis} cannot be measured until {wake or 'the device'} "
+                    f"arrives; brochure figures are not this axis"
+                ),
+            )
+        )
+    return rows
+
+
+def axes_for_domain(
+    domain: Mapping[str, Any],
+    *,
+    genome: Mapping[str, Any] | None = None,
+) -> list[dict[str, Any]]:
+    """Per-axis measured / modelled / unknown inventory for one domain.
+
+    Called by the Hardware Doctor. A domain with present=True and no
+    bandwidth probe still reports bandwidth UNKNOWN -- presence is not a
+    rate. An absent domain never emits HARDWARE_MEASURED on a performance
+    axis.
+    """
+    if not isinstance(domain, dict):
+        raise TypeError("domain must be a dict")
+    name = domain.get("name")
+    kind = domain.get("kind")
+    present = bool(domain.get("present"))
+    genome = genome or {}
+    thermal = genome.get("thermal_envelope") if isinstance(genome.get("thermal_envelope"), dict) else {}
+    sustained = genome.get("sustained_behaviour") if isinstance(genome.get("sustained_behaviour"), dict) else {}
+
+    if not present:
+        return _absent_axes(domain)
+
+    rows: list[dict[str, Any]] = [
+        axis_record(
+            "presence",
+            status="MEASURED",
+            evidence_tier=domain.get("evidence_tier")
+            if domain.get("evidence_tier") in EVIDENCE_TIERS
+            else "HARDWARE_MEASURED",
+            device=name,
+            kind=kind,
+            device_present=True,
+        )
+    ]
+
+    def _thermal() -> dict[str, Any]:
+        if thermal.get("status") in {"ABSENT", "BLOCKED"}:
+            return axis_record(
+                "thermal",
+                status=str(thermal.get("status")),
+                evidence_tier=thermal.get("evidence_tier")
+                if thermal.get("evidence_tier") in EVIDENCE_TIERS
+                else "STATIC",
+                device=name,
+                kind=kind,
+                device_present=True,
+                reason=thermal.get("reason"),
+            )
+        if sustained.get("status") in {"ABSENT", "BLOCKED"}:
+            return axis_record(
+                "thermal",
+                status=str(sustained.get("status")),
+                evidence_tier="STATIC",
+                device=name,
+                kind=kind,
+                device_present=True,
+                reason=sustained.get("reason"),
+            )
+        return axis_record(
+            "thermal",
+            status="UNKNOWN",
+            evidence_tier="STATIC",
+            device=name,
+            kind=kind,
+            device_present=True,
+            reason="no sustained thermal campaign has been run",
+        )
+
+    def _energy() -> dict[str, Any]:
+        return axis_record(
+            "energy",
+            status="UNKNOWN",
+            evidence_tier="STATIC",
+            device=name,
+            kind=kind,
+            device_present=True,
+            reason="no joule meter / powermetrics campaign is cited on this domain",
+        )
+
+    def _backend() -> dict[str, Any]:
+        return axis_record(
+            "backend",
+            status="MEASURED" if domain.get("maturity") in {"MEASURED", "PROFILED", "QUALIFIED", "PRESENT"} else "UNKNOWN",
+            evidence_tier=domain.get("evidence_tier")
+            if domain.get("evidence_tier") in EVIDENCE_TIERS
+            else "STATIC",
+            device=name,
+            kind=kind,
+            device_present=True,
+            maturity=domain.get("maturity"),
+        )
+
+    if kind == "CPU":
+        rows.append(
+            axis_record(
+                "identity",
+                status="STATIC_IDENTITY",
+                evidence_tier="STATIC",
+                device=name,
+                kind=kind,
+                device_present=True,
+                cores=domain.get("cores"),
+                arch=domain.get("arch"),
+                soc=domain.get("soc"),
+            )
+        )
+        rows.append(
+            axis_record(
+                "capacity",
+                status="MEASURED",
+                evidence_tier="HARDWARE_MEASURED",
+                device=name,
+                kind=kind,
+                device_present=True,
+                cores=domain.get("cores"),
+                perf_cores=domain.get("perf_cores"),
+                efficiency_cores=domain.get("efficiency_cores"),
+            )
+        )
+        rows.append(
+            axis_record(
+                "bandwidth",
+                status="UNKNOWN",
+                evidence_tier="STATIC",
+                device=name,
+                kind=kind,
+                device_present=True,
+                reason="CPU STREAM/triad has not been run; the GPU triad is not a CPU roof",
+            )
+        )
+        rows.append(
+            axis_record(
+                "latency",
+                status="UNKNOWN",
+                evidence_tier="STATIC",
+                device=name,
+                kind=kind,
+                device_present=True,
+                reason="no CPU cache/memory latency campaign is cited",
+            )
+        )
+        rows.append(_energy())
+        rows.append(_thermal())
+        rows.append(
+            axis_record(
+                "placement",
+                status="STATIC_IDENTITY",
+                evidence_tier="STATIC",
+                device=name,
+                kind=kind,
+                device_present=True,
+                note="host CPU is always a legal placement; not a preference measurement",
+            )
+        )
+        rows.append(
+            axis_record(
+                "transport",
+                status="STATIC_IDENTITY",
+                evidence_tier="STATIC",
+                device=name,
+                kind=kind,
+                device_present=True,
+                note="on-package; no host-to-device copy on this SoC",
+            )
+        )
+        rows.append(_backend())
+        return rows
+
+    if kind == "GPU":
+        rows.append(
+            axis_record(
+                "identity",
+                status="MEASURED",
+                evidence_tier="HARDWARE_MEASURED",
+                device=name,
+                kind=kind,
+                device_present=True,
+                gpu_cores=domain.get("gpu_cores"),
+            )
+        )
+        rows.append(
+            axis_record(
+                "capacity",
+                status="MEASURED",
+                evidence_tier="HARDWARE_MEASURED",
+                device=name,
+                kind=kind,
+                device_present=True,
+                gpu_cores=domain.get("gpu_cores"),
+                note="core count is identity; it is not a FLOP roof",
+            )
+        )
+        bw = domain.get("measured_bandwidth") if isinstance(domain.get("measured_bandwidth"), dict) else (
+            genome.get("measured_bandwidth") if isinstance(genome.get("measured_bandwidth"), dict) else {}
+        )
+        st, tier, reason = _probe_status(bw)
+        rec = axis_record(
+            "bandwidth",
+            status=st if st != "STATIC_IDENTITY" else "UNKNOWN",
+            evidence_tier=tier,
+            device=name,
+            kind=kind,
+            device_present=True,
+            reason=reason or bw.get("note"),
+            reliable=bw.get("reliable"),
+            pattern=bw.get("pattern"),
+            note="one triad pattern; not the SoC roof",
+        )
+        if st == "MEASURED" and "median_gb_s" in bw:
+            rec["median_gb_s"] = bw.get("median_gb_s")
+            rec["iqr_spread_pct"] = bw.get("iqr_spread_pct")
+        rows.append(rec)
+        rows.append(
+            axis_record(
+                "latency",
+                status="UNKNOWN",
+                evidence_tier="STATIC",
+                device=name,
+                kind=kind,
+                device_present=True,
+                reason="no dispatch/small-message latency campaign is cited on this domain",
+            )
+        )
+        rows.append(_energy())
+        rows.append(_thermal())
+        rows.append(
+            axis_record(
+                "placement",
+                status="STATIC_IDENTITY",
+                evidence_tier="STATIC",
+                device=name,
+                kind=kind,
+                device_present=True,
+                note="Metal GPU is the default decode placement on this host",
+            )
+        )
+        rows.append(
+            axis_record(
+                "transport",
+                status="STATIC_IDENTITY",
+                evidence_tier="STATIC",
+                device=name,
+                kind=kind,
+                device_present=True,
+                note="UMA: CUDA-era HtoD/DtoH copies are structurally avoidable (law, not a speedup number)",
+            )
+        )
+        rows.append(_backend())
+        return rows
+
+    if kind == "UMA":
+        cap_tier = domain.get("capacity_evidence_tier") if domain.get("capacity_evidence_tier") in EVIDENCE_TIERS else "HARDWARE_MEASURED"
+        rows.append(
+            axis_record(
+                "identity",
+                status="STATIC_IDENTITY",
+                evidence_tier="STATIC",
+                device=name,
+                kind=kind,
+                device_present=True,
+                internal_coherency=domain.get("internal_coherency"),
+            )
+        )
+        rows.append(
+            axis_record(
+                "capacity",
+                status="MEASURED" if domain.get("capacity_bytes") else "UNKNOWN",
+                evidence_tier=cap_tier if domain.get("capacity_bytes") else "STATIC",
+                device=name,
+                kind=kind,
+                device_present=True,
+                capacity_bytes=domain.get("capacity_bytes"),
+            )
+        )
+        bw = genome.get("measured_bandwidth") if isinstance(genome.get("measured_bandwidth"), dict) else {}
+        st, tier, reason = _probe_status(bw)
+        rec = axis_record(
+            "bandwidth",
+            status=st if st != "STATIC_IDENTITY" else "UNKNOWN",
+            evidence_tier=tier,
+            device=name,
+            kind=kind,
+            device_present=True,
+            reason=reason or "UMA is the physical medium of the GPU triad; not an independent roof",
+            note="same triad as gpu_uma_0; citing it here does not invent a second measurement",
+        )
+        if st == "MEASURED" and "median_gb_s" in bw:
+            rec["median_gb_s"] = bw.get("median_gb_s")
+        rows.append(rec)
+        rows.append(
+            axis_record(
+                "latency",
+                status="UNKNOWN",
+                evidence_tier="STATIC",
+                device=name,
+                kind=kind,
+                device_present=True,
+                reason="no pointer-chase / cache-line campaign is cited",
+            )
+        )
+        rows.append(_energy())
+        rows.append(_thermal())
+        rows.append(
+            axis_record(
+                "placement",
+                status="STATIC_IDENTITY",
+                evidence_tier="STATIC",
+                device=name,
+                kind=kind,
+                device_present=True,
+                note="resident bodies that fit capacity_bytes are UMA-legal",
+            )
+        )
+        rows.append(
+            axis_record(
+                "transport",
+                status="STATIC_IDENTITY",
+                evidence_tier="STATIC",
+                device=name,
+                kind=kind,
+                device_present=True,
+                law_id="UMA-COPY-ELISION",
+                note="topology fact, not a speedup number; does not transfer to a discrete GPU",
+            )
+        )
+        rows.append(_backend())
+        return rows
+
+    if kind == "ANE":
+        ioreg = domain.get("ioreg") if isinstance(domain.get("ioreg"), dict) else {}
+        rows.append(
+            axis_record(
+                "identity",
+                status="MEASURED" if ioreg.get("present") else "UNKNOWN",
+                evidence_tier=ioreg.get("evidence_tier")
+                if ioreg.get("evidence_tier") in EVIDENCE_TIERS
+                else "HARDWARE_MEASURED",
+                device=name,
+                kind=kind,
+                device_present=True,
+                ioreg_class=ioreg.get("ioreg_class"),
+                note="presence only; ioreg is not TOPS",
+            )
+        )
+        rows.append(
+            axis_record(
+                "capacity",
+                status="UNKNOWN",
+                evidence_tier="STATIC",
+                device=name,
+                kind=kind,
+                device_present=True,
+                reason="no TOPS, no SRAM census; refusing to invent one",
+            )
+        )
+        rows.append(
+            axis_record(
+                "bandwidth",
+                status="UNKNOWN",
+                evidence_tier="STATIC",
+                device=name,
+                kind=kind,
+                device_present=True,
+                reason="ANE bandwidth is not a public ioreg field and is not guessed",
+            )
+        )
+        rows.append(
+            axis_record(
+                "latency",
+                status="MEASURED" if isinstance(domain.get("predict"), dict) and domain["predict"].get("status") == "MEASURED" else "UNKNOWN",
+                evidence_tier="HARDWARE_MEASURED"
+                if isinstance(domain.get("predict"), dict) and domain["predict"].get("status") == "MEASURED"
+                else "STATIC",
+                device=name,
+                kind=kind,
+                device_present=True,
+                reason=None
+                if isinstance(domain.get("predict"), dict) and domain["predict"].get("status") == "MEASURED"
+                else "no predict receipt, or predict was not MEASURED",
+                provenance=(domain.get("predict") or {}).get("provenance")
+                if isinstance(domain.get("predict"), dict)
+                else None,
+                note="cited from the lab receipt when present; add-fixture only, not Flash/Qwen",
+            )
+        )
+        rows.append(_energy())
+        rows.append(_thermal())
+        placement = domain.get("placement")
+        supported = domain.get("supported_compute_devices") or []
+        rows.append(
+            axis_record(
+                "placement",
+                status="MEASURED" if placement or supported else "UNKNOWN",
+                evidence_tier="HARDWARE_MEASURED" if placement or supported else "STATIC",
+                device=name,
+                kind=kind,
+                device_present=True,
+                supported_compute_devices=list(supported),
+                placement=placement,
+                claim_boundary=domain.get("claim_boundary"),
+                note="requested compute units are not placement; Flash/Qwen residency is not claimed",
+            )
+        )
+        rows.append(
+            axis_record(
+                "transport",
+                status="UNKNOWN",
+                evidence_tier="STATIC",
+                device=name,
+                kind=kind,
+                device_present=True,
+                reason="ANE host-to-engine transport is not measured here",
+            )
+        )
+        rows.append(_backend())
+        return rows
+
+    if kind == "STORAGE":
+        mounts = list(domain.get("mounts") or [])
+        rows.append(
+            axis_record(
+                "identity",
+                status="STATIC_IDENTITY",
+                evidence_tier="STATIC",
+                device=name,
+                kind=kind,
+                device_present=True,
+                n_mounts=len(mounts),
+                mounts=[m.get("mount") for m in mounts],
+            )
+        )
+        cap_measured = any(
+            isinstance(m.get("capacity"), dict)
+            and m["capacity"].get("evidence_tier") == "HARDWARE_MEASURED"
+            for m in mounts
+        )
+        rows.append(
+            axis_record(
+                "capacity",
+                status="MEASURED" if cap_measured else "UNKNOWN",
+                evidence_tier="HARDWARE_MEASURED" if cap_measured else "STATIC",
+                device=name,
+                kind=kind,
+                device_present=True,
+                note="statvfs capacity; free space is a live reading, not identity",
+            )
+        )
+        seq_rows = []
+        for m in mounts:
+            seq = m.get("sequential") if isinstance(m.get("sequential"), dict) else {}
+            st, tier, reason = _probe_status(seq)
+            seq_rows.append({
+                "mount": m.get("mount"),
+                "status": st,
+                "evidence_tier": tier,
+                "reason": reason or seq.get("note"),
+                "write_probe": (m.get("write_probe") or {}).get("status")
+                if isinstance(m.get("write_probe"), dict)
+                else None,
+            })
+        any_measured = any(s["status"] == "MEASURED" for s in seq_rows)
+        any_blocked = any(s["status"] in {"BLOCKED", "ABSENT"} for s in seq_rows)
+        bw_status = "MEASURED" if any_measured else ("BLOCKED" if any_blocked else "UNKNOWN")
+        rows.append(
+            axis_record(
+                "bandwidth",
+                status=bw_status,
+                evidence_tier="HARDWARE_MEASURED" if any_measured else "STATIC",
+                device=name,
+                kind=kind,
+                device_present=True,
+                samples=seq_rows,
+                note="bounded sequential sample of an existing file; not a disk roof. corpdrive write is BLOCKED",
+            )
+        )
+        rnd_measured = any(
+            isinstance(m.get("random"), dict) and m["random"].get("evidence_tier") == "HARDWARE_MEASURED"
+            for m in mounts
+        )
+        rows.append(
+            axis_record(
+                "latency",
+                status="MEASURED" if rnd_measured else "UNKNOWN",
+                evidence_tier="HARDWARE_MEASURED" if rnd_measured else "STATIC",
+                device=name,
+                kind=kind,
+                device_present=True,
+                note="scattered 4KiB reads / metadata sample when present; not a random-IOPS roof",
+            )
+        )
+        rows.append(_energy())
+        rows.append(
+            axis_record(
+                "thermal",
+                status="UNKNOWN",
+                evidence_tier="STATIC",
+                device=name,
+                kind=kind,
+                device_present=True,
+                reason="storage thermal is not in this genome",
+            )
+        )
+        rows.append(
+            axis_record(
+                "placement",
+                status="STATIC_IDENTITY",
+                evidence_tier="STATIC",
+                device=name,
+                kind=kind,
+                device_present=True,
+                note="lake vs SSD vs UMA changes science economics (STORAGE-CHANGES-SCIENCE-ECONOMICS)",
+            )
+        )
+        rows.append(
+            axis_record(
+                "transport",
+                status="STATIC_IDENTITY",
+                evidence_tier="STATIC",
+                device=name,
+                kind=kind,
+                device_present=True,
+                note="mount table is identity of what is attached, not a WAN rate",
+            )
+        )
+        rows.append(_backend())
+        return rows
+
+    if kind == "NETWORK":
+        wan = domain.get("wan_throughput") if isinstance(domain.get("wan_throughput"), dict) else {}
+        rows.append(
+            axis_record(
+                "identity",
+                status="STATIC_IDENTITY",
+                evidence_tier="STATIC",
+                device=name,
+                kind=kind,
+                device_present=True,
+                interfaces=domain.get("interfaces"),
+            )
+        )
+        rows.append(
+            axis_record(
+                "capacity",
+                status="UNKNOWN",
+                evidence_tier="STATIC",
+                device=name,
+                kind=kind,
+                device_present=True,
+                reason="link speed is not scraped from ifconfig here",
+            )
+        )
+        st, tier, reason = _probe_status(wan) if wan else ("BLOCKED", "STATIC", "no wan_throughput record")
+        rows.append(
+            axis_record(
+                "bandwidth",
+                status=st if st != "STATIC_IDENTITY" else "BLOCKED",
+                evidence_tier=tier,
+                device=name,
+                kind=kind,
+                device_present=True,
+                reason=reason or wan.get("reason"),
+            )
+        )
+        rows.append(
+            axis_record(
+                "latency",
+                status="UNKNOWN",
+                evidence_tier="STATIC",
+                device=name,
+                kind=kind,
+                device_present=True,
+                reason="no RTT campaign; WAN probe is blocked while lake fills run",
+            )
+        )
+        rows.append(_energy())
+        rows.append(
+            axis_record(
+                "thermal",
+                status="UNKNOWN",
+                evidence_tier="STATIC",
+                device=name,
+                kind=kind,
+                device_present=True,
+                reason="not applicable as a host thermal axis",
+            )
+        )
+        rows.append(
+            axis_record(
+                "placement",
+                status="STATIC_IDENTITY",
+                evidence_tier="STATIC",
+                device=name,
+                kind=kind,
+                device_present=True,
+            )
+        )
+        rows.append(
+            axis_record(
+                "transport",
+                status="BLOCKED" if wan else "UNKNOWN",
+                evidence_tier="STATIC",
+                device=name,
+                kind=kind,
+                device_present=True,
+                reason=(wan or {}).get("reason"),
+            )
+        )
+        rows.append(_backend())
+        return rows
+
+    # Unknown kind, present: identity only, everything else UNKNOWN.
+    rows.append(
+        axis_record(
+            "identity",
+            status="STATIC_IDENTITY",
+            evidence_tier=domain.get("evidence_tier")
+            if domain.get("evidence_tier") in EVIDENCE_TIERS
+            else "STATIC",
+            device=name,
+            kind=kind,
+            device_present=True,
+        )
+    )
+    for axis in AXES:
+        if axis in {"presence", "identity"}:
+            continue
+        rows.append(
+            axis_record(
+                axis,
+                status="UNKNOWN",
+                evidence_tier="STATIC",
+                device=name,
+                kind=kind,
+                device_present=True,
+                reason=f"kind {kind!r} has no specialised axis filler",
+            )
+        )
+    return rows
+
+
+def devices_exist(genome: Mapping[str, Any]) -> dict[str, Any]:
+    """What the genome says is attached. Inventory, not a performance number."""
+    present: list[dict[str, Any]] = []
+    absent: list[dict[str, Any]] = []
+    for name, d in (genome.get("domains") or {}).items():
+        if not isinstance(d, dict):
+            continue
+        row = {
+            "name": name,
+            "kind": d.get("kind"),
+            "present": bool(d.get("present")),
+            "maturity": d.get("maturity"),
+            "evidence_tier": d.get("evidence_tier"),
+            "wake_condition": d.get("wake_condition"),
+            "physical": d.get("physical"),
+        }
+        (present if row["present"] else absent).append(row)
+    return {
+        "soc": genome.get("soc"),
+        "arch": genome.get("arch"),
+        "present": present,
+        "absent": absent,
+        "n_present": len(present),
+        "n_absent": len(absent),
+        "evidence_tier": "STATIC",
+        "note": (
+            "present/absent is genome inventory. A declared slot with "
+            "present=False is not a measurement of a future board."
+        ),
     }
 
 
@@ -912,6 +1749,8 @@ def build(*, contended: bool, contention_note: str) -> dict[str, Any]:
     uma = _domain_uma(identity)
     fpga = _domain_fpga_declared()
     ext = _domain_external_declared()
+    u50dd = _domain_u50dd_declared()
+    egpu = _domain_egpu_declared()
     domains = {
         cpu["name"]: cpu,
         gpu["name"]: gpu,
@@ -921,6 +1760,8 @@ def build(*, contended: bool, contention_note: str) -> dict[str, Any]:
         network["name"]: network,
         fpga["name"]: fpga,
         ext["name"]: ext,
+        u50dd["name"]: u50dd,
+        egpu["name"]: egpu,
     }
     laws = []
     for d in domains.values():

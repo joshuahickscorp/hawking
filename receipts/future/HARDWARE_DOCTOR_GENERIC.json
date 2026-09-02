@@ -1,0 +1,2128 @@
+{
+ "absent_u50dd": {
+  "axes": [
+   {
+    "axis": "presence",
+    "device": "u50dd_0",
+    "device_present": false,
+    "evidence_tier": "STATIC",
+    "kind": "FPGA",
+    "reason": "no U50/U50DD is attached to this host. Expected SKU is a planning name, not a local census. Vendor-literature LUT/DSP/HBM figures live in hwir.u50_family_profile('u50dd') and are STATIC, not HARDWARE_MEASURED.",
+    "status": "ABSENT",
+    "wake_condition": "U50_PRESENT"
+   },
+   {
+    "axis": "identity",
+    "device": "u50dd_0",
+    "device_present": false,
+    "evidence_tier": "STATIC",
+    "kind": "FPGA",
+    "reason": "identity cannot be measured until U50_PRESENT arrives; brochure figures are not this axis",
+    "status": "UNKNOWN",
+    "wake_condition": "U50_PRESENT"
+   },
+   {
+    "axis": "capacity",
+    "device": "u50dd_0",
+    "device_present": false,
+    "evidence_tier": "STATIC",
+    "kind": "FPGA",
+    "reason": "capacity cannot be measured until U50_PRESENT arrives; brochure figures are not this axis",
+    "status": "ABSENT",
+    "wake_condition": "U50_PRESENT"
+   },
+   {
+    "axis": "bandwidth",
+    "device": "u50dd_0",
+    "device_present": false,
+    "evidence_tier": "STATIC",
+    "kind": "FPGA",
+    "reason": "bandwidth cannot be measured until U50_PRESENT arrives; brochure figures are not this axis",
+    "status": "ABSENT",
+    "wake_condition": "U50_PRESENT"
+   },
+   {
+    "axis": "latency",
+    "device": "u50dd_0",
+    "device_present": false,
+    "evidence_tier": "STATIC",
+    "kind": "FPGA",
+    "reason": "latency cannot be measured until U50_PRESENT arrives; brochure figures are not this axis",
+    "status": "ABSENT",
+    "wake_condition": "U50_PRESENT"
+   },
+   {
+    "axis": "energy",
+    "device": "u50dd_0",
+    "device_present": false,
+    "evidence_tier": "STATIC",
+    "kind": "FPGA",
+    "reason": "energy cannot be measured until U50_PRESENT arrives; brochure figures are not this axis",
+    "status": "ABSENT",
+    "wake_condition": "U50_PRESENT"
+   },
+   {
+    "axis": "thermal",
+    "device": "u50dd_0",
+    "device_present": false,
+    "evidence_tier": "STATIC",
+    "kind": "FPGA",
+    "reason": "thermal cannot be measured until U50_PRESENT arrives; brochure figures are not this axis",
+    "status": "ABSENT",
+    "wake_condition": "U50_PRESENT"
+   },
+   {
+    "axis": "placement",
+    "device": "u50dd_0",
+    "device_present": false,
+    "evidence_tier": "STATIC",
+    "kind": "FPGA",
+    "reason": "placement cannot be measured until U50_PRESENT arrives; brochure figures are not this axis",
+    "status": "ABSENT",
+    "wake_condition": "U50_PRESENT"
+   },
+   {
+    "axis": "transport",
+    "device": "u50dd_0",
+    "device_present": false,
+    "evidence_tier": "STATIC",
+    "kind": "FPGA",
+    "reason": "transport cannot be measured until U50_PRESENT arrives; brochure figures are not this axis",
+    "status": "ABSENT",
+    "wake_condition": "U50_PRESENT"
+   },
+   {
+    "axis": "backend",
+    "device": "u50dd_0",
+    "device_present": false,
+    "evidence_tier": "STATIC",
+    "kind": "FPGA",
+    "reason": "backend cannot be measured until U50_PRESENT arrives; brochure figures are not this axis",
+    "status": "ABSENT",
+    "wake_condition": "U50_PRESENT"
+   }
+  ],
+  "brochure": {
+   "claim_boundary": "STATIC vendor literature from hwir.u50_family_profile('u50dd'). Not a local board census. Never HARDWARE_MEASURED.",
+   "declared_not_measured": true,
+   "device_id": "alveo-u50dd",
+   "evidence_tier": "STATIC",
+   "hardware_measured": false,
+   "origin": "U50_FAMILY_VARIANT_DECLARED_NOT_A_BOARD",
+   "resources": {
+    "BRAM": {
+     "citation": "DS965 (v1.2-era Table 1) U50DD ES3 column (A-U50DD-P00G-ES3-G) 36 Kb block RAM 1344",
+     "document_class": "AMD_DATASHEET_DS965",
+     "evidence_tier": "STATIC",
+     "hardware_measured": false,
+     "value": 1344,
+     "vendor_literature_not_measurement": true
+    },
+    "DSP": {
+     "citation": "DS965 (v1.2-era Table 1) U50DD ES3 column (A-U50DD-P00G-ES3-G) DSP slices 5,952",
+     "document_class": "AMD_DATASHEET_DS965",
+     "evidence_tier": "STATIC",
+     "hardware_measured": false,
+     "value": 5952,
+     "vendor_literature_not_measurement": true
+    },
+    "LUT": {
+     "citation": "DS965 (v1.2-era Table 1) U50DD ES3 column (A-U50DD-P00G-ES3-G) Look-up tables (LUTs) 872K",
+     "document_class": "AMD_DATASHEET_DS965",
+     "evidence_tier": "STATIC",
+     "hardware_measured": false,
+     "value": 872000,
+     "vendor_literature_not_measurement": true
+    },
+    "URAM": {
+     "citation": "DS965 (v1.2-era Table 1) U50DD ES3 column (A-U50DD-P00G-ES3-G) 288 Kb UltraRAM 640",
+     "document_class": "AMD_DATASHEET_DS965",
+     "evidence_tier": "STATIC",
+     "hardware_measured": false,
+     "value": 640,
+     "vendor_literature_not_measurement": true
+    },
+    "cooling": {
+     "citation": "DS965 (v1.2-era Table 1) U50DD ES3 column (A-U50DD-P00G-ES3-G) Thermal cooling solution Passive",
+     "document_class": "AMD_DATASHEET_DS965",
+     "evidence_tier": "STATIC",
+     "hardware_measured": false,
+     "value": "passive",
+     "vendor_literature_not_measurement": true
+    },
+    "form_factor": {
+     "citation": "DS965 (v1.2-era Table 1) U50DD ES3 column (A-U50DD-P00G-ES3-G) Form factor Half height, half length",
+     "document_class": "AMD_DATASHEET_DS965",
+     "evidence_tier": "STATIC",
+     "hardware_measured": false,
+     "value": "half_height_half_length_single_slot",
+     "vendor_literature_not_measurement": true
+    },
+    "fpga_part": {
+     "citation": "UG1371 Card Features: UltraScale+ XCU50 FPGA (ES3 listed in the SKU table)",
+     "document_class": "AMD_USER_GUIDE_UG1371",
+     "evidence_tier": "STATIC",
+     "hardware_measured": false,
+     "value": "XCU50",
+     "vendor_literature_not_measurement": true
+    },
+    "hbm_capacity_bytes": {
+     "citation": "DS965 (v1.2-era Table 1) U50DD ES3 column (A-U50DD-P00G-ES3-G) HBM2 total capacity 8 GB",
+     "document_class": "AMD_DATASHEET_DS965",
+     "evidence_tier": "STATIC",
+     "hardware_measured": false,
+     "value": 8589934592,
+     "vendor_literature_not_measurement": true
+    },
+    "hbm_channels": {
+     "citation": "UG1371 Card Features (covers ES3 SKU in Table 1): 32 channels of 256 MB",
+     "document_class": "AMD_USER_GUIDE_UG1371",
+     "evidence_tier": "STATIC",
+     "hardware_measured": false,
+     "value": 32,
+     "vendor_literature_not_measurement": true
+    },
+    "pcie_generation": {
+     "citation": "DS965 (v1.2-era Table 1) U50DD ES3 column (A-U50DD-P00G-ES3-G) PCIe interface Gen3 x16, Gen4 x8, CCIX",
+     "document_class": "AMD_DATASHEET_DS965",
+     "evidence_tier": "STATIC",
+     "hardware_measured": false,
+     "value": 3,
+     "vendor_literature_not_measurement": true
+    },
+    "pcie_lanes": {
+     "citation": "DS965 (v1.2-era Table 1) U50DD ES3 column (A-U50DD-P00G-ES3-G) PCIe interface Gen3 x16, Gen4 x8, CCIX",
+     "document_class": "AMD_DATASHEET_DS965",
+     "evidence_tier": "STATIC",
+     "hardware_measured": false,
+     "value": 16,
+     "vendor_literature_not_measurement": true
+    },
+    "power_envelope_w": {
+     "citation": "DS965 (v1.2-era Table 1) U50DD ES3 column (A-U50DD-P00G-ES3-G) Total electrical card load 75W",
+     "document_class": "AMD_DATASHEET_DS965",
+     "evidence_tier": "STATIC",
+     "hardware_measured": false,
+     "value": 75,
+     "vendor_literature_not_measurement": true
+    },
+    "sku": {
+     "citation": "DS965 (v1.2-era Table 1) U50DD ES3 column (A-U50DD-P00G-ES3-G) Product SKU; product selection guide: engineering sample, not volume production",
+     "document_class": "AMD_DATASHEET_DS965",
+     "evidence_tier": "STATIC",
+     "hardware_measured": false,
+     "value": "A-U50DD-P00G-ES3-G",
+     "vendor_literature_not_measurement": true
+    }
+   },
+   "sku": "A-U50DD-P00G-ES3-G",
+   "unpinned_fields": [
+    {
+     "evidence_tier": "STATIC",
+     "field": "speed_grade",
+     "hardware_measured": false,
+     "reason": "hwir: speed grade for the ES3 SKU is UNPINNED; not copied from production U50",
+     "value": "UNPINNED"
+    }
+   ],
+   "variant_id": "u50dd",
+   "vendor_literature": "AMD Alveo U50DD engineering sample SKU A-U50DD-P00G-ES3-G from public DS965 ES3 column / UG1371. Not qualified for volume deployment. STATIC vendor literature. Not a local board."
+  },
+  "carrier": {
+   "airflow_class": "none",
+   "carrier_id": "chestnut-current-fw",
+   "claim_boundary": "THIRD_PARTY_REPORTED. Must not be emitted as HARDWARE_MEASURED. Hardware Doctor overwrites chestnut_hawking_optimized on U50_PRESENT.",
+   "evidence_class": "THIRD_PARTY_REPORTED",
+   "evidence_tier": "STATIC",
+   "hardware_measured": false,
+   "note": "tinygrad firmware deliberately trains PCIe Gen3 x2. Observed payload ~1.66-1.68 GB/s, and ~the same at x4 because the ASM2464PD completer caps there -- so the ceiling is a COMPLETER property, not a lane count. 12V/3.3V rails and PERST# are firmware-controlled; INA231 telemetry. Carrier supplies power and mechanical support but NO airflow.",
+   "observed_payload_bytes_per_s": 1680000000,
+   "origin": "CHESTNUT_CURRENT_FW_THIRD_PARTY_REPORTED",
+   "pcie_generation": 3,
+   "pcie_lanes": 2,
+   "sustained_power_w": 75
+  },
+  "carrier_hawking_optimized": {
+   "airflow_class": "none",
+   "carrier_id": "chestnut-hawking-optimized",
+   "claim_boundary": "UNPINNED_AWAITING_HAWKING_MEASUREMENT. Must not be emitted as HARDWARE_MEASURED. Hardware Doctor overwrites chestnut_hawking_optimized on U50_PRESENT.",
+   "evidence_class": "UNPINNED_AWAITING_HAWKING_MEASUREMENT",
+   "evidence_tier": "STATIC",
+   "hardware_measured": false,
+   "note": "Downstream width, payload bandwidth, latency and queue depth are BENCHMARK INPUTS to be written by Hardware Doctor on U50_PRESENT. Gen3 x2 is a firmware choice, not a physical limit: the gap between ~1.68 GB/s observed and ~5.0 GB/s raw is open research. UNTIL MEASURED this mode inherits the CURRENT-FIRMWARE ceiling. An unpinned carrier must not license more optimism than the pinned one: planning as if an unmeasured bridge were a full server slot is exactly the fail-open default this envelope exists to prevent.",
+   "observed_payload_bytes_per_s": 1680000000,
+   "origin": "CHESTNUT_HAWKING_OPTIMIZED_UNPINNED",
+   "pcie_generation": "UNPINNED",
+   "pcie_lanes": "UNPINNED",
+   "sustained_power_w": 75
+  },
+  "claim_boundary": "U50DD is DECLARED-absent on this host. STATIC vendor literature and THIRD_PARTY_REPORTED carrier figures are models. No number in this object is HARDWARE_MEASURED.",
+  "evidence_tier": "STATIC",
+  "hardware_measured": false,
+  "kind": "FPGA",
+  "maturity": "DECLARED",
+  "name": "u50dd_0",
+  "performance": "UNKNOWN",
+  "physical": false,
+  "present": false,
+  "product": "Alveo U50DD",
+  "unknown_axes": [
+   "identity",
+   "capacity",
+   "bandwidth",
+   "latency",
+   "energy",
+   "thermal",
+   "placement",
+   "transport",
+   "backend"
+  ],
+  "wake": {
+   "description": "AMD/Xilinx Alveo U50DD/XCU50-class FPGA enumerated on this host (PCIe/Thunderbolt identity contains xilinx/alveo/u50/xcu50).",
+   "evidence": "no Xilinx/Alveo/U50/XCU50 identity in PCIe/Thunderbolt/ioreg inventory",
+   "evidence_tier": "STATIC",
+   "id": "U50_PRESENT",
+   "present": false,
+   "probe_u50_evidence": "no Xilinx/Alveo/U50/XCU50 identity in PCIe/Thunderbolt/ioreg inventory",
+   "probe_u50_present": false
+  },
+  "wake_condition": "U50_PRESENT",
+  "wake_gates": [
+   "U50_PURCHASE_ACCEPTANCE",
+   "U50_SAFE_COOLING",
+   "U50_DEVICE_PROFILE",
+   "U50_DMA_HBM",
+   "U50_FIRST_NATIVE_ENGINE",
+   "U50_MIXED_APPLE_FPGA_GRAPH",
+   "U50_34_TO_40",
+   "U50_40_TO_50",
+   "U50_50_TO_60",
+   "U50_60_TO_70",
+   "U50_70_TO_80",
+   "U50_80_TO_90"
+  ],
+  "what_wake_does_not_resolve": [
+   "measured HBM bandwidth (needs 15.13 M09 HBM round trip, still HARDWARE_MEASURED only after the ladder)",
+   "measured H2C/C2H (M07/M08)",
+   "local thermal on this carrier (U50DD is passively cooled; Chestnut supplies no airflow)",
+   "Fmax, joules/token, capability-preserving TPS",
+   "any DS965 LUT/DSP/HBM brochure field becoming HARDWARE_MEASURED by virtue of enumeration",
+   "Chestnut usable payload: THIRD_PARTY_REPORTED until Hawking measures it"
+  ],
+  "what_wake_resolves": [
+   "device identity/presence: PCIe/Thunderbolt inventory matching xilinx/alveo/u50/xcu50",
+   "permission to flip u50dd_0.present after a local census (still not a rate)",
+   "the U50_* capability-graph gates become runnable, not passed",
+   "Hardware Doctor may overwrite chestnut_hawking_optimized with a Hawking measurement"
+  ]
+ },
+ "already_known_probes": [
+  {
+   "axis": "bandwidth",
+   "cost": 2,
+   "device": "network",
+   "device_present": true,
+   "evidence_class_if_run": "STATIC",
+   "evidence_tier_now": "STATIC",
+   "falsifier": "the sample contends with live hf download workers",
+   "hypothesis": "A WAN sample would convert network.bandwidth from BLOCKED.",
+   "id": "HDG-NETWORK-WAN",
+   "ineligible_reason": "live hf download workers write to /Volumes/corpdrive; a WAN sample would be contended and could disturb them",
+   "info_weight": 0,
+   "predicted_effect": {
+    "direction": "reduce_uncertainty",
+    "magnitude_class": "UNKNOWN"
+   },
+   "prerequisite": "lake fills idle",
+   "resolves": "network.wan_throughput",
+   "runnable_now": false,
+   "status_now": "BLOCKED"
+  }
+ ],
+ "called": [
+  "machine_genome.discover_identity",
+  "device_ascension.characterize",
+  "machine_genome.build",
+  "device_ascension.economics",
+  "device_profiles.economics_from_genome",
+  "device_ascension.select",
+  "device_profiles.select_resident",
+  "machine_genome.devices_exist",
+  "machine_genome.axes_for_domain",
+  "hwir.u50_family_profile",
+  "hwir.chestnut_current_firmware",
+  "hwir.chestnut_hawking_optimized",
+  "tools.roadmap.hardware.probe",
+  "tools.roadmap.hardware.probe_u50"
+ ],
+ "claim_boundary": "Host domains may carry HARDWARE_MEASURED axes from the genome. Absent U50DD/DGX/eGPU never do. STATIC vendor literature and THIRD_PARTY_REPORTED carrier figures are not measurements. Tiers are never merged.",
+ "evidence_tiers_used": [
+  "HARDWARE_MEASURED",
+  "STATIC"
+ ],
+ "generated_at": "2026-09-02T09:15:13Z",
+ "host": {
+  "arch": "arm64",
+  "cpu_cores": 28,
+  "evidence_tier": "STATIC",
+  "genome_digest": "8b644d3f19d6ef5bdbb72d96c34e628e32a7d37bf77fdf48083a1746d1fe5ca6",
+  "gpu_cores": 60,
+  "memory_bytes": 103079215104,
+  "note": "identity from machine_genome.discover_identity / build. This is THIS machine, not a fixture.",
+  "soc": "Apple M3 Ultra"
+ },
+ "questions": {
+  "backend_maturity": {
+   "ane_0": "PROFILED",
+   "cpu_0": "MEASURED",
+   "egpu_0": "DECLARED",
+   "fpga_hbm_0": "DECLARED",
+   "gpu_uma_0": "PRESENT",
+   "network": "PRESENT",
+   "nvidia_dgx_0": "DECLARED",
+   "storage": "MEASURED",
+   "u50dd_0": "DECLARED",
+   "uma_0": "PRESENT"
+  },
+  "devices_exist": {
+   "absent": [
+    {
+     "evidence_tier": "STATIC",
+     "kind": "FPGA",
+     "maturity": "DECLARED",
+     "name": "fpga_hbm_0",
+     "physical": false,
+     "present": false,
+     "wake_condition": "U50_PRESENT",
+     "wake_probe_evidence": "no Xilinx/Alveo/U50/XCU50 identity in PCIe/Thunderbolt/ioreg inventory",
+     "wake_probe_evidence_tier": "STATIC",
+     "wake_probe_present": false
+    },
+    {
+     "evidence_tier": "STATIC",
+     "kind": "EXTERNAL_ACCELERATOR",
+     "maturity": "DECLARED",
+     "name": "nvidia_dgx_0",
+     "physical": false,
+     "present": false,
+     "wake_condition": "DGX_PRESENT",
+     "wake_probe_evidence": "nvidia-smi not present or produced no GPU list",
+     "wake_probe_evidence_tier": "STATIC",
+     "wake_probe_present": false
+    },
+    {
+     "evidence_tier": "STATIC",
+     "kind": "FPGA",
+     "maturity": "DECLARED",
+     "name": "u50dd_0",
+     "physical": false,
+     "present": false,
+     "wake_condition": "U50_PRESENT",
+     "wake_probe_evidence": "no Xilinx/Alveo/U50/XCU50 identity in PCIe/Thunderbolt/ioreg inventory",
+     "wake_probe_evidence_tier": "STATIC",
+     "wake_probe_present": false
+    },
+    {
+     "evidence_tier": "STATIC",
+     "kind": "EXTERNAL_ACCELERATOR",
+     "maturity": "DECLARED",
+     "name": "egpu_0",
+     "physical": false,
+     "present": false,
+     "wake_condition": "EGPU_PRESENT",
+     "wake_probe_evidence": "no eGPU enclosure in displays/thunderbolt inventory",
+     "wake_probe_evidence_tier": "STATIC",
+     "wake_probe_present": false
+    }
+   ],
+   "arch": "arm64",
+   "evidence_tier": "STATIC",
+   "n_absent": 4,
+   "n_present": 6,
+   "note": "present/absent is genome inventory. A declared slot with present=False is not a measurement of a future board.",
+   "present": [
+    {
+     "evidence_tier": "HARDWARE_MEASURED",
+     "kind": "CPU",
+     "maturity": "MEASURED",
+     "name": "cpu_0",
+     "physical": null,
+     "present": true,
+     "wake_condition": null
+    },
+    {
+     "evidence_tier": "HARDWARE_MEASURED",
+     "kind": "GPU",
+     "maturity": "PRESENT",
+     "name": "gpu_uma_0",
+     "physical": null,
+     "present": true,
+     "wake_condition": null
+    },
+    {
+     "evidence_tier": "STATIC",
+     "kind": "UMA",
+     "maturity": "PRESENT",
+     "name": "uma_0",
+     "physical": null,
+     "present": true,
+     "wake_condition": null
+    },
+    {
+     "evidence_tier": "HARDWARE_MEASURED",
+     "kind": "ANE",
+     "maturity": "PROFILED",
+     "name": "ane_0",
+     "physical": null,
+     "present": true,
+     "wake_condition": null
+    },
+    {
+     "evidence_tier": "HARDWARE_MEASURED",
+     "kind": "STORAGE",
+     "maturity": "MEASURED",
+     "name": "storage",
+     "physical": null,
+     "present": true,
+     "wake_condition": null
+    },
+    {
+     "evidence_tier": "STATIC",
+     "kind": "NETWORK",
+     "maturity": "PRESENT",
+     "name": "network",
+     "physical": null,
+     "present": true,
+     "wake_condition": null
+    }
+   ],
+   "soc": "Apple M3 Ultra"
+  },
+  "experiments_ranked": [
+   {
+    "axis": "latency",
+    "cost": 2,
+    "device": "cpu_0",
+    "device_present": true,
+    "evidence_class_if_run": "HARDWARE_MEASURED",
+    "evidence_tier_now": "STATIC",
+    "falsifier": "sample window < 5ms, or contention makes the IQR miss the 10% gate",
+    "hypothesis": "A pointer-chase / cache-line sample would convert cpu_0.latency from UNKNOWN.",
+    "id": "HDG-CPU-LATENCY",
+    "ineligible_reason": null,
+    "info_weight": 4,
+    "information_per_cost": {
+     "cost": 2,
+     "info_weight": 4,
+     "rule": "runnable first, then info_weight / cost via integer key -(info*60//cost); never a hardware measurement",
+     "runnable_now": true
+    },
+    "predicted_effect": {
+     "direction": "reduce_uncertainty",
+     "magnitude_class": "UNKNOWN"
+    },
+    "prerequisite": "userspace; no GPU lease required",
+    "rank": 1,
+    "resolves": "cpu_0.latency",
+    "runnable_now": true,
+    "status_now": "UNKNOWN"
+   },
+   {
+    "axis": "bandwidth",
+    "cost": 2,
+    "device": "cpu_0",
+    "device_present": true,
+    "evidence_class_if_run": "HARDWARE_MEASURED",
+    "evidence_tier_now": "STATIC",
+    "falsifier": "IQR > 10% under current contention, or no userspace triad can run",
+    "hypothesis": "A bounded CPU STREAM/triad on this SoC would convert cpu_0.bandwidth from UNKNOWN to HARDWARE_MEASURED (or UNRELIABLE if the machine is not held still). The GPU triad is not a CPU roof.",
+    "id": "HDG-CPU-STREAM",
+    "ineligible_reason": null,
+    "info_weight": 4,
+    "information_per_cost": {
+     "cost": 2,
+     "info_weight": 4,
+     "rule": "runnable first, then info_weight / cost via integer key -(info*60//cost); never a hardware measurement",
+     "runnable_now": true
+    },
+    "predicted_effect": {
+     "direction": "reduce_uncertainty",
+     "magnitude_class": "UNKNOWN"
+    },
+    "prerequisite": "userspace CPU triad (numpy/mlx); no GPU lease required",
+    "rank": 2,
+    "resolves": "cpu_0.bandwidth",
+    "runnable_now": true,
+    "status_now": "UNKNOWN"
+   },
+   {
+    "axis": "latency",
+    "cost": 2,
+    "device": "gpu_uma_0",
+    "device_present": true,
+    "evidence_class_if_run": "HARDWARE_MEASURED",
+    "evidence_tier_now": "STATIC",
+    "falsifier": "dispatch sample is not a roof; IQR misses the gate",
+    "hypothesis": "A small-dispatch sample would convert gpu_uma_0.latency from UNKNOWN.",
+    "id": "HDG-GPU-DISPATCH-LATENCY",
+    "ineligible_reason": null,
+    "info_weight": 4,
+    "information_per_cost": {
+     "cost": 2,
+     "info_weight": 4,
+     "rule": "runnable first, then info_weight / cost via integer key -(info*60//cost); never a hardware measurement",
+     "runnable_now": true
+    },
+    "predicted_effect": {
+     "direction": "reduce_uncertainty",
+     "magnitude_class": "UNKNOWN"
+    },
+    "prerequisite": "mlx or Metal runtime; not a production ADP",
+    "rank": 3,
+    "resolves": "gpu_uma_0.latency",
+    "runnable_now": true,
+    "status_now": "UNKNOWN"
+   },
+   {
+    "axis": "bandwidth",
+    "cost": 2,
+    "device": "gpu_uma_0",
+    "device_present": true,
+    "evidence_class_if_run": "HARDWARE_MEASURED",
+    "evidence_tier_now": "STATIC",
+    "falsifier": "mlx unavailable, or IQR > 10% so the number is UNRELIABLE not a roof",
+    "hypothesis": "A GPU triad converts gpu_uma_0.bandwidth from ABSENT/UNKNOWN to HARDWARE_MEASURED. If the live triad is UNRELIABLE, the same probe in a protected window is the one that can become a roof. If it is already MEASURED and reliable, info_weight is 0.",
+    "id": "HDG-GPU-TRIAD",
+    "ineligible_reason": null,
+    "info_weight": 4,
+    "information_per_cost": {
+     "cost": 2,
+     "info_weight": 4,
+     "rule": "runnable first, then info_weight / cost via integer key -(info*60//cost); never a hardware measurement",
+     "runnable_now": true
+    },
+    "predicted_effect": {
+     "direction": "reduce_uncertainty",
+     "magnitude_class": "UNKNOWN"
+    },
+    "prerequisite": "mlx in this interpreter; one triad is not a roof",
+    "rank": 4,
+    "resolves": "gpu_uma_0.bandwidth",
+    "runnable_now": true,
+    "status_now": "ABSENT"
+   },
+   {
+    "axis": "transport",
+    "cost": 2,
+    "device": "uma_0",
+    "device_present": true,
+    "evidence_class_if_run": "HARDWARE_MEASURED",
+    "evidence_tier_now": "STATIC",
+    "falsifier": "a discrete-memory copy is observed on this SoC, which would refute the law",
+    "hypothesis": "UMA-COPY-ELISION is a STATIC topology law. A measurement of avoided HtoD/DtoH bytes would add a HARDWARE_MEASURED overlay without promoting the law to a speedup on discrete GPUs.",
+    "id": "HDG-UMA-COPY-ELISION",
+    "ineligible_reason": null,
+    "info_weight": 4,
+    "information_per_cost": {
+     "cost": 2,
+     "info_weight": 4,
+     "rule": "runnable first, then info_weight / cost via integer key -(info*60//cost); never a hardware measurement",
+     "runnable_now": true
+    },
+    "predicted_effect": {
+     "direction": "reduce_uncertainty",
+     "magnitude_class": "UNKNOWN"
+    },
+    "prerequisite": "a CUDA-shaped workload rewritten against UMA",
+    "rank": 5,
+    "resolves": "uma_0.transport as a measured overlay on a STATIC law",
+    "runnable_now": true,
+    "status_now": "UNKNOWN"
+   },
+   {
+    "axis": "placement",
+    "cost": 3,
+    "device": "ane_0",
+    "device_present": true,
+    "evidence_class_if_run": "HARDWARE_MEASURED",
+    "evidence_tier_now": "STATIC",
+    "falsifier": "preferred device remains CPU, or the organ is unsupported",
+    "hypothesis": "The lab receipt profiles an add fixture, not Flash/Qwen. A real-organ MLComputePlan placement probe would convert ANE residency from 'present but unproven' to PROFILED-for-that-organ.",
+    "id": "HDG-ANE-ORGAN-PLACEMENT",
+    "ineligible_reason": null,
+    "info_weight": 4,
+    "information_per_cost": {
+     "cost": 3,
+     "info_weight": 4,
+     "rule": "runnable first, then info_weight / cost via integer key -(info*60//cost); never a hardware measurement",
+     "runnable_now": true
+    },
+    "predicted_effect": {
+     "direction": "reduce_uncertainty",
+     "magnitude_class": "UNKNOWN"
+    },
+    "prerequisite": "CoreML/MLComputePlan lab path; no TOPS invented",
+    "rank": 6,
+    "resolves": "ane_0.placement for a named organ (still not TOPS)",
+    "runnable_now": true,
+    "status_now": "UNKNOWN"
+   },
+   {
+    "axis": "presence",
+    "cost": 1,
+    "device": "nvidia_dgx_0",
+    "device_present": false,
+    "evidence_class_if_run": "STATIC",
+    "evidence_tier_now": "STATIC",
+    "falsifier": "nvidia-smi -L names a DGX product",
+    "hypothesis": "nvidia-smi inventory confirms no DGX on this host.",
+    "id": "HDG-DGX-WAKE-INVENTORY",
+    "ineligible_reason": null,
+    "info_weight": 1,
+    "information_per_cost": {
+     "cost": 1,
+     "info_weight": 1,
+     "rule": "runnable first, then info_weight / cost via integer key -(info*60//cost); never a hardware measurement",
+     "runnable_now": true
+    },
+    "predicted_effect": {
+     "direction": "reduce_uncertainty",
+     "magnitude_class": "UNKNOWN"
+    },
+    "prerequisite": "nvidia-smi",
+    "rank": 7,
+    "resolves": "nvidia_dgx_0.presence",
+    "runnable_now": true,
+    "status_now": "ABSENT"
+   },
+   {
+    "axis": "presence",
+    "cost": 1,
+    "device": "egpu_0",
+    "device_present": false,
+    "evidence_class_if_run": "STATIC",
+    "evidence_tier_now": "STATIC",
+    "falsifier": "an eGPU enclosure is named in SPDisplays/SPThunderbolt",
+    "hypothesis": "Displays/Thunderbolt inventory confirms no eGPU enclosure.",
+    "id": "HDG-EGPU-WAKE-INVENTORY",
+    "ineligible_reason": null,
+    "info_weight": 1,
+    "information_per_cost": {
+     "cost": 1,
+     "info_weight": 1,
+     "rule": "runnable first, then info_weight / cost via integer key -(info*60//cost); never a hardware measurement",
+     "runnable_now": true
+    },
+    "predicted_effect": {
+     "direction": "reduce_uncertainty",
+     "magnitude_class": "UNKNOWN"
+    },
+    "prerequisite": "system_profiler",
+    "rank": 8,
+    "resolves": "egpu_0.presence",
+    "runnable_now": true,
+    "status_now": "ABSENT"
+   },
+   {
+    "axis": "presence",
+    "cost": 1,
+    "device": "u50dd_0",
+    "device_present": false,
+    "evidence_class_if_run": "STATIC",
+    "evidence_tier_now": "STATIC",
+    "falsifier": "PCIe/Thunderbolt identity matches xilinx/alveo/u50/xcu50",
+    "hypothesis": "Re-running the U50_PRESENT inventory confirms the board has not arrived.",
+    "id": "HDG-U50-WAKE-INVENTORY",
+    "ineligible_reason": null,
+    "info_weight": 1,
+    "information_per_cost": {
+     "cost": 1,
+     "info_weight": 1,
+     "rule": "runnable first, then info_weight / cost via integer key -(info*60//cost); never a hardware measurement",
+     "runnable_now": true
+    },
+    "predicted_effect": {
+     "direction": "reduce_uncertainty",
+     "magnitude_class": "UNKNOWN"
+    },
+    "prerequisite": "system_profiler/ioreg; already the wake probe",
+    "rank": 9,
+    "resolves": "u50dd_0.presence (inventory only)",
+    "runnable_now": true,
+    "status_now": "ABSENT"
+   },
+   {
+    "axis": "energy",
+    "cost": 4,
+    "device": "ane_0",
+    "device_present": true,
+    "evidence_class_if_run": "HARDWARE_MEASURED",
+    "evidence_tier_now": "STATIC",
+    "falsifier": "powermetrics unavailable without privileges, or ANE is not the preferred device",
+    "hypothesis": "powermetrics during an ANE-legal fixture would convert ane_0.energy from UNKNOWN.",
+    "id": "HDG-ANE-ENERGY",
+    "ineligible_reason": null,
+    "info_weight": 4,
+    "information_per_cost": {
+     "cost": 4,
+     "info_weight": 4,
+     "rule": "runnable first, then info_weight / cost via integer key -(info*60//cost); never a hardware measurement",
+     "runnable_now": true
+    },
+    "predicted_effect": {
+     "direction": "reduce_uncertainty",
+     "magnitude_class": "UNKNOWN"
+    },
+    "prerequisite": "powermetrics; may require privileges. Still not TOPS.",
+    "rank": 10,
+    "resolves": "ane_0.energy",
+    "runnable_now": true,
+    "status_now": "UNKNOWN"
+   },
+   {
+    "axis": "thermal",
+    "cost": 6,
+    "device": "gpu_uma_0",
+    "device_present": true,
+    "evidence_class_if_run": "HARDWARE_MEASURED",
+    "evidence_tier_now": "STATIC",
+    "falsifier": "throttling appears, or the campaign cannot be isolated from lake fills",
+    "hypothesis": "A sustained thermal campaign is ABSENT and is required before a production ADP (G049). This is the probe that converts thermal from ABSENT to HARDWARE_MEASURED.",
+    "id": "HDG-SUSTAINED-THERMAL",
+    "ineligible_reason": null,
+    "info_weight": 4,
+    "information_per_cost": {
+     "cost": 6,
+     "info_weight": 4,
+     "rule": "runnable first, then info_weight / cost via integer key -(info*60//cost); never a hardware measurement",
+     "runnable_now": true
+    },
+    "predicted_effect": {
+     "direction": "reduce_uncertainty",
+     "magnitude_class": "UNKNOWN"
+    },
+    "prerequisite": "long exclusive GPU window; not a microbenchmark",
+    "rank": 11,
+    "resolves": "genome.thermal_envelope / gpu_uma_0.thermal",
+    "runnable_now": true,
+    "status_now": "ABSENT"
+   },
+   {
+    "axis": "bandwidth",
+    "cost": 8,
+    "device": "u50dd_0",
+    "device_present": false,
+    "evidence_class_if_run": "STATIC",
+    "evidence_tier_now": "STATIC",
+    "falsifier": "M09 does not complete, or the carrier supplies no usable HBM path",
+    "hypothesis": "An HBM round trip on an attached U50DD (15.13 M09) would convert u50dd_0.bandwidth from ABSENT/UNKNOWN to HARDWARE_MEASURED. U50_PRESENT alone does not produce that number.",
+    "id": "HDG-U50DD-ARRIVAL-HBM",
+    "ineligible_reason": null,
+    "info_weight": 2,
+    "information_per_cost": {
+     "cost": 8,
+     "info_weight": 2,
+     "rule": "runnable first, then info_weight / cost via integer key -(info*60//cost); never a hardware measurement",
+     "runnable_now": false
+    },
+    "predicted_effect": {
+     "direction": "reduce_uncertainty",
+     "magnitude_class": "UNKNOWN"
+    },
+    "prerequisite": "wake_condition U50_PRESENT, then M00\u2013M09",
+    "rank": 12,
+    "resolves": "u50dd_0.bandwidth (only after wake AND the DMA/HBM ladder)",
+    "runnable_now": false,
+    "status_now": "ABSENT"
+   },
+   {
+    "axis": "transport",
+    "cost": 8,
+    "device": "u50dd_0",
+    "device_present": false,
+    "evidence_class_if_run": "STATIC",
+    "evidence_tier_now": "STATIC",
+    "falsifier": "measured payload disagrees with the third-party completer ceiling",
+    "hypothesis": "On U50_PRESENT, a Hawking measurement overwrites chestnut_hawking_optimized. Until then the ~1.68 GB/s figure is THIRD_PARTY_REPORTED, not HARDWARE_MEASURED.",
+    "id": "HDG-U50DD-CHESTNUT-PAYLOAD",
+    "ineligible_reason": null,
+    "info_weight": 2,
+    "information_per_cost": {
+     "cost": 8,
+     "info_weight": 2,
+     "rule": "runnable first, then info_weight / cost via integer key -(info*60//cost); never a hardware measurement",
+     "runnable_now": false
+    },
+    "predicted_effect": {
+     "direction": "reduce_uncertainty",
+     "magnitude_class": "UNKNOWN"
+    },
+    "prerequisite": "wake_condition U50_PRESENT plus a Hawking transport campaign",
+    "rank": 13,
+    "resolves": "chestnut_hawking_optimized (Hardware Doctor overwrite on wake)",
+    "runnable_now": false,
+    "status_now": "ABSENT"
+   }
+  ],
+  "measured_vs_modelled_vs_unknown": {
+   "ane_0": [
+    {
+     "axis": "presence",
+     "device": "ane_0",
+     "device_present": true,
+     "evidence_tier": "HARDWARE_MEASURED",
+     "kind": "ANE",
+     "status": "MEASURED"
+    },
+    {
+     "axis": "identity",
+     "device": "ane_0",
+     "device_present": true,
+     "evidence_tier": "HARDWARE_MEASURED",
+     "ioreg_class": "H11ANEIn",
+     "kind": "ANE",
+     "note": "presence only; ioreg is not TOPS",
+     "status": "MEASURED"
+    },
+    {
+     "axis": "capacity",
+     "device": "ane_0",
+     "device_present": true,
+     "evidence_tier": "STATIC",
+     "kind": "ANE",
+     "reason": "no TOPS, no SRAM census; refusing to invent one",
+     "status": "UNKNOWN"
+    },
+    {
+     "axis": "bandwidth",
+     "device": "ane_0",
+     "device_present": true,
+     "evidence_tier": "STATIC",
+     "kind": "ANE",
+     "reason": "ANE bandwidth is not a public ioreg field and is not guessed",
+     "status": "UNKNOWN"
+    },
+    {
+     "axis": "latency",
+     "device": "ane_0",
+     "device_present": true,
+     "evidence_tier": "HARDWARE_MEASURED",
+     "kind": "ANE",
+     "note": "cited from the lab receipt when present; add-fixture only, not Flash/Qwen",
+     "provenance": "/Users/scammermike/Downloads/hawking/receipts/headless/HCLI_FORBIDDEN_FRUIT_LAB.json",
+     "reason": null,
+     "status": "MEASURED"
+    },
+    {
+     "axis": "energy",
+     "device": "ane_0",
+     "device_present": true,
+     "evidence_tier": "STATIC",
+     "kind": "ANE",
+     "reason": "no joule meter / powermetrics campaign is cited on this domain",
+     "status": "UNKNOWN"
+    },
+    {
+     "axis": "thermal",
+     "device": "ane_0",
+     "device_present": true,
+     "evidence_tier": "STATIC",
+     "kind": "ANE",
+     "reason": "no sustained thermal campaign has been run; sustained behaviour is required before any production ADP (G049) and is not claimed here",
+     "status": "ABSENT"
+    },
+    {
+     "axis": "placement",
+     "claim_boundary": "Public MLComputePlan operation support and preferred placement, plus ioreg presence. No TOPS, no energy, no Flash residency claim. Requested compute units are not placement.",
+     "device": "ane_0",
+     "device_present": true,
+     "evidence_tier": "HARDWARE_MEASURED",
+     "kind": "ANE",
+     "note": "requested compute units are not placement; Flash/Qwen residency is not claimed",
+     "placement": {
+      "ane_preferred_this_run": false,
+      "api": "MLComputePlan.load(contentsOf:configuration:)",
+      "evidence_class": "PUBLIC_API_OBSERVED",
+      "operations": [
+       {
+        "estimated_cost_weight": 1,
+        "function": "main",
+        "index": 0,
+        "operator": "ios16.mul",
+        "placement_status": "PLANNED",
+        "preferred": "CPU",
+        "supported": [
+         "CPU",
+         "GPU",
+         "NEURAL_ENGINE"
+        ]
+       }
+      ],
+      "preferred_devices_observed": [
+       "CPU"
+      ],
+      "status": "PLANNED"
+     },
+     "status": "MEASURED",
+     "supported_compute_devices": [
+      "NEURAL_ENGINE",
+      "GPU",
+      "CPU"
+     ]
+    },
+    {
+     "axis": "transport",
+     "device": "ane_0",
+     "device_present": true,
+     "evidence_tier": "STATIC",
+     "kind": "ANE",
+     "reason": "ANE host-to-engine transport is not measured here",
+     "status": "UNKNOWN"
+    },
+    {
+     "axis": "backend",
+     "device": "ane_0",
+     "device_present": true,
+     "evidence_tier": "HARDWARE_MEASURED",
+     "kind": "ANE",
+     "maturity": "PROFILED",
+     "status": "MEASURED"
+    }
+   ],
+   "cpu_0": [
+    {
+     "axis": "presence",
+     "device": "cpu_0",
+     "device_present": true,
+     "evidence_tier": "HARDWARE_MEASURED",
+     "kind": "CPU",
+     "status": "MEASURED"
+    },
+    {
+     "arch": "arm64",
+     "axis": "identity",
+     "cores": 28,
+     "device": "cpu_0",
+     "device_present": true,
+     "evidence_tier": "STATIC",
+     "kind": "CPU",
+     "soc": "Apple M3 Ultra",
+     "status": "STATIC_IDENTITY"
+    },
+    {
+     "axis": "capacity",
+     "cores": 28,
+     "device": "cpu_0",
+     "device_present": true,
+     "efficiency_cores": 8,
+     "evidence_tier": "HARDWARE_MEASURED",
+     "kind": "CPU",
+     "perf_cores": 20,
+     "status": "MEASURED"
+    },
+    {
+     "axis": "bandwidth",
+     "device": "cpu_0",
+     "device_present": true,
+     "evidence_tier": "STATIC",
+     "kind": "CPU",
+     "reason": "CPU STREAM/triad has not been run; the GPU triad is not a CPU roof",
+     "status": "UNKNOWN"
+    },
+    {
+     "axis": "latency",
+     "device": "cpu_0",
+     "device_present": true,
+     "evidence_tier": "STATIC",
+     "kind": "CPU",
+     "reason": "no CPU cache/memory latency campaign is cited",
+     "status": "UNKNOWN"
+    },
+    {
+     "axis": "energy",
+     "device": "cpu_0",
+     "device_present": true,
+     "evidence_tier": "STATIC",
+     "kind": "CPU",
+     "reason": "no joule meter / powermetrics campaign is cited on this domain",
+     "status": "UNKNOWN"
+    },
+    {
+     "axis": "thermal",
+     "device": "cpu_0",
+     "device_present": true,
+     "evidence_tier": "STATIC",
+     "kind": "CPU",
+     "reason": "no sustained thermal campaign has been run; sustained behaviour is required before any production ADP (G049) and is not claimed here",
+     "status": "ABSENT"
+    },
+    {
+     "axis": "placement",
+     "device": "cpu_0",
+     "device_present": true,
+     "evidence_tier": "STATIC",
+     "kind": "CPU",
+     "note": "host CPU is always a legal placement; not a preference measurement",
+     "status": "STATIC_IDENTITY"
+    },
+    {
+     "axis": "transport",
+     "device": "cpu_0",
+     "device_present": true,
+     "evidence_tier": "STATIC",
+     "kind": "CPU",
+     "note": "on-package; no host-to-device copy on this SoC",
+     "status": "STATIC_IDENTITY"
+    },
+    {
+     "axis": "backend",
+     "device": "cpu_0",
+     "device_present": true,
+     "evidence_tier": "HARDWARE_MEASURED",
+     "kind": "CPU",
+     "maturity": "MEASURED",
+     "status": "MEASURED"
+    }
+   ],
+   "egpu_0": [
+    {
+     "axis": "presence",
+     "device": "egpu_0",
+     "device_present": false,
+     "evidence_tier": "STATIC",
+     "kind": "EXTERNAL_ACCELERATOR",
+     "reason": "no eGPU enclosure is attached to this host. The Apple SoC GPU is not an eGPU.",
+     "status": "ABSENT",
+     "wake_condition": "EGPU_PRESENT"
+    },
+    {
+     "axis": "identity",
+     "device": "egpu_0",
+     "device_present": false,
+     "evidence_tier": "STATIC",
+     "kind": "EXTERNAL_ACCELERATOR",
+     "reason": "identity cannot be measured until EGPU_PRESENT arrives; brochure figures are not this axis",
+     "status": "UNKNOWN",
+     "wake_condition": "EGPU_PRESENT"
+    },
+    {
+     "axis": "capacity",
+     "device": "egpu_0",
+     "device_present": false,
+     "evidence_tier": "STATIC",
+     "kind": "EXTERNAL_ACCELERATOR",
+     "reason": "capacity cannot be measured until EGPU_PRESENT arrives; brochure figures are not this axis",
+     "status": "ABSENT",
+     "wake_condition": "EGPU_PRESENT"
+    },
+    {
+     "axis": "bandwidth",
+     "device": "egpu_0",
+     "device_present": false,
+     "evidence_tier": "STATIC",
+     "kind": "EXTERNAL_ACCELERATOR",
+     "reason": "bandwidth cannot be measured until EGPU_PRESENT arrives; brochure figures are not this axis",
+     "status": "ABSENT",
+     "wake_condition": "EGPU_PRESENT"
+    },
+    {
+     "axis": "latency",
+     "device": "egpu_0",
+     "device_present": false,
+     "evidence_tier": "STATIC",
+     "kind": "EXTERNAL_ACCELERATOR",
+     "reason": "latency cannot be measured until EGPU_PRESENT arrives; brochure figures are not this axis",
+     "status": "ABSENT",
+     "wake_condition": "EGPU_PRESENT"
+    },
+    {
+     "axis": "energy",
+     "device": "egpu_0",
+     "device_present": false,
+     "evidence_tier": "STATIC",
+     "kind": "EXTERNAL_ACCELERATOR",
+     "reason": "energy cannot be measured until EGPU_PRESENT arrives; brochure figures are not this axis",
+     "status": "ABSENT",
+     "wake_condition": "EGPU_PRESENT"
+    },
+    {
+     "axis": "thermal",
+     "device": "egpu_0",
+     "device_present": false,
+     "evidence_tier": "STATIC",
+     "kind": "EXTERNAL_ACCELERATOR",
+     "reason": "thermal cannot be measured until EGPU_PRESENT arrives; brochure figures are not this axis",
+     "status": "ABSENT",
+     "wake_condition": "EGPU_PRESENT"
+    },
+    {
+     "axis": "placement",
+     "device": "egpu_0",
+     "device_present": false,
+     "evidence_tier": "STATIC",
+     "kind": "EXTERNAL_ACCELERATOR",
+     "reason": "placement cannot be measured until EGPU_PRESENT arrives; brochure figures are not this axis",
+     "status": "ABSENT",
+     "wake_condition": "EGPU_PRESENT"
+    },
+    {
+     "axis": "transport",
+     "device": "egpu_0",
+     "device_present": false,
+     "evidence_tier": "STATIC",
+     "kind": "EXTERNAL_ACCELERATOR",
+     "reason": "transport cannot be measured until EGPU_PRESENT arrives; brochure figures are not this axis",
+     "status": "ABSENT",
+     "wake_condition": "EGPU_PRESENT"
+    },
+    {
+     "axis": "backend",
+     "device": "egpu_0",
+     "device_present": false,
+     "evidence_tier": "STATIC",
+     "kind": "EXTERNAL_ACCELERATOR",
+     "reason": "backend cannot be measured until EGPU_PRESENT arrives; brochure figures are not this axis",
+     "status": "ABSENT",
+     "wake_condition": "EGPU_PRESENT"
+    }
+   ],
+   "fpga_hbm_0": [
+    {
+     "axis": "presence",
+     "device": "fpga_hbm_0",
+     "device_present": false,
+     "evidence_tier": "STATIC",
+     "kind": "FPGA",
+     "reason": "no FPGA is attached to this host; fpga_hbm_0 is the same declared domain name fusion_bridge already uses. A future board fills this record; it does not require a schema change.",
+     "status": "ABSENT",
+     "wake_condition": "U50_PRESENT"
+    },
+    {
+     "axis": "identity",
+     "device": "fpga_hbm_0",
+     "device_present": false,
+     "evidence_tier": "STATIC",
+     "kind": "FPGA",
+     "reason": "identity cannot be measured until U50_PRESENT arrives; brochure figures are not this axis",
+     "status": "UNKNOWN",
+     "wake_condition": "U50_PRESENT"
+    },
+    {
+     "axis": "capacity",
+     "device": "fpga_hbm_0",
+     "device_present": false,
+     "evidence_tier": "STATIC",
+     "kind": "FPGA",
+     "reason": "capacity cannot be measured until U50_PRESENT arrives; brochure figures are not this axis",
+     "status": "ABSENT",
+     "wake_condition": "U50_PRESENT"
+    },
+    {
+     "axis": "bandwidth",
+     "device": "fpga_hbm_0",
+     "device_present": false,
+     "evidence_tier": "STATIC",
+     "kind": "FPGA",
+     "reason": "bandwidth cannot be measured until U50_PRESENT arrives; brochure figures are not this axis",
+     "status": "ABSENT",
+     "wake_condition": "U50_PRESENT"
+    },
+    {
+     "axis": "latency",
+     "device": "fpga_hbm_0",
+     "device_present": false,
+     "evidence_tier": "STATIC",
+     "kind": "FPGA",
+     "reason": "latency cannot be measured until U50_PRESENT arrives; brochure figures are not this axis",
+     "status": "ABSENT",
+     "wake_condition": "U50_PRESENT"
+    },
+    {
+     "axis": "energy",
+     "device": "fpga_hbm_0",
+     "device_present": false,
+     "evidence_tier": "STATIC",
+     "kind": "FPGA",
+     "reason": "energy cannot be measured until U50_PRESENT arrives; brochure figures are not this axis",
+     "status": "ABSENT",
+     "wake_condition": "U50_PRESENT"
+    },
+    {
+     "axis": "thermal",
+     "device": "fpga_hbm_0",
+     "device_present": false,
+     "evidence_tier": "STATIC",
+     "kind": "FPGA",
+     "reason": "thermal cannot be measured until U50_PRESENT arrives; brochure figures are not this axis",
+     "status": "ABSENT",
+     "wake_condition": "U50_PRESENT"
+    },
+    {
+     "axis": "placement",
+     "device": "fpga_hbm_0",
+     "device_present": false,
+     "evidence_tier": "STATIC",
+     "kind": "FPGA",
+     "reason": "placement cannot be measured until U50_PRESENT arrives; brochure figures are not this axis",
+     "status": "ABSENT",
+     "wake_condition": "U50_PRESENT"
+    },
+    {
+     "axis": "transport",
+     "device": "fpga_hbm_0",
+     "device_present": false,
+     "evidence_tier": "STATIC",
+     "kind": "FPGA",
+     "reason": "transport cannot be measured until U50_PRESENT arrives; brochure figures are not this axis",
+     "status": "ABSENT",
+     "wake_condition": "U50_PRESENT"
+    },
+    {
+     "axis": "backend",
+     "device": "fpga_hbm_0",
+     "device_present": false,
+     "evidence_tier": "STATIC",
+     "kind": "FPGA",
+     "reason": "backend cannot be measured until U50_PRESENT arrives; brochure figures are not this axis",
+     "status": "ABSENT",
+     "wake_condition": "U50_PRESENT"
+    }
+   ],
+   "gpu_uma_0": [
+    {
+     "axis": "presence",
+     "device": "gpu_uma_0",
+     "device_present": true,
+     "evidence_tier": "HARDWARE_MEASURED",
+     "kind": "GPU",
+     "status": "MEASURED"
+    },
+    {
+     "axis": "identity",
+     "device": "gpu_uma_0",
+     "device_present": true,
+     "evidence_tier": "HARDWARE_MEASURED",
+     "gpu_cores": 60,
+     "kind": "GPU",
+     "status": "MEASURED"
+    },
+    {
+     "axis": "capacity",
+     "device": "gpu_uma_0",
+     "device_present": true,
+     "evidence_tier": "HARDWARE_MEASURED",
+     "gpu_cores": 60,
+     "kind": "GPU",
+     "note": "core count is identity; it is not a FLOP roof",
+     "status": "MEASURED"
+    },
+    {
+     "axis": "bandwidth",
+     "device": "gpu_uma_0",
+     "device_present": true,
+     "evidence_tier": "STATIC",
+     "kind": "GPU",
+     "note": "one triad pattern; not the SoC roof",
+     "pattern": null,
+     "reason": "mlx unavailable: ModuleNotFoundError",
+     "reliable": null,
+     "status": "ABSENT"
+    },
+    {
+     "axis": "latency",
+     "device": "gpu_uma_0",
+     "device_present": true,
+     "evidence_tier": "STATIC",
+     "kind": "GPU",
+     "reason": "no dispatch/small-message latency campaign is cited on this domain",
+     "status": "UNKNOWN"
+    },
+    {
+     "axis": "energy",
+     "device": "gpu_uma_0",
+     "device_present": true,
+     "evidence_tier": "STATIC",
+     "kind": "GPU",
+     "reason": "no joule meter / powermetrics campaign is cited on this domain",
+     "status": "UNKNOWN"
+    },
+    {
+     "axis": "thermal",
+     "device": "gpu_uma_0",
+     "device_present": true,
+     "evidence_tier": "STATIC",
+     "kind": "GPU",
+     "reason": "no sustained thermal campaign has been run; sustained behaviour is required before any production ADP (G049) and is not claimed here",
+     "status": "ABSENT"
+    },
+    {
+     "axis": "placement",
+     "device": "gpu_uma_0",
+     "device_present": true,
+     "evidence_tier": "STATIC",
+     "kind": "GPU",
+     "note": "Metal GPU is the default decode placement on this host",
+     "status": "STATIC_IDENTITY"
+    },
+    {
+     "axis": "transport",
+     "device": "gpu_uma_0",
+     "device_present": true,
+     "evidence_tier": "STATIC",
+     "kind": "GPU",
+     "note": "UMA: CUDA-era HtoD/DtoH copies are structurally avoidable (law, not a speedup number)",
+     "status": "STATIC_IDENTITY"
+    },
+    {
+     "axis": "backend",
+     "device": "gpu_uma_0",
+     "device_present": true,
+     "evidence_tier": "HARDWARE_MEASURED",
+     "kind": "GPU",
+     "maturity": "PRESENT",
+     "status": "MEASURED"
+    }
+   ],
+   "network": [
+    {
+     "axis": "presence",
+     "device": "network",
+     "device_present": true,
+     "evidence_tier": "STATIC",
+     "kind": "NETWORK",
+     "status": "MEASURED"
+    },
+    {
+     "axis": "identity",
+     "device": "network",
+     "device_present": true,
+     "evidence_tier": "STATIC",
+     "interfaces": [
+      "lo0",
+      "gif0",
+      "stf0",
+      "anpi5",
+      "anpi0",
+      "anpi2",
+      "anpi1",
+      "anpi4",
+      "anpi3",
+      "en0",
+      "en8",
+      "en9",
+      "en10",
+      "en11",
+      "en12",
+      "en13",
+      "en2",
+      "en3",
+      "en4",
+      "en5",
+      "en6",
+      "en7",
+      "utun0",
+      "ap1",
+      "en1",
+      "bridge0",
+      "awdl0",
+      "llw0",
+      "utun1",
+      "utun2",
+      "utun3",
+      "utun4",
+      "nan0",
+      "utun5",
+      "utun6"
+     ],
+     "kind": "NETWORK",
+     "status": "STATIC_IDENTITY"
+    },
+    {
+     "axis": "capacity",
+     "device": "network",
+     "device_present": true,
+     "evidence_tier": "STATIC",
+     "kind": "NETWORK",
+     "reason": "link speed is not scraped from ifconfig here",
+     "status": "UNKNOWN"
+    },
+    {
+     "axis": "bandwidth",
+     "device": "network",
+     "device_present": true,
+     "evidence_tier": "STATIC",
+     "kind": "NETWORK",
+     "reason": "live hf download workers write to /Volumes/corpdrive; a WAN sample would be contended and could disturb them",
+     "status": "BLOCKED"
+    },
+    {
+     "axis": "latency",
+     "device": "network",
+     "device_present": true,
+     "evidence_tier": "STATIC",
+     "kind": "NETWORK",
+     "reason": "no RTT campaign; WAN probe is blocked while lake fills run",
+     "status": "UNKNOWN"
+    },
+    {
+     "axis": "energy",
+     "device": "network",
+     "device_present": true,
+     "evidence_tier": "STATIC",
+     "kind": "NETWORK",
+     "reason": "no joule meter / powermetrics campaign is cited on this domain",
+     "status": "UNKNOWN"
+    },
+    {
+     "axis": "thermal",
+     "device": "network",
+     "device_present": true,
+     "evidence_tier": "STATIC",
+     "kind": "NETWORK",
+     "reason": "not applicable as a host thermal axis",
+     "status": "UNKNOWN"
+    },
+    {
+     "axis": "placement",
+     "device": "network",
+     "device_present": true,
+     "evidence_tier": "STATIC",
+     "kind": "NETWORK",
+     "status": "STATIC_IDENTITY"
+    },
+    {
+     "axis": "transport",
+     "device": "network",
+     "device_present": true,
+     "evidence_tier": "STATIC",
+     "kind": "NETWORK",
+     "reason": "live hf download workers write to /Volumes/corpdrive; a WAN sample would be contended and could disturb them",
+     "status": "BLOCKED"
+    },
+    {
+     "axis": "backend",
+     "device": "network",
+     "device_present": true,
+     "evidence_tier": "STATIC",
+     "kind": "NETWORK",
+     "maturity": "PRESENT",
+     "status": "MEASURED"
+    }
+   ],
+   "nvidia_dgx_0": [
+    {
+     "axis": "presence",
+     "device": "nvidia_dgx_0",
+     "device_present": false,
+     "evidence_tier": "STATIC",
+     "kind": "EXTERNAL_ACCELERATOR",
+     "reason": "no DGX, no discrete NVIDIA GPU, no eGPU on this host. The domain is declared so a future DGX slots in without a schema change.",
+     "status": "ABSENT",
+     "wake_condition": "DGX_PRESENT"
+    },
+    {
+     "axis": "identity",
+     "device": "nvidia_dgx_0",
+     "device_present": false,
+     "evidence_tier": "STATIC",
+     "kind": "EXTERNAL_ACCELERATOR",
+     "reason": "identity cannot be measured until DGX_PRESENT arrives; brochure figures are not this axis",
+     "status": "UNKNOWN",
+     "wake_condition": "DGX_PRESENT"
+    },
+    {
+     "axis": "capacity",
+     "device": "nvidia_dgx_0",
+     "device_present": false,
+     "evidence_tier": "STATIC",
+     "kind": "EXTERNAL_ACCELERATOR",
+     "reason": "capacity cannot be measured until DGX_PRESENT arrives; brochure figures are not this axis",
+     "status": "ABSENT",
+     "wake_condition": "DGX_PRESENT"
+    },
+    {
+     "axis": "bandwidth",
+     "device": "nvidia_dgx_0",
+     "device_present": false,
+     "evidence_tier": "STATIC",
+     "kind": "EXTERNAL_ACCELERATOR",
+     "reason": "bandwidth cannot be measured until DGX_PRESENT arrives; brochure figures are not this axis",
+     "status": "ABSENT",
+     "wake_condition": "DGX_PRESENT"
+    },
+    {
+     "axis": "latency",
+     "device": "nvidia_dgx_0",
+     "device_present": false,
+     "evidence_tier": "STATIC",
+     "kind": "EXTERNAL_ACCELERATOR",
+     "reason": "latency cannot be measured until DGX_PRESENT arrives; brochure figures are not this axis",
+     "status": "ABSENT",
+     "wake_condition": "DGX_PRESENT"
+    },
+    {
+     "axis": "energy",
+     "device": "nvidia_dgx_0",
+     "device_present": false,
+     "evidence_tier": "STATIC",
+     "kind": "EXTERNAL_ACCELERATOR",
+     "reason": "energy cannot be measured until DGX_PRESENT arrives; brochure figures are not this axis",
+     "status": "ABSENT",
+     "wake_condition": "DGX_PRESENT"
+    },
+    {
+     "axis": "thermal",
+     "device": "nvidia_dgx_0",
+     "device_present": false,
+     "evidence_tier": "STATIC",
+     "kind": "EXTERNAL_ACCELERATOR",
+     "reason": "thermal cannot be measured until DGX_PRESENT arrives; brochure figures are not this axis",
+     "status": "ABSENT",
+     "wake_condition": "DGX_PRESENT"
+    },
+    {
+     "axis": "placement",
+     "device": "nvidia_dgx_0",
+     "device_present": false,
+     "evidence_tier": "STATIC",
+     "kind": "EXTERNAL_ACCELERATOR",
+     "reason": "placement cannot be measured until DGX_PRESENT arrives; brochure figures are not this axis",
+     "status": "ABSENT",
+     "wake_condition": "DGX_PRESENT"
+    },
+    {
+     "axis": "transport",
+     "device": "nvidia_dgx_0",
+     "device_present": false,
+     "evidence_tier": "STATIC",
+     "kind": "EXTERNAL_ACCELERATOR",
+     "reason": "transport cannot be measured until DGX_PRESENT arrives; brochure figures are not this axis",
+     "status": "ABSENT",
+     "wake_condition": "DGX_PRESENT"
+    },
+    {
+     "axis": "backend",
+     "device": "nvidia_dgx_0",
+     "device_present": false,
+     "evidence_tier": "STATIC",
+     "kind": "EXTERNAL_ACCELERATOR",
+     "reason": "backend cannot be measured until DGX_PRESENT arrives; brochure figures are not this axis",
+     "status": "ABSENT",
+     "wake_condition": "DGX_PRESENT"
+    }
+   ],
+   "storage": [
+    {
+     "axis": "presence",
+     "device": "storage",
+     "device_present": true,
+     "evidence_tier": "HARDWARE_MEASURED",
+     "kind": "STORAGE",
+     "status": "MEASURED"
+    },
+    {
+     "axis": "identity",
+     "device": "storage",
+     "device_present": true,
+     "evidence_tier": "STATIC",
+     "kind": "STORAGE",
+     "mounts": [
+      "/",
+      "/System/Volumes/Data",
+      "/Volumes/corpdrive",
+      "/tmp"
+     ],
+     "n_mounts": 4,
+     "status": "STATIC_IDENTITY"
+    },
+    {
+     "axis": "capacity",
+     "device": "storage",
+     "device_present": true,
+     "evidence_tier": "HARDWARE_MEASURED",
+     "kind": "STORAGE",
+     "note": "statvfs capacity; free space is a live reading, not identity",
+     "status": "MEASURED"
+    },
+    {
+     "axis": "bandwidth",
+     "device": "storage",
+     "device_present": true,
+     "evidence_tier": "HARDWARE_MEASURED",
+     "kind": "STORAGE",
+     "note": "bounded sequential sample of an existing file; not a disk roof. corpdrive write is BLOCKED",
+     "samples": [
+      {
+       "evidence_tier": "STATIC",
+       "mount": "/",
+       "reason": "/ is read-only; no write probe, no disposable file",
+       "status": "BLOCKED",
+       "write_probe": null
+      },
+      {
+       "evidence_tier": "HARDWARE_MEASURED",
+       "mount": "/System/Volumes/Data",
+       "reason": "tempfile created under a writable mount and unlinked; not a roof",
+       "status": "MEASURED",
+       "write_probe": null
+      },
+      {
+       "evidence_tier": "HARDWARE_MEASURED",
+       "mount": "/Volumes/corpdrive",
+       "reason": "bounded sequential read of an existing file; not a disk roof",
+       "status": "MEASURED",
+       "write_probe": "BLOCKED"
+      },
+      {
+       "evidence_tier": "HARDWARE_MEASURED",
+       "mount": "/tmp",
+       "reason": "tempfile created under a writable mount and unlinked; not a roof",
+       "status": "MEASURED",
+       "write_probe": null
+      }
+     ],
+     "status": "MEASURED"
+    },
+    {
+     "axis": "latency",
+     "device": "storage",
+     "device_present": true,
+     "evidence_tier": "HARDWARE_MEASURED",
+     "kind": "STORAGE",
+     "note": "scattered 4KiB reads / metadata sample when present; not a random-IOPS roof",
+     "status": "MEASURED"
+    },
+    {
+     "axis": "energy",
+     "device": "storage",
+     "device_present": true,
+     "evidence_tier": "STATIC",
+     "kind": "STORAGE",
+     "reason": "no joule meter / powermetrics campaign is cited on this domain",
+     "status": "UNKNOWN"
+    },
+    {
+     "axis": "thermal",
+     "device": "storage",
+     "device_present": true,
+     "evidence_tier": "STATIC",
+     "kind": "STORAGE",
+     "reason": "storage thermal is not in this genome",
+     "status": "UNKNOWN"
+    },
+    {
+     "axis": "placement",
+     "device": "storage",
+     "device_present": true,
+     "evidence_tier": "STATIC",
+     "kind": "STORAGE",
+     "note": "lake vs SSD vs UMA changes science economics (STORAGE-CHANGES-SCIENCE-ECONOMICS)",
+     "status": "STATIC_IDENTITY"
+    },
+    {
+     "axis": "transport",
+     "device": "storage",
+     "device_present": true,
+     "evidence_tier": "STATIC",
+     "kind": "STORAGE",
+     "note": "mount table is identity of what is attached, not a WAN rate",
+     "status": "STATIC_IDENTITY"
+    },
+    {
+     "axis": "backend",
+     "device": "storage",
+     "device_present": true,
+     "evidence_tier": "HARDWARE_MEASURED",
+     "kind": "STORAGE",
+     "maturity": "MEASURED",
+     "status": "MEASURED"
+    }
+   ],
+   "u50dd_0": [
+    {
+     "axis": "presence",
+     "device": "u50dd_0",
+     "device_present": false,
+     "evidence_tier": "STATIC",
+     "kind": "FPGA",
+     "reason": "no U50/U50DD is attached to this host. Expected SKU is a planning name, not a local census. Vendor-literature LUT/DSP/HBM figures live in hwir.u50_family_profile('u50dd') and are STATIC, not HARDWARE_MEASURED.",
+     "status": "ABSENT",
+     "wake_condition": "U50_PRESENT"
+    },
+    {
+     "axis": "identity",
+     "device": "u50dd_0",
+     "device_present": false,
+     "evidence_tier": "STATIC",
+     "kind": "FPGA",
+     "reason": "identity cannot be measured until U50_PRESENT arrives; brochure figures are not this axis",
+     "status": "UNKNOWN",
+     "wake_condition": "U50_PRESENT"
+    },
+    {
+     "axis": "capacity",
+     "device": "u50dd_0",
+     "device_present": false,
+     "evidence_tier": "STATIC",
+     "kind": "FPGA",
+     "reason": "capacity cannot be measured until U50_PRESENT arrives; brochure figures are not this axis",
+     "status": "ABSENT",
+     "wake_condition": "U50_PRESENT"
+    },
+    {
+     "axis": "bandwidth",
+     "device": "u50dd_0",
+     "device_present": false,
+     "evidence_tier": "STATIC",
+     "kind": "FPGA",
+     "reason": "bandwidth cannot be measured until U50_PRESENT arrives; brochure figures are not this axis",
+     "status": "ABSENT",
+     "wake_condition": "U50_PRESENT"
+    },
+    {
+     "axis": "latency",
+     "device": "u50dd_0",
+     "device_present": false,
+     "evidence_tier": "STATIC",
+     "kind": "FPGA",
+     "reason": "latency cannot be measured until U50_PRESENT arrives; brochure figures are not this axis",
+     "status": "ABSENT",
+     "wake_condition": "U50_PRESENT"
+    },
+    {
+     "axis": "energy",
+     "device": "u50dd_0",
+     "device_present": false,
+     "evidence_tier": "STATIC",
+     "kind": "FPGA",
+     "reason": "energy cannot be measured until U50_PRESENT arrives; brochure figures are not this axis",
+     "status": "ABSENT",
+     "wake_condition": "U50_PRESENT"
+    },
+    {
+     "axis": "thermal",
+     "device": "u50dd_0",
+     "device_present": false,
+     "evidence_tier": "STATIC",
+     "kind": "FPGA",
+     "reason": "thermal cannot be measured until U50_PRESENT arrives; brochure figures are not this axis",
+     "status": "ABSENT",
+     "wake_condition": "U50_PRESENT"
+    },
+    {
+     "axis": "placement",
+     "device": "u50dd_0",
+     "device_present": false,
+     "evidence_tier": "STATIC",
+     "kind": "FPGA",
+     "reason": "placement cannot be measured until U50_PRESENT arrives; brochure figures are not this axis",
+     "status": "ABSENT",
+     "wake_condition": "U50_PRESENT"
+    },
+    {
+     "axis": "transport",
+     "device": "u50dd_0",
+     "device_present": false,
+     "evidence_tier": "STATIC",
+     "kind": "FPGA",
+     "reason": "transport cannot be measured until U50_PRESENT arrives; brochure figures are not this axis",
+     "status": "ABSENT",
+     "wake_condition": "U50_PRESENT"
+    },
+    {
+     "axis": "backend",
+     "device": "u50dd_0",
+     "device_present": false,
+     "evidence_tier": "STATIC",
+     "kind": "FPGA",
+     "reason": "backend cannot be measured until U50_PRESENT arrives; brochure figures are not this axis",
+     "status": "ABSENT",
+     "wake_condition": "U50_PRESENT"
+    }
+   ],
+   "uma_0": [
+    {
+     "axis": "presence",
+     "device": "uma_0",
+     "device_present": true,
+     "evidence_tier": "STATIC",
+     "kind": "UMA",
+     "status": "MEASURED"
+    },
+    {
+     "axis": "identity",
+     "device": "uma_0",
+     "device_present": true,
+     "evidence_tier": "STATIC",
+     "internal_coherency": "HARDWARE_UMA",
+     "kind": "UMA",
+     "status": "STATIC_IDENTITY"
+    },
+    {
+     "axis": "capacity",
+     "capacity_bytes": 103079215104,
+     "device": "uma_0",
+     "device_present": true,
+     "evidence_tier": "HARDWARE_MEASURED",
+     "kind": "UMA",
+     "status": "MEASURED"
+    },
+    {
+     "axis": "bandwidth",
+     "device": "uma_0",
+     "device_present": true,
+     "evidence_tier": "STATIC",
+     "kind": "UMA",
+     "note": "same triad as gpu_uma_0; citing it here does not invent a second measurement",
+     "reason": "mlx unavailable: ModuleNotFoundError",
+     "status": "ABSENT"
+    },
+    {
+     "axis": "latency",
+     "device": "uma_0",
+     "device_present": true,
+     "evidence_tier": "STATIC",
+     "kind": "UMA",
+     "reason": "no pointer-chase / cache-line campaign is cited",
+     "status": "UNKNOWN"
+    },
+    {
+     "axis": "energy",
+     "device": "uma_0",
+     "device_present": true,
+     "evidence_tier": "STATIC",
+     "kind": "UMA",
+     "reason": "no joule meter / powermetrics campaign is cited on this domain",
+     "status": "UNKNOWN"
+    },
+    {
+     "axis": "thermal",
+     "device": "uma_0",
+     "device_present": true,
+     "evidence_tier": "STATIC",
+     "kind": "UMA",
+     "reason": "no sustained thermal campaign has been run; sustained behaviour is required before any production ADP (G049) and is not claimed here",
+     "status": "ABSENT"
+    },
+    {
+     "axis": "placement",
+     "device": "uma_0",
+     "device_present": true,
+     "evidence_tier": "STATIC",
+     "kind": "UMA",
+     "note": "resident bodies that fit capacity_bytes are UMA-legal",
+     "status": "STATIC_IDENTITY"
+    },
+    {
+     "axis": "transport",
+     "device": "uma_0",
+     "device_present": true,
+     "evidence_tier": "STATIC",
+     "kind": "UMA",
+     "law_id": "UMA-COPY-ELISION",
+     "note": "topology fact, not a speedup number; does not transfer to a discrete GPU",
+     "status": "STATIC_IDENTITY"
+    },
+    {
+     "axis": "backend",
+     "device": "uma_0",
+     "device_present": true,
+     "evidence_tier": "STATIC",
+     "kind": "UMA",
+     "maturity": "PRESENT",
+     "status": "MEASURED"
+    }
+   ]
+  },
+  "workload_fit": {
+   "ane_present": true,
+   "bodies": [
+    {
+     "evidence_tier": "COST_MODEL",
+     "fits_uma": true,
+     "id": "sealed-3.14",
+     "resident_bytes": 10554328856,
+     "stage_from_corpdrive": {
+      "evidence_tier": "COST_MODEL",
+      "from_gb_s": 10.071,
+      "mount": "/Volumes/corpdrive",
+      "note": "extrapolated from a HARDWARE_MEASURED sequential sample; not a measured stage of this body",
+      "seconds": 1.048
+     },
+     "stage_from_ssd": {
+      "evidence_tier": "STATIC",
+      "reason": "no sequential rate on this mount; refusing to invent a stage time",
+      "status": "BLOCKED"
+     },
+     "uma_headroom_bytes": 92524886248
+    },
+    {
+     "evidence_tier": "COST_MODEL",
+     "fits_uma": true,
+     "id": "variantB-2.76",
+     "resident_bytes": 9265849388,
+     "stage_from_corpdrive": {
+      "evidence_tier": "COST_MODEL",
+      "from_gb_s": 10.071,
+      "mount": "/Volumes/corpdrive",
+      "note": "extrapolated from a HARDWARE_MEASURED sequential sample; not a measured stage of this body",
+      "seconds": 0.92
+     },
+     "stage_from_ssd": {
+      "evidence_tier": "STATIC",
+      "reason": "no sequential rate on this mount; refusing to invent a stage time",
+      "status": "BLOCKED"
+     },
+     "uma_headroom_bytes": 93813365716
+    }
+   ],
+   "evidence_tier": "COST_MODEL",
+   "external_accelerator_present": false,
+   "fpga_present": false,
+   "note": "Derived affordances (time-to-stage, headroom) are COST_MODEL. G023 INTERACTIVE/MAXX winners are cited STATIC; this function does not re-run the token benchmark.",
+   "selected_resident": {
+    "evidence_tier": "COST_MODEL",
+    "installed": false,
+    "note": "decision record, not an install",
+    "profile": "INTERACTIVE",
+    "selected": "sealed-3.14"
+   },
+   "uma_bytes": 103079215104,
+   "uma_present": true,
+   "workloads": [
+    {
+     "also": [
+      "UMA"
+     ],
+     "evidence_tier": "COST_MODEL",
+     "fit": true,
+     "id": "interactive_decode",
+     "profile": "INTERACTIVE",
+     "reason": "G023 INTERACTIVE winner is a UMA-resident body on the host GPU",
+     "requires_kind": "GPU"
+    },
+    {
+     "also": [
+      "UMA"
+     ],
+     "evidence_tier": "COST_MODEL",
+     "fit": true,
+     "id": "max_throughput_decode",
+     "profile": "MAXX",
+     "reason": "G023 MAXX winner is a UMA-resident body on the host GPU",
+     "requires_kind": "GPU"
+    },
+    {
+     "evidence_tier": "STATIC",
+     "fit": false,
+     "id": "ane_prefill",
+     "reason": "ANE is present (ioreg H11ANEIn) but the lab receipt's add fixture preferred CPU; Flash/Qwen placement is not claimed",
+     "requires_kind": "ANE",
+     "unproven": true
+    },
+    {
+     "evidence_tier": "COST_MODEL",
+     "fit": true,
+     "id": "lake_stage",
+     "reason": "staging cost is extrapolated from a sequential sample; not a measured stage of a body",
+     "requires_kind": "STORAGE"
+    },
+    {
+     "evidence_tier": "STATIC",
+     "fit": false,
+     "id": "u50dd_hbm_resident_shard",
+     "reason": "u50dd_0 is DECLARED-absent; an FPGA-required resident is ineligible until U50_PRESENT",
+     "requires_kind": "FPGA",
+     "requires_name": "u50dd_0",
+     "wake_condition": "U50_PRESENT"
+    },
+    {
+     "evidence_tier": "STATIC",
+     "fit": false,
+     "id": "dgx_offload",
+     "reason": "no DGX on this host",
+     "requires_kind": "EXTERNAL_ACCELERATOR",
+     "requires_name": "nvidia_dgx_0",
+     "wake_condition": "DGX_PRESENT"
+    },
+    {
+     "evidence_tier": "STATIC",
+     "fit": false,
+     "id": "egpu_offload",
+     "reason": "no eGPU enclosure; the Apple SoC GPU is not an eGPU",
+     "requires_kind": "EXTERNAL_ACCELERATOR",
+     "requires_name": "egpu_0",
+     "wake_condition": "EGPU_PRESENT"
+    }
+   ]
+  }
+ },
+ "ranking_rule": "runnable first, then info_weight / cost via integer key -(info*60//cost). Board-gated probes stay in the list but cannot outrank a cheap UNKNOWN-on-present probe.",
+ "recorded_by": "tools/accelerator/hardware_doctor.py",
+ "recovered_implementation": [
+  {
+   "path": "tools/accelerator/machine_genome.py",
+   "present": true,
+   "what": "CPU/GPU/UMA/ANE/storage/network + declared FPGA/DGX/U50DD/eGPU; axes_for_domain"
+  },
+  {
+   "path": "tools/accelerator/device_ascension.py",
+   "present": true,
+   "what": "discover -> characterize -> economics -> select -> promote -> invalidate"
+  },
+  {
+   "path": "tools/future/hwir.py",
+   "present": true,
+   "what": "u50_family_profile('u50dd'), Chestnut carrier, U50_WAKE_GATES"
+  },
+  {
+   "path": "tools/roadmap/hardware.py",
+   "present": true,
+   "what": "wake probes U50_PRESENT / DGX_PRESENT / EGPU_PRESENT (STATIC inventory)"
+  },
+  {
+   "path": "tools/odyssey/device_profiles.py",
+   "present": true,
+   "what": "economics_from_genome / select_resident (called via device_ascension, not edited)"
+  },
+  {
+   "path": "tools/future/hardware_doctor.py",
+   "present": true,
+   "what": "FPGA-axis experiment proposer; sibling, not replaced"
+  }
+ ],
+ "schema": "hawking.accelerator.hardware_doctor.v1",
+ "seal_sha256": "7300488bd9ed8dc9bb6567e29971c716f887597c9f47346c8a271458b2f06a93",
+ "wakes": {
+  "DGX_PRESENT": {
+   "description": "NVIDIA DGX Spark or DGX-class node visible: nvidia-smi succeeds and the product name contains DGX.",
+   "evidence": "nvidia-smi not present or produced no GPU list",
+   "evidence_tier": "STATIC",
+   "id": "DGX_PRESENT",
+   "present": false
+  },
+  "EGPU_PRESENT": {
+   "description": "External GPU enumerated on Thunderbolt/USB4 (eGPU / AMD / NVIDIA enclosure that is not the Apple SoC GPU).",
+   "evidence": "no eGPU enclosure in displays/thunderbolt inventory",
+   "evidence_tier": "STATIC",
+   "id": "EGPU_PRESENT",
+   "present": false
+  },
+  "NEW_M_SERIES_PRESENT": {
+   "description": "Apple SoC newer than the current M3 Ultra textbook (M4 or later).",
+   "evidence": "SoC identity 'Apple M3 Ultra Mac15,14' is not M4-or-later (current textbook is M3 Ultra)",
+   "evidence_tier": "STATIC",
+   "id": "NEW_M_SERIES_PRESENT",
+   "present": false
+  },
+  "U50_PRESENT": {
+   "description": "AMD/Xilinx Alveo U50DD/XCU50-class FPGA enumerated on this host (PCIe/Thunderbolt identity contains xilinx/alveo/u50/xcu50).",
+   "evidence": "no Xilinx/Alveo/U50/XCU50 identity in PCIe/Thunderbolt/ioreg inventory",
+   "evidence_tier": "STATIC",
+   "id": "U50_PRESENT",
+   "present": false,
+   "probe_u50_evidence": "no Xilinx/Alveo/U50/XCU50 identity in PCIe/Thunderbolt/ioreg inventory",
+   "probe_u50_present": false
+  }
+ }
+}
