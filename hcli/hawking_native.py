@@ -1137,14 +1137,25 @@ class HawkingNativeConnector:
         prompt_tokens: int,
     ) -> Tuple[int, int, bool]:
         requested = payload.get("max_tokens")
+        explicit = requested is not None
         if requested is None:
             requested = self.config.generation.get("max_new_tokens", 2048)
         actual = _positive_int(requested, "max_tokens", 2048)
-        configured_cap = _positive_int(
-            self.config.generation.get("max_new_tokens", actual),
-            "generation.max_new_tokens",
-            actual,
-        )
+        # `generation.max_new_tokens` is a DEFAULT for callers that ask for
+        # nothing, not a ceiling over callers that already did the arithmetic.
+        # Treating it as a ceiling silently cut an explicit engine request of
+        # 6310 down to the unset-env default of 2048; the truncation was then
+        # reported as "hit the 6310-token budget", a number the model never
+        # reached, so the diagnosis pointed at the wrong knob for weeks. Only
+        # the context window may bound an explicit request.
+        if explicit:
+            configured_cap = actual
+        else:
+            configured_cap = _positive_int(
+                self.config.generation.get("max_new_tokens", actual),
+                "generation.max_new_tokens",
+                actual,
+            )
         clamped = actual > configured_cap
         actual = min(actual, configured_cap)
         requested_seq = payload.get("max_seq_len")

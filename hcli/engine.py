@@ -15,12 +15,14 @@ import traceback
 import urllib.error
 import urllib.request
 import uuid
+from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, Tuple
 
 from .backends import (
     CompletionResult,
+    SchemaViolation,
     StructuredOutputContract,
     StructuredOutputExhausted,
     backend_supports_response_format,
@@ -213,6 +215,90 @@ _PATH_TOKEN_RE = re.compile(
     re.VERBOSE,
 )
 
+_DIRECTORY_LIST_INTENT_RE = re.compile(
+    r"\b(?:"
+    r"what(?:['’]s| is)\s+(?:in|inside)\s+(?:this|the\s+current|the)\s+"
+    r"(?:directory|folder)|"
+    r"directory\s+listing|"
+    r"(?:list|show|display)\s+(?:the\s+)?(?:files|contents|entries)"
+    r"(?:\s+(?:in|under|inside|at)\s+[^\n]+)?"
+    r")\b",
+    re.IGNORECASE,
+)
+_DIRECTORY_PATH_RE = re.compile(
+    r"\b(?:in|under|inside|at|of)\s+(?:the\s+)?"
+    r"([A-Za-z0-9_.@+~/-]+)",
+    re.IGNORECASE,
+)
+_DIRECTORY_STOPWORDS = frozenset({"this", "current", "the", "a", "an", "directory", "folder"})
+_DIRECTORY_MUTATION_RE = re.compile(
+    r"\b(?:create|write|edit|modify|delete|remove|change|fix|implement|move|rename)\b",
+    re.IGNORECASE,
+)
+
+
+
+def _truncation_message(
+    budget: Any, completion_tokens: Any, prompt_tokens: Any
+) -> str:
+    """Say what the model ACTUALLY produced, not only what it was offered.
+
+    Reporting the requested budget alone made a runtime that clamped below it
+    look identical to a model that genuinely exhausted it. The native adapter
+    was capping an explicit 6310-token request at its 2048 default, and every
+    receipt said "hit the 6310-token completion budget" -- so the real ceiling
+    was invisible in the only artifact anyone reads.
+    """
+    base = (
+        f"model produced {completion_tokens} tokens against a "
+        f"{budget}-token completion budget after an {prompt_tokens}-token "
+        f"prompt and never closed the JSON object"
+    )
+    try:
+        if completion_tokens is not None and budget is not None and (
+            int(completion_tokens) < int(budget)
+        ):
+            return (
+                base + f"; the runtime stopped {int(budget) - int(completion_tokens)}"
+                " tokens SHORT of the budget, so the real ceiling is the"
+                " runtime's, not this budget"
+            )
+    except (TypeError, ValueError):
+        pass
+    return base
+
+
+def _degraded_structured_record(
+    contract: "StructuredOutputContract", **fields: Any
+) -> Dict[str, Any]:
+    """Degraded receipt, plus WHY constrained decoding was not used.
+
+    `features` in this record is the list of things the backend does NOT
+    have, which reads like a capability list to anyone holding the receipt:
+    mode=degraded with features=[response_format, grammar] looked like the
+    engine declined two features it had. It did not have them. The contract
+    only exists because supports() answered False for every name in that
+    list, so the field was withheld -- a request key the runtime ignores is
+    not enforcement, and pretending otherwise is the whole failure mode this
+    path exists to avoid.
+    """
+    record = structured_output_record(
+        mode="degraded",
+        max_attempts=int(contract.max_attempts),
+        features=list(contract.degraded_features),
+        **fields,
+    )
+    record["degraded_features"] = list(contract.degraded_features)
+    record["constrained_decoding"] = "unavailable"
+    record["constrained_decoding_reason"] = (
+        "backend.supports() reports "
+        + ", ".join(f"{name}=False" for name in contract.degraded_features)
+        + "; the field is withheld rather than sent-and-ignored, so an "
+        "unclosed JSON object is prevented by prompt+validate+bounded retry, "
+        "not structurally"
+    )
+    return record
+
 
 class EngineError(RuntimeError):
     pass
@@ -259,6 +345,20 @@ _SUMMARY_COUNT_RE = re.compile(
 _PYTHON_INVOKER_RE = re.compile(r"^python3(\.\d+)?$")
 _PROTECTED_PATH_PREFIXES = frozenset({".git", ".hcli"})
 _TEST_ENV_KEYS = ("PATH", "HOME", "LANG", "TMPDIR")
+
+# These spellings stay registered because existing missions and callers may
+# emit them.  The model-facing catalog can treat them as one capability.  A
+# slash-bearing alias is intentionally kept out of the canonical spelling: it
+# is legal in the registry, but it is a poor token boundary for a model.
+_TOOL_ALIAS_GROUPS = (
+    ("fs.read", "filesystem.read"),
+    ("fs.search", "filesystem.search"),
+    ("fs.list", "filesystem.list"),
+    ("git.checkout-safe", "git.revert-safe", "git.checkout/revert-safe"),
+    ("receipt.read", "receipt.inspect", "benchmark.inspect"),
+    ("huggingface.resolve", "huggingface.manifest"),
+    ("roadmap.read", "roadmap.inspect"),
+)
 
 
 def _sha256_bytes(data: Optional[bytes]) -> Optional[str]:
@@ -357,6 +457,61 @@ def _error_fields(exc: BaseException) -> Dict[str, str]:
     }
 
 
+_HEARTBEAT_S = 1.0
+
+
+class _PhaseHeartbeat:
+    """Daemon ticks while a blocking call (the model) is in flight.
+
+    The resident transport is request/response JSONL with no token stream,
+    so elapsed-time heartbeats are the honest progress signal. Payloads
+    never include model text or chain-of-thought.
+    """
+
+    def __init__(
+        self,
+        emit: Callable[..., None],
+        *,
+        phase: str,
+        extra: Optional[Dict[str, Any]] = None,
+        interval: float = _HEARTBEAT_S,
+    ) -> None:
+        self._emit = emit
+        self._phase = phase
+        self._extra = dict(extra or {})
+        self._interval = max(0.05, float(interval))
+        self._stop = threading.Event()
+        self._thread: Optional[threading.Thread] = None
+        self._t0 = 0.0
+
+    def __enter__(self) -> "_PhaseHeartbeat":
+        self._t0 = time.perf_counter()
+        self._thread = threading.Thread(
+            target=self._run,
+            name="hcli-model-heartbeat",
+            daemon=True,
+        )
+        self._thread.start()
+        return self
+
+    def _run(self) -> None:
+        while not self._stop.wait(self._interval):
+            payload = dict(self._extra)
+            payload["phase"] = self._phase
+            payload["elapsed_s"] = round(time.perf_counter() - self._t0, 1)
+            try:
+                self._emit("heartbeat", payload)
+            except Exception:
+                return
+
+    def __exit__(self, *exc: Any) -> bool:
+        self._stop.set()
+        thread = self._thread
+        if thread is not None:
+            thread.join(timeout=0.5)
+        return False
+
+
 class Engine:
     """Native HCLI execution boundary.
 
@@ -437,6 +592,51 @@ class Engine:
         self.event_bus.emit(
             Event(event_type, data or {})
         )
+
+    @contextmanager
+    def _model_call_scope(
+        self,
+        prompt_tokens: Optional[int] = None,
+    ) -> Iterator[None]:
+        """Emit model_call started/finished and 1 Hz heartbeats around a block.
+
+        The blocked body is the HTTP/pool/client call. Rendering stays on
+        the EventBus; this must not wait on the TUI.
+        """
+        t0 = time.perf_counter()
+        data: Dict[str, Any] = {}
+        if self._active_goal_id is not None:
+            data["goal_id"] = self._active_goal_id
+        if prompt_tokens is not None:
+            try:
+                data["prompt_tokens"] = int(prompt_tokens)
+            except (TypeError, ValueError):
+                pass
+        self._emit("model_call_started", dict(data))
+        ok = False
+        try:
+            with _PhaseHeartbeat(
+                self._emit,
+                phase="thinking",
+                extra=data,
+            ):
+                yield
+            ok = True
+        finally:
+            payload: Dict[str, Any] = {
+                "elapsed_s": round(time.perf_counter() - t0, 3),
+                "ok": ok,
+            }
+            if self._active_goal_id is not None:
+                payload["goal_id"] = self._active_goal_id
+            plan = self._last_call_plan or {}
+            tokens = plan.get("prompt_tokens_est", prompt_tokens)
+            if tokens is not None:
+                try:
+                    payload["prompt_tokens"] = int(tokens)
+                except (TypeError, ValueError):
+                    pass
+            self._emit("model_call_finished", payload)
 
     def _cancel_result(
         self,
@@ -538,6 +738,162 @@ class Engine:
             self._tools_cached = registry
         return registry
 
+    @classmethod
+    def _directory_listing_path(cls, prompt: str) -> Optional[str]:
+        """Recognize only unambiguous, read-only directory questions.
+
+        This is deliberately a tiny fast path, not a second natural-language
+        planner.  A simple request to see a folder should not require a cold
+        27B resident just to discover that ``fs.list`` exists; anything that
+        also asks for a mutation stays on the normal model path.
+        """
+        text = str(prompt or "").strip()
+        if not text or not _DIRECTORY_LIST_INTENT_RE.search(text):
+            return None
+        if _DIRECTORY_MUTATION_RE.search(text):
+            return None
+
+        # Quoted paths are the least ambiguous form.  Keep the accepted
+        # spelling broad here; ToolContext is the authority that enforces
+        # workspace/repository containment when the call is invoked.
+        quoted = re.search(r"(?:['\"`])([^'\"`\n]+)(?:['\"`])", text)
+        if quoted:
+            candidate = quoted.group(1).strip()
+            if candidate:
+                return candidate
+
+        match = _DIRECTORY_PATH_RE.search(text)
+        if match:
+            candidate = match.group(1).strip()
+            if candidate.lower() not in _DIRECTORY_STOPWORDS:
+                return candidate
+        return "."
+
+    @staticmethod
+    def _render_directory_listing(value: Dict[str, Any]) -> str:
+        """Turn the bounded ``fs.list`` observation into concise answer text."""
+        root = str(value.get("root") or ".")
+        files = [item for item in value.get("files", []) if isinstance(item, dict)]
+        directories = [
+            item for item in value.get("directories", []) if isinstance(item, dict)
+        ]
+        total = len(files) + len(directories)
+        if total == 0:
+            return f"Observed directory {root}: empty."
+
+        lines = [
+            f"Observed directory {root}: {len(directories)} director"
+            f"{'y' if len(directories) == 1 else 'ies'}, {len(files)} file"
+            f"{'s' if len(files) != 1 else ''}."
+        ]
+        for item in directories:
+            name = str(item.get("path") or "")
+            if name:
+                lines.append(f"[directory] {name}/")
+        for item in files:
+            name = str(item.get("path") or "")
+            if not name:
+                continue
+            size = item.get("bytes")
+            suffix = f" ({size} bytes)" if isinstance(size, int) else ""
+            lines.append(f"[file] {name}{suffix}")
+        if value.get("truncated"):
+            lines.append("[listing truncated by the bounded fs.list limit]")
+        return "\n".join(lines)
+
+    def _try_deterministic_directory_answer(
+        self,
+        prompt: str,
+        goal_id: str,
+        evidence: List[Dict[str, Any]],
+        started: datetime,
+    ) -> Optional[Dict[str, Any]]:
+        """Answer an obvious directory read without starting a model."""
+        path = self._directory_listing_path(prompt)
+        if path is None:
+            return None
+
+        observations = self._run_tool_calls(
+            [
+                {
+                    "tool": "fs.list",
+                    "arguments": [
+                        {"name": "path", "value": path},
+                        {"name": "recursive", "value": "false"},
+                        {"name": "max_results", "value": "200"},
+                    ],
+                }
+            ],
+            goal_id,
+        )
+        observation = observations[0] if observations else None
+        if not isinstance(observation, dict):
+            return None
+
+        if not observation.get("ok"):
+            result: Dict[str, Any] = {
+                "kind": "error",
+                "content": "",
+                "operations": [],
+                "tests": [],
+                "tool_calls": [],
+                "error": str(observation.get("text") or "fs.list failed"),
+                "status": "failed",
+                "goal_id": goal_id,
+            }
+            validation: Dict[str, Any] = {
+                "ok": False,
+                "kind": "read_only",
+                "tool": "fs.list",
+                "reason": "tool_failed",
+            }
+        else:
+            try:
+                value = json.loads(str(observation.get("text") or "{}"))
+            except (TypeError, ValueError):
+                return None
+            if not isinstance(value, dict):
+                return None
+            result = {
+                "kind": "answer",
+                "content": self._render_directory_listing(value),
+                "operations": [],
+                "tests": [],
+                "tool_calls": [],
+                "status": "completed",
+                "goal_id": goal_id,
+            }
+            validation = {
+                "ok": True,
+                "kind": "read_only",
+                "tool": "fs.list",
+                "observed_files": len(value.get("files", [])),
+                "observed_directories": len(value.get("directories", [])),
+                "truncated": bool(value.get("truncated")),
+            }
+
+        receipt = self._write_receipt(
+            goal_id=goal_id,
+            goal=prompt,
+            result=result,
+            evidence=evidence,
+            validation=validation,
+            rolled_back=False,
+            started=started,
+        )
+        result["receipt"] = receipt
+        self._emit("goal_completed", {"goal_id": goal_id, "status": result["status"]})
+        self._emit(
+            "final_response",
+            {
+                "goal_id": goal_id,
+                "content": result.get("content") or result.get("error") or "",
+                "status": result["status"],
+            },
+        )
+        self.last_result = result
+        return result
+
     def _run_tool_calls(
         self,
         calls: List[Dict[str, Any]],
@@ -555,6 +911,10 @@ class Engine:
         for call in calls[: self.MAX_TOOL_ROUNDS]:
             name = str((call or {}).get("tool") or "").strip()
             args = self._typed_arguments(registry, name, (call or {}).get("arguments"))
+            self._emit("tool_call_started", {
+                "goal_id": goal_id, "tool": name,
+            })
+            started = time.perf_counter()
             try:
                 result = registry.invoke(name, args)
                 ok = bool(getattr(result, "ok", False))
@@ -564,6 +924,7 @@ class Engine:
                 )
             except Exception as exc:  # a tool must never end the goal
                 ok, text = False, f"{type(exc).__name__}: {exc}"
+            elapsed = round(time.perf_counter() - started, 3)
             if not ok:
                 # The signature travels WITH the error. An error that says
                 # "missing required property 'pattern'" three rounds away from
@@ -586,8 +947,13 @@ class Engine:
                 "ok": ok,
                 "text": text[: self.MAX_EVIDENCE_CHARS_PER_FILE],
             })
+            self._emit("tool_call_finished", {
+                "goal_id": goal_id, "tool": name, "ok": ok,
+                "elapsed_s": elapsed,
+            })
             self._emit("tool_invoked", {
                 "goal_id": goal_id, "tool": name, "ok": ok,
+                "elapsed_s": elapsed,
             })
         return out
 
@@ -614,6 +980,119 @@ class Engine:
                 for key in sorted(props)
             )
             lines.append(f"{spec.get('name')}({args})")
+        return "\n".join(lines)
+
+    @staticmethod
+    def _compact_tool_catalog(
+        registry,
+        *,
+        focus: str = "",
+    ) -> str:
+        """Render the same registry as a smaller, alias-aware tool index.
+
+        The executor still accepts every registered spelling.  This is only a
+        prompt optimization for observation rounds: repeating dozens of
+        near-identical names and six alias families consumed roughly 4.4k
+        characters on every turn. Exact names remain visible, while a prefix
+        is written once and aliases share one signature. The full catalog
+        remains available through ``/tools`` and ``tools.catalog`` for
+        operator/debugging surfaces.
+        """
+        try:
+            discovered = registry.discover()
+        except Exception:
+            return ""
+
+        specs = {
+            str(item.get("name")): item
+            for item in discovered
+            if isinstance(item, dict) and item.get("name")
+        }
+
+        def signature(spec: Dict[str, Any]) -> str:
+            schema = spec.get("input_schema") or {}
+            props = schema.get("properties") or {}
+            required = set(schema.get("required") or [])
+            args = ", ".join(
+                f"{key}{'*' if key in required else ''}:"
+                f"{(props[key] or {}).get('type', 'string')}"
+                for key in sorted(props)
+            )
+            return f"({args})"
+
+        focus_text = str(focus or "").lower()
+        always = {"context", "fs", "filesystem", "git", "tests", "receipt", "shell", "tools"}
+        keyword_families = {
+            "odyssey": {"odyssey"},
+            "huggingface": {"huggingface", "hf", "model", "download", "weights"},
+            "web": {"web", "internet", "research", "source", "prior art", "claude", "aider", "mcp"},
+            "github": {"github", "repo", "repository", "issue", "commit"},
+            "gravity": {"gravity", "compress", "compression", "representation", "context"},
+            "frontier": {"frontier", "cloud", "escalate", "swarm", "lane"},
+            "doctor": {"doctor", "audit", "measure", "measurement"},
+            "accelerator": {"accelerator", "gpu", "ane", "benchmark", "timing"},
+            "modellake": {"modellake", "model lake", "acquire", "storage"},
+            "specimens": {"specimen", "sealed", "registry"},
+            "architecture": {"architecture", "topology", "organ"},
+            "forbidden_fruit": {"forbidden fruit", "mlcompute"},
+            "grok": {"grok"},
+            "acquisition": {"acquisition", "disk", "ssd", "headroom"},
+            "roadmap": {"roadmap", "civilization"},
+            "vmcp": {"vmcp", "visionmcp"},
+            "benchmark": {"benchmark", "pytest", "verification", "verify"},
+        }
+        selected_prefixes = set(always)
+        for prefix, words in keyword_families.items():
+            if any(word in focus_text for word in words):
+                selected_prefixes.add(prefix)
+        for name in specs:
+            if name.lower() in focus_text:
+                selected_prefixes.add(name.split(".", 1)[0])
+
+        used = set()
+        alias_lines: List[str] = []
+        for group in _TOOL_ALIAS_GROUPS:
+            present = [name for name in group if name in specs]
+            if not any(name.split(".", 1)[0] in selected_prefixes for name in present):
+                continue
+            if not present:
+                continue
+            if group[0].startswith("git.checkout") and not any(
+                word in focus_text
+                for word in ("checkout", "revert", "restore", "reset", "discard")
+            ):
+                # A refused destructive capability is still noise on ordinary
+                # read rounds. It re-enters only when the goal explicitly asks
+                # about rollback semantics, and even then no mutation is done.
+                continue
+            advertised = [name for name in present if "/" not in name]
+            if advertised:
+                alias_lines.append("|".join(advertised) + signature(specs[present[0]]))
+            used.update(present)
+
+        by_prefix: Dict[str, List[str]] = {}
+        for name in sorted(specs):
+            if name in used:
+                continue
+            prefix, separator, short = name.partition(".")
+            if prefix not in selected_prefixes:
+                continue
+            if not separator:
+                by_prefix.setdefault("", []).append(name + signature(specs[name]))
+            else:
+                by_prefix.setdefault(prefix, []).append(short + signature(specs[name]))
+
+        lines = [
+            "EXACT DOTTED TOOL NAMES; aliases joined by |; prefix before : applies to each entry:",
+            "Call tools.catalog(focus=...) for exact signatures in an omitted domain.",
+        ]
+        lines.extend(alias_lines)
+        for prefix in sorted(by_prefix):
+            entries = by_prefix[prefix]
+            if prefix:
+                lines.append(f"{prefix}: " + "; ".join(entries))
+            else:
+                lines.extend(entries)
         return "\n".join(lines)
 
     @staticmethod
@@ -664,6 +1143,7 @@ class Engine:
         observations: List[Dict[str, Any]],
         *,
         final: bool = False,
+        compact_catalog: bool = False,
     ) -> str:
         """Tool output rides beside the goal, NOT inside `evidence`.
 
@@ -673,7 +1153,21 @@ class Engine:
         pose as deterministic evidence and quietly weaken the freshness gate.
         """
         registry = self._tool_registry()
-        catalog = self._tool_catalog(registry)
+        catalog = (
+            self._compact_tool_catalog(
+                registry,
+                focus=" ".join(
+                    [
+                        str(prompt or ""),
+                        *(str(item.get("tool") or "") for item in observations),
+                    ]
+                ),
+            )
+            if compact_catalog
+            else self._tool_catalog(registry)
+        )
+        self._tool_catalog_chars = len(catalog)
+        self._tool_catalog_mode = "compact" if compact_catalog else "full"
         parts = [prompt]
         if catalog:
             parts.append(
@@ -697,6 +1191,8 @@ class Engine:
         prompt: str,
         evidence: Optional[List[Dict[str, Any]]] = None,
         compiled: Any = None,
+        *,
+        context_memory: Any = None,
     ) -> Dict[str, Any]:
         prompt = (prompt or "").strip()
 
@@ -732,10 +1228,35 @@ class Engine:
             if self._cancelled:
                 return self._cancel_result(goal_id, evidence)
 
+            # Handle the narrow, unambiguous directory read before evidence
+            # budgeting.  Budget discovery may ask the controller to start a
+            # runtime; a model-free capability must get first refusal on a
+            # cold folder, not after the resident has already loaded.
+            if supplied_evidence is None and supplied_compiled is None:
+                deterministic_directory = self._try_deterministic_directory_answer(
+                    prompt,
+                    goal_id,
+                    evidence,
+                    started,
+                )
+                if deterministic_directory is not None:
+                    return deterministic_directory
+
+            self._emit(
+                "evidence_gathering_started",
+                {"goal_id": goal_id},
+            )
             if supplied_evidence is None:
                 evidence = self._gather_evidence(prompt)
             else:
                 evidence = list(supplied_evidence)
+            self._emit(
+                "evidence_gathering_finished",
+                {
+                    "goal_id": goal_id,
+                    "file_count": len(evidence),
+                },
+            )
 
             if supplied_compiled is None:
                 try:
@@ -767,11 +1288,16 @@ class Engine:
             # answer "no evidence provided". Now a tool_use reply is executed and
             # fed back, bounded, until the model answers or the budget runs out.
             observations: List[Dict[str, Any]] = []
-            for _ in range(self.MAX_TOOL_ROUNDS):
+            for round_index in range(self.MAX_TOOL_ROUNDS):
                 raw = self._call_model(
-                    self._prompt_with_observations(prompt, observations),
+                    self._prompt_with_observations(
+                        prompt,
+                        observations,
+                        compact_catalog=True,
+                    ),
                     evidence,
                     compiled,
+                    context_memory=context_memory,
                 )
                 result = self._sanitize_result(raw)
                 if result.get("kind") != "tool_use":
@@ -791,10 +1317,14 @@ class Engine:
                 result = self._sanitize_result(
                     self._call_model(
                         self._prompt_with_observations(
-                            prompt, observations, final=True
+                            prompt,
+                            observations,
+                            final=True,
+                            compact_catalog=True,
                         ),
                         evidence,
                         compiled,
+                        context_memory=context_memory,
                     )
                 )
                 if result.get("kind") == "tool_use":
@@ -1466,6 +1996,8 @@ class Engine:
             "root_tokens": root_tokens,
             "worker_tokens": worker_tokens,
             "evidence_bytes_inlined": evidence_bytes_inlined,
+            "tool_catalog_chars": getattr(self, "_tool_catalog_chars", "unknown"),
+            "tool_catalog_mode": getattr(self, "_tool_catalog_mode", "unknown"),
             "bytes_re_read_stale": (
                 int(self._evidence_reread_bytes)
                 if self._evidence_reread_ran
@@ -2147,9 +2679,7 @@ class Engine:
             if str(finish_reason) == "length":
                 budget = plan.get("max_tokens")
                 raise EngineError(
-                    f"model hit the {budget}-token completion budget "
-                    f"after an {prompt_tokens}-token prompt and never "
-                    f"closed the JSON object"
+                    _truncation_message(budget, completion_tokens, prompt_tokens)
                 )
             raise EngineError(
                 "Model did not return a valid structured JSON object "
@@ -2208,10 +2738,20 @@ class Engine:
                     prompt_tokens = result.prompt_tokens
                     if prompt_tokens is None:
                         prompt_tokens = plan.get("prompt_tokens_est")
-                    raise EngineError(
-                        f"model hit the {budget}-token completion budget "
-                        f"after an {prompt_tokens}-token prompt and never "
-                        f"closed the JSON object"
+                    # A reply cut off mid-object is a SCHEMA VIOLATION the
+                    # contract can retry, not an engine fault. Raising
+                    # EngineError here escaped contract.enforce, so the
+                    # attempt was never counted and the live receipt read
+                    # attempts=0 against max_attempts=3 -- a retry budget
+                    # that was never spent. The reason doubles as the retry
+                    # instruction: enforce() appends it to the next payload.
+                    raise SchemaViolation(
+                        _truncation_message(
+                            budget, result.completion_tokens, prompt_tokens
+                        )
+                        + "; answer far more briefly -- shortest valid values, "
+                        "no prose, no markdown fence, no repeated fields",
+                        text=content,
                     )
             if "response_format" in to_send:
                 raise EngineError(
@@ -2225,14 +2765,12 @@ class Engine:
             last_violation = (
                 exc.errors[-1] if exc.errors else (exc.reason or "no valid JSON")
             )
-            plan["structured_output"] = structured_output_record(
-                mode="degraded",
+            plan["structured_output"] = _degraded_structured_record(
+                contract,
                 attempts=int(exc.attempts),
-                max_attempts=int(contract.max_attempts),
                 exhausted=True,
                 last_violation=last_violation,
                 errors=list(exc.errors),
-                features=list(contract.degraded_features),
             )
             self._last_call_plan = plan
             raise
@@ -2241,12 +2779,10 @@ class Engine:
             getattr(result, "schema_attempts", None)
             or 1
         )
-        plan["structured_output"] = structured_output_record(
-            mode="degraded",
+        plan["structured_output"] = _degraded_structured_record(
+            contract,
             attempts=attempts,
-            max_attempts=int(contract.max_attempts),
             exhausted=False,
-            features=list(contract.degraded_features),
         )
         self._last_call_plan = plan
 
@@ -2272,16 +2808,224 @@ class Engine:
         )
         return derived, "derived"
 
+    @staticmethod
+    def _render_context_memory(memory: Any) -> str:
+        """Serialize only bounded, structured memory into the next prompt."""
+        if not isinstance(memory, dict) or not memory:
+            return ""
+        try:
+            safe = json.loads(json.dumps(
+                memory,
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(",", ":"),
+                default=str,
+            ))
+        except (TypeError, ValueError):
+            return ""
+        limit = 16000
+
+        def shrink(value: Any, *, depth: int = 0, text_limit: int = 600) -> Any:
+            if isinstance(value, str):
+                return value[:text_limit] + ("…" if len(value) > text_limit else "")
+            if value is None or isinstance(value, (bool, int, float)):
+                return value
+            if depth >= 4:
+                return "[omitted]"
+            if isinstance(value, list):
+                return [
+                    shrink(item, depth=depth + 1, text_limit=text_limit)
+                    for item in value[:12]
+                ]
+            if isinstance(value, dict):
+                # Constraints and state survive before conversational tail or
+                # raw receipt detail. This is semantic gravity, not a blind
+                # character slice that can produce invalid JSON.
+                order = (
+                    "schema",
+                    "active_goal",
+                    "mission",
+                    "ledger",
+                    "steering",
+                    "staging",
+                    "prior_knowledge",
+                    "goal_bank",
+                    "receipts",
+                    "recent",
+                    "retention",
+                )
+                keys = [key for key in order if key in value]
+                keys.extend(key for key in value if key not in keys)
+                return {
+                    str(key): shrink(value[key], depth=depth + 1, text_limit=text_limit)
+                    for key in keys[:20]
+                }
+            return str(value)[:text_limit]
+
+        text = json.dumps(safe, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        if len(text) <= limit:
+            return text
+        for text_limit in (600, 360, 220, 120, 72):
+            candidate = shrink(safe, text_limit=text_limit)
+            text = json.dumps(candidate, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+            if len(text) <= limit:
+                return text
+        # The final fallback is intentionally small and always valid JSON.
+        core = {
+            key: safe.get(key)
+            for key in ("schema", "active_goal", "mission", "ledger", "staging", "prior_knowledge", "goal_bank")
+            if key in safe
+        }
+        return json.dumps(shrink(core, text_limit=48), ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+
+    @classmethod
+    def _prompt_with_context_memory(cls, prompt: str, memory: Any) -> str:
+        """Compatibility path for legacy ``model_client.complete`` providers."""
+        rendered = cls._render_context_memory(memory)
+        if not rendered:
+            return prompt
+        return (
+            f"{prompt}\n\nDURABLE CONTEXT CHECKPOINT (bounded operator memory; "
+            f"verify against current disk state):\n{rendered}"
+        )
+
+    # The raw goal may be far larger than the resident's whole input budget: the
+    # sovereign ultragoal that failed measured 12,456 tokens against 5,632 usable
+    # on sealed-3.14. `del compiled` used to throw away the compiled goal and
+    # embed the raw text verbatim, so an oversized goal could only ever be
+    # refused. SOURCE IS NOT ACTIVE CONTEXT: the exact bytes are preserved on
+    # disk, hashed, and referenced, and the resident receives a compact kernel
+    # plus the handle. It retrieves exact wording with fs.read when it needs it.
+    GOAL_BUDGET_FRACTION = 0.5
+
+    def _persist_goal_source(self, prompt: str) -> Optional[Dict[str, Any]]:
+        """Write the exact goal bytes once, keyed by content hash. Never deletes."""
+        try:
+            digest = hashlib.sha256(prompt.encode("utf-8")).hexdigest()
+            directory = self.root / ".hcli" / "sources"
+            directory.mkdir(parents=True, exist_ok=True)
+            path = directory / f"goal-{digest[:16]}.txt"
+            if not path.is_file():
+                _atomic_write_text(path, prompt)
+            return {
+                "path": os.path.relpath(path, self.root),
+                "sha256": digest,
+                "chars": len(prompt),
+            }
+        except OSError:
+            return None
+
+    def _goal_block(self, prompt: str, compiled: Any) -> str:
+        """Raw goal when it fits the budget; a compiled kernel when it does not."""
+        if compiled is None:
+            return f"GOAL:\n{prompt}"
+        try:
+            usable = int(self._context_budget().usable_input_tokens)
+        except Exception:
+            return f"GOAL:\n{prompt}"
+        limit = max(256, int(usable * self.GOAL_BUDGET_FRACTION))
+        if len(prompt) // _CHARS_PER_TOKEN <= limit:
+            return f"GOAL:\n{prompt}"
+
+        source = self._persist_goal_source(prompt)
+        get = compiled.get if hasattr(compiled, "get") else (lambda k, d=None: d)
+        lines = ["GOAL (compiled kernel; the full source is EXACT and retrievable):"]
+        summary = str(get("goal_summary") or "").strip()
+        if summary:
+            lines.append(f"  objective: {summary}")
+        for label, key in (
+            ("invariants", "invariants"),
+            ("acceptance criteria", "acceptance_criteria"),
+            ("obligations", "obligations"),
+            ("referenced files", "referenced_files"),
+        ):
+            items = [str(x).strip() for x in (get(key) or []) if str(x).strip()]
+            if items:
+                lines.append(f"  {label}:")
+                lines.extend(f"    - {item}" for item in items[:12])
+        if source is not None:
+            lines.append(
+                f"  SOURCE: {source['path']}  "
+                f"({source['chars']} chars, sha256 {source['sha256'][:16]})"
+            )
+            lines.append(
+                "  The compiled kernel above is a SUMMARY. When you need exact "
+                f"wording, read spans with fs.read(path=\"{source['path']}\"). "
+                "Do not assume detail that is not stated here."
+            )
+        else:
+            lines.append(
+                "  SOURCE: could not be persisted; this kernel is all that is available."
+            )
+        return "\n".join(lines)
+
+    # A turn that does not fit must SHRINK before it is refused. Preflight used
+    # to raise ContextPreflightError straight into `resources.py`, which grades
+    # it IMPOSSIBLE_CONTRACT -- so one oversized turn ended the goal with no
+    # attempt to recover, which is exactly what an unattended overnight run
+    # cannot survive. Reduce what is re-derivable, in order of least loss:
+    # deterministic evidence can be re-read from disk with fs.read, and the
+    # durable checkpoint can be re-read from mission state. The GOAL is never
+    # reduced here -- `_goal_block` already compiled it and the exact source is
+    # on disk. Nothing is truncated mid-token; whole items are dropped.
+    EVIDENCE_REDUCTION_STEPS = (1.0, 0.5, 0.25, 0.0)
+
+    def _fit_payload_to_budget(
+        self,
+        build: Callable[[Any, Any], Dict[str, Any]],
+        evidence: Any,
+        context_memory: Any,
+    ) -> Tuple[Dict[str, Any], Optional[Dict[str, Any]]]:
+        """Build the payload, shrinking re-derivable context until it fits."""
+        try:
+            budget = self._context_budget()
+        except Exception:
+            return build(evidence, context_memory), None
+
+        items = list(evidence or ())
+        attempts: List[Tuple[Any, Any, str]] = []
+        for fraction in self.EVIDENCE_REDUCTION_STEPS:
+            keep = items[: max(0, int(len(items) * fraction))] if items else []
+            label = (
+                "full" if fraction == 1.0
+                else f"evidence {len(keep)}/{len(items)}"
+            )
+            attempts.append((keep, context_memory, label))
+        # Last resorts: drop the durable checkpoint too, then bare goal.
+        attempts.append(([], None, "evidence 0 + no checkpoint"))
+
+        last = None
+        for keep, memory, label in attempts:
+            payload = build(keep, memory)
+            demand = self._estimate_prompt_tokens(payload.get("messages") or [])
+            if preflight(budget, demand, kind="root").ok:
+                if label == "full":
+                    return payload, None
+                return payload, {
+                    "reduced_to": label,
+                    "prompt_tokens_est": demand,
+                    "usable_input_tokens": int(budget.usable_input_tokens),
+                    "dropped_evidence": len(items) - len(keep),
+                }
+            last = (payload, demand)
+
+        # Still over budget with nothing re-derivable left. Refuse honestly, and
+        # say what was already given up so the refusal is actionable.
+        payload, demand = last
+        result = preflight(budget, demand, kind="root")
+        raise ContextPreflightError(result)
+
     def _build_model_payload(
         self,
         prompt: str,
         evidence: Optional[List[Dict[str, Any]]] = None,
         compiled: Any = None,
         *,
+        context_memory: Any = None,
         enable_thinking: Optional[bool] = None,
         response_schema: Optional[bool] = None,
     ) -> Dict[str, Any]:
-        del compiled
+        goal_block = self._goal_block(prompt, compiled)
         evidence = self._assert_evidence_fresh(evidence)
         evidence_text = "\n\n".join(
             (
@@ -2291,10 +3035,17 @@ class Engine:
             for item in evidence
         )
         user = (
-            f"GOAL:\n{prompt}\n\n"
+            f"{goal_block}\n\n"
             f"DETERMINISTIC EVIDENCE:\n"
             f"{evidence_text or '(none)'}"
         )
+        memory_text = self._render_context_memory(context_memory)
+        if memory_text:
+            user += (
+                "\n\nDURABLE CONTEXT CHECKPOINT (bounded operator memory; "
+                "verify against current disk state):\n"
+                + memory_text
+            )
         messages = [
             {
                 "role": "system",
@@ -2439,6 +3190,7 @@ class Engine:
         evidence: Optional[List[Dict[str, Any]]] = None,
         compiled: Any = None,
         *,
+        context_memory: Any = None,
         enable_thinking: Optional[bool] = None,
         response_schema: Optional[bool] = None,
         plain_text: bool = False,
@@ -2452,14 +3204,16 @@ class Engine:
 
             if callable(call):
                 self._assert_evidence_fresh(evidence)
-                value = call(
-                    prompt=prompt,
-                    evidence=evidence or [],
-                    compiled=compiled,
-                )
-                if plain_text:
-                    return self._require_plain_text(value, endpoint="model-client")
-                return value
+                est = max(1, len(prompt or "") // _CHARS_PER_TOKEN)
+                with self._model_call_scope(est):
+                    value = call(
+                        prompt=self._prompt_with_context_memory(prompt, context_memory),
+                        evidence=evidence or [],
+                        compiled=compiled,
+                    )
+                    if plain_text:
+                        return self._require_plain_text(value, endpoint="model-client")
+                    return value
 
             # A provider is not required to expose the legacy ``complete``
             # convenience method.  The model-neutral contract is
@@ -2474,47 +3228,50 @@ class Engine:
                     prompt,
                     evidence,
                     compiled,
+                    context_memory=context_memory,
                     enable_thinking=enable_thinking,
                     response_schema=response_schema,
                 )
-                started = time.perf_counter()
-                response = generate(
-                    GenerationRequest.from_mapping(payload),
-                    timeout=float(os.environ.get("HCLI_MODEL_TIMEOUT", "1800")),
-                )
-                wall = time.perf_counter() - started
-                text = getattr(response, "text", None)
-                raw = getattr(response, "raw", response)
-                if isinstance(raw, dict):
-                    structured = raw.get("_structured")
-                    if isinstance(structured, dict):
-                        return structured
-                    choices = raw.get("choices")
-                    if isinstance(choices, list) and choices:
-                        choice = choices[0] if isinstance(choices[0], dict) else {}
-                        message = choice.get("message")
-                        if isinstance(message, dict):
-                            text = message.get("content", text)
-                        elif choice.get("text") is not None:
-                            text = choice.get("text")
-                    if text is None and isinstance(raw.get("content"), str):
-                        text = raw["content"]
-                usage = getattr(response, "usage", None)
-                self._record_model_call(
-                    endpoint=f"provider:{type(self.model_client).__name__}",
-                    finish_reason=getattr(response, "finish_reason", None),
-                    prompt_tokens=(usage or {}).get("prompt_tokens") if isinstance(usage, dict) else None,
-                    completion_tokens=(usage or {}).get("completion_tokens") if isinstance(usage, dict) else None,
-                    wall_s=wall,
-                    max_tokens=payload.get("max_tokens"),
-                    max_tokens_source="provider-contract",
-                )
-                if plain_text:
-                    return self._require_plain_text(
-                        response,
-                        endpoint=f"provider:{type(self.model_client).__name__}",
+                est = (self._last_call_plan or {}).get("prompt_tokens_est")
+                with self._model_call_scope(est):
+                    started = time.perf_counter()
+                    response = generate(
+                        GenerationRequest.from_mapping(payload),
+                        timeout=float(os.environ.get("HCLI_MODEL_TIMEOUT", "1800")),
                     )
-                return self._extract_json_object(text)
+                    wall = time.perf_counter() - started
+                    text = getattr(response, "text", None)
+                    raw = getattr(response, "raw", response)
+                    if isinstance(raw, dict):
+                        structured = raw.get("_structured")
+                        if isinstance(structured, dict):
+                            return structured
+                        choices = raw.get("choices")
+                        if isinstance(choices, list) and choices:
+                            choice = choices[0] if isinstance(choices[0], dict) else {}
+                            message = choice.get("message")
+                            if isinstance(message, dict):
+                                text = message.get("content", text)
+                            elif choice.get("text") is not None:
+                                text = choice.get("text")
+                        if text is None and isinstance(raw.get("content"), str):
+                            text = raw["content"]
+                    usage = getattr(response, "usage", None)
+                    self._record_model_call(
+                        endpoint=f"provider:{type(self.model_client).__name__}",
+                        finish_reason=getattr(response, "finish_reason", None),
+                        prompt_tokens=(usage or {}).get("prompt_tokens") if isinstance(usage, dict) else None,
+                        completion_tokens=(usage or {}).get("completion_tokens") if isinstance(usage, dict) else None,
+                        wall_s=wall,
+                        max_tokens=payload.get("max_tokens"),
+                        max_tokens_source="provider-contract",
+                    )
+                    if plain_text:
+                        return self._require_plain_text(
+                            response,
+                            endpoint=f"provider:{type(self.model_client).__name__}",
+                        )
+                    return self._extract_json_object(text)
 
         backend = self._active_backend()
         use_schema = False if plain_text else self._resolve_response_schema(response_schema)
@@ -2531,13 +3288,21 @@ class Engine:
             # the caller explicitly overrode enable_thinking on this call.
             thinking_arg = False
 
-        payload = self._build_model_payload(
-            prompt,
-            evidence,
-            compiled,
-            enable_thinking=thinking_arg,
-            response_schema=(False if degrade else response_schema),
+        def _build(ev: Any, cm: Any) -> Dict[str, Any]:
+            return self._build_model_payload(
+                prompt,
+                ev,
+                compiled,
+                context_memory=cm,
+                enable_thinking=thinking_arg,
+                response_schema=(False if degrade else response_schema),
+            )
+
+        payload, reduction = self._fit_payload_to_budget(
+            _build, evidence, context_memory
         )
+        if reduction:
+            self._emit("context_reduced", reduction)
         contract: Optional[StructuredOutputContract] = None
         if degrade:
             contract = self._schema_contract(backend)
@@ -2547,12 +3312,10 @@ class Engine:
         # after the inner snapshot, on the same dict that is posted.
         plan = self._commit_posted_prompt_estimate(payload)
         if contract is not None:
-            plan["structured_output"] = structured_output_record(
-                mode="degraded",
+            plan["structured_output"] = _degraded_structured_record(
+                contract,
                 attempts=0,
-                max_attempts=int(contract.max_attempts),
                 exhausted=False,
-                features=list(contract.degraded_features),
             )
         else:
             plan["structured_output"] = structured_output_record(
@@ -2591,17 +3354,38 @@ class Engine:
         else:
             endpoint, provenance = self._runtime_endpoint()
 
-        self._emit(
-            "workunit_started",
-            {
-                "runtime": provenance,
-                "role": "primary",
-            },
-        )
+        with self._model_call_scope(plan.get("prompt_tokens_est")):
+            self._emit(
+                "workunit_started",
+                {
+                    "runtime": provenance,
+                    "role": "primary",
+                },
+            )
 
-        if contract is not None:
-            parsed = self._complete_with_schema_contract(
-                contract,
+            if contract is not None:
+                parsed = self._complete_with_schema_contract(
+                    contract,
+                    payload,
+                    timeout,
+                    endpoint=endpoint,
+                    provenance=provenance,
+                    plan=plan,
+                    prefix_key=prefix_key,
+                    use_pool=use_pool,
+                    pool=pool,
+                    thinking_on=thinking_on,
+                )
+                self._emit(
+                    "workunit_completed",
+                    {
+                        "runtime": provenance,
+                        "role": "primary",
+                    },
+                )
+                return parsed
+
+            result, provenance, endpoint = self._invoke_completion(
                 payload,
                 timeout,
                 endpoint=endpoint,
@@ -2610,8 +3394,8 @@ class Engine:
                 prefix_key=prefix_key,
                 use_pool=use_pool,
                 pool=pool,
-                thinking_on=thinking_on,
             )
+
             self._emit(
                 "workunit_completed",
                 {
@@ -2619,39 +3403,19 @@ class Engine:
                     "role": "primary",
                 },
             )
-            return parsed
 
-        result, provenance, endpoint = self._invoke_completion(
-            payload,
-            timeout,
-            endpoint=endpoint,
-            provenance=provenance,
-            plan=plan,
-            prefix_key=prefix_key,
-            use_pool=use_pool,
-            pool=pool,
-        )
+            if plain_text:
+                if not thinking_on and self._thinking_leaked(
+                    result.text,
+                    self._message_from_completion(result),
+                ):
+                    raise EngineError(
+                        "provider ignored chat_template_kwargs.enable_thinking=false "
+                        "for plain-text cognition"
+                    )
+                return self._require_plain_text(result, endpoint=endpoint)
 
-        self._emit(
-            "workunit_completed",
-            {
-                "runtime": provenance,
-                "role": "primary",
-            },
-        )
-
-        if plain_text:
-            if not thinking_on and self._thinking_leaked(
-                result.text,
-                self._message_from_completion(result),
-            ):
-                raise EngineError(
-                    "provider ignored chat_template_kwargs.enable_thinking=false "
-                    "for plain-text cognition"
-                )
-            return self._require_plain_text(result, endpoint=endpoint)
-
-        return self._parse_structured_reply(result, plan, thinking_on)
+            return self._parse_structured_reply(result, plan, thinking_on)
 
     def _extract_json_object(
         self,
