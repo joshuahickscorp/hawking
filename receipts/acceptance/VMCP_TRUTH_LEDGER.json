@@ -1,0 +1,168 @@
+{
+  "blocker": null,
+  "checks": [
+    {
+      "detail": null,
+      "id": "prove_truth_ledger_called",
+      "ok": true
+    },
+    {
+      "detail": [
+        {
+          "binding_id": "binding:store:0",
+          "status": "supported"
+        }
+      ],
+      "id": "claims",
+      "ok": true
+    },
+    {
+      "detail": {
+        "binding_count": 38,
+        "content_hash": "b8cff53c97e38ea68671d767b7b33b9d1d6cf30a92efae8cf38faa90e5f140b5",
+        "graph_id": "graph:store"
+      },
+      "id": "evidence",
+      "ok": true
+    },
+    {
+      "detail": {
+        "forged_claim_from_dict": {
+          "detection": "EvidenceGraphValidationError: claim value_digest does not match its canonical value",
+          "verdict": "DETECTED"
+        },
+        "verify_content_hash_after_claim_forge": false
+      },
+      "id": "counterevidence_detected",
+      "ok": true
+    },
+    {
+      "detail": "supported",
+      "id": "confidence",
+      "ok": true
+    },
+    {
+      "detail": {
+        "detection": "KeyError: 'unknown field binding: binding:nope'",
+        "verdict": "DETECTED"
+      },
+      "id": "blockers_fail_closed",
+      "ok": true
+    },
+    {
+      "detail": true,
+      "id": "no_op_detected",
+      "ok": true
+    }
+  ],
+  "claim_boundary": "FUNCTIONAL_SIM / STATIC acceptance evidence. No claim that VisionMCP web/3d extras, Blender, Chrome, FPGA, DGX or eGPU ran unless a check records that binary on PATH. An empty collection is not evidence of absence.",
+  "command": [
+    "python3",
+    "-m",
+    "tools.acceptance.vmcp",
+    "--gate",
+    "VMCP_TRUTH_LEDGER"
+  ],
+  "criterion": {
+    "end_line": 7738,
+    "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "quoted": "## E.2 State lattice schemas\n\n```text\nDEEP_DIGEST\n    digest of canonical sensory/execution state\n\nASSET_LATTICE\n    asset_id, source, sha256, type, size, decoded, ownership, uses\n\nDECODE_LATTICE\n    input_hash, transform, output_hash, confidence, recovered artifacts\n\nENTITY_GENOME\n    entity_id, name, kind, evidence, confidence, parent/children\n\nRENDER_GENOME\n    node, text, image, font, color, background, border, radius, shadow, transform, layout\n\nSPATIAL_GENOME\n    object, dimensions, faces, normals, UVs, materials, parts, evidence, origin\n\nREPAIR_VECTOR\n    residual, cause, next_action\n\nDIRECTOR_STATE\n    phase, target, residuals, blocked_gates, next_actions, deep_digest\n\nPERFORMANCE_LEDGER\n    per-act latency, tool p95, build/render/verify costs\n\nTRUTH_LEDGER\n    claims, evidence, counterevidence, confidence, blockers, no_op_detected\n```",
+    "start_line": 7706,
+    "weakened": false
+  },
+  "criterion_weakened": false,
+  "elapsed_ms": 74.295,
+  "evidence_tier": "FUNCTIONAL_SIM",
+  "gate": "VMCP_TRUTH_LEDGER",
+  "generated_at": "2026-09-02T09:12:15Z",
+  "gpu_authority": false,
+  "invoked_symbols": [
+    {
+      "elapsed_ms": 0.054,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "tools.headless.vmcp_lattice_disposition._load_vm"
+    },
+    {
+      "elapsed_ms": 64.796,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "tools.headless.vmcp_lattice_disposition.prove_truth_ledger"
+    },
+    {
+      "elapsed_ms": 3.776,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "tools.headless.vmcp_lattice_disposition._bound_graph"
+    },
+    {
+      "elapsed_ms": 0.071,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "visionmcp.evidence_graph.graph.EvidenceGraph.support_for"
+    },
+    {
+      "elapsed_ms": 0.474,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "visionmcp.worldir.canonical.content_digest"
+    },
+    {
+      "elapsed_ms": 0.431,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "visionmcp.worldir.canonical.content_digest"
+    }
+  ],
+  "measured": {
+    "blockers": {
+      "detection": "KeyError: 'unknown field binding: binding:nope'",
+      "verdict": "DETECTED"
+    },
+    "claims": [
+      {
+        "binding_id": "binding:store:0",
+        "status": "supported"
+      }
+    ],
+    "confidence": "supported",
+    "counterevidence": {
+      "forged_claim_from_dict": {
+        "detection": "EvidenceGraphValidationError: claim value_digest does not match its canonical value",
+        "verdict": "DETECTED"
+      },
+      "verify_content_hash_after_claim_forge": false
+    },
+    "evidence": {
+      "binding_count": 38,
+      "content_hash": "b8cff53c97e38ea68671d767b7b33b9d1d6cf30a92efae8cf38faa90e5f140b5",
+      "graph_id": "graph:store"
+    },
+    "no_op_detected": true
+  },
+  "output": {
+    "from_dict_forged_claim": {
+      "detection": "EvidenceGraphValidationError: claim value_digest does not match its canonical value",
+      "verdict": "DETECTED"
+    },
+    "support_for": {
+      "binding_id": "binding:store:0",
+      "fail_closed_unknown_binding": {
+        "detection": "KeyError: 'unknown field binding: binding:nope'",
+        "verdict": "DETECTED"
+      },
+      "status": "supported"
+    },
+    "verify_content_hash_after_claim_forge": false,
+    "verify_content_hash_clean": true
+  },
+  "recorded_by": "tools/acceptance/vmcp/run.py",
+  "schema": "hawking.acceptance.gate.v1",
+  "verdict": "ACCEPTED"
+}

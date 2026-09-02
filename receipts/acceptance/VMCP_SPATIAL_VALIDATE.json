@@ -1,0 +1,207 @@
+{
+  "blocker": null,
+  "checks": [
+    {
+      "detail": {
+        "face_count": 4,
+        "material_count": 1,
+        "normal_count": 2,
+        "object_count": 1,
+        "usemtl_count": 1,
+        "vertex_count": 8
+      },
+      "id": "independent_obj_parser",
+      "ok": true
+    },
+    {
+      "detail": {
+        "face_count": 4,
+        "material_count": 1,
+        "normal_count": 2,
+        "object_count": 1,
+        "usemtl_count": 1,
+        "vertex_count": 8
+      },
+      "id": "normals_and_materials",
+      "ok": true
+    },
+    {
+      "detail": {
+        "face_count": 0,
+        "material_count": 1,
+        "normal_count": 2,
+        "object_count": 1,
+        "usemtl_count": 1,
+        "vertex_count": 8
+      },
+      "id": "remove_faces_red",
+      "ok": true
+    },
+    {
+      "detail": {
+        "face_count": 4,
+        "material_count": 1,
+        "normal_count": 2,
+        "object_count": 1,
+        "usemtl_count": 1,
+        "vertex_count": 8
+      },
+      "id": "restore_green",
+      "ok": true
+    },
+    {
+      "detail": {
+        "restored": "0239c1c9c587168a",
+        "scaled": "1cc2b7adbf79519a"
+      },
+      "id": "scale_changes_hash",
+      "ok": true
+    },
+    {
+      "detail": {
+        "face_count": 4,
+        "material_count": 1,
+        "normal_count": 0,
+        "object_count": 1,
+        "usemtl_count": 1,
+        "vertex_count": 8
+      },
+      "id": "remove_normals_red",
+      "ok": true
+    },
+    {
+      "detail": {
+        "a": 216,
+        "b": 100
+      },
+      "id": "multi_view_render",
+      "ok": true
+    },
+    {
+      "detail": 84,
+      "id": "views_differ",
+      "ok": true
+    }
+  ],
+  "claim_boundary": "FUNCTIONAL_SIM / STATIC acceptance evidence. No claim that VisionMCP web/3d extras, Blender, Chrome, FPGA, DGX or eGPU ran unless a check records that binary on PATH. An empty collection is not evidence of absence.",
+  "command": [
+    "python3",
+    "-m",
+    "tools.acceptance.vmcp",
+    "--gate",
+    "VMCP_SPATIAL_VALIDATE"
+  ],
+  "criterion": {
+    "end_line": 7865,
+    "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "quoted": "## E.9 Spatial Eye\n\n1. Load supported OBJ/GLTF/USDZ/etc through independent parsers where possible.\n2. Inventory geometry, face count, normals, UVs, material regions and semantic parts.\n3. Extract or compare evidence-backed dimensions.\n4. Render independently from multiple views.\n5. Compare silhouette, multi-view images, materials and dimensions.\n6. Run canaries: remove faces, scale, remove normals, alter material/part, corrupt render, no-op.\n7. Require RED \u2192 restore \u2192 GREEN.\n\n",
+    "start_line": 7855,
+    "weakened": false
+  },
+  "criterion_weakened": false,
+  "elapsed_ms": 2.514,
+  "evidence_tier": "FUNCTIONAL_SIM",
+  "gate": "VMCP_SPATIAL_VALIDATE",
+  "generated_at": "2026-09-02T09:12:16Z",
+  "gpu_authority": false,
+  "invoked_symbols": [
+    {
+      "elapsed_ms": 0.107,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "visionmcp.worlds.spatial.io.obj.obj_file_counts"
+    },
+    {
+      "elapsed_ms": 0.079,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "visionmcp.worlds.spatial.io.obj.obj_file_counts"
+    },
+    {
+      "elapsed_ms": 0.068,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "visionmcp.worlds.spatial.io.obj.obj_file_counts"
+    },
+    {
+      "elapsed_ms": 0.145,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "tools.acceptance.vmcp.gates._raster_obj"
+    },
+    {
+      "elapsed_ms": 0.067,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "tools.acceptance.vmcp.gates._raster_obj"
+    },
+    {
+      "elapsed_ms": 0.354,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "tools.acceptance.vmcp.gates._pixel_metrics"
+    },
+    {
+      "elapsed_ms": 0.071,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "visionmcp.worlds.spatial.io.obj.obj_file_counts"
+    }
+  ],
+  "measured": {
+    "blender": null,
+    "canaries": {
+      "remove_faces": {
+        "face_count": 0,
+        "material_count": 1,
+        "normal_count": 2,
+        "object_count": 1,
+        "usemtl_count": 1,
+        "vertex_count": 8
+      },
+      "remove_normals": {
+        "face_count": 4,
+        "material_count": 1,
+        "normal_count": 0,
+        "object_count": 1,
+        "usemtl_count": 1,
+        "vertex_count": 8
+      },
+      "restore": {
+        "face_count": 4,
+        "material_count": 1,
+        "normal_count": 2,
+        "object_count": 1,
+        "usemtl_count": 1,
+        "vertex_count": 8
+      },
+      "scale_hash_changed": true
+    },
+    "inventory": {
+      "face_count": 4,
+      "material_count": 1,
+      "normal_count": 2,
+      "object_count": 1,
+      "usemtl_count": 1,
+      "vertex_count": 8
+    },
+    "views": {
+      "xy_png_bytes": 216,
+      "xz_png_bytes": 100
+    }
+  },
+  "output": {
+    "parser": "visionmcp.worlds.spatial.io.obj.obj_file_counts",
+    "renderer": "software silhouette"
+  },
+  "recorded_by": "tools/acceptance/vmcp/run.py",
+  "schema": "hawking.acceptance.gate.v1",
+  "verdict": "ACCEPTED"
+}

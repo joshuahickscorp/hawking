@@ -1,0 +1,170 @@
+{
+  "blocker": null,
+  "checks": [
+    {
+      "detail": "c2985c5ba6f7d2a55e768f92490ca09388e95bc4cccb9fdf11b15f4d42f93e73",
+      "id": "content_digest_called",
+      "ok": true
+    },
+    {
+      "detail": {
+        "a": "c2985c5ba6f7d2a55e768f92490ca09388e95bc4cccb9fdf11b15f4d42f93e73",
+        "b": "c2985c5ba6f7d2a55e768f92490ca09388e95bc4cccb9fdf11b15f4d42f93e73"
+      },
+      "id": "canonical_key_order_stable",
+      "ok": true
+    },
+    {
+      "detail": {
+        "a": "c2985c5ba6f7d2a55e768f92490ca09388e95bc4cccb9fdf11b15f4d42f93e73",
+        "c": "51221262a85f34235978c8dc712134f6e04b6078190d87ef73bee21422c8af3e"
+      },
+      "id": "value_mutation_changes_digest",
+      "ok": true
+    },
+    {
+      "detail": "5981a04b1cf8f91257452311e14b8aacc90e911e1ba84a1ca4c8122263ed23b1",
+      "id": "sensory_observation_hashed",
+      "ok": true
+    },
+    {
+      "detail": "86d56672007eac8a67df1263dec2aa10ea63187bb8d7797a543882649dbca571",
+      "id": "observe_file_called",
+      "ok": true
+    },
+    {
+      "detail": "fdea9fca99efd6018db8fdfdc75c1ba23eb6492f09d78cee31f7cab390760cea",
+      "id": "digest_of_canonical_sensory_state",
+      "ok": true
+    },
+    {
+      "detail": {
+        "baseline": "5981a04b1cf8f91257452311e14b8aacc90e911e1ba84a1ca4c8122263ed23b1",
+        "green": true,
+        "mutated": "9daa536063d5436e70789018b637b1a1dcd51aac8b706dcfce74d600cc0c3a3c",
+        "red": true
+      },
+      "id": "prove_red_green",
+      "ok": true
+    }
+  ],
+  "claim_boundary": "FUNCTIONAL_SIM / STATIC acceptance evidence. No claim that VisionMCP web/3d extras, Blender, Chrome, FPGA, DGX or eGPU ran unless a check records that binary on PATH. An empty collection is not evidence of absence.",
+  "command": [
+    "python3",
+    "-m",
+    "tools.acceptance.vmcp",
+    "--gate",
+    "VMCP_DEEP_DIGEST"
+  ],
+  "criterion": {
+    "end_line": 7738,
+    "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "quoted": "## E.2 State lattice schemas\n\n```text\nDEEP_DIGEST\n    digest of canonical sensory/execution state\n\nASSET_LATTICE\n    asset_id, source, sha256, type, size, decoded, ownership, uses\n\nDECODE_LATTICE\n    input_hash, transform, output_hash, confidence, recovered artifacts\n\nENTITY_GENOME\n    entity_id, name, kind, evidence, confidence, parent/children\n\nRENDER_GENOME\n    node, text, image, font, color, background, border, radius, shadow, transform, layout\n\nSPATIAL_GENOME\n    object, dimensions, faces, normals, UVs, materials, parts, evidence, origin\n\nREPAIR_VECTOR\n    residual, cause, next_action\n\nDIRECTOR_STATE\n    phase, target, residuals, blocked_gates, next_actions, deep_digest\n\nPERFORMANCE_LEDGER\n    per-act latency, tool p95, build/render/verify costs\n\nTRUTH_LEDGER\n    claims, evidence, counterevidence, confidence, blockers, no_op_detected\n```",
+    "start_line": 7706,
+    "weakened": false
+  },
+  "criterion_weakened": false,
+  "elapsed_ms": 35.495,
+  "evidence_tier": "FUNCTIONAL_SIM",
+  "gate": "VMCP_DEEP_DIGEST",
+  "generated_at": "2026-09-02T09:12:15Z",
+  "gpu_authority": false,
+  "invoked_symbols": [
+    {
+      "elapsed_ms": 0.099,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "tools.future.vmcp.see"
+    },
+    {
+      "elapsed_ms": 28.439,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "tools.headless.hcli_vmcp_integration.observe_file"
+    },
+    {
+      "elapsed_ms": 0.01,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "visionmcp.worldir.canonical.content_digest"
+    },
+    {
+      "elapsed_ms": 0.004,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "visionmcp.worldir.canonical.content_digest"
+    },
+    {
+      "elapsed_ms": 0.003,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "visionmcp.worldir.canonical.content_digest"
+    },
+    {
+      "elapsed_ms": 0.006,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "visionmcp.worldir.canonical.content_digest"
+    },
+    {
+      "elapsed_ms": 0.905,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "tools.future.vmcp.prove"
+    }
+  ],
+  "measured": {
+    "capture_id": "86d56672007eac8a67df1263dec2aa10ea63187bb8d7797a543882649dbca571",
+    "content_digest": "c2985c5ba6f7d2a55e768f92490ca09388e95bc4cccb9fdf11b15f4d42f93e73",
+    "file_sha256": "5981a04b1cf8f91257452311e14b8aacc90e911e1ba84a1ca4c8122263ed23b1",
+    "sensory_digest": "fdea9fca99efd6018db8fdfdc75c1ba23eb6492f09d78cee31f7cab390760cea"
+  },
+  "output": {
+    "observe_status": "COMPLETE",
+    "prove": {
+      "act": "prove",
+      "baseline_sha256": "5981a04b1cf8f91257452311e14b8aacc90e911e1ba84a1ca4c8122263ed23b1",
+      "empty_success": false,
+      "evidence_tier": "FUNCTIONAL_SIM",
+      "green": true,
+      "looked": true,
+      "mutated_sha256": "9daa536063d5436e70789018b637b1a1dcd51aac8b706dcfce74d600cc0c3a3c",
+      "note": "controlled mutation of a temp copy. RED is a digest change; GREEN is restoration. A always-GREEN canary is a failure.",
+      "ok": true,
+      "red": true,
+      "restored_sha256": "5981a04b1cf8f91257452311e14b8aacc90e911e1ba84a1ca4c8122263ed23b1",
+      "status": "CONNECTED"
+    },
+    "see": {
+      "act": "see",
+      "empty_success": false,
+      "evidence_tier": "FUNCTIONAL_SIM",
+      "hashed_bytes": 27,
+      "limitations": [],
+      "looked": true,
+      "matches_file_eye_fields": [
+        "present",
+        "path",
+        "size",
+        "mode",
+        "sha256"
+      ],
+      "mode": "0o100644",
+      "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-digest-54hdsyrz/state.txt",
+      "present": true,
+      "sha256": "5981a04b1cf8f91257452311e14b8aacc90e911e1ba84a1ca4c8122263ed23b1",
+      "size": 27,
+      "status": "CONNECTED"
+    }
+  },
+  "recorded_by": "tools/acceptance/vmcp/run.py",
+  "schema": "hawking.acceptance.gate.v1",
+  "verdict": "ACCEPTED"
+}

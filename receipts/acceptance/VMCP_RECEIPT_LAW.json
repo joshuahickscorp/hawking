@@ -1,0 +1,172 @@
+{
+  "blocker": null,
+  "checks": [
+    {
+      "detail": "954e16f95958724e09d8571021c04d4e1c89ceef598c5748258ce94839f4401f",
+      "id": "observe_file_called",
+      "ok": true
+    },
+    {
+      "detail": {
+        "canary": true,
+        "elapsed_ms": true,
+        "input_hashes": true,
+        "input_ids": true,
+        "invocation": true,
+        "limitations": true,
+        "output_hashes": true,
+        "output_ids": true,
+        "started_at": true,
+        "status": true,
+        "tool": true,
+        "verifier": true,
+        "version": true
+      },
+      "id": "e4_fields_present",
+      "ok": true
+    },
+    {
+      "detail": "negative control: drop canary",
+      "id": "missing_canary_is_not_complete",
+      "ok": true
+    },
+    {
+      "detail": {
+        "proof_set_size": 2,
+        "untraced_hash": "6180edd216eedee62ac08a288e6947acdb097aa65adc9de1fe06012a018f099a"
+      },
+      "id": "untraced_tool_excluded_from_proof",
+      "ok": true
+    },
+    {
+      "detail": {
+        "capture_id": "954e16f95958724e09d8571021c04d4e1c89ceef598c5748258ce94839f4401f",
+        "failures": [],
+        "manifest_digest": "0a1960fb4cc72dca72566778dbb9606e4eb971c1b3142e66490c59be9d630045",
+        "scope": "stored_capture",
+        "status": "COMPLETE",
+        "valid": true,
+        "worldir_verification": {
+          "connected": false,
+          "reason": "no_worldir_world_artifact"
+        }
+      },
+      "id": "verifier_ran",
+      "ok": true
+    },
+    {
+      "detail": {
+        "prove": {
+          "green": true,
+          "ok": true,
+          "red": true
+        },
+        "restored": true,
+        "stale_after_mutation": true
+      },
+      "id": "mutation_stale_then_restore",
+      "ok": true
+    },
+    {
+      "detail": true,
+      "id": "prove_canary_red_green",
+      "ok": true
+    }
+  ],
+  "claim_boundary": "FUNCTIONAL_SIM / STATIC acceptance evidence. No claim that VisionMCP web/3d extras, Blender, Chrome, FPGA, DGX or eGPU ran unless a check records that binary on PATH. An empty collection is not evidence of absence.",
+  "command": [
+    "python3",
+    "-m",
+    "tools.acceptance.vmcp",
+    "--gate",
+    "VMCP_RECEIPT_LAW"
+  ],
+  "criterion": {
+    "end_line": 7790,
+    "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "quoted": "## E.4 Tool receipt law\n\n```rust\nToolReceipt {\n    tool,\n    version,\n    invocation,\n    input_ids,\n    input_hashes,\n    output_ids,\n    output_hashes,\n    started_at,\n    elapsed_ms,\n    status,\n    limitations,\n    verifier,\n    canary\n}\n\nA truth-affecting tool with no trace is not part of the proof.\n```",
+    "start_line": 7770,
+    "weakened": false
+  },
+  "criterion_weakened": false,
+  "elapsed_ms": 35.177,
+  "evidence_tier": "FUNCTIONAL_SIM",
+  "gate": "VMCP_RECEIPT_LAW",
+  "generated_at": "2026-09-02T09:12:15Z",
+  "gpu_authority": false,
+  "invoked_symbols": [
+    {
+      "elapsed_ms": 26.638,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "tools.headless.hcli_vmcp_integration.observe_file"
+    },
+    {
+      "elapsed_ms": 2.041,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "tools.headless.hcli_vmcp_integration.verify_capture"
+    },
+    {
+      "elapsed_ms": 1.169,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "tools.future.vmcp.prove"
+    }
+  ],
+  "measured": {
+    "receipt": {
+      "canary": {
+        "prove": {
+          "green": true,
+          "ok": true,
+          "red": true
+        },
+        "restored": true,
+        "stale_after_mutation": true
+      },
+      "elapsed_ms": 26.638,
+      "input_hashes": [
+        "abafd07705042100aa13fabf93a32842dff4a55ef0971f91e9f827726c39636e"
+      ],
+      "input_ids": [
+        "file:/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-receipt-0dayj4ux/claim.txt"
+      ],
+      "invocation": {
+        "adapter": "file.eye",
+        "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-receipt-0dayj4ux/claim.txt"
+      },
+      "limitations": [
+        "none"
+      ],
+      "output_hashes": [
+        "abafd07705042100aa13fabf93a32842dff4a55ef0971f91e9f827726c39636e"
+      ],
+      "output_ids": [
+        "954e16f95958724e09d8571021c04d4e1c89ceef598c5748258ce94839f4401f"
+      ],
+      "started_at": 1788340335.9624808,
+      "status": "COMPLETE",
+      "tool": "file.eye",
+      "verifier": {
+        "name": "verify_capture",
+        "subject_sha256": "abafd07705042100aa13fabf93a32842dff4a55ef0971f91e9f827726c39636e",
+        "valid": true
+      },
+      "version": "1"
+    },
+    "untraced_excluded": true
+  },
+  "output": {
+    "observe": {
+      "capture_id": "954e16f95958724e09d8571021c04d4e1c89ceef598c5748258ce94839f4401f",
+      "status": "COMPLETE"
+    }
+  },
+  "recorded_by": "tools/acceptance/vmcp/run.py",
+  "schema": "hawking.acceptance.gate.v1",
+  "verdict": "ACCEPTED"
+}

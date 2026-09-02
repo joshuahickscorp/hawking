@@ -1,0 +1,144 @@
+{
+  "accepted": [
+    "VMCP_STATE_LATTICE",
+    "VMCP_DEEP_DIGEST",
+    "VMCP_TRUTH_LEDGER",
+    "VMCP_RECEIPT_LAW",
+    "VMCP_TOOL_DOCTOR",
+    "VMCP_FILE_CLASSIFIER",
+    "VMCP_VISUAL_DIFF",
+    "VMCP_SPATIAL_VALIDATE",
+    "VMCP_COMPACT_SURFACE",
+    "VMCP_AGENTOS_INTEGRATION"
+  ],
+  "accepted_count": 10,
+  "assigned_count": 14,
+  "auditor_note": "These receipts record a real run of each gate's own acceptance span. The catalog currently only auto-accepts numeric specs; this lane does not edit tools/roadmap or tools/audit. Consume receipts/acceptance/<GATE>.json as accepted evidence: verdict, invoked_symbols (kind=call), checks, measured, output.",
+  "blocked": [
+    "VMCP_WEB_CAPTURE",
+    "VMCP_PTY_CAPTURE",
+    "AGENTOS_BEHAVIOR_LAB",
+    "AGENTOS_DETERMINISTIC_OFFLOAD"
+  ],
+  "blocked_count": 4,
+  "criterion_weakened": false,
+  "gates": [
+    {
+      "blocker_missing": null,
+      "evidence_tier": "FUNCTIONAL_SIM",
+      "gate": "VMCP_STATE_LATTICE",
+      "invoked_call_count": 14,
+      "receipt": "receipts/acceptance/VMCP_STATE_LATTICE.json",
+      "verdict": "ACCEPTED"
+    },
+    {
+      "blocker_missing": null,
+      "evidence_tier": "FUNCTIONAL_SIM",
+      "gate": "VMCP_DEEP_DIGEST",
+      "invoked_call_count": 7,
+      "receipt": "receipts/acceptance/VMCP_DEEP_DIGEST.json",
+      "verdict": "ACCEPTED"
+    },
+    {
+      "blocker_missing": null,
+      "evidence_tier": "FUNCTIONAL_SIM",
+      "gate": "VMCP_TRUTH_LEDGER",
+      "invoked_call_count": 6,
+      "receipt": "receipts/acceptance/VMCP_TRUTH_LEDGER.json",
+      "verdict": "ACCEPTED"
+    },
+    {
+      "blocker_missing": null,
+      "evidence_tier": "FUNCTIONAL_SIM",
+      "gate": "VMCP_RECEIPT_LAW",
+      "invoked_call_count": 3,
+      "receipt": "receipts/acceptance/VMCP_RECEIPT_LAW.json",
+      "verdict": "ACCEPTED"
+    },
+    {
+      "blocker_missing": null,
+      "evidence_tier": "FUNCTIONAL_SIM",
+      "gate": "VMCP_TOOL_DOCTOR",
+      "invoked_call_count": 4,
+      "receipt": "receipts/acceptance/VMCP_TOOL_DOCTOR.json",
+      "verdict": "ACCEPTED"
+    },
+    {
+      "blocker_missing": null,
+      "evidence_tier": "FUNCTIONAL_SIM",
+      "gate": "VMCP_FILE_CLASSIFIER",
+      "invoked_call_count": 7,
+      "receipt": "receipts/acceptance/VMCP_FILE_CLASSIFIER.json",
+      "verdict": "ACCEPTED"
+    },
+    {
+      "blocker_missing": "host Chrome/CDP",
+      "evidence_tier": "STATIC",
+      "gate": "VMCP_WEB_CAPTURE",
+      "invoked_call_count": 1,
+      "receipt": "receipts/acceptance/VMCP_WEB_CAPTURE.json",
+      "verdict": "BLOCKED"
+    },
+    {
+      "blocker_missing": null,
+      "evidence_tier": "FUNCTIONAL_SIM",
+      "gate": "VMCP_VISUAL_DIFF",
+      "invoked_call_count": 2,
+      "receipt": "receipts/acceptance/VMCP_VISUAL_DIFF.json",
+      "verdict": "ACCEPTED"
+    },
+    {
+      "blocker_missing": null,
+      "evidence_tier": "FUNCTIONAL_SIM",
+      "gate": "VMCP_SPATIAL_VALIDATE",
+      "invoked_call_count": 7,
+      "receipt": "receipts/acceptance/VMCP_SPATIAL_VALIDATE.json",
+      "verdict": "ACCEPTED"
+    },
+    {
+      "blocker_missing": "PTY slave open (os.open(ptsname))",
+      "evidence_tier": "STATIC",
+      "gate": "VMCP_PTY_CAPTURE",
+      "invoked_call_count": 2,
+      "receipt": "receipts/acceptance/VMCP_PTY_CAPTURE.json",
+      "verdict": "BLOCKED"
+    },
+    {
+      "blocker_missing": null,
+      "evidence_tier": "FUNCTIONAL_SIM",
+      "gate": "VMCP_COMPACT_SURFACE",
+      "invoked_call_count": 9,
+      "receipt": "receipts/acceptance/VMCP_COMPACT_SURFACE.json",
+      "verdict": "ACCEPTED"
+    },
+    {
+      "blocker_missing": null,
+      "evidence_tier": "FUNCTIONAL_SIM",
+      "gate": "VMCP_AGENTOS_INTEGRATION",
+      "invoked_call_count": 6,
+      "receipt": "receipts/acceptance/VMCP_AGENTOS_INTEGRATION.json",
+      "verdict": "ACCEPTED"
+    },
+    {
+      "blocker_missing": "BHV-01..BHV-23 fixture runner",
+      "evidence_tier": "STATIC",
+      "gate": "AGENTOS_BEHAVIOR_LAB",
+      "invoked_call_count": 0,
+      "receipt": "receipts/acceptance/AGENTOS_BEHAVIOR_LAB.json",
+      "verdict": "BLOCKED"
+    },
+    {
+      "blocker_missing": "lab/hcli/claude_offload_bench.py",
+      "evidence_tier": "STATIC",
+      "gate": "AGENTOS_DETERMINISTIC_OFFLOAD",
+      "invoked_call_count": 0,
+      "receipt": "receipts/acceptance/AGENTOS_DETERMINISTIC_OFFLOAD.json",
+      "verdict": "BLOCKED"
+    }
+  ],
+  "generated_at": "2026-09-02T09:12:16Z",
+  "gpu_authority": false,
+  "lane": "acc3-vmcp-acceptance",
+  "recorded_by": "tools/acceptance/vmcp/run.py",
+  "schema": "hawking.acceptance.index.v1"
+}

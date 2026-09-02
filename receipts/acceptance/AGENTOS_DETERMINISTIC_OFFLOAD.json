@@ -1,0 +1,53 @@
+{
+  "blocker": {
+    "also_missing": [
+      "hcli/scheduler.py"
+    ],
+    "in_git_HEAD": true,
+    "missing": "lab/hcli/claude_offload_bench.py",
+    "why": "D.7 (acceptance_span 7485-7507) requires a scheduler that observes model/runtime/machine identity, ready-work shape, context demand, KV/slot cost, critical path, verifier backlog, mutation contention, I/O pressure, GPU benchmark contamination, background acquisition and measured marginal throughput, and must never manufacture filler work solely to hit a concurrency number. The catalog implementing symbol is lab.hcli.claude_offload_bench.run_bench. That path is in git HEAD (True) but is not materialized in this sparse checkout, so run_bench cannot be CALLed. hcli/scheduler.py is likewise absent on disk."
+  },
+  "checks": [
+    {
+      "detail": {
+        "in_git_HEAD": true,
+        "on_disk": false,
+        "path": "/Users/scammermike/.claude-grok/worktrees/acc3-vmcp-acceptance-20260902-045046/lab/hcli/claude_offload_bench.py"
+      },
+      "id": "run_bench_on_disk",
+      "ok": false
+    }
+  ],
+  "claim_boundary": "FUNCTIONAL_SIM / STATIC acceptance evidence. No claim that VisionMCP web/3d extras, Blender, Chrome, FPGA, DGX or eGPU ran unless a check records that binary on PATH. An empty collection is not evidence of absence.",
+  "command": [
+    "python3",
+    "-m",
+    "tools.acceptance.vmcp",
+    "--gate",
+    "AGENTOS_DETERMINISTIC_OFFLOAD"
+  ],
+  "criterion": {
+    "end_line": 7507,
+    "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "quoted": "## D.7 MAX scheduler measured policy\n\nHistorical Qwen concurrency measurements are priors, not constants. Recalibrate when model/runtime/machine/context changes.\n```text\nScheduler observes:\n    model identity\n    runtime identity\n    machine identity\n    model/provider health\n    ready-work shape\n    context demand\n    KV/slot cost\n    critical path\n    verifier backlog\n    mutation contention\n    I/O pressure\n    GPU benchmark contamination\n    background acquisition\n    measured marginal throughput\n\nScheduler must never manufacture filler work solely to hit a concurrency number.\n```\n",
+    "start_line": 7485,
+    "weakened": false
+  },
+  "criterion_weakened": false,
+  "elapsed_ms": 18.73,
+  "evidence_tier": "STATIC",
+  "gate": "AGENTOS_DETERMINISTIC_OFFLOAD",
+  "generated_at": "2026-09-02T09:12:16Z",
+  "gpu_authority": false,
+  "invoked_symbols": [],
+  "measured": {
+    "run_bench_callable": false,
+    "scheduler_on_disk": false
+  },
+  "output": {
+    "acceptance_span": "7485-7507 D.7 MAX scheduler measured policy"
+  },
+  "recorded_by": "tools/acceptance/vmcp/run.py",
+  "schema": "hawking.acceptance.gate.v1",
+  "verdict": "BLOCKED"
+}

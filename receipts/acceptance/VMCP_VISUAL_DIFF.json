@@ -1,0 +1,220 @@
+{
+  "blocker": null,
+  "checks": [
+    {
+      "detail": {
+        "b": 224,
+        "c": 242
+      },
+      "id": "baseline_candidate_screenshots",
+      "ok": true
+    },
+    {
+      "detail": {
+        "changed_px": 441,
+        "fraction": 0.107666015625,
+        "ssim": 0.7725917669179806
+      },
+      "id": "pixel_diff_detects_change",
+      "ok": true
+    },
+    {
+      "detail": {
+        "bl": {
+          "changed_px": 38,
+          "fraction": 0.037109375,
+          "total_px": 1024
+        },
+        "br": {
+          "changed_px": 361,
+          "fraction": 0.3525390625,
+          "total_px": 1024
+        },
+        "tl": {
+          "changed_px": 4,
+          "fraction": 0.00390625,
+          "total_px": 1024
+        },
+        "tr": {
+          "changed_px": 38,
+          "fraction": 0.037109375,
+          "total_px": 1024
+        }
+      },
+      "id": "region_diff",
+      "ok": true
+    },
+    {
+      "detail": {
+        "max_x": 50,
+        "max_y": 50,
+        "min_x": 30,
+        "min_y": 30
+      },
+      "id": "residual_localization",
+      "ok": true
+    },
+    {
+      "detail": 0.7725917669179806,
+      "id": "ssim_computed",
+      "ok": true
+    },
+    {
+      "detail": 0,
+      "id": "identical_is_green",
+      "ok": true
+    },
+    {
+      "detail": {
+        "baseline_sha256": "93b9c8464a343153320739721c65987a0986ebdd60137fdc50b2686d5e7157b2",
+        "candidate_sha256": "fc51f8bd8c9db7f78c240152d8b9bee893ab1a7ab2e9d9ae2e602542d3ed8099"
+      },
+      "id": "image_provenance",
+      "ok": true
+    },
+    {
+      "detail": [
+        "layout_diff requires a DOM/layout tree; this fixture is raster-only",
+        "text comparison here is pixel-level, not OCR"
+      ],
+      "id": "known_limit_report",
+      "ok": true
+    },
+    {
+      "detail": {
+        "green_identical": true,
+        "red": 441
+      },
+      "id": "red_restore_green",
+      "ok": true
+    }
+  ],
+  "claim_boundary": "FUNCTIONAL_SIM / STATIC acceptance evidence. No claim that VisionMCP web/3d extras, Blender, Chrome, FPGA, DGX or eGPU ran unless a check records that binary on PATH. An empty collection is not evidence of absence.",
+  "command": [
+    "python3",
+    "-m",
+    "tools.acceptance.vmcp",
+    "--gate",
+    "VMCP_VISUAL_DIFF"
+  ],
+  "criterion": {
+    "end_line": 7854,
+    "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "quoted": "## E.8 Visual proof engine\n\n- baseline/candidate screenshot\n- pixel diff\n- region diff\n- layout diff\n- text comparison\n- image provenance\n- SSIM where useful\n- per-region metrics\n- known-limit report\n- residual localization\n\n",
+    "start_line": 7841,
+    "weakened": false
+  },
+  "criterion_weakened": false,
+  "elapsed_ms": 1.907,
+  "evidence_tier": "FUNCTIONAL_SIM",
+  "gate": "VMCP_VISUAL_DIFF",
+  "generated_at": "2026-09-02T09:12:16Z",
+  "gpu_authority": false,
+  "invoked_symbols": [
+    {
+      "elapsed_ms": 0.794,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "tools.acceptance.vmcp.gates._pixel_metrics"
+    },
+    {
+      "elapsed_ms": 0.376,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "tools.acceptance.vmcp.gates._pixel_metrics"
+    }
+  ],
+  "measured": {
+    "identical": {
+      "changed_px": 0,
+      "fraction": 0.0,
+      "identical": true,
+      "regions": {
+        "bl": {
+          "changed_px": 0,
+          "fraction": 0.0,
+          "total_px": 1024
+        },
+        "br": {
+          "changed_px": 0,
+          "fraction": 0.0,
+          "total_px": 1024
+        },
+        "tl": {
+          "changed_px": 0,
+          "fraction": 0.0,
+          "total_px": 1024
+        },
+        "tr": {
+          "changed_px": 0,
+          "fraction": 0.0,
+          "total_px": 1024
+        }
+      },
+      "residual_bbox": null,
+      "size": [
+        64,
+        64
+      ],
+      "ssim": 1.0,
+      "total_px": 4096
+    },
+    "known_limits": [
+      "layout_diff requires a DOM/layout tree; this fixture is raster-only",
+      "text comparison here is pixel-level, not OCR"
+    ],
+    "pixel": {
+      "changed_px": 441,
+      "fraction": 0.107666015625,
+      "identical": false,
+      "regions": {
+        "bl": {
+          "changed_px": 38,
+          "fraction": 0.037109375,
+          "total_px": 1024
+        },
+        "br": {
+          "changed_px": 361,
+          "fraction": 0.3525390625,
+          "total_px": 1024
+        },
+        "tl": {
+          "changed_px": 4,
+          "fraction": 0.00390625,
+          "total_px": 1024
+        },
+        "tr": {
+          "changed_px": 38,
+          "fraction": 0.037109375,
+          "total_px": 1024
+        }
+      },
+      "residual_bbox": {
+        "max_x": 50,
+        "max_y": 50,
+        "min_x": 30,
+        "min_y": 30
+      },
+      "size": [
+        64,
+        64
+      ],
+      "ssim": 0.7725917669179806,
+      "total_px": 4096
+    },
+    "provenance": {
+      "baseline_sha256": "93b9c8464a343153320739721c65987a0986ebdd60137fdc50b2686d5e7157b2",
+      "candidate_sha256": "fc51f8bd8c9db7f78c240152d8b9bee893ab1a7ab2e9d9ae2e602542d3ed8099"
+    },
+    "ssim": 0.7725917669179806
+  },
+  "output": {
+    "engine": "PIL.ImageChops.difference + numpy SSIM",
+    "layout_diff": null
+  },
+  "recorded_by": "tools/acceptance/vmcp/run.py",
+  "schema": "hawking.acceptance.gate.v1",
+  "verdict": "ACCEPTED"
+}

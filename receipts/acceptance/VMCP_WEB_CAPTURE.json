@@ -1,0 +1,205 @@
+{
+  "blocker": {
+    "also_missing": [
+      "host Chrome/CDP (playwright or visionmcp web extra)",
+      "network/resource manifest from a real navigation",
+      "computed style / layout / screenshots"
+    ],
+    "missing": "host Chrome/CDP",
+    "partial": "stdlib HTMLParser on a local fixture (not counted as acceptance)",
+    "why": "E.7 requires network/resource capture, computed style/layout, screenshots and interaction traces. This process has chrome=None playwright=False. A local HTML parse is not a web-eye capture. Sandboxed Chrome MCP is not used."
+  },
+  "checks": [
+    {
+      "detail": {
+        "chrome": null,
+        "playwright": false
+      },
+      "id": "chrome_or_playwright",
+      "ok": false
+    },
+    {
+      "detail": {
+        "img_refs": [
+          "x.png"
+        ],
+        "nodes": [
+          {
+            "attrs": {},
+            "depth": 1,
+            "tag": "html"
+          },
+          {
+            "attrs": {},
+            "depth": 2,
+            "tag": "head"
+          },
+          {
+            "attrs": {},
+            "depth": 3,
+            "tag": "title"
+          },
+          {
+            "attrs": {},
+            "depth": 3,
+            "tag": "style"
+          },
+          {
+            "attrs": {},
+            "depth": 2,
+            "tag": "body"
+          },
+          {
+            "attrs": {
+              "id": "t"
+            },
+            "depth": 3,
+            "tag": "h1"
+          },
+          {
+            "attrs": {
+              "alt": "x",
+              "src": "x.png"
+            },
+            "depth": 3,
+            "tag": "img"
+          }
+        ],
+        "text": [
+          "vmcp-web-fixture",
+          "h1{color:#111;font-size:24px}",
+          "hello-web"
+        ],
+        "title": "t"
+      },
+      "id": "local_html_looked_not_empty_success",
+      "ok": true
+    },
+    {
+      "detail": {
+        "green": true,
+        "red": true,
+        "text": [
+          "vmcp-web-fixture",
+          "h1{color:#111;font-size:24px}",
+          "hello-web"
+        ]
+      },
+      "id": "text_canary_on_fixture",
+      "ok": true
+    }
+  ],
+  "claim_boundary": "FUNCTIONAL_SIM / STATIC acceptance evidence. No claim that VisionMCP web/3d extras, Blender, Chrome, FPGA, DGX or eGPU ran unless a check records that binary on PATH. An empty collection is not evidence of absence.",
+  "command": [
+    "python3",
+    "-m",
+    "tools.acceptance.vmcp",
+    "--gate",
+    "VMCP_WEB_CAPTURE"
+  ],
+  "criterion": {
+    "end_line": 7840,
+    "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "quoted": "## E.7 Web Eye\n\n1. Open controlled/public target or user-authorized page.\n2. Capture network/resource manifest.\n3. Capture HTML/DOM/computed style/layout/text/media references.\n4. Capture screenshots and interaction traces.\n5. Bind assets to nodes and hashes.\n6. Parse styles/source maps where present and authorized.\n7. Generate reference/candidate render states.\n8. Run visual/layout/text/provenance comparisons.\n9. Run canaries: remove image, change text/CSS/layout/hash, corrupt baseline, no-op.\n10. Require RED \u2192 restore \u2192 GREEN before claiming proof.\n\n",
+    "start_line": 7827,
+    "weakened": false
+  },
+  "criterion_weakened": false,
+  "elapsed_ms": 1.761,
+  "evidence_tier": "STATIC",
+  "gate": "VMCP_WEB_CAPTURE",
+  "generated_at": "2026-09-02T09:12:16Z",
+  "gpu_authority": false,
+  "invoked_symbols": [
+    {
+      "elapsed_ms": 0.018,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "visionmcp.benchmarks.parity04.capture.parse_css"
+    }
+  ],
+  "measured": {
+    "canary": {
+      "green": true,
+      "red": true,
+      "text": [
+        "vmcp-web-fixture",
+        "h1{color:#111;font-size:24px}",
+        "hello-web"
+      ]
+    },
+    "e7_steps": {
+      "10_red_restore_green": true,
+      "1_open_controlled_target": true,
+      "2_network_resource_manifest": false,
+      "3_html_dom_computed_style_layout": true,
+      "4_screenshots_interaction_traces": false,
+      "5_bind_assets_to_nodes_and_hashes": true,
+      "6_parse_styles_source_maps": true,
+      "7_reference_candidate_render_states": false,
+      "8_visual_layout_text_provenance": true,
+      "9_canaries": true
+    },
+    "local_dom": {
+      "img_refs": [
+        "x.png"
+      ],
+      "nodes": [
+        {
+          "attrs": {},
+          "depth": 1,
+          "tag": "html"
+        },
+        {
+          "attrs": {},
+          "depth": 2,
+          "tag": "head"
+        },
+        {
+          "attrs": {},
+          "depth": 3,
+          "tag": "title"
+        },
+        {
+          "attrs": {},
+          "depth": 3,
+          "tag": "style"
+        },
+        {
+          "attrs": {},
+          "depth": 2,
+          "tag": "body"
+        },
+        {
+          "attrs": {
+            "id": "t"
+          },
+          "depth": 3,
+          "tag": "h1"
+        },
+        {
+          "attrs": {
+            "alt": "x",
+            "src": "x.png"
+          },
+          "depth": 3,
+          "tag": "img"
+        }
+      ],
+      "text": [
+        "vmcp-web-fixture",
+        "h1{color:#111;font-size:24px}",
+        "hello-web"
+      ],
+      "title": "t"
+    }
+  },
+  "output": {
+    "claimed_browser": false,
+    "looked_local_html": true
+  },
+  "recorded_by": "tools/acceptance/vmcp/run.py",
+  "schema": "hawking.acceptance.gate.v1",
+  "verdict": "BLOCKED"
+}
