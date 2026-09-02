@@ -247,6 +247,44 @@ not this.
 The profile capability flag stays OFF until the mask is proven by mutation on
 real hardware. A receipt must never claim a capability that did not act.
 
+## The haider name is retired
+
+`haider` was HCLI's bootstrap form and a contraction of *aider*. The package
+dependency was already gone and audited; the name and the framing were not.
+Both are now.
+
+- 65 test files moved to `hcli/tests/`; bootstrap history to `tools/hcli/bootstrap/`
+  with a README saying why its contents still read "haider" (a snapshot named for
+  a file that really was called that is a record).
+- `tools/haider/aider_patches/` held a VERBATIM copy of upstream aider's
+  `CoderPrompts` plus a patch. Nothing read it. Deleted.
+- `HAIDER_SYSTEM_PROMPT.txt` ("You are HAIDER, the bootstrap form of HCLI") had
+  no reader either. Deleted; the doctrine lives in `engine.py::_SYSTEM_PROMPT`.
+- `hide_backend::haider` -> `::hcli`, `parse_haider_args` -> `parse_hcli_args`,
+  `HAIDER_MODEL_PATH` dropped, `.haider/` -> `.hcli-legacy/` on disk.
+- `docs/ultragoals/HCLI_SUPER_AGENT_OS.md` set the condition "Aider dependency
+  monotonically decreases until HAIDER effectively IS HCLI". That is discharged.
+
+Three findings that were not renames:
+
+1. **`hide_backend::haider` has never compiled.** `mod haider` was never in
+   lib.rs, so the module, its binary and its integration test -- 2823 lines --
+   were in no build, and `cargo build -p hide-backend` has been failing on that
+   binary before and after this change. Declaring it yields 14 compile errors.
+   The library builds clean. Documented in lib.rs. Adopt or delete is a
+   separate call, now with evidence.
+2. **`tools/headless/conftest.py` would have skipped everything.** It gated on
+   `tools/haider/hcli` existing; after the move that is permanently false and
+   every hcli-importing module below it would have been skipped silently. It
+   asks whether `hcli` is importable now.
+3. **`.hcli/legacy/` was the wrong home.** `engine._safe_path` refuses every
+   path under `.hcli`, so a document the evidence gatherer reads became
+   unreachable. It is `.hcli-legacy/`, beside the control directory.
+
+Suite: **1311 passed, 19 failed, 3 skipped** gates-excluded. The 19 are the same
+19 that failed at the old location, by name -- byte-identical failure list before
+and after the move. They were red where nobody looked.
+
 ## The test that settles it
 
 Leave it four hours and come back to `accepted >= 1` and a gate that was red
