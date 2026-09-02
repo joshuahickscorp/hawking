@@ -1,65 +1,45 @@
 {
-  "schema": "hawking.acceptance.context.summary.v1",
-  "gates": [
-    "HCLI_CONTEXT_AUTHORITY_UNIFIED",
-    "HCLI_CONTEXT_FOCUSED_WORKUNITS",
-    "HCLI_CONTEXT_INVALIDATION",
-    "HCLI_STATUS_PHYSICAL",
-    "HCLI_MIXED_MAX",
-    "BACKEND_FAILURE_ISOLATION",
-    "HCLI_SELF_SUPPLEMENT",
-    "HCLI_SELF_OPTIMIZATION_BOOTSTRAP"
-  ],
-  "accepted": [
-    "HCLI_CONTEXT_AUTHORITY_UNIFIED",
-    "HCLI_CONTEXT_FOCUSED_WORKUNITS",
-    "HCLI_CONTEXT_INVALIDATION",
-    "BACKEND_FAILURE_ISOLATION",
-    "HCLI_SELF_SUPPLEMENT"
-  ],
-  "blocked": [
-    "HCLI_STATUS_PHYSICAL",
-    "HCLI_MIXED_MAX",
-    "HCLI_SELF_OPTIMIZATION_BOOTSTRAP"
-  ],
-  "accepted_count": 5,
-  "blocked_count": 3,
+  "accepted": 4,
+  "blocked": 2,
   "criterion_altered": false,
-  "results": {
-    "HCLI_CONTEXT_AUTHORITY_UNIFIED": {
-      "verdict": "ACCEPTED",
-      "blocker": null
+  "gates": [
+    {
+      "gate": "MODELLAKE_IDENTITY_RESOLVED",
+      "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc4-modellake-qwen27-acceptance-20260902-045058/receipts/acceptance/MODELLAKE_IDENTITY_RESOLVED.json",
+      "symbol_invoked": true,
+      "verdict": "ACCEPTED"
     },
-    "HCLI_CONTEXT_FOCUSED_WORKUNITS": {
-      "verdict": "ACCEPTED",
-      "blocker": null
+    {
+      "gate": "MODELLAKE_HASH_VERIFIED",
+      "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc4-modellake-qwen27-acceptance-20260902-045058/receipts/acceptance/MODELLAKE_HASH_VERIFIED.json",
+      "symbol_invoked": true,
+      "verdict": "BLOCKED"
     },
-    "HCLI_CONTEXT_INVALIDATION": {
-      "verdict": "ACCEPTED",
-      "blocker": null
+    {
+      "gate": "MODELLAKE_ATOMIC_PROMOTION",
+      "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc4-modellake-qwen27-acceptance-20260902-045058/receipts/acceptance/MODELLAKE_ATOMIC_PROMOTION.json",
+      "symbol_invoked": true,
+      "verdict": "ACCEPTED"
     },
-    "HCLI_STATUS_PHYSICAL": {
-      "verdict": "BLOCKED",
-      "blocker": "format_status does not render the D.9 physical /status contract. Missing fields from a fully populated snapshot: MISSION.last_progress, EXTERNAL.throttled, VERIFICATION.active, VERIFICATION.fail, MUTATION.lease_age, REPAIR.active_chains, REPAIR.max_depth, REPAIR.exhausted, PERSISTENCE.generation, PERSISTENCE.digest, THROUGHPUT.marginal_trend, RESOURCE.GPU, RESOURCE.RAM, RESOURCE.swap, RESOURCE.disk, RESOURCE.IO, RESOURCE.benchmark_qualification, STAGNATION.reason. This is not a missing live mission; the renderer drops the sections."
+    {
+      "gate": "QWEN27_RUNTIME_IDENTITY_FROZEN",
+      "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc4-modellake-qwen27-acceptance-20260902-045058/receipts/acceptance/QWEN27_RUNTIME_IDENTITY_FROZEN.json",
+      "symbol_invoked": true,
+      "verdict": "ACCEPTED"
     },
-    "HCLI_MIXED_MAX": {
-      "verdict": "BLOCKED",
-      "blocker": "no llama-server is listening (socket probe {8080: False, 8081: False, 52484: False, 8088: False, 8090: False}, lsof_port=None, lsof_error=None). A mixed campaign without a cognition backend is the CPU-only campaign again; tools/headless/hcli_true_mixed_max.py refuses that substitution and so does this lane. Failure isolation is recorded under BACKEND_FAILURE_ISOLATION, not here."
+    {
+      "gate": "QWEN27_PROTECTED_BASELINE",
+      "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc4-modellake-qwen27-acceptance-20260902-045058/receipts/acceptance/QWEN27_PROTECTED_BASELINE.json",
+      "symbol_invoked": true,
+      "verdict": "BLOCKED"
     },
-    "BACKEND_FAILURE_ISOLATION": {
-      "verdict": "ACCEPTED",
-      "blocker": null
-    },
-    "HCLI_SELF_SUPPLEMENT": {
-      "verdict": "ACCEPTED",
-      "blocker": null
-    },
-    "HCLI_SELF_OPTIMIZATION_BOOTSTRAP": {
-      "verdict": "BLOCKED",
-      "blocker": "D.11 two-iteration law is not demonstrable in this lane. (1) run_autonomy_gate stages A3_resident_kill and A4_hcli_process_kill send SIGTERM/SIGKILL; this lane must not signal the live HCLI daemon or any other process. Even stage=a1 is census qualification, not self-optimization. (2) receipts/headless/HCLI_SELF_OPT_ITERATION_2.json is a prewritten second task (raise RuntimePool admission) \u2014 D.11: 'A prewritten second task does not prove self-optimization.' (3) HCLI_SELF_OPT_ITERATION_2_REMEASURED.json records that the perf gate never entered the mutated RuntimePool. (4) Promoting a bounded improvement would require editing hcli/, which this lane must not touch. Missing input: a kill-free, evidence-chosen iteration-2 loop that independently verifies an improvement without mutating hcli/ or signalling processes."
+    {
+      "gate": "QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED",
+      "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc4-modellake-qwen27-acceptance-20260902-045058/receipts/acceptance/QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED.json",
+      "symbol_invoked": false,
+      "verdict": "ACCEPTED"
     }
-  },
-  "gate": "SUMMARY",
-  "generated_at": "2026-09-02T09:05:34Z",
-  "git_head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9"
+  ],
+  "receipts_dir": "/Users/scammermike/.claude-grok/worktrees/acc4-modellake-qwen27-acceptance-20260902-045058/receipts/acceptance",
+  "schema": "hawking.acceptance.lake.summary.v1"
 }

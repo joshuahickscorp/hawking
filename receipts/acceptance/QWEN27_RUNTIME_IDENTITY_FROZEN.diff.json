@@ -1,0 +1,222 @@
+{
+  "claim_boundary": "Historical identity is reconstructed from receipt and source evidence. The diff identifies candidates for a correction; it does not attribute the TPS gap or qualify a benchmark.",
+  "classification_policy": {
+    "allowed": [
+      "SAME_VERIFIED",
+      "DIFFERENT_VERIFIED",
+      "UNKNOWN",
+      "NOT_COMPARABLE"
+    ],
+    "source_derived_is_not_physical": true,
+    "unknown_is_not_equal": true
+  },
+  "generated_at": 1788340458.140948,
+  "identity_receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc4-modellake-qwen27-acceptance-20260902-045058/receipts/acceptance/QWEN27_RUNTIME_IDENTITY_FROZEN.archaeology.json",
+  "ranked_differences": [
+    {
+      "classification": "UNKNOWN",
+      "current": 10554328856,
+      "dimension": "artifact_payload_bytes",
+      "expected_token_ns_impact": null,
+      "historical": null,
+      "impact_rank": 1,
+      "reason": "stored bytes are not comparable when one artifact lacks a surviving manifest"
+    },
+    {
+      "classification": "DIFFERENT_VERIFIED",
+      "current": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+      "dimension": "artifact_root",
+      "expected_token_ns_impact": null,
+      "historical": "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1",
+      "impact_rank": 1,
+      "reason": "weights/representation are first-order runtime identity"
+    },
+    {
+      "classification": "UNKNOWN",
+      "current": "UNKNOWN",
+      "dimension": "bench_state",
+      "expected_token_ns_impact": null,
+      "historical": "UNKNOWN",
+      "impact_rank": 1,
+      "reason": "historical receipt was backfilled with UNKNOWN quiescence"
+    },
+    {
+      "classification": "UNKNOWN",
+      "current": "9f79d8a26540b86091296ddbc5829cf372bd75e789b9b0551a76d6ce2446fc37",
+      "dimension": "binary_sha256",
+      "expected_token_ns_impact": null,
+      "historical": null,
+      "impact_rank": 1,
+      "reason": "binary hash is the executable implementation identity"
+    },
+    {
+      "classification": "SAME_VERIFIED",
+      "current": 0,
+      "dimension": "fallbacks",
+      "expected_token_ns_impact": null,
+      "historical": 0,
+      "impact_rank": 1,
+      "reason": "fallbacks change the executed function and must be zero for a capability claim"
+    },
+    {
+      "classification": "DIFFERENT_VERIFIED",
+      "current": {
+        "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+        "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+        "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+        "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+      },
+      "dimension": "fusion_env",
+      "expected_token_ns_impact": null,
+      "historical": {
+        "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "UNKNOWN",
+        "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+        "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+        "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+      },
+      "impact_rank": 1,
+      "reason": "one-control fusion differences alter the selected graph"
+    },
+    {
+      "classification": "NOT_COMPARABLE",
+      "current": null,
+      "dimension": "kernel_genome",
+      "expected_token_ns_impact": null,
+      "historical": [
+        "qwen_uniform_q4_group64_matvec_gate_up_geo_tpr64_tg128",
+        "qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+        "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128",
+        "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128"
+      ],
+      "impact_rank": 1,
+      "reason": "kernel names/genome are missing from the current sealed response until instrumented telemetry runs"
+    },
+    {
+      "classification": "DIFFERENT_VERIFIED",
+      "current": "86afca57eed74194fd3811ebe3ff4b7b5e68e982dc4e842dacf0b0199b87fae8",
+      "dimension": "metal_source_sha256",
+      "expected_token_ns_impact": null,
+      "historical": "1693b7df51e28dbab890154e36c62414d7ce771cb07cf27468d9d63160457341",
+      "impact_rank": 1,
+      "reason": "kernel source can change GPU work even when the host graph is unchanged"
+    },
+    {
+      "classification": "DIFFERENT_VERIFIED",
+      "current": "19df6b4f4d84ba5f0ecadfecbef497f9f3a3b0b5eb9dd1da7fc2b848bc6fb203",
+      "dimension": "qwen38_hybrid_decode_sha256",
+      "expected_token_ns_impact": null,
+      "historical": "d235cd0f49cdc69227df20aa8f07009d8438a84b900fb17fea6606e39976e55d",
+      "impact_rank": 1,
+      "reason": "fusion parser and dispatch graph authority"
+    },
+    {
+      "classification": "NOT_COMPARABLE",
+      "current": 628,
+      "dimension": "selected_source_or_measured_dispatches",
+      "expected_token_ns_impact": null,
+      "historical": 756,
+      "impact_rank": 1,
+      "reason": "source-derived current count and measured historical count are different evidence classes"
+    },
+    {
+      "classification": "DIFFERENT_VERIFIED",
+      "current": "6d82b7bb8256254f7cc78630362f859f4c105159",
+      "dimension": "source_git_head",
+      "expected_token_ns_impact": null,
+      "historical": "03373eae6c961158e3b929ecbd8f2c31302c1809",
+      "impact_rank": 1,
+      "reason": "source commit can change graph, kernel wiring, and accounting"
+    },
+    {
+      "classification": "SAME_VERIFIED",
+      "current": "release-fast",
+      "dimension": "cargo_profile",
+      "expected_token_ns_impact": null,
+      "historical": "release-fast",
+      "impact_rank": 2,
+      "reason": "compiler optimization profile is part of the executable identity"
+    },
+    {
+      "classification": "UNKNOWN",
+      "current": null,
+      "dimension": "command_buffers",
+      "expected_token_ns_impact": null,
+      "historical": 1,
+      "impact_rank": 2,
+      "reason": "command-buffer boundaries affect host synchronization"
+    },
+    {
+      "classification": "UNKNOWN",
+      "current": null,
+      "dimension": "rust_flags",
+      "expected_token_ns_impact": null,
+      "historical": "UNKNOWN",
+      "impact_rank": 2,
+      "reason": "Rust codegen flags are not present in the historical receipt"
+    },
+    {
+      "classification": "UNKNOWN",
+      "current": "0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3",
+      "dimension": "tokenizer_sha256",
+      "expected_token_ns_impact": null,
+      "historical": null,
+      "impact_rank": 2,
+      "reason": "tokenization changes prompt length and can change generated ids"
+    },
+    {
+      "classification": "UNKNOWN",
+      "current": "unknown",
+      "dimension": "architecture",
+      "expected_token_ns_impact": null,
+      "historical": "Qwen3.8",
+      "impact_rank": 3,
+      "reason": "historical receipt names the Qwen3.8 runtime but does not carry a config hash"
+    },
+    {
+      "classification": "UNKNOWN",
+      "current": null,
+      "dimension": "generated_tokens",
+      "expected_token_ns_impact": null,
+      "historical": 16,
+      "impact_rank": 3,
+      "reason": "token accounting must match before complete-token timings can be compared"
+    },
+    {
+      "classification": "SAME_VERIFIED",
+      "current": "qwen3.8",
+      "dimension": "model_family",
+      "expected_token_ns_impact": null,
+      "historical": "qwen3.8",
+      "impact_rank": 3,
+      "reason": "same architecture family is required before runtime comparison"
+    },
+    {
+      "classification": "DIFFERENT_VERIFIED",
+      "current": "qwen3.8-27b-sealed-3.14",
+      "dimension": "model_id",
+      "expected_token_ns_impact": null,
+      "historical": "Qwen3.8-27B historical fusion artifact",
+      "impact_rank": 3,
+      "reason": "profile model identity is not the historical artifact identity"
+    },
+    {
+      "classification": "UNKNOWN",
+      "current": null,
+      "dimension": "prompt_tokens",
+      "expected_token_ns_impact": null,
+      "historical": null,
+      "impact_rank": 3,
+      "reason": "current profile does not encode the historical prompt"
+    }
+  ],
+  "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc4-modellake-qwen27-acceptance-20260902-045058/receipts/acceptance/QWEN27_RUNTIME_IDENTITY_FROZEN.diff.json",
+  "repo_root": "/Users/scammermike/Downloads/hawking",
+  "schema": "hcli.agentos.qwen27_runtime_diff.v1",
+  "status": "PASSED",
+  "summary": {
+    "different_verified": 6,
+    "not_comparable": 2,
+    "same_verified": 3,
+    "unknown": 9
+  }
+}

@@ -1,0 +1,684 @@
+{
+  "blocker": {
+    "canonical_error": null,
+    "canonical_specimen": "Qwen--Qwen3-0.6B@c1899de289a0",
+    "canonical_verify_only": {
+      "n_ok": 10,
+      "n_rejected": 0,
+      "rejected": [],
+      "verified": true
+    },
+    "missing_input": "oid-backed sha256 of 54 sealed specimens (4.351 TB remaining after the canonical 0.6B hash)",
+    "why": "verify_only() hashes every file against the hub LFS oid. Re-hashing the 4.35 TB school is a multi-hour HDD pass; this lane hashed the canonical Qwen3-0.6B specimen and size-checked the rest. Size match is not sha256. Catalog symbol reconcile() was invoked on a scratch tree because the live call promotes with go=True, which this lane must not do."
+  },
+  "checks": {
+    "all_sealed_size_complete": false,
+    "canonical_oid_hash_verified": true,
+    "full_lake_oid_hash_complete": false,
+    "live_partial_is_empty": true,
+    "no_lake_write": true,
+    "reconcile_invoked": true,
+    "reconcile_promoted_scratch": true,
+    "scratch_is_not_the_live_lake": true
+  },
+  "command": [
+    "python3",
+    "-m",
+    "tools.acceptance.lake",
+    "--gate",
+    "MODELLAKE_HASH_VERIFIED"
+  ],
+  "criterion": {
+    "end_line": 553,
+    "ledger_line": 9488,
+    "operational": "MODE-003 hash verification. acquire() checks each file against the hub LFS oid (sha256); files without an oid are size-only and recorded as such. A specimen is only visible as complete once every declared file's sha256 matches the upstream LFS oid. Catalog symbol reconcile() is the size-completeness second look (not cryptographic).",
+    "quote": "## I-E. Odyssey I \u2014 Discovery\n\n**Mission:** Build the first real school of model/device facts.\n\n**Genes to express:**\n- architecture-diverse specimens\n- controlled experiments\n- negative science\n- ModelLake\n- genomes\n- laws with scope\n- transfer annotations\n- scientific receipts\n- model #2 completion\n- first cross-model surprises\n\n**Operating rule:** act only on genes whose prerequisites are physically or artifact-verifiably available. Missing prerequisites become explicit blockers or prerequisite WorkUnits; they do not justify fake completion.\n\n**Promotion gate:** this civilization advances only when a fresh process or unseen specimen/device can demonstrate the promised behavior through independent receipts, not because the implementation surface exists.\n\n**Self-refill triggers:** regression, new specimen, new device, new counterexample, new profiler bottleneck, failed transfer, stale assumption, or a newly available deterministic verifier.\n\n",
+    "source": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "start_line": 531
+  },
+  "criterion_altered": false,
+  "elapsed_s": 1.898,
+  "evidence_tier": "STATIC",
+  "gate": "MODELLAKE_HASH_VERIFIED",
+  "generated_at": "2026-09-02T09:14:17Z",
+  "hcli_unmodified": true,
+  "implementing_symbol": "tools.odyssey.modellake_watch.reconcile",
+  "lake": "/Volumes/corpdrive/hawking-modellake",
+  "lake_readonly": true,
+  "measured": {
+    "canonical_error": null,
+    "canonical_verify_only": {
+      "n_ok": 10,
+      "n_rejected": 0,
+      "rejected": [],
+      "verified": true
+    },
+    "oid_hash_required": 55,
+    "oid_hashed_specimens": 1,
+    "reconcile_anomalies": [
+      {
+        "kind": "orphaned_manifest",
+        "tag": "acme--hash@deadbeefcafe"
+      }
+    ],
+    "reconcile_promoted": [
+      "acme--hash@deadbeefcafe"
+    ],
+    "remaining_unhashed_tb": 4.351,
+    "scratch": {
+      "destination_present": true,
+      "live_lake_untouched": true,
+      "partial_gone": true,
+      "promoted_tag": "acme--hash@deadbeefcafe",
+      "weights_bytes": 2048
+    },
+    "sealed_specimens": 55,
+    "size_complete": 49,
+    "size_failed": 0,
+    "size_unknown": 6
+  },
+  "output": {
+    "size_failures": [],
+    "size_rows": [
+      {
+        "bytes_on_disk": 15236443179,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 18,
+        "size_complete": true,
+        "slug": "Dream-org--Dream-v0-Instruct-7B@05334cb9faaf",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 16512918618,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 16,
+        "size_complete": true,
+        "slug": "GSAI-ML--iLLaDA-8B-Base@a1b5b5f8a31a",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 8992155310,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 16,
+        "size_complete": true,
+        "slug": "HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 47693072354,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 9,
+        "size_complete": true,
+        "slug": "LiquidAI--LFM2-24B-A2B@a3bbacd91a67",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 2345559281,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 10,
+        "size_complete": true,
+        "slug": "LiquidAI--LFM2.5-1.2B-Instruct@0f604ada3f76",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 5412362135,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 9,
+        "size_complete": true,
+        "slug": "LiquidAI--LFM2.5-2.6B-Base@c57bdaed1ef1",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 145424101604,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 47,
+        "size_complete": true,
+        "slug": "Qwen--Qwen2.5-72B-Instruct@495f39366efe",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 1519209243,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 10,
+        "size_complete": true,
+        "slug": "Qwen--Qwen3-0.6B@c1899de289a0",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 29552613776,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 18,
+        "size_complete": true,
+        "slug": "Qwen--Qwen3-14B@40c069824f42",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 61084185821,
+        "check": "lake_manifest_no_per_file_list",
+        "missing": null,
+        "n_files_on_disk": 25,
+        "size_complete": null,
+        "slug": "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+        "wrong_size": null
+      },
+      {
+        "bytes_on_disk": 8060917568,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 13,
+        "size_complete": true,
+        "slug": "Qwen--Qwen3-4B-Instruct-2507@cdbee75f17c0",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 61079826794,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 28,
+        "size_complete": true,
+        "slug": "Qwen--Qwen3-Coder-30B-A3B-Instruct@b2cff646eb4b",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 1207489041,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 12,
+        "size_complete": true,
+        "slug": "Qwen--Qwen3-Embedding-0.6B@97b0c614be4d",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 62153205636,
+        "check": "lake_manifest_no_per_file_list",
+        "missing": null,
+        "n_files_on_disk": 24,
+        "size_complete": null,
+        "slug": "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+        "wrong_size": null
+      },
+      {
+        "bytes_on_disk": 17545915883,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 16,
+        "size_complete": true,
+        "slug": "Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 360023284884,
+        "check": "lake_manifest_no_per_file_list",
+        "missing": null,
+        "n_files_on_disk": 143,
+        "size_complete": null,
+        "slug": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+        "wrong_size": null
+      },
+      {
+        "bytes_on_disk": 26542898184,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 22,
+        "size_complete": true,
+        "slug": "RWKV--RWKV7-13.3B-20260805@64ffe5934178",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 126201624837,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 32,
+        "size_complete": true,
+        "slug": "Wan-AI--Wan2.2-T2V-A14B@c8c270b13ee0",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 6402697164,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 13,
+        "size_complete": true,
+        "slug": "ai21labs--AI21-Jamba2-3B@525c6c8e1d9f",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 14605881703,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 15,
+        "size_complete": true,
+        "slug": "allenai--Olmo-3-1025-7B@a81bae42db39",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 1585710451,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 7,
+        "size_complete": true,
+        "slug": "answerdotai--ModernBERT-large@45bb4654a4d5",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 82253494627,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 5,
+        "size_complete": true,
+        "slug": "arcinstitute--evo2_40b@d529aa57c307",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 13766624059,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 4,
+        "size_complete": true,
+        "slug": "arcinstitute--evo2_7b@bda0089f9258",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 14351246858,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 13,
+        "size_complete": true,
+        "slug": "bigcode--starcoder2-7b@bb9afde76d79",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 4348702182,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 4,
+        "size_complete": true,
+        "slug": "boltz-community--boltz-2@6fdef46d763f",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 159630040023,
+        "check": "lake_manifest_no_per_file_list",
+        "missing": null,
+        "n_files_on_disk": 72,
+        "size_complete": null,
+        "slug": "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+        "wrong_size": null
+      },
+      {
+        "bytes_on_disk": 1341331020,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 5,
+        "size_complete": true,
+        "slug": "depth-anything--Depth-Anything-V2-Large-hf@7581137eff8d",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 13957873280,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 9,
+        "size_complete": true,
+        "slug": "facebook--musicgen-large@15ccdc920998",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 897929900,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 8,
+        "size_complete": true,
+        "slug": "facebook--sam2.1-hiera-large@665f8e2ad61c",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 4138867523,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 7,
+        "size_complete": true,
+        "slug": "facebook--vjepa2-vitg-fpc64-256@875c192b7b70",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 3135902327,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 9,
+        "size_complete": true,
+        "slug": "google--flan-t5-large@0613663d0d48",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 1995416592,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 4,
+        "size_complete": true,
+        "slug": "google--timesfm-2.0-500m-pytorch@dc2443792ce5",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 6392637158,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 14,
+        "size_complete": true,
+        "slug": "ibm-granite--granite-4.0-h-micro@d5f01a3ea75f",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 13888348686,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 15,
+        "size_complete": true,
+        "slug": "ibm-granite--granite-4.0-h-tiny@791e0d3d28c8",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 15760704983,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 5,
+        "size_complete": true,
+        "slug": "kyutai--moshika-pytorch-bf16@a49141e28b3d",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 14005628474,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 6,
+        "size_complete": true,
+        "slug": "lerobot--pi0_base@25c379b52ba2",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 7694054130,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 21,
+        "size_complete": true,
+        "slug": "microsoft--Phi-4-mini-instruct@cfbefacb9925",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 12878588835,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 55,
+        "size_complete": true,
+        "slug": "microsoft--Phi-4-multimodal-instruct@93f923e1a772",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 29327880349,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 19,
+        "size_complete": true,
+        "slug": "microsoft--Phi-4-reasoning-plus@69baf8528e1b",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 4834832435,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 10,
+        "size_complete": true,
+        "slug": "microsoft--bitnet-b1.58-2B-4T-bf16@276681394656",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 1187777736,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 10,
+        "size_complete": true,
+        "slug": "microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 96077777512,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 25,
+        "size_complete": true,
+        "slug": "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 1560998984390,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 118,
+        "size_complete": true,
+        "slug": "moonshotai--Kimi-K3@9f62e4e9fffb",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 98253571658,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 38,
+        "size_complete": true,
+        "slug": "moonshotai--Kimi-Linear-48B-A3B-Instruct@e1df551a4471",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 32823061362,
+        "check": "lake_manifest_no_per_file_list",
+        "missing": null,
+        "n_files_on_disk": 24,
+        "size_complete": null,
+        "slug": "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+        "wrong_size": null
+      },
+      {
+        "bytes_on_disk": 17961809773,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 29,
+        "size_complete": true,
+        "slug": "nvidia--audio-flamingo-3@ee26c5842398",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 1622466054,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 13,
+        "size_complete": true,
+        "slug": "openai--whisper-large-v3-turbo@41f01f3fe87f",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 2994284299,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 4,
+        "size_complete": true,
+        "slug": "state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 2989542664,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 4,
+        "size_complete": true,
+        "slug": "state-spaces--mamba3-siso-1.5b@5cfc721542ec",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 14171362521,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 6,
+        "size_complete": true,
+        "slug": "tencent--HunyuanVideo@6204ad6aea1a",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 531944668170,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 43,
+        "size_complete": true,
+        "slug": "thinkingmachines--Inkling-Small@8cc5877b44d3",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 15182220211,
+        "check": "lake_manifest_no_per_file_list",
+        "missing": null,
+        "n_files_on_disk": 14,
+        "size_complete": null,
+        "slug": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+        "wrong_size": null
+      },
+      {
+        "bytes_on_disk": 3348992577,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 8,
+        "size_complete": true,
+        "slug": "tiiuae--Falcon3-1B-Instruct@28ba2251970a",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 220961581797,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 55,
+        "size_complete": true,
+        "slug": "zai-org--GLM-4.5-Air@a24ceef6ce4f",
+        "wrong_size": 0
+      },
+      {
+        "bytes_on_disk": 328366172315,
+        "check": "watch_manifest_per_file_size",
+        "missing": 0,
+        "n_files_on_disk": 72,
+        "size_complete": true,
+        "slug": "zai-org--GLM-5.3-Flash@04c4e9e95c5d",
+        "wrong_size": 0
+      }
+    ],
+    "size_unknown": [
+      {
+        "bytes_on_disk": 61084185821,
+        "check": "lake_manifest_no_per_file_list",
+        "lake_manifest": {
+          "bytes": 61087084544,
+          "n_files": 26,
+          "n_sha256_verified": 17,
+          "n_size_only_verified": 9,
+          "present": true
+        },
+        "n_files_on_disk": 25,
+        "present": true,
+        "size_complete": null,
+        "slug": "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+        "watch_present": false
+      },
+      {
+        "bytes_on_disk": 62153205636,
+        "check": "lake_manifest_no_per_file_list",
+        "lake_manifest": {
+          "bytes": 62153351168,
+          "n_files": 25,
+          "n_sha256_verified": 13,
+          "n_size_only_verified": 12,
+          "present": true
+        },
+        "n_files_on_disk": 24,
+        "present": true,
+        "size_complete": null,
+        "slug": "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+        "watch_present": false
+      },
+      {
+        "bytes_on_disk": 360023284884,
+        "check": "lake_manifest_no_per_file_list",
+        "lake_manifest": {
+          "bytes": 360053432320,
+          "n_files": 144,
+          "n_sha256_verified": 132,
+          "n_size_only_verified": 12,
+          "present": true
+        },
+        "n_files_on_disk": 143,
+        "present": true,
+        "size_complete": null,
+        "slug": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+        "watch_present": false
+      },
+      {
+        "bytes_on_disk": 159630040023,
+        "check": "lake_manifest_no_per_file_list",
+        "lake_manifest": {
+          "bytes": 159630491648,
+          "n_files": 73,
+          "n_sha256_verified": 47,
+          "n_size_only_verified": 26,
+          "present": true
+        },
+        "n_files_on_disk": 72,
+        "present": true,
+        "size_complete": null,
+        "slug": "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+        "watch_present": false
+      },
+      {
+        "bytes_on_disk": 32823061362,
+        "check": "lake_manifest_no_per_file_list",
+        "lake_manifest": {
+          "bytes": 32823230464,
+          "n_files": 25,
+          "n_sha256_verified": 12,
+          "n_size_only_verified": 13,
+          "present": true
+        },
+        "n_files_on_disk": 24,
+        "present": true,
+        "size_complete": null,
+        "slug": "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+        "watch_present": false
+      },
+      {
+        "bytes_on_disk": 15182220211,
+        "check": "lake_manifest_no_per_file_list",
+        "lake_manifest": {
+          "bytes": 15183298560,
+          "n_files": 13,
+          "n_sha256_verified": 5,
+          "n_size_only_verified": 8,
+          "present": true
+        },
+        "n_files_on_disk": 14,
+        "present": true,
+        "size_complete": null,
+        "slug": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+        "watch_present": false
+      }
+    ],
+    "summary": "reconcile scratch promoted=True; size-complete 49/55; oid-hash 1/55"
+  },
+  "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc4-modellake-qwen27-acceptance-20260902-045058/receipts/acceptance/MODELLAKE_HASH_VERIFIED.json",
+  "schema": "hawking.acceptance.gate.v1",
+  "symbol_invoked": true,
+  "verdict": "BLOCKED",
+  "worktree": "/Users/scammermike/.claude-grok/worktrees/acc4-modellake-qwen27-acceptance-20260902-045058"
+}

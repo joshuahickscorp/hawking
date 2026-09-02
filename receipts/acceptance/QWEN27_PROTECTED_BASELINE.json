@@ -1,0 +1,230 @@
+{
+  "blocker": {
+    "missing_input": "a quiescent machine window (machine_quiescence().quiet is True) with no live competing HCLI resident",
+    "protected_window": false,
+    "qualification": false,
+    "run_error": {
+      "message": "machine did not become quiet for 2.0s",
+      "type": "QuiescenceTimeout"
+    },
+    "run_status": "WAITING_FOR_QUIESCENCE",
+    "started_resident": false,
+    "why": "machine did not present a protected window (status='WAITING_FOR_QUIESCENCE' error={'type': 'QuiescenceTimeout', 'message': 'machine did not become quiet for 2.0s'}); live HCLI daemon must not be signalled/restarted; this profile cannot run `ps` (machine_quiescence \u2192 quiet=None); a competing resident must not be started"
+  },
+  "checks": {
+    "did_not_start_resident_without_quiet_window": true,
+    "protected_window": false,
+    "qualified": false,
+    "symbol_invoked": true
+  },
+  "command": [
+    "python3",
+    "-m",
+    "tools.acceptance.lake",
+    "--gate",
+    "QWEN27_PROTECTED_BASELINE",
+    "--ready-timeout-s=2.0"
+  ],
+  "criterion": {
+    "end_line": 530,
+    "ledger_line": 9491,
+    "operational": "\u00a711.4.4 / Q27-03 / QWEN-003: watch for a protected quiescent window and run a current release-fast protected baseline. Qualification requires a quiet machine; a contended or unobservable machine is not a baseline.",
+    "quote": "## I-D. Hawking Accelerator\n\n**Mission:** Turn representations and machines into optimized physical programs.\n\n**Genes to express:**\n- AIR/ACORE\n- Metal-native kernels\n- MLX controls\n- CUDA-capability translation\n- Kernel Forge\n- persistent execution\n- dispatch elimination\n- residency\n- memory-layout search\n- PhysicalGraph\n- phase-aware backend selection\n- pre-board FPGA school\n\n**Operating rule:** act only on genes whose prerequisites are physically or artifact-verifiably available. Missing prerequisites become explicit blockers or prerequisite WorkUnits; they do not justify fake completion.\n\n**Promotion gate:** this civilization advances only when a fresh process or unseen specimen/device can demonstrate the promised behavior through independent receipts, not because the implementation surface exists.\n\n**Self-refill triggers:** regression, new specimen, new device, new counterexample, new profiler bottleneck, failed transfer, stale assumption, or a newly available deterministic verifier.\n\n",
+    "source": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "start_line": 506
+  },
+  "criterion_altered": false,
+  "elapsed_s": 2.011,
+  "evidence_tier": "STATIC",
+  "gate": "QWEN27_PROTECTED_BASELINE",
+  "generated_at": "2026-09-02T09:14:20Z",
+  "hcli_unmodified": true,
+  "implementing_symbol": "hcli.agentos.protected_accelerator_benchmark.run_protected_accelerator_benchmark",
+  "lake_readonly": true,
+  "measured": {
+    "aggregate": {
+      "active_bytes_per_token": {
+        "all": [],
+        "max": null,
+        "median": null,
+        "min": null,
+        "n": 0,
+        "spread_pct": null
+      },
+      "active_weight_bytes_per_generated_token": {
+        "all": [],
+        "max": null,
+        "median": null,
+        "min": null,
+        "n": 0,
+        "spread_pct": null
+      },
+      "actual_read_bytes_per_token": {
+        "all": [],
+        "max": null,
+        "median": null,
+        "min": null,
+        "n": 0,
+        "spread_pct": null
+      },
+      "complete_wall_ns": {
+        "all": [],
+        "max": null,
+        "median": null,
+        "min": null,
+        "n": 0,
+        "spread_pct": null
+      },
+      "complete_wall_ns_per_token": {
+        "all": [],
+        "max": null,
+        "median": null,
+        "min": null,
+        "n": 0,
+        "spread_pct": null
+      },
+      "decode": [],
+      "decode_steps": {
+        "all": [],
+        "max": null,
+        "median": null,
+        "min": null,
+        "n": 0,
+        "spread_pct": null
+      },
+      "dispatches": {
+        "all": [],
+        "max": null,
+        "median": null,
+        "min": null,
+        "n": 0,
+        "spread_pct": null
+      },
+      "dispatches_per_token": {
+        "all": [],
+        "max": null,
+        "median": null,
+        "min": null,
+        "n": 0,
+        "spread_pct": null
+      },
+      "generated_token_ids": [],
+      "generated_token_ids_exact_and_stable": false,
+      "generated_tokens": {
+        "all": [],
+        "max": null,
+        "median": null,
+        "min": null,
+        "n": 0,
+        "spread_pct": null
+      },
+      "gpu_ns": {
+        "all": [],
+        "max": null,
+        "median": null,
+        "min": null,
+        "n": 0,
+        "spread_pct": null
+      },
+      "gpu_ns_per_token": {
+        "all": [],
+        "max": null,
+        "median": null,
+        "min": null,
+        "n": 0,
+        "spread_pct": null
+      },
+      "kernel_genome_exact_and_stable": false,
+      "kernel_genomes": [],
+      "native_wall_minus_gpu_ns": {
+        "all": [],
+        "max": null,
+        "median": null,
+        "min": null,
+        "n": 0,
+        "spread_pct": null
+      },
+      "native_wall_minus_gpu_ns_per_token": {
+        "all": [],
+        "max": null,
+        "median": null,
+        "min": null,
+        "n": 0,
+        "spread_pct": null
+      },
+      "prefill": [],
+      "prefill_steps": {
+        "all": [],
+        "max": null,
+        "median": null,
+        "min": null,
+        "n": 0,
+        "spread_pct": null
+      },
+      "resident_weight_bytes": {
+        "all": [],
+        "max": null,
+        "median": null,
+        "min": null,
+        "n": 0,
+        "spread_pct": null
+      },
+      "transient_bytes_per_token": {
+        "all": [],
+        "max": null,
+        "median": null,
+        "min": null,
+        "n": 0,
+        "spread_pct": null
+      },
+      "wall_minus_gpu_ns_per_token": {
+        "all": [],
+        "max": null,
+        "median": null,
+        "min": null,
+        "n": 0,
+        "spread_pct": null
+      },
+      "workspace_resident_bytes": {
+        "all": [],
+        "max": null,
+        "median": null,
+        "min": null,
+        "n": 0,
+        "spread_pct": null
+      }
+    },
+    "n_measurements": 0,
+    "protected_window": false,
+    "qualification": false,
+    "readiness_polls": 10,
+    "ready_timeout_s": 2.0,
+    "started_resident": false,
+    "status": "WAITING_FOR_QUIESCENCE"
+  },
+  "output": {
+    "checks": {
+      "all_measurements_ok": false,
+      "all_requested_measurements_completed": false,
+      "capability_sanity": false,
+      "exact_kernel_genome_recorded": true,
+      "no_connector_restart": true,
+      "no_unqualified_promotion": true,
+      "one_persistent_pid_when_declared": true,
+      "profile_or_resident_started": false,
+      "required_physical_metrics_present": false,
+      "zero_fallbacks": false
+    },
+    "error": {
+      "message": "machine did not become quiet for 2.0s",
+      "type": "QuiescenceTimeout"
+    },
+    "run_receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc4-modellake-qwen27-acceptance-20260902-045058/receipts/acceptance/QWEN27_PROTECTED_BASELINE.run.json",
+    "summary": "protected benchmark status='WAITING_FOR_QUIESCENCE' qualification=False window=False measurements=0 resident=False"
+  },
+  "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc4-modellake-qwen27-acceptance-20260902-045058/receipts/acceptance/QWEN27_PROTECTED_BASELINE.json",
+  "schema": "hawking.acceptance.gate.v1",
+  "symbol_invoked": true,
+  "verdict": "BLOCKED",
+  "worktree": "/Users/scammermike/.claude-grok/worktrees/acc4-modellake-qwen27-acceptance-20260902-045058"
+}
