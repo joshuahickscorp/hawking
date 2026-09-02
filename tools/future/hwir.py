@@ -4,7 +4,8 @@ The FPGA/spatial school compiles into this IR. It consumes Noetic/PhysicalGraph
 semantics and real FPGA organ-map receipts. A graph that assumes it is
 multiplying original dense source weight matrices is invalid by construction.
 
-This is not an FPGA backend, HDL emitter, or bitstream path. There is no U50
+This is not a vendor backend or bitstream path. Lowering targets emit
+PREHARDWARE source artifacts only; they do not synthesize. There is no U50
 board on this host. Every number this module emits is PREHARDWARE: STATIC,
 FUNCTIONAL_SIM, COST_MODEL, or CYCLE_APPROX. None of them is HARDWARE_MEASURED.
 
@@ -25,10 +26,12 @@ than rewriting them:
 * a scoring path keyed to wake_condition U50_PRESENT that names the
   implicated coefficient on FALSIFIED; a synthetic-arrival rehearsal
   that is never an arrival
-* selectable Alveo U50-family variants (U50 / U50C / U50DD / U50LV) with
+* selectable U50-family variants (U50 / U50C / U50DD / U50LV) with
   per-field provenance; UNPINNED where public literature does not pin a number
 * CarrierEnvelope: a host-side bound that DOWNGRADES a DeviceProfile (PCIe,
   power, thermal/airflow, mechanical). The real comma-device carrier is UNPINNED.
+* a pluggable LoweringTarget interface with two equal-citizen source emitters
+  (HLS-style C/C++ and Rust-hosted HDL/IR). Toolchain choice is not encoded.
 
     python3 tools/future/hwir.py --selftest
     python3 tools/future/hwir.py --build
@@ -44,9 +47,11 @@ _sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.dirname(_os.path.
 
 from tools.future._common import write_receipt, load_json, REPO, git, sha256_file
 
+import abc
 import argparse
 import hashlib
 import json
+import re
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any, Mapping, Sequence
@@ -3899,6 +3904,748 @@ def run_qgemv_preboard(
     return doc
 
 
+# === GENERIC LOWERING LAYER BEGIN ===
+# Vendor-neutral HWIR lowering-target interface. Style families live behind
+# this boundary. Toolchain choice is not encoded. Rust owns Hawking semantics;
+# host/runtime APIs stay behind a thin boundary and must not leak through
+# the compiler. Device-specific names belong in backends, not here.
+
+# Closed catalog the interface can name. Atlas primitives are the 17 IR
+# contracts; platform primitives are the pieces that typically still need
+# hand-written HDL. An emitter that cannot cover a name must say so.
+PLATFORM_PRIMITIVES: tuple[str, ...] = (
+    "clock_generator",
+    "dfx_region_wrapper",
+    "hbm_memory_controller",
+    "host_link_phy",
+    "interrupt_doorbell",
+    "io_pinout_constraints",
+    "vendor_dsp_primitive",
+)
+
+HARDWARE_PRIMITIVE_CATALOG: tuple[str, ...] = tuple(RECOVERED_PRIMITIVES) + PLATFORM_PRIMITIVES
+
+# Explicitly unset. Ranking a target would encode a toolchain decision.
+PREFERRED_LOWERING_TARGET: str | None = None
+
+_HWIR_EMITTED_RE = re.compile(r"HWIR_EMITTED:([A-Za-z0-9_]+)")
+_HWIR_HOLE_RE = re.compile(r"HWIR_HOLE:([A-Za-z0-9_]+)")
+
+
+class UnknownLoweringTarget(KeyError):
+    """No registered lowering target with that id."""
+
+
+def lowering_emitted_primitives(result: Mapping[str, Any] | str) -> set[str]:
+    """Primitives for which a lowering result contains an implementation body."""
+    found: set[str] = set()
+    if isinstance(result, str):
+        found.update(_HWIR_EMITTED_RE.findall(result))
+        return found
+    for art in result.get("artifacts") or []:
+        found.update(_HWIR_EMITTED_RE.findall(str(art.get("body") or "")))
+    return found
+
+
+def lowering_hole_primitives(result: Mapping[str, Any] | str) -> set[str]:
+    """Primitives a lowering result names as a hole (not expressed)."""
+    found: set[str] = set()
+    if isinstance(result, str):
+        found.update(_HWIR_HOLE_RE.findall(result))
+        return found
+    for art in result.get("artifacts") or []:
+        found.update(_HWIR_HOLE_RE.findall(str(art.get("body") or "")))
+    for name in result.get("cannot_express") or []:
+        found.add(str(name))
+    return found
+
+
+def _c_ident(node_id: str) -> str:
+    chars = [(ch if ch.isalnum() else "_") for ch in str(node_id)]
+    ident = "".join(chars).strip("_") or "node"
+    if ident[0].isdigit():
+        ident = "n_" + ident
+    return ident
+
+
+def _kernel_params(graph: HwirGraph) -> dict[str, Any]:
+    raw = dict(graph.kernel or {})
+
+    def _int(name: str) -> int:
+        value = raw.get(name)
+        return 0 if value is None else int(value)
+
+    return {
+        "K": _int("K"),
+        "M": _int("M"),
+        "arithmetic": str(raw.get("arithmetic") or ""),
+        "group_size": _int("group_size"),
+        "mac_lanes": _int("mac_lanes"),
+        "organ": str(raw.get("organ") or graph.organ or "organ"),
+        "tile_m": _int("tile_m"),
+        "weight_bits": _int("weight_bits"),
+    }
+
+
+def _topo_ids(graph: HwirGraph) -> list[str]:
+    ids = [n.id for n in sorted(graph.nodes, key=lambda n: n.id)]
+    incoming = {i: 0 for i in ids}
+    adj = {i: [] for i in ids}
+    for edge in graph.edges:
+        if edge.src in adj and edge.dst in incoming:
+            adj[edge.src].append(edge.dst)
+            incoming[edge.dst] += 1
+    ready = sorted(i for i, count in incoming.items() if count == 0)
+    ordered: list[str] = []
+    while ready:
+        node_id = ready.pop(0)
+        ordered.append(node_id)
+        for dest in sorted(adj[node_id]):
+            incoming[dest] -= 1
+            if incoming[dest] == 0:
+                ready.append(dest)
+                ready.sort()
+    for node_id in ids:
+        if node_id not in ordered:
+            ordered.append(node_id)
+    return ordered
+
+
+def _source_artifact(
+    *,
+    filename: str,
+    language: str,
+    body: str,
+    target_id: str,
+) -> dict[str, Any]:
+    return emit_evidence(
+        "STATIC",
+        {
+            "body": body,
+            "filename": filename,
+            "kind": "SOURCE_ARTIFACT",
+            "language": language,
+            "note": (
+                "PREHARDWARE source artifact. Compiler product only. "
+                "Not synthesis, not a bitstream, not a correctness claim, "
+                "not HARDWARE_MEASURED."
+            ),
+            "target_id": target_id,
+        },
+    )
+
+
+def _artifact_filename(graph: HwirGraph, target_id: str, ext: str) -> str:
+    organ = _c_ident(graph.organ or "graph")
+    return f"{organ}_{target_id}.{ext}"
+
+
+class LoweringTarget(abc.ABC):
+    """Pluggable HWIR lowering target. Equal citizen. Not a ranked backend.
+
+    Generic methods must not branch on a device vendor. A target declares
+    what it emits, what it cannot express, and which primitives still need
+    hand-written HDL. 'Minimal HDL' is only a real claim when those holes
+    are named.
+    """
+
+    TARGET_ID: str = ""
+    FAMILY: str = ""
+    EMITS: tuple[str, ...] = ()
+
+    def target_id(self) -> str:
+        return str(self.TARGET_ID)
+
+    def family(self) -> str:
+        return str(self.FAMILY)
+
+    def emits(self) -> tuple[str, ...]:
+        return tuple(self.EMITS)
+
+    @abc.abstractmethod
+    def cannot_express(self) -> tuple[str, ...]:
+        """Primitives this target cannot express. Must be non-empty and honest."""
+
+    @abc.abstractmethod
+    def handwritten_hdl(self) -> tuple[str, ...]:
+        """Primitives that still require hand-written HDL under this target."""
+
+    @abc.abstractmethod
+    def supported_primitives(self) -> tuple[str, ...]:
+        """Primitives this target claims to emit an implementation body for."""
+
+    @abc.abstractmethod
+    def emit_artifacts(self, graph: HwirGraph) -> list[dict[str, Any]]:
+        """Return SOURCE_ARTIFACT dicts. Source text only; no synthesis."""
+
+    def lower(self, graph: HwirGraph) -> dict[str, Any]:
+        return _finalize_lowering(graph, self, self.emit_artifacts(graph))
+
+    def manifest(self) -> dict[str, Any]:
+        return emit_evidence(
+            "STATIC",
+            {
+                "cannot_express": list(self.cannot_express()),
+                "emits": list(self.emits()),
+                "family": self.family(),
+                "handwritten_hdl": list(self.handwritten_hdl()),
+                "kind": "LOWERING_TARGET_MANIFEST",
+                "note": (
+                    "Equal-citizen lowering target. PREHARDWARE source artifacts "
+                    "only. Toolchain choice is not encoded."
+                ),
+                "preferred": False,
+                "supported_primitives": list(self.supported_primitives()),
+                "target_id": self.target_id(),
+                "toolchain_choice": None,
+            },
+        )
+
+
+_LOWERING_REGISTRY: dict[str, LoweringTarget] = {}
+
+
+def register_lowering_target(target: LoweringTarget) -> LoweringTarget:
+    """Register a lowering target. Ids are equal citizens; none is preferred."""
+    if not isinstance(target, LoweringTarget):
+        raise TypeError("target must implement LoweringTarget")
+    tid = str(target.target_id() or "").strip()
+    if not tid:
+        raise ValueError("lowering target id is empty")
+    prev = _LOWERING_REGISTRY.get(tid)
+    if prev is not None and type(prev) is not type(target):
+        raise ValueError(f"duplicate lowering target id {tid!r}")
+    _LOWERING_REGISTRY[tid] = target
+    return target
+
+
+def list_lowering_targets() -> tuple[str, ...]:
+    """Registered target ids, lexicographic. Order is not preference."""
+    return tuple(sorted(_LOWERING_REGISTRY))
+
+
+def get_lowering_target(target_id: str) -> LoweringTarget:
+    tid = str(target_id or "").strip()
+    target = _LOWERING_REGISTRY.get(tid)
+    if target is None:
+        known = list(list_lowering_targets())
+        raise UnknownLoweringTarget(
+            f"unknown lowering target {tid!r}; registered: {known}"
+        )
+    return target
+
+
+def lowering_target_manifests() -> dict[str, dict[str, Any]]:
+    return {tid: get_lowering_target(tid).manifest() for tid in list_lowering_targets()}
+
+
+def _finalize_lowering(
+    graph: HwirGraph,
+    target: LoweringTarget,
+    artifacts: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    report = validate(graph)
+    cannot = list(target.cannot_express())
+    if not cannot:
+        raise ValueError(
+            f"{target.target_id()} cannot_express is empty; "
+            "unsupported primitives must be named"
+        )
+    hdl = list(target.handwritten_hdl())
+    if not hdl:
+        raise ValueError(
+            f"{target.target_id()} handwritten_hdl is empty; "
+            "minimal-HDL is only a real claim when the holes are named"
+        )
+    stamped = [_source_artifact(
+        filename=str(art.get("filename") or "unnamed"),
+        language=str(art.get("language") or "text"),
+        body=str(art.get("body") or ""),
+        target_id=target.target_id(),
+    ) if not (isinstance(art, Mapping) and art.get("kind") == "SOURCE_ARTIFACT")
+        else dict(art) for art in artifacts]
+    for art in stamped:
+        if art.get("kind") != "SOURCE_ARTIFACT":
+            raise ValueError(f"{target.target_id()} emitted a non-source artifact")
+        if "PREHARDWARE" not in str(art.get("body") or ""):
+            raise ValueError(
+                f"{target.target_id()} artifact {art.get('filename')!r} "
+                "is not labeled PREHARDWARE"
+            )
+    body = {
+        "artifacts": stamped,
+        "cannot_express": cannot,
+        "emits": list(target.emits()),
+        "family": target.family(),
+        "graph_fingerprint": graph.fingerprint(),
+        "handwritten_hdl": hdl,
+        "kind": "HWIR_LOWERING",
+        "note": (
+            "PREHARDWARE source artifacts. Compiler product only. "
+            "Not synthesis, not a bitstream, not a correctness claim, "
+            "not HARDWARE_MEASURED."
+        ),
+        "organ": graph.organ,
+        "preferred": False,
+        "supported_primitives": list(target.supported_primitives()),
+        "target_id": target.target_id(),
+        "toolchain_choice": None,
+        "validate": report.to_dict(),
+    }
+    doc = emit_evidence("STATIC", body)
+    assert_no_hardware_measured(doc)
+    illegal = collect_evidence_tiers(doc) - set(EVIDENCE_TIERS)
+    if illegal:
+        raise IllegalEvidenceTier(
+            f"illegal evidence tiers in lowering result: {sorted(illegal)}"
+        )
+    if PREFERRED_LOWERING_TARGET is not None:
+        raise RuntimeError(
+            "PREFERRED_LOWERING_TARGET must stay unset; "
+            "the compiler does not pick a toolchain"
+        )
+    return doc
+
+
+def lower_hwir(graph: HwirGraph, target_id: str) -> dict[str, Any]:
+    """Lower `graph` through a registered target. Dispatcher is target-id keyed,
+    never vendor keyed.
+    """
+    target = get_lowering_target(target_id)
+    return target.lower(graph)
+
+
+def lower_hwir_all(graph: HwirGraph) -> dict[str, dict[str, Any]]:
+    """Lower the same graph through every registered target. No ranking."""
+    return {tid: lower_hwir(graph, tid) for tid in list_lowering_targets()}
+
+
+def lower_qgemv_targets(
+    kernel: QGemvKernel | None = None,
+    device: DeviceProfile | None = None,
+) -> dict[str, Any]:
+    """Lower the canonical (or supplied) qGEMV HWIR graph through every target."""
+    graph = from_qgemv(kernel, device)
+    results = lower_hwir_all(graph)
+    doc = emit_evidence(
+        "STATIC",
+        {
+            "graph_fingerprint": graph.fingerprint(),
+            "kind": "QGEMV_LOWERING_TARGETS",
+            "preferred": None,
+            "target_ids": list(results),
+            "targets": results,
+            "toolchain_choice": None,
+        },
+    )
+    assert_no_hardware_measured(doc)
+    return doc
+
+
+# === GENERIC LOWERING LAYER END ===
+
+
+def _hole_comment(primitive: str, node_id: str, dialect: str) -> str:
+    return (
+        f"/* HWIR_HOLE:{primitive} node={node_id} "
+        f"not expressed by {dialect}; hand-written HDL required */"
+    )
+
+
+def _hls_body_tiled_projection(node: HwirNode, kp: Mapping[str, Any]) -> str:
+    ident = _c_ident(node.id)
+    tile = int(kp.get("tile_m") or 0)
+    lanes = int(kp.get("mac_lanes") or 0)
+    return (
+        f"/* HWIR_EMITTED:{node.primitive} node={node.id} */\n"
+        f"static void tiled_projection_{ident}("
+        "const float in_act[], const float in_rep[], float out_partial[]) {\n"
+        f"    /* pipeline ii=1; unroll mac_lanes={lanes}; SOURCE ARTIFACT ONLY */\n"
+        "    for (int m0 = 0; m0 < M; m0 += (TILE_M > 0 ? TILE_M : 1)) {\n"
+        "        for (int k = 0; k < K; ++k) {\n"
+        f"            for (int tm = 0; tm < {max(tile, 1)} && (m0 + tm) < M; ++tm) {{\n"
+        "                out_partial[m0 + tm] += in_act[k] * in_rep[(m0 + tm) * (K > 0 ? K : 1) + k];\n"
+        "            }\n"
+        "        }\n"
+        "    }\n"
+        "}\n"
+    )
+
+
+def _hls_body_fused_decode(node: HwirNode, kp: Mapping[str, Any]) -> str:
+    ident = _c_ident(node.id)
+    bits = int(kp.get("weight_bits") or 0)
+    return (
+        f"/* HWIR_EMITTED:{node.primitive} node={node.id} */\n"
+        f"static void fused_decode_{ident}(const uint8_t packed[], float decoded[]) {{\n"
+        "    /* native decode at the consumer; no dense rematerialization */\n"
+        f"    /* packed codes at {bits} bits; FUNCTIONAL_SIM is the qGEMV engine, not this text */\n"
+        "    (void)packed; (void)decoded;\n"
+        "}\n"
+    )
+
+
+def _hls_body_stationary(node: HwirNode, kp: Mapping[str, Any]) -> str:
+    ident = _c_ident(node.id)
+    return (
+        f"/* HWIR_EMITTED:{node.primitive} node={node.id} */\n"
+        f"/* resident packed shards; per_token_transfer is false; "
+        "memory-controller PHY is not in this source */\n"
+        f"static const uint8_t stationary_{ident}[] = {{0}};\n"
+    )
+
+
+def _hls_body_transport(node: HwirNode, kp: Mapping[str, Any]) -> str:
+    ident = _c_ident(node.id)
+    return (
+        f"/* HWIR_EMITTED:{node.primitive} node={node.id} */\n"
+        f"static void semantic_transport_{ident}(const float src[], float dst[], int n) {{\n"
+        "    /* typed stream copy; host-link PHY is not in this source */\n"
+        "    for (int i = 0; i < n; ++i) dst[i] = src[i];\n"
+        "}\n"
+    )
+
+
+def _hls_body_collective(node: HwirNode, kp: Mapping[str, Any]) -> str:
+    ident = _c_ident(node.id)
+    return (
+        f"/* HWIR_EMITTED:{node.primitive} node={node.id} */\n"
+        f"static void collective_{ident}(const float in[], float out[], int n) {{\n"
+        "    for (int i = 0; i < n; ++i) out[i] = in[i];\n"
+        "}\n"
+    )
+
+
+# Implementation bodies. Independent of HLS_STYLE_SUPPORTED_PRIMITIVES so a
+# claim that is not backed by a body is detectable.
+_HLS_BODIES = {
+    "CollectiveRegion": _hls_body_collective,
+    "FusedDecodeCompute": _hls_body_fused_decode,
+    "SemanticTransportEdge": _hls_body_transport,
+    "StationaryRepresentation": _hls_body_stationary,
+    "TiledProjection": _hls_body_tiled_projection,
+}
+
+# Claimed support. Mutation check: add a primitive with no body here; the
+# unsupported-primitive honesty test must then FAIL. Never leave a lie.
+HLS_STYLE_SUPPORTED_PRIMITIVES: tuple[str, ...] = (
+    "CollectiveRegion",
+    "FusedDecodeCompute",
+    "SemanticTransportEdge",
+    "StationaryRepresentation",
+    "TiledProjection",
+)
+
+HLS_STYLE_CANNOT_EXPRESS: tuple[str, ...] = (
+    "AsyncPrefetch",
+    "ConditionalPhysicalProgram",
+    "DirectRoutedAccumulate",
+    "DoubleBufferedTile",
+    "GraphReplay",
+    "LayoutTransform",
+    "LocalStateMachine",
+    "MemoryTierIdentity",
+    "MoveOrRecompute",
+    "PersistentPhysicalRegion",
+    "SparseSkip",
+    "SpatialPipeline",
+    "clock_generator",
+    "dfx_region_wrapper",
+    "explicit_pipeline_registers",
+    "explicit_ready_valid_handshake",
+    "hbm_memory_controller",
+    "host_link_phy",
+    "interrupt_doorbell",
+    "io_pinout_constraints",
+    "vendor_dsp_primitive",
+)
+
+HLS_STYLE_HANDWRITTEN_HDL: tuple[str, ...] = (
+    "clock_generator",
+    "dfx_region_wrapper",
+    "hbm_memory_controller",
+    "host_link_phy",
+    "interrupt_doorbell",
+    "io_pinout_constraints",
+    "vendor_dsp_primitive",
+)
+
+
+class HlsStyleEmitter(LoweringTarget):
+    """High-level-synthesis-style C/C++ kernel source. Not a vendor dialect."""
+
+    TARGET_ID = "hls_style"
+    FAMILY = "hls"
+    EMITS = ("c_kernel_source",)
+
+    def cannot_express(self) -> tuple[str, ...]:
+        return HLS_STYLE_CANNOT_EXPRESS
+
+    def handwritten_hdl(self) -> tuple[str, ...]:
+        return HLS_STYLE_HANDWRITTEN_HDL
+
+    def supported_primitives(self) -> tuple[str, ...]:
+        return HLS_STYLE_SUPPORTED_PRIMITIVES
+
+    def emit_artifacts(self, graph: HwirGraph) -> list[dict[str, Any]]:
+        kp = _kernel_params(graph)
+        chunks = [
+            "/* PREHARDWARE SOURCE ARTIFACT */",
+            "/* evidence_tier: STATIC */",
+            "/* qualification: PREHARDWARE */",
+            "/* hardware_measured: false */",
+            "/* Not synthesis. Not a bitstream. Not a timing claim. */",
+            f"/* HWIR graph fingerprint: {graph.fingerprint()} */",
+            f"/* lowering_target: {self.target_id()} */",
+            "#include <stdint.h>",
+            f"#define M {int(kp['M'])}",
+            f"#define K {int(kp['K'])}",
+            f"#define TILE_M {int(kp['tile_m'])}",
+            f"#define MAC_LANES {int(kp['mac_lanes'])}",
+            f"#define WEIGHT_BITS {int(kp['weight_bits'])}",
+            f"#define GROUP_SIZE {int(kp['group_size'])}",
+            "",
+        ]
+        emitted_fns: list[str] = []
+        for node in sorted(graph.nodes, key=lambda n: n.id):
+            prim = node.primitive or node.kind
+            body_fn = _HLS_BODIES.get(prim)
+            if body_fn is None:
+                chunks.append(_hole_comment(prim, node.id, self.target_id()))
+            else:
+                chunks.append(body_fn(node, kp))
+                emitted_fns.append(f"{prim}:{_c_ident(node.id)}")
+        chunks.append("/* edges */")
+        for edge in sorted(graph.edges, key=lambda e: e.id):
+            chunks.append(
+                f"/* edge {edge.id}: {edge.src}.{edge.src_port} -> "
+                f"{edge.dst}.{edge.dst_port} frame={edge.frame_kind} */"
+            )
+        chunks.append("/* topo kernel (shape-faithful skeleton, not a golden) */")
+        chunks.append("void hwir_kernel(const float act_in[], float partial_out[]) {")
+        chunks.append(f"    /* topo: {' -> '.join(_topo_ids(graph))} */")
+        chunks.append("    (void)act_in; (void)partial_out;")
+        chunks.append("}")
+        chunks.append("/* cannot_express roster */")
+        for name in self.cannot_express():
+            chunks.append(_hole_comment(name, "-", self.target_id()))
+        chunks.append("/* handwritten_hdl: " + ", ".join(self.handwritten_hdl()) + " */")
+        body = "\n".join(chunks) + "\n"
+        return [
+            _source_artifact(
+                filename=_artifact_filename(graph, self.target_id(), "cpp"),
+                language="c++",
+                body=body,
+                target_id=self.target_id(),
+            )
+        ]
+
+
+def _rust_body_tiled_projection(node: HwirNode, kp: Mapping[str, Any]) -> str:
+    ident = _c_ident(node.id)
+    return (
+        f"/// HWIR_EMITTED:{node.primitive} node={node.id}\n"
+        f"pub struct TiledProjection_{ident} {{\n"
+        f"    pub tile_m: u32,\n"
+        f"    pub k: u32,\n"
+        f"    pub mac_lanes: u32,\n"
+        f"    pub acc: i32, // explicit pipeline register\n"
+        "}\n"
+        f"impl TiledProjection_{ident} {{\n"
+        "    pub fn tick(&mut self, act: i32, decoded: i32) -> i32 {\n"
+        "        // structural MAC; SOURCE ARTIFACT ONLY\n"
+        f"        let _lanes = {int(kp.get('mac_lanes') or 0)}u32;\n"
+        "        self.acc = self.acc.wrapping_add(act.wrapping_mul(decoded));\n"
+        "        self.acc\n"
+        "    }\n"
+        "}\n"
+    )
+
+
+def _rust_body_fused_decode(node: HwirNode, kp: Mapping[str, Any]) -> str:
+    ident = _c_ident(node.id)
+    bits = int(kp.get("weight_bits") or 0)
+    return (
+        f"/// HWIR_EMITTED:{node.primitive} node={node.id}\n"
+        f"pub struct FusedDecode_{ident};\n"
+        f"impl FusedDecode_{ident} {{\n"
+        "    pub fn tick(&self, packed: u8) -> i32 {\n"
+        f"        // native {bits}-bit decode; no dense rematerialization\n"
+        "        let _ = packed;\n"
+        "        0\n"
+        "    }\n"
+        "}\n"
+    )
+
+
+def _rust_body_stationary(node: HwirNode, kp: Mapping[str, Any]) -> str:
+    ident = _c_ident(node.id)
+    return (
+        f"/// HWIR_EMITTED:{node.primitive} node={node.id}\n"
+        f"pub struct Stationary_{ident} {{\n"
+        "    pub resident: bool,\n"
+        "}\n"
+        f"impl Stationary_{ident} {{\n"
+        "    pub const fn new() -> Self { Self { resident: true } }\n"
+        "}\n"
+    )
+
+
+def _rust_body_transport(node: HwirNode, kp: Mapping[str, Any]) -> str:
+    ident = _c_ident(node.id)
+    return (
+        f"/// HWIR_EMITTED:{node.primitive} node={node.id}\n"
+        f"pub struct SemanticTransport_{ident};\n"
+        f"impl SemanticTransport_{ident} {{\n"
+        "    pub fn tick(&self, src: ReadyValid<i32>) -> ReadyValid<i32> {\n"
+        "        // typed stream; host-link PHY is not in this source\n"
+        "        src\n"
+        "    }\n"
+        "}\n"
+    )
+
+
+def _rust_body_collective(node: HwirNode, kp: Mapping[str, Any]) -> str:
+    ident = _c_ident(node.id)
+    return (
+        f"/// HWIR_EMITTED:{node.primitive} node={node.id}\n"
+        f"pub struct Collective_{ident} {{ pub acc: i32 }}\n"
+        f"impl Collective_{ident} {{\n"
+        "    pub fn tick(&mut self, lane: i32) -> i32 {\n"
+        "        self.acc = self.acc.wrapping_add(lane);\n"
+        "        self.acc\n"
+        "    }\n"
+        "}\n"
+    )
+
+
+_RUST_BODIES = {
+    "CollectiveRegion": _rust_body_collective,
+    "FusedDecodeCompute": _rust_body_fused_decode,
+    "SemanticTransportEdge": _rust_body_transport,
+    "StationaryRepresentation": _rust_body_stationary,
+    "TiledProjection": _rust_body_tiled_projection,
+}
+
+RUST_HDL_SUPPORTED_PRIMITIVES: tuple[str, ...] = (
+    "CollectiveRegion",
+    "FusedDecodeCompute",
+    "SemanticTransportEdge",
+    "StationaryRepresentation",
+    "TiledProjection",
+)
+
+RUST_HDL_CANNOT_EXPRESS: tuple[str, ...] = (
+    "AsyncPrefetch",
+    "ConditionalPhysicalProgram",
+    "DirectRoutedAccumulate",
+    "DoubleBufferedTile",
+    "GraphReplay",
+    "LayoutTransform",
+    "LocalStateMachine",
+    "MemoryTierIdentity",
+    "MoveOrRecompute",
+    "PersistentPhysicalRegion",
+    "SparseSkip",
+    "SpatialPipeline",
+    "clock_generator",
+    "dfx_region_wrapper",
+    "hbm_memory_controller",
+    "host_link_phy",
+    "inferred_loop_pipelining",
+    "interrupt_doorbell",
+    "io_pinout_constraints",
+    "vendor_dsp_primitive",
+)
+
+RUST_HDL_HANDWRITTEN_HDL: tuple[str, ...] = (
+    "clock_generator",
+    "dfx_region_wrapper",
+    "hbm_memory_controller",
+    "host_link_phy",
+    "interrupt_doorbell",
+    "io_pinout_constraints",
+    "vendor_dsp_primitive",
+)
+
+
+class RustHdlEmitter(LoweringTarget):
+    """Rust-hosted HDL/IR-style source. Structural modules, not a toolchain."""
+
+    TARGET_ID = "rust_hdl_style"
+    FAMILY = "rust_hdl"
+    EMITS = ("rust_hdl_ir_source",)
+
+    def cannot_express(self) -> tuple[str, ...]:
+        return RUST_HDL_CANNOT_EXPRESS
+
+    def handwritten_hdl(self) -> tuple[str, ...]:
+        return RUST_HDL_HANDWRITTEN_HDL
+
+    def supported_primitives(self) -> tuple[str, ...]:
+        return RUST_HDL_SUPPORTED_PRIMITIVES
+
+    def emit_artifacts(self, graph: HwirGraph) -> list[dict[str, Any]]:
+        kp = _kernel_params(graph)
+        chunks = [
+            "//! PREHARDWARE SOURCE ARTIFACT",
+            "//! evidence_tier: STATIC",
+            "//! qualification: PREHARDWARE",
+            "//! hardware_measured: false",
+            "//! Not synthesis. Not a bitstream. Not a timing claim.",
+            f"//! HWIR graph fingerprint: {graph.fingerprint()}",
+            f"//! lowering_target: {self.target_id()}",
+            "#![allow(non_camel_case_types, dead_code)]",
+            "",
+            f"pub const M: u32 = {int(kp['M'])};",
+            f"pub const K: u32 = {int(kp['K'])};",
+            f"pub const TILE_M: u32 = {int(kp['tile_m'])};",
+            f"pub const MAC_LANES: u32 = {int(kp['mac_lanes'])};",
+            f"pub const WEIGHT_BITS: u32 = {int(kp['weight_bits'])};",
+            f"pub const GROUP_SIZE: u32 = {int(kp['group_size'])};",
+            "",
+            "/// explicit ready/valid handshake (expressed in this dialect)",
+            "#[derive(Clone, Copy)]",
+            "pub struct ReadyValid<T> { pub valid: bool, pub ready: bool, pub data: T }",
+            "",
+        ]
+        for node in sorted(graph.nodes, key=lambda n: n.id):
+            prim = node.primitive or node.kind
+            body_fn = _RUST_BODIES.get(prim)
+            if body_fn is None:
+                chunks.append(
+                    f"// {_hole_comment(prim, node.id, self.target_id())}"
+                )
+            else:
+                chunks.append(body_fn(node, kp))
+        chunks.append("pub struct Edge { pub id: &'static str, pub src: &'static str, pub dst: &'static str }")
+        chunks.append("pub const EDGES: &[Edge] = &[")
+        for edge in sorted(graph.edges, key=lambda e: e.id):
+            chunks.append(
+                f'    Edge {{ id: "{edge.id}", src: "{edge.src}", dst: "{edge.dst}" }},'
+            )
+        chunks.append("];")
+        chunks.append(f"pub const TOPO: &[&str] = &[{', '.join(repr(i) for i in _topo_ids(graph))}];")
+        chunks.append("// cannot_express roster")
+        for name in self.cannot_express():
+            chunks.append(f"// {_hole_comment(name, '-', self.target_id())}")
+        chunks.append("// handwritten_hdl: " + ", ".join(self.handwritten_hdl()))
+        body = "\n".join(chunks) + "\n"
+        return [
+            _source_artifact(
+                filename=_artifact_filename(graph, self.target_id(), "rs"),
+                language="rust",
+                body=body,
+                target_id=self.target_id(),
+            )
+        ]
+
+
+# Backend registration. Lexicographic listing is not preference.
+register_lowering_target(HlsStyleEmitter())
+register_lowering_target(RustHdlEmitter())
+
+
 # ---------------------------------------------------------------------------
 # Sealed predictions. PREHARDWARE. Scored when U50_PRESENT; rehearsed without.
 #
@@ -5109,6 +5856,41 @@ def _run_proofs() -> dict[str, Any]:
     for vid in U50_FAMILY_VARIANT_IDS:
         assert_variant_provenance(u50_family_profile(vid))
         assert_no_hardware_measured(u50_family_profile(vid).to_dict())
+
+    target_ids = list_lowering_targets()
+    if len(target_ids) < 2:
+        raise RuntimeError(f"need at least two lowering targets, got {target_ids}")
+    if PREFERRED_LOWERING_TARGET is not None:
+        raise RuntimeError("PREFERRED_LOWERING_TARGET must stay unset")
+    q_lower = lower_hwir_all(q_graph)
+    fps = {doc["graph_fingerprint"] for doc in q_lower.values()}
+    if fps != {q_graph.fingerprint()}:
+        raise RuntimeError("lowering targets did not see the same qGEMV graph")
+    key_sets = [frozenset(doc) for doc in q_lower.values()]
+    if len(set(key_sets)) != 1:
+        raise RuntimeError("lowering targets did not share an interface result schema")
+    for tid, doc in q_lower.items():
+        assert_no_hardware_measured(doc)
+        if not doc.get("cannot_express"):
+            raise RuntimeError(f"{tid} declared empty cannot_express")
+        if not doc.get("handwritten_hdl"):
+            raise RuntimeError(f"{tid} declared empty handwritten_hdl")
+        if doc.get("preferred"):
+            raise RuntimeError(f"{tid} marked preferred; toolchain choice is not encoded")
+        if "HARDWARE_MEASURED" in collect_evidence_tiers(doc):
+            raise RuntimeError(f"{tid} leaked HARDWARE_MEASURED")
+        if not doc.get("artifacts"):
+            raise RuntimeError(f"{tid} emitted no source artifacts")
+        for art in doc["artifacts"]:
+            if art.get("kind") != "SOURCE_ARTIFACT":
+                raise RuntimeError(f"{tid} emitted a non-source artifact")
+            if "PREHARDWARE" not in str(art.get("body") or ""):
+                raise RuntimeError(f"{tid} artifact missing PREHARDWARE label")
+    proofs["lowering_target_ids"] = list(target_ids)
+    proofs["lowering_same_graph"] = True
+    proofs["lowering_interface_identical"] = True
+    proofs["lowering_cannot_express_nonempty"] = True
+    proofs["lowering_no_preferred_target"] = True
     return proofs
 
 
@@ -5151,7 +5933,8 @@ def build() -> Path:
         "version": VERSION,
         "purpose": (
             "Hardware IR a future physical compiler uses to decide what an FPGA "
-            "should become. Not a backend, not HDL, not a bitstream."
+            "should become. Lowering targets emit PREHARDWARE source artifacts. "
+            "Not a vendor backend, not a bitstream."
         ),
         "head": git("rev-parse", "HEAD"),
         "branch": git("rev-parse", "--abbrev-ref", "HEAD"),
@@ -5297,6 +6080,8 @@ def build() -> Path:
             "U50-family variants (U50/U50C/U50DD/U50LV) selectable with per-field provenance or explicit UNPINNED",
             "CarrierEnvelope DOWNGRADES a DeviceProfile (PCIe beat, power-derated resources); constrained carrier refuses a brochure-fit kernel",
             "no code path emits HARDWARE_MEASURED",
+            "pluggable LoweringTarget interface with equal-citizen HLS-style and Rust-HDL-style source emitters",
+            "each lowering target names the primitives it cannot express and the HDL still required",
             "sealed predictions: content-hashed, refused without a falsification condition, keyed to U50_PRESENT",
             "synthetic-arrival rehearsal grades divergent predictions FALSIFIED and names the implicated coefficient; not an arrival",
             "tampered sealed predictions are detected and rejected",
@@ -5306,7 +6091,7 @@ def build() -> Path:
             "hcli/physical_graph.py and hcli/agentos/fpga_preboard.py are git-present but not materialized (sparse checkout)",
             "existing hcli.fpga.hwir.v1 is not an IR: no types, no validator, no serdes, organ_operator only",
             "device genome is TARGET_UNSELECTED; HBM channel and resource footprints cannot be known without a board/synthesis",
-            "no FPGA board, no HDL, no bitstream; this module must not and did not emit any",
+            "no FPGA board, no bitstream; lowering targets emit PREHARDWARE source artifacts only",
             "AIR exists and executes on Metal; it is not HWIR and was not reused as the spatial IR",
             "PhysicalGraph compile_physical_graph is too unresolved to lower into a resource-accurate HWIR without invention; organ maps are the reality connection",
             "fpga_fidelity.StructuralGraph is a sibling stand-in and was not imported; HWIR owns the qGEMV preboard stack",
@@ -5317,6 +6102,29 @@ def build() -> Path:
             "U50LV PCIe lane width is UNPINNED (DS965 Table 1 Gen3 x16 vs VLOW Gen3 x4 note / UG1120 Gen3 x4 XDMA)",
         ],
         "not_an_fpga_backend": True,
+        "lowering_targets": {
+            "interface": "LoweringTarget",
+            "preferred": PREFERRED_LOWERING_TARGET,
+            "qgemv": {
+                tid: {
+                    "artifact_filenames": [
+                        a.get("filename") for a in (doc.get("artifacts") or [])
+                    ],
+                    "cannot_express": list(doc.get("cannot_express") or []),
+                    "emits": list(doc.get("emits") or []),
+                    "family": doc.get("family"),
+                    "graph_fingerprint": doc.get("graph_fingerprint"),
+                    "handwritten_hdl": list(doc.get("handwritten_hdl") or []),
+                    "supported_primitives": list(doc.get("supported_primitives") or []),
+                    "target_id": tid,
+                }
+                for tid, doc in lower_hwir_all(
+                    from_qgemv(canonical_qgemv_kernel(), synthetic_u50_class())
+                ).items()
+            },
+            "registered": lowering_target_manifests(),
+            "toolchain_choice": None,
+        },
         "claim_boundary": (
             "PREHARDWARE sidecar HWIR artifact. No FPGA board, bitstream, "
             "timing, or HARDWARE_MEASURED number. Resource figures are "
@@ -5387,6 +6195,16 @@ def main() -> int:
     ap.add_argument("--organ")
     ap.add_argument("--qgemv", action="store_true", help="run the PREHARDWARE qGEMV pre-board stack")
     ap.add_argument(
+        "--emit",
+        metavar="TARGET",
+        help="lower canonical qGEMV through a registered target (source artifacts only)",
+    )
+    ap.add_argument(
+        "--emit-all",
+        action="store_true",
+        help="lower canonical qGEMV through every registered target",
+    )
+    ap.add_argument(
         "--seal-predictions",
         action="store_true",
         help="seal the inbound-board prediction set (PREHARDWARE, keyed to U50_PRESENT)",
@@ -5407,6 +6225,23 @@ def main() -> int:
         help="full | constrained | unpinned  (unpinned is the real comma-device carrier)",
     )
     a = ap.parse_args()
+    if a.emit_all:
+        doc = lower_qgemv_targets()
+        print(canon_dumps({
+            "graph_fingerprint": doc.get("graph_fingerprint"),
+            "kind": doc.get("kind"),
+            "target_ids": doc.get("target_ids"),
+            "cannot_express": {
+                tid: (doc.get("targets") or {}).get(tid, {}).get("cannot_express")
+                for tid in (doc.get("target_ids") or [])
+            },
+        }))
+        return 0
+    if a.emit:
+        graph = from_qgemv()
+        doc = lower_hwir(graph, a.emit)
+        print(canon_dumps(doc))
+        return 0
     if a.seal_predictions:
         out = write_sealed_predictions_receipt()
         print(out)

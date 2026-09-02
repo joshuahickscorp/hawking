@@ -375,6 +375,8 @@ def test_no_code_path_emits_hardware_measured():
         hwir.floorplan_hints(kernel, device),
         device.to_dict(),
         kernel.to_dict(),
+        *hwir.lower_hwir_all(hwir.from_qgemv(kernel, device)).values(),
+        hwir.lower_qgemv_targets(kernel, device),
     ):
         hwir.assert_no_hardware_measured(report)
         assert report["evidence_tier"] in hwir.EVIDENCE_TIERS
