@@ -7,20 +7,20 @@ components yet' from work that genuinely needs an experiment, wall time, or sili
 
 ## Blocker census
 
-    SOFTWARE_CONNECTION_REMAINING    25
-    EXPERIMENTATION_REQUIRED         11
-    LONG_RUN_EVIDENCE_REQUIRED       7
+    SOFTWARE_CONNECTION_REMAINING    19
+    EXPERIMENTATION_REQUIRED         12
+    LONG_RUN_EVIDENCE_REQUIRED       10
     PHYSICAL_HARDWARE_REQUIRED       13
     UNKNOWN_RESEARCH                 1
 
-    TOTAL REMAINING                  57
+    TOTAL REMAINING                  55
 
-SOFTWARE_CONNECTION_REMAINING = 25 is the
+SOFTWARE_CONNECTION_REMAINING = 19 is the
 number this campaign exists to drive toward zero. Every other class is honest
 frontier: an experiment that must run, evidence that needs wall time, hardware that
 must physically exist, or a question whose answer nobody has.
 
-## SOFTWARE_CONNECTION_REMAINING (25)
+## SOFTWARE_CONNECTION_REMAINING (19)
 
 ### AGENTOS_CIRCUIT_BREAKER
     missing             no non-test call site reaches this capability
@@ -118,40 +118,16 @@ must physically exist, or a question whose answer nobody has.
     implementation      tools/headless/vmcp_lattice_disposition.py
     unlocks             1 declared dependencies
 
-### VMCP_FILE_CLASSIFIER
-    missing             no non-test call site reaches this capability
-    shortest verifier   must be written
-    implementation      tools/headless/vmcp_capability_probe.py
-    unlocks             1 declared dependencies
-
-### VMCP_PTY_CAPTURE
-    missing             no non-test call site reaches this capability
-    shortest verifier   must be written
-    implementation      tools/headless/vmcp_capability_probe.py
-    unlocks             1 declared dependencies
-
 ### VMCP_RECEIPT_LAW
     missing             wired but nothing verifies it
     shortest verifier   must be written
     implementation      hcli/agentos/vmcp_gate.py, hcli/agentos/vmcp_gate.py:258
     unlocks             0 declared dependencies
 
-### VMCP_SPATIAL_VALIDATE
-    missing             no non-test call site reaches this capability
-    shortest verifier   must be written
-    implementation      tools/headless/vmcp_capability_probe.py
-    unlocks             1 declared dependencies
-
 ### VMCP_STATE_LATTICE
     missing             no non-test call site reaches this capability
     shortest verifier   must be written
     implementation      tools/headless/vmcp_lattice_disposition.py, hcli/vmcp_adapter.py
-    unlocks             0 declared dependencies
-
-### VMCP_TOOL_DOCTOR
-    missing             no non-test call site reaches this capability
-    shortest verifier   must be written
-    implementation      tools/headless/vmcp_capability_probe.py
     unlocks             0 declared dependencies
 
 ### VMCP_TRUTH_LEDGER
@@ -160,19 +136,7 @@ must physically exist, or a question whose answer nobody has.
     implementation      tools/headless/vmcp_forgery_canary.py
     unlocks             1 declared dependencies
 
-### VMCP_VISUAL_DIFF
-    missing             no non-test call site reaches this capability
-    shortest verifier   must be written
-    implementation      tools/headless/vmcp_capability_probe.py
-    unlocks             1 declared dependencies
-
-### VMCP_WEB_CAPTURE
-    missing             no non-test call site reaches this capability
-    shortest verifier   must be written
-    implementation      tools/headless/vmcp_capability_probe.py
-    unlocks             1 declared dependencies
-
-## EXPERIMENTATION_REQUIRED (11)
+## EXPERIMENTATION_REQUIRED (12)
 
 ### AGENTOS_DETERMINISTIC_OFFLOAD
     missing             wired and verified; its acceptance criterion has never been run
@@ -240,7 +204,13 @@ must physically exist, or a question whose answer nobody has.
     implementation      hcli/agentos/protected_accelerator_benchmark.py, hcli/agentos/accelerator_regression.py (+1 more)
     unlocks             1 declared dependencies
 
-## LONG_RUN_EVIDENCE_REQUIRED (7)
+### VMCP_PTY_CAPTURE
+    missing             wired and verified; its acceptance criterion has never been run
+    shortest verifier   tools/vmcp/test_pty_eye.py:4 (+3 more)
+    implementation      tools/vmcp/pty_eye.py, tools/headless/vmcp_capability_probe.py (+1 more)
+    unlocks             1 declared dependencies
+
+## LONG_RUN_EVIDENCE_REQUIRED (10)
 
 ### THEIA_BOUNTY_GENERALIST_QUALIFIED
     missing             the bounty ENGINE exists at tools/theia/ but no qualified generalist MODEL does. Wake: THEIA_RESEARCH=PASS.
@@ -282,6 +252,24 @@ must physically exist, or a question whose answer nobody has.
     missing             needs a trained ~20B-40B student. Wake: THEIA_LAB=PASS.
     shortest verifier   must be written
     implementation      absent
+    unlocks             1 declared dependencies
+
+### VMCP_SPATIAL_VALIDATE
+    missing             OBJ/GLTF parsing, the spatial validator and an independent renderer are PARKED on the visionmcp 3d extra plus Blender CLI. Wake: VISIONMCP_3D_EXTRA_AND_BLENDER.
+    shortest verifier   must be written
+    implementation      tools/headless/vmcp_capability_probe.py
+    unlocks             1 declared dependencies
+
+### VMCP_VISUAL_DIFF
+    missing             visual diff is PARKED on the visionmcp compiler residual. Wake: VISIONMCP_COMPILER_RESIDUAL_AVAILABLE.
+    shortest verifier   must be written
+    implementation      tools/headless/vmcp_capability_probe.py
+    unlocks             1 declared dependencies
+
+### VMCP_WEB_CAPTURE
+    missing             browser/CDP, HTML/DOM capture and CSS parsing are PARKED on the visionmcp web extra plus a host Chrome; no Hawking code is missing. Wake: VISIONMCP_WEB_EXTRA_INSTALLED.
+    shortest verifier   must be written
+    implementation      tools/headless/vmcp_capability_probe.py
     unlocks             1 declared dependencies
 
 ## PHYSICAL_HARDWARE_REQUIRED (13)

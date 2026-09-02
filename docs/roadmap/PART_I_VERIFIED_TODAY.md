@@ -7,11 +7,11 @@ Nothing here is complete because a file exists: a field with no evidence prints 
 
 ## Status census
 
-    SCAFFOLDED               20
-    VERIFIED_INTEGRATED      18
+    VERIFIED_INTEGRATED      20
+    SCAFFOLDED               14
     BLOCKED_HARDWARE         13
-    VERIFIED_BUILT           11
-    BLOCKED_EVIDENCE         7
+    VERIFIED_BUILT           12
+    BLOCKED_EVIDENCE         10
     ABSENT                   1
     UNREACHABLE              1
 
@@ -22,8 +22,8 @@ design, not by neglect: simulated is not measured.
 ## Evidence coverage across all gates
 
     defining property available     70 / 71
-    real (non-test) caller          30 / 71
-    any verifier                    46 / 71
+    real (non-test) caller          33 / 71
+    any verifier                    49 / 71
     receipt cited                   12 / 71
 
 ## A. CONTROL / HCLI / AGENTOS
@@ -101,7 +101,7 @@ design, not by neglect: simulated is not measured.
     defining property   1. Repair depth is bounded structurally, not by model discretion.
     implementation      hcli/scheduler.py, hcli/agentos/resident.py, hcli/agentos/background.py (+1 more)
     real caller         hcli/agentos/handoff.py:106, hcli/agentos/protected_benchmark_watcher.py:65, hcli/agentos/resident.py:907 (+7 more)
-    verifier            hcli/agentos/test_resident_mission_corruption.py:23, hcli/agentos/test_resident_orphan.py:17, hcli/agentos/test_resident_orphan.py:140 (+36 more)
+    verifier            hcli/agentos/test_resident_mission_corruption.py:23, hcli/agentos/test_resident_orphan.py:17, hcli/agentos/test_resident_orphan.py:140 (+37 more)
     negative control    hcli/agentos/test_resident_mission_corruption.py, hcli/agentos/test_resident_orphan.py
     receipt             absent
     evidence level      STATIC
@@ -127,7 +127,7 @@ design, not by neglect: simulated is not measured.
     defining property   1. Repair depth is bounded structurally, not by model discretion.
     implementation      hcli/scheduler.py, hcli/workunit.py, hcli/scheduler.py:72
     real caller         hcli/goal_compile.py:518, hcli/mission.py:264, hcli/mission.py:374 (+14 more)
-    verifier            hcli/test_abort_checkpoint_atomicity.py:21, hcli/test_cognition_unit_concurrency.py:14, hcli/test_goal_compile.py:257 (+103 more)
+    verifier            hcli/test_abort_checkpoint_atomicity.py:21, hcli/test_cognition_unit_concurrency.py:14, hcli/test_goal_compile.py:257 (+104 more)
     negative control    hcli/test_cognition_unit_concurrency.py, hcli/test_mission_repair_verdict.py
     receipt             absent
     evidence level      STATIC
@@ -140,7 +140,7 @@ design, not by neglect: simulated is not measured.
     defining property   **Meaning:** Same mission survives process death.
     implementation      hcli/agentos/recovery.py, hcli/agentos/resident.py, hcli/agentos/recovery.py:420
     real caller         hcli/agentos_cli.py:584, tools/acceptance/agentos/harness.py:1837
-    verifier            hcli/agentos/test_resident_mission_corruption.py:23, hcli/agentos/test_resident_orphan.py:17, hcli/agentos/test_resident_orphan.py:140 (+22 more)
+    verifier            hcli/agentos/test_resident_mission_corruption.py:23, hcli/agentos/test_resident_orphan.py:17, hcli/agentos/test_resident_orphan.py:140 (+23 more)
     negative control    hcli/agentos/test_resident_mission_corruption.py, hcli/agentos/test_resident_orphan.py
     receipt             receipts/headless/HCLI_AGENTOS_RECOVERY_GATE.json
     evidence level      STATIC
@@ -166,7 +166,7 @@ design, not by neglect: simulated is not measured.
     defining property   `BACKEND_UNAVAILABLE`
     implementation      hcli/backends.py, hcli/providers.py, hcli/engine.py (+1 more)
     real caller         hcli/mission.py:1504, hcli/runtime.py:520, hcli/runtime.py:879 (+2 more)
-    verifier            hcli/test_constrained_decoding.py:40, hcli/test_constrained_decoding.py:50, hcli/test_context_memory.py:8 (+64 more)
+    verifier            hcli/test_constrained_decoding.py:40, hcli/test_constrained_decoding.py:50, hcli/test_context_memory.py:8 (+65 more)
     negative control    hcli/test_context_reduction.py, hcli/test_goal_source_compile.py
     receipt             absent
     evidence level      STATIC
@@ -178,8 +178,8 @@ design, not by neglect: simulated is not measured.
     STATUS              VERIFIED_INTEGRATED
     defining property   **Meaning:** One context-budget authority drives root and worker admission.
     implementation      hcli/context_budget.py, hcli/engine.py, hcli/context_budget.py:476
-    real caller         hcli/backends.py:1320, hcli/config.py:131, hcli/engine.py:1886 (+4 more)
-    verifier            hcli/test_constrained_decoding.py:50, hcli/test_context_memory.py:8, hcli/test_context_reduction.py:16 (+69 more)
+    real caller         hcli/backends.py:1320, hcli/config.py:131, hcli/engine.py:1899 (+4 more)
+    verifier            hcli/test_constrained_decoding.py:50, hcli/test_context_memory.py:8, hcli/test_context_reduction.py:16 (+70 more)
     negative control    hcli/test_context_reduction.py, hcli/test_goal_source_compile.py
     receipt             absent
     evidence level      STATIC
@@ -244,7 +244,7 @@ design, not by neglect: simulated is not measured.
     defining property   **Meaning:** Mission can create dependency-ready next WorkUnits from verified state.
     implementation      hcli/agentos/resident.py, hcli/agentos/resident.py:736
     real caller         tools/acceptance/context/gates.py:933, tools/acceptance/context/gates.py:949
-    verifier            hcli/agentos/test_resident_mission_corruption.py:23, hcli/agentos/test_resident_orphan.py:17, hcli/agentos/test_resident_orphan.py:140 (+23 more)
+    verifier            hcli/agentos/test_resident_mission_corruption.py:23, hcli/agentos/test_resident_orphan.py:17, hcli/agentos/test_resident_orphan.py:140 (+24 more)
     negative control    hcli/agentos/test_resident_mission_corruption.py, hcli/agentos/test_resident_orphan.py
     receipt             absent
     evidence level      STATIC
@@ -728,7 +728,7 @@ design, not by neglect: simulated is not measured.
 
 ## G. PERCEPTION / PRODUCT / VMCP / THEIA / PLATFORM
 
-19 capabilities. SCAFFOLDED=11, BLOCKED_EVIDENCE=7, VERIFIED_INTEGRATED=1
+19 capabilities. BLOCKED_EVIDENCE=10, SCAFFOLDED=5, VERIFIED_INTEGRATED=3, VERIFIED_BUILT=1
 
 ### THEIA_BOUNTY_GENERALIST_QUALIFIED
 
@@ -862,29 +862,29 @@ design, not by neglect: simulated is not measured.
 
 ### VMCP_FILE_CLASSIFIER
 
-    STATUS              SCAFFOLDED
+    STATUS              VERIFIED_INTEGRATED
     defining property   magic/header identification
-    implementation      tools/headless/vmcp_capability_probe.py
-    real caller         absent — no non-test call site
-    verifier            absent — no test cites this gate
-    negative control    absent — no cited test proves it can fail
+    implementation      tools/vmcp/file_eye.py, tools/headless/vmcp_capability_probe.py, tools/vmcp/file_eye.py:593
+    real caller         tools/future/vmcp.py:662, tools/future/vmcp.py:914, tools/future/vmcp.py:998 (+2 more)
+    verifier            tools/vmcp/test_file_eye.py:10, tools/vmcp/test_file_eye.py:29, tools/vmcp/test_file_eye.py:42 (+4 more)
+    negative control    tools/vmcp/test_file_eye.py
     receipt             absent
     evidence level      STATIC
     limitations         none recorded
-    integration         wired=False accepted=True
+    integration         wired=True accepted=True
 
 ### VMCP_PTY_CAPTURE
 
-    STATUS              SCAFFOLDED
+    STATUS              VERIFIED_BUILT
     defining property   allowlisted environment metadata
-    implementation      tools/headless/vmcp_capability_probe.py
-    real caller         absent — no non-test call site
-    verifier            absent — no test cites this gate
-    negative control    absent — no cited test proves it can fail
+    implementation      tools/vmcp/pty_eye.py, tools/headless/vmcp_capability_probe.py, tools/vmcp/pty_eye.py:239
+    real caller         tools/future/vmcp.py:661, tools/future/vmcp.py:922, tools/future/vmcp.py:1000 (+1 more)
+    verifier            tools/vmcp/test_pty_eye.py:4, tools/vmcp/test_pty_eye.py:20, tools/vmcp/test_pty_eye.py:28 (+1 more)
+    negative control    tools/vmcp/test_pty_eye.py
     receipt             absent
     evidence level      STATIC
     limitations         acceptance not demonstrated: acceptance verdict BLOCKED: {'error': None, 'missing': 'PTY slave open (os.open(ptsname))', 'ptsname': '/dev/ttys002', 'why': 'posix_openpt/grantpt/unlockpt/pts
-    integration         wired=False accepted=False
+    integration         wired=True accepted=False
 
 ### VMCP_RECEIPT_LAW
 
@@ -901,7 +901,7 @@ design, not by neglect: simulated is not measured.
 
 ### VMCP_SPATIAL_VALIDATE
 
-    STATUS              SCAFFOLDED
+    STATUS              BLOCKED_EVIDENCE
     defining property   1. Load supported OBJ/GLTF/USDZ/etc through independent parsers where possible.
     implementation      tools/headless/vmcp_capability_probe.py
     real caller         absent — no non-test call site
@@ -909,7 +909,7 @@ design, not by neglect: simulated is not measured.
     negative control    absent — no cited test proves it can fail
     receipt             absent
     evidence level      STATIC
-    limitations         none recorded
+    limitations         OBJ/GLTF parsing, the spatial validator and an independent renderer are PARKED on the visionmcp 3d extra plus Blender CLI. Wake: VISIONMCP_3D_EXTRA_AND_BLENDER.
     integration         wired=False accepted=True
 
 ### VMCP_STATE_LATTICE
@@ -927,16 +927,16 @@ design, not by neglect: simulated is not measured.
 
 ### VMCP_TOOL_DOCTOR
 
-    STATUS              SCAFFOLDED
+    STATUS              VERIFIED_INTEGRATED
     defining property   **Required classes:**
-    implementation      tools/headless/vmcp_capability_probe.py
-    real caller         absent — no non-test call site
-    verifier            absent — no test cites this gate
-    negative control    absent — no cited test proves it can fail
+    implementation      tools/vmcp/tool_doctor.py, tools/headless/vmcp_capability_probe.py, tools/vmcp/tool_doctor.py:111 (+1 more)
+    real caller         tools/future/vmcp.py:730, tools/future/vmcp.py:731, tools/future/vmcp.py:733 (+10 more)
+    verifier            tools/vmcp/test_tool_doctor.py:6, tools/vmcp/test_tool_doctor.py:10, tools/vmcp/test_tool_doctor.py:24 (+4 more)
+    negative control    tools/vmcp/test_tool_doctor.py
     receipt             receipts/headless/VMCP_CAPABILITY_SURFACE.json
     evidence level      STATIC
     limitations         none recorded
-    integration         wired=False accepted=True
+    integration         wired=True accepted=True
 
 ### VMCP_TRUTH_LEDGER
 
@@ -953,7 +953,7 @@ design, not by neglect: simulated is not measured.
 
 ### VMCP_VISUAL_DIFF
 
-    STATUS              SCAFFOLDED
+    STATUS              BLOCKED_EVIDENCE
     defining property   baseline/candidate screenshot
     implementation      tools/headless/vmcp_capability_probe.py
     real caller         absent — no non-test call site
@@ -961,12 +961,12 @@ design, not by neglect: simulated is not measured.
     negative control    absent — no cited test proves it can fail
     receipt             absent
     evidence level      STATIC
-    limitations         none recorded
+    limitations         visual diff is PARKED on the visionmcp compiler residual. Wake: VISIONMCP_COMPILER_RESIDUAL_AVAILABLE.
     integration         wired=False accepted=True
 
 ### VMCP_WEB_CAPTURE
 
-    STATUS              SCAFFOLDED
+    STATUS              BLOCKED_EVIDENCE
     defining property   1. Open controlled/public target or user-authorized page.
     implementation      tools/headless/vmcp_capability_probe.py
     real caller         absent — no non-test call site
@@ -974,6 +974,6 @@ design, not by neglect: simulated is not measured.
     negative control    absent — no cited test proves it can fail
     receipt             absent
     evidence level      STATIC
-    limitations         acceptance not demonstrated: acceptance verdict BLOCKED: {'also_missing': ['host Chrome/CDP (playwright or visionmcp web extra)', 'network/resource manifest from a real navigation', 'comput
+    limitations         browser/CDP, HTML/DOM capture and CSS parsing are PARKED on the visionmcp web extra plus a host Chrome; no Hawking code is missing. Wake: VISIONMCP_WEB_EXTRA_INSTALLED. | acceptance not demonstrated: acceptance verdict BLOCKED: {'also_missing': ['host Chrome/CDP (playwright or visionmcp web extra)', 'network/resource manifest from a real navigation', 'comput
     integration         wired=False accepted=False
 

@@ -14,7 +14,7 @@
     "base_commit": "caf83078f",
     "graph": "civilization/CAPABILITY_GRAPH.json",
     "graph_generated_by": "tools/roadmap/auditor.py",
-    "head": "7d64280068d7f1e1d239e3ffb783a10af485d037"
+    "head": "2542c46354972ba73705ee0462972bbac3589648"
   },
   "externally_blocked": [
     {
@@ -44,22 +44,34 @@
     {
       "blocker": "needs a trained ~20B-40B student. Wake: THEIA_LAB=PASS.",
       "gate": "THEIA_WORKER"
+    },
+    {
+      "blocker": "OBJ/GLTF parsing, the spatial validator and an independent renderer are PARKED on the visionmcp 3d extra plus Blender CLI. Wake: VISIONMCP_3D_EXTRA_AND_BLENDER.",
+      "gate": "VMCP_SPATIAL_VALIDATE"
+    },
+    {
+      "blocker": "visual diff is PARKED on the visionmcp compiler residual. Wake: VISIONMCP_COMPILER_RESIDUAL_AVAILABLE.",
+      "gate": "VMCP_VISUAL_DIFF"
+    },
+    {
+      "blocker": "browser/CDP, HTML/DOM capture and CSS parsing are PARKED on the visionmcp web extra plus a host Chrome; no Hawking code is missing. Wake: VISIONMCP_WEB_EXTRA_INSTALLED.",
+      "gate": "VMCP_WEB_CAPTURE"
     }
   ],
   "final": {
     "by_status": {
       "ABSENT": 1,
-      "BLOCKED_EXTERNAL": 7,
+      "BLOCKED_EXTERNAL": 10,
       "BLOCKED_HARDWARE": 13,
-      "BUILT": 18,
-      "SCAFFOLDED": 20,
+      "BUILT": 20,
+      "SCAFFOLDED": 14,
       "UNREACHABLE": 1,
-      "WIRED": 11
+      "WIRED": 12
     },
     "gates_total": 71,
-    "movable_gates": 51,
-    "movable_scaffolded_or_better": 49,
-    "movable_scaffolded_or_better_pct": 96.1
+    "movable_gates": 48,
+    "movable_scaffolded_or_better": 46,
+    "movable_scaffolded_or_better_pct": 95.8
   },
   "hardware_blocked": [
     {
@@ -149,15 +161,16 @@
       "ODYSSEY_III_ADVERSARIAL_META_SCIENCE",
       "ODYSSEY_II_TRANSFER",
       "QWEN27_PROTECTED_BASELINE",
-      "U50_MIXED_APPLE_FPGA_GRAPH"
+      "U50_MIXED_APPLE_FPGA_GRAPH",
+      "VMCP_PTY_CAPTURE"
     ],
-    "wired_but_not_accepted_count": 12
+    "wired_but_not_accepted_count": 13
   },
   "unreachable": [
     "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE"
   ],
   "work": {
-    "commits": 123,
+    "commits": 156,
     "new_crates": [
       "crates/hawking-index-query/Cargo.toml"
     ],
@@ -183,11 +196,17 @@
       "hcli/test_long_context_runtime.py",
       "hcli/test_mission_dag_supersession.py",
       "hcli/test_mission_fingerprint_is_bounded.py",
+      "hcli/test_mission_repair_verdict.py",
       "hcli/test_native_context_budget.py",
+      "hcli/test_native_json_grammar.py",
       "hcli/test_native_token_budget_clamp.py",
       "hcli/test_negative_science_runtime.py",
       "hcli/test_obligation_work_gate_pairing.py",
+      "hcli/test_prefix_and_prefill_instruments.py",
       "hcli/test_qwen38_prefill_pipeline.py",
+      "hcli/test_recovery_fixture_does_not_leak.py",
+      "hcli/test_rejected_reply_is_in_the_receipt.py",
+      "hcli/test_resident_evacuation_resumable.py",
       "hcli/test_resident_lifecycle_cutover.py",
       "hcli/test_resident_protected_performance.py",
       "hcli/test_resident_restart_after_failure.py",
@@ -196,10 +215,14 @@
       "hcli/test_resident_watch.py",
       "hcli/test_resident_watch_control_plane.py",
       "hcli/test_resident_watch_stream.py",
+      "hcli/test_retire_archives_the_whole_generation.py",
       "hcli/test_self_mutation_e2e.py",
       "hcli/test_session_ledger.py",
+      "hcli/test_sovereign_goal_file.py",
       "hcli/test_stream_render.py",
       "hcli/test_structured_output_retry.py",
+      "hcli/test_system_prompt_matches_schema.py",
+      "hcli/test_tool_failure_is_legible.py",
       "hcli/test_tool_registry.py",
       "hcli/test_tui_autosteer.py",
       "tools/accelerator/test_backend_contract.py",
@@ -217,6 +240,7 @@
       "tools/future/test_capability_eval.py",
       "tools/future/test_experiment_policy.py",
       "tools/future/test_experiment_receipt.py",
+      "tools/future/test_hwir_lowering.py",
       "tools/future/test_hwir_sealed_predictions.py",
       "tools/future/test_law_scar_registry.py",
       "tools/future/test_physical_compiler_predict.py",
@@ -311,12 +335,14 @@
       "tools/future/science_corpus.py",
       "tools/future/static_kernel_verify_parity.py",
       "tools/future/vmcp.py",
+      "tools/hcli/bootstrap/snapshots/conftest.py",
       "tools/odyssey/families/__init__.py",
       "tools/odyssey/families/toy_mean_residual.py",
       "tools/odyssey/families/toy_xor_codes.py",
       "tools/odyssey/fusion_bridge_adapter.py",
       "tools/odyssey/modellake_index.py",
       "tools/odyssey/modellake_lineage.py",
+      "tools/odyssey/modellake_manifest_backfill.py",
       "tools/odyssey/product_boundary.py",
       "tools/odyssey/specimen_open.py",
       "tools/product/__init__.py",
@@ -335,6 +361,7 @@
       "tools/roadmap/index_client.py",
       "tools/roadmap/parse.py",
       "tools/roadmap/reach.py",
+      "tools/roadmap/recompile.py",
       "tools/roadmap/saturation.py",
       "tools/sovereign/g001_verifier_synthesis.py",
       "tools/sovereign/g002_overhead.py",
@@ -362,7 +389,7 @@
       "tools/vmcp/receipt.py",
       "tools/vmcp/tool_doctor.py"
     ],
-    "python_lines_added": 83807,
-    "rust_lines_added": 6988
+    "python_lines_added": 88745,
+    "rust_lines_added": 7572
   }
 }

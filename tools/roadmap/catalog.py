@@ -662,3 +662,81 @@ _THEIA_EXTERNAL_BLOCKERS: dict[str, str] = {
 
 for _gate, _blocker in _THEIA_EXTERNAL_BLOCKERS.items():
     GATES[_gate]["software_blocker"] = _blocker
+
+
+# ---------------------------------------------------------------------------
+# VMCP organs: cite what implements the capability, not what probes a vendor.
+#
+# Six VMCP gates pointed at tools/headless/vmcp_capability_probe.py. That file
+# MEASURES the external visionmcp package -- it is a probe of somebody else's
+# tool, run rather than called -- so the auditor correctly found no call site and
+# correctly read six capabilities as unwired scaffolding. Hawking's own organs
+# live in tools/vmcp/ and ARE reachable: tools/future/vmcp.py calls all four, and
+# tools/acceptance/vmcp/gates.py calls that in turn.
+#
+# tools/vmcp/tool_doctor.report() already probes PTY at runtime rather than
+# trusting its own E3_CLASSES literal, and on this host it reports PTY capture
+# CONNECTED via tools.vmcp.pty_eye.capture. Verified directly: pty_eye.probe()
+# returns used_real_pty=True, method=libutil.openpty, blocker=None, and
+# capture(argv=["/bin/echo", ...]) returns argv, cwd, pid, exit_code, signal and
+# terminal text with CRLF from a genuine PTY. The module docstring's flat claim
+# that "this sandbox has been measured to deny the slave (EPERM)" is STALE for
+# this execution context -- it is a per-context fact stated as a permanent one.
+_VMCP_ORGANS: dict[str, tuple[str, ...]] = {
+    "VMCP_TOOL_DOCTOR": ("tools/vmcp/tool_doctor.py",),
+    "VMCP_FILE_CLASSIFIER": ("tools/vmcp/file_eye.py",),
+    "VMCP_PTY_CAPTURE": ("tools/vmcp/pty_eye.py",),
+}
+
+# The gate must NAME the symbol whose call counts, or no call can ever match it.
+# VMCP_RECEIPT_LAW carries symbols= and reads BUILT; these three carried none, so
+# `runtime_caller` could never populate and they read as unwired scaffolding no
+# matter how many production callers existed. tools/future/vmcp.py calls every one
+# of these -- pty_capture(...), file_observe(...), doctor_report(...),
+# doctor_profile(...) -- through `from X import Y as Z` aliases.
+_VMCP_ORGAN_SYMBOLS: dict[str, tuple[tuple[str, str], ...]] = {
+    "VMCP_TOOL_DOCTOR": (
+        ("tools.vmcp.tool_doctor", "profile"),
+        ("tools.vmcp.tool_doctor", "report"),
+    ),
+    "VMCP_FILE_CLASSIFIER": (("tools.vmcp.file_eye", "observe"),),
+    "VMCP_PTY_CAPTURE": (("tools.vmcp.pty_eye", "capture"),),
+}
+
+for _gate, _syms in _VMCP_ORGAN_SYMBOLS.items():
+    GATES[_gate]["symbols"] = [
+        {"module": _m, "symbol": _y} for _m, _y in _syms
+    ] + list(GATES[_gate].get("symbols") or [])
+
+for _gate, _paths in _VMCP_ORGANS.items():
+    # `code_paths`, NOT `paths`: _p() stores the probe's file list under
+    # code_paths, so assigning to `paths` writes a key nothing reads -- a silent
+    # no-op that still looks like a successful repoint.
+    GATES[_gate]["code_paths"] = list(_paths) + list(GATES[_gate].get("code_paths") or [])
+    GATES[_gate]["modules"] = [
+        _q.removesuffix(".py").replace("/", ".") for _q in _paths
+    ] + list(GATES[_gate].get("modules") or [])
+
+# The three that remain PARKED are blocked on OPTIONAL EXTERNAL PACKAGES, not on
+# unwritten Hawking code, and calling them "software connection remaining" would
+# have pointed this campaign at work that does not exist. tool_doctor.report()
+# names the host for each on this machine.
+_VMCP_EXTERNAL_BLOCKERS: dict[str, str] = {
+    "VMCP_WEB_CAPTURE": (
+        "browser/CDP, HTML/DOM capture and CSS parsing are PARKED on the "
+        "visionmcp web extra plus a host Chrome; no Hawking code is missing. "
+        "Wake: VISIONMCP_WEB_EXTRA_INSTALLED."
+    ),
+    "VMCP_VISUAL_DIFF": (
+        "visual diff is PARKED on the visionmcp compiler residual. "
+        "Wake: VISIONMCP_COMPILER_RESIDUAL_AVAILABLE."
+    ),
+    "VMCP_SPATIAL_VALIDATE": (
+        "OBJ/GLTF parsing, the spatial validator and an independent renderer are "
+        "PARKED on the visionmcp 3d extra plus Blender CLI. "
+        "Wake: VISIONMCP_3D_EXTRA_AND_BLENDER."
+    ),
+}
+
+for _gate, _blocker in _VMCP_EXTERNAL_BLOCKERS.items():
+    GATES[_gate]["software_blocker"] = _blocker

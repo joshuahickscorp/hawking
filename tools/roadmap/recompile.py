@@ -326,6 +326,215 @@ def build_part_ii() -> Path:
     return out
 
 
+
+
+# ---------------------------------------------------------------------------
+# PART III and the APPENDIX, plus the machine-readable state.
+#
+# PART III holds what must NOT be expanded into tasks: the constitution that does
+# not change, and research whose answer nobody has. Pre-expanding an open question
+# into a dozen implementation items before evidence selects it is how a roadmap
+# grows without gaining capability.
+# ---------------------------------------------------------------------------
+
+CONSTITUTION = """HAWKING = SELF-OPTIMIZING PHYSICAL AI COMPUTER
+
+Exactly FIVE ERAS. Exactly THREE ODYSSEYS. No Era VI. No Odyssey IV.
+
+HCLI / AgentOS is the sovereign control plane.
+
+    Doctor diagnoses.      Gravity searches.     Noetic represents.
+    PhysicalGraph lowers.  Accelerator executes. Pareto remembers.
+    Singularity chooses.   Resident runs.
+
+FPGA remains inside Hawking Accelerator / Fusion.
+U50DD/XCU50-class remains Textbook FPGA #1.
+Theia remains one future generalist bounty model.
+
+    MODELS THINK. TOOLS KNOW. CONTEXT IS A CACHE. DISK STATE IS AUTHORITY.
+
+No model self-certifies.
+Design intent != artifact reality != runtime reality.
+Simulated != measured. Physical claims require physical evidence.
+No dense-parent/runtime fallback in final Noetic execution.
+Optimize accepted useful work / wall / resources, not vanity utilization.
+
+The 0.7% civilization coordinate stands as the historical civilizational
+coordinate unless an audit explains a denominator change. It is not inflated
+because scaffolding exists."""
+
+VERIFICATION_LAWS = """EQUIVALENCE BETWEEN TWO EXECUTIONS OF THE SAME IMPLEMENTATION
+DOES NOT PROVE THE DEFINING PROPERTY.
+
+For a capability whose semantics matter, at least one verifier must establish the
+defining property through an independent oracle, a mathematical invariant, an
+adversarial mutation, a reference implementation, a controlled reconstruction, or
+another independent semantic test.
+
+Mutation clauses are not ceremonial end-of-task checks. They are probes of whether
+the verifier can detect a false reality.
+
+Watch for: the same implementation on both sides of an equality; the same
+conversion path on both sides; a round trip whose encoder and decoder share one
+bug; a simulator checked against simulator-generated expectations; a benchmark
+compared to its own derived arithmetic; a verifier reading a claim produced by the
+same producer.
+
+Do NOT mechanically flag all self-comparison. Determinism, purity and idempotence
+legitimately compare two calls. The pathology is a SEMANTIC function with ONLY
+shape or self-comparison coverage and NO independent defining-property assertion.
+This is a reasoning rule, not an AST lint.
+
+Earned, not asserted: three live holes were found this way in code previously
+described as bit-identical -- _top_eigh returning the TOP eigenspace, and
+residual_factors / residual_factors_batch absorbing the projection into V."""
+
+
+def render_part_iii() -> str:
+    graph = json.loads(GRAPH.read_text())
+    gates = graph["gates"]
+    unknown = [g for g in gates.values() if blocker_class(g)[0] == "UNKNOWN_RESEARCH"]
+    hardware = [g for g in gates.values() if blocker_class(g)[0] == "PHYSICAL_HARDWARE_REQUIRED"]
+
+    out = ["# PART III — CONSTITUTION / HARD FUTURES / RESEARCH QUESTIONS", ""]
+    out += ["## The constitution that does not change", "", "```", CONSTITUTION, "```", ""]
+    out += ["## Verification law", "", "```", VERIFICATION_LAWS, "```", ""]
+    out += ["## Hardware-gated futures (not tasks until the silicon exists)", ""]
+    for g in sorted(hardware, key=lambda g: g["id"]):
+        out.append(f"    {g['id']:42} wakes on {g.get('wake_condition')}")
+    out += ["", "## Open research (do NOT pre-expand into implementation tasks)", ""]
+    for g in sorted(unknown, key=lambda g: g["id"]):
+        out.append(f"    {g['id']:42} {blocker_class(g)[1]}")
+    out += [
+        "",
+        "Kept alive without pretending they are near-term: generated experts, shared",
+        "substrates, recurrent transition programs, semantic dictionaries, tokenizer",
+        "topology redesign, multi-token microdecoders, verification inside the physical",
+        "graph, Gravity-native FPGA structures, a learned Hardware Doctor, custom FPGA",
+        "fabric, ASIC discovery, Theia training, deeper Fusion. Evidence selects which",
+        "of these becomes work; expanding them now would grow the roadmap without",
+        "growing the machine.",
+        "",
+    ]
+    return "\n".join(out) + "\n"
+
+
+def render_appendix() -> str:
+    out = ["# APPENDIX — HISTORICAL / SUBSUMED / ARCHIVED LINEAGE", ""]
+    out += [
+        "The superseded canonical roadmap is preserved verbatim, not summarized:",
+        "",
+        "    docs/roadmap-lineage/H-ROADMAP.superseded-2026-09-02.md",
+        "    docs/roadmap-lineage/PRESERVATION.md   hash, HEAD, worktrees, preserved refs",
+        "",
+        "It remains the historical authority for anything this recompilation does not",
+        "carry forward. The new document became ACTIVE AUTHORITY only once it and the",
+        "machine-readable state agreed.",
+        "",
+        "## Subsumed by generic machinery",
+        "",
+        "A completed capability must not keep occupying active roadmap surface because",
+        "old prose mentions it. Items are moved here when a generic substrate made the",
+        "bespoke task unnecessary -- the architecture, not the author, deleted the work.",
+        "",
+        "## Preserved but unabsorbed",
+        "",
+        "    preserve/aud-lane-parent-04193ccbc",
+        "        hcli/backends.py::repair_absent_required_arrays and its 87-line test",
+        "        exist ONLY in this commit; it is not an ancestor of odyssey-i. Most of",
+        "        the commit was absorbed by copy, which is what made it look landed.",
+        "        The 20 aud* worktrees must not be reaped until this is absorbed or",
+        "        explicitly abandoned.",
+        "",
+    ]
+    return "\n".join(out) + "\n"
+
+
+def render_state() -> dict:
+    """The machine-readable active plan. Counts here MUST match the documents."""
+    graph = json.loads(GRAPH.read_text())
+    gates = graph["gates"]
+    buckets: dict[str, list[str]] = defaultdict(list)
+    for gid, gate in sorted(gates.items()):
+        cls, _missing = blocker_class(gate)
+        if not cls:
+            buckets["integrated_capabilities"].append(gid)
+            continue
+        buckets[{
+            "SOFTWARE_CONNECTION_REMAINING": "active_actions",
+            "EXPERIMENTATION_REQUIRED": "experiment_required",
+            "LONG_RUN_EVIDENCE_REQUIRED": "long_run_required",
+            "PHYSICAL_HARDWARE_REQUIRED": "hardware_required",
+            "UNKNOWN_RESEARCH": "unknown_research",
+        }[cls]].append(gid)
+
+    completed = [g for g, v in sorted(gates.items()) if v["status"] == "BUILT"]
+    deps = [[gid, d] for gid, v in sorted(gates.items()) for d in (v.get("dependencies") or [])]
+    verifiers = {
+        gid: refs(v.get("tests"), 2)
+        for gid, v in sorted(gates.items()) if v.get("tests")
+    }
+    evidence_levels = Counter(v.get("evidence_tier") for v in gates.values())
+
+    software_remaining = len(buckets["active_actions"])
+    return {
+        "schema": "hawking.roadmap.state.v2",
+        "generated_from": "civilization/CAPABILITY_GRAPH.json",
+        "completed_capabilities": completed,
+        "integrated_capabilities": buckets["integrated_capabilities"],
+        "active_actions": buckets["active_actions"],
+        "recurring_operations": [],
+        "experiment_required": buckets["experiment_required"],
+        "long_run_required": buckets["long_run_required"],
+        "hardware_required": buckets["hardware_required"],
+        "unknown_research": buckets["unknown_research"],
+        "subsumed_items": [],
+        "archived_items": ["docs/roadmap-lineage/H-ROADMAP.superseded-2026-09-02.md"],
+        "dependency_edges": deps,
+        "multiplier_edges": [],
+        "verifiers": verifiers,
+        "defining_properties": {
+            gid: "acceptance_span in the superseded roadmap"
+            for gid in sorted(gates)
+        },
+        "evidence_levels": dict(evidence_levels),
+        "next_actions": buckets["active_actions"][:10],
+        "software_connection_remaining_count": software_remaining,
+        "net_future_burden": software_remaining + len(buckets["experiment_required"]),
+        "future_work_eliminated_count": len(buckets["integrated_capabilities"]),
+        "not_physically_measured": "every gate is evidence_tier STATIC; no present capability rests on a physical measurement",
+        # completed_capabilities (status BUILT) and integrated_capabilities (no
+        # remaining blocker) differ by EXACTLY this set, and the difference is a
+        # finding rather than an inconsistency: these are wired and carry an
+        # acceptance receipt, yet no test cites them. BUILT is not the same as
+        # verified, and a state file that silently reconciled the two counts
+        # would be hiding the only thing worth reading here.
+        "built_but_no_verifier": [
+            gid for gid, v in sorted(gates.items())
+            if v["status"] == "BUILT" and not v.get("tests")
+        ],
+    }
+
+
+def build_rest() -> list[Path]:
+    base = REPO / "docs" / "roadmap"
+    base.mkdir(parents=True, exist_ok=True)
+    written = []
+    for name, text in (
+        ("PART_III_CONSTITUTION_AND_RESEARCH.md", render_part_iii()),
+        ("APPENDIX_LINEAGE.md", render_appendix()),
+    ):
+        p = base / name
+        p.write_text(text)
+        written.append(p)
+    state = REPO / "civilization" / "ROADMAP_STATE.json"
+    state.write_text(json.dumps(render_state(), indent=2, sort_keys=True) + "\n")
+    written.append(state)
+    return written
+
+
 if __name__ == "__main__":
     print(build())
     print(build_part_ii())
+    for _p in build_rest():
+        print(_p)
