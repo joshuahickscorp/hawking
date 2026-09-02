@@ -957,6 +957,60 @@ def _quantities_report(ledger: PromotionLedger) -> dict[str, Any]:
     return out
 
 
+def doctor_zeros_for_doc(
+    doc: Mapping[str, Any], source_path: str | None = None
+) -> dict[str, Any]:
+    """Call Doctor's three-zeros checks on organs this ledger names.
+
+    A low-BPW figure that fails all three zeros is ordinary quantization
+    (H-ROADMAP §9.2). This invokes ``tools.doctor.zeros.check_three_zeros``;
+    importing the module is not a call site.
+    """
+    from tools.doctor.zeros import (
+        PASS,
+        check_three_zeros,
+        ordinary_quantization,
+        organs_from_doc,
+        whole_artifact_organ,
+        zeros_as_dict,
+    )
+
+    organs = organs_from_doc(doc)
+    if not organs:
+        organs = [whole_artifact_organ(doc)]
+    rows: list[dict[str, Any]] = []
+    any_ordinary = False
+    any_zero = False
+    for organ in organs:
+        results = check_three_zeros(organ)
+        ordinary = ordinary_quantization(results)
+        if ordinary:
+            any_ordinary = True
+        if any(r.verdict == PASS for r in results.values()):
+            any_zero = True
+        rows.append(
+            {
+                "name": organ.get("name") or organ.get("organ_class"),
+                "three_zeros": zeros_as_dict(results),
+                "ordinary_quantization": ordinary,
+            }
+        )
+    return {
+        "applied": True,
+        "called": "tools.doctor.zeros.check_three_zeros",
+        "n_organs": len(rows),
+        "organs": rows,
+        "any_ordinary_quantization": any_ordinary,
+        "any_zero_available": any_zero,
+        "note": (
+            "a low-BPW result that fails all three zeros may merely be ordinary "
+            "quantization (roadmap 9.2). This annotation does not promote."
+        ),
+        "source_path": source_path,
+        "evidence_tier": "STATIC",
+    }
+
+
 def validate(doc: Mapping[str, Any], source_path: str | None = None) -> dict[str, Any]:
     """GREEN if honest (including honest non-promotion). REFUSED if it launders."""
     ledger = extract_ledger(doc, source_path=source_path)
@@ -975,6 +1029,8 @@ def validate(doc: Mapping[str, Any], source_path: str | None = None) -> dict[str
     if _launders_physical_from_meta(doc):
         refused.append("physical EBPW claimed from a prospective meta budget")
 
+    zeros_block = doctor_zeros_for_doc(doc, source_path=source_path)
+
     verdict = "REFUSED" if refused else "GREEN"
     return {
         "verdict": verdict,
@@ -989,6 +1045,7 @@ def validate(doc: Mapping[str, Any], source_path: str | None = None) -> dict[str
         "notes": list(ledger.notes),
         "reasons": refused if refused else [promote_reason],
         "source_path": source_path,
+        "doctor_three_zeros": zeros_block,
     }
 
 
@@ -1066,6 +1123,15 @@ def inventory_path(rel: str) -> dict[str, Any]:
             },
             "notes": result["notes"],
             "dense_rematerialization": result["dense_rematerialization"],
+            "doctor_three_zeros": {
+                "called": (result.get("doctor_three_zeros") or {}).get("called"),
+                "any_ordinary_quantization": (result.get("doctor_three_zeros") or {}).get(
+                    "any_ordinary_quantization"
+                ),
+                "any_zero_available": (result.get("doctor_three_zeros") or {}).get(
+                    "any_zero_available"
+                ),
+            },
         }
     )
     return row
@@ -1164,6 +1230,44 @@ def _run_negative_controls() -> dict[str, Any]:
     results["positive_combinator_is_not_a_measurement"] = True
     if not full_ok:
         raise AssertionError(f"positive combinator failed to open: {full_reason}")
+
+    # Doctor 9.2: watch the three zeros FAIL on a broken organ and PASS on
+    # good fixtures. This is a call of tools.doctor.zeros.check_three_zeros,
+    # not an import-only mention.
+    from tools.doctor.zeros import (
+        FAIL as ZFAIL,
+        PASS as ZPASS,
+        BROKEN_ORGAN,
+        ROUTED_EXPERT_ORGAN,
+        TIED_EMBED_ORGAN,
+        check_three_zeros,
+        ordinary_quantization,
+    )
+
+    broken = check_three_zeros(BROKEN_ORGAN)
+    tied = check_three_zeros(TIED_EMBED_ORGAN)
+    routed = check_three_zeros(ROUTED_EXPERT_ORGAN)
+    results["doctor_three_zeros_fail_on_broken"] = ordinary_quantization(broken) is True
+    results["doctor_zero_storage_fail_on_broken"] = broken["ZERO_STORAGE"].verdict == ZFAIL
+    results["doctor_zero_info_fail_on_broken"] = (
+        broken["ZERO_INDEPENDENT_INFORMATION"].verdict == ZFAIL
+    )
+    results["doctor_zero_execution_fail_on_broken"] = (
+        broken["ZERO_EXECUTION"].verdict == ZFAIL
+    )
+    results["doctor_zero_storage_pass_on_tied"] = tied["ZERO_STORAGE"].verdict == ZPASS
+    results["doctor_zero_info_pass_on_tied"] = (
+        tied["ZERO_INDEPENDENT_INFORMATION"].verdict == ZPASS
+    )
+    results["doctor_zero_execution_pass_on_routed"] = (
+        routed["ZERO_EXECUTION"].verdict == ZPASS
+    )
+    if not results["doctor_three_zeros_fail_on_broken"]:
+        raise AssertionError("Doctor three zeros did not FAIL on the broken organ")
+    if not results["doctor_zero_storage_pass_on_tied"]:
+        raise AssertionError("ZERO_STORAGE did not PASS on tied embeddings")
+    if not results["doctor_zero_execution_pass_on_routed"]:
+        raise AssertionError("ZERO_EXECUTION did not PASS on a routed expert")
 
     return results
 
@@ -1374,6 +1478,7 @@ def build() -> Path:
             "Dense rematerialization: production refused, verification allowed, verification cannot promote.",
             "Active-bytes accounting is five separate fields; collapsing them raises.",
             "Validator is GREEN on honest FLASH_META_REPRESENTATION_SUB1 and REFUSED on a synthetic promotion variant.",
+            "validate() calls tools.doctor.zeros.check_three_zeros; a low-BPW ledger that fails all three zeros is ordinary quantization (roadmap 9.2) and still does not promote.",
         ],
         "negative_findings": [
             "FLASH_META_REPRESENTATION_SUB1.json, FLASH_COMPLETE_V2.nr.json, FLASH_COMPLETE_V0.nx.json, and tools/flash_complete_byte_ledger.py are not in git HEAD; they are untracked in the primary worktree.",
@@ -1389,6 +1494,10 @@ def build() -> Path:
             "validate": "validate(doc: Mapping, source_path: str | None = None) -> dict",
             "extract_ledger": "extract_ledger(doc: Mapping, source_path: str | None = None) -> PromotionLedger",
             "judge_dense_rematerialization": "judge_dense_rematerialization(ledger) -> RematVerdict",
+            "doctor_zeros_for_doc": (
+                "doctor_zeros_for_doc(doc) -> dict; CALLS "
+                "tools.doctor.zeros.check_three_zeros (import is not a call site)"
+            ),
         },
     }
     return write_receipt(RECEIPT, doc, "tools/future/ebpw_categories.py")

@@ -5,6 +5,7 @@ A guard nobody has watched fail is not a guard.
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import pytest
 
@@ -306,3 +307,43 @@ def test_selftest_watches_the_guards_fail():
     assert controls["verification_cannot_promote"] is True
     assert controls["positive_combinator_opens"] is True
     assert controls["positive_combinator_is_not_a_measurement"] is True
+    assert controls["doctor_three_zeros_fail_on_broken"] is True
+    assert controls["doctor_zero_storage_fail_on_broken"] is True
+    assert controls["doctor_zero_info_fail_on_broken"] is True
+    assert controls["doctor_zero_execution_fail_on_broken"] is True
+    assert controls["doctor_zero_storage_pass_on_tied"] is True
+    assert controls["doctor_zero_info_pass_on_tied"] is True
+    assert controls["doctor_zero_execution_pass_on_routed"] is True
+
+
+def test_validate_calls_doctor_three_zeros_symbol(monkeypatch):
+    """Import is not a call site. validate() must invoke check_three_zeros."""
+    import tools.doctor.zeros as z
+
+    seen = {"n": 0}
+    real = z.check_three_zeros
+
+    def wrap(organ):
+        seen["n"] += 1
+        return real(organ)
+
+    monkeypatch.setattr(z, "check_three_zeros", wrap)
+    result = ec.validate({"prospective_meta_bpw": 0.88})
+    assert seen["n"] >= 1
+    assert result["doctor_three_zeros"]["called"] == "tools.doctor.zeros.check_three_zeros"
+    assert result["can_promote"] is False
+
+
+def test_qwen80_ledger_has_an_execution_zero_not_ordinary_everywhere():
+    path = Path("receipts/QWEN80_BIT_BUDGET_LEDGER.json")
+    if not path.is_file():
+        pytest.skip("QWEN80_BIT_BUDGET_LEDGER.json not on disk")
+    doc = json.loads(path.read_text())
+    result = ec.validate(doc, source_path=str(path))
+    block = result["doctor_three_zeros"]
+    assert block["called"] == "tools.doctor.zeros.check_three_zeros"
+    assert block["any_zero_available"] is True
+    routed = next(o for o in block["organs"] if "routed" in str(o["name"]).lower())
+    assert routed["three_zeros"]["ZERO_EXECUTION"]["verdict"] == "PASS"
+    assert routed["ordinary_quantization"] is False
+    assert result["can_promote"] is False
