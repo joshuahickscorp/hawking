@@ -426,10 +426,6 @@ QUEUE = [
     job("microsoft/bitnet-b1.58-2B-4T-bf16", "276681394656abdadb8e80e5b2c3db5e5d7fcaff", "safe", "P1-S"),
     job("LiquidAI/LFM2.5-2.6B-Base", "c57bdaed1ef166fe3095dda07f4a5e789ad5321e", "safe", "P1-A"),
     job("ai21labs/AI21-Jamba2-3B", "525c6c8e1d9f5bddedfbdc1dbb0ade2df84230c9", "safe", "P1-A"),
-    # Gated 2026-09-02: hf download returned "Access denied. This
-    # repository requires approval." Re-enable once accepted upstream.
-    {**job("stabilityai/stable-audio-open-1.0", "f21265c1e2710b3bd2386596943f0007f55f802e", "stable_audio", "P1-A"),
-     "requires_manual_auth": True},
     job("arcinstitute/evo2_7b", "bda0089f92582d5baabf0f22d9fc85f3588f6b58", "all", "P1-S"),
     job("facebook/musicgen-large", "15ccdc92099879e47b6da12c350cdb71d4eab3ca", "musicgen", "P2-A"),
     job("lerobot/pi0_base", "25c379b52ba2ff8788cab921758a3cc3fe3f77f2", "safe", "P2-HIGH"),
@@ -447,11 +443,13 @@ QUEUE = [
     # watcher was correctly refusing them and emitting admission_blocked_auth
     # on every pass, which is noise for work that can never start unattended.
     # Re-add them (with requires_manual_auth) once the licences are accepted.
+    # REMOVED 2026-09-02: stabilityai/stable-audio-open-1.0 and facebook/blt-7b
+    # also answer "Access denied. This repository requires approval." Flagging
+    # them requires_manual_auth stopped the wasted relaunches but still left
+    # two permanently unstartable entries in a queue whose whole purpose is
+    # unattended work -- so ModelLake read as "2 remaining" forever. Removed
+    # for the same reason as the three above. Re-add once accepted upstream.
     job("nvidia/audio-flamingo-3", "ee26c58423988d7d7cda7b85dd3ce5d97ee8753d", "all", "P2-HIGH"),
-    # Gated 2026-09-02: hf download returned "Access denied. This
-    # repository requires approval." Re-enable once accepted upstream.
-    {**job("facebook/blt-7b", "b65201dce04b0a824f0dedeb13bb16fc3a918048", "blt", "P1-S"),
-     "requires_manual_auth": True},
     job("RWKV/RWKV7-13.3B-20260805", "64ffe5934178f40fb2c6de13f12cffaf9058f243", "safe", "P1-S"),
     job("microsoft/Phi-4-reasoning-plus", "69baf8528e1bcf05f475034d9e5dd32875ed125f", "safe", "P1-A"),
     job("LiquidAI/LFM2-24B-A2B", "a3bbacd91a678b97712f0e323e52f8c24ba29542", "safe", "P1-A"),

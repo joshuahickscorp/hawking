@@ -66,84 +66,33 @@ def test_two_distinct_jobs_still_reach_the_cap():
     )
 
 
-def test_gated_repositories_are_flagged_not_retried():
-    """Both returned "Access denied. This repository requires approval."."""
-    import sys
+def test_no_queue_entry_needs_a_human_to_start():
+    """A queue for unattended work cannot contain unstartable entries.
 
-    sys.path.insert(0, str(SOURCE.parent))
-    import modellake_watch as W
-
-    gated = {j["repo"] for j in W.QUEUE if j.get("requires_manual_auth")}
-    for repo in ("stabilityai/stable-audio-open-1.0", "facebook/blt-7b"):
-        assert repo in gated, (
-            f"{repo} is gated upstream but not flagged; it burns an admission "
-            "attempt and a launch every rearm cycle"
-        )
-    assert len(gated) >= 2, "the gated set collapsed; this test would pass vacuously"
-
-
-def _admission_reservation_source() -> str:
-    """The storage-reservation block that guards a QUEUE admission."""
-    text = SOURCE.read_text(encoding="utf-8")
-    start = text.index("scratch = max(10_000_000_000")
-    head = text.rindex("present =", 0, start)
-    return text[head:text.index("if projected <", start)]
-
-
-def test_reservation_accounts_for_bytes_already_on_disk():
-    """A nearly-complete model must not be blocked by its own total size.
-
-    Inkling-Small sat at 515.9 of 531.9 GB needing 16 GB, and every admission
-    pass emitted admission_blocked_storage: the reservation used the full
-    manifest, which exceeds the 519 GB free on the volume. Reserving `expected`
-    rather than `expected - present` makes a model unfinishable on any disk
-    smaller than its own total size.
+    Five repositories answer "Access denied. This repository requires
+    approval." Flagging two of them requires_manual_auth stopped the wasted
+    relaunch every rearm cycle, but they still sat in the queue forever, so
+    ModelLake read as "2 remaining" with no remaining work that could ever
+    run. They are removed, like the three before them.
     """
-    block = _admission_reservation_source()
-    assert "present = None" not in block, (
-        "the reservation discards what is already on disk; a 16 GB remainder "
-        "is reserved as though it were the full manifest"
-    )
-    assert "durable_bytes(" in block, (
-        "the reservation does not measure bytes already present"
-    )
-    assert "expected - present" in block, (
-        f"remaining is not derived from present bytes:\n{block}"
-    )
-
-
-def test_a_nearly_complete_giant_is_admitted_on_a_smaller_disk():
-    """Reproduce the exact production arithmetic that deadlocked."""
     import sys
 
     sys.path.insert(0, str(SOURCE.parent))
     import modellake_watch as W
 
-    expected = 531_900_000_000
-    present = 515_900_000_000
-    free = 519_000_000_000
-    active_remaining = 0
-
-    remaining = max(0, expected - present)
-    scratch = max(10_000_000_000, int(remaining * 0.05))
-    uncertainty = max(5_000_000_000, int(remaining * 0.02))
-    projected = (free - active_remaining - remaining - scratch
-                 - uncertainty - W.KNOWN_TEMP_BYTES)
-    assert projected >= W.FLOOR_BYTES, (
-        f"projected {projected / 1e9:.1f} GB is below the "
-        f"{W.FLOOR_BYTES / 1e9:.0f} GB floor; a 16 GB remainder was refused"
+    stuck = [j["repo"] for j in W.P0 + W.QUEUE if j.get("requires_manual_auth")]
+    assert not stuck, (
+        f"{stuck} need a human to accept upstream terms and can never start "
+        "unattended; remove them rather than leaving the queue permanently "
+        "short of done"
     )
+    assert len(W.QUEUE) > 10, "the queue collapsed; this test would pass vacuously"
 
-    # The old arithmetic, kept as the contrast that makes this test bite.
-    old_remaining = expected
-    old_projected = (free - active_remaining - old_remaining
-                     - max(10_000_000_000, int(old_remaining * 0.05))
-                     - max(5_000_000_000, int(old_remaining * 0.02))
-                     - W.KNOWN_TEMP_BYTES)
-    assert old_projected < W.FLOOR_BYTES, (
-        "the pre-fix arithmetic no longer reproduces the deadlock; this test "
-        "would pass for the wrong reason"
-    )
+    gone = ("stabilityai/stable-audio-open-1.0", "facebook/blt-7b",
+            "nvidia/personaplex-7b-v1", "google/gemma-3-4b-it")
+    live = {j["repo"] for j in W.P0 + W.QUEUE}
+    for repo in gone:
+        assert repo not in live, f"{repo} is gated upstream and still queued"
 
 
 def test_the_event_log_is_bounded_and_the_tail_survives_a_rotation(tmp_path, monkeypatch):

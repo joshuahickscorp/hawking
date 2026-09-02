@@ -123,10 +123,13 @@ while neither was ever sent).
 | ModelLake event log unbounded (612 MB) | same, `emit()` | rotates at 64 MB, reader spans generations |
 | `processes.*` tools (G009's hole) | `tool_registry.py` | read-only, zero-arg schemas |
 
-**ModelLake is DONE.** 55 specimens, Inkling-Small promoted at 495 G. Two remain
-and both are gated on a human accepting upstream terms:
-`stabilityai/stable-audio-open-1.0`, `facebook/blt-7b`. Acquisition no longer
-blocks Odyssey.
+**ModelLake is DONE — zero remaining.** 56 specimens on disk against 47 catalog
+jobs; Inkling-Small promoted at 495 G. Five repositories that answer "Access
+denied. This repository requires approval." have been removed from the queue
+outright, not merely flagged: a queue whose purpose is unattended work cannot
+hold entries that need a human to start, or it reads as permanently short of
+done. A test now asserts no `requires_manual_auth` entry remains. Acquisition no
+longer blocks Odyssey and needs no further attention.
 
 ## Gate state
 

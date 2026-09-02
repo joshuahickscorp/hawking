@@ -180,11 +180,60 @@ def _numeric_acceptance(spec: dict[str, Any], view: SourceView) -> dict[str, Any
     return {"value": ok, "evidence": [base]}
 
 
-def _accepted_fact(probe: dict[str, Any], look: dict[str, Any], view: SourceView) -> dict[str, Any]:
+def _accepted_fact(probe: dict[str, Any], look: dict[str, Any], view: SourceView,
+                   gate_id: str | None = None) -> dict[str, Any]:
     """The gate's own acceptance criterion, not 'a receipt on this topic exists'."""
     spec = probe.get("acceptance")
     if isinstance(spec, dict) and spec.get("kind") == "numeric":
         return _numeric_acceptance(spec, view)
+    # An acceptance lane may demonstrate the criterion directly. That evidence
+    # lives at receipts/acceptance/<GATE>.json and is consumed ADVERSARIALLY:
+    # a receipt only counts when it says ACCEPTED, swears the criterion was not
+    # altered, and names the command it ran. A receipt that merely exists, or
+    # that reports BLOCKED, never produces accepted -- BLOCKED is a truthful
+    # result, not a pass.
+    if gate_id:
+        rel = f"receipts/acceptance/{gate_id}.json"
+        raw = view.read(rel)
+        if raw:
+            try:
+                doc = json.loads(raw)
+            except Exception:
+                doc = None
+            if isinstance(doc, dict):
+                verdict = str(doc.get("verdict") or "").strip().upper()
+                altered = bool(doc.get("criterion_altered"))
+                command = doc.get("command")
+                if verdict == "ACCEPTED" and not altered and command:
+                    return {
+                        "value": True,
+                        "evidence": [
+                            {
+                                "kind": "acceptance_demonstrated",
+                                "file": rel,
+                                "line": None,
+                                "command": command,
+                                "evidence_tier": doc.get("evidence_tier"),
+                                "note": "the gate's own criterion was demonstrated by a real run",
+                            }
+                        ],
+                    }
+                if verdict:
+                    return {
+                        "value": False,
+                        "evidence": [
+                            {
+                                "kind": "acceptance_refused",
+                                "file": rel,
+                                "line": None,
+                                "note": (
+                                    f"acceptance verdict {verdict}"
+                                    + (" (criterion was ALTERED, refused)" if altered else "")
+                                    + (f": {doc.get('blocker')}" if doc.get("blocker") else "")
+                                ),
+                            }
+                        ],
+                    }
     topic = (look.get("receipts") or [None])[0]
     note = (
         "wired is not accepted: no receipt or measurement demonstrates the "
@@ -537,6 +586,7 @@ def _local_status(
 
 def _fill_entry(
     *,
+    entry_id: str | None = None,
     skeleton: dict[str, Any],
     probe: dict[str, Any],
     look: dict[str, Any],
@@ -548,7 +598,7 @@ def _fill_entry(
     hw_id = probe.get("hardware_wake")
     hw_probe = hw_cache.get(hw_id) if hw_id else None
     wired = _wired_fact(look)
-    accepted = _accepted_fact(probe, look, view)
+    accepted = _accepted_fact(probe, look, view, gate_id=entry_id)
     status, evidence, hw_block, sw_block = _local_status(
         era=era,
         look=look,
@@ -786,6 +836,7 @@ def _audit_uncached(
             raise KeyError(f"APPENDIX O gate {name} has no catalog probe (auditor cannot invent a look-up)")
         look = _look_up(view, probe_row, unique_paths=gate_unique)
         gates[name] = _fill_entry(
+            entry_id=name,
             skeleton=skeleton,
             probe=probe_row,
             look=look,

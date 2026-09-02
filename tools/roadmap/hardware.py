@@ -43,13 +43,19 @@ def _run(argv: list[str], timeout: float = 8.0) -> str:
     if cached is not None:
         return cached
     try:
+        # bytes, not text=True: a hardware probe reports whatever the OS hands
+        # it, and system_profiler/ioreg on this host emit non-UTF-8 bytes that
+        # made subprocess raise UnicodeDecodeError and take the whole audit
+        # down. A probe for ABSENT hardware must never be able to do that.
         cp = subprocess.run(
-            argv, capture_output=True, text=True, timeout=timeout, check=False
+            argv, capture_output=True, timeout=timeout, check=False
         )
-    except (OSError, subprocess.TimeoutExpired):
+    except (OSError, subprocess.TimeoutExpired, ValueError):
         result = ""
     else:
-        result = (cp.stdout or "") + "\n" + (cp.stderr or "")
+        out = (cp.stdout or b"").decode("utf-8", errors="replace")
+        err = (cp.stderr or b"").decode("utf-8", errors="replace")
+        result = out + "\n" + err
     _CMD_CACHE[key] = result
     return result
 
