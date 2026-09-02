@@ -1,0 +1,56 @@
+{
+  "blocker": null,
+  "command": "python3 -m pytest tools/acceptance/agentos/test_agentos_acceptance.py::test_repair_bounded -o addopts=''",
+  "criterion_altered": false,
+  "criterion_quoted": "Repair depth is bounded structurally, not by model discretion. Equivalent deterministic failure fingerprints do not generate semantically identical descendants. Exhausted chains become FAILED_EXHAUSTED / BLOCKED / REPLAN_REQUIRED. No repair child may widen mutation/safety/authorization scope inherited from its root.\n\n## D.1 Repair lineage and homeostasis\n\n```rust\nWorkUnitLineage {\n    workunit_id,\n    root_workunit_id,\n    parent_workunit_id,\n    repair_depth,\n    attempt,\n    failure_class,\n    failure_fingerprint,\n    provider,\n    backend_task_id?,\n    created_at,\n    deadline?,\n    mutation_lease?,\n    verifier_contract\n}\n```\n\n1. Repair depth is bounded structurally, not by model discretion.\n2. Equivalent deterministic failure fingerprints do not generate semantically identical descendants.\n3. Exhausted chains become FAILED_EXHAUSTED / BLOCKED / REPLAN_REQUIRED.\n4. Transient provider failure may retry with bounded exponential/backoff policy; deterministic verifier failure does not become a blind retry loop.\n5. Cancellation writes a durable terminal state and reconciles children/external jobs.\n6. Orphan jobs are adopted, reconciled or failed; they are not silently duplicated.\n7. No repair child may widen mutation authority, safety authority, or authorization scope inherited from its root.",
+  "criterion_source": {
+    "end_line": 7358,
+    "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "start_line": 7332
+  },
+  "evidence_tier": "FUNCTIONAL_SIM",
+  "gate": "AGENTOS_REPAIR_BOUNDED",
+  "generated_at": "2026-09-02T09:09:20Z",
+  "git_head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
+  "hcli_file": "/Users/scammermike/Downloads/hawking/hcli/__init__.py",
+  "measured": {
+    "cycle_deepest": 1,
+    "cycle_exhausted_reasons": [
+      "repair cycle: failure signature already seen in lineage dead"
+    ],
+    "cycle_n_repairs": 1,
+    "emit_repair_callable": true,
+    "exhausted_not_rereadied": true,
+    "failed_exhausted_token_present": false,
+    "max_repair_depth": 3,
+    "max_repairs_per_root": 6,
+    "negative_control_deepest": 12,
+    "negative_control_n_repairs": 12,
+    "repair_does_not_widen_resource_class": true,
+    "scheduler_module": "/Users/scammermike/Downloads/hawking/hcli/scheduler.py",
+    "unique_deepest": 3,
+    "unique_exhausted_reasons": [
+      "repair budget exhausted at depth 3 for root dead"
+    ],
+    "unique_n_repairs": 3
+  },
+  "notes": [
+    "Terminal exhausted state is the durable flag repair_exhausted=True (status remains failed; is_ready returns False). The exact token FAILED_EXHAUSTED is not a WorkUnit status in this checkout.",
+    "Catalog symbol Scheduler is invoked via Scheduler.fail, which is the only synthesis path (fail -> _emit_repair -> workunit.emit_repair)."
+  ],
+  "output": "cycle: {\"n_units\": 2, \"n_repairs\": 1, \"deepest\": 1, \"exhausted\": [{\"id\": \"dead.repair.1\", \"reason\": \"repair cycle: failure signature already seen in lineage dead\", \"depth\": 1}], \"lineage\": [\"dead\", \"dead.repair.1\"], \"resource_classes\": [\"LIGHT_CONTROL\"], \"steps\": 2}\nunique: {\"n_units\": 4, \"n_repairs\": 3, \"deepest\": 3, \"exhausted\": [{\"id\": \"dead.repair.1.repair.1.repair.1\", \"reason\": \"repair budget exhausted at depth 3 for root dead\", \"depth\": 3}], \"lineage\": [\"dead\", \"dead.repair.1\", \"dead.repair.1.repair.1\", \"dead.repair.1.repair.1.repair.1\"], \"resource_classes\": [\"LIGHT_CONTROL\"], \"steps\": 4}\nexhausted is_ready=False (want False)\nnegative control lifted: {\"n_units\": 13, \"n_repairs\": 12, \"deepest\": 12, \"exhausted\": [{\"id\": \"dead.repair.1.repair.1.repair.1.repair.1.repair.1.repair.1.repair.1.repair.1.repair.1.repair.1.repair.1.repair.1\", \"reason\": \"repair budget exhausted at depth 12 for root dead\", \"depth\": 12}], \"lineage\": [\"dead\", \"dead.repair.1\", \"dead.repair.1.repair.1\", \"dead.repair.1.repair.1.repair.1\", \"dead.repair.1.repair.1.repair.1.repair.1\", \"dead.repair.1.repair.1.repair.1.repair.1.repair.1\", \"dead.repair.1.repair.1.repair.1.repair.1.repair.1.repair.1\", \"dead.repair.1.repair.1.repair.1.repair.1.repair.1.repair.1.repair.1\", \"dead.repair.1.repair.1.repair.1.repair.1.repair.1.repair.1.repair.1.repair.1\", \"dead.repair.1.repair.1.repair.1.repair.1.repair.1.repair.1.repair.1.repair.1.repair.1\", \"dead.repair.1.repair.1.repair.1.repair.1.repair.1.repair.1.repair.1.repair.1.repair.1.repair.1\", \"dead.repair.1.repair.1.repair.1.repair.1.repair.1.repair.1.repair.1.repair.1.repair.1.repair.1.repair.1\", \"dead.repair.1.repair.1.repair.1.repair.1.repair.1.repair.1.repair.1.repair.1.repair.1.repair.1.repair.1.repair.1\"], \"resource_classes\": [\"LIGHT_CONTROL\"], \"steps\": 13}\nFAILED_EXHAUSTED token absent; durable flag is repair_exhausted",
+  "schema": "hawking.acceptance.gate.v1",
+  "symbols_invoked": [
+    {
+      "module": "hcli.scheduler",
+      "symbol": "Scheduler",
+      "via": "Scheduler.fail -> emit_repair"
+    },
+    {
+      "module": "hcli.workunit",
+      "symbol": "emit_repair",
+      "via": "direct + Scheduler._emit_repair"
+    }
+  ],
+  "verdict": "ACCEPTED"
+}

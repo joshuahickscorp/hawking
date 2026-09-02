@@ -1,0 +1,56 @@
+{
+  "accepted": [
+    "AGENTOS_REPAIR_BOUNDED",
+    "AGENTOS_CIRCUIT_BREAKER",
+    "AGENTOS_CANCELLATION",
+    "AGENTOS_ORPHAN_RECONCILIATION",
+    "AGENTOS_PERSISTENCE_SINGLE_AUTHORITY",
+    "AGENTOS_CHECKPOINT_ATOMICITY",
+    "AGENTOS_RESTART_COHERENCE"
+  ],
+  "accepted_count": 7,
+  "assigned_count": 8,
+  "blocked": [
+    "AGENTOS_RETRY_CLASSIFIED"
+  ],
+  "blocked_count": 1,
+  "blockers": {
+    "AGENTOS_RETRY_CLASSIFIED": "Scheduler.fail does not consult classify_failure (measured: NO_OP_MUTATION still emitted repair 'noop.repair.1'). classify_failure is not on the retry path. D.2 lists 17 class names; FAILURE_KINDS implements 7 tokens. Exact overlap=['INVALID_OUTPUT', 'RATE_LIMIT', 'TRANSIENT_BACKEND']; aliased={'VERIFIER_FAILED': 'VERIFIER_FAILURE', 'IMPLEMENTATION_FAILED': 'DETERMINISTIC_IMPLEMENTATION', 'BACKEND_UNAVAILABLE': 'UNAVAILABLE_DEPENDENCY', 'DEPENDENCY_BLOCKED': 'UNAVAILABLE_DEPENDENCY', 'CONTRACT_IMPOSSIBLE': 'IMPOSSIBLE_CONTRACT'}; unimplemented D.2 classes=['AUTHORIZATION_REQUIRED', 'BENCHMARK_CONTAMINATED', 'CANCELLED', 'DISK_HEADROOM_BLOCK', 'PERSISTENCE_CORRUPT', 'RESOURCE_DENIED', 'STATE_AMBIGUOUS', 'THERMAL_RESOURCE_BLOCK', 'TOOLCHAIN_BLOCKED']. Retries are therefore not classified by the gate's own taxonomy."
+  },
+  "criterion_altered": false,
+  "evidence_tier": "FUNCTIONAL_SIM",
+  "gates": [
+    "AGENTOS_REPAIR_BOUNDED",
+    "AGENTOS_RETRY_CLASSIFIED",
+    "AGENTOS_CIRCUIT_BREAKER",
+    "AGENTOS_CANCELLATION",
+    "AGENTOS_ORPHAN_RECONCILIATION",
+    "AGENTOS_PERSISTENCE_SINGLE_AUTHORITY",
+    "AGENTOS_CHECKPOINT_ATOMICITY",
+    "AGENTOS_RESTART_COHERENCE"
+  ],
+  "generated_at": "2026-09-02T09:09:25Z",
+  "git_head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
+  "hcli_file": "/Users/scammermike/Downloads/hawking/hcli/__init__.py",
+  "receipts": {
+    "AGENTOS_CANCELLATION": "/Users/scammermike/.claude-grok/worktrees/acc1-agentos-acceptance-20260902-045022/receipts/acceptance/AGENTOS_CANCELLATION.json",
+    "AGENTOS_CHECKPOINT_ATOMICITY": "/Users/scammermike/.claude-grok/worktrees/acc1-agentos-acceptance-20260902-045022/receipts/acceptance/AGENTOS_CHECKPOINT_ATOMICITY.json",
+    "AGENTOS_CIRCUIT_BREAKER": "/Users/scammermike/.claude-grok/worktrees/acc1-agentos-acceptance-20260902-045022/receipts/acceptance/AGENTOS_CIRCUIT_BREAKER.json",
+    "AGENTOS_ORPHAN_RECONCILIATION": "/Users/scammermike/.claude-grok/worktrees/acc1-agentos-acceptance-20260902-045022/receipts/acceptance/AGENTOS_ORPHAN_RECONCILIATION.json",
+    "AGENTOS_PERSISTENCE_SINGLE_AUTHORITY": "/Users/scammermike/.claude-grok/worktrees/acc1-agentos-acceptance-20260902-045022/receipts/acceptance/AGENTOS_PERSISTENCE_SINGLE_AUTHORITY.json",
+    "AGENTOS_REPAIR_BOUNDED": "/Users/scammermike/.claude-grok/worktrees/acc1-agentos-acceptance-20260902-045022/receipts/acceptance/AGENTOS_REPAIR_BOUNDED.json",
+    "AGENTOS_RESTART_COHERENCE": "/Users/scammermike/.claude-grok/worktrees/acc1-agentos-acceptance-20260902-045022/receipts/acceptance/AGENTOS_RESTART_COHERENCE.json",
+    "AGENTOS_RETRY_CLASSIFIED": "/Users/scammermike/.claude-grok/worktrees/acc1-agentos-acceptance-20260902-045022/receipts/acceptance/AGENTOS_RETRY_CLASSIFIED.json"
+  },
+  "schema": "hawking.acceptance.summary.v1",
+  "verdicts": {
+    "AGENTOS_CANCELLATION": "ACCEPTED",
+    "AGENTOS_CHECKPOINT_ATOMICITY": "ACCEPTED",
+    "AGENTOS_CIRCUIT_BREAKER": "ACCEPTED",
+    "AGENTOS_ORPHAN_RECONCILIATION": "ACCEPTED",
+    "AGENTOS_PERSISTENCE_SINGLE_AUTHORITY": "ACCEPTED",
+    "AGENTOS_REPAIR_BOUNDED": "ACCEPTED",
+    "AGENTOS_RESTART_COHERENCE": "ACCEPTED",
+    "AGENTOS_RETRY_CLASSIFIED": "BLOCKED"
+  }
+}
