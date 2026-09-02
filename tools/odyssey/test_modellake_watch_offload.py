@@ -39,12 +39,21 @@ def test_a_sweep_still_in_flight_is_never_started_twice():
     assert started == [1], f"single-flight broken: {len(started)} runs"
 
 
-def test_a_raising_sweep_does_not_kill_the_watcher():
+def test_a_raising_sweep_does_not_kill_the_watcher(tmp_path, monkeypatch):
+    # run_detached catches the exception and emit()s probe_boom_error. Without
+    # this patch that row lands in the live operational log, where
+    # modellake_scheduler_view reads it back as real watcher telemetry -- the
+    # log carried three "sweep exploded" errors from test runs. The sibling
+    # test below already guards this; this one did not.
+    monkeypatch.setattr(w, "LOG", tmp_path / "probe.jsonl")
+    monkeypatch.setattr(w, "DOWNLOAD_DIR", tmp_path)
+
     def boom():
         raise RuntimeError("sweep exploded")
 
     assert w.run_detached("probe_boom", boom) is True
     time.sleep(0.4)   # if it propagated, the thread dies silently; loop lives
+    assert "sweep exploded" in (tmp_path / "probe.jsonl").read_text()
 
 
 def test_emit_is_serialised_across_threads(tmp_path, monkeypatch):
