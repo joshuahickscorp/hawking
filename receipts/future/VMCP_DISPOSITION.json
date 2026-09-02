@@ -3,12 +3,12 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T03:33:04Z",
+  "recorded_at": "2026-09-02T09:18:22Z",
   "recorded_by": "tools/future/vmcp.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
- "claim_boundary": "Static sidecar + local-file FUNCTIONAL_SIM. No browser, no Blender, no Ghidra, no GPU, no claim that VisionMCP ran. An empty collection is not evidence of absence: unavailable tools must not look like a negative finding.",
+ "claim_boundary": "Local-file classification, local ToolReceipts, and isolated BHV fixtures on this host. No browser, no Blender, no Ghidra, no GPU, no claim that VisionMCP ran. PTY is attempted via openpty; EPERM on the slave is a blocker, never a pipe stand-in. An empty collection is not evidence of absence: unavailable tools must not look like a negative finding.",
  "disposition": {
   "acts": [
    {
@@ -192,7 +192,7 @@
     "wake": null
    }
   ],
-  "claim_boundary": "Static sidecar + local-file FUNCTIONAL_SIM. No browser, no Blender, no Ghidra, no GPU, no claim that VisionMCP ran. An empty collection is not evidence of absence: unavailable tools must not look like a negative finding.",
+  "claim_boundary": "Local-file classification, local ToolReceipts, and isolated BHV fixtures on this host. No browser, no Blender, no Ghidra, no GPU, no claim that VisionMCP ran. PTY is attempted via openpty; EPERM on the slave is a blocker, never a pipe stand-in. An empty collection is not evidence of absence: unavailable tools must not look like a negative finding.",
   "core_mcp_tools": [
    "vision.capabilities",
    "vision.observe",
@@ -217,7 +217,7 @@
     {
      "has_bus": false,
      "on_disk": false,
-     "path": "/Users/scammermike/.claude-grok/worktrees/d1-vmcp-tabula-disposition-20260901-231744/visionmcp/src"
+     "path": "/Users/scammermike/.claude-grok/worktrees/v1-vmcp-perception-depth-20260902-045226/visionmcp/src"
     },
     {
      "has_bus": true,
@@ -580,6 +580,12 @@
     "aspiration": "CaptureBus-backed observe with CAS reuse in visionmcp",
     "call_sites": [
      {
+      "file": "tools/future/vmcp.py",
+      "kind": "call",
+      "symbol": "tools.vmcp.file_eye.observe",
+      "via": "see()"
+     },
+     {
       "file": "tools/audit/reachability_triage.py",
       "kind": "call",
       "symbol": "tools.future.vmcp.compact_surface",
@@ -588,10 +594,11 @@
     ],
     "disposition": "CONNECTED",
     "evidence_tier": "FUNCTIONAL_SIM",
-    "exists_today": "hashlib + stat local-file observation whose summary fields match tools/headless/hcli_vmcp_integration.FileEye (present, path, size, mode, sha256, limitations). TARGET_ABSENT is a classification, never an empty success.",
+    "execution": "REAL",
+    "exists_today": "tools.vmcp.file_eye.observe: magic/header classification of a real local file (Mach-O/ELF/PE/PNG/ZIP/WASM/...) plus hashlib identity fields matching FileEye (present, path, size, mode, sha256). TARGET_ABSENT is a classification, never an empty success.",
     "id": "vmcp.file_eye",
     "organ": "EYES / generic file metadata eye (roadmap VMCP-002)",
-    "symbol": "tools.future.vmcp.see",
+    "symbol": "tools.vmcp.file_eye.observe",
     "wake": null
    },
    {
@@ -739,33 +746,44 @@
    },
    {
     "aspiration": "roadmap E.10 terminal screen / scrollback / ANSI",
+    "call_sites": [
+     {
+      "file": "tools/future/vmcp.py",
+      "kind": "call",
+      "symbol": "tools.vmcp.pty_eye.capture",
+      "via": "see(organ=pty)"
+     }
+    ],
     "disposition": "PARKED",
     "evidence_tier": "STATIC",
-    "exists_today": "none on the Hawking side",
+    "execution": "BLOCKED",
+    "exists_today": "tools.vmcp.pty_eye.capture attempts a real posix PTY pair. This sandbox has been measured to deny the slave (openpty EPERM); that is a blocker, not a pipe stand-in.",
     "id": "vmcp.pty_eye",
     "organ": "PTY EYE",
+    "symbol": "tools.vmcp.pty_eye.capture",
+    "used_real_pty": false,
     "wake": {
-     "blocker": "no PTY SensorAdapter is registered in tools/headless FileEye; roadmap E.10 is aspiration here",
+     "blocker": "sandbox denies PTY slave allocation: os.openpty/libutil.openpty return EPERM and /dev/ttys* cannot be opened. posix_openpt(/dev/ptmx) succeeds for the master but a session requires the slave. This is not a pipe stand-in. Needs an unsandboxed (`gate`) process that can openpty.",
      "evidence_tier": "STATIC",
-     "kind": "VISIONMCP_PTY_EYE",
-     "missing_dependency": "a PTY SensorAdapter in visionmcp plus an HCLI Call",
-     "predicate": "production AST Call of a PTY/terminal SensorAdapter from an HCLI entry (no such adapter is wired on the Hawking side today)",
+     "kind": "PTY_OPEN_DENIED",
+     "missing_dependency": "unsandboxed process that can openpty (gate profile)",
+     "predicate": "production AST Call of tools.vmcp.pty_eye.capture after openpty succeeds (unsandboxed / gate profile). A pipe capture is not a PTY session. An import is not a call site.",
      "required_caller_prefix": "hcli/",
      "required_kind": "call",
-     "required_symbol": "visionmcp.perception.bus.CaptureBus.observe",
+     "required_symbol": "tools.vmcp.pty_eye.capture",
      "satisfy_by": [
       {
        "channel": "visionmcp",
        "how": "materialize the foreign visionmcp 0.8.0a2 checkout, then a production AST Call of the named symbol (an import is not a call site)",
        "required_kind": "call",
-       "required_symbol": "visionmcp.perception.bus.CaptureBus.observe",
+       "required_symbol": "tools.vmcp.pty_eye.capture",
        "where": "VISIONMCP_SRC / visionmcp/src"
       },
       {
        "channel": "adapter",
        "how": "add a WIRED handler that AST-Calls the named symbol; an import is not enough",
        "required_kind": "call",
-       "required_symbol": "visionmcp.perception.bus.CaptureBus.observe",
+       "required_symbol": "tools.vmcp.pty_eye.capture",
        "where": "tools/audit/reachability_triage.py"
       }
      ],
@@ -774,73 +792,41 @@
    },
    {
     "aspiration": "roadmap E.11 fixture matrix",
-    "disposition": "PARKED",
-    "evidence_tier": "STATIC",
-    "exists_today": "none of BHV-01..23 are implemented here",
+    "call_sites": [
+     {
+      "file": "tools/future/vmcp.py",
+      "kind": "call",
+      "symbol": "tools.vmcp.behavior_lab.run_matrix",
+      "via": "prove(organ=behavior_lab)"
+     }
+    ],
+    "disposition": "CONNECTED",
+    "evidence_tier": "FUNCTIONAL_SIM",
+    "execution": "REAL",
+    "exists_today": "tools.vmcp.behavior_lab.run_matrix runs BHV-01..23 in isolated temp git repos and CALLs tools.future.tabula.evaluate. LABORATORY profile is not used.",
     "id": "vmcp.behavior_lab",
     "organ": "BEHAVIOR LAB",
-    "wake": {
-     "blocker": "APPENDIX E.11 fixture matrix is not implemented in this repo",
-     "evidence_tier": "STATIC",
-     "kind": "VISIONMCP_BEHAVIOR_LAB",
-     "missing_dependency": "BHV fixture runner + HCLI Call of it",
-     "predicate": "production AST Call of a BHV-01..23 fixture runner from an HCLI entry that records initial/final repo hash, WorkUnit trace and receipt",
-     "required_caller_prefix": "hcli/",
-     "required_kind": "call",
-     "required_symbol": "tools.headless.hcli_vmcp_integration.observe_file",
-     "satisfy_by": [
-      {
-       "channel": "visionmcp",
-       "how": "materialize the foreign visionmcp 0.8.0a2 checkout, then a production AST Call of the named symbol (an import is not a call site)",
-       "required_kind": "call",
-       "required_symbol": "tools.headless.hcli_vmcp_integration.observe_file",
-       "where": "VISIONMCP_SRC / visionmcp/src"
-      },
-      {
-       "channel": "adapter",
-       "how": "add a WIRED handler that AST-Calls the named symbol; an import is not enough",
-       "required_kind": "call",
-       "required_symbol": "tools.headless.hcli_vmcp_integration.observe_file",
-       "where": "tools/audit/reachability_triage.py"
-      }
-     ],
-     "schema": "hawking.audit.wake_condition.v1"
-    }
+    "symbol": "tools.vmcp.behavior_lab.run_matrix",
+    "wake": null
    },
    {
     "aspiration": "roadmap E.3 required classes hosted by HCLI",
-    "disposition": "PARKED",
-    "evidence_tier": "STATIC",
-    "exists_today": "visionmcp system.doctor / `visionmcp doctor --core` (foreign)",
+    "call_sites": [
+     {
+      "file": "tools/future/vmcp.py",
+      "kind": "call",
+      "symbol": "tools.vmcp.tool_doctor.profile",
+      "via": "check(organ=tool_doctor)"
+     }
+    ],
+    "disposition": "CONNECTED",
+    "evidence_tier": "FUNCTIONAL_SIM",
+    "execution": "REAL",
+    "exists_today": "tools.vmcp.tool_doctor.profile runs a real local argv into an E.4 ToolReceipt (availability, version, permissions, health, limits, refusal). visionmcp system.doctor is a different symbol and is not called.",
     "id": "vmcp.tool_doctor",
     "organ": "TOOL DOCTOR",
-    "wake": {
-     "blocker": "system.doctor is a core MCP tool of the foreign package; Hawking does not host it",
-     "evidence_tier": "STATIC",
-     "kind": "VISIONMCP_TOOL_DOCTOR",
-     "missing_dependency": "VISIONMCP_SRC importable",
-     "predicate": "production AST Call of visionmcp doctor --core / core_doctor_report from an HCLI entry",
-     "required_caller_prefix": "hcli/",
-     "required_kind": "call",
-     "required_symbol": "visionmcp.capabilities.core_doctor_report",
-     "satisfy_by": [
-      {
-       "channel": "visionmcp",
-       "how": "materialize the foreign visionmcp 0.8.0a2 checkout, then a production AST Call of the named symbol (an import is not a call site)",
-       "required_kind": "call",
-       "required_symbol": "visionmcp.capabilities.core_doctor_report",
-       "where": "VISIONMCP_SRC / visionmcp/src"
-      },
-      {
-       "channel": "adapter",
-       "how": "add a WIRED handler that AST-Calls the named symbol; an import is not enough",
-       "required_kind": "call",
-       "required_symbol": "visionmcp.capabilities.core_doctor_report",
-       "where": "tools/audit/reachability_triage.py"
-      }
-     ],
-     "schema": "hawking.audit.wake_condition.v1"
-    }
+    "symbol": "tools.vmcp.tool_doctor.profile",
+    "wake": null
    },
    {
     "aspiration": "none; integrating against it is forbidden",
@@ -916,17 +902,17 @@
   "receipts": {
    "census": {
     "path": "receipts/headless/VMCP_CENSUS.json",
-    "path_taken": "worktree",
+    "path_taken": "git:HEAD",
     "present": true
    },
    "integration": {
     "path": "receipts/headless/VMCP_AGENTOS_INTEGRATION.json",
-    "path_taken": "worktree",
+    "path_taken": "git:HEAD",
     "present": true
    },
    "lattice": {
     "path": "receipts/headless/VMCP_LATTICE_DISPOSITION.json",
-    "path_taken": "worktree",
+    "path_taken": "git:HEAD",
     "present": true
    }
   },
@@ -952,21 +938,34 @@
  "evidence_class": "STATIC_ONLY",
  "gpu_authority": false,
  "promoted": false,
- "purpose": "Dispose VMCP against source and roadmap, connect the generic file eye, park everything that needs the foreign visionmcp package or absent hardware.",
+ "promoted_organs": [
+  "vmcp.file_eye",
+  "vmcp.tool_doctor",
+  "vmcp.behavior_lab"
+ ],
+ "purpose": "Dispose VMCP against source and roadmap. Promote the local file classifier, tool doctor and behavior-lab fixture matrix to REAL execution behind the same nine-act compact surface. Park PTY if openpty is denied, and park organs that need visionmcp or absent hardware.",
  "resident_callable": {
   "entry_point": "python3 tools/future/vmcp.py --build",
   "invoke": "python3 tools/audit/reachability_triage.py --invoke future.vmcp --args '{\"act\":\"see\",\"path\":\"...\"}'",
   "symbol": "tools.future.vmcp.compact_surface"
  },
  "schema": "hawking.future.vmcp.v1",
- "seal_sha256": "c43a8bac8cd18eb5a695dc55779f90c88590e21627c3c50a0704a3ba1abd1dfc",
+ "seal_sha256": "84b56f4b2d6af65518cc0e90a9f53520579a33a02429d158eccb1e0fef394900",
  "selftest": {
+  "behavior_lab_n_ok": 23,
+  "behavior_lab_verdict": "PASS",
+  "file_eye_kind": "text",
   "n_connected_acts": 5,
   "n_organs": 10,
   "n_parked_acts": 4,
-  "ok": true
+  "ok": true,
+  "pty_used_real": false,
+  "tool_doctor_exit": 0,
+  "verb_count": 9
  },
  "status": "BUILT_NOT_PROMOTED",
+ "verb_count_after": 9,
+ "verb_count_before": 9,
  "version": 1,
  "weights_modified": false
 }

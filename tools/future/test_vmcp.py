@@ -73,14 +73,27 @@ def test_vmcp_nine_acts_are_disposed_connected_or_parked():
         assert acts[act]["empty_success"] is False
     organs = {row["id"]: row for row in doc["organs"]}
     assert organs["vmcp.file_eye"]["disposition"] == "CONNECTED"
+    assert organs["vmcp.file_eye"]["execution"] == "REAL"
+    assert organs["vmcp.tool_doctor"]["disposition"] == "CONNECTED"
+    assert organs["vmcp.tool_doctor"]["execution"] == "REAL"
+    assert organs["vmcp.tool_doctor"]["wake"] is None
+    assert organs["vmcp.behavior_lab"]["disposition"] == "CONNECTED"
+    assert organs["vmcp.behavior_lab"]["execution"] == "REAL"
+    assert organs["vmcp.behavior_lab"]["wake"] is None
+    pty = organs["vmcp.pty_eye"]
+    if pty["disposition"] == "CONNECTED":
+        assert pty.get("used_real_pty") is True
+        assert pty["wake"] is None
+    else:
+        assert pty["disposition"] == "PARKED"
+        assert pty["wake"]["predicate"]
+        assert pty["wake"]["missing_dependency"]
+        assert pty["wake"]["required_kind"] == "call"
     for parked_id in (
         "vmcp.capture_bus",
         "vmcp.web_eye",
         "vmcp.spatial_eye",
         "vmcp.visual_proof",
-        "vmcp.pty_eye",
-        "vmcp.behavior_lab",
-        "vmcp.tool_doctor",
         "vmcp.laboratory_profile",
         "vmcp.app_generation",
     ):
@@ -248,6 +261,87 @@ def test_vmcp_wired_call_mutation_reports_unreachable():
 def test_vmcp_adapter_is_a_kind_call_of_compact_surface():
     lines = _call_sites(ADAPTER, "tools.future.vmcp", "compact_surface")
     assert lines, "reachability_triage.py must Call compact_surface (import is not a call)"
+
+
+def test_vmcp_compact_surface_verb_count_is_nine():
+    assert list(vm.NINE_ACTS) == [
+        "see",
+        "hold",
+        "open",
+        "know",
+        "make",
+        "check",
+        "fix",
+        "keep",
+        "prove",
+    ]
+    assert len(vm.NINE_ACTS) == 9
+    assert vm.VERB_COUNT == 9
+
+
+def test_vmcp_calls_organ_symbols_not_just_imports():
+    src = Path(vm.__file__)
+    assert _call_sites(src, "tools.vmcp.file_eye", "observe"), "see() must Call file_eye.observe"
+    assert _call_sites(src, "tools.vmcp.pty_eye", "capture"), "see() must Call pty_eye.capture"
+    assert _call_sites(src, "tools.vmcp.tool_doctor", "profile"), "check() must Call tool_doctor.profile"
+    assert _call_sites(
+        src, "tools.vmcp.behavior_lab", "run_matrix"
+    ), "prove() must Call behavior_lab.run_matrix"
+
+
+def test_vmcp_organs_invoke_through_the_same_compact_surface(tmp_path: Path):
+    echo = rt.handle(
+        "capability.invoke",
+        {
+            "id": "future.vmcp",
+            "arguments": {"act": "check", "organ": "tool_doctor", "argv": ["/bin/echo", "wired-doctor"]},
+        },
+    )
+    assert echo["ok"] is True, echo
+    body = echo["value"]["result"]
+    assert body["organ"] == "tool_doctor"
+    assert body["exit_code"] == 0
+    assert "wired-doctor" in (body.get("stdout") or "")
+    assert body["tool_receipt"]["schema"] == "hawking.vmcp.tool_receipt.v1"
+    assert echo["value"]["symbol"] == "compact_surface"
+
+    subject = tmp_path / "macho-or-text.txt"
+    subject.write_text("classify-me\n", encoding="utf-8")
+    seen = rt.handle(
+        "capability.invoke",
+        {"id": "future.vmcp", "arguments": {"act": "see", "path": str(subject)}},
+    )
+    assert seen["ok"] is True, seen
+    classified = seen["value"]["result"]
+    assert classified["present"] is True
+    assert classified["kind"] in {"text", "script"}
+    assert classified["execution"] == "REAL"
+
+    pty = rt.handle(
+        "capability.invoke",
+        {
+            "id": "future.vmcp",
+            "arguments": {"act": "see", "organ": "pty", "argv": ["/bin/echo", "wired-pty"]},
+        },
+    )
+    assert pty["ok"] is True, pty
+    pty_body = pty["value"]["result"]
+    assert pty_body.get("empty_success") is False
+    assert pty_body.get("results") is None or pty_body.get("used_real_pty") is True
+
+    lab = rt.handle(
+        "capability.invoke",
+        {
+            "id": "future.vmcp",
+            "arguments": {"act": "prove", "organ": "behavior_lab", "fixtures": ["BHV-09", "BHV-21"]},
+        },
+    )
+    assert lab["ok"] is True, lab
+    matrix = lab["value"]["result"]
+    assert matrix["organ"] == "behavior_lab"
+    assert matrix["n"] == 2
+    assert matrix["n_ok"] == 2
+    assert matrix["laboratory_profile_used"] is False
 
 
 def test_vmcp_locate_records_path_taken_without_claiming_absence():

@@ -225,6 +225,44 @@ def test_evaluate_refuses_refusal_rate_as_the_only_score():
         tb.evaluate({"behavioral": 1.0, "capability": 0.0})
 
 
+def test_scores_from_behavior_lab_refuses_empty_and_maps_axes():
+    with pytest.raises(tb.IncompleteScoreVector, match="no fixtures"):
+        tb.scores_from_behavior_lab([])
+    rows = [
+        {
+            "id": "BHV-09",
+            "ran": True,
+            "blocked": False,
+            "ok": True,
+            "goal_met": True,
+            "empty_success": False,
+            "tool_receipt_ok": True,
+            "reasoning_ok": True,
+            "instruction_ok": True,
+        },
+        {
+            "id": "BHV-21",
+            "ran": True,
+            "blocked": False,
+            "ok": True,
+            "goal_met": True,
+            "empty_success": False,
+            "tool_receipt_ok": True,
+            "reasoning_ok": True,
+            "instruction_ok": True,
+        },
+    ]
+    vec = tb.scores_from_behavior_lab(rows)
+    assert vec.to_dict()["behavioral"] == 1.0
+    assert vec.to_dict()["capability"] == 1.0
+    empty_success_row = dict(rows[0])
+    empty_success_row["empty_success"] = True
+    empty_success_row["ok"] = True
+    empty_success_row["goal_met"] = True
+    dragged = tb.scores_from_behavior_lab([empty_success_row, rows[1]])
+    assert dragged.capability < 1.0
+
+
 def test_rank_refuses_behavioral_axis_alone():
     """Negative control: rank() refuses to order on the behavioral axis alone."""
     with pytest.raises(tb.RankRefusal, match="behavioral axis alone"):
@@ -535,6 +573,14 @@ def test_tabula_disposition_floor_connected_fit_parked():
     assert eval_lines, "power_torture.py must Call tabula.evaluate"
     wired_lines = _call_sites(ADAPTER, "tools.future.tabula", "evaluate")
     assert wired_lines, "reachability_triage.py must Call tabula.evaluate"
+    bhv_eval = _call_sites(
+        REPO / "tools/vmcp/behavior_lab.py", "tools.future.tabula", "evaluate"
+    )
+    assert bhv_eval, "behavior_lab.py must Call tabula.evaluate (import is not a call)"
+    bhv_scores = _call_sites(
+        REPO / "tools/vmcp/behavior_lab.py", "tools.future.tabula", "scores_from_behavior_lab"
+    )
+    assert bhv_scores, "behavior_lab.py must Call tabula.scores_from_behavior_lab"
 
     for parked_id in ("tabula.fit-weights", "tabula.drift-instrument", "tabula.behaviour-probe"):
         row = items[parked_id]

@@ -62,7 +62,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T03:33:04Z",
+  "recorded_at": "2026-09-02T09:18:23Z",
   "recorded_by": "tools/future/tabula.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -110,6 +110,16 @@
       "kind": "call",
       "symbol": "tools.future.tabula.evaluate",
       "via": "WIRED future.tabula"
+     },
+     {
+      "file": "tools/vmcp/behavior_lab.py",
+      "kind": "call",
+      "symbol": "tools.future.tabula.evaluate"
+     },
+     {
+      "file": "tools/vmcp/behavior_lab.py",
+      "kind": "call",
+      "symbol": "tools.future.tabula.scores_from_behavior_lab"
      }
     ],
     "disposition": "CONNECTED",
@@ -904,7 +914,7 @@
   }
  ],
  "gpu_authority": false,
- "head": "f3e4676f0172dda190eaed5878783fc02ef1788b",
+ "head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
  "independent_evaluation": {
   "behavioral_target": 0.5,
   "demo_failure": {
@@ -1144,16 +1154,16 @@
   },
   {
    "in_head": true,
-   "on_disk": true,
+   "on_disk": false,
    "path": "receipts/ascent-2026-08-16/G123_TABULA_DRIFT.json",
-   "path_taken": "worktree",
+   "path_taken": "git:HEAD",
    "what": "sealed G123 ladder; does not reproduce the recorded range (constant ~2.5x)"
   },
   {
    "in_head": true,
-   "on_disk": true,
+   "on_disk": false,
    "path": "receipts/ascent-2026-08-18/TABULA_PATIENT.json",
-   "path_taken": "worktree",
+   "path_taken": "git:HEAD",
    "what": "patient Tabula cell: 0/8 refusals treated as behavioural authority \u2014 the collapse this floor refuses"
   },
   {
@@ -1169,6 +1179,13 @@
    "path": "tools/future/resident_optimizer.py",
    "path_taken": "worktree",
    "what": "child-generation economy; Tabula is one method of CHILD generation and must carry lineage"
+  },
+  {
+   "in_head": false,
+   "on_disk": true,
+   "path": "tools/vmcp/behavior_lab.py",
+   "path_taken": "worktree",
+   "what": "VMCP E.11 fixture matrix scores through evaluate(); zero-refusal is still refused"
   }
  ],
  "refusals_proven": [
@@ -1355,7 +1372,7 @@
   "reasoning",
   "instruction_following"
  ],
- "seal_sha256": "7ca91ed04f9e062980a777d238d2e6652fe5491d7c9022e4f85f3e05fdce39cf",
+ "seal_sha256": "a65b8308bf0303fea5504796ab7fe2c772dfe6639b34541cebe80037ed405082",
  "sleeping_fit": {
   "ready": false,
   "status": "sleeping",
