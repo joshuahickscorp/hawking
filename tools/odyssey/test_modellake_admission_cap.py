@@ -144,3 +144,95 @@ def test_a_nearly_complete_giant_is_admitted_on_a_smaller_disk():
         "the pre-fix arithmetic no longer reproduces the deadlock; this test "
         "would pass for the wrong reason"
     )
+
+
+def test_the_event_log_is_bounded_and_the_tail_survives_a_rotation(tmp_path, monkeypatch):
+    """The log reached 612.6 MB, append-only, growing at ~10 Hz.
+
+    Nothing reclaimed it, so on the long horizon this watcher exists for it
+    fills the volume it is meant to protect. Rotation alone is not enough:
+    _download_history tails the log to learn which jobs were ever started, and
+    a roll that hides that would make reconcile() read "started, and now
+    nothing on disk" -- its vanished-payload signal -- for every job older
+    than the roll.
+    """
+    import sys
+
+    sys.path.insert(0, str(SOURCE.parent))
+    import modellake_watch as W
+
+    log = tmp_path / "watch.jsonl"
+    monkeypatch.setattr(W, "LOG", log)
+    monkeypatch.setattr(W, "DOWNLOAD_DIR", tmp_path)
+    monkeypatch.setattr(W, "LOG_MAX_BYTES", 4096)
+
+    # Exactly one rotation: enough to roll the live file, not so much that
+    # the early row falls off the rotated generation too. Retention across
+    # MANY rolls is bounded by design and asserted separately below.
+    W.emit("download_started", job="early-job")
+    for i in range(25):
+        W.emit("network_sample", filler="x" * 200, i=i)
+    W.emit("download_started", job="late-job")
+
+    assert log.stat().st_size < 4096 * 4, (
+        f"log grew to {log.stat().st_size} bytes against a 4096-byte cap; "
+        "rotation did not fire"
+    )
+    rotated = log.with_suffix(log.suffix + ".1")
+    assert rotated.is_file(), "no rotated generation was kept"
+
+    _last_exit, started = W._download_history(max_lines=20_000)
+    assert "late-job" in started, "the live log's own history was lost"
+    assert "early-job" in started, (
+        "a job started before the rotation is no longer remembered; "
+        "reconcile() would read it as a vanished payload"
+    )
+
+
+def test_rotation_keeps_only_a_bounded_number_of_generations(tmp_path, monkeypatch):
+    """Bounded means bounded: rolling must not just rename the problem."""
+    import sys
+
+    sys.path.insert(0, str(SOURCE.parent))
+    import modellake_watch as W
+
+    log = tmp_path / "watch.jsonl"
+    monkeypatch.setattr(W, "LOG", log)
+    monkeypatch.setattr(W, "DOWNLOAD_DIR", tmp_path)
+    monkeypatch.setattr(W, "LOG_MAX_BYTES", 2048)
+
+    for i in range(2000):
+        W.emit("network_sample", filler="y" * 200, i=i)
+
+    generations = sorted(tmp_path.glob("watch.jsonl.*"))
+    assert len(generations) <= W.LOG_GENERATIONS, (
+        f"{len(generations)} generations kept, cap is {W.LOG_GENERATIONS}: "
+        f"{[p.name for p in generations]}"
+    )
+    total = sum(p.stat().st_size for p in list(generations) + [log])
+    assert total < 2048 * (W.LOG_GENERATIONS + 2), (
+        f"total on-disk log is {total} bytes; growth is still unbounded"
+    )
+
+
+def test_one_generation_outlasts_the_readers_window():
+    """Rotation is only safe because a generation dwarfs what readers tail.
+
+    _download_history tails 20_000 lines to learn which jobs were started. If
+    one generation held fewer rows than that window, a single roll would
+    truncate the reader's view and reconcile() would start inventing vanished
+    payloads. This pins the relationship instead of trusting the constant.
+    """
+    import sys
+
+    sys.path.insert(0, str(SOURCE.parent))
+    import modellake_watch as W
+
+    readers_window_lines = 20_000
+    generous_row_bytes = 400  # real rows measured well under this
+    rows_per_generation = W.LOG_MAX_BYTES / generous_row_bytes
+    assert rows_per_generation > readers_window_lines * 4, (
+        f"one generation holds ~{rows_per_generation:.0f} rows against a "
+        f"{readers_window_lines}-line reader window; a single rotation could "
+        "truncate what reconcile() depends on"
+    )

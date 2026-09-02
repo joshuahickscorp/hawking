@@ -251,11 +251,48 @@ def redact(value: str) -> str:
 _EMIT_LOCK = threading.Lock()
 
 
+# This log had reached 612.6 MB and was still growing at roughly 10 Hz. It is
+# append-only and nothing ever reclaimed it, so on the long horizon this
+# watcher is built for it fills the volume it is supposed to be protecting.
+# Two generations is enough: _download_history only ever tails 20k lines, and
+# the rotated file is kept precisely so that tail still spans a rotation.
+LOG_MAX_BYTES = int(os.environ.get("HAWKING_MODELLAKE_LOG_MAX_BYTES", 64_000_000))
+LOG_GENERATIONS = 2
+
+
+def _rotate_log_if_needed() -> None:
+    """Roll the event log before it can grow without bound.
+
+    Callers hold _EMIT_LOCK. emit() reopens the file on every write, so a
+    rename is clean: the next write recreates LOG rather than continuing to
+    an unlinked inode, which is exactly what would happen if the handle were
+    held open across the rotation.
+    """
+    try:
+        if LOG.stat().st_size < LOG_MAX_BYTES:
+            return
+    except OSError:
+        return
+    for gen in range(LOG_GENERATIONS - 1, 0, -1):
+        older = LOG.with_suffix(LOG.suffix + f".{gen + 1}")
+        newer = LOG.with_suffix(LOG.suffix + f".{gen}")
+        if newer.is_file():
+            try:
+                newer.replace(older)
+            except OSError:
+                return
+    try:
+        LOG.replace(LOG.with_suffix(LOG.suffix + ".1"))
+    except OSError:
+        return
+
+
 def emit(event: str, **fields: object) -> None:
     row = {"ts": now(), "event": event, **fields}
     line = json.dumps(row, sort_keys=True) + "\n"
     with _EMIT_LOCK:
         DOWNLOAD_DIR.mkdir(parents=True, exist_ok=True)
+        _rotate_log_if_needed()
         with LOG.open("a", encoding="utf-8") as handle:
             handle.write(line)
 
@@ -679,12 +716,26 @@ def _tail_json_lines(path: Path, max_lines: int) -> list[dict[str, object]]:
     reverse/seek read if the log ever grows large enough to make that cost
     matter at this call rate.
     """
-    if not path.is_file():
-        return []
-    try:
-        with path.open("r", encoding="utf-8") as handle:
-            tail = deque(handle, maxlen=max_lines)
-    except OSError:
+    # Read the rotated generation first so the tail spans a rotation. Without
+    # this, the roll would erase every download_started this watcher remembers
+    # and reconcile() would read "started, and now nothing on disk" -- its
+    # vanished-payload signal -- for jobs that are simply older than the roll.
+    sources = [
+        path.with_suffix(path.suffix + f".{gen}")
+        for gen in range(LOG_GENERATIONS, 0, -1)
+    ] + [path]
+    tail: deque = deque(maxlen=max_lines)
+    found = False
+    for source in sources:
+        if not source.is_file():
+            continue
+        found = True
+        try:
+            with source.open("r", encoding="utf-8") as handle:
+                tail.extend(handle)
+        except OSError:
+            continue
+    if not found:
         return []
     out = []
     for line in tail:
