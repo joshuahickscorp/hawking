@@ -1,20 +1,20 @@
 {
   "schema": "hawking.headless.vmcp_capability_surface.v1",
   "obligation": "Generic capability surface: what the core eyes can actually see, and what they refuse. Empty success is the finding.",
-  "generated_at": "2026-08-23T08:52:34Z",
-  "elapsed_s": 0.809,
+  "generated_at": "2026-09-02T22:36:47Z",
+  "elapsed_s": 2.262,
   "git": {
-    "head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
-    "oneline": "2f670c2 hcli: wire /grok command dispatch through GrokBridge (G027 phase 2)",
-    "cwd": "/Users/scammermike/Downloads/hawking-copy"
+    "head": "96bbfe2053f2ce2f86cd5a66b4688f8997937aa6",
+    "oneline": "96bbfe205 fix(tools): a tool the model cannot call is a tool it does not have",
+    "cwd": "/Users/scammermike/Downloads/hawking"
   },
   "visionmcp": {
     "version": "0.8.0a2",
-    "src": "/Users/scammermike/Downloads/hawking-copy/visionmcp/src",
+    "src": "/Users/scammermike/Downloads/hawking/visionmcp/src",
     "git": {
-      "head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
-      "oneline": "2f670c2 hcli: wire /grok command dispatch through GrokBridge (G027 phase 2)",
-      "cwd": "/Users/scammermike/Downloads/hawking-copy/visionmcp"
+      "head": "af8a81fd0559ab209e15452118da5e063949a3d7",
+      "oneline": "af8a81fd CaptureBus: verify the stored record, ask separately about the live subject",
+      "cwd": "/Users/scammermike/Downloads/hawking/visionmcp"
     },
     "in_this_worktree": true,
     "create_core_server_signature": "(projects_root: 'Path | None' = None, *, evidence_graph_registry: 'EvidenceGraphResourceRegistry | None' = None) -> 'McpHost'",
@@ -22,7 +22,7 @@
     "construction_used": "create_server(projects_root, profile='core')"
   },
   "interpreter": {
-    "executable": "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "executable": "/Users/scammermike/Downloads/hawking/workspace/ops/.venv/bin/python",
     "version": "3.14.6 (main, Jun 10 2026, 10:03:53) [Clang 21.0.0 (clang-2100.0.123.102)]",
     "heavy_modules_before_import": {
       "torch": false,
@@ -980,7 +980,7 @@
               "no_fallback_physical_pass": true
             }
           },
-          "seconds": 0.0024
+          "seconds": 0.0056
         },
         {
           "probe_id": "det_repeat",
@@ -1819,14 +1819,14 @@
               "no_fallback_physical_pass": true
             }
           },
-          "seconds": 0.0002
+          "seconds": 0.0003
         },
         {
           "probe_id": "unexpected_kw",
           "kind": "meta",
           "category": "empty",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main"
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main"
           },
           "ok": false,
           "classification": "EXPLICIT_ERROR",
@@ -1933,9 +1933,9 @@
             ],
             "plugins_loaded": 0,
             "network_used": false,
-            "elapsed_ms": 13.43908400303917
+            "elapsed_ms": 14.756040996871889
           },
-          "seconds": 0.0135
+          "seconds": 0.0148
         },
         {
           "probe_id": "det_repeat",
@@ -1996,9 +1996,9 @@
             ],
             "plugins_loaded": 0,
             "network_used": false,
-            "elapsed_ms": 0.21712500165449455
+            "elapsed_ms": 0.26133299979846925
           },
-          "seconds": 0.0004
+          "seconds": 0.0006
         },
         {
           "probe_id": "unexpected_kw",
@@ -2014,7 +2014,7 @@
           "cause_type": "TypeError",
           "cause": "create_core_server.<locals>.system_doctor() got an unexpected keyword argument 'project_path'",
           "payload": null,
-          "seconds": 0.0
+          "seconds": 0.0001
         }
       ],
       "empty_success": []
@@ -2083,7 +2083,7 @@
           "cause_type": "ProjectError",
           "cause": "project name does not produce a valid slug",
           "payload": null,
-          "seconds": 0.0025
+          "seconds": 0.0018
         },
         {
           "probe_id": "non_slug_name",
@@ -2139,14 +2139,14 @@
                 "handedness": "right",
                 "up_axis": "Z"
               },
-              "created_at": "2026-08-23T08:52:33.695633+00:00",
-              "id": "24896677-7c41-4def-9583-98b0a2cc36b0",
+              "created_at": "2026-09-02T22:36:45.242213+00:00",
+              "id": "cd065483-82f8-4f1f-a115-82b2cda67331",
               "metadata": {},
               "name": "probe-main",
               "schema_version": 1,
               "slug": "probe-main",
               "target_fidelity": "L3",
-              "updated_at": "2026-08-23T08:52:33.695633+00:00"
+              "updated_at": "2026-09-02T22:36:45.242213+00:00"
             },
             "counts": {
               "artifacts": 0,
@@ -2235,7 +2235,7 @@
             },
             "jobs": {}
           },
-          "seconds": 0.0215
+          "seconds": 0.0167
         },
         {
           "probe_id": "duplicate_name",
@@ -2247,11 +2247,11 @@
           "ok": false,
           "classification": "EXPLICIT_ERROR",
           "error_type": "ToolError",
-          "error": "Error executing tool project.create: project already exists: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main",
+          "error": "Error executing tool project.create: project already exists: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main",
           "cause_type": "ProjectError",
-          "cause": "project already exists: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main",
+          "cause": "project already exists: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main",
           "payload": null,
-          "seconds": 0.0002
+          "seconds": 0.0003
         },
         {
           "probe_id": "det_a",
@@ -2274,14 +2274,14 @@
                 "handedness": "right",
                 "up_axis": "Z"
               },
-              "created_at": "2026-08-23T08:52:33.717362+00:00",
-              "id": "017cacc8-f973-4002-b29d-9fa79900b0b0",
+              "created_at": "2026-09-02T22:36:45.259318+00:00",
+              "id": "b45d88a8-c3e0-4ac1-9fa4-2c5c7fc86148",
               "metadata": {},
               "name": "det-alpha",
               "schema_version": 1,
               "slug": "det-alpha",
               "target_fidelity": "L3",
-              "updated_at": "2026-08-23T08:52:33.717362+00:00"
+              "updated_at": "2026-09-02T22:36:45.259318+00:00"
             },
             "counts": {
               "artifacts": 0,
@@ -2370,7 +2370,7 @@
             },
             "jobs": {}
           },
-          "seconds": 0.0205
+          "seconds": 0.017
         },
         {
           "probe_id": "det_b",
@@ -2393,14 +2393,14 @@
                 "handedness": "right",
                 "up_axis": "Z"
               },
-              "created_at": "2026-08-23T08:52:33.737862+00:00",
-              "id": "a516857f-12db-47cf-bd2f-332dffec863a",
+              "created_at": "2026-09-02T22:36:45.276318+00:00",
+              "id": "1c992bf8-d114-4d9c-8279-1eb6f5c7a938",
               "metadata": {},
               "name": "det-beta",
               "schema_version": 1,
               "slug": "det-beta",
               "target_fidelity": "L3",
-              "updated_at": "2026-08-23T08:52:33.737862+00:00"
+              "updated_at": "2026-09-02T22:36:45.276318+00:00"
             },
             "counts": {
               "artifacts": 0,
@@ -2489,7 +2489,7 @@
             },
             "jobs": {}
           },
-          "seconds": 0.0203
+          "seconds": 0.0159
         },
         {
           "probe_id": "schema_absent_host",
@@ -2512,14 +2512,14 @@
                 "handedness": "right",
                 "up_axis": "Z"
               },
-              "created_at": "2026-08-23T08:52:34.080157+00:00",
-              "id": "05cad416-69bf-4e7b-b48c-1035bf0e5570",
+              "created_at": "2026-09-02T22:36:45.648719+00:00",
+              "id": "108ba2e7-77f7-4b09-83d7-47ef88b61bf1",
               "metadata": {},
               "name": "probe-notable",
               "schema_version": 1,
               "slug": "probe-notable",
               "target_fidelity": "L3",
-              "updated_at": "2026-08-23T08:52:34.080157+00:00"
+              "updated_at": "2026-09-02T22:36:45.648719+00:00"
             },
             "counts": {
               "artifacts": 0,
@@ -2608,7 +2608,7 @@
             },
             "jobs": {}
           },
-          "seconds": 0.0201
+          "seconds": 0.0172
         }
       ],
       "empty_success": []
@@ -2660,14 +2660,14 @@
           "kind": "refuse",
           "category": "absent",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/does-not-exist"
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/does-not-exist"
           },
           "ok": false,
           "classification": "EXPLICIT_ERROR",
           "error_type": "ToolError",
-          "error": "Error executing tool project.status: path does not exist: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/does-not-exist",
+          "error": "Error executing tool project.status: path does not exist: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/does-not-exist",
           "cause_type": "SecurityError",
-          "cause": "path does not exist: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/does-not-exist",
+          "cause": "path does not exist: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/does-not-exist",
           "payload": null,
           "seconds": 0.0004
         },
@@ -2685,30 +2685,30 @@
           "cause_type": "SecurityError",
           "cause": "path escapes project root: .",
           "payload": null,
-          "seconds": 0.0002
+          "seconds": 0.0003
         },
         {
           "probe_id": "outside_project",
           "kind": "refuse",
           "category": "outside",
           "arguments": {
-            "project_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/outside/escaped"
+            "project_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/outside/escaped"
           },
           "ok": false,
           "classification": "EXPLICIT_ERROR",
           "error_type": "ToolError",
-          "error": "Error executing tool project.status: path escapes project root: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/outside/escaped",
+          "error": "Error executing tool project.status: path escapes project root: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/outside/escaped",
           "cause_type": "SecurityError",
-          "cause": "path escapes project root: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/outside/escaped",
+          "cause": "path escapes project root: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/outside/escaped",
           "payload": null,
-          "seconds": 0.0001
+          "seconds": 0.0002
         },
         {
           "probe_id": "happy",
           "kind": "meta",
           "category": "meta",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main"
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main"
           },
           "ok": true,
           "classification": "SUCCESS",
@@ -2724,14 +2724,14 @@
                 "handedness": "right",
                 "up_axis": "Z"
               },
-              "created_at": "2026-08-23T08:52:33.695633+00:00",
-              "id": "24896677-7c41-4def-9583-98b0a2cc36b0",
+              "created_at": "2026-09-02T22:36:45.242213+00:00",
+              "id": "cd065483-82f8-4f1f-a115-82b2cda67331",
               "metadata": {},
               "name": "probe-main",
               "schema_version": 1,
               "slug": "probe-main",
               "target_fidelity": "L3",
-              "updated_at": "2026-08-23T08:52:33.695633+00:00"
+              "updated_at": "2026-09-02T22:36:45.242213+00:00"
             },
             "counts": {
               "artifacts": 0,
@@ -2827,7 +2827,7 @@
           "kind": "meta",
           "category": "meta",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main"
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main"
           },
           "ok": true,
           "classification": "SUCCESS",
@@ -2843,14 +2843,14 @@
                 "handedness": "right",
                 "up_axis": "Z"
               },
-              "created_at": "2026-08-23T08:52:33.695633+00:00",
-              "id": "24896677-7c41-4def-9583-98b0a2cc36b0",
+              "created_at": "2026-09-02T22:36:45.242213+00:00",
+              "id": "cd065483-82f8-4f1f-a115-82b2cda67331",
               "metadata": {},
               "name": "probe-main",
               "schema_version": 1,
               "slug": "probe-main",
               "target_fidelity": "L3",
-              "updated_at": "2026-08-23T08:52:33.695633+00:00"
+              "updated_at": "2026-09-02T22:36:45.242213+00:00"
             },
             "counts": {
               "artifacts": 0,
@@ -2991,14 +2991,14 @@
           "kind": "refuse",
           "category": "absent",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/does-not-exist"
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/does-not-exist"
           },
           "ok": false,
           "classification": "EXPLICIT_ERROR",
           "error_type": "ToolError",
-          "error": "Error executing tool vision.open_project: path does not exist: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/does-not-exist",
+          "error": "Error executing tool vision.open_project: path does not exist: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/does-not-exist",
           "cause_type": "SecurityError",
-          "cause": "path does not exist: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/does-not-exist",
+          "cause": "path does not exist: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/does-not-exist",
           "payload": null,
           "seconds": 0.0001
         },
@@ -3007,14 +3007,14 @@
           "kind": "refuse",
           "category": "outside",
           "arguments": {
-            "project_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/outside/escaped"
+            "project_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/outside/escaped"
           },
           "ok": false,
           "classification": "EXPLICIT_ERROR",
           "error_type": "ToolError",
-          "error": "Error executing tool vision.open_project: path escapes project root: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/outside/escaped",
+          "error": "Error executing tool vision.open_project: path escapes project root: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/outside/escaped",
           "cause_type": "SecurityError",
-          "cause": "path escapes project root: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/outside/escaped",
+          "cause": "path escapes project root: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/outside/escaped",
           "payload": null,
           "seconds": 0.0001
         },
@@ -3023,14 +3023,14 @@
           "kind": "refuse",
           "category": "absent",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/.resources"
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/.resources"
           },
           "ok": false,
           "classification": "EXPLICIT_ERROR",
           "error_type": "ToolError",
-          "error": "Error executing tool vision.open_project: not a VisionMCP project: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/.resources",
+          "error": "Error executing tool vision.open_project: not a VisionMCP project: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/.resources",
           "cause_type": "ProjectError",
-          "cause": "not a VisionMCP project: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/.resources",
+          "cause": "not a VisionMCP project: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/.resources",
           "payload": null,
           "seconds": 0.0002
         },
@@ -3039,7 +3039,7 @@
           "kind": "meta",
           "category": "meta",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main"
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main"
           },
           "ok": true,
           "classification": "SUCCESS",
@@ -3057,14 +3057,14 @@
                   "handedness": "right",
                   "up_axis": "Z"
                 },
-                "created_at": "2026-08-23T08:52:33.695633+00:00",
-                "id": "24896677-7c41-4def-9583-98b0a2cc36b0",
+                "created_at": "2026-09-02T22:36:45.242213+00:00",
+                "id": "cd065483-82f8-4f1f-a115-82b2cda67331",
                 "metadata": {},
                 "name": "probe-main",
                 "schema_version": 1,
                 "slug": "probe-main",
                 "target_fidelity": "L3",
-                "updated_at": "2026-08-23T08:52:33.695633+00:00"
+                "updated_at": "2026-09-02T22:36:45.242213+00:00"
               },
               "counts": {
                 "artifacts": 0,
@@ -3161,14 +3161,14 @@
           "kind": "refuse",
           "category": "absent",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/does-not-exist"
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/does-not-exist"
           },
           "ok": false,
           "classification": "EXPLICIT_ERROR",
           "error_type": "ToolError",
-          "error": "Error executing tool vision.open_project: path does not exist: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/does-not-exist",
+          "error": "Error executing tool vision.open_project: path does not exist: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/does-not-exist",
           "cause_type": "SecurityError",
-          "cause": "path does not exist: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/does-not-exist",
+          "cause": "path does not exist: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/does-not-exist",
           "payload": null,
           "seconds": 0.0002
         }
@@ -3222,7 +3222,7 @@
           "kind": "refuse",
           "category": "absent",
           "arguments": {
-            "project_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/never-opened"
+            "project_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/never-opened"
           },
           "ok": true,
           "classification": "EXPLICIT_CLASS",
@@ -3232,7 +3232,7 @@
           "cause": null,
           "payload": {
             "status": "not_open",
-            "project_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/never-opened"
+            "project_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/never-opened"
           },
           "seconds": 0.0003
         },
@@ -3241,7 +3241,7 @@
           "kind": "refuse",
           "category": "absent",
           "arguments": {
-            "project_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/never-opened"
+            "project_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/never-opened"
           },
           "ok": true,
           "classification": "EXPLICIT_CLASS",
@@ -3251,7 +3251,7 @@
           "cause": null,
           "payload": {
             "status": "not_open",
-            "project_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/never-opened"
+            "project_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/never-opened"
           },
           "seconds": 0.0002
         },
@@ -3260,14 +3260,14 @@
           "kind": "refuse",
           "category": "absent",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/does-not-exist"
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/does-not-exist"
           },
           "ok": false,
           "classification": "EXPLICIT_ERROR",
           "error_type": "ToolError",
-          "error": "Error executing tool vision.close_project: path does not exist: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/does-not-exist",
+          "error": "Error executing tool vision.close_project: path does not exist: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/does-not-exist",
           "cause_type": "SecurityError",
-          "cause": "path does not exist: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/does-not-exist",
+          "cause": "path does not exist: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/does-not-exist",
           "payload": null,
           "seconds": 0.0001
         },
@@ -3276,16 +3276,16 @@
           "kind": "refuse",
           "category": "outside",
           "arguments": {
-            "project_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/outside/escaped"
+            "project_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/outside/escaped"
           },
           "ok": false,
           "classification": "EXPLICIT_ERROR",
           "error_type": "ToolError",
-          "error": "Error executing tool vision.close_project: path escapes project root: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/outside/escaped",
+          "error": "Error executing tool vision.close_project: path escapes project root: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/outside/escaped",
           "cause_type": "SecurityError",
-          "cause": "path escapes project root: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/outside/escaped",
+          "cause": "path escapes project root: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/outside/escaped",
           "payload": null,
-          "seconds": 0.0002
+          "seconds": 0.0001
         }
       ],
       "empty_success": []
@@ -3342,7 +3342,7 @@
           "kind": "empty_ok",
           "category": "empty",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main"
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main"
           },
           "ok": true,
           "classification": "LEGITIMATE_EMPTY",
@@ -3362,7 +3362,7 @@
           "kind": "empty_ok",
           "category": "empty",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main"
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main"
           },
           "ok": true,
           "classification": "LEGITIMATE_EMPTY",
@@ -3382,14 +3382,14 @@
           "kind": "refuse",
           "category": "absent",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/does-not-exist"
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/does-not-exist"
           },
           "ok": false,
           "classification": "EXPLICIT_ERROR",
           "error_type": "ToolError",
-          "error": "Error executing tool vision.list_artifacts: path does not exist: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/does-not-exist",
+          "error": "Error executing tool vision.list_artifacts: path does not exist: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/does-not-exist",
           "cause_type": "SecurityError",
-          "cause": "path does not exist: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/does-not-exist",
+          "cause": "path does not exist: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/does-not-exist",
           "payload": null,
           "seconds": 0.0001
         },
@@ -3398,14 +3398,14 @@
           "kind": "refuse",
           "category": "outside",
           "arguments": {
-            "project_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/outside/escaped"
+            "project_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/outside/escaped"
           },
           "ok": false,
           "classification": "EXPLICIT_ERROR",
           "error_type": "ToolError",
-          "error": "Error executing tool vision.list_artifacts: path escapes project root: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/outside/escaped",
+          "error": "Error executing tool vision.list_artifacts: path escapes project root: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/outside/escaped",
           "cause_type": "SecurityError",
-          "cause": "path escapes project root: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/outside/escaped",
+          "cause": "path escapes project root: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/outside/escaped",
           "payload": null,
           "seconds": 0.0001
         },
@@ -3414,7 +3414,7 @@
           "kind": "empty_ok",
           "category": "empty",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main"
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main"
           },
           "ok": true,
           "classification": "SUCCESS",
@@ -3425,87 +3425,87 @@
           "payload": {
             "artifacts": [
               {
-                "digest": "b86a714dd00214bb32c1f5761703e7c887a300616305f5136c29bcec84b72bfd",
+                "digest": "935dcbafde8db2745132892e40fc2f07e8d9bb330b7bbd37b5eb672a48fedda6",
                 "size": 330,
                 "media_type": "application/json",
-                "relative_path": "artifacts/sha256/b8/6a/b86a714dd00214bb32c1f5761703e7c887a300616305f5136c29bcec84b72bfd",
-                "created_at": "2026-08-23T08:52:34.433730+00:00"
+                "relative_path": "artifacts/sha256/93/5d/935dcbafde8db2745132892e40fc2f07e8d9bb330b7bbd37b5eb672a48fedda6",
+                "created_at": "2026-09-02T22:36:47.433133+00:00"
               },
               {
-                "digest": "d9134e2651bdcfaa77296cb1bf86ef25b70fd59f21b0744e13ff0eef5b34403d",
-                "size": 1954,
+                "digest": "342431c8ba14576143946ac9eb7660602be4bc60c6d095b227260c9dcaaca0a0",
+                "size": 1931,
                 "media_type": "application/json",
-                "relative_path": "artifacts/sha256/d9/13/d9134e2651bdcfaa77296cb1bf86ef25b70fd59f21b0744e13ff0eef5b34403d",
-                "created_at": "2026-08-23T08:52:34.432414+00:00"
+                "relative_path": "artifacts/sha256/34/24/342431c8ba14576143946ac9eb7660602be4bc60c6d095b227260c9dcaaca0a0",
+                "created_at": "2026-09-02T22:36:47.432296+00:00"
               },
               {
-                "digest": "f354aa368037e6ded445f3a09b0f63889cf78cfab324f32c4f5872027b03efe4",
-                "size": 912,
+                "digest": "79abc3f10ad3fe5e00a9cc425d2364ca4232962659c46adec33ad310149c570f",
+                "size": 889,
                 "media_type": "application/json",
-                "relative_path": "artifacts/sha256/f3/54/f354aa368037e6ded445f3a09b0f63889cf78cfab324f32c4f5872027b03efe4",
-                "created_at": "2026-08-23T08:52:34.431200+00:00"
+                "relative_path": "artifacts/sha256/79/ab/79abc3f10ad3fe5e00a9cc425d2364ca4232962659c46adec33ad310149c570f",
+                "created_at": "2026-09-02T22:36:47.431383+00:00"
               },
               {
                 "digest": "c47dd9465c00e9a0c8b85e9ea58d3034a0d23b9cf926113602f3460752a4eb96",
                 "size": 69,
                 "media_type": "image/png",
                 "relative_path": "artifacts/sha256/c4/7d/c47dd9465c00e9a0c8b85e9ea58d3034a0d23b9cf926113602f3460752a4eb96",
-                "created_at": "2026-08-23T08:52:34.427583+00:00"
+                "created_at": "2026-09-02T22:36:47.426950+00:00"
               },
               {
-                "digest": "c474ea370b5c8679bb78adada2a001c70a80c8fae58f4f9362788854eec32c96",
+                "digest": "ddd08d422d132a57831257636d250df612cd1474204d09f3aa64259b3f74b39b",
                 "size": 897,
                 "media_type": "application/json",
-                "relative_path": "artifacts/sha256/c4/74/c474ea370b5c8679bb78adada2a001c70a80c8fae58f4f9362788854eec32c96",
-                "created_at": "2026-08-23T08:52:34.426446+00:00"
+                "relative_path": "artifacts/sha256/dd/d0/ddd08d422d132a57831257636d250df612cd1474204d09f3aa64259b3f74b39b",
+                "created_at": "2026-09-02T22:36:47.426197+00:00"
               },
               {
-                "digest": "f75b53625fe5f0c0a65c3cbff3d639891a82d7a1e3ded9030151776141aeced2",
+                "digest": "f6ac546af67543b1b9d804edd37d8783c838572f9d6e4d1190236c8f74701131",
                 "size": 425,
                 "media_type": "application/json",
-                "relative_path": "artifacts/sha256/f7/5b/f75b53625fe5f0c0a65c3cbff3d639891a82d7a1e3ded9030151776141aeced2",
-                "created_at": "2026-08-23T08:52:34.424622+00:00"
+                "relative_path": "artifacts/sha256/f6/ac/f6ac546af67543b1b9d804edd37d8783c838572f9d6e4d1190236c8f74701131",
+                "created_at": "2026-09-02T22:36:47.424854+00:00"
               },
               {
                 "digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
                 "size": 0,
                 "media_type": "image/png",
                 "relative_path": "artifacts/sha256/e3/b0/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-                "created_at": "2026-08-23T08:52:34.423354+00:00"
+                "created_at": "2026-09-02T22:36:47.423961+00:00"
               },
               {
-                "digest": "1876a7a26034db4758f716191309323d1e66c40c32cdf74bf4c0dc72b08cbec8",
+                "digest": "d2e6dffe6c14d3ec13a072aa729c8806d1e5adb4131060e93987faa9b9530b90",
                 "size": 896,
                 "media_type": "application/json",
-                "relative_path": "artifacts/sha256/18/76/1876a7a26034db4758f716191309323d1e66c40c32cdf74bf4c0dc72b08cbec8",
-                "created_at": "2026-08-23T08:52:34.422252+00:00"
+                "relative_path": "artifacts/sha256/d2/e6/d2e6dffe6c14d3ec13a072aa729c8806d1e5adb4131060e93987faa9b9530b90",
+                "created_at": "2026-09-02T22:36:47.423169+00:00"
               },
               {
-                "digest": "7995be5be96c4ee0ecb0bca2928776bbe1bc1523338f96418a60aa82dbd15c9b",
+                "digest": "cfd109cd8fc20e52cfe64119e0624f7c2d279b5839a5fe890580efad774520cc",
                 "size": 423,
                 "media_type": "application/json",
-                "relative_path": "artifacts/sha256/79/95/7995be5be96c4ee0ecb0bca2928776bbe1bc1523338f96418a60aa82dbd15c9b",
-                "created_at": "2026-08-23T08:52:34.420041+00:00"
+                "relative_path": "artifacts/sha256/cf/d1/cfd109cd8fc20e52cfe64119e0624f7c2d279b5839a5fe890580efad774520cc",
+                "created_at": "2026-09-02T22:36:47.421121+00:00"
               },
               {
                 "digest": "bcc227fae0a03553c015d6d936966078f759604d0fb67ff58fa7b4fa639963f8",
                 "size": 29,
                 "media_type": "image/png",
                 "relative_path": "artifacts/sha256/bc/c2/bcc227fae0a03553c015d6d936966078f759604d0fb67ff58fa7b4fa639963f8",
-                "created_at": "2026-08-23T08:52:34.318507+00:00"
+                "created_at": "2026-09-02T22:36:47.266172+00:00"
               },
               {
-                "digest": "8d6f4bf471f9da81a90c7403b8a4868b0ab3cc7df3d6a3026ec627e9ac2c00bc",
+                "digest": "1f9af87d6cf6924d203db21aa5c1298029e1da0d752bda000221c075c4efaa36",
                 "size": 895,
                 "media_type": "application/json",
-                "relative_path": "artifacts/sha256/8d/6f/8d6f4bf471f9da81a90c7403b8a4868b0ab3cc7df3d6a3026ec627e9ac2c00bc",
-                "created_at": "2026-08-23T08:52:34.316372+00:00"
+                "relative_path": "artifacts/sha256/1f/9a/1f9af87d6cf6924d203db21aa5c1298029e1da0d752bda000221c075c4efaa36",
+                "created_at": "2026-09-02T22:36:47.263818+00:00"
               }
             ],
             "count": 11,
             "limit": 100
           },
-          "seconds": 0.0004
+          "seconds": 0.0003
         }
       ],
       "empty_success": []
@@ -3568,7 +3568,7 @@
           "kind": "refuse",
           "category": "absent",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main",
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main",
             "digest": "abababababababababababababababababababababababababababababababab"
           },
           "ok": false,
@@ -3578,14 +3578,14 @@
           "cause_type": "FileNotFoundError",
           "cause": "artifact not found for digest abababababababababababababababababababababababababababababababab",
           "payload": null,
-          "seconds": 0.0011
+          "seconds": 0.0033
         },
         {
           "probe_id": "empty_digest",
           "kind": "refuse",
           "category": "empty",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main",
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main",
             "digest": ""
           },
           "ok": false,
@@ -3602,7 +3602,7 @@
           "kind": "refuse",
           "category": "empty",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main",
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main",
             "digest": "not-a-digest"
           },
           "ok": false,
@@ -3619,24 +3619,24 @@
           "kind": "refuse",
           "category": "outside",
           "arguments": {
-            "project_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/outside/escaped",
+            "project_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/outside/escaped",
             "digest": "abababababababababababababababababababababababababababababababab"
           },
           "ok": false,
           "classification": "EXPLICIT_ERROR",
           "error_type": "ToolError",
-          "error": "Error executing tool vision.get_artifact: path escapes project root: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/outside/escaped",
+          "error": "Error executing tool vision.get_artifact: path escapes project root: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/outside/escaped",
           "cause_type": "SecurityError",
-          "cause": "path escapes project root: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/outside/escaped",
+          "cause": "path escapes project root: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/outside/escaped",
           "payload": null,
-          "seconds": 0.0001
+          "seconds": 0.0002
         },
         {
           "probe_id": "missing_digest_repeat",
           "kind": "refuse",
           "category": "absent",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main",
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main",
             "digest": "abababababababababababababababababababababababababababababababab"
           },
           "ok": false,
@@ -3646,7 +3646,7 @@
           "cause_type": "FileNotFoundError",
           "cause": "artifact not found for digest abababababababababababababababababababababababababababababababab",
           "payload": null,
-          "seconds": 0.0003
+          "seconds": 0.0002
         }
       ],
       "empty_success": []
@@ -3729,7 +3729,7 @@
       "exactness": {
         "class": "heuristic",
         "says_which": "partial",
-        "notes": "On a successful image capture: width/height are integer pixel counts (exact for the *normalized* raster, which may have been resized; original_width/original_height are also returned). perceptual_hash is an 8x8 average hash \u2014 a heuristic \u2014 labelled only as perceptual_hash, no error class. region confidence is min(0.95, area/pixels), a heuristic with authority=DERIVED. limitations[] does say contour/OCR are DERIVED. mean_rgb is rounded to 3 decimal places. Capture identity is sha256 of the canonical request (exact)."
+        "notes": "On a successful image capture: width/height are integer pixel counts (exact for the *normalized* raster, which may have been resized; original_width/original_height are also returned). perceptual_hash is an 8x8 average hash — a heuristic — labelled only as perceptual_hash, no error class. region confidence is min(0.95, area/pixels), a heuristic with authority=DERIVED. limitations[] does say contour/OCR are DERIVED. mean_rgb is rounded to 3 decimal places. Capture identity is sha256 of the canonical request (exact)."
       },
       "determinism": {
         "compared": true,
@@ -3747,19 +3747,19 @@
           "kind": "refuse",
           "category": "absent",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main",
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main",
             "rights_decision": "OWNED",
             "adapter": "image.file",
             "target": {
-              "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main/no-such-file.png"
+              "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main/no-such-file.png"
             }
           },
           "ok": false,
           "classification": "EXPLICIT_ERROR",
           "error_type": "ToolError",
-          "error": "Error executing tool vision.observe: path does not exist: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main/no-such-file.png",
+          "error": "Error executing tool vision.observe: path does not exist: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main/no-such-file.png",
           "cause_type": "SecurityError",
-          "cause": "path does not exist: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main/no-such-file.png",
+          "cause": "path does not exist: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main/no-such-file.png",
           "payload": null,
           "seconds": 0.0003
         },
@@ -3768,28 +3768,28 @@
           "kind": "refuse",
           "category": "outside",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main",
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main",
             "rights_decision": "OWNED",
             "adapter": "image.file",
             "target": {
-              "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/outside/canary.txt"
+              "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/outside/canary.txt"
             }
           },
           "ok": false,
           "classification": "EXPLICIT_ERROR",
           "error_type": "ToolError",
-          "error": "Error executing tool vision.observe: path escapes project root: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/outside/canary.txt",
+          "error": "Error executing tool vision.observe: path escapes project root: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/outside/canary.txt",
           "cause_type": "SecurityError",
-          "cause": "path escapes project root: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/outside/canary.txt",
+          "cause": "path escapes project root: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/outside/canary.txt",
           "payload": null,
-          "seconds": 0.0003
+          "seconds": 0.0002
         },
         {
           "probe_id": "empty_target",
           "kind": "refuse",
           "category": "empty",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main",
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main",
             "rights_decision": "OWNED",
             "adapter": "image.file",
             "target": null
@@ -3808,7 +3808,7 @@
           "kind": "refuse",
           "category": "empty",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main",
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main",
             "rights_decision": "OWNED",
             "adapter": "image.file",
             "target": {
@@ -3829,11 +3829,11 @@
           "kind": "refuse",
           "category": "wrong_type",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main",
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main",
             "rights_decision": "OWNED",
             "adapter": "image.file",
             "target": {
-              "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main/note.txt"
+              "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main/note.txt"
             }
           },
           "ok": false,
@@ -3843,14 +3843,14 @@
           "cause_type": "ValueError",
           "cause": "image target must be an existing supported file",
           "payload": null,
-          "seconds": 0.0869
+          "seconds": 0.1293
         },
         {
           "probe_id": "unsupported_adapter",
           "kind": "refuse",
           "category": "wrong_type",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main",
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main",
             "rights_decision": "OWNED",
             "adapter": "browser.chromium",
             "target": {
@@ -3871,11 +3871,11 @@
           "kind": "refuse",
           "category": "empty",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main",
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main",
             "rights_decision": "   ",
             "adapter": "image.file",
             "target": {
-              "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main/valid.png"
+              "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main/valid.png"
             }
           },
           "ok": false,
@@ -3892,11 +3892,11 @@
           "kind": "refuse",
           "category": "wrong_type",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main",
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main",
             "rights_decision": "OWNED",
             "adapter": "image.file",
             "target": {
-              "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main/lie.png"
+              "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main/lie.png"
             },
             "configuration": {
               "ocr": false
@@ -3916,11 +3916,11 @@
           "kind": "refuse",
           "category": "wrong_type",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main",
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main",
             "rights_decision": "OWNED",
             "adapter": "image.file",
             "target": {
-              "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main/empty.png"
+              "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main/empty.png"
             },
             "configuration": {
               "ocr": false
@@ -3933,18 +3933,18 @@
           "cause_type": "OptionalDependencyError",
           "cause": "Optional dependency 'cv2' is not installed. Install the declared extra/profile: geometry or ocular (opencv-python-headless).",
           "payload": null,
-          "seconds": 0.0005
+          "seconds": 0.0004
         },
         {
           "probe_id": "valid_png_system_python",
           "kind": "refuse",
           "category": "wrong_type",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main",
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main",
             "rights_decision": "OWNED",
             "adapter": "image.file",
             "target": {
-              "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main/valid.png"
+              "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main/valid.png"
             },
             "configuration": {
               "ocr": false
@@ -3964,11 +3964,11 @@
           "kind": "refuse",
           "category": "wrong_type",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main",
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main",
             "rights_decision": "OWNED",
             "adapter": "video.file",
             "target": {
-              "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main/lie.mp4"
+              "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main/lie.mp4"
             }
           },
           "ok": false,
@@ -3978,7 +3978,7 @@
           "cause_type": "OptionalDependencyError",
           "cause": "Optional dependency 'cv2' is not installed. Install the declared extra/profile: geometry or ocular (opencv-python-headless).",
           "payload": null,
-          "seconds": 0.0005
+          "seconds": 0.0019
         },
         {
           "probe_id": "cv2_lie_png",
@@ -3990,9 +3990,9 @@
           "ok": false,
           "classification": "EXPLICIT_ERROR",
           "error_type": "ToolError",
-          "error": "Error executing tool vision.observe: cannot identify image file '/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main/lie.png'",
+          "error": "Error executing tool vision.observe: cannot identify image file '/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main/lie.png'",
           "cause_type": "UnidentifiedImageError",
-          "cause": "cannot identify image file '/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main/lie.png'",
+          "cause": "cannot identify image file '/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main/lie.png'",
           "payload": null,
           "seconds": 0.0
         },
@@ -4006,9 +4006,9 @@
           "ok": false,
           "classification": "EXPLICIT_ERROR",
           "error_type": "ToolError",
-          "error": "Error executing tool vision.observe: cannot identify image file '/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main/empty.png'",
+          "error": "Error executing tool vision.observe: cannot identify image file '/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main/empty.png'",
           "cause_type": "UnidentifiedImageError",
-          "cause": "cannot identify image file '/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main/empty.png'",
+          "cause": "cannot identify image file '/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main/empty.png'",
           "payload": null,
           "seconds": 0.0
         },
@@ -4026,12 +4026,12 @@
           "cause_type": null,
           "cause": null,
           "payload": {
-            "capture_id": "1d841ed0fc0e2980eacba7d2afe2fb0fdb9c942ed6768738bbf783d10cd4a882",
+            "capture_id": "ec65790a8c5ad8cdbd1f8909fb54f003eeaefad33f1615a20fe9fd85bde2e01e",
             "adapter": "image.file",
             "adapter_version": "1",
             "status": "COMPLETE",
             "authority": "OBSERVED",
-            "manifest_digest": "d9134e2651bdcfaa77296cb1bf86ef25b70fd59f21b0744e13ff0eef5b34403d",
+            "manifest_digest": "342431c8ba14576143946ac9eb7660602be4bc60c6d095b227260c9dcaaca0a0",
             "request": {
               "adapter": "image.file",
               "adapter_version": "1",
@@ -4056,7 +4056,7 @@
                 "digest": "c47dd9465c00e9a0c8b85e9ea58d3034a0d23b9cf926113602f3460752a4eb96",
                 "id": "c47dd9465c00e9a0c8b85e9ea58d3034a0d23b9cf926113602f3460752a4eb96",
                 "kind": "image",
-                "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main/valid.png",
+                "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main/valid.png",
                 "size": 69
               }
             },
@@ -4071,7 +4071,6 @@
             },
             "summary": {
               "height": 1,
-              "ocr_status": "OMITTED",
               "perceptual_hash": "ffffffffffffffff",
               "region_count": 0,
               "text_symbol_count": 0,
@@ -4082,15 +4081,15 @@
               "Single-image depth and occluded structure remain unobserved."
             ],
             "attempt_count": 1,
-            "created_at": "2026-08-23T08:52:34.425487+00:00",
-            "updated_at": "2026-08-23T08:52:34.431629+00:00",
+            "created_at": "2026-09-02T22:36:47.425547+00:00",
+            "updated_at": "2026-09-02T22:36:47.431642+00:00",
             "artifacts": [
               {
                 "role": "image.graph",
-                "digest": "f354aa368037e6ded445f3a09b0f63889cf78cfab324f32c4f5872027b03efe4",
+                "digest": "79abc3f10ad3fe5e00a9cc425d2364ca4232962659c46adec33ad310149c570f",
                 "media_type": "application/json",
                 "metadata": {},
-                "created_at": "2026-08-23T08:52:34.431438+00:00"
+                "created_at": "2026-09-02T22:36:47.431509+00:00"
               },
               {
                 "role": "image.normalized",
@@ -4100,7 +4099,7 @@
                   "coordinate_space": "normalized-image-pixels",
                   "source_digest": "c47dd9465c00e9a0c8b85e9ea58d3034a0d23b9cf926113602f3460752a4eb96"
                 },
-                "created_at": "2026-08-23T08:52:34.430258+00:00"
+                "created_at": "2026-09-02T22:36:47.430651+00:00"
               },
               {
                 "role": "image.source",
@@ -4109,12 +4108,12 @@
                 "metadata": {
                   "source_digest": "c47dd9465c00e9a0c8b85e9ea58d3034a0d23b9cf926113602f3460752a4eb96"
                 },
-                "created_at": "2026-08-23T08:52:34.427832+00:00"
+                "created_at": "2026-09-02T22:36:47.427050+00:00"
               }
             ],
             "manifest": {
               "schema": "vision.observation-envelope/v1",
-              "capture_id": "1d841ed0fc0e2980eacba7d2afe2fb0fdb9c942ed6768738bbf783d10cd4a882",
+              "capture_id": "ec65790a8c5ad8cdbd1f8909fb54f003eeaefad33f1615a20fe9fd85bde2e01e",
               "authority": "OBSERVED",
               "request": {
                 "adapter": "image.file",
@@ -4122,7 +4121,7 @@
                 "target": {
                   "id": "c47dd9465c00e9a0c8b85e9ea58d3034a0d23b9cf926113602f3460752a4eb96",
                   "kind": "image",
-                  "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main/valid.png",
+                  "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main/valid.png",
                   "digest": "c47dd9465c00e9a0c8b85e9ea58d3034a0d23b9cf926113602f3460752a4eb96",
                   "size": 69
                 },
@@ -4147,10 +4146,10 @@
               "artifacts": [
                 {
                   "role": "image.graph",
-                  "digest": "f354aa368037e6ded445f3a09b0f63889cf78cfab324f32c4f5872027b03efe4",
+                  "digest": "79abc3f10ad3fe5e00a9cc425d2364ca4232962659c46adec33ad310149c570f",
                   "media_type": "application/json",
                   "metadata": {},
-                  "created_at": "2026-08-23T08:52:34.431438+00:00"
+                  "created_at": "2026-09-02T22:36:47.431509+00:00"
                 },
                 {
                   "role": "image.normalized",
@@ -4160,7 +4159,7 @@
                     "coordinate_space": "normalized-image-pixels",
                     "source_digest": "c47dd9465c00e9a0c8b85e9ea58d3034a0d23b9cf926113602f3460752a4eb96"
                   },
-                  "created_at": "2026-08-23T08:52:34.430258+00:00"
+                  "created_at": "2026-09-02T22:36:47.430651+00:00"
                 },
                 {
                   "role": "image.source",
@@ -4169,7 +4168,7 @@
                   "metadata": {
                     "source_digest": "c47dd9465c00e9a0c8b85e9ea58d3034a0d23b9cf926113602f3460752a4eb96"
                   },
-                  "created_at": "2026-08-23T08:52:34.427832+00:00"
+                  "created_at": "2026-09-02T22:36:47.427050+00:00"
                 }
               ],
               "summary": {
@@ -4177,14 +4176,13 @@
                 "height": 1,
                 "region_count": 0,
                 "text_symbol_count": 0,
-                "perceptual_hash": "ffffffffffffffff",
-                "ocr_status": "OMITTED"
+                "perceptual_hash": "ffffffffffffffff"
               },
               "limitations": [
                 "Contour regions and OCR symbols are DERIVED interpretations of observed pixels.",
                 "Single-image depth and occluded structure remain unobserved."
               ],
-              "created_at": "2026-08-23T08:52:34.431629+00:00"
+              "created_at": "2026-09-02T22:36:47.431642+00:00"
             },
             "reused": false
           },
@@ -4195,21 +4193,21 @@
           "kind": "refuse",
           "category": "absent",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main",
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main",
             "rights_decision": "OWNED",
             "adapter": "image.file",
             "target": {
-              "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main/no-such-file.png"
+              "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main/no-such-file.png"
             }
           },
           "ok": false,
           "classification": "EXPLICIT_ERROR",
           "error_type": "ToolError",
-          "error": "Error executing tool vision.observe: path does not exist: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main/no-such-file.png",
+          "error": "Error executing tool vision.observe: path does not exist: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main/no-such-file.png",
           "cause_type": "SecurityError",
-          "cause": "path does not exist: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main/no-such-file.png",
+          "cause": "path does not exist: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main/no-such-file.png",
           "payload": null,
-          "seconds": 0.0004
+          "seconds": 0.0005
         }
       ],
       "empty_success": []
@@ -4274,7 +4272,7 @@
           "kind": "empty_hunt",
           "category": "missing_id",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main",
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main",
             "capture_id": "0000000000000000000000000000000000000000000000000000000000000000",
             "query": {
               "point": {
@@ -4297,7 +4295,7 @@
           "kind": "empty_hunt",
           "category": "empty",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main",
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main",
             "capture_id": "",
             "query": {}
           },
@@ -4315,16 +4313,16 @@
           "kind": "refuse",
           "category": "outside",
           "arguments": {
-            "project_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/outside/escaped",
+            "project_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/outside/escaped",
             "capture_id": "0000000000000000000000000000000000000000000000000000000000000000",
             "query": {}
           },
           "ok": false,
           "classification": "EXPLICIT_ERROR",
           "error_type": "ToolError",
-          "error": "Error executing tool vision.query: path escapes project root: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/outside/escaped",
+          "error": "Error executing tool vision.query: path escapes project root: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/outside/escaped",
           "cause_type": "SecurityError",
-          "cause": "path escapes project root: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/outside/escaped",
+          "cause": "path escapes project root: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/outside/escaped",
           "payload": null,
           "seconds": 0.0002
         },
@@ -4333,7 +4331,7 @@
           "kind": "empty_hunt",
           "category": "missing_id",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main",
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main",
             "capture_id": "0000000000000000000000000000000000000000000000000000000000000000",
             "query": {
               "text": "nope"
@@ -4353,7 +4351,7 @@
           "kind": "empty_hunt",
           "category": "missing_id",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main",
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main",
             "capture_id": "0000000000000000000000000000000000000000000000000000000000000000",
             "query": {
               "text": "nope"
@@ -4446,7 +4444,7 @@
       "exactness": {
         "class": "exact_over_derived_graph",
         "says_which": false,
-        "notes": "Wraps query; explanations copy authority/confidence/uncertainty from nodes. confidence on image regions is the heuristic above. A miss returns explanations:[] *with a citation* when the graph loaded \u2014 distinguishable from a missing capture, which raises KeyError."
+        "notes": "Wraps query; explanations copy authority/confidence/uncertainty from nodes. confidence on image regions is the heuristic above. A miss returns explanations:[] *with a citation* when the graph loaded — distinguishable from a missing capture, which raises KeyError."
       },
       "determinism": {
         "compared": true,
@@ -4464,7 +4462,7 @@
           "kind": "empty_hunt",
           "category": "missing_id",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main",
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main",
             "capture_id": "0000000000000000000000000000000000000000000000000000000000000000",
             "x": 0.0,
             "y": 0.0
@@ -4483,7 +4481,7 @@
           "kind": "empty_hunt",
           "category": "empty",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main",
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main",
             "capture_id": "",
             "x": 0.0,
             "y": 0.0
@@ -4502,7 +4500,7 @@
           "kind": "empty_hunt",
           "category": "missing_id",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main",
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main",
             "capture_id": "0000000000000000000000000000000000000000000000000000000000000000",
             "x": 1.0,
             "y": 1.0
@@ -4521,7 +4519,7 @@
           "kind": "empty_hunt",
           "category": "missing_id",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main",
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main",
             "capture_id": "0000000000000000000000000000000000000000000000000000000000000000",
             "x": 1.0,
             "y": 1.0
@@ -4549,7 +4547,7 @@
           "cause_type": null,
           "cause": null,
           "payload": {
-            "capture_id": "1d841ed0fc0e2980eacba7d2afe2fb0fdb9c942ed6768738bbf783d10cd4a882",
+            "capture_id": "ec65790a8c5ad8cdbd1f8909fb54f003eeaefad33f1615a20fe9fd85bde2e01e",
             "graph_type": "ImageGraph",
             "query": {
               "point": {
@@ -4561,8 +4559,8 @@
             "matches": [],
             "match_count": 0,
             "citation": {
-              "capture_id": "1d841ed0fc0e2980eacba7d2afe2fb0fdb9c942ed6768738bbf783d10cd4a882",
-              "artifact_digest": "f354aa368037e6ded445f3a09b0f63889cf78cfab324f32c4f5872027b03efe4",
+              "capture_id": "ec65790a8c5ad8cdbd1f8909fb54f003eeaefad33f1615a20fe9fd85bde2e01e",
+              "artifact_digest": "79abc3f10ad3fe5e00a9cc425d2364ca4232962659c46adec33ad310149c570f",
               "authority": "MIXED"
             },
             "explanations": []
@@ -4647,7 +4645,7 @@
           "kind": "empty_hunt",
           "category": "missing_id",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main",
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main",
             "capture_a": "0000000000000000000000000000000000000000000000000000000000000000",
             "capture_b": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
           },
@@ -4665,7 +4663,7 @@
           "kind": "empty_hunt",
           "category": "missing_id",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main",
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main",
             "capture_a": "0000000000000000000000000000000000000000000000000000000000000000",
             "capture_b": "0000000000000000000000000000000000000000000000000000000000000000"
           },
@@ -4683,7 +4681,7 @@
           "kind": "empty_hunt",
           "category": "missing_id",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main",
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main",
             "capture_a": "0000000000000000000000000000000000000000000000000000000000000000",
             "capture_b": "0000000000000000000000000000000000000000000000000000000000000000"
           },
@@ -4694,7 +4692,7 @@
           "cause_type": "RuntimeError",
           "cause": "verification requires a CaptureBus",
           "payload": null,
-          "seconds": 0.0002
+          "seconds": 0.0001
         }
       ],
       "empty_success": []
@@ -4770,7 +4768,7 @@
           "kind": "refuse",
           "category": "empty",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main"
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main"
           },
           "ok": false,
           "classification": "EXPLICIT_ERROR",
@@ -4779,14 +4777,14 @@
           "cause_type": "ValueError",
           "cause": "vision.verify requires capture_id or receipt_path",
           "payload": null,
-          "seconds": 0.0002
+          "seconds": 0.0001
         },
         {
           "probe_id": "unknown_capture",
           "kind": "empty_hunt",
           "category": "missing_id",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main",
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main",
             "capture_id": "0000000000000000000000000000000000000000000000000000000000000000"
           },
           "ok": false,
@@ -4803,32 +4801,32 @@
           "kind": "refuse",
           "category": "absent",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main",
-            "receipt_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main/no-receipt.json"
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main",
+            "receipt_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main/no-receipt.json"
           },
           "ok": false,
           "classification": "EXPLICIT_ERROR",
           "error_type": "ToolError",
-          "error": "Error executing tool vision.verify: path does not exist: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main/no-receipt.json",
+          "error": "Error executing tool vision.verify: path does not exist: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main/no-receipt.json",
           "cause_type": "SecurityError",
-          "cause": "path does not exist: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main/no-receipt.json",
+          "cause": "path does not exist: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main/no-receipt.json",
           "payload": null,
-          "seconds": 0.1632
+          "seconds": 0.1563
         },
         {
           "probe_id": "outside_receipt",
           "kind": "refuse",
           "category": "outside",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main",
-            "receipt_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/outside/canary.txt"
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main",
+            "receipt_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/outside/canary.txt"
           },
           "ok": false,
           "classification": "EXPLICIT_ERROR",
           "error_type": "ToolError",
-          "error": "Error executing tool vision.verify: path escapes project root: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/outside/canary.txt",
+          "error": "Error executing tool vision.verify: path escapes project root: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/outside/canary.txt",
           "cause_type": "SecurityError",
-          "cause": "path escapes project root: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/outside/canary.txt",
+          "cause": "path escapes project root: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/outside/canary.txt",
           "payload": null,
           "seconds": 0.0004
         },
@@ -4837,8 +4835,8 @@
           "kind": "refuse",
           "category": "wrong_type",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main",
-            "receipt_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main/garbage-receipt.json"
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main",
+            "receipt_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main/garbage-receipt.json"
           },
           "ok": false,
           "classification": "EXPLICIT_ERROR",
@@ -4847,15 +4845,15 @@
           "cause_type": "JSONDecodeError",
           "cause": "Expecting property name enclosed in double quotes: line 1 column 2 (char 1)",
           "payload": null,
-          "seconds": 0.0004
+          "seconds": 0.0006
         },
         {
           "probe_id": "empty_json_receipt",
           "kind": "refuse",
           "category": "wrong_type",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main",
-            "receipt_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main/empty-receipt.json"
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main",
+            "receipt_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main/empty-receipt.json"
           },
           "ok": false,
           "classification": "EXPLICIT_ERROR",
@@ -4871,7 +4869,7 @@
           "kind": "empty_hunt",
           "category": "missing_id",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main",
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main",
             "capture_id": "0000000000000000000000000000000000000000000000000000000000000000"
           },
           "ok": false,
@@ -4881,14 +4879,14 @@
           "cause_type": "KeyError",
           "cause": "'unknown capture: 0000000000000000000000000000000000000000000000000000000000000000'",
           "payload": null,
-          "seconds": 0.0002
+          "seconds": 0.0003
         },
         {
           "probe_id": "det_repeat_b",
           "kind": "empty_hunt",
           "category": "missing_id",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main",
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main",
             "capture_id": "0000000000000000000000000000000000000000000000000000000000000000"
           },
           "ok": false,
@@ -4932,7 +4930,7 @@
       "exactness": {
         "class": "exact_counts_silent_blockers",
         "says_which": false,
-        "notes": "artifact_count is SQL COUNT(*). overview.captures is a full table read. blockers is hardcoded [] in core_server.py \u2014 never computed, never labelled as 'not implemented'."
+        "notes": "artifact_count is SQL COUNT(*). overview.captures is a full table read. blockers is hardcoded [] in core_server.py — never computed, never labelled as 'not implemented'."
       },
       "determinism": {
         "compared": true,
@@ -4950,7 +4948,7 @@
           "kind": "empty_ok",
           "category": "empty",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main"
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main"
           },
           "ok": true,
           "classification": "LEGITIMATE_EMPTY",
@@ -4960,7 +4958,7 @@
           "cause": null,
           "payload": {
             "overview": {
-              "project_id": "24896677-7c41-4def-9583-98b0a2cc36b0",
+              "project_id": "cd065483-82f8-4f1f-a115-82b2cda67331",
               "captures": []
             },
             "artifact_count": 0,
@@ -4974,7 +4972,7 @@
           "kind": "empty_ok",
           "category": "empty",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main"
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main"
           },
           "ok": true,
           "classification": "LEGITIMATE_EMPTY",
@@ -4984,7 +4982,7 @@
           "cause": null,
           "payload": {
             "overview": {
-              "project_id": "24896677-7c41-4def-9583-98b0a2cc36b0",
+              "project_id": "cd065483-82f8-4f1f-a115-82b2cda67331",
               "captures": []
             },
             "artifact_count": 0,
@@ -4998,30 +4996,30 @@
           "kind": "refuse",
           "category": "absent",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/does-not-exist"
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/does-not-exist"
           },
           "ok": false,
           "classification": "EXPLICIT_ERROR",
           "error_type": "ToolError",
-          "error": "Error executing tool vision.progress: path does not exist: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/does-not-exist",
+          "error": "Error executing tool vision.progress: path does not exist: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/does-not-exist",
           "cause_type": "SecurityError",
-          "cause": "path does not exist: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/does-not-exist",
+          "cause": "path does not exist: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/does-not-exist",
           "payload": null,
-          "seconds": 0.0002
+          "seconds": 0.0001
         },
         {
           "probe_id": "outside_project",
           "kind": "refuse",
           "category": "outside",
           "arguments": {
-            "project_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/outside/escaped"
+            "project_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/outside/escaped"
           },
           "ok": false,
           "classification": "EXPLICIT_ERROR",
           "error_type": "ToolError",
-          "error": "Error executing tool vision.progress: path escapes project root: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/outside/escaped",
+          "error": "Error executing tool vision.progress: path escapes project root: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/outside/escaped",
           "cause_type": "SecurityError",
-          "cause": "path escapes project root: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/outside/escaped",
+          "cause": "path escapes project root: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/outside/escaped",
           "payload": null,
           "seconds": 0.0002
         },
@@ -5040,47 +5038,46 @@
           "cause": null,
           "payload": {
             "overview": {
-              "project_id": "24896677-7c41-4def-9583-98b0a2cc36b0",
+              "project_id": "cd065483-82f8-4f1f-a115-82b2cda67331",
               "captures": [
                 {
-                  "capture_id": "1d841ed0fc0e2980eacba7d2afe2fb0fdb9c942ed6768738bbf783d10cd4a882",
+                  "capture_id": "ec65790a8c5ad8cdbd1f8909fb54f003eeaefad33f1615a20fe9fd85bde2e01e",
                   "adapter": "image.file",
                   "status": "COMPLETE",
                   "authority": "OBSERVED",
-                  "manifest_digest": "d9134e2651bdcfaa77296cb1bf86ef25b70fd59f21b0744e13ff0eef5b34403d",
+                  "manifest_digest": "342431c8ba14576143946ac9eb7660602be4bc60c6d095b227260c9dcaaca0a0",
                   "summary": {
                     "height": 1,
-                    "ocr_status": "OMITTED",
                     "perceptual_hash": "ffffffffffffffff",
                     "region_count": 0,
                     "text_symbol_count": 0,
                     "width": 1
                   },
                   "attempt_count": 1,
-                  "created_at": "2026-08-23T08:52:34.425487+00:00",
-                  "updated_at": "2026-08-23T08:52:34.431629+00:00"
+                  "created_at": "2026-09-02T22:36:47.425547+00:00",
+                  "updated_at": "2026-09-02T22:36:47.431642+00:00"
                 },
                 {
-                  "capture_id": "dd5c90c80fa29bbe2b34546fd1ef69b5cf652a4b274e87d344f0605459557b63",
+                  "capture_id": "08136e432019ad9895b27b5c74f19b901560c6b3be5d4eb06ece201ae5b81900",
                   "adapter": "image.file",
                   "status": "INTERRUPTED",
                   "authority": "OBSERVED",
                   "manifest_digest": null,
                   "summary": {},
                   "attempt_count": 1,
-                  "created_at": "2026-08-23T08:52:34.421281+00:00",
-                  "updated_at": "2026-08-23T08:52:34.423785+00:00"
+                  "created_at": "2026-09-02T22:36:47.422241+00:00",
+                  "updated_at": "2026-09-02T22:36:47.424218+00:00"
                 },
                 {
-                  "capture_id": "56299e7415c627d3623c02ae930ca45fc2685c9b9340e939442ae1fb0028ef57",
+                  "capture_id": "b2648edf25f9ab96cf1606dfdf149f73ba1d233ec7b47f2bbfa74dcacdc67231",
                   "adapter": "image.file",
                   "status": "INTERRUPTED",
                   "authority": "OBSERVED",
                   "manifest_digest": null,
                   "summary": {},
                   "attempt_count": 1,
-                  "created_at": "2026-08-23T08:52:34.314606+00:00",
-                  "updated_at": "2026-08-23T08:52:34.418989+00:00"
+                  "created_at": "2026-09-02T22:36:47.262376+00:00",
+                  "updated_at": "2026-09-02T22:36:47.420185+00:00"
                 }
               ]
             },
@@ -5095,7 +5092,7 @@
           "kind": "empty_hunt",
           "category": "absent",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main"
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main"
           },
           "ok": true,
           "classification": "EMPTY_SUCCESS",
@@ -5105,47 +5102,46 @@
           "cause": null,
           "payload": {
             "overview": {
-              "project_id": "24896677-7c41-4def-9583-98b0a2cc36b0",
+              "project_id": "cd065483-82f8-4f1f-a115-82b2cda67331",
               "captures": [
                 {
-                  "capture_id": "1d841ed0fc0e2980eacba7d2afe2fb0fdb9c942ed6768738bbf783d10cd4a882",
+                  "capture_id": "ec65790a8c5ad8cdbd1f8909fb54f003eeaefad33f1615a20fe9fd85bde2e01e",
                   "adapter": "image.file",
                   "status": "COMPLETE",
                   "authority": "OBSERVED",
-                  "manifest_digest": "d9134e2651bdcfaa77296cb1bf86ef25b70fd59f21b0744e13ff0eef5b34403d",
+                  "manifest_digest": "342431c8ba14576143946ac9eb7660602be4bc60c6d095b227260c9dcaaca0a0",
                   "summary": {
                     "height": 1,
-                    "ocr_status": "OMITTED",
                     "perceptual_hash": "ffffffffffffffff",
                     "region_count": 0,
                     "text_symbol_count": 0,
                     "width": 1
                   },
                   "attempt_count": 1,
-                  "created_at": "2026-08-23T08:52:34.425487+00:00",
-                  "updated_at": "2026-08-23T08:52:34.431629+00:00"
+                  "created_at": "2026-09-02T22:36:47.425547+00:00",
+                  "updated_at": "2026-09-02T22:36:47.431642+00:00"
                 },
                 {
-                  "capture_id": "dd5c90c80fa29bbe2b34546fd1ef69b5cf652a4b274e87d344f0605459557b63",
+                  "capture_id": "08136e432019ad9895b27b5c74f19b901560c6b3be5d4eb06ece201ae5b81900",
                   "adapter": "image.file",
                   "status": "INTERRUPTED",
                   "authority": "OBSERVED",
                   "manifest_digest": null,
                   "summary": {},
                   "attempt_count": 1,
-                  "created_at": "2026-08-23T08:52:34.421281+00:00",
-                  "updated_at": "2026-08-23T08:52:34.423785+00:00"
+                  "created_at": "2026-09-02T22:36:47.422241+00:00",
+                  "updated_at": "2026-09-02T22:36:47.424218+00:00"
                 },
                 {
-                  "capture_id": "56299e7415c627d3623c02ae930ca45fc2685c9b9340e939442ae1fb0028ef57",
+                  "capture_id": "b2648edf25f9ab96cf1606dfdf149f73ba1d233ec7b47f2bbfa74dcacdc67231",
                   "adapter": "image.file",
                   "status": "INTERRUPTED",
                   "authority": "OBSERVED",
                   "manifest_digest": null,
                   "summary": {},
                   "attempt_count": 1,
-                  "created_at": "2026-08-23T08:52:34.314606+00:00",
-                  "updated_at": "2026-08-23T08:52:34.418989+00:00"
+                  "created_at": "2026-09-02T22:36:47.262376+00:00",
+                  "updated_at": "2026-09-02T22:36:47.420185+00:00"
                 }
               ]
             },
@@ -5153,7 +5149,7 @@
             "profile": "core",
             "blockers": []
           },
-          "seconds": 0.0011
+          "seconds": 0.001
         }
       ],
       "empty_success": [
@@ -5166,47 +5162,46 @@
           },
           "response": {
             "overview": {
-              "project_id": "24896677-7c41-4def-9583-98b0a2cc36b0",
+              "project_id": "cd065483-82f8-4f1f-a115-82b2cda67331",
               "captures": [
                 {
-                  "capture_id": "1d841ed0fc0e2980eacba7d2afe2fb0fdb9c942ed6768738bbf783d10cd4a882",
+                  "capture_id": "ec65790a8c5ad8cdbd1f8909fb54f003eeaefad33f1615a20fe9fd85bde2e01e",
                   "adapter": "image.file",
                   "status": "COMPLETE",
                   "authority": "OBSERVED",
-                  "manifest_digest": "d9134e2651bdcfaa77296cb1bf86ef25b70fd59f21b0744e13ff0eef5b34403d",
+                  "manifest_digest": "342431c8ba14576143946ac9eb7660602be4bc60c6d095b227260c9dcaaca0a0",
                   "summary": {
                     "height": 1,
-                    "ocr_status": "OMITTED",
                     "perceptual_hash": "ffffffffffffffff",
                     "region_count": 0,
                     "text_symbol_count": 0,
                     "width": 1
                   },
                   "attempt_count": 1,
-                  "created_at": "2026-08-23T08:52:34.425487+00:00",
-                  "updated_at": "2026-08-23T08:52:34.431629+00:00"
+                  "created_at": "2026-09-02T22:36:47.425547+00:00",
+                  "updated_at": "2026-09-02T22:36:47.431642+00:00"
                 },
                 {
-                  "capture_id": "dd5c90c80fa29bbe2b34546fd1ef69b5cf652a4b274e87d344f0605459557b63",
+                  "capture_id": "08136e432019ad9895b27b5c74f19b901560c6b3be5d4eb06ece201ae5b81900",
                   "adapter": "image.file",
                   "status": "INTERRUPTED",
                   "authority": "OBSERVED",
                   "manifest_digest": null,
                   "summary": {},
                   "attempt_count": 1,
-                  "created_at": "2026-08-23T08:52:34.421281+00:00",
-                  "updated_at": "2026-08-23T08:52:34.423785+00:00"
+                  "created_at": "2026-09-02T22:36:47.422241+00:00",
+                  "updated_at": "2026-09-02T22:36:47.424218+00:00"
                 },
                 {
-                  "capture_id": "56299e7415c627d3623c02ae930ca45fc2685c9b9340e939442ae1fb0028ef57",
+                  "capture_id": "b2648edf25f9ab96cf1606dfdf149f73ba1d233ec7b47f2bbfa74dcacdc67231",
                   "adapter": "image.file",
                   "status": "INTERRUPTED",
                   "authority": "OBSERVED",
                   "manifest_digest": null,
                   "summary": {},
                   "attempt_count": 1,
-                  "created_at": "2026-08-23T08:52:34.314606+00:00",
-                  "updated_at": "2026-08-23T08:52:34.418989+00:00"
+                  "created_at": "2026-09-02T22:36:47.262376+00:00",
+                  "updated_at": "2026-09-02T22:36:47.420185+00:00"
                 }
               ]
             },
@@ -5221,51 +5216,50 @@
           "probe_id": "after_cv2_observe",
           "category": "absent",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main"
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main"
           },
           "response": {
             "overview": {
-              "project_id": "24896677-7c41-4def-9583-98b0a2cc36b0",
+              "project_id": "cd065483-82f8-4f1f-a115-82b2cda67331",
               "captures": [
                 {
-                  "capture_id": "1d841ed0fc0e2980eacba7d2afe2fb0fdb9c942ed6768738bbf783d10cd4a882",
+                  "capture_id": "ec65790a8c5ad8cdbd1f8909fb54f003eeaefad33f1615a20fe9fd85bde2e01e",
                   "adapter": "image.file",
                   "status": "COMPLETE",
                   "authority": "OBSERVED",
-                  "manifest_digest": "d9134e2651bdcfaa77296cb1bf86ef25b70fd59f21b0744e13ff0eef5b34403d",
+                  "manifest_digest": "342431c8ba14576143946ac9eb7660602be4bc60c6d095b227260c9dcaaca0a0",
                   "summary": {
                     "height": 1,
-                    "ocr_status": "OMITTED",
                     "perceptual_hash": "ffffffffffffffff",
                     "region_count": 0,
                     "text_symbol_count": 0,
                     "width": 1
                   },
                   "attempt_count": 1,
-                  "created_at": "2026-08-23T08:52:34.425487+00:00",
-                  "updated_at": "2026-08-23T08:52:34.431629+00:00"
+                  "created_at": "2026-09-02T22:36:47.425547+00:00",
+                  "updated_at": "2026-09-02T22:36:47.431642+00:00"
                 },
                 {
-                  "capture_id": "dd5c90c80fa29bbe2b34546fd1ef69b5cf652a4b274e87d344f0605459557b63",
+                  "capture_id": "08136e432019ad9895b27b5c74f19b901560c6b3be5d4eb06ece201ae5b81900",
                   "adapter": "image.file",
                   "status": "INTERRUPTED",
                   "authority": "OBSERVED",
                   "manifest_digest": null,
                   "summary": {},
                   "attempt_count": 1,
-                  "created_at": "2026-08-23T08:52:34.421281+00:00",
-                  "updated_at": "2026-08-23T08:52:34.423785+00:00"
+                  "created_at": "2026-09-02T22:36:47.422241+00:00",
+                  "updated_at": "2026-09-02T22:36:47.424218+00:00"
                 },
                 {
-                  "capture_id": "56299e7415c627d3623c02ae930ca45fc2685c9b9340e939442ae1fb0028ef57",
+                  "capture_id": "b2648edf25f9ab96cf1606dfdf149f73ba1d233ec7b47f2bbfa74dcacdc67231",
                   "adapter": "image.file",
                   "status": "INTERRUPTED",
                   "authority": "OBSERVED",
                   "manifest_digest": null,
                   "summary": {},
                   "attempt_count": 1,
-                  "created_at": "2026-08-23T08:52:34.314606+00:00",
-                  "updated_at": "2026-08-23T08:52:34.418989+00:00"
+                  "created_at": "2026-09-02T22:36:47.262376+00:00",
+                  "updated_at": "2026-09-02T22:36:47.420185+00:00"
                 }
               ]
             },
@@ -5324,7 +5318,7 @@
           "kind": "empty_ok",
           "category": "empty",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main"
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main"
           },
           "ok": true,
           "classification": "LEGITIMATE_EMPTY",
@@ -5343,7 +5337,7 @@
           "kind": "empty_ok",
           "category": "empty",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main"
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main"
           },
           "ok": true,
           "classification": "LEGITIMATE_EMPTY",
@@ -5355,21 +5349,21 @@
             "items": [],
             "count": 0
           },
-          "seconds": 0.0003
+          "seconds": 0.0002
         },
         {
           "probe_id": "missing_project",
           "kind": "refuse",
           "category": "absent",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/does-not-exist"
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/does-not-exist"
           },
           "ok": false,
           "classification": "EXPLICIT_ERROR",
           "error_type": "ToolError",
-          "error": "Error executing tool vision.review_queue: path does not exist: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/does-not-exist",
+          "error": "Error executing tool vision.review_queue: path does not exist: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/does-not-exist",
           "cause_type": "SecurityError",
-          "cause": "path does not exist: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/does-not-exist",
+          "cause": "path does not exist: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/does-not-exist",
           "payload": null,
           "seconds": 0.0001
         },
@@ -5378,14 +5372,14 @@
           "kind": "refuse",
           "category": "outside",
           "arguments": {
-            "project_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/outside/escaped"
+            "project_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/outside/escaped"
           },
           "ok": false,
           "classification": "EXPLICIT_ERROR",
           "error_type": "ToolError",
-          "error": "Error executing tool vision.review_queue: path escapes project root: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/outside/escaped",
+          "error": "Error executing tool vision.review_queue: path escapes project root: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/outside/escaped",
           "cause_type": "SecurityError",
-          "cause": "path escapes project root: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/outside/escaped",
+          "cause": "path escapes project root: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/outside/escaped",
           "payload": null,
           "seconds": 0.0001
         },
@@ -5394,7 +5388,7 @@
           "kind": "empty_hunt",
           "category": "schema_absent",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-notable"
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-notable"
           },
           "ok": true,
           "classification": "EMPTY_SUCCESS",
@@ -5415,13 +5409,13 @@
           "probe_id": "schema_absent",
           "category": "schema_absent",
           "arguments": {
-            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-notable"
+            "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-notable"
           },
           "response": {
             "items": [],
             "count": 0
           },
-          "why": "frontend_patch_proposals was dropped; the tool skipped the missing table and returned {items:[], count:0} \u2014 the same shape as a real empty review queue (LEGITIMATE_EMPTY on an intact schema)."
+          "why": "frontend_patch_proposals was dropped; the tool skipped the missing table and returned {items:[], count:0} — the same shape as a real empty review queue (LEGITIMATE_EMPTY on an intact schema)."
         }
       ]
     }
@@ -5436,47 +5430,46 @@
       },
       "response": {
         "overview": {
-          "project_id": "24896677-7c41-4def-9583-98b0a2cc36b0",
+          "project_id": "cd065483-82f8-4f1f-a115-82b2cda67331",
           "captures": [
             {
-              "capture_id": "1d841ed0fc0e2980eacba7d2afe2fb0fdb9c942ed6768738bbf783d10cd4a882",
+              "capture_id": "ec65790a8c5ad8cdbd1f8909fb54f003eeaefad33f1615a20fe9fd85bde2e01e",
               "adapter": "image.file",
               "status": "COMPLETE",
               "authority": "OBSERVED",
-              "manifest_digest": "d9134e2651bdcfaa77296cb1bf86ef25b70fd59f21b0744e13ff0eef5b34403d",
+              "manifest_digest": "342431c8ba14576143946ac9eb7660602be4bc60c6d095b227260c9dcaaca0a0",
               "summary": {
                 "height": 1,
-                "ocr_status": "OMITTED",
                 "perceptual_hash": "ffffffffffffffff",
                 "region_count": 0,
                 "text_symbol_count": 0,
                 "width": 1
               },
               "attempt_count": 1,
-              "created_at": "2026-08-23T08:52:34.425487+00:00",
-              "updated_at": "2026-08-23T08:52:34.431629+00:00"
+              "created_at": "2026-09-02T22:36:47.425547+00:00",
+              "updated_at": "2026-09-02T22:36:47.431642+00:00"
             },
             {
-              "capture_id": "dd5c90c80fa29bbe2b34546fd1ef69b5cf652a4b274e87d344f0605459557b63",
+              "capture_id": "08136e432019ad9895b27b5c74f19b901560c6b3be5d4eb06ece201ae5b81900",
               "adapter": "image.file",
               "status": "INTERRUPTED",
               "authority": "OBSERVED",
               "manifest_digest": null,
               "summary": {},
               "attempt_count": 1,
-              "created_at": "2026-08-23T08:52:34.421281+00:00",
-              "updated_at": "2026-08-23T08:52:34.423785+00:00"
+              "created_at": "2026-09-02T22:36:47.422241+00:00",
+              "updated_at": "2026-09-02T22:36:47.424218+00:00"
             },
             {
-              "capture_id": "56299e7415c627d3623c02ae930ca45fc2685c9b9340e939442ae1fb0028ef57",
+              "capture_id": "b2648edf25f9ab96cf1606dfdf149f73ba1d233ec7b47f2bbfa74dcacdc67231",
               "adapter": "image.file",
               "status": "INTERRUPTED",
               "authority": "OBSERVED",
               "manifest_digest": null,
               "summary": {},
               "attempt_count": 1,
-              "created_at": "2026-08-23T08:52:34.314606+00:00",
-              "updated_at": "2026-08-23T08:52:34.418989+00:00"
+              "created_at": "2026-09-02T22:36:47.262376+00:00",
+              "updated_at": "2026-09-02T22:36:47.420185+00:00"
             }
           ]
         },
@@ -5491,51 +5484,50 @@
       "probe_id": "after_cv2_observe",
       "category": "absent",
       "arguments": {
-        "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main"
+        "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main"
       },
       "response": {
         "overview": {
-          "project_id": "24896677-7c41-4def-9583-98b0a2cc36b0",
+          "project_id": "cd065483-82f8-4f1f-a115-82b2cda67331",
           "captures": [
             {
-              "capture_id": "1d841ed0fc0e2980eacba7d2afe2fb0fdb9c942ed6768738bbf783d10cd4a882",
+              "capture_id": "ec65790a8c5ad8cdbd1f8909fb54f003eeaefad33f1615a20fe9fd85bde2e01e",
               "adapter": "image.file",
               "status": "COMPLETE",
               "authority": "OBSERVED",
-              "manifest_digest": "d9134e2651bdcfaa77296cb1bf86ef25b70fd59f21b0744e13ff0eef5b34403d",
+              "manifest_digest": "342431c8ba14576143946ac9eb7660602be4bc60c6d095b227260c9dcaaca0a0",
               "summary": {
                 "height": 1,
-                "ocr_status": "OMITTED",
                 "perceptual_hash": "ffffffffffffffff",
                 "region_count": 0,
                 "text_symbol_count": 0,
                 "width": 1
               },
               "attempt_count": 1,
-              "created_at": "2026-08-23T08:52:34.425487+00:00",
-              "updated_at": "2026-08-23T08:52:34.431629+00:00"
+              "created_at": "2026-09-02T22:36:47.425547+00:00",
+              "updated_at": "2026-09-02T22:36:47.431642+00:00"
             },
             {
-              "capture_id": "dd5c90c80fa29bbe2b34546fd1ef69b5cf652a4b274e87d344f0605459557b63",
+              "capture_id": "08136e432019ad9895b27b5c74f19b901560c6b3be5d4eb06ece201ae5b81900",
               "adapter": "image.file",
               "status": "INTERRUPTED",
               "authority": "OBSERVED",
               "manifest_digest": null,
               "summary": {},
               "attempt_count": 1,
-              "created_at": "2026-08-23T08:52:34.421281+00:00",
-              "updated_at": "2026-08-23T08:52:34.423785+00:00"
+              "created_at": "2026-09-02T22:36:47.422241+00:00",
+              "updated_at": "2026-09-02T22:36:47.424218+00:00"
             },
             {
-              "capture_id": "56299e7415c627d3623c02ae930ca45fc2685c9b9340e939442ae1fb0028ef57",
+              "capture_id": "b2648edf25f9ab96cf1606dfdf149f73ba1d233ec7b47f2bbfa74dcacdc67231",
               "adapter": "image.file",
               "status": "INTERRUPTED",
               "authority": "OBSERVED",
               "manifest_digest": null,
               "summary": {},
               "attempt_count": 1,
-              "created_at": "2026-08-23T08:52:34.314606+00:00",
-              "updated_at": "2026-08-23T08:52:34.418989+00:00"
+              "created_at": "2026-09-02T22:36:47.262376+00:00",
+              "updated_at": "2026-09-02T22:36:47.420185+00:00"
             }
           ]
         },
@@ -5550,13 +5542,13 @@
       "probe_id": "schema_absent",
       "category": "schema_absent",
       "arguments": {
-        "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-notable"
+        "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-notable"
       },
       "response": {
         "items": [],
         "count": 0
       },
-      "why": "frontend_patch_proposals was dropped; the tool skipped the missing table and returned {items:[], count:0} \u2014 the same shape as a real empty review queue (LEGITIMATE_EMPTY on an intact schema)."
+      "why": "frontend_patch_proposals was dropped; the tool skipped the missing table and returned {items:[], count:0} — the same shape as a real empty review queue (LEGITIMATE_EMPTY on an intact schema)."
     }
   ],
   "false_available": [
@@ -5569,11 +5561,11 @@
         "kind": "refuse",
         "category": "wrong_type",
         "arguments": {
-          "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main",
+          "project_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main",
           "rights_decision": "OWNED",
           "adapter": "image.file",
           "target": {
-            "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main/valid.png"
+            "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main/valid.png"
           },
           "configuration": {
             "ocr": false
@@ -5599,26 +5591,26 @@
       "lie_png": {
         "ok": false,
         "error_type": "ToolError",
-        "error": "Error executing tool vision.observe: cannot identify image file '/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main/lie.png'",
+        "error": "Error executing tool vision.observe: cannot identify image file '/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main/lie.png'",
         "cause_type": "UnidentifiedImageError",
-        "cause": "cannot identify image file '/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main/lie.png'"
+        "cause": "cannot identify image file '/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main/lie.png'"
       },
       "empty_png": {
         "ok": false,
         "error_type": "ToolError",
-        "error": "Error executing tool vision.observe: cannot identify image file '/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main/empty.png'",
+        "error": "Error executing tool vision.observe: cannot identify image file '/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main/empty.png'",
         "cause_type": "UnidentifiedImageError",
-        "cause": "cannot identify image file '/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main/empty.png'"
+        "cause": "cannot identify image file '/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main/empty.png'"
       },
       "valid_png": {
         "ok": true,
         "payload": {
-          "capture_id": "1d841ed0fc0e2980eacba7d2afe2fb0fdb9c942ed6768738bbf783d10cd4a882",
+          "capture_id": "ec65790a8c5ad8cdbd1f8909fb54f003eeaefad33f1615a20fe9fd85bde2e01e",
           "adapter": "image.file",
           "adapter_version": "1",
           "status": "COMPLETE",
           "authority": "OBSERVED",
-          "manifest_digest": "d9134e2651bdcfaa77296cb1bf86ef25b70fd59f21b0744e13ff0eef5b34403d",
+          "manifest_digest": "342431c8ba14576143946ac9eb7660602be4bc60c6d095b227260c9dcaaca0a0",
           "request": {
             "adapter": "image.file",
             "adapter_version": "1",
@@ -5643,7 +5635,7 @@
               "digest": "c47dd9465c00e9a0c8b85e9ea58d3034a0d23b9cf926113602f3460752a4eb96",
               "id": "c47dd9465c00e9a0c8b85e9ea58d3034a0d23b9cf926113602f3460752a4eb96",
               "kind": "image",
-              "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main/valid.png",
+              "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main/valid.png",
               "size": 69
             }
           },
@@ -5658,7 +5650,6 @@
           },
           "summary": {
             "height": 1,
-            "ocr_status": "OMITTED",
             "perceptual_hash": "ffffffffffffffff",
             "region_count": 0,
             "text_symbol_count": 0,
@@ -5669,15 +5660,15 @@
             "Single-image depth and occluded structure remain unobserved."
           ],
           "attempt_count": 1,
-          "created_at": "2026-08-23T08:52:34.425487+00:00",
-          "updated_at": "2026-08-23T08:52:34.431629+00:00",
+          "created_at": "2026-09-02T22:36:47.425547+00:00",
+          "updated_at": "2026-09-02T22:36:47.431642+00:00",
           "artifacts": [
             {
               "role": "image.graph",
-              "digest": "f354aa368037e6ded445f3a09b0f63889cf78cfab324f32c4f5872027b03efe4",
+              "digest": "79abc3f10ad3fe5e00a9cc425d2364ca4232962659c46adec33ad310149c570f",
               "media_type": "application/json",
               "metadata": {},
-              "created_at": "2026-08-23T08:52:34.431438+00:00"
+              "created_at": "2026-09-02T22:36:47.431509+00:00"
             },
             {
               "role": "image.normalized",
@@ -5687,7 +5678,7 @@
                 "coordinate_space": "normalized-image-pixels",
                 "source_digest": "c47dd9465c00e9a0c8b85e9ea58d3034a0d23b9cf926113602f3460752a4eb96"
               },
-              "created_at": "2026-08-23T08:52:34.430258+00:00"
+              "created_at": "2026-09-02T22:36:47.430651+00:00"
             },
             {
               "role": "image.source",
@@ -5696,12 +5687,12 @@
               "metadata": {
                 "source_digest": "c47dd9465c00e9a0c8b85e9ea58d3034a0d23b9cf926113602f3460752a4eb96"
               },
-              "created_at": "2026-08-23T08:52:34.427832+00:00"
+              "created_at": "2026-09-02T22:36:47.427050+00:00"
             }
           ],
           "manifest": {
             "schema": "vision.observation-envelope/v1",
-            "capture_id": "1d841ed0fc0e2980eacba7d2afe2fb0fdb9c942ed6768738bbf783d10cd4a882",
+            "capture_id": "ec65790a8c5ad8cdbd1f8909fb54f003eeaefad33f1615a20fe9fd85bde2e01e",
             "authority": "OBSERVED",
             "request": {
               "adapter": "image.file",
@@ -5709,7 +5700,7 @@
               "target": {
                 "id": "c47dd9465c00e9a0c8b85e9ea58d3034a0d23b9cf926113602f3460752a4eb96",
                 "kind": "image",
-                "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main/valid.png",
+                "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main/valid.png",
                 "digest": "c47dd9465c00e9a0c8b85e9ea58d3034a0d23b9cf926113602f3460752a4eb96",
                 "size": 69
               },
@@ -5734,10 +5725,10 @@
             "artifacts": [
               {
                 "role": "image.graph",
-                "digest": "f354aa368037e6ded445f3a09b0f63889cf78cfab324f32c4f5872027b03efe4",
+                "digest": "79abc3f10ad3fe5e00a9cc425d2364ca4232962659c46adec33ad310149c570f",
                 "media_type": "application/json",
                 "metadata": {},
-                "created_at": "2026-08-23T08:52:34.431438+00:00"
+                "created_at": "2026-09-02T22:36:47.431509+00:00"
               },
               {
                 "role": "image.normalized",
@@ -5747,7 +5738,7 @@
                   "coordinate_space": "normalized-image-pixels",
                   "source_digest": "c47dd9465c00e9a0c8b85e9ea58d3034a0d23b9cf926113602f3460752a4eb96"
                 },
-                "created_at": "2026-08-23T08:52:34.430258+00:00"
+                "created_at": "2026-09-02T22:36:47.430651+00:00"
               },
               {
                 "role": "image.source",
@@ -5756,7 +5747,7 @@
                 "metadata": {
                   "source_digest": "c47dd9465c00e9a0c8b85e9ea58d3034a0d23b9cf926113602f3460752a4eb96"
                 },
-                "created_at": "2026-08-23T08:52:34.427832+00:00"
+                "created_at": "2026-09-02T22:36:47.427050+00:00"
               }
             ],
             "summary": {
@@ -5764,14 +5755,13 @@
               "height": 1,
               "region_count": 0,
               "text_symbol_count": 0,
-              "perceptual_hash": "ffffffffffffffff",
-              "ocr_status": "OMITTED"
+              "perceptual_hash": "ffffffffffffffff"
             },
             "limitations": [
               "Contour regions and OCR symbols are DERIVED interpretations of observed pixels.",
               "Single-image depth and occluded structure remain unobserved."
             ],
-            "created_at": "2026-08-23T08:52:34.431629+00:00"
+            "created_at": "2026-09-02T22:36:47.431642+00:00"
           },
           "reused": false
         }
@@ -5780,47 +5770,46 @@
         "ok": true,
         "payload": {
           "overview": {
-            "project_id": "24896677-7c41-4def-9583-98b0a2cc36b0",
+            "project_id": "cd065483-82f8-4f1f-a115-82b2cda67331",
             "captures": [
               {
-                "capture_id": "1d841ed0fc0e2980eacba7d2afe2fb0fdb9c942ed6768738bbf783d10cd4a882",
+                "capture_id": "ec65790a8c5ad8cdbd1f8909fb54f003eeaefad33f1615a20fe9fd85bde2e01e",
                 "adapter": "image.file",
                 "status": "COMPLETE",
                 "authority": "OBSERVED",
-                "manifest_digest": "d9134e2651bdcfaa77296cb1bf86ef25b70fd59f21b0744e13ff0eef5b34403d",
+                "manifest_digest": "342431c8ba14576143946ac9eb7660602be4bc60c6d095b227260c9dcaaca0a0",
                 "summary": {
                   "height": 1,
-                  "ocr_status": "OMITTED",
                   "perceptual_hash": "ffffffffffffffff",
                   "region_count": 0,
                   "text_symbol_count": 0,
                   "width": 1
                 },
                 "attempt_count": 1,
-                "created_at": "2026-08-23T08:52:34.425487+00:00",
-                "updated_at": "2026-08-23T08:52:34.431629+00:00"
+                "created_at": "2026-09-02T22:36:47.425547+00:00",
+                "updated_at": "2026-09-02T22:36:47.431642+00:00"
               },
               {
-                "capture_id": "dd5c90c80fa29bbe2b34546fd1ef69b5cf652a4b274e87d344f0605459557b63",
+                "capture_id": "08136e432019ad9895b27b5c74f19b901560c6b3be5d4eb06ece201ae5b81900",
                 "adapter": "image.file",
                 "status": "INTERRUPTED",
                 "authority": "OBSERVED",
                 "manifest_digest": null,
                 "summary": {},
                 "attempt_count": 1,
-                "created_at": "2026-08-23T08:52:34.421281+00:00",
-                "updated_at": "2026-08-23T08:52:34.423785+00:00"
+                "created_at": "2026-09-02T22:36:47.422241+00:00",
+                "updated_at": "2026-09-02T22:36:47.424218+00:00"
               },
               {
-                "capture_id": "56299e7415c627d3623c02ae930ca45fc2685c9b9340e939442ae1fb0028ef57",
+                "capture_id": "b2648edf25f9ab96cf1606dfdf149f73ba1d233ec7b47f2bbfa74dcacdc67231",
                 "adapter": "image.file",
                 "status": "INTERRUPTED",
                 "authority": "OBSERVED",
                 "manifest_digest": null,
                 "summary": {},
                 "attempt_count": 1,
-                "created_at": "2026-08-23T08:52:34.314606+00:00",
-                "updated_at": "2026-08-23T08:52:34.418989+00:00"
+                "created_at": "2026-09-02T22:36:47.262376+00:00",
+                "updated_at": "2026-09-02T22:36:47.420185+00:00"
               }
             ]
           },
@@ -5832,7 +5821,7 @@
       "explain_far_point": {
         "ok": true,
         "payload": {
-          "capture_id": "1d841ed0fc0e2980eacba7d2afe2fb0fdb9c942ed6768738bbf783d10cd4a882",
+          "capture_id": "ec65790a8c5ad8cdbd1f8909fb54f003eeaefad33f1615a20fe9fd85bde2e01e",
           "graph_type": "ImageGraph",
           "query": {
             "point": {
@@ -5844,8 +5833,8 @@
           "matches": [],
           "match_count": 0,
           "citation": {
-            "capture_id": "1d841ed0fc0e2980eacba7d2afe2fb0fdb9c942ed6768738bbf783d10cd4a882",
-            "artifact_digest": "f354aa368037e6ded445f3a09b0f63889cf78cfab324f32c4f5872027b03efe4",
+            "capture_id": "ec65790a8c5ad8cdbd1f8909fb54f003eeaefad33f1615a20fe9fd85bde2e01e",
+            "artifact_digest": "79abc3f10ad3fe5e00a9cc425d2364ca4232962659c46adec33ad310149c570f",
             "authority": "MIXED"
           },
           "explanations": []
@@ -5918,7 +5907,7 @@
       "tool": "vision.progress",
       "input": "project with INTERRUPTED captures",
       "empty_shape": "{\"blockers\": []}",
-      "what_actually_happened": "LEGITIMATE_EMPTY payload={\"artifact_count\":0,\"blockers\":[],\"overview\":{\"captures\":[],\"project_id\":\"24896677-7c41-4def-9583-98b0a2cc36b0\"},\"profile\":\"core\"}"
+      "what_actually_happened": "LEGITIMATE_EMPTY payload={\"artifact_count\":0,\"blockers\":[],\"overview\":{\"captures\":[],\"project_id\":\"cd065483-82f8-4f1f-a115-82b2cda67331\"},\"profile\":\"core\"}"
     },
     {
       "tool": "vision.list_artifacts",
@@ -5937,7 +5926,7 @@
     "vision.compare never inspects the captures: ObservationQueryService is constructed without a CaptureBus, so verify() raises RuntimeError: verification requires a CaptureBus.",
     "vision.review_queue after DROP TABLE frontend_patch_proposals (dropped=True): EMPTY_SUCCESS {\"count\":0,\"items\":[]}",
     "vision.progress after cv2 observe: 3 capture(s), statuses=['COMPLETE', 'INTERRUPTED', 'INTERRUPTED'], blockers=[], classification=EMPTY_SUCCESS.",
-    "Supplementary ~/.grok-vision/bin/python observe probes: {\"empty_png\":{\"cause\":\"cannot identify image file '/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main/empty.png'\",\"cause_type\":\"UnidentifiedImageError\",\"error\":\"Error executing tool \u2026",
+    "Supplementary ~/.grok-vision/bin/python observe probes: {\"empty_png\":{\"cause\":\"cannot identify image file '/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main/empty.png'\",\"cause_type\":\"UnidentifiedImageError\",\"error\":\"Error executing tool …",
     "Empty-success cases named: 3 (vision.progress, vision.review_queue)."
   ],
   "handoff": {
@@ -5947,7 +5936,7 @@
     "also": "vision.review_queue is the same class: a dropped frontend_patch_proposals table returns {items:[], count:0}, identical to a real empty queue.",
     "smallest_change": "In vision_progress, replace the literal blockers: [] with a SELECT over observation_captures WHERE status != 'COMPLETE'. Each interrupted row becomes {'code': 'CAPTURE_INTERRUPTED', 'capture_id': id, 'status': status}. If the table is missing, return {'code': 'SCHEMA_ABSENT', 'blockers': []} rather than an empty list with no code. Never emit blockers:[] without having looked."
   },
-  "scratch": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj",
+  "scratch": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu",
   "create_ok": true,
   "create_empty": {
     "probe_id": "empty_name",
@@ -5963,7 +5952,7 @@
     "cause_type": "ProjectError",
     "cause": "project name does not produce a valid slug",
     "payload": null,
-    "seconds": 0.0025
+    "seconds": 0.0018
   },
   "create_punct": {
     "probe_id": "non_slug_name",
@@ -6008,20 +5997,11 @@
     "ok": false,
     "classification": "EXPLICIT_ERROR",
     "error_type": "ToolError",
-    "error": "Error executing tool project.create: project already exists: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main",
+    "error": "Error executing tool project.create: project already exists: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main",
     "cause_type": "ProjectError",
-    "cause": "project already exists: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main",
+    "cause": "project already exists: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-o5x4kdlu/projects/probe-main",
     "payload": null,
-    "seconds": 0.0002
+    "seconds": 0.0003
   },
-  "schema_project_ok": true,
-  "bench": {
-    "state": "UNKNOWN",
-    "recorded_at": "2026-08-26T00:00:00Z",
-    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
-    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
-    "quiescence": null,
-    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
-    "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
-  }
+  "schema_project_ok": true
 }
