@@ -16,41 +16,31 @@
    }
   ],
   "causality_verdict": "SUPPORTED",
-  "claim_kind": "measured_unmet",
+  "claim_kind": "field_value",
   "confidence": {
    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
    "level": "HIGH",
    "would_lower": "a demonstration that the observation is consistent with the claim being false",
    "would_raise": "independent replication of the same probe"
   },
-  "direct_observation": "pytest.ran=True pytest.green=False returncode=1 why='pytest failed' tail=['=========================== short test summary info ============================', 'FAILED tools/future/test__gate_probe_red2.py::test_red - assert False', '1 failed in 0.08s'] receipts.green=True malformed=[]",
+  "direct_observation": "pytest.ran=False why='no test module corresponds to these paths' receipts.green=True malformed=[]",
   "falsifier": "an independent probe of the same object the status names, not a reread of the status",
-  "green": false,
-  "interpretation": "RED: tests.why='pytest failed' receipts.green=True",
-  "paths": [
-   "tools/future/_gate_probe_red2.py"
-  ],
+  "green": true,
+  "interpretation": "GREEN: tests.why='no test module corresponds to these paths' receipts.green=True",
+  "paths": [],
   "probe_kind": "measured_flags",
-  "probe_performed": "subprocess.run ['/opt/homebrew/opt/python@3.14/bin/python3.14', '-m', 'pytest', 'tools/future/test__gate_probe_red2.py', '-q', '-p', 'no:cacheprovider'] cwd=REPO timeout=1200s; json.loads each .json path in ['tools/future/_gate_probe_red2.py']",
+  "probe_performed": "required_tests([]) looked for tools/future test_*.py; no corresponding test module. json.loads each .json path in []",
   "receipts": {
    "green": true,
    "malformed": []
   },
   "tests": {
-   "green": false,
-   "ran": true,
-   "returncode": 1,
-   "tail": [
-    "=========================== short test summary info ============================",
-    "FAILED tools/future/test__gate_probe_red2.py::test_red - assert False",
-    "1 failed in 0.08s"
-   ],
-   "tests": [
-    "tools/future/test__gate_probe_red2.py"
-   ],
-   "why": "pytest failed"
+   "green": true,
+   "ran": false,
+   "tests": [],
+   "why": "no test module corresponds to these paths"
   },
-  "verdict": "RED"
+  "verdict": "GREEN"
  },
  "law": "NO CANONICAL SOURCE COMMIT WHILE THE REQUIRED ACCEPTANCE SUITE IS RED. A behaviourally-correct-but-red test is still a red integration state.",
  "recorded_by": "tools/future/integration_gate.py",

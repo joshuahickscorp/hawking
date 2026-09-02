@@ -10,28 +10,28 @@
  },
  "alternatives": [
   {
-   "consistent_with_claim": false,
+   "consistent_with_claim": true,
    "consistent_with_observation": true,
-   "hypothetical": "h"
+   "hypothetical": "the stored field currently has this value"
   }
  ],
  "bench": {
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T09:03:27Z",
+  "recorded_at": "2026-09-02T18:47:20Z",
   "recorded_by": "tools/future/odyssey2_law_store.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
- "causality_verdict": "OVERREACHING",
+ "causality_verdict": "SUPPORTED",
  "claim_boundary": "Static sidecar artifact. No hardware measurement.",
- "claim_kind": "object_absence",
+ "claim_kind": "field_value",
  "confidence": {
-  "about": "a",
-  "level": "LOW",
-  "would_lower": "c",
-  "would_raise": "b"
+  "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+  "level": "HIGH",
+  "would_lower": "a demonstration that the observation is consistent with the claim being false",
+  "would_raise": "independent replication of the same probe"
  },
  "counts": {
   "by_evidence_strength": {
@@ -73,7 +73,7 @@
   "ternary_factorization",
   "uniform_subbit_allocation"
  ],
- "falsifier": "f",
+ "falsifier": "an independent probe of the same object the status names, not a reread of the status",
  "gaps_closed": [
   "Law record with the Odyssey II field set, including scope and evidence_strength.",
   "Sequential scope lattice MODEL_LOCAL < ARCHITECTURE_FAMILY < BACKEND_FAMILY < MACHINE_LOCAL < GENERIC_CANDIDATE < GENERIC_VERIFIED.",
@@ -1134,7 +1134,7 @@
    "source_model": "Qwen3.8-27B"
   }
  },
- "seal_sha256": "3f3b7428fb4bd587bff9a6c6122c330c95412219576375c04d5f617d72cf4c35",
+ "seal_sha256": "706622bdef253d88223ad84d945dfb41b5b5f1042d5c04e10529f99eed05ec18",
  "seed_report": {
   "atlas_failed_keys": [
    "calibration_88_tokens",

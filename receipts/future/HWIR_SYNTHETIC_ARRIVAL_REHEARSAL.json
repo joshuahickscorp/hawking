@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T09:16:37Z",
+  "recorded_at": "2026-09-02T18:47:20Z",
   "recorded_by": "tools/future/hwir.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -1264,7 +1264,7 @@
   "synthetic_rehearsal": true,
   "u50": {
    "capability_graph": "civilization/CAPABILITY_GRAPH.json",
-   "capability_graph_sha256": "70fa3f855be4a8524cc49adbeb86d552a90468230321faa5e5661718e05ef1a0",
+   "capability_graph_sha256": "d1d284822c0f02273dd5e9ab98e487c5f5036fafb5d825520453c457e20dcc43",
    "evidence_tier": "STATIC",
    "gates_carrying_wake": [
     "U50_PURCHASE_ACCEPTANCE",
@@ -1293,13 +1293,13 @@
     "present": false
    },
    "qualification": "PREHARDWARE",
-   "source": "git HEAD:civilization/CAPABILITY_GRAPH.json",
+   "source": "civilization/CAPABILITY_GRAPH.json",
    "wake_condition": "U50_PRESENT"
   },
   "unpinned_ids": [],
   "wake_condition": "U50_PRESENT"
  },
- "seal_sha256": "5129c3d4ac2ba5856e8f20b921d70d4cef1df372ad5cc3c0e9b3a1eac4cd3c81",
+ "seal_sha256": "74a4d82e0da910c0b4cb98a1011d905c783ba810c2bc76cbbe32f4d926e8557a",
  "synthetic_rehearsal": true,
  "u50_present": false,
  "wake_condition": "U50_PRESENT"

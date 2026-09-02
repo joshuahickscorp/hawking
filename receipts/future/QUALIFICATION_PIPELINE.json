@@ -1,4 +1,11 @@
 {
+ "alternatives": [
+  {
+   "consistent_with_claim": true,
+   "consistent_with_observation": true,
+   "hypothetical": "the named flags were measured and have these values"
+  }
+ ],
  "authority_boundary": {
   "even_then": "sidecar has no GPU authority and still raises",
   "execute_requires": [
@@ -24,7 +31,15 @@
   "state": "UNKNOWN"
  },
  "branch": "odyssey-i",
+ "causality_verdict": "SUPPORTED",
  "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "confidence": {
+  "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+  "level": "HIGH",
+  "would_lower": "a demonstration that the observation is consistent with the claim being false",
+  "would_raise": "independent replication of the same probe"
+ },
+ "direct_observation": "blocking_defect_count=None; would_waste_a_protected_window=None; dry_run_stop={'honest_on_this_machine': 'stops at the lease check: no existing HCLI lease. later stages are still walked as STATIC_ONLY specs so a human does not have to assemble the run by hand when a window opens', 'reason': \"lock file exists but no holder could be proven without flock (lsof status='OK' reason=None). fail closed: present=false. flock would be a seizure\", 'stage_id': 'identify_lease_availability', 'stage_index': 1}",
  "dry_run_stop": {
   "honest_on_this_machine": "stops at the lease check: no existing HCLI lease. later stages are still walked as STATIC_ONLY specs so a human does not have to assemble the run by hand when a window opens",
   "reason": "lock file exists but no holder could be proven without flock (lsof status='OK' reason=None). fail closed: present=false. flock would be a seizure",
@@ -38,6 +53,7 @@
   "IV Synthetic Machine Civilization",
   "V Released Hawking Civilization"
  ],
+ "falsifier": "an independent probe of the same object the status names, not a reread of the status",
  "fpga": "FPGA is part of Accelerator / Physical Compiler / Fusion. It is not its own civilization and this module does not build an FPGA backend.",
  "frontier_entry": {
   "classification": "BLOCKED",
@@ -63,6 +79,7 @@
   "read_hcli_lease_state": "read_hcli_lease_state(repo=None) -> dict  # present True only with a proven holder; never flock",
   "run_pipeline": "run_pipeline(*, dry_run=True, live=False, queue=None, plan=None, snap=None, klass=None, preflight=None, lease=None, interrupt_after=None, resume_from=None, on_stage=None) -> dict"
  },
+ "interpretation": "lock file exists but no holder could be proven without flock (lsof status='OK' reason=None). fail closed: present=false. flock would be a seizure",
  "n_stages": 13,
  "negative_findings": [
   "no .hcli/locks/protected-accelerator-bench.lock in this worktree; lease present is fail-closed false",
@@ -1309,6 +1326,7 @@
    "qwen27-pipeline-state-elision"
   ]
  },
+ "probe_performed": "static_kernel_verify.scan(): host/shader ABI analysis of .metal sources and Rust hosts; blocking_defect_count from ERROR findings; zero GPU, no lease",
  "purpose": "Sequence the existing qualification pieces into one resumable pipeline that is structurally incapable of taking GPU authority. FIVE ERAS, THREE ODYSSEYS. FPGA stays inside Accelerator / Physical Compiler / Fusion. DISK STATE IS AUTHORITY.",
  "queue_policy_binding": {
   "diagnostic_results_do_not_promote": true,
@@ -1400,7 +1418,7 @@
   }
  ],
  "schema": "hawking.future.qualification_pipeline.v1",
- "seal_sha256": "ffa99745509ee75eaf23e68d70c86aeab0a65e351210688b139a6e73ad96ffea",
+ "seal_sha256": "292afc5fdcfc075108314cd5e0c5888a972a55861161b3ae62ccd10cde0ff43d",
  "stages_declared": [
   "identify_lease_availability",
   "assess_machine_quiescence",

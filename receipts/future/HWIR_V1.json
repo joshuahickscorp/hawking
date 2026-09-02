@@ -1,7 +1,7 @@
 {
  "atlas": {
   "git_head_has_file": false,
-  "on_disk": false,
+  "on_disk": true,
   "path": "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
   "recovered_fingerprint": "e763623e8a4ddcfc8350d6b5f680284a23db68f8bfbca53428e258d24adfc2ab",
   "recovered_from": "parent checkout /Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
@@ -30,12 +30,12 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T07:04:07Z",
+  "recorded_at": "2026-09-02T18:47:20Z",
   "recorded_by": "tools/future/hwir.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
- "branch": "grok/s2-hwir-pluggable-lowering-target-20260902-025130",
+ "branch": "odyssey-i",
  "claim_boundary": "PREHARDWARE sidecar HWIR artifact. No FPGA board, bitstream, timing, or HARDWARE_MEASURED number. Resource figures are ESTIMATES. Cycle figures are APPROXIMATIONS, not measurements.",
  "evidence_tiers_illegal": [
   "HARDWARE_MEASURED"
@@ -77,18 +77,17 @@
   "synthetic-arrival rehearsal grades divergent predictions FALSIFIED and names the implicated coefficient; not an arrival",
   "tampered sealed predictions are detected and rejected"
  ],
- "head": "c8f7ab8de9031bf44a85f99820a465cd395c9e71",
+ "head": "7eaca722fdd3b47e8d9e5279e7573ebe18e09636",
  "hwir_hypotheses": [
   {
    "behavior_id": "move_or_recompute",
    "buffers": [
-    "partial_reduction",
-    "persistent_state",
     "resident_representation",
-    "token_activation"
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
    ],
    "hwir_node_kind": "dataflow_region",
-   "ir_node_kind": "compute",
    "label": "[D] hypothesis; no board or hardware timing claim",
    "placement_constraint": {
     "dependencies": "costed_dependency_queries",
@@ -98,22 +97,21 @@
    "primitive": "MoveOrRecompute",
    "semantic_edges": [
     "activation",
+    "state",
     "compact_representation",
-    "partial_reduction",
-    "state"
+    "partial_reduction"
    ],
    "status": "CANDIDATE"
   },
   {
    "behavior_id": "persistent_physical_region",
    "buffers": [
-    "partial_reduction",
-    "persistent_state",
     "resident_representation",
-    "token_activation"
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
    ],
    "hwir_node_kind": "dataflow_region",
-   "ir_node_kind": "persistent-pipeline",
    "label": "[D] hypothesis; no board or hardware timing claim",
    "placement_constraint": {
     "execution_policy.process": "long_lived_executor",
@@ -123,22 +121,21 @@
    "primitive": "PersistentPhysicalRegion",
    "semantic_edges": [
     "activation",
+    "state",
     "compact_representation",
-    "partial_reduction",
-    "state"
+    "partial_reduction"
    ],
    "status": "CANDIDATE"
   },
   {
    "behavior_id": "fused_decode_compute",
    "buffers": [
-    "partial_reduction",
-    "persistent_state",
     "resident_representation",
-    "token_activation"
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
    ],
    "hwir_node_kind": "spatial_region",
-   "ir_node_kind": "representation-decoder",
    "label": "[D] hypothesis; no board or hardware timing claim",
    "placement_constraint": {
     "computation": "projection_plus_decode",
@@ -148,22 +145,21 @@
    "primitive": "FusedDecodeCompute",
    "semantic_edges": [
     "activation",
+    "state",
     "compact_representation",
-    "partial_reduction",
-    "state"
+    "partial_reduction"
    ],
    "status": "CANDIDATE"
   },
   {
    "behavior_id": "local_state_machine",
    "buffers": [
-    "partial_reduction",
-    "persistent_state",
     "resident_representation",
-    "token_activation"
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
    ],
    "hwir_node_kind": "spatial_region",
-   "ir_node_kind": "state",
    "label": "[D] hypothesis; no board or hardware timing claim",
    "placement_constraint": {
     "execution_policy": "fixed_state_transitions",
@@ -173,22 +169,21 @@
    "primitive": "LocalStateMachine",
    "semantic_edges": [
     "activation",
+    "state",
     "compact_representation",
-    "partial_reduction",
-    "state"
+    "partial_reduction"
    ],
    "status": "CANDIDATE"
   },
   {
    "behavior_id": "graph_replay",
    "buffers": [
-    "partial_reduction",
-    "persistent_state",
     "resident_representation",
-    "token_activation"
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
    ],
    "hwir_node_kind": "dataflow_region",
-   "ir_node_kind": "persistent-pipeline",
    "label": "[D] hypothesis; no board or hardware timing claim",
    "placement_constraint": {
     "execution_policy.dynamic_slots": [
@@ -202,22 +197,21 @@
    "primitive": "GraphReplay",
    "semantic_edges": [
     "activation",
+    "state",
     "compact_representation",
-    "partial_reduction",
-    "state"
+    "partial_reduction"
    ],
    "status": "CANDIDATE"
   },
   {
    "behavior_id": "layout_algebra",
    "buffers": [
-    "partial_reduction",
-    "persistent_state",
     "resident_representation",
-    "token_activation"
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
    ],
    "hwir_node_kind": "dataflow_region",
-   "ir_node_kind": "compute",
    "label": "[D] hypothesis; no board or hardware timing claim",
    "placement_constraint": {
     "computation": "tile_and_lane_mapping",
@@ -227,22 +221,21 @@
    "primitive": "LayoutTransform",
    "semantic_edges": [
     "activation",
+    "state",
     "compact_representation",
-    "partial_reduction",
-    "state"
+    "partial_reduction"
    ],
    "status": "CANDIDATE"
   },
   {
    "behavior_id": "static_dynamic_skeleton",
    "buffers": [
-    "partial_reduction",
-    "persistent_state",
     "resident_representation",
-    "token_activation"
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
    ],
    "hwir_node_kind": "dataflow_region",
-   "ir_node_kind": "compute",
    "label": "[D] hypothesis; no board or hardware timing claim",
    "placement_constraint": {
     "dependencies": "precomputed",
@@ -252,22 +245,21 @@
    "primitive": "ConditionalPhysicalProgram",
    "semantic_edges": [
     "activation",
+    "state",
     "compact_representation",
-    "partial_reduction",
-    "state"
+    "partial_reduction"
    ],
    "status": "CANDIDATE"
   },
   {
    "behavior_id": "stationary_representation",
    "buffers": [
-    "partial_reduction",
-    "persistent_state",
     "resident_representation",
-    "token_activation"
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
    ],
    "hwir_node_kind": "dataflow_region",
-   "ir_node_kind": "memory",
    "label": "[D] hypothesis; no board or hardware timing claim",
    "placement_constraint": {
     "memory": "tier_is_executable_identity",
@@ -277,22 +269,21 @@
    "primitive": "StationaryRepresentation",
    "semantic_edges": [
     "activation",
+    "state",
     "compact_representation",
-    "partial_reduction",
-    "state"
+    "partial_reduction"
    ],
    "status": "CANDIDATE"
   },
   {
    "behavior_id": "semantic_transport",
    "buffers": [
-    "partial_reduction",
-    "persistent_state",
     "resident_representation",
-    "token_activation"
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
    ],
    "hwir_node_kind": "dataflow_region",
-   "ir_node_kind": "dma-transport",
    "label": "[D] hypothesis; no board or hardware timing claim",
    "placement_constraint": {
     "dependencies": "typed_transport_edges",
@@ -302,22 +293,21 @@
    "primitive": "SemanticTransportEdge",
    "semantic_edges": [
     "activation",
+    "state",
     "compact_representation",
-    "partial_reduction",
-    "state"
+    "partial_reduction"
    ],
    "status": "CANDIDATE"
   },
   {
    "behavior_id": "collective_region",
    "buffers": [
-    "partial_reduction",
-    "persistent_state",
     "resident_representation",
-    "token_activation"
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
    ],
    "hwir_node_kind": "dataflow_region",
-   "ir_node_kind": "reduction",
    "label": "[D] hypothesis; no board or hardware timing claim",
    "placement_constraint": {
     "dependencies": "semantic_transport",
@@ -327,22 +317,21 @@
    "primitive": "CollectiveRegion",
    "semantic_edges": [
     "activation",
+    "state",
     "compact_representation",
-    "partial_reduction",
-    "state"
+    "partial_reduction"
    ],
    "status": "CANDIDATE"
   },
   {
    "behavior_id": "async_double_buffer",
    "buffers": [
-    "partial_reduction",
-    "persistent_state",
     "resident_representation",
-    "token_activation"
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
    ],
    "hwir_node_kind": "dataflow_region",
-   "ir_node_kind": "memory",
    "label": "[D] hypothesis; no board or hardware timing claim",
    "placement_constraint": {
     "execution_policy": "overlap_when_measured",
@@ -352,22 +341,21 @@
    "primitive": "DoubleBufferedTile",
    "semantic_edges": [
     "activation",
+    "state",
     "compact_representation",
-    "partial_reduction",
-    "state"
+    "partial_reduction"
    ],
    "status": "CANDIDATE"
   },
   {
    "behavior_id": "spatial_local_pipeline",
    "buffers": [
-    "partial_reduction",
-    "persistent_state",
     "resident_representation",
-    "token_activation"
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
    ],
    "hwir_node_kind": "spatial_region",
-   "ir_node_kind": "persistent-pipeline",
    "label": "[D] hypothesis; no board or hardware timing claim",
    "placement_constraint": {
     "computation": "spatial_regions",
@@ -377,22 +365,21 @@
    "primitive": "SpatialPipeline",
    "semantic_edges": [
     "activation",
+    "state",
     "compact_representation",
-    "partial_reduction",
-    "state"
+    "partial_reduction"
    ],
    "status": "CANDIDATE"
   },
   {
    "behavior_id": "direct_routed_accumulate",
    "buffers": [
-    "partial_reduction",
-    "persistent_state",
     "resident_representation",
-    "token_activation"
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
    ],
    "hwir_node_kind": "dataflow_region",
-   "ir_node_kind": "compute",
    "label": "[D] hypothesis; no board or hardware timing claim",
    "placement_constraint": {
     "computation": "route_then_native_expert",
@@ -402,22 +389,21 @@
    "primitive": "DirectRoutedAccumulate",
    "semantic_edges": [
     "activation",
+    "state",
     "compact_representation",
-    "partial_reduction",
-    "state"
+    "partial_reduction"
    ],
    "status": "CANDIDATE"
   },
   {
    "behavior_id": "sparse_conditional_execution",
    "buffers": [
-    "partial_reduction",
-    "persistent_state",
     "resident_representation",
-    "token_activation"
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
    ],
    "hwir_node_kind": "dataflow_region",
-   "ir_node_kind": "compute",
    "label": "[D] hypothesis; no board or hardware timing claim",
    "placement_constraint": {
     "computation": "conditional_regions",
@@ -427,22 +413,21 @@
    "primitive": "SparseSkip",
    "semantic_edges": [
     "activation",
+    "state",
     "compact_representation",
-    "partial_reduction",
-    "state"
+    "partial_reduction"
    ],
    "status": "CANDIDATE"
   },
   {
    "behavior_id": "npu_regular_island",
    "buffers": [
-    "partial_reduction",
-    "persistent_state",
     "resident_representation",
-    "token_activation"
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
    ],
    "hwir_node_kind": "dataflow_region",
-   "ir_node_kind": "compute",
    "label": "[D] hypothesis; no board or hardware timing claim",
    "placement_constraint": {
     "dependencies": "explicit_transfer_edges",
@@ -452,14 +437,14 @@
    "primitive": "ConditionalPhysicalProgram",
    "semantic_edges": [
     "activation",
+    "state",
     "compact_representation",
-    "partial_reduction",
-    "state"
+    "partial_reduction"
    ],
    "status": "CANDIDATE"
   }
  ],
- "hypotheses_source": "embedded_recovery_atlas_absent_from_worktree",
+ "hypotheses_source": "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
  "in_transit_transforms": [
   "identity",
   "quantize",
@@ -1025,12 +1010,12 @@
   "flash": {
    "path": "receipts/headless/FLASH_NEXT_FPGA_ORGAN_MAP.json",
    "present": true,
-   "sha256": "a31e3a548f5ce955131bc9e6c04a812ad212ea2dd31e669e93328b33f84c98d0"
+   "sha256": "fb7ca577696f3dbbd783e6a3d7b5986a30e7f1cbec7a30ed522fc45b3cf88011"
   },
   "qwen27": {
    "path": "receipts/headless/QWEN27_FPGA_ORGAN_MAP.json",
    "present": true,
-   "sha256": "790c7356c757cf0ad1186acb16dff1f0fb053b0d146d06582f0b1452bebcf655"
+   "sha256": "66a606e5ce0319ef828bfed3ec4a49f2904289692bd447bbffcb1f1cbf841aec"
   }
  },
  "physical_graph_semantics_consumed": [
@@ -1412,7 +1397,7 @@
    "reduction",
    "representation-decoder"
   ],
-  "lowered_qwen_fingerprint": null,
+  "lowered_qwen_fingerprint": "4d3e58f334a4a13406658beef6f9f5506a00927221ab9a872b6300c3ac42fce6",
   "lowered_state_fingerprint": "cd03dac5abe5f898b119e9e4f5f4d6943042d0ba931230cebf8f43b7d617d1ca",
   "lowered_state_kinds": [
    "compute",
@@ -1447,7 +1432,7 @@
    "STATIC"
   ],
   "qgemv_resource_fit": true,
-  "qwen_lowered_valid": null,
+  "qwen_lowered_valid": true,
   "real_carrier_unpinned": true,
   "real_scoring_refused_without_u50": true,
   "resource_over_budget_rejected": true,
@@ -1558,7 +1543,7 @@
   "URAM"
  ],
  "schema": "hawking.future.hwir.v1",
- "seal_sha256": "f59a171ee72b24fe7fb74501867da6679767852987f033b1c96e1306fbb26d28",
+ "seal_sha256": "6471ecc460a4a02282d9d4a8e1202378118e5e695a2a7db1849f66f7cd3cee98",
  "sealed_predictions": {
   "count": 12,
   "ids": [
