@@ -34,12 +34,14 @@ class App:
         return self._run_interactive()
 
     def _run_headless(self, prompt: str, *, plain: bool = False) -> int:
+        # Headless/piped: never attach the TUI. stdout is the answer (or
+        # slash-command text). Live cursor control is how ANSI would leak.
         self.bus.emit("session_started", {"mode": "headless"})
         try:
             # A slash command is a command in every mode. Routing it through
             # execute() sends `hcli /help` to the model, which is both wrong
             # and expensive.
-            if prompt.startswith("/"):
+            if prompt.startswith(("/", "\\")):
                 # Print what the TUI would render, not the structured payload
                 # handle_command returns to programmatic callers. Both surfaces
                 # must show the operator the same text.
@@ -110,6 +112,9 @@ class App:
             workspace=self.ws.root,
             model_name=model_name,
             runtime_count=self.runtime_count,
+            bank_snapshot_fn=self.controller.goal_bank_snapshot,
+            stream=sys.stdout,
+            tty=sys.stdout.isatty(),
         )
         self.bus.emit("session_started", {"mode": "interactive"})
         try:
@@ -119,6 +124,6 @@ class App:
 
     def _handle_input(self, text: str):
         self.bus.emit("user_message", {"text": text})
-        if text.startswith("/"):
+        if text.startswith(("/", "\\")):
             return self.controller.handle_command(text)
         return self.controller.execute(text)

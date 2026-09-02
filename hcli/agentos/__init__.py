@@ -20,6 +20,8 @@ from hcli.verifier_pipeline import command_is_admissible
 from hcli.workunit import WorkUnit
 from hcli.agentos.runtime import AgentOS
 from hcli.agentos.background import BackgroundJob, BackgroundJobStore
+from hcli.goal_bank import GoalBank, GoalBankError
+from hcli.knowledge import KnowledgeError, KnowledgeStore
 from hcli.agentos.resident import (
     ResidentConfig,
     ResidentBodyRegistry,
@@ -77,6 +79,10 @@ __all__ = [
     "command_is_admissible",
     "compile_worker_context",
     "AgentOS",
+    "GoalBank",
+    "GoalBankError",
+    "KnowledgeError",
+    "KnowledgeStore",
     "BackgroundJob",
     "BackgroundJobStore",
     "ResidentConfig",

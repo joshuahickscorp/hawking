@@ -967,14 +967,22 @@ class StructuredOutputContract:
                         "schema and nothing else."
                     ),
                 )
-            result = complete_fn(to_send, timeout)
-            if not isinstance(result, CompletionResult):
-                result = CompletionResult(raw=result, text=str(result))
-            last_text = result.text
             try:
+                # complete_fn is inside the try on purpose: a caller that can
+                # see the reply is truncated knows it violates the schema
+                # before the validator does, and that is still a violation
+                # this contract owns. Retrying only what validate() raised
+                # let a length-truncation escape enforce() entirely, so no
+                # attempt was ever counted against max_attempts.
+                result = complete_fn(to_send, timeout)
+                if not isinstance(result, CompletionResult):
+                    result = CompletionResult(raw=result, text=str(result))
+                last_text = result.text
                 parsed = self.validate(result.text)
             except SchemaViolation as exc:
                 errors.append(exc.reason)
+                if exc.text is not None:
+                    last_text = exc.text
                 continue
             result.degraded = list(result.degraded or [])
             for feature in self.degraded_features:

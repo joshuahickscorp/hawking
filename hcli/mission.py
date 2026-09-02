@@ -10,6 +10,7 @@ import json
 import os
 import queue
 import signal
+import subprocess
 import sys
 import threading
 import time
@@ -17,7 +18,7 @@ import uuid
 from pathlib import Path
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Union
 
-from .dag_store import atomic_write_json
+from .dag_store import DagStore, atomic_write_json
 from .executors import dispatch_workunit
 from .goal import (
     GoalCompiler,
@@ -27,7 +28,7 @@ from .goal import (
 )
 from .resources import normalize_resource_class, pid_is_alive
 from .scheduler import DEFAULT_NO_PROGRESS_THRESHOLD, NO_PROGRESS, Scheduler
-from .workunit import WorkUnit, identify_ready, transition_status
+from .workunit import IdentityConflict, WorkUnit, identify_ready, transition_status
 
 MISSION_DIRNAME = "mission"
 STATE_FILENAME = "state.json"
@@ -180,6 +181,7 @@ class Mission:
         providers: Optional[Dict[str, Any]] = None,
         stop_runtime_pool: bool = True,
         tool_registry: Any = None,
+        context_memory: Any = None,
     ) -> None:
         self.workspace = _as_workspace(workspace)
         self.engine = engine
@@ -191,6 +193,7 @@ class Mission:
         self.heartbeat_s = float(heartbeat_s) if heartbeat_s else DEFAULT_HEARTBEAT_S
         self.quiet = bool(quiet)
         self.id = mission_id or str(uuid.uuid4())
+        self.retired_dag: Optional[Path] = None
         self.session_id = session_id or self.id
         self.install_signals = bool(install_signals)
         self.before_dispatch = before_dispatch
@@ -198,6 +201,10 @@ class Mission:
         # Kept so _run_unit can hand the executor AgentOS's own registry
         # and repo root instead of the executor building its own.
         self.tool_registry = tool_registry
+        # A bounded semantic packet may accompany each WorkUnit. It is never
+        # the transcript; it lets an overnight worker inherit prior verified
+        # facts and operator constraints without replaying the whole session.
+        self.context_memory = context_memory if isinstance(context_memory, dict) else None
         self.repo_root = Path(repo_root) if repo_root else None
         # A Mission may be given a pool it owns, or a pool owned by the
         # long-lived Controller/AgentOS facade.  The latter must survive a
@@ -242,14 +249,34 @@ class Mission:
             self.scheduler = scheduler
         else:
             unit_map = self._coerce_units(units)
-            self.scheduler = Scheduler(
-                unit_map,
-                self.runtime_count,
-                workspace=self.workspace,
-                no_progress_threshold=self.no_progress_threshold,
-                repo_root=repo_root,
-                limits=limits,
-            )
+
+            def _build_scheduler() -> Scheduler:
+                return Scheduler(
+                    unit_map,
+                    self.runtime_count,
+                    workspace=self.workspace,
+                    no_progress_threshold=self.no_progress_threshold,
+                    repo_root=repo_root,
+                    limits=limits,
+                )
+
+            try:
+                self.scheduler = _build_scheduler()
+            except IdentityConflict:
+                # A FINISHED mission's graph is still the live dag.json, and
+                # GoalCompiler names every mission's units `implement` and
+                # `validate`, so the second goal in a workspace collided by id
+                # and this constructor raised. That made bank promotion --
+                # one new Mission per queued goal -- structurally unable to
+                # complete a second goal, and killed the resident worker on
+                # `resident start --goal <something new>`. Retire the
+                # superseded graph (renamed under .hcli/dag-retired/, never
+                # deleted) and build this mission's own. Only reached on a real
+                # conflict, so a compatible graph is never disturbed.
+                self.retired_dag = DagStore(self.workspace).retire(
+                    reason="superseded"
+                )
+                self.scheduler = _build_scheduler()
 
         self._maybe_compile()
         self._ensure_steering()
@@ -419,6 +446,60 @@ class Mission:
                     pass
         return mission
 
+    # A workspace this big cannot be fingerprinted by reading it. The walk
+    # below read_bytes()'d EVERY file under the workspace to answer one
+    # question -- "did the tree change since the last unit?" -- and
+    # `Mission.run()` asks it before the first WorkUnit and again on every
+    # heartbeat. On this repo that is tens of gigabytes of model artifacts and
+    # activation captures (46,780 files under ONE capture directory), so a
+    # mission never reached its first model call: `hcli resident start` sat at
+    # body=LOADING with the worker at 70% CPU stat-ing .f32le dumps, and the
+    # supervisor eventually evacuated it. git answers the same question from
+    # its index in ~0.1s.
+    GIT_FINGERPRINT_TIMEOUT_S = 60.0
+
+    def _git_fingerprint(self, root: Path) -> Optional[str]:
+        """HEAD plus the size/mtime of every path git reports as changed.
+
+        Sensitive to a second edit of an already-dirty file (which a bare
+        `git status` is not) without reading any file's bytes. Returns None
+        when this is not a usable git worktree, so the content walk below
+        stays the behaviour for a plain directory.
+        """
+        if not (root / ".git").exists():
+            return None
+        try:
+            status = subprocess.run(
+                ["git", "-C", str(root), "status", "--porcelain=v1", "-z"],
+                capture_output=True,
+                timeout=self.GIT_FINGERPRINT_TIMEOUT_S,
+                check=False,
+            )
+            head = subprocess.run(
+                ["git", "-C", str(root), "rev-parse", "HEAD"],
+                capture_output=True,
+                timeout=self.GIT_FINGERPRINT_TIMEOUT_S,
+                check=False,
+            )
+        except (OSError, subprocess.SubprocessError):
+            return None
+        if status.returncode != 0:
+            return None
+        digest = hashlib.sha256()
+        digest.update(head.stdout.strip() if head.returncode == 0 else b"")
+        digest.update(b"\0")
+        digest.update(status.stdout)
+        for record in status.stdout.split(b"\0"):
+            if len(record) < 4:
+                continue
+            rel = record[3:].decode("utf-8", "replace")
+            try:
+                info = (root / rel).stat()
+            except OSError:
+                continue
+            digest.update(f"\0{rel}\0{info.st_size}\0{info.st_mtime_ns}".encode("utf-8"))
+        return digest.hexdigest()[:20]
+
     def fingerprint(self) -> str:
         if self._fingerprint_fn is not None:
             return str(self._fingerprint_fn())
@@ -427,6 +508,9 @@ class Mission:
         skip = {".hcli", ".git", ".haider"}
         if not root.exists():
             return digest.hexdigest()[:20]
+        git = self._git_fingerprint(root)
+        if git is not None:
+            return git
         for dirpath, dirnames, filenames in os.walk(root):
             rel = Path(dirpath).relative_to(root)
             if any(part in skip for part in rel.parts):
@@ -909,6 +993,7 @@ class Mission:
             "acceptance": list(packet.acceptance),
             "neighborhood": list(packet.neighborhood),
             "compiled": compiled_ir_to_jsonable(compiled),
+            "context_memory": self.context_memory,
             "packet": packet,
             "provider": getattr(wu, "provider", None) or getattr(wu, "preferred_backend", None),
         }

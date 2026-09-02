@@ -130,6 +130,7 @@ _COMMAND_FIRST = frozenset(
 
 # Shell builtins / tautologies that exit 0 (or 1) without inspecting the world.
 _VACUOUS_FIRST = frozenset({"true", "false", ":", "exit"})
+_PYTHON_FIRST_RE = re.compile(r"python(?:\d+(?:\.\d+)*)?\Z", re.I)
 
 
 def _admissibility_note() -> str:
@@ -140,12 +141,17 @@ def _admissibility_note() -> str:
     missions proposed `test -d ...` and `grep -l ... | wc -l`, both refused as
     COMMAND_NOT_ADMITTED, both obligations FALSE -- and nothing in the prompt had
     ever said which first words are admitted or why. Built from _COMMAND_FIRST
-    itself so the sentence cannot drift from the enforcement.
+    itself so the sentence cannot drift from the enforcement. The one narrow
+    extension is an absolute executable whose basename is `python` plus an
+    optional numeric version (for example, `python3.14`), which receives the
+    same Python `-c` vacuity check as `python3`.
     """
     return (
         "\n\nTHE HARNESS ONLY ADMITS A COMMAND WHOSE FIRST WORD IS ONE OF: "
         + ", ".join(sorted(_COMMAND_FIRST))
-        + ". A command starting with anything else is REFUSED UNRUN and the "
+        + ". An absolute versioned Python basename (for example, `python3.14`) is "
+        "also admitted and receives the same Python `-c` vacuity check. A command "
+        "starting with anything else is REFUSED UNRUN and the "
         "obligation fails. This is not a style preference: the proof is the EXIT "
         "CODE, and `grep ... | wc -l` exits 0 whether the count is 9 or 900, so it "
         "prints a number and checks nothing. Wrap the check so it FAILS when the "
@@ -902,7 +908,11 @@ def _split_top_level(command: str, sep: str) -> List[str]:
 
 
 def command_is_admissible(command: str) -> Tuple[bool, str]:
-    """Refuse tautologies and anything whose first token is not in _COMMAND_FIRST.
+    """Refuse tautologies and unknown first tokens.
+
+    The admitted set is ``_COMMAND_FIRST`` plus a Python interpreter basename
+    matching ``python<version>``; versioned interpreters are needed because
+    ``sys.executable`` is often ``python3.14``.
 
     ``true``, ``:``, ``exit 0``, ``python3 -c 'raise SystemExit(0)'`` and
     ``sh -c true`` cannot fail for a reason that depends on the claim.
@@ -938,7 +948,14 @@ def command_is_admissible(command: str) -> Tuple[bool, str]:
     base = tokens[0].rsplit("/", 1)[-1].lower()
     if base in _VACUOUS_FIRST or tokens[0] == ":":
         return False, "VACUOUS_COMMAND"
-    if base not in _COMMAND_FIRST:
+    # ``sys.executable`` is commonly an absolute, versioned basename such as
+    # ``/opt/homebrew/.../python3.14``. It is the same interpreter family as
+    # the explicitly admitted ``python``/``python3`` spellings; rejecting it
+    # here made the landing verifier refuse every real test command on those
+    # hosts before the command could run. Keep the match narrow (Python names
+    # only), and run the same ``-c`` vacuity analysis below for all versions.
+    is_python = _PYTHON_FIRST_RE.fullmatch(base) is not None
+    if base not in _COMMAND_FIRST and not is_python:
         return False, "COMMAND_NOT_ADMITTED"
     if base in {"sh", "bash", "zsh"} and len(tokens) >= 3 and tokens[1] in {"-c", "-lc"}:
         if _is_vacuous_shell_body(tokens[2]):
@@ -948,7 +965,7 @@ def command_is_admissible(command: str) -> Tuple[bool, str]:
         inner_ok, inner_why = command_is_admissible(tokens[2])
         if not inner_ok:
             return False, inner_why
-    if base in {"python", "python3"} and "-c" in tokens:
+    if is_python and "-c" in tokens:
         idx = tokens.index("-c")
         if idx + 1 < len(tokens) and _is_vacuous_python_body(tokens[idx + 1]):
             return False, "VACUOUS_COMMAND"

@@ -42,6 +42,28 @@ def atomic_write_text(path: Union[str, Path], text: str) -> None:
         raise
 
 
+def atomic_write_bytes(path: Union[str, Path], payload: bytes) -> None:
+    """Write bytes via the same-directory temp + fsync + replace contract."""
+    dest = Path(path)
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    if not isinstance(payload, bytes):
+        raise TypeError(f"payload must be bytes, got {type(payload).__name__}")
+    tmp_name = f".{dest.name}.{os.getpid()}.{uuid.uuid4().hex}.tmp"
+    tmp_path = dest.parent / tmp_name
+    try:
+        with open(tmp_path, "wb") as handle:
+            handle.write(payload)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(tmp_path, dest)
+    except Exception:
+        try:
+            tmp_path.unlink()
+        except OSError:
+            pass
+        raise
+
+
 def atomic_write_json(path: Union[str, Path], obj: Any) -> None:
     """Write JSON via ``atomic_write_text`` (indent=2, sort_keys=True)."""
     atomic_write_text(path, json.dumps(obj, indent=2, sort_keys=True))

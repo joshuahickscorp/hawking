@@ -98,6 +98,7 @@ _SAFE_SHELL_COMMANDS = frozenset(
 _SAFE_GIT_COMMANDS = frozenset({"status", "diff", "log", "show", "rev-parse"})
 _MAX_READ_BYTES = 2 * 1024 * 1024
 _MAX_SEARCH_FILES = 20_000
+_MAX_LIST_DIRECTORIES = 20_000
 
 
 def _redact(value: Any, *, limit: int = 4000) -> Any:
@@ -364,6 +365,51 @@ class ToolRegistry:
             result.append(spec.to_dict())
         return result
 
+    def describe(self, focus: str = "", *, max_results: int = 12) -> Dict[str, Any]:
+        """Return the smallest useful slice of the registry for one question.
+
+        The full catalog is still available through :meth:`discover`, but
+        putting every domain in every model prompt makes aliases and unrelated
+        capabilities compete with the current task. This deterministic index
+        lets a model ask for the exact signatures it needs after seeing only a
+        compact first-round catalog.
+        """
+        query = str(focus or "").strip()
+        terms = tuple(dict.fromkeys(re.findall(r"[a-z0-9][a-z0-9_.-]*", query.lower())))
+        try:
+            limit = max(1, min(32, int(max_results)))
+        except (TypeError, ValueError):
+            limit = 12
+
+        scored: List[Tuple[int, str, ToolSpec]] = []
+        for spec in self._tools.values():
+            name = spec.name.lower()
+            haystack = " ".join(
+                (spec.name, spec.description, *spec.roles, *spec.resources)
+            ).lower()
+            score = 0
+            for term in terms:
+                if term == name:
+                    score += 100
+                elif term in name:
+                    score += 40
+                elif term in haystack:
+                    score += 10
+            if score or not terms:
+                scored.append((score, spec.name, spec))
+        if terms:
+            scored.sort(key=lambda item: (-item[0], item[1]))
+        else:
+            scored.sort(key=lambda item: item[1])
+        matches = [spec.to_dict() for _score, _name, spec in scored[:limit]]
+        return {
+            "focus": query,
+            "matches": matches,
+            "match_count": len(scored),
+            "truncated": len(scored) > limit,
+            "provenance": "hcli.tool_registry.ToolRegistry.describe",
+        }
+
     def invoke(self, name: str, arguments: Optional[Mapping[str, Any]] = None) -> ToolResult:
         invocation_id = f"tool-{uuid.uuid4()}"
         spec = self.get(name)
@@ -510,13 +556,14 @@ def _search_files(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def _list_files(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
-    """List files under a read root. The verb 61 tools did not have.
+    """List files and visible directories under a read root.
 
     `fs.search` requires a content `pattern`, so a caller that wanted to SEE
     what is in a directory could not express it and forced search into a
     listing role instead -- the model spent an entire tool budget calling
-    fs.search without `pattern`, reading the failure, and guessing again. That
-    was a missing capability, not a confused caller.
+    fs.search without `pattern`, reading the failure, and guessing again. The
+    listing result keeps the historical ``files`` field and adds
+    ``directories`` so a directory question does not silently omit folders.
     """
     root = context.resolve_read_path(args.get("path") or ".")
     if not root.is_dir():
@@ -525,11 +572,29 @@ def _list_files(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
     limit = max(1, min(2000, int(args.get("max_results") or 500)))
     recursive = bool(args.get("recursive", True))
     entries: List[Dict[str, Any]] = []
+    directories: List[Dict[str, Any]] = []
+    truncated = False
+    directories_seen = 0
     for dirpath, dirnames, filenames in os.walk(root):
+        directories_seen += 1
+        if directories_seen > _MAX_LIST_DIRECTORIES:
+            truncated = True
+            break
         dirnames[:] = sorted(
             name for name in dirnames
             if name not in {".git", ".venv", "__pycache__", "node_modules"}
         )
+        for dirname in dirnames:
+            if not Path(dirname).match(glob):
+                continue
+            if len(directories) >= limit:
+                truncated = True
+                continue
+            path = Path(dirpath) / dirname
+            directories.append({
+                "path": str(path.relative_to(root)),
+                "kind": "directory",
+            })
         for filename in sorted(filenames):
             if not Path(filename).match(glob):
                 continue
@@ -538,12 +603,19 @@ def _list_files(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
                 size = path.stat().st_size
             except OSError:
                 continue
-            entries.append({"path": str(path.relative_to(root)), "bytes": size})
             if len(entries) >= limit:
-                return {"root": str(root), "glob": glob, "files": entries, "truncated": True}
+                truncated = True
+                continue
+            entries.append({"path": str(path.relative_to(root)), "bytes": size})
         if not recursive:
             break
-    return {"root": str(root), "glob": glob, "files": entries, "truncated": False}
+    return {
+        "root": str(root),
+        "glob": glob,
+        "files": entries,
+        "directories": directories,
+        "truncated": truncated,
+    }
 
 
 def _git_dir(context: ToolContext, raw: Any = None) -> Path:
@@ -1140,6 +1212,24 @@ def _receipt_read(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
     return {"path": str(path), "sha256": _sha256_bytes(raw), "bytes": len(raw), "document": value}
 
 
+def _context_recall(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """Recall bounded older semantic facts without replaying the transcript."""
+    from .config import Config
+    from .knowledge import KnowledgeStore
+
+    archive_root = Config(str(context.workspace)).value(
+        "context_archive_root",
+        "HCLI_CONTEXT_ARCHIVE_ROOT",
+        None,
+    )
+    store = KnowledgeStore(context.workspace, archive_root=archive_root)
+    return store.recall(
+        str(args.get("focus") or ""),
+        limit=args.get("max_results", 8),
+        max_chars=args.get("max_chars", 8000),
+    )
+
+
 _RECEIPT_TARGETS = {
     "roadmap.read": "civilization/ROADMAP_STATE.json",
     "vmcp.capabilities": "receipts/headless/VMCP_CAPABILITY_SURFACE.json",
@@ -1480,9 +1570,7 @@ def _forbidden_fruit_lab(context: ToolContext, args: Dict[str, Any]) -> Dict[str
     """
     from . import forbidden_fruit
 
-    return forbidden_fruit.run_forbidden_fruit_lab(
-        sdk=args.get("sdk"), timeout_s=args.get("timeout_s"),
-    )
+    return forbidden_fruit.run_forbidden_fruit_lab(sdk=args.get("sdk"))
 
 
 def _frontier_decide(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
@@ -1585,6 +1673,39 @@ def default_tool_registry(
         ),
     )
     registry = ToolRegistry(context)
+    registry.register(ToolSpec(
+        "tools.catalog",
+        "Find exact typed tool signatures for a focused question; read-only and bounded.",
+        {
+            "type": "object",
+            "required": ["focus"],
+            "additionalProperties": False,
+            "properties": {
+                "focus": {"type": "string"},
+                "max_results": {"type": "integer"},
+            },
+        },
+        resources=("filesystem",),
+        handler=lambda _context, args: registry.describe(
+            args.get("focus"), max_results=args.get("max_results", 12)
+        ),
+    ))
+    registry.register(ToolSpec(
+        "context.recall",
+        "Recall bounded prior-knowledge facts from the hot index and cold gzip archive; never replays the transcript.",
+        {
+            "type": "object",
+            "required": ["focus"],
+            "additionalProperties": False,
+            "properties": {
+                "focus": {"type": "string"},
+                "max_results": {"type": "integer"},
+                "max_chars": {"type": "integer"},
+            },
+        },
+        resources=("filesystem", "ssd"),
+        handler=_context_recall,
+    ))
     path_schema = {
         "type": "object",
         "required": ["path"],
@@ -1617,11 +1738,11 @@ def default_tool_registry(
         },
     }
     registry.register(ToolSpec(
-        "fs.list", "List files under a read root, optionally filtered by glob.",
+        "fs.list", "List files and directory entries under a read root, optionally filtered by glob.",
         list_schema, handler=_list_files,
     ))
     registry.register(ToolSpec(
-        "filesystem.list", "List files under a read root, optionally filtered by glob.",
+        "filesystem.list", "List files and directory entries under a read root, optionally filtered by glob.",
         list_schema, handler=_list_files,
     ))
     registry.register(ToolSpec(
@@ -1783,8 +1904,12 @@ def default_tool_registry(
     registry.register(ToolSpec(
         "forbidden_fruit.lab",
         "Probe CPU/GPU/ANE, run the compiled fixture, report OBSERVED placement and timing.",
+        # `timeout_s` was advertised here and forwarded to a handler that has no
+        # such parameter, so EVERY call raised TypeError before the lab ran. The
+        # lab bounds itself per step (compile 180s, run 60s, pair 120s); there is
+        # no single timeout for one knob to mean.
         {"type": "object", "additionalProperties": False,
-         "properties": {"sdk": {"type": "string"}, "timeout_s": {"type": "number"}}},
+         "properties": {"sdk": {"type": "string"}}},
         mutation=REVERSIBLE_RUNTIME, deterministic=False, resources=("cpu",),
         verifier_expectations=(
             "placement is MLComputePlan.deviceUsage as observed, never the requested compute units",

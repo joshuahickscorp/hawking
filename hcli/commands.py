@@ -259,6 +259,14 @@ def format_status(snapshot: Dict[str, Any]) -> str:
     mission_id = snap.get("mission_id") or "—"
     phase = snap.get("phase") or "—"
     goal = _truncate_goal(snap.get("goal"))
+    bank = snap.get("goal_bank")
+    if isinstance(bank, dict) and bank.get("available"):
+        bank_count = str(int(bank.get("queued_count") or 0))
+    elif isinstance(bank, dict):
+        bank_count = "?"
+    else:
+        bank_count = "0"
+    mission_line = f"mission {mission_id}  phase={phase} bank={bank_count}"
 
     if units is None and snap.get("blocked_units") is None:
         wu_line = "WU unknown"
@@ -365,7 +373,7 @@ def format_status(snapshot: Dict[str, Any]) -> str:
     # the machine lines splice in unconditionally, is what keeps a warning-
     # carrying mission from rendering STATUS_MAX_LINES + 1.
     lines = [
-        f"mission {mission_id}  phase={phase}",
+        mission_line,
         f"Goal: {goal}",
         wu_line,
         qwen_line,
@@ -947,7 +955,7 @@ class CommandHandler:
         self.last_value = None
         self.last_command = ""
         line = (line or "").strip()
-        if not line.startswith("/"):
+        if not line.startswith(("/", "\\")):
             return None
         parts = line.split(None, 1)
         cmd = parts[0].lower()
@@ -1077,6 +1085,98 @@ class CommandHandler:
         self.controller.set_goal(arg)
         self.last_value = arg
         return f"Goal set: {arg}"
+
+    def _cmd_bank(self, arg: str) -> str:
+        """Queue a future goal, or inspect/manage the durable goal bank."""
+        usage = (
+            "Usage:\n"
+            "  /bank <goal> - queue a future goal (auto runner)\n"
+            "  /bank mission <goal> - queue a persistent Mission goal\n"
+            "  /bank - show queued/running/recent goals\n"
+            "  /bank drop <id|position> - remove one waiting goal\n"
+            "  /bank clear - remove all waiting goals"
+        )
+        raw = (arg or "").strip()
+        if not raw:
+            snapshot = self.controller.goal_bank_snapshot()
+            self.last_value = snapshot
+            if not snapshot.get("available", False):
+                return f"Goal bank unavailable: {snapshot.get('reason', 'unknown error')}"
+            queued = snapshot.get("queued") or []
+            running = snapshot.get("running") or []
+            recent = snapshot.get("recent") or []
+            lines = [
+                f"Goal bank: queued={snapshot.get('queued_count', 0)} "
+                f"running={snapshot.get('running_count', 0)}"
+            ]
+            if queued:
+                lines.append("Queued:")
+                lines.extend(
+                    f"  {index}. {item.get('id')} [{item.get('mode', 'auto')}] "
+                    f"{_truncate(item.get('goal'), 100)}"
+                    for index, item in enumerate(queued, start=1)
+                )
+            if running:
+                lines.append("Running:")
+                lines.extend(
+                    f"  {item.get('id')} [{item.get('mode', 'auto')}] "
+                    f"{_truncate(item.get('goal'), 100)}"
+                    for item in running
+                )
+            if recent:
+                lines.append("Recent:")
+                lines.extend(
+                    f"  {item.get('id')} {item.get('status')} "
+                    f"{_truncate(item.get('goal'), 100)}"
+                    for item in recent
+                )
+            if not queued and not running and not recent:
+                lines.append("  (empty)")
+            return "\n".join(lines)
+
+        verb, _, rest = raw.partition(" ")
+        verb = verb.lower()
+        rest = rest.strip()
+        try:
+            if verb in {"drop", "remove"}:
+                if not rest:
+                    return "Usage: /bank drop <id|position>"
+                item = self.controller.drop_banked_goal(rest)
+                self.last_value = item
+                return (
+                    f"Dropped banked goal {item.get('id')}"
+                    if item is not None
+                    else f"No queued goal matched: {rest}"
+                )
+            if verb == "clear":
+                removed = self.controller.clear_banked_goals()
+                self.last_value = {"removed": removed}
+                return f"Cleared {removed} banked goal(s)"
+            mode = "auto"
+            goal = raw
+            if verb == "mission":
+                mode = "mission"
+                goal = rest
+            if not goal:
+                return usage
+            item = self.controller.bank_goal(goal, mode=mode)
+            self.last_value = item
+            snapshot = self.controller.goal_bank_snapshot()
+            position = next(
+                (
+                    index
+                    for index, queued in enumerate(snapshot.get("queued") or [], start=1)
+                    if queued.get("id") == item.get("id")
+                ),
+                snapshot.get("queued_count", "?"),
+            )
+            return (
+                f"Banked {item.get('id')} position={position} mode={mode}: "
+                f"{_truncate(goal, 160)}"
+            )
+        except (ValueError, RuntimeError) as exc:
+            self.last_value = str(exc)
+            return f"Goal bank error: {exc}"
 
     def _cmd_ultragoal(self, arg: str) -> str:
         starter = getattr(self.controller, "start_ultragoal", None)
@@ -1310,6 +1410,7 @@ class CommandHandler:
         usage = (
             "Commands:\n"
             "  /context - context summary\n"
+            "  /context memory - show the bounded prior-knowledge index\n"
             "  /context list - list cached pastes, newest first\n"
             "  /context drop <paste-id> - delete one cached paste\n"
             "  /context clear-pastes - delete every cached paste"
@@ -1325,6 +1426,12 @@ class CommandHandler:
                 text += " pastes=unknown"
             self.last_value = text
             return text
+
+        if verb == "memory":
+            getter = getattr(self.controller, "prior_knowledge_snapshot", None)
+            snapshot = getter() if callable(getter) else {}
+            self.last_value = snapshot
+            return json.dumps(snapshot, indent=2, sort_keys=True, default=str)
 
         if verb == "list":
             refs = self._paste_cache().list()
@@ -1414,8 +1521,17 @@ class CommandHandler:
         )
 
     def _cmd_compact(self, arg: str) -> str:
-        self.controller.compact_context()
-        self.last_value = True
+        memory = self.controller.compact_context()
+        self.last_value = memory
+        if isinstance(memory, dict):
+            staging = memory.get("staging") or {}
+            staged = (staging.get("staged") or {}).get("count", 0)
+            unstaged = (staging.get("unstaged") or {}).get("count", 0)
+            generation = memory.get("generation", "?")
+            return (
+                f"Context compacted checkpoint#{generation} "
+                f"messages_kept=4 staged={staged} unstaged={unstaged}"
+            )
         return "Context compacted"
 
     def _cmd_clear(self, arg: str) -> str:

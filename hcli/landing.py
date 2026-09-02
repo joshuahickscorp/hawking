@@ -62,6 +62,26 @@ _ALWAYS_REFUSED_PREFIXES: Tuple[str, ...] = (
     # _run_tool is the only route from a WorkUnit to the permission contract.
     # Edit it and the contract stops being consulted at all.
     "hcli/executors.py",
+    # The sovereign verifier envelope. The resident may propose implementation
+    # that makes these pass; it may not edit the gate until it passes. A gate
+    # believed scientifically wrong is SUPERSEDED through protected review with
+    # a negative control, never quietly relaxed.
+    "hcli/test_goal_verifier_synthesis.py",
+    "hcli/test_hcli_overhead.py",
+    "hcli/test_self_mutation_e2e.py",
+    "hcli/test_context_compiler_runtime.py",
+    "hcli/test_qwen38_prefill_pipeline.py",
+    "hcli/test_long_context_runtime.py",
+    "hcli/test_deltanet_state_checkpoint.py",
+    "hcli/test_autonomous_frontier_metabolism.py",
+    "hcli/test_capability_callsite_reachability.py",
+    "hcli/test_resident_protected_performance.py",
+    "hcli/test_resident_successor_handoff.py",
+    "hcli/test_negative_science_runtime.py",
+    "hcli/test_resident_watch_control_plane.py",
+    "tools/odyssey/test_modellake_retained_bytes.py",
+    "tools/odyssey/test_odyssey_streaming_runtime.py",
+    "receipts/sovereign/VERIFIER_MANIFEST.json",
 )
 
 REFUSAL_REASONS = frozenset({

@@ -8,6 +8,8 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, Mapping, Optional, Union
 
 from hcli.goal import GoalCompiler
+from hcli.goal_bank import GoalBank
+from hcli.knowledge import KnowledgeStore
 from hcli.mission import Mission, mission_state_path
 from hcli.persist import atomic_write_json
 from hcli.providers import ResidentProfile, RoleRouter, profile_from_backend
@@ -96,6 +98,15 @@ class AgentOS:
             self.workspace,
             allowed_roots=(self.repo_root,),
         )
+        self.knowledge = getattr(self.controller, "knowledge", None)
+        if self.knowledge is None:
+            self.knowledge = KnowledgeStore(self.workspace)
+        self.goal_bank = GoalBank(self.workspace)
+        self._goal_bank_error: Optional[str] = None
+        try:
+            self.goal_bank.recover_inflight()
+        except Exception as exc:
+            self._goal_bank_error = f"{type(exc).__name__}: {exc}"
         self.mission: Optional[Mission] = None
         self.last_result: Optional[Dict[str, Any]] = None
 
@@ -119,6 +130,113 @@ class AgentOS:
         if getattr(active, "phase", "") == "completed":
             return "inspect the result envelope and receipts; start the next mission if more work is required"
         return "reconstruct Mission.from_workspace and continue"
+
+    def goal_bank_snapshot(self) -> Dict[str, Any]:
+        """Bounded queue state for resident status and control checkpoints."""
+        if self._goal_bank_error:
+            return {
+                "available": False,
+                "path": str(self.goal_bank.path),
+                "reason": self._goal_bank_error,
+                "queued_count": 0,
+                "running_count": 0,
+                "queued": [],
+                "running": [],
+                "recent": [],
+                "next": None,
+            }
+        try:
+            return self.goal_bank.snapshot(
+                queued_limit=8,
+                recent_limit=4,
+                display_limit=480,
+            )
+        except Exception as exc:
+            self._goal_bank_error = f"{type(exc).__name__}: {exc}"
+            return {
+                "available": False,
+                "path": str(self.goal_bank.path),
+                "reason": self._goal_bank_error,
+                "queued_count": 0,
+                "running_count": 0,
+                "queued": [],
+                "running": [],
+                "recent": [],
+                "next": None,
+            }
+
+    def prior_knowledge_snapshot(self) -> Dict[str, Any]:
+        """Return the bounded semantic index used by overnight WorkUnits."""
+        try:
+            return self.knowledge.snapshot(limit=6, max_chars=6000)
+        except Exception as exc:
+            return {
+                "schema": "hcli.workspace_knowledge.v1",
+                "available": False,
+                "path": str(getattr(self.knowledge, "path", self.workspace / ".hcli")),
+                "reason": f"{type(exc).__name__}: {exc}",
+                "generation": 0,
+                "records": [],
+            }
+
+    def bank_goal(self, goal: str, *, mode: str = "auto") -> Dict[str, Any]:
+        """Queue a future goal without changing the active Mission."""
+        if self._goal_bank_error:
+            raise RuntimeError(self._goal_bank_error)
+        item = self.goal_bank.add(goal, mode=mode)
+        self._emit_controller(
+            "bank_queued",
+            {
+                "id": item.get("id"),
+                "goal": item.get("goal"),
+                "mode": item.get("mode"),
+            },
+        )
+        self._persist_control_checkpoint(event="bank_queued")
+        return item
+
+    def drop_banked_goal(self, selector: str) -> Optional[Dict[str, Any]]:
+        item = self.goal_bank.drop(selector)
+        if item is not None:
+            self._emit_controller(
+                "bank_dropped",
+                {"id": item.get("id"), "goal": item.get("goal")},
+            )
+            self._persist_control_checkpoint(event="bank_dropped")
+        return item
+
+    def clear_banked_goals(self) -> int:
+        removed = self.goal_bank.clear()
+        if removed:
+            self._emit_controller("bank_cleared", {"removed": removed})
+            self._persist_control_checkpoint(event="bank_cleared")
+        return removed
+
+    def _context_memory(self) -> Optional[Dict[str, Any]]:
+        current = getattr(self.controller, "_context_memory_for_turn", None)
+        if callable(current):
+            try:
+                value = current()
+                if isinstance(value, dict) and value:
+                    return value
+            except Exception:
+                pass
+        session = getattr(self.controller, "session", None)
+        value = getattr(session, "memory", None)
+        if isinstance(value, dict) and value:
+            return value
+        prior = self.prior_knowledge_snapshot()
+        if not prior.get("available") or not prior.get("records"):
+            return None
+        return {
+            "schema": "hcli.context.memory.v1",
+            "generation": 0,
+            "prior_knowledge": prior,
+            "retention": {
+                "raw_history": "available in the gzip archive; not replayed into prompts",
+                "rule": "prior claims are context, current disk state is authority",
+            },
+        }
 
     def _persist_control_checkpoint(self, *, event: str, next_action: Optional[str] = None) -> Path:
         mission = self.mission
@@ -150,6 +268,8 @@ class AgentOS:
                 "continue": "AgentOS(workspace).continue_mission()",
                 "disk_is_authority": True,
             },
+            "goal_bank": self.goal_bank_snapshot(),
+            "prior_knowledge": self.prior_knowledge_snapshot(),
             "background": self.background.list(),
         }
         atomic_write_json(self.checkpoint_path, payload)
@@ -184,6 +304,7 @@ class AgentOS:
             providers=selected_providers,
             stop_runtime_pool=False,
             tool_registry=self.tools,
+            context_memory=self._context_memory(),
         )
         self.mission.checkpoint()
         self._persist_control_checkpoint(event="mission_started")
@@ -201,6 +322,7 @@ class AgentOS:
             repo_root=self.repo_root,
             providers=self.providers,
             stop_runtime_pool=False,
+            context_memory=self._context_memory(),
         )
         self._persist_control_checkpoint(event="mission_recovered")
         return self.mission
@@ -215,9 +337,77 @@ class AgentOS:
         else:
             raise RuntimeError("no mission is loaded; provide a goal first")
         result = mission.run()
+        promoted = self._drain_goal_bank(result)
+        if promoted and isinstance(result, dict):
+            result["bank_started"] = promoted
+        try:
+            self.knowledge.record_result(
+                getattr(mission, "goal", goal or "mission"),
+                result,
+                source="agentos_mission",
+            )
+        except Exception:
+            pass
         self.last_result = result
         self._persist_control_checkpoint(event="mission_finished")
         return result
+
+    def _emit_controller(self, event_type: str, payload: Dict[str, Any]) -> None:
+        emit = getattr(self.controller, "_emit", None)
+        if callable(emit):
+            try:
+                emit(event_type, payload)
+            except Exception:
+                pass
+
+    def _drain_goal_bank(self, result: Any) -> list[Dict[str, Any]]:
+        """Run queued goals as durable Missions after a successful Mission."""
+        if not isinstance(result, dict) or str(result.get("status") or "").lower() != "completed":
+            return []
+        if self._goal_bank_error:
+            return []
+        promoted: list[Dict[str, Any]] = []
+        while True:
+            try:
+                item = self.goal_bank.claim_next()
+            except Exception as exc:
+                self._goal_bank_error = f"{type(exc).__name__}: {exc}"
+                break
+            if item is None:
+                break
+            item_id = str(item.get("id") or "")
+            goal = str(item.get("goal") or "")
+            self._emit_controller(
+                "bank_started",
+                {"id": item_id, "goal": goal, "mode": "mission"},
+            )
+            try:
+                mission = self.start_mission(goal)
+                next_result = mission.run()
+            except Exception as exc:
+                self.goal_bank.finish(
+                    item_id,
+                    {"status": "failed"},
+                    error=f"{type(exc).__name__}: {exc}",
+                )
+                self._emit_controller(
+                    "bank_finished",
+                    {"id": item_id, "goal": goal, "status": "failed", "error": str(exc)},
+                )
+                break
+            self.goal_bank.finish(item_id, next_result)
+            status = str(next_result.get("status") or "failed").lower() if isinstance(next_result, dict) else "failed"
+            promoted.append(
+                {"id": item_id, "goal": goal, "mode": "mission", "status": status}
+            )
+            self._emit_controller(
+                "bank_finished",
+                {"id": item_id, "goal": goal, "status": status},
+            )
+            if status != "completed":
+                break
+            result = next_result
+        return promoted
 
     def continue_mission(self) -> Dict[str, Any]:
         """Reconstruct and run the durable mission without human re-planning."""
@@ -491,6 +681,8 @@ class AgentOS:
             "roles": self.role_router.to_dict(),
             "tools": self.tools.discover(),
             "background": self.background.list(),
+            "goal_bank": self.goal_bank_snapshot(),
+            "prior_knowledge": self.prior_knowledge_snapshot(),
             "checkpoint_path": str(self.checkpoint_path),
             "next_action": self._next_action(self.mission),
             "generated_at": time.time(),

@@ -114,6 +114,13 @@ def build_parser() -> argparse.ArgumentParser:
     resident_queue.add_argument("--verifier", default=None)
     resident_queue.add_argument("--preferred-backend", default=None)
     resident_queue.add_argument("--provider", default=None)
+    resident_bank = resident_sub.add_parser(
+        "bank",
+        help="queue a high-level goal for automatic resident promotion",
+    )
+    resident_bank.add_argument("--workspace", default=os.getcwd())
+    resident_bank.add_argument("--mode", choices=("auto", "mission"), default="auto")
+    resident_bank.add_argument("goal", nargs="+")
     resident_child = resident_sub.add_parser("child", help="launch one durable child under this resident")
     resident_child.add_argument("--workspace", default=os.getcwd())
     resident_child.add_argument("--cwd", default=None)
@@ -1262,6 +1269,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                         preferred_backend=args.preferred_backend,
                         provider=args.provider,
                     )
+                ))
+                return 0
+            if args.resident_command == "bank":
+                _emit(ResidentDaemon(args.workspace).bank_goal(
+                    " ".join(args.goal),
+                    mode=args.mode,
                 ))
                 return 0
             if args.resident_command == "child":

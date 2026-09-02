@@ -1,7 +1,30 @@
 from __future__ import annotations
 
+import threading
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Tuple
+
+
+# Live-activity events. Engine and Controller emit these on EventBus;
+# the TUI renders them. Payloads must never carry model text or
+# chain-of-thought — elapsed time, counts, tool names, and ok/failed only.
+MODEL_CALL_STARTED = "model_call_started"
+MODEL_CALL_FINISHED = "model_call_finished"
+EVIDENCE_GATHERING_STARTED = "evidence_gathering_started"
+EVIDENCE_GATHERING_FINISHED = "evidence_gathering_finished"
+TOOL_CALL_STARTED = "tool_call_started"
+TOOL_CALL_FINISHED = "tool_call_finished"
+HEARTBEAT = "heartbeat"
+
+LIVE_EVENT_TYPES: Tuple[str, ...] = (
+    MODEL_CALL_STARTED,
+    MODEL_CALL_FINISHED,
+    EVIDENCE_GATHERING_STARTED,
+    EVIDENCE_GATHERING_FINISHED,
+    TOOL_CALL_STARTED,
+    TOOL_CALL_FINISHED,
+    HEARTBEAT,
+)
 
 
 @dataclass
@@ -13,12 +36,16 @@ class Event:
 class EventBus:
     def __init__(self):
         self._subscribers: List[Callable[[Event], None]] = []
+        self._lock = threading.Lock()
 
     def subscribe(self, callback: Callable[[Event], None]):
-        self._subscribers.append(callback)
+        with self._lock:
+            self._subscribers.append(callback)
 
     def emit(self, event: Event):
-        for cb in self._subscribers:
+        with self._lock:
+            subscribers = list(self._subscribers)
+        for cb in subscribers:
             cb(event)
 
 # HCLI_EVENT_COMPAT_V1

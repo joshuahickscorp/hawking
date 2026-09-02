@@ -61,6 +61,10 @@ def _configured_supervisor(tmp: Path, **overrides) -> ResidentSupervisor:
         workspace=str(tmp),
         goal="orphan integration check",
         interval_s=0.1,
+        # These tests assert on ORPHAN handling, never on how long a worker is
+        # given to evacuate. The 10.0s default was spent 40 x 0.25s in the
+        # grace loop and was 10.11s of a 77.82s suite on its own.
+        evacuation_grace_s=overrides.pop("evacuation_grace_s", 0.2),
         **overrides,
     )
     daemon.configure(config)

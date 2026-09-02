@@ -45,6 +45,7 @@ from .goal_ir import (
     GoalNode,
     GoalType,
     Provenance,
+    Status,
     make_stable_id,
     preserve_source,
 )
@@ -271,6 +272,9 @@ _KEYWORD_RULES: Tuple[Tuple[GoalType, Tuple[str, ...]], ...] = (
 )
 
 _COMMAND_RE = re.compile(r"`[^`]+`")
+_QUOTED_EXAMPLE_RE = re.compile(
+    r"^\s*(?:(?:\"[^\"\n]*\")|(?:“[^”\n]*”)|(?:‘[^’\n]*’)|(?:'[^'\n]*'))\s*[.!?]?\s*$"
+)
 _VERIFY_WORD_RE = re.compile(r"\b(test|tests|pytest|verify|validate|run)\b", re.I)
 _RESOURCE_RE = re.compile(r"\b\d+(?:\.\d+)?\s*(?:GB|GiB|MB|TB|cores?|CPUs?|GPUs?)\b", re.I)
 _DATE_RE = re.compile(r"\b\d{4}-\d{2}-\d{2}\b|\b\d{1,2}/\d{1,2}/\d{2,4}\b")
@@ -286,6 +290,91 @@ _OBJECTIVE_VERBS = (
     "maximize", "restore", "prevent",
 )
 _METHOD_SPLIT_RE = re.compile(r"\s+\b(?:by|via|using)\b\s+", re.I)
+_METHOD_FIRST_RE = re.compile(
+    r"^\s*use\s+(?P<methods>.+?)\s+to\s+"
+    r"(?P<outcome>(?:get|achieve|reach|bring|keep|take)\s+.+?)\s*[.!?]?\s*$",
+    re.I,
+)
+_FORGET_RE = re.compile(r"^\s*forget\b.+?\bfor\s+now\s*[.!?]?\s*$", re.I)
+_MEASUREMENT_TARGET_RE = re.compile(r"\b(?:hdd|ssd|bottleneck|contention)\b", re.I)
+
+
+def _split_method_list(methods: str) -> List[str]:
+    """Split a method list without treating narrative as a new goal.
+
+    This is intentionally only used after ``_METHOD_FIRST_RE`` has already
+    established the sentence's outcome/method grammar. Commas and a final
+    conjunction are enough for the compact imperative form we accept here;
+    arbitrary prose remains subject to the ordinary conservative classifier.
+    """
+    return [
+        item.strip(" .;:,")
+        for item in re.split(r"\s*,\s*|\s+and\s+", methods, flags=re.I)
+        if item.strip(" .;:,")
+    ]
+
+
+def _subunit(
+    unit: Dict[str, Any], start: int, end: int, **metadata: Any
+) -> Dict[str, Any]:
+    """Return a span-preserving child of a sentence-like tokenizer unit."""
+    text = unit["text"]
+    child = text[start:end].strip(" \t,;")
+    if not child:
+        return unit
+    left = start + len(text[start:end]) - len(text[start:end].lstrip(" \t,;"))
+    right = left + len(child)
+    return {
+        **unit,
+        "start": unit["start"] + left,
+        "end": unit["start"] + right,
+        "text": child,
+        **metadata,
+    }
+
+
+def _expand_compound_update(unit: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """Split the one update grammar that carries four independent intents.
+
+    ``forget X for now; improve Y, especially Z, but don't abandon W`` is
+    not one prohibition. It contains a parked item, an elevated objective,
+    a measurement hypothesis, and a protective constraint. Splitting only
+    this recognizable shape avoids the old failure (the first negation won)
+    without turning arbitrary comma-heavy prose into one atom per clause.
+    """
+    if unit["is_heading"] or unit["is_bullet"]:
+        return [unit]
+    text = unit["text"]
+    forget = re.search(r"\bforget\b.+?\bfor\s+now\b", text, re.I)
+    protect = re.search(r"\bbut\s+don['’]t\s+abandon\b.+", text, re.I)
+    if not forget or not protect or forget.end() > protect.start():
+        return [unit]
+    middle = text[forget.end():protect.start()]
+    improve = re.search(r"\bimprove\b.+", middle, re.I)
+    if not improve:
+        return [unit]
+
+    middle_text = middle[improve.start():]
+    especially = re.search(r"\s*,\s*especially\s+", middle_text, re.I)
+    if not especially:
+        return [unit]
+
+    children = [
+        _subunit(unit, forget.start(), forget.end()),
+        _subunit(
+            unit,
+            forget.end() + improve.start(),
+            forget.end() + improve.start() + especially.start(),
+            elevated=True,
+        ),
+        _subunit(
+            unit,
+            forget.end() + improve.start() + especially.end(),
+            forget.end() + improve.start() + len(middle_text),
+        ),
+        _subunit(unit, protect.start(), len(text)),
+    ]
+    return [child for child in children if child["text"].strip()]
 
 _ACCEPTANCE_SECTION_RE = re.compile(r"acceptance|success criteri", re.I)
 _FAILURE_SECTION_RE = re.compile(r"failure criteri", re.I)
@@ -296,7 +385,13 @@ def _detect_objective(sentence: str) -> bool:
     return any(re.search(rf"\b{re.escape(v)}\b", head) for v in _OBJECTIVE_VERBS)
 
 
-def _classify(sentence: str, *, is_bullet: bool, section: Optional[Tuple[int, str]]) -> Optional[Tuple[GoalType, Dict[str, Any]]]:
+def _classify(
+    sentence: str,
+    *,
+    is_bullet: bool,
+    section: Optional[Tuple[int, str]],
+    elevated: bool = False,
+) -> Optional[Tuple[GoalType, Dict[str, Any]]]:
     lower = " " + sentence.lower() + " "
 
     if is_bullet and section is not None:
@@ -306,6 +401,25 @@ def _classify(sentence: str, *, is_bullet: bool, section: Optional[Tuple[int, st
         if _FAILURE_SECTION_RE.search(title_lower):
             return GoalType.FAILURE_CRITERION, {"confidence": 0.85}
 
+    # A defer-now instruction is a live, revisitable work item, not a
+    # destructive deletion and not a generic hard constraint. The caller
+    # carries the explicit lifecycle override into GoalNode.
+    if _FORGET_RE.search(sentence):
+        return GoalType.SUBOBJECTIVE, {
+            "confidence": 0.75,
+            "status": Status.PARKED,
+            "priority": 1,
+        }
+
+    # A fully quoted sentence is an example/counterexample when it appears
+    # in directive prose (not a new imperative from the user). This matters
+    # for constructions such as ``Do not interpret this as: "make X"``:
+    # treating the inner quotation as an OBJECTIVE would schedule the exact
+    # thing the outer directive prohibited. Keep it traceable as EXAMPLE,
+    # but never let it become a frontier.
+    if _QUOTED_EXAMPLE_RE.match(sentence):
+        return GoalType.EXAMPLE, {"confidence": 0.9}
+
     negated = _detect_negation_family(lower)
     if negated is not None:
         return negated, {"confidence": 0.8}
@@ -313,6 +427,27 @@ def _classify(sentence: str, *, is_bullet: bool, section: Optional[Tuple[int, st
     for goal_type, markers in _KEYWORD_RULES:
         if any(marker in lower for marker in markers):
             return goal_type, {"confidence": 0.75}
+
+    # Method-first imperative: keep the requested outcome independent from
+    # the proposed mechanisms. This must run before RESOURCE/TEMPORAL rules
+    # so a target such as "under 24h" does not swallow the whole sentence.
+    method_first = _METHOD_FIRST_RE.match(sentence)
+    if method_first:
+        methods = _split_method_list(method_first.group("methods"))
+        outcome = method_first.group("outcome").strip(" .;:,")
+        if outcome and methods:
+            if re.match(r"^(?:get|achieve|reach|bring|keep|take)\s+", outcome, re.I):
+                outcome = re.sub(
+                    r"^(?:get|achieve|reach|bring|keep|take)\s+",
+                    "",
+                    outcome,
+                    flags=re.I,
+                )
+            return GoalType.OBJECTIVE, {
+                "confidence": 0.65,
+                "statement": outcome,
+                "method_texts": methods,
+            }
 
     if _COMMAND_RE.search(sentence) and _VERIFY_WORD_RE.search(sentence):
         return GoalType.EVIDENCE_REQUIREMENT, {"confidence": 0.75}
@@ -339,7 +474,17 @@ def _classify(sentence: str, *, is_bullet: bool, section: Optional[Tuple[int, st
             if len(outcome) >= 4 and len(method) >= 4:
                 extra["statement"] = outcome
                 extra["method_text"] = method
+        if elevated or "especially" in lower:
+            extra["priority"] = 1
         return goal_type, extra
+
+    # In the compound update grammar, the "especially ..." clause is a
+    # measurement target. It is a hypothesis until evidence establishes the
+    # bottleneck; never promote the noun phrase to a fact. Keep this after
+    # open-question and imperative detection so an objective mentioning SSD,
+    # or a question about a bottleneck, keeps its primary type.
+    if _MEASUREMENT_TARGET_RE.search(sentence):
+        return GoalType.HYPOTHESIS, {"confidence": 0.6}
 
     return None
 
@@ -383,6 +528,8 @@ def tokenize(
         confidence: float,
         dependencies: Tuple[str, ...] = (),
         resources: Tuple[str, ...] = (),
+        priority: int = 2,
+        status: Status = Status.ACTIVE,
     ) -> GoalNode:
         node_id = _stable_id(goal_type, seed_text, used_ids)
         used_ids.add(node_id)
@@ -393,6 +540,8 @@ def tokenize(
             statement=statement,
             provenance=Provenance.DERIVED,
             confidence=confidence,
+            priority=priority,
+            status=status,
             dependencies=dependencies,
             resources=resources,
             parent_ultragoal=(ultragoal_id if goal_type is not GoalType.ULTRAGOAL else None),
@@ -401,68 +550,78 @@ def tokenize(
         nodes.append(node)
         return node
 
-    for unit in _iter_units(raw):
-        u_text = unit["text"]
-        if len(u_text) < 4:
-            continue
+    for raw_unit in _iter_units(raw):
+        for unit in _expand_compound_update(raw_unit):
+            u_text = unit["text"]
+            if len(u_text) < 4:
+                continue
 
-        if unit["is_heading"]:
-            if unit["heading_level"] == 1 and ultragoal_id is None and not nodes:
-                node = _mint(
-                    GoalType.ULTRAGOAL,
-                    u_text,
-                    _clean_statement(u_text),
-                    start=unit["start"],
-                    end=unit["end"],
-                    confidence=0.9,
-                )
-                ultragoal_id = node.id
-            # A non-root heading is section-context only (see _iter_units);
-            # it never mints an atom of its own.
-            continue
+            if unit["is_heading"]:
+                if unit["heading_level"] == 1 and ultragoal_id is None and not nodes:
+                    node = _mint(
+                        GoalType.ULTRAGOAL,
+                        u_text,
+                        _clean_statement(u_text),
+                        start=unit["start"],
+                        end=unit["end"],
+                        confidence=0.9,
+                    )
+                    ultragoal_id = node.id
+                # A non-root heading is section-context only (see _iter_units);
+                # it never mints an atom of its own.
+                continue
 
-        result = _classify(u_text, is_bullet=unit["is_bullet"], section=unit["section"])
-        if result is None:
-            continue
-        goal_type, extra = result
+            result = _classify(
+                u_text,
+                is_bullet=unit["is_bullet"],
+                section=unit["section"],
+                elevated=bool(unit.get("elevated")),
+            )
+            if result is None:
+                continue
+            goal_type, extra = result
 
-        statement = _clean_statement(extra.get("statement", u_text))
-        # GoalNode.resources is a generic Tuple[str, ...]; this module uses it
-        # to carry any file paths the sentence names, same reuse pattern as
-        # goal.py's own _mentioned_and_known_files().
-        files = tuple(_compiler._referenced_files(u_text))
+            statement = _clean_statement(extra.get("statement", u_text))
+            # GoalNode.resources is a generic Tuple[str, ...]; this module uses it
+            # to carry any file paths the sentence names, same reuse pattern as
+            # goal.py's own _mentioned_and_known_files().
+            files = tuple(_compiler._referenced_files(u_text))
 
-        deps: Tuple[str, ...] = ()
-        if goal_type is GoalType.SUBOBJECTIVE:
-            anchor = last_objective_id or ultragoal_id
-            if anchor:
-                deps = (anchor,)
+            deps: Tuple[str, ...] = ()
+            if goal_type is GoalType.SUBOBJECTIVE:
+                anchor = last_objective_id or ultragoal_id
+                if anchor:
+                    deps = (anchor,)
 
-        node = _mint(
-            goal_type,
-            u_text,
-            statement,
-            start=unit["start"],
-            end=unit["end"],
-            confidence=extra["confidence"],
-            dependencies=deps,
-            resources=files,
-        )
-        if goal_type is GoalType.OBJECTIVE:
-            last_objective_id = node.id
-
-        method_text = extra.get("method_text")
-        if method_text:
-            _mint(
-                GoalType.SUGGESTED_METHOD,
-                method_text,
-                _clean_statement(method_text),
+            node = _mint(
+                goal_type,
+                u_text,
+                statement,
                 start=unit["start"],
                 end=unit["end"],
-                confidence=0.6,
-                dependencies=(node.id,),
-                resources=tuple(_compiler._referenced_files(method_text)),
+                confidence=extra["confidence"],
+                dependencies=deps,
+                resources=files,
+                priority=extra.get("priority", 2),
+                status=extra.get("status", Status.ACTIVE),
             )
+            if goal_type is GoalType.OBJECTIVE:
+                last_objective_id = node.id
+
+            method_texts = extra.get("method_texts")
+            if method_texts is None and extra.get("method_text"):
+                method_texts = [extra["method_text"]]
+            for method_text in method_texts or ():
+                _mint(
+                    GoalType.SUGGESTED_METHOD,
+                    method_text,
+                    _clean_statement(method_text),
+                    start=unit["start"],
+                    end=unit["end"],
+                    confidence=0.6,
+                    dependencies=(node.id,),
+                    resources=tuple(_compiler._referenced_files(method_text)),
+                )
 
     return nodes
 
