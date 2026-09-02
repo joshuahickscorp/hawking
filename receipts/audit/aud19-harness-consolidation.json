@@ -1,0 +1,2245 @@
+{
+  "schema": "hawking.audit.harness_consolidation.v1",
+  "audit_id": "aud19-harness-consolidation",
+  "title": "One-off experiment scripts that should become one parameterized harness",
+  "pass_kind": "DISCOVERY_ONLY",
+  "implementation": false,
+  "head": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+  "head_short": "04193ccbc",
+  "inspected_at_note": "Source archaeology on sparse checkout HEAD. Missing-on-disk files were read via git show / git cat-file, never inferred from absence on disk.",
+  "authority": {
+    "in_scope": [
+      "source archaeology",
+      "call-site reachability",
+      "test coverage",
+      "schema/topology",
+      "dependency graphs",
+      "duplication",
+      "naming",
+      "receipt consistency"
+    ],
+    "out_of_scope": [
+      "GPU physical performance",
+      "Metal runtime behaviour not executed this pass",
+      "ANE physical behaviour",
+      "U50/FPGA board facts",
+      "thermal/power",
+      "protected benchmarks"
+    ],
+    "hardware_present": [
+      "Apple M3 Ultra CPU/GPU/UMA",
+      "ANE"
+    ],
+    "hardware_absent": [
+      "FPGA/U50DD",
+      "DGX",
+      "eGPU"
+    ],
+    "never_wrote_MEASURED": true
+  },
+  "method": {
+    "call_site_rule": "A definition or an import is not a call site. A call of the symbol itself is required. Test files that only import a module without invoking the symbol are discounted. Catalogue entries (discover, module lists, CAPABILITY_GRAPH text) are not capability.",
+    "clone_ratio_method": "SOURCE_INSPECTION: shared-line ratio = |set(lines_a) \u2229 set(lines_b)| / max(|set(lines_a)|, |set(lines_b)|) computed from git show HEAD:<path>. Not a semantic diff.",
+    "existence_rule": "git cat-file -e HEAD:<path>. A sparse-checkout hole is not evidence of absence.",
+    "roadmap_rule": "H-ROADMAP.md is not in this repository (README points at /Users/scammermike/Downloads/H-ROADMAP.md). Roadmap prose is DATA, not evidence a capability exists.",
+    "not_done": [
+      "Did not run cargo test, cargo build, or GPU leases.",
+      "Did not run python3 -m pytest (discovery pass; no code changes to protect).",
+      "Did not execute any rust example or tools/future --measure path.",
+      "Did not rewrite H-ROADMAP.md or migrate any script."
+    ]
+  },
+  "constitution_held": {
+    "eras": 5,
+    "odysseys": 3,
+    "no_era_vi": true,
+    "fpga_lives_in": "Hawking Accelerator/Fusion",
+    "theia": "one generalist bounty model, not another civilization",
+    "north_star": "HAWKING = SELF-OPTIMIZING PHYSICAL AI COMPUTER"
+  },
+  "test_applied_to_each_family": "Is the scientific variable DATA/CONFIG, or does it genuinely require new executable structure? If configuration suffices, migrate toward ONE HARNESS + parameterized experiment spec + receipt.",
+  "existing_harnesses": [
+    {
+      "id": "lab.bench_harness",
+      "paths": [
+        "lab/bench_harness/spec.py",
+        "lab/bench_harness/runner.py",
+        "lab/bench_harness/cli.py"
+      ],
+      "spec_schema": "hawking.lab.experiment.v1",
+      "harness_schema": "hawking.lab.harness.v1",
+      "state": "TESTED",
+      "evidence_class": "STATIC_VERIFICATION",
+      "what_it_is": "Generic stage runner: fixtures, matrix, argv/shell stages, pause/resume, receipts. CLI: python3.12 -m lab.bench_harness run <spec.json>.",
+      "call_sites": [
+        {
+          "kind": "call_site",
+          "path": "tools/bench/compare_sota.sh",
+          "detail": "exec python3.12 -m lab.bench_harness run tools/bench/specs/compare_sota.json",
+          "line": 8
+        },
+        {
+          "kind": "call_site",
+          "path": "tools/bench/clean_room_batch.sh",
+          "detail": "same exec pattern for clean_room_batch.json",
+          "line": 8
+        },
+        {
+          "kind": "call_site",
+          "path": "tools/bench/clean_room_queue.sh",
+          "detail": "same exec pattern",
+          "line": 8
+        },
+        {
+          "kind": "call_site",
+          "path": "tools/bench/clean_room_small_tps.sh",
+          "detail": "same exec pattern",
+          "line": 8
+        },
+        {
+          "kind": "call_site",
+          "path": "tools/bench/coexist_bench.sh",
+          "detail": "same exec pattern",
+          "line": 8
+        },
+        {
+          "kind": "call_site",
+          "path": "tools/bench/ratios.sh",
+          "detail": "same exec pattern",
+          "line": 8
+        },
+        {
+          "kind": "call_site",
+          "path": "tools/bench/report_card.sh",
+          "detail": "same exec pattern",
+          "line": 8
+        },
+        {
+          "kind": "call_site",
+          "path": "tools/bench/report_card_selftest.sh",
+          "detail": "same exec pattern",
+          "line": 8
+        },
+        {
+          "kind": "call_site",
+          "path": "tools/bench/bench_diff.sh",
+          "detail": "same exec pattern",
+          "line": 8
+        },
+        {
+          "kind": "call_site",
+          "path": "tools/foundry/tests/test_foundry_tables_lifecycle.py",
+          "detail": "Runner(spec, root=tmp_path, dry_run=True).run() and dry_run=False .run()",
+          "line": 238,
+          "symbol": "Runner.run"
+        }
+      ],
+      "not_call_sites": [
+        {
+          "kind": "import_only_discounted",
+          "path": "lab/bench_harness/__init__.py",
+          "detail": "re-exports ExperimentSpec; not a caller"
+        }
+      ],
+      "covers_science_families": false,
+      "note": "Live callers are SOTA/clean-room bench shell wrappers plus one foundry lifecycle test. None of the ten science families run through this harness today."
+    },
+    {
+      "id": "lab.spec_runtime",
+      "paths": [
+        "lab/spec.py",
+        "lab/runtime.py",
+        "lab/__main__.py"
+      ],
+      "spec_schema": "hawking.lab.experiment_spec.v1",
+      "also_accepts": [
+        "hawking.condense.experiment_spec.v1",
+        "hawking.lab.experiment.v1"
+      ],
+      "state": "TESTED",
+      "evidence_class": "STATIC_VERIFICATION",
+      "what_it_is": "Campaign engine with phases (precheck/measure/allocate/pack/verify/seal/promote) and named handlers. Different object from lab.bench_harness.ExperimentSpec despite the same class name.",
+      "call_sites": [
+        {
+          "kind": "call_site",
+          "path": "lab/__main__.py",
+          "detail": "raise SystemExit(lab.runtime.main())",
+          "line": 3,
+          "symbol": "runtime.main"
+        },
+        {
+          "kind": "call_site",
+          "path": "tools/condense/tests/test_campaign_engine.py",
+          "detail": "load_spec_path / load_spec invoked against SPECS_DIR family json",
+          "line": 49,
+          "symbol": "load_spec_path"
+        }
+      ],
+      "covers_science_families": false
+    },
+    {
+      "id": "tools.future.experiment_receipt",
+      "paths": [
+        "tools/future/experiment_receipt.py"
+      ],
+      "spec_schema": "hawking.experiment.receipt.v1",
+      "identity_schema": "hawking.artifact.identity.v1",
+      "state": "TESTED",
+      "evidence_class": "STATIC_VERIFICATION",
+      "what_it_is": "Shared ResultEnvelope attach() for producers. Not a runner. H-ROADMAP \u00a71.2 field list is copied here as DATA.",
+      "call_sites": [
+        {
+          "kind": "call_site",
+          "path": "tools/future/ba_delta_ab.py",
+          "detail": "return attach(...)",
+          "line": 177,
+          "symbol": "attach"
+        },
+        {
+          "kind": "call_site",
+          "path": "tools/future/capability_eval.py",
+          "detail": "doc = attach(...)",
+          "line": 631,
+          "symbol": "attach"
+        },
+        {
+          "kind": "call_site",
+          "path": "tools/future/lpc_baselines.py",
+          "detail": "doc = attach(...)",
+          "line": 536,
+          "symbol": "attach"
+        },
+        {
+          "kind": "call_site",
+          "path": "tools/future/test_experiment_receipt.py",
+          "detail": "env = er.experiment_receipt(...)",
+          "line": 79,
+          "symbol": "experiment_receipt"
+        }
+      ],
+      "underuse": "Live complete-token A/B sidecars (deltanet_widen_ab, fold_addqx_ab, mlp_aux_merge_ab) do not call attach(). They mint per-script schemas hawking.future.<name>.v1."
+    },
+    {
+      "id": "tools.accelerator.accelerator_runner",
+      "paths": [
+        "tools/accelerator/accelerator_runner.py"
+      ],
+      "spec_schema": "AcceleratorExperimentSpec (local class)",
+      "state": "TESTED",
+      "evidence_class": "STATIC_VERIFICATION",
+      "what_it_is": "FPGA/accelerator experiment spec + runner. Third ExperimentSpec type.",
+      "call_sites": [
+        {
+          "kind": "call_site",
+          "path": "tools/accelerator/test_accelerator_runner.py",
+          "detail": "AcceleratorExperimentSpec.from_dict restored and exercised",
+          "line": 50,
+          "symbol": "from_dict"
+        }
+      ]
+    },
+    {
+      "id": "hawking_research.experiments",
+      "paths": [
+        "crates/hawking-research/src/experiments.rs"
+      ],
+      "state": "SCAFFOLDED",
+      "evidence_class": "SOURCE_INSPECTION",
+      "what_it_is": "Hypothesis + ExperimentRun structs (47 lines). lib.rs pub mod experiments; ExperimentRun::new is never called outside this file.",
+      "call_sites": [],
+      "blocker": "git grep ExperimentRun::new / experiments::ExperimentRun over crates returned only the definition file."
+    },
+    {
+      "id": "hawking_bench",
+      "paths": [
+        "crates/hawking-bench/src/suites/prefill.rs",
+        "crates/hawking-bench/src/suites/throughput.rs",
+        "crates/hawking/src/main.rs"
+      ],
+      "state": "CALLABLE",
+      "evidence_class": "SOURCE_INSPECTION",
+      "what_it_is": "CLI suite pack. prefill.rs hardcodes a ~1024-token repeated phrase. throughput.rs returns phase4_pending: true and does not measure.",
+      "call_sites": [
+        {
+          "kind": "call_site",
+          "path": "crates/hawking/src/main.rs",
+          "detail": "hawking_bench::run(hawking_bench::BenchOptions { ... })",
+          "line": 1235,
+          "symbol": "hawking_bench::run"
+        }
+      ],
+      "throughput_state": "SCAFFOLDED"
+    },
+    {
+      "id": "broker_kernel_ab",
+      "paths": [
+        "crates/hawking-core/src/broker_kernel_ab.rs",
+        "crates/hawking-core/examples/broker_kernel_ab_harness.rs",
+        "crates/hawking-core/tests/broker_kernel_ab_gate.rs"
+      ],
+      "spec_schema": "hawking.broker_kernel_ab.v1",
+      "state": "TESTED",
+      "evidence_class": "STATIC_VERIFICATION",
+      "what_it_is": "Promotion gate over sealed receipt constants. Example is --dry-run / --simulate-parity; docstring forbids loading Gravity or dispatching Metal.",
+      "call_sites": [
+        {
+          "kind": "call_site",
+          "path": "crates/hawking-core/tests/broker_kernel_ab_gate.rs",
+          "detail": "broker_kernel_ranking() and decide_promotion() invoked",
+          "line": 13,
+          "symbol": "broker_kernel_ranking"
+        },
+        {
+          "kind": "call_site",
+          "path": "crates/hawking-core/examples/broker_kernel_ab_harness.rs",
+          "detail": "example main calls decide_promotion / ranking; simulated trials only",
+          "line": 1,
+          "symbol": "decide_promotion"
+        }
+      ],
+      "not_a_metal_ab": true
+    }
+  ],
+  "spec_proliferation": {
+    "state": "CALLABLE",
+    "evidence_class": "SOURCE_INSPECTION",
+    "schemas": [
+      "hawking.lab.experiment.v1 (lab.bench_harness.spec)",
+      "hawking.lab.experiment_spec.v1 (lab.spec)",
+      "hawking.experiment.receipt.v1 (tools.future.experiment_receipt)",
+      "AcceleratorExperimentSpec (tools.accelerator.accelerator_runner)",
+      "per-script hawking.future.<name>.v1 (tools/future/*_ab.py and sweeps)"
+    ],
+    "recommendation": "Do not mint a fifth/sixth ExperimentSpec. Point science one-offs at lab.bench_harness (run) + hawking.experiment.receipt.v1 (envelope). Keep per-family adjudication as a plugin, not a new runner.",
+    "risk_of_new_spec": "A new science harness that does not replace the four existing ones increases bespoke code, which is the opposite of this audit's point."
+  },
+  "cross_cutting_clones": {
+    "id": "example_binaries_sidecar",
+    "state": "CALLABLE",
+    "evidence_class": "SOURCE_INSPECTION",
+    "finding": "Fourteen tools/future modules each define def example_binaries() that walks CARGO_TARGET_DIR / workspace/ops/build/rust / target \u00d7 {release-fast, release} / examples / <name>. The scientific variable is the example name and argv; the locator/lock/raw-json/record loop is copy-paste.",
+    "scripts_with_example_binaries": [
+      {
+        "path": "tools/future/aux_u8_lut.py",
+        "nlines": 1233
+      },
+      {
+        "path": "tools/future/aux_u8_native.py",
+        "nlines": 1353
+      },
+      {
+        "path": "tools/future/deltanet_organ_decompose.py",
+        "example": "alu_roofline_organs",
+        "nlines": 936
+      },
+      {
+        "path": "tools/future/deltanet_widen_ab.py",
+        "example": "ascension_qwen38_deltanet_widen_ab",
+        "nlines": 765
+      },
+      {
+        "path": "tools/future/dispatch_size_sweep.py",
+        "example": "dispatch_size_sweep",
+        "nlines": 462,
+        "rust_example_in_HEAD": false
+      },
+      {
+        "path": "tools/future/fold_addqx_ab.py",
+        "example": "fold_addqx_token_ab",
+        "nlines": 976
+      },
+      {
+        "path": "tools/future/geometry_table.py",
+        "example": "geometry_table_sweep",
+        "nlines": 1110
+      },
+      {
+        "path": "tools/future/mlp_alu_roofline.py",
+        "example": "alu_roofline_organs",
+        "nlines": 612
+      },
+      {
+        "path": "tools/future/mlp_aux_merge_ab.py",
+        "example": "mlp_aux_merge_ab",
+        "nlines": 737
+      },
+      {
+        "path": "tools/future/mlp_decode_cheapen.py",
+        "example": "decode_cheapen_mlp",
+        "nlines": 858
+      },
+      {
+        "path": "tools/future/mlp_issue_rate_ladder.py",
+        "example": "issue_ladder_mlp",
+        "nlines": 1079
+      },
+      {
+        "path": "tools/future/mlp_region_falsifier.py",
+        "example": "mlp_region_falsifier",
+        "nlines": 368,
+        "rust_example_in_HEAD": false
+      },
+      {
+        "path": "tools/future/mlp_stream_count.py",
+        "example": "stream_count_probe",
+        "nlines": 795
+      },
+      {
+        "path": "tools/future/parity_ladder.py",
+        "nlines": 1904
+      }
+    ],
+    "variation_kind": "CONFIG",
+    "proposed_harness": "One sidecar runner (find example binary, optional gpu_lane_lock.sh, write _raw.json, load_raw, call a plugin adjudicator, attach hawking.experiment.receipt.v1).",
+    "would_delete": "The 14 copies of example_binaries / run_example / load_raw / argparse --measure/--record/--from. Not the rust examples, not the adjudicators.",
+    "risk": "A shared runner that drops gpu_lane_lock, warmup, or token-identity would weaken every family at once. The harness must take lock/warmup/parity-predicate as required spec fields, not defaults that can silently go missing.",
+    "protecting_tests": [
+      "tools/future/test_geometry_table.py",
+      "tools/future/test_deltanet_widen_ab.py",
+      "tools/future/test_fold_addqx_ab.py",
+      "tools/future/test_mlp_aux_merge_ab.py",
+      "tools/future/test_dispatch_size_sweep.py",
+      "tools/future/test_experiment_receipt.py"
+    ]
+  },
+  "families": [
+    {
+      "id": "kernel_geometry_sweeps",
+      "candidate_domain": "kernel geometry sweeps",
+      "state": "CALLABLE",
+      "evidence_class": "SOURCE_INSPECTION",
+      "migrate": "PARTIAL",
+      "current_scripts": [
+        {
+          "path": "crates/hawking-core/examples/geometry_table_sweep.rs",
+          "nlines": 1354,
+          "role": "rust_measure",
+          "in_HEAD": true
+        },
+        {
+          "path": "tools/future/geometry_table.py",
+          "nlines": 1110,
+          "role": "python_adjudicator",
+          "in_HEAD": true
+        },
+        {
+          "path": "tools/future/dispatch_size_sweep.py",
+          "nlines": 462,
+          "role": "python_adjudicator",
+          "in_HEAD": true
+        },
+        {
+          "path": "crates/hawking-core/examples/dispatch_size_sweep.rs",
+          "role": "rust_measure_cited",
+          "in_HEAD": false
+        },
+        {
+          "path": "crates/hawking-core/examples/ascension_qwen80_matvec_geometry_sweep.rs",
+          "nlines": 1109,
+          "role": "rust_measure",
+          "in_HEAD": true
+        },
+        {
+          "path": "crates/hawking-core/examples/gravity_deepseek_v4_act_quant_simdgroup_sweep.rs",
+          "nlines": 1134,
+          "role": "rust_measure",
+          "in_HEAD": true
+        },
+        {
+          "path": "crates/hawking-core/examples/gravity_deepseek_v4_component_kernel_sweep.rs",
+          "nlines": 372,
+          "role": "rust_measure",
+          "in_HEAD": true
+        },
+        {
+          "path": "crates/hawking-core/examples/gravity_deepseek_v4_gate_reduction_sweep.rs",
+          "nlines": 1673,
+          "role": "rust_measure",
+          "in_HEAD": true
+        },
+        {
+          "path": "crates/hawking-core/examples/gravity_deepseek_v4_simdgroup_splitk_sweep.rs",
+          "role": "rust_measure",
+          "in_HEAD": true
+        },
+        {
+          "path": "tools/future/mlp_issue_rate_ladder.py",
+          "example": "issue_ladder_mlp",
+          "role": "python_adjudicator"
+        },
+        {
+          "path": "tools/future/mlp_stream_count.py",
+          "example": "stream_count_probe",
+          "role": "python_adjudicator"
+        },
+        {
+          "path": "hawking-experiments/superwave/g1/claude-evidence/g1_group_partition_geometry_sweep.py",
+          "role": "archive",
+          "state": "SUPERSEDED"
+        }
+      ],
+      "what_varies": {
+        "config": [
+          "threadgroup size",
+          "rows-per-threadgroup",
+          "warmup",
+          "reps",
+          "artifact-root",
+          "organ/shape (rows, cols, dtype)",
+          "example binary name"
+        ],
+        "structure": [
+          "production diagnostic shaders vs Q80 packed-matvec generator vs DSV4 act_quant byte-exact oracle vs P0 gate C1-C7 candidates vs split-K",
+          "CPU oracle and receipt schema per DSV4 component",
+          "Q80 never-materialize-dense-weight constraint vs sealed-3.14 affine2 catalog"
+        ]
+      },
+      "variation_kind": "MIXED",
+      "clone_ratios_shared_lines": {
+        "geometry_table_sweep.rs vs q80_matvec_geometry_sweep.rs": 0.06,
+        "geometry_table_sweep.rs vs dsv4 act_quant simdgroup": 0.033,
+        "geometry_table_sweep.rs vs dsv4 component_kernel": 0.02,
+        "q80_matvec vs any dsv4 sweep": "0.028-0.042",
+        "dsv4 act_quant vs dsv4 splitk": 0.191,
+        "dsv4 act_quant vs dsv4 component": 0.144,
+        "method": "set-line intersection / max unique lines; SOURCE_INSPECTION"
+      },
+      "call_sites": [
+        {
+          "kind": "call_site",
+          "path": "tools/future/geometry_table.py",
+          "detail": "run_example() subprocesses geometry_table_sweep under gpu_lane_lock.sh",
+          "line": 996,
+          "symbol": "run_example"
+        },
+        {
+          "kind": "call_site",
+          "path": "lab/operators/deepseek_v4_gravity.py",
+          "detail": "_child_baseline_v3_simdgroup_sweep(...) assigned and used",
+          "line": 5914,
+          "symbol": "_child_baseline_v3_simdgroup_sweep"
+        },
+        {
+          "kind": "call_site",
+          "path": "tools/accelerator/test_physical_qualification.py",
+          "detail": "test_flash_p6_act_quant_simdgroup_has_a_byte_exact_control",
+          "line": 550
+        },
+        {
+          "kind": "test_invokes_symbol",
+          "path": "tools/future/test_geometry_table.py",
+          "detail": "from tools.future import geometry_table as gt; tests call gt helpers on synthetic launches",
+          "symbol": "geometry_table"
+        },
+        {
+          "kind": "test_invokes_symbol",
+          "path": "tools/future/test_dispatch_size_sweep.py",
+          "detail": "imports dispatch_size_sweep as dss and judges synthetic curves",
+          "symbol": "dispatch_size_sweep"
+        }
+      ],
+      "not_call_sites": [
+        {
+          "kind": "self_ref",
+          "path": "crates/hawking-core/examples/geometry_table_sweep.rs",
+          "detail": "example binary referring to its own name is not an external caller"
+        },
+        {
+          "kind": "receipt_citation",
+          "path": "receipts/future/DISPATCH_SIZE_SWEEP.json",
+          "detail": "source field cites dispatch_size_sweep.rs and Qwen38HybridDecodeSession::measure_dispatch_size_sweep; both ABSENT in HEAD"
+        }
+      ],
+      "proposed_harness": "lab.bench_harness spec with matrix over (organ, rows, cols, dtype, tg, rows_per_tg, warmup, reps) plus a required rust_example field. Python adjudicator plugin produces hawking.future.geometry_table.v1-shaped table OR a generic sweep curve. DSV4 component sweeps stay as separate plugins because the oracle/shader is the science.",
+      "proposed_spec_shape": {
+        "schema": "hawking.lab.experiment.v1",
+        "id": "kernel_geometry_sweep",
+        "matrix": [
+          {
+            "example": "geometry_table_sweep",
+            "artifact_root": "...",
+            "warmup": 3,
+            "reps": 7,
+            "adjudicator": "tools.future.geometry_table"
+          }
+        ],
+        "stages": [
+          {
+            "id": "measure",
+            "argv": [
+              "./tools/gpu_lane_lock.sh",
+              "<id>",
+              "<example>",
+              "--artifact-root",
+              "...",
+              "--out",
+              "<raw>"
+            ]
+          },
+          {
+            "id": "adjudicate",
+            "argv": [
+              "python3",
+              "-m",
+              "tools.future.geometry_table",
+              "--from",
+              "<raw>",
+              "--record"
+            ]
+          }
+        ],
+        "receipt_schema": "hawking.experiment.receipt.v1"
+      },
+      "would_delete": [
+        "Copied example_binaries/run_example in geometry_table.py and dispatch_size_sweep.py (after shared runner exists)",
+        "Not the rust examples",
+        "Not DSV4 sweep examples (structure)"
+      ],
+      "would_keep_as_structure": [
+        "gravity_deepseek_v4_*_sweep.rs (byte-exact oracles, unique shaders, unique scientific questions)",
+        "ascension_qwen80_matvec_geometry_sweep.rs (packed-path generator, never-dense constraint)"
+      ],
+      "risk": "Merging DSV4 byte-exact sweeps into a geometry-table runner would drop CPU-oracle byte compares. Dispatch-size sidecar currently names a rust example that is not in HEAD; migrating the sidecar without restoring or rewriting the producer would freeze a broken citation into the harness.",
+      "protecting_tests": [
+        "tools/future/test_geometry_table.py",
+        "tools/future/test_dispatch_size_sweep.py",
+        "tools/accelerator/test_physical_qualification.py::test_flash_p6_act_quant_simdgroup_has_a_byte_exact_control",
+        "tools/condense/tests/test_deepseek_v4_child_baseline_v3.py (consumes splitk sweep receipts)"
+      ],
+      "blockers": [
+        "crates/hawking-core/examples/dispatch_size_sweep.rs is ABSENT (git cat-file).",
+        "git grep measure_dispatch_size_sweep over crates returned no matches.",
+        "receipts/future/DISPATCH_SIZE_SWEEP.json still has source= that rust path.",
+        "tools/future/kernel_geometry.py is ABSENT; receipts/future/KERNEL_GEOMETRY.json recorded_by that path."
+      ]
+    },
+    {
+      "id": "representation_ab",
+      "candidate_domain": "representation A/B",
+      "state": "CALLABLE",
+      "evidence_class": "SOURCE_INSPECTION",
+      "migrate": "YES_FOR_LIVE_AB",
+      "current_scripts": {
+        "live_complete_token_ab": [
+          {
+            "path": "crates/hawking-core/examples/ascension_qwen38_deltanet_widen_ab.rs",
+            "nlines": 499
+          },
+          {
+            "path": "tools/future/deltanet_widen_ab.py",
+            "nlines": 765
+          },
+          {
+            "path": "crates/hawking-core/examples/fold_addqx_token_ab.rs",
+            "nlines": 701
+          },
+          {
+            "path": "tools/future/fold_addqx_ab.py",
+            "nlines": 976
+          }
+        ],
+        "live_isolated_kernel_ab": [
+          {
+            "path": "crates/hawking-core/examples/mlp_aux_merge_ab.rs",
+            "nlines": 963
+          },
+          {
+            "path": "tools/future/mlp_aux_merge_ab.py",
+            "nlines": 737
+          },
+          {
+            "path": "crates/hawking-core/examples/aux_u8_ab.rs",
+            "nlines": 943
+          },
+          {
+            "path": "tools/future/aux_u8_native.py",
+            "nlines": 1353
+          },
+          {
+            "path": "crates/hawking-core/examples/aux_u8_lut_ab.rs",
+            "nlines": 1308
+          },
+          {
+            "path": "tools/future/aux_u8_lut.py",
+            "nlines": 1233
+          }
+        ],
+        "receipt_from_raw_not_a_runner": [
+          {
+            "path": "tools/future/ba_delta_ab.py",
+            "nlines": 262,
+            "uses_experiment_receipt_attach": true
+          },
+          {
+            "path": "tools/future/bitcast_dequant_ab.py",
+            "nlines": 354
+          },
+          {
+            "path": "tools/future/dequant_hoist_ab.py",
+            "nlines": 249
+          },
+          {
+            "path": "tools/future/q4_bitcast_ab.py",
+            "nlines": 307
+          },
+          {
+            "path": "tools/future/intra_token_concurrency_ab.py",
+            "nlines": 171
+          }
+        ],
+        "cpu_codec_screens": [
+          {
+            "path": "lab/operators/q80_rank_bits_sweep.py",
+            "nlines": 107
+          },
+          {
+            "path": "lab/operators/q80_representation_frontier_sweep.py",
+            "nlines": 295
+          },
+          {
+            "path": "lab/operators/q80_residual_encoding_sweep.py",
+            "nlines": 463
+          },
+          {
+            "path": "lab/operators/qwen38_bpw_descent_sweep.py",
+            "nlines": 831
+          }
+        ],
+        "already_a_plugin_lab": [
+          {
+            "path": "tools/future/representation_lab.py",
+            "nlines": 1119,
+            "state": "TESTED",
+            "measures": "nothing; STATIC_ONLY / FUNCTIONAL_SIM round-trip"
+          }
+        ]
+      },
+      "what_varies": {
+        "config": [
+          "incumbent vs candidate kernel names",
+          "fusion env flags",
+          "reps/warmup/max_new_tokens/max_seq_len",
+          "parity predicate (token-id equality vs named-buffer bytes vs GB/s + byte identity)",
+          "Q80 LE_PAIRS, BAR=0.8604, ALLOWANCE, codec grid"
+        ],
+        "structure": [
+          "complete-token generate_greedy vs isolated command-buffer kernel probe",
+          "receipt-from-raw producers that do not launch Metal",
+          "CPU numpy codec screens vs Metal A/B",
+          "representation_lab family plugins (noetic_compiler.round_trip) vs kernel A/B"
+        ]
+      },
+      "variation_kind": "MIXED",
+      "clone_ratios_shared_lines": {
+        "deltanet_widen_ab.rs vs fold_addqx_token_ab.rs": 0.62,
+        "deltanet_widen_ab.py vs fold_addqx_ab.py": 0.481,
+        "shared python functions deltanet\u2229fold": [
+          "_all_identical",
+          "_as_int_list",
+          "_fallbacks_sum",
+          "_finding",
+          "_median_u64",
+          "_require_gpu_ns",
+          "_require_kernel",
+          "_run_ids",
+          "build",
+          "example_binaries",
+          "first_divergence",
+          "kernel_count",
+          "load_raw",
+          "locate_saving",
+          "main",
+          "measurement_from_raw",
+          "ns_to_ms",
+          "record",
+          "report_token_parity",
+          "run_example"
+        ],
+        "function_similarity_1_00": [
+          "_all_identical",
+          "_fallbacks_sum",
+          "_median_u64",
+          "_require_gpu_ns",
+          "_run_ids",
+          "first_divergence",
+          "kernel_count",
+          "load_raw",
+          "ns_to_ms"
+        ],
+        "mlp_aux_merge_ab.rs vs aux_u8_ab.rs": 0.556,
+        "aux_u8_ab.rs vs aux_u8_lut_ab.rs": 0.683,
+        "mlp_aux_merge_ab.rs vs aux_u8_lut_ab.rs": 0.419,
+        "ba_delta/bitcast/dequant/q4/intra vs deltanet_widen_ab.py": "0.03-0.05 (not the same program)"
+      },
+      "call_sites": [
+        {
+          "kind": "call_site",
+          "path": "tools/future/deltanet_widen_ab.py",
+          "detail": "run_example() locates ascension_qwen38_deltanet_widen_ab and execs under gpu_lane_lock",
+          "line": 644,
+          "symbol": "run_example"
+        },
+        {
+          "kind": "call_site",
+          "path": "tools/future/fold_addqx_ab.py",
+          "detail": "run_example() locates fold_addqx_token_ab",
+          "line": 840,
+          "symbol": "run_example"
+        },
+        {
+          "kind": "call_site",
+          "path": "tools/future/mlp_aux_merge_ab.py",
+          "detail": "run_example() locates mlp_aux_merge_ab",
+          "line": 612,
+          "symbol": "run_example"
+        },
+        {
+          "kind": "test_invokes_symbol",
+          "path": "tools/future/test_deltanet_widen_ab.py",
+          "detail": "imports deltanet_widen_ab as dwa; builds synthetic raw and calls adjudicator helpers",
+          "symbol": "deltanet_widen_ab"
+        },
+        {
+          "kind": "test_invokes_symbol",
+          "path": "tools/future/test_fold_addqx_ab.py",
+          "detail": "imports fold_addqx_ab as fab; calls fab.byte_compare_u32 and adjudicator",
+          "symbol": "fold_addqx_ab"
+        },
+        {
+          "kind": "test_invokes_symbol",
+          "path": "tools/future/test_mlp_aux_merge_ab.py",
+          "detail": "imports mlp_aux_merge_ab as ab; constructs arms and calls judge helpers",
+          "symbol": "mlp_aux_merge_ab"
+        },
+        {
+          "kind": "call_site",
+          "path": "tools/future/representation_lab.py",
+          "detail": "score_family / verify_family documented as calling noetic_compiler.round_trip and complete_ebpw.refuse_unbilled_components",
+          "line": 1073,
+          "symbol": "score_family"
+        },
+        {
+          "kind": "test_invokes_symbol",
+          "path": "tools/future/test_representation_lab.py",
+          "detail": "pytest against representation_lab"
+        }
+      ],
+      "not_call_sites": [
+        {
+          "kind": "import_only_discounted",
+          "path": "hcli/agentos/representation_ab.py",
+          "detail": "READ-ONLY this pass; not counted as a science-harness caller without a symbol invocation from outside hcli (hcli is live-daemon tree; not edited)."
+        },
+        {
+          "kind": "no_test_file",
+          "path": "lab/operators/q80_rank_bits_sweep.py",
+          "detail": "git ls-tree found no test_q80_*sweep. Sibling residual_encoding_sweep comments that it reuses the X cache; that is a comment, not a call."
+        },
+        {
+          "kind": "doc_only",
+          "path": "docs/HQ80BR1_KERNEL_DESIGN_SUPERSEDED.md",
+          "detail": "mentions q80_representation_frontier_sweep; documentation is not a caller"
+        }
+      ],
+      "proposed_harness": "One complete-token A/B harness (rust example with --incumbent-kernel/--candidate-kernel/--parity=token_ids|named_buffers plus python adjudicator plugin). One isolated-kernel A/B harness (same process, two/three arms, warmup/spread/byte-identity). One CPU codec-screen spec for the Q80/Q38 BAR/ALLOWANCE grid. Do not fold receipt-from-raw scripts into the live harness.",
+      "proposed_spec_shape": {
+        "schema": "hawking.lab.experiment.v1",
+        "id": "representation_ab",
+        "meta": {
+          "kind": "complete_token_ab | isolated_kernel_ab | cpu_codec_screen | receipt_from_raw",
+          "parity": "token_ids | named_buffers | gb_s_and_bytes",
+          "argmax_is_not_parity": true,
+          "fallbacks_must_be_0": true
+        },
+        "matrix": [
+          {
+            "id": "widen_f4",
+            "example": "ascension_qwen38_deltanet_widen_ab",
+            "incumbent_kernel": "qwen38_gated_delta_decode_vi_simd",
+            "candidate_kernel": "qwen38_gated_delta_decode_vi_simd_ba_f4"
+          },
+          {
+            "id": "fold_addqx",
+            "example": "fold_addqx_token_ab",
+            "incumbent_swiglu": "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128"
+          }
+        ]
+      },
+      "would_delete": [
+        "Near-duplicate python helpers in deltanet_widen_ab.py and fold_addqx_ab.py (keep locate_saving / _finding as plugins)",
+        "Near-duplicate CLI/argparse/main in isolated-kernel A/B sidecars",
+        "After a CPU codec-screen spec exists: the three q80_*_sweep.py CLIs, keeping codecs as plugins"
+      ],
+      "would_keep_as_structure": [
+        "receipt-from-raw modules (they reseal sealed numbers; different executable)",
+        "representation_lab.py (already the plug-in lab)",
+        "Per-candidate Metal shaders and kernel selection in rust"
+      ],
+      "risk": "A shared A/B harness that accepts argmax agreement as parity would reopen the exact hole DELTANET_MULTISTEP / fold_addqx tests refuse. Parity predicate must be a required spec enum with no default to argmax. Q80 sweeps have no tests today; migrating them without first adding tests that fail when BAR/LE_PAIRS/codec chain is gutted would be unguarded.",
+      "protecting_tests": [
+        "tools/future/test_deltanet_widen_ab.py",
+        "tools/future/test_fold_addqx_ab.py",
+        "tools/future/test_mlp_aux_merge_ab.py",
+        "tools/future/test_bitcast_dequant_ab.py",
+        "tools/future/test_dequant_hoist_ab.py",
+        "tools/future/test_q4_bitcast_ab.py",
+        "tools/future/test_representation_lab.py",
+        "ABSENT for lab/operators/q80_*_sweep.py (blocker for that sub-family)"
+      ]
+    },
+    {
+      "id": "context_length_sweeps",
+      "candidate_domain": "context-length sweeps",
+      "state": "CALLABLE",
+      "evidence_class": "SOURCE_INSPECTION",
+      "migrate": "ALREADY_ONE_MATRIX_PLUS_PRODUCT_TESTS",
+      "current_scripts": [
+        {
+          "path": "tools/headless/prefill_kv.py",
+          "nlines": 1713,
+          "role": "length_matrix_measure",
+          "lengths": [
+            "short",
+            "4k",
+            "16k",
+            "long"
+          ],
+          "long_note": "32K is DERIVED from measured 16K, not walked"
+        },
+        {
+          "path": "tools/headless/test_prefill_kv.py",
+          "role": "tests"
+        },
+        {
+          "path": "tools/headless/context_budget_probe.py",
+          "role": "static_budget_probe"
+        },
+        {
+          "path": "tools/headless/hcli_long_context_ingress.py",
+          "role": "product_ingress"
+        },
+        {
+          "path": "hcli/test_long_context_runtime.py",
+          "role": "product_test_read_only"
+        },
+        {
+          "path": "tools/acceptance/context/gates.py",
+          "role": "acceptance_gates"
+        },
+        {
+          "path": "crates/hawking-bench/src/suites/prefill.rs",
+          "role": "bench_suite_hardcoded_1024"
+        },
+        {
+          "path": "crates/hawking-context/src/budget.rs",
+          "role": "product_compiler_not_a_sweep"
+        }
+      ],
+      "what_varies": {
+        "config": [
+          "LENGTHS short/4k/16k/long",
+          "incumbent uniform-q4 vs sealed parent",
+          "c=1 vs c=4 session footprint"
+        ],
+        "structure": [
+          "static budget probe vs live Metal generate_greedy walk vs HCLI ingress vs hawking-context compiler"
+        ]
+      },
+      "variation_kind": "MIXED",
+      "call_sites": [
+        {
+          "kind": "call_site",
+          "path": "tools/headless/latency_ledger.py",
+          "detail": "command=['python3','tools/headless/prefill_kv.py','--measure']",
+          "line": 672,
+          "symbol": "prefill_kv"
+        },
+        {
+          "kind": "call_site",
+          "path": "tools/headless/latency_ledger.py",
+          "detail": "command=['python3','tools/headless/prefill_kv.py'] reuse path",
+          "line": 924,
+          "symbol": "prefill_kv"
+        },
+        {
+          "kind": "test_invokes_symbol",
+          "path": "tools/headless/test_prefill_kv.py",
+          "detail": "pytest against prefill_kv"
+        },
+        {
+          "kind": "call_site",
+          "path": "crates/hawking/src/main.rs",
+          "detail": "hawking_bench::run includes prefill suite",
+          "line": 1235
+        }
+      ],
+      "not_call_sites": [
+        {
+          "kind": "self_ref",
+          "path": "tools/headless/context_budget_probe.py",
+          "detail": "CAPABILITY_GRAPH.json mentions the probe 7 times; catalogue is not a caller. git grep found no external python call of the probe module."
+        }
+      ],
+      "proposed_harness": "Do not invent a second context-length runner. Lift LENGTHS into a lab.bench_harness spec consumed by prefill_kv AND hawking-bench prefill.rs (today hardcoded 1024-token pangram). Keep hawking-context compiler and HCLI long-context tests as product, not science sweeps.",
+      "proposed_spec_shape": {
+        "schema": "hawking.lab.experiment.v1",
+        "id": "context_length_prefill",
+        "matrix": [
+          {
+            "bucket": "short",
+            "tokens": null
+          },
+          {
+            "bucket": "4k",
+            "tokens": 4096
+          },
+          {
+            "bucket": "16k",
+            "tokens": 16384
+          },
+          {
+            "bucket": "long",
+            "tokens": 32768,
+            "mode": "DERIVE_OR_MEASURE"
+          }
+        ]
+      },
+      "would_delete": [
+        "Hardcoded prompt = pangram.repeat(80) in crates/hawking-bench/src/suites/prefill.rs once the spec feeds prompt length",
+        "Nothing from hawking-context (product)"
+      ],
+      "risk": "Calling a derived 32K number MEASURED. prefill_kv.py already labels long as DERIVE. A harness default that walks 32K live would be a new GPU lease, not a config change.",
+      "protecting_tests": [
+        "tools/headless/test_prefill_kv.py",
+        "tools/headless/test_state_gravity.py::test_state_genome_lockstep_with_prefill_kv_workspace",
+        "tools/acceptance/context/test_gates.py"
+      ]
+    },
+    {
+      "id": "prefill_chunk_sweeps",
+      "candidate_domain": "prefill chunk sweeps",
+      "state": "STALE_ROADMAP_TEXT",
+      "evidence_class": "SOURCE_INSPECTION",
+      "migrate": "NO_FAMILY_IN_HEAD",
+      "current_scripts": [
+        {
+          "path": "docs/PREFILL.md",
+          "role": "prose_describes_absent_impl"
+        },
+        {
+          "path": "crates/hawking-serve/src/batch/scheduler.rs",
+          "role": "product_scheduler_prefill_chunks_token_budgeted",
+          "state": "TESTED"
+        },
+        {
+          "path": "hcli/test_qwen38_prefill_pipeline.py",
+          "role": "hcli_test_read_only"
+        },
+        {
+          "path": "receipts/ascent-2026-08-16/G117_PREFILL_BASELINE.json",
+          "role": "historic_receipt"
+        },
+        {
+          "path": "receipts/ascent-2026-08-16/G118_PREFILL_SCALING.json",
+          "role": "historic_receipt"
+        },
+        {
+          "path": "receipts/ascent-2026-08-16/G119_PREFILL_RESIDUAL.json",
+          "role": "historic_receipt"
+        }
+      ],
+      "what_varies": {
+        "config": [
+          "chunk size 1..=64 claimed as HAWKING_QWEN38_PREFILL_CHUNK in docs/PREFILL.md only"
+        ],
+        "structure": [
+          "GEMM prefill vs single-token decode; docs claim shaders/qwen38_prefill.metal and src/model/qwen38_hybrid_prefill.rs"
+        ]
+      },
+      "variation_kind": "STRUCTURE_IF_IT_EXISTED",
+      "call_sites": [
+        {
+          "kind": "call_site",
+          "path": "crates/hawking-serve/src/lib.rs",
+          "detail": "scheduler.prefill_chunks_token_budgeted(max_batch, max_prefill_tokens) then commit_prefill_chunk",
+          "line": 811,
+          "symbol": "prefill_chunks_token_budgeted"
+        },
+        {
+          "kind": "test_invokes_symbol",
+          "path": "crates/hawking-serve/src/batch/scheduler.rs",
+          "detail": "inline tests call prefill_chunks_token_budgeted and commit_prefill_chunk",
+          "line": 979,
+          "symbol": "prefill_chunks_token_budgeted"
+        }
+      ],
+      "absences": [
+        {
+          "kind": "absence",
+          "path": "crates/hawking-core/src/model/qwen38_hybrid_prefill.rs",
+          "detail": "git cat-file -e HEAD:... failed"
+        },
+        {
+          "kind": "absence",
+          "path": "crates/hawking-core/shaders/qwen38_prefill.metal",
+          "detail": "git ls-tree -r --name-only HEAD | rg qwen38_prefill found only hcli/test_qwen38_prefill_pipeline.py"
+        },
+        {
+          "kind": "absence",
+          "path": "HAWKING_QWEN38_PREFILL_CHUNK",
+          "detail": "git grep over crates/tools/lab/hcli found the token only in docs/PREFILL.md:55"
+        }
+      ],
+      "proposed_harness": "Do not migrate. There is no family of chunk-sweep experiment scripts in HEAD. If GEMM prefill lands, the scientific variable (chunk size 1..=64) is CONFIG and should be a matrix on the same spec as context_length_prefill, not a new executable.",
+      "proposed_spec_shape": {
+        "schema": "hawking.lab.experiment.v1",
+        "id": "prefill_chunk_sweep",
+        "status": "NOT_IN_HEAD",
+        "matrix_when_impl_exists": [
+          {
+            "chunk": 1
+          },
+          {
+            "chunk": 8
+          },
+          {
+            "chunk": 16
+          },
+          {
+            "chunk": 32
+          },
+          {
+            "chunk": 64
+          }
+        ]
+      },
+      "would_delete": [],
+      "risk": "Writing a chunk-sweep harness against docs/PREFILL.md would certify a producer that is not in this tree. G117-G119 are historic receipts; they do not restore the rust files.",
+      "protecting_tests": [
+        "crates/hawking-serve/src/batch/scheduler.rs inline tests (product scheduler, not GEMM prefill)",
+        "NO test of HAWKING_QWEN38_PREFILL_CHUNK (symbol absent)"
+      ],
+      "surprise": true
+    },
+    {
+      "id": "resident_throughput",
+      "candidate_domain": "resident throughput",
+      "state": "CALLABLE",
+      "evidence_class": "SOURCE_INSPECTION",
+      "migrate": "PARTIAL",
+      "current_scripts": [
+        {
+          "path": "tools/future/resident_reprofile.py",
+          "nlines": 206,
+          "role": "one_shot_receipt_from_raw_measure"
+        },
+        {
+          "path": "tools/future/resident_token_budget.py",
+          "role": "arithmetic_over_receipts"
+        },
+        {
+          "path": "tools/future/harness_reconciliation.py",
+          "role": "decomposes_two_harness_walls_into_gpu_vs_host",
+          "not_a_script_consolidator": true
+        },
+        {
+          "path": "tools/agentos/measure_genesis_resident.py",
+          "role": "measure"
+        },
+        {
+          "path": "crates/hawking-core/examples/ascension_qwen80_mixed_decode_throughput.rs",
+          "role": "q80_example"
+        },
+        {
+          "path": "crates/hawking-bench/src/suites/throughput.rs",
+          "nlines": 10,
+          "state": "SCAFFOLDED",
+          "note": "phase4_pending: true"
+        },
+        {
+          "path": "tools/future/resident_science_loop.py",
+          "role": "ops_loop_not_a_sweep"
+        },
+        {
+          "path": "tools/future/resident_*.py",
+          "role": "mostly_product_install_health_identity_supervisor_api"
+        }
+      ],
+      "what_varies": {
+        "config": [
+          "which resident binary/profile (release vs release-fast)",
+          "arm (widen_f4 vs control)",
+          "protected window vs dirty engineering timing_label"
+        ],
+        "structure": [
+          "serving/install/health stack vs a measurement producer vs hawking-bench stub"
+        ]
+      },
+      "variation_kind": "MIXED",
+      "call_sites": [
+        {
+          "kind": "call_site",
+          "path": "tools/future/harness_reconciliation.py",
+          "detail": "reads decode_gpu_ms_per_token from RESIDENT_TOKEN_BUDGET_POST_WIDEN_F4.json produced by resident_reprofile.py",
+          "line": 14
+        },
+        {
+          "kind": "test_invokes_symbol",
+          "path": "tools/future/test_resident_reprofile.py",
+          "detail": "pytest against resident_reprofile"
+        },
+        {
+          "kind": "call_site",
+          "path": "crates/hawking/src/main.rs",
+          "detail": "hawking_bench::run; throughput suite currently returns phase4_pending",
+          "line": 1235
+        }
+      ],
+      "proposed_harness": "One resident-complete-token measure spec (binary, profile, arm, lock policy, timing_label rules) that both resident_reprofile and the organ-profiler lease already used in HARNESS_RECONCILIATION.json would emit. Do not merge resident_install/health/supervisor into that spec. Do not treat hawking-bench throughput.rs as a harness until it measures.",
+      "proposed_spec_shape": {
+        "schema": "hawking.lab.experiment.v1",
+        "id": "resident_complete_token",
+        "meta": {
+          "timing_label_required": true,
+          "wall_tps_is_range_if_host_moves": true
+        },
+        "matrix": [
+          {
+            "arm": "control"
+          },
+          {
+            "arm": "candidate"
+          }
+        ]
+      },
+      "would_delete": [
+        "Duplicated receipt-sealing in resident_reprofile.py once the shared measured-receipt helper is the only writer"
+      ],
+      "would_keep_as_structure": [
+        "resident_install.py, resident_supervisor.py, resident_health.py, resident_api.py (product)",
+        "harness_reconciliation.py (arithmetic rule, not a runner)"
+      ],
+      "risk": "Collapsing DIRTY_ENGINEERING and PROTECTED_WINDOW into one TPS number. harness_reconciliation.py already forbids that: GPU halves may agree while host moves. The spec must emit a range for wall TPS.",
+      "protecting_tests": [
+        "tools/future/test_resident_reprofile.py",
+        "tools/future/test_harness_reconciliation.py (if present; module tools/future/harness_reconciliation.py exists)",
+        "tools/agentos/test_genesis_resident.py"
+      ]
+    },
+    {
+      "id": "perturbation_experiments",
+      "candidate_domain": "perturbation experiments",
+      "state": "CALLABLE",
+      "evidence_class": "SOURCE_INSPECTION",
+      "migrate": "ALREADY_ONE_WORKUNIT_WIRING_BROKEN",
+      "current_scripts": [
+        {
+          "path": "tools/future/perturbation_workunit.py",
+          "nlines": 230,
+          "role": "one_point_workunit",
+          "kinds": [
+            "zero",
+            "quantize",
+            "noise",
+            "low_rank"
+          ]
+        },
+        {
+          "path": "tools/future/capability_curve.py",
+          "nlines": 635,
+          "role": "search_over_points",
+          "live_sweep_ran": false
+        },
+        {
+          "path": "tools/future/capability_byte_elimination.py",
+          "role": "calls capability_curve.sweep with its OWN measure, not bind_workunit"
+        },
+        {
+          "path": "tools/future/hcli_sovereign.py",
+          "role": "subprocess CLI caller"
+        }
+      ],
+      "what_varies": {
+        "config": [
+          "tensor in {gate,up,down}",
+          "layer",
+          "side in {rows,cols}",
+          "fraction",
+          "kind in {zero,quantize,noise,low_rank}",
+          "seed"
+        ],
+        "structure": [
+          "pure perturb() on a copy vs live replay run() vs capability_curve search"
+        ]
+      },
+      "variation_kind": "CONFIG",
+      "call_sites": [
+        {
+          "kind": "call_site",
+          "path": "tools/future/test_perturbation_workunit.py",
+          "detail": "pw.perturb(W(), side, fraction, kind, seed) for every kind",
+          "line": 27,
+          "symbol": "perturb"
+        },
+        {
+          "kind": "call_site",
+          "path": "tools/future/perturbation_workunit.py",
+          "detail": "main() calls run() when --tensor/--layer/--fraction set",
+          "line": 224,
+          "symbol": "run"
+        },
+        {
+          "kind": "call_site",
+          "path": "tools/future/hcli_sovereign.py",
+          "detail": "cmd = [sys.executable, .../perturbation_workunit.py, ...]",
+          "line": 458,
+          "symbol": "subprocess"
+        },
+        {
+          "kind": "call_site",
+          "path": "tools/future/capability_byte_elimination.py",
+          "detail": "cc.sweep(...) with local measure, not bind_workunit",
+          "line": 1081,
+          "symbol": "capability_curve.sweep"
+        }
+      ],
+      "not_call_sites": [
+        {
+          "kind": "broken_adapter",
+          "path": "tools/future/capability_curve.py",
+          "detail": "bind_workunit() getattr-s run_one/measure_one/measure/point. perturbation_workunit exposes perturb and run. A successful bind against the live module is not evidenced. test_bind_workunit_refuses_when_the_workunit_is_absent only monkeypatches ImportError.",
+          "line": 153,
+          "symbol": "bind_workunit"
+        }
+      ],
+      "proposed_harness": "Already one WorkUnit. Do not write a second perturbation executable. Fix bind_workunit to call run() (or add an alias) so capability_curve.sweep can inject it. Receipt COMPONENT_PERTURBATION.json is a contract (--build), not a measured curve (no points/curve keys).",
+      "proposed_spec_shape": {
+        "schema": "hawking.lab.experiment.v1",
+        "id": "component_perturbation",
+        "matrix": [
+          {
+            "tensor": "down",
+            "layer": 21,
+            "side": "rows",
+            "kind": "zero",
+            "fraction": 0.5
+          },
+          {
+            "tensor": "down",
+            "layer": 21,
+            "side": "rows",
+            "kind": "quantize",
+            "fraction": 0.5
+          }
+        ]
+      },
+      "would_delete": [],
+      "risk": "A 'harness consolidation' that reimplements perturb() in capability_curve would fork the matched-fraction guarantee. Tests parametrize over pw.KINDS and would not catch a second implementation.",
+      "protecting_tests": [
+        "tools/future/test_perturbation_workunit.py (calls perturb; does NOT call run/replay)",
+        "tools/future/test_capability_curve.py (synthetic measure=; live_sweep.ran is False in the sealed receipt path)"
+      ],
+      "surprise": true
+    },
+    {
+      "id": "fpga_simulation",
+      "candidate_domain": "FPGA simulation",
+      "state": "TESTED",
+      "evidence_class": "SOURCE_INSPECTION",
+      "migrate": "ALREADY_TWO_COMPLEMENTARY_MODULES",
+      "hardware": "BLOCKED_HARDWARE",
+      "current_scripts": [
+        {
+          "path": "tools/future/fpga_engines.py",
+          "nlines": 1442,
+          "role": "bit_exact_functional_references_no_HDL"
+        },
+        {
+          "path": "tools/future/fpga_fidelity.py",
+          "nlines": 1470,
+          "role": "multi_fidelity_estimator"
+        },
+        {
+          "path": "tools/future/test_fpga_engines.py",
+          "role": "tests"
+        },
+        {
+          "path": "tools/future/test_fpga_fidelity.py",
+          "role": "tests"
+        }
+      ],
+      "what_varies": {
+        "config": [
+          "fidelity level ANALYTICAL/FUNCTIONAL_SIM/CYCLE_MODEL",
+          "adaptation clock 0..3",
+          "engine kind"
+        ],
+        "structure": [
+          "golden numpy engines vs cycle/pressure model vs HW_EMULATION/REAL_HARDWARE which raise"
+        ]
+      },
+      "variation_kind": "STRUCTURE_BETWEEN_THE_TWO_MODULES_CONFIG_WITHIN_EACH",
+      "call_sites": [
+        {
+          "kind": "test_invokes_symbol",
+          "path": "tools/future/test_fpga_engines.py",
+          "detail": "pytest invokes engine school"
+        },
+        {
+          "kind": "test_invokes_symbol",
+          "path": "tools/future/test_fpga_fidelity.py",
+          "detail": "asserts LADDER HW_EMULATION and REAL_HARDWARE available=False, UNIMPLEMENTED, missing_dependency no emulation seat / no U50 board"
+        },
+        {
+          "kind": "call_site",
+          "path": "tools/future/fpga_engines.py",
+          "detail": "cli --selftest / --build",
+          "symbol": "main"
+        },
+        {
+          "kind": "call_site",
+          "path": "tools/future/fpga_fidelity.py",
+          "detail": "cli --selftest / --build",
+          "symbol": "main"
+        }
+      ],
+      "proposed_harness": "Do not merge engines (golden models) with fidelity (estimator ladder). They are already the parameterized FPGA sim school. A future board-level harness is BLOCKED_HARDWARE (no U50, no emulation seat). FPGA stays inside Accelerator/Fusion; no Era VI.",
+      "proposed_spec_shape": {
+        "schema": "hawking.lab.experiment.v1",
+        "id": "fpga_sim_ladder",
+        "matrix": [
+          {
+            "level": "ANALYTICAL"
+          },
+          {
+            "level": "FUNCTIONAL_SIM"
+          },
+          {
+            "level": "CYCLE_MODEL"
+          }
+        ],
+        "blocked_levels": [
+          "HW_EMULATION",
+          "REAL_HARDWARE"
+        ]
+      },
+      "would_delete": [],
+      "risk": "Merging the two modules would mix bit-exact functional references with assumed coefficient tables (COEFFICIENT_TABLE = v1-assumed-not-measured). Fidelity tests exist specifically to keep REAL_HARDWARE raising rather than guessing.",
+      "protecting_tests": [
+        "tools/future/test_fpga_engines.py",
+        "tools/future/test_fpga_fidelity.py"
+      ]
+    },
+    {
+      "id": "hbm_mappings",
+      "candidate_domain": "HBM mappings",
+      "state": "TESTED",
+      "evidence_class": "SOURCE_INSPECTION",
+      "migrate": "ALREADY_ONE",
+      "hardware": "BLOCKED_HARDWARE",
+      "current_scripts": [
+        {
+          "path": "tools/future/hbm_doctor.py",
+          "nlines": 1108,
+          "role": "rank_residency_candidates_under_byte_budget"
+        },
+        {
+          "path": "tools/future/test_hbm_doctor.py",
+          "nlines": 291,
+          "role": "tests"
+        }
+      ],
+      "what_varies": {
+        "config": [
+          "--budget-bytes default 8GiB",
+          "candidate list from named receipts"
+        ],
+        "structure": []
+      },
+      "variation_kind": "CONFIG",
+      "call_sites": [
+        {
+          "kind": "call_site",
+          "path": "tools/future/hbm_doctor.py",
+          "detail": "cli --build / --budget-bytes",
+          "line": 13,
+          "symbol": "main"
+        },
+        {
+          "kind": "test_invokes_symbol",
+          "path": "tools/future/test_hbm_doctor.py",
+          "detail": "hd.build() writes HBM_DOCTOR.json; negative controls must fire; selected_ids == [] because undecidable_is_the_decision",
+          "line": 17,
+          "symbol": "build"
+        },
+        {
+          "kind": "call_site",
+          "path": "tools/future/frontiers.py",
+          "detail": "verifier=future.hbm_doctor.rank cited as frontier F005",
+          "line": 636,
+          "symbol": "hbm_doctor.rank"
+        }
+      ],
+      "not_call_sites": [
+        {
+          "kind": "catalogue",
+          "path": "civilization/CAPABILITY_GRAPH.json",
+          "detail": "mentions hbm_doctor; catalogue is not a caller"
+        }
+      ],
+      "other_hbm_py_rs": "git ls-tree -r --name-only HEAD | rg hbm | rg '\\.(py|rs)$' returned only hbm_doctor.py and test_hbm_doctor.py.",
+      "proposed_harness": "Already one parameterized doctor. Do not write a second HBM mapper. Budget is already a flag. FPGA latency is a class, never a number \u2014 no board.",
+      "proposed_spec_shape": {
+        "schema": "hawking.lab.experiment.v1",
+        "id": "hbm_residency",
+        "matrix": [
+          {
+            "budget_bytes": 8589934592
+          }
+        ]
+      },
+      "would_delete": [],
+      "risk": "Filling HBM with the largest items is the anti_pattern the tests lock. A 'harness' that defaulted missing scores to zero would violate the module's UNKNOWN-not-zero rule.",
+      "protecting_tests": [
+        "tools/future/test_hbm_doctor.py"
+      ]
+    },
+    {
+      "id": "modellake_policy_tests",
+      "candidate_domain": "ModelLake policy tests",
+      "state": "TESTED",
+      "evidence_class": "STATIC_VERIFICATION",
+      "migrate": "TABLE_DRIVEN_TESTS_NOT_A_SCIENCE_HARNESS",
+      "current_scripts": [
+        {
+          "path": "tools/odyssey/modellake.py",
+          "role": "product"
+        },
+        {
+          "path": "tools/odyssey/modellake_index.py",
+          "role": "product"
+        },
+        {
+          "path": "tools/odyssey/modellake_lineage.py",
+          "role": "product"
+        },
+        {
+          "path": "tools/odyssey/modellake_promote.py",
+          "role": "product"
+        },
+        {
+          "path": "tools/odyssey/modellake_watch.py",
+          "role": "product"
+        },
+        {
+          "path": "tools/odyssey/test_modellake.py",
+          "nlines": 92,
+          "policy": "budget + guard_protected"
+        },
+        {
+          "path": "tools/odyssey/test_modellake_admission_cap.py",
+          "nlines": 187,
+          "policy": "AST of active_count must union not sum"
+        },
+        {
+          "path": "tools/odyssey/test_modellake_boundary.py",
+          "nlines": 150,
+          "policy": "artifacts from config not cwd"
+        },
+        {
+          "path": "tools/odyssey/test_modellake_index.py",
+          "nlines": 461,
+          "policy": "durable index; docstring requires call sites not imports"
+        },
+        {
+          "path": "tools/odyssey/test_modellake_lineage.py",
+          "nlines": 245,
+          "policy": "named specimen expressible"
+        },
+        {
+          "path": "tools/odyssey/test_modellake_promote.py",
+          "nlines": 211,
+          "policy": "atomic rename, idempotent replay, tmp_path only"
+        },
+        {
+          "path": "tools/odyssey/test_modellake_retained_bytes.py",
+          "nlines": 103,
+          "policy": "G010 red gate on receipt"
+        },
+        {
+          "path": "tools/odyssey/test_modellake_watch.py",
+          "role": "watch"
+        },
+        {
+          "path": "tools/odyssey/test_modellake_watch_offload.py",
+          "role": "offload"
+        },
+        {
+          "path": "tools/future/modellake_events.py",
+          "role": "MODEL_SEALED emits WorkUnits"
+        },
+        {
+          "path": "tools/future/modellake_scheduler_view.py",
+          "role": "scheduler view of watcher log"
+        }
+      ],
+      "what_varies": {
+        "config": [
+          "admit bytes/jobs",
+          "scratch lake layout",
+          "specimen slug/shards"
+        ],
+        "structure": [
+          "AST admission-cap test",
+          "G010 receipt red gate",
+          "promote atomic rename",
+          "index query API"
+        ]
+      },
+      "variation_kind": "MIXED",
+      "call_sites": [
+        {
+          "kind": "call_site",
+          "path": "tools/odyssey/test_modellake.py",
+          "detail": "ml.admit(...) and ml.guard_protected(...)",
+          "line": 13,
+          "symbol": "admit"
+        },
+        {
+          "kind": "call_site",
+          "path": "tools/odyssey/test_modellake_promote.py",
+          "detail": "invokes promotion against tmp_path; never /Volumes/corpdrive",
+          "symbol": "modellake_promote"
+        },
+        {
+          "kind": "call_site",
+          "path": "tools/odyssey/test_modellake_index.py",
+          "detail": "docstring: build/query_specimen/update_specimen/walk_specimen_files are invoked"
+        }
+      ],
+      "proposed_harness": "Optional pytest parametrize over (policy, fixture lake, expected refuse/allow). That is a test refactor, not a science experiment harness. Do not run these against ModelLake specimens/; tests already use tmp_path. Do not merge with Odyssey transfer.",
+      "proposed_spec_shape": {
+        "schema": "pytest.mark.parametrize",
+        "cases": [
+          "admit_over_budget",
+          "write_outside_lake",
+          "promote_idempotent",
+          "index_query"
+        ]
+      },
+      "would_delete": [
+        "Possibly duplicated scratch-lake fixtures across test_modellake_boundary/index/lineage/promote (_tiny_safetensors copied in index and lineage)"
+      ],
+      "would_keep_as_structure": [
+        "test_modellake_admission_cap.py AST walk (unique)",
+        "test_modellake_retained_bytes.py G010 red gate (unique)"
+      ],
+      "risk": "A 'policy harness' that pointed at /Volumes/corpdrive would violate ModelLake read-only. Current promote tests monkeypatch MODEL_ROOT to tmp_path; keep that.",
+      "protecting_tests": [
+        "the listed tools/odyssey/test_modellake*.py files ARE the tests; they protect the product, not a migration of experiment scripts"
+      ]
+    },
+    {
+      "id": "odyssey_transfer_tests",
+      "candidate_domain": "Odyssey transfer tests",
+      "state": "TESTED",
+      "evidence_class": "SOURCE_INSPECTION",
+      "migrate": "NO_DO_NOT_MERGE_HOMONYMS",
+      "current_scripts": [
+        {
+          "path": "tools/future/odyssey2_transfer.py",
+          "nlines": 1137,
+          "science": "Odyssey II law-store transfer onto a different sealed specimen",
+          "evidence_class_module": "STATIC_ONLY"
+        },
+        {
+          "path": "tools/future/test_odyssey2_transfer.py",
+          "nlines": 203,
+          "role": "tests; calls o2t.build, o2t.run_transfers, o2t.transfer_values_l1_to_falcon"
+        },
+        {
+          "path": "tools/odyssey/transfer_rehearsal.py",
+          "science": "rehearse transfer_report inheritance fields"
+        },
+        {
+          "path": "tools/odyssey/test_transfer_rehearsal.py",
+          "role": "tests"
+        },
+        {
+          "path": "tools/odyssey/cold_vs_transfer.py",
+          "science": "cold start vs transfer comparison"
+        },
+        {
+          "path": "tools/headless/doctor_transfer.py",
+          "nlines": 227,
+          "science": "Doctor technique library applied to a new specimen"
+        },
+        {
+          "path": "tools/headless/dense_subbit_transfer.py",
+          "nlines": 1408,
+          "science": "GLM 0.167 BPW method onto dense Qwen organs"
+        },
+        {
+          "path": "tools/headless/transfer_report.py",
+          "nlines": 359,
+          "science": "inheritance report, not a transfer trial"
+        }
+      ],
+      "what_varies": {
+        "config": [
+          "named law id, source specimen, target specimen (inside odyssey2_transfer)"
+        ],
+        "structure": [
+          "STATIC_ONLY law-store trial vs rehearsal of report fields vs doctor library vs dense-organ codec transfer vs cold-vs-transfer"
+        ]
+      },
+      "variation_kind": "STRUCTURE",
+      "call_sites": [
+        {
+          "kind": "call_site",
+          "path": "tools/future/test_odyssey2_transfer.py",
+          "detail": "o2t.build(); o2t.run_transfers(); o2t.transfer_values_l1_to_falcon()",
+          "line": 15,
+          "symbol": "build"
+        },
+        {
+          "kind": "call_site",
+          "path": "tools/odyssey/test_transfer_rehearsal.py",
+          "detail": "invokes transfer_rehearsal.py as a tool path",
+          "line": 13
+        },
+        {
+          "kind": "call_site",
+          "path": "tools/future/odyssey2_transfer.py",
+          "detail": "cli --build / --selftest",
+          "line": 13,
+          "symbol": "main"
+        }
+      ],
+      "proposed_harness": "odyssey2_transfer.py is already the parameterized Odyssey II harness over ols.Law. Do not merge doctor_transfer, dense_subbit_transfer, transfer_rehearsal, or cold_vs_transfer into it. They share a word, not a scientific variable.",
+      "proposed_spec_shape": {
+        "schema": "hawking.future.odyssey2_transfer.v1 (already)",
+        "id": "odyssey2_transfer",
+        "matrix": [
+          {
+            "law": "LAW-L1-MLP-ARITHMETIC-SENSITIVE",
+            "target": "Falcon"
+          }
+        ]
+      },
+      "would_delete": [],
+      "risk": "A unified 'transfer harness' would let a similarity score stand in for a failed value transfer. test_odyssey2_transfer.py asserts similarity_score is None and citations are copied measurements. Keep that refusal.",
+      "protecting_tests": [
+        "tools/future/test_odyssey2_transfer.py",
+        "tools/odyssey/test_transfer_rehearsal.py",
+        "tools/headless/test_doctor_transfer.py",
+        "tools/headless/test_odyssey_gates.py (schema name QWEN_TRANSFER_REHEARSAL)"
+      ]
+    }
+  ],
+  "surprises": [
+    {
+      "id": "S1_dispatch_size_sweep_rust_absent",
+      "loud": true,
+      "state": "ABSENT",
+      "evidence_class": "SOURCE_INSPECTION",
+      "what": "tools/future/dispatch_size_sweep.py and receipts/future/DISPATCH_SIZE_SWEEP.json cite crates/hawking-core/examples/dispatch_size_sweep.rs via Qwen38HybridDecodeSession::measure_dispatch_size_sweep. git cat-file -e HEAD:crates/hawking-core/examples/dispatch_size_sweep.rs fails. git grep measure_dispatch_size_sweep over crates returns no matches. git log --all -- that path returned empty. The sealed receipt still has verdict PER_DISPATCH_SIZE_REFUTED, evidence_class DIAGNOSTIC_RELATIVE.",
+      "what_would_settle": "Restore the rust example, or rewrite the sidecar source field to the real producer, or mark the receipt STALE with a producer-absent flag. Do not migrate the sidecar onto a harness while it names a missing binary."
+    },
+    {
+      "id": "S2_kernel_geometry_py_absent",
+      "loud": true,
+      "state": "ABSENT",
+      "evidence_class": "SOURCE_INSPECTION",
+      "what": "receipts/future/KERNEL_GEOMETRY.json bench.recorded_by = tools/future/kernel_geometry.py. git cat-file -e HEAD:tools/future/kernel_geometry.py fails. The receipt remains as STATIC_ONLY arithmetic citing other receipts.",
+      "what_would_settle": "Find the deleting commit and either restore the producer or retarget recorded_by to the module that still can rebuild the receipt."
+    },
+    {
+      "id": "S3_mlp_region_falsifier_rs_absent",
+      "loud": true,
+      "state": "ABSENT",
+      "evidence_class": "SOURCE_INSPECTION",
+      "what": "tools/future/mlp_region_falsifier.py example_binaries names ('mlp_region_falsifier',). crates/hawking-core/examples/mlp_region_falsifier.rs is ABSENT in HEAD.",
+      "what_would_settle": "Same as S1: restore, retarget, or quarantine the sidecar."
+    },
+    {
+      "id": "S4_prefill_gemm_described_not_in_HEAD",
+      "loud": true,
+      "state": "STALE_ROADMAP_TEXT",
+      "evidence_class": "SOURCE_INSPECTION",
+      "what": "docs/PREFILL.md (date 2026-09-02 in the file) lists qwen38_hybrid_prefill.rs, shaders/qwen38_prefill.metal, tests/qwen38_prefill_gemm_parity.rs, env HAWKING_QWEN38_PREFILL_CHUNK. None of those paths/symbols exist in this HEAD except the env name in the doc. The doc names branch grok/prefill-gemm-20260901-232724 commit 8391a0ef8, which is not this HEAD (04193ccbc).",
+      "what_would_settle": "git merge-base / git show 8391a0ef8 --stat, or confirm that branch never landed. A chunk-sweep harness against this checkout would be fiction."
+    },
+    {
+      "id": "S5_perturbation_bind_workunit_wrong_symbols",
+      "loud": true,
+      "state": "CALLABLE",
+      "evidence_class": "SOURCE_INSPECTION",
+      "what": "capability_curve.bind_workunit looks for run_one/measure_one/measure/point. perturbation_workunit exposes perturb and run. The only bind_workunit test monkeypatches ImportError. capability_curve --build writes live_sweep.ran = False. capability_byte_elimination calls cc.sweep with its own measure, which is a real call of sweep but not of perturbation.run.",
+      "what_would_settle": "A test that calls bind_workunit() against the real perturbation_workunit module. Expected today: CurveRefused. After an alias, it must call run()."
+    },
+    {
+      "id": "S6_research_ExperimentRun_has_no_callers",
+      "loud": true,
+      "state": "SCAFFOLDED",
+      "evidence_class": "SOURCE_INSPECTION",
+      "what": "crates/hawking-research/src/experiments.rs is pub mod'd from lib.rs. git grep ExperimentRun::new and experiments::ExperimentRun over crates hits only the definition file. Building a 'parameterized harness' on this type would inflate a scaffold.",
+      "what_would_settle": "A non-test production call of ExperimentRun::new, or delete/quarantine the type so it cannot be counted as a runner."
+    },
+    {
+      "id": "S7_hawking_bench_throughput_stub",
+      "loud": false,
+      "state": "SCAFFOLDED",
+      "evidence_class": "SOURCE_INSPECTION",
+      "what": "crates/hawking-bench/src/suites/throughput.rs is 10 lines: phase4_pending true, batch>1 lands with continuous-batching. Not a throughput harness.",
+      "what_would_settle": "A run() that actually calls the engine, or an explicit SUPERSEDED in favor of resident_reprofile."
+    },
+    {
+      "id": "S8_fourteen_example_binaries_clones",
+      "loud": true,
+      "state": "CALLABLE",
+      "evidence_class": "SOURCE_INSPECTION",
+      "what": "14 tools/future modules copy def example_binaries(). Two of the named rust examples are missing (S1, S3). This is the actual consolidation surface, larger than the ten named domains.",
+      "what_would_settle": "One shared locator used by those 14, with a test that fails if a spec names an example that git cat-file cannot see."
+    },
+    {
+      "id": "S9_four_experiment_spec_types",
+      "loud": true,
+      "state": "CALLABLE",
+      "evidence_class": "SOURCE_INSPECTION",
+      "what": "lab.bench_harness.ExperimentSpec, lab.spec.ExperimentSpec, AcceleratorExperimentSpec, hawking.experiment.receipt.v1, plus per-script hawking.future.*.v1. H-ROADMAP P13 (external file, DATA) asked for parameterized specs so a new hypothesis does not require a bespoke executable. The runners exist; the science one-offs did not move onto them.",
+      "what_would_settle": "A policy that new tools/future measurement producers must be a spec JSON + plugin, enforced by a test that greps for new example_binaries copies."
+    },
+    {
+      "id": "S10_odyssey_transfer_is_four_sciences",
+      "loud": true,
+      "state": "TESTED",
+      "evidence_class": "SOURCE_INSPECTION",
+      "what": "The candidate domain 'Odyssey transfer tests' collides four different programs that share the substring transfer. Merging them would be the import-inflation failure mode applied to filenames.",
+      "what_would_settle": "Keep odyssey2_transfer as the Odyssey II harness; name the others by their actual variable (doctor techniques, dense-organ codec, report fields, cold start)."
+    }
+  ],
+  "do_not_merge": [
+    {
+      "items": [
+        "gravity_deepseek_v4_*_sweep.rs",
+        "geometry_table_sweep.rs",
+        "ascension_qwen80_matvec_geometry_sweep.rs"
+      ],
+      "why": "Shared-line ratios < 0.20. Different shaders, oracles, and scientific questions. Config-extract the argv/lock/receipt envelope only."
+    },
+    {
+      "items": [
+        "live Metal A/B sidecars",
+        "receipt-from-raw *_ab.py"
+      ],
+      "why": "0.03-0.05 shared-line ratio. One launches a rust example; the other reseals sealed numbers."
+    },
+    {
+      "items": [
+        "fpga_engines.py",
+        "fpga_fidelity.py"
+      ],
+      "why": "Golden models vs estimator ladder. REAL_HARDWARE must keep raising."
+    },
+    {
+      "items": [
+        "odyssey2_transfer.py",
+        "doctor_transfer.py",
+        "dense_subbit_transfer.py",
+        "transfer_rehearsal.py",
+        "cold_vs_transfer.py"
+      ],
+      "why": "Homonyms. Odyssey II law-store is already parameterized."
+    },
+    {
+      "items": [
+        "lab.bench_harness.ExperimentSpec",
+        "lab.spec.ExperimentSpec"
+      ],
+      "why": "Same class name, different schemas and runners. Unifying the names without unifying the engines would hide a second authority."
+    },
+    {
+      "items": [
+        "hawking-research ExperimentRun",
+        "any new science harness"
+      ],
+      "why": "No callers. Do not build on a scaffold."
+    }
+  ],
+  "proposed_target": {
+    "runner": "lab.bench_harness (already TESTED via tools/bench/*.sh and foundry Runner.run)",
+    "envelope": "hawking.experiment.receipt.v1 attach() (already TESTED; underused by live A/B)",
+    "plugin": "per-family adjudicator (parity predicate, oracle, codec)",
+    "do_not_create": "a fifth ExperimentSpec type, a hawking-research ExperimentRun runner, or a unified 'transfer' executable",
+    "first_migrations_if_an_implementation_lane_is_opened": [
+      "Extract example_binaries/run_example/load_raw; refuse specs whose rust example is not in git HEAD (would have caught S1/S3).",
+      "Complete-token A/B: deltanet_widen + fold_addqx (highest clone ratios, tests already call the adjudicators).",
+      "Isolated-kernel A/B: mlp_aux_merge + aux_u8 + aux_u8_lut.",
+      "Wire capability_curve.bind_workunit to perturbation_workunit.run (S5) instead of writing a new perturbation harness."
+    ]
+  },
+  "claims": [
+    {
+      "id": "C1",
+      "statement": "lab.bench_harness is invoked as a process by tools/bench/*.sh and as Runner.run() by foundry tests; it is not invoked by the ten science families.",
+      "state": "TESTED",
+      "evidence_class": "STATIC_VERIFICATION",
+      "evidence": [
+        {
+          "kind": "call_site",
+          "path": "tools/bench/compare_sota.sh",
+          "detail": "exec python3.12 -m lab.bench_harness run",
+          "line": 8
+        },
+        {
+          "kind": "call_site",
+          "path": "tools/foundry/tests/test_foundry_tables_lifecycle.py",
+          "detail": "Runner(...).run()",
+          "line": 238
+        }
+      ]
+    },
+    {
+      "id": "C2",
+      "statement": "hawking-research ExperimentRun has no callers outside crates/hawking-research/src/experiments.rs.",
+      "state": "SCAFFOLDED",
+      "evidence_class": "SOURCE_INSPECTION",
+      "evidence": [
+        {
+          "kind": "absence",
+          "path": "crates/",
+          "detail": "git grep ExperimentRun::new / experiments::ExperimentRun over crates hit only the definition file"
+        }
+      ]
+    },
+    {
+      "id": "C3",
+      "statement": "crates/hawking-core/examples/dispatch_size_sweep.rs is not in HEAD while a sealed receipt names it as source.",
+      "state": "ABSENT",
+      "evidence_class": "SOURCE_INSPECTION",
+      "evidence": [
+        {
+          "kind": "absence",
+          "path": "crates/hawking-core/examples/dispatch_size_sweep.rs",
+          "detail": "git cat-file -e failed"
+        },
+        {
+          "kind": "receipt",
+          "path": "receipts/future/DISPATCH_SIZE_SWEEP.json",
+          "detail": "source field names that rust path; recorded_by tools/future/dispatch_size_sweep.py"
+        }
+      ],
+      "family": "kernel_geometry_sweeps"
+    },
+    {
+      "id": "C4",
+      "statement": "Qwen38HybridDecodeSession::measure_dispatch_size_sweep is not a symbol in crates at HEAD.",
+      "state": "ABSENT",
+      "evidence_class": "SOURCE_INSPECTION",
+      "evidence": [
+        {
+          "kind": "absence",
+          "path": "crates/",
+          "detail": "git grep measure_dispatch_size_sweep over crates returned no matches"
+        }
+      ],
+      "family": "kernel_geometry_sweeps"
+    },
+    {
+      "id": "C5",
+      "statement": "tools/future/kernel_geometry.py is not in HEAD; KERNEL_GEOMETRY.json still names it as recorded_by.",
+      "state": "ABSENT",
+      "evidence_class": "SOURCE_INSPECTION",
+      "evidence": [
+        {
+          "kind": "absence",
+          "path": "tools/future/kernel_geometry.py",
+          "detail": "git cat-file -e failed"
+        },
+        {
+          "kind": "receipt",
+          "path": "receipts/future/KERNEL_GEOMETRY.json",
+          "detail": "bench.recorded_by tools/future/kernel_geometry.py"
+        }
+      ],
+      "family": "kernel_geometry_sweeps"
+    },
+    {
+      "id": "C6",
+      "statement": "Complete-token A/B rust examples deltanet_widen vs fold_addqx share 0.620 of unique lines; python sidecars share 0.481 and 20 function names.",
+      "state": "CALLABLE",
+      "evidence_class": "SOURCE_INSPECTION",
+      "evidence": [
+        {
+          "kind": "clone_ratio",
+          "path": "crates/hawking-core/examples/ascension_qwen38_deltanet_widen_ab.rs",
+          "detail": "vs fold_addqx_token_ab.rs = 0.620"
+        },
+        {
+          "kind": "clone_ratio",
+          "path": "tools/future/deltanet_widen_ab.py",
+          "detail": "vs fold_addqx_ab.py = 0.481"
+        }
+      ],
+      "family": "representation_ab"
+    },
+    {
+      "id": "C7",
+      "statement": "Isolated-kernel A/B rust examples aux_u8_ab vs aux_u8_lut_ab share 0.683 of unique lines; mlp_aux_merge vs aux_u8_ab share 0.556.",
+      "state": "CALLABLE",
+      "evidence_class": "SOURCE_INSPECTION",
+      "evidence": [
+        {
+          "kind": "clone_ratio",
+          "path": "crates/hawking-core/examples/aux_u8_ab.rs",
+          "detail": "vs aux_u8_lut_ab.rs = 0.683"
+        },
+        {
+          "kind": "clone_ratio",
+          "path": "crates/hawking-core/examples/mlp_aux_merge_ab.rs",
+          "detail": "vs aux_u8_ab.rs = 0.556"
+        }
+      ],
+      "family": "representation_ab"
+    },
+    {
+      "id": "C8",
+      "statement": "Fourteen tools/future modules define def example_binaries().",
+      "state": "CALLABLE",
+      "evidence_class": "SOURCE_INSPECTION",
+      "evidence": [
+        {
+          "kind": "grep",
+          "path": "tools/future",
+          "detail": "git grep -n 'def example_binaries' HEAD -- tools/future returned 14 paths"
+        }
+      ]
+    },
+    {
+      "id": "C9",
+      "statement": "qwen38_hybrid_prefill.rs and HAWKING_QWEN38_PREFILL_CHUNK are not in HEAD; docs/PREFILL.md describes them.",
+      "state": "STALE_ROADMAP_TEXT",
+      "evidence_class": "SOURCE_INSPECTION",
+      "evidence": [
+        {
+          "kind": "absence",
+          "path": "crates/hawking-core/src/model/qwen38_hybrid_prefill.rs",
+          "detail": "git cat-file -e failed"
+        },
+        {
+          "kind": "doc",
+          "path": "docs/PREFILL.md",
+          "detail": "line 55 Chunk size HAWKING_QWEN38_PREFILL_CHUNK; lines 45-49 list the missing files"
+        }
+      ],
+      "family": "prefill_chunk_sweeps"
+    },
+    {
+      "id": "C10",
+      "statement": "hawking-serve scheduler.prefill_chunks_token_budgeted is called from crates/hawking-serve/src/lib.rs and from inline tests in scheduler.rs. That is product batching, not a chunk-size science sweep.",
+      "state": "TESTED",
+      "evidence_class": "STATIC_VERIFICATION",
+      "evidence": [
+        {
+          "kind": "call_site",
+          "path": "crates/hawking-serve/src/lib.rs",
+          "detail": "prefill_chunks_token_budgeted",
+          "line": 811
+        },
+        {
+          "kind": "call_site",
+          "path": "crates/hawking-serve/src/batch/scheduler.rs",
+          "detail": "inline test calls",
+          "line": 979
+        }
+      ],
+      "family": "prefill_chunk_sweeps"
+    },
+    {
+      "id": "C11",
+      "statement": "prefill_kv.py already parameterizes LENGTHS = (short, 4k, 16k, long) and is invoked by latency_ledger.py. long is derived, not walked.",
+      "state": "CALLABLE",
+      "evidence_class": "SOURCE_INSPECTION",
+      "evidence": [
+        {
+          "kind": "definition",
+          "path": "tools/headless/prefill_kv.py",
+          "detail": "LENGTHS and TOKENS maps",
+          "line": 71
+        },
+        {
+          "kind": "call_site",
+          "path": "tools/headless/latency_ledger.py",
+          "detail": "python3 tools/headless/prefill_kv.py --measure",
+          "line": 672
+        }
+      ],
+      "family": "context_length_sweeps"
+    },
+    {
+      "id": "C12",
+      "statement": "hawking-bench throughput.rs does not measure; it returns phase4_pending true.",
+      "state": "SCAFFOLDED",
+      "evidence_class": "SOURCE_INSPECTION",
+      "evidence": [
+        {
+          "kind": "definition",
+          "path": "crates/hawking-bench/src/suites/throughput.rs",
+          "detail": "10-line stub",
+          "line": 4
+        }
+      ],
+      "family": "resident_throughput"
+    },
+    {
+      "id": "C13",
+      "statement": "perturbation_workunit.perturb is called from test_perturbation_workunit.py for every kind; capability_curve.bind_workunit does not call perturb or run.",
+      "state": "CALLABLE",
+      "evidence_class": "SOURCE_INSPECTION",
+      "evidence": [
+        {
+          "kind": "call_site",
+          "path": "tools/future/test_perturbation_workunit.py",
+          "detail": "pw.perturb(...)",
+          "line": 27
+        },
+        {
+          "kind": "definition",
+          "path": "tools/future/capability_curve.py",
+          "detail": "WORKUNIT_RUNNERS = run_one, measure_one, measure, point",
+          "line": 38
+        }
+      ],
+      "family": "perturbation_experiments"
+    },
+    {
+      "id": "C14",
+      "statement": "FPGA HW_EMULATION and REAL_HARDWARE are UNIMPLEMENTED in fpga_fidelity.LADDER; tests assert they raise rather than guess. No U50 on this machine.",
+      "state": "BLOCKED_HARDWARE",
+      "evidence_class": "SOURCE_INSPECTION",
+      "evidence": [
+        {
+          "kind": "test_invokes_symbol",
+          "path": "tools/future/test_fpga_fidelity.py",
+          "detail": "available False for last two ladder rungs; missing_dependency no emulation seat / no U50 board"
+        }
+      ],
+      "blocker": "ABSENT FPGA/U50DD hardware; module already refuses to invent numbers.",
+      "family": "fpga_simulation"
+    },
+    {
+      "id": "C15",
+      "statement": "hbm_doctor.py is the only HBM mapping script in HEAD; test_hbm_doctor.py calls hd.build() and locks selected_ids == [] when undecidable.",
+      "state": "TESTED",
+      "evidence_class": "STATIC_VERIFICATION",
+      "evidence": [
+        {
+          "kind": "grep",
+          "path": ".",
+          "detail": "only hbm_doctor.py and test_hbm_doctor.py match hbm + py/rs"
+        },
+        {
+          "kind": "call_site",
+          "path": "tools/future/test_hbm_doctor.py",
+          "detail": "hd.build()",
+          "line": 17
+        }
+      ],
+      "family": "hbm_mappings"
+    },
+    {
+      "id": "C16",
+      "statement": "odyssey2_transfer.build/run_transfers/transfer_values_l1_to_falcon are called from test_odyssey2_transfer.py. Other *transfer* modules are different sciences.",
+      "state": "TESTED",
+      "evidence_class": "STATIC_VERIFICATION",
+      "evidence": [
+        {
+          "kind": "call_site",
+          "path": "tools/future/test_odyssey2_transfer.py",
+          "detail": "o2t.build / run_transfers / transfer_values_l1_to_falcon",
+          "line": 15
+        }
+      ],
+      "family": "odyssey_transfer_tests"
+    },
+    {
+      "id": "C17",
+      "statement": "experiment_receipt.attach is called from ba_delta_ab.py, capability_eval.py, lpc_baselines.py, and test_experiment_receipt.py. Live complete-token A/B sidecars do not call it.",
+      "state": "TESTED",
+      "evidence_class": "STATIC_VERIFICATION",
+      "evidence": [
+        {
+          "kind": "call_site",
+          "path": "tools/future/ba_delta_ab.py",
+          "detail": "attach(",
+          "line": 177
+        },
+        {
+          "kind": "call_site",
+          "path": "tools/future/capability_eval.py",
+          "detail": "attach(",
+          "line": 631
+        },
+        {
+          "kind": "call_site",
+          "path": "tools/future/lpc_baselines.py",
+          "detail": "attach(",
+          "line": 536
+        }
+      ]
+    },
+    {
+      "id": "C18",
+      "statement": "lab/operators/q80_*_sweep.py share BAR=0.8604, LE_PAIRS, ALLOWANCE, X cache; no dedicated test_q80_*sweep file exists in HEAD.",
+      "state": "CALLABLE",
+      "evidence_class": "SOURCE_INSPECTION",
+      "evidence": [
+        {
+          "kind": "definition",
+          "path": "lab/operators/q80_rank_bits_sweep.py",
+          "detail": "BAR, LE_PAIRS, GRID"
+        },
+        {
+          "kind": "absence",
+          "path": "test_q80_*sweep",
+          "detail": "git ls-tree found no matching test file"
+        }
+      ],
+      "family": "representation_ab"
+    },
+    {
+      "id": "C19",
+      "statement": "DSV4 rust geometry/component sweeps are not config-clones of geometry_table_sweep (shared-line ratios 0.020-0.033).",
+      "state": "CALLABLE",
+      "evidence_class": "SOURCE_INSPECTION",
+      "evidence": [
+        {
+          "kind": "clone_ratio",
+          "path": "crates/hawking-core/examples/geometry_table_sweep.rs",
+          "detail": "vs gravity_deepseek_v4_component_kernel_sweep.rs = 0.020"
+        }
+      ],
+      "family": "kernel_geometry_sweeps"
+    },
+    {
+      "id": "C20",
+      "statement": "This pass did not physically measure GPU, ANE, or FPGA behaviour and writes no MEASURED state.",
+      "state": "BLOCKED_AUTHORITY",
+      "evidence_class": "SOURCE_INSPECTION",
+      "evidence": [
+        {
+          "kind": "method",
+          "path": "aud19",
+          "detail": "discovery pass; no cargo test, no gpu_lane_lock, no --measure"
+        }
+      ]
+    }
+  ],
+  "acceptance": {
+    "artifact_json": "receipts/audit/aud19-harness-consolidation.json",
+    "artifact_md": "receipts/audit/aud19-harness-consolidation.md",
+    "every_claim_has_evidence_or_blocker": true,
+    "implementation_performed": false
+  }
+}

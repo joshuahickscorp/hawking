@@ -1,0 +1,1094 @@
+{
+  "schema": "hawking.audit.acceleration_strategy_order.v1",
+  "audit_id": "aud06-acceleration-strategy-order",
+  "kind": "DISCOVERY_AUDIT",
+  "implementation": false,
+  "rewrote_h_roadmap": false,
+  "recorded_at": "2026-09-02T15:00:00-04:00",
+  "head": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+  "evidence_class_default": "SOURCE_INSPECTION",
+  "authority": {
+    "in_scope": [
+      "source archaeology",
+      "call-site reachability",
+      "schema/topology",
+      "roadmap ordering vs strategy",
+      "receipt consistency"
+    ],
+    "out_of_scope": [
+      "GPU physical performance this pass did not run",
+      "Metal runtime behaviour this pass did not execute",
+      "ANE physical behaviour this pass did not execute",
+      "U50/FPGA facts not physically measured",
+      "thermal/power",
+      "protected benchmarks"
+    ],
+    "hardware_present": ["Apple M3 Ultra CPU/GPU/UMA", "ANE"],
+    "hardware_absent": ["FPGA/U50DD", "DGX", "eGPU"],
+    "note": "Never MEASURED in this artifact. Prior receipts are cited as SOURCE_INSPECTION of disk, not as this-pass measurement."
+  },
+  "canonical_roadmap": {
+    "path": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "in_git_tree": false,
+    "version_string": "H-ROADMAP_CRISPR_EXECUTION_SPECIFICATION_2026-08-27",
+    "freeze_date_in_file": "2026-08-27",
+    "mtime": "2026-08-29T00:39:09-0400",
+    "sha256": "d43a6b07ab9590bc11c265bfe8a1466131cce291b0622c076370a01d811328e4",
+    "line_count": 9645,
+    "cited_by": [
+      "civilization/build_state.py:15 CANONICAL_ROADMAP",
+      "README.md accelerator platform loop",
+      "tools/roadmap/parse.py DEFAULT_ROADMAP"
+    ]
+  },
+  "strategy_under_test": {
+    "source": "aud06 contract; not a rewrite of the five-era constitution",
+    "order": [
+      {
+        "rank": 1,
+        "id": "apple_gpu_metal",
+        "rule": "APPLE GPU / METAL = first physical software school"
+      },
+      {
+        "rank": 2,
+        "id": "context_prefill",
+        "rule": "CONTEXT + PREFILL = first-class runtime/physical optimization"
+      },
+      {
+        "rank": 3,
+        "id": "ane_forbidden_fruit",
+        "rule": "ANE / FORBIDDEN FRUIT = independent clean-room machine-discovery lane"
+      },
+      {
+        "rank": 4,
+        "id": "u50dd",
+        "rule": "U50DD = first programmable hardware school"
+      },
+      {
+        "rank": 5,
+        "id": "hmf_hgvas_fusion",
+        "rule": "HMF/HGVAS/FUSION = software-defined object/memory truth"
+      },
+      {
+        "rank": 6,
+        "id": "alien_machines",
+        "rule": "eGPU / DGX Spark / additional Macs = later alien-machine schools"
+      },
+      {
+        "rank": 7,
+        "id": "high_end_fpga",
+        "rule": "High-end FPGA fabric = only after U50 tuition"
+      },
+      {
+        "rank": 8,
+        "id": "custom_board",
+        "rule": "Custom board = only if integration is justified"
+      },
+      {
+        "rank": 9,
+        "id": "asic",
+        "rule": "ASIC = only after a recurring stable primitive survives"
+      }
+    ]
+  },
+  "constitution_check": {
+    "five_eras": {
+      "status": "ALIGNED",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 5,
+        "end_line": 8
+      },
+      "programs": 25,
+      "note": "Exactly I–V with five programs each. No Era VI heading exists."
+    },
+    "three_odysseys": {
+      "status": "ALIGNED",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 997,
+        "end_line": 1014
+      },
+      "quote": "THERE IS NO ODYSSEY IV."
+    },
+    "no_era_vi": {
+      "status": "ALIGNED",
+      "spans": [
+        {
+          "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+          "start_line": 8,
+          "end_line": 8
+        },
+        {
+          "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+          "start_line": 4003,
+          "end_line": 4003
+        }
+      ]
+    },
+    "fpga_inside_accelerator_or_fusion": {
+      "status": "ALIGNED_IN_ERA_MAP_CONTRADICTED_BY_APPENDIX_I_RANKING",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 8,
+        "end_line": 8
+      },
+      "era_i_d_gene": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 522,
+        "end_line": 522,
+        "text": "pre-board FPGA school"
+      },
+      "note": "FPGA is not a sixth era and is not one of the 25 named programs. It is a gene of I-D and of IV-A. That matches the constitution. Appendix I still ranks eGPU Fusion as a phase before FPGA Alpha, which is an ordering defect, not an extra era."
+    },
+    "theia_is_one_generalist_bounty_model": {
+      "status": "ALIGNED",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 2972,
+        "end_line": 2974
+      },
+      "note": "Theia is section 19 and is not in CANONICAL_PROGRAMS. Line 4931 (V3 gene index) lists 'Theia Bounty Generalist' as a sibling bullet; section 34 labels that index as lineage, not an active competing plan."
+    },
+    "civilizational_coordinate_0_7": {
+      "status": "ALIGNED",
+      "spans": [
+        {
+          "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+          "start_line": 5,
+          "end_line": 5
+        },
+        {
+          "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+          "start_line": 68,
+          "end_line": 68
+        }
+      ]
+    },
+    "north_star": {
+      "status": "ALIGNED",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 64,
+        "end_line": 64
+      }
+    }
+  },
+  "roadmap_declared_orders": [
+    {
+      "id": "section_11_1_physical_optimization",
+      "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+      "start_line": 1505,
+      "end_line": 1518,
+      "sequence": [
+        "ELIMINATE INFORMATION",
+        "ELIMINATE BYTES",
+        "ELIMINATE FLOPs",
+        "ELIMINATE DISPATCHES",
+        "ELIMINATE INTERMEDIATE TENSORS",
+        "ELIMINATE SYNCHRONIZATION",
+        "ELIMINATE COPIES",
+        "ELIMINATE HOST CEREMONY",
+        "FUSE",
+        "SPECIALIZE",
+        "TUNE GEOMETRY",
+        "SATURATE REMAINING WORK"
+      ],
+      "vs_strategy": "CONTRADICTS context_prefill: prefill and runtime context are not in this list at all."
+    },
+    {
+      "id": "section_11_3_apple_school",
+      "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+      "start_line": 1533,
+      "end_line": 1547,
+      "sequence": [
+        "Native Metal/AIR",
+        "MachineGenome",
+        "GEMM/GEMV",
+        "persistent buffers",
+        "command-buffer fusion",
+        "packed low-bit decode",
+        "fused norms",
+        "GQA/QKV",
+        "LM head",
+        "phase-aware prefill vs decode backends"
+      ],
+      "vs_strategy": "ALIGNED that Metal is the first accelerator school. CONTRADICTS context_prefill first-class: prefill is item 10 of 13 bullets, not a school."
+    },
+    {
+      "id": "section_17_2_priority",
+      "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+      "start_line": 2890,
+      "end_line": 2899,
+      "sequence": [
+        "software Accelerator deepens",
+        "U50 FPGA school",
+        "eGPU external-device school",
+        "DGX Spark / multi-device Fusion",
+        "broader synthetic machine"
+      ],
+      "vs_strategy": "ALIGNED with u50dd then alien_machines. HMF is not in this chain (it is section 16, immediately before)."
+    },
+    {
+      "id": "section_25_beyond_u50",
+      "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+      "start_line": 3620,
+      "end_line": 3668,
+      "sequence": [
+        "SOFTWARE DISCOVERS THE ALGORITHM",
+        "FPGA DISCOVERS THE ARCHITECTURE",
+        "HIGH-END FPGA FABRIC / OPEN PROFILES",
+        "CUSTOM FPGA BOARD only if integration is justified",
+        "ASIC DISCOVERY only if a primitive repeatedly survives",
+        "ASIC only if reconfigurability no longer earns its cost"
+      ],
+      "vs_strategy": "ALIGNED with high_end_fpga, custom_board, asic."
+    },
+    {
+      "id": "appendix_I_23_hardware_development_law",
+      "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+      "start_line": 8860,
+      "end_line": 8880,
+      "sequence": [
+        "SOFTWARE",
+        "FPGA SIMULATION",
+        "CHEAP / TEXTBOOK FPGA",
+        "SERIOUS FPGA / HBM",
+        "FUSION FPGA / FABRIC",
+        "CUSTOM BOARD",
+        "ASIC DISCOVERY",
+        "ASIC"
+      ],
+      "vs_strategy": "ALIGNED. eGPU is absent here, which is correct relative to U50-first."
+    },
+    {
+      "id": "appendix_I_phases_i_xxii",
+      "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+      "start_line": 8706,
+      "end_line": 8857,
+      "sequence": [
+        "Phase I Software Hawking Accelerator",
+        "Phase II Commodity eGPU Fusion",
+        "Phase III Additional Compute Nodes",
+        "Phase IV Hawking Hardware Lab",
+        "Phase V FPGA Alpha",
+        "Phase VI FPGA Coprocessor",
+        "Phase VII Compute-in-Transit",
+        "Phase VIII FPGA Fusion Bridge",
+        "Phase IX Hawking-Owned Memory",
+        "Phase X HBM Residency Architecture",
+        "Phase XI Hardware-Assisted Synthetic Memory",
+        "Phase XII High-End FPGA Fabric",
+        "Phase XIII Hardware Profiles",
+        "Phase XIV Open Hawking FPGA Architecture",
+        "Phase XV Compatibility Specification",
+        "Phase XVI Custom Hawking FPGA Board",
+        "Phase XVII Architecture Search",
+        "Phase XVIII Hardware Gravity",
+        "Phase XIX Hardware Kernel Forge",
+        "Phase XX Full Hawking Synthetic Computer",
+        "Phase XXI ASIC Discovery",
+        "Phase XXII Hawking ASIC"
+      ],
+      "vs_strategy": "CONTRADICTS u50dd and alien_machines: eGPU Fusion is Phase II, FPGA Alpha is Phase V. CONTRADICTS appendix_I_23 in the same appendix."
+    },
+    {
+      "id": "era_iv_numbering",
+      "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+      "start_line": 771,
+      "end_line": 864,
+      "sequence": [
+        "IV-A Hawking Fusion (genes include FPGA, DGX Spark, eGPU, additional Macs)",
+        "IV-B HMF / HGVAS",
+        "IV-C DGX Spark",
+        "IV-D eGPU",
+        "IV-E Fusion Bridge / Topology Ascension"
+      ],
+      "vs_strategy": "CONTRADICTS hmf_hgvas_fusion before alien_machines: Fusion is numbered before HMF, and Fusion's genes already include eGPU/DGX. CONTRADICTS section_17_2 (eGPU before DGX)."
+    },
+    {
+      "id": "ane_placement_in_flash_closure",
+      "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+      "start_line": 1899,
+      "end_line": 1950,
+      "sequence": [
+        "SING-F01..F60 Flash exactness / representation / tournament",
+        "SING-F61..F80 Measurement, ANE and proof closure",
+        "ANE must not block SING-F01..F42"
+      ],
+      "vs_strategy": "PARTIAL: non-blocking is compatible with 'independent'. CONTRADICTS first-class independent school: ANE is steps 71–78 of a Flash campaign, and the string Forbidden Fruit never appears in H-ROADMAP."
+    },
+    {
+      "id": "c41_c48_device_lanes",
+      "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+      "start_line": 2169,
+      "end_line": 2190,
+      "sequence": [
+        "C41–C46 ANE public discovery/atlas/organs",
+        "C47 CUDA hardware-blocked",
+        "C48 FPGA compiler-first simulation"
+      ],
+      "vs_strategy": "PARTIAL: ANE and FPGA are parallel non-blocking lanes under the Flash compounding graph, not named schools. Compatible with independence, not with first-class ranking."
+    },
+    {
+      "id": "overnight_2_3",
+      "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+      "start_line": 269,
+      "end_line": 287,
+      "sequence": [
+        "A AgentOS",
+        "B Qwen27 Accelerator",
+        "C Flash-Next",
+        "D ModelLake",
+        "E FPGA pre-board simulation / HWIR / DriverKit",
+        "F VMCP",
+        "G ResearchScout"
+      ],
+      "vs_strategy": "ALIGNED that FPGA pre-board is an overnight hardware lane. CONTRADICTS context_prefill and ane_forbidden_fruit: neither appears."
+    },
+    {
+      "id": "appendix_P_tonight",
+      "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+      "start_line": 9552,
+      "end_line": 9559,
+      "sequence": [
+        "1 Flash source→Gravity→native executable",
+        "2 Qwen27 regression/protected Accelerator",
+        "3 ModelLake verification/promotion",
+        "4 FPGA pre-board executable simulation/HWIR",
+        "5 AgentOS recovery/autonomy defects",
+        "6 VMCP deterministic proof substrate",
+        "7 ResearchScout"
+      ],
+      "vs_strategy": "Same omission as overnight_2_3. FPGA at #4 is compatible with U50-as-first-programmable-school among hardware. CONTEXT+PREFILL and ANE/Forbidden Fruit are missing."
+    },
+    {
+      "id": "section_32_lineage_claim",
+      "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+      "start_line": 4032,
+      "end_line": 4032,
+      "sequence": [
+        "software→eGPU→nodes→FPGA→fabric→open profiles→custom board→ASIC progression; retained and reordered under five eras"
+      ],
+      "vs_strategy": "The claim that the old eGPU-before-FPGA progression was reordered is FALSE as applied to Appendix I, which still is that progression."
+    }
+  ],
+  "contradictions": [
+    {
+      "id": "C-APP-I-EGPU-BEFORE-FPGA",
+      "severity": "HIGH",
+      "strategy_rule": "u50dd then alien_machines",
+      "classification": "STALE_ROADMAP_TEXT",
+      "evidence_class": "SOURCE_INSPECTION",
+      "spans": [
+        {
+          "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+          "start_line": 8706,
+          "end_line": 8738,
+          "note": "Appendix I Phase II Commodity eGPU Fusion before Phase V FPGA Alpha"
+        },
+        {
+          "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+          "start_line": 2890,
+          "end_line": 2899,
+          "note": "live §17.2 says software Accelerator → U50 FPGA school → eGPU"
+        },
+        {
+          "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+          "start_line": 8860,
+          "end_line": 8880,
+          "note": "I.23 in the same appendix omits eGPU and puts textbook FPGA after software"
+        }
+      ],
+      "statement": "Appendix I is live decree text, not the section-34 lineage index. It still ranks commodity eGPU Fusion as the second physical-manifestation phase, before FPGA Alpha, Hardware Lab, and U50. That is the unreordered Physical Manifestation roadmap. §17.2 and I.23 in the same file say the opposite.",
+      "do_not_preserve_because_frozen": true
+    },
+    {
+      "id": "C-SEC32-REORDER-CLAIM-FALSE",
+      "severity": "HIGH",
+      "strategy_rule": "u50dd then alien_machines",
+      "classification": "STALE_ROADMAP_TEXT",
+      "evidence_class": "SOURCE_INSPECTION",
+      "spans": [
+        {
+          "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+          "start_line": 4032,
+          "end_line": 4032
+        },
+        {
+          "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+          "start_line": 8703,
+          "end_line": 8717
+        }
+      ],
+      "statement": "§32 says the Accelerator Physical Manifestation 'software→eGPU→nodes→FPGA' progression was 'retained and reordered under five eras'. Appendix I still is software→eGPU→nodes→FPGA. The reordering was claimed, not done.",
+      "do_not_preserve_because_frozen": true
+    },
+    {
+      "id": "C-ERA-IV-FUSION-BEFORE-HMF",
+      "severity": "HIGH",
+      "strategy_rule": "hmf_hgvas_fusion before alien_machines",
+      "classification": "STALE_ROADMAP_TEXT",
+      "evidence_class": "SOURCE_INSPECTION",
+      "spans": [
+        {
+          "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+          "start_line": 771,
+          "end_line": 817
+        },
+        {
+          "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+          "start_line": 2801,
+          "end_line": 2864,
+          "note": "section 16 HMF is the object/memory truth, before section 17 Fusion"
+        }
+      ],
+      "call_sites_or_blocker": {
+        "blocker": "receipts/acceptance/FUSION_FIRST_HETEROGENEOUS_EXECUTABLE.json verdict BLOCKED on HMF_DEVICE_VISIBLE_TRUST / NO_SECOND_PHYSICAL_DOMAIN",
+        "invoked_symbol": "tools.accelerator.fusion_planner.topology_apple_alone",
+        "dependency": "HMF_DEVICE_VISIBLE_TRUST is a prerequisite of the Fusion gate, so numbering Fusion as IV-A and HMF as IV-B contradicts the project's own acceptance producer"
+      },
+      "statement": "Strategy groups HMF/HGVAS/FUSION as software-defined object/memory truth, then eGPU/DGX as later alien-machine schools. Era IV numbers Fusion first, with FPGA/DGX/eGPU/additional Macs as Fusion genes, then HMF as IV-B, then DGX and eGPU again as their own civilizations. Document sections 16 then 17 are the other way around (HMF then Fusion/eGPU/DGX). The Fusion acceptance gate is blocked on HMF_PRESENT. Era numbering is the stale order.",
+      "do_not_preserve_because_frozen": true
+    },
+    {
+      "id": "C-ERA-IV-DGX-BEFORE-EGPU",
+      "severity": "MEDIUM",
+      "strategy_rule": "alien_machines listed eGPU / DGX Spark / additional Macs",
+      "classification": "STALE_ROADMAP_TEXT",
+      "evidence_class": "SOURCE_INSPECTION",
+      "spans": [
+        {
+          "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+          "start_line": 820,
+          "end_line": 861
+        },
+        {
+          "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+          "start_line": 2890,
+          "end_line": 2899
+        }
+      ],
+      "statement": "§17.2 says eGPU school then DGX Spark. Era numbering says IV-C DGX Spark then IV-D eGPU. Both are later alien-machine schools, so this is a smaller inversion than eGPU-before-U50, but it is a live internal contradiction.",
+      "do_not_preserve_because_frozen": true
+    },
+    {
+      "id": "C-CONTEXT-PREFILL-NOT-FIRST-CLASS",
+      "severity": "HIGH",
+      "strategy_rule": "context_prefill",
+      "classification": "STALE_ROADMAP_TEXT",
+      "evidence_class": "STATIC_VERIFICATION",
+      "spans": [
+        {
+          "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+          "start_line": 1505,
+          "end_line": 1518,
+          "note": "§11.1 physical optimization order omits prefill and runtime context"
+        },
+        {
+          "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+          "start_line": 1544,
+          "end_line": 1544,
+          "note": "prefill appears once, as 'Phase-aware prefill vs decode backends' under the Apple school"
+        },
+        {
+          "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+          "start_line": 5049,
+          "end_line": 5049,
+          "note": "still a 'what if' in §35: neural acceleration owning prefill"
+        },
+        {
+          "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+          "start_line": 269,
+          "end_line": 287
+        },
+        {
+          "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+          "start_line": 9552,
+          "end_line": 9559
+        }
+      ],
+      "call_sites_or_blocker": {
+        "production_qwen38_path": {
+          "file": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+          "start_line": 7433,
+          "end_line": 7468,
+          "symbol": "Qwen38HybridDecodeSession::generate_greedy",
+          "kind": "call",
+          "what": "prompt tokens are session.step'd one by one; the loop is still the decode path. A variable named prefill only times that loop."
+        },
+        "default_engine_hook": {
+          "file": "crates/hawking-core/src/engine.rs",
+          "start_line": 481,
+          "end_line": 482,
+          "symbol": "prefill_slot",
+          "kind": "definition_default",
+          "what": "default Engine::prefill_slot returns Unimplemented. A default that raises is not a production prefill."
+        },
+        "real_prefill_slot_impls": [
+          {
+            "file": "crates/hawking-core/src/model/qwen_dense.rs",
+            "line": 2997,
+            "symbol": "prefill_slot",
+            "kind": "call_impl"
+          },
+          {
+            "file": "crates/hawking-core/src/model/rwkv7.rs",
+            "line": 1805,
+            "symbol": "prefill_slot",
+            "kind": "call_impl"
+          }
+        ],
+        "agentos_context_compiler_is_a_different_thing": [
+          {
+            "file": "crates/hide-kernel/src/lib.rs",
+            "line": 87,
+            "symbol": "ContextCompiler::compile",
+            "kind": "call"
+          },
+          {
+            "file": "crates/hide-backend/src/connectors.rs",
+            "line": 550,
+            "symbol": "ContextCompiler::compile",
+            "kind": "call"
+          }
+        ],
+        "post_freeze_doc": {
+          "file": "docs/PREFILL.md",
+          "date": "2026-09-02",
+          "what": "Documents the generate_greedy defect and a GEMM prefill branch grok/prefill-gemm-20260901-232724. qwen38_hybrid_prefill.rs and shaders/qwen38_prefill.metal are NOT on this HEAD."
+        }
+      },
+      "statement": "Strategy requires CONTEXT+PREFILL as a first-class runtime/physical optimization. H-ROADMAP freeze (2026-08-27) never gave it a program, a tonight-queue slot, or a §11.1 step. AgentOS 'CONTEXT IS A CACHE' / ContextCompiler is a different organ (prompt packing). The Qwen38 resident generate path on this HEAD still steps every prompt token through decode. Treating the freeze's silence as order would preserve a stale ranking.",
+      "do_not_preserve_because_frozen": true
+    },
+    {
+      "id": "C-ANE-FF-NOT-A-SCHOOL",
+      "severity": "HIGH",
+      "strategy_rule": "ane_forbidden_fruit",
+      "classification": "STALE_ROADMAP_TEXT",
+      "evidence_class": "STATIC_VERIFICATION",
+      "spans": [
+        {
+          "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+          "start_line": 1899,
+          "end_line": 1950
+        },
+        {
+          "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+          "start_line": 2169,
+          "end_line": 2190
+        },
+        {
+          "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+          "start_line": 269,
+          "end_line": 287
+        },
+        {
+          "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+          "start_line": 9552,
+          "end_line": 9559
+        }
+      ],
+      "call_sites_or_blocker": {
+        "forbidden_fruit_string_in_h_roadmap": "ABSENT",
+        "production_lab_call": {
+          "file": "hcli/tool_registry.py",
+          "line": 1573,
+          "symbol": "forbidden_fruit.run_forbidden_fruit_lab",
+          "kind": "call"
+        },
+        "registry_name": {
+          "file": "hcli/tool_registry.py",
+          "line": 1982,
+          "symbol": "forbidden_fruit.lab",
+          "kind": "registration_plus_handler_call"
+        },
+        "receipt": {
+          "file": "receipts/headless/HCLI_FORBIDDEN_FRUIT_LAB.json",
+          "status": "PASSED",
+          "ane_placement_observed_this_run": false,
+          "timing_status": "MEASURED",
+          "claim_boundary": "Public Core ML only. No ANE placement demonstrated on this host; preferred device was CPU."
+        }
+      },
+      "statement": "Strategy requires ANE/Forbidden Fruit as an independent clean-room machine-discovery lane. The CRISPR spec never names Forbidden Fruit. ANE is SING-F71–F78 inside Flash proof closure, plus C41–C46 as a side lane that 'cannot block' Flash exactness. Overnight and Appendix P omit it. The lab exists in hcli and has a PASSED receipt. The roadmap order is the stale one.",
+      "do_not_preserve_because_frozen": true
+    },
+    {
+      "id": "C-PB03-SIMFPGA-ABSENT",
+      "severity": "MEDIUM",
+      "strategy_rule": "u50dd (pre-board school must not claim a provider that has no symbol)",
+      "classification": "ABSENT",
+      "evidence_class": "STATIC_VERIFICATION",
+      "spans": [
+        {
+          "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+          "start_line": 2754,
+          "end_line": 2758,
+          "note": "PB-03 SimFPGAProvider listed under 'Pre-board campaign — executable now'"
+        },
+        {
+          "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+          "start_line": 3949,
+          "end_line": 3950,
+          "note": "seed bank FPGA-001 MockFPGAProvider, FPGA-002 SimFPGAProvider"
+        }
+      ],
+      "call_sites_or_blocker": {
+        "blocker": "git grep SimFPGAProvider HEAD is empty. MockFPGAProvider exists at hcli/agentos/fpga_preboard.py:192. FPGAProvider.execute at line 187 raises 'no physical backend selected'.",
+        "existing_call": {
+          "file": "hcli/agentos_cli.py",
+          "line": 1019,
+          "symbol": "run_fpga_preboard",
+          "kind": "call"
+        }
+      },
+      "statement": "The freeze lists SimFPGAProvider as executable-now pre-board work. The symbol is not in HEAD. That is not a school-order inversion, but it is stale ordering text presenting a missing provider as a live next step.",
+      "do_not_preserve_because_frozen": true
+    }
+  ],
+  "alignments": [
+    {
+      "id": "A-METAL-FIRST-SCHOOL",
+      "strategy_rule": "apple_gpu_metal",
+      "spans": [
+        {
+          "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+          "start_line": 1533,
+          "end_line": 1547
+        },
+        {
+          "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+          "start_line": 506,
+          "end_line": 522
+        }
+      ],
+      "note": "I-D Accelerator and §11.3 put Apple/Metal first among physical software schools. Matches strategy."
+    },
+    {
+      "id": "A-U50-TEXTBOOK-FPGA",
+      "strategy_rule": "u50dd",
+      "spans": [
+        {
+          "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+          "start_line": 2422,
+          "end_line": 2426
+        },
+        {
+          "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+          "start_line": 2890,
+          "end_line": 2899
+        }
+      ],
+      "note": "§15 names U50DD/XCU50 textbook FPGA #1. §17.2 puts that school before eGPU/DGX. Matches strategy. Appendix I is the exception, not this section."
+    },
+    {
+      "id": "A-HIGH-END-FPGA-AFTER-U50",
+      "strategy_rule": "high_end_fpga",
+      "spans": [
+        {
+          "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+          "start_line": 3620,
+          "end_line": 3634
+        },
+        {
+          "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+          "start_line": 8783,
+          "end_line": 8787
+        }
+      ]
+    },
+    {
+      "id": "A-CUSTOM-BOARD-AND-ASIC-LAST",
+      "strategy_rule": "custom_board + asic",
+      "spans": [
+        {
+          "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+          "start_line": 3628,
+          "end_line": 3668
+        },
+        {
+          "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+          "start_line": 8811,
+          "end_line": 8857
+        },
+        {
+          "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+          "start_line": 8860,
+          "end_line": 8880
+        }
+      ]
+    },
+    {
+      "id": "A-FPGA-NOT-A-SIXTH-ERA",
+      "strategy_rule": "constitution",
+      "spans": [
+        {
+          "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+          "start_line": 8,
+          "end_line": 8
+        },
+        {
+          "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+          "start_line": 4005,
+          "end_line": 4005
+        }
+      ]
+    }
+  ],
+  "capability_claims": [
+    {
+      "id": "CAP-METAL-PRIMARY-BACKEND",
+      "claim": "Apple Metal is the wired primary physical software backend on this host, not a catalogue entry.",
+      "classification": "INTEGRATED",
+      "evidence_class": "STATIC_VERIFICATION",
+      "call_sites": [
+        {
+          "file": "crates/hawking-core/src/model/qwen_dense.rs",
+          "line": 6119,
+          "symbol": "MetalBackend::new",
+          "kind": "call"
+        },
+        {
+          "file": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+          "line": 7461,
+          "symbol": "session.step",
+          "kind": "call",
+          "note": "Qwen38 greedy generate drives the Metal decode session. Not an import."
+        }
+      ],
+      "blocker": null
+    },
+    {
+      "id": "CAP-PREFILL-QWEN38-GENERATE",
+      "claim": "Qwen38 generate_greedy performs a real batched/GEMM prefill.",
+      "classification": "ABSENT",
+      "evidence_class": "STATIC_VERIFICATION",
+      "call_sites": [
+        {
+          "file": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+          "line": 7458,
+          "symbol": "session.step",
+          "kind": "call",
+          "note": "The only prompt path in generate_greedy is per-token decode step. Naming the timer 'prefill' is not a prefill implementation."
+        }
+      ],
+      "blocker": "qwen38_hybrid_prefill.rs and shaders/qwen38_prefill.metal are not in HEAD. Default Engine::prefill_slot at crates/hawking-core/src/engine.rs:481 returns Unimplemented."
+    },
+    {
+      "id": "CAP-PREFILL-SLOT-DENSE-RWKV",
+      "claim": "A prefill_slot implementation exists for QwenDense and RWKV7.",
+      "classification": "CALLABLE",
+      "evidence_class": "STATIC_VERIFICATION",
+      "call_sites": [
+        {
+          "file": "crates/hawking-serve/src/lib.rs",
+          "line": 875,
+          "symbol": "engine.prefill_slot",
+          "kind": "call",
+          "note": "Serve batch path. Not the Qwen38 hybrid generate_greedy path."
+        },
+        {
+          "file": "crates/hawking-core/src/model/qwen_dense.rs",
+          "line": 2997,
+          "symbol": "prefill_slot",
+          "kind": "impl"
+        },
+        {
+          "file": "crates/hawking-core/tests/prefill_slot_into_multiseq_parity.rs",
+          "line": 61,
+          "symbol": "engine.prefill_slot",
+          "kind": "test_call"
+        }
+      ],
+      "blocker": null,
+      "note": "CALLABLE on those families is not INTEGRATED Qwen38 prefill and is not a first-class school in H-ROADMAP."
+    },
+    {
+      "id": "CAP-CONTEXT-COMPILER-AGENTOS",
+      "claim": "ContextCompiler is invoked on the hide/HCLI context-packing path.",
+      "classification": "CALLABLE",
+      "evidence_class": "STATIC_VERIFICATION",
+      "call_sites": [
+        {
+          "file": "crates/hide-kernel/src/lib.rs",
+          "line": 87,
+          "symbol": "ContextCompiler::new + compile",
+          "kind": "call"
+        },
+        {
+          "file": "crates/hide-backend/src/connectors.rs",
+          "line": 550,
+          "symbol": "ContextCompiler::compile",
+          "kind": "call"
+        }
+      ],
+      "blocker": null,
+      "note": "This is AgentOS prompt packing (CONTEXT IS A CACHE), not runtime KV/prefill physical optimization."
+    },
+    {
+      "id": "CAP-FORBIDDEN-FRUIT-LAB",
+      "claim": "Forbidden Fruit lab is reachable through the typed tool registry and has been run.",
+      "classification": "TESTED",
+      "evidence_class": "SOURCE_INSPECTION",
+      "call_sites": [
+        {
+          "file": "hcli/tool_registry.py",
+          "line": 1573,
+          "symbol": "forbidden_fruit.run_forbidden_fruit_lab",
+          "kind": "call"
+        },
+        {
+          "file": "hcli/test_forbidden_fruit.py",
+          "line": 140,
+          "symbol": "registry.invoke('forbidden_fruit.lab')",
+          "kind": "test_call"
+        }
+      ],
+      "receipt": {
+        "file": "receipts/headless/HCLI_FORBIDDEN_FRUIT_LAB.json",
+        "status": "PASSED",
+        "ane_placement_observed_this_run": false
+      },
+      "blocker": null,
+      "note": "TESTED as a public Core ML placement lab. Not an ANE-resident organ. H-ROADMAP does not name this lane."
+    },
+    {
+      "id": "CAP-ANE-ATLAS",
+      "claim": "A measured ANE MLProgram atlas with compile/placement/latency exists.",
+      "classification": "SCAFFOLDED",
+      "evidence_class": "SOURCE_INSPECTION",
+      "call_sites": [
+        {
+          "file": "hcli/test_ane_provider.py",
+          "line": 10,
+          "symbol": "ANEProvider(",
+          "kind": "test_call",
+          "note": "Only constructor of ANEProvider in HEAD. A test file is not a production caller."
+        }
+      ],
+      "receipt": {
+        "file": "receipts/headless/APPLE_ANE_ATLAS.json",
+        "status": "ATLAS_SCAFFOLD_COMPILE_BOUNDARY",
+        "claim_boundary": "Graph manifests do not prove compilation, ANE support, placement, latency, energy, or Flash parity."
+      },
+      "blocker": "ANEProvider(...) has no production caller. tools/future/capability_reachability.py:1208 records that construction outside hcli/test_ane_provider.py is missing. physical_graph.py:427 compares the string 'ANEProvider' on a payload; that is not a call of the class. OPEN_GATES I-D still records the atlas as NOT MEASURED. The production ANE lab is forbidden_fruit.run_forbidden_fruit_lab (CAP-FORBIDDEN-FRUIT-LAB), not ANEProvider."
+    },
+    {
+      "id": "CAP-U50DD-PHYSICAL",
+      "claim": "U50DD physical execution exists on this host.",
+      "classification": "BLOCKED_HARDWARE",
+      "evidence_class": "SOURCE_INSPECTION",
+      "call_sites": [
+        {
+          "file": "hcli/agentos/fpga_preboard.py",
+          "line": 187,
+          "symbol": "FPGAProvider.execute",
+          "kind": "call",
+          "note": "Raises RuntimeError: FPGAProvider has no physical backend selected."
+        }
+      ],
+      "receipt": {
+        "file": "receipts/headless/HCLI_FPGA_PREBOARD.json",
+        "status": "PASSED",
+        "physical_board": {"claim": false, "status": "ABSENT"},
+        "fpga_backend": {"claim": false, "status": "NOT_BUILT"},
+        "claim_boundary": "Pre-board compiler scaffolding plus executable [S] link/partition sensitivity. No physical FPGA execution or performance is claimed."
+      },
+      "blocker": "No U50DD/XCU50 board on this machine. ROADMAP_STATE active_textbooks U50DD/XCU50 status NOT_STARTED."
+    },
+    {
+      "id": "CAP-FPGA-PREBOARD-SIM",
+      "claim": "FPGA pre-board MockFPGAProvider simulation is callable.",
+      "classification": "CALLABLE",
+      "evidence_class": "STATIC_VERIFICATION",
+      "call_sites": [
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 1019,
+          "symbol": "run_fpga_preboard",
+          "kind": "call"
+        },
+        {
+          "file": "hcli/agentos/fpga_preboard.py",
+          "line": 204,
+          "symbol": "MockFPGAProvider.execute",
+          "kind": "call"
+        }
+      ],
+      "blocker": null,
+      "note": "Simulation. Label SIMULATED. Not board reality."
+    },
+    {
+      "id": "CAP-SIMFPGA-PROVIDER",
+      "claim": "SimFPGAProvider exists as listed in H-ROADMAP PB-03 / FPGA-002.",
+      "classification": "ABSENT",
+      "evidence_class": "STATIC_VERIFICATION",
+      "call_sites": [],
+      "blocker": "git grep SimFPGAProvider HEAD returned no files. Symbol has no definition and no caller."
+    },
+    {
+      "id": "CAP-HMF-DEVICE-VISIBLE",
+      "claim": "HMF/HGVAS is a device-visible managed-memory domain on this host.",
+      "classification": "BLOCKED_HARDWARE",
+      "evidence_class": "SOURCE_INSPECTION",
+      "call_sites": [
+        {
+          "file": "tools/future/hmf_objects.py",
+          "symbol": "is_coherent",
+          "kind": "call",
+          "note": "Invoked by tools.acceptance.odyssey.run as recorded in receipts/acceptance/HMF_DEVICE_VISIBLE_TRUST.json invoked_symbol."
+        }
+      ],
+      "receipt": {
+        "file": "receipts/acceptance/HMF_DEVICE_VISIBLE_TRUST.json",
+        "verdict": "BLOCKED",
+        "blocker_id": "HMF_PRESENT"
+      },
+      "blocker": "No HMF/HGVAS/CXL memory appliance in inventory. Software object model in tools/accelerator/humf.py and tools/future/hmf_objects.py is not a physical domain."
+    },
+    {
+      "id": "CAP-FUSION-HETEROGENEOUS-EXECUTABLE",
+      "claim": "A heterogeneous Fusion executable exists across two physical domains.",
+      "classification": "BLOCKED_HARDWARE",
+      "evidence_class": "SOURCE_INSPECTION",
+      "call_sites": [
+        {
+          "file": "tools/accelerator/fusion_planner.py",
+          "symbol": "topology_apple_alone",
+          "kind": "call",
+          "note": "Invoked by tools.acceptance.odyssey.run as recorded in receipts/acceptance/FUSION_FIRST_HETEROGENEOUS_EXECUTABLE.json."
+        }
+      ],
+      "receipt": {
+        "file": "receipts/acceptance/FUSION_FIRST_HETEROGENEOUS_EXECUTABLE.json",
+        "verdict": "BLOCKED",
+        "blocker_id": "NO_SECOND_PHYSICAL_DOMAIN",
+        "wake_conditions": ["HMF_PRESENT", "U50_PRESENT", "EGPU_PRESENT", "DGX_PRESENT"]
+      },
+      "blocker": "Host fusion nodes are ['APPLE'] (need >=2). U50=False, EGPU=False, DGX=False. A COST_MODEL/SIMULATED hop is not a heterogeneous executable."
+    },
+    {
+      "id": "CAP-EGPU",
+      "claim": "An eGPU enclosure is present and is a live alien-machine school.",
+      "classification": "BLOCKED_HARDWARE",
+      "evidence_class": "SOURCE_INSPECTION",
+      "call_sites": [
+        {
+          "file": "tools/accelerator/fusion_planner.py",
+          "line": 309,
+          "symbol": "topology_apple_spark_egpu",
+          "kind": "call",
+          "note": "Adds APPLE–EGPU0 link with physical=False, note Thunderbolt/PCIe eGPU bridge, SIMULATED."
+        },
+        {
+          "file": "tools/accelerator/hardware_doctor.py",
+          "line": 710,
+          "symbol": "egpu_0 presence axis",
+          "kind": "call"
+        }
+      ],
+      "blocker": "hardware_doctor: no eGPU enclosure; Apple SoC GPU is not an eGPU. Fusion planner marks the eGPU link SIMULATED."
+    },
+    {
+      "id": "CAP-DGX-SPARK",
+      "claim": "A DGX Spark node is present.",
+      "classification": "BLOCKED_HARDWARE",
+      "evidence_class": "SOURCE_INSPECTION",
+      "call_sites": [
+        {
+          "file": "tools/accelerator/machine_genome.py",
+          "line": 845,
+          "symbol": "_domain nvidia/dgx declared absent",
+          "kind": "call"
+        }
+      ],
+      "blocker": "No DGX, no discrete NVIDIA GPU on this host. ROADMAP_STATE program_statuses IV-C_DGX_SPARK is NOT_STARTED."
+    },
+    {
+      "id": "CAP-HIGH-END-FPGA",
+      "claim": "High-end FPGA fabric is in play.",
+      "classification": "CONCEPT_ONLY",
+      "evidence_class": "SOURCE_INSPECTION",
+      "call_sites": [],
+      "blocker": "H-ROADMAP.md §25.1 and Appendix I Phase XII are prose. No board, no caller, no receipt of a high-end fabric. Strategy forbids this before U50 tuition; U50 is BLOCKED_HARDWARE."
+    },
+    {
+      "id": "CAP-CUSTOM-BOARD",
+      "claim": "A custom Hawking FPGA board is justified.",
+      "classification": "CONCEPT_ONLY",
+      "evidence_class": "SOURCE_INSPECTION",
+      "call_sites": [],
+      "blocker": "Appendix I Phase XVI and §25: only after commercial boards expose stable integration requirements. No U50 tuition has been paid."
+    },
+    {
+      "id": "CAP-ASIC",
+      "claim": "An ASIC primitive has earned permanence.",
+      "classification": "CONCEPT_ONLY",
+      "evidence_class": "SOURCE_INSPECTION",
+      "call_sites": [],
+      "blocker": "§25.3 ASIC discovery gate requires a primitive that survives across models/devices after FPGA implementation. No such caller or receipt."
+    }
+  ],
+  "surprises": [
+    {
+      "id": "S-APPENDIX-I-VS-I23",
+      "loud": true,
+      "statement": "Appendix I Phases I–XXII and Appendix I.23 Hardware development law live in the same appendix and contradict each other. Phases put eGPU Fusion at II and FPGA at V. I.23 is SOFTWARE → FPGA SIMULATION → TEXTBOOK FPGA → SERIOUS FPGA → FUSION FPGA → CUSTOM BOARD → ASIC, with no eGPU. A freeze that contains both is not a single order.",
+      "would_settle": "A freeze edit that either deletes Appendix I phases, rewrites them to match I.23/§17.2, or explicitly marks Appendix I phases SUPERSEDED rather than live decree. This audit does not perform that edit."
+    },
+    {
+      "id": "S-FORBIDDEN-FRUIT-UNNAMED",
+      "loud": true,
+      "statement": "hcli/forbidden_fruit.py, tool forbidden_fruit.lab, tests, and receipts/headless/HCLI_FORBIDDEN_FRUIT_LAB.json exist. The string 'Forbidden Fruit' does not occur in H-ROADMAP.md. The independent clean-room lane the strategy names is a live lab the freeze does not know the name of.",
+      "would_settle": "Confirm whether Forbidden Fruit was added after 2026-08-27 on purpose as a later gene, or was omitted by absorption failure from the ANE lane docs."
+    },
+    {
+      "id": "S-PREFILL-BRANCH-NOT-ON-HEAD",
+      "loud": true,
+      "statement": "docs/PREFILL.md (dated 2026-09-02, after the freeze) describes GEMM prefill on branch grok/prefill-gemm-20260901-232724 with qwen38_hybrid_prefill.rs and qwen38_prefill.metal. Those files are not in this HEAD. generate_greedy still decode-steps the prompt. A file named docs/PREFILL.md is not a finished prefill school.",
+      "would_settle": "git merge-base / git log -- crates/hawking-core/src/model/qwen38_hybrid_prefill.rs against odyssey-i, or a HEAD that actually contains the GEMM path."
+    },
+    {
+      "id": "S-H-ROADMAP-NOT-IN-GIT",
+      "loud": true,
+      "statement": "The canonical execution decree is /Users/scammermike/Downloads/H-ROADMAP.md, sha256 d43a6b07…, not a git blob. civilization/build_state.py and tools/roadmap/parse.py point at that path. A sparse-missing git file is not this. The freeze can drift without a commit.",
+      "would_settle": "Whether a future freeze is copied into the repo or remains a Downloads-path authority."
+    },
+    {
+      "id": "S-FUSION-GATE-DEPENDS-ON-HMF",
+      "loud": true,
+      "statement": "Era IV-A is Fusion and IV-B is HMF, but receipts/acceptance/FUSION_FIRST_HETEROGENEOUS_EXECUTABLE.json is blocked on HMF_DEVICE_VISIBLE_TRUST. The acceptance producer already treats HMF as a prerequisite of Fusion. Era numbering does not.",
+      "would_settle": "Treat the acceptance dependency as the order (HMF then Fusion then alien machines) and mark Era IV-A/IV-B numbering stale. Constitution stays at five eras; only the IV-A/IV-B labels would move. This audit does not move them."
+    }
+  ],
+  "ledger_notes": {
+    "civilization_ROADMAP_STATE": {
+      "path": "civilization/ROADMAP_STATE.json",
+      "roadmap_version": "H-ROADMAP_CRISPR_EXECUTION_SPECIFICATION_2026-08-27",
+      "active_era": "I",
+      "IV-A_FUSION": "EXPLORING",
+      "IV-B_HMF_HGVAS": "EXPLORING",
+      "IV-C_DGX_SPARK": "NOT_STARTED",
+      "IV-D_EGPU": "EXPLORING",
+      "U50DD_textbook": "NOT_STARTED",
+      "note": "EXPLORING on Fusion/HMF/eGPU is mapped-obligation status, not proof those schools outrank U50 in execution. Era I remains sovereign. Not counted as a separate ordering contradiction beyond C-ERA-IV-*."
+    },
+    "section_34_gene_index": {
+      "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+      "start_line": 4058,
+      "end_line": 4060,
+      "note": "Section 34 says lineage headings are 'not active competing plans'. V3 Stage O eGPU / Stage Q HMF-after-eGPU is therefore not counted as a live contradiction. Appendix I is counted because it is a live appendix, not the gene index."
+    }
+  },
+  "does_not_propose": [
+    "changing the five-era constitution",
+    "adding Era VI",
+    "adding Odyssey IV",
+    "making Theia a civilization",
+    "rewriting the 0.7% coordinate",
+    "rewriting H-ROADMAP.md in this pass",
+    "starting an implementation campaign"
+  ]
+}

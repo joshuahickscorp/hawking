@@ -1,0 +1,2074 @@
+{
+  "schema": "hawking.audit.stale_roadmap_text.v1",
+  "audit_id": "aud04-stale-roadmap-text",
+  "generated_at": "2026-09-02T18:59:09Z",
+  "auditor": "grok-4.6",
+  "mode": "DISCOVERY_ONLY",
+  "did_not": [
+    "rewrite H-ROADMAP.md",
+    "edit hcli/",
+    "edit tools/",
+    "edit crates/",
+    "edit civilization/",
+    "signal or restart any process",
+    "write into ModelLake/specimens"
+  ],
+  "worktree_head": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+  "capability_graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+  "roadmap": {
+    "path": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "sha256": "d43a6b07ab9590bc11c265bfe8a1466131cce291b0622c076370a01d811328e4",
+    "line_count": 9645,
+    "freeze_date_in_document": "2026-08-27",
+    "mtime_observed": "2026-08-29T00:39:00-07:00",
+    "matches_capability_graph_hash": true,
+    "roadmap_state_hash_is_different": true,
+    "roadmap_state_hash": "51474151b53f63fe9f409a11dae5ef29e9efcc1dec62c6bdd40755b14017be2c",
+    "roadmap_state_hash_note": "civilization/ROADMAP_STATE.json still hashes a previous bytes of the same path. That is a derived-ledger defect, not a rewrite of H-ROADMAP. Cited as corroboration that launch-state text drifts."
+  },
+  "method": {
+    "evidence_tier_default": "STATIC_VERIFICATION",
+    "law": "A capability nothing calls does not exist. Imports are not call sites. Tests are not physical measurements. Receipts do not override a broken producer. Roadmap prose is not evidence.",
+    "sources": [
+      "H-ROADMAP.md line-numbered hunt",
+      "civilization/CAPABILITY_GRAPH.json (STATIC, generated 2026-09-02T18:35:55Z)",
+      "civilization/ROADMAP_STATE.json (derived; hash stale vs current H-ROADMAP)",
+      "git show / git grep of HEAD for definitions and CALL sites",
+      "read-only ModelLake inventory under /Volumes/corpdrive/hawking-modellake",
+      "receipts/acceptance/* and receipts/headless/* and receipts/future/ODYSSEY_MISSION_CONTROLLER.json"
+    ],
+    "not_done": [
+      "Did not run pytest (sparse tree; would not be a full-suite measurement).",
+      "Did not hash the 4.35 TB school.",
+      "Did not enumerate PCIe/Thunderbolt beyond CAPABILITY_GRAPH.hardware_probes.",
+      "Did not signal the live HCLI daemon; ps was sandbox-blocked. Resident identity taken from receipts, not a live PID sample."
+    ],
+    "coverage_rule": "KEEP EXACTLY means the cited range is still the law or still accurate and must not be casually rewritten. Ranges not listed in keep/update/remove were scanned for the hunt patterns; no independent stale claim was found there. Absence from KEEP is not a delete instruction."
+  },
+  "authority": {
+    "is": [
+      "source archaeology",
+      "call-site reachability",
+      "test coverage as files on disk",
+      "schema/topology",
+      "dependency graphs",
+      "duplication",
+      "naming",
+      "receipt consistency"
+    ],
+    "is_not": [
+      "GPU physical performance",
+      "Metal runtime behaviour not executed this session",
+      "ANE physical behaviour not executed this session",
+      "U50/FPGA facts not physically measured",
+      "thermal/power",
+      "protected benchmarks"
+    ],
+    "never_wrote_MEASURED": true
+  },
+  "hardware_inventory": {
+    "evidence_tier": "STATIC_VERIFICATION",
+    "present": [
+      "Apple M3 Ultra CPU/GPU/UMA",
+      "ANE (device present per CAPABILITY_GRAPH/APPLE_ANE_DEVICE_PROFILE; private ANE control forbidden)"
+    ],
+    "absent": [
+      "FPGA/U50DD",
+      "DGX",
+      "eGPU",
+      "HMF/HGVAS"
+    ],
+    "source": "civilization/CAPABILITY_GRAPH.json hardware_probes; task contract",
+    "probes": {
+      "U50_PRESENT": false,
+      "DGX_PRESENT": false,
+      "NEW_M_SERIES_PRESENT": false,
+      "HMF_PRESENT": false,
+      "EGPU_PRESENT": false
+    }
+  },
+  "constitution_check": {
+    "five_eras": {
+      "ok": true,
+      "lines": [
+        8,
+        425,
+        4003,
+        5120,
+        5198
+      ]
+    },
+    "three_odysseys": {
+      "ok": true,
+      "lines": [
+        8,
+        997,
+        1012,
+        4004,
+        5194
+      ]
+    },
+    "no_era_vi": {
+      "ok": true,
+      "caveat": "Appendix I 'Phase VI \u2014 FPGA Coprocessor' (8741) is a manifestation phase, not Era VI. Naming collision only.",
+      "lines": [
+        8,
+        4003,
+        5120
+      ]
+    },
+    "fpga_inside_accelerator_or_fusion": {
+      "ok": true,
+      "lines": [
+        8,
+        396,
+        401,
+        2422
+      ]
+    },
+    "theia_is_bounty_not_civilization": {
+      "ok": true,
+      "lines": [
+        8,
+        394,
+        2972
+      ]
+    },
+    "civilizational_coordinate_0_7_percent": {
+      "ok": true,
+      "lines": [
+        5,
+        68,
+        4940
+      ]
+    },
+    "north_star": {
+      "ok": true,
+      "lines": [
+        64
+      ]
+    },
+    "do_not_casually_rewrite_0_7": true
+  },
+  "live_disk_facts": {
+    "evidence_tier": "STATIC_VERIFICATION",
+    "modellake_root": "/Volumes/corpdrive/hawking-modellake",
+    "specimen_dirs": 55,
+    "manifest_json_files": 55,
+    "bytes_sum_from_manifests": 4352666459500,
+    "bytes_sum_tb": 4.353,
+    "flash_next": {
+      "slug": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+      "n_files": 144,
+      "bytes": 360023286454,
+      "n_sha256_verified": 132,
+      "n_size_only_verified": 12,
+      "acquired_at": "2026-08-27T04:53:13Z",
+      "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915"
+    },
+    "identity_gate": {
+      "receipt": "receipts/acceptance/MODELLAKE_IDENTITY_RESOLVED.json",
+      "verdict": "ACCEPTED",
+      "summary": "55/55 sealed specimens at IDENTITY_RESOLVED or later; census status='PASSED'",
+      "implementing_symbol": "hcli.agentos.modellake_gate.run_modellake_census",
+      "symbol_invoked": true
+    },
+    "hash_gate": {
+      "receipt": "receipts/acceptance/MODELLAKE_HASH_VERIFIED.json",
+      "graph_status": "WIRED",
+      "accepted": false,
+      "why": "canonical Qwen3-0.6B hashed; remaining ~4.35 TB size-checked not sha256-rehashed. Size match is not sha256."
+    }
+  },
+  "graph_status_summary": {
+    "source": "civilization/CAPABILITY_GRAPH.json",
+    "evidence_tier": "STATIC_VERIFICATION",
+    "gates": 71,
+    "genes": 25,
+    "gates_by_status": {
+      "BUILT": 18,
+      "SCAFFOLDED": 20,
+      "WIRED": 11,
+      "ABSENT": 1,
+      "BLOCKED_HARDWARE": 13,
+      "UNREACHABLE": 1,
+      "BLOCKED_EXTERNAL": 7
+    },
+    "notable": {
+      "AGENTOS_BEHAVIOR_LAB": "ABSENT",
+      "FLASH_SOURCE_VERIFIED": "SCAFFOLDED (accepted=True, wired=False)",
+      "FLASH_FULL_NOETIC_EXECUTABLE": "SCAFFOLDED",
+      "FLASH_FIRST_GRAVITY_ORGAN": "BUILT",
+      "FLASH_DENSE_VS_NF_AB": "BUILT",
+      "MODELLAKE_IDENTITY_RESOLVED": "BUILT",
+      "MODELLAKE_ATOMIC_PROMOTION": "BUILT",
+      "MODELLAKE_HASH_VERIFIED": "WIRED",
+      "ODYSSEY_I_DISCOVERY": "BUILT",
+      "ODYSSEY_II_TRANSFER": "WIRED (accepted refused: evaluations_avoided -8)",
+      "ODYSSEY_III_ADVERSARIAL_META_SCIENCE": "WIRED (accepted refused: synthetic REFUTED)",
+      "FPGA_HWIR": "WIRED",
+      "FPGA_PREBOARD_SCHEMAS": "SCAFFOLDED (catalog symbol FPGADeviceGenome)",
+      "HCLI_CONTEXT_AUTHORITY_UNIFIED": "BUILT",
+      "VMCP_RECEIPT_LAW": "BUILT",
+      "THEIA_*": "BLOCKED_EXTERNAL",
+      "I-A_AGENTOS_HCLI_gene": "SCAFFOLDED despite 10 BUILT I-A gates",
+      "II-C_PHYSICAL_GRAPH_COMPILER_gene": "WIRED"
+    }
+  },
+  "surprises": [
+    {
+      "id": "S1_TWENTY_REQUEST_UNBACKED",
+      "severity": "high",
+      "what": "H-ROADMAP:357 claims a 20-request residency proof (one PID, one model open, one weight upload, zero fallbacks, isolated request state). hcli/agentos/checkpoint.py:671 still appends blocker '20-request native resident proof has not passed'. git grep finds no other 20-request receipt.",
+      "why_loud": "Section 3 presents a passed proof that the live checkpoint code still treats as unmet.",
+      "what_would_settle": "A named receipt for the 20-request run, or deletion of the sentence. Do not treat A1-A6 native-gate (6 HCLI reproduction stages) as that proof.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "lines": [
+        357
+      ]
+    },
+    {
+      "id": "S2_FLASH_144_IS_COMPLETE_NOT_PARTIAL",
+      "severity": "high",
+      "what": "Section 3 freeze '144-file partial tree; atomic final publication still pending' uses the same file count as the now-complete sealed Flash-Next specimen (n_files=144, 360.02 GB, acquired_at 2026-08-27T04:53:13Z). The number survived; the 'partial/pending' qualifier did not.",
+      "what_would_settle": "Replace with the sealed slug Qwen--Qwen3.8-Flash-Next@34567a4712bc and the identity receipt. Keep the 131/131 safetensor-header metadata audit as a historical metadata fact, not as an in-flight download.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "lines": [
+        361
+      ]
+    },
+    {
+      "id": "S3_FLASH_SOURCE_ACCEPTED_BUT_NOT_WIRED",
+      "severity": "high",
+      "what": "FLASH_SOURCE_VERIFIED is accepted (receipts/acceptance/FLASH_SOURCE_VERIFIED.json) and the body is sealed, but CAPABILITY_GRAPH status is SCAFFOLDED because tools/flash_organ_census.py has no non-test call of the implementing symbol. An earlier lane that counted the import at tools/acceptance/flash/run_gates.py:183 would have inflated this to wired.",
+      "what_would_settle": "A production call/subprocess of the census symbol, or a catalog symbol that the existing caller actually invokes.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "graph_status": "SCAFFOLDED",
+      "accepted": true,
+      "wired": false
+    },
+    {
+      "id": "S4_FPGA_PREBOARD_CLI_VS_CATALOG_SYMBOL",
+      "severity": "medium",
+      "what": "Catalog symbol for FPGA_PREBOARD_SCHEMAS is FPGADeviceGenome, which the graph reports as no production caller (SCAFFOLDED). Production CLI hcli/agentos_cli.py:1019 does call run_fpga_preboard, which constructs FPGADeviceGenome() inside _map. Intra-module construction + a different symbol name made the graph miss a real CLI.",
+      "what_would_settle": "Re-run the auditor with symbol run_fpga_preboard, or add that symbol to the catalog. Do not call the schemas BUILT: FPGA_PREBOARD_SCHEMAS accepted=False, U50 absent.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "graph_status": "SCAFFOLDED",
+      "call_site_found_this_audit": {
+        "file": "hcli/agentos_cli.py",
+        "line": 1019,
+        "symbol": "run_fpga_preboard",
+        "kind": "call"
+      }
+    },
+    {
+      "id": "S5_IA_GENE_SCAFFOLDED_WHILE_GATES_BUILT",
+      "severity": "medium",
+      "what": "Gene I-A_AGENTOS_HCLI is SCAFFOLDED (catalog implementing file hcli/engine.py, no production caller of that file-as-symbol) while ten I-A gates are BUILT with real callers (Scheduler, abort, BackgroundJobStore, MutationLock, write_program_checkpoint, resolve, ...). Gene status is not the OR of its gates.",
+      "what_would_settle": "Either retarget the gene symbol to a called entrypoint (hcli/cli.py / agentos_cli) or publish gene status as a roll-up with an explicit rule.",
+      "evidence_tier": "STATIC_VERIFICATION"
+    },
+    {
+      "id": "S6_THEIA_ENGINE_LIVE_GATES_NO_DEFINITION",
+      "severity": "medium",
+      "what": "verified_absent.theia verdict=PRESENT (tools/theia/ exists). THEIA_* gates are BLOCKED_EXTERNAL with catalog paths=() and 'no git-tracked definition'. tools/theia/engine.py reports bounty_engine LIVE and model ladder BLOCKED_EXTERNAL. The engine is not the model.",
+      "what_would_settle": "Keep THEIA_* BLOCKED_EXTERNAL for the trained model. Do not describe tools/theia as absent. Do not describe a Theia checkpoint as present.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "call_sites": [
+        {
+          "file": "tools/theia/__main__.py",
+          "line": 1,
+          "symbol": "tools.theia.engine.main",
+          "kind": "entrypoint"
+        },
+        {
+          "file": "tools/theia/engine.py",
+          "line": 196,
+          "symbol": "bounty_engine status LIVE",
+          "kind": "self-report-in-source"
+        }
+      ],
+      "blocker": "WAKE.THEIA_MICRO and T0 teacher/data/trace/curriculum/checkpoint authorities are unmet. tools/theia/ladder.py: not_sufficient includes 'tools/theia directory exists'."
+    },
+    {
+      "id": "S7_ROADMAP_STATE_HASH_DRIFT",
+      "severity": "medium",
+      "what": "civilization/ROADMAP_STATE.json roadmap_hash=51474151... but the file at roadmap_path hashes to d43a6b07... (matches CAPABILITY_GRAPH). The derived ledger is describing a previous byte-state of H-ROADMAP while pointing at the same path. ROADMAP_STATE also still talks about a live ModelLake fill (3 hf download workers: Olmo, starcoder2, Kimi-K3) after those three are among the 55 sealed specimens.",
+      "what_would_settle": "Rebuild ROADMAP_STATE from disk. Out of scope for this audit (civilization/ is DO_NOT_TOUCH).",
+      "evidence_tier": "STATIC_VERIFICATION"
+    },
+    {
+      "id": "S8_UNATTENDED_WINDOW_WAS_REAL_AND_ALSO_CANCELLED_IN_HANDOFF",
+      "severity": "low",
+      "what": "receipts/headless/HCLI_AGENTOS_UNATTENDED_WINDOW.json status=PASSED, elapsed_s=3600.242, attempted=55, accepted=54, human_interventions=0 \u2014 matching section 3. The later HCLI_AGENTOS_HANDOFF.json lists a 3600s unattended-window background job as state=CANCELLED. Two receipts, one cancelled job record. The numbers in H-ROADMAP are not invented, but they are unbound to a path and mixed with a cancelled job in the handoff.",
+      "what_would_settle": "Cite HCLI_AGENTOS_UNATTENDED_WINDOW.json explicitly; do not also imply the cancelled job completed.",
+      "evidence_tier": "STATIC_VERIFICATION"
+    },
+    {
+      "id": "S9_LUNA_HAS_NO_CODE",
+      "severity": "medium",
+      "what": "H-ROADMAP:2197,2231,2339 assign 'frontier reasoning to Codex/Luna'. git grep of HEAD *.py *.md *.toml finds zero Luna provider. hcli/providers.py families are native/mlx/llamacpp/openai_compatible only.",
+      "what_would_settle": "Delete Luna or point at a real provider id that exists in hcli/providers.py.",
+      "evidence_tier": "STATIC_VERIFICATION"
+    },
+    {
+      "id": "S10_NO_48H_CYCLE_IN_H_ROADMAP",
+      "severity": "high",
+      "what": "Current Odyssey law is a <=48h wall-clock I+II+III overlapping cycle (tools/future/odyssey_mission_controller.py CYCLE_HOURS=48.0; receipts/future/ODYSSEY_MISSION_CONTROLLER.json). H-ROADMAP has no such cycle. Appendix M jumps 24 HOURS -> 72 HOURS -> 1 WEEK. '48' in the file is C48, 48-layer Flash, or a numbered step, never the Odyssey budget. The cycle itself is NOT_STARTED (no ODYSSEY_CYCLE_1_START.json) \u2014 do not write fake hour-0 progress.",
+      "what_would_settle": "Add a 48h overlapping I+II+III wall budget as current Odyssey operating law, citing the controller. Keep 72h/1 week as meta-review recipes, not as the cycle.",
+      "evidence_tier": "STATIC_VERIFICATION"
+    }
+  ],
+  "keep_exactly": [
+    {
+      "id": "K01_HEADER_CONSTITUTION",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 1,
+        "end_line": 9
+      },
+      "why": "Freeze banner, 0.7% coordinate, exactly five eras / three Odysseys / no Era VI, FPGA inside Accelerator/Fusion, Theia is a bounty model not a civilization. Still the law.",
+      "classification": "KEEP"
+    },
+    {
+      "id": "K02_CRISPR_METAPHOR",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 10,
+        "end_line": 39
+      },
+      "why": "Execution-decree metaphor. Not a snapshot. Still how the file is supposed to be used.",
+      "classification": "KEEP"
+    },
+    {
+      "id": "K03_ROOT_ULTRAGOAL_NORTH_STAR",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 42,
+        "end_line": 69
+      },
+      "why": "North star HAWKING = self-optimizing physical AI computer; primary metric; 0.7% is deliberately coarse and must not be recomputed from file counts.",
+      "classification": "KEEP"
+    },
+    {
+      "id": "K04_AUTHORITY_TRUTH_CONSTITUTION",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 71,
+        "end_line": 207
+      },
+      "why": "Evidence ladder, result envelope, mutation classes. Still the proof constitution. Do not dilute.",
+      "classification": "KEEP"
+    },
+    {
+      "id": "K05_RUNLOOP_WITHOUT_SNAPSHOT",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 208,
+        "end_line": 256
+      },
+      "why": "Recover-from-disk loop and 15-minute boot charge. Correct operating policy. The overnight/24h charges below this are the stale part, not this kernel.",
+      "classification": "KEEP"
+    },
+    {
+      "id": "K06_SELF_REFILL_AND_SCHEDULER",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 302,
+        "end_line": 349
+      },
+      "why": "Children only from verified information; scheduler scores work and does not certify truth.",
+      "classification": "KEEP"
+    },
+    {
+      "id": "K07_GENOME_MAP",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 367,
+        "end_line": 422
+      },
+      "why": "FPGA sits under Hawking Accelerator; Theia is bounty generalist; five eras; three Odysseys. Matches constitution.",
+      "classification": "KEEP"
+    },
+    {
+      "id": "K08_FIVE_ERA_DECREE_HEADING",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 425,
+        "end_line": 426
+      },
+      "why": "Exactly five eras. The per-civilization gene lists that follow are still the genome even where promotion-gate boilerplate is copy-pasted.",
+      "classification": "KEEP"
+    },
+    {
+      "id": "K09_ERA_GENE_LISTS",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 428,
+        "end_line": 996
+      },
+      "why": "I-A..V-E mission + genes-to-express lists are the 25-program genome. Repeated 'Promotion gate/Self-refill triggers' sentences are duplication but not factually wrong. Do not add Era VI here.",
+      "classification": "KEEP",
+      "duplication_note": "Promotion-gate and self-refill trigger paragraphs are copy-pasted 25 times. Harmless. Not a delete of the gene lists."
+    },
+    {
+      "id": "K10_THREE_ODYSSEYS_CURRICULUM",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 997,
+        "end_line": 1026
+      },
+      "why": "I=WHAT IS TRUE, II=WHAT DID HAWKING ALREADY LEARN, III=WHERE IS HAWKING WRONG, no Odyssey IV. These are logical roles, compatible with overlapping 48h wall time. Do not serialize them as exclusive machine modes, but do not rewrite the questions.",
+      "classification": "KEEP"
+    },
+    {
+      "id": "K11_PROVIDER_NEUTRAL_SHAPE",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 1071,
+        "end_line": 1088
+      },
+      "why": "ProviderProfile families native|mlx|gguf|openai_compatible|remote|future still match hcli/providers.py. The named-system sentence after this block is the stale part.",
+      "classification": "KEEP"
+    },
+    {
+      "id": "K12_L0_L5_AUTONOMY_LADDER_DEFINITION",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 1131,
+        "end_line": 1142
+      },
+      "why": "L0-L5 is the autonomy ladder definition. Promotion requires failure injection, not elapsed time. Distinct from A1-A6 native-gate. Keep the definition; do not treat A1-A6 or a 1h window as L3/L4/L5 promotion.",
+      "classification": "KEEP"
+    },
+    {
+      "id": "K13_FLASH_HARD_GATE_AS_RESEARCH_TARGET",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 1607,
+        "end_line": 1647
+      },
+      "why": "EBPW<=1 and accepted TPS>=50 are research targets, not current claims. Matches FLASH_COMPLETE_EBPW_LE_1 WIRED/not-accepted and FLASH_ACCEPTED_TPS_GE_50 SCAFFOLDED. Do not promote.",
+      "classification": "KEEP"
+    },
+    {
+      "id": "K14_QWEN27_CONTROL_PURPOSES",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 1561,
+        "end_line": 1576
+      },
+      "why": "Qwen27 is textbook #1 / control school, not merely the old resident. This is the correct role. Native-gate still loads qwen3.8-27b-sealed-3.14 as the native resident profile; that does not make it the only future resident.",
+      "classification": "KEEP"
+    },
+    {
+      "id": "K15_MODELLAKE_LIFECYCLE_SCHEMA",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 2359,
+        "end_line": 2383
+      },
+      "why": "DISCOVERED..RETIRED state machine is still the schema. Current school is at IDENTITY_RESOLVED or later for 55/55, not still in DOWNLOADING.",
+      "classification": "KEEP"
+    },
+    {
+      "id": "K16_FPGA_CORE_LAW_AND_TEXTBOOK_U50DD",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 2422,
+        "end_line": 2467
+      },
+      "why": "Do not build an FPGA backend; build a physical compiler. Textbook FPGA #1 is U50DD/XCU50-class 8GB HBM2. M3 Ultimate is not 104 GB coherent UMA. This is already the concrete-first-board language the hunt asked for; do not genericize it.",
+      "classification": "KEEP"
+    },
+    {
+      "id": "K17_HBM_DOCTRINE",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 2489,
+        "end_line": 2498
+      },
+      "why": "HBM is a separate domain. Still the law. U50 physical results remain BLOCKED_HARDWARE.",
+      "classification": "KEEP"
+    },
+    {
+      "id": "K18_U50_UNMEASURED_UNTIL_BOARD",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 364,
+        "end_line": 364
+      },
+      "why": "U50DD physical results remain unmeasured until the board is physically activated; pre-board outputs are [V]/[D]/[S], never [M]. Matches hardware_probes.U50_PRESENT=false and every U50_* gate BLOCKED_HARDWARE.",
+      "classification": "KEEP"
+    },
+    {
+      "id": "K19_THEIA_DEFINITION_AND_BOUNDARIES",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 2972,
+        "end_line": 3033
+      },
+      "why": "Theia is a generalist bounty model, not a sixth civilization. Authorization boundary for security bounties is still required. The engine at tools/theia is not a qualified model.",
+      "classification": "KEEP"
+    },
+    {
+      "id": "K20_TRAINING_BEFORE_GRAVITY",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 3131,
+        "end_line": 3148
+      },
+      "why": "Training-before-Gravity law. Matches THEIA_GRAVITY_EXECUTABLE blocker.",
+      "classification": "KEEP"
+    },
+    {
+      "id": "K21_NEGATIVE_SCIENCE",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 3552,
+        "end_line": 3579
+      },
+      "why": "Graveyard is a compiler asset. Reopen rule still correct.",
+      "classification": "KEEP"
+    },
+    {
+      "id": "K22_DO_NOT_DO_CONSTITUTION",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 4001,
+        "end_line": 4026
+      },
+      "why": "Do not add Era VI; do not invent Odyssey IV; do not call U50 HBM extra coherent Mac RAM. Still the law.",
+      "classification": "KEEP"
+    },
+    {
+      "id": "K23_FINAL_DECREE",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 5162,
+        "end_line": 5220
+      },
+      "why": "Five eras do not get more eras; three Odysseys as school / transfer / attack. Compatible with overlapping wall-clock. North-star close.",
+      "classification": "KEEP"
+    },
+    {
+      "id": "K24_APPENDIX_O_LEDGER_TEMPLATE",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 9455,
+        "end_line": 9529
+      },
+      "why": "71 named gates as NOT_RUN|PASS|FAIL|BLOCKED|INCONCLUSIVE is a ledger template, not a claim they are unrun. Parser (tools/roadmap/parse.py) requires this appendix. Do not delete. Do not treat the enum as current status \u2014 status lives in CAPABILITY_GRAPH.",
+      "classification": "KEEP"
+    },
+    {
+      "id": "K25_APPENDIX_J_U50DD",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 8883,
+        "end_line": 8999
+      },
+      "why": "U50DD execution plan reconciled with direct-Mac canon. Forced airflow, optional Linux fixture, HBM residency. Board still absent. Keep as the first-board plan.",
+      "classification": "KEEP"
+    },
+    {
+      "id": "K26_NO_ODYSSEY_IV",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 1012,
+        "end_line": 1013
+      },
+      "why": "THERE IS NO ODYSSEY IV. After III the mechanism is internalized. Still the law.",
+      "classification": "KEEP"
+    }
+  ],
+  "update": [
+    {
+      "id": "U01_SECTION3_SNAPSHOT",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 351,
+        "end_line": 364
+      },
+      "classification": "STALE_ROADMAP_TEXT",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "why": "Self-labelled 'last-known launch hint' from the 2026-08-27/29 freeze. Several bullets are now false or unbound. The section header is honest; the bullets are not a safe boot source.",
+      "should_say": "Delete numeric freeze bullets or replace each with a receipt path + date + claim_boundary. Boot charge already says recover from disk; this section currently fights that instruction.",
+      "items": [
+        {
+          "lines": [
+            355
+          ],
+          "claim": "current native Qwen resident is a validated default profile",
+          "state": "CALLABLE",
+          "nuance": "Still true as the loaded native profile: receipts/headless/HCLI_AGENTOS_NATIVE_GATE.json model_id=qwen3.8-27b-sealed-3.14, provider=native. Constitutionally Qwen27 is the control school (section 12). Flash-Next is the resident candidate, not the resident.",
+          "call_sites": [
+            {
+              "file": "hcli/agentos/native_gate.py",
+              "line": 518,
+              "symbol": "A1_direct_resident",
+              "kind": "call"
+            },
+            {
+              "file": "hcli/agentos_cli.py",
+              "line": 157,
+              "symbol": "native-gate CLI",
+              "kind": "call"
+            }
+          ],
+          "receipts": [
+            "receipts/headless/HCLI_AGENTOS_NATIVE_GATE.json"
+          ],
+          "should_say": "Qwen3.8-27B sealed-3.14 remains the native resident profile and the control school. Flash-Next is the resident candidate under investigation; it is not the loaded resident and is not promoted."
+        },
+        {
+          "lines": [
+            356
+          ],
+          "claim": "Durable AgentOS missions, background jobs, typed tools, recovery, research, VMCP, Doctor/Gravity/Accelerator surfaces and checkpoint receipts have been implemented",
+          "state": "SCAFFOLDED",
+          "why": "Inflates a mixed gate set to 'implemented'. AgentOS repair/cancellation/orphan/persistence/checkpoint/restart and HCLI context-authority are BUILT. VMCP is mostly SCAFFOLDED; AGENTOS_BEHAVIOR_LAB is ABSENT. FLASH_FULL_NOETIC_EXECUTABLE is SCAFFOLDED.",
+          "call_sites": [
+            {
+              "file": "hcli/goal_compile.py",
+              "line": 518,
+              "symbol": "Scheduler",
+              "kind": "call"
+            },
+            {
+              "file": "hcli/agentos_cli.py",
+              "line": 609,
+              "symbol": "run_vmcp_gate",
+              "kind": "call"
+            },
+            {
+              "file": "hcli/agentos_cli.py",
+              "line": 1220,
+              "symbol": "write_program_checkpoint",
+              "kind": "call"
+            }
+          ],
+          "blocker": "AGENTOS_BEHAVIOR_LAB: no git-tracked definition; receipts/acceptance/AGENTOS_BEHAVIOR_LAB.json BLOCKED missing BHV-01..BHV-23. VMCP_WEB_CAPTURE/PTY_CAPTURE accepted=False.",
+          "should_say": "Name the BUILT I-A gates. Do not say VMCP has been implemented. Point at CAPABILITY_GRAPH for status."
+        },
+        {
+          "lines": [
+            357
+          ],
+          "claim": "Last reported resident ladder: A1-A6 passed; 20-request residency showed one PID, one model open, one weight upload, zero fallbacks and isolated request state",
+          "state": "TESTED",
+          "split": {
+            "A1_A6_native_gate": {
+              "state": "TESTED",
+              "receipt": "receipts/headless/HCLI_AGENTOS_NATIVE_GATE.json",
+              "status": "PASSED",
+              "stages": [
+                "A1_direct_resident",
+                "A2_hawking_native_backend",
+                "A3_provider_abstraction",
+                "A4_hcli_plain_cognition",
+                "A5_hcli_structured_cognition",
+                "A6_full_hcli_task"
+              ],
+              "call_sites": [
+                {
+                  "file": "hcli/agentos_cli.py",
+                  "line": 157,
+                  "symbol": "native-gate",
+                  "kind": "call"
+                },
+                {
+                  "file": "hcli/agentos/native_gate.py",
+                  "line": 518,
+                  "symbol": "record A1_direct_resident",
+                  "kind": "call"
+                }
+              ]
+            },
+            "A1_A5_autonomy_gate": {
+              "state": "TESTED",
+              "receipt": "receipts/headless/HCLI_AGENTOS_AUTONOMY_GATE.json",
+              "status": "PASSED",
+              "stages": [
+                "A1_three_workunits",
+                "A2_ten_workunits",
+                "A3_resident_kill",
+                "A4_hcli_process_kill",
+                "A5_post_mutation_crash"
+              ],
+              "claim_boundary": "not a sovereignty claim; not L3/L4/L5",
+              "call_sites": [
+                {
+                  "file": "hcli/agentos/autonomy_gate.py",
+                  "line": 984,
+                  "symbol": "run_autonomy_gate",
+                  "kind": "call"
+                }
+              ]
+            },
+            "twenty_request_residency": {
+              "state": "ABSENT",
+              "blocker": "hcli/agentos/checkpoint.py:671 still lists '20-request native resident proof has not passed'. No receipt found."
+            }
+          },
+          "should_say": "Cite the two receipts by path. Distinguish A1-A6 native reproduction from A1-A5 autonomy-gate from L0-L5. Remove the 20-request sentence until a receipt exists."
+        },
+        {
+          "lines": [
+            358
+          ],
+          "claim": "Last reported unattended proof: 3600 seconds, 55 model calls, 54 accepted WorkUnits, zero human interventions",
+          "state": "TESTED",
+          "receipt": "receipts/headless/HCLI_AGENTOS_UNATTENDED_WINDOW.json",
+          "qualification": "LIVE_UNATTENDED_NATIVE_WORK",
+          "metrics": {
+            "elapsed_s": 3600.242,
+            "attempted": 55,
+            "accepted": 54,
+            "human_interventions": 0,
+            "model_calls": 55
+          },
+          "claim_boundary_in_receipt": "one-hour unattended useful-work observation; not a sovereignty or quality certification",
+          "call_sites": [
+            {
+              "file": "hcli/agentos/autonomy_gate.py",
+              "line": 1230,
+              "symbol": "run_unattended_window / main",
+              "kind": "call"
+            }
+          ],
+          "should_say": "Keep the qualification (one-hour, not multi-day). Bind the path. Do not let a later CANCELLED job record in HCLI_AGENTOS_HANDOFF.json overwrite this without saying so."
+        },
+        {
+          "lines": [
+            359
+          ],
+          "claim": "Last reported full test suite in the overnight campaign: 712 passed, 2 skipped, 2 warnings",
+          "state": "STALE_ROADMAP_TEXT",
+          "why": "Unscoped, undated, wrong even vs the later handoff in the same campaign (HCLI_AGENTOS_HANDOFF.verification.full_suite.last_observed='747 passed, 2 skipped'). ROADMAP_STATE.last_verified_test_count=855 is tools/accelerator only under CPython 3.12.6/mlx. civilization README already forbids a count without interpreter and scope. ERA_I_CHECKPOINT_003 records tools/headless carrying 41 pre-existing failures that a one-directory number never sees.",
+          "blocker": "This audit did not re-run pytest (sparse tree). Do not replace 712 with another headline number in H-ROADMAP.",
+          "should_say": "Remove the frozen count. Say: any test number must name interpreter, directory, command, date, and commit. Point at ROADMAP_STATE.test_count_scope."
+        },
+        {
+          "lines": [
+            360
+          ],
+          "claim": "Flash-Next pre-runtime audit 131/131 safetensor shard headers, 1658/1658 tensor layouts, exact 359999963128-byte indexed payload, no weight-body bytes loaded",
+          "state": "TESTED",
+          "why": "Metadata-only audit numbers still match the sealed specimen's index_total_size=359999963128 and n_files=144 (131 shards + sidecars). Stale as 'last reported' in-flight audit; the body is now a sealed specimen.",
+          "receipts": [
+            "receipts/acceptance/FLASH_SOURCE_VERIFIED.json",
+            "receipts/headless/HCLI_AGENTOS_HANDOFF.json flash_next.architecture"
+          ],
+          "graph": "FLASH_SOURCE_VERIFIED SCAFFOLDED: accepted=True, wired=False, no non-test call of tools/flash_organ_census.py",
+          "should_say": "Cite the sealed slug and the acceptance receipt. Keep the metadata numbers as a historical metadata audit. Do not imply the body is still arriving."
+        },
+        {
+          "lines": [
+            361
+          ],
+          "claim": "Flash ModelLake acquisition pinned resumable worker, 144-file partial tree, atomic final publication still pending",
+          "state": "SUPERSEDED",
+          "now": "Sealed specimen Qwen--Qwen3.8-Flash-Next@34567a4712bc, n_files=144, bytes=360023286454, acquired_at=2026-08-27T04:53:13Z. 55/55 specimens IDENTITY_RESOLVED.",
+          "call_sites": [
+            {
+              "file": "hcli/acquisition.py",
+              "line": 172,
+              "symbol": "pick_acquire_candidate",
+              "kind": "call"
+            },
+            {
+              "file": "hcli/agentos/modellake_gate.py",
+              "line": null,
+              "symbol": "run_modellake_census",
+              "kind": "call",
+              "note": "invoked; receipts/acceptance/MODELLAKE_IDENTITY_RESOLVED.json symbol_invoked=true"
+            }
+          ],
+          "should_say": "Flash-Next is a sealed ModelLake specimen (144 files, 360.02 GB). Do not restart an acquisition worker for it. Remaining ModelLake work is hash verification of the rest of the school and science, not publication of this tree."
+        },
+        {
+          "lines": [
+            362
+          ],
+          "claim": "Qwen27 native resident remains the first control school",
+          "state": "CALLABLE",
+          "why": "Role is correct (control school). 'Native resident' is also currently true. Keep both, explicitly.",
+          "call_sites": [
+            {
+              "file": "hcli/agentos/qwen27_runtime_identity.py",
+              "line": 1,
+              "symbol": "module (receipt archaeology for current Qwen27 resident)",
+              "kind": "call"
+            }
+          ],
+          "graph": "QWEN27_RUNTIME_IDENTITY_FROZEN BUILT; QWEN27_PROTECTED_BASELINE WIRED, accepted refused (no quiescent window / live competing HCLI resident)",
+          "should_say": "Qwen27 is textbook #1 / control school and the current sealed native resident profile. Protected baseline remains unqualified. Flash is not the resident."
+        }
+      ]
+    },
+    {
+      "id": "U02_OVERNIGHT_CHARGE_ACQUISITION_LANES",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 269,
+        "end_line": 288
+      },
+      "classification": "STALE_ROADMAP_TEXT",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "why": "Overnight policy still lists 'C. Flash-Next acquisition / verification / Gravity / native execution' and 'D. ModelLake lifecycle supervision' as if a download worker is the live lane. Flash-Next is sealed. 55 specimens are sealed. Acquisition is no longer the overnight job.",
+      "should_say": "C. Flash-Next Gravity / native complete-token / capability (body is sealed; FLASH_FULL_NOETIC_EXECUTABLE still SCAFFOLDED). D. ModelLake hash-verify / census / science on the sealed 55, not acquisition. Keep A/B/E/F/G as independent lanes.",
+      "capability_claims": [
+        {
+          "claim": "Flash-Next source body exists",
+          "state": "END_TO_END",
+          "note": "Identity+files on disk. Not a full noetic executable. Not accepted TPS. Graph FLASH_SOURCE_VERIFIED remains SCAFFOLDED for lack of a production caller of the census symbol.",
+          "artifact": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc"
+        }
+      ]
+    },
+    {
+      "id": "U03_PRESERVE_DOWNLOAD_WORKERS",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 1125,
+        "end_line": 1125
+      },
+      "classification": "STALE_ROADMAP_TEXT",
+      "why": "Mixed MAX scheduler still 'preserves download workers'. The 55-specimen school is sealed. Remaining I/O is science staging, not hf fill.",
+      "should_say": "Preserve sealed-specimen integrity and any in-flight staging; do not imply a live fill."
+    },
+    {
+      "id": "U04_PROVIDER_NAMES_CODEX_LUNA",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 1089,
+        "end_line": 1092
+      },
+      "classification": "STALE_ROADMAP_TEXT",
+      "why": "Line 1090 'Qwen is a current resident profile' is still true. Line 1091 lists Claude/Codex/Grok as external teachers. Codex as a live overnight campaign is historical (line 4039). Luna does not exist in this tree.",
+      "should_say": "Qwen sealed-3.14 is a current native resident profile. Grok/Claude may be external teachers/workers per authorization. Drop Luna. Do not name Codex as a current overnight operator. Families remain native|mlx|gguf|openai_compatible.",
+      "call_sites": [
+        {
+          "file": "hcli/providers.py",
+          "line": 868,
+          "symbol": "family maps resident/local/remote",
+          "kind": "call"
+        }
+      ],
+      "blocker": "No Luna symbol. Aider is also absent from H-ROADMAP (good) and from current hcli provider families."
+    },
+    {
+      "id": "U05_CODEX_LUNA_IN_C_GRAPH",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 2197,
+        "end_line": 2231
+      },
+      "classification": "STALE_ROADMAP_TEXT",
+      "why": "C53/C64 send frontier reasoning to Codex/Luna. Luna is not in the repo. Codex is not a hcli provider family.",
+      "should_say": "Named external teacher/worker must be an id that exists in hcli/providers.py or an explicit BLOCKED_EXTERNAL. Use Grok/Claude only where authorized; never Luna.",
+      "also_lines": [
+        2339
+      ]
+    },
+    {
+      "id": "U06_FLASH_F0_F1_SHARDS_ARRIVING",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 1751,
+        "end_line": 1752
+      },
+      "classification": "SUPERSEDED",
+      "why": "F0 verify pinned source / F1 verify final shard hashes as bodies arrive. Bodies have arrived. F1 as an acquisition step is done; remaining is MODELLAKE_HASH_VERIFIED for the school (WIRED, not accepted) and Flash science.",
+      "should_say": "F0/F1 closed by sealed specimen + identity receipt. Next Flash work is complete native token / capability, not shard arrival.",
+      "graph": "FLASH_FIRST_GRAVITY_ORGAN BUILT; FLASH_FULL_NOETIC_EXECUTABLE SCAFFOLDED",
+      "call_sites": [
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 761,
+          "symbol": "run_flash_science_gate",
+          "kind": "call"
+        },
+        {
+          "file": "tools/acceptance/flash/run_gates.py",
+          "line": 292,
+          "symbol": "run_flash_science_gate",
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "id": "U07_FLASH_CHECKPOINT_C18_C19",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 2235,
+        "end_line": 2300
+      },
+      "classification": "STALE_ROADMAP_TEXT",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "why": "Checkpoint cites FLASH_FUSED_ROUTE_ACCUMULATE_PARITY_L3/L7 and FLASH_FAST_FUSED_L0_L47_V1. Those receipts still exist and their claim_boundary (not complete-token, not TPS, not EBPW, not resident promotion) is still honest. Later receipts FLASH_DEVICE_RESIDENT_L0_L47_COMPLETE_V1 exist with the same open boundary. The 'next Flash-critical action' sentence is still the right next action, but the cited checkpoint is no longer the newest chain receipt.",
+      "should_say": "Cite FLASH_DEVICE_RESIDENT_L0_L47_COMPLETE_V1/FAST_CHAIN_SUMMARY.json (status PASSED; claim_boundary: deep per-layer parity, complete token, and resident promotion remain open) plus the fused L3/L7 parity receipts. Do not promote. FLASH_FULL_NOETIC_EXECUTABLE remains SCAFFOLDED; native_loader=NOT_IMPLEMENTED on the acceptance receipt.",
+      "call_sites": [
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 761,
+          "symbol": "run_flash_science_gate",
+          "kind": "call"
+        }
+      ],
+      "blocker": "receipts/acceptance/FLASH_FULL_NOETIC_EXECUTABLE.json BLOCKED: FLASH_COMPLETE_V0.nx SEALED_METADATA_ONLY_NOT_FOR_PROMOTION; native_loader=NOT_IMPLEMENTED."
+    },
+    {
+      "id": "U08_FLAS001_AND_MODE007",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 3891,
+        "end_line": 3944
+      },
+      "classification": "WRONG_PRIORITY",
+      "why": "Seed bank still starts Flash at 'FLAS-001 verify next completed shard' and ModelLake at 'MODE-001 worker health' / 'MODE-007 next acquisition manifest'. That was the 2026-08-27 fill. Highest-information remaining Flash work is complete native token; ModelLake remaining is hash-verify + science on 55 sealed specimens.",
+      "should_say": "Retire FLAS-001 as done. Retire MODE-007 as default next work (acquisition is not the open gate). Keep MODE-003 hash verification (MODELLAKE_HASH_VERIFIED WIRED, not accepted).",
+      "call_sites": [
+        {
+          "file": "tools/acceptance/lake/hash_verify.py",
+          "line": 41,
+          "symbol": "reconcile",
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "id": "U09_APPENDIX_P_TONIGHT",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 9532,
+        "end_line": 9586
+      },
+      "classification": "WRONG_PRIORITY",
+      "why": "PHASE 1 still recovers 'ModelLake worker'. PHASE 3 still ranks '1 Flash source\u2192Gravity\u2192native executable' as if source were the gap. FLASH_FIRST_GRAVITY_ORGAN is BUILT; source is sealed; the gap is complete native token + capability. Line 9535 'BEGIN FROM CURRENT DISK STATE' is correct and currently contradicted by the rest of the appendix.",
+      "should_say": "Keep the BEGIN-FROM-DISK law. Recover sealed-specimen census, not a download worker. Rank: (1) Flash complete native token / capability with promotion refused until EBPW+TPS+capability, (2) Qwen27 protected baseline when a quiescent window exists, (3) ModelLake sha256 of the unhashed 54, (4) FPGA pre-board sim/HWIR, (5) AgentOS remaining SCAFFOLDED gates (retry/circuit-breaker/behavior-lab), (6) VMCP wiring of SCAFFOLDED organs.",
+      "call_sites": [
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 761,
+          "symbol": "run_flash_science_gate",
+          "kind": "call"
+        },
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 1193,
+          "symbol": "run_protected_accelerator_benchmark",
+          "kind": "call"
+        }
+      ],
+      "blocker": "QWEN27_PROTECTED_BASELINE accepted refused: no quiescent window, live competing HCLI resident. U50_* BLOCKED_HARDWARE."
+    },
+    {
+      "id": "U10_APPENDIX_M_72H_7D",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 9267,
+        "end_line": 9325
+      },
+      "classification": "STALE_ROADMAP_TEXT",
+      "why": "Time-horizon recipes have 15m/1h/4h/8h/24h/72h/1 week and no 48h overlapping I+II+III cycle. Current Odyssey operating law is CYCLE_HOURS=48.0 wall time, phases as logical roles that may run simultaneously. 72h/1 week as Odyssey duration is the old serialized cadence.",
+      "should_say": "Insert a 48 HOURS recipe: one wall-clock I+II+III cycle, overlap expected, not 18+12+12 summed, most hypotheses die before expensive levels, seal is a checkpoint not a death. Relabel 72 HOURS / 1 WEEK as meta-review / next-cycle prior, not the Odyssey duration. Cite tools/future/odyssey_mission_controller.py. State the cycle is NOT_STARTED until ODYSSEY_CYCLE_1_START.json exists.",
+      "call_sites": [
+        {
+          "file": "tools/future/odyssey_mission_controller.py",
+          "line": 34,
+          "symbol": "CYCLE_HOURS",
+          "kind": "definition"
+        },
+        {
+          "file": "tools/future/odyssey_mission_controller.py",
+          "line": 14,
+          "symbol": "python3 tools/future/odyssey_mission_controller.py --build",
+          "kind": "cli_entrypoint"
+        }
+      ],
+      "blocker": "No non-test production caller of horizon() was found; recurring_operations.py:115 lists the module as owner (a string, not a call). Cycle NOT_STARTED. Do not report hour 0 of 48.",
+      "also_lines": [
+        3534
+      ],
+      "serialized_language": "21.3 'MONTHLY / BEFORE NEXT ODYSSEY' implies serialized Odyssey cadence. Update to: Odysseys I/II/III are overlapping roles inside a 48h wall budget once launched; monthly search is independent."
+    },
+    {
+      "id": "U11_VMCP_AS_IF_BUILT",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 1155,
+        "end_line": 1284
+      },
+      "classification": "STALE_ROADMAP_TEXT",
+      "why": "Section 8 presents Nine Acts / organs (web, file, visual, spatial, PTY, behavior lab, tool doctor) as the organ map. That is a spec. Combined with section 3 'VMCP have been implemented' it reads as built. Graph: VMCP_RECEIPT_LAW BUILT; most VMCP_* SCAFFOLDED; AGENTOS_BEHAVIOR_LAB ABSENT; VMCP_WEB_CAPTURE and VMCP_PTY_CAPTURE accepted=False.",
+      "should_say": "Keep the organ map as the spec. Mark each organ with graph status. Behavior Lab is ABSENT (no fixture runner). Do not say VMCP is implemented.",
+      "call_sites": [
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 609,
+          "symbol": "run_vmcp_gate",
+          "kind": "call"
+        }
+      ],
+      "blocker": "AGENTOS_BEHAVIOR_LAB no git-tracked definition; receipts/acceptance/AGENTOS_BEHAVIOR_LAB.json BLOCKED. VMCP_STATE_LATTICE SCAFFOLDED (accepted True, no production caller)."
+    },
+    {
+      "id": "U12_HWIR_SKELETON",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 2754,
+        "end_line": 2777
+      },
+      "classification": "STALE_ROADMAP_TEXT",
+      "why": "PB-09 'HawkingHWIR skeleton' undersells FPGA_HWIR WIRED. HwirGraph is constructed at tools/accelerator/backend_contract.py:1094 and tools/accelerator/fusion_bridge.py:1444. PB-01/02 FPGAProvider/MockFPGAProvider exist in hcli/agentos/fpga_preboard.py. Pre-board is not a physical board. FPGA_LINK_SIM/PARTITION_SIM still SCAFFOLDED. U50_* BLOCKED_HARDWARE.",
+      "should_say": "PB-09: HwirGraph is WIRED (not accepted, not a board result). PB-01/02 exist as SIMULATOR_ONLY. Do not write [M]. Keep PB-20/21 as simulation targets.",
+      "call_sites": [
+        {
+          "file": "tools/accelerator/backend_contract.py",
+          "line": 1094,
+          "symbol": "HwirGraph",
+          "kind": "call"
+        },
+        {
+          "file": "tools/accelerator/fusion_bridge.py",
+          "line": 1444,
+          "symbol": "HwirGraph",
+          "kind": "call"
+        },
+        {
+          "file": "tools/future/hwir.py",
+          "line": 862,
+          "symbol": "class HwirGraph",
+          "kind": "definition"
+        },
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 1019,
+          "symbol": "run_fpga_preboard",
+          "kind": "call"
+        }
+      ],
+      "blocker": "U50_PRESENT=false. FPGA_PREBOARD_SCHEMAS graph=SCAFFOLDED (catalog symbol FPGADeviceGenome). Accepted=False."
+    },
+    {
+      "id": "U13_PHYSICAL_GRAPH_AS_FUTURE_ONLY",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 595,
+        "end_line": 618
+      },
+      "classification": "STALE_ROADMAP_TEXT",
+      "why": "II-C Physical Graph Compiler is an Era II civilization in the genome (KEEP as era membership). Gene status is now WIRED via subprocess of tools/odyssey/physical_graph_compiler.py from tools/future/nr_nx_generic.py:1981. Treating it as purely future unbuilt work is stale. It is not BUILT: accepted undemonstrated; main() still MoE-hardcoded.",
+      "should_say": "Era membership stays II-C. Status: WIRED compiler entry exists; not accepted; not a heterogeneous executable (FUSION_FIRST_HETEROGENEOUS_EXECUTABLE UNREACHABLE, no second physical domain).",
+      "call_sites": [
+        {
+          "file": "tools/future/nr_nx_generic.py",
+          "line": 1981,
+          "symbol": "subprocess tools/odyssey/physical_graph_compiler.py",
+          "kind": "subprocess"
+        },
+        {
+          "file": "tools/odyssey/physical_graph_compiler.py",
+          "line": 183,
+          "symbol": "main schema",
+          "kind": "definition"
+        }
+      ],
+      "blocker": "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE UNREACHABLE: host fusion nodes=['APPLE']; U50/EGPU/DGX/HMF absent."
+    },
+    {
+      "id": "U14_THEIA_ENGINE_EXISTS_MODEL_DOES_NOT",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 3965,
+        "end_line": 3978
+      },
+      "classification": "STALE_ROADMAP_TEXT",
+      "why": "THEI-001..012 seed bank reads as if the bounty engine is still to be created. tools/theia/engine.py is LIVE as an engine; model ladder is BLOCKED_EXTERNAL. Catalog THEIA_* paths=() so the graph says no definition; that is a catalog miss of the engine, not absence of the directory.",
+      "should_say": "Bounty engine exists at tools/theia (CALLABLE via python3 -m tools.theia). THEIA_MICRO..RESEARCH remain BLOCKED_EXTERNAL until T0 teacher/data/trace/curriculum/checkpoint authorities exist. Directory existence is listed as not_sufficient in tools/theia/ladder.py.",
+      "call_sites": [
+        {
+          "file": "tools/theia/__main__.py",
+          "line": 1,
+          "symbol": "engine.main",
+          "kind": "entrypoint"
+        },
+        {
+          "file": "tools/theia/engine.py",
+          "line": 243,
+          "symbol": "argparse python3 -m tools.theia",
+          "kind": "entrypoint"
+        }
+      ],
+      "blocker": "BLOCKED_EXTERNAL: WAKE.THEIA_MICRO all_of T0_* unmet. No caller of tools.theia outside tools/theia except comments."
+    },
+    {
+      "id": "U15_D13_PARALLEL_GATE_REGISTRY",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 7640,
+        "end_line": 7684
+      },
+      "classification": "STALE_ROADMAP_TEXT",
+      "why": "Appendix D.13 lists HCLI_ULTRAGOAL_INGRESS, HCLI_REPORT_COMPACTION, AGENTOS_VERIFIER_AUTHORITY, AGENTOS_SINGLE_WRITER, HCLI_RESTART_RESUME, AGENTOS_STEERING_DURABLE, HCLI_BOOTSTRAP_HANDOFF which are NOT in Appendix O's 71-gate ledger. HCLI_CONTEXT_AUTHORITY_UNIFIED is in both and is BUILT. A second gate list will desync.",
+      "should_say": "Map D.13 names onto Appendix O ids (or add them to O via the CRISPR protocol, not a shadow list). Mark HCLI_CONTEXT_AUTHORITY_UNIFIED as BUILT with callers. HCLI_MIXED_MAX is WIRED not accepted. HCLI_SELF_OPTIMIZATION_BOOTSTRAP is WIRED not accepted.",
+      "call_sites": [
+        {
+          "file": "hcli/backends.py",
+          "line": 1320,
+          "symbol": "resolve",
+          "kind": "call"
+        },
+        {
+          "file": "hcli/engine.py",
+          "line": 1866,
+          "symbol": "resolve",
+          "kind": "call"
+        },
+        {
+          "file": "hcli/config.py",
+          "line": 131,
+          "symbol": "resolve",
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "id": "U16_CONTEXT_AUTHORITY_AS_FUTURE",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 7420,
+        "end_line": 7472
+      },
+      "classification": "STALE_ROADMAP_TEXT",
+      "why": "D.4/D.5 specify the context budget / preflight algorithm. That is now BUILT as HCLI_CONTEXT_AUTHORITY_UNIFIED. HCLI_CONTEXT_INVALIDATION is SCAFFOLDED (accepted True, no production caller). No old 8k/32k/128k constants were found in H-ROADMAP \u2014 the stale part is treating the authority as unbuilt spec. Prefill-vs-decode as a physical split remains a research hypothesis (lines 1544, 2966, 5049), not a measured ANE-owns-prefill fact.",
+      "should_say": "D.4/D.5 remain the contract. Status: context-budget authority is BUILT. Invalidation is SCAFFOLDED. Prefill/decode placement is a hypothesis, not a measurement. Do not invent a k-token window.",
+      "call_sites": [
+        {
+          "file": "hcli/backends.py",
+          "line": 1320,
+          "symbol": "resolve",
+          "kind": "call"
+        },
+        {
+          "file": "hcli/engine.py",
+          "line": 1866,
+          "symbol": "resolve",
+          "kind": "call"
+        }
+      ],
+      "blocker": "HCLI_CONTEXT_INVALIDATION: no production caller of the implementing symbol (catalog file hcli/goal.py).",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "prefill_note": "No MEASURED prefill/decode split was taken this session. Keep ANE-owns-prefill as a question (5049), not a result."
+    },
+    {
+      "id": "U17_APPENDIX_I_PHASE_VI_NAME",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 8741,
+        "end_line": 8746
+      },
+      "classification": "STALE_ROADMAP_TEXT",
+      "why": "Phase VI \u2014 FPGA Coprocessor is not Era VI, but the heading collides with the constitutional 'no Era VI'. Easy to misread.",
+      "should_say": "Rename to a non-Roman-era label (e.g. Manifestation step 6 \u2014 FPGA coprocessor) or add an explicit 'this is not Era VI' line."
+    },
+    {
+      "id": "U18_CODEX_OVERNIGHT_LINEAGE",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 4039,
+        "end_line": 4039
+      },
+      "classification": "STALE_ROADMAP_TEXT",
+      "why": "Source-lineage bullet 'Current overnight Codex/HCLI campaign' is a 2026-08-27 operator snapshot, not a living campaign name. Grok is the current executor in this worktree. Keep as lineage if dated; do not let a fresh process treat Codex as the operator.",
+      "should_say": "Historical overnight Codex/HCLI campaign (2026-08-27): provider-neutral HCLI, 1h autonomy evidence, Flash metadata audit. Superseded as operator snapshot. Lineage only."
+    },
+    {
+      "id": "U19_SEARCH_CADENCE_NEXT_ODYSSEY",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 3534,
+        "end_line": 3538
+      },
+      "classification": "STALE_ROADMAP_TEXT",
+      "why": "'MONTHLY / BEFORE NEXT ODYSSEY' serializes Odysseys. Current law: I/II/III are overlapping roles inside one 48h wall budget once launched.",
+      "should_say": "MONTHLY / BEFORE NEXT 48h CYCLE. Odysseys I/II/III may already be concurrent roles."
+    },
+    {
+      "id": "U20_MODELLAKE_LAW_PARTIALS",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 2385,
+        "end_line": 2385
+      },
+      "classification": "STALE_ROADMAP_TEXT",
+      "why": "MODELLAKE LAW 'Never casually restart a healthy acquisition worker' remains good safety text but now describes a closed fill. Pair it with 'the 55-specimen school is sealed; do not reopen acquisition as default work'.",
+      "should_say": "Never casually restart a healthy acquisition worker IF one is running. The current school is 55 sealed specimens at IDENTITY_RESOLVED or later. Default work is hash-verify + science, not a new fill."
+    },
+    {
+      "id": "U21_24H_MODELLAKE_PROGRESS",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 296,
+        "end_line": 296
+      },
+      "classification": "WRONG_PRIORITY",
+      "why": "24-hour charge requires 'ModelLake lifecycle progress or a justified stall receipt'. Lifecycle progress as acquisition is the old fill. A sealed school that does not grow is not a stall.",
+      "should_say": "Require ModelLake hash-verify progress, a new science-on-specimen receipt, or an explicit no-new-specimen decision. Sealed-and-idle is not failure."
+    },
+    {
+      "id": "U22_KEEP_QWEN27_AS_CONTROL_EVEN_IF_FLASH_RESIDENT",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 1558,
+        "end_line": 1558
+      },
+      "classification": "KEEP",
+      "why": "This sentence is already the right doctrine. Listed under UPDATE only to note it should survive any rewrite of section 3 that currently over-identifies Qwen27 as 'the' resident.",
+      "should_say": "Unchanged."
+    },
+    {
+      "id": "U23_GENE_CARD_PLACEHOLDERS",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 5223,
+        "end_line": 7269
+      },
+      "classification": "SCAFFOLDED",
+      "why": "Appendix A has 25 gene cards. 325 identical 'Action: instantiate a bounded WorkUnit...' lines and 325 identical 'Receipt: bind input identity...' lines. AUTHORITY through PROMOTION are unfilled templates. Only Root phenotype + SUBGENES are gene-specific. These cards cannot be executed as CRISPR until filled.",
+      "should_say": "Keep unique Root phenotype and SUBGENES. Replace the 13 identical Q&A blocks per gene with gene-specific answers, or mark the cards as TEMPLATE_NOT_FILLED so a process does not treat them as ready mutations."
+    },
+    {
+      "id": "U24_ODYSSEY_I_BUILT_VS_SCHOOL_OPEN",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 531,
+        "end_line": 553
+      },
+      "classification": "STALE_ROADMAP_TEXT",
+      "why": "I-E mission text is still right as an open school. Gate ODYSSEY_I_DISCOVERY is BUILT/ACCEPTED (2026-09-02). Do not describe Discovery as unstarted. Do not describe it as finished civilization: gene I-E is SCAFFOLDED; real weights on unseen specimens remain an open next_work item in ROADMAP_STATE.",
+      "should_say": "Odyssey I discovery gate is BUILT (pick_acquire_candidate called; identity census accepted). The school is not complete. Odyssey II/III are WIRED not accepted (transfer reduction not positive; synthetic refutation).",
+      "call_sites": [
+        {
+          "file": "hcli/acquisition.py",
+          "line": 172,
+          "symbol": "pick_acquire_candidate",
+          "kind": "call"
+        },
+        {
+          "file": "tools/acceptance/odyssey/run.py",
+          "line": 304,
+          "symbol": "pick_acquire_candidate",
+          "kind": "call"
+        }
+      ],
+      "blocker_ii": "receipts/acceptance/ODYSSEY_II_TRANSFER.json TRANSFER_REDUCTION_NOT_POSITIVE (evaluations_avoided -8).",
+      "blocker_iii": "receipts/acceptance/ODYSSEY_III_ADVERSARIAL_META_SCIENCE.json NO_INDEPENDENT_LAW_REFUTATION (synthetic=True)."
+    }
+  ],
+  "remove_or_archive": [
+    {
+      "id": "R01_SING_F_AS_ACTIVE_CHARGE",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 1770,
+        "end_line": 1942
+      },
+      "action": "ARCHIVE",
+      "classification": "SUPERSEDED",
+      "why": "SING-F01..SING-F80 is labelled 'URGENT SINGULARITY CAMPAIGN CHARGE' and 'active execution supplement'. Section 13.10 says the C-graph is the operational index that prevents several serial campaigns. Keep SING as lineage of a 80-step charge; stop presenting it as the live queue. F1-style shard-arrival steps inside it are additionally superseded by the sealed specimen.",
+      "should_say": "Move under a Historical charges appendix. Pointer from 13.10 consolidation map is enough."
+    },
+    {
+      "id": "R02_LAT_F_AS_ACTIVE_CHARGE",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 1952,
+        "end_line": 2051
+      },
+      "action": "ARCHIVE",
+      "classification": "SUPERSEDED",
+      "why": "LAT-F01..LAT-F37 same overlap with C-graph. Live queue is C01-C64 plus the later L0-L47 device-resident receipts, not a second 37-step charge.",
+      "should_say": "Archive as lineage. Keep any LAT step that is not already a C-step only as a mapping row."
+    },
+    {
+      "id": "R03_F0_F17_AS_LIVE_LADDER",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 1749,
+        "end_line": 1768
+      },
+      "action": "ARCHIVE",
+      "classification": "SUPERSEDED",
+      "why": "F0-F17 is mapped into C01-C32. F0/F1 acquisition steps are done. Keep the mapping table at 2238-2241; do not keep a second live ladder.",
+      "keep_nearby": "13.1 promotion EBPW/TPS numbers (1607-1647) stay."
+    },
+    {
+      "id": "R04_AIDER",
+      "span": null,
+      "action": "KEEP_ABSENT",
+      "classification": "KEEP",
+      "why": "Aider is not mentioned in H-ROADMAP. Do not add it. hcli provider families do not include aider. receipts/future/AIDER_NAMESPACE_AUDIT.json is lineage of a namespace problem, not a current provider.",
+      "lines_in_h_roadmap": []
+    },
+    {
+      "id": "R05_DO_NOT_ARCHIVE_SECTION34_INDEX",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 4058,
+        "end_line": 5040
+      },
+      "action": "KEEP_AS_LINEAGE",
+      "classification": "KEEP",
+      "why": "Section 34 is an absorbed-source heading dump so compaction cannot silently drop a branch. It is not an execution queue. Do not drive work from V3's 'next-resident school' wording (4997) \u2014 that line is lineage of V3, not current doctrine. If anything is archived, archive the operational reading of 4997, not the index.",
+      "stale_line_inside": {
+        "line": 4997,
+        "text": "10.2 Qwen3.8-Flash-Next \u2014 MoE olive branch / next-resident school",
+        "why": "V3 index. Flash is the candidate, not the resident. Harmless if the index stays labelled as absorbed V3."
+      }
+    },
+    {
+      "id": "R06_DO_NOT_DELETE_APPENDIX_O",
+      "span": {
+        "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+        "start_line": 9455,
+        "end_line": 9529
+      },
+      "action": "KEEP",
+      "why": "Parser requires 71 gates here. Status does not belong in this file."
+    }
+  ],
+  "capability_claims": [
+    {
+      "id": "C_FLASH_SOURCE_BODY",
+      "claim": "Qwen3.8-Flash-Next source body exists as a sealed ModelLake specimen",
+      "state": "END_TO_END",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "call_sites": [
+        {
+          "file": "receipts/acceptance/MODELLAKE_IDENTITY_RESOLVED.json",
+          "line": null,
+          "symbol": "hcli.agentos.modellake_gate.run_modellake_census",
+          "kind": "receipt_invocation",
+          "note": "symbol_invoked=true; 55/55 IDENTITY_RESOLVED"
+        },
+        {
+          "file": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+          "line": null,
+          "symbol": null,
+          "kind": "artifact",
+          "note": "n_files=144 bytes=360023286454 acquired_at=2026-08-27T04:53:13Z"
+        }
+      ],
+      "graph_status": "FLASH_SOURCE_VERIFIED=SCAFFOLDED because tools/flash_organ_census.py has no non-test caller",
+      "roadmap_lines_that_are_wrong": [
+        278,
+        361,
+        1751,
+        1752,
+        3891
+      ]
+    },
+    {
+      "id": "C_FLASH_FIRST_GRAVITY_ORGAN",
+      "claim": "First Flash Gravity organ path is BUILT",
+      "state": "BUILT",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "call_sites": [
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 761,
+          "symbol": "run_flash_science_gate",
+          "kind": "call"
+        },
+        {
+          "file": "tools/acceptance/flash/run_gates.py",
+          "line": 292,
+          "symbol": "run_flash_science_gate",
+          "kind": "call"
+        },
+        {
+          "file": "hcli/agentos/flash_science.py",
+          "line": 1100,
+          "symbol": "run_flash_science_gate",
+          "kind": "definition"
+        }
+      ],
+      "receipt": "receipts/acceptance/FLASH_FIRST_GRAVITY_ORGAN.json",
+      "roadmap_lines": [
+        1755,
+        3893
+      ]
+    },
+    {
+      "id": "C_FLASH_FULL_NOETIC_EXECUTABLE",
+      "claim": "Flash full Noetic executable is not built",
+      "state": "SCAFFOLDED",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "call_sites": [],
+      "blocker": "No non-test caller of tools/odyssey/noetic_compiler.py. receipts/acceptance/FLASH_FULL_NOETIC_EXECUTABLE.json BLOCKED: native_loader=NOT_IMPLEMENTED; NR can_promote=False; complete_system_ebpw=None; accepted_capability_preserving_tps=None.",
+      "roadmap_lines_ok_as_target": [
+        1607,
+        1629,
+        1763
+      ],
+      "roadmap_lines_if_they_imply_done": [
+        2277
+      ]
+    },
+    {
+      "id": "C_FLASH_L0_L47_CHAIN",
+      "claim": "Device-resident Flash 0\u219247 continuation exists and is not a complete token",
+      "state": "TESTED",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "call_sites": [
+        {
+          "file": "receipts/headless/FLASH_DEVICE_RESIDENT_L0_L47_COMPLETE_V1/FAST_CHAIN_SUMMARY.json",
+          "line": null,
+          "symbol": null,
+          "kind": "artifact",
+          "note": "status=PASSED; claim_boundary keeps complete token and resident promotion open"
+        }
+      ],
+      "receipt": "receipts/headless/FLASH_DEVICE_RESIDENT_L0_L47_COMPLETE_V1/FAST_CHAIN_SUMMARY.json",
+      "claim_boundary": "device-resident protected-shaped continuation; deep per-layer parity, complete token, and resident promotion remain open",
+      "status": "PASSED",
+      "blocker": "Complete token / TPS / EBPW / resident promotion remain open. Not MEASURED this session."
+    },
+    {
+      "id": "C_MODELLAKE_55",
+      "claim": "55 sealed specimens at IDENTITY_RESOLVED or later",
+      "state": "END_TO_END",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "call_sites": [
+        {
+          "file": "hcli/acquisition.py",
+          "line": 172,
+          "symbol": "pick_acquire_candidate",
+          "kind": "call"
+        },
+        {
+          "file": "receipts/acceptance/MODELLAKE_IDENTITY_RESOLVED.json",
+          "line": null,
+          "symbol": "run_modellake_census",
+          "kind": "receipt_invocation"
+        }
+      ],
+      "artifact": "55 directories under /Volumes/corpdrive/hawking-modellake/specimens and 55 manifests",
+      "bytes": 4352666459500,
+      "roadmap_lines_that_are_wrong": [
+        361,
+        278,
+        3944,
+        9543
+      ]
+    },
+    {
+      "id": "C_MODELLAKE_HASH",
+      "claim": "School-wide oid-backed sha256 is not done",
+      "state": "WIRED",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "call_sites": [
+        {
+          "file": "tools/acceptance/lake/hash_verify.py",
+          "line": 41,
+          "symbol": "reconcile",
+          "kind": "call"
+        }
+      ],
+      "blocker": "receipts/acceptance/MODELLAKE_HASH_VERIFIED.json: hashed canonical Qwen3-0.6B only; 4.351 TB remaining size-checked. Size is not sha256."
+    },
+    {
+      "id": "C_QWEN27_RESIDENT",
+      "claim": "Qwen3.8-27B sealed-3.14 is the current native resident profile",
+      "state": "TESTED",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "call_sites": [
+        {
+          "file": "hcli/agentos/native_gate.py",
+          "line": 518,
+          "symbol": "A1_direct_resident",
+          "kind": "call"
+        },
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 157,
+          "symbol": "native-gate",
+          "kind": "call"
+        }
+      ],
+      "receipt": "receipts/headless/HCLI_AGENTOS_NATIVE_GATE.json",
+      "model_id": "qwen3.8-27b-sealed-3.14",
+      "provider": "native",
+      "protected_baseline": {
+        "graph": "QWEN27_PROTECTED_BASELINE WIRED",
+        "accepted": false,
+        "blocker": "receipts/acceptance/QWEN27_PROTECTED_BASELINE.json: no quiescent window; live competing HCLI resident",
+        "call_sites": [
+          {
+            "file": "hcli/agentos_cli.py",
+            "line": 1193,
+            "symbol": "run_protected_accelerator_benchmark",
+            "kind": "call"
+          }
+        ]
+      }
+    },
+    {
+      "id": "C_A1A6_NATIVE",
+      "claim": "A1-A6 native HCLI reproduction ladder passed",
+      "state": "TESTED",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "call_sites": [
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 157,
+          "symbol": "native-gate",
+          "kind": "call"
+        },
+        {
+          "file": "hcli/agentos/native_gate.py",
+          "line": 518,
+          "symbol": "A1_direct_resident",
+          "kind": "call"
+        }
+      ],
+      "receipt": "receipts/headless/HCLI_AGENTOS_NATIVE_GATE.json",
+      "not_the_same_as": [
+        "L0-L5 autonomy ladder",
+        "20-request residency proof"
+      ]
+    },
+    {
+      "id": "C_A1A5_AUTONOMY",
+      "claim": "A1-A5 AgentOS autonomy-gate passed (not L3/L4/L5, not sovereignty)",
+      "state": "TESTED",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "call_sites": [
+        {
+          "file": "hcli/agentos/autonomy_gate.py",
+          "line": 984,
+          "symbol": "run_autonomy_gate",
+          "kind": "call"
+        }
+      ],
+      "receipt": "receipts/headless/HCLI_AGENTOS_AUTONOMY_GATE.json",
+      "claim_boundary": "native cognition proposes; typed tools, persisted WorkUnits, and fixed verifiers decide; no sovereignty claim"
+    },
+    {
+      "id": "C_TWENTY_REQUEST",
+      "claim": "20-request residency proof passed",
+      "state": "ABSENT",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "call_sites": [],
+      "blocker": "hcli/agentos/checkpoint.py:671 blocker still open; no receipt found for a 20-request run",
+      "roadmap_lines": [
+        357
+      ]
+    },
+    {
+      "id": "C_ONE_HOUR_UNATTENDED",
+      "claim": "One-hour unattended window 55 calls / 54 accepted / 0 human",
+      "state": "TESTED",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "call_sites": [
+        {
+          "file": "hcli/agentos/autonomy_gate.py",
+          "line": 1230,
+          "symbol": "run_unattended_window",
+          "kind": "call"
+        }
+      ],
+      "receipt": "receipts/headless/HCLI_AGENTOS_UNATTENDED_WINDOW.json",
+      "not": "L4 multi-day laboratory"
+    },
+    {
+      "id": "C_CONTEXT_AUTHORITY",
+      "claim": "HCLI context-budget authority is BUILT",
+      "state": "BUILT",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "call_sites": [
+        {
+          "file": "hcli/backends.py",
+          "line": 1320,
+          "symbol": "resolve",
+          "kind": "call"
+        },
+        {
+          "file": "hcli/config.py",
+          "line": 131,
+          "symbol": "resolve",
+          "kind": "call"
+        },
+        {
+          "file": "hcli/engine.py",
+          "line": 1866,
+          "symbol": "resolve",
+          "kind": "call"
+        }
+      ],
+      "receipt": "receipts/acceptance/HCLI_CONTEXT_AUTHORITY_UNIFIED.json",
+      "invalidation": {
+        "graph": "HCLI_CONTEXT_INVALIDATION SCAFFOLDED",
+        "accepted": true,
+        "wired": false,
+        "blocker": "no production caller of implementing symbol"
+      }
+    },
+    {
+      "id": "C_VMCP",
+      "claim": "VMCP as a whole is implemented",
+      "state": "SCAFFOLDED",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "call_sites": [
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 609,
+          "symbol": "run_vmcp_gate",
+          "kind": "call"
+        }
+      ],
+      "built_subset": [
+        "VMCP_RECEIPT_LAW"
+      ],
+      "blocker": "AGENTOS_BEHAVIOR_LAB ABSENT. Most VMCP_* SCAFFOLDED. VMCP_WEB_CAPTURE and VMCP_PTY_CAPTURE accepted=False.",
+      "roadmap_lines": [
+        356,
+        1155
+      ]
+    },
+    {
+      "id": "C_BEHAVIOR_LAB",
+      "claim": "AgentOS Behavior Lab exists",
+      "state": "ABSENT",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "call_sites": [],
+      "blocker": "no git-tracked definition; receipts/acceptance/AGENTOS_BEHAVIOR_LAB.json BLOCKED missing BHV-01..BHV-23 fixture runner; also_missing hcli/workunit.py per that receipt",
+      "roadmap_lines": [
+        1269,
+        3859,
+        9483
+      ]
+    },
+    {
+      "id": "C_FPGA_HWIR",
+      "claim": "HawkingHWIR is more than a skeleton",
+      "state": "WIRED",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "call_sites": [
+        {
+          "file": "tools/future/hwir.py",
+          "line": 862,
+          "symbol": "class HwirGraph",
+          "kind": "definition"
+        },
+        {
+          "file": "tools/accelerator/backend_contract.py",
+          "line": 1094,
+          "symbol": "HwirGraph",
+          "kind": "call"
+        },
+        {
+          "file": "tools/accelerator/fusion_bridge.py",
+          "line": 1444,
+          "symbol": "HwirGraph",
+          "kind": "call"
+        },
+        {
+          "file": "tools/future/p6_projection.py",
+          "line": 857,
+          "symbol": "HwirGraph",
+          "kind": "call"
+        }
+      ],
+      "accepted": false,
+      "blocker": "Not a board result. U50_PRESENT=false. Do not write MEASURED."
+    },
+    {
+      "id": "C_FPGA_PREBOARD_CLI",
+      "claim": "FPGA preboard CLI exists",
+      "state": "CALLABLE",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "call_sites": [
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 1019,
+          "symbol": "run_fpga_preboard",
+          "kind": "call"
+        }
+      ],
+      "graph_status": "FPGA_PREBOARD_SCHEMAS SCAFFOLDED (catalog symbol FPGADeviceGenome, not run_fpga_preboard)",
+      "blocker": "SIMULATOR_ONLY; FPGAProvider.execute raises; no board"
+    },
+    {
+      "id": "C_U50",
+      "claim": "U50DD physical results",
+      "state": "BLOCKED_HARDWARE",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "call_sites": [],
+      "blocker": "CAPABILITY_GRAPH.hardware_probes.U50_PRESENT=false. All U50_* gates BLOCKED_HARDWARE. Roadmap:364 is correct."
+    },
+    {
+      "id": "C_PHYSICAL_GRAPH",
+      "claim": "Physical graph compiler exists",
+      "state": "WIRED",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "call_sites": [
+        {
+          "file": "tools/future/nr_nx_generic.py",
+          "line": 1981,
+          "symbol": "subprocess tools/odyssey/physical_graph_compiler.py",
+          "kind": "subprocess"
+        },
+        {
+          "file": "hcli/physical_graph.py",
+          "line": 1,
+          "symbol": "module",
+          "kind": "definition"
+        },
+        {
+          "file": "tools/odyssey/physical_graph_compiler.py",
+          "line": 1,
+          "symbol": "module",
+          "kind": "definition"
+        }
+      ],
+      "accepted": false,
+      "blocker": "main() still MoE-hardcoded; FUSION_FIRST_HETEROGENEOUS_EXECUTABLE UNREACHABLE (only APPLE domain)"
+    },
+    {
+      "id": "C_THEIA_ENGINE",
+      "claim": "Theia bounty engine exists; Theia model does not",
+      "state": "CALLABLE",
+      "model_state": "BLOCKED_EXTERNAL",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "call_sites": [
+        {
+          "file": "tools/theia/__main__.py",
+          "line": 1,
+          "symbol": "engine.main",
+          "kind": "entrypoint"
+        },
+        {
+          "file": "tools/theia/engine.py",
+          "line": 243,
+          "symbol": "argparse",
+          "kind": "entrypoint"
+        }
+      ],
+      "blocker": "No non-tools.theia production caller. Model ladder WAKE.THEIA_MICRO unmet. Catalog THEIA_* paths=() so graph says no definition \u2014 engine is still present on disk."
+    },
+    {
+      "id": "C_ODYSSEY_48H",
+      "claim": "Complete I+II+III cycle target is <=48h wall time, overlapping, not serialized 72h/7d",
+      "state": "CALLABLE",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "call_sites": [
+        {
+          "file": "tools/future/odyssey_mission_controller.py",
+          "line": 34,
+          "symbol": "CYCLE_HOURS",
+          "kind": "definition"
+        },
+        {
+          "file": "tools/future/odyssey_mission_controller.py",
+          "line": 14,
+          "symbol": "--build CLI",
+          "kind": "cli_entrypoint"
+        }
+      ],
+      "blocker": "recurring_operations.py:115 is an owner string, not a call. Cycle NOT_STARTED (receipts/future/ODYSSEY_CYCLE_1_START.json absent). Do not report hour 0.",
+      "absent_from_h_roadmap": true,
+      "roadmap_lines_that_conflict": [
+        9312,
+        9319,
+        3534
+      ]
+    },
+    {
+      "id": "C_ODYSSEY_I",
+      "claim": "ODYSSEY_I_DISCOVERY gate",
+      "state": "BUILT",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "call_sites": [
+        {
+          "file": "hcli/acquisition.py",
+          "line": 172,
+          "symbol": "pick_acquire_candidate",
+          "kind": "call"
+        },
+        {
+          "file": "tools/acceptance/odyssey/run.py",
+          "line": 304,
+          "symbol": "pick_acquire_candidate",
+          "kind": "call"
+        }
+      ],
+      "receipt": "receipts/acceptance/ODYSSEY_I_DISCOVERY.json",
+      "verdict": "ACCEPTED",
+      "generated_at": "2026-09-02T18:44:47Z",
+      "not": "civilization I-E complete; gene still SCAFFOLDED"
+    },
+    {
+      "id": "C_ODYSSEY_II",
+      "claim": "ODYSSEY_II_TRANSFER",
+      "state": "WIRED",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "call_sites": [
+        {
+          "file": "tools/acceptance/odyssey/run.py",
+          "line": 463,
+          "symbol": "load_qualification_queue",
+          "kind": "call"
+        },
+        {
+          "file": "tools/future/consolidated_run.py",
+          "line": 891,
+          "symbol": "load_qualification_queue",
+          "kind": "call"
+        },
+        {
+          "file": "tools/future/protected_window.py",
+          "line": 365,
+          "symbol": "load_qualification_queue",
+          "kind": "call"
+        }
+      ],
+      "blocker": "receipts/acceptance/ODYSSEY_II_TRANSFER.json TRANSFER_REDUCTION_NOT_POSITIVE; evaluations_avoided=-8"
+    },
+    {
+      "id": "C_ODYSSEY_III",
+      "claim": "ODYSSEY_III_ADVERSARIAL_META_SCIENCE",
+      "state": "WIRED",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "call_sites": [
+        {
+          "file": "tools/acceptance/odyssey/run.py",
+          "line": 561,
+          "symbol": "scars",
+          "kind": "call"
+        },
+        {
+          "file": "tools/future/evidence_dag.py",
+          "line": 1124,
+          "symbol": "scars",
+          "kind": "call"
+        },
+        {
+          "file": "tools/future/resident_supervisor.py",
+          "line": 893,
+          "symbol": "scars",
+          "kind": "call"
+        }
+      ],
+      "blocker": "receipts/acceptance/ODYSSEY_III_ADVERSARIAL_META_SCIENCE.json NO_INDEPENDENT_LAW_REFUTATION; odyssey3_adversary.selftest synthetic=True"
+    },
+    {
+      "id": "C_LUNA",
+      "claim": "Luna is a current provider/teacher",
+      "state": "ABSENT",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "call_sites": [],
+      "blocker": "git grep HEAD *.py *.md *.toml for Luna returned no provider. hcli/providers.py families have no luna.",
+      "roadmap_lines": [
+        2197,
+        2231,
+        2339
+      ]
+    },
+    {
+      "id": "C_TEST_COUNT_712",
+      "claim": "Full test suite 712 passed",
+      "state": "STALE_ROADMAP_TEXT",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "call_sites": [],
+      "blocker": "Unscoped. Contradicted by HCLI_AGENTOS_HANDOFF.verification.full_suite='747 passed, 2 skipped' and by ROADMAP_STATE 855 (tools/accelerator only). This audit did not re-run pytest.",
+      "roadmap_lines": [
+        359
+      ]
+    },
+    {
+      "id": "C_COORDINATE_0_7",
+      "claim": "Canonical civilizational coordinate is 0.7%",
+      "state": "KEEP",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "call_sites": [],
+      "note": "Not a capability. Constitution. Do not recompute from obligation or file counts. civilization/ROADMAP_STATE.json civilizational_coordinate=0.7 with heuristic=true.",
+      "roadmap_lines": [
+        5,
+        68
+      ],
+      "blocker": "Not a callable capability. Constitutional coordinate 0.7% at H-ROADMAP.md:5 and :68. civilization/ROADMAP_STATE.json civilizational_coordinate=0.7 heuristic=true. Do not recompute from obligation or file counts."
+    },
+    {
+      "id": "C_AGENTOS_BUILT_GATES",
+      "claim": "Named I-A gates that are BUILT",
+      "state": "BUILT",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "call_sites": [
+        {
+          "file": "hcli/goal_compile.py",
+          "line": 518,
+          "symbol": "Scheduler",
+          "kind": "call"
+        },
+        {
+          "file": "hcli/mission.py",
+          "line": 254,
+          "symbol": "Scheduler",
+          "kind": "call"
+        },
+        {
+          "file": "tools/acceptance/agentos/harness.py",
+          "line": 714,
+          "symbol": "abort",
+          "kind": "call"
+        },
+        {
+          "file": "hcli/agentos/handoff.py",
+          "line": 106,
+          "symbol": "BackgroundJobStore",
+          "kind": "call"
+        },
+        {
+          "file": "hcli/controller.py",
+          "line": 664,
+          "symbol": "MutationLock",
+          "kind": "call"
+        },
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 1220,
+          "symbol": "write_program_checkpoint",
+          "kind": "call"
+        },
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 584,
+          "symbol": "restart path (AGENTOS_RESTART_COHERENCE)",
+          "kind": "call"
+        }
+      ],
+      "gates": [
+        "AGENTOS_REPAIR_BOUNDED",
+        "AGENTOS_CANCELLATION",
+        "AGENTOS_ORPHAN_RECONCILIATION",
+        "AGENTOS_PERSISTENCE_SINGLE_AUTHORITY",
+        "AGENTOS_CHECKPOINT_ATOMICITY",
+        "AGENTOS_RESTART_COHERENCE",
+        "HCLI_CONTEXT_AUTHORITY_UNIFIED",
+        "HCLI_CONTEXT_FOCUSED_WORKUNITS",
+        "BACKEND_FAILURE_ISOLATION",
+        "HCLI_SELF_SUPPLEMENT"
+      ],
+      "still_scaffolded": [
+        "AGENTOS_RETRY_CLASSIFIED",
+        "AGENTOS_CIRCUIT_BREAKER",
+        "HCLI_CONTEXT_INVALIDATION"
+      ],
+      "still_wired_not_accepted": [
+        "HCLI_STATUS_PHYSICAL",
+        "HCLI_MIXED_MAX",
+        "HCLI_SELF_OPTIMIZATION_BOOTSTRAP",
+        "AGENTOS_DETERMINISTIC_OFFLOAD"
+      ]
+    }
+  ],
+  "hunt_coverage": {
+    "missing_capability_that_now_exists": [
+      "U02 Flash-Next acquisition",
+      "U06 F0/F1 shard arrival",
+      "U12 HWIR skeleton",
+      "U13 Physical graph compiler as purely future",
+      "U14 Theia engine",
+      "U16 context authority",
+      "U24 Odyssey I unstarted",
+      "C_AGENTOS_BUILT_GATES vs section 3 mixed with VMCP"
+    ],
+    "described_as_built_still_scaffolded": [
+      "U01 line 356 VMCP/AgentOS implemented",
+      "U11 section 8 VMCP organs",
+      "C_FLASH_FULL_NOETIC_EXECUTABLE",
+      "C_BEHAVIOR_LAB",
+      "U23 gene cards as executable CRISPR",
+      "S3 FLASH_SOURCE_VERIFIED accepted but SCAFFOLDED"
+    ],
+    "old_flash_next_assumptions": [
+      "U01:360-361",
+      "U02",
+      "U06",
+      "U07",
+      "U08 FLAS-001",
+      "R01",
+      "R02",
+      "R03"
+    ],
+    "qwen27_resident_vs_control": [
+      "U01:355,362",
+      "K14",
+      "U22",
+      "C_QWEN27_RESIDENT"
+    ],
+    "generic_fpga_vs_u50dd": [
+      "K16 already U50DD-specific",
+      "U17 Phase VI name",
+      "K25 Appendix J",
+      "C_U50"
+    ],
+    "72h_7d_odyssey": [
+      "U10",
+      "S10"
+    ],
+    "serialized_odyssey": [
+      "U10",
+      "U19",
+      "K10 keep logical roles"
+    ],
+    "outdated_acquisition_55_sealed": [
+      "U01:361",
+      "U02",
+      "U08",
+      "U09",
+      "U20",
+      "C_MODELLAKE_55"
+    ],
+    "stale_provider_names": [
+      "U04",
+      "U05",
+      "U18",
+      "S9 Luna",
+      "R04 Aider absent (good)"
+    ],
+    "codex_aider": [
+      "U04",
+      "U05",
+      "U18",
+      "R04"
+    ],
+    "old_context_prefill": [
+      "U16 \u2014 no 8k/32k/128k constants found; authority is BUILT; prefill/decode is still a hypothesis"
+    ],
+    "old_autonomy_ladder_evidence": [
+      "U01:357-358",
+      "S1 20-request",
+      "K12 L0-L5 keep",
+      "C_A1A6_NATIVE",
+      "C_A1A5_AUTONOMY"
+    ],
+    "old_test_counts": [
+      "U01:359",
+      "C_TEST_COUNT_712"
+    ],
+    "old_completion_percentages": [
+      "K03 0.7% KEEP; do not recompute. No other completion % in H-ROADMAP snapshot besides 0.7%."
+    ]
+  },
+  "acceptance": {
+    "json_path": "receipts/audit/aud04-stale-roadmap-text.json",
+    "md_path": "receipts/audit/aud04-stale-roadmap-text.md",
+    "every_capability_claim_has_call_site_or_blocker": true,
+    "h_roadmap_edited": false
+  }
+}

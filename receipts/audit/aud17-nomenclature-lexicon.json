@@ -1,0 +1,4512 @@
+{
+  "schema": "hawking.audit.nomenclature_lexicon.v1",
+  "audit_id": "aud17-nomenclature-lexicon",
+  "nomenclature_version": "HAWKING_NOMENCLATURE_V1",
+  "head": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+  "recorded_at": "2026-09-02T19:04:17Z",
+  "recorded_by": "aud17-nomenclature-lexicon",
+  "evidence_tier": "SOURCE_INSPECTION",
+  "claim_boundary": "Static nomenclature audit. SOURCE_INSPECTION / STATIC_VERIFICATION. No hardware measurement. No implementation. No rewrite of H-ROADMAP.md. A module IMPORT is not a call site. Tests are not physical measurements. Roadmap prose is not evidence that a noun exists. Sparse checkout: git show/grep HEAD is existence authority; missing files on disk are not absence. Never MEASURED: GPU/ANE/FPGA/HMF/eGPU/DGX physical behaviour, thermal, protected benchmarks, ModelLake specimen bytes. Live HCLI daemon under launchd was NOT observed by pgrep in this sandbox (INFERRED from environment pack).",
+  "constitution": {
+    "eras": 5,
+    "odysseys": 3,
+    "era_vi": false,
+    "fpga_lives_in": [
+      "HawkingAccelerator",
+      "Fusion"
+    ],
+    "theia": "ONE generalist bounty model, not another civilization",
+    "civilizational_coordinate": "0.7%",
+    "north_star": "HAWKING = SELF-OPTIMIZING PHYSICAL AI COMPUTER",
+    "enforced_in_code": [
+      "tools/future/workunit_species.py:341 no Era VI",
+      "tools/future/succession.py:298 no Era VI",
+      "tools/future/codex_ingest.py:42 no fourth Odyssey and no Era VI"
+    ]
+  },
+  "hardware": {
+    "present": {
+      "soc": "Apple M3 Ultra (CPU/GPU/UMA)",
+      "ane": true
+    },
+    "absent": {
+      "fpga_u50dd": true,
+      "dgx": true,
+      "egpu": true,
+      "hmf_device": true,
+      "new_m_series": true
+    },
+    "probes": "civilization/CAPABILITY_GRAPH.json hardware_probes (STATIC)",
+    "evidence_tier": "SOURCE_INSPECTION"
+  },
+  "methodology": {
+    "call_site_rule": "wired := non-test call or subprocess of the implementing symbol. import != call. class X: != X().",
+    "search": "git grep -n -E HEAD -- hcli tools crates lab src civilization docs contracts (POSIX ERE; no \\\\b)",
+    "prior_documents": [
+      "docs/HAWKING_NOMENCLATURE.md",
+      "hcli/nomenclature.py",
+      "receipts/headless/NOMENCLATURE_CENSUS.json",
+      "receipts/future/NOMENCLATURE_AUDIT.json",
+      "civilization/CAPABILITY_GRAPH.json",
+      "/Users/scammermike/Downloads/H-ROADMAP.md (outside git; ROADMAP_STATE.roadmap_path)"
+    ],
+    "did_not_do": [
+      "rewrite H-ROADMAP.md",
+      "refactor/move/merge/delete source",
+      "edit hcli/ tools/ crates/ civilization/",
+      "kill/signal any process",
+      "write ModelLake specimens",
+      "run cargo test or pytest (not required for a nomenclature census; call sites from git grep)"
+    ],
+    "sparse_checkout": "37% materialized; git grep HEAD still searches blobs"
+  },
+  "expected_top_level": [
+    "HCLI",
+    "AgentOS",
+    "WorkUnit",
+    "GoalIR",
+    "Doctor",
+    "Gravity",
+    "Noetic",
+    "EBPW",
+    "PhysicalGraph",
+    "HawkingAccelerator",
+    "ModelLake",
+    "Odyssey",
+    "MachineGenome",
+    "DeviceAscension",
+    "HMF",
+    "HGVAS",
+    "Fusion",
+    "Theia",
+    "VMCP",
+    "FPGA_HWIR",
+    "ResultEnvelope",
+    "Receipt",
+    "Law",
+    "Scar"
+  ],
+  "counts": {
+    "lexicon_entries": 118,
+    "by_lexicon_class": {
+      "CONSTITUTIONAL": 6,
+      "CANONICAL_PUBLIC": 22,
+      "CANONICAL_INTERNAL": 28,
+      "EXPERIMENTAL": 20,
+      "SHOULD_RETIRE": 5,
+      "ALIAS": 2,
+      "OVER_SPECIFIC": 6,
+      "DUPLICATE": 1,
+      "HISTORICAL": 28
+    },
+    "by_existence": {
+      "INTEGRATED": 21,
+      "CONCEPT_ONLY": 6,
+      "SCAFFOLDED": 28,
+      "TESTED": 3,
+      "CALLABLE": 24,
+      "SUPERSEDED": 25,
+      "ABSENT": 7,
+      "STALE_ROADMAP_TEXT": 1,
+      "BLOCKED_HARDWARE": 3
+    },
+    "keep_top_level": 27,
+    "earned_separate_noun": 27,
+    "surprise_entries": 16,
+    "unearned_headline": 29,
+    "hierarchy_findings": 10,
+    "duplicate_definition_groups": 8
+  },
+  "lexicon": [
+    {
+      "noun": "Hawking",
+      "lexicon_class": "CONSTITUTIONAL",
+      "existence": "INTEGRATED",
+      "keep_top_level": true,
+      "earned_separate_noun": true,
+      "semantic_kind": "product",
+      "is_separate_semantic_object": true,
+      "collapse_to": null,
+      "preferred_shape": "one product: self-optimizing physical AI computer",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "H-ROADMAP.md:64 NORTH STAR",
+        "docs/HAWKING_NOMENCLATURE.md HAWKING_NOMENCLATURE_V1",
+        "crates/hawking-* workspace members exist at HEAD"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "Product envelope. Not a campaign brand. Census class AMBIGUOUS because the word also names crates, schemas, and the civilization.",
+      "surprise": false
+    },
+    {
+      "noun": "FiveEras",
+      "lexicon_class": "CONSTITUTIONAL",
+      "existence": "INTEGRATED",
+      "keep_top_level": true,
+      "earned_separate_noun": true,
+      "semantic_kind": "schedule_axis",
+      "is_separate_semantic_object": true,
+      "collapse_to": null,
+      "preferred_shape": "enum era in {I,II,III,IV,V} on WorkUnits/genes/gates; not six civilization objects",
+      "definitions": [
+        {
+          "path": "tools/future/workunit_species.py",
+          "line": 44,
+          "symbol": "ERAS = ('I','II','III','IV','V')"
+        }
+      ],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "H-ROADMAP.md:425 EXACTLY FIVE",
+        "civilization/CAPABILITY_GRAPH.json genes I-A..V-E (25 genes, 5 eras)",
+        "tools/future/workunit_species.py:341 refuses era not in I-V (there is no Era VI)",
+        "tools/future/succession.py:298 BoundViolation: there is no Era VI"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "Era is a coordinate, not five product nouns. Code refuses Era VI.",
+      "surprise": false
+    },
+    {
+      "noun": "ThreeOdysseys",
+      "lexicon_class": "CONSTITUTIONAL",
+      "existence": "INTEGRATED",
+      "keep_top_level": true,
+      "earned_separate_noun": true,
+      "semantic_kind": "curriculum",
+      "is_separate_semantic_object": true,
+      "collapse_to": "Odyssey",
+      "preferred_shape": "one Odyssey mechanism with phase field in {I,II,III}",
+      "definitions": [
+        {
+          "path": "tools/future/workunit_species.py",
+          "line": 45,
+          "symbol": "ODYSSEYS = ('I','II','III')"
+        }
+      ],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "H-ROADMAP.md:997 THE THREE ODYSSEYS",
+        "civilization/CAPABILITY_GRAPH.json gates ODYSSEY_I_DISCOVERY=BUILT, ODYSSEY_II_TRANSFER=WIRED, ODYSSEY_III_ADVERSARIAL_META_SCIENCE=WIRED",
+        "tools/future/codex_ingest.py:42 There is no fourth Odyssey and no Era VI"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "Odyssey-I is the live instance. II/III have WIRED gates and sidecar modules; they are phases of Odyssey, not extra civilizations.",
+      "surprise": false
+    },
+    {
+      "noun": "CivilizationalCoordinate0_7pct",
+      "lexicon_class": "CONSTITUTIONAL",
+      "existence": "CONCEPT_ONLY",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "accounting",
+      "is_separate_semantic_object": false,
+      "collapse_to": "Hawking",
+      "preferred_shape": "a coarse accounting field on civilization state, not a noun",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "H-ROADMAP.md:68 0.7% remains the canonical civilization coordinate"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "Accounting convention. Do not casually rewrite. Not an executable object.",
+      "surprise": false
+    },
+    {
+      "noun": "NorthStar",
+      "lexicon_class": "CONSTITUTIONAL",
+      "existence": "CONCEPT_ONLY",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "law",
+      "is_separate_semantic_object": false,
+      "collapse_to": "Hawking",
+      "preferred_shape": "prose law, not a type",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "H-ROADMAP.md:64 HAWKING = SELF-OPTIMIZING PHYSICAL AI COMPUTER"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "HCLI",
+      "lexicon_class": "CANONICAL_PUBLIC",
+      "existence": "INTEGRATED",
+      "keep_top_level": true,
+      "earned_separate_noun": true,
+      "semantic_kind": "control_plane",
+      "is_separate_semantic_object": true,
+      "collapse_to": null,
+      "preferred_shape": "one control-plane runtime (hcli/ + tools/haider/hcli historical nest)",
+      "definitions": [
+        {
+          "path": "hcli/__main__.py",
+          "line": 1,
+          "symbol": "package hcli"
+        }
+      ],
+      "production_callers": [
+        {
+          "path": "hcli/engine.py",
+          "line": 593,
+          "symbol": "GoalCompiler",
+          "kind": "constructs live engine"
+        },
+        {
+          "path": "hcli/tool_registry.py",
+          "line": 1561,
+          "symbol": "odyssey.cycle",
+          "kind": "call"
+        }
+      ],
+      "test_callers_exist": true,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [
+        "Headless (receipt plane)",
+        "Haider (vestigial directory nest tools/haider/hcli)"
+      ],
+      "overloads": [],
+      "evidence": [
+        "git ls-tree HEAD -- hcli | wc => 198 paths",
+        "receipts/headless/NOMENCLATURE_CENSUS.json: HCLI SURVIVING path_owned_files=980",
+        "civilization/CAPABILITY_GRAPH.json: 18 gates BUILT including HCLI_CONTEXT_FOCUSED_WORKUNITS",
+        "This sandbox pgrep hawkingd/hcli.__main__ returned empty; live-daemon claim is INFERRED from the campaign environment pack, not MEASURED here"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "Headless is the receipt/ops surface of HCLI, not a fourth surviving brand. Haider is a vestigial path prefix.",
+      "surprise": false
+    },
+    {
+      "noun": "AgentOS",
+      "lexicon_class": "CANONICAL_PUBLIC",
+      "existence": "INTEGRATED",
+      "keep_top_level": true,
+      "earned_separate_noun": true,
+      "semantic_kind": "control_plane_behavior",
+      "is_separate_semantic_object": true,
+      "collapse_to": null,
+      "preferred_shape": "AgentOS as the callable behavior layer of HCLI, not a second product",
+      "definitions": [
+        {
+          "path": "hcli/agentos/runtime.py",
+          "line": 47,
+          "symbol": "class AgentOS"
+        }
+      ],
+      "production_callers": [
+        {
+          "path": "hcli/agentos_cli.py",
+          "line": 26,
+          "symbol": "AgentOS(",
+          "kind": "call"
+        },
+        {
+          "path": "hcli/agentos/autonomy_gate.py",
+          "line": 522,
+          "symbol": "AgentOS(",
+          "kind": "call"
+        },
+        {
+          "path": "hcli/agentos/recovery.py",
+          "line": 306,
+          "symbol": "AgentOS(",
+          "kind": "call"
+        },
+        {
+          "path": "hcli/agentos/resident.py",
+          "line": 1563,
+          "symbol": "AgentOS(",
+          "kind": "call"
+        },
+        {
+          "path": "hcli/agentos/charge.py",
+          "line": 289,
+          "symbol": "AgentOS(",
+          "kind": "call"
+        },
+        {
+          "path": "hcli/agentos/native_mission_gate.py",
+          "line": 249,
+          "symbol": "AgentOS(",
+          "kind": "call"
+        }
+      ],
+      "test_callers_exist": true,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "hcli/agentos/__init__.py re-exports WorkUnit, Scheduler, Mission, ResultEnvelope, PhysicalGraph \u2014 ownership package, same objects",
+        "census: AgentOS COMPONENT of HCLI, path_owned_files=70",
+        "SURPRISE: gene I-A_AGENTOS_HCLI status=SCAFFOLDED with no_production_caller of hcli/engine.py, while AgentOS() has many non-test constructors and 18 BUILT gates. Gene implementing-symbol != gate implementing-symbol."
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "Separate from HCLI as a behavior layer (homeostasis, repair, resident, charge). Not a second civilization.",
+      "surprise": true
+    },
+    {
+      "noun": "WorkUnit",
+      "lexicon_class": "CANONICAL_PUBLIC",
+      "existence": "INTEGRATED",
+      "keep_top_level": true,
+      "earned_separate_noun": true,
+      "semantic_kind": "execution_object",
+      "is_separate_semantic_object": true,
+      "collapse_to": null,
+      "preferred_shape": "ONE dataclass with role/description/dependencies/status/resource_class/verifier/tool/provider/effect_class fields. Species are role tokens, not subclasses.",
+      "definitions": [
+        {
+          "path": "hcli/workunit.py",
+          "line": 33,
+          "symbol": "class WorkUnit",
+          "note": "canonical"
+        },
+        {
+          "path": "tools/future/improvement_metabolism.py",
+          "line": 295,
+          "symbol": "class WorkUnit",
+          "note": "DUPLICATE \u2014 should not exist"
+        },
+        {
+          "path": "tools/future/test_status_causality_gates.py",
+          "line": 202,
+          "symbol": "class WorkUnit",
+          "note": "test stub"
+        }
+      ],
+      "production_callers": [
+        {
+          "path": "hcli/goal.py",
+          "line": 0,
+          "symbol": "WorkUnit(",
+          "kind": "call"
+        },
+        {
+          "path": "hcli/mission.py",
+          "line": 0,
+          "symbol": "WorkUnit(",
+          "kind": "call"
+        },
+        {
+          "path": "hcli/agentos/charge.py",
+          "line": 0,
+          "symbol": "WorkUnit(",
+          "kind": "call"
+        },
+        {
+          "path": "hcli/agentos/recovery.py",
+          "line": 0,
+          "symbol": "WorkUnit(",
+          "kind": "call"
+        },
+        {
+          "path": "hcli/agentos/resident.py",
+          "line": 0,
+          "symbol": "WorkUnit(",
+          "kind": "call"
+        },
+        {
+          "path": "hcli/agentos_cli.py",
+          "line": 0,
+          "symbol": "WorkUnit(",
+          "kind": "call"
+        },
+        {
+          "path": "tools/accelerator/accelerator_runner.py",
+          "line": 0,
+          "symbol": "WorkUnit(",
+          "kind": "call"
+        }
+      ],
+      "test_callers_exist": true,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "git grep class WorkUnit HEAD -- hcli tools lab => 3 real class bodies + 1 census needle",
+        "git grep WorkUnit( HEAD -- hcli tools lab: 62 source ctor hits / 73 test ctor hits / 38 source files",
+        "git grep PrefillWorkUnit|DecodeWorkUnit|FpgaWorkUnit|GravityWorkUnit|WorkUnitFamily|WorkUnitGroup|WorkUnitBundle|WorkUnitCluster HEAD -- hcli tools crates lab src docs civilization => EXIT 1 (zero files)",
+        "tools/future/workunit_species.py:1-7 defines ten SPECIES_IDS and emits INTO the existing HCLI WorkUnit field set; does not subclass"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "Hierarchy inflation named in the audit question does not exist as types. Duplicate class WorkUnit in improvement_metabolism.py has not earned a second noun.",
+      "surprise": true
+    },
+    {
+      "noun": "WorkUnitDAG",
+      "lexicon_class": "CANONICAL_INTERNAL",
+      "existence": "INTEGRATED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "container",
+      "is_separate_semantic_object": false,
+      "collapse_to": "WorkUnit",
+      "preferred_shape": "a field/container of WorkUnits (the DAG), not a peer noun",
+      "definitions": [
+        {
+          "path": "hcli/goal.py",
+          "line": 55,
+          "symbol": "class WorkUnitDAG"
+        }
+      ],
+      "production_callers": [
+        {
+          "path": "hcli/goal_compile.py",
+          "line": 0,
+          "symbol": "WorkUnitDAG(",
+          "kind": "call"
+        },
+        {
+          "path": "hcli/goal.py",
+          "line": 0,
+          "symbol": "WorkUnitDAG(",
+          "kind": "call"
+        }
+      ],
+      "test_callers_exist": true,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "WorkUnitDAG ctor: 2 source / 10 test hits"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "WorkUnitExecutor",
+      "lexicon_class": "CANONICAL_INTERNAL",
+      "existence": "INTEGRATED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "runtime",
+      "is_separate_semantic_object": false,
+      "collapse_to": "AgentOS",
+      "preferred_shape": "the executor of WorkUnits, a role of AgentOS/HCLI",
+      "definitions": [
+        {
+          "path": "hcli/executors.py",
+          "line": 60,
+          "symbol": "class WorkUnitExecutor"
+        }
+      ],
+      "production_callers": [
+        {
+          "path": "hcli/mission.py",
+          "line": 0,
+          "symbol": "WorkUnitExecutor(",
+          "kind": "call"
+        }
+      ],
+      "test_callers_exist": true,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "WorkUnitExecutor ctor: 7 source / 11 test hits; production files include hcli/mission.py and tools/headless/hcli_*.py"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "WorkUnitSpecies",
+      "lexicon_class": "EXPERIMENTAL",
+      "existence": "SCAFFOLDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "enum",
+      "is_separate_semantic_object": false,
+      "collapse_to": "WorkUnit.role",
+      "preferred_shape": "role/species string on WorkUnit plus bounded_authority fields",
+      "definitions": [
+        {
+          "path": "tools/future/workunit_species.py",
+          "line": 187,
+          "symbol": "SPECIES_IDS"
+        }
+      ],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "ten species ids; constructor emits HCLI_CORE_FIELDS; sidecar receipt HCLI_FUTURE_WORKUNITS.json"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "Correct shape (fields not subclasses). Not a top-level noun.",
+      "surprise": false
+    },
+    {
+      "noun": "GoalIR",
+      "lexicon_class": "CANONICAL_PUBLIC",
+      "existence": "TESTED",
+      "keep_top_level": true,
+      "earned_separate_noun": false,
+      "semantic_kind": "ir",
+      "is_separate_semantic_object": true,
+      "collapse_to": null,
+      "preferred_shape": "the typed goal schema the live engine should compile. Today that live compiler is GoalCompiler, not GoalIR.",
+      "definitions": [
+        {
+          "path": "hcli/goal_ir.py",
+          "line": 1,
+          "symbol": "module GoalIR (no class GoalIR)"
+        },
+        {
+          "path": "hcli/goal_ir.py",
+          "line": 320,
+          "symbol": "class GoalNode",
+          "note": "actual typed atom"
+        },
+        {
+          "path": "hcli/goal.py",
+          "line": 183,
+          "symbol": "class GoalCompiler",
+          "note": "LIVE dual IR"
+        }
+      ],
+      "production_callers": [],
+      "test_callers_exist": true,
+      "import_only": false,
+      "dual_of": "GoalCompiler",
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "git grep GoalIR HEAD -- hcli tools crates lab src civilization docs => 4 hits, all module docstrings (goal_ir.py, goal_compile.py, goal_graph.py, test_context_compiler_runtime.py). ZERO class GoalIR. ZERO GoalIR(",
+        "GoalNode( constructed in hcli/goal_tokenizer.py:537 tokenize(); tokenize() called from goal_compile.ingest and from tests",
+        "from hcli.goal_compile import ingest, schedule appears ONLY in hcli/test_goal_compile.py and hcli/test_goal_compiler_acceptance.py",
+        "LIVE path: hcli/engine.py:593 self.goal_compiler = GoalCompiler(); engine.py:1292 compiled = self.goal_compiler.compile(prompt); controller.py:1394/1651/1783 GoalCompiler().compile; mission.py:316 GoalCompiler().compile",
+        "goal_compile.py:499-519 has a module __main__ demo calling ingest/schedule \u2014 not a production caller"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "Expected to remain top-level. It has NOT earned INTEGRATED existence: the engine does not call it. GoalNode is the real type. GoalCompiler is the live IR. Two goal compilers is one too many.",
+      "surprise": true
+    },
+    {
+      "noun": "GoalNode",
+      "lexicon_class": "CANONICAL_INTERNAL",
+      "existence": "TESTED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "ir_atom",
+      "is_separate_semantic_object": false,
+      "collapse_to": "GoalIR",
+      "preferred_shape": "the atom of GoalIR; keep as a type, not a top-level civilization noun",
+      "definitions": [
+        {
+          "path": "hcli/goal_ir.py",
+          "line": 320,
+          "symbol": "class GoalNode"
+        }
+      ],
+      "production_callers": [
+        {
+          "path": "hcli/goal_tokenizer.py",
+          "line": 537,
+          "symbol": "GoalNode(",
+          "kind": "call"
+        }
+      ],
+      "test_callers_exist": true,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "GoalNode ctor: 1 source file (tokenizer) / 5 test hits. Tokenizer itself is only reached from goal_compile.ingest (tests + demo) and test_goal_tokenizer.py"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "Tokenizer constructs GoalNodes. Production engine never asks for them.",
+      "surprise": false
+    },
+    {
+      "noun": "GoalCompiler",
+      "lexicon_class": "CANONICAL_INTERNAL",
+      "existence": "INTEGRATED",
+      "keep_top_level": false,
+      "earned_separate_noun": true,
+      "semantic_kind": "ir",
+      "is_separate_semantic_object": false,
+      "collapse_to": "GoalIR",
+      "preferred_shape": "should become an implementation of GoalIR, not a second named IR",
+      "definitions": [
+        {
+          "path": "hcli/goal.py",
+          "line": 183,
+          "symbol": "class GoalCompiler"
+        }
+      ],
+      "production_callers": [
+        {
+          "path": "hcli/engine.py",
+          "line": 593,
+          "symbol": "GoalCompiler()",
+          "kind": "call"
+        },
+        {
+          "path": "hcli/engine.py",
+          "line": 1292,
+          "symbol": "goal_compiler.compile",
+          "kind": "call"
+        },
+        {
+          "path": "hcli/controller.py",
+          "line": 1399,
+          "symbol": "GoalCompiler().compile",
+          "kind": "call"
+        },
+        {
+          "path": "hcli/mission.py",
+          "line": 316,
+          "symbol": "GoalCompiler().compile",
+          "kind": "call"
+        },
+        {
+          "path": "hcli/agentos/runtime.py",
+          "line": 280,
+          "symbol": "GoalCompiler().compile",
+          "kind": "call"
+        }
+      ],
+      "test_callers_exist": true,
+      "import_only": false,
+      "dual_of": "GoalIR",
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "Non-test GoalCompiler() in engine, controller, mission, agentos/runtime, goal_compile, goal_tokenizer"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "This is the IR that actually runs. The noun the constitution named is GoalIR.",
+      "surprise": true
+    },
+    {
+      "noun": "GoalGraph",
+      "lexicon_class": "CANONICAL_INTERNAL",
+      "existence": "TESTED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "container",
+      "is_separate_semantic_object": false,
+      "collapse_to": "GoalIR",
+      "preferred_shape": "graph over GoalNodes; internal to GoalIR",
+      "definitions": [
+        {
+          "path": "hcli/goal_graph.py",
+          "line": 1,
+          "symbol": "module GoalGraph"
+        }
+      ],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "Used by goal_compile.ingest/schedule; those functions have no non-test callers"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "Doctor",
+      "lexicon_class": "CANONICAL_PUBLIC",
+      "existence": "CALLABLE",
+      "keep_top_level": true,
+      "earned_separate_noun": true,
+      "semantic_kind": "mechanism",
+      "is_separate_semantic_object": true,
+      "collapse_to": null,
+      "preferred_shape": "one mechanism: measure/prescribe/verify/reject. Versions (Doctor6/V5) are instruments, not brands.",
+      "definitions": [
+        {
+          "path": "hcli/doctor/__init__.py",
+          "line": 1,
+          "symbol": "package marker OWNED_PATHS only \u2014 no callables"
+        },
+        {
+          "path": "tools/doctor_seal.py",
+          "line": 0,
+          "symbol": "seal()"
+        }
+      ],
+      "production_callers": [
+        {
+          "path": "tools/nos_pipeline.py",
+          "line": 68,
+          "symbol": "doctor_seal.seal",
+          "kind": "call"
+        },
+        {
+          "path": "tools/odyssey_ctl.py",
+          "line": 1945,
+          "symbol": "doctor_seal.seal",
+          "kind": "call"
+        },
+        {
+          "path": "tools/odyssey_patient_runner.py",
+          "line": 1403,
+          "symbol": "doctor_seal",
+          "kind": "call"
+        },
+        {
+          "path": "tools/genesis_nos.py",
+          "line": 87,
+          "symbol": "doctor_seal.seal",
+          "kind": "call"
+        },
+        {
+          "path": "tools/flash_gravity_doctor_cycle.py",
+          "line": 25,
+          "symbol": "from doctor_seal import seal",
+          "kind": "call"
+        },
+        {
+          "path": "tools/future/odyssey_tool_driver.py",
+          "line": 910,
+          "symbol": "invoke('doctor_seal')",
+          "kind": "call"
+        }
+      ],
+      "test_callers_exist": true,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "census: Doctor COMPONENT, not VESTIGIAL; required NOS gate",
+        "hcli/doctor/__init__.py is an ownership marker with zero functions \u2014 a definition without a callable",
+        "Capability gene I-B_DOCTOR status=SCAFFOLDED citing hcli/doctor/__init__.py no_production_caller \u2014 true of the marker, false of doctor_seal.seal"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "Do not treat Tool Doctor (VMCP organ) or Hardware Doctor (FPGA loop) as this noun.",
+      "surprise": true
+    },
+    {
+      "noun": "Gravity",
+      "lexicon_class": "CANONICAL_PUBLIC",
+      "existence": "INTEGRATED",
+      "keep_top_level": true,
+      "earned_separate_noun": true,
+      "semantic_kind": "process",
+      "is_separate_semantic_object": true,
+      "collapse_to": null,
+      "preferred_shape": "the search process. .gravity files and hawking.gravity.* schemas are historical/runtime identifiers, not the process.",
+      "definitions": [
+        {
+          "path": "hcli/gravity/__init__.py",
+          "line": 1,
+          "symbol": "package marker OWNED_PREFIXES"
+        },
+        {
+          "path": "crates/hawking-core/src/gravity.rs",
+          "line": 1,
+          "symbol": "Rust gravity runtime"
+        }
+      ],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [
+        "process/search",
+        "historical .gravity artifact format",
+        "hawking.gravity.* schemas"
+      ],
+      "evidence": [
+        "census: Gravity SURVIVING, path_owned_files=1223, schemas=135",
+        "docs/HAWKING_NOMENCLATURE.md: Gravity is not a file format",
+        "hcli/nomenclature.py: Gravity is a process; NR/NX are the new extensions",
+        "crates/hawking-core/examples/gravity_*.rs and src/gravity.rs are live codec/runtime",
+        "hcli/gravity/__init__.py has no callables"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "Quantization is a Gravity operator, not a peer noun.",
+      "surprise": false
+    },
+    {
+      "noun": "Noetic",
+      "lexicon_class": "CANONICAL_PUBLIC",
+      "existence": "CALLABLE",
+      "keep_top_level": true,
+      "earned_separate_noun": true,
+      "semantic_kind": "representation_stack",
+      "is_separate_semantic_object": true,
+      "collapse_to": null,
+      "preferred_shape": "one stack: NR (portable) \u2192 NX (machine-bound) \u2192 optional NVM. NOS is the pipeline name, not a brand.",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "census: Noetic SURVIVING; NR/NX/NOS/NVM COMPONENT",
+        "docs/NOETIC_NR_NX_CONTRACT.md at HEAD",
+        "tools/headless/noetic_ir.py, tools/odyssey/noetic_compiler.py, crates/hawking-core/examples/flash_noetic_*.rs",
+        "FLASH_FULL_NOETIC_EXECUTABLE gate SCAFFOLDED; acceptance refused SEALED_METADATA_ONLY_NOT_FOR_PROMOTION native_loader=NOT_IMPLEMENTED"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "Complete Noetic Executable is not built. Do not promote NR/NX/NOS/NVM to peer nouns of Noetic.",
+      "surprise": false
+    },
+    {
+      "noun": "NR",
+      "lexicon_class": "CANONICAL_INTERNAL",
+      "existence": "CALLABLE",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "artifact_kind",
+      "is_separate_semantic_object": false,
+      "collapse_to": "Noetic",
+      "preferred_shape": "artifact extension/kind of Noetic (portable representation)",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "hcli/nomenclature.py NR_EXTENSION=.nr",
+        "census COMPONENT of Noetic"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "NX",
+      "lexicon_class": "CANONICAL_INTERNAL",
+      "existence": "SCAFFOLDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "artifact_kind",
+      "is_separate_semantic_object": false,
+      "collapse_to": "Noetic",
+      "preferred_shape": "artifact extension/kind of Noetic (machine-bound executable)",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "hcli/nomenclature.py NX_EXTENSION=.nx",
+        "FLASH_FULL_NOETIC_EXECUTABLE SCAFFOLDED / metadata-only"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "NOS",
+      "lexicon_class": "SHOULD_RETIRE",
+      "existence": "SCAFFOLDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "pipeline",
+      "is_separate_semantic_object": false,
+      "collapse_to": "Noetic",
+      "preferred_shape": "the compose-the-gates process, not a brand",
+      "definitions": [
+        {
+          "path": "tools/nos_pipeline.py",
+          "line": 1,
+          "symbol": "qualify_and_promote"
+        }
+      ],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "git grep nos_pipeline HEAD -- hcli tools lab (non-test): only hcli/doctor/__init__.py, hcli/gravity/__init__.py ownership strings, nomenclature_census, and the file itself",
+        "SURPRISE: header claims stage order DOCTOR -> GRAVITY -> NR -> NX -> NVM/HIDE; actual stages are spawn, timing, doctor, provenance, promote, rebind. Gravity/NR/NX/NVM are not invoked."
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "STALE_ROADMAP_TEXT inside the producer. A CLI selftest is not a production caller. | SHOULD_RETIRE as a brand; keep as Noetic pipeline implementation detail",
+      "surprise": true
+    },
+    {
+      "noun": "NVM",
+      "lexicon_class": "CANONICAL_INTERNAL",
+      "existence": "SCAFFOLDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "runtime",
+      "is_separate_semantic_object": false,
+      "collapse_to": "Noetic",
+      "preferred_shape": "minimal bind-and-run of an NX; not the HIDE IDE",
+      "definitions": [
+        {
+          "path": "tools/nvm_minimal.py",
+          "line": 1,
+          "symbol": "nvm_minimal"
+        }
+      ],
+      "production_callers": [
+        {
+          "path": "tools/genesis_nos.py",
+          "line": 129,
+          "symbol": "nvm_minimal.py subprocess",
+          "kind": "call"
+        }
+      ],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [
+        "hide_plan (kernel-selection-as-data, hawking.nos.hide_plan_swap.v1)"
+      ],
+      "overloads": [],
+      "evidence": [
+        "Homonym trap with vestigial HIDE; census already flagged"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "hide_plan",
+      "lexicon_class": "SHOULD_RETIRE",
+      "existence": "SCAFFOLDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "mechanism",
+      "is_separate_semantic_object": false,
+      "collapse_to": "Noetic",
+      "preferred_shape": "keep the module; never use the token HIDE for it",
+      "definitions": [
+        {
+          "path": "tools/hide_plan.py",
+          "line": 59,
+          "symbol": "schema hawking.nos.hide_plan_swap.v1"
+        }
+      ],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": "HIDE",
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "tools/hide_plan.py is the only non-test hide_plan hit besides itself"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "Token collision with vestigial HIDE IDE. Census trap. | SHOULD_RETIRE as a public token (homonym); keep the module under Noetic",
+      "surprise": true
+    },
+    {
+      "noun": "EBPW",
+      "lexicon_class": "CANONICAL_PUBLIC",
+      "existence": "CALLABLE",
+      "keep_top_level": true,
+      "earned_separate_noun": true,
+      "semantic_kind": "metric",
+      "is_separate_semantic_object": true,
+      "collapse_to": null,
+      "preferred_shape": "an accounting dimension (complete_ebpw field), not a unit type. No EBPWUnit/Family/Variant types exist.",
+      "definitions": [
+        {
+          "path": "tools/future/complete_ebpw.py",
+          "line": 139,
+          "symbol": "class CompleteEbpwRefused"
+        },
+        {
+          "path": "tools/future/complete_ebpw.py",
+          "line": 0,
+          "symbol": "mix_report / build"
+        }
+      ],
+      "production_callers": [
+        {
+          "path": "tools/acceptance/flash/run_gates.py",
+          "line": 940,
+          "symbol": "mix_report",
+          "kind": "call"
+        },
+        {
+          "path": "tools/future/capability_byte_elimination.py",
+          "line": 295,
+          "symbol": "mix_report",
+          "kind": "call"
+        },
+        {
+          "path": "tools/accelerator/scoreboard.py",
+          "line": 776,
+          "symbol": "complete_ebpw field",
+          "kind": "call"
+        }
+      ],
+      "test_callers_exist": true,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "git grep EBPWUnit|EBPWFamily|EBPWVariant => EXIT 1 (zero)",
+        "FLASH_COMPLETE_EBPW_LE_1 WIRED accepted=false: measured 3.139... against required <= 1",
+        "docs/HAWKING_NOMENCLATURE.md: never choose Singularity by minimum EBPW alone"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "A metric that is first-class in the constitution. Not an object family.",
+      "surprise": false
+    },
+    {
+      "noun": "PhysicalGraph",
+      "lexicon_class": "CANONICAL_PUBLIC",
+      "existence": "CALLABLE",
+      "keep_top_level": true,
+      "earned_separate_noun": true,
+      "semantic_kind": "ir",
+      "is_separate_semantic_object": true,
+      "collapse_to": null,
+      "preferred_shape": "one planning IR + one compiler function. Two compiler modules is one too many.",
+      "definitions": [
+        {
+          "path": "hcli/physical_graph.py",
+          "line": 338,
+          "symbol": "class PhysicalGraph"
+        },
+        {
+          "path": "hcli/physical_graph.py",
+          "line": 385,
+          "symbol": "def compile_physical_graph"
+        },
+        {
+          "path": "tools/odyssey/physical_graph_compiler.py",
+          "line": 1,
+          "symbol": "second compiler module"
+        }
+      ],
+      "production_callers": [
+        {
+          "path": "hcli/architecture.py",
+          "line": 290,
+          "symbol": "compile_physical_graph",
+          "kind": "call"
+        },
+        {
+          "path": "hcli/agentos/flash_component_campaign.py",
+          "line": 279,
+          "symbol": "compile_physical_graph",
+          "kind": "call"
+        },
+        {
+          "path": "hcli/agentos/flash_graph_component.py",
+          "line": 288,
+          "symbol": "compile_physical_graph",
+          "kind": "call"
+        },
+        {
+          "path": "hcli/agentos/flash_router_graph.py",
+          "line": 184,
+          "symbol": "compile_physical_graph",
+          "kind": "call"
+        },
+        {
+          "path": "hcli/agentos/flash_router_representation_ab.py",
+          "line": 210,
+          "symbol": "compile_physical_graph",
+          "kind": "call"
+        },
+        {
+          "path": "hcli/agentos/flash_router_selection.py",
+          "line": 397,
+          "symbol": "compile_physical_graph",
+          "kind": "call"
+        },
+        {
+          "path": "tools/accelerator/fusion_bridge.py",
+          "line": 1473,
+          "symbol": "compile_physical_graph",
+          "kind": "call"
+        },
+        {
+          "path": "tools/accelerator/repatriation_audit.py",
+          "line": 258,
+          "symbol": "compile_physical_graph",
+          "kind": "call"
+        },
+        {
+          "path": "tools/odyssey/physical_graph_compiler.py",
+          "line": 353,
+          "symbol": "compile_physical_graph",
+          "kind": "call"
+        },
+        {
+          "path": "tools/future/device_ascension_pipeline.py",
+          "line": 908,
+          "symbol": "recompile_physical_graph",
+          "kind": "call"
+        }
+      ],
+      "test_callers_exist": true,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "class PhysicalGraph ctor only in physical_graph.py itself and tools/future/propagate.py \u2014 callers use compile_physical_graph(), which constructs it",
+        "gene II-C_PHYSICAL_GRAPH_COMPILER status=WIRED via subprocess of tools/odyssey/physical_graph_compiler.py from tools/future/nr_nx_generic.py:1981; accepted=false",
+        "hcli/physical_graph.py:1 planning boundary; does not claim device execution"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "CALLABLE as a plan. Not END_TO_END physical execution. Dual compiler modules.",
+      "surprise": false
+    },
+    {
+      "noun": "HawkingAccelerator",
+      "lexicon_class": "CANONICAL_PUBLIC",
+      "existence": "CALLABLE",
+      "keep_top_level": true,
+      "earned_separate_noun": true,
+      "semantic_kind": "substrate",
+      "is_separate_semantic_object": true,
+      "collapse_to": null,
+      "preferred_shape": "the physical execution substrate (Metal/GPU now; FPGA/eGPU/DGX as backends inside it, not peer civilizations)",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "tools/accelerator/* (hmf, fusion_planner, kernel_forge, machine_genome, architecture_atlas, device_ascension, hardware_doctor)",
+        "crates/hawking-core Metal examples and gravity runtime",
+        "gene I-D_ACCELERATOR SCAFFOLDED (auditor chose hcli/physical_graph.py as implementing symbol)",
+        "FPGA/U50 ABSENT on this host (CAPABILITY_GRAPH hardware_probes.U50_PRESENT=false)"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "Metal dispatch receipts are component evidence, not a full model runtime. FPGA lives inside this noun constitutionally.",
+      "surprise": false
+    },
+    {
+      "noun": "ModelLake",
+      "lexicon_class": "CANONICAL_PUBLIC",
+      "existence": "INTEGRATED",
+      "keep_top_level": true,
+      "earned_separate_noun": true,
+      "semantic_kind": "store",
+      "is_separate_semantic_object": true,
+      "collapse_to": null,
+      "preferred_shape": "source-specimen store. Storage location, not a representation or runtime.",
+      "definitions": [
+        {
+          "path": "hcli/specimens.py",
+          "line": 1,
+          "symbol": "specimens"
+        },
+        {
+          "path": "tools/odyssey/modellake.py",
+          "line": 1,
+          "symbol": "modellake"
+        }
+      ],
+      "production_callers": [
+        {
+          "path": "hcli/agentos/modellake_gate.py",
+          "line": 1,
+          "symbol": "modellake_gate",
+          "kind": "call"
+        },
+        {
+          "path": "hcli/agentos/modellake_supervisor.py",
+          "line": 1,
+          "symbol": "modellake_supervisor",
+          "kind": "call"
+        }
+      ],
+      "test_callers_exist": true,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [
+        "SourceSpecimen store",
+        "model lake"
+      ],
+      "overloads": [],
+      "evidence": [
+        "gates MODELLAKE_IDENTITY_RESOLVED=BUILT, MODELLAKE_ATOMIC_PROMOTION=BUILT, MODELLAKE_HASH_VERIFIED=WIRED",
+        "hcli/flash_next.py PINNED_REVISION consumed by modellake_gate",
+        "environment: ModelLake at /Volumes/corpdrive is READ-ONLY evidence; this lane did not inventory specimens (BLOCKED_AUTHORITY / not in scope)"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "Odyssey",
+      "lexicon_class": "CANONICAL_PUBLIC",
+      "existence": "INTEGRATED",
+      "keep_top_level": true,
+      "earned_separate_noun": true,
+      "semantic_kind": "curriculum_engine",
+      "is_separate_semantic_object": true,
+      "collapse_to": null,
+      "preferred_shape": "one curriculum engine with phase I/II/III. Not three products.",
+      "definitions": [
+        {
+          "path": "tools/odyssey_ctl.py",
+          "line": 1,
+          "symbol": "live driver"
+        },
+        {
+          "path": "hcli/odyssey.py",
+          "line": 1,
+          "symbol": "HCLI bridge; shells out; no HCLI odyssey verb of its own"
+        }
+      ],
+      "production_callers": [
+        {
+          "path": "hcli/tool_registry.py",
+          "line": 1561,
+          "symbol": "odyssey.cycle",
+          "kind": "call"
+        },
+        {
+          "path": "hcli/tool_registry.py",
+          "line": 1547,
+          "symbol": "from . import odyssey",
+          "kind": "call"
+        },
+        {
+          "path": "tools/odyssey_ctl.py",
+          "line": 1945,
+          "symbol": "doctor_seal.seal",
+          "kind": "call"
+        }
+      ],
+      "test_callers_exist": true,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "census: Odyssey SURVIVING, Odyssey-I live instance on branch odyssey-i",
+        "ODYSSEY_I_DISCOVERY=BUILT",
+        "hcli/odyssey.py:5 HCLI has no odyssey verb so this module is the connector"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "MachineGenome",
+      "lexicon_class": "CANONICAL_PUBLIC",
+      "existence": "CALLABLE",
+      "keep_top_level": true,
+      "earned_separate_noun": true,
+      "semantic_kind": "digest",
+      "is_separate_semantic_object": true,
+      "collapse_to": null,
+      "preferred_shape": "one digest producer. The compatibility bag in hcli/machine.py must not keep the name.",
+      "definitions": [
+        {
+          "path": "hcli/machine.py",
+          "line": 1018,
+          "symbol": "class MachineGenome",
+          "note": "NOT the genome \u2014 compatibility bag; producer is tools/headless/machine_probe.py"
+        },
+        {
+          "path": "tools/accelerator/machine_genome.py",
+          "line": 1,
+          "symbol": "accelerator machine genome"
+        },
+        {
+          "path": "hcli/genomes/runtime_genome.py",
+          "line": 1,
+          "symbol": "RuntimeGenome"
+        }
+      ],
+      "production_callers": [
+        {
+          "path": "tools/headless/experiment_engine.py",
+          "line": 0,
+          "symbol": "MachineGenome(",
+          "kind": "call"
+        },
+        {
+          "path": "tools/headless/hcli_persistence_audit.py",
+          "line": 0,
+          "symbol": "MachineGenome(",
+          "kind": "call"
+        }
+      ],
+      "test_callers_exist": true,
+      "import_only": false,
+      "dual_of": "hcli.machine.MachineGenome vs tools.accelerator.machine_genome vs RuntimeGenome",
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "hcli/machine.py:1019-1032 docstring: Not a producer and not an admission authority. Verified caller: hcli_persistence_audit.py (crash demo of save). Admission must not import this class.",
+        "tools/headless/authority_census.py:2123 'class MachineGenome is not the machine genome'",
+        "four class MachineGenome hits: hcli/machine.py + three census needles"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "Name collision. Keep the noun; retire the bag's class name.",
+      "surprise": true
+    },
+    {
+      "noun": "DeviceAscension",
+      "lexicon_class": "CANONICAL_PUBLIC",
+      "existence": "SCAFFOLDED",
+      "keep_top_level": true,
+      "earned_separate_noun": true,
+      "semantic_kind": "process",
+      "is_separate_semantic_object": true,
+      "collapse_to": null,
+      "preferred_shape": "re-discover-the-machine process. Not the vestigial Ascension campaign.",
+      "definitions": [
+        {
+          "path": "tools/accelerator/device_ascension.py",
+          "line": 1,
+          "symbol": "device_ascension"
+        },
+        {
+          "path": "tools/future/device_ascension_pipeline.py",
+          "line": 1,
+          "symbol": "pipeline"
+        }
+      ],
+      "production_callers": [],
+      "test_callers_exist": true,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "tools/accelerator/test_device_ascension.py and tools/future/test_device_ascension_pipeline.py exist",
+        "gene IV-E_FUSION_BRIDGE_TOPOLOGY_ASCENSION SCAFFOLDED citing device_ascension.py no_production_caller",
+        "H-ROADMAP.md:118 Device Ascension re-discovers the machine"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "Do not confuse with vestigial campaign Ascension (4028 owned files).",
+      "surprise": false
+    },
+    {
+      "noun": "HMF",
+      "lexicon_class": "CANONICAL_PUBLIC",
+      "existence": "CALLABLE",
+      "keep_top_level": true,
+      "earned_separate_noun": true,
+      "semantic_kind": "memory_fabric",
+      "is_separate_semantic_object": true,
+      "collapse_to": null,
+      "preferred_shape": "software-defined memory truth. Device presence is a hardware probe, not a second noun.",
+      "definitions": [
+        {
+          "path": "tools/accelerator/hmf.py",
+          "line": 1,
+          "symbol": "HMF canonical name; HAWKGPU-0 logical accelerator"
+        },
+        {
+          "path": "tools/accelerator/humf.py",
+          "line": 1,
+          "symbol": "HUMF predecessor still imported by fusion_planner"
+        },
+        {
+          "path": "tools/future/hmf_objects.py",
+          "line": 1,
+          "symbol": "HMF/HGVAS managed-object semantics"
+        }
+      ],
+      "production_callers": [],
+      "test_callers_exist": true,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [
+        "software fabric",
+        "missing hardware appliance"
+      ],
+      "evidence": [
+        "tools/accelerator/test_hmf.py exists; G053 canonicalization humf -> hmf",
+        "gate HMF_DEVICE_VISIBLE_TRUST BLOCKED_HARDWARE: HMF_PRESENT=false, no CXL/HMF/HGVAS appliance",
+        "capability graph wired=false on hmf.py (no production caller of the module as implementing symbol) \u2014 tests and fusion_planner still import HUMF/HMF types",
+        "fusion_planner.py:3 humf.py/hmf.py already own two-domain move-vs-recompute"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": "HMF_PRESENT false on this host",
+      "notes": "Software objects CALLABLE/TESTED. Physical HMF device BLOCKED_HARDWARE. HUMF is an alias/predecessor still in the import graph.",
+      "surprise": false
+    },
+    {
+      "noun": "HGVAS",
+      "lexicon_class": "CANONICAL_INTERNAL",
+      "existence": "SCAFFOLDED",
+      "keep_top_level": true,
+      "earned_separate_noun": false,
+      "semantic_kind": "coherence_level",
+      "is_separate_semantic_object": false,
+      "collapse_to": "HMF",
+      "preferred_shape": "a coherence-ladder level and an identity type {object_id, byte_offset} inside HMF, not a second fabric",
+      "definitions": [
+        {
+          "path": "tools/future/hmf_objects.py",
+          "line": 175,
+          "symbol": "HgvasRef / HGVAS identity"
+        },
+        {
+          "path": "tools/accelerator/semantic_transport.py",
+          "line": 182,
+          "symbol": "HGVAS = 2"
+        }
+      ],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "H-ROADMAP.md:2856 coherence ladder 0..6 with HGVAS at 2",
+        "hmf_objects.py:21 HGVAS identity refuses a native pointer",
+        "hmf_objects.py:1206 no HGVAS page directory, Fusion ISA, or FusionPtr type exists on disk (G054 still open) \u2014 note Fusion ISA DOES exist as tools/accelerator/fusion_isa.py; this comment may be stale relative to fusion_isa.py",
+        "No HGVAS device in inventory"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "Constitution keeps the paired name HMF/HGVAS. As a semantic object HGVAS has not earned independence from HMF.",
+      "surprise": true
+    },
+    {
+      "noun": "Fusion",
+      "lexicon_class": "CANONICAL_PUBLIC",
+      "existence": "SCAFFOLDED",
+      "keep_top_level": true,
+      "earned_separate_noun": true,
+      "semantic_kind": "heterogeneous_execution",
+      "is_separate_semantic_object": true,
+      "collapse_to": null,
+      "preferred_shape": "Hawking Fusion = multi-domain placement/topology/ISA. Kernel fusion is a compiler technique, not this noun.",
+      "definitions": [
+        {
+          "path": "tools/accelerator/fusion_planner.py",
+          "line": 1,
+          "symbol": "Fusion Planner G054 \u2014 no class FusionPlanner; functions place_objects/plan_dependency/plan_collective"
+        },
+        {
+          "path": "tools/accelerator/fusion_isa.py",
+          "line": 70,
+          "symbol": "class FusionOp"
+        },
+        {
+          "path": "tools/accelerator/fusion_bridge.py",
+          "line": 194,
+          "symbol": "class FusionRegion"
+        },
+        {
+          "path": "tools/accelerator/fusion_wire.py",
+          "line": 128,
+          "symbol": "class FusionPacket"
+        }
+      ],
+      "production_callers": [],
+      "test_callers_exist": true,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [
+        "Hawking Fusion (heterogeneous machines) \u2014 canonical",
+        "Metal/kernel op fusion \u2014 technique",
+        "Fusion ISA/wire/bridge \u2014 implementation of Hawking Fusion",
+        "representation_decode_fusion \u2014 different"
+      ],
+      "evidence": [
+        "NO class FusionPlanner; FusionPlanner.ctor census was 0. Public API is functions + Topology/Link/Route dataclasses",
+        "gate FUSION_FIRST_HETEROGENEOUS_EXECUTABLE UNREACHABLE: depends on HMF_DEVICE_VISIBLE_TRUST; NO_SECOND_PHYSICAL_DOMAIN",
+        "gene IV-A_FUSION SCAFFOLDED; fusion_planner.py no_production_caller (tests exist: tools/accelerator/test_fusion_planner.py)",
+        "kernel fusion lives elsewhere: crates/hawking-core/tests/*fusion_parity.rs, hcli/agentos/qwen38_fusion_audit.py, tools/future/representation_decode_fusion.py, tools/headless/noetic_dispatch_fusion.py"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": "NO_SECOND_PHYSICAL_DOMAIN / HMF_PRESENT false / EGPU_PRESENT false / DGX_PRESENT false",
+      "notes": "The noun earns a slot as the heterogeneous-machine contract. It has not earned END_TO_END. Do not let kernel-fusion files inflate the brand.",
+      "surprise": true
+    },
+    {
+      "noun": "Theia",
+      "lexicon_class": "CONSTITUTIONAL",
+      "existence": "SCAFFOLDED",
+      "keep_top_level": true,
+      "earned_separate_noun": true,
+      "semantic_kind": "model",
+      "is_separate_semantic_object": true,
+      "collapse_to": null,
+      "preferred_shape": "ONE generalist bounty model + one engine. Not another civilization. Physics IR / TGFD / Hawking Train are fields/labs of Theia, not peer nouns.",
+      "definitions": [
+        {
+          "path": "tools/theia/engine.py",
+          "line": 1,
+          "symbol": "bounty engine"
+        },
+        {
+          "path": "tools/theia/__main__.py",
+          "line": 1,
+          "symbol": "cli"
+        }
+      ],
+      "production_callers": [],
+      "test_callers_exist": true,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "git grep tools.theia / from theia outside tools/theia/: only CAPABILITY_GRAPH, tools/roadmap/catalog.py, tools/acceptance/odyssey (do-not-touch list), tools/future/vmcp.py comment. NO hcli import",
+        "THEIA_T0_TRAIN_SUBSTRATE / THEIA_MICRO / THEIA_LAB / THEIA_WORKER / THEIA_RESEARCH / THEIA_GRAVITY_EXECUTABLE / THEIA_BOUNTY_GENERALIST_QUALIFIED all BLOCKED_EXTERNAL",
+        "catalog.py: the bounty ENGINE exists at tools/theia/ (33 tests) but no qualified generalist MODEL does",
+        "H-ROADMAP.md:2974 Theia is Hawking's locally runnable generalist model \u2014 model, not engine"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": "no qualified Theia model; Hawking Train T0 substrate absent",
+      "notes": "Engine SCAFFOLDED+TESTED. Model ABSENT. Constitution: one bounty model, not a civilization.",
+      "surprise": true
+    },
+    {
+      "noun": "VMCP",
+      "lexicon_class": "CANONICAL_PUBLIC",
+      "existence": "CALLABLE",
+      "keep_top_level": true,
+      "earned_separate_noun": true,
+      "semantic_kind": "perception_organ",
+      "is_separate_semantic_object": true,
+      "collapse_to": null,
+      "preferred_shape": "one perception/production organ with nine acts as verbs, not nine nouns. All-Seeing Eye is an alias.",
+      "definitions": [
+        {
+          "path": "hcli/vmcp_adapter.py",
+          "line": 1,
+          "symbol": "adapter"
+        },
+        {
+          "path": "tools/future/vmcp.py",
+          "line": 1,
+          "symbol": "compact surface"
+        },
+        {
+          "path": "tools/vmcp/__init__.py",
+          "line": 1,
+          "symbol": "local organs: file_eye, pty_eye, tool_doctor, behavior_lab"
+        }
+      ],
+      "production_callers": [
+        {
+          "path": "hcli/tool_registry.py",
+          "line": 1398,
+          "symbol": "call_vmcp",
+          "kind": "call"
+        },
+        {
+          "path": "hcli/connectivity.py",
+          "line": 131,
+          "symbol": "inspect_vmcp",
+          "kind": "call"
+        }
+      ],
+      "test_callers_exist": true,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [
+        "All-Seeing Eye"
+      ],
+      "overloads": [],
+      "evidence": [
+        "VMCP_RECEIPT_LAW=BUILT; most other VMCP_* gates SCAFFOLDED with accepted=true on receipts (receipt != wired)",
+        "tools/future/vmcp.py: OPEN/MAKE/FIX/KEEP PARKED (foreign visionmcp); WEB/SPATIAL/visual-proof PARKED",
+        "AGENTOS_BEHAVIOR_LAB gate ABSENT"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "Nine Acts are verbs. Web Eye / Spatial Eye / PTY Eye / Tool Doctor are organs, not top-level nouns.",
+      "surprise": false
+    },
+    {
+      "noun": "FPGA_HWIR",
+      "lexicon_class": "CANONICAL_PUBLIC",
+      "existence": "CALLABLE",
+      "keep_top_level": true,
+      "earned_separate_noun": true,
+      "semantic_kind": "ir",
+      "is_separate_semantic_object": false,
+      "collapse_to": "HawkingAccelerator",
+      "preferred_shape": "HWIR as the FPGA lowering IR inside Hawking Accelerator/Fusion. FPGA is a backend, not Era VI, not a civilization.",
+      "definitions": [
+        {
+          "path": "tools/future/hwir.py",
+          "line": 862,
+          "symbol": "class HwirGraph",
+          "note": "canonical graph type"
+        },
+        {
+          "path": "hcli/agentos/fpga_preboard.py",
+          "line": 152,
+          "symbol": "class HWIR",
+          "note": "schema stub; self-ctor only"
+        }
+      ],
+      "production_callers": [
+        {
+          "path": "tools/accelerator/backend_contract.py",
+          "line": 1094,
+          "symbol": "hwir.HwirGraph(",
+          "kind": "call"
+        },
+        {
+          "path": "tools/accelerator/fusion_bridge.py",
+          "line": 1444,
+          "symbol": "hwir.HwirGraph(",
+          "kind": "call"
+        },
+        {
+          "path": "tools/future/p6_projection.py",
+          "line": 857,
+          "symbol": "hwir.HwirGraph(",
+          "kind": "call"
+        },
+        {
+          "path": "tools/future/propagate.py",
+          "line": 695,
+          "symbol": "hwir.HwirGraph(",
+          "kind": "call"
+        }
+      ],
+      "test_callers_exist": true,
+      "import_only": false,
+      "dual_of": "class HWIR vs class HwirGraph",
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "FPGA_HWIR gate WIRED accepted=false",
+        "FPGA_PREBOARD_SCHEMAS SCAFFOLDED; class HWIR ctor only in fpga_preboard.py",
+        "U50_DEVICE_PROFILE BLOCKED_HARDWARE; U50_PRESENT=false",
+        "H-ROADMAP constitution: FPGA lives inside Hawking Accelerator/Fusion"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": "U50/FPGA board ABSENT; any FPGA timing is SIMULATED",
+      "notes": "Keep the paired public name. Do not promote FPGA to a sixth era. Dual type names have not both earned it \u2014 HwirGraph is the one with callers.",
+      "surprise": true
+    },
+    {
+      "noun": "ResultEnvelope",
+      "lexicon_class": "CANONICAL_PUBLIC",
+      "existence": "INTEGRATED",
+      "keep_top_level": true,
+      "earned_separate_noun": true,
+      "semantic_kind": "result_schema",
+      "is_separate_semantic_object": true,
+      "collapse_to": null,
+      "preferred_shape": "one result schema; a receipt is a durable file containing it (or citing it). Not two products.",
+      "definitions": [
+        {
+          "path": "hcli/result_envelope.py",
+          "line": 17,
+          "symbol": "class ResultEnvelope"
+        },
+        {
+          "path": "hcli/result_envelope.py",
+          "line": 57,
+          "symbol": "build_result_envelope"
+        }
+      ],
+      "production_callers": [
+        {
+          "path": "hcli/engine.py",
+          "line": 4797,
+          "symbol": "build_result_envelope",
+          "kind": "call"
+        },
+        {
+          "path": "hcli/agentos/runtime.py",
+          "line": 767,
+          "symbol": "build_result_envelope",
+          "kind": "call"
+        },
+        {
+          "path": "hcli/escalation.py",
+          "line": 219,
+          "symbol": "ResultEnvelope(",
+          "kind": "call"
+        }
+      ],
+      "test_callers_exist": true,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "schema hcli.agentos.result.v1",
+        "H-ROADMAP.md:167 Result envelope"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "Receipt files under receipts/ are the durable form. ResultEnvelope is the typed payload.",
+      "surprise": false
+    },
+    {
+      "noun": "Receipt",
+      "lexicon_class": "CANONICAL_PUBLIC",
+      "existence": "INTEGRATED",
+      "keep_top_level": true,
+      "earned_separate_noun": true,
+      "semantic_kind": "durable_artifact",
+      "is_separate_semantic_object": false,
+      "collapse_to": "ResultEnvelope",
+      "preferred_shape": "durable file of a ResultEnvelope (or a specialized schema). Historical receipts are evidence, not rename debt.",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "receipts/acceptance/INDEX.json schema+gates",
+        "thousands of receipts/** files at HEAD"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "Paired with ResultEnvelope in the expected top-level list.",
+      "surprise": false
+    },
+    {
+      "noun": "Law",
+      "lexicon_class": "CANONICAL_PUBLIC",
+      "existence": "CALLABLE",
+      "keep_top_level": true,
+      "earned_separate_noun": true,
+      "semantic_kind": "compiler_knowledge",
+      "is_separate_semantic_object": true,
+      "collapse_to": null,
+      "preferred_shape": "one Law type with scope/evidence. Duplicate class Law bodies must collapse.",
+      "definitions": [
+        {
+          "path": "tools/future/autonomy_scars.py",
+          "line": 514,
+          "symbol": "class Law"
+        },
+        {
+          "path": "tools/future/odyssey2_law_store.py",
+          "line": 315,
+          "symbol": "class Law"
+        }
+      ],
+      "production_callers": [
+        {
+          "path": "tools/future/autonomy_scars.py",
+          "line": 0,
+          "symbol": "Law(",
+          "kind": "call"
+        },
+        {
+          "path": "tools/future/odyssey2_law_store.py",
+          "line": 0,
+          "symbol": "Law(",
+          "kind": "call"
+        },
+        {
+          "path": "tools/future/phase_listeners.py",
+          "line": 0,
+          "symbol": "Law(",
+          "kind": "call"
+        },
+        {
+          "path": "tools/future/propagate.py",
+          "line": 0,
+          "symbol": "Law(",
+          "kind": "call"
+        },
+        {
+          "path": "tools/future/scar_reevaluator.py",
+          "line": 0,
+          "symbol": "Law(",
+          "kind": "call"
+        }
+      ],
+      "test_callers_exist": true,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "two class Law definitions; Law( 7 source / 2 test hits across 5 source files"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "Odyssey II law store vs autonomy-scar registry. Same noun, two types.",
+      "surprise": true
+    },
+    {
+      "noun": "Scar",
+      "lexicon_class": "CANONICAL_PUBLIC",
+      "existence": "CALLABLE",
+      "keep_top_level": true,
+      "earned_separate_noun": true,
+      "semantic_kind": "compiler_knowledge",
+      "is_separate_semantic_object": true,
+      "collapse_to": null,
+      "preferred_shape": "one Scar type (negative science record with scope). Duplicate class Scar bodies must collapse.",
+      "definitions": [
+        {
+          "path": "tools/future/autonomy_scars.py",
+          "line": 564,
+          "symbol": "class Scar"
+        },
+        {
+          "path": "tools/future/negative_index.py",
+          "line": 467,
+          "symbol": "class Scar"
+        }
+      ],
+      "production_callers": [
+        {
+          "path": "tools/future/autonomy_scars.py",
+          "line": 0,
+          "symbol": "Scar(",
+          "kind": "call"
+        },
+        {
+          "path": "tools/future/negative_index.py",
+          "line": 0,
+          "symbol": "Scar(",
+          "kind": "call"
+        },
+        {
+          "path": "tools/future/improvement_trial.py",
+          "line": 0,
+          "symbol": "Scar(",
+          "kind": "call"
+        },
+        {
+          "path": "tools/future/propagate.py",
+          "line": 0,
+          "symbol": "Scar(",
+          "kind": "call"
+        },
+        {
+          "path": "tools/future/scar_scheduling.py",
+          "line": 0,
+          "symbol": "Scar(",
+          "kind": "call"
+        }
+      ],
+      "test_callers_exist": true,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "two class Scar definitions; Scar( 9 source / 1 test hits"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "Negative-science index vs autonomy-scar registry. Same noun, two types.",
+      "surprise": true
+    },
+    {
+      "noun": "SourceSpecimen",
+      "lexicon_class": "CANONICAL_INTERNAL",
+      "existence": "INTEGRATED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "data",
+      "is_separate_semantic_object": false,
+      "collapse_to": "ModelLake",
+      "preferred_shape": "the thing ModelLake stores; a field/role, not a peer of ModelLake",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "hcli/nomenclature.py CANONICAL_PIPELINE[0]=SourceSpecimen",
+        "docs/HAWKING_NOMENCLATURE.md"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "NoeticCompiler",
+      "lexicon_class": "CANONICAL_INTERNAL",
+      "existence": "SCAFFOLDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "compiler",
+      "is_separate_semantic_object": false,
+      "collapse_to": "Noetic",
+      "preferred_shape": "the compile step of Noetic, not a civilization (II-B is a gene)",
+      "definitions": [
+        {
+          "path": "tools/odyssey/noetic_compiler.py",
+          "line": 1,
+          "symbol": "noetic_compiler"
+        }
+      ],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "gene II-B_NOETIC_COMPILER_V1 SCAFFOLDED no_production_caller"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "PhysicalGraphCompiler",
+      "lexicon_class": "CANONICAL_INTERNAL",
+      "existence": "CALLABLE",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "compiler",
+      "is_separate_semantic_object": false,
+      "collapse_to": "PhysicalGraph",
+      "preferred_shape": "the function compile_physical_graph / odyssey physical_graph_compiler, not a second noun",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "gene II-C WIRED",
+        "compile_physical_graph production callers listed under PhysicalGraph"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "NoeticExecutable",
+      "lexicon_class": "CANONICAL_INTERNAL",
+      "existence": "SCAFFOLDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "artifact",
+      "is_separate_semantic_object": false,
+      "collapse_to": "Noetic",
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "FLASH_FULL_NOETIC_EXECUTABLE SCAFFOLDED / refused metadata-only",
+        "docs/HAWKING_NOMENCLATURE.md: complete Flash bundle is not yet built"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "ParetoFrontier",
+      "lexicon_class": "CANONICAL_INTERNAL",
+      "existence": "SCAFFOLDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "set",
+      "is_separate_semantic_object": false,
+      "collapse_to": "Odyssey",
+      "preferred_shape": "a set of qualified NX plus a durable archive; not a product",
+      "definitions": [
+        {
+          "path": "tools/odyssey/pareto_archive.py",
+          "line": 1,
+          "symbol": "pareto_archive"
+        }
+      ],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "gene V-D_DOMINANCE_SCOREBOARD SCAFFOLDED citing pareto_archive.py no_production_caller"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "ParetoArchive",
+      "lexicon_class": "CANONICAL_INTERNAL",
+      "existence": "SCAFFOLDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "store",
+      "is_separate_semantic_object": false,
+      "collapse_to": "ParetoFrontier",
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "tools/odyssey/pareto_archive.py",
+        "hcli/nomenclature.py CANONICAL_DEFINITIONS"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "Singularity",
+      "lexicon_class": "CANONICAL_INTERNAL",
+      "existence": "CONCEPT_ONLY",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "selection",
+      "is_separate_semantic_object": false,
+      "collapse_to": "Noetic",
+      "preferred_shape": "a promotion status of an NX under a profile, not a class",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "git grep class Singularity|Singularity( HEAD -- hcli tools lab src crates => no class/ctor",
+        "docs/HAWKING_NOMENCLATURE.md: No Singularity is selected by the current Flash scaffold",
+        "workunit_species FORBIDDEN_AUTHORITY includes choose_singularity"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "Resident",
+      "lexicon_class": "CANONICAL_INTERNAL",
+      "existence": "INTEGRATED",
+      "keep_top_level": false,
+      "earned_separate_noun": true,
+      "semantic_kind": "runtime_role",
+      "is_separate_semantic_object": false,
+      "collapse_to": "HCLI",
+      "preferred_shape": "the currently instantiated NX / body. Role tokens, not a campaign. Patient names in argv0 are DATA.",
+      "definitions": [
+        {
+          "path": "hcli/agentos/resident.py",
+          "line": 0,
+          "symbol": "ResidentDaemon / ResidentSupervisor"
+        }
+      ],
+      "production_callers": [
+        {
+          "path": "hcli/agentos/resident.py",
+          "line": 1072,
+          "symbol": "ResidentDaemon(",
+          "kind": "call"
+        },
+        {
+          "path": "hcli/agentos_cli.py",
+          "line": 1247,
+          "symbol": "ResidentDaemon(",
+          "kind": "call"
+        }
+      ],
+      "test_callers_exist": true,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "receipts/future/NOMENCLATURE_AUDIT.json: live argv0 still ascension_qwen38_resident \u2014 vestigial campaign+patient in the process name",
+        "hcli/nomenclature.py ResidentInstance in CANONICAL_PIPELINE"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "ResidentDaemon is CALLABLE. The process name is HISTORICAL. Do not make Resident a peer civilization.",
+      "surprise": false
+    },
+    {
+      "noun": "ResidentDaemon",
+      "lexicon_class": "CANONICAL_INTERNAL",
+      "existence": "INTEGRATED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "process",
+      "is_separate_semantic_object": false,
+      "collapse_to": "Resident",
+      "preferred_shape": "",
+      "definitions": [
+        {
+          "path": "hcli/agentos/resident.py",
+          "line": 0,
+          "symbol": "class ResidentDaemon"
+        }
+      ],
+      "production_callers": [
+        {
+          "path": "hcli/agentos_cli.py",
+          "line": 1247,
+          "symbol": "ResidentDaemon(",
+          "kind": "call"
+        }
+      ],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "Many non-test ResidentDaemon( in resident.py and agentos_cli.py"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "Tabula",
+      "lexicon_class": "CANONICAL_INTERNAL",
+      "existence": "CALLABLE",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "instrument",
+      "is_separate_semantic_object": false,
+      "collapse_to": "Doctor",
+      "preferred_shape": "a required Doctor-seal field, not a brand",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "census COMPONENT; hawking.nos.tabula_drift.v1",
+        "tools/future/tabula.py; gene III-D SCAFFOLDED citing tabula.py no_production_caller"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "Foundry",
+      "lexicon_class": "CANONICAL_INTERNAL",
+      "existence": "SCAFFOLDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "registry",
+      "is_separate_semantic_object": false,
+      "collapse_to": "Gravity",
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "census COMPONENT of Gravity; lab foundry_lab status=live in 2026-08-27 census"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "Condense",
+      "lexicon_class": "CANONICAL_INTERNAL",
+      "existence": "SUPERSEDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "mechanism",
+      "is_separate_semantic_object": false,
+      "collapse_to": "Gravity",
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "census COMPONENT; lab/retirement_receipts.json schema hawking.condense.retirement_receipts.v1",
+        "lab/operators/condense_controller.py"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "Headless",
+      "lexicon_class": "ALIAS",
+      "existence": "INTEGRATED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "receipt_plane",
+      "is_separate_semantic_object": false,
+      "collapse_to": "HCLI",
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "census COMPONENT of HCLI; tools/headless + receipts/headless"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "AllSeeingEye",
+      "lexicon_class": "SHOULD_RETIRE",
+      "existence": "CONCEPT_ONLY",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "alias",
+      "is_separate_semantic_object": false,
+      "collapse_to": "VMCP",
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "H-ROADMAP.md:380 VMCP / All-Seeing Eye",
+        "tools/future/vmcp.py:1 All-Seeing Eye exists"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": " | SHOULD_RETIRE as a public noun; alias of VMCP",
+      "surprise": false
+    },
+    {
+      "noun": "MAXX",
+      "lexicon_class": "OVER_SPECIFIC",
+      "existence": "CALLABLE",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "profile",
+      "is_separate_semantic_object": false,
+      "collapse_to": "HCLI",
+      "preferred_shape": "a scheduler/device profile token (vs INTERACTIVE), not a noun",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "H-ROADMAP.md:375 MAXX scheduler",
+        "tools/odyssey/device_profiles.py MAXX profile keys"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "AIR",
+      "lexicon_class": "EXPERIMENTAL",
+      "existence": "ABSENT",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "accelerator_layer",
+      "is_separate_semantic_object": false,
+      "collapse_to": "HawkingAccelerator",
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "H-ROADMAP.md:398 AIR / ACORE / Metal",
+        "git grep ACORE HEAD -- hcli tools lab docs crates src civilization => essentially CAPABILITY_GRAPH DNA list only"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": "no AIR module at HEAD",
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "ACORE",
+      "lexicon_class": "EXPERIMENTAL",
+      "existence": "ABSENT",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "accelerator_layer",
+      "is_separate_semantic_object": false,
+      "collapse_to": "HawkingAccelerator",
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "civilization/CAPABILITY_GRAPH.json lists AIR/ACORE as a DNA token",
+        "no acore module"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "KernelForge",
+      "lexicon_class": "EXPERIMENTAL",
+      "existence": "SCAFFOLDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "tool",
+      "is_separate_semantic_object": false,
+      "collapse_to": "HawkingAccelerator",
+      "preferred_shape": "",
+      "definitions": [
+        {
+          "path": "tools/accelerator/kernel_forge.py",
+          "line": 1,
+          "symbol": "kernel_forge"
+        }
+      ],
+      "production_callers": [],
+      "test_callers_exist": true,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "tools/accelerator/test_kernel_forge.py; DNA map lists Kernel Forge as a sub-box of Accelerator"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "HAWKGPU",
+      "lexicon_class": "ALIAS",
+      "existence": "SCAFFOLDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "logical_accelerator",
+      "is_separate_semantic_object": false,
+      "collapse_to": "HMF",
+      "preferred_shape": "Accelerator instance name HAWKGPU-0 inside HMF, not a product",
+      "definitions": [
+        {
+          "path": "tools/accelerator/hmf.py",
+          "line": 182,
+          "symbol": "Accelerator(name='HAWKGPU-0')"
+        }
+      ],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "build_hawkgpu0() constructs one APPLE_DOMAIN_0; no second domain"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "HUMF",
+      "lexicon_class": "SHOULD_RETIRE",
+      "existence": "CALLABLE",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "memory_fabric",
+      "is_separate_semantic_object": false,
+      "collapse_to": "HMF",
+      "preferred_shape": "",
+      "definitions": [
+        {
+          "path": "tools/accelerator/humf.py",
+          "line": 1,
+          "symbol": "HUMF"
+        }
+      ],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "fusion_planner still imports HUMF types; G053 renamed canonical to HMF; both files remain"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": " | SHOULD_RETIRE as a public noun; alias of HMF",
+      "surprise": false
+    },
+    {
+      "noun": "HawkFrame",
+      "lexicon_class": "EXPERIMENTAL",
+      "existence": "ABSENT",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "transport_record",
+      "is_separate_semantic_object": false,
+      "collapse_to": "FPGA_HWIR",
+      "preferred_shape": "a field schema of HWIR/semantic transport, not a noun",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "H-ROADMAP.md:2574 HawkFrame {..}",
+        "tools/accelerator/semantic_transport.py:101 comment matching HawkFrame / HWIR frame kinds",
+        "no class HawkFrame"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "TransportGenome",
+      "lexicon_class": "EXPERIMENTAL",
+      "existence": "ABSENT",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "digest",
+      "is_separate_semantic_object": false,
+      "collapse_to": "MachineGenome",
+      "preferred_shape": "a section of MachineGenome or Device Ascension, not a peer",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "H-ROADMAP.md:2950 TransportGenome under Device Ascension",
+        "git grep TransportGenome HEAD -- hcli tools lab docs crates src civilization => ZERO source hits"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": "named only in H-ROADMAP prose",
+      "notes": "",
+      "surprise": true
+    },
+    {
+      "noun": "ArchitectureRecognizer",
+      "lexicon_class": "CANONICAL_INTERNAL",
+      "existence": "CALLABLE",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "mechanism",
+      "is_separate_semantic_object": false,
+      "collapse_to": "Doctor",
+      "preferred_shape": "architecture atlas / hcli.architecture as Doctor/Accelerator input, not a DNA peer",
+      "definitions": [
+        {
+          "path": "hcli/architecture.py",
+          "line": 1,
+          "symbol": "architecture"
+        },
+        {
+          "path": "tools/odyssey/arch_recognizer.py",
+          "line": 1,
+          "symbol": "arch_recognizer"
+        },
+        {
+          "path": "tools/accelerator/architecture_atlas.py",
+          "line": 1,
+          "symbol": "atlas"
+        }
+      ],
+      "production_callers": [
+        {
+          "path": "hcli/architecture.py",
+          "line": 290,
+          "symbol": "compile_physical_graph from atlas",
+          "kind": "call"
+        }
+      ],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "three named surfaces for one job: recognize architecture \u2192 atlas \u2192 physical graph"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "HawkingTrain",
+      "lexicon_class": "EXPERIMENTAL",
+      "existence": "ABSENT",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "pipeline",
+      "is_separate_semantic_object": false,
+      "collapse_to": "Theia",
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "H-ROADMAP.md \u00a719.7",
+        "THEIA_T0_TRAIN_SUBSTRATE BLOCKED_EXTERNAL: no teacher registry/data lake/trace store",
+        "tools/theia/ladder.py:150 Hawking Train T0 substrate is not a live campaign"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": "T0_TEACHER_REGISTRY_LIVE",
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "TGFD",
+      "lexicon_class": "EXPERIMENTAL",
+      "existence": "ABSENT",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "method",
+      "is_separate_semantic_object": false,
+      "collapse_to": "Theia",
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "H-ROADMAP appendix G Hawking Train / TGFD",
+        "git grep TGFD HEAD -- hcli tools lab docs civilization => CAPABILITY_GRAPH/catalog/theia ladder only"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "PhysicsIR",
+      "lexicon_class": "EXPERIMENTAL",
+      "existence": "ABSENT",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "ir",
+      "is_separate_semantic_object": false,
+      "collapse_to": "Theia",
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "H-ROADMAP appendix F retained as Theia bounty domain",
+        "git grep PhysicsIR|physics_ir HEAD -- hcli tools lab docs civilization => ZERO"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "A whole appendix. No module. Settle by either deleting the appendix from live vocabulary or landing a physics_ir module that Theia actually calls.",
+      "surprise": true
+    },
+    {
+      "noun": "CounterfactualScience",
+      "lexicon_class": "EXPERIMENTAL",
+      "existence": "CONCEPT_ONLY",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "lab",
+      "is_separate_semantic_object": false,
+      "collapse_to": "Theia",
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "H-ROADMAP.md:3220 retained as Theia physics bounty lab",
+        "hawking-experiments/superwave/g1/sing/counterfactual/.keep only"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "GreenMachine",
+      "lexicon_class": "EXPERIMENTAL",
+      "existence": "SCAFFOLDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "gene",
+      "is_separate_semantic_object": false,
+      "collapse_to": "HawkingAccelerator",
+      "preferred_shape": "",
+      "definitions": [
+        {
+          "path": "tools/future/green_machine.py",
+          "line": 1,
+          "symbol": "green_machine"
+        }
+      ],
+      "production_callers": [],
+      "test_callers_exist": true,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "gene II-E_GREEN_MACHINE SCAFFOLDED no_production_caller",
+        "receipts/future/GREEN_MACHINE.json"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "HardwareDoctor",
+      "lexicon_class": "OVER_SPECIFIC",
+      "existence": "SCAFFOLDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "mechanism",
+      "is_separate_semantic_object": false,
+      "collapse_to": "Doctor",
+      "preferred_shape": "Doctor applied to FPGA/HWIR (domain field), unless the execution contract truly differs",
+      "definitions": [
+        {
+          "path": "tools/accelerator/hardware_doctor.py",
+          "line": 1,
+          "symbol": "hardware_doctor"
+        }
+      ],
+      "production_callers": [],
+      "test_callers_exist": true,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "tools/accelerator/test_hardware_doctor.py",
+        "H-ROADMAP.md:2648 Hardware Doctor loop"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "ToolDoctor",
+      "lexicon_class": "OVER_SPECIFIC",
+      "existence": "SCAFFOLDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "organ",
+      "is_separate_semantic_object": false,
+      "collapse_to": "VMCP",
+      "preferred_shape": "VMCP organ / nine-act CHECK, not Doctor",
+      "definitions": [
+        {
+          "path": "tools/vmcp/tool_doctor.py",
+          "line": 1,
+          "symbol": "tool_doctor"
+        }
+      ],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "VMCP_TOOL_DOCTOR gate SCAFFOLDED accepted=true on receipt",
+        "tools/vmcp/__init__.py exports profile/report"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "FusionBridge",
+      "lexicon_class": "OVER_SPECIFIC",
+      "existence": "SCAFFOLDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "module",
+      "is_separate_semantic_object": false,
+      "collapse_to": "Fusion",
+      "preferred_shape": "",
+      "definitions": [
+        {
+          "path": "tools/accelerator/fusion_bridge.py",
+          "line": 1,
+          "symbol": "fusion_bridge"
+        }
+      ],
+      "production_callers": [
+        {
+          "path": "tools/accelerator/fusion_bridge.py",
+          "line": 1473,
+          "symbol": "compile_physical_graph",
+          "kind": "call"
+        }
+      ],
+      "test_callers_exist": true,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "gene IV-E names Fusion Bridge / Topology Ascension as one gene"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "TopologyAscension",
+      "lexicon_class": "DUPLICATE",
+      "existence": "SCAFFOLDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "process",
+      "is_separate_semantic_object": false,
+      "collapse_to": "DeviceAscension",
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "H-ROADMAP.md:864 IV-E Fusion Bridge / Topology Ascension",
+        "same gene as FusionBridge+DeviceAscension"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "M3Ultimate",
+      "lexicon_class": "EXPERIMENTAL",
+      "existence": "STALE_ROADMAP_TEXT",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "machine_profile",
+      "is_separate_semantic_object": false,
+      "collapse_to": "DeviceAscension",
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "H-ROADMAP.md:2450 M3 Ultimate definition",
+        "hardware probe NEW_M_SERIES_PRESENT=false; SoC is Apple M3 Ultra Mac15,14"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "Textbook machine is M3 Ultra. 'M3 Ultimate' is roadmap dialect for a future fused machine, not a present noun.",
+      "surprise": false
+    },
+    {
+      "noun": "U50DD",
+      "lexicon_class": "CANONICAL_INTERNAL",
+      "existence": "BLOCKED_HARDWARE",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "device",
+      "is_separate_semantic_object": false,
+      "collapse_to": "FPGA_HWIR",
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "U50_PRESENT=false",
+        "U50_DEVICE_PROFILE BLOCKED_HARDWARE"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": "no Xilinx/Alveo/U50 identity in PCIe/Thunderbolt inventory",
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "DGXSpark",
+      "lexicon_class": "CANONICAL_INTERNAL",
+      "existence": "BLOCKED_HARDWARE",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "device",
+      "is_separate_semantic_object": false,
+      "collapse_to": "Fusion",
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "DGX_PRESENT=false",
+        "gene IV-C BLOCKED_HARDWARE"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "eGPU",
+      "lexicon_class": "CANONICAL_INTERNAL",
+      "existence": "BLOCKED_HARDWARE",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "device",
+      "is_separate_semantic_object": false,
+      "collapse_to": "Fusion",
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "EGPU_PRESENT=false",
+        "gene IV-D BLOCKED_HARDWARE"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "ProductSovereignty",
+      "lexicon_class": "EXPERIMENTAL",
+      "existence": "SCAFFOLDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "gene",
+      "is_separate_semantic_object": false,
+      "collapse_to": "Hawking",
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "gene V-A SCAFFOLDED citing tools/future/devplatform.py"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "DeveloperPlatform",
+      "lexicon_class": "EXPERIMENTAL",
+      "existence": "SCAFFOLDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "gene",
+      "is_separate_semantic_object": false,
+      "collapse_to": "HCLI",
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "gene V-B SCAFFOLDED citing tools/future/devplatform.py \u2014 SAME implementing file as ProductSovereignty"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "ContinuousVerifiedImprovement",
+      "lexicon_class": "EXPERIMENTAL",
+      "existence": "SCAFFOLDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "gene",
+      "is_separate_semantic_object": false,
+      "collapse_to": "Odyssey",
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "gene V-C SCAFFOLDED"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "DominanceScoreboard",
+      "lexicon_class": "EXPERIMENTAL",
+      "existence": "SCAFFOLDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "gene",
+      "is_separate_semantic_object": false,
+      "collapse_to": "ParetoFrontier",
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "gene V-D SCAFFOLDED citing pareto_archive.py"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "PerpetualHawking",
+      "lexicon_class": "EXPERIMENTAL",
+      "existence": "CONCEPT_ONLY",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "gene",
+      "is_separate_semantic_object": false,
+      "collapse_to": "Hawking",
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "gene V-E_PERPETUAL_HAWKING status=DORMANT; no git-tracked definition"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "Ultragoal",
+      "lexicon_class": "OVER_SPECIFIC",
+      "existence": "INTEGRATED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "enum",
+      "is_separate_semantic_object": false,
+      "collapse_to": "GoalIR",
+      "preferred_shape": "GoalType.ULTRAGOAL, not a product",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "hcli/goal_ir.py:73 ULTRAGOAL = 'ULTRAGOAL'"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "Mission",
+      "lexicon_class": "CANONICAL_INTERNAL",
+      "existence": "INTEGRATED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "container",
+      "is_separate_semantic_object": false,
+      "collapse_to": "WorkUnit",
+      "preferred_shape": "a persisted set of WorkUnits + ledger, not a peer of WorkUnit",
+      "definitions": [
+        {
+          "path": "hcli/mission.py",
+          "line": 1,
+          "symbol": "class Mission"
+        }
+      ],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "AgentOS re-exports Mission; engine/controller drive it"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "Charge",
+      "lexicon_class": "OVER_SPECIFIC",
+      "existence": "CALLABLE",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "operating_rhythm",
+      "is_separate_semantic_object": false,
+      "collapse_to": "AgentOS",
+      "preferred_shape": "",
+      "definitions": [
+        {
+          "path": "hcli/agentos/charge.py",
+          "line": 1,
+          "symbol": "charge"
+        }
+      ],
+      "production_callers": [
+        {
+          "path": "hcli/agentos/charge.py",
+          "line": 289,
+          "symbol": "AgentOS(",
+          "kind": "call"
+        }
+      ],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "hcli/agentos/charge.py exists at HEAD",
+        "hcli/agentos/charge.py:289 AgentOS( root ) production constructor",
+        "H-ROADMAP.md \u00a72 boot/one-hour/overnight charges are operating rhythm, not a type"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "FrontierScheduler",
+      "lexicon_class": "EXPERIMENTAL",
+      "existence": "CALLABLE",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "tool",
+      "is_separate_semantic_object": false,
+      "collapse_to": "AgentOS",
+      "preferred_shape": "a tool/WorkUnit that picks the next bounded charge, not a second scheduler product",
+      "definitions": [
+        {
+          "path": "hcli/frontier_scheduler.py",
+          "line": 98,
+          "symbol": "class FrontierState"
+        }
+      ],
+      "production_callers": [
+        {
+          "path": "hcli/tool_registry.py",
+          "line": 1585,
+          "symbol": "frontier_scheduler.decide()",
+          "kind": "call"
+        }
+      ],
+      "test_callers_exist": true,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "Not registered in hcli/cli.py; invoked as a tool. hcli/scheduler.py remains the WorkUnit scheduler."
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "ForbiddenFruit",
+      "lexicon_class": "EXPERIMENTAL",
+      "existence": "CALLABLE",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "lab",
+      "is_separate_semantic_object": false,
+      "collapse_to": "HawkingAccelerator",
+      "preferred_shape": "a named lab WorkUnit (mlcompute/ANE exploration), not a DNA noun",
+      "definitions": [],
+      "production_callers": [
+        {
+          "path": "hcli/tool_registry.py",
+          "line": 1573,
+          "symbol": "forbidden_fruit.run_forbidden_fruit_lab",
+          "kind": "call"
+        }
+      ],
+      "test_callers_exist": true,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "engine.py only mentions the token in a keyword map; real call is tool_registry"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "FlashNext",
+      "lexicon_class": "EXPERIMENTAL",
+      "existence": "CALLABLE",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "patient",
+      "is_separate_semantic_object": false,
+      "collapse_to": "ModelLake",
+      "preferred_shape": "a pinned Source Specimen / campaign patient. Identity is DATA (PINNED_REVISION), not a type.",
+      "definitions": [
+        {
+          "path": "hcli/flash_next.py",
+          "line": 1,
+          "symbol": "PINNED_REVISION / REPO_ID"
+        }
+      ],
+      "production_callers": [
+        {
+          "path": "hcli/agentos/modellake_gate.py",
+          "line": 30,
+          "symbol": "from hcli.flash_next import PINNED_REVISION",
+          "kind": "call"
+        }
+      ],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "Many flash_* AgentOS modules import PINNED_REVISION as data",
+        "FLASH_* gates mixed BUILT/WIRED/SCAFFOLDED"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "QwenPatients",
+      "lexicon_class": "HISTORICAL",
+      "existence": "INTEGRATED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "patient",
+      "is_separate_semantic_object": false,
+      "collapse_to": "ModelLake",
+      "preferred_shape": "model_id data. Never bake into type names (see nomenclature audit: hawking.qwen38.resident.v1).",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "receipts/future/NOMENCLATURE_AUDIT.json",
+        "census QwenPatients AMBIGUOUS 4304 files"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "SpecialUnit",
+      "lexicon_class": "HISTORICAL",
+      "existence": "SCAFFOLDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "receipt_kind",
+      "is_separate_semantic_object": false,
+      "collapse_to": "WorkUnit",
+      "preferred_shape": "",
+      "definitions": [
+        {
+          "path": "lab/hcli/special_unit.py",
+          "line": 1,
+          "symbol": "special_unit"
+        }
+      ],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "census AMBIGUOUS receipt-kind",
+        "lab/tests/test_special_unit.py"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "OneMountain",
+      "lexicon_class": "HISTORICAL",
+      "existence": "SUPERSEDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "receipt_kind",
+      "is_separate_semantic_object": false,
+      "collapse_to": "Gravity",
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "census AMBIGUOUS hawking.one_mountain.*",
+        "lab/operators/one_mountain_capability.py"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "Loc300k",
+      "lexicon_class": "HISTORICAL",
+      "existence": "SUPERSEDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "receipt_kind",
+      "is_separate_semantic_object": false,
+      "collapse_to": "Gravity",
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "census AMBIGUOUS"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "Superwave",
+      "lexicon_class": "HISTORICAL",
+      "existence": "SUPERSEDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "method",
+      "is_separate_semantic_object": false,
+      "collapse_to": "HCLI",
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "census AMBIGUOUS; docs/archive/SUPERWAVE_STATE.md; COSMETIC rename in census"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "Sovereignty",
+      "lexicon_class": "CANONICAL_INTERNAL",
+      "existence": "SCAFFOLDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "mechanism",
+      "is_separate_semantic_object": false,
+      "collapse_to": "Gravity",
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "census COMPONENT of Gravity (Rev3 SS8)"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "RuntimeGenome",
+      "lexicon_class": "SHOULD_RETIRE",
+      "existence": "CALLABLE",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "digest",
+      "is_separate_semantic_object": false,
+      "collapse_to": "MachineGenome",
+      "preferred_shape": "",
+      "definitions": [
+        {
+          "path": "hcli/genomes/runtime_genome.py",
+          "line": 1,
+          "symbol": "RuntimeGenome"
+        }
+      ],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "hcli/agentos/__init__.py exports RuntimeGenome alongside the MachineGenome bag"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": " | SHOULD_RETIRE as a peer of MachineGenome",
+      "surprise": false
+    },
+    {
+      "noun": "ANE",
+      "lexicon_class": "CANONICAL_INTERNAL",
+      "existence": "SCAFFOLDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "backend",
+      "is_separate_semantic_object": false,
+      "collapse_to": "HawkingAccelerator",
+      "preferred_shape": "",
+      "definitions": [
+        {
+          "path": "hcli/ane_provider.py",
+          "line": 1,
+          "symbol": "ANEProvider"
+        }
+      ],
+      "production_callers": [],
+      "test_callers_exist": true,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "hcli/test_ane_provider.py calls compile_physical_graph with provider",
+        "physical ANE behaviour is BLOCKED_AUTHORITY for this lane \u2014 not MEASURED"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": "this audit did not run ANE workloads",
+      "notes": "",
+      "surprise": false
+    },
+    {
+      "noun": "HIDE",
+      "lexicon_class": "HISTORICAL",
+      "existence": "SUPERSEDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "campaign",
+      "is_separate_semantic_object": false,
+      "collapse_to": null,
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "receipts/headless/NOMENCLATURE_CENSUS.json names[] generated_at=2026-08-27T07:02:07Z"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "VESTIGIAL IDE; 8 hide-* crates + app/ remain; deferred not deleted; homonym of hide_plan",
+      "surprise": false
+    },
+    {
+      "noun": "Ramanujan",
+      "lexicon_class": "HISTORICAL",
+      "existence": "SUPERSEDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "campaign",
+      "is_separate_semantic_object": false,
+      "collapse_to": null,
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "receipts/headless/NOMENCLATURE_CENSUS.json names[] generated_at=2026-08-27T07:02:07Z"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "Retired scaffold blocked on Hawking completion",
+      "surprise": false
+    },
+    {
+      "noun": "Haider",
+      "lexicon_class": "HISTORICAL",
+      "existence": "SUPERSEDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "campaign",
+      "is_separate_semantic_object": false,
+      "collapse_to": null,
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "receipts/headless/NOMENCLATURE_CENSUS.json names[] generated_at=2026-08-27T07:02:07Z"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "Predecessor brand; live HCLI source still nested under tools/haider/hcli",
+      "surprise": false
+    },
+    {
+      "noun": "Frankenstein",
+      "lexicon_class": "HISTORICAL",
+      "existence": "SUPERSEDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "campaign",
+      "is_separate_semantic_object": false,
+      "collapse_to": null,
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "receipts/headless/NOMENCLATURE_CENSUS.json names[] generated_at=2026-08-27T07:02:07Z"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "Kimi\u2192GLM\u2192DeepSeek transfer campaign; sealed evidence",
+      "surprise": false
+    },
+    {
+      "noun": "Ascension",
+      "lexicon_class": "HISTORICAL",
+      "existence": "SUPERSEDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "campaign",
+      "is_separate_semantic_object": false,
+      "collapse_to": null,
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "receipts/headless/NOMENCLATURE_CENSUS.json names[] generated_at=2026-08-27T07:02:07Z"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "Q80/Qwen38 example-runtime campaign; live argv0 still ascension_qwen38_resident",
+      "surprise": false
+    },
+    {
+      "noun": "Ascent",
+      "lexicon_class": "HISTORICAL",
+      "existence": "SUPERSEDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "campaign",
+      "is_separate_semantic_object": false,
+      "collapse_to": null,
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "receipts/headless/NOMENCLATURE_CENSUS.json names[] generated_at=2026-08-27T07:02:07Z"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "ascent-2026-08-16/18 receipt campaigns; negative-science register",
+      "surprise": false
+    },
+    {
+      "noun": "Strand",
+      "lexicon_class": "HISTORICAL",
+      "existence": "SUPERSEDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "campaign",
+      "is_separate_semantic_object": false,
+      "collapse_to": null,
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "receipts/headless/NOMENCLATURE_CENSUS.json names[] generated_at=2026-08-27T07:02:07Z"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "Absorbed STRAND quant; workspace/vendor/strand-quant excluded from cargo workspace",
+      "surprise": false
+    },
+    {
+      "noun": "Genesis",
+      "lexicon_class": "HISTORICAL",
+      "existence": "SUPERSEDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "campaign",
+      "is_separate_semantic_object": false,
+      "collapse_to": null,
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "receipts/headless/NOMENCLATURE_CENSUS.json names[] generated_at=2026-08-27T07:02:07Z"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "Qwen3.8 continuity campaign; Odyssey-II 'genesis tournament' reuses the word \u2014 homonym",
+      "surprise": false
+    },
+    {
+      "noun": "Fabric",
+      "lexicon_class": "HISTORICAL",
+      "existence": "SUPERSEDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "campaign",
+      "is_separate_semantic_object": false,
+      "collapse_to": null,
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "receipts/headless/NOMENCLATURE_CENSUS.json names[] generated_at=2026-08-27T07:02:07Z"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "fabric-agent; HIDE-adjacent",
+      "surprise": false
+    },
+    {
+      "noun": "Prometheus",
+      "lexicon_class": "HISTORICAL",
+      "existence": "SUPERSEDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "campaign",
+      "is_separate_semantic_object": false,
+      "collapse_to": null,
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "receipts/headless/NOMENCLATURE_CENSUS.json names[] generated_at=2026-08-27T07:02:07Z"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "Math cartography; lab status historical",
+      "surprise": false
+    },
+    {
+      "noun": "Eco",
+      "lexicon_class": "HISTORICAL",
+      "existence": "SUPERSEDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "campaign",
+      "is_separate_semantic_object": false,
+      "collapse_to": null,
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "receipts/headless/NOMENCLATURE_CENSUS.json names[] generated_at=2026-08-27T07:02:07Z"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "ECO admission/planner; lab retired",
+      "surprise": false
+    },
+    {
+      "noun": "TG",
+      "lexicon_class": "HISTORICAL",
+      "existence": "SUPERSEDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "campaign",
+      "is_separate_semantic_object": false,
+      "collapse_to": null,
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "receipts/headless/NOMENCLATURE_CENSUS.json names[] generated_at=2026-08-27T07:02:07Z"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "Tournament-gate K11 campaign id retired; tournament gates as mechanism remain",
+      "surprise": false
+    },
+    {
+      "noun": "Succession",
+      "lexicon_class": "HISTORICAL",
+      "existence": "SUPERSEDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "campaign",
+      "is_separate_semantic_object": false,
+      "collapse_to": null,
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "receipts/headless/NOMENCLATURE_CENSUS.json names[] generated_at=2026-08-27T07:02:07Z"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "succ_* campaign shell retired; successor_select remains a gate",
+      "surprise": false
+    },
+    {
+      "noun": "Forge",
+      "lexicon_class": "HISTORICAL",
+      "existence": "SUPERSEDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "campaign",
+      "is_separate_semantic_object": false,
+      "collapse_to": null,
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "receipts/headless/NOMENCLATURE_CENSUS.json names[] generated_at=2026-08-27T07:02:07Z"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "campaign shell; not Kernel Forge",
+      "surprise": false
+    },
+    {
+      "noun": "GPTOSS",
+      "lexicon_class": "HISTORICAL",
+      "existence": "SUPERSEDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "campaign",
+      "is_separate_semantic_object": false,
+      "collapse_to": null,
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "receipts/headless/NOMENCLATURE_CENSUS.json names[] generated_at=2026-08-27T07:02:07Z"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "GPT-OSS-120B gravity campaign retired",
+      "surprise": false
+    },
+    {
+      "noun": "Overnight",
+      "lexicon_class": "HISTORICAL",
+      "existence": "SUPERSEDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "campaign",
+      "is_separate_semantic_object": false,
+      "collapse_to": null,
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "receipts/headless/NOMENCLATURE_CENSUS.json names[] generated_at=2026-08-27T07:02:07Z"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "overnight supervisor campaign retired",
+      "surprise": false
+    },
+    {
+      "noun": "KimiK26",
+      "lexicon_class": "HISTORICAL",
+      "existence": "SUPERSEDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "campaign",
+      "is_separate_semantic_object": false,
+      "collapse_to": null,
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "receipts/headless/NOMENCLATURE_CENSUS.json names[] generated_at=2026-08-27T07:02:07Z"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "download/phase-2 campaign retired",
+      "surprise": false
+    },
+    {
+      "noun": "SecondLight",
+      "lexicon_class": "HISTORICAL",
+      "existence": "SUPERSEDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "campaign",
+      "is_separate_semantic_object": false,
+      "collapse_to": null,
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "receipts/headless/NOMENCLATURE_CENSUS.json names[] generated_at=2026-08-27T07:02:07Z"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "vestigial; 0 owned files in census",
+      "surprise": false
+    },
+    {
+      "noun": "Mechanics",
+      "lexicon_class": "HISTORICAL",
+      "existence": "SUPERSEDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "campaign",
+      "is_separate_semantic_object": false,
+      "collapse_to": null,
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "receipts/headless/NOMENCLATURE_CENSUS.json names[] generated_at=2026-08-27T07:02:07Z"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "vestigial; 0 owned files",
+      "surprise": false
+    },
+    {
+      "noun": "QwenCampaign",
+      "lexicon_class": "HISTORICAL",
+      "existence": "SUPERSEDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "campaign",
+      "is_separate_semantic_object": false,
+      "collapse_to": null,
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "receipts/headless/NOMENCLATURE_CENSUS.json names[] generated_at=2026-08-27T07:02:07Z"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "vestigial campaign id; 0 owned files",
+      "surprise": false
+    },
+    {
+      "noun": "Lab",
+      "lexicon_class": "HISTORICAL",
+      "existence": "SUPERSEDED",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "campaign",
+      "is_separate_semantic_object": false,
+      "collapse_to": null,
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "receipts/headless/NOMENCLATURE_CENSUS.json names[] generated_at=2026-08-27T07:02:07Z"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "ambiguous engine vs directory",
+      "surprise": false
+    },
+    {
+      "noun": "GLM52",
+      "lexicon_class": "HISTORICAL",
+      "existence": "CALLABLE",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "campaign",
+      "is_separate_semantic_object": false,
+      "collapse_to": null,
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "receipts/headless/NOMENCLATURE_CENSUS.json names[] generated_at=2026-08-27T07:02:07Z"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "patient; lab status live in 2026-08-27 census | patient/code/receipts exist; the NAME is historical-as-brand not a top-level noun",
+      "surprise": false
+    },
+    {
+      "noun": "DSV4F",
+      "lexicon_class": "HISTORICAL",
+      "existence": "CALLABLE",
+      "keep_top_level": false,
+      "earned_separate_noun": false,
+      "semantic_kind": "campaign",
+      "is_separate_semantic_object": false,
+      "collapse_to": null,
+      "preferred_shape": "",
+      "definitions": [],
+      "production_callers": [],
+      "test_callers_exist": false,
+      "import_only": false,
+      "dual_of": null,
+      "aliases": [],
+      "overloads": [],
+      "evidence": [
+        "receipts/headless/NOMENCLATURE_CENSUS.json names[] generated_at=2026-08-27T07:02:07Z"
+      ],
+      "evidence_tier": "SOURCE_INSPECTION",
+      "blocker": null,
+      "notes": "patient DeepSeek-V4-Flash; large receipt corpus | patient/code/receipts exist; the NAME is historical-as-brand not a top-level noun",
+      "surprise": false
+    }
+  ],
+  "hierarchy_inflation": [
+    {
+      "pattern": "PrefillWorkUnit / DecodeWorkUnit / FpgaWorkUnit / GravityWorkUnit",
+      "verdict": "ABSENT",
+      "earned": false,
+      "evidence": "git grep of those identifiers over hcli tools crates lab src docs civilization exits 1",
+      "note": "The feared subclass explosion is not in the tree. WorkUnit is already the collapsed form."
+    },
+    {
+      "pattern": "WorkUnitFamily / Group / Bundle / Cluster",
+      "verdict": "ABSENT",
+      "earned": false,
+      "evidence": "git grep exits 1",
+      "note": "No extra container noun. WorkUnitDAG is the DAG container and should stay internal."
+    },
+    {
+      "pattern": "EBPWUnit / EBPWFamily / EBPWVariant",
+      "verdict": "ABSENT",
+      "earned": false,
+      "evidence": "git grep exits 1",
+      "note": "EBPW is a metric field (complete_ebpw), correctly not a type family."
+    },
+    {
+      "pattern": "GoalIR vs GoalCompiler vs GoalNode vs GoalGraph",
+      "verdict": "DUPLICATE_IR",
+      "earned": false,
+      "evidence": "engine/controller/mission call GoalCompiler.compile; GoalIR ingest/schedule only tests",
+      "note": "This is the hierarchy inflation that actually exists: two goal compilers."
+    },
+    {
+      "pattern": "class Law x2 / class Scar x2 / class WorkUnit x2 / class HWIR vs HwirGraph / class MachineGenome vs accelerator genome vs RuntimeGenome",
+      "verdict": "DUPLICATE_TYPES",
+      "earned": false,
+      "evidence": "see lexicon duplicate_definitions",
+      "note": "Same noun, multiple class bodies. Callers exist; the extra classes have not earned distinct contracts."
+    },
+    {
+      "pattern": "Fusion (heterogeneous) vs kernel fusion vs Fusion ISA vs decode fusion",
+      "verdict": "OVERLOADED",
+      "earned": false,
+      "evidence": "four file families listed under Fusion.overloads",
+      "note": "One public noun, four execution contracts. Only heterogeneous Fusion is the constitutional object."
+    },
+    {
+      "pattern": "Doctor vs Tool Doctor vs Hardware Doctor vs doctor_seal vs hcli.doctor marker",
+      "verdict": "OVERLOADED",
+      "earned": false,
+      "evidence": "hcli/doctor has no callables; doctor_seal.seal has Odyssey callers; tool_doctor is VMCP; hardware_doctor is FPGA",
+      "note": "One mechanism, three extra names, one empty package."
+    },
+    {
+      "pattern": "PhysicalGraph class vs compile_physical_graph vs tools/odyssey/physical_graph_compiler.py",
+      "verdict": "DUPLICATE_COMPILER",
+      "earned": false,
+      "evidence": "both compilers exist; II-C WIRED on the odyssey module; flash campaigns call the hcli function",
+      "note": "Two compilers for one IR."
+    },
+    {
+      "pattern": "NOS header vs NOS stages",
+      "verdict": "STALE_ROADMAP_TEXT",
+      "earned": false,
+      "evidence": "tools/nos_pipeline.py:11 vs :46-80",
+      "note": "Producer comment claims Gravity/NR/NX/NVM stages the function does not call."
+    },
+    {
+      "pattern": "VMCP nine acts / nine eyes as nouns",
+      "verdict": "OVER_SPECIFIC",
+      "earned": false,
+      "evidence": "tools/future/vmcp.py and H-ROADMAP \u00a78",
+      "note": "Verbs and organs. Compact surface is nine acts. Do not mint WebEye as a civilization noun."
+    }
+  ],
+  "unearned_headline": [
+    "GoalIR (schema exists; live engine still GoalCompiler)",
+    "TransportGenome (roadmap only)",
+    "PhysicsIR (appendix only)",
+    "HawkingTrain / TGFD (blocked external, no module)",
+    "AIR / ACORE (DNA tokens, no module)",
+    "HawkFrame (comment)",
+    "All-Seeing Eye (alias of VMCP)",
+    "MAXX (profile)",
+    "HAWKGPU (HMF instance name)",
+    "HUMF (alias of HMF)",
+    "HGVAS as a second fabric (it is a ladder level + identity type)",
+    "NR/NX/NOS/NVM as peer brands of Noetic",
+    "Tabula / Foundry / Condense / Headless as peer brands",
+    "KernelForge / HardwareDoctor / ToolDoctor as peer brands",
+    "FusionBridge / TopologyAscension as peer of Fusion / DeviceAscension",
+    "ProductSovereignty / DeveloperPlatform / PerpetualHawking / DominanceScoreboard as peer products",
+    "WorkUnitDAG / WorkUnitExecutor / Mission as peer of WorkUnit",
+    "Ultragoal / Charge / FrontierScheduler as peer control-plane products",
+    "FlashNext / QwenPatients as types rather than specimen DATA",
+    "SpecialUnit / OneMountain / Loc300k as live vocabulary",
+    "PrefillWorkUnit family (does not exist \u2014 do not invent it)",
+    "class hcli.machine.MachineGenome (not the genome)",
+    "class HWIR in fpga_preboard (HwirGraph is the called type)",
+    "second class WorkUnit / Law / Scar",
+    "hide_plan token (homonym of HIDE)",
+    "NOS as a brand (and its stale stage list)",
+    "Singularity as a selected object (none selected)",
+    "Complete Noetic Executable (refused scaffold)",
+    "M3 Ultimate (roadmap dialect; hardware is M3 Ultra)"
+  ],
+  "duplicate_definitions": [
+    {
+      "noun": "WorkUnit",
+      "paths": [
+        "hcli/workunit.py:33",
+        "tools/future/improvement_metabolism.py:295"
+      ],
+      "keep": "hcli/workunit.py"
+    },
+    {
+      "noun": "Law",
+      "paths": [
+        "tools/future/autonomy_scars.py:514",
+        "tools/future/odyssey2_law_store.py:315"
+      ],
+      "keep": "unresolved \u2014 both have production Law( callers; collapse requires an implementation lane"
+    },
+    {
+      "noun": "Scar",
+      "paths": [
+        "tools/future/autonomy_scars.py:564",
+        "tools/future/negative_index.py:467"
+      ],
+      "keep": "unresolved \u2014 both have production Scar( callers"
+    },
+    {
+      "noun": "MachineGenome",
+      "paths": [
+        "hcli/machine.py:1018 (NOT the genome)",
+        "tools/accelerator/machine_genome.py",
+        "hcli/genomes/runtime_genome.py RuntimeGenome"
+      ],
+      "keep": "accelerator machine_genome.py + machine_probe.py producer; retire the bag's class name"
+    },
+    {
+      "noun": "HWIR",
+      "paths": [
+        "hcli/agentos/fpga_preboard.py:152 class HWIR",
+        "tools/future/hwir.py:862 class HwirGraph"
+      ],
+      "keep": "HwirGraph"
+    },
+    {
+      "noun": "GoalIR",
+      "paths": [
+        "hcli/goal_ir.py GoalNode (no class GoalIR)",
+        "hcli/goal.py:183 GoalCompiler LIVE"
+      ],
+      "keep": "GoalIR/GoalNode should become the live path; GoalCompiler is the one that currently runs"
+    },
+    {
+      "noun": "HMF",
+      "paths": [
+        "tools/accelerator/hmf.py",
+        "tools/accelerator/humf.py"
+      ],
+      "keep": "HMF; HUMF is alias still imported"
+    },
+    {
+      "noun": "PhysicalGraph compiler",
+      "paths": [
+        "hcli/physical_graph.py compile_physical_graph",
+        "tools/odyssey/physical_graph_compiler.py"
+      ],
+      "keep": "unresolved \u2014 both have callers"
+    }
+  ],
+  "overloaded_names": [
+    {
+      "noun": "Fusion",
+      "senses": [
+        "heterogeneous machines (canonical)",
+        "Metal kernel fusion",
+        "Fusion ISA/wire/bridge",
+        "representation_decode_fusion"
+      ]
+    },
+    {
+      "noun": "Doctor",
+      "senses": [
+        "measure/prescribe/verify (canonical)",
+        "hcli.doctor empty marker",
+        "VMCP Tool Doctor",
+        "Hardware Doctor",
+        "Doctor6/V5 instruments"
+      ]
+    },
+    {
+      "noun": "Gravity",
+      "senses": [
+        "search process (canonical)",
+        ".gravity file format (historical)",
+        "hawking.gravity.* schemas"
+      ]
+    },
+    {
+      "noun": "Ascension",
+      "senses": [
+        "vestigial campaign",
+        "Device Ascension process",
+        "live argv0 ascension_qwen38_resident"
+      ]
+    },
+    {
+      "noun": "Genesis",
+      "senses": [
+        "vestigial Qwen3.8 campaign",
+        "Odyssey-II genesis tournament word"
+      ]
+    },
+    {
+      "noun": "HIDE",
+      "senses": [
+        "vestigial IDE crates/hide-*",
+        "hide_plan NVM kernel-selection"
+      ]
+    },
+    {
+      "noun": "Resident",
+      "senses": [
+        "running NX role (canonical)",
+        "ResidentDaemon process",
+        "patient-named binary"
+      ]
+    },
+    {
+      "noun": "Headless",
+      "senses": [
+        "HCLI receipt plane",
+        "sometimes spoken as a brand"
+      ]
+    }
+  ],
+  "surprises": [
+    {
+      "id": "S1_GOALIR_NOT_LIVE",
+      "what": "There is no class GoalIR. The live engine compiles via GoalCompiler. GoalIR ingest/schedule is tests-only.",
+      "would_settle": "A non-test call from hcli/engine.py or hcli/mission.py to goal_compile.ingest/schedule, or deletion of GoalCompiler in favor of GoalIR."
+    },
+    {
+      "id": "S2_NO_WORKUNIT_SUBCLASSES",
+      "what": "PrefillWorkUnit/DecodeWorkUnit/FpgaWorkUnit/GravityWorkUnit/WorkUnitFamily/EBPWUnit do not exist anywhere in HEAD source. The audit question's example inflation is not present. WorkUnit is already one dataclass with fields; workunit_species.py emits into those fields.",
+      "would_settle": "Nothing to collapse on that axis. Do not invent the subclasses."
+    },
+    {
+      "id": "S3_GENE_VS_GATE_IA",
+      "what": "Capability graph marks gene I-A_AGENTOS_HCLI SCAFFOLDED (no production caller of hcli/engine.py) while 18 gates are BUILT and AgentOS()/WorkUnit() have many non-test constructors.",
+      "would_settle": "Gene implementing-symbol policy: either engine.py is the wrong symbol, or BUILT gates must not outrank a SCAFFOLDED gene."
+    },
+    {
+      "id": "S4_MACHINEGENOME_BAG",
+      "what": "hcli/machine.py::MachineGenome's own docstring says it is not the machine genome and admission must not import it.",
+      "would_settle": "Rename the bag; keep tools/headless/machine_probe.py + tools/accelerator/machine_genome.py as the producer/digest."
+    },
+    {
+      "id": "S5_NOS_STALE_STAGES",
+      "what": "tools/nos_pipeline.py comments claim DOCTOR->GRAVITY->NR->NX->NVM/HIDE. qualify_and_promote runs spawn/timing/doctor/provenance/promote/rebind and never calls Gravity/NR/NX/NVM. Also has no non-test importer.",
+      "would_settle": "Fix the producer comment, or actually call those stages. Receipts cannot override this producer."
+    },
+    {
+      "id": "S6_TRANSPORTGENOME_ABSENT",
+      "what": "H-ROADMAP \u00a718 names TransportGenome. git grep over source/docs in-repo is empty.",
+      "would_settle": "A MachineGenome field named transport, or a module with a production caller."
+    },
+    {
+      "id": "S7_PHYSICSIR_ABSENT",
+      "what": "Appendix F is a scientific OS. No physics_ir module. Theia engine does not import one.",
+      "would_settle": "A tools/theia caller of a PhysicsIR type, or explicit demotion of Appendix F from live vocabulary to historical bounty prose."
+    },
+    {
+      "id": "S8_FUSION_FOUR_SENSES",
+      "what": "Fusion is four execution contracts. FUSION_FIRST_HETEROGENEOUS_EXECUTABLE is UNREACHABLE (no second physical domain). Kernel-fusion files would inflate a Fusion census if counted as the noun.",
+      "would_settle": "Restrict the public noun to heterogeneous Fusion; call kernel fusion a compiler pass/field."
+    },
+    {
+      "id": "S9_THEIA_ENGINE_WITHOUT_MODEL",
+      "what": "tools/theia/ exists with tests; no hcli production import; all THEIA_* gates BLOCKED_EXTERNAL because there is no qualified generalist MODEL and no Hawking Train T0 substrate.",
+      "would_settle": "A resident-callable Theia model identity, or keep Theia as constitutional-future with existence=SCAFFOLDED honestly."
+    },
+    {
+      "id": "S10_HGVAS_NOT_A_FABRIC",
+      "what": "HGVAS is coherence-ladder level 2 plus HgvasRef identity that refuses native pointers. No page directory. No device.",
+      "would_settle": "Keep the paired public name; store HGVAS as HMF.coherence_level / HMF.identity_scheme."
+    },
+    {
+      "id": "S11_DUPLICATE_LAW_SCAR_WORKUNIT",
+      "what": "Two class Law, two class Scar, extra class WorkUnit. All have some callers. Distinct execution contracts were not demonstrated.",
+      "would_settle": "One Law type, one Scar type, one WorkUnit type, with scope/source fields."
+    },
+    {
+      "id": "S12_HIDE_HOMONYM",
+      "what": "tools/hide_plan.py is Noetic kernel-selection-as-data. crates/hide-* is a deferred IDE. Same token.",
+      "would_settle": "Never use HIDE for hide_plan in new vocabulary (census already said this)."
+    },
+    {
+      "id": "S13_DAEMON_NOT_SEEN_HERE",
+      "what": "Campaign environment asserts a live HCLI daemon ~110 dirty files under hcli/. This sandbox pgrep hawkingd|hcli.__main__ was empty. Prior nomenclature audit (2026-09-01) observed ascension_qwen38_resident PIDs.",
+      "would_settle": "A process listing from the unsandboxed host. This lane will not signal any process."
+    },
+    {
+      "id": "S14_CENSUS_VS_CONSTITUTION",
+      "what": "2026-08-27 census surviving vocabulary is only HCLI, Odyssey, Noetic, Gravity. Constitution + this contract expect ~23 top-level nouns including Doctor, AgentOS, Theia, HMF, VMCP. Those are COMPONENT in the census, CANONICAL_PUBLIC here.",
+      "would_settle": "Distinguish campaign-brand survival (census) from semantic-object survival (this audit). Do not mass-rename either list."
+    },
+    {
+      "id": "S15_FLASH_NX_REFUSED",
+      "what": "FLASH_FULL_NOETIC_EXECUTABLE is an explicitly refused scaffold (native_loader=NOT_IMPLEMENTED). Docs already say a complete Flash bundle is not built. The noun Noetic Executable has not earned completeness.",
+      "would_settle": "A native loader that runs an NX independent of the cold Source Specimen, with a complete-token receipt."
+    },
+    {
+      "id": "S16_ERA_VI_REFUSED_IN_CODE",
+      "what": "Era VI is not a stale claim \u2014 several tools/future modules raise if era is not I-V. Positive constitution enforcement.",
+      "would_settle": "Keep those guards. Do not add Era VI."
+    }
+  ],
+  "collapse_recommendations_advisory": [
+    "Keep the expected top-level list. Do not add AIR, ACORE, HAWKGPU, All-Seeing Eye, MAXX, HawkFrame, TransportGenome, PhysicsIR, TGFD, HawkingTrain, KernelForge, HardwareDoctor, ToolDoctor, FusionBridge, TopologyAscension, NR, NX, NOS, NVM, Tabula, Foundry, Condense, Headless, Ultragoal, Charge, FrontierScheduler as top-level nouns.",
+    "Make GoalIR the live compiler or stop calling the typed schema GoalIR while GoalCompiler runs.",
+    "One WorkUnit, one Law, one Scar, one MachineGenome producer, one HWIR graph type (HwirGraph), one PhysicalGraph compiler.",
+    "HGVAS is a field of HMF. HUMF is an alias of HMF. HAWKGPU-0 is an HMF Accelerator instance.",
+    "Fusion public sense = heterogeneous machines. Kernel fusion is a pass/field.",
+    "Doctor public sense = measure/prescribe/verify. Tool Doctor \u2282 VMCP. Hardware Doctor \u2282 Doctor.domain=fpga. Delete the empty hcli.doctor callable claim \u2014 it is an ownership marker.",
+    "Nine VMCP acts stay verbs. Eyes stay organs.",
+    "Flash-Next / Qwen* stay specimen DATA.",
+    "Historical campaign brands stay historical. Vestigial \u2260 reclaimable. No git mv of sealed schemas.",
+    "FPGA stays inside Hawking Accelerator/Fusion. No Era VI.",
+    "Theia stays one bounty model. Physics appendix is a Theia lab, not a civilization.",
+    "Prefer FEWER STRONG NOUNS with MORE EXPLICIT FIELDS. WorkUnit already follows this; do not subclass it."
+  ],
+  "prior_census": {
+    "path": "receipts/headless/NOMENCLATURE_CENSUS.json",
+    "generated_at": "2026-08-27T07:02:07Z",
+    "surviving_vocabulary": [
+      "HCLI",
+      "Odyssey",
+      "Noetic",
+      "Gravity"
+    ],
+    "classification_counts": {
+      "SURVIVING": 4,
+      "COMPONENT": 13,
+      "VESTIGIAL": 20,
+      "AMBIGUOUS": 9
+    },
+    "this_audit_adds": "Semantic-object classes (CONSTITUTIONAL/CANONICAL_*/EXPERIMENTAL/HISTORICAL/ALIAS/DUPLICATE/OVER_SPECIFIC/SHOULD_RETIRE) and existence ladder against CALL SITES of the symbol, not campaign-brand owned-path counts. Does not replace the census; the census remains the search/index boundary."
+  },
+  "acceptance": {
+    "json_valid": true,
+    "every_claim_has_evidence_or_blocker": true,
+    "files": [
+      "receipts/audit/aud17-nomenclature-lexicon.json",
+      "receipts/audit/aud17-nomenclature-lexicon.md"
+    ]
+  }
+}

@@ -1,0 +1,2740 @@
+{
+  "schema": "hawking.audit.aud20_conceptual_load.v1",
+  "lane": "aud20-conceptual-load",
+  "nomenclature_version": "HAWKING_NOMENCLATURE_V1",
+  "recorded_at": "2026-09-02T19:10:45Z",
+  "git_head": "04193ccbc",
+  "git_head_full_note": "04193ccbc fix(hcli): a graceful stop, and a successful repair, no longer end the mission",
+  "evidence_class": "SOURCE_INSPECTION",
+  "executed_on_this_machine": [
+    {
+      "what": "Instantiated hcli.tool_registry.default_tool_registry(tmp, repo_root='.') and listed registry._tools",
+      "result": "68 registered tools",
+      "evidence_class": "STATIC_VERIFICATION",
+      "not": "MEASURED"
+    },
+    {
+      "what": "git ls-tree / git grep / git show against HEAD; python3 json loads of sealed receipts",
+      "evidence_class": "SOURCE_INSPECTION"
+    }
+  ],
+  "not_executed": [
+    "cargo test / cargo build",
+    "python3 -m pytest of hcli/ lab/ tools/",
+    "resident start/stop",
+    "ModelLake promote --go",
+    "any GPU/ANE/FPGA physical run",
+    "diff of the live launchd daemon's uncommitted hcli/ tree"
+  ],
+  "claim_boundary": "Static conceptual-load audit of git HEAD 04193ccbc in this sparse worktree. Definitions without callers are not counted as capability. Module imports are not call sites. Tests are not physical measurements. Roadmap prose is data, not evidence of existence. No MEASURED hardware claim is made. FPGA/U50/DGX/eGPU findings are BLOCKED_HARDWARE. This audit does not rewrite H-ROADMAP.md and does not implement consolidations.",
+  "authority": {
+    "authoritative_for": [
+      "source archaeology",
+      "call-site reachability",
+      "test coverage presence (file exists / constructor exists)",
+      "schema and topology",
+      "dependency graphs",
+      "duplication",
+      "naming",
+      "receipt consistency"
+    ],
+    "not_authoritative_for": [
+      "GPU physical performance",
+      "Metal runtime behaviour not executed here",
+      "ANE physical behaviour not executed here",
+      "U50/FPGA facts not physically measured",
+      "thermal/power",
+      "protected benchmarks"
+    ]
+  },
+  "constitution_held": {
+    "exactly_five_eras": true,
+    "exactly_three_odysseys": true,
+    "no_era_vi": true,
+    "fpga_lives_inside_hawking_accelerator_fusion": true,
+    "theia_is_one_generalist_bounty_model": true,
+    "civilizational_coordinate_0_7_not_rewritten": true,
+    "north_star": "HAWKING = SELF-OPTIMIZING PHYSICAL AI COMPUTER",
+    "evidence": [
+      {
+        "path": "hcli/nomenclature.py",
+        "symbol": "CANONICAL_PIPELINE",
+        "note": "SourceSpecimen..ResidentInstance; FPGA is not a pipeline stage or civilization"
+      },
+      {
+        "path": "tools/future/workunit_species.py",
+        "symbol": "ERAS, ODYSSEYS",
+        "note": "ERAS=('I'..'V'); ODYSSEYS=('I','II','III')"
+      },
+      {
+        "path": "civilization/ROADMAP_STATE.json",
+        "symbol": "civilizational_coordinate",
+        "note": "value 0.7 at HEAD"
+      },
+      {
+        "path": "tools/future/fpga_engines.py",
+        "note": "module docstring: FPGA is Accelerator/Physical Compiler/Fusion, not its own civilization"
+      }
+    ]
+  },
+  "method": {
+    "call_site_rule": "A symbol counts only when invoked (Name(, method call, or registry.register of a handler). import X is not a call site.",
+    "sparse_checkout": "Unmaterialized paths were read with git show HEAD:<path> / git grep HEAD. Absence from the worktree disk is not absence from git.",
+    "live_daemon_caveat": "A launchd HCLI daemon is described as holding ~110 uncommitted hcli/ files against 'this checkout'. THIS worktree git status is clean at HEAD. The daemon dirty tree was not diffed. Claims below are about HEAD, not the daemon's uncommitted overlay.",
+    "prior_receipts_treated_as_data": [
+      "receipts/headless/NOMENCLATURE_CENSUS.json",
+      "receipts/future/NOMENCLATURE_AUDIT.json",
+      "receipts/headless/EBPW_NAMESPACE_SEPARATION.json",
+      "receipts/headless/FLASH_EBPW_BUDGET.json",
+      "receipts/future/COMPLETE_EBPW.json",
+      "docs/CURRENT_ARCHITECTURE.md",
+      "docs/HAWKING_NOMENCLATURE.md"
+    ]
+  },
+  "inventory_HEAD": {
+    "total_git_files": 15913,
+    "top_level": {
+      "workspace": 6061,
+      "receipts": 4121,
+      "hawking-experiments": 1953,
+      "tools": 1666,
+      "crates": 1093,
+      "lab": 464,
+      "hcli": 198,
+      "docs": 28,
+      "civilization": 13
+    },
+    "python_volumes": {
+      "tools/future": {
+        "py": 538,
+        "test_": 276,
+        "non_test": 262
+      },
+      "tools/headless": {
+        "py": 275
+      },
+      "lab/operators": {
+        "py": 269,
+        "ascension_prefix": 127
+      },
+      "hcli": {
+        "py": 196
+      },
+      "tools/odyssey": {
+        "py": 114
+      },
+      "tools/accelerator": {
+        "py": 83
+      },
+      "hcli/agentos": {
+        "py": 50
+      },
+      "flash_star_py": 50,
+      "gravity_star_py": 71,
+      "doctor_named_files_excluding_receipts": 75
+    },
+    "rust_volumes": {
+      "hawking-core/src_rs": 139,
+      "hawking-core/tests_rs": 158,
+      "hawking-core/examples_rs": 233,
+      "hawking-core/examples_ascension_prefix": 131,
+      "workspace_crates": 23
+    },
+    "schema_identifier_counts_source_py_rs": {
+      "note": "git grep -o of quoted schema-like strings; includes some dotted module paths. Order-of-magnitude signal, not a schema registry.",
+      "unique_hcli_or_hawking_quoted_strings": 2480,
+      "unique_hawking.future.*": 369,
+      "unique_hawking.ascension.*": 631,
+      "unique_hawking.gravity.*": 173,
+      "unique_hawking.flash*": 62,
+      "unique_hcli.agentos.flash*": 26
+    },
+    "hcli_live_tool_registry": {
+      "count": 68,
+      "evidence_class": "STATIC_VERIFICATION",
+      "alias_groups": {
+        "fs.read/filesystem.read": "_read_file",
+        "fs.search/filesystem.search": "_search_files",
+        "fs.list/filesystem.list": "_list_files",
+        "huggingface.resolve/huggingface.manifest": "_huggingface_resolve",
+        "receipt.read/receipt.inspect/benchmark.inspect": "_receipt_read",
+        "git.checkout-safe/git.revert-safe/git.checkout/revert-safe": "_git_safe_revert_refusal",
+        "roadmap.read/roadmap.inspect": "shared _target_receipt handler"
+      }
+    }
+  },
+  "governing_law": {
+    "statement": "HAWKING SHOULD GET CONCEPTUALLY SMALLER AS IT GETS MORE CAPABLE.",
+    "verdict": "REFUTED_AS_CURRENT_PROPERTY_OF_HEAD",
+    "evidence_class": "SOURCE_INSPECTION",
+    "why": "Callable capability is concentrated in a small live spine (WorkUnit+Mission+Scheduler, modellake_promote.promote, start_resident, hawking CLI bench), while conceptual surface area keeps growing beside it: 262 non-test tools/future modules, 631 hawking.ascension schema strings, 131 ascension_* examples, 127 ascension_* lab operators, three FPGA primitive vocabularies, two Goal compilers, two EBPW producers that do not call each other, 68 HCLI tools with alias pairs, and Doctor/Gravity tools that do not invoke the Doctor/Gravity producers. Semantic density is falling.",
+    "not_an_loc_argument": "Line count is cited only as retrieval cost. Ten explicit lines beating a generic metaprogram is accepted. The failure is duplicate names for the same job, and parallel stacks that HCLI must distinguish before it can act."
+  },
+  "conceptual_fanout": {
+    "unit": "files_and_symbols_HCLI_must_distinguish_to_perform_the_task_correctly",
+    "after_compression_is": "proposal, not an implemented state",
+    "tasks": [
+      {
+        "id": "understand_workunit",
+        "task": "understand WorkUnit",
+        "classification_of_live_path": "INTEGRATED",
+        "classification_of_parallel_stacks": "TESTED_NOT_WIRED",
+        "current": {
+          "must_read_files": 8,
+          "trap_files_same_name_or_job": 10,
+          "approx_lines_must_read": 7359,
+          "must_read": [
+            {
+              "path": "hcli/workunit.py",
+              "lines": 576,
+              "symbols": [
+                "WorkUnit",
+                "admit_unit",
+                "identify_ready",
+                "transition_status",
+                "content_identity"
+              ]
+            },
+            {
+              "path": "hcli/goal.py",
+              "lines": 1553,
+              "symbols": [
+                "GoalCompiler",
+                "WorkUnitDAG"
+              ],
+              "note": "LIVE compile path: GoalCompiler().compile called from Mission, Controller, AgentOS.runtime, Engine"
+            },
+            {
+              "path": "hcli/mission.py",
+              "lines": 1582,
+              "symbols": [
+                "Mission"
+              ]
+            },
+            {
+              "path": "hcli/scheduler.py",
+              "lines": 427,
+              "symbols": [
+                "Scheduler"
+              ]
+            },
+            {
+              "path": "hcli/executors.py",
+              "lines": 623,
+              "symbols": [
+                "WorkUnitExecutor",
+                "dispatch_workunit"
+              ]
+            },
+            {
+              "path": "hcli/dag_store.py",
+              "lines": 405,
+              "symbols": [
+                "DagStore"
+              ]
+            },
+            {
+              "path": "hcli/resources.py",
+              "symbols": [
+                "ResourceClass",
+                "MutationLock"
+              ]
+            },
+            {
+              "path": "hcli/tool_registry.py",
+              "lines": 2193,
+              "symbols": [
+                "WorkUnit.tool routing"
+              ]
+            }
+          ],
+          "trap_parallel_stacks": [
+            {
+              "path": "hcli/goal_ir.py",
+              "lines": 597,
+              "symbols": [
+                "GoalNode"
+              ],
+              "note": "Second IR. Production Mission/Controller do not call goal_compile.ingest/schedule; only tests do."
+            },
+            {
+              "path": "hcli/goal_graph.py",
+              "lines": 450,
+              "symbols": [
+                "GoalGraph"
+              ]
+            },
+            {
+              "path": "hcli/goal_tokenizer.py",
+              "lines": 669,
+              "symbols": [
+                "tokenize"
+              ]
+            },
+            {
+              "path": "hcli/goal_compile.py",
+              "lines": 544,
+              "symbols": [
+                "ingest",
+                "schedule"
+              ],
+              "note": "Docstring says it is the ONLY contact with WorkUnitDAG; live path still uses GoalCompiler directly."
+            },
+            {
+              "path": "lab/hcli/special_unit.py",
+              "lines": 2597,
+              "symbols": [
+                "SpecialUnit"
+              ],
+              "note": "docs/CURRENT_ARCHITECTURE.md: lab/hcli/ is a different product. Callers: lab/hcli/claude_offload_bench.py, tools/genesis_agentos.py, lab/tests/test_special_unit.py"
+            },
+            {
+              "path": "tools/future/workgraph.py",
+              "lines": 1990,
+              "symbols": [
+                "WorkGraph"
+              ]
+            },
+            {
+              "path": "tools/future/workunit_species.py",
+              "symbols": [
+                "species constructors emitting hcli.workunit.WorkUnit"
+              ]
+            },
+            {
+              "path": "tools/future/improvement_metabolism.py",
+              "lines": 2460,
+              "symbols": [
+                "WorkUnit"
+              ],
+              "note": "SECOND class named WorkUnit. Docstring: 'Scientific work, not an HCLI WorkUnit.' Grep class WorkUnit hits this first."
+            }
+          ],
+          "live_constructors_outside_tests": [
+            "hcli/agentos/autonomy_gate.py WorkUnit(",
+            "hcli/agentos/charge.py WorkUnit(",
+            "hcli/agentos/native_mission_gate.py WorkUnit(",
+            "hcli/agentos/recovery.py WorkUnit(",
+            "hcli/agentos/resident.py WorkUnit(",
+            "hcli/agentos_cli.py WorkUnit(",
+            "hcli/goal.py WorkUnit(",
+            "hcli/workunit.py WorkUnit(  # repair",
+            "tools/accelerator/accelerator_runner.py WorkUnit(",
+            "tools/accelerator/physical_qualification.py WorkUnit(",
+            "tools/future/{detached,detached_trial,no_wait_scheduler,resident_optimizer,restart_supervisor,sandbox,workgraph,workunit_species,improvement_metabolism,hcli_self_profile}.py"
+          ]
+        },
+        "after_compression": {
+          "must_read_files": 4,
+          "proposed": "One WorkUnit type, one compiler (GoalCompiler or GoalIR, not both live), one scheduler, one executor. Parallel IR either becomes the compiler or stays a clearly named adapter with no WorkUnit class of its own. metabolism.WorkUnit renamed. SpecialUnit stays in lab/hcli and is not retrievable as WorkUnit."
+        },
+        "hcli_tax": "To answer 'what is a unit of work' HCLI must open ~18 modules and decide which of two compilers and three unit types is live.",
+        "evidence": [
+          {
+            "path": "hcli/workunit.py",
+            "kind": "definition",
+            "symbol": "class WorkUnit"
+          },
+          {
+            "path": "hcli/mission.py",
+            "kind": "call_site",
+            "symbol": "GoalCompiler().compile",
+            "note": "live compile"
+          },
+          {
+            "path": "hcli/controller.py",
+            "kind": "call_site",
+            "symbol": "GoalCompiler().compile"
+          },
+          {
+            "path": "hcli/agentos/runtime.py",
+            "kind": "call_site",
+            "symbol": "GoalCompiler().compile"
+          },
+          {
+            "path": "hcli/test_goal_compiler_acceptance.py",
+            "kind": "call_site",
+            "symbol": "from hcli.goal_compile import ingest, schedule",
+            "note": "GoalIR adapter tested, not imported by controller/mission"
+          },
+          {
+            "path": "tools/future/improvement_metabolism.py",
+            "kind": "call_site",
+            "symbol": "class WorkUnit",
+            "note": "name collision"
+          },
+          {
+            "path": "lab/hcli/special_unit.py",
+            "kind": "call_site",
+            "symbol": "class SpecialUnit",
+            "note": "different product"
+          }
+        ]
+      },
+      {
+        "id": "modify_ebpw",
+        "task": "modify EBPW",
+        "classification_of_policy_constant": "CALLABLE",
+        "classification_of_complete_system_ebpw": "SCAFFOLDED",
+        "classification_of_complete_ebpw_calculator": "CALLABLE",
+        "complete_system_ebpw_physical": "ABSENT",
+        "current": {
+          "must_read_files": 10,
+          "distinct_meanings": [
+            "complete-system EBPW ceiling 1.00 (hcli.flash_next.COMPLETE_SYSTEM_EBPW_MAX) — policy, not a measurement",
+            "FLASH_EBPW_BUDGET.json complete_system_ebpw=null, status=PLANNED_UNTIL_VERIFIED_BODY, promotion_allowed=false",
+            "tools.future.complete_ebpw STATIC_ONLY arithmetic over MIX_REPORT; evidence_class STATIC_ONLY; acceptance gate FLASH_COMPLETE_EBPW_LE_1 calls this, not flash_executable._ebpw_budget",
+            "tensor-level effective_bits_per_value in flash_representation_experiment / flash_router_representation_ab / flash_tensor_probe",
+            "ARTIFACT_PHYSICAL_active_ebpw_per_token vs DESIGN_EXPECTED_active_ebpw_per_token (EBPW_NAMESPACE_SEPARATION)",
+            "bits_per_weight in uniform Qn / qwen_complete_binary"
+          ],
+          "must_read": [
+            {
+              "path": "hcli/flash_next.py",
+              "symbol": "COMPLETE_SYSTEM_EBPW_MAX = 1.00"
+            },
+            {
+              "path": "hcli/agentos/flash_executable.py",
+              "symbol": "_ebpw_budget",
+              "lines": 2486,
+              "note": "writes FLASH_EBPW_BUDGET.json"
+            },
+            {
+              "path": "tools/future/complete_ebpw.py",
+              "lines": 1124,
+              "note": "does not import flash_executable; flash_executable does not import complete_ebpw"
+            },
+            {
+              "path": "tools/future/ebpw_categories.py",
+              "lines": 1549
+            },
+            {
+              "path": "tools/acceptance/flash/run_gates.py",
+              "symbol": "accept_complete_ebpw",
+              "note": "from tools.future.complete_ebpw import mix_report, build"
+            },
+            {
+              "path": "receipts/headless/FLASH_EBPW_BUDGET.json",
+              "note": "measured.complete_system_ebpw is null"
+            },
+            {
+              "path": "receipts/future/COMPLETE_EBPW.json",
+              "note": "incumbent.complete_ebpw is STATIC_ONLY arithmetic"
+            },
+            {
+              "path": "receipts/headless/EBPW_NAMESPACE_SEPARATION.json"
+            },
+            {
+              "path": "tools/flash_complete_byte_ledger.py"
+            },
+            {
+              "path": "tools/accelerator/scoreboard.py",
+              "note": "reads complete_ebpw OR complete_system_ebpw from whichever payload"
+            }
+          ]
+        },
+        "after_compression": {
+          "must_read_files": 3,
+          "proposed": "One calculator (complete_ebpw), one namespaced field set (ARTIFACT_PHYSICAL_* vs DESIGN_EXPECTED_* vs POLICY_CEILING_*), one receipt writer. Tensor effective_bits_per_value stays a component metric under a different name."
+        },
+        "hcli_tax": "Changing the 1.00 ceiling in flash_next.py does not change what FLASH_COMPLETE_EBPW_LE_1 checks. Changing complete_ebpw.py does not change FLASH_EBPW_BUDGET.json. HCLI can mutate the wrong producer and watch the wrong verifier stay green.",
+        "evidence": [
+          {
+            "path": "hcli/flash_next.py",
+            "kind": "call_site",
+            "symbol": "COMPLETE_SYSTEM_EBPW_MAX"
+          },
+          {
+            "path": "hcli/agentos/flash_executable.py",
+            "kind": "call_site",
+            "symbol": "_ebpw_budget"
+          },
+          {
+            "path": "tools/future/complete_ebpw.py",
+            "kind": "call_site",
+            "symbol": "build",
+            "note": "STATIC_ONLY; MEASURES NOTHING per module docstring"
+          },
+          {
+            "path": "tools/acceptance/flash/run_gates.py",
+            "kind": "call_site",
+            "symbol": "accept_complete_ebpw"
+          },
+          {
+            "path": "receipts/headless/FLASH_EBPW_BUDGET.json",
+            "kind": "receipt",
+            "note": "complete_system_ebpw null"
+          }
+        ]
+      },
+      {
+        "id": "add_fpga_primitive",
+        "task": "add an FPGA primitive",
+        "classification": "SCAFFOLDED",
+        "hardware": "BLOCKED_HARDWARE",
+        "current": {
+          "must_read_files": 11,
+          "primitive_ontologies": 3,
+          "ontologies": [
+            {
+              "name": "NR_PRIMITIVES",
+              "count": 8,
+              "path": "hcli/physical_graph.py",
+              "values": [
+                "BASIS_PROJECT",
+                "COEFFICIENT_APPLY",
+                "SPARSE_RESIDUAL",
+                "QUANT_PROJECT",
+                "CODEBOOK_LOOKUP",
+                "ROUTED_SELECT",
+                "WEIGHTED_ACCUMULATE",
+                "STATE_UPDATE"
+              ]
+            },
+            {
+              "name": "ATLAS_PRIMITIVES",
+              "count": 17,
+              "path": "tools/future/physical_primitives.py",
+              "locked_to": "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json fingerprint e763623e8a4ddcfc8350d6b5f680284a23db68f8bfbca53428e258d24adfc2ab",
+              "values": [
+                "PersistentPhysicalRegion",
+                "StationaryRepresentation",
+                "AsyncPrefetch",
+                "DoubleBufferedTile",
+                "SpatialPipeline",
+                "FusedDecodeCompute",
+                "DirectRoutedAccumulate",
+                "LocalStateMachine",
+                "SemanticTransportEdge",
+                "TiledProjection",
+                "LayoutTransform",
+                "SparseSkip",
+                "ConditionalPhysicalProgram",
+                "GraphReplay",
+                "CollectiveRegion",
+                "MoveOrRecompute",
+                "MemoryTierIdentity"
+              ]
+            },
+            {
+              "name": "HWIR NODE_KINDS",
+              "count": 7,
+              "path": "tools/future/hwir.py",
+              "values": [
+                "compute",
+                "state",
+                "memory",
+                "representation-decoder",
+                "reduction",
+                "dma-transport",
+                "persistent-pipeline"
+              ]
+            }
+          ],
+          "must_read": [
+            {
+              "path": "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json"
+            },
+            {
+              "path": "tools/future/physical_primitives.py",
+              "lines": 1845,
+              "symbol": "instantiate"
+            },
+            {
+              "path": "tools/future/hwir.py",
+              "lines": 6279,
+              "symbols": [
+                "NODE_KINDS",
+                "LoweringTarget",
+                "HlsStyleEmitter",
+                "RustHdlEmitter"
+              ],
+              "note": "hwir.from_qgemv calls physical_primitives.instantiate — a real call site, not an import"
+            },
+            {
+              "path": "hcli/physical_graph.py",
+              "symbol": "NR_PRIMITIVES, compile_physical_graph"
+            },
+            {
+              "path": "hcli/agentos/fpga_preboard.py",
+              "symbol": "run_fpga_preboard",
+              "note": "deterministic mock; numbers carry [S]"
+            },
+            {
+              "path": "tools/accelerator/backend_contract.py",
+              "symbol": "FpgaHwirBackend"
+            },
+            {
+              "path": "tools/accelerator/fusion_bridge.py",
+              "symbol": "lower_fpga_domain_to_hwir"
+            },
+            {
+              "path": "tools/future/fpga_engines.py",
+              "note": "functional golden models, no HDL"
+            },
+            {
+              "path": "tools/odyssey/physical_graph_compiler.py",
+              "note": "third compiler; called from tools/future/nr_nx_generic.py"
+            },
+            {
+              "path": "tools/future/device_ascension_pipeline.py",
+              "symbol": "recompile_physical_graph"
+            },
+            {
+              "path": "hcli/architecture.py"
+            }
+          ]
+        },
+        "after_compression": {
+          "must_read_files": 3,
+          "proposed": "Atlas seventeen are the only primitive names. HWIR node kinds become a lowering of atlas primitives, not a peer vocabulary. NR_PRIMITIVES become aliases or die. One compile_physical_graph. FPGA remains inside Accelerator/Fusion; no board claim without U50_PRESENT."
+        },
+        "hcli_tax": "Adding one primitive without updating the atlas fingerprint lock fails physical_primitives tests. Adding it only to NR_PRIMITIVES is invisible to HWIR. Adding it only to NODE_KINDS is invisible to the atlas. Three files, three names, one intended change.",
+        "evidence": [
+          {
+            "path": "hcli/physical_graph.py",
+            "kind": "definition",
+            "symbol": "NR_PRIMITIVES"
+          },
+          {
+            "path": "tools/future/physical_primitives.py",
+            "kind": "definition",
+            "symbol": "ATLAS_PRIMITIVES"
+          },
+          {
+            "path": "tools/future/hwir.py",
+            "kind": "call_site",
+            "symbol": "instantiate(",
+            "note": "call site of atlas instantiate"
+          },
+          {
+            "path": "tools/future/fpga_engines.py",
+            "kind": "call_site",
+            "note": "STATIC_ONLY; no HDL"
+          },
+          {
+            "path": "hcli/agentos/fpga_preboard.py",
+            "kind": "call_site",
+            "symbol": "run_fpga_preboard",
+            "note": "[S] simulation"
+          }
+        ]
+      },
+      {
+        "id": "change_resident_lifecycle",
+        "task": "change resident lifecycle",
+        "classification_of_live_path": "INTEGRATED",
+        "classification_of_future_supervisor": "TESTED",
+        "current": {
+          "must_read_files": 8,
+          "trap_files": 12,
+          "must_read": [
+            {
+              "path": "hcli/agentos/resident.py",
+              "lines": 2396,
+              "symbols": [
+                "ResidentConfig",
+                "ResidentStore",
+                "ResidentDaemon",
+                "ResidentSupervisor",
+                "start_resident",
+                "watch_resident"
+              ]
+            },
+            {
+              "path": "hcli/agentos/resident_gate.py",
+              "lines": 411,
+              "symbol": "run_resident_gate"
+            },
+            {
+              "path": "hcli/hawkingd.py",
+              "note": "console script hawkingd -> hcli.hawkingd:main; imports daemon_main from resident.py"
+            },
+            {
+              "path": "hcli/agentos_cli.py",
+              "note": "resident start/status/stop/clean/resume/queue/bank/child plus resident-gate"
+            },
+            {
+              "path": "hcli/hawking_native.py",
+              "symbol": "ResidentProcess, _restart_resident"
+            },
+            {
+              "path": "hcli/providers.py",
+              "symbols": [
+                "ResidentProvider",
+                "ResidentProfile"
+              ]
+            },
+            {
+              "path": "hcli/processes.py",
+              "symbol": "orphaned_resident_bodies"
+            },
+            {
+              "path": "docs/RESIDENT_DAEMON.md"
+            }
+          ],
+          "live_start_resident_callers": [
+            "hcli/agentos/resident.py (self)",
+            "hcli/agentos_cli.py",
+            "hcli/test_resident_lifecycle_cutover.py",
+            "tools/headless/hcli_resident_native_smoke.py"
+          ],
+          "trap_parallel": [
+            {
+              "path": "tools/future/resident_supervisor.py",
+              "lines": 2270,
+              "symbol": "class ResidentSupervisor",
+              "note": "SECOND class with the same name. Constructed from its own __main__ and tests. Not imported by hcli.agentos.resident."
+            },
+            {
+              "path": "tools/future/resident_api.py"
+            },
+            {
+              "path": "tools/future/resident_health.py"
+            },
+            {
+              "path": "tools/future/resident_identity.py"
+            },
+            {
+              "path": "tools/future/resident_install.py"
+            },
+            {
+              "path": "tools/future/resident_optimizer.py"
+            },
+            {
+              "path": "tools/future/resident_provider.py"
+            },
+            {
+              "path": "tools/future/super_resident.py"
+            },
+            {
+              "path": "tools/future/fallback_resident.py"
+            },
+            {
+              "path": "tools/hcli_resident/serve_sealed.py"
+            },
+            {
+              "path": "tools/agentos/genesis_resident.py"
+            },
+            {
+              "path": "crates/hawking-core/examples/ascension_qwen38_resident.rs",
+              "note": "nomenclature census: Ascension VESTIGIAL; live body name still campaign-branded"
+            }
+          ]
+        },
+        "after_compression": {
+          "must_read_files": 3,
+          "proposed": "One ResidentSupervisor (hcli.agentos.resident). Future sidecar either calls that class or is renamed. Body binary loses the Ascension campaign name going forward (no sealed rename)."
+        },
+        "hcli_tax": "Grep ResidentSupervisor returns two classes. Editing the future one does not change hawkingd. Editing start_resident does not change tools/future/resident_supervisor.py.",
+        "evidence": [
+          {
+            "path": "hcli/agentos/resident.py",
+            "kind": "call_site",
+            "symbol": "def start_resident"
+          },
+          {
+            "path": "hcli/agentos_cli.py",
+            "kind": "call_site",
+            "symbol": "start_resident("
+          },
+          {
+            "path": "hcli/hawkingd.py",
+            "kind": "call_site",
+            "symbol": "from hcli.agentos.resident import daemon_main"
+          },
+          {
+            "path": "tools/future/resident_supervisor.py",
+            "kind": "definition",
+            "symbol": "class ResidentSupervisor"
+          }
+        ]
+      },
+      {
+        "id": "add_modellake_transition",
+        "task": "add a ModelLake transition",
+        "classification_of_promote": "INTEGRATED",
+        "classification_of_census_gate": "CALLABLE",
+        "current": {
+          "must_read_files": 9,
+          "canonical_mutation": "tools.odyssey.modellake_promote.promote",
+          "must_read": [
+            {
+              "path": "tools/odyssey/modellake_promote.py",
+              "lines": 196,
+              "symbol": "promote"
+            },
+            {
+              "path": "tools/odyssey/modellake_watch.py",
+              "symbol": "promote_if_needed",
+              "note": "calls modellake_promote.promote(tag, go=True); test asserts one module identity"
+            },
+            {
+              "path": "hcli/acquisition.py",
+              "note": "imports modellake_promote; uses survey/verify paths"
+            },
+            {
+              "path": "hcli/specimens.py",
+              "lines": 193,
+              "symbols": [
+                "registry",
+                "get"
+              ]
+            },
+            {
+              "path": "hcli/agentos/modellake_gate.py",
+              "lines": 560,
+              "symbol": "run_modellake_census",
+              "note": "census only; never downloads; never promote"
+            },
+            {
+              "path": "hcli/agentos/modellake_supervisor.py",
+              "symbol": "run_model_lake_supervision"
+            },
+            {
+              "path": "tools/acceptance/lake/promotion.py",
+              "symbol": "run_promotion_gate",
+              "note": "wraps modellake_promote.promote"
+            },
+            {
+              "path": "hcli/tool_registry.py",
+              "symbols": [
+                "specimens.registry",
+                "acquisition.propose",
+                "modellake.status"
+              ]
+            },
+            {
+              "path": "tools/future/specimen_registry.py"
+            }
+          ],
+          "trap": [
+            "tools/future/specimen_scheduler.py",
+            "tools/future/specimen_events.py",
+            "tools/future/modellake_events.py",
+            "tools/future/sleeping_specimens.py",
+            "tools/odyssey/modellake.py vs modellake_promote.py vs modellake_index.py vs modellake_lineage.py"
+          ]
+        },
+        "after_compression": {
+          "must_read_files": 3,
+          "proposed": "promote() remains the only mutation. registry() remains the only census. Watch, acquisition, acceptance gates, and HCLI tools are views/callers of those two symbols. Future specimen_* modules either call them or are receipts-only."
+        },
+        "hcli_tax": "HCLI tools specimens.registry (hcli.specimens) and modellake.status (receipt reader) and acquisition.propose do not share one type. A transition added in sleeping_specimens.py is not a lake transition.",
+        "evidence": [
+          {
+            "path": "tools/odyssey/modellake_promote.py",
+            "kind": "call_site",
+            "symbol": "def promote"
+          },
+          {
+            "path": "tools/odyssey/modellake_watch.py",
+            "kind": "call_site",
+            "symbol": "modellake_promote.promote(tag, go=True)"
+          },
+          {
+            "path": "hcli/acquisition.py",
+            "kind": "call_site",
+            "symbol": "from tools.odyssey import modellake_promote"
+          },
+          {
+            "path": "tools/acceptance/lake/promotion.py",
+            "kind": "call_site",
+            "symbol": "from tools.odyssey import modellake_promote as mp"
+          },
+          {
+            "path": "hcli/agentos/modellake_gate.py",
+            "kind": "call_site",
+            "symbol": "run_modellake_census",
+            "note": "explicitly not a download/promote"
+          }
+        ]
+      },
+      {
+        "id": "run_a_benchmark",
+        "task": "run a benchmark",
+        "classification": "CALLABLE",
+        "protected_window": "CALLABLE",
+        "complete_system_tps_ebpw": "ABSENT",
+        "current": {
+          "must_read_files": 9,
+          "surfaces": [
+            {
+              "path": "crates/hawking-bench",
+              "call": "hawking CLI Cmd::Bench -> hawking_bench::run",
+              "note": "product suite; live call from crates/hawking/src/main.rs"
+            },
+            {
+              "path": "hcli/agentos/protected_accelerator_benchmark.py",
+              "lines": 675,
+              "symbol": "run_protected_accelerator_benchmark",
+              "callers": [
+                "hcli/agentos_cli.py",
+                "tools/acceptance/lake/qwen27.py"
+              ]
+            },
+            {
+              "path": "tools/accelerator/bench.py",
+              "lines": 270,
+              "symbols": [
+                "machine_quiescence",
+                "bench_block"
+              ],
+              "callers": [
+                "hcli/agentos/accelerator_regression.py",
+                "tools/accelerator/accelerator_runner.py"
+              ]
+            },
+            {
+              "path": "hcli/tool_registry.py",
+              "tools": [
+                "accelerator.benchmark",
+                "benchmark.run",
+                "benchmark.inspect"
+              ],
+              "note": "three tools; inspect is _receipt_read; run is pytest/unittest/cargo not hawking-bench; accelerator.benchmark is a window authorizer"
+            },
+            {
+              "path": "tools/bench/",
+              "note": "shell competitive harnesses vs llama.cpp/MLX/vLLM"
+            },
+            {
+              "path": "lab/bench_harness/",
+              "note": "TRAP. Production callers: tools/foundry/tests and authority_census only"
+            },
+            {
+              "path": "crates/hawking-core/src/kernel_bench.rs",
+              "note": "kernel microbench; CLI comments say extracted to hawking-bench pack"
+            },
+            {
+              "path": "lab/hcli/claude_offload_bench.py"
+            },
+            {
+              "path": "hcli/agentos/benchmark_boundary.py"
+            }
+          ]
+        },
+        "after_compression": {
+          "must_read_files": 3,
+          "proposed": "One protected window (run_protected_accelerator_benchmark), one product suite (hawking-bench via hawking bench), one kernel microbench. HCLI tools collapse to benchmark.run (does the work) and benchmark.inspect (reads the receipt). lab.bench_harness either becomes that runner or is not in the catalog."
+        },
+        "hcli_tax": "Calling benchmark.run runs pytest, not hawking-bench. Calling accelerator.benchmark authorizes a window. Calling benchmark.inspect reads a receipt. Three names, three jobs, easy to invert.",
+        "evidence": [
+          {
+            "path": "crates/hawking/src/main.rs",
+            "kind": "call_site",
+            "symbol": "hawking_bench::run"
+          },
+          {
+            "path": "hcli/agentos_cli.py",
+            "kind": "call_site",
+            "symbol": "run_protected_accelerator_benchmark("
+          },
+          {
+            "path": "hcli/tool_registry.py",
+            "kind": "call_site",
+            "symbol": "benchmark.run"
+          },
+          {
+            "path": "lab/bench_harness/runner.py",
+            "kind": "definition",
+            "note": "no non-test production caller except foundry tests"
+          }
+        ]
+      },
+      {
+        "id": "add_representation_candidate",
+        "task": "add a representation candidate",
+        "classification_of_flash_bounded_experiments": "CALLABLE",
+        "classification_of_complete_candidate": "SCAFFOLDED",
+        "classification_of_gravity_experiment_tool": "CONCEPT_ONLY",
+        "current": {
+          "must_read_files": 12,
+          "must_read": [
+            {
+              "path": "hcli/agentos/flash_representation_experiment.py",
+              "symbol": "run_flash_representation_experiment"
+            },
+            {
+              "path": "hcli/agentos/flash_router_representation_ab.py"
+            },
+            {
+              "path": "hcli/agentos/flash_tensor_probe.py"
+            },
+            {
+              "path": "hcli/agentos/flash_transform_parity.py"
+            },
+            {
+              "path": "hcli/agentos/flash_executable.py",
+              "note": "chosen_representation + EBPW budget organs"
+            },
+            {
+              "path": "hcli/agentos_cli.py",
+              "note": "separate subcommands: flash-representation, flash-transform, flash-loader, flash-body, flash-matrix, flash-vector, flash-router-graph, flash-router-selection, flash-router-representation-ab, flash-campaign, flash-graph, flash-executable, flash-science, flash-tensor-probe"
+            },
+            {
+              "path": "tools/flash_meta_representation.py"
+            },
+            {
+              "path": "lab/operators/q80_mixed_representation_pack.py",
+              "note": "Qwen80 mixed ≤1.5 pack; different specimen, different schema hawking.ascension.qwen80_mixed_representation_candidate.v1"
+            },
+            {
+              "path": "crates/hawking-core/src/model/qwen80_mixed_catalog.rs"
+            },
+            {
+              "path": "hcli/tool_registry.py",
+              "symbol": "_gravity_experiment",
+              "note": "execute=True sets REFUSED_NOT_IMPLEMENTED; does not call flash_representation_experiment or q80 pack"
+            },
+            {
+              "path": "docs/FLASH_META_REPRESENTATION.md"
+            },
+            {
+              "path": "tools/future/flash_bpw_ladder.py"
+            }
+          ]
+        },
+        "after_compression": {
+          "must_read_files": 3,
+          "proposed": "One candidate descriptor schema (nomenclature: Noetic representation / candidate). One experiment runner with organ/model as data. Qwen80 mixed catalog is an instance. gravity.experiment either calls that runner or is removed from the catalog."
+        },
+        "hcli_tax": "The tool named gravity.experiment cannot add a candidate. The Flash CLI is 12 subcommands for one family. Qwen80 uses a vestigial hawking.ascension schema. HCLI picking the wrong family silently studies the wrong specimen.",
+        "evidence": [
+          {
+            "path": "hcli/agentos/flash_representation_experiment.py",
+            "kind": "call_site",
+            "symbol": "run_flash_representation_experiment"
+          },
+          {
+            "path": "hcli/tool_registry.py",
+            "kind": "call_site",
+            "symbol": "_gravity_experiment",
+            "note": "REFUSED_NOT_IMPLEMENTED on execute"
+          },
+          {
+            "path": "crates/hawking-core/src/model/qwen80_mixed_catalog.rs",
+            "kind": "call_site",
+            "symbol": "QWEN80_MIXED_SCHEMA"
+          },
+          {
+            "path": "hcli/agentos_cli.py",
+            "kind": "call_site",
+            "symbol": "flash_representation add_parser"
+          }
+        ]
+      }
+    ]
+  },
+  "redundant_concepts": [
+    {
+      "id": "two_goal_compilers",
+      "names": [
+        "hcli.goal.GoalCompiler",
+        "hcli.goal_ir.GoalNode + goal_compile.ingest/schedule"
+      ],
+      "live": "GoalCompiler().compile from Mission/Controller/Engine/AgentOS.runtime",
+      "parallel": "GoalIR stack TESTED via hcli/test_goal_*.py; no production ingest() caller",
+      "taxes": {
+        "files_needed_to_understand_one_subsystem": true,
+        "retrieval_fan_out": true,
+        "context_tokens": true,
+        "tool_ambiguity": false,
+        "incorrect_call_probability": true,
+        "duplicate_mutation_probability": false,
+        "stale_state_risk": true,
+        "verifier_mismatch_risk": false
+      },
+      "classification": "TESTED_NOT_WIRED"
+    },
+    {
+      "id": "two_workunit_classes",
+      "names": [
+        "hcli.workunit.WorkUnit",
+        "tools.future.improvement_metabolism.WorkUnit"
+      ],
+      "taxes": {
+        "files_needed_to_understand_one_subsystem": false,
+        "retrieval_fan_out": true,
+        "context_tokens": true,
+        "tool_ambiguity": false,
+        "incorrect_call_probability": true,
+        "duplicate_mutation_probability": false,
+        "stale_state_risk": false,
+        "verifier_mismatch_risk": false
+      },
+      "classification": "CALLABLE_NAME_COLLISION"
+    },
+    {
+      "id": "specialunit_vs_workunit",
+      "names": [
+        "WorkUnit",
+        "SpecialUnit"
+      ],
+      "note": "CURRENT_ARCHITECTURE: lab/hcli is a different product. Still sits on the same retrieval query 'unit'.",
+      "taxes": {
+        "files_needed_to_understand_one_subsystem": false,
+        "retrieval_fan_out": true,
+        "context_tokens": false,
+        "tool_ambiguity": true,
+        "incorrect_call_probability": true,
+        "duplicate_mutation_probability": false,
+        "stale_state_risk": false,
+        "verifier_mismatch_risk": false
+      }
+    },
+    {
+      "id": "two_resident_supervisors",
+      "names": [
+        "hcli.agentos.resident.ResidentSupervisor",
+        "tools.future.resident_supervisor.ResidentSupervisor"
+      ],
+      "taxes": {
+        "files_needed_to_understand_one_subsystem": true,
+        "retrieval_fan_out": false,
+        "context_tokens": false,
+        "tool_ambiguity": false,
+        "incorrect_call_probability": true,
+        "duplicate_mutation_probability": true,
+        "stale_state_risk": true,
+        "verifier_mismatch_risk": false
+      },
+      "classification": "INTEGRATED + TESTED sidecar"
+    },
+    {
+      "id": "three_fpga_primitive_vocabs",
+      "names": [
+        "NR_PRIMITIVES",
+        "ATLAS_PRIMITIVES",
+        "HWIR NODE_KINDS"
+      ],
+      "taxes": {
+        "files_needed_to_understand_one_subsystem": true,
+        "retrieval_fan_out": true,
+        "context_tokens": true,
+        "tool_ambiguity": false,
+        "incorrect_call_probability": true,
+        "duplicate_mutation_probability": true,
+        "stale_state_risk": false,
+        "verifier_mismatch_risk": true
+      },
+      "classification": "SCAFFOLDED"
+    },
+    {
+      "id": "two_ebpw_producers",
+      "names": [
+        "flash_executable._ebpw_budget",
+        "tools.future.complete_ebpw.build"
+      ],
+      "taxes": {
+        "files_needed_to_understand_one_subsystem": false,
+        "retrieval_fan_out": false,
+        "context_tokens": false,
+        "tool_ambiguity": false,
+        "incorrect_call_probability": true,
+        "duplicate_mutation_probability": true,
+        "stale_state_risk": true,
+        "verifier_mismatch_risk": true
+      },
+      "classification": "SCAFFOLDED vs CALLABLE STATIC_ONLY"
+    },
+    {
+      "id": "doctor_is_many_modules",
+      "names": [
+        "hcli.doctor (OWNED_PATHS marker only)",
+        "hcli.tool_registry._doctor_query (does not call a Doctor engine)",
+        "tools/doctor/engine.py",
+        "lab/operators/doctor6/*",
+        "tools/headless/doctor_diagnosis.py",
+        "tools/headless/noetic_doctor_v2.py",
+        "tools/headless/doctor_technique_registry.py",
+        "tools/accelerator/hardware_doctor.py",
+        "tools/future/hardware_doctor.py",
+        "tools/future/hbm_doctor.py",
+        "tools/future/concurrency_doctor.py",
+        "tools/gravity_doctor_*.py",
+        "tools/odyssey/doctor_tournament.py"
+      ],
+      "taxes": {
+        "files_needed_to_understand_one_subsystem": false,
+        "retrieval_fan_out": true,
+        "context_tokens": true,
+        "tool_ambiguity": true,
+        "incorrect_call_probability": true,
+        "duplicate_mutation_probability": false,
+        "stale_state_risk": false,
+        "verifier_mismatch_risk": true
+      },
+      "note": "hcli.doctor.__init__ is an ownership marker listing tools/doctor_seal.py and tools/gravity_doctor_*.py. doctor.query synthesizes PROPOSED JSON and never imports those instruments."
+    },
+    {
+      "id": "two_hardware_doctors",
+      "names": [
+        "tools.accelerator.hardware_doctor",
+        "tools.future.hardware_doctor"
+      ],
+      "note": "accelerator module docstring explicitly points at the future sidecar as the FPGA-axis doctor. Two diagnose() surfaces.",
+      "taxes": {
+        "files_needed_to_understand_one_subsystem": false,
+        "retrieval_fan_out": true,
+        "context_tokens": false,
+        "tool_ambiguity": false,
+        "incorrect_call_probability": true,
+        "duplicate_mutation_probability": false,
+        "stale_state_risk": false,
+        "verifier_mismatch_risk": false
+      }
+    },
+    {
+      "id": "three_physical_graph_compilers",
+      "names": [
+        "hcli.physical_graph.compile_physical_graph",
+        "tools.odyssey.physical_graph_compiler",
+        "tools.future.device_ascension_pipeline.recompile_physical_graph"
+      ],
+      "live_hcli_calls": "compile_physical_graph from flash_* modules and hcli/architecture.py",
+      "taxes": {
+        "files_needed_to_understand_one_subsystem": true,
+        "retrieval_fan_out": false,
+        "context_tokens": false,
+        "tool_ambiguity": false,
+        "incorrect_call_probability": false,
+        "duplicate_mutation_probability": true,
+        "stale_state_risk": false,
+        "verifier_mismatch_risk": true
+      }
+    },
+    {
+      "id": "bench_surface_fanout",
+      "names": [
+        "hawking-bench",
+        "hawking CLI bench-q4k-shapes",
+        "protected_accelerator_benchmark",
+        "tools.accelerator.bench",
+        "tools/bench/*.sh",
+        "lab.bench_harness",
+        "accelerator.benchmark tool",
+        "benchmark.run tool",
+        "benchmark.inspect tool"
+      ],
+      "taxes": {
+        "files_needed_to_understand_one_subsystem": false,
+        "retrieval_fan_out": false,
+        "context_tokens": false,
+        "tool_ambiguity": true,
+        "incorrect_call_probability": true,
+        "duplicate_mutation_probability": false,
+        "stale_state_risk": false,
+        "verifier_mismatch_risk": true
+      }
+    },
+    {
+      "id": "condense_press_gravity",
+      "names": [
+        "Gravity",
+        "Condense",
+        "Press"
+      ],
+      "note": "lab/semantic_taxonomy.json already binds Condense/Press as legacy aliases of Gravity. Historical receipts keep hawking.condense.* prefixes. Forward vocabulary is settled; retrieval still surfaces all three.",
+      "taxes": {
+        "files_needed_to_understand_one_subsystem": false,
+        "retrieval_fan_out": true,
+        "context_tokens": false,
+        "tool_ambiguity": false,
+        "incorrect_call_probability": false,
+        "duplicate_mutation_probability": false,
+        "stale_state_risk": true,
+        "verifier_mismatch_risk": false
+      },
+      "classification": "SUPERSEDED aliases still in the search set"
+    },
+    {
+      "id": "ascension_vestigial_still_dominant",
+      "names": [
+        "Ascension",
+        "Gravity",
+        "Flash",
+        "Noetic"
+      ],
+      "note": "NOMENCLATURE_CENSUS surviving vocabulary is HCLI, Odyssey, Noetic, Gravity. Ascension is VESTIGIAL. HEAD still has 631 hawking.ascension schemas, 131 ascension_* examples, 127 ascension_* lab operators.",
+      "taxes": {
+        "files_needed_to_understand_one_subsystem": false,
+        "retrieval_fan_out": true,
+        "context_tokens": true,
+        "tool_ambiguity": false,
+        "incorrect_call_probability": true,
+        "duplicate_mutation_probability": false,
+        "stale_state_risk": true,
+        "verifier_mismatch_risk": false
+      },
+      "classification": "STALE_ROADMAP_TEXT + live identifiers"
+    },
+    {
+      "id": "hide_vs_hcli_vs_hawking",
+      "names": [
+        "HCLI AgentOS",
+        "HIDE (hide-* crates)",
+        "hawking-* crates"
+      ],
+      "note": "hawking-eval, hawking-perception, hawking-comms have ZERO `use` sites outside their own crates (git grep hawking_eval:: / hawking_perception:: / hawking_comms::). They remain workspace members. HIDE is a second agent stack (hide-backend talks HTTP to hawking serve).",
+      "taxes": {
+        "files_needed_to_understand_one_subsystem": false,
+        "retrieval_fan_out": true,
+        "context_tokens": true,
+        "tool_ambiguity": false,
+        "incorrect_call_probability": true,
+        "duplicate_mutation_probability": false,
+        "stale_state_risk": false,
+        "verifier_mismatch_risk": false
+      },
+      "classification": "hawking-eval/perception/comms = SCAFFOLDED (no external caller)"
+    },
+    {
+      "id": "hcli_ownership_marker_packages",
+      "names": [
+        "hcli.doctor",
+        "hcli.gravity"
+      ],
+      "note": "Packages exist so ownership is importable. They do not contain the instruments. Retrieving hcli.doctor finds a comment list, not Doctor.",
+      "taxes": {
+        "files_needed_to_understand_one_subsystem": false,
+        "retrieval_fan_out": true,
+        "context_tokens": false,
+        "tool_ambiguity": false,
+        "incorrect_call_probability": true,
+        "duplicate_mutation_probability": false,
+        "stale_state_risk": true,
+        "verifier_mismatch_risk": false
+      }
+    },
+    {
+      "id": "future_hcli_shadow_tree",
+      "names": [
+        "hcli/",
+        "tools/future/"
+      ],
+      "note": "262 non-test Python modules re-expressing WorkUnit species, ResidentSupervisor, hardware_doctor, complete_ebpw, physical_primitives, fusion_sim, workgraph. Intended as sidecars; retrieval treats them as peers.",
+      "taxes": {
+        "files_needed_to_understand_one_subsystem": true,
+        "retrieval_fan_out": true,
+        "context_tokens": true,
+        "tool_ambiguity": false,
+        "incorrect_call_probability": true,
+        "duplicate_mutation_probability": true,
+        "stale_state_risk": false,
+        "verifier_mismatch_risk": false
+      }
+    }
+  ],
+  "top_10_near_zero_risk_consolidations": [
+    {
+      "rank": 1,
+      "title": "Mark HCLI tool aliases as alias_of in the catalog, stop listing duplicates as first-class tools",
+      "current_state": "68 tools. fs.read==filesystem.read, huggingface.resolve==huggingface.manifest, receipt.read==receipt.inspect==benchmark.inspect, three git.*-safe names including git.checkout/revert-safe (slash in the tool name), roadmap.read==roadmap.inspect.",
+      "proposed_state": "Catalog exposes one canonical name per handler. Aliases remain callable for one release, hidden from tools.catalog default listing.",
+      "affected_files_symbols": [
+        "hcli/tool_registry.py:default_tool_registry",
+        "ToolSpec names listed in inventory_HEAD.hcli_live_tool_registry"
+      ],
+      "risk": "low — behavior unchanged if aliases still invoke",
+      "test_strategy": "Instantiate default_tool_registry; assert canonical names unique-by-handler; assert alias_of field; existing tests for fs.read and filesystem.read both still pass.",
+      "expected_downstream_roadmap_benefit": "Cuts incorrect-call probability on every resident tool turn. Immediate context-token win.",
+      "classification": "CALLABLE",
+      "evidence": [
+        {
+          "path": "hcli/tool_registry.py",
+          "kind": "call_site",
+          "symbol": "default_tool_registry",
+          "note": "68 tools STATIC_VERIFICATION"
+        }
+      ],
+      "increases_today": {
+        "files_needed_to_understand_one_subsystem": false,
+        "retrieval_fan_out": false,
+        "context_tokens": true,
+        "tool_ambiguity": true,
+        "incorrect_call_probability": true,
+        "duplicate_mutation_probability": false,
+        "stale_state_risk": false,
+        "verifier_mismatch_risk": false
+      }
+    },
+    {
+      "rank": 2,
+      "title": "Rename tools.future.improvement_metabolism.WorkUnit",
+      "current_state": "Second class WorkUnit, docstring already says it is not an HCLI WorkUnit.",
+      "proposed_state": "ScientificWorkUnit or HypothesisWork. Do not touch hcli.workunit.WorkUnit.",
+      "affected_files_symbols": [
+        "tools/future/improvement_metabolism.py:class WorkUnit",
+        "its tests"
+      ],
+      "risk": "low — local rename in tools/future; not on live Mission path",
+      "test_strategy": "grep class WorkUnit -- '*.py' returns only hcli/workunit.py plus tests constructing hcli.workunit.WorkUnit.",
+      "expected_downstream_roadmap_benefit": "Grep/retrieval for WorkUnit stops lying. Unblocks understand-WorkUnit fan-out.",
+      "classification": "CALLABLE_NAME_COLLISION",
+      "evidence": [
+        {
+          "path": "tools/future/improvement_metabolism.py",
+          "kind": "call_site",
+          "symbol": "class WorkUnit"
+        }
+      ],
+      "increases_today": {
+        "files_needed_to_understand_one_subsystem": false,
+        "retrieval_fan_out": true,
+        "context_tokens": false,
+        "tool_ambiguity": false,
+        "incorrect_call_probability": true,
+        "duplicate_mutation_probability": false,
+        "stale_state_risk": false,
+        "verifier_mismatch_risk": false
+      }
+    },
+    {
+      "rank": 3,
+      "title": "pytest.ini testpaths currently tools/haider only — add hcli/ as a first-class path",
+      "current_state": "pyproject.toml [tool.pytest.ini_options] testpaths=['tools/haider']. Default pytest from repo root does not run hcli/test_*.py.",
+      "proposed_state": "testpaths include hcli/ (and keep tools/haider as the fossil suite until moved). Do not silently drop the fossil tests.",
+      "affected_files_symbols": [
+        "pyproject.toml:tool.pytest.ini_options.testpaths",
+        "hcli/test_*.py",
+        "tools/haider/hcli/tests/"
+      ],
+      "risk": "low — config only; may surface already-failing hcli tests, which is the point",
+      "test_strategy": "python3 -m pytest -o addopts='' --collect-only hcli/ lists the live tests; a WorkUnit mutation in hcli/workunit.py fails a collected hcli test.",
+      "expected_downstream_roadmap_benefit": "Stops the harness from reporting green while the live WorkUnit tests were never collected.",
+      "classification": "INTEGRATED config defect",
+      "evidence": [
+        {
+          "path": "pyproject.toml",
+          "kind": "definition",
+          "symbol": "testpaths = [\"tools/haider\"]"
+        }
+      ],
+      "increases_today": {
+        "files_needed_to_understand_one_subsystem": false,
+        "retrieval_fan_out": false,
+        "context_tokens": false,
+        "tool_ambiguity": false,
+        "incorrect_call_probability": false,
+        "duplicate_mutation_probability": false,
+        "stale_state_risk": true,
+        "verifier_mismatch_risk": true
+      }
+    },
+    {
+      "rank": 4,
+      "title": "Document doctor.query and gravity.experiment as non-producers in their result payload",
+      "current_state": "_doctor_query never imports tools.doctor or doctor6. _gravity_experiment(execute=True) returns REFUSED_NOT_IMPLEMENTED.",
+      "proposed_state": "Every result includes invoked_producer=null and next_callable naming the real module. No behavior change required in this item (wiring is high-leverage, below).",
+      "affected_files_symbols": [
+        "hcli/tool_registry.py:_doctor_query",
+        "hcli/tool_registry.py:_gravity_experiment"
+      ],
+      "risk": "low — additive JSON fields",
+      "test_strategy": "Call the tools; assert invoked_producer is null; assert next_callable names tools/doctor/engine.py / flash_representation_experiment.py.",
+      "expected_downstream_roadmap_benefit": "Stops HCLI from treating a catalog hit as Doctor/Gravity capability.",
+      "classification": "CALLABLE envelope, CONCEPT_ONLY producer",
+      "evidence": [
+        {
+          "path": "hcli/tool_registry.py",
+          "kind": "call_site",
+          "symbol": "_doctor_query"
+        },
+        {
+          "path": "hcli/tool_registry.py",
+          "kind": "call_site",
+          "symbol": "_gravity_experiment"
+        }
+      ],
+      "increases_today": {
+        "files_needed_to_understand_one_subsystem": false,
+        "retrieval_fan_out": false,
+        "context_tokens": false,
+        "tool_ambiguity": true,
+        "incorrect_call_probability": true,
+        "duplicate_mutation_probability": false,
+        "stale_state_risk": true,
+        "verifier_mismatch_risk": false
+      }
+    },
+    {
+      "rank": 5,
+      "title": "Cross-link the two EBPW receipts instead of letting them look like one metric",
+      "current_state": "FLASH_EBPW_BUDGET.json complete_system_ebpw=null (PLANNED). COMPLETE_EBPW.json incumbent.complete_ebpw is STATIC_ONLY arithmetic. Acceptance FLASH_COMPLETE_EBPW_LE_1 calls complete_ebpw only.",
+      "proposed_state": "Each receipt names the other, the producer symbol, and evidence_class. No formula change.",
+      "affected_files_symbols": [
+        "hcli/agentos/flash_executable.py:_ebpw_budget",
+        "tools/future/complete_ebpw.py:build",
+        "receipts/headless/FLASH_EBPW_BUDGET.json",
+        "receipts/future/COMPLETE_EBPW.json"
+      ],
+      "risk": "low — metadata on new writes; do not rewrite sealed historical bytes",
+      "test_strategy": "New FLASH_EBPW_BUDGET contains producer + sibling_receipt + evidence_class. Mutation of COMPLETE_SYSTEM_EBPW_MAX does not change complete_ebpw incumbent (negative control).",
+      "expected_downstream_roadmap_benefit": "Verifier-mismatch risk drops: HCLI can see which number the gate uses.",
+      "classification": "SCAFFOLDED + STATIC_ONLY",
+      "evidence": [
+        {
+          "path": "receipts/headless/FLASH_EBPW_BUDGET.json",
+          "kind": "receipt",
+          "note": "complete_system_ebpw null"
+        },
+        {
+          "path": "tools/acceptance/flash/run_gates.py",
+          "kind": "call_site",
+          "symbol": "accept_complete_ebpw"
+        }
+      ],
+      "increases_today": {
+        "files_needed_to_understand_one_subsystem": false,
+        "retrieval_fan_out": false,
+        "context_tokens": false,
+        "tool_ambiguity": false,
+        "incorrect_call_probability": false,
+        "duplicate_mutation_probability": false,
+        "stale_state_risk": true,
+        "verifier_mismatch_risk": true
+      }
+    },
+    {
+      "rank": 6,
+      "title": "Mark hawking-eval / hawking-perception / hawking-comms as SCAFFOLDED in crate docs and Cargo.toml comments with the zero-caller fact",
+      "current_state": "Workspace members. git grep 'use hawking_eval' / hawking_perception / hawking_comms outside those crates is empty. lib.rs already says perception is stubs and eval support-halo is deferred.",
+      "proposed_state": "Do not delete. Record 'no external use site at HEAD' in the crate rustdoc and exclude from default-members if they are currently pulled by default cargo build. Confirm default-members list before moving.",
+      "affected_files_symbols": [
+        "crates/hawking-eval/src/lib.rs",
+        "crates/hawking-perception/src/lib.rs",
+        "crates/hawking-comms/src/lib.rs",
+        "Cargo.toml members"
+      ],
+      "risk": "low — docs/membership; hide-backend does use hawking-orch/research, do not touch those",
+      "test_strategy": "git grep use hawking_eval remains empty; cargo metadata shows default-members after the change.",
+      "expected_downstream_roadmap_benefit": "HCLI 'which crate do I put perception in' stops retrieving a stub as if it were wired.",
+      "classification": "SCAFFOLDED",
+      "evidence": [
+        {
+          "path": "crates/hawking-eval/src/lib.rs",
+          "kind": "call_site",
+          "note": "no external use hawking_eval::"
+        },
+        {
+          "path": "crates/hawking-perception/src/lib.rs",
+          "kind": "call_site",
+          "note": "stubs; no external use"
+        },
+        {
+          "path": "crates/hawking-comms/src/lib.rs",
+          "kind": "call_site",
+          "note": "no external use"
+        }
+      ],
+      "increases_today": {
+        "files_needed_to_understand_one_subsystem": false,
+        "retrieval_fan_out": true,
+        "context_tokens": false,
+        "tool_ambiguity": false,
+        "incorrect_call_probability": true,
+        "duplicate_mutation_probability": false,
+        "stale_state_risk": false,
+        "verifier_mismatch_risk": false
+      }
+    },
+    {
+      "rank": 7,
+      "title": "Stop minting new hawking.ascension.* schemas; alias table only",
+      "current_state": "631 unique hawking.ascension.* strings in source. Census: Ascension is VESTIGIAL. Surviving brands: HCLI, Odyssey, Noetic, Gravity.",
+      "proposed_state": "Forward-only: new schemas use hawking.gravity.* / hcli.* / hawking.flash.*. No git mv of sealed receipts.",
+      "affected_files_symbols": [
+        "docs/HAWKING_NOMENCLATURE.md",
+        "hcli/nomenclature.py",
+        "new schema string sites"
+      ],
+      "risk": "low — policy on new identifiers; historical receipts untouched",
+      "test_strategy": "A new lab operator adding hawking.ascension. fails a nomenclature lint; adding hawking.gravity. passes.",
+      "expected_downstream_roadmap_benefit": "Schema brand stops fighting the surviving vocabulary. Retrieval density improves over time without touching sealed bytes.",
+      "classification": "STALE_ROADMAP_TEXT / VESTIGIAL brand still productive",
+      "evidence": [
+        {
+          "path": "receipts/headless/NOMENCLATURE_CENSUS.json",
+          "kind": "receipt",
+          "symbol": "surviving_vocabulary"
+        }
+      ],
+      "increases_today": {
+        "files_needed_to_understand_one_subsystem": false,
+        "retrieval_fan_out": true,
+        "context_tokens": true,
+        "tool_ambiguity": false,
+        "incorrect_call_probability": false,
+        "duplicate_mutation_probability": false,
+        "stale_state_risk": true,
+        "verifier_mismatch_risk": false
+      }
+    },
+    {
+      "rank": 8,
+      "title": "Rename tools.future.resident_supervisor.ResidentSupervisor",
+      "current_state": "Same class name as the live supervisor in hcli.agentos.resident (the one hawkingd and start_resident use).",
+      "proposed_state": "FutureResidentSupervisor or delete the class if it only exists to write a sidecar receipt. Do not rename the live one.",
+      "affected_files_symbols": [
+        "tools/future/resident_supervisor.py:class ResidentSupervisor",
+        "tools/future/test_resident_supervisor.py"
+      ],
+      "risk": "low — tools/future only; live start_resident callers unchanged",
+      "test_strategy": "grep 'class ResidentSupervisor' returns only hcli/agentos/resident.py. hcli start_resident tests still pass.",
+      "expected_downstream_roadmap_benefit": "Lifecycle edits stop hitting the wrong class.",
+      "classification": "TESTED sidecar vs INTEGRATED live",
+      "evidence": [
+        {
+          "path": "hcli/agentos/resident.py",
+          "kind": "call_site",
+          "symbol": "class ResidentSupervisor"
+        },
+        {
+          "path": "tools/future/resident_supervisor.py",
+          "kind": "call_site",
+          "symbol": "class ResidentSupervisor"
+        }
+      ],
+      "increases_today": {
+        "files_needed_to_understand_one_subsystem": false,
+        "retrieval_fan_out": false,
+        "context_tokens": false,
+        "tool_ambiguity": false,
+        "incorrect_call_probability": true,
+        "duplicate_mutation_probability": true,
+        "stale_state_risk": false,
+        "verifier_mismatch_risk": false
+      }
+    },
+    {
+      "rank": 9,
+      "title": "NR_PRIMITIVES: add atlas_equivalent field rather than pretending they are the 17",
+      "current_state": "8 NR names in hcli/physical_graph.py serialized into every compile_physical_graph document. 17 atlas names are the locked set.",
+      "proposed_state": "Each NR primitive lists the atlas primitive it lowers to, or UNMAPPED. No new primitive names.",
+      "affected_files_symbols": [
+        "hcli/physical_graph.py:NR_PRIMITIVES",
+        "tools/future/physical_primitives.py:ATLAS_PRIMITIVES"
+      ],
+      "risk": "low — additive mapping; FPGA still BLOCKED_HARDWARE",
+      "test_strategy": "test that every NR name maps to atlas or UNMAPPED; test that adding a 9th NR name without atlas mapping fails.",
+      "expected_downstream_roadmap_benefit": "Adding an FPGA primitive has one place to put the name (the atlas).",
+      "classification": "SCAFFOLDED",
+      "evidence": [
+        {
+          "path": "hcli/physical_graph.py",
+          "kind": "call_site",
+          "symbol": "NR_PRIMITIVES"
+        },
+        {
+          "path": "tools/future/physical_primitives.py",
+          "kind": "call_site",
+          "symbol": "ATLAS_PRIMITIVES"
+        }
+      ],
+      "increases_today": {
+        "files_needed_to_understand_one_subsystem": false,
+        "retrieval_fan_out": false,
+        "context_tokens": false,
+        "tool_ambiguity": false,
+        "incorrect_call_probability": true,
+        "duplicate_mutation_probability": true,
+        "stale_state_risk": false,
+        "verifier_mismatch_risk": true
+      }
+    },
+    {
+      "rank": 10,
+      "title": "Hide lab.bench_harness from HCLI retrieval as a product bench",
+      "current_state": "lab/bench_harness exists (cli/measure/receipt/report/runner/spec) but production callers are foundry tests + authority_census.",
+      "proposed_state": "README/module docstring: not the product bench. Product benches are hawking-bench and run_protected_accelerator_benchmark.",
+      "affected_files_symbols": [
+        "lab/bench_harness/__init__.py",
+        "tools/headless/authority_census.py"
+      ],
+      "risk": "low — docs; no call-site change",
+      "test_strategy": "authority_census either drops it as a product authority or labels SCAFFOLDED.",
+      "expected_downstream_roadmap_benefit": "run-a-benchmark fan-out loses a trap module.",
+      "classification": "SCAFFOLDED",
+      "evidence": [
+        {
+          "path": "lab/bench_harness/runner.py",
+          "kind": "definition"
+        }
+      ],
+      "increases_today": {
+        "files_needed_to_understand_one_subsystem": false,
+        "retrieval_fan_out": true,
+        "context_tokens": false,
+        "tool_ambiguity": true,
+        "incorrect_call_probability": false,
+        "duplicate_mutation_probability": false,
+        "stale_state_risk": false,
+        "verifier_mismatch_risk": false
+      }
+    }
+  ],
+  "top_10_high_leverage_consolidations": [
+    {
+      "rank": 1,
+      "title": "One Goal compiler on the live path",
+      "current_state": "GoalCompiler().compile is what Mission/Controller/Engine/AgentOS call. GoalIR+goal_compile is a second compiler with its own tests and ~2260 lines, explicitly not contacting the scheduler except via an adapter that production does not call.",
+      "proposed_state": "Either (A) wire goal_compile.ingest/schedule as the only compile path and make GoalCompiler a thin wrapper, or (B) stop growing GoalIR and mark it SUPERSEDED in-module. Do not leave both looking live.",
+      "affected_files_symbols": [
+        "hcli/goal.py:GoalCompiler",
+        "hcli/goal_ir.py",
+        "hcli/goal_graph.py",
+        "hcli/goal_tokenizer.py",
+        "hcli/goal_compile.py",
+        "hcli/mission.py",
+        "hcli/controller.py",
+        "hcli/agentos/runtime.py",
+        "hcli/engine.py"
+      ],
+      "risk": "medium — compile-path change; repair/DAG identity tests are load-bearing",
+      "test_strategy": "Mission(goal=text) produces the same WorkUnit ids as today on a frozen fixture (byte-compare DAG). goal_compile.ingest is either on that path or unreachable from hcli.cli. Mutation of the unused compiler must not be able to change a live mission.",
+      "expected_downstream_roadmap_benefit": "understand-WorkUnit fan-out 18→4 files. Stops HCLI from editing GoalNode when the daemon compiles via GoalCompiler.",
+      "classification": "INTEGRATED + TESTED_NOT_WIRED",
+      "evidence": [
+        {
+          "path": "hcli/mission.py",
+          "kind": "call_site",
+          "symbol": "GoalCompiler().compile"
+        },
+        {
+          "path": "hcli/test_goal_compiler_acceptance.py",
+          "kind": "call_site",
+          "symbol": "from hcli.goal_compile import ingest, schedule"
+        }
+      ],
+      "increases_today": {
+        "files_needed_to_understand_one_subsystem": true,
+        "retrieval_fan_out": false,
+        "context_tokens": true,
+        "tool_ambiguity": false,
+        "incorrect_call_probability": true,
+        "duplicate_mutation_probability": false,
+        "stale_state_risk": true,
+        "verifier_mismatch_risk": false
+      }
+    },
+    {
+      "rank": 2,
+      "title": "One EBPW calculator, namespaced fields",
+      "current_state": "Two producers, two receipts, one acceptance gate pointed at only one of them. complete_system_ebpw is still null on the Flash budget.",
+      "proposed_state": "flash_executable._ebpw_budget calls complete_ebpw (or vice versa) so a ceiling change and a part-list change go through one function. Keep ARTIFACT_PHYSICAL_ / DESIGN_EXPECTED_ / POLICY_CEILING_ namespaces from EBPW_NAMESPACE_SEPARATION.",
+      "affected_files_symbols": [
+        "hcli/flash_next.py:COMPLETE_SYSTEM_EBPW_MAX",
+        "hcli/agentos/flash_executable.py:_ebpw_budget",
+        "tools/future/complete_ebpw.py",
+        "tools/future/ebpw_categories.py",
+        "tools/acceptance/flash/run_gates.py:accept_complete_ebpw"
+      ],
+      "risk": "medium — accounting identity; do not claim a physical EBPW that was not measured",
+      "test_strategy": "FLASH_COMPLETE_EBPW_LE_1 still calls the same symbol the budget writer uses. Mutating COMPLETE_SYSTEM_EBPW_MAX changes the policy field only. Mutating a part category changes ARTIFACT_PHYSICAL_complete_ebpw. A test that asserts list() equals its own sort is forbidden.",
+      "expected_downstream_roadmap_benefit": "modify-EBPW fan-out 10→3. Promotions cannot pass a gate the producer does not write.",
+      "classification": "SCAFFOLDED complete-system; CALLABLE static calculator",
+      "evidence": [
+        {
+          "path": "tools/acceptance/flash/run_gates.py",
+          "kind": "call_site",
+          "symbol": "from tools.future.complete_ebpw import mix_report, build"
+        },
+        {
+          "path": "hcli/agentos/flash_executable.py",
+          "kind": "call_site",
+          "symbol": "_ebpw_budget"
+        }
+      ],
+      "increases_today": {
+        "files_needed_to_understand_one_subsystem": false,
+        "retrieval_fan_out": false,
+        "context_tokens": false,
+        "tool_ambiguity": false,
+        "incorrect_call_probability": false,
+        "duplicate_mutation_probability": true,
+        "stale_state_risk": false,
+        "verifier_mismatch_risk": true
+      }
+    },
+    {
+      "rank": 3,
+      "title": "One FPGA/physical primitive vocabulary (the atlas 17)",
+      "current_state": "NR 8 + atlas 17 + HWIR 7. physical_primitives.instantiate is the executable atlas form and IS called from hwir.py. NR_PRIMITIVES are a peer list serialized by HCLI.",
+      "proposed_state": "Atlas names win (already the stated law in physical_primitives.py). HWIR node kinds become attributes of an atlas primitive. HCLI compile_physical_graph emits atlas names. FPGA stays inside Accelerator/Fusion. No HARDWARE_MEASURED without a board.",
+      "affected_files_symbols": [
+        "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+        "tools/future/physical_primitives.py:ATLAS_PRIMITIVES,instantiate",
+        "tools/future/hwir.py:NODE_KINDS,LoweringTarget",
+        "hcli/physical_graph.py:NR_PRIMITIVES,compile_physical_graph",
+        "tools/accelerator/backend_contract.py:FpgaHwirBackend",
+        "hcli/agentos/fpga_preboard.py"
+      ],
+      "risk": "medium-high — three ontologies; but FPGA is already BLOCKED_HARDWARE so a mapping error cannot fabricate a board number if evidence_class stays honest",
+      "test_strategy": "test_physical_primitives already refuses a 18th name. Add: compile_physical_graph output primitive names ⊆ atlas ∪ {UNMAPPED}. HWIR validator accepts atlas names. Mutation adding a name only to NR_PRIMITIVES fails.",
+      "expected_downstream_roadmap_benefit": "add-FPGA-primitive fan-out 11→3. Stops a 'new primitive' that exists in only one of three lists.",
+      "classification": "SCAFFOLDED + BLOCKED_HARDWARE",
+      "evidence": [
+        {
+          "path": "tools/future/hwir.py",
+          "kind": "call_site",
+          "symbol": "instantiate("
+        },
+        {
+          "path": "hcli/physical_graph.py",
+          "kind": "call_site",
+          "symbol": "NR_PRIMITIVES"
+        }
+      ],
+      "increases_today": {
+        "files_needed_to_understand_one_subsystem": true,
+        "retrieval_fan_out": false,
+        "context_tokens": false,
+        "tool_ambiguity": false,
+        "incorrect_call_probability": false,
+        "duplicate_mutation_probability": true,
+        "stale_state_risk": false,
+        "verifier_mismatch_risk": true
+      }
+    },
+    {
+      "rank": 4,
+      "title": "One ResidentSupervisor",
+      "current_state": "Live: hcli.agentos.resident.ResidentSupervisor + start_resident + hawkingd. Shadow: tools/future/resident_supervisor.py (2270 lines) same class name.",
+      "proposed_state": "Future sidecar imports and constructs the live class, or is reduced to a receipt writer that cannot start a process. Body binary naming is a nomenclature item, not this merge.",
+      "affected_files_symbols": [
+        "hcli/agentos/resident.py",
+        "hcli/hawkingd.py",
+        "hcli/agentos_cli.py",
+        "tools/future/resident_supervisor.py"
+      ],
+      "risk": "medium — process lifecycle; daemon is live under launchd. Implementation must not signal/restart that daemon. Work in a worktree, not against the live process.",
+      "test_strategy": "start_resident tests (hcli/test_resident_lifecycle_cutover.py) remain the authority. Future tests construct hcli.agentos.resident.ResidentSupervisor or fail to import a duplicate class.",
+      "expected_downstream_roadmap_benefit": "change-resident-lifecycle fan-out 8+12→3. Duplicate-mutation risk on cutover/evacuation drops.",
+      "classification": "INTEGRATED",
+      "evidence": [
+        {
+          "path": "hcli/agentos_cli.py",
+          "kind": "call_site",
+          "symbol": "start_resident("
+        },
+        {
+          "path": "tools/future/resident_supervisor.py",
+          "kind": "call_site",
+          "symbol": "class ResidentSupervisor"
+        }
+      ],
+      "increases_today": {
+        "files_needed_to_understand_one_subsystem": false,
+        "retrieval_fan_out": false,
+        "context_tokens": false,
+        "tool_ambiguity": false,
+        "incorrect_call_probability": true,
+        "duplicate_mutation_probability": true,
+        "stale_state_risk": true,
+        "verifier_mismatch_risk": false
+      }
+    },
+    {
+      "rank": 5,
+      "title": "Wire doctor.query to one Doctor producer",
+      "current_state": "doctor.query is CALLABLE and returns PROPOSED JSON without calling tools/doctor/engine.py, doctor6, or headless doctor_diagnosis. hcli.doctor is an ownership marker.",
+      "proposed_state": "doctor.query.operation=census/techniques/propose_experiments invokes one chosen producer (recommend tools/doctor/engine.py as the measurement/prescription engine; doctor6 as Gravity-organ instrument). Ownership marker package re-exports that symbol.",
+      "affected_files_symbols": [
+        "hcli/tool_registry.py:_doctor_query",
+        "hcli/doctor/__init__.py",
+        "tools/doctor/engine.py",
+        "lab/operators/doctor6/prescribe.py",
+        "tools/headless/doctor_diagnosis.py"
+      ],
+      "risk": "medium — must not let the tool claim a measurement the producer did not make",
+      "test_strategy": "Call doctor.query; assert result names the producer module and a receipt path. Monkeypatch the producer; the tool result changes. A no-op producer cannot return VERIFIED.",
+      "expected_downstream_roadmap_benefit": "Doctor stops being twelve modules plus a stub tool. HCLI can ask Doctor and hit a call site.",
+      "classification": "CALLABLE stub vs CALLABLE instruments",
+      "evidence": [
+        {
+          "path": "hcli/tool_registry.py",
+          "kind": "call_site",
+          "symbol": "_doctor_query"
+        },
+        {
+          "path": "hcli/doctor/__init__.py",
+          "kind": "call_site",
+          "symbol": "OWNED_PATHS"
+        }
+      ],
+      "increases_today": {
+        "files_needed_to_understand_one_subsystem": false,
+        "retrieval_fan_out": false,
+        "context_tokens": false,
+        "tool_ambiguity": true,
+        "incorrect_call_probability": true,
+        "duplicate_mutation_probability": false,
+        "stale_state_risk": true,
+        "verifier_mismatch_risk": false
+      }
+    },
+    {
+      "rank": 6,
+      "title": "Wire gravity.experiment to one representation experiment runner",
+      "current_state": "execute=True is REFUSED_NOT_IMPLEMENTED. Bounded Flash experiments and Qwen80 mixed pack already exist as separate CLIs.",
+      "proposed_state": "gravity.experiment(model, organ, representation, execute) dispatches to flash_representation_experiment or the specimen-specific pack. execute=false stays a hypothesis envelope.",
+      "affected_files_symbols": [
+        "hcli/tool_registry.py:_gravity_experiment",
+        "hcli/gravity/__init__.py",
+        "hcli/agentos/flash_representation_experiment.py:run_flash_representation_experiment",
+        "lab/operators/q80_mixed_representation_pack.py"
+      ],
+      "risk": "medium — must keep claim_boundary: bounded experiment is not a complete Noetic executable",
+      "test_strategy": "execute=true on the pinned Flash organ calls run_flash_representation_experiment (call of that symbol). execute=true without a specimen REFUSES. Existing flash CLI tests still pass.",
+      "expected_downstream_roadmap_benefit": "add-representation-candidate becomes a tool call instead of a 12-subcommand scavenger hunt.",
+      "classification": "CONCEPT_ONLY tool vs CALLABLE experiments",
+      "evidence": [
+        {
+          "path": "hcli/tool_registry.py",
+          "kind": "call_site",
+          "symbol": "_gravity_experiment"
+        },
+        {
+          "path": "hcli/agentos/flash_representation_experiment.py",
+          "kind": "call_site",
+          "symbol": "run_flash_representation_experiment"
+        }
+      ],
+      "increases_today": {
+        "files_needed_to_understand_one_subsystem": false,
+        "retrieval_fan_out": true,
+        "context_tokens": false,
+        "tool_ambiguity": true,
+        "incorrect_call_probability": true,
+        "duplicate_mutation_probability": false,
+        "stale_state_risk": false,
+        "verifier_mismatch_risk": false
+      }
+    },
+    {
+      "rank": 7,
+      "title": "Quarantine tools/future as sidecar receipts, not a peer HCLI",
+      "current_state": "538 Python files (262 non-test) re-implement WorkUnit species, supervisors, doctors, EBPW, primitives, fusion. Live HCLI is 196 Python files.",
+      "proposed_state": "Split: (a) modules with live callers outside tools/future stay and are imported by hcli/tools/accelerator/odyssey; (b) the rest become --build receipt emitters under a single 'sidecar' package with one entrypoint. Stop adding new future.* schemas for jobs hcli already does.",
+      "affected_files_symbols": [
+        "tools/future/*.py (262 non-test)",
+        "hcli/",
+        "tools/accelerator/",
+        "tools/odyssey/"
+      ],
+      "risk": "high if done as a mass move (CONSOLIDATION.json status BLOCKED historically). Do it as import-graph triage, not git mv of 1948 files.",
+      "test_strategy": "For each future module: git grep the public symbol outside tools/future and its tests. Zero non-test callers => sidecar. Non-zero => list the callers. No mass rename of sealed receipts.",
+      "expected_downstream_roadmap_benefit": "Largest single retrieval-fan-out cut in the repo. HCLI context stops including a second operating system.",
+      "classification": "mixed CALLABLE sidecar / CONCEPT_ONLY",
+      "evidence": [
+        {
+          "path": "tools/future/workunit_species.py",
+          "kind": "definition"
+        },
+        {
+          "path": "tools/future/hwir.py",
+          "kind": "call_site",
+          "symbol": "instantiate(",
+          "note": "example of a future module that DOES have a real call chain"
+        }
+      ],
+      "increases_today": {
+        "files_needed_to_understand_one_subsystem": true,
+        "retrieval_fan_out": true,
+        "context_tokens": true,
+        "tool_ambiguity": false,
+        "incorrect_call_probability": true,
+        "duplicate_mutation_probability": false,
+        "stale_state_risk": false,
+        "verifier_mismatch_risk": false
+      }
+    },
+    {
+      "rank": 8,
+      "title": "Collapse Flash AgentOS experiment CLIs into one family",
+      "current_state": "agentos_cli has separate add_parser entries for flash-science, flash-executable, flash-tensor-probe, flash-representation, flash-transform, flash-loader, flash-body, flash-matrix, flash-vector, flash-router-graph, flash-router-selection, flash-router-representation-ab, flash-campaign, flash-graph — plus charge, preboard, fpga-preboard.",
+      "proposed_state": "hcli agentos flash --organ --stage {probe,transform,body,graph,executable} with the existing modules as stages. Keep the modules; collapse the CLI/tool surface.",
+      "affected_files_symbols": [
+        "hcli/agentos_cli.py",
+        "hcli/agentos/flash_*.py (15 files)"
+      ],
+      "risk": "medium — many receipts keyed by command name; keep emitting the same receipt filenames",
+      "test_strategy": "Each former subcommand still reachable as a stage; receipt schemas unchanged; one --help surface.",
+      "expected_downstream_roadmap_benefit": "add-representation-candidate and Flash work stop requiring a 15-file map. Semantic density up without deleting science.",
+      "classification": "CALLABLE",
+      "evidence": [
+        {
+          "path": "hcli/agentos_cli.py",
+          "kind": "call_site",
+          "symbol": "add_parser"
+        }
+      ],
+      "increases_today": {
+        "files_needed_to_understand_one_subsystem": false,
+        "retrieval_fan_out": true,
+        "context_tokens": true,
+        "tool_ambiguity": true,
+        "incorrect_call_probability": false,
+        "duplicate_mutation_probability": false,
+        "stale_state_risk": false,
+        "verifier_mismatch_risk": false
+      }
+    },
+    {
+      "rank": 9,
+      "title": "One ModelLake mutation symbol, tools as views",
+      "current_state": "promote() is already the mutation and is called from watch, acceptance, acquisition. Parallel future specimen_scheduler/events/sleeping_specimens plus modellake.py vs promote.py vs index.py vs lineage.py still look like peers.",
+      "proposed_state": "Public contract: specimens.registry -> hcli.specimens.registry; modellake.promote -> modellake_promote.promote. Other modules import those. HCLI catalog drops duplicate status tools that only read receipts.",
+      "affected_files_symbols": [
+        "tools/odyssey/modellake_promote.py:promote",
+        "hcli/specimens.py:registry",
+        "hcli/acquisition.py",
+        "hcli/agentos/modellake_gate.py",
+        "tools/future/specimen_*.py",
+        "hcli/tool_registry.py"
+      ],
+      "risk": "medium around --go promote (irreplaceable lake). Census-only and alias cleanup is low.",
+      "test_strategy": "Existing tools/odyssey/test_modellake_promote.py and test_modellake_watch.py (module identity test) stay. New test: HCLI tool acquisition.propose cannot move a specimen.",
+      "expected_downstream_roadmap_benefit": "add-ModelLake-transition fan-out 9→3. Duplicate-mutation of a 4.35 TB lake is the blast radius this shrinks.",
+      "classification": "INTEGRATED",
+      "evidence": [
+        {
+          "path": "tools/odyssey/modellake_promote.py",
+          "kind": "call_site",
+          "symbol": "def promote"
+        },
+        {
+          "path": "tools/odyssey/test_modellake_watch.py",
+          "kind": "call_site",
+          "symbol": "test_modellake_watch_and_modellake_promote_share_one_module_identity"
+        }
+      ],
+      "increases_today": {
+        "files_needed_to_understand_one_subsystem": false,
+        "retrieval_fan_out": false,
+        "context_tokens": false,
+        "tool_ambiguity": true,
+        "incorrect_call_probability": false,
+        "duplicate_mutation_probability": true,
+        "stale_state_risk": true,
+        "verifier_mismatch_risk": false
+      }
+    },
+    {
+      "rank": 10,
+      "title": "One protected benchmark window + one product suite",
+      "current_state": "hawking-bench is wired from hawking CLI. protected_accelerator_benchmark is wired from agentos_cli. benchmark.run runs pytest. accelerator.benchmark authorizes a window. lab.bench_harness is idle. tools/bench is shell.",
+      "proposed_state": "HCLI benchmark.run with runner=hawking|protected|pytest. Window lock lives in one module (protected_accelerator_benchmark._try_lock) and is imported by the others. lab.bench_harness not a product path.",
+      "affected_files_symbols": [
+        "crates/hawking-bench",
+        "crates/hawking/src/main.rs",
+        "hcli/agentos/protected_accelerator_benchmark.py",
+        "hcli/tool_registry.py",
+        "tools/accelerator/bench.py",
+        "lab/bench_harness"
+      ],
+      "risk": "medium — protected window is exclusive GPU time; wrong merge could skip the lock",
+      "test_strategy": "Mutation: remove the lock acquire; protected test must FAIL. hawking bench still calls hawking_bench::run. benchmark.run runner=pytest still cannot emit PROTECTED_ABSOLUTE.",
+      "expected_downstream_roadmap_benefit": "run-a-benchmark fan-out 9→3. Verifier-mismatch (pytest green as if a protected bench ran) closes.",
+      "classification": "CALLABLE",
+      "evidence": [
+        {
+          "path": "crates/hawking/src/main.rs",
+          "kind": "call_site",
+          "symbol": "hawking_bench::run"
+        },
+        {
+          "path": "hcli/tool_registry.py",
+          "kind": "call_site",
+          "symbol": "benchmark.run"
+        }
+      ],
+      "increases_today": {
+        "files_needed_to_understand_one_subsystem": false,
+        "retrieval_fan_out": false,
+        "context_tokens": false,
+        "tool_ambiguity": true,
+        "incorrect_call_probability": true,
+        "duplicate_mutation_probability": false,
+        "stale_state_risk": false,
+        "verifier_mismatch_risk": true
+      }
+    }
+  ],
+  "top_10_nomenclature_retirements": [
+    {
+      "rank": 1,
+      "retire_as_live_identifier": "Ascension",
+      "canonical": "Gravity / Noetic / HCLI (as role dictates)",
+      "current_state": "VESTIGIAL in NOMENCLATURE_CENSUS; still 631 hawking.ascension schemas, 131 examples, 127 lab operators, resident example binary ascension_qwen38_resident.rs",
+      "proposed_state": "Forward identifiers stop using Ascension. Sealed receipts and historical example names stay. New binaries/schemas use Gravity/Noetic/HCLI.",
+      "affected_files_symbols": [
+        "crates/hawking-core/examples/ascension_*.rs",
+        "lab/operators/ascension_*.py",
+        "schema strings hawking.ascension.*"
+      ],
+      "risk": "unsafe to mass-rename (census rename_plan). Forward-only is the safe retirement.",
+      "test_strategy": "nomenclature lint on new files; no git mv of receipts/",
+      "expected_downstream_roadmap_benefit": "Surviving vocabulary becomes the search set. Matches HAWKING_NOMENCLATURE_V1.",
+      "classification": "VESTIGIAL still productive",
+      "evidence": [
+        {
+          "path": "receipts/headless/NOMENCLATURE_CENSUS.json",
+          "kind": "receipt",
+          "symbol": "classification_counts"
+        }
+      ]
+    },
+    {
+      "rank": 2,
+      "retire_as_live_identifier": "Condense / Press as public identity",
+      "canonical": "Gravity (operation condense is an engine operation, not a brand)",
+      "current_state": "lab/semantic_taxonomy.json already maps both to Gravity; hawking condense/press are warnings_backed_compatibility.",
+      "proposed_state": "Keep compatibility commands. Do not add new hawking.condense.* schemas. HCLI catalog uses gravity.* only.",
+      "affected_files_symbols": [
+        "lab/semantic_taxonomy.json",
+        "hcli/nomenclature.py:COMPATIBILITY_ALIASES",
+        "hcli/tool_registry.py gravity.experiment/inspect"
+      ],
+      "risk": "low — already decided; retirement is stopping new use",
+      "test_strategy": "existing semantic_taxonomy.py contract tests",
+      "expected_downstream_roadmap_benefit": "One process name in HCLI speech.",
+      "classification": "SUPERSEDED",
+      "evidence": [
+        {
+          "path": "lab/semantic_taxonomy.json",
+          "kind": "definition",
+          "symbol": "legacy_command_aliases"
+        }
+      ]
+    },
+    {
+      "rank": 3,
+      "retire_as_live_identifier": "improvement_metabolism.WorkUnit",
+      "canonical": "hcli.workunit.WorkUnit",
+      "current_state": "Name collision by construction",
+      "proposed_state": "Rename the scientific one",
+      "affected_files_symbols": [
+        "tools/future/improvement_metabolism.py:class WorkUnit"
+      ],
+      "risk": "low",
+      "test_strategy": "grep class WorkUnit",
+      "expected_downstream_roadmap_benefit": "WorkUnit means one type",
+      "classification": "CALLABLE_NAME_COLLISION",
+      "evidence": [
+        {
+          "path": "tools/future/improvement_metabolism.py",
+          "kind": "call_site",
+          "symbol": "class WorkUnit"
+        }
+      ]
+    },
+    {
+      "rank": 4,
+      "retire_as_live_identifier": "tools.future.resident_supervisor.ResidentSupervisor",
+      "canonical": "hcli.agentos.resident.ResidentSupervisor",
+      "current_state": "Duplicate class name",
+      "proposed_state": "Rename or wrap",
+      "affected_files_symbols": [
+        "tools/future/resident_supervisor.py"
+      ],
+      "risk": "low in future/; do not touch live daemon",
+      "test_strategy": "grep class ResidentSupervisor",
+      "expected_downstream_roadmap_benefit": "Resident lifecycle has one type",
+      "classification": "TESTED sidecar",
+      "evidence": [
+        {
+          "path": "tools/future/resident_supervisor.py",
+          "kind": "call_site",
+          "symbol": "class ResidentSupervisor"
+        }
+      ]
+    },
+    {
+      "rank": 5,
+      "retire_as_live_identifier": "NR_PRIMITIVES as a peer ontology",
+      "canonical": "ATLAS_PRIMITIVES (17)",
+      "current_state": "8 HCLI names vs 17 atlas names vs 7 HWIR kinds",
+      "proposed_state": "NR names become aliases or UNMAPPED; atlas wins (already stated law)",
+      "affected_files_symbols": [
+        "hcli/physical_graph.py:NR_PRIMITIVES",
+        "tools/future/hwir.py:NODE_KINDS"
+      ],
+      "risk": "medium mapping errors; FPGA remains unmeasured",
+      "test_strategy": "subset/alias tests against atlas fingerprint",
+      "expected_downstream_roadmap_benefit": "One primitive to add",
+      "classification": "SCAFFOLDED",
+      "evidence": [
+        {
+          "path": "tools/future/physical_primitives.py",
+          "kind": "call_site",
+          "symbol": "ATLAS_PRIMITIVES"
+        }
+      ]
+    },
+    {
+      "rank": 6,
+      "retire_as_live_identifier": "un-namespaced 'EBPW' / 'complete_ebpw' / 'complete_system_ebpw' as if one number",
+      "canonical": "POLICY_CEILING_complete_system_ebpw / ARTIFACT_PHYSICAL_* / DESIGN_EXPECTED_* / STATIC_ONLY complete_ebpw",
+      "current_state": "EBPW_NAMESPACE_SEPARATION already named the bug; producers still emit overlapping keys",
+      "proposed_state": "New writes use namespaced keys only. Historical receipts untouched.",
+      "affected_files_symbols": [
+        "hcli/flash_next.py:COMPLETE_SYSTEM_EBPW_MAX",
+        "tools/future/complete_ebpw.py",
+        "tools/accelerator/scoreboard.py"
+      ],
+      "risk": "medium if a gate still reads the old key — so gates must be updated with the producer",
+      "test_strategy": "scoreboard cannot treat complete_ebpw and complete_system_ebpw as interchangeable without evidence_class",
+      "expected_downstream_roadmap_benefit": "Promotion law stays honest",
+      "classification": "SCAFFOLDED vs STATIC_ONLY",
+      "evidence": [
+        {
+          "path": "receipts/headless/EBPW_NAMESPACE_SEPARATION.json",
+          "kind": "receipt"
+        }
+      ]
+    },
+    {
+      "rank": 7,
+      "retire_as_live_identifier": "Haider as HCLI path",
+      "canonical": "hcli/",
+      "current_state": "CURRENT_ARCHITECTURE: product is hcli/. Tests still under tools/haider/hcli/tests/. pytest testpaths=tools/haider. Census still lists tools/haider/hcli as owned_path.",
+      "proposed_state": "Forward tests live under hcli/. Fossil package keeps raising ImportError (already the law).",
+      "affected_files_symbols": [
+        "pyproject.toml testpaths",
+        "tools/haider/hcli/tests/",
+        "receipts/headless/NOMENCLATURE_CENSUS.json (data, do not rewrite)"
+      ],
+      "risk": "low-medium test move; import identity already locked by test_module_identity.py",
+      "test_strategy": "import tools.haider.hcli still ImportError; pytest collects hcli/",
+      "expected_downstream_roadmap_benefit": "One HCLI tree",
+      "classification": "SUPERSEDED path still default-tested",
+      "evidence": [
+        {
+          "path": "docs/CURRENT_ARCHITECTURE.md",
+          "kind": "call_site"
+        },
+        {
+          "path": "pyproject.toml",
+          "kind": "call_site",
+          "symbol": "testpaths"
+        }
+      ]
+    },
+    {
+      "rank": 8,
+      "retire_as_live_identifier": "wax / wax-vs-llama-cpp bench suite name",
+      "canonical": "competitive",
+      "current_state": "hawking-bench still accepts wax as deprecated alias 'for one release; will be removed in v0.2'",
+      "proposed_state": "Refuse the alias; print the canonical name",
+      "affected_files_symbols": [
+        "crates/hawking-bench/src/lib.rs suite match wax-vs-llama-cpp"
+      ],
+      "risk": "low",
+      "test_strategy": "suite=wax errors; suite=competitive runs",
+      "expected_downstream_roadmap_benefit": "One competitive suite name",
+      "classification": "SUPERSEDED alias still callable",
+      "evidence": [
+        {
+          "path": "crates/hawking-bench/src/lib.rs",
+          "kind": "call_site",
+          "symbol": "wax-vs-llama-cpp"
+        }
+      ]
+    },
+    {
+      "rank": 9,
+      "retire_as_live_identifier": "Goal tokenizer 'token' in HCLI-facing text",
+      "canonical": "typed unit of intent / GoalNode",
+      "current_state": "goal_tokenizer.py warns not to leak LLM-token meaning; the module is still named tokenizer",
+      "proposed_state": "If GoalIR stays, rename to goal_parse or intent_atoms. If GoalIR is superseded, the name dies with it.",
+      "affected_files_symbols": [
+        "hcli/goal_tokenizer.py"
+      ],
+      "risk": "low-medium depending on GoalIR decision",
+      "test_strategy": "import path tests",
+      "expected_downstream_roadmap_benefit": "HCLI stops confusing BPE tokens with goal atoms",
+      "classification": "TESTED_NOT_WIRED",
+      "evidence": [
+        {
+          "path": "hcli/goal_tokenizer.py",
+          "kind": "call_site",
+          "symbol": "tokenize"
+        }
+      ]
+    },
+    {
+      "rank": 10,
+      "retire_as_live_identifier": "artifact as an unqualified type",
+      "canonical": "Noetic representation / Noetic executable / receipt (after inspection)",
+      "current_state": "HAWKING_NOMENCLATURE.md already says inspect before using 'artifact'. Catalog and schemas still use it as a blob.",
+      "proposed_state": "New HCLI tool results use the canonical class. Compatibility schemas keep artifact.",
+      "affected_files_symbols": [
+        "hcli/nomenclature.py:COMPATIBILITY_ALIASES['artifact']",
+        "docs/HAWKING_NOMENCLATURE.md"
+      ],
+      "risk": "low forward-only",
+      "test_strategy": "nomenclature_metadata() remains the marker on new receipts",
+      "expected_downstream_roadmap_benefit": "Selection law (Singularity vs candidate vs receipt) is speakable",
+      "classification": "AMBIGUOUS",
+      "evidence": [
+        {
+          "path": "hcli/nomenclature.py",
+          "kind": "call_site",
+          "symbol": "COMPATIBILITY_ALIASES"
+        }
+      ]
+    }
+  ],
+  "top_10_harness_generalizations": [
+    {
+      "rank": 1,
+      "title": "Default pytest collects the live HCLI tests",
+      "current_state": "testpaths=['tools/haider']",
+      "proposed_state": "Collect hcli/ (and keep fossil until moved)",
+      "affected_files_symbols": [
+        "pyproject.toml"
+      ],
+      "risk": "low-medium (may reveal existing failures)",
+      "test_strategy": "collect-only; mutation of workunit.py fails a collected test",
+      "expected_downstream_roadmap_benefit": "Harness matches the live control plane",
+      "classification": "INTEGRATED config defect"
+    },
+    {
+      "rank": 2,
+      "title": "One ToolRegistry catalog without duplicate first-class names",
+      "current_state": "68 tools, alias groups listed above, slash-name git.checkout/revert-safe",
+      "proposed_state": "alias_of field; tools.catalog lists canonical only",
+      "affected_files_symbols": [
+        "hcli/tool_registry.py"
+      ],
+      "risk": "low",
+      "test_strategy": "catalog unique-by-handler",
+      "expected_downstream_roadmap_benefit": "Resident tool choice entropy drops",
+      "classification": "CALLABLE"
+    },
+    {
+      "rank": 3,
+      "title": "Doctor/Gravity tools must call a producer or refuse",
+      "current_state": "Envelope tools that look like capability",
+      "proposed_state": "invoke or REFUSED_NOT_IMPLEMENTED with next_callable (gravity.experiment already refuses execute; doctor.query never refuses)",
+      "affected_files_symbols": [
+        "hcli/tool_registry.py:_doctor_query,_gravity_experiment"
+      ],
+      "risk": "medium when wiring",
+      "test_strategy": "producer monkeypatch changes the tool result",
+      "expected_downstream_roadmap_benefit": "Registration law ('a capability nothing calls does not exist') applied to the tools themselves",
+      "classification": "CALLABLE stub"
+    },
+    {
+      "rank": 4,
+      "title": "Protected-window lock is a shared harness, not a per-command copy",
+      "current_state": "protected_accelerator_benchmark has _try_lock; benchmark.run has its own costly mutation class; tools/accelerator/bench has quiescence",
+      "proposed_state": "One lock + quiescence helper imported by all physical benches",
+      "affected_files_symbols": [
+        "hcli/agentos/protected_accelerator_benchmark.py:_try_lock",
+        "tools/accelerator/bench.py:machine_quiescence",
+        "hcli/tool_registry.py:_benchmark_run"
+      ],
+      "risk": "medium (exclusive GPU)",
+      "test_strategy": "removing the lock fails the protected test; pytest runner cannot take the lock",
+      "expected_downstream_roadmap_benefit": "No silent overlapping protected windows",
+      "classification": "CALLABLE"
+    },
+    {
+      "rank": 5,
+      "title": "Acceptance gates call the same symbol the producer writes",
+      "current_state": "FLASH_COMPLETE_EBPW_LE_1 -> complete_ebpw.build; Flash budget writer is _ebpw_budget",
+      "proposed_state": "Gate imports the producer symbol (already the lake promotion pattern: tools.odyssey.modellake_promote.promote)",
+      "affected_files_symbols": [
+        "tools/acceptance/flash/run_gates.py",
+        "tools/acceptance/lake/common.py (positive example)"
+      ],
+      "risk": "medium accounting",
+      "test_strategy": "mutate producer; gate fails. Mutate the unused writer; gate still fails/passes with producer — proves wiring.",
+      "expected_downstream_roadmap_benefit": "Receipts cannot override a broken producer",
+      "classification": "verifier-mismatch present today"
+    },
+    {
+      "rank": 6,
+      "title": "AgentOS acceptance harness vs hcli tests vs tools/haider tests",
+      "current_state": "tools/acceptance/agentos/harness.py constructs WorkUnits; tools/haider/hcli/tests duplicates; hcli/test_*.py is the live suite not default-collected",
+      "proposed_state": "One WorkUnit fixture helper. Acceptance imports it. Fossil haider tests either import hcli or retire.",
+      "affected_files_symbols": [
+        "tools/acceptance/agentos/harness.py",
+        "hcli/test_*.py",
+        "tools/haider/hcli/tests/"
+      ],
+      "risk": "medium size of harness.py",
+      "test_strategy": "single fixture; identity tests still catch IdentityConflict",
+      "expected_downstream_roadmap_benefit": "Fewer duplicate WorkUnit( constructions that drift fields",
+      "classification": "TESTED ×3"
+    },
+    {
+      "rank": 7,
+      "title": "Flash experiment family as one harness with stages",
+      "current_state": "15 flash_* modules × 12+ CLI parsers × many receipt names",
+      "proposed_state": "Shared claim_boundary, specimen pin, and receipt writer; stages plug in",
+      "affected_files_symbols": [
+        "hcli/agentos/flash_*.py",
+        "hcli/agentos_cli.py"
+      ],
+      "risk": "medium receipt filenames must stay stable",
+      "test_strategy": "each stage still emits its schema; CLI stage enum round-trips",
+      "expected_downstream_roadmap_benefit": "Adding a representation candidate is one stage, not a new CLI",
+      "classification": "CALLABLE"
+    },
+    {
+      "rank": 8,
+      "title": "Hardware doctor: one diagnose() HCLI can call",
+      "current_state": "tools/accelerator/hardware_doctor.py (host) and tools/future/hardware_doctor.py (FPGA-axis sidecar), plus hbm/concurrency/git_lock doctors",
+      "proposed_state": "accelerator.hardware_doctor.diagnose is the HCLI entry; FPGA-axis is a named axis inside it (already the stated relationship in the accelerator docstring)",
+      "affected_files_symbols": [
+        "tools/accelerator/hardware_doctor.py:diagnose",
+        "tools/future/hardware_doctor.py"
+      ],
+      "risk": "low-medium if limited to a facade",
+      "test_strategy": "existing test_hardware_doctor.py; HCLI architecture.inspect or a doctor.query operation hits diagnose()",
+      "expected_downstream_roadmap_benefit": "HCLI does not pick the wrong doctor",
+      "classification": "CALLABLE ×2"
+    },
+    {
+      "rank": 9,
+      "title": "Goal compile harness: one frozen DAG golden",
+      "current_state": "GoalCompiler and GoalIR each have tests; no golden proving they emit the same WorkUnits",
+      "proposed_state": "If both live even briefly, a golden DAG compares them. If one is superseded, the golden locks the survivor.",
+      "affected_files_symbols": [
+        "hcli/goal.py",
+        "hcli/goal_compile.py",
+        "hcli/test_goal_compiler_acceptance.py"
+      ],
+      "risk": "low (test-only)",
+      "test_strategy": "byte-compare WorkUnit ids+content_hash on a frozen goal text",
+      "expected_downstream_roadmap_benefit": "Makes the two-compiler surprise un-ignorable",
+      "classification": "TESTED_NOT_WIRED"
+    },
+    {
+      "rank": 10,
+      "title": "lab/operators campaign prefix is not a harness identity",
+      "current_state": "127/269 lab/operators files prefixed ascension_; pytest under lab/tests/",
+      "proposed_state": "New operators named by organ/specimen, not campaign. Existing files stay (sealed science). lab.rules remains governance.",
+      "affected_files_symbols": [
+        "lab/operators/ascension_*.py",
+        "lab/tests/"
+      ],
+      "risk": "low forward-only",
+      "test_strategy": "lint on new operator filenames",
+      "expected_downstream_roadmap_benefit": "Lab retrieval matches surviving vocabulary",
+      "classification": "VESTIGIAL prefix on live operators"
+    }
+  ],
+  "top_10_directory_file_collapses": [
+    {
+      "rank": 1,
+      "title": "tools/future/ (262 non-test py) is a second tree, not a directory to git-mv blindly",
+      "current_state": "538 py files. Historical CONSOLIDATION.json was BLOCKED; CONSOLIDATION2 moved frankenstein and was COMPLETE. A mass future/ move would repeat the blocked pattern.",
+      "proposed_state": "Collapse by import-graph, not by mv: live-called modules stay; the rest become one sidecar package or stay as receipt emitters. Do not git mv 262 files in one lane.",
+      "affected_files_symbols": [
+        "tools/future/*.py"
+      ],
+      "risk": "high if mass-moved; low if triaged",
+      "test_strategy": "caller census per public symbol",
+      "expected_downstream_roadmap_benefit": "Largest retrieval cut",
+      "classification": "mixed",
+      "evidence": [
+        {
+          "path": "receipts/headless/CONSOLIDATION.json",
+          "kind": "receipt",
+          "symbol": "status BLOCKED"
+        }
+      ]
+    },
+    {
+      "rank": 2,
+      "title": "tools/haider/hcli/tests → hcli/ tests as the collected suite",
+      "current_state": "Product code is hcli/. Default tests are tools/haider. CURRENT_ARCHITECTURE already records this split as the F24 aftermath.",
+      "proposed_state": "Collect hcli/test_*.py. Move or wrap haider tests. Do not resurrect import tools.haider.hcli.",
+      "affected_files_symbols": [
+        "tools/haider/hcli/tests/",
+        "hcli/test_*.py",
+        "pyproject.toml"
+      ],
+      "risk": "medium test-path",
+      "test_strategy": "ImportError for tools.haider.hcli; collect hcli/",
+      "expected_downstream_roadmap_benefit": "One HCLI directory in the mental model",
+      "classification": "SUPERSEDED test root"
+    },
+    {
+      "rank": 3,
+      "title": "hcli/doctor and hcli/gravity marker packages vs tools/doctor and tools/gravity_*",
+      "current_state": "Markers exist so ownership is importable. Instruments live elsewhere. Retrieval hits the empty package.",
+      "proposed_state": "Marker packages re-export the live symbol (engine, prescribe) or are deleted in favor of docs/CURRENT_ARCHITECTURE ownership table.",
+      "affected_files_symbols": [
+        "hcli/doctor/__init__.py",
+        "hcli/gravity/__init__.py",
+        "tools/doctor/engine.py",
+        "tools/gravity_doctor_*.py"
+      ],
+      "risk": "low re-export; do not move the instruments (F24)",
+      "test_strategy": "from hcli.doctor import X is the same object as tools.doctor.engine.X",
+      "expected_downstream_roadmap_benefit": "Ownership without a fake module",
+      "classification": "SCAFFOLDED markers"
+    },
+    {
+      "rank": 4,
+      "title": "crates/hawking-core/examples (233) vs src (139) — examples directory is the campaign attic",
+      "current_state": "131 examples named ascension_*. Many are contract/attester binaries, not examples.",
+      "proposed_state": "Do not delete. Classify: examples/ for demos, tests/ or src/bin for load-bearing contracts. Forward names drop Ascension.",
+      "affected_files_symbols": [
+        "crates/hawking-core/examples/ascension_*.rs"
+      ],
+      "risk": "medium if anything launchd-invokes an example binary by path — verify callers first",
+      "test_strategy": "git grep the example binary name outside examples/",
+      "expected_downstream_roadmap_benefit": "Core crate stops looking like 233 products",
+      "classification": "VESTIGIAL naming on possibly-CALLABLE bins"
+    },
+    {
+      "rank": 5,
+      "title": "lab/operators/ascension_* (127 files) stay as science, lose campaign-as-directory-identity going forward",
+      "current_state": "Almost half of lab/operators",
+      "proposed_state": "No new ascension_* files. Optional prefix directory gravity/ or specimen/ for new work. Do not mv sealed operators.",
+      "affected_files_symbols": [
+        "lab/operators/ascension_*.py"
+      ],
+      "risk": "low forward-only; high if moved (receipts point at paths)",
+      "test_strategy": "filename lint; existing lab/tests still import old paths",
+      "expected_downstream_roadmap_benefit": "Lab matches Gravity",
+      "classification": "VESTIGIAL prefix"
+    },
+    {
+      "rank": 6,
+      "title": "tools/headless (275 py) vs tools/future (538) vs tools/accelerator (83) vs tools/odyssey (114)",
+      "current_state": "Four tool roots for HCLI-adjacent work. headless is the code-graph census root (CURRENT_ARCHITECTURE). accelerator is the live physical queue. odyssey is the lake/compiler campaign. future is the sidecar OS.",
+      "proposed_state": "Keep the three live roots. Do not merge headless into future. Collapse future as in rank 1. Document the three live roots in CURRENT_ARCHITECTURE (already partially done).",
+      "affected_files_symbols": [
+        "tools/headless/",
+        "tools/accelerator/",
+        "tools/odyssey/",
+        "tools/future/"
+      ],
+      "risk": "high if merged; the proposal is NOT a merge of the three live ones",
+      "test_strategy": "ownership table test: a new physical queue file must live in tools/accelerator",
+      "expected_downstream_roadmap_benefit": "HCLI knows which tools/ subtree is the product",
+      "classification": "topology"
+    },
+    {
+      "rank": 7,
+      "title": "lab/hcli vs hcli vs tools/haider/hcli",
+      "current_state": "Three HCLI-named trees. CURRENT_ARCHITECTURE: lab/hcli is a different product; haider fossil ImportError; product is hcli/.",
+      "proposed_state": "Rename lab/hcli in speech to 'lab special unit' (SpecialUnit). Do not physically move SpecialUnit into hcli/ (different product, 2597 lines).",
+      "affected_files_symbols": [
+        "lab/hcli/special_unit.py",
+        "hcli/",
+        "tools/haider/hcli/"
+      ],
+      "risk": "low speech/docs; high if packages merged",
+      "test_strategy": "import lab.hcli.special_unit still works; import tools.haider.hcli still ImportError",
+      "expected_downstream_roadmap_benefit": "The word HCLI has one tree",
+      "classification": "name collision across products"
+    },
+    {
+      "rank": 8,
+      "title": "Doctor file collapse is a facade, not a directory merge",
+      "current_state": "75 doctor-named files outside receipts across tools/doctor, doctor6, headless doctor_*, future hardware_doctor, accelerator hardware_doctor, gravity_doctor_*, odyssey doctor_tournament, vmcp tool_doctor",
+      "proposed_state": "Do not merge directories (different axes: representation, hardware, HBM, concurrency, git lock, VMCP). Do publish one HCLI entry that dispatches by axis.",
+      "affected_files_symbols": [
+        "hcli/tool_registry.py doctor.query",
+        "tools/doctor/engine.py",
+        "tools/accelerator/hardware_doctor.py"
+      ],
+      "risk": "low facade; high directory merge",
+      "test_strategy": "dispatch table: axis=representation hits engine.py; axis=hardware hits accelerator hardware_doctor.diagnose",
+      "expected_downstream_roadmap_benefit": "75 files become one tool with an axis enum",
+      "classification": "CALLABLE instruments + stub tool"
+    },
+    {
+      "rank": 9,
+      "title": "Unused hawking-* crates stay in the repo but leave the default cognitive set",
+      "current_state": "hawking-eval, hawking-perception, hawking-comms: no external use. hide-* is a second product and IS called (hide-backend).",
+      "proposed_state": "Keep hide-*. Move the three unused hawking crates out of default-members (confirm Cargo.toml default-members). Do not delete (scaffolds with honest stub docs).",
+      "affected_files_symbols": [
+        "Cargo.toml",
+        "crates/hawking-eval",
+        "crates/hawking-perception",
+        "crates/hawking-comms"
+      ],
+      "risk": "low membership; do not touch hide-backend callers of hawking-orch/research",
+      "test_strategy": "cargo metadata; git grep use hawking_eval still empty",
+      "expected_downstream_roadmap_benefit": "crate graph HCLI sees matches wired crates",
+      "classification": "SCAFFOLDED"
+    },
+    {
+      "rank": 10,
+      "title": "Receipt trees are evidence, not a collapse target",
+      "current_state": "receipts/ has 4121 files (acceptance, future, headless, odyssey-i, ascent-*, dsv4f_*, qwen*). Multiple EBPW/Flash receipts for one idea.",
+      "proposed_state": "DO NOT merge or rewrite sealed receipts. Collapse producers so new receipts stop proliferating schemas. Index (nomenclature census / architecture canon) already exists — use it rather than another receipt tree.",
+      "affected_files_symbols": [
+        "receipts/** (read-only)",
+        "producers listed in conceptual_fanout"
+      ],
+      "risk": "forbidden if treated as a mv campaign (historical science preservation law)",
+      "test_strategy": "n/a — this item is a negative: do not collapse receipts/",
+      "expected_downstream_roadmap_benefit": "Conceptual smallness comes from fewer writers, not fewer sealed bytes",
+      "classification": "do-not-do"
+    }
+  ],
+  "surprises": [
+    {
+      "id": "goal_ir_not_on_live_compile_path",
+      "severity": "high",
+      "what": "hcli/goal_ir.py + goal_graph.py + goal_tokenizer.py + goal_compile.py (~2260 lines) plus dedicated tests exist, and goal_compile.py's docstring says it is the ONLY contact with WorkUnitDAG. Live Mission/Controller/Engine/AgentOS.runtime all call GoalCompiler().compile from hcli/goal.py instead. git grep of goal_compile.ingest/schedule outside tests is empty.",
+      "why_it_matters": "HCLI can spend a turn 'fixing the compiler' in the unused stack. The daemon will not see it.",
+      "what_would_settle_it": "Either a production caller of ingest/schedule (controller/mission/cli) or an in-module SUPERSEDED banner plus a test that Mission does not import goal_compile."
+    },
+    {
+      "id": "doctor_query_does_not_call_doctor",
+      "severity": "high",
+      "what": "Registered tool doctor.query is CALLABLE. Handler _doctor_query builds a PROPOSED dict, optionally calls architecture.inspect / receipt.read / web.search, and returns. It does not import tools.doctor, doctor6, or doctor_diagnosis. hcli.doctor is an OWNED_PATHS comment package.",
+      "why_it_matters": "The catalog law in the same file ('a capability nothing calls does not exist') is inverted: a tool exists that does not call the capability.",
+      "what_would_settle_it": "A test that monkeypatching tools.doctor.engine changes doctor.query output — currently it would not."
+    },
+    {
+      "id": "gravity_experiment_execute_refused",
+      "severity": "high",
+      "what": "_gravity_experiment sets execute=True -> REFUSED_NOT_IMPLEMENTED while flash_representation_experiment.run_flash_representation_experiment is a live callable a few files away.",
+      "why_it_matters": "The HCLI-facing name for 'add a representation candidate' cannot add one.",
+      "what_would_settle_it": "execute=true calls run_flash_representation_experiment (symbol invocation) on a pinned organ."
+    },
+    {
+      "id": "three_primitive_ontologies",
+      "severity": "high",
+      "what": "NR_PRIMITIVES (8), ATLAS_PRIMITIVES (17, fingerprint-locked), HWIR NODE_KINDS (7) are three vocabularies for one FPGA/physical job. Atlas instantiate() IS called from hwir.py — that part is honest. HCLI still serializes the 8.",
+      "why_it_matters": "Adding an FPGA primitive is well-defined in none of the three places alone.",
+      "what_would_settle_it": "compile_physical_graph output ⊆ atlas names, or a checked alias table. A board is NOT required to settle the naming (FPGA is BLOCKED_HARDWARE either way)."
+    },
+    {
+      "id": "two_ebpw_producers_one_gate",
+      "severity": "high",
+      "what": "FLASH_EBPW_BUDGET.json measured.complete_system_ebpw is null (PLANNED_UNTIL_VERIFIED_BODY). COMPLETE_EBPW.json has an incumbent.complete_ebpw from STATIC_ONLY arithmetic. Acceptance FLASH_COMPLETE_EBPW_LE_1 imports complete_ebpw, not _ebpw_budget. scoreboard.py reads either key.",
+      "why_it_matters": "HCLI can change the Flash ceiling, watch a Flash receipt, and still not move the gate that 'proves' EBPW ≤ 1.",
+      "what_would_settle_it": "Gate and writer share one symbol. Negative control: mutate the unused writer, gate result unchanged."
+    },
+    {
+      "id": "pytest_default_misses_hcli",
+      "severity": "high",
+      "what": "pyproject.toml testpaths=['tools/haider'] while the product package is hcli/ and CURRENT_ARCHITECTURE says so.",
+      "why_it_matters": "A WorkUnit regression can be invisible to default pytest.",
+      "what_would_settle_it": "pytest --collect-only from repo root lists hcli/test_workunit_can_call_tools.py."
+    },
+    {
+      "id": "unused_crates_in_workspace",
+      "severity": "medium",
+      "what": "hawking-eval, hawking-perception, hawking-comms: zero `use hawking_*` sites outside themselves. Perception lib.rs says stubs. Comms says no live KV. Eval says GPU-occupied deferred baseline.",
+      "why_it_matters": "HCLI crate choice includes three scaffolds. hide-backend DOES use hawking-orch and hawking-research — those are real.",
+      "what_would_settle_it": "A production use site, or removal from default-members."
+    },
+    {
+      "id": "ascension_still_the_largest_schema_brand",
+      "severity": "medium",
+      "what": "Census surviving vocabulary is four names. Unique hawking.ascension.* strings in source: 631 vs hawking.gravity.* 173.",
+      "why_it_matters": "The vestigial campaign still dominates grep, examples (131/233), and lab operators (127/269).",
+      "what_would_settle_it": "Forward-only lint; not a rewrite of sealed receipts. Count of NEW hawking.ascension schemas after a date goes to zero."
+    },
+    {
+      "id": "git_tool_name_contains_a_slash",
+      "severity": "low",
+      "what": "Live registry contains tool name 'git.checkout/revert-safe' plus git.checkout-safe and git.revert-safe, all bound to _git_safe_revert_refusal.",
+      "why_it_matters": "Tool ambiguity and a name that looks like a path. STATIC_VERIFICATION of the 68-tool list.",
+      "what_would_settle_it": "Catalog lists one refusal tool."
+    },
+    {
+      "id": "audit_is_of_HEAD_not_daemon_dirty_tree",
+      "severity": "medium",
+      "what": "This worktree is clean at 04193ccbc. The live launchd daemon is described as holding ~110 uncommitted hcli/ files. Those bytes were not diffed.",
+      "why_it_matters": "If the daemon overlay already consolidated tools or WorkUnit fields, this audit overstates HEAD's tax for the running process — or understates it.",
+      "what_would_settle_it": "Read-only git -C <daemon-checkout> status --short hcli/ and a diffstat. Do not signal the daemon."
+    },
+    {
+      "id": "complete_ebpw_incumbent_is_not_flash_complete_system",
+      "severity": "medium",
+      "what": "complete_ebpw.py bills MIX_REPORT parts (incumbent affine_bytes 5347795776 etc.) as STATIC_ONLY. Flash complete_system_ebpw is null. These can be read as the same promotion metric.",
+      "why_it_matters": "A STATIC_ONLY number must not be spoken as PHYSICALLY_MEASURED complete-system EBPW.",
+      "what_would_settle_it": "Receipt fields that cannot be copied into a promotion gate without evidence_class check (already the namespace-separation law; not fully applied at the Flash/complete_ebpw seam)."
+    }
+  ],
+  "hcli_tax_summary": {
+    "one_liner": "HCLI's live spine is small; the search set it must retrieve to touch that spine is large, aliased, and partly vestigial.",
+    "live_spine_files": [
+      "hcli/workunit.py",
+      "hcli/goal.py",
+      "hcli/mission.py",
+      "hcli/scheduler.py",
+      "hcli/executors.py",
+      "hcli/agentos/resident.py",
+      "hcli/tool_registry.py",
+      "tools/odyssey/modellake_promote.py",
+      "hcli/specimens.py"
+    ],
+    "search_set_that_taxes_it": {
+      "tools_future_non_test_py": 262,
+      "hawking_ascension_schema_strings": 631,
+      "hawking_core_ascension_examples": 131,
+      "lab_operators_ascension_prefix": 127,
+      "registered_tools": 68,
+      "tool_alias_groups": 7,
+      "goal_compilers": 2,
+      "workunit_classes": 2,
+      "resident_supervisor_classes": 2,
+      "fpga_primitive_ontologies": 3,
+      "ebpw_producers": 2,
+      "physical_graph_compilers": 3,
+      "bench_surfaces": 9,
+      "doctor_named_files_excluding_receipts": 75
+    },
+    "law_result": "REFUTED_AS_CURRENT_PROPERTY_OF_HEAD — capability did not absorb special cases; special cases accumulated as peer modules."
+  },
+  "blockers": [
+    {
+      "id": "live_daemon_dirty_hcli_not_inspected",
+      "class": "BLOCKED_AUTHORITY",
+      "detail": "Did not diff the launchd daemon's ~110 uncommitted hcli/ files. This audit is HEAD 04193ccbc."
+    },
+    {
+      "id": "fpga_board_absent",
+      "class": "BLOCKED_HARDWARE",
+      "detail": "No U50/FPGA on this host. All FPGA findings are SOURCE_INSPECTION of sim/prehardware code. Hardware present: Apple M3 Ultra CPU/GPU/UMA and a real ANE (ANE not exercised in this lane)."
+    },
+    {
+      "id": "protected_benchmarks_not_run",
+      "class": "BLOCKED_AUTHORITY",
+      "detail": "Did not run protected accelerator benchmarks or hawking-bench. Bench surface topology is from call sites only."
+    },
+    {
+      "id": "sparse_checkout",
+      "class": "not_a_capability_blocker_for_this_audit",
+      "detail": "Unmaterialized paths were read via git show/grep. A missing worktree file was not treated as ABSENT from git."
+    },
+    {
+      "id": "git_commit_denied_by_sandbox",
+      "class": "BLOCKED_AUTHORITY",
+      "detail": "This sandbox cannot write git metadata: git add fails with index.lock Operation not permitted (worktree git dir and common .git/objects/.git/refs are not writable). Artifacts are on disk at receipts/audit/aud20-conceptual-load.{json,md}. The supervising launcher MUST `git add --sparse -A` and commit them before cleanup, or they will be destroyed. Nested git dirs and bundles were not created.",
+      "paths": [
+        "receipts/audit/aud20-conceptual-load.json",
+        "receipts/audit/aud20-conceptual-load.md"
+      ]
+    }
+  ],
+  "do_not_do": [
+    "Do not rewrite H-ROADMAP.md from this audit.",
+    "Do not mass-rename sealed receipts, hashed paths, or hawking.ascension.* historical schemas.",
+    "Do not git mv tools/future in one lane (CONSOLIDATION.json already BLOCKED a similar move).",
+    "Do not merge lab/hcli SpecialUnit into hcli.workunit.",
+    "Do not kill/signal/restart the live HCLI daemon to 'verify' lifecycle.",
+    "Do not write MEASURED for EBPW, TPS, FPGA, ANE, or GPU from this lane.",
+    "Do not add Era VI or Odyssey IV or treat FPGA as a civilization.",
+    "Do not casually rewrite the 0.7 civilizational coordinate.",
+    "Do not collapse receipts/ directories.",
+    "Do not chase LOC reduction; chase duplicate names and unwired parallel stacks."
+  ]
+}

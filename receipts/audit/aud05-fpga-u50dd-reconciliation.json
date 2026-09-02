@@ -1,0 +1,1973 @@
+{
+  "schema": "hawking.audit.aud05_fpga_u50dd_reconciliation.v1",
+  "audit_id": "aud05-fpga-u50dd-reconciliation",
+  "kind": "DISCOVERY_AUDIT",
+  "implemented": false,
+  "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+  "generated_at_local": "2026-09-02",
+  "roadmap_path": "/Users/scammermike/Downloads/H-ROADMAP.md",
+  "roadmap_hash_from_capability_graph": "d43a6b07ab9590bc11c265bfe8a1466131cce291b0622c076370a01d811328e4",
+  "capability_graph": {
+    "path": "civilization/CAPABILITY_GRAPH.json",
+    "generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+    "generated_at": "2026-09-02T18:35:55Z",
+    "note": "Graph commit 7d642800 is not this worktree HEAD 04193ccbc. Gate statuses cited from the graph are SOURCE_INSPECTION of that artifact, re-checked against HEAD callers."
+  },
+  "constitution_held": {
+    "eras": 5,
+    "odysseys": 3,
+    "era_vi": false,
+    "fpga_lives_in": "Hawking Accelerator/Fusion",
+    "theia": "one generalist bounty model, not a civilization",
+    "north_star": "HAWKING = SELF-OPTIMIZING PHYSICAL AI COMPUTER"
+  },
+  "authority": {
+    "this_audit": "source archaeology, call-site reachability, test coverage, schema/topology, duplication, naming, receipt consistency",
+    "not_this_audit": "GPU/ANE/U50 physical performance, thermal/power, protected benchmarks",
+    "evidence_tier_of_audit": "STATIC_VERIFICATION",
+    "never_wrote": "MEASURED"
+  },
+  "hardware_inventory": {
+    "host": "Apple M3 Ultra (CPU/GPU/UMA) + ANE present per contract; this lane did not re-benchmark them",
+    "U50_PRESENT": {
+      "present": false,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "commands": [
+        "ioreg -l | rg -i 'xilinx|alveo|u50|xcu50' -> no matches",
+        "system_profiler SPThunderboltDataType | rg -i 'xilinx|alveo|u50|asm2464|chestnut|comma' -> no matches"
+      ],
+      "capability_graph_probe": "no Xilinx/Alveo/U50/XCU50 identity in PCIe/Thunderbolt/ioreg inventory",
+      "note": "Inventory probe, not a performance measurement."
+    },
+    "HMF_PRESENT": false,
+    "DGX_PRESENT": false,
+    "EGPU_PRESENT": false,
+    "label": "ABSENT FPGA/U50DD. BLOCKED_HARDWARE for every board gate."
+  },
+  "classification_vocabulary": [
+    "ABSENT",
+    "CONCEPT_ONLY",
+    "SCAFFOLDED",
+    "CALLABLE",
+    "TESTED",
+    "END_TO_END",
+    "PHYSICALLY_MEASURED",
+    "ADVERSARIALLY_VERIFIED",
+    "INTEGRATED",
+    "BLOCKED_HARDWARE",
+    "BLOCKED_AUTHORITY",
+    "SUPERSEDED",
+    "STALE_ROADMAP_TEXT"
+  ],
+  "audit_standard_applied": {
+    "imports_are_not_callers": true,
+    "tests_are_not_board_measurements": true,
+    "simulation_is_not_board_reality": true,
+    "receipts_do_not_override_a_broken_producer": true,
+    "roadmap_prose_is_not_evidence": true
+  },
+  "simulator": {
+    "primary_path": "tools/future/hwir.py",
+    "line_count": 6279,
+    "schema": "hawking.future.hwir.v1",
+    "status": "TESTED",
+    "evidence_tier": "STATIC_VERIFICATION",
+    "why_this_is_the_simulator": "Contract said start at the ~6000-line module. hwir.py is 6279 lines and contains FUNCTIONAL_SIM, CYCLE_APPROX, COST_MODEL, U50-family profiles, Chestnut carrier envelopes, qGEMV pre-board, and PREHARDWARE lowering.",
+    "cli": [
+      "python3 tools/future/hwir.py --qgemv [--device u50dd] [--carrier current-fw]",
+      "python3 tools/future/hwir.py --build",
+      "python3 tools/future/hwir.py --seal-predictions",
+      "python3 tools/future/hwir.py --rehearse",
+      "python3 tools/future/hwir.py --emit hls_style|rust_hdl_style"
+    ],
+    "what_it_simulates": {
+      "FUNCTIONAL_SIM": "Host-CPU numpy interpreter of tools.future.fpga_engines.qgemv. Canonical kernel is M=2 K=4 weight_bits=4 group_size=4. y = sequential left-to-right fused dequant-then-MAC. Bit-exact against an independent golden in tests. Evidence tier FUNCTIONAL_SIM. Explicitly not a cycle count and not a board run.",
+      "CYCLE_APPROX": "Critical-path modelled cycles: H2C queue+beats, then max(compute II/depth, HBM beats), then C2H. clock_hz=UNKNOWN. conversion_to_seconds=REFUSED. cycles_to_seconds() raises UnmeasuredConversionError.",
+      "COST_MODEL_HBM": "Bytes moved per token. Resident weights do not move. modelled_cycles = ceil(per_token_bytes / hbm_bytes_per_modelled_cycle) with declared beat 1024. Not a measured HBM2 rate. DeviceProfile has no HBM GB/s field.",
+      "COST_MODEL_HOST_DEVICE": "Activation H2C + partial-reduction C2H. Beat from (possibly Chestnut-downgraded) PCIe gen/lanes, or USB4_40G_CLASS prior if gen/lanes UNPINNED. bandwidth_gbps is deliberately absent (HARDWARE_FIELDS key).",
+      "STATIC_RESOURCES": "LUT/DSP/BRAM/URAM estimator. fit_kernel_to_device raises ResourceOverBudget. Over-budget graphs fail validate() with RESOURCE_OVER_BUDGET.",
+      "PARTITION": "Row-split on M so the resident packed shard fits hbm_capacity_bytes. 65/35 Apple/FPGA prior is recorded and NOT applied as physics. transport_policy=activations_and_partial_reductions_only.",
+      "CARRIER": "CarrierEnvelope DOWNGRADES a DeviceProfile. chestnut_current_firmware pins PCIe Gen3 x2, observed_payload_bytes_per_s=1680000000, airflow=none. THIRD_PARTY_REPORTED. Not our measurement.",
+      "LOWERING": "Equal-citizen HlsStyleEmitter and RustHdlEmitter emit PREHARDWARE source text (qgemv_hls_style.cpp / rust). Not synthesis. cannot_express and handwritten_hdl are mandatory non-empty.",
+      "SEALED_PREDICTIONS": "12 COST_MODEL/CYCLE_APPROX coefficients with falsifiers, keyed to wake_condition U50_PRESENT. Synthetic rehearsal is labeled NOT AN ARRIVAL."
+    },
+    "what_it_does_not_simulate": [
+      "A U50DD / XCU50 board, shell, XRT, bitstream, or Fmax",
+      "HBM2 channel physics, bank conflicts, or the 316 GB/s brochure rate (that number is a comment, not a sourced DeviceProfile field)",
+      "PCIe training, ASM2464PD completer behaviour, USB4 payload (Chestnut figures are THIRD_PARTY_REPORTED overlays)",
+      "Seconds, tok/s, joules, or any HARDWARE_MEASURED quantity (emit_evidence refuses HARDWARE_MEASURED)",
+      "DeltaNet / FFN / MTP / n-gram / attention as functional engines (simulate_functional returns ok=False unless organ==qgemv)",
+      "Place-and-route, DFX, Vivado/Vitis, DriverKit, Linux/XRT",
+      "Engine ladder L5\u2013L8 (canonical kernel is APPENDIX K.2 L1)",
+      "A mixed Apple+FPGA executable"
+    ],
+    "call_sites_of_the_simulator_symbols": {
+      "simulate_qgemv_functional": {
+        "non_test": [
+          {
+            "file": "tools/future/hwir.py",
+            "line": 3514,
+            "symbol": "simulate_qgemv_functional",
+            "kind": "call",
+            "test": false,
+            "note": "intra-module from simulate_functional"
+          },
+          {
+            "file": "tools/future/hwir.py",
+            "line": 3800,
+            "symbol": "run_qgemv_preboard",
+            "kind": "call",
+            "test": false,
+            "note": "intra-module orchestrator; CLI --qgemv"
+          }
+        ],
+        "test": [
+          {
+            "file": "tools/future/test_hwir.py",
+            "line": 325,
+            "symbol": "simulate_qgemv_functional",
+            "kind": "call",
+            "test": true,
+            "note": "monkeypatch asserts fpga_engines.qgemv is actually called"
+          },
+          {
+            "file": "tools/future/test_hwir.py",
+            "line": 272,
+            "symbol": "run_qgemv_preboard",
+            "kind": "call",
+            "test": true
+          },
+          {
+            "file": "tools/future/test_u50_carrier.py",
+            "line": 203,
+            "symbol": "run_qgemv_preboard",
+            "kind": "call",
+            "test": true
+          }
+        ],
+        "production_outside_defining_module": [],
+        "blocker_if_claiming_integrated_runtime": {
+          "kind": "no_production_caller_outside_defining_module",
+          "note": "No non-test file other than hwir.py itself calls simulate_qgemv_functional. CLI --qgemv is CALLABLE. That is not an inference-runtime integration."
+        }
+      },
+      "approximate_cycles": {
+        "test": [
+          {
+            "file": "tools/future/test_hwir.py",
+            "line": 409,
+            "symbol": "approximate_cycles",
+            "kind": "call",
+            "test": true
+          }
+        ],
+        "production_outside_defining_module": []
+      },
+      "HwirGraph": {
+        "non_test": [
+          {
+            "file": "tools/accelerator/backend_contract.py",
+            "line": 1094,
+            "symbol": "HwirGraph",
+            "kind": "call",
+            "test": false
+          },
+          {
+            "file": "tools/accelerator/fusion_bridge.py",
+            "line": 1444,
+            "symbol": "HwirGraph",
+            "kind": "call",
+            "test": false
+          },
+          {
+            "file": "tools/future/p6_projection.py",
+            "line": 857,
+            "symbol": "HwirGraph",
+            "kind": "call",
+            "test": false
+          },
+          {
+            "file": "tools/future/propagate.py",
+            "line": 695,
+            "symbol": "HwirGraph",
+            "kind": "call",
+            "test": false
+          }
+        ],
+        "note": "These construct/validate IR. They do not call simulate_qgemv_functional. FPGA_HWIR WIRED in the capability graph is this IR construction, not the numeric simulator."
+      },
+      "fpga_engines.qgemv": {
+        "non_test": [
+          {
+            "file": "tools/future/hwir.py",
+            "line": 3460,
+            "symbol": "qgemv",
+            "kind": "call",
+            "test": false,
+            "note": "lazy import + call inside simulate_qgemv_functional"
+          }
+        ],
+        "test": [
+          {
+            "file": "tools/future/test_fpga_engines.py",
+            "line": 19,
+            "symbol": "fpga_engines",
+            "kind": "call",
+            "test": true,
+            "note": "independent goldens; 12 engines"
+          }
+        ],
+        "not_a_call": [
+          {
+            "file": "tools/future/p6_projection.py",
+            "line": 1160,
+            "symbol": "fe.ENGINE_FNS",
+            "kind": "membership_check",
+            "test": false,
+            "note": "Name set membership only. Does not invoke qgemv."
+          }
+        ]
+      },
+      "u50_family_profile('u50dd')": {
+        "non_test": [
+          {
+            "file": "tools/accelerator/hardware_doctor.py",
+            "line": 782,
+            "symbol": "u50_family_profile",
+            "kind": "call",
+            "test": false
+          },
+          {
+            "file": "tools/accelerator/hardware_doctor.py",
+            "line": 784,
+            "symbol": "chestnut_current_firmware",
+            "kind": "call",
+            "test": false
+          },
+          {
+            "file": "tools/accelerator/hardware_doctor.py",
+            "line": 786,
+            "symbol": "chestnut_hawking_optimized",
+            "kind": "call",
+            "test": false
+          }
+        ],
+        "test": [
+          {
+            "file": "tools/future/test_u50_carrier.py",
+            "line": 56,
+            "symbol": "select_device_profile",
+            "kind": "call",
+            "test": true
+          }
+        ]
+      }
+    },
+    "tests_executed_this_lane": {
+      "environment": "isolated /tmp/aud05-pytest replica of HEAD blobs; did not write worktree receipts/",
+      "command": "python3 -m pytest tools/future/test_u50_carrier.py + selected test_hwir/test_fpga_engines/test_fpga_fidelity/test_hbm_doctor cases -o addopts=''",
+      "result": "31 passed in 0.19s",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "not_a_u50_measurement": true,
+      "smoke_import": {
+        "u50dd": {
+          "device_id": "alveo-u50dd",
+          "DSP": 5952,
+          "LUT": 872000,
+          "hbm_capacity_bytes": 8589934592,
+          "pcie": "Gen3 x16",
+          "cooling": "passive",
+          "sku": "A-U50DD-P00G-ES3-G"
+        },
+        "synthetic_u50_class": {
+          "DSP": 9024,
+          "note": "DEFAULT for run_qgemv_preboard / HWIR_V1.json \u2014 not U50DD"
+        },
+        "chestnut_current_fw": {
+          "pcie": "Gen3 x2",
+          "observed_payload_bytes_per_s": 1680000000,
+          "airflow": "none",
+          "tier": "THIRD_PARTY_REPORTED"
+        },
+        "constrain_u50dd_with_chestnut": {
+          "host_device_beat": 2,
+          "pcie": "Gen3 x2"
+        },
+        "simulate_qgemv_functional_canonical": {
+          "ok": true,
+          "y": [
+            10.0,
+            1.5
+          ],
+          "engine_symbol": "qgemv",
+          "evidence_tier": "FUNCTIONAL_SIM"
+        },
+        "HARDWARE_MEASURED": "refused",
+        "lowering_targets": [
+          "hls_style",
+          "rust_hdl_style"
+        ]
+      }
+    },
+    "default_device_is_not_u50dd": {
+      "finding": "SURPRISING",
+      "detail": "run_qgemv_preboard, approximate_cycles, model_hbm_traffic, partition_qgemv, inbound_board_predictions, and CLI --device default to synthetic_u50_class (DSP 9024, PCIe UNPINNED), not u50_family_profile('u50dd') (DSP 5952, PCIe Gen3 x16, SKU A-U50DD-P00G-ES3-G). receipts/future/HWIR_V1.json preboard.device_profile.device_id is synthetic-u50-class."
+    }
+  },
+  "parallel_stacks": [
+    {
+      "id": "hwir_preboard",
+      "path": "tools/future/hwir.py",
+      "role": "canonical PREHARDWARE compiler+simulator",
+      "status": "TESTED",
+      "interconnect_model": "Chestnut-aware beat when a CarrierEnvelope is supplied; otherwise USB4_40G_CLASS or synthetic beat 16"
+    },
+    {
+      "id": "fpga_preboard_link_sim",
+      "path": "hcli/agentos/fpga_preboard.py",
+      "role": "organ maps + TransportLinkSimulator + simulate_partition",
+      "status": "CALLABLE",
+      "cli": "hcli agentos fpga-preboard -> run_fpga_preboard (hcli/agentos_cli.py:1017)",
+      "interconnect_model": "TransportLinkSimulator default bandwidth_gbps=64.0 (~8 GB/s), latency_ns=900. Emits estimated_transfer_ns AND bandwidth_gbps (a HARDWARE_FIELDS key that hwir.py refuses).",
+      "device_genome": "FPGADeviceGenome defaults to unselected-fpga-device / TARGET_UNSELECTED / hbm_channels=0",
+      "hwir_schema": "hcli.fpga.hwir.v1 (organ list), not hawking.future.hwir.v1",
+      "SimFPGAProvider": "ABSENT (PB-03). Only MockFPGAProvider.",
+      "tests": "hcli/agentos/test_fpga_preboard.py does NOT call TransportLinkSimulator, simulate_partition, FPGADeviceGenome, or MockFPGAProvider. It tests atlas projection via _map/_attach_architecture_atlas. tools/haider/test_hcli_science_boundaries.py:978 calls simulate_partition.",
+      "stale_vs_chestnut": "64 Gbps default is ~4.8x more optimistic than Chestnut 1.68 GB/s THIRD_PARTY_REPORTED. Partition MIXED_CANDIDATE decisions from organ-map receipts are therefore not U50DD/Chestnut-bound."
+    },
+    {
+      "id": "fpga_fidelity_ladder",
+      "path": "tools/future/fpga_fidelity.py",
+      "role": "multi-fidelity estimator on a local StructuralGraph",
+      "status": "TESTED",
+      "production_callers": [],
+      "blocker": {
+        "kind": "no_production_caller",
+        "file": "tools/future/fpga_fidelity.py",
+        "note": "Only tools/future/test_fpga_fidelity.py calls estimate()."
+      },
+      "comment_still_in_source": "Swap StructuralGraph for tools/future/hwir.py when that module lands (frontier F003). HWIR has landed. This stack is not wired to it.",
+      "levels": {
+        "ANALYTICAL": "AVAILABLE STRUCTURAL_COUNTS",
+        "FUNCTIONAL_SIM": "AVAILABLE live-node interpreter, not qgemv",
+        "CYCLE_MODEL": "AVAILABLE modelled_cycles, refuses seconds",
+        "HW_EMULATION": "UNIMPLEMENTED raises ProviderUnavailable (no emulation seat)",
+        "REAL_HARDWARE": "UNIMPLEMENTED raises ProviderUnavailable (no U50 board)"
+      }
+    },
+    {
+      "id": "fpga_hwir_backend_execute",
+      "path": "tools/accelerator/backend_contract.py",
+      "role": "Registered FPGA-HWIR backend",
+      "status": "INTEGRATED",
+      "call_sites": [
+        {
+          "file": "tools/accelerator/backend_contract.py",
+          "line": 1171,
+          "symbol": "FpgaHwirBackend",
+          "kind": "call",
+          "test": false,
+          "note": "register()"
+        },
+        {
+          "file": "tools/accelerator/repatriation_audit.py",
+          "line": 76,
+          "symbol": "fpga.execute",
+          "kind": "call",
+          "test": false,
+          "note": "non-test call of FpgaHwirBackend.execute"
+        }
+      ],
+      "what_execute_actually_runs": "_numpy_elementwise(program.opcode, a, b) after building a 1-node HwirGraph. NOT fpga_engines.qgemv. NOT hwir.simulate_qgemv_functional.",
+      "bridge_knob": "DECLARED_BRIDGE_BW_GB_S = 12.0 GB/s (tools/accelerator/fusion_bridge.py:112). ~7x Chestnut 1.68 GB/s.",
+      "device_budget_when_lowering_from_fusion": "invented DeviceBudget LUT=1<<16 DSP=1<<12 BRAM=1<<20 URAM=1<<10 hbm_channels=1 \u2014 not U50DD 872K/5952/1344/640/32"
+    }
+  ],
+  "interconnect_numbers_in_tree": {
+    "evidence_tier": "SOURCE_INSPECTION",
+    "not_measured_here": true,
+    "values": [
+      {
+        "source": "hwir.chestnut_current_firmware",
+        "payload_bytes_per_s": 1680000000,
+        "label": "THIRD_PARTY_REPORTED completer ceiling",
+        "pcie": "Gen3 x2"
+      },
+      {
+        "source": "hwir.chestnut_theoretical",
+        "note": "USB4 40 Gb/s class, ~5.0 GB/s RAW before overhead; usable payload UNPINNED"
+      },
+      {
+        "source": "hcli.agentos.fpga_preboard.TransportLinkSimulator",
+        "bandwidth_gbps": 64.0,
+        "approx_GB_s": 8.0,
+        "label": "SIMULATED default"
+      },
+      {
+        "source": "tools/accelerator/fusion_bridge.py DECLARED_BRIDGE_BW_GB_S",
+        "GB_s": 12.0,
+        "label": "COST_MODEL knob"
+      },
+      {
+        "source": "hwir.py comment ~316 GB/s HBM vs ~1.68 GB/s bridge ~188x",
+        "on_DeviceProfile": false,
+        "label": "comment only; DeviceProfile has hbm_capacity_bytes and hbm_channels, no HBM GB/s field"
+      }
+    ],
+    "surprise": "Three live interconnect models plus a comment-only HBM roof. None of 12.0, 8.0, or 316 is a Hawking measurement."
+  },
+  "capabilities": {
+    "HWIR": {
+      "id": "HWIR",
+      "status": "INTEGRATED",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "summary": "Two HWIR objects exist. hawking.future.hwir.HwirGraph is a real IR (7 node kinds, validator that refuses dense rematerialization, byte-stable serdes, from_organ_map, from_qgemv). It is constructed from four non-test modules. hcli.agentos.fpga_preboard.HWIR is a fingerprintable organ-list stub (schema hcli.fpga.hwir.v1) produced by run_fpga_preboard.",
+      "call_sites": [
+        {
+          "file": "tools/accelerator/backend_contract.py",
+          "line": 1094,
+          "symbol": "HwirGraph",
+          "kind": "call",
+          "test": false
+        },
+        {
+          "file": "tools/accelerator/fusion_bridge.py",
+          "line": 1444,
+          "symbol": "HwirGraph",
+          "kind": "call",
+          "test": false
+        },
+        {
+          "file": "tools/future/p6_projection.py",
+          "line": 857,
+          "symbol": "HwirGraph",
+          "kind": "call",
+          "test": false
+        },
+        {
+          "file": "tools/future/propagate.py",
+          "line": 695,
+          "symbol": "HwirGraph",
+          "kind": "call",
+          "test": false
+        },
+        {
+          "file": "tools/future/propagate.py",
+          "line": 744,
+          "symbol": "from_organ_map",
+          "kind": "call",
+          "test": false
+        },
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 1019,
+          "symbol": "run_fpga_preboard",
+          "kind": "call",
+          "test": false,
+          "note": "produces hcli.fpga.hwir.v1 stub, not HwirGraph"
+        }
+      ],
+      "blocker": null,
+      "tests": [
+        {
+          "file": "tools/future/test_hwir.py",
+          "line": 57,
+          "symbol": "from_organ_map",
+          "kind": "call",
+          "test": true
+        },
+        {
+          "file": "tools/future/test_hwir.py",
+          "line": 100,
+          "symbol": "graph_dense_source_rematerialization",
+          "kind": "call",
+          "test": true,
+          "note": "negative control refuses dense source"
+        }
+      ],
+      "receipts": [
+        "receipts/future/HWIR_V1.json",
+        "receipts/headless/QWEN27_FPGA_ORGAN_MAP.json",
+        "receipts/headless/FLASH_NEXT_FPGA_ORGAN_MAP.json"
+      ],
+      "surprises": [
+        "Two schemas (hawking.future.hwir.v1 vs hcli.fpga.hwir.v1) share the name HWIR and are not the same type."
+      ],
+      "next_admissible_upgrade": "Keep WIRED. Do not mark ACCEPTED. Acceptance is not a receipt named HWIR_V1.json; it is a gate criterion the graph says is undemonstrated.",
+      "capability_graph_gate": {
+        "id": "FPGA_HWIR",
+        "graph_status": "WIRED",
+        "accepted": false
+      }
+    },
+    "FPGA_compiler": {
+      "id": "FPGA_compiler",
+      "status": "SCAFFOLDED",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "summary": "There is no FPGA backend and no synthesis path. LoweringTarget emitters produce PREHARDWARE C/C++ and Rust-hosted HDL/IR source. Vivado/Vitis harness in organ maps is CONTRACT_ONLY command lists. Toolchain choice is explicitly unset (PREFERRED_LOWERING_TARGET must stay unset).",
+      "call_sites": [
+        {
+          "file": "tools/future/hwir.py",
+          "line": 4210,
+          "symbol": "lower_hwir",
+          "kind": "call",
+          "test": false,
+          "note": "definition + CLI --emit"
+        }
+      ],
+      "blocker": {
+        "kind": "not_a_synthesis_compiler",
+        "note": "Emitters are source artifacts labeled PREHARDWARE. No vivado/vitis/v++/xsim invocation exists as a call site. Organ-map reproducible_vivado_vitis_harness.status=CONTRACT_ONLY."
+      },
+      "tests": [
+        {
+          "file": "tools/future/test_hwir_lowering.py",
+          "line": 94,
+          "symbol": "lower_hwir",
+          "kind": "call",
+          "test": true
+        },
+        {
+          "file": "tools/future/test_hwir_lowering.py",
+          "line": 197,
+          "symbol": "test_generic_lowering_layer_has_no_vendor_symbols",
+          "kind": "call",
+          "test": true
+        }
+      ],
+      "receipts": [
+        "receipts/future/HWIR_V1.json"
+      ],
+      "does_not_simulate": [
+        "bitstream",
+        "place-and-route",
+        "Fmax",
+        "XRT load",
+        "vendor DSP primitive (listed in handwritten_hdl)"
+      ],
+      "next_admissible_upgrade": "TESTED already holds for source emission. Synthesis stays ABSENT until a board+toolchain seat exists. Do not promote U50_FIRST_NATIVE_ENGINE on the strength of .cpp text."
+    },
+    "software_simulator": {
+      "id": "software_simulator",
+      "status": "TESTED",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "summary": "The FPGA software simulator is hwir.simulate_qgemv_functional + run_qgemv_preboard, which CALLS fpga_engines.qgemv (monkeypatched test proves the call). It is CALLABLE via CLI --qgemv. It is not INTEGRATED into the resident runtime. Three other 'simulators' exist and must not be collapsed into this one.",
+      "call_sites": [
+        {
+          "file": "tools/future/hwir.py",
+          "line": 3464,
+          "symbol": "qgemv_engine",
+          "kind": "call",
+          "test": false
+        },
+        {
+          "file": "tools/future/hwir.py",
+          "line": 6262,
+          "symbol": "run_qgemv_preboard",
+          "kind": "cli",
+          "test": false
+        },
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 1019,
+          "symbol": "run_fpga_preboard",
+          "kind": "call",
+          "test": false,
+          "note": "different simulator: TransportLinkSimulator 64 Gbps + invented ns"
+        },
+        {
+          "file": "tools/accelerator/repatriation_audit.py",
+          "line": 76,
+          "symbol": "fpga.execute",
+          "kind": "call",
+          "test": false,
+          "note": "different simulator: numpy elementwise, not qgemv"
+        }
+      ],
+      "blocker": null,
+      "tests": [
+        {
+          "file": "tools/future/test_hwir.py",
+          "line": 249,
+          "symbol": "test_qgemv_lowers_and_simulates_end_to_end",
+          "kind": "call",
+          "test": true
+        },
+        {
+          "file": "tools/future/test_hwir.py",
+          "line": 314,
+          "symbol": "test_functional_sim_calls_fpga_engines_qgemv",
+          "kind": "call",
+          "test": true
+        },
+        {
+          "file": "tools/future/test_fpga_engines.py",
+          "line": 406,
+          "symbol": "test_every_vector_matches_engine_and_independent_golden",
+          "kind": "call",
+          "test": true
+        },
+        {
+          "file": "tools/future/test_fpga_engines.py",
+          "line": 483,
+          "symbol": "test_negative_control_perturbed_weight_is_caught",
+          "kind": "call",
+          "test": true
+        }
+      ],
+      "receipts": [
+        "receipts/future/HWIR_V1.json",
+        "receipts/future/FPGA_ENGINE_SCHOOL.json"
+      ],
+      "simulates": [
+        "qGEMV numerics on host CPU (canonical 2x4, planning kernel 1024x4096 exists but is not the default functional vector)",
+        "COST_MODEL bytes and CYCLE_APPROX modelled cycles around that kernel",
+        "carrier downgrade of PCIe beat"
+      ],
+      "does_not_simulate": [
+        "U50DD wall time or tok/s",
+        "HBM2 physics",
+        "any organ other than qgemv (simulate_functional ok=False)",
+        "seconds"
+      ],
+      "surprises": [
+        "Canonical FUNCTIONAL_SIM is a 2x4 matrix. Planning kernel 1024x4096 is a separate COST_MODEL object.",
+        "FpgaHwirBackend.execute is numpy elementwise, not qgemv \u2014 a production 'FPGA execute' that does not call the FPGA engine school."
+      ],
+      "next_admissible_upgrade": "Remain TESTED/CALLABLE. INTEGRATED would require a non-test caller of simulate_qgemv_functional or run_qgemv_preboard outside hwir.py. That caller does not exist. END_TO_END / PHYSICALLY_MEASURED are illegal without U50_PRESENT.",
+      "capability_graph_gate": {
+        "id": "FPGA_HWIR plus FPGA_LINK_SIM/FPGA_PARTITION_SIM",
+        "note": "Graph WIRED FPGA_HWIR on HwirGraph, SCAFFOLDED link/partition on fpga_preboard symbols. The numeric qGEMV simulator is not a graph gate of its own."
+      }
+    },
+    "cycle_model": {
+      "id": "cycle_model",
+      "status": "TESTED",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "summary": "Two independent cycle models, neither a clock. hwir.approximate_cycles (CYCLE_APPROX) and fpga_fidelity.CycleModelProvider (CYCLE_MODEL on StructuralGraph). Both refuse seconds. Neither is production-called outside tests/CLI/build.",
+      "call_sites": [
+        {
+          "file": "tools/future/hwir.py",
+          "line": 3655,
+          "symbol": "approximate_cycles",
+          "kind": "call",
+          "test": false,
+          "note": "definition; used by run_qgemv_preboard"
+        },
+        {
+          "file": "tools/future/fpga_fidelity.py",
+          "line": 602,
+          "symbol": "CycleModelProvider",
+          "kind": "call",
+          "test": false
+        }
+      ],
+      "blocker": {
+        "kind": "no_production_caller_of_cycle_model_outside_tests_and_self_build",
+        "note": "fpga_fidelity.estimate(CYCLE_MODEL) has only test callers. approximate_cycles has only test + intra-hwir callers."
+      },
+      "tests": [
+        {
+          "file": "tools/future/test_hwir.py",
+          "line": 408,
+          "symbol": "test_cycle_approx_refuses_seconds_conversion",
+          "kind": "call",
+          "test": true
+        },
+        {
+          "file": "tools/future/test_fpga_fidelity.py",
+          "line": 79,
+          "symbol": "test_cycle_model_is_modelled_not_measured_and_refuses_seconds",
+          "kind": "call",
+          "test": true
+        }
+      ],
+      "receipts": [
+        "receipts/future/HWIR_V1.json",
+        "receipts/future/FPGA_MULTIFIDELITY.json"
+      ],
+      "does_not_simulate": [
+        "clock_hz",
+        "seconds",
+        "Fmax",
+        "board II"
+      ],
+      "surprises": [
+        "fpga_fidelity still documents itself as a stand-in until hwir.py lands. hwir.py has landed and the two cycle models are not the same function."
+      ],
+      "next_admissible_upgrade": "Do not merge numbers across the two models. Do not convert modelled_cycles to tok/s."
+    },
+    "HBM_Doctor": {
+      "id": "HBM_Doctor",
+      "status": "TESTED",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "summary": "tools/future/hbm_doctor.py ranks HBM residency by marginal cited-weighted-latency per byte. Missing inputs stay UNKNOWN (not 0). FPGA latency is a CLASS, never a number. solve() has no non-test caller. Sealed receipt headline: every Flash organ UNDECIDABLE; selected_ids=[].",
+      "call_sites": [
+        {
+          "file": "tools/future/hbm_doctor.py",
+          "line": 359,
+          "symbol": "solve",
+          "kind": "call",
+          "test": false,
+          "note": "definition; CLI --build"
+        }
+      ],
+      "blocker": {
+        "kind": "no_production_caller",
+        "file": "tools/future/hbm_doctor.py",
+        "symbol": "solve",
+        "note": "git grep of hbm_doctor.solve / hd.solve hits only test_hbm_doctor.py."
+      },
+      "tests": [
+        {
+          "file": "tools/future/test_hbm_doctor.py",
+          "line": 60,
+          "symbol": "test_unknown_mac_latency_is_undecidable_never_selected",
+          "kind": "call",
+          "test": true
+        },
+        {
+          "file": "tools/future/test_hbm_doctor.py",
+          "line": 151,
+          "symbol": "test_numeric_fpga_latency_is_refused",
+          "kind": "call",
+          "test": true
+        },
+        {
+          "file": "tools/future/test_hbm_doctor.py",
+          "line": 176,
+          "symbol": "test_flash_run_is_undecidable_and_unknown_never_selected",
+          "kind": "call",
+          "test": true
+        }
+      ],
+      "receipts": [
+        "receipts/future/HBM_DOCTOR.json"
+      ],
+      "next_admissible_upgrade": "Stay TESTED. Board DMA/HBM remains BLOCKED_HARDWARE.",
+      "capability_graph_gate": {
+        "id": "U50_DMA_HBM",
+        "graph_status": "BLOCKED_HARDWARE",
+        "wake": "U50_PRESENT",
+        "catalog_path": "tools/future/hbm_doctor.py"
+      },
+      "notes": [
+        "Honesty of UNDECIDABLE is the product. Filling mac_latency_ns from CYCLE_APPROX would be a producer bug."
+      ]
+    },
+    "hardware_profiles": {
+      "id": "hardware_profiles",
+      "status": "TESTED",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "summary": "hwir.u50_family_profile selects u50 / u50c / u50dd / u50lv with per-field provenance (DS965/UG1371) or explicit UNPINNED. U50DD SKU A-U50DD-P00G-ES3-G, DSP 5952, LUT 872000, 8 GiB, 32 HBM channels, passive 75 W, PCIe Gen3 x16. U50C is entirely UNPINNED (not interpolated from U50 or U55C). tools/accelerator/hardware_doctor.py CALLS u50_family_profile('u50dd') and chestnut carriers. tools/odyssey/device_profiles.py (catalog target of U50_DEVICE_PROFILE) only exposes fpga_present from a genome \u2014 it does not contain U50DD numbers.",
+      "call_sites": [
+        {
+          "file": "tools/accelerator/hardware_doctor.py",
+          "line": 782,
+          "symbol": "u50_family_profile",
+          "kind": "call",
+          "test": false
+        },
+        {
+          "file": "tools/accelerator/hardware_doctor.py",
+          "line": 784,
+          "symbol": "chestnut_current_firmware",
+          "kind": "call",
+          "test": false
+        }
+      ],
+      "blocker": null,
+      "tests": [
+        {
+          "file": "tools/future/test_u50_carrier.py",
+          "line": 34,
+          "symbol": "test_u50_family_variants_are_selectable",
+          "kind": "call",
+          "test": true
+        },
+        {
+          "file": "tools/future/test_u50_carrier.py",
+          "line": 67,
+          "symbol": "test_every_variant_field_is_sourced_or_unpinned",
+          "kind": "call",
+          "test": true
+        },
+        {
+          "file": "tools/future/test_u50_carrier.py",
+          "line": 95,
+          "symbol": "test_u50c_is_unpinned_not_interpolated_from_u50_or_u55c",
+          "kind": "call",
+          "test": true
+        },
+        {
+          "file": "tools/accelerator/test_hardware_doctor.py",
+          "line": 293,
+          "symbol": "u50_family_profile",
+          "kind": "call",
+          "test": true
+        }
+      ],
+      "receipts": [
+        "receipts/future/HWIR_V1.json"
+      ],
+      "surprises": [
+        "Default planning profile is still synthetic_u50_class (DSP 9024), not U50DD (DSP 5952).",
+        "U50DD numbers cited from DS965 v1.2-era ES3 column; later DS965 v1.8 dropped that column.",
+        "No HBM GB/s field on DeviceProfile; 316 GB/s is comment-only.",
+        "FPGADeviceGenome in organ maps is still TARGET_UNSELECTED after U50DD profiles exist."
+      ],
+      "next_admissible_upgrade": "Vendor-literature STATIC profile is TESTED. A MEASURED device baseline (Appendix J.4) is BLOCKED_HARDWARE.",
+      "capability_graph_gate": {
+        "id": "U50_DEVICE_PROFILE",
+        "graph_status": "BLOCKED_HARDWARE",
+        "catalog_mismatch": "catalog points at tools/odyssey/device_profiles.py; U50DD numbers live in tools/future/hwir.py"
+      }
+    },
+    "module_cache": {
+      "id": "module_cache",
+      "status": "SCAFFOLDED",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "summary": "Organ maps carry module_cache SCHEMA_ONLY (sha256 of HWIR+device+HBM+toolchain names). fpga_fidelity.module_cache_key hashes a StructuralGraph for CLOCK_2_CACHED_MODULE_DFX. No bitstream, no DFX region, no loadable module.",
+      "call_sites": [
+        {
+          "file": "hcli/agentos/fpga_preboard.py",
+          "line": 520,
+          "symbol": "module_cache",
+          "kind": "dict_literal",
+          "test": false,
+          "note": "SCHEMA_ONLY status written into organ map"
+        },
+        {
+          "file": "tools/future/fpga_fidelity.py",
+          "line": 415,
+          "symbol": "module_cache_key",
+          "kind": "call",
+          "test": false
+        }
+      ],
+      "blocker": {
+        "kind": "schema_only",
+        "note": "status=SCHEMA_ONLY in QWEN27/FLASH organ maps. No caller loads a cached bitstream or DFX partial."
+      },
+      "tests": [
+        {
+          "file": "tools/future/test_fpga_fidelity.py",
+          "line": 149,
+          "symbol": "test_adaptation_clocks_carry_required_fields",
+          "kind": "call",
+          "test": true
+        }
+      ],
+      "receipts": [
+        "receipts/headless/QWEN27_FPGA_ORGAN_MAP.json",
+        "receipts/headless/FLASH_NEXT_FPGA_ORGAN_MAP.json"
+      ],
+      "next_admissible_upgrade": "Remain SCAFFOLDED until a module hash is produced by a real toolchain."
+    },
+    "placement": {
+      "id": "placement",
+      "status": "INTEGRATED",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "summary": "tools/accelerator/placement.py places NODES onto DomainKind (GPU_UMA/CPU/NPU/FPGA_HBM). kind_admits is called from fusion_bridge, backend_contract, physical_graph_compiler. It is device-neutral and explicitly not floorplanning. hwir.floorplan_hints emits STATIC strings from Appendix K.4. fusion_planner.Placement is object-home, a different job.",
+      "call_sites": [
+        {
+          "file": "tools/accelerator/fusion_bridge.py",
+          "line": 686,
+          "symbol": "kind_admits",
+          "kind": "call",
+          "test": false
+        },
+        {
+          "file": "tools/accelerator/backend_contract.py",
+          "line": 553,
+          "symbol": "kind_admits",
+          "kind": "call",
+          "test": false
+        },
+        {
+          "file": "tools/odyssey/physical_graph_compiler.py",
+          "line": 300,
+          "symbol": "kind_admits",
+          "kind": "call",
+          "test": false
+        },
+        {
+          "file": "tools/future/hwir.py",
+          "line": 3710,
+          "symbol": "floorplan_hints",
+          "kind": "call",
+          "test": false
+        }
+      ],
+      "blocker": null,
+      "tests": [
+        {
+          "file": "tools/future/test_hwir.py",
+          "line": 375,
+          "symbol": "floorplan_hints",
+          "kind": "call",
+          "test": true
+        }
+      ],
+      "receipts": [],
+      "does_not_simulate": [
+        "pblock",
+        "P&R",
+        "congestion",
+        "clock-region assignment"
+      ],
+      "next_admissible_upgrade": "FPGA P&R stays ABSENT. Do not read Placement as a U50 floorplan.",
+      "notes": [
+        "kind_admits currently returns True for every domain/node pair \u2014 restrictions deferred to backends."
+      ]
+    },
+    "partitioning": {
+      "id": "partitioning",
+      "status": "TESTED",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "summary": "Two partitioners. (1) hwir.partition_qgemv: row-split so resident packed shard fits declared HBM capacity; TESTED. (2) fpga_preboard.simulate_partition: scenario table with invented apple_compute_ns/fpga_compute_ns plus TransportLinkSimulator; CALLABLE via CLI, tested in haider science-boundaries, NOT Chestnut-bound.",
+      "call_sites": [
+        {
+          "file": "tools/future/hwir.py",
+          "line": 3733,
+          "symbol": "partition_qgemv",
+          "kind": "call",
+          "test": false
+        },
+        {
+          "file": "hcli/agentos/fpga_preboard.py",
+          "line": 350,
+          "symbol": "simulate_partition",
+          "kind": "call",
+          "test": false
+        },
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 1019,
+          "symbol": "run_fpga_preboard",
+          "kind": "call",
+          "test": false,
+          "note": "reaches simulate_partition inside defining module"
+        }
+      ],
+      "blocker": null,
+      "tests": [
+        {
+          "file": "tools/future/test_hwir.py",
+          "line": 416,
+          "symbol": "test_partitioner_keeps_weights_resident_and_splits_on_hbm_capacity",
+          "kind": "call",
+          "test": true
+        },
+        {
+          "file": "tools/haider/test_hcli_science_boundaries.py",
+          "line": 978,
+          "symbol": "simulate_partition",
+          "kind": "call",
+          "test": true
+        }
+      ],
+      "receipts": [
+        "receipts/headless/QWEN27_FPGA_ORGAN_MAP.json",
+        "receipts/headless/FLASH_NEXT_FPGA_ORGAN_MAP.json"
+      ],
+      "surprises": [
+        "Qwen27 within_ffn_split scenario uses hbm_resident_bytes=241591910400 (~225 GiB) against an 8 GiB card \u2014 a scenario parameter, not a feasible residency."
+      ],
+      "next_admissible_upgrade": "hwir.partition_qgemv may stay TESTED as COST_MODEL. FPGA_PARTITION_SIM must not be promoted to U50 evidence while the 64 Gbps / invented-ns table is the producer.",
+      "capability_graph_gate": {
+        "id": "FPGA_PARTITION_SIM",
+        "graph_status": "SCAFFOLDED",
+        "reason": "graph requires a non-test call of the symbol simulate_partition itself; CLI calls run_fpga_preboard"
+      }
+    },
+    "qGEMV": {
+      "id": "qGEMV",
+      "status": "TESTED",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "summary": "fpga_engines.qgemv is a bit-exact host golden (independent loop in tests + negative control). hwir wraps it as FUNCTIONAL_SIM and lowers a qGEMV HWIR graph. Engine ladder level L1 (correct low-bit), not L5\u2013L8. U50_FIRST_NATIVE_ENGINE remains BLOCKED_HARDWARE because a numpy golden is not a native FPGA engine.",
+      "call_sites": [
+        {
+          "file": "tools/future/hwir.py",
+          "line": 3464,
+          "symbol": "qgemv",
+          "kind": "call",
+          "test": false
+        },
+        {
+          "file": "tools/future/fpga_engines.py",
+          "line": 103,
+          "symbol": "qgemv",
+          "kind": "call",
+          "test": false,
+          "note": "definition"
+        }
+      ],
+      "blocker": null,
+      "tests": [
+        {
+          "file": "tools/future/test_fpga_engines.py",
+          "line": 406,
+          "symbol": "test_every_vector_matches_engine_and_independent_golden",
+          "kind": "call",
+          "test": true
+        },
+        {
+          "file": "tools/future/test_fpga_engines.py",
+          "line": 483,
+          "symbol": "test_negative_control_perturbed_weight_is_caught",
+          "kind": "call",
+          "test": true
+        },
+        {
+          "file": "tools/future/test_hwir.py",
+          "line": 314,
+          "symbol": "test_functional_sim_calls_fpga_engines_qgemv",
+          "kind": "call",
+          "test": true
+        }
+      ],
+      "receipts": [
+        "receipts/future/FPGA_ENGINE_SCHOOL.json",
+        "receipts/future/HWIR_V1.json"
+      ],
+      "next_admissible_upgrade": "Functional golden stays TESTED. Native engine stays BLOCKED_HARDWARE. Do not treat FPGA_ENGINE_SCHOOL.json as a board engine.",
+      "capability_graph_gate": {
+        "id": "U50_FIRST_NATIVE_ENGINE",
+        "graph_status": "BLOCKED_HARDWARE",
+        "catalog_path": "tools/future/fpga_engines.py"
+      }
+    },
+    "FFN_organ_split": {
+      "id": "FFN_organ_split",
+      "status": "SCAFFOLDED",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "summary": "Qwen27 organ mlp_gate_up_down exists on the organ map. within_ffn_split is a simulate_partition scenario with invented ns. hwir records \u00a715.5 65/35 as a COST_MODEL prior and does not apply it. No functional FFN split engine is wired into simulate_functional.",
+      "call_sites": [
+        {
+          "file": "hcli/agentos/fpga_preboard.py",
+          "line": 247,
+          "symbol": "within_ffn_split",
+          "kind": "scenario_literal",
+          "test": false
+        },
+        {
+          "file": "tools/future/hwir.py",
+          "line": 3768,
+          "symbol": "apple_fpga_prior",
+          "kind": "call",
+          "test": false
+        }
+      ],
+      "blocker": {
+        "kind": "no_functional_engine",
+        "note": "simulate_functional only runs qgemv. ORGAN_ENGINE_MAP maps mlp_gate_up_down to qgemv/lowbit_gemm/factorized_projection names; p6_projection checks membership and does not call the functions."
+      },
+      "tests": [
+        {
+          "file": "tools/future/test_hwir.py",
+          "line": 444,
+          "symbol": "apple_fpga_prior",
+          "kind": "call",
+          "test": true,
+          "note": "asserts the 65/35 note says COST_MODEL / not a measurement / not applied as physics"
+        }
+      ],
+      "receipts": [],
+      "next_admissible_upgrade": "A TESTED FFN split would need simulate_functional (or a new engine) actually calling qgemv/lowbit_gemm on gate/up/down shards, still labeled FUNCTIONAL_SIM."
+    },
+    "persistent_DeltaNet_state": {
+      "id": "persistent_DeltaNet_state",
+      "status": "SCAFFOLDED",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "summary": "Organ maps name deltanet_state_and_input_projection / deltanet_persistent_state. from_organ_map lowers a state node with owner. fpga_engines.recurrent_state_transition is a numpy golden TESTED in the engine school. hwir.simulate_functional does not run it. No BRAM/URAM-resident state circuit.",
+      "call_sites": [
+        {
+          "file": "hcli/agentos/fpga_preboard.py",
+          "line": 258,
+          "symbol": "deltanet_state",
+          "kind": "scenario_literal",
+          "test": false
+        },
+        {
+          "file": "tools/future/fpga_engines.py",
+          "line": 376,
+          "symbol": "recurrent_state_transition",
+          "kind": "call",
+          "test": false
+        },
+        {
+          "file": "tools/future/hwir.py",
+          "line": 77,
+          "symbol": "from_organ_map",
+          "kind": "call",
+          "test": false,
+          "note": "test_from_organ_map_state_organ_has_owner uses FLASH organ deltanet_persistent_state"
+        }
+      ],
+      "blocker": {
+        "kind": "functional_sim_not_wired",
+        "note": "simulate_functional returns ok=False for non-qgemv organs. recurrent_state_transition is only reached from fpga_engines.run_vector / tests, not from the HWIR simulator."
+      },
+      "tests": [
+        {
+          "file": "tools/future/test_hwir.py",
+          "line": 77,
+          "symbol": "test_from_organ_map_state_organ_has_owner",
+          "kind": "call",
+          "test": true
+        },
+        {
+          "file": "tools/future/test_fpga_engines.py",
+          "line": 174,
+          "symbol": "golden_recurrent_state_transition",
+          "kind": "call",
+          "test": true
+        }
+      ],
+      "receipts": [],
+      "next_admissible_upgrade": "Wiring recurrent_state_transition into simulate_functional would move this to TESTED as FUNCTIONAL_SIM, still not a board state machine."
+    },
+    "partial_reductions": {
+      "id": "partial_reductions",
+      "status": "SCAFFOLDED",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "summary": "HWIR frame kind partial_reduction exists. Host-device COST_MODEL sets c2h = fpga_rows * 4 (float32). Organ-map scenarios carry partial_reduction_bytes. fpga_engines.reductions is a numpy golden (sequential vs tree diverge on float32 ulps). No reduction circuit / collective on fabric.",
+      "call_sites": [
+        {
+          "file": "tools/future/hwir.py",
+          "line": 3602,
+          "symbol": "c2h",
+          "kind": "call",
+          "test": false,
+          "note": "rows * 4 float32 partial reduction"
+        },
+        {
+          "file": "hcli/agentos/fpga_preboard.py",
+          "line": 250,
+          "symbol": "partial_reduction_bytes",
+          "kind": "scenario_literal",
+          "test": false
+        },
+        {
+          "file": "tools/future/fpga_engines.py",
+          "line": 573,
+          "symbol": "reductions",
+          "kind": "call",
+          "test": false
+        }
+      ],
+      "blocker": {
+        "kind": "cost_model_and_golden_only",
+        "note": "No caller implements a fabric reduction tree. c2h=rows*4 is a declared width, not a measured payload."
+      },
+      "tests": [
+        {
+          "file": "tools/future/test_hwir.py",
+          "line": 442,
+          "symbol": "bytes_c2h",
+          "kind": "call",
+          "test": true
+        },
+        {
+          "file": "tools/future/test_fpga_engines.py",
+          "line": 415,
+          "symbol": "test_tree_and_sequential_diverge_on_float32_ulps",
+          "kind": "call",
+          "test": true
+        }
+      ],
+      "receipts": [],
+      "next_admissible_upgrade": "Remain SCAFFOLDED as COST_MODEL. A TESTED reduction engine would call fpga_engines.reductions from simulate_functional for reduction nodes."
+    },
+    "transport_overlap": {
+      "id": "transport_overlap",
+      "status": "SCAFFOLDED",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "summary": "hwir.approximate_cycles uses a conservative schedule: H2C, then max(compute, HBM), then C2H \u2014 overlap of compute with HBM only, not with the host link. fpga_engines.semantic_transport_transform is a numpy pipeline of quantize/transpose/reduce/digest/pack. Atlas names COMPUTE_IN_TRANSIT. fusion_bridge edges carry in_transit_transforms as labels.",
+      "call_sites": [
+        {
+          "file": "tools/future/hwir.py",
+          "line": 3672,
+          "symbol": "approximate_cycles",
+          "kind": "call",
+          "test": false,
+          "note": "H2C then max(compute,HBM) then C2H"
+        },
+        {
+          "file": "tools/future/fpga_engines.py",
+          "line": 673,
+          "symbol": "semantic_transport_transform",
+          "kind": "call",
+          "test": false
+        }
+      ],
+      "blocker": {
+        "kind": "no_overlap_with_host_link_in_the_model",
+        "note": "The cycle approximation deliberately does not overlap H2C/C2H with compute. That is honesty, not a missing plus-sign \u2014 but it is also not a transport-overlap simulator."
+      },
+      "tests": [
+        {
+          "file": "tools/future/test_hwir.py",
+          "line": 249,
+          "symbol": "test_qgemv_lowers_and_simulates_end_to_end",
+          "kind": "call",
+          "test": true
+        }
+      ],
+      "receipts": [],
+      "next_admissible_upgrade": "A real overlap model would still be CYCLE_APPROX until U50_PRESENT. Do not treat conservative non-overlap as measured dual-issue DMA."
+    },
+    "MTP_verification": {
+      "id": "MTP_verification",
+      "status": "CONCEPT_ONLY",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "summary": "Flash organ mtp_draft_verify_rollback exists. simulate_partition has scenario mtp_verification with invented bytes/ns. ORGAN_ENGINE_MAP maps it to reductions + semantic_transport_transform names. No MTP draft/accept/reject/rollback engine, no token ledger.",
+      "call_sites": [
+        {
+          "file": "hcli/agentos/fpga_preboard.py",
+          "line": 337,
+          "symbol": "mtp_verification",
+          "kind": "scenario_literal",
+          "test": false
+        },
+        {
+          "file": "tools/future/fpga_engines.py",
+          "line": 726,
+          "symbol": "mtp_draft_verify_rollback",
+          "kind": "map_entry",
+          "test": false
+        }
+      ],
+      "blocker": {
+        "kind": "scenario_table_only",
+        "note": "No function named for MTP verification is called. Map entry is a name list, not a call."
+      },
+      "tests": [],
+      "receipts": [],
+      "next_admissible_upgrade": "Stay CONCEPT_ONLY/SCAFFOLDED until a functional verifier exists. Board MTP is after U50 tuition (engine order 16)."
+    },
+    "representation_native_arithmetic": {
+      "id": "representation_native_arithmetic",
+      "status": "TESTED",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "summary": "Host goldens exist: qgemv fused dequant, codebook_arithmetic, dictionary_arithmetic, basis_projection, NF4 codebook recovered from Flash receipt. These are CPU interpreters of Gravity-native arithmetic, not an FPGA arithmetic tournament (Appendix K.1 DSP MAC / LUT multiply / bit-serial / etc.). No FPGA circuit family is selected.",
+      "call_sites": [
+        {
+          "file": "tools/future/hwir.py",
+          "line": 3464,
+          "symbol": "qgemv",
+          "kind": "call",
+          "test": false
+        },
+        {
+          "file": "tools/future/fpga_engines.py",
+          "line": 241,
+          "symbol": "codebook_arithmetic",
+          "kind": "call",
+          "test": false
+        }
+      ],
+      "blocker": {
+        "kind": "host_golden_not_fpga_circuit",
+        "note": "TESTED as FUNCTIONAL_SIM goldens. ABSENT as K.1 FPGA arithmetic tournament. Do not upgrade U50_FIRST_NATIVE_ENGINE."
+      },
+      "tests": [
+        {
+          "file": "tools/future/test_fpga_engines.py",
+          "line": 406,
+          "symbol": "test_every_vector_matches_engine_and_independent_golden",
+          "kind": "call",
+          "test": true
+        },
+        {
+          "file": "tools/future/test_fpga_engines.py",
+          "line": 438,
+          "symbol": "test_nf4_codebook_recovered_from_flash_receipt",
+          "kind": "call",
+          "test": true
+        }
+      ],
+      "receipts": [
+        "receipts/future/FPGA_ENGINE_SCHOOL.json"
+      ],
+      "next_admissible_upgrade": "Keep goldens. K.1 tournament is after U50 tuition / first native engine."
+    },
+    "DriverKit_direct_Mac_research": {
+      "id": "DriverKit_direct_Mac_research",
+      "status": "CONCEPT_ONLY",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "summary": "Organ maps contain driverkit_bridge_design status=DESIGN_NOT_IMPLEMENTED with three notes. No IOUserPCI / dext / DriverKit source in the tree. Appendix 15.13 M00\u2013M17 ladder is roadmap prose. Direct-Mac is the canonical runtime experiment (J vs older Linux-first plan) but has no implementation.",
+      "call_sites": [
+        {
+          "file": "hcli/agentos/fpga_preboard.py",
+          "line": 539,
+          "symbol": "driverkit_bridge_design",
+          "kind": "dict_literal",
+          "test": false
+        }
+      ],
+      "blocker": {
+        "kind": "DESIGN_NOT_IMPLEMENTED",
+        "note": "git ls-tree finds no DriverKit/dext/IOUserPCI path. git grep driverkit hits only fpga_preboard.py among Python/Rust/MD implementation files (plus unrelated tokio::io false positives)."
+      },
+      "tests": [],
+      "receipts": [],
+      "next_admissible_upgrade": "M00 bridge visible is BLOCKED_HARDWARE. Research notes may grow; a dext is not pre-board work."
+    },
+    "optional_Linux_fixture": {
+      "id": "optional_Linux_fixture",
+      "status": "ABSENT",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "summary": "Appendix J.3 describes an optional Linux PCIe/XRT/Vitis qualification fixture, then return to Mac\u2192TB/USB4\u2192U50DD. No linux-fixture / xbutil / XRT bring-up module exists in HEAD.",
+      "call_sites": [],
+      "blocker": {
+        "kind": "no_definition",
+        "note": "git ls-tree -r --name-only HEAD | rg -i 'linux.?fixture|xrt_|xbutil|pcie.?bringup' -> empty. Roadmap prose is not a module."
+      },
+      "tests": [],
+      "receipts": [],
+      "next_admissible_upgrade": "Remain optional. Do not implement a Linux host stack as the canonical runtime. If a fixture is later added it is J.3 qualification only."
+    },
+    "HMF_HGVAS_integration": {
+      "id": "HMF_HGVAS_integration",
+      "status": "BLOCKED_HARDWARE",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "summary": "tools/accelerator/hmf.py and tools/future/hmf_objects.py exist. HMF_DEVICE_VISIBLE_TRUST is BLOCKED_HARDWARE (HMF_PRESENT false). The only FPGA-touching call is hmf_objects selftest migrate(... Location(HBM, 'FPGA_HBM_0')) which records UNKNOWN coherence \u2014 a fixture, not a device.",
+      "call_sites": [
+        {
+          "file": "tools/future/hmf_objects.py",
+          "line": 1022,
+          "symbol": "migrate",
+          "kind": "call",
+          "test": false,
+          "note": "selftest fixture to FPGA_HBM_0; result UNKNOWN, not CLEAN"
+        }
+      ],
+      "blocker": {
+        "kind": "HMF_PRESENT",
+        "present": false,
+        "note": "No HMF/HGVAS/CXL memory appliance. Fusion heterogeneous executable additionally needs a second physical domain."
+      },
+      "tests": [
+        {
+          "file": "tools/future/test_hmf_objects.py",
+          "line": 10,
+          "symbol": "hmf_objects",
+          "kind": "import",
+          "test": true
+        }
+      ],
+      "receipts": [
+        "receipts/future/HMF_MANAGED_OBJECTS.json",
+        "receipts/acceptance/HMF_DEVICE_VISIBLE_TRUST.json"
+      ],
+      "next_admissible_upgrade": "Wake HMF_PRESENT. Do not treat FPGA_HBM_0 string as an HMF device.",
+      "capability_graph_gate": {
+        "id": "HMF_DEVICE_VISIBLE_TRUST",
+        "graph_status": "BLOCKED_HARDWARE"
+      }
+    },
+    "physical_graph_integration": {
+      "id": "physical_graph_integration",
+      "status": "INTEGRATED",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "summary": "fusion_bridge.three_domain_plan declares GPU_UMA + NPU + FPGA_HBM (FPGA physical=False). tools/odyssey/physical_graph_compiler.compile_heterogeneous_physical_graph overlays that plan. Non-test callers: fusion_bridge_adapter, physical_graph_compiler, nr_nx_generic.py subprocess of physical_graph_compiler.py (capability graph cites this as U50_MIXED_APPLE_FPGA_GRAPH wired). Evidence COST_MODEL. Not a mixed executable. hcli/physical_graph.py default candidate_devices includes the string 'fpga'.",
+      "call_sites": [
+        {
+          "file": "tools/odyssey/physical_graph_compiler.py",
+          "line": 361,
+          "symbol": "three_domain_plan",
+          "kind": "call",
+          "test": false
+        },
+        {
+          "file": "tools/odyssey/fusion_bridge_adapter.py",
+          "line": 60,
+          "symbol": "two_domain_plan",
+          "kind": "call",
+          "test": false
+        },
+        {
+          "file": "tools/future/nr_nx_generic.py",
+          "line": 1981,
+          "symbol": "tools/odyssey/physical_graph_compiler.py",
+          "kind": "subprocess",
+          "test": false
+        },
+        {
+          "file": "tools/accelerator/fusion_bridge.py",
+          "line": 1444,
+          "symbol": "HwirGraph",
+          "kind": "call",
+          "test": false,
+          "note": "lower_fpga_domain_to_hwir \u2014 production definition; non-test callers of this function are tests only"
+        }
+      ],
+      "blocker": {
+        "kind": "U50_PRESENT",
+        "note": "Declared FPGA_HBM domain is not a board. U50_MIXED_APPLE_FPGA_GRAPH stays BLOCKED_HARDWARE even though the compiler symbol is WIRED."
+      },
+      "tests": [
+        {
+          "file": "tools/accelerator/test_fusion_bridge.py",
+          "line": 376,
+          "symbol": "lower_fpga_domain_to_hwir",
+          "kind": "call",
+          "test": true
+        }
+      ],
+      "receipts": [],
+      "surprises": [
+        "lower_fpga_domain_to_hwir uses an invented DeviceBudget (LUT 65536, DSP 4096, 1 HBM channel), not U50DD."
+      ],
+      "next_admissible_upgrade": "Keep INTEGRATED as COST_MODEL planning. Mixed graph execution is BLOCKED_HARDWARE.",
+      "capability_graph_gate": {
+        "id": "U50_MIXED_APPLE_FPGA_GRAPH",
+        "graph_status": "BLOCKED_HARDWARE",
+        "wired": true
+      }
+    }
+  },
+  "roadmap_gates": {
+    "source": "civilization/CAPABILITY_GRAPH.json + HEAD callers + Appendix O ledger",
+    "simulator_may_legitimately_move": [
+      {
+        "id": "FPGA_HWIR",
+        "graph_status": "WIRED",
+        "this_audit": "INTEGRATED (IR construction) + TESTED (qGEMV FUNCTIONAL_SIM / CYCLE_APPROX in tests)",
+        "may_claim": "ABSENT is false. SCAFFOLDED is too weak for HwirGraph. WIRED/INTEGRATED for IR is correct. TESTED for the software simulator is correct in this vocabulary.",
+        "must_not_claim": "ACCEPTED, END_TO_END, PHYSICALLY_MEASURED, any tok/s"
+      },
+      {
+        "id": "FPGA_PREBOARD_SCHEMAS",
+        "graph_status": "SCAFFOLDED",
+        "this_audit": "CALLABLE via hcli agentos fpga-preboard (run_fpga_preboard). FPGADeviceGenome remains TARGET_UNSELECTED. test_fpga_preboard does not call the genome symbol directly.",
+        "may_claim": "Not ABSENT. SCAFFOLDED/CALLABLE.",
+        "must_not_claim": "TESTED-as-U50DD-profile. The genome is unselected."
+      },
+      {
+        "id": "FPGA_LINK_SIM",
+        "graph_status": "SCAFFOLDED",
+        "this_audit": "CALLABLE (TransportLinkSimulator inside run_fpga_preboard) but STALE vs Chestnut (64 Gbps default).",
+        "may_claim": "A sensitivity toy exists. SCAFFOLDED/CALLABLE.",
+        "must_not_claim": "TESTED U50 transport. Do not use organ-map MIXED_CANDIDATE rows as board evidence."
+      },
+      {
+        "id": "FPGA_PARTITION_SIM",
+        "graph_status": "SCAFFOLDED",
+        "this_audit": "simulate_partition is called from a test file and from run_fpga_preboard. hwir.partition_qgemv is TESTED COST_MODEL row-split.",
+        "may_claim": "SCAFFOLDED/CALLABLE for the preboard table; TESTED for hwir.partition_qgemv as COST_MODEL.",
+        "must_not_claim": "A feasible 8 GiB residency plan (Qwen27 within_ffn_split scenario asks ~225 GiB)."
+      }
+    ],
+    "simulator_must_not_move": [
+      {
+        "id": "U50_PURCHASE_ACCEPTANCE",
+        "graph_status": "BLOCKED_HARDWARE",
+        "wake": "U50_PRESENT",
+        "appendix": "J.1"
+      },
+      {
+        "id": "U50_SAFE_COOLING",
+        "graph_status": "BLOCKED_HARDWARE",
+        "wake": "U50_PRESENT",
+        "appendix": "J.2",
+        "note": "U50DD cooling=passive; Chestnut airflow=none; thermal_mismatch is a COST_MODEL flag, not a thermocouple."
+      },
+      {
+        "id": "U50_DEVICE_PROFILE",
+        "graph_status": "BLOCKED_HARDWARE",
+        "wake": "U50_PRESENT",
+        "appendix": "J.4",
+        "note": "STATIC vendor profile exists in hwir.py; J.4 wants measured HBM/PCIe/thermal. Catalog points at the wrong file (device_profiles.py)."
+      },
+      {
+        "id": "U50_DMA_HBM",
+        "graph_status": "BLOCKED_HARDWARE",
+        "wake": "U50_PRESENT",
+        "appendix": "J.5"
+      },
+      {
+        "id": "U50_FIRST_NATIVE_ENGINE",
+        "graph_status": "BLOCKED_HARDWARE",
+        "wake": "U50_PRESENT",
+        "appendix": "J.6",
+        "note": "numpy qgemv is not this gate."
+      },
+      {
+        "id": "U50_MIXED_APPLE_FPGA_GRAPH",
+        "graph_status": "BLOCKED_HARDWARE",
+        "wired": true,
+        "wake": "U50_PRESENT",
+        "appendix": "J.8"
+      },
+      {
+        "id": "U50_34_TO_40",
+        "graph_status": "BLOCKED_HARDWARE"
+      },
+      {
+        "id": "U50_40_TO_50",
+        "graph_status": "BLOCKED_HARDWARE"
+      },
+      {
+        "id": "U50_50_TO_60",
+        "graph_status": "BLOCKED_HARDWARE"
+      },
+      {
+        "id": "U50_60_TO_70",
+        "graph_status": "BLOCKED_HARDWARE"
+      },
+      {
+        "id": "U50_70_TO_80",
+        "graph_status": "BLOCKED_HARDWARE"
+      },
+      {
+        "id": "U50_80_TO_90",
+        "graph_status": "BLOCKED_HARDWARE",
+        "note": "Appendix K.5: never publish 80\u201390 TPS as a forecast merely because the dimensional bandwidth roof is >90."
+      },
+      {
+        "id": "HMF_DEVICE_VISIBLE_TRUST",
+        "graph_status": "BLOCKED_HARDWARE",
+        "wake": "HMF_PRESENT"
+      },
+      {
+        "id": "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE",
+        "graph_status": "UNREACHABLE"
+      }
+    ]
+  },
+  "u50dd": {
+    "canonical_board": "AMD/Xilinx Alveo U50DD / XCU50-class, 8 GB HBM2",
+    "sku_in_source": "A-U50DD-P00G-ES3-G",
+    "fpga_part_in_source": "XCU50 (speed grade UNPINNED)",
+    "origin": "DS965 v1.2-era Table 1 ES3 column + UG1371. Later DS965 v1.8 dropped the ES3 column. STATIC vendor literature, not a local board.",
+    "engineering_sample": true,
+    "resources_STATIC": {
+      "LUT": 872000,
+      "DSP": 5952,
+      "BRAM": 1344,
+      "URAM": 640,
+      "hbm_channels": 32,
+      "hbm_capacity_bytes": 8589934592,
+      "power_w": 75,
+      "cooling": "passive",
+      "form_factor": "half_height_half_length_single_slot",
+      "pcie_brochure": "Gen3 x16 / Gen4 x8"
+    },
+    "carrier": {
+      "name": "comma Tiny Chestnut",
+      "bridge": "ASMedia ASM2464PD",
+      "modes": {
+        "theoretical": "USB4 40 Gb/s class, ~5 GB/s RAW, usable UNPINNED",
+        "current-fw": "tinygrad firmware trains PCIe Gen3 x2; observed payload ~1.66-1.68 GB/s THIRD_PARTY_REPORTED; completer-capped (same at x4); airflow none",
+        "hawking-optimized": "UNPINNED; inherits 1.68 GB/s until Hawking measures; must not fail-open to a full slot"
+      },
+      "planning_default_in_source": "chestnut_current_firmware when explicitly passed; NOT the hwir CLI/build default (that is synthetic_u50_class with no carrier)"
+    },
+    "residency_rule_J7": "The FPGA must compute where its HBM resides. Weight shuttling each token converts the accelerator into expensive storage. Coarse resident organs/tensor shards and activation-only transfer are the default search prior.",
+    "residency_ratio_function": {
+      "symbol": "tools/future/hwir.py:residency_ratio",
+      "call_sites_test": [
+        {
+          "file": "tools/future/test_u50_carrier.py",
+          "line": 299,
+          "symbol": "residency_ratio",
+          "kind": "call",
+          "test": true
+        }
+      ],
+      "note": "R = local_bytes_consumed / carrier_bytes_transferred. Comment claims ~188x HBM-vs-bridge cliff; 316 GB/s is not a sourced_field."
+    },
+    "appendix_J": {
+      "path": "/Users/scammermike/Downloads/H-ROADMAP.md",
+      "lines": "8883-8999",
+      "J1_procurement": "BLOCKED_HARDWARE",
+      "J2_cooling": "BLOCKED_HARDWARE (passive card + Chestnut airflow=none)",
+      "J3_linux_fixture": "ABSENT code; optional by constitution of J",
+      "J4_device_baseline": "STATIC vendor profile TESTED; measured baseline BLOCKED_HARDWARE",
+      "J5_hardware_ABI": "CONCEPT_ONLY (command ring schema in appendix; no ring implementation)",
+      "J6_qGEMV_flow": "FUNCTIONAL_SIM of numerics TESTED; resident-in-HBM flow BLOCKED_HARDWARE",
+      "J7_residency": "encoded as COST_MODEL policy + residency_ratio(); not measured",
+      "J8_coarse_partition": "two COST_MODEL partitioners; no board comparison",
+      "J9_promotion_modes": "not evaluable without U50_PRESENT"
+    }
+  },
+  "preboard_PB_campaign": {
+    "source": "H-ROADMAP.md \u00a715.15",
+    "items": [
+      {
+        "id": "PB-01",
+        "name": "FPGAProvider trait",
+        "status": "SCAFFOLDED",
+        "note": "class exists; execute raises"
+      },
+      {
+        "id": "PB-02",
+        "name": "MockFPGAProvider",
+        "status": "CALLABLE",
+        "note": "SIMULATOR_ONLY; reached from run_fpga_preboard"
+      },
+      {
+        "id": "PB-03",
+        "name": "SimFPGAProvider",
+        "status": "ABSENT",
+        "blocker": "no symbol SimFPGAProvider in HEAD"
+      },
+      {
+        "id": "PB-04",
+        "name": "TransportGenome schema",
+        "status": "CONCEPT_ONLY",
+        "note": "Appendix K rust struct; Python has TransportLinkSimulator instead"
+      },
+      {
+        "id": "PB-05",
+        "name": "FPGAGenome schema",
+        "status": "SCAFFOLDED",
+        "note": "FPGADeviceGenome TARGET_UNSELECTED; U50DD lives in hwir.DeviceProfile"
+      },
+      {
+        "id": "PB-06",
+        "name": "HBMGenome schema",
+        "status": "SCAFFOLDED",
+        "note": "TARGET_UNSELECTED channels=0"
+      },
+      {
+        "id": "PB-07",
+        "name": "HardwareProfile schema",
+        "status": "SCAFFOLDED",
+        "note": "Appendix K + hwir.DeviceProfile; not the K HardwareProfile with bitstream_hashes"
+      },
+      {
+        "id": "PB-08",
+        "name": "HardwareModule schema",
+        "status": "CONCEPT_ONLY"
+      },
+      {
+        "id": "PB-09",
+        "name": "HawkingHWIR skeleton",
+        "status": "TESTED",
+        "note": "HwirGraph"
+      },
+      {
+        "id": "PB-10",
+        "name": "physical-graph partitioner",
+        "status": "SCAFFOLDED"
+      },
+      {
+        "id": "PB-11",
+        "name": "synthetic link simulator",
+        "status": "CALLABLE",
+        "note": "64 Gbps default, not Chestnut"
+      },
+      {
+        "id": "PB-12",
+        "name": "latency/bandwidth sensitivity simulator",
+        "status": "CALLABLE",
+        "note": "same producer as PB-11"
+      },
+      {
+        "id": "PB-13",
+        "name": "FPGA receipt format",
+        "status": "TESTED",
+        "note": "several receipts; STATIC_ONLY bench"
+      },
+      {
+        "id": "PB-14",
+        "name": "hardware experiment DAG",
+        "status": "SCAFFOLDED",
+        "note": "organ-map experiment_dag schema"
+      },
+      {
+        "id": "PB-15",
+        "name": "bitstream/module cache",
+        "status": "SCAFFOLDED",
+        "note": "SCHEMA_ONLY"
+      },
+      {
+        "id": "PB-16",
+        "name": "DriverKit direct-PCIe research",
+        "status": "CONCEPT_ONLY"
+      },
+      {
+        "id": "PB-17",
+        "name": "Shared Activation Mailbox hypothesis",
+        "status": "ABSENT",
+        "blocker": "no symbol/path found"
+      },
+      {
+        "id": "PB-18",
+        "name": "Vivado/Vitis reproducible build harness",
+        "status": "CONCEPT_ONLY",
+        "note": "CONTRACT_ONLY command lists"
+      },
+      {
+        "id": "PB-19",
+        "name": "RTL/HLS oracle/verifier harness",
+        "status": "SCAFFOLDED",
+        "note": "PREHARDWARE emitters + CONTRACT_ONLY verifier surface"
+      },
+      {
+        "id": "PB-20",
+        "name": "Qwen27 partition simulations",
+        "status": "CALLABLE",
+        "note": "[S] scenario table"
+      },
+      {
+        "id": "PB-21",
+        "name": "Flash expert/state/n-gram simulations",
+        "status": "CALLABLE",
+        "note": "[S] scenario table"
+      }
+    ]
+  },
+  "generic_fpga_branches": {
+    "remove_or_strike_as_deliverable": [
+      {
+        "item": "PB-03 SimFPGAProvider as a missing module",
+        "action": "strike or alias to hwir.run_qgemv_preboard / CLI --qgemv. Do not build a fourth simulator.",
+        "reason": "The software simulator already exists in hwir.py."
+      },
+      {
+        "item": "TransportLinkSimulator default bandwidth_gbps=64.0 as planning truth",
+        "action": "stop using it as a U50 number. Either bind to chestnut_current_firmware (still THIRD_PARTY_REPORTED, still [S]) or delete MIXED_CANDIDATE rows from organ maps until rebound.",
+        "reason": "~4.8x optimism vs Chestnut completer ceiling."
+      },
+      {
+        "item": "FPGADeviceGenome TARGET_UNSELECTED as the organ-map default after U50DD profiles exist",
+        "action": "rewrite organ-map producer to emit u50dd STATIC vendor fields, still physical_board_present=false.",
+        "reason": "Unselected genome plus a U50DD profile is two truths."
+      }
+    ],
+    "demote_to_future_board_generalisation": [
+      {
+        "item": "synthetic_u50_class (DSP 9024)",
+        "action": "keep as a family-envelope comparison object; never the default for --qgemv/--build.",
+        "reason": "Does not match U50DD DSP 5952; PCIe UNPINNED so host-device model falls through to USB4_40G_CLASS prior."
+      },
+      {
+        "item": "U50C selectable profile",
+        "action": "keep as explicit UNPINNED name or hide from CLI default list.",
+        "reason": "No public SKU table; exists so the name is selectable."
+      },
+      {
+        "item": "fpga_fidelity.StructuralGraph",
+        "action": "demote to historical ladder; wire estimate() to HwirGraph or freeze with a SUPERSEDED note.",
+        "reason": "Comment still waits for hwir.py which has landed."
+      },
+      {
+        "item": "fusion_bridge invented DeviceBudget (1<<16 LUT, 1 HBM channel) and DECLARED_BRIDGE_BW_GB_S=12.0",
+        "action": "demote to 'declared example domain'; do not use as U50DD.",
+        "reason": "Conflicts with U50DD 32 channels / Chestnut 1.68 GB/s."
+      },
+      {
+        "item": "hcli.fpga.hwir.v1 organ-list HWIR",
+        "action": "treat as organ-map stub, not the IR. Do not grow it.",
+        "reason": "Second HWIR type."
+      },
+      {
+        "item": "tools/future/hardware_doctor.py vs tools/accelerator/hardware_doctor.py",
+        "action": "name them: sidecar experiment ranker vs host+absent-U50DD census. Do not merge in this audit.",
+        "reason": "Two doctors; catalog U50_PURCHASE_ACCEPTANCE points at the sidecar."
+      }
+    ],
+    "rewrite_as_after_U50_tuition": [
+      {
+        "item": "U50 and U50LV family variants",
+        "reason": "Useful comparison after the ES3 board is the school. Not the first planning default."
+      },
+      {
+        "item": "Appendix I Phase XVI Custom Hawking FPGA Board (H-ROADMAP ~8811)",
+        "reason": "After U50 tuition; constitution forbids treating FPGA as its own civilization/era."
+      },
+      {
+        "item": "DFX / module cache / overlay / hardware microkernel (engine order 13\u201315)",
+        "reason": "After first resident qGEMV."
+      },
+      {
+        "item": "DriverKit dext and M00\u2013M17 ladder implementation",
+        "reason": "Needs a visible endpoint."
+      },
+      {
+        "item": "Linux/XRT fixture as canonical runtime",
+        "reason": "J.3 is optional qualification, then return to Mac."
+      },
+      {
+        "item": "K.1 arithmetic tournament, K.2 L5\u2013L8, MTP on FPGA, representation-native FPGA circuits, persistent DeltaNet circuit",
+        "reason": "Engine order 07 is low-bit qGEMV; 12 is DeltaNet; 16 is MTP."
+      },
+      {
+        "item": "U50_34_TO_40 \u2026 U50_80_TO_90",
+        "reason": "Protected TPS. Simulator must never fill them."
+      }
+    ]
+  },
+  "proposal": {
+    "do_not_implement_in_this_lane": true,
+    "evidence_ladder": [
+      "VENDOR",
+      "DERIVED",
+      "SIMULATED",
+      "MEASURED",
+      "REPRODUCED",
+      "PROTECTED VERIFIED"
+    ],
+    "hard_rule": "No simulator result may become a U50 performance claim. No FUNCTIONAL_SIM/CYCLE_APPROX/COST_MODEL number may be copied into U50_34_TO_40\u2026U50_80_TO_90 or into a HARDWARE_FIELDS key.",
+    "steps": [
+      {
+        "id": "P1",
+        "title": "Pin the planning tuple",
+        "action": "Make (device=u50dd, carrier=chestnut-current-fw) the default for hwir CLI --qgemv/--build, run_qgemv_preboard, and sealed predictions. Keep synthetic_u50_class as an explicit --device for family comparison.",
+        "ladder": "VENDOR profile + THIRD_PARTY_REPORTED carrier overlay = DERIVED envelope, still PREHARDWARE."
+      },
+      {
+        "id": "P2",
+        "title": "One interconnect story",
+        "action": "Stop emitting 64 Gbps and 12.0 GB/s as if they were the Chestnut. Organ-map TransportLinkSimulator and fusion_bridge DECLARED_BRIDGE_BW_GB_S should cite chestnut_current_firmware (1.68e9 B/s, THIRD_PARTY_REPORTED) or UNPINNED. Never bandwidth_gbps as a hardware-claim key.",
+        "ladder": "THIRD_PARTY_REPORTED stays below MEASURED."
+      },
+      {
+        "id": "P3",
+        "title": "Organ maps named U50DD",
+        "action": "run_fpga_preboard should stamp FPGADeviceGenome from hwir.u50_family_profile('u50dd') with physical_board_present=false, not TARGET_UNSELECTED zeros.",
+        "ladder": "VENDOR -> DERIVED organ map. Still not MEASURED."
+      },
+      {
+        "id": "P4",
+        "title": "One simulator",
+        "action": "Canonical numeric simulator is hwir.run_qgemv_preboard. MockFPGAProvider stays schema mock. Do not add SimFPGAProvider. Wire or freeze fpga_fidelity against HwirGraph.",
+        "ladder": "SIMULATED stays SIMULATED."
+      },
+      {
+        "id": "P5",
+        "title": "Source the HBM roof or UNPIN it",
+        "action": "Either add hbm_bandwidth as a sourced_field with a DS965/UG1371 citation, or replace the 316 GB/s comment with UNPINNED. Do not leave a cliff ratio that is not a field.",
+        "ladder": "VENDOR or UNPINNED, never MEASURED."
+      },
+      {
+        "id": "P6",
+        "title": "Residency as admission",
+        "action": "Use residency_ratio as the first-class admissibility metric for any mixed plan. R near 1 is J.7 failure. Do not search 'faster cable' before residency (constitution item 34).",
+        "ladder": "DERIVED from Chestnut overlay + COST_MODEL bytes."
+      },
+      {
+        "id": "P7",
+        "title": "Gate honesty",
+        "action": "FPGA_HWIR may stay WIRED/TESTED. FPGA_LINK_SIM/PARTITION_SIM stay SCAFFOLDED as U50 evidence until rebound to Chestnut. All U50_* stay BLOCKED_HARDWARE. Catalog U50_DEVICE_PROFILE should name hwir.py, not device_profiles.py."
+      },
+      {
+        "id": "P8",
+        "title": "J.1\u2013J.9 as the only U50 execution plan",
+        "action": "When the board arrives: J.1 procurement receipts, J.2 forced airflow before power, J.3 optional Linux XRT health then return to Mac, J.4 measured baseline, J.5 ABI, J.6 resident qGEMV, J.7 residency, J.8 coarse vs within-organ partition A/B, J.9 promotion or negative tuition. Direct-Mac remains canonical.",
+        "ladder": "MEASURED only after U50_PRESENT. REPRODUCED on a second run. PROTECTED VERIFIED only under the protected-benchmark watcher."
+      },
+      {
+        "id": "P9",
+        "title": "Cooling is a blocker not a footnote",
+        "action": "U50DD is passive. Chestnut airflow_class=none. constrain_device_profile already flags thermal_mismatch. J.2: do not power without forced airflow. This is BLOCKED_HARDWARE even after PCIe enumeration if airflow is absent."
+      },
+      {
+        "id": "P10",
+        "title": "Do not implement a Linux-first or generic-FPGA campaign",
+        "action": "J.3 is optional. Custom board / U50LV / DFX / DriverKit dext / K.1 tournament wait for U50 tuition. FPGA stays inside Accelerator/Fusion. Five eras, three Odysseys, no Era VI."
+      }
+    ]
+  },
+  "surprises": [
+    {
+      "id": "S1",
+      "loud": true,
+      "finding": "Three live FPGA simulators plus three interconnect numbers (1.68 GB/s THIRD_PARTY, 8 GB/s link-sim, 12 GB/s fusion bridge).",
+      "would_settle": "A single bound CarrierEnvelope used by hwir, fpga_preboard, and fusion_bridge, with a test that fails if any of them emits a more optimistic beat than chestnut_current_firmware."
+    },
+    {
+      "id": "S2",
+      "loud": true,
+      "finding": "HWIR_V1.json and run_qgemv_preboard default to synthetic_u50_class (DSP 9024, PCIe UNPINNED), not U50DD (DSP 5952), even though u50_family_profile('u50dd') exists and hardware_doctor calls it.",
+      "would_settle": "Change the default and re-seal HWIR_V1; mutation test that --device default is u50dd."
+    },
+    {
+      "id": "S3",
+      "loud": true,
+      "finding": "Organ maps still TARGET_UNSELECTED / hbm_channels=0 after U50DD profiles landed.",
+      "would_settle": "from_organ_map reading a non-zero HBM channel from the map; today hbm_genome.channels=0 so hbm_channel is None."
+    },
+    {
+      "id": "S4",
+      "loud": true,
+      "finding": "fpga_fidelity.py still says swap StructuralGraph for hwir.py when F003 lands. HWIR has landed.",
+      "would_settle": "A call from fpga_fidelity.estimate to a HwirGraph, or a SUPERSEDED receipt."
+    },
+    {
+      "id": "S5",
+      "loud": true,
+      "finding": "316 GB/s HBM roof (and therefore the 188x cliff) is a comment, not a sourced DeviceProfile field. DeviceProfile has no HBM bandwidth.",
+      "would_settle": "sourced_field for brochure HBM GB/s with DS965/UG1371 citation, or explicit UNPINNED."
+    },
+    {
+      "id": "S6",
+      "loud": true,
+      "finding": "FpgaHwirBackend.execute (called from repatriation_audit) runs numpy elementwise, not qgemv. Production 'FPGA execute' is a different simulator than the engine school.",
+      "would_settle": "execute() calling hwir.simulate_functional, or a comment+test that the backend is opcode-elementwise only and must not be read as qGEMV."
+    },
+    {
+      "id": "S7",
+      "finding": "PB-03 SimFPGAProvider is ABSENT. test_fpga_preboard.py does not test the link/partition simulator at all.",
+      "would_settle": "Either add SimFPGAProvider as a thin wrapper or strike PB-03; add a preboard test that calls TransportLinkSimulator/simulate_partition."
+    },
+    {
+      "id": "S8",
+      "finding": "Canonical FUNCTIONAL_SIM kernel is M=2 K=4. Planning kernel 1024x4096 is COST_MODEL only.",
+      "would_settle": "A test that run_qgemv_preboard on planning_qgemv_kernel still refuses HARDWARE_MEASURED and still fits (or honestly overflows) U50DD+Chestnut."
+    },
+    {
+      "id": "S9",
+      "finding": "HBM Doctor selected_ids=[] \u2014 every Flash organ UNDECIDABLE. That is correct honesty, easy to misread as 'HBM plan exists' because the receipt name sounds finished.",
+      "would_settle": "Keep the empty selection. Do not fill UNKNOWN with CYCLE_APPROX."
+    },
+    {
+      "id": "S10",
+      "finding": "Qwen27 within_ffn_split scenario hbm_resident_bytes=241591910400 (~225 GiB) vs 8 GiB card.",
+      "would_settle": "Refuse scenarios whose resident bytes exceed device.hbm_capacity_bytes."
+    },
+    {
+      "id": "S11",
+      "finding": "U50DD profile cites a DS965 column that later DS965 dropped. Engineering sample SKU.",
+      "would_settle": "Seller/local photo+shell UUID (J.1). Until then keep ES3 provenance in the profile note."
+    },
+    {
+      "id": "S12",
+      "finding": "Capability graph generated_from_commit 7d642800 != this HEAD 04193ccbc.",
+      "would_settle": "Re-run tools/roadmap/auditor.py on this HEAD if gate statuses are to be treated as current."
+    },
+    {
+      "id": "S13",
+      "finding": "Catalog maps U50_DEVICE_PROFILE to tools/odyssey/device_profiles.py, which has no U50DD resource table.",
+      "would_settle": "Point the catalog at hwir.u50_family_profile."
+    },
+    {
+      "id": "S14",
+      "finding": "lower_fpga_domain_to_hwir non-test callers are none (tests only), while HwirGraph() inside it is what the capability graph counts as FPGA_HWIR WIRED from fusion_bridge.py:1444. That line is inside the lowering function. fusion_bridge.main constructs two_domain_plan but the HwirGraph call is only reached if lower_fpga_domain_to_hwir is invoked \u2014 tests and (if anyone calls it) production. Confirm: fusion_bridge.py:1474 is main() two_domain_plan, not lower. So fusion_bridge's HwirGraph call site is the function body at 1444; a definition's internal call is a call of HwirGraph, and the graph counts the file:line as runtime_caller. The function itself is only called from tests. This is a reachability subtlety: HwirGraph is called if that function runs; the function's only callers are tests.",
+      "would_settle": "A non-test caller of lower_fpga_domain_to_hwir, or a graph rule that a call inside an uncalled function is not wired. Flagged rather than smoothed.",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "loud": true
+    }
+  ],
+  "tests_executed": {
+    "isolated_replica": "/tmp/aud05-pytest",
+    "wrote_worktree_receipts_future": false,
+    "pytest": {
+      "command": "python3 -m pytest tools/future/test_u50_carrier.py + selected hwir/engines/fidelity/hbm cases -o addopts=''",
+      "result": "31 passed in 0.19s",
+      "evidence_tier": "STATIC_VERIFICATION"
+    },
+    "smoke": "simulate_qgemv_functional y=[10.0, 1.5] match=True; HARDWARE_MEASURED refused; U50DD DSP=5952; Chestnut constrain beat=2",
+    "not_executed_reason_for_full_suite": "tools/future is not in the sparse checkout; full pytest of tools/future/* would also call build() which writes receipts/future/. This lane is not allowed to rewrite those producers."
+  },
+  "sparse_checkout_limits": {
+    "did_not_run": "git sparse-checkout add (forbidden in this sandbox)",
+    "read_absent_paths_via": "git show HEAD:<path> / git grep",
+    "blocker_if_full_in_tree_pytest_required": "materialize tools/future tools/accelerator hcli/agentos/fpga_preboard.py tools/haider/test_hcli_science_boundaries.py"
+  }
+}

@@ -1,0 +1,3414 @@
+{
+  "schema": "hawking.audit.current_truth.v1",
+  "lane": "aud01-current-truth",
+  "generated_at": "2026-09-02T18:59:17Z",
+  "generated_by": "grok-4.6 executor on worktree aud01-current-truth-20260902-145104",
+  "head": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+  "branch": "grok/aud01-current-truth-20260902-145104",
+  "aligned_with": "odyssey-i",
+  "north_star": "HAWKING = SELF-OPTIMIZING PHYSICAL AI COMPUTER",
+  "constitution": {
+    "eras": 5,
+    "odysseys": 3,
+    "era_vi": false,
+    "fpga_home": "I-D_ACCELERATOR / IV-A_FUSION",
+    "theia": "ONE generalist bounty model, not a civilization",
+    "civilizational_coordinate_constitution": "0.7%",
+    "civilizational_coordinate_roadmap_state": 0.7,
+    "civilizational_coordinate_era_checkpoint_value_pct": 1.0,
+    "note": "Not rewritten. Producers disagree (0.7% vs 0.7 vs 1.0)."
+  },
+  "authority": {
+    "authoritative_for": [
+      "source archaeology",
+      "call-site reachability",
+      "test coverage",
+      "schema/topology",
+      "dependency graphs",
+      "duplication",
+      "naming",
+      "receipt consistency"
+    ],
+    "not_authoritative_for": [
+      "GPU physical performance",
+      "Metal runtime not executed",
+      "ANE physical behaviour",
+      "U50/FPGA unmeasured",
+      "thermal/power",
+      "protected benchmarks"
+    ],
+    "never_wrote_MEASURED_for_unrun_work": true,
+    "sparse_checkout": true
+  },
+  "classification_vocabulary": [
+    "ABSENT",
+    "CONCEPT_ONLY",
+    "SCAFFOLDED",
+    "CALLABLE",
+    "TESTED",
+    "END_TO_END",
+    "PHYSICALLY_MEASURED",
+    "ADVERSARIALLY_VERIFIED",
+    "INTEGRATED",
+    "BLOCKED_HARDWARE",
+    "BLOCKED_AUTHORITY",
+    "SUPERSEDED",
+    "STALE_ROADMAP_TEXT"
+  ],
+  "method": {
+    "call_site_rule": "Import is not a call. tools/acceptance is TESTED at most. if __name__=='__main__' demos are discounted. Live-path + accepted => INTEGRATED (source), never PHYSICALLY_MEASURED unless this process ran it.",
+    "capability_graph": {
+      "path": "civilization/CAPABILITY_GRAPH.json",
+      "generated_at": "2026-09-02T18:35:55Z",
+      "generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "head_this_audit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+      "stale_vs_head": true,
+      "counts": {
+        "gates": 71,
+        "genes": 25,
+        "gates_by_status": {
+          "BUILT": 18,
+          "SCAFFOLDED": 20,
+          "WIRED": 11,
+          "ABSENT": 1,
+          "BLOCKED_HARDWARE": 13,
+          "UNREACHABLE": 1,
+          "BLOCKED_EXTERNAL": 7
+        },
+        "genes_by_status": {
+          "SCAFFOLDED": 20,
+          "WIRED": 1,
+          "BLOCKED_HARDWARE": 3,
+          "DORMANT": 1
+        },
+        "built_gates": 18,
+        "wired_gates": 30,
+        "accepted_gates": 30
+      },
+      "evidence_tier": "STATIC"
+    },
+    "line_drift_example": "graph compile_worker_context hcli/mission.py:983; HEAD :1055"
+  },
+  "counts": {
+    "gates_in_graph": 71,
+    "subsystem_capabilities_added": 10,
+    "genes": 25,
+    "capabilities_by_classification": {
+      "INTEGRATED": 9,
+      "SCAFFOLDED": 25,
+      "TESTED": 12,
+      "CALLABLE": 12,
+      "ABSENT": 1,
+      "BLOCKED_HARDWARE": 14,
+      "BLOCKED_AUTHORITY": 8
+    },
+    "genes_by_classification": {
+      "SCAFFOLDED": 20,
+      "CALLABLE": 1,
+      "BLOCKED_HARDWARE": 3,
+      "CONCEPT_ONLY": 1
+    },
+    "graph_BUILT_not_promoted_to_PHYSICALLY_MEASURED": 18,
+    "n_integrated": 9,
+    "n_tested": 12,
+    "n_callable": 12,
+    "n_scaffolded": 25,
+    "n_blocked_hardware": 14,
+    "n_blocked_authority": 8,
+    "n_absent": 1,
+    "n_physically_measured": 0,
+    "n_adversarially_verified": 0,
+    "n_end_to_end": 0
+  },
+  "surprises": [
+    {
+      "id": "S1_DAEMON_NOT_LIVE",
+      "severity": "loud",
+      "finding": "No live hawkingd. Resident state=FAILED, worker_live=false, body UNLOADED, mission cancelled (resident_self_evacuation) at 2026-09-02T05:49:23 local. No com.hawking.hawkingd launchd service. Live hawking launchd pid: com.hawking.modellake.watch 4183.",
+      "contract_claimed": "LIVE HCLI daemon under launchd",
+      "what_would_settle": "Unsbox ps/lsof on .hcli/resident/.resident.lock; pid+start-token in state.json (currently supervisor_pid=null)."
+    },
+    {
+      "id": "S2_NOT_110_DIRTY_HCLI",
+      "severity": "loud",
+      "finding": "Main checkout dirty hcli is 3 paths (backends.py, engine.py, deleted test_absent_required_array_repair.py), not ~110. This worktree is clean.",
+      "contract_claimed": "~110 uncommitted files under hcli/",
+      "what_would_settle": "git status --porcelain -- hcli on the daemon repo_root at contract-write time vs now."
+    },
+    {
+      "id": "S3_THREE_HROADMAP_HASHES",
+      "severity": "loud",
+      "finding": "Downloads/H-ROADMAP.md and CAPABILITY_GRAPH share d43a6b07\u2026 (9645 lines). ROADMAP_STATE stores 51474151\u2026. corpdrive/H-ROADMAP.md is 5d704ca0\u2026 (9028 lines). civilization tests fail on roadmap_hash mismatch.",
+      "what_would_settle": "One canonical path, re-hash, regenerate ROADMAP_STATE from that producer."
+    },
+    {
+      "id": "S4_GRAPH_STALE_AND_MAIN_DEMO_COUNTED",
+      "severity": "loud",
+      "finding": "CAPABILITY_GRAPH from 7d6428006, 5 commits behind HEAD. Line drift. goal_compile.py:518 Scheduler is a __main__ demo. AGENTOS_CANCELLATION graph-BUILT on one harness abort().",
+      "what_would_settle": "Regenerate auditor at HEAD excluding __main__ demos and tools/acceptance from wired."
+    },
+    {
+      "id": "S5_SEALED_IS_NOT_SHA256",
+      "severity": "loud",
+      "finding": "55 bodies, 4.353 TB decimal. Catalog over_budget 852.666 GB vs 3500 GB. No 'sealed' field on manifests. 45/55 provenance=backfill. sha256 verified on 8 manifests observed. loaded_weights=false. Catalog built_at advanced live (18:53\u219218:58Z).",
+      "what_would_settle": "verify_only() per-file sha256 for every specimen, or rename the claim to acquired-bodies-hash-incomplete."
+    },
+    {
+      "id": "S6_ADVERSARIALLY_VERIFIED_IS_PROSE",
+      "severity": "loud",
+      "finding": "ROADMAP_STATE/ERA_I_CHECKPOINT_003 label civilizations ADVERSARIALLY_VERIFIED. Acceptance receipts are FUNCTIONAL_SIM/STATIC. This audit grants ADVERSARIALLY_VERIFIED to zero capabilities. Checkpoint last_verified_commit=a2e3d099b vs HEAD 04193ccbc.",
+      "what_would_settle": "Adversarial run at HEAD with negative controls, or downgrade in the producer."
+    },
+    {
+      "id": "S7_THEIA_PRESENT",
+      "severity": "loud",
+      "finding": "verified_absent.theia.verdict=PRESENT (tools/theia) while THEIA_* gates are BLOCKED_EXTERNAL.",
+      "what_would_settle": "Keep BLOCKED_AUTHORITY with PRESENT source; do not claim ABSENT."
+    },
+    {
+      "id": "S8_FLASH_HARDWARE_MEASURED_RECEIPT_VS_METAL_FAIL",
+      "severity": "loud",
+      "finding": "FLASH_NATIVE_NF_KERNEL receipt evidence_tier=HARDWARE_MEASURED, verdict BLOCKED, error metal: no Metal-capable GPU, while host is M3 Ultra Metal Supported. Receipts do not override a broken producer.",
+      "what_would_settle": "A Metal dispatch on this machine writing a new producer receipt."
+    },
+    {
+      "id": "S9_ODYSSEY_CHECKPOINT_FENCE_FALSE",
+      "severity": "medium",
+      "finding": "ODYSSEY_LAUNCH_AUTHORIZED=false yet T0 checkpoint ca36e0f962b06cbc exists (2026-09-02T18:49:01Z, eval_result_hash=none).",
+      "what_would_settle": "Name the producer of CURRENT; scaffold vs authorized run."
+    },
+    {
+      "id": "S10_COORDINATE_THREE_VALUES",
+      "severity": "medium",
+      "finding": "Constitution 0.7%; ROADMAP_STATE 0.7; ERA checkpoint value_pct 1.0. Not rewritten.",
+      "what_would_settle": "One producer, one number, named denominator."
+    },
+    {
+      "id": "S11_G003_G004_G005_ABSENT_RECEIPTS",
+      "severity": "loud",
+      "finding": "Sovereign receipts G003/G004/G005/G002 absent. G001 and G009 exist. Mission evidence NO_EVIDENCE.",
+      "what_would_settle": "Named producers write the receipts; red gates pass without being edited."
+    },
+    {
+      "id": "S12_SANDBOX_HIDES_PS",
+      "severity": "medium",
+      "finding": "ps/lsof Operation not permitted. A non-launchd hawkingd would be invisible. Disk state used.",
+      "what_would_settle": "gate-profile unsandboxed ps/lsof."
+    }
+  ],
+  "repo": {
+    "head": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+    "head_subject": "fix(hcli): a graceful stop, and a successful repair, no longer end the mission",
+    "head_author": "Joshua Hicks",
+    "head_date": "2026-09-02 14:48:41 -0400",
+    "branch": "grok/aud01-current-truth-20260902-145104",
+    "odyssey_i_at_same_head": true,
+    "main_checkout": "/Users/scammermike/Downloads/hawking",
+    "main_checkout_branch": "odyssey-i",
+    "main_checkout_ahead_of_origin_odyssey_i": 8,
+    "n_local_branches_approx": 497,
+    "n_worktrees": 32,
+    "n_files_at_head": 15913,
+    "this_worktree_dirty_before_audit_write": 0,
+    "hcli_files_at_head": 198,
+    "hcli_test_files_at_head": 78,
+    "recent_commits": [
+      "04193ccbc fix(hcli): a graceful stop, and a successful repair, no longer end the mission",
+      "f16ec8cdd merge s2-hwir-pluggable-lowering-target",
+      "7eaca722f Merge branch grok/s2-hwir-pluggable-lowering-target into odyssey-i",
+      "cb69893cf acceptance: two guards could never pass in a tree the daemon lives in",
+      "14ed3eb1f acceptance: a blocked lock acquirer is EVIDENCE, not a harness crash",
+      "7d6428006 roadmap: consume acceptance receipts; a hardware probe can no longer crash the audit"
+    ]
+  },
+  "hardware": {
+    "evidence_tier": "SOURCE_INSPECTION",
+    "model": "Mac Studio Mac15,14",
+    "chip": "Apple M3 Ultra",
+    "cpu_cores": 28,
+    "performance_cores": 20,
+    "efficiency_cores": 8,
+    "memory_gb": 96,
+    "gpu_cores": 60,
+    "metal": "Supported",
+    "ane_inventory": {
+      "AppleT6031ANEHAL": 1,
+      "ANEScheduler": 1
+    },
+    "ane_physical_performance": "NOT_MEASURED_THIS_SESSION",
+    "fpga_u50": false,
+    "dgx": false,
+    "egpu": false,
+    "nvidia_smi": "not present",
+    "probes_from_capability_graph": {
+      "U50_PRESENT": {
+        "id": "U50_PRESENT",
+        "present": false,
+        "description": "AMD/Xilinx Alveo U50DD/XCU50-class FPGA enumerated on this host (PCIe/Thunderbolt identity contains xilinx/alveo/u50/xcu50).",
+        "evidence": "no Xilinx/Alveo/U50/XCU50 identity in PCIe/Thunderbolt/ioreg inventory",
+        "evidence_tier": "STATIC"
+      },
+      "DGX_PRESENT": {
+        "id": "DGX_PRESENT",
+        "present": false,
+        "description": "NVIDIA DGX Spark or DGX-class node visible: nvidia-smi succeeds and the product name contains DGX.",
+        "evidence": "nvidia-smi not present or produced no GPU list",
+        "evidence_tier": "STATIC"
+      },
+      "NEW_M_SERIES_PRESENT": {
+        "id": "NEW_M_SERIES_PRESENT",
+        "present": false,
+        "description": "Apple SoC newer than the current M3 Ultra textbook (M4 or later).",
+        "evidence": "SoC identity 'Apple M3 Ultra Mac15,14' is not M4-or-later (current textbook is M3 Ultra)",
+        "evidence_tier": "STATIC"
+      },
+      "HMF_PRESENT": {
+        "id": "HMF_PRESENT",
+        "present": false,
+        "description": "HMF/HGVAS managed-memory device visible (CXL expander / HBM appliance enumerated; identity contains HMF, HGVAS, or CXL memory device).",
+        "evidence": "no HMF/HGVAS/CXL memory appliance in inventory",
+        "evidence_tier": "STATIC"
+      },
+      "EGPU_PRESENT": {
+        "id": "EGPU_PRESENT",
+        "present": false,
+        "description": "External GPU enumerated on Thunderbolt/USB4 (eGPU / AMD / NVIDIA enclosure that is not the Apple SoC GPU).",
+        "evidence": "no eGPU enclosure in displays/thunderbolt inventory",
+        "evidence_tier": "STATIC"
+      }
+    }
+  },
+  "daemon": {
+    "classification": "CALLABLE",
+    "live": false,
+    "evidence_tier": "STATIC_VERIFICATION",
+    "entry": "hcli/hawkingd.py -> hcli.agentos.resident.daemon_main",
+    "launchd_service_hawkingd": false,
+    "launchd_live_hawking_jobs": [
+      {
+        "label": "com.hawking.modellake.watch",
+        "pid": 4183
+      }
+    ],
+    "resident_state": "FAILED",
+    "body_status": "UNLOADED",
+    "mission_phase": "cancelled",
+    "cancel_reason": "resident_self_evacuation",
+    "accepted_count": 0,
+    "updated_local": "2026-09-02T05:49:23",
+    "llama_ports_closed": [
+      8080,
+      8081,
+      8088,
+      8090,
+      52484
+    ],
+    "unit_test_this_session": {
+      "file": "hcli/test_hawkingd_daemon_name.py",
+      "passed": 6,
+      "wall_s": 0.21
+    }
+  },
+  "modellake": {
+    "classification": "TESTED",
+    "evidence_tier": "STATIC_VERIFICATION",
+    "root": "/Volumes/corpdrive/hawking-modellake",
+    "n_specimens": 55,
+    "n_manifests": 55,
+    "n_retired": 1,
+    "specimens_bytes": 4352666459500,
+    "specimens_tb_decimal": 4.3526664595,
+    "tier2_budget_gb": 3500.0,
+    "tier2_used_gb": 4352.666,
+    "tier2_overage_gb": 852.666,
+    "over_budget": true,
+    "loaded_weights": false,
+    "hash_seal": "INCOMPLETE",
+    "n_families": 39,
+    "provenance_backfill": 45,
+    "watch_pid": 4183,
+    "catalog_live": true,
+    "catalog_built_at_samples": [
+      "2026-09-02T18:53:04Z",
+      "2026-09-02T18:56:02Z",
+      "2026-09-02T18:58:06Z"
+    ]
+  },
+  "odyssey": {
+    "I": {
+      "classification": "TESTED",
+      "graph_status": "BUILT",
+      "acceptance_verdict": "ACCEPTED",
+      "n_receipts_on_disk": 148
+    },
+    "II": {
+      "classification": "CALLABLE",
+      "acceptance_verdict": "BLOCKED",
+      "blocker": "evaluations_avoided=-8"
+    },
+    "III": {
+      "classification": "CALLABLE",
+      "acceptance_verdict": "BLOCKED",
+      "blocker": "synthetic adversary"
+    },
+    "launch_authorized": false,
+    "fence_authorized": false,
+    "t0_checkpoint_id": "ca36e0f962b06cbcc8d01baecbdfbfbec76883fa4260fbcc387934109007b5be",
+    "t0_eval_result_hash": "none"
+  },
+  "hwir": {
+    "classification": "CALLABLE",
+    "evidence_tier": "SOURCE_INSPECTION",
+    "claim_boundary": "PREHARDWARE; HARDWARE_MEASURED illegal",
+    "receipts": [
+      "receipts/future/HWIR_V1.json",
+      "receipts/future/HWIR_SEALED_PREDICTIONS.json",
+      "receipts/future/HWIR_SYNTHETIC_ARRIVAL_REHEARSAL.json"
+    ],
+    "pluggable_lowering_merged_this_head": true
+  },
+  "accelerator": {
+    "classification": "CALLABLE",
+    "evidence_tier": "SOURCE_INSPECTION",
+    "codex_handoff_recorded_at": "2026-08-30T05:06:03.795628Z",
+    "accelerator_complete": false
+  },
+  "prefill": {
+    "classification": "SCAFFOLDED",
+    "sovereign_receipt": null,
+    "evidence_tier": "SOURCE_INSPECTION"
+  },
+  "context_compiler": {
+    "worker_context_packet": "INTEGRATED",
+    "sovereign_g004": "SCAFFOLDED (receipt absent)",
+    "status_physical": "CALLABLE blocked on renderer",
+    "mixed_max": "CALLABLE blocked on no llama-server"
+  },
+  "self_mutation_and_landing": {
+    "landing_service": "TESTED 23/23 in 6.99s",
+    "g003_e2e": "SCAFFOLDED receipt absent",
+    "never_pushes": true
+  },
+  "tests_this_session": {
+    "runs": [
+      {
+        "command": "python3 -m pytest civilization/test_validate.py civilization/test_checkpoint.py -o addopts=''",
+        "result": "4 failed, 44 passed in 0.45s",
+        "real_s": 0.61
+      },
+      {
+        "command": "python3 -m pytest lab/tests --collect-only -o addopts=''",
+        "result": "85 collected, 139 errors in 2.06s",
+        "note": "sparse"
+      },
+      {
+        "command": "python3 -m pytest tools/haider/hcli/tests --collect-only -o addopts=''",
+        "result": "545 collected in 0.32s"
+      },
+      {
+        "command": "python3 -m pytest tools/haider/hcli/tests -o addopts='' --maxfail=20",
+        "result": "20 failed, 179 passed, 1 skipped in 8.41s",
+        "note": "sparse-contaminated; not a clean suite verdict"
+      },
+      {
+        "command": "python3 -m pytest hawking-experiments/frankenstein/condense/tests --collect-only -o addopts=''",
+        "result": "0 collected, 17 errors in 0.49s"
+      },
+      {
+        "command": "cargo test -p hawking-index-query --offline --lib -- --test-threads=1",
+        "result": "15 passed, 0 failed, test 0.72s, real 6.99s",
+        "target_dir": "workspace/ops/build/rust"
+      },
+      {
+        "command": "python3 -m pytest hcli/test_hawkingd_daemon_name.py -o addopts=''",
+        "cwd": "/Users/scammermike/Downloads/hawking",
+        "result": "6 passed in 0.21s"
+      },
+      {
+        "command": "python3 -m pytest hcli/test_landing.py -o addopts=''",
+        "cwd": "/Users/scammermike/Downloads/hawking",
+        "result": "23 passed in 6.99s"
+      }
+    ],
+    "inventory_not_run": {
+      "hcli_test_py": 78,
+      "tools_test_py": 634,
+      "crate_test_rs": 195,
+      "hawking_core_tests_on_disk": 160
+    }
+  },
+  "roadmap_artifacts": {
+    "receipts_audit_before_this_lane": [],
+    "this_lane_writes": [
+      "receipts/audit/aud01-current-truth.json",
+      "receipts/audit/aud01-current-truth.md"
+    ],
+    "capability_graph": "civilization/CAPABILITY_GRAPH.json",
+    "roadmap_state": "civilization/ROADMAP_STATE.json",
+    "era_checkpoints": [
+      "civilization/ERA_I_CHECKPOINT_001.json",
+      "civilization/ERA_I_CHECKPOINT_002.json",
+      "civilization/ERA_I_CHECKPOINT_003.json"
+    ],
+    "h_roadmap": {
+      "downloads_sha256": "d43a6b07ab9590bc11c265bfe8a1466131cce291b0622c076370a01d811328e4",
+      "downloads_lines": 9645,
+      "corpdrive_sha256": "5d704ca0238763034bbfdc4d9bcd90e812a76916a7d8f63129671284cc61e069",
+      "corpdrive_lines": 9028,
+      "roadmap_state_hash": "51474151b53f63fe9f409a11dae5ef29e9efcc1dec62c6bdd40755b14017be2c",
+      "in_git_at_head": false
+    },
+    "stale_roadmap_text": [
+      "ROADMAP_STATE civilization_status.*.status = ADVERSARIALLY_VERIFIED",
+      "ERA_I_CHECKPOINT_003 last_verified_commit a2e3d099b",
+      "ROADMAP_STATE.roadmap_hash 51474151 vs disk d43a6b07",
+      "contract preamble LIVE daemon + 110 dirty hcli files"
+    ]
+  },
+  "active_era": "I",
+  "active_civilizations": [
+    "I-A_AGENTOS_HCLI",
+    "I-B_DOCTOR",
+    "I-C_GRAVITY_NOETIC",
+    "I-D_ACCELERATOR",
+    "I-E_ODYSSEY_I"
+  ],
+  "capabilities": [
+    {
+      "id": "AGENTOS_REPAIR_BOUNDED",
+      "kind": "gate",
+      "classification": "INTEGRATED",
+      "graph_status": "BUILT",
+      "graph_wired": true,
+      "graph_accepted": true,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "hcli/mission.py",
+          "line": 254,
+          "kind": "call",
+          "symbol": "Scheduler",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": true
+        },
+        {
+          "file": "hcli/mission.py",
+          "line": 364,
+          "kind": "call",
+          "symbol": "Scheduler",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": true
+        },
+        {
+          "file": "tools/headless/control_plane_latency.py",
+          "line": 477,
+          "kind": "call",
+          "symbol": "Scheduler",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": false
+        },
+        {
+          "file": "tools/headless/control_plane_latency.py",
+          "line": 981,
+          "kind": "call",
+          "symbol": "Scheduler",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": false
+        },
+        {
+          "file": "tools/headless/hcli_persistence_audit.py",
+          "line": 898,
+          "kind": "call",
+          "symbol": "Scheduler",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": false
+        },
+        {
+          "file": "tools/headless/hcli_persistence_audit.py",
+          "line": 1787,
+          "kind": "call",
+          "symbol": "Scheduler",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": false
+        },
+        {
+          "file": "tools/headless/hcli_scheduler_quality.py",
+          "line": 245,
+          "kind": "call",
+          "symbol": "Scheduler",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": false
+        },
+        {
+          "file": "tools/headless/hcli_scheduler_quality.py",
+          "line": 593,
+          "kind": "call",
+          "symbol": "Scheduler",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": false
+        },
+        {
+          "file": "tools/headless/repair_disposition_table.py",
+          "line": 170,
+          "kind": "call",
+          "symbol": "Scheduler",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": false
+        },
+        {
+          "file": "tools/headless/repair_disposition_table.py",
+          "line": 282,
+          "kind": "call",
+          "symbol": "Scheduler",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": false
+        },
+        {
+          "file": "tools/headless/repair_disposition_table.py",
+          "line": 334,
+          "kind": "call",
+          "symbol": "Scheduler",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": false
+        },
+        {
+          "file": "hcli/mission.py",
+          "line": 264,
+          "kind": "call",
+          "symbol": "Scheduler",
+          "role": "production",
+          "live_path": true,
+          "verified_at": "HEAD"
+        },
+        {
+          "file": "hcli/mission.py",
+          "line": 374,
+          "kind": "call",
+          "symbol": "Scheduler",
+          "role": "production",
+          "live_path": true,
+          "verified_at": "HEAD"
+        },
+        {
+          "file": "tools/acceptance/agentos/harness.py",
+          "line": 218,
+          "kind": "call",
+          "symbol": "Scheduler",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "acceptance_harness"
+        },
+        {
+          "file": "tools/acceptance/agentos/harness.py",
+          "line": 412,
+          "kind": "call",
+          "symbol": "Scheduler",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "acceptance_harness"
+        },
+        {
+          "file": "tools/acceptance/agentos/harness.py",
+          "line": 432,
+          "kind": "call",
+          "symbol": "Scheduler",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "acceptance_harness"
+        },
+        {
+          "file": "tools/acceptance/agentos/harness.py",
+          "line": 549,
+          "kind": "call",
+          "symbol": "Scheduler",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "acceptance_harness"
+        },
+        {
+          "file": "tools/acceptance/agentos/harness.py",
+          "line": 574,
+          "kind": "call",
+          "symbol": "Scheduler",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "acceptance_harness"
+        }
+      ],
+      "discounted_call_sites": [
+        {
+          "file": "hcli/goal_compile.py",
+          "line": 518,
+          "kind": "call",
+          "symbol": "Scheduler",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "discounted": true,
+          "discount_reason": "if __name__ == '__main__' demo with asserts at HEAD, not a library caller"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/AGENTOS_REPAIR_BOUNDED.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": "DISCOUNTED graph caller hcli/goal_compile.py:518 (if __name__ == '__main__' demo). HEAD production callers are hcli/mission.py Scheduler()."
+    },
+    {
+      "id": "AGENTOS_RETRY_CLASSIFIED",
+      "kind": "gate",
+      "classification": "SCAFFOLDED",
+      "graph_status": "SCAFFOLDED",
+      "graph_wired": false,
+      "graph_accepted": false,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [],
+      "discounted_call_sites": [],
+      "blocker": "Scheduler.fail does not consult classify_failure; FAILURE_KINDS implements 7 of 17 D.2 class names. receipts/acceptance/AGENTOS_RETRY_CLASSIFIED.json verdict BLOCKED.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/AGENTOS_RETRY_CLASSIFIED.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "AGENTOS_CIRCUIT_BREAKER",
+      "kind": "gate",
+      "classification": "SCAFFOLDED",
+      "graph_status": "SCAFFOLDED",
+      "graph_wired": false,
+      "graph_accepted": true,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [],
+      "discounted_call_sites": [],
+      "blocker": "no non-harness production caller of the implementing symbol. Acceptance receipt FUNCTIONAL_SIM ACCEPTED from tools/acceptance; that is TESTED at most.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/AGENTOS_CIRCUIT_BREAKER.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "AGENTOS_CANCELLATION",
+      "kind": "gate",
+      "classification": "TESTED",
+      "graph_status": "BUILT",
+      "graph_wired": true,
+      "graph_accepted": true,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "tools/acceptance/agentos/harness.py",
+          "line": 714,
+          "kind": "call",
+          "symbol": "abort",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "acceptance_harness"
+        }
+      ],
+      "discounted_call_sites": [],
+      "blocker": "no live-path caller of abort(); harness-only.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/AGENTOS_CANCELLATION.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": "Graph BUILT on a single tools/acceptance harness abort() call. Downgraded: harness is not the live path."
+    },
+    {
+      "id": "AGENTOS_ORPHAN_RECONCILIATION",
+      "kind": "gate",
+      "classification": "INTEGRATED",
+      "graph_status": "BUILT",
+      "graph_wired": true,
+      "graph_accepted": true,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "hcli/agentos/handoff.py",
+          "line": 106,
+          "kind": "call",
+          "symbol": "BackgroundJobStore",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": true
+        },
+        {
+          "file": "hcli/agentos/protected_benchmark_watcher.py",
+          "line": 65,
+          "kind": "call",
+          "symbol": "BackgroundJobStore",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": true
+        },
+        {
+          "file": "hcli/agentos/resident.py",
+          "line": 894,
+          "kind": "call",
+          "symbol": "BackgroundJobStore",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": true
+        },
+        {
+          "file": "hcli/agentos/resident.py",
+          "line": 981,
+          "kind": "call",
+          "symbol": "BackgroundJobStore",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": true
+        },
+        {
+          "file": "hcli/agentos/runtime.py",
+          "line": 97,
+          "kind": "call",
+          "symbol": "BackgroundJobStore",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": false
+        },
+        {
+          "file": "tools/acceptance/agentos/harness.py",
+          "line": 864,
+          "kind": "call",
+          "symbol": "BackgroundJobStore",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "acceptance_harness"
+        },
+        {
+          "file": "tools/acceptance/agentos/harness.py",
+          "line": 876,
+          "kind": "call",
+          "symbol": "BackgroundJobStore",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "acceptance_harness"
+        },
+        {
+          "file": "tools/acceptance/agentos/harness.py",
+          "line": 901,
+          "kind": "call",
+          "symbol": "BackgroundJobStore",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "acceptance_harness"
+        },
+        {
+          "file": "tools/acceptance/agentos/harness.py",
+          "line": 907,
+          "kind": "call",
+          "symbol": "BackgroundJobStore",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "acceptance_harness"
+        },
+        {
+          "file": "tools/acceptance/agentos/harness.py",
+          "line": 1142,
+          "kind": "call",
+          "symbol": "BackgroundJobStore",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "acceptance_harness"
+        }
+      ],
+      "discounted_call_sites": [],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/AGENTOS_ORPHAN_RECONCILIATION.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "AGENTOS_PERSISTENCE_SINGLE_AUTHORITY",
+      "kind": "gate",
+      "classification": "INTEGRATED",
+      "graph_status": "BUILT",
+      "graph_wired": true,
+      "graph_accepted": true,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "hcli/controller.py",
+          "line": 664,
+          "kind": "call",
+          "symbol": "MutationLock",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": true
+        },
+        {
+          "file": "hcli/delegate.py",
+          "line": 357,
+          "kind": "call",
+          "symbol": "MutationLock",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": false
+        },
+        {
+          "file": "hcli/delegate.py",
+          "line": 448,
+          "kind": "call",
+          "symbol": "MutationLock",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": false
+        },
+        {
+          "file": "hcli/delegate.py",
+          "line": 544,
+          "kind": "call",
+          "symbol": "MutationLock",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": false
+        },
+        {
+          "file": "hcli/delegate.py",
+          "line": 853,
+          "kind": "call",
+          "symbol": "MutationLock",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": false
+        },
+        {
+          "file": "hcli/delegate.py",
+          "line": 1309,
+          "kind": "call",
+          "symbol": "MutationLock",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": false
+        },
+        {
+          "file": "hcli/scheduler.py",
+          "line": 108,
+          "kind": "call",
+          "symbol": "MutationLock",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": false
+        },
+        {
+          "file": "tools/headless/hcli_bootstrap_live_proof.py",
+          "line": 171,
+          "kind": "call",
+          "symbol": "MutationLock",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": false
+        },
+        {
+          "file": "tools/headless/hcli_bootstrap_live_proof.py",
+          "line": 172,
+          "kind": "call",
+          "symbol": "MutationLock",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": false
+        },
+        {
+          "file": "tools/headless/hcli_persistence_audit.py",
+          "line": 1565,
+          "kind": "call",
+          "symbol": "MutationLock",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": false
+        },
+        {
+          "file": "tools/acceptance/agentos/harness.py",
+          "line": 723,
+          "kind": "call",
+          "symbol": "MutationLock",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "acceptance_harness"
+        },
+        {
+          "file": "tools/acceptance/agentos/harness.py",
+          "line": 1063,
+          "kind": "call",
+          "symbol": "MutationLock",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "acceptance_harness"
+        },
+        {
+          "file": "tools/acceptance/agentos/harness.py",
+          "line": 1083,
+          "kind": "call",
+          "symbol": "MutationLock",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "acceptance_harness"
+        },
+        {
+          "file": "tools/acceptance/agentos/harness.py",
+          "line": 1084,
+          "kind": "call",
+          "symbol": "MutationLock",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "acceptance_harness"
+        },
+        {
+          "file": "tools/acceptance/agentos/harness.py",
+          "line": 1766,
+          "kind": "call",
+          "symbol": "MutationLock",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "acceptance_harness"
+        }
+      ],
+      "discounted_call_sites": [],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/AGENTOS_PERSISTENCE_SINGLE_AUTHORITY.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "AGENTOS_CHECKPOINT_ATOMICITY",
+      "kind": "gate",
+      "classification": "TESTED",
+      "graph_status": "BUILT",
+      "graph_wired": true,
+      "graph_accepted": true,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 1220,
+          "kind": "call",
+          "symbol": "write_program_checkpoint",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": true
+        },
+        {
+          "file": "tools/acceptance/agentos/harness.py",
+          "line": 1542,
+          "kind": "call",
+          "symbol": "write_program_checkpoint",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "acceptance_harness"
+        }
+      ],
+      "discounted_call_sites": [],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/AGENTOS_CHECKPOINT_ATOMICITY.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": "Sole live-path caller is hcli/agentos_cli.py. CLI-wired + FUNCTIONAL_SIM receipt is TESTED, not INTEGRATED into the resident loop."
+    },
+    {
+      "id": "AGENTOS_RESTART_COHERENCE",
+      "kind": "gate",
+      "classification": "TESTED",
+      "graph_status": "BUILT",
+      "graph_wired": true,
+      "graph_accepted": true,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 584,
+          "kind": "call",
+          "symbol": "run_recovery_gate",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": true
+        },
+        {
+          "file": "tools/acceptance/agentos/harness.py",
+          "line": 1809,
+          "kind": "call",
+          "symbol": "run_recovery_gate",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "acceptance_harness"
+        }
+      ],
+      "discounted_call_sites": [],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/AGENTOS_RESTART_COHERENCE.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": "Sole live-path caller is hcli/agentos_cli.py. TESTED, not resident-loop INTEGRATED."
+    },
+    {
+      "id": "HCLI_CONTEXT_AUTHORITY_UNIFIED",
+      "kind": "gate",
+      "classification": "INTEGRATED",
+      "graph_status": "BUILT",
+      "graph_wired": true,
+      "graph_accepted": true,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "hcli/backends.py",
+          "line": 1320,
+          "kind": "call",
+          "symbol": "resolve",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": true
+        },
+        {
+          "file": "hcli/config.py",
+          "line": 131,
+          "kind": "call",
+          "symbol": "resolve",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": false
+        },
+        {
+          "file": "hcli/engine.py",
+          "line": 1866,
+          "kind": "call",
+          "symbol": "resolve",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": true
+        },
+        {
+          "file": "hcli/runtime.py",
+          "line": 649,
+          "kind": "call",
+          "symbol": "resolve",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": true
+        },
+        {
+          "file": "tools/headless/context_budget_probe.py",
+          "line": 86,
+          "kind": "call",
+          "symbol": "resolve",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": false
+        },
+        {
+          "file": "tools/headless/hcli_long_context_ingress.py",
+          "line": 118,
+          "kind": "call",
+          "symbol": "resolve",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": false
+        },
+        {
+          "file": "tools/acceptance/context/gates.py",
+          "line": 189,
+          "kind": "call",
+          "symbol": "resolve",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "acceptance_harness"
+        }
+      ],
+      "discounted_call_sites": [],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/HCLI_CONTEXT_AUTHORITY_UNIFIED.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "HCLI_CONTEXT_FOCUSED_WORKUNITS",
+      "kind": "gate",
+      "classification": "INTEGRATED",
+      "graph_status": "BUILT",
+      "graph_wired": true,
+      "graph_accepted": true,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "hcli/mission.py",
+          "line": 983,
+          "kind": "call",
+          "symbol": "compile_worker_context",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": true
+        },
+        {
+          "file": "tools/headless/control_plane_latency.py",
+          "line": 401,
+          "kind": "call",
+          "symbol": "compile_worker_context",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": false
+        },
+        {
+          "file": "tools/headless/control_plane_latency.py",
+          "line": 414,
+          "kind": "call",
+          "symbol": "compile_worker_context",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": false
+        },
+        {
+          "file": "hcli/mission.py",
+          "line": 1055,
+          "kind": "call",
+          "symbol": "compile_worker_context",
+          "role": "production",
+          "live_path": true,
+          "verified_at": "HEAD",
+          "note": "graph cited line 983; HEAD is 1055"
+        },
+        {
+          "file": "tools/acceptance/context/gates.py",
+          "line": 199,
+          "kind": "call",
+          "symbol": "compile_worker_context",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "acceptance_harness"
+        },
+        {
+          "file": "tools/acceptance/context/gates.py",
+          "line": 325,
+          "kind": "call",
+          "symbol": "compile_worker_context",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "acceptance_harness"
+        },
+        {
+          "file": "tools/acceptance/context/gates.py",
+          "line": 334,
+          "kind": "call",
+          "symbol": "compile_worker_context",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "acceptance_harness"
+        },
+        {
+          "file": "tools/acceptance/context/gates.py",
+          "line": 428,
+          "kind": "call",
+          "symbol": "compile_worker_context",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "acceptance_harness"
+        },
+        {
+          "file": "tools/acceptance/context/gates.py",
+          "line": 460,
+          "kind": "call",
+          "symbol": "compile_worker_context",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "acceptance_harness"
+        }
+      ],
+      "discounted_call_sites": [],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/HCLI_CONTEXT_FOCUSED_WORKUNITS.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "HCLI_CONTEXT_INVALIDATION",
+      "kind": "gate",
+      "classification": "SCAFFOLDED",
+      "graph_status": "SCAFFOLDED",
+      "graph_wired": false,
+      "graph_accepted": true,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [],
+      "discounted_call_sites": [],
+      "blocker": "no production caller of the implementing symbol (graph). Acceptance receipt exists (FUNCTIONAL_SIM) from acc2; a harness is not a live-path caller.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/HCLI_CONTEXT_INVALIDATION.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "HCLI_STATUS_PHYSICAL",
+      "kind": "gate",
+      "classification": "CALLABLE",
+      "graph_status": "WIRED",
+      "graph_wired": true,
+      "graph_accepted": false,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "tools/headless/control_plane_latency.py",
+          "line": 443,
+          "kind": "call",
+          "symbol": "format_status",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": false
+        },
+        {
+          "file": "tools/headless/control_plane_latency.py",
+          "line": 456,
+          "kind": "call",
+          "symbol": "format_status",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": false
+        },
+        {
+          "file": "tools/acceptance/context/gates.py",
+          "line": 604,
+          "kind": "call",
+          "symbol": "format_status",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "acceptance_harness"
+        }
+      ],
+      "discounted_call_sites": [],
+      "blocker": "format_status does not render the D.9 physical /status contract (missing MISSION/EXTERNAL/VERIFICATION/MUTATION/REPAIR/PERSISTENCE/THROUGHPUT/RESOURCE/STAGNATION fields).",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/HCLI_STATUS_PHYSICAL.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": "Harness or CLI caller only; acceptance undemonstrated or blocked."
+    },
+    {
+      "id": "HCLI_MIXED_MAX",
+      "kind": "gate",
+      "classification": "CALLABLE",
+      "graph_status": "WIRED",
+      "graph_wired": true,
+      "graph_accepted": false,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "hcli/controller.py",
+          "line": 337,
+          "kind": "call",
+          "symbol": "grok_pool_snapshot",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": true
+        },
+        {
+          "file": "hcli/controller.py",
+          "line": 431,
+          "kind": "call",
+          "symbol": "grok_pool_snapshot",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": true
+        },
+        {
+          "file": "tools/headless/hcli_p0_gates.py",
+          "line": 332,
+          "kind": "call",
+          "symbol": "grok_pool_snapshot",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": false
+        },
+        {
+          "file": "tools/acceptance/context/gates.py",
+          "line": 531,
+          "kind": "call",
+          "symbol": "grok_pool_snapshot",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "acceptance_harness"
+        },
+        {
+          "file": "tools/acceptance/context/gates.py",
+          "line": 672,
+          "kind": "call",
+          "symbol": "grok_pool_snapshot",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "acceptance_harness"
+        }
+      ],
+      "discounted_call_sites": [],
+      "blocker": "no llama-server listening (this audit probed 8080/8081/8088/8090/52484 \u2014 all closed).",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/HCLI_MIXED_MAX.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "BACKEND_FAILURE_ISOLATION",
+      "kind": "gate",
+      "classification": "INTEGRATED",
+      "graph_status": "BUILT",
+      "graph_wired": true,
+      "graph_accepted": true,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "hcli/mission.py",
+          "line": 1421,
+          "kind": "call",
+          "symbol": "terminate_pid",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": true
+        },
+        {
+          "file": "hcli/runtime.py",
+          "line": 520,
+          "kind": "call",
+          "symbol": "terminate_pid",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": true
+        },
+        {
+          "file": "hcli/runtime.py",
+          "line": 879,
+          "kind": "call",
+          "symbol": "terminate_pid",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": true
+        },
+        {
+          "file": "hcli/runtime.py",
+          "line": 1330,
+          "kind": "call",
+          "symbol": "terminate_pid",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": true
+        },
+        {
+          "file": "tools/acceptance/context/gates.py",
+          "line": 827,
+          "kind": "call",
+          "symbol": "terminate_pid",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "acceptance_harness"
+        }
+      ],
+      "discounted_call_sites": [],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/BACKEND_FAILURE_ISOLATION.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "HCLI_SELF_SUPPLEMENT",
+      "kind": "gate",
+      "classification": "INTEGRATED",
+      "graph_status": "BUILT",
+      "graph_wired": true,
+      "graph_accepted": true,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "hcli/agentos/resident.py",
+          "line": 1012,
+          "kind": "call",
+          "symbol": "admit_evidence_children",
+          "role": "production",
+          "live_path": true,
+          "verified_at": "HEAD"
+        },
+        {
+          "file": "tools/acceptance/context/gates.py",
+          "line": 933,
+          "kind": "call",
+          "symbol": "admit_evidence_children",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "acceptance_harness"
+        },
+        {
+          "file": "tools/acceptance/context/gates.py",
+          "line": 949,
+          "kind": "call",
+          "symbol": "admit_evidence_children",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "acceptance_harness"
+        }
+      ],
+      "discounted_call_sites": [],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/HCLI_SELF_SUPPLEMENT.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": "admit_evidence_children called from hcli/agentos/resident.py:1012 (HEAD). Daemon currently FAILED so this is source-integrated, not a live end-to-end run."
+    },
+    {
+      "id": "HCLI_SELF_OPTIMIZATION_BOOTSTRAP",
+      "kind": "gate",
+      "classification": "CALLABLE",
+      "graph_status": "WIRED",
+      "graph_wired": true,
+      "graph_accepted": false,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 663,
+          "kind": "call",
+          "symbol": "run_autonomy_gate",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": true
+        }
+      ],
+      "discounted_call_sites": [],
+      "blocker": "D.11 two-iteration law not demonstrable without SIGTERM/SIGKILL of the daemon; prewritten second task is not self-optimization.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/HCLI_SELF_OPTIMIZATION_BOOTSTRAP.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "VMCP_STATE_LATTICE",
+      "kind": "gate",
+      "classification": "SCAFFOLDED",
+      "graph_status": "SCAFFOLDED",
+      "graph_wired": false,
+      "graph_accepted": true,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [],
+      "discounted_call_sites": [],
+      "blocker": "no non-harness production caller. Acceptance INDEX invoked_call_count=14 FUNCTIONAL_SIM.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/VMCP_STATE_LATTICE.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "VMCP_DEEP_DIGEST",
+      "kind": "gate",
+      "classification": "SCAFFOLDED",
+      "graph_status": "SCAFFOLDED",
+      "graph_wired": false,
+      "graph_accepted": true,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [],
+      "discounted_call_sites": [],
+      "blocker": "no non-harness production caller. Acceptance INDEX invoked_call_count=7 FUNCTIONAL_SIM.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/VMCP_DEEP_DIGEST.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "VMCP_TRUTH_LEDGER",
+      "kind": "gate",
+      "classification": "SCAFFOLDED",
+      "graph_status": "SCAFFOLDED",
+      "graph_wired": false,
+      "graph_accepted": true,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [],
+      "discounted_call_sites": [],
+      "blocker": "no non-harness production caller. Acceptance INDEX invoked_call_count=6 FUNCTIONAL_SIM.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/VMCP_TRUTH_LEDGER.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "VMCP_RECEIPT_LAW",
+      "kind": "gate",
+      "classification": "TESTED",
+      "graph_status": "BUILT",
+      "graph_wired": true,
+      "graph_accepted": true,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 609,
+          "kind": "call",
+          "symbol": "run_vmcp_gate",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": true
+        }
+      ],
+      "discounted_call_sites": [],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/VMCP_RECEIPT_LAW.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": "Sole live-path caller is hcli/agentos_cli.py:609 run_vmcp_gate. TESTED, not resident-loop INTEGRATED."
+    },
+    {
+      "id": "VMCP_TOOL_DOCTOR",
+      "kind": "gate",
+      "classification": "SCAFFOLDED",
+      "graph_status": "SCAFFOLDED",
+      "graph_wired": false,
+      "graph_accepted": true,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [],
+      "discounted_call_sites": [],
+      "blocker": "no non-harness production caller. Acceptance INDEX invoked_call_count=4 FUNCTIONAL_SIM.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/VMCP_TOOL_DOCTOR.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "VMCP_FILE_CLASSIFIER",
+      "kind": "gate",
+      "classification": "SCAFFOLDED",
+      "graph_status": "SCAFFOLDED",
+      "graph_wired": false,
+      "graph_accepted": true,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [],
+      "discounted_call_sites": [],
+      "blocker": "no non-harness production caller. Acceptance INDEX invoked_call_count=7 FUNCTIONAL_SIM.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/VMCP_FILE_CLASSIFIER.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "VMCP_WEB_CAPTURE",
+      "kind": "gate",
+      "classification": "SCAFFOLDED",
+      "graph_status": "SCAFFOLDED",
+      "graph_wired": false,
+      "graph_accepted": false,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [],
+      "discounted_call_sites": [],
+      "blocker": "host Chrome/CDP missing in the acceptance lane.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/VMCP_WEB_CAPTURE.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "VMCP_VISUAL_DIFF",
+      "kind": "gate",
+      "classification": "SCAFFOLDED",
+      "graph_status": "SCAFFOLDED",
+      "graph_wired": false,
+      "graph_accepted": true,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [],
+      "discounted_call_sites": [],
+      "blocker": "no non-harness production caller. Acceptance INDEX invoked_call_count=2 FUNCTIONAL_SIM.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/VMCP_VISUAL_DIFF.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "VMCP_SPATIAL_VALIDATE",
+      "kind": "gate",
+      "classification": "SCAFFOLDED",
+      "graph_status": "SCAFFOLDED",
+      "graph_wired": false,
+      "graph_accepted": true,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [],
+      "discounted_call_sites": [],
+      "blocker": "no non-harness production caller. Acceptance INDEX invoked_call_count=7 FUNCTIONAL_SIM.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/VMCP_SPATIAL_VALIDATE.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "VMCP_PTY_CAPTURE",
+      "kind": "gate",
+      "classification": "SCAFFOLDED",
+      "graph_status": "SCAFFOLDED",
+      "graph_wired": false,
+      "graph_accepted": false,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [],
+      "discounted_call_sites": [],
+      "blocker": "PTY slave open (os.open(ptsname)) blocked in the acceptance lane.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/VMCP_PTY_CAPTURE.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "AGENTOS_BEHAVIOR_LAB",
+      "kind": "gate",
+      "classification": "ABSENT",
+      "graph_status": "ABSENT",
+      "graph_wired": false,
+      "graph_accepted": false,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [],
+      "discounted_call_sites": [],
+      "blocker": "BHV-01..BHV-23 fixture runner missing. receipts/acceptance/AGENTOS_BEHAVIOR_LAB.json verdict BLOCKED. invoked_call_count=0.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/AGENTOS_BEHAVIOR_LAB.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "VMCP_COMPACT_SURFACE",
+      "kind": "gate",
+      "classification": "SCAFFOLDED",
+      "graph_status": "SCAFFOLDED",
+      "graph_wired": false,
+      "graph_accepted": true,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [],
+      "discounted_call_sites": [],
+      "blocker": "no non-harness production caller. Acceptance INDEX invoked_call_count=9 FUNCTIONAL_SIM.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/VMCP_COMPACT_SURFACE.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "VMCP_AGENTOS_INTEGRATION",
+      "kind": "gate",
+      "classification": "SCAFFOLDED",
+      "graph_status": "SCAFFOLDED",
+      "graph_wired": false,
+      "graph_accepted": true,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [],
+      "discounted_call_sites": [],
+      "blocker": "no non-harness production caller. Acceptance INDEX invoked_call_count=6 FUNCTIONAL_SIM.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/VMCP_AGENTOS_INTEGRATION.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "AGENTOS_DETERMINISTIC_OFFLOAD",
+      "kind": "gate",
+      "classification": "CALLABLE",
+      "graph_status": "WIRED",
+      "graph_wired": true,
+      "graph_accepted": false,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "lab/hcli/special_unit.py",
+          "line": 2503,
+          "kind": "call",
+          "symbol": "run_bench",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": false
+        }
+      ],
+      "discounted_call_sites": [],
+      "blocker": "lab/hcli/claude_offload_bench.py missing as acceptance input; lane must not signal processes. Graph wired via lab/hcli/special_unit.py:2503 run_bench.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/AGENTOS_DETERMINISTIC_OFFLOAD.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "MODELLAKE_IDENTITY_RESOLVED",
+      "kind": "gate",
+      "classification": "TESTED",
+      "graph_status": "BUILT",
+      "graph_wired": true,
+      "graph_accepted": true,
+      "era": "I",
+      "gene": "I-E_ODYSSEY_I",
+      "call_sites": [
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 739,
+          "kind": "call",
+          "symbol": "run_modellake_census",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": true
+        },
+        {
+          "file": "tools/odyssey/lake_filler.py",
+          "line": 151,
+          "kind": "subprocess",
+          "symbol": "tools/odyssey/modellake.py",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": false
+        }
+      ],
+      "discounted_call_sites": [],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/MODELLAKE_IDENTITY_RESOLVED.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": "55 specimen dirs match 55 manifests. Catalog live-rewritten during this audit. Identity is STATIC (slug/path), not a full sha256 of 4.35 TB."
+    },
+    {
+      "id": "MODELLAKE_HASH_VERIFIED",
+      "kind": "gate",
+      "classification": "CALLABLE",
+      "graph_status": "WIRED",
+      "graph_wired": true,
+      "graph_accepted": false,
+      "era": "I",
+      "gene": "I-E_ODYSSEY_I",
+      "call_sites": [
+        {
+          "file": "tools/acceptance/lake/hash_verify.py",
+          "line": 41,
+          "kind": "call",
+          "symbol": "reconcile",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "acceptance_harness"
+        }
+      ],
+      "discounted_call_sites": [],
+      "blocker": "oid-backed sha256 of 54 sealed specimens (4.351 TB) not re-hashed this campaign; canonical Qwen3-0.6B hashed; size match is not sha256.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/MODELLAKE_HASH_VERIFIED.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": "Harness or CLI caller only; acceptance undemonstrated or blocked."
+    },
+    {
+      "id": "MODELLAKE_ATOMIC_PROMOTION",
+      "kind": "gate",
+      "classification": "INTEGRATED",
+      "graph_status": "BUILT",
+      "graph_wired": true,
+      "graph_accepted": true,
+      "era": "I",
+      "gene": "I-E_ODYSSEY_I",
+      "call_sites": [
+        {
+          "file": "tools/odyssey/modellake_watch.py",
+          "line": 659,
+          "kind": "call",
+          "symbol": "promote",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": true
+        },
+        {
+          "file": "tools/odyssey/modellake_watch.py",
+          "line": 809,
+          "kind": "call",
+          "symbol": "promote",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": true
+        },
+        {
+          "file": "tools/acceptance/lake/promotion.py",
+          "line": 26,
+          "kind": "call",
+          "symbol": "promote",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "acceptance_harness"
+        }
+      ],
+      "discounted_call_sites": [],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/MODELLAKE_ATOMIC_PROMOTION.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": "promote() is called from live modellake_watch.py (launchd pid 4183). This audit did not invoke promote."
+    },
+    {
+      "id": "QWEN27_RUNTIME_IDENTITY_FROZEN",
+      "kind": "gate",
+      "classification": "TESTED",
+      "graph_status": "BUILT",
+      "graph_wired": true,
+      "graph_accepted": true,
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "call_sites": [
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 702,
+          "kind": "call",
+          "symbol": "run_runtime_archaeology",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": true
+        }
+      ],
+      "discounted_call_sites": [],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/QWEN27_RUNTIME_IDENTITY_FROZEN.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": "Sole live-path caller is hcli/agentos_cli.py:702 run_runtime_archaeology. TESTED; archaeology is not a live decode path."
+    },
+    {
+      "id": "QWEN27_PROTECTED_BASELINE",
+      "kind": "gate",
+      "classification": "CALLABLE",
+      "graph_status": "WIRED",
+      "graph_wired": true,
+      "graph_accepted": false,
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "call_sites": [
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 1193,
+          "kind": "call",
+          "symbol": "run_protected_accelerator_benchmark",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": true
+        }
+      ],
+      "discounted_call_sites": [],
+      "blocker": "protected benchmark; this audit has no GPU/Metal authority and must not take the protected lock.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/QWEN27_PROTECTED_BASELINE.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED",
+      "kind": "gate",
+      "classification": "INTEGRATED",
+      "graph_status": "BUILT",
+      "graph_wired": true,
+      "graph_accepted": true,
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "call_sites": [
+        {
+          "file": "hcli/agentos/protected_benchmark_watcher.py",
+          "line": 274,
+          "kind": "call",
+          "symbol": "run_qwen27_mlp_diagnostic_ab",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": true
+        },
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 714,
+          "kind": "call",
+          "symbol": "run_qwen27_mlp_diagnostic_ab",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": true
+        }
+      ],
+      "discounted_call_sites": [],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "FLASH_SOURCE_VERIFIED",
+      "kind": "gate",
+      "classification": "TESTED",
+      "graph_status": "SCAFFOLDED",
+      "graph_wired": false,
+      "graph_accepted": true,
+      "era": "I",
+      "gene": "I-C_GRAVITY_NOETIC",
+      "call_sites": [],
+      "discounted_call_sites": [],
+      "blocker": "no production caller (graph). Acceptance STATIC ACCEPTED from acc5; harness-only.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/FLASH_SOURCE_VERIFIED.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": "STATIC acceptance receipt; no production caller. TESTED (harness), not INTEGRATED."
+    },
+    {
+      "id": "FLASH_FIRST_GRAVITY_ORGAN",
+      "kind": "gate",
+      "classification": "TESTED",
+      "graph_status": "BUILT",
+      "graph_wired": true,
+      "graph_accepted": true,
+      "era": "I",
+      "gene": "I-C_GRAVITY_NOETIC",
+      "call_sites": [
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 761,
+          "kind": "call",
+          "symbol": "run_flash_science_gate",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": true
+        },
+        {
+          "file": "tools/acceptance/flash/run_gates.py",
+          "line": 292,
+          "kind": "call",
+          "symbol": "run_flash_science_gate",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "acceptance_harness"
+        }
+      ],
+      "discounted_call_sites": [],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/FLASH_FIRST_GRAVITY_ORGAN.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": "Sole live-path caller is hcli/agentos_cli.py:761. TESTED via acceptance; not resident-loop INTEGRATED."
+    },
+    {
+      "id": "FLASH_NATIVE_NF_KERNEL",
+      "kind": "gate",
+      "classification": "CALLABLE",
+      "graph_status": "WIRED",
+      "graph_wired": true,
+      "graph_accepted": false,
+      "era": "I",
+      "gene": "I-C_GRAVITY_NOETIC",
+      "call_sites": [
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 966,
+          "kind": "call",
+          "symbol": "run_flash_graph_component",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": true
+        },
+        {
+          "file": "tools/acceptance/flash/run_gates.py",
+          "line": 455,
+          "kind": "call",
+          "symbol": "run_flash_graph_component",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "acceptance_harness"
+        }
+      ],
+      "discounted_call_sites": [],
+      "blocker": "acceptance receipt BLOCKED: metal: no Metal-capable GPU in that process even though system_profiler reports M3 Ultra Metal Supported. Receipt labeled HARDWARE_MEASURED is not a measurement this audit ran.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/FLASH_NATIVE_NF_KERNEL.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "FLASH_DENSE_VS_NF_AB",
+      "kind": "gate",
+      "classification": "TESTED",
+      "graph_status": "BUILT",
+      "graph_wired": true,
+      "graph_accepted": true,
+      "era": "I",
+      "gene": "I-C_GRAVITY_NOETIC",
+      "call_sites": [
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 941,
+          "kind": "call",
+          "symbol": "run_flash_router_representation_ab",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": true
+        },
+        {
+          "file": "tools/acceptance/flash/run_gates.py",
+          "line": 629,
+          "kind": "call",
+          "symbol": "run_flash_router_representation_ab",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "acceptance_harness"
+        }
+      ],
+      "discounted_call_sites": [],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/FLASH_DENSE_VS_NF_AB.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": "Sole live-path caller is hcli/agentos_cli.py:941. TESTED via acceptance; not resident-loop INTEGRATED."
+    },
+    {
+      "id": "FLASH_FULL_NOETIC_EXECUTABLE",
+      "kind": "gate",
+      "classification": "SCAFFOLDED",
+      "graph_status": "SCAFFOLDED",
+      "graph_wired": false,
+      "graph_accepted": false,
+      "era": "I",
+      "gene": "I-C_GRAVITY_NOETIC",
+      "call_sites": [],
+      "discounted_call_sites": [],
+      "blocker": "FLASH_COMPLETE_V0.nx SEALED_METADATA_ONLY_NOT_FOR_PROMOTION; native_loader=NOT_IMPLEMENTED; native_kernels=PLAN_ONLY.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/FLASH_FULL_NOETIC_EXECUTABLE.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "FLASH_COMPLETE_EBPW_LE_1",
+      "kind": "gate",
+      "classification": "CALLABLE",
+      "graph_status": "WIRED",
+      "graph_wired": true,
+      "graph_accepted": false,
+      "era": "I",
+      "gene": "I-C_GRAVITY_NOETIC",
+      "call_sites": [
+        {
+          "file": "tools/future/capability_byte_elimination.py",
+          "line": 295,
+          "kind": "call",
+          "symbol": "mix_report",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": false
+        },
+        {
+          "file": "tools/acceptance/flash/run_gates.py",
+          "line": 940,
+          "kind": "call",
+          "symbol": "mix_report",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "acceptance_harness"
+        }
+      ],
+      "discounted_call_sites": [],
+      "blocker": "incumbent.complete_ebpw=3.1393 which is not <= 1.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/FLASH_COMPLETE_EBPW_LE_1.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": "Harness or CLI caller only; acceptance undemonstrated or blocked."
+    },
+    {
+      "id": "FLASH_ACCEPTED_TPS_GE_50",
+      "kind": "gate",
+      "classification": "SCAFFOLDED",
+      "graph_status": "SCAFFOLDED",
+      "graph_wired": false,
+      "graph_accepted": false,
+      "era": "I",
+      "gene": "I-C_GRAVITY_NOETIC",
+      "call_sites": [],
+      "discounted_call_sites": [],
+      "blocker": "accepted_tps=None; one accepted generated token is not a protected multi-token TPS.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/FLASH_ACCEPTED_TPS_GE_50.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "FPGA_PREBOARD_SCHEMAS",
+      "kind": "gate",
+      "classification": "SCAFFOLDED",
+      "graph_status": "SCAFFOLDED",
+      "graph_wired": false,
+      "graph_accepted": false,
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "call_sites": [],
+      "discounted_call_sites": [],
+      "blocker": "definition hcli/agentos/fpga_preboard.py; no non-test call of FPGADeviceGenome.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": null,
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "FPGA_HWIR",
+      "kind": "gate",
+      "classification": "CALLABLE",
+      "graph_status": "WIRED",
+      "graph_wired": true,
+      "graph_accepted": false,
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "call_sites": [
+        {
+          "file": "tools/accelerator/backend_contract.py",
+          "line": 1094,
+          "kind": "call",
+          "symbol": "HwirGraph",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": true
+        },
+        {
+          "file": "tools/accelerator/fusion_bridge.py",
+          "line": 1444,
+          "kind": "call",
+          "symbol": "HwirGraph",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": true
+        },
+        {
+          "file": "tools/future/p6_projection.py",
+          "line": 857,
+          "kind": "call",
+          "symbol": "HwirGraph",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": false
+        },
+        {
+          "file": "tools/future/propagate.py",
+          "line": 695,
+          "kind": "call",
+          "symbol": "HwirGraph",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": false
+        },
+        {
+          "file": "tools/accelerator/backend_contract.py",
+          "line": 1094,
+          "kind": "call",
+          "symbol": "HwirGraph",
+          "role": "production",
+          "live_path": true,
+          "verified_at": "HEAD"
+        },
+        {
+          "file": "tools/accelerator/fusion_bridge.py",
+          "line": 1444,
+          "kind": "call",
+          "symbol": "HwirGraph",
+          "role": "production",
+          "live_path": true,
+          "verified_at": "HEAD"
+        },
+        {
+          "file": "tools/future/propagate.py",
+          "line": 695,
+          "kind": "call",
+          "symbol": "HwirGraph",
+          "role": "production",
+          "verified_at": "HEAD"
+        },
+        {
+          "file": "tools/future/p6_projection.py",
+          "line": 857,
+          "kind": "call",
+          "symbol": "HwirGraph",
+          "role": "production",
+          "verified_at": "HEAD"
+        }
+      ],
+      "discounted_call_sites": [],
+      "blocker": "PREHARDWARE: tools/future/hwir.py forbids HARDWARE_MEASURED. No U50 on this host. Production callers exist; acceptance undemonstrated.",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "acceptance_receipt": null,
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": "s2-hwir-pluggable-lowering-target merged at HEAD after the capability graph commit."
+    },
+    {
+      "id": "FPGA_LINK_SIM",
+      "kind": "gate",
+      "classification": "SCAFFOLDED",
+      "graph_status": "SCAFFOLDED",
+      "graph_wired": false,
+      "graph_accepted": false,
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "call_sites": [],
+      "discounted_call_sites": [],
+      "blocker": "definition TransportLinkSimulator; no production caller.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": null,
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "FPGA_PARTITION_SIM",
+      "kind": "gate",
+      "classification": "SCAFFOLDED",
+      "graph_status": "SCAFFOLDED",
+      "graph_wired": false,
+      "graph_accepted": false,
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "call_sites": [],
+      "discounted_call_sites": [],
+      "blocker": "simulate_partition called from tools/haider tests only.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": null,
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "U50_PURCHASE_ACCEPTANCE",
+      "kind": "gate",
+      "classification": "BLOCKED_HARDWARE",
+      "graph_status": "BLOCKED_HARDWARE",
+      "graph_wired": false,
+      "graph_accepted": false,
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "call_sites": [],
+      "discounted_call_sites": [],
+      "blocker": "hardware_blocker U50_PRESENT=false (no Xilinx/Alveo/U50 identity in ioreg this session).",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "acceptance_receipt": null,
+      "hardware_blocker": "U50_PRESENT",
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "U50_SAFE_COOLING",
+      "kind": "gate",
+      "classification": "BLOCKED_HARDWARE",
+      "graph_status": "BLOCKED_HARDWARE",
+      "graph_wired": false,
+      "graph_accepted": false,
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "call_sites": [],
+      "discounted_call_sites": [],
+      "blocker": "hardware_blocker U50_PRESENT=false.",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "acceptance_receipt": null,
+      "hardware_blocker": "U50_PRESENT",
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "U50_DEVICE_PROFILE",
+      "kind": "gate",
+      "classification": "BLOCKED_HARDWARE",
+      "graph_status": "BLOCKED_HARDWARE",
+      "graph_wired": false,
+      "graph_accepted": false,
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "call_sites": [],
+      "discounted_call_sites": [],
+      "blocker": "hardware_blocker U50_PRESENT=false. Sealed COST_MODEL predictions in receipts/future/HWIR_SEALED_PREDICTIONS.json are PREHARDWARE.",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "acceptance_receipt": null,
+      "hardware_blocker": "U50_PRESENT",
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "U50_DMA_HBM",
+      "kind": "gate",
+      "classification": "BLOCKED_HARDWARE",
+      "graph_status": "BLOCKED_HARDWARE",
+      "graph_wired": false,
+      "graph_accepted": false,
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "call_sites": [],
+      "discounted_call_sites": [],
+      "blocker": "hardware_blocker U50_PRESENT=false.",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "acceptance_receipt": null,
+      "hardware_blocker": "U50_PRESENT",
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "U50_FIRST_NATIVE_ENGINE",
+      "kind": "gate",
+      "classification": "BLOCKED_HARDWARE",
+      "graph_status": "BLOCKED_HARDWARE",
+      "graph_wired": false,
+      "graph_accepted": false,
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "call_sites": [],
+      "discounted_call_sites": [],
+      "blocker": "hardware_blocker U50_PRESENT=false.",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "acceptance_receipt": null,
+      "hardware_blocker": "U50_PRESENT",
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "U50_MIXED_APPLE_FPGA_GRAPH",
+      "kind": "gate",
+      "classification": "BLOCKED_HARDWARE",
+      "graph_status": "BLOCKED_HARDWARE",
+      "graph_wired": true,
+      "graph_accepted": false,
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "call_sites": [
+        {
+          "file": "tools/future/nr_nx_generic.py",
+          "line": 1981,
+          "kind": "subprocess",
+          "symbol": "tools/odyssey/physical_graph_compiler.py",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": false
+        }
+      ],
+      "discounted_call_sites": [],
+      "blocker": "hardware_blocker U50_PRESENT=false. Graph marks wired via subprocess of tools/odyssey/physical_graph_compiler.py \u2014 that is not a U50 mixed graph on hardware.",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "acceptance_receipt": null,
+      "hardware_blocker": "U50_PRESENT",
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "U50_34_TO_40",
+      "kind": "gate",
+      "classification": "BLOCKED_HARDWARE",
+      "graph_status": "BLOCKED_HARDWARE",
+      "graph_wired": false,
+      "graph_accepted": false,
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "call_sites": [],
+      "discounted_call_sites": [],
+      "blocker": "hardware_blocker U50_PRESENT=false.",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "acceptance_receipt": null,
+      "hardware_blocker": "U50_PRESENT",
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "U50_40_TO_50",
+      "kind": "gate",
+      "classification": "BLOCKED_HARDWARE",
+      "graph_status": "BLOCKED_HARDWARE",
+      "graph_wired": false,
+      "graph_accepted": false,
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "call_sites": [],
+      "discounted_call_sites": [],
+      "blocker": "hardware_blocker U50_PRESENT=false.",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "acceptance_receipt": null,
+      "hardware_blocker": "U50_PRESENT",
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "U50_50_TO_60",
+      "kind": "gate",
+      "classification": "BLOCKED_HARDWARE",
+      "graph_status": "BLOCKED_HARDWARE",
+      "graph_wired": false,
+      "graph_accepted": false,
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "call_sites": [],
+      "discounted_call_sites": [],
+      "blocker": "hardware_blocker U50_PRESENT=false.",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "acceptance_receipt": null,
+      "hardware_blocker": "U50_PRESENT",
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "U50_60_TO_70",
+      "kind": "gate",
+      "classification": "BLOCKED_HARDWARE",
+      "graph_status": "BLOCKED_HARDWARE",
+      "graph_wired": false,
+      "graph_accepted": false,
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "call_sites": [],
+      "discounted_call_sites": [],
+      "blocker": "hardware_blocker U50_PRESENT=false.",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "acceptance_receipt": null,
+      "hardware_blocker": "U50_PRESENT",
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "U50_70_TO_80",
+      "kind": "gate",
+      "classification": "BLOCKED_HARDWARE",
+      "graph_status": "BLOCKED_HARDWARE",
+      "graph_wired": false,
+      "graph_accepted": false,
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "call_sites": [],
+      "discounted_call_sites": [],
+      "blocker": "hardware_blocker U50_PRESENT=false.",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "acceptance_receipt": null,
+      "hardware_blocker": "U50_PRESENT",
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "U50_80_TO_90",
+      "kind": "gate",
+      "classification": "BLOCKED_HARDWARE",
+      "graph_status": "BLOCKED_HARDWARE",
+      "graph_wired": false,
+      "graph_accepted": false,
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "call_sites": [],
+      "discounted_call_sites": [],
+      "blocker": "hardware_blocker U50_PRESENT=false.",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "acceptance_receipt": null,
+      "hardware_blocker": "U50_PRESENT",
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "HMF_DEVICE_VISIBLE_TRUST",
+      "kind": "gate",
+      "classification": "BLOCKED_HARDWARE",
+      "graph_status": "BLOCKED_HARDWARE",
+      "graph_wired": false,
+      "graph_accepted": false,
+      "era": "IV",
+      "gene": "IV-B_HMF_HGVAS",
+      "call_sites": [],
+      "discounted_call_sites": [],
+      "blocker": "hardware_blocker HMF_PRESENT=false.",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "acceptance_receipt": "receipts/acceptance/HMF_DEVICE_VISIBLE_TRUST.json",
+      "hardware_blocker": "HMF_PRESENT",
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE",
+      "kind": "gate",
+      "classification": "BLOCKED_HARDWARE",
+      "graph_status": "UNREACHABLE",
+      "graph_wired": false,
+      "graph_accepted": false,
+      "era": "IV",
+      "gene": "IV-A_FUSION",
+      "call_sites": [],
+      "discounted_call_sites": [],
+      "blocker": "graph UNREACHABLE; no FPGA/HMF/eGPU/DGX present.",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "acceptance_receipt": "receipts/acceptance/FUSION_FIRST_HETEROGENEOUS_EXECUTABLE.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "THEIA_T0_TRAIN_SUBSTRATE",
+      "kind": "gate",
+      "classification": "BLOCKED_AUTHORITY",
+      "graph_status": "BLOCKED_EXTERNAL",
+      "graph_wired": false,
+      "graph_accepted": false,
+      "era": "bounty",
+      "gene": null,
+      "call_sites": [],
+      "discounted_call_sites": [],
+      "blocker": "T0 train substrate is an external/authority blocker; tools/theia exists on HEAD (not ABSENT).",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "acceptance_receipt": null,
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "THEIA_MICRO",
+      "kind": "gate",
+      "classification": "BLOCKED_AUTHORITY",
+      "graph_status": "BLOCKED_EXTERNAL",
+      "graph_wired": false,
+      "graph_accepted": false,
+      "era": "bounty",
+      "gene": null,
+      "call_sites": [],
+      "discounted_call_sites": [],
+      "blocker": "blocked on T0 substrate / external wake; engine module exists.",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "acceptance_receipt": null,
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "THEIA_LAB",
+      "kind": "gate",
+      "classification": "BLOCKED_AUTHORITY",
+      "graph_status": "BLOCKED_EXTERNAL",
+      "graph_wired": false,
+      "graph_accepted": false,
+      "era": "bounty",
+      "gene": null,
+      "call_sites": [],
+      "discounted_call_sites": [],
+      "blocker": "blocked on T0 substrate / external wake; labs.py exists.",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "acceptance_receipt": null,
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "THEIA_WORKER",
+      "kind": "gate",
+      "classification": "BLOCKED_AUTHORITY",
+      "graph_status": "BLOCKED_EXTERNAL",
+      "graph_wired": false,
+      "graph_accepted": false,
+      "era": "bounty",
+      "gene": null,
+      "call_sites": [],
+      "discounted_call_sites": [],
+      "blocker": "blocked on T0 substrate / external wake.",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "acceptance_receipt": null,
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "THEIA_RESEARCH",
+      "kind": "gate",
+      "classification": "BLOCKED_AUTHORITY",
+      "graph_status": "BLOCKED_EXTERNAL",
+      "graph_wired": false,
+      "graph_accepted": false,
+      "era": "bounty",
+      "gene": null,
+      "call_sites": [],
+      "discounted_call_sites": [],
+      "blocker": "blocked on T0 substrate / external wake.",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "acceptance_receipt": null,
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "THEIA_GRAVITY_EXECUTABLE",
+      "kind": "gate",
+      "classification": "BLOCKED_AUTHORITY",
+      "graph_status": "BLOCKED_EXTERNAL",
+      "graph_wired": false,
+      "graph_accepted": false,
+      "era": "bounty",
+      "gene": null,
+      "call_sites": [],
+      "discounted_call_sites": [],
+      "blocker": "blocked on T0 substrate / external wake.",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "acceptance_receipt": null,
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "THEIA_BOUNTY_GENERALIST_QUALIFIED",
+      "kind": "gate",
+      "classification": "SCAFFOLDED",
+      "graph_status": "BLOCKED_EXTERNAL",
+      "graph_wired": false,
+      "graph_accepted": false,
+      "era": "bounty",
+      "gene": null,
+      "call_sites": [
+        {
+          "file": "tools/theia/__main__.py",
+          "line": 1,
+          "kind": "call",
+          "symbol": "engine.main",
+          "role": "cli_entry",
+          "verified_at": "HEAD"
+        }
+      ],
+      "discounted_call_sites": [],
+      "blocker": "Theia is one generalist bounty model, not a civilization. Engine CLI exists (tools/theia/__main__.py -> engine.main); generalist qualification has not been run.",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "acceptance_receipt": null,
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": null
+    },
+    {
+      "id": "ODYSSEY_I_DISCOVERY",
+      "kind": "gate",
+      "classification": "TESTED",
+      "graph_status": "BUILT",
+      "graph_wired": true,
+      "graph_accepted": true,
+      "era": "I",
+      "gene": "I-E_ODYSSEY_I",
+      "call_sites": [
+        {
+          "file": "hcli/acquisition.py",
+          "line": 172,
+          "kind": "call",
+          "symbol": "pick_acquire_candidate",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": true
+        },
+        {
+          "file": "hcli/acquisition.py",
+          "line": 172,
+          "kind": "call",
+          "symbol": "pick_acquire_candidate",
+          "role": "production",
+          "live_path": true,
+          "verified_at": "HEAD"
+        },
+        {
+          "file": "tools/odyssey_ctl.py",
+          "line": 6106,
+          "kind": "call",
+          "symbol": "pick_acquire_candidate",
+          "role": "production",
+          "live_path": true,
+          "verified_at": "HEAD"
+        },
+        {
+          "file": "tools/acceptance/odyssey/run.py",
+          "line": 304,
+          "kind": "call",
+          "symbol": "pick_acquire_candidate",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "acceptance_harness"
+        }
+      ],
+      "discounted_call_sites": [],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/ODYSSEY_I_DISCOVERY.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": "pick_acquire_candidate called from hcli/acquisition.py and tools/odyssey_ctl.py. Acceptance STATIC ACCEPTED. Odyssey launch fence authorized=false."
+    },
+    {
+      "id": "ODYSSEY_II_TRANSFER",
+      "kind": "gate",
+      "classification": "CALLABLE",
+      "graph_status": "WIRED",
+      "graph_wired": true,
+      "graph_accepted": false,
+      "era": "II",
+      "gene": "II-A_ODYSSEY_II",
+      "call_sites": [
+        {
+          "file": "tools/future/consolidated_run.py",
+          "line": 891,
+          "kind": "call",
+          "symbol": "load_qualification_queue",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": false
+        },
+        {
+          "file": "tools/future/protected_window.py",
+          "line": 365,
+          "kind": "call",
+          "symbol": "load_qualification_queue",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": false
+        },
+        {
+          "file": "tools/acceptance/odyssey/run.py",
+          "line": 463,
+          "kind": "call",
+          "symbol": "load_qualification_queue",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "acceptance_harness"
+        }
+      ],
+      "discounted_call_sites": [],
+      "blocker": "TRANSFER_REDUCTION_NOT_POSITIVE: evaluations_avoided measured -8; required > 0.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/ODYSSEY_II_TRANSFER.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": "Harness or CLI caller only; acceptance undemonstrated or blocked."
+    },
+    {
+      "id": "ODYSSEY_III_ADVERSARIAL_META_SCIENCE",
+      "kind": "gate",
+      "classification": "CALLABLE",
+      "graph_status": "WIRED",
+      "graph_wired": true,
+      "graph_accepted": false,
+      "era": "III",
+      "gene": "III-A_ODYSSEY_III",
+      "call_sites": [
+        {
+          "file": "tools/future/evidence_dag.py",
+          "line": 1124,
+          "kind": "call",
+          "symbol": "scars",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": false
+        },
+        {
+          "file": "tools/future/resident_supervisor.py",
+          "line": 893,
+          "kind": "call",
+          "symbol": "scars",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": false
+        },
+        {
+          "file": "tools/future/sprint_profile.py",
+          "line": 591,
+          "kind": "call",
+          "symbol": "scars",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": false
+        },
+        {
+          "file": "tools/theia/self_bounty.py",
+          "line": 346,
+          "kind": "call",
+          "symbol": "scars",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "production",
+          "live_path": false
+        },
+        {
+          "file": "tools/acceptance/odyssey/run.py",
+          "line": 561,
+          "kind": "call",
+          "symbol": "scars",
+          "graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+          "role": "acceptance_harness"
+        }
+      ],
+      "discounted_call_sites": [],
+      "blocker": "NO_INDEPENDENT_LAW_REFUTATION: odyssey3_adversary.selftest is synthetic=True; physical_arm=not_run.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/acceptance/ODYSSEY_III_ADVERSARIAL_META_SCIENCE.json",
+      "hardware_blocker": null,
+      "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+      "note": "Harness or CLI caller only; acceptance undemonstrated or blocked."
+    },
+    {
+      "id": "HAWKINGD_RESIDENT_DAEMON",
+      "kind": "subsystem",
+      "classification": "CALLABLE",
+      "call_sites": [
+        {
+          "file": "hcli/hawkingd.py",
+          "line": 31,
+          "kind": "call",
+          "symbol": "daemon_main",
+          "role": "production",
+          "verified_at": "HEAD"
+        },
+        {
+          "file": "hcli/agentos/resident.py",
+          "line": 2361,
+          "kind": "definition",
+          "symbol": "daemon_main",
+          "verified_at": "HEAD"
+        }
+      ],
+      "blocker": "Live process is not running. .hcli/resident/state.json state=FAILED worker_live=false updated 2026-09-02T05:49:23 local. No com.hawking.hawkingd/hcli/resident launchd service. supervisor_pid=null. Sandbox denied ps/lsof; disk state is the authority.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "note": "Contract claimed a LIVE launchd daemon holding ~110 dirty hcli files. Disk contradicts both claims."
+    },
+    {
+      "id": "LANDING_SERVICE",
+      "kind": "subsystem",
+      "classification": "TESTED",
+      "call_sites": [
+        {
+          "file": "hcli/tool_registry.py",
+          "line": 1526,
+          "kind": "call",
+          "symbol": "propose_landing",
+          "role": "production",
+          "verified_at": "HEAD"
+        },
+        {
+          "file": "hcli/commands.py",
+          "line": 1643,
+          "kind": "call",
+          "symbol": "propose_landing",
+          "role": "production",
+          "verified_at": "HEAD"
+        },
+        {
+          "file": "hcli/landing.py",
+          "line": 433,
+          "kind": "call",
+          "symbol": "LandingService().land",
+          "role": "production",
+          "verified_at": "HEAD"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "note": "hcli/test_landing.py 23 passed in 6.99s against scratch repos this session. G003 e2e receipt ABSENT."
+    },
+    {
+      "id": "SELF_MUTATION_E2E_G003",
+      "kind": "sovereign_gate",
+      "classification": "SCAFFOLDED",
+      "call_sites": [
+        {
+          "file": "hcli/test_self_mutation_e2e.py",
+          "line": 1,
+          "kind": "definition",
+          "symbol": "PROTECTED SOVEREIGN VERIFIER G003",
+          "verified_at": "HEAD"
+        }
+      ],
+      "blocker": "receipts/sovereign/G003_self_mutation.json does not exist on disk or at HEAD. Red gate cannot pass.",
+      "evidence_tier": "STATIC_VERIFICATION"
+    },
+    {
+      "id": "CONTEXT_COMPILER_RUNTIME_G004",
+      "kind": "sovereign_gate",
+      "classification": "SCAFFOLDED",
+      "call_sites": [
+        {
+          "file": "hcli/mission.py",
+          "line": 1055,
+          "kind": "call",
+          "symbol": "compile_worker_context",
+          "role": "production",
+          "verified_at": "HEAD"
+        },
+        {
+          "file": "hcli/test_context_compiler_runtime.py",
+          "line": 1,
+          "kind": "definition",
+          "symbol": "PROTECTED SOVEREIGN VERIFIER G004",
+          "verified_at": "HEAD"
+        }
+      ],
+      "blocker": "receipts/sovereign/G004_context_runtime.json does not exist on disk or at HEAD.",
+      "evidence_tier": "STATIC_VERIFICATION"
+    },
+    {
+      "id": "PREFILL_PIPELINE_G005",
+      "kind": "sovereign_gate",
+      "classification": "SCAFFOLDED",
+      "call_sites": [
+        {
+          "file": "hcli/test_qwen38_prefill_pipeline.py",
+          "line": 1,
+          "kind": "definition",
+          "symbol": "PROTECTED SOVEREIGN VERIFIER G005",
+          "verified_at": "HEAD"
+        },
+        {
+          "file": "crates/hawking-core/src/cache/prefill_disk.rs",
+          "line": 1,
+          "kind": "definition",
+          "symbol": "prefill_disk",
+          "verified_at": "HEAD"
+        }
+      ],
+      "blocker": "receipts/sovereign/G005_prefill_pipeline.json does not exist. Rust prefill modules exist; this audit did not run them (Metal authority).",
+      "evidence_tier": "SOURCE_INSPECTION"
+    },
+    {
+      "id": "ANE_PHYSICAL",
+      "kind": "subsystem",
+      "classification": "BLOCKED_AUTHORITY",
+      "call_sites": [
+        {
+          "file": "hcli/ane_provider.py",
+          "line": 1,
+          "kind": "definition",
+          "verified_at": "HEAD"
+        },
+        {
+          "file": "tools/accelerator/ane_probe.swift",
+          "line": 1,
+          "kind": "definition",
+          "verified_at": "HEAD"
+        }
+      ],
+      "blocker": "This audit is not authoritative for ANE physical behaviour. ioreg shows AppleT6031ANEHAL=1 and ANEScheduler=1 (presence only). No ANE kernel executed this session.",
+      "evidence_tier": "SOURCE_INSPECTION"
+    },
+    {
+      "id": "METAL_GPU_RUNTIME",
+      "kind": "subsystem",
+      "classification": "BLOCKED_AUTHORITY",
+      "call_sites": [
+        {
+          "file": "crates/hawking-core/shaders",
+          "line": null,
+          "kind": "definition",
+          "note": "46 .metal shaders on disk in this sparse worktree"
+        }
+      ],
+      "blocker": "This audit is not authoritative for Metal runtime behaviour it cannot execute. system_profiler: M3 Ultra 60 GPU cores, Metal Supported. FLASH_NATIVE_NF_KERNEL acceptance lane recorded 'metal: no Metal-capable GPU' \u2014 process/sandbox fact, not host-without-GPU.",
+      "evidence_tier": "SOURCE_INSPECTION"
+    },
+    {
+      "id": "ODYSSEY_LAUNCH_FENCE",
+      "kind": "subsystem",
+      "classification": "SCAFFOLDED",
+      "call_sites": [
+        {
+          "file": "workspace/campaign/governance/odyssey/program/launch/ODYSSEY_LAUNCH_AUTHORIZED",
+          "line": 1,
+          "kind": "definition",
+          "note": "contents: false",
+          "verified_at": "HEAD"
+        }
+      ],
+      "blocker": "ODYSSEY_LAUNCH_AUTHORIZED is 'false'. ODYSSEY_FENCE.json authorized=false. T0 checkpoint exists but is not an authorized training run.",
+      "evidence_tier": "STATIC_VERIFICATION"
+    },
+    {
+      "id": "G001_VERIFIER_SYNTHESIS",
+      "kind": "sovereign_gate",
+      "classification": "TESTED",
+      "call_sites": [
+        {
+          "file": "tools/sovereign/g001_verifier_synthesis.py",
+          "line": 1,
+          "kind": "definition",
+          "note": "named producer of the receipt"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "acceptance_receipt": "receipts/sovereign/G001_verifier_synthesis.json",
+      "note": "produced_at 2026-09-02T07:52:21Z; cases_measured=4. This audit did not re-run the producer."
+    },
+    {
+      "id": "G002_HCLI_OVERHEAD",
+      "kind": "sovereign_gate",
+      "classification": "SCAFFOLDED",
+      "call_sites": [
+        {
+          "file": "hcli/test_hcli_overhead.py",
+          "line": 1,
+          "kind": "definition",
+          "verified_at": "HEAD"
+        }
+      ],
+      "blocker": "receipts/sovereign/G002_overhead.json does not exist on disk or at HEAD.",
+      "evidence_tier": "STATIC_VERIFICATION"
+    }
+  ],
+  "genes": [
+    {
+      "id": "I-A_AGENTOS_HCLI",
+      "kind": "gene",
+      "classification": "SCAFFOLDED",
+      "graph_status": "SCAFFOLDED",
+      "era": "I",
+      "strongest_child_classification": "INTEGRATED",
+      "n_child_gates": 30,
+      "call_sites": [],
+      "blocker": "no gene-level runtime_caller. Child gates may be stronger; the gene object is not a called symbol.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "hardware_blocker": null
+    },
+    {
+      "id": "I-B_DOCTOR",
+      "kind": "gene",
+      "classification": "SCAFFOLDED",
+      "graph_status": "SCAFFOLDED",
+      "era": "I",
+      "strongest_child_classification": null,
+      "n_child_gates": 0,
+      "call_sites": [],
+      "blocker": "no gene-level runtime_caller. Child gates may be stronger; the gene object is not a called symbol.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "hardware_blocker": null
+    },
+    {
+      "id": "I-C_GRAVITY_NOETIC",
+      "kind": "gene",
+      "classification": "SCAFFOLDED",
+      "graph_status": "SCAFFOLDED",
+      "era": "I",
+      "strongest_child_classification": "INTEGRATED",
+      "n_child_gates": 7,
+      "call_sites": [],
+      "blocker": "no gene-level runtime_caller. Child gates may be stronger; the gene object is not a called symbol.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "hardware_blocker": null
+    },
+    {
+      "id": "I-D_ACCELERATOR",
+      "kind": "gene",
+      "classification": "SCAFFOLDED",
+      "graph_status": "SCAFFOLDED",
+      "era": "I",
+      "strongest_child_classification": "INTEGRATED",
+      "n_child_gates": 19,
+      "call_sites": [],
+      "blocker": "no gene-level runtime_caller. Child gates may be stronger; the gene object is not a called symbol.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "hardware_blocker": null
+    },
+    {
+      "id": "I-E_ODYSSEY_I",
+      "kind": "gene",
+      "classification": "SCAFFOLDED",
+      "graph_status": "SCAFFOLDED",
+      "era": "I",
+      "strongest_child_classification": "INTEGRATED",
+      "n_child_gates": 4,
+      "call_sites": [],
+      "blocker": "no gene-level runtime_caller. Child gates may be stronger; the gene object is not a called symbol.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "hardware_blocker": null
+    },
+    {
+      "id": "II-A_ODYSSEY_II",
+      "kind": "gene",
+      "classification": "SCAFFOLDED",
+      "graph_status": "SCAFFOLDED",
+      "era": "II",
+      "strongest_child_classification": "CALLABLE",
+      "n_child_gates": 1,
+      "call_sites": [],
+      "blocker": "no gene-level runtime_caller. Child gates may be stronger; the gene object is not a called symbol.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "hardware_blocker": null
+    },
+    {
+      "id": "II-B_NOETIC_COMPILER_V1",
+      "kind": "gene",
+      "classification": "SCAFFOLDED",
+      "graph_status": "SCAFFOLDED",
+      "era": "II",
+      "strongest_child_classification": null,
+      "n_child_gates": 0,
+      "call_sites": [],
+      "blocker": "no gene-level runtime_caller. Child gates may be stronger; the gene object is not a called symbol.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "hardware_blocker": null
+    },
+    {
+      "id": "II-C_PHYSICAL_GRAPH_COMPILER",
+      "kind": "gene",
+      "classification": "CALLABLE",
+      "graph_status": "WIRED",
+      "era": "II",
+      "strongest_child_classification": null,
+      "n_child_gates": 0,
+      "call_sites": [
+        {
+          "file": "tools/future/nr_nx_generic.py",
+          "line": 1981,
+          "kind": "subprocess",
+          "symbol": "tools/odyssey/physical_graph_compiler.py",
+          "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "hardware_blocker": null
+    },
+    {
+      "id": "II-D_STATE_TOKENIZER_DECODING",
+      "kind": "gene",
+      "classification": "SCAFFOLDED",
+      "graph_status": "SCAFFOLDED",
+      "era": "II",
+      "strongest_child_classification": null,
+      "n_child_gates": 0,
+      "call_sites": [],
+      "blocker": "no gene-level runtime_caller. Child gates may be stronger; the gene object is not a called symbol.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "hardware_blocker": null
+    },
+    {
+      "id": "II-E_GREEN_MACHINE",
+      "kind": "gene",
+      "classification": "SCAFFOLDED",
+      "graph_status": "SCAFFOLDED",
+      "era": "II",
+      "strongest_child_classification": null,
+      "n_child_gates": 0,
+      "call_sites": [],
+      "blocker": "no gene-level runtime_caller. Child gates may be stronger; the gene object is not a called symbol.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "hardware_blocker": null
+    },
+    {
+      "id": "III-A_ODYSSEY_III",
+      "kind": "gene",
+      "classification": "SCAFFOLDED",
+      "graph_status": "SCAFFOLDED",
+      "era": "III",
+      "strongest_child_classification": "CALLABLE",
+      "n_child_gates": 1,
+      "call_sites": [],
+      "blocker": "no gene-level runtime_caller. Child gates may be stronger; the gene object is not a called symbol.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "hardware_blocker": null
+    },
+    {
+      "id": "III-B_LEARNED_PHYSICAL_COMPILER",
+      "kind": "gene",
+      "classification": "SCAFFOLDED",
+      "graph_status": "SCAFFOLDED",
+      "era": "III",
+      "strongest_child_classification": null,
+      "n_child_gates": 0,
+      "call_sites": [],
+      "blocker": "no gene-level runtime_caller. Child gates may be stronger; the gene object is not a called symbol.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "hardware_blocker": null
+    },
+    {
+      "id": "III-C_RESIDENT_OPTIMIZER",
+      "kind": "gene",
+      "classification": "SCAFFOLDED",
+      "graph_status": "SCAFFOLDED",
+      "era": "III",
+      "strongest_child_classification": null,
+      "n_child_gates": 0,
+      "call_sites": [],
+      "blocker": "no gene-level runtime_caller. Child gates may be stronger; the gene object is not a called symbol.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "hardware_blocker": null
+    },
+    {
+      "id": "III-D_BEYOND_DENSE_REPRESENTATION",
+      "kind": "gene",
+      "classification": "SCAFFOLDED",
+      "graph_status": "SCAFFOLDED",
+      "era": "III",
+      "strongest_child_classification": null,
+      "n_child_gates": 0,
+      "call_sites": [],
+      "blocker": "no gene-level runtime_caller. Child gates may be stronger; the gene object is not a called symbol.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "hardware_blocker": null
+    },
+    {
+      "id": "III-E_AUTONOMOUS_REPRODUCIBLE_SCIENCE",
+      "kind": "gene",
+      "classification": "SCAFFOLDED",
+      "graph_status": "SCAFFOLDED",
+      "era": "III",
+      "strongest_child_classification": null,
+      "n_child_gates": 0,
+      "call_sites": [],
+      "blocker": "no gene-level runtime_caller. Child gates may be stronger; the gene object is not a called symbol.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "hardware_blocker": null
+    },
+    {
+      "id": "IV-A_FUSION",
+      "kind": "gene",
+      "classification": "SCAFFOLDED",
+      "graph_status": "SCAFFOLDED",
+      "era": "IV",
+      "strongest_child_classification": "BLOCKED_HARDWARE",
+      "n_child_gates": 1,
+      "call_sites": [],
+      "blocker": "no gene-level runtime_caller. Child gates may be stronger; the gene object is not a called symbol.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "hardware_blocker": null
+    },
+    {
+      "id": "IV-B_HMF_HGVAS",
+      "kind": "gene",
+      "classification": "BLOCKED_HARDWARE",
+      "graph_status": "BLOCKED_HARDWARE",
+      "era": "IV",
+      "strongest_child_classification": "BLOCKED_HARDWARE",
+      "n_child_gates": 1,
+      "call_sites": [],
+      "blocker": "hardware_blocker=HMF_PRESENT; probe present=false",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "hardware_blocker": "HMF_PRESENT"
+    },
+    {
+      "id": "IV-C_DGX_SPARK",
+      "kind": "gene",
+      "classification": "BLOCKED_HARDWARE",
+      "graph_status": "BLOCKED_HARDWARE",
+      "era": "IV",
+      "strongest_child_classification": null,
+      "n_child_gates": 0,
+      "call_sites": [],
+      "blocker": "hardware_blocker=DGX_PRESENT; probe present=false",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "hardware_blocker": "DGX_PRESENT"
+    },
+    {
+      "id": "IV-D_EGPU",
+      "kind": "gene",
+      "classification": "BLOCKED_HARDWARE",
+      "graph_status": "BLOCKED_HARDWARE",
+      "era": "IV",
+      "strongest_child_classification": null,
+      "n_child_gates": 0,
+      "call_sites": [],
+      "blocker": "hardware_blocker=EGPU_PRESENT; probe present=false",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "hardware_blocker": "EGPU_PRESENT"
+    },
+    {
+      "id": "IV-E_FUSION_BRIDGE_TOPOLOGY_ASCENSION",
+      "kind": "gene",
+      "classification": "SCAFFOLDED",
+      "graph_status": "SCAFFOLDED",
+      "era": "IV",
+      "strongest_child_classification": null,
+      "n_child_gates": 0,
+      "call_sites": [],
+      "blocker": "no gene-level runtime_caller. Child gates may be stronger; the gene object is not a called symbol.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "hardware_blocker": null
+    },
+    {
+      "id": "V-A_PRODUCT_SOVEREIGNTY",
+      "kind": "gene",
+      "classification": "SCAFFOLDED",
+      "graph_status": "SCAFFOLDED",
+      "era": "V",
+      "strongest_child_classification": null,
+      "n_child_gates": 0,
+      "call_sites": [],
+      "blocker": "no gene-level runtime_caller. Child gates may be stronger; the gene object is not a called symbol.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "hardware_blocker": null
+    },
+    {
+      "id": "V-B_DEVELOPER_PLATFORM",
+      "kind": "gene",
+      "classification": "SCAFFOLDED",
+      "graph_status": "SCAFFOLDED",
+      "era": "V",
+      "strongest_child_classification": null,
+      "n_child_gates": 0,
+      "call_sites": [],
+      "blocker": "no gene-level runtime_caller. Child gates may be stronger; the gene object is not a called symbol.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "hardware_blocker": null
+    },
+    {
+      "id": "V-C_CONTINUOUS_VERIFIED_IMPROVEMENT",
+      "kind": "gene",
+      "classification": "SCAFFOLDED",
+      "graph_status": "SCAFFOLDED",
+      "era": "V",
+      "strongest_child_classification": null,
+      "n_child_gates": 0,
+      "call_sites": [],
+      "blocker": "no gene-level runtime_caller. Child gates may be stronger; the gene object is not a called symbol.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "hardware_blocker": null
+    },
+    {
+      "id": "V-D_DOMINANCE_SCOREBOARD",
+      "kind": "gene",
+      "classification": "SCAFFOLDED",
+      "graph_status": "SCAFFOLDED",
+      "era": "V",
+      "strongest_child_classification": null,
+      "n_child_gates": 0,
+      "call_sites": [],
+      "blocker": "no gene-level runtime_caller. Child gates may be stronger; the gene object is not a called symbol.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "hardware_blocker": null
+    },
+    {
+      "id": "V-E_PERPETUAL_HAWKING",
+      "kind": "gene",
+      "classification": "CONCEPT_ONLY",
+      "graph_status": "DORMANT",
+      "era": "V",
+      "strongest_child_classification": null,
+      "n_child_gates": 0,
+      "call_sites": [],
+      "blocker": "gene status DORMANT; no runtime_caller",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "hardware_blocker": null
+    }
+  ],
+  "commit_status": {
+    "committed": false,
+    "blocker": "This process cannot write the parent git dir /Users/scammermike/Downloads/hawking/.git (index.lock, objects, refs all PermissionError / Operation not permitted; directory carries com.apple.macl). git add --sparse and git commit therefore cannot land. Artifacts exist untracked at receipts/audit/. Side object-store/index workarounds were created then deleted so they would not become a nested git dir.",
+    "evidence_tier": "STATIC_VERIFICATION",
+    "untracked_paths": [
+      "receipts/audit/aud01-current-truth.json",
+      "receipts/audit/aud01-current-truth.md"
+    ],
+    "what_would_settle": "From a process that can write Downloads/hawking/.git: git -C <this worktree> add --sparse receipts/audit && git commit. Cleanup of this worktree will destroy these files if that commit does not happen."
+  }
+}
