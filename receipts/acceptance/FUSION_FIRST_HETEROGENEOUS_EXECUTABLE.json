@@ -1,0 +1,106 @@
+{
+  "blocker": {
+    "dependency": "HMF_DEVICE_VISIBLE_TRUST",
+    "id": "NO_SECOND_PHYSICAL_DOMAIN",
+    "missing_input": "HMF_DEVICE_VISIBLE_TRUST is blocked on HMF_PRESENT; this host has present fusion nodes ['APPLE'] (need >=2). U50=False, EGPU=False, DGX=False. simulate_default timing_decidable=False speedup=None. fusion_planner apple-alone has 1 domain. A COST_MODEL/SIMULATED hop is not a heterogeneous executable.",
+    "wake_condition": "HMF_PRESENT and one of U50_PRESENT | EGPU_PRESENT | DGX_PRESENT",
+    "wake_conditions": [
+      "HMF_PRESENT",
+      "U50_PRESENT",
+      "EGPU_PRESENT",
+      "DGX_PRESENT"
+    ]
+  },
+  "command": "python3 -c \"from fusion_planner import topology_apple_alone; topology_apple_alone()\" and fusion_sim.hawking_topology()/simulate_default()",
+  "criterion": {
+    "end_line": 2971,
+    "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "quote": "# 17. FUSION / EGPU / DGX SPARK / ADDITIONAL MACS\n\n```text\n               HAWKING\n                  \u2502\n           PHYSICAL GRAPH\n                  \u2502\n    \u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\n    \u25bc             \u25bc             \u25bc\n APPLE          FPGA          CUDA\nMetal/UMA       HBM/RTL       Spark/eGPU\n    \u2502             \u2502             \u2502\n    \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500 HMF / HGVAS \u2500\u2500\u2500\u2500\u2500\u2500\u2518\n                  \u2502\n               HAWKGPU\n```\n\n\n## 17.1 Fusion law\n\nThe target is not to make alien memory domains literally become Apple UMA. The target is to make Hawking code increasingly indifferent to which qualified domain owns an object or operation, while preserving explicit physical cost, version and trust.\n\n\n## 17.2 Priority order\n\n```text\nsoftware Accelerator deepens\n\u2192 U50 FPGA school\n\u2192 eGPU external-device school\n\u2192 DGX Spark / multi-device Fusion\n\u2192 broader synthetic machine\n\nThis is priority, not exclusion.\n```\n\n\n## 17.3 eGPU school\n\n- external PCIe/device discovery\n- BAR/resources\n- DMA\n- VRAM ownership\n- queues/completion\n- synchronization\n- representation translation\n- CUDA kernels\n- Apple+NVIDIA physical graph\n- HMF/HGVAS\n- fault/recovery\n- capability-preserving end-to-end benchmark\n\n\n## 17.4 DGX Spark school\n\n- CUDA differential oracle\n- Blackwell execution domain\n- large coherent local CPU/GPU memory domain\n- Fusion object-space experiment\n- representation translation\n- multi-device scheduling\n- second independent physical civilization against which FPGA-derived laws can transfer or fail\n\n\n## 17.5 Additional Mac school\n\n- distributed Metal\n- distributed UMA domains\n- JACCL/RDMA/TB5 baseline when available\n- model sharding\n- duplicated vs sharded residency\n- KV/state placement\n- topology-aware collectives\n- semantic object-space hiding node choreography\n\n\n# 18. DEVICE ASCENSION \u2014 EVERY NEW MACHINE IS A NEW TEXTBOOK\n\n```text\nOLD MACHINE LAWS\n      \u2193 priors only\nNEW MACHINE DISCOVERY\n      \u2193\nMachineGenome\nTransportGenome\nKernel microbenchmarks\nmemory hierarchy\nphase behavior\nnew APIs / neural accelerators\n      \u2193\nre-run physical graph search\n      \u2193\nnew laws / counterexamples\n```\n\n\n## 18.1 M5/Metal 4/TB5 future school\n\n- Re-profile memory bandwidth/latency.\n- Characterize TensorOps/cooperative tensors/quantized tensor formats rather than trusting feature names.\n- Test neural accelerator for compute-bound prefill separately from decode.\n- Re-test shared/no-copy and synchronization semantics.\n- Re-search TB5 bridge and RDMA paths.\n- Do not transfer M3 split ratios, command-buffer assumptions or kernel winners by faith.\n\n",
+    "start_line": 2867
+  },
+  "criterion_altered": false,
+  "evidence_tier": "STATIC",
+  "fusion_law": "The target is not to make alien memory domains literally become Apple UMA. A first heterogeneous executable requires a second qualified domain (FPGA/eGPU/DGX) plus HMF/HGVAS object trust.",
+  "gate": "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE",
+  "generated_at": "2026-09-02T09:08:38Z",
+  "generated_by": "tools.acceptance.odyssey.run",
+  "invoked_symbol": {
+    "also_called": [
+      "tools.future.fusion_sim.hawking_topology",
+      "tools.future.fusion_sim.simulate_default",
+      "tools.roadmap.hardware.probe_all"
+    ],
+    "file": "tools/accelerator/fusion_planner.py",
+    "kind": "call",
+    "module": "tools.accelerator.fusion_planner",
+    "symbol": "topology_apple_alone"
+  },
+  "numeric_comparisons": [],
+  "repo": "/Users/scammermike/.claude-grok/worktrees/acc6-odyssey-green-fusion-acceptance-20260902-045121",
+  "run": {
+    "fusion_planner_apple_alone": {
+      "domains": [
+        "APPLE"
+      ],
+      "n_domains": 1,
+      "physical": {
+        "APPLE": true
+      }
+    },
+    "fusion_sim_nodes": {
+      "APPLE": {
+        "missing": null,
+        "present": true
+      },
+      "CUDA_DGX": {
+        "missing": "NVIDIA CUDA device / DGX node. receipts/headless/CUDA_CAPABILITY_CENSUS.json identities.transport.status=ABSENT: 'no NVIDIA hardware exists on this machine'. receipts/headless/CUDA_CAPABILITY_LEDGER.json MULTI_DEVICE.peer_access remains unmeasured. tools/accelerator/cuda_runtime.py is a Metal stand-in and records is_a_cuda_differential=False.",
+        "present": false
+      },
+      "EGPU": {
+        "missing": "Thunderbolt/PCIe eGPU enclosure attached to this host. tools/accelerator/fusion_planner.py models EGPU0 as physical=False and used a 5 GB/s KNOB; this module replaces the knob with UNKNOWN.",
+        "present": false
+      },
+      "FPGA_U50": {
+        "missing": "physical Xilinx Alveo U50 (or any selected FPGA board). receipts/headless/HCLI_FPGA_PREBOARD.json records physical_board.status=ABSENT, fpga_backend.status=NOT_BUILT, device_genome TARGET_UNSELECTED. receipts/headless/FLASH_NEXT_FPGA_ORGAN_MAP.json is a candidate map with no physical board, bitstream, or U50 performance claimed. FPGA is Accelerator/Physical Compiler/Fusion; it is not a civilization and this is not an FPGA backend.",
+        "present": false
+      },
+      "MAC_ADDITIONAL": {
+        "missing": "a second Apple Silicon host with its own INSTANCE MachineGenome plus a measured interconnect. receipts/headless/MACHINE_GENOME.json is INSTANCE-scoped to this machine only; knowledge_level INSTANCE does not transfer to a sibling Mac.",
+        "present": false
+      }
+    },
+    "fusion_sim_present_nodes": [
+      "APPLE"
+    ],
+    "hardware_probes": {
+      "DGX_PRESENT": {
+        "evidence": "nvidia-smi not present or produced no GPU list",
+        "present": false
+      },
+      "EGPU_PRESENT": {
+        "evidence": "no eGPU enclosure in displays/thunderbolt inventory",
+        "present": false
+      },
+      "HMF_PRESENT": {
+        "evidence": "no HMF/HGVAS/CXL memory appliance in inventory",
+        "present": false
+      },
+      "NEW_M_SERIES_PRESENT": {
+        "evidence": "SoC identity 'Apple M3 Ultra Mac15,14' is not M4-or-later (current textbook is M3 Ultra)",
+        "present": false
+      },
+      "U50_PRESENT": {
+        "evidence": "no Xilinx/Alveo/U50/XCU50 identity in PCIe/Thunderbolt/ioreg inventory",
+        "present": false
+      }
+    },
+    "simulate_default": {
+      "speedup": null,
+      "timing_decidable": false
+    },
+    "wall_s": 0.496
+  },
+  "schema": "hawking.acceptance.gate.v1",
+  "seal_sha256": "a55dc7364d7696a76e5b04c058c97809bd44eab1225400920bb303f5c031248f",
+  "verdict": "BLOCKED"
+}

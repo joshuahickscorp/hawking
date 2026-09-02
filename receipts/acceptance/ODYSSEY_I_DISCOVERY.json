@@ -1,0 +1,213 @@
+{
+  "blocker": null,
+  "command": "python3 -c \"from tools.odyssey_ctl import pick_acquire_candidate; pick_acquire_candidate(state, mutate=False)\"",
+  "criterion": {
+    "end_line": 553,
+    "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "quote": "## I-E. Odyssey I \u2014 Discovery\n\n**Mission:** Build the first real school of model/device facts.\n\n**Genes to express:**\n- architecture-diverse specimens\n- controlled experiments\n- negative science\n- ModelLake\n- genomes\n- laws with scope\n- transfer annotations\n- scientific receipts\n- model #2 completion\n- first cross-model surprises\n\n**Operating rule:** act only on genes whose prerequisites are physically or artifact-verifiably available. Missing prerequisites become explicit blockers or prerequisite WorkUnits; they do not justify fake completion.\n\n**Promotion gate:** this civilization advances only when a fresh process or unseen specimen/device can demonstrate the promised behavior through independent receipts, not because the implementation surface exists.\n\n**Self-refill triggers:** regression, new specimen, new device, new counterexample, new profiler bottleneck, failed transfer, stale assumption, or a newly available deterministic verifier.\n\n",
+    "start_line": 531
+  },
+  "criterion_altered": false,
+  "evidence_tier": "STATIC",
+  "gate": "ODYSSEY_I_DISCOVERY",
+  "generated_at": "2026-09-02T09:08:37Z",
+  "generated_by": "tools.acceptance.odyssey.run",
+  "invoked_symbol": {
+    "file": "tools/odyssey_ctl.py",
+    "kind": "call",
+    "module": "tools.odyssey_ctl",
+    "symbol": "pick_acquire_candidate"
+  },
+  "note": "Census reads safetensors headers only (no weight materialisation). Live Odyssey state was deep-copied and pick_acquire_candidate ran with mutate=False; the live daemon's state file was not written.",
+  "numeric_comparisons": [],
+  "repo": "/Users/scammermike/.claude-grok/worktrees/acc6-odyssey-green-fusion-acceptance-20260902-045121",
+  "run": {
+    "census": {
+      "falcon_h1_7b": {
+        "arch": "FalconH1ForCausalLM",
+        "exists": true,
+        "is_moe": false,
+        "model_type": "falcon_h1",
+        "organs_params": {
+          "attn": 484442112,
+          "embed": 399510528,
+          "expert": 0,
+          "lm_head": 399510528,
+          "mlp_dense": 4982833152,
+          "norm": 408576,
+          "other": 1318949984,
+          "router": 0,
+          "shared_expert": 0
+        },
+        "path": "/Volumes/corpdrive/hawking-modellake/specimens/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+        "stored_bpw": 16.0,
+        "total_bytes": 15171309760,
+        "total_params": 7585654880,
+        "wall_s": 0.004
+      },
+      "qwen3_0.6b": {
+        "arch": "Qwen3ForCausalLM",
+        "exists": true,
+        "is_moe": false,
+        "model_type": "qwen3",
+        "organs_params": {
+          "attn": 176167936,
+          "embed": 155582464,
+          "expert": 0,
+          "lm_head": 155582464,
+          "mlp_dense": 264241152,
+          "norm": 58368,
+          "other": 0,
+          "router": 0,
+          "shared_expert": 0
+        },
+        "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0",
+        "stored_bpw": 16.0,
+        "total_bytes": 1503264768,
+        "total_params": 751632384,
+        "wall_s": 0.001
+      }
+    },
+    "census_error": null,
+    "lake": {
+      "model_types": {
+        "Dream": 1,
+        "NO_CONFIG": 3,
+        "UNKNOWN": 5,
+        "UNREADABLE": 1,
+        "bitnet": 2,
+        "deepseek_v4": 1,
+        "depth_anything": 1,
+        "falcon_h1": 1,
+        "glm4_moe": 1,
+        "glm5_next": 1,
+        "granitemoehybrid": 2,
+        "illada": 1,
+        "inkling_mm_model": 1,
+        "jamba": 1,
+        "kimi_k3": 1,
+        "kimi_linear": 1,
+        "kimi_vl": 1,
+        "lfm2": 2,
+        "lfm2_moe": 1,
+        "llama": 1,
+        "llava_llama": 1,
+        "mistral3": 1,
+        "modernbert": 1,
+        "musicgen": 1,
+        "olmo3": 1,
+        "phi3": 2,
+        "phi4mm": 1,
+        "qwen2": 1,
+        "qwen3": 4,
+        "qwen3_moe": 2,
+        "qwen3_vl": 1,
+        "qwen3_vl_moe": 1,
+        "qwen4_exp": 1,
+        "rwkv7": 1,
+        "sam2_video": 1,
+        "smolvlm": 1,
+        "starcoder2": 1,
+        "t5": 1,
+        "timesfm": 1,
+        "vjepa2": 1,
+        "whisper": 1
+      },
+      "mounted": true,
+      "n_model_types": 41,
+      "n_specimens": 55,
+      "n_with_config": 51
+    },
+    "model_types_censused": [
+      "falcon_h1",
+      "qwen3"
+    ],
+    "pick_acquire_candidate": {
+      "candidate_oxx": "O010",
+      "candidate_source": "zai-org/GLM-4.5-Air",
+      "candidate_state": "READY",
+      "mutate": false,
+      "mutated": false,
+      "n_patients": 14,
+      "n_skipped": 10,
+      "ok": true,
+      "skipped_head": [
+        [
+          "O000",
+          "already ACQUIRING"
+        ],
+        [
+          "O001",
+          "already ACQUIRING"
+        ],
+        [
+          "O002",
+          "already ACQUIRING"
+        ],
+        [
+          "O003",
+          "on-disk"
+        ],
+        [
+          "O004",
+          "already ACQUIRING"
+        ],
+        [
+          "O005",
+          "already ACQUIRING"
+        ],
+        [
+          "O006",
+          "on-disk"
+        ],
+        [
+          "O007",
+          "already ACQUIRING"
+        ],
+        [
+          "O008",
+          "already ACQUIRING"
+        ],
+        [
+          "O009",
+          "already ACQUIRING"
+        ]
+      ],
+      "state_file_read": "/Users/scammermike/Downloads/hawking/workspace/campaign/odyssey/ODYSSEY_STATE.json"
+    },
+    "school_artifacts_read_only": {
+      "gravity_rulebase": {
+        "n_rules": 9,
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/odyssey/GRAVITY_RULEBASE.json",
+        "read_only": true,
+        "rule_ids": [
+          "R-sparse-active-expert-gather",
+          "R-uniform-routing-no-cold-compress",
+          "R-protect-router-if-sensitive",
+          "R-heterogeneous-expert-allocate",
+          "R-predictable-route-prefetch",
+          "R-organ-inversion",
+          "R-routing-frequency-alloc",
+          "R-layer0-different-source",
+          "R-affine-grouped-q2-if-native-kernel"
+        ]
+      },
+      "negative_science": {
+        "n_entries": 16,
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/odyssey/NEGATIVE_SCIENCE.json",
+        "read_only": true
+      },
+      "odyssey_i_receipts_in_git": 148,
+      "transfer_matrix": {
+        "n_rows": 9,
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/odyssey/TRANSFER_MATRIX.json",
+        "read_only": true
+      }
+    },
+    "wall_s": 0.035
+  },
+  "schema": "hawking.acceptance.gate.v1",
+  "seal_sha256": "24f529ee09cefebc8b231c858a168b45f9e464cfcd97f9934339e5f5094006cf",
+  "section_6_output": "first-principles model/device laws, scars, genomes, ModelLake school",
+  "verdict": "ACCEPTED"
+}
