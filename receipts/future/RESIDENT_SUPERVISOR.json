@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T08:27:21Z",
+  "recorded_at": "2026-09-02T09:06:01Z",
   "recorded_by": "tools/future/resident_supervisor.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -335,10 +335,10 @@
    "passed": true
   },
   "never_vcs_mutation": {
-   "event_log": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-resident-sup-ovdc06vv/vcs/EVENT_LOG.jsonl",
-   "frontier_store": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-resident-sup-ovdc06vv/vcs/FRONTIER_STORE.json",
+   "event_log": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-resident-sup-hayjf7z_/vcs/EVENT_LOG.jsonl",
+   "frontier_store": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-resident-sup-hayjf7z_/vcs/FRONTIER_STORE.json",
    "git_is_event_log": false,
-   "mission": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-resident-sup-ovdc06vv/vcs/MISSION_STATE.json",
+   "mission": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-resident-sup-hayjf7z_/vcs/MISSION_STATE.json",
    "passed": true,
    "phrase_absent": true
   },
@@ -417,7 +417,7 @@
   "workunit": "one CPU_ANALYSIS supervisor tick; dry or detached launch of admitted WorkUnits"
  },
  "schema": "hawking.future.resident_supervisor.v1",
- "seal_sha256": "95613202d90960135382b579993f3b235e3ae908c7bc26f4a4a5a1ef26f9b0cf",
+ "seal_sha256": "017d1f5a298f33950bda0e4d467135e1eb3e21016a796d528f455e0c5f7d8b03",
  "sigterm": "persists mission + frontier store + already-appended event log, then the loop exits",
  "sleeping_unit_fields": [
   "wake_condition",

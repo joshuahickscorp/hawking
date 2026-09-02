@@ -100,11 +100,13 @@ owner (matched by PID and process-start identity when the host exposes it)
 returns a claimed goal to `queued` on the next launch.
 
 The resident supervisor watches the same file. This means a goal banked from a
-one-shot command or another terminal wakes the resident after its current
-mission is complete, even when no TUI is open. `auto` goals follow the current
-runner in an interactive session; a resident promotes every banked goal as a
-persistent Mission. Use `mode=mission` when queueing a multi-day goal whose
-Mission/DAG/checkpoints must be the visible unit of work.
+one-shot command or another terminal wakes the resident even when no TUI is
+open. While an existing Mission is still runnable, the resident consumes at
+most one queued `auto` goal per worker cycle through the already-loaded Engine;
+the active Mission/DAG stays untouched. After the active Mission succeeds, all
+remaining goals promote FIFO. `mode=mission` always waits for that successful
+boundary and then becomes a persistent Mission. Use it when queueing a
+multi-day goal whose Mission/DAG/checkpoints must be the visible unit of work.
 
 An obvious read-only directory question such as “what is in this folder?” uses
 the typed `fs.list` capability directly, so a cold model does not have to load

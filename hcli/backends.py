@@ -847,6 +847,50 @@ def repair_near_miss_keys(instance: Any, schema: Dict[str, Any],
     return instance
 
 
+def repair_tool_argument_values(instance: Any, log: List[str], path: str = "$") -> Any:
+    """Normalize model-emitted tool values at the structured-output boundary.
+
+    HCLI's result contract deliberately represents tool arguments as flat
+    string pairs: the engine applies each tool's own schema afterwards and can
+    turn ``"true"``/``"5"`` back into boolean/integer values.  Some providers
+    (notably Claude-shaped JSON responses) still emit native JSON scalars in
+    that field.  Rejecting those replies before the engine sees them wastes all
+    retries on a harmless representation mismatch.  Convert only values under
+    the exact ``tool_calls[].arguments[].value`` path; missing values, names,
+    tools, and arbitrary model output remain strict validation failures.
+
+    Arrays and objects are encoded compactly so the existing typed argument
+    path can JSON-decode them.  Every conversion is logged for the receipt.
+    """
+    if not isinstance(instance, dict):
+        return instance
+    calls = instance.get("tool_calls")
+    if not isinstance(calls, list):
+        return instance
+    for call_index, call in enumerate(calls):
+        if not isinstance(call, dict):
+            continue
+        arguments = call.get("arguments")
+        if not isinstance(arguments, list):
+            continue
+        for arg_index, argument in enumerate(arguments):
+            if not isinstance(argument, dict) or "value" not in argument:
+                continue
+            value = argument["value"]
+            if isinstance(value, str):
+                continue
+            try:
+                encoded = json.dumps(value, ensure_ascii=False, separators=(",", ":"))
+            except (TypeError, ValueError):
+                continue
+            argument["value"] = encoded
+            log.append(
+                f"{path}.tool_calls[{call_index}].arguments[{arg_index}].value: "
+                f"{_json_type_name(value)} -> string"
+            )
+    return instance
+
+
 def validate_against_schema(
     instance: Any, schema: Dict[str, Any], path: str = "$"
 ) -> Optional[str]:
@@ -1022,6 +1066,10 @@ class StructuredOutputContract:
     # Same auditability rule: a repair that fixed the reply without spending
     # a retry still has to be visible in the receipt, not silently absorbed.
     truncation_repairs: List[str] = field(default_factory=list)
+    # Providers may emit native JSON scalars for the deliberately flat string
+    # argument-pair representation. Keep that boundary repair separate from
+    # key renames so receipts and degraded-feature metrics say what happened.
+    value_repairs: List[str] = field(default_factory=list)
 
     def apply(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         prepared = deepcopy(payload)
@@ -1033,6 +1081,8 @@ class StructuredOutputContract:
     def validate(self, text: Any) -> Dict[str, Any]:
         diag: List[str] = []
         parsed = extract_json_object(text, diag)
+        value_repairs: List[str] = []
+        repair_tool_argument_values(parsed, value_repairs)
         err = validate_against_schema(parsed, self.schema)
         if err and diag:
             # The syntax error is the cause; the schema error is its shadow.
@@ -1042,8 +1092,11 @@ class StructuredOutputContract:
             repaired = repair_near_miss_keys(deepcopy(parsed), self.schema, log)
             if log and not validate_against_schema(repaired, self.schema):
                 self.repairs.extend(log)
+                self.value_repairs.extend(value_repairs)
                 return repaired
             raise SchemaViolation(err, text=str(text) if text is not None else None)
+        if value_repairs:
+            self.value_repairs.extend(value_repairs)
         for note in diag:
             if note.startswith("TRUNCATION_REPAIR: "):
                 self.truncation_repairs.append(note[len("TRUNCATION_REPAIR: ") :])
@@ -1132,6 +1185,10 @@ class StructuredOutputContract:
                     )
                     if "structured_output_truncation_repair" not in result.degraded:
                         result.degraded.append("structured_output_truncation_repair")
+                if self.value_repairs:
+                    result.raw["_structured_value_repairs"] = list(self.value_repairs)
+                    if "structured_output_value_repair" not in result.degraded:
+                        result.degraded.append("structured_output_value_repair")
             result.schema_attempts = attempt
             return result
         reason = (

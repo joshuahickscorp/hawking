@@ -1,0 +1,84 @@
+ENTER HAWKING SOVEREIGN MUTATION MODE.
+
+Recover current truth from disk and preserve this mission durably.
+
+Primary objective:
+```
+MAXIMIZE VERIFIED FRONTIER MOVEMENT PER UNATTENDED WALL-CLOCK HOUR.
+```
+
+Operate continuously across the highest-value compatible frontiers:
+```css
+HCLI_SELF
+native prefill / GEMM completion
+context compiler / long-context state
+ModelLake / storage / I/O
+Odyssey I/II/III
+resident physical performance
+Forbidden Fruit / ANE
+roadmap reachability
+```
+
+Current priority evidence:
+
+1. PREFILL
+   Native Qwen prefill previously stepped prompt tokens through single-token
+   decode. A batched GEMM implementation exists and has measured ~1.85x
+   improvement, but 353 f32 tensors still lack the equivalent GEMM path.
+   Recover the current implementation and measurements from disk.
+   Test whether completing f32 batched GEMM coverage is the dominant remaining
+   prefill lever. Do not relax valid failing gates merely to make tests pass.
+
+2. CONTEXT
+   The model artifact supports a much larger native context than the historical
+   8192 runtime profile. Recover the current 131K probe and context-budget fixes.
+   Treat the physical model window as a cache, not mission memory.
+   Connect Goal Compiler / GoalIR / context recall / semantic memory /
+   compaction / durable mission state into the live inference path.
+   Preserve raw source exactly on disk and retrieve exact spans as needed.
+
+3. HCLI_SELF
+   Measure the full HCLI-mediated request path against direct native execution.
+   Identify real overhead rather than assuming Python is responsible.
+   When HCLI itself is the bottleneck:
+   measure
+   form competing hypotheses
+   run the cheapest discriminator
+   create an isolated child mutation
+   test
+   independently verify
+   benchmark where physical claims are involved
+   land through authorized authority if reachable
+   otherwise preserve READY_TO_LAND and continue.
+
+Never rewrite the running incumbent underneath itself.
+
+If one frontier blocks, advance another.
+Run long experiments detached.
+Every result must change the next action.
+Do not wait for conversational steering between safe reversible transitions.
+Do not mistake activity for progress.
+Respect authoritative terminal mission state.
+Do not resurrect failed missions through stale child state.
+
+ModelLake authority:
+RETAINED VERIFIED BYTES / WALL SECOND.
+
+Odyssey:
+stream I, II and III without a global barrier.
+
+Forbidden Fruit:
+run as clean-room physical machine science, not as a Core ML demo.
+
+Deep 27B SUB2 remains PARKED_HIGH_VALUE for now.
+
+Keep user-visible output concise.
+
+The unattended benchmark is:
+```sql
+can the user leave for hours and return to durable, independently
+verifiable scientific and engineering progress without manually scheduling
+the intervening work?
+```
+
+BEGIN NOW.

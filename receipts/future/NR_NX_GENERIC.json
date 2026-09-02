@@ -146,7 +146,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T08:28:15Z",
+  "recorded_at": "2026-09-02T09:02:39Z",
   "recorded_by": "tools/future/nr_nx_generic.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -536,7 +536,7 @@
   "workunit": "one CPU_ANALYSIS unit; probe+adapt+drive compiler stages and pack a source-independent NX on a real specimen; no GPU authority"
  },
  "schema": "hawking.future.nr_nx_generic.v1",
- "seal_sha256": "30a85797f8af1b47be374b51246ab51037505cd4ee65f918375d1ed8246615c4",
+ "seal_sha256": "4d2ee281840de6c6cde47cf3469a29d903e2bd247a9e7baa3c3a41477a42ed5e",
  "sleeping_workunit": {
   "blocked_reason": "NX_LOWER blocked at stage None: None",
   "classification": "SLEEPING",
@@ -1604,7 +1604,7 @@
      "template": null,
      "why": "dense MLP has no expert router; router collapse is not an operator on this architecture"
     },
-    "stderr_tail": "Traceback (most recent call last):\n  File \"/Users/scammermike/Downloads/hawking/tools/odyssey/physical_graph_compiler.py\", line 245, in <module>\n    raise SystemExit(main())\n                     ^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/odyssey/physical_graph_compiler.py\", line 128, in main\n    idx = json.load(open(md / \"model.safetensors.index.json\"))[\"weight_map\"]\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: '/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0/model.safetensors.index.json'\n",
+    "stderr_tail": "Traceback (most recent call last):\n  File \"/Users/scammermike/Downloads/hawking/tools/odyssey/physical_graph_compiler.py\", line 245, in <module>\n    raise SystemExit(main())\n                     ~~~~^^\n  File \"/Users/scammermike/Downloads/hawking/tools/odyssey/physical_graph_compiler.py\", line 128, in main\n    idx = json.load(open(md / \"model.safetensors.index.json\"))[\"weight_map\"]\n                    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: '/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0/model.safetensors.index.json'\n",
     "stdout_tail": "",
     "used_compiler_silu": true
    },

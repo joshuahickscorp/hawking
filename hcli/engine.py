@@ -297,6 +297,12 @@ def _degraded_structured_record(
         "unclosed JSON object is prevented by prompt+validate+bounded retry, "
         "not structurally"
     )
+    if contract.repairs:
+        record["structured_repairs"] = list(contract.repairs)
+    if contract.value_repairs:
+        record["structured_value_repairs"] = list(contract.value_repairs)
+    if contract.truncation_repairs:
+        record["structured_truncation_repairs"] = list(contract.truncation_repairs)
     return record
 
 

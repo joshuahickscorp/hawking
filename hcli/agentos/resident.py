@@ -482,8 +482,15 @@ def mission_blocked_reason(workspace: Path) -> Optional[str]:
     except (FileNotFoundError, MissionCorruptError):
         return None
     phase = str(value.get("phase") or "")
-    if phase not in BLOCKED_MISSION_PHASES:
+    failed_units = [
+        uid
+        for uid, item in (value.get("units") or {}).items()
+        if isinstance(item, Mapping) and item.get("status") == "failed"
+    ]
+    if phase not in BLOCKED_MISSION_PHASES and not (phase == "completed" and failed_units):
         return None
+    if phase == "completed" and failed_units:
+        phase = "completed with failed units"
     return (
         f"durable mission {value.get('id')} is {phase} and cannot advance itself; "
         "archive .hcli/mission/state.json or start a new goal"

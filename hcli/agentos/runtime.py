@@ -330,14 +330,18 @@ class AgentOS:
     def run(self, goal: Optional[str] = None) -> Dict[str, Any]:
         if goal is not None:
             mission = self.start_mission(goal)
+            bank_started: list[Dict[str, Any]] = []
         elif self.mission is not None:
             mission = self.mission
+            bank_started = self._run_one_banked_goal(mission)
         elif self.state_path.is_file():
             mission = self.recover_mission()
+            bank_started = self._run_one_banked_goal(mission)
         else:
             raise RuntimeError("no mission is loaded; provide a goal first")
         result = mission.run()
         promoted = self._drain_goal_bank(result)
+        promoted = bank_started + promoted
         if promoted and isinstance(result, dict):
             result["bank_started"] = promoted
         try:
@@ -363,6 +367,18 @@ class AgentOS:
     def _drain_goal_bank(self, result: Any) -> list[Dict[str, Any]]:
         """Run queued goals as durable Missions after a successful Mission."""
         if not isinstance(result, dict) or str(result.get("status") or "").lower() != "completed":
+            return []
+        # Mission historically used ``status=completed`` for a graph whose
+        # units were all terminal, even when some were failed.  Its state and
+        # verdict correctly said INCONCLUSIVE, but this caller only checked the
+        # status and could promote future work after an unsuccessful mission.
+        # Treat explicit verifier signals as authoritative, with the failed
+        # unit list as a defense-in-depth check for older result envelopes.
+        if result.get("failed_units"):
+            return []
+        if "state" in result and str(result.get("state") or "").upper() != "VERIFIED":
+            return []
+        if "verdict" in result and str(result.get("verdict") or "").upper() != "ACCEPT":
             return []
         if self._goal_bank_error:
             return []
@@ -408,6 +424,93 @@ class AgentOS:
                 break
             result = next_result
         return promoted
+
+    def _run_one_banked_goal(self, mission: Mission) -> list[Dict[str, Any]]:
+        """Run one queued goal while a durable Mission is still runnable.
+
+        ``Mission.run()`` owns the active mission's state and DAG for its whole
+        invocation.  Waiting until it returns made the goal bank a write-only
+        queue for a long mission.  A banked goal can share the already-loaded
+        worker body through one bounded Engine request before the active
+        Mission continues.  If the active Mission succeeds, the remaining
+        queue still promotes FIFO and ``mode=mission`` entries become durable
+        Missions with their normal DAG/checkpoint semantics.
+        """
+        phase = str(getattr(mission, "phase", "") or "").lower()
+        if phase in {"failed", "cancelled", "no_progress"}:
+            return []
+        scheduler = getattr(mission, "scheduler", None)
+        units = getattr(scheduler, "units", {}) if scheduler is not None else {}
+        if phase == "completed" and not any(
+            getattr(unit, "status", None) == "failed"
+            for unit in (units.values() if hasattr(units, "values") else ())
+        ):
+            return []
+        is_done = getattr(scheduler, "is_done", None)
+        if callable(is_done):
+            try:
+                if is_done() and phase != "completed":
+                    return []
+            except Exception:
+                pass
+        if self._goal_bank_error:
+            return []
+        snapshot = self.goal_bank_snapshot()
+        next_item = snapshot.get("next") if isinstance(snapshot, dict) else None
+        if not isinstance(next_item, dict):
+            return []
+        try:
+            item = self.goal_bank.claim_next()
+        except Exception as exc:
+            self._goal_bank_error = f"{type(exc).__name__}: {exc}"
+            return []
+        if item is None:
+            return []
+        item_id = str(item.get("id") or "")
+        goal = str(item.get("goal") or "")
+        self._emit_controller(
+            "bank_started",
+            {
+                "id": item_id,
+                "goal": goal,
+                "mode": str(item.get("mode") or "auto"),
+                "interleaved": True,
+            },
+        )
+        try:
+            if self.engine is None:
+                raise RuntimeError("auto bank goal requires an engine")
+            next_result = self.engine.execute(
+                goal,
+                context_memory=self._context_memory(),
+            )
+            if not isinstance(next_result, dict):
+                next_result = {"status": "failed", "result": _json_safe(next_result)}
+            self.goal_bank.finish(item_id, next_result)
+        except Exception as exc:
+            next_result = {"status": "failed"}
+            self.goal_bank.finish(
+                item_id,
+                next_result,
+                error=f"{type(exc).__name__}: {exc}",
+            )
+        status = str(next_result.get("status") or "failed").lower()
+        self._emit_controller(
+            "bank_finished",
+            {
+                "id": item_id,
+                "goal": goal,
+                "status": status,
+                "mode": str(item.get("mode") or "auto"),
+                "interleaved": True,
+            },
+        )
+        return [{
+            "id": item_id,
+            "goal": goal,
+            "mode": str(item.get("mode") or "auto"),
+            "status": status,
+        }]
 
     def continue_mission(self) -> Dict[str, Any]:
         """Reconstruct and run the durable mission without human re-planning."""

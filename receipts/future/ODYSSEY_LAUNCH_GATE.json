@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T08:31:14Z",
+  "recorded_at": "2026-09-02T09:03:56Z",
   "recorded_by": "tools/future/odyssey_launch.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -356,6 +356,11 @@
       "reason": "present in ModelLake, not a first-wave curriculum role",
       "repo": "tencent/HunyuanVideo",
       "revision": "6204ad6aea1a"
+     },
+     {
+      "reason": "present in ModelLake, not a first-wave curriculum role",
+      "repo": "thinkingmachines/Inkling-Small",
+      "revision": "8cc5877b44d3"
      },
      {
       "reason": "present in ModelLake, not a first-wave curriculum role",
@@ -2807,7 +2812,7 @@
   "workspace": "repo-root"
  },
  "gpu_authority": false,
- "head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
+ "head": "6d82b7bb8256254f7cc78630362f859f4c105159",
  "integration_points": {
   "autonomy_trial": "tools/future/autonomy_trial.py \u2014 persisted --verify verdict in AUTONOMY_TRIALS.json (plural)",
   "dirty_measure": "tools/future/dirty_measure.py \u2014 dirty-class measurement that cannot launder into PROTECTED_ABSOLUTE",
@@ -3171,6 +3176,11 @@
      "reason": "present in ModelLake, not a first-wave curriculum role",
      "repo": "tencent/HunyuanVideo",
      "revision": "6204ad6aea1a"
+    },
+    {
+     "reason": "present in ModelLake, not a first-wave curriculum role",
+     "repo": "thinkingmachines/Inkling-Small",
+     "revision": "8cc5877b44d3"
     },
     {
      "reason": "present in ModelLake, not a first-wave curriculum role",
@@ -5077,7 +5087,7 @@
   "unmet_not_from_this_rewire": []
  },
  "schema": "hawking.future.odyssey_launch.v1",
- "seal_sha256": "d895f41b8e90bee82abd10150b4776723305c1b472415c30af46de29e7ec0bf7",
+ "seal_sha256": "7bcab204ff414543b0741c10f62c050bfeb8833957c5cd1f3a8fa291c4667cf0",
  "sleeping_workunits": [
   {
    "assigned_backend": null,
@@ -5534,6 +5544,11 @@
     "reason": "present in ModelLake, not a first-wave curriculum role",
     "repo": "tencent/HunyuanVideo",
     "revision": "6204ad6aea1a"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "thinkingmachines/Inkling-Small",
+    "revision": "8cc5877b44d3"
    },
    {
     "reason": "present in ModelLake, not a first-wave curriculum role",

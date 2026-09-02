@@ -783,7 +783,18 @@ class Mission:
         self._join_inflight()
         if self.phase not in ("no_progress", "failed", "cancelled"):
             if self.scheduler.is_done():
-                self.phase = "completed"
+                failed = [
+                    wu.id
+                    for wu in self.scheduler.units.values()
+                    if wu.status == "failed"
+                ]
+                if failed:
+                    self.phase = "failed"
+                    self._stop_reason = (
+                        f"{len(failed)} WorkUnit(s) failed; mission is inconclusive"
+                    )
+                else:
+                    self.phase = "completed"
             elif self._stop_reason:
                 self.phase = "failed"
         self._stop_children()

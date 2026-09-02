@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T08:27:53Z",
+  "recorded_at": "2026-09-02T09:02:23Z",
   "recorded_by": "tools/future/mutation_surface.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -22,8 +22,8 @@
   "spec/*",
   "contracts/*"
  ],
- "dirty_paths": 61,
- "head": "6ea04b88f9a4bcb92a784ab5359c0370337bcccb",
+ "dirty_paths": 3,
+ "head": "6d82b7bb8256254f7cc78630362f859f4c105159",
  "integration_window_open": false,
  "policy": {
   "codex_writes": "unconstrained; Codex is the live frontier",
@@ -34,14 +34,14 @@
  "purpose": "Ownership map preventing Claude/Grok sidecar lanes from mutating files the live Codex Accelerator campaign is holding.",
  "quiescence_threshold_seconds": 21600,
  "schema": "hawking.future.codex_mutation_surface.v1",
- "seal_sha256": "bd6cbb1eaf889aa46d0ecab6d69d25d766c77714810dde4bb834ede253de95b7",
+ "seal_sha256": "bd0d7756b05856f976f3a5376cd22e3eca59e0cdedac0a3e566c06b2c90a592c",
  "sidecar_owned": [
   "tools/future/*",
   "receipts/future/*"
  ],
  "surface_evidence": [
   {
-   "age_seconds": 5757.5,
+   "age_seconds": 7827.3,
    "exists": true,
    "glob": "crates/*",
    "newest_file": "crates/hawking-index/src/reachability.rs",
@@ -49,23 +49,23 @@
    "quiescent": false
   },
   {
-   "age_seconds": 9.4,
+   "age_seconds": 116.7,
    "exists": true,
    "glob": "hcli/*",
-   "newest_file": "hcli/test_hawkingd_daemon_name.py",
-   "newest_mtime_epoch": 1788337663.789,
+   "newest_file": "hcli/session_ledger.py",
+   "newest_mtime_epoch": 1788339626.334,
    "quiescent": false
   },
   {
-   "age_seconds": 713.3,
+   "age_seconds": 668.1,
    "exists": true,
    "glob": "tools/*",
-   "newest_file": "tools/roadmap/gitfs.py",
-   "newest_mtime_epoch": 1788336959.917,
+   "newest_file": "tools/odyssey/modellake_watch.py",
+   "newest_mtime_epoch": 1788339074.972,
    "quiescent": false
   },
   {
-   "age_seconds": 961.7,
+   "age_seconds": 3031.5,
    "exists": true,
    "glob": "civilization/*",
    "newest_file": "civilization/CAPABILITY_GRAPH.json",
@@ -73,23 +73,23 @@
    "quiescent": false
   },
   {
-   "age_seconds": 961.7,
+   "age_seconds": 768.3,
    "exists": true,
    "glob": "docs/*",
-   "newest_file": "docs/HCLI_LAUNCH.md",
-   "newest_mtime_epoch": 1788336711.542,
+   "newest_file": "docs/SCAFFOLD.md",
+   "newest_mtime_epoch": 1788338974.706,
    "quiescent": false
   },
   {
-   "age_seconds": 26.8,
+   "age_seconds": 1763.1,
    "exists": true,
    "glob": "receipts/headless/*",
    "newest_file": "receipts/headless/HCLI_AGENTOS_RESEARCH_GATE.json",
-   "newest_mtime_epoch": 1788337646.441,
+   "newest_mtime_epoch": 1788337979.974,
    "quiescent": false
   },
   {
-   "age_seconds": 1150135.5,
+   "age_seconds": 1152205.3,
    "exists": true,
    "glob": "receipts/odyssey-i/*",
    "newest_file": "receipts/odyssey-i/O006_GRAVITY_q4-g64-experts.json",
@@ -97,7 +97,7 @@
    "quiescent": true
   },
   {
-   "age_seconds": 1279491.4,
+   "age_seconds": 1281561.2,
    "exists": true,
    "glob": "spec/*",
    "newest_file": "spec/battery/wide_v1.py",
@@ -105,7 +105,7 @@
    "quiescent": true
   },
   {
-   "age_seconds": 1393303.6,
+   "age_seconds": 1395373.4,
    "exists": true,
    "glob": "contracts/*",
    "newest_file": "contracts/genesis/GENESIS_OUTPUT_LAW.md",

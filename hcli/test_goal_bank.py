@@ -195,6 +195,76 @@ def test_agentos_drains_the_same_bank_when_tui_is_closed(tmp_path):
     assert agent.goal_bank.snapshot()["queued_count"] == 0
 
 
+def test_agentos_runs_one_banked_goal_while_active_mission_is_still_runnable(tmp_path):
+    """A long resident mission must not make the bank write-only."""
+    from hcli.agentos.runtime import AgentOS
+
+    class ActiveScheduler:
+        def is_done(self):
+            return False
+
+        class Unit:
+            def to_dict(self):
+                return {"id": "long-unit", "status": "running"}
+
+        units = {"long-unit": Unit()}
+
+    class ActiveMission:
+        phase = "running"
+        goal = "long mission"
+        id = "long-mission"
+        scheduler = ActiveScheduler()
+
+        def run(self):
+            return {"status": "failed", "reason": "bounded test stop"}
+
+        def status(self):
+            return {"status": "failed", "phase": "failed"}
+
+    class Engine:
+        def __init__(self):
+            self.calls = []
+
+        def execute(self, goal, *, context_memory=None):
+            self.calls.append(goal)
+            return {"status": "completed", "goal_id": "auto-goal"}
+
+    engine = Engine()
+    agent = AgentOS(tmp_path, engine=engine)
+    item = agent.goal_bank.add("small self-verifying unit", mode="mission")
+    agent.mission = ActiveMission()
+
+    result = agent.run()
+
+    assert engine.calls == ["small self-verifying unit"]
+    assert result["status"] == "failed"
+    assert result["bank_started"] == [{
+        "id": item["id"],
+        "goal": "small self-verifying unit",
+        "mode": "mission",
+        "status": "completed",
+    }]
+    assert agent.goal_bank.snapshot()["queued_count"] == 0
+    assert agent.goal_bank.snapshot()["recent"][0]["status"] == "completed"
+
+
+def test_inconclusive_completed_envelope_never_promotes_the_bank(tmp_path):
+    from hcli.agentos.runtime import AgentOS
+
+    agent = AgentOS(tmp_path, engine=object())
+    agent.goal_bank.add("must wait for verified success")
+
+    promoted = agent._drain_goal_bank({
+        "status": "completed",
+        "state": "INCONCLUSIVE",
+        "verdict": "INCONCLUSIVE",
+        "failed_units": ["G001.work"],
+    })
+
+    assert promoted == []
+    assert agent.goal_bank.snapshot()["queued_count"] == 1
+
+
 def test_resident_wakes_only_for_queued_bank_work(tmp_path):
     from hcli.agentos.resident import _goal_bank_has_work
 

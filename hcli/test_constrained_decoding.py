@@ -278,6 +278,40 @@ class TestDecodeAwareRetryPrompt(unittest.TestCase):
         self.assertIn("TRUNCATION_REPAIR", ctx.exception.errors[-1])
 
 
+class TestProviderNativeToolValues(unittest.TestCase):
+    def test_native_boolean_tool_value_reaches_typed_argument_boundary(self):
+        """Claude-shaped JSON must not burn retries on ``true`` vs ``"true"``."""
+        reply = json.dumps({
+            "kind": "tool_use",
+            "content": "inspect",
+            "operations": [],
+            "tests": [],
+            "tool_calls": [{
+                "tool": "fs.list",
+                "arguments": [
+                    {"name": "path", "value": "hcli"},
+                    {"name": "recursive", "value": True},
+                ],
+            }],
+        })
+        contract = StructuredOutputContract(
+            schema=HCLI_RESULT_SCHEMA,
+            instruction=schema_instruction(HCLI_RESULT_SCHEMA),
+            max_attempts=3,
+        )
+        result = contract.enforce(
+            lambda _payload, _timeout=None: CompletionResult(
+                raw={}, text=reply, finish_reason="stop"
+            ),
+            {"messages": [{"role": "user", "content": "go"}]},
+        )
+
+        assert result.schema_attempts == 1
+        assert result.raw["_structured"]["tool_calls"][0]["arguments"][1]["value"] == "true"
+        assert result.raw["_structured_value_repairs"]
+        assert "structured_output_value_repair" in result.degraded
+
+
 class TestIsDecodeViolation(unittest.TestCase):
     def test_classifies_the_measured_live_error_as_decode(self):
         self.assertTrue(_is_decode_violation(

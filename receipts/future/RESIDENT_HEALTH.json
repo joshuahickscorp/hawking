@@ -4,7 +4,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T08:28:26Z",
+  "recorded_at": "2026-09-02T09:05:47Z",
   "recorded_by": "tools/future/resident_health.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -45,7 +45,7 @@
   "queue_depth": 26,
   "queue_status": "OK",
   "reason": null,
-  "rss_bytes": 33849344,
+  "rss_bytes": 41320448,
   "uma_pressure_name": "warn"
  },
  "negative_findings": [
@@ -60,7 +60,7 @@
   "live_dead_pid": {
    "coped": true,
    "passed": true,
-   "pid": 47500,
+   "pid": 24909,
    "presence": "ABSENT",
    "reason": "resident pid is not alive",
    "rss_bytes": null
@@ -133,7 +133,7 @@
   "reason": null
  },
  "schema": "hawking.future.resident_health.v1",
- "seal_sha256": "f869e8db42254cefde9788284c488ba8adc804363b2dbd3b595405bba771ca59",
+ "seal_sha256": "16b5316b99acbcb09218ef01c9745922951af2f31280d9d59ef20bececff1f3e",
  "telemetry_evidence_class": "SELF_MEASURED_DIRTY",
  "version": 1,
  "vocabulary": {

@@ -62,10 +62,20 @@ def test_a_blocked_mission_names_why_it_needs_a_human(tmp_path, phase):
 
 
 def test_completed_is_terminal_but_not_blocked(tmp_path):
-    """A completed mission is re-run harmlessly; that is how a bank promotes."""
-    _write_mission(tmp_path, "completed")
+    """A genuinely verified completed mission is the bank promotion boundary."""
+    _write_mission(tmp_path, "completed", units={
+        "implement": {"id": "implement", "status": "completed"},
+        "validate": {"id": "validate", "status": "completed"},
+    })
     assert _mission_has_work(tmp_path) is False
     assert mission_blocked_reason(tmp_path) is None
+
+
+def test_completed_mission_with_failed_units_is_blocked(tmp_path):
+    """Terminal status with failures is inconclusive, never a success gate."""
+    _write_mission(tmp_path, "completed")
+    reason = mission_blocked_reason(tmp_path)
+    assert reason and "completed with failed units" in reason
 
 
 def test_absent_and_corrupt_missions_are_unchanged(tmp_path):

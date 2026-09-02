@@ -87,7 +87,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T08:31:14Z",
+  "recorded_at": "2026-09-02T09:03:56Z",
   "recorded_by": "tools/future/odyssey_launch.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -354,6 +354,11 @@
     "reason": "present in ModelLake, not a first-wave curriculum role",
     "repo": "tencent/HunyuanVideo",
     "revision": "6204ad6aea1a"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "thinkingmachines/Inkling-Small",
+    "revision": "8cc5877b44d3"
    },
    {
     "reason": "present in ModelLake, not a first-wave curriculum role",
@@ -1893,7 +1898,7 @@
   "unbound_reason": null
  },
  "schema": "hawking.future.odyssey_i_launch.v1",
- "seal_sha256": "e7bf8d7e9e90a56aa5af8bd28f62e61cd3308edec6c0c993c158f534a9db5e6a",
+ "seal_sha256": "896dac3f7f92e11b409a9cbf5217a6b801935da5c91f65c391f1198bd9455aba",
  "verdict": {
   "allowed": true,
   "met": [
