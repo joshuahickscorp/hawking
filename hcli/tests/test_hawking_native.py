@@ -245,7 +245,7 @@ class TestNativeGeneralization(TestCase):
                 empty.complete_text("Return exactly: HAWKING_OK")
 
     def test_profile_declares_the_current_resident_prompt_fallback(self):
-        profile = Path(__file__).resolve().parents[4] / "hcli" / "hawking-native.sealed-3.14.json"
+        profile = Path(__file__).resolve().parents[2] / "hcli" / "hawking-native.sealed-3.14.json"
         config = config_for_model_path(str(profile))
         rendered = _TokenizerRenderer(config).render(
             [{"role": "user", "content": "Return exactly: HAWKING_OK"}],

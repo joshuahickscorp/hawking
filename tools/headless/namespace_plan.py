@@ -256,7 +256,7 @@ IMPORT_RE = re.compile(
 )
 SYS_PATH_RE = re.compile(r"sys\.path\.(insert|append)\s*\(")
 USER_CMD_RE = re.compile(
-    r"python3? -m hcli|\bjhcli\b|install-shims|parse_haider_args|"
+    r"python3? -m hcli|\bjhcli\b|install-shims|parse_hcli_args|"
     r"~/\.local/bin/hcli|~/\.local/share/hcli|prog=.haider."
 )
 SCHEMA_RE = re.compile(r"\b(hawking\.[A-Za-z0-9_.]+|hcli\.command\.v1)\b")
@@ -1308,8 +1308,8 @@ def main() -> int:
         },
         {
             "id": "S7",
-            "name": "Optional alias parse_haider_args -> parse_hcli_args",
-            "does": "Rename is cosmetic. Keep parse_haider_args as an alias for one cycle. Not required for the directory move.",
+            "name": "DONE: parse_haider_args renamed to parse_hcli_args",
+            "does": "Landed. No alias was kept: every call site in this repo was rewritten in the same change, and out-of-tree callers of a symbol this repo never published are not a constituency.",
             "blast": {
                 "files": [
                     "tools/haider/hcli/__init__.py",
@@ -1418,7 +1418,7 @@ def main() -> int:
         "user_facing": {
             "commands": ["hcli", "jhcli", "python -m hcli", "python -m hcli install-shims"],
             "slash_commands": list(SLASH_COMMANDS),
-            "parse_symbol": "parse_haider_args",
+            "parse_symbol": "parse_hcli_args",
             "shims_identical": True,
             "cite": "tools/haider/hcli/cli.py:186-221 and tools/haider/hcli/commands.py REQUIRED_COMMANDS",
         },
@@ -1539,7 +1539,7 @@ def main() -> int:
     for c in SLASH_COMMANDS:
         print(f"  {c}")
     print("Fossil CLI still documented: python tools/haider/haider.py 1")
-    print("Symbol to optionally alias later: parse_haider_args")
+    print("Symbol renamed: parse_haider_args -> parse_hcli_args (done)")
     print_sites("USER_FACING_COMMANDS", classified["USER_FACING_COMMANDS"])
 
     print("\n## 6. HISTORICAL RECEIPTS (PRESERVE)")

@@ -8,7 +8,7 @@ import time
 import unittest
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parents[4]
+REPO = Path(__file__).resolve().parents[2]
 
 from hcli.resources import (
     MutationLock,

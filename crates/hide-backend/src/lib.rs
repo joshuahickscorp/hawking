@@ -38,6 +38,14 @@ pub mod compat_instructions;
 pub mod connectors;
 pub mod digest;
 /// Transport-neutral JSONL machine-control contract for the HCLI surface.
+// `src/hcli/` (formerly `src/haider/`) is DELIBERATELY NOT DECLARED, and that is
+// the finding, not an oversight: it never was. 2709 lines across 9 files, plus
+// `src/bin/hcli-backend.rs` and `tests/hcli_parallel.rs` that reference it, have
+// never been part of any build -- `cargo build -p hide-backend` has been failing
+// on that binary alone. Declaring it produces 14 compile errors (borrow, type,
+// unresolved name), so the code is not merely unreferenced, it does not compile.
+// Renamed with the rest of the sweep so no borrowed name survives; adopting or
+// deleting it is a separate decision with evidence now attached to it.
 pub mod hcli_bridge;
 /// Named, bounded compute profiles for the HCLI surface.
 pub mod hcli_profile;

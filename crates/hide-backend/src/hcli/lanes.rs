@@ -6,7 +6,7 @@
 use std::collections::BTreeSet;
 use std::time::Instant;
 
-use super::dag::{HaiderDag, NodeId, NodeStatus};
+use super::dag::{HcliDag, NodeId, NodeStatus};
 use super::memgate::MemGate;
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -135,7 +135,7 @@ impl LaneScheduler {
 
     /// Admit as many ready nodes as the MemGate allows, assigning them to idle
     /// lanes. Returns the admitted node ids.
-    pub fn admit(&mut self, dag: &mut HaiderDag, gate: &dyn MemGate) -> Vec<NodeId> {
+    pub fn admit(&mut self, dag: &mut HcliDag, gate: &dyn MemGate) -> Vec<NodeId> {
         let ready = dag.ready_nodes();
         if ready.is_empty() {
             return Vec::new();

@@ -56,9 +56,9 @@ class TestReportCompactionSemantics(unittest.TestCase):
 
     def test_medium_keeps_decision_critical(self):
         raw = (
-            "FINDING: buffer overflow in tools/haider/hcli/cli.py:12\n"
+            "FINDING: buffer overflow in hcli/cli.py:12\n"
             "- claim: overflow is reachable from parse_args\n"
-            "$ python3 -m pytest tools/haider/hcli/tests/test_cli.py -q\n"
+            "$ python3 -m pytest hcli/tests/test_cli.py -q\n"
             "error: boom\n"
             + "".join(f"step {i} details go here\n" for i in range(120))
         )
@@ -66,7 +66,7 @@ class TestReportCompactionSemantics(unittest.TestCase):
             raw,
             extra={
                 "status": {"state": "done", "exit_code": 0},
-                "verifier_inputs": ["python3 -m pytest tools/haider/hcli/tests/test_cli.py -q"],
+                "verifier_inputs": ["python3 -m pytest hcli/tests/test_cli.py -q"],
             },
         )
         blob = payload_dumps(c)
@@ -80,7 +80,7 @@ class TestReportCompactionSemantics(unittest.TestCase):
         self.assertFalse(c.get("passthrough"))
 
     def test_large_collapses_and_stays_bounded(self):
-        signal = "FINDING: buffer overflow in tools/haider/hcli/cli.py:12\n"
+        signal = "FINDING: buffer overflow in hcli/cli.py:12\n"
         raw = signal + ("trace line\n" * 4000)  # ~44KB
         c = _compile(raw, extra={"status": {"state": "done", "exit_code": 0}})
         blob = payload_dumps(c)
@@ -94,14 +94,14 @@ class TestReportCompactionSemantics(unittest.TestCase):
         # the record is compiled (not passthrough): a 60-byte finding is
         # below that floor and would drop status from payload_dumps.
         pad = "".join(f"context {i} unique detail\n" for i in range(20))
-        base = "FINDING: buffer overflow in tools/haider/hcli/cli.py:12\n" + pad
+        base = "FINDING: buffer overflow in hcli/cli.py:12\n" + pad
         extra = {
             "status": {"state": "done", "exit_code": 0},
             "verifier_inputs": ["pytest -q"],
         }
         d0 = payload_dumps(_compile(base, extra=extra))
         d_find = payload_dumps(_compile(
-            "FINDING: use after free in tools/haider/hcli/cli.py:12\n" + pad,
+            "FINDING: use after free in hcli/cli.py:12\n" + pad,
             extra=extra,
         ))
         d_state = payload_dumps(_compile(
@@ -116,7 +116,7 @@ class TestReportCompactionSemantics(unittest.TestCase):
         self.assertNotEqual(d_ver, d0)
 
     def test_canary_repeated_noise_does_not_balloon(self):
-        signal = "FINDING: buffer overflow in tools/haider/hcli/cli.py:12\n"
+        signal = "FINDING: buffer overflow in hcli/cli.py:12\n"
         extra = {"status": {"state": "done", "exit_code": 0}}
         small = _compile(signal + ("trace line\n" * 50), extra=extra)
         large = _compile(signal + ("trace line\n" * 5000), extra=extra)
@@ -130,7 +130,7 @@ class TestProvenanceAddressability(unittest.TestCase):
     def test_raw_report_path_reads_back_through_compact(self):
         with tempfile.TemporaryDirectory() as tmp:
             raw_path = Path(tmp) / "grok-report.md"
-            body = "FINDING: buffer overflow in tools/haider/hcli/cli.py:12\n"
+            body = "FINDING: buffer overflow in hcli/cli.py:12\n"
             raw_path.write_text(body, encoding="utf-8")
             compact = compile_backend_report(
                 backend="grok",
@@ -156,7 +156,7 @@ class TestProvenanceAddressability(unittest.TestCase):
             task_dir = root / "task"
             task_dir.mkdir()
             raw = task_dir / "grok-report.md"
-            body = "FINDING: buffer overflow in tools/haider/hcli/cli.py:12\n"
+            body = "FINDING: buffer overflow in hcli/cli.py:12\n"
             raw.write_text(body, encoding="utf-8")
             bridge = GrokBridge(root)
             bridge.receipts_dir.mkdir(parents=True, exist_ok=True)

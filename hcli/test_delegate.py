@@ -580,17 +580,17 @@ def test_steer_is_consumed_by_the_executor(tmp_path):
 
 
 def test_existing_single_shot_cli_forms_still_parse():
-    args = cli.parse_haider_args(["4", "do the thing"])
+    args = cli.parse_hcli_args(["4", "do the thing"])
     assert args.runtime_count == 4 and args.prompt == "do the thing"
-    assert cli.parse_haider_args(["do the thing"]).prompt == "do the thing"
-    assert cli.parse_haider_args(["--task", "do the thing"]).prompt == "do the thing"
-    assert cli.parse_haider_args([]).interactive is True
+    assert cli.parse_hcli_args(["do the thing"]).prompt == "do the thing"
+    assert cli.parse_hcli_args(["--task", "do the thing"]).prompt == "do the thing"
+    assert cli.parse_hcli_args([]).interactive is True
 
 
 def test_existing_single_shot_cli_still_parses_in_a_fresh_process():
     proc = subprocess.run(
         [sys.executable, "-c",
-         "from hcli.cli import parse_haider_args as p;"
+         "from hcli.cli import parse_hcli_args as p;"
          "a=p(['4','do the thing']);"
          "print(a.runtime_count, a.prompt)"],
         cwd=str(REPO), capture_output=True, text=True, timeout=120,
@@ -604,7 +604,7 @@ def test_delegate_verbs_do_not_shadow_the_positional_grammar():
     for verb in cli.DELEGATE_VERBS:
         # A prompt that happens to be a verb still reaches the mission form
         # through --task, which is what the runbook tells operators to use.
-        assert cli.parse_haider_args(["--task", verb]).prompt == verb
+        assert cli.parse_hcli_args(["--task", verb]).prompt == verb
 
 
 def test_main_routes_the_old_positional_form_to_the_app(monkeypatch):

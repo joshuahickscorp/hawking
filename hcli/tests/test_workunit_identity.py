@@ -13,7 +13,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parents[4]
+REPO = Path(__file__).resolve().parents[2]
 
 from hcli import dag_store as dag_store_mod
 from hcli import workunit as workunit_mod
@@ -44,8 +44,8 @@ class TestContentIdentity(unittest.TestCase):
         a = _wu("G001", role="impl", description="wire the mutation lock")
         b = _wu("G002", role="impl", description="wire the mutation lock")
         if hasattr(a, "verifier"):
-            a.verifier = "pytest -q tools/haider/hcli/tests/test_workunit_identity.py"
-            b.verifier = "pytest -q tools/haider/hcli/tests/test_workunit_identity.py"
+            a.verifier = "pytest -q hcli/tests/test_workunit_identity.py"
+            b.verifier = "pytest -q hcli/tests/test_workunit_identity.py"
         admit = getattr(workunit_mod, "admit_unit", None)
         units = {}
         if admit is None:

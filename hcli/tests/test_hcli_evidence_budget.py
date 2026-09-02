@@ -57,7 +57,7 @@ class EvidenceAdmissionTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
 
-            (root / ".haider").mkdir()
+            (root / ".hcli-legacy").mkdir(parents=True)
 
             (root / "target.py").write_text(
                 "VALUE = 1\n",
@@ -66,7 +66,7 @@ class EvidenceAdmissionTests(unittest.TestCase):
 
             spec = (
                 root
-                / ".haider"
+                / ".hcli-legacy"
                 / "FULFILLMENT_TASK.md"
             )
 
@@ -79,7 +79,7 @@ class EvidenceAdmissionTests(unittest.TestCase):
             engine = self.make_engine(root)
 
             evidence = engine._gather_evidence(
-                "Read .haider/FULFILLMENT_TASK.md and execute it."
+                "Read .hcli-legacy/FULFILLMENT_TASK.md and execute it."
             )
 
             paths = [
@@ -88,7 +88,7 @@ class EvidenceAdmissionTests(unittest.TestCase):
             ]
 
             self.assertIn(
-                ".haider/FULFILLMENT_TASK.md",
+                ".hcli-legacy/FULFILLMENT_TASK.md",
                 paths,
             )
 

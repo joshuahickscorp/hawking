@@ -918,7 +918,7 @@ def build_call_depths(trees: Dict[str, ast.AST]) -> List[Dict[str, Any]]:
             "command": "hcli max [prompt]",
             "kind": "cli_entrypoint",
             "chain": prefix[:1] + [
-                hop("cli.parse_haider_args", CLI_MAIN, "parse_haider_args", _fn_exists(main_tree, "parse_haider_args")),
+                hop("cli.parse_hcli_args", CLI_MAIN, "parse_hcli_args", _fn_exists(main_tree, "parse_hcli_args")),
                 hop("resolve_resident_runtime_limit", CLI_MAIN, "resolve_resident_runtime_limit", _fn_exists(main_tree, "resolve_resident_runtime_limit")),
                 hop("cli.main", CLI_MAIN, "main", _fn_exists(main_tree, "main")),
                 hop("App.run", CLI_APP, "App.run", _fn_exists(app_tree, "run", "App")),

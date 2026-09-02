@@ -908,7 +908,7 @@ def resolve_runtime_limits(
     1. env HCLI_RESIDENT_RUNTIME_LIMIT / HCLI_ACTIVE_DECODE_LIMIT
     2. ~/.config/hcli/machine_genome.json  (FRESH genomes only)
     3. <repo>/receipts/headless/MACHINE_GENOME.json  (FRESH if genome-shaped)
-    4. <repo>/.haider/bootstrap-director-v6/worker-equilibrium.json
+    4. <repo>/.hcli-legacy/bootstrap-director-v6/worker-equilibrium.json
     5. conservative fallback: resident 1, active 1
 
     A genome is a prior. STALE genomes (wrong machine, wrong model, older
@@ -934,14 +934,14 @@ def resolve_runtime_limits(
     eq_path = None
     for directory in _walk_parents(start):
         candidate = (
-            directory / ".haider" / "bootstrap-director-v6" / "worker-equilibrium.json"
+            directory / ".hcli-legacy" / "bootstrap-director-v6" / "worker-equilibrium.json"
         )
         if candidate.is_file():
             eq_path = candidate
             break
     if eq_path is None:
         eq_path = (
-            root / ".haider" / "bootstrap-director-v6" / "worker-equilibrium.json"
+            root / ".hcli-legacy" / "bootstrap-director-v6" / "worker-equilibrium.json"
         )
 
     files: List[Tuple[Path, str]] = [

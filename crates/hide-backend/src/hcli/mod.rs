@@ -1,4 +1,4 @@
-//! HAIDER P0.5 — MemGate-controlled parent parallelism.
+//! HCLI P0.5 — MemGate-controlled parent parallelism.
 //!
 //! One logical PARENT owns the Ultragoal, DAG, frontier, and final synthesis.
 //! Child lanes receive bounded evidence packets and explicit contracts, and are
@@ -20,7 +20,7 @@ pub mod ultragoal;
 
 pub use cli::run as run_cli;
 pub use context_governor::{ContextBudgets, ContextGovernor, TaskType};
-pub use dag::{HaiderDag, HaiderNode, NodeId, NodeResult, NodeStatus, ResourceClass, Scope};
+pub use dag::{HcliDag, HcliNode, NodeId, NodeResult, NodeStatus, ResourceClass, Scope};
 pub use harvest::{harvest, Contradiction, FrontierPacket, Harvest, LaneOutput, TestResult};
 pub use lanes::{
     ContextBudget, EvidencePacket, Lane, LaneId, LaneRole, LaneScheduler, LaneStatus,
@@ -33,8 +33,8 @@ use std::time::Instant;
 
 /// The parent orchestrator. It owns the DAG and the lane scheduler, keeps moving
 /// while lanes run, and harvests immediately when lanes finish.
-pub struct Haider {
-    pub dag: HaiderDag,
+pub struct Hcli {
+    pub dag: HcliDag,
     pub lanes: LaneScheduler,
     pub gate: std::sync::Arc<dyn MemGate>,
     /// Feedback from completed parallel episodes, used to learn concurrency.
@@ -43,10 +43,10 @@ pub struct Haider {
     episode_start: Option<Instant>,
 }
 
-impl Haider {
+impl Hcli {
     pub fn new(gate: std::sync::Arc<dyn MemGate>, ceiling: usize) -> Self {
         Self {
-            dag: HaiderDag::new(),
+            dag: HcliDag::new(),
             lanes: LaneScheduler::new(ceiling),
             gate,
             episodes: Vec::new(),
@@ -134,7 +134,7 @@ impl Haider {
         let admitted = self.lanes.admitted_count();
         let ceiling = self.gate.ceiling();
         let mut out = String::new();
-        out.push_str("HAIDER\n\n");
+        out.push_str("HCLI\n\n");
         out.push_str(&format!("PARENT   {parent_label}\n"));
         out.push_str(&format!("MEM      {used_gb} / {total_gb} GB\n"));
         out.push_str(&format!("LANES    {admitted} / {ceiling} admitted\n\n"));

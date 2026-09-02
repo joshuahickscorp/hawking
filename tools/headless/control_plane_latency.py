@@ -297,13 +297,13 @@ def worker_import_hcli() -> Dict[str, Any]:
 
 def worker_import_cli() -> Dict[str, Any]:
     t0 = time.perf_counter()
-    from hcli.cli import parse_haider_args  # noqa: F401
+    from hcli.cli import parse_hcli_args  # noqa: F401
 
     cold = (time.perf_counter() - t0) * 1000.0
     warm = []
     for _ in range(N_WARM):
         t1 = time.perf_counter()
-        from hcli.cli import parse_haider_args  # noqa: F401
+        from hcli.cli import parse_hcli_args  # noqa: F401
 
         warm.append((time.perf_counter() - t1) * 1000.0)
     return {"ok": True, "cold_ms": cold, "warm_ms": warm}
@@ -1437,7 +1437,7 @@ def build_ledger(
         ),
         (
             "import_cli",
-            "from hcli.cli import parse_haider_args",
+            "from hcli.cli import parse_hcli_args",
             "import",
             True,
             "Same as import_hcli: package init still imports Controller first.",

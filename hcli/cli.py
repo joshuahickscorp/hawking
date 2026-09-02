@@ -23,7 +23,7 @@ INSTALL_STAMP = "install.json"
 # this reaping was written for) never helped anyone.
 KEEP_BUILDS = 3
 
-# Delegation verbs dispatch BEFORE parse_haider_args, the same way
+# Delegation verbs dispatch BEFORE parse_hcli_args, the same way
 # `install-shims` already does. The single-shot positional grammar
 # (`hcli 4 "do the thing"`, `hcli --task ...`) is untouched: it never
 # begins with one of these tokens. A prompt that literally starts with
@@ -65,7 +65,7 @@ def resolve_resident_runtime_limit(
     cannot pick a STALE genome the runtime pool would refuse. Clamps to
     ``MAX_RUNTIME_COUNT`` because the positional N grammar is 1-8.
 
-    Verified caller: ``parse_haider_args`` (token ``max``).
+    Verified caller: ``parse_hcli_args`` (token ``max``).
     """
     from .machine import resolve_runtime_limits
 
@@ -76,7 +76,7 @@ def resolve_resident_runtime_limit(
     )
 
 
-def parse_haider_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
+def parse_hcli_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog=_prog_name(),
         description="HCLI — autonomous local model engineering",
@@ -343,7 +343,7 @@ def main(argv: Optional[List[str]] = None) -> int:
 
         return resident_main(raw[1:])
 
-    args = parse_haider_args(raw)
+    args = parse_hcli_args(raw)
     if args.debug:
         print(f"[hcli] args={vars(args)}")
     from .app import App

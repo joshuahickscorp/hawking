@@ -12,7 +12,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-REPO = Path(__file__).resolve().parents[4]
+REPO = Path(__file__).resolve().parents[2]
 
 from hcli.backends import CompletionResult, LlamaServerBackend
 from hcli.machine import (
@@ -223,7 +223,7 @@ class TestLimitResolution(RuntimePoolTestCase):
                     {"RESIDENT_RUNTIME_LIMIT": 9, "ACTIVE_DECODE_LIMIT": 9}
                 )
             )
-            eq_dir = root / ".haider" / "bootstrap-director-v6"
+            eq_dir = root / ".hcli-legacy" / "bootstrap-director-v6"
             eq_dir.mkdir(parents=True)
             (eq_dir / "worker-equilibrium.json").write_text(
                 json.dumps({"bootstrap_workers": 8, "active_decode_limit": 8})

@@ -174,13 +174,13 @@ def _tool_reachability() -> Dict[str, Any]:
 
 
 def probe_test_suite() -> Dict[str, Any]:
-    env_path = str(REPO) + os.pathsep + str(REPO / "tools" / "haider")
+    env_path = str(REPO)
     started = time.monotonic()
     env = dict(os.environ)
     env["PYTHONPATH"] = env_path
     try:
         proc = subprocess.run(
-            [PY, "-m", "pytest", "tools/haider/", "hcli/", "-q"],
+            [PY, "-m", "pytest", "hcli/", "-q"],
             cwd=str(REPO), env=env, capture_output=True, text=True, timeout=1200,
         )
         tail = proc.stdout.strip().splitlines()[-1:] or [""]

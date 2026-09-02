@@ -1,4 +1,4 @@
-//! Durable HAIDER/HCLI mission state.
+//! Durable HCLI mission state.
 //!
 //! Disk state is authoritative. A conversation is not.
 
@@ -8,7 +8,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use serde::{Deserialize, Serialize};
 
-pub const MISSION_SCHEMA: &str = "haider.mission.v1";
+pub const MISSION_SCHEMA: &str = "hcli.mission.v1";
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct MissionState {
@@ -90,7 +90,7 @@ pub struct IngestSummary {
 
 impl MissionState {
     pub fn load(root: &Path) -> Self {
-        let path = root.join(".haider").join("mission.json");
+        let path = root.join(".hcli-legacy").join("mission.json");
         let mut state = match fs::read_to_string(&path) {
             Ok(s) => serde_json::from_str(&s).unwrap_or_default(),
             Err(_) => Self::default(),
@@ -109,7 +109,7 @@ impl MissionState {
     }
 
     pub fn save(&self, root: &Path) -> Result<(), Box<dyn std::error::Error>> {
-        let dir = root.join(".haider");
+        let dir = root.join(".hcli-legacy");
         fs::create_dir_all(&dir)?;
         let path = dir.join("mission.json");
         fs::write(path, serde_json::to_string_pretty(self)?)?;

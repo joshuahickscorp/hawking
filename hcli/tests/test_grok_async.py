@@ -8,7 +8,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-REPO = Path(__file__).resolve().parents[4]
+REPO = Path(__file__).resolve().parents[2]
 
 from hcli.grok_bridge import GrokBridge, GrokRunError
 from hcli.report_compiler import compile_backend_report
@@ -77,8 +77,8 @@ class TestGrokWaitPolls(unittest.TestCase):
             "<think>secret chain of thought that must not leak</think>\n"
             '{"tool": "shell", "cmd": "cat /etc/passwd"}\n'
             "error: boom\n"
-            "$ python3 -m pytest tools/haider/hcli/tests -q\n"
-            "tools/haider/hcli/commands.py changed\n",
+            "$ python3 -m pytest hcli/tests -q\n"
+            "hcli/commands.py changed\n",
             encoding="utf-8",
         )
         receipt = {

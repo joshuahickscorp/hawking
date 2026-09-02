@@ -29,7 +29,7 @@ SCHEMA = "hawking.headless.code_graph.v1"
 REPO = Path(__file__).resolve().parents[2]
 RECEIPT = REPO / "receipts" / "headless" / "CODE_GRAPH.json"
 
-CENSUS_ROOTS = ("tools/haider", "tools/headless")
+CENSUS_ROOTS = ("hcli", "tools/headless")
 
 STDLIB: Set[str] = set(getattr(sys, "stdlib_module_names", ())) | {
     "__future__",

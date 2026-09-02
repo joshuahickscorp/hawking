@@ -1305,7 +1305,7 @@ def main() -> int:
             ],
             "denied": [
                 "workspace", "crates", "visionmcp", "app", "lab",
-                "tools/haider", "ramanujan",
+                "tools/hcli", "ramanujan",
             ],
         },
         "verdict": eight["8_expected_value"]["verdict"],

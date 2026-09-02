@@ -2061,7 +2061,7 @@ def write_scope_check() -> Dict[str, Any]:
             "visionmcp",
             "app",
             "lab",
-            "tools/haider",
+            "hcli",
             "ramanujan",
             "receipts/ascent-2026-08-16",
             "receipts/ascent-2026-08-18",

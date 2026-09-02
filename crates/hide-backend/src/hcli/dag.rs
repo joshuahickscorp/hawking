@@ -1,4 +1,4 @@
-//! The HAIDER parallel task DAG.
+//! The HCLI parallel task DAG.
 //!
 //! READY nodes may execute concurrently when: dependencies are satisfied, write
 //! scopes are disjoint, resource classes are compatible, and the MemGate admits
@@ -118,9 +118,9 @@ pub struct NodeResult {
     pub proposed_actions: Vec<String>,
 }
 
-/// One node in the HAIDER DAG.
+/// One node in the HCLI DAG.
 #[derive(Clone, Debug)]
-pub struct HaiderNode {
+pub struct HcliNode {
     pub id: NodeId,
     pub parent: Option<NodeId>,
     /// Node ids that must be Done before this node is Ready.
@@ -140,24 +140,24 @@ pub struct HaiderNode {
 
 /// The DAG.
 #[derive(Clone, Debug, Default)]
-pub struct HaiderDag {
-    nodes: BTreeMap<NodeId, HaiderNode>,
+pub struct HcliDag {
+    nodes: BTreeMap<NodeId, HcliNode>,
 }
 
-impl HaiderDag {
+impl HcliDag {
     pub fn new() -> Self {
         Self::default()
     }
 
-    pub fn insert(&mut self, node: HaiderNode) {
+    pub fn insert(&mut self, node: HcliNode) {
         self.nodes.insert(node.id.clone(), node);
     }
 
-    pub fn get(&self, id: &NodeId) -> Option<&HaiderNode> {
+    pub fn get(&self, id: &NodeId) -> Option<&HcliNode> {
         self.nodes.get(id)
     }
 
-    pub fn get_mut(&mut self, id: &NodeId) -> Option<&mut HaiderNode> {
+    pub fn get_mut(&mut self, id: &NodeId) -> Option<&mut HcliNode> {
         self.nodes.get_mut(id)
     }
 

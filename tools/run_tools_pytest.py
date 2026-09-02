@@ -30,7 +30,14 @@ def main(argv: list[str] | None = None) -> int:
         )
         xdist_args: list[str] = []
     else:
-        xdist_args = ["-n", n, "--dist", "worksteal"]
+        # loadfile, NOT worksteal. worksteal scatters one file's tests across
+        # workers, and every xdist worker is its own process -- so a module-scoped
+        # cache is rebuilt once per worker instead of once. Measured on the three
+        # heaviest tools/future files at n=6: loadfile 435s, worksteal >600s (budget
+        # exceeded) on the identical selection. There are 569 test files under tools/
+        # and at most a few dozen workers, so per-file granularity still balances.
+        dist = os.environ.get("PYTEST_XDIST_DIST", "loadfile")
+        xdist_args = ["-n", n, "--dist", dist]
     import pytest
 
     return int(pytest.main([*xdist_args, *args]))

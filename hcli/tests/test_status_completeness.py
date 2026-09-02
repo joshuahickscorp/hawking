@@ -7,7 +7,7 @@ import time
 import unittest
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parents[4]
+REPO = Path(__file__).resolve().parents[2]
 
 from hcli.commands import (
     MIN_ACCEPTED_RATE_WINDOW_S,

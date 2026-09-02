@@ -189,9 +189,9 @@ def clone_package(src_pkg: Path, dest_parent: Path, init_text: str) -> Path:
 
 
 THIN_INIT = '''"""HCLI product package (census counterfactual: no Controller on import)."""
-from .cli import parse_haider_args, main
+from .cli import parse_hcli_args, main
 
-__all__ = ["parse_haider_args", "main", "Workspace", "Controller", "Event", "EventBus"]
+__all__ = ["parse_hcli_args", "main", "Workspace", "Controller", "Event", "EventBus"]
 
 
 def __getattr__(name):
@@ -829,7 +829,7 @@ def main() -> int:
 
         # Citations that must resolve.
         cites = [
-            cite(src_pkg, "__init__.py", 2, "from .cli import parse_haider_args, main"),
+            cite(src_pkg, "__init__.py", 2, "from .cli import parse_hcli_args, main"),
             cite(src_pkg, "__init__.py", 4, "from .controller import Controller"),
             cite(src_pkg, "__main__.py", 1, "from hcli.cli import main"),
         ]
@@ -1022,13 +1022,13 @@ def main() -> int:
                 "move": (
                     "Stop importing Controller, Workspace, Event, EventBus in "
                     f"{HCLI_GIT_PREFIX}/__init__.py (lines 3-5). Keep "
-                    "`from .cli import parse_haider_args, main`. Expose the rest "
+                    "`from .cli import parse_hcli_args, main`. Expose the rest "
                     "via PEP 562 __getattr__ so `from hcli import Controller` still works."
                 ),
                 "behind": "App construction / `from hcli import Controller` / tests that need Controller",
                 "why_help_does_not_need_it": (
                     f"{HCLI_GIT_PREFIX}/cli.py:{app_line} imports App only after "
-                    "parse_haider_args(); argparse --help sys.exits first. "
+                    "parse_hcli_args(); argparse --help sys.exits first. "
                     f"{HCLI_GIT_PREFIX}/__main__.py imports hcli.cli.main, but "
                     "package __init__ currently still runs the Controller import."
                 ),

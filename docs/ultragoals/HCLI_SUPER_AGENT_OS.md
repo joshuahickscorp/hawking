@@ -1,4 +1,4 @@
-# HAIDER / HCLI-v0 + SUPER AGENT OS ULTRAGOAL
+# HCLI + SUPER AGENT OS ULTRAGOAL
 
 ======================================================================
 0. MISSION
@@ -10,7 +10,7 @@ Do not treat this as a request for another backend prototype.
 
 The deliverable is simultaneously:
 
-1. A genuinely usable interactive `haider` coding-agent CLI.
+1. A genuinely usable interactive `hcli` coding-agent CLI.
 2. The reusable Hawking Agent OS beneath it.
 3. A local-first cognitive runtime capable of exploiting:
    - multiple logical agents,
@@ -33,26 +33,24 @@ A polished CLI sitting on fake/stub infrastructure is also failure.
 1. IDENTITY
 ======================================================================
 
-Canonical lineage:
+Canonical lineage, and it is now CLOSED:
 
     Aider
       ↓ temporary bootstrap substrate
-    HAIDER
-      ↓ progressively sheds Aider
     HCLI
+      ↓ progressively shed Aider
+    HCLI          ← we are here, 2026-09-02
 
-HAIDER IS HCLI-v0.
+This section set one condition -- "Aider dependency monotonically decreases
+until HCLI effectively IS HCLI" -- and forbade a future giant rewrite. Both
+held. The dependency reached zero first (no live import; see
+`receipts/future/AIDER_NAMESPACE_AUDIT.json`), and the name followed without a
+rewrite: the tests moved to `hcli/tests/`, the Rust module to
+`hide_backend::hcli`, `parse_haider_args` to `parse_hcli_args`, and the
+verbatim upstream `CoderPrompts` source that was still checked in was deleted.
 
-HAIDER is NOT intended to remain a permanent Aider fork.
-
-There must be no future giant rewrite:
-
-    HAIDER → HCLI
-
-Instead:
-
-    Aider dependency monotonically decreases
-    until HAIDER effectively IS HCLI.
+There is no HCLI. There is HCLI, and it is not a fork of anything. Nothing in
+this document below should be read as describing a derivative.
 
 Track an explicit AIDER DEPENDENCY INDEX.
 
@@ -169,7 +167,7 @@ Before modifying code:
     verify current HEAD
     verify git status
     verify current diff
-    identify HAIDER/HCLI changes
+    identify HCLI/HCLI changes
     checkpoint relevant work safely
 
 Use exact repository evidence.
@@ -310,12 +308,12 @@ Malformed model tool requests are rejected structurally.
 Never interpret vague prose as successful tool execution.
 
 ======================================================================
-8. ACTUAL HAIDER CLI — HARD PRODUCT REQUIREMENT
+8. ACTUAL HCLI CLI — HARD PRODUCT REQUIREMENT
 ======================================================================
 
 THIS ULTRAGOAL DOES NOT COMPLETE UNTIL:
 
-    $ haider
+    $ hcli
 
 works from a normal terminal inside a project.
 
@@ -330,17 +328,17 @@ No:
 
 The user mental model is:
 
-    HAIDER IS A LOCAL AGENT CLI.
+    HCLI IS A LOCAL AGENT CLI.
 
 Not:
 
-    HAIDER IS A WRAPPER AROUND AIDER.
+    HCLI IS A WRAPPER AROUND AIDER.
 
 ======================================================================
 9. INTERACTIVE CLI / TUI
 ======================================================================
 
-HAIDER should feel closer to Claude Code / Codex CLI than Aider.
+HCLI should feel closer to Claude Code / Codex CLI than Aider.
 
 Provide:
 
@@ -376,7 +374,7 @@ Measure before choosing.
 
 Conceptual UI:
 
-    ┌ HAIDER ──────────────────────────────────────────────┐
+    ┌ HCLI ──────────────────────────────────────────────┐
     │ MODEL     qwen3.8-local / Q30 later                 │
     │ PROJECT   hawking                                   │
     │ GOAL      Agent OS                                  │
@@ -1836,7 +1834,7 @@ Persist worker:
     checkpoint
     output/receipt
 
-When HAIDER reopens:
+When HCLI reopens:
 
     detect running
     detect dead
@@ -1848,7 +1846,7 @@ When HAIDER reopens:
 67. SELF-BENCHMARK
 ======================================================================
 
-Benchmark HAIDER/Agent OS itself.
+Benchmark HCLI/Agent OS itself.
 
 Track:
 
@@ -1882,13 +1880,13 @@ After the CLI and minimum Agent OS are functional:
 
 Use:
 
-    haider
+    hcli
 
 not Aider
 
-to make one actual improvement to HAIDER.
+to make one actual improvement to HCLI.
 
-HAIDER must:
+HCLI must:
 
     inspect itself
     create isolated candidate
@@ -2001,7 +1999,7 @@ Record:
 
 Do not rely forever on edits living only inside ~/.venvs.
 
-Then eliminate those patches as HAIDER owns the loop.
+Then eliminate those patches as HCLI owns the loop.
 
 ======================================================================
 74. CLI INSTALLATION
@@ -2011,7 +2009,7 @@ Provide a reproducible installed command.
 
 Pass:
 
-    which haider
+    which hcli
 
 from a new shell.
 
@@ -2020,7 +2018,7 @@ No shell alias accepted as final product.
 Normal invocation:
 
     cd <project>
-    haider
+    hcli
 
 ======================================================================
 75. CLI END-TO-END ACCEPTANCE
@@ -2029,7 +2027,7 @@ Normal invocation:
 FROM A FRESH SHELL:
 
     cd ~/Downloads/hawking
-    haider
+    hcli
 
 Then execute:
 
@@ -2039,9 +2037,9 @@ and select a local resident.
 
 Then:
 
-    /goal repair one small real HAIDER issue and prove it
+    /goal repair one small real HCLI issue and prove it
 
-HAIDER must autonomously:
+HCLI must autonomously:
 
     search
     read
@@ -2065,7 +2063,7 @@ Exit.
 
 Run:
 
-    haider
+    hcli
 
 again.
 
@@ -2202,7 +2200,7 @@ No latent/KV communication enters default runtime without equivalence evidence.
 83. HAGENT ACCEPTANCE
 ======================================================================
 
-Do not let native-agent research delay HAIDER shipment.
+Do not let native-agent research delay HCLI shipment.
 
 Only promote hagent if benchmark proves meaningful advantage in:
 
@@ -2225,11 +2223,11 @@ ORDER:
 
 PHASE 0 — SEAL CURRENT STATE
     Git sanity
-    HAIDER diff audit
+    HCLI diff audit
     checkpoint
     persist Ultragoal
 
-PHASE 1 — USABLE HAIDER
+PHASE 1 — USABLE HCLI
     compile current backend
     fix tool bus
     HCLI-owned model loop
@@ -2237,7 +2235,7 @@ PHASE 1 — USABLE HAIDER
     usable TUI/composer
     commands
     model picker
-    installable `haider`
+    installable `hcli`
 
 PHASE 2 — PERSISTENT AGENT OS
     goals
@@ -2293,7 +2291,7 @@ PHASE 8 — NATIVE DETACHMENT
     shrink Aider dependency
 
 PHASE 9 — SELF-HOST
-    HAIDER modifies HAIDER
+    HCLI modifies HCLI
     self-benchmark
     self-fork
     bounded overnight improvement
@@ -2311,13 +2309,13 @@ The CLI is part of the mission.
 Likewise do not spend the entire campaign researching latent communication
 while:
 
-    haider
+    hcli
 
 still does not work.
 
 The priority hierarchy is:
 
-    usable autonomous HAIDER
+    usable autonomous HCLI
         ↓
     robust Agent OS
         ↓
@@ -2331,7 +2329,7 @@ The priority hierarchy is:
 
 THIS ULTRAGOAL IS COMPLETE ONLY WHEN:
 
-1. `haider` launches as a real interactive coding-agent CLI.
+1. `hcli` launches as a real interactive coding-agent CLI.
 
 2. Local models are detected and selectable.
 
@@ -2343,9 +2341,9 @@ THIS ULTRAGOAL IS COMPLETE ONLY WHEN:
 
 6. /steer alters active work.
 
-7. model loop is HAIDER/HCLI-owned.
+7. model loop is HCLI/HCLI-owned.
 
-8. deterministic tool bus is HAIDER/HCLI-owned.
+8. deterministic tool bus is HCLI/HCLI-owned.
 
 9. context lifecycle is Agent-OS-owned.
 
@@ -2371,7 +2369,7 @@ THIS ULTRAGOAL IS COMPLETE ONLY WHEN:
 
 20. Aider dependency is explicitly lower than at campaign start.
 
-21. HAIDER successfully performs one real self-modification through itself.
+21. HCLI successfully performs one real self-modification through itself.
 
 22. a bounded self-hosted improvement loop succeeds.
 
@@ -2441,7 +2439,7 @@ EVERY MODEL SHOULD BE REPLACEABLE.
 
 AIDER SHOULD DISAPPEAR.
 
-HAIDER IS HCLI LEARNING TO EXIST.
+HCLI IS HCLI LEARNING TO EXIST.
 
 ======================================================================
 89. BEGIN
@@ -2451,22 +2449,22 @@ HAIDER IS HCLI LEARNING TO EXIST.
 
 2. Inspect actual repository/Git state.
 
-3. Audit existing overnight HAIDER implementation rather than recreating it.
+3. Audit existing overnight HCLI implementation rather than recreating it.
 
-4. Compile/test the current HAIDER code.
+4. Compile/test the current HCLI code.
 
 5. Verify the local multi-slot resident runtime.
 
 6. Establish the first real HCLI-owned model→tool→result loop.
 
-7. Work from the actual `haider` user experience backward.
+7. Work from the actual `hcli` user experience backward.
 
 8. Convert remaining requirements into a durable DAG.
 
 9. Advance Product Plane and Agent OS Plane together.
 
-10. When HAIDER is capable of self-hosting, STOP USING AIDER AS THE PARENT.
+10. When HCLI is capable of self-hosting, STOP USING AIDER AS THE PARENT.
 
-11. Continue remaining Agent OS research through HAIDER itself.
+11. Continue remaining Agent OS research through HCLI itself.
 
 BEGIN.

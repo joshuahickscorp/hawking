@@ -516,7 +516,7 @@ class Mission:
             return str(self._fingerprint_fn())
         digest = hashlib.sha256()
         root = self.workspace
-        skip = {".hcli", ".git", ".haider"}
+        skip = {".hcli", ".git"}
         if not root.exists():
             return digest.hexdigest()[:20]
         git = self._git_fingerprint(root)

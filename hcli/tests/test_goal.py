@@ -15,7 +15,7 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parents[4]
+REPO = Path(__file__).resolve().parents[2]
 
 from hcli.engine import Engine, EngineError, _SYSTEM_PROMPT
 from hcli.events import EventBus
@@ -34,8 +34,8 @@ BANNED = [
 TOKENIZE_URL = "http://127.0.0.1:8080/tokenize"
 
 _ULTRAGOAL_CANDIDATES = (
-    REPO / "docs/ultragoals/HAIDER_HCLI_SUPER_AGENT_OS.md",
-    Path("/Users/scammermike/Downloads/hawking-copy/docs/ultragoals/HAIDER_HCLI_SUPER_AGENT_OS.md"),
+    REPO / "docs/ultragoals/HCLI_SUPER_AGENT_OS.md",
+    Path("/Users/scammermike/Downloads/hawking-copy/docs/ultragoals/HCLI_SUPER_AGENT_OS.md"),
 )
 
 

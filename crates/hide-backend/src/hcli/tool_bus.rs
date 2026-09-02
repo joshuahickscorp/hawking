@@ -1,4 +1,4 @@
-//! Deterministic HAIDER tool bus.
+//! Deterministic HCLI tool bus.
 //!
 //! Models think. Tools know. Every tool result carries enough provenance to
 //! become evidence: command, exit status, stdout/stderr, duration, cwd,
@@ -62,7 +62,7 @@ pub struct ToolBus {
 impl ToolBus {
     pub fn new(root: impl Into<PathBuf>) -> Self {
         let root = root.into();
-        let state_dir = root.join(".haider");
+        let state_dir = root.join(".hcli-legacy");
         fs::create_dir_all(&state_dir).ok();
         Self {
             root,

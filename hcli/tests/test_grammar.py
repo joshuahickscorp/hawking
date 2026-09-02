@@ -9,29 +9,29 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-REPO = Path(__file__).resolve().parents[4]
+REPO = Path(__file__).resolve().parents[2]
 
-from hcli.cli import parse_haider_args, resolve_resident_runtime_limit
+from hcli.cli import parse_hcli_args, resolve_resident_runtime_limit
 from hcli.machine import live_machine_identity
 
 
 class TestGrammar(unittest.TestCase):
     def test_empty_is_interactive(self):
-        args = parse_haider_args([])
+        args = parse_hcli_args([])
         self.assertEqual(args.runtime_count, 1)
         self.assertIsNone(args.prompt)
         self.assertTrue(args.interactive)
         self.assertIsNone(args.max_source)
 
     def test_prompt_only(self):
-        args = parse_haider_args(["p"])
+        args = parse_hcli_args(["p"])
         self.assertEqual(args.runtime_count, 1)
         self.assertEqual(args.prompt, "p")
         self.assertFalse(args.interactive)
         self.assertIsNone(args.max_source)
 
     def test_n_and_prompt(self):
-        args = parse_haider_args(["3", "p"])
+        args = parse_hcli_args(["3", "p"])
         self.assertEqual(args.runtime_count, 3)
         self.assertEqual(args.prompt, "p")
         self.assertFalse(args.interactive)
@@ -39,16 +39,16 @@ class TestGrammar(unittest.TestCase):
 
     def test_zero_rejected(self):
         with self.assertRaises(SystemExit):
-            parse_haider_args(["0", "p"])
+            parse_hcli_args(["0", "p"])
 
     def test_nine_rejected(self):
         with self.assertRaises(SystemExit):
-            parse_haider_args(["9", "p"])
+            parse_hcli_args(["9", "p"])
 
     def test_max_resolves_and_sets_source(self):
         saved = os.environ.pop("HCLI_RESIDENT_RUNTIME_LIMIT", None)
         try:
-            args = parse_haider_args(["max", "p"])
+            args = parse_hcli_args(["max", "p"])
         finally:
             if saved is not None:
                 os.environ["HCLI_RESIDENT_RUNTIME_LIMIT"] = saved
@@ -71,7 +71,7 @@ class TestGrammar(unittest.TestCase):
 
     def test_max_env_wins(self):
         with patch.dict(os.environ, {"HCLI_RESIDENT_RUNTIME_LIMIT": "2"}, clear=False):
-            args = parse_haider_args(["max", "hello"])
+            args = parse_hcli_args(["max", "hello"])
         self.assertEqual(args.runtime_count, 2)
         self.assertEqual(args.max_source, "HCLI_RESIDENT_RUNTIME_LIMIT")
         self.assertEqual(args.prompt, "hello")
@@ -97,7 +97,7 @@ class TestGrammar(unittest.TestCase):
                     }
                 )
             )
-            eq_dir = workspace / ".haider" / "bootstrap-director-v6"
+            eq_dir = workspace / ".hcli-legacy" / "bootstrap-director-v6"
             eq_dir.mkdir(parents=True)
             (eq_dir / "worker-equilibrium.json").write_text(
                 json.dumps({"bootstrap_workers": 3})

@@ -7,16 +7,16 @@ from contextlib import contextmanager
 from pathlib import Path
 from unittest.mock import patch
 
-REPO = Path(__file__).resolve().parents[4]
+REPO = Path(__file__).resolve().parents[2]
 
 from hcli.commands import CommandHandler
 from hcli.grok_bridge import GrokBridge, GrokRunHandle
 
 VALID_CONTRACT = """# WRITE
-create tools/haider/hcli/commands.py
+create hcli/commands.py
 
 # VERIFY
-`pytest tools/haider/hcli/tests -q` must exit 0
+`pytest hcli/tests -q` must exit 0
 
 # ACCEPTANCE
 pytest exits 0

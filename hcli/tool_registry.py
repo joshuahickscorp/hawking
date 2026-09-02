@@ -1250,7 +1250,7 @@ def _target_receipt(name: str) -> Callable[[ToolContext, Dict[str, Any]], Dict[s
 def _list_tests(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
     raw = args.get("root")
     if raw is None or not str(raw).strip():
-        root = (context.repo_root / "tools/haider/hcli/tests").resolve(strict=False)
+        root = (context.repo_root / "hcli/tests").resolve(strict=False)
     else:
         root = context.resolve_read_path(raw)
     if not _within(root, context.read_roots):

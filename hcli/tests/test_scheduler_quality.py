@@ -17,7 +17,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parents[4]
+REPO = Path(__file__).resolve().parents[2]
 
 from hcli import scheduler as scheduler_mod
 from hcli.resources import ResourceLimits
@@ -248,7 +248,7 @@ class TestIdentityAcrossRestartAndReplan(unittest.TestCase):
                 "G001",
                 role="impl",
                 description="wire the mutation lock",
-                verifier="pytest -q tools/haider/hcli/tests/test_scheduler_quality.py",
+                verifier="pytest -q hcli/tests/test_scheduler_quality.py",
             )
             child = _wu(
                 "G002",
@@ -289,7 +289,7 @@ class TestIdentityAcrossRestartAndReplan(unittest.TestCase):
                 "recomputed-G001",
                 role="impl",
                 description="wire the mutation lock",
-                verifier="pytest -q tools/haider/hcli/tests/test_scheduler_quality.py",
+                verifier="pytest -q hcli/tests/test_scheduler_quality.py",
             )
             outcomes = restarted.replan([recomputed, child])
             self.assertEqual(outcomes[0].kind, "idempotent")

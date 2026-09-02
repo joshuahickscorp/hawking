@@ -810,7 +810,7 @@ def classify_haider_control_plane() -> List[Dict[str, Any]]:
                         lines=n,
                         evidence=evidence
                         + [
-                            ev("hcli___init___exports", "parse_haider_args, main, Workspace, Controller, Event, EventBus — no index"),
+                            ev("hcli___init___exports", "parse_hcli_args, main, Workspace, Controller, Event, EventBus — no index"),
                             ev("from_.import_index", "no hits under tools/ receipts/headless lab/"),
                         ],
                         extra={"out_of_write_scope": True, "role": "unreachable_module"},
@@ -995,7 +995,7 @@ def stale_cli_flags() -> List[Dict[str, Any]]:
             kind="cli_flag",
             classification="KEEP",
             reason=(
-                "marked (legacy) but still wired in parse_haider_args: "
+                "marked (legacy) but still wired in parse_hcli_args: "
                 "args.task / args.task_file still populate prompt. Not dead. "
                 "Out-of-tree callers UNKNOWN — do not remove until measured"
             ),

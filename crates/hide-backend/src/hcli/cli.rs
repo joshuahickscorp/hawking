@@ -1,7 +1,7 @@
-//! Minimal but real HAIDER CLI bootstrap.
+//! Minimal but real HCLI CLI bootstrap.
 //!
 //! This is not the final HCLI TUI, but it provides the required user-facing
-//! `haider` command surface: project detection, model discovery, runtime health,
+//! `hcli` command surface: project detection, model discovery, runtime health,
 //! durable mission state, deterministic tools, and compact evidence output.
 
 use std::collections::BTreeSet;
@@ -15,7 +15,7 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use serde_json::{json, Value};
 
 use super::{
-    ContextBudgets, ContextGovernor, Haider, MemGate, MissionState, SystemMemGate, TaskType,
+    ContextBudgets, ContextGovernor, Hcli, MemGate, MissionState, SystemMemGate, TaskType,
     ToolBus, ToolRequest, ToolResult,
 };
 
@@ -26,7 +26,7 @@ pub fn run() -> Result<(), Box<dyn std::error::Error>> {
 
     let stdin = io::stdin();
     loop {
-        print!("haider> ");
+        print!("hcli> ");
         io::stdout().flush()?;
         let mut line = String::new();
         let n = stdin.lock().read_line(&mut line)?;
@@ -55,7 +55,7 @@ struct CliState {
     root: PathBuf,
     mission: MissionState,
     bus: ToolBus,
-    haider: Haider,
+    hcli: Hcli,
     governor: ContextGovernor,
 }
 
@@ -64,13 +64,13 @@ impl CliState {
         let mission = MissionState::load(&root);
         let bus = ToolBus::new(root.clone());
         let gate = Arc::new(SystemMemGate::new(3));
-        let haider = Haider::new(gate, 3);
+        let hcli = Hcli::new(gate, 3);
         let governor = ContextGovernor::new(131072, 8192);
         Ok(Self {
             root,
             mission,
             bus,
-            haider,
+            hcli,
             governor,
         })
     }
@@ -81,7 +81,7 @@ impl CliState {
     }
 
     fn print_banner(&self) -> Result<(), Box<dyn std::error::Error>> {
-        println!("HAIDER");
+        println!("HCLI");
         println!("project  {}", self.root.display());
         let runtime = self.runtime_info();
         println!("resident {}", runtime.resident.as_deref().unwrap_or("none"));
@@ -225,7 +225,7 @@ impl CliState {
             args: json!({}),
         })?;
         print_tool_result(&res);
-        for (i, lane) in self.haider.lanes.lanes.iter().enumerate() {
+        for (i, lane) in self.hcli.lanes.lanes.iter().enumerate() {
             let letter = char::from(b'A' + (i % 26) as u8);
             println!("{}", lane.render_line(letter));
         }
@@ -351,21 +351,21 @@ impl CliState {
         let res = self.bus.dispatch(ToolRequest {
             tool: "shell.run_safe".into(),
             args: json!({
-                "command": ["cargo", "test", "-p", "hide-backend", "--", "haider"],
+                "command": ["cargo", "test", "-p", "hide-backend", "--", "hcli"],
                 "timeout_secs": 300
             }),
         })?;
-        emit("BENCH", "cargo test haider");
+        emit("BENCH", "cargo test hcli");
         print_tool_result(&res);
         Ok(true)
     }
 
     fn print_status(&self) -> Result<(), Box<dyn std::error::Error>> {
-        println!("HAIDER");
+        println!("HCLI");
         println!("PROJECT  {}", self.root.display());
         let runtime = self.runtime_info();
         println!("RESIDENT {}", runtime.resident.as_deref().unwrap_or("none"));
-        let p = self.haider.gate.pressure();
+        let p = self.hcli.gate.pressure();
         let gb = 1024u64 * 1024 * 1024;
         println!(
             "MEM      {} / {} GB",
@@ -374,8 +374,8 @@ impl CliState {
         );
         println!(
             "LANES    {} / {}",
-            self.haider.lanes.admitted_count(),
-            self.haider.gate.ceiling()
+            self.hcli.lanes.admitted_count(),
+            self.hcli.gate.ceiling()
         );
         println!("GOAL     {}", self.mission.goal.as_deref().unwrap_or("none"));
         println!("NEXT     {}", self.mission.next_action().unwrap_or("none"));
@@ -383,7 +383,7 @@ impl CliState {
     }
 
     fn print_context_budgets(&self) -> Result<(), Box<dyn std::error::Error>> {
-        let p = self.haider.gate.pressure();
+        let p = self.hcli.gate.pressure();
         let pressure = if p.total_physical_bytes == 0 {
             0.0
         } else {
@@ -413,7 +413,7 @@ impl CliState {
     }
 
     fn print_memgate(&self) -> Result<(), Box<dyn std::error::Error>> {
-        let p = self.haider.gate.pressure();
+        let p = self.hcli.gate.pressure();
         let gb = 1024u64 * 1024 * 1024;
         println!("MEMGATE");
         println!("total      {} GB", p.total_physical_bytes / gb);
@@ -433,7 +433,7 @@ impl CliState {
             .mission
             .endpoint
             .clone()
-            .or_else(|| std::env::var("HAIDER_ENDPOINT").ok())
+            .or_else(|| std::env::var("HCLI_ENDPOINT").ok())
             .unwrap_or_else(|| "http://127.0.0.1:8081".into());
         let mut info = RuntimeInfo {
             endpoint: endpoint.clone(),
@@ -631,11 +631,11 @@ fn http_get_json(url: &str) -> Result<Value, Box<dyn std::error::Error>> {
 
 fn discover_models(root: &Path) -> Vec<ModelInfo> {
     let mut dirs = Vec::new();
-    if let Ok(d) = std::env::var("HAIDER_MODEL_DIR") {
+    if let Ok(d) = std::env::var("HCLI_MODEL_DIR") {
         dirs.push(PathBuf::from(d));
     }
     dirs.push(root.join("models"));
-    dirs.push(root.join(".haider").join("models"));
+    dirs.push(root.join(".hcli-legacy").join("models"));
     if let Ok(home) = std::env::var("HOME") {
         dirs.push(PathBuf::from(home).join("models"));
         dirs.push(PathBuf::from(home).join(".cache").join("huggingface").join("hub"));
@@ -681,7 +681,7 @@ fn walk(dir: &Path, depth: usize, out: &mut Vec<ModelInfo>, seen: &mut BTreeSet<
 }
 
 fn print_help() {
-    println!("HAIDER commands:");
+    println!("HCLI commands:");
     println!("  /help");
     println!("  /model [index]");
     println!("  /goal <text>");

@@ -1,7 +1,7 @@
-//! Acceptance battery for HAIDER P0.5 (section 15).
+//! Acceptance battery for HCLI P0.5 (section 15).
 
-use hide_backend::haider::{
-    harvest, ContextBudget, Haider, HaiderDag, HaiderNode, LaneRole, LaneOutput, MemGate, NodeId,
+use hide_backend::hcli::{
+    harvest, ContextBudget, Hcli, HcliDag, HcliNode, LaneRole, LaneOutput, MemGate, NodeId,
     NodeStatus, ResourceClass, Scope, SystemMemGate, TestResult, MemoryPressure,
 };
 use std::sync::Arc;
@@ -17,8 +17,8 @@ fn gate(ceiling: usize) -> Arc<SystemMemGate> {
     g
 }
 
-fn node(id: &str, role: LaneRole, write: &str, rc: ResourceClass) -> HaiderNode {
-    HaiderNode {
+fn node(id: &str, role: LaneRole, write: &str, rc: ResourceClass) -> HcliNode {
+    HcliNode {
         id: NodeId::new(id),
         parent: None,
         deps: vec![],
@@ -39,7 +39,7 @@ fn node(id: &str, role: LaneRole, write: &str, rc: ResourceClass) -> HaiderNode 
 // A. one trivial task -> expected 1 lane.
 #[test]
 fn a_trivial_task_one_lane() {
-    let mut h = Haider::new(gate(3), 3);
+    let mut h = Hcli::new(gate(3), 3);
     h.dag.insert(node("t1", LaneRole::Implementer, "src/a.rs", ResourceClass::Cpu));
     let admitted = h.admit_ready();
     assert_eq!(admitted.len(), 1, "a trivial task should admit exactly 1 lane");
@@ -49,7 +49,7 @@ fn a_trivial_task_one_lane() {
 #[test]
 fn c_induced_memory_pressure_reduces_concurrency() {
     let g = gate(3);
-    let mut h = Haider::new(g.clone(), 3);
+    let mut h = Hcli::new(g.clone(), 3);
     g.set_pressure_override(MemoryPressure {
         total_physical_bytes: 16 << 30,
         available_bytes: 1 << 30,
@@ -72,7 +72,7 @@ fn c_induced_memory_pressure_reduces_concurrency() {
 // D. conflicting write scopes -> expected serialization.
 #[test]
 fn d_conflicting_write_scopes_serialize() {
-    let mut dag = HaiderDag::new();
+    let mut dag = HcliDag::new();
     dag.insert(node("a", LaneRole::Implementer, "src/x.rs", ResourceClass::Cpu));
     dag.insert(node("b", LaneRole::Implementer, "src/x.rs", ResourceClass::Cpu));
     assert!(
@@ -84,7 +84,7 @@ fn d_conflicting_write_scopes_serialize() {
 // E. protected GPU benchmark -> expected exclusive timing lane.
 #[test]
 fn e_gpu_timing_is_exclusive() {
-    let mut dag = HaiderDag::new();
+    let mut dag = HcliDag::new();
     dag.insert(node("bench", LaneRole::Adversary, "bench", ResourceClass::GpuTiming));
     dag.insert(node("infer", LaneRole::Implementer, "infer", ResourceClass::GpuInference));
     assert!(
@@ -96,7 +96,7 @@ fn e_gpu_timing_is_exclusive() {
 // F. three independent CPU/static tasks -> expected overlap.
 #[test]
 fn f_three_independent_cpu_tasks_overlap() {
-    let mut h = Haider::new(gate(3), 3);
+    let mut h = Hcli::new(gate(3), 3);
     h.dag.insert(node("t1", LaneRole::Architect, "src/a.rs", ResourceClass::Cpu));
     h.dag.insert(node("t2", LaneRole::Implementer, "src/b.rs", ResourceClass::Cpu));
     h.dag.insert(node("t3", LaneRole::Adversary, "src/c.rs", ResourceClass::Cpu));
@@ -144,7 +144,7 @@ fn g_harvest_compact_evidence() {
 // H. lanes are role-agnostic: same-role independent tasks can overlap.
 #[test]
 fn h_role_agnostic_lanes_admit_same_role() {
-    let mut h = Haider::new(gate(2), 2);
+    let mut h = Hcli::new(gate(2), 2);
     h.dag.insert(node("a", LaneRole::Implementer, "src/a.rs", ResourceClass::Cpu));
     h.dag.insert(node("b", LaneRole::Implementer, "src/b.rs", ResourceClass::Cpu));
     let admitted = h.admit_ready();
@@ -206,7 +206,7 @@ fn j_memgate_unknown_pressure_is_permissive() {
 // K. prefix write scopes serialize.
 #[test]
 fn k_scope_prefix_overlap_serializes() {
-    let mut dag = HaiderDag::new();
+    let mut dag = HcliDag::new();
     dag.insert(node("a", LaneRole::Implementer, "src", ResourceClass::Cpu));
     dag.insert(node("b", LaneRole::Implementer, "src/a.rs", ResourceClass::Cpu));
     assert!(

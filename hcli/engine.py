@@ -1837,10 +1837,7 @@ class Engine:
 
         under_control_dir = (
             len(rel.parts) > 0
-            and rel.parts[0] in {
-                ".haider",
-                ".hcli",
-            }
+            and rel.parts[0] == ".hcli"
         )
 
         named_like_instruction = any(

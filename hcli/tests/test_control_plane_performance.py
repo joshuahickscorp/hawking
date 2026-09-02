@@ -20,7 +20,7 @@ from hcli.events import EventBus
 from hcli.mutation import compile_python_file, validate_python_syntax
 from hcli.workspace import Workspace
 
-REPO = Path(__file__).resolve().parents[4]
+REPO = Path(__file__).resolve().parents[2]
 
 VALID = "def add(a, b):\n    return a + b\n"
 INVALID = "def add(a, b)\n    return a + b\n"
@@ -161,11 +161,11 @@ class TestPackageInitLazy(unittest.TestCase):
 
         self.assertIs(Controller, Direct)
 
-    def test_parse_haider_args_is_eager(self):
+    def test_parse_hcli_args_is_eager(self):
         import hcli
 
-        self.assertIn("parse_haider_args", hcli.__dict__)
-        self.assertTrue(callable(hcli.parse_haider_args))
+        self.assertIn("parse_hcli_args", hcli.__dict__)
+        self.assertTrue(callable(hcli.parse_hcli_args))
 
 
 class TestHelpPath(unittest.TestCase):

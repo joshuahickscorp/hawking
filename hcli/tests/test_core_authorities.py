@@ -14,7 +14,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parents[4]
+REPO = Path(__file__).resolve().parents[2]
 
 from hcli import backends as backends_mod
 from hcli import machine as machine_mod

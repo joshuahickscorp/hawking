@@ -5,11 +5,11 @@ Checked against `receipts/headless/CODE_GRAPH.json` (schema `hawking.headless.co
 
 ## Control plane
 
-One installed package: **`hcli`**, physical path **`hcli/`**, `pyproject.toml` name `hcli`, console scripts `hcli` and `jhcli` → `hcli.cli:main`. `python3 -m hcli` is the product entry. `import tools.haider.hcli` raises `ImportError`. Incident F24 (one file, two dotted names, two class objects) is locked by `tools/haider/hcli/tests/test_module_identity.py`.
+One installed package: **`hcli`**, physical path **`hcli/`**, `pyproject.toml` name `hcli`, console scripts `hcli` and `jhcli` → `hcli.cli:main`. `python3 -m hcli` is the product entry. `import tools.haider.hcli` raises `ImportError` -- there is no second package and no `tools/haider` at all. Incident F24 (one file, two dotted names, two class objects) is locked by `hcli/tests/test_module_identity.py`, which keeps the fossil dotted name on purpose so a mechanical rename cannot delete the thing it guards against.
 
-Tests stayed under `tools/haider/hcli/tests/`. Fossil HCLI-v0 (`tools/haider/haider.py`, `tools/haider/p0_tool_bridge.py`) is disconnected, not the control plane. `lab/hcli/` is a different product.
+Tests live at `hcli/tests/`. The bootstrap-era fossils (`tools/hcli/bootstrap/`) are a dated record, disconnected from the control plane. `lab/hcli/` is a different product.
 
-The graph still inventories `tools/haider/hcli/*.py` as `hcli_product` (33 files). Those 33 basenames exist at `hcli/` on HEAD. The graph does not list `hcli/paths.py`, `hcli/persist.py`, or the ownership packages `hcli.agentos`, `hcli.doctor`, `hcli.gravity`, `hcli.vmcp`, `hcli.genomes`.
+The graph still inventories `tools/haider/hcli/*.py` as `hcli_product` (33 files) -- a stale path; the graph has not been regenerated since the move. Those 33 basenames exist at `hcli/` on HEAD. The graph does not list `hcli/paths.py`, `hcli/persist.py`, or the ownership packages `hcli.agentos`, `hcli.doctor`, `hcli.gravity`, `hcli.vmcp`, `hcli.genomes`.
 
 ## Ownership (importable, not comments)
 
@@ -37,11 +37,11 @@ Graph `git_head` `cba2bb657` is an ancestor of HEAD `fef695d26`. G026 (`a76efc87
 
 | Graph fact | HEAD fact |
 |---|---|
-| Census roots `tools/haider`, `tools/headless` | Product package is `hcli/` |
+| Census roots were `tools/haider`, `tools/headless` | Now `hcli`, `tools/headless` |
 | Finding `dual_import_identity` severity high | Fossil name raises `ImportError` |
 | Import SCC `dag_store → max_policy → resources → workunit` | Broken by extracting `hcli.persist.atomic_write_json` |
 | 88-class `sys.path.insert` coupling | Fossil inserts deleted; remaining inserts are foreign packages / harnesses |
-| Product entrypoints include `tools/haider/hcli/__main__.py` | Installed `hcli.__main__` / `hcli.cli:main` |
+| Product entrypoints once included `tools/haider/hcli/__main__.py` | Installed `hcli.__main__` / `hcli.cli:main` |
 | `hcli.ledger` ↔ `hcli.steering` import cycle | Still present; import-time safe (`TYPE_CHECKING` / function-level) |
 
 The graph is not rewritten. Successor evidence: `receipts/headless/NAMESPACE_MIGRATION.json`.

@@ -325,7 +325,7 @@ class AgentOSGeneralTest(unittest.TestCase):
     def test_qwen38_fusion_source_audit_resolves_profile_graph_without_gpu(self):
         from hcli.agentos.qwen38_fusion_audit import run_qwen38_fusion_source_audit
 
-        repo = Path(__file__).resolve().parents[4]
+        repo = Path(__file__).resolve().parents[2]
         with tempfile.TemporaryDirectory() as tmp:
             report = run_qwen38_fusion_source_audit(
                 repo_root=repo,

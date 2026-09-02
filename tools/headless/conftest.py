@@ -1,17 +1,29 @@
 """Headless pytest collection.
 
-HCLI tests import `hcli` from tools/haider. This worktree is a sparse checkout
-and that path is often not materialized; collecting the directory then dies
-with ModuleNotFoundError before any test runs. Skip those modules only when
-the package is actually absent, so `pytest tools/headless -q` can still
-exercise the tests that do live here.
+Some tests here import `hcli`. In a sparse-checkout worktree the package may
+not be materialized; collecting the directory then dies with
+ModuleNotFoundError before any test runs. Skip those modules only when the
+package is genuinely unimportable, so `pytest tools/headless -q` still
+exercises the tests that do live here.
+
+This used to gate on the directory `tools/haider/hcli` existing. That path is
+gone, so the check would have been permanently False and every module below
+would have been skipped forever -- green, and testing nothing. Ask the real
+question instead: can `hcli` be imported?
 """
 from __future__ import annotations
 
+import importlib.util
 from pathlib import Path
 
 _REPO = Path(__file__).resolve().parents[2]
-_HAIDER = _REPO / "tools" / "haider" / "hcli"
+
+
+def _hcli_importable() -> bool:
+    try:
+        return importlib.util.find_spec("hcli") is not None
+    except (ImportError, ValueError):
+        return False
 
 # Files that import hcli in the test body even when collection succeeds.
 _HCLI_BODY = {
@@ -24,7 +36,7 @@ def pytest_ignore_collect(collection_path, config):  # noqa: ARG001
     # firstresult=True: False would stop parent hooks (tools/conftest.py)
     # from ignoring name-colliding modules under `pytest tools/`. None
     # means "no opinion" so a parent can still vote.
-    if _HAIDER.is_dir():
+    if _hcli_importable():
         return None
     try:
         name = collection_path.name
