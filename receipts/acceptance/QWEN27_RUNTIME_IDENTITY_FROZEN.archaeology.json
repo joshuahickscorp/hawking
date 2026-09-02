@@ -1,0 +1,669 @@
+{
+  "checks": {
+    "best_historical_arm_is_recorded": true,
+    "current_binary_hash_field_present": true,
+    "historical_anchor_is_recorded": true,
+    "historical_receipt_is_present": true,
+    "no_performance_qualification": true,
+    "source_and_metal_hashes_recorded": true,
+    "unknowns_are_explicit": true
+  },
+  "current": {
+    "artifact": {
+      "declared": {
+        "catalog": "/Users/scammermike/noetic/NOETIC_PARENT_A/catalog.hq38m20",
+        "manifest_tensor_payload_bytes": null,
+        "mix_id": "mix_all_mlp_affine_g64_ls",
+        "n_tensors": 755,
+        "payload_bytes": 10554328856
+      },
+      "exists": true,
+      "manifest": {
+        "exists": false,
+        "label": "[V]",
+        "path": "/Users/scammermike/noetic/NOETIC_PARENT_A/manifest.json",
+        "sha256": null
+      },
+      "mix_report": {
+        "exists": true,
+        "label": "[V]",
+        "path": "/Users/scammermike/noetic/NOETIC_PARENT_A/MIX_REPORT.json",
+        "sha256": "c1e2c8388bc5e67c57a00ff10c2413a1def214108a2f389434137551014f0110"
+      },
+      "root": "/Users/scammermike/noetic/NOETIC_PARENT_A"
+    },
+    "binary": {
+      "exists": true,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+      "sha256": "9f79d8a26540b86091296ddbc5829cf372bd75e789b9b0551a76d6ce2446fc37",
+      "sha256_16": "9f79d8a26540b860"
+    },
+    "capability": {
+      "current_runtime": {
+        "complete_tps_current_measured": 24.4086,
+        "complete_tps_historical_qualified": 34.0,
+        "fallbacks": 0
+      },
+      "fallbacks_declared": [
+        "transformers tokenizer fallback when unavailable"
+      ],
+      "weights_loaded_once": true
+    },
+    "compiler": {
+      "language": "rust",
+      "profile": "release-fast",
+      "source": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident"
+    },
+    "fusion": {
+      "env": {
+        "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+        "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+        "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+        "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+      },
+      "selected_graph": {
+        "dispatch_consequence": {
+          "baseline_source_derived": 964,
+          "physical_dispatch_trace": null,
+          "physical_trace_status": "NOT_MEASURED",
+          "saved_by_control": {
+            "add_rmsnorm": 128,
+            "ba_delta": 0,
+            "dn_inproj": 48,
+            "gqa_qkv": 32,
+            "mlp": 128
+          },
+          "selected_source_derived": 628
+        },
+        "dispatch_constants": {
+          "deltanet_layers": 48,
+          "dense_mlp_suffix_dispatches": 6,
+          "gqa_layers": 16,
+          "layers": 64,
+          "mixer_prefix_dispatches": 9,
+          "terminal_head_kernels": 3
+        },
+        "effective_controls": {
+          "fuse_add_rmsnorm": true,
+          "fuse_ba_delta": false,
+          "fuse_dn_inproj": true,
+          "fuse_gqa_qkv": true,
+          "mlp_fusion": "swiglu"
+        },
+        "kernel_family": "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+        "profile_values": {
+          "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+          "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+          "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+          "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+        }
+      }
+    },
+    "git": {
+      "head": "6d82b7bb8256254f7cc78630362f859f4c105159",
+      "working_tree_dirty": true
+    },
+    "label": "[V]",
+    "machine": {
+      "architecture": "arm64",
+      "platform": "macOS-27.0-arm64-arm-64bit-Mach-O"
+    },
+    "profile": {
+      "identity": {
+        "architecture": "unknown",
+        "artifact_inventory": {
+          "artifact_bytes": 10554328856,
+          "artifact_bytes_exact": true,
+          "artifact_bytes_source": "MIX_REPORT.json:payload_bytes",
+          "catalog": "/Users/scammermike/noetic/NOETIC_PARENT_A/catalog.hq38m20",
+          "mix_id": "mix_all_mlp_affine_g64_ls",
+          "n_tensors": 755
+        },
+        "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+        "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+        "binary_sha256_16": "9f79d8a26540b860",
+        "capabilities": {},
+        "compiler": {
+          "language": "rust",
+          "profile": "release-fast",
+          "source": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident"
+        },
+        "current_runtime": {
+          "complete_tps_current_measured": 24.4086,
+          "complete_tps_historical_qualified": 34.0,
+          "fallbacks": 0
+        },
+        "executable_profile": "release-fast",
+        "fallbacks": [
+          "transformers tokenizer fallback when unavailable"
+        ],
+        "family": "qwen3.8",
+        "fusion_env": {
+          "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+          "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+          "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+          "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+        },
+        "generation": {
+          "do_sample": false,
+          "enable_thinking": false,
+          "max_new_tokens": 2048,
+          "temperature": 0.0,
+          "top_k": 1,
+          "top_p": 1.0
+        },
+        "hot_bytes": null,
+        "limits": {
+          "context": 8192,
+          "max_new_tokens": 2048
+        },
+        "machine_genome": {},
+        "max_seq_len": 8192,
+        "mode": "resident",
+        "model_id": "qwen3.8-27b-sealed-3.14",
+        "param_class": "?B",
+        "physical_ebpw": 3.1393,
+        "profile_schema": "hcli.provider.profile.v1",
+        "prompt_contract": {
+          "fallback_template": "qwen_closed_think",
+          "renderer": "qwen-chat-template-or-closed-think-fallback",
+          "token_count_authority": "native-resident"
+        },
+        "protocol": "hawking.qwen38.resident.v1",
+        "provider": "native",
+        "qualification": "capability 30/43 historical sealed contract",
+        "quantisation": "unknown",
+        "receipts": [
+          "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+          "receipts/headless/QWEN_COMPLETION_RECEIPT.json"
+        ],
+        "representation": {
+          "kind": "native-packed",
+          "physical_ebpw": 3.1393,
+          "weights_loaded_once": true
+        },
+        "require_fusion_env": true,
+        "resident_identity": "sealed-3.14",
+        "runtime": "hawking-native",
+        "runtime_env": {},
+        "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json",
+        "tokenizer_sha256_16": "0997f410c57a1f4e"
+      },
+      "path": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
+      "sha256": "d0ccab6562eebde05f81fbc9e7d40698f4aa9a83ae8e19606a7372a1f3abb7ce"
+    },
+    "runtime": {
+      "executable_profile": "release-fast",
+      "mode": "resident",
+      "protocol": "hawking.qwen38.resident.v1",
+      "provider": "native",
+      "runtime": "hawking-native",
+      "runtime_env": {}
+    },
+    "source": {
+      "files": {
+        "cargo_lock": {
+          "exists": true,
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/Cargo.lock",
+          "sha256": "fee079c8c3643c458f530c6c6a5789c5c537861b6e8605b536342144328c381d"
+        },
+        "cargo_toml": {
+          "exists": true,
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/Cargo.toml",
+          "sha256": "414ebe7505496d2b0ddf53f7d32ebae6c9ddc8d54d24f20a6f433e31db15c06b"
+        },
+        "qwen38_geometry": {
+          "exists": true,
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/src/model/qwen38_geometry.rs",
+          "sha256": "c722d11bc6aca57ab70d745e32dc63296edb33ae8d24f50df135231a4829c131"
+        },
+        "qwen38_hybrid_decode": {
+          "exists": true,
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+          "sha256": "19df6b4f4d84ba5f0ecadfecbef497f9f3a3b0b5eb9dd1da7fc2b848bc6fb203"
+        },
+        "qwen38_schedule": {
+          "exists": true,
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/src/model/qwen38_64_layer_execution_schedule.rs",
+          "sha256": "e399c5bf6b86dfcf198091f031017a1adc66d435f7a1014e690aab66f1552456"
+        },
+        "qwen38_token_ns_ledger": {
+          "exists": true,
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/src/model/qwen38_token_ns_ledger.rs",
+          "sha256": "12242ce30663b1e27a52f01e6142ca831de71bfb8abe915cf35cbfeff650b790"
+        },
+        "qwen_uniform_q4_metal": {
+          "exists": true,
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/qwen_uniform_q4.metal",
+          "sha256": "86afca57eed74194fd3811ebe3ff4b7b5e68e982dc4e842dacf0b0199b87fae8"
+        }
+      },
+      "rust_flags": null
+    },
+    "tokenizer": {
+      "exists": true,
+      "path": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json",
+      "sha256": "0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3",
+      "sha256_16": "0997f410c57a1f4e"
+    }
+  },
+  "diff": {
+    "claim_boundary": "Historical identity is reconstructed from receipt and source evidence. The diff identifies candidates for a correction; it does not attribute the TPS gap or qualify a benchmark.",
+    "classification_policy": {
+      "allowed": [
+        "SAME_VERIFIED",
+        "DIFFERENT_VERIFIED",
+        "UNKNOWN",
+        "NOT_COMPARABLE"
+      ],
+      "source_derived_is_not_physical": true,
+      "unknown_is_not_equal": true
+    },
+    "generated_at": 1788340458.140948,
+    "ranked_differences": [
+      {
+        "classification": "UNKNOWN",
+        "current": 10554328856,
+        "dimension": "artifact_payload_bytes",
+        "expected_token_ns_impact": null,
+        "historical": null,
+        "impact_rank": 1,
+        "reason": "stored bytes are not comparable when one artifact lacks a surviving manifest"
+      },
+      {
+        "classification": "DIFFERENT_VERIFIED",
+        "current": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+        "dimension": "artifact_root",
+        "expected_token_ns_impact": null,
+        "historical": "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1",
+        "impact_rank": 1,
+        "reason": "weights/representation are first-order runtime identity"
+      },
+      {
+        "classification": "UNKNOWN",
+        "current": "UNKNOWN",
+        "dimension": "bench_state",
+        "expected_token_ns_impact": null,
+        "historical": "UNKNOWN",
+        "impact_rank": 1,
+        "reason": "historical receipt was backfilled with UNKNOWN quiescence"
+      },
+      {
+        "classification": "UNKNOWN",
+        "current": "9f79d8a26540b86091296ddbc5829cf372bd75e789b9b0551a76d6ce2446fc37",
+        "dimension": "binary_sha256",
+        "expected_token_ns_impact": null,
+        "historical": null,
+        "impact_rank": 1,
+        "reason": "binary hash is the executable implementation identity"
+      },
+      {
+        "classification": "SAME_VERIFIED",
+        "current": 0,
+        "dimension": "fallbacks",
+        "expected_token_ns_impact": null,
+        "historical": 0,
+        "impact_rank": 1,
+        "reason": "fallbacks change the executed function and must be zero for a capability claim"
+      },
+      {
+        "classification": "DIFFERENT_VERIFIED",
+        "current": {
+          "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+          "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+          "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+          "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+        },
+        "dimension": "fusion_env",
+        "expected_token_ns_impact": null,
+        "historical": {
+          "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "UNKNOWN",
+          "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+          "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+          "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+        },
+        "impact_rank": 1,
+        "reason": "one-control fusion differences alter the selected graph"
+      },
+      {
+        "classification": "NOT_COMPARABLE",
+        "current": null,
+        "dimension": "kernel_genome",
+        "expected_token_ns_impact": null,
+        "historical": [
+          "qwen_uniform_q4_group64_matvec_gate_up_geo_tpr64_tg128",
+          "qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+          "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128",
+          "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128"
+        ],
+        "impact_rank": 1,
+        "reason": "kernel names/genome are missing from the current sealed response until instrumented telemetry runs"
+      },
+      {
+        "classification": "DIFFERENT_VERIFIED",
+        "current": "86afca57eed74194fd3811ebe3ff4b7b5e68e982dc4e842dacf0b0199b87fae8",
+        "dimension": "metal_source_sha256",
+        "expected_token_ns_impact": null,
+        "historical": "1693b7df51e28dbab890154e36c62414d7ce771cb07cf27468d9d63160457341",
+        "impact_rank": 1,
+        "reason": "kernel source can change GPU work even when the host graph is unchanged"
+      },
+      {
+        "classification": "DIFFERENT_VERIFIED",
+        "current": "19df6b4f4d84ba5f0ecadfecbef497f9f3a3b0b5eb9dd1da7fc2b848bc6fb203",
+        "dimension": "qwen38_hybrid_decode_sha256",
+        "expected_token_ns_impact": null,
+        "historical": "d235cd0f49cdc69227df20aa8f07009d8438a84b900fb17fea6606e39976e55d",
+        "impact_rank": 1,
+        "reason": "fusion parser and dispatch graph authority"
+      },
+      {
+        "classification": "NOT_COMPARABLE",
+        "current": 628,
+        "dimension": "selected_source_or_measured_dispatches",
+        "expected_token_ns_impact": null,
+        "historical": 756,
+        "impact_rank": 1,
+        "reason": "source-derived current count and measured historical count are different evidence classes"
+      },
+      {
+        "classification": "DIFFERENT_VERIFIED",
+        "current": "6d82b7bb8256254f7cc78630362f859f4c105159",
+        "dimension": "source_git_head",
+        "expected_token_ns_impact": null,
+        "historical": "03373eae6c961158e3b929ecbd8f2c31302c1809",
+        "impact_rank": 1,
+        "reason": "source commit can change graph, kernel wiring, and accounting"
+      },
+      {
+        "classification": "SAME_VERIFIED",
+        "current": "release-fast",
+        "dimension": "cargo_profile",
+        "expected_token_ns_impact": null,
+        "historical": "release-fast",
+        "impact_rank": 2,
+        "reason": "compiler optimization profile is part of the executable identity"
+      },
+      {
+        "classification": "UNKNOWN",
+        "current": null,
+        "dimension": "command_buffers",
+        "expected_token_ns_impact": null,
+        "historical": 1,
+        "impact_rank": 2,
+        "reason": "command-buffer boundaries affect host synchronization"
+      },
+      {
+        "classification": "UNKNOWN",
+        "current": null,
+        "dimension": "rust_flags",
+        "expected_token_ns_impact": null,
+        "historical": "UNKNOWN",
+        "impact_rank": 2,
+        "reason": "Rust codegen flags are not present in the historical receipt"
+      },
+      {
+        "classification": "UNKNOWN",
+        "current": "0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3",
+        "dimension": "tokenizer_sha256",
+        "expected_token_ns_impact": null,
+        "historical": null,
+        "impact_rank": 2,
+        "reason": "tokenization changes prompt length and can change generated ids"
+      },
+      {
+        "classification": "UNKNOWN",
+        "current": "unknown",
+        "dimension": "architecture",
+        "expected_token_ns_impact": null,
+        "historical": "Qwen3.8",
+        "impact_rank": 3,
+        "reason": "historical receipt names the Qwen3.8 runtime but does not carry a config hash"
+      },
+      {
+        "classification": "UNKNOWN",
+        "current": null,
+        "dimension": "generated_tokens",
+        "expected_token_ns_impact": null,
+        "historical": 16,
+        "impact_rank": 3,
+        "reason": "token accounting must match before complete-token timings can be compared"
+      },
+      {
+        "classification": "SAME_VERIFIED",
+        "current": "qwen3.8",
+        "dimension": "model_family",
+        "expected_token_ns_impact": null,
+        "historical": "qwen3.8",
+        "impact_rank": 3,
+        "reason": "same architecture family is required before runtime comparison"
+      },
+      {
+        "classification": "DIFFERENT_VERIFIED",
+        "current": "qwen3.8-27b-sealed-3.14",
+        "dimension": "model_id",
+        "expected_token_ns_impact": null,
+        "historical": "Qwen3.8-27B historical fusion artifact",
+        "impact_rank": 3,
+        "reason": "profile model identity is not the historical artifact identity"
+      },
+      {
+        "classification": "UNKNOWN",
+        "current": null,
+        "dimension": "prompt_tokens",
+        "expected_token_ns_impact": null,
+        "historical": null,
+        "impact_rank": 3,
+        "reason": "current profile does not encode the historical prompt"
+      }
+    ],
+    "schema": "hcli.agentos.qwen27_runtime_diff.v1",
+    "status": "PASSED",
+    "summary": {
+      "different_verified": 6,
+      "not_comparable": 2,
+      "same_verified": 3,
+      "unknown": 9
+    }
+  },
+  "diff_receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc4-modellake-qwen27-acceptance-20260902-045058/receipts/acceptance/QWEN27_RUNTIME_IDENTITY_FROZEN.diff.json",
+  "elapsed_s": 0.366,
+  "finished_at": 1788340458.140967,
+  "historical": {
+    "artifact": {
+      "declared": {
+        "catalog": null,
+        "manifest_tensor_payload_bytes": null,
+        "mix_id": null,
+        "n_tensors": null,
+        "payload_bytes": null
+      },
+      "exists": false,
+      "manifest": {
+        "exists": false,
+        "label": "[V]",
+        "path": "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1/manifest.json",
+        "sha256": null
+      },
+      "mix_report": {
+        "exists": false,
+        "label": "[V]",
+        "path": "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1/MIX_REPORT.json",
+        "sha256": null
+      },
+      "root": "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1"
+    },
+    "binary": {
+      "exists": false,
+      "path": "/Users/scammermike/.claude-grok/worktrees/g012fuse-20260823-194039/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_dispatch_fusion",
+      "sha256": null,
+      "sha256_16": null
+    },
+    "capability": {
+      "coherent": true,
+      "complete_token_accounting": "UNKNOWN",
+      "dense_w_materialized": 0,
+      "fallbacks": 0
+    },
+    "compiler": {
+      "cargo_lock_sha256": "5b9ba32462555fd59f1db3a0ec8beef429f212797174e71fcfcbac3f1d9e0e3c",
+      "cargo_toml_sha256": "72a77afc5d0ceb2b349cccace5e01b09ca03bca4e7049a4e0f376d6591419eb8",
+      "language": "rust",
+      "profile": "release-fast",
+      "rust_flags": "UNKNOWN"
+    },
+    "fusion": {
+      "env": {
+        "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "UNKNOWN",
+        "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+        "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+        "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+      },
+      "selected_graph": {
+        "command_buffers": 1,
+        "dispatches_per_token": 756,
+        "label": "[V]",
+        "source_derived": false
+      }
+    },
+    "git": {
+      "head": "03373eae6c961158e3b929ecbd8f2c31302c1809",
+      "working_tree_dirty": false
+    },
+    "kernel": {
+      "label": "[V]",
+      "names": [
+        "qwen_uniform_q4_group64_matvec_gate_up_geo_tpr64_tg128",
+        "qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+        "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128",
+        "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128"
+      ],
+      "physical_trace": true
+    },
+    "label": "[V]",
+    "machine": {
+      "architecture": "arm64",
+      "platform": "Apple M3 Ultra (from historical bench/machine genome)"
+    },
+    "receipt": {
+      "bench_state": "UNKNOWN",
+      "generated_at": "2026-08-24T00:25:06Z",
+      "git_head": "03373eae6c961158e3b929ecbd8f2c31302c1809",
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/NOETIC_DISPATCH_FUSION.json",
+      "qualification": false,
+      "schema": "hawking.headless.noetic_dispatch_fusion.v1",
+      "sha256": "21010338a9682e95d9ec363452aec094822a01ba4c8f232d589ea7a84b30a59a"
+    },
+    "run": {
+      "anchor_arm": "before",
+      "anchor_tps": 33.716875920652136,
+      "best_tps": 35.67011507580202,
+      "coherent": true,
+      "dispatches_per_token": 756,
+      "generated_tokens": 16,
+      "gpu_ns_per_token": 26906916,
+      "new_token_ids": [
+        248068,
+        198,
+        760,
+        1156,
+        6587,
+        264,
+        11346,
+        11,
+        58655,
+        15673,
+        314,
+        1204,
+        264,
+        18826,
+        27545,
+        264
+      ],
+      "prompt_tokens": null,
+      "selected_arm": "after_mlp_swiglu_qkv_dn"
+    },
+    "runtime": {
+      "executable_profile": "release-fast",
+      "mode": "one_shot_or_direct_native_unknown",
+      "protocol": "hawking.qwen38.resident.v1",
+      "provider": "native",
+      "runtime": "hawking-native",
+      "runtime_env": "UNKNOWN"
+    },
+    "source": {
+      "files": {
+        "cargo_lock": {
+          "label": "[V]",
+          "path": "Cargo.lock",
+          "revision": "03373eae6c961158e3b929ecbd8f2c31302c1809",
+          "sha256": "5b9ba32462555fd59f1db3a0ec8beef429f212797174e71fcfcbac3f1d9e0e3c"
+        },
+        "cargo_toml": {
+          "label": "[V]",
+          "path": "Cargo.toml",
+          "revision": "03373eae6c961158e3b929ecbd8f2c31302c1809",
+          "sha256": "72a77afc5d0ceb2b349cccace5e01b09ca03bca4e7049a4e0f376d6591419eb8"
+        },
+        "qwen38_geometry": {
+          "label": "[V]",
+          "path": "crates/hawking-core/src/model/qwen38_geometry.rs",
+          "revision": "03373eae6c961158e3b929ecbd8f2c31302c1809",
+          "sha256": "c722d11bc6aca57ab70d745e32dc63296edb33ae8d24f50df135231a4829c131"
+        },
+        "qwen38_hybrid_decode": {
+          "label": "[V]",
+          "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+          "revision": "03373eae6c961158e3b929ecbd8f2c31302c1809",
+          "sha256": "d235cd0f49cdc69227df20aa8f07009d8438a84b900fb17fea6606e39976e55d"
+        },
+        "qwen38_schedule": {
+          "label": "[V]",
+          "path": "crates/hawking-core/src/model/qwen38_64_layer_execution_schedule.rs",
+          "revision": "03373eae6c961158e3b929ecbd8f2c31302c1809",
+          "sha256": "e399c5bf6b86dfcf198091f031017a1adc66d435f7a1014e690aab66f1552456"
+        },
+        "qwen38_token_ns_ledger": {
+          "label": "[V]",
+          "path": "crates/hawking-core/src/model/qwen38_token_ns_ledger.rs",
+          "revision": "03373eae6c961158e3b929ecbd8f2c31302c1809",
+          "sha256": "a3d21852cfb15d98ce8470af5d95c33c70f31ea52e9e0485adee13cf30819691"
+        },
+        "qwen_uniform_q4_metal": {
+          "label": "[V]",
+          "path": "crates/hawking-core/shaders/qwen_uniform_q4.metal",
+          "revision": "03373eae6c961158e3b929ecbd8f2c31302c1809",
+          "sha256": "1693b7df51e28dbab890154e36c62414d7ce771cb07cf27468d9d63160457341"
+        }
+      },
+      "rust_flags": "UNKNOWN"
+    },
+    "tokenizer": {
+      "exists": false,
+      "path": "UNKNOWN",
+      "sha256": null,
+      "sha256_16": null
+    }
+  },
+  "historical_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/headless/NOETIC_DISPATCH_FUSION.json",
+  "historical_receipt_present": true,
+  "historical_selection": {
+    "best_historical_tps": 35.67011507580202,
+    "historical_anchor_tps": 33.716875920652136,
+    "receipt": "NOETIC_DISPATCH_FUSION.json",
+    "selected_arm": "after_mlp_swiglu_qkv_dn",
+    "selection_reason": "checked-in receipt with the closest explicit ~34 TPS control and the strongest paired fusion arm"
+  },
+  "identity_receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc4-modellake-qwen27-acceptance-20260902-045058/receipts/acceptance/QWEN27_RUNTIME_IDENTITY_FROZEN.archaeology.json",
+  "profile_path": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
+  "repo_root": "/Users/scammermike/Downloads/hawking",
+  "schema": "hcli.agentos.qwen27_historical_runtime_identity.v1",
+  "status": "PASSED"
+}

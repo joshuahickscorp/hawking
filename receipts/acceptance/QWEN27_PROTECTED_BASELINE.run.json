@@ -1,0 +1,393 @@
+{
+  "NOT_FOR_PROMOTION": true,
+  "aggregate": {
+    "active_bytes_per_token": {
+      "all": [],
+      "max": null,
+      "median": null,
+      "min": null,
+      "n": 0,
+      "spread_pct": null
+    },
+    "active_weight_bytes_per_generated_token": {
+      "all": [],
+      "max": null,
+      "median": null,
+      "min": null,
+      "n": 0,
+      "spread_pct": null
+    },
+    "actual_read_bytes_per_token": {
+      "all": [],
+      "max": null,
+      "median": null,
+      "min": null,
+      "n": 0,
+      "spread_pct": null
+    },
+    "complete_wall_ns": {
+      "all": [],
+      "max": null,
+      "median": null,
+      "min": null,
+      "n": 0,
+      "spread_pct": null
+    },
+    "complete_wall_ns_per_token": {
+      "all": [],
+      "max": null,
+      "median": null,
+      "min": null,
+      "n": 0,
+      "spread_pct": null
+    },
+    "decode": [],
+    "decode_steps": {
+      "all": [],
+      "max": null,
+      "median": null,
+      "min": null,
+      "n": 0,
+      "spread_pct": null
+    },
+    "dispatches": {
+      "all": [],
+      "max": null,
+      "median": null,
+      "min": null,
+      "n": 0,
+      "spread_pct": null
+    },
+    "dispatches_per_token": {
+      "all": [],
+      "max": null,
+      "median": null,
+      "min": null,
+      "n": 0,
+      "spread_pct": null
+    },
+    "generated_token_ids": [],
+    "generated_token_ids_exact_and_stable": false,
+    "generated_tokens": {
+      "all": [],
+      "max": null,
+      "median": null,
+      "min": null,
+      "n": 0,
+      "spread_pct": null
+    },
+    "gpu_ns": {
+      "all": [],
+      "max": null,
+      "median": null,
+      "min": null,
+      "n": 0,
+      "spread_pct": null
+    },
+    "gpu_ns_per_token": {
+      "all": [],
+      "max": null,
+      "median": null,
+      "min": null,
+      "n": 0,
+      "spread_pct": null
+    },
+    "kernel_genome_exact_and_stable": false,
+    "kernel_genomes": [],
+    "native_wall_minus_gpu_ns": {
+      "all": [],
+      "max": null,
+      "median": null,
+      "min": null,
+      "n": 0,
+      "spread_pct": null
+    },
+    "native_wall_minus_gpu_ns_per_token": {
+      "all": [],
+      "max": null,
+      "median": null,
+      "min": null,
+      "n": 0,
+      "spread_pct": null
+    },
+    "prefill": [],
+    "prefill_steps": {
+      "all": [],
+      "max": null,
+      "median": null,
+      "min": null,
+      "n": 0,
+      "spread_pct": null
+    },
+    "resident_weight_bytes": {
+      "all": [],
+      "max": null,
+      "median": null,
+      "min": null,
+      "n": 0,
+      "spread_pct": null
+    },
+    "transient_bytes_per_token": {
+      "all": [],
+      "max": null,
+      "median": null,
+      "min": null,
+      "n": 0,
+      "spread_pct": null
+    },
+    "wall_minus_gpu_ns_per_token": {
+      "all": [],
+      "max": null,
+      "median": null,
+      "min": null,
+      "n": 0,
+      "spread_pct": null
+    },
+    "workspace_resident_bytes": {
+      "all": [],
+      "max": null,
+      "median": null,
+      "min": null,
+      "n": 0,
+      "spread_pct": null
+    }
+  },
+  "bench": {
+    "machine": "Darwin arm64 (macOS-27.0-arm64-arm-64bit-Mach-O)",
+    "note": "Protected persistent-resident complete-token measurement; the resident is stopped before the closing sample.",
+    "quiescence": {
+      "contenders": [],
+      "error": "PermissionError: [Errno 1] Operation not permitted: 'ps'",
+      "method": "unavailable",
+      "quiet": null
+    },
+    "recorded_at": "2026-09-02T09:14:20Z",
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "samples": {
+      "after": {
+        "contenders": [],
+        "error": "PermissionError: [Errno 1] Operation not permitted: 'ps'",
+        "method": "unavailable",
+        "quiet": null
+      },
+      "before": null
+    },
+    "state": "UNKNOWN"
+  },
+  "benchmark_class": "DIAGNOSTIC_CONTAMINATED",
+  "checks": {
+    "all_measurements_ok": false,
+    "all_requested_measurements_completed": false,
+    "capability_sanity": false,
+    "exact_kernel_genome_recorded": true,
+    "no_connector_restart": true,
+    "no_unqualified_promotion": true,
+    "one_persistent_pid_when_declared": true,
+    "profile_or_resident_started": false,
+    "required_physical_metrics_present": false,
+    "zero_fallbacks": false
+  },
+  "claim_boundary": "This receipt is a protected provider-neutral execution baseline when all physical metrics and quiescence checks pass. It never promotes a resident, representation, or model; a separate capability/quality verifier must accept any candidate.",
+  "contamination": [
+    "QUIESCENCE_UNKNOWN"
+  ],
+  "elapsed_s": 2.009,
+  "error": {
+    "message": "machine did not become quiet for 2.0s",
+    "type": "QuiescenceTimeout"
+  },
+  "errors": [],
+  "experiment_contract": {
+    "complete_wall_includes_request_round_trip": true,
+    "complete_wall_minus_gpu_uses_complete_wall_scope": true,
+    "fusion_env_overrides_are_child_only": true,
+    "gpu_metric_must_be_provider_declared_or_explicitly_derived": true,
+    "machine_quiescence_before_and_after": true,
+    "missing_metrics_never_become_zero": true,
+    "native_subphase_residual_recorded_separately": true,
+    "one_experiment_at_a_time": true,
+    "one_persistent_resident": true,
+    "profile_and_source_mutation": false,
+    "promotion_requires_separate_capability_and_quality_gate": true
+  },
+  "finished_at": 1788340460.1539578,
+  "fusion_env_overrides": {},
+  "health": {
+    "connector_restart_count": 0,
+    "final": {},
+    "health_fields_are_optional_provider_telemetry": true,
+    "model_open_count_declared_once": false,
+    "no_connector_restart": true,
+    "one_pid_reused": false,
+    "ready": {},
+    "ready_pid": null,
+    "request_pids": [],
+    "weight_upload_count_declared_once": false
+  },
+  "interval_s": 0.2,
+  "machine": {
+    "architecture": "arm64",
+    "platform": "macOS-27.0-arm64-arm-64bit-Mach-O"
+  },
+  "machine_after": {
+    "contenders": [],
+    "error": "PermissionError: [Errno 1] Operation not permitted: 'ps'",
+    "method": "unavailable",
+    "quiet": null
+  },
+  "machine_snapshot": {
+    "after": {
+      "contenders": [],
+      "error": "PermissionError: [Errno 1] Operation not permitted: 'ps'",
+      "method": "unavailable",
+      "quiet": null
+    },
+    "before": null
+  },
+  "measurement_verdict": "INCONCLUSIVE",
+  "measurements": [],
+  "nomenclature_version": "HAWKING_NOMENCLATURE_V1",
+  "profile_path": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
+  "promotion_allowed": false,
+  "protected_window": false,
+  "qualification": false,
+  "readiness_polls": [
+    {
+      "kind": "machine",
+      "quiet": false,
+      "sample": {
+        "contenders": [],
+        "error": "PermissionError: [Errno 1] Operation not permitted: 'ps'",
+        "method": "unavailable",
+        "quiet": null
+      }
+    },
+    {
+      "kind": "machine",
+      "quiet": false,
+      "sample": {
+        "contenders": [],
+        "error": "PermissionError: [Errno 1] Operation not permitted: 'ps'",
+        "method": "unavailable",
+        "quiet": null
+      }
+    },
+    {
+      "kind": "machine",
+      "quiet": false,
+      "sample": {
+        "contenders": [],
+        "error": "PermissionError: [Errno 1] Operation not permitted: 'ps'",
+        "method": "unavailable",
+        "quiet": null
+      }
+    },
+    {
+      "kind": "machine",
+      "quiet": false,
+      "sample": {
+        "contenders": [],
+        "error": "PermissionError: [Errno 1] Operation not permitted: 'ps'",
+        "method": "unavailable",
+        "quiet": null
+      }
+    },
+    {
+      "kind": "machine",
+      "quiet": false,
+      "sample": {
+        "contenders": [],
+        "error": "PermissionError: [Errno 1] Operation not permitted: 'ps'",
+        "method": "unavailable",
+        "quiet": null
+      }
+    },
+    {
+      "kind": "machine",
+      "quiet": false,
+      "sample": {
+        "contenders": [],
+        "error": "PermissionError: [Errno 1] Operation not permitted: 'ps'",
+        "method": "unavailable",
+        "quiet": null
+      }
+    },
+    {
+      "kind": "machine",
+      "quiet": false,
+      "sample": {
+        "contenders": [],
+        "error": "PermissionError: [Errno 1] Operation not permitted: 'ps'",
+        "method": "unavailable",
+        "quiet": null
+      }
+    },
+    {
+      "kind": "machine",
+      "quiet": false,
+      "sample": {
+        "contenders": [],
+        "error": "PermissionError: [Errno 1] Operation not permitted: 'ps'",
+        "method": "unavailable",
+        "quiet": null
+      }
+    },
+    {
+      "kind": "machine",
+      "quiet": false,
+      "sample": {
+        "contenders": [],
+        "error": "PermissionError: [Errno 1] Operation not permitted: 'ps'",
+        "method": "unavailable",
+        "quiet": null
+      }
+    },
+    {
+      "kind": "machine",
+      "quiet": false,
+      "sample": {
+        "contenders": [],
+        "error": "PermissionError: [Errno 1] Operation not permitted: 'ps'",
+        "method": "unavailable",
+        "quiet": null
+      }
+    }
+  ],
+  "ready_timeout_s": 2.0,
+  "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc4-modellake-qwen27-acceptance-20260902-045058/receipts/acceptance/QWEN27_PROTECTED_BASELINE.run.json",
+  "repo_root": "/Users/scammermike/.claude-grok/worktrees/acc4-modellake-qwen27-acceptance-20260902-045058",
+  "request_contract": {
+    "max_new_tokens": 8,
+    "measure_requests": 1,
+    "prompt": "Return exactly: HAWKING_OK",
+    "same_prompt_for_all_requests": true,
+    "thinking_disabled": true,
+    "warmup_requests": 1
+  },
+  "request_timeout_s": 5.0,
+  "required_metrics": {
+    "all_required_metrics_present": false,
+    "fields": {
+      "complete_wall_ns_per_token": true,
+      "decode": true,
+      "dispatches_per_token": true,
+      "gpu_ns_per_token": true,
+      "kernel_genome": true,
+      "prefill": true,
+      "wall_minus_gpu_ns_per_token": true
+    },
+    "missing_for_generic_provider_is_explicit": true,
+    "optional_physical_fields": {
+      "active_bytes_per_token": false,
+      "actual_read_bytes_per_token": false,
+      "resident_weight_bytes": false,
+      "transient_bytes_per_token": false,
+      "workspace_resident_bytes": false
+    }
+  },
+  "resident_binary_override": null,
+  "schema": "hcli.agentos.protected_accelerator_benchmark.v1",
+  "started_at": 1788340458.144724,
+  "status": "WAITING_FOR_QUIESCENCE",
+  "warmup": []
+}
