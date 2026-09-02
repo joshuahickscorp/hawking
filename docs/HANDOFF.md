@@ -8,15 +8,16 @@ Everything about *surviving* is proven: detachment, worker respawn, one-body
 discipline, memory safety, observability, governance. Everything about *making
 progress* is unproven: `accepted = 0` across two missions and 553 minutes.
 
-Three blockers remain. Two are small. The third needs a decision.
+> **Superseded 2026-09-02, later session.** All three blockers below are
+> resolved and the `haider` name is retired. The paragraphs that follow are kept
+> as the record of what was wrong and why; read "Fixed since" and "The haider
+> name is retired" further down for the current state. Everything above this
+> line was true at `c504a71fc` and is not true now.
 
-Repo: `/Users/scammermike/Downloads/hawking`, branch `odyssey-i`, HEAD
-`c504a71fc`, clean tree, **5 commits unpushed**. `main` was even with `odyssey-i`
-as of `345e209c5`.
-
-Tests: **637 passed** with the 15 protected gates excluded (baseline this
-morning was 588). With gates included, expect ~49 failures — those are red by
-design, see the gate table below.
+Tests: **1311 passed, 19 failed, 3 skipped** with the 15 protected gates
+excluded. The 637 below is stale; so is 641. The suite grew because HCLI's own
+tests moved into `hcli/tests/` from `tools/haider/`, and the 19 failures came
+with them — the same 19, by name, that were failing where nobody was looking.
 
 ---
 
