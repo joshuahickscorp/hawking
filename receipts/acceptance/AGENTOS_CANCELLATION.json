@@ -10,8 +10,8 @@
   },
   "evidence_tier": "FUNCTIONAL_SIM",
   "gate": "AGENTOS_CANCELLATION",
-  "generated_at": "2026-09-02T18:16:49Z",
-  "git_head": "07edb2c2f03078f72b6cd151094e39089e817200",
+  "generated_at": "2026-09-02T18:32:48Z",
+  "git_head": "7d64280068d7f1e1d239e3ffb783a10af485d037",
   "hcli_file": "/Users/scammermike/Downloads/hawking/hcli/__init__.py",
   "measured": {
     "abort_reason": "acceptance-operator-abort",
@@ -19,12 +19,12 @@
     "coop_disk_phase": "cancelled",
     "coop_phase": "cancelled",
     "coop_repairs": [],
-    "dag_checkpoint_id": "1dfa636c436c:1788373009.330162",
+    "dag_checkpoint_id": "6021aa77d8cc:1788373967.989266",
     "durable_cancel_file": true,
     "lock_free": true,
     "new_generation": true,
-    "post_checkpoint_id": "1dfa636c436c:1788373009.330162",
-    "pre_checkpoint_id": "1dfa636c436c:1788373009.302970",
+    "post_checkpoint_id": "6021aa77d8cc:1788373967.989266",
+    "pre_checkpoint_id": "6021aa77d8cc:1788373967.964249",
     "pre_dag_units": [],
     "shared_checkpoint_id": true,
     "state_cancel_reason": "acceptance-operator-abort",
@@ -34,7 +34,7 @@
     "Catalog symbol abort is hcli.delegate.abort. It writes delegation_cancel.json, signals a live mutation-lock holder, loads the mission, Mission.cancel, then Mission.checkpoint (DAG first, shared checkpoint_id).",
     "Cancel of in-flight units uses _fail_inflight(emit_repair=False) so cancellation does not grow the repair tree."
   ],
-  "output": "delegate.run spawn=False keys=['mission_id', 'spawned', 'spec', 'state', 'workspace', 'writer_pid']\npre checkpoint_id=1dfa636c436c:1788373009.302970 phase=delegated\nabort returned {'verdict': 'ABORTED', 'reason': 'acceptance-operator-abort', 'lock_free': True, 'mission_id': '1dfa636c436c'}\ncancel_file=/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-cancel-tf2b08il/mission/.hcli/mission/delegation_cancel.json exists=True doc={'at': 1788373009.303623, 'reason': 'acceptance-operator-abort'}\ncoop phase=cancelled repairs=[] disk_phase=cancelled disk_reason=probe-cancel",
+  "output": "delegate.run spawn=False keys=['mission_id', 'spawned', 'spec', 'state', 'workspace', 'writer_pid']\npre checkpoint_id=6021aa77d8cc:1788373967.964249 phase=delegated\nabort returned {'verdict': 'ABORTED', 'reason': 'acceptance-operator-abort', 'lock_free': True, 'mission_id': '6021aa77d8cc'}\ncancel_file=/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-cancel-vjw6omms/mission/.hcli/mission/delegation_cancel.json exists=True doc={'at': 1788373967.965039, 'reason': 'acceptance-operator-abort'}\ncoop phase=cancelled repairs=[] disk_phase=cancelled disk_reason=probe-cancel",
   "schema": "hawking.acceptance.gate.v1",
   "symbols_invoked": [
     {

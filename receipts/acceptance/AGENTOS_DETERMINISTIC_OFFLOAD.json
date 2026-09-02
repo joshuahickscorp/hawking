@@ -34,10 +34,10 @@
     "weakened": false
   },
   "criterion_weakened": false,
-  "elapsed_ms": 11.082,
+  "elapsed_ms": 12.881,
   "evidence_tier": "STATIC",
   "gate": "AGENTOS_DETERMINISTIC_OFFLOAD",
-  "generated_at": "2026-09-02T18:17:31Z",
+  "generated_at": "2026-09-02T18:34:59Z",
   "gpu_authority": false,
   "invoked_symbols": [],
   "measured": {

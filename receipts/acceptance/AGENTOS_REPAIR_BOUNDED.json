@@ -10,8 +10,8 @@
   },
   "evidence_tier": "FUNCTIONAL_SIM",
   "gate": "AGENTOS_REPAIR_BOUNDED",
-  "generated_at": "2026-09-02T18:16:49Z",
-  "git_head": "07edb2c2f03078f72b6cd151094e39089e817200",
+  "generated_at": "2026-09-02T18:32:47Z",
+  "git_head": "7d64280068d7f1e1d239e3ffb783a10af485d037",
   "hcli_file": "/Users/scammermike/Downloads/hawking/hcli/__init__.py",
   "measured": {
     "cycle_deepest": 1,

@@ -285,6 +285,11 @@ def test_receipts_never_alter_the_criterion():
     for path in found:
         if path.name.endswith(".census.json") or path.name.endswith(".run.json"):
             continue
+        # receipts/acceptance/ is SHARED by every acceptance lane. This test
+        # owns the lake gates only; asserting over a sibling lane's receipt
+        # made it fail on gates it knows nothing about.
+        if path.stem not in GATES:
+            continue
         if path.name.endswith(".archaeology.json") or path.name.endswith(".diff.json"):
             continue
         if path.name == "SUMMARY.json":

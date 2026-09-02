@@ -81,35 +81,35 @@
     "weakened": false
   },
   "criterion_weakened": false,
-  "elapsed_ms": 148.137,
+  "elapsed_ms": 48.229,
   "evidence_tier": "FUNCTIONAL_SIM",
   "gate": "VMCP_TOOL_DOCTOR",
-  "generated_at": "2026-09-02T18:17:31Z",
+  "generated_at": "2026-09-02T18:34:59Z",
   "gpu_authority": false,
   "invoked_symbols": [
     {
-      "elapsed_ms": 1.38,
+      "elapsed_ms": 0.183,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "visionmcp.capabilities.core_doctor_report"
     },
     {
-      "elapsed_ms": 0.023,
+      "elapsed_ms": 0.109,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "visionmcp.acquisition.quarantine._sniff"
     },
     {
-      "elapsed_ms": 0.052,
+      "elapsed_ms": 0.078,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "visionmcp.worlds.spatial.io.obj.obj_file_counts"
     },
     {
-      "elapsed_ms": 0.105,
+      "elapsed_ms": 0.124,
       "error": null,
       "kind": "call",
       "raised": false,
@@ -117,7 +117,7 @@
     }
   ],
   "measured": {
-    "core_doctor_elapsed_ms": 1.375915999233257,
+    "core_doctor_elapsed_ms": 0.17991699860431254,
     "core_doctor_ok": true,
     "required": {
       "CSS parser": {
@@ -267,7 +267,7 @@
           "present": false
         }
       ],
-      "elapsed_ms": 1.375915999233257,
+      "elapsed_ms": 0.17991699860431254,
       "network_used": false,
       "ok": true,
       "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",

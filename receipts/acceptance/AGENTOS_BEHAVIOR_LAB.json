@@ -37,10 +37,10 @@
     "weakened": false
   },
   "criterion_weakened": false,
-  "elapsed_ms": 24.016,
+  "elapsed_ms": 26.612,
   "evidence_tier": "STATIC",
   "gate": "AGENTOS_BEHAVIOR_LAB",
-  "generated_at": "2026-09-02T18:17:31Z",
+  "generated_at": "2026-09-02T18:34:59Z",
   "gpu_authority": false,
   "invoked_symbols": [],
   "measured": {

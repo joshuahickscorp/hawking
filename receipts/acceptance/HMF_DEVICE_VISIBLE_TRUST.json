@@ -21,7 +21,7 @@
   "criterion_altered": false,
   "evidence_tier": "STATIC",
   "gate": "HMF_DEVICE_VISIBLE_TRUST",
-  "generated_at": "2026-09-02T18:17:26Z",
+  "generated_at": "2026-09-02T18:34:54Z",
   "generated_by": "tools.acceptance.odyssey.run",
   "invoked_symbol": {
     "also_called": [
@@ -53,10 +53,10 @@
       "evidence_tier": "FUNCTIONAL_SIM",
       "note": "Apple UMA overlay. PRESENT on UMA is not HMF device-visible trust. Roadmap 16.2: Hawking targets coherence ladder 2-5; never falsely claim 6."
     },
-    "wall_s": 0.003
+    "wall_s": 0.229
   },
   "schema": "hawking.acceptance.gate.v1",
-  "seal_sha256": "54e2ecfc4ebe949f5e2696ef6a969d57b804da71c44db4126c06f1826c8a42ad",
+  "seal_sha256": "90150d364925085c7ecee6551a620f164d42ccee30c52a3b6149e6ac82e560ac",
   "trust_law": "PRESENT != VALID != TRUSTED. UNKNOWN != LOST. READBACK CORRECTNESS DOES NOT PROVE DEVICE-COMPUTE VISIBILITY.",
   "verdict": "BLOCKED"
 }

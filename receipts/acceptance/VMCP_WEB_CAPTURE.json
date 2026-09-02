@@ -105,14 +105,14 @@
     "weakened": false
   },
   "criterion_weakened": false,
-  "elapsed_ms": 1.088,
+  "elapsed_ms": 0.914,
   "evidence_tier": "STATIC",
   "gate": "VMCP_WEB_CAPTURE",
-  "generated_at": "2026-09-02T18:17:31Z",
+  "generated_at": "2026-09-02T18:34:59Z",
   "gpu_authority": false,
   "invoked_symbols": [
     {
-      "elapsed_ms": 0.014,
+      "elapsed_ms": 0.011,
       "error": null,
       "kind": "call",
       "raised": false,

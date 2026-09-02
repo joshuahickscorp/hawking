@@ -71,49 +71,49 @@
     "weakened": false
   },
   "criterion_weakened": false,
-  "elapsed_ms": 58.084,
+  "elapsed_ms": 59.742,
   "evidence_tier": "FUNCTIONAL_SIM",
   "gate": "VMCP_TRUTH_LEDGER",
-  "generated_at": "2026-09-02T18:17:31Z",
+  "generated_at": "2026-09-02T18:34:59Z",
   "gpu_authority": false,
   "invoked_symbols": [
     {
-      "elapsed_ms": 0.051,
+      "elapsed_ms": 0.041,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "tools.headless.vmcp_lattice_disposition._load_vm"
     },
     {
-      "elapsed_ms": 50.29,
+      "elapsed_ms": 51.767,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "tools.headless.vmcp_lattice_disposition.prove_truth_ledger"
     },
     {
-      "elapsed_ms": 3.197,
+      "elapsed_ms": 3.157,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "tools.headless.vmcp_lattice_disposition._bound_graph"
     },
     {
-      "elapsed_ms": 0.064,
+      "elapsed_ms": 0.059,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "visionmcp.evidence_graph.graph.EvidenceGraph.support_for"
     },
     {
-      "elapsed_ms": 0.398,
+      "elapsed_ms": 0.471,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "visionmcp.worldir.canonical.content_digest"
     },
     {
-      "elapsed_ms": 0.395,
+      "elapsed_ms": 0.405,
       "error": null,
       "kind": "call",
       "raised": false,

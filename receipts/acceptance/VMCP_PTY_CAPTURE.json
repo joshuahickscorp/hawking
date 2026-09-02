@@ -43,14 +43,14 @@
     "weakened": false
   },
   "criterion_weakened": false,
-  "elapsed_ms": 27.18,
+  "elapsed_ms": 28.372,
   "evidence_tier": "STATIC",
   "gate": "VMCP_PTY_CAPTURE",
-  "generated_at": "2026-09-02T18:17:31Z",
+  "generated_at": "2026-09-02T18:34:59Z",
   "gpu_authority": false,
   "invoked_symbols": [
     {
-      "elapsed_ms": 0.52,
+      "elapsed_ms": 0.611,
       "error": null,
       "kind": "call",
       "raised": false,
@@ -86,8 +86,8 @@
       "screenshot state where useful": null,
       "terminal text": null,
       "timestamps": {
-        "finished_at": 1788373051.8881102,
-        "started_at": 1788373051.861469
+        "finished_at": 1788374099.581892,
+        "started_at": 1788374099.554145
       },
       "tool/subprocess events where observable": [
         "subprocess.run"

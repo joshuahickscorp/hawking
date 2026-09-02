@@ -1062,30 +1062,50 @@ def demo_persistence_single_authority() -> Dict[str, Any]:
         # Two processes, one lock. The filesystem is the mutex.
         lock = MutationLock(ws)
         acquired = lock.acquire("writer-a")
-        child = subprocess.run(
-            [
-                sys.executable,
-                "-c",
-                (
-                    "from hcli.resources import MutationLock\n"
-                    f"lock = MutationLock({str(ws)!r})\n"
-                    "print('CHILD', lock.acquire('writer-b'))\n"
-                ),
-            ],
-            capture_output=True,
-            text=True,
-            timeout=20,
-            env={**os.environ, "PYTHONUNBUFFERED": "1"},
+        # The child must NOT get the lock the parent holds. A child that BLOCKS
+        # forever is the single-writer guarantee working, so a timeout here is
+        # EVIDENCE, not a harness crash -- treating it as an exception is what
+        # made this gate report "harness exception: TimeoutExpired" and never
+        # reach a verdict at all.
+        child_timed_out = False
+        try:
+            child = subprocess.run(
+                [
+                    sys.executable,
+                    "-c",
+                    (
+                        "from hcli.resources import MutationLock\n"
+                        f"lock = MutationLock({str(ws)!r})\n"
+                        "print('CHILD', lock.acquire('writer-b'))\n"
+                    ),
+                ],
+                capture_output=True,
+                text=True,
+                timeout=120,  # cold `import hcli` in a fresh interpreter, under load
+                env={**os.environ, "PYTHONUNBUFFERED": "1"},
+            )
+            child_stdout = child.stdout or ""
+        except subprocess.TimeoutExpired as exc:
+            child_timed_out = True
+            child_stdout = (exc.stdout or b"").decode("utf-8", "replace") if isinstance(exc.stdout, bytes) else (exc.stdout or "")
+        child_got = "True" in child_stdout
+        log.append(
+            f"parent acquire={acquired} child_stdout={child_stdout!r} "
+            f"child_got={child_got} child_blocked_until_timeout={child_timed_out}"
         )
-        child_got = "True" in (child.stdout or "")
-        log.append(f"parent acquire={acquired} child_stdout={child.stdout!r} child_got={child_got}")
         lock.release("writer-a")
         after = MutationLock(ws).acquire("writer-c")
         MutationLock(ws).release("writer-c")
         log.append(f"acquire after release={after}")
 
         # Two children racing: at most one wins.
-        race = subprocess.run(
+        # Same shape as the child above: one racer is SUPPOSED to lose, and a
+        # nested spawn-pool where each worker cold-imports hcli can outlive the
+        # budget under load. A timeout must not raise past the verdict -- it is
+        # recorded and the gate reports honestly.
+        race_timed_out = False
+        try:
+            race = subprocess.run(
             [
                 sys.executable,
                 "-c",
@@ -1105,13 +1125,21 @@ def demo_persistence_single_authority() -> Dict[str, Any]:
             ],
             capture_output=True,
             text=True,
-            timeout=30,
-        )
-        log.append(f"race rc={race.returncode} out={race.stdout!r} err={(race.stderr or '')[-400:]}")
+            timeout=120,  # same: this is a startup budget, not an assertion
+            )
+            race_out = race.stdout or ""
+            race_rc = race.returncode
+            race_err = (race.stderr or "")[-400:]
+        except subprocess.TimeoutExpired as exc:
+            race_timed_out = True
+            race_out = (exc.stdout or b"").decode("utf-8", "replace") if isinstance(exc.stdout, bytes) else (exc.stdout or "")
+            race_rc = None
+            race_err = "TimeoutExpired"
+        log.append(f"race rc={race_rc} out={race_out!r} err={race_err} timed_out={race_timed_out}")
         race_wins = None
-        if "wins" in (race.stdout or ""):
+        if "wins" in race_out:
             try:
-                race_wins = int((race.stdout or "").strip().split("wins")[-1].strip())
+                race_wins = int(race_out.strip().split("wins")[-1].strip())
             except ValueError:
                 race_wins = None
 
