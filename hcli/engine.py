@@ -601,6 +601,12 @@ class Engine:
         self._model_inflight = 0
         self.max_model_in_flight = 0
         self._reset_evidence_efficiency()
+        from .prefix_probe import PrefixProbe
+
+        # One rendered prompt per live goal, so a turn can be compared with
+        # the turn before it. Never a transcript.
+        self._prefix_probe = PrefixProbe()
+        self._last_rendered_prompt: str = ""
 
     # -----------------------------------------------------------------
     # Lifecycle
@@ -2410,6 +2416,17 @@ class Engine:
         dict before `_post_completion`. context_efficiency must describe
         the posted bytes, not the pre-hook snapshot.
         """
+        # The exact bytes that go on the wire, after the executors hook has
+        # rewritten messages[1]. Comparing anything earlier measures a prompt
+        # that was never sent.
+        try:
+            self._last_rendered_prompt = "\n".join(
+                str((m or {}).get("content") or "")
+                for m in (payload.get("messages") or [])
+                if isinstance(m, dict)
+            )
+        except Exception:
+            self._last_rendered_prompt = ""
         observed = int(
             self._estimate_prompt_tokens(
                 payload.get("messages") or []
@@ -2665,7 +2682,24 @@ class Engine:
             runtime_index=runtime_index,
             cached_tokens=self._cached_tokens_from(data),
             prefix_key=prefix_key,
+            native=(data.get("hawking") if isinstance(data, dict) else None),
         )
+
+        # The builder question, asked on the artifact the builder produces.
+        # Same conversation only: comparing prompts across goals measures
+        # nothing, because nothing was supposed to be shared.
+        try:
+            native = data.get("hawking") if isinstance(data, dict) else None
+            self._prefix_probe.observe(
+                self._active_goal_id or "",
+                self._last_rendered_prompt or "",
+                prompt_tokens=prompt_tokens,
+                prefix_reused_tokens=(native or {}).get("prefix_reused_tokens"),
+                prefill_tokens_stepped=(native or {}).get("prefill_tokens_stepped"),
+                active_context_tokens=plan.get("prompt_tokens_est"),
+            )
+        except Exception:
+            pass
 
         if result_obj is None:
             result_obj = completion_from_openai(data, [])
@@ -3148,6 +3182,7 @@ class Engine:
         runtime_index: Any = None,
         cached_tokens: Any = None,
         prefix_key: Any = None,
+        native: Any = None,
     ) -> None:
         entry: Dict[str, Any] = {
             "endpoint": endpoint,
@@ -3166,6 +3201,28 @@ class Engine:
             entry["cached_tokens"] = cached_tokens
         if prefix_key is not None:
             entry["prefix_key"] = prefix_key
+        if native is not None:
+            # The resident already reports these and `_record_model_call` was
+            # dropping them, so the only evidence of KV reuse was a wall clock.
+            for key in ("prefix_reused_tokens", "prefill_tokens_stepped"):
+                value = native.get(key)
+                if value is not None:
+                    entry[key] = value
+            trace = ((native.get("native_metrics") or {}).get("step_trace")) or None
+            if isinstance(trace, dict):
+                stepped = native.get("prefill_tokens_stepped")
+                if not isinstance(stepped, int):
+                    stepped = prompt_tokens if isinstance(prompt_tokens, int) else 0
+                try:
+                    from .prefill_profile import attribute, bucket_profile
+
+                    profile = bucket_profile(trace, prefill_steps=int(stepped))
+                    # The raw trace is one number per token. Only the shape is
+                    # kept: a receipt is a trail, not a transcript.
+                    entry["prefill_profile"] = profile
+                    entry["prefill_attribution"] = attribute(profile)
+                except Exception as exc:  # telemetry must never end a goal
+                    entry["prefill_profile_error"] = f"{type(exc).__name__}: {exc}"
         self._model_calls.append(entry)
 
     def _post_completion(
