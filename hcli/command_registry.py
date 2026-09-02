@@ -79,6 +79,14 @@ COMMANDS: Tuple[Command, ...] = (
     ),
     Command("/goal", "set active goal", True, "workspace_write", "/goal ship X"),
     Command(
+        "/bank",
+        "queue a future goal; it starts after the active goal completes",
+        True,
+        "workspace_write",
+        "/bank prepare the overnight production report",
+        aliases=("\\bank",),
+    ),
+    Command(
         "/ultragoal",
         "create or show the durable Goal + ledger + DAG",
         True,
@@ -116,7 +124,7 @@ COMMANDS: Tuple[Command, ...] = (
     ),
     Command(
         "/context",
-        "show context summary; list/drop/clear cached pastes",
+        "show context and prior knowledge; manage cached pastes",
         True,
         "destructive",
         "/context list",
@@ -131,12 +139,12 @@ COMMANDS: Tuple[Command, ...] = (
     ),
     Command("/resume", "resume session", True, "workspace_write", "/resume"),
     Command(
-        "/exit",
+        "/quit",
         "exit HCLI",
         True,
         "reversible_runtime",
-        "/exit",
-        aliases=("/quit",),
+        "/quit",
+        aliases=("/exit",),
     ),
 )
 
@@ -156,7 +164,7 @@ def handler_name(name: str) -> str:
     Identical to the lookup in ``CommandHandler.handle``, so a test over this
     is a test of the real dispatch path.
     """
-    return f"_cmd_{name.lstrip('/')}"
+    return f"_cmd_{name.lstrip('/\\')}"
 
 
 def help_text() -> str:

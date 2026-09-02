@@ -15,6 +15,8 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import select
+import shutil
 import signal
 import subprocess
 import sys
@@ -24,16 +26,25 @@ import uuid
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Dict, Iterable, Iterator, List, Mapping, Optional, Sequence
+from typing import Any, Callable, Dict, Iterable, Iterator, List, Mapping, Optional, Sequence, Tuple
 
 try:
     import fcntl
 except ImportError:  # pragma: no cover - Windows has no fcntl
     fcntl = None  # type: ignore[assignment]
 
+try:
+    import termios
+except ImportError:  # pragma: no cover - Windows has no termios
+    termios = None  # type: ignore[assignment]
+
 from hcli.persist import atomic_write_json
 from hcli.resources import process_start_token
 from hcli.workunit import WorkUnit
+from hcli.goal_bank import GoalBank
+from hcli.steering import SteeringQueue
+from hcli.agentos.event_sink import EventSink, read_events
+from hcli.stream_render import render_event
 
 
 SCHEMA = "hcli.agentos.resident_daemon.v1"
@@ -53,6 +64,10 @@ DEFAULT_MAX_RESTARTS = 3
 # implicit unlimited budget just before a native body is admitted.
 DEFAULT_SWAP_CEILING_BYTES = 2 * 1024**3
 BEHAVIOR_SCHEMA = "hcli.agentos.resident_behavior.v1"
+# _watch_unit_summary's cap on named running/failed units -- a module-level
+# constant (not a local) so a mutation check can flip it without editing
+# source.
+WATCH_UNIT_SUMMARY_CAP = 12
 
 # Set by start_resident on the supervisor it deliberately daemonises. Read once
 # at startup so a detached supervisor is a recorded fact rather than whatever
@@ -353,6 +368,38 @@ class ResidentBodyRegistry:
         )
 
 
+class ResidentAlreadyRunning(RuntimeError):
+    """A live supervisor already owns this workspace.
+
+    THE BUG THIS REPLACES: `configure()` returned the CURRENT state unchanged
+    when a supervisor was live, and `start_resident` then returned
+    `daemon.status()`. Neither wrote the requested config and neither said so,
+    so `resident start --goal NEW --interval-s 30 --swap-ceiling 20G` printed a
+    healthy-looking JSON status describing the INCUMBENT -- old goal, old
+    interval, old ceiling, old mission -- and the operator reasonably believed
+    the new goal had launched. Observed live at cycles=818 still resurrecting a
+    smoke mission. Refusing loudly is the only honest option; `replace` is the
+    explicit way to say "retire the incumbent and take over".
+    """
+
+    def __init__(self, state: Mapping[str, Any]) -> None:
+        self.existing_pid = state.get("supervisor_pid")
+        self.existing_mission = state.get("mission_id")
+        config = state.get("config") if isinstance(state.get("config"), Mapping) else {}
+        self.existing_goal = str(config.get("goal") or "")
+        self.cycles = state.get("cycles")
+        super().__init__(
+            "RESIDENT_ALREADY_RUNNING\n"
+            f"  existing_pid={self.existing_pid}\n"
+            f"  existing_mission={self.existing_mission}\n"
+            f"  existing_goal={self.existing_goal[:120]!r}\n"
+            f"  cycles={self.cycles}\n"
+            "  The requested configuration was NOT applied.\n"
+            "  Use: hcli resident status | hcli resident stop | "
+            "hcli resident replace --goal ..."
+        )
+
+
 def memory_decision(
     snapshot: Mapping[str, Any],
     *,
@@ -406,6 +453,43 @@ def memory_decision(
     }
 
 
+# A mission that has stopped for good. `no_progress` is included: the mission
+# raised NO_PROGRESS against its own threshold, which is a give-up, not a pause.
+TERMINAL_MISSION_PHASES = frozenset({"completed", "failed", "cancelled", "no_progress"})
+
+# ...of which these need a human before anything else can run. `completed` does
+# not: a completed mission is re-run harmlessly and is how a queued bank goal
+# gets promoted.
+BLOCKED_MISSION_PHASES = frozenset({"failed", "cancelled", "no_progress"})
+
+
+def mission_blocked_reason(workspace: Path) -> Optional[str]:
+    """Why the durable mission cannot be advanced without a human, or None.
+
+    Unit status is NOT the authority here. ``_mission_has_work`` counted a
+    ``failed`` unit as work, so a mission that had already exhausted its own
+    repair budget and set ``phase=failed`` looked like available work forever:
+    the supervisor dispatched a worker every interval, the worker recovered the
+    dead mission, returned its failure, and exited 0 -- so ``failure_streak``
+    never rose and ``max_restarts`` never tripped. Observed at cycles=60 and
+    climbing, once every 15s, with no path out. The mission's own phase is the
+    authority on whether the mission is still runnable.
+    """
+    from hcli.mission import MissionCorruptError, load_state
+
+    try:
+        value = load_state(workspace / ".hcli" / "mission" / "state.json")
+    except (FileNotFoundError, MissionCorruptError):
+        return None
+    phase = str(value.get("phase") or "")
+    if phase not in BLOCKED_MISSION_PHASES:
+        return None
+    return (
+        f"durable mission {value.get('id')} is {phase} and cannot advance itself; "
+        "archive .hcli/mission/state.json or start a new goal"
+    )
+
+
 def _mission_has_work(workspace: Path) -> bool:
     from hcli.mission import MissionCorruptError, load_state
 
@@ -422,6 +506,11 @@ def _mission_has_work(workspace: Path) -> bool:
         # failure surfaces as a visible worker_failed/error instead of the
         # supervisor silently freezing in IDLE forever with no signal.
         return True
+    # The mission's own phase outranks its unit statuses. A terminal mission
+    # keeps `failed`/`pending` units on disk forever; reading those as work is
+    # what span the supervisor at 15s intervals with nothing to do.
+    if str(value.get("phase") or "") in TERMINAL_MISSION_PHASES:
+        return False
     units = value.get("units")
     if not isinstance(units, dict):
         return False
@@ -435,6 +524,35 @@ def _mission_has_work(workspace: Path) -> bool:
 def _inbox_has_work(workspace: Path) -> bool:
     """Return whether model-free queued work is waiting for the next worker."""
     return bool(ResidentStore(workspace).read_inbox())
+
+
+def _goal_bank_snapshot(workspace: Path) -> Dict[str, Any]:
+    """Return bounded bank state and recover goals from dead worker owners."""
+    bank = GoalBank(workspace)
+    try:
+        recovered = bank.recover_inflight()
+        snapshot = bank.snapshot(queued_limit=8, recent_limit=4, display_limit=480)
+        if recovered:
+            snapshot["recovered"] = recovered
+        return snapshot
+    except Exception as exc:
+        return {
+            "available": False,
+            "path": str(bank.path),
+            "reason": f"{type(exc).__name__}: {exc}",
+            "queued_count": 0,
+            "running_count": 0,
+            "queued": [],
+            "running": [],
+            "recent": [],
+            "next": None,
+        }
+
+
+def _goal_bank_has_work(workspace: Path) -> bool:
+    """Return whether a queued future goal should wake the resident worker."""
+    snapshot = _goal_bank_snapshot(workspace)
+    return bool(snapshot.get("available") and int(snapshot.get("queued_count") or 0) > 0)
 
 
 def resident_behavior(
@@ -665,7 +783,10 @@ class ResidentDaemon:
             raise ValueError("resident config workspace does not match daemon workspace")
         current = self.store.read()
         if _supervisor_live(current):
-            return current
+            # Silently returning the incumbent here is what made `start` a no-op
+            # that looked like a launch. The caller decides whether to refuse or
+            # to replace; this layer never pretends the config was applied.
+            raise ResidentAlreadyRunning(current)
         if _worker_live(current):
             # A crashed supervisor must not leave its owned model worker
             # orphaned while a new supervisor is taking over.
@@ -707,7 +828,16 @@ class ResidentDaemon:
             "mission_id": current.get("mission_id"),
             "generation": int(current.get("generation") or 0),
             "restart_count": int(current.get("restart_count") or 0),
-            "failure_streak": int(current.get("failure_streak") or 0),
+            # `failure_streak` counts consecutive worker failures since the
+            # last human intervention, and it is what the restart budget
+            # spends. It only ever reset on a worker that exited 0 -- but a
+            # resident that reached the limit is FAILED and never spawns a
+            # worker again, so the streak could not come back down and
+            # `resident start` returned immediately with state=FAILED forever.
+            # Issuing `start` IS the intervention, exactly like the
+            # `stop_requested` / `clean_room_requested` flags cleared just
+            # below. `restart_count` is the lifetime counter and is preserved.
+            "failure_streak": 0,
             "cycles": int(current.get("cycles") or 0),
             "last_event": "configured",
             "stop_requested": False,
@@ -731,6 +861,7 @@ class ResidentDaemon:
                 "workspace": self.workspace,
                 "state": "ABSENT",
                 "state_path": str(self.store.state_path),
+                "goal_bank": _goal_bank_snapshot(Path(self.workspace)),
             }
         config = state.get("config") if isinstance(state.get("config"), dict) else {}
         snapshot: Optional[Mapping[str, Any]] = None
@@ -744,6 +875,7 @@ class ResidentDaemon:
         result["state_path"] = str(self.store.state_path)
         result["knowledge_path"] = str(self.store.knowledge_path)
         result["inbox_count"] = len(self.store.read_inbox())
+        result["goal_bank"] = _goal_bank_snapshot(Path(self.workspace))
         result["body"] = self.store.body()
         result["supervisor_live"] = _supervisor_live(state)
         result["worker_live"] = _worker_live(state)
@@ -886,6 +1018,28 @@ class ResidentDaemon:
             "status": "QUEUED",
             "workunit": unit.to_dict(),
             "inbox_path": str(self.store.inbox_path),
+        }
+
+    def bank_goal(self, goal: str, *, mode: str = "auto") -> Dict[str, Any]:
+        """Queue a high-level goal and wake an owned supervisor if present."""
+        item = GoalBank(self.workspace).add(goal, mode=mode)
+        state = self.store.read()
+        if state:
+            self.store.update(
+                goal_bank=_goal_bank_snapshot(Path(self.workspace)),
+                last_event="goal_banked",
+            )
+            wake = getattr(signal, "SIGUSR1", None)
+            if wake is not None and _supervisor_live(state):
+                _owned_signal(
+                    state.get("supervisor_pid"),
+                    state.get("supervisor_start_token"),
+                    wake,
+                )
+        return {
+            "status": "QUEUED",
+            "goal": item,
+            "goal_bank_path": str(GoalBank(self.workspace).path),
         }
 
 
@@ -1172,11 +1326,19 @@ class ResidentSupervisor:
                 mission_path = self.workspace / ".hcli" / "mission" / "state.json"
                 mission_pending = _mission_has_work(self.workspace)
                 inbox_pending = _inbox_has_work(self.workspace)
-                state = self.store.update(worker_live=worker_live)
+                bank_snapshot = _goal_bank_snapshot(self.workspace)
+                bank_pending = bool(
+                    bank_snapshot.get("available")
+                    and int(bank_snapshot.get("queued_count") or 0) > 0
+                )
+                state = self.store.update(
+                    worker_live=worker_live,
+                    goal_bank=bank_snapshot,
+                )
                 decision = resident_behavior(
                     state,
                     memory,
-                    mission_has_work=mission_pending,
+                    mission_has_work=mission_pending or bank_pending,
                     inbox_has_work=inbox_pending,
                     max_restarts=config.max_restarts,
                     auto_restart=config.auto_restart,
@@ -1203,6 +1365,25 @@ class ResidentSupervisor:
                         waiting_state="WAITING_FOR_MEMORY",
                     )
                 else:
+                    # A mission that has given up needs a human, and the worker
+                    # cannot tell the supervisor so: it recovers the dead
+                    # mission, reports the failure, and exits 0, which leaves
+                    # failure_streak at 0 and max_restarts untouched. Stop here
+                    # with the reason on the state file instead of dispatching
+                    # forever. The goal bank is deliberately NOT drained -- a
+                    # failed goal stopping promotion is the documented contract.
+                    blocked = mission_blocked_reason(self.workspace)
+                    if blocked and not worker_live:
+                        self.store.update(
+                            state="FAILED",
+                            last_event="mission_needs_attention",
+                            error=blocked,
+                            stop_reason=blocked,
+                        )
+                        self.daemon.record_knowledge({
+                            "event": "mission_needs_attention", "reason": blocked,
+                        })
+                        break
                     if not worker_live:
                         failure_streak = int(state.get("failure_streak") or 0)
                         if failure_streak > 0 and (
@@ -1216,6 +1397,7 @@ class ResidentSupervisor:
                             break
                         if (
                             mission_pending
+                            or bank_pending
                             or inbox_pending
                             or not mission_path.is_file()
                         ):
@@ -1283,6 +1465,7 @@ def _worker_main(state_path: str) -> int:
     config = ResidentConfig.from_mapping(raw_config)
     body = ResidentBodyRegistry(workspace)
     agent: Any = None
+    sink: Any = None
     evacuating = False
     body_loaded = False
     runtime_policy_env = {
@@ -1334,6 +1517,11 @@ def _worker_main(state_path: str) -> int:
     try:
         from hcli.agentos import AgentOS
 
+        # Constructed here, ahead of AgentOS/body construction, so a worker
+        # that fails before the model ever loads still leaves a durable
+        # events.jsonl trail instead of silently vanishing.
+        sink = EventSink(config.workspace)
+
         body.mark_loading(pid=os.getpid())
         agent = AgentOS(
             config.workspace,
@@ -1353,10 +1541,17 @@ def _worker_main(state_path: str) -> int:
             body.mark_loaded(pid=os.getpid())
             body_loaded = True
 
+        def on_any_event(event: Any) -> None:
+            # EventSink.write already swallows every failure and counts it
+            # in .dropped -- a second try/except here would only hide a real
+            # bug in the sink itself, so none is added.
+            sink.write(event)
+
         bus = getattr(getattr(agent, "controller", None), "bus", None)
         subscribe = getattr(bus, "subscribe", None)
         if callable(subscribe):
             subscribe(on_runtime_ready)
+            subscribe(on_any_event)
         mission_path = Path(config.workspace) / ".hcli" / "mission" / "state.json"
         if mission_path.is_file():
             agent.recover_mission()
@@ -1422,6 +1617,8 @@ def _worker_main(state_path: str) -> int:
     finally:
         heartbeat_stop.set()
         heartbeat_thread.join(timeout=1.0)
+        if sink is not None:
+            sink.close()
         controller = getattr(agent, "controller", None) if agent is not None else None
         shutdown = getattr(controller, "shutdown", None)
         if callable(shutdown):
@@ -1447,6 +1644,354 @@ def _worker_main(state_path: str) -> int:
             pass
 
 
+def _watch_read_mission(mission_path: Path) -> Dict[str, Any]:
+    try:
+        return json.loads(mission_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+
+
+def _watch_header_lines(state: Mapping[str, Any]) -> List[str]:
+    """2-3 sticky lines: resident state, heartbeat age, cycles, pids, memory, goal."""
+    config = state.get("config") if isinstance(state.get("config"), Mapping) else {}
+    body = state.get("body") if isinstance(state.get("body"), Mapping) else {}
+    memory = state.get("memory") if isinstance(state.get("memory"), Mapping) else {}
+    hb = state.get("heartbeat_at") or 0
+    age = f"{_now() - hb:.0f}s" if hb else "-"
+    return [
+        f"HCLI RESIDENT  {state.get('state', '?')}   heartbeat {age} ago"
+        f"   cycles {state.get('cycles', '?')}",
+        f"  supervisor {state.get('supervisor_pid')}  worker {state.get('worker_pid')}"
+        f"  body {body.get('status')}"
+        f"  memory free={(memory.get('free_bytes') or 0) / 1024 ** 3:.1f}GB",
+        f"  goal       {str(config.get('goal') or '')[:100]}",
+    ]
+
+
+def _watch_unit_summary(units: Mapping[str, Any]) -> List[str]:
+    """Counts plus only the running/failed units by name -- never all of them.
+
+    ponytail: caps the named list at 12 so even a mass-failure run stays a
+    few lines; raise WATCH_UNIT_SUMMARY_CAP if triage needs more at once.
+    """
+    from collections import Counter
+
+    cap = WATCH_UNIT_SUMMARY_CAP
+    counts = Counter(str(u.get("status")) for u in units.values() if isinstance(u, Mapping))
+    lines = [f"   {dict(counts)}"]
+    active = sorted(
+        name for name, u in units.items()
+        if isinstance(u, Mapping) and str(u.get("status")) in ("running", "failed")
+    )
+    for name in active[:cap]:
+        status = units[name].get("status")
+        mark = "*" if status == "running" else "x"
+        lines.append(f"   {mark} {name:<22} {status}")
+    if len(active) > cap:
+        lines.append(f"   ... {len(active) - cap} more running/failed")
+    return lines
+
+
+def _watch_footer_lines(mission: Mapping[str, Any], bank: Mapping[str, Any]) -> List[str]:
+    """Sticky footer: mission id/phase/elapsed, compact units, bank depth, key hint."""
+    units = mission.get("units") if isinstance(mission.get("units"), dict) else {}
+    elapsed = ""
+    if mission.get("started_at"):
+        elapsed = f"{(_now() - float(mission['started_at'])) / 60:.0f}m"
+    lines = [
+        f"MISSION {str(mission.get('id') or '-')[:8]}  {mission.get('phase', '-')}"
+        f"  {elapsed}  accepted={mission.get('accepted_count', 0)}",
+    ]
+    lines.extend(_watch_unit_summary(units))
+    queued = int(bank.get("queued_count") or 0)
+    lines.append(f"BANK queued={queued} running={bank.get('running_count', 0)}")
+    for item in (bank.get("queued") or [])[:3]:
+        lines.append(f"   . {str(item.get('goal') or '')[:88]}")
+    lines.append(
+        "  /bank <goal>  /bank mission <goal>  /quit  /help"
+        "  (anything else steers)   leave: Ctrl-C"
+    )
+    return lines
+
+
+def _watch_bank(root: Path, goal: str, mode: str) -> List[str]:
+    """Queue a future goal straight through GoalBank -- safe to append from
+    another process (serialized by GoalBank's own flock), no lifecycle call."""
+    goal = goal.strip()
+    if not goal:
+        return ["! usage: /bank <goal>   or   /bank mission <goal>"]
+    try:
+        item = GoalBank(root).add(goal, mode=mode)
+    except Exception as exc:
+        return [f"✗ bank failed: {type(exc).__name__}: {exc}"]
+    return [f"▣ banked {item['id']}: {goal[:88]}"]
+
+
+def _watch_steer(root: Path, mission: Mapping[str, Any], text: str) -> List[str]:
+    """Queue a plain-text steer onto the live mission's own SteeringQueue file
+    (`.hcli/steering/<session_id>.json`) -- the same file a fresh worker cycle
+    loads on `recover_mission()`, and the same construction pattern already
+    used cross-process elsewhere in this codebase (see hcli/delegate.py's
+    `_steering_queue`). No inbox fallback is needed: this channel reaches the
+    worker for real."""
+    session_id = str(mission.get("session_id") or mission.get("id") or "").strip()
+    if not session_id:
+        return ["! no active mission to steer -- try /bank <goal>"]
+    try:
+        SteeringQueue(str(root), session_id).enqueue(text)
+    except Exception as exc:
+        return [f"✗ steer failed: {type(exc).__name__}: {exc}"]
+    return ["✓ steer queued"]
+
+
+def _watch_handle_line(root: Path, mission: Mapping[str, Any], line: str) -> Tuple[bool, List[str]]:
+    """Dispatch one submitted input line. Returns (quit, status_lines).
+
+    "/bank ..." and "/bank mission ..." queue a goal. "/quit" detaches, same
+    as Ctrl-C. Anything else -- no verb needed -- is a steer to the running
+    mission, per "auto steer unless banked".
+    """
+    text = line.strip()
+    if not text:
+        return False, []
+    if text == "/quit":
+        return True, []
+    if text == "/help":
+        return False, [
+            "/bank <goal>        queue a future goal",
+            "/bank mission <g>   queue a persistent mission goal",
+            "/steer <text>       steer the running mission (same as no leading /)",
+            "/quit               detach (same as Ctrl-C); resident keeps running",
+            "/help               this list",
+            "(a line with no leading / is sent to the mission as a steer)",
+        ]
+    if text.startswith("/bank mission "):
+        return False, _watch_bank(root, text[len("/bank mission "):], "mission")
+    if text.startswith("/bank "):
+        return False, _watch_bank(root, text[len("/bank "):], "auto")
+    if text == "/steer" or text.startswith("/steer "):
+        # The interactive TUI has a real /steer verb (commands.py _cmd_steer);
+        # a user reflexively typing it here must not be swallowed by the
+        # unknown-command catch-all below -- strip the verb and steer, same
+        # as the bare text would.
+        payload = text[len("/steer"):].strip()
+        if not payload:
+            return False, ["! usage: /steer <text>"]
+        return False, _watch_steer(root, mission, payload)
+    if text.startswith("/"):
+        return False, [f"! unknown command {text.split()[0]!r} -- /help lists commands"]
+    return False, _watch_steer(root, mission, text)
+
+
+def _watch_enter_raw(fd: int) -> Any:
+    """ICANON+ECHO off, ISIG left alone -- Ctrl-C still raises KeyboardInterrupt
+    the normal way; we just stop the driver from line-buffering or echoing so
+    the caller can render its own single input line. Returns the previous
+    attributes to restore, or None on a platform/fd with no termios."""
+    if termios is None:
+        return None
+    try:
+        old = termios.tcgetattr(fd)
+    except termios.error:
+        return None
+    new = termios.tcgetattr(fd)
+    new[3] = new[3] & ~(termios.ICANON | termios.ECHO)
+    termios.tcsetattr(fd, termios.TCSADRAIN, new)
+    return old
+
+
+def _watch_restore_terminal(fd: int, old: Any) -> None:
+    if termios is None or old is None:
+        return
+    try:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old)
+    except (termios.error, OSError):
+        pass
+
+
+def _watch_read_key(fd: int, timeout: float) -> str:
+    try:
+        ready, _, _ = select.select([fd], [], [], max(0.0, timeout))
+    except (OSError, ValueError):
+        return ""
+    if not ready:
+        return ""
+    try:
+        return os.read(fd, 1024).decode("utf-8", errors="replace")
+    except OSError:
+        return ""
+
+
+def _watch_repaint(prev_line_count: int, new_transcript: List[str], frame: List[str]) -> int:
+    """Erase only the previous header/footer block, print any brand-new
+    transcript lines once (they scroll into real terminal history and are
+    never touched again), then draw a fresh header/footer block. Returns
+    that block's line count, to erase next time -- this is the "only the
+    changed regions repaint" fallback, not a scroll region."""
+    out = sys.stdout
+    if prev_line_count:
+        out.write(f"\x1b[{prev_line_count}A\x1b[J")
+    for line in new_transcript:
+        out.write(line + "\n")
+    for line in frame:
+        out.write(line + "\n")
+    out.flush()
+    return len(frame)
+
+
+def watch_resident(workspace: str | os.PathLike[str], interval_s: float = 2.0) -> int:
+    """Live read-only view of a running resident. Opens NO model.
+
+    The interactive TUI builds its own Controller, and executing a goal there
+    would open a SECOND 11 GB body beside the resident's. This reads only the
+    durable state the supervisor and worker already write -- including the
+    per-event stream a worker appends to `.hcli/mission/events.jsonl` -- so it
+    is safe to run beside a live daemon and safe to detach from at any moment.
+
+    Passive until touched: it only renders until a key is typed. A submitted
+    line starting with "/" is a command (see /help); anything else is sent to
+    the live mission as a steer. Ctrl-C, or "/quit", detaches -- the daemon
+    keeps running. On a non-interactive stdin this degrades to a plain
+    render-and-sleep loop with no input.
+    """
+    daemon = ResidentDaemon(workspace)
+    root = Path(workspace).expanduser().resolve()
+    mission_path = root / ".hcli" / "mission" / "state.json"
+    events_path = root / ".hcli" / "mission" / "events.jsonl"
+
+    try:
+        interactive = bool(sys.stdin.isatty())
+    except Exception:
+        interactive = False
+
+    fd = None
+    old_term = None
+    if interactive:
+        try:
+            fd = sys.stdin.fileno()
+            old_term = _watch_enter_raw(fd)
+        except Exception:
+            fd = None
+            old_term = None
+        interactive = old_term is not None
+
+    offset = 0
+    input_buf = ""
+    frame_lines = 0
+    last_seq: Optional[int] = None
+
+    try:
+        while True:
+            state = daemon.store.read() or {}
+            mission = _watch_read_mission(mission_path)
+            bank = _goal_bank_snapshot(root)
+            new_events, offset = read_events(events_path, offset=offset, limit=200)
+            transcript: List[str] = []
+            # events.jsonl rotates to a single ``.1`` generation past
+            # max_bytes (EventSink._rotate_if_needed) and read_events only
+            # ever tails the live file -- if this watcher falls behind by
+            # more than one rotation window, the events in between are gone
+            # for good. EventSink.write's own ``seq`` is strictly increasing
+            # for the life of one worker, so a jump in it is a reliable,
+            # cheap signal that a gap happened, even though the events
+            # themselves cannot be recovered from a bounded single-generation
+            # rotation.
+            # ponytail: signal-only, does not widen retention; raise
+            # EventSink's max_bytes or keep more rotated generations if lost
+            # history itself needs recovering, not just flagging.
+            if new_events:
+                first_seq = new_events[0].get("seq")
+                if (
+                    last_seq is not None
+                    and isinstance(first_seq, int)
+                    and first_seq > last_seq + 1
+                ):
+                    gap = first_seq - last_seq - 1
+                    transcript.append(
+                        f"! {gap} event(s) lost (resident outpaced the watcher; "
+                        "events.jsonl rotated past a stale offset)"
+                    )
+                last_seq_candidate = new_events[-1].get("seq")
+                if isinstance(last_seq_candidate, int):
+                    last_seq = last_seq_candidate
+            for event in new_events:
+                transcript.extend(render_event(event))
+
+            if interactive:
+                for ch in _watch_read_key(fd, max(0.05, float(interval_s))):
+                    if ch == "\x03":
+                        raise KeyboardInterrupt
+                    if ch in ("\r", "\n"):
+                        quit_now, extra = _watch_handle_line(root, mission, input_buf)
+                        transcript.extend(extra)
+                        input_buf = ""
+                        if quit_now:
+                            raise KeyboardInterrupt
+                    elif ch in ("\x7f", "\x08"):
+                        input_buf = input_buf[:-1]
+                    elif ch >= " ":
+                        input_buf += ch
+
+            frame = _watch_header_lines(state) + [""] + _watch_footer_lines(mission, bank)
+            if interactive:
+                frame_lines = _watch_repaint(frame_lines, transcript, frame + [f"> {input_buf}"])
+                continue
+
+            for line in transcript:
+                print(line)
+            for line in frame:
+                print(line)
+            print()
+            time.sleep(max(0.5, float(interval_s)))
+    except KeyboardInterrupt:
+        print("\n[hcli] detached. The resident is still running.")
+        return 0
+    finally:
+        if fd is not None:
+            _watch_restore_terminal(fd, old_term)
+
+
+def retire_incumbent(daemon: "ResidentDaemon", timeout_s: float = 30.0) -> Dict[str, Any]:
+    """Stop a live supervisor and archive the mission it owned. Never deletes.
+
+    `replace` is the only supported way to take a workspace over from a live
+    resident. The mission state is MOVED to `.hcli/mission-retired/<stamp>/`,
+    not removed, because a terminal mission is still the evidence for why the
+    previous run ended.
+    """
+    state = daemon.store.read()
+    report: Dict[str, Any] = {
+        "stopped_pid": None,
+        "archived_mission": None,
+        "previous_mission_id": state.get("mission_id"),
+    }
+    if _supervisor_live(state):
+        report["stopped_pid"] = state.get("supervisor_pid")
+        daemon.request_stop()
+        deadline = _now() + timeout_s
+        while _now() < deadline and _supervisor_live(daemon.store.read()):
+            time.sleep(0.25)
+        state = daemon.store.read()
+        if _supervisor_live(state):
+            _owned_signal(
+                state.get("supervisor_pid"),
+                state.get("supervisor_start_token"),
+                signal.SIGKILL,
+            )
+            deadline = _now() + 5.0
+            while _now() < deadline and _supervisor_live(daemon.store.read()):
+                time.sleep(0.25)
+
+    mission_dir = Path(daemon.workspace) / ".hcli" / "mission"
+    if mission_dir.is_dir() and any(mission_dir.iterdir()):
+        stamp = time.strftime("%Y%m%d-%H%M%S", time.gmtime())
+        retired = Path(daemon.workspace) / ".hcli" / "mission-retired" / stamp
+        retired.parent.mkdir(parents=True, exist_ok=True)
+        shutil.move(str(mission_dir), str(retired))
+        report["archived_mission"] = str(retired)
+    return report
+
+
 def start_resident(
     workspace: str | os.PathLike[str],
     *,
@@ -1460,8 +2005,11 @@ def start_resident(
     reserve_bytes: Optional[int] = None,
     swap_ceiling_bytes: Optional[int] = None,
     exit_when_orphaned: bool = True,
+    replace: bool = False,
 ) -> Dict[str, Any]:
     daemon = ResidentDaemon(workspace)
+    if replace:
+        retire_incumbent(daemon)
     config = ResidentConfig(
         workspace=str(Path(workspace).expanduser().resolve()),
         goal=goal,
@@ -1475,9 +2023,10 @@ def start_resident(
         swap_ceiling_bytes=swap_ceiling_bytes,
         exit_when_orphaned=exit_when_orphaned,
     )
-    existing = daemon.configure(config)
-    if _supervisor_live(existing):
-        return daemon.status()
+    # configure() raises ResidentAlreadyRunning if a live supervisor owns this
+    # workspace. That propagates to the CLI, which exits non-zero. `start` never
+    # returns the incumbent's status dressed up as a launch.
+    daemon.configure(config)
     env = os.environ.copy()
     source_root = str(Path(__file__).resolve().parents[2])
     env["PYTHONPATH"] = os.pathsep.join(
@@ -1549,8 +2098,34 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_false",
         help="keep polling after the launcher exits (default: stop and say why)",
     )
+    replace = sub.add_parser(
+        "replace",
+        help="retire a live resident (archiving its mission) and start a new goal",
+    )
+    for _p in (start, replace):
+        pass
+    replace.add_argument("--workspace", default=os.getcwd())
+    replace.add_argument("--repo-root", default=None)
+    replace.add_argument("--goal", required=True)
+    replace.add_argument("--model", default=None)
+    replace.add_argument("--runtime-count", type=int, default=1)
+    replace.add_argument("--interval-s", type=float, default=DEFAULT_INTERVAL_S)
+    replace.add_argument("--evacuation-grace-s", type=float, default=DEFAULT_EVACUATION_GRACE_S)
+    replace.add_argument("--max-restarts", type=int, default=DEFAULT_MAX_RESTARTS)
+    replace.add_argument("--reserve", type=_parse_bytes, default=None)
+    replace.add_argument("--swap-ceiling", type=_parse_bytes, default=None)
+    replace.add_argument(
+        "--keep-running-when-orphaned",
+        dest="exit_when_orphaned",
+        action="store_false",
+    )
     status = sub.add_parser("status", help="show resident state without opening a model")
     status.add_argument("--workspace", default=os.getcwd())
+    watch = sub.add_parser(
+        "watch", help="live read-only view of the running resident (opens no model)"
+    )
+    watch.add_argument("--workspace", default=os.getcwd())
+    watch.add_argument("--interval-s", type=float, default=2.0)
     stop = sub.add_parser("stop", help="stop the owned supervisor and worker")
     stop.add_argument("--workspace", default=os.getcwd())
     clean = sub.add_parser(
@@ -1577,6 +2152,13 @@ def build_parser() -> argparse.ArgumentParser:
     queue.add_argument("--verifier", default=None)
     queue.add_argument("--preferred-backend", default=None)
     queue.add_argument("--provider", default=None)
+    bank = sub.add_parser(
+        "bank",
+        help="queue a high-level goal for automatic resident promotion",
+    )
+    bank.add_argument("--workspace", default=os.getcwd())
+    bank.add_argument("--mode", choices=("auto", "mission"), default="auto")
+    bank.add_argument("goal", nargs="+")
     child = sub.add_parser("child", help="launch one durable child under this resident")
     child.add_argument("--workspace", default=os.getcwd())
     child.add_argument("--cwd", default=None)
@@ -1589,7 +2171,28 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
     args = build_parser().parse_args(list(argv) if argv is not None else None)
-    if args.command == "start":
+    if args.command in ("start", "replace"):
+        try:
+            result = start_resident(
+                args.workspace,
+                goal=args.goal,
+                model=args.model,
+                repo_root=args.repo_root,
+                runtime_count=args.runtime_count,
+                interval_s=args.interval_s,
+                evacuation_grace_s=args.evacuation_grace_s,
+                max_restarts=args.max_restarts,
+                reserve_bytes=args.reserve,
+                swap_ceiling_bytes=args.swap_ceiling,
+                exit_when_orphaned=args.exit_when_orphaned,
+                replace=(args.command == "replace"),
+            )
+        except ResidentAlreadyRunning as exc:
+            # Non-zero exit: a caller that greps for a pid must not read this
+            # as a launch. The requested config was not applied.
+            print(str(exc), file=sys.stderr)
+            return 3
+    elif args.command == "__never__":
         result = start_resident(
             args.workspace,
             goal=args.goal,
@@ -1603,6 +2206,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             swap_ceiling_bytes=args.swap_ceiling,
             exit_when_orphaned=args.exit_when_orphaned,
         )
+    elif args.command == "watch":
+        return watch_resident(args.workspace, interval_s=args.interval_s)
     elif args.command == "status":
         result = ResidentDaemon(args.workspace).status()
     elif args.command == "stop":
@@ -1623,6 +2228,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                 preferred_backend=args.preferred_backend,
                 provider=args.provider,
             )
+        )
+    elif args.command == "bank":
+        result = ResidentDaemon(args.workspace).bank_goal(
+            " ".join(args.goal),
+            mode=args.mode,
         )
     elif args.command == "child":
         argv_value = list(args.argv)
