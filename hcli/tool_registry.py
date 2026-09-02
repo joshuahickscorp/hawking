@@ -580,7 +580,12 @@ def _list_files(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
         raise NotADirectoryError(root)
     glob = str(args.get("glob") or "*")
     limit = max(1, min(2000, int(args.get("max_results") or 500)))
-    recursive = bool(args.get("recursive", True))
+    # Recursion is OPT-IN. "What is in this directory" is one level, and the
+    # default walked the whole tree: a bare fs.list on this repo took 28.1 s
+    # against fs.read's 6 ms, because the tree holds model artifacts and
+    # capture directories with tens of thousands of files. A tool that costs
+    # half a minute is not a tool the model can afford to look with.
+    recursive = bool(args.get("recursive", False))
     entries: List[Dict[str, Any]] = []
     directories: List[Dict[str, Any]] = []
     truncated = False
@@ -594,6 +599,11 @@ def _list_files(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
             name for name in dirnames
             if name not in {".git", ".venv", "__pycache__", "node_modules"}
         )
+        if len(entries) >= limit and len(directories) >= limit:
+            # Both caps are full: every further stat() is work whose result is
+            # thrown away. The walk used to run to completion regardless.
+            truncated = True
+            break
         for dirname in dirnames:
             if not Path(dirname).match(glob):
                 continue
@@ -608,13 +618,15 @@ def _list_files(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
         for filename in sorted(filenames):
             if not Path(filename).match(glob):
                 continue
+            if len(entries) >= limit:
+                # Check the cap BEFORE the stat(). Sizing a file that will not
+                # be returned is the whole cost of a large tree.
+                truncated = True
+                continue
             path = Path(dirpath) / filename
             try:
                 size = path.stat().st_size
             except OSError:
-                continue
-            if len(entries) >= limit:
-                truncated = True
                 continue
             entries.append({"path": str(path.relative_to(root)), "bytes": size})
         if not recursive:

@@ -74,7 +74,12 @@ def test_fs_list_works_with_no_arguments(ctx):
     from hcli.tool_registry import _list_files
 
     out = _list_files(ctx, {})
-    assert out["files"], "a bare fs.list must list the workspace root"
+    # One level, because recursion is opt-in: this fixture's only file lives in
+    # `pkg/`, so the root listing names the DIRECTORY, not the file inside it.
+    assert [d["path"] for d in out["directories"]] == ["pkg"], (
+        "a bare fs.list must list the workspace root"
+    )
+    assert [f["path"] for f in _list_files(ctx, {"path": "pkg"})["files"]] == ["mod.py"]
 
 
 def test_fs_list_still_refuses_a_path_outside_the_read_roots(ctx):
@@ -83,3 +88,65 @@ def test_fs_list_still_refuses_a_path_outside_the_read_roots(ctx):
 
     with pytest.raises(PermissionError):
         _list_files(ctx, {"path": "/etc"})
+
+
+def test_fs_list_is_milliseconds_even_on_a_large_tree(tmp_path):
+    """A tool that costs half a minute is not one the model can afford.
+
+    Measured live: a bare `fs.list` on this repo took 28.1 s against fs.read's
+    6 ms, because the walk recursed by default, kept walking after the result
+    caps were full, and stat()ed files it would never return. This repo holds
+    model artifacts and capture directories with tens of thousands of files.
+    """
+    import time
+
+    from hcli.tool_registry import _list_files
+
+    deep = tmp_path
+    for level in range(6):
+        deep = deep / f"level{level}"
+        deep.mkdir()
+        for i in range(60):
+            (deep / f"f{i}.py").write_text("x", encoding="utf-8")
+
+    ctx = ToolContext(workspace=tmp_path, repo_root=tmp_path)
+
+    started = time.perf_counter()
+    out = _list_files(ctx, {})
+    elapsed_ms = (time.perf_counter() - started) * 1000
+
+    assert elapsed_ms < 250, f"a bare fs.list took {elapsed_ms:.0f} ms"
+    assert out["directories"], "one level must still be listed"
+
+
+def test_fs_list_does_not_recurse_unless_asked(tmp_path):
+    """Recursion is opt-in: 'what is in this directory' is one level."""
+    from hcli.tool_registry import _list_files
+
+    (tmp_path / "top.py").write_text("x", encoding="utf-8")
+    nested = tmp_path / "sub"
+    nested.mkdir()
+    (nested / "deep.py").write_text("x", encoding="utf-8")
+
+    ctx = ToolContext(workspace=tmp_path, repo_root=tmp_path)
+    shallow = {f["path"] for f in _list_files(ctx, {})["files"]}
+    assert shallow == {"top.py"}
+
+    deep = {f["path"] for f in _list_files(ctx, {"recursive": True})["files"]}
+    assert "sub/deep.py" in deep, "recursive:true must still recurse"
+
+
+def test_a_full_result_stops_the_walk(tmp_path):
+    """The cap must end the work, not just trim the output."""
+    from hcli.tool_registry import _list_files
+
+    for d in range(12):
+        sub = tmp_path / f"d{d}"
+        sub.mkdir()
+        for i in range(40):
+            (sub / f"f{i}.py").write_text("x", encoding="utf-8")
+
+    ctx = ToolContext(workspace=tmp_path, repo_root=tmp_path)
+    out = _list_files(ctx, {"recursive": True, "max_results": 5})
+    assert out["truncated"] is True
+    assert len(out["files"]) <= 5

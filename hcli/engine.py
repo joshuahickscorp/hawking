@@ -1275,6 +1275,27 @@ class Engine:
             parts.append(
                 "AVAILABLE TOOLS (name(arg:type), * means required):\n" + catalog
             )
+        block = self._observations_block(observations, final=final)
+        if block:
+            parts.append(block)
+        return "\n\n".join(parts)
+
+    def _observations_block(
+        self,
+        observations: List[Dict[str, Any]],
+        *,
+        final: bool = False,
+    ) -> str:
+        """The APPEND-ONLY tail. Nothing stable may follow it.
+
+        Observations are the only part of the prompt that grows between rounds,
+        so the resident's KV prefix survives exactly up to where this begins.
+        Measured on the real builder: with the stable blocks (evidence, the
+        durable checkpoint) placed AFTER this, mean reusable prefix was 0.544;
+        with this last, 0.924 -- same content, same order of reading for the
+        model, 1.7x more prefill the resident can skip.
+        """
+        parts: List[str] = []
         if observations:
             rendered = "\n\n".join(
                 f"----- {o['tool']} [{'ok' if o['ok'] else 'FAILED'}] -----\n{o['text']}"
@@ -1392,14 +1413,18 @@ class Engine:
             # fed back, bounded, until the model answers or the budget runs out.
             observations: List[Dict[str, Any]] = []
             for round_index in range(self.MAX_TOOL_ROUNDS):
+                # Observations go LAST in the payload, not into the prompt
+                # body: they are the only part that grows between rounds, and
+                # every stable byte after them is re-prefilled for nothing.
                 raw = self._call_model(
                     self._prompt_with_observations(
                         prompt,
-                        observations,
+                        [],
                         compact_catalog=True,
                     ),
                     evidence,
                     compiled,
+                    trailing=self._observations_block(observations),
                     context_memory=context_memory,
                 )
                 result = self._sanitize_result(raw)
@@ -1421,12 +1446,12 @@ class Engine:
                     self._call_model(
                         self._prompt_with_observations(
                             prompt,
-                            observations,
-                            final=True,
+                            [],
                             compact_catalog=True,
                         ),
                         evidence,
                         compiled,
+                        trailing=self._observations_block(observations, final=True),
                         context_memory=context_memory,
                     )
                 )
@@ -3153,6 +3178,7 @@ class Engine:
         context_memory: Any = None,
         enable_thinking: Optional[bool] = None,
         response_schema: Optional[bool] = None,
+        trailing: str = "",
     ) -> Dict[str, Any]:
         goal_block = self._goal_block(prompt, compiled)
         evidence = self._assert_evidence_fresh(evidence)
@@ -3175,6 +3201,13 @@ class Engine:
                 "verify against current disk state):\n"
                 + memory_text
             )
+        # LAST, and it must stay last. `trailing` is the only part of the prompt
+        # that grows between rounds of one goal, so every stable byte placed
+        # after it would be re-prefilled every round for no reason. The stable
+        # blocks used to sit here: mean reusable prefix 0.544 against 0.924 with
+        # the growth at the end.
+        if trailing:
+            user += "\n\n" + trailing
         messages = [
             {
                 "role": "system",
@@ -3346,6 +3379,7 @@ class Engine:
         enable_thinking: Optional[bool] = None,
         response_schema: Optional[bool] = None,
         plain_text: bool = False,
+        trailing: str = "",
     ) -> Any:
         if self.model_client is not None:
             call = getattr(
@@ -3383,6 +3417,7 @@ class Engine:
                     context_memory=context_memory,
                     enable_thinking=enable_thinking,
                     response_schema=response_schema,
+                    trailing=trailing,
                 )
                 est = (self._last_call_plan or {}).get("prompt_tokens_est")
                 with self._model_call_scope(est):
@@ -3448,6 +3483,7 @@ class Engine:
                 context_memory=cm,
                 enable_thinking=thinking_arg,
                 response_schema=(False if degrade else response_schema),
+                trailing=trailing,
             )
 
         payload, reduction = self._fit_payload_to_budget(

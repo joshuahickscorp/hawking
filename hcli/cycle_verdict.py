@@ -60,8 +60,22 @@ def _read_log(path: Path, limit: int = 20000) -> List[Dict[str, Any]]:
     return _read_events(path, limit)
 
 
-def evaluate(workspace: Any) -> Dict[str, Any]:
+#: Named so they can be argued with. A budget buried inside a comparison is a
+#: number nobody can find and nobody revises.
+DEFAULT_BUDGETS: Dict[str, float] = {
+    "tool_p95_ms": 50.0,
+    "mean_rounds_per_goal": 4.0,
+    "effective_prompt_tps": 100.0,
+    "realized_reuse_fraction": 0.5,
+}
+
+
+def evaluate(
+    workspace: Any,
+    budgets: Optional[Dict[str, float]] = None,
+) -> Dict[str, Any]:
     """One verdict per criterion, plus the run verdict, from durable state only."""
+    budgets = {**DEFAULT_BUDGETS, **(budgets or {})}
     root = Path(workspace)
     hcli = root / ".hcli"
     mission = _read_json(hcli / "mission" / "state.json")
@@ -225,6 +239,101 @@ def evaluate(workspace: Any) -> Dict[str, Any]:
                 f"accepted=0, 0 completed of {len(units)} units -- alive is not progress",
             )
 
+    # ---------------------------------------------------------------
+    # SPEED. Working is not the bar; these subsystems must be FAST.
+    # Budgets are named and tunable rather than buried in a comparison,
+    # and the MEASURED value is always reported so the number is the
+    # signal even when the colour is not.
+    # ---------------------------------------------------------------
+    measured: Dict[str, Any] = {}
+    calls: List[Dict[str, Any]] = []
+    for path in receipts:
+        body = _read_json(path) or {}
+        for call in body.get("model_calls") or []:
+            if isinstance(call, dict):
+                calls.append(call)
+
+    # Tool latency. These are local function calls; milliseconds or it is broken.
+    tool_ms = sorted(
+        float((r.get("data") or {}).get("elapsed_s") or 0.0) * 1000.0
+        for r in events
+        if r.get("type") == "tool_call_finished"
+    )
+    if not tool_ms:
+        record("tools_fast", UNKNOWN, "no tool calls yet")
+    else:
+        p95 = tool_ms[min(len(tool_ms) - 1, int(len(tool_ms) * 0.95))]
+        measured["tool_p95_ms"] = round(p95, 3)
+        budget = budgets["tool_p95_ms"]
+        record(
+            "tools_fast",
+            PASS if p95 <= budget else FAIL,
+            f"p95 {p95:.1f} ms over {len(tool_ms)} calls (budget {budget} ms)",
+        )
+
+    # Round trips per goal. A round is a model call; the tools it drives are
+    # milliseconds, so the round count IS the wall clock of a goal.
+    per_goal: Dict[str, int] = {}
+    for row in events:
+        if row.get("type") == "model_call_finished":
+            gid = str((row.get("data") or {}).get("goal_id") or "")
+            per_goal[gid] = per_goal.get(gid, 0) + 1
+    if not per_goal:
+        record("few_round_trips", UNKNOWN, "no model calls yet")
+    else:
+        mean_rounds = sum(per_goal.values()) / len(per_goal)
+        measured["mean_rounds_per_goal"] = round(mean_rounds, 2)
+        budget = budgets["mean_rounds_per_goal"]
+        record(
+            "few_round_trips",
+            PASS if mean_rounds <= budget else FAIL,
+            f"{mean_rounds:.1f} model calls per goal over {len(per_goal)} goal(s) "
+            f"(budget {budget})",
+        )
+
+    # Effective prefill rate: prompt tokens the caller asked for, per second of
+    # wall. KV reuse raises this WITHOUT the kernel getting faster, which is the
+    # point -- this is the number a caller experiences.
+    rated = [
+        (float(c.get("prompt_tokens") or 0), float(c.get("wall_s") or 0.0))
+        for c in calls
+        if c.get("prompt_tokens") and c.get("wall_s")
+    ]
+    if not rated:
+        record("prefill_fast", UNKNOWN, "no timed model calls yet")
+    else:
+        tps = sum(t for t, _ in rated) / max(1e-9, sum(w for _, w in rated))
+        measured["effective_prompt_tps"] = round(tps, 1)
+        budget = budgets["effective_prompt_tps"]
+        record(
+            "prefill_fast",
+            PASS if tps >= budget else FAIL,
+            f"{tps:.0f} prompt tok/s over {len(rated)} calls (budget {budget})",
+        )
+
+    # KV reuse, from the resident's own count. Never inferred from a clock.
+    reused = [
+        (float(c.get("prefix_reused_tokens") or 0), float(c.get("prompt_tokens") or 0))
+        for c in calls
+        if c.get("prefix_reused_tokens") is not None and c.get("prompt_tokens")
+    ]
+    if not reused:
+        record(
+            "kv_reuse",
+            UNKNOWN,
+            "the resident reported no prefix_reused_tokens; unmeasured, NOT zero",
+        )
+    else:
+        fraction = sum(r for r, _ in reused) / max(1e-9, sum(t for _, t in reused))
+        measured["realized_reuse_fraction"] = round(fraction, 4)
+        budget = budgets["realized_reuse_fraction"]
+        record(
+            "kv_reuse",
+            PASS if fraction >= budget else FAIL,
+            f"{fraction:.2f} of prompt tokens reused over {len(reused)} calls "
+            f"(budget {budget})",
+        )
+
     failed = sorted(k for k, v in criteria.items() if v["verdict"] == FAIL)
     unknown = sorted(k for k, v in criteria.items() if v["verdict"] == UNKNOWN)
     if failed:
@@ -237,6 +346,8 @@ def evaluate(workspace: Any) -> Dict[str, Any]:
     return {
         "schema": "hcli.cycle_verdict.v1",
         "verdict": verdict,
+        "measured": measured,
+        "budgets": budgets,
         "failed": failed,
         "unknown": unknown,
         "criteria": criteria,
@@ -248,8 +359,13 @@ def evaluate(workspace: Any) -> Dict[str, Any]:
 
 
 def render(verdict: Dict[str, Any]) -> str:
-    """One screen, widest signal first."""
+    """One screen, widest signal first. The MEASURED numbers always show."""
     lines = [f"RUN VERDICT: {verdict.get('verdict')}"]
     for name, row in sorted(verdict.get("criteria", {}).items()):
         lines.append(f"  {row['verdict']:<8} {name:<26} {row['detail']}")
+    measured = verdict.get("measured") or {}
+    if measured:
+        lines.append("  measured: " + "  ".join(
+            f"{k}={v}" for k, v in sorted(measured.items())
+        ))
     return "\n".join(lines)

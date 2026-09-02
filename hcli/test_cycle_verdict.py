@@ -67,16 +67,26 @@ def test_a_fully_good_run_reports_pass(tmp_path):
         daemon={"failure_streak": 0, "config": {"max_restarts": 3}},
         dag={"repair_counts": {}},
         log=[{"event": "dispatch"}],
-        events=[{"type": "tool_invoked", "data": {"tool": "fs.read", "ok": True}}],
+        events=[
+            {"type": "tool_invoked", "data": {"tool": "fs.read", "ok": True}},
+            {"type": "model_call_finished", "data": {"goal_id": "g", "ok": True}},
+            {"type": "tool_call_finished", "data": {"tool": "fs.read", "elapsed_s": 0.003}},
+        ],
     )
     receipts = tmp_path / ".hcli" / "receipts"
     receipts.mkdir()
-    (receipts / "clean.json").write_text(
-        json.dumps({"structured_output": {"exhausted": False, "attempts": 1}})
-    )
+    (receipts / "clean.json").write_text(json.dumps({
+        "structured_output": {"exhausted": False, "attempts": 1},
+        # Fast AND reusing: green means both.
+        "model_calls": [
+            {"prompt_tokens": 3000, "wall_s": 2.0, "prefix_reused_tokens": 2400},
+        ],
+    }))
     report = evaluate(ws)
     assert report["verdict"] == PASS, report["criteria"]
     assert not report["failed"] and not report["unknown"]
+    assert report["measured"]["effective_prompt_tps"] >= 100
+    assert report["measured"]["realized_reuse_fraction"] >= 0.5
 
 
 def test_alive_but_accepting_nothing_is_a_FAIL(tmp_path):
@@ -228,3 +238,41 @@ def test_a_count_with_no_repair_unit_is_still_caught(tmp_path):
     row = evaluate(ws)["criteria"]["repair_budget_unspent"]
     assert row["verdict"] == FAIL
     assert "no repair unit in this mission" in row["detail"]
+
+
+def test_a_slow_tool_is_a_FAIL_even_when_it_works(tmp_path):
+    """`fs.list` took 28.1 s and returned successfully. Working is not the bar."""
+    ws = _workspace(
+        tmp_path,
+        mission=_healthy_mission(),
+        events=[{"type": "tool_call_finished", "data": {"tool": "fs.list", "elapsed_s": 28.1}}],
+    )
+    row = evaluate(ws)["criteria"]["tools_fast"]
+    assert row["verdict"] == FAIL
+    assert "28100" in row["detail"] or "28100.0" in row["detail"]
+
+
+def test_budgets_are_named_and_overridable(tmp_path):
+    """A budget buried in a comparison is one nobody can find or revise."""
+    from hcli.cycle_verdict import DEFAULT_BUDGETS
+
+    assert set(DEFAULT_BUDGETS) >= {
+        "tool_p95_ms",
+        "mean_rounds_per_goal",
+        "effective_prompt_tps",
+        "realized_reuse_fraction",
+    }
+    ws = _workspace(
+        tmp_path,
+        mission=_healthy_mission(),
+        events=[{"type": "tool_call_finished", "data": {"tool": "x", "elapsed_s": 0.2}}],
+    )
+    assert evaluate(ws)["criteria"]["tools_fast"]["verdict"] == FAIL
+    assert evaluate(ws, {"tool_p95_ms": 500.0})["criteria"]["tools_fast"]["verdict"] == PASS
+
+
+def test_unmeasured_kv_reuse_is_not_reported_as_zero(tmp_path):
+    ws = _workspace(tmp_path, mission=_healthy_mission())
+    row = evaluate(ws)["criteria"]["kv_reuse"]
+    assert row["verdict"] == UNKNOWN
+    assert "NOT zero" in row["detail"]
