@@ -21,13 +21,36 @@ const NEG_INF: f32 = f32::NEG_INFINITY;
 /// Built at serve startup (or lazily on first json-mode request).
 pub struct JsonVocabIndex {
     pub token_text: Vec<String>,
+    /// Tokenizer vocabulary size. Logit ids at or beyond this are padding
+    /// and are always masked. Defaults to `token_text.len()` from [`Self::build`].
+    known_len: usize,
 }
 
 impl JsonVocabIndex {
     /// Build the index. `decode_one` is called for every token id in 0..vocab_size.
+    ///
+    /// `known_len` defaults to `vocab_size`. Call [`Self::with_known_len`] when
+    /// the logits buffer is wider than the tokenizer vocabulary.
     pub fn build(vocab_size: usize, decode_one: impl Fn(u32) -> String) -> Self {
         let token_text: Vec<String> = (0..vocab_size as u32).map(decode_one).collect();
-        Self { token_text }
+        Self {
+            token_text,
+            known_len: vocab_size,
+        }
+    }
+
+    /// Restrict which ids are considered in-vocabulary.
+    ///
+    /// Ids at or beyond `known_len` are always masked, even if they decode to
+    /// the empty string. Empty-text allowance (BOS/EOS/`<|im_end|>`) applies
+    /// only below this cutoff.
+    pub fn with_known_len(mut self, known_len: usize) -> Self {
+        self.known_len = known_len;
+        self
+    }
+
+    pub fn known_len(&self) -> usize {
+        self.known_len
     }
 
     pub fn text(&self, id: u32) -> &str {
@@ -40,6 +63,28 @@ impl JsonVocabIndex {
     pub fn len(&self) -> usize {
         self.token_text.len()
     }
+}
+
+/// Deterministic greedy argmax matching `sample_argmax_f32` in
+/// `crates/hawking-core/shaders/sample.metal`.
+///
+/// The kernel reduces with `if (vb > va || (vb == va && ib < ia))` (line 69):
+/// a strictly greater value wins; an exact tie keeps the lower index. The
+/// per-thread scan uses `if (v > local_v)` walking `i = tid, tid+tg, ...`,
+/// which is the same rule (equal values never replace an earlier index).
+pub fn argmax_f32_metal_tiebreak(logits: &[f32]) -> u32 {
+    if logits.is_empty() {
+        return 0;
+    }
+    let mut best_v = f32::NEG_INFINITY;
+    let mut best_i = 0u32;
+    for (i, &v) in logits.iter().enumerate() {
+        if v > best_v {
+            best_v = v;
+            best_i = i as u32;
+        }
+    }
+    best_i
 }
 
 // ─── JSON state machine ───────────────────────────────────────────────────────
@@ -250,13 +295,20 @@ impl JsonConstraint {
     /// with the valid next-byte set for the current state.
     pub fn mask_logits(&self, vocab: &JsonVocabIndex, logits: &mut [f32]) {
         let valid = self.valid_first_bytes();
+        let known_len = vocab.known_len;
         for (id, logit) in logits.iter_mut().enumerate() {
             if *logit == NEG_INF {
                 continue;
             }
+            if id >= known_len {
+                *logit = NEG_INF;
+                continue;
+            }
             let text = vocab.text(id as u32);
             if text.is_empty() {
-                // Empty token (BOS, padding) — allow so generation doesn't deadlock.
+                // Empty token below known_len (BOS, EOS, <|im_end|>) — allow
+                // so generation can terminate. Padding ids at/beyond known_len
+                // are masked above and must not stay unmaskable.
                 continue;
             }
             let first = text.chars().next().unwrap();
@@ -403,5 +455,123 @@ mod tests {
         assert!(c.validate("yes"));
         assert!(c.validate("  no  "), "trims whitespace");
         assert!(!c.validate("maybe"));
+    }
+
+    /// Host argmax must pick the same winner as `sample_argmax_f32`.
+    ///
+    /// Derived from `crates/hawking-core/shaders/sample.metal` line 69:
+    /// `if (vb > va || (vb == va && ib < ia)) { shmem_v[tid] = vb; shmem_i[tid] = ib; }`
+    /// Strictly greater wins; an exact tie keeps the lower index.
+    #[test]
+    fn host_argmax_matches_metal_lower_index_on_tie() {
+        let logits = [1.5f32, 3.0, 3.0, 2.0];
+        assert_eq!(
+            argmax_f32_metal_tiebreak(&logits),
+            1,
+            "exact tie at 3.0 must keep the lower index (shader line 69)"
+        );
+        let unique = [0.0f32, 1.0, 4.0, 3.0];
+        assert_eq!(argmax_f32_metal_tiebreak(&unique), 2);
+        let leading = [5.0f32, 5.0, 5.0];
+        assert_eq!(argmax_f32_metal_tiebreak(&leading), 0);
+        assert_eq!(argmax_f32_metal_tiebreak(&[]), 0);
+    }
+
+    /// Why `generate_constrained` guards before calling this.
+    ///
+    /// An all-masked vector has no finite entry, so the scan never fires and
+    /// this returns id 0 -- a real token. Without the caller's
+    /// `logits.iter().any(is_finite)` check the resident would emit token 0 for
+    /// the rest of the budget while still reporting `grammar_enforced: true`:
+    /// a silent wrong answer wearing an enforcement claim. If this ever stops
+    /// returning 0 for an all-masked vector, revisit that guard rather than
+    /// assuming it became unnecessary.
+    #[test]
+    fn a_fully_masked_vector_argmaxes_to_a_real_token_id() {
+        let all_masked = [NEG_INF; 8];
+        assert_eq!(
+            argmax_f32_metal_tiebreak(&all_masked),
+            0,
+            "the caller must detect this case before sampling"
+        );
+        let one_survivor = [NEG_INF, NEG_INF, -12.5, NEG_INF];
+        assert_eq!(argmax_f32_metal_tiebreak(&one_survivor), 2);
+    }
+
+    #[test]
+    fn padding_ids_at_or_beyond_known_len_are_masked_eos_is_not() {
+        // id 0 is EOS (empty text, below known_len). ids 4.. are padding
+        // in a logits buffer wider than the tokenizer vocabulary.
+        const EOS: usize = 0;
+        let vocab = JsonVocabIndex::build(4, |id| match id {
+            0 => String::new(),
+            1 => "{".into(),
+            2 => "}".into(),
+            3 => "true".into(),
+            _ => String::new(),
+        });
+        assert_eq!(vocab.known_len(), 4);
+        let c = JsonConstraint::new();
+        let mut logits = vec![0.0f32; 8];
+        logits[EOS] = 1.0;
+        logits[1] = 0.5;
+        logits[7] = 99.0;
+        c.mask_logits(&vocab, &mut logits);
+        assert_eq!(
+            logits[7], NEG_INF,
+            "id 7 is at/beyond known_len and must be masked"
+        );
+        assert_eq!(
+            logits[4], NEG_INF,
+            "id 4 is at known_len and must be masked"
+        );
+        assert_ne!(
+            logits[EOS], NEG_INF,
+            "EOS id below known_len must stay emittable"
+        );
+        let shrunk = vocab.with_known_len(2);
+        let mut logits = vec![5.0f32; 4];
+        c.mask_logits(&shrunk, &mut logits);
+        assert_eq!(logits[2], NEG_INF);
+        assert_eq!(logits[3], NEG_INF);
+        assert_ne!(logits[0], NEG_INF);
+        assert_ne!(logits[1], NEG_INF);
+    }
+
+    /// Load-bearing evidence: a model that always prefers an illegal token
+    /// still cannot emit one while the masker is live. The concatenated
+    /// output must parse as JSON. Mutation-check this by turning
+    /// `mask_logits` into a no-op — the same assertions must then fail.
+    #[test]
+    fn masked_argmax_cannot_emit_illegal_json_token() {
+        const NOPE: usize = 9;
+        let texts = [
+            "", "{", "}", "[", "]", "\"", ":", ",", "true", "NOPE", "1", " ",
+        ];
+        let vocab = JsonVocabIndex::build(texts.len(), |id| texts[id as usize].to_string());
+        let mut c = JsonConstraint::new();
+        let mut out = String::new();
+        for _ in 0..16 {
+            let mut logits = vec![1.0f32; vocab.len()];
+            logits[0] = 0.0;
+            logits[NOPE] = 100.0;
+            c.mask_logits(&vocab, &mut logits);
+            let id = argmax_f32_metal_tiebreak(&logits) as usize;
+            assert_ne!(id, NOPE, "masked argmax emitted illegal token NOPE");
+            let text = vocab.text(id as u32);
+            out.push_str(text);
+            c.advance(text);
+            if c.is_done() || text.is_empty() {
+                break;
+            }
+        }
+        assert!(c.is_done(), "constraint never reached Done; out={out:?}");
+        let parsed: serde_json::Value =
+            serde_json::from_str(&out).unwrap_or_else(|e| panic!("not JSON ({e}): {out:?}"));
+        assert!(
+            parsed.is_object() || parsed.is_array(),
+            "expected object or array, got {parsed}"
+        );
+        assert!(!out.contains("NOPE"), "illegal token leaked into {out:?}");
     }
 }

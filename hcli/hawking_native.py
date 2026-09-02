@@ -1364,6 +1364,7 @@ class HawkingNativeConnector:
             "retry_count": retry_count,
             "resident_health": resident_health,
             "native_metrics": native_metrics,
+            "grammar_enforced": body.get("grammar_enforced") is True,
         }
         return {
             "id": f"hawking-chat-{uuid.uuid4()}",
@@ -1425,6 +1426,12 @@ class HawkingNativeConnector:
             "max_new_tokens": max_new_tokens,
             "max_seq_len": max_seq_len,
         }
+        response_format = payload.get("response_format")
+        if (
+            isinstance(response_format, dict)
+            and response_format.get("type") == "json_object"
+        ):
+            request["grammar"] = "json"
         started = time.perf_counter()
         try:
             body = self.resident.request(request, limit)

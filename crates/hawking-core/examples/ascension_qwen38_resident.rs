@@ -26,8 +26,10 @@ use std::process;
 use std::time::Instant;
 
 #[cfg(target_os = "macos")]
+use hawking_core::json_constrain::{JsonConstraint, JsonVocabIndex};
+#[cfg(target_os = "macos")]
 use hawking_core::model::qwen38_hybrid_decode::{
-    generate_greedy, load_qwen38_tokenizer, Qwen38HybridDecodeSession,
+    generate_constrained, generate_greedy, load_qwen38_tokenizer, Qwen38HybridDecodeSession,
     Qwen38HybridWeights,
 };
 
@@ -63,14 +65,10 @@ fn parse_args() -> Args {
                 process::exit(0);
             }
             "--artifact-root" => {
-                artifact_root = Some(PathBuf::from(
-                    args.next().unwrap_or_else(|| fail(usage())),
-                ));
+                artifact_root = Some(PathBuf::from(args.next().unwrap_or_else(|| fail(usage()))));
             }
             "--tokenizer" => {
-                tokenizer = Some(PathBuf::from(
-                    args.next().unwrap_or_else(|| fail(usage())),
-                ));
+                tokenizer = Some(PathBuf::from(args.next().unwrap_or_else(|| fail(usage()))));
             }
             "--max-seq-len" => {
                 max_seq_len = Some(
@@ -142,13 +140,14 @@ fn run_resident(args: Args) -> Result<(), String> {
         .map_err(|e| format!("load artifact: {e}"))?;
     let dense_w_materialized = weights.dense_w_materialized;
     let weights = std::sync::Arc::new(weights);
-    let tokenizer = load_qwen38_tokenizer(&args.tokenizer)
-        .map_err(|e| format!("load tokenizer: {e}"))?;
-    let mut session = Qwen38HybridDecodeSession::attach(
-        std::sync::Arc::clone(&weights),
-        args.max_seq_len,
-    )
-    .map_err(|e| format!("allocate resident session: {e}"))?;
+    let tokenizer =
+        load_qwen38_tokenizer(&args.tokenizer).map_err(|e| format!("load tokenizer: {e}"))?;
+    let mut session =
+        Qwen38HybridDecodeSession::attach(std::sync::Arc::clone(&weights), args.max_seq_len)
+            .map_err(|e| format!("allocate resident session: {e}"))?;
+    // Built on the first grammar=json request, not at startup: indexing the
+    // tokenizer calls decode_one once per vocab id.
+    let mut json_vocab_index: Option<JsonVocabIndex> = None;
 
     let pid = process::id();
     let mut stdout = io::BufWriter::new(io::stdout().lock());
@@ -180,7 +179,10 @@ fn run_resident(args: Args) -> Result<(), String> {
         let body = match parsed {
             Ok(value) if value.is_object() => value,
             Ok(_) => {
-                write_record(&mut stdout, &error_reply("", "request is not a JSON object"))?;
+                write_record(
+                    &mut stdout,
+                    &error_reply("", "request is not a JSON object"),
+                )?;
                 continue;
             }
             Err(error) => {
@@ -192,7 +194,14 @@ fn run_resident(args: Args) -> Result<(), String> {
             }
         };
         let id = request_id(&body);
-        let reply = match serve_request(&mut session, &tokenizer, &args, pid, &body) {
+        let reply = match serve_request(
+            &mut session,
+            &tokenizer,
+            &mut json_vocab_index,
+            &args,
+            pid,
+            &body,
+        ) {
             Ok(reply) => reply,
             Err(error) => error_reply(&id, error),
         };
@@ -205,6 +214,7 @@ fn run_resident(args: Args) -> Result<(), String> {
 fn serve_request(
     session: &mut Qwen38HybridDecodeSession,
     tokenizer: &hawking_core::tokenizer::Tokenizer,
+    json_vocab_index: &mut Option<JsonVocabIndex>,
     args: &Args,
     pid: u32,
     body: &Value,
@@ -225,8 +235,8 @@ fn serve_request(
     if max_new == 0 {
         return Err("max_new_tokens must be positive".to_owned());
     }
-    let max_new = usize::try_from(max_new)
-        .map_err(|_| "max_new_tokens does not fit in usize".to_owned())?;
+    let max_new =
+        usize::try_from(max_new).map_err(|_| "max_new_tokens does not fit in usize".to_owned())?;
     let requested_seq = body
         .get("max_seq_len")
         .and_then(Value::as_u64)
@@ -240,6 +250,15 @@ fn serve_request(
             ));
         }
     }
+    let constrain_json = match body.get("grammar") {
+        None => false,
+        Some(Value::String(s)) if s == "json" => true,
+        Some(other) => {
+            return Err(format!(
+                "unsupported grammar {other}; only the string \"json\" is accepted"
+            ));
+        }
+    };
 
     let prompt_ids = tokenizer
         .encode(prompt, false)
@@ -251,7 +270,8 @@ fn serve_request(
     if required > args.max_seq_len {
         return Err(format!(
             "prompt has {} tokens and max_new_tokens is {max_new}; resident max_seq_len is {}",
-            prompt_ids.len(), args.max_seq_len
+            prompt_ids.len(),
+            args.max_seq_len
         ));
     }
 
@@ -260,8 +280,25 @@ fn serve_request(
     // this explicit here makes the resident isolation contract visible.
     session.reset();
     let started = Instant::now();
-    let result = generate_greedy(session, &prompt_ids, max_new)
-        .map_err(|e| format!("native generation: {e}"))?;
+    let result = if constrain_json {
+        let vocab = json_vocab_index.get_or_insert_with(|| {
+            JsonVocabIndex::build(tokenizer.vocab_size(), |id| {
+                tokenizer.decode_one(id).unwrap_or_default()
+            })
+        });
+        let mut constraint = JsonConstraint::new();
+        generate_constrained(
+            session,
+            tokenizer,
+            vocab,
+            &mut constraint,
+            &prompt_ids,
+            max_new,
+        )
+    } else {
+        generate_greedy(session, &prompt_ids, max_new)
+    }
+    .map_err(|e| format!("native generation: {e}"))?;
     let wall_ns = started.elapsed().as_nanos() as u64;
     let generated = result.new_tokens().to_vec();
     let generated_count = generated.len();
@@ -289,9 +326,8 @@ fn serve_request(
     } else {
         None
     };
-    let gpu_ns_per_generated_token = complete_gpu_ns.map(|value| {
-        value as f64 / generated_count.max(1) as f64
-    });
+    let gpu_ns_per_generated_token =
+        complete_gpu_ns.map(|value| value as f64 / generated_count.max(1) as f64);
     let dispatches_per_generated_token = dispatches as f64 / generated_count.max(1) as f64;
     let complete_tps = if wall_ns > 0 {
         Some(generated_count as f64 / (wall_ns as f64 / 1e9))
@@ -309,6 +345,7 @@ fn serve_request(
         "protocol": PROTOCOL,
         "resident_identity": args.resident_identity,
         "resident_pid": pid,
+        "grammar_enforced": constrain_json,
         "text": text,
         "generated_text": text,
         "new_token_ids": generated,

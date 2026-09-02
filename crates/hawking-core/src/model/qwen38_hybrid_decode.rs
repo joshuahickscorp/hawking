@@ -1849,6 +1849,7 @@ pub fn load_qwen38_tokenizer(path: impl AsRef<Path>) -> Result<Tokenizer> {
 #[cfg(target_os = "macos")]
 mod device {
     use super::*;
+    use crate::json_constrain::{argmax_f32_metal_tiebreak, JsonConstraint, JsonVocabIndex};
     use crate::kernels::{
         mha_decode_f32_tcb, qwen_next_add_residual_tcb, sample_argmax_f32_tcb,
     };
@@ -7514,6 +7515,130 @@ mod device {
         })
     }
 
+    /// Greedy generation with a JSON logit mask applied on the host.
+    ///
+    /// The GPU argmax kernel still runs inside [`Qwen38HybridDecodeSession::step`];
+    /// its answer is discarded. After each wait, logits are read from the
+    /// shared workspace, masked, and reduced with the Metal tie-break
+    /// (strictly greater wins, exact ties keep the lower index).
+    pub fn generate_constrained(
+        session: &mut Qwen38HybridDecodeSession,
+        tokenizer: &Tokenizer,
+        vocab: &JsonVocabIndex,
+        constraint: &mut JsonConstraint,
+        prompt: &[u32],
+        max_new_tokens: usize,
+    ) -> Result<Qwen38GenerateResult> {
+        if prompt.is_empty() {
+            return Err(Error::Model("qwen38 prompt is empty".into()));
+        }
+        session.reset();
+        let step_capacity = prompt.len().saturating_add(max_new_tokens);
+        let token_capacity = step_capacity.saturating_add(1);
+        let mut tokens = Vec::with_capacity(token_capacity);
+        tokens.extend_from_slice(prompt);
+        let mut gpu_ns = Vec::with_capacity(step_capacity);
+        let mut wait_ns = Vec::with_capacity(step_capacity);
+        let mut encode_ns = Vec::with_capacity(step_capacity);
+        let mut submit_ns = Vec::with_capacity(step_capacity);
+        let mut dispatches = Vec::with_capacity(step_capacity);
+        let mut active_weight_bytes = Vec::with_capacity(step_capacity);
+        let mut wall_ns_per_step = Vec::with_capacity(step_capacity);
+        let wall = Instant::now();
+        let prefill = Instant::now();
+        let mut first_step_wall_ns = 0u64;
+        for (i, &token) in prompt.iter().enumerate() {
+            let step_wall = Instant::now();
+            let (_, timing) = session.step(token)?;
+            let step_ns = step_wall.elapsed().as_nanos() as u64;
+            if i == 0 {
+                first_step_wall_ns = step_ns;
+            }
+            wall_ns_per_step.push(step_ns);
+            gpu_ns.push(timing.gpu_ns);
+            wait_ns.push(timing.wait_ns);
+            encode_ns.push(timing.encode_ns);
+            submit_ns.push(timing.submit_ns);
+            dispatches.push(timing.dispatches);
+            active_weight_bytes.push(session.last_active_weight_bytes());
+        }
+        let prefill_wall_ns = prefill.elapsed().as_nanos() as u64;
+        // Last prefill step already dispatched GPU argmax; discard it and pick
+        // the first generated id on the host so the JSON mask applies.
+        let mut logits = session.read_f32_workspace("logits", QWEN38_VOCAB)?;
+        constraint.mask_logits(vocab, &mut logits);
+        // A state where the mask leaves nothing legal must SAY so. Without this
+        // the argmax over an all-NEG_INF vector returns id 0 and the resident
+        // emits token 0 to the budget while still reporting grammar_enforced --
+        // a silent wrong answer wearing an enforcement claim.
+        if !logits.iter().any(|v| v.is_finite()) {
+            return Err(Error::Model(
+                "json constraint masked every token at the first generated position".into(),
+            ));
+        }
+        let mut next = argmax_f32_metal_tiebreak(&logits);
+        tokens.push(next);
+        constraint.advance(&tokenizer.decode_one(next).unwrap_or_default());
+        let decode = Instant::now();
+        let ignore_eos = std::env::var("HAWKING_QWEN38_IGNORE_EOS")
+            .map(|v| v != "0")
+            .unwrap_or(false);
+        while tokens.len() - prompt.len() < max_new_tokens {
+            if constraint.is_done() {
+                break;
+            }
+            if !ignore_eos
+                && (next == crate::model::qwen38_geometry::QWEN38_EOS_IM_END
+                    || next == crate::model::qwen38_geometry::QWEN38_EOS_END_OF_TEXT)
+            {
+                break;
+            }
+            let step_wall = Instant::now();
+            let (_, timing) = session.step(next)?;
+            wall_ns_per_step.push(step_wall.elapsed().as_nanos() as u64);
+            gpu_ns.push(timing.gpu_ns);
+            wait_ns.push(timing.wait_ns);
+            encode_ns.push(timing.encode_ns);
+            submit_ns.push(timing.submit_ns);
+            dispatches.push(timing.dispatches);
+            active_weight_bytes.push(session.last_active_weight_bytes());
+            let mut logits = session.read_f32_workspace("logits", QWEN38_VOCAB)?;
+            constraint.mask_logits(vocab, &mut logits);
+            if !logits.iter().any(|v| v.is_finite()) {
+                return Err(Error::Model(format!(
+                    "json constraint masked every token at generated position {}",
+                    tokens.len() - prompt.len()
+                )));
+            }
+            let sampled = argmax_f32_metal_tiebreak(&logits);
+            tokens.push(sampled);
+            next = sampled;
+            constraint.advance(&tokenizer.decode_one(sampled).unwrap_or_default());
+        }
+        let decode_wall_ns = decode.elapsed().as_nanos() as u64;
+        let decode_steps = tokens.len().saturating_sub(prompt.len()).saturating_sub(1);
+        Ok(Qwen38GenerateResult {
+            tokens,
+            prompt_len: prompt.len(),
+            wall_ns: wall.elapsed().as_nanos() as u64,
+            gpu_ns,
+            wait_ns,
+            encode_ns,
+            submit_ns,
+            dispatches,
+            active_weight_bytes,
+            fallbacks: session.fallbacks,
+            dense_w_materialized: session.dense_w_materialized,
+            resident_weight_bytes: session.resident_weight_bytes(),
+            workspace_resident_bytes: session.workspace_resident_bytes(),
+            first_step_wall_ns,
+            prefill_wall_ns,
+            decode_wall_ns,
+            decode_steps,
+            wall_ns_per_step,
+        })
+    }
+
     /// Greedy generation for an explicitly selected resident serving path.
     ///
     /// Unlike [`generate_greedy`], this does not allocate per-token timing
@@ -7961,7 +8086,7 @@ impl Qwen38GenerateResult {
 
 #[cfg(target_os = "macos")]
 pub use device::{
-    generate_greedy, generate_greedy_complete_wall, generate_greedy_parallel,
+    generate_constrained, generate_greedy, generate_greedy_complete_wall, generate_greedy_parallel,
     generate_greedy_unmeasured,
     measure_shared_weight_fanout, Qwen38HybridDecodeSession, Qwen38HybridWeights,
     Qwen38WeightFanout,
