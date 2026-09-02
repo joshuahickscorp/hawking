@@ -539,3 +539,46 @@ def test_rank_sweep_reuses_one_eigendecomposition_and_nothing_else(monkeypatch):
     # And the original bank, asked again after eviction, still answers correctly.
     monkeypatch.setattr(np.linalg, "eigh", real_eigh)
     assert np.array_equal(rcs.right_basis(bank, 4), swept[4])
+
+
+def test_top_eigh_is_the_TOP_eigenspace_not_merely_some_k_columns():
+    """The defining property, which nothing else in this file pins.
+
+    _top_eigh underwrites left_basis, right_basis, residual_factors and
+    residual_factors_batch -- every factorization here. Inverting its slice to
+    `evecs[:, :rank]` returns the eigenvectors of the SMALLEST eigenvalues: the
+    worst rank-k subspace instead of the best. That mutation survived all 19 fast
+    tests in this file, because test_left_basis_is_the_output_side asserts only
+    SHAPES (both slices are the same shape) and the threading test compares the
+    serial path against the threaded one (both would be equally wrong).
+
+    A comparison of two paths through the same function cannot detect a fault in
+    that function. This asserts the property against an independent reference.
+    """
+    rng = np.random.default_rng(3)
+    a = rng.standard_normal((40, 12), dtype=np.float32).astype(np.float64)
+    gram = a @ a.T
+    rank = 4
+
+    got = rcs._top_eigh(gram, rank)
+    assert got.shape == (40, rank)
+
+    evals, evecs = np.linalg.eigh(gram)
+    top = evecs[:, -rank:]
+    bottom = evecs[:, :rank]
+
+    # Energy captured, computed independently of which columns were returned.
+    def captured(basis):
+        basis = basis.astype(np.float64, copy=False)
+        return float(np.trace(basis.T @ gram @ basis))
+
+    assert captured(got) > captured(bottom), "returned the WORST rank-k subspace"
+    # rel=1e-6, not tighter: _top_eigh returns float32, the reference is float64,
+    # and the gap between them here is 4e-9 relative -- float32 rounding, not a
+    # different subspace. The load-bearing comparison is the one above, which the
+    # inverted slice fails by a factor of ~100.
+    assert captured(got) == pytest.approx(captured(top), rel=1e-6)
+
+    # And it really is the maximiser: no other rank-k eigen-subspace beats it.
+    best = float(np.sort(evals)[-rank:].sum())
+    assert captured(got) == pytest.approx(best, rel=1e-6)
