@@ -47,13 +47,20 @@ def body_files(body: Path) -> list[Path]:
                   and CACHE not in p.relative_to(body).parts)
 
 
-def hub_metadata(body: Path) -> tuple[str | None, set[str], list[str]]:
-    """(commit sha, body-relative paths with an etag, disagreeing shas)."""
+def hub_metadata(body: Path) -> tuple[str | None, set[str], list[str], float | None]:
+    """(commit sha, body-relative paths with an etag, disagreeing shas, last write).
+
+    Line 3 of a .metadata file is the epoch second `hf` finished writing that
+    file. The latest one across the body is when the specimen finished landing --
+    an observation, not a guess, and the only acquisition time recoverable for a
+    body whose manifest was never written.
+    """
     root = body / CACHE / HUB_META
     if not root.is_dir():
-        return None, set(), []
+        return None, set(), [], None
     shas: dict[str, int] = {}
     with_etag: set[str] = set()
+    stamps: list[float] = []
     for meta in root.rglob("*.metadata"):
         try:
             lines = meta.read_text(encoding="utf-8").splitlines()
@@ -65,10 +72,16 @@ def hub_metadata(body: Path) -> tuple[str | None, set[str], list[str]]:
         if len(lines) > 1 and lines[1].strip():
             rel = str(meta.relative_to(root))[: -len(".metadata")]
             with_etag.add(rel)
+        if len(lines) > 2:
+            try:
+                stamps.append(float(lines[2].strip()))
+            except ValueError:
+                pass
     if not shas:
-        return None, set(), []
+        return None, set(), [], None
     winner = max(shas, key=lambda s: shas[s])
-    return winner, with_etag, sorted(s for s in shas if s != winner)
+    return (winner, with_etag, sorted(s for s in shas if s != winner),
+            max(stamps) if stamps else None)
 
 
 def split_slug(slug: str) -> tuple[str, str]:
@@ -84,7 +97,7 @@ def split_slug(slug: str) -> tuple[str, str]:
 def build(body: Path) -> dict:
     slug = body.name
     repo, rev12 = split_slug(slug)
-    sha, with_etag, disagreeing = hub_metadata(body)
+    sha, with_etag, disagreeing, landed_at = hub_metadata(body)
     if sha is None:
         return {"slug": slug, "written": False,
                 "why": "no .cache/huggingface/download metadata: revision is not "
@@ -99,7 +112,7 @@ def build(body: Path) -> dict:
         "bytes": sum(f.stat().st_size for f in files), "n_files": len(files),
         "n_files_with_hub_etag": len(with_etag),
         "reacquisition": f"hf download {repo} --revision {sha} --local-dir <dest>",
-        "disagreeing_shas": disagreeing,
+        "disagreeing_shas": disagreeing, "landed_at": landed_at,
     }
 
 
@@ -114,6 +127,15 @@ def manifest_doc(rec: dict, *, prior: dict | None = None) -> dict:
             out.setdefault("bytes_allocated", out["bytes"])
         out["bytes"] = rec["bytes"]
         out["bytes_are"] = "sum of st_size over regular files outside .cache"
+        # A manifest this tool wrote before it read the landing timestamps has a
+        # null acquired_at, and specimen_registry refuses a seal without one.
+        # Fill it from the body's own record; never overwrite a real one.
+        if not out.get("acquired_at") and rec["landed_at"]:
+            out["acquired_at"] = time.strftime(
+                "%Y-%m-%dT%H:%M:%SZ", time.gmtime(rec["landed_at"]))
+            out.setdefault("backfill", {})["acquired_at_source"] = (
+                "latest write timestamp across the body's .metadata files (line 3), "
+                "i.e. when the last file landed. Observed, not invented.")
         out["restated_at"] = now
         return out
     doc = {
@@ -122,7 +144,8 @@ def manifest_doc(rec: dict, *, prior: dict | None = None) -> dict:
         "bytes": rec["bytes"],
         "bytes_are": "sum of st_size over regular files outside .cache",
         "n_files": rec["n_files"],
-        "acquired_at": None,
+        "acquired_at": (time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(rec["landed_at"]))
+                        if rec["landed_at"] else None),
         "reacquisition": rec["reacquisition"],
         "provenance": "backfill",
         "backfill": {
@@ -133,6 +156,10 @@ def manifest_doc(rec: dict, *, prior: dict | None = None) -> dict:
             "n_files_without_hub_etag": rec["n_files"] - rec["n_files_with_hub_etag"],
             "verified_now": "revision and byte count only. Per-file sha256 was checked "
                             "by `hf` at download time and is NOT re-checked here.",
+            "acquired_at_source": "latest write timestamp across the body's .metadata "
+                                  "files (line 3), i.e. when the last file landed. "
+                                  "Observed, not the wall time acquire() would have "
+                                  "recorded, and not invented.",
             "backfilled_at": now,
         },
     }
@@ -196,6 +223,10 @@ def demo() -> None:
         rec = build(body)
         assert rec["written"] and rec["bytes"] == 100 and rec["n_files"] == 1, rec
         assert rec["n_files_with_hub_etag"] == 1, rec
+        # acquired_at must come from the recorded landing time, never be null
+        # for a body that has one: specimen_registry rejects a seal without it.
+        assert rec["landed_at"] == 1.0, rec
+        assert manifest_doc(rec)["acquired_at"] == "1970-01-01T00:00:01Z"
         # a body whose metadata names a different commit must be refused, not written
         (meta / "w.safetensors.metadata").write_text("b" * 40 + "\netag\n1.0\n")
         assert build(body)["written"] is False, "revision mismatch must refuse"

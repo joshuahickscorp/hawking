@@ -150,8 +150,8 @@
    "openai--whisper-large-v3-turbo@41f01f3fe87f"
   ]
  },
- "build_wall_s": 32.641998,
- "built_at": "2026-09-02T18:58:01Z",
+ "build_wall_s": 2.859878,
+ "built_at": "2026-09-02T20:54:46Z",
  "bytes_are": "sum of st_size over regular files in specimens/ and partial/; directory metadata is not included. This is not `du` allocated blocks.",
  "dropped_slugs": [],
  "evidence_tier": "STATIC",
@@ -2584,7 +2584,7 @@
  "tier2_used_bytes": 4352666459500,
  "tier2_used_gb": 4352.666,
  "tier2_used_minus_budget": 852666459500,
- "written_index_bytes": 490126,
+ "written_index_bytes": 490125,
  "written_index_paths": [
   "receipts/future/modellake-index/by-slug/Dream-org--Dream-v0-Instruct-7B@05334cb9faaf.json",
   "receipts/future/modellake-index/by-slug/GSAI-ML--iLLaDA-8B-Base@a1b5b5f8a31a.json",
