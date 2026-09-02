@@ -1,0 +1,329 @@
+{
+ "authority": "H-ROADMAP \u00a76 the three Odysseys and the work-unit law; II-A / III-A gene cards; a candidate law emits TRANSFER_TEST and LAW_ATTACK WorkUnits",
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-02T09:05:22Z",
+  "recorded_by": "tools/future/scar_reevaluator.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "claim_boundary_reminder": "STATIC. The law's DIAGNOSTIC_RELATIVE evidence_strength is copied as identity, not remeasured. Scope on the unit is the origin. The target specimen is the experiment, not a silent promotion.",
+ "evidence_class": "STATIC",
+ "evidence_receipt": "receipts/headless/ODYSSEY_TRANSFER_PROVEN.json",
+ "gaps_closed": [
+  "Recovered LAW-COLD-CONTROL-BEAT-TRANSFER-SEED from receipts/future/ODYSSEY2_LAW_STORE.json (evidence receipts/headless/ODYSSEY_TRANSFER_PROVEN.json); did not invent a law.",
+  "TRANSFER_TEST future.TRANSFER_TEST.LAW-COLD-CONTROL-BEAT-TRANSFER-SEED.Qwen3.8-Flash-Next targets Qwen3.8-Flash-Next family=qwen4_exp (source family qwen3_moe).",
+  "LAW_ATTACK future.LAW_ATTACK.LAW-COLD-CONTROL-BEAT-TRANSFER-SEED.measurement_trap selected LAW-COLD-CONTROL-BEAT-TRANSFER-SEED::measurement_trap.",
+  "Both units carry scope_binding, falsifier, result_that_would_retire.",
+  "JSON round-trip preserves the measured lattice; dropping or widening the binding fails.",
+  "No Odyssey I completion barrier."
+ ],
+ "gates_invoked": [
+  "tools.future.autonomy_scars.law_from_odyssey2_record",
+  "tools.future.autonomy_scars.round_trip_law",
+  "tools.future.odyssey2_law_store.load_repo_json",
+  "tools.future.odyssey2_law_store.validate_law",
+  "tools.future.odyssey2_transfer.may_transfer",
+  "tools.future.odyssey2_transfer.odyssey_i_barrier",
+  "tools.future.odyssey2_transfer.require_sealed",
+  "tools.future.odyssey3_adversary.emit_for_law",
+  "tools.future.odyssey3_adversary.generate_attacks",
+  "tools.future.odyssey3_adversary.validate_law",
+  "tools.future.odyssey3_attack.to_o3_law",
+  "tools.future.workunit_species.emit_hcli_workunit",
+  "tools.future.workunit_species.validate_emitted_unit"
+ ],
+ "gpu_authority": false,
+ "law_attack": {
+  "assigned_backend": null,
+  "assigned_runtime": null,
+  "attack_falsifier": "any control fires: scale-invariant cosine certifies 0.01*W, SKIPPED tests count as passes, or a checked-in receipt is treated as a run",
+  "attempts": 0,
+  "backend_task_id": null,
+  "catalog_species": "odyssey_iii_adversarial_experiment",
+  "claim_boundary": "WorkUnit is a proposal. A SURVIVED attack is a result. Scope is the law's measured origin; a hit moves scope DOWN only through odyssey3_adversary.apply_result, not this emit.",
+  "classification": "STATIC_ONLY",
+  "content_hash": "4895c4bd7b8118323352e1b532e24117ce237ae918bbd5b87b63357a3c425b2b",
+  "dependencies": [],
+  "description": "LAW_ATTACK on LAW-COLD-CONTROL-BEAT-TRANSFER-SEED via measurement_trap (scope MODEL_LOCAL). Falsifier: a pre-registered landing target on this organ where the transfer seed uses strictly fewer evaluations than cold AND lands at equal or better held-out rel_fro; until then the savings claim is refuted here. Attack falsifier: any control fires: scale-invariant cosine certifies 0.01*W, SKIPPED tests count as passes, or a checked-in receipt is treated as a run",
+  "does_not_widen_scope": true,
+  "effect_class": "READ_ONLY",
+  "evidence_class": "STATIC",
+  "evidence_refs": [
+   "receipts/headless/ODYSSEY_TRANSFER_PROVEN.json"
+  ],
+  "failure_context": null,
+  "falsifier": "a pre-registered landing target on this organ where the transfer seed uses strictly fewer evaluations than cold AND lands at equal or better held-out rel_fro; until then the savings claim is refuted here",
+  "finished_at": null,
+  "gates_invoked": [
+   "tools.future.odyssey3_attack.to_o3_law",
+   "tools.future.odyssey3_adversary.validate_law",
+   "tools.future.odyssey3_adversary.generate_attacks",
+   "tools.future.odyssey3_adversary.emit_for_law",
+   "tools.future.workunit_species.emit_hcli_workunit",
+   "tools.future.workunit_species.validate_emitted_unit"
+  ],
+  "id": "future.LAW_ATTACK.LAW-COLD-CONTROL-BEAT-TRANSFER-SEED.measurement_trap",
+  "law_id": "LAW-COLD-CONTROL-BEAT-TRANSFER-SEED",
+  "n_attacks": 9,
+  "n_generate_attacks": 9,
+  "o3_scope": "MODEL_LOCAL",
+  "o3_spec": {
+   "adversarial_target": "harness_self_measure_controls",
+   "attack_id": "LAW-COLD-CONTROL-BEAT-TRANSFER-SEED::measurement_trap",
+   "command": [
+    "python3",
+    "tools/future/odyssey3_adversary.py",
+    "--replay-attack",
+    "LAW-COLD-CONTROL-BEAT-TRANSFER-SEED::measurement_trap"
+   ],
+   "expected_if_law_false": {
+    "harness_self_measure": true,
+    "note": "a control with the mechanism absent produced an 'effect'"
+   },
+   "expected_if_law_holds": {
+    "harness_self_measure": false,
+    "receipt_reread_trap_fired": false,
+    "scale_invariance_trap_fired": false,
+    "skip_as_pass_trap_fired": false
+   },
+   "falsifier": "any control fires: scale-invariant cosine certifies 0.01*W, SKIPPED tests count as passes, or a checked-in receipt is treated as a run",
+   "family": "measurement_trap",
+   "target_scope_if_refuted": "REFUTED",
+   "transfer_hypothesis": "the metric named by LAW-COLD-CONTROL-BEAT-TRANSFER-SEED measures the organ, not the harness"
+  },
+  "odyssey": "III",
+  "odyssey_i_barrier": null,
+  "preferred_backend": null,
+  "provider": "future.scar_reevaluator",
+  "ranked_attack_ids": [
+   "LAW-COLD-CONTROL-BEAT-TRANSFER-SEED::measurement_trap",
+   "LAW-COLD-CONTROL-BEAT-TRANSFER-SEED::blind_holdout",
+   "LAW-COLD-CONTROL-BEAT-TRANSFER-SEED::causal_control",
+   "LAW-COLD-CONTROL-BEAT-TRANSFER-SEED::goodhart",
+   "LAW-COLD-CONTROL-BEAT-TRANSFER-SEED::law_scope",
+   "LAW-COLD-CONTROL-BEAT-TRANSFER-SEED::contamination_trap",
+   "LAW-COLD-CONTROL-BEAT-TRANSFER-SEED::representation_overfit",
+   "LAW-COLD-CONTROL-BEAT-TRANSFER-SEED::compiler_prior",
+   "LAW-COLD-CONTROL-BEAT-TRANSFER-SEED::negative_transfer"
+  ],
+  "ready_at": null,
+  "repair_depth": 0,
+  "repair_exhausted": false,
+  "repair_reason": null,
+  "repair_root": null,
+  "repairs": null,
+  "requires_quiescence": false,
+  "resource_class": "STATIC_ANALYSIS",
+  "result_that_would_retire": {
+   "does_not_delete_the_law": true,
+   "does_not_widen_scope": true,
+   "expected_if_law_false": {
+    "harness_self_measure": true,
+    "note": "a control with the mechanism absent produced an 'effect'"
+   },
+   "on_the_law": "a pre-registered landing target on this organ where the transfer seed uses strictly fewer evaluations than cold AND lands at equal or better held-out rel_fro; until then the savings claim is refuted here",
+   "on_this_unit": "any control fires: scale-invariant cosine certifies 0.01*W, SKIPPED tests count as passes, or a checked-in receipt is treated as a run",
+   "target_scope_if_refuted": "REFUTED",
+   "verdict_that_retires": "REFUTED"
+  },
+  "role": "science",
+  "running_at": null,
+  "scope_after_emit": "MODEL_LOCAL",
+  "scope_binding": {
+   "architecture_family": "qwen3_moe",
+   "backend": "UNKNOWN",
+   "evidence_refs": [
+    "receipts/headless/ODYSSEY_TRANSFER_PROVEN.json"
+   ],
+   "falsifier": "a pre-registered landing target on this organ where the transfer seed uses strictly fewer evaluations than cold AND lands at equal or better held-out rel_fro; until then the savings claim is refuted here",
+   "lattice": "MODEL_LOCAL",
+   "law_id": "LAW-COLD-CONTROL-BEAT-TRANSFER-SEED",
+   "machine": "UNKNOWN",
+   "models": [
+    "qwen3-30b-a3b"
+   ],
+   "organ_class": "moe_expert",
+   "organs": [
+    "moe_expert"
+   ],
+   "source_device": "UNKNOWN",
+   "source_model": "Qwen/Qwen3-30B-A3B",
+   "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json"
+  },
+  "selected_attack_id": "LAW-COLD-CONTROL-BEAT-TRANSFER-SEED::measurement_trap",
+  "selected_family": "measurement_trap",
+  "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+  "species": "LAW_ATTACK",
+  "statement": "On Qwen3-30B-A3B moe_expert layer 2, under the pre-registered loose landing target (held-out rel_fro <= 1.15x of uniform q4 g64), the COLD arm landed in 2 evaluations and the ODYSSEY_TRANSFER seed landed in 10; evaluations_avoided=-8. The transfer signal is in the matched-bits comparison (seeded affine wins 3/3 tiers), not in search-length. Values did not save experiments; the method still discriminated at matched bits.",
+  "status": "pending",
+  "verification": null,
+  "verifier": "future.odyssey_iii.adversary",
+  "workspace": "repo-root"
+ },
+ "mutation_check": {
+  "law_attack": {
+   "evidence_class": "STATIC",
+   "fails_when_lattice_silently_widened": true,
+   "fails_when_scope_binding_dropped": true,
+   "fails_when_scope_binding_emptied": true,
+   "intact_on_emitted_unit": true,
+   "raises_when_scope_binding_dropped": true
+  },
+  "transfer_test": {
+   "evidence_class": "STATIC",
+   "fails_when_lattice_silently_widened": true,
+   "fails_when_scope_binding_dropped": true,
+   "fails_when_scope_binding_emptied": true,
+   "intact_on_emitted_unit": true,
+   "raises_when_scope_binding_dropped": true
+  }
+ },
+ "named_law": {
+  "architecture_family": "qwen3_moe",
+  "evidence_refs": [
+   "receipts/headless/ODYSSEY_TRANSFER_PROVEN.json"
+  ],
+  "falsifier": "a pre-registered landing target on this organ where the transfer seed uses strictly fewer evaluations than cold AND lands at equal or better held-out rel_fro; until then the savings claim is refuted here",
+  "law_id": "LAW-COLD-CONTROL-BEAT-TRANSFER-SEED",
+  "named": true,
+  "organ_class": "moe_expert",
+  "scope": "MODEL_LOCAL",
+  "source_model": "Qwen/Qwen3-30B-A3B",
+  "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+  "statement": "On Qwen3-30B-A3B moe_expert layer 2, under the pre-registered loose landing target (held-out rel_fro <= 1.15x of uniform q4 g64), the COLD arm landed in 2 evaluations and the ODYSSEY_TRANSFER seed landed in 10; evaluations_avoided=-8. The transfer signal is in the matched-bits comparison (seeded affine wins 3/3 tiers), not in search-length. Values did not save experiments; the method still discriminated at matched bits."
+ },
+ "negative_findings": [
+  "STATIC plumbing: neither unit ran a GPU or measured the target.",
+  "TRANSFER_TEST does not widen MODEL_LOCAL even if a later measurement holds.",
+  "LAW_ATTACK does not apply_result here; a hit still has to go through the III loop.",
+  "Flash physical_status in the II school table is metadata_only; the B-side used is the sealed WHOLE_TREE_VERIFIED identity, not a fabricated weight presence."
+ ],
+ "odyssey": "II WHAT DID HAWKING ALREADY LEARN? / III WHERE IS HAWKING WRONG?",
+ "odyssey_i_barrier": null,
+ "purpose": "Odyssey II/III activation plumbing: a recovered LAW emits a TRANSFER_TEST WorkUnit (same mechanism, different specimen/architecture) and a LAW_ATTACK WorkUnit (adversarial falsifier). Both carry the law's measured scope, its falsifier, and the result that would retire it. Scope is copied, never widened.",
+ "recovered_implementation": {
+  "autonomy_scars": "law_from_odyssey2_record + round_trip_law + Scope axes",
+  "not_a_fork": true,
+  "odyssey2_law_store": "LAW-COLD-CONTROL-BEAT-TRANSFER-SEED in receipts/future/ODYSSEY2_LAW_STORE.json, seeded from receipts/headless/ODYSSEY_TRANSFER_PROVEN.json; Law field set and sequential lattice consumed, not forked",
+  "odyssey2_transfer": "may_transfer / require_sealed / sealed B-side / no Phase-I barrier",
+  "odyssey3_adversary": "validate_law / generate_attacks / emit_for_law; nine families, ranking",
+  "odyssey3_attack": "to_o3_law projects the II Law onto the III field set",
+  "scar_reevaluator.consult_candidate": "existing HCLI consult path; this emit path is the follow-on",
+  "workunit_species": "emit_hcli_workunit + validate_emitted_unit (HCLI field set)"
+ },
+ "round_trip": {
+  "law_attack_lattice": "MODEL_LOCAL",
+  "scope_survived_law_attack": true,
+  "scope_survived_transfer_test": true,
+  "transfer_test_lattice": "MODEL_LOCAL"
+ },
+ "schema": "hawking.future.odyssey_ii_iii_activation.v1",
+ "seal_sha256": "266631f2bfc7623d8c31c7c79402e4d573bf8e13d8eb0a7c0aa76c534548b774",
+ "source_receipt": "receipts/future/ODYSSEY2_LAW_STORE.json",
+ "transfer_test": {
+  "assigned_backend": null,
+  "assigned_runtime": null,
+  "attempts": 0,
+  "backend_task_id": null,
+  "catalog_species": "odyssey_ii_transfer_experiment",
+  "claim_boundary": "WorkUnit is a proposal. Scope is the law's measured origin, not the target. A passing diagnostic does not widen MODEL_LOCAL.",
+  "classification": "STATIC_ONLY",
+  "content_hash": "a4589db7127df65199304efc8b7a20518d2ad51b8689706d179b87782df26c82",
+  "dependencies": [],
+  "description": "TRANSFER_TEST of LAW-COLD-CONTROL-BEAT-TRANSFER-SEED (moe_expert on Qwen/Qwen3-30B-A3B, scope MODEL_LOCAL) onto Qwen3.8-Flash-Next family=qwen4_exp. Falsifier: a pre-registered landing target on this organ where the transfer seed uses strictly fewer evaluations than cold AND lands at equal or better held-out rel_fro; until then the savings claim is refuted here",
+  "different_architecture": true,
+  "different_specimen": true,
+  "does_not_widen_scope": true,
+  "effect_class": "READ_ONLY",
+  "evidence_class": "STATIC",
+  "evidence_refs": [
+   "receipts/headless/ODYSSEY_TRANSFER_PROVEN.json"
+  ],
+  "failure_context": null,
+  "falsifier": "a pre-registered landing target on this organ where the transfer seed uses strictly fewer evaluations than cold AND lands at equal or better held-out rel_fro; until then the savings claim is refuted here",
+  "finished_at": null,
+  "from_transfer_candidate": {
+   "confidence": 0.45,
+   "confidence_basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+   "counterexample_requirement": "a pre-registered landing target on this organ where the transfer seed uses strictly fewer evaluations than cold AND lands at equal or better held-out rel_fro; until then the savings claim is refuted here",
+   "source_model": "Qwen/Qwen3-30B-A3B",
+   "source_school": null,
+   "target_architecture_family": "qwen4_exp",
+   "target_model": "Qwen/Qwen3.8-Flash-Next",
+   "target_school": "Flash"
+  },
+  "gates_invoked": [
+   "tools.future.odyssey2_transfer.may_transfer",
+   "tools.future.odyssey2_transfer.require_sealed",
+   "tools.future.odyssey2_transfer.odyssey_i_barrier",
+   "tools.future.workunit_species.emit_hcli_workunit",
+   "tools.future.workunit_species.validate_emitted_unit"
+  ],
+  "id": "future.TRANSFER_TEST.LAW-COLD-CONTROL-BEAT-TRANSFER-SEED.Qwen3.8-Flash-Next",
+  "law_id": "LAW-COLD-CONTROL-BEAT-TRANSFER-SEED",
+  "may_transfer": true,
+  "mechanism": "moe_expert",
+  "odyssey": "II",
+  "odyssey_i_barrier": null,
+  "preferred_backend": null,
+  "provider": "future.scar_reevaluator",
+  "ready_at": null,
+  "repair_depth": 0,
+  "repair_exhausted": false,
+  "repair_reason": null,
+  "repair_root": null,
+  "repairs": null,
+  "requires_quiescence": false,
+  "resource_class": "STATIC_ANALYSIS",
+  "result_that_would_retire": {
+   "does_not_delete_the_law": true,
+   "does_not_widen_scope": true,
+   "on_the_law": "a pre-registered landing target on this organ where the transfer seed uses strictly fewer evaluations than cold AND lands at equal or better held-out rel_fro; until then the savings claim is refuted here",
+   "on_this_unit": "TRANSFER_FAILED: the statement does not hold on Qwen--Qwen3.8-Flash-Next@34567a4712bc (family qwen4_exp). The law stays at MODEL_LOCAL on Qwen/Qwen3-30B-A3B/moe_expert and must not be quoted as generic.",
+   "would_also_retire_the_law": "a pre-registered landing target on this organ where the transfer seed uses strictly fewer evaluations than cold AND lands at equal or better held-out rel_fro; until then the savings claim is refuted here"
+  },
+  "role": "science",
+  "running_at": null,
+  "same_mechanism": true,
+  "scope_after_emit": "MODEL_LOCAL",
+  "scope_binding": {
+   "architecture_family": "qwen3_moe",
+   "backend": "UNKNOWN",
+   "evidence_refs": [
+    "receipts/headless/ODYSSEY_TRANSFER_PROVEN.json"
+   ],
+   "falsifier": "a pre-registered landing target on this organ where the transfer seed uses strictly fewer evaluations than cold AND lands at equal or better held-out rel_fro; until then the savings claim is refuted here",
+   "lattice": "MODEL_LOCAL",
+   "law_id": "LAW-COLD-CONTROL-BEAT-TRANSFER-SEED",
+   "machine": "UNKNOWN",
+   "models": [
+    "qwen3-30b-a3b"
+   ],
+   "organ_class": "moe_expert",
+   "organs": [
+    "moe_expert"
+   ],
+   "source_device": "UNKNOWN",
+   "source_model": "Qwen/Qwen3-30B-A3B",
+   "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json"
+  },
+  "source_architecture_family": "qwen3_moe",
+  "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+  "species": "TRANSFER_TEST",
+  "statement": "On Qwen3-30B-A3B moe_expert layer 2, under the pre-registered loose landing target (held-out rel_fro <= 1.15x of uniform q4 g64), the COLD arm landed in 2 evaluations and the ODYSSEY_TRANSFER seed landed in 10; evaluations_avoided=-8. The transfer signal is in the matched-bits comparison (seeded affine wins 3/3 tiers), not in search-length. Values did not save experiments; the method still discriminated at matched bits.",
+  "status": "pending",
+  "target_alias": "Qwen3.8-Flash-Next",
+  "target_architecture_family": "qwen4_exp",
+  "target_repo": "Qwen/Qwen3.8-Flash-Next",
+  "target_specimen": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+  "target_whole_tree_verified": true,
+  "verification": null,
+  "verifier": "future.odyssey_ii.law_scope",
+  "workspace": "repo-root"
+ },
+ "version": 1
+}
