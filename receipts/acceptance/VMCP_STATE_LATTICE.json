@@ -1,0 +1,380 @@
+{
+  "blocker": null,
+  "checks": [
+    {
+      "detail": [
+        "DEEP_DIGEST",
+        "DIRECTOR_STATE",
+        "TRUTH_LEDGER",
+        "ASSET_LATTICE",
+        "DECODE_LATTICE",
+        "ENTITY_GENOME",
+        "RENDER_GENOME",
+        "SPATIAL_GENOME",
+        "REPAIR_VECTOR",
+        "PERFORMANCE_LEDGER"
+      ],
+      "id": "ten_named_slots",
+      "ok": true
+    },
+    {
+      "detail": {
+        "ASSET_LATTICE": "DETECTED",
+        "DECODE_LATTICE": "DETECTED",
+        "DEEP_DIGEST": "DETECTED",
+        "ENTITY_GENOME": "DETECTED",
+        "PERFORMANCE_LEDGER": "DETECTED",
+        "RENDER_GENOME": "DETECTED",
+        "REPAIR_VECTOR": "DETECTED",
+        "SPATIAL_GENOME": "DETECTED",
+        "TRUTH_LEDGER": "DETECTED"
+      },
+      "id": "consolidate_canaries_detected",
+      "ok": true
+    },
+    {
+      "detail": {
+        "canary_verdict": "N/A",
+        "disposition": "REJECT",
+        "name": "DIRECTOR_STATE",
+        "named_type_present": false,
+        "proof_keys": [
+          "director_classes",
+          "named_type_present",
+          "negative_science"
+        ]
+      },
+      "id": "director_state_rejected_not_faked",
+      "ok": true
+    },
+    {
+      "detail": "082fb050fae3d7f05a5ad4a95037560fa6c8d4ead273afc8bf680f3b1258373d",
+      "id": "content_digest_called",
+      "ok": true
+    },
+    {
+      "detail": "c2985c5ba6f7d2a55e768f92490ca09388e95bc4cccb9fdf11b15f4d42f93e73",
+      "id": "deep_digest_key_order_stable",
+      "ok": true
+    }
+  ],
+  "claim_boundary": "FUNCTIONAL_SIM / STATIC acceptance evidence. No claim that VisionMCP web/3d extras, Blender, Chrome, FPGA, DGX or eGPU ran unless a check records that binary on PATH. An empty collection is not evidence of absence.",
+  "command": [
+    "python3",
+    "-m",
+    "tools.acceptance.vmcp",
+    "--gate",
+    "VMCP_STATE_LATTICE"
+  ],
+  "criterion": {
+    "end_line": 7738,
+    "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "quoted": "## E.2 State lattice schemas\n\n```text\nDEEP_DIGEST\n    digest of canonical sensory/execution state\n\nASSET_LATTICE\n    asset_id, source, sha256, type, size, decoded, ownership, uses\n\nDECODE_LATTICE\n    input_hash, transform, output_hash, confidence, recovered artifacts\n\nENTITY_GENOME\n    entity_id, name, kind, evidence, confidence, parent/children\n\nRENDER_GENOME\n    node, text, image, font, color, background, border, radius, shadow, transform, layout\n\nSPATIAL_GENOME\n    object, dimensions, faces, normals, UVs, materials, parts, evidence, origin\n\nREPAIR_VECTOR\n    residual, cause, next_action\n\nDIRECTOR_STATE\n    phase, target, residuals, blocked_gates, next_actions, deep_digest\n\nPERFORMANCE_LEDGER\n    per-act latency, tool p95, build/render/verify costs\n\nTRUTH_LEDGER\n    claims, evidence, counterevidence, confidence, blockers, no_op_detected\n```",
+    "start_line": 7706,
+    "weakened": false
+  },
+  "criterion_weakened": false,
+  "elapsed_ms": 509.081,
+  "evidence_tier": "FUNCTIONAL_SIM",
+  "gate": "VMCP_STATE_LATTICE",
+  "generated_at": "2026-09-02T09:12:15Z",
+  "gpu_authority": false,
+  "invoked_symbols": [
+    {
+      "elapsed_ms": 0.101,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "tools.headless.vmcp_lattice_disposition.locate_visionmcp_src"
+    },
+    {
+      "elapsed_ms": 135.922,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "tools.headless.vmcp_lattice_disposition._load_vm"
+    },
+    {
+      "elapsed_ms": 193.255,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "tools.headless.vmcp_lattice_disposition._name_scan"
+    },
+    {
+      "elapsed_ms": 172.278,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "tools.headless.vmcp_lattice_disposition.prove_deep_digest"
+    },
+    {
+      "elapsed_ms": null,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "tools.headless.vmcp_lattice_disposition.prove_director_state"
+    },
+    {
+      "elapsed_ms": null,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "tools.headless.vmcp_lattice_disposition.prove_truth_ledger"
+    },
+    {
+      "elapsed_ms": null,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "tools.headless.vmcp_lattice_disposition.prove_asset_lattice"
+    },
+    {
+      "elapsed_ms": null,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "tools.headless.vmcp_lattice_disposition.prove_decode_lattice"
+    },
+    {
+      "elapsed_ms": null,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "tools.headless.vmcp_lattice_disposition.prove_entity_genome"
+    },
+    {
+      "elapsed_ms": null,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "tools.headless.vmcp_lattice_disposition.prove_render_genome"
+    },
+    {
+      "elapsed_ms": null,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "tools.headless.vmcp_lattice_disposition.prove_spatial_genome"
+    },
+    {
+      "elapsed_ms": null,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "tools.headless.vmcp_lattice_disposition.prove_repair_vector"
+    },
+    {
+      "elapsed_ms": null,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "tools.headless.vmcp_lattice_disposition.prove_performance_ledger"
+    },
+    {
+      "elapsed_ms": 0.014,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "visionmcp.worldir.canonical.content_digest"
+    }
+  ],
+  "measured": {
+    "consolidate": [
+      "DEEP_DIGEST",
+      "TRUTH_LEDGER",
+      "ASSET_LATTICE",
+      "DECODE_LATTICE",
+      "ENTITY_GENOME",
+      "RENDER_GENOME",
+      "SPATIAL_GENOME",
+      "REPAIR_VECTOR",
+      "PERFORMANCE_LEDGER"
+    ],
+    "content_digest": "082fb050fae3d7f05a5ad4a95037560fa6c8d4ead273afc8bf680f3b1258373d",
+    "n_slots": 10,
+    "reject": [
+      "DIRECTOR_STATE"
+    ]
+  },
+  "output": {
+    "deep_digest_proof": {
+      "canonical_key_order_stable": true,
+      "canonical_value_mutation_detected": true,
+      "mutated_digest": "51221262a85f34235978c8dc712134f6e04b6078190d87ef73bee21422c8af3e",
+      "schema_hash_matches_frozen": true,
+      "stable_digest_a": "c2985c5ba6f7d2a55e768f92490ca09388e95bc4cccb9fdf11b15f4d42f93e73"
+    },
+    "rows": [
+      {
+        "canary_verdict": "DETECTED",
+        "disposition": "CONSOLIDATE",
+        "name": "DEEP_DIGEST",
+        "named_type_present": false,
+        "proof_keys": [
+          "canonical_key_order_stable",
+          "canonical_value_mutation_detected",
+          "digest_functions_already_in_tree",
+          "frozen_schema_hash",
+          "live_schema_hash",
+          "migrate_deep_digest_schema",
+          "mutated_digest",
+          "named_type_present",
+          "negative_science",
+          "one_byte_schema_flip_detected",
+          "one_byte_schema_flip_hash",
+          "schema",
+          "schema_hash_matches_frozen",
+          "schema_version",
+          "stable_digest_a"
+        ]
+      },
+      {
+        "canary_verdict": "N/A",
+        "disposition": "REJECT",
+        "name": "DIRECTOR_STATE",
+        "named_type_present": false,
+        "proof_keys": [
+          "director_classes",
+          "named_type_present",
+          "negative_science"
+        ]
+      },
+      {
+        "canary_verdict": "DETECTED",
+        "disposition": "CONSOLIDATE",
+        "name": "TRUTH_LEDGER",
+        "named_type_present": false,
+        "proof_keys": [
+          "append_only_update_trigger",
+          "atomic_crash_mid_insert",
+          "binding_count",
+          "content_hash",
+          "durable_put_snapshot",
+          "freshness",
+          "from_dict_forged_claim",
+          "graph_id",
+          "provenance",
+          "reload_matches",
+          "schema",
+          "support_for",
+          "verify_content_hash_after_claim_forge",
+          "verify_content_hash_clean",
+          "wrong_schema_version"
+        ]
+      },
+      {
+        "canary_verdict": "DETECTED",
+        "disposition": "CONSOLIDATE",
+        "name": "ASSET_LATTICE",
+        "named_type_present": false,
+        "proof_keys": [
+          "atomic_write_crash",
+          "cas_byte_tamper",
+          "cas_digest",
+          "cas_verify_after_restore",
+          "cas_verify_clean",
+          "ingest_uses_os_replace",
+          "project_id",
+          "project_schema_version",
+          "resource_content_hash",
+          "resource_digest_tamper",
+          "resource_media_type_tamper",
+          "resource_schema_version"
+        ]
+      },
+      {
+        "canary_verdict": "DETECTED",
+        "disposition": "CONSOLIDATE",
+        "name": "DECODE_LATTICE",
+        "named_type_present": false,
+        "proof_keys": [
+          "binary_content_hash",
+          "binary_format_tamper",
+          "binary_wrong_domain",
+          "program_content_hash",
+          "program_language_tamper",
+          "program_schema_version",
+          "program_source_content_hash",
+          "program_source_hash_tamper"
+        ]
+      },
+      {
+        "canary_verdict": "DETECTED",
+        "disposition": "CONSOLIDATE",
+        "name": "ENTITY_GENOME",
+        "named_type_present": false,
+        "proof_keys": [
+          "entity_version_forged_hash",
+          "entity_version_hash",
+          "entity_version_lying_hash",
+          "memory_schema",
+          "memory_store_pk_payload_swap",
+          "worldir_entity_hash",
+          "worldir_entity_type_tamper",
+          "worldir_wrong_schema"
+        ]
+      },
+      {
+        "canary_verdict": "DETECTED",
+        "disposition": "CONSOLIDATE",
+        "name": "RENDER_GENOME",
+        "named_type_present": false,
+        "proof_keys": [
+          "geometry_dimensions_tamper",
+          "geometry_hash",
+          "kernel_record",
+          "surface_hash",
+          "surface_material_tamper",
+          "surface_visible_tamper"
+        ]
+      },
+      {
+        "canary_verdict": "DETECTED",
+        "disposition": "CONSOLIDATE",
+        "name": "SPATIAL_GENOME",
+        "named_type_present": false,
+        "proof_keys": [
+          "content_hash",
+          "coordinate_system_tamper",
+          "domain",
+          "schema_version",
+          "unit_tamper",
+          "wrong_domain"
+        ]
+      },
+      {
+        "canary_verdict": "DETECTED",
+        "disposition": "CONSOLIDATE",
+        "name": "REPAIR_VECTOR",
+        "named_type_present": false,
+        "proof_keys": [
+          "atomic_save_crash",
+          "attempt_digest",
+          "changed_digest",
+          "ledger_schema",
+          "lying_digest_on_load",
+          "reason_change_live_digest_differs",
+          "reload_matches",
+          "save_load_digest",
+          "threshold_mutation_forbidden"
+        ]
+      },
+      {
+        "canary_verdict": "DETECTED",
+        "disposition": "CONSOLIDATE",
+        "name": "PERFORMANCE_LEDGER",
+        "named_type_present": false,
+        "proof_keys": [
+          "hawking_performance_ledger_row_id",
+          "kernel_has_content_hash",
+          "kernel_speedup_rewrite",
+          "why_evidencegraph_is_stronger"
+        ]
+      }
+    ]
+  },
+  "recorded_by": "tools/acceptance/vmcp/run.py",
+  "schema": "hawking.acceptance.gate.v1",
+  "verdict": "ACCEPTED"
+}

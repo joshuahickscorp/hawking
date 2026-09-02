@@ -1,0 +1,583 @@
+{
+  "blocker": null,
+  "checks": [
+    {
+      "detail": "ok",
+      "id": "e14_shape_see",
+      "ok": true
+    },
+    {
+      "detail": "024586c04ed5fa1d2ae0cbe737af33ed192033ba551752e734b9a098e442bb95",
+      "id": "connected_digest_see",
+      "ok": true
+    },
+    {
+      "detail": "ok",
+      "id": "e14_shape_hold",
+      "ok": true
+    },
+    {
+      "detail": "024586c04ed5fa1d2ae0cbe737af33ed192033ba551752e734b9a098e442bb95",
+      "id": "connected_digest_hold",
+      "ok": true
+    },
+    {
+      "detail": "ok",
+      "id": "e14_shape_open",
+      "ok": true
+    },
+    {
+      "detail": {
+        "empty_success": false,
+        "looked": false,
+        "residuals": [
+          "production AST Call of CaptureBus.observe (or an authorized opener) on a compressed / encoded / minified / binary target from an HCLI entry after VISIONMCP_SRC is importable"
+        ],
+        "status": "PARKED"
+      },
+      "id": "parked_not_empty_success_open",
+      "ok": true
+    },
+    {
+      "detail": "ok",
+      "id": "e14_shape_know",
+      "ok": true
+    },
+    {
+      "detail": "024586c04ed5fa1d2ae0cbe737af33ed192033ba551752e734b9a098e442bb95",
+      "id": "connected_digest_know",
+      "ok": true
+    },
+    {
+      "detail": "ok",
+      "id": "e14_shape_make",
+      "ok": true
+    },
+    {
+      "detail": {
+        "empty_success": false,
+        "looked": false,
+        "residuals": [
+          "production AST Call of visionmcp compiler surface (vision.compile / VisualProgramIR emit) from an HCLI entry with profile='compiler'"
+        ],
+        "status": "PARKED"
+      },
+      "id": "parked_not_empty_success_make",
+      "ok": true
+    },
+    {
+      "detail": "ok",
+      "id": "e14_shape_check",
+      "ok": true
+    },
+    {
+      "detail": "024586c04ed5fa1d2ae0cbe737af33ed192033ba551752e734b9a098e442bb95",
+      "id": "connected_digest_check",
+      "ok": true
+    },
+    {
+      "detail": "ok",
+      "id": "e14_shape_fix",
+      "ok": true
+    },
+    {
+      "detail": {
+        "empty_success": false,
+        "looked": false,
+        "residuals": [
+          "production AST Call of the visionmcp repair ledger / residual loop from an HCLI entry after a CHECK residual exists"
+        ],
+        "status": "PARKED"
+      },
+      "id": "parked_not_empty_success_fix",
+      "ok": true
+    },
+    {
+      "detail": "ok",
+      "id": "e14_shape_keep",
+      "ok": true
+    },
+    {
+      "detail": {
+        "empty_success": false,
+        "looked": false,
+        "residuals": [
+          "production AST Call of ProjectStore.create / CaptureBus.observe that persists CAS artifacts from an HCLI entry"
+        ],
+        "status": "PARKED"
+      },
+      "id": "parked_not_empty_success_keep",
+      "ok": true
+    },
+    {
+      "detail": "ok",
+      "id": "e14_shape_prove",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "id": "connected_digest_prove",
+      "ok": true
+    },
+    {
+      "detail": [
+        "see",
+        "hold",
+        "open",
+        "know",
+        "make",
+        "check",
+        "fix",
+        "keep",
+        "prove"
+      ],
+      "id": "nine_acts",
+      "ok": true
+    },
+    {
+      "detail": [
+        {
+          "green": true,
+          "kind": "canary",
+          "red": true
+        }
+      ],
+      "id": "prove_canary_evidence",
+      "ok": true
+    }
+  ],
+  "claim_boundary": "FUNCTIONAL_SIM / STATIC acceptance evidence. No claim that VisionMCP web/3d extras, Blender, Chrome, FPGA, DGX or eGPU ran unless a check records that binary on PATH. An empty collection is not evidence of absence.",
+  "command": [
+    "python3",
+    "-m",
+    "tools.acceptance.vmcp",
+    "--gate",
+    "VMCP_COMPACT_SURFACE"
+  ],
+  "criterion": {
+    "end_line": 7980,
+    "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "quoted": "## E.14 Compact model-facing VMCP surface\n\n```text\nsee\nhold\nopen\nknow\nmake\ncheck\nfix\nkeep\nprove\n\nResponse:\n{\n  status,\n  deep_digest,\n  artifacts[],\n  evidence[],\n  residuals[],\n  next_actions[],\n  performance_ms,\n  note\n}\n```\n\n",
+    "start_line": 7954,
+    "weakened": false
+  },
+  "criterion_weakened": false,
+  "elapsed_ms": 2.411,
+  "evidence_tier": "FUNCTIONAL_SIM",
+  "gate": "VMCP_COMPACT_SURFACE",
+  "generated_at": "2026-09-02T09:12:16Z",
+  "gpu_authority": false,
+  "invoked_symbols": [
+    {
+      "elapsed_ms": 0.135,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "tools.future.vmcp.compact_surface"
+    },
+    {
+      "elapsed_ms": 0.077,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "tools.future.vmcp.compact_surface"
+    },
+    {
+      "elapsed_ms": 0.014,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "tools.future.vmcp.compact_surface"
+    },
+    {
+      "elapsed_ms": 0.073,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "tools.future.vmcp.compact_surface"
+    },
+    {
+      "elapsed_ms": 0.005,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "tools.future.vmcp.compact_surface"
+    },
+    {
+      "elapsed_ms": 0.068,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "tools.future.vmcp.compact_surface"
+    },
+    {
+      "elapsed_ms": 0.002,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "tools.future.vmcp.compact_surface"
+    },
+    {
+      "elapsed_ms": 0.003,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "tools.future.vmcp.compact_surface"
+    },
+    {
+      "elapsed_ms": 1.1,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "tools.future.vmcp.compact_surface"
+    }
+  ],
+  "measured": {
+    "acts": {
+      "check": {
+        "artifacts": [
+          {
+            "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-e14-363uqxpn/s.txt",
+            "sha256": "024586c04ed5fa1d2ae0cbe737af33ed192033ba551752e734b9a098e442bb95",
+            "size": 24
+          }
+        ],
+        "deep_digest": "024586c04ed5fa1d2ae0cbe737af33ed192033ba551752e734b9a098e442bb95",
+        "evidence": [
+          {
+            "kind": "content_sha256",
+            "sha256": "024586c04ed5fa1d2ae0cbe737af33ed192033ba551752e734b9a098e442bb95"
+          }
+        ],
+        "next_actions": [],
+        "note": "check compact surface",
+        "performance_ms": 0.068,
+        "residuals": [],
+        "status": "CONNECTED"
+      },
+      "fix": {
+        "artifacts": null,
+        "deep_digest": null,
+        "evidence": null,
+        "next_actions": [
+          "VISIONMCP_SRC importable and a residual from CHECK"
+        ],
+        "note": "fix is not implemented in this repo. Returning PARKED with a wake rather than an empty collection a verifier could accept.",
+        "performance_ms": 0.002,
+        "residuals": [
+          "production AST Call of the visionmcp repair ledger / residual loop from an HCLI entry after a CHECK residual exists"
+        ],
+        "status": "PARKED"
+      },
+      "hold": {
+        "artifacts": [
+          {
+            "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-e14-363uqxpn/s.txt",
+            "sha256": "024586c04ed5fa1d2ae0cbe737af33ed192033ba551752e734b9a098e442bb95",
+            "size": 24
+          }
+        ],
+        "deep_digest": "024586c04ed5fa1d2ae0cbe737af33ed192033ba551752e734b9a098e442bb95",
+        "evidence": [
+          {
+            "kind": "content_sha256",
+            "sha256": "024586c04ed5fa1d2ae0cbe737af33ed192033ba551752e734b9a098e442bb95"
+          }
+        ],
+        "next_actions": [],
+        "note": "hold compact surface",
+        "performance_ms": 0.077,
+        "residuals": [],
+        "status": "CONNECTED"
+      },
+      "keep": {
+        "artifacts": null,
+        "deep_digest": null,
+        "evidence": null,
+        "next_actions": [
+          "VISIONMCP_SRC importable; profile='core' only (LABORATORY is a second AgentOS and is refused)"
+        ],
+        "note": "keep is not implemented in this repo. Returning PARKED with a wake rather than an empty collection a verifier could accept.",
+        "performance_ms": 0.003,
+        "residuals": [
+          "production AST Call of ProjectStore.create / CaptureBus.observe that persists CAS artifacts from an HCLI entry"
+        ],
+        "status": "PARKED"
+      },
+      "know": {
+        "artifacts": [
+          {
+            "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-e14-363uqxpn/s.txt",
+            "sha256": "024586c04ed5fa1d2ae0cbe737af33ed192033ba551752e734b9a098e442bb95",
+            "size": 24
+          }
+        ],
+        "deep_digest": "024586c04ed5fa1d2ae0cbe737af33ed192033ba551752e734b9a098e442bb95",
+        "evidence": [
+          {
+            "kind": "content_sha256",
+            "sha256": "024586c04ed5fa1d2ae0cbe737af33ed192033ba551752e734b9a098e442bb95"
+          }
+        ],
+        "next_actions": [],
+        "note": "know compact surface",
+        "performance_ms": 0.073,
+        "residuals": [],
+        "status": "CONNECTED"
+      },
+      "make": {
+        "artifacts": null,
+        "deep_digest": null,
+        "evidence": null,
+        "next_actions": [
+          "VISIONMCP_SRC with the compiler extra; do not build a parallel VisualProgramIR in hawking/"
+        ],
+        "note": "make is not implemented in this repo. Returning PARKED with a wake rather than an empty collection a verifier could accept.",
+        "performance_ms": 0.005,
+        "residuals": [
+          "production AST Call of visionmcp compiler surface (vision.compile / VisualProgramIR emit) from an HCLI entry with profile='compiler'"
+        ],
+        "status": "PARKED"
+      },
+      "open": {
+        "artifacts": null,
+        "deep_digest": null,
+        "evidence": null,
+        "next_actions": [
+          "VISIONMCP_SRC pointing at visionmcp 0.8.0a2 src/ (parent of the visionmcp package) plus the format-specific opener"
+        ],
+        "note": "open is not implemented in this repo. Returning PARKED with a wake rather than an empty collection a verifier could accept.",
+        "performance_ms": 0.014,
+        "residuals": [
+          "production AST Call of CaptureBus.observe (or an authorized opener) on a compressed / encoded / minified / binary target from an HCLI entry after VISIONMCP_SRC is importable"
+        ],
+        "status": "PARKED"
+      },
+      "prove": {
+        "artifacts": [],
+        "deep_digest": null,
+        "evidence": [
+          {
+            "green": true,
+            "kind": "canary",
+            "red": true
+          }
+        ],
+        "next_actions": [],
+        "note": "controlled mutation of a temp copy. RED is a digest change; GREEN is restoration. A always-GREEN canary is a failure.",
+        "performance_ms": 1.1,
+        "residuals": [],
+        "status": "CONNECTED"
+      },
+      "see": {
+        "artifacts": [
+          {
+            "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-e14-363uqxpn/s.txt",
+            "sha256": "024586c04ed5fa1d2ae0cbe737af33ed192033ba551752e734b9a098e442bb95",
+            "size": 24
+          }
+        ],
+        "deep_digest": "024586c04ed5fa1d2ae0cbe737af33ed192033ba551752e734b9a098e442bb95",
+        "evidence": [
+          {
+            "kind": "content_sha256",
+            "sha256": "024586c04ed5fa1d2ae0cbe737af33ed192033ba551752e734b9a098e442bb95"
+          }
+        ],
+        "next_actions": [],
+        "note": "see compact surface",
+        "performance_ms": 0.135,
+        "residuals": [],
+        "status": "CONNECTED"
+      }
+    }
+  },
+  "output": {
+    "check": {
+      "act": "check",
+      "artifacts": [
+        {
+          "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-e14-363uqxpn/s.txt",
+          "sha256": "024586c04ed5fa1d2ae0cbe737af33ed192033ba551752e734b9a098e442bb95",
+          "size": 24
+        }
+      ],
+      "deep_digest": "024586c04ed5fa1d2ae0cbe737af33ed192033ba551752e734b9a098e442bb95",
+      "empty_success": false,
+      "evidence": [
+        {
+          "kind": "content_sha256",
+          "sha256": "024586c04ed5fa1d2ae0cbe737af33ed192033ba551752e734b9a098e442bb95"
+        }
+      ],
+      "looked": true,
+      "next_actions": [],
+      "note": "check compact surface",
+      "performance_ms": 0.068,
+      "residuals": [],
+      "status": "CONNECTED"
+    },
+    "fix": {
+      "act": "fix",
+      "artifacts": null,
+      "deep_digest": null,
+      "empty_success": false,
+      "evidence": null,
+      "looked": false,
+      "next_actions": [
+        "VISIONMCP_SRC importable and a residual from CHECK"
+      ],
+      "note": "fix is not implemented in this repo. Returning PARKED with a wake rather than an empty collection a verifier could accept.",
+      "performance_ms": 0.002,
+      "residuals": [
+        "production AST Call of the visionmcp repair ledger / residual loop from an HCLI entry after a CHECK residual exists"
+      ],
+      "status": "PARKED"
+    },
+    "hold": {
+      "act": "hold",
+      "artifacts": [
+        {
+          "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-e14-363uqxpn/s.txt",
+          "sha256": "024586c04ed5fa1d2ae0cbe737af33ed192033ba551752e734b9a098e442bb95",
+          "size": 24
+        }
+      ],
+      "deep_digest": "024586c04ed5fa1d2ae0cbe737af33ed192033ba551752e734b9a098e442bb95",
+      "empty_success": false,
+      "evidence": [
+        {
+          "kind": "content_sha256",
+          "sha256": "024586c04ed5fa1d2ae0cbe737af33ed192033ba551752e734b9a098e442bb95"
+        }
+      ],
+      "looked": true,
+      "next_actions": [],
+      "note": "hold compact surface",
+      "performance_ms": 0.077,
+      "residuals": [],
+      "status": "CONNECTED"
+    },
+    "keep": {
+      "act": "keep",
+      "artifacts": null,
+      "deep_digest": null,
+      "empty_success": false,
+      "evidence": null,
+      "looked": false,
+      "next_actions": [
+        "VISIONMCP_SRC importable; profile='core' only (LABORATORY is a second AgentOS and is refused)"
+      ],
+      "note": "keep is not implemented in this repo. Returning PARKED with a wake rather than an empty collection a verifier could accept.",
+      "performance_ms": 0.003,
+      "residuals": [
+        "production AST Call of ProjectStore.create / CaptureBus.observe that persists CAS artifacts from an HCLI entry"
+      ],
+      "status": "PARKED"
+    },
+    "know": {
+      "act": "know",
+      "artifacts": [
+        {
+          "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-e14-363uqxpn/s.txt",
+          "sha256": "024586c04ed5fa1d2ae0cbe737af33ed192033ba551752e734b9a098e442bb95",
+          "size": 24
+        }
+      ],
+      "deep_digest": "024586c04ed5fa1d2ae0cbe737af33ed192033ba551752e734b9a098e442bb95",
+      "empty_success": false,
+      "evidence": [
+        {
+          "kind": "content_sha256",
+          "sha256": "024586c04ed5fa1d2ae0cbe737af33ed192033ba551752e734b9a098e442bb95"
+        }
+      ],
+      "looked": true,
+      "next_actions": [],
+      "note": "know compact surface",
+      "performance_ms": 0.073,
+      "residuals": [],
+      "status": "CONNECTED"
+    },
+    "make": {
+      "act": "make",
+      "artifacts": null,
+      "deep_digest": null,
+      "empty_success": false,
+      "evidence": null,
+      "looked": false,
+      "next_actions": [
+        "VISIONMCP_SRC with the compiler extra; do not build a parallel VisualProgramIR in hawking/"
+      ],
+      "note": "make is not implemented in this repo. Returning PARKED with a wake rather than an empty collection a verifier could accept.",
+      "performance_ms": 0.005,
+      "residuals": [
+        "production AST Call of visionmcp compiler surface (vision.compile / VisualProgramIR emit) from an HCLI entry with profile='compiler'"
+      ],
+      "status": "PARKED"
+    },
+    "open": {
+      "act": "open",
+      "artifacts": null,
+      "deep_digest": null,
+      "empty_success": false,
+      "evidence": null,
+      "looked": false,
+      "next_actions": [
+        "VISIONMCP_SRC pointing at visionmcp 0.8.0a2 src/ (parent of the visionmcp package) plus the format-specific opener"
+      ],
+      "note": "open is not implemented in this repo. Returning PARKED with a wake rather than an empty collection a verifier could accept.",
+      "performance_ms": 0.014,
+      "residuals": [
+        "production AST Call of CaptureBus.observe (or an authorized opener) on a compressed / encoded / minified / binary target from an HCLI entry after VISIONMCP_SRC is importable"
+      ],
+      "status": "PARKED"
+    },
+    "prove": {
+      "act": "prove",
+      "artifacts": [],
+      "deep_digest": null,
+      "empty_success": false,
+      "evidence": [
+        {
+          "green": true,
+          "kind": "canary",
+          "red": true
+        }
+      ],
+      "looked": true,
+      "next_actions": [],
+      "note": "controlled mutation of a temp copy. RED is a digest change; GREEN is restoration. A always-GREEN canary is a failure.",
+      "performance_ms": 1.1,
+      "residuals": [],
+      "status": "CONNECTED"
+    },
+    "see": {
+      "act": "see",
+      "artifacts": [
+        {
+          "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-e14-363uqxpn/s.txt",
+          "sha256": "024586c04ed5fa1d2ae0cbe737af33ed192033ba551752e734b9a098e442bb95",
+          "size": 24
+        }
+      ],
+      "deep_digest": "024586c04ed5fa1d2ae0cbe737af33ed192033ba551752e734b9a098e442bb95",
+      "empty_success": false,
+      "evidence": [
+        {
+          "kind": "content_sha256",
+          "sha256": "024586c04ed5fa1d2ae0cbe737af33ed192033ba551752e734b9a098e442bb95"
+        }
+      ],
+      "looked": true,
+      "next_actions": [],
+      "note": "see compact surface",
+      "performance_ms": 0.135,
+      "residuals": [],
+      "status": "CONNECTED"
+    }
+  },
+  "recorded_by": "tools/acceptance/vmcp/run.py",
+  "schema": "hawking.acceptance.gate.v1",
+  "verdict": "ACCEPTED"
+}

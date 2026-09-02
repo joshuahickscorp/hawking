@@ -1,0 +1,294 @@
+{
+  "blocker": null,
+  "checks": [
+    {
+      "detail": {
+        "checks": [
+          "python",
+          "package_import",
+          "plugins_loaded_at_core",
+          "network",
+          "optional_blender",
+          "optional_colmap",
+          "optional_playwright"
+        ],
+        "scope": "core"
+      },
+      "id": "core_doctor_report_called",
+      "ok": true
+    },
+    {
+      "detail": {
+        "missing": [],
+        "unclassified": []
+      },
+      "id": "all_required_classes_classified",
+      "ok": true
+    },
+    {
+      "detail": {
+        "PTY capture": {
+          "available": false,
+          "detail": {
+            "available": false,
+            "error": "PermissionError: [Errno 1] Operation not permitted: '/dev/ttys003'",
+            "grantpt": true,
+            "ptsname": "/dev/ttys003"
+          },
+          "fallback": "PermissionError: [Errno 1] Operation not permitted: '/dev/ttys003'",
+          "symbol": "os.posix_openpt"
+        },
+        "browser/CDP": {
+          "available": false,
+          "detail": {
+            "chrome": null,
+            "playwright": null
+          },
+          "fallback": "UNAVAILABLE \u2014 no host Chrome/CDP in this process",
+          "symbol": "visionmcp.perception.browser"
+        }
+      },
+      "id": "no_empty_success_on_unavailable",
+      "ok": true
+    },
+    {
+      "detail": [
+        {
+          "detail": "not required for core",
+          "name": "optional_blender",
+          "ok": true,
+          "present": false
+        },
+        {
+          "detail": "not required for core",
+          "name": "optional_colmap",
+          "ok": true,
+          "present": true
+        },
+        {
+          "detail": "not required for core",
+          "name": "optional_playwright",
+          "ok": true,
+          "present": false
+        }
+      ],
+      "id": "doctor_does_not_claim_blender_required",
+      "ok": true
+    }
+  ],
+  "claim_boundary": "FUNCTIONAL_SIM / STATIC acceptance evidence. No claim that VisionMCP web/3d extras, Blender, Chrome, FPGA, DGX or eGPU ran unless a check records that binary on PATH. An empty collection is not evidence of absence.",
+  "command": [
+    "python3",
+    "-m",
+    "tools.acceptance.vmcp",
+    "--gate",
+    "VMCP_TOOL_DOCTOR"
+  ],
+  "criterion": {
+    "end_line": 7767,
+    "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "quoted": "## E.3 Tool Doctor profile\n\n**Required classes:**\n- file classifier\n- hashing\n- archive/compression\n- browser/CDP\n- HTML/DOM capture\n- CSS parser\n- source-map parser\n- visual diff\n- image handling\n- OBJ/GLTF parser\n- spatial validator\n- independent renderer/viewer\n- PTY capture\n- process inspection\n- profiling hooks\n\n**Optional accelerators:**\n- binwalk-like container discovery\n- WASM tools\n- additional binary analyzers\n- Blender CLI\n- meshoptimizer\n- format converters\n- GPU profiler",
+    "start_line": 7741,
+    "weakened": false
+  },
+  "criterion_weakened": false,
+  "elapsed_ms": 158.871,
+  "evidence_tier": "FUNCTIONAL_SIM",
+  "gate": "VMCP_TOOL_DOCTOR",
+  "generated_at": "2026-09-02T09:12:16Z",
+  "gpu_authority": false,
+  "invoked_symbols": [
+    {
+      "elapsed_ms": 21.659,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "visionmcp.capabilities.core_doctor_report"
+    },
+    {
+      "elapsed_ms": 0.069,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "visionmcp.acquisition.quarantine._sniff"
+    },
+    {
+      "elapsed_ms": 0.088,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "visionmcp.worlds.spatial.io.obj.obj_file_counts"
+    },
+    {
+      "elapsed_ms": 0.115,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "visionmcp.benchmarks.parity04.capture.parse_css"
+    }
+  ],
+  "measured": {
+    "core_doctor_elapsed_ms": 21.63529093377292,
+    "core_doctor_ok": true,
+    "required": {
+      "CSS parser": {
+        "available": true,
+        "detail": "rules=1",
+        "symbol": "visionmcp.benchmarks.parity04.capture.parse_css"
+      },
+      "HTML/DOM capture": {
+        "available": true,
+        "detail": "stdlib HTMLParser",
+        "symbol": "html.parser.HTMLParser"
+      },
+      "OBJ/GLTF parser": {
+        "available": true,
+        "detail": {
+          "face_count": 4,
+          "material_count": 0,
+          "normal_count": 2,
+          "object_count": 1,
+          "usemtl_count": 1,
+          "vertex_count": 8
+        },
+        "symbol": "visionmcp.worlds.spatial.io.obj.obj_file_counts"
+      },
+      "PTY capture": {
+        "available": false,
+        "detail": {
+          "available": false,
+          "error": "PermissionError: [Errno 1] Operation not permitted: '/dev/ttys003'",
+          "grantpt": true,
+          "ptsname": "/dev/ttys003"
+        },
+        "fallback": "PermissionError: [Errno 1] Operation not permitted: '/dev/ttys003'",
+        "symbol": "os.posix_openpt"
+      },
+      "archive/compression": {
+        "available": true,
+        "detail": "zipfile+zlib 1.2.12",
+        "symbol": "zipfile.ZipFile"
+      },
+      "browser/CDP": {
+        "available": false,
+        "detail": {
+          "chrome": null,
+          "playwright": null
+        },
+        "fallback": "UNAVAILABLE \u2014 no host Chrome/CDP in this process",
+        "symbol": "visionmcp.perception.browser"
+      },
+      "file classifier": {
+        "available": true,
+        "detail": "image/png",
+        "symbol": "visionmcp.acquisition.quarantine._sniff"
+      },
+      "hashing": {
+        "available": true,
+        "detail": "2d711642b726b044",
+        "symbol": "hashlib.sha256"
+      },
+      "image handling": {
+        "available": true,
+        "detail": "Pillow present",
+        "symbol": "PIL.Image"
+      },
+      "independent renderer/viewer": {
+        "available": true,
+        "detail": {
+          "blender": null,
+          "software_raster": true
+        },
+        "limit": "software silhouette raster; Blender CLI absent",
+        "symbol": "tools.acceptance.vmcp.gates._raster_obj"
+      },
+      "process inspection": {
+        "available": true,
+        "detail": "subprocess present",
+        "symbol": "subprocess.run"
+      },
+      "profiling hooks": {
+        "available": true,
+        "detail": "perf_counter+cProfile",
+        "symbol": "time.perf_counter"
+      },
+      "source-map parser": {
+        "available": true,
+        "detail": "source-map/v3 JSON",
+        "symbol": "json.loads"
+      },
+      "spatial validator": {
+        "available": true,
+        "detail": {
+          "face_count": 4,
+          "material_count": 0,
+          "normal_count": 2,
+          "object_count": 1,
+          "usemtl_count": 1,
+          "vertex_count": 8
+        },
+        "symbol": "visionmcp.worlds.spatial.io.obj.obj_file_counts"
+      },
+      "visual diff": {
+        "available": true,
+        "detail": "Pillow present",
+        "symbol": "PIL.ImageChops.difference"
+      }
+    }
+  },
+  "output": {
+    "core_doctor": {
+      "checks": [
+        {
+          "detail": "3.14.6",
+          "name": "python",
+          "ok": true
+        },
+        {
+          "detail": "visionmcp 0.8.0a2",
+          "name": "package_import",
+          "ok": true
+        },
+        {
+          "detail": "loaded=0 (must be 0 for core startup)",
+          "name": "plugins_loaded_at_core",
+          "ok": true
+        },
+        {
+          "detail": "not contacted (core doctor is offline-only)",
+          "name": "network",
+          "ok": true
+        },
+        {
+          "detail": "not required for core",
+          "name": "optional_blender",
+          "ok": true,
+          "present": false
+        },
+        {
+          "detail": "not required for core",
+          "name": "optional_colmap",
+          "ok": true,
+          "present": true
+        },
+        {
+          "detail": "not required for core",
+          "name": "optional_playwright",
+          "ok": true,
+          "present": false
+        }
+      ],
+      "elapsed_ms": 21.63529093377292,
+      "network_used": false,
+      "ok": true,
+      "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
+      "plugins_loaded": 0,
+      "profile": "core",
+      "python": "3.14.6",
+      "scope": "core"
+    }
+  },
+  "recorded_by": "tools/acceptance/vmcp/run.py",
+  "schema": "hawking.acceptance.gate.v1",
+  "verdict": "ACCEPTED"
+}

@@ -1,0 +1,181 @@
+{
+  "blocker": null,
+  "checks": [
+    {
+      "detail": {
+        "green": true,
+        "observe_complete": true,
+        "prove_ok": true,
+        "red": true,
+        "verify_valid": true
+      },
+      "id": "V10_observe",
+      "ok": true
+    },
+    {
+      "detail": {
+        "green": true,
+        "observe_complete": true,
+        "prove_ok": true,
+        "red": true,
+        "verify_valid": true
+      },
+      "id": "V10_verify",
+      "ok": true
+    },
+    {
+      "detail": {
+        "green": true,
+        "observe_complete": true,
+        "prove_ok": true,
+        "red": true,
+        "verify_valid": true
+      },
+      "id": "V10_canary_red_green",
+      "ok": true
+    },
+    {
+      "detail": {
+        "browser": false,
+        "fixture": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-integ-0be_3uv9/index.html",
+        "green": true,
+        "nodes": 7,
+        "note": "local HTML fixture; not Chrome/CDP",
+        "red": true,
+        "text": [
+          "vmcp-web-fixture",
+          "h1{color:#111;font-size:24px}",
+          "hello-web"
+        ]
+      },
+      "id": "V11_web_fixture_dom",
+      "ok": true
+    },
+    {
+      "detail": {
+        "browser": false,
+        "fixture": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-integ-0be_3uv9/index.html",
+        "green": true,
+        "nodes": 7,
+        "note": "local HTML fixture; not Chrome/CDP",
+        "red": true,
+        "text": [
+          "vmcp-web-fixture",
+          "h1{color:#111;font-size:24px}",
+          "hello-web"
+        ]
+      },
+      "id": "V11_web_fixture_canary",
+      "ok": true
+    },
+    {
+      "detail": {
+        "baseline_faces": 4,
+        "green_faces": 4,
+        "red_faces": 0
+      },
+      "id": "V12_spatial_fixture_canary",
+      "ok": true
+    }
+  ],
+  "claim_boundary": "FUNCTIONAL_SIM / STATIC acceptance evidence. No claim that VisionMCP web/3d extras, Blender, Chrome, FPGA, DGX or eGPU ran unless a check records that binary on PATH. An empty collection is not evidence of absence.",
+  "command": [
+    "python3",
+    "-m",
+    "tools.acceptance.vmcp",
+    "--gate",
+    "VMCP_AGENTOS_INTEGRATION"
+  ],
+  "criterion": {
+    "end_line": 7630,
+    "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "quoted": "- V11 web fixture proof\n- V12 spatial fixture proof\n- V13 PTY/Behavior Lab",
+    "start_line": 7628,
+    "weakened": false
+  },
+  "criterion_weakened": false,
+  "elapsed_ms": 37.277,
+  "evidence_tier": "FUNCTIONAL_SIM",
+  "gate": "VMCP_AGENTOS_INTEGRATION",
+  "generated_at": "2026-09-02T09:12:16Z",
+  "gpu_authority": false,
+  "invoked_symbols": [
+    {
+      "elapsed_ms": 28.856,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "tools.headless.hcli_vmcp_integration.observe_file"
+    },
+    {
+      "elapsed_ms": 2.05,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "tools.headless.hcli_vmcp_integration.verify_capture"
+    },
+    {
+      "elapsed_ms": 1.059,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "tools.future.vmcp.prove"
+    },
+    {
+      "elapsed_ms": 0.093,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "visionmcp.worlds.spatial.io.obj.obj_file_counts"
+    },
+    {
+      "elapsed_ms": 0.063,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "visionmcp.worlds.spatial.io.obj.obj_file_counts"
+    },
+    {
+      "elapsed_ms": 0.069,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "visionmcp.worlds.spatial.io.obj.obj_file_counts"
+    }
+  ],
+  "measured": {
+    "V10": {
+      "green": true,
+      "observe_complete": true,
+      "prove_ok": true,
+      "red": true,
+      "verify_valid": true
+    },
+    "V11": {
+      "browser": false,
+      "fixture": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-integ-0be_3uv9/index.html",
+      "green": true,
+      "nodes": 7,
+      "note": "local HTML fixture; not Chrome/CDP",
+      "red": true,
+      "text": [
+        "vmcp-web-fixture",
+        "h1{color:#111;font-size:24px}",
+        "hello-web"
+      ]
+    },
+    "V12": {
+      "baseline_faces": 4,
+      "green_faces": 4,
+      "red_faces": 0
+    }
+  },
+  "output": {
+    "hcli_workunit": "not invoked \u2014 hcli/ is not materialized in this sparse checkout",
+    "seam": "observe_file -> verify_capture (VMCP evidence, deterministic verifier)",
+    "span": "7628-7630 V10 VMCP state/receipt canaries; V11 web fixture proof; V12 spatial fixture proof"
+  },
+  "recorded_by": "tools/acceptance/vmcp/run.py",
+  "schema": "hawking.acceptance.gate.v1",
+  "verdict": "ACCEPTED"
+}

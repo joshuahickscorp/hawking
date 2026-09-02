@@ -1,0 +1,78 @@
+{
+  "blocker": {
+    "also_missing": [
+      "hcli/workunit.py"
+    ],
+    "fixtures_implemented": 0,
+    "missing": "BHV-01..BHV-23 fixture runner",
+    "why": "E.11 requires every fixture to record initial/final repo hash, diff, WorkUnit trace, tool trace, terminal trace, tests, timing and receipt. The catalog lists no code_paths for this gate (status ABSENT). hcli/workunit.py is not materialized in this sparse checkout, so WorkUnit traces cannot be recorded. git-tracked BHV/behavior_lab paths: none."
+  },
+  "checks": [
+    {
+      "detail": {
+        "git_bhv_paths": [],
+        "on_disk_workunit": false
+      },
+      "id": "fixture_runner_absent",
+      "ok": false
+    }
+  ],
+  "claim_boundary": "FUNCTIONAL_SIM / STATIC acceptance evidence. No claim that VisionMCP web/3d extras, Blender, Chrome, FPGA, DGX or eGPU ran unless a check records that binary on PATH. An empty collection is not evidence of absence.",
+  "command": [
+    "python3",
+    "-m",
+    "tools.acceptance.vmcp",
+    "--gate",
+    "AGENTOS_BEHAVIOR_LAB"
+  ],
+  "criterion": {
+    "end_line": 7910,
+    "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "quoted": "## E.11 Behavior Lab fixture matrix\n\nBHV-01 fresh repo onboarding\nBHV-02 one-file edit\nBHV-03 multi-file edit\nBHV-04 bug fix with failing test\nBHV-05 test creation\nBHV-06 build failure recovery\nBHV-07 tool failure\nBHV-08 permission denial\nBHV-09 dangerous command confirmation\nBHV-10 dirty-tree handling\nBHV-11 merge conflict\nBHV-12 context pressure\nBHV-13 restart/resume\nBHV-14 mid-task steering\nBHV-15 cancellation\nBHV-16 replan after contradiction\nBHV-17 tool discovery\nBHV-18 delegation\nBHV-19 parallel independent tasks\nBHV-20 background work\nBHV-21 false-success rejection\nBHV-22 no-op detection\nBHV-23 bad-patch recovery\n\nEvery fixture records initial/final repo hash, diff, WorkUnit trace, tool trace, terminal trace, tests, timing and receipt.\n\n",
+    "start_line": 7882,
+    "weakened": false
+  },
+  "criterion_weakened": false,
+  "elapsed_ms": 31.719,
+  "evidence_tier": "STATIC",
+  "gate": "AGENTOS_BEHAVIOR_LAB",
+  "generated_at": "2026-09-02T09:12:16Z",
+  "gpu_authority": false,
+  "invoked_symbols": [],
+  "measured": {
+    "fixtures_implemented": 0,
+    "fixtures_required": 23,
+    "ids": [
+      "BHV-01",
+      "BHV-02",
+      "BHV-03",
+      "BHV-04",
+      "BHV-05",
+      "BHV-06",
+      "BHV-07",
+      "BHV-08",
+      "BHV-09",
+      "BHV-10",
+      "BHV-11",
+      "BHV-12",
+      "BHV-13",
+      "BHV-14",
+      "BHV-15",
+      "BHV-16",
+      "BHV-17",
+      "BHV-18",
+      "BHV-19",
+      "BHV-20",
+      "BHV-21",
+      "BHV-22",
+      "BHV-23"
+    ]
+  },
+  "output": {
+    "catalog_modules": [],
+    "catalog_paths": []
+  },
+  "recorded_by": "tools/acceptance/vmcp/run.py",
+  "schema": "hawking.acceptance.gate.v1",
+  "verdict": "BLOCKED"
+}

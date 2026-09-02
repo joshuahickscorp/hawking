@@ -1,0 +1,110 @@
+{
+  "blocker": {
+    "error": "PermissionError: [Errno 1] Operation not permitted: '/dev/ttys003'",
+    "missing": "PTY slave open (os.open(ptsname))",
+    "ptsname": "/dev/ttys003",
+    "why": "posix_openpt/grantpt/unlockpt/ptsname succeed in this process, but opening the slave node raises PermissionError. script(1) reports openpty: Operation not permitted. E.10 terminal text, ANSI, resize/layout and screenshot-state require a real PTY. A pipe subprocess is process inspection, not PTY capture."
+  },
+  "checks": [
+    {
+      "detail": {
+        "available": false,
+        "error": "PermissionError: [Errno 1] Operation not permitted: '/dev/ttys003'",
+        "grantpt": true,
+        "ptsname": "/dev/ttys003"
+      },
+      "id": "pty_slave_openable",
+      "ok": false
+    },
+    {
+      "detail": {
+        "available": false,
+        "error": "PermissionError: [Errno 1] Operation not permitted: '/dev/ttys003'",
+        "grantpt": true,
+        "ptsname": "/dev/ttys003"
+      },
+      "id": "not_empty_look",
+      "ok": true
+    }
+  ],
+  "claim_boundary": "FUNCTIONAL_SIM / STATIC acceptance evidence. No claim that VisionMCP web/3d extras, Blender, Chrome, FPGA, DGX or eGPU ran unless a check records that binary on PATH. An empty collection is not evidence of absence.",
+  "command": [
+    "python3",
+    "-m",
+    "tools.acceptance.vmcp",
+    "--gate",
+    "VMCP_PTY_CAPTURE"
+  ],
+  "criterion": {
+    "end_line": 7881,
+    "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "quoted": "## E.10 PTY / terminal eye\n\n- process identity\n- argv\n- cwd\n- allowlisted environment metadata\n- terminal text\n- timestamps\n- input/output event boundaries\n- exit code/signal\n- resize/layout\n- tool/subprocess events where observable\n- diff/test markers\n- screenshot state where useful\n\n",
+    "start_line": 7866,
+    "weakened": false
+  },
+  "criterion_weakened": false,
+  "elapsed_ms": 32.694,
+  "evidence_tier": "STATIC",
+  "gate": "VMCP_PTY_CAPTURE",
+  "generated_at": "2026-09-02T09:12:16Z",
+  "gpu_authority": false,
+  "invoked_symbols": [
+    {
+      "elapsed_ms": 0.54,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "os.posix_openpt"
+    },
+    {
+      "elapsed_ms": null,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "os.grantpt"
+    }
+  ],
+  "measured": {
+    "pipe_fallback_not_counted": {
+      "allowlisted environment metadata": {
+        "TERM": "xterm"
+      },
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-c",
+        "<script>"
+      ],
+      "cwd": "/Users/scammermike/.claude-grok/worktrees/acc3-vmcp-acceptance-20260902-045046",
+      "diff/test markers": null,
+      "exit code/signal": 3,
+      "input/output event boundaries": {
+        "stdout_bytes": 92
+      },
+      "note": "pipe subprocess is NOT a PTY; listed only so the blocker is not an empty look",
+      "process identity": "/opt/homebrew/opt/python@3.14/bin/python3.14",
+      "resize/layout": null,
+      "screenshot state where useful": null,
+      "terminal text": null,
+      "timestamps": {
+        "finished_at": 1788340336.256835,
+        "started_at": 1788340336.224698
+      },
+      "tool/subprocess events where observable": [
+        "subprocess.run"
+      ]
+    },
+    "pty_probe": {
+      "available": false,
+      "error": "PermissionError: [Errno 1] Operation not permitted: '/dev/ttys003'",
+      "grantpt": true,
+      "ptsname": "/dev/ttys003"
+    }
+  },
+  "output": {
+    "looked": true,
+    "pty": false
+  },
+  "recorded_by": "tools/acceptance/vmcp/run.py",
+  "schema": "hawking.acceptance.gate.v1",
+  "verdict": "BLOCKED"
+}
