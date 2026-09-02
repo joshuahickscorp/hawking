@@ -13,6 +13,26 @@ from __future__ import annotations
 
 import os
 import sys
+from pathlib import Path
+
+# The interpreters on this host (Framework python, /usr/bin/python3) have no
+# pytest-xdist and PEP 668 refuses to install it into them, so this runner used
+# to fall back to SERIAL for everyone -- the documented fast path never ran.
+# workspace/ops/.venv is a --system-site-packages venv that adds xdist and
+# nothing else; re-exec into it rather than asking each caller to remember.
+_XDIST_VENV = Path(__file__).resolve().parents[1] / "workspace/ops/.venv/bin/python"
+
+
+def _reexec_into_xdist_venv() -> None:
+    """Hand off to the venv that has xdist. No-op if we are already there."""
+    if os.environ.get("HAWKING_NO_XDIST_VENV"):
+        return
+    if not _XDIST_VENV.exists() or Path(sys.executable).resolve() == _XDIST_VENV.resolve():
+        return
+    try:
+        import xdist  # noqa: F401
+    except ImportError:
+        os.execv(str(_XDIST_VENV), [str(_XDIST_VENV), __file__, *sys.argv[1:]])
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -20,6 +40,7 @@ def main(argv: list[str] | None = None) -> int:
     if not args:
         args = ["tools"]
     n = os.environ.get("PYTEST_XDIST_N") or str(os.cpu_count() or 8)
+    _reexec_into_xdist_venv()
     try:
         import xdist  # noqa: F401
     except ImportError:
