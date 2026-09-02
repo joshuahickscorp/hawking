@@ -130,3 +130,94 @@ def test_the_module_says_which_of_its_answers_are_live():
     b = omc.build()
     assert "NOT_STARTED" in b["what_is_live_and_what_is_not"]
     assert "live and tested now" in b["what_is_live_and_what_is_not"]
+
+
+def test_the_four_cycle_timings_are_measured_separately_not_collapsed():
+    """One elapsed number cannot describe a streaming cycle.
+
+    A cycle that finds its first law at hour two and lands its first adversarial
+    attack at hour forty is not the same machine as one that does both by hour
+    twelve, even though both finish inside 48. Collapsing them hides exactly the
+    thing the contract exists to expose.
+    """
+    from tools.future import odyssey_mission_controller as omc
+
+    t = omc.cycle_timings()
+    for name, _meaning in omc.CYCLE_TIMINGS:
+        assert name in t, f"{name} is not measured"
+        assert "state" in t[name], f"{name} has no state"
+    assert len({n for n, _ in omc.CYCLE_TIMINGS}) == 4, "there must be four distinct timings"
+
+
+def test_there_is_no_global_barrier_between_the_phases():
+    """II starts when a law exists; III runs concurrently. Nothing waits."""
+    from tools.future import odyssey_mission_controller as omc
+
+    t = omc.cycle_timings()
+    assert "no_global_barrier" in t
+
+    # The invariant is STRUCTURAL: III's entry condition must depend on its own
+    # input existing, never on II having finished. A phase that waits for another
+    # phase IS the global barrier this contract forbids.
+    conditions = omc.phase_entry(n_laws=0, n_attackable_laws=0)["entry_conditions"]
+    third = conditions["ODYSSEY_III"].lower()
+    assert "odyssey_ii" not in third and "transfer" not in third, (
+        f"III waits on II: {conditions['ODYSSEY_III']!r}"
+    )
+    second = conditions["ODYSSEY_II"].lower()
+    assert "complete" not in second and "finish" not in second, (
+        f"II waits for I to finish rather than for a law to exist: {conditions['ODYSSEY_II']!r}"
+    )
+
+    # And with the cycle running, one law opens BOTH II and III on the same tick.
+    entry = omc.phase_entry(n_laws=1, n_attackable_laws=1)
+    assert entry["ODYSSEY_II"] == entry["ODYSSEY_III"], (
+        "II and III must open together on the same input, not in sequence"
+    )
+
+
+def test_an_unreached_timing_is_null_and_never_interpolated():
+    """A timing nobody measured must not be reported as a number."""
+    from tools.future import odyssey_mission_controller as omc
+
+    for name, _ in omc.CYCLE_TIMINGS:
+        row = omc.cycle_timings()[name]
+        if row["state"] != "REACHED":
+            assert row["hours"] is None, (
+                f"{name} reports {row['hours']} hours while state={row['state']}"
+            )
+
+
+def test_the_specimen_count_comes_from_disk_not_from_prose():
+    """The roadmap carried 'Flash is still downloading' long after it was false."""
+    from tools.future import odyssey_mission_controller as omc
+
+    reg = omc.specimen_registry()
+    assert reg["state"] in {"READ_FROM_DISK", "VOLUME_ABSENT"}
+    if reg["state"] == "VOLUME_ABSENT":
+        # An unmounted volume must NOT be reported as an empty lake.
+        assert reg["sealed_specimens"] is None
+        return
+    assert isinstance(reg["sealed_specimens"], int)
+    on_disk = len([p for p in (omc.LAKE / "specimens").iterdir() if p.is_dir()])
+    assert reg["sealed_specimens"] == on_disk, "the count disagrees with the filesystem"
+
+
+def test_an_unmounted_lake_is_not_reported_as_an_empty_lake(monkeypatch, tmp_path):
+    """The branch that only runs when the volume is missing must still be tested.
+
+    On this host the lake IS mounted, so the VOLUME_ABSENT path never executes
+    and a mutation making it report zero specimens passed unnoticed. A test that
+    covers only the branch its environment happens to take is not coverage.
+    Drive the absent case directly.
+    """
+    from tools.future import odyssey_mission_controller as omc
+
+    monkeypatch.setattr(omc, "LAKE", tmp_path / "not-mounted")
+    reg = omc.specimen_registry()
+    assert reg["state"] == "VOLUME_ABSENT"
+    assert reg["sealed_specimens"] is None, (
+        "an unmounted volume reported a specimen count; absent is not empty"
+    )
+    assert reg["manifests"] is None
+    assert "not the same as an empty lake" in reg["why"]

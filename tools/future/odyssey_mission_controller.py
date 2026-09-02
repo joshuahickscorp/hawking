@@ -219,6 +219,101 @@ def seal_contract() -> dict[str, Any]:
     }
 
 
+
+LAKE = Path("/Volumes/corpdrive/hawking-modellake")
+
+# The four timings the contract measures SEPARATELY. Collapsing them into one
+# "cycle time" hides the thing worth knowing: a cycle that reaches its first law
+# in two hours and its first adversarial attack in forty is not the same machine
+# as one that reaches both in twelve, even when both finish inside 48.
+CYCLE_TIMINGS = (
+    ("time_to_first_law", "ODYSSEY_I produced a candidate law/scar/genome"),
+    ("time_to_first_transfer", "ODYSSEY_II tested that law on another specimen"),
+    ("time_to_first_attack", "ODYSSEY_III attacked a I or II conclusion"),
+    ("time_to_complete_cycle", "I+II+III curriculum cycle closed"),
+)
+
+
+def cycle_timings(now: float | None = None) -> dict[str, Any]:
+    """Four separately-measured timings, NOT_STARTED until each is stamped.
+
+    Deliberately four fields and not one. There is NO GLOBAL BARRIER between the
+    phases -- II begins the moment a law exists and III runs concurrently with
+    both -- so a single elapsed number cannot say whether transfer was fast and
+    adversarial review lagged, or the reverse. Each is null until its own marker
+    receipt lands, because interpolating a timing nobody measured is fake
+    progress of exactly the kind the horizon block already refuses.
+    """
+    start = _start()
+    out: dict[str, Any] = {
+        "no_global_barrier": (
+            "II starts when one law exists; III runs concurrently with I and II. "
+            "These are logical roles on a shared wall clock, not exclusive modes, "
+            "and nothing waits for a phase to 'finish'."
+        ),
+        "measured_separately_because": (
+            "one elapsed number cannot distinguish a cycle that found a law in "
+            "two hours and attacked it at hour forty from one that did both by "
+            "hour twelve"
+        ),
+    }
+    for name, meaning in CYCLE_TIMINGS:
+        marker = REPO / "receipts" / "future" / f"ODYSSEY_CYCLE_1_{name.upper()}.json"
+        if start is None:
+            out[name] = {"state": "NOT_STARTED", "hours": None, "meaning": meaning,
+                         "why": "the cycle has not been launched"}
+        elif not marker.is_file():
+            out[name] = {"state": "NOT_REACHED", "hours": None, "meaning": meaning,
+                         "why": f"{marker.name} is not on disk"}
+        else:
+            try:
+                stamped = float(json.loads(marker.read_text()).get("epoch_s"))
+            except (OSError, ValueError, TypeError):
+                out[name] = {"state": "UNREADABLE", "hours": None, "meaning": meaning,
+                             "why": f"{marker.name} exists but carries no epoch_s"}
+                continue
+            out[name] = {
+                "state": "REACHED",
+                "hours": round((stamped - float(start["epoch_s"])) / 3600.0, 3),
+                "meaning": meaning,
+            }
+    return out
+
+
+def specimen_registry() -> dict[str, Any]:
+    """ModelLake state read FROM DISK, never from prose.
+
+    The roadmap carried "Flash is still downloading" long after it was not.
+    Anything this controller says about eligible specimens is counted off the
+    filesystem at call time, and says so when the volume is not mounted rather
+    than reporting zero as though the lake were empty.
+    """
+    specimens = LAKE / "specimens"
+    manifests = LAKE / "manifests"
+    if not LAKE.is_dir():
+        return {
+            "state": "VOLUME_ABSENT",
+            "root": str(LAKE),
+            "why": "the lake volume is not mounted; this is not the same as an empty lake",
+            "sealed_specimens": None,
+            "manifests": None,
+        }
+    sealed = sorted(p.name for p in specimens.iterdir() if p.is_dir()) if specimens.is_dir() else []
+    manifest_count = len(list(manifests.glob("*.json"))) if manifests.is_dir() else 0
+    return {
+        "state": "READ_FROM_DISK",
+        "root": str(LAKE),
+        "sealed_specimens": len(sealed),
+        "manifests": manifest_count,
+        "every_sealed_specimen_is_eligible": (
+            "architecture recognition, Doctor, law retrieval and Odyssey work "
+            "follow from sealing; no manual campaign creation is required "
+            "because another model arrived"
+        ),
+        "examples": sealed[:5],
+    }
+
+
 def build() -> dict[str, Any]:
     return {
         "obligation": "G099",
@@ -226,6 +321,8 @@ def build() -> dict[str, Any]:
         "evidence_class": "STATIC_ONLY",
         "gpu_authority": False,
         "horizon": horizon(),
+        "cycle_timings": cycle_timings(),
+        "specimen_registry": specimen_registry(),
         "phase_entry": phase_entry(n_laws=0, n_attackable_laws=0),
         "depth_policy": depth_policy(),
         "long_work_requirements": list(LONG_WORK_REQUIREMENTS),
