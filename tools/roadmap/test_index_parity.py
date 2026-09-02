@@ -41,7 +41,7 @@ def run():
 SYN_SUB = """\
 import subprocess
 subprocess.run(["syn/mod.py"])
-subprocess.run(["tools/haider/syn/mod.py"])
+subprocess.run(["tools/hcli/bootstrap/syn/mod.py"])
 """
 
 
@@ -81,7 +81,7 @@ def test_index_client_classifies_assignment_vs_class():
 
 def test_exact_cli_path_still_rejects_suffix():
     assert reach.is_exact_cli_path("syn/mod.py", "syn/mod.py")
-    assert not reach.is_exact_cli_path("syn/mod.py", "tools/haider/syn/mod.py")
+    assert not reach.is_exact_cli_path("syn/mod.py", "tools/hcli/bootstrap/syn/mod.py")
 
 
 @pytest.mark.skipif(index_client.find_index_bin() is None, reason="hawking-index-query not built")

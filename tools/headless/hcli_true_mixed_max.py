@@ -173,7 +173,7 @@ def build_units() -> List[WorkUnit]:
     # ---- CPU: real checks over this repository -------------------------
     units.append(_cpu_unit(
         "cpu.suite", "the full HCLI unit suite",
-        f'{PY} -m pytest {REPO_ROOT / "tools/haider/hcli/tests"} -q'))
+        f'{PY} -m pytest {REPO_ROOT / "hcli/tests"} -q'))
     units.append(_cpu_unit(
         "cpu.ctxauth", "the context authority still serves the long ingress",
         f'{PY} -c "import sys; '
@@ -198,16 +198,16 @@ def build_units() -> List[WorkUnit]:
     units.append(_qwen_unit(
         "qwen.scheduler_cap",
         "report the repair depth cap the scheduler enforces",
-        "Read tools/haider/hcli/scheduler.py and report the integer value of "
+        "Read hcli/scheduler.py and report the integer value of "
         "MAX_REPAIR_DEPTH. Answer with only that integer.",
-        "grep -m1 '^MAX_REPAIR_DEPTH' tools/haider/hcli/scheduler.py "
+        "grep -m1 '^MAX_REPAIR_DEPTH' hcli/scheduler.py "
         "| sed 's/[^0-9]//g'"))
 
     # ---- GROK: real read-only audit -------------------------------------
     units.append(_grok_unit(
         "grok.audit_status",
         "an independent read of the status surface",
-        "Read tools/haider/hcli/commands.py and report, in one sentence, "
+        "Read hcli/commands.py and report, in one sentence, "
         "whether format_status can print a per-hour rate without a window "
         "behind it. Cite file:line."))
 

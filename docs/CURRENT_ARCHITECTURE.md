@@ -9,7 +9,7 @@ One installed package: **`hcli`**, physical path **`hcli/`**, `pyproject.toml` n
 
 Tests live at `hcli/tests/`. The bootstrap-era fossils (`tools/hcli/bootstrap/`) are a dated record, disconnected from the control plane. `lab/hcli/` is a different product.
 
-The graph still inventories `tools/haider/hcli/*.py` as `hcli_product` (33 files) -- a stale path; the graph has not been regenerated since the move. Those 33 basenames exist at `hcli/` on HEAD. The graph does not list `hcli/paths.py`, `hcli/persist.py`, or the ownership packages `hcli.agentos`, `hcli.doctor`, `hcli.gravity`, `hcli.vmcp`, `hcli.genomes`.
+The graph still inventories `hcli/*.py` as `hcli_product` (33 files) -- a stale path; the graph has not been regenerated since the move. Those 33 basenames exist at `hcli/` on HEAD. The graph does not list `hcli/paths.py`, `hcli/persist.py`, or the ownership packages `hcli.agentos`, `hcli.doctor`, `hcli.gravity`, `hcli.vmcp`, `hcli.genomes`.
 
 ## Ownership (importable, not comments)
 
@@ -41,7 +41,7 @@ Graph `git_head` `cba2bb657` is an ancestor of HEAD `fef695d26`. G026 (`a76efc87
 | Finding `dual_import_identity` severity high | Fossil name raises `ImportError` |
 | Import SCC `dag_store → max_policy → resources → workunit` | Broken by extracting `hcli.persist.atomic_write_json` |
 | 88-class `sys.path.insert` coupling | Fossil inserts deleted; remaining inserts are foreign packages / harnesses |
-| Product entrypoints once included `tools/haider/hcli/__main__.py` | Installed `hcli.__main__` / `hcli.cli:main` |
+| Product entrypoints once included `hcli/__main__.py` | Installed `hcli.__main__` / `hcli.cli:main` |
 | `hcli.ledger` ↔ `hcli.steering` import cycle | Still present; import-time safe (`TYPE_CHECKING` / function-level) |
 
 The graph is not rewritten. Successor evidence: `receipts/headless/NAMESPACE_MIGRATION.json`.

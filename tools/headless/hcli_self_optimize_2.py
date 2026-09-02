@@ -1148,7 +1148,7 @@ def test_h1_controller_wires_observed_overlap_into_runtimepool() -> None:
     """Fails before H1, passes after. Engine.execute uses this as evidence.
 
     Collected only when pytest is pointed at this file (the mutation's
-    tests= list). Not part of tools/haider/hcli/tests.
+    tests= list). Not part of hcli/tests.
     """
     repo = Path(__file__).resolve().parents[2]
     text = (repo / CONTROLLER_REL).read_text(encoding="utf-8")
@@ -1659,7 +1659,7 @@ def stage_gate_correctness(state: Dict[str, Any], repo: Path, ws: Path) -> None:
     # from that host load so the gate measures the change.
     env.setdefault("HCLI_SWAP_CEILING_GIB", "64")
     proc = subprocess.run(
-        [sys.executable, "-m", "pytest", "tools/haider/hcli/tests", "-q", "--tb=line"],
+        [sys.executable, "-m", "pytest", "hcli/tests", "-q", "--tb=line"],
         cwd=str(repo),
         capture_output=True,
         text=True,
@@ -1669,7 +1669,7 @@ def stage_gate_correctness(state: Dict[str, Any], repo: Path, ws: Path) -> None:
     wall = time.perf_counter() - t0
     tail = (proc.stdout or "")[-2000:] + "\n" + (proc.stderr or "")[-1000:]
     payload = {
-        "command": [sys.executable, "-m", "pytest", "tools/haider/hcli/tests", "-q"],
+        "command": [sys.executable, "-m", "pytest", "hcli/tests", "-q"],
         "exit_code": proc.returncode,
         "passed_gate": proc.returncode == 0,
         "wall_s": wall,
@@ -3626,7 +3626,7 @@ STAGE_SPECS = [
     ),
     (
         "gate.correctness",
-        "Run python3 -m pytest tools/haider/hcli/tests -q and record the exit",
+        "Run python3 -m pytest hcli/tests -q and record the exit",
         ["mutate"],
         "TEST",
     ),
@@ -3833,7 +3833,7 @@ def main_loop(repo: Path) -> int:
             {
                 "title": "Default HCLI_CPU_TIMEOUT=120 is below the suite wall",
                 "detail": (
-                    "gate.correctness runs python3 -m pytest tools/haider/hcli/tests "
+                    "gate.correctness runs python3 -m pytest hcli/tests "
                     "which took ~142s on this box. The loop sets HCLI_CPU_TIMEOUT=600 "
                     "so the WorkUnit verifier is not killed mid-suite."
                 ),

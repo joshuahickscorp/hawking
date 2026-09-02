@@ -13,11 +13,11 @@ This builder does not hand-write status. It reads:
   * receipts/headless at HEAD (git objects; this worktree may be sparse)
   * the primary checkout behind `git rev-parse --git-common-dir`, for
     gitignored live state (.hcli, extra receipts, dirty HCLI source)
-  * .hcli / .haider in this worktree, if present
+  * .hcli / .hcli-legacy in this worktree, if present
 
 Default emit path is a STAGING file, not the durable name. The cold-read
 test promotes the staging file to
-`.haider/HAWKING_HEADLESS_COMPLETION_V3.json` only after every real claim
+`.hcli-legacy/HAWKING_HEADLESS_COMPLETION_V3.json` only after every real claim
 is SUPPORTED and a negative control has been seen to fail.
 
 Run:
@@ -41,8 +41,8 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 
 SCHEMA = "hawking.headless.completion.v3"
-STAGING_REL = ".haider/HAWKING_HEADLESS_COMPLETION_V3.staging.json"
-FINAL_REL = ".haider/HAWKING_HEADLESS_COMPLETION_V3.json"
+STAGING_REL = ".hcli-legacy/HAWKING_HEADLESS_COMPLETION_V3.staging.json"
+FINAL_REL = ".hcli-legacy/HAWKING_HEADLESS_COMPLETION_V3.json"
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[1]
@@ -408,10 +408,10 @@ def discover(repo: Path = REPO) -> Dict[str, Any]:
         if p not in git_receipts
     ]
 
-    haider_here = (repo / "hcli").is_dir() or (repo / "tools" / "haider" / "hcli").is_dir()
+    haider_here = (repo / "hcli").is_dir()
     receipts_here = (repo / "receipts" / "headless").is_dir()
     hcli_here = (repo / ".hcli").is_dir()
-    haider_dot_here = (repo / ".haider").is_dir()
+    haider_dot_here = (repo / ".hcli-legacy").is_dir()
 
     haider_tests: List[str] = []
     if headless_dir.is_dir():
@@ -456,7 +456,7 @@ def discover(repo: Path = REPO) -> Dict[str, Any]:
                         primary_extra_harnesses.append(p.name)
         # dirty tracked files in the HCLI tree (live vs HEAD)
         diff = git_out(
-            ["diff", "--name-only", "HEAD", "--", "hcli", "tools/haider/hcli"],
+            ["diff", "--name-only", "HEAD", "--", "hcli", "hcli"],
             cwd=primary,
         )
         primary_dirty = [ln for ln in diff.splitlines() if ln] if diff else []
@@ -679,20 +679,20 @@ def _facts(out: List[Claim], disc: Dict[str, Any], ids: IdGen) -> None:
             id=ids.next("F"),
             kind="fact",
             statement=(
-                "tools/haider/hcli is not on disk in this worktree"
+                "hcli is not on disk in this worktree"
                 if not disc["this_worktree"]["tools_haider_hcli"]
-                else "tools/haider/hcli is on disk in this worktree"
+                else "hcli is on disk in this worktree"
             ),
             evidence_path="tools/headless/handoff_builder.py",
             reproducing_command=py_cmd(
                 "from pathlib import Path",
-                "cur = Path('tools/haider/hcli').is_dir()",
+                "cur = Path('hcli').is_dir()",
                 f"exp = {bool(disc['this_worktree']['tools_haider_hcli'])}",
                 "assert cur is exp, (cur, exp)",
             ),
             derived_from={
                 "how": "Path.is_dir",
-                "source": "tools/haider/hcli",
+                "source": "hcli",
                 "note": (
                     "sparse-checkout omission is not evidence the path is "
                     "absent from git; see git ls-tree"
@@ -705,14 +705,14 @@ def _facts(out: List[Claim], disc: Dict[str, Any], ids: IdGen) -> None:
         Claim(
             id=ids.next("F"),
             kind="fact",
-            statement="tools/haider/hcli/scheduler.py exists at git HEAD",
-            evidence_path="tools/haider/hcli/scheduler.py",
+            statement="hcli/scheduler.py exists at git HEAD",
+            evidence_path="hcli/scheduler.py",
             reproducing_command=py_cmd(
-                "assert git_exists('tools/haider/hcli/scheduler.py')",
+                "assert git_exists('hcli/scheduler.py')",
             ),
             derived_from={
-                "how": "git cat-file -e HEAD:tools/haider/hcli/scheduler.py",
-                "source": "tools/haider/hcli/scheduler.py",
+                "how": "git cat-file -e HEAD:hcli/scheduler.py",
+                "source": "hcli/scheduler.py",
                 "via": "git_head",
             },
         ),
@@ -1154,27 +1154,27 @@ def _source_constants_at_head(out: List[Claim], ids: IdGen) -> None:
     """Constants committed at HEAD. Live dirty trees are a separate section."""
     consts: List[Tuple[str, str, str]] = [
         (
-            "tools/haider/hcli/workunit.py",
+            "hcli/workunit.py",
             "DEFAULT_RETRY_BUDGET = 3",
             "HEAD workunit.py records DEFAULT_RETRY_BUDGET = 3",
         ),
         (
-            "tools/haider/hcli/resources.py",
+            "hcli/resources.py",
             "DEFAULT_DECODE_LIMIT = 1",
             "HEAD resources.py records DEFAULT_DECODE_LIMIT = 1",
         ),
         (
-            "tools/haider/hcli/resources.py",
+            "hcli/resources.py",
             "MEMORY_HEAVY_LIMIT = 2",
             "HEAD resources.py records MEMORY_HEAVY_LIMIT = 2",
         ),
         (
-            "tools/haider/hcli/ledger.py",
+            "hcli/ledger.py",
             "NO_PROGRESS_THRESHOLD = 3",
             "HEAD ledger.py records NO_PROGRESS_THRESHOLD = 3",
         ),
         (
-            "tools/haider/hcli/mutation.py",
+            "hcli/mutation.py",
             "MAX_MUTATION_OPERATIONS = 20",
             "HEAD mutation.py records MAX_MUTATION_OPERATIONS = 20",
         ),
@@ -1212,7 +1212,7 @@ def _source_constants_at_head(out: List[Claim], ids: IdGen) -> None:
             ),
         )
 
-    sched = "tools/haider/hcli/scheduler.py"
+    sched = "hcli/scheduler.py"
     if at_head(sched):
         _add(
             out,
@@ -1220,7 +1220,7 @@ def _source_constants_at_head(out: List[Claim], ids: IdGen) -> None:
                 id=ids.next("N"),
                 kind="not_done",
                 statement=(
-                    "HEAD tools/haider/hcli/scheduler.py does not define "
+                    "HEAD hcli/scheduler.py does not define "
                     "MAX_REPAIR_DEPTH (the bound lives only in the dirty "
                     "primary working tree, if at all)"
                 ),
@@ -1241,7 +1241,7 @@ def _source_constants_at_head(out: List[Claim], ids: IdGen) -> None:
                 id=ids.next("N"),
                 kind="not_done",
                 statement=(
-                    "HEAD tools/haider/hcli/scheduler.py does not define "
+                    "HEAD hcli/scheduler.py does not define "
                     "MAX_REPAIRS_PER_ROOT"
                 ),
                 evidence_path=sched,
@@ -1424,8 +1424,8 @@ def _live_primary(out: List[Claim], disc: Dict[str, Any], ids: IdGen) -> None:
     # between assemble and cold-read. Byte inequality of the load-bearing
     # files against THIS worktree's HEAD is the durable fact.
     for rel in (
-        "tools/haider/hcli/scheduler.py",
-        "tools/haider/hcli/workunit.py",
+        "hcli/scheduler.py",
+        "hcli/workunit.py",
     ):
         live_p = Path(primary) / rel
         if not live_p.is_file() or not at_head(rel):
@@ -1460,7 +1460,7 @@ def _live_primary(out: List[Claim], disc: Dict[str, Any], ids: IdGen) -> None:
             ),
         )
 
-    live_sched = "tools/haider/hcli/scheduler.py"
+    live_sched = "hcli/scheduler.py"
     # Only emit live-constant claims if the primary file actually contains them.
     primary_path = Path(primary) / live_sched
     if primary_path.is_file():
@@ -1751,11 +1751,11 @@ def _blocked(out: List[Claim], disc: Dict[str, Any], ids: IdGen) -> None:
                 evidence_path="tools/headless",
                 reproducing_command=py_cmd(
                     "from pathlib import Path",
-                    "assert Path('tools/haider/hcli').is_dir() is False",
+                    "assert Path('hcli').is_dir() is False",
                     f"names = json.loads({json.dumps(json.dumps(tests))})",
                     "for n in names:",
                     "    assert (Path('tools/headless') / n).is_file(), n",
-                    "assert git_exists('tools/haider/hcli/scheduler.py')",
+                    "assert git_exists('hcli/scheduler.py')",
                 ),
                 derived_from={
                     "how": "scan *_test.py for sys.path.insert(...haider) plus Path.is_dir",

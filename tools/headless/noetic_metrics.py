@@ -1151,7 +1151,7 @@ def build_record(artifact: Path, live_probe: bool) -> dict:
             "what": "git apply of lane-bootstrap/tree-state.patch",
             "result": "FAILED",
             "why": (
-                "Patch is 30 files under tools/haider/hcli, which is a DENY "
+                "Patch is 30 files under hcli, which is a DENY "
                 "path and is not in this sparse checkout. untracked.tar is "
                 "the same tree. Baseline 464-pass haider suite cannot run "
                 "here without materializing tools/haider."

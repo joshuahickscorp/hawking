@@ -1181,7 +1181,7 @@ def main() -> int:
             "visionmcp/",
             "app/",
             "lab/",
-            "tools/haider/",
+            "tools/hcli/bootstrap/",
         ],
     }
 

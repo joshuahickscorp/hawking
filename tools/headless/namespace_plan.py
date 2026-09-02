@@ -394,7 +394,7 @@ def _is_python_test(path: str) -> bool:
 
 
 def _is_hcli_impl(path: str) -> bool:
-    if not path.startswith("tools/haider/"):
+    if not path.startswith("tools/hcli/bootstrap/"):
         return False
     if "/tests/" in path:
         return False
@@ -439,7 +439,7 @@ def classify_site(path: str, text: str) -> Tuple[str, str]:
     if USER_CMD_RE.search(stripped) or "python -m hcli" in stripped or "python3 -m hcli" in stripped:
         return "USER_FACING_COMMANDS", "operator-facing command / shim / CLI symbol"
 
-    if path.startswith("tools/haider/hcli/tests/") or path.startswith("tools/haider/test_"):
+    if path.startswith("hcli/tests/") or path.startswith("tools/hcli/bootstrap/test_"):
         return "TEST_HARNESS_PATHS", "in-package test path assumption"
 
     if path.startswith("tools/headless/"):
@@ -450,7 +450,7 @@ def classify_site(path: str, text: str) -> Tuple[str, str]:
     if path.startswith("lab/hcli/"):
         return (
             "UNKNOWN",
-            "package lab.hcli — Agent OS scaffolds, not tools/haider/hcli; do not fold into this move",
+            "package lab.hcli — Agent OS scaffolds, not hcli; do not fold into this move",
         )
 
     if path.startswith("lab/"):
@@ -465,23 +465,23 @@ def classify_site(path: str, text: str) -> Tuple[str, str]:
             "Rust namesake (hide-backend haider/hcli); different language and product; do not rename with the Python move",
         )
 
-    if path.startswith("tools/haider/") and _is_hcli_impl(path):
+    if path.startswith("tools/hcli/bootstrap/") and _is_hcli_impl(path):
         return "LIVE_IMPLEMENTATION_REFERENCES", "implementation source under the fossil directory"
 
-    if path.startswith("tools/haider/"):
+    if path.startswith("tools/hcli/bootstrap/"):
         return "LIVE_IMPLEMENTATION_REFERENCES", "fossil-directory artifact"
 
     if path.startswith("tools/condense/"):
         return (
             "UNKNOWN",
-            "condense HCLI live-suite talks to the Rust hcli.command.v1 product, not tools/haider/hcli imports",
+            "condense HCLI live-suite talks to the Rust hcli.command.v1 product, not hcli imports",
         )
 
     if path.startswith("workspace/docs/"):
         return "HISTORICAL_RECEIPTS", "plan/doc under workspace; preserve filename; do not treat as live code"
 
     if path == ".gitignore":
-        return "LIVE_IMPLEMENTATION_REFERENCES", "gitignore of .haider/ state dir; PRESERVE the ignore rule"
+        return "LIVE_IMPLEMENTATION_REFERENCES", "gitignore of .hcli-legacy/ state dir; PRESERVE the ignore rule"
 
     if path.startswith("contracts/") or path == "README.md" or path == "Cargo.toml":
         return "UNKNOWN", "docs/manifest mention; inspect before any rename"
@@ -626,11 +626,11 @@ def watched_fail(root: Path) -> List[Dict[str, Any]]:
     )
 
     # Depth arithmetic check: resources.py parents[3] identity.
-    src = blob(root, "tools/haider/hcli/resources.py") or ""
+    src = blob(root, "hcli/resources.py") or ""
     rows.append(
         {
             "name": "resources_default_repo_root_depth",
-            "argv": ["git", "show", "HEAD:tools/haider/hcli/resources.py"],
+            "argv": ["git", "show", "HEAD:hcli/resources.py"],
             "exit": 0 if "parents[3]" in src else 1,
             "output_head": "parents[3] present" if "parents[3]" in src else "MISSING parents[3]",
         }
@@ -771,7 +771,7 @@ def main() -> int:
     hcli_py = [
         p
         for p in haider_files
-        if p.startswith("tools/haider/hcli/") and p.endswith(".py")
+        if p.startswith("hcli/") and p.endswith(".py")
     ]
     hcli_modules = [p for p in hcli_py if "/tests/" not in p]
     hcli_tests = [p for p in hcli_py if "/tests/" in p]
@@ -877,7 +877,7 @@ def main() -> int:
                 1,
                 f"<file {p}>",
                 "UNKNOWN",
-                note if _bkt == "UNKNOWN" else "namesake file; not tools/haider/hcli",
+                note if _bkt == "UNKNOWN" else "namesake file; not hcli",
                 root,
             )
         )
@@ -1035,31 +1035,31 @@ def main() -> int:
             "name": ".hcli/",
             "role": "live per-workspace durable state (dag.json, mission, ledger, grok receipts, sessions)",
             "preserve": True,
-            "cite": "tools/haider/hcli/dag_store.py:3",
+            "cite": "hcli/dag_store.py:3",
         },
         {
-            "name": ".haider/",
+            "name": ".hcli-legacy/",
             "role": "gitignored fossil state dir; also listed in engine skip sets and genome lookup",
             "preserve": True,
-            "cite": ".gitignore:182 and tools/haider/hcli/cli.py:14",
+            "cite": ".gitignore:182 and hcli/cli.py:14",
         },
         {
             "name": "~/.config/hcli/",
             "role": "user config + machine_genome.json",
             "preserve": True,
-            "cite": "tools/haider/hcli/config.py:41",
+            "cite": "hcli/config.py:41",
         },
         {
             "name": "~/.local/share/hcli/current",
             "role": "install-shims package copy; PYTHONPATH for the operator shims",
             "preserve": True,
-            "cite": "tools/haider/hcli/cli.py:191",
+            "cite": "hcli/cli.py:191",
         },
         {
             "name": "~/.local/bin/{hcli,jhcli}",
             "role": "user-facing shims; both exec python -m hcli",
             "preserve_command_name": True,
-            "cite": "tools/haider/hcli/cli.py:221",
+            "cite": "hcli/cli.py:221",
         },
     ]
 
@@ -1077,36 +1077,36 @@ def main() -> int:
     # path-depth assumptions
     depth = [
         {
-            "path": "tools/haider/hcli/resources.py",
+            "path": "hcli/resources.py",
             "line": 57,
             "text": "return Path(__file__).resolve().parents[3]",
-            "meaning": "repo root, encoding tools/haider/hcli/<file> (4 levels)",
+            "meaning": "repo root, encoding hcli/<file> (4 levels)",
             "breaks_if": "package dropped one directory (tools/hcli/resources.py would need parents[2])",
-            "resolves": resolves(root, "tools/haider/hcli/resources.py"),
+            "resolves": resolves(root, "hcli/resources.py"),
         },
         {
-            "path": "tools/haider/hcli/machine.py",
+            "path": "hcli/machine.py",
             "line": 85,
             "text": "return Path(__file__).resolve().parents[3]",
             "meaning": "repo root, same 4-level encoding",
             "breaks_if": "package dropped one directory",
-            "resolves": resolves(root, "tools/haider/hcli/machine.py"),
+            "resolves": resolves(root, "hcli/machine.py"),
         },
         {
-            "path": "tools/haider/hcli/machine.py",
+            "path": "hcli/machine.py",
             "line": 143,
             "text": 'Path(__file__).resolve().parents[2] / "headless" / "metal_budget.py"',
             "meaning": "tools/headless/metal_budget.py via sibling of tools/haider",
             "breaks_if": "package leaves tools/",
-            "resolves": resolves(root, "tools/haider/hcli/machine.py"),
+            "resolves": resolves(root, "hcli/machine.py"),
         },
         {
-            "path": "tools/haider/hcli/engine.py",
+            "path": "hcli/engine.py",
             "line": 2779,
             "text": 'extra = str(self.root / "tools" / "haider")',
             "meaning": "contained test subprocess PYTHONPATH includes fossil dir so `import hcli` works",
             "breaks_if": "directory rename without updating this literal",
-            "resolves": resolves(root, "tools/haider/hcli/engine.py"),
+            "resolves": resolves(root, "hcli/engine.py"),
         },
     ]
 
@@ -1119,12 +1119,12 @@ def main() -> int:
     test_repo_inserts = [
         s
         for s in sys_path_sites
-        if s["path"].startswith("tools/haider/hcli/tests/") and "parents[4]" in (blob(root, s["path"]) or "")
+        if s["path"].startswith("hcli/tests/") and "parents[4]" in (blob(root, s["path"]) or "")
     ]
 
     layout = {
         "canonical_package_name": "hcli",
-        "canonical_physical_path": "tools/hcli/  (today: tools/haider/hcli/)",
+        "canonical_physical_path": "tools/hcli/  (today: hcli/)",
         "do_not_invent": [
             {
                 "hint": f"hawking/{name}",
@@ -1133,7 +1133,7 @@ def main() -> int:
                     "hcli": "the package is already named hcli; wrapping it in a Python hawking/ tree would collide with the Rust crate hawking and invent a namespace no Python file uses",
                     "agentos": "AgentOS lives as modules inside hcli (ledger, mission, workunit, steering, verifier_pipeline); splitting them out is an architecture rewrite, not a namespace move",
                     "runtime": "RuntimePool/backends/machine already live in hcli; a hawking/runtime/ Python package does not exist",
-                    "doctor": "doctor lives as tools/doctor_seal.py and tools/gravity_doctor_*.py, not inside tools/haider/hcli",
+                    "doctor": "doctor lives as tools/doctor_seal.py and tools/gravity_doctor_*.py, not inside hcli",
                     "gravity": "gravity lives as tools/gravity_*.py plus crates; not this package",
                     "vmcp": "visionmcp/ is already its own package; harnesses sys.path.insert visionmcp/src independently",
                     "genomes": "MachineGenome is hcli.machine; receipts/headless/MACHINE_GENOME.json is a sealed receipt",
@@ -1147,23 +1147,23 @@ def main() -> int:
         "unassigned_modules": unassigned,
         "fossil_siblings_not_in_package": [
             {
-                "path": "tools/haider/haider.py",
-                "loc": (blob(root, "tools/haider/haider.py") or "").count("\n"),
+                "path": "tools/hcli/bootstrap/snapshots/haider.py",
+                "loc": (blob(root, "tools/hcli/bootstrap/snapshots/haider.py") or "").count("\n"),
                 "owns": "HCLI-v0 Gate Zero bootstrap. Does not import the hcli package. sys.path.insert of its own directory + import p0_tool_bridge.",
                 "action": "leave in place through the package move; retire in a later fossil step after proving zero callers",
-                "resolves": resolves(root, "tools/haider/haider.py"),
+                "resolves": resolves(root, "tools/hcli/bootstrap/snapshots/haider.py"),
             },
             {
-                "path": "tools/haider/p0_tool_bridge.py",
-                "owns": "P0 tool bridge used only by haider.py and tools/haider/test_*.py",
+                "path": "tools/hcli/bootstrap/p0_tool_bridge.py",
+                "owns": "P0 tool bridge used only by haider.py and tools/hcli/bootstrap/test_*.py",
                 "action": "same as haider.py",
-                "resolves": resolves(root, "tools/haider/p0_tool_bridge.py"),
+                "resolves": resolves(root, "tools/hcli/bootstrap/p0_tool_bridge.py"),
             },
             {
-                "path": "tools/haider/P1_HAIDER_PRODUCTIZATION_MAX.md",
-                "owns": "historical productization notes citing python tools/haider/haider.py",
+                "path": "tools/hcli/bootstrap/P1_HAIDER_PRODUCTIZATION_MAX.md",
+                "owns": "historical productization notes citing python tools/hcli/bootstrap/snapshots/haider.py",
                 "action": "preserve as doc; do not treat as live entrypoint",
-                "resolves": resolves(root, "tools/haider/P1_HAIDER_PRODUCTIZATION_MAX.md"),
+                "resolves": resolves(root, "tools/hcli/bootstrap/P1_HAIDER_PRODUCTIZATION_MAX.md"),
             },
         ],
         "other_products_sharing_the_name": [
@@ -1183,7 +1183,7 @@ def main() -> int:
             {
                 "path": "crates/hide-backend/src/bin/hcli.rs",
                 "schema": "hcli.command.v1",
-                "action": "HIDE-backend CLI product. Preserve the schema id and the bin name unless a dedicated Rust rename campaign says otherwise. Not an import of tools/haider/hcli.",
+                "action": "HIDE-backend CLI product. Preserve the schema id and the bin name unless a dedicated Rust rename campaign says otherwise. Not an import of hcli.",
                 "resolves": resolves(root, "crates/hide-backend/src/bin/hcli.rs"),
             },
             {
@@ -1223,7 +1223,7 @@ def main() -> int:
                 "import_sites_tools_haider": len(import_tools_haider),
                 "science_lanes": "untouched (they already `from hcli` after inserting tools/haider)",
             },
-            "run_after": "python3 -m unittest discover -s tools/haider/hcli/tests -t .",
+            "run_after": "python3 -m unittest discover -s hcli/tests -t .",
             "blocks_if": "tools/haider not materialized in a sparse worktree (this worktree: NOT on disk)",
         },
         {
@@ -1236,8 +1236,8 @@ def main() -> int:
             ),
             "blast": {
                 "files": [
-                    "tools/haider/hcli/resources.py",
-                    "tools/haider/hcli/machine.py",
+                    "hcli/resources.py",
+                    "hcli/machine.py",
                 ],
                 "file_count": 2,
             },
@@ -1252,7 +1252,7 @@ def main() -> int:
                 "Point it at Path(__file__).resolve().parent.parent (the directory that contains the hcli package)."
             ),
             "blast": {
-                "files": ["tools/haider/hcli/engine.py"],
+                "files": ["hcli/engine.py"],
                 "file_count": 1,
             },
             "run_after": "unittest test_acceptance_integrity test_parallel_engine test_runtime_pool",
@@ -1276,12 +1276,12 @@ def main() -> int:
         },
         {
             "id": "S5",
-            "name": "Directory move tools/haider/hcli -> tools/hcli  (package name stays `hcli`)",
+            "name": "Directory move hcli -> tools/hcli  (package name stays `hcli`)",
             "does": (
                 "PYTHONPATH=tools then `import hcli` / `python -m hcli`. "
                 "Update remaining live path literals. Do not touch receipts/, .hcli/ state, "
-                ".haider/ gitignore, lab/hcli, or crates/hide-backend. "
-                "Leave tools/haider/haider.py and p0_tool_bridge.py where they are."
+                ".hcli-legacy/ gitignore, lab/hcli, or crates/hide-backend. "
+                "Leave tools/hcli/bootstrap/snapshots/haider.py and p0_tool_bridge.py where they are."
             ),
             "blast": {
                 "live_path_strings": "every remaining tools/haider string outside receipts/ and docs",
@@ -1312,9 +1312,9 @@ def main() -> int:
             "does": "Landed. No alias was kept: every call site in this repo was rewritten in the same change, and out-of-tree callers of a symbol this repo never published are not a constituency.",
             "blast": {
                 "files": [
-                    "tools/haider/hcli/__init__.py",
-                    "tools/haider/hcli/cli.py",
-                    "tools/haider/hcli/tests/test_grammar.py",
+                    "hcli/__init__.py",
+                    "hcli/cli.py",
+                    "hcli/tests/test_grammar.py",
                     "tools/headless/hcli_foundation_test.py",
                 ],
             },
@@ -1327,10 +1327,10 @@ def main() -> int:
             "does": "Only after a census shows zero callers. Do not combine with S5.",
             "blast": {
                 "files": [
-                    "tools/haider/haider.py",
-                    "tools/haider/p0_tool_bridge.py",
-                    "tools/haider/test_haider_edit.py",
-                    "tools/haider/test_p0_tool_bridge.py",
+                    "tools/hcli/bootstrap/snapshots/haider.py",
+                    "tools/hcli/bootstrap/p0_tool_bridge.py",
+                    "tools/hcli/bootstrap/test_haider_edit.py",
+                    "tools/hcli/bootstrap/test_p0_tool_bridge.py",
                 ],
             },
             "run_after": "grep callers == 0, then the same suite",
@@ -1420,7 +1420,7 @@ def main() -> int:
             "slash_commands": list(SLASH_COMMANDS),
             "parse_symbol": "parse_hcli_args",
             "shims_identical": True,
-            "cite": "tools/haider/hcli/cli.py:186-221 and tools/haider/hcli/commands.py REQUIRED_COMMANDS",
+            "cite": "hcli/cli.py:186-221 and hcli/commands.py REQUIRED_COMMANDS",
         },
         "sealed_exclusion": {
             "policy": (
@@ -1431,7 +1431,7 @@ def main() -> int:
             "schema_ids_in_receipts_headless": schema_ids,
             "named_schema_cites": extra_schema_cites,
             "on_disk_state_dir_names": state_dirs,
-            "gitignore": {".haider/": "PRESERVE"},
+            "gitignore": {".hcli-legacy/": "PRESERVE"},
         },
         "migration_steps": steps,
         "unknowns": classified["UNKNOWN"],
@@ -1488,13 +1488,13 @@ def main() -> int:
     print()
 
     print("## 1. LIVE IMPLEMENTATION REFERENCES")
-    print("Python control plane lives at tools/haider/hcli/ (33 modules). Fossil v0 siblings:")
+    print("Python control plane lives at hcli/ (33 modules). Fossil v0 siblings:")
     for p in [
-        "tools/haider/haider.py",
-        "tools/haider/p0_tool_bridge.py",
-        "tools/haider/test_haider_edit.py",
-        "tools/haider/test_p0_tool_bridge.py",
-        "tools/haider/P1_HAIDER_PRODUCTIZATION_MAX.md",
+        "tools/hcli/bootstrap/snapshots/haider.py",
+        "tools/hcli/bootstrap/p0_tool_bridge.py",
+        "tools/hcli/bootstrap/test_haider_edit.py",
+        "tools/hcli/bootstrap/test_p0_tool_bridge.py",
+        "tools/hcli/bootstrap/P1_HAIDER_PRODUCTIZATION_MAX.md",
     ]:
         print(f"  {p}  resolves={resolves(root, p)}")
     print("Line hits classified LIVE_IMPLEMENTATION_REFERENCES:")
@@ -1538,7 +1538,7 @@ def main() -> int:
     print("Slash commands (CommandHandler.REQUIRED_COMMANDS):")
     for c in SLASH_COMMANDS:
         print(f"  {c}")
-    print("Fossil CLI still documented: python tools/haider/haider.py 1")
+    print("Fossil CLI still documented: python tools/hcli/bootstrap/snapshots/haider.py 1")
     print("Symbol renamed: parse_haider_args -> parse_hcli_args (done)")
     print_sites("USER_FACING_COMMANDS", classified["USER_FACING_COMMANDS"])
 
@@ -1580,7 +1580,7 @@ def main() -> int:
 
     print("\n## PROPOSED PACKAGE LAYOUT (from measured ownership)")
     print("Canonical package name: hcli")
-    print("Canonical physical path after the move: tools/hcli/   (today: tools/haider/hcli/)")
+    print("Canonical physical path after the move: tools/hcli/   (today: hcli/)")
     print("Do not create a Python hawking/ tree. The Rust crate is already named hawking.")
     print("Do not split this package to satisfy the hint directories.")
     print()
@@ -1589,7 +1589,7 @@ def main() -> int:
         print(f"### group {g}  -> {spec['belongs']}")
         print(f"    owns: {spec['owns']}")
         for name in spec["modules"]:
-            rel = f"tools/haider/hcli/{name}"
+            rel = f"hcli/{name}"
             covered.add(name)
             meta = next((m for m in assigned if m["path"].endswith("/" + name)), None)
             loc = meta["loc"] if meta else "?"

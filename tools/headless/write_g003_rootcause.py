@@ -4,9 +4,9 @@
 Binds three independent sources so the conclusion is checkable rather than
 asserted:
 
-  1. production failure record  .haider/bootstrap-director-v6/{negative-science.jsonl,runs/*/hcli.log}
+  1. production failure record  .hcli-legacy/bootstrap-director-v6/{negative-science.jsonl,runs/*/hcli.log}
   2. controlled reproduction    receipts/headless/STRUCTURED_OUTPUT_PROBE.json
-  3. the code path itself       tools/haider/hcli/engine.py at a pinned commit
+  3. the code path itself       hcli/engine.py at a pinned commit
 
 Writes receipts/headless/G003_ROOT_CAUSE.json.
 """
@@ -28,7 +28,7 @@ def sh(c: str) -> str:
 
 
 def production_evidence() -> dict:
-    ns = REPO / ".haider/bootstrap-director-v6/negative-science.jsonl"
+    ns = REPO / ".hcli-legacy/bootstrap-director-v6/negative-science.jsonl"
     rows = []
     if ns.exists():
         for line in ns.read_text().splitlines():
@@ -37,7 +37,7 @@ def production_evidence() -> dict:
             except Exception:
                 pass
     logs = {}
-    for p in sorted(glob.glob(str(REPO / ".haider/bootstrap-director-v6/runs/*/*.log"))):
+    for p in sorted(glob.glob(str(REPO / ".hcli-legacy/bootstrap-director-v6/runs/*/*.log"))):
         txt = Path(p).read_text(errors="replace").strip()
         if txt:
             logs.setdefault(txt.splitlines()[-1][:200], []).append(os.path.basename(os.path.dirname(p)))
@@ -156,7 +156,7 @@ def main() -> int:
         "production_evidence": prod,
         "controlled_reproduction": probe,
         "code_under_test": {
-            "path": "tools/haider/hcli/engine.py",
+            "path": "hcli/engine.py",
             "pinned_commit": pinned,
             "call_site": "_call_model (~line 896), payload built ~line 966",
             "receipt_site": "_write_receipt (~line 1821)",
@@ -165,10 +165,10 @@ def main() -> int:
         "reproduce": {
             "production_failure":
                 "python3 tools/headless/structured_output_probe.py --reps 1 --arms baseline "
-                "--user-file .haider/bootstrap-director-v6/runs/20260822-143859-epoch-00007/mission.md",
+                "--user-file .hcli-legacy/bootstrap-director-v6/runs/20260822-143859-epoch-00007/mission.md",
             "the_fix":
                 "python3 tools/headless/structured_output_probe.py --reps 1 --arms schema_nothink "
-                "--user-file .haider/bootstrap-director-v6/runs/20260822-143859-epoch-00007/mission.md",
+                "--user-file .hcli-legacy/bootstrap-director-v6/runs/20260822-143859-epoch-00007/mission.md",
         },
         "related": {
             "acceptance_vacuity": "receipts/headless/ACCEPTANCE_VACUITY.json — a separate and more "

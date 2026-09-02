@@ -80,7 +80,7 @@ SCAN_PATTERNS: Dict[str, str] = {
     "Goal": r"^(class |pub struct |struct )(Goal|GoalCompiler|GoalRecord|GoalStore|GoalNotMet)\b",
     "mission": r"^(class |pub struct |struct )(Mission)\b",
     "WorkUnit": r"^(class |pub struct |struct )(WorkUnit|WorkUnitDAG|WorkUnitExecutor|_WorkItem)\b",
-    "DAG": r"^(class |pub struct |struct )(WorkUnitDAG|DagStore|HaiderDag|PlanDag|HaiderNode)\b",
+    "DAG": r"^(class |pub struct |struct )(WorkUnitDAG|DagStore|HcliDag|PlanDag|HcliNode)\b",
     "scheduler": r"^(class |pub struct |struct )(Scheduler|AgentScheduler|LaneScheduler)\b",
     "checkpoint": r"^(class |pub struct |struct )(Checkpoint|CheckpointStore|CheckpointRecord|AgentCheckpoint|CheckpointId|CheckpointMeta)\b",
     "mutation lock": r"^(class |pub struct |struct )(MutationLock|SingletonLease)\b",
@@ -110,7 +110,7 @@ SCAN_SKIP_PREFIXES = (
 # on a wrapper means removable.
 #
 # plane:
-#   hcli-py          tools/haider/hcli  (live campaign control plane)
+#   hcli-py          hcli  (live campaign control plane)
 #   hide-rs          hide-kernel / hide-backend / hide-protocol
 #   hawking-orch     fleet admission
 #   hawking-serve    decode-slot batching
@@ -119,7 +119,7 @@ SCAN_SKIP_PREFIXES = (
 #   headless         measurement harnesses
 #   ramanujan        math verifier scaffold
 #   agentos          genesis / machine_state
-#   haider-v0        tools/haider/haider.py bootstrap
+#   haider-v0        tools/hcli/bootstrap/snapshots/haider.py bootstrap
 #   hawking-speculate speculative-decode accept (name collision)
 CatalogRow = Dict[str, Any]
 
@@ -128,7 +128,7 @@ CATALOG: List[CatalogRow] = [
     {
         "id": "hcli.ledger.Ledger",
         "concept": "Goal",
-        "path": "tools/haider/hcli/ledger.py",
+        "path": "hcli/ledger.py",
         "needle": "class Ledger:",
         "symbol": "Ledger",
         "classification": "canonical_authority",
@@ -146,16 +146,16 @@ CATALOG: List[CatalogRow] = [
             "assert_may_complete."
         ),
         "callers": [
-            "tools/haider/hcli/mission.py",
-            "tools/haider/hcli/commands.py",
-            "tools/haider/hcli/steering.py",
+            "hcli/mission.py",
+            "hcli/commands.py",
+            "hcli/steering.py",
         ],
         "evidence": "receipts/headless/DAG_CONSOLIDATION_DECISION.json",
     },
     {
         "id": "hcli.goal.GoalCompiler",
         "concept": "Goal",
-        "path": "tools/haider/hcli/goal.py",
+        "path": "hcli/goal.py",
         "needle": "class GoalCompiler:",
         "symbol": "GoalCompiler",
         "classification": "canonical_authority",
@@ -172,9 +172,9 @@ CATALOG: List[CatalogRow] = [
             "Controller, and Mission already call GoalCompiler().compile."
         ),
         "callers": [
-            "tools/haider/hcli/engine.py",
-            "tools/haider/hcli/controller.py",
-            "tools/haider/hcli/mission.py",
+            "hcli/engine.py",
+            "hcli/controller.py",
+            "hcli/mission.py",
         ],
         "evidence": "receipts/headless/DAG_CONSOLIDATION_DECISION.json",
     },
@@ -222,7 +222,7 @@ CATALOG: List[CatalogRow] = [
     {
         "id": "haider-v0.haider.py",
         "concept": "Goal",
-        "path": "tools/haider/haider.py",
+        "path": "tools/hcli/bootstrap/snapshots/haider.py",
         "needle": "haider — HCLI-v0 bootstrap",
         "symbol": "haider.py (HCLI-v0 loop)",
         "classification": "obsolete_implementation",
@@ -232,7 +232,7 @@ CATALOG: List[CatalogRow] = [
         "role": "Gate-zero bootstrap: one llama-server, one scoped edit, one receipt.",
         "move": (
             "Leave in tree (historical bootstrap). Do not route live missions "
-            "through it. Live control plane is tools/haider/hcli/."
+            "through it. Live control plane is hcli/."
         ),
         "callers": [],
     },
@@ -240,7 +240,7 @@ CATALOG: List[CatalogRow] = [
     {
         "id": "hcli.mission.Mission",
         "concept": "mission",
-        "path": "tools/haider/hcli/mission.py",
+        "path": "hcli/mission.py",
         "needle": "class Mission:",
         "symbol": "Mission",
         "classification": "canonical_authority",
@@ -254,8 +254,8 @@ CATALOG: List[CatalogRow] = [
         ),
         "move": "Keep. Lab ExperimentRuntime and hide-kernel AgentDriver stay in their planes.",
         "callers": [
-            "tools/haider/hcli/controller.py",
-            "tools/haider/hcli/app.py",
+            "hcli/controller.py",
+            "hcli/app.py",
         ],
     },
     {
@@ -303,14 +303,14 @@ CATALOG: List[CatalogRow] = [
         "two_real": False,
         "survives": False,
         "role": "Experimental self-evolution ledger under lab/hcli, not the live HCLI Mission.",
-        "move": "Leave. Not a migration target for tools/haider/hcli/mission.py.",
+        "move": "Leave. Not a migration target for hcli/mission.py.",
         "callers": [],
     },
     # ------------------------------------------------------------------ WorkUnit
     {
         "id": "hcli.workunit.WorkUnit",
         "concept": "WorkUnit",
-        "path": "tools/haider/hcli/workunit.py",
+        "path": "hcli/workunit.py",
         "needle": "class WorkUnit:",
         "symbol": "WorkUnit",
         "classification": "canonical_authority",
@@ -323,17 +323,17 @@ CATALOG: List[CatalogRow] = [
         ),
         "move": "Keep. All status writes go through transition_status.",
         "callers": [
-            "tools/haider/hcli/scheduler.py",
-            "tools/haider/hcli/goal.py",
-            "tools/haider/hcli/dag_store.py",
-            "tools/haider/hcli/mission.py",
+            "hcli/scheduler.py",
+            "hcli/goal.py",
+            "hcli/dag_store.py",
+            "hcli/mission.py",
         ],
         "evidence": "receipts/headless/DAG_CONSOLIDATION_DECISION.json",
     },
     {
         "id": "hcli.goal.WorkUnitDAG",
         "concept": "WorkUnit",
-        "path": "tools/haider/hcli/goal.py",
+        "path": "hcli/goal.py",
         "needle": "class WorkUnitDAG:",
         "symbol": "WorkUnitDAG",
         "classification": "compatibility_wrapper",
@@ -350,7 +350,7 @@ CATALOG: List[CatalogRow] = [
             "'all deps completed' loop or direct wu.status writes."
         ),
         "callers": [
-            "tools/haider/hcli/goal.py",
+            "hcli/goal.py",
             "tools/headless/hcli_dag_consolidation_test.py",
         ],
         "evidence": "receipts/headless/DAG_CONSOLIDATION_DECISION.json",
@@ -358,7 +358,7 @@ CATALOG: List[CatalogRow] = [
     {
         "id": "hcli.executors.WorkUnitExecutor",
         "concept": "WorkUnit",
-        "path": "tools/haider/hcli/executors.py",
+        "path": "hcli/executors.py",
         "needle": "class WorkUnitExecutor:",
         "symbol": "WorkUnitExecutor",
         "classification": "canonical_authority",
@@ -367,7 +367,7 @@ CATALOG: List[CatalogRow] = [
         "survives": True,
         "role": "Executes an already-admitted WorkUnit. Does not invent work or decide readiness.",
         "move": "Keep. Not a second WorkUnit type.",
-        "callers": ["tools/haider/hcli/mission.py"],
+        "callers": ["hcli/mission.py"],
     },
     {
         "id": "lab._WorkItem",
@@ -387,7 +387,7 @@ CATALOG: List[CatalogRow] = [
     {
         "id": "hcli.workunit.identify_ready",
         "concept": "DAG",
-        "path": "tools/haider/hcli/workunit.py",
+        "path": "hcli/workunit.py",
         "needle": "def identify_ready(",
         "symbol": "identify_ready / assign_ready / is_ready",
         "classification": "canonical_authority",
@@ -400,15 +400,15 @@ CATALOG: List[CatalogRow] = [
         ),
         "move": "Keep. Scheduler.dispatch and WorkUnitDAG.get_ready_units both call this.",
         "callers": [
-            "tools/haider/hcli/scheduler.py",
-            "tools/haider/hcli/goal.py",
+            "hcli/scheduler.py",
+            "hcli/goal.py",
         ],
         "evidence": "receipts/headless/DAG_CONSOLIDATION_DECISION.json",
     },
     {
         "id": "hcli.dag_store.DagStore",
         "concept": "DAG",
-        "path": "tools/haider/hcli/dag_store.py",
+        "path": "hcli/dag_store.py",
         "needle": "class DagStore:",
         "symbol": "DagStore",
         "classification": "canonical_authority",
@@ -418,8 +418,8 @@ CATALOG: List[CatalogRow] = [
         "role": "Durable atomic writer for the HCLI WorkUnit DAG (.hcli/dag.json).",
         "move": "Keep as the only on-disk DAG for HCLI-py.",
         "callers": [
-            "tools/haider/hcli/scheduler.py",
-            "tools/haider/hcli/goal.py",
+            "hcli/scheduler.py",
+            "hcli/goal.py",
         ],
     },
     {
@@ -469,7 +469,7 @@ CATALOG: List[CatalogRow] = [
     {
         "id": "hcli.scheduler.Scheduler",
         "concept": "scheduler",
-        "path": "tools/haider/hcli/scheduler.py",
+        "path": "hcli/scheduler.py",
         "needle": "class Scheduler:",
         "symbol": "Scheduler",
         "classification": "canonical_authority",
@@ -486,15 +486,15 @@ CATALOG: List[CatalogRow] = [
             "_remaining_depth is dead in dispatch — do not reintroduce depth sort."
         ),
         "callers": [
-            "tools/haider/hcli/mission.py",
-            "tools/haider/hcli/controller.py",
+            "hcli/mission.py",
+            "hcli/controller.py",
         ],
         "evidence": "receipts/headless/HCLI_SCHEDULER_QUALITY.json",
     },
     {
         "id": "hcli.scheduler._remaining_depth",
         "concept": "scheduler",
-        "path": "tools/haider/hcli/scheduler.py",
+        "path": "hcli/scheduler.py",
         "needle": "def _remaining_depth(",
         "symbol": "_remaining_depth",
         "classification": "obsolete_implementation",
@@ -600,7 +600,7 @@ CATALOG: List[CatalogRow] = [
     {
         "id": "hcli.dag_store.persist",
         "concept": "checkpoint",
-        "path": "tools/haider/hcli/dag_store.py",
+        "path": "hcli/dag_store.py",
         "needle": "class DagStore:",
         "symbol": "DagStore (HCLI crash checkpoint)",
         "classification": "canonical_authority",
@@ -617,8 +617,8 @@ CATALOG: List[CatalogRow] = [
             "needed, it is this pair, not hide-backend CheckpointStore."
         ),
         "callers": [
-            "tools/haider/hcli/scheduler.py",
-            "tools/haider/hcli/mission.py",
+            "hcli/scheduler.py",
+            "hcli/mission.py",
         ],
         "evidence": "receipts/headless/HCLI_CRASH_CHECKPOINT.json",
     },
@@ -752,7 +752,7 @@ CATALOG: List[CatalogRow] = [
     {
         "id": "hcli.resources.MutationLock",
         "concept": "mutation lock",
-        "path": "tools/haider/hcli/resources.py",
+        "path": "hcli/resources.py",
         "needle": "class MutationLock:",
         "symbol": "MutationLock",
         "classification": "canonical_authority",
@@ -765,17 +765,17 @@ CATALOG: List[CatalogRow] = [
         ),
         "move": "Keep. Scheduler.assign_ready and GrokBridge.delegate must keep using it.",
         "callers": [
-            "tools/haider/hcli/scheduler.py",
-            "tools/haider/hcli/workunit.py",
-            "tools/haider/hcli/commands.py",
-            "tools/haider/hcli/grok_bridge.py",
+            "hcli/scheduler.py",
+            "hcli/workunit.py",
+            "hcli/commands.py",
+            "hcli/grok_bridge.py",
         ],
         "evidence": "receipts/headless/AGENTOS_SINGLE_WRITER.json",
     },
     {
         "id": "hcli.grok_bridge.mutation_lock_param",
         "concept": "mutation lock",
-        "path": "tools/haider/hcli/grok_bridge.py",
+        "path": "hcli/grok_bridge.py",
         "needle": "def _as_mutation_lock(",
         "symbol": "_as_mutation_lock / delegate(mutation_lock=)",
         "classification": "compatibility_wrapper",
@@ -785,8 +785,8 @@ CATALOG: List[CatalogRow] = [
         "role": "Accepts a callable or context manager wrapping MutationLock for Grok delegate.",
         "move": "Keep while CommandHandler._grok_mutation_lock and Mission pass it.",
         "callers": [
-            "tools/haider/hcli/commands.py",
-            "tools/haider/hcli/grok_bridge.py",
+            "hcli/commands.py",
+            "hcli/grok_bridge.py",
         ],
     },
     {
@@ -838,7 +838,7 @@ CATALOG: List[CatalogRow] = [
     {
         "id": "hcli.verifier_pipeline",
         "concept": "verifier",
-        "path": "tools/haider/hcli/verifier_pipeline.py",
+        "path": "hcli/verifier_pipeline.py",
         "needle": "def verify(",
         "symbol": "verifier_pipeline.verify / plan / execute",
         "classification": "canonical_authority",
@@ -856,15 +856,15 @@ CATALOG: List[CatalogRow] = [
             "command_is_admissible stays the vacuity gate."
         ),
         "callers": [
-            "tools/haider/hcli/mission.py",
-            "tools/haider/hcli/scheduler.py",
+            "hcli/mission.py",
+            "hcli/scheduler.py",
         ],
         "evidence": "receipts/headless/AGENTOS_VERIFIER_AUTHORITY.json",
     },
     {
         "id": "hcli.ledger.Obligation",
         "concept": "verifier",
-        "path": "tools/haider/hcli/ledger.py",
+        "path": "hcli/ledger.py",
         "needle": "class Obligation:",
         "symbol": "ledger.Obligation + Ledger.run_verify",
         "classification": "canonical_authority",
@@ -876,13 +876,13 @@ CATALOG: List[CatalogRow] = [
             "fresh only when produced by run_verify (anti-forgery)."
         ),
         "move": "Keep. Different type from verifier_pipeline.Obligation. TWO real authorities in one package.",
-        "callers": ["tools/haider/hcli/mission.py"],
+        "callers": ["hcli/mission.py"],
         "evidence": "receipts/headless/AGENTOS_VERIFIER_AUTHORITY.json",
     },
     {
         "id": "hcli.scheduler.verification_passed",
         "concept": "verifier",
-        "path": "tools/haider/hcli/scheduler.py",
+        "path": "hcli/scheduler.py",
         "needle": "def verification_passed(",
         "symbol": "verification_passed / UnverifiedCompletion",
         "classification": "compatibility_wrapper",
@@ -891,7 +891,7 @@ CATALOG: List[CatalogRow] = [
         "survives": True,
         "role": "Thin predicate: outcome is a dict with ok is True. complete() raises otherwise.",
         "move": "Keep. Verified caller: Scheduler.complete.",
-        "callers": ["tools/haider/hcli/scheduler.py"],
+        "callers": ["hcli/scheduler.py"],
     },
     {
         "id": "lab.VerificationAuthority",
@@ -956,7 +956,7 @@ CATALOG: List[CatalogRow] = [
     {
         "id": "hcli.backends.RuntimeBackend",
         "concept": "backend registry",
-        "path": "tools/haider/hcli/backends.py",
+        "path": "hcli/backends.py",
         "needle": "class RuntimeBackend(",
         "symbol": "RuntimeBackend + LlamaServerBackend + MlxServerBackend",
         "classification": "canonical_authority",
@@ -970,15 +970,15 @@ CATALOG: List[CatalogRow] = [
         ),
         "move": "Keep. New backends implement RuntimeBackend; do not add a second registry dict.",
         "callers": [
-            "tools/haider/hcli/runtime.py",
-            "tools/haider/hcli/engine.py",
+            "hcli/runtime.py",
+            "hcli/engine.py",
         ],
         "evidence": "receipts/headless/BACKEND_CAPABILITY.json",
     },
     {
         "id": "hcli.resources.BackendHealth",
         "concept": "backend registry",
-        "path": "tools/haider/hcli/resources.py",
+        "path": "hcli/resources.py",
         "needle": "class BackendHealth:",
         "symbol": "BackendHealth",
         "classification": "canonical_authority",
@@ -987,7 +987,7 @@ CATALOG: List[CatalogRow] = [
         "survives": True,
         "role": "Durable per-backend circuit breaker. Not a backend registry.",
         "move": "Keep beside RuntimeBackend. Do not let it grow spawn/complete methods.",
-        "callers": ["tools/haider/hcli/resources.py"],
+        "callers": ["hcli/resources.py"],
     },
     {
         "id": "hawking-orch.RoleRegistry",
@@ -1006,7 +1006,7 @@ CATALOG: List[CatalogRow] = [
     {
         "id": "haider-v0.allocate_port",
         "concept": "backend registry",
-        "path": "tools/haider/haider.py",
+        "path": "tools/hcli/bootstrap/snapshots/haider.py",
         "needle": "def allocate_port() -> int:",
         "symbol": "allocate_port (HCLI-v0)",
         "classification": "obsolete_implementation",
@@ -1014,14 +1014,14 @@ CATALOG: List[CatalogRow] = [
         "two_real": False,
         "survives": False,
         "role": "Duplicate of backends.allocate_port in the v0 bootstrap.",
-        "move": "Leave the v0 file. Live callers use tools/haider/hcli/backends.py:allocate_port.",
+        "move": "Leave the v0 file. Live callers use hcli/backends.py:allocate_port.",
         "callers": [],
     },
     # ------------------------------------------------------------------ context budget
     {
         "id": "hcli.context_budget.ContextBudget",
         "concept": "context budget",
-        "path": "tools/haider/hcli/context_budget.py",
+        "path": "hcli/context_budget.py",
         "needle": "class ContextBudget:",
         "symbol": "ContextBudget / resolve / preflight / per_seq_context",
         "classification": "canonical_authority",
@@ -1038,18 +1038,18 @@ CATALOG: List[CatalogRow] = [
             "demand (G006/G007). Do not reintroduce a 32768 literal in config.py."
         ),
         "callers": [
-            "tools/haider/hcli/runtime.py",
-            "tools/haider/hcli/backends.py",
-            "tools/haider/hcli/config.py",
-            "tools/haider/hcli/engine.py",
-            "tools/haider/hcli/goal.py",
+            "hcli/runtime.py",
+            "hcli/backends.py",
+            "hcli/config.py",
+            "hcli/engine.py",
+            "hcli/goal.py",
         ],
         "evidence": "receipts/headless/HCLI_CONTEXT_AUTHORITY.json",
     },
     {
         "id": "hcli.context.reexport",
         "concept": "context budget",
-        "path": "tools/haider/hcli/context.py",
+        "path": "hcli/context.py",
         "needle": "from .goal import WorkerPacket, compile_worker_context",
         "symbol": "context.py (re-export)",
         "classification": "compatibility_wrapper",
@@ -1130,7 +1130,7 @@ CATALOG: List[CatalogRow] = [
     {
         "id": "hcli.runtime.RuntimePool",
         "concept": "runtime registry",
-        "path": "tools/haider/hcli/runtime.py",
+        "path": "hcli/runtime.py",
         "needle": "class RuntimePool:",
         "symbol": "RuntimePool / Runtime",
         "classification": "canonical_authority",
@@ -1143,8 +1143,8 @@ CATALOG: List[CatalogRow] = [
         ),
         "move": "Keep. Do not hand-edit MACHINE_GENOME.json to change slot counts.",
         "callers": [
-            "tools/haider/hcli/controller.py",
-            "tools/haider/hcli/mission.py",
+            "hcli/controller.py",
+            "hcli/mission.py",
         ],
         "evidence": "receipts/headless/RUNTIME_AUTHORITY.json",
     },
@@ -1215,7 +1215,7 @@ CATALOG: List[CatalogRow] = [
     {
         "id": "hcli.engine._write_receipt",
         "concept": "receipt",
-        "path": "tools/haider/hcli/engine.py",
+        "path": "hcli/engine.py",
         "needle": "def _write_receipt(",
         "symbol": "Engine._write_receipt",
         "classification": "canonical_authority",
@@ -1228,12 +1228,12 @@ CATALOG: List[CatalogRow] = [
             "Share the atomic-write primitive with grok_bridge and ledger on a "
             "later source lane; do not merge the three payload shapes."
         ),
-        "callers": ["tools/haider/hcli/engine.py"],
+        "callers": ["hcli/engine.py"],
     },
     {
         "id": "hcli.grok_bridge._write_receipt",
         "concept": "receipt",
-        "path": "tools/haider/hcli/grok_bridge.py",
+        "path": "hcli/grok_bridge.py",
         "needle": "def _write_receipt(",
         "symbol": "GrokBridge._write_receipt",
         "classification": "canonical_authority",
@@ -1242,12 +1242,12 @@ CATALOG: List[CatalogRow] = [
         "survives": True,
         "role": "Per-Grok-task receipt. Different payload from Engine.",
         "move": "Keep. Share atomic-write only.",
-        "callers": ["tools/haider/hcli/grok_bridge.py"],
+        "callers": ["hcli/grok_bridge.py"],
     },
     {
         "id": "hcli.ledger._write_receipt",
         "concept": "receipt",
-        "path": "tools/haider/hcli/ledger.py",
+        "path": "hcli/ledger.py",
         "needle": "def _write_receipt(self, ob: Obligation, evidence: VerifyResult) -> None:",
         "symbol": "Ledger._write_receipt",
         "classification": "canonical_authority",
@@ -1256,7 +1256,7 @@ CATALOG: List[CatalogRow] = [
         "survives": True,
         "role": "Per-obligation verify receipt. Forgery of VERIFIED without this is demoted to STALE.",
         "move": "Keep. Required by AGENTOS_VERIFIER_AUTHORITY.",
-        "callers": ["tools/haider/hcli/ledger.py"],
+        "callers": ["hcli/ledger.py"],
         "evidence": "receipts/headless/AGENTOS_VERIFIER_AUTHORITY.json",
     },
     {
@@ -1279,7 +1279,7 @@ CATALOG: List[CatalogRow] = [
     {
         "id": "haider-v0.write_receipt",
         "concept": "receipt",
-        "path": "tools/haider/haider.py",
+        "path": "tools/hcli/bootstrap/snapshots/haider.py",
         "needle": "def write_receipt(",
         "symbol": "haider.py write_receipt",
         "classification": "obsolete_implementation",
@@ -1287,7 +1287,7 @@ CATALOG: List[CatalogRow] = [
         "two_real": False,
         "survives": False,
         "role": "HCLI-v0 receipt writer.",
-        "move": "Leave. Historical .haider/receipts filenames are evidence.",
+        "move": "Leave. Historical .hcli-legacy/receipts filenames are evidence.",
         "callers": [],
     },
     # ------------------------------------------------------------------ experiment
@@ -1361,7 +1361,7 @@ CATALOG: List[CatalogRow] = [
     {
         "id": "hcli.models.ModelRegistry",
         "concept": "model identity",
-        "path": "tools/haider/hcli/models.py",
+        "path": "hcli/models.py",
         "needle": "class ModelRegistry:",
         "symbol": "ModelRegistry / ModelInfo / resolve_model",
         "classification": "canonical_authority",
@@ -1374,7 +1374,7 @@ CATALOG: List[CatalogRow] = [
         ),
         "move": "Keep as HCLI selection. Do not merge with the promotion registry.",
         "callers": [
-            "tools/haider/hcli/cli.py",
+            "hcli/cli.py",
             "tools/headless/hcli_command_driver.py",
         ],
     },
@@ -1486,7 +1486,7 @@ CATALOG: List[CatalogRow] = [
     {
         "id": "hcli.machine.live_machine_identity",
         "concept": "machine identity",
-        "path": "tools/haider/hcli/machine.py",
+        "path": "hcli/machine.py",
         "needle": "def live_machine_identity()",
         "symbol": "live_machine_identity / assess_genome_freshness / resolve_runtime_limits / MachineProbe / MemGate",
         "classification": "canonical_authority",
@@ -1500,15 +1500,15 @@ CATALOG: List[CatalogRow] = [
         ),
         "move": "Keep as the consumer. Do not let it grow a write() that bypasses the probe.",
         "callers": [
-            "tools/haider/hcli/runtime.py",
-            "tools/haider/hcli/resources.py",
+            "hcli/runtime.py",
+            "hcli/resources.py",
         ],
         "evidence": "receipts/headless/RUNTIME_AUTHORITY.json",
     },
     {
         "id": "hcli.machine.MachineGenome",
         "concept": "machine identity",
-        "path": "tools/haider/hcli/machine.py",
+        "path": "hcli/machine.py",
         "needle": "class MachineGenome:",
         "symbol": "MachineGenome (HCLI_HOME/machine-genome.json)",
         "classification": "obsolete_implementation",
@@ -1558,7 +1558,7 @@ CATALOG: List[CatalogRow] = [
     {
         "id": "hcli.workunit.transition_status",
         "concept": "status",
-        "path": "tools/haider/hcli/workunit.py",
+        "path": "hcli/workunit.py",
         "needle": "def transition_status(",
         "symbol": "transition_status / WORKUNIT_STATUSES",
         "classification": "canonical_authority",
@@ -1568,14 +1568,14 @@ CATALOG: List[CatalogRow] = [
         "role": "WorkUnit state machine (pending/ready/running/completed/failed/interrupted).",
         "move": "Keep. Direct wu.status writes are forbidden (DAG consolidation).",
         "callers": [
-            "tools/haider/hcli/scheduler.py",
-            "tools/haider/hcli/goal.py",
+            "hcli/scheduler.py",
+            "hcli/goal.py",
         ],
     },
     {
         "id": "hcli.ledger.outcome",
         "concept": "status",
-        "path": "tools/haider/hcli/ledger.py",
+        "path": "hcli/ledger.py",
         "needle": "class Ledger:",
         "symbol": "Ledger.outcome / Ledger.status",
         "classification": "canonical_authority",
@@ -1589,7 +1589,7 @@ CATALOG: List[CatalogRow] = [
         ),
         "move": "Keep. Compatibility: .status still returns EMPTY_LEDGER/GOAL_MET/GOAL_NOT_MET.",
         "callers": [
-            "tools/haider/hcli/commands.py",
+            "hcli/commands.py",
             "tools/headless/hcli_agentos_ledger_test.py",
         ],
         "evidence": "receipts/headless/DAG_CONSOLIDATION_DECISION.json",
@@ -1597,7 +1597,7 @@ CATALOG: List[CatalogRow] = [
     {
         "id": "hcli.commands.format_status",
         "concept": "status",
-        "path": "tools/haider/hcli/commands.py",
+        "path": "hcli/commands.py",
         "needle": "def format_status(",
         "symbol": "format_status / enrich_status_snapshot",
         "classification": "canonical_authority",
@@ -1611,16 +1611,16 @@ CATALOG: List[CatalogRow] = [
         ),
         "move": "Keep as the only human /status renderer. TUI.render_status is a transcript line, not this.",
         "callers": [
-            "tools/haider/hcli/commands.py",
-            "tools/haider/hcli/tests/test_status_completeness.py",
-            "tools/haider/hcli/tests/test_status_truth.py",
+            "hcli/commands.py",
+            "hcli/tests/test_status_completeness.py",
+            "hcli/tests/test_status_truth.py",
         ],
         "evidence": "receipts/headless/HCLI_STATUS_OBSERVABILITY.json",
     },
     {
         "id": "hcli.controller.status",
         "concept": "status",
-        "path": "tools/haider/hcli/controller.py",
+        "path": "hcli/controller.py",
         "needle": "def status(",
         "symbol": "Controller.status (snapshot)",
         "classification": "canonical_authority",
@@ -1629,12 +1629,12 @@ CATALOG: List[CatalogRow] = [
         "survives": True,
         "role": "Builds the snapshot format_status renders (qwen/grok/mutation/occupancy).",
         "move": "Keep as the data side of /status. format_status must not grow its own probes.",
-        "callers": ["tools/haider/hcli/commands.py"],
+        "callers": ["hcli/commands.py"],
     },
     {
         "id": "hcli.tui.render_status",
         "concept": "status",
-        "path": "tools/haider/hcli/tui.py",
+        "path": "hcli/tui.py",
         "needle": "def render_status(",
         "symbol": "TUI.render_status",
         "classification": "obsolete_implementation",
@@ -1643,12 +1643,12 @@ CATALOG: List[CatalogRow] = [
         "survives": True,
         "role": "Prints TUI.status string (idle/working). Not /status.",
         "move": "Keep as a transcript chrome, or later call format_status. Do not treat as the operator status surface.",
-        "callers": ["tools/haider/hcli/tui.py"],
+        "callers": ["hcli/tui.py"],
     },
     {
         "id": "hcli.grok.parse_grok_status",
         "concept": "status",
-        "path": "tools/haider/hcli/grok_bridge.py",
+        "path": "hcli/grok_bridge.py",
         "needle": "def parse_grok_status(",
         "symbol": "parse_grok_status / grok_succeeded",
         "classification": "canonical_authority",
@@ -1658,8 +1658,8 @@ CATALOG: List[CatalogRow] = [
         "role": "Grok-run task liveness/terminal state. Input to Mission adoption and P0-3.",
         "move": "Keep. Not WorkUnit.status and not Ledger.outcome.",
         "callers": [
-            "tools/haider/hcli/grok_bridge.py",
-            "tools/haider/hcli/scheduler.py",
+            "hcli/grok_bridge.py",
+            "hcli/scheduler.py",
         ],
     },
     {
@@ -1694,7 +1694,7 @@ CATALOG: List[CatalogRow] = [
     {
         "id": "hcli.workunit.DEFAULT_RETRY_BUDGET",
         "concept": "retry policy",
-        "path": "tools/haider/hcli/workunit.py",
+        "path": "hcli/workunit.py",
         "needle": "DEFAULT_RETRY_BUDGET = 3",
         "symbol": "DEFAULT_RETRY_BUDGET / MAX_REPAIR_DEPTH / MAX_REPAIRS_PER_ROOT",
         "classification": "canonical_authority",
@@ -1704,14 +1704,14 @@ CATALOG: List[CatalogRow] = [
         "role": "Durable retry/repair caps on the unit and DAG document.",
         "move": "Keep here. Scheduler must re-export, not reassign.",
         "callers": [
-            "tools/haider/hcli/workunit.py",
-            "tools/haider/hcli/scheduler.py",
+            "hcli/workunit.py",
+            "hcli/scheduler.py",
         ],
     },
     {
         "id": "hcli.scheduler.MAX_REPAIR_shadow",
         "concept": "retry policy",
-        "path": "tools/haider/hcli/scheduler.py",
+        "path": "hcli/scheduler.py",
         "needle": "MAX_REPAIR_DEPTH = 3",
         "symbol": "MAX_REPAIR_DEPTH = 3 (shadows the import)",
         "classification": "obsolete_implementation",
@@ -1724,12 +1724,12 @@ CATALOG: List[CatalogRow] = [
             "the repair cap between emit_repair and `from scheduler import`."
         ),
         "move": "Delete the reassignment; keep a re-export comment only.",
-        "callers": ["tools/haider/hcli/tests/test_scheduler_quality.py"],
+        "callers": ["hcli/tests/test_scheduler_quality.py"],
     },
     {
         "id": "hcli.resources.classify_failure",
         "concept": "retry policy",
-        "path": "tools/haider/hcli/resources.py",
+        "path": "hcli/resources.py",
         "needle": "def classify_failure(",
         "symbol": "classify_failure / counts_toward_retry_budget / NON_RETRYABLE / FailureClassification",
         "classification": "canonical_authority",
@@ -1739,7 +1739,7 @@ CATALOG: List[CatalogRow] = [
         "role": "Retryability of a failure. Non-retryable names do not burn DEFAULT_RETRY_BUDGET.",
         "move": "Keep as the retryability authority. emit_repair consults this.",
         "callers": [
-            "tools/haider/hcli/workunit.py",
+            "hcli/workunit.py",
             "tools/headless/repair_disposition_table.py",
         ],
     },
@@ -1760,7 +1760,7 @@ CATALOG: List[CatalogRow] = [
     {
         "id": "hcli.backends.structured_output_attempts",
         "concept": "retry policy",
-        "path": "tools/haider/hcli/backends.py",
+        "path": "hcli/backends.py",
         "needle": "DEFAULT_STRUCTURED_OUTPUT_ATTEMPTS = 3",
         "symbol": "DEFAULT_STRUCTURED_OUTPUT_ATTEMPTS",
         "classification": "canonical_authority",
@@ -1769,7 +1769,7 @@ CATALOG: List[CatalogRow] = [
         "survives": True,
         "role": "Bounded parse retries for structured output (especially MLX without grammar).",
         "move": "Keep. Different budget from WorkUnit attempts.",
-        "callers": ["tools/haider/hcli/backends.py"],
+        "callers": ["hcli/backends.py"],
         "evidence": "receipts/headless/BACKEND_CAPABILITY.json",
     },
     # rust HCLI as a second product (spans several concepts; recorded under mission too)
@@ -1785,7 +1785,7 @@ CATALOG: List[CatalogRow] = [
         "survives": True,
         "role": (
             "A second product named HCLI: JSONL shell over hide-backend. Not "
-            "tools/haider/hcli. bin/haider.rs is an empty blob (git e69de29)."
+            "hcli. bin/haider.rs is an empty blob (git e69de29)."
         ),
         "move": (
             "Keep as the HIDE product surface. Do not point ~/.local/bin/hcli "
@@ -2084,7 +2084,7 @@ WATCHED_FAIL = [
         "what": "Working-tree git grep is silent on the live control plane",
         "detail": (
             "This worktree is a sparse checkout. `git grep class Goal -- '*.py'` "
-            "returned nothing even though HEAD:tools/haider/hcli/goal.py exists. "
+            "returned nothing even though HEAD:hcli/goal.py exists. "
             "Every search in this census is `git grep … HEAD` / `git show HEAD:path`."
         ),
     },
@@ -2101,7 +2101,7 @@ WATCHED_FAIL = [
         "id": 3,
         "what": "format_status defined twice, later shadowing earlier — did not reproduce",
         "detail": (
-            "HEAD tools/haider/hcli/commands.py has exactly one `def format_status` "
+            "HEAD hcli/commands.py has exactly one `def format_status` "
             "(line recovered live). TUI.render_status is a different function. "
             "The shadowing bug is not present at this HEAD; claiming it still "
             "disables a fix would be a wrong confident answer."
@@ -2256,7 +2256,7 @@ def build() -> Dict[str, Any]:
             ],
         },
         "planes": {
-            "hcli-py": "tools/haider/hcli — live campaign control plane (33 modules)",
+            "hcli-py": "hcli — live campaign control plane (33 modules)",
             "hide-rs": "hide-kernel / hide-backend / hide-protocol, including rust bin/hcli.rs",
             "hawking-orch": "model-role admission",
             "hawking-serve": "decode-slot batching",
@@ -2265,7 +2265,7 @@ def build() -> Dict[str, Any]:
             "headless": "measurement harnesses",
             "ramanujan": "math verifier scaffold",
             "agentos": "genesis / machine_state",
-            "haider-v0": "tools/haider/haider.py bootstrap",
+            "haider-v0": "tools/hcli/bootstrap/snapshots/haider.py bootstrap",
             "hawking-speculate": "speculative-decode accept (name collision)",
         },
         "concepts": list(CONCEPTS),

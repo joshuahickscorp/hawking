@@ -59,7 +59,7 @@ GENERATED_WHY = (
 # pre-existing and precious.
 CAMPAIGN_PREFIXES = (
     "tools/headless/",
-    "tools/haider/hcli/",
+    "hcli/",
     "hcli/",
     "receipts/headless/",
     ".hcli/",
@@ -675,7 +675,7 @@ def inspect_ignored_generated(repo: Path) -> dict[str, Any]:
             "DISK_TRUTH counted `git status --porcelain` (non-ignored). This "
             "gate uses the same grain for the comparable count, plus `-uall` "
             "for the full untracked-file inventory. gitignored trees such as "
-            ".haider/, .claude/, *.log, weights/ are therefore outside the "
+            ".hcli-legacy/, .claude/, *.log, weights/ are therefore outside the "
             "373-style dirty count — they were outside it at DISK_TRUTH time "
             "too. Generated dirs listed here are the ones we skip even if "
             "they leak through gitignore."
@@ -990,7 +990,7 @@ def main() -> int:
         "campaign_prefixes": list(CAMPAIGN_PREFIXES),
         "classification_rule": (
             "A path is 'campaign' iff it is under tools/headless/, "
-            "tools/haider/hcli/, receipts/headless/, or .hcli/. Everything else "
+            "hcli/, receipts/headless/, or .hcli/. Everything else "
             "is presumed pre-existing and precious."
         ),
         "counts": {

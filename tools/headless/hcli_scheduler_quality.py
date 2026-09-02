@@ -9,7 +9,7 @@ uncommitted edit of dispatch() sorts by (-remaining_depth, ready_at, id) on
 the theory that this shortens total wall time. That theory is measured here,
 not assumed.
 
-This file does not modify tools/haider/hcli. Ordering arms other than
+This file does not modify hcli. Ordering arms other than
 as-shipped wrap Scheduler.dispatch in-process.
 
 Wall times are real sleeps on real threads. Other lanes on the box make

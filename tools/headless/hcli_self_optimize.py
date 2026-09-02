@@ -931,7 +931,7 @@ def stage_mutate(state: Dict[str, Any], repo: Path, ws: Path) -> None:
 def stage_gate_correctness(state: Dict[str, Any], repo: Path, ws: Path) -> None:
     t0 = time.perf_counter()
     proc = subprocess.run(
-        [sys.executable, "-m", "pytest", "tools/haider/hcli/tests", "-q", "--tb=line"],
+        [sys.executable, "-m", "pytest", "hcli/tests", "-q", "--tb=line"],
         cwd=str(repo),
         capture_output=True,
         text=True,
@@ -940,7 +940,7 @@ def stage_gate_correctness(state: Dict[str, Any], repo: Path, ws: Path) -> None:
     wall = time.perf_counter() - t0
     tail = (proc.stdout or "")[-2000:] + "\n" + (proc.stderr or "")[-1000:]
     payload = {
-        "command": [sys.executable, "-m", "pytest", "tools/haider/hcli/tests", "-q"],
+        "command": [sys.executable, "-m", "pytest", "hcli/tests", "-q"],
         "exit_code": proc.returncode,
         "passed_gate": proc.returncode == 0,
         "wall_s": wall,
@@ -1352,7 +1352,7 @@ STAGE_SPECS = [
     ("hypotheses", "Enumerate at least three candidate changes each naming file:line", ["bottleneck"], "LIGHT_CONTROL"),
     ("screen", "Cheap disproof first; reject narrowing the lock", ["hypotheses"], "LIGHT_CONTROL"),
     ("mutate", "Apply the surviving change through Engine.execute mutation path", ["screen"], "MUTATION"),
-    ("gate.correctness", "Run python3 -m pytest tools/haider/hcli/tests -q and record the exit", ["mutate"], "TEST"),
+    ("gate.correctness", "Run python3 -m pytest hcli/tests -q and record the exit", ["mutate"], "TEST"),
     ("gate.perf", "Re-measure overlap paired and alternating; report the spread", ["gate.correctness"], "CPU_HEAVY"),
     ("decide", "Promote or reject from the gates alone; refuse promotion if a gate failed", ["gate.perf"], "LIGHT_CONTROL"),
     ("priors", "Write the updated prior, citing the measurement that changed it", ["decide"], "LIGHT_CONTROL"),
@@ -1510,7 +1510,7 @@ def main_loop(repo: Path) -> int:
             {
                 "title": "Default HCLI_CPU_TIMEOUT=120 is below the suite wall",
                 "detail": (
-                    "gate.correctness runs python3 -m pytest tools/haider/hcli/tests "
+                    "gate.correctness runs python3 -m pytest hcli/tests "
                     "which took ~130s on this box. The loop sets HCLI_CPU_TIMEOUT=600 "
                     "so the WorkUnit verifier is not killed mid-suite."
                 ),

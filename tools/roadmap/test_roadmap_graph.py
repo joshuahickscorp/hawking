@@ -382,8 +382,11 @@ def test_exact_cli_path_rejects_suffix_of_another_tree():
 
     assert is_exact_cli_path("hcli/scheduler.py", "hcli/scheduler.py")
     assert is_exact_cli_path("hcli/scheduler.py", "./hcli/scheduler.py")
+    # A DIFFERENT tree whose tail happens to match. `tools/haider/hcli/` was the
+    # original example and no longer exists; `lab/hcli/` is a real separate
+    # product in this repo and makes the same point.
     assert not is_exact_cli_path(
-        "hcli/scheduler.py", "tools/haider/hcli/scheduler.py"
+        "hcli/scheduler.py", "lab/hcli/scheduler.py"
     )
     assert not is_exact_cli_path("hcli/scheduler.py", "MAX_REPAIR_DEPTH")
 

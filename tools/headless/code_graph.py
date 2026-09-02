@@ -220,12 +220,12 @@ DEST_FAMILIES = (
     ("~/.config/hcli/config.json", re.compile(r"config/hcli/config\.json|hcli/config\.json")),
     ("~/.config/hcli/machine_genome.json", re.compile(r"machine_genome\.json")),
     ("receipts/headless", re.compile(r"receipts/headless")),
-    (".haider/", re.compile(r"\.haider/")),
+    (".hcli-legacy/", re.compile(r"\.hcli-legacy/")),
     ("receipts/", re.compile(r"receipts/")),
 )
 
 CENSUS_PY_RE = re.compile(
-    r"(?:tools/haider|tools/headless)/[A-Za-z0-9_./-]+\.py"
+    r"(?:tools/hcli|tools/headless)/[A-Za-z0-9_./-]+\.py"
 )
 RECEIPT_RE = re.compile(r"receipts/headless/[A-Za-z0-9_.-]+\.json")
 HCLI_REL_RE = re.compile(r"\.hcli/[A-Za-z0-9_./-]+")
@@ -298,9 +298,9 @@ def is_test_path(rel: str) -> bool:
 def module_kind(rel: str) -> str:
     p = _posix(rel)
     test = is_test_path(p)
-    if p.startswith("tools/haider/hcli/"):
+    if p.startswith("hcli/"):
         return "hcli_test" if test else "hcli_product"
-    if p.startswith("tools/haider/"):
+    if p.startswith("tools/hcli/bootstrap/"):
         name = Path(p).name
         if name in {"haider.py", "p0_tool_bridge.py"}:
             return "hcli_fossil"
@@ -322,7 +322,7 @@ def dotted_candidates(rel: str) -> List[str]:
         p = p[: -len(".py")]
     parts = p.split("/")
     names = [".".join(parts), ".".join(parts[-1:])]
-    if parts[:2] == ["tools", "haider"] and len(parts) > 2:
+    if parts[:2] == ["tools", "hcli"] and len(parts) > 2:
         names.append(".".join(parts[2:]))
         names.append(".".join(parts[1:]))
     if parts[:1] == ["tools"] and len(parts) > 1:
@@ -1018,7 +1018,7 @@ class Extractor:
             entry.append("__main__")
         if facts["has_def_main"] and facts["has_main_guard"]:
             entry.append("main()")
-        if rel.endswith("tools/haider/hcli/cli.py") and facts["has_def_main"]:
+        if rel.endswith("hcli/cli.py") and facts["has_def_main"]:
             entry.append("hcli.cli:main")
         facts["entrypoints"] = entry
 
@@ -1223,8 +1223,8 @@ def extract_edges(
                 # keep external on the module record only; still a real import
                 facts.setdefault("imports_external", []).append(edge)
 
-        init = "tools/haider/hcli/__init__.py"
-        if init in files and not rel.startswith("tools/haider/hcli/"):
+        init = "hcli/__init__.py"
+        if init in files and not rel.startswith("hcli/"):
             forms = [(imp.get("form") or "") for imp in facts.get("imports") or []]
             if any(
                 f.startswith("from hcli") or f.startswith("import hcli") or "tools.haider.hcli" in f
@@ -1390,8 +1390,8 @@ def extract_edges(
                     dst = module_hits[0]
                     dst_kind = "census_module"
                 elif m_hcli:
-                    dst = "tools/haider/hcli/__main__.py"
-                    dst_kind = "census_module" if "tools/haider/hcli/__main__.py" in files else "runtime"
+                    dst = "hcli/__main__.py"
+                    dst_kind = "census_module" if "hcli/__main__.py" in files else "runtime"
                 elif binary:
                     dst = binary
                     dst_kind = "binary"
@@ -1507,8 +1507,8 @@ def extract_edges(
                         "runtime",
                         {
                             "src": rel,
-                            "dst": "tools/haider/hcli/__main__.py",
-                            "dst_kind": "census_module" if "tools/haider/hcli/__main__.py" in files else "runtime",
+                            "dst": "hcli/__main__.py",
+                            "dst_kind": "census_module" if "hcli/__main__.py" in files else "runtime",
                             "line": line,
                             "call": fname,
                             "evidence": "python -m hcli",
@@ -1655,8 +1655,8 @@ def extract_edges(
                 "runtime",
                 {
                     "src": rel,
-                    "dst": "tools/haider/hcli/__main__.py",
-                    "dst_kind": "census_module" if "tools/haider/hcli/__main__.py" in files else "runtime",
+                    "dst": "hcli/__main__.py",
+                    "dst_kind": "census_module" if "hcli/__main__.py" in files else "runtime",
                     "line": 0,
                     "call": "string-literal",
                     "evidence": s,
@@ -1823,7 +1823,7 @@ def findings(
             product_entry.append(p)
         if kind == "hcli_product" and Path(p).name == "cli.py":
             product_entry.append(p)
-        if p == "tools/haider/hcli/__init__.py":
+        if p == "hcli/__init__.py":
             product_entry.append(p)
         if kind in {"headless_harness", "headless_test"} and entries:
             harness_entry.append(p)
@@ -1910,7 +1910,7 @@ def findings(
                     "reexport_only": bool(f.get("reexport_only")),
                     "entrypoints": f.get("entrypoints") or [],
                     "reason": (
-                        "fossil namespace (tools/haider/*.py, disconnected from hcli package)"
+                        "fossil namespace (tools/hcli/bootstrap/*.py, disconnected from hcli package)"
                         if kind == "hcli_fossil"
                         else "product module with no inbound product imports"
                         if not inbound
@@ -1959,7 +1959,7 @@ def findings(
     hcli_imports_headless = [
         e
         for e in edges["import"]
-        if e["src"].startswith("tools/haider/") and str(e.get("dst") or "").startswith("tools/headless/")
+        if e["src"].startswith("tools/hcli/bootstrap/") and str(e.get("dst") or "").startswith("tools/headless/")
     ]
     outside_imports = []
     for p, f in facts.items():
@@ -2021,11 +2021,11 @@ def findings(
             "id": "fossil_haider_disconnected",
             "severity": "info",
             "detail": (
-                "tools/haider/haider.py and p0_tool_bridge.py are a separate process "
+                "tools/hcli/bootstrap/snapshots/haider.py and p0_tool_bridge.py are a separate process "
                 "from the hcli package. Standing fact: haider is a fossil namespace. "
                 "The graph must show them disconnected from hcli.*, not rename them."
             ),
-            "files": [p for p in nodes if p.startswith("tools/haider/") and not p.startswith("tools/haider/hcli/")],
+            "files": [p for p in nodes if p.startswith("tools/hcli/bootstrap/") and not p.startswith("hcli/")],
         },
         {
             "id": "lab_hcli_sibling",
@@ -2033,7 +2033,7 @@ def findings(
             "detail": (
                 "lab/hcli/ exists in git as a sibling namespace and was not parsed "
                 "(out of census, and not materialized in this sparse worktree). "
-                "UNKNOWN whether it still imports or duplicates tools/haider/hcli."
+                "UNKNOWN whether it still imports or duplicates hcli."
             ),
             "path": "lab/hcli/",
         },
@@ -2041,15 +2041,15 @@ def findings(
             "id": "duplicate_mutation_authority",
             "severity": "high",
             "detail": (
-                "tools/haider/hcli/mutation.py (apply_mutation_operations) has no inbound "
+                "hcli/mutation.py (apply_mutation_operations) has no inbound "
                 "import from any hcli product module. Engine implements mutation itself "
                 "via _atomic_write_text. Two mutation authorities; tests and "
                 "hcli_persistence_audit.py are the only census importers of mutation.py."
             ),
-            "mutation_module": "tools/haider/hcli/mutation.py",
-            "engine_module": "tools/haider/hcli/engine.py",
-            "product_importers": sorted(in_from_product.get("tools/haider/hcli/mutation.py") or []),
-            "nontest_importers": sorted(in_from_nontest.get("tools/haider/hcli/mutation.py") or []),
+            "mutation_module": "hcli/mutation.py",
+            "engine_module": "hcli/engine.py",
+            "product_importers": sorted(in_from_product.get("hcli/mutation.py") or []),
+            "nontest_importers": sorted(in_from_nontest.get("hcli/mutation.py") or []),
         },
     ]
 
@@ -2108,12 +2108,12 @@ def findings(
 def watch_failures(files: Dict[str, Dict[str, Any]]) -> List[Dict[str, Any]]:
     rows: List[Dict[str, Any]] = []
 
-    controller = REPO / "tools/haider/hcli/controller.py"
+    controller = REPO / "hcli/controller.py"
     try:
         controller.read_text(encoding="utf-8")
         rows.append(
             {
-                "what": "read tools/haider/hcli/controller.py from disk",
+                "what": "read hcli/controller.py from disk",
                 "result": "UNEXPECTED_OK",
                 "reason": "file is on disk in this worktree; sparse hole was expected",
             }
@@ -2121,16 +2121,16 @@ def watch_failures(files: Dict[str, Dict[str, Any]]) -> List[Dict[str, Any]]:
     except FileNotFoundError:
         rows.append(
             {
-                "what": "read tools/haider/hcli/controller.py from disk",
+                "what": "read hcli/controller.py from disk",
                 "result": "FAIL",
                 "reason": "FileNotFoundError — sparse hole. git show is the authority here.",
             }
         )
 
-    blob = git_show("tools/haider/hcli/controller.py")
+    blob = git_show("hcli/controller.py")
     rows.append(
         {
-            "what": "git show HEAD:tools/haider/hcli/controller.py",
+            "what": "git show HEAD:hcli/controller.py",
             "result": "OK" if blob else "FAIL",
             "reason": f"{len(blob)} bytes" if blob else "empty/nonzero",
         }
@@ -2165,8 +2165,8 @@ def watch_failures(files: Dict[str, Dict[str, Any]]) -> List[Dict[str, Any]]:
     )
 
     # prove we did not treat a sparse hole as absence of haider modules
-    haider_n = sum(1 for p in files if p.startswith("tools/haider/"))
-    haider_disk = sum(1 for p in files if p.startswith("tools/haider/") and files[p]["on_disk"])
+    haider_n = sum(1 for p in files if p.startswith("tools/hcli/bootstrap/"))
+    haider_disk = sum(1 for p in files if p.startswith("tools/hcli/bootstrap/") and files[p]["on_disk"])
     rows.append(
         {
             "what": "haider module presence under sparse checkout",
@@ -2391,7 +2391,7 @@ def main() -> int:
         "census_roots": list(CENSUS_ROOTS),
         "scope": {
             "includes": [
-                "tools/haider/**/*.py — live HCLI control plane plus fossil wrappers (read via git when sparse-missing)",
+                "tools/hcli/bootstrap/**/*.py — live HCLI control plane plus fossil wrappers (read via git when sparse-missing)",
                 "tools/headless/**/*.py — harnesses and headless tests",
             ],
             "excludes": [

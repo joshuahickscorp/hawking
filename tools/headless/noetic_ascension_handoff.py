@@ -1440,7 +1440,7 @@ def assemble(loop_doc: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     haider_copy = None
     haider_dir = REPO / ".haider"
     if haider_dir.is_dir():
-        haider_copy = ".haider/NOETIC_ASCENSION_HANDOFF.json"
+        haider_copy = ".hcli-legacy/NOETIC_ASCENSION_HANDOFF.json"
 
     doc: Dict[str, Any] = {
         "schema": SCHEMA,

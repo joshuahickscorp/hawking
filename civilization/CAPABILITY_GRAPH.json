@@ -1166,388 +1166,388 @@
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_agentos_general.py",
+          "file": "hcli/tests/test_agentos_general.py",
           "line": 18,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_context_compiler.py",
+          "file": "hcli/tests/test_context_compiler.py",
           "line": 36,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_core_authorities.py",
+          "file": "hcli/tests/test_core_authorities.py",
           "line": 25,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_core_authorities.py",
+          "file": "hcli/tests/test_core_authorities.py",
           "line": 27,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_dag_store.py",
+          "file": "hcli/tests/test_dag_store.py",
           "line": 13,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_dag_store.py",
+          "file": "hcli/tests/test_dag_store.py",
           "line": 14,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_dag_store.py",
+          "file": "hcli/tests/test_dag_store.py",
           "line": 63,
           "kind": "call",
           "symbol": "Scheduler",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_dag_store.py",
+          "file": "hcli/tests/test_dag_store.py",
           "line": 133,
           "kind": "call",
           "symbol": "Scheduler",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_executors.py",
+          "file": "hcli/tests/test_executors.py",
           "line": 20,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_goal.py",
+          "file": "hcli/tests/test_goal.py",
           "line": 24,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_goal_workunit_dag.py",
+          "file": "hcli/tests/test_goal_workunit_dag.py",
           "line": 15,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_grok_cancel_orphan.py",
+          "file": "hcli/tests/test_grok_cancel_orphan.py",
           "line": 26,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_max_policy.py",
+          "file": "hcli/tests/test_max_policy.py",
           "line": 19,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_mission.py",
+          "file": "hcli/tests/test_mission.py",
           "line": 17,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_mixed_backend.py",
+          "file": "hcli/tests/test_mixed_backend.py",
           "line": 15,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_p0_closeout.py",
+          "file": "hcli/tests/test_p0_closeout.py",
           "line": 25,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_runtime_interface.py",
+          "file": "hcli/tests/test_runtime_interface.py",
           "line": 28,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_quality.py",
+          "file": "hcli/tests/test_scheduler_quality.py",
           "line": 22,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_quality.py",
+          "file": "hcli/tests/test_scheduler_quality.py",
           "line": 24,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_quality.py",
+          "file": "hcli/tests/test_scheduler_quality.py",
           "line": 25,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_quality.py",
+          "file": "hcli/tests/test_scheduler_quality.py",
           "line": 77,
           "kind": "call",
           "symbol": "Scheduler",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_quality.py",
+          "file": "hcli/tests/test_scheduler_quality.py",
           "line": 98,
           "kind": "call",
           "symbol": "Scheduler",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_quality.py",
+          "file": "hcli/tests/test_scheduler_quality.py",
           "line": 112,
           "kind": "call",
           "symbol": "Scheduler",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_quality.py",
+          "file": "hcli/tests/test_scheduler_quality.py",
           "line": 124,
           "kind": "call",
           "symbol": "Scheduler",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_quality.py",
+          "file": "hcli/tests/test_scheduler_quality.py",
           "line": 140,
           "kind": "call",
           "symbol": "Scheduler",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_quality.py",
+          "file": "hcli/tests/test_scheduler_quality.py",
           "line": 151,
           "kind": "call",
           "symbol": "Scheduler",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_quality.py",
+          "file": "hcli/tests/test_scheduler_quality.py",
           "line": 185,
           "kind": "call",
           "symbol": "Scheduler",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_quality.py",
+          "file": "hcli/tests/test_scheduler_quality.py",
           "line": 197,
           "kind": "call",
           "symbol": "Scheduler",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_quality.py",
+          "file": "hcli/tests/test_scheduler_quality.py",
           "line": 260,
           "kind": "call",
           "symbol": "Scheduler",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_quality.py",
+          "file": "hcli/tests/test_scheduler_quality.py",
           "line": 316,
           "kind": "call",
           "symbol": "Scheduler",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_quality.py",
+          "file": "hcli/tests/test_scheduler_quality.py",
           "line": 355,
           "kind": "call",
           "symbol": "Scheduler",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_quality.py",
+          "file": "hcli/tests/test_scheduler_quality.py",
           "line": 399,
           "kind": "call",
           "symbol": "Scheduler",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_quality.py",
+          "file": "hcli/tests/test_scheduler_quality.py",
           "line": 462,
           "kind": "call",
           "symbol": "Scheduler",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_quality.py",
+          "file": "hcli/tests/test_scheduler_quality.py",
           "line": 491,
           "kind": "call",
           "symbol": "Scheduler",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_quality.py",
+          "file": "hcli/tests/test_scheduler_quality.py",
           "line": 512,
           "kind": "call",
           "symbol": "Scheduler",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_quality.py",
+          "file": "hcli/tests/test_scheduler_quality.py",
           "line": 534,
           "kind": "call",
           "symbol": "Scheduler",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_resources.py",
+          "file": "hcli/tests/test_scheduler_resources.py",
           "line": 20,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_resources.py",
+          "file": "hcli/tests/test_scheduler_resources.py",
           "line": 21,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_resources.py",
+          "file": "hcli/tests/test_scheduler_resources.py",
           "line": 47,
           "kind": "call",
           "symbol": "Scheduler",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_resources.py",
+          "file": "hcli/tests/test_scheduler_resources.py",
           "line": 143,
           "kind": "call",
           "symbol": "Scheduler",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_resources.py",
+          "file": "hcli/tests/test_scheduler_resources.py",
           "line": 157,
           "kind": "call",
           "symbol": "Scheduler",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_resources.py",
+          "file": "hcli/tests/test_scheduler_resources.py",
           "line": 169,
           "kind": "call",
           "symbol": "Scheduler",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_resources.py",
+          "file": "hcli/tests/test_scheduler_resources.py",
           "line": 180,
           "kind": "call",
           "symbol": "Scheduler",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_resources.py",
+          "file": "hcli/tests/test_scheduler_resources.py",
           "line": 197,
           "kind": "call",
           "symbol": "Scheduler",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_resources.py",
+          "file": "hcli/tests/test_scheduler_resources.py",
           "line": 210,
           "kind": "call",
           "symbol": "Scheduler",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_resources.py",
+          "file": "hcli/tests/test_scheduler_resources.py",
           "line": 219,
           "kind": "call",
           "symbol": "Scheduler",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_resources.py",
+          "file": "hcli/tests/test_scheduler_resources.py",
           "line": 308,
           "kind": "call",
           "symbol": "Scheduler",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_resources.py",
+          "file": "hcli/tests/test_scheduler_resources.py",
           "line": 317,
           "kind": "call",
           "symbol": "Scheduler",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_resources.py",
+          "file": "hcli/tests/test_scheduler_resources.py",
           "line": 329,
           "kind": "call",
           "symbol": "Scheduler",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_resources.py",
+          "file": "hcli/tests/test_scheduler_resources.py",
           "line": 345,
           "kind": "call",
           "symbol": "Scheduler",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_resources.py",
+          "file": "hcli/tests/test_scheduler_resources.py",
           "line": 362,
           "kind": "call",
           "symbol": "Scheduler",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_resources.py",
+          "file": "hcli/tests/test_scheduler_resources.py",
           "line": 374,
           "kind": "call",
           "symbol": "Scheduler",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_workunit_identity.py",
+          "file": "hcli/tests/test_workunit_identity.py",
           "line": 19,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_workunit_identity.py",
+          "file": "hcli/tests/test_workunit_identity.py",
           "line": 21,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_workunit_identity.py",
+          "file": "hcli/tests/test_workunit_identity.py",
           "line": 22,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_workunit_identity.py",
+          "file": "hcli/tests/test_workunit_identity.py",
           "line": 220,
           "kind": "call",
           "symbol": "Scheduler",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_workunit_status.py",
+          "file": "hcli/tests/test_workunit_status.py",
           "line": 9,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_workunit_status.py",
+          "file": "hcli/tests/test_workunit_status.py",
           "line": 104,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_resident_daemon.py",
+          "file": "hcli/tests/test_hcli_resident_daemon.py",
           "line": 25,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
@@ -1813,43 +1813,43 @@
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_core_authorities.py",
+          "file": "hcli/tests/test_core_authorities.py",
           "line": 25,
           "kind": "test",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_dag_store.py",
+          "file": "hcli/tests/test_dag_store.py",
           "line": 13,
           "kind": "test",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_runtime_interface.py",
+          "file": "hcli/tests/test_runtime_interface.py",
           "line": 28,
           "kind": "test",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_quality.py",
+          "file": "hcli/tests/test_scheduler_quality.py",
           "line": 22,
           "kind": "test",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_quality.py",
+          "file": "hcli/tests/test_scheduler_quality.py",
           "line": 24,
           "kind": "test",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_resources.py",
+          "file": "hcli/tests/test_scheduler_resources.py",
           "line": 20,
           "kind": "test",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_workunit_identity.py",
+          "file": "hcli/tests/test_workunit_identity.py",
           "line": 21,
           "kind": "test",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
@@ -1973,43 +1973,43 @@
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_core_authorities.py",
+          "file": "hcli/tests/test_core_authorities.py",
           "line": 25,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_dag_store.py",
+          "file": "hcli/tests/test_dag_store.py",
           "line": 13,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_runtime_interface.py",
+          "file": "hcli/tests/test_runtime_interface.py",
           "line": 28,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_quality.py",
+          "file": "hcli/tests/test_scheduler_quality.py",
           "line": 22,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_quality.py",
+          "file": "hcli/tests/test_scheduler_quality.py",
           "line": 24,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_resources.py",
+          "file": "hcli/tests/test_scheduler_resources.py",
           "line": 20,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_workunit_identity.py",
+          "file": "hcli/tests/test_workunit_identity.py",
           "line": 21,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
@@ -2213,43 +2213,43 @@
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_core_authorities.py",
+          "file": "hcli/tests/test_core_authorities.py",
           "line": 25,
           "kind": "test",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_dag_store.py",
+          "file": "hcli/tests/test_dag_store.py",
           "line": 13,
           "kind": "test",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_runtime_interface.py",
+          "file": "hcli/tests/test_runtime_interface.py",
           "line": 28,
           "kind": "test",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_quality.py",
+          "file": "hcli/tests/test_scheduler_quality.py",
           "line": 22,
           "kind": "test",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_quality.py",
+          "file": "hcli/tests/test_scheduler_quality.py",
           "line": 24,
           "kind": "test",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_resources.py",
+          "file": "hcli/tests/test_scheduler_resources.py",
           "line": 20,
           "kind": "test",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_workunit_identity.py",
+          "file": "hcli/tests/test_workunit_identity.py",
           "line": 21,
           "kind": "test",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
@@ -2418,43 +2418,43 @@
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_core_authorities.py",
+          "file": "hcli/tests/test_core_authorities.py",
           "line": 25,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_dag_store.py",
+          "file": "hcli/tests/test_dag_store.py",
           "line": 13,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_runtime_interface.py",
+          "file": "hcli/tests/test_runtime_interface.py",
           "line": 28,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_quality.py",
+          "file": "hcli/tests/test_scheduler_quality.py",
           "line": 22,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_quality.py",
+          "file": "hcli/tests/test_scheduler_quality.py",
           "line": 24,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_resources.py",
+          "file": "hcli/tests/test_scheduler_resources.py",
           "line": 20,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_workunit_identity.py",
+          "file": "hcli/tests/test_workunit_identity.py",
           "line": 21,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
@@ -2873,61 +2873,61 @@
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_core_authorities.py",
+          "file": "hcli/tests/test_core_authorities.py",
           "line": 25,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_dag_store.py",
+          "file": "hcli/tests/test_dag_store.py",
           "line": 13,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_grammar.py",
+          "file": "hcli/tests/test_grammar.py",
           "line": 14,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_install_shims.py",
+          "file": "hcli/tests/test_install_shims.py",
           "line": 12,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_runtime_interface.py",
+          "file": "hcli/tests/test_runtime_interface.py",
           "line": 28,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_quality.py",
+          "file": "hcli/tests/test_scheduler_quality.py",
           "line": 22,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_quality.py",
+          "file": "hcli/tests/test_scheduler_quality.py",
           "line": 24,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_resources.py",
+          "file": "hcli/tests/test_scheduler_resources.py",
           "line": 20,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_workunit_identity.py",
+          "file": "hcli/tests/test_workunit_identity.py",
           "line": 21,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_cli.py",
+          "file": "hcli/tests/test_hcli_cli.py",
           "line": 4,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
@@ -3594,61 +3594,61 @@
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_core_authorities.py",
+          "file": "hcli/tests/test_core_authorities.py",
           "line": 25,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_dag_store.py",
+          "file": "hcli/tests/test_dag_store.py",
           "line": 13,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_runtime_interface.py",
+          "file": "hcli/tests/test_runtime_interface.py",
           "line": 28,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_quality.py",
+          "file": "hcli/tests/test_scheduler_quality.py",
           "line": 22,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_quality.py",
+          "file": "hcli/tests/test_scheduler_quality.py",
           "line": 24,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_resources.py",
+          "file": "hcli/tests/test_scheduler_resources.py",
           "line": 20,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_workunit_identity.py",
+          "file": "hcli/tests/test_workunit_identity.py",
           "line": 21,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_resident_daemon.py",
+          "file": "hcli/tests/test_hcli_resident_daemon.py",
           "line": 15,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_resident_daemon.py",
+          "file": "hcli/tests/test_hcli_resident_daemon.py",
           "line": 139,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_resident_daemon.py",
+          "file": "hcli/tests/test_hcli_resident_daemon.py",
           "line": 141,
           "kind": "call",
           "symbol": "BackgroundJobStore",
@@ -5023,177 +5023,177 @@
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_acceptance_integrity.py",
+          "file": "hcli/tests/test_acceptance_integrity.py",
           "line": 13,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_backend_health.py",
+          "file": "hcli/tests/test_backend_health.py",
           "line": 31,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_backend_health.py",
+          "file": "hcli/tests/test_backend_health.py",
           "line": 32,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_backend_health.py",
+          "file": "hcli/tests/test_backend_health.py",
           "line": 33,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_control_plane_performance.py",
+          "file": "hcli/tests/test_control_plane_performance.py",
           "line": 20,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_core_authorities.py",
+          "file": "hcli/tests/test_core_authorities.py",
           "line": 21,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_core_authorities.py",
+          "file": "hcli/tests/test_core_authorities.py",
           "line": 22,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_core_authorities.py",
+          "file": "hcli/tests/test_core_authorities.py",
           "line": 23,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_core_authorities.py",
+          "file": "hcli/tests/test_core_authorities.py",
           "line": 29,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_core_authorities.py",
+          "file": "hcli/tests/test_core_authorities.py",
           "line": 30,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_executors.py",
+          "file": "hcli/tests/test_executors.py",
           "line": 19,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_executors.py",
+          "file": "hcli/tests/test_executors.py",
           "line": 129,
           "kind": "call",
           "symbol": "MutationLock",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_mixed_backend.py",
+          "file": "hcli/tests/test_mixed_backend.py",
           "line": 14,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_mixed_backend.py",
+          "file": "hcli/tests/test_mixed_backend.py",
           "line": 154,
           "kind": "call",
           "symbol": "MutationLock",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_mixed_backend.py",
+          "file": "hcli/tests/test_mixed_backend.py",
           "line": 155,
           "kind": "call",
           "symbol": "MutationLock",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_mutation_hash.py",
+          "file": "hcli/tests/test_mutation_hash.py",
           "line": 11,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_mutation_lock_race.py",
+          "file": "hcli/tests/test_mutation_lock_race.py",
           "line": 20,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_mutation_lock_race.py",
+          "file": "hcli/tests/test_mutation_lock_race.py",
           "line": 170,
           "kind": "call",
           "symbol": "MutationLock",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_mutation_lock_race.py",
+          "file": "hcli/tests/test_mutation_lock_race.py",
           "line": 197,
           "kind": "call",
           "symbol": "MutationLock",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_mutation_lock_race.py",
+          "file": "hcli/tests/test_mutation_lock_race.py",
           "line": 207,
           "kind": "call",
           "symbol": "MutationLock",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_runtime_authority.py",
+          "file": "hcli/tests/test_runtime_authority.py",
           "line": 29,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_runtime_pool.py",
+          "file": "hcli/tests/test_runtime_pool.py",
           "line": 25,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_quality.py",
+          "file": "hcli/tests/test_scheduler_quality.py",
           "line": 23,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_resources.py",
+          "file": "hcli/tests/test_scheduler_resources.py",
           "line": 13,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_resources.py",
+          "file": "hcli/tests/test_scheduler_resources.py",
           "line": 263,
           "kind": "call",
           "symbol": "MutationLock",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_resources.py",
+          "file": "hcli/tests/test_scheduler_resources.py",
           "line": 292,
           "kind": "call",
           "symbol": "MutationLock",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_status_truth.py",
+          "file": "hcli/tests/test_status_truth.py",
           "line": 16,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_status_truth.py",
+          "file": "hcli/tests/test_status_truth.py",
           "line": 158,
           "kind": "call",
           "symbol": "MutationLock",
@@ -5868,13 +5868,13 @@
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_core_authorities.py",
+          "file": "hcli/tests/test_core_authorities.py",
           "line": 22,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_core_authorities.py",
+          "file": "hcli/tests/test_core_authorities.py",
           "line": 29,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
@@ -6199,7 +6199,7 @@
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_resident_daemon.py",
+          "file": "hcli/tests/test_hcli_resident_daemon.py",
           "line": 15,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
@@ -6753,217 +6753,217 @@
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_acceptance_integrity.py",
+          "file": "hcli/tests/test_acceptance_integrity.py",
           "line": 11,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_backend_health.py",
+          "file": "hcli/tests/test_backend_health.py",
           "line": 29,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_callpath.py",
+          "file": "hcli/tests/test_callpath.py",
           "line": 14,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_context_budget.py",
+          "file": "hcli/tests/test_context_budget.py",
           "line": 21,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_context_budget.py",
+          "file": "hcli/tests/test_context_budget.py",
           "line": 34,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_context_budget.py",
+          "file": "hcli/tests/test_context_budget.py",
           "line": 133,
           "kind": "call",
           "symbol": "resolve",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_context_budget.py",
+          "file": "hcli/tests/test_context_budget.py",
           "line": 160,
           "kind": "call",
           "symbol": "resolve",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_context_budget.py",
+          "file": "hcli/tests/test_context_budget.py",
           "line": 177,
           "kind": "call",
           "symbol": "resolve",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_context_budget.py",
+          "file": "hcli/tests/test_context_budget.py",
           "line": 193,
           "kind": "call",
           "symbol": "resolve",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_context_budget.py",
+          "file": "hcli/tests/test_context_budget.py",
           "line": 216,
           "kind": "call",
           "symbol": "resolve",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_context_budget.py",
+          "file": "hcli/tests/test_context_budget.py",
           "line": 225,
           "kind": "call",
           "symbol": "resolve",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_context_budget.py",
+          "file": "hcli/tests/test_context_budget.py",
           "line": 237,
           "kind": "call",
           "symbol": "resolve",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_context_budget.py",
+          "file": "hcli/tests/test_context_budget.py",
           "line": 265,
           "kind": "call",
           "symbol": "resolve",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_context_budget.py",
+          "file": "hcli/tests/test_context_budget.py",
           "line": 341,
           "kind": "call",
           "symbol": "resolve",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_context_budget.py",
+          "file": "hcli/tests/test_context_budget.py",
           "line": 358,
           "kind": "call",
           "symbol": "resolve",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_context_budget.py",
+          "file": "hcli/tests/test_context_budget.py",
           "line": 377,
           "kind": "call",
           "symbol": "resolve",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_context_compiler.py",
+          "file": "hcli/tests/test_context_compiler.py",
           "line": 18,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_context_compiler.py",
+          "file": "hcli/tests/test_context_compiler.py",
           "line": 23,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_context_compiler.py",
+          "file": "hcli/tests/test_context_compiler.py",
           "line": 350,
           "kind": "call",
           "symbol": "resolve",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_control_plane_performance.py",
+          "file": "hcli/tests/test_control_plane_performance.py",
           "line": 18,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_core_authorities.py",
+          "file": "hcli/tests/test_core_authorities.py",
           "line": 221,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_engine_schema_degrade.py",
+          "file": "hcli/tests/test_engine_schema_degrade.py",
           "line": 22,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_evidence_freshness.py",
+          "file": "hcli/tests/test_evidence_freshness.py",
           "line": 15,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_goal.py",
+          "file": "hcli/tests/test_goal.py",
           "line": 20,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_hawking_native.py",
+          "file": "hcli/tests/test_hawking_native.py",
           "line": 14,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_module_identity.py",
+          "file": "hcli/tests/test_module_identity.py",
           "line": 29,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_module_identity.py",
+          "file": "hcli/tests/test_module_identity.py",
           "line": 35,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_module_identity.py",
+          "file": "hcli/tests/test_module_identity.py",
           "line": 43,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_p0_closeout.py",
+          "file": "hcli/tests/test_p0_closeout.py",
           "line": 20,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_p0_closeout.py",
+          "file": "hcli/tests/test_p0_closeout.py",
           "line": 181,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_parallel_engine.py",
+          "file": "hcli/tests/test_parallel_engine.py",
           "line": 10,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_receipt_diagnostics.py",
+          "file": "hcli/tests/test_receipt_diagnostics.py",
           "line": 11,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_evidence_budget.py",
+          "file": "hcli/tests/test_hcli_evidence_budget.py",
           "line": 8,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/tests/test_hcli_engine_connector.py",
+          "file": "hcli/tests/test_hcli_engine_connector.py",
           "line": 11,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
@@ -7470,227 +7470,227 @@
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_context_compiler.py",
+          "file": "hcli/tests/test_context_compiler.py",
           "line": 25,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_context_compiler.py",
+          "file": "hcli/tests/test_context_compiler.py",
           "line": 66,
           "kind": "call",
           "symbol": "compile_worker_context",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_context_compiler.py",
+          "file": "hcli/tests/test_context_compiler.py",
           "line": 211,
           "kind": "call",
           "symbol": "compile_worker_context",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_context_compiler.py",
+          "file": "hcli/tests/test_context_compiler.py",
           "line": 251,
           "kind": "call",
           "symbol": "compile_worker_context",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_context_compiler.py",
+          "file": "hcli/tests/test_context_compiler.py",
           "line": 299,
           "kind": "call",
           "symbol": "compile_worker_context",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_context_compiler.py",
+          "file": "hcli/tests/test_context_compiler.py",
           "line": 327,
           "kind": "call",
           "symbol": "compile_worker_context",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_context_compiler.py",
+          "file": "hcli/tests/test_context_compiler.py",
           "line": 354,
           "kind": "call",
           "symbol": "compile_worker_context",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_context_compiler.py",
+          "file": "hcli/tests/test_context_compiler.py",
           "line": 370,
           "kind": "call",
           "symbol": "compile_worker_context",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_context_compiler.py",
+          "file": "hcli/tests/test_context_compiler.py",
           "line": 403,
           "kind": "call",
           "symbol": "compile_worker_context",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_context_compiler.py",
+          "file": "hcli/tests/test_context_compiler.py",
           "line": 432,
           "kind": "call",
           "symbol": "compile_worker_context",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_context_compiler.py",
+          "file": "hcli/tests/test_context_compiler.py",
           "line": 461,
           "kind": "call",
           "symbol": "compile_worker_context",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_context_compiler.py",
+          "file": "hcli/tests/test_context_compiler.py",
           "line": 497,
           "kind": "call",
           "symbol": "compile_worker_context",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_context_compiler.py",
+          "file": "hcli/tests/test_context_compiler.py",
           "line": 498,
           "kind": "call",
           "symbol": "compile_worker_context",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_context_compiler.py",
+          "file": "hcli/tests/test_context_compiler.py",
           "line": 506,
           "kind": "call",
           "symbol": "compile_worker_context",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_context_compiler.py",
+          "file": "hcli/tests/test_context_compiler.py",
           "line": 509,
           "kind": "call",
           "symbol": "compile_worker_context",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_context_compiler.py",
+          "file": "hcli/tests/test_context_compiler.py",
           "line": 552,
           "kind": "call",
           "symbol": "compile_worker_context",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_context_compiler.py",
+          "file": "hcli/tests/test_context_compiler.py",
           "line": 559,
           "kind": "call",
           "symbol": "compile_worker_context",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_core_authorities.py",
+          "file": "hcli/tests/test_core_authorities.py",
           "line": 136,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_goal.py",
+          "file": "hcli/tests/test_goal.py",
           "line": 22,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_goal.py",
+          "file": "hcli/tests/test_goal.py",
           "line": 298,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_goal.py",
+          "file": "hcli/tests/test_goal.py",
           "line": 306,
           "kind": "call",
           "symbol": "compile_worker_context",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_goal.py",
+          "file": "hcli/tests/test_goal.py",
           "line": 330,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_goal.py",
+          "file": "hcli/tests/test_goal.py",
           "line": 362,
           "kind": "call",
           "symbol": "compile_worker_context",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_goal.py",
+          "file": "hcli/tests/test_goal.py",
           "line": 379,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_goal.py",
+          "file": "hcli/tests/test_goal.py",
           "line": 399,
           "kind": "call",
           "symbol": "compile_worker_context",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_goal.py",
+          "file": "hcli/tests/test_goal.py",
           "line": 418,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_goal.py",
+          "file": "hcli/tests/test_goal.py",
           "line": 460,
           "kind": "call",
           "symbol": "compile_worker_context",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_goal.py",
+          "file": "hcli/tests/test_goal.py",
           "line": 479,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_goal.py",
+          "file": "hcli/tests/test_goal.py",
           "line": 493,
           "kind": "call",
           "symbol": "compile_worker_context",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_goal.py",
+          "file": "hcli/tests/test_goal.py",
           "line": 551,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_goal.py",
+          "file": "hcli/tests/test_goal.py",
           "line": 554,
           "kind": "call",
           "symbol": "compile_worker_context",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_goal_workunit_dag.py",
+          "file": "hcli/tests/test_goal_workunit_dag.py",
           "line": 10,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_p0_closeout.py",
+          "file": "hcli/tests/test_p0_closeout.py",
           "line": 22,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_goal.py",
+          "file": "hcli/tests/test_hcli_goal.py",
           "line": 7,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
@@ -8182,85 +8182,85 @@
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_context_budget.py",
+          "file": "hcli/tests/test_context_budget.py",
           "line": 21,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_context_compiler.py",
+          "file": "hcli/tests/test_context_compiler.py",
           "line": 18,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_context_compiler.py",
+          "file": "hcli/tests/test_context_compiler.py",
           "line": 25,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_core_authorities.py",
+          "file": "hcli/tests/test_core_authorities.py",
           "line": 136,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_goal.py",
+          "file": "hcli/tests/test_goal.py",
           "line": 22,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_goal.py",
+          "file": "hcli/tests/test_goal.py",
           "line": 298,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_goal.py",
+          "file": "hcli/tests/test_goal.py",
           "line": 330,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_goal.py",
+          "file": "hcli/tests/test_goal.py",
           "line": 379,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_goal.py",
+          "file": "hcli/tests/test_goal.py",
           "line": 418,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_goal.py",
+          "file": "hcli/tests/test_goal.py",
           "line": 479,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_goal.py",
+          "file": "hcli/tests/test_goal.py",
           "line": 551,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_goal_workunit_dag.py",
+          "file": "hcli/tests/test_goal_workunit_dag.py",
           "line": 10,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_p0_closeout.py",
+          "file": "hcli/tests/test_p0_closeout.py",
           "line": 22,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_goal.py",
+          "file": "hcli/tests/test_hcli_goal.py",
           "line": 7,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
@@ -8792,139 +8792,139 @@
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_agentos_general.py",
+          "file": "hcli/tests/test_agentos_general.py",
           "line": 12,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_command_ingress.py",
+          "file": "hcli/tests/test_command_ingress.py",
           "line": 13,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_command_ingress.py",
+          "file": "hcli/tests/test_command_ingress.py",
           "line": 14,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_commands_grok.py",
+          "file": "hcli/tests/test_commands_grok.py",
           "line": 12,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_config_persist.py",
+          "file": "hcli/tests/test_config_persist.py",
           "line": 13,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_control_plane_performance.py",
+          "file": "hcli/tests/test_control_plane_performance.py",
           "line": 160,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_hawking_native.py",
+          "file": "hcli/tests/test_hawking_native.py",
           "line": 313,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_mission.py",
+          "file": "hcli/tests/test_mission.py",
           "line": 14,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_mixed_backend.py",
+          "file": "hcli/tests/test_mixed_backend.py",
           "line": 12,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_p0_closeout.py",
+          "file": "hcli/tests/test_p0_closeout.py",
           "line": 19,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_status_completeness.py",
+          "file": "hcli/tests/test_status_completeness.py",
           "line": 12,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_status_completeness.py",
+          "file": "hcli/tests/test_status_completeness.py",
           "line": 140,
           "kind": "call",
           "symbol": "format_status",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_status_completeness.py",
+          "file": "hcli/tests/test_status_completeness.py",
           "line": 157,
           "kind": "call",
           "symbol": "format_status",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_status_completeness.py",
+          "file": "hcli/tests/test_status_completeness.py",
           "line": 297,
           "kind": "call",
           "symbol": "format_status",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_status_truth.py",
+          "file": "hcli/tests/test_status_truth.py",
           "line": 14,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_status_truth.py",
+          "file": "hcli/tests/test_status_truth.py",
           "line": 15,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_status_truth.py",
+          "file": "hcli/tests/test_status_truth.py",
           "line": 21,
           "kind": "call",
           "symbol": "format_status",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_status_truth.py",
+          "file": "hcli/tests/test_status_truth.py",
           "line": 90,
           "kind": "call",
           "symbol": "format_status",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_status_truth.py",
+          "file": "hcli/tests/test_status_truth.py",
           "line": 172,
           "kind": "call",
           "symbol": "format_status",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_commands.py",
+          "file": "hcli/tests/test_hcli_commands.py",
           "line": 6,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_live_start.py",
+          "file": "hcli/tests/test_hcli_live_start.py",
           "line": 11,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/tests/test_hcli_engine_connector.py",
+          "file": "hcli/tests/test_hcli_engine_connector.py",
           "line": 12,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
@@ -9333,107 +9333,107 @@
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_agentos_general.py",
+          "file": "hcli/tests/test_agentos_general.py",
           "line": 12,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_command_ingress.py",
+          "file": "hcli/tests/test_command_ingress.py",
           "line": 14,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_config_persist.py",
+          "file": "hcli/tests/test_config_persist.py",
           "line": 13,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_control_plane_performance.py",
+          "file": "hcli/tests/test_control_plane_performance.py",
           "line": 160,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_hawking_native.py",
+          "file": "hcli/tests/test_hawking_native.py",
           "line": 313,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_max_policy.py",
+          "file": "hcli/tests/test_max_policy.py",
           "line": 12,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_max_policy.py",
+          "file": "hcli/tests/test_max_policy.py",
           "line": 40,
           "kind": "call",
           "symbol": "grok_pool_snapshot",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_max_policy.py",
+          "file": "hcli/tests/test_max_policy.py",
           "line": 66,
           "kind": "call",
           "symbol": "grok_pool_snapshot",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_max_policy.py",
+          "file": "hcli/tests/test_max_policy.py",
           "line": 82,
           "kind": "call",
           "symbol": "grok_pool_snapshot",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_mission.py",
+          "file": "hcli/tests/test_mission.py",
           "line": 14,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_mission.py",
+          "file": "hcli/tests/test_mission.py",
           "line": 430,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_mission.py",
+          "file": "hcli/tests/test_mission.py",
           "line": 434,
           "kind": "call",
           "symbol": "grok_pool_snapshot",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_mixed_backend.py",
+          "file": "hcli/tests/test_mixed_backend.py",
           "line": 12,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_p0_closeout.py",
+          "file": "hcli/tests/test_p0_closeout.py",
           "line": 19,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_status_truth.py",
+          "file": "hcli/tests/test_status_truth.py",
           "line": 15,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_live_start.py",
+          "file": "hcli/tests/test_hcli_live_start.py",
           "line": 11,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/tests/test_hcli_engine_connector.py",
+          "file": "hcli/tests/test_hcli_engine_connector.py",
           "line": 12,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
@@ -10084,201 +10084,201 @@
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_acceptance_integrity.py",
+          "file": "hcli/tests/test_acceptance_integrity.py",
           "line": 11,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_agentos_general.py",
+          "file": "hcli/tests/test_agentos_general.py",
           "line": 11,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_agentos_general.py",
+          "file": "hcli/tests/test_agentos_general.py",
           "line": 15,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_backend_health.py",
+          "file": "hcli/tests/test_backend_health.py",
           "line": 29,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_callpath.py",
+          "file": "hcli/tests/test_callpath.py",
           "line": 14,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_context_budget.py",
+          "file": "hcli/tests/test_context_budget.py",
           "line": 34,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_context_compiler.py",
+          "file": "hcli/tests/test_context_compiler.py",
           "line": 23,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_control_plane_performance.py",
+          "file": "hcli/tests/test_control_plane_performance.py",
           "line": 18,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_core_authorities.py",
+          "file": "hcli/tests/test_core_authorities.py",
           "line": 19,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_core_authorities.py",
+          "file": "hcli/tests/test_core_authorities.py",
           "line": 221,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_engine_schema_degrade.py",
+          "file": "hcli/tests/test_engine_schema_degrade.py",
           "line": 20,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_engine_schema_degrade.py",
+          "file": "hcli/tests/test_engine_schema_degrade.py",
           "line": 22,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_evidence_freshness.py",
+          "file": "hcli/tests/test_evidence_freshness.py",
           "line": 15,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_goal.py",
+          "file": "hcli/tests/test_goal.py",
           "line": 20,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_hawking_native.py",
+          "file": "hcli/tests/test_hawking_native.py",
           "line": 14,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_hawking_native.py",
+          "file": "hcli/tests/test_hawking_native.py",
           "line": 16,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_mlx_backend.py",
+          "file": "hcli/tests/test_mlx_backend.py",
           "line": 15,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_module_identity.py",
+          "file": "hcli/tests/test_module_identity.py",
           "line": 29,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_module_identity.py",
+          "file": "hcli/tests/test_module_identity.py",
           "line": 35,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_module_identity.py",
+          "file": "hcli/tests/test_module_identity.py",
           "line": 43,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_p0_closeout.py",
+          "file": "hcli/tests/test_p0_closeout.py",
           "line": 20,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_p0_closeout.py",
+          "file": "hcli/tests/test_p0_closeout.py",
           "line": 181,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_parallel_engine.py",
+          "file": "hcli/tests/test_parallel_engine.py",
           "line": 10,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_receipt_diagnostics.py",
+          "file": "hcli/tests/test_receipt_diagnostics.py",
           "line": 11,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_runtime_authority.py",
+          "file": "hcli/tests/test_runtime_authority.py",
           "line": 22,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_runtime_authority.py",
+          "file": "hcli/tests/test_runtime_authority.py",
           "line": 165,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_runtime_authority.py",
+          "file": "hcli/tests/test_runtime_authority.py",
           "line": 179,
           "kind": "call",
           "symbol": "terminate_pid",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_runtime_interface.py",
+          "file": "hcli/tests/test_runtime_interface.py",
           "line": 12,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_runtime_pool.py",
+          "file": "hcli/tests/test_runtime_pool.py",
           "line": 17,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_runtime_pool.py",
+          "file": "hcli/tests/test_runtime_pool.py",
           "line": 95,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_runtime_pool.py",
+          "file": "hcli/tests/test_runtime_pool.py",
           "line": 109,
           "kind": "call",
           "symbol": "terminate_pid",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_evidence_budget.py",
+          "file": "hcli/tests/test_hcli_evidence_budget.py",
           "line": 8,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/tests/test_hcli_engine_connector.py",
+          "file": "hcli/tests/test_hcli_engine_connector.py",
           "line": 11,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
@@ -10640,13 +10640,13 @@
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_resident_daemon.py",
+          "file": "hcli/tests/test_hcli_resident_daemon.py",
           "line": 15,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_resident_daemon.py",
+          "file": "hcli/tests/test_hcli_resident_daemon.py",
           "line": 111,
           "kind": "call",
           "symbol": "admit_evidence_children",
@@ -13751,7 +13751,7 @@
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_science_boundaries.py",
+          "file": "hcli/tests/test_hcli_science_boundaries.py",
           "line": 25,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
@@ -14289,13 +14289,13 @@
       ],
       "tests": [
         {
-          "file": "tools/haider/hcli/tests/test_agentos_general.py",
+          "file": "hcli/tests/test_agentos_general.py",
           "line": 265,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_flash_science.py",
+          "file": "hcli/tests/test_hcli_flash_science.py",
           "line": 14,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
@@ -14496,38 +14496,38 @@
       ],
       "tests": [
         {
-          "file": "tools/haider/test_hcli_flash_science.py",
+          "file": "hcli/tests/test_hcli_flash_science.py",
           "line": 5,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_science_boundaries.py",
+          "file": "hcli/tests/test_hcli_science_boundaries.py",
           "line": 12,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_science_boundaries.py",
+          "file": "hcli/tests/test_hcli_science_boundaries.py",
           "line": 13,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_science_boundaries.py",
+          "file": "hcli/tests/test_hcli_science_boundaries.py",
           "line": 18,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_science_boundaries.py",
+          "file": "hcli/tests/test_hcli_science_boundaries.py",
           "line": 482,
           "kind": "call",
           "symbol": "run_flash_graph_component",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_science_boundaries.py",
+          "file": "hcli/tests/test_hcli_science_boundaries.py",
           "line": 510,
           "kind": "call",
           "symbol": "run_flash_graph_component",
@@ -14865,19 +14865,19 @@
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_flash_science.py",
+          "file": "hcli/tests/test_hcli_flash_science.py",
           "line": 5,
           "kind": "test",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_science_boundaries.py",
+          "file": "hcli/tests/test_hcli_science_boundaries.py",
           "line": 12,
           "kind": "test",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_science_boundaries.py",
+          "file": "hcli/tests/test_hcli_science_boundaries.py",
           "line": 13,
           "kind": "test",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
@@ -14970,19 +14970,19 @@
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_flash_science.py",
+          "file": "hcli/tests/test_hcli_flash_science.py",
           "line": 5,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_science_boundaries.py",
+          "file": "hcli/tests/test_hcli_science_boundaries.py",
           "line": 12,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_science_boundaries.py",
+          "file": "hcli/tests/test_hcli_science_boundaries.py",
           "line": 13,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
@@ -15423,7 +15423,7 @@
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_science_boundaries.py",
+          "file": "hcli/tests/test_hcli_science_boundaries.py",
           "line": 23,
           "kind": "test",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
@@ -15474,7 +15474,7 @@
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_science_boundaries.py",
+          "file": "hcli/tests/test_hcli_science_boundaries.py",
           "line": 23,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
@@ -15783,7 +15783,7 @@
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_science_boundaries.py",
+          "file": "hcli/tests/test_hcli_science_boundaries.py",
           "line": 23,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
@@ -15884,7 +15884,7 @@
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_science_boundaries.py",
+          "file": "hcli/tests/test_hcli_science_boundaries.py",
           "line": 23,
           "kind": "test",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
@@ -15935,7 +15935,7 @@
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_science_boundaries.py",
+          "file": "hcli/tests/test_hcli_science_boundaries.py",
           "line": 23,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
@@ -16036,19 +16036,19 @@
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_science_boundaries.py",
+          "file": "hcli/tests/test_hcli_science_boundaries.py",
           "line": 23,
           "kind": "test",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_science_boundaries.py",
+          "file": "hcli/tests/test_hcli_science_boundaries.py",
           "line": 978,
           "kind": "test",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_science_boundaries.py",
+          "file": "hcli/tests/test_hcli_science_boundaries.py",
           "line": 979,
           "kind": "test",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
@@ -16099,20 +16099,20 @@
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_science_boundaries.py",
+          "file": "hcli/tests/test_hcli_science_boundaries.py",
           "line": 23,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_science_boundaries.py",
+          "file": "hcli/tests/test_hcli_science_boundaries.py",
           "line": 978,
           "kind": "call",
           "symbol": "simulate_partition",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_science_boundaries.py",
+          "file": "hcli/tests/test_hcli_science_boundaries.py",
           "line": 979,
           "kind": "call",
           "symbol": "simulate_partition",
@@ -16929,7 +16929,7 @@
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_science_boundaries.py",
+          "file": "hcli/tests/test_hcli_science_boundaries.py",
           "line": 32,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
@@ -20213,247 +20213,247 @@
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_acceptance_integrity.py",
+          "file": "hcli/tests/test_acceptance_integrity.py",
           "line": 11,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_agentos_general.py",
+          "file": "hcli/tests/test_agentos_general.py",
           "line": 10,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_backend_health.py",
+          "file": "hcli/tests/test_backend_health.py",
           "line": 29,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_callpath.py",
+          "file": "hcli/tests/test_callpath.py",
           "line": 14,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_context_budget.py",
+          "file": "hcli/tests/test_context_budget.py",
           "line": 34,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_context_compiler.py",
+          "file": "hcli/tests/test_context_compiler.py",
           "line": 23,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_control_plane_performance.py",
+          "file": "hcli/tests/test_control_plane_performance.py",
           "line": 18,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_core_authorities.py",
+          "file": "hcli/tests/test_core_authorities.py",
           "line": 25,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_core_authorities.py",
+          "file": "hcli/tests/test_core_authorities.py",
           "line": 221,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_dag_store.py",
+          "file": "hcli/tests/test_dag_store.py",
           "line": 13,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_engine_schema_degrade.py",
+          "file": "hcli/tests/test_engine_schema_degrade.py",
           "line": 22,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_evidence_freshness.py",
+          "file": "hcli/tests/test_evidence_freshness.py",
           "line": 15,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_goal.py",
+          "file": "hcli/tests/test_goal.py",
           "line": 20,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_grammar.py",
+          "file": "hcli/tests/test_grammar.py",
           "line": 14,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_hawking_native.py",
+          "file": "hcli/tests/test_hawking_native.py",
           "line": 14,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_install_shims.py",
+          "file": "hcli/tests/test_install_shims.py",
           "line": 12,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_module_identity.py",
+          "file": "hcli/tests/test_module_identity.py",
           "line": 29,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_module_identity.py",
+          "file": "hcli/tests/test_module_identity.py",
           "line": 35,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_module_identity.py",
+          "file": "hcli/tests/test_module_identity.py",
           "line": 43,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_p0_closeout.py",
+          "file": "hcli/tests/test_p0_closeout.py",
           "line": 20,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_p0_closeout.py",
+          "file": "hcli/tests/test_p0_closeout.py",
           "line": 181,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_parallel_engine.py",
+          "file": "hcli/tests/test_parallel_engine.py",
           "line": 10,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_receipt_diagnostics.py",
+          "file": "hcli/tests/test_receipt_diagnostics.py",
           "line": 11,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_runtime_interface.py",
+          "file": "hcli/tests/test_runtime_interface.py",
           "line": 28,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_quality.py",
+          "file": "hcli/tests/test_scheduler_quality.py",
           "line": 22,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_quality.py",
+          "file": "hcli/tests/test_scheduler_quality.py",
           "line": 24,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_scheduler_resources.py",
+          "file": "hcli/tests/test_scheduler_resources.py",
           "line": 20,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/hcli/tests/test_workunit_identity.py",
+          "file": "hcli/tests/test_workunit_identity.py",
           "line": 21,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_cli.py",
+          "file": "hcli/tests/test_hcli_cli.py",
           "line": 4,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_evidence_budget.py",
+          "file": "hcli/tests/test_hcli_evidence_budget.py",
           "line": 8,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_resident_daemon.py",
+          "file": "hcli/tests/test_hcli_resident_daemon.py",
           "line": 14,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_science_boundaries.py",
+          "file": "hcli/tests/test_hcli_science_boundaries.py",
           "line": 13,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_science_boundaries.py",
+          "file": "hcli/tests/test_hcli_science_boundaries.py",
           "line": 14,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_science_boundaries.py",
+          "file": "hcli/tests/test_hcli_science_boundaries.py",
           "line": 15,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_science_boundaries.py",
+          "file": "hcli/tests/test_hcli_science_boundaries.py",
           "line": 16,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_science_boundaries.py",
+          "file": "hcli/tests/test_hcli_science_boundaries.py",
           "line": 17,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_science_boundaries.py",
+          "file": "hcli/tests/test_hcli_science_boundaries.py",
           "line": 18,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_science_boundaries.py",
+          "file": "hcli/tests/test_hcli_science_boundaries.py",
           "line": 19,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_science_boundaries.py",
+          "file": "hcli/tests/test_hcli_science_boundaries.py",
           "line": 20,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_science_boundaries.py",
+          "file": "hcli/tests/test_hcli_science_boundaries.py",
           "line": 21,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/tests/test_hcli_engine_connector.py",
+          "file": "hcli/tests/test_hcli_engine_connector.py",
           "line": 11,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
@@ -21254,13 +21254,13 @@
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_science_boundaries.py",
+          "file": "hcli/tests/test_hcli_science_boundaries.py",
           "line": 23,
           "kind": "test",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_science_boundaries.py",
+          "file": "hcli/tests/test_hcli_science_boundaries.py",
           "line": 32,
           "kind": "test",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
@@ -21412,13 +21412,13 @@
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_science_boundaries.py",
+          "file": "hcli/tests/test_hcli_science_boundaries.py",
           "line": 23,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_science_boundaries.py",
+          "file": "hcli/tests/test_hcli_science_boundaries.py",
           "line": 32,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
@@ -22355,7 +22355,7 @@
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_science_boundaries.py",
+          "file": "hcli/tests/test_hcli_science_boundaries.py",
           "line": 32,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
@@ -22478,19 +22478,19 @@
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_flash_science.py",
+          "file": "hcli/tests/test_hcli_flash_science.py",
           "line": 5,
           "kind": "test",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_science_boundaries.py",
+          "file": "hcli/tests/test_hcli_science_boundaries.py",
           "line": 12,
           "kind": "test",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_science_boundaries.py",
+          "file": "hcli/tests/test_hcli_science_boundaries.py",
           "line": 13,
           "kind": "test",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
@@ -22540,19 +22540,19 @@
       "weak_signals": [],
       "tests": [
         {
-          "file": "tools/haider/test_hcli_flash_science.py",
+          "file": "hcli/tests/test_hcli_flash_science.py",
           "line": 5,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_science_boundaries.py",
+          "file": "hcli/tests/test_hcli_science_boundaries.py",
           "line": 12,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"
         },
         {
-          "file": "tools/haider/test_hcli_science_boundaries.py",
+          "file": "hcli/tests/test_hcli_science_boundaries.py",
           "line": 13,
           "kind": "import",
           "commit": "7d64280068d7f1e1d239e3ffb783a10af485d037"

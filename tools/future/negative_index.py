@@ -1390,7 +1390,7 @@ def coverage(scars: list[Scar] | None = None) -> dict[str, Any]:
             "Protected GPU / FPGA / power-meter measurements (sidecar is STATIC_ONLY; bench state UNKNOWN).",
             "Promotion of MODEL_SPECIFIC scars to FAMILY or GENERAL_PHYSICAL — the index never auto-promotes.",
             "DIAGNOSTIC_RELATIVE vs PROTECTED_ABSOLUTE classification of source numbers (this lane produces neither).",
-            ".haider/bootstrap-director-v6/negative-science.jsonl (cited by noetic sweep; not in git HEAD).",
+            ".hcli-legacy/bootstrap-director-v6/negative-science.jsonl (cited by noetic sweep; not in git HEAD).",
             "Live Codex receipts/headless beyond the named / name-scanned negative and *refuted* files.",
             "ramanujan.scaffold.core.stores Graveyard (in-process bury/revive, not a corpus index).",
             "Worktrees and grok/* branches the noetic sweeper walked; this index is HEAD + disk only.",
@@ -1460,7 +1460,7 @@ def gaps_closed() -> list[str]:
 def negative_findings() -> list[str]:
     return [
         "tools/headless/negative_science.py QWEN entries are not in the v1 NOETIC receipt; they are extracted from the Python catalog so they are not lost. Rebuilding the Codex receipt was out of scope.",
-        ".haider/bootstrap-director-v6/negative-science.jsonl is not in git HEAD; cited by noetic as HCLI tactic fingerprints, not representation science.",
+        ".hcli-legacy/bootstrap-director-v6/negative-science.jsonl is not in git HEAD; cited by noetic as HCLI tactic fingerprints, not representation science.",
         "The dual-gravity JSONL duplicates many qwen80/evolution JSONL records (same record_id). Both sources are kept; they are not merged.",
         "No FAMILY or GENERAL_PHYSICAL promotion was performed. Counts of distinct parents per family are visible in coverage.by_model but are not a promotion.",
         "Cannot certify whether any source number was DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE; this lane produces neither.",

@@ -978,7 +978,7 @@ def watched_fail(cal: dict, cands: list[dict]) -> list[dict]:
             "what": "baseline suite 464 passed, 1 skipped (HCLI_SWAP_CEILING_GIB=64)",
             "result": "NOT RUN",
             "why": (
-                "That suite lives under tools/haider/hcli/tests (DENY, not on disk). "
+                "That suite lives under hcli/tests (DENY, not on disk). "
                 "git sparse-checkout add is forbidden (sparse-checkout.lock: Operation "
                 "not permitted)."
             ),

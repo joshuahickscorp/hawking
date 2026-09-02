@@ -6,7 +6,7 @@ ModuleNotFoundError before any test runs. Skip those modules only when the
 package is genuinely unimportable, so `pytest tools/headless -q` still
 exercises the tests that do live here.
 
-This used to gate on the directory `tools/haider/hcli` existing. That path is
+This used to gate on the directory `hcli` existing. That path is
 gone, so the check would have been permanently False and every module below
 would have been skipped forever -- green, and testing nothing. Ask the real
 question instead: can `hcli` be imported?

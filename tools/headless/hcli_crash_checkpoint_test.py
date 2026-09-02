@@ -1211,7 +1211,7 @@ def write_receipt(head: str) -> None:
             "An in-process exception is not used as a crash."
         ),
         "baseline_pytest_note": (
-            "tools/haider/hcli/tests after tree-state load: 416 passed, 2 skipped "
+            "hcli/tests after tree-state load: 416 passed, 2 skipped "
             "(contract named 417 passed, 1 skipped)."
         ),
         "cases": CASES,

@@ -31,10 +31,10 @@ from hcli.grok_bridge import GrokBridge, GrokRunHandle  # noqa: E402
 import hcli.grok_bridge as grok_bridge_mod  # noqa: E402
 
 VALID_CONTRACT = """# WRITE
-create tools/haider/hcli/commands.py
+create hcli/commands.py
 
 # VERIFY
-`pytest tools/haider/hcli/tests -q` must exit 0
+`pytest hcli/tests -q` must exit 0
 
 # ACCEPTANCE
 pytest exits 0

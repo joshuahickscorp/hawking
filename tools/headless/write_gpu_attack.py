@@ -25,7 +25,7 @@ import time
 from pathlib import Path
 
 REPO = Path(os.path.expanduser("~/Downloads/hawking-copy"))
-BASELINE_TPS = 27.900814587942833  # .haider/bootstrap-director-v6/worker-equilibrium.json
+BASELINE_TPS = 27.900814587942833  # .hcli-legacy/bootstrap-director-v6/worker-equilibrium.json
 
 
 def main() -> int:
@@ -87,7 +87,7 @@ def main() -> int:
         "operator_ask": ("run parallel models like ports without aggregate being similar — "
                          "i.e. N runtimes should aggregate to meaningfully more than one"),
         "baseline_tps": BASELINE_TPS,
-        "baseline_source": (".haider/bootstrap-director-v6/worker-equilibrium.json "
+        "baseline_source": (".hcli-legacy/bootstrap-director-v6/worker-equilibrium.json "
                             "best_aggregate_tps at active_decode_limit=2, "
                             "aggregate_scaling_vs_1=1.208"),
         "reps": (d.get("params") or {}).get("reps"),

@@ -1397,7 +1397,7 @@ def watched_fail(cases, self_fails, llama, metal, artifact, geo) -> list:
         {
             "what": "apply tree-state.patch onto tools/haider in this sparse checkout",
             "what_happened": (
-                "git apply failed with 'tools/haider/hcli/*.py: No such file or "
+                "git apply failed with 'hcli/*.py: No such file or "
                 "directory'. Applied with --exclude tools/haider. Baseline suite "
                 "was run from ~/Downloads/hawking-copy."
             ),
@@ -1405,7 +1405,7 @@ def watched_fail(cases, self_fails, llama, metal, artifact, geo) -> list:
         {
             "what": "reproduce 464 passed, 1 skipped",
             "what_happened": (
-                "HCLI_SWAP_CEILING_GIB=64 pytest tools/haider/hcli/tests from "
+                "HCLI_SWAP_CEILING_GIB=64 pytest hcli/tests from "
                 "hawking-copy: 463 passed, 2 skipped. The extra skip is "
                 "test_mlx_backend.py: mlx_lm.server --help did not answer in this "
                 "environment. The expected skip is the live grok-run audit."

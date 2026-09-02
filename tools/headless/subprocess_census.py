@@ -37,7 +37,7 @@ SCHEMA = "hawking.headless.subprocess_census.v1"
 REPO = Path(__file__).resolve().parents[2]
 RECEIPT = REPO / "receipts" / "headless" / "SUBPROCESS_CENSUS.json"
 
-ROOTS = ("hcli", "tools/haider", "tools/headless", "crates", "src")
+ROOTS = ("hcli", "tools/hcli", "tools/headless", "crates", "src")
 CLASSES = (
     "REQUIRED_EXTERNAL_TOOL",
     "ISOLATION_BOUNDARY",
@@ -117,7 +117,7 @@ STAMP_FUNCS = {
 HIST_SUITE = {
     "iteration_1": {
         "receipt": "receipts/headless/HCLI_SELF_OPT_ITERATION_1.json",
-        "command": "python3 -m pytest tools/haider/hcli/tests -q",
+        "command": "python3 -m pytest hcli/tests -q",
         "wall_s": 129.31068000000232,
         "passed": 416,
         "skipped": 2,
@@ -126,7 +126,7 @@ HIST_SUITE = {
     },
     "iteration_2": {
         "receipt": "receipts/headless/HCLI_SELF_OPT_ITERATION_2.json",
-        "command": "python3 -m pytest tools/haider/hcli/tests -q",
+        "command": "python3 -m pytest hcli/tests -q",
         "wall_s": 139.5457987080008,
         "passed": 432,
         "skipped": 2,
@@ -640,13 +640,13 @@ def _role(hit: Dict[str, Any]) -> str:
             if any(s in func.lower() for s in ("git_head", "git")):
                 return "receipt_stamp"
         return "harness"
-    if f.startswith("tools/haider/hcli/") and "/tests/" not in f:
+    if f.startswith("hcli/") and "/tests/" not in f:
         return "production"
     if f.startswith("hcli/") and "/tests/" not in f:
         return "production"
     if f.startswith("crates/") or f.startswith("src/"):
         return "native"
-    if f in {"tools/haider/haider.py", "tools/haider/p0_tool_bridge.py"}:
+    if f in {"tools/hcli/bootstrap/snapshots/haider.py", "tools/hcli/bootstrap/p0_tool_bridge.py"}:
         return "production_fossil"
     return "other"
 
@@ -805,7 +805,7 @@ def classify(hit: Dict[str, Any]) -> Dict[str, Any]:
     if func.endswith("run_validation") and f.endswith("haider.py"):
         return out(
             "LEGACY_WRAPPER",
-            "`[sys.executable, tools/haider/test_p0_tool_bridge.py]` — Python spawning Hawking Python.",
+            "`[sys.executable, tools/hcli/bootstrap/test_p0_tool_bridge.py]` — Python spawning Hawking Python.",
             replacement="import the test module and call its main, or pytest.main([str(test_file)])",
             would_break="haider.py is a fossil entrypoint (zero `import aider`). Callers expecting a subprocess exit code from the P0 file.",
             hot_path="cold",
@@ -1721,7 +1721,7 @@ def measure_workunit(watched: List[str]) -> Dict[str, Any]:
 
 
 def measure_suite(watched: List[str]) -> Dict[str, Any]:
-    """Live spawn count + milliseconds for pytest tools/haider/hcli/tests.
+    """Live spawn count + milliseconds for pytest hcli/tests.
 
     Always git-archives HEAD:tools/haider into /tmp. This worktree is sparse
     (haider is not on disk) and the live ~/Downloads/hawking tree must not be
@@ -1732,7 +1732,7 @@ def measure_suite(watched: List[str]) -> Dict[str, Any]:
         "historical": HIST_SUITE,
         "historical_note": (
             "Self-opt gate.correctness is itself a WorkUnit whose verifier shells "
-            "python3 -m pytest tools/haider/hcli/tests. Measured walls 129.3s and "
+            "python3 -m pytest hcli/tests. Measured walls 129.3s and "
             "139.5s (receipts cited). The contract's ~140s suite is that command."
         ),
     }
@@ -1749,7 +1749,7 @@ def measure_suite(watched: List[str]) -> Dict[str, Any]:
             watched.append(
                 f"Cited previous suite live measurement from {prev.get('generated_at')} "
                 f"(n_spawns={live.get('n_spawns')}, wall_ms={live.get('wall_ms')}). "
-                "This run did not re-exec pytest tools/haider/hcli/tests "
+                "This run did not re-exec pytest hcli/tests "
                 "(~140s). CENSUS_REMEASURE_SUITE=1 forces a rerun. Historical walls "
                 "remain in cost.suite.historical."
             )
@@ -1764,7 +1764,7 @@ def measure_suite(watched: List[str]) -> Dict[str, Any]:
         out["live"] = {
             "ok": False,
             "reason": "NOT_REMEASURED",
-            "note": "Set CENSUS_REMEASURE_SUITE=1 to run pytest tools/haider/hcli/tests under an audit hook.",
+            "note": "Set CENSUS_REMEASURE_SUITE=1 to run pytest hcli/tests under an audit hook.",
         }
         return out
     py = sys.executable
@@ -1787,7 +1787,7 @@ def measure_suite(watched: List[str]) -> Dict[str, Any]:
     if not haider_init.exists():
         haider_init.write_text("", encoding="utf-8")
     cwd = Path(tmp_extract)
-    tests = "tools/haider/hcli/tests"
+    tests = "hcli/tests"
     env["PYTHONPATH"] = str(cwd) + os.pathsep + env.get("PYTHONPATH", "")
     out["repo"] = str(cwd)
     out["repo_kind"] = "git-archive temp tree"
@@ -1953,7 +1953,7 @@ def experiment_cost(micro: Dict[str, Any], wu: Dict[str, Any]) -> Dict[str, Any]
                 "receipts/headless/HCLI_SELF_OPT_ITERATION_2.json",
             ],
             "spawns_from_executor": 10,
-            "plus_inner_gate_correctness": "1 pytest of tools/haider/hcli/tests (129–140s) which then starts one process per test that shells out",
+            "plus_inner_gate_correctness": "1 pytest of hcli/tests (129–140s) which then starts one process per test that shells out",
             "mission_wall_s": {
                 "iteration_1": HIST_SUITE["iteration_1"]["mission_wall_s"],
                 "iteration_2": HIST_SUITE["iteration_2"]["mission_wall_s"],
@@ -2223,7 +2223,7 @@ def print_report(doc: Dict[str, Any]) -> None:
     print(f"  {json.dumps(exp['per_experiment_self_opt'], indent=2)}")
     print()
     suite = doc["cost"]["suite"]
-    print("suite run (pytest tools/haider/hcli/tests):")
+    print("suite run (pytest hcli/tests):")
     print(f"  historical iteration_1 wall_s={HIST_SUITE['iteration_1']['wall_s']:.1f} passed={HIST_SUITE['iteration_1']['passed']}")
     print(f"  historical iteration_2 wall_s={HIST_SUITE['iteration_2']['wall_s']:.1f} passed={HIST_SUITE['iteration_2']['passed']}")
     live_s = suite.get("live") or {}

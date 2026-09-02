@@ -53,7 +53,7 @@ RECEIPT_PATH = RECEIPTS / "DEAD_CODE_CENSUS.json"
 
 # Live control plane lives here. Sparse checkout does not materialize it;
 # we read blobs via `git show HEAD:<path>` and search via `git grep HEAD`.
-HAIDER_PREFIX = "tools/haider/"
+HAIDER_PREFIX = "tools/hcli/bootstrap/"
 
 NEVER_DELETE_PREFIXES = (
     "receipts/",
@@ -757,10 +757,10 @@ def classify_haider_control_plane() -> List[Dict[str, Any]]:
 
         # HCLI-v0 bootstrap cluster
         if rel in {
-            "tools/haider/haider.py",
-            "tools/haider/p0_tool_bridge.py",
-            "tools/haider/test_haider_edit.py",
-            "tools/haider/test_p0_tool_bridge.py",
+            "tools/hcli/bootstrap/snapshots/haider.py",
+            "tools/hcli/bootstrap/p0_tool_bridge.py",
+            "tools/hcli/bootstrap/test_haider_edit.py",
+            "tools/hcli/bootstrap/test_p0_tool_bridge.py",
         }:
             items.append(
                 item(
@@ -770,7 +770,7 @@ def classify_haider_control_plane() -> List[Dict[str, Any]]:
                     classification="ARCHIVE",
                     reason=(
                         "HCLI-v0 bootstrap (Gate Zero). Live control plane is "
-                        "tools/haider/hcli/. Still an entrypoint/test of that "
+                        "hcli/. Still an entrypoint/test of that "
                         "bootstrap; historical science, not proven-dead live path"
                     ),
                     bytes_=b,
@@ -779,7 +779,7 @@ def classify_haider_control_plane() -> List[Dict[str, Any]]:
                     + [
                         ev(
                             "live_control_plane",
-                            "tools/haider/hcli/ (python -m hcli)",
+                            "hcli/ (python -m hcli)",
                         ),
                         ev(
                             "aider_imports_in_tools",
@@ -978,7 +978,7 @@ def namesake_unknowns() -> List[Dict[str, Any]]:
 
 
 def stale_cli_flags() -> List[Dict[str, Any]]:
-    text, src = load_text("tools/haider/hcli/cli.py")
+    text, src = load_text("hcli/cli.py")
     b = 0
     n = 0
     if text:
@@ -990,8 +990,8 @@ def stale_cli_flags() -> List[Dict[str, Any]]:
         )
     return [
         item(
-            ident="cli_flag:tools/haider/hcli/cli.py:--task",
-            path="tools/haider/hcli/cli.py",
+            ident="cli_flag:hcli/cli.py:--task",
+            path="hcli/cli.py",
             kind="cli_flag",
             classification="KEEP",
             reason=(
@@ -1012,7 +1012,7 @@ def stale_cli_flags() -> List[Dict[str, Any]]:
 
 
 def haider_tests_keep() -> List[Dict[str, Any]]:
-    files = [f for f in git_ls_tree("tools/haider/hcli/tests") if f.endswith(".py")]
+    files = [f for f in git_ls_tree("hcli/tests") if f.endswith(".py")]
     total_b = 0
     total_n = 0
     for rel in files:
@@ -1022,8 +1022,8 @@ def haider_tests_keep() -> List[Dict[str, Any]]:
         total_n += n
     return [
         item(
-            ident="tree:tools/haider/hcli/tests",
-            path="tools/haider/hcli/tests/",
+            ident="tree:hcli/tests",
+            path="hcli/tests/",
             kind="tree",
             classification="KEEP",
             reason=(
@@ -1191,7 +1191,7 @@ def downgraded(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """First-class record of DELETE temptations that inspection reversed."""
     rows = [
         {
-            "path": "tools/haider/haider.py",
+            "path": "tools/hcli/bootstrap/snapshots/haider.py",
             "tempted": "DELETE",
             "landed": "ARCHIVE",
             "why": (
@@ -1204,7 +1204,7 @@ def downgraded(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
             ),
         },
         {
-            "path": "tools/haider/hcli/mutation.py (rollback_mutation / apply_mutation_operations)",
+            "path": "hcli/mutation.py (rollback_mutation / apply_mutation_operations)",
             "tempted": "DELETE",
             "landed": "KEEP",
             "why": (
@@ -1236,7 +1236,7 @@ def downgraded(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
             ),
         },
         {
-            "path": "tools/haider/hcli/context.py",
+            "path": "hcli/context.py",
             "tempted": "DELETE",
             "landed": "ARCHIVE",
             "why": (
@@ -1462,7 +1462,7 @@ def build() -> Tuple[Dict[str, Any], str]:
             ),
             "out_of_write_scope": (
                 "ARCHIVE the HCLI-v0 cluster (haider.py, p0_tool_bridge.py, "
-                "their tests, P1 doc). DELETE tools/haider/hcli/index.py after "
+                "their tests, P1 doc). DELETE hcli/index.py after "
                 "confirming no out-of-tree importer. Deprecate context.py in "
                 "favor of goal.py. Leave --task/--task-file until callers are "
                 "measured."

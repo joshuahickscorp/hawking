@@ -2,7 +2,7 @@
 """G003 probe: is HCLI's structured-output failure caused by unconstrained decoding
 plus Qwen3 thinking-token burn?
 
-Hypothesis (from .haider/bootstrap-director-v6/runs/*/hcli.log, every epoch):
+Hypothesis (from .hcli-legacy/bootstrap-director-v6/runs/*/hcli.log, every epoch):
     "Model did not return a valid structured JSON object"
     ~314 s per failed call, HCLI_MODEL_TOKENS=6500, machine single-decode ~21 tok/s
     => 6500 tok / 314 s = 20.7 tok/s  => the call is exhausting max_tokens, not erroring.

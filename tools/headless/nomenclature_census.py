@@ -89,7 +89,7 @@ NAMES: list[dict] = [
         "kind": "campaign",
         "summary": "Headless control plane and the live agent runtime.",
         "path_prefixes": (
-            "tools/haider/hcli/",
+            "hcli/",
             "tools/headless/",
             "lab/hcli/",
             "crates/hide-backend/src/bin/hcli.rs",
@@ -106,7 +106,7 @@ NAMES: list[dict] = [
         "belongs_to": None,
         "reasoning": (
             "Named surviving vocabulary. Live source currently nested under "
-            "tools/haider/hcli (a vestigial Haider directory) plus tools/headless."
+            "hcli (a vestigial Haider directory) plus tools/headless."
         ),
     },
     {
@@ -434,20 +434,20 @@ NAMES: list[dict] = [
         "id": "Haider",
         "class": "VESTIGIAL",
         "kind": "campaign",
-        "summary": "Predecessor productization brand. Live HCLI source still lives under tools/haider/hcli.",
+        "summary": "Predecessor productization brand. Live HCLI source still lives under hcli.",
         "path_prefixes": (
-            "tools/haider/",
-            "crates/hide-backend/src/haider/",
+            "tools/hcli/bootstrap/",
+            "crates/hide-backend/src/hcli/",
             "crates/hide-backend/src/bin/haider.rs",
         ),
-        "path_regex": r"(^|/)haider([^a-z0-9]|$)|(^|/)\.haider/",
+        "path_regex": r"(^|/)haider([^a-z0-9]|$)|(^|/)\.hcli-legacy/",
         "content_ere": wb("Haider", "haider", "HAIDER"),
         "schema_prefixes": (),
         "belongs_to": None,
         "reasoning": (
             "VESTIGIAL brand, not a mechanism. P1_HAIDER_PRODUCTIZATION_MAX.md is "
             "the old productization spec. The surviving runtime is HCLI; its source "
-            "happens to sit at tools/haider/hcli. Renaming that directory would stale "
+            "happens to sit at hcli. Renaming that directory would stale "
             "sealed headless receipts that name the path."
         ),
     },
@@ -1154,9 +1154,9 @@ def evidence_for(spec: dict, owned: list[dict], schemas: list[str]) -> dict:
         ])
     elif spec["id"] == "Haider":
         lost.extend([
-            "tools/haider/hcli — LIVE HCLI source of truth (nested under the vestigial brand)",
+            "hcli — LIVE HCLI source of truth (nested under the vestigial brand)",
             "P1_HAIDER_PRODUCTIZATION_MAX.md acceptance contract",
-            "headless receipts that name tools/haider/hcli/... as the defending path",
+            "headless receipts that name hcli/... as the defending path",
         ])
     elif spec["id"] == "Ascent":
         lost.extend([
@@ -1282,8 +1282,8 @@ def rename_plan(names_out: list[dict], all_schemas: list[str], g105: dict) -> di
         "Ramanujan",
     )
     U(
-        "tools/haider/hcli/ path",
-        "Live HCLI source. Hundreds of headless receipts defend tools/haider/hcli/*.py. "
+        "hcli/ path",
+        "Live HCLI source. Hundreds of headless receipts defend hcli/*.py. "
         "A directory rename would make the evidence corpus point at a hole.",
         "Haider",
     )
@@ -1470,8 +1470,8 @@ def watched_fail(identity: dict, names_out: list[dict], tree_rows: list[dict]) -
             "correction": "Vestigial = not active, not reclaimable. Evidence stays indexed.",
         },
         {
-            "trap": "Renaming tools/haider/ because HCLI survived",
-            "what_failed": "Live HCLI source is tools/haider/hcli. Headless receipts cite those paths as the thing they defend.",
+            "trap": "Renaming tools/hcli/bootstrap/ because HCLI survived",
+            "what_failed": "Live HCLI source is hcli. Headless receipts cite those paths as the thing they defend.",
             "correction": "Haider directory is vestigial brand wrapping surviving source. UNSAFE to git mv.",
         },
         {

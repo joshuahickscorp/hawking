@@ -87,20 +87,20 @@ AMBIGUOUS_NAMES = {
 }
 
 ARCHIVE_MODULES = {
-    "tools/haider/haider.py",
-    "tools/haider/p0_tool_bridge.py",
-    "tools/haider/test_haider_edit.py",
-    "tools/haider/test_p0_tool_bridge.py",
-    "tools/haider/hcli/context.py",
+    "tools/hcli/bootstrap/snapshots/haider.py",
+    "tools/hcli/bootstrap/p0_tool_bridge.py",
+    "tools/hcli/bootstrap/test_haider_edit.py",
+    "tools/hcli/bootstrap/test_p0_tool_bridge.py",
+    "hcli/context.py",
 }
 
 SCIENCE_FILE_PREFIXES = ("noetic_",)
 
-CLI_ENTRY = "tools/haider/hcli/__main__.py"
-CLI_MAIN = "tools/haider/hcli/cli.py"
-CLI_APP = "tools/haider/hcli/app.py"
-CLI_CONTROLLER = "tools/haider/hcli/controller.py"
-CLI_COMMANDS = "tools/haider/hcli/commands.py"
+CLI_ENTRY = "hcli/__main__.py"
+CLI_MAIN = "hcli/cli.py"
+CLI_APP = "hcli/app.py"
+CLI_CONTROLLER = "hcli/controller.py"
+CLI_COMMANDS = "hcli/commands.py"
 
 # Slash command → Controller method that does the work (after getattr dispatch).
 SLASH_IMPL = {
@@ -483,7 +483,7 @@ def classify_module(
             evidence,
         )
 
-    if path == "tools/haider/hcli/index.py":
+    if path == "hcli/index.py":
         return _mod_row(
             rec,
             "DELETE",
@@ -967,15 +967,15 @@ def build_call_depths(trees: Dict[str, ast.AST]) -> List[Dict[str, Any]]:
         )
 
     # Fossil CLI
-    fossil = "tools/haider/haider.py"
+    fossil = "tools/hcli/bootstrap/snapshots/haider.py"
     rows.append(
         {
-            "command": "python tools/haider/haider.py",
+            "command": "python tools/hcli/bootstrap/snapshots/haider.py",
             "kind": "fossil_cli",
             "chain": [
                 hop("haider.main", fossil, "main", _fn_exists(trees.get(fossil), "main")),
             ],
-            "impl": "tools/haider/haider.py:main",
+            "impl": "tools/hcli/bootstrap/snapshots/haider.py:main",
             "depth": 1,
             "notes": "ARCHIVE fossil launcher; disconnected from python -m hcli",
         }
@@ -1158,8 +1158,8 @@ def build() -> Dict[str, Any]:
     # (_gate, FakeBackend, median) stay UNKNOWN even when unused here.
     proof_specs = [
         {
-            "target_id": "file:tools/haider/hcli/index.py",
-            "path": "tools/haider/hcli/index.py",
+            "target_id": "file:hcli/index.py",
+            "path": "hcli/index.py",
             "names": ["WorkspaceIndex"],
             "extra": ["hcli.index", "from hcli.index import", "from .index import"],
             "level": "module",
@@ -1230,19 +1230,19 @@ def build() -> Dict[str, Any]:
 
     tempted = [
         {
-            "path": "tools/haider/haider.py",
+            "path": "tools/hcli/bootstrap/snapshots/haider.py",
             "tempted": "DELETE",
             "landed": "ARCHIVE",
             "why": "Zero product inbound. It is the HCLI-v0 Gate Zero launcher plus tests. Historical science.",
         },
         {
-            "path": "tools/haider/hcli/context.py",
+            "path": "hcli/context.py",
             "tempted": "DELETE",
             "landed": "ARCHIVE",
             "why": "Re-export of goal.WorkerPacket with zero from-import callers. A silent delete of a public alias is a deprecation cycle.",
         },
         {
-            "path": "tools/haider/hcli/mutation.py",
+            "path": "hcli/mutation.py",
             "tempted": "DELETE",
             "landed": "KEEP",
             "why": "No product importer, but tools/headless/hcli_persistence_audit.py and repair_disposition_table.py import it. Harness callers are callers. A stale audit is not evidence.",
@@ -1520,10 +1520,10 @@ def test_unknown_is_not_smuggled_into_delete():
 def test_index_module_is_delete_and_context_is_archive():
     census = _census()
     by = {m["path"]: m["classification"] for m in census["modules"]}
-    assert by.get("tools/haider/hcli/index.py") == "DELETE"
-    assert by.get("tools/haider/hcli/context.py") == "ARCHIVE"
-    assert by.get("tools/haider/haider.py") == "ARCHIVE"
-    assert by.get("tools/haider/hcli/mutation.py") == "KEEP"
+    assert by.get("hcli/index.py") == "DELETE"
+    assert by.get("hcli/context.py") == "ARCHIVE"
+    assert by.get("tools/hcli/bootstrap/snapshots/haider.py") == "ARCHIVE"
+    assert by.get("hcli/mutation.py") == "KEEP"
 
 
 def test_cycles_hubs_wrappers_reexports_and_call_depth_present():

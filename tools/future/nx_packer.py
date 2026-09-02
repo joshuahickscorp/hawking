@@ -480,8 +480,8 @@ def _copy_and_hash(src: Path, dest: Path) -> tuple[int, str]:
                             break
                         h.update(b)
                 return ds.st_size, h.hexdigest()
-        dest.unlink()
-    tmp = dest.with_name(dest.name + ".tmp")
+        dest.unlink(missing_ok=True)
+    tmp = _tmp_sibling(dest)
     h = hashlib.sha256()
     n = 0
     with open(src, "rb") as inf, open(tmp, "wb") as out:
@@ -501,9 +501,25 @@ def _copy_and_hash(src: Path, dest: Path) -> tuple[int, str]:
     return n, h.hexdigest()
 
 
+def _tmp_sibling(dest: Path) -> Path:
+    """A staging path no other process will also pick.
+
+    Both writers below stage into a sibling and os.replace() it into place.
+    The staging name used to be a fixed `<dest>.tmp`, which is shared state:
+    two processes packing the same content-addressed artifact concurrently
+    both wrote that one path, and whichever replaced it first left the other
+    with `FileNotFoundError: ... .tmp -> ...`. That surfaced as 17 setup
+    errors the moment the test suite ran a file's tests in one worker while
+    another worker packed the same model. os.replace is atomic and the
+    destination name is a content hash, so a late writer landing on an
+    identical file is harmless -- only the staging name needed to be unique.
+    """
+    return dest.with_name(f"{dest.name}.{os.getpid()}.tmp")
+
+
 def _write_and_hash(dest: Path, data: bytes) -> tuple[int, str]:
     dest.parent.mkdir(parents=True, exist_ok=True)
-    tmp = dest.with_name(dest.name + ".tmp")
+    tmp = _tmp_sibling(dest)
     tmp.write_bytes(data)
     os.replace(tmp, dest)
     return len(data), sha256_bytes(data)

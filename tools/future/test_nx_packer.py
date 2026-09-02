@@ -398,3 +398,38 @@ def test_no_pytest_skip_in_this_file():
             elif isinstance(func, ast.Name):
                 name = func.id
             assert name != "skip", "pytest.skip that actually fires is a P0"
+
+
+def test_concurrent_writers_do_not_share_one_staging_name(tmp_path):
+    """Two processes packing the same content-addressed part must not collide.
+
+    The staging sibling used to be a fixed `<dest>.tmp`. Two workers writing
+    the same artifact both created that one path, and whichever `os.replace`d
+    it first left the other raising FileNotFoundError on a name that no longer
+    existed. The destination is a content hash, so a concurrent write is
+    legitimate; only the staging name has to be private to the writer.
+    """
+    dest = tmp_path / "embed.deadbeef.mtlarchive"
+
+    # The real race, driven for real: fork a second writer that stages and
+    # replaces the same destination while this one does. Both must succeed.
+    payload = b"\xcb\xfe\xba\xbe" + b"nx" * 4096
+    child = os.fork()
+    if child == 0:  # pragma: no cover - the child exits, never reports
+        try:
+            for _ in range(200):
+                nxp._write_and_hash(dest, payload)
+        except BaseException:
+            os._exit(1)
+        os._exit(0)
+    try:
+        for _ in range(200):
+            size, digest = nxp._write_and_hash(dest, payload)
+            assert size == len(payload)
+            assert digest == hashlib.sha256(payload).hexdigest()
+    finally:
+        _, status = os.waitpid(child, 0)
+    assert os.waitstatus_to_exitcode(status) == 0, "the concurrent writer failed"
+    assert dest.read_bytes() == payload
+    assert not list(tmp_path.glob("*.tmp")), "a staging file was left behind"
+    assert str(os.getpid()) in nxp._tmp_sibling(dest).name

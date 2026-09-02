@@ -8,7 +8,7 @@ see HEAD/worktree bytes.
 
 Import sites are collected, but they are not invocations. A subprocess hit
 counts only when the string constant is exactly the gate's own path -- a
-suffix match against a different tree (`tools/haider/hcli/scheduler.py` for
+suffix match against a different tree (`hcli/scheduler.py` for
 `hcli/scheduler.py`) is not a launch of this capability.
 """
 from __future__ import annotations
@@ -178,7 +178,7 @@ def is_test_path(rel: str) -> bool:
 def is_exact_cli_path(rel_path: str, value: str) -> bool:
     """True iff `value` is a launch of this repo-relative path, not a suffix of another.
 
-    `tools/haider/hcli/scheduler.py` is not a launch of `hcli/scheduler.py`.
+    `hcli/scheduler.py` is not a launch of `hcli/scheduler.py`.
     Substring/suffix matching is how the previous auditor credited five
     AgentOS gates with one grep of a different tree.
     """

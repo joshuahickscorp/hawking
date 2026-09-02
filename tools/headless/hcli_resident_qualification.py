@@ -102,7 +102,7 @@ class SourceTestEngine:
                 sys.executable,
                 "-m",
                 "pytest",
-                "tools/haider/test_hcli_resident_daemon.py",
+                "hcli/tests/test_hcli_resident_daemon.py",
                 "-q",
             ]
             proc = subprocess.run(

@@ -38,15 +38,15 @@ def build_prompt(target_tokens: int, chars_per_token: float = 3.7) -> str:
     than merely long.
     """
     sources = [
-        REPO_ROOT / "tools/haider/hcli/mission.py",
-        REPO_ROOT / "tools/haider/hcli/scheduler.py",
-        REPO_ROOT / "tools/haider/hcli/context_budget.py",
-        REPO_ROOT / "tools/haider/hcli/report_compiler.py",
-        REPO_ROOT / "tools/haider/hcli/workunit.py",
-        REPO_ROOT / "tools/haider/hcli/engine.py",
-        REPO_ROOT / "tools/haider/hcli/ledger.py",
-        REPO_ROOT / "tools/haider/hcli/grok_bridge.py",
-        REPO_ROOT / "tools/haider/hcli/controller.py",
+        REPO_ROOT / "hcli/mission.py",
+        REPO_ROOT / "hcli/scheduler.py",
+        REPO_ROOT / "hcli/context_budget.py",
+        REPO_ROOT / "hcli/report_compiler.py",
+        REPO_ROOT / "hcli/workunit.py",
+        REPO_ROOT / "hcli/engine.py",
+        REPO_ROOT / "hcli/ledger.py",
+        REPO_ROOT / "hcli/grok_bridge.py",
+        REPO_ROOT / "hcli/controller.py",
     ]
     parts: List[str] = [
         "You are reading part of a Python control plane. "
