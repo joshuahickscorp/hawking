@@ -306,6 +306,19 @@ def test_build_writes_sealed_receipt_and_nothing_was_relaunched():
     _assert_no_hardware_claims(doc)
     for key in HARDWARE_FIELDS:
         assert key not in doc or doc[key] in (None, "UNKNOWN")
+    follow = doc["follow_on"]
+    assert follow["law_id"] == sr.NAMED_LAW_ID
+    assert follow["source_receipt"] == sr.NAMED_LAW_STORE
+    assert follow["evidence_receipt"] == sr.NAMED_LAW_EVIDENCE
+    assert follow["scope_lattice"] == "MODEL_LOCAL"
+    assert follow["scope_preserved"] is True
+    assert follow["mutation_check_fails_when_binding_dropped"] is True
+    assert follow["transfer_test_id"].startswith(f"future.{sr.TRANSFER_TEST}.")
+    assert follow["law_attack_id"].startswith(f"future.{sr.LAW_ATTACK}.")
+    act = json.loads((out.parent / sr.FOLLOW_ON_RECEIPT).read_text())
+    assert act["named_law"]["law_id"] == sr.NAMED_LAW_ID
+    assert act["transfer_test"]["id"] == follow["transfer_test_id"]
+    assert act["law_attack"]["id"] == follow["law_attack_id"]
 
 
 def test_top_reopenable_names_the_threshold_each_died_at():
@@ -323,3 +336,165 @@ def test_top_reopenable_names_the_threshold_each_died_at():
     ]
     assert organ_gate, "JSONL organ-gate scars must surface measured cosine/relative_l2"
     assert organ_gate[0]["died_at"]["measured"] < 0.99
+
+
+# ---------------------------------------------------------------------------
+# Odyssey II / III activation: a recovered law emits TRANSFER_TEST + LAW_ATTACK.
+# ---------------------------------------------------------------------------
+
+
+NAMED_LAW = sr.NAMED_LAW_ID
+NAMED_STORE = sr.NAMED_LAW_STORE
+NAMED_EVIDENCE = sr.NAMED_LAW_EVIDENCE
+
+
+def test_invented_law_is_refused():
+    with pytest.raises(sr.FollowOnError, match="refusing to invent"):
+        sr.recover_named_law("LAW-I-MADE-THIS-UP")
+
+
+def test_named_real_law_emits_transfer_test_and_law_attack():
+    """End-to-end on LAW-COLD-CONTROL-BEAT-TRANSFER-SEED from the II store."""
+    rec = sr.recover_named_law(NAMED_LAW)
+    assert rec["law_id"] == NAMED_LAW
+    assert rec["source_path"] == NAMED_STORE
+    assert NAMED_EVIDENCE in rec["evidence_refs"]
+    assert rec["scope"] == "MODEL_LOCAL"
+    assert rec["source_model"] == "Qwen/Qwen3-30B-A3B"
+    assert rec["organ_class"] == "moe_expert"
+    assert rec["architecture_family"] == "qwen3_moe"
+    assert rec["falsifier"]
+    assert "evaluations" in rec["falsifier"] or "rel_fro" in rec["falsifier"]
+
+    follow = sr.emit_follow_on(NAMED_LAW)
+    law = follow["law"]
+    transfer = follow["transfer_test"]
+    attack = follow["law_attack"]
+
+    assert law["law_id"] == NAMED_LAW
+    assert law["source_path"] == NAMED_STORE
+    assert NAMED_EVIDENCE in law["evidence_refs"]
+
+    assert transfer["species"] == sr.TRANSFER_TEST
+    assert attack["species"] == sr.LAW_ATTACK
+    assert transfer["id"].startswith(f"future.{sr.TRANSFER_TEST}.{NAMED_LAW}.")
+    assert attack["id"].startswith(f"future.{sr.LAW_ATTACK}.{NAMED_LAW}.")
+    assert transfer["verifier"] == "future.odyssey_ii.law_scope"
+    assert attack["verifier"] == "future.odyssey_iii.adversary"
+    assert transfer["effect_class"] == "READ_ONLY"
+    assert attack["effect_class"] == "READ_ONLY"
+
+    for unit in (transfer, attack):
+        assert unit["law_id"] == NAMED_LAW
+        assert unit["falsifier"] == rec["falsifier"]
+        assert unit["scope_binding"]["lattice"] == "MODEL_LOCAL"
+        assert unit["scope_binding"]["source_model"] == "Qwen/Qwen3-30B-A3B"
+        assert unit["scope_binding"]["architecture_family"] == "qwen3_moe"
+        assert unit["scope_binding"]["organ_class"] == "moe_expert"
+        assert "qwen3-30b-a3b" in unit["scope_binding"]["models"]
+        assert unit["scope_after_emit"] == "MODEL_LOCAL"
+        assert unit["does_not_widen_scope"] is True
+        assert unit["result_that_would_retire"]
+        assert unit["result_that_would_retire"]["on_the_law"] == rec["falsifier"]
+        assert unit["result_that_would_retire"]["does_not_widen_scope"] is True
+
+    assert transfer["same_mechanism"] is True
+    assert transfer["different_specimen"] is True
+    assert transfer["different_architecture"] is True
+    assert transfer["target_architecture_family"] != rec["architecture_family"]
+    assert transfer["may_transfer"] is True
+    assert transfer["odyssey_i_barrier"] is None
+    assert "tools.future.odyssey2_transfer.may_transfer" in transfer["gates_invoked"]
+
+    assert attack["n_attacks"] >= 1
+    assert attack["n_generate_attacks"] == attack["n_attacks"]
+    assert attack["selected_attack_id"]
+    assert attack["selected_family"]
+    assert attack["o3_spec"]["falsifier"]
+    assert attack["o3_spec"]["command"]
+    assert "tools.future.odyssey3_adversary.emit_for_law" in attack["gates_invoked"]
+    assert "tools.future.odyssey3_adversary.generate_attacks" in attack["gates_invoked"]
+    assert "tools.future.workunit_species.emit_hcli_workunit" in attack["gates_invoked"]
+
+
+def test_scope_survives_round_trip_and_fails_when_binding_dropped():
+    """LOAD-BEARING: dropping scope_binding must fail the intact check.
+
+    The TRANSFER_TEST is the instrument that stops a MODEL_LOCAL law being
+    quoted as generic. If the binding can fall off the unit, the instrument
+    does not exist.
+    """
+    follow = sr.emit_follow_on(NAMED_LAW)
+    binding = follow["scope_binding"]
+    assert binding["lattice"] == "MODEL_LOCAL"
+
+    for unit in (follow["transfer_test"], follow["law_attack"]):
+        again = sr.round_trip_unit(unit)
+        assert sr.scope_binding_intact(binding, again)
+        got = sr.require_scope_binding(binding, again)
+        assert got["lattice"] == "MODEL_LOCAL"
+        assert got["source_model"] == "Qwen/Qwen3-30B-A3B"
+        assert got["architecture_family"] == "qwen3_moe"
+        assert got["falsifier"] == follow["law"]["falsifier"]
+
+        dropped = dict(again)
+        dropped.pop("scope_binding", None)
+        assert sr.scope_binding_intact(binding, dropped) is False
+        with pytest.raises(sr.ScopeBindingDropped):
+            sr.require_scope_binding(binding, dropped)
+
+        emptied = dict(again)
+        emptied["scope_binding"] = {}
+        assert sr.scope_binding_intact(binding, emptied) is False
+
+        widened = dict(again)
+        widened["scope_binding"] = dict(again["scope_binding"])
+        widened["scope_binding"]["lattice"] = "GENERIC_VERIFIED"
+        assert sr.scope_binding_intact(binding, widened) is False
+        with pytest.raises(sr.ScopeBindingDropped):
+            sr.require_scope_binding(binding, widened)
+
+        # Stuffing the target specimen into the law's models is silent
+        # generalisation and must not count as intact.
+        if unit.get("species") == sr.TRANSFER_TEST:
+            stuffed = dict(again)
+            stuffed["scope_binding"] = dict(again["scope_binding"])
+            stuffed["scope_binding"]["models"] = [
+                str(unit.get("target_specimen") or unit.get("target_alias"))
+            ]
+            assert sr.scope_binding_intact(binding, stuffed) is False
+
+    recorded = follow["mutation_check"]
+    assert recorded["transfer_test"]["fails_when_scope_binding_dropped"] is True
+    assert recorded["law_attack"]["fails_when_lattice_silently_widened"] is True
+
+
+def test_transfer_test_refuses_a_target_the_gate_rejects():
+    """qwen27 is the campaign origin (source_of_campaign_laws); may_transfer is False."""
+    with pytest.raises(sr.FollowOnError, match="may_transfer"):
+        sr.emit_transfer_test(NAMED_LAW, target_alias="qwen27")
+
+
+def test_follow_on_receipt_names_the_real_law_and_both_units():
+    follow = sr.emit_follow_on(NAMED_LAW)
+    path = sr.write_follow_on_receipt(follow)
+    assert path.name == sr.FOLLOW_ON_RECEIPT
+    doc = json.loads(path.read_text())
+    assert doc["schema"] == sr.FOLLOW_ON_SCHEMA
+    assert doc["seal_sha256"]
+    assert doc["named_law"]["law_id"] == NAMED_LAW
+    assert doc["source_receipt"] == NAMED_STORE
+    assert doc["evidence_receipt"] == NAMED_EVIDENCE
+    assert doc["transfer_test"]["species"] == sr.TRANSFER_TEST
+    assert doc["law_attack"]["species"] == sr.LAW_ATTACK
+    assert doc["round_trip"]["scope_survived_transfer_test"] is True
+    assert doc["round_trip"]["scope_survived_law_attack"] is True
+    assert doc["round_trip"]["transfer_test_lattice"] == "MODEL_LOCAL"
+    assert doc["mutation_check"]["transfer_test"]["fails_when_scope_binding_dropped"] is True
+    assert doc["odyssey_i_barrier"] is None
+    assert doc["evidence_class"] == "STATIC"
+    assert "tools.future.odyssey2_transfer.may_transfer" in doc["gates_invoked"]
+    assert "tools.future.odyssey3_adversary.emit_for_law" in doc["gates_invoked"]
+    _assert_no_hardware_claims(doc)
+    for key in HARDWARE_FIELDS:
+        assert key not in doc or doc[key] in (None, "UNKNOWN")

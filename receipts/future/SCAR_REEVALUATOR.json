@@ -4,12 +4,12 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T08:16:37Z",
+  "recorded_at": "2026-09-02T09:05:57Z",
   "recorded_by": "tools/future/scar_reevaluator.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
- "branch": "odyssey-i",
+ "branch": "grok/o1-odyssey-two-three-activation-20260902-045200",
  "census_share_source": "receipts/future/MLP_BYTE_CENSUS.json",
  "cited_campaign_fidelity_bars": {
   "organ_cosine": {
@@ -6945,8 +6945,19 @@
   "n_structurally_refuted": 228
  },
  "evidence_class": "STATIC_ONLY",
+ "follow_on": {
+  "evidence_receipt": "receipts/headless/ODYSSEY_TRANSFER_PROVEN.json",
+  "law_attack_id": "future.LAW_ATTACK.LAW-COLD-CONTROL-BEAT-TRANSFER-SEED.measurement_trap",
+  "law_id": "LAW-COLD-CONTROL-BEAT-TRANSFER-SEED",
+  "mutation_check_fails_when_binding_dropped": true,
+  "receipt": "ODYSSEY_II_III_ACTIVATION.json",
+  "scope_lattice": "MODEL_LOCAL",
+  "scope_preserved": true,
+  "source_receipt": "receipts/future/ODYSSEY2_LAW_STORE.json",
+  "transfer_test_id": "future.TRANSFER_TEST.LAW-COLD-CONTROL-BEAT-TRANSFER-SEED.Qwen3.8-Flash-Next"
+ },
  "gpu_authority": false,
- "head": "345e209c5e66b9729b65bf73f9c58978800aea97",
+ "head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
  "n_scars_ingested": 691,
  "nothing_relaunched": true,
  "nothing_relaunched_statement": "This module classified existing scars and ranked POSSIBLY_REOPENABLE ones by theoretical EBPW-cut rank, token_ns opportunity rank, and implementation cost rank. It did not relaunch, reschedule, admit, or run any candidate. The resident owning SUB2_EBPW decides.",
@@ -8879,7 +8890,7 @@
    }
   ]
  },
- "seal_sha256": "c94d74815c4589be33acdfaaf7a98b965d45457bfa61c86608f30d31b25777be",
+ "seal_sha256": "9a9fb71b04991c631077a1aadff9788330ee7bf371d744b790437513c5e1f97a",
  "top_reopenable_families": [
   {
    "died_at": {
