@@ -150,7 +150,8 @@ For a read-only request:
   "kind": "answer",
   "content": "concise final answer",
   "operations": [],
-  "tests": []
+  "tests": [],
+  "tool_calls": []
 }
 
 For a requested code/file change:
@@ -159,13 +160,14 @@ For a requested code/file change:
   "content": "concise description of what changed",
   "operations": [
     {
-      "op": "replace|create|replace_file|insert_before|insert_after|append",
+      "op": "replace",
       "path": "workspace/relative/path",
       "old_text": "exact anchor when required",
       "new_text": "new content"
     }
   ],
-  "tests": ["optional safe workspace-relative Python test paths"]
+  "tests": ["optional safe workspace-relative Python test paths"],
+  "tool_calls": []
 }
 
 To LOOK at something before answering (read a file, search, run a read-only
@@ -184,6 +186,9 @@ guessing: an answer that says evidence is missing when a tool could have
 fetched it is a wrong answer.
 
 Rules:
+- every example above is a literal you may copy; every key shown is required
+- op is exactly one of: replace, create, replace_file, insert_before,
+  insert_after, append
 - tool_calls is [] unless kind is "tool_use"
 - every argument value is a plain string; never nest JSON inside a string
 - maximum 20 operations
@@ -268,8 +273,14 @@ def _truncation_message(
     return base
 
 
+_REJECTED_EXCERPT_CHARS = 800
+
+
 def _degraded_structured_record(
-    contract: "StructuredOutputContract", **fields: Any
+    contract: "StructuredOutputContract",
+    *,
+    last_text: Optional[str] = None,
+    **fields: Any,
 ) -> Dict[str, Any]:
     """Degraded receipt, plus WHY constrained decoding was not used.
 
@@ -303,6 +314,18 @@ def _degraded_structured_record(
         record["structured_value_repairs"] = list(contract.value_repairs)
     if contract.truncation_repairs:
         record["structured_truncation_repairs"] = list(contract.truncation_repairs)
+    if last_text is not None:
+        # A rejection that does not carry the offending reply is not
+        # diagnosable. Every structured-output receipt on disk said "response
+        # is not a JSON object" and none of them said WHAT the reply was, so a
+        # whole unattended run's failure had to be inferred from a token count.
+        # Bounded, and never the prompt -- only what the model wrote back.
+        text = str(last_text)
+        record["rejected_reply_chars"] = len(text)
+        record["rejected_reply_excerpt"] = text[:_REJECTED_EXCERPT_CHARS]
+        record["rejected_reply_truncated_in_receipt"] = (
+            len(text) > _REJECTED_EXCERPT_CHARS
+        )
     return record
 
 
@@ -2777,6 +2800,7 @@ class Engine:
                 exhausted=True,
                 last_violation=last_violation,
                 errors=list(exc.errors),
+                last_text=exc.last_text,
             )
             self._last_call_plan = plan
             raise

@@ -482,10 +482,23 @@ def mission_blocked_reason(workspace: Path) -> Optional[str]:
     except (FileNotFoundError, MissionCorruptError):
         return None
     phase = str(value.get("phase") or "")
+    units = value.get("units") or {}
+    # A root whose repair COMPLETED keeps its own `failed` status forever; the
+    # repair is the mission's answer to it. Counting those made every mission
+    # that ever repaired anything read as needing a human.
+    repaired = {
+        item.get("repairs")
+        for item in units.values()
+        if isinstance(item, Mapping)
+        and item.get("status") == "completed"
+        and item.get("repairs")
+    }
     failed_units = [
         uid
-        for uid, item in (value.get("units") or {}).items()
-        if isinstance(item, Mapping) and item.get("status") == "failed"
+        for uid, item in units.items()
+        if isinstance(item, Mapping)
+        and item.get("status") == "failed"
+        and uid not in repaired
     ]
     if phase not in BLOCKED_MISSION_PHASES and not (phase == "completed" and failed_units):
         return None
@@ -1514,7 +1527,10 @@ def _worker_main(state_path: str) -> int:
             if agent is not None:
                 agent.checkpoint()
                 if getattr(agent, "mission", None) is not None:
-                    agent.mission.cancel("resident_self_evacuation")
+                    # NOT cancel(). The supervisor sends SIGTERM to free memory
+                    # and expects to resume; cancel() put the mission into
+                    # BLOCKED_MISSION_PHASES and the daemon never advanced again.
+                    agent.mission.evacuate("resident_self_evacuation")
         except Exception as exc:
             daemon.store.update(last_event="evacuation_checkpoint_error", error=str(exc))
 
@@ -2097,6 +2113,34 @@ def _parse_bytes(value: Optional[str]) -> Optional[int]:
         raise argparse.ArgumentTypeError(f"invalid byte size: {value!r}") from exc
 
 
+def _add_goal_arguments(parser: argparse.ArgumentParser) -> None:
+    """`--goal` or `--goal-file`, exactly one.
+
+    A sovereign goal is 5 KB of obligation ledger. Requiring it as a shell
+    argument meant the documented launch command (`--goal-file sovereign-goal.txt`)
+    did not exist, and the goal's only durable copy was a JSON field inside the
+    daemon's own state file -- which is not a thing an operator can edit or
+    review before launching.
+    """
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("--goal", help="the goal text, inline")
+    group.add_argument(
+        "--goal-file",
+        default=None,
+        help="read the goal from a file (use - for stdin)",
+    )
+
+
+def _resolved_goal(args: argparse.Namespace) -> str:
+    """The goal text, whichever way it was supplied. Empty is refused upstream."""
+    path = getattr(args, "goal_file", None)
+    if not path:
+        return str(args.goal or "")
+    if path == "-":
+        return sys.stdin.read()
+    return Path(path).expanduser().read_text(encoding="utf-8")
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="hcli resident",
@@ -2106,7 +2150,7 @@ def build_parser() -> argparse.ArgumentParser:
     start = sub.add_parser("start", help="start or attach to the resident supervisor")
     start.add_argument("--workspace", default=os.getcwd())
     start.add_argument("--repo-root", default=None)
-    start.add_argument("--goal", required=True)
+    _add_goal_arguments(start)
     start.add_argument("--model", default=None)
     start.add_argument("--runtime-count", type=int, default=1)
     start.add_argument("--interval-s", type=float, default=DEFAULT_INTERVAL_S)
@@ -2124,11 +2168,9 @@ def build_parser() -> argparse.ArgumentParser:
         "replace",
         help="retire a live resident (archiving its mission) and start a new goal",
     )
-    for _p in (start, replace):
-        pass
     replace.add_argument("--workspace", default=os.getcwd())
     replace.add_argument("--repo-root", default=None)
-    replace.add_argument("--goal", required=True)
+    _add_goal_arguments(replace)
     replace.add_argument("--model", default=None)
     replace.add_argument("--runtime-count", type=int, default=1)
     replace.add_argument("--interval-s", type=float, default=DEFAULT_INTERVAL_S)
@@ -2195,9 +2237,16 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     args = build_parser().parse_args(list(argv) if argv is not None else None)
     if args.command in ("start", "replace"):
         try:
+            goal = _resolved_goal(args)
+        except OSError as exc:
+            # An unreadable goal file must say so on one line, not as a
+            # traceback that reads like the daemon crashed on launch.
+            print(f"cannot read --goal-file: {exc}", file=sys.stderr)
+            return 2
+        try:
             result = start_resident(
                 args.workspace,
-                goal=args.goal,
+                goal=goal,
                 model=args.model,
                 repo_root=args.repo_root,
                 runtime_count=args.runtime_count,

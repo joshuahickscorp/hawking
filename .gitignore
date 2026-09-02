@@ -253,3 +253,4 @@ workspace/campaign/odyssey/.modellake-watch.lock
 # clone (cuda-metal keeps its own .git). Dependencies, not this repo's source.
 workspace/ops/ane/
 workspace/ops/c2m-seed/
+.worktrees/

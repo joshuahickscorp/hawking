@@ -20,6 +20,11 @@ design, see the gate table below.
 
 ---
 
+> **Status 2026-09-02 (later session):** blockers 1 and 2 are fixed and the
+> structured-output decision is made and half-landed. What each section below
+> says about the *defect* is still the record of why; what it says about *what to
+> do next* is superseded by "Fixed since" at the bottom of this file.
+
 ## Blocker 1 — a graceful shutdown permanently kills the run  ← FIX FIRST
 
 `hcli/agentos/resident.py:1517`
@@ -61,9 +66,16 @@ than deleting it — a terminal mission is still the evidence for why the previo
 run ended.
 
 ```bash
-hcli resident replace --goal-file sovereign-goal.txt --interval 30
+hcli resident replace --goal-file sovereign-goal.txt --interval-s 30
 hcli resident watch
 ```
+
+`--goal-file` did not exist when this line was first written, and
+`sovereign-goal.txt` was a 2810-char variant with no G001-G015 in it, so the
+documented command both failed to parse and would have dropped the whole
+obligation ledger if it had run. Both are fixed: the flag is real and the file is
+the live 5444-char goal. `hcli/test_sovereign_goal_file.py` fails if either
+drifts again.
 
 Do blocker 1 first, or the next clean shutdown repeats this.
 
@@ -183,6 +195,57 @@ Two workflows died on the session limit: the naming/nomenclature audit
 (`docs/NOMENCLATURE.md` was never written; resume `wf_15d2bbc5-099`) and the
 ledger audit. The nomenclature *renames* did land and are committed; only the
 audit and the written plan are missing.
+
+## Fixed since — 2026-09-02, later session
+
+| What | Where | Evidence |
+|---|---|---|
+| Evacuation cancelled the mission; `cancelled` is blocked, so a graceful stop was permanently fatal | `mission.py` `evacuate()`, `resident.py:1517` | `hcli/test_resident_evacuation_resumable.py` (7) |
+| The same handler fires on **memory pressure**, not just an operator: `WAIT_FOR_MEMORY` -> `_evacuate` -> SIGTERM -> `cancel()`. Routine backpressure killed the run | same | live store's `evacuation_reason: free RAM 11336974336 below reserve 12884901888` |
+| An evacuated unit was marked `failed`; it is now `interrupted`, which re-runs and does not spend the repair budget | `mission.py` `_interrupt_inflight` | same file |
+| **A repair that SUCCEEDED still ended the mission `failed`** — so any mission that repaired anything went terminal and blocked. Second independent permanent-death path, not in the original three | `mission.py` `_unrepaired_failures`, `resident.py` `mission_blocked_reason` | `hcli/test_mission_repair_verdict.py` (9) |
+| The system prompt's `answer` and `mutation` examples omitted `tool_calls`, which the schema **requires** — a model copying what it was shown was rejected every attempt. The `op` example was a `a\|b\|c` placeholder, also invalid | `engine.py` `_SYSTEM_PROMPT` | `hcli/test_system_prompt_matches_schema.py` (5) |
+| `structured_output_probe.py` held a stale hand-copy of the schema with **no `tool_calls` at all** — the instrument understated the failure it measures. It now imports the live values | `tools/headless/structured_output_probe.py` | same |
+| A structured-output rejection now carries the reply it rejected. Every prior receipt said "response is not a JSON object" and none said what the reply was | `engine.py` `_degraded_structured_record` | `hcli/test_rejected_reply_is_in_the_receipt.py` (4) |
+| `--goal-file` did not exist and `sovereign-goal.txt` was missing G001-G015 | `resident.py` `_add_goal_arguments`, `sovereign-goal.txt` | `hcli/test_sovereign_goal_file.py` (18) |
+| The recovery gate's fixture child looped `while True` under a comment calling it bounded; 10 orphans were alive at PPID 1, one per suite run | `agentos/recovery.py` | `hcli/test_recovery_fixture_does_not_leak.py` (2, mutation-checked) |
+
+Gates-excluded baseline is now **686 passed, 1 skipped**. The handoff's 637 and
+the 641 measured this morning are both stale.
+
+### Blocker 3, decided
+
+Both routes, in the order the evidence supports.
+
+The receipts settle which failure class dominates: `response is not a JSON
+object` x14 and `empty response` x3, against `expected string, got boolean` x5 —
+and that last class was already repaired by `repair_tool_argument_values`, which
+landed at 14:11 *after* the failing run. So route 2's remaining share was small,
+and it is now taken (absent-array repair, prompt/schema agreement).
+
+An absent-required-array repair was written, measured against the receipts, and
+then REMOVED: no receipt on disk has ever shown that error class, so it was a
+prediction, not a fix -- and it weakened two `test_mlx_backend` assertions that
+exist to reject an incomplete reply. If a post-grammar failure rate shows omitted
+arrays, add it then, with the evidence in hand.
+
+The dominant class is the model not emitting JSON at all, and only a grammar
+channel makes that impossible. Route 1 is smaller than the handoff assumed:
+`crates/hawking-core/src/json_constrain.rs` is a **working token-level logit
+masker with live call sites** in `qwen_dense.rs` and `rwkv7.rs`; the qwen38
+resident just cannot reach it. `workspace.logits` is `StorageModeShared` with a
+public `read_f32_workspace("logits", QWEN38_VOCAB)` accessor and a live call site
+in `parity_ladder_probe.rs:650`, so a host-side mask needs no shader change: step,
+read logits, mask, host argmax, feed the id back.
+
+Its honest ceiling, which must not be overstated anywhere: **this constrains
+syntax, not schema.** No required keys, no types, no enums. And `mask_logits`
+inspects only a token's first character, which is unsound for multi-character
+tokens. Real schema-constrained decoding is a token-trie-over-FSM build and is
+not this.
+
+The profile capability flag stays OFF until the mask is proven by mutation on
+real hardware. A receipt must never claim a capability that did not act.
 
 ## The test that settles it
 

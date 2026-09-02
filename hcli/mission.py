@@ -28,7 +28,13 @@ from .goal import (
 )
 from .resources import normalize_resource_class, pid_is_alive
 from .scheduler import DEFAULT_NO_PROGRESS_THRESHOLD, NO_PROGRESS, Scheduler
-from .workunit import IdentityConflict, WorkUnit, identify_ready, transition_status
+from .workunit import (
+    IdentityConflict,
+    WorkUnit,
+    identify_ready,
+    mark_interrupted,
+    transition_status,
+)
 
 MISSION_DIRNAME = "mission"
 STATE_FILENAME = "state.json"
@@ -221,6 +227,7 @@ class Mission:
         self.accepted_count = 0
         self.no_progress_warning: Optional[str] = None
         self.cancel_reason: Optional[str] = None
+        self.evacuation_reason: Optional[str] = None
         self.child_pids: set = set()
         self.observed_max_gpu_decode = 0
         self._compiled: Optional[Dict[str, Any]] = None
@@ -238,6 +245,9 @@ class Mission:
         self._last_observe = 0.0
 
         self._cancel = threading.Event()
+        # Distinct from _cancel on purpose. Both stop this worker; only one of
+        # them ends the mission. See evacuate().
+        self._evacuating = threading.Event()
         self._lock = threading.Lock()
         self._done: queue.Queue = queue.Queue()
         self._inflight: Dict[str, threading.Thread] = {}
@@ -415,6 +425,7 @@ class Mission:
         warning = data.get("no_progress_warning")
         mission.no_progress_warning = str(warning) if warning else None
         mission.cancel_reason = data.get("cancel_reason")
+        mission.evacuation_reason = data.get("evacuation_reason")
         for pid in data.get("child_pids") or []:
             try:
                 mission.child_pids.add(int(pid))
@@ -678,6 +689,7 @@ class Mission:
             "no_progress_warning": self.no_progress_warning,
             "child_pids": sorted(self.child_pids),
             "cancel_reason": self.cancel_reason,
+            "evacuation_reason": self.evacuation_reason,
             "session_id": self.session_id,
             "no_progress_threshold": self.no_progress_threshold,
             "units": {
@@ -709,6 +721,24 @@ class Mission:
         # runtime pool while in-process workers are still joining.
         self._cancel_grok_tasks()
         self._log({"event": "cancel", "reason": self.cancel_reason})
+
+    def evacuate(self, reason: str = "evacuated") -> None:
+        """Stop this worker for a resource reason, leaving the mission resumable.
+
+        Cancellation is an operator verb. Evacuation is the supervisor freeing
+        the machine -- SIGTERM under memory pressure, or a clean shutdown.
+        Routing evacuation through cancel() set phase=cancelled, which is in
+        resident.BLOCKED_MISSION_PHASES, so the supervisor then refused to
+        advance the mission forever. The consequence was backwards: SIGKILL
+        left the mission `running` and recovered cleanly, while a *graceful*
+        stop was permanently fatal. That is what ended the 553-minute run.
+
+        In-flight units are marked INTERRUPTED, not failed: the crash does not
+        consume a retry and recovery re-runs them from the start.
+        """
+        self.evacuation_reason = reason or "evacuated"
+        self._evacuating.set()
+        self._log({"event": "evacuate", "reason": self.evacuation_reason})
 
     def _is_cancelled(self) -> bool:
         return self._cancel.is_set()
@@ -772,6 +802,21 @@ class Mission:
         return self._result()
 
     def _finish(self) -> None:
+        if self._evacuating.is_set() and not self._cancel.is_set():
+            # `evacuated` is deliberately in neither TERMINAL_MISSION_PHASES nor
+            # BLOCKED_MISSION_PHASES: the supervisor dispatches the next worker
+            # and recover_mission() picks this up with the interrupted units
+            # ready again.
+            self.phase = "evacuated"
+            self._interrupt_inflight()
+            self._join_inflight()
+            # ponytail: kills every child pid, same as cancel(). No Grok unit
+            # has ever run under the resident; if one does, preserve adopted
+            # launch pids here so recovery can re-adopt instead of relaunch.
+            self._stop_children()
+            self.checkpoint()
+            self._term(f"phase: evacuated ({self.evacuation_reason})")
+            return
         if self._cancel.is_set():
             self.phase = "cancelled"
             self._fail_inflight(emit_repair=False)
@@ -783,11 +828,7 @@ class Mission:
         self._join_inflight()
         if self.phase not in ("no_progress", "failed", "cancelled"):
             if self.scheduler.is_done():
-                failed = [
-                    wu.id
-                    for wu in self.scheduler.units.values()
-                    if wu.status == "failed"
-                ]
+                failed = self._unrepaired_failures()
                 if failed:
                     self.phase = "failed"
                     self._stop_reason = (
@@ -801,11 +842,38 @@ class Mission:
         self.checkpoint()
         self._term(f"phase: {self.phase}")
 
+    def _unrepaired_failures(self) -> List[str]:
+        """Failed units whose repair lineage never produced a completed unit.
+
+        The repair budget exists so a failed unit is not the end of a mission:
+        `scheduler.fail` emits a descendant that repairs it. But the end-of-run
+        verdict counted EVERY unit whose status is `failed`, including roots
+        whose repair then SUCCEEDED. So any mission that ever repaired anything
+        finished `phase=failed` -- which is in BLOCKED_MISSION_PHASES, so the
+        supervisor stopped and asked for a human. The repair budget could not
+        pay out.
+
+        A root still counts when its repairs are exhausted or all failed, which
+        is what keeps a genuinely dead mission terminal instead of respawning a
+        worker every interval forever.
+        """
+        units = list(self.scheduler.units.values())
+        repaired_by_completion = {
+            wu.repairs
+            for wu in units
+            if wu.status == "completed" and getattr(wu, "repairs", None)
+        }
+        return [
+            wu.id
+            for wu in units
+            if wu.status == "failed" and wu.id not in repaired_by_completion
+        ]
+
     def _result(self) -> Dict[str, Any]:
         reason = self._stop_reason or self.cancel_reason
         if self.phase == "no_progress":
             reason = "no_progress"
-        failed = [wu.id for wu in self.scheduler.units.values() if wu.status == "failed"]
+        failed = self._unrepaired_failures()
         state = "INCONCLUSIVE" if failed else ("VERIFIED" if self.phase == "completed" else None)
         return {
             "status": self.phase,
@@ -822,7 +890,11 @@ class Mission:
 
     def _loop(self) -> None:
         idle_spins = 0
-        while not self._cancel.is_set() and self._stop_reason is None:
+        while (
+            not self._cancel.is_set()
+            and not self._evacuating.is_set()
+            and self._stop_reason is None
+        ):
             hook = self.before_dispatch
             if callable(hook):
                 try:
@@ -1212,6 +1284,17 @@ class Mission:
                 except Exception:
                     pass
             self.scheduler._persist()
+
+    def _interrupt_inflight(self) -> None:
+        """Leave in-flight units re-runnable. INTERRUPTED is not a verifier failure."""
+        with self._lock:
+            live = list(self._inflight)
+        for uid in live:
+            wu = self.scheduler.units.get(uid)
+            if wu is None:
+                continue
+            mark_interrupted(wu)
+        self.scheduler._persist()
 
     def _fail_inflight(self, emit_repair: bool = False) -> None:
         with self._lock:

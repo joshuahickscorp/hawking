@@ -6,6 +6,7 @@ are invoked. Lineage wrappers and modellake.main must CALL those symbols.
 from __future__ import annotations
 
 import json
+import subprocess
 import time
 from pathlib import Path
 
@@ -100,9 +101,9 @@ def _add_specimen(
 
 def _lake(tmp: Path) -> Path:
     lake = tmp / "hawking-modellake"
-    for d in ("specimens", "partial", "manifests", "claims", "watch", "filler-logs"):
+    for d in ("specimens", "manifests", "watch", "logs"):
         (lake / d).mkdir(parents=True)
-    (lake / "filler-state.json").write_text("{}")
+    (lake / "logs" / "acquisition-state.json").write_text("{}")
     return lake
 
 
@@ -361,6 +362,12 @@ def test_layout_names_storage_roles():
     loc = mx.layout(lake="/Volumes/corpdrive/hawking-modellake")
     assert loc["roles"]["specimens"]["storage_role"] == "TIER2_COLD"
     assert loc["roles"]["partial"]["storage_role"] == "PARTIAL"
+    assert loc["roles"]["logs"]["path"] == "logs/"
+    # partial/ and claims/ exist only during an acquisition; an idle lake has
+    # neither, so the layout must mark them transient rather than missing.
+    assert loc["roles"]["partial"]["transient"] is True
+    assert loc["roles"]["claims"]["transient"] is True
+    assert "transient" not in loc["roles"]["specimens"]
     assert loc["roles"]["specimens"]["writable_by_index"] is False
     assert loc["roles"]["index"]["writable_by_index"] is True
     assert loc["index_never_writes_specimens"] is True
@@ -393,7 +400,28 @@ def test_lineage_wrappers_drive_the_index(tmp_path):
 def test_list_watch_slugs_reads_git_objects_not_the_sparse_tree():
     slugs = mx.list_watch_slugs()
     assert CANON in slugs
-    assert len(slugs) >= 50
+    assert len(slugs) >= 40
+
+
+def test_retired_watch_manifests_leave_the_live_queue(tmp_path):
+    """A retirement must not read back as an orphan forever.
+
+    git ls-tree -r is recursive, so watch-manifests/retired/<slug>.json would
+    still be counted as queued and every retired slug would show up in
+    anomalies.orphaned_watch on every build.
+    """
+    root = tmp_path / "repo"
+    live = root / lin.WATCH_MANIFEST_REL
+    (live / "retired").mkdir(parents=True)
+    (live / "still--queued@aaaaaaaaaaaa.json").write_text("{}")
+    (live / "retired" / "taken--out@bbbbbbbbbbbb.json").write_text("{}")
+    subprocess.run(["git", "-C", str(root), "init", "-q"], check=True)
+    subprocess.run(["git", "-C", str(root), "add", "-A"], check=True)
+    subprocess.run(["git", "-C", str(root), "-c", "user.email=t@t", "-c", "user.name=t",
+                    "commit", "-qm", "x"], check=True)
+
+    slugs = mx.list_watch_slugs(git_root=root)
+    assert slugs == ["still--queued@aaaaaaaaaaaa"], slugs
 
 
 def test_unknown_family_is_not_clustered_as_redundant_bulk(tmp_path):

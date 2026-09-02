@@ -37,6 +37,9 @@ SCHEMA = "hcli.agentos.recovery_gate.v1"
 _HOST_STARTED = "recovery-host-started.json"
 _RESIDENT = "recovery-resident.json"
 _TOOL_STARTED = "recovery-tool-started.json"
+# Ceiling on the fixture child's life when nothing reaps it. The gate itself
+# finishes in seconds; this only ever fires for a run that died mid-flight.
+_FIXTURE_MAX_LIFETIME_S = 300.0
 _REASONING = "recovery-reasoning.json"
 _SAFE_ARTIFACT = "recovery-safe-artifact.txt"
 _GATE_RECEIPT = "recovery-gate.json"
@@ -209,10 +212,20 @@ def _fixture_resident_main(workspace: Path) -> int:
         "started_at": time.time(),
         "tool": "fixture.blocking_tool",
     })
-    # The parent kills this process. A long bounded loop keeps the proof
-    # deterministic without relying on an external service or a busy spin.
-    while True:
+    # The parent kills this process -- but only if the parent lives to do it.
+    # `while True` here meant every interrupted or timed-out gate run stranded a
+    # child at PPID 1 forever; ten were alive on this host, one per suite run,
+    # each holding a temp directory. The loop the comment claimed to be
+    # "bounded" was not.
+    #
+    # Two exits, both cheap: the parent going away, and a wall-clock ceiling far
+    # beyond any run of this gate.
+    deadline = time.monotonic() + _FIXTURE_MAX_LIFETIME_S
+    while time.monotonic() < deadline:
+        if os.getppid() == 1:
+            return 0
         time.sleep(0.1)
+    return 0
 
 
 class _FixtureProvider:

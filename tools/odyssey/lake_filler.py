@@ -20,8 +20,11 @@ REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "tools/odyssey"))
 import modellake as ml  # noqa: E402
 
-STATE = ml.LAKE / "filler-state.json"
-LOGDIR = ml.LAKE / "filler-logs"
+# One log destination for the lake. `filler-logs/` and `filler-state.json` sat at
+# the lake root beside the specimen tree; both are this worker's output and belong
+# under logs/ with everything else the lake writes.
+STATE = ml.LAKE / "logs" / "acquisition-state.json"
+LOGDIR = ml.LAKE / "logs"
 _lock = threading.Lock()
 _results = []
 
@@ -169,6 +172,7 @@ def fetch(item, worker):
            "capacity_check": cap, "log": str(log)}
     with _lock:
         _results.append(rec)
+        STATE.parent.mkdir(parents=True, exist_ok=True)
         STATE.write_text(json.dumps({"results": _results}, indent=1))
     print(f"  [w{worker}] {'DONE  ' if rec['acquired'] else 'FAIL  '} {item['oxx']} "
           f"{rec['MB_per_s']} MB/s in {rec['wall_s']}s", flush=True)

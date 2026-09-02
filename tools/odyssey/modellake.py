@@ -73,6 +73,21 @@ def _api(repo, rev):
         return json.load(r)
 
 
+def logical_bytes(p):
+    """Sum of st_size over regular files, excluding the downloader's .cache.
+
+    This is the catalog's definition of a specimen's size. du() below reports
+    allocated blocks and includes .cache, which is the right number for capacity
+    admission and the wrong one for a manifest that must agree with the index.
+    """
+    p = Path(p)
+    if not p.exists():
+        return 0
+    return sum(f.stat().st_size for f in p.rglob("*")
+               if f.is_file() and not f.is_symlink()
+               and ".cache" not in f.relative_to(p).parts)
+
+
 def du(p):
     p = Path(p)
     if not p.exists():
@@ -200,9 +215,16 @@ def acquire(repo, rev, emit_progress=True):
                 "partial": str(part)}
 
     os.rename(part, final)                      # atomic: never half-visible in TIER2
+    # `bytes` is the sum of st_size over regular files outside .cache -- the same
+    # number modellake_index puts in the catalog. Recording du()'s allocated blocks
+    # here instead made every manifest disagree with the catalog by a few hundred KB
+    # and land in the stale_manifest_bytes anomaly list. The allocated figure is kept
+    # beside it because it is what the volume actually spends.
     manifest = {
         "repo": repo, "revision": rev, "resolved_sha": meta.get("sha"),
-        "path": str(final), "bytes": du(final), "n_files": len(sibs),
+        "path": str(final), "bytes": logical_bytes(final),
+        "bytes_are": "sum of st_size over regular files outside .cache",
+        "bytes_allocated": du(final), "n_files": len(sibs),
         "n_sha256_verified": len(verified), "n_size_only_verified": len(weak),
         "acquired_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "wall_s": round(time.time() - t0, 1),

@@ -66,26 +66,16 @@ LAYOUT = {
             "deletes or compresses anything here"
         ),
     },
-    "partial": {
-        "path": "partial/",
-        "storage_role": "PARTIAL",
-        "meaning": lin.STORAGE_ROLES["PARTIAL"],
-        "writable_by_index": False,
-        "law": "quarantined until verified and atomically renamed into specimens/",
-    },
     "manifests": {
         "path": "manifests/",
         "storage_role": "GIT_METADATA",
         "meaning": (
             "acquisition manifests beside the bodies they describe; "
-            "reacquisition recipe lives here"
+            "reacquisition recipe lives here. One per body: without a manifest "
+            "modellake.retire() refuses to relegate a specimen, so a gap here is "
+            "a body the lake cannot free. manifests/retired/ keeps the recipe for "
+            "a body deliberately removed, and is not a live manifest."
         ),
-        "writable_by_index": False,
-    },
-    "claims": {
-        "path": "claims/",
-        "storage_role": "GIT_METADATA",
-        "meaning": "filler worker claims (pid/slug/taken_at); not a specimen body",
         "writable_by_index": False,
     },
     "index": {
@@ -97,17 +87,32 @@ LAYOUT = {
         ),
         "writable_by_index": True,
     },
-    "filler-logs": {
-        "path": "filler-logs/",
+    "logs": {
+        "path": "logs/",
         "storage_role": "GIT_METADATA",
-        "meaning": "acquisition worker logs",
+        "meaning": (
+            "everything the lake writes about itself: acquisition worker logs, "
+            "acquisition-state.json, and compressed archives of retired campaign logs"
+        ),
         "writable_by_index": False,
     },
-    "filler-state": {
-        "path": "filler-state.json",
-        "storage_role": "GIT_METADATA",
-        "meaning": "filler run state",
+    # Transient: these exist only while an acquisition is in flight. The worker
+    # mkdirs them and they are absent on an idle lake -- their absence is the
+    # normal state, not a missing role.
+    "partial": {
+        "path": "partial/",
+        "storage_role": "PARTIAL",
+        "meaning": lin.STORAGE_ROLES["PARTIAL"],
         "writable_by_index": False,
+        "transient": True,
+        "law": "quarantined until verified and atomically renamed into specimens/",
+    },
+    "claims": {
+        "path": "claims/",
+        "storage_role": "GIT_METADATA",
+        "meaning": "filler worker claims (pid/slug/taken_at); not a specimen body",
+        "writable_by_index": False,
+        "transient": True,
     },
 }
 
@@ -458,9 +463,14 @@ def list_watch_slugs(
         return []
     slugs = []
     for line in r.stdout.splitlines():
-        name = Path(line).name
-        if name.endswith(".json"):
-            slugs.append(name[:-5])
+        p = Path(line)
+        # ls-tree -r is recursive. Only direct children are the live queue:
+        # watch-manifests/retired/ holds entries deliberately taken out of it,
+        # and counting those would report every retirement as an orphan forever.
+        if p.parent != Path(lin.WATCH_MANIFEST_REL):
+            continue
+        if p.name.endswith(".json"):
+            slugs.append(p.name[:-5])
     return sorted(slugs)
 
 
