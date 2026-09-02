@@ -1,0 +1,121 @@
+{
+  "blocker": {
+    "id": "NO_INDEPENDENT_LAW_REFUTATION",
+    "missing_input": "odyssey3_adversary.selftest applies a synthetic REFUTED verdict (synthetic=True); physical_arm='not_run'; evidence_class='STATIC_ONLY'. scars() returned 4 orchestrator scars with 0 missing regression tests \u2014 a registry, not a fresh law attack.",
+    "wake_condition": "a non-synthetic result from a physical or specimen-backed arm that moves a named campaign law's scope DOWN, with evidence_class other than STATIC_ONLY/synthetic"
+  },
+  "command": "python3 -c \"from tools.future.autonomy_scars import scars; scars()\" and odyssey3_adversary.selftest() (no --build, no receipt write)",
+  "criterion": {
+    "end_line": 683,
+    "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "quote": "## III-A. Odyssey III \u2014 Adversarial Meta-Science\n\n**Mission:** Attack Hawking laws and search procedures themselves.\n\n**Genes to express:**\n- counterexample generation\n- law falsification\n- blind holdouts\n- causal controls\n- measurement traps\n- Goodhart tests\n- compiler prior attacks\n- negative-transfer tests\n\n**Operating rule:** act only on genes whose prerequisites are physically or artifact-verifiably available. Missing prerequisites become explicit blockers or prerequisite WorkUnits; they do not justify fake completion.\n\n**Promotion gate:** this civilization advances only when a fresh process or unseen specimen/device can demonstrate the promised behavior through independent receipts, not because the implementation surface exists.\n\n**Self-refill triggers:** regression, new specimen, new device, new counterexample, new profiler bottleneck, failed transfer, stale assumption, or a newly available deterministic verifier.\n\n",
+    "start_line": 663
+  },
+  "criterion_altered": false,
+  "evidence_tier": "FUNCTIONAL_SIM",
+  "gate": "ODYSSEY_III_ADVERSARIAL_META_SCIENCE",
+  "generated_at": "2026-09-02T09:08:38Z",
+  "generated_by": "tools.acceptance.odyssey.run",
+  "invoked_symbol": {
+    "file": "tools/future/autonomy_scars.py",
+    "kind": "call",
+    "module": "tools.future.autonomy_scars",
+    "symbol": "scars"
+  },
+  "note": "CPU measurement traps (scale_invariance, skip_counted_as_pass) fired in this process on a synthetic vector explicitly labelled 'not a model organ'. That demonstrates trap machinery, not an independent law falsification. selftest() does not write receipts.",
+  "numeric_comparisons": [],
+  "repo": "/Users/scammermike/.claude-grok/worktrees/acc6-odyssey-green-fusion-acceptance-20260902-045121",
+  "run": {
+    "adversary_selftest": {
+      "cpu_observation": {
+        "controls": [
+          {
+            "control": "scale_invariance",
+            "cosine": 1.0000000000000002,
+            "dim": 256,
+            "note": "synthetic vector; not a model organ; STATIC_ONLY",
+            "rel_fro": 0.9900000000000001,
+            "scale": 0.01,
+            "seed": 0,
+            "trap_fired": true
+          },
+          {
+            "control": "skip_counted_as_pass",
+            "honest_pass": false,
+            "n_skipped": 2,
+            "n_tests": 2,
+            "naive_pass": true,
+            "note": "SKIPPED is not PASSED; a grade that cannot fail is not a grade",
+            "trap_fired": true
+          },
+          {
+            "control": "receipt_reread_as_run",
+            "note": "a test that only loads a checked-in receipt has not run the tool",
+            "ran_generator": true,
+            "read_checked_in_receipt": false,
+            "trap_fired": false
+          }
+        ],
+        "evidence_class": "STATIC_ONLY",
+        "physical_arm": "not_run",
+        "reason": "CPU controls fired: ['scale_invariance', 'skip_counted_as_pass']",
+        "synthetic": true,
+        "traps_fired": [
+          "scale_invariance",
+          "skip_counted_as_pass"
+        ],
+        "verdict": "TRAP_TRIGGERED"
+      },
+      "evidence_class": "STATIC_ONLY",
+      "law_id": "LAW-COSINE-ADEQUACY-GATE",
+      "moved_down": true,
+      "scope_after": "REFUTED",
+      "scope_before": "GENERIC_VERIFIED",
+      "selected_attack_id": "LAW-COSINE-ADEQUACY-GATE::measurement_trap",
+      "selected_family": "measurement_trap",
+      "synthetic_result": {
+        "reason": "synthetic refuting result for closed-loop proof: cosine is scale-invariant, so 0.01*W scores ~1.0 while rel_fro ~0.99; mixed-2p0 cosine 0.907 was native-INCOHERENT. The metric is not an adequacy certificate.",
+        "synthetic": true,
+        "verdict": "REFUTED"
+      }
+    },
+    "scars": {
+      "ids": [
+        "STATIC_LANE_TAXONOMY_DIVERGED_FROM_FRONTIER",
+        "SCAR_LOOKUP_ON_IMPLEMENTATION_NAMES",
+        "DECLARED_CAPABILITY_READ_AS_EXECUTED_CAPABILITY",
+        "STATUS_LABEL_LAUNDERED_AS_CAUSAL_CLAIM"
+      ],
+      "missing": [],
+      "n_missing_regression_tests": 0,
+      "n_scars": 4,
+      "sample": [
+        {
+          "claim_refuted": "that a scheduler may keep its own list of resource lanes alongside the frontier's",
+          "id": "STATIC_LANE_TAXONOMY_DIVERGED_FROM_FRONTIER",
+          "law": "a scheduler derives its lane vocabulary from the authority; it never restates it"
+        },
+        {
+          "claim_refuted": "that a module name can be asked whether it is a dead hypothesis family",
+          "id": "SCAR_LOOKUP_ON_IMPLEMENTATION_NAMES",
+          "law": "negative science is keyed by hypothesis semantics, never by implementation identity"
+        },
+        {
+          "claim_refuted": "that naming a tool in source is evidence the tool was driven",
+          "id": "DECLARED_CAPABILITY_READ_AS_EXECUTED_CAPABILITY",
+          "law": "DECLARED CAPABILITY != EXECUTED CAPABILITY. Require invocation, a resulting receipt, and the link between them."
+        },
+        {
+          "claim_refuted": "that a failure status naming a subsystem is evidence that subsystem failed",
+          "id": "STATUS_LABEL_LAUNDERED_AS_CAUSAL_CLAIM",
+          "law": "STATUS LABELS ARE HYPOTHESES UNTIL THEIR CAUSAL CLAIM IS VERIFIED. A failure receipt records the exact underlying error and the probes that would separate the candidate causes."
+        }
+      ]
+    },
+    "wall_s": 0.057
+  },
+  "schema": "hawking.acceptance.gate.v1",
+  "seal_sha256": "7708bbf21f7cbe48d8bef878e9b6eb15fc324c9b66590a62f04177fc2065db58",
+  "section_6_output": "broken laws, corrected priors, stronger verifiers, causal robustness",
+  "verdict": "BLOCKED"
+}

@@ -1,0 +1,47 @@
+{
+  "accepted_ids": [
+    "ODYSSEY_I_DISCOVERY"
+  ],
+  "blocked_ids": [
+    "ODYSSEY_II_TRANSFER",
+    "ODYSSEY_III_ADVERSARIAL_META_SCIENCE",
+    "HMF_DEVICE_VISIBLE_TRUST",
+    "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE"
+  ],
+  "criterion_altered": false,
+  "gates": [
+    {
+      "gate": "ODYSSEY_I_DISCOVERY",
+      "path": "/Users/scammermike/.claude-grok/worktrees/acc6-odyssey-green-fusion-acceptance-20260902-045121/receipts/acceptance/ODYSSEY_I_DISCOVERY.json",
+      "verdict": "ACCEPTED"
+    },
+    {
+      "gate": "ODYSSEY_II_TRANSFER",
+      "path": "/Users/scammermike/.claude-grok/worktrees/acc6-odyssey-green-fusion-acceptance-20260902-045121/receipts/acceptance/ODYSSEY_II_TRANSFER.json",
+      "verdict": "BLOCKED"
+    },
+    {
+      "gate": "ODYSSEY_III_ADVERSARIAL_META_SCIENCE",
+      "path": "/Users/scammermike/.claude-grok/worktrees/acc6-odyssey-green-fusion-acceptance-20260902-045121/receipts/acceptance/ODYSSEY_III_ADVERSARIAL_META_SCIENCE.json",
+      "verdict": "BLOCKED"
+    },
+    {
+      "gate": "HMF_DEVICE_VISIBLE_TRUST",
+      "path": "/Users/scammermike/.claude-grok/worktrees/acc6-odyssey-green-fusion-acceptance-20260902-045121/receipts/acceptance/HMF_DEVICE_VISIBLE_TRUST.json",
+      "verdict": "BLOCKED"
+    },
+    {
+      "gate": "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE",
+      "path": "/Users/scammermike/.claude-grok/worktrees/acc6-odyssey-green-fusion-acceptance-20260902-045121/receipts/acceptance/FUSION_FIRST_HETEROGENEOUS_EXECUTABLE.json",
+      "verdict": "BLOCKED"
+    }
+  ],
+  "generated_at": "2026-09-02T09:08:38Z",
+  "generated_by": "tools.acceptance.odyssey.run",
+  "n_accepted": 1,
+  "n_blocked": 4,
+  "n_gates": 5,
+  "note": "A truthful BLOCKED with the exact missing input is success for this lane. No acceptance criterion was altered.",
+  "schema": "hawking.acceptance.manifest.v1",
+  "seal_sha256": "0b2a4a507c96ca25bfa46676854fa32f9b465932d3d894b16a5ca8f9aeea28d2"
+}

@@ -1,0 +1,62 @@
+{
+  "blocker": {
+    "id": "HMF_PRESENT",
+    "missing_input": "HMF/HGVAS/CXL memory appliance enumerated on this host. probe evidence: no HMF/HGVAS/CXL memory appliance in inventory",
+    "wake_condition": "HMF_PRESENT",
+    "wake_condition_detail": {
+      "description": "HMF/HGVAS managed-memory device visible (CXL expander / HBM appliance enumerated; identity contains HMF, HGVAS, or CXL memory device).",
+      "evidence": "no HMF/HGVAS/CXL memory appliance in inventory",
+      "evidence_tier": "STATIC",
+      "id": "HMF_PRESENT",
+      "present": false
+    }
+  },
+  "command": "python3 -c \"from tools.roadmap.hardware import probe; probe('HMF_PRESENT')\" and hmf_objects is_coherent/cross_kernel_boundary on an in-memory UMA fixture",
+  "criterion": {
+    "end_line": 2866,
+    "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "quote": "# 16. HMF / HGVAS \u2014 SOFTWARE-DEFINED MEMORY TRUTH\n\n```text\nOBJECT\n  identity\n  owner\n  location\n  version\n  representation\n  trust\n  size\n  next-use prediction\n  cost_to_move\n  cost_to_recompute\n  legal_devices\n  materializations\n\nDecision:\nMOVE?\nRECOMPUTE?\nDUPLICATE?\nCOMPRESS?\nPREFETCH?\nEXECUTE REMOTELY?\nKEEP RESIDENT?\nEVICT?\n```\n\n\n## 16.1 Trust states\n\n```text\nABSENT\nMATERIALIZING\nCLEAN\nDIRTY\nSTALE\nUNKNOWN\nCORRUPT\nLOST\nEVICTED\n\nPRESENT != VALID != TRUSTED.\nUNKNOWN != LOST.\nQUARANTINE IS ABOUT TRUST, NOT DIRECTION.\nPLAN SOURCE MUST EQUAL EXECUTED SOURCE.\nREADBACK CORRECTNESS DOES NOT PROVE DEVICE-COMPUTE VISIBILITY.\n```\n\n\n## 16.2 Coherence truth ladder\n\n```text\n0 network serving\n1 distributed execution\n2 HGVAS\n3 software-managed coherence\n4 ownership/versioned object fabric\n5 kernel-boundary coherent HAWKGPU\n6 true hardware cache-coherent UMA\n\nHawking targets 2\u20135 across heterogeneous devices.\nNever falsely claim 6.\n```\n\n",
+    "start_line": 2801
+  },
+  "criterion_altered": false,
+  "evidence_tier": "STATIC",
+  "gate": "HMF_DEVICE_VISIBLE_TRUST",
+  "generated_at": "2026-09-02T09:08:38Z",
+  "generated_by": "tools.acceptance.odyssey.run",
+  "invoked_symbol": {
+    "also_called": [
+      "tools.roadmap.hardware.probe('HMF_PRESENT')",
+      "hmf_objects.establish_clean",
+      "hmf_objects.cross_kernel_boundary",
+      "hmf_objects.device_digest"
+    ],
+    "file": "tools/future/hmf_objects.py",
+    "kind": "call",
+    "module": "tools.future.hmf_objects",
+    "symbol": "is_coherent"
+  },
+  "numeric_comparisons": [],
+  "repo": "/Users/scammermike/.claude-grok/worktrees/acc6-odyssey-green-fusion-acceptance-20260902-045121",
+  "run": {
+    "hardware_probe": {
+      "description": "HMF/HGVAS managed-memory device visible (CXL expander / HBM appliance enumerated; identity contains HMF, HGVAS, or CXL memory device).",
+      "evidence": "no HMF/HGVAS/CXL memory appliance in inventory",
+      "evidence_tier": "STATIC",
+      "id": "HMF_PRESENT",
+      "present": false
+    },
+    "overlay": {
+      "after_unsynced_kernel_boundary": "UNKNOWN",
+      "boolean_collapse_refused": true,
+      "clean_coherence": "COHERENT",
+      "device_digest_without_provider": "DeviceDigest(status='UNKNOWN', digest=None, path=None, note='no provider offering digest_resident; absence of evidence is UNKNOWN, not failure')",
+      "evidence_tier": "FUNCTIONAL_SIM",
+      "note": "Apple UMA overlay. PRESENT on UMA is not HMF device-visible trust. Roadmap 16.2: Hawking targets coherence ladder 2-5; never falsely claim 6."
+    },
+    "wall_s": 0.229
+  },
+  "schema": "hawking.acceptance.gate.v1",
+  "seal_sha256": "b995fff402b80f557ebf58b4aa7ffc57b5c00d18807a0cf4786d7c6884bea458",
+  "trust_law": "PRESENT != VALID != TRUSTED. UNKNOWN != LOST. READBACK CORRECTNESS DOES NOT PROVE DEVICE-COMPUTE VISIBILITY.",
+  "verdict": "BLOCKED"
+}

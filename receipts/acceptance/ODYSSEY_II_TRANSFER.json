@@ -1,0 +1,88 @@
+{
+  "blocker": {
+    "id": "TRANSFER_REDUCTION_NOT_POSITIVE",
+    "missing_input": "delta.evaluations_avoided measured -8; required > 0. COLD arm used 2 evaluations, TRANSFER arm used 10 (evaluations_avoided=-8). Odyssey II sidecar records actual_saved_experiments=null / UNMEASURED.",
+    "wake_condition": "a cold-vs-transfer measurement on an unseen specimen with evaluations_avoided > 0 (or an equivalent measured reduction in time/cost), not a similarity score and not UNMEASURED"
+  },
+  "command": "python3 -c \"from tools.future.qualification_pipeline import load_qualification_queue; load_qualification_queue(path)\"",
+  "criterion": {
+    "end_line": 573,
+    "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "quote": "## II-A. Odyssey II \u2014 Transfer\n\n**Mission:** Ask what Hawking already learned and make it reduce search cost on unseen models.\n\n**Genes to express:**\n- law retrieval\n- prior-to-experiment planner\n- transfer confidence\n- counterexample search\n- specimen curriculum\n- time-to-first-useful-executable\n- saved-experiment accounting\n\n**Operating rule:** act only on genes whose prerequisites are physically or artifact-verifiably available. Missing prerequisites become explicit blockers or prerequisite WorkUnits; they do not justify fake completion.\n\n**Promotion gate:** this civilization advances only when a fresh process or unseen specimen/device can demonstrate the promised behavior through independent receipts, not because the implementation surface exists.\n\n**Self-refill triggers:** regression, new specimen, new device, new counterexample, new profiler bottleneck, failed transfer, stale assumption, or a newly available deterministic verifier.\n\n",
+    "start_line": 554
+  },
+  "criterion_altered": false,
+  "evidence_tier": "STATIC",
+  "gate": "ODYSSEY_II_TRANSFER",
+  "generated_at": "2026-09-02T09:08:38Z",
+  "generated_by": "tools.acceptance.odyssey.run",
+  "invoked_symbol": {
+    "file": "tools/future/qualification_pipeline.py",
+    "kind": "call",
+    "module": "tools.future.qualification_pipeline",
+    "symbol": "load_qualification_queue"
+  },
+  "note": "load_qualification_queue was called on the git-HEAD queue snapshot. That call proves the planner is reachable. The acceptance bar is the numeric reduction, compared here against the cold-vs-transfer receipt rather than asserted. pass=true on that receipt is not this gate: its own honest_note reports the COLD arm winning the pre-registered target.",
+  "numeric_comparisons": [
+    {
+      "field": "delta.evaluations_avoided",
+      "measured": -8,
+      "op": ">",
+      "passed": false,
+      "source": "git HEAD receipts/headless/ODYSSEY_TRANSFER_PROVEN.json",
+      "threshold": 0
+    }
+  ],
+  "repo": "/Users/scammermike/.claude-grok/worktrees/acc6-odyssey-green-fusion-acceptance-20260902-045121",
+  "run": {
+    "load_qualification_queue": {
+      "candidate_ids_head": [
+        "qwen27-affine2-splitk4",
+        "qwen27-attention-gate-fusion",
+        "qwen27-ba-delta-fusion",
+        "qwen27-commit-timing-elision",
+        "qwen27-deltanet-inproj-fusion",
+        "qwen27-encoder-label-elision",
+        "qwen27-fast-profile",
+        "qwen27-gqa-qkv-fusion"
+      ],
+      "hcli": {
+        "ok": true,
+        "path": "/Users/scammermike/Downloads/hawking/hcli/__init__.py",
+        "source": "sys.path"
+      },
+      "loaded_from": "/Users/scammermike/.claude-grok/worktrees/acc6-odyssey-green-fusion-acceptance-20260902-045121/receipts/acceptance/_queue_snapshot.json",
+      "n_candidates": 49,
+      "ok": true,
+      "schema": "hawking.accelerator.physical_qualification_queue.v1",
+      "statuses_head": [
+        "READY_PROTECTED",
+        "READY_PROTECTED",
+        "READY_PROTECTED",
+        "READY_PROTECTED",
+        "READY_PROTECTED",
+        "READY_PROTECTED",
+        "READY_PROTECTED",
+        "READY_PROTECTED"
+      ]
+    },
+    "transfer_proven": {
+      "cold_evaluations": 2,
+      "evaluations_avoided": -8,
+      "generated_at": "2026-08-25T00:41:06Z",
+      "generated_by": "tools/odyssey/cold_vs_transfer.py",
+      "honest_note": "Under the loose landing target the COLD arm wins: q4 g128 clears a 1.15x-of-q4 bar on its second try, so there is nothing for a seed to save. That result is reported rather than retuned. The transfer signal is in the matched-bits comparison and in which arm reaches the quality-per-bit frontier first.",
+      "pass_field_in_receipt": true,
+      "reduction_holds": false,
+      "same_landing": true,
+      "source": "git HEAD receipts/headless/ODYSSEY_TRANSFER_PROVEN.json",
+      "specimen": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+      "transfer_evaluations": 10
+    },
+    "wall_s": 0.113
+  },
+  "schema": "hawking.acceptance.gate.v1",
+  "seal_sha256": "bd4be26d419c99293719c27b41a2927846699896c41581f381304c970156d2e7",
+  "section_6_output": "measurable reduction in experiments/time/cost on unseen models and devices",
+  "verdict": "BLOCKED"
+}
