@@ -433,3 +433,57 @@ def test_concurrent_writers_do_not_share_one_staging_name(tmp_path):
     assert dest.read_bytes() == payload
     assert not list(tmp_path.glob("*.tmp")), "a staging file was left behind"
     assert str(os.getpid()) in nxp._tmp_sibling(dest).name
+
+
+def test_no_shared_staging_name_in_a_producer_two_test_files_can_reach():
+    """The nx_packer collision was one instance of a repo-wide shape.
+
+    A producer that stages into a fixed `<dest>.tmp` and then replaces it is safe
+    alone and broken the moment two processes run it: both write that one path,
+    and whichever replaces it first leaves the other with FileNotFoundError. The
+    risk condition is not "unlocked", it is "unlocked AND reachable from more than
+    one test file" -- under `--dist loadfile` a single file's tests share one
+    worker, so one caller cannot race itself. Two callers can, which is exactly
+    how nx_packer got hit from test_power_torture and the nr_nx tests.
+
+    Computed rather than listed, so a new producer with the same shape is caught
+    without anyone remembering to add it here.
+    """
+    import re
+
+    root = Path(__file__).resolve().parents[2]
+    tools = root / "tools"
+    fixed_tmp = re.compile(
+        r'\.with_suffix\("\.json\.tmp"\)'
+        r'|\.with_suffix\(\w+\.suffix \+ "\.tmp"\)'
+        r'|\.with_name\(\w+\.name \+ "\.tmp"\)'
+    )
+
+    producers = {}
+    for path in tools.rglob("*.py"):
+        if path.name.startswith("test_"):
+            continue
+        text = path.read_text(errors="replace")
+        if "flock" in text or "getpid" in text:
+            continue          # serialized, or already process-private
+        if fixed_tmp.search(text):
+            producers[path.stem] = path
+
+    if not producers:
+        return
+
+    offenders = []
+    for stem, path in sorted(producers.items()):
+        word = re.compile(rf"\b(?:import|from)\b.*\b{re.escape(stem)}\b")
+        callers = [
+            t.name
+            for t in tools.rglob("test_*.py")
+            if word.search(t.read_text(errors="replace"))
+        ]
+        if len(callers) > 1:
+            offenders.append(f"{path.relative_to(root)} <- {', '.join(sorted(callers)[:4])}")
+
+    assert not offenders, (
+        "these stage into a shared fixed .tmp and more than one test file can run them "
+        "concurrently:\n  " + "\n  ".join(offenders)
+    )

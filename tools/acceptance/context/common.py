@@ -63,7 +63,7 @@ def write_receipt(gate: str, payload: Mapping[str, Any]) -> Path:
     body.setdefault("generated_at", now_utc())
     body.setdefault("git_head", git_head())
     body.setdefault("criterion_altered", False)
-    tmp = path.with_suffix(".json.tmp")
+    tmp = path.with_suffix(f".json.{os.getpid()}.tmp")
     tmp.write_text(json.dumps(body, indent=2, sort_keys=False) + "\n", encoding="utf-8")
     os.replace(tmp, path)
     return path

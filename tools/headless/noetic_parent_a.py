@@ -912,7 +912,7 @@ def seal(
     }
     if write_receipt:
         RECEIPT.parent.mkdir(parents=True, exist_ok=True)
-        tmp = RECEIPT.with_suffix(".json.tmp")
+        tmp = RECEIPT.with_suffix(f".json.{os.getpid()}.tmp")
         tmp.write_text(json.dumps(receipt, indent=2) + "\n")
         os.replace(tmp, RECEIPT)
         print(f"wrote {RECEIPT}", flush=True)
