@@ -2202,6 +2202,14 @@ def build_parser() -> argparse.ArgumentParser:
     )
     status = sub.add_parser("status", help="show resident state without opening a model")
     status.add_argument("--workspace", default=os.getcwd())
+    verdict = sub.add_parser(
+        "verdict",
+        help="is this a good run? named criteria, read from disk, opens no model",
+    )
+    verdict.add_argument("--workspace", default=os.getcwd())
+    verdict.add_argument(
+        "--json", action="store_true", help="emit the full verdict document"
+    )
     watch = sub.add_parser(
         "watch", help="live read-only view of the running resident (opens no model)"
     )
@@ -2280,6 +2288,17 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             # as a launch. The requested config was not applied.
             print(str(exc), file=sys.stderr)
             return 3
+    elif args.command == "verdict":
+        from hcli.cycle_verdict import evaluate, render
+
+        report = evaluate(args.workspace)
+        if args.json:
+            print(json.dumps(report, indent=2, sort_keys=True))
+        else:
+            print(render(report))
+        # Exit code carries the verdict so a watcher does not have to parse it.
+        # UNKNOWN is 2, not 0: unchecked is not passed.
+        return {"PASS": 0, "FAIL": 1}.get(report["verdict"], 2)
     elif args.command == "__never__":
         result = start_resident(
             args.workspace,

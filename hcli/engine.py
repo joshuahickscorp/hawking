@@ -105,7 +105,9 @@ HCLI_RESULT_SCHEMA: Dict[str, Any] = {
         # contract lives anyway.
         "tool_calls": {
             "type": "array",
-            "maxItems": 8,
+            # Matches MAX_TOOL_CALLS_PER_ROUND. A schema that allows fewer calls
+            # than the executor will run is a cap the model cannot see past.
+            "maxItems": 16,
             "items": {
                 "type": "object",
                 "properties": {
@@ -181,9 +183,16 @@ command, inspect git):
     {"tool": "fs.read", "arguments": [{"name": "path", "value": "hcli/engine.py"}]}
   ]
 }
-Results come back as OBSERVATIONS and you are asked again. Prefer looking over
-guessing: an answer that says evidence is missing when a tool could have
-fetched it is a wrong answer.
+Results come back as OBSERVATIONS and you are asked again.
+
+ASK FOR EVERYTHING YOU NEED IN ONE REPLY. A tool call costs about a
+millisecond. Being asked again costs minutes, and you get at most 6 rounds. Two
+files and a search in one reply is one round; asking for them one at a time is
+three rounds and roughly two hundred times the wall clock for the same answer.
+List up to 16 calls at once. Do not pace yourself.
+
+Prefer looking over guessing: an answer that says evidence is missing when a
+tool could have fetched it is a wrong answer.
 
 Rules:
 - every example above is a literal you may copy; every key shown is required
@@ -607,6 +616,9 @@ class Engine:
         # the turn before it. Never a transcript.
         self._prefix_probe = PrefixProbe()
         self._last_rendered_prompt: str = ""
+        # (tool, args) already executed in the CURRENT goal. Cleared per goal:
+        # a repeat across goals is a different question with the same shape.
+        self._tool_calls_seen: Dict[tuple, Dict[str, Any]] = {}
 
     # -----------------------------------------------------------------
     # Lifecycle
@@ -756,7 +768,17 @@ class Engine:
             raise EngineError("plain-text cognition returned a non-text result")
         return value
 
+    # One constant used to mean two different things: how many ROUNDS the
+    # agentic loop may take, and how many tool calls one round may execute.
+    # They are not the same budget and their costs differ by five orders of
+    # magnitude -- a round is a model call at 92-385 s, a tool call is 1-3 ms.
+    # Capping calls-per-round at the round budget priced milliseconds like
+    # minutes.
     MAX_TOOL_ROUNDS = 6
+    MAX_TOOL_CALLS_PER_ROUND = 16
+    # Kept as an alias: external callers and tests referenced the old name for
+    # the per-round cap, and silently changing what it means is worse than
+    # carrying it.
     # Bounded: an event stream is a trail, not a transcript.
     TOOL_ERROR_EVENT_CHARS = 400
 
@@ -945,9 +967,45 @@ class Engine:
         """
         registry = self._tool_registry()
         out: List[Dict[str, Any]] = []
-        for call in calls[: self.MAX_TOOL_ROUNDS]:
+        for call in calls[: self.MAX_TOOL_CALLS_PER_ROUND]:
             name = str((call or {}).get("tool") or "").strip()
             args = self._typed_arguments(registry, name, (call or {}).get("arguments"))
+
+            # A repeated call is the loop signature, not a request. Measured:
+            # one goal spent five of eleven invocations re-issuing fs.read with
+            # the same rejected argument and fs.search with no `pattern`, each
+            # costing a whole round. Re-running it would produce the identical
+            # observation, so answer from the first one and SAY it is a repeat
+            # -- the model cannot break a loop it cannot see.
+            key = (name, json.dumps(args, sort_keys=True, default=str))
+            # Lazy: the cache is an optimization, not an invariant, and callers
+            # that build an Engine without __init__ must still be able to run
+            # tools rather than die on a missing attribute.
+            seen = getattr(self, "_tool_calls_seen", None)
+            if seen is None:
+                seen = {}
+                self._tool_calls_seen = seen
+            prior = seen.get(key)
+            if prior is not None:
+                repeated = dict(prior)
+                note = (
+                    f"REPEAT: you already called {name} with these exact "
+                    f"arguments in this goal and got the result below. Calling "
+                    f"it again cannot change it."
+                )
+                if not prior.get("ok"):
+                    note += (
+                        " It FAILED then and fails now for the same reason. "
+                        "Change the arguments or answer from what you have."
+                    )
+                repeated["text"] = f"{note}\n\n{prior.get('text', '')}"
+                repeated["repeat"] = True
+                out.append(repeated)
+                self._emit("tool_call_repeated", {
+                    "goal_id": goal_id, "tool": name, "ok": prior.get("ok"),
+                })
+                continue
+
             self._emit("tool_call_started", {
                 "goal_id": goal_id, "tool": name,
             })
@@ -979,11 +1037,13 @@ class Engine:
                         )
                         + ")  (* = required)"
                     )
-            out.append({
+            observation = {
                 "tool": name,
                 "ok": ok,
                 "text": text[: self.MAX_EVIDENCE_CHARS_PER_FILE],
-            })
+            }
+            seen[key] = observation
+            out.append(observation)
             # `ok: false` with no reason is not observability. Five fs.read
             # failures in one goal said only that they failed; the cause (a
             # directory passed where a file was wanted) had to be reproduced by
@@ -1250,6 +1310,7 @@ class Engine:
         goal_id = str(uuid.uuid4())
         self._active_goal_id = goal_id
         self._model_calls = []
+        self._tool_calls_seen = {}
         self._last_call_plan = {}
         self._reset_evidence_efficiency()
 
