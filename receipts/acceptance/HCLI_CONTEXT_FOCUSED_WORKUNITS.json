@@ -1,0 +1,80 @@
+{
+  "criterion": {
+    "span": [
+      7420,
+      7447
+    ],
+    "quoted": "## D.4 Context authority\n\n```text\nDISTINGUISH:\nmodel_architectural_ceiling\nphysically_qualified_context\nallocated_runtime_context\nusable_request_context\ngeneration_reserve\ntool_reserve\nsafety_reserve\nworker_context_target\nactive_sequence_KV_cost\n\nROOT CONTEXT:\n    ultragoal + global invariants + current authority\n\nWORKER CONTEXT:\n    global invariants\n  + current phase\n  + one WorkUnit\n  + dependency neighborhood\n  + exact evidence\n  + acceptance criteria\n\nChanged evidence invalidates stale compiled context.\nDo not feed every worker the entire civilization roadmap.\n```",
+    "meaning": "WORKER CONTEXT = global invariants + current phase + one WorkUnit + dependency neighborhood + exact evidence + acceptance criteria. Do not feed every worker the entire civilization roadmap."
+  },
+  "symbol": {
+    "qualname": "compile_worker_context",
+    "module": "hcli.goal",
+    "file": "/Users/scammermike/Downloads/hawking/hcli/goal.py",
+    "line": 1338
+  },
+  "invocations": [
+    {
+      "symbol": "hcli.goal.compile_worker_context",
+      "unit": "wu-child"
+    },
+    {
+      "symbol": "hcli.goal.compile_worker_context",
+      "unit": "wu-unrelated"
+    },
+    {
+      "symbol": "hcli.goal.refuse_goal_dump"
+    }
+  ],
+  "command": "python3 -m tools.acceptance.context --gate HCLI_CONTEXT_FOCUSED_WORKUNITS",
+  "evidence_tier": "FUNCTIONAL_SIM",
+  "root_chars": 2632,
+  "packet": {
+    "unit_id": "wu-child",
+    "phase": "running",
+    "workunit": "wu-child implement apply the neighborhood evidence to one file",
+    "invariants": [
+      "stay inside the named file",
+      "global invariant: never invent a measurement",
+      "global invariant: mutation is single-writer"
+    ],
+    "acceptance": [
+      "tests pass under the unit verifier",
+      "no root goal dump in the worker packet"
+    ],
+    "neighborhood": [
+      "wu-parent status=pending receipt=(none)"
+    ],
+    "evidence_paths": [],
+    "prompt_chars": 492,
+    "truncated": false,
+    "omitted": []
+  },
+  "other_packet_unit_id": "wu-unrelated",
+  "other_packet_prompt_chars": 356,
+  "checks": {
+    "compile_worker_context_invoked": true,
+    "has_phase": true,
+    "has_one_workunit": true,
+    "has_invariants": true,
+    "has_acceptance": true,
+    "has_neighborhood": true,
+    "prompt_excludes_root": true,
+    "prompt_excludes_unrelated_body": true,
+    "prompt_smaller_than_root": true,
+    "two_workers_differ": true,
+    "other_worker_is_other_unit": true,
+    "refuse_goal_dump_clean": true
+  },
+  "verdict": "ACCEPTED",
+  "blocker": null,
+  "output": {
+    "prompt_excerpt": "PHASE: running\n\nWORKUNIT: wu-child\nROLE: implement\nOBJECTIVE: apply the neighborhood evidence to one file\n\nINVARIANTS:\n- stay inside the named file\n- global invariant: never invent a measurement\n- global invariant: mutation is single-writer\n\nACCEPTANCE:\n- tests pass under the unit verifier\n- no root goal dump in the worker packet\n\nEVIDENCE_PATHS:\n(none)\n\nNEIGHBORHOOD:\n- wu-parent status=pending receipt=(none)\n\nSTEERING:\n- [constraint] stay inside the named file\n\nROOT_REF: mission/goal.md",
+    "root_in_prompt": false
+  },
+  "schema": "hawking.acceptance.gate.v1",
+  "gate": "HCLI_CONTEXT_FOCUSED_WORKUNITS",
+  "generated_at": "2026-09-02T09:05:32Z",
+  "git_head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
+  "criterion_altered": false
+}
