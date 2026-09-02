@@ -883,7 +883,7 @@ design, not by neglect: simulated is not measured.
     negative control    tools/vmcp/test_pty_eye.py
     receipt             absent
     evidence level      STATIC
-    limitations         acceptance not demonstrated: acceptance verdict BLOCKED: {'error': None, 'missing': 'PTY slave open (os.open(ptsname))', 'ptsname': '/dev/ttys002', 'why': 'posix_openpt/grantpt/unlockpt/pts
+    limitations         acceptance not demonstrated: acceptance verdict BLOCKED: {'error': None, 'missing': 'PTY slave open (os.open(ptsname))', 'ptsname': '/dev/ttys004', 'why': 'posix_openpt/grantpt/unlockpt/pts
     integration         wired=True accepted=False
 
 ### VMCP_RECEIPT_LAW

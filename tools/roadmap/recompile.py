@@ -500,7 +500,14 @@ def render_state() -> dict:
         "evidence_levels": dict(evidence_levels),
         "next_actions": buckets["active_actions"][:10],
         "software_connection_remaining_count": software_remaining,
-        "net_future_burden": software_remaining + len(buckets["experiment_required"]),
+        # software + experiment + long-run. Excluding long_run_required made this
+        # disagree with COMPRESSION.md's own arithmetic (31 vs 41) -- two
+        # definitions of one name, which is how a plan ends up with two answers.
+        "net_future_burden": (
+            software_remaining
+            + len(buckets["experiment_required"])
+            + len(buckets["long_run_required"])
+        ),
         "future_work_eliminated_count": len(buckets["integrated_capabilities"]),
         "not_physically_measured": "every gate is evidence_tier STATIC; no present capability rests on a physical measurement",
         # completed_capabilities (status BUILT) and integrated_capabilities (no

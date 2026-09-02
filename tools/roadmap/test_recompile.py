@@ -123,3 +123,26 @@ def test_blocker_class_is_derived_from_evidence_not_assigned():
 
     done = dict(unwired, wired={"value": True}, accepted={"value": True})
     assert recompile.blocker_class(done)[0] == ""
+
+
+def test_net_future_burden_means_the_same_thing_in_both_documents():
+    """One name, one definition.
+
+    ROADMAP_STATE computed net_future_burden as software+experiment while
+    COMPRESSION.md computed software+experiment+long_run: 31 against 41, the
+    same phrase carrying two answers. Whichever is chosen, both must use it.
+    """
+    state = _state()
+    expected = (
+        state["software_connection_remaining_count"]
+        + len(state["experiment_required"])
+        + len(state["long_run_required"])
+    )
+    assert state["net_future_burden"] == expected, "state's own arithmetic disagrees"
+
+    text = (DOCS / "COMPRESSION.md").read_text()
+    m = re.search(r"NET FUTURE BURDEN\s+(\d+)", text)
+    assert m, "COMPRESSION.md no longer prints a net future burden"
+    assert int(m.group(1)) == state["net_future_burden"], (
+        "COMPRESSION.md and ROADMAP_STATE disagree about net future burden"
+    )
