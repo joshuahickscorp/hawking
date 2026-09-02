@@ -1,0 +1,93 @@
+{
+  "artifacts": [
+    "receipts/acceptance/FLASH_DENSE_VS_NF_AB.run.json"
+  ],
+  "blocker": null,
+  "claim_boundary": "Bounded in-memory Flash router representation A/B on model.language_model.layers.0.mlp.gate.weight. CPU FUNCTIONAL_SIM; native_kernel_execution_observed is false. No whole-model, complete-token, EBPW, or TPS claim.",
+  "command": [
+    "hcli.agentos.flash_router_representation_ab.run_flash_router_representation_ab",
+    "--root=/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "--emit=/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/acceptance/FLASH_DENSE_VS_NF_AB.run.json"
+  ],
+  "comparison": {
+    "measured_n_candidates": 4,
+    "measured_status": "PASSED",
+    "required": "source-vs-low-bit (Q4/NF4) A/B on a real Flash router tensor with >=2 candidates",
+    "satisfied": "independent_q4_g64"
+  },
+  "criterion": {
+    "acceptance_span": {
+      "end_line": 505,
+      "section": "I-C",
+      "start_line": 478
+    },
+    "quoted": "F6 dense-vs-NF A/B / FLAS-005 dense-vs-NF A/B. Catalog symbol run_flash_router_representation_ab compares source BF16 routing to derived low-bit (Q4/NF4) candidates on the pinned Flash router matrix.",
+    "source": {
+      "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+      "lines": [
+        1757,
+        3894
+      ]
+    }
+  },
+  "criterion_altered": false,
+  "evidence_tier": "FUNCTIONAL_SIM",
+  "finished_at": "2026-09-02T09:12:15Z",
+  "gate": "FLASH_DENSE_VS_NF_AB",
+  "git_head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
+  "measured": {
+    "best_low_bit_overlap_candidate": "independent_nf4_g64",
+    "candidates": [
+      {
+        "candidate_bytes": 696320,
+        "effective_bits_per_value": 4.25,
+        "family": "uniform_q4",
+        "id": "independent_q4_g64",
+        "native_kernel": "qwen_uniform_q4_group64_matvec",
+        "top_k_overlap_count": 8
+      },
+      {
+        "candidate_bytes": 737280,
+        "effective_bits_per_value": 4.5,
+        "family": "uniform_q4",
+        "id": "independent_q4_g32",
+        "native_kernel": null,
+        "top_k_overlap_count": 8
+      },
+      {
+        "candidate_bytes": 819200,
+        "effective_bits_per_value": 5.0,
+        "family": "uniform_q4",
+        "id": "independent_q4_g16",
+        "native_kernel": null,
+        "top_k_overlap_count": 9
+      },
+      {
+        "candidate_bytes": 696320,
+        "effective_bits_per_value": 4.25,
+        "family": "nf4",
+        "id": "independent_nf4_g64",
+        "native_kernel": null,
+        "top_k_overlap_count": 9
+      }
+    ],
+    "n_candidates": 4,
+    "native_compatible_baseline": "independent_q4_g64",
+    "native_kernel_execution_observed": false,
+    "source_top_k_exact_for_any_low_bit_candidate": false,
+    "status": "PASSED",
+    "tensor_name": "model.language_model.layers.0.mlp.gate.weight"
+  },
+  "returncode": 0,
+  "schema": "hawking.acceptance.gate.v1",
+  "started_at": "2026-09-02T09:12:15Z",
+  "stderr": "",
+  "stdout": "{\"status\": \"PASSED\", \"n_candidates\": 4, \"recommendation\": {\"source_top_k\": [29, 309, 455, 151, 500, 374, 15, 220, 37, 0], \"best_low_bit_overlap_candidate\": \"independent_nf4_g64\", \"best_low_bit_overlap_count\": 9, \"native_compatible_baseline\": \"independent_q4_g64\", \"native_compatible_baseline_overlap_count\": 8, \"decision\": \"retain independent_q4_g64 for the current native kernel; evaluate independent_nf4_g64 only with a native NF4 kernel, or accept the extra scale bytes of a tighter Q4 group if exact routing quality justifies it\", \"source_top_k_exact_for_any_low_bit_candidate\": false, \"label\": \"[D]\"}, \"native_kernel_execution_observed\": false, \"tensor\": \"model.language_model.layers.0.mlp.gate.weight\"}",
+  "symbol": {
+    "file": "tools/acceptance/flash/run_gates.py",
+    "kind": "call",
+    "module": "hcli.agentos.flash_router_representation_ab",
+    "name": "run_flash_router_representation_ab"
+  },
+  "verdict": "ACCEPTED"
+}
