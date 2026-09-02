@@ -572,6 +572,15 @@
     "completed_capabilities": "gates the auditor calls BUILT: wired AND acceptance-passed, which does NOT require a verifier -- the difference from integrated_capabilities is built_but_no_verifier",
     "integrated_capabilities": "gates with NO remaining blocker AND a test citing them"
   },
+  "deferred_programs": [
+    "THEIA_BOUNTY_GENERALIST_QUALIFIED",
+    "THEIA_GRAVITY_EXECUTABLE",
+    "THEIA_LAB",
+    "THEIA_MICRO",
+    "THEIA_RESEARCH",
+    "THEIA_T0_TRAIN_SUBSTRATE",
+    "THEIA_WORKER"
+  ],
   "defining_properties": {
     "AGENTOS_BEHAVIOR_LAB": "acceptance_span in the superseded roadmap",
     "AGENTOS_CANCELLATION": "acceptance_span in the superseded roadmap",
@@ -969,6 +978,11 @@
     "QWEN27_PROTECTED_BASELINE",
     "VMCP_PTY_CAPTURE"
   ],
+  "external_environment_required": [
+    "VMCP_SPATIAL_VALIDATE",
+    "VMCP_VISUAL_DIFF",
+    "VMCP_WEB_CAPTURE"
+  ],
   "future_work_eliminated_count": 16,
   "generated_from": "civilization/CAPABILITY_GRAPH.json",
   "hardware_required": [
@@ -1260,20 +1274,9 @@
     "VMCP_FILE_CLASSIFIER",
     "VMCP_TOOL_DOCTOR"
   ],
-  "long_run_required": [
-    "THEIA_BOUNTY_GENERALIST_QUALIFIED",
-    "THEIA_GRAVITY_EXECUTABLE",
-    "THEIA_LAB",
-    "THEIA_MICRO",
-    "THEIA_RESEARCH",
-    "THEIA_T0_TRAIN_SUBSTRATE",
-    "THEIA_WORKER",
-    "VMCP_SPATIAL_VALIDATE",
-    "VMCP_VISUAL_DIFF",
-    "VMCP_WEB_CAPTURE"
-  ],
+  "long_run_required": [],
   "multiplier_edges": [],
-  "net_future_burden": 40,
+  "net_future_burden": 41,
   "next_actions": [
     "AGENTOS_CIRCUIT_BREAKER",
     "AGENTOS_RETRY_CLASSIFIED",
@@ -2711,11 +2714,12 @@
   ],
   "recurring_operations": [],
   "schema": "hawking.roadmap.state.v3",
-  "software_connection_remaining_count": 18,
-  "subsumed_items": [],
-  "unknown_research": [
+  "software_build_required": [
     "AGENTOS_BEHAVIOR_LAB"
   ],
+  "software_connection_remaining_count": 18,
+  "subsumed_items": [],
+  "unknown_research": [],
   "verifiers": {
     "AGENTOS_CANCELLATION": "hcli/test_abort_checkpoint_atomicity.py:18, hcli/test_abort_checkpoint_atomicity.py:49 (+30 more)",
     "AGENTOS_CHECKPOINT_ATOMICITY": "hcli/test_goal_bank.py:10, hcli/tests/test_core_authorities.py:22 (+4 more)",

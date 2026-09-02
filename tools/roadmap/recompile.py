@@ -467,19 +467,27 @@ def render_state() -> dict:
     """The machine-readable active plan. Counts here MUST match the documents."""
     graph = json.loads(GRAPH.read_text())
     gates = graph["gates"]
+    # One classifier, not two. The census and the buckets disagreed about
+    # UNKNOWN_RESEARCH because the census had moved to the expanded taxonomy and
+    # the buckets had not -- a state file whose own fields contradict each other
+    # is worse than one that is merely coarse.
+    _BUCKET = {
+        "SOFTWARE_CONNECTION_REMAINING": "active_actions",
+        "SOFTWARE_BUILD_REQUIRED": "software_build_required",
+        "EXPERIMENTATION_REQUIRED": "experiment_required",
+        "LONG_RUN_EVIDENCE_REQUIRED": "long_run_required",
+        "EXTERNAL_ENVIRONMENT_REQUIRED": "external_environment_required",
+        "DEFERRED_PROGRAM": "deferred_programs",
+        "PHYSICAL_HARDWARE_REQUIRED": "hardware_required",
+        "UNKNOWN_RESEARCH": "unknown_research",
+    }
     buckets: dict[str, list[str]] = defaultdict(list)
     for gid, gate in sorted(gates.items()):
-        cls, _missing = blocker_class(gate)
+        cls, _missing = _classify_v2(gate)
         if not cls:
             buckets["integrated_capabilities"].append(gid)
             continue
-        buckets[{
-            "SOFTWARE_CONNECTION_REMAINING": "active_actions",
-            "EXPERIMENTATION_REQUIRED": "experiment_required",
-            "LONG_RUN_EVIDENCE_REQUIRED": "long_run_required",
-            "PHYSICAL_HARDWARE_REQUIRED": "hardware_required",
-            "UNKNOWN_RESEARCH": "unknown_research",
-        }[cls]].append(gid)
+        buckets[_BUCKET[cls]].append(gid)
 
     completed = [g for g, v in sorted(gates.items()) if v["status"] == "BUILT"]
     deps = [[gid, d] for gid, v in sorted(gates.items()) for d in (v.get("dependencies") or [])]
@@ -522,6 +530,9 @@ def render_state() -> dict:
         "long_run_required": buckets["long_run_required"],
         "hardware_required": buckets["hardware_required"],
         "unknown_research": buckets["unknown_research"],
+        "software_build_required": buckets["software_build_required"],
+        "external_environment_required": buckets["external_environment_required"],
+        "deferred_programs": buckets["deferred_programs"],
         "subsumed_items": [],
         "archived_items": ["docs/roadmap-lineage/H-ROADMAP.superseded-2026-09-02.md"],
         "dependency_edges": deps,
@@ -537,11 +548,10 @@ def render_state() -> dict:
         # software + experiment + long-run. Excluding long_run_required made this
         # disagree with COMPRESSION.md's own arithmetic (31 vs 41) -- two
         # definitions of one name, which is how a plan ends up with two answers.
-        "net_future_burden": (
-            software_remaining
-            + len(buckets["experiment_required"])
-            + len(buckets["long_run_required"])
-        ),
+        # An alias for ACTIVE_NONHARDWARE_BURDEN, kept because older receipts
+        # cite the name. Defined by subtraction from the census so a NEW blocker
+        # class cannot quietly drop out of the burden.
+        "net_future_burden": non_hardware,
         "future_work_eliminated_count": len(buckets["integrated_capabilities"]),
         "not_physically_measured": "every gate is evidence_tier STATIC; no present capability rests on a physical measurement",
         # completed_capabilities (status BUILT) and integrated_capabilities (no
@@ -598,23 +608,28 @@ def render_compression() -> str:
     graph = json.loads(GRAPH.read_text())
     gates = graph["gates"]
     now = Counter(g["status"] for g in gates.values())
+    # One classifier and one burden, both taken from the same authority as the
+    # state file. This section used to recompute the burden from its own class
+    # names and printed 40 while the state said 41.
     classes = Counter()
     for gate in gates.values():
-        cls, _ = blocker_class(gate)
-        status = gate["status"]
+        cls, _ = _classify_v2(gate)
         if not cls:
             classes["MOVE_TO_COMPLETED"] += 1
         elif cls == "PHYSICAL_HARDWARE_REQUIRED":
             classes["HARDWARE_CONTINGENT"] += 1
-        elif cls == "EXPERIMENTATION_REQUIRED":
-            classes["EXPERIMENT_CONTINGENT"] += 1
-        elif cls == "LONG_RUN_EVIDENCE_REQUIRED":
+        elif cls in ("EXPERIMENTATION_REQUIRED", "LONG_RUN_EVIDENCE_REQUIRED"):
             classes["EXPERIMENT_CONTINGENT"] += 1
         elif cls == "UNKNOWN_RESEARCH":
             classes["UNKNOWN_RESEARCH"] += 1
+        elif cls == "DEFERRED_PROGRAM":
+            classes["DEFERRED_PROGRAM"] += 1
+        elif cls == "EXTERNAL_ENVIRONMENT_REQUIRED":
+            classes["EXTERNAL_ENVIRONMENT"] += 1
         else:
             classes["KEEP_ACTIVE"] += 1
-        del status
+    burden = sum(n for k, n in classes.items()
+                 if k not in ("MOVE_TO_COMPLETED", "HARDWARE_CONTINGENT"))
 
     old_active = BASELINE_TOTAL - BASELINE_CENSUS["BUILT"]
     new_active = classes["KEEP_ACTIVE"]
@@ -625,7 +640,8 @@ def render_compression() -> str:
         out.append(f"    {k:20} {BASELINE_CENSUS.get(k,0):8} {now.get(k,0):6}")
     out += ["", "## Where the old active future went", ""]
     for k in ("MOVE_TO_COMPLETED", "KEEP_ACTIVE", "EXPERIMENT_CONTINGENT",
-              "HARDWARE_CONTINGENT", "UNKNOWN_RESEARCH"):
+              "DEFERRED_PROGRAM", "EXTERNAL_ENVIRONMENT", "HARDWARE_CONTINGENT",
+              "UNKNOWN_RESEARCH"):
         out.append(f"    {k:24} {classes.get(k,0)}")
     out += [
         "",
@@ -642,7 +658,7 @@ def render_compression() -> str:
         f"    old active future (baseline, non-BUILT)   {old_active}",
         f"    active now (software connections)         {new_active}",
         f"    plus experiment/long-run contingent       {classes.get('EXPERIMENT_CONTINGENT', 0)}",
-        f"    NET FUTURE BURDEN                         {new_active + classes.get('EXPERIMENT_CONTINGENT', 0)}",
+        f"    NET FUTURE BURDEN                         {burden}",
         "",
         "Progress is capability gained AND future bespoke work eliminated. The honest",
         "reading: the gate count did not shrink -- 71 gates before and after -- but the",

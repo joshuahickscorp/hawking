@@ -56,6 +56,8 @@ def test_every_gate_lands_in_exactly_one_bucket():
     buckets = (
         "integrated_capabilities", "active_actions", "experiment_required",
         "long_run_required", "hardware_required", "unknown_research",
+        "software_build_required", "external_environment_required",
+        "deferred_programs",
     )
     seen: list[str] = []
     for b in buckets:
@@ -133,11 +135,10 @@ def test_net_future_burden_means_the_same_thing_in_both_documents():
     same phrase carrying two answers. Whichever is chosen, both must use it.
     """
     state = _state()
-    expected = (
-        state["software_connection_remaining_count"]
-        + len(state["experiment_required"])
-        + len(state["long_run_required"])
-    )
+    # Every non-hardware bucket, so a new blocker class cannot silently vanish
+    # from the burden the way DEFERRED_PROGRAM and EXTERNAL_ENVIRONMENT did when
+    # the taxonomy expanded underneath a hardcoded sum.
+    expected = state["ACTIVE_NONHARDWARE_BURDEN"]
     assert state["net_future_burden"] == expected, "state's own arithmetic disagrees"
 
     text = (DOCS / "COMPRESSION.md").read_text()
@@ -146,3 +147,104 @@ def test_net_future_burden_means_the_same_thing_in_both_documents():
     assert int(m.group(1)) == state["net_future_burden"], (
         "COMPRESSION.md and ROADMAP_STATE disagree about net future burden"
     )
+
+
+# --------------------------------------------------------------------------- boot ROM
+
+ROADMAP = Path.home() / "Downloads" / "H-ROADMAP-REVISED.md"
+
+
+def _roadmap() -> str:
+    if not ROADMAP.is_file():
+        pytest.skip("the revised roadmap has not been emitted on this host")
+    return ROADMAP.read_text()
+
+
+def test_the_document_leads_with_the_kernel_not_with_history():
+    """A fresh model reads top-down; the first thing it meets must orient it."""
+    text = _roadmap()
+    heads = [ln for ln in text.splitlines() if ln.startswith("# ")]
+    order = [h for h in heads if h != "# H-ROADMAP — REVISED"]
+    assert order[0].startswith("# 0."), f"first section is {order[0]!r}"
+    assert order[1].startswith("# 1."), f"second section is {order[1]!r}"
+    assert order[2].startswith("# 2."), f"third section is {order[2]!r}"
+    joined = " ".join(order)
+    assert joined.index("PART I") < joined.index("PART II") < joined.index("PART III")
+
+
+def test_no_headline_claims_verification_the_evidence_does_not_support():
+    """VERIFIED_* must not name a gate with no independent verifier.
+
+    This is the vocabulary defect the axes exist to prevent: a gate that is wired
+    and acceptance-receipted but has NO test was previously called
+    VERIFIED_INTEGRATED.
+    """
+    state = _state()
+    for gid, status in state["derived_status"].items():
+        if state["axes"][gid]["verification_state"] == "NONE":
+            assert not status.startswith("VERIFIED"), (
+                f"{gid} has no verifier but its status reads {status}"
+            )
+
+
+def test_the_three_headline_counts_cannot_be_mistaken_for_one_another():
+    state = _state()
+    total = state["TOTAL_UNRESOLVED_GATES"]
+    nonhw = state["ACTIVE_NONHARDWARE_BURDEN"]
+    soft = state["software_connection_remaining_count"]
+    assert soft <= nonhw <= total, f"{soft} <= {nonhw} <= {total} does not hold"
+    hardware = state["blocker_census"].get("PHYSICAL_HARDWARE_REQUIRED", 0)
+    assert total - hardware == nonhw, "non-hardware burden is not total minus hardware"
+    for key in ("TOTAL_UNRESOLVED_GATES", "ACTIVE_NONHARDWARE_BURDEN",
+                "SOFTWARE_CONNECTION_REMAINING"):
+        assert key in state["counts_explained"], f"{key} is not explained anywhere"
+
+
+def test_absent_code_is_not_filed_as_unknown_research():
+    """UNKNOWN_RESEARCH means the ANSWER is unknown, not that code is unwritten.
+
+    Filing missing implementation as research excuses it from ever being built.
+    """
+    state = _state()
+    census = state["blocker_census"]
+    for gid in state.get("unknown_research", []):
+        axes = state["axes"][gid]
+        assert axes["implementation_state"] != "ABSENT", (
+            f"{gid} has no implementation but is filed as unknown research"
+        )
+    assert census.get("UNKNOWN_RESEARCH", 0) == len(state.get("unknown_research", [])), (
+        "the census and the bucket disagree about unknown research"
+    )
+
+
+def test_the_hot_frontier_names_owner_lane_and_verifier_for_every_row():
+    """A frontier row nobody can act on is decoration."""
+    state = _state()
+    for row in state["hot_frontier"]:
+        for field in ("gate", "owner", "resource_lane", "verifier", "stop_condition",
+                      "depends_on", "unlocks_transitive", "blocker_class"):
+            assert field in row, f"{row.get('gate')} is missing {field}"
+        assert row["owner"] != "unassigned", f"{row['gate']} has no owner"
+        assert row["actionable_now"], "a blocked gate is occupying the hot frontier"
+
+
+def test_the_roadmap_carries_a_fingerprint_and_can_detect_its_own_staleness():
+    text = _roadmap()
+    for field in ("generated_at", "repo_head", "valid_for_head", "generator_commit",
+                  "roadmap_state_sha256", "capability_graph_sha256", "lineage_sha256"):
+        assert field in text, f"the authority fingerprint lacks {field}"
+    assert "STALE_IF" in text
+    from tools.roadmap import emit_revised
+
+    assert emit_revised.check() == 0, "the emitted roadmap is stale against current authority"
+
+
+def test_a_fresh_intelligence_is_told_where_truth_lives():
+    text = _roadmap()
+    assert "IF YOU ARE CHATGPT / CLAUDE / GROK / HCLI" in text
+    assert "READ IN THIS ORDER" in text
+    # The ordered authority chain must put machine state above this document.
+    chain = text.split("READ IN THIS ORDER", 1)[1][:900]
+    assert chain.index("ROADMAP_STATE.json") < chain.index("git HEAD")
+    assert "CHECK OWNERSHIP" in text, "nothing warns against duplicating another campaign"
+    assert "retired" in text.lower(), "no alias-retirement guidance"
