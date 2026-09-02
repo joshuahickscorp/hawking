@@ -54,6 +54,13 @@ def test_six_laboratories_registered():
     assert "network_egress" in sec.refused_work
     assert "credential_handling" in sec.refused_work
     assert "ACTIVE_TEST" not in sec.executable_work
+    assert LABS[LabKind.MATH_FORMAL].executable_work
+    assert LABS[LabKind.SYSTEMS_COMPILER].executable_work
+    assert LABS[LabKind.HAWKING_SELF_BOUNTY].executable_work
+    assert LABS[LabKind.PHYSICS_QUANTUM].executable_work == ()
+    assert LABS[LabKind.OPEN_SOURCE].executable_work == ()
+    assert "ACTIVE_TEST" not in LABS[LabKind.MATH_FORMAL].executable_work
+    assert "ACTIVE_TEST" not in LABS[LabKind.SYSTEMS_COMPILER].executable_work
 
 
 def test_package_has_no_network_or_scan_imports():

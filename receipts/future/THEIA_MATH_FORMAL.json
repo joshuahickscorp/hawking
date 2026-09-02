@@ -1,0 +1,136 @@
+{
+ "apple_threadgroup_ceiling": 1024,
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-02T09:18:34Z",
+  "recorded_by": "tools/theia/math_lab.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "checkers": {
+  "lean": {
+   "available": true,
+   "path": "/opt/homebrew/bin/lean",
+   "used": false,
+   "why_unused": "ramanujan/container/probe/RamanujanProbe.lean is not in this sparse checkout; invoking lean would require subprocess, which this engine does not do"
+  },
+  "z3py": {
+   "available": true,
+   "error": null,
+   "used": true,
+   "version": "4.16.0"
+  }
+ },
+ "claim_boundary": "SMT sat/unsat over this repo's own stated laws. Not novel mathematics. Not a hardware measurement. Lean was not invoked.",
+ "claims": [
+  {
+   "ceiling": 1024,
+   "checker": "z3.Solver.check",
+   "evidence_tier": "STATIC",
+   "expected": "unsat",
+   "formal": "unsat of (x,y,z>=1 /\\ x*y*z<=CEILING /\\ x*y*z>CEILING) with CEILING=1024",
+   "holds": true,
+   "id": "APPLE_TG_PRODUCT_NEVER_EXCEEDS_CEILING",
+   "kind": "theorem",
+   "novelty": "not novel; formalization of this repo's static kernel ceiling",
+   "source_symbol": "tools.future.static_kernel_verify.APPLE_MAX_THREADS_PER_THREADGROUP",
+   "work": "formalization",
+   "z3_result": "unsat"
+  },
+  {
+   "archived_as_negative_science": true,
+   "checker": "z3.Solver.check",
+   "claim_refuted": "any power-of-two threadgroup triple is legal on Apple Silicon",
+   "evidence_tier": "STATIC",
+   "expected": "sat",
+   "formal": "(64,8,4) product 2048 > CEILING 1024",
+   "holds": true,
+   "id": "POWER_OF_TWO_THREADGROUP_IS_NOT_ALWAYS_LEGAL",
+   "kind": "counterexample",
+   "model": {
+    "product": 2048,
+    "x": 64,
+    "y": 8,
+    "z": 4
+   },
+   "novelty": "not novel; the ceiling is already in static_kernel_verify",
+   "work": "counterexample_search",
+   "z3_result": "sat"
+  },
+  {
+   "checker": "z3.Solver.check",
+   "evidence_tier": "STATIC",
+   "expected": "sat",
+   "formal": "sat of x=64 /\\ y=2 /\\ z=1 /\\ x*y*z=128 /\\ legal",
+   "holds": true,
+   "id": "KERNEL_GEOMETRY_OCCUPANCY_IDENTITY_IS_LEGAL",
+   "instance": {
+    "rows_per_tg": 2,
+    "threadgroup": 128,
+    "threads_per_row": 64
+   },
+   "kind": "theorem",
+   "novelty": "not novel; occupancy_class identity already in KERNEL_GEOMETRY.json",
+   "source": "/Users/scammermike/.claude-grok/worktrees/t1-theia-laboratories-real-20260902-045552/receipts/future/KERNEL_GEOMETRY.json",
+   "work": "theorem_search",
+   "z3_result": "sat"
+  },
+  {
+   "checker": "z3.Solver.check",
+   "evidence_tier": "STATIC",
+   "expected": "unsat",
+   "formal": "unsat of (all H.1 factors > 0 /\\ risk1 < risk2 /\\ value(risk1) <= value(risk2))",
+   "holds": true,
+   "id": "H1_VALUE_STRICTLY_DECREASES_IN_RISK",
+   "kind": "theorem",
+   "novelty": "not novel; restates H.1 as a ratio of positive terms",
+   "source_symbol": "tools.theia.value.bounty_value",
+   "work": "symbolic_computation",
+   "z3_result": "unsat"
+  },
+  {
+   "checker": "z3.Solver.check",
+   "evidence_tier": "STATIC",
+   "expected": "sat",
+   "formal": "sat of Sum(part_i) == stored_bytes with part_i bound to receipt bytes",
+   "holds": true,
+   "id": "COMPLETE_EBPW_PARTS_SUM_EQUALS_STORED_BYTES",
+   "kind": "theorem",
+   "n_parts": 6,
+   "novelty": "not novel; restates complete_ebpw's unreconciled-candidate refusal",
+   "parts_sum": 10554328856,
+   "source": "/Users/scammermike/.claude-grok/worktrees/t1-theia-laboratories-real-20260902-045552/receipts/future/COMPLETE_EBPW.json",
+   "stored_bytes": 10554328856,
+   "work": "symbolic_computation",
+   "z3_result": "sat"
+  }
+ ],
+ "evidence_class": "STATIC_ONLY",
+ "evidence_tier": "STATIC",
+ "executable_work": [
+  "counterexample_search",
+  "formalization",
+  "symbolic_computation",
+  "theorem_search"
+ ],
+ "h6": {
+  "failed_lemmas_archived": [
+   "POWER_OF_TWO_THREADGROUP_IS_NOT_ALWAYS_LEGAL"
+  ],
+  "formalize": true,
+  "independent_checker": "tools.theia.math_lab.check_claims re-runs z3.Solver.check",
+  "literature_equivalence": "explicitly not novel; each claim names the repo law it restates",
+  "prover": "z3py",
+  "unformalized": "none in this receipt; every claim has a z3_result"
+ },
+ "lab": "MATH / FORMAL",
+ "n_claims": 5,
+ "n_hold": 5,
+ "recipe": "H.6",
+ "recorded_by": "tools/theia/math_lab.py",
+ "schema": "hawking.theia.math_formal.v1",
+ "seal_sha256": "f476360a9d2a66b600ce66554ef31328614639eca27cf855a78a937694c363cd",
+ "version": 1
+}

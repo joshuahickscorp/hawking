@@ -80,6 +80,55 @@ def unpinned_scope() -> AuthorizationScope:
     return AuthorizationScope(kind="UNPINNED", program_id=None)
 
 
+INTERNAL_VERIFIER = "tools.theia.intake.verify_receipt"
+
+_INTERNAL_RULES = (
+    "local artifact only",
+    "no network",
+    "no ACTIVE_TEST",
+    "no training",
+)
+
+
+def make_internal_bounty(
+    *,
+    id: str,
+    source: str,
+    domain: str,
+    question_or_target: str,
+    nonmonetary_value: str,
+    bounty_class: BountyClass,
+    lab: str,
+    extra_rules: tuple[str, ...] = (),
+    evidence_required: tuple[str, ...] = ("receipt schema", "seal_sha256"),
+) -> "Bounty":
+    """Hawking-internal bounty. Not a security class. Never infers scope from text."""
+    return Bounty(
+        id=id,
+        source=source,
+        domain=domain,
+        question_or_target=question_or_target,
+        monetary_reward=None,
+        nonmonetary_value=nonmonetary_value,
+        authorization_scope=hawking_internal_scope(),
+        rules=_INTERNAL_RULES + extra_rules,
+        evidence_required=evidence_required,
+        verifier=INTERNAL_VERIFIER,
+        budget=Budget(workunits=1),
+        deadline=None,
+        public_or_private=PublicOrPrivate.PRIVATE,
+        submission_policy="stage into receipts/future; do not publish externally",
+        success_conditions=(
+            "intake reaches TRAJECTORY + METHOD + NEGATIVE SCIENCE",
+            "schedule score produced",
+            "independent receipt verification",
+        ),
+        stop_conditions=("BLOCKED_RIGHTS", "missing receipt", "unreadable json"),
+        bounty_class=bounty_class,
+        lab=lab,
+    )
+
+
 @dataclass(frozen=True)
 class Bounty:
     id: str
