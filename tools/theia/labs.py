@@ -60,8 +60,13 @@ LABS: dict[LabKind, Lab] = {
             BountyClass.FORMAL_PROOF_OR_COUNTEREXAMPLE,
             BountyClass.MATH_RESEARCH_CHALLENGE,
         ),
-        executable_work=(),
-        refused_work=(),
+        executable_work=(
+            "theorem_search",
+            "formalization",
+            "counterexample_search",
+            "symbolic_computation",
+        ),
+        refused_work=("network_egress", "ACTIVE_TEST", "train_model"),
     ),
     LabKind.PHYSICS_QUANTUM: Lab(
         kind=LabKind.PHYSICS_QUANTUM,
@@ -77,7 +82,7 @@ LABS: dict[LabKind, Lab] = {
             BountyClass.PHYSICS_MODEL_DISCRIMINATION,
         ),
         executable_work=(),
-        refused_work=(),
+        refused_work=("network_egress", "ACTIVE_TEST", "train_model"),
     ),
     LabKind.SYSTEMS_COMPILER: Lab(
         kind=LabKind.SYSTEMS_COMPILER,
@@ -93,8 +98,14 @@ LABS: dict[LabKind, Lab] = {
             BountyClass.GPU_KERNEL_OPTIMIZATION,
             BountyClass.PERFORMANCE_ENERGY_CHALLENGE,
         ),
-        executable_work=(),
-        refused_work=(),
+        executable_work=(
+            "runtime_bugs",
+            "compiler_bugs",
+            "kernel_optimization",
+            "performance_archaeology",
+            "hardware_mapping",
+        ),
+        refused_work=("network_egress", "ACTIVE_TEST", "train_model"),
     ),
     LabKind.OPEN_SOURCE: Lab(
         kind=LabKind.OPEN_SOURCE,
@@ -111,7 +122,7 @@ LABS: dict[LabKind, Lab] = {
             BountyClass.REPRODUCIBILITY_BOUNTY,
         ),
         executable_work=(),
-        refused_work=(),
+        refused_work=("network_egress", "ACTIVE_TEST", "train_model"),
     ),
     LabKind.AUTHORIZED_SECURITY: Lab(
         kind=LabKind.AUTHORIZED_SECURITY,
@@ -150,3 +161,33 @@ def lab(kind: LabKind) -> Lab:
 
 def registered_lab_kinds() -> tuple[LabKind, ...]:
     return tuple(LabKind)
+
+
+# PHYSICS/QUANTUM and OPEN SOURCE stay declared. H.7 needs pinned observations
+# this checkout is not allowed to write (ModelLake is read-only). H.4 needs an
+# upstream issue; this engine has no network and will not impersonate one.
+# This repo's own defects run through HAWKING SELF-BOUNTY and SYSTEMS/COMPILER.
+DECLARED_IDLE_REASON: dict[LabKind, str] = {
+    LabKind.PHYSICS_QUANTUM: (
+        "H.7 scientific recipe needs pinned observations with uncertainty/"
+        "provenance; ModelLake specimens are read-only and this engine must "
+        "not invent a measurement. Declared, not executed."
+    ),
+    LabKind.OPEN_SOURCE: (
+        "H.4 open-source recipe needs a pinned external issue and environment; "
+        "this engine has no network egress and will not impersonate an "
+        "upstream. This repo's own defects are HAWKING SELF-BOUNTY / "
+        "SYSTEMS/COMPILER work, not an external project bounty."
+    ),
+}
+
+
+def is_runnable(kind: LabKind) -> bool:
+    """True when the lab has executable work that is not security-active-test."""
+    if kind is LabKind.AUTHORIZED_SECURITY:
+        return False
+    return bool(LABS[kind].executable_work)
+
+
+def runnable_lab_kinds() -> tuple[LabKind, ...]:
+    return tuple(k for k in LabKind if is_runnable(k))

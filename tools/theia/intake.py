@@ -160,24 +160,19 @@ def verify_receipt(path: Path, *, expected_schema: str | None = None) -> Verifie
     if claimed != actual:
         raise VerificationFailed(f"seal mismatch for {path}")
     detail: dict[str, Any] = {"schema": schema, "seal_sha256": actual}
-    if schema == "hawking.future.autonomy_scars.v1":
-        scars = doc.get("scars")
-        if not isinstance(scars, list):
-            raise VerificationFailed("autonomy_scars receipt has no scars list")
-        n = doc.get("n_scars")
-        if n != len(scars):
-            raise VerificationFailed(f"n_scars {n} != len(scars) {len(scars)}")
-        receipt_ids = [s.get("id") for s in scars]
-        from tools.future import autonomy_scars as asc
+    if schema == "hawking.theia.math_formal.v1":
+        from tools.theia.math_lab import verify_math_receipt
 
-        module_ids = [s["id"] for s in asc.scars()]
-        if receipt_ids != module_ids:
-            raise VerificationFailed(
-                "receipt scar ids disagree with tools.future.autonomy_scars.scars()"
-            )
-        detail["n_scars"] = n
-        detail["scar_ids"] = receipt_ids
-        detail["independent_module"] = "tools.future.autonomy_scars.scars"
+        detail.update(verify_math_receipt(path, doc))
+    elif schema == "hawking.theia.systems_compiler.v1":
+        from tools.theia.systems_lab import verify_systems_receipt
+
+        detail.update(verify_systems_receipt(path, doc))
+    else:
+        from tools.theia.self_bounty import SCHEMA_KIND, independent_self_bounty_checks
+
+        if schema in SCHEMA_KIND:
+            detail.update(independent_self_bounty_checks(path, doc))
     return VerifiedResult(
         kind="receipt_seal",
         artifact=str(path),
@@ -288,7 +283,7 @@ def run_intake(
         )
     notes["authorization"] = {
         "status": "HAWKING_INTERNAL",
-        "reason": "self-bounty; not a security class",
+        "reason": "hawking-internal laboratory work; not a security class",
     }
 
     # DUPLICATE / KNOWN-SOLUTION CHECK
