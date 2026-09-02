@@ -1,5 +1,6 @@
 {
  "architecture_family": "mistral3",
+ "architecture_family_source": "config.model_type",
  "architecture_fingerprint": {
   "architectures": [
    "Mistral3ForConditionalGeneration"
@@ -377,7 +378,7 @@
    "dense decoder"
   ]
  },
- "scanned_at": "2026-09-02T20:58:30Z",
+ "scanned_at": "2026-09-02T21:05:44Z",
  "schema": "hawking.modellake.index.specimen.v1",
  "seal_status": "SEALED",
  "shards": {

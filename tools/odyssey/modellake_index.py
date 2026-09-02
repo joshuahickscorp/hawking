@@ -36,7 +36,7 @@ import subprocess
 import time
 from collections import Counter
 from pathlib import Path
-from typing import Any, Iterable, Optional
+from typing import Any, Iterable, Mapping, Optional
 
 from tools.odyssey import modellake_lineage as lin
 
@@ -572,13 +572,7 @@ def scan_specimen(
         slug, config={}, source_dir=source_dir, staged_dir=staged_dir,
         partial_dir=partial_dir, watch_only=watch is not None and source_dir is None,
     )
-    family = None
-    if cfg and cfg.get("model_type"):
-        family = cfg.get("model_type")
-    elif fp.get("model_type"):
-        family = fp.get("model_type")
-    else:
-        family = "UNKNOWN"
+    family, family_source = family_from_config(cfg, fp)
     return {
         "schema": SCHEMA_SPECIMEN,
         "evidence_tier": EVIDENCE_TIER,
@@ -591,6 +585,7 @@ def scan_specimen(
         "n_shards": shards["n_shards"],
         "shards": shards,
         "architecture_family": family,
+        "architecture_family_source": family_source,
         "role": {
             "primary": role.get("primary"),
             "roles": role.get("roles"),
@@ -649,6 +644,53 @@ def _summary_row(record: dict[str, Any]) -> dict[str, Any]:
         "manifest_bytes": record.get("manifest_bytes"),
         "watch_expected_bytes": record.get("watch_expected_bytes"),
     }
+
+
+def family_from_config(cfg: Optional[Mapping[str, Any]],
+                       fp: Mapping[str, Any]) -> tuple[str, str]:
+    """(architecture family, where it came from).
+
+    `model_type` is the HuggingFace convention and stays first. It is not the
+    only convention on this lake, and reading only it filed four bodies as
+    UNKNOWN -- which the retention ranking then treated as four unique
+    architecture classes rather than two families of two:
+
+      evo2_40b / evo2_7b   config carries `architecture: ["StripedHyena2"]`,
+                           singular, list-valued. 96 GB read as unique.
+      mamba3 siso / mimo   architecture lives at `ssm_cfg.layer: "Mamba3"`,
+                           the mamba-ssm convention.
+
+    The source is returned with the family because a family read off
+    `ssm_cfg.layer` is a weaker claim than one declared in `model_type`, and
+    §14.2.4 deletes bytes on the strength of family membership. A body with no
+    architecture evidence at all stays UNKNOWN: Wan2.2 ships only
+    `configuration.json` with framework/task, boltz-2 ships no config, and
+    inventing a family for either would be worse than admitting there is none.
+    """
+    cfg = cfg or {}
+    if cfg.get("model_type"):
+        return str(cfg["model_type"]), "config.model_type"
+    if fp.get("model_type"):
+        return str(fp["model_type"]), "fingerprint.model_type"
+
+    def first(value: Any) -> Optional[str]:
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+        if isinstance(value, (list, tuple)) and value:
+            return first(value[0])
+        return None
+
+    for key, source in (("architectures", "config.architectures"),
+                        ("architecture", "config.architecture")):
+        name = first(cfg.get(key))
+        if name:
+            return name.lower(), source
+    ssm = cfg.get("ssm_cfg")
+    if isinstance(ssm, Mapping):
+        name = first(ssm.get("layer"))
+        if name:
+            return name.lower(), "config.ssm_cfg.layer"
+    return "UNKNOWN", "no architecture evidence in the body"
 
 
 def _anomalies(

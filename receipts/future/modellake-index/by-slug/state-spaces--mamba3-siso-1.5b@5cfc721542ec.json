@@ -1,5 +1,6 @@
 {
- "architecture_family": "UNKNOWN",
+ "architecture_family": "mamba3",
+ "architecture_family_source": "config.ssm_cfg.layer",
  "architecture_fingerprint": {
   "architectures": null,
   "hidden_size": null,
@@ -79,7 +80,7 @@
    "state-heavy architecture"
   ]
  },
- "scanned_at": "2026-09-02T20:58:32Z",
+ "scanned_at": "2026-09-02T21:05:46Z",
  "schema": "hawking.modellake.index.specimen.v1",
  "seal_status": "SEALED",
  "shards": {

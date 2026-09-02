@@ -1,5 +1,6 @@
 {
  "architecture_family": "deepseek_v4",
+ "architecture_family_source": "config.model_type",
  "architecture_fingerprint": {
   "architectures": [
    "DeepseekV4ForCausalLM"
@@ -817,7 +818,7 @@
    "long-context"
   ]
  },
- "scanned_at": "2026-09-02T20:58:30Z",
+ "scanned_at": "2026-09-02T21:05:44Z",
  "schema": "hawking.modellake.index.specimen.v1",
  "seal_status": "UNSEALED",
  "shards": {

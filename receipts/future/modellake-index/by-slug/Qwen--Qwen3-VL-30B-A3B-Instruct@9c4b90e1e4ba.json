@@ -1,5 +1,6 @@
 {
  "architecture_family": "qwen3_vl_moe",
+ "architecture_family_source": "config.model_type",
  "architecture_fingerprint": {
   "architectures": [
    "Qwen3VLMoeForConditionalGeneration"
@@ -378,7 +379,7 @@
    "MoE"
   ]
  },
- "scanned_at": "2026-09-02T20:58:30Z",
+ "scanned_at": "2026-09-02T21:05:43Z",
  "schema": "hawking.modellake.index.specimen.v1",
  "seal_status": "UNSEALED",
  "shards": {

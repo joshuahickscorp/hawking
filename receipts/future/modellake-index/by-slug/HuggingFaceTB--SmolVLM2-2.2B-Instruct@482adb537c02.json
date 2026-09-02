@@ -1,5 +1,6 @@
 {
  "architecture_family": "smolvlm",
+ "architecture_family_source": "config.model_type",
  "architecture_fingerprint": {
   "architectures": [
    "SmolVLMForConditionalGeneration"
@@ -287,7 +288,7 @@
    "dense decoder"
   ]
  },
- "scanned_at": "2026-09-02T20:58:29Z",
+ "scanned_at": "2026-09-02T21:05:43Z",
  "schema": "hawking.modellake.index.specimen.v1",
  "seal_status": "SEALED",
  "shards": {

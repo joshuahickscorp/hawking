@@ -1,5 +1,6 @@
 {
  "architecture_family": "falcon_h1",
+ "architecture_family_source": "config.model_type",
  "architecture_fingerprint": {
   "architectures": [
    "FalconH1ForCausalLM"
@@ -267,7 +268,7 @@
    "long-context"
   ]
  },
- "scanned_at": "2026-09-02T20:58:32Z",
+ "scanned_at": "2026-09-02T21:05:46Z",
  "schema": "hawking.modellake.index.specimen.v1",
  "seal_status": "UNSEALED",
  "shards": {

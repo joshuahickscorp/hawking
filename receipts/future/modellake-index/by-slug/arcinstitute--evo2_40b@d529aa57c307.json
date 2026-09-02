@@ -1,5 +1,6 @@
 {
- "architecture_family": "UNKNOWN",
+ "architecture_family": "stripedhyena2",
+ "architecture_family_source": "config.architecture",
  "architecture_fingerprint": {
   "architectures": null,
   "hidden_size": null,
@@ -88,7 +89,7 @@
    "dense decoder"
   ]
  },
- "scanned_at": "2026-09-02T20:58:30Z",
+ "scanned_at": "2026-09-02T21:05:44Z",
  "schema": "hawking.modellake.index.specimen.v1",
  "seal_status": "SEALED",
  "shards": {

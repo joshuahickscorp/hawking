@@ -1,5 +1,6 @@
 {
  "architecture_family": "UNKNOWN",
+ "architecture_family_source": "no architecture evidence in the body",
  "architecture_fingerprint": {
   "architectures": null,
   "hidden_size": null,
@@ -98,7 +99,7 @@
    "dense decoder"
   ]
  },
- "scanned_at": "2026-09-02T20:58:32Z",
+ "scanned_at": "2026-09-02T21:05:46Z",
  "schema": "hawking.modellake.index.specimen.v1",
  "seal_status": "SEALED",
  "shards": {

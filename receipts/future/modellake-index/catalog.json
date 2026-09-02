@@ -21,13 +21,9 @@
   ],
   "UNKNOWN": [
    "Wan-AI--Wan2.2-T2V-A14B@c8c270b13ee0",
-   "arcinstitute--evo2_40b@d529aa57c307",
-   "arcinstitute--evo2_7b@bda0089f9258",
    "boltz-community--boltz-2@6fdef46d763f",
    "kyutai--moshika-pytorch-bf16@a49141e28b3d",
    "lerobot--pi0_base@25c379b52ba2",
-   "state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994",
-   "state-spaces--mamba3-siso-1.5b@5cfc721542ec",
    "tencent--HunyuanVideo@6204ad6aea1a"
   ],
   "bitnet": [
@@ -84,6 +80,10 @@
   "llava_llama": [
    "nvidia--audio-flamingo-3@ee26c5842398"
   ],
+  "mamba3": [
+   "state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994",
+   "state-spaces--mamba3-siso-1.5b@5cfc721542ec"
+  ],
   "mistral3": [
    "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618"
   ],
@@ -137,6 +137,10 @@
   "starcoder2": [
    "bigcode--starcoder2-7b@bb9afde76d79"
   ],
+  "stripedhyena2": [
+   "arcinstitute--evo2_40b@d529aa57c307",
+   "arcinstitute--evo2_7b@bda0089f9258"
+  ],
   "t5": [
    "google--flan-t5-large@0613663d0d48"
   ],
@@ -150,8 +154,8 @@
    "openai--whisper-large-v3-turbo@41f01f3fe87f"
   ]
  },
- "build_wall_s": 2.867548,
- "built_at": "2026-09-02T20:58:32Z",
+ "build_wall_s": 3.303794,
+ "built_at": "2026-09-02T21:05:46Z",
  "bytes_are": "sum of st_size over regular files in specimens/ and partial/; directory metadata is not included. This is not `du` allocated blocks.",
  "dropped_slugs": [],
  "evidence_tier": "STATIC",
@@ -222,7 +226,7 @@
   "schema": "hawking.modellake.layout.v1"
  },
  "loaded_weights": false,
- "n_families": 39,
+ "n_families": 41,
  "n_partial": 0,
  "n_scanned": 55,
  "n_skipped": 0,
@@ -230,9 +234,21 @@
  "over_budget": true,
  "partial_bytes": 0,
  "retention_recommendation": {
-  "covering_set_bytes": 153680351583,
+  "covering_set_bytes": 238928130509,
   "does_not_retire": true,
   "kept_as_family_representative": [
+   {
+    "architecture_family": "stripedhyena2",
+    "bytes": 13766624059,
+    "family_n": 2,
+    "primary_role": "dense decoder",
+    "redundancy": 0.5,
+    "role_n": 33,
+    "score": 6883312029,
+    "slug": "arcinstitute--evo2_7b@bda0089f9258",
+    "unique_family": false,
+    "why": "keep as the stripedhyena2 representative (13766624059 bytes); not a retention candidate under \u00a714.2.4"
+   },
    {
     "architecture_family": "qwen3_moe",
     "bytes": 61079826794,
@@ -304,10 +320,34 @@
     "slug": "microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361",
     "unique_family": false,
     "why": "keep as the bitnet representative (1187777736 bytes); not a retention candidate under \u00a714.2.4"
+   },
+   {
+    "architecture_family": "mamba3",
+    "bytes": 2989542664,
+    "family_n": 2,
+    "primary_role": "hybrid recurrent/state-space",
+    "redundancy": 0.5,
+    "role_n": 6,
+    "score": 1494771332,
+    "slug": "state-spaces--mamba3-siso-1.5b@5cfc721542ec",
+    "unique_family": false,
+    "why": "keep as the mamba3 representative (2989542664 bytes); not a retention candidate under \u00a714.2.4"
    }
   ],
   "operator_decision_only": true,
   "ranked_redundant_bulk": [
+   {
+    "architecture_family": "stripedhyena2",
+    "bytes": 82253494627,
+    "family_n": 2,
+    "primary_role": "dense decoder",
+    "redundancy": 0.5,
+    "role_n": 33,
+    "score": 41126747313,
+    "slug": "arcinstitute--evo2_40b@d529aa57c307",
+    "unique_family": false,
+    "why": "stripedhyena2 has 2 residents; this is redundant bulk under \u00a714.2.4 (82253494627 bytes)"
+   },
    {
     "architecture_family": "qwen3_moe",
     "bytes": 61084187391,
@@ -367,6 +407,18 @@
     "slug": "ibm-granite--granite-4.0-h-tiny@791e0d3d28c8",
     "unique_family": false,
     "why": "granitemoehybrid has 2 residents; this is redundant bulk under \u00a714.2.4 (13888348686 bytes)"
+   },
+   {
+    "architecture_family": "stripedhyena2",
+    "bytes": 13766624059,
+    "family_n": 2,
+    "primary_role": "dense decoder",
+    "redundancy": 0.5,
+    "role_n": 33,
+    "score": 6883312029,
+    "slug": "arcinstitute--evo2_7b@bda0089f9258",
+    "unique_family": false,
+    "why": "stripedhyena2 has 2 residents; this is redundant bulk under \u00a714.2.4 (13766624059 bytes)"
    },
    {
     "architecture_family": "qwen3",
@@ -429,6 +481,30 @@
     "why": "bitnet has 2 residents; this is redundant bulk under \u00a714.2.4 (4834832435 bytes)"
    },
    {
+    "architecture_family": "mamba3",
+    "bytes": 2994284299,
+    "family_n": 2,
+    "primary_role": "hybrid recurrent/state-space",
+    "redundancy": 0.5,
+    "role_n": 6,
+    "score": 1497142149,
+    "slug": "state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994",
+    "unique_family": false,
+    "why": "mamba3 has 2 residents; this is redundant bulk under \u00a714.2.4 (2994284299 bytes)"
+   },
+   {
+    "architecture_family": "mamba3",
+    "bytes": 2989542664,
+    "family_n": 2,
+    "primary_role": "hybrid recurrent/state-space",
+    "redundancy": 0.5,
+    "role_n": 6,
+    "score": 1494771332,
+    "slug": "state-spaces--mamba3-siso-1.5b@5cfc721542ec",
+    "unique_family": false,
+    "why": "mamba3 has 2 residents; this is redundant bulk under \u00a714.2.4 (2989542664 bytes)"
+   },
+   {
     "architecture_family": "lfm2",
     "bytes": 2345559281,
     "family_n": 2,
@@ -479,6 +555,19 @@
   ],
   "ranked_surplus_bulk": [
    {
+    "architecture_family": "stripedhyena2",
+    "bytes": 82253494627,
+    "family_n": 2,
+    "kept_sibling": "arcinstitute--evo2_7b@bda0089f9258",
+    "primary_role": "dense decoder",
+    "redundancy": 0.5,
+    "role_n": 33,
+    "score": 41126747313,
+    "slug": "arcinstitute--evo2_40b@d529aa57c307",
+    "unique_family": false,
+    "why": "stripedhyena2 already represented by arcinstitute--evo2_7b@bda0089f9258 (13766624059 bytes); this is surplus bulk"
+   },
+   {
     "architecture_family": "qwen3_moe",
     "bytes": 61084187391,
     "family_n": 2,
@@ -570,6 +659,19 @@
     "why": "bitnet already represented by microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361 (1187777736 bytes); this is surplus bulk"
    },
    {
+    "architecture_family": "mamba3",
+    "bytes": 2994284299,
+    "family_n": 2,
+    "kept_sibling": "state-spaces--mamba3-siso-1.5b@5cfc721542ec",
+    "primary_role": "hybrid recurrent/state-space",
+    "redundancy": 0.5,
+    "role_n": 6,
+    "score": 1497142149,
+    "slug": "state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994",
+    "unique_family": false,
+    "why": "mamba3 already represented by state-spaces--mamba3-siso-1.5b@5cfc721542ec (2989542664 bytes); this is surplus bulk"
+   },
+   {
     "architecture_family": "qwen3",
     "bytes": 1519209243,
     "family_n": 4,
@@ -583,8 +685,8 @@
     "why": "qwen3 already represented by Qwen--Qwen3-Embedding-0.6B@97b0c614be4d (1207489041 bytes); this is surplus bulk"
    }
   ],
-  "reading": "Redundant bulk (same architecture family as another resident) is the only class this ranking treats as a plausible retention candidate. Unique families are listed so the operator can see the cost of dropping a diversity class; they are not recommended. Surplus bulk (duplicates beyond one kept representative per family) totalling 153680351583 bytes does not cover the 852666459500 byte overage; closing the gap would require considering unique-family specimens, which \u00a714.2.4 weighs against.",
-  "redundant_bulk_bytes": 233587695723,
+  "reading": "Redundant bulk (same architecture family as another resident) is the only class this ranking treats as a plausible retention candidate. Unique families are listed so the operator can see the cost of dropping a diversity class; they are not recommended. Surplus bulk (duplicates beyond one kept representative per family) totalling 238928130509 bytes does not cover the 852666459500 byte overage; closing the gap would require considering unique-family specimens, which \u00a714.2.4 weighs against.",
+  "redundant_bulk_bytes": 335591641372,
   "redundant_bulk_covers_overage": false,
   "roadmap": {
    "14.2.3": "If headroom becomes unsafe, stop new acquisition; do not delete canonical sources automatically.",
@@ -593,6 +695,19 @@
   },
   "smallest_redundant_set_that_covers_overage": [
    {
+    "architecture_family": "stripedhyena2",
+    "bytes": 82253494627,
+    "family_n": 2,
+    "kept_sibling": "arcinstitute--evo2_7b@bda0089f9258",
+    "primary_role": "dense decoder",
+    "redundancy": 0.5,
+    "role_n": 33,
+    "score": 41126747313,
+    "slug": "arcinstitute--evo2_40b@d529aa57c307",
+    "unique_family": false,
+    "why": "stripedhyena2 already represented by arcinstitute--evo2_7b@bda0089f9258 (13766624059 bytes); this is surplus bulk"
+   },
+   {
     "architecture_family": "qwen3_moe",
     "bytes": 61084187391,
     "family_n": 2,
@@ -684,6 +799,19 @@
     "why": "bitnet already represented by microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361 (1187777736 bytes); this is surplus bulk"
    },
    {
+    "architecture_family": "mamba3",
+    "bytes": 2994284299,
+    "family_n": 2,
+    "kept_sibling": "state-spaces--mamba3-siso-1.5b@5cfc721542ec",
+    "primary_role": "hybrid recurrent/state-space",
+    "redundancy": 0.5,
+    "role_n": 6,
+    "score": 1497142149,
+    "slug": "state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994",
+    "unique_family": false,
+    "why": "mamba3 already represented by state-spaces--mamba3-siso-1.5b@5cfc721542ec (2989542664 bytes); this is surplus bulk"
+   },
+   {
     "architecture_family": "qwen3",
     "bytes": 1519209243,
     "family_n": 4,
@@ -697,7 +825,7 @@
     "why": "qwen3 already represented by Qwen--Qwen3-Embedding-0.6B@97b0c614be4d (1207489041 bytes); this is surplus bulk"
    }
   ],
-  "surplus_bulk_bytes": 153680351583,
+  "surplus_bulk_bytes": 238928130509,
   "tier2_budget": 3500000000000,
   "tier2_overage_bytes": 852666459500,
   "tier2_used_bytes": 4352666459500,
@@ -790,7 +918,7 @@
    {
     "architecture_family": "UNKNOWN",
     "bytes": 126201624837,
-    "family_n": 9,
+    "family_n": 5,
     "primary_role": "multimodal",
     "redundancy": 0.0,
     "role_n": 8,
@@ -822,18 +950,6 @@
     "slug": "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
     "unique_family": true,
     "why": "unique mistral3 family \u2014 retiring this drops a diversity class"
-   },
-   {
-    "architecture_family": "UNKNOWN",
-    "bytes": 82253494627,
-    "family_n": 9,
-    "primary_role": "dense decoder",
-    "redundancy": 0.0,
-    "role_n": 33,
-    "score": 0,
-    "slug": "arcinstitute--evo2_40b@d529aa57c307",
-    "unique_family": true,
-    "why": "unique UNKNOWN family \u2014 retiring this drops a diversity class"
    },
    {
     "architecture_family": "qwen3_vl_moe",
@@ -922,7 +1038,7 @@
    {
     "architecture_family": "UNKNOWN",
     "bytes": 15760704983,
-    "family_n": 9,
+    "family_n": 5,
     "primary_role": "dense decoder",
     "redundancy": 0.0,
     "role_n": 33,
@@ -982,7 +1098,7 @@
    {
     "architecture_family": "UNKNOWN",
     "bytes": 14171362521,
-    "family_n": 9,
+    "family_n": 5,
     "primary_role": "dense decoder",
     "redundancy": 0.0,
     "role_n": 33,
@@ -994,7 +1110,7 @@
    {
     "architecture_family": "UNKNOWN",
     "bytes": 14005628474,
-    "family_n": 9,
+    "family_n": 5,
     "primary_role": "dense decoder",
     "redundancy": 0.0,
     "role_n": 33,
@@ -1014,18 +1130,6 @@
     "slug": "facebook--musicgen-large@15ccdc920998",
     "unique_family": true,
     "why": "unique musicgen family \u2014 retiring this drops a diversity class"
-   },
-   {
-    "architecture_family": "UNKNOWN",
-    "bytes": 13766624059,
-    "family_n": 9,
-    "primary_role": "dense decoder",
-    "redundancy": 0.0,
-    "role_n": 33,
-    "score": 0,
-    "slug": "arcinstitute--evo2_7b@bda0089f9258",
-    "unique_family": true,
-    "why": "unique UNKNOWN family \u2014 retiring this drops a diversity class"
    },
    {
     "architecture_family": "phi4mm",
@@ -1066,7 +1170,7 @@
    {
     "architecture_family": "UNKNOWN",
     "bytes": 4348702182,
-    "family_n": 9,
+    "family_n": 5,
     "primary_role": "dense decoder",
     "redundancy": 0.0,
     "role_n": 33,
@@ -1110,30 +1214,6 @@
     "slug": "google--flan-t5-large@0613663d0d48",
     "unique_family": true,
     "why": "unique t5 family \u2014 retiring this drops a diversity class"
-   },
-   {
-    "architecture_family": "UNKNOWN",
-    "bytes": 2994284299,
-    "family_n": 9,
-    "primary_role": "hybrid recurrent/state-space",
-    "redundancy": 0.0,
-    "role_n": 6,
-    "score": 0,
-    "slug": "state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994",
-    "unique_family": true,
-    "why": "unique UNKNOWN family \u2014 retiring this drops a diversity class"
-   },
-   {
-    "architecture_family": "UNKNOWN",
-    "bytes": 2989542664,
-    "family_n": 9,
-    "primary_role": "hybrid recurrent/state-space",
-    "redundancy": 0.0,
-    "role_n": 6,
-    "score": 0,
-    "slug": "state-spaces--mamba3-siso-1.5b@5cfc721542ec",
-    "unique_family": true,
-    "why": "unique UNKNOWN family \u2014 retiring this drops a diversity class"
    },
    {
     "architecture_family": "timesfm",
@@ -1196,7 +1276,7 @@
     "why": "unique sam2_video family \u2014 retiring this drops a diversity class"
    }
   ],
-  "unique_family_bytes": 4119078763777
+  "unique_family_bytes": 4017074818128
  },
  "roadmap": {
   "section": "14",
@@ -1770,7 +1850,7 @@
    "watch_expected_bytes": 1585710451
   },
   {
-   "architecture_family": "UNKNOWN",
+   "architecture_family": "stripedhyena2",
    "bytes": 82253494627,
    "dir_mtime_ns": 1787992687143198890,
    "has_lake_manifest": true,
@@ -1793,7 +1873,7 @@
    "watch_expected_bytes": 82253494627
   },
   {
-   "architecture_family": "UNKNOWN",
+   "architecture_family": "stripedhyena2",
    "bytes": 13766624059,
    "dir_mtime_ns": 1787976299524587921,
    "has_lake_manifest": true,
@@ -2386,7 +2466,7 @@
    "watch_expected_bytes": 1622466054
   },
   {
-   "architecture_family": "UNKNOWN",
+   "architecture_family": "mamba3",
    "bytes": 2994284299,
    "dir_mtime_ns": 1787955939332429908,
    "has_lake_manifest": true,
@@ -2410,7 +2490,7 @@
    "watch_expected_bytes": 2994284299
   },
   {
-   "architecture_family": "UNKNOWN",
+   "architecture_family": "mamba3",
    "bytes": 2989542664,
    "dir_mtime_ns": 1787953599634069751,
    "has_lake_manifest": true,
@@ -2584,7 +2664,7 @@
  "tier2_used_bytes": 4352666459500,
  "tier2_used_gb": 4352.666,
  "tier2_used_minus_budget": 852666459500,
- "written_index_bytes": 490125,
+ "written_index_bytes": 496019,
  "written_index_paths": [
   "receipts/future/modellake-index/by-slug/Dream-org--Dream-v0-Instruct-7B@05334cb9faaf.json",
   "receipts/future/modellake-index/by-slug/GSAI-ML--iLLaDA-8B-Base@a1b5b5f8a31a.json",

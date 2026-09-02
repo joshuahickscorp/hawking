@@ -80,8 +80,24 @@ def economics(alpha, draft_ms, verify_ms):
             "predicted_speedup_x": round(speedup, 4)}
 
 
+AGREE = Path("/tmp/draft_agree.json")
+
+
 def main():
-    agree = json.load(open("/tmp/draft_agree.json"))
+    # This producer has never been reproducible: its only measurement input is a
+    # scratch file in /tmp, which the OS wipes on reboot, and no G038-shaped
+    # receipt was ever committed. Say so instead of dying on a bare
+    # FileNotFoundError -- a red gate is an open question, and "the input is
+    # gone" is a different answer from "the measurement said no".
+    if not AGREE.is_file():
+        raise SystemExit(
+            f"G038 REFUSED - no receipt written. {AGREE} is absent: the draft "
+            "agreement measurement it reads is scratch state, not a durable "
+            "artifact, so this producer cannot re-run after a reboot. Re-measure "
+            "draft agreement and write it there, or give this producer a durable "
+            "input under receipts/."
+        )
+    agree = json.load(open(AGREE))
     meta = agree["_meta"]
     verifier = meta["verifier"]
     v_ms = TPOT_MS[verifier]
@@ -167,7 +183,13 @@ def main():
     }
     out["pass"] = bool(c["mtp_params"] > 0 and drafts and
                        all("pays" in d for d in drafts.values()))
-    p = RH / "DECODING_GRAVITY.json"
+    # G038 owns this filename. tools/headless/decoding_gravity.py is a DIFFERENT
+    # obligation (N049) with a different schema, and it wrote receipts/headless/
+    # DECODING_GRAVITY.json on 2026-08-26 -- which silently replaced this
+    # obligation's receipt and took all twelve G038 verifiers dark with a bare
+    # `KeyError: 'census'`. Two obligations sharing one receipt path means last
+    # writer wins and the loser stops being checked at all.
+    p = RH / "G038_DECODING_GRAVITY.json"
     p.write_text(json.dumps(out, indent=1))
 
     print(f"CENSUS: MTP machinery {'FOUND' if c['mtp_params'] else 'ABSENT'} — "

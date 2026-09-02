@@ -487,3 +487,49 @@ def test_receipt_records_real_lake_measurements():
     rec = doc["retention_recommendation"]
     assert rec["operator_decision_only"] is True
     assert rec["does_not_retire"] is True
+
+
+def test_family_is_read_from_more_than_model_type():
+    """Reading only `model_type` filed four bodies as UNKNOWN, and the retention
+    ranking then treated them as four unique architecture classes instead of two
+    families of two -- 96 GB of evo2 among them. These are the real config shapes
+    on the lake, not invented ones."""
+    # HuggingFace convention wins, and its answer is unchanged.
+    assert mx.family_from_config({"model_type": "qwen3_moe"}, {}) == (
+        "qwen3_moe", "config.model_type")
+    assert mx.family_from_config({}, {"model_type": "qwen3"}) == (
+        "qwen3", "fingerprint.model_type")
+    # evo2: singular `architecture`, list-valued. Both sizes must land together.
+    evo = {"name": "Evo 2 40B", "architecture": ["StripedHyena2"]}
+    assert mx.family_from_config(evo, {}) == ("stripedhyena2", "config.architecture")
+    assert mx.family_from_config({"architecture": ["StripedHyena2"]}, {})[0] == \
+        mx.family_from_config(evo, {})[0]
+    # mamba3: the mamba-ssm convention.
+    assert mx.family_from_config({"ssm_cfg": {"layer": "Mamba3"}}, {}) == (
+        "mamba3", "config.ssm_cfg.layer")
+    # No architecture evidence stays UNKNOWN. Wan2.2 ships framework/task only
+    # and boltz-2 ships no config; inventing a family for either would let
+    # §14.2.4 delete bytes on a guess.
+    for empty in ({}, None, {"framework": "Pytorch", "task": "image-to-video"},
+                  {"architecture": []}, {"ssm_cfg": {}}):
+        assert mx.family_from_config(empty, {})[0] == "UNKNOWN", empty
+
+
+def test_a_reclassified_family_makes_its_larger_member_retirable(tmp_path):
+    """The point of the fix: two bodies sharing a family means the ranking can
+    offer one of them, where two UNKNOWNs offered neither."""
+    rows = [
+        {"slug": "a--evo2_40b@aaaaaaaaaaaa", "architecture_family": "stripedhyena2",
+         "bytes": 82_000_000_000, "role_primary": "dense decoder",
+         "location": "specimens"},
+        {"slug": "a--evo2_7b@bbbbbbbbbbbb", "architecture_family": "stripedhyena2",
+         "bytes": 13_800_000_000, "role_primary": "dense decoder",
+         "location": "specimens"},
+    ]
+    rec = mx.retention_recommendation(rows, budget=1, used=95_800_000_000)
+    ranked = {r["slug"] for r in rec["ranked_redundant_bulk"]}
+    assert "a--evo2_40b@aaaaaaaaaaaa" in ranked, rec["ranked_redundant_bulk"]
+    # Same two bodies with no family are not offered as redundant to each other.
+    unknown = [dict(r, architecture_family="UNKNOWN") for r in rows]
+    rec2 = mx.retention_recommendation(unknown, budget=1, used=95_800_000_000)
+    assert not {r["slug"] for r in rec2["ranked_redundant_bulk"]}
