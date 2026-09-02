@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:29:48Z",
+  "recorded_at": "2026-09-02T09:39:11Z",
   "recorded_by": "tools/future/work_events.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -121,7 +121,7 @@
   "workunit": "one CPU_ANALYSIS unit; the contract both the driver and the judge must speak before a refill or an ingest counts"
  },
  "schema": "hawking.future.work_events.v1",
- "seal_sha256": "42e7e250b81677143ee08d7336fbecb9a9dbffe3cad8fab58b33c1826b2d577f",
+ "seal_sha256": "4e7e27522ca48b22c15309d7fca429224fcf88f8e5b5c02ae2415434179ecf82",
  "version": 1,
  "watched_refusals": [
   {

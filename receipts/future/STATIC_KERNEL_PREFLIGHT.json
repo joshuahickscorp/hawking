@@ -8,13 +8,13 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T06:18:41Z",
+  "recorded_at": "2026-09-02T09:51:48Z",
   "recorded_by": "tools/future/static_kernel_verify.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
  "blocking_defect_count": 5,
- "branch": "odyssey-i",
+ "branch": "grok/s4-tools-future-under-10s-20260902-045214",
  "claim_boundary": "Static sidecar artifact. No hardware measurement.",
  "counts": {
   "ERROR": 5,
@@ -2042,7 +2042,7 @@
    "verification": "NAME_RECOVERED_FROM_MACRO; body binding and PSO geometry remain compiler/runtime checks"
   }
  },
- "head": "c8f7ab8de9031bf44a85f99820a465cd395c9e71",
+ "head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
  "library_membership_files": [
   [
    "attn.metal",
@@ -2223,7 +2223,7 @@
   "metal_mod_trace_name_tests": "crates/hawking-core/src/metal/mod.rs \u2014 static_kernel_name plus per-family `SHADER_X.contains(kernel void {name}()` tests. Compile/trace-name contract, not host bind vs [[buffer(N)]]."
  },
  "schema": "hawking.future.static_kernel_verify.v1",
- "seal_sha256": "b4d124047f5d5620d25c16fefbf45b30946ba85badb450e468a00b6abccdddfa",
+ "seal_sha256": "2f463d1014fd243af262baeca57f3706ba8efe3d722b1c67707cfcf136fa2ac0",
  "static_correctness_does_not_prove_speed": "Static correctness does NOT prove speed and does NOT substitute for a protected measurement. A finding of no static ERROR is not a tps number, not a token_ns, not a complete-token, and not PROTECTED_ABSOLUTE. This tool exists to stop wasting a protected GPU window on a defect that was detectable from the .metal sources and their Rust hosts. It produces neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE. Everything here is STATIC_ONLY with bench state UNKNOWN.",
  "version": 1,
  "would_waste_a_protected_window": true

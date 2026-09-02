@@ -20,9 +20,10 @@ from __future__ import annotations
 import os as _os, sys as _sys
 _sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))))
 
-from tools.future._common import write_receipt, load_json, REPO, git
+from tools.future._common import compile_swift, write_receipt, load_json, REPO, git
 
 import argparse
+import functools
 import importlib.util
 import json
 import platform
@@ -204,6 +205,7 @@ def _coremltools_status() -> dict[str, Any]:
         }
 
 
+@functools.lru_cache(maxsize=1)
 def probe_toolchain() -> dict[str, Any]:
     """Observe the environment. Does not install, does not run xcode-select -s."""
     xcode_app = Path("/Applications/Xcode.app")
@@ -1469,27 +1471,14 @@ def load_live_compute_plan(compiled_model: str) -> dict[str, Any]:
 
 def _load_live_compute_plan_impl(compiled_model: str) -> dict[str, Any]:
     probe = probe_toolchain()
-    src = Path(tempfile.mkdtemp(prefix="hawking-ane-inspector-")) / "inspector.swift"
-    src.write_text(SWIFT_MLCOMPUTEPLAN_INSPECTOR)
-    binary = src.with_suffix("")
-    compile_cmd = [
-        "xcrun",
-        "swiftc",
-        "-O",
-        "-framework",
-        "CoreML",
-        "-o",
-        str(binary),
-        str(src),
-    ]
-    compiled = _run(compile_cmd)
-    if compiled.returncode != 0:
+    binary, err = compile_swift(SWIFT_MLCOMPUTEPLAN_INSPECTOR)
+    if binary is None:
         raise ToolchainUnavailableError(
             {
                 **probe,
                 "available": False,
                 "missing": list(probe.get("missing") or [])
-                + [f"swiftc inspector failed: {(compiled.stderr or compiled.stdout or '').strip().splitlines()[:1]}"],
+                + [f"swiftc inspector failed: {(err or '').strip().splitlines()[:1]}"],
             }
         )
     ran = _run([str(binary), compiled_model])

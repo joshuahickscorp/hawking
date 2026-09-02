@@ -55,6 +55,7 @@ from tools.future._common import (
     RECEIPTS,
     REPO,
     git,
+    gpu_lane_lock_path,
     sha256_file,
     write_receipt,
 )
@@ -71,7 +72,7 @@ RECORDED_BY = "tools/future/model_bearing_torture.py"
 VERSION = 1
 
 DURATION_S = 30 * 60
-GPU_LOCK = Path("/tmp/hawking-gpu-lane.lock")
+GPU_LOCK = gpu_lane_lock_path()
 HCLI_LOCK_NAME = "protected-accelerator-bench.lock"
 
 SEALED_REL = "hcli/hawking-native.sealed-3.14.json"

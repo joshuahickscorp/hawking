@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:10:48Z",
+  "recorded_at": "2026-09-02T09:39:08Z",
   "recorded_by": "tools/future/resident_optimizer.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -599,7 +599,7 @@
   "mark_verified / weaken_verifier / widen_authority each RAISE on the proposer",
   "promote() does not exist; receipt status is BUILT_NOT_PROMOTED"
  ],
- "head": "0a844ee1a34f9be97a1c0b2a49beeaadfedb2b5b",
+ "head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
  "hypotheses": [
   {
    "bench_state": "UNKNOWN",
@@ -1536,7 +1536,7 @@
   },
   {
    "path": "lab/hcli/self_evolution.py",
-   "present": true,
+   "present": false,
    "what": "recovered via git show; tribunal separation: the proposer is never the admitter; missing evidence yields PENDING not fabricated ACCEPT"
   },
   {
@@ -1593,7 +1593,7 @@
   "resident_py_note": "hcli/agentos/resident.py does not exist in HEAD; resident_gate.py is the live sequential-proof boundary",
   "runs_recovery": false,
   "self_evolution": {
-   "materialized_in_this_worktree": true,
+   "materialized_in_this_worktree": false,
    "path": "lab/hcli/self_evolution.py",
    "recovered_principle": "the proposer is never the admitter (tribunal separation)"
   },
@@ -1603,7 +1603,7 @@
   }
  },
  "schema": "hawking.future.resident_optimizer.v1",
- "seal_sha256": "054c370418501dd500a24a68af963142e53f8665bcd8f50216e3f62372bd7c3a",
+ "seal_sha256": "fbafb32b8d74e55b6aacd037b552273dca5d40fba6a7350675c677d3ad40c89c",
  "status": "BUILT_NOT_PROMOTED",
  "verifier_separation": {
   "principle": "Models propose; protected deterministic evidence decides. The IsolatedVerifier in this module is STATIC_ONLY structure checking. A protected GPU verifier is Codex-owned and absent here.",

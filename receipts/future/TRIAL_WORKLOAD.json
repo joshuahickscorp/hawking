@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:29:23Z",
+  "recorded_at": "2026-09-02T09:39:14Z",
   "recorded_by": "tools/future/trial_workload.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -1001,7 +1001,7 @@
   "workunit": "one CPU_ANALYSIS unit; compose the mixed real-frontier workload for a named autonomy trial and refuse a 3h/6h set with no replan pair"
  },
  "schema": "hawking.future.trial_workload.v1",
- "seal_sha256": "41c3d5056dc282835bdcb909cfa125c9235c8c7f1e837b023a1c1edcd0397802",
+ "seal_sha256": "2be9a1794433ea285867cdec0b462f79f20a50e1db37c0a9687ba0a4b078b935",
  "trial_ids": [
   "15m",
   "30m",

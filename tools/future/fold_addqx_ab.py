@@ -879,7 +879,8 @@ def run_example(
         str(out),
     ]
     lock = REPO / "tools" / "gpu_lane_lock.sh"
-    lock_path = Path("/tmp/hawking-gpu-lane.lock")
+    from tools.future._common import gpu_lane_lock_path
+    lock_path = gpu_lane_lock_path()
     if lock_path.exists() and lock_waited is not None:
         owner = ""
         try:

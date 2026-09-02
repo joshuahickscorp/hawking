@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:28:09Z",
+  "recorded_at": "2026-09-02T09:38:59Z",
   "recorded_by": "tools/future/super_resident.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -17,31 +17,31 @@
       {
        "field": "status",
        "path": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
-       "source": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+       "source": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.nx.json",
        "value": "SEALED_METADATA_ONLY_NOT_FOR_PROMOTION"
       },
       {
        "field": "qualification.resident_promotion",
        "path": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
-       "source": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+       "source": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.nx.json",
        "value": false
       },
       {
        "field": "status",
        "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
-       "source": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+       "source": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
        "value": "SCAFFOLD_ONLY"
       },
       {
        "field": "native_loader.status",
        "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
-       "source": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+       "source": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
        "value": "NOT_IMPLEMENTED"
       },
       {
        "field": "native_kernels.status",
        "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
-       "source": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+       "source": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
        "value": "PLAN_ONLY"
       }
      ],
@@ -67,13 +67,13 @@
       {
        "field": "status",
        "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
-       "source": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+       "source": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
        "value": "SCAFFOLD_ONLY"
       },
       {
        "field": "qualification",
        "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
-       "source": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+       "source": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
        "value": false
       },
       {
@@ -99,7 +99,7 @@
       {
        "field": "promotion_gate.missing_or_refused",
        "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
-       "source": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+       "source": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
        "value": [
         "MTP accounting",
         "complete-system byte ledger",
@@ -129,7 +129,7 @@
       {
        "field": "dense_parent_execution_fallback",
        "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
-       "source": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+       "source": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
        "value": false
       }
      ],
@@ -143,31 +143,31 @@
       {
        "field": "status",
        "path": "receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
-       "source": "receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
+       "source": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
        "value": "BLOCKED_FIRST_PHYSICAL_BOUNDARY"
       },
       {
        "field": "complete_stateful_session.accepted_generation_tokens",
        "path": "receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
-       "source": "receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
+       "source": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
        "value": 1
       },
       {
        "field": "complete_stateful_session.status",
        "path": "receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
-       "source": "receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
+       "source": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
        "value": "PASSED_STATEFUL_COMPLETE_TOKEN_ACCEPTED"
       },
       {
        "field": "first_physical_failure_boundary.status",
        "path": "receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
-       "source": "receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
+       "source": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
        "value": "ONE_TOKEN_ACCEPTED"
       },
       {
        "field": "complete_stateful_session.claim",
        "path": "receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
-       "source": "receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
+       "source": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
        "value": "The pinned tokenizer prompt completed all 48 Flash layers in the dense exact stateful oracle, and the native terminal argmax produced token 2972 as the first generated token. This closes one accepted-token prediction without claiming that token's continuation state was advanced; repeated accepted decode, TPS, EBPW, capability and HCLI residency remain open."
       }
      ],
@@ -181,13 +181,13 @@
       {
        "field": "status",
        "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
-       "source": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+       "source": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
        "value": "SCAFFOLD_ONLY"
       },
       {
        "field": "qualification.resident_promotion",
        "path": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
-       "source": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+       "source": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.nx.json",
        "value": false
       }
      ],
@@ -201,7 +201,7 @@
       {
        "field": "capability_contract.status",
        "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
-       "source": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+       "source": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
        "value": "NOT_RUN"
       },
       {
@@ -221,13 +221,13 @@
       {
        "field": "complete_stateful_session.accepted_generation_tokens",
        "path": "receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
-       "source": "receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
+       "source": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
        "value": 1
       },
       {
        "field": "qualification.accepted_multitoken_tps",
        "path": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
-       "source": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+       "source": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.nx.json",
        "value": null
       },
       {
@@ -245,7 +245,7 @@
       {
        "field": "first_physical_failure_boundary.status",
        "path": "receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
-       "source": "receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
+       "source": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
        "value": "ONE_TOKEN_ACCEPTED"
       }
      ],
@@ -259,13 +259,13 @@
       {
        "field": "qualification.complete_system_ebpw",
        "path": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
-       "source": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+       "source": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.nx.json",
        "value": null
       },
       {
        "field": "complete_system_ebpw",
        "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
-       "source": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+       "source": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
        "value": null
       },
       {
@@ -285,13 +285,13 @@
       {
        "field": "qualification.resident_promotion",
        "path": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
-       "source": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+       "source": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.nx.json",
        "value": false
       },
       {
        "field": "promotion_allowed",
        "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
-       "source": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+       "source": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
        "value": false
       }
      ],
@@ -309,7 +309,7 @@
      "present": true,
      "recovery": "disk",
      "rel": "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
-     "source": "/Users/scammermike/Downloads/hawking/receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
+     "source": "/Users/scammermike/.claude-grok/worktrees/s4-tools-future-under-10s-20260902-045214/receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
      "tracked_in_head": true
     },
     "executable": {
@@ -323,7 +323,7 @@
      "present": true,
      "recovery": "disk",
      "rel": "CODEX_ACCELERATOR_HANDOFF.json",
-     "source": "/Users/scammermike/Downloads/hawking/CODEX_ACCELERATOR_HANDOFF.json",
+     "source": "/Users/scammermike/.claude-grok/worktrees/s4-tools-future-under-10s-20260902-045214/CODEX_ACCELERATOR_HANDOFF.json",
      "tracked_in_head": true
     },
     "nx": {
@@ -375,49 +375,49 @@
       {
        "field": "resident_identity",
        "path": "hcli/hawking-native.sealed-3.14.json",
-       "source": "hcli/hawking-native.sealed-3.14.json",
+       "source": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
        "value": "sealed-3.14"
       },
       {
        "field": "protocol",
        "path": "hcli/hawking-native.sealed-3.14.json",
-       "source": "hcli/hawking-native.sealed-3.14.json",
+       "source": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
        "value": "hawking.qwen38.resident.v1"
       },
       {
        "field": "runtime",
        "path": "hcli/hawking-native.sealed-3.14.json",
-       "source": "hcli/hawking-native.sealed-3.14.json",
+       "source": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
        "value": "hawking-native"
       },
       {
        "field": "resident_binary",
        "path": "hcli/hawking-native.sealed-3.14.json",
-       "source": "hcli/hawking-native.sealed-3.14.json",
+       "source": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
        "value": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident"
       },
       {
        "field": "artifact_root",
        "path": "hcli/hawking-native.sealed-3.14.json",
-       "source": "hcli/hawking-native.sealed-3.14.json",
+       "source": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
        "value": "/Users/scammermike/noetic/NOETIC_PARENT_A"
       },
       {
        "field": "tokenizer",
        "path": "hcli/hawking-native.sealed-3.14.json",
-       "source": "hcli/hawking-native.sealed-3.14.json",
+       "source": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
        "value": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json"
       },
       {
        "field": "status",
        "path": "receipts/headless/HCLI_RESIDENT_SEAL.json",
-       "source": "receipts/headless/HCLI_RESIDENT_SEAL.json",
+       "source": "/Users/scammermike/Downloads/hawking/receipts/headless/HCLI_RESIDENT_SEAL.json",
        "value": "SEALED"
       },
       {
        "field": "resident",
        "path": "receipts/headless/HCLI_RESIDENT_SEAL.json",
-       "source": "receipts/headless/HCLI_RESIDENT_SEAL.json",
+       "source": "/Users/scammermike/Downloads/hawking/receipts/headless/HCLI_RESIDENT_SEAL.json",
        "value": "sealed-3.14"
       }
      ],
@@ -430,25 +430,25 @@
       {
        "field": "runtime",
        "path": "hcli/hawking-native.sealed-3.14.json",
-       "source": "hcli/hawking-native.sealed-3.14.json",
+       "source": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
        "value": "hawking-native"
       },
       {
        "field": "protocol",
        "path": "hcli/hawking-native.sealed-3.14.json",
-       "source": "hcli/hawking-native.sealed-3.14.json",
+       "source": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
        "value": "hawking.qwen38.resident.v1"
       },
       {
        "field": "representation.kind",
        "path": "hcli/hawking-native.sealed-3.14.json",
-       "source": "hcli/hawking-native.sealed-3.14.json",
+       "source": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
        "value": "native-packed"
       },
       {
        "field": "mode",
        "path": "hcli/hawking-native.sealed-3.14.json",
-       "source": "hcli/hawking-native.sealed-3.14.json",
+       "source": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
        "value": "auto"
       }
      ],
@@ -461,13 +461,13 @@
       {
        "field": "current_runtime.fallbacks",
        "path": "hcli/hawking-native.sealed-3.14.json",
-       "source": "hcli/hawking-native.sealed-3.14.json",
+       "source": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
        "value": 0
       },
       {
        "field": "fallbacks",
        "path": "hcli/hawking-native.sealed-3.14.json",
-       "source": "hcli/hawking-native.sealed-3.14.json",
+       "source": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
        "value": [
         "transformers tokenizer fallback when unavailable"
        ]
@@ -482,13 +482,13 @@
       {
        "field": "protocol",
        "path": "hcli/hawking-native.sealed-3.14.json",
-       "source": "hcli/hawking-native.sealed-3.14.json",
+       "source": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
        "value": "hawking.qwen38.resident.v1"
       },
       {
        "field": "representation.weights_loaded_once",
        "path": "hcli/hawking-native.sealed-3.14.json",
-       "source": "hcli/hawking-native.sealed-3.14.json",
+       "source": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
        "value": true
       },
       {
@@ -513,7 +513,7 @@
       {
        "field": "schema",
        "path": "receipts/future/RESIDENT_INSTALL_CONTRACT.json",
-       "source": "receipts/future/RESIDENT_INSTALL_CONTRACT.json",
+       "source": "/Users/scammermike/Downloads/hawking/receipts/future/RESIDENT_INSTALL_CONTRACT.json",
        "value": "hawking.future.resident_install.v1"
       }
      ],
@@ -526,31 +526,31 @@
       {
        "field": "qualification",
        "path": "hcli/hawking-native.sealed-3.14.json",
-       "source": "hcli/hawking-native.sealed-3.14.json",
+       "source": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
        "value": "capability 30/43 historical sealed contract"
       },
       {
        "field": "overall.passed",
        "path": "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
-       "source": "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+       "source": "/Users/scammermike/Downloads/hawking/receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
        "value": 30
       },
       {
        "field": "overall.total",
        "path": "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
-       "source": "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+       "source": "/Users/scammermike/Downloads/hawking/receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
        "value": 43
       },
       {
        "field": "identity_sufficient",
        "path": "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
-       "source": "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+       "source": "/Users/scammermike/Downloads/hawking/receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
        "value": false
       },
       {
        "field": "identity_verdict",
        "path": "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
-       "source": "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+       "source": "/Users/scammermike/Downloads/hawking/receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
        "value": "UNIDENTIFIED (G073, amended 2026-08-26): this receipt records target='http://127.0.0.1:8080' and label='noetic-sealed-3.14' and carries NO artifact hash, NO executable-closure hash and NO chat-template field. The score stands as a MEASUREME"
       }
      ],
@@ -563,13 +563,13 @@
       {
        "field": "current_runtime.complete_tps_current_measured",
        "path": "hcli/hawking-native.sealed-3.14.json",
-       "source": "hcli/hawking-native.sealed-3.14.json",
+       "source": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
        "value": "24.4086"
       },
       {
        "field": "current_runtime.complete_tps_historical_qualified",
        "path": "hcli/hawking-native.sealed-3.14.json",
-       "source": "hcli/hawking-native.sealed-3.14.json",
+       "source": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
        "value": "34.0"
       },
       {
@@ -594,13 +594,13 @@
       {
        "field": "physical_ebpw",
        "path": "hcli/hawking-native.sealed-3.14.json",
-       "source": "hcli/hawking-native.sealed-3.14.json",
+       "source": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
        "value": 3.1393
       },
       {
        "field": "representation.physical_ebpw",
        "path": "hcli/hawking-native.sealed-3.14.json",
-       "source": "hcli/hawking-native.sealed-3.14.json",
+       "source": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
        "value": 3.1393
       }
      ],
@@ -625,7 +625,7 @@
       {
        "field": "phases",
        "path": "receipts/future/RESIDENT_INSTALL_CONTRACT.json",
-       "source": "receipts/future/RESIDENT_INSTALL_CONTRACT.json",
+       "source": "/Users/scammermike/Downloads/hawking/receipts/future/RESIDENT_INSTALL_CONTRACT.json",
        "value": [
         "nx_identity",
         "executable_identity",
@@ -664,7 +664,7 @@
      "present": true,
      "recovery": "disk",
      "rel": "CODEX_ACCELERATOR_HANDOFF.json",
-     "source": "/Users/scammermike/Downloads/hawking/CODEX_ACCELERATOR_HANDOFF.json",
+     "source": "/Users/scammermike/.claude-grok/worktrees/s4-tools-future-under-10s-20260902-045214/CODEX_ACCELERATOR_HANDOFF.json",
      "tracked_in_head": true
     },
     "identity": {
@@ -685,7 +685,7 @@
      "present": true,
      "recovery": "disk",
      "rel": "receipts/future/TOURNAMENT_READINESS.json",
-     "source": "/Users/scammermike/Downloads/hawking/receipts/future/TOURNAMENT_READINESS.json",
+     "source": "/Users/scammermike/.claude-grok/worktrees/s4-tools-future-under-10s-20260902-045214/receipts/future/TOURNAMENT_READINESS.json",
      "tracked_in_head": true
     }
    },
@@ -963,7 +963,7 @@
   ]
  },
  "schema": "hawking.future.super_resident.v1",
- "seal_sha256": "223cf5c2c935a8cb7985bb721f38667308ff9dc2af6a9ac5296e18e2955d2f42",
+ "seal_sha256": "23033776d67fea91bd4f707d297c78045e59ac4047111c8821ef696316d3f5d4",
  "started_model_process": false,
  "status": {
   "flash": {

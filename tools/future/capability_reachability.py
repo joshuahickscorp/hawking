@@ -80,10 +80,13 @@ from tools.future._common import GIT_TIMEOUT_S, REPO, git, load_json, require_kn
 import argparse
 import ast
 import contextvars
+import fcntl
+import hashlib
 import json
 import re
 import shutil
 import subprocess
+import tempfile
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -462,36 +465,245 @@ def build_repo_index(
         return idx
 
 
-def _fill_repo_index(idx: RepoIndex) -> None:
-    for path in idx.files:
-        text = read_text(path)
-        if not text:
-            continue
-        try:
-            tree = ast.parse(text)
-        except SyntaxError:
-            continue
-        binds: list[tuple[str, str]] = []
-        for node in ast.walk(tree):
-            if isinstance(node, (ast.Import, ast.ImportFrom)):
-                targets = _resolve_import_targets(path, node)
-                for t in targets:
-                    idx.add_import(t, Site(rel(path), node.lineno, "import"))
-                if isinstance(node, ast.ImportFrom):
-                    # Bind against the SAME resolved base(s) used for
-                    # import_sites above -- a relative `from .escalation
-                    # import x` must bind "x" to "hcli.escalation.x", not
-                    # the raw "escalation.x", or a later call-site lookup
-                    # for the fully-dotted symbol silently finds nothing.
-                    for mod in _resolved_from_modules(path, node):
-                        for alias in node.names:
-                            local = alias.asname or alias.name
-                            binds.append((local, f"{mod}.{alias.name}"))
-                elif isinstance(node, ast.Import):
+# Capture the tool-name token from a dispatch-shaped line. Equivalent to
+# _tool_dispatch_pattern(token) for every token, computed once per file
+# instead of once per (tool × file) during assembly.
+_DISPATCH_CAPTURE_RE = re.compile(
+    r"""(?:"tool"|'tool'|\btool)\s*[:=]\s*(['"])([^'"]+)\1"""
+    r"""|invoke\(\s*(['"])([^'"]+)\3"""
+)
+
+_FANOUT_THRESHOLD = 64
+
+
+def _sibling_rel(importer_rp: str, mod: str) -> str:
+    parent = importer_rp.rsplit("/", 1)[0] if "/" in importer_rp else ""
+    return f"{parent}/{mod}.py" if parent else f"{mod}.py"
+
+
+def _resolved_from_modules_rel(
+    importer_rp: str, node: ast.ImportFrom, py_rels: frozenset[str]
+) -> list[str]:
+    """Same binding rules as _resolved_from_modules, from a repo-relative path."""
+    bases: list[str] = []
+    name = importer_rp.rsplit("/", 1)[-1]
+    if node.level and node.level > 0:
+        importer_mod = _module_name_from_rel(importer_rp)
+        parts = importer_mod.split(".")
+        is_init = name == "__init__.py"
+        base_parts = parts if is_init else parts[:-1]
+        if node.level > 1:
+            cut = node.level - 1
+            base_parts = base_parts[: max(0, len(base_parts) - cut)]
+        base = ".".join(base_parts)
+        mod = f"{base}.{node.module}" if node.module else base
+        if mod:
+            bases.append(mod)
+    else:
+        mod = node.module or ""
+        if mod:
+            bases.append(mod)
+            if "." not in mod:
+                sib = _sibling_rel(importer_rp, mod)
+                if sib in py_rels and sib != importer_rp:
+                    bases.append(_module_name_from_rel(sib))
+    return bases
+
+
+def _resolve_import_targets_rel(
+    importer_rp: str, node: ast.AST, py_rels: frozenset[str]
+) -> list[str]:
+    targets: list[str] = []
+    if isinstance(node, ast.Import):
+        for alias in node.names:
+            targets.append(alias.name)
+            if "." not in alias.name:
+                sib = _sibling_rel(importer_rp, alias.name.split(".")[0])
+                if sib in py_rels and sib != importer_rp:
+                    targets.append(_module_name_from_rel(sib))
+    elif isinstance(node, ast.ImportFrom):
+        for mod in _resolved_from_modules_rel(importer_rp, node, py_rels):
+            targets.append(mod)
+            for alias in node.names:
+                targets.append(f"{mod}.{alias.name}")
+    return targets
+
+
+def _extract_file_facts(
+    rp: str, text: str, py_rels: frozenset[str]
+) -> dict[str, Any]:
+    """One-pass facts for a file. Pure: no git, no REPO, pickleable.
+
+    Filling call/subprocess/literal tables here means assemble() does not
+    re-parse every file once per capability (the 12s that used to sit on
+    top of the 10s first parse).
+    """
+    empty: dict[str, Any] = {
+        "rp": rp,
+        "imports": [],
+        "binds": [],
+        "calls": [],
+        "subprocess": [],
+        "literals": [],
+    }
+    if not text:
+        return empty
+    try:
+        tree = ast.parse(text)
+    except SyntaxError:
+        return empty
+    imports: list[tuple[str, int]] = []
+    binds: list[tuple[str, str]] = []
+    calls: list[tuple[int, str, str | None]] = []
+    subproc: list[tuple[int, list[str]]] = []
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.Import, ast.ImportFrom)):
+            for t in _resolve_import_targets_rel(rp, node, py_rels):
+                imports.append((t, node.lineno))
+            if isinstance(node, ast.ImportFrom):
+                for mod in _resolved_from_modules_rel(rp, node, py_rels):
                     for alias in node.names:
-                        local = alias.asname or alias.name.split(".")[0]
-                        binds.append((local, alias.name))
-        idx.bound_names[rel(path)] = binds
+                        local = alias.asname or alias.name
+                        binds.append((local, f"{mod}.{alias.name}"))
+            else:
+                for alias in node.names:
+                    local = alias.asname or alias.name.split(".")[0]
+                    binds.append((local, alias.name))
+        elif isinstance(node, ast.Call):
+            func = node.func
+            if isinstance(func, ast.Name):
+                calls.append((node.lineno, func.id, None))
+            elif isinstance(func, ast.Attribute) and isinstance(func.value, ast.Name):
+                calls.append((node.lineno, func.attr, func.value.id))
+            if _is_subprocess_call(node):
+                strings = [
+                    inner.value
+                    for inner in ast.walk(node)
+                    if isinstance(inner, ast.Constant) and isinstance(inner.value, str)
+                ]
+                subproc.append((node.lineno, strings))
+    literals: list[tuple[str, int]] = []
+    if '"tool"' in text or "'tool'" in text or "invoke(" in text or "tool=" in text or "tool :" in text:
+        for lineno, line in enumerate(text.splitlines(), start=1):
+            for m in _DISPATCH_CAPTURE_RE.finditer(line):
+                token = m.group(2) or m.group(4)
+                if token:
+                    literals.append((token, lineno))
+    return {
+        "rp": rp,
+        "imports": imports,
+        "binds": binds,
+        "calls": calls,
+        "subprocess": subproc,
+        "literals": literals,
+    }
+
+
+def _merge_file_facts(idx: RepoIndex, facts: Mapping[str, Any]) -> None:
+    rp = str(facts["rp"])
+    for target, lineno in facts.get("imports") or []:
+        idx.add_import(str(target), Site(rp, int(lineno), "import"))
+    idx.bound_names[rp] = [(str(a), str(b)) for a, b in (facts.get("binds") or [])]
+    if idx.call_table is not None:
+        idx.call_table[rp] = [
+            (int(ln), str(name), None if q is None else str(q))
+            for ln, name, q in (facts.get("calls") or [])
+        ]
+    if idx.subprocess_table is not None:
+        idx.subprocess_table[rp] = [
+            (int(ln), [str(s) for s in strings])
+            for ln, strings in (facts.get("subprocess") or [])
+        ]
+    if idx.literal_table is not None:
+        for token, lineno in facts.get("literals") or []:
+            idx.literal_table.setdefault(str(token), []).append(
+                Site(rp, int(lineno), "literal")
+            )
+
+
+def _fanout_worker_main() -> None:
+    """stdin: pickle {py_rels, items}; stdout: pickle [facts]."""
+    import pickle as _pickle
+
+    payload = _pickle.load(_sys.stdin.buffer)
+    py_rels = frozenset(payload["py_rels"])
+    out = [_extract_file_facts(rp, text, py_rels) for rp, text in payload["items"]]
+    _pickle.dump(out, _sys.stdout.buffer, protocol=_pickle.HIGHEST_PROTOCOL)
+
+
+def _extract_file_facts_fanout(
+    items: Sequence[tuple[str, str]], py_rels: frozenset[str]
+) -> list[dict[str, Any]]:
+    """N independent python processes, no multiprocessing semaphore.
+
+    ThreadPoolExecutor cannot beat the GIL on ast.parse (measured: 8.6s
+    serial, 9.3s 8 threads). multiprocessing.ProcessPoolExecutor raises
+    PermissionError on this host (sem_open). subprocess.Popen of N
+    interpreters does not. 28 workers: 2.4s for 2389 files / 52MB.
+    """
+    import pickle as _pickle
+    from concurrent.futures import ThreadPoolExecutor
+
+    n = min(_os.cpu_count() or 8, len(items))
+    if n < 2:
+        return [_extract_file_facts(rp, text, py_rels) for rp, text in items]
+    chunks: list[list[tuple[str, str]]] = [[] for _ in range(n)]
+    for i, pair in enumerate(items):
+        chunks[i % n].append(pair)
+    py_rels_list = list(py_rels)
+    worker = (
+        "from tools.future.capability_reachability import _fanout_worker_main; "
+        "_fanout_worker_main()"
+    )
+    env = dict(_os.environ)
+    env["PYTHONPATH"] = _os.pathsep.join(_sys.path)
+
+    def _run(chunk: list[tuple[str, str]]) -> list[dict[str, Any]]:
+        proc = subprocess.run(
+            [_sys.executable, "-c", worker],
+            input=_pickle.dumps({"py_rels": py_rels_list, "items": chunk}),
+            capture_output=True,
+            cwd=str(REPO),
+            env=env,
+            timeout=GIT_TIMEOUT_S,
+            check=False,
+        )
+        if proc.returncode != 0:
+            raise RuntimeError(proc.stderr[-400:].decode("utf-8", errors="replace"))
+        return _pickle.loads(proc.stdout)
+
+    with ThreadPoolExecutor(max_workers=n) as pool:
+        parts = list(pool.map(_run, chunks))
+    out: list[dict[str, Any]] = []
+    for part in parts:
+        out.extend(part)
+    return out
+
+
+def _fill_repo_index(idx: RepoIndex) -> None:
+    idx.call_table = {}
+    idx.subprocess_table = {}
+    idx.literal_table = {}
+    items = [(rel(p), read_text(p)) for p in idx.files]
+    items = [(rp, text) for rp, text in items if text]
+    if not items:
+        return
+    py_rels = frozenset(rel(p) for p in idx.files)
+    facts_list: list[dict[str, Any]]
+    use_fanout = (
+        len(items) >= _FANOUT_THRESHOLD
+        and not _os.environ.get("HAWKING_REACHABILITY_SERIAL")
+        and _reader_var.get() is None
+    )
+    if use_fanout:
+        try:
+            facts_list = _extract_file_facts_fanout(items, py_rels)
+        except (OSError, RuntimeError, ValueError, subprocess.TimeoutExpired):
+            facts_list = [_extract_file_facts(rp, text, py_rels) for rp, text in items]
+    else:
+        facts_list = [_extract_file_facts(rp, text, py_rels) for rp, text in items]
+    for facts in facts_list:
+        _merge_file_facts(idx, facts)
 
 
 def find_symbol_call_sites(
@@ -1325,13 +1537,76 @@ def _load_rust_facts() -> dict[str, Any] | None:
     return facts
 
 
+_ASSEMBLE_MEMO: dict[tuple[Any, ...], dict[str, Any]] = {}
+
+
+def _assemble_code_digest() -> str:
+    """Bust the on-disk memo when this analyzer's source changes.
+
+    The mutation check edits this file and re-runs pytest; a cache that
+    ignored the bytes would keep a green receipt for a gutted analyzer.
+    """
+    try:
+        return hashlib.sha256(Path(__file__).read_bytes()).hexdigest()[:16]
+    except OSError:
+        return "unreadable"
+
+
+def _assemble_disk_cache_path(key: tuple[Any, ...]) -> Path | None:
+    if not repo_is_git_checkout():
+        return None
+    sid = _os.environ.get("FUTURE_ARTIFACT_SESSION") or str(_os.getpid())
+    digest = hashlib.sha256(repr(key).encode()).hexdigest()[:24]
+    d = Path(tempfile.gettempdir()) / f"hawking-future-art-{sid}"
+    d.mkdir(parents=True, exist_ok=True)
+    return d / f"assemble-{digest}.json"
+
+
 def assemble(*, source: str = DEFAULT_SOURCE) -> dict[str, Any]:
     """Build the capability map.
 
     `source` is the file source of truth. Default ``head``: commit blobs,
     matching hawking-index. Pass ``source='worktree'`` only for an explicit
     working-tree view; that path does not use the rust dump (the dump is HEAD).
+
+    Memoized per (REPO, source, force-python, bin hint, this-file digest).
+    A mutated capability_reachability.py is a new key. Overlay readers and
+    tmpdir REPOs skip the disk memo. xdist workers share the file via
+    FUTURE_ARTIFACT_SESSION.
     """
+    if _reader_var.get() is not None:
+        return _assemble_uncached(source=source)
+    force_py = bool(_os.environ.get("HAWKING_REACHABILITY_FORCE_PYTHON"))
+    bin_hint = _os.environ.get("HAWKING_INDEX_BIN") or ""
+    key = (str(REPO), source, force_py, bin_hint, _assemble_code_digest())
+    cached = _ASSEMBLE_MEMO.get(key)
+    if cached is not None:
+        return cached
+    disk = _assemble_disk_cache_path(key)
+    if disk is not None:
+        lockp = disk.with_suffix(".lock")
+        with open(lockp, "a+") as lf:
+            fcntl.flock(lf, fcntl.LOCK_EX)
+            if disk.is_file():
+                try:
+                    loaded = json.loads(disk.read_text())
+                except (ValueError, OSError):
+                    loaded = None
+                if isinstance(loaded, dict) and loaded.get("schema") == SCHEMA:
+                    _ASSEMBLE_MEMO[key] = loaded
+                    return loaded
+            doc = _assemble_uncached(source=source)
+            tmp = disk.with_suffix(".tmp")
+            tmp.write_text(json.dumps(doc))
+            tmp.replace(disk)
+            _ASSEMBLE_MEMO[key] = doc
+            return doc
+    doc = _assemble_uncached(source=source)
+    _ASSEMBLE_MEMO[key] = doc
+    return doc
+
+
+def _assemble_uncached(*, source: str = DEFAULT_SOURCE) -> dict[str, Any]:
     with using_source(source):
         if current_source() == SOURCE_HEAD:
             facts = _load_rust_facts()

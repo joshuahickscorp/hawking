@@ -117,12 +117,12 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T04:17:16Z",
+  "recorded_at": "2026-09-02T09:25:41Z",
   "recorded_by": "tools/future/fpga_fidelity.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
- "branch": "odyssey-i",
+ "branch": "grok/s4-tools-future-under-10s-20260902-045214",
  "claim_boundary": "Static sidecar artifact. No hardware measurement.",
  "claim_boundary_note": "Everything in this receipt is STATIC_ONLY. modelled_cycles is not gpu_ns, not wall_ns, not token_ns, and not a hardware measurement. hbm_channel_demand is a structural count, not bandwidth_gbps.",
  "clock_state_on_mixed": {
@@ -470,7 +470,7 @@
   "Four adaptation clocks with identity, compatibility predicate, cost class, cache key, footprint.",
   "Local StructuralGraph stand-in so this lane does not import in-flight hwir.py."
  ],
- "head": "b76580b272ed17cc5b178a3fe438763699716ff8",
+ "head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
  "negative_findings": [
   "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json is not in git HEAD and is not on disk here; the 15 hwir_hypotheses were not readable. Node kinds are a local catalog, not atlas-derived.",
   "hcli/agentos/test_fpga_preboard.py does not exist in git HEAD.",
@@ -484,73 +484,32 @@
  "recovered_implementation": [
   {
    "in_git_head": true,
-   "loaded_keys": [
-    "<unreadable>"
-   ],
-   "on_disk": true,
+   "loaded_keys": null,
+   "on_disk": false,
    "path": "hcli/agentos/fpga_preboard.py",
    "role": "FPGA pre-board contracts, MockFPGAProvider, organ-map HWIR, link/partition [S] sim",
    "what_found": "FPGAProvider.execute raises; MockFPGAProvider is SIMULATOR_ONLY; device genome TARGET_UNSELECTED; physical_board_present False; HWIR dataclass (nodes/buffers/dependencies/sync/placements); module_cache schema-only. This is scaffolding, not a fidelity ladder. Not imported: hcli is Codex-owned."
   },
   {
    "in_git_head": true,
-   "loaded_keys": [
-    "architecture_repatriation",
-    "claim_boundary",
-    "device_genome",
-    "driverkit_bridge_design",
-    "experiment_dag",
-    "hbm_genome",
-    "hwir",
-    "label",
-    "model",
-    "model_identity",
-    "module_cache",
-    "organs"
-   ],
-   "on_disk": true,
+   "loaded_keys": null,
+   "on_disk": false,
    "path": "receipts/headless/FLASH_NEXT_FPGA_ORGAN_MAP.json",
    "role": "Flash organ map + derived HWIR",
    "what_found": "7 organs (expert_bank, router_topk_and_gather, routed_plus_shared_expert, deltanet_persistent_state, ngram_lookup_or_generator, sparse_attention, mtp_draft_verify_rollback); nodes are organ_operator without width/tile/banking/resource_class; no DSP/LUT/BRAM/URAM counts."
   },
   {
    "in_git_head": true,
-   "loaded_keys": [
-    "architecture_repatriation",
-    "claim_boundary",
-    "device_genome",
-    "driverkit_bridge_design",
-    "experiment_dag",
-    "hbm_genome",
-    "hwir",
-    "label",
-    "model",
-    "model_identity",
-    "module_cache",
-    "organs"
-   ],
-   "on_disk": true,
+   "loaded_keys": null,
+   "on_disk": false,
    "path": "receipts/headless/QWEN27_FPGA_ORGAN_MAP.json",
    "role": "Qwen27 organ map + derived HWIR",
    "what_found": "6 organs (mlp_gate_up_down, gqa_qkv_and_output, deltanet_state_and_input_projection, norm_add_epilogues, lm_head_and_sampling, command_buffer_graph); same structural gap."
   },
   {
    "in_git_head": true,
-   "loaded_keys": [
-    "bench",
-    "checks",
-    "claim_boundary",
-    "fingerprint",
-    "fpga_backend",
-    "generated_at",
-    "maps",
-    "model_specific",
-    "physical_board",
-    "repo_root",
-    "schema",
-    "shared_primitives"
-   ],
-   "on_disk": true,
+   "loaded_keys": null,
+   "on_disk": false,
    "path": "receipts/headless/HCLI_FPGA_PREBOARD.json",
    "role": "Preboard receipt",
    "what_found": "physical_board ABSENT; fpga_backend NOT_BUILT; mock provider simulation-only."
@@ -567,41 +526,24 @@
   },
   {
    "in_git_head": true,
-   "loaded_keys": [
-    "asic_candidate_ledger",
-    "backend_neutral_primitives",
-    "behavior_taxonomy",
-    "bench",
-    "canonicalization_policy",
-    "claim_boundary",
-    "entries",
-    "evidence_inputs",
-    "experiment_queue",
-    "fingerprint",
-    "hwir_hypotheses",
-    "schema"
-   ],
-   "on_disk": true,
+   "loaded_keys": null,
+   "on_disk": false,
    "path": "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
    "role": "Claimed home of 15 hwir_hypotheses (frontier F003/F012)",
    "what_found": "NOT in git HEAD and not on disk in this sparse worktree. Node kinds for the estimator could not be read from the atlas."
   },
   {
    "in_git_head": true,
-   "loaded_keys": [
-    "<unreadable>"
-   ],
-   "on_disk": true,
+   "loaded_keys": null,
+   "on_disk": false,
    "path": "hcli/physical_graph.py",
    "role": "Provider-neutral PhysicalGraph (F003 prerequisite)",
    "what_found": "PLAN_ONLY placement/dataflow; computation nodes kind=computation; no FPGA resource fields. Not imported."
   },
   {
    "in_git_head": true,
-   "loaded_keys": [
-    "<unreadable>"
-   ],
-   "on_disk": true,
+   "loaded_keys": null,
+   "on_disk": false,
    "path": "hcli/agentos/test_fpga_preboard.py",
    "role": "Listed in the lane contract as a recovery target",
    "what_found": "Path does not exist in git HEAD."
@@ -628,7 +570,7 @@
   }
  ],
  "schema": "hawking.future.fpga_fidelity.v1",
- "seal_sha256": "10d361b3f66bb09f7a6f190470a8219b0e8d708915cba9b47b714e403c249c47",
+ "seal_sha256": "26467743bdfcef558dd0e61c62f29147cf06982e30ce709b5d27072177927063",
  "search_ladder": {
   "evidence_class": "STATIC_ONLY",
   "highest_available_level": "CYCLE_MODEL",

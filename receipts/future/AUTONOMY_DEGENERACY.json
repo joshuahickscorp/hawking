@@ -9,7 +9,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T07:11:57Z",
+  "recorded_at": "2026-09-02T09:39:33Z",
   "recorded_by": "tools/future/autonomy_degeneracy.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -32,7 +32,7 @@
  "evidence_class": "STATIC_ONLY",
  "fails_on_degeneracy_even_when_nominal_conditions_met": true,
  "gpu_authority": false,
- "head": "36691aa32412e3cc38b3f9f7d2575e1d59e9cff4",
+ "head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
  "measurement_class": "STATIC_ONLY",
  "named_axes": [
   "rejections",
@@ -260,14 +260,14 @@
     }
    ],
    "provenance": {
-    "n_bytes": 654162,
-    "present": true,
+    "n_bytes": null,
+    "present": false,
     "rel": "receipts/future/AUTONOMY_TIMELINE_1h.json",
-    "sha256": "72f00ec20f958aa83f30e2346839ddbeb4e5e31679f91235eb8775952bd7f011"
+    "sha256": null
    },
    "reason": "degenerate on rejections, refills, ingestion, launches, decisions, scars",
    "score": null,
-   "source_path": "/Users/scammermike/Downloads/hawking/receipts/future/AUTONOMY_TIMELINE_1h.json",
+   "source_path": "/Users/scammermike/.claude-grok/worktrees/s4-tools-future-under-10s-20260902-045214/receipts/future/AUTONOMY_TIMELINE_1h.json",
    "specimen_verification_ingests": 31,
    "table_not_a_score": true,
    "unlabelled_or_argv0_units": 32,
@@ -284,7 +284,7 @@
     }
    ],
    "degenerate_axes": [],
-   "elapsed_s": 129.50581693649292,
+   "elapsed_s": 130.41725492477417,
    "fails_on_degeneracy_even_when_nominal_conditions_met": true,
    "must_verdict": "PASS",
    "n_argv0_labelled": 0,
@@ -317,10 +317,10 @@
      "consecutive_emissions_identical": false,
      "consecutive_identical_pairs": 0,
      "degenerate": false,
-     "elapsed_after_last_s": 5.103195,
+     "elapsed_after_last_s": 5.089857,
      "fail_eligible": true,
      "largest_repeat_run": 1,
-     "last_t_s": 124.40262198448181,
+     "last_t_s": 125.32739782333374,
      "max_item_count": 1,
      "most_repeated": "[\"WU.DETACHED_TRIAL.ind.0000\",\"WU.DETACHED_TRIAL.ind.0001\"]",
      "n_events": 49,
@@ -395,8 +395,8 @@
      "most_repeated": "WORK_REFILLED:[\"WU.DETACHED_TRIAL.ind.0000\",\"WU.DETACHED_TRIAL.ind.0001\"]",
      "n_events": 54,
      "reason": "decisions unique=54 total=54 under thresholds",
-     "t_s_max": 128.37335777282715,
-     "t_s_min": 0.23886895179748535,
+     "t_s_max": 128.25612115859985,
+     "t_s_min": 0.3114628791809082,
      "total": 54,
      "unique": 54,
      "unique_ratio": 1.0
@@ -422,14 +422,14 @@
     }
    ],
    "provenance": {
-    "n_bytes": 104292,
+    "n_bytes": 105119,
     "present": true,
     "rel": "receipts/future/DETACHED_WORK_TRIAL.json",
-    "sha256": "2ce448b683d238e8c660c5fc48e8f111f457fc8d60cbfa0fc06cabcd6de004d9"
+    "sha256": "74989ed5b2ccc60e7279aa22a1e0f5f1db5bf2d2c694f881f77e2b1dba280d0f"
    },
    "reason": "every named axis is non-degenerate under the stated thresholds",
    "score": null,
-   "source_path": "/Users/scammermike/Downloads/hawking/receipts/future/DETACHED_WORK_TRIAL.json",
+   "source_path": "/Users/scammermike/.claude-grok/worktrees/s4-tools-future-under-10s-20260902-045214/receipts/future/DETACHED_WORK_TRIAL.json",
    "specimen_verification_ingests": 0,
    "table_not_a_score": true,
    "unlabelled_or_argv0_units": 0,
@@ -439,7 +439,7 @@
   "opposite_verdicts": true
  },
  "schema": "hawking.future.autonomy_degeneracy.v1",
- "seal_sha256": "f58efbd59bc614dde32f39a735b8c63da3de6fc72234d7a73ef1b29a2697b94a",
+ "seal_sha256": "3457d5e1cfdacecdfc9cad2f5789eb493a2ecb2c3e9fc5de65bd98c67898e390",
  "table_not_a_score": true,
  "threshold_defense": {
   "dead_scar_relaunches_max": "Zero: relaunching a family the trial already killed as a scar is dead_scar_repetition. The 1h table-replay of refusals is caught by the rejection ratio; this line is the improvement-trial control so the two mechanisms agree on that run.",

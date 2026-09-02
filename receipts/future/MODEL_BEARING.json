@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:06:07Z",
+  "recorded_at": "2026-09-02T09:40:10Z",
   "recorded_by": "tools/future/model_bearing.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -53,7 +53,7 @@
   "gpu_authority": false,
   "lease_taken": false,
   "path": "receipts/future/evidence/RESIDENT_LIVE_PROBE.json",
-  "path_taken": "disk",
+  "path_taken": "git",
   "present": true,
   "schema": "hawking.future.resident_live_probe.v1",
   "verdict": "RESIDENT_STARTS_AND_GENERATES",
@@ -114,7 +114,7 @@
   "workunit": "one CPU_ANALYSIS unit; the resident proposes a WorkUnit against the live frontier, tools admit or refuse, and the tape records whether the pick diverged and whether it ran"
  },
  "schema": "hawking.future.model_bearing.v1",
- "seal_sha256": "30eb9ad029d10aee123d025dd8cde94346c413071dd2f3ef808f8e0b351ad0b5",
+ "seal_sha256": "2f0632605595923925823a45f75e00039f8f01b57a193362cb81a43da977a262",
  "separation": {
   "model_decided": null,
   "rule": "the model proposes; the tools decide. This receipt has a null model_decided column because --build did not ask.",

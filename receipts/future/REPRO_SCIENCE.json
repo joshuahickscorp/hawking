@@ -3,12 +3,12 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:10:00Z",
+  "recorded_at": "2026-09-02T09:16:45Z",
   "recorded_by": "tools/future/repro_science.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
- "branch": "odyssey-i",
+ "branch": "grok/s4-tools-future-under-10s-20260902-045214",
  "claim_boundary": "Static sidecar artifact. No hardware measurement. Neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE.",
  "claim_downgrade": {
   "after": {
@@ -221,7 +221,7 @@
   "SKIP is not PASS: finalize_verdict('SKIP') refuses"
  ],
  "gpu_authority": false,
- "head": "0a844ee1a34f9be97a1c0b2a49beeaadfedb2b5b",
+ "head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
  "measurement_states": {
   "DIAGNOSTIC_RELATIVE": "contaminated A/B on a busy machine; guides; never promotes; this module does not produce it",
   "PROTECTED_ABSOLUTE": "measurement under a real protected GPU lease; decides; this module does not produce it",
@@ -528,6 +528,6 @@
   }
  },
  "schema": "hawking.future.repro_science.v1",
- "seal_sha256": "e42385b3e0f7217501b14e47b04535dcba4165b6d13f8e96f935484d2ebc2344",
+ "seal_sha256": "5670c327e5d854ab174a79232cc1177537785392c3eb7dee9ac02fc9038f06a9",
  "version": 1
 }

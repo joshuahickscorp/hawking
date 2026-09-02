@@ -10,7 +10,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T05:10:30Z",
+  "recorded_at": "2026-09-02T09:39:20Z",
   "recorded_by": "tools/future/abliteration.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -299,14 +299,14 @@
   "evidence_class": "STATIC_ONLY",
   "gpu_authority": false,
   "kind": {
-   "architecture": "qwen3_dense",
+   "architecture": "falcon_h1",
    "eligible": true,
-   "instruct_in_name": false,
+   "instruct_in_name": true,
    "moe_expert_granular_not_in_recovered_method": false,
    "named_abliterated": false,
-   "specimen": "Qwen--Qwen3-0.6B@c1899de289a0",
+   "specimen": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
    "weight_space": "full_weight",
-   "why": "smallest recovered residual-stream causal LM on this lake"
+   "why": "instruct decoder-only"
   },
   "layer_scoping": null,
   "named_abliterated_is_not_a_result": false,
@@ -320,7 +320,7 @@
   "ran": false,
   "resource_class": "GPU_EXCLUSIVE",
   "sleep_state": "SLEEPING",
-  "specimen": "Qwen--Qwen3-0.6B@c1899de289a0",
+  "specimen": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
   "stages": [
    "load full-weight specimen read-only (ModelLake is never mutated)",
    "tokenize declared harmful and harmless sets with the specimen chat template",
@@ -334,7 +334,7 @@
   ],
   "status": "PLAN_ONLY",
   "verification": {
-   "n_files": 10,
+   "n_files": 13,
    "owner": "modellake",
    "path": "receipts/future/SPECIMEN_VERIFICATION.json",
    "path_taken": "external_specimen_seal.load_verification_doc",
@@ -474,7 +474,7 @@
   ]
  },
  "schema": "hawking.future.abliteration.v1",
- "seal_sha256": "a7e18c6aed75a19f645223139778f0eb0697699ca3754dd5fa94f130e81f2b46",
+ "seal_sha256": "7d6af57bccc23724a3acdb8af8a691cf43b26b3db7f59710ad6dd6e9a1f3d729",
  "selection_demo": {
   "claim": "candidate direction selected under completion+harmless+loss gates; this is not an uncensoring result",
   "discarded": [
