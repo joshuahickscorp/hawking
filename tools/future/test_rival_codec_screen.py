@@ -582,3 +582,48 @@ def test_top_eigh_is_the_TOP_eigenspace_not_merely_some_k_columns():
     # And it really is the maximiser: no other rank-k eigen-subspace beats it.
     best = float(np.sort(evals)[-rank:].sum())
     assert captured(got) == pytest.approx(best, rel=1e-6)
+
+
+def test_residual_factors_absorb_the_projection_into_V_single_and_batch():
+    """V must be U^T R, not just some r rows of R.
+
+    residual_factors and residual_factors_batch return R ~ U @ V with U spanning
+    the top-r left eigenspace. Replacing V with `R[:r]` -- discarding the
+    projection entirely -- passed all 20 fast tests in this file. The batch case
+    survived even though the threading test calls it, because that test compares
+    the serial path to the threaded one and both would carry the same wrong V.
+
+    Asserted here against the property itself: V is the projection, and U @ V is
+    the orthogonal projection of R onto U's span, which strictly beats taking r
+    raw rows of R.
+    """
+    rng = np.random.default_rng(5)
+    residual = rng.standard_normal((30, 41), dtype=np.float32)
+    rank = 5
+
+    u, v = rcs.residual_factors(residual, rank)
+    assert u.shape == (30, rank)
+    assert v.shape == (rank, 41)
+
+    # V is the projection of R onto U, not an arbitrary slice of R.
+    assert np.allclose(v, u.T @ residual, atol=1e-4), "V is not U^T R"
+
+    # U @ V is therefore the orthogonal projection U U^T R.
+    assert np.allclose(u @ v, (u @ u.T) @ residual, atol=1e-4)
+
+    # And that beats the mutant that drops the projection.
+    def err(pred):
+        return float(np.linalg.norm(pred - residual))
+
+    assert err(u @ v) < err(u @ residual[:rank]), "the projection buys nothing"
+
+    # The batch path must carry the same property, per expert.
+    batch = np.stack([residual, residual[::-1] * 0.5], axis=0)
+    bu, bv = rcs.residual_factors_batch(batch, rank)
+    assert bu.shape == (2, 30, rank)
+    assert bv.shape == (2, rank, 41)
+    for i in range(2):
+        assert np.allclose(bv[i], bu[i].T @ batch[i], atol=1e-4), f"expert {i}: V is not U^T R"
+        projected = float(np.linalg.norm(bu[i] @ bv[i] - batch[i]))
+        raw_rows = float(np.linalg.norm(bu[i] @ batch[i][:rank] - batch[i]))
+        assert projected < raw_rows, f"expert {i}: the projection buys nothing"
