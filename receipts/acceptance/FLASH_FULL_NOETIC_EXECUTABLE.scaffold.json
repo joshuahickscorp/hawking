@@ -1,0 +1,2800 @@
+{
+  "NOT_FOR_PROMOTION": true,
+  "accepted_capability_preserving_tps": null,
+  "capability_contract": {
+    "declarations_are_requirements_not_runtime_evidence": true,
+    "dense_parent_execution_fallback": false,
+    "fallback_count": null,
+    "hidden_dense_rematerialization": false,
+    "required": [
+      "same-model output parity",
+      "multimodal/text contract",
+      "sequence isolation",
+      "zero hidden dense rematerialization",
+      "fallback disclosure",
+      "accepted-token accounting"
+    ],
+    "status": "NOT_RUN"
+  },
+  "chosen_representation": {
+    "bounded_source_transform": {
+      "capability_parity": "NOT_TESTED",
+      "full_payload_read": true,
+      "independent_q4_candidate_bytes": 891289600,
+      "independent_q4_effective_bits_per_value": 4.25,
+      "independent_reference_vector": {
+        "cosine": 0.9928837403313406,
+        "count": 655360,
+        "finite": true,
+        "max_abs_error": 0.5110001564025879,
+        "mean_abs_error": 0.06314619255277591,
+        "rmse": 0.07972607929790755
+      },
+      "independent_weight_reconstruction": {
+        "cosine": 0.9930165146332164,
+        "count": 1677721600,
+        "finite": true,
+        "max_abs_error": 0.0390625,
+        "mean_abs_error": 0.0013130531516401943,
+        "rmse": 0.001574400915434971
+      },
+      "label": "[D]",
+      "loader_roundtrip": {
+        "candidate_id": "independent_q4_g64",
+        "descriptor_sha256": "e5de59c4502b1adfc8da8fc6ba5bef9ded3994d90079c44eeb042abffa81a14d",
+        "label": "[D]",
+        "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/tools/acceptance/flash/_cache/receipts/headless/FLASH_ROUTED_EXPERT_LOADER_ROUNDTRIP.json",
+        "roundtrip": {
+          "code_pack_unpack_parity": true,
+          "decoded_finite": true,
+          "decoded_shape": [
+            2,
+            2560
+          ],
+          "descriptor_json_roundtrip": true,
+          "label": "[D]",
+          "reference_vector": {
+            "cosine": 0.999917678792683,
+            "count": 2,
+            "finite": true,
+            "max_abs_error": 0.047425270080566406,
+            "mean_abs_error": 0.03642413020133972,
+            "rmse": 0.03804920944282053
+          },
+          "source_file_unchanged": true,
+          "source_payload_unchanged": true,
+          "status": "PASSED",
+          "weight_reconstruction": {
+            "cosine": 0.9930054747215294,
+            "count": 5120,
+            "finite": true,
+            "max_abs_error": 0.00537109375,
+            "mean_abs_error": 0.0014073599595576525,
+            "rmse": 0.001666226581554829
+          }
+        },
+        "status": "PASSED"
+      },
+      "native_kernel_parity": {
+        "descriptor": {
+          "candidate_id": "independent_q4_g64",
+          "load_policy": "validated serialized descriptor; candidate body is not persisted by this bounded probe",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_ROUTED_EXPERT_LOADER_ROUNDTRIP.json",
+          "schema": "hcli.noetic.representation_descriptor.v1",
+          "sha256": "60e7c098c67f26013e47d3411efc554b7e8612417300eb2116d8237f53568c19"
+        },
+        "gpu_timing": {
+          "device": "Apple M3 Ultra",
+          "gpu_ns": [
+            341459,
+            327250,
+            282500,
+            331416,
+            352584,
+            271000,
+            306166
+          ],
+          "gpu_ns_max": 352584,
+          "gpu_ns_median": 327250,
+          "gpu_ns_min": 271000,
+          "host_wall_ns": [
+            566333,
+            590166,
+            520333,
+            583667,
+            554375,
+            471416,
+            514125
+          ],
+          "host_wall_ns_max": 590166,
+          "host_wall_ns_median": 554375,
+          "host_wall_ns_min": 471416,
+          "measured_runs": 7,
+          "memory_limits": {
+            "current_allocated_size": 638976,
+            "has_unified_memory": true,
+            "max_buffer_length": 62620631040,
+            "recommended_max_working_set_size": 83494174720
+          },
+          "timing_authority": "Metal completed-command-buffer GPUStartTime/GPUEndTime; host wall reported separately",
+          "warmup_runs": 2
+        },
+        "kernel": "qwen_uniform_q4_group64_matvec",
+        "label": "[D]",
+        "native_loader": {
+          "candidate_body_persisted": true,
+          "candidate_id": "independent_q4_g64",
+          "dense_rematerialization": "forbidden",
+          "descriptor_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_ROUTED_EXPERT_LOADER_ROUNDTRIP.json",
+          "descriptor_sha256": "60e7c098c67f26013e47d3411efc554b7e8612417300eb2116d8237f53568c19",
+          "source_block_streamed_for_reference": true,
+          "source_independent_execution": true,
+          "status": "BOUNDED_NOETIC_DESCRIPTOR_AND_BODY_LOAD",
+          "whole_model_capability": "NOT_TESTED",
+          "whole_model_runtime": "NOT_TESTED"
+        },
+        "parity": {
+          "cosine": 0.9999999999999637,
+          "count": 128,
+          "finite": true,
+          "max_abs_error": 1.564621925354004e-07,
+          "rmse": 5.2199908547982395e-08,
+          "tolerance": 0.0020000000949949026,
+          "within_tolerance": true
+        },
+        "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/tools/acceptance/flash/_cache/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_PARITY.json",
+        "status": "PASSED",
+        "whole_model_capability": "NOT_TESTED",
+        "whole_model_runtime": "NOT_TESTED"
+      },
+      "next_experiment": {
+        "action": "serialize the chosen source-layout candidate metadata and run a bounded loader encode/decode round-trip before implementing a native kernel",
+        "id": "flash-routed-expert-bounded-loader-roundtrip",
+        "required_before_promotion": [
+          "bounded loader",
+          "native kernel",
+          "whole-model capability",
+          "protected complete-token timing"
+        ],
+        "source_mutation_allowed": false
+      },
+      "pack_unpack_parity": true,
+      "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/tools/acceptance/flash/_cache/receipts/headless/FLASH_FULL_TENSOR_TRANSFORM_PARITY.json",
+      "shape": [
+        512,
+        1280,
+        2560
+      ],
+      "shared_basis_nf4_residual_candidate_bytes": 897843200,
+      "shared_basis_nf4_residual_effective_bits_per_value": 4.28125,
+      "shared_reference_vector": {
+        "cosine": 0.9954127399449646,
+        "count": 655360,
+        "finite": true,
+        "max_abs_error": 0.4027063846588135,
+        "mean_abs_error": 0.05057982959311573,
+        "rmse": 0.0636275173080289
+      },
+      "shared_weight_reconstruction": {
+        "cosine": 0.9954952928791921,
+        "count": 1677721600,
+        "finite": true,
+        "max_abs_error": 0.039417535066604614,
+        "mean_abs_error": 0.0009965070781567215,
+        "rmse": 0.0012570701157017504
+      },
+      "source_layout": "row-major [expert, row, column]; complete tensor payload streamed in expert/row blocks",
+      "source_payload_bytes": 3355443200,
+      "tensor_name": "model.language_model.layers.0.mlp.experts.gate_up_proj",
+      "whole_model_runtime": "NOT_TESTED"
+    },
+    "deltanet": "resident state-native representation",
+    "expert_bank": "shared basis plus per-expert NF residual",
+    "id": "flash-routed-expert-dual-candidate-v1",
+    "label": "[D]",
+    "mtp": "explicit draft/verify/rollback representation",
+    "ngram": "lookup/compositional representation, not generic dense quantization",
+    "quality_alternate": "shared_bf16_basis_nf4_residual",
+    "router": "resident route metadata and selected-expert gather",
+    "selected_candidate": "independent_q4_g64",
+    "selected_candidate_reason": "lower observed tensor-level EBPW (4.25 versus 4.28125 bits/value); shared-basis/NF4 remains the lower-error quality alternate",
+    "selection_policy": "minimize observed tensor-level effective bits per value while retaining a lower-error quality alternate; this does not select a whole-model runtime representation",
+    "sparse_attention": "budget/index-native sparse representation",
+    "status": "FULL_TENSOR_TRANSFORM_OBSERVED_NOT_WHOLE_MODEL",
+    "vision": "conditional multimodal path; text-resident omission requires an explicit separate contract"
+  },
+  "claim_boundary": "FLASH_NEXT_NOETIC_EXECUTABLE remains a scaffold. It now records a physically observed exact layer-0 HyperConnection read/write boundary around a selected routed-plus-shared MoE candidate, while source router parity, source BF16 activation parity, whole-model loading/capability, complete-token timing, complete-system EBPW, Flash TPS, and promotion remain unqualified.",
+  "complete_system_ebpw": null,
+  "complete_token_timing": {
+    "accepted_tps": null,
+    "budget_receipt": {
+      "accepted_tokens": null,
+      "capability_parity": null,
+      "complete_generation_wall_ns": null,
+      "copy_bytes": null,
+      "decode_wall_ns": null,
+      "dispatches": null,
+      "fallback_count": null,
+      "gpu_ns": null,
+      "host_wait_ns": null,
+      "prefill_wall_ns": null,
+      "protected_benchmark_class": null,
+      "rejected_draft_tokens": null,
+      "sync_ns": null
+    },
+    "complete_token_definition": "complete accepted generated token wall time, including all required graph/runtime/host ceremony",
+    "complete_wall_ns_per_accepted_token": null,
+    "status": "NOT_MEASURED"
+  },
+  "declarations_are_requirements_not_runtime_evidence": true,
+  "dense_parent_execution_fallback": false,
+  "ebpw_budget_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/acceptance/FLASH_FULL_NOETIC_EXECUTABLE.ebpw_budget.json",
+  "fallback_count": null,
+  "flash_telemetry": {
+    "cuda_capability_graph": {
+      "path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/CUDA_CAPABILITY_GRAPH.json",
+      "sha256": "1eacb33fed611d272fb68b207b3a0b0ceb23b6688857bbc68d1cb592c093fb2a",
+      "status": "PARTIAL_TRANSFER_MAP"
+    },
+    "gpu_work_ledger": {
+      "path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_GPU_WORK_LEDGER.json",
+      "sha256": "a92c0276e7d26baaef248e5108f8df43192db67f54d6fd00a6ad3ea4203cfc6f",
+      "status": "NOT_RUN"
+    },
+    "token_critical_path": {
+      "path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_TOKEN_CRITICAL_PATH.json",
+      "sha256": "e610ef4a8e8e110af654295da63b7f3cb6b8fe66a8a2493a59026191b1e3048c",
+      "status": "NOT_RUN"
+    }
+  },
+  "graph_runtime": {
+    "bounded_component": {
+      "candidate_body_persisted": true,
+      "candidate_id": "independent_q4_g64",
+      "complete_token_runtime": "NOT_TESTED",
+      "fingerprint": "af2727f14fece8940229fc644615abe588e21e4895e632b3607d4ddb50bc972b",
+      "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/acceptance/FLASH_NATIVE_NF_KERNEL.graph.json",
+      "source_backed": false,
+      "status": "BOUNDED_COMPONENT_COMPILED",
+      "whole_model_capability": "NOT_TESTED"
+    },
+    "component_campaign": {
+      "candidate_body_persisted": null,
+      "complete_token_runtime": "NOT_TESTED",
+      "component_count": 0,
+      "component_windows": [],
+      "fingerprint": null,
+      "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_COMPONENT_CAMPAIGN.json",
+      "source_independent_execution": null,
+      "status": "NOT_COMPILED",
+      "whole_model_capability": "NOT_TESTED"
+    },
+    "fallbacks": "No fallback may be silently counted as native Flash execution.",
+    "graph_source": "pinned header organ graph; bounded component body-backed when the native body-load receipt is present, while remaining runtime edges still require implementation",
+    "mtp_accept_reject": "EXPLICIT_REQUIRED_EDGE",
+    "native_exact_hyperconnection": {
+      "complete_layer0_moe_candidate": null,
+      "complete_moe_combine": null,
+      "complete_token_runtime": "NOT_TESTED",
+      "device_intermediate_no_host_roundtrip": null,
+      "fingerprint": null,
+      "qualification": null,
+      "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_EXACT_HYPERCONNECTION_NATIVE.json",
+      "receipt_sha256": null,
+      "routed_expert_count": null,
+      "source_independent_execution": null,
+      "source_selection_parity": null,
+      "status": "NOT_RUN",
+      "whole_model_capability": "NOT_TESTED"
+    },
+    "native_expert_composition": {
+      "complete_expert_runtime": "NOT_TESTED",
+      "complete_token_runtime": "NOT_TESTED",
+      "device_intermediate_no_host_roundtrip": null,
+      "fingerprint": null,
+      "native_down_projection_observed": null,
+      "native_expert_composition_observed": null,
+      "native_gate_up_swiglu_observed": null,
+      "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_COMPOSITION_NATIVE.json",
+      "selected_expert_count": null,
+      "source_independent_execution": null,
+      "status": "NOT_RUN",
+      "whole_model_capability": "NOT_TESTED"
+    },
+    "native_gate_up_swiglu": {
+      "complete_expert_runtime": "NOT_TESTED",
+      "complete_token_runtime": "NOT_TESTED",
+      "fingerprint": null,
+      "native_expert_gate_up_activation_observed": null,
+      "native_gate_up_swiglu_observed": null,
+      "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_GATE_UP_SWIGLU_NATIVE.json",
+      "selected_expert_count": null,
+      "source_independent_execution": null,
+      "status": "NOT_RUN",
+      "whole_model_capability": "NOT_TESTED"
+    },
+    "native_routed_expert_dispatch": {
+      "complete_expert_runtime": "NOT_TESTED",
+      "complete_token_runtime": "NOT_TESTED",
+      "fingerprint": null,
+      "native_routed_body_dispatch_observed": null,
+      "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_DISPATCH_NATIVE.json",
+      "selected_expert_count": null,
+      "source_independent_execution": null,
+      "status": "NOT_RUN",
+      "whole_model_capability": "NOT_TESTED"
+    },
+    "native_router_selection": {
+      "complete_token_runtime": "NOT_TESTED",
+      "fingerprint": null,
+      "native_selection_execution_observed": null,
+      "native_source_authority_execution_observed": null,
+      "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_ROUTER_SELECTION_NATIVE.json",
+      "source_guard_unchanged": null,
+      "source_independent_execution": null,
+      "source_payload_exact": null,
+      "source_reference_parity": null,
+      "source_selection_parity_qualified": null,
+      "status": "NOT_EXECUTED",
+      "whole_model_capability": "NOT_TESTED"
+    },
+    "native_shared_expert_composition": {
+      "complete_token_runtime": "NOT_TESTED",
+      "device_intermediate_no_host_roundtrip": null,
+      "fingerprint": null,
+      "native_shared_expert_composition_observed": null,
+      "native_shared_expert_down_projection_observed": null,
+      "native_shared_expert_gate_up_swiglu_observed": null,
+      "native_shared_expert_scalar_gate_observed": null,
+      "native_shared_expert_sigmoid_gate_observed": null,
+      "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_SHARED_EXPERT_COMPOSITION_NATIVE.json",
+      "source_independent_execution": null,
+      "status": "NOT_RUN",
+      "whole_model_capability": "NOT_TESTED"
+    },
+    "native_shared_residual_hyperconnection": {
+      "complete_token_runtime": "NOT_TESTED",
+      "device_intermediate_no_host_roundtrip": null,
+      "fingerprint": null,
+      "native_hyperconnection_block_inject_observed": null,
+      "native_hyperconnection_low_rank_down_observed": null,
+      "native_hyperconnection_low_rank_up_observed": null,
+      "native_hyperconnection_residual_mix_observed": null,
+      "native_hyperconnection_stream_injection_observed": null,
+      "native_shared_residual_composition_observed": null,
+      "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_SHARED_RESIDUAL_HYPERCONNECTION_NATIVE.json",
+      "source_independent_execution": null,
+      "status": "NOT_RUN",
+      "whole_model_capability": "NOT_TESTED"
+    },
+    "organ_order": [
+      "embeddings",
+      "deltanet",
+      "sparse_attention",
+      "router",
+      "routed_experts",
+      "shared_expert",
+      "lm_head",
+      "mtp",
+      "ngram_engine",
+      "vision_backbone",
+      "residual_hyperconnections",
+      "support_misc",
+      "recurrent_state"
+    ],
+    "router_component": {
+      "candidate_body_persisted": null,
+      "complete_token_runtime": "NOT_TESTED",
+      "component_window": null,
+      "fingerprint": null,
+      "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_ROUTER_GRAPH.json",
+      "source_independent_execution": null,
+      "status": "NOT_COMPILED",
+      "whole_model_capability": "NOT_TESTED"
+    },
+    "router_representation_ab": {
+      "candidate_bodies_persisted": false,
+      "complete_token_runtime": "NOT_TESTED",
+      "fingerprint": "f6a54e19ead6f42a079359e569c357e56fda0c0fc811292d4bb0c901828f8d18",
+      "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/acceptance/FLASH_DENSE_VS_NF_AB.run.json",
+      "status": "PASSED",
+      "whole_model_capability": "NOT_TESTED"
+    },
+    "router_selection": {
+      "candidate_body_persisted": null,
+      "complete_token_runtime": "NOT_TESTED",
+      "fingerprint": null,
+      "native_selection_execution_observed": null,
+      "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
+      "source_independent_execution": null,
+      "source_selection_parity_qualified": null,
+      "status": "NOT_EXECUTED",
+      "whole_model_capability": "NOT_TESTED"
+    },
+    "status": "BOUNDED_COMPONENT_COMPILED",
+    "text_only_vision_bypass": "CONDITIONAL_AND_UNPROVEN"
+  },
+  "hidden_dense_rematerialization": false,
+  "label": "[D]",
+  "model_lake": {
+    "body_read_by_this_scaffold": false,
+    "census_final_present": null,
+    "census_receipt": {
+      "path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/MODELLAKE_FLASH_NEXT_CENSUS.json",
+      "present": false,
+      "sha256": null
+    },
+    "expected_bytes": 360023286454,
+    "final": {
+      "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+      "present": true,
+      "verified_manifest": true
+    },
+    "manifest": {
+      "path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+      "present": true,
+      "resolved_sha": "34567a4712bc9766c4449e2e98e4468bfa24d915"
+    },
+    "mutation_by_this_scaffold": false,
+    "observed_job_status": null,
+    "partial": {
+      "direct_bytes": 0,
+      "direct_files": 0,
+      "path": "/Volumes/corpdrive/hawking-modellake/partial/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+      "present": false
+    },
+    "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "repo": "Qwen/Qwen3.8-Flash-Next",
+    "status": "VERIFIED_FINAL_IDENTITY",
+    "supervision_receipt": {
+      "path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/MODELLAKE_FLASH_NEXT_SUPERVISION.json",
+      "present": false,
+      "sha256": null
+    }
+  },
+  "native_kernels": {
+    "bounded_campaign_evidence": {
+      "candidate_body_persisted": null,
+      "component_count": 0,
+      "component_windows": [],
+      "label": "[D]",
+      "physical_graph_fingerprint": null,
+      "receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_COMPONENT_CAMPAIGN.json",
+      "scope": "bounded routed-expert body campaign only; not complete Flash execution",
+      "source_independent_execution": null,
+      "status": "NOT_RUN"
+    },
+    "bounded_component_evidence": {
+      "candidate_body": {
+        "bytes": 174080,
+        "path": "/Users/scammermike/Downloads/hawking/.hcli/flash-component/flash-routed-expert-independent-q4-g64-e0-r0-128.bin",
+        "receipt_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_BODY.json",
+        "receipt_sha256": "60deabc9be0f32005679ad17a6124a56f89a791dab2c641268d9f5bc7599672b",
+        "sha256": "5be289f04c8ec072a951fdd249d21fd44d69aad8baafedde0158e77aca72aa78",
+        "source_independent": true
+      },
+      "kernel": "qwen_uniform_q4_group64_matvec",
+      "label": "[D]",
+      "receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/tools/acceptance/flash/_cache/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_PARITY.json",
+      "scope": "one real routed-expert source block only; not complete Flash execution",
+      "source_independent_execution": true,
+      "status": "PASSED"
+    },
+    "bounded_deltanet_matrix_evidence": {
+      "candidate_body_persisted": null,
+      "gpu_timing": null,
+      "label": "[D]",
+      "native_kernel": null,
+      "native_loader": null,
+      "parity": null,
+      "receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_Q4_MATRIX_KERNEL_DELTANET_IN_PROJ_QKV_L0_R0_128_PARITY.json",
+      "scope": null,
+      "source_independent_execution": null,
+      "source_tensor": null,
+      "status": "NOT_RUN"
+    },
+    "bounded_mtp_gate_matrix_evidence": {
+      "candidate_body_persisted": null,
+      "gpu_timing": null,
+      "label": "[D]",
+      "native_kernel": null,
+      "native_loader": null,
+      "parity": null,
+      "receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_Q4_MATRIX_KERNEL_MTP_GATE_L0_R0_128_PARITY.json",
+      "scope": null,
+      "source_independent_execution": null,
+      "source_tensor": null,
+      "status": "NOT_RUN"
+    },
+    "bounded_native_exact_hyperconnection_evidence": {
+      "complete_layer0_moe_candidate": null,
+      "complete_moe_combine": null,
+      "device_intermediate_no_host_roundtrip": null,
+      "gpu_timing": null,
+      "label": "[D]",
+      "layer": null,
+      "native_hyperconnection_read_observed": null,
+      "native_hyperconnection_write_observed": null,
+      "native_moe_shared_add_observed": null,
+      "native_moe_weighted_sum_observed": null,
+      "native_routed_expert_down_projection_observed": null,
+      "native_routed_expert_gate_up_swiglu_observed": null,
+      "noetic_ir": null,
+      "parity": null,
+      "physical_graph": null,
+      "qualification": null,
+      "receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_EXACT_HYPERCONNECTION_NATIVE.json",
+      "receipt_sha256": null,
+      "routed_expert_count": null,
+      "routed_expert_ids": null,
+      "scope": "bounded exact layer-0 candidate only; source route parity and source BF16 numeric parity are unresolved, and complete token/TPS/EBPW remain unmeasured",
+      "selected_weight_sum": null,
+      "source_hc_norm_payload_exact": null,
+      "source_independent_execution": null,
+      "source_selection_parity": null,
+      "status": "NOT_RUN"
+    },
+    "bounded_native_expert_composition_evidence": {
+      "device_intermediate_no_host_roundtrip": null,
+      "dispatches_per_route": null,
+      "label": "[D]",
+      "native_down_projection_observed": null,
+      "native_expert_composition_observed": null,
+      "native_gate_up_swiglu_observed": null,
+      "physical_graph_fingerprint": null,
+      "qualification": null,
+      "receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_COMPOSITION_NATIVE.json",
+      "scope": "native selected persisted gate/up/down bodies with a device-resident intermediate; complete expert/model/token runtime remains untested",
+      "selected_expert_count": null,
+      "source_independent_execution": null,
+      "status": "NOT_RUN"
+    },
+    "bounded_native_gate_up_swiglu_evidence": {
+      "gate_rows": null,
+      "label": "[D]",
+      "native_expert_gate_up_activation_observed": null,
+      "native_gate_up_swiglu_observed": null,
+      "physical_graph_fingerprint": null,
+      "qualification": null,
+      "receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_GATE_UP_SWIGLU_NATIVE.json",
+      "scope": "native Q4/G64 gate+up/SwiGLU activation plus host weighted gather; down projection and complete expert/Flash execution remain untested",
+      "selected_expert_count": null,
+      "source_independent_execution": null,
+      "status": "NOT_RUN"
+    },
+    "bounded_native_routed_expert_dispatch_evidence": {
+      "dispatches_per_route": null,
+      "label": "[D]",
+      "native_routed_body_dispatch_observed": null,
+      "physical_graph_fingerprint": null,
+      "qualification": null,
+      "receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_DISPATCH_NATIVE.json",
+      "scope": "native selected persisted Q4/G64 routed-expert body windows plus host weighted gather; no complete expert or Flash execution",
+      "selected_expert_count": null,
+      "source_independent_execution": null,
+      "status": "NOT_RUN"
+    },
+    "bounded_native_router_selection_evidence": {
+      "label": "[D]",
+      "native_selection_execution_observed": null,
+      "physical_graph_fingerprint": null,
+      "receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_ROUTER_SELECTION_NATIVE.json",
+      "scope": "native Metal router matvec plus FP32 softmax/top-k over a persisted full body; no complete Flash execution",
+      "selection_status": "NOT_EXECUTED",
+      "source_independent_execution": null,
+      "source_selection_parity_qualified": null,
+      "source_selection_parity_status": null,
+      "status": "NOT_RUN"
+    },
+    "bounded_native_shared_expert_composition_evidence": {
+      "device_intermediate_no_host_roundtrip": null,
+      "dispatches_per_graph": null,
+      "label": "[D]",
+      "native_shared_expert_composition_observed": null,
+      "native_shared_expert_down_projection_observed": null,
+      "native_shared_expert_gate_up_swiglu_observed": null,
+      "native_shared_expert_scalar_gate_observed": null,
+      "native_shared_expert_sigmoid_gate_observed": null,
+      "physical_graph_fingerprint": null,
+      "qualification": null,
+      "receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_SHARED_EXPERT_COMPOSITION_NATIVE.json",
+      "scope": "complete layer-0 shared-expert candidate graph only; routed/MoE combine, remaining Flash organs, complete model/token runtime, TPS, and EBPW remain untested",
+      "source_independent_execution": null,
+      "status": "NOT_RUN"
+    },
+    "bounded_native_shared_residual_hyperconnection_evidence": {
+      "candidate_semantics": null,
+      "device_intermediate_no_host_roundtrip": null,
+      "dispatches_per_graph": null,
+      "label": "[D]",
+      "native_hyperconnection_block_inject_observed": null,
+      "native_hyperconnection_low_rank_down_observed": null,
+      "native_hyperconnection_low_rank_up_observed": null,
+      "native_hyperconnection_residual_mix_observed": null,
+      "native_hyperconnection_stream_injection_observed": null,
+      "native_shared_expert_down_projection_observed": null,
+      "native_shared_expert_gate_up_swiglu_observed": null,
+      "native_shared_expert_sigmoid_gate_observed": null,
+      "native_shared_residual_composition_observed": null,
+      "physical_graph_fingerprint": null,
+      "qualification": null,
+      "receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_SHARED_RESIDUAL_HYPERCONNECTION_NATIVE.json",
+      "scope": "bounded layer-0 shared-expert-to-hyperconnection candidate graph only; hc_norm and exact source hyperconnection semantics, routed/MoE combine, remaining Flash organs, complete model/token runtime, TPS, and EBPW remain untested",
+      "source_independent_execution": null,
+      "status": "NOT_RUN"
+    },
+    "bounded_router_matrix_evidence": {
+      "candidate_body_persisted": null,
+      "component_status": "NOT_COMPILED",
+      "label": "[D]",
+      "physical_graph_fingerprint": null,
+      "receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_ROUTER_GRAPH.json",
+      "scope": "bounded router matrix matvec only; sigmoid/top-k and complete Flash execution remain unimplemented",
+      "source_independent_execution": null,
+      "status": "NOT_RUN"
+    },
+    "bounded_router_representation_ab_evidence": {
+      "candidate_bodies_persisted": false,
+      "label": "[D]",
+      "physical_graph_fingerprint": "f6a54e19ead6f42a079359e569c357e56fda0c0fc811292d4bb0c901828f8d18",
+      "receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/acceptance/FLASH_DENSE_VS_NF_AB.run.json",
+      "recommendation": {
+        "best_low_bit_overlap_candidate": "independent_nf4_g64",
+        "best_low_bit_overlap_count": 9,
+        "decision": "retain independent_q4_g64 for the current native kernel; evaluate independent_nf4_g64 only with a native NF4 kernel, or accept the extra scale bytes of a tighter Q4 group if exact routing quality justifies it",
+        "label": "[D]",
+        "native_compatible_baseline": "independent_q4_g64",
+        "native_compatible_baseline_overlap_count": 8,
+        "source_top_k": [
+          29,
+          309,
+          455,
+          151,
+          500,
+          374,
+          15,
+          220,
+          37,
+          0
+        ],
+        "source_top_k_exact_for_any_low_bit_candidate": false
+      },
+      "scope": "in-memory router representation comparison only; no persisted body, native kernel, or complete Flash execution",
+      "status": "PASSED"
+    },
+    "bounded_router_selection_evidence": {
+      "candidate_body_persisted": null,
+      "label": "[D]",
+      "native_selection_execution_observed": null,
+      "physical_graph_fingerprint": null,
+      "receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
+      "scope": "derived CPU router softmax/top-k over a persisted full body; no native selection kernel or complete Flash execution",
+      "selection_status": "NOT_EXECUTED",
+      "source_independent_execution": null,
+      "source_selection_parity_qualified": null,
+      "source_selection_parity_status": null,
+      "status": "NOT_RUN"
+    },
+    "bounded_shared_expert_matrix_evidence": {
+      "candidate_body_persisted": null,
+      "gpu_timing": null,
+      "label": "[D]",
+      "native_kernel": null,
+      "native_loader": null,
+      "parity": null,
+      "receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_Q4_MATRIX_KERNEL_SHARED_EXPERT_GATE_L0_R0_128_PARITY.json",
+      "scope": "one shared-expert rank-2 matrix window only; not complete Flash execution",
+      "source_independent_execution": null,
+      "source_tensor": null,
+      "status": "NOT_RUN"
+    },
+    "bounded_sparse_attention_matrix_evidence": {
+      "candidate_body_persisted": null,
+      "gpu_timing": null,
+      "label": "[D]",
+      "native_kernel": null,
+      "native_loader": null,
+      "parity": null,
+      "receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_Q4_MATRIX_KERNEL_SPARSE_INDEXER_QK_PROJ_L11_R0_128_PARITY.json",
+      "scope": null,
+      "source_independent_execution": null,
+      "source_tensor": null,
+      "status": "NOT_RUN"
+    },
+    "coverage": [
+      {
+        "kernel": "partitioned_embedding_lookup",
+        "organ": "embeddings",
+        "status": "NOT_IMPLEMENTED"
+      },
+      {
+        "kernel": "native_nf_expert_gemv",
+        "organ": "routed_experts",
+        "status": "BOUNDED_LAYER0_SELECTED_TOP10_COMPOSITION_ONLY"
+      },
+      {
+        "kernel": "qwen_uniform_q4_group64_matvec_gate_up_swiglu + qwen_uniform_q4_group64_matvec + qwen_next_shared_expert_sigmoid_gate",
+        "organ": "shared_expert",
+        "status": "BOUNDED_LAYER0_COMPOSITION_ONLY"
+      },
+      {
+        "kernel": "qwen_next_moe_weighted_sum + qwen_next_moe_add_shared",
+        "organ": "moe_join",
+        "status": "BOUNDED_LAYER0_EXACT_MOE_JOIN"
+      },
+      {
+        "kernel": "router_topk_gather",
+        "organ": "router",
+        "status": "NOT_IMPLEMENTED"
+      },
+      {
+        "kernel": "persistent_state_update",
+        "organ": "deltanet",
+        "status": "NOT_IMPLEMENTED"
+      },
+      {
+        "kernel": "resident_state_read_modify_write",
+        "organ": "recurrent_state",
+        "status": "NOT_IMPLEMENTED"
+      },
+      {
+        "kernel": "budgeted_sparse_gather_reduce",
+        "organ": "sparse_attention",
+        "status": "NOT_IMPLEMENTED"
+      },
+      {
+        "kernel": "lookup_or_compositional_generator",
+        "organ": "ngram_engine",
+        "status": "NOT_IMPLEMENTED"
+      },
+      {
+        "kernel": "draft_verify_rollback",
+        "organ": "mtp",
+        "status": "NOT_IMPLEMENTED"
+      },
+      {
+        "kernel": "fused_norm_epilogue",
+        "organ": "norms",
+        "status": "NOT_IMPLEMENTED"
+      },
+      {
+        "kernel": "vocabulary_projection_and_reduce",
+        "organ": "lm_head",
+        "status": "NOT_IMPLEMENTED"
+      },
+      {
+        "kernel": "conditional_multimodal_vision_path",
+        "organ": "vision_backbone",
+        "status": "NOT_IMPLEMENTED"
+      },
+      {
+        "kernel": "qwen_next_expand_shared_to_hyper_state + qwen_uniform_q4_group64_matvec + qwen_next_hyperconnection_residual_mix_candidate",
+        "organ": "residual_hyperconnections",
+        "status": "BOUNDED_LAYER0_CANDIDATE_ONLY"
+      },
+      {
+        "kernel": "ownership_audit_required",
+        "organ": "support_misc",
+        "status": "UNRESOLVED"
+      }
+    ],
+    "dense_rematerialization": "FORBIDDEN_BY_FINAL_RUNTIME_POLICY",
+    "status": "PLAN_ONLY"
+  },
+  "native_loader": {
+    "body_read_by_scaffold": false,
+    "bounded_component_body": {
+      "bytes": 174080,
+      "path": "/Users/scammermike/Downloads/hawking/.hcli/flash-component/flash-routed-expert-independent-q4-g64-e0-r0-128.bin",
+      "receipt_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_BODY.json",
+      "receipt_sha256": "60deabc9be0f32005679ad17a6124a56f89a791dab2c641268d9f5bc7599672b",
+      "sha256": "5be289f04c8ec072a951fdd249d21fd44d69aad8baafedde0158e77aca72aa78",
+      "source_independent": true
+    },
+    "bounded_component_body_persisted": true,
+    "bounded_descriptor_roundtrip_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/tools/acceptance/flash/_cache/receipts/headless/FLASH_ROUTED_EXPERT_LOADER_ROUNDTRIP.json",
+    "bounded_descriptor_roundtrip_status": "PASSED",
+    "bounded_native_descriptor_load_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/tools/acceptance/flash/_cache/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_PARITY.json",
+    "bounded_native_descriptor_load_status": "BOUNDED_NOETIC_DESCRIPTOR_AND_BODY_LOAD",
+    "bounded_native_exact_hyperconnection_observed": null,
+    "bounded_native_exact_hyperconnection_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_EXACT_HYPERCONNECTION_NATIVE.json",
+    "bounded_native_exact_hyperconnection_scope": "layer-0 exact HyperConnection read/write equations around selected routed top-10 plus sigmoid-gated shared MoE, with device-resident weighted sum/add; source router parity, source BF16 activation parity, attention/state, complete model/token runtime, TPS, and EBPW remain unqualified",
+    "bounded_native_exact_hyperconnection_status": "NOT_RUN",
+    "bounded_native_expert_composition_observed": null,
+    "bounded_native_expert_composition_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_COMPOSITION_NATIVE.json",
+    "bounded_native_expert_composition_scope": "selected full persisted gate_up bodies through native SwiGLU into a device-resident activation buffer consumed by selected full persisted down bodies; complete model/token runtime remains untested",
+    "bounded_native_expert_composition_status": "NOT_RUN",
+    "bounded_native_gate_up_swiglu_observed": null,
+    "bounded_native_gate_up_swiglu_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_GATE_UP_SWIGLU_NATIVE.json",
+    "bounded_native_gate_up_swiglu_scope": "selected full persisted fused gate_up bodies split into gate/up halves and activated by native SwiGLU; down projection and full expert remain untested",
+    "bounded_native_gate_up_swiglu_status": "NOT_RUN",
+    "bounded_native_kernel_parity_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/tools/acceptance/flash/_cache/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_PARITY.json",
+    "bounded_native_kernel_parity_status": "PASSED",
+    "bounded_native_routed_expert_dispatch_observed": null,
+    "bounded_native_routed_expert_dispatch_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_DISPATCH_NATIVE.json",
+    "bounded_native_routed_expert_dispatch_scope": "selected persisted routed-expert body windows only; full expert activation remains untested",
+    "bounded_native_routed_expert_dispatch_status": "NOT_RUN",
+    "bounded_native_shared_expert_composition_observed": null,
+    "bounded_native_shared_expert_composition_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_SHARED_EXPERT_COMPOSITION_NATIVE.json",
+    "bounded_native_shared_expert_composition_scope": "layer-0 shared-expert gate/up/SwiGLU -> down -> scalar sigmoid gate with device-resident intermediates; routed/MoE and complete model/token runtime remain untested",
+    "bounded_native_shared_expert_composition_status": "NOT_RUN",
+    "bounded_native_shared_residual_hyperconnection_observed": null,
+    "bounded_native_shared_residual_hyperconnection_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_SHARED_RESIDUAL_HYPERCONNECTION_NATIVE.json",
+    "bounded_native_shared_residual_hyperconnection_scope": "layer-0 shared-expert output injected on-device into a four-stream hyperconnection candidate and consumed by low-rank down/up plus block-gated residual mix; hc_norm, exact source semantics, routed/MoE, and complete model/token runtime remain untested",
+    "bounded_native_shared_residual_hyperconnection_status": "NOT_RUN",
+    "bounded_source_independent_body_load_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/tools/acceptance/flash/_cache/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_PARITY.json",
+    "bounded_source_independent_body_load_status": true,
+    "required": [
+      "verified body manifest",
+      "zero-copy/streaming policy",
+      "per-organ ownership",
+      "resident lifetime",
+      "loader hash"
+    ],
+    "status": "NOT_IMPLEMENTED"
+  },
+  "nomenclature_version": "HAWKING_NOMENCLATURE_V1",
+  "promotion_allowed": false,
+  "promotion_gate": {
+    "artifact_contract": "FLASH_NEXT_COMPLETE_MULTIMODAL",
+    "claim_boundary": "Only PROMOTABLE closes the final Flash-Next gate. A measured candidate that misses either hard threshold remains a research/Pareto intermediate.",
+    "evidence": {
+      "capability_contract_passed": false,
+      "dense_parent_execution_fallback": true,
+      "dense_vs_nf_ab": false,
+      "hidden_dense_rematerialization": true,
+      "mtp_accounting_disclosed": false,
+      "native_executable": false,
+      "reproducible_protected_receipt": false,
+      "runtime_kernel_genome_complete": false,
+      "whole_model_reference_comparison": false
+    },
+    "hard_gate": {
+      "accepted_capability_preserving_tps_at_or_above_50": false,
+      "complete_system_ebpw_at_or_below_1": false
+    },
+    "ladder": {
+      "exceptional": {
+        "accepted_tps_min": 90.0,
+        "complete_system_ebpw_max": 0.6
+      },
+      "extreme": {
+        "accepted_tps_min": 120.0,
+        "complete_system_ebpw_max": 0.5
+      },
+      "final": {
+        "accepted_tps_min": 50.0,
+        "complete_system_ebpw_max": 1.0
+      },
+      "strong": {
+        "accepted_tps_min": 70.0,
+        "complete_system_ebpw_max": 0.75
+      }
+    },
+    "measured": {
+      "accepted_capability_preserving_tps": null,
+      "complete_system_ebpw": null
+    },
+    "missing_or_refused": [
+      "MTP accounting",
+      "complete-system byte ledger",
+      "dense-versus-NF A/B receipt",
+      "ebpw_accounting.all_required_bytes_included=true",
+      "ebpw_accounting.bases.bytes",
+      "ebpw_accounting.dictionaries.bytes",
+      "ebpw_accounting.expert_indices.bytes",
+      "ebpw_accounting.generators.bytes",
+      "ebpw_accounting.lookup_structures.bytes",
+      "ebpw_accounting.mtp_representation.bytes",
+      "ebpw_accounting.ngram_representation.bytes",
+      "ebpw_accounting.required_executable_metadata.bytes",
+      "ebpw_accounting.residuals.bytes",
+      "ebpw_accounting.routing_metadata.bytes",
+      "ebpw_accounting.scales.bytes",
+      "ebpw_accounting.weight_codes.bytes",
+      "ebpw_accounting.zero_points.bytes",
+      "fallback_count disclosure",
+      "native executable",
+      "protected capability contract",
+      "reproducible protected receipt",
+      "runtime/kernel genome",
+      "whole-model reference comparison"
+    ],
+    "promotion_allowed": false,
+    "schema": "hcli.flash-next.promotion.v1",
+    "status": "INCOMPLETE"
+  },
+  "qualification": false,
+  "runtime_genome": {
+    "compiler_identity": null,
+    "component_campaign_fingerprint": null,
+    "deltanet_kernel_parity_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_Q4_MATRIX_KERNEL_DELTANET_IN_PROJ_QKV_L0_R0_128_PARITY.json",
+    "device_identity": null,
+    "executable_sha256": null,
+    "graph_fingerprint": "af2727f14fece8940229fc644615abe588e21e4895e632b3607d4ddb50bc972b",
+    "kernel_binary_hashes": [],
+    "kernel_source_hashes": [],
+    "loader_sha256": null,
+    "mtp_gate_kernel_parity_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_Q4_MATRIX_KERNEL_MTP_GATE_L0_R0_128_PARITY.json",
+    "native_exact_hyperconnection_fingerprint": null,
+    "native_exact_hyperconnection_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_EXACT_HYPERCONNECTION_NATIVE.json",
+    "native_expert_composition_fingerprint": null,
+    "native_expert_composition_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_COMPOSITION_NATIVE.json",
+    "native_gate_up_swiglu_fingerprint": null,
+    "native_gate_up_swiglu_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_GATE_UP_SWIGLU_NATIVE.json",
+    "native_routed_expert_dispatch_fingerprint": null,
+    "native_routed_expert_dispatch_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_DISPATCH_NATIVE.json",
+    "native_router_selection_fingerprint": null,
+    "native_router_selection_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_ROUTER_SELECTION_NATIVE.json",
+    "native_shared_expert_composition_fingerprint": null,
+    "native_shared_expert_composition_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_SHARED_EXPERT_COMPOSITION_NATIVE.json",
+    "native_shared_residual_hyperconnection_fingerprint": null,
+    "native_shared_residual_hyperconnection_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_SHARED_RESIDUAL_HYPERCONNECTION_NATIVE.json",
+    "receipt_schema": "hcli.agentos.flash_next_noetic_executable.v1",
+    "representation_manifest_sha256": null,
+    "router_graph_fingerprint": null,
+    "router_representation_ab_fingerprint": "f6a54e19ead6f42a079359e569c357e56fda0c0fc811292d4bb0c901828f8d18",
+    "router_selection_fingerprint": null,
+    "shared_expert_kernel_parity_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_Q4_MATRIX_KERNEL_SHARED_EXPERT_GATE_L0_R0_128_PARITY.json",
+    "sparse_attention_kernel_parity_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_Q4_MATRIX_KERNEL_SPARSE_INDEXER_QK_PROJ_L11_R0_128_PARITY.json",
+    "status": "BOUNDED_COMPONENT_ONLY"
+  },
+  "schema": "hcli.agentos.flash_next_noetic_executable.v1",
+  "source_component_campaign": {
+    "candidate_body_persisted": null,
+    "complete_token_runtime": "NOT_TESTED",
+    "component_count": 0,
+    "component_status": "NOT_COMPILED",
+    "component_windows": [],
+    "promotion_allowed": false,
+    "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_COMPONENT_CAMPAIGN.json",
+    "source_independent_execution": null,
+    "status": "NOT_RUN",
+    "whole_model_capability": "NOT_TESTED"
+  },
+  "source_deltanet_kernel_parity": {
+    "candidate_body": null,
+    "candidate_body_persisted": null,
+    "gpu_timing": null,
+    "native_kernel": null,
+    "native_loader": null,
+    "noetic_descriptor": null,
+    "noetic_representation": null,
+    "organ": "deltanet",
+    "parity": null,
+    "promotion_allowed": false,
+    "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_Q4_MATRIX_KERNEL_DELTANET_IN_PROJ_QKV_L0_R0_128_PARITY.json",
+    "source_independent_execution": null,
+    "source_tensor": null,
+    "status": "NOT_RUN",
+    "whole_model_capability": "NOT_TESTED",
+    "whole_model_runtime": "NOT_TESTED"
+  },
+  "source_exact_hyperconnection_native": {
+    "claim_boundary": null,
+    "complete_expert_runtime": "NOT_TESTED",
+    "complete_layer0_moe_candidate": null,
+    "complete_moe_combine": null,
+    "complete_system_ebpw": null,
+    "complete_token_runtime": "NOT_TESTED",
+    "dependencies": null,
+    "execution": null,
+    "flash_tps": null,
+    "gpu_timing": null,
+    "input": null,
+    "layer": null,
+    "native_moe_shared_add_observed": null,
+    "native_moe_weighted_sum_observed": null,
+    "native_routed_expert_down_projection_observed": null,
+    "native_routed_expert_gate_up_swiglu_observed": null,
+    "next_action": null,
+    "noetic_ir": null,
+    "parity": null,
+    "physical_graph": null,
+    "promotion_allowed": false,
+    "qualification": null,
+    "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_EXACT_HYPERCONNECTION_NATIVE.json",
+    "schema": null,
+    "semantics": null,
+    "source_reference": null,
+    "source_selection_parity": null,
+    "status": "NOT_RUN",
+    "whole_model_capability": "NOT_TESTED"
+  },
+  "source_graph_component": {
+    "candidate_body_persisted": true,
+    "candidate_id": "independent_q4_g64",
+    "claim_boundary": "Bounded routed-expert graph component compiled from validated Noetic descriptor, persisted component body, and native kernel receipts; no complete-model loader, capability, complete-token timing, EBPW, or Flash TPS claim.",
+    "compiler_stage": "PhysicalGraphCompiler",
+    "complete_token_runtime": "NOT_TESTED",
+    "component_status": "BOUNDED_COMPONENT_COMPILED",
+    "graph_fingerprint": "af2727f14fece8940229fc644615abe588e21e4895e632b3607d4ddb50bc972b",
+    "next_action": "compose the bounded source-independent component across the routed-expert organ, then extend independently-owned representation/loader contracts across the remaining Flash organs",
+    "noetic_ir": {
+      "candidate_id": "independent_q4_g64",
+      "complete_model": false,
+      "operations": [
+        "retain_verified_source_block_as_parity_reference",
+        "load_persisted_source_independent_component_body",
+        "load_serialized_representation_descriptor",
+        "dispatch_qwen_uniform_q4_group64_matvec"
+      ],
+      "schema": "hcli.noetic.ir.v1",
+      "semantic_type": "NoeticIR",
+      "source_independent": true
+    },
+    "nomenclature_version": "HAWKING_NOMENCLATURE_V1",
+    "physical_graph": {
+      "compiler_stage": "PhysicalGraphCompiler",
+      "component_scope": "one routed-expert source block expert=0 rows=0:128; not complete Flash execution",
+      "computation": [
+        {
+          "execution_input": false,
+          "expert": 0,
+          "id": "source_block_reference",
+          "kind": "verified_source_reference",
+          "row_count": 128,
+          "row_start": 0,
+          "source_backed": true,
+          "source_block_bytes": 655360,
+          "stage": "SourceSpecimen",
+          "tensor_name": "model.language_model.layers.0.mlp.experts.gate_up_proj"
+        },
+        {
+          "body_persisted": true,
+          "candidate_id": "independent_q4_g64",
+          "execution_input": true,
+          "expert_index": 0,
+          "id": "noetic_component_body_load",
+          "kind": "source_independent_component_body",
+          "row_count": 128,
+          "row_start": 0,
+          "stage": "NoeticCompiler"
+        },
+        {
+          "candidate_id": "independent_q4_g64",
+          "descriptor_sha256": "60e7c098c67f26013e47d3411efc554b7e8612417300eb2116d8237f53568c19",
+          "execution_input": true,
+          "expert_index": 0,
+          "id": "noetic_descriptor_load",
+          "kind": "serialized_representation_descriptor",
+          "loader_status": "BOUNDED_NOETIC_DESCRIPTOR_AND_BODY_LOAD",
+          "row_count": 128,
+          "row_start": 0,
+          "schema": "hcli.noetic.representation_descriptor.v1",
+          "stage": "NoeticCompiler"
+        },
+        {
+          "dispatches_per_sample": 1,
+          "expert_index": 0,
+          "id": "routed_expert_q4_g64_matvec",
+          "kernel": "qwen_uniform_q4_group64_matvec",
+          "kind": "native_kernel_dispatch",
+          "parity_within_tolerance": true,
+          "registered": true,
+          "row_count": 128,
+          "row_start": 0,
+          "source_independent_execution": true,
+          "stage": "HawkingAccelerator"
+        },
+        {
+          "complete_token": false,
+          "expert_index": 0,
+          "id": "bounded_component_output",
+          "kind": "source_block_matvec_output",
+          "row_count": 128,
+          "row_start": 0,
+          "stage": "NoeticExecutableCandidate",
+          "whole_model": false
+        }
+      ],
+      "data": [
+        {
+          "active_bytes_per_token": null,
+          "bytes": null,
+          "id": "routed_expert_component",
+          "kind": "tensor_group",
+          "source": "architecture metadata; size unresolved"
+        }
+      ],
+      "dependencies": [
+        {
+          "from": "source_block_reference",
+          "kind": "parity_reference_only",
+          "to": "bounded_component_output"
+        },
+        {
+          "from": "noetic_component_body_load",
+          "kind": "body_to_descriptor",
+          "to": "noetic_descriptor_load"
+        },
+        {
+          "from": "noetic_descriptor_load",
+          "kind": "descriptor_to_kernel",
+          "to": "routed_expert_q4_g64_matvec"
+        },
+        {
+          "from": "routed_expert_q4_g64_matvec",
+          "kind": "kernel_to_output",
+          "to": "bounded_component_output"
+        }
+      ],
+      "device_placement": {
+        "ane": null,
+        "candidates": [
+          "apple_metal"
+        ],
+        "selected": null
+      },
+      "evidence": [
+        {
+          "label": "[V]",
+          "path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/tools/acceptance/flash/_cache/receipts/headless/FLASH_ROUTED_EXPERT_LOADER_ROUNDTRIP.json",
+          "schema": "hcli.agentos.flash_loader_roundtrip.v1",
+          "sha256": "5352b964296df2ee1abdf9668e54810b327c6240396eb88bed72d71b654d8980",
+          "status": "PASSED"
+        },
+        {
+          "label": "[V]",
+          "path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/tools/acceptance/flash/_cache/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_PARITY.json",
+          "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+          "sha256": "fadda68dea81f38f8a841f7fbf5af1ecdef19d8804512af60b54523a3b4af02a",
+          "status": "PASSED"
+        },
+        {
+          "label": "[V]",
+          "path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/tools/acceptance/flash/_cache/receipts/headless/FLASH_FULL_TENSOR_TRANSFORM_PARITY.json",
+          "schema": "hcli.agentos.flash_transform_parity.v1",
+          "sha256": "87fe6ace5ae2680593b0c8e06aa04482d436ee2beb47ce6554a1d1cc42501e54",
+          "status": "PASSED"
+        }
+      ],
+      "execution_policy": {
+        "cache_key": [
+          "source_seal",
+          "organ_identity",
+          "representation_schema",
+          "parameters",
+          "verifier_version"
+        ],
+        "device_count_is_not_speed_authority": true,
+        "grouping": "architecture_species_and_attention_boundaries",
+        "layer_semantics": "instantiate_qualified_species_contract_with_layer_data",
+        "pipeline_state": "compile_once_reuse",
+        "process": "long_lived_executor",
+        "promotion_metric": "measured_complete_useful_work",
+        "scratch": "allocate_once_reuse",
+        "selection_costs": [
+          "transfer",
+          "conversion",
+          "residency",
+          "launch",
+          "synchronization",
+          "interference"
+        ],
+        "source_index": "cache_by_immutable_source_seal",
+        "state_handoff": {
+          "deep_verification": "optional_host_snapshot",
+          "fast_verified": "device_resident"
+        },
+        "verification": {
+          "debug": "L0_plus_L1_plus_L2_plus_L3_full_state",
+          "divergence": "checkpoint_bisection_then_local_deep_probe",
+          "fast": "L0_device_state_plus_L1_fingerprint_checkpoint",
+          "protected": "L0_plus_L1_plus_L2_sampled_probes"
+        }
+      },
+      "fingerprint": "af2727f14fece8940229fc644615abe588e21e4895e632b3607d4ddb50bc972b",
+      "generated_at": 1788339799.3632169,
+      "graph_execution_observed": false,
+      "memory": [
+        {
+          "role": "active working set",
+          "status": "candidate",
+          "tier": "hot"
+        },
+        {
+          "role": "canonical source",
+          "status": "candidate",
+          "tier": "cold"
+        }
+      ],
+      "model_id": "Qwen/Qwen3.8-Flash-Next",
+      "native_kernel_execution_observed": true,
+      "nomenclature_version": "HAWKING_NOMENCLATURE_V1",
+      "precision": {
+        "accumulator": "unresolved",
+        "activation": "unresolved",
+        "weight": "unresolved"
+      },
+      "provider_context": {
+        "kernel": "qwen_uniform_q4_group64_matvec",
+        "provider": "apple-metal"
+      },
+      "qualification": "BOUNDED_COMPONENT_ONLY",
+      "representation": {
+        "candidate_body_persisted": true,
+        "candidate_bytes_full_tensor": 891289600,
+        "candidate_id": "independent_q4_g64",
+        "component_window": {
+          "expert_index": 0,
+          "row_count": 128,
+          "row_start": 0
+        },
+        "dense_rematerialization": "forbidden",
+        "descriptor_schema": "hcli.noetic.representation_descriptor.v1",
+        "effective_bits_per_value": 4.25,
+        "source_independent_execution": true
+      },
+      "residency": {
+        "page_cache": "unresolved",
+        "state": "unresolved",
+        "weights": "unresolved"
+      },
+      "schema": "hcli.physical_graph.v1",
+      "semantic_type": "PhysicalGraphPlan",
+      "state": {
+        "kv_cache": "unresolved",
+        "recurrent_state": "unresolved"
+      },
+      "synchronization": [
+        {
+          "kind": "runtime_boundary",
+          "status": "unresolved"
+        }
+      ]
+    },
+    "promotion_allowed": false,
+    "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/acceptance/FLASH_NATIVE_NF_KERNEL.graph.json",
+    "receipt_sha256": "5777f3e3ebc10a241aa6937bc20500157a77537d709b8769664029d0ecd03876",
+    "schema": "hcli.agentos.flash_noetic_graph_component.v1",
+    "semantic_type": "NoeticExecutableCandidate",
+    "source_backed": false,
+    "source_identity": {
+      "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+      "manifest_sha256": "1f536f70c963a4d9b800e17c54c0dec54ce2d31a0a36041146b4013a04221fb7",
+      "repo": "Qwen/Qwen3.8-Flash-Next",
+      "resolved_sha": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+      "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+      "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc"
+    },
+    "source_independent_execution": true,
+    "status": "PASSED",
+    "validation": {
+      "descriptor_schema": "hcli.noetic.representation_descriptor.v1",
+      "errors": [],
+      "full_transform_candidate": {
+        "candidate_bytes": 891289600,
+        "candidate_sha256": "c67c3306edc972e5fc7257d939f545e94562e0f8e1306cf24eb4264376e57f39",
+        "code_bytes": 838860800,
+        "effective_bits_per_value": 4.25,
+        "group_size": 64,
+        "id": "independent_q4_g64",
+        "label": "[D]",
+        "model_capability_tested": false,
+        "native_kernel_tested": false,
+        "pack_unpack_parity": true,
+        "packed_sha256": "5847742f10b70a201a9acc11049a3deb278fe8742993c71344f9389f1db277d1",
+        "reference_vector": {
+          "cosine": 0.9928837403313406,
+          "count": 655360,
+          "finite": true,
+          "max_abs_error": 0.5110001564025879,
+          "mean_abs_error": 0.06314619255277591,
+          "rmse": 0.07972607929790755
+        },
+        "runtime_performance_tested": false,
+        "scale_bytes": 52428800,
+        "scale_sha256": "a927cdfe0c62c4422bb11ebfc661a65afd9e93caa6d42a36766d93ae8f35034f",
+        "scheme": "symmetric_signed_4bit_group64_with_fp16_scales",
+        "source_layout_preserved": true,
+        "status": "FULL_TENSOR_TRANSFORM_ONLY",
+        "weight_reconstruction": {
+          "cosine": 0.9930165146332164,
+          "count": 1677721600,
+          "finite": true,
+          "max_abs_error": 0.0390625,
+          "mean_abs_error": 0.0013130531516401943,
+          "rmse": 0.001574400915434971
+        }
+      },
+      "native_kernel": {
+        "dispatches_per_sample": 1,
+        "grid": [
+          128,
+          1,
+          1
+        ],
+        "kernel": "qwen_uniform_q4_group64_matvec",
+        "kernel_registered": true,
+        "label": "[V]/[D]",
+        "scope": "one Flash routed-expert source block matvec",
+        "shader_family": "qwen_uniform_q4.metal",
+        "threadgroup": [
+          1,
+          1,
+          1
+        ],
+        "whole_model_capability": "NOT_TESTED",
+        "whole_model_runtime": "NOT_TESTED"
+      },
+      "native_loader": {
+        "candidate_body_persisted": true,
+        "candidate_id": "independent_q4_g64",
+        "dense_rematerialization": "forbidden",
+        "descriptor_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_ROUTED_EXPERT_LOADER_ROUNDTRIP.json",
+        "descriptor_sha256": "60e7c098c67f26013e47d3411efc554b7e8612417300eb2116d8237f53568c19",
+        "source_block_streamed_for_reference": true,
+        "source_independent_execution": true,
+        "status": "BOUNDED_NOETIC_DESCRIPTOR_AND_BODY_LOAD",
+        "whole_model_capability": "NOT_TESTED",
+        "whole_model_runtime": "NOT_TESTED"
+      },
+      "parity": {
+        "cosine": 0.9999999999999637,
+        "count": 128,
+        "finite": true,
+        "max_abs_error": 1.564621925354004e-07,
+        "rmse": 5.2199908547982395e-08,
+        "tolerance": 0.0020000000949949026,
+        "within_tolerance": true
+      },
+      "source_tensor": {
+        "dtype": "BF16",
+        "group_size": 64,
+        "layout": "row-major [expert, row, column]",
+        "shape": [
+          512,
+          1280,
+          2560
+        ],
+        "tensor_name": "model.language_model.layers.0.mlp.experts.gate_up_proj"
+      }
+    },
+    "whole_model_capability": "NOT_TESTED"
+  },
+  "source_identity": {
+    "architecture_fingerprint": {
+      "algorithm": "sha256(canonical pinned metadata + sorted tensor names)",
+      "label": "DERIVED",
+      "value": "8dbc9c34f223d240def13a1f7c70d3cbddbc768bc9ccc9c002683e2958b6be5b"
+    },
+    "bounded_component_body_loaded": true,
+    "bounded_component_body_receipt": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_BODY.json",
+    "bounded_component_campaign_observed": false,
+    "bounded_component_campaign_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_COMPONENT_CAMPAIGN.json",
+    "bounded_deltanet_kernel_parity_observed": false,
+    "bounded_deltanet_kernel_parity_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_Q4_MATRIX_KERNEL_DELTANET_IN_PROJ_QKV_L0_R0_128_PARITY.json",
+    "bounded_full_tensor_transform_observed": true,
+    "bounded_loader_roundtrip_observed": true,
+    "bounded_loader_roundtrip_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/tools/acceptance/flash/_cache/receipts/headless/FLASH_ROUTED_EXPERT_LOADER_ROUNDTRIP.json",
+    "bounded_mtp_gate_kernel_parity_observed": false,
+    "bounded_mtp_gate_kernel_parity_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_Q4_MATRIX_KERNEL_MTP_GATE_L0_R0_128_PARITY.json",
+    "bounded_native_exact_hyperconnection_observed": false,
+    "bounded_native_exact_hyperconnection_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_EXACT_HYPERCONNECTION_NATIVE.json",
+    "bounded_native_expert_composition_observed": false,
+    "bounded_native_expert_composition_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_COMPOSITION_NATIVE.json",
+    "bounded_native_gate_up_swiglu_observed": false,
+    "bounded_native_gate_up_swiglu_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_GATE_UP_SWIGLU_NATIVE.json",
+    "bounded_native_kernel_parity_observed": true,
+    "bounded_native_kernel_parity_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/tools/acceptance/flash/_cache/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_PARITY.json",
+    "bounded_native_routed_expert_dispatch_observed": false,
+    "bounded_native_routed_expert_dispatch_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_DISPATCH_NATIVE.json",
+    "bounded_native_router_selection_observed": false,
+    "bounded_native_router_selection_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_ROUTER_SELECTION_NATIVE.json",
+    "bounded_native_shared_expert_composition_observed": false,
+    "bounded_native_shared_expert_composition_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_SHARED_EXPERT_COMPOSITION_NATIVE.json",
+    "bounded_native_shared_residual_hyperconnection_observed": false,
+    "bounded_native_shared_residual_hyperconnection_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_SHARED_RESIDUAL_HYPERCONNECTION_NATIVE.json",
+    "bounded_noetic_graph_component_observed": true,
+    "bounded_noetic_graph_component_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/acceptance/FLASH_NATIVE_NF_KERNEL.graph.json",
+    "bounded_probe_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_FIRST_TENSOR_PROBE.json",
+    "bounded_representation_experiment_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_ROUTED_EXPERT_REPRESENTATION_EXPERIMENT.json",
+    "bounded_router_graph_observed": false,
+    "bounded_router_graph_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_ROUTER_GRAPH.json",
+    "bounded_router_representation_ab_observed": true,
+    "bounded_router_representation_ab_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/acceptance/FLASH_DENSE_VS_NF_AB.run.json",
+    "bounded_router_selection_observed": false,
+    "bounded_router_selection_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
+    "bounded_shared_expert_kernel_parity_observed": false,
+    "bounded_shared_expert_kernel_parity_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_Q4_MATRIX_KERNEL_SHARED_EXPERT_GATE_L0_R0_128_PARITY.json",
+    "bounded_source_layout_experiment_observed": false,
+    "bounded_source_slice_observed": false,
+    "bounded_sparse_attention_kernel_parity_observed": false,
+    "bounded_sparse_attention_kernel_parity_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_Q4_MATRIX_KERNEL_SPARSE_INDEXER_QK_PROJ_L11_R0_128_PARITY.json",
+    "bounded_transform_parity_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/tools/acceptance/flash/_cache/receipts/headless/FLASH_FULL_TENSOR_TRANSFORM_PARITY.json",
+    "header_only_source": true,
+    "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "repo": "Qwen/Qwen3.8-Flash-Next",
+    "science_receipt": {
+      "path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/acceptance/FLASH_FIRST_GRAVITY_ORGAN.science.json",
+      "sha256": "8b04af3d3dd4e13098f327a204a0aafb12c35db6a6d65d9187434a7aef67ea26",
+      "status": "PASSED"
+    },
+    "weight_body_loaded": false
+  },
+  "source_kernel_parity": {
+    "body_mutated": false,
+    "candidate_body": {
+      "bytes": 174080,
+      "path": "/Users/scammermike/Downloads/hawking/.hcli/flash-component/flash-routed-expert-independent-q4-g64-e0-r0-128.bin",
+      "receipt_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_BODY.json",
+      "receipt_sha256": "60deabc9be0f32005679ad17a6124a56f89a791dab2c641268d9f5bc7599672b",
+      "sha256": "5be289f04c8ec072a951fdd249d21fd44d69aad8baafedde0158e77aca72aa78",
+      "source_independent": true
+    },
+    "candidate_body_persisted": true,
+    "claim_boundary": "PASSED bounded source-independent Noetic component-body load, source-reference Q4 Metal kernel parity, and GPU timing only; no whole-model loader, capability, complete-token runtime, EBPW, or Flash TPS claim",
+    "complete_system_ebpw": null,
+    "flash_tps": null,
+    "gpu_timing": {
+      "device": "Apple M3 Ultra",
+      "gpu_ns": [
+        341459,
+        327250,
+        282500,
+        331416,
+        352584,
+        271000,
+        306166
+      ],
+      "gpu_ns_max": 352584,
+      "gpu_ns_median": 327250,
+      "gpu_ns_min": 271000,
+      "host_wall_ns": [
+        566333,
+        590166,
+        520333,
+        583667,
+        554375,
+        471416,
+        514125
+      ],
+      "host_wall_ns_max": 590166,
+      "host_wall_ns_median": 554375,
+      "host_wall_ns_min": 471416,
+      "measured_runs": 7,
+      "memory_limits": {
+        "current_allocated_size": 638976,
+        "has_unified_memory": true,
+        "max_buffer_length": 62620631040,
+        "recommended_max_working_set_size": 83494174720
+      },
+      "timing_authority": "Metal completed-command-buffer GPUStartTime/GPUEndTime; host wall reported separately",
+      "warmup_runs": 2
+    },
+    "input": {
+      "definition": "((index * 71) mod 509 - 254) / 509",
+      "deterministic_sha256": "62055d5ebab03995a1e46aa8d8586ad80052602b0b1ed744c56b912c8c14593a",
+      "values": 2560
+    },
+    "model_lake_manifest": {
+      "bytes": 360053432320,
+      "label": "[V]",
+      "n_files": 144,
+      "path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+      "repo": "Qwen/Qwen3.8-Flash-Next",
+      "resolved_sha": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+      "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+      "sha256": "1f536f70c963a4d9b800e17c54c0dec54ce2d31a0a36041146b4013a04221fb7"
+    },
+    "model_loaded": false,
+    "native_kernel": {
+      "dispatches_per_sample": 1,
+      "grid": [
+        128,
+        1,
+        1
+      ],
+      "kernel": "qwen_uniform_q4_group64_matvec",
+      "kernel_registered": true,
+      "label": "[V]/[D]",
+      "scope": "one Flash routed-expert source block matvec",
+      "shader_family": "qwen_uniform_q4.metal",
+      "threadgroup": [
+        1,
+        1,
+        1
+      ],
+      "whole_model_capability": "NOT_TESTED",
+      "whole_model_runtime": "NOT_TESTED"
+    },
+    "native_loader": {
+      "candidate_body_persisted": true,
+      "candidate_id": "independent_q4_g64",
+      "dense_rematerialization": "forbidden",
+      "descriptor_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_ROUTED_EXPERT_LOADER_ROUNDTRIP.json",
+      "descriptor_sha256": "60e7c098c67f26013e47d3411efc554b7e8612417300eb2116d8237f53568c19",
+      "source_block_streamed_for_reference": true,
+      "source_independent_execution": true,
+      "status": "BOUNDED_NOETIC_DESCRIPTOR_AND_BODY_LOAD",
+      "whole_model_capability": "NOT_TESTED",
+      "whole_model_runtime": "NOT_TESTED"
+    },
+    "next_action": "compose the source-independent component body into the bounded Noetic graph while keeping protected complete-token timing gated",
+    "noetic_descriptor": {
+      "candidate_id": "independent_q4_g64",
+      "load_policy": "validated serialized descriptor; candidate body is not persisted by this bounded probe",
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_ROUTED_EXPERT_LOADER_ROUNDTRIP.json",
+      "schema": "hcli.noetic.representation_descriptor.v1",
+      "sha256": "60e7c098c67f26013e47d3411efc554b7e8612417300eb2116d8237f53568c19"
+    },
+    "noetic_representation": {
+      "candidate_bytes": 174080,
+      "candidate_id": "independent_q4_g64",
+      "candidate_sha256": "5be289f04c8ec072a951fdd249d21fd44d69aad8baafedde0158e77aca72aa78",
+      "code_bytes": 163840,
+      "code_dtype": "uint4_packed",
+      "code_offset": 8,
+      "effective_bits_per_value": 4.25,
+      "group_size": 64,
+      "label": "[D]",
+      "layout": "row-major [expert, row, column]",
+      "nibble_order": "low_nibble_then_high_nibble_row_major",
+      "scale_bytes": 10240,
+      "scale_dtype": "little_endian_float16",
+      "scale_scope": "one scale per 64 source values",
+      "schema": "hcli.noetic.representation_descriptor.v1",
+      "source_to_candidate_max_abs_error": 0.0118255615234375,
+      "source_to_candidate_rmse": 0.001611581793462567
+    },
+    "parity": {
+      "cosine": 0.9999999999999637,
+      "count": 128,
+      "finite": true,
+      "max_abs_error": 1.564621925354004e-07,
+      "rmse": 5.2199908547982395e-08,
+      "tolerance": 0.0020000000949949026,
+      "within_tolerance": true
+    },
+    "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "promotion_allowed": false,
+    "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/tools/acceptance/flash/_cache/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_PARITY.json",
+    "receipt_sha256": "fadda68dea81f38f8a841f7fbf5af1ecdef19d8804512af60b54523a3b4af02a",
+    "repo": "Qwen/Qwen3.8-Flash-Next",
+    "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "source_independent_execution": true,
+    "source_tensor": {
+      "dtype": "BF16",
+      "header_sha256": "d482a7b5ad9050e1ec1541aa95e6ce3e836d943641748dbb0836f0c5232e3f9d",
+      "index_sha256": "99e815241ef03325536b0aaa4441deea45174c17fae31e10f0bb456410c590de",
+      "selected_block_bytes": 655360,
+      "selected_block_sha256": "033fdf732c60ab90664b73e1b72dedd53b9fc92490048eabfc7e862eaab48060",
+      "selected_expert": 0,
+      "selected_row_count": 128,
+      "selected_row_start": 0,
+      "selected_shard_full_hash_recomputed": false,
+      "shape": [
+        512,
+        1280,
+        2560
+      ],
+      "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00002-of-00131.safetensors",
+      "shard_name": "model-00002-of-00131.safetensors",
+      "shard_size": 3355443368,
+      "tensor_data_offsets": [
+        0,
+        3355443200
+      ],
+      "tensor_name": "model.language_model.layers.0.mlp.experts.gate_up_proj"
+    },
+    "status": "PASSED",
+    "whole_model_capability": "NOT_TESTED",
+    "whole_model_runtime": "NOT_TESTED"
+  },
+  "source_loader_roundtrip": {
+    "body_mutated": false,
+    "candidate_id": "independent_q4_g64",
+    "claim_boundary": "Bounded serialized descriptor and source-block loader round-trip only. This does not establish whole-model capability, native-kernel performance, complete-system EBPW, or Flash TPS.",
+    "encoded_sample": {
+      "basis_bytes": 0,
+      "candidate_bytes": 2720,
+      "candidate_sha256": "e9340fe43a016f43fab0b8943cc9336fa62171b5e164937777642f071f647787",
+      "label": "[D]",
+      "packed_code_bytes": 2560,
+      "scale_bytes": 160
+    },
+    "loader_roundtrip": {
+      "code_pack_unpack_parity": true,
+      "decoded_finite": true,
+      "decoded_shape": [
+        2,
+        2560
+      ],
+      "descriptor_json_roundtrip": true,
+      "label": "[D]",
+      "reference_vector": {
+        "cosine": 0.999917678792683,
+        "count": 2,
+        "finite": true,
+        "max_abs_error": 0.047425270080566406,
+        "mean_abs_error": 0.03642413020133972,
+        "rmse": 0.03804920944282053
+      },
+      "source_file_unchanged": true,
+      "source_payload_unchanged": true,
+      "status": "PASSED",
+      "weight_reconstruction": {
+        "cosine": 0.9930054747215294,
+        "count": 5120,
+        "finite": true,
+        "max_abs_error": 0.00537109375,
+        "mean_abs_error": 0.0014073599595576525,
+        "rmse": 0.001666226581554829
+      }
+    },
+    "model_loaded": false,
+    "native_kernel": "NOT_TESTED",
+    "native_loader": "BOUNDED_DESCRIPTOR_ROUNDTRIP_ONLY",
+    "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/tools/acceptance/flash/_cache/receipts/headless/FLASH_ROUTED_EXPERT_LOADER_ROUNDTRIP.json",
+    "receipt_sha256": "5352b964296df2ee1abdf9668e54810b327c6240396eb88bed72d71b654d8980",
+    "representation_descriptor": {
+      "candidate_id": "independent_q4_g64",
+      "full_transform_reference": {
+        "candidate_bytes": 891289600,
+        "candidate_sha256": "c67c3306edc972e5fc7257d939f545e94562e0f8e1306cf24eb4264376e57f39",
+        "effective_bits_per_value": 4.25,
+        "status": "FULL_TENSOR_TRANSFORM_ONLY"
+      },
+      "label": "[D]",
+      "loader_policy": {
+        "candidate_body_persisted_by_this_tool": false,
+        "dense_rematerialization": "forbidden",
+        "model_load": false,
+        "source_mutation": false,
+        "streaming_block_order": "expert ascending, row ascending, complete column rows"
+      },
+      "schema": "hcli.noetic.representation_descriptor.v1",
+      "source_tensor": {
+        "dtype": "BF16",
+        "group_size": 64,
+        "layout": "row-major [expert, row, column]",
+        "shape": [
+          512,
+          1280,
+          2560
+        ],
+        "tensor_name": "model.language_model.layers.0.mlp.experts.gate_up_proj"
+      },
+      "storage": {
+        "code_dtype": "uint4_packed",
+        "code_offset": 8,
+        "nibble_order": "low_nibble_then_high_nibble_row_major",
+        "scale_dtype": "little_endian_float16",
+        "scale_scope": "one_scale_per_64_values"
+      }
+    },
+    "runtime_performance": "NOT_TESTED",
+    "serialized_descriptor_sha256": "e5de59c4502b1adfc8da8fc6ba5bef9ded3994d90079c44eeb042abffa81a14d",
+    "source_sample": {
+      "bytes": 10240,
+      "expert_index": 0,
+      "label": "[V]",
+      "payload_sha256": "796df7ef195d1e8bd3eba2cc0c7f20a2017898a6d910159fdb47f37f831b1dcb",
+      "row_range": [
+        0,
+        2
+      ],
+      "shape": [
+        2,
+        2560
+      ]
+    },
+    "status": "PASSED",
+    "tensor_name": "model.language_model.layers.0.mlp.experts.gate_up_proj",
+    "transform_reference": {
+      "candidate": {
+        "candidate_bytes": 891289600,
+        "candidate_sha256": "c67c3306edc972e5fc7257d939f545e94562e0f8e1306cf24eb4264376e57f39",
+        "effective_bits_per_value": 4.25,
+        "id": "independent_q4_g64"
+      },
+      "label": "[V]",
+      "receipt_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_FULL_TENSOR_TRANSFORM_PARITY.json",
+      "receipt_sha256": "f0ad216973c421a4457a9e33b091b05168c4289de8aedd23633747b5c54cf3d3",
+      "source_tensor_payload_sha256": "cac366f51f797c0c939e12e010d97f83f5032ddd27085bb232687c35d26b663a"
+    },
+    "whole_model_capability": "NOT_TESTED",
+    "whole_model_runtime": "NOT_TESTED"
+  },
+  "source_mtp_gate_kernel_parity": {
+    "candidate_body": null,
+    "candidate_body_persisted": null,
+    "gpu_timing": null,
+    "native_kernel": null,
+    "native_loader": null,
+    "noetic_descriptor": null,
+    "noetic_representation": null,
+    "organ": "mtp",
+    "parity": null,
+    "promotion_allowed": false,
+    "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_Q4_MATRIX_KERNEL_MTP_GATE_L0_R0_128_PARITY.json",
+    "source_independent_execution": null,
+    "source_tensor": null,
+    "status": "NOT_RUN",
+    "whole_model_capability": "NOT_TESTED",
+    "whole_model_runtime": "NOT_TESTED"
+  },
+  "source_representation_experiment": {
+    "candidates": null,
+    "comparison": null,
+    "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_ROUTED_EXPERT_REPRESENTATION_EXPERIMENT.json",
+    "replications": [],
+    "source_tensor": null,
+    "status": "NOT_RUN",
+    "whole_model_capability": "NOT_TESTED",
+    "whole_model_runtime": "NOT_TESTED"
+  },
+  "source_routed_expert_composition_native": {
+    "complete_expert_runtime": "NOT_TESTED",
+    "complete_token_runtime": "NOT_TESTED",
+    "promotion_allowed": false,
+    "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_COMPOSITION_NATIVE.json",
+    "status": "NOT_RUN",
+    "whole_model_capability": "NOT_TESTED"
+  },
+  "source_routed_expert_dispatch_native": {
+    "complete_expert_runtime": "NOT_TESTED",
+    "complete_token_runtime": "NOT_TESTED",
+    "promotion_allowed": false,
+    "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_DISPATCH_NATIVE.json",
+    "status": "NOT_RUN",
+    "whole_model_capability": "NOT_TESTED"
+  },
+  "source_routed_expert_gate_up_swiglu_native": {
+    "complete_expert_runtime": "NOT_TESTED",
+    "complete_token_runtime": "NOT_TESTED",
+    "promotion_allowed": false,
+    "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_GATE_UP_SWIGLU_NATIVE.json",
+    "status": "NOT_RUN",
+    "whole_model_capability": "NOT_TESTED"
+  },
+  "source_router_graph": {
+    "candidate_body_persisted": null,
+    "complete_token_runtime": "NOT_TESTED",
+    "component_status": "NOT_COMPILED",
+    "promotion_allowed": false,
+    "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_ROUTER_GRAPH.json",
+    "source_independent_execution": null,
+    "status": "NOT_RUN",
+    "whole_model_capability": "NOT_TESTED"
+  },
+  "source_router_representation_ab": {
+    "candidate_bodies_persisted": false,
+    "candidates": [
+      {
+        "body_persisted": false,
+        "candidate_bytes": 696320,
+        "candidate_sha256": "54a03b2e7a32d592f9604fb9101649b680bebff374e6d9a971c3e93b9578b2b0",
+        "code_bytes": 655360,
+        "code_dtype": "uint4_packed",
+        "effective_bits_per_value": 4.25,
+        "family": "uniform_q4",
+        "group_size": 64,
+        "id": "independent_q4_g64",
+        "label": "[D]",
+        "logits_finite": true,
+        "native_kernel": "qwen_uniform_q4_group64_matvec",
+        "native_kernel_compatible": true,
+        "scale_bytes": 40960,
+        "selection": {
+          "expert_ids": [
+            29,
+            309,
+            455,
+            374,
+            151,
+            93,
+            0,
+            500,
+            149,
+            220
+          ],
+          "logits_sha256": "14189b79a355dc44adce38f3f782653e49d6ab42c20aac9713a40e443667cbd1",
+          "probabilities_finite": true,
+          "probability_vector_sha256": "9426e33b677aad48648274716040fd17b1c32f3904c8248fd9c555977f9570b8",
+          "router_probabilities": [
+            0.005038146860897541,
+            0.004888959228992462,
+            0.0045752753503620625,
+            0.004258244764059782,
+            0.004131840541958809,
+            0.004084357526153326,
+            0.003927456680685282,
+            0.003922594711184502,
+            0.003883223282173276,
+            0.0037942647468298674
+          ],
+          "selected_probability_sum": 0.042504362761974335,
+          "selected_weight_sum": 1.0,
+          "selected_weights": [
+            0.1185324639081955,
+            0.11502252519130707,
+            0.10764248669147491,
+            0.10018371045589447,
+            0.09720979630947113,
+            0.09609266370534897,
+            0.09240125864744186,
+            0.09228686988353729,
+            0.09136058390140533,
+            0.08926765620708466
+          ]
+        },
+        "source_selection_parity": {
+          "candidate_expert_ids": [
+            29,
+            309,
+            455,
+            374,
+            151,
+            93,
+            0,
+            500,
+            149,
+            220
+          ],
+          "candidate_selection_weight_sum": 1.0,
+          "common_selected_weights": {
+            "count": 8,
+            "expert_ids": [
+              0,
+              29,
+              151,
+              220,
+              309,
+              374,
+              455,
+              500
+            ],
+            "finite": true,
+            "max_abs_error": 0.008621998131275177,
+            "rmse": 0.004660995677113533
+          },
+          "expert_ids_exact_match": false,
+          "label": "[V]/[D]",
+          "logits": {
+            "cosine": 0.9802068471908569,
+            "count": 512,
+            "finite": true,
+            "max_abs_error": 0.2657049894332886,
+            "rmse": 0.0590323880314827
+          },
+          "qualification": "SOURCE_ROUTER_SELECTION_NOT_QUALIFIED",
+          "source_expert_ids": [
+            29,
+            309,
+            455,
+            151,
+            500,
+            374,
+            15,
+            220,
+            37,
+            0
+          ],
+          "source_selection_weight_sum": 1.0,
+          "status": "MISMATCH",
+          "top_k_overlap_count": 8,
+          "top_k_overlap_fraction": 0.8
+        },
+        "weight_reconstruction_finite": true
+      },
+      {
+        "body_persisted": false,
+        "candidate_bytes": 737280,
+        "candidate_sha256": "8c71ea642b57be99de1913920fe0639d307d34e220450045696cabc06446539a",
+        "code_bytes": 655360,
+        "code_dtype": "uint4_packed",
+        "effective_bits_per_value": 4.5,
+        "family": "uniform_q4",
+        "group_size": 32,
+        "id": "independent_q4_g32",
+        "label": "[D]",
+        "logits_finite": true,
+        "native_kernel": null,
+        "native_kernel_compatible": false,
+        "scale_bytes": 81920,
+        "selection": {
+          "expert_ids": [
+            29,
+            455,
+            309,
+            374,
+            500,
+            220,
+            151,
+            149,
+            0,
+            163
+          ],
+          "logits_sha256": "b632104b7a3cafb5241981888814bb05759b0b1ba542937196f802ac7b5abe97",
+          "probabilities_finite": true,
+          "probability_vector_sha256": "3b7aca1e3232d5de5c0dff7146e3820248af702b8981de0aa7785c588a5f58a6",
+          "router_probabilities": [
+            0.0051756747998297215,
+            0.004801900591701269,
+            0.004790158476680517,
+            0.004395630210638046,
+            0.004369635134935379,
+            0.004104730673134327,
+            0.004053523298352957,
+            0.004010021686553955,
+            0.0038110765162855387,
+            0.0037279606331139803
+          ],
+          "selected_probability_sum": 0.04324031248688698,
+          "selected_weight_sum": 1.0,
+          "selected_weights": [
+            0.11969558894634247,
+            0.11105147749185562,
+            0.11077992618083954,
+            0.10165584087371826,
+            0.10105466097593307,
+            0.0949283316731453,
+            0.09374407678842545,
+            0.09273803979158401,
+            0.08813712000846863,
+            0.08621492981910706
+          ]
+        },
+        "source_selection_parity": {
+          "candidate_expert_ids": [
+            29,
+            455,
+            309,
+            374,
+            500,
+            220,
+            151,
+            149,
+            0,
+            163
+          ],
+          "candidate_selection_weight_sum": 1.0,
+          "common_selected_weights": {
+            "count": 8,
+            "expert_ids": [
+              0,
+              29,
+              151,
+              220,
+              309,
+              374,
+              455,
+              500
+            ],
+            "finite": true,
+            "max_abs_error": 0.009739995002746582,
+            "rmse": 0.0046950154937803745
+          },
+          "expert_ids_exact_match": false,
+          "label": "[V]/[D]",
+          "logits": {
+            "cosine": 0.9876571893692017,
+            "count": 512,
+            "finite": true,
+            "max_abs_error": 0.210964173078537,
+            "rmse": 0.046065907925367355
+          },
+          "qualification": "SOURCE_ROUTER_SELECTION_NOT_QUALIFIED",
+          "source_expert_ids": [
+            29,
+            309,
+            455,
+            151,
+            500,
+            374,
+            15,
+            220,
+            37,
+            0
+          ],
+          "source_selection_weight_sum": 1.0,
+          "status": "MISMATCH",
+          "top_k_overlap_count": 8,
+          "top_k_overlap_fraction": 0.8
+        },
+        "weight_reconstruction_finite": true
+      },
+      {
+        "body_persisted": false,
+        "candidate_bytes": 819200,
+        "candidate_sha256": "1684d8ea58899de08454d8dbd86033ecc113c1d79a42852db97f46f533410e61",
+        "code_bytes": 655360,
+        "code_dtype": "uint4_packed",
+        "effective_bits_per_value": 5.0,
+        "family": "uniform_q4",
+        "group_size": 16,
+        "id": "independent_q4_g16",
+        "label": "[D]",
+        "logits_finite": true,
+        "native_kernel": null,
+        "native_kernel_compatible": false,
+        "scale_bytes": 163840,
+        "selection": {
+          "expert_ids": [
+            29,
+            309,
+            455,
+            374,
+            500,
+            151,
+            220,
+            15,
+            149,
+            0
+          ],
+          "logits_sha256": "e10125ece45198a2a2e1e0c14d99f91bdeff8235c86cf45847d8e61662ebf0b8",
+          "probabilities_finite": true,
+          "probability_vector_sha256": "6f60e444d9a362e90fd5c99bc7d39a9596a6607bf797e7bb9893eb08514f2558",
+          "router_probabilities": [
+            0.0051095979288220406,
+            0.004921702202409506,
+            0.004530867096036673,
+            0.004413696005940437,
+            0.004164510872215033,
+            0.0041427467949688435,
+            0.0040216161869466305,
+            0.003982501104474068,
+            0.0039223008789122105,
+            0.003675151150673628
+          ],
+          "selected_probability_sum": 0.042884692549705505,
+          "selected_weight_sum": 0.9999999403953552,
+          "selected_weights": [
+            0.11914736032485962,
+            0.1147659420967102,
+            0.10565231740474701,
+            0.10292007774114609,
+            0.09710949659347534,
+            0.09660199284553528,
+            0.09377742558717728,
+            0.09286533296108246,
+            0.09146156162023544,
+            0.0856984406709671
+          ]
+        },
+        "source_selection_parity": {
+          "candidate_expert_ids": [
+            29,
+            309,
+            455,
+            374,
+            500,
+            151,
+            220,
+            15,
+            149,
+            0
+          ],
+          "candidate_selection_weight_sum": 0.9999999403953552,
+          "common_selected_weights": {
+            "count": 9,
+            "expert_ids": [
+              0,
+              15,
+              29,
+              151,
+              220,
+              309,
+              374,
+              455,
+              500
+            ],
+            "finite": true,
+            "max_abs_error": 0.006882078945636749,
+            "rmse": 0.003619532333686948
+          },
+          "expert_ids_exact_match": false,
+          "label": "[V]/[D]",
+          "logits": {
+            "cosine": 0.9925892949104309,
+            "count": 512,
+            "finite": true,
+            "max_abs_error": 0.11057045310735703,
+            "rmse": 0.03566847741603851
+          },
+          "qualification": "SOURCE_ROUTER_SELECTION_NOT_QUALIFIED",
+          "source_expert_ids": [
+            29,
+            309,
+            455,
+            151,
+            500,
+            374,
+            15,
+            220,
+            37,
+            0
+          ],
+          "source_selection_weight_sum": 1.0,
+          "status": "MISMATCH",
+          "top_k_overlap_count": 9,
+          "top_k_overlap_fraction": 0.9
+        },
+        "weight_reconstruction_finite": true
+      },
+      {
+        "body_persisted": false,
+        "candidate_bytes": 696320,
+        "candidate_sha256": "0a0b6f2d8c298ddcae04f100ac7c70572e9b5e8331c7fe72bf7279805e1e52fa",
+        "code_bytes": 655360,
+        "code_dtype": "nf4_packed",
+        "effective_bits_per_value": 4.25,
+        "family": "nf4",
+        "group_size": 64,
+        "id": "independent_nf4_g64",
+        "label": "[D]",
+        "logits_finite": true,
+        "native_kernel": null,
+        "native_kernel_compatible": false,
+        "scale_bytes": 40960,
+        "selection": {
+          "expert_ids": [
+            29,
+            455,
+            151,
+            309,
+            220,
+            374,
+            500,
+            15,
+            37,
+            75
+          ],
+          "logits_sha256": "7bdd4106c0b9e9a1ae963b575beea664b43c87cc8b613bd217d0442adc6c6fd5",
+          "probabilities_finite": true,
+          "probability_vector_sha256": "46cab9c1bb335a7b2c11a8d571b9377981e7e66fa5dc0d8a380441e242210059",
+          "router_probabilities": [
+            0.0052217175252735615,
+            0.005004889331758022,
+            0.004584111273288727,
+            0.004424922168254852,
+            0.0043220981024205685,
+            0.004183244425803423,
+            0.004104285500943661,
+            0.004096921533346176,
+            0.004006625153124332,
+            0.0038220060523599386
+          ],
+          "selected_probability_sum": 0.043770819902420044,
+          "selected_weight_sum": 1.0,
+          "selected_weights": [
+            0.11929677426815033,
+            0.1143430545926094,
+            0.10472984611988068,
+            0.10109297186136246,
+            0.09874382615089417,
+            0.09557153284549713,
+            0.09376762062311172,
+            0.09359937906265259,
+            0.09153643995523453,
+            0.08731858432292938
+          ]
+        },
+        "source_selection_parity": {
+          "candidate_expert_ids": [
+            29,
+            455,
+            151,
+            309,
+            220,
+            374,
+            500,
+            15,
+            37,
+            75
+          ],
+          "candidate_selection_weight_sum": 1.0,
+          "common_selected_weights": {
+            "count": 9,
+            "expert_ids": [
+              15,
+              29,
+              37,
+              151,
+              220,
+              309,
+              374,
+              455,
+              500
+            ],
+            "finite": true,
+            "max_abs_error": 0.01079501211643219,
+            "rmse": 0.00618555024266243
+          },
+          "expert_ids_exact_match": false,
+          "label": "[V]/[D]",
+          "logits": {
+            "cosine": 0.9883633255958557,
+            "count": 512,
+            "finite": true,
+            "max_abs_error": 0.17932194471359253,
+            "rmse": 0.04492805898189545
+          },
+          "qualification": "SOURCE_ROUTER_SELECTION_NOT_QUALIFIED",
+          "source_expert_ids": [
+            29,
+            309,
+            455,
+            151,
+            500,
+            374,
+            15,
+            220,
+            37,
+            0
+          ],
+          "source_selection_weight_sum": 1.0,
+          "status": "MISMATCH",
+          "top_k_overlap_count": 9,
+          "top_k_overlap_fraction": 0.9
+        },
+        "weight_reconstruction_finite": true
+      }
+    ],
+    "claim_boundary": "Bounded in-memory Flash router representation study only. It compares source BF16 routing to derived low-bit candidates and identifies native-kernel compatibility; no candidate body is persisted, no source-model runtime is loaded, and no complete-token, EBPW, or Flash TPS qualification is made.",
+    "compiler_stage": "NoeticRepresentationStudy",
+    "complete_token_runtime": "NOT_TESTED",
+    "config": {
+      "label": "[V]",
+      "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/config.json",
+      "router": {
+        "config_scope": "text_config",
+        "norm_topk_prob": true,
+        "norm_topk_prob_default_when_absent": true,
+        "norm_topk_prob_present_in_pinned_config": false,
+        "num_experts": 512,
+        "num_experts_per_tok": 10,
+        "router_logits": "F.linear(hidden_states, gate.weight)",
+        "router_probability": "softmax(router_logits, dtype=float32, dim=-1)",
+        "selection": "topk(router_probs, num_experts_per_tok)",
+        "shared_expert_sigmoid_is_not_router_selection": true
+      },
+      "sha256": "889658f2508e8c61d409b02e70e0d78d8d4452ec65aaafbe129805d213d2e74b"
+    },
+    "next_action": "implement and parity-test the selected alternate native kernel only if its source-routing overlap justifies the representation cost; otherwise continue the current Q4/G64 path toward expert dispatch",
+    "noetic_ir": {
+      "candidate_bodies_persisted": false,
+      "complete_model": false,
+      "operations": [
+        "read_pinned_router_source_reference",
+        "derive_in_memory_router_representations",
+        "execute_source_and_candidate_router_selection",
+        "compare_ebpw_and_source_top_k_overlap",
+        "retain_native_compatibility_boundary"
+      ],
+      "schema": "hcli.noetic.ir.v1",
+      "semantic_type": "NoeticIR"
+    },
+    "nomenclature_version": "HAWKING_NOMENCLATURE_V1",
+    "physical_graph": {
+      "compiler_stage": "PhysicalGraphCompiler",
+      "component_scope": "bounded full Flash router representation comparison; no persisted candidate body or native selection execution",
+      "computation": [
+        {
+          "execution_input": true,
+          "id": "router_bf16_source_reference",
+          "kind": "verified_source_reference",
+          "shape": [
+            512,
+            2560
+          ],
+          "stage": "SourceSpecimen",
+          "tensor_name": "model.language_model.layers.0.mlp.gate.weight"
+        },
+        {
+          "execution_input": true,
+          "id": "router_source_softmax_top_k",
+          "kind": "source_router_selection_reference",
+          "stage": "NoeticRepresentationStudy",
+          "top_k": 10
+        },
+        {
+          "body_persisted": false,
+          "candidate_count": 4,
+          "execution_input": true,
+          "id": "router_representation_candidates",
+          "kind": "in_memory_representation_candidates",
+          "stage": "NoeticRepresentationStudy"
+        },
+        {
+          "best_candidate": "independent_nf4_g64",
+          "execution_input": true,
+          "id": "router_ebpw_routing_tradeoff",
+          "kind": "bytes_vs_source_top_k_overlap",
+          "stage": "NoeticRepresentationStudy"
+        }
+      ],
+      "data": [
+        {
+          "active_bytes_per_token": null,
+          "bytes": null,
+          "id": "router",
+          "kind": "tensor_group",
+          "source": "architecture metadata; size unresolved"
+        }
+      ],
+      "dependencies": [
+        {
+          "from": "router_bf16_source_reference",
+          "kind": "source_selection_reference",
+          "to": "router_source_softmax_top_k"
+        },
+        {
+          "from": "router_bf16_source_reference",
+          "kind": "source_to_candidate_transform",
+          "to": "router_representation_candidates"
+        },
+        {
+          "from": "router_representation_candidates",
+          "kind": "candidate_comparison",
+          "to": "router_ebpw_routing_tradeoff"
+        }
+      ],
+      "device_placement": {
+        "ane": null,
+        "candidates": [
+          "cpu"
+        ],
+        "selected": null
+      },
+      "evidence": [
+        {
+          "label": "[V]",
+          "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/config.json",
+          "schema": "config.json",
+          "sha256": "889658f2508e8c61d409b02e70e0d78d8d4452ec65aaafbe129805d213d2e74b",
+          "status": "PINNED"
+        }
+      ],
+      "execution_policy": {
+        "cache_key": [
+          "source_seal",
+          "organ_identity",
+          "representation_schema",
+          "parameters",
+          "verifier_version"
+        ],
+        "device_count_is_not_speed_authority": true,
+        "grouping": "architecture_species_and_attention_boundaries",
+        "layer_semantics": "instantiate_qualified_species_contract_with_layer_data",
+        "pipeline_state": "compile_once_reuse",
+        "process": "long_lived_executor",
+        "promotion_metric": "measured_complete_useful_work",
+        "scratch": "allocate_once_reuse",
+        "selection_costs": [
+          "transfer",
+          "conversion",
+          "residency",
+          "launch",
+          "synchronization",
+          "interference"
+        ],
+        "source_index": "cache_by_immutable_source_seal",
+        "state_handoff": {
+          "deep_verification": "optional_host_snapshot",
+          "fast_verified": "device_resident"
+        },
+        "verification": {
+          "debug": "L0_plus_L1_plus_L2_plus_L3_full_state",
+          "divergence": "checkpoint_bisection_then_local_deep_probe",
+          "fast": "L0_device_state_plus_L1_fingerprint_checkpoint",
+          "protected": "L0_plus_L1_plus_L2_sampled_probes"
+        }
+      },
+      "fingerprint": "f6a54e19ead6f42a079359e569c357e56fda0c0fc811292d4bb0c901828f8d18",
+      "generated_at": 1788339761.285646,
+      "graph_execution_observed": true,
+      "memory": [
+        {
+          "role": "active working set",
+          "status": "candidate",
+          "tier": "hot"
+        },
+        {
+          "role": "canonical source",
+          "status": "candidate",
+          "tier": "cold"
+        }
+      ],
+      "model_id": "Qwen/Qwen3.8-Flash-Next",
+      "native_kernel_execution_observed": false,
+      "nomenclature_version": "HAWKING_NOMENCLATURE_V1",
+      "precision": {
+        "accumulator": "unresolved",
+        "activation": "unresolved",
+        "weight": "unresolved"
+      },
+      "provider_context": {
+        "kernel": "router_matvec_variants",
+        "provider": "derived-cpu-representation-study"
+      },
+      "qualification": "BOUNDED_ROUTER_REPRESENTATION_AB",
+      "representation": {
+        "candidate_bodies_persisted": false,
+        "dense_rematerialization": "in_memory_study_only",
+        "source_independent_execution": false
+      },
+      "residency": {
+        "candidate": "in-memory only",
+        "source": "bounded pinned router tensor read",
+        "whole_model": "not loaded"
+      },
+      "schema": "hcli.physical_graph.v1",
+      "semantic_type": "PhysicalGraphPlan",
+      "state": {
+        "kv_cache": "unresolved",
+        "recurrent_state": "unresolved"
+      },
+      "synchronization": [
+        {
+          "kind": "runtime_boundary",
+          "status": "unresolved"
+        }
+      ]
+    },
+    "promotion_allowed": false,
+    "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/acceptance/FLASH_DENSE_VS_NF_AB.run.json",
+    "receipt_sha256": "1944f4dd9c258a9762992c4df046c059c35e383243403c371bbe8149d6f45d42",
+    "recommendation": {
+      "best_low_bit_overlap_candidate": "independent_nf4_g64",
+      "best_low_bit_overlap_count": 9,
+      "decision": "retain independent_q4_g64 for the current native kernel; evaluate independent_nf4_g64 only with a native NF4 kernel, or accept the extra scale bytes of a tighter Q4 group if exact routing quality justifies it",
+      "label": "[D]",
+      "native_compatible_baseline": "independent_q4_g64",
+      "native_compatible_baseline_overlap_count": 8,
+      "source_top_k": [
+        29,
+        309,
+        455,
+        151,
+        500,
+        374,
+        15,
+        220,
+        37,
+        0
+      ],
+      "source_top_k_exact_for_any_low_bit_candidate": false
+    },
+    "schema": "hcli.agentos.flash_noetic_router_representation_ab.v1",
+    "semantic_type": "NoeticRepresentationStudy",
+    "source_identity": {
+      "model_lake_manifest": {
+        "bytes": 360053432320,
+        "label": "[V]",
+        "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+        "manifest_sha256": "1f536f70c963a4d9b800e17c54c0dec54ce2d31a0a36041146b4013a04221fb7",
+        "n_files": 144,
+        "n_sha256_verified": 132,
+        "n_size_only_verified": 12,
+        "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+        "repo": "Qwen/Qwen3.8-Flash-Next",
+        "resolved_sha": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+        "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915"
+      },
+      "repo": "Qwen/Qwen3.8-Flash-Next",
+      "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+      "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc"
+    },
+    "source_selection": {
+      "expert_ids": [
+        29,
+        309,
+        455,
+        151,
+        500,
+        374,
+        15,
+        220,
+        37,
+        0
+      ],
+      "logits_sha256": "93d667bf3397252bf2ca92599eaa2a9b23301b704ba2fd5c8249f8b47d61f40f",
+      "probabilities_finite": true,
+      "probability_vector_sha256": "f27f8342ada398627d38707dffcc81d44515d3d9a5beeadf3cba3451e65b3f50",
+      "router_probabilities": [
+        0.005116026382893324,
+        0.004751706495881081,
+        0.004427797626703978,
+        0.004394805524498224,
+        0.004285440780222416,
+        0.0041353353299200535,
+        0.004015421960502863,
+        0.0038680764846503735,
+        0.0037573452573269606,
+        0.0037164699751883745
+      ],
+      "selected_probability_sum": 0.04246842488646507,
+      "selected_weight_sum": 1.0,
+      "selected_weights": [
+        0.12046658992767334,
+        0.11188798397779465,
+        0.10426093637943268,
+        0.10348407179117203,
+        0.10090886801481247,
+        0.09737434983253479,
+        0.09455076605081558,
+        0.09108123183250427,
+        0.0884738564491272,
+        0.08751136809587479
+      ]
+    },
+    "status": "PASSED",
+    "validation": {
+      "all_candidates_finite": true,
+      "errors": [],
+      "model_loaded": false,
+      "source_guard_unchanged": true,
+      "source_mutation": false
+    },
+    "whole_model_capability": "NOT_TESTED"
+  },
+  "source_router_selection": {
+    "candidate_body_persisted": null,
+    "complete_token_runtime": "NOT_TESTED",
+    "native_selection_execution_observed": null,
+    "promotion_allowed": false,
+    "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
+    "selection_status": "NOT_EXECUTED",
+    "source_independent_execution": null,
+    "status": "NOT_RUN",
+    "whole_model_capability": "NOT_TESTED"
+  },
+  "source_router_selection_native": {
+    "complete_token_runtime": "NOT_TESTED",
+    "native_selection_execution_observed": null,
+    "native_source_authority_execution_observed": null,
+    "promotion_allowed": false,
+    "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_ROUTER_SELECTION_NATIVE.json",
+    "selection_status": "NOT_EXECUTED",
+    "source_independent_execution": null,
+    "status": "NOT_RUN",
+    "whole_model_capability": "NOT_TESTED"
+  },
+  "source_shared_expert_composition_native": {
+    "complete_expert_runtime": "NOT_TESTED",
+    "complete_token_runtime": "NOT_TESTED",
+    "promotion_allowed": false,
+    "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_SHARED_EXPERT_COMPOSITION_NATIVE.json",
+    "status": "NOT_RUN",
+    "whole_model_capability": "NOT_TESTED"
+  },
+  "source_shared_expert_kernel_parity": {
+    "candidate_body": null,
+    "candidate_body_persisted": null,
+    "gpu_timing": null,
+    "native_kernel": null,
+    "native_loader": null,
+    "noetic_descriptor": null,
+    "noetic_representation": null,
+    "organ": "shared_expert",
+    "parity": null,
+    "promotion_allowed": false,
+    "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_Q4_MATRIX_KERNEL_SHARED_EXPERT_GATE_L0_R0_128_PARITY.json",
+    "source_independent_execution": null,
+    "source_tensor": null,
+    "status": "NOT_RUN",
+    "whole_model_capability": "NOT_TESTED",
+    "whole_model_runtime": "NOT_TESTED"
+  },
+  "source_shared_residual_hyperconnection_native": {
+    "complete_expert_runtime": "NOT_TESTED",
+    "complete_system_ebpw": null,
+    "complete_token_runtime": "NOT_TESTED",
+    "device_intermediate_no_host_roundtrip": null,
+    "flash_tps": null,
+    "native_hyperconnection_block_inject_observed": null,
+    "native_hyperconnection_low_rank_down_observed": null,
+    "native_hyperconnection_low_rank_up_observed": null,
+    "native_hyperconnection_residual_mix_observed": null,
+    "native_hyperconnection_stream_injection_observed": null,
+    "native_shared_residual_composition_observed": null,
+    "promotion_allowed": false,
+    "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_SHARED_RESIDUAL_HYPERCONNECTION_NATIVE.json",
+    "source_independent_execution": null,
+    "status": "NOT_RUN",
+    "whole_model_capability": "NOT_TESTED"
+  },
+  "source_sparse_attention_kernel_parity": {
+    "candidate_body": null,
+    "candidate_body_persisted": null,
+    "gpu_timing": null,
+    "native_kernel": null,
+    "native_loader": null,
+    "noetic_descriptor": null,
+    "noetic_representation": null,
+    "organ": "sparse_attention",
+    "parity": null,
+    "promotion_allowed": false,
+    "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_NOETIC_Q4_MATRIX_KERNEL_SPARSE_INDEXER_QK_PROJ_L11_R0_128_PARITY.json",
+    "source_independent_execution": null,
+    "source_tensor": null,
+    "status": "NOT_RUN",
+    "whole_model_capability": "NOT_TESTED",
+    "whole_model_runtime": "NOT_TESTED"
+  },
+  "source_tensor_probe": {
+    "dense_vs_packed_low_bit": null,
+    "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_FIRST_TENSOR_PROBE.json",
+    "source_tensor": null,
+    "status": "NOT_RUN",
+    "whole_model_capability": "NOT_TESTED",
+    "whole_model_runtime": "NOT_TESTED"
+  },
+  "source_transform_parity": {
+    "body_mutated": false,
+    "candidates": {
+      "independent_q4_g64": {
+        "candidate_bytes": 891289600,
+        "candidate_sha256": "c67c3306edc972e5fc7257d939f545e94562e0f8e1306cf24eb4264376e57f39",
+        "code_bytes": 838860800,
+        "effective_bits_per_value": 4.25,
+        "group_size": 64,
+        "id": "independent_q4_g64",
+        "label": "[D]",
+        "model_capability_tested": false,
+        "native_kernel_tested": false,
+        "pack_unpack_parity": true,
+        "packed_sha256": "5847742f10b70a201a9acc11049a3deb278fe8742993c71344f9389f1db277d1",
+        "reference_vector": {
+          "cosine": 0.9928837403313406,
+          "count": 655360,
+          "finite": true,
+          "max_abs_error": 0.5110001564025879,
+          "mean_abs_error": 0.06314619255277591,
+          "rmse": 0.07972607929790755
+        },
+        "runtime_performance_tested": false,
+        "scale_bytes": 52428800,
+        "scale_sha256": "a927cdfe0c62c4422bb11ebfc661a65afd9e93caa6d42a36766d93ae8f35034f",
+        "scheme": "symmetric_signed_4bit_group64_with_fp16_scales",
+        "source_layout_preserved": true,
+        "status": "FULL_TENSOR_TRANSFORM_ONLY",
+        "weight_reconstruction": {
+          "cosine": 0.9930165146332164,
+          "count": 1677721600,
+          "finite": true,
+          "max_abs_error": 0.0390625,
+          "mean_abs_error": 0.0013130531516401943,
+          "rmse": 0.001574400915434971
+        }
+      },
+      "shared_bf16_basis_nf4_residual": {
+        "basis_bytes": 6553600,
+        "basis_dtype": "BF16",
+        "basis_sha256": "cb7d1afc7e8c9469875be5610d7ff423726529cd9f1ddf1f0087e3af6b7b34e3",
+        "basis_shared_once_across_all_experts": true,
+        "candidate_bytes": 897843200,
+        "candidate_sha256": "eaaa21b52ea0db9cf60c24a97c5f4d690c0dbfaf4ae90bbbd6b39b8b531a3aa1",
+        "code_bytes": 838860800,
+        "effective_bits_per_value": 4.28125,
+        "group_size": 64,
+        "id": "shared_bf16_basis_nf4_residual",
+        "label": "[D]",
+        "model_capability_tested": false,
+        "native_kernel_tested": false,
+        "pack_unpack_parity": true,
+        "packed_sha256": "8ced5e0761121f3db0c3411149a677fb03a9fe4e3809f505c65389d7ae547c0b",
+        "reference_vector": {
+          "cosine": 0.9954127399449646,
+          "count": 655360,
+          "finite": true,
+          "max_abs_error": 0.4027063846588135,
+          "mean_abs_error": 0.05057982959311573,
+          "rmse": 0.0636275173080289
+        },
+        "residual_codebook": [
+          -1.0,
+          -0.6961928,
+          -0.52507305,
+          -0.3949175,
+          -0.28444138,
+          -0.18477343,
+          -0.09105004,
+          0.0,
+          0.0795803,
+          0.1609302,
+          0.2461123,
+          0.33791524,
+          0.44070983,
+          0.562617,
+          0.72295684,
+          1.0
+        ],
+        "runtime_performance_tested": false,
+        "scale_bytes": 52428800,
+        "scale_sha256": "501092e06ed09a84f37d53638840232d1c68c316dd57002b55470cf28b385582",
+        "scheme": "shared_bf16_basis_plus_nf4_group64_residual_with_fp16_scales",
+        "source_layout_preserved": true,
+        "status": "FULL_TENSOR_TRANSFORM_ONLY",
+        "weight_reconstruction": {
+          "cosine": 0.9954952928791921,
+          "count": 1677721600,
+          "finite": true,
+          "max_abs_error": 0.039417535066604614,
+          "mean_abs_error": 0.0009965070781567215,
+          "rmse": 0.0012570701157017504
+        }
+      }
+    },
+    "claim_boundary": "Full routed-expert tensor body transform parity only. This does not establish whole-model capability, native loader compatibility, native-kernel performance, or promotion.",
+    "comparison": {
+      "capability_parity": "NOT_TESTED",
+      "dense_bytes": 3355443200,
+      "full_payload_read": true,
+      "independent_q4_bytes": 891289600,
+      "independent_q4_smaller_than_dense": true,
+      "label": "[D]",
+      "same_dimensions": true,
+      "same_source_tensor": true,
+      "shared_basis_nf4_residual_bytes": 897843200,
+      "shared_basis_nf4_residual_smaller_than_dense": true,
+      "shared_basis_nf4_residual_smaller_than_independent_q4": false,
+      "whole_model_runtime": "NOT_TESTED"
+    },
+    "model_loaded": false,
+    "native_kernel": "NOT_TESTED",
+    "native_loader": "NOT_TESTED",
+    "next_experiment": {
+      "action": "serialize the chosen source-layout candidate metadata and run a bounded loader encode/decode round-trip before implementing a native kernel",
+      "id": "flash-routed-expert-bounded-loader-roundtrip",
+      "required_before_promotion": [
+        "bounded loader",
+        "native kernel",
+        "whole-model capability",
+        "protected complete-token timing"
+      ],
+      "source_mutation_allowed": false
+    },
+    "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/tools/acceptance/flash/_cache/receipts/headless/FLASH_FULL_TENSOR_TRANSFORM_PARITY.json",
+    "receipt_sha256": "87fe6ace5ae2680593b0c8e06aa04482d436ee2beb47ce6554a1d1cc42501e54",
+    "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "runtime_performance": "NOT_TESTED",
+    "source_tensor": {
+      "bytes_read_pass_one": 3355443200,
+      "bytes_read_pass_two": 3355443200,
+      "data_offsets": [
+        0,
+        3355443200
+      ],
+      "dtype": "BF16",
+      "label": "[V]",
+      "layout": "row-major [expert, row, column]; complete tensor payload streamed in expert/row blocks",
+      "payload_bytes": 3355443200,
+      "payload_sha256": "cac366f51f797c0c939e12e010d97f83f5032ddd27085bb232687c35d26b663a",
+      "selected_shard_full_hash_recomputed": false,
+      "shape": [
+        512,
+        1280,
+        2560
+      ],
+      "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00002-of-00131.safetensors",
+      "shard_name": "model-00002-of-00131.safetensors",
+      "tensor_name": "model.language_model.layers.0.mlp.experts.gate_up_proj",
+      "verification_scope": "complete BF16 tensor payload under exact pinned final ModelLake identity"
+    },
+    "status": "PASSED",
+    "tensor_name": "model.language_model.layers.0.mlp.experts.gate_up_proj",
+    "transform_parity": {
+      "candidate_hashes_complete": true,
+      "candidate_reference_dots_finite": true,
+      "complete_source_payload_read": true,
+      "dense_reference_dots_finite": true,
+      "independent_reconstruction_finite": true,
+      "label": "[D]",
+      "pack_unpack_parity": true,
+      "pass_one_blocks": 5120,
+      "pass_two_blocks": 5120,
+      "shared_reconstruction_finite": true,
+      "source_file_unchanged_between_passes": true,
+      "source_shape_payload_match": true,
+      "status": "PASSED"
+    },
+    "whole_model_capability": "NOT_TESTED",
+    "whole_model_runtime": "NOT_TESTED"
+  },
+  "status": "SCAFFOLD_ONLY",
+  "token_ns_budget_receipt": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/acceptance/FLASH_FULL_NOETIC_EXECUTABLE.token_ns_budget.json"
+}

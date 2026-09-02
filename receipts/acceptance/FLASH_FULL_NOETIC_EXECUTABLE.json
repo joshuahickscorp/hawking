@@ -1,0 +1,273 @@
+{
+  "artifacts": [
+    "receipts/acceptance/FLASH_FULL_NOETIC_EXECUTABLE.scaffold.json",
+    "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+    "receipts/future/FLASH_NR_COMPLETE.json"
+  ],
+  "blocker": "FLASH_COMPLETE_V0.nx status=SEALED_METADATA_ONLY_NOT_FOR_PROMOTION; native_loader=NOT_IMPLEMENTED; native_kernels=PLAN_ONLY; NR can_promote=False reason='prospective_meta_bpw is RESEARCH_TARGET and is never a promotion predicate; qualified_complete_physical_ebpw is UNKNOWN on this host; no self-contained executable byte ledger; no capability-preserving runtime; production path does not prove direct representation consumption (dense rematerialization unknown)'; complete_system_ebpw=None; accepted_capability_preserving_tps=None. noetic_compiler.round_trip runs toy/generic families, not a Flash full noetic executable. routed_group_execution is FamilyChainBlocked.",
+  "claim_boundary": "Scaffold and metadata seals exist. There is no source-independent Flash full noetic executable on this checkout. Promotion is refused.",
+  "command": [
+    "tools.odyssey.noetic_compiler.round_trip",
+    "hcli.agentos.flash_executable.run_flash_executable_scaffold"
+  ],
+  "comparison": {
+    "measured_native_kernels": "PLAN_ONLY",
+    "measured_native_loader": "NOT_IMPLEMENTED",
+    "measured_nx_status": "SEALED_METADATA_ONLY_NOT_FOR_PROMOTION",
+    "required": "full noetic executable (not metadata-only NX, not PLAN_ONLY kernels, not NOT_IMPLEMENTED loader)",
+    "satisfied": false
+  },
+  "criterion": {
+    "acceptance_span": {
+      "end_line": 594,
+      "section": "II-B",
+      "start_line": 574
+    },
+    "quoted": "F13 full executable no-dense-rematerialization audit / FLAS-012 full executable audit. I-C genes include compile to device and verify full function. FLASH_COMPLETE_V0.nx must be a machine-bound executable, not a metadata seal.",
+    "source": {
+      "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+      "lines": [
+        496,
+        1629,
+        1754,
+        3901
+      ]
+    }
+  },
+  "criterion_altered": false,
+  "evidence_tier": "STATIC",
+  "finished_at": "2026-09-02T09:12:15Z",
+  "gate": "FLASH_FULL_NOETIC_EXECUTABLE",
+  "git_head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
+  "measured": {
+    "called_scaffold_this_invocation": false,
+    "native_kernels": "PLAN_ONLY",
+    "native_loader": "NOT_IMPLEMENTED",
+    "nr_can_promote": false,
+    "nr_source_independent_nx_status": "SCAFFOLD_ONLY",
+    "nx_accepted_multitoken_tps": null,
+    "nx_complete_system_ebpw": null,
+    "nx_resident_promotion": false,
+    "nx_status": "SEALED_METADATA_ONLY_NOT_FOR_PROMOTION",
+    "round_trips": [
+      {
+        "family_id": "binary_sign_codes",
+        "keys": [
+          "accounting",
+          "chain",
+          "evidence_tier",
+          "execute",
+          "family_id",
+          "lowering",
+          "nr",
+          "payload_keys",
+          "reconciled",
+          "verified"
+        ],
+        "status": "RAN"
+      },
+      {
+        "family_id": "exact_island",
+        "keys": [
+          "accounting",
+          "chain",
+          "evidence_tier",
+          "execute",
+          "family_id",
+          "lowering",
+          "nr",
+          "payload_keys",
+          "reconciled",
+          "verified"
+        ],
+        "status": "RAN"
+      },
+      {
+        "family_id": "generated_block",
+        "keys": [
+          "accounting",
+          "chain",
+          "evidence_tier",
+          "execute",
+          "family_id",
+          "lowering",
+          "nr",
+          "payload_keys",
+          "reconciled",
+          "verified"
+        ],
+        "status": "RAN"
+      },
+      {
+        "family_id": "grouped_absmax_q4",
+        "keys": [
+          "accounting",
+          "chain",
+          "evidence_tier",
+          "execute",
+          "family_id",
+          "lowering",
+          "nr",
+          "payload_keys",
+          "reconciled",
+          "verified"
+        ],
+        "status": "RAN"
+      },
+      {
+        "family_id": "low_rank_uv",
+        "keys": [
+          "accounting",
+          "chain",
+          "evidence_tier",
+          "execute",
+          "family_id",
+          "lowering",
+          "nr",
+          "payload_keys",
+          "reconciled",
+          "verified"
+        ],
+        "status": "RAN"
+      },
+      {
+        "family_id": "product_quantization",
+        "keys": [
+          "accounting",
+          "chain",
+          "evidence_tier",
+          "execute",
+          "family_id",
+          "lowering",
+          "nr",
+          "payload_keys",
+          "reconciled",
+          "verified"
+        ],
+        "status": "RAN"
+      },
+      {
+        "family_id": "q2_affine",
+        "keys": [
+          "accounting",
+          "chain",
+          "evidence_tier",
+          "execute",
+          "family_id",
+          "lowering",
+          "nr",
+          "payload_keys",
+          "reconciled",
+          "verified"
+        ],
+        "status": "RAN"
+      },
+      {
+        "family_id": "raw_f32",
+        "keys": [
+          "accounting",
+          "chain",
+          "evidence_tier",
+          "execute",
+          "family_id",
+          "lowering",
+          "nr",
+          "payload_keys",
+          "reconciled",
+          "verified"
+        ],
+        "status": "RAN"
+      },
+      {
+        "error": "recurrent_state_operator: no demo_payload; blockers=['noetic_ir.NODE_TYPES has no recurrent node; the mixer kernel is DISPATCHED on the Qwen3.8 token (census family_table) but is not a weight-side IR. Cannot add a 27B interpreter here.']",
+        "family_id": "recurrent_state_operator",
+        "status": "FamilyChainBlocked"
+      },
+      {
+        "error": "routed_group_execution: no demo_payload; blockers=['noetic_ir.NODE_TYPES has no routed-group node; gk_worklist_fp4 EXISTS for Q80/DSV4F/GLM. Qwen3.8 is dense (qwen38_geometry.rs refuses num_experts). Cannot invent a router.']",
+        "family_id": "routed_group_execution",
+        "status": "FamilyChainBlocked"
+      },
+      {
+        "family_id": "shared_basis",
+        "keys": [
+          "accounting",
+          "chain",
+          "evidence_tier",
+          "execute",
+          "family_id",
+          "lowering",
+          "nr",
+          "payload_keys",
+          "reconciled",
+          "verified"
+        ],
+        "status": "RAN"
+      },
+      {
+        "family_id": "sparse_correction",
+        "keys": [
+          "accounting",
+          "chain",
+          "evidence_tier",
+          "execute",
+          "family_id",
+          "lowering",
+          "nr",
+          "payload_keys",
+          "reconciled",
+          "verified"
+        ],
+        "status": "RAN"
+      },
+      {
+        "family_id": "ternary_group64",
+        "keys": [
+          "accounting",
+          "chain",
+          "evidence_tier",
+          "execute",
+          "family_id",
+          "lowering",
+          "nr",
+          "payload_keys",
+          "reconciled",
+          "verified"
+        ],
+        "status": "RAN"
+      },
+      {
+        "family_id": "toy_xor_codes",
+        "keys": [
+          "accounting",
+          "chain",
+          "evidence_tier",
+          "execute",
+          "family_id",
+          "lowering",
+          "nr",
+          "payload_keys",
+          "reconciled",
+          "verified"
+        ],
+        "status": "RAN"
+      }
+    ],
+    "scaffold_accepted_tps": null,
+    "scaffold_complete_system_ebpw": null,
+    "scaffold_status": "SCAFFOLD_ONLY"
+  },
+  "returncode": 0,
+  "schema": "hawking.acceptance.gate.v1",
+  "started_at": "2026-09-02T09:12:15Z",
+  "stderr": "",
+  "stdout": "{\"nx_status\": \"SEALED_METADATA_ONLY_NOT_FOR_PROMOTION\", \"nr_can_promote\": false, \"nr_nx_status\": \"SCAFFOLD_ONLY\", \"scaffold_status\": \"SCAFFOLD_ONLY\", \"native_loader\": \"NOT_IMPLEMENTED\", \"native_kernels\": \"PLAN_ONLY\", \"source_family_ids\": [\"binary_sign_codes\", \"exact_island\", \"generated_block\", \"grouped_absmax_q4\", \"low_rank_uv\", \"product_quantization\", \"q2_affine\", \"raw_f32\", \"recurrent_state_operator\", \"routed_group_execution\", \"shared_basis\", \"sparse_correction\", \"ternary_group64\"], \"round_trip_blocked\": [{\"family_id\": \"recurrent_state_operator\", \"status\": \"FamilyChainBlocked\", \"error\": \"recurrent_state_operator: no demo_payload; blockers=['noetic_ir.NODE_TYPES has no recurrent node; the mixer kernel is DISPATCHED on the Qwen3.8 token (census family_table) but is not a weight-side IR. Cannot add a 27B interpreter here.']\"}, {\"family_id\": \"routed_group_execution\", \"status\": \"FamilyChainBlocked\", \"error\": \"routed_group_execution: no demo_payload; blockers=['noetic_ir.NODE_TYPES has no routed-group node; gk_worklist_fp4 EXISTS for Q80/DSV4F/GLM. Qwen3.8 is dense (qwen38_geometry.rs refuses num_experts). Cannot invent a router.']\"}]}",
+  "symbol": {
+    "also_called": "family_inventory, run_flash_executable_scaffold",
+    "file": "tools/acceptance/flash/run_gates.py",
+    "kind": "call",
+    "module": "tools.odyssey.noetic_compiler",
+    "name": "round_trip"
+  },
+  "verdict": "BLOCKED"
+}

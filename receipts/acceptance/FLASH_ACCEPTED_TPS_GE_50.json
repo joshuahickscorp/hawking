@@ -1,0 +1,66 @@
+{
+  "artifacts": [
+    "receipts/acceptance/FLASH_ACCEPTED_TPS_GE_50.gate.json"
+  ],
+  "blocker": "accepted_tps=None which is not >= 50. status=BLOCKED_FIRST_PHYSICAL_BOUNDARY; accepted_tokens=1; first_physical_failure_boundary=token_acceptance_loop ONE_TOKEN_ACCEPTED. One accepted generated token is not a protected multi-token TPS. No TPS figure was fabricated.",
+  "claim_boundary": "Source-backed TPS gate, not a timed multi-token benchmark. accepted_tps is null. One tokenizer-bound accepted token does not satisfy >= 50 accepted TPS. Evidence tier is STATIC (audit), not HARDWARE_MEASURED.",
+  "command": [
+    "tools/flash_stateful_gate.py",
+    "--out",
+    "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/acceptance/FLASH_ACCEPTED_TPS_GE_50.gate.json"
+  ],
+  "comparison": {
+    "field": "accepted_tps",
+    "measured": null,
+    "op": ">=",
+    "satisfied": false,
+    "threshold": 50.0
+  },
+  "criterion": {
+    "acceptance_span": {
+      "end_line": 505,
+      "section": "I-C",
+      "start_line": 478
+    },
+    "quoted": "FLASH HARD GATE: accepted capability-preserving TPS >= 50. 50 TPS = 20.00 ms accepted token. Do not use raw TPS as accepted TPS.",
+    "source": {
+      "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+      "lines": [
+        1607,
+        1640,
+        1742,
+        4013,
+        9499
+      ]
+    }
+  },
+  "criterion_altered": false,
+  "evidence_tier": "STATIC",
+  "finished_at": "2026-09-02T09:12:16Z",
+  "gate": "FLASH_ACCEPTED_TPS_GE_50",
+  "git_head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
+  "measured": {
+    "accepted_tokens": 1,
+    "accepted_tps": null,
+    "bench_state": "UNKNOWN",
+    "first_physical_failure_boundary": {
+      "evidence": "the complete 48-layer stateful oracle produced the tokenizer-bound terminal argmax as one accepted generated token; continuation state, repeated decode and protected TPS remain open",
+      "stage": "token_acceptance_loop",
+      "status": "ONE_TOKEN_ACCEPTED"
+    },
+    "session_status": "PASSED_STATEFUL_COMPLETE_TOKEN_ACCEPTED",
+    "status": "BLOCKED_FIRST_PHYSICAL_BOUNDARY"
+  },
+  "returncode": 0,
+  "schema": "hawking.acceptance.gate.v1",
+  "started_at": "2026-09-02T09:12:15Z",
+  "stderr": "",
+  "stdout": "{\"status\": \"BLOCKED_FIRST_PHYSICAL_BOUNDARY\", \"accepted_tps\": null, \"accepted_tokens\": 1, \"first_physical_failure_boundary\": {\"stage\": \"token_acceptance_loop\", \"status\": \"ONE_TOKEN_ACCEPTED\", \"evidence\": \"the complete 48-layer stateful oracle produced the tokenizer-bound terminal argmax as one accepted generated token; continuation state, repeated decode and protected TPS remain open\"}, \"session\": {\"receipt\": \"/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json\", \"sha256\": \"c6e688b6fb621fac7a1cb0198d023c9257379da0187546fd23f68f955755cc85\", \"status\": \"PASSED_STATEFUL_COMPLETE_TOKEN_ACCEPTED\", \"accepted_generation_tokens\": 1, \"claim\": \"The pinned tokenizer prompt completed all 48 Flash layers in the dense exact stateful oracle, and the native terminal argmax produced token 2972 as the first generated token. This closes one accepted-token prediction without claiming that token's continuation state was advanced; repeated accepted decode, TPS, EBPW, capability and HCLI residency remain open.\"}}",
+  "symbol": {
+    "file": "tools/acceptance/flash/run_gates.py",
+    "kind": "call",
+    "module": "tools.flash_stateful_gate",
+    "name": "main"
+  },
+  "verdict": "BLOCKED"
+}

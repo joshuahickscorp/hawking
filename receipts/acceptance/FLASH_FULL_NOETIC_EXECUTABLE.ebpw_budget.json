@@ -1,0 +1,1125 @@
+{
+  "bounded_kernel_parity": {
+    "body_mutated": false,
+    "candidate_body": {
+      "bytes": 174080,
+      "path": "/Users/scammermike/Downloads/hawking/.hcli/flash-component/flash-routed-expert-independent-q4-g64-e0-r0-128.bin",
+      "receipt_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_BODY.json",
+      "receipt_sha256": "60deabc9be0f32005679ad17a6124a56f89a791dab2c641268d9f5bc7599672b",
+      "sha256": "5be289f04c8ec072a951fdd249d21fd44d69aad8baafedde0158e77aca72aa78",
+      "source_independent": true
+    },
+    "candidate_body_persisted": true,
+    "claim_boundary": "PASSED bounded source-independent Noetic component-body load, source-reference Q4 Metal kernel parity, and GPU timing only; no whole-model loader, capability, complete-token runtime, EBPW, or Flash TPS claim",
+    "complete_system_ebpw": null,
+    "flash_tps": null,
+    "gpu_timing": {
+      "device": "Apple M3 Ultra",
+      "gpu_ns": [
+        341459,
+        327250,
+        282500,
+        331416,
+        352584,
+        271000,
+        306166
+      ],
+      "gpu_ns_max": 352584,
+      "gpu_ns_median": 327250,
+      "gpu_ns_min": 271000,
+      "host_wall_ns": [
+        566333,
+        590166,
+        520333,
+        583667,
+        554375,
+        471416,
+        514125
+      ],
+      "host_wall_ns_max": 590166,
+      "host_wall_ns_median": 554375,
+      "host_wall_ns_min": 471416,
+      "measured_runs": 7,
+      "memory_limits": {
+        "current_allocated_size": 638976,
+        "has_unified_memory": true,
+        "max_buffer_length": 62620631040,
+        "recommended_max_working_set_size": 83494174720
+      },
+      "timing_authority": "Metal completed-command-buffer GPUStartTime/GPUEndTime; host wall reported separately",
+      "warmup_runs": 2
+    },
+    "input": {
+      "definition": "((index * 71) mod 509 - 254) / 509",
+      "deterministic_sha256": "62055d5ebab03995a1e46aa8d8586ad80052602b0b1ed744c56b912c8c14593a",
+      "values": 2560
+    },
+    "model_lake_manifest": {
+      "bytes": 360053432320,
+      "label": "[V]",
+      "n_files": 144,
+      "path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+      "repo": "Qwen/Qwen3.8-Flash-Next",
+      "resolved_sha": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+      "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+      "sha256": "1f536f70c963a4d9b800e17c54c0dec54ce2d31a0a36041146b4013a04221fb7"
+    },
+    "model_loaded": false,
+    "native_kernel": {
+      "dispatches_per_sample": 1,
+      "grid": [
+        128,
+        1,
+        1
+      ],
+      "kernel": "qwen_uniform_q4_group64_matvec",
+      "kernel_registered": true,
+      "label": "[V]/[D]",
+      "scope": "one Flash routed-expert source block matvec",
+      "shader_family": "qwen_uniform_q4.metal",
+      "threadgroup": [
+        1,
+        1,
+        1
+      ],
+      "whole_model_capability": "NOT_TESTED",
+      "whole_model_runtime": "NOT_TESTED"
+    },
+    "native_loader": {
+      "candidate_body_persisted": true,
+      "candidate_id": "independent_q4_g64",
+      "dense_rematerialization": "forbidden",
+      "descriptor_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_ROUTED_EXPERT_LOADER_ROUNDTRIP.json",
+      "descriptor_sha256": "60e7c098c67f26013e47d3411efc554b7e8612417300eb2116d8237f53568c19",
+      "source_block_streamed_for_reference": true,
+      "source_independent_execution": true,
+      "status": "BOUNDED_NOETIC_DESCRIPTOR_AND_BODY_LOAD",
+      "whole_model_capability": "NOT_TESTED",
+      "whole_model_runtime": "NOT_TESTED"
+    },
+    "next_action": "compose the source-independent component body into the bounded Noetic graph while keeping protected complete-token timing gated",
+    "noetic_descriptor": {
+      "candidate_id": "independent_q4_g64",
+      "load_policy": "validated serialized descriptor; candidate body is not persisted by this bounded probe",
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_ROUTED_EXPERT_LOADER_ROUNDTRIP.json",
+      "schema": "hcli.noetic.representation_descriptor.v1",
+      "sha256": "60e7c098c67f26013e47d3411efc554b7e8612417300eb2116d8237f53568c19"
+    },
+    "noetic_representation": {
+      "candidate_bytes": 174080,
+      "candidate_id": "independent_q4_g64",
+      "candidate_sha256": "5be289f04c8ec072a951fdd249d21fd44d69aad8baafedde0158e77aca72aa78",
+      "code_bytes": 163840,
+      "code_dtype": "uint4_packed",
+      "code_offset": 8,
+      "effective_bits_per_value": 4.25,
+      "group_size": 64,
+      "label": "[D]",
+      "layout": "row-major [expert, row, column]",
+      "nibble_order": "low_nibble_then_high_nibble_row_major",
+      "scale_bytes": 10240,
+      "scale_dtype": "little_endian_float16",
+      "scale_scope": "one scale per 64 source values",
+      "schema": "hcli.noetic.representation_descriptor.v1",
+      "source_to_candidate_max_abs_error": 0.0118255615234375,
+      "source_to_candidate_rmse": 0.001611581793462567
+    },
+    "parity": {
+      "cosine": 0.9999999999999637,
+      "count": 128,
+      "finite": true,
+      "max_abs_error": 1.564621925354004e-07,
+      "rmse": 5.2199908547982395e-08,
+      "tolerance": 0.0020000000949949026,
+      "within_tolerance": true
+    },
+    "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "promotion_allowed": false,
+    "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/tools/acceptance/flash/_cache/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_PARITY.json",
+    "receipt_sha256": "fadda68dea81f38f8a841f7fbf5af1ecdef19d8804512af60b54523a3b4af02a",
+    "repo": "Qwen/Qwen3.8-Flash-Next",
+    "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "source_independent_execution": true,
+    "source_tensor": {
+      "dtype": "BF16",
+      "header_sha256": "d482a7b5ad9050e1ec1541aa95e6ce3e836d943641748dbb0836f0c5232e3f9d",
+      "index_sha256": "99e815241ef03325536b0aaa4441deea45174c17fae31e10f0bb456410c590de",
+      "selected_block_bytes": 655360,
+      "selected_block_sha256": "033fdf732c60ab90664b73e1b72dedd53b9fc92490048eabfc7e862eaab48060",
+      "selected_expert": 0,
+      "selected_row_count": 128,
+      "selected_row_start": 0,
+      "selected_shard_full_hash_recomputed": false,
+      "shape": [
+        512,
+        1280,
+        2560
+      ],
+      "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00002-of-00131.safetensors",
+      "shard_name": "model-00002-of-00131.safetensors",
+      "shard_size": 3355443368,
+      "tensor_data_offsets": [
+        0,
+        3355443200
+      ],
+      "tensor_name": "model.language_model.layers.0.mlp.experts.gate_up_proj"
+    },
+    "status": "PASSED",
+    "whole_model_capability": "NOT_TESTED",
+    "whole_model_runtime": "NOT_TESTED"
+  },
+  "bounded_loader_roundtrip": {
+    "body_mutated": false,
+    "candidate_id": "independent_q4_g64",
+    "claim_boundary": "Bounded serialized descriptor and source-block loader round-trip only. This does not establish whole-model capability, native-kernel performance, complete-system EBPW, or Flash TPS.",
+    "encoded_sample": {
+      "basis_bytes": 0,
+      "candidate_bytes": 2720,
+      "candidate_sha256": "e9340fe43a016f43fab0b8943cc9336fa62171b5e164937777642f071f647787",
+      "label": "[D]",
+      "packed_code_bytes": 2560,
+      "scale_bytes": 160
+    },
+    "loader_roundtrip": {
+      "code_pack_unpack_parity": true,
+      "decoded_finite": true,
+      "decoded_shape": [
+        2,
+        2560
+      ],
+      "descriptor_json_roundtrip": true,
+      "label": "[D]",
+      "reference_vector": {
+        "cosine": 0.999917678792683,
+        "count": 2,
+        "finite": true,
+        "max_abs_error": 0.047425270080566406,
+        "mean_abs_error": 0.03642413020133972,
+        "rmse": 0.03804920944282053
+      },
+      "source_file_unchanged": true,
+      "source_payload_unchanged": true,
+      "status": "PASSED",
+      "weight_reconstruction": {
+        "cosine": 0.9930054747215294,
+        "count": 5120,
+        "finite": true,
+        "max_abs_error": 0.00537109375,
+        "mean_abs_error": 0.0014073599595576525,
+        "rmse": 0.001666226581554829
+      }
+    },
+    "model_loaded": false,
+    "native_kernel": "NOT_TESTED",
+    "native_loader": "BOUNDED_DESCRIPTOR_ROUNDTRIP_ONLY",
+    "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/tools/acceptance/flash/_cache/receipts/headless/FLASH_ROUTED_EXPERT_LOADER_ROUNDTRIP.json",
+    "receipt_sha256": "5352b964296df2ee1abdf9668e54810b327c6240396eb88bed72d71b654d8980",
+    "representation_descriptor": {
+      "candidate_id": "independent_q4_g64",
+      "full_transform_reference": {
+        "candidate_bytes": 891289600,
+        "candidate_sha256": "c67c3306edc972e5fc7257d939f545e94562e0f8e1306cf24eb4264376e57f39",
+        "effective_bits_per_value": 4.25,
+        "status": "FULL_TENSOR_TRANSFORM_ONLY"
+      },
+      "label": "[D]",
+      "loader_policy": {
+        "candidate_body_persisted_by_this_tool": false,
+        "dense_rematerialization": "forbidden",
+        "model_load": false,
+        "source_mutation": false,
+        "streaming_block_order": "expert ascending, row ascending, complete column rows"
+      },
+      "schema": "hcli.noetic.representation_descriptor.v1",
+      "source_tensor": {
+        "dtype": "BF16",
+        "group_size": 64,
+        "layout": "row-major [expert, row, column]",
+        "shape": [
+          512,
+          1280,
+          2560
+        ],
+        "tensor_name": "model.language_model.layers.0.mlp.experts.gate_up_proj"
+      },
+      "storage": {
+        "code_dtype": "uint4_packed",
+        "code_offset": 8,
+        "nibble_order": "low_nibble_then_high_nibble_row_major",
+        "scale_dtype": "little_endian_float16",
+        "scale_scope": "one_scale_per_64_values"
+      }
+    },
+    "runtime_performance": "NOT_TESTED",
+    "serialized_descriptor_sha256": "e5de59c4502b1adfc8da8fc6ba5bef9ded3994d90079c44eeb042abffa81a14d",
+    "source_sample": {
+      "bytes": 10240,
+      "expert_index": 0,
+      "label": "[V]",
+      "payload_sha256": "796df7ef195d1e8bd3eba2cc0c7f20a2017898a6d910159fdb47f37f831b1dcb",
+      "row_range": [
+        0,
+        2
+      ],
+      "shape": [
+        2,
+        2560
+      ]
+    },
+    "status": "PASSED",
+    "tensor_name": "model.language_model.layers.0.mlp.experts.gate_up_proj",
+    "transform_reference": {
+      "candidate": {
+        "candidate_bytes": 891289600,
+        "candidate_sha256": "c67c3306edc972e5fc7257d939f545e94562e0f8e1306cf24eb4264376e57f39",
+        "effective_bits_per_value": 4.25,
+        "id": "independent_q4_g64"
+      },
+      "label": "[V]",
+      "receipt_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_FULL_TENSOR_TRANSFORM_PARITY.json",
+      "receipt_sha256": "f0ad216973c421a4457a9e33b091b05168c4289de8aedd23633747b5c54cf3d3",
+      "source_tensor_payload_sha256": "cac366f51f797c0c939e12e010d97f83f5032ddd27085bb232687c35d26b663a"
+    },
+    "whole_model_capability": "NOT_TESTED",
+    "whole_model_runtime": "NOT_TESTED"
+  },
+  "bounded_representation_experiment": {
+    "candidates": null,
+    "comparison": null,
+    "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_ROUTED_EXPERT_REPRESENTATION_EXPERIMENT.json",
+    "replications": [],
+    "source_tensor": null,
+    "status": "NOT_RUN",
+    "whole_model_capability": "NOT_TESTED",
+    "whole_model_runtime": "NOT_TESTED"
+  },
+  "bounded_source_probe": {
+    "dense_vs_packed_low_bit": null,
+    "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/headless/FLASH_FIRST_TENSOR_PROBE.json",
+    "source_tensor": null,
+    "status": "NOT_RUN",
+    "whole_model_capability": "NOT_TESTED",
+    "whole_model_runtime": "NOT_TESTED"
+  },
+  "bounded_tensor_observation": {
+    "candidates": {
+      "independent_q4_g64": {
+        "candidate_bytes": 891289600,
+        "effective_bits_per_value": 4.25,
+        "reference_vector": {
+          "cosine": 0.9928837403313406,
+          "count": 655360,
+          "finite": true,
+          "max_abs_error": 0.5110001564025879,
+          "mean_abs_error": 0.06314619255277591,
+          "rmse": 0.07972607929790755
+        },
+        "weight_reconstruction": {
+          "cosine": 0.9930165146332164,
+          "count": 1677721600,
+          "finite": true,
+          "max_abs_error": 0.0390625,
+          "mean_abs_error": 0.0013130531516401943,
+          "rmse": 0.001574400915434971
+        }
+      },
+      "shared_bf16_basis_nf4_residual": {
+        "candidate_bytes": 897843200,
+        "effective_bits_per_value": 4.28125,
+        "reference_vector": {
+          "cosine": 0.9954127399449646,
+          "count": 655360,
+          "finite": true,
+          "max_abs_error": 0.4027063846588135,
+          "mean_abs_error": 0.05057982959311573,
+          "rmse": 0.0636275173080289
+        },
+        "weight_reconstruction": {
+          "cosine": 0.9954952928791921,
+          "count": 1677721600,
+          "finite": true,
+          "max_abs_error": 0.039417535066604614,
+          "mean_abs_error": 0.0009965070781567215,
+          "rmse": 0.0012570701157017504
+        }
+      }
+    },
+    "comparison": {
+      "capability_parity": "NOT_TESTED",
+      "dense_bytes": 3355443200,
+      "full_payload_read": true,
+      "independent_q4_bytes": 891289600,
+      "independent_q4_smaller_than_dense": true,
+      "label": "[D]",
+      "same_dimensions": true,
+      "same_source_tensor": true,
+      "shared_basis_nf4_residual_bytes": 897843200,
+      "shared_basis_nf4_residual_smaller_than_dense": true,
+      "shared_basis_nf4_residual_smaller_than_independent_q4": false,
+      "whole_model_runtime": "NOT_TESTED"
+    },
+    "is_complete_system": false,
+    "label": "[D]",
+    "source_tensor": {
+      "bytes_read_pass_one": 3355443200,
+      "bytes_read_pass_two": 3355443200,
+      "data_offsets": [
+        0,
+        3355443200
+      ],
+      "dtype": "BF16",
+      "label": "[V]",
+      "layout": "row-major [expert, row, column]; complete tensor payload streamed in expert/row blocks",
+      "payload_bytes": 3355443200,
+      "payload_sha256": "cac366f51f797c0c939e12e010d97f83f5032ddd27085bb232687c35d26b663a",
+      "selected_shard_full_hash_recomputed": false,
+      "shape": [
+        512,
+        1280,
+        2560
+      ],
+      "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00002-of-00131.safetensors",
+      "shard_name": "model-00002-of-00131.safetensors",
+      "tensor_name": "model.language_model.layers.0.mlp.experts.gate_up_proj",
+      "verification_scope": "complete BF16 tensor payload under exact pinned final ModelLake identity"
+    },
+    "status": "FULL_TENSOR_TRANSFORM_ONLY"
+  },
+  "bounded_transform_parity": {
+    "body_mutated": false,
+    "candidates": {
+      "independent_q4_g64": {
+        "candidate_bytes": 891289600,
+        "candidate_sha256": "c67c3306edc972e5fc7257d939f545e94562e0f8e1306cf24eb4264376e57f39",
+        "code_bytes": 838860800,
+        "effective_bits_per_value": 4.25,
+        "group_size": 64,
+        "id": "independent_q4_g64",
+        "label": "[D]",
+        "model_capability_tested": false,
+        "native_kernel_tested": false,
+        "pack_unpack_parity": true,
+        "packed_sha256": "5847742f10b70a201a9acc11049a3deb278fe8742993c71344f9389f1db277d1",
+        "reference_vector": {
+          "cosine": 0.9928837403313406,
+          "count": 655360,
+          "finite": true,
+          "max_abs_error": 0.5110001564025879,
+          "mean_abs_error": 0.06314619255277591,
+          "rmse": 0.07972607929790755
+        },
+        "runtime_performance_tested": false,
+        "scale_bytes": 52428800,
+        "scale_sha256": "a927cdfe0c62c4422bb11ebfc661a65afd9e93caa6d42a36766d93ae8f35034f",
+        "scheme": "symmetric_signed_4bit_group64_with_fp16_scales",
+        "source_layout_preserved": true,
+        "status": "FULL_TENSOR_TRANSFORM_ONLY",
+        "weight_reconstruction": {
+          "cosine": 0.9930165146332164,
+          "count": 1677721600,
+          "finite": true,
+          "max_abs_error": 0.0390625,
+          "mean_abs_error": 0.0013130531516401943,
+          "rmse": 0.001574400915434971
+        }
+      },
+      "shared_bf16_basis_nf4_residual": {
+        "basis_bytes": 6553600,
+        "basis_dtype": "BF16",
+        "basis_sha256": "cb7d1afc7e8c9469875be5610d7ff423726529cd9f1ddf1f0087e3af6b7b34e3",
+        "basis_shared_once_across_all_experts": true,
+        "candidate_bytes": 897843200,
+        "candidate_sha256": "eaaa21b52ea0db9cf60c24a97c5f4d690c0dbfaf4ae90bbbd6b39b8b531a3aa1",
+        "code_bytes": 838860800,
+        "effective_bits_per_value": 4.28125,
+        "group_size": 64,
+        "id": "shared_bf16_basis_nf4_residual",
+        "label": "[D]",
+        "model_capability_tested": false,
+        "native_kernel_tested": false,
+        "pack_unpack_parity": true,
+        "packed_sha256": "8ced5e0761121f3db0c3411149a677fb03a9fe4e3809f505c65389d7ae547c0b",
+        "reference_vector": {
+          "cosine": 0.9954127399449646,
+          "count": 655360,
+          "finite": true,
+          "max_abs_error": 0.4027063846588135,
+          "mean_abs_error": 0.05057982959311573,
+          "rmse": 0.0636275173080289
+        },
+        "residual_codebook": [
+          -1.0,
+          -0.6961928,
+          -0.52507305,
+          -0.3949175,
+          -0.28444138,
+          -0.18477343,
+          -0.09105004,
+          0.0,
+          0.0795803,
+          0.1609302,
+          0.2461123,
+          0.33791524,
+          0.44070983,
+          0.562617,
+          0.72295684,
+          1.0
+        ],
+        "runtime_performance_tested": false,
+        "scale_bytes": 52428800,
+        "scale_sha256": "501092e06ed09a84f37d53638840232d1c68c316dd57002b55470cf28b385582",
+        "scheme": "shared_bf16_basis_plus_nf4_group64_residual_with_fp16_scales",
+        "source_layout_preserved": true,
+        "status": "FULL_TENSOR_TRANSFORM_ONLY",
+        "weight_reconstruction": {
+          "cosine": 0.9954952928791921,
+          "count": 1677721600,
+          "finite": true,
+          "max_abs_error": 0.039417535066604614,
+          "mean_abs_error": 0.0009965070781567215,
+          "rmse": 0.0012570701157017504
+        }
+      }
+    },
+    "claim_boundary": "Full routed-expert tensor body transform parity only. This does not establish whole-model capability, native loader compatibility, native-kernel performance, or promotion.",
+    "comparison": {
+      "capability_parity": "NOT_TESTED",
+      "dense_bytes": 3355443200,
+      "full_payload_read": true,
+      "independent_q4_bytes": 891289600,
+      "independent_q4_smaller_than_dense": true,
+      "label": "[D]",
+      "same_dimensions": true,
+      "same_source_tensor": true,
+      "shared_basis_nf4_residual_bytes": 897843200,
+      "shared_basis_nf4_residual_smaller_than_dense": true,
+      "shared_basis_nf4_residual_smaller_than_independent_q4": false,
+      "whole_model_runtime": "NOT_TESTED"
+    },
+    "model_loaded": false,
+    "native_kernel": "NOT_TESTED",
+    "native_loader": "NOT_TESTED",
+    "next_experiment": {
+      "action": "serialize the chosen source-layout candidate metadata and run a bounded loader encode/decode round-trip before implementing a native kernel",
+      "id": "flash-routed-expert-bounded-loader-roundtrip",
+      "required_before_promotion": [
+        "bounded loader",
+        "native kernel",
+        "whole-model capability",
+        "protected complete-token timing"
+      ],
+      "source_mutation_allowed": false
+    },
+    "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/tools/acceptance/flash/_cache/receipts/headless/FLASH_FULL_TENSOR_TRANSFORM_PARITY.json",
+    "receipt_sha256": "87fe6ace5ae2680593b0c8e06aa04482d436ee2beb47ce6554a1d1cc42501e54",
+    "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "runtime_performance": "NOT_TESTED",
+    "source_tensor": {
+      "bytes_read_pass_one": 3355443200,
+      "bytes_read_pass_two": 3355443200,
+      "data_offsets": [
+        0,
+        3355443200
+      ],
+      "dtype": "BF16",
+      "label": "[V]",
+      "layout": "row-major [expert, row, column]; complete tensor payload streamed in expert/row blocks",
+      "payload_bytes": 3355443200,
+      "payload_sha256": "cac366f51f797c0c939e12e010d97f83f5032ddd27085bb232687c35d26b663a",
+      "selected_shard_full_hash_recomputed": false,
+      "shape": [
+        512,
+        1280,
+        2560
+      ],
+      "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00002-of-00131.safetensors",
+      "shard_name": "model-00002-of-00131.safetensors",
+      "tensor_name": "model.language_model.layers.0.mlp.experts.gate_up_proj",
+      "verification_scope": "complete BF16 tensor payload under exact pinned final ModelLake identity"
+    },
+    "status": "PASSED",
+    "tensor_name": "model.language_model.layers.0.mlp.experts.gate_up_proj",
+    "transform_parity": {
+      "candidate_hashes_complete": true,
+      "candidate_reference_dots_finite": true,
+      "complete_source_payload_read": true,
+      "dense_reference_dots_finite": true,
+      "independent_reconstruction_finite": true,
+      "label": "[D]",
+      "pack_unpack_parity": true,
+      "pass_one_blocks": 5120,
+      "pass_two_blocks": 5120,
+      "shared_reconstruction_finite": true,
+      "source_file_unchanged_between_passes": true,
+      "source_shape_payload_match": true,
+      "status": "PASSED"
+    },
+    "whole_model_capability": "NOT_TESTED",
+    "whole_model_runtime": "NOT_TESTED"
+  },
+  "budget_policy": {
+    "allocation": "No guessed per-organ actual is accepted. A provisional ceiling may be allocated only after a representation body and loader manifest exist.",
+    "overhead_must_be_counted": true,
+    "source_payload_is_not_candidate_storage": true,
+    "zero_bytes_are_not_inferred_from_missing_fields": true
+  },
+  "chosen_representation": {
+    "bounded_source_transform": {
+      "capability_parity": "NOT_TESTED",
+      "full_payload_read": true,
+      "independent_q4_candidate_bytes": 891289600,
+      "independent_q4_effective_bits_per_value": 4.25,
+      "independent_reference_vector": {
+        "cosine": 0.9928837403313406,
+        "count": 655360,
+        "finite": true,
+        "max_abs_error": 0.5110001564025879,
+        "mean_abs_error": 0.06314619255277591,
+        "rmse": 0.07972607929790755
+      },
+      "independent_weight_reconstruction": {
+        "cosine": 0.9930165146332164,
+        "count": 1677721600,
+        "finite": true,
+        "max_abs_error": 0.0390625,
+        "mean_abs_error": 0.0013130531516401943,
+        "rmse": 0.001574400915434971
+      },
+      "label": "[D]",
+      "loader_roundtrip": {
+        "candidate_id": "independent_q4_g64",
+        "descriptor_sha256": "e5de59c4502b1adfc8da8fc6ba5bef9ded3994d90079c44eeb042abffa81a14d",
+        "label": "[D]",
+        "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/tools/acceptance/flash/_cache/receipts/headless/FLASH_ROUTED_EXPERT_LOADER_ROUNDTRIP.json",
+        "roundtrip": {
+          "code_pack_unpack_parity": true,
+          "decoded_finite": true,
+          "decoded_shape": [
+            2,
+            2560
+          ],
+          "descriptor_json_roundtrip": true,
+          "label": "[D]",
+          "reference_vector": {
+            "cosine": 0.999917678792683,
+            "count": 2,
+            "finite": true,
+            "max_abs_error": 0.047425270080566406,
+            "mean_abs_error": 0.03642413020133972,
+            "rmse": 0.03804920944282053
+          },
+          "source_file_unchanged": true,
+          "source_payload_unchanged": true,
+          "status": "PASSED",
+          "weight_reconstruction": {
+            "cosine": 0.9930054747215294,
+            "count": 5120,
+            "finite": true,
+            "max_abs_error": 0.00537109375,
+            "mean_abs_error": 0.0014073599595576525,
+            "rmse": 0.001666226581554829
+          }
+        },
+        "status": "PASSED"
+      },
+      "native_kernel_parity": {
+        "descriptor": {
+          "candidate_id": "independent_q4_g64",
+          "load_policy": "validated serialized descriptor; candidate body is not persisted by this bounded probe",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_ROUTED_EXPERT_LOADER_ROUNDTRIP.json",
+          "schema": "hcli.noetic.representation_descriptor.v1",
+          "sha256": "60e7c098c67f26013e47d3411efc554b7e8612417300eb2116d8237f53568c19"
+        },
+        "gpu_timing": {
+          "device": "Apple M3 Ultra",
+          "gpu_ns": [
+            341459,
+            327250,
+            282500,
+            331416,
+            352584,
+            271000,
+            306166
+          ],
+          "gpu_ns_max": 352584,
+          "gpu_ns_median": 327250,
+          "gpu_ns_min": 271000,
+          "host_wall_ns": [
+            566333,
+            590166,
+            520333,
+            583667,
+            554375,
+            471416,
+            514125
+          ],
+          "host_wall_ns_max": 590166,
+          "host_wall_ns_median": 554375,
+          "host_wall_ns_min": 471416,
+          "measured_runs": 7,
+          "memory_limits": {
+            "current_allocated_size": 638976,
+            "has_unified_memory": true,
+            "max_buffer_length": 62620631040,
+            "recommended_max_working_set_size": 83494174720
+          },
+          "timing_authority": "Metal completed-command-buffer GPUStartTime/GPUEndTime; host wall reported separately",
+          "warmup_runs": 2
+        },
+        "kernel": "qwen_uniform_q4_group64_matvec",
+        "label": "[D]",
+        "native_loader": {
+          "candidate_body_persisted": true,
+          "candidate_id": "independent_q4_g64",
+          "dense_rematerialization": "forbidden",
+          "descriptor_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_ROUTED_EXPERT_LOADER_ROUNDTRIP.json",
+          "descriptor_sha256": "60e7c098c67f26013e47d3411efc554b7e8612417300eb2116d8237f53568c19",
+          "source_block_streamed_for_reference": true,
+          "source_independent_execution": true,
+          "status": "BOUNDED_NOETIC_DESCRIPTOR_AND_BODY_LOAD",
+          "whole_model_capability": "NOT_TESTED",
+          "whole_model_runtime": "NOT_TESTED"
+        },
+        "parity": {
+          "cosine": 0.9999999999999637,
+          "count": 128,
+          "finite": true,
+          "max_abs_error": 1.564621925354004e-07,
+          "rmse": 5.2199908547982395e-08,
+          "tolerance": 0.0020000000949949026,
+          "within_tolerance": true
+        },
+        "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/tools/acceptance/flash/_cache/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_PARITY.json",
+        "status": "PASSED",
+        "whole_model_capability": "NOT_TESTED",
+        "whole_model_runtime": "NOT_TESTED"
+      },
+      "next_experiment": {
+        "action": "serialize the chosen source-layout candidate metadata and run a bounded loader encode/decode round-trip before implementing a native kernel",
+        "id": "flash-routed-expert-bounded-loader-roundtrip",
+        "required_before_promotion": [
+          "bounded loader",
+          "native kernel",
+          "whole-model capability",
+          "protected complete-token timing"
+        ],
+        "source_mutation_allowed": false
+      },
+      "pack_unpack_parity": true,
+      "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/tools/acceptance/flash/_cache/receipts/headless/FLASH_FULL_TENSOR_TRANSFORM_PARITY.json",
+      "shape": [
+        512,
+        1280,
+        2560
+      ],
+      "shared_basis_nf4_residual_candidate_bytes": 897843200,
+      "shared_basis_nf4_residual_effective_bits_per_value": 4.28125,
+      "shared_reference_vector": {
+        "cosine": 0.9954127399449646,
+        "count": 655360,
+        "finite": true,
+        "max_abs_error": 0.4027063846588135,
+        "mean_abs_error": 0.05057982959311573,
+        "rmse": 0.0636275173080289
+      },
+      "shared_weight_reconstruction": {
+        "cosine": 0.9954952928791921,
+        "count": 1677721600,
+        "finite": true,
+        "max_abs_error": 0.039417535066604614,
+        "mean_abs_error": 0.0009965070781567215,
+        "rmse": 0.0012570701157017504
+      },
+      "source_layout": "row-major [expert, row, column]; complete tensor payload streamed in expert/row blocks",
+      "source_payload_bytes": 3355443200,
+      "tensor_name": "model.language_model.layers.0.mlp.experts.gate_up_proj",
+      "whole_model_runtime": "NOT_TESTED"
+    },
+    "deltanet": "resident state-native representation",
+    "expert_bank": "shared basis plus per-expert NF residual",
+    "id": "flash-routed-expert-dual-candidate-v1",
+    "label": "[D]",
+    "mtp": "explicit draft/verify/rollback representation",
+    "ngram": "lookup/compositional representation, not generic dense quantization",
+    "quality_alternate": "shared_bf16_basis_nf4_residual",
+    "router": "resident route metadata and selected-expert gather",
+    "selected_candidate": "independent_q4_g64",
+    "selected_candidate_reason": "lower observed tensor-level EBPW (4.25 versus 4.28125 bits/value); shared-basis/NF4 remains the lower-error quality alternate",
+    "selection_policy": "minimize observed tensor-level effective bits per value while retaining a lower-error quality alternate; this does not select a whole-model runtime representation",
+    "sparse_attention": "budget/index-native sparse representation",
+    "status": "FULL_TENSOR_TRANSFORM_OBSERVED_NOT_WHOLE_MODEL",
+    "vision": "conditional multimodal path; text-resident omission requires an explicit separate contract"
+  },
+  "claim_boundary": "This is an EBPW budget and representation contract, not a compressed artifact measurement. Missing actual bytes remain missing.",
+  "complete_system_accounting": {
+    "bases": {
+      "actual_bytes": null,
+      "budget_bytes": null,
+      "label": "[D]",
+      "status": "WAITING_FOR_REPRESENTATION_AND_LOADER"
+    },
+    "dictionaries": {
+      "actual_bytes": null,
+      "budget_bytes": null,
+      "label": "[D]",
+      "status": "WAITING_FOR_REPRESENTATION_AND_LOADER"
+    },
+    "expert_indices": {
+      "actual_bytes": null,
+      "budget_bytes": null,
+      "label": "[D]",
+      "status": "WAITING_FOR_REPRESENTATION_AND_LOADER"
+    },
+    "generators": {
+      "actual_bytes": null,
+      "budget_bytes": null,
+      "label": "[D]",
+      "status": "WAITING_FOR_REPRESENTATION_AND_LOADER"
+    },
+    "lookup_structures": {
+      "actual_bytes": null,
+      "budget_bytes": null,
+      "label": "[D]",
+      "status": "WAITING_FOR_REPRESENTATION_AND_LOADER"
+    },
+    "mtp_representation": {
+      "actual_bytes": null,
+      "budget_bytes": null,
+      "label": "[D]",
+      "status": "WAITING_FOR_REPRESENTATION_AND_LOADER"
+    },
+    "ngram_representation": {
+      "actual_bytes": null,
+      "budget_bytes": null,
+      "label": "[D]",
+      "status": "WAITING_FOR_REPRESENTATION_AND_LOADER"
+    },
+    "required_executable_metadata": {
+      "actual_bytes": null,
+      "budget_bytes": null,
+      "label": "[D]",
+      "status": "WAITING_FOR_REPRESENTATION_AND_LOADER"
+    },
+    "residuals": {
+      "actual_bytes": null,
+      "budget_bytes": null,
+      "label": "[D]",
+      "status": "WAITING_FOR_REPRESENTATION_AND_LOADER"
+    },
+    "routing_metadata": {
+      "actual_bytes": null,
+      "budget_bytes": null,
+      "label": "[D]",
+      "status": "WAITING_FOR_REPRESENTATION_AND_LOADER"
+    },
+    "scales": {
+      "actual_bytes": null,
+      "budget_bytes": null,
+      "label": "[D]",
+      "status": "WAITING_FOR_REPRESENTATION_AND_LOADER"
+    },
+    "weight_codes": {
+      "actual_bytes": null,
+      "budget_bytes": null,
+      "label": "[D]",
+      "status": "WAITING_FOR_REPRESENTATION_AND_LOADER"
+    },
+    "zero_points": {
+      "actual_bytes": null,
+      "budget_bytes": null,
+      "label": "[D]",
+      "status": "WAITING_FOR_REPRESENTATION_AND_LOADER"
+    }
+  },
+  "label": "[D]",
+  "measured": {
+    "all_required_bytes_included": false,
+    "complete_system_bytes": null,
+    "complete_system_ebpw": null,
+    "dense_parent_execution_fallback": null,
+    "fallback_count": null,
+    "hidden_dense_rematerialization": null
+  },
+  "nomenclature_version": "HAWKING_NOMENCLATURE_V1",
+  "organs": [
+    {
+      "actual_bytes_label": "NOT_MEASURED",
+      "actual_representation_bytes": null,
+      "capability_status": "NOT_RUN",
+      "chosen_representation": "shared-basis-plus-NF-residual for expert/routed paths; organ-native representation for state, sparse, n-gram, MTP, and vision paths",
+      "label": "[D]",
+      "native_kernel_status": "PLAN_ONLY",
+      "native_loader_status": "NOT_IMPLEMENTED",
+      "organ": "embeddings",
+      "representation_status": "CANDIDATE_NOT_BUILT",
+      "source_active_bytes_per_token": 5120,
+      "source_allocation_fraction": 0.0035316625839429522,
+      "source_bytes": 1271398400,
+      "source_bytes_label": "[V] pinned safetensors header payload",
+      "source_flops_per_token": 0,
+      "source_tensor_count": 1
+    },
+    {
+      "actual_bytes_label": "NOT_MEASURED",
+      "actual_representation_bytes": null,
+      "capability_status": "NOT_RUN",
+      "chosen_representation": "shared-basis-plus-NF-residual for expert/routed paths; organ-native representation for state, sparse, n-gram, MTP, and vision paths",
+      "label": "[D]",
+      "native_kernel_status": "PLAN_ONLY",
+      "native_loader_status": "NOT_IMPLEMENTED",
+      "organ": "deltanet",
+      "representation_status": "CANDIDATE_NOT_BUILT",
+      "source_active_bytes_per_token": 4173020928,
+      "source_allocation_fraction": 0.011591725987250334,
+      "source_bytes": 4173020928,
+      "source_bytes_label": "[V] pinned safetensors header payload",
+      "source_flops_per_token": 4173004800,
+      "source_tensor_count": 324
+    },
+    {
+      "actual_bytes_label": "NOT_MEASURED",
+      "actual_representation_bytes": null,
+      "capability_status": "NOT_RUN",
+      "chosen_representation": "shared-basis-plus-NF-residual for expert/routed paths; organ-native representation for state, sparse, n-gram, MTP, and vision paths",
+      "label": "[D]",
+      "native_kernel_status": "PLAN_ONLY",
+      "native_loader_status": "NOT_IMPLEMENTED",
+      "organ": "sparse_attention",
+      "representation_status": "CANDIDATE_NOT_BUILT",
+      "source_active_bytes_per_token": 1234741248,
+      "source_allocation_fraction": 0.0034297688846178843,
+      "source_bytes": 1234716672,
+      "source_bytes_label": "[V] pinned safetensors header payload",
+      "source_flops_per_token": 1234698240,
+      "source_tensor_count": 108
+    },
+    {
+      "actual_bytes_label": "NOT_MEASURED",
+      "actual_representation_bytes": null,
+      "capability_status": "NOT_RUN",
+      "chosen_representation": "shared-basis-plus-NF-residual for expert/routed paths; organ-native representation for state, sparse, n-gram, MTP, and vision paths",
+      "label": "[D]",
+      "native_kernel_status": "PLAN_ONLY",
+      "native_loader_status": "NOT_IMPLEMENTED",
+      "organ": "router",
+      "representation_status": "CANDIDATE_NOT_BUILT",
+      "source_active_bytes_per_token": 125829120,
+      "source_allocation_fraction": 0.0003495253691324984,
+      "source_bytes": 125829120,
+      "source_bytes_label": "[V] pinned safetensors header payload",
+      "source_flops_per_token": 125829120,
+      "source_tensor_count": 48
+    },
+    {
+      "actual_bytes_label": "NOT_MEASURED",
+      "actual_representation_bytes": null,
+      "capability_status": "NOT_RUN",
+      "chosen_representation": "shared-basis-plus-NF-residual for expert/routed paths; organ-native representation for state, sparse, n-gram, MTP, and vision paths",
+      "label": "[D]",
+      "native_kernel_status": "PLAN_ONLY",
+      "native_loader_status": "NOT_IMPLEMENTED",
+      "organ": "routed_experts",
+      "representation_status": "CANDIDATE_NOT_BUILT",
+      "source_active_bytes_per_token": 4718592000,
+      "source_allocation_fraction": 0.6710887087343969,
+      "source_bytes": 241591910400,
+      "source_bytes_label": "[V] pinned safetensors header payload",
+      "source_flops_per_token": 4718592000,
+      "source_tensor_count": 96
+    },
+    {
+      "actual_bytes_label": "NOT_MEASURED",
+      "actual_representation_bytes": null,
+      "capability_status": "NOT_RUN",
+      "chosen_representation": "shared-basis-plus-NF-residual for expert/routed paths; organ-native representation for state, sparse, n-gram, MTP, and vision paths",
+      "label": "[D]",
+      "native_kernel_status": "PLAN_ONLY",
+      "native_loader_status": "NOT_IMPLEMENTED",
+      "organ": "shared_expert",
+      "representation_status": "CANDIDATE_NOT_BUILT",
+      "source_active_bytes_per_token": 472104960,
+      "source_allocation_fraction": 0.0013114028009834557,
+      "source_bytes": 472104960,
+      "source_bytes_label": "[V] pinned safetensors header payload",
+      "source_flops_per_token": 472104960,
+      "source_tensor_count": 192
+    },
+    {
+      "actual_bytes_label": "NOT_MEASURED",
+      "actual_representation_bytes": null,
+      "capability_status": "NOT_RUN",
+      "chosen_representation": "shared-basis-plus-NF-residual for expert/routed paths; organ-native representation for state, sparse, n-gram, MTP, and vision paths",
+      "label": "[D]",
+      "native_kernel_status": "PLAN_ONLY",
+      "native_loader_status": "NOT_IMPLEMENTED",
+      "organ": "lm_head",
+      "representation_status": "CANDIDATE_NOT_BUILT",
+      "source_active_bytes_per_token": 1271398400,
+      "source_allocation_fraction": 0.0035316625839429522,
+      "source_bytes": 1271398400,
+      "source_bytes_label": "[V] pinned safetensors header payload",
+      "source_flops_per_token": 1271398400,
+      "source_tensor_count": 1
+    },
+    {
+      "actual_bytes_label": "NOT_MEASURED",
+      "actual_representation_bytes": null,
+      "capability_status": "NOT_RUN",
+      "chosen_representation": "shared-basis-plus-NF-residual for expert/routed paths; organ-native representation for state, sparse, n-gram, MTP, and vision paths",
+      "label": "[D]",
+      "native_kernel_status": "PLAN_ONLY",
+      "native_loader_status": "NOT_IMPLEMENTED",
+      "organ": "mtp",
+      "representation_status": "CANDIDATE_NOT_BUILT",
+      "source_active_bytes_per_token": 5214301696,
+      "source_allocation_fraction": 0.01448417286127895,
+      "source_bytes": 5214301696,
+      "source_bytes_label": "[V] pinned safetensors header payload",
+      "source_flops_per_token": 5214213120,
+      "source_tensor_count": 31
+    },
+    {
+      "actual_bytes_label": "NOT_MEASURED",
+      "actual_representation_bytes": null,
+      "capability_status": "NOT_RUN",
+      "chosen_representation": "shared-basis-plus-NF-residual for expert/routed paths; organ-native representation for state, sparse, n-gram, MTP, and vision paths",
+      "label": "[D]",
+      "native_kernel_status": "PLAN_ONLY",
+      "native_loader_status": "NOT_IMPLEMENTED",
+      "organ": "ngram_engine",
+      "representation_status": "CANDIDATE_NOT_BUILT",
+      "source_active_bytes_per_token": 65680600,
+      "source_allocation_fraction": 0.2846282823744834,
+      "source_bytes": 102466171160,
+      "source_bytes_label": "[V] pinned safetensors header payload",
+      "source_flops_per_token": 65617920,
+      "source_tensor_count": 137
+    },
+    {
+      "actual_bytes_label": "NOT_MEASURED",
+      "actual_representation_bytes": null,
+      "capability_status": "NOT_RUN",
+      "chosen_representation": "shared-basis-plus-NF-residual for expert/routed paths; organ-native representation for state, sparse, n-gram, MTP, and vision paths",
+      "label": "[D]",
+      "native_kernel_status": "PLAN_ONLY",
+      "native_loader_status": "NOT_IMPLEMENTED",
+      "organ": "vision_backbone",
+      "representation_status": "CANDIDATE_NOT_BUILT",
+      "source_active_bytes_per_token": 0,
+      "source_allocation_fraction": 0.0024940616776695616,
+      "source_bytes": 897862112,
+      "source_bytes_label": "[V] pinned safetensors header payload",
+      "source_flops_per_token": 0,
+      "source_tensor_count": 333
+    },
+    {
+      "actual_bytes_label": "NOT_MEASURED",
+      "actual_representation_bytes": null,
+      "capability_status": "NOT_RUN",
+      "chosen_representation": "shared-basis-plus-NF-residual for expert/routed paths; organ-native representation for state, sparse, n-gram, MTP, and vision paths",
+      "label": "[D]",
+      "native_kernel_status": "PLAN_ONLY",
+      "native_loader_status": "NOT_IMPLEMENTED",
+      "organ": "residual_hyperconnections",
+      "representation_status": "CANDIDATE_NOT_BUILT",
+      "source_active_bytes_per_token": 1281249280,
+      "source_allocation_fraction": 0.0035590261423011442,
+      "source_bytes": 1281249280,
+      "source_bytes_label": "[V] pinned safetensors header payload",
+      "source_flops_per_token": 1279262720,
+      "source_tensor_count": 387
+    },
+    {
+      "actual_bytes_label": "NOT_MEASURED",
+      "actual_representation_bytes": null,
+      "capability_status": "NOT_RUN",
+      "chosen_representation": "shared-basis-plus-NF-residual for expert/routed paths; organ-native representation for state, sparse, n-gram, MTP, and vision paths",
+      "label": "[D]",
+      "native_kernel_status": "PLAN_ONLY",
+      "native_loader_status": "NOT_IMPLEMENTED",
+      "organ": "support_misc",
+      "representation_status": "CANDIDATE_NOT_BUILT",
+      "source_active_bytes_per_token": 0,
+      "source_allocation_fraction": 0.0,
+      "source_bytes": 0,
+      "source_bytes_label": "[V] pinned safetensors header payload",
+      "source_flops_per_token": 0,
+      "source_tensor_count": 0
+    },
+    {
+      "actual_bytes_label": "NOT_MEASURED",
+      "actual_representation_bytes": null,
+      "capability_status": "NOT_RUN",
+      "chosen_representation": "resident sequence-isolated state with explicit read/modify/write accounting",
+      "label": "[D]",
+      "native_kernel_status": "PLAN_ONLY",
+      "native_loader_status": "NOT_IMPLEMENTED",
+      "organ": "recurrent_state",
+      "representation_status": "REQUIRED_RESIDENT_STATE_NOT_BUILT",
+      "source_active_bytes_per_token": 235339776,
+      "source_allocation_fraction": 0.0,
+      "source_bytes": 0,
+      "source_bytes_label": "[D] virtual runtime state; no source tensor payload",
+      "source_flops_per_token": 56623104
+    }
+  ],
+  "promotion_allowed": false,
+  "schema": "hcli.agentos.flash_ebpw_budget.v1",
+  "source_identity": {
+    "architecture_fingerprint": {
+      "algorithm": "sha256(canonical pinned metadata + sorted tensor names)",
+      "label": "DERIVED",
+      "value": "8dbc9c34f223d240def13a1f7c70d3cbddbc768bc9ccc9c002683e2958b6be5b"
+    },
+    "declared_dtype_bytes": 2,
+    "header_audit": {
+      "body_bytes_loaded": 0,
+      "body_bytes_requested": 0,
+      "complete": true,
+      "header_tensor_count": 1658,
+      "payload_bytes": 359999963128
+    },
+    "index_total_size": 359999963128,
+    "science_receipt": {
+      "path": "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/acceptance/FLASH_FIRST_GRAVITY_ORGAN.science.json",
+      "sha256": "8b04af3d3dd4e13098f327a204a0aafb12c35db6a6d65d9187434a7aef67ea26",
+      "status": "PASSED"
+    },
+    "source_identity": {
+      "expected_complete_source_bytes": 360023286454,
+      "expected_file_count": 144,
+      "labels": {
+        "derived": "DERIVED",
+        "local_physical": "LOCAL_PHYSICAL",
+        "upstream": "UPSTREAM_SOURCE"
+      },
+      "page": "https://huggingface.co/Qwen/Qwen3.8-Flash-Next",
+      "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+      "repo": "Qwen/Qwen3.8-Flash-Next"
+    },
+    "source_parameter_count": 179999981564,
+    "source_payload_bytes": 359999963128
+  },
+  "status": "PLANNED_UNTIL_VERIFIED_BODY",
+  "target_contract": {
+    "complete_system_byte_fields": [
+      "weight_codes",
+      "scales",
+      "zero_points",
+      "bases",
+      "residuals",
+      "dictionaries",
+      "expert_indices",
+      "routing_metadata",
+      "generators",
+      "lookup_structures",
+      "ngram_representation",
+      "mtp_representation",
+      "required_executable_metadata"
+    ],
+    "complete_system_ebpw_max": 1.0,
+    "denominator": "source_parameter_count derived from complete pinned header payload / declared dtype bytes",
+    "target_ceiling_bytes": 179999981564,
+    "target_ceiling_is_not_an_actual_measurement": true
+  }
+}
