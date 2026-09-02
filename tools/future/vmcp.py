@@ -12,30 +12,22 @@ callers live in tools/headless/ (FileEye + CaptureBus integration, capability
 probe, lattice disposition, forgery canary, unavailable gate) and
 hcli/vmcp_adapter.py (read-only; this lane does not edit hcli/).
 
-Real today (receipts/headless/VMCP_CENSUS.json — not re-derived):
-  EvidenceGraph, WorldIR v1, ProjectStore + CAS, 15-tool core MCP,
-  CaptureBus.observe, content_digest receipts.
-  Integrate against profile='core' only. LABORATORY is a second AgentOS.
+This sidecar's compact E.14 surface stays nine verbs. Organs that can run
+on this host without visionmcp and without the network are implemented under
+tools/vmcp/ and CALLED from see/check/prove (an import is not a call site):
 
-Aspiration (roadmap, not this repo):
-  the ten named lattice types, web / spatial / PTY eyes, behavior-lab
-  BHV-01..23, VisualProgramIR app generation, 3D mesh proof, compact 9-act
-  MCP surface as Hawking's own organ.
+  see  -> tools.vmcp.file_eye.observe  (real magic/header classification)
+  see  -> tools.vmcp.pty_eye.capture   (real PTY if openpty works; else PARKED)
+  check-> tools.vmcp.tool_doctor.profile (real local ToolReceipt)
+  prove-> tools.vmcp.behavior_lab.run_matrix (BHV-01..23 in isolated temp repos)
 
-This module does not reimplement VisionMCP and is not a new perception
-framework. It:
-
-  1. Disposes every named organ (CONNECTED / PARKED). Nothing is deleted.
-  2. Exposes the E.14 compact surface. Acts that can run without the foreign
-     package (generic local-file eye: see / hold / know / check / prove) CALL
-     a hashlib implementation whose summary fields match FileEye in
-     tools/headless/hcli_vmcp_integration.py. Every other act returns PARKED
-     with a non-empty wake — never an empty success.
+OPEN / MAKE / FIX / KEEP stay PARKED: those still live in the foreign package.
+WEB / SPATIAL / visual-proof / LABORATORY stay PARKED with explicit blockers.
 
     python3 tools/future/vmcp.py --build
     python3 tools/future/vmcp.py --selftest
     python3 tools/audit/reachability_triage.py --invoke future.vmcp --args '{"act":"see","path":"..."}'
-    python3 -m pytest tools/future/test_vmcp.py -q
+    python3 -m pytest tools/future/test_vmcp.py tools/vmcp/test_file_eye.py -q -o addopts=""
 """
 from __future__ import annotations
 
@@ -45,9 +37,14 @@ import sys as _sys
 _sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))))
 
 from tools.future._common import write_receipt, REPO, git
+from tools.vmcp.behavior_lab import run_matrix as bhv_run_matrix
+from tools.vmcp.file_eye import observe as file_observe
+from tools.vmcp.pty_eye import capture as pty_capture
+from tools.vmcp.pty_eye import probe as pty_probe
+from tools.vmcp.tool_doctor import profile as doctor_profile
+from tools.vmcp.tool_doctor import report as doctor_report
 
 import argparse
-import hashlib
 import json
 import os
 import tempfile
@@ -115,10 +112,13 @@ LATTICE_REL = "receipts/headless/VMCP_LATTICE_DISPOSITION.json"
 INTEGRATION_REL = "receipts/headless/VMCP_AGENTOS_INTEGRATION.json"
 
 CLAIM_BOUNDARY = (
-    "Static sidecar + local-file FUNCTIONAL_SIM. No browser, no Blender, no "
-    "Ghidra, no GPU, no claim that VisionMCP ran. An empty collection is not "
-    "evidence of absence: unavailable tools must not look like a negative finding."
+    "Local-file classification, local ToolReceipts, and isolated BHV fixtures "
+    "on this host. No browser, no Blender, no Ghidra, no GPU, no claim that "
+    "VisionMCP ran. PTY is attempted via openpty; EPERM on the slave is a "
+    "blocker, never a pipe stand-in. An empty collection is not evidence of "
+    "absence: unavailable tools must not look like a negative finding."
 )
+VERB_COUNT = len(NINE_ACTS)
 
 
 def _head_names() -> set[str]:
@@ -324,39 +324,23 @@ def _organ_table(located: Mapping[str, Any]) -> list[dict[str, Any]]:
         "is unrelated and absent hardware is never a measurement",
         missing_dependency="VISIONMCP_SRC with Blender CLI on PATH",
     )
-    pty_wake = _wake(
-        kind="VISIONMCP_PTY_EYE",
-        required_symbol="visionmcp.perception.bus.CaptureBus.observe",
-        predicate=(
-            "production AST Call of a PTY/terminal SensorAdapter from an HCLI "
-            "entry (no such adapter is wired on the Hawking side today)"
-        ),
-        blocker="no PTY SensorAdapter is registered in tools/headless FileEye; "
-        "roadmap E.10 is aspiration here",
-        missing_dependency="a PTY SensorAdapter in visionmcp plus an HCLI Call",
-    )
-    bhv_wake = _wake(
-        kind="VISIONMCP_BEHAVIOR_LAB",
-        required_symbol="tools.headless.hcli_vmcp_integration.observe_file",
-        predicate=(
-            "production AST Call of a BHV-01..23 fixture runner from an HCLI "
-            "entry that records initial/final repo hash, WorkUnit trace and "
-            "receipt"
-        ),
-        blocker="APPENDIX E.11 fixture matrix is not implemented in this repo",
-        missing_dependency="BHV fixture runner + HCLI Call of it",
-    )
-    doctor_wake = _wake(
-        kind="VISIONMCP_TOOL_DOCTOR",
-        required_symbol="visionmcp.capabilities.core_doctor_report",
-        predicate=(
-            "production AST Call of visionmcp doctor --core / "
-            "core_doctor_report from an HCLI entry"
-        ),
-        blocker="system.doctor is a core MCP tool of the foreign package; "
-        "Hawking does not host it",
-        missing_dependency="VISIONMCP_SRC importable",
-    )
+    probed = pty_probe()
+    if probed.get("ok"):
+        pty_wake = None
+    else:
+        pty_wake = _wake(
+            kind="PTY_OPEN_DENIED",
+            required_symbol="tools.vmcp.pty_eye.capture",
+            predicate=(
+                "production AST Call of tools.vmcp.pty_eye.capture after "
+                "openpty succeeds (unsandboxed / gate profile). A pipe "
+                "capture is not a PTY session. An import is not a call site."
+            ),
+            blocker=str(probed.get("blocker") or "openpty EPERM"),
+            missing_dependency="unsandboxed process that can openpty (gate profile)",
+        )
+    bhv_wake = None
+    doctor_wake = None
     lab_wake = _wake(
         kind="DO_NOT_USE_LABORATORY_PROFILE",
         required_symbol="visionmcp.mcp.factory.create_server",
@@ -393,22 +377,29 @@ def _organ_table(located: Mapping[str, Any]) -> list[dict[str, Any]]:
             "organ": "EYES / generic file metadata eye (roadmap VMCP-002)",
             "disposition": "CONNECTED",
             "exists_today": (
-                "hashlib + stat local-file observation whose summary fields "
-                "match tools/headless/hcli_vmcp_integration.FileEye (present, "
-                "path, size, mode, sha256, limitations). TARGET_ABSENT is a "
-                "classification, never an empty success."
+                "tools.vmcp.file_eye.observe: magic/header classification of a "
+                "real local file (Mach-O/ELF/PE/PNG/ZIP/WASM/...) plus hashlib "
+                "identity fields matching FileEye (present, path, size, mode, "
+                "sha256). TARGET_ABSENT is a classification, never an empty success."
             ),
             "aspiration": "CaptureBus-backed observe with CAS reuse in visionmcp",
-            "symbol": "tools.future.vmcp.see",
+            "symbol": "tools.vmcp.file_eye.observe",
             "call_sites": [
+                {
+                    "file": "tools/future/vmcp.py",
+                    "symbol": "tools.vmcp.file_eye.observe",
+                    "kind": "call",
+                    "via": "see()",
+                },
                 {
                     "file": "tools/audit/reachability_triage.py",
                     "symbol": "tools.future.vmcp.compact_surface",
                     "kind": "call",
                     "via": "WIRED future.vmcp",
-                }
+                },
             ],
             "evidence_tier": "FUNCTIONAL_SIM",
+            "execution": "REAL",
             "wake": None,
         },
         {
@@ -457,28 +448,72 @@ def _organ_table(located: Mapping[str, Any]) -> list[dict[str, Any]]:
         {
             "id": "vmcp.pty_eye",
             "organ": "PTY EYE",
-            "disposition": "PARKED",
-            "exists_today": "none on the Hawking side",
+            "disposition": "CONNECTED" if probed.get("ok") else "PARKED",
+            "exists_today": (
+                "tools.vmcp.pty_eye.capture attempts a real posix PTY pair. "
+                "This sandbox has been measured to deny the slave (openpty "
+                "EPERM); that is a blocker, not a pipe stand-in."
+            ),
             "aspiration": "roadmap E.10 terminal screen / scrollback / ANSI",
-            "evidence_tier": "STATIC",
+            "symbol": "tools.vmcp.pty_eye.capture",
+            "call_sites": [
+                {
+                    "file": "tools/future/vmcp.py",
+                    "symbol": "tools.vmcp.pty_eye.capture",
+                    "kind": "call",
+                    "via": "see(organ=pty)",
+                }
+            ],
+            "evidence_tier": "FUNCTIONAL_SIM" if probed.get("ok") else "STATIC",
+            "execution": "REAL" if probed.get("ok") else "BLOCKED",
+            "used_real_pty": bool(probed.get("ok")),
             "wake": pty_wake,
         },
         {
             "id": "vmcp.behavior_lab",
             "organ": "BEHAVIOR LAB",
-            "disposition": "PARKED",
-            "exists_today": "none of BHV-01..23 are implemented here",
+            "disposition": "CONNECTED",
+            "exists_today": (
+                "tools.vmcp.behavior_lab.run_matrix runs BHV-01..23 in isolated "
+                "temp git repos and CALLs tools.future.tabula.evaluate. "
+                "LABORATORY profile is not used."
+            ),
             "aspiration": "roadmap E.11 fixture matrix",
-            "evidence_tier": "STATIC",
+            "symbol": "tools.vmcp.behavior_lab.run_matrix",
+            "call_sites": [
+                {
+                    "file": "tools/future/vmcp.py",
+                    "symbol": "tools.vmcp.behavior_lab.run_matrix",
+                    "kind": "call",
+                    "via": "prove(organ=behavior_lab)",
+                }
+            ],
+            "evidence_tier": "FUNCTIONAL_SIM",
+            "execution": "REAL",
             "wake": bhv_wake,
         },
         {
             "id": "vmcp.tool_doctor",
             "organ": "TOOL DOCTOR",
-            "disposition": "PARKED",
-            "exists_today": "visionmcp system.doctor / `visionmcp doctor --core` (foreign)",
+            "disposition": "CONNECTED",
+            "exists_today": (
+                "tools.vmcp.tool_doctor.profile runs a real local argv into an "
+                "E.4 ToolReceipt (availability, version, permissions, health, "
+                "limits, refusal). visionmcp system.doctor is a different "
+                "symbol and is not called."
+            ),
             "aspiration": "roadmap E.3 required classes hosted by HCLI",
-            "evidence_tier": "STATIC",
+            "symbol": "tools.vmcp.tool_doctor.profile",
+            "call_sites": [
+                {
+                    "file": "tools/future/vmcp.py",
+                    "symbol": "tools.vmcp.tool_doctor.profile",
+                    "kind": "call",
+                    "via": "check(organ=tool_doctor)",
+                }
+            ],
+            "evidence_tier": "FUNCTIONAL_SIM",
+            "execution": "REAL",
             "wake": doctor_wake,
         },
         {
@@ -607,85 +642,24 @@ def disposition() -> dict[str, Any]:
     }
 
 
-def _limitations_for(path: Path, *, max_bytes: int, truncated: bool) -> list[str]:
-    if not path.exists():
-        return ["TARGET_ABSENT"]
-    if path.is_dir():
-        return ["TARGET_IS_DIRECTORY"]
-    if not path.is_file():
-        return ["TARGET_NOT_A_FILE"]
-    out: list[str] = []
-    if truncated:
-        out.append("TRUNCATED_TO_MAX_BYTES")
-    return out
-
-
 def see(
     path: str | os.PathLike[str] | None = None,
     *,
     max_bytes: int = 8_000_000,
     arguments: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Generic file metadata eye. Matches FileEye.summary field names.
+    """E.14 SEE. Default organ is the file eye; organ=pty selects the PTY eye.
 
-    Absent is TARGET_ABSENT, never an empty success. Evidence tier is
-    FUNCTIONAL_SIM: a real file is hashed; no CaptureBus, no GPU.
+    Both organs are CALLED (an import of tools.vmcp is not a call site).
     """
     args = dict(arguments or {})
-    raw = path if path is not None else args.get("path")
-    if raw is None or str(raw) == "":
-        return {
-            "act": "see",
-            "status": "CONNECTED",
-            "present": False,
-            "limitations": ["PATH_REQUIRED"],
-            "empty_success": False,
-            "looked": False,
-            "evidence_tier": "FUNCTIONAL_SIM",
-            "note": "see requires a path; refusing to invent a target",
-        }
-    max_bytes = int(args.get("max_bytes") or max_bytes)
-    target = Path(str(raw))
-    try:
-        resolved = target.resolve()
-    except OSError:
-        resolved = target
-    if not resolved.is_file():
-        limitations = _limitations_for(resolved, max_bytes=max_bytes, truncated=False)
-        return {
-            "act": "see",
-            "status": "CONNECTED",
-            "present": False,
-            "path": str(resolved),
-            "size": None,
-            "mode": None,
-            "sha256": None,
-            "limitations": limitations,
-            "empty_success": False,
-            "looked": True,
-            "evidence_tier": "FUNCTIONAL_SIM",
-        }
-    data = resolved.read_bytes()
-    truncated = len(data) > max_bytes
-    if truncated:
-        data = data[:max_bytes]
-    digest = hashlib.sha256(data).hexdigest()
-    st = resolved.stat()
-    return {
-        "act": "see",
-        "status": "CONNECTED",
-        "present": True,
-        "path": str(resolved),
-        "size": int(st.st_size),
-        "mode": oct(st.st_mode),
-        "sha256": digest,
-        "hashed_bytes": len(data),
-        "limitations": _limitations_for(resolved, max_bytes=max_bytes, truncated=truncated),
-        "empty_success": False,
-        "looked": True,
-        "evidence_tier": "FUNCTIONAL_SIM",
-        "matches_file_eye_fields": ["present", "path", "size", "mode", "sha256"],
-    }
+    if path is not None and "path" not in args:
+        args["path"] = str(path)
+    args["max_bytes"] = int(args.get("max_bytes") or max_bytes)
+    organ = str(args.get("organ") or "").strip().lower()
+    if organ in {"pty", "terminal"}:
+        return pty_capture(arguments=args)
+    return file_observe(path, max_bytes=int(args["max_bytes"]), arguments=args)
 
 
 def hold(
@@ -748,8 +722,15 @@ def check(
     *,
     arguments: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Re-hash and compare to a claimed digest. Stale evidence is a refusal."""
+    """E.14 CHECK. organ=tool_doctor profiles a real argv; otherwise re-hash."""
     args = dict(arguments or {})
+    organ = str(args.get("organ") or "").strip().lower()
+    if organ in {"tool_doctor", "doctor"}:
+        if args.get("report"):
+            return doctor_report(arguments=args)
+        return doctor_profile(arguments=args)
+    if (args.get("argv") or args.get("command") or args.get("tool")) and organ != "file":
+        return doctor_profile(arguments=args)
     observed = see(path, arguments=args)
     claimed = args.get("expected_sha256") or args.get("sha256")
     observed["act"] = "check"
@@ -773,13 +754,16 @@ def prove(
     *,
     arguments: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """RED → restore → GREEN canary on the generic file eye. FUNCTIONAL_SIM.
+    """E.14 PROVE. organ=behavior_lab runs BHV-01..23; otherwise the file canary.
 
     Mutation must change the digest (RED). Restoration must restore it (GREEN).
     A canary that cannot go RED is not a canary. Runs on a temp copy so the
     caller's file is not the mutation surface.
     """
     args = dict(arguments or {})
+    organ = str(args.get("organ") or "").strip().lower()
+    if organ in {"behavior_lab", "bhv"} or args.get("fixtures") is not None:
+        return bhv_run_matrix(arguments=args)
     raw = path if path is not None else args.get("path")
     payload = b"vmcp-file-eye-canary\n"
     if raw:
@@ -927,11 +911,48 @@ def selftest() -> dict[str, Any]:
             raise AssertionError(f"open must PARK without looking: {opened}")
         if not (opened.get("wake") or {}).get("predicate"):
             raise AssertionError("open PARKED without a wake predicate")
+        classified = file_observe(p)
+        if classified.get("kind") not in {"text", "script"}:
+            raise AssertionError(f"file eye did not classify a text file: {classified}")
+        echo = doctor_profile(["/bin/echo", "vmcp-doctor"])
+        if echo.get("exit_code") != 0 or "vmcp-doctor" not in (echo.get("stdout") or ""):
+            raise AssertionError(f"tool doctor did not profile /bin/echo: {echo}")
+        if (echo.get("tool_receipt") or {}).get("schema") != "hawking.vmcp.tool_receipt.v1":
+            raise AssertionError(f"tool doctor missing E.4 receipt: {echo}")
+        pty = pty_capture(argv=["/bin/echo", "vmcp-pty"])
+        if pty.get("empty_success"):
+            raise AssertionError(f"pty empty success: {pty}")
+        if pty.get("used_real_pty") and not pty.get("ok"):
+            raise AssertionError(f"real pty ran but failed: {pty}")
+        if not pty.get("used_real_pty"):
+            if pty.get("status") != "PARKED" or "PTY_OPEN_DENIED" not in (pty.get("limitations") or []):
+                raise AssertionError(f"blocked pty must PARK with PTY_OPEN_DENIED: {pty}")
+        matrix = bhv_run_matrix()
+        if matrix.get("n") != 23:
+            raise AssertionError(f"behavior lab did not run 23 fixtures: {matrix.get('n')}")
+        if matrix.get("n_ok") != 23:
+            raise AssertionError(
+                "behavior lab residuals: " + ",".join(matrix.get("residuals") or [])
+            )
+        if (matrix.get("verdict") or {}).get("outcome") != "PASS":
+            raise AssertionError(f"tabula verdict not PASS: {matrix.get('verdict')}")
+    organs = {row["id"]: row for row in doc["organs"]}
+    for oid in ("vmcp.file_eye", "vmcp.tool_doctor", "vmcp.behavior_lab"):
+        if organs[oid]["disposition"] != "CONNECTED":
+            raise AssertionError(f"{oid} not CONNECTED")
+        if organs[oid].get("execution") != "REAL":
+            raise AssertionError(f"{oid} not REAL execution")
     return {
         "ok": True,
         "n_connected_acts": len(connected),
         "n_parked_acts": len(parked),
         "n_organs": len(doc["organs"]),
+        "verb_count": len(NINE_ACTS),
+        "file_eye_kind": classified.get("kind"),
+        "tool_doctor_exit": echo.get("exit_code"),
+        "pty_used_real": bool(pty.get("used_real_pty")),
+        "behavior_lab_n_ok": matrix.get("n_ok"),
+        "behavior_lab_verdict": (matrix.get("verdict") or {}).get("outcome"),
     }
 
 
@@ -944,9 +965,11 @@ def build() -> Path:
         "status": "BUILT_NOT_PROMOTED",
         "promoted": False,
         "purpose": (
-            "Dispose VMCP against source and roadmap, connect the generic "
-            "file eye, park everything that needs the foreign visionmcp "
-            "package or absent hardware."
+            "Dispose VMCP against source and roadmap. Promote the local file "
+            "classifier, tool doctor and behavior-lab fixture matrix to REAL "
+            "execution behind the same nine-act compact surface. Park PTY if "
+            "openpty is denied, and park organs that need visionmcp or "
+            "absent hardware."
         ),
         "disposition": doc,
         "selftest": proof,
@@ -962,8 +985,116 @@ def build() -> Path:
         "gpu_authority": False,
         "evidence_class": "STATIC_ONLY",
         "weights_modified": False,
+        "verb_count_before": 9,
+        "verb_count_after": len(NINE_ACTS),
+        "promoted_organs": [
+            "vmcp.file_eye",
+            "vmcp.tool_doctor",
+            "vmcp.behavior_lab",
+        ],
     }
-    return write_receipt(RECEIPT, payload, RECORDED_BY)
+    out = write_receipt(RECEIPT, payload, RECORDED_BY)
+    echo_path = "/bin/echo"
+    file_run = file_observe(echo_path)
+    doctor_run = doctor_profile([echo_path, "perception-depth"])
+    pty_run = pty_capture(argv=[echo_path, "perception-depth-pty"])
+    bhv_run = bhv_run_matrix(fixtures=["BHV-02", "BHV-09", "BHV-21"])
+    before = {
+        "vmcp.file_eye": {"disposition": "CONNECTED", "evidence_tier": "FUNCTIONAL_SIM", "execution": "hash-only"},
+        "vmcp.pty_eye": {"disposition": "PARKED", "evidence_tier": "STATIC"},
+        "vmcp.behavior_lab": {"disposition": "PARKED", "evidence_tier": "STATIC"},
+        "vmcp.tool_doctor": {"disposition": "PARKED", "evidence_tier": "STATIC"},
+    }
+    depth = {
+        "schema": "hawking.future.vmcp_perception_depth.v1",
+        "version": 1,
+        "status": "BUILT_NOT_PROMOTED",
+        "promoted": False,
+        "purpose": "Per-organ before/after plus the real command and output of each promoted organ.",
+        "verb_count_before": 9,
+        "verb_count_after": len(NINE_ACTS),
+        "compact_surface": list(NINE_ACTS),
+        "selftest": proof,
+        "before": before,
+        "after": {
+            row["id"]: {
+                "disposition": row.get("disposition"),
+                "evidence_tier": row.get("evidence_tier"),
+                "execution": row.get("execution"),
+                "symbol": row.get("symbol"),
+                "wake": row.get("wake"),
+            }
+            for row in doc["organs"]
+            if row["id"] in before
+        },
+        "runs": {
+            "file_eye": {
+                "command": f"python3 tools/future/vmcp.py --act see --path {echo_path}",
+                "invoke": (
+                    "python3 tools/audit/reachability_triage.py --invoke future.vmcp "
+                    f"--args '{{\"act\":\"see\",\"path\":\"{echo_path}\"}}'"
+                ),
+                "kind": file_run.get("kind"),
+                "container": file_run.get("container"),
+                "sha256": file_run.get("sha256"),
+                "present": file_run.get("present"),
+                "execution": file_run.get("execution"),
+                "cpu": (file_run.get("classification") or {}).get("cpu")
+                or (file_run.get("classification") or {}).get("slices"),
+            },
+            "tool_doctor": {
+                "command": (
+                    "python3 tools/future/vmcp.py --act check --organ tool_doctor "
+                    "--args '{\"argv\":[\"/bin/echo\",\"perception-depth\"]}'"
+                ),
+                "invoke": (
+                    "python3 tools/audit/reachability_triage.py --invoke future.vmcp "
+                    "--args '{\"act\":\"check\",\"organ\":\"tool_doctor\","
+                    "\"argv\":[\"/bin/echo\",\"perception-depth\"]}'"
+                ),
+                "exit_code": doctor_run.get("exit_code"),
+                "stdout": (doctor_run.get("stdout") or "").strip(),
+                "elapsed_ms": doctor_run.get("performance_ms"),
+                "receipt_schema": (doctor_run.get("tool_receipt") or {}).get("schema"),
+                "execution": doctor_run.get("execution"),
+            },
+            "behavior_lab": {
+                "command": (
+                    "python3 tools/future/vmcp.py --act prove --organ behavior_lab "
+                    "--args '{\"fixtures\":[\"BHV-02\",\"BHV-09\",\"BHV-21\"]}'"
+                ),
+                "invoke": (
+                    "python3 tools/audit/reachability_triage.py --invoke future.vmcp "
+                    "--args '{\"act\":\"prove\",\"organ\":\"behavior_lab\","
+                    "\"fixtures\":[\"BHV-02\",\"BHV-09\",\"BHV-21\"]}'"
+                ),
+                "n": bhv_run.get("n"),
+                "n_ok": bhv_run.get("n_ok"),
+                "verdict": (bhv_run.get("verdict") or {}).get("outcome"),
+                "scores": bhv_run.get("scores"),
+                "ids": [r.get("id") for r in (bhv_run.get("fixtures") or [])],
+                "execution": bhv_run.get("execution"),
+                "laboratory_profile_used": bhv_run.get("laboratory_profile_used"),
+            },
+            "pty_eye": {
+                "command": (
+                    "python3 tools/future/vmcp.py --act see --organ pty "
+                    "--args '{\"argv\":[\"/bin/echo\",\"perception-depth-pty\"]}'"
+                ),
+                "status": pty_run.get("status"),
+                "used_real_pty": pty_run.get("used_real_pty"),
+                "limitations": pty_run.get("limitations"),
+                "blocker": (pty_run.get("wake") or {}).get("blocker"),
+                "promoted": False,
+            },
+        },
+        "gpu_authority": False,
+        "evidence_class": "STATIC_ONLY",
+        "weights_modified": False,
+        "claim_boundary": CLAIM_BOUNDARY,
+    }
+    write_receipt("VMCP_PERCEPTION_DEPTH.json", depth, RECORDED_BY)
+    return out
 
 
 def main() -> int:
@@ -973,12 +1104,22 @@ def main() -> int:
     ap.add_argument("--disposition", action="store_true")
     ap.add_argument("--act")
     ap.add_argument("--path")
+    ap.add_argument("--organ")
+    ap.add_argument("--args", default="", help="JSON object merged into compact_surface arguments")
     args = ap.parse_args()
     if args.selftest:
         print(json.dumps(selftest(), indent=2, sort_keys=True))
         return 0
     if args.act:
-        payload = {"path": args.path} if args.path else {}
+        payload: dict[str, Any] = {}
+        if args.args:
+            loaded = json.loads(args.args)
+            if isinstance(loaded, dict):
+                payload.update(loaded)
+        if args.path:
+            payload["path"] = args.path
+        if args.organ:
+            payload["organ"] = args.organ
         print(json.dumps(compact_surface(args.act, payload), indent=2, sort_keys=True))
         return 0
     if args.disposition:

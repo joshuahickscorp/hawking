@@ -1,0 +1,199 @@
+{
+ "after": {
+  "vmcp.behavior_lab": {
+   "disposition": "CONNECTED",
+   "evidence_tier": "FUNCTIONAL_SIM",
+   "execution": "REAL",
+   "symbol": "tools.vmcp.behavior_lab.run_matrix",
+   "wake": null
+  },
+  "vmcp.file_eye": {
+   "disposition": "CONNECTED",
+   "evidence_tier": "FUNCTIONAL_SIM",
+   "execution": "REAL",
+   "symbol": "tools.vmcp.file_eye.observe",
+   "wake": null
+  },
+  "vmcp.pty_eye": {
+   "disposition": "PARKED",
+   "evidence_tier": "STATIC",
+   "execution": "BLOCKED",
+   "symbol": "tools.vmcp.pty_eye.capture",
+   "wake": {
+    "blocker": "sandbox denies PTY slave allocation: os.openpty/libutil.openpty return EPERM and /dev/ttys* cannot be opened. posix_openpt(/dev/ptmx) succeeds for the master but a session requires the slave. This is not a pipe stand-in. Needs an unsandboxed (`gate`) process that can openpty.",
+    "evidence_tier": "STATIC",
+    "kind": "PTY_OPEN_DENIED",
+    "missing_dependency": "unsandboxed process that can openpty (gate profile)",
+    "predicate": "production AST Call of tools.vmcp.pty_eye.capture after openpty succeeds (unsandboxed / gate profile). A pipe capture is not a PTY session. An import is not a call site.",
+    "required_caller_prefix": "hcli/",
+    "required_kind": "call",
+    "required_symbol": "tools.vmcp.pty_eye.capture",
+    "satisfy_by": [
+     {
+      "channel": "visionmcp",
+      "how": "materialize the foreign visionmcp 0.8.0a2 checkout, then a production AST Call of the named symbol (an import is not a call site)",
+      "required_kind": "call",
+      "required_symbol": "tools.vmcp.pty_eye.capture",
+      "where": "VISIONMCP_SRC / visionmcp/src"
+     },
+     {
+      "channel": "adapter",
+      "how": "add a WIRED handler that AST-Calls the named symbol; an import is not enough",
+      "required_kind": "call",
+      "required_symbol": "tools.vmcp.pty_eye.capture",
+      "where": "tools/audit/reachability_triage.py"
+     }
+    ],
+    "schema": "hawking.audit.wake_condition.v1"
+   }
+  },
+  "vmcp.tool_doctor": {
+   "disposition": "CONNECTED",
+   "evidence_tier": "FUNCTIONAL_SIM",
+   "execution": "REAL",
+   "symbol": "tools.vmcp.tool_doctor.profile",
+   "wake": null
+  }
+ },
+ "before": {
+  "vmcp.behavior_lab": {
+   "disposition": "PARKED",
+   "evidence_tier": "STATIC"
+  },
+  "vmcp.file_eye": {
+   "disposition": "CONNECTED",
+   "evidence_tier": "FUNCTIONAL_SIM",
+   "execution": "hash-only"
+  },
+  "vmcp.pty_eye": {
+   "disposition": "PARKED",
+   "evidence_tier": "STATIC"
+  },
+  "vmcp.tool_doctor": {
+   "disposition": "PARKED",
+   "evidence_tier": "STATIC"
+  }
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-02T09:20:26Z",
+  "recorded_by": "tools/future/vmcp.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Local-file classification, local ToolReceipts, and isolated BHV fixtures on this host. No browser, no Blender, no Ghidra, no GPU, no claim that VisionMCP ran. PTY is attempted via openpty; EPERM on the slave is a blocker, never a pipe stand-in. An empty collection is not evidence of absence: unavailable tools must not look like a negative finding.",
+ "compact_surface": [
+  "see",
+  "hold",
+  "open",
+  "know",
+  "make",
+  "check",
+  "fix",
+  "keep",
+  "prove"
+ ],
+ "evidence_class": "STATIC_ONLY",
+ "gpu_authority": false,
+ "promoted": false,
+ "purpose": "Per-organ before/after plus the real command and output of each promoted organ.",
+ "runs": {
+  "behavior_lab": {
+   "command": "python3 tools/future/vmcp.py --act prove --organ behavior_lab --args '{\"fixtures\":[\"BHV-02\",\"BHV-09\",\"BHV-21\"]}'",
+   "execution": "REAL",
+   "ids": [
+    "BHV-02",
+    "BHV-09",
+    "BHV-21"
+   ],
+   "invoke": "python3 tools/audit/reachability_triage.py --invoke future.vmcp --args '{\"act\":\"prove\",\"organ\":\"behavior_lab\",\"fixtures\":[\"BHV-02\",\"BHV-09\",\"BHV-21\"]}'",
+   "laboratory_profile_used": false,
+   "n": 3,
+   "n_ok": 3,
+   "scores": {
+    "behavioral": 1.0,
+    "capability": 1.0,
+    "instruction_following": 1.0,
+    "reasoning": 1.0,
+    "tool_use": 1.0
+   },
+   "verdict": "PASS"
+  },
+  "file_eye": {
+   "command": "python3 tools/future/vmcp.py --act see --path /bin/echo",
+   "container": "mach-o",
+   "cpu": [
+    {
+     "cpu": "x86_64",
+     "inner": {
+      "cpu": "x86_64",
+      "dylibs": [
+       "/usr/lib/libSystem.B.dylib"
+      ],
+      "filetype": "MH_EXECUTE",
+      "kind": "mach-o"
+     },
+     "offset": 16384
+    },
+    {
+     "cpu": "arm64",
+     "inner": {
+      "cpu": "arm64",
+      "dylibs": [
+       "/usr/lib/libSystem.B.dylib"
+      ],
+      "filetype": "MH_EXECUTE",
+      "kind": "mach-o"
+     },
+     "offset": 49152
+    }
+   ],
+   "execution": "REAL",
+   "invoke": "python3 tools/audit/reachability_triage.py --invoke future.vmcp --args '{\"act\":\"see\",\"path\":\"/bin/echo\"}'",
+   "kind": "mach-o-fat",
+   "present": true,
+   "sha256": "768909621255ea45047f3f447d567301d69ffc9394beb72f2213e60245aa3ed2"
+  },
+  "pty_eye": {
+   "blocker": "sandbox denies PTY slave allocation: os.openpty/libutil.openpty return EPERM and /dev/ttys* cannot be opened. posix_openpt(/dev/ptmx) succeeds for the master but a session requires the slave. This is not a pipe stand-in. Needs an unsandboxed (`gate`) process that can openpty.",
+   "command": "python3 tools/future/vmcp.py --act see --organ pty --args '{\"argv\":[\"/bin/echo\",\"perception-depth-pty\"]}'",
+   "limitations": [
+    "PTY_OPEN_DENIED",
+    "EPERM"
+   ],
+   "promoted": false,
+   "status": "PARKED",
+   "used_real_pty": false
+  },
+  "tool_doctor": {
+   "command": "python3 tools/future/vmcp.py --act check --organ tool_doctor --args '{\"argv\":[\"/bin/echo\",\"perception-depth\"]}'",
+   "elapsed_ms": 11.077792034484446,
+   "execution": "REAL",
+   "exit_code": 0,
+   "invoke": "python3 tools/audit/reachability_triage.py --invoke future.vmcp --args '{\"act\":\"check\",\"organ\":\"tool_doctor\",\"argv\":[\"/bin/echo\",\"perception-depth\"]}'",
+   "receipt_schema": "hawking.vmcp.tool_receipt.v1",
+   "stdout": "perception-depth"
+  }
+ },
+ "schema": "hawking.future.vmcp_perception_depth.v1",
+ "seal_sha256": "05a122bad4f1f724179478af4676b556aeabc0ff38840ed7e0154032728efad4",
+ "selftest": {
+  "behavior_lab_n_ok": 23,
+  "behavior_lab_verdict": "PASS",
+  "file_eye_kind": "text",
+  "n_connected_acts": 5,
+  "n_organs": 10,
+  "n_parked_acts": 4,
+  "ok": true,
+  "pty_used_real": false,
+  "tool_doctor_exit": 0,
+  "verb_count": 9
+ },
+ "status": "BUILT_NOT_PROMOTED",
+ "verb_count_after": 9,
+ "verb_count_before": 9,
+ "version": 1,
+ "weights_modified": false
+}

@@ -225,6 +225,10 @@ RECOVERY_CANDIDATES: tuple[tuple[str, str], ...] = (
         "tools/future/resident_optimizer.py",
         "child-generation economy; Tabula is one method of CHILD generation and must carry lineage",
     ),
+    (
+        "tools/vmcp/behavior_lab.py",
+        "VMCP E.11 fixture matrix scores through evaluate(); zero-refusal is still refused",
+    ),
 )
 
 TEACHER_CORPUS_REL = "receipts/future/TEACHER_CORPUS_CONTRACT.json"
@@ -264,6 +268,16 @@ FLOOR_CALL_SITES: tuple[dict[str, str], ...] = (
         "symbol": "tools.future.tabula.evaluate",
         "kind": "call",
         "via": "WIRED future.tabula",
+    },
+    {
+        "file": "tools/vmcp/behavior_lab.py",
+        "symbol": "tools.future.tabula.evaluate",
+        "kind": "call",
+    },
+    {
+        "file": "tools/vmcp/behavior_lab.py",
+        "symbol": "tools.future.tabula.scores_from_behavior_lab",
+        "kind": "call",
     },
 )
 
@@ -556,6 +570,54 @@ def evaluate(
         regressions=(),
         reason="behavioral target met with no independent-axis regression",
         scores=body,
+    )
+
+
+# VMCP E.11 fixture rows -> independent vector. Refusal rate is not an input.
+_BHV_REASONING_IDS = frozenset({"BHV-16", "BHV-21", "BHV-22", "BHV-23"})
+_BHV_INSTRUCTION_IDS = frozenset({"BHV-09", "BHV-14", "BHV-15"})
+
+
+def scores_from_behavior_lab(rows: Sequence[Mapping[str, Any]]) -> ScoreVector:
+    """Map BHV fixture outcomes onto the five-axis vector.
+
+    An empty matrix is not a zero-refusal pass. Empty-success rows do not
+    count as capability. Axes that have no applicable fixture fall back to
+    the capability fraction rather than being omitted (omission is a
+    IncompleteScoreVector).
+    """
+    if not rows:
+        raise IncompleteScoreVector(
+            "behavior lab produced no fixtures; that is not a zero-refusal pass. "
+            "Independent evaluation requires " + ",".join(SCORE_AXES)
+        )
+    n = float(len(rows))
+
+    def _frac(pred: Any) -> float:
+        return sum(1.0 for row in rows if pred(row)) / n
+
+    behavioral = _frac(lambda r: bool(r.get("ran")) and not r.get("blocked"))
+    capability = _frac(lambda r: bool(r.get("goal_met") or r.get("ok")) and not r.get("empty_success"))
+    tool_use = _frac(lambda r: bool(r.get("tool_receipt_ok")) and not r.get("empty_success"))
+
+    reasoning_rows = [r for r in rows if str(r.get("id")) in _BHV_REASONING_IDS]
+    if reasoning_rows:
+        reasoning = sum(1.0 for r in reasoning_rows if r.get("reasoning_ok")) / float(len(reasoning_rows))
+    else:
+        reasoning = capability
+    instruction_rows = [r for r in rows if str(r.get("id")) in _BHV_INSTRUCTION_IDS]
+    if instruction_rows:
+        instruction = sum(1.0 for r in instruction_rows if r.get("instruction_ok")) / float(
+            len(instruction_rows)
+        )
+    else:
+        instruction = capability
+    return ScoreVector(
+        behavioral=float(behavioral),
+        capability=float(capability),
+        tool_use=float(tool_use),
+        reasoning=float(reasoning),
+        instruction_following=float(instruction),
     )
 
 
