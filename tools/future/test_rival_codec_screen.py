@@ -474,3 +474,31 @@ def test_build_copes_with_or_without_the_corpus():
 
 def test_selftest_is_callable():
     assert callable(rcs.selftest)
+
+
+def test_threaded_expert_factoring_is_bit_identical_to_the_serial_path(monkeypatch):
+    """Parallelism here must be a scheduling change, never a numerical one.
+
+    Each expert's gram and eigendecomposition is independent, so factoring them
+    across threads has to return exactly what the serial loop returned, in the
+    same expert order. A result that merely agrees to a tolerance, or that comes
+    back in completion order, is a different screen.
+    """
+    rng = np.random.default_rng(7)
+    residuals = rng.standard_normal((9, 48, 61), dtype=np.float32)
+
+    monkeypatch.setenv("RCS_EIGH_WORKERS", "1")
+    assert rcs._eigh_workers() == 1
+    serial_u, serial_v = rcs.residual_factors_batch(residuals, 6)
+
+    monkeypatch.setenv("RCS_EIGH_WORKERS", "4")
+    assert rcs._eigh_workers() == 4
+    threaded_u, threaded_v = rcs.residual_factors_batch(residuals, 6)
+
+    assert np.array_equal(serial_u, threaded_u), "threading moved the left factors"
+    assert np.array_equal(serial_v, threaded_v), "threading moved the right factors"
+
+    # Order, not just contents: a shuffled batch must NOT compare equal, or the
+    # assertions above would pass for a result reassembled in completion order.
+    shuffled_u, _ = rcs.residual_factors_batch(residuals[::-1], 6)
+    assert not np.array_equal(serial_u, shuffled_u)
