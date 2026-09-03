@@ -522,13 +522,45 @@ def _read_file(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
         raise FileNotFoundError(path)
     limit = _text_limit(args.get("max_bytes"))
     raw = path.read_bytes()
+    encoding = str(args.get("encoding") or "utf-8")
+
+    # A WINDOW, because without one a large file can only ever be read from the
+    # top. fs.read returned the first 4,001 bytes of a 188,062-byte engine.py,
+    # so a model that had already located `_record_model_call` at line 3514 --
+    # fs.search reports the line -- could never read it, and said so:
+    # "Need to see the actual _record_model_call function ... to implement the
+    # grammar_enforced field correctly". It could find the code and not look at
+    # it. Lines are 1-indexed and inclusive, matching what fs.search returns.
+    start = args.get("start_line")
+    end = args.get("end_line")
+    line_window = start is not None or end is not None
+    if line_window:
+        text = raw.decode(encoding, errors="replace")
+        lines = text.splitlines(keepends=True)
+        first = max(1, int(start or 1))
+        last = min(len(lines), int(end) if end is not None else len(lines))
+        selected = "".join(lines[first - 1:last]) if first <= last else ""
+        body = selected.encode(encoding, errors="replace")
+        clipped = body[:limit]
+        return {
+            "path": str(path),
+            "bytes": len(raw),
+            "start_line": first,
+            "end_line": last,
+            "total_lines": len(lines),
+            "truncated": len(body) > limit,
+            "sha256": _sha256_bytes(raw),
+            "content": clipped.decode(encoding, errors="replace"),
+            "artifact": {"kind": "file", "path": str(path), "sha256": _sha256_bytes(raw), "bytes": len(raw)},
+        }
+
     clipped = raw[:limit]
     return {
         "path": str(path),
         "bytes": len(raw),
         "truncated": len(raw) > limit,
         "sha256": _sha256_bytes(raw),
-        "content": clipped.decode(str(args.get("encoding") or "utf-8"), errors="replace"),
+        "content": clipped.decode(encoding, errors="replace"),
         "artifact": {"kind": "file", "path": str(path), "sha256": _sha256_bytes(raw), "bytes": len(raw)},
     }
 
@@ -1797,9 +1829,18 @@ def default_tool_registry(
             "path": {"type": "string"},
             "max_bytes": {"type": "integer"},
             "encoding": {"type": "string"},
+            "start_line": {"type": "integer"},
+            "end_line": {"type": "integer"},
         },
     }
-    registry.register(ToolSpec("fs.read", "Read one known file under an AgentOS read root.", path_schema, handler=_read_file))
+    registry.register(ToolSpec(
+        "fs.read",
+        "Read one known file under an AgentOS read root. Pass start_line and "
+        "end_line (1-indexed, inclusive) to read a window; fs.search reports "
+        "the line a match is on, so search then read that region.",
+        path_schema,
+        handler=_read_file,
+    ))
     registry.register(ToolSpec("filesystem.read", "Read one known file under an AgentOS read root.", path_schema, handler=_read_file))
     registry.register(ToolSpec(
         "fs.search", "Search bounded text files under a read root.",
