@@ -7,11 +7,11 @@ Nothing here is complete because a file exists: a field with no evidence prints 
 
 ## Status census
 
-    VERIFIED_INTEGRATED      24
+    VERIFIED_INTEGRATED      25
     VERIFIED_BUILT           19
     BLOCKED_EVIDENCE         14
     BLOCKED_HARDWARE         13
-    SCAFFOLDED               11
+    SCAFFOLDED               10
     ABSENT                   1
     UNREACHABLE              1
 
@@ -22,8 +22,8 @@ design, not by neglect: simulated is not measured.
 ## Evidence coverage across all gates
 
     defining property available     82 / 83
-    real (non-test) caller          44 / 83
-    any verifier                    61 / 83
+    real (non-test) caller          45 / 83
+    any verifier                    62 / 83
     receipt cited                   13 / 83
 
 ## A. CONTROL / HCLI / AGENTOS
@@ -49,8 +49,8 @@ design, not by neglect: simulated is not measured.
     defining property   1. Repair depth is bounded structurally, not by model discretion.
     implementation      hcli/scheduler.py, hcli/cli.py, hcli/delegate.py (+1 more)
     real caller         tools/acceptance/agentos/harness.py:714
-    verifier            hcli/test_abort_checkpoint_atomicity.py:18, hcli/test_abort_checkpoint_atomicity.py:49, hcli/test_abort_checkpoint_atomicity.py:97 (+29 more)
-    negative control    hcli/test_delegate.py, hcli/test_hawkingd_daemon_name.py
+    verifier            hcli/test_abort_checkpoint_atomicity.py:18, hcli/test_abort_checkpoint_atomicity.py:49, hcli/test_abort_checkpoint_atomicity.py:97 (+30 more)
+    negative control    hcli/test_delegate.py, hcli/test_failed_unit_says_why.py
     receipt             absent
     evidence level      STATIC
     limitations         none recorded
@@ -75,8 +75,8 @@ design, not by neglect: simulated is not measured.
     defining property   1. Repair depth is bounded structurally, not by model discretion.
     implementation      hcli/scheduler.py, hcli/scheduler.py:55
     real caller         absent — no non-test call site
-    verifier            hcli/test_goal_compile.py:257, hcli/tests/test_core_authorities.py:25, hcli/tests/test_dag_store.py:13 (+10 more)
-    negative control    hcli/tests/test_core_authorities.py, hcli/tests/test_runtime_interface.py
+    verifier            hcli/test_failed_unit_says_why.py:19, hcli/test_goal_compile.py:257, hcli/tests/test_core_authorities.py:25 (+11 more)
+    negative control    hcli/test_failed_unit_says_why.py, hcli/tests/test_core_authorities.py
     receipt             absent
     evidence level      STATIC
     limitations         none recorded
@@ -101,7 +101,7 @@ design, not by neglect: simulated is not measured.
     defining property   1. Repair depth is bounded structurally, not by model discretion.
     implementation      hcli/scheduler.py, hcli/agentos/resident.py, hcli/agentos/background.py (+1 more)
     real caller         hcli/agentos/handoff.py:106, hcli/agentos/protected_benchmark_watcher.py:65, hcli/agentos/resident.py:907 (+7 more)
-    verifier            hcli/agentos/test_resident_mission_corruption.py:23, hcli/agentos/test_resident_orphan.py:17, hcli/agentos/test_resident_orphan.py:140 (+37 more)
+    verifier            hcli/agentos/test_resident_mission_corruption.py:23, hcli/agentos/test_resident_orphan.py:17, hcli/agentos/test_resident_orphan.py:140 (+38 more)
     negative control    hcli/agentos/test_resident_mission_corruption.py, hcli/agentos/test_resident_orphan.py
     receipt             absent
     evidence level      STATIC
@@ -127,8 +127,8 @@ design, not by neglect: simulated is not measured.
     defining property   1. Repair depth is bounded structurally, not by model discretion.
     implementation      hcli/scheduler.py, hcli/workunit.py, hcli/scheduler.py:72
     real caller         hcli/goal_compile.py:518, hcli/mission.py:264, hcli/mission.py:374 (+14 more)
-    verifier            hcli/test_abort_checkpoint_atomicity.py:21, hcli/test_cognition_unit_concurrency.py:14, hcli/test_goal_compile.py:257 (+104 more)
-    negative control    hcli/test_cognition_unit_concurrency.py, hcli/test_mission_repair_verdict.py
+    verifier            hcli/test_abort_checkpoint_atomicity.py:21, hcli/test_cognition_unit_concurrency.py:14, hcli/test_failed_unit_says_why.py:19 (+107 more)
+    negative control    hcli/test_cognition_unit_concurrency.py, hcli/test_failed_unit_says_why.py
     receipt             absent
     evidence level      STATIC
     limitations         none recorded
@@ -151,10 +151,10 @@ design, not by neglect: simulated is not measured.
 
     STATUS              SCAFFOLDED
     defining property   `BACKEND_UNAVAILABLE`
-    implementation      hcli/scheduler.py, hcli/scheduler.py:394
+    implementation      hcli/scheduler.py, hcli/scheduler.py:405
     real caller         absent — no non-test call site
-    verifier            hcli/test_goal_compile.py:257, hcli/tests/test_core_authorities.py:25, hcli/tests/test_dag_store.py:13 (+10 more)
-    negative control    hcli/tests/test_core_authorities.py, hcli/tests/test_runtime_interface.py
+    verifier            hcli/test_failed_unit_says_why.py:19, hcli/test_goal_compile.py:257, hcli/tests/test_core_authorities.py:25 (+11 more)
+    negative control    hcli/test_failed_unit_says_why.py, hcli/tests/test_core_authorities.py
     receipt             absent
     evidence level      STATIC
     limitations         acceptance not demonstrated: acceptance verdict BLOCKED: Scheduler.fail does not consult classify_failure (measured: NO_OP_MUTATION still emitted repair 'noop.repair.1'). classify_failure i
@@ -266,7 +266,7 @@ design, not by neglect: simulated is not measured.
 
 ## B. MODEL SCIENCE / DOCTOR / GRAVITY / NOETIC
 
-7 capabilities. VERIFIED_BUILT=3, VERIFIED_INTEGRATED=2, BLOCKED_EVIDENCE=1, SCAFFOLDED=1
+7 capabilities. VERIFIED_BUILT=3, VERIFIED_INTEGRATED=3, BLOCKED_EVIDENCE=1
 
 ### FLASH_ACCEPTED_TPS_GE_50
 
@@ -348,16 +348,16 @@ design, not by neglect: simulated is not measured.
 
 ### FLASH_SOURCE_VERIFIED
 
-    STATUS              SCAFFOLDED
+    STATUS              VERIFIED_INTEGRATED
     defining property   ├── sparse-attention blocks
-    implementation      tools/flash_organ_census.py, tools/gravity_verify_source.py, tools/gravity_verify_source.py:26 (+1 more)
-    real caller         absent — no non-test call site
-    verifier            absent — no test cites this gate
+    implementation      tools/flash_organ_census.py, tools/gravity_verify_source.py, tools/gravity_verify_source.py:48 (+1 more)
+    real caller         tools/acceptance/flash/run_gates.py:189, tools/flash_organ_census.py:119
+    verifier            tools/acceptance/flash/test_source_verified_defining_property.py:77
     negative control    absent — no cited test proves it can fail
     receipt             receipts/headless/FLASH_ORGAN_CENSUS.json
     evidence level      STATIC
     limitations         none recorded
-    integration         wired=False accepted=True
+    integration         wired=True accepted=True
 
 ## C. NATIVE RUNTIME / APPLE ACCELERATOR
 

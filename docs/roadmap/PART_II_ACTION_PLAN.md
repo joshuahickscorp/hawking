@@ -7,31 +7,31 @@ components yet' from work that genuinely needs an experiment, wall time, or sili
 
 ## Blocker census
 
-    SOFTWARE_CONNECTION_REMAINING    15
+    SOFTWARE_CONNECTION_REMAINING    14
     EXPERIMENTATION_REQUIRED         19
     LONG_RUN_EVIDENCE_REQUIRED       14
     PHYSICAL_HARDWARE_REQUIRED       14
     UNKNOWN_RESEARCH                 1
 
-    TOTAL REMAINING                  63
+    TOTAL REMAINING                  62
 
-SOFTWARE_CONNECTION_REMAINING = 15 is the
+SOFTWARE_CONNECTION_REMAINING = 14 is the
 number this campaign exists to drive toward zero. Every other class is honest
 frontier: an experiment that must run, evidence that needs wall time, hardware that
 must physically exist, or a question whose answer nobody has.
 
-## SOFTWARE_CONNECTION_REMAINING (15)
+## SOFTWARE_CONNECTION_REMAINING (14)
 
 ### AGENTOS_CIRCUIT_BREAKER
     missing             no non-test call site reaches this capability
-    shortest verifier   hcli/test_goal_compile.py:257 (+12 more)
+    shortest verifier   hcli/test_failed_unit_says_why.py:19 (+13 more)
     implementation      hcli/scheduler.py, hcli/scheduler.py:55
     unlocks             1 declared dependencies
 
 ### AGENTOS_RETRY_CLASSIFIED
     missing             no non-test call site reaches this capability
-    shortest verifier   hcli/test_goal_compile.py:257 (+12 more)
-    implementation      hcli/scheduler.py, hcli/scheduler.py:394
+    shortest verifier   hcli/test_failed_unit_says_why.py:19 (+13 more)
+    implementation      hcli/scheduler.py, hcli/scheduler.py:405
     unlocks             1 declared dependencies
 
 ### FLASH_DENSE_VS_NF_AB
@@ -39,12 +39,6 @@ must physically exist, or a question whose answer nobody has.
     shortest verifier   must be written
     implementation      hcli/agentos/flash_router_representation_ab.py, hcli/agentos/representation_ab.py (+1 more)
     unlocks             1 declared dependencies
-
-### FLASH_SOURCE_VERIFIED
-    missing             no non-test call site reaches this capability
-    shortest verifier   must be written
-    implementation      tools/flash_organ_census.py, tools/gravity_verify_source.py (+2 more)
-    unlocks             0 declared dependencies
 
 ### FPGA_LINK_SIM
     missing             no non-test call site reaches this capability

@@ -1,11 +1,10 @@
 {
-  "ACTIVE_NONHARDWARE_BURDEN": 49,
-  "TOTAL_UNRESOLVED_GATES": 63,
+  "ACTIVE_NONHARDWARE_BURDEN": 48,
+  "TOTAL_UNRESOLVED_GATES": 62,
   "active_actions": [
     "AGENTOS_CIRCUIT_BREAKER",
     "AGENTOS_RETRY_CLASSIFIED",
     "FLASH_DENSE_VS_NF_AB",
-    "FLASH_SOURCE_VERIFIED",
     "FPGA_LINK_SIM",
     "FPGA_PARTITION_SIM",
     "FPGA_PREBOARD_SCHEMAS",
@@ -144,9 +143,9 @@
     "FLASH_SOURCE_VERIFIED": {
       "acceptance_state": "PASS",
       "evidence_tier": "STATIC",
-      "implementation_state": "SCAFFOLDED",
-      "integration_state": "ISOLATED",
-      "verification_state": "NONE"
+      "implementation_state": "INTEGRATED",
+      "integration_state": "IN_PRODUCTION_PATH",
+      "verification_state": "TEST_PRESENT"
     },
     "FPGA_HWIR": {
       "acceptance_state": "UNRUN",
@@ -611,7 +610,7 @@
     "LONG_RUN_EVIDENCE_REQUIRED": 4,
     "PHYSICAL_HARDWARE_REQUIRED": 14,
     "SOFTWARE_BUILD_REQUIRED": 1,
-    "SOFTWARE_CONNECTION_REMAINING": 15
+    "SOFTWARE_CONNECTION_REMAINING": 14
   },
   "built_but_no_verifier": [
     "FLASH_DENSE_VS_NF_AB",
@@ -629,6 +628,7 @@
     "BACKEND_FAILURE_ISOLATION",
     "FLASH_DENSE_VS_NF_AB",
     "FLASH_FIRST_GRAVITY_ORGAN",
+    "FLASH_SOURCE_VERIFIED",
     "HCLI_CONTEXT_AUTHORITY_UNIFIED",
     "HCLI_CONTEXT_FOCUSED_WORKUNITS",
     "HCLI_CONTEXT_INVALIDATION",
@@ -990,7 +990,7 @@
     "FLASH_FIRST_GRAVITY_ORGAN": "INTEGRATED_TEST_PRESENT",
     "FLASH_FULL_NOETIC_EXECUTABLE": "WIRED_ACCEPTANCE_BLOCKED",
     "FLASH_NATIVE_NF_KERNEL": "WIRED_ACCEPTANCE_BLOCKED",
-    "FLASH_SOURCE_VERIFIED": "SCAFFOLDED_NO_CALLER",
+    "FLASH_SOURCE_VERIFIED": "INTEGRATED_TEST_PRESENT",
     "FPGA_HWIR": "WIRED_ACCEPTANCE_UNRUN",
     "FPGA_LINK_SIM": "SCAFFOLDED_NO_CALLER",
     "FPGA_PARTITION_SIM": "SCAFFOLDED_NO_CALLER",
@@ -1094,7 +1094,7 @@
     "VMCP_VISUAL_DIFF",
     "VMCP_WEB_CAPTURE"
   ],
-  "future_work_eliminated_count": 20,
+  "future_work_eliminated_count": 21,
   "generated_from": "civilization/CAPABILITY_GRAPH.json",
   "hardware_required": [
     "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE",
@@ -1150,34 +1150,6 @@
         "U50_SAFE_COOLING"
       ],
       "verifier": "hcli/agentos/test_fpga_preboard.py"
-    },
-    {
-      "actionable_now": true,
-      "blocker_class": "SOFTWARE_CONNECTION_REMAINING",
-      "critical_path": true,
-      "depends_on": [],
-      "estimated_wall": "under an hour (guess)",
-      "gate": "FLASH_SOURCE_VERIFIED",
-      "leverage_score": 25,
-      "missing": "no non-test call site reaches this capability",
-      "multiplier": true,
-      "owner": "this-lane",
-      "parallel_safe_with": "any gate in a different resource_lane",
-      "reopen_if": "the caller is removed, the verifier is deleted, or the gate's acceptance criterion changes",
-      "resource_lane": "cpu",
-      "stop_condition": "a non-test call site reaches the named symbol AND a test fails when that connection is cut",
-      "unlocks_direct": [
-        "FLASH_FIRST_GRAVITY_ORGAN"
-      ],
-      "unlocks_transitive": [
-        "FLASH_ACCEPTED_TPS_GE_50",
-        "FLASH_COMPLETE_EBPW_LE_1",
-        "FLASH_DENSE_VS_NF_AB",
-        "FLASH_FIRST_GRAVITY_ORGAN",
-        "FLASH_FULL_NOETIC_EXECUTABLE",
-        "FLASH_NATIVE_NF_KERNEL"
-      ],
-      "verifier": "must be written"
     },
     {
       "actionable_now": true,
@@ -1365,6 +1337,7 @@
     "AGENTOS_RESTART_COHERENCE",
     "BACKEND_FAILURE_ISOLATION",
     "FLASH_FIRST_GRAVITY_ORGAN",
+    "FLASH_SOURCE_VERIFIED",
     "HCLI_CONTEXT_AUTHORITY_UNIFIED",
     "HCLI_CONTEXT_FOCUSED_WORKUNITS",
     "HCLI_CONTEXT_INVALIDATION",
@@ -1385,18 +1358,18 @@
     "SEMANTIC_COMPRESSION"
   ],
   "multiplier_edges": [],
-  "net_future_burden": 49,
+  "net_future_burden": 48,
   "next_actions": [
     "AGENTOS_CIRCUIT_BREAKER",
     "AGENTOS_RETRY_CLASSIFIED",
     "FLASH_DENSE_VS_NF_AB",
-    "FLASH_SOURCE_VERIFIED",
     "FPGA_LINK_SIM",
     "FPGA_PARTITION_SIM",
     "FPGA_PREBOARD_SCHEMAS",
     "QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED",
     "QWEN27_RUNTIME_IDENTITY_FROZEN",
-    "RUNTIME_CONTEXT_NATIVE"
+    "RUNTIME_CONTEXT_NATIVE",
+    "RUNTIME_PREFIX_STATE_REUSE"
   ],
   "not_physically_measured": "every gate is evidence_tier STATIC; no present capability rests on a physical measurement",
   "ranked_remaining": [
@@ -1681,34 +1654,6 @@
         "U50_MIXED_APPLE_FPGA_GRAPH"
       ],
       "verifier": "tools/future/test_hbm_doctor.py"
-    },
-    {
-      "actionable_now": true,
-      "blocker_class": "SOFTWARE_CONNECTION_REMAINING",
-      "critical_path": true,
-      "depends_on": [],
-      "estimated_wall": "under an hour (guess)",
-      "gate": "FLASH_SOURCE_VERIFIED",
-      "leverage_score": 25,
-      "missing": "no non-test call site reaches this capability",
-      "multiplier": true,
-      "owner": "this-lane",
-      "parallel_safe_with": "any gate in a different resource_lane",
-      "reopen_if": "the caller is removed, the verifier is deleted, or the gate's acceptance criterion changes",
-      "resource_lane": "cpu",
-      "stop_condition": "a non-test call site reaches the named symbol AND a test fails when that connection is cut",
-      "unlocks_direct": [
-        "FLASH_FIRST_GRAVITY_ORGAN"
-      ],
-      "unlocks_transitive": [
-        "FLASH_ACCEPTED_TPS_GE_50",
-        "FLASH_COMPLETE_EBPW_LE_1",
-        "FLASH_DENSE_VS_NF_AB",
-        "FLASH_FIRST_GRAVITY_ORGAN",
-        "FLASH_FULL_NOETIC_EXECUTABLE",
-        "FLASH_NATIVE_NF_KERNEL"
-      ],
-      "verifier": "must be written"
     },
     {
       "actionable_now": false,
@@ -2217,7 +2162,7 @@
       "unlocks_transitive": [
         "AGENTOS_CIRCUIT_BREAKER"
       ],
-      "verifier": "hcli/test_goal_compile.py"
+      "verifier": "hcli/test_failed_unit_says_why.py"
     },
     {
       "actionable_now": true,
@@ -2531,7 +2476,7 @@
       "stop_condition": "a non-test call site reaches the named symbol AND a test fails when that connection is cut",
       "unlocks_direct": [],
       "unlocks_transitive": [],
-      "verifier": "hcli/test_goal_compile.py"
+      "verifier": "hcli/test_failed_unit_says_why.py"
     },
     {
       "actionable_now": false,
@@ -2963,24 +2908,25 @@
   "software_build_required": [
     "AGENTOS_BEHAVIOR_LAB"
   ],
-  "software_connection_remaining_count": 15,
+  "software_connection_remaining_count": 14,
   "subsumed_items": [],
   "unknown_research": [],
   "verifiers": {
-    "AGENTOS_CANCELLATION": "hcli/test_abort_checkpoint_atomicity.py:18, hcli/test_abort_checkpoint_atomicity.py:49 (+30 more)",
+    "AGENTOS_CANCELLATION": "hcli/test_abort_checkpoint_atomicity.py:18, hcli/test_abort_checkpoint_atomicity.py:49 (+31 more)",
     "AGENTOS_CHECKPOINT_ATOMICITY": "hcli/test_goal_bank.py:10, hcli/tests/test_core_authorities.py:22 (+4 more)",
-    "AGENTOS_CIRCUIT_BREAKER": "hcli/test_goal_compile.py:257, hcli/tests/test_core_authorities.py:25 (+11 more)",
+    "AGENTOS_CIRCUIT_BREAKER": "hcli/test_failed_unit_says_why.py:19, hcli/test_goal_compile.py:257 (+12 more)",
     "AGENTOS_DETERMINISTIC_OFFLOAD": "hcli/test_abort_checkpoint_atomicity.py:18, hcli/test_delegate.py:22 (+13 more)",
-    "AGENTOS_ORPHAN_RECONCILIATION": "hcli/agentos/test_resident_mission_corruption.py:23, hcli/agentos/test_resident_orphan.py:17 (+38 more)",
+    "AGENTOS_ORPHAN_RECONCILIATION": "hcli/agentos/test_resident_mission_corruption.py:23, hcli/agentos/test_resident_orphan.py:17 (+39 more)",
     "AGENTOS_PERSISTENCE_SINGLE_AUTHORITY": "hcli/test_cognition_unit_concurrency.py:13, hcli/test_delegate.py:24 (+56 more)",
-    "AGENTOS_REPAIR_BOUNDED": "hcli/test_abort_checkpoint_atomicity.py:21, hcli/test_cognition_unit_concurrency.py:14 (+105 more)",
+    "AGENTOS_REPAIR_BOUNDED": "hcli/test_abort_checkpoint_atomicity.py:21, hcli/test_cognition_unit_concurrency.py:14 (+108 more)",
     "AGENTOS_RESTART_COHERENCE": "hcli/agentos/test_resident_mission_corruption.py:23, hcli/agentos/test_resident_orphan.py:17 (+24 more)",
-    "AGENTOS_RETRY_CLASSIFIED": "hcli/test_goal_compile.py:257, hcli/tests/test_core_authorities.py:25 (+11 more)",
+    "AGENTOS_RETRY_CLASSIFIED": "hcli/test_failed_unit_says_why.py:19, hcli/test_goal_compile.py:257 (+12 more)",
     "BACKEND_FAILURE_ISOLATION": "hcli/test_constrained_decoding.py:40, hcli/test_constrained_decoding.py:50 (+70 more)",
     "FLASH_COMPLETE_EBPW_LE_1": "tools/future/test_complete_ebpw.py:14, tools/future/test_complete_ebpw.py:23 (+6 more)",
     "FLASH_FIRST_GRAVITY_ORGAN": "hcli/tests/test_agentos_general.py:265, hcli/tests/test_hcli_flash_science.py:14",
     "FLASH_FULL_NOETIC_EXECUTABLE": "hcli/tests/test_hcli_flash_science.py:5, hcli/tests/test_hcli_science_boundaries.py:12 (+8 more)",
     "FLASH_NATIVE_NF_KERNEL": "hcli/tests/test_hcli_flash_science.py:5, hcli/tests/test_hcli_science_boundaries.py:12 (+4 more)",
+    "FLASH_SOURCE_VERIFIED": "tools/acceptance/flash/test_source_verified_defining_property.py:77",
     "FPGA_HWIR": "hcli/agentos/test_fpga_preboard.py:5, hcli/tests/test_hcli_science_boundaries.py:23 (+12 more)",
     "FPGA_LINK_SIM": "hcli/agentos/test_fpga_preboard.py:5, hcli/tests/test_hcli_science_boundaries.py:23",
     "FPGA_PARTITION_SIM": "hcli/agentos/test_fpga_preboard.py:5, hcli/tests/test_hcli_science_boundaries.py:23 (+2 more)",
