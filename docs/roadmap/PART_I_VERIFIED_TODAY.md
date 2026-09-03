@@ -73,7 +73,7 @@ design, not by neglect: simulated is not measured.
 
     STATUS              SCAFFOLDED
     defining property   1. Repair depth is bounded structurally, not by model discretion.
-    implementation      hcli/scheduler.py, hcli/scheduler.py:55
+    implementation      hcli/scheduler.py, hcli/scheduler.py:55, hcli/scheduler.py:301
     real caller         absent — no non-test call site
     verifier            hcli/test_failed_unit_says_why.py:19, hcli/test_failed_unit_says_why.py:93, hcli/test_goal_compile.py:257 (+12 more)
     negative control    hcli/test_failed_unit_says_why.py, hcli/tests/test_core_authorities.py
@@ -151,7 +151,7 @@ design, not by neglect: simulated is not measured.
 
     STATUS              SCAFFOLDED
     defining property   `BACKEND_UNAVAILABLE`
-    implementation      hcli/scheduler.py, hcli/scheduler.py:424
+    implementation      hcli/scheduler.py, hcli/scheduler.py:424, hcli/scheduler.py:301
     real caller         absent — no non-test call site
     verifier            hcli/test_failed_unit_says_why.py:19, hcli/test_failed_unit_says_why.py:93, hcli/test_goal_compile.py:257 (+12 more)
     negative control    hcli/test_failed_unit_says_why.py, hcli/tests/test_core_authorities.py

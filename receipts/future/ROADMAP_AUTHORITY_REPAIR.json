@@ -1,0 +1,166 @@
+{
+ "before_after": {
+  "capability_graph_generated_from_commit": {
+   "after": "25394a1a517b8298df11b356736d50a85d1b690b",
+   "before": "acefb264102645618c45eadeea07d7c8619af290"
+  },
+  "defining_properties_real": {
+   "after": 82,
+   "before": 0,
+   "of": 83
+  },
+  "gate_status_census": {
+   "after": "BUILT=25 WIRED=19 accepted=30",
+   "before": "BUILT=25 WIRED=19 accepted=30",
+   "note": "unchanged, and that is the point: statuses derive from callers and receipts, not from roadmap prose. The repair restored the ability to REGENERATE and the criteria themselves, not the verdicts."
+  },
+  "revised_roadmap_freshness": {
+   "after": "FRESH",
+   "before": "STALE (emitted for a different HEAD)"
+  },
+  "test_roadmap_graph_collection_errors": {
+   "after": 0,
+   "before": 17
+  },
+  "tools_roadmap_suite": {
+   "after": "81 passed",
+   "before": "1 failed, 51 passed, 17 errors"
+  }
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-03T04:45:04Z",
+  "recorded_by": "claude/roadmap-authority-repair",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "criterion_guard_is_a_noop_today": {
+  "accepted": 30,
+  "blocked": 18,
+  "claiming_receipts_scanned": 48,
+  "empty_criteria_found": 0,
+  "placeholder_criteria_found": 0,
+  "why_it_still_matters": "the guard costs nothing now and closes the path by which a missing roadmap could have produced an ACCEPTED gate with no obligation behind it"
+ },
+ "evidence_tier": "STATIC",
+ "git_head": "25394a1a517b8298df11b356736d50a85d1b690b",
+ "negative_control": {
+  "marker_swept": "grep MUTATION_MARKER_CLAUDE over *.py returns nothing",
+  "mutation": "disabled the lineage fallback branch in roadmap_path (if False:)",
+  "restored": true,
+  "result": "tools/roadmap/test_roadmap_graph.py died at collection with FileNotFoundError; test_lineage failed"
+ },
+ "new_finding_acceptance_spans_are_not_per_gate": {
+  "consequence": "63% of gates do not have their own acceptance criterion. The entire U50 performance ladder (34->40->50->60->70->80->90) shares ONE span, so the six rungs have identical stated criteria and cannot be distinguished from each other. All four FPGA gates share span 9000-9061, which is APPENDIX K, a Rust SCHEMA DUMP declaring TransportGenome/FPGAGenome/HBMGenome/HardwareProfile -- a data model, not a proof obligation. FPGA_HWIR's acceptance has never been run because there is nothing there to run: the roadmap frontier's 'acceptance criterion has never been run' is a misdiagnosis.",
+  "distinct_acceptance_spans": 43,
+  "gates": 83,
+  "gates_sharing_a_span": 52,
+  "gates_with_a_unique_span": 31,
+  "shared_spans": {
+   "1610-1634": [
+    "FLASH_FULL_NOETIC_EXECUTABLE",
+    "FLASH_SOURCE_VERIFIED"
+   ],
+   "2972-3064": [
+    "THEIA_LAB",
+    "THEIA_MICRO",
+    "THEIA_RESEARCH",
+    "THEIA_WORKER"
+   ],
+   "478-505": [
+    "FLASH_COMPLETE_EBPW_LE_1",
+    "FLASH_DENSE_VS_NF_AB",
+    "FLASH_FIRST_GRAVITY_ORGAN",
+    "FLASH_NATIVE_NF_KERNEL",
+    "HAWKING_PUBLIC_MVP",
+    "MODELLAKE_LIFECYCLE",
+    "REPO_TOPOLOGY_COMPRESSION",
+    "RUNTIME_COMPLETE_TOKEN_PROFILE",
+    "RUNTIME_CONTEXT_NATIVE",
+    "RUNTIME_DECODE_PROTECTED",
+    "RUNTIME_DELTANET_STATE_REUSE",
+    "RUNTIME_NATIVE_PREFILL",
+    "RUNTIME_PREFILL_PHYSICAL_FRONTIER",
+    "RUNTIME_PREFIX_STATE_REUSE",
+    "SEMANTIC_COMPRESSION",
+    "STABLE_PREFIX_CONTEXT_ALIGNMENT"
+   ],
+   "506-530": [
+    "QWEN27_PROTECTED_BASELINE",
+    "QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED",
+    "QWEN27_RUNTIME_IDENTITY_FROZEN"
+   ],
+   "531-553": [
+    "MODELLAKE_ATOMIC_PROMOTION",
+    "MODELLAKE_HASH_VERIFIED",
+    "MODELLAKE_IDENTITY_RESOLVED",
+    "ODYSSEY_I_DISCOVERY"
+   ],
+   "7332-7358": [
+    "AGENTOS_CANCELLATION",
+    "AGENTOS_CIRCUIT_BREAKER",
+    "AGENTOS_ORPHAN_RECONCILIATION",
+    "AGENTOS_REPAIR_BOUNDED"
+   ],
+   "7361-7379": [
+    "AGENTOS_RETRY_CLASSIFIED",
+    "BACKEND_FAILURE_ISOLATION"
+   ],
+   "7382-7417": [
+    "AGENTOS_CHECKPOINT_ATOMICITY",
+    "AGENTOS_PERSISTENCE_SINGLE_AUTHORITY"
+   ],
+   "7420-7447": [
+    "HCLI_CONTEXT_FOCUSED_WORKUNITS",
+    "HCLI_CONTEXT_INVALIDATION"
+   ],
+   "7706-7738": [
+    "VMCP_DEEP_DIGEST",
+    "VMCP_STATE_LATTICE",
+    "VMCP_TRUTH_LEDGER"
+   ],
+   "8989-8997": [
+    "U50_34_TO_40",
+    "U50_40_TO_50",
+    "U50_50_TO_60",
+    "U50_60_TO_70",
+    "U50_70_TO_80",
+    "U50_80_TO_90"
+   ],
+   "9000-9061": [
+    "FPGA_HWIR",
+    "FPGA_LINK_SIM",
+    "FPGA_PARTITION_SIM",
+    "FPGA_PREBOARD_SCHEMAS"
+   ]
+  }
+ },
+ "schema": "hawking.future.roadmap_authority_repair.v1",
+ "seal_sha256": "ae96261fef369d61a9e8ebdd54cd40f1292b07c935e26ccde8f561c42ac01b44",
+ "verdict": "ACCEPT",
+ "what_changed": {
+  "acceptance harnesses": "context, vmcp, lake, odyssey, agentos and flash resolve through the shared resolver.",
+  "civilization/build_state.py": "refuses to overwrite a ROADMAP_STATE.json whose schema it does not own; --force overrides.",
+  "tools/roadmap/auditor.py": "_accepted_fact refuses a receipt whose criterion is empty or a roadmap-unreadable placeholder, across all three shapes the corpus uses.",
+  "tools/roadmap/lineage.py": "NEW. Single resolver: $H_ROADMAP, external copy, then the in-repo copy admitted ONLY on sha256 match against PRESERVATION.md.",
+  "tools/roadmap/parse.py": "roadmap_path delegates to the resolver.",
+  "tools/roadmap/recompile.py": "no silent [] fallback; render_state now emits the REAL defining property instead of one constant string for all 83 gates."
+ },
+ "what_is_not_claimed": [
+  "No gate was accepted, and no gate status changed.",
+  "No hardware was measured. U50_PRESENT is false.",
+  "The FPGA program is not advanced by this receipt; it is unblocked for diagnosis."
+ ],
+ "what_was_broken": {
+  "root_cause": "The canonical roadmap ~/Downloads/H-ROADMAP.md is external by user placement and was moved to the Trash on 2026-08-29. A byte-identical copy had already been committed to docs/roadmap-lineage/ on 2026-09-02 with its sha256 in PRESERVATION.md, and none of the twelve modules hardcoding the ~/Downloads path was repointed at it.",
+  "second_defect_found_by_accident": "civilization/build_state.py and tools/roadmap/recompile.py both write civilization/ROADMAP_STATE.json with incompatible schemas, and build_state parses no arguments, so any invocation overwrote whichever ledger was on disk. It destroyed the live 83-gate v3 ledger during this repair; recovered from HEAD and now guarded.",
+  "three_simultaneous_silences": [
+   "parse_roadmap raised, taking all 17 invariants in tools/roadmap/test_roadmap_graph.py down as COLLECTION ERRORS. Every capability-graph law was unenforced and the graph was frozen at acefb264 while HEAD moved on.",
+   "recompile.render substituted [] for the roadmap, so defining_property() returned '' for all 83 gates.",
+   "Four acceptance harnesses degraded to a placeholder criterion string; the auditor accepted on verdict+command without asking whether the criterion was real."
+  ]
+ }
+}

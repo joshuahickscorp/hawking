@@ -25,13 +25,13 @@ must physically exist, or a question whose answer nobody has.
 ### AGENTOS_CIRCUIT_BREAKER
     missing             no non-test call site reaches this capability
     shortest verifier   hcli/test_failed_unit_says_why.py:19 (+14 more)
-    implementation      hcli/scheduler.py, hcli/scheduler.py:55
+    implementation      hcli/scheduler.py, hcli/scheduler.py:55 (+1 more)
     unlocks             1 declared dependencies
 
 ### AGENTOS_RETRY_CLASSIFIED
     missing             no non-test call site reaches this capability
     shortest verifier   hcli/test_failed_unit_says_why.py:19 (+14 more)
-    implementation      hcli/scheduler.py, hcli/scheduler.py:424
+    implementation      hcli/scheduler.py, hcli/scheduler.py:424 (+1 more)
     unlocks             1 declared dependencies
 
 ### FPGA_LINK_SIM

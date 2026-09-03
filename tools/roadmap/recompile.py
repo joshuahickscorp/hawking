@@ -468,6 +468,7 @@ def render_appendix() -> str:
 
 def render_state() -> dict:
     """The machine-readable active plan. Counts here MUST match the documents."""
+    _roadmap_lines = lineage.roadmap_lines()
     graph = json.loads(GRAPH.read_text())
     gates = graph["gates"]
     # One classifier, not two. The census and the buckets disagreed about
@@ -541,8 +542,14 @@ def render_state() -> dict:
         "dependency_edges": deps,
         "multiplier_edges": [],
         "verifiers": verifiers,
+        # Was a constant string for all 83 gates, so the MACHINE-READABLE
+        # ledger -- the authority -- carried a pointer where the human-readable
+        # PART I carried the real obligation, quoted by the same function two
+        # hundred lines up. A gate whose span yields no prose keeps the pointer,
+        # which is now a statement about that span rather than about all of them.
         "defining_properties": {
-            gid: "acceptance_span in the superseded roadmap"
+            gid: (defining_property(gates[gid], _roadmap_lines)
+                  or "acceptance_span yields no prose in the superseded roadmap")
             for gid in sorted(gates)
         },
         "evidence_levels": dict(evidence_levels),
