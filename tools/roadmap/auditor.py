@@ -740,7 +740,12 @@ def _credit_disk_truth(view: SourceView) -> list[dict[str, Any]]:
 
 
 def _verify_absent_claims(view: SourceView) -> list[dict[str, Any]]:
-    ls = list(head_paths())
+    # SORTED, because head_paths() is a frozenset and list() of one varies with
+    # PYTHONHASHSEED. Two audits of the SAME commit produced graphs differing in
+    # 24 hawking_paths entries -- so the generated authority was not reproducible
+    # at a fixed HEAD, which defeats diffing it, content-addressing it, and any
+    # check of the form "did the graph change?".
+    ls = sorted(head_paths())
     out = []
     for name, meaning in catalog.ABSENT_CLAIMS:
         hits = [

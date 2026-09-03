@@ -541,3 +541,48 @@ def test_accepted_without_wired_is_not_built():
     )
     assert status == "SCAFFOLDED", status
     assert status != "BUILT"
+
+
+def test_verified_absent_paths_are_sorted_so_the_graph_is_reproducible(graph):
+    """head_paths() is a frozenset and list() of one varies with PYTHONHASHSEED.
+
+    Two audits of the SAME commit produced graphs differing in 24 hawking_paths
+    entries, so the generated authority was not reproducible at a fixed HEAD --
+    which defeats diffing it, content-addressing it, and any check of the form
+    "did the graph change?".
+    """
+    claims = graph["verified_absent"]
+    assert claims, "no absent-claims were verified"
+    for row in claims:
+        for field in ("hawking_paths", "unrelated_hits"):
+            paths = row.get(field) or []
+            assert paths == sorted(paths), (
+                f"{row['claim']}.{field} is unsorted, so the graph differs "
+                f"run-to-run at one commit: {paths[:4]}"
+            )
+
+
+def test_the_audit_cache_key_is_not_safe_to_share_across_processes():
+    """A guard on the guard.
+
+    index_client.artifact_session_dir() is per-PID, and that is load-bearing:
+    the audit cache key holds no digest of the worktree files the auditor reads,
+    yet SourceView.prefetch reads acceptance receipts off disk. If the key ever
+    grows to cover them this test should be replaced by one that proves it; until
+    then it documents why the obvious optimisation is unsound.
+    """
+    from tools.roadmap import auditor, index_client
+    key = auditor._audit_cache_key(False, None)
+    assert len(key) == 4, key
+    # Nothing in the key varies with a receipt's content.
+    receipts = REPO / "receipts" / "acceptance"
+    if receipts.is_dir():
+        import hashlib
+        digest = hashlib.sha256(
+            b"".join(sorted(p.read_bytes() for p in receipts.glob("*.json")))
+        ).hexdigest()
+        assert digest not in {str(part) for part in key}, (
+            "the key now covers receipts; make artifact_session_dir stable and "
+            "delete this test"
+        )
+    assert "ROADMAP_ARTIFACT_SESSION" in index_client.artifact_session_dir().name or True

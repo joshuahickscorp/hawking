@@ -132,6 +132,23 @@ def code_digest() -> str:
 
 
 def artifact_session_dir() -> Path:
+    """Per-PROCESS artifact cache. DO NOT make this stable across invocations.
+
+    It looks like an obvious win -- the audit cache key is
+    (head_commit, include_assemble, roadmap, code_digest), which is content-
+    addressed and flock-protected, so a shared directory would let one 27-second
+    graph build serve every later invocation at the same commit.
+
+    It would also be silently wrong. SourceView.prefetch reads the WORKING TREE
+    first and only falls back to HEAD blobs for paths not on disk, so the auditor
+    reads receipts/acceptance/*.json off disk -- and the key contains no digest of
+    them. Write an acceptance receipt, regenerate at the same commit, and a stable
+    cache would serve the graph from BEFORE the receipt existed: the gate would
+    stay open and the roadmap would say so, with nothing to indicate why.
+
+    The per-PID directory is what currently prevents that. Making it stable
+    requires first putting every worktree input the auditor reads into the key.
+    """
     sid = os.environ.get("ROADMAP_ARTIFACT_SESSION")
     if not sid:
         sid = str(os.getpid())

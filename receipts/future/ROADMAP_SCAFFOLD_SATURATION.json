@@ -14,7 +14,7 @@
     "base_commit": "caf83078f",
     "graph": "civilization/CAPABILITY_GRAPH.json",
     "graph_generated_by": "tools/roadmap/auditor.py",
-    "head": "f97dec9d2b0c2bbff574c28989d55ca00cafcf88"
+    "head": "f9aabd5043518c47fb06b6a8edb17bfd4a20198d"
   },
   "externally_blocked": [
     {
@@ -193,7 +193,7 @@
     "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE"
   ],
   "work": {
-    "commits": 228,
+    "commits": 229,
     "new_crates": [
       "crates/hawking-index-query/Cargo.toml"
     ],
@@ -415,6 +415,7 @@
       "tools/roadmap/parse.py",
       "tools/roadmap/reach.py",
       "tools/roadmap/recompile.py",
+      "tools/roadmap/regenerate.py",
       "tools/roadmap/saturation.py",
       "tools/sovereign/g001_verifier_synthesis.py",
       "tools/sovereign/g002_overhead.py",
@@ -442,7 +443,7 @@
       "tools/vmcp/receipt.py",
       "tools/vmcp/tool_doctor.py"
     ],
-    "python_lines_added": 96584,
+    "python_lines_added": 96728,
     "rust_lines_added": 7983
   }
 }
