@@ -3302,7 +3302,12 @@ class Engine:
         if native is not None:
             # The resident already reports these and `_record_model_call` was
             # dropping them, so the only evidence of KV reuse was a wall clock.
-            for key in ("prefix_reused_tokens", "prefill_tokens_stepped"):
+            for key in (
+                "prefix_reused_tokens",
+                "prefill_tokens_stepped",
+                "prefix_source",
+                "prefix_checkpoint_taken_at",
+            ):
                 value = native.get(key)
                 if value is not None:
                     entry[key] = value

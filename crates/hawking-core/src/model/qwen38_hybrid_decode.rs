@@ -7648,11 +7648,26 @@ mod device {
         constraint: &mut JsonConstraint,
         prompt: &[u32],
         max_new_tokens: usize,
-    ) -> Result<Qwen38GenerateResult> {
+        reuse: usize,
+        snapshot_at: Option<usize>,
+    ) -> Result<(Qwen38GenerateResult, Option<Qwen38PrefixCheckpoint>)> {
         if prompt.is_empty() {
             return Err(Error::Model("qwen38 prompt is empty".into()));
         }
-        session.reset();
+        if reuse >= prompt.len() {
+            return Err(Error::Model(format!(
+                "qwen38 reuse {reuse} leaves no prompt token to step (prompt is {})",
+                prompt.len()
+            )));
+        }
+        let mut snapshot: Option<Qwen38PrefixCheckpoint> = None;
+        // The constrained path resets ONLY on a cold request now. It used to
+        // reset unconditionally, which made the grammar channel and the prefix
+        // cache mutually exclusive -- and since the grammar channel is on, the
+        // cache could never fire in the shipped configuration.
+        if reuse == 0 {
+            session.reset();
+        }
         let step_capacity = prompt.len().saturating_add(max_new_tokens);
         let token_capacity = step_capacity.saturating_add(1);
         let mut tokens = Vec::with_capacity(token_capacity);
@@ -7667,11 +7682,11 @@ mod device {
         let wall = Instant::now();
         let prefill = Instant::now();
         let mut first_step_wall_ns = 0u64;
-        for (i, &token) in prompt.iter().enumerate() {
+        for (i, &token) in prompt.iter().enumerate().skip(reuse) {
             let step_wall = Instant::now();
             let (_, timing) = session.step(token)?;
             let step_ns = step_wall.elapsed().as_nanos() as u64;
-            if i == 0 {
+            if i == reuse {
                 first_step_wall_ns = step_ns;
             }
             wall_ns_per_step.push(step_ns);
@@ -7681,6 +7696,9 @@ mod device {
             submit_ns.push(timing.submit_ns);
             dispatches.push(timing.dispatches);
             active_weight_bytes.push(session.last_active_weight_bytes());
+            if snapshot.is_none() && snapshot_at == Some(i + 1) {
+                snapshot = Some(session.prefix_checkpoint()?);
+            }
         }
         let prefill_wall_ns = prefill.elapsed().as_nanos() as u64;
         // Last prefill step already dispatched GPU argmax; discard it and pick
@@ -7737,7 +7755,7 @@ mod device {
         }
         let decode_wall_ns = decode.elapsed().as_nanos() as u64;
         let decode_steps = tokens.len().saturating_sub(prompt.len()).saturating_sub(1);
-        Ok(Qwen38GenerateResult {
+        Ok((Qwen38GenerateResult {
             tokens,
             prompt_len: prompt.len(),
             wall_ns: wall.elapsed().as_nanos() as u64,
@@ -7756,7 +7774,7 @@ mod device {
             decode_wall_ns,
             decode_steps,
             wall_ns_per_step,
-        })
+        }, snapshot))
     }
 
     /// Greedy generation for an explicitly selected resident serving path.

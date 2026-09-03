@@ -344,7 +344,7 @@ fn serve_request(
             }
         });
         match usable {
-            Some((shared, cp)) if !constrain_json => {
+            Some((shared, cp)) => {
                 session
                     .restore_prefix(cp)
                     .map_err(|e| format!("restore prefix checkpoint: {e}"))?;
@@ -364,7 +364,6 @@ fn serve_request(
     // for, because the carry cannot be rewound to a boundary once passed.
     let snapshot_at = if restored_from_checkpoint == 0
         && prefix_checkpoint.is_none()
-        && !constrain_json
         && agreed_with_previous > 16
         && agreed_with_previous < prompt_ids.len()
     {
@@ -387,7 +386,15 @@ fn serve_request(
             &mut constraint,
             &prompt_ids,
             max_new,
+            reuse,
+            snapshot_at,
         )
+        .map(|(result, snapshot)| {
+            if let Some(cp) = snapshot {
+                *prefix_checkpoint = Some((prompt_ids[..cp.position].to_vec(), cp));
+            }
+            result
+        })
     } else {
         generate_greedy_reusing_snapshot(session, &prompt_ids, max_new, reuse, snapshot_at)
             .map(|(result, snapshot)| {

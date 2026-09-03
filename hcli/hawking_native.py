@@ -1370,6 +1370,10 @@ class HawkingNativeConnector:
             # distinguish "reuse worked" from "the prompt was shorter".
             "prefix_reused_tokens": body.get("prefix_reused_tokens"),
             "prefill_tokens_stepped": body.get("prefill_tokens_stepped"),
+            # cold / session_append / checkpoint_restore. Which path ran is a
+            # fact the resident knows and nothing else can recover.
+            "prefix_source": body.get("prefix_source"),
+            "prefix_checkpoint_taken_at": body.get("prefix_checkpoint_taken_at"),
         }
         return {
             "id": f"hawking-chat-{uuid.uuid4()}",
