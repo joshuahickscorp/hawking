@@ -150,7 +150,10 @@ def wait_for_mission(started: float, previous_mission: str) -> str:
     # Phase one: the new mission must exist before its phase means anything.
     while time.time() < hard_stop:
         state = read_json(STATE)
-        if str(state.get("mission_id") or "") not in ("", previous_mission):
+        # The field is `id`. `mission_id` does not exist in mission state and
+        # reading it returned None every time, so "a new mission started" was
+        # never true and the driver watched the OLD mission's terminal phase.
+        if str(state.get("id") or "") not in ("", previous_mission):
             break
         if time.time() - started > IDLE_TIMEOUT_S:
             return "never_started"
@@ -191,7 +194,7 @@ def record(row: dict) -> None:
 
 def cycle(level: int, goal: str, attempt: int) -> dict:
     started = time.time()
-    previous_mission = str(read_json(STATE).get("mission_id") or "")
+    previous_mission = str(read_json(STATE).get("id") or "")
     start(goal, level, attempt)
     phase = wait_for_mission(started, previous_mission)
     receipt = newest_receipt()
