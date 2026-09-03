@@ -22,6 +22,14 @@ from pathlib import Path
 
 import pytest
 
+# STATIC imports, not importlib.import_module(name). The auditor matches
+# verifiers by AST, so a dynamic import is invisible to it -- these gates read
+# tests=0 with this very file committed until the imports were written out.
+# Same class of blindness as the sibling-import miss: the analyzer sees names,
+# not intentions.
+from hcli.agentos import flash_router_representation_ab, qwen27_mlp_diagnostic
+from hcli.agentos import qwen27_runtime_identity, vmcp_gate
+
 REPO = Path(__file__).resolve().parents[2]
 ACCEPTANCE = REPO / "receipts" / "acceptance"
 
@@ -63,13 +71,34 @@ def _evidence_count(doc: dict) -> int:
     return 0
 
 
-@pytest.mark.parametrize("gate,module", sorted(GATES.items()))
-def test_the_module_the_gate_names_actually_imports(gate, module):
-    """A gate catalogued against a module that cannot import is not built."""
-    import importlib
+_MODULES = {
+    "VMCP_RECEIPT_LAW": vmcp_gate,
+    "QWEN27_RUNTIME_IDENTITY_FROZEN": qwen27_runtime_identity,
+    "QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED": qwen27_mlp_diagnostic,
+    "FLASH_DENSE_VS_NF_AB": flash_router_representation_ab,
+}
 
-    mod = importlib.import_module(module)
-    assert mod is not None, f"{gate} names {module}, which does not import"
+_SYMBOLS = {
+    "VMCP_RECEIPT_LAW": "run_vmcp_gate",
+    "QWEN27_RUNTIME_IDENTITY_FROZEN": "run_runtime_archaeology",
+    "QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED": "run_qwen27_mlp_diagnostic_ab",
+    "FLASH_DENSE_VS_NF_AB": "run_flash_router_representation_ab",
+}
+
+
+@pytest.mark.parametrize("gate", sorted(GATES))
+def test_the_symbol_the_gate_is_catalogued_against_exists(gate):
+    """A gate catalogued against a symbol that does not exist is not built.
+
+    The catalogue names one symbol per gate as the thing whose call counts. If
+    that symbol is absent, every caller the auditor found was matching something
+    else, and the gate's wiring evidence is meaningless.
+    """
+    mod = _MODULES[gate]
+    name = _SYMBOLS[gate]
+    assert callable(getattr(mod, name, None)), (
+        f"{gate} is catalogued against {mod.__name__}.{name}, which is not callable"
+    )
 
 
 @pytest.mark.parametrize("gate", sorted(GATES))
