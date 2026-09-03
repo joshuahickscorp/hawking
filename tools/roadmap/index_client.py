@@ -170,9 +170,70 @@ def _overlay_fingerprint(view: SourceView) -> str:
     return h.hexdigest()[:16]
 
 
+def index_bin_stamp() -> str:
+    """Identity of the index binary. A rebuild must bust the facts cache.
+
+    The dump is a pure function of (commit, watch names, BINARY): rebuild the
+    binary with different behaviour at the same commit and a key that omits it
+    would serve the old answer. size+mtime_ns detects any rebuild without
+    hashing 30 MB on every call.
+    """
+    b = find_index_bin()
+    if b is None:
+        return "-"
+    try:
+        st = b.stat()
+    except OSError:
+        return "-"
+    return f"{st.st_size}:{st.st_mtime_ns}"
+
+
 def _facts_key(view: SourceView, git_head: bool) -> tuple[Any, ...]:
     commit = head_commit() if git_head else None
-    return (commit, _overlay_fingerprint(view), git_head, code_digest())
+    return (commit, _overlay_fingerprint(view), git_head, code_digest(), index_bin_stamp())
+
+
+#: How many cached dumps to keep. Each is ~9 MB; 254 were materialised on this
+#: machine while only 78 were distinct.
+FACTS_CACHE_KEEP = 12
+
+
+def facts_cache_dir() -> Path:
+    """STABLE across processes, unlike artifact_session_dir().
+
+    This one is safe to share and the audit cache is not, and the difference is
+    what each reads. The facts dump runs the binary with `--git-head --commit
+    <sha>`, which reads the git OBJECT STORE: an uncommitted file is verifiably
+    absent from its output. So the dump depends only on the commit, the watch
+    names (in code_digest) and the binary (in index_bin_stamp) -- all in the key.
+
+    The audit that consumes it also reads acceptance receipts off the WORKING
+    TREE and keys on none of them, which is why artifact_session_dir stays
+    per-PID. Sharing the expensive deterministic half costs nothing and does not
+    touch the unsound half.
+
+    Measured waste from not doing this: 254 dumps materialised, 78 distinct, so
+    176 recomputations of a byte-identical 9 MB artifact at ~24 s each.
+    """
+    d = Path(os.environ.get("HAWKING_FACTS_CACHE")
+             or Path(tempfile.gettempdir()) / "hawking-roadmap-facts")
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+def _reap_facts_cache(keep: int = FACTS_CACHE_KEEP) -> None:
+    """Keep the newest `keep` dumps. ~9 MB each; unbounded growth is not free."""
+    try:
+        entries = sorted(facts_cache_dir().glob("facts-*.json"),
+                         key=lambda p: p.stat().st_mtime, reverse=True)
+    except OSError:
+        return
+    for stale in entries[keep:]:
+        for victim in (stale, stale.with_suffix(".lock"), stale.with_suffix(".tmp")):
+            try:
+                victim.unlink()
+            except OSError:
+                pass
 
 
 def _wrap_dump(dump: dict[str, Any], bin_path: Path, commit: str | None) -> dict[str, Any]:
@@ -254,7 +315,7 @@ def load_python_facts(view: SourceView, *, git_head: bool = True) -> dict[str, A
         return memo
 
     digest = hashlib.sha256(repr(key).encode()).hexdigest()[:24]
-    disk = artifact_session_dir() / f"facts-{digest}.json"
+    disk = facts_cache_dir() / f"facts-{digest}.json"
     lockp = disk.with_suffix(".lock")
     with open(lockp, "a+") as lf:
         fcntl.flock(lf, fcntl.LOCK_EX)
@@ -275,6 +336,7 @@ def load_python_facts(view: SourceView, *, git_head: bool = True) -> dict[str, A
             tmp.write_text(json.dumps(memo))
             tmp.replace(disk)
             _FACTS_MEMO[key] = memo
+            _reap_facts_cache()
     view._python_facts = memo  # type: ignore[attr-defined]
     return memo
 

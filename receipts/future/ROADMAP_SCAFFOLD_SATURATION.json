@@ -14,7 +14,7 @@
     "base_commit": "caf83078f",
     "graph": "civilization/CAPABILITY_GRAPH.json",
     "graph_generated_by": "tools/roadmap/auditor.py",
-    "head": "f9aabd5043518c47fb06b6a8edb17bfd4a20198d"
+    "head": "6e66667bba238d848268101b7aeafbb27c830071"
   },
   "externally_blocked": [
     {
@@ -193,13 +193,15 @@
     "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE"
   ],
   "work": {
-    "commits": 229,
+    "commits": 232,
     "new_crates": [
       "crates/hawking-index-query/Cargo.toml"
     ],
     "new_test_files": [
+      "hcli/_test_git.py",
       "hcli/test_abort_checkpoint_atomicity.py",
       "hcli/test_autonomous_frontier_metabolism.py",
+      "hcli/test_cancel_does_not_wait_on_a_zombie.py",
       "hcli/test_capability_callsite_reachability.py",
       "hcli/test_checkpoint.py",
       "hcli/test_cognition_unit_concurrency.py",
@@ -253,6 +255,7 @@
       "hcli/test_tool_registry.py",
       "hcli/test_tool_round_economy.py",
       "hcli/test_tui_autosteer.py",
+      "hcli/tests/test_mutation_lock_race.py",
       "tools/accelerator/test_backend_contract.py",
       "tools/accelerator/test_fusion_bridge.py",
       "tools/accelerator/test_hardware_doctor.py",
@@ -443,7 +446,7 @@
       "tools/vmcp/receipt.py",
       "tools/vmcp/tool_doctor.py"
     ],
-    "python_lines_added": 96728,
+    "python_lines_added": 97408,
     "rust_lines_added": 7983
   }
 }
