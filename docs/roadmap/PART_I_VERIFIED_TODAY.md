@@ -23,7 +23,7 @@ design, not by neglect: simulated is not measured.
 
     defining property available     82 / 83
     real (non-test) caller          47 / 83
-    any verifier                    65 / 83
+    any verifier                    66 / 83
     receipt cited                   13 / 83
 
 ## A. CONTROL / HCLI / AGENTOS
@@ -994,10 +994,10 @@ design, not by neglect: simulated is not measured.
 
     STATUS              VERIFIED_INTEGRATED
     defining property   absent
-    implementation      hcli/vmcp/__init__.py, hcli/vmcp_adapter.py, hcli/vmcp_adapter.py:155 (+1 more)
-    real caller         hcli/connectivity.py:133, hcli/tool_registry.py:1433, hcli/tool_registry.py:1442
-    verifier            absent — no test cites this gate
-    negative control    absent — no cited test proves it can fail
+    implementation      tools/future/vmcp.py, tools/future/vmcp.py:827
+    real caller         tools/audit/reachability_triage.py:2097
+    verifier            tools/future/test_vmcp.py:16, tools/future/test_vmcp.py:172
+    negative control    tools/future/test_vmcp.py
     receipt             absent
     evidence level      STATIC
     limitations         none recorded

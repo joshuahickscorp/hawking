@@ -1,6 +1,6 @@
 {
-  "ACTIVE_NONHARDWARE_BURDEN": 43,
-  "TOTAL_UNRESOLVED_GATES": 57,
+  "ACTIVE_NONHARDWARE_BURDEN": 42,
+  "TOTAL_UNRESOLVED_GATES": 56,
   "active_actions": [
     "AGENTOS_CIRCUIT_BREAKER",
     "AGENTOS_RETRY_CLASSIFIED",
@@ -525,7 +525,7 @@
       "evidence_tier": "STATIC",
       "implementation_state": "INTEGRATED",
       "integration_state": "IN_PRODUCTION_PATH",
-      "verification_state": "NONE"
+      "verification_state": "TEST_PRESENT"
     },
     "VMCP_DEEP_DIGEST": {
       "acceptance_state": "PASS",
@@ -605,12 +605,9 @@
     "LONG_RUN_EVIDENCE_REQUIRED": 4,
     "PHYSICAL_HARDWARE_REQUIRED": 14,
     "SOFTWARE_BUILD_REQUIRED": 1,
-    "SOFTWARE_CONNECTION_REMAINING": 9,
-    "VERIFIER_MISSING": 1
+    "SOFTWARE_CONNECTION_REMAINING": 9
   },
-  "built_but_no_verifier": [
-    "VMCP_COMPACT_SURFACE"
-  ],
+  "built_but_no_verifier": [],
   "capability_graph": "civilization/CAPABILITY_GRAPH.json",
   "capability_graph_law": "BUILT requires wired AND accepted. wired is a non-test call of the implementing symbol. accepted is the gate's own acceptance criterion demonstrably met by a receipt or measurement that meets the stated bar, not merely a receipt on the topic. wired alone is WIRED, never BUILT.",
   "capability_graph_schema": "hawking.roadmap.capability_graph.v1",
@@ -1043,7 +1040,7 @@
     "U50_PURCHASE_ACCEPTANCE": "BLOCKED_HARDWARE",
     "U50_SAFE_COOLING": "BLOCKED_HARDWARE",
     "VMCP_AGENTOS_INTEGRATION": "SCAFFOLDED_NO_CALLER",
-    "VMCP_COMPACT_SURFACE": "INTEGRATED_UNVERIFIED",
+    "VMCP_COMPACT_SURFACE": "INTEGRATED_TEST_PRESENT",
     "VMCP_DEEP_DIGEST": "INTEGRATED_TEST_PRESENT",
     "VMCP_FILE_CLASSIFIER": "INTEGRATED_TEST_PRESENT",
     "VMCP_PTY_CAPTURE": "WIRED_ACCEPTANCE_BLOCKED",
@@ -1091,7 +1088,7 @@
     "VMCP_VISUAL_DIFF",
     "VMCP_WEB_CAPTURE"
   ],
-  "future_work_eliminated_count": 26,
+  "future_work_eliminated_count": 27,
   "generated_from": "civilization/CAPABILITY_GRAPH.json",
   "hardware_required": [
     "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE",
@@ -1308,6 +1305,7 @@
     "ODYSSEY_I_DISCOVERY",
     "QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED",
     "QWEN27_RUNTIME_IDENTITY_FROZEN",
+    "VMCP_COMPACT_SURFACE",
     "VMCP_DEEP_DIGEST",
     "VMCP_FILE_CLASSIFIER",
     "VMCP_RECEIPT_LAW",
@@ -1322,7 +1320,7 @@
     "SEMANTIC_COMPRESSION"
   ],
   "multiplier_edges": [],
-  "net_future_burden": 43,
+  "net_future_burden": 42,
   "next_actions": [
     "AGENTOS_CIRCUIT_BREAKER",
     "AGENTOS_RETRY_CLASSIFIED",
@@ -2266,29 +2264,6 @@
     },
     {
       "actionable_now": false,
-      "blocker_class": "VERIFIER_MISSING",
-      "critical_path": true,
-      "depends_on": [],
-      "estimated_wall": "unestimated",
-      "gate": "VMCP_COMPACT_SURFACE",
-      "leverage_score": 5,
-      "missing": "wired but nothing verifies it",
-      "multiplier": false,
-      "owner": "hcli-campaign (do not implement here)",
-      "parallel_safe_with": "any gate in a different resource_lane",
-      "reopen_if": "the caller is removed, the verifier is deleted, or the gate's acceptance criterion changes",
-      "resource_lane": "cpu",
-      "stop_condition": "the blocker named above clears: wired but nothing verifies it",
-      "unlocks_direct": [
-        "VMCP_AGENTOS_INTEGRATION"
-      ],
-      "unlocks_transitive": [
-        "VMCP_AGENTOS_INTEGRATION"
-      ],
-      "verifier": "must be written"
-    },
-    {
-      "actionable_now": false,
       "blocker_class": "SOFTWARE_BUILD_REQUIRED",
       "critical_path": false,
       "depends_on": [
@@ -2741,9 +2716,7 @@
   "software_connection_remaining_count": 9,
   "subsumed_items": [],
   "unknown_research": [],
-  "verifier_missing": [
-    "VMCP_COMPACT_SURFACE"
-  ],
+  "verifier_missing": [],
   "verifiers": {
     "AGENTOS_CANCELLATION": "hcli/test_abort_checkpoint_atomicity.py:18, hcli/test_abort_checkpoint_atomicity.py:49 (+32 more)",
     "AGENTOS_CHECKPOINT_ATOMICITY": "hcli/test_goal_bank.py:10, hcli/tests/test_core_authorities.py:22 (+4 more)",
@@ -2803,6 +2776,7 @@
     "U50_FIRST_NATIVE_ENGINE": "tools/future/test_fpga_engines.py:19, tools/future/test_hwir.py:315 (+1 more)",
     "U50_MIXED_APPLE_FPGA_GRAPH": "hcli/test_ane_provider.py:6, hcli/tests/test_hcli_science_boundaries.py:32 (+3 more)",
     "VMCP_AGENTOS_INTEGRATION": "tools/acceptance/test_accepted_gates_show_their_evidence.py:31",
+    "VMCP_COMPACT_SURFACE": "tools/future/test_vmcp.py:16, tools/future/test_vmcp.py:172",
     "VMCP_DEEP_DIGEST": "tools/acceptance/vmcp/test_state_lattice_defining_property.py:110",
     "VMCP_FILE_CLASSIFIER": "tools/vmcp/test_file_eye.py:10, tools/vmcp/test_file_eye.py:29 (+5 more)",
     "VMCP_PTY_CAPTURE": "tools/acceptance/vmcp/test_receipt_law_defining_property.py:24, tools/acceptance/vmcp/test_receipt_law_defining_property.py:65 (+6 more)",

@@ -8,7 +8,7 @@ components yet' from work that genuinely needs an experiment, wall time, or sili
 ## Blocker census
 
     SOFTWARE_CONNECTION_REMAINING    9
-    VERIFIER_MISSING                 1
+    VERIFIER_MISSING                 0
     SOFTWARE_BUILD_REQUIRED          1
     EXPERIMENTATION_REQUIRED         18
     LONG_RUN_EVIDENCE_REQUIRED       4
@@ -17,7 +17,7 @@ components yet' from work that genuinely needs an experiment, wall time, or sili
     DEFERRED_PROGRAM                 7
     UNKNOWN_RESEARCH                 0
 
-    TOTAL REMAINING                  57
+    TOTAL REMAINING                  56
 
 SOFTWARE_CONNECTION_REMAINING = 9 is the
 number this campaign exists to drive toward zero. Every other class is honest
@@ -79,14 +79,6 @@ must physically exist, or a question whose answer nobody has.
     shortest verifier   tools/acceptance/test_accepted_gates_show_their_evidence.py:31
     implementation      hcli/agentos/vmcp_gate.py, tools/headless/hcli_vmcp_integration.py (+1 more)
     unlocks             2 declared dependencies
-
-## VERIFIER_MISSING (1)
-
-### VMCP_COMPACT_SURFACE
-    missing             wired but nothing verifies it
-    shortest verifier   must be written
-    implementation      hcli/vmcp/__init__.py, hcli/vmcp_adapter.py (+2 more)
-    unlocks             0 declared dependencies
 
 ## SOFTWARE_BUILD_REQUIRED (1)
 

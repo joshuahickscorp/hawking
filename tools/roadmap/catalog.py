@@ -250,8 +250,8 @@ GATES: dict[str, dict[str, Any]] = {
     ),
     "VMCP_COMPACT_SURFACE": _p(
         era="I", gene=IA, acc=(7954, 7980),
-        paths=("hcli/vmcp/__init__.py", "hcli/vmcp_adapter.py"),
-        modules=("hcli.vmcp", "hcli.vmcp_adapter"),
+        paths=("tools/future/vmcp.py",),
+        modules=("tools.future.vmcp",),
     ),
     "VMCP_AGENTOS_INTEGRATION": _p(
         era="I", gene=IA, acc=(7628, 7630),
@@ -956,15 +956,23 @@ _DECLARATION_SWEEP: dict[str, tuple[tuple[str, str], ...]] = {
     # NOT wired and the declaration stays put: the fix for a missing caller is a
     # caller, never a re-pointed symbol.
     "VMCP_AGENTOS_INTEGRATION": (("hcli.agentos.vmcp_gate", "causality_payload"),),
-    # hcli/vmcp/__init__.py is a NINE-LINE MARKER PACKAGE whose whole purpose is to
-    # stop a parallel hcli.vmcp.* implementation from growing. It defines neither
-    # symbol. inspect_vmcp and call_vmcp live in hcli/vmcp_adapter.py at :155 and
-    # :200 -- already named in this gate's own modules tuple -- and are really
-    # called from hcli/connectivity.py:133 and hcli/tool_registry.py:1433,:1442.
-    # The gate read SCAFFOLDED because the catalog looked in the marker.
+    # Two wrong answers were possible here and the first fix took the second one.
+    #
+    # hcli/vmcp/__init__.py is a NINE-LINE MARKER PACKAGE that exists to stop a
+    # parallel hcli.vmcp.* implementation growing, and it defines neither symbol.
+    # That much was right. But repointing at hcli.vmcp_adapter.inspect_vmcp made
+    # the gate WIRED by one artifact and ACCEPTED by a different one: the adapter
+    # inspects VisionMCP source and exposes nine read-only MCP TOOL NAMES
+    # (system.doctor, project.status, vision.*), while this gate's criterion is
+    # H-ROADMAP E.14 -- nine VERBS (see hold open know make check fix keep prove)
+    # each returning one fixed 8-field envelope. Different capability, same count.
+    #
+    # tools/acceptance/vmcp/gates.py:1690 exercises tools.future.vmcp.compact_surface,
+    # and tools/audit/reachability_triage.py:2097 calls it from production. That is
+    # the symbol the acceptance is about AND the symbol something really calls, so
+    # wiring and acceptance now describe the same artifact.
     "VMCP_COMPACT_SURFACE": (
-        ("hcli.vmcp_adapter", "inspect_vmcp"),
-        ("hcli.vmcp_adapter", "call_vmcp"),
+        ("tools.future.vmcp", "compact_surface"),
     ),
     "HCLI_CONTEXT_INVALIDATION": (("hcli.goal", "assert_evidence_fresh"),),
     # This lane's own.

@@ -13,8 +13,8 @@
 
 ## Where the old active future went
 
-    MOVE_TO_COMPLETED        26
-    KEEP_ACTIVE              11
+    MOVE_TO_COMPLETED        27
+    KEEP_ACTIVE              10
     EXPERIMENT_CONTINGENT    22
     DEFERRED_PROGRAM         7
     EXTERNAL_ENVIRONMENT     3
@@ -33,9 +33,9 @@ already wired but never declared.
 ## Net future burden
 
     old active future (baseline, non-BUILT)   53
-    active now (software connections)         11
+    active now (software connections)         10
     plus experiment/long-run contingent       22
-    NET FUTURE BURDEN                         43
+    NET FUTURE BURDEN                         42
 
 Progress is capability gained AND future bespoke work eliminated. The honest
 reading: the gate count did not shrink -- 71 gates before and after -- but the
