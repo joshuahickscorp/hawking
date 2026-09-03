@@ -1629,7 +1629,24 @@ class Engine:
             pass
         if len(text) <= limit:
             return text
-        return text[:limit] + f"\n[... {len(text) - limit} characters truncated to fit the context window]"
+        # Say what to DO about it. The notice used to report that bytes were
+        # dropped and stop there, which is the deep-code-unreachable failure in
+        # a new costume: hcli/tool_registry.py is 2,341 lines and a whole-file
+        # read shows 169 of them, so a target at line 582 is 413 lines past the
+        # cut. Measured consequence: the model asked to read the file to obtain
+        # an exact anchor, received the head, and sent "x" as the anchor.
+        #
+        # fs.read takes start_line/end_line and fs.search reports the line a
+        # symbol is on, but nothing told the model that at the moment it
+        # mattered, and the system prompt names neither -- deliberately, since
+        # every token there is re-prefilled on every call of every goal.
+        return text[:limit] + (
+            f"\n[... {len(text) - limit} characters truncated to fit the context"
+            f" window. This is the HEAD of the result only; what you are looking"
+            f" for may be past the cut. Use fs.search to find the line a symbol"
+            f" is on, then fs.read that file again with start_line and end_line"
+            f" to read a window around it.]"
+        )
 
     def _observations_block(
         self,
