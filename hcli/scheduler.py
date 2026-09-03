@@ -319,6 +319,17 @@ class Scheduler:
         wu.finished_at = time.time()
         if was_running:
             self._release_unit(wu)
+        # The reason belongs on the unit that FAILED, not only on the descendant
+        # that repairs it. `_integrate` computes the validation and the error and
+        # hands them here, and they were being attached exclusively to the repair
+        # unit -- so anyone reading a failed unit saw `failure_context: {}` and
+        # could not tell whether the verifier bit, the model refused, or the
+        # engine errored. Three units failed in the live run with no reason
+        # recorded anywhere.
+        if isinstance(context, dict) and context:
+            merged = dict(wu.failure_context or {})
+            merged.update({k: v for k, v in context.items() if v is not None})
+            wu.failure_context = merged
         repair = self._emit_repair(wu, context)
         self._persist()
         return repair
