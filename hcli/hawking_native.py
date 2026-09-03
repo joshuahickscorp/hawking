@@ -1400,6 +1400,14 @@ class HawkingNativeConnector:
             # fact the resident knows and nothing else can recover.
             "prefix_source": body.get("prefix_source"),
             "prefix_checkpoint_taken_at": body.get("prefix_checkpoint_taken_at"),
+            # WHY generation ended, and the body's own layer count. Both are
+            # facts only the resident holds. A field has to survive THREE hops
+            # to reach a receipt -- the resident emits it, this block relays it,
+            # the engine allowlists it -- and adding it at the first and last
+            # while missing this one is silent: the receipt simply reads None,
+            # exactly as grammar_enforced did before the scar above.
+            "stop_reason": body.get("stop_reason"),
+            "layers": body.get("layers"),
         }
         return {
             "id": f"hawking-chat-{uuid.uuid4()}",
