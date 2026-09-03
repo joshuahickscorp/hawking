@@ -1007,3 +1007,27 @@ GATES["FLASH_ACCEPTED_TPS_GE_50"]["software_blocker"] = (
     "gate is satisfied by a measurement, never by a call site, and must never "
     "read BUILT on STATIC evidence. Wake: PROTECTED_TPS_CAMPAIGN_MEASURED."
 )
+
+
+# The circuit-breaker and retry-classification gates could never satisfy the
+# call-site rule as catalogued, and neither could be fixed by loosening it.
+#
+#   AGENTOS_CIRCUIT_BREAKER named hcli.scheduler.NO_PROGRESS, which is an
+#   EXCEPTION CLASS (scheduler.py:55). An exception is raised and caught, never
+#   called, so no call site can exist however thoroughly the capability is
+#   exercised -- and tools/acceptance/agentos/harness.py:443 does exercise it,
+#   catching a real NO_PROGRESS after three same-fingerprint completions.
+#
+#   AGENTOS_RETRY_CLASSIFIED named _record_fingerprint, which raises it
+#   (scheduler.py:424). That IS the implementing symbol, but it is only ever
+#   called from complete() inside scheduler.py itself -- a self-call, which the
+#   wiring guard correctly refuses as evidence.
+#
+# Both capabilities are entered through the public Scheduler.complete, which the
+# harness calls three times to trip the breaker. Naming it points each gate at
+# the callable through which its capability is actually reached. The original
+# symbols are KEPT so the evidence still shows what implements the behaviour.
+for _gate in ("AGENTOS_CIRCUIT_BREAKER", "AGENTOS_RETRY_CLASSIFIED"):
+    GATES[_gate]["symbols"] = list(GATES[_gate].get("symbols") or []) + [
+        {"module": "hcli.scheduler", "symbol": "complete"},
+    ]
