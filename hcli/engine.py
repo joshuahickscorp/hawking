@@ -243,6 +243,9 @@ def _join_observations(blocks: List[str]) -> str:
     )
 
 
+#: Tokenizer estimates and the real tokenizer disagree by a little. Leave room,
+#: because being over by one token costs the entire call.
+_CTX_ESTIMATE_MARGIN = 96
 _MAX_TOKENS_FLOOR = 512
 _MAX_TOKENS_CEILING = 8192
 _CHARS_PER_TOKEN = 3
@@ -2576,6 +2579,20 @@ class Engine:
                 payload.get("messages") or []
             )
         )
+        # Re-derive the completion budget against the POSTED prompt. It was
+        # resolved before `contract.apply` injected the schema instruction, so
+        # the payload grew by ~713 tokens after the budget was set and the sum
+        # overflowed max_seq_len. The prompt is known exactly here; the budget
+        # must follow it rather than a stale estimate.
+        if payload.get("max_tokens") is not None:
+            refreshed, source = self._resolve_max_tokens(observed)
+            if int(refreshed) < int(payload.get("max_tokens") or 0):
+                payload["max_tokens"] = int(refreshed)
+                self._last_call_plan = {
+                    **(self._last_call_plan or {}),
+                    "max_tokens": int(refreshed),
+                    "max_tokens_source": source,
+                }
         plan = dict(self._last_call_plan or {})
         plan["prompt_tokens_est"] = observed
         ce = dict(self._context_efficiency or {})
@@ -3013,12 +3030,18 @@ class Engine:
         if explicit is not None and source is not None:
             return max(1, int(explicit)), source
         ctx = self._context_budget().per_request_ctx
-        remaining = int(ctx) - int(prompt_tokens_est)
-        derived = max(
-            _MAX_TOKENS_FLOOR,
-            min(_MAX_TOKENS_CEILING, remaining),
-        )
-        return derived, "derived"
+        remaining = int(ctx) - int(prompt_tokens_est) - _CTX_ESTIMATE_MARGIN
+        # The floor may not push the request PAST the window. `max(floor, ...)`
+        # granted 512 completion tokens even when the prompt had already used
+        # the context, and the runtime refused the whole call:
+        #   "prompt has 5792 tokens and max_new_tokens is 2612;
+        #    resident max_seq_len is 8192"
+        # A request that cannot fit is not worth making, and asking for a floor
+        # that does not exist turns a tight fit into a hard failure.
+        derived = min(_MAX_TOKENS_CEILING, remaining)
+        if derived >= _MAX_TOKENS_FLOOR:
+            return derived, "derived"
+        return max(1, derived), "derived_clamped_to_window"
 
     @staticmethod
     def _render_context_memory(memory: Any) -> str:
