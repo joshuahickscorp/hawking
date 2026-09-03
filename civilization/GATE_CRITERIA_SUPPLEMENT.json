@@ -34,6 +34,144 @@
     "A total IR is not a correct compiler. Totality and refusal are necessary, not sufficient.",
     "This does not accept FPGA_PREBOARD_SCHEMAS, FPGA_LINK_SIM or FPGA_PARTITION_SIM, which share the same empty span and need their own criteria."
    ]
+  },
+  "U50_34_TO_40": {
+   "span_states": "APPENDIX O gives all six ladder rungs the SAME acceptance span, 8989-8997, which is '## J.9 U50 permanent-node promotion modes': five general promotion conditions ('primitive dramatically faster/more efficient', '>10% reproducible end-to-end improvement', ...) and a closing note that a negative result still pays tuition. It is a sound promotion policy and it is not a rung criterion -- it contains NO throughput number at all, so nothing in it can distinguish 40 tok/s from 90 tok/s. Six gates named after six different numbers shared one criterion that mentions none of them.",
+   "authored_at_commit": "eb30aea66e24b42009a632a591a1db6f49e597c7",
+   "evidence_tier_ceiling": "HARDWARE_MEASURED",
+   "requires_hardware": true,
+   "wake_condition": "U50_PRESENT",
+   "criterion": "With the U50 physically present, sustained ACCEPTED throughput reaches at least 40 tok/s on the frozen model contract, and does so as a PAIRED measurement: an Apple-only control and the Apple+FPGA arm run in the same session, under the same exclusive GPU lane lock, on the same model bytes, with the mixed arm's accepted output verified capability-preserving against the control. The receipt carries measurement_provenance (lock_held, loadavg, lane, measured_at) for BOTH arms.\n\nACCEPTED means tokens that survive verification, not raw decode: a faster path that produces output the control would not have produced has not reached 40 tok/s, it has changed the model.\n\nThe rung is 34 -> 40. It is satisfied only by crossing 40; reaching 34 satisfies the rung below and this one is still open.",
+   "falsifiers": {
+    "throughput": "the paired mixed arm sustains below 40 tok/s",
+    "capability": "the mixed arm's accepted output diverges from the control",
+    "isolation": "either arm ran without the exclusive lane lock, so the delta is uninterpretable",
+    "provenance": "either receipt omits measurement_provenance"
+   },
+   "may_not_be_satisfied_by": [
+    "a simulation, a cost model, or an envelope. tools/future/fpga_partition.py refuses to report its ratios as a prediction for exactly this reason, and a number it produces may never be recorded against this gate.",
+    "an unpaired absolute reading, because an interactive session on this machine is recorded to inflate decode throughput several-fold.",
+    "raw decode tok/s in place of accepted tok/s."
+   ],
+   "baseline_is_not_established": "The ladder is written as if ~34 tok/s were the standing reference. The highest accepted_tps value anywhere in receipts/ is 25.29 (receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json), and it carries NO measurement provenance -- it is one of the 132 counted in receipts/future/MEASUREMENT_PROVENANCE_AUDIT.json. So the ladder's own floor is unestablished, and these criteria deliberately do not depend on it: each rung names an absolute number and requires its own control in the same session, rather than comparing against a remembered figure.",
+   "not_claimed": [
+    "Authoring a criterion does not make a rung reachable. U50_PRESENT is false; all six stay BLOCKED_HARDWARE and no receipt may be written for them until a board is enumerated."
+   ]
+  },
+  "U50_40_TO_50": {
+   "span_states": "APPENDIX O gives all six ladder rungs the SAME acceptance span, 8989-8997, which is '## J.9 U50 permanent-node promotion modes': five general promotion conditions ('primitive dramatically faster/more efficient', '>10% reproducible end-to-end improvement', ...) and a closing note that a negative result still pays tuition. It is a sound promotion policy and it is not a rung criterion -- it contains NO throughput number at all, so nothing in it can distinguish 40 tok/s from 90 tok/s. Six gates named after six different numbers shared one criterion that mentions none of them.",
+   "authored_at_commit": "eb30aea66e24b42009a632a591a1db6f49e597c7",
+   "evidence_tier_ceiling": "HARDWARE_MEASURED",
+   "requires_hardware": true,
+   "wake_condition": "U50_PRESENT",
+   "criterion": "With the U50 physically present, sustained ACCEPTED throughput reaches at least 50 tok/s on the frozen model contract, and does so as a PAIRED measurement: an Apple-only control and the Apple+FPGA arm run in the same session, under the same exclusive GPU lane lock, on the same model bytes, with the mixed arm's accepted output verified capability-preserving against the control. The receipt carries measurement_provenance (lock_held, loadavg, lane, measured_at) for BOTH arms.\n\nACCEPTED means tokens that survive verification, not raw decode: a faster path that produces output the control would not have produced has not reached 50 tok/s, it has changed the model.\n\nThe rung is 40 -> 50. It is satisfied only by crossing 50; reaching 40 satisfies the rung below and this one is still open.",
+   "falsifiers": {
+    "throughput": "the paired mixed arm sustains below 50 tok/s",
+    "capability": "the mixed arm's accepted output diverges from the control",
+    "isolation": "either arm ran without the exclusive lane lock, so the delta is uninterpretable",
+    "provenance": "either receipt omits measurement_provenance"
+   },
+   "may_not_be_satisfied_by": [
+    "a simulation, a cost model, or an envelope. tools/future/fpga_partition.py refuses to report its ratios as a prediction for exactly this reason, and a number it produces may never be recorded against this gate.",
+    "an unpaired absolute reading, because an interactive session on this machine is recorded to inflate decode throughput several-fold.",
+    "raw decode tok/s in place of accepted tok/s."
+   ],
+   "baseline_is_not_established": "The ladder is written as if ~34 tok/s were the standing reference. The highest accepted_tps value anywhere in receipts/ is 25.29 (receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json), and it carries NO measurement provenance -- it is one of the 132 counted in receipts/future/MEASUREMENT_PROVENANCE_AUDIT.json. So the ladder's own floor is unestablished, and these criteria deliberately do not depend on it: each rung names an absolute number and requires its own control in the same session, rather than comparing against a remembered figure.",
+   "not_claimed": [
+    "Authoring a criterion does not make a rung reachable. U50_PRESENT is false; all six stay BLOCKED_HARDWARE and no receipt may be written for them until a board is enumerated."
+   ]
+  },
+  "U50_50_TO_60": {
+   "span_states": "APPENDIX O gives all six ladder rungs the SAME acceptance span, 8989-8997, which is '## J.9 U50 permanent-node promotion modes': five general promotion conditions ('primitive dramatically faster/more efficient', '>10% reproducible end-to-end improvement', ...) and a closing note that a negative result still pays tuition. It is a sound promotion policy and it is not a rung criterion -- it contains NO throughput number at all, so nothing in it can distinguish 40 tok/s from 90 tok/s. Six gates named after six different numbers shared one criterion that mentions none of them.",
+   "authored_at_commit": "eb30aea66e24b42009a632a591a1db6f49e597c7",
+   "evidence_tier_ceiling": "HARDWARE_MEASURED",
+   "requires_hardware": true,
+   "wake_condition": "U50_PRESENT",
+   "criterion": "With the U50 physically present, sustained ACCEPTED throughput reaches at least 60 tok/s on the frozen model contract, and does so as a PAIRED measurement: an Apple-only control and the Apple+FPGA arm run in the same session, under the same exclusive GPU lane lock, on the same model bytes, with the mixed arm's accepted output verified capability-preserving against the control. The receipt carries measurement_provenance (lock_held, loadavg, lane, measured_at) for BOTH arms.\n\nACCEPTED means tokens that survive verification, not raw decode: a faster path that produces output the control would not have produced has not reached 60 tok/s, it has changed the model.\n\nThe rung is 50 -> 60. It is satisfied only by crossing 60; reaching 50 satisfies the rung below and this one is still open.",
+   "falsifiers": {
+    "throughput": "the paired mixed arm sustains below 60 tok/s",
+    "capability": "the mixed arm's accepted output diverges from the control",
+    "isolation": "either arm ran without the exclusive lane lock, so the delta is uninterpretable",
+    "provenance": "either receipt omits measurement_provenance"
+   },
+   "may_not_be_satisfied_by": [
+    "a simulation, a cost model, or an envelope. tools/future/fpga_partition.py refuses to report its ratios as a prediction for exactly this reason, and a number it produces may never be recorded against this gate.",
+    "an unpaired absolute reading, because an interactive session on this machine is recorded to inflate decode throughput several-fold.",
+    "raw decode tok/s in place of accepted tok/s."
+   ],
+   "baseline_is_not_established": "The ladder is written as if ~34 tok/s were the standing reference. The highest accepted_tps value anywhere in receipts/ is 25.29 (receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json), and it carries NO measurement provenance -- it is one of the 132 counted in receipts/future/MEASUREMENT_PROVENANCE_AUDIT.json. So the ladder's own floor is unestablished, and these criteria deliberately do not depend on it: each rung names an absolute number and requires its own control in the same session, rather than comparing against a remembered figure.",
+   "not_claimed": [
+    "Authoring a criterion does not make a rung reachable. U50_PRESENT is false; all six stay BLOCKED_HARDWARE and no receipt may be written for them until a board is enumerated."
+   ]
+  },
+  "U50_60_TO_70": {
+   "span_states": "APPENDIX O gives all six ladder rungs the SAME acceptance span, 8989-8997, which is '## J.9 U50 permanent-node promotion modes': five general promotion conditions ('primitive dramatically faster/more efficient', '>10% reproducible end-to-end improvement', ...) and a closing note that a negative result still pays tuition. It is a sound promotion policy and it is not a rung criterion -- it contains NO throughput number at all, so nothing in it can distinguish 40 tok/s from 90 tok/s. Six gates named after six different numbers shared one criterion that mentions none of them.",
+   "authored_at_commit": "eb30aea66e24b42009a632a591a1db6f49e597c7",
+   "evidence_tier_ceiling": "HARDWARE_MEASURED",
+   "requires_hardware": true,
+   "wake_condition": "U50_PRESENT",
+   "criterion": "With the U50 physically present, sustained ACCEPTED throughput reaches at least 70 tok/s on the frozen model contract, and does so as a PAIRED measurement: an Apple-only control and the Apple+FPGA arm run in the same session, under the same exclusive GPU lane lock, on the same model bytes, with the mixed arm's accepted output verified capability-preserving against the control. The receipt carries measurement_provenance (lock_held, loadavg, lane, measured_at) for BOTH arms.\n\nACCEPTED means tokens that survive verification, not raw decode: a faster path that produces output the control would not have produced has not reached 70 tok/s, it has changed the model.\n\nThe rung is 60 -> 70. It is satisfied only by crossing 70; reaching 60 satisfies the rung below and this one is still open.",
+   "falsifiers": {
+    "throughput": "the paired mixed arm sustains below 70 tok/s",
+    "capability": "the mixed arm's accepted output diverges from the control",
+    "isolation": "either arm ran without the exclusive lane lock, so the delta is uninterpretable",
+    "provenance": "either receipt omits measurement_provenance"
+   },
+   "may_not_be_satisfied_by": [
+    "a simulation, a cost model, or an envelope. tools/future/fpga_partition.py refuses to report its ratios as a prediction for exactly this reason, and a number it produces may never be recorded against this gate.",
+    "an unpaired absolute reading, because an interactive session on this machine is recorded to inflate decode throughput several-fold.",
+    "raw decode tok/s in place of accepted tok/s."
+   ],
+   "baseline_is_not_established": "The ladder is written as if ~34 tok/s were the standing reference. The highest accepted_tps value anywhere in receipts/ is 25.29 (receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json), and it carries NO measurement provenance -- it is one of the 132 counted in receipts/future/MEASUREMENT_PROVENANCE_AUDIT.json. So the ladder's own floor is unestablished, and these criteria deliberately do not depend on it: each rung names an absolute number and requires its own control in the same session, rather than comparing against a remembered figure.",
+   "not_claimed": [
+    "Authoring a criterion does not make a rung reachable. U50_PRESENT is false; all six stay BLOCKED_HARDWARE and no receipt may be written for them until a board is enumerated."
+   ]
+  },
+  "U50_70_TO_80": {
+   "span_states": "APPENDIX O gives all six ladder rungs the SAME acceptance span, 8989-8997, which is '## J.9 U50 permanent-node promotion modes': five general promotion conditions ('primitive dramatically faster/more efficient', '>10% reproducible end-to-end improvement', ...) and a closing note that a negative result still pays tuition. It is a sound promotion policy and it is not a rung criterion -- it contains NO throughput number at all, so nothing in it can distinguish 40 tok/s from 90 tok/s. Six gates named after six different numbers shared one criterion that mentions none of them.",
+   "authored_at_commit": "eb30aea66e24b42009a632a591a1db6f49e597c7",
+   "evidence_tier_ceiling": "HARDWARE_MEASURED",
+   "requires_hardware": true,
+   "wake_condition": "U50_PRESENT",
+   "criterion": "With the U50 physically present, sustained ACCEPTED throughput reaches at least 80 tok/s on the frozen model contract, and does so as a PAIRED measurement: an Apple-only control and the Apple+FPGA arm run in the same session, under the same exclusive GPU lane lock, on the same model bytes, with the mixed arm's accepted output verified capability-preserving against the control. The receipt carries measurement_provenance (lock_held, loadavg, lane, measured_at) for BOTH arms.\n\nACCEPTED means tokens that survive verification, not raw decode: a faster path that produces output the control would not have produced has not reached 80 tok/s, it has changed the model.\n\nThe rung is 70 -> 80. It is satisfied only by crossing 80; reaching 70 satisfies the rung below and this one is still open.",
+   "falsifiers": {
+    "throughput": "the paired mixed arm sustains below 80 tok/s",
+    "capability": "the mixed arm's accepted output diverges from the control",
+    "isolation": "either arm ran without the exclusive lane lock, so the delta is uninterpretable",
+    "provenance": "either receipt omits measurement_provenance"
+   },
+   "may_not_be_satisfied_by": [
+    "a simulation, a cost model, or an envelope. tools/future/fpga_partition.py refuses to report its ratios as a prediction for exactly this reason, and a number it produces may never be recorded against this gate.",
+    "an unpaired absolute reading, because an interactive session on this machine is recorded to inflate decode throughput several-fold.",
+    "raw decode tok/s in place of accepted tok/s."
+   ],
+   "baseline_is_not_established": "The ladder is written as if ~34 tok/s were the standing reference. The highest accepted_tps value anywhere in receipts/ is 25.29 (receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json), and it carries NO measurement provenance -- it is one of the 132 counted in receipts/future/MEASUREMENT_PROVENANCE_AUDIT.json. So the ladder's own floor is unestablished, and these criteria deliberately do not depend on it: each rung names an absolute number and requires its own control in the same session, rather than comparing against a remembered figure.",
+   "not_claimed": [
+    "Authoring a criterion does not make a rung reachable. U50_PRESENT is false; all six stay BLOCKED_HARDWARE and no receipt may be written for them until a board is enumerated."
+   ]
+  },
+  "U50_80_TO_90": {
+   "span_states": "APPENDIX O gives all six ladder rungs the SAME acceptance span, 8989-8997, which is '## J.9 U50 permanent-node promotion modes': five general promotion conditions ('primitive dramatically faster/more efficient', '>10% reproducible end-to-end improvement', ...) and a closing note that a negative result still pays tuition. It is a sound promotion policy and it is not a rung criterion -- it contains NO throughput number at all, so nothing in it can distinguish 40 tok/s from 90 tok/s. Six gates named after six different numbers shared one criterion that mentions none of them.",
+   "authored_at_commit": "eb30aea66e24b42009a632a591a1db6f49e597c7",
+   "evidence_tier_ceiling": "HARDWARE_MEASURED",
+   "requires_hardware": true,
+   "wake_condition": "U50_PRESENT",
+   "criterion": "With the U50 physically present, sustained ACCEPTED throughput reaches at least 90 tok/s on the frozen model contract, and does so as a PAIRED measurement: an Apple-only control and the Apple+FPGA arm run in the same session, under the same exclusive GPU lane lock, on the same model bytes, with the mixed arm's accepted output verified capability-preserving against the control. The receipt carries measurement_provenance (lock_held, loadavg, lane, measured_at) for BOTH arms.\n\nACCEPTED means tokens that survive verification, not raw decode: a faster path that produces output the control would not have produced has not reached 90 tok/s, it has changed the model.\n\nThe rung is 80 -> 90. It is satisfied only by crossing 90; reaching 80 satisfies the rung below and this one is still open.",
+   "falsifiers": {
+    "throughput": "the paired mixed arm sustains below 90 tok/s",
+    "capability": "the mixed arm's accepted output diverges from the control",
+    "isolation": "either arm ran without the exclusive lane lock, so the delta is uninterpretable",
+    "provenance": "either receipt omits measurement_provenance"
+   },
+   "may_not_be_satisfied_by": [
+    "a simulation, a cost model, or an envelope. tools/future/fpga_partition.py refuses to report its ratios as a prediction for exactly this reason, and a number it produces may never be recorded against this gate.",
+    "an unpaired absolute reading, because an interactive session on this machine is recorded to inflate decode throughput several-fold.",
+    "raw decode tok/s in place of accepted tok/s."
+   ],
+   "baseline_is_not_established": "The ladder is written as if ~34 tok/s were the standing reference. The highest accepted_tps value anywhere in receipts/ is 25.29 (receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json), and it carries NO measurement provenance -- it is one of the 132 counted in receipts/future/MEASUREMENT_PROVENANCE_AUDIT.json. So the ladder's own floor is unestablished, and these criteria deliberately do not depend on it: each rung names an absolute number and requires its own control in the same session, rather than comparing against a remembered figure.",
+   "not_claimed": [
+    "Authoring a criterion does not make a rung reachable. U50_PRESENT is false; all six stay BLOCKED_HARDWARE and no receipt may be written for them until a board is enumerated."
+   ]
   }
  }
 }
