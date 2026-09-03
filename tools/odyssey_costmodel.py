@@ -307,7 +307,14 @@ def record(patient, event, wall_s, bytes_scanned=0, bytes_transformed=0,
         "grok_lane": grok_lane,
         "opus": bool(opus),
         "ts": _as_float(stamp, float(stamp) if _finite(stamp) else time.time()),
-        "_evidence": extra.pop("_evidence", "MEASURED"),
+        # A ZERO WALL MAY NOT CLAIM TO BE MEASURED. Every call site in
+        # tools/odyssey_ctl.py records a LAUNCH marker, where no duration exists
+        # yet, and passes wall_s=0.0 -- so all 9,573 events in
+        # COMPILE_ECONOMICS.jsonl carried "_evidence": "MEASURED" against 0.0
+        # seconds, across 72 hours of timestamps. Zero is the right value for a
+        # start marker; MEASURED is the wrong label for it, and the two together
+        # are how a ledger reports a full dataset and contains no measurement.
+        "_evidence": extra.pop("_evidence", "MEASURED" if wall > 0 else "UNRECORDED"),
     }
     for k, v in extra.items():
         if k in rec:
