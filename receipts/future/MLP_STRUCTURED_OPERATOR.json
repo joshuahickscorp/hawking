@@ -48,7 +48,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-03T01:41:44Z",
+  "recorded_at": "2026-09-03T03:29:02Z",
   "recorded_by": "tools/future/mlp_structured_operator.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -5390,7 +5390,7 @@
   "train-set figure cannot be reported as held-out",
   "negative_index queried; proposal families not refused"
  ],
- "git_head": "6f22c76702e0c0294689ea10a8a4e3ff9783a349",
+ "git_head": "efd64c2c04235be60bdb6da0b5937c72b8f1c817",
  "go_wider": false,
  "gpu_authority": false,
  "incumbent_mlp_bytes": 5347795776,
@@ -5653,7 +5653,7 @@
   }
  ],
  "schema": "hawking.future.mlp_structured_operator.v1",
- "seal_sha256": "47ca437140f5d2fa41ed9e762b76dc4ed23c3fc0ae6ca768d28450d07c3e9220",
+ "seal_sha256": "4114714d8fdaf310efae752697cb7aa41476584e5ea6c7733c2ab04ec2077aa6",
  "selftest": {
   "baseline_codes": [
    "BaselineOmitted"
