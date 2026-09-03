@@ -1122,3 +1122,80 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+
+# ---------------------------------------------------------------------------
+# Is the bar reachable at all? The gate FLASH_COMPLETE_EBPW_LE_1 is the only
+# numeric acceptance spec in the entire 83-gate catalog, and the whole FLASH
+# program pulls one lever at it: MLP density. That lever cannot close it.
+# ---------------------------------------------------------------------------
+
+def bar_reachability(threshold: float = 1.0) -> dict[str, Any]:
+    """What complete_ebpw <= threshold actually requires, unconditionally.
+
+    Set the ENTIRE MLP to zero bytes -- a bound no compression scheme can beat,
+    since a stored MLP cannot occupy negative space -- and ask whether the rest
+    already exceeds the budget. If it does, no MLP result at any density can
+    reach the bar, and continuing to push MLP density is pushing on the wrong
+    term. That is a statement about arithmetic, not about whether the bar is
+    right; the threshold is not touched here.
+    """
+    doc = _load_json(REPO / "receipts" / "future" / RECEIPT,
+                     why="the incumbent complete-EBPW ledger")
+    inc = doc["incumbent"]
+    parent = int(inc["parent_params"])
+    payload = int(inc["payload_bytes"])
+    non_mlp_bytes = int(inc["q4_attention_deltanet_bytes"])
+    mlp_elements = int(inc["mlp_elements"])
+    mlp_bytes = payload - non_mlp_bytes
+    non_mlp_params = parent - mlp_elements
+
+    budget_bytes = parent * threshold / 8.0
+    floor_ebpw = 8.0 * non_mlp_bytes / parent          # MLP at zero bytes
+    reachable = floor_ebpw <= threshold
+
+    return {
+        "schema": "hawking.future.ebpw_bar_reachability.v1",
+        "evidence_tier": "STATIC",
+        "gate": "FLASH_COMPLETE_EBPW_LE_1",
+        "threshold": threshold,
+        "threshold_untouched": True,
+        "measured_complete_ebpw": _r(8.0 * payload / parent),
+        "parent_params": parent,
+        "payload_bytes": payload,
+        "budget_bytes_at_threshold": int(budget_bytes),
+        "over_budget_factor": _r(payload / budget_bytes),
+        "mlp": {
+            "elements": mlp_elements,
+            "bytes": mlp_bytes,
+            "bpw": _r(8.0 * mlp_bytes / mlp_elements),
+        },
+        "non_mlp": {
+            "params": non_mlp_params,
+            "bytes": non_mlp_bytes,
+            "bpw": _r(8.0 * non_mlp_bytes / non_mlp_params),
+        },
+        "with_the_entire_mlp_at_zero_bytes": {
+            "complete_ebpw": _r(floor_ebpw),
+            "still_above_threshold": not reachable,
+            "exceeds_threshold_by": _r(floor_ebpw / threshold),
+        },
+        "reachable_by_mlp_density_alone": reachable,
+        "second_lever_required": None if reachable else {
+            "term": "attention + deltanet",
+            "current_bpw": _r(8.0 * non_mlp_bytes / non_mlp_params),
+            "required_bpw_even_with_a_free_mlp": _r(8.0 * budget_bytes / non_mlp_params),
+            "note": "currently Q4; the bar needs it below Q4 before MLP density matters",
+        },
+        "mlp_density_sensitivity": [
+            {"mlp_bpw": bpw,
+             "complete_ebpw": _r(8.0 * (non_mlp_bytes + mlp_elements * bpw / 8.0) / parent)}
+            for bpw in (2.5, 2.25, 2.0, 1.5, 1.0, 0.5)
+        ],
+        "claim_boundary": (
+            "STATIC arithmetic over the committed complete-EBPW ledger. It does not "
+            "argue the bar is wrong and does not move it. It states which term has to "
+            "change, so that effort is not spent on a lever whose entire remaining "
+            "range cannot reach the threshold."
+        ),
+    }
