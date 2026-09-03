@@ -1431,8 +1431,21 @@ class HawkingNativeConnector:
             "max_new_tokens": max_new_tokens,
             "max_seq_len": max_seq_len,
         }
+        # Either trigger: an explicit `grammar` (what StructuredOutputContract
+        # sets once the profile declares the resident honours one) or an
+        # OpenAI-shaped json_object request. The contract strips
+        # response_format on the degraded path, so deriving it from that field
+        # alone left the constrained path unreachable.
+        # ONLY "json". The resident implements a JSON syntax mask and nothing
+        # else, so any other grammar -- a GBNF string, a custom rule set -- is a
+        # field it would ignore. Sending it reads as enforcement in a receipt
+        # and enforces nothing, which is the exact lie the degraded path exists
+        # to avoid.
+        grammar = payload.get("grammar")
         response_format = payload.get("response_format")
-        if (
+        if isinstance(grammar, str) and grammar.strip().lower() == "json":
+            request["grammar"] = "json"
+        elif (
             isinstance(response_format, dict)
             and response_format.get("type") == "json_object"
         ):

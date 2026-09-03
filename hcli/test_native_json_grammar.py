@@ -100,3 +100,62 @@ def test_json_schema_response_format_does_not_send_grammar():
     assert resident.sent is not None
     assert "grammar" not in resident.sent
     assert set(resident.sent) == {"id", "prompt", "max_new_tokens", "max_seq_len"}
+
+
+def test_the_contract_sends_json_when_the_backend_honours_a_grammar():
+    """The chain that was built but unreachable.
+
+    The resident could mask logits and the contract stripped the field that
+    asks it to, so the constrained path could never fire. Now: profile declares
+    it -> backend.supports("grammar") -> contract sets it -> connector forwards
+    it.
+    """
+    from hcli.backends import make_structured_output_contract
+    from hcli.engine import HCLI_RESULT_SCHEMA
+
+    class Backend:
+        def __init__(self, grammar: bool) -> None:
+            self.grammar = grammar
+
+        def supports(self, feature: str) -> bool:
+            return {"response_format": False, "grammar": self.grammar}.get(feature, False)
+
+    honours = make_structured_output_contract(Backend(True), HCLI_RESULT_SCHEMA)
+    sent = honours.apply({"messages": [{"role": "user", "content": "go"}]})
+    assert sent["grammar"] == "json"
+    assert "grammar" not in honours.degraded_features, (
+        "a feature that ACTS must not be listed as degraded"
+    )
+
+    cannot = make_structured_output_contract(Backend(False), HCLI_RESULT_SCHEMA)
+    assert "grammar" not in cannot.apply({"messages": []})
+    assert "grammar" in cannot.degraded_features
+
+
+def test_the_sealed_profile_declares_only_what_the_resident_implements():
+    """SYNTAX, not schema. The profile must not overclaim."""
+    import json
+    from pathlib import Path
+
+    profile = json.loads(
+        (Path(__file__).resolve().parents[1] / "hcli/hawking-native.sealed-3.14.json")
+        .read_text(encoding="utf-8")
+    )
+    features = profile["capabilities"]["features"]
+    assert features["grammar"] == "supported"
+    assert features["response_format"] == "unsupported", (
+        "the resident masks JSON syntax; it does not enforce a schema"
+    )
+    note = profile["capabilities"]["grammar_note"]
+    assert "SYNTAX only" in note and "does NOT enforce the schema" in note
+
+
+def test_a_grammar_the_resident_cannot_honour_is_never_sent():
+    """Negative control. Sent-and-ignored reads as enforcement in a receipt."""
+    resident = _FakeResident()
+    connector = _connector(resident)
+    connector.complete_payload(
+        {"messages": [{"role": "user", "content": "go"}], "grammar": "root ::= object"},
+        timeout=5.0,
+    )
+    assert "grammar" not in resident.sent

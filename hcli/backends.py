@@ -1066,6 +1066,11 @@ class StructuredOutputContract:
     # Same auditability rule: a repair that fixed the reply without spending
     # a retry still has to be visible in the receipt, not silently absorbed.
     truncation_repairs: List[str] = field(default_factory=list)
+    # True only when the backend reported it can honour a grammar. A field the
+    # runtime ignores must never be sent -- "sent and ignored" reads as
+    # enforcement in a receipt and is the exact lie this contract exists to
+    # prevent.
+    grammar_supported: bool = False
     # Providers may emit native JSON scalars for the deliberately flat string
     # argument-pair representation. Keep that boundary repair separate from
     # key renames so receipts and degraded-feature metrics say what happened.
@@ -1074,7 +1079,18 @@ class StructuredOutputContract:
     def apply(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         prepared = deepcopy(payload)
         prepared.pop("response_format", None)
-        prepared.pop("grammar", None)
+        if self.grammar_supported:
+            # A backend that HONOURS a grammar should be given one. Stripping it
+            # unconditionally is what kept the constrained path unreachable
+            # after it was built: the resident could mask logits, and the field
+            # that asks it to was being removed before the request left Python.
+            #
+            # This constrains SYNTAX, not schema, so prompt-and-validate stays
+            # exactly as it is -- the grammar removes "the reply is NOT valid
+            # JSON", the contract still owns whether the shape is right.
+            prepared["grammar"] = "json"
+        else:
+            prepared.pop("grammar", None)
         inject_schema_instruction(prepared, self.instruction)
         return prepared
 
@@ -1224,13 +1240,15 @@ def make_structured_output_contract(
         else structured_output_attempts()
     )
     degraded = ["response_format"]
-    if callable(supports) and not supports("grammar"):
+    grammar_ok = bool(callable(supports) and supports("grammar"))
+    if not grammar_ok:
         degraded.append("grammar")
     return StructuredOutputContract(
         schema=schema,
         instruction=schema_instruction(schema),
         max_attempts=max(1, attempts),
         degraded_features=degraded,
+        grammar_supported=grammar_ok,
     )
 
 

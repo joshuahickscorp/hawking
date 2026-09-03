@@ -60,5 +60,12 @@
   "receipts": [
     "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
     "receipts/headless/QWEN_COMPLETION_RECEIPT.json"
-  ]
+  ],
+  "capabilities": {
+    "features": {
+      "grammar": "supported",
+      "response_format": "unsupported"
+    },
+    "grammar_note": "SYNTAX only: the resident masks logits so a reply cannot break JSON. It does NOT enforce the schema -- no required keys, no types, no enums -- so the structured-output contract still validates and retries. grammar_enforced in the reply is true only when the mask actually ran."
+  }
 }
