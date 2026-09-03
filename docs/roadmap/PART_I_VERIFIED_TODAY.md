@@ -9,9 +9,9 @@ Nothing here is complete because a file exists: a field with no evidence prints 
 
     VERIFIED_INTEGRATED      24
     VERIFIED_BUILT           19
-    BLOCKED_EVIDENCE         13
+    BLOCKED_EVIDENCE         14
     BLOCKED_HARDWARE         13
-    SCAFFOLDED               12
+    SCAFFOLDED               11
     ABSENT                   1
     UNREACHABLE              1
 
@@ -266,19 +266,19 @@ design, not by neglect: simulated is not measured.
 
 ## B. MODEL SCIENCE / DOCTOR / GRAVITY / NOETIC
 
-7 capabilities. VERIFIED_BUILT=3, SCAFFOLDED=2, VERIFIED_INTEGRATED=2
+7 capabilities. VERIFIED_BUILT=3, VERIFIED_INTEGRATED=2, BLOCKED_EVIDENCE=1, SCAFFOLDED=1
 
 ### FLASH_ACCEPTED_TPS_GE_50
 
-    STATUS              SCAFFOLDED
-    defining property   **Mission:** Find the smallest capability-preserving executable function, not merely the smallest file.
+    STATUS              BLOCKED_EVIDENCE
+    defining property   > **FLASH HARD GATE:** Final promotion requires BOTH complete-system EBPW <= 1.00 and accepted capability-preserving TPS >= 50. These are research targets, not current claims.
     implementation      tools/flash_stateful_gate.py
     real caller         absent — no non-test call site
     verifier            absent — no test cites this gate
     negative control    absent — no cited test proves it can fail
     receipt             receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json
     evidence level      STATIC
-    limitations         acceptance not demonstrated: acceptance verdict BLOCKED: accepted_tps=None which is not >= 50. status=BLOCKED_FIRST_PHYSICAL_BOUNDARY; accepted_tokens=1; first_physical_failure_boundary=tok
+    limitations         requires a MEASURED accepted capability-preserving TPS >= 50 under the protected window, against complete-system EBPW <= 1.00 (roadmap 13, line 1607). The roadmap calls these research targets, not current claims. This gate is satisfied by a measurement, never by a call site, and must never read BUILT on STATIC evidence. Wake: PROTECTED_TPS_CAMPAIGN_MEASURED. | acceptance not demonstrated: acceptance verdict BLOCKED: accepted_tps=None which is not >= 50. status=BLOCKED_FIRST_PHYSICAL_BOUNDARY; accepted_tokens=1; first_physical_failure_boundary=tok
     integration         wired=False accepted=False
 
 ### FLASH_COMPLETE_EBPW_LE_1
@@ -323,7 +323,7 @@ design, not by neglect: simulated is not measured.
 ### FLASH_FULL_NOETIC_EXECUTABLE
 
     STATUS              VERIFIED_BUILT
-    defining property   **Mission:** Compile model semantics into explicit representation choices.
+    defining property   ├── sparse-attention blocks
     implementation      tools/odyssey/noetic_compiler.py, hcli/agentos/flash_executable.py
     real caller         tools/acceptance/flash/run_gates.py:752, tools/future/representation_lab.py:785, tools/odyssey/noetic_compiler.py:238 (+1 more)
     verifier            hcli/tests/test_hcli_flash_science.py:5, hcli/tests/test_hcli_science_boundaries.py:12, hcli/tests/test_hcli_science_boundaries.py:13 (+7 more)
@@ -349,8 +349,8 @@ design, not by neglect: simulated is not measured.
 ### FLASH_SOURCE_VERIFIED
 
     STATUS              SCAFFOLDED
-    defining property   **Mission:** Find the smallest capability-preserving executable function, not merely the smallest file.
-    implementation      tools/flash_organ_census.py, tools/gravity_verify_source.py, tools/gravity_verify_source.py:26
+    defining property   ├── sparse-attention blocks
+    implementation      tools/flash_organ_census.py, tools/gravity_verify_source.py, tools/gravity_verify_source.py:26 (+1 more)
     real caller         absent — no non-test call site
     verifier            absent — no test cites this gate
     negative control    absent — no cited test proves it can fail

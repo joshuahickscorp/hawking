@@ -14,9 +14,13 @@
     "base_commit": "caf83078f",
     "graph": "civilization/CAPABILITY_GRAPH.json",
     "graph_generated_by": "tools/roadmap/auditor.py",
-    "head": "6a849c4576bf6bc8dc445bef9e559790dac980fb"
+    "head": "efc37e13ff7fbdaf6450e8f147c8bcabcd046dcb"
   },
   "externally_blocked": [
+    {
+      "blocker": "requires a MEASURED accepted capability-preserving TPS >= 50 under the protected window, against complete-system EBPW <= 1.00 (roadmap 13, line 1607). The roadmap calls these research targets, not current claims. This gate is satisfied by a measurement, never by a call site, and must never read BUILT on STATIC evidence. Wake: PROTECTED_TPS_CAMPAIGN_MEASURED.",
+      "gate": "FLASH_ACCEPTED_TPS_GE_50"
+    },
     {
       "blocker": "HCLI_OPERATIONAL and ODYSSEY_DETACHED and KNOWN_GOOD_RUNTIME_COMMIT frozen. Isolated worktree only; merge after parity. Never reorganize underneath an active Odyssey.",
       "gate": "HAWKING_PUBLIC_MVP"
@@ -73,17 +77,17 @@
   "final": {
     "by_status": {
       "ABSENT": 1,
-      "BLOCKED_EXTERNAL": 13,
+      "BLOCKED_EXTERNAL": 14,
       "BLOCKED_HARDWARE": 13,
       "BUILT": 24,
-      "SCAFFOLDED": 12,
+      "SCAFFOLDED": 11,
       "UNREACHABLE": 1,
       "WIRED": 19
     },
     "gates_total": 83,
-    "movable_gates": 57,
-    "movable_scaffolded_or_better": 55,
-    "movable_scaffolded_or_better_pct": 96.5
+    "movable_gates": 56,
+    "movable_scaffolded_or_better": 54,
+    "movable_scaffolded_or_better_pct": 96.4
   },
   "hardware_blocked": [
     {
@@ -189,7 +193,7 @@
     "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE"
   ],
   "work": {
-    "commits": 180,
+    "commits": 182,
     "new_crates": [
       "crates/hawking-index-query/Cargo.toml"
     ],
@@ -420,7 +424,7 @@
       "tools/vmcp/receipt.py",
       "tools/vmcp/tool_doctor.py"
     ],
-    "python_lines_added": 92296,
-    "rust_lines_added": 7936
+    "python_lines_added": 92357,
+    "rust_lines_added": 7983
   }
 }

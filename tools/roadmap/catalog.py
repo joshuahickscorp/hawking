@@ -958,3 +958,44 @@ for _gate, _syms in _DECLARATION_SWEEP.items():
         | {_m.rsplit(".", 1)[-1] for _m, _ in _syms}
         | set(GATES[_gate].get("modules") or [])
     )
+
+
+# The FLASH gates' acceptance spans pointed at a SHARED DEFAULT section cited by
+# six gates, so their criteria read as undefined and Claude refused to wire them.
+# That was the wrong conclusion from the right evidence: the span was wrong, not
+# the criterion. Both exist and are quotable.
+#
+#   1607  FLASH HARD GATE: promotion requires BOTH complete-system EBPW <= 1.00
+#         AND accepted capability-preserving TPS >= 50. "These are research
+#         targets, not current claims."
+#   1640  the promotion ladder, 50/70/90/120 TPS against 1.00/0.85/0.75/0.60 EBPW
+#   1610  SOURCE / MANIFEST -> EXACT TENSOR CENSUS -> ORGAN GRAPH
+#
+# Pointing a gate at the obligation that already governs it is not inventing a
+# criterion. FLASH_ACCEPTED_TPS_GE_50 still must never read BUILT without a
+# MEASURED TPS: the roadmap says in the same breath that these are targets.
+for _gate, _start, _end in (
+    ("FLASH_ACCEPTED_TPS_GE_50", 1607, 1645),
+    ("FLASH_SOURCE_VERIFIED", 1610, 1634),
+    ("FLASH_FULL_NOETIC_EXECUTABLE", 1610, 1634),
+):
+    GATES[_gate]["acceptance_span"] = {"start_line": _start, "end_line": _end}
+
+
+# With a real criterion, FLASH_SOURCE_VERIFIED can be declared honestly: its
+# obligation IS the tensor census, and tools/flash_organ_census.census performs it.
+GATES["FLASH_SOURCE_VERIFIED"]["symbols"] = [
+    {"module": "tools.flash_organ_census", "symbol": "census"},
+] + list(GATES["FLASH_SOURCE_VERIFIED"].get("symbols") or [])
+
+# FLASH_ACCEPTED_TPS_GE_50 is NOT a software connection and must never be filed
+# as one. Its criterion is a MEASURED accepted capability-preserving TPS >= 50,
+# and the roadmap says in the same sentence that this is a research target, not a
+# current claim. No amount of wiring satisfies it; a protected measurement does.
+GATES["FLASH_ACCEPTED_TPS_GE_50"]["software_blocker"] = (
+    "requires a MEASURED accepted capability-preserving TPS >= 50 under the "
+    "protected window, against complete-system EBPW <= 1.00 (roadmap 13, line "
+    "1607). The roadmap calls these research targets, not current claims. This "
+    "gate is satisfied by a measurement, never by a call site, and must never "
+    "read BUILT on STATIC evidence. Wake: PROTECTED_TPS_CAMPAIGN_MEASURED."
+)

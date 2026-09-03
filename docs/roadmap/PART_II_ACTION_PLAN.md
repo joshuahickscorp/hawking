@@ -7,20 +7,20 @@ components yet' from work that genuinely needs an experiment, wall time, or sili
 
 ## Blocker census
 
-    SOFTWARE_CONNECTION_REMAINING    16
+    SOFTWARE_CONNECTION_REMAINING    15
     EXPERIMENTATION_REQUIRED         19
-    LONG_RUN_EVIDENCE_REQUIRED       13
+    LONG_RUN_EVIDENCE_REQUIRED       14
     PHYSICAL_HARDWARE_REQUIRED       14
     UNKNOWN_RESEARCH                 1
 
     TOTAL REMAINING                  63
 
-SOFTWARE_CONNECTION_REMAINING = 16 is the
+SOFTWARE_CONNECTION_REMAINING = 15 is the
 number this campaign exists to drive toward zero. Every other class is honest
 frontier: an experiment that must run, evidence that needs wall time, hardware that
 must physically exist, or a question whose answer nobody has.
 
-## SOFTWARE_CONNECTION_REMAINING (16)
+## SOFTWARE_CONNECTION_REMAINING (15)
 
 ### AGENTOS_CIRCUIT_BREAKER
     missing             no non-test call site reaches this capability
@@ -34,12 +34,6 @@ must physically exist, or a question whose answer nobody has.
     implementation      hcli/scheduler.py, hcli/scheduler.py:394
     unlocks             1 declared dependencies
 
-### FLASH_ACCEPTED_TPS_GE_50
-    missing             no non-test call site reaches this capability
-    shortest verifier   must be written
-    implementation      tools/flash_stateful_gate.py
-    unlocks             1 declared dependencies
-
 ### FLASH_DENSE_VS_NF_AB
     missing             wired but nothing verifies it
     shortest verifier   must be written
@@ -49,7 +43,7 @@ must physically exist, or a question whose answer nobody has.
 ### FLASH_SOURCE_VERIFIED
     missing             no non-test call site reaches this capability
     shortest verifier   must be written
-    implementation      tools/flash_organ_census.py, tools/gravity_verify_source.py (+1 more)
+    implementation      tools/flash_organ_census.py, tools/gravity_verify_source.py (+2 more)
     unlocks             0 declared dependencies
 
 ### FPGA_LINK_SIM
@@ -234,7 +228,13 @@ must physically exist, or a question whose answer nobody has.
     implementation      tools/vmcp/pty_eye.py, tools/headless/vmcp_capability_probe.py (+1 more)
     unlocks             1 declared dependencies
 
-## LONG_RUN_EVIDENCE_REQUIRED (13)
+## LONG_RUN_EVIDENCE_REQUIRED (14)
+
+### FLASH_ACCEPTED_TPS_GE_50
+    missing             requires a MEASURED accepted capability-preserving TPS >= 50 under the protected window, against complete-system EBPW <= 1.00 (roadmap 13, line 1607). The roadmap calls these research targets, not cur
+    shortest verifier   must be written
+    implementation      tools/flash_stateful_gate.py
+    unlocks             1 declared dependencies
 
 ### HAWKING_PUBLIC_MVP
     missing             HCLI_OPERATIONAL and ODYSSEY_DETACHED and KNOWN_GOOD_RUNTIME_COMMIT frozen. Isolated worktree only; merge after parity. Never reorganize underneath an active Odyssey.

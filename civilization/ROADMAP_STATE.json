@@ -4,7 +4,6 @@
   "active_actions": [
     "AGENTOS_CIRCUIT_BREAKER",
     "AGENTOS_RETRY_CLASSIFIED",
-    "FLASH_ACCEPTED_TPS_GE_50",
     "FLASH_DENSE_VS_NF_AB",
     "FLASH_SOURCE_VERIFIED",
     "FPGA_LINK_SIM",
@@ -609,10 +608,10 @@
     "DEFERRED_PROGRAM": 7,
     "EXPERIMENTATION_REQUIRED": 19,
     "EXTERNAL_ENVIRONMENT_REQUIRED": 3,
-    "LONG_RUN_EVIDENCE_REQUIRED": 3,
+    "LONG_RUN_EVIDENCE_REQUIRED": 4,
     "PHYSICAL_HARDWARE_REQUIRED": 14,
     "SOFTWARE_BUILD_REQUIRED": 1,
-    "SOFTWARE_CONNECTION_REMAINING": 16
+    "SOFTWARE_CONNECTION_REMAINING": 15
   },
   "built_but_no_verifier": [
     "FLASH_DENSE_VS_NF_AB",
@@ -985,7 +984,7 @@
     "AGENTOS_RESTART_COHERENCE": "INTEGRATED_TEST_PRESENT",
     "AGENTOS_RETRY_CLASSIFIED": "SCAFFOLDED_NO_CALLER",
     "BACKEND_FAILURE_ISOLATION": "INTEGRATED_TEST_PRESENT",
-    "FLASH_ACCEPTED_TPS_GE_50": "SCAFFOLDED_NO_CALLER",
+    "FLASH_ACCEPTED_TPS_GE_50": "BLOCKED_EXTERNAL",
     "FLASH_COMPLETE_EBPW_LE_1": "WIRED_ACCEPTANCE_UNRUN",
     "FLASH_DENSE_VS_NF_AB": "INTEGRATED_UNVERIFIED",
     "FLASH_FIRST_GRAVITY_ORGAN": "INTEGRATED_TEST_PRESENT",
@@ -1278,27 +1277,6 @@
     },
     {
       "actionable_now": true,
-      "blocker_class": "SOFTWARE_CONNECTION_REMAINING",
-      "critical_path": false,
-      "depends_on": [
-        "FLASH_FULL_NOETIC_EXECUTABLE"
-      ],
-      "estimated_wall": "under an hour (guess)",
-      "gate": "FLASH_ACCEPTED_TPS_GE_50",
-      "leverage_score": 5,
-      "missing": "no non-test call site reaches this capability",
-      "multiplier": false,
-      "owner": "this-lane",
-      "parallel_safe_with": "any gate in a different resource_lane",
-      "reopen_if": "the caller is removed, the verifier is deleted, or the gate's acceptance criterion changes",
-      "resource_lane": "cpu",
-      "stop_condition": "a non-test call site reaches the named symbol AND a test fails when that connection is cut",
-      "unlocks_direct": [],
-      "unlocks_transitive": [],
-      "verifier": "must be written"
-    },
-    {
-      "actionable_now": true,
       "blocker_class": "EXPERIMENTATION_REQUIRED",
       "critical_path": false,
       "depends_on": [
@@ -1357,6 +1335,25 @@
       "unlocks_direct": [],
       "unlocks_transitive": [],
       "verifier": "tools/future/test_autonomy_scars.py"
+    },
+    {
+      "actionable_now": true,
+      "blocker_class": "EXPERIMENTATION_REQUIRED",
+      "critical_path": false,
+      "depends_on": [],
+      "estimated_wall": "one run, minutes to hours (guess)",
+      "gate": "RUNTIME_DELTANET_STATE_REUSE",
+      "leverage_score": 5,
+      "missing": "wired and verified; its acceptance criterion has never been run",
+      "multiplier": false,
+      "owner": "this-lane",
+      "parallel_safe_with": "any gate in a different resource_lane",
+      "reopen_if": "the caller is removed, the verifier is deleted, or the gate's acceptance criterion changes",
+      "resource_lane": "cpu",
+      "stop_condition": "the blocker named above clears: wired and verified; its acceptance criterion has never been run",
+      "unlocks_direct": [],
+      "unlocks_transitive": [],
+      "verifier": "tools/headless/test_prefill_kv.py"
     }
   ],
   "integrated_capabilities": [
@@ -1382,6 +1379,7 @@
     "VMCP_TRUTH_LEDGER"
   ],
   "long_run_required": [
+    "FLASH_ACCEPTED_TPS_GE_50",
     "HAWKING_PUBLIC_MVP",
     "REPO_TOPOLOGY_COMPRESSION",
     "SEMANTIC_COMPRESSION"
@@ -1391,14 +1389,14 @@
   "next_actions": [
     "AGENTOS_CIRCUIT_BREAKER",
     "AGENTOS_RETRY_CLASSIFIED",
-    "FLASH_ACCEPTED_TPS_GE_50",
     "FLASH_DENSE_VS_NF_AB",
     "FLASH_SOURCE_VERIFIED",
     "FPGA_LINK_SIM",
     "FPGA_PARTITION_SIM",
     "FPGA_PREBOARD_SCHEMAS",
     "QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED",
-    "QWEN27_RUNTIME_IDENTITY_FROZEN"
+    "QWEN27_RUNTIME_IDENTITY_FROZEN",
+    "RUNTIME_CONTEXT_NATIVE"
   ],
   "not_physically_measured": "every gate is evidence_tier STATIC; no present capability rests on a physical measurement",
   "ranked_remaining": [
@@ -2223,27 +2221,6 @@
     },
     {
       "actionable_now": true,
-      "blocker_class": "SOFTWARE_CONNECTION_REMAINING",
-      "critical_path": false,
-      "depends_on": [
-        "FLASH_FULL_NOETIC_EXECUTABLE"
-      ],
-      "estimated_wall": "under an hour (guess)",
-      "gate": "FLASH_ACCEPTED_TPS_GE_50",
-      "leverage_score": 5,
-      "missing": "no non-test call site reaches this capability",
-      "multiplier": false,
-      "owner": "this-lane",
-      "parallel_safe_with": "any gate in a different resource_lane",
-      "reopen_if": "the caller is removed, the verifier is deleted, or the gate's acceptance criterion changes",
-      "resource_lane": "cpu",
-      "stop_condition": "a non-test call site reaches the named symbol AND a test fails when that connection is cut",
-      "unlocks_direct": [],
-      "unlocks_transitive": [],
-      "verifier": "must be written"
-    },
-    {
-      "actionable_now": true,
       "blocker_class": "EXPERIMENTATION_REQUIRED",
       "critical_path": false,
       "depends_on": [
@@ -2555,6 +2532,27 @@
       "unlocks_direct": [],
       "unlocks_transitive": [],
       "verifier": "hcli/test_goal_compile.py"
+    },
+    {
+      "actionable_now": false,
+      "blocker_class": "LONG_RUN_EVIDENCE_REQUIRED",
+      "critical_path": false,
+      "depends_on": [
+        "FLASH_FULL_NOETIC_EXECUTABLE"
+      ],
+      "estimated_wall": "wall-bound (guess)",
+      "gate": "FLASH_ACCEPTED_TPS_GE_50",
+      "leverage_score": 0,
+      "missing": "requires a MEASURED accepted capability-preserving TPS >= 50 under the protected window, against complete-system EBPW <= 1.00 (roadmap 13, line 1607). The roadmap calls these research targets, not current claims. This ga",
+      "multiplier": false,
+      "owner": "this-lane",
+      "parallel_safe_with": "any gate in a different resource_lane",
+      "reopen_if": "the caller is removed, the verifier is deleted, or the gate's acceptance criterion changes",
+      "resource_lane": "wall",
+      "stop_condition": "the blocker named above clears: requires a MEASURED accepted capability-preserving TPS >= 50 under the protected",
+      "unlocks_direct": [],
+      "unlocks_transitive": [],
+      "verifier": "must be written"
     },
     {
       "actionable_now": false,
@@ -2965,7 +2963,7 @@
   "software_build_required": [
     "AGENTOS_BEHAVIOR_LAB"
   ],
-  "software_connection_remaining_count": 16,
+  "software_connection_remaining_count": 15,
   "subsumed_items": [],
   "unknown_research": [],
   "verifiers": {
