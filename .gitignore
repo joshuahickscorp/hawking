@@ -266,3 +266,7 @@ workspace/campaign/records/
 receipts/dsv4f_fullseq_capture_L0_frozen_export/
 receipts/dsv4f_fullseq_capture_L1_frozen_export/
 receipts/q80-velocity-pairs/
+# Per-model generated evidence (509 MB). Tools build these paths and write into
+# them locally; nothing opens them as a fixture. The hide/systems/runtime
+# subtrees stay tracked because hide-backend tests open them.
+workspace/campaign/evidence/models/
