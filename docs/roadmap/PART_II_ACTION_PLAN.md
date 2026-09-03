@@ -92,7 +92,7 @@ must physically exist, or a question whose answer nobody has.
 
 ### FLASH_COMPLETE_EBPW_LE_1
     missing             wired and verified; its acceptance criterion has never been run
-    shortest verifier   tools/future/test_complete_ebpw.py:14 (+7 more)
+    shortest verifier   tools/future/test_complete_ebpw.py:14 (+8 more)
     implementation      tools/future/complete_ebpw.py, tools/future/complete_ebpw.py:193
     unlocks             1 declared dependencies
 
@@ -294,43 +294,43 @@ must physically exist, or a question whose answer nobody has.
 
 ### U50_34_TO_40
     missing             silicon absent; wakes on U50_PRESENT
-    shortest verifier   tools/accelerator/test_fusion_bridge.py:372 (+8 more)
+    shortest verifier   tools/accelerator/test_fusion_bridge.py:372 (+9 more)
     implementation      tools/future/hwir.py
     unlocks             1 declared dependencies
 
 ### U50_40_TO_50
     missing             silicon absent; wakes on U50_PRESENT
-    shortest verifier   tools/accelerator/test_fusion_bridge.py:372 (+8 more)
+    shortest verifier   tools/accelerator/test_fusion_bridge.py:372 (+9 more)
     implementation      tools/future/hwir.py
     unlocks             1 declared dependencies
 
 ### U50_50_TO_60
     missing             silicon absent; wakes on U50_PRESENT
-    shortest verifier   tools/accelerator/test_fusion_bridge.py:372 (+8 more)
+    shortest verifier   tools/accelerator/test_fusion_bridge.py:372 (+9 more)
     implementation      tools/future/hwir.py
     unlocks             1 declared dependencies
 
 ### U50_60_TO_70
     missing             silicon absent; wakes on U50_PRESENT
-    shortest verifier   tools/accelerator/test_fusion_bridge.py:372 (+8 more)
+    shortest verifier   tools/accelerator/test_fusion_bridge.py:372 (+9 more)
     implementation      tools/future/hwir.py
     unlocks             1 declared dependencies
 
 ### U50_70_TO_80
     missing             silicon absent; wakes on U50_PRESENT
-    shortest verifier   tools/accelerator/test_fusion_bridge.py:372 (+8 more)
+    shortest verifier   tools/accelerator/test_fusion_bridge.py:372 (+9 more)
     implementation      tools/future/hwir.py
     unlocks             1 declared dependencies
 
 ### U50_80_TO_90
     missing             silicon absent; wakes on U50_PRESENT
-    shortest verifier   tools/accelerator/test_fusion_bridge.py:372 (+8 more)
+    shortest verifier   tools/accelerator/test_fusion_bridge.py:372 (+9 more)
     implementation      tools/future/hwir.py
     unlocks             1 declared dependencies
 
 ### U50_DEVICE_PROFILE
     missing             silicon absent; wakes on U50_PRESENT
-    shortest verifier   tools/accelerator/test_fusion_bridge.py:372 (+22 more)
+    shortest verifier   tools/accelerator/test_fusion_bridge.py:372 (+24 more)
     implementation      tools/future/hwir.py, tools/future/hwir.py:2328
     unlocks             1 declared dependencies
 

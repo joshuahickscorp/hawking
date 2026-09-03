@@ -287,8 +287,8 @@ design, not by neglect: simulated is not measured.
     defining property   **Mission:** Find the smallest capability-preserving executable function, not merely the smallest file.
     implementation      tools/future/complete_ebpw.py, tools/future/complete_ebpw.py:193
     real caller         tools/acceptance/flash/run_gates.py:941, tools/future/capability_byte_elimination.py:295
-    verifier            tools/future/test_complete_ebpw.py:14, tools/future/test_complete_ebpw.py:23, tools/future/test_complete_ebpw.py:56 (+5 more)
-    negative control    tools/future/test_complete_ebpw.py, tools/future/test_experiment_policy.py
+    verifier            tools/future/test_complete_ebpw.py:14, tools/future/test_complete_ebpw.py:23, tools/future/test_complete_ebpw.py:56 (+6 more)
+    negative control    tools/future/test_complete_ebpw.py, tools/future/test_ebpw_bar_reachability.py
     receipt             receipts/future/COMPLETE_EBPW.json, receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json
     evidence level      STATIC
     limitations         acceptance not demonstrated: measured 3.139300850311054 against required <= 1
@@ -611,7 +611,7 @@ design, not by neglect: simulated is not measured.
     defining property   negotiated_generation,
     implementation      tools/future/hwir.py, hcli/agentos/fpga_preboard.py, tools/future/hwir.py:862
     real caller         tools/accelerator/backend_contract.py:1094, tools/accelerator/fusion_bridge.py:1444, tools/future/p6_projection.py:857 (+1 more)
-    verifier            hcli/agentos/test_fpga_preboard.py:5, hcli/tests/test_hcli_science_boundaries.py:23, tools/accelerator/test_fusion_bridge.py:372 (+11 more)
+    verifier            hcli/agentos/test_fpga_preboard.py:5, hcli/tests/test_hcli_science_boundaries.py:23, tools/accelerator/test_fusion_bridge.py:372 (+12 more)
     negative control    hcli/tests/test_hcli_science_boundaries.py, tools/accelerator/test_fusion_bridge.py
     receipt             absent
     evidence level      STATIC
@@ -663,7 +663,7 @@ design, not by neglect: simulated is not measured.
     defining property   primitive dramatically faster/more efficient
     implementation      tools/future/hwir.py
     real caller         absent — no non-test call site
-    verifier            tools/accelerator/test_fusion_bridge.py:372, tools/accelerator/test_fusion_bridge.py:450, tools/accelerator/test_fusion_bridge.py:589 (+6 more)
+    verifier            tools/accelerator/test_fusion_bridge.py:372, tools/accelerator/test_fusion_bridge.py:450, tools/accelerator/test_fusion_bridge.py:589 (+7 more)
     negative control    tools/accelerator/test_fusion_bridge.py, tools/accelerator/test_hardware_doctor.py
     receipt             absent
     evidence level      STATIC
@@ -676,7 +676,7 @@ design, not by neglect: simulated is not measured.
     defining property   primitive dramatically faster/more efficient
     implementation      tools/future/hwir.py
     real caller         absent — no non-test call site
-    verifier            tools/accelerator/test_fusion_bridge.py:372, tools/accelerator/test_fusion_bridge.py:450, tools/accelerator/test_fusion_bridge.py:589 (+6 more)
+    verifier            tools/accelerator/test_fusion_bridge.py:372, tools/accelerator/test_fusion_bridge.py:450, tools/accelerator/test_fusion_bridge.py:589 (+7 more)
     negative control    tools/accelerator/test_fusion_bridge.py, tools/accelerator/test_hardware_doctor.py
     receipt             absent
     evidence level      STATIC
@@ -689,7 +689,7 @@ design, not by neglect: simulated is not measured.
     defining property   primitive dramatically faster/more efficient
     implementation      tools/future/hwir.py
     real caller         absent — no non-test call site
-    verifier            tools/accelerator/test_fusion_bridge.py:372, tools/accelerator/test_fusion_bridge.py:450, tools/accelerator/test_fusion_bridge.py:589 (+6 more)
+    verifier            tools/accelerator/test_fusion_bridge.py:372, tools/accelerator/test_fusion_bridge.py:450, tools/accelerator/test_fusion_bridge.py:589 (+7 more)
     negative control    tools/accelerator/test_fusion_bridge.py, tools/accelerator/test_hardware_doctor.py
     receipt             absent
     evidence level      STATIC
@@ -702,7 +702,7 @@ design, not by neglect: simulated is not measured.
     defining property   primitive dramatically faster/more efficient
     implementation      tools/future/hwir.py
     real caller         absent — no non-test call site
-    verifier            tools/accelerator/test_fusion_bridge.py:372, tools/accelerator/test_fusion_bridge.py:450, tools/accelerator/test_fusion_bridge.py:589 (+6 more)
+    verifier            tools/accelerator/test_fusion_bridge.py:372, tools/accelerator/test_fusion_bridge.py:450, tools/accelerator/test_fusion_bridge.py:589 (+7 more)
     negative control    tools/accelerator/test_fusion_bridge.py, tools/accelerator/test_hardware_doctor.py
     receipt             absent
     evidence level      STATIC
@@ -715,7 +715,7 @@ design, not by neglect: simulated is not measured.
     defining property   primitive dramatically faster/more efficient
     implementation      tools/future/hwir.py
     real caller         absent — no non-test call site
-    verifier            tools/accelerator/test_fusion_bridge.py:372, tools/accelerator/test_fusion_bridge.py:450, tools/accelerator/test_fusion_bridge.py:589 (+6 more)
+    verifier            tools/accelerator/test_fusion_bridge.py:372, tools/accelerator/test_fusion_bridge.py:450, tools/accelerator/test_fusion_bridge.py:589 (+7 more)
     negative control    tools/accelerator/test_fusion_bridge.py, tools/accelerator/test_hardware_doctor.py
     receipt             absent
     evidence level      STATIC
@@ -728,7 +728,7 @@ design, not by neglect: simulated is not measured.
     defining property   primitive dramatically faster/more efficient
     implementation      tools/future/hwir.py
     real caller         absent — no non-test call site
-    verifier            tools/accelerator/test_fusion_bridge.py:372, tools/accelerator/test_fusion_bridge.py:450, tools/accelerator/test_fusion_bridge.py:589 (+6 more)
+    verifier            tools/accelerator/test_fusion_bridge.py:372, tools/accelerator/test_fusion_bridge.py:450, tools/accelerator/test_fusion_bridge.py:589 (+7 more)
     negative control    tools/accelerator/test_fusion_bridge.py, tools/accelerator/test_hardware_doctor.py
     receipt             absent
     evidence level      STATIC
@@ -740,8 +740,8 @@ design, not by neglect: simulated is not measured.
     STATUS              BLOCKED_HARDWARE
     defining property   HBM capacity/bandwidth/latency/bank behavior
     implementation      tools/future/hwir.py, tools/future/hwir.py:2328
-    real caller         tools/accelerator/hardware_doctor.py:782, tools/future/fpga_partition.py:119, tools/future/fpga_partition.py:348
-    verifier            tools/accelerator/test_fusion_bridge.py:372, tools/accelerator/test_fusion_bridge.py:450, tools/accelerator/test_fusion_bridge.py:589 (+20 more)
+    real caller         tools/accelerator/hardware_doctor.py:782, tools/future/fpga_partition.py:119, tools/future/fpga_partition.py:348 (+1 more)
+    verifier            tools/accelerator/test_fusion_bridge.py:372, tools/accelerator/test_fusion_bridge.py:450, tools/accelerator/test_fusion_bridge.py:589 (+22 more)
     negative control    tools/accelerator/test_fusion_bridge.py, tools/accelerator/test_hardware_doctor.py
     receipt             absent
     evidence level      STATIC
