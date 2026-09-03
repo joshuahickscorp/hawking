@@ -69,3 +69,54 @@ def test_shedding_actually_shrinks_the_payload():
     half = _join_observations(blocks[-4:])
     one = _join_observations(blocks[-1:])
     assert len(full) > len(half) > len(one)
+
+
+def test_one_observation_can_never_exceed_the_window():
+    """The blocker shedding could not solve.
+
+    MAX_EVIDENCE_CHARS_PER_FILE was 24,000 characters -- about 8,000 tokens --
+    against a usable input of 5,632. A single fs.read of a large file was 1.4x
+    the entire context, so the ladder could shed every OTHER observation and
+    still be over. Measured: demand stuck at 12,469 against a 8,192 window.
+    """
+    eng = Engine.__new__(Engine)
+    eng.MAX_EVIDENCE_CHARS_PER_FILE = 24000
+    eng._context_budget = lambda: type("B", (), {"usable_input_tokens": 5632})()
+
+    clamped = eng._clamp_observation("x" * 30000)
+    assert len(clamped) < 5632 * 3 // 2, "one result must not dominate the window"
+    assert "truncated to fit the context window" in clamped, (
+        "silent truncation hides that there was more"
+    )
+
+
+def test_a_small_result_is_returned_exactly(tmp_path):
+    """Negative control: clamping must not touch what already fits."""
+    eng = Engine.__new__(Engine)
+    eng.MAX_EVIDENCE_CHARS_PER_FILE = 24000
+    eng._context_budget = lambda: type("B", (), {"usable_input_tokens": 5632})()
+    assert eng._clamp_observation("VALUE = 1\n") == "VALUE = 1\n"
+
+
+def test_the_clamp_follows_the_window_rather_than_a_constant():
+    """A bigger window should permit bigger results, without a code change."""
+    eng = Engine.__new__(Engine)
+    eng.MAX_EVIDENCE_CHARS_PER_FILE = 24000
+
+    eng._context_budget = lambda: type("B", (), {"usable_input_tokens": 5632})()
+    small = len(eng._clamp_observation("x" * 30000))
+    eng._context_budget = lambda: type("B", (), {"usable_input_tokens": 30000})()
+    large = len(eng._clamp_observation("x" * 30000))
+    assert large > small
+
+
+def test_a_broken_budget_falls_back_to_the_constant():
+    """Telemetry must never be the thing that ends a goal."""
+    eng = Engine.__new__(Engine)
+    eng.MAX_EVIDENCE_CHARS_PER_FILE = 500
+
+    def boom():
+        raise RuntimeError("no budget")
+
+    eng._context_budget = boom
+    assert len(eng._clamp_observation("x" * 5000)) < 600

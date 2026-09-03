@@ -1073,7 +1073,7 @@ class Engine:
             observation = {
                 "tool": name,
                 "ok": ok,
-                "text": text[: self.MAX_EVIDENCE_CHARS_PER_FILE],
+                "text": self._clamp_observation(text),
             }
             seen[key] = observation
             out.append(observation)
@@ -1312,6 +1312,31 @@ class Engine:
         if block:
             parts.append(block)
         return "\n\n".join(parts)
+
+    def _clamp_observation(self, text: str) -> str:
+        """One tool result must never exceed a fraction of the usable window.
+
+        `MAX_EVIDENCE_CHARS_PER_FILE` was 24,000 characters -- about 8,000
+        tokens -- against a usable input of 5,632. A single `fs.read` of a large
+        file was therefore 1.4x the entire context on its own, so the reduction
+        ladder could shed every other observation and still not fit. Measured:
+        demand stuck at 12,469 against a 8,192 window with one observation left.
+
+        Derived from the live budget rather than hardcoded, so it stays correct
+        if the window changes. A quarter each, so a handful of results coexist
+        with the goal and the schema instruction.
+        """
+        text = str(text or "")
+        limit = self.MAX_EVIDENCE_CHARS_PER_FILE
+        try:
+            usable = int(self._context_budget().usable_input_tokens)
+            if usable > 0:
+                limit = min(limit, max(1200, usable * _CHARS_PER_TOKEN // 4))
+        except Exception:
+            pass
+        if len(text) <= limit:
+            return text
+        return text[:limit] + f"\n[... {len(text) - limit} characters truncated to fit the context window]"
 
     def _observations_block(
         self,
