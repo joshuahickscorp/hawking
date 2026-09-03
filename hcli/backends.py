@@ -602,6 +602,32 @@ def schema_instruction(schema: Dict[str, Any]) -> str:
     )
 
 
+def _repay_completion_budget(payload: Dict[str, Any], added: str) -> None:
+    """Growing the prompt must shrink the completion budget by as much.
+
+    `max_tokens` is derived ONCE from the prompt the caller built, against a
+    fixed context window. Every retry appends its rejection reason to that same
+    payload, so the prompt grew while the budget it was computed against did
+    not. Measured: three attempts of one goal carried max_tokens 3243 against
+    prompts of 4776, 4876 and 5090. The first two fit the 8192 window; the
+    third asked for 8333 and the runtime truncated the reply mid-object, which
+    was then rejected as malformed -- the retry mechanism defeating itself.
+
+    A whole-token estimate is enough here: the note is small and this only ever
+    makes the request smaller, so an over-estimate costs a few completion
+    tokens and an under-estimate is what we are fixing.
+    """
+    budget = payload.get("max_tokens")
+    if not isinstance(budget, int) or budget <= 0 or not added:
+        return
+    spent = max(1, len(added) // _CHARS_PER_TOKEN_ESTIMATE)
+    payload["max_tokens"] = max(_MIN_COMPLETION_AFTER_RETRY, budget - spent)
+
+
+_CHARS_PER_TOKEN_ESTIMATE = 4
+_MIN_COMPLETION_AFTER_RETRY = 256
+
+
 def append_user_text(
     payload: Dict[str, Any], note: str, skip_if: Optional[str] = None
 ) -> None:
@@ -612,12 +638,14 @@ def append_user_text(
             if skip_if and skip_if in last["content"]:
                 return
             last["content"] = last["content"] + note
+            _repay_completion_budget(payload, note)
         return
     prompt = payload.get("prompt")
     if isinstance(prompt, str):
         if skip_if and skip_if in prompt:
             return
         payload["prompt"] = prompt + note
+        _repay_completion_budget(payload, note)
 
 
 def inject_schema_instruction(payload: Dict[str, Any], instruction: str) -> None:
