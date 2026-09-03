@@ -21,6 +21,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from hcli._test_git import scratch_repo
+
 from hcli.landing import LandingService
 from hcli.tool_registry import DESTRUCTIVE, READ_ONLY, default_tool_registry
 
@@ -30,15 +32,13 @@ FAIL_CMD = [sys.executable, "-c", "import sys; sys.exit(1)"]
 
 def _repo(tmp_path: Path) -> Path:
     """A scratch git repository, never the Hawking repo, fresh per test."""
-    repo = tmp_path / "repo"
-    repo.mkdir()
-    subprocess.run(["git", "init", "-q", "-b", "main"], cwd=repo, check=True)
-    subprocess.run(["git", "config", "user.email", "hcli-landing-test@example.com"], cwd=repo, check=True)
-    subprocess.run(["git", "config", "user.name", "hcli-landing-test"], cwd=repo, check=True)
-    (repo / "README.md").write_text("scratch repo for hcli.landing tests\n", encoding="utf-8")
-    subprocess.run(["git", "add", "README.md"], cwd=repo, check=True)
-    subprocess.run(["git", "commit", "-q", "-m", "init"], cwd=repo, check=True)
-    return repo
+    return scratch_repo(
+        tmp_path / "repo",
+        email="hcli-landing-test@example.com",
+        name="hcli-landing-test",
+        filename="README.md",
+        body="scratch repo for hcli.landing tests\n",
+    )
 
 
 def _head(repo: Path) -> str:

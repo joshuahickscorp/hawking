@@ -12,6 +12,8 @@ import os
 import subprocess
 from pathlib import Path
 
+from hcli._test_git import scratch_repo
+
 import pytest
 
 from hcli.escalation import (
@@ -62,15 +64,14 @@ def test_curate_packet_refuses_to_dump_an_archive_rather_than_truncate():
 # ---------------------------------------------------------------------------
 
 def _git_repo(tmp_path: Path) -> Path:
-    repo = tmp_path / "repo"
-    repo.mkdir()
-    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
-    subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=repo, check=True)
-    subprocess.run(["git", "config", "user.name", "test"], cwd=repo, check=True)
-    (repo / "tracked.py").write_text("print('hi')\n", encoding="utf-8")
-    subprocess.run(["git", "add", "tracked.py"], cwd=repo, check=True)
-    subprocess.run(["git", "commit", "-q", "-m", "init"], cwd=repo, check=True)
-    return repo
+    return scratch_repo(
+        tmp_path / "repo",
+        email="test@example.com",
+        name="test",
+        filename="tracked.py",
+        body="print('hi')\n",
+        branch="",
+    )
 
 
 def test_render_lane_contract_has_write_and_verify_sections():
