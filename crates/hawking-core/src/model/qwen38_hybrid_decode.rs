@@ -7764,7 +7764,7 @@ mod device {
         let decode_wall_ns = decode.elapsed().as_nanos() as u64;
         let decode_steps = tokens.len().saturating_sub(prompt.len()).saturating_sub(1);
         Ok((Qwen38GenerateResult {
-            stop_reason: "",
+            stop_reason,
             tokens,
             prompt_len: prompt.len(),
             wall_ns: wall.elapsed().as_nanos() as u64,
