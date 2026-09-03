@@ -55,6 +55,21 @@ LEDGER = [
      None, 1, "CLASS",
      "the daemon that owns the model worker had no supervisor; the driver "
      "would keep cycling against a control plane that was gone"),
+    ("D10", "retry grew the prompt without shrinking the completion budget",
+     3, 1, "CLASS",
+     "max_tokens 3243 held across prompts of 4776, 4876, 5090; the third asked "
+     "for 8333 against an 8192 window, the runtime truncated the reply mid-"
+     "object and it was rejected as malformed. The model's patch was correct"),
+    ("D11", "a tool_use reply was judged on its placeholder operations",
+     3, 1, "CLASS",
+     "the model asked to READ the file to obtain an exact anchor and filled "
+     "old_text with 'x' to satisfy the reply shape; the anchor preflight "
+     "refused it 3x with 'matches 497 places', so the request for the bytes "
+     "was the thing being refused. Self-inflicted, same day as the preflight"),
+    ("D12", "a truncated tool result did not say how to reach past the cut",
+     None, None, "CLASS",
+     "tool_registry.py is 2341 lines; the clamp shows 169; the target is at "
+     "582. Unbounded: no number of reads of the head ever reaches line 582"),
     ("D9", "one tool observation could occupy the entire input window",
      None, None, "CLASS",
      "24,000 chars against a 5,632-token usable input: one fs.read was 1.4x "
