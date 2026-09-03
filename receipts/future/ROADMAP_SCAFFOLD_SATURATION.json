@@ -14,7 +14,7 @@
     "base_commit": "caf83078f",
     "graph": "civilization/CAPABILITY_GRAPH.json",
     "graph_generated_by": "tools/roadmap/auditor.py",
-    "head": "efc37e13ff7fbdaf6450e8f147c8bcabcd046dcb"
+    "head": "c8e27de90ffeb9b9113447de37626e9a1799014c"
   },
   "externally_blocked": [
     {
@@ -79,8 +79,8 @@
       "ABSENT": 1,
       "BLOCKED_EXTERNAL": 14,
       "BLOCKED_HARDWARE": 13,
-      "BUILT": 24,
-      "SCAFFOLDED": 11,
+      "BUILT": 25,
+      "SCAFFOLDED": 10,
       "UNREACHABLE": 1,
       "WIRED": 19
     },
@@ -193,7 +193,7 @@
     "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE"
   ],
   "work": {
-    "commits": 182,
+    "commits": 188,
     "new_crates": [
       "crates/hawking-index-query/Cargo.toml"
     ],
@@ -210,6 +210,7 @@
       "hcli/test_cycle_verdict.py",
       "hcli/test_deltanet_state_checkpoint.py",
       "hcli/test_event_sink.py",
+      "hcli/test_failed_unit_says_why.py",
       "hcli/test_goal_bank.py",
       "hcli/test_goal_compile.py",
       "hcli/test_goal_compiler_acceptance.py",
@@ -255,6 +256,7 @@
       "tools/accelerator/test_hardware_doctor.py",
       "tools/acceptance/agentos/test_agentos_acceptance.py",
       "tools/acceptance/context/test_gates.py",
+      "tools/acceptance/flash/test_source_verified_defining_property.py",
       "tools/acceptance/odyssey/test_acceptance.py",
       "tools/acceptance/test_flash.py",
       "tools/acceptance/test_lake_acceptance.py",
@@ -288,6 +290,7 @@
       "tools/odyssey/test_physical_graph_compiler_heterogeneous.py",
       "tools/odyssey/test_specimen_open.py",
       "tools/product/test_product.py",
+      "tools/roadmap/test_boot_questions.py",
       "tools/roadmap/test_index_parity.py",
       "tools/roadmap/test_recompile.py",
       "tools/roadmap/test_roadmap_graph.py",
@@ -424,7 +427,7 @@
       "tools/vmcp/receipt.py",
       "tools/vmcp/tool_doctor.py"
     ],
-    "python_lines_added": 92357,
+    "python_lines_added": 92709,
     "rust_lines_added": 7983
   }
 }
