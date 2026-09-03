@@ -12,9 +12,13 @@ from pathlib import Path
 _REPO = Path(__file__).resolve().parent
 # Insert order: operators last so it is searched first (condense wrappers share names).
 for _p in (
-    _REPO / "hawking-experiments" / "prometheus" / "tools",
-    _REPO / "hawking-experiments" / "frankenstein" / "condense",
-    _REPO / "hawking-experiments" / "frankenstein" / "operators",
+    # research/ is a source root: `lab.*` is imported by dotted name from
+    # over a thousand sites and moving the tree under research/ without this
+    # leaves every one of them unresolvable.
+    _REPO / "research",
+    _REPO / "research/hawking-experiments" / "prometheus" / "tools",
+    _REPO / "research/hawking-experiments" / "frankenstein" / "condense",
+    _REPO / "research/hawking-experiments" / "frankenstein" / "operators",
 ):
     _s = str(_p)
     if _p.is_dir() and _s not in sys.path:
