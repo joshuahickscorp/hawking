@@ -1,0 +1,1432 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-03T05:04:57Z",
+  "recorded_by": "tools/future/fpga_partition.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "capacity": {
+  "basis": "DERIVED_FROM_MEASURED",
+  "device": {
+   "declared_not_measured": true,
+   "hbm_capacity_bytes": 8589934592,
+   "hbm_channels": 32,
+   "origin": "U50_FAMILY_VARIANT_DECLARED_NOT_A_BOARD",
+   "variant_id": "u50dd"
+  },
+  "families_that_fit_whole": [
+   "linear_attention_hyperconnection",
+   "embedding_lm_head",
+   "full_attention",
+   "mlp_hyperconnection",
+   "shared_expert",
+   "other",
+   "norm"
+  ],
+  "family_bytes": {
+   "embedding_lm_head": 2564759064,
+   "full_attention": 1337609728,
+   "linear_attention_hyperconnection": 4820291328,
+   "mlp_hyperconnection": 1311502048,
+   "ngram_embedding": 102400491520,
+   "norm": 376320,
+   "other": 457917440,
+   "routed_experts": 246625075200,
+   "shared_expert": 481940480
+  },
+  "finding": "HBM holds a small fraction of the body, and the obvious resident set -- everything that is not the MoE experts or the n-gram table -- does NOT fit. Residency is therefore a real selection problem, not an obvious one, and the selection must be value-ranked rather than size-ranked (tools/future/hbm_doctor.py owns that knapsack and refuses size ranking).",
+  "hbm_fraction_of_body": 0.02386093186611189,
+  "model": "Qwen/Qwen3.8-Flash-Next",
+  "non_bulk_bytes": 10974396408,
+  "non_bulk_families": [
+   "embedding_lm_head",
+   "full_attention",
+   "linear_attention_hyperconnection",
+   "mlp_hyperconnection",
+   "norm",
+   "other",
+   "shared_expert"
+  ],
+  "non_bulk_fits": false,
+  "non_bulk_overflow_bytes": 2384461816,
+  "parameter_bytes": 359999963128,
+  "source": {
+   "layer_count_observed": 48,
+   "pinned_source": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+   "receipt": "receipts/headless/FLASH_ORGAN_CENSUS.json",
+   "source_index_sha256": "99e815241ef03325536b0aaa4441deea45174c17fae31e10f0bb456410c590de",
+   "tensor_count": 1658
+  }
+ },
+ "claim_boundary": "COST_MODEL over MEASURED bytes and UNPINNED rate ratios. The capacity arithmetic is derived from an indexed model on disk and is exact. Every partition number is a surface over ratios nobody can measure without the board, and Conclusion.as_prediction() raises rather than reporting one as a rate. No tok/s, no GB/s, no Fmax, no utilisation.",
+ "evidence_tier": "COST_MODEL",
+ "hardware_measured": false,
+ "not_a_board_result": true,
+ "partition_envelope": {
+  "W_bytes_per_layer": 27322959.333333332,
+  "activation_plus_reduction_as_fraction_of_W": 0.002,
+  "basis": "ENVELOPE",
+  "best": {
+   "C_over_W": 1.9999999999999998e-05,
+   "helps": true,
+   "optimum_fpga_fraction": 0.9411576470588235,
+   "phase": "COMPUTE_BALANCED",
+   "r_fpga_over_apple": 16.0,
+   "speedup": 16.99456174024312,
+   "t_link_over_apple": 100.0,
+   "transport_cost_C": 546.4591866666666
+  },
+  "break_even_rule": "the FPGA helps if and only if C < W",
+  "cells": 126,
+  "cells_where_fpga_helps": 117,
+  "inputs": {
+   "W_bytes": {
+    "pinned": true,
+    "value": 27322959.333333332
+   },
+   "activation_bytes": {
+    "pinned": true,
+    "value": 27322.959333333332
+   },
+   "r_fpga_over_apple": {
+    "citation": "",
+    "document_class": "UNPINNED",
+    "evidence_tier": "STATIC",
+    "hardware_measured": false,
+    "note": "r: needs a measured Apple rate for this organ and a board",
+    "pinned": false,
+    "value": "UNPINNED",
+    "vendor_literature_not_measurement": true
+   },
+   "reduction_bytes": {
+    "pinned": true,
+    "value": 27322.959333333332
+   },
+   "setup": {
+    "citation": "",
+    "document_class": "UNPINNED",
+    "evidence_tier": "STATIC",
+    "hardware_measured": false,
+    "note": "s: needs measured DMA submission and completion cost",
+    "pinned": false,
+    "value": "UNPINNED",
+    "vendor_literature_not_measurement": true
+   },
+   "t_link_over_apple": {
+    "citation": "",
+    "document_class": "UNPINNED",
+    "evidence_tier": "STATIC",
+    "hardware_measured": false,
+    "note": "t: needs sustained host<->board bandwidth, which requires the carrier",
+    "pinned": false,
+    "value": "UNPINNED",
+    "vendor_literature_not_measurement": true
+   }
+  },
+  "organ": "mlp_hyperconnection",
+  "phase_counts": {
+   "APPLE_ONLY": 9,
+   "COMPUTE_BALANCED": 50,
+   "FPGA_LIMITED": 40,
+   "TRANSPORT_DOMINATED": 27
+  },
+  "rows": [
+   {
+    "C_over_W": 2.0,
+    "helps": false,
+    "optimum_fpga_fraction": 0.0,
+    "phase": "APPLE_ONLY",
+    "r_fpga_over_apple": 0.0625,
+    "speedup": 1.0,
+    "t_link_over_apple": 0.001,
+    "transport_cost_C": 54645918.666666664
+   },
+   {
+    "C_over_W": 0.7999999999999999,
+    "helps": true,
+    "optimum_fpga_fraction": 0.011764705882352944,
+    "phase": "TRANSPORT_DOMINATED",
+    "r_fpga_over_apple": 0.0625,
+    "speedup": 1.0119047619047619,
+    "t_link_over_apple": 0.0025,
+    "transport_cost_C": 21858367.466666665
+   },
+   {
+    "C_over_W": 0.6666666666666666,
+    "helps": true,
+    "optimum_fpga_fraction": 0.019607843137254905,
+    "phase": "TRANSPORT_DOMINATED",
+    "r_fpga_over_apple": 0.0625,
+    "speedup": 1.02,
+    "t_link_over_apple": 0.003,
+    "transport_cost_C": 18215306.22222222
+   },
+   {
+    "C_over_W": 0.5714285714285714,
+    "helps": true,
+    "optimum_fpga_fraction": 0.025210084033613446,
+    "phase": "TRANSPORT_DOMINATED",
+    "r_fpga_over_apple": 0.0625,
+    "speedup": 1.0258620689655171,
+    "t_link_over_apple": 0.0035,
+    "transport_cost_C": 15613119.619047618
+   },
+   {
+    "C_over_W": 0.19999999999999998,
+    "helps": true,
+    "optimum_fpga_fraction": 0.047058823529411764,
+    "phase": "FPGA_LIMITED",
+    "r_fpga_over_apple": 0.0625,
+    "speedup": 1.0493827160493827,
+    "t_link_over_apple": 0.01,
+    "transport_cost_C": 5464591.866666666
+   },
+   {
+    "C_over_W": 0.04,
+    "helps": true,
+    "optimum_fpga_fraction": 0.05647058823529411,
+    "phase": "FPGA_LIMITED",
+    "r_fpga_over_apple": 0.0625,
+    "speedup": 1.059850374064838,
+    "t_link_over_apple": 0.05,
+    "transport_cost_C": 1092918.3733333333
+   },
+   {
+    "C_over_W": 0.02,
+    "helps": true,
+    "optimum_fpga_fraction": 0.05764705882352941,
+    "phase": "FPGA_LIMITED",
+    "r_fpga_over_apple": 0.0625,
+    "speedup": 1.0611735330836454,
+    "t_link_over_apple": 0.1,
+    "transport_cost_C": 546459.1866666666
+   },
+   {
+    "C_over_W": 0.008,
+    "helps": true,
+    "optimum_fpga_fraction": 0.05835294117647059,
+    "phase": "FPGA_LIMITED",
+    "r_fpga_over_apple": 0.0625,
+    "speedup": 1.0619690154922539,
+    "t_link_over_apple": 0.25,
+    "transport_cost_C": 218583.67466666666
+   },
+   {
+    "C_over_W": 0.004,
+    "helps": true,
+    "optimum_fpga_fraction": 0.05858823529411765,
+    "phase": "FPGA_LIMITED",
+    "r_fpga_over_apple": 0.0625,
+    "speedup": 1.0622344413896525,
+    "t_link_over_apple": 0.5,
+    "transport_cost_C": 109291.83733333333
+   },
+   {
+    "C_over_W": 0.002,
+    "helps": true,
+    "optimum_fpga_fraction": 0.05870588235294118,
+    "phase": "FPGA_LIMITED",
+    "r_fpga_over_apple": 0.0625,
+    "speedup": 1.0623672040994876,
+    "t_link_over_apple": 1.0,
+    "transport_cost_C": 54645.918666666665
+   },
+   {
+    "C_over_W": 0.001,
+    "helps": true,
+    "optimum_fpga_fraction": 0.05876470588235294,
+    "phase": "FPGA_LIMITED",
+    "r_fpga_over_apple": 0.0625,
+    "speedup": 1.0624335979001311,
+    "t_link_over_apple": 2.0,
+    "transport_cost_C": 27322.959333333332
+   },
+   {
+    "C_over_W": 0.0004,
+    "helps": true,
+    "optimum_fpga_fraction": 0.058800000000000005,
+    "phase": "FPGA_LIMITED",
+    "r_fpga_over_apple": 0.0625,
+    "speedup": 1.062473438164046,
+    "t_link_over_apple": 5.0,
+    "transport_cost_C": 10929.183733333333
+   },
+   {
+    "C_over_W": 0.0002,
+    "helps": true,
+    "optimum_fpga_fraction": 0.058811764705882355,
+    "phase": "FPGA_LIMITED",
+    "r_fpga_over_apple": 0.0625,
+    "speedup": 1.0624867189160134,
+    "t_link_over_apple": 10.0,
+    "transport_cost_C": 5464.591866666667
+   },
+   {
+    "C_over_W": 1.9999999999999998e-05,
+    "helps": true,
+    "optimum_fpga_fraction": 0.05882235294117647,
+    "phase": "FPGA_LIMITED",
+    "r_fpga_over_apple": 0.0625,
+    "speedup": 1.06249867187666,
+    "t_link_over_apple": 100.0,
+    "transport_cost_C": 546.4591866666666
+   },
+   {
+    "C_over_W": 2.0,
+    "helps": false,
+    "optimum_fpga_fraction": 0.0,
+    "phase": "APPLE_ONLY",
+    "r_fpga_over_apple": 0.125,
+    "speedup": 1.0,
+    "t_link_over_apple": 0.001,
+    "transport_cost_C": 54645918.666666664
+   },
+   {
+    "C_over_W": 0.7999999999999999,
+    "helps": true,
+    "optimum_fpga_fraction": 0.02222222222222223,
+    "phase": "TRANSPORT_DOMINATED",
+    "r_fpga_over_apple": 0.125,
+    "speedup": 1.0227272727272727,
+    "t_link_over_apple": 0.0025,
+    "transport_cost_C": 21858367.466666665
+   },
+   {
+    "C_over_W": 0.6666666666666666,
+    "helps": true,
+    "optimum_fpga_fraction": 0.03703703703703704,
+    "phase": "TRANSPORT_DOMINATED",
+    "r_fpga_over_apple": 0.125,
+    "speedup": 1.0384615384615385,
+    "t_link_over_apple": 0.003,
+    "transport_cost_C": 18215306.22222222
+   },
+   {
+    "C_over_W": 0.5714285714285714,
+    "helps": true,
+    "optimum_fpga_fraction": 0.04761904761904762,
+    "phase": "TRANSPORT_DOMINATED",
+    "r_fpga_over_apple": 0.125,
+    "speedup": 1.05,
+    "t_link_over_apple": 0.0035,
+    "transport_cost_C": 15613119.619047618
+   },
+   {
+    "C_over_W": 0.19999999999999998,
+    "helps": true,
+    "optimum_fpga_fraction": 0.08888888888888889,
+    "phase": "FPGA_LIMITED",
+    "r_fpga_over_apple": 0.125,
+    "speedup": 1.097560975609756,
+    "t_link_over_apple": 0.01,
+    "transport_cost_C": 5464591.866666666
+   },
+   {
+    "C_over_W": 0.04,
+    "helps": true,
+    "optimum_fpga_fraction": 0.10666666666666666,
+    "phase": "FPGA_LIMITED",
+    "r_fpga_over_apple": 0.125,
+    "speedup": 1.1194029850746268,
+    "t_link_over_apple": 0.05,
+    "transport_cost_C": 1092918.3733333333
+   },
+   {
+    "C_over_W": 0.02,
+    "helps": true,
+    "optimum_fpga_fraction": 0.10888888888888888,
+    "phase": "FPGA_LIMITED",
+    "r_fpga_over_apple": 0.125,
+    "speedup": 1.1221945137157108,
+    "t_link_over_apple": 0.1,
+    "transport_cost_C": 546459.1866666666
+   },
+   {
+    "C_over_W": 0.008,
+    "helps": true,
+    "optimum_fpga_fraction": 0.11022222222222222,
+    "phase": "FPGA_LIMITED",
+    "r_fpga_over_apple": 0.125,
+    "speedup": 1.123876123876124,
+    "t_link_over_apple": 0.25,
+    "transport_cost_C": 218583.67466666666
+   },
+   {
+    "C_over_W": 0.004,
+    "helps": true,
+    "optimum_fpga_fraction": 0.11066666666666666,
+    "phase": "FPGA_LIMITED",
+    "r_fpga_over_apple": 0.125,
+    "speedup": 1.1244377811094453,
+    "t_link_over_apple": 0.5,
+    "transport_cost_C": 109291.83733333333
+   },
+   {
+    "C_over_W": 0.002,
+    "helps": true,
+    "optimum_fpga_fraction": 0.11088888888888888,
+    "phase": "FPGA_LIMITED",
+    "r_fpga_over_apple": 0.125,
+    "speedup": 1.1247188202949263,
+    "t_link_over_apple": 1.0,
+    "transport_cost_C": 54645.918666666665
+   },
+   {
+    "C_over_W": 0.001,
+    "helps": true,
+    "optimum_fpga_fraction": 0.11099999999999999,
+    "phase": "FPGA_LIMITED",
+    "r_fpga_over_apple": 0.125,
+    "speedup": 1.1248593925759278,
+    "t_link_over_apple": 2.0,
+    "transport_cost_C": 27322.959333333332
+   },
+   {
+    "C_over_W": 0.0004,
+    "helps": true,
+    "optimum_fpga_fraction": 0.11106666666666666,
+    "phase": "FPGA_LIMITED",
+    "r_fpga_over_apple": 0.125,
+    "speedup": 1.1249437528123594,
+    "t_link_over_apple": 5.0,
+    "transport_cost_C": 10929.183733333333
+   },
+   {
+    "C_over_W": 0.0002,
+    "helps": true,
+    "optimum_fpga_fraction": 0.11108888888888889,
+    "phase": "FPGA_LIMITED",
+    "r_fpga_over_apple": 0.125,
+    "speedup": 1.1249718757031073,
+    "t_link_over_apple": 10.0,
+    "transport_cost_C": 5464.591866666667
+   },
+   {
+    "C_over_W": 1.9999999999999998e-05,
+    "helps": true,
+    "optimum_fpga_fraction": 0.11110888888888888,
+    "phase": "FPGA_LIMITED",
+    "r_fpga_over_apple": 0.125,
+    "speedup": 1.1249971875070313,
+    "t_link_over_apple": 100.0,
+    "transport_cost_C": 546.4591866666666
+   },
+   {
+    "C_over_W": 2.0,
+    "helps": false,
+    "optimum_fpga_fraction": 0.0,
+    "phase": "APPLE_ONLY",
+    "r_fpga_over_apple": 0.25,
+    "speedup": 1.0,
+    "t_link_over_apple": 0.001,
+    "transport_cost_C": 54645918.666666664
+   },
+   {
+    "C_over_W": 0.7999999999999999,
+    "helps": true,
+    "optimum_fpga_fraction": 0.040000000000000015,
+    "phase": "TRANSPORT_DOMINATED",
+    "r_fpga_over_apple": 0.25,
+    "speedup": 1.0416666666666665,
+    "t_link_over_apple": 0.0025,
+    "transport_cost_C": 21858367.466666665
+   },
+   {
+    "C_over_W": 0.6666666666666666,
+    "helps": true,
+    "optimum_fpga_fraction": 0.06666666666666668,
+    "phase": "TRANSPORT_DOMINATED",
+    "r_fpga_over_apple": 0.25,
+    "speedup": 1.0714285714285714,
+    "t_link_over_apple": 0.003,
+    "transport_cost_C": 18215306.22222222
+   },
+   {
+    "C_over_W": 0.5714285714285714,
+    "helps": true,
+    "optimum_fpga_fraction": 0.08571428571428573,
+    "phase": "TRANSPORT_DOMINATED",
+    "r_fpga_over_apple": 0.25,
+    "speedup": 1.09375,
+    "t_link_over_apple": 0.0035,
+    "transport_cost_C": 15613119.619047618
+   },
+   {
+    "C_over_W": 0.19999999999999998,
+    "helps": true,
+    "optimum_fpga_fraction": 0.16000000000000003,
+    "phase": "FPGA_LIMITED",
+    "r_fpga_over_apple": 0.25,
+    "speedup": 1.1904761904761902,
+    "t_link_over_apple": 0.01,
+    "transport_cost_C": 5464591.866666666
+   },
+   {
+    "C_over_W": 0.04,
+    "helps": true,
+    "optimum_fpga_fraction": 0.192,
+    "phase": "FPGA_LIMITED",
+    "r_fpga_over_apple": 0.25,
+    "speedup": 1.2376237623762376,
+    "t_link_over_apple": 0.05,
+    "transport_cost_C": 1092918.3733333333
+   },
+   {
+    "C_over_W": 0.02,
+    "helps": true,
+    "optimum_fpga_fraction": 0.196,
+    "phase": "FPGA_LIMITED",
+    "r_fpga_over_apple": 0.25,
+    "speedup": 1.243781094527363,
+    "t_link_over_apple": 0.1,
+    "transport_cost_C": 546459.1866666666
+   },
+   {
+    "C_over_W": 0.008,
+    "helps": true,
+    "optimum_fpga_fraction": 0.19840000000000002,
+    "phase": "FPGA_LIMITED",
+    "r_fpga_over_apple": 0.25,
+    "speedup": 1.24750499001996,
+    "t_link_over_apple": 0.25,
+    "transport_cost_C": 218583.67466666666
+   },
+   {
+    "C_over_W": 0.004,
+    "helps": true,
+    "optimum_fpga_fraction": 0.19920000000000002,
+    "phase": "FPGA_LIMITED",
+    "r_fpga_over_apple": 0.25,
+    "speedup": 1.2487512487512487,
+    "t_link_over_apple": 0.5,
+    "transport_cost_C": 109291.83733333333
+   },
+   {
+    "C_over_W": 0.002,
+    "helps": true,
+    "optimum_fpga_fraction": 0.1996,
+    "phase": "FPGA_LIMITED",
+    "r_fpga_over_apple": 0.25,
+    "speedup": 1.249375312343828,
+    "t_link_over_apple": 1.0,
+    "transport_cost_C": 54645.918666666665
+   },
+   {
+    "C_over_W": 0.001,
+    "helps": true,
+    "optimum_fpga_fraction": 0.1998,
+    "phase": "FPGA_LIMITED",
+    "r_fpga_over_apple": 0.25,
+    "speedup": 1.2496875781054735,
+    "t_link_over_apple": 2.0,
+    "transport_cost_C": 27322.959333333332
+   },
+   {
+    "C_over_W": 0.0004,
+    "helps": true,
+    "optimum_fpga_fraction": 0.19992000000000001,
+    "phase": "FPGA_LIMITED",
+    "r_fpga_over_apple": 0.25,
+    "speedup": 1.2498750124987499,
+    "t_link_over_apple": 5.0,
+    "transport_cost_C": 10929.183733333333
+   },
+   {
+    "C_over_W": 0.0002,
+    "helps": true,
+    "optimum_fpga_fraction": 0.19996000000000003,
+    "phase": "FPGA_LIMITED",
+    "r_fpga_over_apple": 0.25,
+    "speedup": 1.2499375031248434,
+    "t_link_over_apple": 10.0,
+    "transport_cost_C": 5464.591866666667
+   },
+   {
+    "C_over_W": 1.9999999999999998e-05,
+    "helps": true,
+    "optimum_fpga_fraction": 0.199996,
+    "phase": "FPGA_LIMITED",
+    "r_fpga_over_apple": 0.25,
+    "speedup": 1.24999375003125,
+    "t_link_over_apple": 100.0,
+    "transport_cost_C": 546.4591866666666
+   },
+   {
+    "C_over_W": 2.0,
+    "helps": false,
+    "optimum_fpga_fraction": 0.0,
+    "phase": "APPLE_ONLY",
+    "r_fpga_over_apple": 0.5,
+    "speedup": 1.0,
+    "t_link_over_apple": 0.001,
+    "transport_cost_C": 54645918.666666664
+   },
+   {
+    "C_over_W": 0.7999999999999999,
+    "helps": true,
+    "optimum_fpga_fraction": 0.06666666666666668,
+    "phase": "TRANSPORT_DOMINATED",
+    "r_fpga_over_apple": 0.5,
+    "speedup": 1.0714285714285714,
+    "t_link_over_apple": 0.0025,
+    "transport_cost_C": 21858367.466666665
+   },
+   {
+    "C_over_W": 0.6666666666666666,
+    "helps": true,
+    "optimum_fpga_fraction": 0.11111111111111112,
+    "phase": "TRANSPORT_DOMINATED",
+    "r_fpga_over_apple": 0.5,
+    "speedup": 1.125,
+    "t_link_over_apple": 0.003,
+    "transport_cost_C": 18215306.22222222
+   },
+   {
+    "C_over_W": 0.5714285714285714,
+    "helps": true,
+    "optimum_fpga_fraction": 0.14285714285714285,
+    "phase": "TRANSPORT_DOMINATED",
+    "r_fpga_over_apple": 0.5,
+    "speedup": 1.1666666666666665,
+    "t_link_over_apple": 0.0035,
+    "transport_cost_C": 15613119.619047618
+   },
+   {
+    "C_over_W": 0.19999999999999998,
+    "helps": true,
+    "optimum_fpga_fraction": 0.26666666666666666,
+    "phase": "FPGA_LIMITED",
+    "r_fpga_over_apple": 0.5,
+    "speedup": 1.3636363636363635,
+    "t_link_over_apple": 0.01,
+    "transport_cost_C": 5464591.866666666
+   },
+   {
+    "C_over_W": 0.04,
+    "helps": true,
+    "optimum_fpga_fraction": 0.31999999999999995,
+    "phase": "FPGA_LIMITED",
+    "r_fpga_over_apple": 0.5,
+    "speedup": 1.4705882352941175,
+    "t_link_over_apple": 0.05,
+    "transport_cost_C": 1092918.3733333333
+   },
+   {
+    "C_over_W": 0.02,
+    "helps": true,
+    "optimum_fpga_fraction": 0.32666666666666666,
+    "phase": "FPGA_LIMITED",
+    "r_fpga_over_apple": 0.5,
+    "speedup": 1.4851485148514851,
+    "t_link_over_apple": 0.1,
+    "transport_cost_C": 546459.1866666666
+   },
+   {
+    "C_over_W": 0.008,
+    "helps": true,
+    "optimum_fpga_fraction": 0.33066666666666666,
+    "phase": "FPGA_LIMITED",
+    "r_fpga_over_apple": 0.5,
+    "speedup": 1.4940239043824701,
+    "t_link_over_apple": 0.25,
+    "transport_cost_C": 218583.67466666666
+   },
+   {
+    "C_over_W": 0.004,
+    "helps": true,
+    "optimum_fpga_fraction": 0.33199999999999996,
+    "phase": "FPGA_LIMITED",
+    "r_fpga_over_apple": 0.5,
+    "speedup": 1.4970059880239521,
+    "t_link_over_apple": 0.5,
+    "transport_cost_C": 109291.83733333333
+   },
+   {
+    "C_over_W": 0.002,
+    "helps": true,
+    "optimum_fpga_fraction": 0.33266666666666667,
+    "phase": "FPGA_LIMITED",
+    "r_fpga_over_apple": 0.5,
+    "speedup": 1.4985014985014982,
+    "t_link_over_apple": 1.0,
+    "transport_cost_C": 54645.918666666665
+   },
+   {
+    "C_over_W": 0.001,
+    "helps": true,
+    "optimum_fpga_fraction": 0.33299999999999996,
+    "phase": "FPGA_LIMITED",
+    "r_fpga_over_apple": 0.5,
+    "speedup": 1.4992503748125934,
+    "t_link_over_apple": 2.0,
+    "transport_cost_C": 27322.959333333332
+   },
+   {
+    "C_over_W": 0.0004,
+    "helps": true,
+    "optimum_fpga_fraction": 0.3332,
+    "phase": "FPGA_LIMITED",
+    "r_fpga_over_apple": 0.5,
+    "speedup": 1.4997000599880024,
+    "t_link_over_apple": 5.0,
+    "transport_cost_C": 10929.183733333333
+   },
+   {
+    "C_over_W": 0.0002,
+    "helps": true,
+    "optimum_fpga_fraction": 0.33326666666666666,
+    "phase": "FPGA_LIMITED",
+    "r_fpga_over_apple": 0.5,
+    "speedup": 1.4998500149985,
+    "t_link_over_apple": 10.0,
+    "transport_cost_C": 5464.591866666667
+   },
+   {
+    "C_over_W": 1.9999999999999998e-05,
+    "helps": true,
+    "optimum_fpga_fraction": 0.33332666666666666,
+    "phase": "FPGA_LIMITED",
+    "r_fpga_over_apple": 0.5,
+    "speedup": 1.4999850001499984,
+    "t_link_over_apple": 100.0,
+    "transport_cost_C": 546.4591866666666
+   },
+   {
+    "C_over_W": 2.0,
+    "helps": false,
+    "optimum_fpga_fraction": 0.0,
+    "phase": "APPLE_ONLY",
+    "r_fpga_over_apple": 1.0,
+    "speedup": 1.0,
+    "t_link_over_apple": 0.001,
+    "transport_cost_C": 54645918.666666664
+   },
+   {
+    "C_over_W": 0.7999999999999999,
+    "helps": true,
+    "optimum_fpga_fraction": 0.10000000000000003,
+    "phase": "TRANSPORT_DOMINATED",
+    "r_fpga_over_apple": 1.0,
+    "speedup": 1.1111111111111112,
+    "t_link_over_apple": 0.0025,
+    "transport_cost_C": 21858367.466666665
+   },
+   {
+    "C_over_W": 0.6666666666666666,
+    "helps": true,
+    "optimum_fpga_fraction": 0.16666666666666669,
+    "phase": "TRANSPORT_DOMINATED",
+    "r_fpga_over_apple": 1.0,
+    "speedup": 1.2,
+    "t_link_over_apple": 0.003,
+    "transport_cost_C": 18215306.22222222
+   },
+   {
+    "C_over_W": 0.5714285714285714,
+    "helps": true,
+    "optimum_fpga_fraction": 0.2142857142857143,
+    "phase": "TRANSPORT_DOMINATED",
+    "r_fpga_over_apple": 1.0,
+    "speedup": 1.2727272727272727,
+    "t_link_over_apple": 0.0035,
+    "transport_cost_C": 15613119.619047618
+   },
+   {
+    "C_over_W": 0.19999999999999998,
+    "helps": true,
+    "optimum_fpga_fraction": 0.4,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 1.0,
+    "speedup": 1.6666666666666665,
+    "t_link_over_apple": 0.01,
+    "transport_cost_C": 5464591.866666666
+   },
+   {
+    "C_over_W": 0.04,
+    "helps": true,
+    "optimum_fpga_fraction": 0.48,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 1.0,
+    "speedup": 1.923076923076923,
+    "t_link_over_apple": 0.05,
+    "transport_cost_C": 1092918.3733333333
+   },
+   {
+    "C_over_W": 0.02,
+    "helps": true,
+    "optimum_fpga_fraction": 0.49,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 1.0,
+    "speedup": 1.9607843137254901,
+    "t_link_over_apple": 0.1,
+    "transport_cost_C": 546459.1866666666
+   },
+   {
+    "C_over_W": 0.008,
+    "helps": true,
+    "optimum_fpga_fraction": 0.496,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 1.0,
+    "speedup": 1.984126984126984,
+    "t_link_over_apple": 0.25,
+    "transport_cost_C": 218583.67466666666
+   },
+   {
+    "C_over_W": 0.004,
+    "helps": true,
+    "optimum_fpga_fraction": 0.498,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 1.0,
+    "speedup": 1.9920318725099602,
+    "t_link_over_apple": 0.5,
+    "transport_cost_C": 109291.83733333333
+   },
+   {
+    "C_over_W": 0.002,
+    "helps": true,
+    "optimum_fpga_fraction": 0.499,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 1.0,
+    "speedup": 1.996007984031936,
+    "t_link_over_apple": 1.0,
+    "transport_cost_C": 54645.918666666665
+   },
+   {
+    "C_over_W": 0.001,
+    "helps": true,
+    "optimum_fpga_fraction": 0.4995,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 1.0,
+    "speedup": 1.9980019980019978,
+    "t_link_over_apple": 2.0,
+    "transport_cost_C": 27322.959333333332
+   },
+   {
+    "C_over_W": 0.0004,
+    "helps": true,
+    "optimum_fpga_fraction": 0.4998,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 1.0,
+    "speedup": 1.9992003198720512,
+    "t_link_over_apple": 5.0,
+    "transport_cost_C": 10929.183733333333
+   },
+   {
+    "C_over_W": 0.0002,
+    "helps": true,
+    "optimum_fpga_fraction": 0.4999,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 1.0,
+    "speedup": 1.999600079984003,
+    "t_link_over_apple": 10.0,
+    "transport_cost_C": 5464.591866666667
+   },
+   {
+    "C_over_W": 1.9999999999999998e-05,
+    "helps": true,
+    "optimum_fpga_fraction": 0.49999,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 1.0,
+    "speedup": 1.9999600007999838,
+    "t_link_over_apple": 100.0,
+    "transport_cost_C": 546.4591866666666
+   },
+   {
+    "C_over_W": 2.0,
+    "helps": false,
+    "optimum_fpga_fraction": 0.0,
+    "phase": "APPLE_ONLY",
+    "r_fpga_over_apple": 2.0,
+    "speedup": 1.0,
+    "t_link_over_apple": 0.001,
+    "transport_cost_C": 54645918.666666664
+   },
+   {
+    "C_over_W": 0.7999999999999999,
+    "helps": true,
+    "optimum_fpga_fraction": 0.13333333333333336,
+    "phase": "TRANSPORT_DOMINATED",
+    "r_fpga_over_apple": 2.0,
+    "speedup": 1.153846153846154,
+    "t_link_over_apple": 0.0025,
+    "transport_cost_C": 21858367.466666665
+   },
+   {
+    "C_over_W": 0.6666666666666666,
+    "helps": true,
+    "optimum_fpga_fraction": 0.22222222222222224,
+    "phase": "TRANSPORT_DOMINATED",
+    "r_fpga_over_apple": 2.0,
+    "speedup": 1.2857142857142856,
+    "t_link_over_apple": 0.003,
+    "transport_cost_C": 18215306.22222222
+   },
+   {
+    "C_over_W": 0.5714285714285714,
+    "helps": true,
+    "optimum_fpga_fraction": 0.2857142857142857,
+    "phase": "TRANSPORT_DOMINATED",
+    "r_fpga_over_apple": 2.0,
+    "speedup": 1.4000000000000001,
+    "t_link_over_apple": 0.0035,
+    "transport_cost_C": 15613119.619047618
+   },
+   {
+    "C_over_W": 0.19999999999999998,
+    "helps": true,
+    "optimum_fpga_fraction": 0.5333333333333333,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 2.0,
+    "speedup": 2.142857142857143,
+    "t_link_over_apple": 0.01,
+    "transport_cost_C": 5464591.866666666
+   },
+   {
+    "C_over_W": 0.04,
+    "helps": true,
+    "optimum_fpga_fraction": 0.6399999999999999,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 2.0,
+    "speedup": 2.777777777777777,
+    "t_link_over_apple": 0.05,
+    "transport_cost_C": 1092918.3733333333
+   },
+   {
+    "C_over_W": 0.02,
+    "helps": true,
+    "optimum_fpga_fraction": 0.6533333333333333,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 2.0,
+    "speedup": 2.8846153846153846,
+    "t_link_over_apple": 0.1,
+    "transport_cost_C": 546459.1866666666
+   },
+   {
+    "C_over_W": 0.008,
+    "helps": true,
+    "optimum_fpga_fraction": 0.6613333333333333,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 2.0,
+    "speedup": 2.952755905511811,
+    "t_link_over_apple": 0.25,
+    "transport_cost_C": 218583.67466666666
+   },
+   {
+    "C_over_W": 0.004,
+    "helps": true,
+    "optimum_fpga_fraction": 0.6639999999999999,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 2.0,
+    "speedup": 2.976190476190476,
+    "t_link_over_apple": 0.5,
+    "transport_cost_C": 109291.83733333333
+   },
+   {
+    "C_over_W": 0.002,
+    "helps": true,
+    "optimum_fpga_fraction": 0.6653333333333333,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 2.0,
+    "speedup": 2.9880478087649402,
+    "t_link_over_apple": 1.0,
+    "transport_cost_C": 54645.918666666665
+   },
+   {
+    "C_over_W": 0.001,
+    "helps": true,
+    "optimum_fpga_fraction": 0.6659999999999999,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 2.0,
+    "speedup": 2.994011976047904,
+    "t_link_over_apple": 2.0,
+    "transport_cost_C": 27322.959333333332
+   },
+   {
+    "C_over_W": 0.0004,
+    "helps": true,
+    "optimum_fpga_fraction": 0.6664,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 2.0,
+    "speedup": 2.997601918465228,
+    "t_link_over_apple": 5.0,
+    "transport_cost_C": 10929.183733333333
+   },
+   {
+    "C_over_W": 0.0002,
+    "helps": true,
+    "optimum_fpga_fraction": 0.6665333333333333,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 2.0,
+    "speedup": 2.998800479808077,
+    "t_link_over_apple": 10.0,
+    "transport_cost_C": 5464.591866666667
+   },
+   {
+    "C_over_W": 1.9999999999999998e-05,
+    "helps": true,
+    "optimum_fpga_fraction": 0.6666533333333333,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 2.0,
+    "speedup": 2.999880004799808,
+    "t_link_over_apple": 100.0,
+    "transport_cost_C": 546.4591866666666
+   },
+   {
+    "C_over_W": 2.0,
+    "helps": false,
+    "optimum_fpga_fraction": 0.0,
+    "phase": "APPLE_ONLY",
+    "r_fpga_over_apple": 4.0,
+    "speedup": 1.0,
+    "t_link_over_apple": 0.001,
+    "transport_cost_C": 54645918.666666664
+   },
+   {
+    "C_over_W": 0.7999999999999999,
+    "helps": true,
+    "optimum_fpga_fraction": 0.16000000000000006,
+    "phase": "TRANSPORT_DOMINATED",
+    "r_fpga_over_apple": 4.0,
+    "speedup": 1.1904761904761905,
+    "t_link_over_apple": 0.0025,
+    "transport_cost_C": 21858367.466666665
+   },
+   {
+    "C_over_W": 0.6666666666666666,
+    "helps": true,
+    "optimum_fpga_fraction": 0.2666666666666667,
+    "phase": "TRANSPORT_DOMINATED",
+    "r_fpga_over_apple": 4.0,
+    "speedup": 1.3636363636363638,
+    "t_link_over_apple": 0.003,
+    "transport_cost_C": 18215306.22222222
+   },
+   {
+    "C_over_W": 0.5714285714285714,
+    "helps": true,
+    "optimum_fpga_fraction": 0.3428571428571429,
+    "phase": "TRANSPORT_DOMINATED",
+    "r_fpga_over_apple": 4.0,
+    "speedup": 1.5217391304347825,
+    "t_link_over_apple": 0.0035,
+    "transport_cost_C": 15613119.619047618
+   },
+   {
+    "C_over_W": 0.19999999999999998,
+    "helps": true,
+    "optimum_fpga_fraction": 0.6400000000000001,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 4.0,
+    "speedup": 2.7777777777777777,
+    "t_link_over_apple": 0.01,
+    "transport_cost_C": 5464591.866666666
+   },
+   {
+    "C_over_W": 0.04,
+    "helps": true,
+    "optimum_fpga_fraction": 0.768,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 4.0,
+    "speedup": 4.310344827586207,
+    "t_link_over_apple": 0.05,
+    "transport_cost_C": 1092918.3733333333
+   },
+   {
+    "C_over_W": 0.02,
+    "helps": true,
+    "optimum_fpga_fraction": 0.784,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 4.0,
+    "speedup": 4.62962962962963,
+    "t_link_over_apple": 0.1,
+    "transport_cost_C": 546459.1866666666
+   },
+   {
+    "C_over_W": 0.008,
+    "helps": true,
+    "optimum_fpga_fraction": 0.7936000000000001,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 4.0,
+    "speedup": 4.844961240310077,
+    "t_link_over_apple": 0.25,
+    "transport_cost_C": 218583.67466666666
+   },
+   {
+    "C_over_W": 0.004,
+    "helps": true,
+    "optimum_fpga_fraction": 0.7968000000000001,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 4.0,
+    "speedup": 4.921259842519684,
+    "t_link_over_apple": 0.5,
+    "transport_cost_C": 109291.83733333333
+   },
+   {
+    "C_over_W": 0.002,
+    "helps": true,
+    "optimum_fpga_fraction": 0.7984,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 4.0,
+    "speedup": 4.9603174603174605,
+    "t_link_over_apple": 1.0,
+    "transport_cost_C": 54645.918666666665
+   },
+   {
+    "C_over_W": 0.001,
+    "helps": true,
+    "optimum_fpga_fraction": 0.7992,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 4.0,
+    "speedup": 4.9800796812749,
+    "t_link_over_apple": 2.0,
+    "transport_cost_C": 27322.959333333332
+   },
+   {
+    "C_over_W": 0.0004,
+    "helps": true,
+    "optimum_fpga_fraction": 0.7996800000000001,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 4.0,
+    "speedup": 4.992012779552716,
+    "t_link_over_apple": 5.0,
+    "transport_cost_C": 10929.183733333333
+   },
+   {
+    "C_over_W": 0.0002,
+    "helps": true,
+    "optimum_fpga_fraction": 0.7998400000000001,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 4.0,
+    "speedup": 4.996003197442046,
+    "t_link_over_apple": 10.0,
+    "transport_cost_C": 5464.591866666667
+   },
+   {
+    "C_over_W": 1.9999999999999998e-05,
+    "helps": true,
+    "optimum_fpga_fraction": 0.799984,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 4.0,
+    "speedup": 4.99960003199744,
+    "t_link_over_apple": 100.0,
+    "transport_cost_C": 546.4591866666666
+   },
+   {
+    "C_over_W": 2.0,
+    "helps": false,
+    "optimum_fpga_fraction": 0.0,
+    "phase": "APPLE_ONLY",
+    "r_fpga_over_apple": 8.0,
+    "speedup": 1.0,
+    "t_link_over_apple": 0.001,
+    "transport_cost_C": 54645918.666666664
+   },
+   {
+    "C_over_W": 0.7999999999999999,
+    "helps": true,
+    "optimum_fpga_fraction": 0.17777777777777784,
+    "phase": "TRANSPORT_DOMINATED",
+    "r_fpga_over_apple": 8.0,
+    "speedup": 1.2162162162162162,
+    "t_link_over_apple": 0.0025,
+    "transport_cost_C": 21858367.466666665
+   },
+   {
+    "C_over_W": 0.6666666666666666,
+    "helps": true,
+    "optimum_fpga_fraction": 0.29629629629629634,
+    "phase": "TRANSPORT_DOMINATED",
+    "r_fpga_over_apple": 8.0,
+    "speedup": 1.4210526315789471,
+    "t_link_over_apple": 0.003,
+    "transport_cost_C": 18215306.22222222
+   },
+   {
+    "C_over_W": 0.5714285714285714,
+    "helps": true,
+    "optimum_fpga_fraction": 0.380952380952381,
+    "phase": "TRANSPORT_DOMINATED",
+    "r_fpga_over_apple": 8.0,
+    "speedup": 1.6153846153846152,
+    "t_link_over_apple": 0.0035,
+    "transport_cost_C": 15613119.619047618
+   },
+   {
+    "C_over_W": 0.19999999999999998,
+    "helps": true,
+    "optimum_fpga_fraction": 0.7111111111111111,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 8.0,
+    "speedup": 3.4615384615384612,
+    "t_link_over_apple": 0.01,
+    "transport_cost_C": 5464591.866666666
+   },
+   {
+    "C_over_W": 0.04,
+    "helps": true,
+    "optimum_fpga_fraction": 0.8533333333333333,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 8.0,
+    "speedup": 6.818181818181816,
+    "t_link_over_apple": 0.05,
+    "transport_cost_C": 1092918.3733333333
+   },
+   {
+    "C_over_W": 0.02,
+    "helps": true,
+    "optimum_fpga_fraction": 0.8711111111111111,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 8.0,
+    "speedup": 7.758620689655169,
+    "t_link_over_apple": 0.1,
+    "transport_cost_C": 546459.1866666666
+   },
+   {
+    "C_over_W": 0.008,
+    "helps": true,
+    "optimum_fpga_fraction": 0.8817777777777778,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 8.0,
+    "speedup": 8.458646616541353,
+    "t_link_over_apple": 0.25,
+    "transport_cost_C": 218583.67466666666
+   },
+   {
+    "C_over_W": 0.004,
+    "helps": true,
+    "optimum_fpga_fraction": 0.8853333333333333,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 8.0,
+    "speedup": 8.720930232558137,
+    "t_link_over_apple": 0.5,
+    "transport_cost_C": 109291.83733333333
+   },
+   {
+    "C_over_W": 0.002,
+    "helps": true,
+    "optimum_fpga_fraction": 0.8871111111111111,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 8.0,
+    "speedup": 8.85826771653543,
+    "t_link_over_apple": 1.0,
+    "transport_cost_C": 54645.918666666665
+   },
+   {
+    "C_over_W": 0.001,
+    "helps": true,
+    "optimum_fpga_fraction": 0.8879999999999999,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 8.0,
+    "speedup": 8.92857142857142,
+    "t_link_over_apple": 2.0,
+    "transport_cost_C": 27322.959333333332
+   },
+   {
+    "C_over_W": 0.0004,
+    "helps": true,
+    "optimum_fpga_fraction": 0.8885333333333333,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 8.0,
+    "speedup": 8.971291866028704,
+    "t_link_over_apple": 5.0,
+    "transport_cost_C": 10929.183733333333
+   },
+   {
+    "C_over_W": 0.0002,
+    "helps": true,
+    "optimum_fpga_fraction": 0.8887111111111111,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 8.0,
+    "speedup": 8.985623003194888,
+    "t_link_over_apple": 10.0,
+    "transport_cost_C": 5464.591866666667
+   },
+   {
+    "C_over_W": 1.9999999999999998e-05,
+    "helps": true,
+    "optimum_fpga_fraction": 0.8888711111111111,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 8.0,
+    "speedup": 8.998560230363138,
+    "t_link_over_apple": 100.0,
+    "transport_cost_C": 546.4591866666666
+   },
+   {
+    "C_over_W": 2.0,
+    "helps": false,
+    "optimum_fpga_fraction": 0.0,
+    "phase": "APPLE_ONLY",
+    "r_fpga_over_apple": 16.0,
+    "speedup": 1.0,
+    "t_link_over_apple": 0.001,
+    "transport_cost_C": 54645918.666666664
+   },
+   {
+    "C_over_W": 0.7999999999999999,
+    "helps": true,
+    "optimum_fpga_fraction": 0.1882352941176471,
+    "phase": "TRANSPORT_DOMINATED",
+    "r_fpga_over_apple": 16.0,
+    "speedup": 1.2318840579710144,
+    "t_link_over_apple": 0.0025,
+    "transport_cost_C": 21858367.466666665
+   },
+   {
+    "C_over_W": 0.6666666666666666,
+    "helps": true,
+    "optimum_fpga_fraction": 0.3137254901960785,
+    "phase": "TRANSPORT_DOMINATED",
+    "r_fpga_over_apple": 16.0,
+    "speedup": 1.457142857142857,
+    "t_link_over_apple": 0.003,
+    "transport_cost_C": 18215306.22222222
+   },
+   {
+    "C_over_W": 0.5714285714285714,
+    "helps": true,
+    "optimum_fpga_fraction": 0.40336134453781514,
+    "phase": "TRANSPORT_DOMINATED",
+    "r_fpga_over_apple": 16.0,
+    "speedup": 1.6760563380281692,
+    "t_link_over_apple": 0.0035,
+    "transport_cost_C": 15613119.619047618
+   },
+   {
+    "C_over_W": 0.19999999999999998,
+    "helps": true,
+    "optimum_fpga_fraction": 0.7529411764705882,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 16.0,
+    "speedup": 4.0476190476190474,
+    "t_link_over_apple": 0.01,
+    "transport_cost_C": 5464591.866666666
+   },
+   {
+    "C_over_W": 0.04,
+    "helps": true,
+    "optimum_fpga_fraction": 0.9035294117647058,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 16.0,
+    "speedup": 10.365853658536576,
+    "t_link_over_apple": 0.05,
+    "transport_cost_C": 1092918.3733333333
+   },
+   {
+    "C_over_W": 0.02,
+    "helps": true,
+    "optimum_fpga_fraction": 0.9223529411764706,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 16.0,
+    "speedup": 12.878787878787879,
+    "t_link_over_apple": 0.1,
+    "transport_cost_C": 546459.1866666666
+   },
+   {
+    "C_over_W": 0.008,
+    "helps": true,
+    "optimum_fpga_fraction": 0.9336470588235294,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 16.0,
+    "speedup": 15.070921985815596,
+    "t_link_over_apple": 0.25,
+    "transport_cost_C": 218583.67466666666
+   },
+   {
+    "C_over_W": 0.004,
+    "helps": true,
+    "optimum_fpga_fraction": 0.9374117647058824,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 16.0,
+    "speedup": 15.977443609022556,
+    "t_link_over_apple": 0.5,
+    "transport_cost_C": 109291.83733333333
+   },
+   {
+    "C_over_W": 0.002,
+    "helps": true,
+    "optimum_fpga_fraction": 0.9392941176470588,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 16.0,
+    "speedup": 16.472868217054263,
+    "t_link_over_apple": 1.0,
+    "transport_cost_C": 54645.918666666665
+   },
+   {
+    "C_over_W": 0.001,
+    "helps": true,
+    "optimum_fpga_fraction": 0.9402352941176471,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 16.0,
+    "speedup": 16.73228346456693,
+    "t_link_over_apple": 2.0,
+    "transport_cost_C": 27322.959333333332
+   },
+   {
+    "C_over_W": 0.0004,
+    "helps": true,
+    "optimum_fpga_fraction": 0.9408000000000001,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 16.0,
+    "speedup": 16.89189189189189,
+    "t_link_over_apple": 5.0,
+    "transport_cost_C": 10929.183733333333
+   },
+   {
+    "C_over_W": 0.0002,
+    "helps": true,
+    "optimum_fpga_fraction": 0.9409882352941177,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 16.0,
+    "speedup": 16.945773524720895,
+    "t_link_over_apple": 10.0,
+    "transport_cost_C": 5464.591866666667
+   },
+   {
+    "C_over_W": 1.9999999999999998e-05,
+    "helps": true,
+    "optimum_fpga_fraction": 0.9411576470588235,
+    "phase": "COMPUTE_BALANCED",
+    "r_fpga_over_apple": 16.0,
+    "speedup": 16.99456174024312,
+    "t_link_over_apple": 100.0,
+    "transport_cost_C": 546.4591866666666
+   }
+  ]
+ },
+ "preboard_link_constant_audit": {
+  "declared_link_in_device_profile": {
+   "host_device_bytes_per_modelled_cycle": 16,
+   "pcie_generation": 3,
+   "pcie_lanes": 16,
+   "real_carrier": "UNPINNED",
+   "real_carrier_note": "The operator reports the inbound card will hang off a comma device. That carrier is UNPINNED. Example envelopes are labeled examples, not that carrier. Pin CarrierEnvelope in one constructor call when numbers are known. Do not invent the comma-device specifications."
+  },
+  "finding": "The link constant carries no input provenance, and the device profile expresses host<->device movement in bytes per MODELLED CYCLE precisely so that no absolute rate is asserted. One module refuses to name a rate and the other hardcodes one. This model takes the first convention.",
+  "has_input_provenance_tagging": false,
+  "input_provenance_occurrences": {
+   "ASSUMED": 0,
+   "CALIBRATED": 0,
+   "PLACEHOLDER": 0,
+   "PUBLISHED_SPEC": 0,
+   "UNPINNED": 0,
+   "citation": 0,
+   "document_class": 0,
+   "provenance": 0,
+   "sourced_field": 0,
+   "unpinned_field": 0
+  },
+  "module": "hcli/agentos/fpga_preboard.py",
+  "output_claim_labels_present": {
+   "DERIVED": 26,
+   "SIMULATED": 14,
+   "VERIFIED": 1
+  },
+  "why_they_are_different": "DERIVED there is DERIVED = \"[D]\" (line 23), stamped on emitted dicts. It says what the RESULT may claim, never where the INPUT came from."
+ },
+ "schema": "hawking.future.fpga_partition.v1",
+ "seal_sha256": "aa64e81cf4220063479ad3aba7e3fb14efd7f110e527c0a955e45b2413392036",
+ "u50_present": false
+}
