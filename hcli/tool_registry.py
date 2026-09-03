@@ -614,12 +614,26 @@ def _search_files(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
     # apparently found nothing. One inconsistent word cost a whole round and
     # the confidence of the answer.
     root = context.resolve_read_path(args.get("root") or args.get("path") or ".")
-    if not root.is_dir():
+    # A FILE is a legitimate place to search. Finding the line a symbol sits on
+    # inside one known file is the whole point of searching before a windowed
+    # read, and refusing it with NotADirectoryError sent the model back to
+    # reading the file's head -- which is where it could not see the symbol in
+    # the first place. Measured: the truncation notice tells the model to
+    # "use fs.search to find the line a symbol is on, then fs.read that file
+    # with start_line and end_line", and fs.search then rejected the file it
+    # had just been pointed at.
+    single_file = None
+    if root.is_file():
+        single_file = root
+        root = root.parent
+    elif not root.is_dir():
         raise NotADirectoryError(root)
     needle = str(args.get("pattern") or "")
     if not needle:
         raise ValueError("pattern is required")
-    glob = str(args.get("glob") or "*")
+    # Naming one file IS the filter, so it overrides any glob rather than
+    # silently returning nothing when the two disagree.
+    glob = single_file.name if single_file is not None else str(args.get("glob") or "*")
     limit = max(1, min(1000, int(args.get("max_results") or 100)))
     matches: List[Dict[str, Any]] = []
     files_seen = 0
