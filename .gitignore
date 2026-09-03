@@ -273,3 +273,6 @@ workspace/campaign/evidence/models/
 
 # Campaign log: development narrative, not product documentation.
 docs/HCLI_SCHOOL.md
+
+# Campaign goal text: development input, not product source.
+directive-goal.txt
