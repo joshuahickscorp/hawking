@@ -57,9 +57,17 @@ class TestProbeCache(unittest.TestCase):
             self.assertEqual(_probe_cached(str(b), "llama-help"), "llama")
             self.assertEqual(_probe_cached(str(b), "mlx-help"), "mlx")
 
-    def test_a_missing_binary_does_not_raise(self):
-        self.assertIsNone(_probe_cached("/no/such/binary", "help"))
+    def test_a_missing_binary_is_never_cached(self):
+        """Storing one made the cache answer for a file that was not there.
+
+        The key rests on the binary's mtime and size; for a missing file that
+        is a constant, so the entry would survive the binary appearing and
+        report the capabilities of something absent when asked. It also made
+        this test state-dependent -- None on the first run, the stored value on
+        every run after.
+        """
         _probe_store("/no/such/binary", "help", "x")
+        self.assertIsNone(_probe_cached("/no/such/binary", "help"))
 
     def test_an_unwritable_cache_is_not_fatal(self):
         """Telemetry must never be the thing that ends a run."""

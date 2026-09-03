@@ -89,7 +89,14 @@ def _probe_cached(path: str, kind: str) -> Optional[str]:
 
 
 def _probe_store(path: str, kind: str, text: str) -> None:
+    # Never cache a probe of a binary that is not there. The key would rest on
+    # a "missing" stamp, so the entry would answer for the binary once it DOES
+    # exist -- reporting the capabilities of a file that was absent when asked.
+    # It also made a test state-dependent: the first run saw None and every run
+    # after saw the stored value.
     try:
+        if not os.path.exists(path):
+            return
         _PROBE_CACHE_DIR.mkdir(parents=True, exist_ok=True)
         (_PROBE_CACHE_DIR / _probe_key(path, kind)).write_text(text, encoding="utf-8")
     except OSError:
