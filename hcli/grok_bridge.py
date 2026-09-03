@@ -603,6 +603,14 @@ def _terminate_pids(pids: Sequence[int], *, grace: float = 2.0) -> None:
             _reap_if_child(pid)
         deadline = time.monotonic() + (grace if sig == signal.SIGTERM else 1.0)
         while time.monotonic() < deadline:
+            # Reap EVERY pass, not once before the signal lands. A direct child
+            # that obeys SIGTERM dies in about a millisecond and becomes a
+            # zombie, and `os.kill(pid, 0)` succeeds on a zombie -- so the loop
+            # below never observed the death and burned the entire grace on a
+            # process that was already gone. Cancel and evacuation each paid
+            # 2 s per pid for nothing.
+            for pid in ordered:
+                _reap_if_child(pid)
             if not any(process_alive(pid) for pid in ordered):
                 return
             time.sleep(0.05)
