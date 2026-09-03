@@ -257,3 +257,12 @@ workspace/ops/c2m-seed/
 
 # Local run logs: process output, not source.
 /logs/
+
+# Heavyweight generated scientific artifacts. These stay on disk and remain the
+# local authority; they are not source, and a source checkout should not carry
+# gigabytes of capture output. Publish as release assets or compact summaries
+# when they need to be public.
+workspace/campaign/records/
+receipts/dsv4f_fullseq_capture_L0_frozen_export/
+receipts/dsv4f_fullseq_capture_L1_frozen_export/
+receipts/q80-velocity-pairs/
