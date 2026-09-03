@@ -42,7 +42,10 @@ def main() -> int:
     if not r:
         print("no receipt")
         return 1
-    calls = r.get("calls") or []
+    # An error receipt files them under model_calls, a completed one under
+    # calls. Reading only one reported "0 resident calls" for an attempt that
+    # had made seven.
+    calls = r.get("calls") or r.get("model_calls") or []
     ev = events()
 
     tool_calls = sum(1 for e in ev if e.get("type") == "tool_invoked")
