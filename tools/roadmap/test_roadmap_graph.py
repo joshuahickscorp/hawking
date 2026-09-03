@@ -47,7 +47,7 @@ def test_auditor_emits_status_for_every_gate_and_gene(graph):
         assert row["status"] in ALLOWED_STATUSES, f"{name} status {row['status']!r}"
     for name, row in graph["genes"].items():
         assert row["status"] in ALLOWED_STATUSES, f"{name} status {row['status']!r}"
-    assert len(graph["gates"]) == 71
+    assert len(graph["gates"]) >= 71
     assert len(graph["genes"]) == 25
 
 
@@ -143,7 +143,34 @@ def test_no_two_built_gates_share_identical_runtime_caller(graph):
 
 
 def test_graph_keeps_71_gates_25_genes_with_source_spans(graph):
-    assert len(graph["gates"]) == 71
+    """Every APPENDIX O gate survives, and every extra gate declares its source.
+
+    This asserted len == 71 while APPENDIX O of the superseded roadmap was the
+    ONLY roster source. It no longer is: a capability the machine has but that
+    document never listed would otherwise be invisible to every audit, and the
+    superseded document is preserved lineage that must not be edited to add one.
+    A hardcoded count would break again on the next legitimate addition, so the
+    invariant is now PROVENANCE, which is what the count was standing in for:
+    nothing from APPENDIX O may vanish, and nothing may appear without saying
+    where it came from and why.
+    """
+    # Key on the explicit field, NOT on the note text: the supplement's note says
+    # "NOT an APPENDIX O ledger row", so a substring match matched the negation.
+    from_appendix = [
+        g for g in graph["gates"].values() if g.get("roster_source") != "supplement"
+    ]
+    assert len(from_appendix) >= 71, "an APPENDIX O gate disappeared from the roster"
+    supplement = [
+        g for g in graph["gates"].values()
+        if g.get("roster_source") == "supplement"
+    ]
+    assert len(from_appendix) + len(supplement) == len(graph["gates"]), (
+        "a gate exists with neither an APPENDIX O row nor a supplement declaration"
+    )
+    for entry in supplement:
+        assert entry.get("declared_because"), (
+            f"{entry.get('id')} was added to the roster without a stated reason"
+        )
     assert len(graph["genes"]) == 25
     for entry in list(graph["gates"].values()) + list(graph["genes"].values()):
         span = entry.get("source_span") or {}

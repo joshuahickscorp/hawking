@@ -14,7 +14,7 @@
     "base_commit": "caf83078f",
     "graph": "civilization/CAPABILITY_GRAPH.json",
     "graph_generated_by": "tools/roadmap/auditor.py",
-    "head": "4e938058a5e518e6241cc8e4a78dc0eca8db38ce"
+    "head": "931f7c4ec94c0245032b17c717b3261c9893eb94"
   },
   "externally_blocked": [
     {
@@ -64,14 +64,14 @@
       "BLOCKED_EXTERNAL": 10,
       "BLOCKED_HARDWARE": 13,
       "BUILT": 23,
-      "SCAFFOLDED": 11,
+      "SCAFFOLDED": 19,
       "UNREACHABLE": 1,
       "WIRED": 12
     },
-    "gates_total": 71,
-    "movable_gates": 48,
-    "movable_scaffolded_or_better": 46,
-    "movable_scaffolded_or_better_pct": 95.8
+    "gates_total": 79,
+    "movable_gates": 56,
+    "movable_scaffolded_or_better": 54,
+    "movable_scaffolded_or_better_pct": 96.4
   },
   "hardware_blocked": [
     {
@@ -170,7 +170,7 @@
     "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE"
   ],
   "work": {
-    "commits": 162,
+    "commits": 167,
     "new_crates": [
       "crates/hawking-index-query/Cargo.toml"
     ],
@@ -358,9 +358,12 @@
       "tools/roadmap/__init__.py",
       "tools/roadmap/__main__.py",
       "tools/roadmap/auditor.py",
+      "tools/roadmap/axes.py",
+      "tools/roadmap/blockers.py",
       "tools/roadmap/catalog.py",
       "tools/roadmap/conftest.py",
       "tools/roadmap/emit_revised.py",
+      "tools/roadmap/frontier.py",
       "tools/roadmap/gitfs.py",
       "tools/roadmap/hardware.py",
       "tools/roadmap/index_client.py",
@@ -394,7 +397,7 @@
       "tools/vmcp/receipt.py",
       "tools/vmcp/tool_doctor.py"
     ],
-    "python_lines_added": 90494,
+    "python_lines_added": 91495,
     "rust_lines_added": 7572
   }
 }

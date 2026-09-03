@@ -1,0 +1,30 @@
+{
+  "gates": {
+    "RUNTIME_COMPLETE_TOKEN_PROFILE": {
+      "because": "prefill + decode + host + tools + context accounted together"
+    },
+    "RUNTIME_CONTEXT_NATIVE": {
+      "because": "native 131K/262K admission and accounting; YaRN only after the native path"
+    },
+    "RUNTIME_DECODE_PROTECTED": {
+      "because": "current protected decode authority"
+    },
+    "RUNTIME_DELTANET_STATE_REUSE": {
+      "because": "recurrent state checkpoint/restore and prefix-state reuse"
+    },
+    "RUNTIME_NATIVE_PREFILL": {
+      "because": "real batched prefill rather than decode applied token by token"
+    },
+    "RUNTIME_PREFILL_PHYSICAL_FRONTIER": {
+      "because": "projection/f32/full-attention prefill path measured and optimized"
+    },
+    "RUNTIME_PREFIX_STATE_REUSE": {
+      "because": "exact-token append-only prefix reuse: instrumented, realized reuse NOT proven"
+    },
+    "STABLE_PREFIX_CONTEXT_ALIGNMENT": {
+      "because": "maximize the useful stable physical prefix subject to reasoning quality and context budget"
+    }
+  },
+  "schema": "hawking.roadmap.roster_supplement.v1",
+  "why": "APPENDIX O of the superseded roadmap owned the entire gate roster, so no capability it never listed could be audited. The superseded document is preserved lineage and must not be edited, so new capabilities are declared here instead. APPENDIX O still wins on any id it defines."
+}

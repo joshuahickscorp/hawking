@@ -5,7 +5,7 @@
     status                baseline    now
     BUILT                      18     23
     WIRED                       0     12
-    SCAFFOLDED                 29     11
+    SCAFFOLDED                 29     19
     BLOCKED_HARDWARE           13     13
     BLOCKED_EXTERNAL            0     10
     ABSENT                     11      1
@@ -14,7 +14,7 @@
 ## Where the old active future went
 
     MOVE_TO_COMPLETED        16
-    KEEP_ACTIVE              19
+    KEEP_ACTIVE              27
     EXPERIMENT_CONTINGENT    12
     DEFERRED_PROGRAM         7
     EXTERNAL_ENVIRONMENT     3
@@ -33,9 +33,9 @@ already wired but never declared.
 ## Net future burden
 
     old active future (baseline, non-BUILT)   53
-    active now (software connections)         19
+    active now (software connections)         27
     plus experiment/long-run contingent       12
-    NET FUTURE BURDEN                         41
+    NET FUTURE BURDEN                         49
 
 Progress is capability gained AND future bespoke work eliminated. The honest
 reading: the gate count did not shrink -- 71 gates before and after -- but the

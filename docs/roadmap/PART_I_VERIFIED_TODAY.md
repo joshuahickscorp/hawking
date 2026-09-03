@@ -8,9 +8,9 @@ Nothing here is complete because a file exists: a field with no evidence prints 
 ## Status census
 
     VERIFIED_INTEGRATED      23
+    SCAFFOLDED               19
     BLOCKED_HARDWARE         13
     VERIFIED_BUILT           12
-    SCAFFOLDED               11
     BLOCKED_EVIDENCE         10
     ABSENT                   1
     UNREACHABLE              1
@@ -21,10 +21,10 @@ design, not by neglect: simulated is not measured.
 
 ## Evidence coverage across all gates
 
-    defining property available     70 / 71
-    real (non-test) caller          36 / 71
-    any verifier                    49 / 71
-    receipt cited                   12 / 71
+    defining property available     78 / 79
+    real (non-test) caller          36 / 79
+    any verifier                    57 / 79
+    receipt cited                   12 / 79
 
 ## A. CONTROL / HCLI / AGENTOS
 
@@ -178,7 +178,7 @@ design, not by neglect: simulated is not measured.
     STATUS              VERIFIED_INTEGRATED
     defining property   **Meaning:** One context-budget authority drives root and worker admission.
     implementation      hcli/context_budget.py, hcli/engine.py, hcli/context_budget.py:476
-    real caller         hcli/backends.py:1320, hcli/config.py:131, hcli/engine.py:1960 (+4 more)
+    real caller         hcli/backends.py:1320, hcli/config.py:131, hcli/engine.py:1989 (+4 more)
     verifier            hcli/test_constrained_decoding.py:50, hcli/test_context_memory.py:8, hcli/test_context_reduction.py:16 (+72 more)
     negative control    hcli/test_context_reduction.py, hcli/test_goal_source_compile.py
     receipt             absent
@@ -361,7 +361,7 @@ design, not by neglect: simulated is not measured.
 
 ## C. NATIVE RUNTIME / APPLE ACCELERATOR
 
-3 capabilities. VERIFIED_INTEGRATED=2, VERIFIED_BUILT=1
+11 capabilities. SCAFFOLDED=8, VERIFIED_INTEGRATED=2, VERIFIED_BUILT=1
 
 ### QWEN27_PROTECTED_BASELINE
 
@@ -401,6 +401,110 @@ design, not by neglect: simulated is not measured.
     evidence level      STATIC
     limitations         none recorded
     integration         wired=True accepted=True
+
+### RUNTIME_COMPLETE_TOKEN_PROFILE
+
+    STATUS              SCAFFOLDED
+    defining property   **Mission:** Find the smallest capability-preserving executable function, not merely the smallest file.
+    implementation      hcli/prefill_profile.py
+    real caller         absent — no non-test call site
+    verifier            hcli/test_prefix_and_prefill_instruments.py:14
+    negative control    hcli/test_prefix_and_prefill_instruments.py
+    receipt             absent
+    evidence level      STATIC
+    limitations         acceptance not demonstrated: wired is not accepted: no receipt or measurement demonstrates the gate's own acceptance criterion. A receipt on the topic is not the bar.
+    integration         wired=False accepted=False
+
+### RUNTIME_CONTEXT_NATIVE
+
+    STATUS              SCAFFOLDED
+    defining property   **Mission:** Find the smallest capability-preserving executable function, not merely the smallest file.
+    implementation      hcli/context_budget.py
+    real caller         absent — no non-test call site
+    verifier            hcli/test_context_reduction.py:69, hcli/test_goal_source_compile.py:82, hcli/test_native_context_budget.py:17 (+5 more)
+    negative control    hcli/test_context_reduction.py, hcli/test_goal_source_compile.py
+    receipt             absent
+    evidence level      STATIC
+    limitations         acceptance not demonstrated: wired is not accepted: no receipt or measurement demonstrates the gate's own acceptance criterion. A receipt on the topic is not the bar.
+    integration         wired=False accepted=False
+
+### RUNTIME_DECODE_PROTECTED
+
+    STATUS              SCAFFOLDED
+    defining property   **Mission:** Find the smallest capability-preserving executable function, not merely the smallest file.
+    implementation      hcli/hawking_native.py
+    real caller         absent — no non-test call site
+    verifier            hcli/test_constrained_decoding.py:51, hcli/test_native_json_grammar.py:10, hcli/test_native_token_budget_clamp.py:16 (+1 more)
+    negative control    absent — no cited test proves it can fail
+    receipt             absent
+    evidence level      STATIC
+    limitations         acceptance not demonstrated: wired is not accepted: no receipt or measurement demonstrates the gate's own acceptance criterion. A receipt on the topic is not the bar.
+    integration         wired=False accepted=False
+
+### RUNTIME_DELTANET_STATE_REUSE
+
+    STATUS              SCAFFOLDED
+    defining property   **Mission:** Find the smallest capability-preserving executable function, not merely the smallest file.
+    implementation      tools/headless/prefill_kv.py
+    real caller         absent — no non-test call site
+    verifier            tools/headless/test_prefill_kv.py:15
+    negative control    absent — no cited test proves it can fail
+    receipt             absent
+    evidence level      STATIC
+    limitations         acceptance not demonstrated: wired is not accepted: no receipt or measurement demonstrates the gate's own acceptance criterion. A receipt on the topic is not the bar.
+    integration         wired=False accepted=False
+
+### RUNTIME_NATIVE_PREFILL
+
+    STATUS              SCAFFOLDED
+    defining property   **Mission:** Find the smallest capability-preserving executable function, not merely the smallest file.
+    implementation      hcli/prefill_profile.py, hcli/hawking_native.py
+    real caller         absent — no non-test call site
+    verifier            hcli/test_prefix_and_prefill_instruments.py:14
+    negative control    hcli/test_prefix_and_prefill_instruments.py
+    receipt             absent
+    evidence level      STATIC
+    limitations         acceptance not demonstrated: wired is not accepted: no receipt or measurement demonstrates the gate's own acceptance criterion. A receipt on the topic is not the bar.
+    integration         wired=False accepted=False
+
+### RUNTIME_PREFILL_PHYSICAL_FRONTIER
+
+    STATUS              SCAFFOLDED
+    defining property   **Mission:** Find the smallest capability-preserving executable function, not merely the smallest file.
+    implementation      hcli/prefill_profile.py
+    real caller         absent — no non-test call site
+    verifier            hcli/test_prefix_and_prefill_instruments.py:14
+    negative control    hcli/test_prefix_and_prefill_instruments.py
+    receipt             absent
+    evidence level      STATIC
+    limitations         acceptance not demonstrated: wired is not accepted: no receipt or measurement demonstrates the gate's own acceptance criterion. A receipt on the topic is not the bar.
+    integration         wired=False accepted=False
+
+### RUNTIME_PREFIX_STATE_REUSE
+
+    STATUS              SCAFFOLDED
+    defining property   **Mission:** Find the smallest capability-preserving executable function, not merely the smallest file.
+    implementation      hcli/prefix_probe.py, hcli/prefix_probe.py:29
+    real caller         absent — no non-test call site
+    verifier            hcli/test_prefix_and_prefill_instruments.py:15, hcli/test_prefix_and_prefill_instruments.py:84, hcli/test_prefix_and_prefill_instruments.py:85 (+1 more)
+    negative control    hcli/test_prefix_and_prefill_instruments.py
+    receipt             absent
+    evidence level      STATIC
+    limitations         acceptance not demonstrated: wired is not accepted: no receipt or measurement demonstrates the gate's own acceptance criterion. A receipt on the topic is not the bar.
+    integration         wired=False accepted=False
+
+### STABLE_PREFIX_CONTEXT_ALIGNMENT
+
+    STATUS              SCAFFOLDED
+    defining property   **Mission:** Find the smallest capability-preserving executable function, not merely the smallest file.
+    implementation      hcli/prefix_probe.py
+    real caller         absent — no non-test call site
+    verifier            hcli/test_prefix_and_prefill_instruments.py:15
+    negative control    hcli/test_prefix_and_prefill_instruments.py
+    receipt             absent
+    evidence level      STATIC
+    limitations         acceptance not demonstrated: wired is not accepted: no receipt or measurement demonstrates the gate's own acceptance criterion. A receipt on the topic is not the bar.
+    integration         wired=False accepted=False
 
 ## D. SCIENCE MEMORY / MODELLAKE / ODYSSEY
 

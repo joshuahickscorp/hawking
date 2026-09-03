@@ -773,3 +773,85 @@ for _gate, _syms in _VMCP_LATTICE_SYMBOLS.items():
         GATES[_gate]["code_paths"] = ["tools/headless/vmcp_lattice_disposition.py"] + list(
             GATES[_gate].get("code_paths") or []
         )
+
+
+# ---------------------------------------------------------------------------
+# Native runtime. The graph tracked three Qwen27 gates and nothing about prefill,
+# context or state reuse -- which is most of the physical work actually happening.
+# Seven capabilities, not dozens: enough to make the runtime frontier visible
+# without inventing a noun per experiment.
+#
+# Paths point at what EXISTS. Where nothing implements a capability the gate will
+# read ABSENT, and that is the useful answer rather than a silent omission.
+_RUNTIME_GATES: dict[str, dict[str, Any]] = {
+    "RUNTIME_NATIVE_PREFILL": dict(
+        paths=("hcli/prefill_profile.py", "hcli/hawking_native.py"),
+        modules=("hcli.prefill_profile",),
+        note="real batched prefill rather than decode applied token by token",
+    ),
+    "RUNTIME_PREFILL_PHYSICAL_FRONTIER": dict(
+        paths=("hcli/prefill_profile.py",),
+        modules=("hcli.prefill_profile",),
+        note="projection / f32 / full-attention prefill path measured and optimized",
+    ),
+    "RUNTIME_CONTEXT_NATIVE": dict(
+        paths=("hcli/context_budget.py",),
+        modules=("hcli.context_budget",),
+        note="native 131K/262K admission and accounting; YaRN only after the native path",
+    ),
+    "RUNTIME_PREFIX_STATE_REUSE": dict(
+        paths=("hcli/prefix_probe.py",),
+        modules=("hcli.prefix_probe",),
+        symbols=(("hcli.prefix_probe", "longest_common_prefix"),),
+        note=(
+            "exact-token append-only prefix reuse. INSTRUMENTED: prefix_reused_tokens, "
+            "prefill_tokens_stepped, longest_common_prefix_tokens, "
+            "reason_for_prefix_divergence, and reusable_fraction kept DISTINCT from "
+            "realized_reuse_fraction. NOT PROVEN in production: zero receipts across "
+            "800 scanned carry prefix_reused_tokens, so realized reuse has never been "
+            "demonstrated by a run. Do not claim a speedup from wall clock until a "
+            "receipt counter establishes reuse."
+        ),
+    ),
+    "RUNTIME_DELTANET_STATE_REUSE": dict(
+        paths=("tools/headless/prefill_kv.py",),
+        modules=("tools.headless.prefill_kv",),
+        note="recurrent state checkpoint/restore and prefix-state reuse",
+    ),
+    "RUNTIME_DECODE_PROTECTED": dict(
+        paths=("hcli/hawking_native.py",),
+        modules=("hcli.hawking_native",),
+        note="current protected decode authority",
+    ),
+    "RUNTIME_COMPLETE_TOKEN_PROFILE": dict(
+        paths=("hcli/prefill_profile.py",),
+        modules=("hcli.prefill_profile",),
+        note="prefill + decode + host + tools + context accounted together, not separately",
+    ),
+}
+
+for _gate, _spec in _RUNTIME_GATES.items():
+    GATES[_gate] = _p(
+        era="I", gene=ID_ACCEL if "ID_ACCEL" in dir() else "I-D_ACCELERATOR",
+        paths=tuple(_spec["paths"]),
+        modules=tuple(_spec["modules"]),
+        symbols=tuple(_spec.get("symbols") or ()),
+        acc=(478, 505),
+    )
+    GATES[_gate]["runtime_note"] = _spec["note"]
+
+# The multiplier the operator named: maximize the useful stable physical prefix,
+# subject to reasoning quality and context budget. It is a MEASUREMENT programme,
+# so it is declared with what it must measure rather than as a boolean.
+GATES["STABLE_PREFIX_CONTEXT_ALIGNMENT"] = _p(
+    era="I", gene="I-D_ACCELERATOR",
+    paths=("hcli/prefix_probe.py",),
+    modules=("hcli.prefix_probe",),
+    acc=(478, 505),
+)
+GATES["STABLE_PREFIX_CONTEXT_ALIGNMENT"]["runtime_note"] = (
+    "measure previous/current prompt tokens, longest common prefix, realized "
+    "reused tokens, prefill tokens stepped and the divergence reason. Objective: "
+    "maximize the useful stable physical prefix subject to reasoning quality and "
+    "context budget. A wall-clock improvement is NOT evidence of reuse."
+)

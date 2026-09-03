@@ -7,6 +7,9 @@ repo walk.
 """
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 import os
 
 import pytest
@@ -109,8 +112,23 @@ def test_index_and_ast_agree_on_synthetic_overlay(overlay_view):
     assert ast_imp == idx_imp, (ast_look["import_sites"], idx_look["import_sites"])
 
 
-def test_catalog_still_has_71_gates():
-    assert len(GATES) == 71
+def test_catalog_covers_every_appendix_o_gate():
+    """The catalogue must not lose a probe, and may gain them.
+
+    This asserted len(GATES) == 71 when APPENDIX O was the sole roster source.
+    The roster now also has civilization/GATE_ROSTER_SUPPLEMENT.json, so a
+    constant would fail on every legitimate addition while still not catching the
+    thing that matters -- a gate quietly losing its probe. Assert coverage of the
+    historical roster instead, which is what the constant was standing in for.
+    """
+    assert len(GATES) >= 71, "the catalogue lost gate probes"
+    from tools.roadmap.parse import SUPPLEMENT
+
+    supplement = Path(__file__).resolve().parents[2] / SUPPLEMENT
+    if supplement.is_file():
+        declared = set(json.loads(supplement.read_text()).get("gates") or {})
+        missing = sorted(declared - set(GATES))
+        assert not missing, f"supplement gates with no catalogue probe: {missing}"
 
 
 def test_sibling_resolution_uses_known_files_not_disk():

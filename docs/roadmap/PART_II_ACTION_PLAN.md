@@ -7,20 +7,20 @@ components yet' from work that genuinely needs an experiment, wall time, or sili
 
 ## Blocker census
 
-    SOFTWARE_CONNECTION_REMAINING    18
+    SOFTWARE_CONNECTION_REMAINING    26
     EXPERIMENTATION_REQUIRED         12
     LONG_RUN_EVIDENCE_REQUIRED       10
     PHYSICAL_HARDWARE_REQUIRED       14
     UNKNOWN_RESEARCH                 1
 
-    TOTAL REMAINING                  55
+    TOTAL REMAINING                  63
 
-SOFTWARE_CONNECTION_REMAINING = 18 is the
+SOFTWARE_CONNECTION_REMAINING = 26 is the
 number this campaign exists to drive toward zero. Every other class is honest
 frontier: an experiment that must run, evidence that needs wall time, hardware that
 must physically exist, or a question whose answer nobody has.
 
-## SOFTWARE_CONNECTION_REMAINING (18)
+## SOFTWARE_CONNECTION_REMAINING (26)
 
 ### AGENTOS_CIRCUIT_BREAKER
     missing             no non-test call site reaches this capability
@@ -92,6 +92,54 @@ must physically exist, or a question whose answer nobody has.
     missing             wired but nothing verifies it
     shortest verifier   must be written
     implementation      hcli/agentos/qwen27_runtime_identity.py, hcli/agentos/qwen27_runtime_identity.py:438
+    unlocks             0 declared dependencies
+
+### RUNTIME_COMPLETE_TOKEN_PROFILE
+    missing             no non-test call site reaches this capability
+    shortest verifier   hcli/test_prefix_and_prefill_instruments.py:14
+    implementation      hcli/prefill_profile.py
+    unlocks             0 declared dependencies
+
+### RUNTIME_CONTEXT_NATIVE
+    missing             no non-test call site reaches this capability
+    shortest verifier   hcli/test_context_reduction.py:69 (+7 more)
+    implementation      hcli/context_budget.py
+    unlocks             0 declared dependencies
+
+### RUNTIME_DECODE_PROTECTED
+    missing             no non-test call site reaches this capability
+    shortest verifier   hcli/test_constrained_decoding.py:51 (+3 more)
+    implementation      hcli/hawking_native.py
+    unlocks             0 declared dependencies
+
+### RUNTIME_DELTANET_STATE_REUSE
+    missing             no non-test call site reaches this capability
+    shortest verifier   tools/headless/test_prefill_kv.py:15
+    implementation      tools/headless/prefill_kv.py
+    unlocks             0 declared dependencies
+
+### RUNTIME_NATIVE_PREFILL
+    missing             no non-test call site reaches this capability
+    shortest verifier   hcli/test_prefix_and_prefill_instruments.py:14
+    implementation      hcli/prefill_profile.py, hcli/hawking_native.py
+    unlocks             0 declared dependencies
+
+### RUNTIME_PREFILL_PHYSICAL_FRONTIER
+    missing             no non-test call site reaches this capability
+    shortest verifier   hcli/test_prefix_and_prefill_instruments.py:14
+    implementation      hcli/prefill_profile.py
+    unlocks             0 declared dependencies
+
+### RUNTIME_PREFIX_STATE_REUSE
+    missing             no non-test call site reaches this capability
+    shortest verifier   hcli/test_prefix_and_prefill_instruments.py:15 (+3 more)
+    implementation      hcli/prefix_probe.py, hcli/prefix_probe.py:29
+    unlocks             0 declared dependencies
+
+### STABLE_PREFIX_CONTEXT_ALIGNMENT
+    missing             no non-test call site reaches this capability
+    shortest verifier   hcli/test_prefix_and_prefill_instruments.py:15
+    implementation      hcli/prefix_probe.py
     unlocks             0 declared dependencies
 
 ### VMCP_AGENTOS_INTEGRATION
