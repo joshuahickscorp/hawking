@@ -1,0 +1,1094 @@
+{
+ "bare": [
+  {
+   "example": {
+    "field": ".FINDING_8_THE_18_FLOOR_HOLDS_AND_A_19_PERCENT_TIMING_GAIN_IN_THE_SAME_RUNS_IS_REFUTED.ACCEPTED_TPS_IS_NOW_A_MEASUREMENT.unfused.accepted_tps",
+    "value": 23.63
+   },
+   "hardware_fields": 2,
+   "receipt": "receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json"
+  },
+  {
+   "example": {
+    "field": ".rows[0].wall_ns",
+    "value": 139844129917.0
+   },
+   "hardware_fields": 10,
+   "receipt": "receipts/headless/ACCELERATOR_SCOREBOARD.json"
+  },
+  {
+   "example": {
+    "field": ".best_any_read.cold.gpu_ns",
+    "value": 11279458.0
+   },
+   "hardware_fields": 8,
+   "receipt": "receipts/headless/BANDWIDTH_ROOF.headline1.json"
+  },
+  {
+   "example": {
+    "field": ".best_any_read.cold.gpu_ns",
+    "value": 11709750.0
+   },
+   "hardware_fields": 8,
+   "receipt": "receipts/headless/BANDWIDTH_ROOF.headline2.json"
+  },
+  {
+   "example": {
+    "field": ".best_any_read.cold.gpu_ns",
+    "value": 11407125.0
+   },
+   "hardware_fields": 8,
+   "receipt": "receipts/headless/BANDWIDTH_ROOF.headline3.json"
+  },
+  {
+   "example": {
+    "field": ".best_any_read.cold.gpu_ns",
+    "value": 670125.0
+   },
+   "hardware_fields": 57,
+   "receipt": "receipts/headless/BANDWIDTH_ROOF.raw.json"
+  },
+  {
+   "example": {
+    "field": ".healing_candidates[0].COMPLETE_TOKEN_NS.composed.complete_token_ns",
+    "value": 24433707.0
+   },
+   "hardware_fields": 6,
+   "receipt": "receipts/headless/BINARY_HEALING.json"
+  },
+  {
+   "example": {
+    "field": ".representations[0].COMPLETE_TOKEN_NS.composed.complete_token_ns",
+    "value": 27547874.0
+   },
+   "hardware_fields": 6,
+   "receipt": "receipts/headless/BYTES_FRONTIER.json"
+  },
+  {
+   "example": {
+    "field": ".incumbent_anchors_not_rederived.tps",
+    "value": 32.73
+   },
+   "hardware_fields": 1,
+   "receipt": "receipts/headless/C1SHAREDBASIS_DESIGN.json"
+  },
+  {
+   "example": {
+    "field": ".anchors_not_rederived.tps",
+    "value": 32.73
+   },
+   "hardware_fields": 1,
+   "receipt": "receipts/headless/C2TENSOROP_DESIGN.json"
+  },
+  {
+   "example": {
+    "field": ".anchors_not_rederived.tps",
+    "value": 32.73
+   },
+   "hardware_fields": 2,
+   "receipt": "receipts/headless/C3LOWRANKSPARSE_DESIGN.json"
+  },
+  {
+   "example": {
+    "field": ".anchors_not_rederived.tps",
+    "value": 32.73
+   },
+   "hardware_fields": 3,
+   "receipt": "receipts/headless/C4CODEBOOK_DESIGN.json"
+  },
+  {
+   "example": {
+    "field": ".anchors_not_rederived.tps",
+    "value": 32.73
+   },
+   "hardware_fields": 1,
+   "receipt": "receipts/headless/C5STRUCTTRANSFORM_DESIGN.json"
+  },
+  {
+   "example": {
+    "field": ".metric_framing.accepted_tokens_per_gpu_second.baseline_q2f_composed.complete_token_ns",
+    "value": 27547874.0
+   },
+   "hardware_fields": 1,
+   "receipt": "receipts/headless/DECODING_GRAVITY.json"
+  },
+  {
+   "example": {
+    "field": ".candidates[3].superseded_two_pass.complete_token_ns",
+    "value": 110201749.0
+   },
+   "hardware_fields": 1,
+   "receipt": "receipts/headless/DENSITY_DESCENT_FRONTIER.json"
+  },
+  {
+   "example": {
+    "field": ".director_state.worker_equilibrium.results[0].workers[0].tps",
+    "value": 23.093629824344674
+   },
+   "hardware_fields": 10,
+   "receipt": "receipts/headless/DISK_TRUTH.json"
+  },
+  {
+   "example": {
+    "field": ".reduction.dispatch_probes[0].probe.gpu_ns",
+    "value": 54341791.0
+   },
+   "hardware_fields": 3,
+   "receipt": "receipts/headless/DISPATCH_LEDGER.json"
+  },
+  {
+   "example": {
+    "field": ".campaign_cross_references.binary.measured.complete_token_ns",
+    "value": 23431791.0
+   },
+   "hardware_fields": 3,
+   "receipt": "receipts/headless/DOCTOR_TECHNIQUE_REGISTRY.json"
+  },
+  {
+   "example": {
+    "field": ".baseline.gpu_ns",
+    "value": 21630500.0
+   },
+   "hardware_fields": 2,
+   "receipt": "receipts/headless/FLASH_DISPATCH_OPTIMIZATION_PROBE_LAYER29.json"
+  },
+  {
+   "example": {
+    "field": ".execution.gpu_ns",
+    "value": 10092541.0
+   },
+   "hardware_fields": 2,
+   "receipt": "receipts/headless/FLASH_FUSED_ROUTE_ACCUMULATE_L3.json"
+  },
+  {
+   "example": {
+    "field": ".execution.gpu_ns",
+    "value": 6905374.0
+   },
+   "hardware_fields": 2,
+   "receipt": "receipts/headless/FLASH_FUSED_ROUTE_ACCUMULATE_L7.json"
+  },
+  {
+   "example": {
+    "field": ".execution.gpu_ns",
+    "value": 11509125.0
+   },
+   "hardware_fields": 3,
+   "receipt": "receipts/headless/FLASH_FUSED_TIMING_L3_CACHE.json"
+  },
+  {
+   "example": {
+    "field": ".execution.gpu_ns",
+    "value": 9672000.0
+   },
+   "hardware_fields": 3,
+   "receipt": "receipts/headless/FLASH_FUSED_TIMING_L3_SERIAL.json"
+  },
+  {
+   "example": {
+    "field": ".execution.gpu_ns",
+    "value": 11857124.0
+   },
+   "hardware_fields": 3,
+   "receipt": "receipts/headless/FLASH_FUSED_TIMING_L3_SERIAL_DIRECT.json"
+  },
+  {
+   "example": {
+    "field": ".execution.gpu_ns",
+    "value": 10404333.0
+   },
+   "hardware_fields": 3,
+   "receipt": "receipts/headless/FLASH_FUSED_TIMING_L3_V1.json"
+  },
+  {
+   "example": {
+    "field": ".partition_simulation.link.bandwidth_gbps",
+    "value": 64.0
+   },
+   "hardware_fields": 11,
+   "receipt": "receipts/headless/FLASH_NEXT_FPGA_ORGAN_MAP.json"
+  },
+  {
+   "example": {
+    "field": ".execution.gpu_ns",
+    "value": 11227375.0
+   },
+   "hardware_fields": 2,
+   "receipt": "receipts/headless/FLASH_NOETIC_FULL_ATTENTION_LAYER11_ORGAN.json"
+  },
+  {
+   "example": {
+    "field": ".execution.gpu_ns",
+    "value": 10883166.0
+   },
+   "hardware_fields": 2,
+   "receipt": "receipts/headless/FLASH_NOETIC_FULL_ATTENTION_LAYER15_ORGAN.json"
+  },
+  {
+   "example": {
+    "field": ".execution.gpu_ns",
+    "value": 10114708.0
+   },
+   "hardware_fields": 2,
+   "receipt": "receipts/headless/FLASH_NOETIC_FULL_ATTENTION_LAYER19_ORGAN.json"
+  },
+  {
+   "example": {
+    "field": ".execution.gpu_ns",
+    "value": 10857541.0
+   },
+   "hardware_fields": 2,
+   "receipt": "receipts/headless/FLASH_NOETIC_FULL_ATTENTION_LAYER23_ORGAN.json"
+  },
+  {
+   "example": {
+    "field": ".execution.gpu_ns",
+    "value": 8898166.0
+   },
+   "hardware_fields": 2,
+   "receipt": "receipts/headless/FLASH_NOETIC_FULL_ATTENTION_LAYER27_ORGAN.json"
+  },
+  {
+   "example": {
+    "field": ".execution.gpu_ns",
+    "value": 6961125.0
+   },
+   "hardware_fields": 2,
+   "receipt": "receipts/headless/FLASH_NOETIC_FULL_ATTENTION_LAYER31_ORGAN.json"
+  },
+  {
+   "example": {
+    "field": ".execution.gpu_ns",
+    "value": 9616958.0
+   },
+   "hardware_fields": 2,
+   "receipt": "receipts/headless/FLASH_NOETIC_FULL_ATTENTION_LAYER35_ORGAN.json"
+  },
+  {
+   "example": {
+    "field": ".execution.gpu_ns",
+    "value": 7540708.0
+   },
+   "hardware_fields": 2,
+   "receipt": "receipts/headless/FLASH_NOETIC_FULL_ATTENTION_LAYER39_ORGAN.json"
+  },
+  {
+   "example": {
+    "field": ".execution.gpu_ns",
+    "value": 10918708.0
+   },
+   "hardware_fields": 2,
+   "receipt": "receipts/headless/FLASH_NOETIC_FULL_ATTENTION_LAYER3_ORGAN.json"
+  },
+  {
+   "example": {
+    "field": ".execution.gpu_ns",
+    "value": 8069874.0
+   },
+   "hardware_fields": 2,
+   "receipt": "receipts/headless/FLASH_NOETIC_FULL_ATTENTION_LAYER43_ORGAN.json"
+  },
+  {
+   "example": {
+    "field": ".execution.gpu_ns",
+    "value": 7967375.0
+   },
+   "hardware_fields": 2,
+   "receipt": "receipts/headless/FLASH_NOETIC_FULL_ATTENTION_LAYER47_DUAL_PROJ.json"
+  },
+  {
+   "example": {
+    "field": ".execution.gpu_ns",
+    "value": 6292958.0
+   },
+   "hardware_fields": 2,
+   "receipt": "receipts/headless/FLASH_NOETIC_FULL_ATTENTION_LAYER47_FUSED_SWIGLU.json"
+  },
+  {
+   "example": {
+    "field": ".execution.gpu_ns",
+    "value": 9387375.0
+   },
+   "hardware_fields": 2,
+   "receipt": "receipts/headless/FLASH_NOETIC_FULL_ATTENTION_LAYER47_ORGAN.json"
+  },
+  {
+   "example": {
+    "field": ".execution.gpu_ns",
+    "value": 11352125.0
+   },
+   "hardware_fields": 2,
+   "receipt": "receipts/headless/FLASH_NOETIC_FULL_ATTENTION_LAYER7_ORGAN.json"
+  },
+  {
+   "example": {
+    "field": ".execution.gpu_ns",
+    "value": 3620000.0
+   },
+   "hardware_fields": 2,
+   "receipt": "receipts/headless/FLASH_SOURCE_BF16_TERMINAL_TOKEN.json"
+  },
+  {
+   "example": {
+    "field": ".execution.gpu_ns",
+    "value": 7327375.0
+   },
+   "hardware_fields": 2,
+   "receipt": "receipts/headless/FLASH_SOURCE_BF16_TERMINAL_TOKEN_METAL_READOUT.json"
+  },
+  {
+   "example": {
+    "field": ".steps[0].gpu_ns",
+    "value": 3291708.0
+   },
+   "hardware_fields": 4,
+   "receipt": "receipts/headless/FLASH_STATEFUL_ATTENTION_ORGAN.json"
+  },
+  {
+   "example": {
+    "field": ".steps[0].gpu_ns",
+    "value": 3330416.0
+   },
+   "hardware_fields": 4,
+   "receipt": "receipts/headless/FLASH_STATEFUL_ATTENTION_ORGAN_V2.json"
+  },
+  {
+   "example": {
+    "field": ".steps[0].gpu_ns",
+    "value": 11077000.0
+   },
+   "hardware_fields": 4,
+   "receipt": "receipts/headless/FLASH_STATEFUL_ATTENTION_REUSE.json"
+  },
+  {
+   "example": {
+    "field": ".steps[0].gpu_ns",
+    "value": 6309999.0
+   },
+   "hardware_fields": 4,
+   "receipt": "receipts/headless/FLASH_STATEFUL_ATTENTION_UNION.json"
+  },
+  {
+   "example": {
+    "field": ".segments[0].wall_ns",
+    "value": 2373050459.0
+   },
+   "hardware_fields": 24,
+   "receipt": "receipts/headless/FLASH_STATEFUL_COMPLETE_SESSION_TIMING.json"
+  },
+  {
+   "example": {
+    "field": ".segments[0].steps[0].gpu_ns",
+    "value": 27410750.0
+   },
+   "hardware_fields": 444,
+   "receipt": "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_SESSION.json"
+  },
+  {
+   "example": {
+    "field": ".steps[0].gpu_ns",
+    "value": 9627958.0
+   },
+   "hardware_fields": 4,
+   "receipt": "receipts/headless/FLASH_STATEFUL_CROSS_SPECIES_ATTN.json"
+  },
+  {
+   "example": {
+    "field": ".steps[0].gpu_ns",
+    "value": 11238791.0
+   },
+   "hardware_fields": 4,
+   "receipt": "receipts/headless/FLASH_STATEFUL_CROSS_SPECIES_SEAM_V2_ATTN.json"
+  },
+  {
+   "example": {
+    "field": ".steps[0].gpu_ns",
+    "value": 11109041.0
+   },
+   "hardware_fields": 4,
+   "receipt": "receipts/headless/FLASH_STATEFUL_CROSS_SPECIES_SEAM_V3_ATTN.json"
+  },
+  {
+   "example": {
+    "field": ".linear_4_6.steps[0].gpu_ns",
+    "value": 30761791.0
+   },
+   "hardware_fields": 24,
+   "receipt": "receipts/headless/FLASH_STATEFUL_LAYER3_LAYER11_BRIDGE.json"
+  },
+  {
+   "example": {
+    "field": ".steps[0].gpu_ns",
+    "value": 9342583.0
+   },
+   "hardware_fields": 4,
+   "receipt": "receipts/headless/FLASH_STATEFUL_LAYER3_LAYER11_BRIDGE_ATTN.json"
+  },
+  {
+   "example": {
+    "field": ".steps[0].gpu_ns",
+    "value": 8762541.0
+   },
+   "hardware_fields": 4,
+   "receipt": "receipts/headless/FLASH_STATEFUL_LAYER3_LAYER11_BRIDGE_L11_ATTN.json"
+  },
+  {
+   "example": {
+    "field": ".steps[0].gpu_ns",
+    "value": 10257041.0
+   },
+   "hardware_fields": 4,
+   "receipt": "receipts/headless/FLASH_STATEFUL_LAYER3_LAYER11_BRIDGE_L3_ATTN.json"
+  },
+  {
+   "example": {
+    "field": ".steps[0].gpu_ns",
+    "value": 9552291.0
+   },
+   "hardware_fields": 4,
+   "receipt": "receipts/headless/FLASH_STATEFUL_LAYER3_LAYER11_BRIDGE_L7_ATTN.json"
+  },
+  {
+   "example": {
+    "field": ".layer4.steps[0].gpu_ns",
+    "value": 30549874.0
+   },
+   "hardware_fields": 4,
+   "receipt": "receipts/headless/FLASH_STATEFUL_LAYER3_LAYER4_BRIDGE.json"
+  },
+  {
+   "example": {
+    "field": ".steps[0].gpu_ns",
+    "value": 9741958.0
+   },
+   "hardware_fields": 4,
+   "receipt": "receipts/headless/FLASH_STATEFUL_LAYER3_LAYER4_BRIDGE_ATTN.json"
+  },
+  {
+   "example": {
+    "field": ".linear_4_6.steps[0].gpu_ns",
+    "value": 28954291.0
+   },
+   "hardware_fields": 12,
+   "receipt": "receipts/headless/FLASH_STATEFUL_LAYER3_LAYER7_BRIDGE.json"
+  },
+  {
+   "example": {
+    "field": ".steps[0].gpu_ns",
+    "value": 9759624.0
+   },
+   "hardware_fields": 4,
+   "receipt": "receipts/headless/FLASH_STATEFUL_LAYER3_LAYER7_BRIDGE_ATTN.json"
+  },
+  {
+   "example": {
+    "field": ".steps[0].gpu_ns",
+    "value": 34853041.0
+   },
+   "hardware_fields": 4,
+   "receipt": "receipts/headless/FLASH_STATEFUL_LINEAR_ORGAN.json"
+  },
+  {
+   "example": {
+    "field": ".steps[0].gpu_ns",
+    "value": 30370666.0
+   },
+   "hardware_fields": 12,
+   "receipt": "receipts/headless/FLASH_STATEFUL_LINEAR_PREFIX_DENSE_AUDIT.json"
+  },
+  {
+   "example": {
+    "field": ".steps[0].gpu_ns",
+    "value": 32102249.0
+   },
+   "hardware_fields": 12,
+   "receipt": "receipts/headless/FLASH_STATEFUL_LINEAR_PREFIX_SESSION.json"
+  },
+  {
+   "example": {
+    "field": ".steps[0].gpu_ns",
+    "value": 29261666.0
+   },
+   "hardware_fields": 12,
+   "receipt": "receipts/headless/FLASH_STATEFUL_LINEAR_PREFIX_SESSION_REUSE.json"
+  },
+  {
+   "example": {
+    "field": ".steps[0].gpu_ns",
+    "value": 29422250.0
+   },
+   "hardware_fields": 12,
+   "receipt": "receipts/headless/FLASH_STATEFUL_LINEAR_PREFIX_UNION.json"
+  },
+  {
+   "example": {
+    "field": ".questions[3].gpu_ledger_bad_control.gpu_ns",
+    "value": 29049999.0
+   },
+   "hardware_fields": 1,
+   "receipt": "receipts/headless/FRONTIER_ADVERSARY.json"
+  },
+  {
+   "example": {
+    "field": ".throughput.model.token_ns",
+    "value": 21581157.399582114
+   },
+   "hardware_fields": 1,
+   "receipt": "receipts/headless/GLOBAL_ALLOCATOR.json"
+  },
+  {
+   "example": {
+    "field": ".best_available_today.tps",
+    "value": 35.506
+   },
+   "hardware_fields": 1,
+   "receipt": "receipts/headless/GPU_ATTACK.json"
+  },
+  {
+   "example": {
+    "field": ".cold_generate.cold_or_first_step.gpu_ns",
+    "value": 74532750.0
+   },
+   "hardware_fields": 5,
+   "receipt": "receipts/headless/GPU_LEDGER_RAW.run1.json"
+  },
+  {
+   "example": {
+    "field": ".cold_generate.cold_or_first_step.gpu_ns",
+    "value": 80492625.0
+   },
+   "hardware_fields": 5,
+   "receipt": "receipts/headless/GPU_LEDGER_RAW.run2.json"
+  },
+  {
+   "example": {
+    "field": ".cold_generate.cold_or_first_step.gpu_ns",
+    "value": 80919833.0
+   },
+   "hardware_fields": 5,
+   "receipt": "receipts/headless/GPU_LEDGER_RAW.run3.json"
+  },
+  {
+   "example": {
+    "field": ".candidates[0].score.prediction.token_ns",
+    "value": 19276579.05392912
+   },
+   "hardware_fields": 3,
+   "receipt": "receipts/headless/GRAVITY_COMPILER_SEARCH.json"
+  },
+  {
+   "example": {
+    "field": ".experiment.live.wall_ns",
+    "value": 3826846583.0
+   },
+   "hardware_fields": 1,
+   "receipt": "receipts/headless/HCLI_ACCELERATOR_REGRESSION.json"
+  },
+  {
+   "example": {
+    "field": ".simulation.flash_next.link.bandwidth_gbps",
+    "value": 64.0
+   },
+   "hardware_fields": 11,
+   "receipt": "receipts/headless/HCLI_FPGA_PREBOARD.json"
+  },
+  {
+   "example": {
+    "field": ".aggregate.decode[0].gpu_ns",
+    "value": 138049248.0
+   },
+   "hardware_fields": 118,
+   "receipt": "receipts/headless/HCLI_PROTECTED_ACCELERATOR_BENCHMARK_AFTER_FLASH.json"
+  },
+  {
+   "example": {
+    "field": ".q2f_baseline.complete_token_ns",
+    "value": 27547874.0
+   },
+   "hardware_fields": 4,
+   "receipt": "receipts/headless/HYBRID_OPERATOR.json"
+  },
+  {
+   "example": {
+    "field": ".kernels[5].measurements.dispatch_fusion.reduction.dispatch_probes[0].probe.gpu_ns",
+    "value": 54341791.0
+   },
+   "hardware_fields": 10,
+   "receipt": "receipts/headless/KERNEL_LIBRARY.json"
+  },
+  {
+   "example": {
+    "field": ".mechanisms[2].measured_result.tps",
+    "value": 32.73
+   },
+   "hardware_fields": 1,
+   "receipt": "receipts/headless/NOETIC_ARCHAEOLOGY_INDEX.json"
+  },
+  {
+   "example": {
+    "field": ".anchors_not_rederived.tps",
+    "value": 32.73
+   },
+   "hardware_fields": 1,
+   "receipt": "receipts/headless/NOETIC_DELTANET_DESIGN.json"
+  },
+  {
+   "example": {
+    "field": ".dispatch_probes[0].probe.gpu_ns",
+    "value": 60735499.0
+   },
+   "hardware_fields": 8,
+   "receipt": "receipts/headless/NOETIC_DISPATCH_FUSION.json"
+  },
+  {
+   "example": {
+    "field": ".dispatch_probes[0].probe.gpu_ns",
+    "value": 47194208.0
+   },
+   "hardware_fields": 8,
+   "receipt": "receipts/headless/NOETIC_FUSED_SUBBIT.json"
+  },
+  {
+   "example": {
+    "field": ".anchors_not_rederived.tps",
+    "value": 32.73
+   },
+   "hardware_fields": 1,
+   "receipt": "receipts/headless/NOETIC_GQA_DESIGN.json"
+  },
+  {
+   "example": {
+    "field": ".anchors_not_rederived.tps",
+    "value": 32.73
+   },
+   "hardware_fields": 1,
+   "receipt": "receipts/headless/NOETIC_INFORMATION_ACCOUNTING.json"
+  },
+  {
+   "example": {
+    "field": ".controls.native_qwen38.tps",
+    "value": 32.73
+   },
+   "hardware_fields": 3,
+   "receipt": "receipts/headless/NOETIC_MLX_ANATOMY.json"
+  },
+  {
+   "example": {
+    "field": ".live.operator_microbatch[0].concurrent.gpu_ns",
+    "value": 1055000.0
+   },
+   "hardware_fields": 12,
+   "receipt": "receipts/headless/NOETIC_MULTISESSION.json"
+  },
+  {
+   "example": {
+    "field": ".operator_microbatch[0].concurrent.gpu_ns",
+    "value": 1055000.0
+   },
+   "hardware_fields": 6,
+   "receipt": "receipts/headless/NOETIC_MULTISESSION.raw.json"
+  },
+  {
+   "example": {
+    "field": ".anchors_not_rederived.tps",
+    "value": 32.73
+   },
+   "hardware_fields": 1,
+   "receipt": "receipts/headless/NOETIC_OPERATION_CENSUS.json"
+  },
+  {
+   "example": {
+    "field": ".anchors_not_rederived.tps",
+    "value": 32.73
+   },
+   "hardware_fields": 6,
+   "receipt": "receipts/headless/NOETIC_TRAFFIC_MODEL.json"
+  },
+  {
+   "example": {
+    "field": ".fpga.preboard.simulation.flash_next.link.bandwidth_gbps",
+    "value": 64.0
+   },
+   "hardware_fields": 11,
+   "receipt": "receipts/headless/OVERNIGHT_HAWKING_HANDOFF.json"
+  },
+  {
+   "example": {
+    "field": ".cells[0].wall_ns",
+    "value": 72573512792.0
+   },
+   "hardware_fields": 42,
+   "receipt": "receipts/headless/PRODUCTION_BENCH.parent.raw.json"
+  },
+  {
+   "example": {
+    "field": ".cells[0].wall_ns",
+    "value": 67246157250.0
+   },
+   "hardware_fields": 42,
+   "receipt": "receipts/headless/PRODUCTION_BENCH.q4.raw.json"
+  },
+  {
+   "example": {
+    "field": ".partition_simulation.link.bandwidth_gbps",
+    "value": 64.0
+   },
+   "hardware_fields": 8,
+   "receipt": "receipts/headless/QWEN27_FPGA_ORGAN_MAP.json"
+  },
+  {
+   "example": {
+    "field": ".arms[0].live.decode_metrics.gpu_ns",
+    "value": 139316247.0
+   },
+   "hardware_fields": 20,
+   "receipt": "receipts/headless/QWEN27_MLP_DIAGNOSTIC_AB.json"
+  },
+  {
+   "example": {
+    "field": ".arms[0].live.decode_metrics.gpu_ns",
+    "value": 135962539.0
+   },
+   "hardware_fields": 20,
+   "receipt": "receipts/headless/QWEN27_MLP_PROTECTED_AB.json"
+  },
+  {
+   "example": {
+    "field": ".arms[0].live.decode_metrics.gpu_ns",
+    "value": 134738040.0
+   },
+   "hardware_fields": 20,
+   "receipt": "receipts/headless/QWEN27_MLP_PROTECTED_AB_AFTER_FLASH.json"
+  },
+  {
+   "example": {
+    "field": ".control_result.aggregate.decode[0].gpu_ns",
+    "value": 134699289.0
+   },
+   "hardware_fields": 28,
+   "receipt": "receipts/headless/QWEN38_FUSION_PROTECTED_AB_AFTER_FLASH.json"
+  },
+  {
+   "example": {
+    "field": ".aggregate.decode[0].gpu_ns",
+    "value": 134699289.0
+   },
+   "hardware_fields": 118,
+   "receipt": "receipts/headless/QWEN38_FUSION_PROTECTED_AB_CONTROL_SWIGLU.json"
+  },
+  {
+   "example": {
+    "field": ".cold_generate.cold_or_first_step.gpu_ns",
+    "value": 57838083.0
+   },
+   "hardware_fields": 7,
+   "receipt": "receipts/headless/QWEN38_GRAVITY_NATIVE_RAW.run1.json"
+  },
+  {
+   "example": {
+    "field": ".cold_generate.cold_or_first_step.gpu_ns",
+    "value": 57833541.0
+   },
+   "hardware_fields": 7,
+   "receipt": "receipts/headless/QWEN38_GRAVITY_NATIVE_RAW.run2.json"
+  },
+  {
+   "example": {
+    "field": ".cold_generate.cold_or_first_step.gpu_ns",
+    "value": 58373624.0
+   },
+   "hardware_fields": 7,
+   "receipt": "receipts/headless/QWEN38_GRAVITY_NATIVE_RAW.run3.json"
+  },
+  {
+   "example": {
+    "field": ".strongest_historical_realizations[0].tps",
+    "value": 37.7
+   },
+   "hardware_fields": 3,
+   "receipt": "receipts/headless/QWEN_ARCHAEOLOGY.json"
+  },
+  {
+   "example": {
+    "field": ".completion_vector.hybrid_verdict.q2f_baseline.complete_token_ns",
+    "value": 27547874.0
+   },
+   "hardware_fields": 1,
+   "receipt": "receipts/headless/QWEN_COMPLETION_RECEIPT.json"
+  },
+  {
+   "example": {
+    "field": ".families[6].information_accounting.accounting.roofline.token_ns",
+    "value": 30606000.0
+   },
+   "hardware_fields": 1,
+   "receipt": "receipts/headless/REPRESENTATION_LIBRARY.json"
+  },
+  {
+   "example": {
+    "field": ".measured_this_session.clean-2.60.accepted_tps",
+    "value": 10.78
+   },
+   "hardware_fields": 4,
+   "receipt": "receipts/headless/RESIDENT_PARETO_FRONTIER.json"
+  },
+  {
+   "example": {
+    "field": ".operating_point.COMPLETE_TOKEN_NS.composed.complete_token_ns",
+    "value": 59754833.0
+   },
+   "hardware_fields": 7,
+   "receipt": "receipts/headless/SHARED_BASIS_COHERENT.json"
+  },
+  {
+   "example": {
+    "field": ".before.COMPLETE_TOKEN_NS.composed.complete_token_ns",
+    "value": 110201749.0
+   },
+   "hardware_fields": 4,
+   "receipt": "receipts/headless/SHARED_BASIS_KERNEL.json"
+  },
+  {
+   "example": {
+    "field": ".dispatch_probes[0].probe.gpu_ns",
+    "value": 54341791.0
+   },
+   "hardware_fields": 3,
+   "receipt": "receipts/headless/_DISPATCH_LEDGER_raw.json"
+  },
+  {
+   "example": {
+    "field": ".dispatch_probes[0].probe.gpu_ns",
+    "value": 56462250.0
+   },
+   "hardware_fields": 5,
+   "receipt": "receipts/headless/_MLP_DOWN_raw.json"
+  },
+  {
+   "example": {
+    "field": ".dispatch_probes[0].probe.gpu_ns",
+    "value": 116079208.0
+   },
+   "hardware_fields": 4,
+   "receipt": "receipts/headless/_NOETIC_PARENT_A_raw.json"
+  },
+  {
+   "example": {
+    "field": ".dispatch_probes[0].probe.gpu_ns",
+    "value": 27592083.0
+   },
+   "hardware_fields": 4,
+   "receipt": "receipts/headless/_ORGAN_BANDWIDTH_raw.json"
+  },
+  {
+   "example": {
+    "field": ".wall_ns",
+    "value": 1959560759250.0
+   },
+   "hardware_fields": 1,
+   "receipt": "receipts/headless/_PREFILL_KV_parent_16k_gen_run1.json"
+  },
+  {
+   "example": {
+    "field": ".wall_ns",
+    "value": 176154597458.0
+   },
+   "hardware_fields": 1,
+   "receipt": "receipts/headless/_PREFILL_KV_parent_4k_gen_run1.json"
+  },
+  {
+   "example": {
+    "field": ".wall_ns",
+    "value": 174933180375.0
+   },
+   "hardware_fields": 1,
+   "receipt": "receipts/headless/_PREFILL_KV_parent_4k_gen_run2.json"
+  },
+  {
+   "example": {
+    "field": ".cold_generate.cold_or_first_step.gpu_ns",
+    "value": 60132124.0
+   },
+   "hardware_fields": 3,
+   "receipt": "receipts/headless/_PREFILL_KV_parent_short_cw_run1.json"
+  },
+  {
+   "example": {
+    "field": ".cold_generate.cold_or_first_step.gpu_ns",
+    "value": 64030791.0
+   },
+   "hardware_fields": 3,
+   "receipt": "receipts/headless/_PREFILL_KV_parent_short_cw_run2.json"
+  },
+  {
+   "example": {
+    "field": ".cold_generate.cold_or_first_step.gpu_ns",
+    "value": 63576875.0
+   },
+   "hardware_fields": 3,
+   "receipt": "receipts/headless/_PREFILL_KV_parent_short_cw_run3.json"
+  },
+  {
+   "example": {
+    "field": ".wall_ns",
+    "value": 1111651583.0
+   },
+   "hardware_fields": 1,
+   "receipt": "receipts/headless/_PREFILL_KV_parent_short_gen_run0.json"
+  },
+  {
+   "example": {
+    "field": ".wall_ns",
+    "value": 1945870354625.0
+   },
+   "hardware_fields": 1,
+   "receipt": "receipts/headless/_PREFILL_KV_q4_16k_gen_run1.json"
+  },
+  {
+   "example": {
+    "field": ".wall_ns",
+    "value": 180388044292.0
+   },
+   "hardware_fields": 1,
+   "receipt": "receipts/headless/_PREFILL_KV_q4_4k_gen_run1.json"
+  },
+  {
+   "example": {
+    "field": ".wall_ns",
+    "value": 181883211125.0
+   },
+   "hardware_fields": 1,
+   "receipt": "receipts/headless/_PREFILL_KV_q4_4k_gen_run2.json"
+  },
+  {
+   "example": {
+    "field": ".cold_generate.cold_or_first_step.gpu_ns",
+    "value": 99922749.0
+   },
+   "hardware_fields": 3,
+   "receipt": "receipts/headless/_PREFILL_KV_q4_short_cw_run1.json"
+  },
+  {
+   "example": {
+    "field": ".cold_generate.cold_or_first_step.gpu_ns",
+    "value": 106989083.0
+   },
+   "hardware_fields": 3,
+   "receipt": "receipts/headless/_PREFILL_KV_q4_short_cw_run2.json"
+  },
+  {
+   "example": {
+    "field": ".cold_generate.cold_or_first_step.gpu_ns",
+    "value": 106361583.0
+   },
+   "hardware_fields": 3,
+   "receipt": "receipts/headless/_PREFILL_KV_q4_short_cw_run3.json"
+  },
+  {
+   "example": {
+    "field": ".wall_ns",
+    "value": 1157254292.0
+   },
+   "hardware_fields": 1,
+   "receipt": "receipts/headless/_PREFILL_KV_q4_short_gen_run0.json"
+  },
+  {
+   "example": {
+    "field": ".dispatch_probes[0].probe.gpu_ns",
+    "value": 47194208.0
+   },
+   "hardware_fields": 4,
+   "receipt": "receipts/headless/_fused_subbit_raw.json"
+  },
+  {
+   "example": {
+    "field": ".measured_state.tps",
+    "value": 45.566
+   },
+   "hardware_fields": 1,
+   "receipt": "receipts/future/HCLI_MISSION_KERNEL.json"
+  },
+  {
+   "example": {
+    "field": ".cold_generate.cold_or_first_step.gpu_ns",
+    "value": 55679791.0
+   },
+   "hardware_fields": 7,
+   "receipt": "receipts/future/_G075_greedy_baseline.json"
+  },
+  {
+   "example": {
+    "field": ".cold_generate.cold_or_first_step.gpu_ns",
+    "value": 59030124.0
+   },
+   "hardware_fields": 7,
+   "receipt": "receipts/future/_G075_greedy_widen_f4.json"
+  },
+  {
+   "example": {
+    "field": ".dispatch_probes[0].probe.gpu_ns",
+    "value": 26362708.0
+   },
+   "hardware_fields": 4,
+   "receipt": "receipts/future/_G075_organ_widen_f4.json"
+  },
+  {
+   "example": {
+    "field": ".cold_generate.cold_or_first_step.gpu_ns",
+    "value": 64199250.0
+   },
+   "hardware_fields": 7,
+   "receipt": "receipts/future/_G083_concurrent.json"
+  },
+  {
+   "example": {
+    "field": ".cold_generate.cold_or_first_step.gpu_ns",
+    "value": 72835958.0
+   },
+   "hardware_fields": 7,
+   "receipt": "receipts/future/_G083_serial.json"
+  },
+  {
+   "example": {
+    "field": ".dispatch_probes[0].probe.gpu_ns",
+    "value": 21964208.0
+   },
+   "hardware_fields": 4,
+   "receipt": "receipts/future/_G133_ORGAN_SEALED_raw.json"
+  }
+ ],
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-03T06:23:56Z",
+  "recorded_by": "tools/future/measurement_provenance_audit.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "STATIC scan of committed receipts. It measures nothing itself and changes no recorded number.",
+ "evidence_tier": "STATIC",
+ "hardware_field_names": [
+  "accepted_tps",
+  "bandwidth_gbps",
+  "complete_token_ns",
+  "dispatch_ns",
+  "gpu_ns",
+  "joules_per_token",
+  "token_ns",
+  "tps",
+  "wall_ns"
+ ],
+ "receipts_carrying_a_hardware_number": 147,
+ "receipts_scanned": 1299,
+ "roots": [
+  "receipts/headless",
+  "receipts/future",
+  "receipts/acceptance"
+ ],
+ "schema": "hawking.future.measurement_provenance_audit.v1",
+ "seal_sha256": "ba22aaf96e7e03087d7468093e6b16b75a7e596ab58e5dcbf7ce44c8532d2d01",
+ "why_it_is_not_retrofitted": "Provenance cannot be added after the fact. Nobody can now say whether a figure recorded months ago held the GPU lane, and writing lock_held:true to make an audit pass would fabricate exactly the fact that is missing. The deficit is counted and pinned so it can only shrink; it shrinks when a measurement is RE-RUN through measurement_provenance().",
+ "with_provenance": 15,
+ "without_provenance": 132
+}
