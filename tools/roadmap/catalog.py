@@ -984,8 +984,16 @@ for _gate, _start, _end in (
 
 # With a real criterion, FLASH_SOURCE_VERIFIED can be declared honestly: its
 # obligation IS the tensor census, and tools/flash_organ_census.census performs it.
+# `main` as well as `census`: tools/acceptance/flash/run_gates.py:186 calls
+# flash_organ_census.main and names itself "catalog producer for this gate", so
+# main is the entry point the acceptance actually reaches. Declaring only the
+# inner function matched nothing -- the same wrong-symbol mistake as the sibling
+# import, one level down.
+# ONLY main. `census` is not a top-level function in flash_organ_census -- an
+# earlier AST sweep listed it from a nested scope, and declaring a symbol that
+# does not exist is a claim the module cannot honour.
 GATES["FLASH_SOURCE_VERIFIED"]["symbols"] = [
-    {"module": "tools.flash_organ_census", "symbol": "census"},
+    {"module": "tools.flash_organ_census", "symbol": "main"},
 ] + list(GATES["FLASH_SOURCE_VERIFIED"].get("symbols") or [])
 
 # FLASH_ACCEPTED_TPS_GE_50 is NOT a software connection and must never be filed
