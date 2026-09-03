@@ -14,6 +14,7 @@ silent pass.
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import re
@@ -56,6 +57,44 @@ def llama_server_binary() -> str:
 _HELP: Dict[str, str] = {}
 _VERSION: Dict[str, str] = {}
 
+#: Probe results survive the process. A `--help` on a model server costs about
+#: a second -- mlx_lm imports torch to print it -- and the in-memory dict only
+#: helps a process that asks twice. Every HCLI invocation and every test shard
+#: paid it again: measured 1.14 s in a 4.4 s sharded suite, and once per
+#: control-plane start.
+#:
+#: Keyed by binary path AND its mtime+size, so a rebuilt or replaced binary is
+#: re-probed rather than answered from a stale cache. A capability answer that
+#: outlives the thing it describes is worse than no cache.
+_PROBE_CACHE_DIR = Path(os.environ.get("HCLI_PROBE_CACHE", "")) if os.environ.get(
+    "HCLI_PROBE_CACHE"
+) else Path.home() / ".cache" / "hcli" / "probes"
+
+
+def _probe_key(path: str, kind: str) -> str:
+    try:
+        st = os.stat(path)
+        stamp = f"{st.st_mtime_ns}:{st.st_size}"
+    except OSError:
+        stamp = "missing"
+    digest = hashlib.sha256(f"{path}|{stamp}|{kind}".encode()).hexdigest()[:32]
+    return digest
+
+
+def _probe_cached(path: str, kind: str) -> Optional[str]:
+    try:
+        return (_PROBE_CACHE_DIR / _probe_key(path, kind)).read_text(encoding="utf-8")
+    except OSError:
+        return None
+
+
+def _probe_store(path: str, kind: str, text: str) -> None:
+    try:
+        _PROBE_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+        (_PROBE_CACHE_DIR / _probe_key(path, kind)).write_text(text, encoding="utf-8")
+    except OSError:
+        pass
+
 
 def _capture(binary: str, args: List[str], timeout: float = 15.0) -> str:
     try:
@@ -76,8 +115,13 @@ def llama_help_text(binary: Optional[str] = None) -> str:
     cached = _HELP.get(path)
     if cached is not None:
         return cached
+    on_disk = _probe_cached(path, "llama-help")
+    if on_disk is not None:
+        _HELP[path] = on_disk
+        return on_disk
     text = _capture(path, ["--help"])
     _HELP[path] = text
+    _probe_store(path, "llama-help", text)
     return text
 
 
@@ -109,8 +153,13 @@ def mlx_help_text(binary: Optional[str] = None) -> str:
     cached = _HELP.get(path)
     if cached is not None:
         return cached
+    on_disk = _probe_cached(path, "mlx-help")
+    if on_disk is not None:
+        _HELP[path] = on_disk
+        return on_disk
     text = _capture(path, ["--help"])
     _HELP[path] = text
+    _probe_store(path, "mlx-help", text)
     return text
 
 
