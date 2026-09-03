@@ -281,37 +281,15 @@ def cycle_timings(now: float | None = None) -> dict[str, Any]:
 
 
 def specimen_registry() -> dict[str, Any]:
-    """ModelLake state read FROM DISK, never from prose.
+    """ModelLake state, delegated to the lifecycle capability that owns it.
 
-    The roadmap carried "Flash is still downloading" long after it was not.
-    Anything this controller says about eligible specimens is counted off the
-    filesystem at call time, and says so when the volume is not mounted rather
-    than reporting zero as though the lake were empty.
+    This used to count the lake itself, which meant two modules held two
+    filesystem censuses that could disagree. tools.future.modellake_lifecycle is
+    the authority; this returns what it says. One producer, one answer.
     """
-    specimens = LAKE / "specimens"
-    manifests = LAKE / "manifests"
-    if not LAKE.is_dir():
-        return {
-            "state": "VOLUME_ABSENT",
-            "root": str(LAKE),
-            "why": "the lake volume is not mounted; this is not the same as an empty lake",
-            "sealed_specimens": None,
-            "manifests": None,
-        }
-    sealed = sorted(p.name for p in specimens.iterdir() if p.is_dir()) if specimens.is_dir() else []
-    manifest_count = len(list(manifests.glob("*.json"))) if manifests.is_dir() else 0
-    return {
-        "state": "READ_FROM_DISK",
-        "root": str(LAKE),
-        "sealed_specimens": len(sealed),
-        "manifests": manifest_count,
-        "every_sealed_specimen_is_eligible": (
-            "architecture recognition, Doctor, law retrieval and Odyssey work "
-            "follow from sealing; no manual campaign creation is required "
-            "because another model arrived"
-        ),
-        "examples": sealed[:5],
-    }
+    from tools.future.modellake_lifecycle import lifecycle
+
+    return lifecycle()
 
 
 def build() -> dict[str, Any]:

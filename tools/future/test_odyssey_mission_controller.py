@@ -213,7 +213,12 @@ def test_an_unmounted_lake_is_not_reported_as_an_empty_lake(monkeypatch, tmp_pat
     """
     from tools.future import odyssey_mission_controller as omc
 
-    monkeypatch.setattr(omc, "LAKE", tmp_path / "not-mounted")
+    # Patch where the value is USED, not where it used to live: the census now
+    # belongs to tools.future.modellake_lifecycle and the controller delegates to
+    # it, so one module holds one answer instead of two that can disagree.
+    from tools.future import modellake_lifecycle as ml
+
+    monkeypatch.setattr(ml, "LAKE", tmp_path / "not-mounted")
     reg = omc.specimen_registry()
     assert reg["state"] == "VOLUME_ABSENT"
     assert reg["sealed_specimens"] is None, (
