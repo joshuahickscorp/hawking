@@ -791,14 +791,34 @@ def _python_syntax_violation(content: str) -> Optional[str]:
         body = op.get("new_text")
         if not isinstance(body, str) or not body.strip():
             continue
+
+        # Compile the RESULTING FILE, not the fragment. A replace operation's
+        # new_text is spliced into an existing file, so an indented block is
+        # correct as a replacement for an indented block -- compiling it
+        # standalone reported "unexpected indent at line 1" and rejected
+        # patches that were fine. Measured: three consecutive goals died on
+        # that false rejection, having been told to fix code that was not
+        # broken. A check that refuses correct work is worse than no check.
+        candidate = body
+        if str(op.get("op") or "") == "replace":
+            anchor = op.get("old_text")
+            try:
+                current = (Path(path)).read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                continue
+            if not isinstance(anchor, str) or anchor not in current:
+                # A missing anchor is the verifier's business, not the parser's.
+                continue
+            candidate = current.replace(anchor, body, 1)
+
         try:
-            compile(body, path or "<operation>", "exec")
+            compile(candidate, path or "<operation>", "exec")
         except SyntaxError as exc:
             where = f"line {exc.lineno}" if exc.lineno else "an unknown line"
             return (
-                f"operation on {path} is not valid Python: {exc.msg} at {where}"
-                f" -- rewrite that operation only, and keep it short enough to"
-                f" get the brackets right"
+                f"applying your operation to {path} would not compile: "
+                f"{exc.msg} at {where} of the resulting file"
+                f" -- fix that operation and keep it short"
             )
         except ValueError as exc:
             return f"operation on {path} could not be compiled: {exc}"

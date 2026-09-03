@@ -26,10 +26,58 @@ from hcli.engine import _python_syntax_violation
 
 
 def reply(path: str, body: str) -> str:
+    # `create`, so the body is judged as a whole module. A `replace` fragment is
+    # spliced into a file and is judged by whether the RESULT compiles.
     return json.dumps({
         "kind": "mutation", "content": "x", "tests": [], "tool_calls": [],
-        "operations": [{"op": "replace", "path": path, "new_text": body}],
+        "operations": [{"op": "create", "path": path, "new_text": body}],
     })
+
+
+class TestFragmentsAreNotCompiledAlone(unittest.TestCase):
+    """A replace fragment is spliced into a file, not a module.
+
+    The first version of this check compiled `new_text` on its own, so an
+    indented block -- the correct replacement for an indented block -- was
+    reported as "unexpected indent at line 1" and REJECTED. Three consecutive
+    goals died being told to fix code that was not broken.
+
+    A check that refuses correct work is worse than no check: it converts a
+    working model into a failing one and hides the fact behind a plausible
+    error message.
+    """
+
+    ANCHOR = "    files_seen = 0\n"
+
+    def _op(self, new_text, op="replace"):
+        return json.dumps({"operations": [{
+            "op": op, "path": "hcli/tool_registry.py",
+            "old_text": self.ANCHOR, "new_text": new_text,
+        }]})
+
+    def test_an_indented_fragment_is_accepted(self):
+        self.assertIsNone(
+            _python_syntax_violation(self._op("    files_seen = 0\n    extra = 1\n"))
+        )
+
+    def test_a_fragment_that_breaks_the_file_is_still_caught(self):
+        got = _python_syntax_violation(self._op("    files_seen = (0\n"))
+        self.assertIsNotNone(got)
+        self.assertIn("resulting file", got)
+
+    def test_a_missing_anchor_is_left_to_the_verifier(self):
+        """Not the parser's job to report a bad anchor."""
+        payload = json.dumps({"operations": [{
+            "op": "replace", "path": "hcli/tool_registry.py",
+            "old_text": "this text is not in the file anywhere",
+            "new_text": "    x = 1\n",
+        }]})
+        self.assertIsNone(_python_syntax_violation(payload))
+
+    def test_a_create_still_compiles_standalone(self):
+        """A created file IS a whole module, so the old rule is right there."""
+        got = _python_syntax_violation(self._op("def f(:\n", op="create"))
+        self.assertIsNotNone(got)
 
 
 class TestSyntaxPreflight(unittest.TestCase):
@@ -58,7 +106,7 @@ class TestSyntaxPreflight(unittest.TestCase):
 
     def test_the_message_tells_the_model_what_to_do(self):
         got = _python_syntax_violation(reply("a.py", "def f(:\n"))
-        self.assertIn("rewrite that operation only", got)
+        self.assertIn("fix that operation", got)
 
     def test_it_is_wired_into_the_contract_retry(self):
         """At the call site, not just the helper.
