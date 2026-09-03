@@ -123,6 +123,43 @@ def cosine(left: np.ndarray, right: np.ndarray) -> float:
     return float(np.dot(a, b) / denominator)
 
 
+# teacher[:, mask] is a ~660 MB gather, and _score_pred recomputed it on every one
+# of its 33 calls from the SAME teacher and the SAME mask. Held by identity, with a
+# strong reference so the id cannot be reused while the entry is live.
+_MASKED_COLUMNS: tuple[int, np.ndarray, int, np.ndarray] | None = None
+
+
+def _masked_columns(teacher: np.ndarray, mask: np.ndarray) -> np.ndarray:
+    global _MASKED_COLUMNS
+    if _MASKED_COLUMNS is not None:
+        t_id, t_ref, m_id, cached = _MASKED_COLUMNS
+        if t_id == id(teacher) and t_ref is teacher and m_id == id(mask):
+            return cached
+    out = teacher[:, mask]
+    _MASKED_COLUMNS = (id(teacher), teacher, id(mask), out)
+    return out
+
+
+def _relative_fro_and_cosine(pred: np.ndarray, teacher: np.ndarray) -> dict[str, float]:
+    """Both metrics from one float64 view of each array.
+
+    Identical to calling relative_fro() then cosine(): the same casts, the same
+    norms, the same dot, in the same order. Only the second pair of temporaries
+    is gone.
+    """
+    p = pred.astype(np.float64, copy=False)
+    t = teacher.astype(np.float64, copy=False)
+    t_norm = float(np.linalg.norm(t))
+    rel = float(np.linalg.norm(p - t) / max(t_norm, 1e-30))
+    a = p.reshape(-1)
+    b = t.reshape(-1)
+    denominator = max(float(np.linalg.norm(a) * t_norm), 1e-30)
+    return {
+        "heldout_relative_fro_error": rel,
+        "heldout_cosine": float(np.dot(a, b) / denominator),
+    }
+
+
 def relative_fro(pred: np.ndarray, teacher: np.ndarray) -> float:
     p = pred.astype(np.float64, copy=False)
     t = teacher.astype(np.float64, copy=False)
@@ -831,7 +868,7 @@ def _score_pred(
     fitted_dimension: int,
     extra: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
-    held_t = teacher[:, heldout_rows]
+    held_t = _masked_columns(teacher, heldout_rows)
     row: dict[str, Any] = {
         "family": family,
         "scored": True,
@@ -839,8 +876,11 @@ def _score_pred(
         "fitted_dimension": int(fitted_dimension),
         "fit_rows": int(fit_rows.sum()),
         "heldout_rows": int(heldout_rows.sum()),
-        "heldout_relative_fro_error": relative_fro(pred_held, held_t),
-        "heldout_cosine": cosine(pred_held, held_t),
+        # ONE upcast shared by both metrics. relative_fro and cosine each cast the
+        # SAME two arrays to float64 independently, so scoring a (314, 205, 2560)
+        # pair paid for four temporaries where two suffice. Same operations on the
+        # same values -- this removes duplicated work, not arithmetic.
+        **_relative_fro_and_cosine(pred_held, held_t),
         "diagnostic_factor_bytes": int(factor_bytes),
         "diagnostic_factor_equivalent_bpw": diagnostic_bpw(factor_bytes, source_parameters),
         "selected_dense_source_bytes": int(source_parameters) * 2,

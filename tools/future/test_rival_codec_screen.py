@@ -627,3 +627,46 @@ def test_residual_factors_absorb_the_projection_into_V_single_and_batch():
         projected = float(np.linalg.norm(bu[i] @ bv[i] - batch[i]))
         raw_rows = float(np.linalg.norm(bu[i] @ batch[i][:rank] - batch[i]))
         assert projected < raw_rows, f"expert {i}: the projection buys nothing"
+
+
+def test_fused_metrics_are_bit_identical_to_the_separate_ones():
+    """Removing duplicated work must not move a single bit.
+
+    relative_fro and cosine each upcast the SAME two arrays to float64
+    independently, so scoring one pair paid for four temporaries where two
+    suffice. The fused form must produce exactly what the separate calls did --
+    not "within a tolerance", exactly, because a screen that shifts under a
+    refactor cannot be compared against its own committed numbers.
+    """
+    rng = np.random.default_rng(19)
+    for shape in ((5, 31, 17), (2, 64, 8), (9, 3, 40)):
+        pred = rng.standard_normal(shape, dtype=np.float32)
+        teacher = rng.standard_normal(shape, dtype=np.float32)
+        fused = rcs._relative_fro_and_cosine(pred, teacher)
+        assert fused["heldout_relative_fro_error"] == rcs.relative_fro(pred, teacher)
+        assert fused["heldout_cosine"] == rcs.cosine(pred, teacher)
+
+
+def test_the_masked_gather_is_reused_only_for_the_SAME_teacher_and_mask():
+    """A 660 MB gather may be reused, but never across different inputs."""
+    rng = np.random.default_rng(23)
+    teacher = rng.standard_normal((4, 12, 6), dtype=np.float32)
+    mask = np.zeros(12, dtype=bool)
+    mask[::2] = True
+
+    first = rcs._masked_columns(teacher, mask)
+    again = rcs._masked_columns(teacher, mask)
+    assert again is first, "the identical gather was recomputed"
+    assert np.array_equal(first, teacher[:, mask])
+
+    other_mask = np.zeros(12, dtype=bool)
+    other_mask[1::2] = True
+    third = rcs._masked_columns(teacher, other_mask)
+    assert third is not first, "a different mask was served the cached gather"
+    assert np.array_equal(third, teacher[:, other_mask])
+
+    other_teacher = rng.standard_normal((4, 12, 6), dtype=np.float32)
+    fourth = rcs._masked_columns(other_teacher, other_mask)
+    assert np.array_equal(fourth, other_teacher[:, other_mask]), (
+        "a different teacher was served another teacher's columns"
+    )
