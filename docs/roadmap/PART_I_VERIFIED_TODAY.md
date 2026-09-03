@@ -7,11 +7,11 @@ Nothing here is complete because a file exists: a field with no evidence prints 
 
 ## Status census
 
-    VERIFIED_INTEGRATED      23
-    SCAFFOLDED               18
-    VERIFIED_BUILT           14
+    VERIFIED_INTEGRATED      24
+    VERIFIED_BUILT           19
     BLOCKED_EVIDENCE         13
     BLOCKED_HARDWARE         13
+    SCAFFOLDED               12
     ABSENT                   1
     UNREACHABLE              1
 
@@ -22,13 +22,13 @@ design, not by neglect: simulated is not measured.
 ## Evidence coverage across all gates
 
     defining property available     82 / 83
-    real (non-test) caller          38 / 83
+    real (non-test) caller          44 / 83
     any verifier                    61 / 83
     receipt cited                   13 / 83
 
 ## A. CONTROL / HCLI / AGENTOS
 
-18 capabilities. VERIFIED_INTEGRATED=10, VERIFIED_BUILT=4, SCAFFOLDED=3, ABSENT=1
+18 capabilities. VERIFIED_INTEGRATED=11, VERIFIED_BUILT=4, SCAFFOLDED=2, ABSENT=1
 
 ### AGENTOS_BEHAVIOR_LAB
 
@@ -201,16 +201,16 @@ design, not by neglect: simulated is not measured.
 
 ### HCLI_CONTEXT_INVALIDATION
 
-    STATUS              SCAFFOLDED
+    STATUS              VERIFIED_INTEGRATED
     defining property   model_architectural_ceiling
     implementation      hcli/goal.py, hcli/context_budget.py
-    real caller         absent — no non-test call site
-    verifier            hcli/test_cognition_unit_concurrency.py:12, hcli/test_context_reduction.py:69, hcli/test_goal_compile.py (+30 more)
+    real caller         hcli/goal.py:959, tools/acceptance/context/gates.py:449
+    verifier            hcli/test_cognition_unit_concurrency.py:12, hcli/test_context_reduction.py:69, hcli/test_goal_compile.py (+32 more)
     negative control    hcli/test_cognition_unit_concurrency.py, hcli/test_context_reduction.py
     receipt             absent
     evidence level      STATIC
     limitations         none recorded
-    integration         wired=False accepted=True
+    integration         wired=True accepted=True
 
 ### HCLI_MIXED_MAX
 
@@ -266,7 +266,7 @@ design, not by neglect: simulated is not measured.
 
 ## B. MODEL SCIENCE / DOCTOR / GRAVITY / NOETIC
 
-7 capabilities. SCAFFOLDED=3, VERIFIED_BUILT=2, VERIFIED_INTEGRATED=2
+7 capabilities. VERIFIED_BUILT=3, SCAFFOLDED=2, VERIFIED_INTEGRATED=2
 
 ### FLASH_ACCEPTED_TPS_GE_50
 
@@ -322,16 +322,16 @@ design, not by neglect: simulated is not measured.
 
 ### FLASH_FULL_NOETIC_EXECUTABLE
 
-    STATUS              SCAFFOLDED
+    STATUS              VERIFIED_BUILT
     defining property   **Mission:** Compile model semantics into explicit representation choices.
     implementation      tools/odyssey/noetic_compiler.py, hcli/agentos/flash_executable.py
-    real caller         absent — no non-test call site
-    verifier            hcli/tests/test_hcli_flash_science.py:5, hcli/tests/test_hcli_science_boundaries.py:12, hcli/tests/test_hcli_science_boundaries.py:13 (+2 more)
+    real caller         tools/acceptance/flash/run_gates.py:752, tools/future/representation_lab.py:785, tools/odyssey/noetic_compiler.py:238 (+1 more)
+    verifier            hcli/tests/test_hcli_flash_science.py:5, hcli/tests/test_hcli_science_boundaries.py:12, hcli/tests/test_hcli_science_boundaries.py:13 (+7 more)
     negative control    hcli/tests/test_hcli_flash_science.py, hcli/tests/test_hcli_science_boundaries.py
     receipt             absent
     evidence level      STATIC
     limitations         acceptance not demonstrated: acceptance verdict BLOCKED: FLASH_COMPLETE_V0.nx status=SEALED_METADATA_ONLY_NOT_FOR_PROMOTION; native_loader=NOT_IMPLEMENTED; native_kernels=PLAN_ONLY; NR can_
-    integration         wired=False accepted=False
+    integration         wired=True accepted=False
 
 ### FLASH_NATIVE_NF_KERNEL
 
@@ -350,7 +350,7 @@ design, not by neglect: simulated is not measured.
 
     STATUS              SCAFFOLDED
     defining property   **Mission:** Find the smallest capability-preserving executable function, not merely the smallest file.
-    implementation      tools/flash_organ_census.py, tools/gravity_verify_source.py
+    implementation      tools/flash_organ_census.py, tools/gravity_verify_source.py, tools/gravity_verify_source.py:26
     real caller         absent — no non-test call site
     verifier            absent — no test cites this gate
     negative control    absent — no cited test proves it can fail
@@ -361,7 +361,7 @@ design, not by neglect: simulated is not measured.
 
 ## C. NATIVE RUNTIME / APPLE ACCELERATOR
 
-11 capabilities. SCAFFOLDED=7, VERIFIED_BUILT=2, VERIFIED_INTEGRATED=2
+11 capabilities. VERIFIED_BUILT=6, SCAFFOLDED=3, VERIFIED_INTEGRATED=2
 
 ### QWEN27_PROTECTED_BASELINE
 
@@ -404,16 +404,16 @@ design, not by neglect: simulated is not measured.
 
 ### RUNTIME_COMPLETE_TOKEN_PROFILE
 
-    STATUS              SCAFFOLDED
+    STATUS              VERIFIED_BUILT
     defining property   **Mission:** Find the smallest capability-preserving executable function, not merely the smallest file.
-    implementation      hcli/prefill_profile.py
-    real caller         absent — no non-test call site
-    verifier            hcli/test_prefix_and_prefill_instruments.py:14
+    implementation      hcli/prefill_profile.py, hcli/prefill_profile.py:102
+    real caller         hcli/engine.py:3326
+    verifier            hcli/test_prefix_and_prefill_instruments.py:14, hcli/test_prefix_and_prefill_instruments.py:113, hcli/test_prefix_and_prefill_instruments.py:121 (+3 more)
     negative control    hcli/test_prefix_and_prefill_instruments.py
     receipt             absent
     evidence level      STATIC
     limitations         acceptance not demonstrated: wired is not accepted: no receipt or measurement demonstrates the gate's own acceptance criterion. A receipt on the topic is not the bar.
-    integration         wired=False accepted=False
+    integration         wired=True accepted=False
 
 ### RUNTIME_CONTEXT_NATIVE
 
@@ -430,16 +430,16 @@ design, not by neglect: simulated is not measured.
 
 ### RUNTIME_DECODE_PROTECTED
 
-    STATUS              SCAFFOLDED
+    STATUS              VERIFIED_BUILT
     defining property   **Mission:** Find the smallest capability-preserving executable function, not merely the smallest file.
     implementation      hcli/hawking_native.py
-    real caller         absent — no non-test call site
-    verifier            hcli/test_constrained_decoding.py:51, hcli/test_native_json_grammar.py:10, hcli/test_native_token_budget_clamp.py:16 (+1 more)
+    real caller         hcli/agentos/resident.py:1119, hcli/backends.py:2187, hcli/models.py:358 (+3 more)
+    verifier            hcli/test_constrained_decoding.py:51, hcli/test_native_json_grammar.py:10, hcli/test_native_token_budget_clamp.py:16 (+4 more)
     negative control    hcli/test_native_json_grammar.py
     receipt             absent
     evidence level      STATIC
     limitations         acceptance not demonstrated: wired is not accepted: no receipt or measurement demonstrates the gate's own acceptance criterion. A receipt on the topic is not the bar.
-    integration         wired=False accepted=False
+    integration         wired=True accepted=False
 
 ### RUNTIME_DELTANET_STATE_REUSE
 
@@ -456,29 +456,29 @@ design, not by neglect: simulated is not measured.
 
 ### RUNTIME_NATIVE_PREFILL
 
-    STATUS              SCAFFOLDED
+    STATUS              VERIFIED_BUILT
     defining property   **Mission:** Find the smallest capability-preserving executable function, not merely the smallest file.
-    implementation      hcli/prefill_profile.py, hcli/hawking_native.py
-    real caller         absent — no non-test call site
-    verifier            hcli/test_prefix_and_prefill_instruments.py:14
+    implementation      hcli/prefill_profile.py, hcli/hawking_native.py, hcli/prefill_profile.py:45
+    real caller         hcli/engine.py:3322
+    verifier            hcli/test_prefix_and_prefill_instruments.py:14, hcli/test_prefix_and_prefill_instruments.py:112, hcli/test_prefix_and_prefill_instruments.py:121 (+4 more)
     negative control    hcli/test_prefix_and_prefill_instruments.py
     receipt             absent
     evidence level      STATIC
     limitations         acceptance not demonstrated: wired is not accepted: no receipt or measurement demonstrates the gate's own acceptance criterion. A receipt on the topic is not the bar.
-    integration         wired=False accepted=False
+    integration         wired=True accepted=False
 
 ### RUNTIME_PREFILL_PHYSICAL_FRONTIER
 
-    STATUS              SCAFFOLDED
+    STATUS              VERIFIED_BUILT
     defining property   **Mission:** Find the smallest capability-preserving executable function, not merely the smallest file.
-    implementation      hcli/prefill_profile.py
-    real caller         absent — no non-test call site
-    verifier            hcli/test_prefix_and_prefill_instruments.py:14
+    implementation      hcli/prefill_profile.py, hcli/prefill_profile.py:102
+    real caller         hcli/engine.py:3326
+    verifier            hcli/test_prefix_and_prefill_instruments.py:14, hcli/test_prefix_and_prefill_instruments.py:113, hcli/test_prefix_and_prefill_instruments.py:121 (+3 more)
     negative control    hcli/test_prefix_and_prefill_instruments.py
     receipt             absent
     evidence level      STATIC
     limitations         acceptance not demonstrated: wired is not accepted: no receipt or measurement demonstrates the gate's own acceptance criterion. A receipt on the topic is not the bar.
-    integration         wired=False accepted=False
+    integration         wired=True accepted=False
 
 ### RUNTIME_PREFIX_STATE_REUSE
 
@@ -497,9 +497,9 @@ design, not by neglect: simulated is not measured.
 
     STATUS              SCAFFOLDED
     defining property   **Mission:** Find the smallest capability-preserving executable function, not merely the smallest file.
-    implementation      hcli/prefix_probe.py
+    implementation      hcli/prefix_probe.py, hcli/prefix_probe.py:29, hcli/prefix_probe.py:38
     real caller         absent — no non-test call site
-    verifier            hcli/test_prefix_and_prefill_instruments.py:15
+    verifier            hcli/test_prefix_and_prefill_instruments.py:15, hcli/test_prefix_and_prefill_instruments.py:84, hcli/test_prefix_and_prefill_instruments.py:85 (+2 more)
     negative control    hcli/test_prefix_and_prefill_instruments.py
     receipt             absent
     evidence level      STATIC
@@ -981,7 +981,7 @@ design, not by neglect: simulated is not measured.
 
     STATUS              SCAFFOLDED
     defining property   V11 web fixture proof
-    implementation      hcli/agentos/vmcp_gate.py, tools/headless/hcli_vmcp_integration.py
+    implementation      hcli/agentos/vmcp_gate.py, tools/headless/hcli_vmcp_integration.py, hcli/agentos/vmcp_gate.py:205
     real caller         absent — no non-test call site
     verifier            absent — no test cites this gate
     negative control    absent — no cited test proves it can fail

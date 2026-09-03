@@ -14,7 +14,7 @@
     "base_commit": "caf83078f",
     "graph": "civilization/CAPABILITY_GRAPH.json",
     "graph_generated_by": "tools/roadmap/auditor.py",
-    "head": "acb487ba815cabc02276fc0c23c1fc76c8f01dbf"
+    "head": "6a849c4576bf6bc8dc445bef9e559790dac980fb"
   },
   "externally_blocked": [
     {
@@ -75,10 +75,10 @@
       "ABSENT": 1,
       "BLOCKED_EXTERNAL": 13,
       "BLOCKED_HARDWARE": 13,
-      "BUILT": 23,
-      "SCAFFOLDED": 18,
+      "BUILT": 24,
+      "SCAFFOLDED": 12,
       "UNREACHABLE": 1,
-      "WIRED": 14
+      "WIRED": 19
     },
     "gates_total": 83,
     "movable_gates": 57,
@@ -164,6 +164,7 @@
     "wired_but_not_accepted": [
       "AGENTOS_DETERMINISTIC_OFFLOAD",
       "FLASH_COMPLETE_EBPW_LE_1",
+      "FLASH_FULL_NOETIC_EXECUTABLE",
       "FLASH_NATIVE_NF_KERNEL",
       "FPGA_HWIR",
       "HCLI_MIXED_MAX",
@@ -174,17 +175,21 @@
       "ODYSSEY_III_ADVERSARIAL_META_SCIENCE",
       "ODYSSEY_II_TRANSFER",
       "QWEN27_PROTECTED_BASELINE",
+      "RUNTIME_COMPLETE_TOKEN_PROFILE",
+      "RUNTIME_DECODE_PROTECTED",
       "RUNTIME_DELTANET_STATE_REUSE",
+      "RUNTIME_NATIVE_PREFILL",
+      "RUNTIME_PREFILL_PHYSICAL_FRONTIER",
       "U50_MIXED_APPLE_FPGA_GRAPH",
       "VMCP_PTY_CAPTURE"
     ],
-    "wired_but_not_accepted_count": 15
+    "wired_but_not_accepted_count": 20
   },
   "unreachable": [
     "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE"
   ],
   "work": {
-    "commits": 178,
+    "commits": 180,
     "new_crates": [
       "crates/hawking-index-query/Cargo.toml"
     ],
@@ -415,7 +420,7 @@
       "tools/vmcp/receipt.py",
       "tools/vmcp/tool_doctor.py"
     ],
-    "python_lines_added": 92248,
+    "python_lines_added": 92296,
     "rust_lines_added": 7936
   }
 }

@@ -7,20 +7,20 @@ components yet' from work that genuinely needs an experiment, wall time, or sili
 
 ## Blocker census
 
-    SOFTWARE_CONNECTION_REMAINING    22
-    EXPERIMENTATION_REQUIRED         14
+    SOFTWARE_CONNECTION_REMAINING    16
+    EXPERIMENTATION_REQUIRED         19
     LONG_RUN_EVIDENCE_REQUIRED       13
     PHYSICAL_HARDWARE_REQUIRED       14
     UNKNOWN_RESEARCH                 1
 
-    TOTAL REMAINING                  64
+    TOTAL REMAINING                  63
 
-SOFTWARE_CONNECTION_REMAINING = 22 is the
+SOFTWARE_CONNECTION_REMAINING = 16 is the
 number this campaign exists to drive toward zero. Every other class is honest
 frontier: an experiment that must run, evidence that needs wall time, hardware that
 must physically exist, or a question whose answer nobody has.
 
-## SOFTWARE_CONNECTION_REMAINING (22)
+## SOFTWARE_CONNECTION_REMAINING (16)
 
 ### AGENTOS_CIRCUIT_BREAKER
     missing             no non-test call site reaches this capability
@@ -46,16 +46,10 @@ must physically exist, or a question whose answer nobody has.
     implementation      hcli/agentos/flash_router_representation_ab.py, hcli/agentos/representation_ab.py (+1 more)
     unlocks             1 declared dependencies
 
-### FLASH_FULL_NOETIC_EXECUTABLE
-    missing             no non-test call site reaches this capability
-    shortest verifier   hcli/tests/test_hcli_flash_science.py:5 (+4 more)
-    implementation      tools/odyssey/noetic_compiler.py, hcli/agentos/flash_executable.py
-    unlocks             1 declared dependencies
-
 ### FLASH_SOURCE_VERIFIED
     missing             no non-test call site reaches this capability
     shortest verifier   must be written
-    implementation      tools/flash_organ_census.py, tools/gravity_verify_source.py
+    implementation      tools/flash_organ_census.py, tools/gravity_verify_source.py (+1 more)
     unlocks             0 declared dependencies
 
 ### FPGA_LINK_SIM
@@ -76,12 +70,6 @@ must physically exist, or a question whose answer nobody has.
     implementation      hcli/agentos/fpga_preboard.py, hcli/agentos/fpga_preboard.py:127
     unlocks             0 declared dependencies
 
-### HCLI_CONTEXT_INVALIDATION
-    missing             no non-test call site reaches this capability
-    shortest verifier   hcli/test_cognition_unit_concurrency.py:12 (+32 more)
-    implementation      hcli/goal.py, hcli/context_budget.py
-    unlocks             1 declared dependencies
-
 ### QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED
     missing             wired but nothing verifies it
     shortest verifier   must be written
@@ -94,34 +82,10 @@ must physically exist, or a question whose answer nobody has.
     implementation      hcli/agentos/qwen27_runtime_identity.py, hcli/agentos/qwen27_runtime_identity.py:438
     unlocks             0 declared dependencies
 
-### RUNTIME_COMPLETE_TOKEN_PROFILE
-    missing             no non-test call site reaches this capability
-    shortest verifier   hcli/test_prefix_and_prefill_instruments.py:14
-    implementation      hcli/prefill_profile.py
-    unlocks             0 declared dependencies
-
 ### RUNTIME_CONTEXT_NATIVE
     missing             no non-test call site reaches this capability
     shortest verifier   hcli/test_context_reduction.py:69 (+7 more)
     implementation      hcli/context_budget.py
-    unlocks             0 declared dependencies
-
-### RUNTIME_DECODE_PROTECTED
-    missing             no non-test call site reaches this capability
-    shortest verifier   hcli/test_constrained_decoding.py:51 (+3 more)
-    implementation      hcli/hawking_native.py
-    unlocks             0 declared dependencies
-
-### RUNTIME_NATIVE_PREFILL
-    missing             no non-test call site reaches this capability
-    shortest verifier   hcli/test_prefix_and_prefill_instruments.py:14
-    implementation      hcli/prefill_profile.py, hcli/hawking_native.py
-    unlocks             0 declared dependencies
-
-### RUNTIME_PREFILL_PHYSICAL_FRONTIER
-    missing             no non-test call site reaches this capability
-    shortest verifier   hcli/test_prefix_and_prefill_instruments.py:14
-    implementation      hcli/prefill_profile.py
     unlocks             0 declared dependencies
 
 ### RUNTIME_PREFIX_STATE_REUSE
@@ -132,14 +96,14 @@ must physically exist, or a question whose answer nobody has.
 
 ### STABLE_PREFIX_CONTEXT_ALIGNMENT
     missing             no non-test call site reaches this capability
-    shortest verifier   hcli/test_prefix_and_prefill_instruments.py:15
-    implementation      hcli/prefix_probe.py
+    shortest verifier   hcli/test_prefix_and_prefill_instruments.py:15 (+4 more)
+    implementation      hcli/prefix_probe.py, hcli/prefix_probe.py:29 (+1 more)
     unlocks             0 declared dependencies
 
 ### VMCP_AGENTOS_INTEGRATION
     missing             no non-test call site reaches this capability
     shortest verifier   must be written
-    implementation      hcli/agentos/vmcp_gate.py, tools/headless/hcli_vmcp_integration.py
+    implementation      hcli/agentos/vmcp_gate.py, tools/headless/hcli_vmcp_integration.py (+1 more)
     unlocks             2 declared dependencies
 
 ### VMCP_COMPACT_SURFACE
@@ -154,7 +118,7 @@ must physically exist, or a question whose answer nobody has.
     implementation      hcli/agentos/vmcp_gate.py, hcli/agentos/vmcp_gate.py:258
     unlocks             0 declared dependencies
 
-## EXPERIMENTATION_REQUIRED (14)
+## EXPERIMENTATION_REQUIRED (19)
 
 ### AGENTOS_DETERMINISTIC_OFFLOAD
     missing             wired and verified; its acceptance criterion has never been run
@@ -166,6 +130,12 @@ must physically exist, or a question whose answer nobody has.
     missing             wired and verified; its acceptance criterion has never been run
     shortest verifier   tools/future/test_complete_ebpw.py:14 (+7 more)
     implementation      tools/future/complete_ebpw.py, tools/future/complete_ebpw.py:193
+    unlocks             1 declared dependencies
+
+### FLASH_FULL_NOETIC_EXECUTABLE
+    missing             wired and verified; its acceptance criterion has never been run
+    shortest verifier   hcli/tests/test_hcli_flash_science.py:5 (+9 more)
+    implementation      tools/odyssey/noetic_compiler.py, hcli/agentos/flash_executable.py
     unlocks             1 declared dependencies
 
 ### FLASH_NATIVE_NF_KERNEL
@@ -228,10 +198,34 @@ must physically exist, or a question whose answer nobody has.
     implementation      hcli/agentos/protected_accelerator_benchmark.py, hcli/agentos/accelerator_regression.py (+1 more)
     unlocks             1 declared dependencies
 
+### RUNTIME_COMPLETE_TOKEN_PROFILE
+    missing             wired and verified; its acceptance criterion has never been run
+    shortest verifier   hcli/test_prefix_and_prefill_instruments.py:14 (+5 more)
+    implementation      hcli/prefill_profile.py, hcli/prefill_profile.py:102
+    unlocks             0 declared dependencies
+
+### RUNTIME_DECODE_PROTECTED
+    missing             wired and verified; its acceptance criterion has never been run
+    shortest verifier   hcli/test_constrained_decoding.py:51 (+6 more)
+    implementation      hcli/hawking_native.py
+    unlocks             0 declared dependencies
+
 ### RUNTIME_DELTANET_STATE_REUSE
     missing             wired and verified; its acceptance criterion has never been run
     shortest verifier   tools/headless/test_prefill_kv.py:15 (+7 more)
     implementation      tools/headless/prefill_kv.py, tools/headless/prefill_kv.py:239
+    unlocks             0 declared dependencies
+
+### RUNTIME_NATIVE_PREFILL
+    missing             wired and verified; its acceptance criterion has never been run
+    shortest verifier   hcli/test_prefix_and_prefill_instruments.py:14 (+6 more)
+    implementation      hcli/prefill_profile.py, hcli/hawking_native.py (+1 more)
+    unlocks             0 declared dependencies
+
+### RUNTIME_PREFILL_PHYSICAL_FRONTIER
+    missing             wired and verified; its acceptance criterion has never been run
+    shortest verifier   hcli/test_prefix_and_prefill_instruments.py:14 (+5 more)
+    implementation      hcli/prefill_profile.py, hcli/prefill_profile.py:102
     unlocks             0 declared dependencies
 
 ### VMCP_PTY_CAPTURE

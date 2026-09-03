@@ -897,3 +897,64 @@ GATES["RUNTIME_DELTANET_STATE_REUSE"]["modules"] = sorted(
     {"tools.headless.prefill_kv", "prefill_kv"}
     | set(GATES["RUNTIME_DELTANET_STATE_REUSE"].get("modules") or [])
 )
+
+
+# ---------------------------------------------------------------------------
+# The declaration sweep. Twelve gates named no symbol, so no call could ever
+# match them however many production callers existed -- the same defect that
+# hid VMCP's organs, the lattice probes and DeltaNet state reuse.
+#
+# Declaring a symbol CANNOT fabricate wiring: the auditor still has to find a
+# real non-test call of it. A gate with no caller stays SCAFFOLDED. This only
+# lets it look, which it previously could not do at all.
+#
+# Symbols chosen to match each gate's DEFINING PROPERTY, not to be convenient.
+# FLASH_ACCEPTED_TPS_GE_50 is deliberately absent: its acceptance span is a
+# shared default cited by six gates, so its criterion is undefined, and it is a
+# physical throughput claim that must never read BUILT on STATIC evidence.
+_DECLARATION_SWEEP: dict[str, tuple[tuple[str, str], ...]] = {
+    # Representation of HCLI truth, per roadmap section 10. Declaring where a
+    # capability lives is NOT implementing it; that campaign still owns the code.
+    "RUNTIME_NATIVE_PREFILL": (("hcli.prefill_profile", "bucket_profile"),),
+    "RUNTIME_PREFILL_PHYSICAL_FRONTIER": (("hcli.prefill_profile", "attribute"),),
+    "RUNTIME_COMPLETE_TOKEN_PROFILE": (("hcli.prefill_profile", "attribute"),),
+    # RUNTIME_CONTEXT_NATIVE is DELIBERATELY ABSENT. Declaring
+    # native_profile_limits / per_seq_context made it read WIRED on a caller
+    # inside hcli/context_budget.py itself -- the module calling its own helper,
+    # which the self-call guard correctly refused. No external caller exists, so
+    # the honest status is SCAFFOLDED and it stays there until one does.
+    "RUNTIME_DECODE_PROTECTED": (("hcli.hawking_native", "config_for_model_path"),),
+    "STABLE_PREFIX_CONTEXT_ALIGNMENT": (
+        ("hcli.prefix_probe", "longest_common_prefix"),
+        ("hcli.prefix_probe", "divergence_reason"),
+    ),
+    # NOT run_vmcp_gate: that is VMCP_RECEIPT_LAW's symbol, and declaring it here
+    # gave two distinct capabilities a byte-identical caller list -- one call
+    # cannot be evidence for two different gates. causality_payload is the
+    # integration-specific symbol, called from hcli/agentos/recovery.py:413.
+    "VMCP_AGENTOS_INTEGRATION": (("hcli.agentos.vmcp_gate", "causality_payload"),),
+    "VMCP_COMPACT_SURFACE": (
+        ("hcli.vmcp", "inspect_vmcp"),
+        ("hcli.vmcp", "call_vmcp"),
+    ),
+    "HCLI_CONTEXT_INVALIDATION": (("hcli.goal", "assert_evidence_fresh"),),
+    # This lane's own.
+    "FLASH_SOURCE_VERIFIED": (("tools.flash_organ_census", "census"),),
+    "FLASH_FULL_NOETIC_EXECUTABLE": (
+        ("tools.odyssey.noetic_compiler", "chain_status"),
+        ("tools.odyssey.noetic_compiler", "family_inventory"),
+    ),
+}
+
+for _gate, _syms in _DECLARATION_SWEEP.items():
+    if _gate not in GATES:
+        continue
+    GATES[_gate]["symbols"] = [
+        {"module": _m, "symbol": _y} for _m, _y in _syms
+    ] + list(GATES[_gate].get("symbols") or [])
+    GATES[_gate]["modules"] = sorted(
+        {_m for _m, _ in _syms}
+        # sibling spelling too: sys.path-manipulating modules import the bare name
+        | {_m.rsplit(".", 1)[-1] for _m, _ in _syms}
+        | set(GATES[_gate].get("modules") or [])
+    )
