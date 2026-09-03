@@ -13,6 +13,7 @@ application explicitly grants the corresponding permission.
 """
 from __future__ import annotations
 
+import difflib
 import hashlib
 import html
 import ipaddress
@@ -523,7 +524,27 @@ def _read_file(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
             f"inside it, then fs.read one of the files it names."
         )
     if not path.is_file():
-        raise FileNotFoundError(path)
+        # A miss is CORRECTABLE and used to be a bare traceback, so a model
+        # that guessed a path just guessed it again -- measured: three
+        # identical FileNotFoundError on hcli/tests/test_tool_registry.py in
+        # one goal, one 60-190s model call apiece. The directory case has said
+        # what to do next for a while; the file case never did.
+        parent = path.parent
+        if not parent.is_dir():
+            raise FileNotFoundError(
+                f"{path} does not exist, and neither does {parent}. Use fs.list "
+                f"on a directory that does exist to find the right path."
+            )
+        siblings = sorted(q.name for q in parent.iterdir() if q.is_file())
+        close = difflib.get_close_matches(path.name, siblings, n=3, cutoff=0.72)
+        hint = (
+            f" Did you mean: {', '.join(close)}?" if close
+            else f" {parent} holds {len(siblings)} files; use fs.list to see them."
+        )
+        raise FileNotFoundError(
+            f"{path} does not exist.{hint} If you meant to CREATE it, do not "
+            f"read it first -- emit a create operation for that path."
+        )
     limit = _text_limit(args.get("max_bytes"))
     raw = path.read_bytes()
     encoding = str(args.get("encoding") or "utf-8")

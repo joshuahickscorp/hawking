@@ -517,6 +517,10 @@ fn serve_request(
         // diagnosable at all -- the constraint believing it closed and the
         // budget running out are opposite faults.
         "stop_reason": result.stop_reason,
+        // The body knows its own layer count and the host was guessing at it.
+        // Dispatches per step means nothing until it is divided by this: 580 is
+        // damning at 8 layers and unremarkable at 64.
+        "layers": hawking_core::model::qwen38_geometry::QWEN38_LAYERS,
         "prefix_reused_tokens": reuse,
         "prefill_tokens_stepped": prompt_ids.len().saturating_sub(reuse),
         "prefix_source": if restored_from_checkpoint > 0 {

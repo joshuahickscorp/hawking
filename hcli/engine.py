@@ -3802,6 +3802,10 @@ class Engine:
                 # the budget running out -- and the receipt could not tell them
                 # apart.
                 "stop_reason",
+                # The body's own layer count. Dispatches per step is not
+                # interpretable without it, and the host has no other source:
+                # the sealed profile carries capabilities, not geometry.
+                "layers",
             ):
                 value = native.get(key)
                 if value is not None:
@@ -3818,7 +3822,7 @@ class Engine:
                     # The raw trace is one number per token. Only the shape is
                     # kept: a receipt is a trail, not a transcript.
                     entry["prefill_profile"] = profile
-                    entry["prefill_attribution"] = attribute(profile)
+                    entry["prefill_attribution"] = attribute(profile, layers=entry.get("layers"))
                 except Exception as exc:  # telemetry must never end a goal
                     entry["prefill_profile_error"] = f"{type(exc).__name__}: {exc}"
         self._model_calls.append(entry)
