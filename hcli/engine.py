@@ -3222,6 +3222,7 @@ class Engine:
         evidence: Any,
         context_memory: Any,
         trailing: str = "",
+        reserve: int = 0,
     ) -> Tuple[Dict[str, Any], Optional[Dict[str, Any]]]:
         """Build the payload, shrinking re-derivable context until it fits.
 
@@ -3277,7 +3278,7 @@ class Engine:
                 payload = build(keep, memory, attempt[3])
             else:
                 payload = build(keep, memory)
-            demand = self._estimate_prompt_tokens(payload.get("messages") or [])
+            demand = self._estimate_prompt_tokens(payload.get("messages") or []) + reserve
             if preflight(budget, demand, kind="root").ok:
                 if label == "full":
                     return payload, None
@@ -3638,14 +3639,24 @@ class Engine:
                 trailing=tr,
             )
 
+        # Build the contract BEFORE fitting. `contract.apply` injects the schema
+        # instruction -- about 713 tokens -- and it was being added AFTER the
+        # ladder had already declared the payload a fit, so the post-contract
+        # preflight refused a payload the reducer had just approved:
+        #   demand 8739 exceeds per-request ctx 8192
+        # The reducer must shrink against the size that will actually be posted.
+        contract: Optional[StructuredOutputContract] = None
+        reserve = 0
+        if degrade:
+            contract = self._schema_contract(backend)
+            reserve = len(str(contract.instruction or "")) // _CHARS_PER_TOKEN
+
         payload, reduction = self._fit_payload_to_budget(
-            _build, evidence, context_memory, trailing=trailing
+            _build, evidence, context_memory, trailing=trailing, reserve=reserve
         )
         if reduction:
             self._emit("context_reduced", reduction)
-        contract: Optional[StructuredOutputContract] = None
-        if degrade:
-            contract = self._schema_contract(backend)
+        if contract is not None:
             payload = contract.apply(payload)
         # Re-measure after return: executors.py:359 mutates
         # messages[1]["content"] in place (strips a leading "GOAL:\n")
