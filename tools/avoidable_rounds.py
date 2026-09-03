@@ -78,6 +78,18 @@ LEDGER = [
      "an anchor missing '])' and ']' that matched zero places with old_text == "
      "new_text, then answered instead of mutating. 8 calls, 1160s. "
      "Self-inflicted: the instruction described a workflow the tool lacked"),
+    ("D14", "a syntax rejection named a line the model could not see",
+     3, 1, "CLASS",
+     "'closing parenthesis does not match ... at line 592 of the RESULTING "
+     "file' -- a file the model never sees, since it knows only its own "
+     "new_text. Three attempts, three identical bracket errors. The message "
+     "now quotes the offending line, which is the same fix that worked for the "
+     "anchor error"),
+    ("D15", "the rejected-reply excerpt elided the operation that was rejected",
+     None, None, "CLASS",
+     "800-char head-only excerpt spent its whole budget on the reply's content "
+     "prose and cut off at the word 'operations'. Unbounded: it did not cost "
+     "the model rounds, it cost every future diagnosis of this failure class"),
     ("D9", "one tool observation could occupy the entire input window",
      None, None, "CLASS",
      "24,000 chars against a 5,632-token usable input: one fs.read was 1.4x "

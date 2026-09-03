@@ -442,7 +442,7 @@ def _degraded_structured_record(
         # Bounded, and never the prompt -- only what the model wrote back.
         text = str(last_text)
         record["rejected_reply_chars"] = len(text)
-        record["rejected_reply_excerpt"] = text[:_REJECTED_EXCERPT_CHARS]
+        record["rejected_reply_excerpt"] = _rejected_excerpt(text)
         record["rejected_reply_truncated_in_receipt"] = (
             len(text) > _REJECTED_EXCERPT_CHARS
         )
@@ -797,6 +797,25 @@ def _anchor_violation(path: str, anchor: str, current: str, hits: int) -> str:
     )
 
 
+def _rejected_excerpt(text: str) -> str:
+    """Keep both ENDS of a rejected reply, not just its head.
+
+    A head-only excerpt spent its whole budget on the `content` prose and cut
+    off at the word "operations", which is the one part a rejection about an
+    operation needs. Measured: a 2,221-character reply rejected three times for
+    a bracket error inside new_text, and all the receipt preserved was 800
+    characters of description ending at '"op": "replace",'.
+
+    Half from each end, so the shape of the reply and the thing that broke both
+    survive.
+    """
+    if len(text) <= _REJECTED_EXCERPT_CHARS:
+        return text
+    half = _REJECTED_EXCERPT_CHARS // 2
+    dropped = len(text) - 2 * half
+    return f"{text[:half]}\n[... {dropped} characters elided ...]\n{text[-half:]}"
+
+
 def _python_syntax_violation(content: str) -> Optional[str]:
     """The reply's Python operations must compile, or say why they do not.
 
@@ -865,11 +884,28 @@ def _python_syntax_violation(content: str) -> Optional[str]:
         try:
             compile(candidate, path or "<operation>", "exec")
         except SyntaxError as exc:
+            # QUOTE the offending line. A line number in the RESULTING file is
+            # a coordinate the model cannot resolve: it never sees that file,
+            # only its own new_text. Measured: three attempts on one goal, each
+            # told "closing parenthesis '}' does not match opening parenthesis
+            # '(' at line 592 of the resulting file", each repeating the same
+            # bracket mistake, because nothing in the message showed the line
+            # it was talking about.
             where = f"line {exc.lineno}" if exc.lineno else "an unknown line"
+            quoted = ""
+            if exc.lineno:
+                lines = candidate.splitlines()
+                lo = max(0, exc.lineno - 2)
+                window = lines[lo:exc.lineno + 1]
+                if window:
+                    numbered = "\n".join(
+                        f"{lo + i + 1}: {line}" for i, line in enumerate(window)
+                    )
+                    quoted = f"\nthe resulting file reads there:\n{numbered}"
             return (
                 f"applying your operation to {path} would not compile: "
-                f"{exc.msg} at {where} of the resulting file"
-                f" -- fix that operation and keep it short"
+                f"{exc.msg} at {where} of the resulting file{quoted}"
+                f"\nfix that operation and keep it short"
             )
         except ValueError as exc:
             return f"operation on {path} could not be compiled: {exc}"
