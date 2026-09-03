@@ -289,7 +289,7 @@
         "resident bpw": {
           "file_hits": 1,
           "sample": [
-            "workspace/superwave/g1/claude-evidence/g1_conditional_group_union.py"
+            "workspace/superwave/g1/evidence/g1_conditional_group_union.py"
           ]
         },
         "active bpw": {
@@ -378,7 +378,7 @@
           "file_hits": 2,
           "sample": [
             "receipts/ascent-2026-08-16/G098_LEDGER_PRIOR.json",
-            "workspace/superwave/g1/claude-evidence/g1_share_basis.py"
+            "workspace/superwave/g1/evidence/g1_share_basis.py"
           ]
         },
         "shared transform": {
@@ -422,8 +422,8 @@
           "file_hits": 3,
           "sample": [
             "tools/gravity_allocator.py",
-            "workspace/superwave/g1/claude-evidence/g_rank.py",
-            "workspace/superwave/g1/claude-manifold/g_rank.py"
+            "workspace/superwave/g1/evidence/g_rank.py",
+            "workspace/superwave/g1/manifold/g_rank.py"
           ]
         },
         "held-out activation": {
@@ -433,8 +433,8 @@
             "receipts/ascent-2026-08-16/G073_PLANE_ALLOCATION.json",
             "tools/gravity_plane_allocation.py",
             "workspace/campaign/evidence/research/doctor/DOCTOR_NEGATIVE_TRANSFER_ATLAS.json",
-            "workspace/superwave/g1/claude-evidence/g_ladder4.py",
-            "workspace/superwave/g1/claude-manifold/g_ladder4.py"
+            "workspace/superwave/g1/evidence/g_ladder4.py",
+            "workspace/superwave/g1/manifold/g_ladder4.py"
           ]
         },
         "tensor train": {
@@ -449,8 +449,8 @@
           "file_hits": 3,
           "sample": [
             "receipts/ascent-2026-08-16/G034_TENSOR_OPERATOR.json",
-            "workspace/superwave/g1/claude-evidence/g1_tensor_operators.json",
-            "workspace/superwave/g1/claude-evidence/g1_tensor_operators.py"
+            "workspace/superwave/g1/evidence/g1_tensor_operators.json",
+            "workspace/superwave/g1/evidence/g1_tensor_operators.py"
           ]
         },
         "MixT": {
@@ -788,22 +788,22 @@
           "sample": [
             "receipts/ascent-2026-08-16/G034_TENSOR_OPERATOR.json",
             "receipts/ascent-2026-08-16/G096_NEURAL_ISA_AUDIT.json",
-            "workspace/superwave/g1/claude-evidence/g1_tensor_operators.json",
-            "workspace/superwave/g1/claude-evidence/g1_tensor_operators.py"
+            "workspace/superwave/g1/evidence/g1_tensor_operators.json",
+            "workspace/superwave/g1/evidence/g1_tensor_operators.py"
           ]
         },
         "tensor_ring_identifiers": {
           "file_hits": 2,
           "sample": [
-            "workspace/superwave/g1/claude-evidence/g1_tensor_operators.json",
-            "workspace/superwave/g1/claude-evidence/g1_tensor_operators.py"
+            "workspace/superwave/g1/evidence/g1_tensor_operators.json",
+            "workspace/superwave/g1/evidence/g1_tensor_operators.py"
           ]
         },
         "tucker_identifiers": {
           "file_hits": 2,
           "sample": [
-            "workspace/superwave/g1/claude-evidence/g1_tensor_operators.json",
-            "workspace/superwave/g1/claude-evidence/g1_tensor_operators.py"
+            "workspace/superwave/g1/evidence/g1_tensor_operators.json",
+            "workspace/superwave/g1/evidence/g1_tensor_operators.py"
           ]
         },
         "noetic_kind_strings": {
@@ -1115,7 +1115,7 @@
         "git_tracked": false
       },
       {
-        "path": "workspace/superwave/g1/claude-evidence/g1_tensor_operators.json",
+        "path": "workspace/superwave/g1/evidence/g1_tensor_operators.json",
         "resolves": true,
         "why": "TRACKED. The tensor-train/Tucker/ring measurements the phrase-grep missed.",
         "git_tracked": true
@@ -1507,9 +1507,9 @@
     },
     {
       "mechanism": "G-SHARE joint SVD on real Qwen3.8 BF16 (G1 lane)",
-      "source_path": "workspace/superwave/g1/claude-evidence/g1_share_basis.py",
+      "source_path": "workspace/superwave/g1/evidence/g1_share_basis.py",
       "experiment_id": "G1-SHARE",
-      "artifact": "workspace/superwave/g1/claude-evidence/g1_share_basis.json",
+      "artifact": "workspace/superwave/g1/evidence/g1_share_basis.json",
       "status": "RAN",
       "measured_result": {
         "ranks": [
@@ -1547,9 +1547,9 @@
     },
     {
       "mechanism": "G-TENSOR structured operators: Tucker / tensor-train / tensor-ring / CP / BTD / Kronecker",
-      "source_path": "workspace/superwave/g1/claude-evidence/g1_tensor_operators.py",
+      "source_path": "workspace/superwave/g1/evidence/g1_tensor_operators.py",
       "experiment_id": "G1-TENSOR / G034",
-      "artifact": "workspace/superwave/g1/claude-evidence/g1_tensor_operators.json",
+      "artifact": "workspace/superwave/g1/evidence/g1_tensor_operators.json",
       "status": "REFUTED",
       "measured_result": {
         "selfcheck": "PASS",
@@ -7507,7 +7507,7 @@
         "family": "G1 one_basis_fullV (shared right basis stored once)",
         "complete_physical_bpw": 0.015594527957807665,
         "band": "<0.05 as a SHARED STRUCTURE quote",
-        "source_path": "workspace/superwave/g1/claude-evidence/g1_share_basis.json",
+        "source_path": "workspace/superwave/g1/evidence/g1_share_basis.json",
         "experiment_id": "G1-SHARE",
         "function_represented": "one right basis for a class if energy concentrated \u2014 it is not (r512 captures ~42%)",
         "hidden_outside_bpw_accounting": [

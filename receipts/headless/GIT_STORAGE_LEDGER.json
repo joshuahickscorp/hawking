@@ -67,12 +67,12 @@
  },
  "current_largest_blobs": [
   {
-   "path": "workspace/superwave/g1/claude-evidence/g1_functional_exceptions.json",
+   "path": "workspace/superwave/g1/evidence/g1_functional_exceptions.json",
    "bytes": 29013511,
    "sha": "b16f5aab98157a3d8bfcaa523a0b96715b11841c"
   },
   {
-   "path": "workspace/superwave/g1/claude-evidence/g1_attention_2bpw_stack.json",
+   "path": "workspace/superwave/g1/evidence/g1_attention_2bpw_stack.json",
    "bytes": 10359514,
    "sha": "4ebb418d5cc642852a00df59edce62c381852c8c"
   },
@@ -219,11 +219,11 @@
  ],
  "current_ge_10m": [
   {
-   "path": "workspace/superwave/g1/claude-evidence/g1_functional_exceptions.json",
+   "path": "workspace/superwave/g1/evidence/g1_functional_exceptions.json",
    "bytes": 29013511
   },
   {
-   "path": "workspace/superwave/g1/claude-evidence/g1_attention_2bpw_stack.json",
+   "path": "workspace/superwave/g1/evidence/g1_attention_2bpw_stack.json",
    "bytes": 10359514
   }
  ],
@@ -416,7 +416,7 @@
     "n_unique_blobs": 1
    },
    {
-    "path": "workspace/superwave/g1/claude-evidence/g1_functional_exceptions.json",
+    "path": "workspace/superwave/g1/evidence/g1_functional_exceptions.json",
     "unique_logical_bytes": 29013511,
     "unique_disk_bytes": 7065111,
     "n_unique_blobs": 1
@@ -755,9 +755,9 @@
    "example_paths": [
     "workspace/superwave/g1/GRAVITY1_SOURCE_PIN.json",
     "workspace/superwave/g1/README.md",
-    "workspace/superwave/g1/claude-batch/batch_gate.out",
-    "workspace/superwave/g1/claude-batch/cap-c-mlpq3attnq4.out",
-    "workspace/superwave/g1/claude-batch/cap-c-q3r1p35.out"
+    "workspace/superwave/g1/batch/batch_gate.out",
+    "workspace/superwave/g1/batch/cap-c-mlpq3attnq4.out",
+    "workspace/superwave/g1/batch/cap-c-q3r1p35.out"
    ],
    "reachable_history": "PRESENT",
    "lfs_rejected": "S020 \u00a726 \u2014 LFS is not a magic fix; it does not strip history. Future tracking should be local CAS, not LFS.",
@@ -1538,7 +1538,7 @@
   "tracked_despite_gitignore_examples": [
    "crates/hawking-core/tests/fixtures/gravity_pq/*.bin (KEEP_GIT fixtures; *.bin is a weight rule)",
    "crates/hawking-core/reports/w4a8_activation_dist.csv",
-   "workspace/superwave/g1/claude-wall/*.log"
+   "workspace/superwave/g1/wall/*.log"
   ],
   "note": "gitignore does not untrack. 8ad51461a ran git rm --cached for RUN_LOG and the q30 tarball only."
  },

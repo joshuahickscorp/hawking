@@ -1096,7 +1096,7 @@ def build() -> dict[str, Any]:
             "tracked_despite_gitignore_examples": [
                 "crates/hawking-core/tests/fixtures/gravity_pq/*.bin (KEEP_GIT fixtures; *.bin is a weight rule)",
                 "crates/hawking-core/reports/w4a8_activation_dist.csv",
-                "research/hawking-experiments/superwave/g1/claude-wall/*.log",
+                "research/hawking-experiments/superwave/g1/wall/*.log",
             ],
             "note": "gitignore does not untrack. 8ad51461a ran git rm --cached for RUN_LOG and the q30 tarball only.",
         },

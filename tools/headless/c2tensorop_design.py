@@ -29,9 +29,9 @@ from collections import Counter
 from pathlib import Path
 
 SCHEMA = "hawking.headless.c2tensorop_design.v1"
-G1_PATH = "research/hawking-experiments/superwave/g1/claude-evidence/g1_tensor_operators.json"
+G1_PATH = "research/hawking-experiments/superwave/g1/evidence/g1_tensor_operators.json"
 G034_PATH = "receipts/ascent-2026-08-16/G034_TENSOR_OPERATOR.json"
-G1_PY = "research/hawking-experiments/superwave/g1/claude-evidence/g1_tensor_operators.py"
+G1_PY = "research/hawking-experiments/superwave/g1/evidence/g1_tensor_operators.py"
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[1]
@@ -845,7 +845,7 @@ def eight_items(organs: list[dict], rows: list[dict], g034: dict, g1: dict) -> d
         "cheapest_kill_no_fit": {
             "command": (
                 "python3 -c \"import json,subprocess; d=json.loads(subprocess.check_output("
-                "['git','show','HEAD:workspace/superwave/g1/claude-evidence/g1_tensor_operators.json'])); "
+                "['git','show','HEAD:workspace/superwave/g1/evidence/g1_tensor_operators.json'])); "
                 "rows=[op for t in d['tensors'] for op in t['operators']]; "
                 "h=sum(1 for op in rows if (op.get('gate') or {}).get('healthy')); "
                 "print('rows',len(rows),'healthy',h); raise SystemExit(0 if h==0 else 1)\""

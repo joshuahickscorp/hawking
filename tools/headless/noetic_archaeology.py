@@ -440,9 +440,9 @@ def curated_mechanisms() -> list[dict[str, Any]]:
         ),
         mech(
             mechanism="G-SHARE joint SVD on real Qwen3.8 BF16 (G1 lane)",
-            source_path="research/hawking-experiments/superwave/g1/claude-evidence/g1_share_basis.py",
+            source_path="research/hawking-experiments/superwave/g1/evidence/g1_share_basis.py",
             experiment_id="G1-SHARE",
-            artifact="research/hawking-experiments/superwave/g1/claude-evidence/g1_share_basis.json",
+            artifact="research/hawking-experiments/superwave/g1/evidence/g1_share_basis.json",
             status="RAN",
             measured_result={
                 "ranks": [8, 16, 32, 64, 128, 256, 384, 512],
@@ -469,9 +469,9 @@ def curated_mechanisms() -> list[dict[str, Any]]:
         ),
         mech(
             mechanism="G-TENSOR structured operators: Tucker / tensor-train / tensor-ring / CP / BTD / Kronecker",
-            source_path="research/hawking-experiments/superwave/g1/claude-evidence/g1_tensor_operators.py",
+            source_path="research/hawking-experiments/superwave/g1/evidence/g1_tensor_operators.py",
             experiment_id="G1-TENSOR / G034",
-            artifact="research/hawking-experiments/superwave/g1/claude-evidence/g1_tensor_operators.json",
+            artifact="research/hawking-experiments/superwave/g1/evidence/g1_tensor_operators.json",
             status="REFUTED",
             measured_result={
                 "selfcheck": "PASS",
@@ -1099,7 +1099,7 @@ def curated_mechanisms() -> list[dict[str, Any]]:
 
 
 def tensor_operator_ebpw_rows() -> list[dict[str, Any]]:
-    doc = load_json("research/hawking-experiments/superwave/g1/claude-evidence/g1_tensor_operators.json")
+    doc = load_json("research/hawking-experiments/superwave/g1/evidence/g1_tensor_operators.json")
     if not isinstance(doc, dict):
         return []
 
@@ -1268,7 +1268,7 @@ def other_sub05_components() -> list[dict[str, Any]]:
             "family": "G1 one_basis_fullV (shared right basis stored once)",
             "complete_physical_bpw": 0.015594527957807665,
             "band": "<0.05 as a SHARED STRUCTURE quote",
-            "source_path": "research/hawking-experiments/superwave/g1/claude-evidence/g1_share_basis.json",
+            "source_path": "research/hawking-experiments/superwave/g1/evidence/g1_share_basis.json",
             "experiment_id": "G1-SHARE",
             "function_represented": "one right basis for a class if energy concentrated — it is not (r512 captures ~42%)",
             "hidden_outside_bpw_accounting": [
@@ -1388,7 +1388,7 @@ def seed_verification() -> dict[str, Any]:
         "byte_reproducibility_NOT_met": bool(g105.get("byte_reproducibility_NOT_met")),
         "nx_genome_py_exists": exists_rel("tools/nx_genome.py"),
         "nr_container_py_exists": exists_rel("tools/nr_container.py"),
-        "g1_share_basis_py_exists": exists_rel("research/hawking-experiments/superwave/g1/claude-evidence/g1_share_basis.py"),
+        "g1_share_basis_py_exists": exists_rel("research/hawking-experiments/superwave/g1/evidence/g1_share_basis.py"),
         "g098_exists": exists_rel("receipts/ascent-2026-08-16/G098_LEDGER_PRIOR.json"),
         "g103_exists": exists_rel("receipts/ascent-2026-08-16/G103_NR_uniform-q4-v1.json"),
         "g104_exists": exists_rel("receipts/ascent-2026-08-16/G104_NX_SEAL.json"),
@@ -1578,7 +1578,7 @@ def worktree_recoveries(worktrees: list[dict[str, Any]]) -> list[dict[str, Any]]
             "UNTRACKED executable of the shared operator. gitignored campaign path.",
         ),
         (
-            "research/hawking-experiments/superwave/g1/claude-evidence/g1_tensor_operators.json",
+            "research/hawking-experiments/superwave/g1/evidence/g1_tensor_operators.json",
             "TRACKED. The tensor-train/Tucker/ring measurements the phrase-grep missed.",
         ),
     ):
@@ -1804,7 +1804,7 @@ def build_index(install_info: dict[str, Any], index_path: Path, index_kind: str)
     sub05 = tensor_operator_ebpw_rows()
     sub05_extra = other_sub05_components()
     q80_pair = q80_storage_active_from_register()
-    g1doc = load_json("research/hawking-experiments/superwave/g1/claude-evidence/g1_tensor_operators.json") or {}
+    g1doc = load_json("research/hawking-experiments/superwave/g1/evidence/g1_tensor_operators.json") or {}
     g1_family_rows = 0
     g1_healthy_true = 0
     if isinstance(g1doc, dict):

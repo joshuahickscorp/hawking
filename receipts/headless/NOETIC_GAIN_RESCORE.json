@@ -35,7 +35,7 @@
     },
     "packers_that_drop_gain": [
       {
-        "path": "workspace/superwave/g1/claude-evidence/g1_func_objective.py",
+        "path": "workspace/superwave/g1/evidence/g1_func_objective.py",
         "fn": "pack_axes",
         "lines": [
           309,
@@ -44,7 +44,7 @@
         "note": "stores only observed/probed/worst_unit; drops gain even if axes() returns it"
       },
       {
-        "path": "workspace/superwave/g1/claude-evidence/g1_adversarial_frontier.py",
+        "path": "workspace/superwave/g1/evidence/g1_adversarial_frontier.py",
         "fn": "score_pack",
         "lines": [
           360,
@@ -215,8 +215,8 @@
       "notes": "Stores energy_ratio. spanfit_X_and_P0 scored HEALTHY at cosine 1.0 with energy 0.294.",
       "receipts": [
         {
-          "path": "workspace/superwave/g1/claude-evidence/g1_adversarial_frontier.json",
-          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_adversarial_frontier.json",
+          "path": "workspace/superwave/g1/evidence/g1_adversarial_frontier.json",
+          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/evidence/g1_adversarial_frontier.json",
           "present": true
         }
       ],
@@ -226,7 +226,7 @@
       "cosine_only": true,
       "missing_receipts": [],
       "resolved_from": [
-        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_adversarial_frontier.json"
+        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/evidence/g1_adversarial_frontier.json"
       ]
     },
     {
@@ -236,8 +236,8 @@
       "notes": "Same constructions as tools/gravity_doctor_gate.py:run, packed without gain.",
       "receipts": [
         {
-          "path": "workspace/superwave/g1/claude-evidence/g003-L0.json",
-          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g003-L0.json",
+          "path": "workspace/superwave/g1/evidence/g003-L0.json",
+          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/evidence/g003-L0.json",
           "present": true
         }
       ],
@@ -247,7 +247,7 @@
       "cosine_only": true,
       "missing_receipts": [],
       "resolved_from": [
-        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g003-L0.json"
+        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/evidence/g003-L0.json"
       ]
     },
     {
@@ -257,8 +257,8 @@
       "notes": "",
       "receipts": [
         {
-          "path": "workspace/superwave/g1/claude-evidence/g003-L31.json",
-          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g003-L31.json",
+          "path": "workspace/superwave/g1/evidence/g003-L31.json",
+          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/evidence/g003-L31.json",
           "present": true
         }
       ],
@@ -268,7 +268,7 @@
       "cosine_only": true,
       "missing_receipts": [],
       "resolved_from": [
-        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g003-L31.json"
+        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/evidence/g003-L31.json"
       ]
     },
     {
@@ -278,8 +278,8 @@
       "notes": "",
       "receipts": [
         {
-          "path": "workspace/superwave/g1/claude-evidence/g003-gate.json",
-          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g003-gate.json",
+          "path": "workspace/superwave/g1/evidence/g003-gate.json",
+          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/evidence/g003-gate.json",
           "present": true
         }
       ],
@@ -289,7 +289,7 @@
       "cosine_only": true,
       "missing_receipts": [],
       "resolved_from": [
-        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g003-gate.json"
+        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/evidence/g003-gate.json"
       ]
     },
     {
@@ -299,8 +299,8 @@
       "notes": "373 family rows, 223 with local_bpw<0.5 and healthy=true: 0. Wh not stored; cannot live-rescore.",
       "receipts": [
         {
-          "path": "workspace/superwave/g1/claude-evidence/g1_tensor_operators.json",
-          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_tensor_operators.json",
+          "path": "workspace/superwave/g1/evidence/g1_tensor_operators.json",
+          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/evidence/g1_tensor_operators.json",
           "present": true
         }
       ],
@@ -310,7 +310,7 @@
       "cosine_only": true,
       "missing_receipts": [],
       "resolved_from": [
-        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_tensor_operators.json"
+        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/evidence/g1_tensor_operators.json"
       ]
     },
     {
@@ -320,13 +320,13 @@
       "notes": "Shared vs independent already both UNHEALTHY on worst_unit. Magnitude not the binder.",
       "receipts": [
         {
-          "path": "workspace/superwave/g1/claude-evidence/g1_share_basis.json",
-          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_share_basis.json",
+          "path": "workspace/superwave/g1/evidence/g1_share_basis.json",
+          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/evidence/g1_share_basis.json",
           "present": true
         },
         {
-          "path": "workspace/superwave/g1/claude-evidence/g1_share_basis_smoke.json",
-          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_share_basis_smoke.json",
+          "path": "workspace/superwave/g1/evidence/g1_share_basis_smoke.json",
+          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/evidence/g1_share_basis_smoke.json",
           "present": true
         }
       ],
@@ -336,8 +336,8 @@
       "cosine_only": true,
       "missing_receipts": [],
       "resolved_from": [
-        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_share_basis.json",
-        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_share_basis_smoke.json"
+        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/evidence/g1_share_basis.json",
+        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/evidence/g1_share_basis_smoke.json"
       ]
     },
     {
@@ -347,8 +347,8 @@
       "notes": "axis_margin has only observed/probed/worst_unit. Honest qN, energy tracks cosine.",
       "receipts": [
         {
-          "path": "workspace/superwave/g1/claude-evidence/g1_xform_hadamard.json",
-          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_xform_hadamard.json",
+          "path": "workspace/superwave/g1/evidence/g1_xform_hadamard.json",
+          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/evidence/g1_xform_hadamard.json",
           "present": true
         }
       ],
@@ -358,7 +358,7 @@
       "cosine_only": true,
       "missing_receipts": [],
       "resolved_from": [
-        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_xform_hadamard.json"
+        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/evidence/g1_xform_hadamard.json"
       ]
     },
     {
@@ -368,18 +368,18 @@
       "notes": "Some rows store resid_rel_f (weight residual), not activation gain.",
       "receipts": [
         {
-          "path": "workspace/superwave/g1/claude-evidence/g1_planes_ternary.json",
-          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_planes_ternary.json",
+          "path": "workspace/superwave/g1/evidence/g1_planes_ternary.json",
+          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/evidence/g1_planes_ternary.json",
           "present": true
         },
         {
-          "path": "workspace/superwave/g1/claude-evidence/g1_planes_ternary_smoke.json",
-          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_planes_ternary_smoke.json",
+          "path": "workspace/superwave/g1/evidence/g1_planes_ternary_smoke.json",
+          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/evidence/g1_planes_ternary_smoke.json",
           "present": true
         },
         {
-          "path": "workspace/superwave/g1/claude-evidence/g1_planes_lm_head.json",
-          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_planes_lm_head.json",
+          "path": "workspace/superwave/g1/evidence/g1_planes_lm_head.json",
+          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/evidence/g1_planes_lm_head.json",
           "present": true
         }
       ],
@@ -389,9 +389,9 @@
       "cosine_only": true,
       "missing_receipts": [],
       "resolved_from": [
-        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_planes_ternary.json",
-        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_planes_ternary_smoke.json",
-        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_planes_lm_head.json"
+        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/evidence/g1_planes_ternary.json",
+        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/evidence/g1_planes_ternary_smoke.json",
+        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/evidence/g1_planes_lm_head.json"
       ]
     },
     {
@@ -401,13 +401,13 @@
       "notes": "26 tensors \u00d7 26 codecs (qN, planes, rank_k, shared_k, sparse). Duplicate receipts.",
       "receipts": [
         {
-          "path": "workspace/superwave/g1/claude-evidence/g1_alloc_unified_out.json",
-          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_alloc_unified_out.json",
+          "path": "workspace/superwave/g1/evidence/g1_alloc_unified_out.json",
+          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/evidence/g1_alloc_unified_out.json",
           "present": true
         },
         {
-          "path": "workspace/superwave/g1/claude-evidence/g1_alloc_unified_measure.json",
-          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_alloc_unified_measure.json",
+          "path": "workspace/superwave/g1/evidence/g1_alloc_unified_measure.json",
+          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/evidence/g1_alloc_unified_measure.json",
           "present": true
         }
       ],
@@ -417,8 +417,8 @@
       "cosine_only": true,
       "missing_receipts": [],
       "resolved_from": [
-        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_alloc_unified_out.json",
-        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_alloc_unified_measure.json"
+        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/evidence/g1_alloc_unified_out.json",
+        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/evidence/g1_alloc_unified_measure.json"
       ]
     },
     {
@@ -428,13 +428,13 @@
       "notes": "",
       "receipts": [
         {
-          "path": "workspace/superwave/g1/claude-evidence/g005-alloc.json",
-          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g005-alloc.json",
+          "path": "workspace/superwave/g1/evidence/g005-alloc.json",
+          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/evidence/g005-alloc.json",
           "present": true
         },
         {
-          "path": "workspace/superwave/g1/claude-evidence/g005-curves.json",
-          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g005-curves.json",
+          "path": "workspace/superwave/g1/evidence/g005-curves.json",
+          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/evidence/g005-curves.json",
           "present": true
         }
       ],
@@ -444,8 +444,8 @@
       "cosine_only": true,
       "missing_receipts": [],
       "resolved_from": [
-        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g005-alloc.json",
-        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g005-curves.json"
+        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/evidence/g005-alloc.json",
+        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/evidence/g005-curves.json"
       ]
     },
     {
@@ -455,8 +455,8 @@
       "notes": "",
       "receipts": [
         {
-          "path": "workspace/superwave/g1/claude-evidence/g1_reshape_before_lowbit.json",
-          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_reshape_before_lowbit.json",
+          "path": "workspace/superwave/g1/evidence/g1_reshape_before_lowbit.json",
+          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/evidence/g1_reshape_before_lowbit.json",
           "present": true
         }
       ],
@@ -466,7 +466,7 @@
       "cosine_only": true,
       "missing_receipts": [],
       "resolved_from": [
-        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_reshape_before_lowbit.json"
+        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/evidence/g1_reshape_before_lowbit.json"
       ]
     },
     {
@@ -476,8 +476,8 @@
       "notes": "",
       "receipts": [
         {
-          "path": "workspace/superwave/g1/claude-evidence/g010.json",
-          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g010.json",
+          "path": "workspace/superwave/g1/evidence/g010.json",
+          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/evidence/g010.json",
           "present": true
         }
       ],
@@ -487,7 +487,7 @@
       "cosine_only": true,
       "missing_receipts": [],
       "resolved_from": [
-        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g010.json"
+        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/evidence/g010.json"
       ]
     },
     {
@@ -498,13 +498,13 @@
       "weight_space": true,
       "receipts": [
         {
-          "path": "workspace/superwave/g1/claude-evidence/g1_capability_gate_full_cosine.json",
-          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_capability_gate_full_cosine.json",
+          "path": "workspace/superwave/g1/evidence/g1_capability_gate_full_cosine.json",
+          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/evidence/g1_capability_gate_full_cosine.json",
           "present": true
         },
         {
-          "path": "workspace/superwave/g1/claude-evidence/g1_capability_gate_measure.json",
-          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_capability_gate_measure.json",
+          "path": "workspace/superwave/g1/evidence/g1_capability_gate_measure.json",
+          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/evidence/g1_capability_gate_measure.json",
           "present": true
         }
       ],
@@ -514,8 +514,8 @@
       "cosine_only": false,
       "missing_receipts": [],
       "resolved_from": [
-        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_capability_gate_full_cosine.json",
-        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_capability_gate_measure.json"
+        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/evidence/g1_capability_gate_full_cosine.json",
+        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/evidence/g1_capability_gate_measure.json"
       ]
     },
     {
@@ -549,8 +549,8 @@
       "already_has_gain": true,
       "receipts": [
         {
-          "path": "workspace/superwave/g1/claude-evidence/endpoint.json",
-          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/endpoint.json",
+          "path": "workspace/superwave/g1/evidence/endpoint.json",
+          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/evidence/endpoint.json",
           "present": true
         }
       ],
@@ -560,7 +560,7 @@
       "cosine_only": false,
       "missing_receipts": [],
       "resolved_from": [
-        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/endpoint.json"
+        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/evidence/endpoint.json"
       ]
     }
   ],
@@ -911,7 +911,7 @@
     "peer_sets": [
       {
         "campaign": "G1_ADVERSARIAL_FRONTIER",
-        "receipt": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_adversarial_frontier.json",
+        "receipt": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/evidence/g1_adversarial_frontier.json",
         "n": 34,
         "n_high_cosine_obs_ge_0.95": 24,
         "ranked_by_old": [
@@ -1381,7 +1381,7 @@
       },
       {
         "campaign": "G1_CAPABILITY_GATE_Q4_COSINE",
-        "receipt": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_capability_gate_measure.json",
+        "receipt": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/evidence/g1_capability_gate_measure.json",
         "n": 10,
         "n_inversions": 0,
         "note": "q4 dequant vs BF16; global-norm gain proxy. Honest q4 is not a scale cheat.",
@@ -1490,7 +1490,7 @@
       },
       {
         "campaign": "G1_ALLOC_UNIFIED",
-        "receipt": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_alloc_unified_out.json",
+        "receipt": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/evidence/g1_alloc_unified_out.json",
         "n": 676,
         "n_inversions": 0,
         "note": "No energy_ratio / norms stored. Cosine-only archive cannot recover `_gain`. Live reconstruction of the qN subset is in live_rescore."

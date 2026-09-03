@@ -162,11 +162,11 @@
       "hawking-experiments/superwave/g1/g1-bracket-bisection.md",
       "hawking-experiments/superwave/g1/g1-arch-dsv4f.md",
       "hawking-experiments/superwave/g1/mixed-sub15-native-catalog/NATIVE_CATALOG.json",
-      "hawking-experiments/superwave/g1/claude-evidence/g1_gravity_ir_eval.py",
-      "hawking-experiments/superwave/g1/claude-evidence/g1_alloc_unified.py",
-      "hawking-experiments/superwave/g1/claude-evidence/g1_share_basis_smoke.json",
-      "hawking-experiments/superwave/g1/claude-evidence/g1_share_basis.py",
-      "hawking-experiments/superwave/g1/claude-evidence/g1_share_basis.json",
+      "hawking-experiments/superwave/g1/evidence/g1_gravity_ir_eval.py",
+      "hawking-experiments/superwave/g1/evidence/g1_alloc_unified.py",
+      "hawking-experiments/superwave/g1/evidence/g1_share_basis_smoke.json",
+      "hawking-experiments/superwave/g1/evidence/g1_share_basis.py",
+      "hawking-experiments/superwave/g1/evidence/g1_share_basis.json",
       "hawking-experiments/frankenstein/operators/frankenstein_trace_format.py",
       "hawking-experiments/frankenstein/operators/frankenstein_v0_seal.py",
       "hawking-experiments/frankenstein/operators/frankenstein_pipeline.py",
@@ -367,7 +367,7 @@
         "reason": "git show HEAD:<old-path> still addresses the blob at the current HEAD commit. Replacing with the new path would 404 until this work is committed. Filesystem readers were updated to hawking-experiments/superwave/."
       },
       {
-        "hit": "tools/headless/c2tensorop_design.py git show HEAD:workspace/superwave/g1/claude-evidence/g1_tensor_operators.json",
+        "hit": "tools/headless/c2tensorop_design.py git show HEAD:workspace/superwave/g1/evidence/g1_tensor_operators.json",
         "action": "intentionally-left",
         "reason": "same HEAD: blob lookup as c1sharedbasis_design.py"
       },
@@ -387,7 +387,7 @@
         "reason": "Dead-data command logs captured at generation time. Not live code."
       },
       {
-        "hit": "hawking-experiments/superwave/g1/claude-evidence/g1_alloc_unified_out.json pin: workspace/superwave/g1/GRAVITY1_SOURCE_PIN.json",
+        "hit": "hawking-experiments/superwave/g1/evidence/g1_alloc_unified_out.json pin: workspace/superwave/g1/GRAVITY1_SOURCE_PIN.json",
         "action": "intentionally-left",
         "reason": "Sealed Superwave evidence artifact; live gravity tools now read hawking-experiments/superwave/g1/GRAVITY1_SOURCE_PIN.json."
       }

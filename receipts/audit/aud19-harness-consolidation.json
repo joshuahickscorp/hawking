@@ -473,7 +473,7 @@
           "role": "python_adjudicator"
         },
         {
-          "path": "hawking-experiments/superwave/g1/claude-evidence/g1_group_partition_geometry_sweep.py",
+          "path": "hawking-experiments/superwave/g1/evidence/g1_group_partition_geometry_sweep.py",
           "role": "archive",
           "state": "SUPERSEDED"
         }
