@@ -14,7 +14,7 @@
     "base_commit": "caf83078f",
     "graph": "civilization/CAPABILITY_GRAPH.json",
     "graph_generated_by": "tools/roadmap/auditor.py",
-    "head": "c77373358d2d5487484246d76220b0e0c09f2bd6"
+    "head": "d90a39551d21ead9d7cd7a509926491c8b869765"
   },
   "externally_blocked": [
     {
@@ -79,8 +79,8 @@
       "ABSENT": 1,
       "BLOCKED_EXTERNAL": 14,
       "BLOCKED_HARDWARE": 13,
-      "BUILT": 26,
-      "SCAFFOLDED": 10,
+      "BUILT": 27,
+      "SCAFFOLDED": 9,
       "UNREACHABLE": 1,
       "WIRED": 18
     },
@@ -193,7 +193,7 @@
     "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE"
   ],
   "work": {
-    "commits": 212,
+    "commits": 214,
     "new_crates": [
       "crates/hawking-index-query/Cargo.toml"
     ],
@@ -272,6 +272,7 @@
       "tools/future/test_capability_eval.py",
       "tools/future/test_experiment_policy.py",
       "tools/future/test_experiment_receipt.py",
+      "tools/future/test_fpga_partition.py",
       "tools/future/test_hwir_lowering.py",
       "tools/future/test_hwir_sealed_predictions.py",
       "tools/future/test_law_scar_registry.py",
@@ -368,6 +369,7 @@
       "tools/future/conftest.py",
       "tools/future/experiment_policy.py",
       "tools/future/experiment_receipt.py",
+      "tools/future/fpga_partition.py",
       "tools/future/modellake_lifecycle.py",
       "tools/future/physical_compiler_predict.py",
       "tools/future/representation_lab.py",
@@ -434,7 +436,7 @@
       "tools/vmcp/receipt.py",
       "tools/vmcp/tool_doctor.py"
     ],
-    "python_lines_added": 94355,
+    "python_lines_added": 95017,
     "rust_lines_added": 7983
   }
 }

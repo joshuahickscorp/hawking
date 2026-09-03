@@ -3,9 +3,9 @@
 ## Census, then and now
 
     status                baseline    now
-    BUILT                      18     26
+    BUILT                      18     27
     WIRED                       0     18
-    SCAFFOLDED                 29     10
+    SCAFFOLDED                 29      9
     BLOCKED_HARDWARE           13     13
     BLOCKED_EXTERNAL            0     14
     ABSENT                     11      1

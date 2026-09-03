@@ -524,8 +524,8 @@
     "VMCP_COMPACT_SURFACE": {
       "acceptance_state": "PASS",
       "evidence_tier": "STATIC",
-      "implementation_state": "SCAFFOLDED",
-      "integration_state": "ISOLATED",
+      "implementation_state": "INTEGRATED",
+      "integration_state": "IN_PRODUCTION_PATH",
       "verification_state": "NONE"
     },
     "VMCP_DEEP_DIGEST": {
@@ -608,7 +608,9 @@
     "SOFTWARE_BUILD_REQUIRED": 1,
     "SOFTWARE_CONNECTION_REMAINING": 10
   },
-  "built_but_no_verifier": [],
+  "built_but_no_verifier": [
+    "VMCP_COMPACT_SURFACE"
+  ],
   "capability_graph": "civilization/CAPABILITY_GRAPH.json",
   "capability_graph_law": "BUILT requires wired AND accepted. wired is a non-test call of the implementing symbol. accepted is the gate's own acceptance criterion demonstrably met by a receipt or measurement that meets the stated bar, not merely a receipt on the topic. wired alone is WIRED, never BUILT.",
   "capability_graph_schema": "hawking.roadmap.capability_graph.v1",
@@ -633,6 +635,7 @@
     "ODYSSEY_I_DISCOVERY",
     "QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED",
     "QWEN27_RUNTIME_IDENTITY_FROZEN",
+    "VMCP_COMPACT_SURFACE",
     "VMCP_DEEP_DIGEST",
     "VMCP_FILE_CLASSIFIER",
     "VMCP_RECEIPT_LAW",
@@ -1040,7 +1043,7 @@
     "U50_PURCHASE_ACCEPTANCE": "BLOCKED_HARDWARE",
     "U50_SAFE_COOLING": "BLOCKED_HARDWARE",
     "VMCP_AGENTOS_INTEGRATION": "SCAFFOLDED_NO_CALLER",
-    "VMCP_COMPACT_SURFACE": "SCAFFOLDED_NO_CALLER",
+    "VMCP_COMPACT_SURFACE": "INTEGRATED_UNVERIFIED",
     "VMCP_DEEP_DIGEST": "INTEGRATED_TEST_PRESENT",
     "VMCP_FILE_CLASSIFIER": "INTEGRATED_TEST_PRESENT",
     "VMCP_PTY_CAPTURE": "WIRED_ACCEPTANCE_BLOCKED",
@@ -2270,7 +2273,7 @@
       "estimated_wall": "under an hour (guess)",
       "gate": "VMCP_COMPACT_SURFACE",
       "leverage_score": 5,
-      "missing": "no non-test call site reaches this capability",
+      "missing": "wired but nothing verifies it",
       "multiplier": false,
       "owner": "hcli-campaign (do not implement here)",
       "parallel_safe_with": "any gate in a different resource_lane",

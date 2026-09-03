@@ -77,9 +77,9 @@ must physically exist, or a question whose answer nobody has.
     unlocks             2 declared dependencies
 
 ### VMCP_COMPACT_SURFACE
-    missing             no non-test call site reaches this capability
+    missing             wired but nothing verifies it
     shortest verifier   must be written
-    implementation      hcli/vmcp/__init__.py, hcli/vmcp_adapter.py
+    implementation      hcli/vmcp/__init__.py, hcli/vmcp_adapter.py (+2 more)
     unlocks             0 declared dependencies
 
 ## EXPERIMENTATION_REQUIRED (18)

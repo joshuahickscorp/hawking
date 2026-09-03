@@ -7,11 +7,11 @@ Nothing here is complete because a file exists: a field with no evidence prints 
 
 ## Status census
 
-    VERIFIED_INTEGRATED      26
+    VERIFIED_INTEGRATED      27
     VERIFIED_BUILT           18
     BLOCKED_EVIDENCE         14
     BLOCKED_HARDWARE         13
-    SCAFFOLDED               10
+    SCAFFOLDED               9
     ABSENT                   1
     UNREACHABLE              1
 
@@ -22,7 +22,7 @@ design, not by neglect: simulated is not measured.
 ## Evidence coverage across all gates
 
     defining property available     82 / 83
-    real (non-test) caller          46 / 83
+    real (non-test) caller          47 / 83
     any verifier                    65 / 83
     receipt cited                   13 / 83
 
@@ -740,7 +740,7 @@ design, not by neglect: simulated is not measured.
     STATUS              BLOCKED_HARDWARE
     defining property   HBM capacity/bandwidth/latency/bank behavior
     implementation      tools/future/hwir.py, tools/future/hwir.py:2328
-    real caller         tools/accelerator/hardware_doctor.py:782
+    real caller         tools/accelerator/hardware_doctor.py:782, tools/future/fpga_partition.py:119, tools/future/fpga_partition.py:348
     verifier            tools/accelerator/test_fusion_bridge.py:372, tools/accelerator/test_fusion_bridge.py:450, tools/accelerator/test_fusion_bridge.py:589 (+20 more)
     negative control    tools/accelerator/test_fusion_bridge.py, tools/accelerator/test_hardware_doctor.py
     receipt             absent
@@ -845,7 +845,7 @@ design, not by neglect: simulated is not measured.
 
 ## G. PERCEPTION / PRODUCT / VMCP / THEIA / PLATFORM
 
-22 capabilities. BLOCKED_EVIDENCE=13, VERIFIED_INTEGRATED=6, SCAFFOLDED=2, VERIFIED_BUILT=1
+22 capabilities. BLOCKED_EVIDENCE=13, VERIFIED_INTEGRATED=7, SCAFFOLDED=1, VERIFIED_BUILT=1
 
 ### HAWKING_PUBLIC_MVP
 
@@ -992,16 +992,16 @@ design, not by neglect: simulated is not measured.
 
 ### VMCP_COMPACT_SURFACE
 
-    STATUS              SCAFFOLDED
+    STATUS              VERIFIED_INTEGRATED
     defining property   absent
-    implementation      hcli/vmcp/__init__.py, hcli/vmcp_adapter.py
-    real caller         absent — no non-test call site
+    implementation      hcli/vmcp/__init__.py, hcli/vmcp_adapter.py, hcli/vmcp_adapter.py:155 (+1 more)
+    real caller         hcli/connectivity.py:133, hcli/tool_registry.py:1433, hcli/tool_registry.py:1442
     verifier            absent — no test cites this gate
     negative control    absent — no cited test proves it can fail
     receipt             absent
     evidence level      STATIC
     limitations         none recorded
-    integration         wired=False accepted=True
+    integration         wired=True accepted=True
 
 ### VMCP_DEEP_DIGEST
 

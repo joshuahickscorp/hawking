@@ -945,11 +945,26 @@ _DECLARATION_SWEEP: dict[str, tuple[tuple[str, str], ...]] = {
     # NOT run_vmcp_gate: that is VMCP_RECEIPT_LAW's symbol, and declaring it here
     # gave two distinct capabilities a byte-identical caller list -- one call
     # cannot be evidence for two different gates. causality_payload is the
-    # integration-specific symbol, called from hcli/agentos/recovery.py:413.
+    # integration-specific symbol.
+    #
+    # THE CLAIM THAT IT IS "called from hcli/agentos/recovery.py:413" WAS FALSE.
+    # recovery.py DEFINES ITS OWN causality_payload at :367 and calls that local
+    # one at :413 and :543; it never imports vmcp_gate at all. Two sibling modules
+    # hold same-named functions and one's call sites were credited to the other.
+    # vmcp_gate.causality_payload is called only at vmcp_gate.py:251 and :336,
+    # which are self-calls the guard correctly refuses. So this gate is genuinely
+    # NOT wired and the declaration stays put: the fix for a missing caller is a
+    # caller, never a re-pointed symbol.
     "VMCP_AGENTOS_INTEGRATION": (("hcli.agentos.vmcp_gate", "causality_payload"),),
+    # hcli/vmcp/__init__.py is a NINE-LINE MARKER PACKAGE whose whole purpose is to
+    # stop a parallel hcli.vmcp.* implementation from growing. It defines neither
+    # symbol. inspect_vmcp and call_vmcp live in hcli/vmcp_adapter.py at :155 and
+    # :200 -- already named in this gate's own modules tuple -- and are really
+    # called from hcli/connectivity.py:133 and hcli/tool_registry.py:1433,:1442.
+    # The gate read SCAFFOLDED because the catalog looked in the marker.
     "VMCP_COMPACT_SURFACE": (
-        ("hcli.vmcp", "inspect_vmcp"),
-        ("hcli.vmcp", "call_vmcp"),
+        ("hcli.vmcp_adapter", "inspect_vmcp"),
+        ("hcli.vmcp_adapter", "call_vmcp"),
     ),
     "HCLI_CONTEXT_INVALIDATION": (("hcli.goal", "assert_evidence_fresh"),),
     # This lane's own.
