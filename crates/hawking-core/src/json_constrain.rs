@@ -311,11 +311,38 @@ impl JsonConstraint {
                 // are masked above and must not stay unmaskable.
                 continue;
             }
+            // Check the WHOLE token, not just its first character. Tokens are
+            // BPE pieces of several characters, so one can begin legally and
+            // break JSON in its tail -- `",` after a value, or text carrying a
+            // raw newline. The mask reported grammar_enforced=true while the
+            // reply still failed to parse:
+            //
+            //   Expecting ',' delimiter: line 9 column 143
+            //
+            // The first-character test is kept as a cheap reject: most tokens
+            // fail it outright in a constrained state, and only survivors pay
+            // for the full simulation.
             let first = text.chars().next().unwrap();
-            if !self.byte_allowed(first, &valid) {
+            if !self.byte_allowed(first, &valid) || !self.token_allowed(text) {
                 *logit = NEG_INF;
             }
         }
+    }
+
+    /// Would every character of `text` be legal, in order, from here?
+    ///
+    /// A token is atomic: the model emits all of it or none of it, so a token
+    /// whose tail is illegal must be refused whole.
+    fn token_allowed(&self, text: &str) -> bool {
+        let mut probe = self.clone();
+        for ch in text.chars() {
+            let valid = probe.valid_first_bytes();
+            if !probe.byte_allowed(ch, &valid) {
+                return false;
+            }
+            probe.advance_char(ch);
+        }
+        true
     }
 
     fn byte_allowed(&self, ch: char, valid: &ValidFirstBytes) -> bool {
@@ -448,6 +475,77 @@ mod tests {
         for ch in ['x', ' ', '\\', '"', '{', 'é'] {
             assert!(c.byte_allowed(ch, &valid), "{ch:?} must stay allowed");
         }
+    }
+
+    /// A token that starts legally and breaks JSON in its tail must be
+    /// refused whole. This is what made grammar_enforced=true coexist with
+    /// "Expecting ',' delimiter" in a live receipt.
+    #[test]
+    fn a_token_whose_tail_breaks_json_is_refused() {
+        let mut c = JsonConstraint::new();
+        c.advance("{\"a\": \"v\"");
+        // After a closed string value the only legal next characters are , } or
+        // whitespace. A BPE piece like ":x" starts illegally; one like ",,"
+        // starts LEGALLY and is still invalid.
+        assert!(!c.token_allowed(",,"), "a legal first char must not admit an illegal tail");
+        assert!(c.token_allowed(","), "the legal single character must stay allowed");
+    }
+
+    /// Inside a string, a token carrying a raw newline must be refused even
+    /// though its first character is ordinary text.
+    #[test]
+    fn a_string_token_carrying_a_raw_newline_is_refused() {
+        let mut c = JsonConstraint::new();
+        c.advance("{\"a\": \"code");
+        assert!(!c.token_allowed("x\ny"), "a raw newline in the tail must be refused");
+        assert!(c.token_allowed("xy"), "ordinary text must stay allowed");
+        assert!(c.token_allowed("x\\ny"), "an ESCAPED newline must stay allowed");
+    }
+
+    /// Through mask_logits, not the helper.
+    ///
+    /// The first version of these tests called `token_allowed` directly, so
+    /// they all passed with the whole-token check removed from `mask_logits` --
+    /// the helper was never the thing that failed. Same trap as testing a
+    /// prompt sanitizer instead of the assembled packet.
+    #[test]
+    fn mask_logits_refuses_a_token_whose_tail_breaks_json() {
+        // A BPE piece that starts legally and is invalid as a whole: after a
+        // closed string value, "," is legal and ",," is not.
+        const TAIL_BREAKS: usize = 2;
+        let texts = ["", ",", ",,", "}"];
+        let vocab = JsonVocabIndex::build(texts.len(), |id| texts[id as usize].to_string());
+
+        let mut c = JsonConstraint::new();
+        c.advance("{\"a\": \"v\"");
+
+        let mut logits = vec![1.0f32; vocab.len()];
+        logits[TAIL_BREAKS] = 100.0;
+        c.mask_logits(&vocab, &mut logits);
+
+        assert_eq!(
+            logits[TAIL_BREAKS], NEG_INF,
+            "mask_logits admitted a token whose tail breaks JSON",
+        );
+        assert_ne!(logits[1], NEG_INF, "the legal single comma must survive");
+    }
+
+    /// Same, inside a string: a token carrying a raw newline in its tail.
+    #[test]
+    fn mask_logits_refuses_a_string_token_carrying_a_raw_newline() {
+        const RAW_NEWLINE: usize = 1;
+        let texts = ["", "x\ny", "xy"];
+        let vocab = JsonVocabIndex::build(texts.len(), |id| texts[id as usize].to_string());
+
+        let mut c = JsonConstraint::new();
+        c.advance("{\"a\": \"code");
+
+        let mut logits = vec![1.0f32; vocab.len()];
+        logits[RAW_NEWLINE] = 100.0;
+        c.mask_logits(&vocab, &mut logits);
+
+        assert_eq!(logits[RAW_NEWLINE], NEG_INF, "raw newline admitted inside a string");
+        assert_ne!(logits[2], NEG_INF, "ordinary text must survive");
     }
 
     #[test]
