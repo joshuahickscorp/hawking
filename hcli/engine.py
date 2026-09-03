@@ -3,6 +3,7 @@ from __future__ import annotations
 import ast
 import hashlib
 import json
+import functools
 import os
 import re
 import shlex
@@ -279,6 +280,34 @@ _CHARS_PER_TOKEN = 3
 #: since being over by a token costs the entire call.
 _CHARS_PER_TOKEN_FLOOR = 2.0
 _CHARS_PER_TOKEN_CEILING = 4.0
+#: Reserve when the count is EXACT. Only the chat template's role markers are
+#: unaccounted for, since the tokenizer is the resident's own.
+_CTX_EXACT_MARGIN = 0.04
+
+
+@functools.lru_cache(maxsize=1)
+def _exact_tokenizer() -> Any:
+    """The resident's own tokenizer, or None.
+
+    Estimating characters-per-token cost this campaign two opposite failures on
+    the same 8192-token window: a 25% under-count overflowed it and killed the
+    call, and the 30% reserve that fixed the overflow left 1107 completion
+    tokens after a 5422-token prompt, so the reply was truncated mid-object.
+    There is no ratio that satisfies both. The tokenizer is on disk and
+    `tokenizers` is installed, so count instead of guessing.
+    """
+    try:
+        from tokenizers import Tokenizer
+
+        from .hawking_native import _sealed_profile
+
+        profile = _sealed_profile()
+        path = getattr(profile, "tokenizer", "") if profile else ""
+        if not path or not os.path.exists(path):
+            return None
+        return Tokenizer.from_file(path)
+    except Exception:
+        return None
 _THINK_OPEN_RE = re.compile(r"<think\b", re.I)
 
 _PATH_TOKEN_RE = re.compile(
@@ -2577,11 +2606,17 @@ class Engine:
         self,
         messages: List[Dict[str, Any]],
     ) -> int:
-        chars = 0
-        for message in messages:
-            chars += len(str(message.get("content") or ""))
+        text = "\n".join(str(m.get("content") or "") for m in messages)
+        tokenizer = _exact_tokenizer()
+        if tokenizer is not None:
+            try:
+                self._last_estimate_exact = True
+                return max(1, len(tokenizer.encode(text).ids))
+            except Exception:
+                pass
+        self._last_estimate_exact = False
         ratio = getattr(self, "_chars_per_token", None) or float(_CHARS_PER_TOKEN)
-        return max(1, int(chars / ratio))
+        return max(1, int(len(text) / ratio))
 
     def _calibrate_chars_per_token(self, real_prompt_tokens: int) -> None:
         """Learn the ratio from a count the runtime actually measured.
@@ -3085,7 +3120,14 @@ class Engine:
         # estimated 5,488 where the resident counted 5,804 -- and a flat 96
         # tokens cannot cover an error proportional to length. Measured
         # overflow: 5,804 + 2,557 against a 8,192 window.
-        margin = max(_CTX_ESTIMATE_MARGIN, int(prompt_tokens_est * _CTX_ESTIMATE_ERROR))
+        # An exact count needs only the chat template's overhead covered; an
+        # estimated one needs the whole measured disagreement.
+        error = (
+            _CTX_EXACT_MARGIN
+            if getattr(self, "_last_estimate_exact", False)
+            else _CTX_ESTIMATE_ERROR
+        )
+        margin = max(_CTX_ESTIMATE_MARGIN, int(prompt_tokens_est * error))
         remaining = int(ctx) - int(prompt_tokens_est) - margin
         # The floor may not push the request PAST the window. `max(floor, ...)`
         # granted 512 completion tokens even when the prompt had already used
