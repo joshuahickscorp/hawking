@@ -70,7 +70,10 @@ def test_the_margin_scales_with_the_prompt():
     assert (8192 - 6000 - large) > (8192 - 1000 - small), (
         "a longer prompt must reserve MORE, not the same"
     )
-    assert _CTX_ESTIMATE_ERROR > 0.058, "the reserve must exceed the measured error"
+    assert _CTX_ESTIMATE_ERROR >= 0.25, (
+        "the reserve must cover the 25% error measured on a source-carrying "
+        "payload, not just the 5.8% measured on prose"
+    )
 
 
 @pytest.mark.parametrize("estimated,real", [(5488, 5804), (2531, 2680), (7000, 7420)])

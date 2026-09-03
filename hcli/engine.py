@@ -253,10 +253,18 @@ def _join_observations(blocks: List[str]) -> str:
 #: because being over by one token costs the entire call.
 _CTX_ESTIMATE_MARGIN = 96
 #: Observed disagreement between `_estimate_prompt_tokens` and the resident's
-#: real tokenizer, with headroom: 5.8% measured, 12% reserved. Being over by one
-#: token costs the whole call, and the cost of reserving too much is only a
-#: shorter reply.
-_CTX_ESTIMATE_ERROR = 0.12
+#: real tokenizer, with headroom. 5.8% on prose; 25% on a payload carrying
+#: Python source -- estimated ~5300 against a real 6605, which overflowed the
+#: window and killed the call outright. 30% reserved.
+#:
+#: A learned ratio cannot cover this on its own: density is a property of the
+#: payload, not of history. The first call of a goal is prose and calibrates
+#: near 3.0; the second carries a source file and is far denser. So the
+#: reserve has to be sized for the worst payload, not the last one.
+#:
+#: Being over by one token costs the whole call. Reserving too much only
+#: shortens a reply.
+_CTX_ESTIMATE_ERROR = 0.30
 _MAX_TOKENS_FLOOR = 512
 _MAX_TOKENS_CEILING = 8192
 _CHARS_PER_TOKEN = 3
