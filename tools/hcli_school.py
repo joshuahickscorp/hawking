@@ -1,0 +1,191 @@
+#!/usr/bin/env python3
+"""Drive HCLI through a competence ladder, unattended.
+
+Claude teaches by writing the goal and reading the receipt. HCLI does the work.
+This driver only keeps the loop turning: it restarts a resident that has
+stopped, hands over the next goal, waits for the mission to reach a terminal
+phase, records what happened, and decides whether to advance or retry.
+
+Two things are load-bearing and were learned the hard way:
+
+  * ONE IMPERATIVE SENTENCE per goal. `goal_tokenizer` emits one WorkUnit per
+    sentence, so explanatory prose becomes fake obligations -- a five-sentence
+    goal produced eleven units, six of them sentence fragments.
+
+  * SMALL EDITS. The measured model weakness is long verbatim code inside a
+    JSON string: a 2-line source patch was correct while a 15-line test rewrite
+    in the same reply dropped three closing parens.
+
+Run:  python3 tools/hcli_school.py [--once] [--start-level N]
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+REPO = Path(__file__).resolve().parents[1]
+STATE = REPO / ".hcli" / "mission" / "state.json"
+RESIDENT = REPO / ".hcli" / "resident" / "state.json"
+LOG = REPO / ".hcli" / "school" / "log.jsonl"
+GOALS = REPO / ".hcli" / "school" / "goals"
+
+#: One imperative sentence each. Levels follow the campaign ladder: read,
+#: patch, patch+test, author a regression test, repair a failure, optimise,
+#: benchmark, then choose its own work.
+LADDER = [
+    (2, "In hcli/tool_registry.py, make a whole-file fs.read result also report total_lines, the way the windowed read already does."),
+    (3, "In hcli/resources.py, add a one-line docstring to pid_is_alive saying it reaps a zombie before testing liveness."),
+    (4, "Write hcli/tests/test_pid_is_alive_contract.py asserting pid_is_alive returns False for a pid of 0, -1 and None."),
+    (5, "In hcli/context_budget.py, report per_request_ctx and usable_input_tokens in the ContextBudget repr so a budget refusal names its own numbers."),
+    (6, "In hcli/engine.py, record prefill_tokens_stepped and prefix_reused_tokens as a single reuse_fraction field on each model_call entry."),
+    (7, "Write hcli/tests/test_prefix_reuse_fraction.py asserting reuse_fraction is prefix_reused_tokens divided by prompt_tokens and is None when either is absent."),
+    (8, "Read .hcli/school/log.jsonl and name in one sentence the single change to HCLI that would most raise effective_prompt_tps."),
+]
+
+#: Appended when a level is retried, so the next attempt carries what failed.
+RETRY_HINT = (
+    " Keep the edit under five lines and change one file."
+)
+
+TERMINAL = {"completed", "failed", "cancelled", "evacuated"}
+MAX_RETRIES = 2
+POLL_S = 20
+MISSION_TIMEOUT_S = 2400
+
+
+def run(*argv: str, timeout: int = 300) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        [sys.executable, "-m", "hcli.agentos.resident", *argv],
+        cwd=REPO, capture_output=True, text=True, timeout=timeout,
+    )
+
+
+def read_json(path: Path) -> dict:
+    try:
+        return json.loads(path.read_text())
+    except (OSError, ValueError):
+        return {}
+
+
+def newest_receipt() -> dict:
+    files = sorted((REPO / ".hcli" / "receipts").glob("*.json"),
+                   key=lambda p: p.stat().st_mtime)
+    return read_json(files[-1]) if files else {}
+
+
+def verdict() -> dict:
+    proc = run("verdict", timeout=120)
+    out = {}
+    for line in (proc.stdout or "").splitlines():
+        if "measured:" in line:
+            for pair in line.split("measured:", 1)[1].split():
+                if "=" in pair:
+                    k, v = pair.split("=", 1)
+                    try:
+                        out[k] = float(v)
+                    except ValueError:
+                        out[k] = v
+        parts = line.split()
+        if len(parts) >= 2 and parts[0] in {"PASS", "FAIL", "UNKNOWN"}:
+            out.setdefault("criteria", {})[parts[1]] = parts[0]
+    return out
+
+
+def start(goal: str, level: int, attempt: int) -> None:
+    GOALS.mkdir(parents=True, exist_ok=True)
+    path = GOALS / f"L{level}.{attempt}.txt"
+    path.write_text(goal.rstrip() + "\n", encoding="utf-8")
+    run("replace", "--goal-file", str(path), timeout=600)
+
+
+def wait_for_mission() -> str:
+    deadline = time.time() + MISSION_TIMEOUT_S
+    while time.time() < deadline:
+        phase = str(read_json(STATE).get("phase") or "")
+        if phase in TERMINAL:
+            return phase
+        if str(read_json(RESIDENT).get("state") or "") == "FAILED":
+            return "failed"
+        time.sleep(POLL_S)
+    return "timeout"
+
+
+def landed(receipt: dict) -> bool:
+    """Did the goal actually change the tree?
+
+    `kind: answer` carries operations that are never applied, and a unit can
+    complete without its deliverable existing. Only a mutation that was not
+    rolled back and passed validation is a landed contribution.
+    """
+    return (
+        receipt.get("kind") == "mutation"
+        and receipt.get("status") == "completed"
+        and not receipt.get("rolled_back")
+        and bool((receipt.get("validation") or {}).get("ok"))
+    )
+
+
+def record(row: dict) -> None:
+    LOG.parent.mkdir(parents=True, exist_ok=True)
+    with LOG.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(row, sort_keys=True) + "\n")
+
+
+def cycle(level: int, goal: str, attempt: int) -> dict:
+    started = time.time()
+    start(goal, level, attempt)
+    phase = wait_for_mission()
+    receipt = newest_receipt()
+    row = {
+        "level": level,
+        "attempt": attempt,
+        "phase": phase,
+        "goal": goal,
+        "kind": receipt.get("kind"),
+        "status": receipt.get("status"),
+        "landed": landed(receipt),
+        "rolled_back": receipt.get("rolled_back"),
+        "tests": receipt.get("tests"),
+        "operations": [(o.get("op"), o.get("path")) for o in (receipt.get("operations") or [])],
+        "error": str(receipt.get("error") or "")[:400],
+        "model_calls": len(receipt.get("model_calls") or []),
+        "grammar_enforced": [c.get("grammar_enforced") for c in (receipt.get("model_calls") or [])][:4],
+        "verdict": verdict(),
+        "wall_s": round(time.time() - started, 1),
+    }
+    record(row)
+    return row
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--once", action="store_true")
+    ap.add_argument("--start-level", type=int, default=2)
+    args = ap.parse_args()
+
+    index = next((i for i, (lvl, _) in enumerate(LADDER) if lvl >= args.start_level), 0)
+    while index < len(LADDER):
+        level, goal = LADDER[index]
+        for attempt in range(1, MAX_RETRIES + 2):
+            text = goal if attempt == 1 else goal + RETRY_HINT
+            row = cycle(level, text, attempt)
+            print(
+                f"L{level} attempt {attempt}: phase={row['phase']} "
+                f"kind={row['kind']} landed={row['landed']} "
+                f"calls={row['model_calls']} {row['wall_s']}s",
+                flush=True,
+            )
+            if row["landed"]:
+                break
+        index += 1
+        if args.once:
+            break
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
