@@ -283,6 +283,15 @@ _CHARS_PER_TOKEN_CEILING = 4.0
 #: Reserve when the count is EXACT. Only the chat template's role markers are
 #: unaccounted for, since the tokenizer is the resident's own.
 _CTX_EXACT_MARGIN = 0.04
+#: The share of the usable input ONE tool observation may occupy.
+#:
+#: It was the whole of it. A single fs.read grew the prompt from 1,925 tokens
+#: to 5,348 against a per-request window of 6,745 -- 3,423 tokens for one
+#: observation -- and the reply was left 1,107 tokens and truncated mid-object.
+#: The scaffolding (system prompt 763, worker packet 110, tool catalog, schema
+#: instruction) is ~1,925 tokens before any evidence arrives, so a cap equal to
+#: the whole usable input can never be satisfied alongside it.
+_MAX_OBSERVATION_SHARE = 0.35
 
 
 @functools.lru_cache(maxsize=1)
@@ -2119,7 +2128,11 @@ class Engine:
         """
         budget = self._context_budget()
         ratio = getattr(self, "_chars_per_token", None) or float(_CHARS_PER_TOKEN)
-        cap = int(max(0, int(budget.usable_input_tokens)) * ratio)
+        cap = int(
+            max(0, int(budget.usable_input_tokens))
+            * _MAX_OBSERVATION_SHARE
+            * ratio
+        )
         cap = min(self.MAX_TOTAL_EVIDENCE_CHARS, cap)
 
         explicit = os.environ.get(
