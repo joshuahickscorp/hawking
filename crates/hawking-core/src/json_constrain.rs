@@ -323,9 +323,22 @@ impl JsonConstraint {
             ValidFirstBytes::Any => true,
             ValidFirstBytes::Set(set) => set.contains(&ch),
             ValidFirstBytes::InString => {
-                // Any char except unescaped '"' is allowed inside a string.
-                // We allow '"' here too — the state machine will close the string.
-                true
+                // A raw control character is NOT legal inside a JSON string.
+                // RFC 8259 requires U+0000..=U+001F to be escaped, so allowing
+                // "any char except an unescaped quote" let the model emit a
+                // literal newline or tab in a string value and produce a reply
+                // that could not parse:
+                //
+                //   the reply is NOT valid JSON -- Invalid control character
+                //   at: line 67 column 23
+                //
+                // That is the one failure this mask exists to make impossible,
+                // and it happened while the mask was running. Embedding source
+                // code in a string value is the common case, and it is exactly
+                // the case that emits raw newlines.
+                //
+                // '"' stays allowed: the state machine closes the string on it.
+                (ch as u32) >= 0x20
             }
             ValidFirstBytes::Done => ch.is_whitespace() || ch == '\n',
         }
@@ -404,6 +417,39 @@ impl GrammarConstraint {
 #[cfg(test)]
 mod tests {
     use super::*;
+    /// A raw control character inside a string is not legal JSON.
+    ///
+    /// The mask allowed "any char except an unescaped quote", so a model
+    /// embedding source code in a string value emitted a literal newline and
+    /// produced a reply that could not parse:
+    ///
+    ///   the reply is NOT valid JSON -- Invalid control character at:
+    ///   line 67 column 23
+    ///
+    /// That happened WHILE the mask was running: the one failure it exists to
+    /// prevent.
+    #[test]
+    fn raw_control_characters_are_refused_inside_a_string() {
+        let mut c = JsonConstraint::new();
+        c.advance("{\"a\": \"code");
+        let valid = c.valid_first_bytes();
+        assert!(!c.byte_allowed('\n', &valid), "a raw newline must be refused");
+        assert!(!c.byte_allowed('\t', &valid), "a raw tab must be refused");
+        assert!(!c.byte_allowed('\u{0}', &valid), "a raw NUL must be refused");
+    }
+
+    /// Negative control: escaping and ordinary text must still be accepted, or
+    /// the mask would make it impossible to write code into a string at all.
+    #[test]
+    fn escapes_and_ordinary_text_are_still_allowed_inside_a_string() {
+        let mut c = JsonConstraint::new();
+        c.advance("{\"a\": \"code");
+        let valid = c.valid_first_bytes();
+        for ch in ['x', ' ', '\\', '"', '{', 'é'] {
+            assert!(c.byte_allowed(ch, &valid), "{ch:?} must stay allowed");
+        }
+    }
+
     #[test]
     fn empty_object() {
         let mut c = JsonConstraint::new();
