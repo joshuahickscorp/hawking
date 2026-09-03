@@ -224,6 +224,17 @@ def next_class_slot(
 def pid_is_alive(pid: int) -> bool:
     if not isinstance(pid, int) or pid <= 0:
         return False
+    # Reap first. A direct child that has exited stays a zombie until someone
+    # waits on it, and os.kill(pid, 0) SUCCEEDS on a zombie -- so without this
+    # a process that is already dead is reported alive for as long as nobody
+    # reaps it, and callers wait out their full grace on nothing. This is the
+    # same defect that made _terminate_pids burn its whole 2 s grace; the
+    # pairing there (reap, then test liveness) is what this mirrors.
+    # Not our child, or already reaped, both mean "nothing to learn here".
+    try:
+        os.waitpid(pid, os.WNOHANG)
+    except (OSError, ValueError, ChildProcessError):
+        pass
     try:
         os.kill(pid, 0)
         return True

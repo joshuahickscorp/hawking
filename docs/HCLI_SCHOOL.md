@@ -1,0 +1,122 @@
+# HCLI Self-Improvement School
+
+Claude teaches, supervises, verifies, and doctors failures.
+HCLI operates, experiments, authors code, benchmarks, and is the subject.
+
+The loop has no final goal. It stops when the human says so.
+
+## Live truth at campaign start
+
+Recovered from disk, not assumed. `python3 -m hcli.agentos.resident verdict`:
+
+```
+FAIL  prefill_fast             24 prompt tok/s over 27 calls (budget 100.0)
+FAIL  progress                 accepted=0, 0 completed of 7 units
+PASS  repair_budget_unspent    1 spent, all earned by this mission
+PASS  repair_reached_the_unit  no depth-0 refusals
+FAIL  structured_output_ok     2 of 5 receipts exhausted their retries
+FAIL  tools_fast               p95 60.0 ms over 59 calls (budget 50.0 ms)
+PASS  worker_stable            failure_streak 0
+
+effective_prompt_tps=24.0  mean_rounds_per_goal=3.33
+realized_reuse_fraction=0.1591  tool_p95_ms=60.0
+```
+
+Resident: `cycles=858  generation=903  restart_count=5  state=RUNNING`.
+Durability is already demonstrated: five restarts survived, failure streak zero.
+
+## P0 diagnosis: why accepted was 0
+
+Three independent defects. The first one is the whole story.
+
+### 1. The goal was unwinnable, and the contract lied about why (FIXED)
+
+`Engine._validate`:
+
+```python
+if not test_list:
+    result["ok"] = False
+    result["reason"] = "NO_EVIDENCE"
+```
+
+`NO_EVIDENCE` maps to status `unverified`, which is terminal. A mutation that
+names no test is discarded however good it is.
+
+The system prompt said the opposite: `"tests": ["optional safe workspace-relative
+Python test paths"]`. The model believed it, sent no tests, and every mutation
+landed unverified.
+
+Worse, the goal we set was unacceptable by construction. Only `.py` files have a
+checker; every other suffix records `no_checker_available`. The deliverable was a
+markdown document, so **no model output could have been accepted**. We read a
+contract defect as a model defect.
+
+Fixed in `1c746a27d`: the contract now states the rule and its consequence, the
+example names a real test path, and a correlated-verifier test holds prompt and
+validator together. Negative control included: a read-only `answer` still needs
+no test.
+
+### 2. Retries collapse to an empty reply (OPEN)
+
+From `.hcli/receipts/dc104ddf*.json`, one goal's four model calls:
+
+```
+(prompt 2044, completion 206)   finish=stop
+(prompt 3419, completion   2)   finish=stop
+(prompt 3492, completion   1)   finish=stop
+(prompt 3492, completion   1)   finish=stop
+```
+
+`max_tokens` was 3724 on every retry, so this is not a budget exhaustion. The
+first attempt produces real content; every retry emits one or two tokens and
+stops. Recorded as `errors: ['empty response','empty response','empty response']`
+and `rejected_reply_chars: 0`.
+
+Not yet explained. Candidates: the retry prompt shape, chat-template handling of
+the rejected turn, or `enable_thinking` interaction.
+
+### 3. `grammar_enforced` is never observed (OPEN)
+
+The sealed profile `hcli/hawking-native.sealed-3.14.json` declares
+`grammar: "supported"` (syntax masking only; `response_format: "unsupported"` is
+correct and deliberate — the resident does not enforce schema). The resident
+accepts `grammar: "json"`, masks logits, and returns `grammar_enforced`.
+
+But `grammar_enforced` is `None` on every model call in every receipt. Either
+the field is not propagated into the receipt, or the mask is not running. A
+capability that cannot be observed cannot be trusted.
+
+## Bar ladder
+
+Pass a bar, freeze it, raise it. Bars move on evidence, not on schedule.
+
+| facet | baseline | next bar |
+|---|---|---|
+| accepted goals | 0 | > 0, then majority, then high first-pass |
+| structured output | 2 of 5 exhausted | 0 exhausted over 10 receipts |
+| realized prefix reuse | 0.159 | 0.25, 0.35, 0.50, 0.65 |
+| effective prompt tok/s | 24.0 | 1.25x, 1.5x, 2x, 3x |
+| tool p95 | 60 ms | < 50, < 35, < 25 |
+| rounds per goal | 3.33 | lower only if acceptance holds |
+
+Never optimize one by silently degrading another. The quantity being maximized is
+**verified accepted useful work per unit wall time**, not any single metric.
+
+## Laws
+
+- **A goal with no deterministic checker is unwinnable. Check the goal is
+  acceptable before reading a failure as incapacity.**
+- **When one rule lives in two places — a prompt and a validator — write the test
+  that holds them together.** Either side can be relaxed without the other
+  noticing, and the prompt is the side nobody runs.
+- **A capability that is declared but never observed in a receipt is not known to
+  work.** Grep for the call site and the reported field, not the definition.
+
+## Scars
+
+- Told HCLI to write a `.md` deliverable, then measured its failure to be
+  accepted as a quality problem. It was a contract problem. Cost: a full mission
+  and several hours of resident time.
+- Diagnosed `constrained_decoding: unavailable` as a wiring gap before reading
+  the profile, which correctly declares `response_format: unsupported`. Reading
+  the declaration first would have cost one command.

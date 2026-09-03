@@ -76,7 +76,6 @@ pass ``mutation_lock``: a zero-arg callable returning an
 
 Example (future wiring)::
 
-    from contextlib import contextmanager
     from hcli.resources import MutationLock
 
     lock = MutationLock(workspace_root)
@@ -118,6 +117,7 @@ printed id (live).
 from __future__ import annotations
 
 import itertools
+import fcntl
 import json
 import logging
 import os
@@ -127,11 +127,11 @@ import signal
 import subprocess
 import threading
 import time
-from contextlib import AbstractContextManager, nullcontext
+from contextlib import AbstractContextManager, contextmanager, nullcontext
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Sequence, Union
+from typing import Any, Callable, Dict, Iterator, List, Optional, Sequence, Union
 
 from .persist import atomic_write_json, atomic_write_text
 
@@ -1277,7 +1277,39 @@ class GrokBridge:
             return None
         return data if isinstance(data, dict) else None
 
+    @contextmanager
+    def _receipt_lock(self, task_id: str) -> "Iterator[None]":
+        """Serialize one receipt's read-modify-write across threads and processes.
+
+        `_update_receipt` read the receipt, merged fields, and wrote it back with
+        no lock, so a `status()` poll could reverse a concurrent `cancel()`:
+        the poll read the pre-cancel receipt, cancel wrote "cancelled", and the
+        poll then wrote its stale "running" over the top. Third instance of this
+        shape in this codebase, after BackgroundJobStore._refresh.
+        """
+        handle = self.receipt_path(task_id).with_suffix(".lock").open("a+")
+        try:
+            if fcntl is not None:
+                fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+            yield
+        finally:
+            if fcntl is not None:
+                try:
+                    fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+                except OSError:
+                    pass
+            handle.close()
+
     def _update_receipt(self, task_id: str, **fields: Any) -> None:
+        # Absent receipt means nothing to update. Checked BEFORE locking so a
+        # no-op never creates a lock file -- and never creates the directory
+        # that would have to exist to hold one.
+        if self._read_receipt(task_id) is None:
+            return
+        with self._receipt_lock(task_id):
+            self._update_receipt_locked(task_id, **fields)
+
+    def _update_receipt_locked(self, task_id: str, **fields: Any) -> None:
         current = self._read_receipt(task_id)
         if current is None:
             return
