@@ -565,3 +565,37 @@ def test_economics_projection_uses_the_shared_scorer():
     assert scored["bytes_added"]["total"] == added["total"]
     assert scored["dispatch_delta"] == sketch["dispatch_delta"]
     assert scored["terms"]["dispatch_ms_delta"] > 0.0
+
+
+def test_butterfly_matches_the_einsum_form_it_replaced():
+    """The rewrite must stay equivalent to the form it replaced.
+
+    apply_butterfly used np.stack + einsum("npd,pde->npe"). The explicit 2x2
+    multiply-adds are NOT bit-identical to it -- einsum accumulates differently,
+    ~1e-6 on float32 -- so the guarantee is a TOLERANCE here and receipt-level
+    exactness was verified separately by a full A/B build (1334 float fields,
+    0 differing). This pins the operation so a future edit cannot drift further.
+    """
+    import numpy as np
+
+    from tools.future import mlp_structured_operator as m
+
+    rng = np.random.default_rng(31)
+    n, p = 128, 41
+    y = rng.standard_normal((n, 2 * p), dtype=np.float32)
+    a = np.arange(p) * 2
+    b = a + 1
+    blocks = rng.standard_normal((p, 2, 2), dtype=np.float32)
+
+    got = m.apply_butterfly(y, [{"a": a, "b": b, "blocks": blocks}])
+
+    pair = np.stack((y[:, a], y[:, b]), axis=-1)
+    ref_out = np.einsum("npd,pde->npe", pair, blocks, optimize=True)
+    expected = np.array(y, dtype=np.float32, copy=True)
+    expected[:, a] = ref_out[:, :, 0]
+    expected[:, b] = ref_out[:, :, 1]
+
+    assert got.shape == expected.shape
+    assert np.allclose(got, expected, atol=1e-5), (
+        "the butterfly no longer agrees with the einsum form it replaced"
+    )

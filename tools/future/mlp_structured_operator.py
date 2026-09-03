@@ -997,10 +997,17 @@ def apply_butterfly(
         b = fac["b"]
         blocks = fac["blocks"]
         if int(a.size) > 0:
-            pair = np.stack((y[:, a], y[:, b]), axis=-1)
-            out = np.einsum("npd,pde->npe", pair, blocks, optimize=True)
-            y[:, a] = out[:, :, 0]
-            y[:, b] = out[:, :, 1]
+            # The same 2x2 arithmetic, without materializing the stacked pair.
+            # This replaced np.stack + einsum("npd,pde->npe"). The two forms are
+            # NOT bit-identical elementwise -- einsum accumulates differently, max
+            # absolute deviation 9.5e-07 on float32 -- so the equivalence that
+            # matters was measured on the ARTIFACT rather than assumed: a full
+            # build() under each form produced receipts whose 1334 float fields
+            # agree exactly, 0 differing. 155.9s -> 147.6s.
+            ya = y[:, a]
+            yb = y[:, b]
+            y[:, a] = ya * blocks[:, 0, 0] + yb * blocks[:, 1, 0]
+            y[:, b] = ya * blocks[:, 0, 1] + yb * blocks[:, 1, 1]
         unpaired = fac.get("unpaired")
         scales = fac.get("scales")
         if unpaired is not None and int(unpaired.size) > 0 and scales is not None:
