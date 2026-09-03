@@ -50,7 +50,7 @@ class TestFragmentsAreNotCompiledAlone(unittest.TestCase):
     ANCHOR = "    files_seen = 0\n"
 
     def _op(self, new_text, op="replace"):
-        return json.dumps({"operations": [{
+        return json.dumps({"kind": "mutation", "operations": [{
             "op": op, "path": "hcli/tool_registry.py",
             "old_text": self.ANCHOR, "new_text": new_text,
         }]})
@@ -75,7 +75,7 @@ class TestFragmentsAreNotCompiledAlone(unittest.TestCase):
         so it now goes back through the contract's retry with the file's real
         bytes attached.
         """
-        payload = json.dumps({"operations": [{
+        payload = json.dumps({"kind": "mutation", "operations": [{
             "op": "replace", "path": "hcli/tool_registry.py",
             "old_text": "this text is not in the file anywhere",
             "new_text": "    x = 1\n",
@@ -86,7 +86,7 @@ class TestFragmentsAreNotCompiledAlone(unittest.TestCase):
 
     def test_an_ambiguous_anchor_says_so(self):
         """Matching many places needs the opposite fix from matching none."""
-        payload = json.dumps({"operations": [{
+        payload = json.dumps({"kind": "mutation", "operations": [{
             "op": "replace", "path": "hcli/tool_registry.py",
             "old_text": "\n", "new_text": "x",
         }]})
@@ -145,3 +145,47 @@ class TestSyntaxPreflight(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestOnlyAMutationIsJudgedOnItsOperations(unittest.TestCase):
+    """A tool_use reply carries placeholder operations. Judging them is a trap.
+
+    Measured: the model asked to read hcli/tool_registry.py -- content "need
+    exact unique anchor for _read_file total_lines" -- and filled old_text with
+    "x" to satisfy the reply shape. The anchor preflight, added that same day to
+    make anchors CORRECTABLE, refused it with "matches 497 places" on all three
+    attempts. The model could never obtain the bytes the refusal demanded,
+    because the request for them was what kept being refused.
+    """
+
+    def _reply(self, kind):
+        return json.dumps({
+            "kind": kind,
+            "content": "need exact unique anchor for _read_file total_lines",
+            "operations": [{
+                "op": "replace", "path": "hcli/tool_registry.py",
+                "old_text": "x", "new_text": "x",
+            }],
+            "tool_calls": [{"tool": "fs.read", "arguments": []}],
+        })
+
+    def test_a_tool_use_reply_is_not_judged_on_its_placeholder_operations(self):
+        self.assertIsNone(_python_syntax_violation(self._reply("tool_use")))
+
+    def test_an_answer_reply_is_not_judged_either(self):
+        self.assertIsNone(_python_syntax_violation(self._reply("answer")))
+
+    def test_a_mutation_reply_IS_still_judged(self):
+        """The check must not be disabled, only aimed."""
+        got = _python_syntax_violation(self._reply("mutation"))
+        self.assertIsNotNone(got)
+        self.assertIn("must match exactly one", got)
+
+    def test_a_reply_with_no_kind_is_not_judged(self):
+        """Absent kind is not 'mutation'; do not guess it into one."""
+        self.assertIsNone(_python_syntax_violation(json.dumps({
+            "operations": [{
+                "op": "replace", "path": "hcli/tool_registry.py",
+                "old_text": "x", "new_text": "x",
+            }],
+        })))

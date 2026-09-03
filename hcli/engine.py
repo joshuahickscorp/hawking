@@ -811,6 +811,17 @@ def _python_syntax_violation(content: str) -> Optional[str]:
         return None
     if not isinstance(parsed, dict):
         return None
+    # ONLY a reply that is actually applying its operations may be judged on
+    # them. A tool_use reply is asking to read the file precisely BECAUSE it
+    # does not yet know the exact bytes, and it fills operations with a
+    # placeholder to satisfy the shape. Judging that placeholder rejected the
+    # tool request three times over -- measured: content "need exact unique
+    # anchor for _read_file total_lines", old_text "x", refused with "matches
+    # 497 places" on every attempt, so the model could never obtain the bytes
+    # the refusal was demanding. The check that was added to make anchors
+    # correctable had made the correction itself unreachable.
+    if str(parsed.get("kind") or "") != "mutation":
+        return None
     for op in parsed.get("operations") or []:
         if not isinstance(op, dict):
             continue
