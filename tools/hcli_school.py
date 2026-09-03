@@ -48,13 +48,21 @@ LADDER = [
 
 #: Appended when a level is retried, so the next attempt carries what failed.
 RETRY_HINT = (
-    " Keep the edit under five lines and change one file."
+    " Change at most five lines of source and add at most one test function of"
+    " three lines or fewer."
 )
 
 TERMINAL = {"completed", "failed", "cancelled", "evacuated"}
 MAX_RETRIES = 2
 POLL_S = 20
-MISSION_TIMEOUT_S = 2400
+#: Bound on INACTIVITY, not on total time. A flat wall cut a mission off at
+#: 2400 s while it was still advancing through its repair chain -- two units
+#: failed, one ready, one pending -- and the driver then evacuated work that
+#: was making progress. Same error as a fixed sleep instead of a rendezvous.
+#: A repair round costs minutes at ~25 prompt tok/s, so allow a long quiet
+#: gap; the hard cap only stops a mission that is genuinely wedged.
+IDLE_TIMEOUT_S = 1800
+HARD_CAP_S = 10800
 
 
 def run(*argv: str, timeout: int = 300) -> subprocess.CompletedProcess:
@@ -102,14 +110,27 @@ def start(goal: str, level: int, attempt: int) -> None:
     run("replace", "--goal-file", str(path), timeout=600)
 
 
+def _last_activity() -> float:
+    """When the mission last produced anything: a receipt or a state write."""
+    newest = 0.0
+    for path in (REPO / ".hcli" / "receipts").glob("*.json"):
+        newest = max(newest, path.stat().st_mtime)
+    for path in (STATE, REPO / ".hcli" / "mission" / "events.jsonl"):
+        if path.exists():
+            newest = max(newest, path.stat().st_mtime)
+    return newest
+
+
 def wait_for_mission() -> str:
-    deadline = time.time() + MISSION_TIMEOUT_S
-    while time.time() < deadline:
+    hard_stop = time.time() + HARD_CAP_S
+    while time.time() < hard_stop:
         phase = str(read_json(STATE).get("phase") or "")
         if phase in TERMINAL:
             return phase
         if str(read_json(RESIDENT).get("state") or "") == "FAILED":
             return "failed"
+        if time.time() - _last_activity() > IDLE_TIMEOUT_S:
+            return "idle"
         time.sleep(POLL_S)
     return "timeout"
 
