@@ -1,0 +1,751 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-03T05:51:13Z",
+  "recorded_by": "tools/future/odyssey_wall.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "categories": [
+  "artifact",
+  "diagnosis",
+  "compilation",
+  "verification",
+  "measurement",
+  "deterministic_tools",
+  "cognition",
+  "friction",
+  "bookkeeping",
+  "coordination",
+  "science"
+ ],
+ "claim_boundary": "STATIC accounting structure. Every component is UNRECORDED or NOT_INSTRUMENTED; none carries a duration. The ladder table states what each rung REQUIRES, which is arithmetic on the target and not a forecast. No Odyssey was launched and no campaign wall is projected.",
+ "components": [
+  {
+   "cacheable": true,
+   "category": "artifact",
+   "evidence": "UNRECORDED",
+   "measured_seconds": null,
+   "name": "acquisition",
+   "note": "fetching a specimen; bounded by network, reusable across campaigns",
+   "parallel_by_construction": true,
+   "resident_dependent": false,
+   "substrate_event": "acquisition_wall"
+  },
+  {
+   "cacheable": true,
+   "category": "artifact",
+   "evidence": "UNRECORDED",
+   "measured_seconds": null,
+   "name": "census",
+   "note": "indexing a specimen's tensors; deterministic given the bytes",
+   "parallel_by_construction": true,
+   "resident_dependent": false,
+   "substrate_event": "census_wall"
+  },
+  {
+   "cacheable": true,
+   "category": "diagnosis",
+   "evidence": "UNRECORDED",
+   "measured_seconds": null,
+   "name": "doctor_fast",
+   "note": "",
+   "parallel_by_construction": true,
+   "resident_dependent": false,
+   "substrate_event": "doctor_fast_wall"
+  },
+  {
+   "cacheable": true,
+   "category": "diagnosis",
+   "evidence": "UNRECORDED",
+   "measured_seconds": null,
+   "name": "doctor_full",
+   "note": "",
+   "parallel_by_construction": true,
+   "resident_dependent": false,
+   "substrate_event": "doctor_full_wall"
+  },
+  {
+   "cacheable": false,
+   "category": "compilation",
+   "evidence": "UNRECORDED",
+   "measured_seconds": null,
+   "name": "gravity_search",
+   "note": "the search itself; the largest declared compile term",
+   "parallel_by_construction": true,
+   "resident_dependent": false,
+   "substrate_event": "gravity_search_wall"
+  },
+  {
+   "cacheable": false,
+   "category": "compilation",
+   "evidence": "UNRECORDED",
+   "measured_seconds": null,
+   "name": "gravity_pack",
+   "note": "",
+   "parallel_by_construction": true,
+   "resident_dependent": false,
+   "substrate_event": "gravity_pack_wall"
+  },
+  {
+   "cacheable": false,
+   "category": "verification",
+   "evidence": "UNRECORDED",
+   "measured_seconds": null,
+   "name": "gravity_verify",
+   "note": "",
+   "parallel_by_construction": true,
+   "resident_dependent": false,
+   "substrate_event": "gravity_verify_wall"
+  },
+  {
+   "cacheable": false,
+   "category": "compilation",
+   "evidence": "UNRECORDED",
+   "measured_seconds": null,
+   "name": "nx_lower",
+   "note": "",
+   "parallel_by_construction": true,
+   "resident_dependent": false,
+   "substrate_event": "nx_lower_wall"
+  },
+  {
+   "cacheable": false,
+   "category": "measurement",
+   "evidence": "UNRECORDED",
+   "measured_seconds": null,
+   "name": "kernel_probe",
+   "note": "needs an exclusive GPU lane; cannot overlap another GPU measurement",
+   "parallel_by_construction": false,
+   "resident_dependent": false,
+   "substrate_event": "kernel_probe_wall"
+  },
+  {
+   "cacheable": false,
+   "category": "measurement",
+   "evidence": "UNRECORDED",
+   "measured_seconds": null,
+   "name": "gpu_total",
+   "note": "every GPU-exclusive measurement, serialised against itself",
+   "parallel_by_construction": false,
+   "resident_dependent": false,
+   "substrate_event": "total_gpu_wall"
+  },
+  {
+   "cacheable": true,
+   "category": "deterministic_tools",
+   "evidence": "UNRECORDED",
+   "measured_seconds": null,
+   "name": "cpu_total",
+   "note": "",
+   "parallel_by_construction": true,
+   "resident_dependent": false,
+   "substrate_event": "total_cpu_wall"
+  },
+  {
+   "cacheable": false,
+   "category": "artifact",
+   "evidence": "UNRECORDED",
+   "measured_seconds": null,
+   "name": "retirement",
+   "note": "",
+   "parallel_by_construction": true,
+   "resident_dependent": false,
+   "substrate_event": "retirement_wall"
+  },
+  {
+   "cacheable": true,
+   "category": "cognition",
+   "evidence": "NOT_INSTRUMENTED",
+   "measured_seconds": null,
+   "name": "resident_prefill",
+   "note": "prompt/context prefill per turn; the stable-prefix reuse target",
+   "parallel_by_construction": false,
+   "resident_dependent": true,
+   "substrate_event": null
+  },
+  {
+   "cacheable": false,
+   "category": "cognition",
+   "evidence": "NOT_INSTRUMENTED",
+   "measured_seconds": null,
+   "name": "resident_decode",
+   "note": "reasoning and generation; the irreducible cognition this campaign protects",
+   "parallel_by_construction": false,
+   "resident_dependent": true,
+   "substrate_event": null
+  },
+  {
+   "cacheable": false,
+   "category": "friction",
+   "evidence": "NOT_INSTRUMENTED",
+   "measured_seconds": null,
+   "name": "tool_call_recovery",
+   "note": "malformed call, schema repair, re-probe -- each costs a full resident turn",
+   "parallel_by_construction": false,
+   "resident_dependent": true,
+   "substrate_event": null
+  },
+  {
+   "cacheable": true,
+   "category": "friction",
+   "evidence": "NOT_INSTRUMENTED",
+   "measured_seconds": null,
+   "name": "context_reconstruction",
+   "note": "rebuilding what the resident already knew; HCLI-owned, consumed not built here",
+   "parallel_by_construction": false,
+   "resident_dependent": true,
+   "substrate_event": null
+  },
+  {
+   "cacheable": false,
+   "category": "bookkeeping",
+   "evidence": "NOT_INSTRUMENTED",
+   "measured_seconds": null,
+   "name": "receipt_generation",
+   "note": "resident cognition spent writing evidence boilerplate",
+   "parallel_by_construction": true,
+   "resident_dependent": true,
+   "substrate_event": null
+  },
+  {
+   "cacheable": true,
+   "category": "bookkeeping",
+   "evidence": "NOT_INSTRUMENTED",
+   "measured_seconds": null,
+   "name": "result_ingestion",
+   "note": "copying numbers between files; deterministic and migratable off the resident",
+   "parallel_by_construction": true,
+   "resident_dependent": true,
+   "substrate_event": null
+  },
+  {
+   "cacheable": false,
+   "category": "coordination",
+   "evidence": "NOT_INSTRUMENTED",
+   "measured_seconds": null,
+   "name": "scheduler_idle",
+   "note": "gaps where a lane waits with nothing admitted; pure loss",
+   "parallel_by_construction": false,
+   "resident_dependent": false,
+   "substrate_event": null
+  },
+  {
+   "cacheable": false,
+   "category": "coordination",
+   "evidence": "NOT_INSTRUMENTED",
+   "measured_seconds": null,
+   "name": "dependency_wait",
+   "note": "a lane blocked on another lane's output; the serial critical path",
+   "parallel_by_construction": false,
+   "resident_dependent": false,
+   "substrate_event": null
+  },
+  {
+   "cacheable": false,
+   "category": "science",
+   "evidence": "NOT_INSTRUMENTED",
+   "measured_seconds": null,
+   "name": "failed_hypotheses",
+   "note": "experiments that produce a negative result; useful, not waste",
+   "parallel_by_construction": false,
+   "resident_dependent": true,
+   "substrate_event": null
+  },
+  {
+   "cacheable": true,
+   "category": "coordination",
+   "evidence": "NOT_INSTRUMENTED",
+   "measured_seconds": null,
+   "name": "duplicated_work",
+   "note": "two lanes deriving the same fact; pure loss",
+   "parallel_by_construction": true,
+   "resident_dependent": true,
+   "substrate_event": null
+  }
+ ],
+ "counts": {
+  "components": 22,
+  "measured": 0,
+  "with_a_substrate_event": 12,
+  "with_no_substrate_event": 10
+ },
+ "evidence_tier": "STATIC",
+ "instrumentation_order": {
+  "ordering_basis": "structural, not size",
+  "rows": [
+   {
+    "cannot_be_deleted_only_shortened": true,
+    "category": "friction",
+    "component": "tool_call_recovery",
+    "instrument_order": 1,
+    "invisible_to_the_substrate_today": true,
+    "moves_with_the_resident_model": true,
+    "on_serial_critical_path": true,
+    "why": "lands directly on the campaign wall; nothing records it, so instrumenting it comes before measuring it; scales with the resident model and must be normalised"
+   },
+   {
+    "cannot_be_deleted_only_shortened": true,
+    "category": "cognition",
+    "component": "resident_decode",
+    "instrument_order": 2,
+    "invisible_to_the_substrate_today": true,
+    "moves_with_the_resident_model": true,
+    "on_serial_critical_path": true,
+    "why": "lands directly on the campaign wall; nothing records it, so instrumenting it comes before measuring it; scales with the resident model and must be normalised"
+   },
+   {
+    "cannot_be_deleted_only_shortened": true,
+    "category": "science",
+    "component": "failed_hypotheses",
+    "instrument_order": 3,
+    "invisible_to_the_substrate_today": true,
+    "moves_with_the_resident_model": true,
+    "on_serial_critical_path": true,
+    "why": "lands directly on the campaign wall; nothing records it, so instrumenting it comes before measuring it; scales with the resident model and must be normalised"
+   },
+   {
+    "cannot_be_deleted_only_shortened": true,
+    "category": "coordination",
+    "component": "scheduler_idle",
+    "instrument_order": 4,
+    "invisible_to_the_substrate_today": true,
+    "moves_with_the_resident_model": false,
+    "on_serial_critical_path": true,
+    "why": "lands directly on the campaign wall; nothing records it, so instrumenting it comes before measuring it"
+   },
+   {
+    "cannot_be_deleted_only_shortened": true,
+    "category": "coordination",
+    "component": "dependency_wait",
+    "instrument_order": 5,
+    "invisible_to_the_substrate_today": true,
+    "moves_with_the_resident_model": false,
+    "on_serial_critical_path": true,
+    "why": "lands directly on the campaign wall; nothing records it, so instrumenting it comes before measuring it"
+   },
+   {
+    "cannot_be_deleted_only_shortened": false,
+    "category": "cognition",
+    "component": "resident_prefill",
+    "instrument_order": 6,
+    "invisible_to_the_substrate_today": true,
+    "moves_with_the_resident_model": true,
+    "on_serial_critical_path": true,
+    "why": "lands directly on the campaign wall; nothing records it, so instrumenting it comes before measuring it; cacheable, so it could be deleted rather than shortened; scales with the resident model and must be normalised"
+   },
+   {
+    "cannot_be_deleted_only_shortened": false,
+    "category": "friction",
+    "component": "context_reconstruction",
+    "instrument_order": 7,
+    "invisible_to_the_substrate_today": true,
+    "moves_with_the_resident_model": true,
+    "on_serial_critical_path": true,
+    "why": "lands directly on the campaign wall; nothing records it, so instrumenting it comes before measuring it; cacheable, so it could be deleted rather than shortened; scales with the resident model and must be normalised"
+   },
+   {
+    "cannot_be_deleted_only_shortened": true,
+    "category": "measurement",
+    "component": "kernel_probe",
+    "instrument_order": 8,
+    "invisible_to_the_substrate_today": false,
+    "moves_with_the_resident_model": false,
+    "on_serial_critical_path": true,
+    "why": "lands directly on the campaign wall"
+   },
+   {
+    "cannot_be_deleted_only_shortened": true,
+    "category": "measurement",
+    "component": "gpu_total",
+    "instrument_order": 9,
+    "invisible_to_the_substrate_today": false,
+    "moves_with_the_resident_model": false,
+    "on_serial_critical_path": true,
+    "why": "lands directly on the campaign wall"
+   },
+   {
+    "cannot_be_deleted_only_shortened": true,
+    "category": "bookkeeping",
+    "component": "receipt_generation",
+    "instrument_order": 10,
+    "invisible_to_the_substrate_today": true,
+    "moves_with_the_resident_model": true,
+    "on_serial_critical_path": false,
+    "why": "can overlap other work; nothing records it, so instrumenting it comes before measuring it; scales with the resident model and must be normalised"
+   },
+   {
+    "cannot_be_deleted_only_shortened": false,
+    "category": "bookkeeping",
+    "component": "result_ingestion",
+    "instrument_order": 11,
+    "invisible_to_the_substrate_today": true,
+    "moves_with_the_resident_model": true,
+    "on_serial_critical_path": false,
+    "why": "can overlap other work; nothing records it, so instrumenting it comes before measuring it; cacheable, so it could be deleted rather than shortened; scales with the resident model and must be normalised"
+   },
+   {
+    "cannot_be_deleted_only_shortened": false,
+    "category": "coordination",
+    "component": "duplicated_work",
+    "instrument_order": 12,
+    "invisible_to_the_substrate_today": true,
+    "moves_with_the_resident_model": true,
+    "on_serial_critical_path": false,
+    "why": "can overlap other work; nothing records it, so instrumenting it comes before measuring it; cacheable, so it could be deleted rather than shortened; scales with the resident model and must be normalised"
+   },
+   {
+    "cannot_be_deleted_only_shortened": true,
+    "category": "artifact",
+    "component": "retirement",
+    "instrument_order": 13,
+    "invisible_to_the_substrate_today": false,
+    "moves_with_the_resident_model": false,
+    "on_serial_critical_path": false,
+    "why": "can overlap other work"
+   },
+   {
+    "cannot_be_deleted_only_shortened": true,
+    "category": "compilation",
+    "component": "nx_lower",
+    "instrument_order": 14,
+    "invisible_to_the_substrate_today": false,
+    "moves_with_the_resident_model": false,
+    "on_serial_critical_path": false,
+    "why": "can overlap other work"
+   },
+   {
+    "cannot_be_deleted_only_shortened": true,
+    "category": "verification",
+    "component": "gravity_verify",
+    "instrument_order": 15,
+    "invisible_to_the_substrate_today": false,
+    "moves_with_the_resident_model": false,
+    "on_serial_critical_path": false,
+    "why": "can overlap other work"
+   },
+   {
+    "cannot_be_deleted_only_shortened": true,
+    "category": "compilation",
+    "component": "gravity_search",
+    "instrument_order": 16,
+    "invisible_to_the_substrate_today": false,
+    "moves_with_the_resident_model": false,
+    "on_serial_critical_path": false,
+    "why": "can overlap other work"
+   },
+   {
+    "cannot_be_deleted_only_shortened": true,
+    "category": "compilation",
+    "component": "gravity_pack",
+    "instrument_order": 17,
+    "invisible_to_the_substrate_today": false,
+    "moves_with_the_resident_model": false,
+    "on_serial_critical_path": false,
+    "why": "can overlap other work"
+   },
+   {
+    "cannot_be_deleted_only_shortened": false,
+    "category": "diagnosis",
+    "component": "doctor_full",
+    "instrument_order": 18,
+    "invisible_to_the_substrate_today": false,
+    "moves_with_the_resident_model": false,
+    "on_serial_critical_path": false,
+    "why": "can overlap other work; cacheable, so it could be deleted rather than shortened"
+   },
+   {
+    "cannot_be_deleted_only_shortened": false,
+    "category": "diagnosis",
+    "component": "doctor_fast",
+    "instrument_order": 19,
+    "invisible_to_the_substrate_today": false,
+    "moves_with_the_resident_model": false,
+    "on_serial_critical_path": false,
+    "why": "can overlap other work; cacheable, so it could be deleted rather than shortened"
+   },
+   {
+    "cannot_be_deleted_only_shortened": false,
+    "category": "deterministic_tools",
+    "component": "cpu_total",
+    "instrument_order": 20,
+    "invisible_to_the_substrate_today": false,
+    "moves_with_the_resident_model": false,
+    "on_serial_critical_path": false,
+    "why": "can overlap other work; cacheable, so it could be deleted rather than shortened"
+   },
+   {
+    "cannot_be_deleted_only_shortened": false,
+    "category": "artifact",
+    "component": "census",
+    "instrument_order": 21,
+    "invisible_to_the_substrate_today": false,
+    "moves_with_the_resident_model": false,
+    "on_serial_critical_path": false,
+    "why": "can overlap other work; cacheable, so it could be deleted rather than shortened"
+   },
+   {
+    "cannot_be_deleted_only_shortened": false,
+    "category": "artifact",
+    "component": "acquisition",
+    "instrument_order": 22,
+    "invisible_to_the_substrate_today": false,
+    "moves_with_the_resident_model": false,
+    "on_serial_critical_path": false,
+    "why": "can overlap other work; cacheable, so it could be deleted rather than shortened"
+   }
+  ],
+  "why_not_size": "sweeping each category's plausible share of a nominal 48 h and ranking by which can change the ladder rung was tried: with one uniform share range per category, all eleven reach the same rungs and the ordering is arbitrary. No size is known, so size cannot order the work.",
+  "worst_case_shape": "serial + invisible + not cacheable"
+ },
+ "ladder_requirements": [
+  {
+   "irreducible_serial_hours_at_that_work": 48.0,
+   "is_a_prediction": false,
+   "max_total_work_hours": 960.0,
+   "requirement": "total campaign work must not exceed 960.0 h if 5% of it is serial, because no concurrency goes below the serial part",
+   "serial_fraction": 0.05,
+   "target_hours": 48.0
+  },
+  {
+   "irreducible_serial_hours_at_that_work": 48.0,
+   "is_a_prediction": false,
+   "max_total_work_hours": 480.0,
+   "requirement": "total campaign work must not exceed 480.0 h if 10% of it is serial, because no concurrency goes below the serial part",
+   "serial_fraction": 0.1,
+   "target_hours": 48.0
+  },
+  {
+   "irreducible_serial_hours_at_that_work": 48.0,
+   "is_a_prediction": false,
+   "max_total_work_hours": 240.0,
+   "requirement": "total campaign work must not exceed 240.0 h if 20% of it is serial, because no concurrency goes below the serial part",
+   "serial_fraction": 0.2,
+   "target_hours": 48.0
+  },
+  {
+   "irreducible_serial_hours_at_that_work": 48.0,
+   "is_a_prediction": false,
+   "max_total_work_hours": 160.0,
+   "requirement": "total campaign work must not exceed 160.0 h if 30% of it is serial, because no concurrency goes below the serial part",
+   "serial_fraction": 0.3,
+   "target_hours": 48.0
+  },
+  {
+   "irreducible_serial_hours_at_that_work": 48.0,
+   "is_a_prediction": false,
+   "max_total_work_hours": 96.0,
+   "requirement": "total campaign work must not exceed 96.0 h if 50% of it is serial, because no concurrency goes below the serial part",
+   "serial_fraction": 0.5,
+   "target_hours": 48.0
+  },
+  {
+   "irreducible_serial_hours_at_that_work": 48.0,
+   "is_a_prediction": false,
+   "max_total_work_hours": 60.0,
+   "requirement": "total campaign work must not exceed 60.0 h if 80% of it is serial, because no concurrency goes below the serial part",
+   "serial_fraction": 0.8,
+   "target_hours": 48.0
+  },
+  {
+   "irreducible_serial_hours_at_that_work": 36.0,
+   "is_a_prediction": false,
+   "max_total_work_hours": 720.0,
+   "requirement": "total campaign work must not exceed 720.0 h if 5% of it is serial, because no concurrency goes below the serial part",
+   "serial_fraction": 0.05,
+   "target_hours": 36.0
+  },
+  {
+   "irreducible_serial_hours_at_that_work": 36.0,
+   "is_a_prediction": false,
+   "max_total_work_hours": 360.0,
+   "requirement": "total campaign work must not exceed 360.0 h if 10% of it is serial, because no concurrency goes below the serial part",
+   "serial_fraction": 0.1,
+   "target_hours": 36.0
+  },
+  {
+   "irreducible_serial_hours_at_that_work": 36.0,
+   "is_a_prediction": false,
+   "max_total_work_hours": 180.0,
+   "requirement": "total campaign work must not exceed 180.0 h if 20% of it is serial, because no concurrency goes below the serial part",
+   "serial_fraction": 0.2,
+   "target_hours": 36.0
+  },
+  {
+   "irreducible_serial_hours_at_that_work": 36.0,
+   "is_a_prediction": false,
+   "max_total_work_hours": 120.0,
+   "requirement": "total campaign work must not exceed 120.0 h if 30% of it is serial, because no concurrency goes below the serial part",
+   "serial_fraction": 0.3,
+   "target_hours": 36.0
+  },
+  {
+   "irreducible_serial_hours_at_that_work": 36.0,
+   "is_a_prediction": false,
+   "max_total_work_hours": 72.0,
+   "requirement": "total campaign work must not exceed 72.0 h if 50% of it is serial, because no concurrency goes below the serial part",
+   "serial_fraction": 0.5,
+   "target_hours": 36.0
+  },
+  {
+   "irreducible_serial_hours_at_that_work": 36.0,
+   "is_a_prediction": false,
+   "max_total_work_hours": 45.0,
+   "requirement": "total campaign work must not exceed 45.0 h if 80% of it is serial, because no concurrency goes below the serial part",
+   "serial_fraction": 0.8,
+   "target_hours": 36.0
+  },
+  {
+   "irreducible_serial_hours_at_that_work": 24.0,
+   "is_a_prediction": false,
+   "max_total_work_hours": 480.0,
+   "requirement": "total campaign work must not exceed 480.0 h if 5% of it is serial, because no concurrency goes below the serial part",
+   "serial_fraction": 0.05,
+   "target_hours": 24.0
+  },
+  {
+   "irreducible_serial_hours_at_that_work": 24.0,
+   "is_a_prediction": false,
+   "max_total_work_hours": 240.0,
+   "requirement": "total campaign work must not exceed 240.0 h if 10% of it is serial, because no concurrency goes below the serial part",
+   "serial_fraction": 0.1,
+   "target_hours": 24.0
+  },
+  {
+   "irreducible_serial_hours_at_that_work": 24.0,
+   "is_a_prediction": false,
+   "max_total_work_hours": 120.0,
+   "requirement": "total campaign work must not exceed 120.0 h if 20% of it is serial, because no concurrency goes below the serial part",
+   "serial_fraction": 0.2,
+   "target_hours": 24.0
+  },
+  {
+   "irreducible_serial_hours_at_that_work": 24.0,
+   "is_a_prediction": false,
+   "max_total_work_hours": 80.0,
+   "requirement": "total campaign work must not exceed 80.0 h if 30% of it is serial, because no concurrency goes below the serial part",
+   "serial_fraction": 0.3,
+   "target_hours": 24.0
+  },
+  {
+   "irreducible_serial_hours_at_that_work": 24.0,
+   "is_a_prediction": false,
+   "max_total_work_hours": 48.0,
+   "requirement": "total campaign work must not exceed 48.0 h if 50% of it is serial, because no concurrency goes below the serial part",
+   "serial_fraction": 0.5,
+   "target_hours": 24.0
+  },
+  {
+   "irreducible_serial_hours_at_that_work": 24.0,
+   "is_a_prediction": false,
+   "max_total_work_hours": 30.0,
+   "requirement": "total campaign work must not exceed 30.0 h if 80% of it is serial, because no concurrency goes below the serial part",
+   "serial_fraction": 0.8,
+   "target_hours": 24.0
+  },
+  {
+   "irreducible_serial_hours_at_that_work": 18.0,
+   "is_a_prediction": false,
+   "max_total_work_hours": 360.0,
+   "requirement": "total campaign work must not exceed 360.0 h if 5% of it is serial, because no concurrency goes below the serial part",
+   "serial_fraction": 0.05,
+   "target_hours": 18.0
+  },
+  {
+   "irreducible_serial_hours_at_that_work": 18.0,
+   "is_a_prediction": false,
+   "max_total_work_hours": 180.0,
+   "requirement": "total campaign work must not exceed 180.0 h if 10% of it is serial, because no concurrency goes below the serial part",
+   "serial_fraction": 0.1,
+   "target_hours": 18.0
+  },
+  {
+   "irreducible_serial_hours_at_that_work": 18.0,
+   "is_a_prediction": false,
+   "max_total_work_hours": 90.0,
+   "requirement": "total campaign work must not exceed 90.0 h if 20% of it is serial, because no concurrency goes below the serial part",
+   "serial_fraction": 0.2,
+   "target_hours": 18.0
+  },
+  {
+   "irreducible_serial_hours_at_that_work": 18.0,
+   "is_a_prediction": false,
+   "max_total_work_hours": 60.0,
+   "requirement": "total campaign work must not exceed 60.0 h if 30% of it is serial, because no concurrency goes below the serial part",
+   "serial_fraction": 0.3,
+   "target_hours": 18.0
+  },
+  {
+   "irreducible_serial_hours_at_that_work": 18.0,
+   "is_a_prediction": false,
+   "max_total_work_hours": 36.0,
+   "requirement": "total campaign work must not exceed 36.0 h if 50% of it is serial, because no concurrency goes below the serial part",
+   "serial_fraction": 0.5,
+   "target_hours": 18.0
+  },
+  {
+   "irreducible_serial_hours_at_that_work": 18.0,
+   "is_a_prediction": false,
+   "max_total_work_hours": 22.5,
+   "requirement": "total campaign work must not exceed 22.5 h if 80% of it is serial, because no concurrency goes below the serial part",
+   "serial_fraction": 0.8,
+   "target_hours": 18.0
+  },
+  {
+   "irreducible_serial_hours_at_that_work": 12.0,
+   "is_a_prediction": false,
+   "max_total_work_hours": 240.0,
+   "requirement": "total campaign work must not exceed 240.0 h if 5% of it is serial, because no concurrency goes below the serial part",
+   "serial_fraction": 0.05,
+   "target_hours": 12.0
+  },
+  {
+   "irreducible_serial_hours_at_that_work": 12.0,
+   "is_a_prediction": false,
+   "max_total_work_hours": 120.0,
+   "requirement": "total campaign work must not exceed 120.0 h if 10% of it is serial, because no concurrency goes below the serial part",
+   "serial_fraction": 0.1,
+   "target_hours": 12.0
+  },
+  {
+   "irreducible_serial_hours_at_that_work": 12.0,
+   "is_a_prediction": false,
+   "max_total_work_hours": 60.0,
+   "requirement": "total campaign work must not exceed 60.0 h if 20% of it is serial, because no concurrency goes below the serial part",
+   "serial_fraction": 0.2,
+   "target_hours": 12.0
+  },
+  {
+   "irreducible_serial_hours_at_that_work": 12.0,
+   "is_a_prediction": false,
+   "max_total_work_hours": 40.0,
+   "requirement": "total campaign work must not exceed 40.0 h if 30% of it is serial, because no concurrency goes below the serial part",
+   "serial_fraction": 0.3,
+   "target_hours": 12.0
+  },
+  {
+   "irreducible_serial_hours_at_that_work": 12.0,
+   "is_a_prediction": false,
+   "max_total_work_hours": 24.0,
+   "requirement": "total campaign work must not exceed 24.0 h if 50% of it is serial, because no concurrency goes below the serial part",
+   "serial_fraction": 0.5,
+   "target_hours": 12.0
+  },
+  {
+   "irreducible_serial_hours_at_that_work": 12.0,
+   "is_a_prediction": false,
+   "max_total_work_hours": 15.0,
+   "requirement": "total campaign work must not exceed 15.0 h if 80% of it is serial, because no concurrency goes below the serial part",
+   "serial_fraction": 0.8,
+   "target_hours": 12.0
+  }
+ ],
+ "odyssey_launched": false,
+ "projected_campaign_wall": {
+  "refused": "no Odyssey component has a measured duration: COMPILE_ECONOMICS.jsonl holds events whose wall_s is uniformly 0.0, and 10 of the components below have no substrate event at all. A projected campaign wall would be arithmetic over nothing. Instrument first; see instrumentation_order()."
+ },
+ "schema": "hawking.future.odyssey_wall.v1",
+ "seal_sha256": "6985e29005aec89dfe9aebeb52abe38eef4438c09a41e14d23bd42dcf6f0f7c7"
+}
