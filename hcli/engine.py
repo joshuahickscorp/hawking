@@ -260,6 +260,17 @@ _CTX_ESTIMATE_ERROR = 0.12
 _MAX_TOKENS_FLOOR = 512
 _MAX_TOKENS_CEILING = 8192
 _CHARS_PER_TOKEN = 3
+#: The estimator divides characters by a single constant, but the constant is
+#: not one number. Measured on the live resident: markdown prose runs near 3,
+#: Python source near 2.4 -- indentation and punctuation are their own tokens.
+#: A goal that read one 40 KB source file overflowed the window because the
+#: estimate said ~5300 tokens and the tokenizer said 6605, a 25% error against
+#: a 12% reserve, and the whole call was refused. So the ratio is LEARNED from
+#: the real counts the runtime reports, clamped to a sane band, and the
+#: MINIMUM ever seen is used -- the most pessimistic ratio is the safe one,
+#: since being over by a token costs the entire call.
+_CHARS_PER_TOKEN_FLOOR = 2.0
+_CHARS_PER_TOKEN_CEILING = 4.0
 _THINK_OPEN_RE = re.compile(r"<think\b", re.I)
 
 _PATH_TOKEN_RE = re.compile(
@@ -2070,7 +2081,8 @@ class Engine:
         evidence cannot exceed what the live slot can actually send.
         """
         budget = self._context_budget()
-        cap = max(0, int(budget.usable_input_tokens)) * _CHARS_PER_TOKEN
+        ratio = getattr(self, "_chars_per_token", None) or float(_CHARS_PER_TOKEN)
+        cap = int(max(0, int(budget.usable_input_tokens)) * ratio)
         cap = min(self.MAX_TOTAL_EVIDENCE_CHARS, cap)
 
         explicit = os.environ.get(
@@ -2560,7 +2572,24 @@ class Engine:
         chars = 0
         for message in messages:
             chars += len(str(message.get("content") or ""))
-        return max(1, chars // _CHARS_PER_TOKEN)
+        ratio = getattr(self, "_chars_per_token", None) or float(_CHARS_PER_TOKEN)
+        return max(1, int(chars / ratio))
+
+    def _calibrate_chars_per_token(self, real_prompt_tokens: int) -> None:
+        """Learn the ratio from a count the runtime actually measured.
+
+        Keeps the smallest ratio seen, which yields the largest token estimate
+        and so the most conservative completion budget.
+        """
+        rendered = getattr(self, "_last_rendered_prompt", "") or ""
+        if not rendered or not isinstance(real_prompt_tokens, int):
+            return
+        if real_prompt_tokens <= 0:
+            return
+        observed = len(rendered) / float(real_prompt_tokens)
+        observed = max(_CHARS_PER_TOKEN_FLOOR, min(_CHARS_PER_TOKEN_CEILING, observed))
+        current = getattr(self, "_chars_per_token", None) or float(_CHARS_PER_TOKEN)
+        self._chars_per_token = min(current, observed)
 
     def _commit_posted_prompt_estimate(
         self,
@@ -2839,6 +2868,8 @@ class Engine:
         finish_reason = choice0.get("finish_reason")
         usage = data.get("usage") or {}
         prompt_tokens = usage.get("prompt_tokens")
+        if isinstance(prompt_tokens, int):
+            self._calibrate_chars_per_token(prompt_tokens)
         if prompt_tokens is None:
             prompt_tokens = plan.get("prompt_tokens_est")
         completion_tokens = usage.get("completion_tokens")
