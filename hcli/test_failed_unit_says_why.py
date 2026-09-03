@@ -80,3 +80,37 @@ def test_the_reason_survives_a_reload(tmp_path):
     reloaded = Scheduler.from_workspace(tmp_path, runtime_count=1)
     ctx = reloaded.units["u1"].failure_context or {}
     assert ctx["validation"]["reason"] == "verifier red"
+
+
+def test_the_reason_is_bounded_so_repairs_cannot_compound(tmp_path):
+    """A repair carries its parent's context into its own prompt.
+
+    Unbounded, an error that quotes its parent's error nests once per repair
+    generation. Measured live: 2,531 prompt tokens on the base unit, 12,415 on
+    the third repair, entirely on nested copies of one preflight message -- and
+    every one of those units then failed the context preflight it was quoting.
+    """
+    from hcli.scheduler import FAILURE_REASON_CHARS
+
+    sched = _scheduler(tmp_path)
+    sched.units["u1"].status = "running"
+    sched.fail("u1", context={"error": "E" * 5000, "validation": {"ok": False}})
+
+    stored = (sched.units["u1"].failure_context or {})["error"]
+    assert len(stored) < FAILURE_REASON_CHARS + 32
+    assert stored.endswith("[truncated]"), "silent truncation hides that there was more"
+
+
+def test_a_short_reason_is_left_exactly_as_it_is(tmp_path):
+    """Negative control: bounding must not mangle the common case."""
+    sched = _scheduler(tmp_path)
+    sched.units["u1"].status = "running"
+    sched.fail("u1", context={"error": "verifier red"})
+    assert (sched.units["u1"].failure_context or {})["error"] == "verifier red"
+
+
+def test_non_string_context_survives_bounding(tmp_path):
+    sched = _scheduler(tmp_path)
+    sched.units["u1"].status = "running"
+    sched.fail("u1", context={"validation": {"ok": False, "reason": "x"}})
+    assert (sched.units["u1"].failure_context or {})["validation"]["reason"] == "x"
