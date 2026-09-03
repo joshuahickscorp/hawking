@@ -7,8 +7,8 @@ Nothing here is complete because a file exists: a field with no evidence prints 
 
 ## Status census
 
-    VERIFIED_INTEGRATED      25
-    VERIFIED_BUILT           19
+    VERIFIED_INTEGRATED      26
+    VERIFIED_BUILT           18
     BLOCKED_EVIDENCE         14
     BLOCKED_HARDWARE         13
     SCAFFOLDED               10
@@ -48,7 +48,7 @@ design, not by neglect: simulated is not measured.
     STATUS              VERIFIED_INTEGRATED
     defining property   1. Repair depth is bounded structurally, not by model discretion.
     implementation      hcli/scheduler.py, hcli/cli.py, hcli/delegate.py (+1 more)
-    real caller         tools/acceptance/agentos/harness.py:714
+    real caller         tools/acceptance/agentos/harness.py:717
     verifier            hcli/test_abort_checkpoint_atomicity.py:18, hcli/test_abort_checkpoint_atomicity.py:49, hcli/test_abort_checkpoint_atomicity.py:97 (+31 more)
     negative control    hcli/test_delegate.py, hcli/test_failed_unit_says_why.py
     receipt             absent
@@ -61,7 +61,7 @@ design, not by neglect: simulated is not measured.
     STATUS              VERIFIED_INTEGRATED
     defining property   For every durable field record:
     implementation      hcli/agentos/checkpoint.py, hcli/persist.py, hcli/agentos/checkpoint.py:909
-    real caller         hcli/agentos_cli.py:1220, tools/acceptance/agentos/harness.py:1570
+    real caller         hcli/agentos_cli.py:1220, tools/acceptance/agentos/harness.py:1573
     verifier            hcli/test_goal_bank.py:10, hcli/tests/test_core_authorities.py:22, hcli/tests/test_core_authorities.py:29 (+3 more)
     negative control    hcli/tests/test_core_authorities.py, tools/future/test_detached.py
     receipt             absent
@@ -139,7 +139,7 @@ design, not by neglect: simulated is not measured.
     STATUS              VERIFIED_INTEGRATED
     defining property   **Meaning:** Same mission survives process death.
     implementation      hcli/agentos/recovery.py, hcli/agentos/resident.py, hcli/agentos/recovery.py:420
-    real caller         hcli/agentos_cli.py:584, tools/acceptance/agentos/harness.py:1837
+    real caller         hcli/agentos_cli.py:584, tools/acceptance/agentos/harness.py:1840
     verifier            hcli/agentos/test_resident_mission_corruption.py:23, hcli/agentos/test_resident_orphan.py:17, hcli/agentos/test_resident_orphan.py:140 (+23 more)
     negative control    hcli/agentos/test_resident_mission_corruption.py, hcli/agentos/test_resident_orphan.py
     receipt             receipts/headless/HCLI_AGENTOS_RECOVERY_GATE.json
@@ -166,7 +166,7 @@ design, not by neglect: simulated is not measured.
     defining property   `BACKEND_UNAVAILABLE`
     implementation      hcli/backends.py, hcli/providers.py, hcli/engine.py (+1 more)
     real caller         hcli/mission.py:1504, hcli/runtime.py:520, hcli/runtime.py:879 (+2 more)
-    verifier            hcli/test_completion_budget_fits_the_window.py:21, hcli/test_completion_budget_fits_the_window.py:65, hcli/test_constrained_decoding.py:40 (+72 more)
+    verifier            hcli/test_completion_budget_fits_the_window.py:21, hcli/test_completion_budget_fits_the_window.py:65, hcli/test_constrained_decoding.py:40 (+73 more)
     negative control    hcli/test_completion_budget_fits_the_window.py, hcli/test_context_reduction.py
     receipt             absent
     evidence level      STATIC
@@ -179,7 +179,7 @@ design, not by neglect: simulated is not measured.
     defining property   **Meaning:** One context-budget authority drives root and worker admission.
     implementation      hcli/context_budget.py, hcli/engine.py, hcli/context_budget.py:476
     real caller         hcli/backends.py:1338, hcli/config.py:131, hcli/engine.py:2051 (+4 more)
-    verifier            hcli/test_completion_budget_fits_the_window.py:21, hcli/test_completion_budget_fits_the_window.py:65, hcli/test_constrained_decoding.py:50 (+76 more)
+    verifier            hcli/test_completion_budget_fits_the_window.py:21, hcli/test_completion_budget_fits_the_window.py:65, hcli/test_constrained_decoding.py:50 (+77 more)
     negative control    hcli/test_completion_budget_fits_the_window.py, hcli/test_context_reduction.py
     receipt             absent
     evidence level      STATIC
@@ -286,7 +286,7 @@ design, not by neglect: simulated is not measured.
     STATUS              VERIFIED_BUILT
     defining property   **Mission:** Find the smallest capability-preserving executable function, not merely the smallest file.
     implementation      tools/future/complete_ebpw.py, tools/future/complete_ebpw.py:193
-    real caller         tools/acceptance/flash/run_gates.py:940, tools/future/capability_byte_elimination.py:295
+    real caller         tools/acceptance/flash/run_gates.py:941, tools/future/capability_byte_elimination.py:295
     verifier            tools/future/test_complete_ebpw.py:14, tools/future/test_complete_ebpw.py:23, tools/future/test_complete_ebpw.py:56 (+5 more)
     negative control    tools/future/test_complete_ebpw.py, tools/future/test_experiment_policy.py
     receipt             receipts/future/COMPLETE_EBPW.json, receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json
@@ -299,7 +299,7 @@ design, not by neglect: simulated is not measured.
     STATUS              VERIFIED_INTEGRATED
     defining property   **Mission:** Find the smallest capability-preserving executable function, not merely the smallest file.
     implementation      hcli/agentos/flash_router_representation_ab.py, hcli/agentos/representation_ab.py, hcli/agentos/flash_router_representation_ab.py:137
-    real caller         hcli/agentos_cli.py:941, tools/acceptance/flash/run_gates.py:629
+    real caller         hcli/agentos_cli.py:941, tools/acceptance/flash/run_gates.py:630
     verifier            tools/acceptance/test_accepted_gates_show_their_evidence.py:30
     negative control    absent — no cited test proves it can fail
     receipt             absent
@@ -312,7 +312,7 @@ design, not by neglect: simulated is not measured.
     STATUS              VERIFIED_INTEGRATED
     defining property   **Mission:** Find the smallest capability-preserving executable function, not merely the smallest file.
     implementation      hcli/agentos/flash_science.py, hcli/agentos/flash_science.py:1100
-    real caller         hcli/agentos_cli.py:761, tools/acceptance/flash/run_gates.py:292
+    real caller         hcli/agentos_cli.py:761, tools/acceptance/flash/run_gates.py:293
     verifier            hcli/tests/test_agentos_general.py:265, hcli/tests/test_hcli_flash_science.py:14
     negative control    hcli/tests/test_agentos_general.py, hcli/tests/test_hcli_flash_science.py
     receipt             absent
@@ -325,7 +325,7 @@ design, not by neglect: simulated is not measured.
     STATUS              VERIFIED_BUILT
     defining property   ├── sparse-attention blocks
     implementation      tools/odyssey/noetic_compiler.py, hcli/agentos/flash_executable.py
-    real caller         tools/acceptance/flash/run_gates.py:752, tools/future/representation_lab.py:785, tools/odyssey/noetic_compiler.py:238 (+1 more)
+    real caller         tools/acceptance/flash/run_gates.py:753, tools/future/representation_lab.py:785, tools/odyssey/noetic_compiler.py:239 (+1 more)
     verifier            hcli/tests/test_hcli_flash_science.py:5, hcli/tests/test_hcli_science_boundaries.py:12, hcli/tests/test_hcli_science_boundaries.py:13 (+7 more)
     negative control    hcli/tests/test_hcli_flash_science.py, hcli/tests/test_hcli_science_boundaries.py
     receipt             absent
@@ -338,7 +338,7 @@ design, not by neglect: simulated is not measured.
     STATUS              VERIFIED_BUILT
     defining property   **Mission:** Find the smallest capability-preserving executable function, not merely the smallest file.
     implementation      hcli/agentos/flash_executable.py, hcli/agentos/flash_graph_component.py, hcli/agentos/flash_graph_component.py:399
-    real caller         hcli/agentos_cli.py:966, tools/acceptance/flash/run_gates.py:455
+    real caller         hcli/agentos_cli.py:966, tools/acceptance/flash/run_gates.py:456
     verifier            hcli/tests/test_hcli_flash_science.py:5, hcli/tests/test_hcli_science_boundaries.py:12, hcli/tests/test_hcli_science_boundaries.py:13 (+3 more)
     negative control    hcli/tests/test_hcli_flash_science.py, hcli/tests/test_hcli_science_boundaries.py
     receipt             absent
@@ -351,7 +351,7 @@ design, not by neglect: simulated is not measured.
     STATUS              VERIFIED_INTEGRATED
     defining property   ├── sparse-attention blocks
     implementation      tools/flash_organ_census.py, tools/gravity_verify_source.py, tools/gravity_verify_source.py:48 (+1 more)
-    real caller         tools/acceptance/flash/run_gates.py:189, tools/flash_organ_census.py:119
+    real caller         tools/acceptance/flash/run_gates.py:190, tools/flash_organ_census.py:119
     verifier            tools/acceptance/flash/test_source_verified_defining_property.py:77
     negative control    absent — no cited test proves it can fail
     receipt             receipts/headless/FLASH_ORGAN_CENSUS.json
@@ -407,7 +407,7 @@ design, not by neglect: simulated is not measured.
     STATUS              VERIFIED_BUILT
     defining property   **Mission:** Find the smallest capability-preserving executable function, not merely the smallest file.
     implementation      hcli/prefill_profile.py, hcli/prefill_profile.py:102
-    real caller         hcli/engine.py:3469
+    real caller         hcli/engine.py:3470
     verifier            hcli/test_prefix_and_prefill_instruments.py:14, hcli/test_prefix_and_prefill_instruments.py:113, hcli/test_prefix_and_prefill_instruments.py:121 (+3 more)
     negative control    hcli/test_prefix_and_prefill_instruments.py
     receipt             absent
@@ -459,7 +459,7 @@ design, not by neglect: simulated is not measured.
     STATUS              VERIFIED_BUILT
     defining property   **Mission:** Find the smallest capability-preserving executable function, not merely the smallest file.
     implementation      hcli/prefill_profile.py, hcli/hawking_native.py, hcli/prefill_profile.py:45
-    real caller         hcli/engine.py:3465
+    real caller         hcli/engine.py:3466
     verifier            hcli/test_prefix_and_prefill_instruments.py:14, hcli/test_prefix_and_prefill_instruments.py:112, hcli/test_prefix_and_prefill_instruments.py:121 (+4 more)
     negative control    hcli/test_prefix_and_prefill_instruments.py
     receipt             absent
@@ -472,7 +472,7 @@ design, not by neglect: simulated is not measured.
     STATUS              VERIFIED_BUILT
     defining property   **Mission:** Find the smallest capability-preserving executable function, not merely the smallest file.
     implementation      hcli/prefill_profile.py, hcli/prefill_profile.py:102
-    real caller         hcli/engine.py:3469
+    real caller         hcli/engine.py:3470
     verifier            hcli/test_prefix_and_prefill_instruments.py:14, hcli/test_prefix_and_prefill_instruments.py:113, hcli/test_prefix_and_prefill_instruments.py:121 (+3 more)
     negative control    hcli/test_prefix_and_prefill_instruments.py
     receipt             absent
@@ -567,7 +567,7 @@ design, not by neglect: simulated is not measured.
     STATUS              VERIFIED_BUILT
     defining property   **Mission:** Attack Hawking laws and search procedures themselves.
     implementation      tools/future/repro_science.py, tools/future/autonomy_scars.py, tools/future/autonomy_scars.py:1068
-    real caller         tools/acceptance/odyssey/run.py:561, tools/future/evidence_dag.py:1124, tools/future/resident_supervisor.py:893 (+2 more)
+    real caller         tools/acceptance/odyssey/run.py:564, tools/future/evidence_dag.py:1124, tools/future/resident_supervisor.py:893 (+2 more)
     verifier            tools/future/test_autonomy_scars.py:10, tools/future/test_autonomy_scars.py:21, tools/future/test_autonomy_scars.py:33 (+13 more)
     negative control    tools/future/test_autonomy_trial.py, tools/future/test_evidence_dag.py
     receipt             absent
@@ -580,7 +580,7 @@ design, not by neglect: simulated is not measured.
     STATUS              VERIFIED_BUILT
     defining property   **Mission:** Ask what Hawking already learned and make it reduce search cost on unseen models.
     implementation      tools/future/qualification_pipeline.py, tools/future/qualification_pipeline.py:289
-    real caller         tools/acceptance/odyssey/run.py:463, tools/future/consolidated_run.py:891, tools/future/protected_window.py:365
+    real caller         tools/acceptance/odyssey/run.py:466, tools/future/consolidated_run.py:891, tools/future/protected_window.py:365
     verifier            tools/future/test_capability_stages.py:25, tools/future/test_orchestration.py:179, tools/future/test_protected_scheduler.py:18 (+2 more)
     negative control    tools/future/test_capability_stages.py, tools/future/test_orchestration.py
     receipt             absent
@@ -593,7 +593,7 @@ design, not by neglect: simulated is not measured.
     STATUS              VERIFIED_INTEGRATED
     defining property   **Mission:** Build the first real school of model/device facts.
     implementation      tools/odyssey_ctl.py, tools/odyssey_census.py, hcli/odyssey.py (+1 more)
-    real caller         hcli/acquisition.py:172, tools/acceptance/odyssey/run.py:304
+    real caller         hcli/acquisition.py:172, tools/acceptance/odyssey/run.py:307
     verifier            hcli/test_acquisition.py:94, hcli/test_odyssey.py:34
     negative control    hcli/test_odyssey.py
     receipt             absent
@@ -603,11 +603,11 @@ design, not by neglect: simulated is not measured.
 
 ## E. HARDWARE COMPILER / U50DD PREBOARD
 
-16 capabilities. BLOCKED_HARDWARE=12, SCAFFOLDED=3, VERIFIED_BUILT=1
+16 capabilities. BLOCKED_HARDWARE=12, SCAFFOLDED=3, VERIFIED_INTEGRATED=1
 
 ### FPGA_HWIR
 
-    STATUS              VERIFIED_BUILT
+    STATUS              VERIFIED_INTEGRATED
     defining property   negotiated_generation,
     implementation      tools/future/hwir.py, hcli/agentos/fpga_preboard.py, tools/future/hwir.py:862
     real caller         tools/accelerator/backend_contract.py:1094, tools/accelerator/fusion_bridge.py:1444, tools/future/p6_projection.py:857 (+1 more)
@@ -615,8 +615,8 @@ design, not by neglect: simulated is not measured.
     negative control    hcli/tests/test_hcli_science_boundaries.py, tools/accelerator/test_fusion_bridge.py
     receipt             absent
     evidence level      STATIC
-    limitations         acceptance not demonstrated: wired is not accepted: no receipt or measurement demonstrates the gate's own acceptance criterion. A receipt on the topic is not the bar.
-    integration         wired=True accepted=False
+    limitations         none recorded
+    integration         wired=True accepted=True
 
 ### FPGA_LINK_SIM
 

@@ -8,12 +8,12 @@ components yet' from work that genuinely needs an experiment, wall time, or sili
 ## Blocker census
 
     SOFTWARE_CONNECTION_REMAINING    10
-    EXPERIMENTATION_REQUIRED         19
+    EXPERIMENTATION_REQUIRED         18
     LONG_RUN_EVIDENCE_REQUIRED       14
     PHYSICAL_HARDWARE_REQUIRED       14
     UNKNOWN_RESEARCH                 1
 
-    TOTAL REMAINING                  58
+    TOTAL REMAINING                  57
 
 SOFTWARE_CONNECTION_REMAINING = 10 is the
 number this campaign exists to drive toward zero. Every other class is honest
@@ -82,7 +82,7 @@ must physically exist, or a question whose answer nobody has.
     implementation      hcli/vmcp/__init__.py, hcli/vmcp_adapter.py
     unlocks             0 declared dependencies
 
-## EXPERIMENTATION_REQUIRED (19)
+## EXPERIMENTATION_REQUIRED (18)
 
 ### AGENTOS_DETERMINISTIC_OFFLOAD
     missing             wired and verified; its acceptance criterion has never been run
@@ -106,12 +106,6 @@ must physically exist, or a question whose answer nobody has.
     missing             wired and verified; its acceptance criterion has never been run
     shortest verifier   hcli/tests/test_hcli_flash_science.py:5 (+5 more)
     implementation      hcli/agentos/flash_executable.py, hcli/agentos/flash_graph_component.py (+1 more)
-    unlocks             1 declared dependencies
-
-### FPGA_HWIR
-    missing             wired and verified; its acceptance criterion has never been run
-    shortest verifier   hcli/agentos/test_fpga_preboard.py:5 (+13 more)
-    implementation      tools/future/hwir.py, hcli/agentos/fpga_preboard.py (+1 more)
     unlocks             1 declared dependencies
 
 ### HCLI_MIXED_MAX

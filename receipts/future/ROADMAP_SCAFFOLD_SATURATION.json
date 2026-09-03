@@ -14,7 +14,7 @@
     "base_commit": "caf83078f",
     "graph": "civilization/CAPABILITY_GRAPH.json",
     "graph_generated_by": "tools/roadmap/auditor.py",
-    "head": "c8e27de90ffeb9b9113447de37626e9a1799014c"
+    "head": "b3977e34c8914a3d382e136e64e671d136f35042"
   },
   "externally_blocked": [
     {
@@ -79,10 +79,10 @@
       "ABSENT": 1,
       "BLOCKED_EXTERNAL": 14,
       "BLOCKED_HARDWARE": 13,
-      "BUILT": 25,
+      "BUILT": 26,
       "SCAFFOLDED": 10,
       "UNREACHABLE": 1,
-      "WIRED": 19
+      "WIRED": 18
     },
     "gates_total": 83,
     "movable_gates": 56,
@@ -170,7 +170,6 @@
       "FLASH_COMPLETE_EBPW_LE_1",
       "FLASH_FULL_NOETIC_EXECUTABLE",
       "FLASH_NATIVE_NF_KERNEL",
-      "FPGA_HWIR",
       "HCLI_MIXED_MAX",
       "HCLI_SELF_OPTIMIZATION_BOOTSTRAP",
       "HCLI_STATUS_PHYSICAL",
@@ -187,13 +186,13 @@
       "U50_MIXED_APPLE_FPGA_GRAPH",
       "VMCP_PTY_CAPTURE"
     ],
-    "wired_but_not_accepted_count": 20
+    "wired_but_not_accepted_count": 19
   },
   "unreachable": [
     "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE"
   ],
   "work": {
-    "commits": 188,
+    "commits": 211,
     "new_crates": [
       "crates/hawking-index-query/Cargo.toml"
     ],
@@ -203,6 +202,7 @@
       "hcli/test_capability_callsite_reachability.py",
       "hcli/test_checkpoint.py",
       "hcli/test_cognition_unit_concurrency.py",
+      "hcli/test_completion_budget_fits_the_window.py",
       "hcli/test_constrained_decoding.py",
       "hcli/test_context_compiler_runtime.py",
       "hcli/test_context_memory.py",
@@ -227,6 +227,7 @@
       "hcli/test_native_token_budget_clamp.py",
       "hcli/test_negative_science_runtime.py",
       "hcli/test_obligation_work_gate_pairing.py",
+      "hcli/test_observations_can_be_shed.py",
       "hcli/test_prefix_and_prefill_instruments.py",
       "hcli/test_qwen38_prefill_pipeline.py",
       "hcli/test_recovery_fixture_does_not_leak.py",
@@ -258,6 +259,7 @@
       "tools/acceptance/context/test_gates.py",
       "tools/acceptance/flash/test_source_verified_defining_property.py",
       "tools/acceptance/odyssey/test_acceptance.py",
+      "tools/acceptance/test_accepted_gates_show_their_evidence.py",
       "tools/acceptance/test_flash.py",
       "tools/acceptance/test_lake_acceptance.py",
       "tools/acceptance/vmcp/test_acceptance.py",
@@ -292,6 +294,7 @@
       "tools/product/test_product.py",
       "tools/roadmap/test_boot_questions.py",
       "tools/roadmap/test_index_parity.py",
+      "tools/roadmap/test_lineage.py",
       "tools/roadmap/test_recompile.py",
       "tools/roadmap/test_roadmap_graph.py",
       "tools/roadmap/test_saturation.py",
@@ -333,6 +336,8 @@
       "tools/acceptance/flash/__init__.py",
       "tools/acceptance/flash/__main__.py",
       "tools/acceptance/flash/run_gates.py",
+      "tools/acceptance/fpga/__init__.py",
+      "tools/acceptance/fpga/run_gates.py",
       "tools/acceptance/lake/__init__.py",
       "tools/acceptance/lake/__main__.py",
       "tools/acceptance/lake/common.py",
@@ -397,6 +402,7 @@
       "tools/roadmap/groups.py",
       "tools/roadmap/hardware.py",
       "tools/roadmap/index_client.py",
+      "tools/roadmap/lineage.py",
       "tools/roadmap/parse.py",
       "tools/roadmap/reach.py",
       "tools/roadmap/recompile.py",
@@ -427,7 +433,7 @@
       "tools/vmcp/receipt.py",
       "tools/vmcp/tool_doctor.py"
     ],
-    "python_lines_added": 92709,
+    "python_lines_added": 94341,
     "rust_lines_added": 7983
   }
 }

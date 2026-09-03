@@ -589,8 +589,22 @@ def build_rest() -> list[Path]:
         p = base / name
         p.write_text(text)
         written.append(p)
+    # The three capability_graph pointer keys belong to `python3 -m tools.roadmap
+    # --build`, not to this renderer, and rewriting the whole file used to drop
+    # them. That made the pipeline order-dependent in both directions: build must
+    # run FIRST so this reads a current graph, but build also had to run LAST to
+    # put the pointers back. Carry what we do not own instead.
     state = REPO / "civilization" / "ROADMAP_STATE.json"
-    state.write_text(json.dumps(render_state(), indent=2, sort_keys=True) + "\n")
+    doc = render_state()
+    if state.is_file():
+        try:
+            previous = json.loads(state.read_text())
+        except ValueError:
+            previous = {}
+        for key in ("capability_graph", "capability_graph_schema", "capability_graph_law"):
+            if key in previous:
+                doc.setdefault(key, previous[key])
+    state.write_text(json.dumps(doc, indent=2, sort_keys=True) + "\n")
     written.append(state)
     return written
 
