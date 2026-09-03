@@ -204,14 +204,39 @@ def main() -> int:
 
     rungs = ladder()
     index = next((i for i, (lvl, _) in enumerate(rungs) if lvl >= args.start_level), 0)
-    while index < len(rungs):
+    passes = 0
+    while True:
         rungs = ladder()
+        if not rungs:
+            time.sleep(POLL_S)
+            continue
         if index >= len(rungs):
-            break
+            # The ladder is a loop, not a queue. An unattended run that exits
+            # when the last rung is reached stops improving at exactly the
+            # point the rungs start being about HCLI rather than the harness.
+            # New rungs can be appended to the ladder file while this runs.
+            index = 0
+            passes += 1
+            print(f"--- ladder pass {passes} complete, restarting", flush=True)
+            if args.once:
+                return 0
         level, goal = rungs[index]
         for attempt in range(1, MAX_RETRIES + 2):
             text = goal if attempt == 1 else goal + RETRY_HINT
-            row = cycle(level, text, attempt)
+            try:
+                row = cycle(level, text, attempt)
+            except Exception as exc:  # noqa: BLE001 - unattended: never die
+                # One bad cycle must not end the run. Record it and carry on;
+                # a driver that exits on an exception is a driver that is not
+                # running by morning.
+                record({
+                    "level": level, "attempt": attempt, "phase": "driver_error",
+                    "goal": text, "landed": False,
+                    "error": f"{type(exc).__name__}: {exc}"[:400],
+                })
+                print(f"L{level} attempt {attempt}: DRIVER ERROR {type(exc).__name__}: {exc}", flush=True)
+                time.sleep(POLL_S)
+                continue
             print(
                 f"L{level} attempt {attempt}: phase={row['phase']} "
                 f"kind={row['kind']} landed={row['landed']} "
@@ -222,8 +247,7 @@ def main() -> int:
                 break
         index += 1
         if args.once:
-            break
-    return 0
+            return 0
 
 
 if __name__ == "__main__":
