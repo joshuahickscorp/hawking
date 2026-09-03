@@ -225,4 +225,9 @@ def test_an_unmounted_lake_is_not_reported_as_an_empty_lake(monkeypatch, tmp_pat
         "an unmounted volume reported a specimen count; absent is not empty"
     )
     assert reg["manifests"] is None
-    assert "not the same as an empty lake" in reg["why"]
+    # The invariant is the SEMANTIC claim, not one module's phrasing: the counts
+    # above are the load-bearing assertion, and the message must say why they are
+    # null rather than zero. Asserted against the owning module's wording, which
+    # is now the single authority for it.
+    why = reg["why"].lower()
+    assert "not mounted" in why and "empty" in why, reg["why"]
