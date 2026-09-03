@@ -661,6 +661,70 @@ class _PhaseHeartbeat:
         return False
 
 
+_IDENT_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_]{3,}")
+_DEF_RE = re.compile(r"\s*(?:def|class|fn|pub fn)\s")
+
+
+def _focused_excerpt(content: str, prompt: str, limit: int, path: str) -> str:
+    """The part of the file the request is ABOUT, not the first `limit` bytes.
+
+    Truncating from the top is the same defect as an fs.read with no offset: a
+    goal about `_read_file` at line 509 of a 100 KB file received the first
+    5,913 characters -- about line 150 -- and had to spend a tool round asking
+    for the rest of a file it had already been handed.
+
+    The window is centred on the densest run of identifiers the prompt and the
+    file share, so the excerpt is the neighbourhood of the thing being changed.
+    Falls back to the head when nothing matches, which is no worse than before.
+    """
+    if len(content) <= limit:
+        return content
+
+    wanted = {w for w in _IDENT_RE.findall(prompt or "") if not w.isupper()}
+    lines = content.splitlines(keepends=True)
+    if not wanted or not lines:
+        return content[:limit]
+
+    hits = [i for i, line in enumerate(lines) if any(w in line for w in wanted)]
+    if not hits:
+        return content[:limit]
+
+    # A DEFINITION outweighs a mention. Density alone chose the block where
+    # fs.read is registered over the `_read_file` that implements it -- both
+    # mention the name, only one is the thing being changed.
+    def score(i: int) -> tuple:
+        line = lines[i]
+        defines = bool(_DEF_RE.match(line)) and any(w in line for w in wanted)
+        near = sum(1 for j in hits if abs(j - i) <= 60)
+        return (1 if defines else 0, near)
+
+    best = max(hits, key=score)
+
+    # Grow outward from the chosen line, and NEVER trim with a head slice
+    # afterwards: expansion is symmetric, so `[:limit]` cuts the tail and can
+    # drop the very line the window was centred on. Stop growing at the limit
+    # instead, and keep the anchor line even if it alone exceeds it.
+    lo = hi = best
+    size = len(lines[best])
+    while lo > 0 or hi < len(lines) - 1:
+        grew = False
+        if hi < len(lines) - 1 and size + len(lines[hi + 1]) <= limit:
+            hi += 1
+            size += len(lines[hi])
+            grew = True
+        if lo > 0 and size + len(lines[lo - 1]) <= limit:
+            lo -= 1
+            size += len(lines[lo])
+            grew = True
+        if not grew:
+            break
+    body = "".join(lines[lo:hi + 1])
+    return (
+        f"# {path} lines {lo + 1}-{hi + 1} of {len(lines)}, "
+        f"selected around the code this request names\n" + body
+    )
+
+
 def _python_syntax_violation(content: str) -> Optional[str]:
     """The reply's Python operations must compile, or say why they do not.
 
@@ -2389,9 +2453,7 @@ class Engine:
             except Exception:
                 continue
 
-            content = content[
-                :per_file_limit
-            ]
+            content = _focused_excerpt(content, prompt, per_file_limit, str(path))
 
             rel = str(
                 path.relative_to(

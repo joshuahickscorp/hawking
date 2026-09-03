@@ -71,7 +71,10 @@ POLL_S = 20
 #: was making progress. Same error as a fixed sleep instead of a rendezvous.
 #: A repair round costs minutes at ~25 prompt tok/s, so allow a long quiet
 #: gap; the hard cap only stops a mission that is genuinely wedged.
-IDLE_TIMEOUT_S = 1800
+#: A model call costs ~200 s, so 15 minutes is four calls of headroom. 30
+#: minutes was a wedged mission burning half an hour of a run that only gets so
+#: many cycles in a night.
+IDLE_TIMEOUT_S = 900
 HARD_CAP_S = 10800
 
 
@@ -288,6 +291,7 @@ def main() -> int:
             if args.once:
                 return 0
         level, goal = rungs[index]
+        last_error = None
         for attempt in range(1, MAX_RETRIES + 2):
             text = goal if attempt == 1 else goal + RETRY_HINT
             try:
@@ -312,6 +316,16 @@ def main() -> int:
             )
             if row["landed"]:
                 break
+            # A retry that reproduces the SAME error is a cycle spent to learn
+            # nothing. Three attempts per rung is 3x the wall clock for one
+            # result when the failure is deterministic, and a night only holds
+            # so many cycles. Retry a failure that MOVED; abandon one that did
+            # not.
+            error = (row.get("error") or "")[:200]
+            if attempt > 1 and error and error == last_error:
+                print(f"L{level}: identical failure on retry, moving on", flush=True)
+                break
+            last_error = error
         index += 1
         if args.once:
             return 0
