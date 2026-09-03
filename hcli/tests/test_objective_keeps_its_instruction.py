@@ -74,5 +74,47 @@ class TestObjectiveKeepsItsInstruction(unittest.TestCase):
             refuse_goal_dump(packet, ROOT)
 
 
+class TestWholePacketKeepsTheInstruction(unittest.TestCase):
+    """At the level that actually failed.
+
+    The first fix only covered `_excise_root_goal` on the bare description and
+    changed NOTHING in three live runs, because compile_worker_context
+    sanitizes the whole assembled prompt a second time. On the whole prompt the
+    remainder is the entire packet, so the whole-objective test cannot fire and
+    the objective loses its instruction anyway.
+
+    Testing the helper proved the helper. This tests the packet.
+    """
+
+    def _packet(self, description, root):
+        from hcli.goal import compile_worker_context
+        from hcli.workunit import WorkUnit
+
+        wu = WorkUnit(id="implement", role="implementation",
+                      description=description, status="ready")
+        return compile_worker_context(
+            wu, {}, phase="running", units={wu.id: wu}, steering=[], root_goal=root
+        ).prompt
+
+    def test_the_assembled_prompt_still_carries_the_instruction(self):
+        prompt = self._packet("obligations=G001 " + ROOT, ROOT)
+        self.assertIn(ROOT, prompt)
+        self.assertNotIn(ROOT_GOAL_OMITTED, prompt)
+
+    def test_a_root_quoted_in_steering_is_still_excised_from_the_packet(self):
+        """Negative control at the same level: the leak must still be stopped."""
+        from hcli.goal import compile_worker_context
+        from hcli.workunit import WorkUnit
+
+        wu = WorkUnit(id="implement", role="implementation",
+                      description="edit foo.py", status="ready")
+        prompt = compile_worker_context(
+            wu, {}, phase="running", units={wu.id: wu},
+            steering=["[constraint] " + ROOT], root_goal=ROOT,
+        ).prompt
+        self.assertNotIn(ROOT, prompt)
+        self.assertIn(ROOT_GOAL_OMITTED, prompt)
+
+
 if __name__ == "__main__":
     unittest.main()

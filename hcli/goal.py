@@ -837,13 +837,26 @@ def root_is_the_whole_objective(text: str, root_goal: str) -> bool:
 def _excise_root_goal(text: str, root_goal: str) -> str:
     raw = str(text or "")
     root = str(root_goal or "").strip()
-    if not raw or not root or len(root) < MIN_ROOT_EXCISE:
+    if not raw or not root or len(root) < MIN_ROOT_EXCISE or root not in raw:
         return raw
     if root_is_the_whole_objective(raw, root):
         return raw
-    if root in raw:
-        return raw.replace(root, ROOT_GOAL_OMITTED)
-    return raw
+    # Line-aware, because this runs TWICE: once on the bare description and
+    # again on the whole assembled prompt (compile_worker_context line 1452).
+    # On the whole prompt the remainder is the entire packet, so the
+    # whole-objective test above cannot fire and the objective lost its
+    # instruction anyway -- which is why fixing only the description path
+    # changed nothing in three live runs.
+    out: List[str] = []
+    for line in raw.splitlines(keepends=True):
+        stripped = line.strip()
+        if root in line and stripped.startswith("OBJECTIVE:"):
+            body = stripped[len("OBJECTIVE:"):]
+            if root_is_the_whole_objective(body, root):
+                out.append(line)
+                continue
+        out.append(line.replace(root, ROOT_GOAL_OMITTED))
+    return "".join(out)
 
 
 def _redact_goal_dump(text: str) -> str:
