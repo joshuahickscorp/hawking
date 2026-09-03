@@ -534,7 +534,14 @@ def _read_file(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def _search_files(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
-    root = context.resolve_read_path(args.get("root") or ".")
+    # `path` is an alias for `root`. fs.read, fs.list and fs.write all name
+    # their location `path`; search alone called it `root`, so the consistent
+    # guess was a hard schema error -- "unexpected properties ['path']" --
+    # which the model read as ZERO MATCHES and reported as an absence of
+    # evidence. It then hedged a correct answer because its own search had
+    # apparently found nothing. One inconsistent word cost a whole round and
+    # the confidence of the answer.
+    root = context.resolve_read_path(args.get("root") or args.get("path") or ".")
     if not root.is_dir():
         raise NotADirectoryError(root)
     needle = str(args.get("pattern") or "")
@@ -1797,13 +1804,13 @@ def default_tool_registry(
     registry.register(ToolSpec(
         "fs.search", "Search bounded text files under a read root.",
         {"type": "object", "required": ["pattern"], "additionalProperties": False,
-         "properties": {"pattern": {"type": "string"}, "root": {"type": "string"}, "glob": {"type": "string"}, "max_results": {"type": "integer"}}},
+         "properties": {"pattern": {"type": "string"}, "root": {"type": "string"}, "path": {"type": "string"}, "glob": {"type": "string"}, "max_results": {"type": "integer"}}},
         handler=_search_files,
     ))
     registry.register(ToolSpec(
         "filesystem.search", "Search bounded text files under a read root.",
         {"type": "object", "required": ["pattern"], "additionalProperties": False,
-         "properties": {"pattern": {"type": "string"}, "root": {"type": "string"}, "glob": {"type": "string"}, "max_results": {"type": "integer"}}},
+         "properties": {"pattern": {"type": "string"}, "root": {"type": "string"}, "path": {"type": "string"}, "glob": {"type": "string"}, "max_results": {"type": "integer"}}},
         handler=_search_files,
     ))
     # `path` is NOT required: the handler already defaults to the workspace root
