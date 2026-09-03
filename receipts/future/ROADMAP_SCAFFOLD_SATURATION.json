@@ -14,7 +14,7 @@
     "base_commit": "caf83078f",
     "graph": "civilization/CAPABILITY_GRAPH.json",
     "graph_generated_by": "tools/roadmap/auditor.py",
-    "head": "c2d7fb3eb7a3faa2513f999c356a2ff4f6240ea4"
+    "head": "f97dec9d2b0c2bbff574c28989d55ca00cafcf88"
   },
   "externally_blocked": [
     {
@@ -193,7 +193,7 @@
     "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE"
   ],
   "work": {
-    "commits": 224,
+    "commits": 228,
     "new_crates": [
       "crates/hawking-index-query/Cargo.toml"
     ],
@@ -270,6 +270,7 @@
       "tools/audit/test_reachability_triage.py",
       "tools/doctor/test_doctor.py",
       "tools/future/test_capability_eval.py",
+      "tools/future/test_decision_value.py",
       "tools/future/test_ebpw_bar_reachability.py",
       "tools/future/test_experiment_policy.py",
       "tools/future/test_experiment_receipt.py",
@@ -278,6 +279,7 @@
       "tools/future/test_hwir_sealed_predictions.py",
       "tools/future/test_law_scar_registry.py",
       "tools/future/test_modellake_lifecycle.py",
+      "tools/future/test_odyssey_wall.py",
       "tools/future/test_physical_compiler_predict.py",
       "tools/future/test_representation_lab.py",
       "tools/future/test_science_corpus.py",
@@ -304,6 +306,7 @@
       "tools/sovereign/test_g011_streaming.py",
       "tools/test_hardware_wake.py",
       "tools/test_lifecycle_events.py",
+      "tools/test_odyssey_costmodel.py",
       "tools/test_pareto_selection.py",
       "tools/theia/test_authority.py",
       "tools/theia/test_boundary.py",
@@ -368,10 +371,12 @@
       "tools/doctor/zeros.py",
       "tools/future/capability_eval.py",
       "tools/future/conftest.py",
+      "tools/future/decision_value.py",
       "tools/future/experiment_policy.py",
       "tools/future/experiment_receipt.py",
       "tools/future/fpga_partition.py",
       "tools/future/modellake_lifecycle.py",
+      "tools/future/odyssey_wall.py",
       "tools/future/physical_compiler_predict.py",
       "tools/future/representation_lab.py",
       "tools/future/science_corpus.py",
@@ -437,7 +442,7 @@
       "tools/vmcp/receipt.py",
       "tools/vmcp/tool_doctor.py"
     ],
-    "python_lines_added": 95686,
+    "python_lines_added": 96584,
     "rust_lines_added": 7983
   }
 }
