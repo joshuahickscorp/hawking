@@ -118,6 +118,50 @@ Never optimize one by silently degrading another. The quantity being maximized i
   ~3 chars per token, Python source ~2.4. Sizing a reserve for the last payload
   instead of the worst one fails on the payload that matters.
 
+## Defects found by running the ladder
+
+Thirteen, in the order the machine surfaced them. Every one sat BETWEEN the
+model and the task. None was the model being weak.
+
+| # | defect | commit |
+|---|---|---|
+| 1 | contract called `tests` optional; the verifier requires them, so `accepted=0` was structural | `1c746a27d` |
+| 2 | token estimate calibrated on prose, applied to source: 25% under-count, context overflow | `b34f9e294` |
+| 3 | reserve sized for the last payload, not the worst -- same overflow again | (same) |
+| 4 | the instruction was excised from the worker's own OBJECTIVE line | `3ec9049c3` |
+| 5 | ...and again on the whole assembled prompt, so fix 4 changed nothing for three runs | `78d8c30fc` |
+| 6 | a directory launch dropped the sealed profile's capabilities: the grammar channel never ran | `b4ee8f21b` |
+| 7 | `fs.search` named its location `root` while every sibling used `path`; the schema error read as "zero matches" | `134eccdda` |
+| 8 | one tool observation could occupy the entire input window | (engine) |
+| 9 | counting characters cannot size a window: exact tokenization instead | (engine) |
+| 10 | `fs.read` had no offset, so deep code was unreachable in a 188 KB file | `43b827129` |
+| 11 | `grammar_enforced` was never recorded, so a malformed reply could not be diagnosed | `424c289d7` |
+| 12 | the JSON mask checked only a token's FIRST character; BPE tails broke JSON while it reported enforcement | `ca1dd50c3` |
+| 13 | raw control characters were legal inside a JSON string | `6446f4428` |
+
+Three of these were fixes for problems a previous fix of mine created. Two of
+my own tests were vacuous and only mutation checks caught them -- both tested a
+helper instead of the path that actually failed.
+
+## What the model actually did
+
+Level 1 (read and explain): PASSED. Correct answer on why `pid_is_alive` reaps
+before testing liveness, and it correctly flagged its own evidence as weak
+because a broken tool had told it there were zero matches.
+
+Level 3 (patch + test): one genuine attempt. It produced a real `mutation`,
+patched the source AND the test, and named a test -- the combination acceptance
+requires and which no run had ever produced. The source patch was CORRECT and
+compiled. The test patch dropped three closing parens and failed `py_compile`,
+so the verifier rolled the whole mutation back on deterministic evidence.
+
+The repair then returned `kind: answer` carrying operations, which are never
+applied to disk, and the mission failed. `accepted` is still 0.
+
+Standing weakness, and the first that is genuinely about the model: it writes
+short patches correctly and long verbatim code inside a JSON string
+unreliably.
+
 ## Ladder progress
 
 Levels from the campaign directive. Level 1 is read-and-explain, and it took
