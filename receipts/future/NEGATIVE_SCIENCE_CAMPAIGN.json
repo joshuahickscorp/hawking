@@ -1,0 +1,84 @@
+{
+ "_doc": "Killed mechanisms from the non-HCLI/non-Odyssey campaign. Query before every expensive hypothesis. A new architecture reopens a kill only if it invalidates the old premise, which each entry states explicitly.",
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-03T06:37:10Z",
+  "recorded_by": "claude/non-hcli-campaign",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Each kill names the measurement or proof that produced it and the condition that would reopen it. None is an opinion about difficulty.",
+ "entries": [
+  {
+   "evidence": "tools/future/fpga_partition.py, tools/future/test_fpga_partition.py::test_no_fpga_speed_can_create_or_destroy_a_win",
+   "id": "NS-fpga-rate-cannot-create-a-win",
+   "killed_by": "The break-even is C < W and the FPGA/Apple rate ratio r appears nowhere in C. No value of r -- not 1e-6, not 1e6 -- moves the system into APPLE_ONLY. r swings the speedup 14.19x and decides nothing; the link ratio swings it 2.0x and decides everything.",
+   "mechanism": "measuring FPGA throughput first, to decide whether an FPGA architecture exists",
+   "premise": "the variable with the largest effect on the outcome is the one to measure first",
+   "reopens_if": "the cost model gains a term in which the compute ratio appears in the break-even",
+   "transferable_as": "In any two-domain offload, a variable absent from the break-even inequality can only SIZE a win. It can never create or destroy one, so it is never the first measurement."
+  },
+  {
+   "evidence": "tools/future/complete_ebpw.py:bar_reachability, receipts/future/FLASH_EBPW_BAR_REACHABILITY.json",
+   "id": "NS-flash-ebpw-le-1-by-mlp-density",
+   "killed_by": "With the ENTIRE MLP at zero bytes -- a bound no compression scheme can beat, since stored weights cannot occupy negative space -- complete_ebpw is still 1.545 against a threshold of 1. The attention+deltanet term alone at Q4 is 1.55x the whole byte budget. The lever's full remaining range moves the total only 3.136 -> 1.864.",
+   "mechanism": "driving MLP bits-per-weight down to close FLASH_COMPLETE_EBPW_LE_1",
+   "premise": "the MLP is 63.6% of the parameters, so MLP density is the lever that closes the gate",
+   "reopens_if": "attention/deltanet drops below Q4, or the threshold is deliberately changed",
+   "transferable_as": "Before optimising a term, set it to its physical bound and check whether the REMAINDER already exceeds the target. If it does, the term is the wrong lever at any efficiency."
+  },
+  {
+   "evidence": "tools/future/fpga_partition.py:hbm_capacity_report, receipts/future/FPGA_PARTITION_ENVELOPE.json",
+   "id": "NS-obvious-hbm-resident-set-fits",
+   "killed_by": "Measured from the indexed model: the non-bulk families total 10,974,396,408 bytes against 8,589,934,592 bytes of HBM. They OVERFLOW by 2,384,461,816 bytes. HBM holds 2.39% of the 359,999,963,128-byte body.",
+   "mechanism": "placing everything that is not MoE experts or the n-gram table in U50 HBM",
+   "premise": "the non-bulk families are small, so the residency question is trivial",
+   "reopens_if": "the body changes, or a larger-capacity board is selected",
+   "transferable_as": "Residency on a scarce domain is a value-ranked selection problem even when the candidate set looks obviously small. Size-rank it and it does not fit."
+  },
+  {
+   "evidence": "tools/future/decision_value.py, tools/future/test_decision_value.py",
+   "id": "NS-rank-measurements-by-output-swing",
+   "killed_by": "Swing and decision power are different quantities and can be anti-correlated. The FPGA case has the 14x variable reaching two decisions and the 2x variable reaching three including the one that kills the design.",
+   "mechanism": "ordering an experiment plan by which variable moves the output most",
+   "premise": "the biggest effect is the most informative measurement",
+   "reopens_if": "never; this is a property of decision boundaries, not of any one model",
+   "transferable_as": "Rank candidate measurements by DECISION POWER first and magnitude only as a tie-break. An input that cannot cross a decision boundary anywhere in its plausible range is a refinement, not an experiment."
+  },
+  {
+   "evidence": "tools/future/odyssey_wall.py:instrumentation_order",
+   "id": "NS-uniform-share-sweep-orders-instrumentation",
+   "killed_by": "Applying one uniform share range to every category makes all eleven reach exactly the same rungs, so the ordering is arbitrary. It is the honest answer to a question asked with no information in it.",
+   "mechanism": "ranking which wall component to instrument by sweeping each category's plausible share",
+   "premise": "sweeping shares and seeing which moves the target rung orders the work",
+   "reopens_if": "per-category share ranges become measured rather than assumed",
+   "transferable_as": "A sensitivity sweep whose ranges are assumed rather than measured cannot rank anything. Rank by STRUCTURE that is known -- serial vs concurrent, observable vs invisible, cacheable vs irreducible."
+  },
+  {
+   "evidence": "receipts/future/ODYSSEY_WALL_INSTRUMENTATION.json, tools/test_odyssey_costmodel.py",
+   "id": "NS-odyssey-wall-projectable-from-compile-economics",
+   "killed_by": "Every one of the 9,573 rows has wall_s exactly 0.0, across 72.47 hours of timestamps, and every row was tagged _evidence MEASURED. The run log's only timing field is the boolean False on all 116,517 rows carrying it. No duration exists anywhere in the substrate.",
+   "mechanism": "projecting Odyssey campaign wall from the compile-economics ledger",
+   "premise": "COMPILE_ECONOMICS.jsonl holds 9,573 events across 6 patients, so it holds the timings",
+   "reopens_if": "a completion event carrying a real duration is emitted",
+   "transferable_as": "A ledger's row count is not evidence that it holds the quantity it is named for. Check the DISTRIBUTION of the field before building on it: a single distinct value across thousands of rows is a latch, not a measurement."
+  },
+  {
+   "evidence": "tools/roadmap/index_client.py:artifact_session_dir, tools/roadmap/test_facts_cache.py",
+   "id": "NS-audit-cache-directory-is-safe-to-share",
+   "killed_by": "SourceView.prefetch reads the WORKING TREE first and only falls back to HEAD blobs. The auditor therefore reads acceptance receipts off disk, and the key (head_commit, include_assemble, roadmap, code_digest) covers none of them. A shared cache would serve the graph from before the last receipt was written, leaving a gate open with nothing to indicate why. The per-PID directory is what prevents it.",
+   "mechanism": "making the roadmap audit's disk cache stable across processes",
+   "premise": "the audit cache key is content-addressed and flock-protected, so the directory can be shared",
+   "reopens_if": "the audit cache key grows a digest of the worktree files the auditor reads",
+   "transferable_as": "A content-addressed cache is only as sound as the completeness of its key. Before sharing one, enumerate every input the computation READS, not every input it is documented to depend on."
+  }
+ ],
+ "entry_count": 7,
+ "evidence_tier": "STATIC",
+ "git_head": "b1cdc5830c4fa4b8154aee458f4014766c260002",
+ "relationship_to_the_odyssey_ledger": "workspace/campaign/odyssey/NEGATIVE_SCIENCE.json is the Odyssey campaign's store and is not written here. This file uses the SAME schema so the two merge without translation, and records kills produced outside that campaign's ownership.",
+ "schema": "hawking.odyssey.negative_science.v1",
+ "seal_sha256": "360a88f4ee773260bf99ff30bd11acc91ae91edae1f88de5cf4fbdab87c08558"
+}
