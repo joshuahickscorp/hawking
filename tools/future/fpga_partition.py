@@ -371,6 +371,92 @@ def preboard_link_constant_audit() -> dict[str, Any]:
     }
 
 
+#: Which sealed U50 prediction pins each unpinned model input. hwir already
+#: pre-registers the device coefficients with falsifiers; what was missing is the
+#: statement of WHICH of them decides the architecture.
+PINNED_BY = {
+    "t_link_over_apple": (
+        "u50.coeff.host_device_bytes_per_modelled_cycle",
+        "u50.coeff.host_device_queue_cycles",
+    ),
+    "setup": ("u50.coeff.host_device_queue_cycles",),
+    "r_fpga_over_apple": (
+        "u50.coeff.hbm_bytes_per_modelled_cycle",
+        "u50.coeff.fabric_bytes_per_modelled_cycle",
+    ),
+}
+
+#: Both ratios are FPGA-or-link over APPLE. The denominator is measurable on this
+#: host today -- it needs no board, only an exclusive GPU lane -- and the board
+#: supplies only the numerator. Half of every ratio is already reachable.
+DENOMINATOR_IS_LOCAL = (
+    "r and t are both <something>/apple_effective_rate. The Apple denominator is a "
+    "local measurement gated on an exclusive benchmark lane, not on the U50. "
+    "Measuring it before the board arrives halves the remaining unknown in both "
+    "ratios and cannot be contaminated by the board's absence."
+)
+
+
+def sensitivity(W: float, activation_bytes: float, reduction_bytes: float,
+                r_grid: Iterable[float] = R_GRID, t_grid: Iterable[float] = T_GRID,
+                setup: float = 0.0) -> list[dict[str, Any]]:
+    """Rank the unknowns by how much the ANSWER moves, not by how unknown they are.
+
+    An experiment pack ordered by curiosity measures the wrong thing first. For
+    each input, hold the others at their grid median and sweep it: report the
+    speedup swing and which PHASES become reachable.
+
+    The ordering result is not the obvious one. r moves the speedup by ~14x and t
+    by only ~2x, but r cannot reach APPLE_ONLY at any value -- it does not appear
+    in C, and the break-even is C < W. So the FPGA's own speed can only size a
+    win; it can never create or destroy one. The link decides whether there is an
+    architecture at all, and that is what the board must settle first.
+    """
+    r_list, t_list = sorted(r_grid), sorted(t_grid)
+    r_mid, t_mid = r_list[len(r_list) // 2], t_list[len(t_list) // 2]
+
+    def row(name: str, values: list[float], fn) -> dict[str, Any]:
+        out = [fn(v) for v in values]
+        speeds = [x["speedup"] for x in out]
+        phases = {x["phase"] for x in out}
+        return {
+            "input": name,
+            "swept_over": [values[0], values[-1]],
+            "speedup_min": min(speeds),
+            "speedup_max": max(speeds),
+            "speedup_swing": max(speeds) / min(speeds) if min(speeds) > 0 else float("inf"),
+            "phases_reachable": sorted(phases),
+            "changes_phase": len(phases) > 1,
+            "pinned_by_sealed_predictions": list(PINNED_BY.get(name, ())),
+            "resolvable_without_the_board": name in ("r_fpga_over_apple", "t_link_over_apple"),
+            "how": DENOMINATOR_IS_LOCAL if name in ("r_fpga_over_apple", "t_link_over_apple")
+                   else "needs measured DMA submission and completion cost on the board",
+        }
+
+    def at(r: float, t: float, s: float) -> dict[str, Any]:
+        C = transport_cost(activation_bytes, reduction_bytes, t, s)
+        return {"speedup": speedup(W, r, C), "phase": phase(W, r, C)}
+
+    rows = [
+        row("r_fpga_over_apple", r_list, lambda r: at(r, t_mid, setup)),
+        row("t_link_over_apple", t_list, lambda t: at(r_mid, t, setup)),
+        row("setup", [0.0, 0.1 * W, 0.5 * W, W, 2.0 * W],
+            lambda sv: at(r_mid, t_mid, sv)),
+    ]
+    # Rank by what can KILL the design, then by what sizes the win. Ordering by
+    # swing alone puts r first because it moves the speedup 14x -- but r appears
+    # nowhere in C, and the break-even is C < W, so NO value of r can ever make
+    # the FPGA stop helping or start helping. The FPGA's own speed sizes the win;
+    # only the link can decide there is one. A pre-board pack must measure what
+    # can falsify the architecture before what merely scales it.
+    for row_ in rows:
+        row_["can_falsify_the_architecture"] = "APPLE_ONLY" in row_["phases_reachable"]
+    rows.sort(key=lambda x: (x["can_falsify_the_architecture"], x["speedup_swing"]), reverse=True)
+    for i, r in enumerate(rows, 1):
+        r["measure_order"] = i
+    return rows
+
+
 def build() -> Path:
     from tools.future._common import write_receipt
 
@@ -402,6 +488,23 @@ def build() -> Path:
             **env.value,
         },
         "preboard_link_constant_audit": preboard_link_constant_audit(),
+        "experiment_pack": {
+            "purpose": (
+                "The minimal discriminating measurement set, DERIVED from which "
+                "unpinned input moves the answer -- not a wishlist. Ordered by what "
+                "can falsify the architecture, then by what sizes the win."
+            ),
+            "ordering_result": (
+                "r (FPGA rate / Apple rate) swings the speedup ~14x and t (link rate "
+                "/ Apple rate) only ~2x, yet t is measured FIRST: r does not appear "
+                "in C, and the break-even is C < W, so no value of r can put the "
+                "system into APPLE_ONLY. The FPGA's own speed sizes a win and can "
+                "never create or destroy one. Only the link decides whether there is "
+                "an architecture to build."
+            ),
+            "apple_denominator_is_local": DENOMINATOR_IS_LOCAL,
+            "rows": sensitivity(per_layer_W, per_layer_W * 0.001, per_layer_W * 0.001),
+        },
         "claim_boundary": (
             "COST_MODEL over MEASURED bytes and UNPINNED rate ratios. The capacity "
             "arithmetic is derived from an indexed model on disk and is exact. Every "

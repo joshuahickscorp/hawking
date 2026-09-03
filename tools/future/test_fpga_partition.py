@@ -211,3 +211,29 @@ def test_the_audit_does_not_mistake_an_output_label_for_input_provenance():
     assert a["has_input_provenance_tagging"] is False
     assert all(n == 0 for n in a["input_provenance_occurrences"].values())
     assert a["output_claim_labels_present"]["DERIVED"] > 0
+
+
+def test_no_fpga_speed_can_create_or_destroy_a_win():
+    """r does not appear in C, and the break-even is C < W. A theorem, not a grid
+    artifact: the FPGA's own rate sizes the win and can never decide there is one."""
+    for t in (1e-6, 0.001, 0.01, 1.0, 1e6):
+        C = P.transport_cost(A, R, t=t)
+        verdicts = {P.helps(W, C) for _ in (0,)}          # helps() ignores r by construction
+        assert len(verdicts) == 1
+        phases = {P.phase(W, r, C) for r in (1e-6, 0.1, 1.0, 10.0, 1e6)}
+        # r may move between the helping phases, but never in or out of APPLE_ONLY.
+        assert ("APPLE_ONLY" in phases) == (not P.helps(W, C))
+        if P.helps(W, C):
+            assert "APPLE_ONLY" not in phases
+
+
+def test_the_experiment_pack_measures_what_can_kill_the_design_first():
+    rows = P.sensitivity(1.0, 0.001, 0.001)
+    assert rows[0]["can_falsify_the_architecture"] is True
+    by_name = {r["input"]: r for r in rows}
+    assert by_name["r_fpga_over_apple"]["can_falsify_the_architecture"] is False
+    assert by_name["r_fpga_over_apple"]["speedup_swing"] > by_name["t_link_over_apple"]["speedup_swing"]
+    assert by_name["r_fpga_over_apple"]["measure_order"] > by_name["t_link_over_apple"]["measure_order"], \
+        "ranked by swing instead of by what can falsify the architecture"
+    for r in rows:
+        assert r["pinned_by_sealed_predictions"], f"{r['input']} names no sealed prediction"

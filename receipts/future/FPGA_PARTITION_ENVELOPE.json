@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-03T05:04:57Z",
+  "recorded_at": "2026-09-03T05:10:10Z",
   "recorded_by": "tools/future/fpga_partition.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -63,6 +63,83 @@
  },
  "claim_boundary": "COST_MODEL over MEASURED bytes and UNPINNED rate ratios. The capacity arithmetic is derived from an indexed model on disk and is exact. Every partition number is a surface over ratios nobody can measure without the board, and Conclusion.as_prediction() raises rather than reporting one as a rate. No tok/s, no GB/s, no Fmax, no utilisation.",
  "evidence_tier": "COST_MODEL",
+ "experiment_pack": {
+  "apple_denominator_is_local": "r and t are both <something>/apple_effective_rate. The Apple denominator is a local measurement gated on an exclusive benchmark lane, not on the U50. Measuring it before the board arrives halves the remaining unknown in both ratios and cannot be contaminated by the board's absence.",
+  "ordering_result": "r (FPGA rate / Apple rate) swings the speedup ~14x and t (link rate / Apple rate) only ~2x, yet t is measured FIRST: r does not appear in C, and the break-even is C < W, so no value of r can put the system into APPLE_ONLY. The FPGA's own speed sizes a win and can never create or destroy one. Only the link decides whether there is an architecture to build.",
+  "purpose": "The minimal discriminating measurement set, DERIVED from which unpinned input moves the answer -- not a wishlist. Ordered by what can falsify the architecture, then by what sizes the win.",
+  "rows": [
+   {
+    "can_falsify_the_architecture": true,
+    "changes_phase": true,
+    "how": "r and t are both <something>/apple_effective_rate. The Apple denominator is a local measurement gated on an exclusive benchmark lane, not on the U50. Measuring it before the board arrives halves the remaining unknown in both ratios and cannot be contaminated by the board's absence.",
+    "input": "t_link_over_apple",
+    "measure_order": 1,
+    "phases_reachable": [
+     "APPLE_ONLY",
+     "COMPUTE_BALANCED",
+     "TRANSPORT_DOMINATED"
+    ],
+    "pinned_by_sealed_predictions": [
+     "u50.coeff.host_device_bytes_per_modelled_cycle",
+     "u50.coeff.host_device_queue_cycles"
+    ],
+    "resolvable_without_the_board": true,
+    "speedup_max": 1.9999600007999838,
+    "speedup_min": 1.0,
+    "speedup_swing": 1.9999600007999838,
+    "swept_over": [
+     0.001,
+     100.0
+    ]
+   },
+   {
+    "can_falsify_the_architecture": true,
+    "changes_phase": true,
+    "how": "needs measured DMA submission and completion cost on the board",
+    "input": "setup",
+    "measure_order": 2,
+    "phases_reachable": [
+     "APPLE_ONLY",
+     "COMPUTE_BALANCED",
+     "TRANSPORT_DOMINATED"
+    ],
+    "pinned_by_sealed_predictions": [
+     "u50.coeff.host_device_queue_cycles"
+    ],
+    "resolvable_without_the_board": false,
+    "speedup_max": 1.984126984126984,
+    "speedup_min": 1.0,
+    "speedup_swing": 1.984126984126984,
+    "swept_over": [
+     0.0,
+     54645918.666666664
+    ]
+   },
+   {
+    "can_falsify_the_architecture": false,
+    "changes_phase": true,
+    "how": "r and t are both <something>/apple_effective_rate. The Apple denominator is a local measurement gated on an exclusive benchmark lane, not on the U50. Measuring it before the board arrives halves the remaining unknown in both ratios and cannot be contaminated by the board's absence.",
+    "input": "r_fpga_over_apple",
+    "measure_order": 3,
+    "phases_reachable": [
+     "COMPUTE_BALANCED",
+     "FPGA_LIMITED"
+    ],
+    "pinned_by_sealed_predictions": [
+     "u50.coeff.hbm_bytes_per_modelled_cycle",
+     "u50.coeff.fabric_bytes_per_modelled_cycle"
+    ],
+    "resolvable_without_the_board": true,
+    "speedup_max": 15.070921985815596,
+    "speedup_min": 1.0619690154922539,
+    "speedup_swing": 14.191489361702121,
+    "swept_over": [
+     0.0625,
+     16.0
+    ]
+   }
+  ]
+ },
  "hardware_measured": false,
  "not_a_board_result": true,
  "partition_envelope": {
@@ -1427,6 +1504,6 @@
   "why_they_are_different": "DERIVED there is DERIVED = \"[D]\" (line 23), stamped on emitted dicts. It says what the RESULT may claim, never where the INPUT came from."
  },
  "schema": "hawking.future.fpga_partition.v1",
- "seal_sha256": "aa64e81cf4220063479ad3aba7e3fb14efd7f110e527c0a955e45b2413392036",
+ "seal_sha256": "72c4f14aabe0aaf76504eb21cf72ce0413bcf69d7ae5312b5215a6a642487360",
  "u50_present": false
 }
