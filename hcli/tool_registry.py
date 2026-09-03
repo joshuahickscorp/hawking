@@ -97,7 +97,11 @@ _SAFE_SHELL_COMMANDS = frozenset(
 )
 _SAFE_GIT_COMMANDS = frozenset({"status", "diff", "log", "show", "rev-parse"})
 _MAX_READ_BYTES = 2 * 1024 * 1024
-_MAX_SEARCH_FILES = 20_000
+#: Lowered from 20,000. With the byte cap in place a rare pattern over the repo
+#: root still cost 5.7 s at 20,000 files; a code search does not need that
+#: breadth, and the result already reports `truncated` so a caller can narrow
+#: the root rather than be told a silent lie.
+_MAX_SEARCH_FILES = 5_000
 _MAX_LIST_DIRECTORIES = 20_000
 
 
@@ -565,6 +569,21 @@ def _read_file(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+#: A search reads candidates whole, so an unbounded file size is an unbounded
+#: search. Measured: one fs.search took 23.5 s against a 50 ms budget because
+#: `glob` defaults to `*` and the walk read model artifacts under workspace/.
+_MAX_SEARCH_FILE_BYTES = 2_000_000
+_SEARCH_SKIP_DIRS = {
+    ".git", ".venv", "__pycache__", "node_modules", ".cache",
+    "target", ".worktrees",
+}
+_SEARCH_SKIP_SUFFIXES = {
+    ".safetensors", ".bin", ".gguf", ".pt", ".pth", ".onnx", ".npy", ".npz",
+    ".so", ".dylib", ".a", ".o", ".zip", ".tar", ".gz", ".zst", ".png",
+    ".jpg", ".jpeg", ".pdf", ".mp4", ".mov", ".wav",
+}
+
+
 def _search_files(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
     # `path` is an alias for `root`. fs.read, fs.list and fs.write all name
     # their location `path`; search alone called it `root`, so the consistent
@@ -583,15 +602,31 @@ def _search_files(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
     limit = max(1, min(1000, int(args.get("max_results") or 100)))
     matches: List[Dict[str, Any]] = []
     files_seen = 0
+    skipped_large = 0
     for dirpath, dirnames, filenames in os.walk(root):
-        dirnames[:] = sorted(name for name in dirnames if name not in {".git", ".venv", "__pycache__"})
+        dirnames[:] = sorted(
+            name for name in dirnames if name not in _SEARCH_SKIP_DIRS
+        )
         for filename in sorted(filenames):
             if not Path(filename).match(glob):
                 continue
+            path = Path(dirpath) / filename
+            # Bound the BYTES, not only the file count. The count was already
+            # capped and a search still took 23.5 s, because `glob` defaults to
+            # `*` and every candidate was read WHOLE -- including multi-gigabyte
+            # model artifacts under workspace/. Source files that a search is
+            # for are kilobytes; anything above the cap is a specimen, not code.
+            try:
+                if path.stat().st_size > _MAX_SEARCH_FILE_BYTES:
+                    skipped_large += 1
+                    continue
+            except OSError:
+                continue
+            if path.suffix.lower() in _SEARCH_SKIP_SUFFIXES:
+                continue
             files_seen += 1
             if files_seen > _MAX_SEARCH_FILES:
-                return {"root": str(root), "pattern": needle, "matches": matches, "truncated": True, "files_seen": files_seen}
-            path = Path(dirpath) / filename
+                return {"root": str(root), "pattern": needle, "matches": matches, "truncated": True, "files_seen": files_seen, "skipped_large": skipped_large}
             try:
                 data = path.read_text(encoding="utf-8", errors="replace")
             except OSError:
