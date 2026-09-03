@@ -214,6 +214,35 @@ Rules:
 - do not include reasoning_content, hidden reasoning, chain-of-thought, or <think>
 """
 
+_OBSERVATION_HEADER = "OBSERVATIONS (tool results, this goal):"
+_OBSERVATION_SEP = "\n\n----- "
+
+
+def _observation_blocks(trailing: str) -> List[str]:
+    """Split the observations tail into one entry per tool result.
+
+    Splitting on the rendered separator rather than re-deriving from the
+    observation list: this operates on the block that will actually be posted,
+    which is the only thing whose size the budget cares about.
+    """
+    if not trailing or _OBSERVATION_HEADER not in trailing:
+        return []
+    body = trailing.split(_OBSERVATION_HEADER, 1)[1]
+    parts = body.split(_OBSERVATION_SEP)
+    return [p for p in (part.strip() for part in parts) if p]
+
+
+def _join_observations(blocks: List[str]) -> str:
+    if not blocks:
+        return ""
+    rendered = "\n\n----- ".join(blocks)
+    return (
+        f"{_OBSERVATION_HEADER}\n"
+        f"[earlier tool results dropped to fit the context window]\n\n"
+        f"----- {rendered}"
+    )
+
+
 _MAX_TOKENS_FLOOR = 512
 _MAX_TOKENS_CEILING = 8192
 _CHARS_PER_TOKEN = 3
@@ -3130,18 +3159,33 @@ class Engine:
 
     def _fit_payload_to_budget(
         self,
-        build: Callable[[Any, Any], Dict[str, Any]],
+        build: Callable[..., Dict[str, Any]],
         evidence: Any,
         context_memory: Any,
+        trailing: str = "",
     ) -> Tuple[Dict[str, Any], Optional[Dict[str, Any]]]:
-        """Build the payload, shrinking re-derivable context until it fits."""
+        """Build the payload, shrinking re-derivable context until it fits.
+
+        `trailing` -- the accumulated tool observations -- is re-derivable too,
+        and it was the one growing block the ladder could not touch. Twelve
+        model calls succeeded at ~2,600 prompt tokens and then the thirteenth
+        was refused at 14,135, because observations accumulate across rounds and
+        nothing could shed them. Evidence would be dropped to zero while the
+        observations that actually caused the overflow were left untouched.
+
+        Observations are shed NEWEST-KEEPING: the last tool result is the one
+        the model asked for and is about to reason over, and the earliest are
+        the ones it has already used. This runs only after evidence and the
+        durable checkpoint are gone, because a file snapshot is cheaper to
+        re-derive than a tool call that has already been paid for.
+        """
         try:
             budget = self._context_budget()
         except Exception:
             return build(evidence, context_memory), None
 
         items = list(evidence or ())
-        attempts: List[Tuple[Any, Any, str]] = []
+        attempts: List[Tuple[Any, ...]] = []
         for fraction in self.EVIDENCE_REDUCTION_STEPS:
             keep = items[: max(0, int(len(items) * fraction))] if items else []
             label = (
@@ -3149,12 +3193,31 @@ class Engine:
                 else f"evidence {len(keep)}/{len(items)}"
             )
             attempts.append((keep, context_memory, label))
-        # Last resorts: drop the durable checkpoint too, then bare goal.
+        # Last resorts: drop the durable checkpoint too, then shed observations
+        # oldest-first. Observations go last because a tool call has already
+        # been paid for, while a file snapshot can be re-read for free.
         attempts.append(([], None, "evidence 0 + no checkpoint"))
+        blocks = _observation_blocks(trailing)
+        if len(blocks) > 1:
+            for keep_n in (len(blocks) * 3 // 4, len(blocks) // 2, len(blocks) // 4, 1):
+                if keep_n < 1 or keep_n >= len(blocks):
+                    continue
+                attempts.append((
+                    [], None,
+                    f"evidence 0 + observations {keep_n}/{len(blocks)}",
+                    _join_observations(blocks[-keep_n:]),
+                ))
 
         last = None
-        for keep, memory, label in attempts:
-            payload = build(keep, memory)
+        for attempt in attempts:
+            keep, memory, label = attempt[0], attempt[1], attempt[2]
+            # The two-argument form is the contract every existing caller uses.
+            # A third argument appears only for the observation-shedding rungs,
+            # so a build() that knows nothing about `trailing` keeps working.
+            if len(attempt) > 3:
+                payload = build(keep, memory, attempt[3])
+            else:
+                payload = build(keep, memory)
             demand = self._estimate_prompt_tokens(payload.get("messages") or [])
             if preflight(budget, demand, kind="root").ok:
                 if label == "full":
@@ -3484,7 +3547,7 @@ class Engine:
             # the caller explicitly overrode enable_thinking on this call.
             thinking_arg = False
 
-        def _build(ev: Any, cm: Any) -> Dict[str, Any]:
+        def _build(ev: Any, cm: Any, tr: str = trailing) -> Dict[str, Any]:
             return self._build_model_payload(
                 prompt,
                 ev,
@@ -3492,11 +3555,11 @@ class Engine:
                 context_memory=cm,
                 enable_thinking=thinking_arg,
                 response_schema=(False if degrade else response_schema),
-                trailing=trailing,
+                trailing=tr,
             )
 
         payload, reduction = self._fit_payload_to_budget(
-            _build, evidence, context_memory
+            _build, evidence, context_memory, trailing=trailing
         )
         if reduction:
             self._emit("context_reduced", reduction)
