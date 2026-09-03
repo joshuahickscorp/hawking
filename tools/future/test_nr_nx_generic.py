@@ -1168,3 +1168,42 @@ def test_no_pytest_skip_in_this_file():
             elif isinstance(func, ast.Name):
                 name = func.id
             assert name != "skip", "pytest.skip that actually fires is a P0"
+
+
+def test_doctor_energy_is_the_gram_spectrum_and_matches_the_svd_it_replaced():
+    """energy is the squared singular values, so an SVD is the wrong tool.
+
+    _doctor_stats used np.linalg.svd(mat, compute_uv=False) and then only ever
+    squared the result. Singular values are the square roots of the Gram
+    eigenvalues, so that is a sqrt-then-square round trip through a routine ~3x
+    more expensive than the eigendecomposition that yields energy directly.
+
+    THIS CALLS _doctor_stats. An earlier version of this test recomputed the Gram
+    spectrum inline and compared it to numpy -- which passed even when the source
+    was mutated to reverse the energy ordering, because it never touched the
+    implementation. A test that reimplements what it checks is checking itself.
+    """
+    import numpy as np
+
+    from tools.future import nr_nx_generic as m
+
+    rng = np.random.default_rng(5)
+    for shape in ((256, 320), (400, 128)):
+        mat = rng.standard_normal(shape, dtype=np.float32)
+
+        got = m._doctor_stats(mat)
+
+        # Independent oracle: the SVD path this replaced, computed here.
+        ref_energy = np.linalg.svd(mat, compute_uv=False) ** 2
+        denom = float(ref_energy.sum())
+        cum = np.cumsum(ref_energy) / denom
+        r50 = int(np.sum(cum < 0.50)) + 1
+        r90 = int(np.sum(cum < 0.90)) + 1
+
+        assert got["rank_for_50pct_energy"] == r50, (
+            f"{shape}: r50 {got['rank_for_50pct_energy']} != SVD reference {r50}"
+        )
+        assert got["rank_for_90pct_energy"] == r90, (
+            f"{shape}: r90 {got['rank_for_90pct_energy']} != SVD reference {r90}"
+        )
+        assert got["full_rank"] == min(shape)
