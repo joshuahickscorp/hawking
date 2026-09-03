@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T09:05:04Z",
+  "recorded_at": "2026-09-02T23:40:13Z",
   "recorded_by": "tools/future/resident_api.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -11,14 +11,14 @@
  "bench_state": "UNKNOWN",
  "claim_boundary": "Static sidecar artifact. No hardware measurement.",
  "counts": {
-  "capabilities": 282,
-  "discovered_python": 535,
-  "human_cli_only": 256,
+  "capabilities": 283,
+  "discovered_python": 538,
+  "human_cli_only": 257,
   "import_failures": 0,
-  "not_operational": 157,
+  "not_operational": 158,
   "operational": 104,
-  "scored": 261,
-  "tests": 274,
+  "scored": 262,
+  "tests": 276,
   "work_units": 6
  },
  "five_questions": [
@@ -827,6 +827,7 @@
    "recurring_operations",
    "representation_decode_fusion",
    "representation_floor",
+   "representation_lab",
    "resident_binary_drift",
    "resident_code_tools",
    "resident_output_contract",
@@ -835,7 +836,6 @@
    "resident_token_budget",
    "roof_anchor",
    "runnability_snapshot",
-   "scar_reevaluator",
    "science_corpus",
    "sealed_default_absolute",
    "sealed_default_verified",
@@ -1059,6 +1059,7 @@
    "recurring_operations",
    "representation_decode_fusion",
    "representation_floor",
+   "representation_lab",
    "resident_binary_drift",
    "resident_code_tools",
    "resident_output_contract",
@@ -1227,7 +1228,7 @@
   ],
   "tool_registry_present": true
  },
- "honest_scoring": "104 operational / 157 not operational / 261 scored. A human CLI is not an operational subsystem.",
+ "honest_scoring": "104 operational / 158 not operational / 262 scored. A human CLI is not an operational subsystem.",
  "law": "A subsystem is not operational until the RESIDENT can discover it, invoke it, schedule it and verify it; its result changes a frontier; the result persists; and next work refills. 'It has a CLI a human can run' is NOT enough.",
  "measurement_class": "STATIC_ONLY",
  "modules": [
@@ -1336,13 +1337,21 @@
    "kind": "infra",
    "preferred_callable": null,
    "public_callables": [
+    "gpu_lane_lock_path",
     "bench_block",
     "seal",
     "write_receipt",
     "measurement_provenance",
     "write_measured_receipt",
     "load_json",
+    "clear_git_cache",
+    "prefetch_blobs",
+    "blob_text",
+    "head_paths_ordered",
+    "head_path_set",
+    "prefetch_session_artifacts",
     "git",
+    "compile_swift",
     "sha256_file",
     "newest_mtime",
     "require_known_flags"
@@ -1385,13 +1394,21 @@
       "import_ok": true,
       "preferred_callable": null,
       "public_callables": [
+       "gpu_lane_lock_path",
        "bench_block",
        "seal",
        "write_receipt",
        "measurement_provenance",
        "write_measured_receipt",
        "load_json",
+       "clear_git_cache",
+       "prefetch_blobs",
+       "blob_text",
+       "head_paths_ordered",
+       "head_path_set",
+       "prefetch_session_artifacts",
        "git",
+       "compile_swift",
        "sha256_file",
        "newest_mtime",
        "require_known_flags"
@@ -4896,6 +4913,7 @@
    "kind": "production",
    "preferred_callable": "build",
    "public_callables": [
+    "score_representation_family",
     "passing_scripted_source",
     "failing_scripted_source",
     "default_registry",
@@ -4914,7 +4932,7 @@
     },
     "fail_closed": {
      "evidence": {
-      "raise_count": 12,
+      "raise_count": 13,
       "rule": "fail closed means raise (or write_receipt's HardwareClaimError) rather than returning a silent default",
       "uses_write_receipt": true
      },
@@ -4941,6 +4959,7 @@
       "import_ok": true,
       "preferred_callable": "build",
       "public_callables": [
+       "score_representation_family",
        "passing_scripted_source",
        "failing_scripted_source",
        "default_registry",
@@ -4962,7 +4981,7 @@
      "pass": true
     }
    },
-   "raise_count": 12,
+   "raise_count": 13,
    "receipt": "CAPABILITY_EVAL.json",
    "relpath": "tools/future/capability_eval.py",
    "status": "NOT_OPERATIONAL",
@@ -5209,7 +5228,7 @@
     },
     "fail_closed": {
      "evidence": {
-      "raise_count": 10,
+      "raise_count": 11,
       "rule": "fail closed means raise (or write_receipt's HardwareClaimError) rather than returning a silent default",
       "uses_write_receipt": true
      },
@@ -5283,7 +5302,7 @@
      "pass": true
     }
    },
-   "raise_count": 10,
+   "raise_count": 11,
    "receipt": "HCLI_CAPABILITY_REACHABILITY.json",
    "relpath": "tools/future/capability_reachability.py",
    "status": "NOT_OPERATIONAL",
@@ -6482,6 +6501,10 @@
     "refuse_unbilled_components",
     "incumbent_candidate",
     "cost",
+    "empty_parts",
+    "axes_of",
+    "candidate_from_parts",
+    "compare_to_incumbent",
     "build",
     "main"
    ],
@@ -6496,7 +6519,7 @@
     },
     "fail_closed": {
      "evidence": {
-      "raise_count": 46,
+      "raise_count": 49,
       "rule": "fail closed means raise (or write_receipt's HardwareClaimError) rather than returning a silent default",
       "uses_write_receipt": true
      },
@@ -6529,6 +6552,10 @@
        "refuse_unbilled_components",
        "incumbent_candidate",
        "cost",
+       "empty_parts",
+       "axes_of",
+       "candidate_from_parts",
+       "compare_to_incumbent",
        "build",
        "main"
       ]
@@ -6546,7 +6573,7 @@
      "pass": true
     }
    },
-   "raise_count": 46,
+   "raise_count": 49,
    "receipt": "COMPLETE_EBPW.json",
    "relpath": "tools/future/complete_ebpw.py",
    "status": "NOT_OPERATIONAL",
@@ -6789,7 +6816,7 @@
     "future.conftest"
    ],
    "cli_flags": [],
-   "docstring": "Sparse-checkout collection guard. ``pytest tools/future`` imports every test module before ``-k`` runs. Two modules fail at import when receipts/ or hcli/ are not materialized. Ignore them only while those paths are absent so the noetic/eb\u2026",
+   "docstring": "Sparse-checkout collection guard and session git artifacts. ``pytest tools/future`` imports every test module before ``-k`` runs. Two modules fail at import when receipts/ or hcli/ are not materialized. Ignore them only while those paths a\u2026",
    "filename": "conftest.py",
    "gaps": [
     "no_callable_entry_point_only_main_or_absent",
@@ -6807,6 +6834,9 @@
    "kind": "production",
    "preferred_callable": null,
    "public_callables": [
+    "pytest_configure",
+    "pytest_runtest_logreport",
+    "pytest_collection_modifyitems",
     "pytest_ignore_collect"
    ],
    "questions": {
@@ -6848,6 +6878,9 @@
       "import_ok": true,
       "preferred_callable": null,
       "public_callables": [
+       "pytest_configure",
+       "pytest_runtest_logreport",
+       "pytest_collection_modifyitems",
        "pytest_ignore_collect"
       ]
      },
@@ -10416,6 +10449,7 @@
     "can_promote",
     "judge_dense_rematerialization",
     "extract_ledger",
+    "doctor_zeros_for_doc",
     "validate",
     "resolve_repo_path",
     "load_named_receipt",
@@ -10435,7 +10469,7 @@
     },
     "fail_closed": {
      "evidence": {
-      "raise_count": 20,
+      "raise_count": 23,
       "rule": "fail closed means raise (or write_receipt's HardwareClaimError) rather than returning a silent default",
       "uses_write_receipt": true
      },
@@ -10468,6 +10502,7 @@
        "can_promote",
        "judge_dense_rematerialization",
        "extract_ledger",
+       "doctor_zeros_for_doc",
        "validate",
        "resolve_repo_path",
        "load_named_receipt",
@@ -10491,7 +10526,7 @@
      "pass": true
     }
    },
-   "raise_count": 20,
+   "raise_count": 23,
    "receipt": "EBPW_CATEGORY_VALIDATOR.json",
    "relpath": "tools/future/ebpw_categories.py",
    "status": "OPERATIONAL",
@@ -14184,6 +14219,9 @@
     "probe_pmset_therm",
     "probe_pmset_batt",
     "probe_sysctl_thermal",
+    "proc_pid_rusage",
+    "observe_contention",
+    "measure_process_energy",
     "probe_ioreport_catalog",
     "probe_ioreport_subscription",
     "probe_ioreg_power_telemetry",
@@ -14254,6 +14292,9 @@
        "probe_pmset_therm",
        "probe_pmset_batt",
        "probe_sysctl_thermal",
+       "proc_pid_rusage",
+       "observe_contention",
+       "measure_process_energy",
        "probe_ioreport_catalog",
        "probe_ioreport_subscription",
        "probe_ioreg_power_telemetry",
@@ -15373,6 +15414,12 @@
      "--qgemv"
     ],
     [
+     "--emit"
+    ],
+    [
+     "--emit-all"
+    ],
+    [
      "--seal-predictions"
     ],
     [
@@ -15453,6 +15500,15 @@
     "floorplan_hints",
     "partition_qgemv",
     "run_qgemv_preboard",
+    "lowering_emitted_primitives",
+    "lowering_hole_primitives",
+    "register_lowering_target",
+    "list_lowering_targets",
+    "get_lowering_target",
+    "lowering_target_manifests",
+    "lower_hwir",
+    "lower_hwir_all",
+    "lower_qgemv_targets",
     "prediction_content_sha256",
     "verify_prediction_seal",
     "declared_planning_coefficients",
@@ -15479,7 +15535,7 @@
     },
     "fail_closed": {
      "evidence": {
-      "raise_count": 100,
+      "raise_count": 121,
       "rule": "fail closed means raise (or write_receipt's HardwareClaimError) rather than returning a silent default",
       "uses_write_receipt": true
      },
@@ -15567,6 +15623,15 @@
        "floorplan_hints",
        "partition_qgemv",
        "run_qgemv_preboard",
+       "lowering_emitted_primitives",
+       "lowering_hole_primitives",
+       "register_lowering_target",
+       "list_lowering_targets",
+       "get_lowering_target",
+       "lowering_target_manifests",
+       "lower_hwir",
+       "lower_hwir_all",
+       "lower_qgemv_targets",
        "prediction_content_sha256",
        "verify_prediction_seal",
        "declared_planning_coefficients",
@@ -15599,7 +15664,7 @@
      "pass": true
     }
    },
-   "raise_count": 100,
+   "raise_count": 121,
    "receipt": "HWIR_V1.json",
    "relpath": "tools/future/hwir.py",
    "status": "OPERATIONAL",
@@ -22535,6 +22600,8 @@
     "phase_entry",
     "depth_policy",
     "seal_contract",
+    "cycle_timings",
+    "specimen_registry",
     "build",
     "main"
    ],
@@ -22581,6 +22648,8 @@
        "phase_entry",
        "depth_policy",
        "seal_contract",
+       "cycle_timings",
+       "specimen_registry",
        "build",
        "main"
       ]
@@ -25682,6 +25751,135 @@
   },
   {
    "capabilities": [
+    "future.representation_lab"
+   ],
+   "cli_flags": [
+    [
+     "--build"
+    ]
+   ],
+   "docstring": "Beyond-Dense research laboratory \u2014 plug a family in; do not start a search. Roadmap \u00a739: Beyond-Dense is Era III-D. This module is the environment a future representation campaign plugs into. It does not choose a family, run a SUB2 search,\u2026",
+   "filename": "representation_lab.py",
+   "gaps": [
+    "does_not_emit_workunit",
+    "result_does_not_feed_a_named_frontier"
+   ],
+   "has_if_main": true,
+   "has_main": true,
+   "hcli_tool_registered": false,
+   "human_cli_only": true,
+   "import_error": null,
+   "import_ok": true,
+   "kind": "production",
+   "preferred_callable": "build",
+   "public_callables": [
+    "adapt_complete_ebpw",
+    "adapt_representation_floor",
+    "adapt_rival_codec_screen",
+    "adapt_named_candidates",
+    "adapt_sparse_residual",
+    "adapt_deltanet",
+    "adapt_flash_bpw_ladder",
+    "adapt_aux_capability_screen",
+    "adapt_decode_fusion",
+    "adapt_mlp_byte_census",
+    "adapt_economics",
+    "load_prior_results",
+    "lookup_prior",
+    "local_dense_f32_candidate",
+    "score_family",
+    "verify_family",
+    "claim",
+    "core_diff",
+    "plugin_not_in_core",
+    "run_second_family_proof",
+    "build",
+    "main"
+   ],
+   "questions": {
+    "emits_workunit": {
+     "evidence": {
+      "constructs": [],
+      "emitted_by_orchestration_connector": false
+     },
+     "gap": "does_not_emit_workunit",
+     "pass": false
+    },
+    "fail_closed": {
+     "evidence": {
+      "raise_count": 13,
+      "rule": "fail closed means raise (or write_receipt's HardwareClaimError) rather than returning a silent default",
+      "uses_write_receipt": true
+     },
+     "pass": true
+    },
+    "feeds_named_frontier": {
+     "evidence": {
+      "frontier_present": true,
+      "named_as_integration_target": [],
+      "receipt_is_frontier_probe": [],
+      "writes_frontier_document": false
+     },
+     "gap": "result_does_not_feed_a_named_frontier",
+     "pass": false
+    },
+    "hcli_invoke": {
+     "evidence": {
+      "has_if_main": true,
+      "has_main": true,
+      "hcli_future_tools": [],
+      "hcli_tool_count": 49,
+      "hcli_tool_registered": false,
+      "import_error": null,
+      "import_ok": true,
+      "preferred_callable": "build",
+      "public_callables": [
+       "adapt_complete_ebpw",
+       "adapt_representation_floor",
+       "adapt_rival_codec_screen",
+       "adapt_named_candidates",
+       "adapt_sparse_residual",
+       "adapt_deltanet",
+       "adapt_flash_bpw_ladder",
+       "adapt_aux_capability_screen",
+       "adapt_decode_fusion",
+       "adapt_mlp_byte_census",
+       "adapt_economics",
+       "load_prior_results",
+       "lookup_prior",
+       "local_dense_f32_candidate",
+       "score_family",
+       "verify_family",
+       "claim",
+       "core_diff",
+       "plugin_not_in_core",
+       "run_second_family_proof",
+       "build",
+       "main"
+      ]
+     },
+     "pass": true
+    },
+    "produces_receipt": {
+     "evidence": {
+      "receipt": "REPRESENTATION_LAB.json",
+      "uses_write_receipt": true,
+      "write_receipt_names": [
+       "REPRESENTATION_LAB.json"
+      ]
+     },
+     "pass": true
+    }
+   },
+   "raise_count": 13,
+   "receipt": "REPRESENTATION_LAB.json",
+   "relpath": "tools/future/representation_lab.py",
+   "status": "NOT_OPERATIONAL",
+   "stem": "representation_lab",
+   "workunit_constructs": []
+  },
+  {
+   "capabilities": [
     "future.repro_science",
     "future.autonomous_reproducible_science"
    ],
@@ -27545,7 +27743,7 @@
     },
     "fail_closed": {
      "evidence": {
-      "raise_count": 29,
+      "raise_count": 30,
       "rule": "fail closed means raise (or write_receipt's HardwareClaimError) rather than returning a silent default",
       "uses_write_receipt": true
      },
@@ -27637,7 +27835,7 @@
      "pass": true
     }
    },
-   "raise_count": 29,
+   "raise_count": 30,
    "receipt": "RIVAL_CODEC_SCREEN.json",
    "relpath": "tools/future/rival_codec_screen.py",
    "status": "OPERATIONAL",
@@ -28131,12 +28329,14 @@
    "cli_flags": [
     [
      "--build"
+    ],
+    [
+     "--emit-follow-on"
     ]
    ],
    "docstring": "SCAR REEVALUATOR \u2014 which old refutations died at a fidelity bar. FUNCTIONAL_ROLE_PROBE.json recorded that zeroing 40% of a tensor's output rows moves the hidden state by ~0.0059 cosine. Many representation scars in this repo were judged ag\u2026",
    "filename": "scar_reevaluator.py",
    "gaps": [
-    "does_not_emit_workunit",
     "result_does_not_feed_a_named_frontier"
    ],
    "has_if_main": true,
@@ -28155,21 +28355,35 @@
     "classify_corpus",
     "rank_reopenable",
     "counts",
+    "recover_named_law",
+    "law_scope_binding",
+    "extract_scope_binding",
+    "scope_binding_intact",
+    "recovered_lattice",
+    "require_scope_binding",
+    "round_trip_unit",
+    "pick_transfer_target",
+    "emit_transfer_test",
+    "emit_law_attack",
+    "mutation_check_scope_binding",
+    "emit_follow_on",
+    "write_follow_on_receipt",
     "build",
     "main"
    ],
    "questions": {
     "emits_workunit": {
      "evidence": {
-      "constructs": [],
+      "constructs": [
+       "emit_hcli_workunit"
+      ],
       "emitted_by_orchestration_connector": false
      },
-     "gap": "does_not_emit_workunit",
-     "pass": false
+     "pass": true
     },
     "fail_closed": {
      "evidence": {
-      "raise_count": 11,
+      "raise_count": 25,
       "rule": "fail closed means raise (or write_receipt's HardwareClaimError) rather than returning a silent default",
       "uses_write_receipt": true
      },
@@ -28203,6 +28417,19 @@
        "classify_corpus",
        "rank_reopenable",
        "counts",
+       "recover_named_law",
+       "law_scope_binding",
+       "extract_scope_binding",
+       "scope_binding_intact",
+       "recovered_lattice",
+       "require_scope_binding",
+       "round_trip_unit",
+       "pick_transfer_target",
+       "emit_transfer_test",
+       "emit_law_attack",
+       "mutation_check_scope_binding",
+       "emit_follow_on",
+       "write_follow_on_receipt",
        "build",
        "main"
       ]
@@ -28214,18 +28441,21 @@
       "receipt": "SCAR_REEVALUATOR.json",
       "uses_write_receipt": true,
       "write_receipt_names": [
+       "FOLLOW_ON_RECEIPT",
        "SCAR_REEVALUATOR.json"
       ]
      },
      "pass": true
     }
    },
-   "raise_count": 11,
+   "raise_count": 25,
    "receipt": "SCAR_REEVALUATOR.json",
    "relpath": "tools/future/scar_reevaluator.py",
    "status": "NOT_OPERATIONAL",
    "stem": "scar_reevaluator",
-   "workunit_constructs": []
+   "workunit_constructs": [
+    "emit_hcli_workunit"
+   ]
   },
   {
    "capabilities": [
@@ -31037,6 +31267,7 @@
     "may_external_action",
     "scores_from_refusal_rate",
     "evaluate",
+    "scores_from_behavior_lab",
     "rank",
     "make_contract",
     "catalog",
@@ -31074,7 +31305,7 @@
     },
     "fail_closed": {
      "evidence": {
-      "raise_count": 47,
+      "raise_count": 48,
       "rule": "fail closed means raise (or write_receipt's HardwareClaimError) rather than returning a silent default",
       "uses_write_receipt": true
      },
@@ -31110,6 +31341,7 @@
        "may_external_action",
        "scores_from_refusal_rate",
        "evaluate",
+       "scores_from_behavior_lab",
        "rank",
        "make_contract",
        "catalog",
@@ -31149,7 +31381,7 @@
      "pass": true
     }
    },
-   "raise_count": 47,
+   "raise_count": 48,
    "receipt": "TABULA_FLOOR.json",
    "relpath": "tools/future/tabula.py",
    "status": "OPERATIONAL",
@@ -32845,6 +33077,12 @@
     ],
     [
      "--path"
+    ],
+    [
+     "--organ"
+    ],
+    [
+     "--args"
     ]
    ],
    "docstring": "VMCP disposition \u2014 what of the All-Seeing Eye exists, and a compact invoke. Roadmap \u00a78 / APPENDIX E: VMCP is Hawking's perception + visual / 3D / application-generation organ. Nine Acts: SEE HOLD OPEN KNOW MAKE CHECK FIX KEEP PROVE. It is \u2026",
@@ -32885,7 +33123,7 @@
     },
     "fail_closed": {
      "evidence": {
-      "raise_count": 14,
+      "raise_count": 25,
       "rule": "fail closed means raise (or write_receipt's HardwareClaimError) rather than returning a silent default",
       "uses_write_receipt": true
      },
@@ -32932,13 +33170,14 @@
       "receipt": "VMCP_DISPOSITION.json",
       "uses_write_receipt": true,
       "write_receipt_names": [
-       "VMCP_DISPOSITION.json"
+       "VMCP_DISPOSITION.json",
+       "VMCP_PERCEPTION_DEPTH.json"
       ]
      },
      "pass": true
     }
    },
-   "raise_count": 14,
+   "raise_count": 25,
    "receipt": "VMCP_DISPOSITION.json",
    "relpath": "tools/future/vmcp.py",
    "status": "NOT_OPERATIONAL",
@@ -33518,8 +33757,8 @@
   }
  ],
  "negative_findings": [
-  "157 of 261 scored modules are NOT_OPERATIONAL; operational=104. Not rounded up.",
-  "256 scored modules are human-CLI-callable (argparse / __main__) and are not registered in HCLI ToolRegistry.",
+  "158 of 262 scored modules are NOT_OPERATIONAL; operational=104. Not rounded up.",
+  "257 scored modules are human-CLI-callable (argparse / __main__) and are not registered in HCLI ToolRegistry.",
   "hcli/tool_registry.py default_tool_registry lists 49 tools and 0 future.* tools. AgentOS cannot discover the sidecar.",
   "HCLI ToolRegistry.invoke returns ToolResult(ok=False, UNKNOWN_TOOL) instead of raising; resident_api.invoke raises. Fail-closed is this surface, not HCLI's.",
   "Most modules persist a receipt a human can regenerate with `python3 tools/future/<mod>.py --build` but do not emit a WorkUnit and do not feed CLAUDE_GLOBAL_FRONTIER.json.",
@@ -33650,6 +33889,7 @@
   "recurring_operations",
   "representation_decode_fusion",
   "representation_floor",
+  "representation_lab",
   "resident_binary_drift",
   "resident_code_tools",
   "resident_output_contract",
@@ -38977,6 +39217,18 @@
      {
       "dest": null,
       "flags": [
+       "--emit"
+      ]
+     },
+     {
+      "dest": null,
+      "flags": [
+       "--emit-all"
+      ]
+     },
+     {
+      "dest": null,
+      "flags": [
        "--seal-predictions"
       ]
      },
@@ -42768,6 +43020,33 @@
    "receipt": null,
    "status": "NOT_OPERATIONAL"
   },
+  "future.representation_lab": {
+   "aliases": [
+    "future.representation_lab"
+   ],
+   "argument_contract": {
+    "bindable": true,
+    "cli_flags": [
+     {
+      "dest": null,
+      "flags": [
+       "--build"
+      ]
+     }
+    ],
+    "params": []
+   },
+   "callable": "build",
+   "frontier": [],
+   "gaps": [
+    "does_not_emit_workunit",
+    "result_does_not_feed_a_named_frontier"
+   ],
+   "import_error": null,
+   "module": "tools/future/representation_lab.py",
+   "receipt": "REPRESENTATION_LAB.json",
+   "status": "NOT_OPERATIONAL"
+  },
   "future.repro_science": {
    "aliases": [
     "future.repro_science",
@@ -43446,6 +43725,12 @@
       "flags": [
        "--build"
       ]
+     },
+     {
+      "dest": null,
+      "flags": [
+       "--emit-follow-on"
+      ]
      }
     ],
     "params": [
@@ -43460,7 +43745,6 @@
    "callable": "build",
    "frontier": [],
    "gaps": [
-    "does_not_emit_workunit",
     "result_does_not_feed_a_named_frontier"
    ],
    "import_error": null,
@@ -44881,6 +45165,18 @@
       "flags": [
        "--path"
       ]
+     },
+     {
+      "dest": null,
+      "flags": [
+       "--organ"
+      ]
+     },
+     {
+      "dest": null,
+      "flags": [
+       "--args"
+      ]
      }
     ],
     "params": []
@@ -45093,7 +45389,7 @@
   ]
  },
  "schema": "hawking.future.resident_api.v1",
- "seal_sha256": "d1f0258c02ba105e48d07fdf5a64dbb1789aa2fda0a6dc1be038112512540ed8",
+ "seal_sha256": "6270333cadfa5d9ea2f7a63838d10f92b9fb6aff87c1758519e6db1735c51622",
  "version": 1,
  "work_units": [
   {
@@ -45229,6 +45525,7 @@
     "recurring_operations",
     "representation_decode_fusion",
     "representation_floor",
+    "representation_lab",
     "resident_binary_drift",
     "resident_code_tools",
     "resident_output_contract",
@@ -45237,7 +45534,6 @@
     "resident_token_budget",
     "roof_anchor",
     "runnability_snapshot",
-    "scar_reevaluator",
     "science_corpus",
     "sealed_default_absolute",
     "sealed_default_verified",
@@ -45463,15 +45759,15 @@
    "backend_task_id": null,
    "claim_boundary": "Proposal only. Sidecar cannot register HCLI tools or rewrite CLAUDE_GLOBAL_FRONTIER.json.",
    "classification": "STATIC_ONLY",
-   "content_hash": "d0b40ca84116046a61a9f64cc6114bf4012a27b0cff75167ff0ba19002e312af",
+   "content_hash": "6adeb62b78a19a1993a9b441c5c0666ddc68e1bf5face1b877dbe267fc19505c",
    "dependencies": [],
-   "description": "Close resident-callability gap 'result_does_not_feed_a_named_frontier' for 157 sidecar module(s).",
+   "description": "Close resident-callability gap 'result_does_not_feed_a_named_frontier' for 158 sidecar module(s).",
    "effect_class": "READ_ONLY",
    "failure_context": null,
    "finished_at": null,
    "gap": "result_does_not_feed_a_named_frontier",
    "id": "future.resident_api.close.result_does_not_feed_a_named_frontier",
-   "module_count": 157,
+   "module_count": 158,
    "module_stems": [
     "__init__",
     "_common",
@@ -45593,6 +45889,7 @@
     "recurring_operations",
     "representation_decode_fusion",
     "representation_floor",
+    "representation_lab",
     "resident_binary_drift",
     "resident_code_tools",
     "resident_output_contract",

@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T09:39:30Z",
+  "recorded_at": "2026-09-02T22:54:43Z",
   "recorded_by": "tools/future/artifact_identity.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -26,9 +26,11 @@
  ],
  "gpu_authority": false,
  "historical_stale_finding": {
-  "binary_mtime": null,
+  "binary_mtime": "2026-08-26T17:31:14.601767",
   "binary_path": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
-  "instrumentation_landed_in": null,
+  "instrumentation_landed_in": [
+   "8b6f50270 2026-08-27 Harden HCLI model-neutral science and protected benchmarks"
+  ],
   "law": "A capability present in source is not a capability present in the running system. Probe the artifact that serves, not the file that describes it.",
   "missing_from_binary": [
    "dispatches",
@@ -80,8 +82,123 @@
    "sealed_env_hash": "7f677c8208a879575c8c604f40c573da3d58fa314b6e58e48317ba384789771b"
   }
  },
- "live_inspect_error": "ABSENT:workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
- "live_inspect_refuse_stale_false": null,
+ "live_inspect_error": null,
+ "live_inspect_refuse_stale_false": {
+  "benchmark_label": {
+   "env_hash": "7f677c8208a879575c8c604f40c573da3d58fa314b6e58e48317ba384789771b",
+   "incumbent_label": "sealed-3.14-production",
+   "inherited_incumbent": true,
+   "label": "sealed-3.14-production",
+   "rule": "A benchmark whose env hash does not match the sealed config must not inherit the incumbent label automatically.",
+   "sealed_env_hash": "7f677c8208a879575c8c604f40c573da3d58fa314b6e58e48317ba384789771b"
+  },
+  "binary": {
+   "bytes": 6804600,
+   "mtime_unix": 1788386603.9440713,
+   "path": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+   "rel": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+   "sha256": "c108acc6a49eb5f1719ae260ece23c4c019fdbf560f305f491cf6c124880c270"
+  },
+  "environment": {
+   "env_hash": "7f677c8208a879575c8c604f40c573da3d58fa314b6e58e48317ba384789771b",
+   "fusion_flags": {
+    "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+    "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+    "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+    "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+   },
+   "hawking_toggles": {
+    "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+    "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+    "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+    "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+   },
+   "measurement_mode": "DIAGNOSTIC_RELATIVE",
+   "n_fusion_flags": 4,
+   "n_hawking_toggles": 4,
+   "serving_mode": "resident"
+  },
+  "feature_flags": {
+   "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+   "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+   "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+   "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+  },
+  "field_introduced_unix": {
+   "active_bytes_per_token": 1788241135.0,
+   "active_weight_bytes_per_generated_token": 1788241135.0,
+   "actual_read_bytes_per_token": 1788241135.0,
+   "actual_read_bytes_status": 1788241135.0,
+   "dispatches": 1787808226.0,
+   "dispatches_per_generated_token": 1787808226.0,
+   "gpu_ns_per_generated_token": 1787808226.0,
+   "resident_weight_bytes": 1788241135.0
+  },
+  "fields_in_binary": {
+   "active_bytes_per_token": true,
+   "active_weight_bytes_per_generated_token": true,
+   "actual_read_bytes_per_token": true,
+   "actual_read_bytes_status": true,
+   "dispatches": true,
+   "dispatches_per_generated_token": true,
+   "gpu_ns_per_generated_token": true,
+   "resident_weight_bytes": true
+  },
+  "interpreted_fields": [
+   "dispatches",
+   "dispatches_per_generated_token",
+   "active_bytes_per_token",
+   "active_weight_bytes_per_generated_token",
+   "actual_read_bytes_per_token",
+   "actual_read_bytes_status",
+   "gpu_ns_per_generated_token",
+   "resident_weight_bytes"
+  ],
+  "measurement_mode": "DIAGNOSTIC_RELATIVE",
+  "nx": {
+   "claim_class": "STATIC_ONLY",
+   "evidence": [
+    "hcli/hawking-native.sealed-3.14.json#model_id",
+    "hcli/hawking-native.sealed-3.14.json#resident_identity"
+   ],
+   "missing_evidence": [],
+   "profile_sha256": "d0ccab6562eebde05f81fbc9e7d40698f4aa9a83ae8e19606a7372a1f3abb7ce",
+   "source_state": "ON_DISK",
+   "value": {
+    "model_id": "qwen3.8-27b-sealed-3.14",
+    "profile_schema": "hcli.provider.profile.v1",
+    "protocol": "hawking.qwen38.resident.v1",
+    "resident_identity": "sealed-3.14"
+   }
+  },
+  "refuse_rule": "RAISE when binary mtime predates the source commit that introduced a field being read. Source reality is not running-artifact reality.",
+  "refused": false,
+  "resident_identity": {
+   "claim_class": "STATIC_ONLY",
+   "evidence": [
+    "hcli/hawking-native.sealed-3.14.json#model_id",
+    "hcli/hawking-native.sealed-3.14.json#resident_identity"
+   ],
+   "missing_evidence": [],
+   "profile_sha256": "d0ccab6562eebde05f81fbc9e7d40698f4aa9a83ae8e19606a7372a1f3abb7ce",
+   "source_state": "ON_DISK",
+   "value": {
+    "model_id": "qwen3.8-27b-sealed-3.14",
+    "profile_schema": "hcli.provider.profile.v1",
+    "protocol": "hawking.qwen38.resident.v1",
+    "resident_identity": "sealed-3.14"
+   }
+  },
+  "serving_mode": "resident",
+  "source": {
+   "commit": "f317a8f1b4a628fd7566e930e8e71dcd46884d50",
+   "commit_iso": "2026-09-02T18:05:17-04:00",
+   "commit_unix": 1788386717.0,
+   "dirty": false,
+   "path": "crates/hawking-core/examples/ascension_qwen38_resident.rs"
+  },
+  "stale_fields": []
+ },
  "negative_findings": [
   "the serving binary that motivated this helper predated 8b6f50270 by a day",
   "the first production dispatch count of this campaign was the unfused graph",
@@ -95,7 +212,7 @@
   ],
   "missing_evidence": [],
   "profile_sha256": "d0ccab6562eebde05f81fbc9e7d40698f4aa9a83ae8e19606a7372a1f3abb7ce",
-  "source_state": "GIT_HEAD",
+  "source_state": "ON_DISK",
   "value": {
    "model_id": "qwen3.8-27b-sealed-3.14",
    "profile_schema": "hcli.provider.profile.v1",
@@ -119,7 +236,7 @@
   "receipt": "receipts/future/ARTIFACT_IDENTITY.json"
  },
  "schema": "hawking.future.artifact_identity.v1",
- "seal_sha256": "58637a7028a8ec1b98b6d133d25fdf91b31f07651defadc9b161dbd77fc104f8",
+ "seal_sha256": "f65d42b4fc8ea505267887179114298f6ac158e56be578ac0f0afa6fb7310f12",
  "sealed_does_inherit_incumbent": true,
  "sealed_environment": {
   "env_hash": "7f677c8208a879575c8c604f40c573da3d58fa314b6e58e48317ba384789771b",

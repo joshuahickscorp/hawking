@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T08:51:16Z",
+  "recorded_at": "2026-09-02T23:39:01Z",
   "recorded_by": "tools/future/improvement_trial.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -85,13 +85,15 @@
    "dispatch_count",
    "eliminate_all_host_gap",
    "entropy_floor_of_mlp_codes",
+   "gravity_callable",
    "group_size_1024",
    "group_size_256",
    "mlp_decode_fma_cheapening",
    "quantize_aux_u8",
    "reach_demonstrated_bandwidth_deltanet",
    "reach_demonstrated_bandwidth_gqa",
-   "reach_demonstrated_bandwidth_mlp"
+   "reach_demonstrated_bandwidth_mlp",
+   "specimen_curriculum_ready"
   ],
   "experimentally_killed": [
    "CONDITIONAL_PROGRAM",
@@ -101,10 +103,10 @@
    "NONLINEAR_GENERATOR",
    "PRODUCT_DICTIONARY"
   ],
-  "n_considered": 18,
+  "n_considered": 20,
   "n_experimentally_killed": 6,
   "n_oracle_killed": 4,
-  "n_still_live": 7,
+  "n_still_live": 9,
   "oracle_killed": [
    "deltanet_big_kernel_is_organ_cost",
    "dispatch_count",
@@ -113,12 +115,14 @@
   ],
   "still_live": [
    "deltanet_organ_vs_isolated_kernel",
+   "gravity_callable",
    "group_size_1024",
    "group_size_256",
    "mlp_decode_fma_cheapening",
    "quantize_aux_u8",
    "reach_demonstrated_bandwidth_deltanet",
-   "reach_demonstrated_bandwidth_gqa"
+   "reach_demonstrated_bandwidth_gqa",
+   "specimen_curriculum_ready"
   ]
  },
  "gpu_authority": false,
@@ -137,14 +141,14 @@
  "recorded_by": "tools/future/improvement_trial.py",
  "repeated_scar_attempts": 0,
  "schema": "hawking.future.improvement_velocity.v1",
- "seal_sha256": "b5a51aae7d5fda25d92314c1dff4459417746e253b84513b3ba5d0e7af8e0d1d",
+ "seal_sha256": "575ae69b9e32c65afa1677017f744551751f73112692c8393bea2b790af983ba",
  "search_space_collapse": {
   "delta_ms": 4.942,
   "delta_n_live": 10,
   "live_hypothesis_mass_ms_after": 10.151,
   "live_hypothesis_mass_ms_before": 15.093,
-  "n_live_after": 7,
-  "n_live_before": 17
+  "n_live_after": 9,
+  "n_live_before": 19
  },
  "trial": "HCLI_10M_IMPROVEMENT_TRIAL",
  "verified_frontier_movement": 12,

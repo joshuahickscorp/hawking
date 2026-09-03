@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T09:38:59Z",
+  "recorded_at": "2026-09-02T22:55:36Z",
   "recorded_by": "tools/future/global_frontier.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -16,9 +16,9 @@
    "MISSING": 8,
    "WEAK": 4
   },
-  "probes_holding": 8,
-  "probes_resolved_by_sidecar": 5,
-  "probes_stale": 7,
+  "probes_holding": 14,
+  "probes_resolved_by_sidecar": 0,
+  "probes_stale": 6,
   "total": 20
  },
  "entries": [
@@ -38,10 +38,10 @@
     "path": "receipts/headless/FLASH_COMPLETE_V0.nx.json"
    },
    "probe_result": {
-    "actual": "<file missing>",
+    "actual": "SEALED_METADATA_ONLY_NOT_FOR_PROMOTION",
     "expect": "SEALED_METADATA_ONLY_NOT_FOR_PROMOTION",
     "field": "status",
-    "holds": false,
+    "holds": true,
     "kind": "field",
     "path": "receipts/headless/FLASH_COMPLETE_V0.nx.json"
    },
@@ -62,8 +62,10 @@
     "path": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
    },
    "probe_result": {
-    "hits": [],
-    "holds": false,
+    "hits": [
+     "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
+    ],
+    "holds": true,
     "kind": "present",
     "path": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
    },
@@ -88,18 +90,34 @@
      "./receipts/future/HWIR_V1.json",
      "./receipts/future/HWIR_SYNTHETIC_ARRIVAL_REHEARSAL.json",
      "./receipts/future/HWIR_SEALED_PREDICTIONS.json",
+     "./tools/future/test_hwir_lowering.py",
      "./tools/future/test_hwir_sealed_predictions.py",
      "./tools/future/hwir.py",
-     "./tools/future/test_hwir.py"
+     "./tools/future/test_hwir.py",
+     "./.worktrees/g047-baseline/receipts/future/HWIR_V1.json",
+     "./.worktrees/g047-baseline/receipts/future/HWIR_SYNTHETIC_ARRIVAL_REHEARSAL.json",
+     "./.worktrees/g047-baseline/receipts/future/HWIR_SEALED_PREDICTIONS.json",
+     "./.worktrees/g047-baseline/tools/future/test_hwir_lowering.py",
+     "./.worktrees/g047-baseline/tools/future/test_hwir_sealed_predictions.py",
+     "./.worktrees/g047-baseline/tools/future/hwir.py",
+     "./.worktrees/g047-baseline/tools/future/test_hwir.py",
+     "./.worktrees/base2/receipts/future/HWIR_V1.json",
+     "./.worktrees/base2/receipts/future/HWIR_SYNTHETIC_ARRIVAL_REHEARSAL.json",
+     "./.worktrees/base2/receipts/future/HWIR_SEALED_PREDICTIONS.json",
+     "./.worktrees/base2/tools/future/test_hwir_lowering.py",
+     "./.worktrees/base2/tools/future/test_hwir_sealed_predictions.py",
+     "./.worktrees/base2/tools/future/hwir.py",
+     "./.worktrees/base2/tools/future/test_hwir.py"
     ],
     "holds": false,
     "kind": "absent",
     "pattern": "*hwir*",
-    "resolved_by_sidecar": true,
+    "resolved_by_sidecar": false,
     "resolving_paths": [
      "./receipts/future/HWIR_V1.json",
      "./receipts/future/HWIR_SYNTHETIC_ARRIVAL_REHEARSAL.json",
      "./receipts/future/HWIR_SEALED_PREDICTIONS.json",
+     "./tools/future/test_hwir_lowering.py",
      "./tools/future/test_hwir_sealed_predictions.py",
      "./tools/future/hwir.py",
      "./tools/future/test_hwir.py"
@@ -122,15 +140,31 @@
    },
    "probe_result": {
     "hits": [
+     "./receipts/future/HARDWARE_DOCTOR_GENERIC.json",
      "./receipts/future/HARDWARE_DOCTOR.json",
+     "./tools/accelerator/hardware_doctor.py",
+     "./tools/accelerator/test_hardware_doctor.py",
      "./tools/future/hardware_doctor.py",
-     "./tools/future/test_hardware_doctor.py"
+     "./tools/future/test_hardware_doctor.py",
+     "./.worktrees/g047-baseline/receipts/future/HARDWARE_DOCTOR_GENERIC.json",
+     "./.worktrees/g047-baseline/receipts/future/HARDWARE_DOCTOR.json",
+     "./.worktrees/g047-baseline/tools/accelerator/hardware_doctor.py",
+     "./.worktrees/g047-baseline/tools/accelerator/test_hardware_doctor.py",
+     "./.worktrees/g047-baseline/tools/future/hardware_doctor.py",
+     "./.worktrees/g047-baseline/tools/future/test_hardware_doctor.py",
+     "./.worktrees/base2/receipts/future/HARDWARE_DOCTOR_GENERIC.json",
+     "./.worktrees/base2/receipts/future/HARDWARE_DOCTOR.json",
+     "./.worktrees/base2/tools/accelerator/hardware_doctor.py",
+     "./.worktrees/base2/tools/accelerator/test_hardware_doctor.py",
+     "./.worktrees/base2/tools/future/hardware_doctor.py",
+     "./.worktrees/base2/tools/future/test_hardware_doctor.py"
     ],
     "holds": false,
     "kind": "absent",
     "pattern": "*hardware_doctor*",
-    "resolved_by_sidecar": true,
+    "resolved_by_sidecar": false,
     "resolving_paths": [
+     "./receipts/future/HARDWARE_DOCTOR_GENERIC.json",
      "./receipts/future/HARDWARE_DOCTOR.json",
      "./tools/future/hardware_doctor.py",
      "./tools/future/test_hardware_doctor.py"
@@ -155,12 +189,18 @@
     "hits": [
      "./receipts/future/HBM_DOCTOR.json",
      "./tools/future/hbm_doctor.py",
-     "./tools/future/test_hbm_doctor.py"
+     "./tools/future/test_hbm_doctor.py",
+     "./.worktrees/g047-baseline/receipts/future/HBM_DOCTOR.json",
+     "./.worktrees/g047-baseline/tools/future/hbm_doctor.py",
+     "./.worktrees/g047-baseline/tools/future/test_hbm_doctor.py",
+     "./.worktrees/base2/receipts/future/HBM_DOCTOR.json",
+     "./.worktrees/base2/tools/future/hbm_doctor.py",
+     "./.worktrees/base2/tools/future/test_hbm_doctor.py"
     ],
     "holds": false,
     "kind": "absent",
     "pattern": "*hbm_doctor*",
-    "resolved_by_sidecar": true,
+    "resolved_by_sidecar": false,
     "resolving_paths": [
      "./receipts/future/HBM_DOCTOR.json",
      "./tools/future/hbm_doctor.py",
@@ -186,12 +226,18 @@
     "hits": [
      "./receipts/future/GREEN_MACHINE.json",
      "./tools/future/test_green_machine.py",
-     "./tools/future/green_machine.py"
+     "./tools/future/green_machine.py",
+     "./.worktrees/g047-baseline/receipts/future/GREEN_MACHINE.json",
+     "./.worktrees/g047-baseline/tools/future/test_green_machine.py",
+     "./.worktrees/g047-baseline/tools/future/green_machine.py",
+     "./.worktrees/base2/receipts/future/GREEN_MACHINE.json",
+     "./.worktrees/base2/tools/future/test_green_machine.py",
+     "./.worktrees/base2/tools/future/green_machine.py"
     ],
     "holds": false,
     "kind": "absent",
     "pattern": "*green_machine*",
-    "resolved_by_sidecar": true,
+    "resolved_by_sidecar": false,
     "resolving_paths": [
      "./receipts/future/GREEN_MACHINE.json",
      "./tools/future/test_green_machine.py",
@@ -286,12 +332,18 @@
     "hits": [
      "./receipts/future/ODYSSEY2_LAW_STORE.json",
      "./tools/future/test_odyssey2_law_store.py",
-     "./tools/future/odyssey2_law_store.py"
+     "./tools/future/odyssey2_law_store.py",
+     "./.worktrees/g047-baseline/receipts/future/ODYSSEY2_LAW_STORE.json",
+     "./.worktrees/g047-baseline/tools/future/test_odyssey2_law_store.py",
+     "./.worktrees/g047-baseline/tools/future/odyssey2_law_store.py",
+     "./.worktrees/base2/receipts/future/ODYSSEY2_LAW_STORE.json",
+     "./.worktrees/base2/tools/future/test_odyssey2_law_store.py",
+     "./.worktrees/base2/tools/future/odyssey2_law_store.py"
     ],
     "holds": false,
     "kind": "absent",
     "pattern": "*law_store*",
-    "resolved_by_sidecar": true,
+    "resolved_by_sidecar": false,
     "resolving_paths": [
      "./receipts/future/ODYSSEY2_LAW_STORE.json",
      "./tools/future/test_odyssey2_law_store.py",
@@ -338,8 +390,10 @@
     "path": "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json"
    },
    "probe_result": {
-    "hits": [],
-    "holds": false,
+    "hits": [
+     "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json"
+    ],
+    "holds": true,
     "kind": "present",
     "path": "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json"
    },
@@ -388,7 +442,17 @@
      "./tools/future/static_kernel_verify_parity.py",
      "./tools/future/static_kernel_verify.py",
      "./tools/future/test_static_kernel_verify.py",
-     "./crates/hawking-core/src/static_kernel_verify.rs"
+     "./crates/hawking-core/src/static_kernel_verify.rs",
+     "./workspace/ops/build/rust/release/deps/hawking_static_kernel_verify-22ab1681c35da344.d",
+     "./workspace/ops/build/rust/release/deps/hawking_static_kernel_verify-22ab1681c35da344",
+     "./.worktrees/g047-baseline/tools/future/static_kernel_verify_parity.py",
+     "./.worktrees/g047-baseline/tools/future/static_kernel_verify.py",
+     "./.worktrees/g047-baseline/tools/future/test_static_kernel_verify.py",
+     "./.worktrees/g047-baseline/crates/hawking-core/src/static_kernel_verify.rs",
+     "./.worktrees/base2/tools/future/static_kernel_verify_parity.py",
+     "./.worktrees/base2/tools/future/static_kernel_verify.py",
+     "./.worktrees/base2/tools/future/test_static_kernel_verify.py",
+     "./.worktrees/base2/crates/hawking-core/src/static_kernel_verify.rs"
     ],
     "holds": false,
     "kind": "absent",
@@ -417,8 +481,10 @@
     "path": "receipts/headless/ACCELERATOR_SCOREBOARD.json"
    },
    "probe_result": {
-    "hits": [],
-    "holds": false,
+    "hits": [
+     "receipts/headless/ACCELERATOR_SCOREBOARD.json"
+    ],
+    "holds": true,
     "kind": "present",
     "path": "receipts/headless/ACCELERATOR_SCOREBOARD.json"
    },
@@ -513,10 +579,10 @@
     "path": "receipts/headless/FLASH_META_TEACHER_L4_CAPTURE_BOUNDARY.json"
    },
    "probe_result": {
-    "actual": "<file missing>",
+    "actual": "BLOCKED_NO_METAL_GPU",
     "expect": "BLOCKED_NO_METAL_GPU",
     "field": "status",
-    "holds": false,
+    "holds": true,
     "kind": "field",
     "path": "receipts/headless/FLASH_META_TEACHER_L4_CAPTURE_BOUNDARY.json"
    },
@@ -537,8 +603,10 @@
     "path": "receipts/headless/ACCELERATOR_FRONT_G_P6.json"
    },
    "probe_result": {
-    "hits": [],
-    "holds": false,
+    "hits": [
+     "receipts/headless/ACCELERATOR_FRONT_G_P6.json"
+    ],
+    "holds": true,
     "kind": "present",
     "path": "receipts/headless/ACCELERATOR_FRONT_G_P6.json"
    },
@@ -548,24 +616,17 @@
  ],
  "purpose": "live frontier: missing / weak / stale / blocked / high-value-integration only",
  "recovered_from": "disk state on 2026-08-29, not from the directive text",
- "resolved_entries": [
+ "resolved_entries": [],
+ "resolved_meaning": "A MISSING claim whose probe now finds ONLY sidecar files: this campaign closed the gap. The entry is retired, not refuted.",
+ "schema": "hawking.future.claude_global_frontier.v1",
+ "seal_sha256": "3f5dde99df179f21085b67ea208348ba6e1335138999c0f6ccbd2a319dc87cbb",
+ "stale_entries": [
   "F003",
   "F004",
   "F005",
   "F006",
-  "F010"
- ],
- "resolved_meaning": "A MISSING claim whose probe now finds ONLY sidecar files: this campaign closed the gap. The entry is retired, not refuted.",
- "schema": "hawking.future.claude_global_frontier.v1",
- "seal_sha256": "97e679175d9616eaa1fb97a89761fad3440730d47a4df579966902a7ffa59a28",
- "stale_entries": [
-  "F001",
-  "F002",
-  "F012",
-  "F014",
-  "F015",
-  "F019",
-  "F020"
+  "F010",
+  "F014"
  ],
  "stale_meaning": "A stale probe means the claim no longer matches disk -- usually because Codex or a sidecar lane built the thing. Retire or reclassify the entry; do not silently keep it.",
  "version": 1

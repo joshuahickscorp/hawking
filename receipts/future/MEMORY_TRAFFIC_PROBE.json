@@ -4,7 +4,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T08:51:21Z",
+  "recorded_at": "2026-09-02T23:39:16Z",
   "recorded_by": "tools/future/memory_traffic_probe.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -27,14 +27,14 @@
   "maxBufferLength": 62620631040,
   "name": "Apple M3 Ultra",
   "recommendedMaxWorkingSetSize": 83494174720,
-  "registryID": 4294968900
+  "registryID": 4294969147
  },
  "dispatch_boundary_samples": [
   {
    "contains_mtl_counter_error_value": false,
-   "gpu_duration_s": 1.3041659258306026e-05,
-   "gpu_end_time": 636512.7908709167,
-   "gpu_start_time": 636512.790857875,
+   "gpu_duration_s": 1.408332900609821e-05,
+   "gpu_end_time": 49418.514665625,
+   "gpu_start_time": 49418.51465154167,
    "payload_bytes": 1048576,
    "resolved_byte_count": 16,
    "resolved_u64": [
@@ -50,9 +50,9 @@
   },
   {
    "contains_mtl_counter_error_value": false,
-   "gpu_duration_s": 6.354169454425573e-05,
-   "gpu_end_time": 636512.7918674167,
-   "gpu_start_time": 636512.791803875,
+   "gpu_duration_s": 8.966666791820899e-05,
+   "gpu_end_time": 49418.51690766667,
+   "gpu_start_time": 49418.516818000004,
    "payload_bytes": 4194304,
    "resolved_byte_count": 16,
    "resolved_u64": [
@@ -67,7 +67,7 @@
    "set": "timestamp"
   }
  ],
- "enumerator_stderr": "2026-09-02 04:51:21.524 mtl_traffic_probe[41365:94672345] Error, registring service 0x2a03! (Error Domain=GPURawCounterErrorDomain Code=-1 \"Fail to instantiate AGXGPURawCounterSourceGroup\" UserInfo={NSLocalizedDescription=Fail to instantiate AGXGPURawCounterSourceGroup})",
+ "enumerator_stderr": "2026-09-02 19:39:16.013 mtl_traffic_probe[17652:11926334] Error, registring service 0x2a03! (Error Domain=GPURawCounterErrorDomain Code=-1 \"Fail to instantiate AGXGPURawCounterSourceGroup\" UserInfo={NSLocalizedDescription=Fail to instantiate AGXGPURawCounterSourceGroup})",
  "env_flag": "HAWKING_MEMORY_TRAFFIC",
  "env_flag_meaning": "HAWKING_MEMORY_TRAFFIC=1 opts into sampling a real byte-traffic counter if one exists. It does not license an estimate. On this device the flag still yields UNKNOWN / UnmeasuredMemoryTraffic.",
  "evidence_class": "STATIC_ONLY",
@@ -93,45 +93,45 @@
   "receipt": "receipts/future/MEMORY_TRAFFIC_PROBE.json"
  },
  "schema": "hawking.future.memory_traffic_probe.v1",
- "seal_sha256": "f00a29cef9f9b2a348884ad988d5d9ceefe993f5b98b200ca5c302ef5ab7e4cd",
+ "seal_sha256": "da418449d497d441bf8e99db862b60509d2ad431f6c7a921f9c5c5d1fda35d9b",
  "stage_boundary_samples": [
   {
    "contains_mtl_counter_error_value": false,
-   "gpu_duration_s": 4.112499300390482e-05,
-   "gpu_end_time": 636512.792392625,
-   "gpu_start_time": 636512.7923515,
+   "gpu_duration_s": 1.18750031106174e-05,
+   "gpu_end_time": 49418.517943625004,
+   "gpu_start_time": 49418.51793175,
    "payload_bytes": 1048576,
    "resolved_byte_count": 16,
    "resolved_u64": [
-    636512792351541,
-    636512792392625
+    49418517931750,
+    49418517943625
    ],
    "resolved_u64_hex": [
-    "0x242e7aee21335",
-    "0x242e7aee2b3b1"
+    "0x2cf22534e6e6",
+    "0x2cf225351549"
    ],
    "sampled_via": "compute_pass_sampleBufferAttachments_stage_boundary",
    "set": "timestamp",
-   "timestamp_delta_ns": 41084
+   "timestamp_delta_ns": 11875
   },
   {
    "contains_mtl_counter_error_value": false,
-   "gpu_duration_s": 3.112491685897112e-05,
-   "gpu_end_time": 636512.7931866667,
-   "gpu_start_time": 636512.7931555418,
+   "gpu_duration_s": 5.3499999921768904e-05,
+   "gpu_end_time": 49418.519314000005,
+   "gpu_start_time": 49418.519260500005,
    "payload_bytes": 4194304,
    "resolved_byte_count": 16,
    "resolved_u64": [
-    636512793155583,
-    636512793186708
+    49418519260500,
+    49418519314000
    ],
    "resolved_u64_hex": [
-    "0x242e7aeee57ff",
-    "0x242e7aeeed194"
+    "0x2cf225492d54",
+    "0x2cf22549fe50"
    ],
    "sampled_via": "compute_pass_sampleBufferAttachments_stage_boundary",
    "set": "timestamp",
-   "timestamp_delta_ns": 31125
+   "timestamp_delta_ns": 53500
   }
  ],
  "status": "NOT_MEASURED_NO_METAL_MEMORY_COUNTER",
@@ -240,7 +240,7 @@
    "n_groups": 0,
    "reachable_without_elevated_privileges": false,
    "reports_memory_traffic": false,
-   "stderr": "2026-09-02 04:51:21.524 mtl_traffic_probe[41365:94672345] Error, registring service 0x2a03! (Error Domain=GPURawCounterErrorDomain Code=-1 \"Fail to instantiate AGXGPURawCounterSourceGroup\" UserInfo={NSLocalizedDescription=Fail to instantiate AGXGPURawCounterSourceGroup})",
+   "stderr": "2026-09-02 19:39:16.013 mtl_traffic_probe[17652:11926334] Error, registring service 0x2a03! (Error Domain=GPURawCounterErrorDomain Code=-1 \"Fail to instantiate AGXGPURawCounterSourceGroup\" UserInfo={NSLocalizedDescription=Fail to instantiate AGXGPURawCounterSourceGroup})",
    "what_it_returned": "dlopen of GPURawCounter.framework succeeded. GRCCopyAllCounterSourceGroupWithError returned 'Fail to instantiate AGXGPURawCounterSourceGroup' with n_groups=0. Instruments-style raw GPU counters are not instantiable from an ordinary Metal process here."
   },
   "IOAccelMemoryInfo": {
@@ -719,17 +719,17 @@
     "IVDM: Max Throttle Percent       "
    ],
    "PerformanceStatistics": {
-    "Alloc system memory": 17310269440,
-    "Allocated PB Size": 167641088,
+    "Alloc system memory": 16424173568,
+    "Allocated PB Size": 98959360,
     "Device Utilization %": 0,
-    "In use system memory": 15098462208,
+    "In use system memory": 15234400256,
     "In use system memory (driver)": 0,
     "Renderer Utilization %": 0,
     "SplitSceneCount": 0,
-    "TiledSceneBytes": 1802240,
+    "TiledSceneBytes": 0,
     "Tiler Utilization %": 0,
-    "lastRecoveryTime": 1365455430418,
-    "recoveryCount": 3
+    "lastRecoveryTime": 0,
+    "recoveryCount": 0
    },
    "PerformanceStatistics_keys": [
     "Alloc system memory",
@@ -806,8 +806,8 @@
    "what_it_returned": "bytes currently allocated by this process on the device, not bytes transferred"
   },
   "MTLDevice.sampleTimestamps": {
-   "cpu": 636512793347958,
-   "gpu": 636512793347958,
+   "cpu": 49418519651333,
+   "gpu": 49418519651333,
    "is_memory_traffic": false,
    "meaning": "clock samples, not bytes transferred",
    "reports_memory_traffic": false

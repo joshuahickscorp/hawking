@@ -15,37 +15,11 @@
    "wake": null
   },
   "vmcp.pty_eye": {
-   "disposition": "PARKED",
-   "evidence_tier": "STATIC",
-   "execution": "BLOCKED",
+   "disposition": "CONNECTED",
+   "evidence_tier": "FUNCTIONAL_SIM",
+   "execution": "REAL",
    "symbol": "tools.vmcp.pty_eye.capture",
-   "wake": {
-    "blocker": "sandbox denies PTY slave allocation: os.openpty/libutil.openpty return EPERM and /dev/ttys* cannot be opened. posix_openpt(/dev/ptmx) succeeds for the master but a session requires the slave. This is not a pipe stand-in. Needs an unsandboxed (`gate`) process that can openpty.",
-    "evidence_tier": "STATIC",
-    "kind": "PTY_OPEN_DENIED",
-    "missing_dependency": "unsandboxed process that can openpty (gate profile)",
-    "predicate": "production AST Call of tools.vmcp.pty_eye.capture after openpty succeeds (unsandboxed / gate profile). A pipe capture is not a PTY session. An import is not a call site.",
-    "required_caller_prefix": "hcli/",
-    "required_kind": "call",
-    "required_symbol": "tools.vmcp.pty_eye.capture",
-    "satisfy_by": [
-     {
-      "channel": "visionmcp",
-      "how": "materialize the foreign visionmcp 0.8.0a2 checkout, then a production AST Call of the named symbol (an import is not a call site)",
-      "required_kind": "call",
-      "required_symbol": "tools.vmcp.pty_eye.capture",
-      "where": "VISIONMCP_SRC / visionmcp/src"
-     },
-     {
-      "channel": "adapter",
-      "how": "add a WIRED handler that AST-Calls the named symbol; an import is not enough",
-      "required_kind": "call",
-      "required_symbol": "tools.vmcp.pty_eye.capture",
-      "where": "tools/audit/reachability_triage.py"
-     }
-    ],
-    "schema": "hawking.audit.wake_condition.v1"
-   }
+   "wake": null
   },
   "vmcp.tool_doctor": {
    "disposition": "CONNECTED",
@@ -78,7 +52,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T09:20:26Z",
+  "recorded_at": "2026-09-02T23:40:15Z",
   "recorded_by": "tools/future/vmcp.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -157,19 +131,16 @@
    "sha256": "768909621255ea45047f3f447d567301d69ffc9394beb72f2213e60245aa3ed2"
   },
   "pty_eye": {
-   "blocker": "sandbox denies PTY slave allocation: os.openpty/libutil.openpty return EPERM and /dev/ttys* cannot be opened. posix_openpt(/dev/ptmx) succeeds for the master but a session requires the slave. This is not a pipe stand-in. Needs an unsandboxed (`gate`) process that can openpty.",
+   "blocker": null,
    "command": "python3 tools/future/vmcp.py --act see --organ pty --args '{\"argv\":[\"/bin/echo\",\"perception-depth-pty\"]}'",
-   "limitations": [
-    "PTY_OPEN_DENIED",
-    "EPERM"
-   ],
+   "limitations": [],
    "promoted": false,
-   "status": "PARKED",
-   "used_real_pty": false
+   "status": "CONNECTED",
+   "used_real_pty": true
   },
   "tool_doctor": {
    "command": "python3 tools/future/vmcp.py --act check --organ tool_doctor --args '{\"argv\":[\"/bin/echo\",\"perception-depth\"]}'",
-   "elapsed_ms": 11.077792034484446,
+   "elapsed_ms": 14.865124998323154,
    "execution": "REAL",
    "exit_code": 0,
    "invoke": "python3 tools/audit/reachability_triage.py --invoke future.vmcp --args '{\"act\":\"check\",\"organ\":\"tool_doctor\",\"argv\":[\"/bin/echo\",\"perception-depth\"]}'",
@@ -178,7 +149,7 @@
   }
  },
  "schema": "hawking.future.vmcp_perception_depth.v1",
- "seal_sha256": "05a122bad4f1f724179478af4676b556aeabc0ff38840ed7e0154032728efad4",
+ "seal_sha256": "bb24e4c74a02efa0f524c97139077411b8b8dc25e1ef9aef6d8a8fb5ec49d928",
  "selftest": {
   "behavior_lab_n_ok": 23,
   "behavior_lab_verdict": "PASS",
@@ -187,7 +158,7 @@
   "n_organs": 10,
   "n_parked_acts": 4,
   "ok": true,
-  "pty_used_real": false,
+  "pty_used_real": true,
   "tool_doctor_exit": 0,
   "verb_count": 9
  },

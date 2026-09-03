@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T09:04:11Z",
+  "recorded_at": "2026-09-02T23:39:06Z",
   "recorded_by": "tools/future/odyssey_tool_driver.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -21,7 +21,7 @@
   "isolation": "cli_out",
   "receipt": "receipts/future/DOCTOR_SEAL_DRIVEN.json",
   "refused": false,
-  "wall_seconds": 0.136
+  "wall_seconds": 0.211
  },
  "gaps_closed": [
   "no sidecar module actually invoked Doctor/Gravity; this one does",
@@ -117,7 +117,7 @@
   }
  },
  "schema": "hawking.future.odyssey_tool_driver.v1",
- "seal_sha256": "7fa7f3bdbff5a0b8f41a23ab57f374cd13c9b38063b419b738bbe49925331246",
+ "seal_sha256": "f05b65e3f344b8664ffca2c8c26a0b36e7889d69aa93962f93a51465f1743104",
  "sleeping": [
   {
    "id": "doctor_tournament",
@@ -137,7 +137,7 @@
   },
   {
    "id": "decoding_gravity",
-   "why": "required runtime input absent: /tmp/draft_agree.json; inventing the measurement file would be a synthetic result"
+   "why": "AGREE declared at /tmp/draft_agree.json is absent"
   },
   {
    "id": "state_gravity",
@@ -322,15 +322,16 @@
      "name": "PARENT",
      "path": "/Volumes/corpdrive/personalmodel/correspondent/qwen3.8-27b-abliterated-bf16",
      "present": true
-    }
-   ],
-   "evidence_class": "STATIC_ONLY",
-   "extra_inputs": [
+    },
     {
+     "declared_in": "tools/odyssey/decoding_gravity.py",
+     "name": "AGREE",
      "path": "/tmp/draft_agree.json",
      "present": false
     }
    ],
+   "evidence_class": "STATIC_ONLY",
+   "extra_inputs": [],
    "family": "gravity",
    "frontier": "FT.DECODING.cost-model",
    "gpu_authority": false,
@@ -460,7 +461,7 @@
    "status": "sleeping"
   },
   {
-   "blocked_reason": "required runtime input absent: /tmp/draft_agree.json; inventing the measurement file would be a synthetic result",
+   "blocked_reason": "AGREE declared at /tmp/draft_agree.json is absent",
    "classification": "SLEEPING",
    "id": "WU.ODYSSEY.decoding_gravity",
    "status": "sleeping"

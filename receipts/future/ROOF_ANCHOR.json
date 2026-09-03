@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T09:38:57Z",
+  "recorded_at": "2026-09-02T19:06:32Z",
   "recorded_by": "tools/future/roof_anchor.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -772,7 +772,7 @@
   "text": "EVERY CEILING MUST STATE WHICH ROOF IT RESTS ON. A ceiling with an unstated roof is the defect that produced 595.9. compute_ceiling() raises UnstatedRoof unless roof_id is a registry key."
  },
  "schema": "hawking.future.roof_anchor.v1",
- "seal_sha256": "c42a250e62ad535e0711ab92fd58e62ecaf09513877edbf1e2c117e8f22618f0",
+ "seal_sha256": "8b3601b2c88c4cf82d20ffab99be46b533f412fe32150836ba219e91f3f9282c",
  "source_verification": {
   "checks": [
    {
@@ -782,7 +782,7 @@
     "source_field": "hardware.published_peak_gb_s",
     "source_receipt": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
     "status": "LOADED",
-    "via": "git:HEAD:receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json"
+    "via": "disk:receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json"
    },
    {
     "actual": 703.6072736347875,
@@ -791,7 +791,7 @@
     "source_field": "q4_single_gemv_addr_probe[label=gemv_payload_13p612gb].spread.max",
     "source_receipt": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
     "status": "LOADED",
-    "via": "git:HEAD:receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json"
+    "via": "disk:receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json"
    },
    {
     "actual": 699.5736545106142,
@@ -800,7 +800,7 @@
     "source_field": "q4_single_gemv_addr_probe[label=gemv_payload_13p612gb].spread.median",
     "source_receipt": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
     "status": "LOADED",
-    "via": "git:HEAD:receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json"
+    "via": "disk:receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json"
    },
    {
     "actual": 530.6544688491846,
@@ -809,7 +809,7 @@
     "source_field": "q4_production_catalog_addr_probe.spread.median",
     "source_receipt": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
     "status": "LOADED",
-    "via": "git:HEAD:receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json"
+    "via": "disk:receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json"
    },
    {
     "actual": 595.9,
@@ -818,7 +818,7 @@
     "source_field": "measured_roof_gb_s",
     "source_receipt": "receipts/ascent-2026-08-16/G072_MULTI_PLANE_GEMV.json",
     "status": "LOADED",
-    "via": "git:HEAD:receipts/ascent-2026-08-16/G072_MULTI_PLANE_GEMV.json"
+    "via": "disk:receipts/ascent-2026-08-16/G072_MULTI_PLANE_GEMV.json"
    },
    {
     "actual": 595.9,
@@ -827,7 +827,7 @@
     "source_field": "artifact.anchors_not_rederived.measured_roof_GB_s",
     "source_receipt": "receipts/headless/NOETIC_ORGAN_CENSUS.json",
     "status": "LOADED",
-    "via": "git:HEAD:receipts/headless/NOETIC_ORGAN_CENSUS.json"
+    "via": "disk:receipts/headless/NOETIC_ORGAN_CENSUS.json"
    },
    {
     "actual": 589.73,
@@ -836,7 +836,7 @@
     "source_field": "measured_bandwidth.median_gb_s",
     "source_receipt": "receipts/headless/MACHINE_GENOME.json",
     "status": "LOADED",
-    "via": "git:HEAD:receipts/headless/MACHINE_GENOME.json"
+    "via": "disk:receipts/headless/MACHINE_GENOME.json"
    },
    {
     "actual": 497.4,
@@ -845,7 +845,7 @@
     "source_field": "mlp.arm_a_stripped.effective_gb_s",
     "source_receipt": "receipts/future/MLP_ALU_ROOFLINE.json",
     "status": "LOADED",
-    "via": "git:HEAD:receipts/future/MLP_ALU_ROOFLINE.json"
+    "via": "disk:receipts/future/MLP_ALU_ROOFLINE.json"
    },
    {
     "actual": 943.2,
@@ -854,7 +854,7 @@
     "source_field": "deltanet.arm_a_stripped.effective_gb_s",
     "source_receipt": "receipts/future/MLP_ALU_ROOFLINE.json",
     "status": "LOADED",
-    "via": "git:HEAD:receipts/future/MLP_ALU_ROOFLINE.json"
+    "via": "disk:receipts/future/MLP_ALU_ROOFLINE.json"
    },
    {
     "actual": 497.4,
@@ -863,7 +863,7 @@
     "source_field": "organs[organ=lm_head].effective_gb_s",
     "source_receipt": "receipts/future/ORGAN_BANDWIDTH.json",
     "status": "LOADED",
-    "via": "git:HEAD:receipts/future/ORGAN_BANDWIDTH.json"
+    "via": "disk:receipts/future/ORGAN_BANDWIDTH.json"
    },
    {
     "actual": 594.3492381201206,
@@ -872,20 +872,20 @@
     "source_field": "bandwidth_ceiling_gb_s",
     "source_receipt": "receipts/ascent-2026-08-16/G044_ROOFLINE_KNEE.json",
     "status": "LOADED",
-    "via": "git:HEAD:receipts/ascent-2026-08-16/G044_ROOFLINE_KNEE.json"
+    "via": "disk:receipts/ascent-2026-08-16/G044_ROOFLINE_KNEE.json"
    }
   ],
   "extras": {
    "atlas_the_ceiling_uses_589p73": {
     "actual": 589.73,
     "status": "LOADED",
-    "via": "git:HEAD:receipts/headless/ACCELERATOR_TOKEN_BYTES_ATLAS.json"
+    "via": "disk:receipts/headless/ACCELERATOR_TOKEN_BYTES_ATLAS.json"
    },
    "genesis_promotes_595p9": {
     "actual": 595.9,
     "provenance": "roofline sweep in the G072 run, low arithmetic intensity peak",
     "status": "LOADED",
-    "via": "git:HEAD:receipts/ascent-2026-08-18/Genesis.m3ultra.nx"
+    "via": "disk:receipts/ascent-2026-08-18/Genesis.m3ultra.nx"
    }
   },
   "mismatches": [],

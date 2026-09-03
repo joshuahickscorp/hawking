@@ -4,12 +4,12 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T09:05:57Z",
+  "recorded_at": "2026-09-02T23:39:02Z",
   "recorded_by": "tools/future/scar_reevaluator.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
- "branch": "grok/o1-odyssey-two-three-activation-20260902-045200",
+ "branch": "odyssey-i",
  "census_share_source": "receipts/future/MLP_BYTE_CENSUS.json",
  "cited_campaign_fidelity_bars": {
   "organ_cosine": {
@@ -6954,10 +6954,10 @@
   "scope_lattice": "MODEL_LOCAL",
   "scope_preserved": true,
   "source_receipt": "receipts/future/ODYSSEY2_LAW_STORE.json",
-  "transfer_test_id": "future.TRANSFER_TEST.LAW-COLD-CONTROL-BEAT-TRANSFER-SEED.Qwen3.8-Flash-Next"
+  "transfer_test_id": "future.TRANSFER_TEST.LAW-COLD-CONTROL-BEAT-TRANSFER-SEED.Falcon-H1-7B-Instruct"
  },
  "gpu_authority": false,
- "head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
+ "head": "a612af62db43bee98204eb7e19a64d901f1eb571",
  "n_scars_ingested": 691,
  "nothing_relaunched": true,
  "nothing_relaunched_statement": "This module classified existing scars and ranked POSSIBLY_REOPENABLE ones by theoretical EBPW-cut rank, token_ns opportunity rank, and implementation cost rank. It did not relaunch, reschedule, admit, or run any candidate. The resident owning SUB2_EBPW decides.",
@@ -8320,18 +8320,18 @@
       "code_and_build_identity": {
        "binary_sha256_pin": "d34044cffae8f320",
        "dirty_source_label": "DIRTY_SOURCE_DIAGNOSTIC",
-       "git_head": "36691aa32412e3cc38b3f9f7d2575e1d59e9cff4",
-       "git_head_short": "36691aa32",
+       "git_head": "a612af62db43bee98204eb7e19a64d901f1eb571",
+       "git_head_short": "a612af62d",
        "source": "git rev-parse HEAD + RESIDENT_IDENTITY executable_hash pin"
       },
       "laws_scars_version": {
-       "digest": "d3e3d756e7cee4905507b6484b8d464620a69bd3b48457c77fa1691ac464fa8e",
+       "digest": "1e96094f00187ff640f903c439969bb2b5cabebf2c8dec53c11d6ccc9df49522",
        "missing": [],
        "pins": {
-        "receipts/future/CAMPAIGN_SCARS.json": "c2ee58385c35fe62c020f0efca1e143b54ad18285c44c5df046ae4640d61a08d",
-        "receipts/future/MLP_STRUCTURED_OPERATOR.json": "67024233707e71aec2694e1e57a9bfd4be2362ac3f95573e1e1d9f876f759393",
-        "receipts/future/NEGATIVE_SCIENCE_INDEX.json": "d10002f5ac1884dced76c4ae2db38a9921752d355fb61e713e5c83b1aeb03b65",
-        "receipts/future/ODYSSEY2_LAW_STORE.json": "3803c2c280c874f2d62c97359ad9bfe0768d96b3310a062a181ee9821dc972da"
+        "receipts/future/CAMPAIGN_SCARS.json": "8b537f1017fb6cfb5dbc0d7c02b82dea65148be77a22f306b53c53f83b8cde3b",
+        "receipts/future/MLP_STRUCTURED_OPERATOR.json": "ae6ead21f6eb83208261234f9df702138fb987ba5a9ff4b6dede726a5f17ec93",
+        "receipts/future/NEGATIVE_SCIENCE_INDEX.json": "0c50ec634ec7d53691a4539081710af422c3409a4e25c41097cb5282db794005",
+        "receipts/future/ODYSSEY2_LAW_STORE.json": "0f9aeaefbc47e013db5773eb6f43e11b6599b4bd74dee0a168f60caa1fbc3e1c"
        },
        "rule": "an experiment is judged against a named laws/scars version; a later scar does not silently rewrite an earlier verdict"
       },
@@ -8422,18 +8422,18 @@
       "code_and_build_identity": {
        "binary_sha256_pin": "d34044cffae8f320",
        "dirty_source_label": "DIRTY_SOURCE_DIAGNOSTIC",
-       "git_head": "36691aa32412e3cc38b3f9f7d2575e1d59e9cff4",
-       "git_head_short": "36691aa32",
+       "git_head": "a612af62db43bee98204eb7e19a64d901f1eb571",
+       "git_head_short": "a612af62d",
        "source": "git rev-parse HEAD + RESIDENT_IDENTITY executable_hash pin"
       },
       "laws_scars_version": {
-       "digest": "d3e3d756e7cee4905507b6484b8d464620a69bd3b48457c77fa1691ac464fa8e",
+       "digest": "1e96094f00187ff640f903c439969bb2b5cabebf2c8dec53c11d6ccc9df49522",
        "missing": [],
        "pins": {
-        "receipts/future/CAMPAIGN_SCARS.json": "c2ee58385c35fe62c020f0efca1e143b54ad18285c44c5df046ae4640d61a08d",
-        "receipts/future/MLP_STRUCTURED_OPERATOR.json": "67024233707e71aec2694e1e57a9bfd4be2362ac3f95573e1e1d9f876f759393",
-        "receipts/future/NEGATIVE_SCIENCE_INDEX.json": "d10002f5ac1884dced76c4ae2db38a9921752d355fb61e713e5c83b1aeb03b65",
-        "receipts/future/ODYSSEY2_LAW_STORE.json": "3803c2c280c874f2d62c97359ad9bfe0768d96b3310a062a181ee9821dc972da"
+        "receipts/future/CAMPAIGN_SCARS.json": "8b537f1017fb6cfb5dbc0d7c02b82dea65148be77a22f306b53c53f83b8cde3b",
+        "receipts/future/MLP_STRUCTURED_OPERATOR.json": "ae6ead21f6eb83208261234f9df702138fb987ba5a9ff4b6dede726a5f17ec93",
+        "receipts/future/NEGATIVE_SCIENCE_INDEX.json": "0c50ec634ec7d53691a4539081710af422c3409a4e25c41097cb5282db794005",
+        "receipts/future/ODYSSEY2_LAW_STORE.json": "0f9aeaefbc47e013db5773eb6f43e11b6599b4bd74dee0a168f60caa1fbc3e1c"
        },
        "rule": "an experiment is judged against a named laws/scars version; a later scar does not silently rewrite an earlier verdict"
       },
@@ -8524,18 +8524,18 @@
       "code_and_build_identity": {
        "binary_sha256_pin": "d34044cffae8f320",
        "dirty_source_label": "DIRTY_SOURCE_DIAGNOSTIC",
-       "git_head": "36691aa32412e3cc38b3f9f7d2575e1d59e9cff4",
-       "git_head_short": "36691aa32",
+       "git_head": "a612af62db43bee98204eb7e19a64d901f1eb571",
+       "git_head_short": "a612af62d",
        "source": "git rev-parse HEAD + RESIDENT_IDENTITY executable_hash pin"
       },
       "laws_scars_version": {
-       "digest": "d3e3d756e7cee4905507b6484b8d464620a69bd3b48457c77fa1691ac464fa8e",
+       "digest": "1e96094f00187ff640f903c439969bb2b5cabebf2c8dec53c11d6ccc9df49522",
        "missing": [],
        "pins": {
-        "receipts/future/CAMPAIGN_SCARS.json": "c2ee58385c35fe62c020f0efca1e143b54ad18285c44c5df046ae4640d61a08d",
-        "receipts/future/MLP_STRUCTURED_OPERATOR.json": "67024233707e71aec2694e1e57a9bfd4be2362ac3f95573e1e1d9f876f759393",
-        "receipts/future/NEGATIVE_SCIENCE_INDEX.json": "d10002f5ac1884dced76c4ae2db38a9921752d355fb61e713e5c83b1aeb03b65",
-        "receipts/future/ODYSSEY2_LAW_STORE.json": "3803c2c280c874f2d62c97359ad9bfe0768d96b3310a062a181ee9821dc972da"
+        "receipts/future/CAMPAIGN_SCARS.json": "8b537f1017fb6cfb5dbc0d7c02b82dea65148be77a22f306b53c53f83b8cde3b",
+        "receipts/future/MLP_STRUCTURED_OPERATOR.json": "ae6ead21f6eb83208261234f9df702138fb987ba5a9ff4b6dede726a5f17ec93",
+        "receipts/future/NEGATIVE_SCIENCE_INDEX.json": "0c50ec634ec7d53691a4539081710af422c3409a4e25c41097cb5282db794005",
+        "receipts/future/ODYSSEY2_LAW_STORE.json": "0f9aeaefbc47e013db5773eb6f43e11b6599b4bd74dee0a168f60caa1fbc3e1c"
        },
        "rule": "an experiment is judged against a named laws/scars version; a later scar does not silently rewrite an earlier verdict"
       },
@@ -8627,18 +8627,18 @@
       "code_and_build_identity": {
        "binary_sha256_pin": "d34044cffae8f320",
        "dirty_source_label": "DIRTY_SOURCE_DIAGNOSTIC",
-       "git_head": "36691aa32412e3cc38b3f9f7d2575e1d59e9cff4",
-       "git_head_short": "36691aa32",
+       "git_head": "a612af62db43bee98204eb7e19a64d901f1eb571",
+       "git_head_short": "a612af62d",
        "source": "git rev-parse HEAD + RESIDENT_IDENTITY executable_hash pin"
       },
       "laws_scars_version": {
-       "digest": "d3e3d756e7cee4905507b6484b8d464620a69bd3b48457c77fa1691ac464fa8e",
+       "digest": "1e96094f00187ff640f903c439969bb2b5cabebf2c8dec53c11d6ccc9df49522",
        "missing": [],
        "pins": {
-        "receipts/future/CAMPAIGN_SCARS.json": "c2ee58385c35fe62c020f0efca1e143b54ad18285c44c5df046ae4640d61a08d",
-        "receipts/future/MLP_STRUCTURED_OPERATOR.json": "67024233707e71aec2694e1e57a9bfd4be2362ac3f95573e1e1d9f876f759393",
-        "receipts/future/NEGATIVE_SCIENCE_INDEX.json": "d10002f5ac1884dced76c4ae2db38a9921752d355fb61e713e5c83b1aeb03b65",
-        "receipts/future/ODYSSEY2_LAW_STORE.json": "3803c2c280c874f2d62c97359ad9bfe0768d96b3310a062a181ee9821dc972da"
+        "receipts/future/CAMPAIGN_SCARS.json": "8b537f1017fb6cfb5dbc0d7c02b82dea65148be77a22f306b53c53f83b8cde3b",
+        "receipts/future/MLP_STRUCTURED_OPERATOR.json": "ae6ead21f6eb83208261234f9df702138fb987ba5a9ff4b6dede726a5f17ec93",
+        "receipts/future/NEGATIVE_SCIENCE_INDEX.json": "0c50ec634ec7d53691a4539081710af422c3409a4e25c41097cb5282db794005",
+        "receipts/future/ODYSSEY2_LAW_STORE.json": "0f9aeaefbc47e013db5773eb6f43e11b6599b4bd74dee0a168f60caa1fbc3e1c"
        },
        "rule": "an experiment is judged against a named laws/scars version; a later scar does not silently rewrite an earlier verdict"
       },
@@ -8729,18 +8729,18 @@
       "code_and_build_identity": {
        "binary_sha256_pin": "d34044cffae8f320",
        "dirty_source_label": "DIRTY_SOURCE_DIAGNOSTIC",
-       "git_head": "36691aa32412e3cc38b3f9f7d2575e1d59e9cff4",
-       "git_head_short": "36691aa32",
+       "git_head": "a612af62db43bee98204eb7e19a64d901f1eb571",
+       "git_head_short": "a612af62d",
        "source": "git rev-parse HEAD + RESIDENT_IDENTITY executable_hash pin"
       },
       "laws_scars_version": {
-       "digest": "d3e3d756e7cee4905507b6484b8d464620a69bd3b48457c77fa1691ac464fa8e",
+       "digest": "1e96094f00187ff640f903c439969bb2b5cabebf2c8dec53c11d6ccc9df49522",
        "missing": [],
        "pins": {
-        "receipts/future/CAMPAIGN_SCARS.json": "c2ee58385c35fe62c020f0efca1e143b54ad18285c44c5df046ae4640d61a08d",
-        "receipts/future/MLP_STRUCTURED_OPERATOR.json": "67024233707e71aec2694e1e57a9bfd4be2362ac3f95573e1e1d9f876f759393",
-        "receipts/future/NEGATIVE_SCIENCE_INDEX.json": "d10002f5ac1884dced76c4ae2db38a9921752d355fb61e713e5c83b1aeb03b65",
-        "receipts/future/ODYSSEY2_LAW_STORE.json": "3803c2c280c874f2d62c97359ad9bfe0768d96b3310a062a181ee9821dc972da"
+        "receipts/future/CAMPAIGN_SCARS.json": "8b537f1017fb6cfb5dbc0d7c02b82dea65148be77a22f306b53c53f83b8cde3b",
+        "receipts/future/MLP_STRUCTURED_OPERATOR.json": "ae6ead21f6eb83208261234f9df702138fb987ba5a9ff4b6dede726a5f17ec93",
+        "receipts/future/NEGATIVE_SCIENCE_INDEX.json": "0c50ec634ec7d53691a4539081710af422c3409a4e25c41097cb5282db794005",
+        "receipts/future/ODYSSEY2_LAW_STORE.json": "0f9aeaefbc47e013db5773eb6f43e11b6599b4bd74dee0a168f60caa1fbc3e1c"
        },
        "rule": "an experiment is judged against a named laws/scars version; a later scar does not silently rewrite an earlier verdict"
       },
@@ -8890,7 +8890,7 @@
    }
   ]
  },
- "seal_sha256": "9a9fb71b04991c631077a1aadff9788330ee7bf371d744b790437513c5e1f97a",
+ "seal_sha256": "9e19ec932450ceb06ba03199b9a8bc0add0f1843c0547a7b49d3f2f0905363fe",
  "top_reopenable_families": [
   {
    "died_at": {

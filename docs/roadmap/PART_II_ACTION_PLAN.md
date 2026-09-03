@@ -7,20 +7,20 @@ components yet' from work that genuinely needs an experiment, wall time, or sili
 
 ## Blocker census
 
-    SOFTWARE_CONNECTION_REMAINING    26
+    SOFTWARE_CONNECTION_REMAINING    27
     EXPERIMENTATION_REQUIRED         12
-    LONG_RUN_EVIDENCE_REQUIRED       10
+    LONG_RUN_EVIDENCE_REQUIRED       13
     PHYSICAL_HARDWARE_REQUIRED       14
     UNKNOWN_RESEARCH                 1
 
-    TOTAL REMAINING                  63
+    TOTAL REMAINING                  67
 
-SOFTWARE_CONNECTION_REMAINING = 26 is the
+SOFTWARE_CONNECTION_REMAINING = 27 is the
 number this campaign exists to drive toward zero. Every other class is honest
 frontier: an experiment that must run, evidence that needs wall time, hardware that
 must physically exist, or a question whose answer nobody has.
 
-## SOFTWARE_CONNECTION_REMAINING (26)
+## SOFTWARE_CONNECTION_REMAINING (27)
 
 ### AGENTOS_CIRCUIT_BREAKER
     missing             no non-test call site reaches this capability
@@ -81,6 +81,12 @@ must physically exist, or a question whose answer nobody has.
     shortest verifier   hcli/test_cognition_unit_concurrency.py:12 (+32 more)
     implementation      hcli/goal.py, hcli/context_budget.py
     unlocks             1 declared dependencies
+
+### MODELLAKE_LIFECYCLE
+    missing             no non-test call site reaches this capability
+    shortest verifier   must be written
+    implementation      tools/future/modellake_lifecycle.py, tools/future/modellake_lifecycle.py:39
+    unlocks             0 declared dependencies
 
 ### QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED
     missing             wired but nothing verifies it
@@ -252,7 +258,25 @@ must physically exist, or a question whose answer nobody has.
     implementation      tools/vmcp/pty_eye.py, tools/headless/vmcp_capability_probe.py (+1 more)
     unlocks             1 declared dependencies
 
-## LONG_RUN_EVIDENCE_REQUIRED (10)
+## LONG_RUN_EVIDENCE_REQUIRED (13)
+
+### HAWKING_PUBLIC_MVP
+    missing             HCLI_OPERATIONAL and ODYSSEY_DETACHED and KNOWN_GOOD_RUNTIME_COMMIT frozen. Isolated worktree only; merge after parity. Never reorganize underneath an active Odyssey.
+    shortest verifier   must be written
+    implementation      absent
+    unlocks             0 declared dependencies
+
+### REPO_TOPOLOGY_COMPRESSION
+    missing             HCLI_OPERATIONAL and ODYSSEY_DETACHED and KNOWN_GOOD_RUNTIME_COMMIT frozen. Isolated worktree only; merge after parity. Never reorganize underneath an active Odyssey.
+    shortest verifier   must be written
+    implementation      absent
+    unlocks             0 declared dependencies
+
+### SEMANTIC_COMPRESSION
+    missing             HCLI_OPERATIONAL and ODYSSEY_DETACHED and KNOWN_GOOD_RUNTIME_COMMIT frozen. Isolated worktree only; merge after parity. Never reorganize underneath an active Odyssey.
+    shortest verifier   must be written
+    implementation      absent
+    unlocks             0 declared dependencies
 
 ### THEIA_BOUNTY_GENERALIST_QUALIFIED
     missing             the bounty ENGINE exists at tools/theia/ but no qualified generalist MODEL does. Wake: THEIA_RESEARCH=PASS.

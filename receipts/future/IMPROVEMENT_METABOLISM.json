@@ -28,7 +28,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T09:26:05Z",
+  "recorded_at": "2026-09-02T21:22:27Z",
   "recorded_by": "tools/future/improvement_metabolism.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -128,9 +128,9 @@
   },
   "odyssey_gate": {
    "met": [
+    "resident_autonomy_trial_pass",
     "modellake_identity",
     "doctor_callable",
-    "gravity_callable",
     "nr_nx_path_callable",
     "evidence_hierarchy",
     "negative_science",
@@ -149,8 +149,8 @@
    "phase_transition": "NOT_STARTED",
    "source": "receipts/future/ODYSSEY_LAUNCH_GATE.json",
    "unmet": [
-    "resident_autonomy_trial_pass",
-    "specimen_curriculum_ready"
+    "specimen_curriculum_ready",
+    "gravity_callable"
    ],
    "verdict": "REFUSED"
   },
@@ -1480,30 +1480,10 @@
    }
   },
   "odyssey_gate": {
-   "biggest_unknown": "the unmet criteria: resident_autonomy_trial_pass, specimen_curriculum_ready",
+   "biggest_unknown": "the unmet criteria: specimen_curriculum_ready, gravity_callable",
    "causal_hypotheses": {
     "cheapest_decisive_experiment": "python3 tools/future/odyssey_launch.py --verify",
     "children": [
-     {
-      "cheapest_decisive_experiment": "re-evaluate criterion resident_autonomy_trial_pass from disk evidence; python3 tools/future/odyssey_launch.py --verify",
-      "children": [],
-      "evidence": [],
-      "evidence_for": null,
-      "expected_runtime_s": 30.0,
-      "falsifier": "resident_autonomy_trial_pass is MET only when the resident can discover, invoke, schedule and verify it and the result persists; a CLI a human can run is not enough",
-      "formal_verdict": null,
-      "id": "odyssey.unmet.resident_autonomy_trial_pass",
-      "max_possible_gain_ms": 0.0,
-      "notes": "",
-      "parent_id": "odyssey.gate",
-      "prior_confidence": 0.5,
-      "reopen_if": null,
-      "required_resource": "ODYSSEY",
-      "rule_satisfied": null,
-      "status": "OPEN",
-      "title": "resident_autonomy_trial_pass",
-      "wake_condition": null
-     },
      {
       "cheapest_decisive_experiment": "re-evaluate criterion specimen_curriculum_ready from disk evidence; python3 tools/future/odyssey_launch.py --verify",
       "children": [],
@@ -1523,12 +1503,32 @@
       "status": "OPEN",
       "title": "specimen_curriculum_ready",
       "wake_condition": null
+     },
+     {
+      "cheapest_decisive_experiment": "re-evaluate criterion gravity_callable from disk evidence; python3 tools/future/odyssey_launch.py --verify",
+      "children": [],
+      "evidence": [],
+      "evidence_for": null,
+      "expected_runtime_s": 30.0,
+      "falsifier": "gravity_callable is MET only when the resident can discover, invoke, schedule and verify it and the result persists; a CLI a human can run is not enough",
+      "formal_verdict": null,
+      "id": "odyssey.unmet.gravity_callable",
+      "max_possible_gain_ms": 0.0,
+      "notes": "",
+      "parent_id": "odyssey.gate",
+      "prior_confidence": 0.5,
+      "reopen_if": null,
+      "required_resource": "ODYSSEY",
+      "rule_satisfied": null,
+      "status": "OPEN",
+      "title": "gravity_callable",
+      "wake_condition": null
      }
     ],
     "evidence": [],
     "evidence_for": null,
     "expected_runtime_s": 30.0,
-    "falsifier": "ODYSSEY_I_LAUNCH.json is written only when every criterion is met; the sealed receipt is REFUSED with unmet=['resident_autonomy_trial_pass', 'specimen_curriculum_ready']",
+    "falsifier": "ODYSSEY_I_LAUNCH.json is written only when every criterion is met; the sealed receipt is REFUSED with unmet=['specimen_curriculum_ready', 'gravity_callable']",
     "formal_verdict": null,
     "id": "odyssey.gate",
     "max_possible_gain_ms": 0.0,
@@ -1558,14 +1558,14 @@
      "status": "OPEN"
     },
     {
-     "id": "odyssey.unmet.resident_autonomy_trial_pass",
+     "id": "odyssey.unmet.specimen_curriculum_ready",
      "max_possible_gain_ms": 0.0,
      "prior_confidence": 0.5,
      "required_resource": "ODYSSEY",
      "status": "OPEN"
     },
     {
-     "id": "odyssey.unmet.specimen_curriculum_ready",
+     "id": "odyssey.unmet.gravity_callable",
      "max_possible_gain_ms": 0.0,
      "prior_confidence": 0.5,
      "required_resource": "ODYSSEY",
@@ -1574,15 +1574,15 @@
    ],
    "next_decisive_experiments": [
     "python3 tools/future/odyssey_launch.py --verify",
-    "re-evaluate criterion resident_autonomy_trial_pass from disk evidence; python3 tools/future/odyssey_launch.py --verify",
-    "re-evaluate criterion specimen_curriculum_ready from disk evidence; python3 tools/future/odyssey_launch.py --verify"
+    "re-evaluate criterion specimen_curriculum_ready from disk evidence; python3 tools/future/odyssey_launch.py --verify",
+    "re-evaluate criterion gravity_callable from disk evidence; python3 tools/future/odyssey_launch.py --verify"
    ],
-   "objective": "Odyssey I (WHAT IS TRUE?) is REFUSED at 14/16 cited from receipts/future/ODYSSEY_LAUNCH_GATE.json. Unmet: ['resident_autonomy_trial_pass', 'specimen_curriculum_ready']. This frontier exists because a green scaffold is not Odyssey started.",
+   "objective": "Odyssey I (WHAT IS TRUE?) is REFUSED at 14/16 cited from receipts/future/ODYSSEY_LAUNCH_GATE.json. Unmet: ['specimen_curriculum_ready', 'gravity_callable']. This frontier exists because a green scaffold is not Odyssey started.",
    "remaining_gap": {
     "n_unmet": 2,
     "unmet": [
-     "resident_autonomy_trial_pass",
-     "specimen_curriculum_ready"
+     "specimen_curriculum_ready",
+     "gravity_callable"
     ]
    },
    "resource_requirements": [
@@ -1596,7 +1596,7 @@
     "verdict": "LAUNCH"
    },
    "why_it_exists": {
-    "biggest_unknown": "the unmet criteria: resident_autonomy_trial_pass, specimen_curriculum_ready",
+    "biggest_unknown": "the unmet criteria: specimen_curriculum_ready, gravity_callable",
     "current_best": {
      "n_criteria": 16,
      "n_met": 14,
@@ -1613,14 +1613,14 @@
       "status": "OPEN"
      },
      {
-      "id": "odyssey.unmet.resident_autonomy_trial_pass",
+      "id": "odyssey.unmet.specimen_curriculum_ready",
       "max_possible_gain_ms": 0.0,
       "prior_confidence": 0.5,
       "required_resource": "ODYSSEY",
       "status": "OPEN"
      },
      {
-      "id": "odyssey.unmet.specimen_curriculum_ready",
+      "id": "odyssey.unmet.gravity_callable",
       "max_possible_gain_ms": 0.0,
       "prior_confidence": 0.5,
       "required_resource": "ODYSSEY",
@@ -1631,15 +1631,15 @@
     "n_scars": 0,
     "next_decisive_experiments": [
      "python3 tools/future/odyssey_launch.py --verify",
-     "re-evaluate criterion resident_autonomy_trial_pass from disk evidence; python3 tools/future/odyssey_launch.py --verify",
-     "re-evaluate criterion specimen_curriculum_ready from disk evidence; python3 tools/future/odyssey_launch.py --verify"
+     "re-evaluate criterion specimen_curriculum_ready from disk evidence; python3 tools/future/odyssey_launch.py --verify",
+     "re-evaluate criterion gravity_callable from disk evidence; python3 tools/future/odyssey_launch.py --verify"
     ],
-    "objective": "Odyssey I (WHAT IS TRUE?) is REFUSED at 14/16 cited from receipts/future/ODYSSEY_LAUNCH_GATE.json. Unmet: ['resident_autonomy_trial_pass', 'specimen_curriculum_ready']. This frontier exists because a green scaffold is not Odyssey started.",
+    "objective": "Odyssey I (WHAT IS TRUE?) is REFUSED at 14/16 cited from receipts/future/ODYSSEY_LAUNCH_GATE.json. Unmet: ['specimen_curriculum_ready', 'gravity_callable']. This frontier exists because a green scaffold is not Odyssey started.",
     "remaining_gap": {
      "n_unmet": 2,
      "unmet": [
-      "resident_autonomy_trial_pass",
-      "specimen_curriculum_ready"
+      "specimen_curriculum_ready",
+      "gravity_callable"
      ]
     },
     "resource_requirements": [
@@ -2047,18 +2047,18 @@
   "unbalanced": false
  },
  "schema": "hawking.future.improvement_metabolism.v1",
- "seal_sha256": "8f0dfe26576347f8db11f7e02f86b6e664c284337ce55bf097ca7de322ffe984",
+ "seal_sha256": "b32521e00004adde49d3be33182eeaaad174a5a44233d81791eab3b8dcaa9bb7",
  "sources": {
-  "receipts/future/DELTANET_GENERATED_TRANSITION.json": "git:HEAD:receipts/future/DELTANET_GENERATED_TRANSITION.json",
-  "receipts/future/DELTANET_MULTISTEP.json": "git:HEAD:receipts/future/DELTANET_MULTISTEP.json",
-  "receipts/future/EXECUTABLE_ECONOMICS.json": "git:HEAD:receipts/future/EXECUTABLE_ECONOMICS.json",
-  "receipts/future/MLP_ALU_ROOFLINE.json": "git:HEAD:receipts/future/MLP_ALU_ROOFLINE.json",
-  "receipts/future/MLP_FUNCTIONAL_RANK.json": "git:HEAD:receipts/future/MLP_FUNCTIONAL_RANK.json",
-  "receipts/future/MLP_NONLINEAR_PROGRAM.json": "git:HEAD:receipts/future/MLP_NONLINEAR_PROGRAM.json",
-  "receipts/future/MLP_SHARED_PROGRAM.json": "git:HEAD:receipts/future/MLP_SHARED_PROGRAM.json",
-  "receipts/future/ODYSSEY_LAUNCH_GATE.json": "disk:/Users/scammermike/.claude-grok/worktrees/s4-tools-future-under-10s-20260902-045214/receipts/future/ODYSSEY_LAUNCH_GATE.json",
-  "receipts/future/PATH_TO_71.json": "git:HEAD:receipts/future/PATH_TO_71.json",
-  "receipts/future/RESIDENT_71TPS_CAUSAL_BUDGET.json": "git:HEAD:receipts/future/RESIDENT_71TPS_CAUSAL_BUDGET.json"
+  "receipts/future/DELTANET_GENERATED_TRANSITION.json": "disk:/Users/scammermike/Downloads/hawking/receipts/future/DELTANET_GENERATED_TRANSITION.json",
+  "receipts/future/DELTANET_MULTISTEP.json": "disk:/Users/scammermike/Downloads/hawking/receipts/future/DELTANET_MULTISTEP.json",
+  "receipts/future/EXECUTABLE_ECONOMICS.json": "disk:/Users/scammermike/Downloads/hawking/receipts/future/EXECUTABLE_ECONOMICS.json",
+  "receipts/future/MLP_ALU_ROOFLINE.json": "disk:/Users/scammermike/Downloads/hawking/receipts/future/MLP_ALU_ROOFLINE.json",
+  "receipts/future/MLP_FUNCTIONAL_RANK.json": "disk:/Users/scammermike/Downloads/hawking/receipts/future/MLP_FUNCTIONAL_RANK.json",
+  "receipts/future/MLP_NONLINEAR_PROGRAM.json": "disk:/Users/scammermike/Downloads/hawking/receipts/future/MLP_NONLINEAR_PROGRAM.json",
+  "receipts/future/MLP_SHARED_PROGRAM.json": "disk:/Users/scammermike/Downloads/hawking/receipts/future/MLP_SHARED_PROGRAM.json",
+  "receipts/future/ODYSSEY_LAUNCH_GATE.json": "disk:/Users/scammermike/Downloads/hawking/receipts/future/ODYSSEY_LAUNCH_GATE.json",
+  "receipts/future/PATH_TO_71.json": "disk:/Users/scammermike/Downloads/hawking/receipts/future/PATH_TO_71.json",
+  "receipts/future/RESIDENT_71TPS_CAUSAL_BUDGET.json": "disk:/Users/scammermike/Downloads/hawking/receipts/future/RESIDENT_71TPS_CAUSAL_BUDGET.json"
  },
  "tenet": "HAWKING IMPROVES BY COLLAPSING UNCERTAINTY FASTER THAN IT CREATES IT",
  "version": 1,

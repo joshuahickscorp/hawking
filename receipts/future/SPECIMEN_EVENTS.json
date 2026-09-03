@@ -3,36 +3,36 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T08:27:31Z",
+  "recorded_at": "2026-09-02T23:39:31Z",
   "recorded_by": "tools/future/specimen_events.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
  "candidate_roles": [
   {
-   "role": "deferred_lake_entry",
+   "role": "small_dense_alternate_architecture_transfer",
    "status": "CANDIDATE",
-   "why": "no first-wave role matches; recorded and deferred"
+   "why": "falcon_h1 is the alternate-architecture first-wave role"
   }
  ],
  "cite_existing_seal": {
   "action": "CITED_EXISTING_SEAL",
-  "bytes_hashed_cited": 13957873280,
-  "expected_revision": null,
-  "n_files_cited": 9,
-  "n_sha256_verified_cited": 9,
+  "bytes_hashed_cited": 15182220635,
+  "expected_revision": "41e72f27effbab80cd45b6e884688452253a3686",
+  "n_files_cited": 13,
+  "n_sha256_verified_cited": 13,
   "rehashed": false,
   "revision_matches": true,
   "rule": "a sealed source is not re-hashed; the existing whole-tree receipt is the seal",
-  "specimen": "facebook--musicgen-large@15ccdc920998",
+  "specimen": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
   "status": "WHOLE_TREE_VERIFIED",
-  "tag_revision_prefix": "15ccdc920998",
+  "tag_revision_prefix": "41e72f27effb",
   "verification_source": "receipts/future/SPECIMEN_VERIFICATION.json",
   "whole_tree_verified": true
  },
  "claim_boundary": "Static sidecar artifact. A specimen-seal event ADDS a WorkGraph to the running Odyssey I mission. It does not restart Odyssey, does not rewrite ODYSSEY_I_LAUNCH.json, does not re-hash a sealed source, and does not record a partial-weight experiment as specimen science.",
  "demonstration_mode": "replay",
- "demonstration_why": "no live ModelLake completion sealed while this lane ran; replaying the already-sealed transition of facebook--musicgen-large@15ccdc920998",
+ "demonstration_why": "no live ModelLake completion sealed while this lane ran; replaying the already-sealed transition of tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
  "durable_event": {
   "in_memory_callback_is_not_this": true,
   "n_events": 3,
@@ -40,14 +40,14 @@
   "survives_restart": true,
   "transitions": [
    {
-    "event_id": "0d169f3ba4af4483db5ba3b359112a5c2618d24e87f48356874f422a481899c3",
+    "event_id": "5ecb2d102d93b3a0b913c1c02ca5f44166f5c9b1bfeb1546deafadadf5aba7da",
     "from_state": "DOWNLOADING",
     "kind": "SPECIMEN_STATE_TRANSITION",
     "replay": true,
     "to_state": "COMPLETE_UNSEALED"
    },
    {
-    "event_id": "0b63a8be2fc2828b1f5eba55d95206a6dc71ea3a353860e2095d16dc8f66476b",
+    "event_id": "0438409bf09cb7ea1d3bb48adb37256c659977afd1c72e98f41f9f1a428630f9",
     "from_state": "COMPLETE_UNSEALED",
     "kind": "SPECIMEN_STATE_TRANSITION",
     "replay": true,
@@ -141,22 +141,25 @@
   }
  ],
  "fingerprint": {
-  "architecture_family": "UNKNOWN",
-  "architectures": [],
-  "hidden_size": null,
-  "model_type": "",
+  "architecture_family": "falcon_h1",
+  "architectures": [
+   "FalconH1ForCausalLM"
+  ],
+  "hidden_size": 3072,
+  "model_type": "falcon_h1",
   "moe": false,
   "multimodal": false,
-  "n_named_tensors": 0,
-  "num_hidden_layers": null,
+  "n_named_tensors": 751,
+  "num_hidden_layers": 44,
   "organ_families": [
-   "attention",
    "mlp",
+   "attention",
+   "mamba_ssm",
    "embed",
    "lm_head",
    "norm"
   ],
-  "size_bytes": 13957873280,
+  "size_bytes": 15171309760,
   "source": "config.json+optional_index",
   "weights_opened": false
  },
@@ -187,26 +190,26 @@
  "live_arrival": false,
  "mission": {
   "identity_after": {
-   "launch_seal_sha256": "669f24909ee1b14e109c59f0a7f1a7bcbb67fac5eb01d339d226f83b05d53bea",
-   "mission_id": "odyssey-i/669f24909ee1b14e109c59f0a7f1a7bcbb67fac5eb01d339d226f83b05d53bea",
+   "launch_seal_sha256": "896dac3f7f92e11b409a9cbf5217a6b801935da5c91f65c391f1198bd9455aba",
+   "mission_id": "odyssey-i/896dac3f7f92e11b409a9cbf5217a6b801935da5c91f65c391f1198bd9455aba",
    "phase_transition": "STARTED"
   },
   "identity_before": {
-   "launch_seal_sha256": "669f24909ee1b14e109c59f0a7f1a7bcbb67fac5eb01d339d226f83b05d53bea",
-   "mission_id": "odyssey-i/669f24909ee1b14e109c59f0a7f1a7bcbb67fac5eb01d339d226f83b05d53bea",
+   "launch_seal_sha256": "896dac3f7f92e11b409a9cbf5217a6b801935da5c91f65c391f1198bd9455aba",
+   "mission_id": "odyssey-i/896dac3f7f92e11b409a9cbf5217a6b801935da5c91f65c391f1198bd9455aba",
    "phase_transition": "STARTED"
   },
   "launch_receipt": "receipts/future/ODYSSEY_I_LAUNCH.json",
   "launch_untouched": {
-   "mission_id": "odyssey-i/669f24909ee1b14e109c59f0a7f1a7bcbb67fac5eb01d339d226f83b05d53bea",
+   "mission_id": "odyssey-i/896dac3f7f92e11b409a9cbf5217a6b801935da5c91f65c391f1198bd9455aba",
    "mission_id_unchanged": true,
    "path": "/Users/scammermike/Downloads/hawking/receipts/future/ODYSSEY_I_LAUNCH.json",
    "phase_transition": "STARTED",
    "phase_transition_unchanged": true,
-   "seal_sha256": "669f24909ee1b14e109c59f0a7f1a7bcbb67fac5eb01d339d226f83b05d53bea",
+   "seal_sha256": "896dac3f7f92e11b409a9cbf5217a6b801935da5c91f65c391f1198bd9455aba",
    "seal_unchanged": true
   },
-  "mission_id": "odyssey-i/669f24909ee1b14e109c59f0a7f1a7bcbb67fac5eb01d339d226f83b05d53bea",
+  "mission_id": "odyssey-i/896dac3f7f92e11b409a9cbf5217a6b801935da5c91f65c391f1198bd9455aba",
   "phase_transition": "STARTED",
   "restarts_odyssey": false
  },
@@ -336,26 +339,28 @@
   }
  ],
  "scheduler_wake": {
-  "event_id": "0b63a8be2fc2828b1f5eba55d95206a6dc71ea3a353860e2095d16dc8f66476b",
+  "event_id": "0438409bf09cb7ea1d3bb48adb37256c659977afd1c72e98f41f9f1a428630f9",
   "human_reminder": false,
   "kind": "SCHEDULER_WAKE",
-  "mission_id": "odyssey-i/669f24909ee1b14e109c59f0a7f1a7bcbb67fac5eb01d339d226f83b05d53bea",
+  "mission_id": "odyssey-i/896dac3f7f92e11b409a9cbf5217a6b801935da5c91f65c391f1198bd9455aba",
   "phase_transition": "STARTED",
   "restarts_odyssey": false,
-  "ts": "2026-09-02T08:27:31Z"
+  "ts": "2026-09-02T23:39:31Z"
  },
  "schema": "hawking.future.specimen_events.v1",
- "seal_sha256": "9c78d8e4c2ff5443206646919465e7b960ce92de161826e946c869d01108d581",
+ "seal_sha256": "5c621740b7ecbc29ecade46ce62e6f13e43c9294e469f55cd8398638c92fd7d6",
  "specimen": {
-  "bytes_hashed": 13957873280,
-  "n_files": 9,
-  "repo": "facebook/musicgen-large",
-  "revision": null,
-  "specimen_path": null,
-  "tag": "facebook--musicgen-large@15ccdc920998",
+  "architecture_family": "falcon_h1",
+  "bytes_hashed": 15182220635,
+  "n_files": 13,
+  "repo": "tiiuae/Falcon-H1-7B-Instruct",
+  "revision": "41e72f27effbab80cd45b6e884688452253a3686",
+  "role": "small_dense_alternate_architecture_transfer",
+  "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+  "tag": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
   "verification": {
-   "bytes_hashed": 13957873280,
-   "n_files": 9,
+   "bytes_hashed": 15182220635,
+   "n_files": 13,
    "status": "WHOLE_TREE_VERIFIED",
    "whole_tree_verified": true
   }
@@ -405,38 +410,38 @@
    "allow_new_search": true,
    "band": "mid",
    "max_units": 6,
-   "size_bytes": 13957873280,
+   "size_bytes": 15171309760,
    "why": "mid-size: transfer/scars first, at most one new-search unit, no GPU depth"
   },
   "n_units": 5,
   "new_search_ids": [
-   "odyssey-i.arrival.musicgen-large@unpinned.new_search"
+   "odyssey-i.arrival.falcon-h1-7b-instruct@41e72f27effb.new_search"
   ],
   "restarts_odyssey": false,
   "transfer_and_scar_ids": [
-   "odyssey-i.arrival.musicgen-large@unpinned.architecture_fingerprint",
-   "odyssey-i.arrival.musicgen-large@unpinned.cite_existing_seal",
-   "odyssey-i.arrival.musicgen-large@unpinned.relevant_scars",
-   "odyssey-i.arrival.musicgen-large@unpinned.transfer_laws"
+   "odyssey-i.arrival.falcon-h1-7b-instruct@41e72f27effb.architecture_fingerprint",
+   "odyssey-i.arrival.falcon-h1-7b-instruct@41e72f27effb.cite_existing_seal",
+   "odyssey-i.arrival.falcon-h1-7b-instruct@41e72f27effb.relevant_scars",
+   "odyssey-i.arrival.falcon-h1-7b-instruct@41e72f27effb.transfer_laws"
   ],
   "transfer_before_new_search": true,
   "transfer_does_not_depend_on_new_search": true,
   "unit_ids": [
-   "odyssey-i.arrival.musicgen-large@unpinned.architecture_fingerprint",
-   "odyssey-i.arrival.musicgen-large@unpinned.cite_existing_seal",
-   "odyssey-i.arrival.musicgen-large@unpinned.new_search",
-   "odyssey-i.arrival.musicgen-large@unpinned.relevant_scars",
-   "odyssey-i.arrival.musicgen-large@unpinned.transfer_laws"
+   "odyssey-i.arrival.falcon-h1-7b-instruct@41e72f27effb.architecture_fingerprint",
+   "odyssey-i.arrival.falcon-h1-7b-instruct@41e72f27effb.cite_existing_seal",
+   "odyssey-i.arrival.falcon-h1-7b-instruct@41e72f27effb.new_search",
+   "odyssey-i.arrival.falcon-h1-7b-instruct@41e72f27effb.relevant_scars",
+   "odyssey-i.arrival.falcon-h1-7b-instruct@41e72f27effb.transfer_laws"
   ],
   "units": [
    {
     "campaign_phase": "transfer_and_scars",
     "cost_units": 1,
     "dependencies": [
-     "odyssey-i.arrival.musicgen-large@unpinned.cite_existing_seal"
+     "odyssey-i.arrival.falcon-h1-7b-instruct@41e72f27effb.cite_existing_seal"
     ],
     "expected_information_gain": 3,
-    "id": "odyssey-i.arrival.musicgen-large@unpinned.architecture_fingerprint",
+    "id": "odyssey-i.arrival.falcon-h1-7b-instruct@41e72f27effb.architecture_fingerprint",
     "resource_lane": "CPU_ANALYSIS",
     "role": "science",
     "status": "pending"
@@ -446,7 +451,7 @@
     "cost_units": 1,
     "dependencies": [],
     "expected_information_gain": 3,
-    "id": "odyssey-i.arrival.musicgen-large@unpinned.cite_existing_seal",
+    "id": "odyssey-i.arrival.falcon-h1-7b-instruct@41e72f27effb.cite_existing_seal",
     "resource_lane": "CPU_VERIFY",
     "role": "verify",
     "status": "pending"
@@ -455,11 +460,11 @@
     "campaign_phase": "new_search",
     "cost_units": 3,
     "dependencies": [
-     "odyssey-i.arrival.musicgen-large@unpinned.transfer_laws",
-     "odyssey-i.arrival.musicgen-large@unpinned.relevant_scars"
+     "odyssey-i.arrival.falcon-h1-7b-instruct@41e72f27effb.transfer_laws",
+     "odyssey-i.arrival.falcon-h1-7b-instruct@41e72f27effb.relevant_scars"
     ],
     "expected_information_gain": 2,
-    "id": "odyssey-i.arrival.musicgen-large@unpinned.new_search",
+    "id": "odyssey-i.arrival.falcon-h1-7b-instruct@41e72f27effb.new_search",
     "resource_lane": "CPU_ANALYSIS",
     "role": "science",
     "status": "pending"
@@ -468,10 +473,10 @@
     "campaign_phase": "transfer_and_scars",
     "cost_units": 1,
     "dependencies": [
-     "odyssey-i.arrival.musicgen-large@unpinned.architecture_fingerprint"
+     "odyssey-i.arrival.falcon-h1-7b-instruct@41e72f27effb.architecture_fingerprint"
     ],
     "expected_information_gain": 3,
-    "id": "odyssey-i.arrival.musicgen-large@unpinned.relevant_scars",
+    "id": "odyssey-i.arrival.falcon-h1-7b-instruct@41e72f27effb.relevant_scars",
     "resource_lane": "CPU_ANALYSIS",
     "role": "science",
     "status": "pending"
@@ -480,10 +485,10 @@
     "campaign_phase": "transfer_and_scars",
     "cost_units": 1,
     "dependencies": [
-     "odyssey-i.arrival.musicgen-large@unpinned.architecture_fingerprint"
+     "odyssey-i.arrival.falcon-h1-7b-instruct@41e72f27effb.architecture_fingerprint"
     ],
     "expected_information_gain": 3,
-    "id": "odyssey-i.arrival.musicgen-large@unpinned.transfer_laws",
+    "id": "odyssey-i.arrival.falcon-h1-7b-instruct@41e72f27effb.transfer_laws",
     "resource_lane": "CPU_ANALYSIS",
     "role": "science",
     "status": "pending"

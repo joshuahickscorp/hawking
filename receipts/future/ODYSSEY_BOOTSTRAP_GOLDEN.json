@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T08:33:32Z",
+  "recorded_at": "2026-09-02T23:27:05Z",
   "recorded_by": "tools/future/bootstrap_golden.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -1606,7 +1606,7 @@
   "tree": "bf2c7f2240354f04bb1d6db441cf226f2f28569f"
  },
  "gpu_authority": false,
- "head_at_seal": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
+ "head_at_seal": "a612af62db43bee98204eb7e19a64d901f1eb571",
  "honest_extra_ids": [
   "hcli_agentos_resident_py",
   "concurrency_doctor",
@@ -1819,7 +1819,7 @@
   "tree_matches": true
  },
  "schema": "hawking.future.odyssey_bootstrap_golden.v1",
- "seal_sha256": "5bef3e052beda07b60757fd04e9dfa8bdfd9c240077885dfd3ec6dda2ab7e38a",
+ "seal_sha256": "de6f0f8d5672e626609153addf7d32855227ce85e1b9f324948e47d3619e7451",
  "successor": {
   "blocking_a_descendant_is_forbidden": true,
   "casual_overwrite_is_detectable": true,

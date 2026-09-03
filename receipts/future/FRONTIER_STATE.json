@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T08:45:09Z",
+  "recorded_at": "2026-09-02T23:39:03Z",
   "recorded_by": "tools/future/frontiers.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -585,8 +585,8 @@
    "counts": {
     "blocked": 1,
     "next_work": 2,
-    "open_questions": 1,
-    "runnable_questions": 1
+    "open_questions": 2,
+    "runnable_questions": 2
    },
    "name": "FPGA",
    "next_work": [
@@ -636,6 +636,29 @@
     }
    ],
    "open_questions": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "ACCELERATOR_ARCHITECTURE_ATLAS.json carries hwir_hypotheses, but there is no HWIR module: no node/edge types, no serialization, no validator, no lowering from PhysicalGraph.",
+     "evidence": [
+      "receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
+      "tools/future/hwir.py"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 2,
+     "frontier": "FPGA",
+     "hypothesis_family": "campaign_f003",
+     "id": "FT.FPGA.campaign.F003",
+     "kind": "OPEN_QUESTION",
+     "redundancy_key": "FPGA|campaign_f003|",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "source_f": "F003",
+     "species": "independent_reproduction",
+     "title": "HWIR exists only as 15 hypotheses inside the atlas, not as an IR",
+     "verifier": "future.global_frontier.F003"
+    },
     {
      "bench_state": "UNKNOWN",
      "detail": "Fourteen P6/P7 candidates encode reusable physical concepts -- routed gate/up fusion, W2/down fusion, shared FP8 fusion, concurrent prefix, learned reader reuse, bounded expert cache reuse. None has a Hawking primitive, an HWIR hypothesis, an FPGA realization, a transfer scope or an Odyssey III counterexample. All are BLOCKED and unmeasured, so nothing may be claimed.",
@@ -1718,8 +1741,8 @@
    "counts": {
     "blocked": 0,
     "next_work": 2,
-    "open_questions": 1,
-    "runnable_questions": 1
+    "open_questions": 2,
+    "runnable_questions": 2
    },
    "name": "PHYSICAL_GRAPH",
    "next_work": [
@@ -1772,6 +1795,29 @@
     }
    ],
    "open_questions": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "turns FPGA speculation into ranked falsifiable experiments before the board arrives",
+     "evidence": [
+      "receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
+      "tools/future/hardware_doctor.py -> HCLI WorkUnit species"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 2,
+     "frontier": "PHYSICAL_GRAPH",
+     "hypothesis_family": "campaign_f004",
+     "id": "FT.PHYSICAL_GRAPH.campaign.F004",
+     "kind": "OPEN_QUESTION",
+     "redundancy_key": "PHYSICAL_GRAPH|campaign_f004|",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "source_f": "F004",
+     "species": "independent_reproduction",
+     "title": "No Hardware Doctor",
+     "verifier": "future.global_frontier.F004"
+    },
     {
      "bench_state": "UNKNOWN",
      "detail": "14 source schools, 21 behavior taxonomy entries, 17 backend-neutral primitives, 15 HWIR hypotheses, an ASIC candidate ledger and an experiment queue already exist. The value now is downstream wiring: primitives into a real library, hypotheses into a real IR.",
@@ -2117,8 +2163,8 @@
    "counts": {
     "blocked": 0,
     "next_work": 2,
-    "open_questions": 3,
-    "runnable_questions": 3
+    "open_questions": 4,
+    "runnable_questions": 4
    },
    "name": "VERIFICATION",
    "next_work": [
@@ -2168,6 +2214,29 @@
     }
    ],
    "open_questions": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "an axis of the dominance scoreboard that is currently absent entirely",
+     "evidence": [
+      "receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
+      "tools/future/green_machine.py -> tournament scoreboard"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 2,
+     "frontier": "VERIFICATION",
+     "hypothesis_family": "campaign_f006",
+     "id": "FT.VERIFICATION.campaign.F006",
+     "kind": "OPEN_QUESTION",
+     "redundancy_key": "VERIFICATION|campaign_f006|",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "source_f": "F006",
+     "species": "independent_reproduction",
+     "title": "No Green Machine energy accounting",
+     "verifier": "future.global_frontier.F006"
+    },
     {
      "bench_state": "UNKNOWN",
      "detail": "Without GPU authority the cheapest way to protect a future protected window is to catch binding/ABI/geometry errors statically. Nothing does.",
@@ -2257,20 +2326,19 @@
   "n_entries": 20,
   "note": "CLAUDE_GLOBAL_FRONTIER is the campaign gap tracker. This module extends it as an operating layer; it does not rewrite it.",
   "path": "receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
-  "resolved_entries": [
+  "resolved_entries": [],
+  "schema": "hawking.future.claude_global_frontier.v1",
+  "stale_entries": [
    "F003",
    "F004",
    "F005",
    "F006",
-   "F010"
-  ],
-  "schema": "hawking.future.claude_global_frontier.v1",
-  "stale_entries": [
+   "F010",
    "F014"
   ]
  },
  "gpu_authority": false,
- "head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
+ "head": "a612af62db43bee98204eb7e19a64d901f1eb571",
  "idle_proof": {
   "active": [
    "ACTIVE_BYTES",
@@ -4368,7 +4436,7 @@
   "workunit_emitted": "HCLI WorkUnit via tools.future.workunit_species.emit_hcli_workunit; extras: frontier, required_lanes, wake_condition, redundancy_key, expected_information_gain, hypothesis_family"
  },
  "schema": "hawking.future.frontiers.v1",
- "seal_sha256": "7b70dcc45da31f3f8b84747c2bae7ff70b592498e1686e471ca1bfde4e638a80",
+ "seal_sha256": "9a917009f8aa7078a54639d8149d4226e3f71dde1fb7ccb5a314bd7e2833606a",
  "sleeping": [
   {
    "assigned_backend": null,

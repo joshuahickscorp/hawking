@@ -23,7 +23,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T08:28:12Z",
+  "recorded_at": "2026-09-02T23:27:14Z",
   "recorded_by": "tools/future/teacher_corpus.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -561,7 +561,7 @@
  ],
  "purpose": "Teacher-corpus contract: bind every capture to specimen/layer/surface/provenance, compute diversity, dedup, and structurally refuse a corpus that only meets its sample-count threshold by duplication, resampling, or synthesis.",
  "recovered_implementation": {
-  "head": "6ea04b88f9a4bcb92a784ab5359c0370337bcccb",
+  "head": "a612af62db43bee98204eb7e19a64d901f1eb571",
   "missing_from_HEAD": [
    "receipts/headless/QWEN80_CAPTURE_INDEX.json",
    "receipts/headless/QWEN80_CAPTURE_SPEED.json"
@@ -733,7 +733,7 @@
     ]
    },
    "tools/accelerator": {
-    "n_files": 84,
+    "n_files": 86,
     "sample": [
      "tools/accelerator/accelerator_runner.py",
      "tools/accelerator/air.py",
@@ -780,7 +780,7 @@
   "route_union_definition": "Sorted unique route_ids over all rows sharing (specimen, layer, surface). Membership is the intersection of the row's route_ids with that union. Recovered from Q80 key_(layer, expert), not from FLASH_ATTENTION_ROUTE_UNION_PARITY (that receipt is not in HEAD)."
  },
  "schema": "hawking.future.teacher_corpus.v1",
- "seal_sha256": "75fa723ad7164e05a03585eb4b31911d8e2520a49bd03dd5db5cac85f9dd4069",
+ "seal_sha256": "cade3954ce6eee7d5e501dc72cbee47a9068191bfd9cba1e68c1aedca5cf7374",
  "selftest": {
   "dedup_collision_groups": 4,
   "dedup_kept_from_duplicated": 4,

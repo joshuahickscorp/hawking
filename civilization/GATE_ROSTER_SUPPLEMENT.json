@@ -1,5 +1,14 @@
 {
   "gates": {
+    "HAWKING_PUBLIC_MVP": {
+      "because": "README, architecture diagram, quickstart, bounded HCLI demo, sample evidence receipt, safe one-body operation. WAKES ONLY when HCLI is operational AND a detached Odyssey is running AND a known-good runtime commit is frozen"
+    },
+    "MODELLAKE_LIFECYCLE": {
+      "because": "one lifecycle capability with structured fields read from disk (sealed, partial, payload-complete-unpromoted, curriculum-eligible, HCLI-visible, active acquisition workers) instead of eight new gates"
+    },
+    "REPO_TOPOLOGY_COMPRESSION": {
+      "because": "target ~7 conceptual top-level areas. Isolated worktree only; never reorganize underneath an active Odyssey"
+    },
     "RUNTIME_COMPLETE_TOKEN_PROFILE": {
       "because": "prefill + decode + host + tools + context accounted together"
     },
@@ -20,6 +29,9 @@
     },
     "RUNTIME_PREFIX_STATE_REUSE": {
       "because": "exact-token append-only prefix reuse: instrumented, realized reuse NOT proven"
+    },
+    "SEMANTIC_COMPRESSION": {
+      "because": "duplicate functions, schemas, one-off harnesses, nomenclature and environment/config surface. Same wake condition and same isolation rule"
     },
     "STABLE_PREFIX_CONTEXT_ALIGNMENT": {
       "because": "maximize the useful stable physical prefix subject to reasoning quality and context budget"

@@ -4,7 +4,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T09:05:22Z",
+  "recorded_at": "2026-09-02T19:15:48Z",
   "recorded_by": "tools/future/scar_reevaluator.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -15,7 +15,7 @@
  "evidence_receipt": "receipts/headless/ODYSSEY_TRANSFER_PROVEN.json",
  "gaps_closed": [
   "Recovered LAW-COLD-CONTROL-BEAT-TRANSFER-SEED from receipts/future/ODYSSEY2_LAW_STORE.json (evidence receipts/headless/ODYSSEY_TRANSFER_PROVEN.json); did not invent a law.",
-  "TRANSFER_TEST future.TRANSFER_TEST.LAW-COLD-CONTROL-BEAT-TRANSFER-SEED.Qwen3.8-Flash-Next targets Qwen3.8-Flash-Next family=qwen4_exp (source family qwen3_moe).",
+  "TRANSFER_TEST future.TRANSFER_TEST.LAW-COLD-CONTROL-BEAT-TRANSFER-SEED.Falcon-H1-7B-Instruct targets Falcon-H1-7B-Instruct family=falcon_h1 (source family qwen3_moe).",
   "LAW_ATTACK future.LAW_ATTACK.LAW-COLD-CONTROL-BEAT-TRANSFER-SEED.measurement_trap selected LAW-COLD-CONTROL-BEAT-TRANSFER-SEED::measurement_trap.",
   "Both units carry scope_binding, falsifier, result_that_would_retire.",
   "JSON round-trip preserves the measured lattice; dropping or widening the binding fails.",
@@ -222,7 +222,7 @@
   "transfer_test_lattice": "MODEL_LOCAL"
  },
  "schema": "hawking.future.odyssey_ii_iii_activation.v1",
- "seal_sha256": "266631f2bfc7623d8c31c7c79402e4d573bf8e13d8eb0a7c0aa76c534548b774",
+ "seal_sha256": "0410cc3b93a06c15a5a27440d580a163be51fec634b5eff513f45441ad164eaa",
  "source_receipt": "receipts/future/ODYSSEY2_LAW_STORE.json",
  "transfer_test": {
   "assigned_backend": null,
@@ -232,9 +232,9 @@
   "catalog_species": "odyssey_ii_transfer_experiment",
   "claim_boundary": "WorkUnit is a proposal. Scope is the law's measured origin, not the target. A passing diagnostic does not widen MODEL_LOCAL.",
   "classification": "STATIC_ONLY",
-  "content_hash": "a4589db7127df65199304efc8b7a20518d2ad51b8689706d179b87782df26c82",
+  "content_hash": "74080e5c506b3f82d5ee705cfb910ffeafa670de652c8444749ad2c2dfd1c0f2",
   "dependencies": [],
-  "description": "TRANSFER_TEST of LAW-COLD-CONTROL-BEAT-TRANSFER-SEED (moe_expert on Qwen/Qwen3-30B-A3B, scope MODEL_LOCAL) onto Qwen3.8-Flash-Next family=qwen4_exp. Falsifier: a pre-registered landing target on this organ where the transfer seed uses strictly fewer evaluations than cold AND lands at equal or better held-out rel_fro; until then the savings claim is refuted here",
+  "description": "TRANSFER_TEST of LAW-COLD-CONTROL-BEAT-TRANSFER-SEED (moe_expert on Qwen/Qwen3-30B-A3B, scope MODEL_LOCAL) onto Falcon-H1-7B-Instruct family=falcon_h1. Falsifier: a pre-registered landing target on this organ where the transfer seed uses strictly fewer evaluations than cold AND lands at equal or better held-out rel_fro; until then the savings claim is refuted here",
   "different_architecture": true,
   "different_specimen": true,
   "does_not_widen_scope": true,
@@ -246,16 +246,6 @@
   "failure_context": null,
   "falsifier": "a pre-registered landing target on this organ where the transfer seed uses strictly fewer evaluations than cold AND lands at equal or better held-out rel_fro; until then the savings claim is refuted here",
   "finished_at": null,
-  "from_transfer_candidate": {
-   "confidence": 0.45,
-   "confidence_basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
-   "counterexample_requirement": "a pre-registered landing target on this organ where the transfer seed uses strictly fewer evaluations than cold AND lands at equal or better held-out rel_fro; until then the savings claim is refuted here",
-   "source_model": "Qwen/Qwen3-30B-A3B",
-   "source_school": null,
-   "target_architecture_family": "qwen4_exp",
-   "target_model": "Qwen/Qwen3.8-Flash-Next",
-   "target_school": "Flash"
-  },
   "gates_invoked": [
    "tools.future.odyssey2_transfer.may_transfer",
    "tools.future.odyssey2_transfer.require_sealed",
@@ -263,7 +253,7 @@
    "tools.future.workunit_species.emit_hcli_workunit",
    "tools.future.workunit_species.validate_emitted_unit"
   ],
-  "id": "future.TRANSFER_TEST.LAW-COLD-CONTROL-BEAT-TRANSFER-SEED.Qwen3.8-Flash-Next",
+  "id": "future.TRANSFER_TEST.LAW-COLD-CONTROL-BEAT-TRANSFER-SEED.Falcon-H1-7B-Instruct",
   "law_id": "LAW-COLD-CONTROL-BEAT-TRANSFER-SEED",
   "may_transfer": true,
   "mechanism": "moe_expert",
@@ -283,7 +273,7 @@
    "does_not_delete_the_law": true,
    "does_not_widen_scope": true,
    "on_the_law": "a pre-registered landing target on this organ where the transfer seed uses strictly fewer evaluations than cold AND lands at equal or better held-out rel_fro; until then the savings claim is refuted here",
-   "on_this_unit": "TRANSFER_FAILED: the statement does not hold on Qwen--Qwen3.8-Flash-Next@34567a4712bc (family qwen4_exp). The law stays at MODEL_LOCAL on Qwen/Qwen3-30B-A3B/moe_expert and must not be quoted as generic.",
+   "on_this_unit": "TRANSFER_FAILED: the statement does not hold on tiiuae--Falcon-H1-7B-Instruct@41e72f27effb (family falcon_h1). The law stays at MODEL_LOCAL on Qwen/Qwen3-30B-A3B/moe_expert and must not be quoted as generic.",
    "would_also_retire_the_law": "a pre-registered landing target on this organ where the transfer seed uses strictly fewer evaluations than cold AND lands at equal or better held-out rel_fro; until then the savings claim is refuted here"
   },
   "role": "science",
@@ -316,10 +306,10 @@
   "species": "TRANSFER_TEST",
   "statement": "On Qwen3-30B-A3B moe_expert layer 2, under the pre-registered loose landing target (held-out rel_fro <= 1.15x of uniform q4 g64), the COLD arm landed in 2 evaluations and the ODYSSEY_TRANSFER seed landed in 10; evaluations_avoided=-8. The transfer signal is in the matched-bits comparison (seeded affine wins 3/3 tiers), not in search-length. Values did not save experiments; the method still discriminated at matched bits.",
   "status": "pending",
-  "target_alias": "Qwen3.8-Flash-Next",
-  "target_architecture_family": "qwen4_exp",
-  "target_repo": "Qwen/Qwen3.8-Flash-Next",
-  "target_specimen": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+  "target_alias": "Falcon-H1-7B-Instruct",
+  "target_architecture_family": "falcon_h1",
+  "target_repo": "tiiuae/Falcon-H1-7B-Instruct",
+  "target_specimen": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
   "target_whole_tree_verified": true,
   "verification": null,
   "verifier": "future.odyssey_ii.law_scope",

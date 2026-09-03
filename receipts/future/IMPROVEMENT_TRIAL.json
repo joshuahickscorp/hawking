@@ -5,7 +5,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T08:51:16Z",
+  "recorded_at": "2026-09-02T23:39:01Z",
   "recorded_by": "tools/future/improvement_trial.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -203,7 +203,7 @@
    "kind": "STATE_RECOVERED",
    "payload": {
     "is_idle": false,
-    "n_live_options": 17,
+    "n_live_options": 19,
     "n_receipts": 14,
     "task_sequence": null
    },
@@ -231,7 +231,9 @@
      "mlp_decode_fma_cheapening",
      "deltanet_organ_vs_isolated_kernel",
      "deltanet_big_kernel_is_organ_cost",
-     "dispatch_count_explains_organ_gap"
+     "dispatch_count_explains_organ_gap",
+     "odyssey_unmet.specimen_curriculum_ready",
+     "odyssey_unmet.gravity_callable"
     ]
    },
    "seq": 2,
@@ -285,7 +287,7 @@
      "DISPATCH_COUNT_DOES_NOT_EXPLAIN_THE_DIFFERENCE"
     ],
     "n_avoided": 9,
-    "n_families": 18,
+    "n_families": 20,
     "n_hits": 9
    },
    "seq": 4,
@@ -296,7 +298,7 @@
    "kind": "OPTIONS_RANKED",
    "payload": {
     "live_mass_ms": 15.093,
-    "n_live": 17,
+    "n_live": 19,
     "top": [
      {
       "family": "mlp_decode_fma_cheapening",
@@ -815,7 +817,7 @@
     "live_mass_ms": 10.151,
     "n_killed": 10,
     "n_launched": 2,
-    "n_live": 7
+    "n_live": 9
    },
    "seq": 35,
    "t_ns": 28000000000,
@@ -824,7 +826,7 @@
   {
    "kind": "WORK_REFILLED",
    "payload": {
-    "queue_depth": 13,
+    "queue_depth": 15,
     "unit_ids": [
      "FT.ACTIVE_BYTES.hbm-rank",
      "FT.CHILD_RESIDENT.install-dry-run",
@@ -832,7 +834,8 @@
      "FT.DECODING.cost-model",
      "FT.FPGA.engine-sim",
      "FT.GPU_KERNELS.static-warnings",
-     "group_size_1024"
+     "group_size_1024",
+     "odyssey_unmet.specimen_curriculum_ready"
     ]
    },
    "seq": 36,
@@ -915,7 +918,7 @@
  "failed_on_degeneracy": false,
  "gpu_authority": false,
  "harness_integrity": "OK",
- "head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
+ "head": "a612af62db43bee98204eb7e19a64d901f1eb571",
  "killed": [
   {
    "cites": [
@@ -1086,13 +1089,16 @@
   },
   "numbers_are_citations_not_measurements": true,
   "odyssey_gate": {
-   "allowed": true,
+   "allowed": false,
    "n_criteria": 16,
-   "n_met": 16,
-   "n_unmet": 0,
+   "n_met": 14,
+   "n_unmet": 2,
    "source": "receipts/future/ODYSSEY_LAUNCH_GATE.json",
-   "unmet": [],
-   "verdict": "LAUNCH"
+   "unmet": [
+    "specimen_curriculum_ready",
+    "gravity_callable"
+   ],
+   "verdict": "REFUSED"
   }
  },
  "measurement_class": "STATIC_ONLY",
@@ -1373,7 +1379,7 @@
   "leave_next_running"
  ],
  "schema": "hawking.future.improvement_trial.v1",
- "seal_sha256": "89218801dd8659a937c1bb6efa354d51db5607b33505247e64c716aa8126feda",
+ "seal_sha256": "41f0956b07c1f9ccf14bec374becfa3fa18fb5fac046375ea415b19bb8a2d6dd",
  "six_negative_controls": [
   "duplicate_workunits",
   "dead_scar_repetition",

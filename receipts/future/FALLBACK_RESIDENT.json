@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T09:25:34Z",
+  "recorded_at": "2026-09-02T22:54:04Z",
   "recorded_by": "tools/future/fallback_resident.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -72,7 +72,7 @@
    "present": true,
    "recovery": "disk",
    "rel": "hcli/hawking-native.sealed-3.14.json",
-   "source": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
+   "source": "hcli/hawking-native.sealed-3.14.json",
    "tracked_in_head": true
   },
   "mix_report": {
@@ -98,8 +98,8 @@
    "note": "HCLI_RESIDENT_SEAL.runtime_binary_sha256_16 matches 'binary' (hybrid greedy), not resident_binary. Presence is required; matching the greedy prefix is not.",
    "path": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
    "role": "resident protocol binary (distinct from seal runtime_binary)",
-   "sha256": "9f79d8a26540b86091296ddbc5829cf372bd75e789b9b0551a76d6ce2446fc37",
-   "size_bytes": 6752552,
+   "sha256": "c108acc6a49eb5f1719ae260ece23c4c019fdbf560f305f491cf6c124880c270",
+   "size_bytes": 6804600,
    "source": "disk"
   },
   "role": "CURRENT_NONFINAL_HCLI_WORKER",
@@ -120,7 +120,7 @@
    "present": true,
    "recovery": "disk",
    "rel": "receipts/headless/HCLI_RESIDENT_SEAL.json",
-   "source": "/Users/scammermike/Downloads/hawking/receipts/headless/HCLI_RESIDENT_SEAL.json",
+   "source": "receipts/headless/HCLI_RESIDENT_SEAL.json",
    "tracked_in_head": true
   },
   "seal_resident": "sealed-3.14",
@@ -463,7 +463,7 @@
   }
  },
  "schema": "hawking.future.fallback_resident.v1",
- "seal_sha256": "5812127e21a25b727b9b296c18a5d14614734c43092495dc8fb212c42c8f872b",
+ "seal_sha256": "e539ef754aea27fd9f200b6f16b3be9a53dd6ae89f1e9064d2912707d23e6733",
  "started_model_process": false,
  "took_gpu_lease": false,
  "verify_restorable": {
@@ -486,7 +486,7 @@
      "present": true,
      "recovery": "disk",
      "rel": "hcli/hawking-native.sealed-3.14.json",
-     "source": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
+     "source": "hcli/hawking-native.sealed-3.14.json",
      "tracked_in_head": true
     },
     "id": "identity_document",
@@ -615,8 +615,8 @@
      "note": "HCLI_RESIDENT_SEAL.runtime_binary_sha256_16 matches 'binary' (hybrid greedy), not resident_binary. Presence is required; matching the greedy prefix is not.",
      "path": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
      "role": "resident protocol binary (distinct from seal runtime_binary)",
-     "sha256": "9f79d8a26540b86091296ddbc5829cf372bd75e789b9b0551a76d6ce2446fc37",
-     "size_bytes": 6752552,
+     "sha256": "c108acc6a49eb5f1719ae260ece23c4c019fdbf560f305f491cf6c124880c270",
+     "size_bytes": 6804600,
      "source": "disk"
     },
     "id": "resident_binary",

@@ -3,12 +3,12 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T09:12:34Z",
+  "recorded_at": "2026-09-02T23:39:53Z",
   "recorded_by": "tools/future/representation_lab.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
- "branch": "grok/b1-beyond-dense-research-env-20260902-045433",
+ "branch": "odyssey-i",
  "call_sites": [
   "representation_lab.score_family -> noetic_compiler.round_trip",
   "representation_lab.score_family -> complete_ebpw.refuse_unbilled_components",
@@ -92,7 +92,7 @@
   "source_path": "tools/odyssey/families/toy_xor_codes.py"
  },
  "gpu_authority": false,
- "head": "e868078d8a23c1339b41e03afd83b247bd401fc0",
+ "head": "a612af62db43bee98204eb7e19a64d901f1eb571",
  "named_receipts_loaded": [
   "receipts/future/COMPLETE_EBPW.json",
   "receipts/future/REPRESENTATION_FLOOR.json",
@@ -131,7 +131,7 @@
   }
  ],
  "schema": "hawking.future.representation_lab.v1",
- "seal_sha256": "fc072b0ed610c6cd5bcbfbe0ee990ebdf27534d08bdae4c75d2ff61d7e2d568b",
+ "seal_sha256": "656a02e127546cee44b5e95d6e2276a7e7e25fc50cc9ddb37fe866d3a03cb17d",
  "sealed_incumbent_priors": [
   {
    "axes": {
@@ -178,7 +178,7 @@
   "call_sites": "score_representation_family -> EvalSubject(kind='representation')",
   "claim_allowed": true,
   "family_id": "toy_mean_residual",
-  "git_diff_name_only_core": "tools/future/complete_ebpw.py",
+  "git_diff_name_only_core": "(empty)",
   "hardware_claim_refused": true,
   "named_in_core_source": false,
   "plugin": true,

@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T18:47:20Z",
+  "recorded_at": "2026-09-02T23:26:55Z",
   "recorded_by": "tools/future/hwir.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -732,10 +732,10 @@
  ],
  "purpose": "Pre-registered predictions about the inbound U50, sealed before arrival so they cannot be rationalised after the fact. Every number is PREHARDWARE (COST_MODEL / CYCLE_APPROX / STATIC). None is HARDWARE_MEASURED. There is no FPGA on this host.",
  "schema": "hawking.future.hwir.sealed_prediction_set.v1",
- "seal_sha256": "c19e2b734b0b10273cf995e29611f36d79f65f241969a4ced9472b7ddfc8c3fc",
+ "seal_sha256": "79f6743bebee316daec3a1a61afe44b807261d7a9e95ccd9ae95cf908b505a41",
  "u50": {
   "capability_graph": "civilization/CAPABILITY_GRAPH.json",
-  "capability_graph_sha256": "d1d284822c0f02273dd5e9ab98e487c5f5036fafb5d825520453c457e20dcc43",
+  "capability_graph_sha256": "cbc7546edb398ef0fc20b76be0d6eca1e48f6f74580926697a9d48210aea232c",
   "evidence_tier": "STATIC",
   "gates_carrying_wake": [
    "U50_PURCHASE_ACCEPTANCE",

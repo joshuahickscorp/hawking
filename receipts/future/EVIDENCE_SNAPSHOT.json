@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T08:33:04Z",
+  "recorded_at": "2026-09-02T23:40:28Z",
   "recorded_by": "tools/future/evidence_snapshot.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -347,8 +347,8 @@
    "name": "HCLI_MODELLAKE_FLASH_CENSUS.json",
    "sha256": "b96700c2360e75e75bc5789c0c9b4354a807771a45dce2418c78de2b1b9bb4cb",
    "snapshot_path": "receipts/future/evidence/HCLI_MODELLAKE_FLASH_CENSUS.json",
-   "source_mtime_epoch": 1788337979.966,
-   "source_mtime_utc": "2026-09-02T08:32:59Z",
+   "source_mtime_epoch": 1788392404.197,
+   "source_mtime_utc": "2026-09-02T23:40:04Z",
    "source_path": "receipts/headless/HCLI_MODELLAKE_FLASH_CENSUS.json"
   },
   {
@@ -439,6 +439,6 @@
  "purpose": "Pinned copy of the Codex receipts sidecar lanes read. Lanes run in sparse git worktrees where the live, uncommitted receipts are invisible; without this snapshot a lane would silently fall back to a fixture and its conclusions would be attached to nothing.",
  "read_only_guarantee": "Codex originals are opened read-only and never modified.",
  "schema": "hawking.future.evidence_snapshot.v1",
- "seal_sha256": "65e7376cd50c90ae81096c1f4fb2131e3878135723cc90de10b47210380f6fff",
+ "seal_sha256": "0febe7769c3ea1512ef8b34fb9994e348f9fa14e62af0f70fab608389d414077",
  "version": 1
 }

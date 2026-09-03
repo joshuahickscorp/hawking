@@ -12,7 +12,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T09:02:28Z",
+  "recorded_at": "2026-09-02T23:39:04Z",
   "recorded_by": "tools/future/no_wait_scheduler.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -39,7 +39,7 @@
   "rediscover adopts handles that outlived a resident restart and never relaunches"
  ],
  "gpu_authority": false,
- "head": "6d82b7bb8256254f7cc78630362f859f4c105159",
+ "head": "a612af62db43bee98204eb7e19a64d901f1eb571",
  "module_sha256": "da2bcc7c691cca293749338f2a1886cfa98c110792ecf6e67710de2592621296",
  "negative_findings": [
   "autonomy_run.py still calls subprocess.run; this lane is not allowed to edit it, so the live loop is not yet wired to the scheduler",
@@ -66,7 +66,7 @@
   },
   "cancel_stops": {
    "passed": true,
-   "pid": 14989,
+   "pid": 13882,
    "pid_still_alive": false,
    "process_gone": true,
    "terminal": "cancelled"
@@ -83,18 +83,18 @@
   },
   "overlap_interval": {
    "clock": "time.time() unix seconds; overlap is an interval, not an intent",
-   "fast_finished_at": 1788339747.766984,
+   "fast_finished_at": 1788392343.600039,
    "fast_ingest": "ingested",
-   "fast_launched_at": 1788339747.418921,
-   "fast_progress_at": 1788339747.54213,
+   "fast_launched_at": 1788392343.1842308,
+   "fast_progress_at": 1788392343.357891,
    "fast_receipt_present": true,
-   "fast_terminal": "unknown",
+   "fast_terminal": "completed-with-receipt",
    "independent_named": [
     "independent-cpu"
    ],
    "passed": true,
    "runnable_status_while_slow_open": "RUNNABLE",
-   "slow_launched_at": 1788339747.339363,
+   "slow_launched_at": 1788392343.052767,
    "slow_open_at_fast_finish": true,
    "slow_open_at_fast_progress": true,
    "slow_terminal_during_window": null,
@@ -137,7 +137,7 @@
    "claim_boundary": "Static sidecar artifact. No hardware measurement. A supervision interval is process identity and disk landing, not a bench. poll is a supervisor operation; the reasoning context is already released.",
    "classification": "STATIC_ONLY",
    "command": [
-    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/workspace/ops/.venv/bin/python",
     "/Users/scammermike/Downloads/hawking/tools/future/no_wait_scheduler.py",
     "--build"
    ],
@@ -173,7 +173,7 @@
   }
  },
  "schema": "hawking.future.no_wait_scheduler.v1",
- "seal_sha256": "386dc6dee8003eb1ba54edee3bdc86a24a0965e516c8c52af52375bda99ebcba",
+ "seal_sha256": "8dd5932d3d07a51d256113b29f655683b5452468d696ea2366d3f447d22e53e7",
  "supervisor_poll_rule": "poll is a supervisor operation; the reasoning context is released before this runs. Do not call it from a model-reasoning loop.",
  "version": 1
 }

@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T08:27:58Z",
+  "recorded_at": "2026-09-02T19:05:33Z",
   "recorded_by": "tools/future/succession_trial.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -13,7 +13,7 @@
   "architectures": [
    "Qwen3ForCausalLM"
   ],
-  "bytes": 1519280128,
+  "bytes": 1519209243,
   "census": {
    "census_path": "receipts/future/evidence/HCLI_MODELLAKE_FLASH_CENSUS.json",
    "census_present": true,
@@ -148,7 +148,7 @@
    },
    "source_model_lineage": {
     "acquired_at": "2026-08-25T04:14:38Z",
-    "bytes": 1519280128,
+    "bytes": 1519209243,
     "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3-0.6B@c1899de289a0.json",
     "method": "different_specimen",
     "n_files": 10,
@@ -202,7 +202,7 @@
   "Flash-Next and Coder-30B inspected and rejected with disk reasons"
  ],
  "gpu_authority": false,
- "head": "6ea04b88f9a4bcb92a784ab5359c0370337bcccb",
+ "head": "0bf5d2f5cca9ac95744437ff0e7e5e806e2613d8",
  "incumbent": {
   "artifact_path": "/Users/scammermike/noetic/NOETIC_PARENT_A",
   "config_digest": "2979da8f8d30d0965ef6629b6df47e82cf5a7bb99c9ffc6531fb308292c4cf7e",
@@ -627,7 +627,7 @@
   "workunit": "one CPU_ANALYSIS unit; real ModelLake child; independent judge; Qwen27 restorable; PROMOTE unreachable"
  },
  "schema": "hawking.future.succession_trial.v1",
- "seal_sha256": "e8a030248594974b5db66c4e270f7a6940e99d876f45a554e5dc28c4d6bc77b3",
+ "seal_sha256": "40de85f54060e1201b935e8750b183baf57d90396e4d2ba5005216201321fae4",
  "shadow": {
   "bound_exceeded_on_real_units": {
    "error": "child.different_specimen.Qwen--Qwen3-0.6B@c1899de289a0: cloned workunits 26 exceed bound.max_cloned_workunits 1",

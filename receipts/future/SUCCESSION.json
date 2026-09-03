@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T09:16:23Z",
+  "recorded_at": "2026-09-02T18:56:57Z",
   "recorded_by": "tools/future/succession.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -300,7 +300,7 @@
   "REFUSE_INSUFFICIENT_EVIDENCE as the honest default; PROMOTE unreachable without executed GPU authority"
  ],
  "gpu_authority": false,
- "head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
+ "head": "dfaeaab9b8dc9131d676b04a18a576bef3d0f073",
  "ladder": {
   "default_run": {
    "candidate_id": "child.adapter.incumbent.synthetic.v0",
@@ -757,37 +757,37 @@
  "recovered_implementation": [
   {
    "path": "hcli/agentos/resident.py",
-   "path_taken": "git_head",
+   "path_taken": "disk",
    "present_in_head": true,
-   "present_on_disk": false,
+   "present_on_disk": true,
    "what": "does not exist in HEAD; resident_gate.py is the live sequential-proof boundary. This module copes with either state and records path_taken."
   },
   {
    "path": "hcli/agentos/resident_gate.py",
-   "path_taken": "git_head",
+   "path_taken": "disk",
    "present_in_head": true,
-   "present_on_disk": false,
+   "present_on_disk": true,
    "what": "LIVE_RESIDENT_SEQUENTIAL_PROOF; process/lifecycle only; does not promote"
   },
   {
    "path": "hcli/agentos/checkpoint.py",
-   "path_taken": "git_head",
+   "path_taken": "disk",
    "present_in_head": true,
-   "present_on_disk": false,
+   "present_on_disk": true,
    "what": "program-level census, not a success stamp; cited as checkpoint owner"
   },
   {
    "path": "hcli/agentos/recovery.py",
-   "path_taken": "git_head",
+   "path_taken": "disk",
    "present_in_head": true,
-   "present_on_disk": false,
+   "present_on_disk": true,
    "what": "fixture recovery gate; not re-run here (would start a fixture process)"
   },
   {
    "path": "lab/lineage/promotion.py",
-   "path_taken": "git_head",
+   "path_taken": "disk",
    "present_in_head": true,
-   "present_on_disk": false,
+   "present_on_disk": true,
    "what": "recovered via git show: refuse_self_certification; parent and child cannot invoke the gate on themselves; missing evidence is PENDING. Not imported (out of this lane's import surface)."
   },
   {
@@ -901,7 +901,7 @@
   "workunit": "one CPU_ANALYSIS unit; independent judge over a shadowed candidate; PROMOTE unreachable from SELF_MEASURED_DIRTY"
  },
  "schema": "hawking.future.succession.v1",
- "seal_sha256": "264fc052a3fbc59b9c60568fcb67a42b07b4043fcef223ccaebda06bdc096cf2",
+ "seal_sha256": "4b581a53f4f3dae50b30a5b7aedbd7a2d29e036cdcef182bb91cce0156f02b9f",
  "shadow": {
   "allowed": [
    "classify_receipt_static_only",

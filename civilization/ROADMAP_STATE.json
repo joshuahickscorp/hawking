@@ -1,6 +1,6 @@
 {
-  "ACTIVE_NONHARDWARE_BURDEN": 49,
-  "TOTAL_UNRESOLVED_GATES": 63,
+  "ACTIVE_NONHARDWARE_BURDEN": 53,
+  "TOTAL_UNRESOLVED_GATES": 67,
   "active_actions": [
     "AGENTOS_CIRCUIT_BREAKER",
     "AGENTOS_RETRY_CLASSIFIED",
@@ -12,6 +12,7 @@
     "FPGA_PARTITION_SIM",
     "FPGA_PREBOARD_SCHEMAS",
     "HCLI_CONTEXT_INVALIDATION",
+    "MODELLAKE_LIFECYCLE",
     "QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED",
     "QWEN27_RUNTIME_IDENTITY_FROZEN",
     "RUNTIME_COMPLETE_TOKEN_PROFILE",
@@ -194,6 +195,13 @@
       "integration_state": "ISOLATED",
       "verification_state": "TEST_PRESENT"
     },
+    "HAWKING_PUBLIC_MVP": {
+      "acceptance_state": "UNRUN",
+      "evidence_tier": "STATIC",
+      "implementation_state": "SCAFFOLDED",
+      "integration_state": "ISOLATED",
+      "verification_state": "NONE"
+    },
     "HCLI_CONTEXT_AUTHORITY_UNIFIED": {
       "acceptance_state": "PASS",
       "evidence_tier": "STATIC",
@@ -271,6 +279,13 @@
       "integration_state": "IN_PRODUCTION_PATH",
       "verification_state": "TEST_PRESENT"
     },
+    "MODELLAKE_LIFECYCLE": {
+      "acceptance_state": "UNRUN",
+      "evidence_tier": "STATIC",
+      "implementation_state": "SCAFFOLDED",
+      "integration_state": "ISOLATED",
+      "verification_state": "NONE"
+    },
     "ODYSSEY_III_ADVERSARIAL_META_SCIENCE": {
       "acceptance_state": "BLOCKED",
       "evidence_tier": "STATIC",
@@ -311,6 +326,13 @@
       "evidence_tier": "STATIC",
       "implementation_state": "INTEGRATED",
       "integration_state": "IN_PRODUCTION_PATH",
+      "verification_state": "NONE"
+    },
+    "REPO_TOPOLOGY_COMPRESSION": {
+      "acceptance_state": "UNRUN",
+      "evidence_tier": "STATIC",
+      "implementation_state": "SCAFFOLDED",
+      "integration_state": "ISOLATED",
       "verification_state": "NONE"
     },
     "RUNTIME_COMPLETE_TOKEN_PROFILE": {
@@ -361,6 +383,13 @@
       "implementation_state": "SCAFFOLDED",
       "integration_state": "ISOLATED",
       "verification_state": "TEST_PRESENT"
+    },
+    "SEMANTIC_COMPRESSION": {
+      "acceptance_state": "UNRUN",
+      "evidence_tier": "STATIC",
+      "implementation_state": "SCAFFOLDED",
+      "integration_state": "ISOLATED",
+      "verification_state": "NONE"
     },
     "STABLE_PREFIX_CONTEXT_ALIGNMENT": {
       "acceptance_state": "UNRUN",
@@ -591,9 +620,10 @@
     "DEFERRED_PROGRAM": 7,
     "EXPERIMENTATION_REQUIRED": 12,
     "EXTERNAL_ENVIRONMENT_REQUIRED": 3,
+    "LONG_RUN_EVIDENCE_REQUIRED": 3,
     "PHYSICAL_HARDWARE_REQUIRED": 14,
     "SOFTWARE_BUILD_REQUIRED": 1,
-    "SOFTWARE_CONNECTION_REMAINING": 26
+    "SOFTWARE_CONNECTION_REMAINING": 27
   },
   "built_but_no_verifier": [
     "FLASH_DENSE_VS_NF_AB",
@@ -669,6 +699,7 @@
     "FPGA_PARTITION_SIM": "acceptance_span in the superseded roadmap",
     "FPGA_PREBOARD_SCHEMAS": "acceptance_span in the superseded roadmap",
     "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE": "acceptance_span in the superseded roadmap",
+    "HAWKING_PUBLIC_MVP": "acceptance_span in the superseded roadmap",
     "HCLI_CONTEXT_AUTHORITY_UNIFIED": "acceptance_span in the superseded roadmap",
     "HCLI_CONTEXT_FOCUSED_WORKUNITS": "acceptance_span in the superseded roadmap",
     "HCLI_CONTEXT_INVALIDATION": "acceptance_span in the superseded roadmap",
@@ -680,12 +711,14 @@
     "MODELLAKE_ATOMIC_PROMOTION": "acceptance_span in the superseded roadmap",
     "MODELLAKE_HASH_VERIFIED": "acceptance_span in the superseded roadmap",
     "MODELLAKE_IDENTITY_RESOLVED": "acceptance_span in the superseded roadmap",
+    "MODELLAKE_LIFECYCLE": "acceptance_span in the superseded roadmap",
     "ODYSSEY_III_ADVERSARIAL_META_SCIENCE": "acceptance_span in the superseded roadmap",
     "ODYSSEY_II_TRANSFER": "acceptance_span in the superseded roadmap",
     "ODYSSEY_I_DISCOVERY": "acceptance_span in the superseded roadmap",
     "QWEN27_PROTECTED_BASELINE": "acceptance_span in the superseded roadmap",
     "QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED": "acceptance_span in the superseded roadmap",
     "QWEN27_RUNTIME_IDENTITY_FROZEN": "acceptance_span in the superseded roadmap",
+    "REPO_TOPOLOGY_COMPRESSION": "acceptance_span in the superseded roadmap",
     "RUNTIME_COMPLETE_TOKEN_PROFILE": "acceptance_span in the superseded roadmap",
     "RUNTIME_CONTEXT_NATIVE": "acceptance_span in the superseded roadmap",
     "RUNTIME_DECODE_PROTECTED": "acceptance_span in the superseded roadmap",
@@ -693,6 +726,7 @@
     "RUNTIME_NATIVE_PREFILL": "acceptance_span in the superseded roadmap",
     "RUNTIME_PREFILL_PHYSICAL_FRONTIER": "acceptance_span in the superseded roadmap",
     "RUNTIME_PREFIX_STATE_REUSE": "acceptance_span in the superseded roadmap",
+    "SEMANTIC_COMPRESSION": "acceptance_span in the superseded roadmap",
     "STABLE_PREFIX_CONTEXT_ALIGNMENT": "acceptance_span in the superseded roadmap",
     "THEIA_BOUNTY_GENERALIST_QUALIFIED": "acceptance_span in the superseded roadmap",
     "THEIA_GRAVITY_EXECUTABLE": "acceptance_span in the superseded roadmap",
@@ -976,6 +1010,7 @@
     "FPGA_PARTITION_SIM": "SCAFFOLDED_NO_CALLER",
     "FPGA_PREBOARD_SCHEMAS": "SCAFFOLDED_NO_CALLER",
     "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE": "UNREACHABLE_DEPENDENCIES",
+    "HAWKING_PUBLIC_MVP": "BLOCKED_EXTERNAL",
     "HCLI_CONTEXT_AUTHORITY_UNIFIED": "INTEGRATED_TEST_PRESENT",
     "HCLI_CONTEXT_FOCUSED_WORKUNITS": "INTEGRATED_TEST_PRESENT",
     "HCLI_CONTEXT_INVALIDATION": "SCAFFOLDED_NO_CALLER",
@@ -987,12 +1022,14 @@
     "MODELLAKE_ATOMIC_PROMOTION": "INTEGRATED_TEST_PRESENT",
     "MODELLAKE_HASH_VERIFIED": "WIRED_ACCEPTANCE_BLOCKED",
     "MODELLAKE_IDENTITY_RESOLVED": "INTEGRATED_TEST_PRESENT",
+    "MODELLAKE_LIFECYCLE": "SCAFFOLDED_NO_CALLER",
     "ODYSSEY_III_ADVERSARIAL_META_SCIENCE": "WIRED_ACCEPTANCE_BLOCKED",
     "ODYSSEY_II_TRANSFER": "WIRED_ACCEPTANCE_BLOCKED",
     "ODYSSEY_I_DISCOVERY": "INTEGRATED_TEST_PRESENT",
     "QWEN27_PROTECTED_BASELINE": "WIRED_ACCEPTANCE_BLOCKED",
     "QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED": "INTEGRATED_UNVERIFIED",
     "QWEN27_RUNTIME_IDENTITY_FROZEN": "INTEGRATED_UNVERIFIED",
+    "REPO_TOPOLOGY_COMPRESSION": "BLOCKED_EXTERNAL",
     "RUNTIME_COMPLETE_TOKEN_PROFILE": "SCAFFOLDED_NO_CALLER",
     "RUNTIME_CONTEXT_NATIVE": "SCAFFOLDED_NO_CALLER",
     "RUNTIME_DECODE_PROTECTED": "SCAFFOLDED_NO_CALLER",
@@ -1000,6 +1037,7 @@
     "RUNTIME_NATIVE_PREFILL": "SCAFFOLDED_NO_CALLER",
     "RUNTIME_PREFILL_PHYSICAL_FRONTIER": "SCAFFOLDED_NO_CALLER",
     "RUNTIME_PREFIX_STATE_REUSE": "SCAFFOLDED_NO_CALLER",
+    "SEMANTIC_COMPRESSION": "BLOCKED_EXTERNAL",
     "STABLE_PREFIX_CONTEXT_ALIGNMENT": "SCAFFOLDED_NO_CALLER",
     "THEIA_BOUNTY_GENERALIST_QUALIFIED": "BLOCKED_EXTERNAL",
     "THEIA_GRAVITY_EXECUTABLE": "BLOCKED_EXTERNAL",
@@ -1034,7 +1072,7 @@
     "VMCP_WEB_CAPTURE": "BLOCKED_EXTERNAL"
   },
   "evidence_levels": {
-    "STATIC": 79
+    "STATIC": 83
   },
   "evidence_tier_meaning": {
     "FUNCTIONAL_SIM": "a real local run of the software, not of the target hardware",
@@ -1354,9 +1392,13 @@
     "VMCP_FILE_CLASSIFIER",
     "VMCP_TOOL_DOCTOR"
   ],
-  "long_run_required": [],
+  "long_run_required": [
+    "HAWKING_PUBLIC_MVP",
+    "REPO_TOPOLOGY_COMPRESSION",
+    "SEMANTIC_COMPRESSION"
+  ],
   "multiplier_edges": [],
-  "net_future_burden": 49,
+  "net_future_burden": 53,
   "next_actions": [
     "AGENTOS_CIRCUIT_BREAKER",
     "AGENTOS_RETRY_CLASSIFIED",
@@ -2354,6 +2396,25 @@
     },
     {
       "actionable_now": true,
+      "blocker_class": "SOFTWARE_CONNECTION_REMAINING",
+      "critical_path": false,
+      "depends_on": [],
+      "estimated_wall": "under an hour (guess)",
+      "gate": "MODELLAKE_LIFECYCLE",
+      "leverage_score": 5,
+      "missing": "no non-test call site reaches this capability",
+      "multiplier": false,
+      "owner": "this-lane",
+      "parallel_safe_with": "any gate in a different resource_lane",
+      "reopen_if": "the caller is removed, the verifier is deleted, or the gate's acceptance criterion changes",
+      "resource_lane": "cpu",
+      "stop_condition": "a non-test call site reaches the named symbol AND a test fails when that connection is cut",
+      "unlocks_direct": [],
+      "unlocks_transitive": [],
+      "verifier": "must be written"
+    },
+    {
+      "actionable_now": true,
       "blocker_class": "EXPERIMENTATION_REQUIRED",
       "critical_path": false,
       "depends_on": [
@@ -2599,6 +2660,25 @@
     },
     {
       "actionable_now": false,
+      "blocker_class": "LONG_RUN_EVIDENCE_REQUIRED",
+      "critical_path": false,
+      "depends_on": [],
+      "estimated_wall": "wall-bound (guess)",
+      "gate": "HAWKING_PUBLIC_MVP",
+      "leverage_score": 0,
+      "missing": "HCLI_OPERATIONAL and ODYSSEY_DETACHED and KNOWN_GOOD_RUNTIME_COMMIT frozen. Isolated worktree only; merge after parity. Never reorganize underneath an active Odyssey.",
+      "multiplier": false,
+      "owner": "unassigned",
+      "parallel_safe_with": "any gate in a different resource_lane",
+      "reopen_if": "the caller is removed, the verifier is deleted, or the gate's acceptance criterion changes",
+      "resource_lane": "wall",
+      "stop_condition": "the blocker named above clears: HCLI_OPERATIONAL and ODYSSEY_DETACHED and KNOWN_GOOD_RUNTIME_COMMIT frozen. Isol",
+      "unlocks_direct": [],
+      "unlocks_transitive": [],
+      "verifier": "must be written"
+    },
+    {
+      "actionable_now": false,
       "blocker_class": "SOFTWARE_CONNECTION_REMAINING",
       "critical_path": false,
       "depends_on": [
@@ -2679,6 +2759,25 @@
       "reopen_if": "the caller is removed, the verifier is deleted, or the gate's acceptance criterion changes",
       "resource_lane": "cpu",
       "stop_condition": "a non-test call site reaches the named symbol AND a test fails when that connection is cut",
+      "unlocks_direct": [],
+      "unlocks_transitive": [],
+      "verifier": "must be written"
+    },
+    {
+      "actionable_now": false,
+      "blocker_class": "LONG_RUN_EVIDENCE_REQUIRED",
+      "critical_path": false,
+      "depends_on": [],
+      "estimated_wall": "wall-bound (guess)",
+      "gate": "REPO_TOPOLOGY_COMPRESSION",
+      "leverage_score": 0,
+      "missing": "HCLI_OPERATIONAL and ODYSSEY_DETACHED and KNOWN_GOOD_RUNTIME_COMMIT frozen. Isolated worktree only; merge after parity. Never reorganize underneath an active Odyssey.",
+      "multiplier": false,
+      "owner": "unassigned",
+      "parallel_safe_with": "any gate in a different resource_lane",
+      "reopen_if": "the caller is removed, the verifier is deleted, or the gate's acceptance criterion changes",
+      "resource_lane": "wall",
+      "stop_condition": "the blocker named above clears: HCLI_OPERATIONAL and ODYSSEY_DETACHED and KNOWN_GOOD_RUNTIME_COMMIT frozen. Isol",
       "unlocks_direct": [],
       "unlocks_transitive": [],
       "verifier": "must be written"
@@ -2796,6 +2895,25 @@
       "unlocks_direct": [],
       "unlocks_transitive": [],
       "verifier": "hcli/test_prefix_and_prefill_instruments.py"
+    },
+    {
+      "actionable_now": false,
+      "blocker_class": "LONG_RUN_EVIDENCE_REQUIRED",
+      "critical_path": false,
+      "depends_on": [],
+      "estimated_wall": "wall-bound (guess)",
+      "gate": "SEMANTIC_COMPRESSION",
+      "leverage_score": 0,
+      "missing": "HCLI_OPERATIONAL and ODYSSEY_DETACHED and KNOWN_GOOD_RUNTIME_COMMIT frozen. Isolated worktree only; merge after parity. Never reorganize underneath an active Odyssey.",
+      "multiplier": false,
+      "owner": "unassigned",
+      "parallel_safe_with": "any gate in a different resource_lane",
+      "reopen_if": "the caller is removed, the verifier is deleted, or the gate's acceptance criterion changes",
+      "resource_lane": "wall",
+      "stop_condition": "the blocker named above clears: HCLI_OPERATIONAL and ODYSSEY_DETACHED and KNOWN_GOOD_RUNTIME_COMMIT frozen. Isol",
+      "unlocks_direct": [],
+      "unlocks_transitive": [],
+      "verifier": "must be written"
     },
     {
       "actionable_now": false,
@@ -2949,7 +3067,7 @@
   "software_build_required": [
     "AGENTOS_BEHAVIOR_LAB"
   ],
-  "software_connection_remaining_count": 26,
+  "software_connection_remaining_count": 27,
   "subsumed_items": [],
   "unknown_research": [],
   "verifiers": {

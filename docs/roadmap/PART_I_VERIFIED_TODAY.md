@@ -8,10 +8,10 @@ Nothing here is complete because a file exists: a field with no evidence prints 
 ## Status census
 
     VERIFIED_INTEGRATED      23
-    SCAFFOLDED               19
+    SCAFFOLDED               20
+    BLOCKED_EVIDENCE         13
     BLOCKED_HARDWARE         13
     VERIFIED_BUILT           12
-    BLOCKED_EVIDENCE         10
     ABSENT                   1
     UNREACHABLE              1
 
@@ -21,10 +21,10 @@ design, not by neglect: simulated is not measured.
 
 ## Evidence coverage across all gates
 
-    defining property available     78 / 79
-    real (non-test) caller          36 / 79
-    any verifier                    57 / 79
-    receipt cited                   12 / 79
+    defining property available     82 / 83
+    real (non-test) caller          36 / 83
+    any verifier                    57 / 83
+    receipt cited                   12 / 83
 
 ## A. CONTROL / HCLI / AGENTOS
 
@@ -435,7 +435,7 @@ design, not by neglect: simulated is not measured.
     implementation      hcli/hawking_native.py
     real caller         absent — no non-test call site
     verifier            hcli/test_constrained_decoding.py:51, hcli/test_native_json_grammar.py:10, hcli/test_native_token_budget_clamp.py:16 (+1 more)
-    negative control    absent — no cited test proves it can fail
+    negative control    hcli/test_native_json_grammar.py
     receipt             absent
     evidence level      STATIC
     limitations         acceptance not demonstrated: wired is not accepted: no receipt or measurement demonstrates the gate's own acceptance criterion. A receipt on the topic is not the bar.
@@ -508,7 +508,7 @@ design, not by neglect: simulated is not measured.
 
 ## D. SCIENCE MEMORY / MODELLAKE / ODYSSEY
 
-6 capabilities. VERIFIED_INTEGRATED=3, VERIFIED_BUILT=3
+7 capabilities. VERIFIED_INTEGRATED=3, VERIFIED_BUILT=3, SCAFFOLDED=1
 
 ### MODELLAKE_ATOMIC_PROMOTION
 
@@ -548,6 +548,19 @@ design, not by neglect: simulated is not measured.
     evidence level      STATIC
     limitations         none recorded
     integration         wired=True accepted=True
+
+### MODELLAKE_LIFECYCLE
+
+    STATUS              SCAFFOLDED
+    defining property   **Mission:** Find the smallest capability-preserving executable function, not merely the smallest file.
+    implementation      tools/future/modellake_lifecycle.py, tools/future/modellake_lifecycle.py:39
+    real caller         absent — no non-test call site
+    verifier            absent — no test cites this gate
+    negative control    absent — no cited test proves it can fail
+    receipt             absent
+    evidence level      STATIC
+    limitations         acceptance not demonstrated: wired is not accepted: no receipt or measurement demonstrates the gate's own acceptance criterion. A receipt on the topic is not the bar.
+    integration         wired=False accepted=False
 
 ### ODYSSEY_III_ADVERSARIAL_META_SCIENCE
 
@@ -832,7 +845,46 @@ design, not by neglect: simulated is not measured.
 
 ## G. PERCEPTION / PRODUCT / VMCP / THEIA / PLATFORM
 
-19 capabilities. BLOCKED_EVIDENCE=10, VERIFIED_INTEGRATED=6, SCAFFOLDED=2, VERIFIED_BUILT=1
+22 capabilities. BLOCKED_EVIDENCE=13, VERIFIED_INTEGRATED=6, SCAFFOLDED=2, VERIFIED_BUILT=1
+
+### HAWKING_PUBLIC_MVP
+
+    STATUS              BLOCKED_EVIDENCE
+    defining property   **Mission:** Find the smallest capability-preserving executable function, not merely the smallest file.
+    implementation      absent
+    real caller         absent — no non-test call site
+    verifier            absent — no test cites this gate
+    negative control    absent — no cited test proves it can fail
+    receipt             absent
+    evidence level      STATIC
+    limitations         HCLI_OPERATIONAL and ODYSSEY_DETACHED and KNOWN_GOOD_RUNTIME_COMMIT frozen. Isolated worktree only; merge after parity. Never reorganize underneath an active Odyssey. | acceptance not demonstrated: wired is not accepted: no receipt or measurement demonstrates the gate's own acceptance criterion. A receipt on the topic is not the bar.
+    integration         wired=False accepted=False
+
+### REPO_TOPOLOGY_COMPRESSION
+
+    STATUS              BLOCKED_EVIDENCE
+    defining property   **Mission:** Find the smallest capability-preserving executable function, not merely the smallest file.
+    implementation      absent
+    real caller         absent — no non-test call site
+    verifier            absent — no test cites this gate
+    negative control    absent — no cited test proves it can fail
+    receipt             absent
+    evidence level      STATIC
+    limitations         HCLI_OPERATIONAL and ODYSSEY_DETACHED and KNOWN_GOOD_RUNTIME_COMMIT frozen. Isolated worktree only; merge after parity. Never reorganize underneath an active Odyssey. | acceptance not demonstrated: wired is not accepted: no receipt or measurement demonstrates the gate's own acceptance criterion. A receipt on the topic is not the bar.
+    integration         wired=False accepted=False
+
+### SEMANTIC_COMPRESSION
+
+    STATUS              BLOCKED_EVIDENCE
+    defining property   **Mission:** Find the smallest capability-preserving executable function, not merely the smallest file.
+    implementation      absent
+    real caller         absent — no non-test call site
+    verifier            absent — no test cites this gate
+    negative control    absent — no cited test proves it can fail
+    receipt             absent
+    evidence level      STATIC
+    limitations         HCLI_OPERATIONAL and ODYSSEY_DETACHED and KNOWN_GOOD_RUNTIME_COMMIT frozen. Isolated worktree only; merge after parity. Never reorganize underneath an active Odyssey. | acceptance not demonstrated: wired is not accepted: no receipt or measurement demonstrates the gate's own acceptance criterion. A receipt on the topic is not the bar.
+    integration         wired=False accepted=False
 
 ### THEIA_BOUNTY_GENERALIST_QUALIFIED
 

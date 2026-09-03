@@ -855,3 +855,28 @@ GATES["STABLE_PREFIX_CONTEXT_ALIGNMENT"]["runtime_note"] = (
     "maximize the useful stable physical prefix subject to reasoning quality and "
     "context budget. A wall-clock improvement is NOT evidence of reuse."
 )
+
+
+# ModelLake operational truth, and the post-Odyssey product milestones.
+#
+# The product work is REAL roadmap surface now rather than a vague future idea,
+# but it must not become today's work: reorganizing the repository underneath a
+# running science campaign is how a known-good runtime stops being known-good.
+# Its wake condition is recorded on the gate so nobody has to remember it.
+GATES["MODELLAKE_LIFECYCLE"] = _p(
+    era="I", gene="I-E_ODYSSEY_I",
+    paths=("tools/future/modellake_lifecycle.py",),
+    modules=("tools.future.modellake_lifecycle",),
+    symbols=(("tools.future.modellake_lifecycle", "lifecycle"),),
+    receipts=("receipts/future/MODELLAKE_LIFECYCLE.json",),
+    acc=(478, 505),
+)
+
+_PRODUCT_WAKE = (
+    "HCLI_OPERATIONAL and ODYSSEY_DETACHED and KNOWN_GOOD_RUNTIME_COMMIT frozen. "
+    "Isolated worktree only; merge after parity. Never reorganize underneath an "
+    "active Odyssey."
+)
+for _g in ("HAWKING_PUBLIC_MVP", "REPO_TOPOLOGY_COMPRESSION", "SEMANTIC_COMPRESSION"):
+    GATES[_g] = _p(era="V", gene=None, paths=(), modules=(), acc=(478, 505),
+                   ext=_PRODUCT_WAKE)

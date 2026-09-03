@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T09:04:35Z",
+  "recorded_at": "2026-09-02T23:43:09Z",
   "recorded_by": "tools/future/power_torture.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -280,7 +280,7 @@
   "verdict": "PASS"
  },
  "duration_s_budget": 1800,
- "elapsed_s": 4.9130778312683105,
+ "elapsed_s": 4.552382946014404,
  "evidence_class": "STATIC_ONLY",
  "exercised": [
   "NO_WAIT",
@@ -305,7 +305,7 @@
   "kind": "absent",
   "owner": null,
   "parked": false,
-  "path": "/tmp/hawking-gpu-lane.lock",
+  "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-gpu-lane-pytest-10126.lock",
   "pid": null,
   "pid_alive": null,
   "present": false,
@@ -314,12 +314,12 @@
  "integration_ok": true,
  "judge": {
   "append_only": true,
-  "claimed_sha256": "642282fbd580034f86a094cb2294c441d3bfdf646f7221de521d97ef779602c1",
+  "claimed_sha256": "f850d34ad439f67a693d61aea4acf3c21889b09ab467478762c627670754eaf7",
   "correct_refusal_counts_as_exercised": true,
   "correct_refusals": [
    "CONCURRENCY"
   ],
-  "events_sha256": "642282fbd580034f86a094cb2294c441d3bfdf646f7221de521d97ef779602c1",
+  "events_sha256": "f850d34ad439f67a693d61aea4acf3c21889b09ab467478762c627670754eaf7",
   "evidence_class": "STATIC_ONLY",
   "exercised": [
    "NO_WAIT",
@@ -367,7 +367,7 @@
     "power": "CONCURRENCY",
     "seq": 18,
     "status": "EXERCISED_REFUSAL",
-    "why": "doctor REFUSED a verdict without observations and is SLEEPING with blocked_reason=\"sidecar has no GPU authority and will not take a lease; no protected GPU lease is held; quiescence is 'UNKNOWN', not QUIESCENT; a DIAGNOSTIC_RELATIVE number on a busy machine is not this experiment; this sidecar is structurally unable to execute the protected ladder; a process with PROTECTED_ABSOLUTE authority must run observe() on hardware\"; that is the exercise"
+    "why": "doctor REFUSED a verdict without observations and is SLEEPING with blocked_reason=\"resident presence is 'UNDECLARED', not PRESENT; will not invent a pid from the largest RSS neighbour; sidecar has no GPU authority and will not take a lease; no protected GPU lease is held; quiescence is 'UNKNOWN', not QUIESCENT; a DIAGNOSTIC_RELATIVE number on a busy machine is not this experiment; this sidecar is structurally unable to execute the protected ladder; a process with PROTECTED_ABSOLUTE authority must run observe() on hardware\"; that is the exercise"
    },
    "FRONTIER_INVALIDATION": {
     "correct_refusal": false,
@@ -399,7 +399,7 @@
     "power": "NO_WAIT",
     "seq": 5,
     "status": "EXERCISED",
-    "why": "detached pid 21862 stayed open while WU.TORTURE.NO_WAIT.ind started, progressed and ingested; idle_runnable was not a wait"
+    "why": "detached pid 48621 stayed open while WU.TORTURE.NO_WAIT.ind started, progressed and ingested; idle_runnable was not a wait"
    },
    "PROTECTED_PARKING": {
     "correct_refusal": false,
@@ -534,7 +534,7 @@
    "correct_refusal": true,
    "counts_toward_pass": true,
    "evidence": {
-    "blocked_reason": "sidecar has no GPU authority and will not take a lease; no protected GPU lease is held; quiescence is 'UNKNOWN', not QUIESCENT; a DIAGNOSTIC_RELATIVE number on a busy machine is not this experiment; this sidecar is structurally unable to execute the protected ladder; a process with PROTECTED_ABSOLUTE authority must run observe() on hardware",
+    "blocked_reason": "resident presence is 'UNDECLARED', not PRESENT; will not invent a pid from the largest RSS neighbour; sidecar has no GPU authority and will not take a lease; no protected GPU lease is held; quiescence is 'UNKNOWN', not QUIESCENT; a DIAGNOSTIC_RELATIVE number on a busy machine is not this experiment; this sidecar is structurally unable to execute the protected ladder; a process with PROTECTED_ABSOLUTE authority must run observe() on hardware",
     "experiment_state": "SLEEPING",
     "ladder": [
      1,
@@ -588,7 +588,7 @@
      "kind": "absent",
      "owner": null,
      "parked": false,
-     "path": "/tmp/hawking-gpu-lane.lock",
+     "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-gpu-lane-pytest-10126.lock",
      "pid": null,
      "pid_alive": null,
      "present": false,
@@ -609,18 +609,18 @@
    "counts_toward_pass": true,
    "evidence": {
     "detector_verdict": "NO_WAIT_OK",
-    "fast_finished_at": 1788339872.120857,
+    "fast_finished_at": 1788392586.911533,
     "fast_ingest": "ingested",
-    "pid": 21862,
+    "pid": 48621,
     "runnable_while_open": "RUNNABLE",
-    "slow_launched_at": 1788339871.794576
+    "slow_launched_at": 1788392586.53879
    },
    "exercised": true,
    "failed": false,
    "power": "NO_WAIT",
    "skipped": false,
    "status": "EXERCISED",
-   "why": "detached pid 21862 stayed open while WU.TORTURE.NO_WAIT.ind started, progressed and ingested; idle_runnable was not a wait"
+   "why": "detached pid 48621 stayed open while WU.TORTURE.NO_WAIT.ind started, progressed and ingested; idle_runnable was not a wait"
   },
   "PROTECTED_PARKING": {
    "correct_refusal": false,
@@ -658,7 +658,7 @@
     "cites": [
      "receipts/future/STATUS_CAUSALITY_CHALLENGE.json",
      "receipts/future/DETACHED_WORK_TRIAL.json",
-     "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/pytest-of-scammermike/pytest-3178/power_torture_run0/nowait/results/fast.json"
+     "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/pytest-of-scammermike/pytest-676/popen-gw22/power_torture_run0/nowait/results/fast.json"
     ]
    },
    "exercised": true,
@@ -767,12 +767,12 @@
  "purpose": "30-minute power torture on a frozen build. Judged independently from the sealed timeline against a substrate verified unchanged.",
  "resident_model_attached": false,
  "schema": "hawking.future.power_torture.v2",
- "seal_sha256": "430eab9b1d0deca5d1228545fb3de794f756aa4f28527ffa39ecce85fce0f1f1",
+ "seal_sha256": "7209adfc696598a3d94d33939fbda917748bf0b8a5a6de07cfe50dca85bd8b4d",
  "skipped": [],
  "skipped_do_not_count_toward_pass": true,
  "substrate": {
-  "after_digest": "6f08aed8e70ec1cf3d88ff57688330a6806083ba6f92fd2a0c4f68a5594ab38e",
-  "before_digest": "6f08aed8e70ec1cf3d88ff57688330a6806083ba6f92fd2a0c4f68a5594ab38e",
+  "after_digest": "17d87f94d576b04a70515d7f394ce7d59b217e93d5bde442dc1557c5963b6a36",
+  "before_digest": "17d87f94d576b04a70515d7f394ce7d59b217e93d5bde442dc1557c5963b6a36",
   "equal": true,
   "files": [
    {
@@ -782,9 +782,9 @@
     "state": "HASHED"
    },
    {
-    "bytes": 14589,
+    "bytes": 23340,
     "path": "tools/future/_common.py",
-    "sha256": "9717c3358c7386524e36e173f16bd6e78e234bacab2e63b1274f1bfc5646d27c",
+    "sha256": "3e2c6efe54cba73e4c1b6aab442acf5c66723278897b4c3bbcb43ca01b63ded3",
     "state": "HASHED"
    },
    {
@@ -812,9 +812,9 @@
     "state": "HASHED"
    },
    {
-    "bytes": 156931,
+    "bytes": 156937,
     "path": "tools/future/autonomy_trial.py",
-    "sha256": "a4dd3902c8d721f960d537babda2a59232248e9905eeeab1bb18369af72c9feb",
+    "sha256": "1b4a5ab254ffd3722ac840accb90c8b2eabcc0f17213156fa9887230cbe55b34",
     "state": "HASHED"
    },
    {
@@ -854,9 +854,9 @@
     "state": "HASHED"
    },
    {
-    "bytes": 54920,
+    "bytes": 59303,
     "path": "tools/future/ebpw_categories.py",
-    "sha256": "544c7dad345c3e86bf7dd15cf416c9fae0e615c0535a0dc6bfc96933460e674c",
+    "sha256": "57ba36d4fe6a9ae7b6fc88f97f0f7b0537f5bf9881e3209f981921f96c0fede6",
     "state": "HASHED"
    },
    {
@@ -938,9 +938,9 @@
     "state": "HASHED"
    },
    {
-    "bytes": 63420,
+    "bytes": 63430,
     "path": "tools/future/negative_index.py",
-    "sha256": "c89cf428e8926637db2c4c5f38f0c2355fe2e9bdd8e9204246597284494eeedf",
+    "sha256": "ccef33cc90030f41d787582709d0be2c2bc7cb9eba38cffa851e65ea8066541f",
     "state": "HASHED"
    },
    {
@@ -974,9 +974,9 @@
     "state": "HASHED"
    },
    {
-    "bytes": 41733,
+    "bytes": 42553,
     "path": "tools/future/nx_packer.py",
-    "sha256": "e02e9dddb3b331e6a53b7d211efde7f56383afa8e58c3c005e54bc1ff08c8a06",
+    "sha256": "826f8ecbd8844dae2e158c45280a2d67398ebdf917d74220e0ea24dca6615763",
     "state": "HASHED"
    },
    {
@@ -1010,9 +1010,9 @@
     "state": "HASHED"
    },
    {
-    "bytes": 132533,
+    "bytes": 132543,
     "path": "tools/future/power_torture.py",
-    "sha256": "68e2b8e8bf44d9d31a37482bc7e0b5b4cb48f301960e040f22fc38c359bbf9bd",
+    "sha256": "ca7af67708bdfca539e6a1525c5a116b6ff832d139a7653718332826261fe9f6",
     "state": "HASHED"
    },
    {
@@ -1076,9 +1076,9 @@
     "state": "HASHED"
    },
    {
-    "bytes": 77648,
+    "bytes": 79918,
     "path": "tools/future/rival_codec_screen.py",
-    "sha256": "982e001d983c10d2b17bad47119c5bd1fb6f3b7b03cd4617948a6ce25f0f8554",
+    "sha256": "c6a34d4aa774f3f761554e8d6326109ec3e3f786f536c01dbe28069217aeb238",
     "state": "HASHED"
    },
    {
@@ -1142,9 +1142,9 @@
     "state": "HASHED"
    },
    {
-    "bytes": 77047,
+    "bytes": 79468,
     "path": "tools/future/tabula.py",
-    "sha256": "4cc43a2f20fb713754124e0372b5332ecc4289c71da4949a7d094bb95b6c8cce",
+    "sha256": "f21c03a2a62ecb2655613b5b2c6aa784a7cb5c09c6d301899ede484ec9daea35",
     "state": "HASHED"
    },
    {
@@ -1205,8 +1205,8 @@
  },
  "timeline": {
   "append_only": true,
-  "elapsed_s": 4.91243,
-  "events_sha256": "642282fbd580034f86a094cb2294c441d3bfdf646f7221de521d97ef779602c1",
+  "elapsed_s": 4.55171,
+  "events_sha256": "f850d34ad439f67a693d61aea4acf3c21889b09ab467478762c627670754eaf7",
   "n_events": 27,
   "path": "receipts/future/POWER_TORTURE_TIMELINE.json",
   "receipt": "receipts/future/POWER_TORTURE_TIMELINE.json",
