@@ -111,6 +111,37 @@ Never optimize one by silently degrading another. The quantity being maximized i
   noticing, and the prompt is the side nobody runs.
 - **A capability that is declared but never observed in a receipt is not known to
   work.** Grep for the call site and the reported field, not the definition.
+- **Read what the worker actually received before judging what it produced.**
+  Four missions were graded as model failures while the instruction was being
+  deleted from the prompt by a sanitizer.
+- **A constant calibrated on one kind of input is wrong for another.** Prose is
+  ~3 chars per token, Python source ~2.4. Sizing a reserve for the last payload
+  instead of the worst one fails on the payload that matters.
+
+## Ladder progress
+
+Levels from the campaign directive. Level 1 is read-and-explain, and it took
+four attempts, each blocked by a different real defect:
+
+| attempt | blocker | fix |
+|---|---|---|
+| 1 | goal prose shredded into 6 fake obligations | one-sentence goals (compiler defect still open) |
+| 2 | context overflow, 6605 tok vs 8192 window | learn chars-per-token (`b34f9e294`) |
+| 3 | same overflow: density is per payload, not learned | reserve 12% -> 30% |
+| 4 | `OBJECTIVE: obligations=G001 [ROOT_GOAL_OMITTED]` | keep the root when it IS the objective (`3ec9049c3`) |
+
+Bars moved on the run that got furthest:
+
+```
+structured_output_ok      FAIL -> PASS   (0 of 1 exhausted)
+realized_reuse_fraction   0.159 -> 0.2986   (first bar 0.25 cleared)
+effective_prompt_tps      24.0 -> 28.5
+tool_p95_ms               60 -> 51
+```
+
+New red surfaced by getting further: `no_tool_loops` FAIL, 9 of 25 requested
+calls were duplicates, and `mean_rounds_per_goal` rose 3.33 -> 7.0 because of
+them. That is the next front after the ladder moves.
 
 ## Scars
 
@@ -120,3 +151,10 @@ Never optimize one by silently degrading another. The quantity being maximized i
 - Diagnosed `constrained_decoding: unavailable` as a wiring gap before reading
   the profile, which correctly declares `response_format: unsupported`. Reading
   the declaration first would have cost one command.
+- Graded the model degenerate for echoing its prompt, then found the prompt had
+  had its instruction excised. The model's own reply said so plainly and was
+  recorded as a failure. Cost: most of the campaign to date.
+- Shipped a learned chars-per-token ratio as the fix for a context overflow,
+  and the very next rep reproduced the overflow. The ratio was right and
+  irrelevant: it learns from the previous call, and density belongs to the
+  current payload.
