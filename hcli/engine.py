@@ -168,9 +168,15 @@ For a requested code/file change:
       "new_text": "new content"
     }
   ],
-  "tests": ["optional safe workspace-relative Python test paths"],
+  "tests": ["hcli/tests/test_the_thing_you_changed.py"],
   "tool_calls": []
 }
+
+A MUTATION WITH AN EMPTY "tests" LIST CANNOT BE ACCEPTED. The verifier records
+it UNVERIFIED -- reason NO_EVIDENCE -- which is terminal, so the work is thrown
+away no matter how good the change was. Name a test that fails before your
+change and passes after it. If none exists, write one as part of the same
+mutation. Deterministic evidence is the only thing that can accept work here.
 
 To LOOK at something before answering (read a file, search, run a read-only
 command, inspect git):
