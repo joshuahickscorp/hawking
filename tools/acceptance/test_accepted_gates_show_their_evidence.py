@@ -52,11 +52,23 @@ def _receipt(gate: str) -> dict:
 
 
 def _criterion_text(doc: dict) -> str:
-    """Every known criterion shape, because there are three."""
+    """Every known criterion shape, because there are FOUR.
+
+        criterion.quoted        29 receipts
+        criterion.quote         11
+        criterion_quoted        top-level, written by tools/acceptance/agentos
+        criterion as a string   rare
+
+    Missing the third variant made Claude report "8 of 48 gate verdicts have no
+    criterion" and, before that, "28 of 68". Both were false: EVERY gate verdict
+    records its criterion. The drift is real; the missing criteria were not.
+    """
     c = doc.get("criterion")
     if isinstance(c, dict):
-        return str(c.get("quoted") or c.get("quote") or "")
-    return str(c or "")
+        text = c.get("quoted") or c.get("quote") or ""
+    else:
+        text = c or ""
+    return str(text or doc.get("criterion_quoted") or "")
 
 
 def _evidence_count(doc: dict) -> int:
