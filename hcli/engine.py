@@ -661,6 +661,43 @@ class _PhaseHeartbeat:
         return False
 
 
+def _python_syntax_violation(content: str) -> Optional[str]:
+    """The reply's Python operations must compile, or say why they do not.
+
+    Returns a retry instruction naming the file, line and error, or None when
+    every Python operation parses. Non-Python paths are not checked here: the
+    verifier owns them and this is only about giving the model back the one
+    error it can act on.
+    """
+    try:
+        parsed = json.loads(content)
+    except (TypeError, ValueError):
+        return None
+    if not isinstance(parsed, dict):
+        return None
+    for op in parsed.get("operations") or []:
+        if not isinstance(op, dict):
+            continue
+        path = str(op.get("path") or "")
+        if not path.endswith(".py"):
+            continue
+        body = op.get("new_text")
+        if not isinstance(body, str) or not body.strip():
+            continue
+        try:
+            compile(body, path or "<operation>", "exec")
+        except SyntaxError as exc:
+            where = f"line {exc.lineno}" if exc.lineno else "an unknown line"
+            return (
+                f"operation on {path} is not valid Python: {exc.msg} at {where}"
+                f" -- rewrite that operation only, and keep it short enough to"
+                f" get the brackets right"
+            )
+        except ValueError as exc:
+            return f"operation on {path} could not be compiled: {exc}"
+    return None
+
+
 class Engine:
     """Native HCLI execution boundary.
 
@@ -3090,6 +3127,19 @@ class Engine:
                 raise EngineError(
                     "degraded structured-output path sent response_format"
                 )
+            syntax = _python_syntax_violation(content)
+            if syntax is not None:
+                # A dropped bracket is a SCHEMA VIOLATION the contract can
+                # retry, not a terminal unit failure. Measured behaviour: a
+                # 2-line source patch was correct while a 15-line test rewrite
+                # in the same reply dropped three closing parens, py_compile
+                # failed AFTER the mutation was applied, and the whole unit --
+                # including the correct half -- was rolled back and lost.
+                #
+                # The model never saw the error. Now it does, with the line and
+                # the caret, on the next attempt, which is the one thing that
+                # makes the failure fixable by the thing that caused it.
+                raise SchemaViolation(syntax, text=content)
             return result
 
         try:
