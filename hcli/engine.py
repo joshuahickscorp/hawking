@@ -3551,6 +3551,12 @@ class Engine:
                 "prefill_tokens_stepped",
                 "prefix_source",
                 "prefix_checkpoint_taken_at",
+                # Whether the resident's JSON mask actually ran. Without it a
+                # malformed reply cannot be diagnosed: "the reply is NOT valid
+                # JSON" means either the mask is off or the mask is wrong, and
+                # those need opposite fixes. The resident has always reported
+                # this field; the receipt has never carried it.
+                "grammar_enforced",
             ):
                 value = native.get(key)
                 if value is not None:
