@@ -83,6 +83,12 @@ def read_json(path: Path) -> dict:
         return {}
 
 
+def newest_receipt_mtime() -> float:
+    files = sorted((REPO / ".hcli" / "receipts").glob("*.json"),
+                   key=lambda p: p.stat().st_mtime)
+    return files[-1].stat().st_mtime if files else 0.0
+
+
 def newest_receipt() -> dict:
     files = sorted((REPO / ".hcli" / "receipts").glob("*.json"),
                    key=lambda p: p.stat().st_mtime)
@@ -125,15 +131,38 @@ def _last_activity() -> float:
     return newest
 
 
-def wait_for_mission() -> str:
-    hard_stop = time.time() + HARD_CAP_S
+def wait_for_mission(started: float, previous_mission: str) -> str:
+    """Wait for THIS mission to finish.
+
+    Two things went wrong reading the phase naively, and both made the loop
+    spin without doing any work:
+
+      * the phase read right after `replace` is the PREVIOUS mission's, which
+        is `evacuated` -- a terminal phase -- so the cycle "finished" in 31 s.
+      * `_last_activity()` reads receipt mtimes that are stale at cycle start,
+        so the inactivity bound fired immediately and the cycle "finished" in
+        0.3 s.
+
+    So: wait for a new mission id first, and treat the cycle's own start as
+    activity until the mission produces some.
+    """
+    hard_stop = started + HARD_CAP_S
+    # Phase one: the new mission must exist before its phase means anything.
+    while time.time() < hard_stop:
+        state = read_json(STATE)
+        if str(state.get("mission_id") or "") not in ("", previous_mission):
+            break
+        if time.time() - started > IDLE_TIMEOUT_S:
+            return "never_started"
+        time.sleep(POLL_S)
+
     while time.time() < hard_stop:
         phase = str(read_json(STATE).get("phase") or "")
         if phase in TERMINAL:
             return phase
         if str(read_json(RESIDENT).get("state") or "") == "FAILED":
             return "failed"
-        if time.time() - _last_activity() > IDLE_TIMEOUT_S:
+        if time.time() - max(_last_activity(), started) > IDLE_TIMEOUT_S:
             return "idle"
         time.sleep(POLL_S)
     return "timeout"
@@ -162,9 +191,15 @@ def record(row: dict) -> None:
 
 def cycle(level: int, goal: str, attempt: int) -> dict:
     started = time.time()
+    previous_mission = str(read_json(STATE).get("mission_id") or "")
     start(goal, level, attempt)
-    phase = wait_for_mission()
+    phase = wait_for_mission(started, previous_mission)
     receipt = newest_receipt()
+    # A receipt older than this cycle belongs to the PREVIOUS one. Reporting it
+    # as this cycle's result is how three cycles logged identical operations
+    # they never performed.
+    if receipt and newest_receipt_mtime() < started:
+        receipt = {}
     row = {
         "level": level,
         "attempt": attempt,
