@@ -248,3 +248,34 @@ def test_a_fresh_intelligence_is_told_where_truth_lives():
     assert chain.index("ROADMAP_STATE.json") < chain.index("git HEAD")
     assert "CHECK OWNERSHIP" in text, "nothing warns against duplicating another campaign"
     assert "retired" in text.lower(), "no alias-retirement guidance"
+
+
+def test_no_gate_is_wired_solely_by_its_own_module_calling_itself():
+    """A module using its own function is not evidence anything reaches it.
+
+    The auditor accepts any non-test call of the implementing symbol, including
+    one made INSIDE the implementing module. Taken alone that is "registration is
+    not wiring" in a new costume: a producer that calls its own helper would read
+    WIRED with nothing in the production path reaching it.
+
+    Swept at the time of writing: zero gates depended on a self-call, so nothing
+    is grandfathered here. This keeps it that way, because the auditor cannot
+    currently tell an internal caller from an external one.
+    """
+    graph = json.loads((REPO / "civilization" / "CAPABILITY_GRAPH.json").read_text())
+    offenders = []
+    for gid, gate in sorted(graph["gates"].items()):
+        callers = gate.get("runtime_caller") or []
+        if not callers:
+            continue
+        implementing = {
+            (r.get("file") if isinstance(r, dict) else r)
+            for r in (gate.get("code_refs") or [])
+        }
+        external = [c for c in callers if c.get("file") not in implementing]
+        if not external:
+            offenders.append(f"{gid} (only caller: {callers[0].get('file')})")
+    assert not offenders, (
+        "these gates are WIRED only by their own module calling itself:\n  "
+        + "\n  ".join(offenders)
+    )
