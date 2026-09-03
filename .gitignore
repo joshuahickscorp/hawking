@@ -254,3 +254,6 @@ workspace/campaign/odyssey/.modellake-watch.lock
 workspace/ops/ane/
 workspace/ops/c2m-seed/
 .worktrees/
+
+# Local run logs: process output, not source.
+/logs/
