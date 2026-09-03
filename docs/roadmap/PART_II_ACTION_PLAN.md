@@ -330,8 +330,8 @@ must physically exist, or a question whose answer nobody has.
 
 ### U50_DEVICE_PROFILE
     missing             silicon absent; wakes on U50_PRESENT
-    shortest verifier   tools/odyssey/test_device_profiles_open.py:13 (+1 more)
-    implementation      tools/odyssey/device_profiles.py
+    shortest verifier   tools/accelerator/test_fusion_bridge.py:372 (+22 more)
+    implementation      tools/future/hwir.py, tools/future/hwir.py:2328
     unlocks             1 declared dependencies
 
 ### U50_DMA_HBM
@@ -354,14 +354,14 @@ must physically exist, or a question whose answer nobody has.
 
 ### U50_PURCHASE_ACCEPTANCE
     missing             silicon absent; wakes on U50_PRESENT
-    shortest verifier   tools/future/test_autonomy_run.py:124 (+3 more)
-    implementation      tools/future/hardware_doctor.py
+    shortest verifier   must be written
+    implementation      tools/accelerator/hardware_doctor.py, tools/accelerator/hardware_doctor.py:230
     unlocks             1 declared dependencies
 
 ### U50_SAFE_COOLING
     missing             silicon absent; wakes on U50_PRESENT
-    shortest verifier   tools/future/test_autonomy_run.py:124 (+3 more)
-    implementation      tools/future/hardware_doctor.py
+    shortest verifier   must be written
+    implementation      tools/accelerator/hardware_doctor.py, tools/accelerator/hardware_doctor.py:313
     unlocks             1 declared dependencies
 
 ## UNKNOWN_RESEARCH (1)

@@ -475,8 +475,8 @@
     "U50_DEVICE_PROFILE": {
       "acceptance_state": "UNRUN",
       "evidence_tier": "STATIC",
-      "implementation_state": "SCAFFOLDED",
-      "integration_state": "ISOLATED",
+      "implementation_state": "WIRED",
+      "integration_state": "IN_PRODUCTION_PATH",
       "verification_state": "TEST_PRESENT"
     },
     "U50_DMA_HBM": {
@@ -505,14 +505,14 @@
       "evidence_tier": "STATIC",
       "implementation_state": "SCAFFOLDED",
       "integration_state": "ISOLATED",
-      "verification_state": "TEST_PRESENT"
+      "verification_state": "NONE"
     },
     "U50_SAFE_COOLING": {
       "acceptance_state": "UNRUN",
       "evidence_tier": "STATIC",
       "implementation_state": "SCAFFOLDED",
       "integration_state": "ISOLATED",
-      "verification_state": "TEST_PRESENT"
+      "verification_state": "NONE"
     },
     "VMCP_AGENTOS_INTEGRATION": {
       "acceptance_state": "PASS",
@@ -1477,7 +1477,7 @@
         "U50_MIXED_APPLE_FPGA_GRAPH",
         "U50_SAFE_COOLING"
       ],
-      "verifier": "tools/future/test_autonomy_run.py"
+      "verifier": "must be written"
     },
     {
       "actionable_now": false,
@@ -1511,7 +1511,7 @@
         "U50_FIRST_NATIVE_ENGINE",
         "U50_MIXED_APPLE_FPGA_GRAPH"
       ],
-      "verifier": "tools/future/test_autonomy_run.py"
+      "verifier": "must be written"
     },
     {
       "actionable_now": false,
@@ -1544,7 +1544,7 @@
         "U50_FIRST_NATIVE_ENGINE",
         "U50_MIXED_APPLE_FPGA_GRAPH"
       ],
-      "verifier": "tools/odyssey/test_device_profiles_open.py"
+      "verifier": "tools/accelerator/test_fusion_bridge.py"
     },
     {
       "actionable_now": false,
@@ -2793,12 +2793,10 @@
     "U50_60_TO_70": "tools/accelerator/test_fusion_bridge.py:372, tools/accelerator/test_fusion_bridge.py:450 (+7 more)",
     "U50_70_TO_80": "tools/accelerator/test_fusion_bridge.py:372, tools/accelerator/test_fusion_bridge.py:450 (+7 more)",
     "U50_80_TO_90": "tools/accelerator/test_fusion_bridge.py:372, tools/accelerator/test_fusion_bridge.py:450 (+7 more)",
-    "U50_DEVICE_PROFILE": "tools/odyssey/test_device_profiles_open.py:13, tools/odyssey/test_specimen_open.py:15",
+    "U50_DEVICE_PROFILE": "tools/accelerator/test_fusion_bridge.py:372, tools/accelerator/test_fusion_bridge.py:450 (+21 more)",
     "U50_DMA_HBM": "tools/future/test_hbm_doctor.py:8",
     "U50_FIRST_NATIVE_ENGINE": "tools/future/test_fpga_engines.py:19, tools/future/test_hwir.py:315 (+1 more)",
     "U50_MIXED_APPLE_FPGA_GRAPH": "hcli/test_ane_provider.py:6, hcli/tests/test_hcli_science_boundaries.py:32 (+3 more)",
-    "U50_PURCHASE_ACCEPTANCE": "tools/future/test_autonomy_run.py:124, tools/future/test_concurrency_doctor.py:435 (+2 more)",
-    "U50_SAFE_COOLING": "tools/future/test_autonomy_run.py:124, tools/future/test_concurrency_doctor.py:435 (+2 more)",
     "VMCP_AGENTOS_INTEGRATION": "tools/acceptance/test_accepted_gates_show_their_evidence.py:31",
     "VMCP_DEEP_DIGEST": "tools/acceptance/vmcp/test_state_lattice_defining_property.py:110",
     "VMCP_FILE_CLASSIFIER": "tools/vmcp/test_file_eye.py:10, tools/vmcp/test_file_eye.py:29 (+5 more)",

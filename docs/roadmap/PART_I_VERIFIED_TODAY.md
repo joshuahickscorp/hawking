@@ -22,8 +22,8 @@ design, not by neglect: simulated is not measured.
 ## Evidence coverage across all gates
 
     defining property available     82 / 83
-    real (non-test) caller          45 / 83
-    any verifier                    67 / 83
+    real (non-test) caller          46 / 83
+    any verifier                    65 / 83
     receipt cited                   13 / 83
 
 ## A. CONTROL / HCLI / AGENTOS
@@ -739,14 +739,14 @@ design, not by neglect: simulated is not measured.
 
     STATUS              BLOCKED_HARDWARE
     defining property   HBM capacity/bandwidth/latency/bank behavior
-    implementation      tools/odyssey/device_profiles.py
-    real caller         absent — no non-test call site
-    verifier            tools/odyssey/test_device_profiles_open.py:13, tools/odyssey/test_specimen_open.py:15
-    negative control    tools/odyssey/test_device_profiles_open.py, tools/odyssey/test_specimen_open.py
+    implementation      tools/future/hwir.py, tools/future/hwir.py:2328
+    real caller         tools/accelerator/hardware_doctor.py:782
+    verifier            tools/accelerator/test_fusion_bridge.py:372, tools/accelerator/test_fusion_bridge.py:450, tools/accelerator/test_fusion_bridge.py:589 (+20 more)
+    negative control    tools/accelerator/test_fusion_bridge.py, tools/accelerator/test_hardware_doctor.py
     receipt             absent
     evidence level      STATIC
     limitations         U50_PRESENT | acceptance not demonstrated: wired is not accepted: no receipt or measurement demonstrates the gate's own acceptance criterion. A receipt on the topic is not the bar.
-    integration         wired=False accepted=False
+    integration         wired=True accepted=False
 
 ### U50_DMA_HBM
 
@@ -791,10 +791,10 @@ design, not by neglect: simulated is not measured.
 
     STATUS              BLOCKED_HARDWARE
     defining property   exact board revision/photo/markings
-    implementation      tools/future/hardware_doctor.py
+    implementation      tools/accelerator/hardware_doctor.py, tools/accelerator/hardware_doctor.py:230
     real caller         absent — no non-test call site
-    verifier            tools/future/test_autonomy_run.py:124, tools/future/test_concurrency_doctor.py:435, tools/future/test_hardware_doctor.py:8 (+1 more)
-    negative control    tools/future/test_autonomy_run.py, tools/future/test_concurrency_doctor.py
+    verifier            absent — no test cites this gate
+    negative control    absent — no cited test proves it can fail
     receipt             absent
     evidence level      STATIC
     limitations         U50_PRESENT | acceptance not demonstrated: wired is not accepted: no receipt or measurement demonstrates the gate's own acceptance criterion. A receipt on the topic is not the bar.
@@ -804,10 +804,10 @@ design, not by neglect: simulated is not measured.
 
     STATUS              BLOCKED_HARDWARE
     defining property   U50-class passive accelerator must have forced airflow whenever powered. Power delivery, mechanical stability, cable strain, ESD handling and thermal telemetry are prerequisites, not afterthoughts.
-    implementation      tools/future/hardware_doctor.py
+    implementation      tools/accelerator/hardware_doctor.py, tools/accelerator/hardware_doctor.py:313
     real caller         absent — no non-test call site
-    verifier            tools/future/test_autonomy_run.py:124, tools/future/test_concurrency_doctor.py:435, tools/future/test_hardware_doctor.py:8 (+1 more)
-    negative control    tools/future/test_autonomy_run.py, tools/future/test_concurrency_doctor.py
+    verifier            absent — no test cites this gate
+    negative control    absent — no cited test proves it can fail
     receipt             absent
     evidence level      STATIC
     limitations         U50_PRESENT | acceptance not demonstrated: wired is not accepted: no receipt or measurement demonstrates the gate's own acceptance criterion. A receipt on the topic is not the bar.

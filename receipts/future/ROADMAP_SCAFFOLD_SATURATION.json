@@ -14,7 +14,7 @@
     "base_commit": "caf83078f",
     "graph": "civilization/CAPABILITY_GRAPH.json",
     "graph_generated_by": "tools/roadmap/auditor.py",
-    "head": "b3977e34c8914a3d382e136e64e671d136f35042"
+    "head": "c77373358d2d5487484246d76220b0e0c09f2bd6"
   },
   "externally_blocked": [
     {
@@ -183,16 +183,17 @@
       "RUNTIME_DELTANET_STATE_REUSE",
       "RUNTIME_NATIVE_PREFILL",
       "RUNTIME_PREFILL_PHYSICAL_FRONTIER",
+      "U50_DEVICE_PROFILE",
       "U50_MIXED_APPLE_FPGA_GRAPH",
       "VMCP_PTY_CAPTURE"
     ],
-    "wired_but_not_accepted_count": 19
+    "wired_but_not_accepted_count": 20
   },
   "unreachable": [
     "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE"
   ],
   "work": {
-    "commits": 211,
+    "commits": 212,
     "new_crates": [
       "crates/hawking-index-query/Cargo.toml"
     ],
@@ -433,7 +434,7 @@
       "tools/vmcp/receipt.py",
       "tools/vmcp/tool_doctor.py"
     ],
-    "python_lines_added": 94341,
+    "python_lines_added": 94355,
     "rust_lines_added": 7983
   }
 }

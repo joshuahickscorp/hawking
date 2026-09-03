@@ -393,23 +393,37 @@ GATES: dict[str, dict[str, Any]] = {
         modules=("hcli.agentos.fpga_preboard",),
         symbols=(("hcli.agentos.fpga_preboard", "simulate_partition"),),
     ),
+    # Two files share the basename hardware_doctor.py and the catalog named the
+    # wrong one. tools/future/hardware_doctor.py contains ZERO U50/Alveo/XCU50
+    # lines; tools/accelerator/hardware_doctor.py contains 74 and owns
+    # absent_u50dd/workload_fit/candidate_probes -- the code that consumes the
+    # U50 brochure and the carrier. A gate pointing at a same-named file with
+    # none of the capability is a matcher that cannot see what exists.
     "U50_PURCHASE_ACCEPTANCE": _p(
         era="I", gene=ID, acc=(8888, 8901), hw="U50_PRESENT",
         deps=("FPGA_PARTITION_SIM",),
-        paths=("tools/future/hardware_doctor.py",),
-        modules=("tools.future.hardware_doctor",),
+        paths=("tools/accelerator/hardware_doctor.py",),
+        modules=("tools.accelerator.hardware_doctor",),
+        symbols=(("tools.accelerator.hardware_doctor", "absent_u50dd"),),
     ),
     "U50_SAFE_COOLING": _p(
         era="I", gene=ID, acc=(8903, 8906), hw="U50_PRESENT",
         deps=("U50_PURCHASE_ACCEPTANCE",),
-        paths=("tools/future/hardware_doctor.py",),
-        modules=("tools.future.hardware_doctor",),
+        paths=("tools/accelerator/hardware_doctor.py",),
+        modules=("tools.accelerator.hardware_doctor",),
+        symbols=(("tools.accelerator.hardware_doctor", "workload_fit"),),
     ),
+    # tools/odyssey/device_profiles.py holds two WORKLOAD profiles and resident
+    # economics for two Qwen bodies, and zero U50 numbers of any kind. The real
+    # per-field-provenanced XCU50 device profile is u50_family_profile in
+    # tools/future/hwir.py, which the catalog previously reached only through the
+    # later 34_TO_40..80_TO_90 rungs.
     "U50_DEVICE_PROFILE": _p(
         era="I", gene=ID, acc=(8925, 8940), hw="U50_PRESENT",
         deps=("U50_SAFE_COOLING",),
-        paths=("tools/odyssey/device_profiles.py",),
-        modules=("tools.odyssey.device_profiles",),
+        paths=("tools/future/hwir.py",),
+        modules=("tools.future.hwir",),
+        symbols=(("tools.future.hwir", "u50_family_profile"),),
     ),
     "U50_DMA_HBM": _p(
         era="I", gene=ID, acc=(8942, 8959), hw="U50_PRESENT",
