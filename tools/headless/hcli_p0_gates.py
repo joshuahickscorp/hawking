@@ -84,7 +84,7 @@ def gate_p0_1() -> Dict[str, Any]:
     return {
         "gate": "P0-1",
         "claim": "every compiled obligation carries a verify command that is capable of failing",
-        "defends": "tools/haider/hcli/controller.py:580 start_ultragoal",
+        "defends": "hcli/controller.py:580 start_ultragoal",
         "obligations": len(verifies),
         "unfailable": len(bad),
         "distinct_unfailable": sorted(set(bad))[:5],
@@ -113,7 +113,7 @@ def gate_p0_12() -> Dict[str, Any]:
     return {
         "gate": "P0-12",
         "claim": "the WorkUnit DAG is derived from the obligations, not a fixed two-step template",
-        "defends": "tools/haider/hcli/controller.py start_ultragoal -> dag.json",
+        "defends": "hcli/controller.py start_ultragoal -> dag.json",
         "obligations": obligations,
         "workunits": len(units),
         "workunit_ids": units[:8],
@@ -174,7 +174,7 @@ def gate_p0_3() -> Dict[str, Any]:
     return {
         "gate": "P0-3",
         "claim": "a failed Grok terminal state blocks acceptance regardless of the verifier",
-        "defends": "tools/haider/hcli/executors.py WorkUnitExecutor._run_grok",
+        "defends": "hcli/executors.py WorkUnitExecutor._run_grok",
         "failed_state": out.get("failed"),
         "done_state": out.get("done"),
         # The failed state must not be accepted. The done state is allowed to be
@@ -211,7 +211,7 @@ def gate_p0_4() -> Dict[str, Any]:
     return {
         "gate": "P0-4",
         "claim": "an executor-run verifier that cannot fail is rejected, not accepted",
-        "defends": "tools/haider/hcli/executors.py WorkUnitExecutor._run_cpu",
+        "defends": "hcli/executors.py WorkUnitExecutor._run_cpu",
         "validation": {"ok": bool(validation.get("ok")), "reason": validation.get("reason")},
         "ok": validation.get("ok") is not True,
     }
@@ -251,7 +251,7 @@ def gate_p0_6() -> Dict[str, Any]:
     return {
         "gate": "P0-6",
         "claim": "HCLI hands grok-run a distinct task slug per dispatch",
-        "defends": "tools/haider/hcli/grok_bridge.py consult() -> --task slug",
+        "defends": "hcli/grok_bridge.py consult() -> --task slug",
         "dispatches": len(seen),
         "distinct_slugs": len(set(seen)),
         "example": seen[0] if seen else None,
@@ -266,7 +266,7 @@ def gate_p0_11() -> Dict[str, Any]:
     the 887c receipt claims `evidence_files: []` while five files were in fact
     inlined into the 23532-token prompt that failed.
     """
-    src = (REPO_ROOT / "tools/haider/hcli/engine.py").read_text(encoding="utf-8")
+    src = (REPO_ROOT / "hcli/engine.py").read_text(encoding="utf-8")
     # The real shape is `evidence=[]` passed into _write_receipt on the error
     # path. An earlier version of this gate looked for `evidence_files: []` and
     # went green while the defect was sitting there — match the argument, not
@@ -278,7 +278,7 @@ def gate_p0_11() -> Dict[str, Any]:
     return {
         "gate": "P0-11",
         "claim": "the error path preserves the evidence list instead of emitting an empty one",
-        "defends": "tools/haider/hcli/engine.py:788",
+        "defends": "hcli/engine.py:788",
         "empty_evidence_arguments_at_lines": wipes,
         "ok": not wipes,
     }
@@ -291,12 +291,12 @@ def gate_p0_2() -> Dict[str, Any]:
     Measured elsewhere at 79/80 double-acquire under an undelayed race. This
     gate is the cheap structural check; the race itself is the expensive one.
     """
-    src = (REPO_ROOT / "tools/haider/hcli/resources.py").read_text(encoding="utf-8")
+    src = (REPO_ROOT / "hcli/resources.py").read_text(encoding="utf-8")
     real = bool(re.search(r"\bflock\b|O_EXCL|O_CREAT\s*\|\s*os\.O_EXCL", src))
     return {
         "gate": "P0-2",
         "claim": "the mutation lock uses flock or O_EXCL, not check-then-replace",
-        "defends": "tools/haider/hcli/resources.py:481-505",
+        "defends": "hcli/resources.py:481-505",
         "uses_real_primitive": real,
         "ok": real,
     }
@@ -308,14 +308,14 @@ def gate_p0_8() -> Dict[str, Any]:
     Defends: scheduler.py:94-102, which transitions a WorkUnit to `completed`
     without ever reading `wu.verifier`.
     """
-    src = (REPO_ROOT / "tools/haider/hcli/scheduler.py").read_text(encoding="utf-8")
+    src = (REPO_ROOT / "hcli/scheduler.py").read_text(encoding="utf-8")
     m = re.search(r"def complete\(.*?\n(?:.*?\n){0,30}?\n    def ", src, re.DOTALL)
     body = m.group(0) if m else src
     consults = bool(re.search(r"verifier|verified|verdict", body))
     return {
         "gate": "P0-8",
         "claim": "Scheduler.complete consults a verifier outcome before completing a WorkUnit",
-        "defends": "tools/haider/hcli/scheduler.py:94-102",
+        "defends": "hcli/scheduler.py:94-102",
         "body_mentions_verifier": consults,
         "ok": consults,
     }
@@ -343,7 +343,7 @@ def gate_p0_7() -> Dict[str, Any]:
     return {
         "gate": "P0-7",
         "claim": "reported Grok activity tracks the real process table",
-        "defends": "tools/haider/hcli/max_policy.py grok_pool_snapshot",
+        "defends": "hcli/max_policy.py grok_pool_snapshot",
         "reported_active": reported,
         "live_grok_processes": live_n,
         # Only meaningful while lanes are actually running; if nothing is live

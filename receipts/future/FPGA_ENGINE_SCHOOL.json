@@ -4,12 +4,12 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T09:16:29Z",
+  "recorded_at": "2026-09-02T18:57:00Z",
   "recorded_by": "tools/future/fpga_engines.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
- "branch": "grok/s4-tools-future-under-10s-20260902-045214",
+ "branch": "odyssey-i",
  "civilization_boundary": "FPGA is Accelerator / Physical Compiler / Fusion. Not its own civilization. Five eras, three odysseys. Sidecar has no GPU and produces neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE.",
  "claim_boundary": "Static sidecar artifact. No hardware measurement.",
  "emits_hdl": false,
@@ -187,7 +187,7 @@
   "hbm_bandwidth",
   "gpu_token_timing"
  ],
- "head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
+ "head": "dfaeaab9b8dc9131d676b04a18a576bef3d0f073",
  "negative_findings": [
   "receipts/headless/FLASH_COMPLETE_V2.nr.json is not a blob at HEAD; representation recovered instead from FLASH_NEXT_NOETIC_EXECUTABLE.json and FLASH_ROUTED_EXPERT_REPRESENTATION_EXPERIMENT.json",
   "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json is not a blob at HEAD (frontier F012 probed it on a machine where it was materialized)",
@@ -284,22 +284,22 @@
   "flash_complete_v2_nr_present_in_head": true,
   "paths": [
    {
-    "materialized": false,
+    "materialized": true,
     "path": "receipts/headless/FLASH_NEXT_FPGA_ORGAN_MAP.json",
     "present_in_head": true
    },
    {
-    "materialized": false,
+    "materialized": true,
     "path": "receipts/headless/QWEN27_FPGA_ORGAN_MAP.json",
     "present_in_head": true
    },
    {
-    "materialized": false,
+    "materialized": true,
     "path": "receipts/headless/HCLI_FPGA_PREBOARD.json",
     "present_in_head": true
    },
    {
-    "materialized": false,
+    "materialized": true,
     "path": "hcli/agentos/fpga_preboard.py",
     "present_in_head": true
    },
@@ -344,22 +344,22 @@
     "present_in_head": true
    },
    {
-    "materialized": false,
+    "materialized": true,
     "path": "receipts/headless/FLASH_ROUTED_EXPERT_REPRESENTATION_EXPERIMENT.json",
     "present_in_head": true
    },
    {
-    "materialized": false,
+    "materialized": true,
     "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
     "present_in_head": true
    },
    {
-    "materialized": false,
+    "materialized": true,
     "path": "receipts/headless/C4CODEBOOK_DESIGN.json",
     "present_in_head": true
    },
    {
-    "materialized": false,
+    "materialized": true,
     "path": "receipts/headless/REPRESENTATION_LIBRARY.json",
     "present_in_head": true
    },
@@ -374,12 +374,12 @@
     "present_in_head": true
    },
    {
-    "materialized": false,
+    "materialized": true,
     "path": "receipts/headless/FLASH_COMPLETE_V2.nr.json",
     "present_in_head": true
    },
    {
-    "materialized": false,
+    "materialized": true,
     "path": "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
     "present_in_head": true
    }
@@ -387,7 +387,7 @@
   "summary": "Organ maps and the FPGA preboard name organs and a mock link simulator; they do not implement arithmetic. tools/accelerator/gemm.py is a Metal tiled GEMM that loses to MLX and is not a NumPy golden. kernel_forge.py searches kernel variants; it does not define engine contracts. gravity_native.py has the sequential q4 group-64 dequant-matvec used as the qgemv width contract. C4 codebook design names fused ADC. DeltaNet gated-delta lives in the qwen38 Metal shader. Representation library lists families (shared_basis, low_rank, binary_sparse_residual, conventional_low_bit) without executable goldens. No tools/future/fpga_engines.py existed."
  },
  "schema": "hawking.future.fpga_engines.v1",
- "seal_sha256": "6904033531e7c92d62b366d1d3ac0ece3a3a49948e36439f54d18de38464dd98",
+ "seal_sha256": "52b89d4f97bc33533ee5802716a56423eaeaa0ec771b5f76cb73e1fde293a033",
  "selftest_vectors": [
   {
    "associativity": "sequential_left_to_right over K",

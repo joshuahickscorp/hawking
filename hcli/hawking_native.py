@@ -1364,6 +1364,16 @@ class HawkingNativeConnector:
             "retry_count": retry_count,
             "resident_health": resident_health,
             "native_metrics": native_metrics,
+            "grammar_enforced": body.get("grammar_enforced") is True,
+            # How much prefill the resident actually skipped. Without this the
+            # only evidence of KV reuse is a wall clock, and a wall clock cannot
+            # distinguish "reuse worked" from "the prompt was shorter".
+            "prefix_reused_tokens": body.get("prefix_reused_tokens"),
+            "prefill_tokens_stepped": body.get("prefill_tokens_stepped"),
+            # cold / session_append / checkpoint_restore. Which path ran is a
+            # fact the resident knows and nothing else can recover.
+            "prefix_source": body.get("prefix_source"),
+            "prefix_checkpoint_taken_at": body.get("prefix_checkpoint_taken_at"),
         }
         return {
             "id": f"hawking-chat-{uuid.uuid4()}",
@@ -1425,6 +1435,25 @@ class HawkingNativeConnector:
             "max_new_tokens": max_new_tokens,
             "max_seq_len": max_seq_len,
         }
+        # Either trigger: an explicit `grammar` (what StructuredOutputContract
+        # sets once the profile declares the resident honours one) or an
+        # OpenAI-shaped json_object request. The contract strips
+        # response_format on the degraded path, so deriving it from that field
+        # alone left the constrained path unreachable.
+        # ONLY "json". The resident implements a JSON syntax mask and nothing
+        # else, so any other grammar -- a GBNF string, a custom rule set -- is a
+        # field it would ignore. Sending it reads as enforcement in a receipt
+        # and enforces nothing, which is the exact lie the degraded path exists
+        # to avoid.
+        grammar = payload.get("grammar")
+        response_format = payload.get("response_format")
+        if isinstance(grammar, str) and grammar.strip().lower() == "json":
+            request["grammar"] = "json"
+        elif (
+            isinstance(response_format, dict)
+            and response_format.get("type") == "json_object"
+        ):
+            request["grammar"] = "json"
         started = time.perf_counter()
         try:
             body = self.resident.request(request, limit)

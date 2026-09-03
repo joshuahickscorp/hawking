@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """HCLI persistence and transaction-integrity audit.
 
-Enumerates every durable writer under tools/haider/hcli/ and DEMONSTRATES
+Enumerates every durable writer under hcli/ and DEMONSTRATES
 atomicity, crash-between-writes leftovers, persist-failure handling, and
 restart reconciliation. A finding is only claimed after this process
 watched the on-disk state.
@@ -1812,7 +1812,7 @@ def demo_recover_running_no_repair() -> None:
 HANDOFF_PATCHES = r'''
 ## HANDOFF
 
-This lane is DENIED writes under tools/haider/hcli/. Apply these exact patches
+This lane is DENIED writes under hcli/. Apply these exact patches
 in the lane that owns those modules.
 
 ### P1 — Mission.checkpoint: DAG first, raise, stamp checkpoint_id
@@ -1823,8 +1823,8 @@ Scheduler._persist (dispatch) and checkpoint() leaves dag.json with the unit
 running and mission state with the unit pending / in_flight=[]. Resume then
 re-dispatches (identify_ready on failed, attempts < 3).
 
---- a/tools/haider/hcli/mission.py
-+++ b/tools/haider/hcli/mission.py
+--- a/hcli/mission.py
++++ b/hcli/mission.py
 @@ def checkpoint(self) -> Path:
      def checkpoint(self) -> Path:
          path = self.state_path
@@ -1878,8 +1878,8 @@ a repair. identify_ready then re-readies the same id (attempts < 3). That is
 the duplicate Grok launch. from_workspace also adopts child_pids without killing
 them.
 
---- a/tools/haider/hcli/dag_store.py
-+++ b/tools/haider/hcli/dag_store.py
+--- a/hcli/dag_store.py
++++ b/hcli/dag_store.py
 @@ in DagStore.load, recover_running loop:
          if recover_running:
 +            recovered = []
@@ -1893,8 +1893,8 @@ them.
 +                    wu.failure_context = ctx
 +            self.last_meta["recovered_running"] = recovered
 
---- a/tools/haider/hcli/mission.py
-+++ b/tools/haider/hcli/mission.py
+--- a/hcli/mission.py
++++ b/hcli/mission.py
 @@ in Mission.from_workspace, after sched = Scheduler.from_workspace / fallback:
 +        recovered = []
 +        meta = getattr(sched.store, "last_meta", None) or {}
@@ -1934,8 +1934,8 @@ them.
 Current order: _persist() then _record_fingerprint() which may raise
 NO_PROGRESS. The tripping fingerprint never hits disk.
 
---- a/tools/haider/hcli/scheduler.py
-+++ b/tools/haider/hcli/scheduler.py
+--- a/hcli/scheduler.py
++++ b/hcli/scheduler.py
 @@ def complete(self, wu_id, fingerprint=None):
              transition_status(wu, "completed")
              if was_running:
@@ -1956,8 +1956,8 @@ NO_PROGRESS. The tripping fingerprint never hits disk.
 
 ### P4 — Grok receipts/contracts: use atomic_write_json / atomic text
 
---- a/tools/haider/hcli/grok_bridge.py
-+++ b/tools/haider/hcli/grok_bridge.py
+--- a/hcli/grok_bridge.py
++++ b/hcli/grok_bridge.py
 @@
 +from .dag_store import atomic_write_json
 @@ _write_contract_file:
@@ -1975,8 +1975,8 @@ with no .hcli/grok/<id>.json.
 
 ### P5 — Engine._write_receipt: atomic_write_json
 
---- a/tools/haider/hcli/engine.py
-+++ b/tools/haider/hcli/engine.py
+--- a/hcli/engine.py
++++ b/hcli/engine.py
 @@
 +from .dag_store import atomic_write_json
 @@ end of _write_receipt:
@@ -1995,8 +1995,8 @@ listing in-flight paths; without it, a two-file mutation can remain partial
 
 ### P7 — mutation._restore_file None-snapshot bug
 
---- a/tools/haider/hcli/mutation.py
-+++ b/tools/haider/hcli/mutation.py
+--- a/hcli/mutation.py
++++ b/hcli/mutation.py
 @@
 -def _restore_file(snapshot: Optional[Dict[str, Any]]) -> None:
 -    if snapshot is None:
@@ -2024,8 +2024,8 @@ listing in-flight paths; without it, a two-file mutation can remain partial
 
 ### P8 — RuntimePool.start: write ownership BEFORE returning, and stop() on failure
 
---- a/tools/haider/hcli/runtime.py
-+++ b/tools/haider/hcli/runtime.py
+--- a/hcli/runtime.py
++++ b/hcli/runtime.py
 @@ end of start():
          self.admitted_n = len(self.runtimes)
          if self.runtimes:
@@ -2038,8 +2038,8 @@ listing in-flight paths; without it, a two-file mutation can remain partial
 
 ### P9 — MachineGenome.save atomic
 
---- a/tools/haider/hcli/machine.py
-+++ b/tools/haider/hcli/machine.py
+--- a/hcli/machine.py
++++ b/hcli/machine.py
 @@ def save(self) -> None:
 -        self.path.write_text(json.dumps(self.data, indent=2))
 +        from .dag_store import atomic_write_json
@@ -2208,7 +2208,7 @@ def print_inventory(census: List[Dict[str, Any]]) -> None:
     print()
     print("=== WRITER INVENTORY ===")
     print(f"durable persist functions enumerated: {len(WRITERS)}")
-    print(f"AST write-like calls under tools/haider/hcli/*.py: {len(census)}")
+    print(f"AST write-like calls under hcli/*.py: {len(census)}")
     print()
     for w in WRITERS:
         print(

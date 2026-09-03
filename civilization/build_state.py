@@ -12,7 +12,12 @@ GOAL = pathlib.Path.home() / ".claude/ultragoal/hawking-odyssey-maxx-ascension/G
 # decree supplied for the current campaign.  Keep the path and its digest in the
 # generated ledger so a fresh process can distinguish a changed roadmap from a
 # changed repository.
-CANONICAL_ROADMAP = pathlib.Path.home() / "Downloads/H-ROADMAP.md"
+sys.path.insert(0, str(HAWKING))  # run as a script; tools/ is not otherwise importable
+from tools.roadmap import lineage  # noqa: E402
+
+# External by user placement, so it can vanish without a commit -- and did.
+# lineage falls back to the digest-verified in-repo preservation copy.
+CANONICAL_ROADMAP = lineage.roadmap_path()
 CANONICAL_ROADMAP_VERSION = "H-ROADMAP_CRISPR_EXECUTION_SPECIFICATION_2026-08-27"
 CANONICAL_CIVILIZATIONAL_COORDINATE = 0.7
 
@@ -2640,9 +2645,37 @@ def build():
     return state
 
 
+# Two generators target this one file with incompatible schemas: this one, and
+# tools/roadmap/recompile.py (hawking.roadmap.state.v3).  There is no argument
+# parsing here, so ANY invocation used to overwrite whichever one happened to be
+# on disk -- a v3 ledger of 83 gates was destroyed exactly this way.  Refuse
+# instead of clobbering; --force is the deliberate override.
+OWNED_SCHEMAS = (None, "hawking.civilization.state.v1")
+
+
+def _refuse_to_clobber(out: pathlib.Path) -> None:
+    if not out.is_file():
+        return
+    try:
+        existing = json.loads(out.read_text())
+    except (OSError, ValueError):
+        return
+    schema = existing.get("schema") if isinstance(existing, dict) else None
+    if schema in OWNED_SCHEMAS:
+        return
+    raise SystemExit(
+        f"refusing to overwrite {out}: it carries schema {schema!r}, which this "
+        "generator does not own (tools/roadmap/recompile.py does). Regenerate it "
+        "with `python3 -m tools.roadmap`, or pass --force to overwrite deliberately."
+    )
+
+
 if __name__ == "__main__":
+    out = pathlib.Path(__file__).with_name("ROADMAP_STATE.json")
+    if "--force" not in sys.argv:
+        _refuse_to_clobber(out)
     s = build()
-    pathlib.Path(__file__).with_name("ROADMAP_STATE.json").write_text(json.dumps(s, indent=1))
+    out.write_text(json.dumps(s, indent=1))
     print(f"era {s['active_era']} | {s['obligations_total']} obligations "
           f"{s['obligation_status_counts']} | unmapped={s['unmapped_obligations']} "
           f"orphan={s['orphan_map_entries']} | tests={s['last_verified_test_count']}")

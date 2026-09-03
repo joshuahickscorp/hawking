@@ -798,7 +798,7 @@ def what_watched_fail(artifact: dict, g: dict, bound_n: int, declared_n: int,
         "what": "git apply tree-state.patch",
         "result": "FAILED",
         "why": (
-            "The patch is entirely tools/haider/hcli/**. This worktree is a sparse checkout "
+            "The patch is entirely hcli/**. This worktree is a sparse checkout "
             "and tools/haider is neither materialized nor in WRITE scope (DENY: tools/haider). "
             "git apply aborted with 'No such file or directory' on every hunk. "
             "untracked.tar is the same tree. Nothing in-scope was missing from HEAD."
@@ -808,7 +808,7 @@ def what_watched_fail(artifact: dict, g: dict, bound_n: int, declared_n: int,
         "what": "baseline suite 464 passed, 1 skipped (HCLI_SWAP_CEILING_GIB=64)",
         "result": "NOT RUN",
         "why": (
-            "That suite lives under tools/haider/hcli/tests, which is DENY and not on disk. "
+            "That suite lives under hcli/tests, which is DENY and not on disk. "
             "git sparse-checkout add is forbidden in this sandbox (sparse-checkout.lock: "
             "Operation not permitted). The 9 RuntimePool MemGate failures the ceiling "
             "avoids cannot be reproduced here without materializing a denied path."

@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T09:38:58Z",
+  "recorded_at": "2026-09-02T19:05:52Z",
   "recorded_by": "tools/future/router_science.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -677,13 +677,13 @@
    {
     "path": "receipts/headless/FLASH_ROUTER_SENSITIVITY_MAP_L3_L4.json",
     "provenance": {
-     "in_git_HEAD": true,
+     "in_git_HEAD": false,
      "on_parent_disk": false,
-     "on_worktree_disk": false,
-     "path": null,
+     "on_worktree_disk": true,
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_ROUTER_SENSITIVITY_MAP_L3_L4.json",
      "rel": "receipts/headless/FLASH_ROUTER_SENSITIVITY_MAP_L3_L4.json",
      "sha256": "4dc9bf25ea300f7c41e9623827a81fae29567c533e11c7c1f2ee85ba0614fa28",
-     "source": "git_HEAD"
+     "source": "worktree"
     },
     "role": "the measurement this module allocates from"
    },
@@ -696,13 +696,13 @@
    {
     "path": "receipts/headless/FLASH_MARGIN_RESIDUAL_CANDIDATE_L3_L4.json",
     "provenance": {
-     "in_git_HEAD": true,
+     "in_git_HEAD": false,
      "on_parent_disk": false,
-     "on_worktree_disk": false,
-     "path": null,
+     "on_worktree_disk": true,
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_MARGIN_RESIDUAL_CANDIDATE_L3_L4.json",
      "rel": "receipts/headless/FLASH_MARGIN_RESIDUAL_CANDIDATE_L3_L4.json",
      "sha256": "5fc4422723a3fd83c5a84ab2821815431f7f1d503045c5977215931e74801ee7",
-     "source": "git_HEAD"
+     "source": "worktree"
     },
     "role": "oracle residual candidate; still not route-stable"
    },
@@ -736,26 +736,26 @@
    {
     "path": "receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
     "provenance": {
-     "in_git_HEAD": true,
+     "in_git_HEAD": false,
      "on_parent_disk": false,
-     "on_worktree_disk": false,
-     "path": null,
+     "on_worktree_disk": true,
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
      "rel": "receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
      "sha256": "3f405e0b4339a28f13e74676e297c3a78cf7be32d1502ad41721fe54f0d7b6fa",
-     "source": "git_HEAD"
+     "source": "worktree"
     },
     "role": "layer-0 Q4/G64 vs source top-k mismatch (8/10)"
    },
    {
     "path": "receipts/headless/FLASH_NOETIC_ROUTER_REPRESENTATION_AB.json",
     "provenance": {
-     "in_git_HEAD": true,
+     "in_git_HEAD": false,
      "on_parent_disk": false,
-     "on_worktree_disk": false,
-     "path": null,
+     "on_worktree_disk": true,
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTER_REPRESENTATION_AB.json",
      "rel": "receipts/headless/FLASH_NOETIC_ROUTER_REPRESENTATION_AB.json",
      "sha256": "da43ea715aa04e84b7da3d243aa28d5631e62f0a79fe75bc49c184dd28a68443",
-     "source": "git_HEAD"
+     "source": "worktree"
     },
     "role": "no low-bit router candidate is exact; NF4/G64 best at 9/10"
    },
@@ -888,7 +888,7 @@
   "topk_form": "no derivative; use route_margins"
  },
  "schema": "hawking.future.router_science.v1",
- "seal_sha256": "df0b5e763c4fae1a017e915c626600ab9fc944c934e007ffc76676f27808067c",
+ "seal_sha256": "18820eb1c6ba516f1c2d976c9dc358b2bf9b8cf50af160d38cc69d48497808bd",
  "seam": {
   "hidden": 2560,
   "k": 10,
@@ -907,13 +907,13 @@
  },
  "source_map": {
   "provenance": {
-   "in_git_HEAD": true,
+   "in_git_HEAD": false,
    "on_parent_disk": false,
-   "on_worktree_disk": false,
-   "path": null,
+   "on_worktree_disk": true,
+   "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_ROUTER_SENSITIVITY_MAP_L3_L4.json",
    "rel": "receipts/headless/FLASH_ROUTER_SENSITIVITY_MAP_L3_L4.json",
    "sha256": "4dc9bf25ea300f7c41e9623827a81fae29567c533e11c7c1f2ee85ba0614fa28",
-   "source": "git_HEAD"
+   "source": "worktree"
   },
   "rel": "receipts/headless/FLASH_ROUTER_SENSITIVITY_MAP_L3_L4.json",
   "schema": "hawking.flash.router_sensitivity_map.v1",

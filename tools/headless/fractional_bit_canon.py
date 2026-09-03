@@ -1451,7 +1451,7 @@ def main() -> int:
     }
     results["wall_s"] = time.time() - t_all
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    tmp = OUT_PATH.with_suffix(".json.tmp")
+    tmp = OUT_PATH.with_suffix(f".json.{os.getpid()}.tmp")
     tmp.write_text(json.dumps(j(results), indent=2, allow_nan=False) + "\n")
     tmp.replace(OUT_PATH)
     print_report(results)

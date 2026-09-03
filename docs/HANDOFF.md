@@ -8,15 +8,16 @@ Everything about *surviving* is proven: detachment, worker respawn, one-body
 discipline, memory safety, observability, governance. Everything about *making
 progress* is unproven: `accepted = 0` across two missions and 553 minutes.
 
-Three blockers remain. Two are small. The third needs a decision.
+> **Superseded 2026-09-02, later session.** All three blockers below are
+> resolved and the `haider` name is retired. The paragraphs that follow are kept
+> as the record of what was wrong and why; read "Fixed since" and "The haider
+> name is retired" further down for the current state. Everything above this
+> line was true at `c504a71fc` and is not true now.
 
-Repo: `/Users/scammermike/Downloads/hawking`, branch `odyssey-i`, HEAD
-`c504a71fc`, clean tree, **5 commits unpushed**. `main` was even with `odyssey-i`
-as of `345e209c5`.
-
-Tests: **637 passed** with the 15 protected gates excluded (baseline this
-morning was 588). With gates included, expect ~49 failures — those are red by
-design, see the gate table below.
+Tests: **1311 passed, 19 failed, 3 skipped** with the 15 protected gates
+excluded. The 637 below is stale; so is 641. The suite grew because HCLI's own
+tests moved into `hcli/tests/` from `tools/haider/`, and the 19 failures came
+with them — the same 19, by name, that were failing where nobody was looking.
 
 ---
 
@@ -246,6 +247,44 @@ not this.
 
 The profile capability flag stays OFF until the mask is proven by mutation on
 real hardware. A receipt must never claim a capability that did not act.
+
+## The haider name is retired
+
+`haider` was HCLI's bootstrap form and a contraction of *aider*. The package
+dependency was already gone and audited; the name and the framing were not.
+Both are now.
+
+- 65 test files moved to `hcli/tests/`; bootstrap history to `tools/hcli/bootstrap/`
+  with a README saying why its contents still read "haider" (a snapshot named for
+  a file that really was called that is a record).
+- `tools/haider/aider_patches/` held a VERBATIM copy of upstream aider's
+  `CoderPrompts` plus a patch. Nothing read it. Deleted.
+- `HAIDER_SYSTEM_PROMPT.txt` ("You are HAIDER, the bootstrap form of HCLI") had
+  no reader either. Deleted; the doctrine lives in `engine.py::_SYSTEM_PROMPT`.
+- `hide_backend::haider` -> `::hcli`, `parse_haider_args` -> `parse_hcli_args`,
+  `HAIDER_MODEL_PATH` dropped, `.haider/` -> `.hcli-legacy/` on disk.
+- `docs/ultragoals/HCLI_SUPER_AGENT_OS.md` set the condition "Aider dependency
+  monotonically decreases until HAIDER effectively IS HCLI". That is discharged.
+
+Three findings that were not renames:
+
+1. **`hide_backend::haider` has never compiled.** `mod haider` was never in
+   lib.rs, so the module, its binary and its integration test -- 2823 lines --
+   were in no build, and `cargo build -p hide-backend` has been failing on that
+   binary before and after this change. Declaring it yields 14 compile errors.
+   The library builds clean. Documented in lib.rs. Adopt or delete is a
+   separate call, now with evidence.
+2. **`tools/headless/conftest.py` would have skipped everything.** It gated on
+   `tools/haider/hcli` existing; after the move that is permanently false and
+   every hcli-importing module below it would have been skipped silently. It
+   asks whether `hcli` is importable now.
+3. **`.hcli/legacy/` was the wrong home.** `engine._safe_path` refuses every
+   path under `.hcli`, so a document the evidence gatherer reads became
+   unreachable. It is `.hcli-legacy/`, beside the control directory.
+
+Suite: **1311 passed, 19 failed, 3 skipped** gates-excluded. The 19 are the same
+19 that failed at the old location, by name -- byte-identical failure list before
+and after the move. They were red where nobody looked.
 
 ## The test that settles it
 

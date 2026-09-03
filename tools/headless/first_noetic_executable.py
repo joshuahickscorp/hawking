@@ -224,7 +224,7 @@ def parse_hgravb01(payload: bytes) -> dict[str, Any]:
 
 def write_atomic(path: Path, data: bytes) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_name(path.name + ".tmp")
+    tmp = path.with_name(f"{path.name}.{os.getpid()}.tmp")
     tmp.write_bytes(data)
     os.replace(tmp, path)
 
@@ -865,7 +865,7 @@ def run_all(
             "coherence": d.get("coherence"),
         }
     out_receipt.parent.mkdir(parents=True, exist_ok=True)
-    tmp = out_receipt.with_suffix(".json.tmp")
+    tmp = out_receipt.with_suffix(f".json.{os.getpid()}.tmp")
     tmp.write_text(json.dumps(receipt, indent=2) + "\n")
     os.replace(tmp, out_receipt)
     print(f"wrote {out_receipt}", flush=True)

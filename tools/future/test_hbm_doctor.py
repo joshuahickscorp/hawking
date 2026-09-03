@@ -289,3 +289,33 @@ def test_score_is_reduction_per_byte():
     # 20 * 0.5 * 2 * 1 = 20; per byte = 2
     assert a.cited_weighted_latency() == pytest.approx(20.0)
     assert a.score_per_byte() == pytest.approx(2.0)
+
+
+def test_the_hbm_budget_is_sourced_not_an_unattributed_literal():
+    """The number was always right; its provenance was missing.
+
+    A module that refuses to fill reuse_count or mac_latency_ns with a default
+    should not take its own byte budget on faith, especially when an identical
+    CITED value was in the U50DD device profile the whole time.
+    """
+    prov = hd.DEFAULT_BUDGET_PROVENANCE
+    assert prov["pinned"] is True, "budget fell back to the unsourced literal"
+    assert prov["citation"], "a budget with no citation"
+    assert prov["document_class"] == "AMD_DATASHEET_DS965"
+    assert prov["hardware_measured"] is False, "vendor literature is not a measurement"
+    assert prov["value"] == hd.DEFAULT_BUDGET_BYTES
+
+
+def test_the_budget_tracks_the_device_profile_rather_than_a_copy():
+    """Mutation control: move the profile and the budget must move with it.
+
+    Two constants that merely happen to be equal drift apart the first time one
+    of them is edited.
+    """
+    from tools.future import hwir
+    assert hd.DEFAULT_BUDGET_BYTES == int(
+        hwir.u50_family_profile("u50dd").to_dict()["hbm_capacity_bytes"]
+    )
+    recomputed, prov = hd._u50dd_hbm_capacity()
+    assert recomputed == hd.DEFAULT_BUDGET_BYTES
+    assert prov["via"].endswith("u50_family_profile('u50dd')")

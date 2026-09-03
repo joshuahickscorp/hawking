@@ -86,7 +86,7 @@ trigger for another cycle. The physical body registry records `CONFIGURED`,
 merely because a worker process was constructed.
 
 The lightweight resident qualification is
-`tools/haider/test_hcli_resident_daemon.py`. It uses a fixture engine and a
+`hcli/tests/test_hcli_resident_daemon.py`. It uses a fixture engine and a
 short-lived child process, so it does not load Qwen3.8 or consume GPU memory.
 
 For a serving-only latency experiment, set

@@ -2027,6 +2027,23 @@ def retire_incumbent(daemon: "ResidentDaemon", timeout_s: float = 30.0) -> Dict[
         retired.parent.mkdir(parents=True, exist_ok=True)
         shutil.move(str(mission_dir), str(retired))
         report["archived_mission"] = str(retired)
+        # The DAG is the OTHER HALF of the same generation, and leaving it
+        # behind is not a tidiness problem -- it carries `repair_signatures`
+        # and `repair_counts`. A fresh mission rebuilt its repair budget from
+        # the previous mission's spent one, so the FIRST failure of a unit
+        # matched a signature already in the inherited set and was refused a
+        # repair at depth 0:
+        #
+        #   repair_exhausted G001.work depth=0
+        #   "repair cycle: failure signature already seen in lineage G001.work"
+        #
+        # Every unit got exactly one attempt and no repair, across every
+        # restart, forever. Observed with 11 units pre-spent in `.hcli/dag.json`
+        # before mission 89e411d8 had run a single one of them.
+        dag_path = Path(daemon.workspace) / ".hcli" / "dag.json"
+        if dag_path.is_file():
+            shutil.move(str(dag_path), str(Path(retired) / "dag.json"))
+            report["archived_dag"] = str(Path(retired) / "dag.json")
     return report
 
 
@@ -2185,6 +2202,14 @@ def build_parser() -> argparse.ArgumentParser:
     )
     status = sub.add_parser("status", help="show resident state without opening a model")
     status.add_argument("--workspace", default=os.getcwd())
+    verdict = sub.add_parser(
+        "verdict",
+        help="is this a good run? named criteria, read from disk, opens no model",
+    )
+    verdict.add_argument("--workspace", default=os.getcwd())
+    verdict.add_argument(
+        "--json", action="store_true", help="emit the full verdict document"
+    )
     watch = sub.add_parser(
         "watch", help="live read-only view of the running resident (opens no model)"
     )
@@ -2263,6 +2288,17 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             # as a launch. The requested config was not applied.
             print(str(exc), file=sys.stderr)
             return 3
+    elif args.command == "verdict":
+        from hcli.cycle_verdict import evaluate, render
+
+        report = evaluate(args.workspace)
+        if args.json:
+            print(json.dumps(report, indent=2, sort_keys=True))
+        else:
+            print(render(report))
+        # Exit code carries the verdict so a watcher does not have to parse it.
+        # UNKNOWN is 2, not 0: unchecked is not passed.
+        return {"PASS": 0, "FAIL": 1}.get(report["verdict"], 2)
     elif args.command == "__never__":
         result = start_resident(
             args.workspace,

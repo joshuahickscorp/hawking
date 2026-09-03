@@ -1284,7 +1284,7 @@ def build() -> dict:
                 "receipts/headless/C1SHAREDBASIS_DESIGN.json",
             ],
             "verify": ["tools/headless", "receipts/headless"],
-            "deny": ["workspace", "crates", "visionmcp", "app", "lab", "tools/haider", "ramanujan"],
+            "deny": ["workspace", "crates", "visionmcp", "app", "lab", "tools/hcli", "ramanujan"],
             "crates_read_only": True,
         },
         "self_check": self_check,

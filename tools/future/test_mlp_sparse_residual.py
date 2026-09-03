@@ -362,3 +362,34 @@ def test_receipt_reports_both_allocations_and_held_out_by_prompt():
         msr.OPEN,
     }
     assert "is_the_residual_after_the_best_bulk_sparse" in doc["answers"]
+
+
+def test_residual_map_uses_cholesky_back_substitution_not_a_general_solve():
+    """L is triangular; solving it with a general LU is the wrong algorithm.
+
+    factor["L"] comes from np.linalg.cholesky. np.linalg.solve would ask LAPACK
+    for a general LU factorization with pivoting -- O(n^3) to answer what
+    back-substitution answers in O(n^2), twice per call. This pins BOTH facts:
+    the result must match a general solve (it is the same system), and the
+    routine must be the triangular one (it is the same answer for less work).
+    """
+    import numpy as np
+
+    from tools.future import mlp_sparse_residual as m
+
+    rng = np.random.default_rng(17)
+    n, k, c = 64, 9, 5
+    x = rng.standard_normal((n, k))
+    g = x.T @ x + np.eye(k) * 1e-3
+    factor = {"L": np.linalg.cholesky(g), "X": x}
+    r_cols = rng.standard_normal((n, c))
+
+    got = m.solve_residual_map(factor, r_cols)
+
+    # Independent reference: the general solve this replaced.
+    rhs = factor["X"].T @ np.ascontiguousarray(r_cols, dtype=np.float64)
+    ref = np.linalg.solve(factor["L"].T, np.linalg.solve(factor["L"], rhs))
+    assert np.allclose(got, ref, atol=1e-9), "the triangular solve changed the answer"
+
+    # And it really solves the normal equations: g @ result == X.T @ r_cols.
+    assert np.allclose(g @ got, rhs, atol=1e-8), "the result does not satisfy the system"

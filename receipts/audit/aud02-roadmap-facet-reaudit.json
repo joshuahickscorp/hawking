@@ -1,0 +1,3806 @@
+{
+  "schema": "hawking.audit.roadmap_facet.v1",
+  "audit_id": "aud02-roadmap-facet-reaudit",
+  "generated_at": "2026-09-02T19:11:42Z",
+  "head_commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+  "graph_generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+  "commits_behind_graph": 7,
+  "roadmap": {
+    "path": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "hash_sha256": "d43a6b07ab9590bc11c265bfe8a1466131cce291b0622c076370a01d811328e4",
+    "line_count": 9645,
+    "appendix_o": {
+      "start_line": 9455,
+      "end_line": 9528,
+      "n_named_gates": 71
+    },
+    "appendix_a_gene_cards": {
+      "start_line": 5223,
+      "end_line": 7269,
+      "n_cards": 25
+    },
+    "section_5_eras": {
+      "start_line": 425,
+      "end_line": 995,
+      "n_programs": 25
+    },
+    "in_repo": false,
+    "note": "Canonical H-ROADMAP.md lives outside the git tree at /Users/scammermike/Downloads/H-ROADMAP.md. civilization/ROADMAP_STATE.json.roadmap_hash is 51474151\u2026 and does NOT match this file's d43a6b07\u2026"
+  },
+  "graph": {
+    "path": "civilization/CAPABILITY_GRAPH.json",
+    "schema": "hawking.roadmap.capability_graph.v1",
+    "evidence_tier": "STATIC",
+    "counts_as_committed": {
+      "gates": 71,
+      "genes": 25,
+      "gates_by_status": {
+        "BUILT": 18,
+        "SCAFFOLDED": 20,
+        "WIRED": 11,
+        "ABSENT": 1,
+        "BLOCKED_HARDWARE": 13,
+        "UNREACHABLE": 1,
+        "BLOCKED_EXTERNAL": 7
+      },
+      "genes_by_status": {
+        "SCAFFOLDED": 20,
+        "WIRED": 1,
+        "BLOCKED_HARDWARE": 3,
+        "DORMANT": 1
+      }
+    }
+  },
+  "vocabulary": {
+    "required_13": [
+      "ABSENT",
+      "CONCEPT_ONLY",
+      "SCAFFOLDED",
+      "CALLABLE",
+      "TESTED",
+      "END_TO_END",
+      "PHYSICALLY_MEASURED",
+      "ADVERSARIALLY_VERIFIED",
+      "INTEGRATED",
+      "BLOCKED_HARDWARE",
+      "BLOCKED_AUTHORITY",
+      "SUPERSEDED",
+      "STALE_ROADMAP_TEXT"
+    ],
+    "graph_vocab_not_in_13": [
+      "BUILT",
+      "WIRED",
+      "UNREACHABLE",
+      "BLOCKED_EXTERNAL",
+      "DORMANT",
+      "PASS"
+    ],
+    "mapping_used": {
+      "BUILT": "never copied; independently TESTED or END_TO_END or CALLABLE after refutation",
+      "WIRED": "CALLABLE",
+      "SCAFFOLDED": "SCAFFOLDED",
+      "ABSENT": "ABSENT or CALLABLE if the catalog was empty but code exists",
+      "BLOCKED_HARDWARE": "BLOCKED_HARDWARE",
+      "UNREACHABLE": "BLOCKED_HARDWARE when the blocker is missing hardware",
+      "BLOCKED_EXTERNAL": "CONCEPT_ONLY + BLOCKED_AUTHORITY for Theia model ladder",
+      "DORMANT": "CONCEPT_ONLY",
+      "ADVERSARIALLY_VERIFIED_in_ROADMAP_STATE": "rejected; not earned",
+      "PHYSICALLY_RUNNING_in_ROADMAP_STATE": "rejected; not earned"
+    }
+  },
+  "method": {
+    "evidence_tier": "STATIC_VERIFICATION unless noted SOURCE_INSPECTION / SIMULATED / INFERRED / BLOCKED_AUTHORITY",
+    "call_site_law": "A capability nothing Calls does not exist. Module import is not a Call. Registration is not wiring. Acceptance harness (tools/acceptance/** except test_*) was NOT treated as production. Same-file Calls that are not the def line WERE counted (the committed graph excludes the whole def file and therefore dropped resident.py:1012 admit_evidence_children and delegate.py:1470 abort).",
+    "tests_are_not_measurement": true,
+    "simulation_is_not_board": true,
+    "receipts_do_not_override_broken_producer": true,
+    "never_physically_measured_performance": true,
+    "sparse_checkout": "Missing-from-disk is not absence. Definitions via git cat-file / git show HEAD:<path>.",
+    "graph_was_read_then_independently_checked": true,
+    "did_not_run": [
+      "live daemon pytest",
+      "Metal kernel dispatch",
+      "protected GPU benchmark",
+      "ModelLake rehash",
+      "tools/vmcp/test_behavior_lab.py"
+    ],
+    "did_run": [
+      "sysctl machdep.cpu.brand_string / hw.model \u2192 Apple M3 Ultra Mac15,14",
+      "nvidia-smi \u2192 not found",
+      "system_profiler SPPCIeDataType / SPThunderboltDataType \u2192 no U50/eGPU",
+      "ioreg \u2192 AppleT6031ANEHAL=1 (ANE present as inventory), no HMF/CXL/HGVAS",
+      "git grep + git show + AST Call scan of every catalog symbol at HEAD",
+      "read of receipts/acceptance/*.json verdicts and COMPLETE_EBPW.json numeric field"
+    ],
+    "process_state": "ps was not permitted in this sandbox. Live HCLI daemon was NOT inspected. Not INTEGRATED for any gate."
+  },
+  "hardware": {
+    "soc": "Apple M3 Ultra",
+    "model": "Mac15,14",
+    "ane_inventory": "AppleT6031ANEHAL=1 (ioreg class count; inventory, not an ANE benchmark)",
+    "gpu_uma": "present (SoC); Metal dispatch not executed this lane",
+    "U50_PRESENT": false,
+    "DGX_PRESENT": false,
+    "EGPU_PRESENT": false,
+    "HMF_PRESENT": false,
+    "NEW_M_SERIES_PRESENT": false,
+    "evidence_tier": "STATIC_VERIFICATION of inventory commands executed this lane"
+  },
+  "constitution_check": {
+    "five_eras": true,
+    "three_odysseys": true,
+    "no_era_vi": true,
+    "no_odyssey_iv": true,
+    "fpga_inside_accelerator_fusion": true,
+    "theia_is_bounty_not_civilization": true,
+    "civilizational_coordinate_0_7": true,
+    "north_star_untouched": true,
+    "notes": [
+      "H-ROADMAP.md line 8 and 1012 and 4003\u20134004 and 5120 restate the constitution.",
+      "Appendix O places FPGA_* under the same ledger as I-D gates; catalog gene=I-D_ACCELERATOR. Good.",
+      "Theia gates have era='bounty' in the catalog. Good.",
+      "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE catalog-depends on HMF, not FPGA \u2014 tension with FPGA-inside-Fusion."
+    ]
+  },
+  "surprises": [
+    {
+      "id": "S1_GENE_CARD_BOILERPLATE",
+      "loud": true,
+      "finding": "All 25 Appendix A gene cards share the identical Action sentence (325 occurrences) and Receipt sentence (325 occurrences). AUTHORITY/PHENOTYPE/MUTATION/CONTROL/VERIFIER/PHYSICAL COST/CAPABILITY/FAILURE/RECOVERY/TRANSFER/SEARCH/NEGATIVE SCIENCE/PROMOTION are not gene-specific. Section 5 copies the same Operating rule / Promotion gate / Self-refill triggers 25 times.",
+      "what_would_settle_it": "A rewrite of Appendix A with per-gene authority artifacts. This audit does not rewrite H-ROADMAP.md."
+    },
+    {
+      "id": "S2_BEHAVIOR_LAB_ABSENT_IS_FALSE",
+      "loud": true,
+      "finding": "AGENTOS_BEHAVIOR_LAB is ABSENT in CAPABILITY_GRAPH because catalog paths=(). tools/vmcp/behavior_lab.py implements BHV-01..23 and tools/future/vmcp.py CALLS run_matrix.",
+      "what_would_settle_it": "Catalog the path+symbol and re-run tools/vmcp/test_behavior_lab.py plus prove(organ=behavior_lab) with hcli/workunit.py materialized."
+    },
+    {
+      "id": "S3_ROADMAP_STATE_INFLATION",
+      "loud": true,
+      "finding": "civilization/ROADMAP_STATE.json marks I-A/I-C/I-D/I-E ADVERSARIALLY_VERIFIED and I-B PHYSICALLY_RUNNING, and Era I PHYSICALLY_RUNNING. The capability graph marks those genes SCAFFOLDED. Acceptance receipts are FUNCTIONAL_SIM or STATIC. ROADMAP_STATE.roadmap_hash does not match the current H-ROADMAP.md.",
+      "what_would_settle_it": "Regenerate ROADMAP_STATE from the capability graph + 13-state vocab, or mutation-check the 'adversarial_verification' evidence flags."
+    },
+    {
+      "id": "S4_METAL_INVISIBLE_ON_M3_ULTRA",
+      "loud": true,
+      "finding": "FLASH_NATIVE_NF_KERNEL acceptance BLOCKED with 'metal: no Metal-capable GPU' in worktree acc5-flash-acceptance despite Chipset Model Apple M3 Ultra / Metal Supported. This lane also could not run xcrun metal (utility not in PATH in sandbox).",
+      "what_would_settle_it": "Unsbox/gate-profile Metal dispatch of flash_noetic_q4_kernel_parity on this host."
+    },
+    {
+      "id": "S5_QWEN27_REGRESSION_ACCEPTED_WITHOUT_SYMBOL",
+      "loud": true,
+      "finding": "QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED graph BUILT, but the ACCEPTED receipt says run_qwen27_mlp_diagnostic_ab was not invoked.",
+      "what_would_settle_it": "Invoke the diagnostic on a disposable resident, or downgrade BUILT."
+    },
+    {
+      "id": "S6_ODYSSEY_I_BUILT_IS_A_PICKER",
+      "loud": true,
+      "finding": "ODYSSEY_I_DISCOVERY graph BUILT from STATIC mutate=False picker + header census.",
+      "what_would_settle_it": "A law/scar/genome from a specimen."
+    },
+    {
+      "id": "S7_EBPW_IS_3_14_NOT_1",
+      "loud": true,
+      "finding": "incumbent.complete_ebpw=3.139300850311054 against bar <= 1. Graph correctly refused accepted. Anyone reading BUILT nearby Flash gates as 'Gravity is done' is wrong.",
+      "what_would_settle_it": "A mix whose complete_ebpw <= 1 by the receipt's own formula."
+    },
+    {
+      "id": "S8_GRAPH_SEVEN_COMMITS_STALE",
+      "loud": true,
+      "finding": "Graph generated_from_commit 7d642800, HEAD 04193ccbc (7 commits), including HWIR pluggable lowering (hwir.py 5444\u21926279 lines) and hcli repair-stop behaviour.",
+      "what_would_settle_it": "Re-run tools/roadmap/auditor.py at HEAD (out of scope for this discovery lane)."
+    },
+    {
+      "id": "S9_VERIFIED_ABSENT_MEANS_PRESENT",
+      "loud": true,
+      "finding": "CAPABILITY_GRAPH.verified_absent[].verdict is PRESENT for theia, transport, placement.",
+      "what_would_settle_it": "Rename the field or invert the verdicts."
+    },
+    {
+      "id": "S10_FUSION_GATED_ON_HMF_NOT_FPGA",
+      "loud": true,
+      "finding": "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE depends on HMF_DEVICE_VISIBLE_TRUST, so it is UNREACHABLE/BLOCKED_HARDWARE even though constitution places FPGA inside Fusion and FPGA preboard software exists.",
+      "what_would_settle_it": "A catalog dependency on U50_MIXED_APPLE_FPGA_GRAPH, or an explicit statement that Fusion's first executable requires HMF."
+    },
+    {
+      "id": "S11_APPENDIX_O_HAS_NO_VERDICTS",
+      "loud": true,
+      "finding": "Appendix O is 71 lines of NAME=NOT_RUN|PASS|FAIL|BLOCKED|INCONCLUSIVE with no filled verdict. A gate name is not evidence (line 9529). The committed graph's BUILT column is not reflected in the roadmap text.",
+      "what_would_settle_it": "Do not treat Appendix O as a status ledger until a generator writes real verdicts. This audit does not rewrite it."
+    },
+    {
+      "id": "S12_GENERIC_SYMBOLS",
+      "loud": true,
+      "finding": "Catalog symbols resolve, promote, abort, scars, reconcile are not unique. Independent AST of resolve produced 3124 Call hits. Bound-to-module filtering is mandatory; the previous rejected lane counted imports, this graph sometimes counts the right Call but the wrong uniqueness.",
+      "what_would_settle_it": "Fully qualified catalog symbols only."
+    },
+    {
+      "id": "S13_DEF_FILE_EXCLUSION_DROPS_REAL_CALLS",
+      "loud": true,
+      "finding": "Excluding the whole definition file dropped admit_evidence_children (resident loop) and abort (CLI main in delegate.py).",
+      "what_would_settle_it": "Exclude the def line, not the file."
+    },
+    {
+      "id": "S14_LIVE_DAEMON_INVISIBLE",
+      "loud": true,
+      "finding": "ps is not permitted in this sandbox. The live launchd HCLI daemon was not observed. No gate is INTEGRATED.",
+      "what_would_settle_it": "A read-only process/launchctl listing outside the sandbox, without signalling the daemon."
+    }
+  ],
+  "disagreements_with_committed_graph": [
+    {
+      "id": "AGENTOS_REPAIR_BOUNDED",
+      "kind": "gate",
+      "graph_status": "BUILT",
+      "independent_state": "TESTED",
+      "reason": "Graph BUILT. Independent: TESTED (FUNCTIONAL_SIM pytest), not END_TO_END/INTEGRATED/PHYSICALLY_MEASURED. Catalog symbol is Scheduler \u2014 the whole class, not repair-boundedness. Live-daemon repair was not re-run here."
+    },
+    {
+      "id": "AGENTOS_CANCELLATION",
+      "kind": "gate",
+      "graph_status": "BUILT",
+      "independent_state": "TESTED",
+      "reason": "Graph BUILT citing ONLY tools/acceptance/agentos/harness.py:714 abort. Independent: hcli/cli.py DELEGATE_VERBS includes abort and dispatches to hcli.delegate.cli_main, which Calls abort() at hcli/delegate.py:1470. That is a production CLI. Graph missed it because the auditor excludes the definition file. Still not INTEGRATED (resident path not shown to call abort). Not PHYSICALLY_MEASURED."
+    },
+    {
+      "id": "AGENTOS_ORPHAN_RECONCILIATION",
+      "kind": "gate",
+      "graph_status": "BUILT",
+      "independent_state": "END_TO_END",
+      "reason": "Graph BUILT. Independent strongest 13-state is END_TO_END: BackgroundJobStore is constructed from resident.py, handoff.py, protected_benchmark_watcher.py, runtime.py. Acceptance ACCEPTED FUNCTIONAL_SIM. Not PHYSICALLY_MEASURED / not INTEGRATED (live daemon not inspected)."
+    },
+    {
+      "id": "AGENTOS_PERSISTENCE_SINGLE_AUTHORITY",
+      "kind": "gate",
+      "graph_status": "BUILT",
+      "independent_state": "END_TO_END",
+      "reason": "Graph BUILT vs 13-state END_TO_END. MutationLock is constructed from controller, delegate, grok_bridge, scheduler \u2014 the mutation writer path. Acceptance FUNCTIONAL_SIM. Not PHYSICALLY_MEASURED."
+    },
+    {
+      "id": "AGENTOS_CHECKPOINT_ATOMICITY",
+      "kind": "gate",
+      "graph_status": "BUILT",
+      "independent_state": "TESTED",
+      "reason": "Graph BUILT. Independent TESTED: write_program_checkpoint is Called from hcli/agentos_cli.py:1220 (CLI, not the resident loop). Acceptance FUNCTIONAL_SIM."
+    },
+    {
+      "id": "AGENTOS_RESTART_COHERENCE",
+      "kind": "gate",
+      "graph_status": "BUILT",
+      "independent_state": "TESTED",
+      "reason": "Graph BUILT. Independent TESTED: run_recovery_gate Called from agentos_cli.py:584. Acceptance FUNCTIONAL_SIM. Not a live launchd restart."
+    },
+    {
+      "id": "HCLI_CONTEXT_AUTHORITY_UNIFIED",
+      "kind": "gate",
+      "graph_status": "BUILT",
+      "independent_state": "END_TO_END",
+      "reason": "Graph BUILT. Independent END_TO_END: hcli.context_budget.resolve is imported as resolve_context_budget and Called from engine/runtime/backends/config. Catalog symbol `resolve` is dangerously generic (independent AST scan hit 3124 Call nodes of any resolve). Bound-to-module callers are real. Not PHYSICALLY_MEASURED."
+    },
+    {
+      "id": "HCLI_CONTEXT_FOCUSED_WORKUNITS",
+      "kind": "gate",
+      "graph_status": "BUILT",
+      "independent_state": "END_TO_END",
+      "reason": "Graph BUILT vs 13-state END_TO_END. compile_worker_context Called from hcli/mission.py:1055 (production). Acceptance FUNCTIONAL_SIM."
+    },
+    {
+      "id": "HCLI_STATUS_PHYSICAL",
+      "kind": "gate",
+      "graph_status": "WIRED",
+      "independent_state": "CALLABLE",
+      "reason": "Graph WIRED citing harness/headless only. Independent: format_status is Called from hcli/commands.py:1017 (same file as def \u2014 the /status command path). Acceptance BLOCKED. 13-state CALLABLE, not WIRED-as-BUILT-adjacent."
+    },
+    {
+      "id": "HCLI_MIXED_MAX",
+      "kind": "gate",
+      "graph_status": "WIRED",
+      "independent_state": "CALLABLE",
+      "reason": "Graph WIRED. Independent CALLABLE: grok_pool_snapshot Called from hcli/controller.py:337 and :431. Catalog lists controller.py as a code_path so a naive def-file exclusion drops those Calls. Acceptance BLOCKED."
+    },
+    {
+      "id": "BACKEND_FAILURE_ISOLATION",
+      "kind": "gate",
+      "graph_status": "BUILT",
+      "independent_state": "END_TO_END",
+      "reason": "Graph BUILT vs 13-state END_TO_END. terminate_pid Called from backends.py (self), runtime.py, mission.py. Acceptance ACCEPTED FUNCTIONAL_SIM on an owned child (did_not_signal_live_daemon)."
+    },
+    {
+      "id": "HCLI_SELF_SUPPLEMENT",
+      "kind": "gate",
+      "graph_status": "BUILT",
+      "independent_state": "END_TO_END",
+      "reason": "Graph BUILT citing only acceptance harness. Independent: admit_evidence_children is Called from hcli/agentos/resident.py:1012 (the resident loop, same file as def \u2014 excluded by the graph). Acceptance ACCEPTED FUNCTIONAL_SIM."
+    },
+    {
+      "id": "HCLI_SELF_OPTIMIZATION_BOOTSTRAP",
+      "kind": "gate",
+      "graph_status": "WIRED",
+      "independent_state": "CALLABLE",
+      "reason": "Graph WIRED. Independent CALLABLE: run_autonomy_gate Called from agentos_cli.py:663. Acceptance BLOCKED because A3/A4 kill processes (must not signal the live daemon)."
+    },
+    {
+      "id": "VMCP_RECEIPT_LAW",
+      "kind": "gate",
+      "graph_status": "BUILT",
+      "independent_state": "TESTED",
+      "reason": "Graph BUILT. Independent TESTED: run_vmcp_gate Called from hcli/agentos_cli.py:609. Acceptance ACCEPTED FUNCTIONAL_SIM. CLI gate, not the resident's default path."
+    },
+    {
+      "id": "AGENTOS_BEHAVIOR_LAB",
+      "kind": "gate",
+      "graph_status": "ABSENT",
+      "independent_state": "CALLABLE",
+      "reason": "GRAPH ABSENT IS FALSE. tools/vmcp/behavior_lab.py implements BHV-01..23 (FIXTURE_IDS). tools/future/vmcp.py:40 imports run_matrix as bhv_run_matrix and CALLS it at lines 766, 930, 1001. Catalog paths=() so the graph never looked. Acceptance BLOCKED because the catalog listed no code_paths (circular)."
+    },
+    {
+      "id": "AGENTOS_DETERMINISTIC_OFFLOAD",
+      "kind": "gate",
+      "graph_status": "WIRED",
+      "independent_state": "CALLABLE",
+      "reason": "Graph WIRED. Independent CALLABLE: lab.hcli.claude_offload_bench.run_bench is the catalog symbol; the production-shaped caller is the lab bench itself. Acceptance BLOCKED."
+    },
+    {
+      "id": "MODELLAKE_IDENTITY_RESOLVED",
+      "kind": "gate",
+      "graph_status": "BUILT",
+      "independent_state": "TESTED",
+      "reason": "Graph BUILT. Independent TESTED at STATIC census grain: run_modellake_census Called from hcli and tools. Acceptance ACCEPTED STATIC. This lane did not re-census 55 specimens. Not PHYSICALLY_MEASURED."
+    },
+    {
+      "id": "MODELLAKE_HASH_VERIFIED",
+      "kind": "gate",
+      "graph_status": "WIRED",
+      "independent_state": "SCAFFOLDED",
+      "reason": "Graph WIRED citing only the acceptance harness. Independent: reconcile is a generic name (17 AST hits). No non-harness product Call of tools.odyssey.modellake_watch.reconcile isolated. Acceptance BLOCKED. Not hash-verified. 13-state SCAFFOLDED, not CALLABLE."
+    },
+    {
+      "id": "MODELLAKE_ATOMIC_PROMOTION",
+      "kind": "gate",
+      "graph_status": "BUILT",
+      "independent_state": "TESTED",
+      "reason": "Graph BUILT. Independent TESTED STATIC: tools.odyssey.modellake_promote.promote is a generic name (65 AST hits). Graph cited 2 tools + 1 acceptance Call. Acceptance ACCEPTED STATIC. Not a live promotion (lake is read-only in this lane)."
+    },
+    {
+      "id": "QWEN27_RUNTIME_IDENTITY_FROZEN",
+      "kind": "gate",
+      "graph_status": "BUILT",
+      "independent_state": "TESTED",
+      "reason": "Graph BUILT. Independent TESTED STATIC: run_runtime_archaeology Called from hcli. Acceptance ACCEPTED STATIC. Not a GPU measurement."
+    },
+    {
+      "id": "QWEN27_PROTECTED_BASELINE",
+      "kind": "gate",
+      "graph_status": "WIRED",
+      "independent_state": "CALLABLE",
+      "reason": "Graph WIRED. Independent CALLABLE. Acceptance BLOCKED. Protected GPU baseline is BLOCKED_AUTHORITY for this auditor (must not contend with the live daemon / protected benchmark)."
+    },
+    {
+      "id": "QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED",
+      "kind": "gate",
+      "graph_status": "BUILT",
+      "independent_state": "CALLABLE",
+      "reason": "REFUTE GRAPH BUILT. Acceptance ACCEPTED STATIC but explicitly: 'run_qwen27_mlp_diagnostic_ab was not invoked' because it starts a resident. The explanation is identity-mismatch SOURCE_INSPECTION (6 DIFFERENT_VERIFIED dimensions), not the catalog diagnostic A/B. Graph still marks wired+accepted=BUILT. The call-site law's implementing symbol was not invoked in the run that granted accepted."
+    },
+    {
+      "id": "FLASH_SOURCE_VERIFIED",
+      "kind": "gate",
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "CALLABLE",
+      "reason": "Graph SCAFFOLDED (no catalog symbol) but accepted=True. Independent CALLABLE: acceptance command is tools/flash_organ_census.py --root <specimen> which is a CLI subprocess of the implementing path. Catalog omitted the symbol (main)."
+    },
+    {
+      "id": "FLASH_FIRST_GRAVITY_ORGAN",
+      "kind": "gate",
+      "graph_status": "BUILT",
+      "independent_state": "TESTED",
+      "reason": "Graph BUILT. Independent TESTED FUNCTIONAL_SIM: run_flash_science_gate Called from agentos_cli. Not a native executable, not PHYSICALLY_MEASURED."
+    },
+    {
+      "id": "FLASH_NATIVE_NF_KERNEL",
+      "kind": "gate",
+      "graph_status": "WIRED",
+      "independent_state": "CALLABLE",
+      "reason": "Graph WIRED accepted=False. Independent CALLABLE. Acceptance BLOCKED HARDWARE_MEASURED with error 'metal: no Metal-capable GPU' in another worktree despite Apple M3 Ultra / Metal Supported. SURPRISE. This lane did not dispatch Metal."
+    },
+    {
+      "id": "FLASH_DENSE_VS_NF_AB",
+      "kind": "gate",
+      "graph_status": "BUILT",
+      "independent_state": "TESTED",
+      "reason": "Graph BUILT. Independent TESTED FUNCTIONAL_SIM. Simulation is not board reality. Not PHYSICALLY_MEASURED."
+    },
+    {
+      "id": "FLASH_COMPLETE_EBPW_LE_1",
+      "kind": "gate",
+      "graph_status": "WIRED",
+      "independent_state": "CALLABLE",
+      "reason": "Graph WIRED accepted=False. Independent CALLABLE. Numeric bar FAILS: receipts/future/COMPLETE_EBPW.json incumbent.complete_ebpw = 3.139300850311054 which is not <= 1. Graph correctly refused accepted. 13-state has no WIRED; CALLABLE is the match."
+    },
+    {
+      "id": "FPGA_PREBOARD_SCHEMAS",
+      "kind": "gate",
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "CALLABLE",
+      "reason": "Graph SCAFFOLDED because FPGADeviceGenome is only constructed inside fpga_preboard.py. Independent: hcli/agentos_cli.py:1019 Calls run_fpga_preboard, which constructs FPGADeviceGenome at fpga_preboard.py:483. That is a product CLI of the preboard school. Catalog symbol is the dataclass, not the CLI."
+    },
+    {
+      "id": "FPGA_HWIR",
+      "kind": "gate",
+      "graph_status": "WIRED",
+      "independent_state": "CALLABLE",
+      "reason": "Graph WIRED (commit 7d642800). Independent CALLABLE at HEAD. HwirGraph constructed from tools/accelerator/backend_contract.py, fusion_bridge.py, tools/future/p6_projection.py. HEAD hwir.py is 6279 lines vs 5444 at graph commit \u2014 pluggable LoweringTarget (HlsStyleEmitter, RustHdlEmitter) landed in f16ec8cdd / 79d98bab9. Graph is stale on this surface. Not accepted, not on FPGA silicon."
+    },
+    {
+      "id": "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE",
+      "kind": "gate",
+      "graph_status": "UNREACHABLE",
+      "independent_state": "BLOCKED_HARDWARE",
+      "reason": "Graph UNREACHABLE (not in the 13-state vocab). Independent BLOCKED_HARDWARE because the only dependency is HMF_DEVICE_VISIBLE_TRUST and HMF is absent. fusion_planner.py exists (SCAFFOLDED software). UNREACHABLE is a derived auditor status, not a 13-state."
+    },
+    {
+      "id": "THEIA_T0_TRAIN_SUBSTRATE",
+      "kind": "gate",
+      "graph_status": "BLOCKED_EXTERNAL",
+      "independent_state": "CONCEPT_ONLY",
+      "reason": "Graph BLOCKED_EXTERNAL (not in 13-state vocab). Independent CONCEPT_ONLY for the trained-model ladder: catalog paths=() modules=(). The bounty ENGINE at tools/theia/ is a different artifact (CALLABLE CLI python -m tools.theia) and must not be used to inflate these gates. BLOCKED_AUTHORITY also applies: this auditor cannot train Theia."
+    },
+    {
+      "id": "THEIA_MICRO",
+      "kind": "gate",
+      "graph_status": "BLOCKED_EXTERNAL",
+      "independent_state": "CONCEPT_ONLY",
+      "reason": "Graph BLOCKED_EXTERNAL (not in 13-state vocab). Independent CONCEPT_ONLY for the trained-model ladder: catalog paths=() modules=(). The bounty ENGINE at tools/theia/ is a different artifact (CALLABLE CLI python -m tools.theia) and must not be used to inflate these gates. BLOCKED_AUTHORITY also applies: this auditor cannot train Theia."
+    },
+    {
+      "id": "THEIA_LAB",
+      "kind": "gate",
+      "graph_status": "BLOCKED_EXTERNAL",
+      "independent_state": "CONCEPT_ONLY",
+      "reason": "Graph BLOCKED_EXTERNAL (not in 13-state vocab). Independent CONCEPT_ONLY for the trained-model ladder: catalog paths=() modules=(). The bounty ENGINE at tools/theia/ is a different artifact (CALLABLE CLI python -m tools.theia) and must not be used to inflate these gates. BLOCKED_AUTHORITY also applies: this auditor cannot train Theia."
+    },
+    {
+      "id": "THEIA_WORKER",
+      "kind": "gate",
+      "graph_status": "BLOCKED_EXTERNAL",
+      "independent_state": "CONCEPT_ONLY",
+      "reason": "Graph BLOCKED_EXTERNAL (not in 13-state vocab). Independent CONCEPT_ONLY for the trained-model ladder: catalog paths=() modules=(). The bounty ENGINE at tools/theia/ is a different artifact (CALLABLE CLI python -m tools.theia) and must not be used to inflate these gates. BLOCKED_AUTHORITY also applies: this auditor cannot train Theia."
+    },
+    {
+      "id": "THEIA_RESEARCH",
+      "kind": "gate",
+      "graph_status": "BLOCKED_EXTERNAL",
+      "independent_state": "CONCEPT_ONLY",
+      "reason": "Graph BLOCKED_EXTERNAL (not in 13-state vocab). Independent CONCEPT_ONLY for the trained-model ladder: catalog paths=() modules=(). The bounty ENGINE at tools/theia/ is a different artifact (CALLABLE CLI python -m tools.theia) and must not be used to inflate these gates. BLOCKED_AUTHORITY also applies: this auditor cannot train Theia."
+    },
+    {
+      "id": "THEIA_GRAVITY_EXECUTABLE",
+      "kind": "gate",
+      "graph_status": "BLOCKED_EXTERNAL",
+      "independent_state": "CONCEPT_ONLY",
+      "reason": "Graph BLOCKED_EXTERNAL (not in 13-state vocab). Independent CONCEPT_ONLY for the trained-model ladder: catalog paths=() modules=(). The bounty ENGINE at tools/theia/ is a different artifact (CALLABLE CLI python -m tools.theia) and must not be used to inflate these gates. BLOCKED_AUTHORITY also applies: this auditor cannot train Theia."
+    },
+    {
+      "id": "THEIA_BOUNTY_GENERALIST_QUALIFIED",
+      "kind": "gate",
+      "graph_status": "BLOCKED_EXTERNAL",
+      "independent_state": "CONCEPT_ONLY",
+      "reason": "Graph BLOCKED_EXTERNAL (not in 13-state vocab). Independent CONCEPT_ONLY for the trained-model ladder: catalog paths=() modules=(). The bounty ENGINE at tools/theia/ is a different artifact (CALLABLE CLI python -m tools.theia) and must not be used to inflate these gates. BLOCKED_AUTHORITY also applies: this auditor cannot train Theia."
+    },
+    {
+      "id": "ODYSSEY_I_DISCOVERY",
+      "kind": "gate",
+      "graph_status": "BUILT",
+      "independent_state": "CALLABLE",
+      "reason": "REFUTE GRAPH BUILT. pick_acquire_candidate is Called from hcli/acquisition.py:172 (real). Acceptance ACCEPTED STATIC by python3 -c import + pick_acquire_candidate(state, mutate=False) plus a safetensors-header census. That is not Odyssey I 'first real school of model/device facts'. Evidence tier STATIC. mutate=False so the live Odyssey state was not written."
+    },
+    {
+      "id": "ODYSSEY_II_TRANSFER",
+      "kind": "gate",
+      "graph_status": "WIRED",
+      "independent_state": "CALLABLE",
+      "reason": "Graph WIRED. Independent CALLABLE. Era II. Acceptance BLOCKED STATIC. Era I is sovereign \u2014 this cannot complete civilization."
+    },
+    {
+      "id": "ODYSSEY_III_ADVERSARIAL_META_SCIENCE",
+      "kind": "gate",
+      "graph_status": "WIRED",
+      "independent_state": "CALLABLE",
+      "reason": "Graph WIRED. Independent CALLABLE. Catalog symbol scars() is a function. Era III. Acceptance BLOCKED. Not adversarial meta-science as a school."
+    },
+    {
+      "id": "I-A_AGENTOS_HCLI",
+      "kind": "gene",
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "CALLABLE",
+      "reason": "Graph SCAFFOLDED because catalog has no gene-level symbol and looks for a Call of hcli.engine. Independent: hcli/__main__.py Calls cli.main; cli.main Calls delegate.cli_main, agentos_cli.main, resident.main, App(). The control plane is the product. ROADMAP_STATE claims ADVERSARIALLY_VERIFIED \u2014 that is a larger inflation and is also rejected. Gene promotion gate (fresh process demonstrates the whole phenotype) is unmet (retry BLOCKED, circuit-breaker SCAFFOLDED, several VMCP organs SCAFFOLDED). Strongest honest gene-level state: CALLABLE, with several child gates TESTED/END_TO_END."
+    },
+    {
+      "id": "I-B_DOCTOR",
+      "kind": "gene",
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "SCAFFOLDED",
+      "reason": "Graph SCAFFOLDED (agree as capability). ROADMAP_STATE PHYSICALLY_RUNNING is a disagreement with disk truth: hcli/doctor/__init__.py exists; tools/future/odyssey_launch.py imports hcli.doctor (import is not a Call). No non-test Call of a doctor implementing symbol isolated this lane."
+    },
+    {
+      "id": "I-C_GRAVITY_NOETIC",
+      "kind": "gene",
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "CALLABLE",
+      "reason": "Graph SCAFFOLDED (looked for Call of tools.gravity_ir as a module symbol). Independent: gravity_ir is imported and used across tools/gravity_*.py; FLASH_FIRST_GRAVITY_ORGAN is TESTED FUNCTIONAL_SIM; FLASH_FULL_NOETIC_EXECUTABLE SCAFFOLDED; EBPW 3.14 \u2270 1; TPS unmet. Gene is CALLABLE at IR grain, not a Noetic executable. ROADMAP_STATE ADVERSARIALLY_VERIFIED is rejected."
+    },
+    {
+      "id": "I-D_ACCELERATOR",
+      "kind": "gene",
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "CALLABLE",
+      "reason": "Graph SCAFFOLDED. Independent CALLABLE: FPGA_HWIR HwirGraph has non-test Calls; QWEN27 identity TESTED STATIC; U50 ladder BLOCKED_HARDWARE. ROADMAP_STATE ADVERSARIALLY_VERIFIED is rejected. PhysicalGraph module exists (disk_truth_modules)."
+    },
+    {
+      "id": "I-E_ODYSSEY_I",
+      "kind": "gene",
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "CALLABLE",
+      "reason": "Graph SCAFFOLDED at gene grain while child ODYSSEY_I_DISCOVERY is BUILT \u2014 internal graph inconsistency. Independent: pick_acquire_candidate Called from hcli/acquisition.py. Gene promotion unmet. ROADMAP_STATE ADVERSARIALLY_VERIFIED rejected."
+    },
+    {
+      "id": "II-A_ODYSSEY_II",
+      "kind": "gene",
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "CALLABLE",
+      "reason": "Graph SCAFFOLDED; child ODYSSEY_II_TRANSFER is WIRED. Independent CALLABLE via load_qualification_queue. Era II, not promoted."
+    },
+    {
+      "id": "II-C_PHYSICAL_GRAPH_COMPILER",
+      "kind": "gene",
+      "graph_status": "WIRED",
+      "independent_state": "CALLABLE",
+      "reason": "Graph WIRED via subprocess of tools/odyssey/physical_graph_compiler.py from tools/future/nr_nx_generic.py:1981. Independent agrees CALLABLE (exact CLI path). Not accepted. ROADMAP_STATE NOT_STARTED understates this. 13-state has no WIRED."
+    },
+    {
+      "id": "III-A_ODYSSEY_III",
+      "kind": "gene",
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "CALLABLE",
+      "reason": "Graph SCAFFOLDED; child ODYSSEY_III_ADVERSARIAL_META_SCIENCE is WIRED via scars(). Independent CALLABLE at the scars() grain. Not Odyssey III as a school."
+    },
+    {
+      "id": "V-E_PERPETUAL_HAWKING",
+      "kind": "gene",
+      "graph_status": "DORMANT",
+      "independent_state": "CONCEPT_ONLY",
+      "reason": "Graph DORMANT (not in 13-state vocab). Independent CONCEPT_ONLY: catalog paths empty. Also BLOCKED_AUTHORITY in the sense Era I is sovereign \u2014 do not promote. ROADMAP_STATE NOT_STARTED."
+    }
+  ],
+  "disagreement_count": {
+    "total": 49,
+    "gates": 40,
+    "genes": 9
+  },
+  "refutations_of_graph_BUILT": [
+    "AGENTOS_REPAIR_BOUNDED",
+    "AGENTOS_CANCELLATION",
+    "AGENTOS_ORPHAN_RECONCILIATION",
+    "AGENTOS_PERSISTENCE_SINGLE_AUTHORITY",
+    "AGENTOS_CHECKPOINT_ATOMICITY",
+    "AGENTOS_RESTART_COHERENCE",
+    "HCLI_CONTEXT_AUTHORITY_UNIFIED",
+    "HCLI_CONTEXT_FOCUSED_WORKUNITS",
+    "BACKEND_FAILURE_ISOLATION",
+    "HCLI_SELF_SUPPLEMENT",
+    "VMCP_RECEIPT_LAW",
+    "MODELLAKE_IDENTITY_RESOLVED",
+    "MODELLAKE_ATOMIC_PROMOTION",
+    "QWEN27_RUNTIME_IDENTITY_FROZEN",
+    "QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED",
+    "FLASH_FIRST_GRAVITY_ORGAN",
+    "FLASH_DENSE_VS_NF_AB",
+    "ODYSSEY_I_DISCOVERY"
+  ],
+  "counts_independent": {
+    "gates": 71,
+    "genes": 25,
+    "gates_by_state": {
+      "TESTED": 10,
+      "SCAFFOLDED": 19,
+      "END_TO_END": 6,
+      "CALLABLE": 15,
+      "BLOCKED_HARDWARE": 14,
+      "CONCEPT_ONLY": 7
+    },
+    "genes_by_state": {
+      "CALLABLE": 7,
+      "SCAFFOLDED": 14,
+      "BLOCKED_HARDWARE": 3,
+      "CONCEPT_ONLY": 1
+    },
+    "never_physically_measured": true,
+    "never_adversarially_verified_this_lane": true,
+    "never_integrated_this_lane": true
+  },
+  "stale_roadmap_text": {
+    "appendix_o_unfilled_enum": true,
+    "gene_cards_identical_boilerplate": true,
+    "action_sentence_count": 325,
+    "receipt_sentence_count": 325,
+    "section_5_operating_rule_copies": 25,
+    "roadmap_state_hash_mismatch": {
+      "H-ROADMAP.md": "d43a6b07ab9590bc11c265bfe8a1466131cce291b0622c076370a01d811328e4",
+      "ROADMAP_STATE.json.roadmap_hash": "51474151b53f63fe9f409a11dae5ef29e9efcc1dec62c6bdd40755b14017be2c"
+    }
+  },
+  "gates": [
+    {
+      "id": "AGENTOS_REPAIR_BOUNDED",
+      "kind": "gate",
+      "roadmap_item": "AGENTOS_REPAIR_BOUNDED",
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "catalog_symbol": "hcli.scheduler.Scheduler",
+      "graph_status": "BUILT",
+      "independent_state": "TESTED",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph BUILT. Independent: TESTED (FUNCTIONAL_SIM pytest), not END_TO_END/INTEGRATED/PHYSICALLY_MEASURED. Catalog symbol is Scheduler \u2014 the whole class, not repair-boundedness. Live-daemon repair was not re-run here.",
+      "code": [
+        "hcli/scheduler.py",
+        "hcli/workunit.py"
+      ],
+      "call_sites": [
+        {
+          "file": "hcli/mission.py",
+          "line": 264,
+          "symbol": "Scheduler",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)",
+          "note": "production Mission reconstruction"
+        },
+        {
+          "file": "hcli/mission.py",
+          "line": 374,
+          "symbol": "Scheduler",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        },
+        {
+          "file": "hcli/goal_compile.py",
+          "line": 518,
+          "symbol": "Scheduler",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        }
+      ],
+      "call_site_blocker": null,
+      "test_verifier": "python3 -m pytest tools/acceptance/agentos/test_agentos_acceptance.py::test_repair_bounded -o addopts='' (receipt ACCEPTED, FUNCTIONAL_SIM; not re-run this lane)",
+      "receipt": "receipts/acceptance/AGENTOS_REPAIR_BOUNDED.json",
+      "current_blocker": "Acceptance is FUNCTIONAL_SIM. Catalog symbol Scheduler is coarser than the gate. HEAD commit 04193ccbc changed graceful-stop/repair-end-mission behaviour after the graph commit.",
+      "next_promotion_gate": "Re-run the bounded-repair acceptance against HEAD 04193ccbc; then an adversarial mutation that repair_exhausted still cannot re-ready.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O names the gate; it does not claim PASS. Acceptance span 7332-7358 is the proof obligation.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": [
+        "Graph counted 9 tools/headless + 5 tools/acceptance harness callers as wiring; 3 hcli production callers remain after dropping harness."
+      ]
+    },
+    {
+      "id": "AGENTOS_RETRY_CLASSIFIED",
+      "kind": "gate",
+      "roadmap_item": "AGENTOS_RETRY_CLASSIFIED",
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "catalog_symbol": "hcli.scheduler._record_fingerprint",
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "SCAFFOLDED",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "hcli/scheduler.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "Catalog symbol _record_fingerprint is a Scheduler method. The only Call is hcli/scheduler.py:307 (same definition file). Auditor excludes the def file; no non-test external caller. Acceptance verdict BLOCKED.",
+      "test_verifier": "tools/acceptance/agentos/test_agentos_acceptance.py::test_retry_classified (receipt BLOCKED)",
+      "receipt": "receipts/acceptance/AGENTOS_RETRY_CLASSIFIED.json",
+      "current_blocker": "Acceptance BLOCKED. Same-file internal call of _record_fingerprint from Scheduler.complete is not an external production caller.",
+      "next_promotion_gate": "Get the acceptance test to PASS without altering the criterion; a same-file method call is not enough under the call-site law.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O is an empty enum, not a PASS claim.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "AGENTOS_CIRCUIT_BREAKER",
+      "kind": "gate",
+      "roadmap_item": "AGENTOS_CIRCUIT_BREAKER",
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "catalog_symbol": "hcli.scheduler.NO_PROGRESS",
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "SCAFFOLDED",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "hcli/scheduler.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "Catalog symbol NO_PROGRESS is an Exception class (hcli/scheduler.py:55). raise NO_PROGRESS(...) is a same-file construct; except NO_PROGRESS in hcli/mission.py:1237 is not a Call. Name-only matches are weak_signal.",
+      "test_verifier": "tools/acceptance/agentos/test_agentos_acceptance.py::test_circuit_breaker (receipt ACCEPTED FUNCTIONAL_SIM \u2014 accepted without production Call of the symbol)",
+      "receipt": "receipts/acceptance/AGENTOS_CIRCUIT_BREAKER.json",
+      "current_blocker": "Accepted-without-wired. Exception type is not a callable capability under the call-site law.",
+      "next_promotion_gate": "Wire a non-test Call of a real function that trips the circuit, or change the catalog symbol off the Exception class.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": [
+        "Graph accepted=True, wired=False \u2192 SCAFFOLDED. Independent agrees."
+      ]
+    },
+    {
+      "id": "AGENTOS_CANCELLATION",
+      "kind": "gate",
+      "roadmap_item": "AGENTOS_CANCELLATION",
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "catalog_symbol": "hcli.delegate.abort",
+      "graph_status": "BUILT",
+      "independent_state": "TESTED",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph BUILT citing ONLY tools/acceptance/agentos/harness.py:714 abort. Independent: hcli/cli.py DELEGATE_VERBS includes abort and dispatches to hcli.delegate.cli_main, which Calls abort() at hcli/delegate.py:1470. That is a production CLI. Graph missed it because the auditor excludes the definition file. Still not INTEGRATED (resident path not shown to call abort). Not PHYSICALLY_MEASURED.",
+      "code": [
+        "hcli/delegate.py",
+        "hcli/cli.py"
+      ],
+      "call_sites": [
+        {
+          "file": "hcli/delegate.py",
+          "line": 1470,
+          "symbol": "abort",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)",
+          "note": "CLI verb abort \u2192 abort(); same file as def, excluded by graph auditor"
+        },
+        {
+          "file": "hcli/cli.py",
+          "line": 321,
+          "symbol": "cli_main",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)",
+          "note": "DELEGATE_VERBS includes abort; dispatches to delegate.cli_main"
+        }
+      ],
+      "call_site_blocker": null,
+      "test_verifier": "python3 -m pytest tools/acceptance/agentos/test_agentos_acceptance.py::test_cancellation -o addopts='' (receipt ACCEPTED FUNCTIONAL_SIM)",
+      "receipt": "receipts/acceptance/AGENTOS_CANCELLATION.json",
+      "current_blocker": "Graph's sole cited caller is the acceptance harness. Production CLI exists in the def file. Live daemon cancellation was not observed (ps blocked in this sandbox).",
+      "next_promotion_gate": "Cite the CLI dispatch as the production caller in the graph; then show the resident honours abort without a harness.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum. Gate name is accurate as an obligation, not as PASS.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "AGENTOS_ORPHAN_RECONCILIATION",
+      "kind": "gate",
+      "roadmap_item": "AGENTOS_ORPHAN_RECONCILIATION",
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "catalog_symbol": "hcli.agentos.background.BackgroundJobStore",
+      "graph_status": "BUILT",
+      "independent_state": "END_TO_END",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph BUILT. Independent strongest 13-state is END_TO_END: BackgroundJobStore is constructed from resident.py, handoff.py, protected_benchmark_watcher.py, runtime.py. Acceptance ACCEPTED FUNCTIONAL_SIM. Not PHYSICALLY_MEASURED / not INTEGRATED (live daemon not inspected).",
+      "code": [
+        "hcli/agentos/background.py",
+        "hcli/agentos/resident.py"
+      ],
+      "call_sites": [
+        {
+          "file": "hcli/agentos/resident.py",
+          "line": 907,
+          "symbol": "BackgroundJobStore",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        },
+        {
+          "file": "hcli/agentos/resident.py",
+          "line": 994,
+          "symbol": "BackgroundJobStore",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        },
+        {
+          "file": "hcli/agentos/handoff.py",
+          "line": 106,
+          "symbol": "BackgroundJobStore",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        },
+        {
+          "file": "hcli/agentos/protected_benchmark_watcher.py",
+          "line": 65,
+          "symbol": "BackgroundJobStore",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        },
+        {
+          "file": "hcli/agentos/runtime.py",
+          "line": 97,
+          "symbol": "BackgroundJobStore",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        }
+      ],
+      "call_site_blocker": null,
+      "test_verifier": "tools/acceptance/agentos/test_agentos_acceptance.py::test_orphan_reconciliation (ACCEPTED FUNCTIONAL_SIM)",
+      "receipt": "receipts/acceptance/AGENTOS_ORPHAN_RECONCILIATION.json",
+      "current_blocker": "Not observed on the live launchd daemon (process inspection blocked in this sandbox).",
+      "next_promotion_gate": "Observe orphan reconciliation on the live resident, or mutation-check that a dead child is reaped.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "AGENTOS_PERSISTENCE_SINGLE_AUTHORITY",
+      "kind": "gate",
+      "roadmap_item": "AGENTOS_PERSISTENCE_SINGLE_AUTHORITY",
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "catalog_symbol": "hcli.resources.MutationLock",
+      "graph_status": "BUILT",
+      "independent_state": "END_TO_END",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph BUILT vs 13-state END_TO_END. MutationLock is constructed from controller, delegate, grok_bridge, scheduler \u2014 the mutation writer path. Acceptance FUNCTIONAL_SIM. Not PHYSICALLY_MEASURED.",
+      "code": [
+        "hcli/resources.py",
+        "hcli/mutation.py",
+        "hcli/persist.py"
+      ],
+      "call_sites": [
+        {
+          "file": "hcli/controller.py",
+          "line": 664,
+          "symbol": "MutationLock",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        },
+        {
+          "file": "hcli/delegate.py",
+          "line": 357,
+          "symbol": "MutationLock",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        },
+        {
+          "file": "hcli/delegate.py",
+          "line": 448,
+          "symbol": "MutationLock",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        },
+        {
+          "file": "hcli/grok_bridge.py",
+          "line": 82,
+          "symbol": "MutationLock",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        },
+        {
+          "file": "hcli/scheduler.py",
+          "line": 108,
+          "symbol": "MutationLock",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        }
+      ],
+      "call_site_blocker": null,
+      "test_verifier": "tools/acceptance/agentos/test_agentos_acceptance.py::test_persistence_single_authority (ACCEPTED FUNCTIONAL_SIM)",
+      "receipt": "receipts/acceptance/AGENTOS_PERSISTENCE_SINGLE_AUTHORITY.json",
+      "current_blocker": "FUNCTIONAL_SIM only. Live lock contention with the daemon was not re-measured here.",
+      "next_promotion_gate": "Adversarial two-acquirer test against the live daemon lock (acceptance notes a blocked acquirer is evidence, not a crash \u2014 commit 14ed3eb1f).",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "AGENTOS_CHECKPOINT_ATOMICITY",
+      "kind": "gate",
+      "roadmap_item": "AGENTOS_CHECKPOINT_ATOMICITY",
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "catalog_symbol": "hcli.agentos.checkpoint.write_program_checkpoint",
+      "graph_status": "BUILT",
+      "independent_state": "TESTED",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph BUILT. Independent TESTED: write_program_checkpoint is Called from hcli/agentos_cli.py:1220 (CLI, not the resident loop). Acceptance FUNCTIONAL_SIM.",
+      "code": [
+        "hcli/agentos/checkpoint.py",
+        "hcli/persist.py"
+      ],
+      "call_sites": [
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 1220,
+          "symbol": "write_program_checkpoint",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        }
+      ],
+      "call_site_blocker": null,
+      "test_verifier": "tools/acceptance/agentos/test_agentos_acceptance.py::test_checkpoint_atomicity (ACCEPTED FUNCTIONAL_SIM)",
+      "receipt": "receipts/acceptance/AGENTOS_CHECKPOINT_ATOMICITY.json",
+      "current_blocker": "CLI-invoked, not shown as the resident's automatic checkpoint path.",
+      "next_promotion_gate": "Show the resident writes the program checkpoint on a real restart boundary.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "AGENTOS_RESTART_COHERENCE",
+      "kind": "gate",
+      "roadmap_item": "AGENTOS_RESTART_COHERENCE",
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "catalog_symbol": "hcli.agentos.recovery.run_recovery_gate",
+      "graph_status": "BUILT",
+      "independent_state": "TESTED",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph BUILT. Independent TESTED: run_recovery_gate Called from agentos_cli.py:584. Acceptance FUNCTIONAL_SIM. Not a live launchd restart.",
+      "code": [
+        "hcli/agentos/recovery.py",
+        "hcli/agentos/resident.py"
+      ],
+      "call_sites": [
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 584,
+          "symbol": "run_recovery_gate",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        }
+      ],
+      "call_site_blocker": null,
+      "test_verifier": "tools/acceptance/agentos/test_agentos_acceptance.py::test_restart_coherence (ACCEPTED FUNCTIONAL_SIM)",
+      "receipt": "receipts/acceptance/AGENTOS_RESTART_COHERENCE.json",
+      "current_blocker": "Not a launchd-restart measurement. receipts/headless/HCLI_AGENTOS_RECOVERY_GATE.json is a citation, not this-lane run.",
+      "next_promotion_gate": "Fresh-process restart of the resident that resumes the same mission without split-brain.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "HCLI_CONTEXT_AUTHORITY_UNIFIED",
+      "kind": "gate",
+      "roadmap_item": "HCLI_CONTEXT_AUTHORITY_UNIFIED",
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "catalog_symbol": "hcli.context_budget.resolve",
+      "graph_status": "BUILT",
+      "independent_state": "END_TO_END",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph BUILT. Independent END_TO_END: hcli.context_budget.resolve is imported as resolve_context_budget and Called from engine/runtime/backends/config. Catalog symbol `resolve` is dangerously generic (independent AST scan hit 3124 Call nodes of any resolve). Bound-to-module callers are real. Not PHYSICALLY_MEASURED.",
+      "code": [
+        "hcli/context_budget.py",
+        "hcli/engine.py",
+        "hcli/runtime.py"
+      ],
+      "call_sites": [
+        {
+          "file": "hcli/engine.py",
+          "line": 1889,
+          "symbol": "resolve_context_budget",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)",
+          "note": "from .context_budget import resolve as resolve_context_budget"
+        },
+        {
+          "file": "hcli/runtime.py",
+          "line": 649,
+          "symbol": "resolve_context_budget",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        },
+        {
+          "file": "hcli/backends.py",
+          "line": 1361,
+          "symbol": "resolve_context_budget",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        },
+        {
+          "file": "hcli/config.py",
+          "line": 131,
+          "symbol": "resolve_context_budget",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        }
+      ],
+      "call_site_blocker": null,
+      "test_verifier": "python3 -m tools.acceptance.context --gate HCLI_CONTEXT_AUTHORITY_UNIFIED (ACCEPTED FUNCTIONAL_SIM)",
+      "receipt": "receipts/acceptance/HCLI_CONTEXT_AUTHORITY_UNIFIED.json",
+      "current_blocker": "FUNCTIONAL_SIM. Graph's 7 callers include harness; production alias resolve_context_budget is the real wiring.",
+      "next_promotion_gate": "Keep the catalog symbol fully qualified; do not grep bare `resolve`.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": [
+        "SURPRISE: bare symbol `resolve` is not a unique implementing symbol."
+      ]
+    },
+    {
+      "id": "HCLI_CONTEXT_FOCUSED_WORKUNITS",
+      "kind": "gate",
+      "roadmap_item": "HCLI_CONTEXT_FOCUSED_WORKUNITS",
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "catalog_symbol": "hcli.goal.compile_worker_context",
+      "graph_status": "BUILT",
+      "independent_state": "END_TO_END",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph BUILT vs 13-state END_TO_END. compile_worker_context Called from hcli/mission.py:1055 (production). Acceptance FUNCTIONAL_SIM.",
+      "code": [
+        "hcli/goal.py"
+      ],
+      "call_sites": [
+        {
+          "file": "hcli/mission.py",
+          "line": 1055,
+          "symbol": "compile_worker_context",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        }
+      ],
+      "call_site_blocker": null,
+      "test_verifier": "python3 -m tools.acceptance.context --gate HCLI_CONTEXT_FOCUSED_WORKUNITS (ACCEPTED FUNCTIONAL_SIM)",
+      "receipt": "receipts/acceptance/HCLI_CONTEXT_FOCUSED_WORKUNITS.json",
+      "current_blocker": "FUNCTIONAL_SIM. lab/lineage/continuity.py also defines a same-named compile_worker_context \u2014 a second tree, not this gate.",
+      "next_promotion_gate": "Confirm Mission.compile path is the one the resident uses for every WorkUnit, not only the compiler entry.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "HCLI_CONTEXT_INVALIDATION",
+      "kind": "gate",
+      "roadmap_item": "HCLI_CONTEXT_INVALIDATION",
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "catalog_symbol": null,
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "SCAFFOLDED",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "hcli/goal.py",
+        "hcli/context_budget.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "Catalog lists no implementing symbol. Acceptance ACCEPTED FUNCTIONAL_SIM by calling assert_evidence_fresh inside the harness. That is not a production Call of a named gate symbol.",
+      "test_verifier": "python3 -m tools.acceptance.context --gate HCLI_CONTEXT_INVALIDATION (ACCEPTED FUNCTIONAL_SIM)",
+      "receipt": "receipts/acceptance/HCLI_CONTEXT_INVALIDATION.json",
+      "current_blocker": "No catalog symbol. accepted-without-wired. Graph correctly stays SCAFFOLDED.",
+      "next_promotion_gate": "Name the invalidation function in the catalog and find a non-harness Call.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": [
+        "Graph accepted=True, wired=False. Independent agrees SCAFFOLDED; the ACCEPTED receipt does not promote under the call-site law."
+      ]
+    },
+    {
+      "id": "HCLI_STATUS_PHYSICAL",
+      "kind": "gate",
+      "roadmap_item": "HCLI_STATUS_PHYSICAL",
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "catalog_symbol": "hcli.commands.format_status",
+      "graph_status": "WIRED",
+      "independent_state": "CALLABLE",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph WIRED citing harness/headless only. Independent: format_status is Called from hcli/commands.py:1017 (same file as def \u2014 the /status command path). Acceptance BLOCKED. 13-state CALLABLE, not WIRED-as-BUILT-adjacent.",
+      "code": [
+        "hcli/commands.py",
+        "hcli/processes.py",
+        "hcli/controller.py"
+      ],
+      "call_sites": [
+        {
+          "file": "hcli/commands.py",
+          "line": 1017,
+          "symbol": "format_status",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)",
+          "note": "status command renderer; same file as def"
+        }
+      ],
+      "call_site_blocker": null,
+      "test_verifier": "python3 -m tools.acceptance.context --gate HCLI_STATUS_PHYSICAL (receipt BLOCKED FUNCTIONAL_SIM)",
+      "receipt": "receipts/acceptance/HCLI_STATUS_PHYSICAL.json",
+      "current_blocker": "Acceptance BLOCKED \u2014 format_status does not yet render the D.9 physical /status contract (harness note).",
+      "next_promotion_gate": "Make format_status satisfy D.9 and re-run the context acceptance gate.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum. The physical /status contract is still the bar.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "HCLI_MIXED_MAX",
+      "kind": "gate",
+      "roadmap_item": "HCLI_MIXED_MAX",
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "catalog_symbol": "hcli.max_policy.grok_pool_snapshot",
+      "graph_status": "WIRED",
+      "independent_state": "CALLABLE",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph WIRED. Independent CALLABLE: grok_pool_snapshot Called from hcli/controller.py:337 and :431. Catalog lists controller.py as a code_path so a naive def-file exclusion drops those Calls. Acceptance BLOCKED.",
+      "code": [
+        "hcli/max_policy.py",
+        "hcli/controller.py"
+      ],
+      "call_sites": [
+        {
+          "file": "hcli/controller.py",
+          "line": 337,
+          "symbol": "grok_pool_snapshot",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        },
+        {
+          "file": "hcli/controller.py",
+          "line": 431,
+          "symbol": "grok_pool_snapshot",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        }
+      ],
+      "call_site_blocker": null,
+      "test_verifier": "python3 -m tools.acceptance.context --gate HCLI_MIXED_MAX (receipt BLOCKED FUNCTIONAL_SIM)",
+      "receipt": "receipts/acceptance/HCLI_MIXED_MAX.json",
+      "current_blocker": "Acceptance BLOCKED. Mixed-max is not a demonstrated operator posture.",
+      "next_promotion_gate": "Demonstrate the gate's own mixed-max criterion without signalling the live daemon.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "BACKEND_FAILURE_ISOLATION",
+      "kind": "gate",
+      "roadmap_item": "BACKEND_FAILURE_ISOLATION",
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "catalog_symbol": "hcli.backends.terminate_pid",
+      "graph_status": "BUILT",
+      "independent_state": "END_TO_END",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph BUILT vs 13-state END_TO_END. terminate_pid Called from backends.py (self), runtime.py, mission.py. Acceptance ACCEPTED FUNCTIONAL_SIM on an owned child (did_not_signal_live_daemon).",
+      "code": [
+        "hcli/backends.py",
+        "hcli/runtime.py",
+        "hcli/mission.py"
+      ],
+      "call_sites": [
+        {
+          "file": "hcli/runtime.py",
+          "line": 520,
+          "symbol": "terminate_pid",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        },
+        {
+          "file": "hcli/runtime.py",
+          "line": 879,
+          "symbol": "terminate_pid",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        },
+        {
+          "file": "hcli/mission.py",
+          "line": 1504,
+          "symbol": "terminate_pid",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        },
+        {
+          "file": "hcli/backends.py",
+          "line": 1569,
+          "symbol": "terminate_pid",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)",
+          "note": "same-file backend teardown"
+        }
+      ],
+      "call_site_blocker": null,
+      "test_verifier": "python3 -m tools.acceptance.context --gate BACKEND_FAILURE_ISOLATION (ACCEPTED FUNCTIONAL_SIM)",
+      "receipt": "receipts/acceptance/BACKEND_FAILURE_ISOLATION.json",
+      "current_blocker": "FUNCTIONAL_SIM on an owned child, not a live Qwen/Grok backend crash.",
+      "next_promotion_gate": "Inject a real backend death under the resident and show independent units continue.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "HCLI_SELF_SUPPLEMENT",
+      "kind": "gate",
+      "roadmap_item": "HCLI_SELF_SUPPLEMENT",
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "catalog_symbol": "hcli.agentos.resident.admit_evidence_children",
+      "graph_status": "BUILT",
+      "independent_state": "END_TO_END",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph BUILT citing only acceptance harness. Independent: admit_evidence_children is Called from hcli/agentos/resident.py:1012 (the resident loop, same file as def \u2014 excluded by the graph). Acceptance ACCEPTED FUNCTIONAL_SIM.",
+      "code": [
+        "hcli/agentos/resident.py"
+      ],
+      "call_sites": [
+        {
+          "file": "hcli/agentos/resident.py",
+          "line": 1012,
+          "symbol": "admit_evidence_children",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)",
+          "note": "resident loop; same file as def"
+        }
+      ],
+      "call_site_blocker": null,
+      "test_verifier": "python3 -m tools.acceptance.context --gate HCLI_SELF_SUPPLEMENT (ACCEPTED FUNCTIONAL_SIM; checks.admit_evidence_children_invoked true)",
+      "receipt": "receipts/acceptance/HCLI_SELF_SUPPLEMENT.json",
+      "current_blocker": "Same-file production Call is real; graph auditor dropped it. Live daemon not inspected.",
+      "next_promotion_gate": "Graph should count same-file Calls that are not the def line. Then observe a live evidence-child admission.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "HCLI_SELF_OPTIMIZATION_BOOTSTRAP",
+      "kind": "gate",
+      "roadmap_item": "HCLI_SELF_OPTIMIZATION_BOOTSTRAP",
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "catalog_symbol": "hcli.agentos.autonomy_gate.run_autonomy_gate",
+      "graph_status": "WIRED",
+      "independent_state": "CALLABLE",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph WIRED. Independent CALLABLE: run_autonomy_gate Called from agentos_cli.py:663. Acceptance BLOCKED because A3/A4 kill processes (must not signal the live daemon).",
+      "code": [
+        "hcli/agentos/autonomy_gate.py",
+        "tools/future/resident_optimizer.py"
+      ],
+      "call_sites": [
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 663,
+          "symbol": "run_autonomy_gate",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        }
+      ],
+      "call_site_blocker": null,
+      "test_verifier": "python3 -m tools.acceptance.context --gate HCLI_SELF_OPTIMIZATION_BOOTSTRAP (receipt BLOCKED; run_autonomy_gate_not_invoked)",
+      "receipt": "receipts/acceptance/HCLI_SELF_OPTIMIZATION_BOOTSTRAP.json",
+      "current_blocker": "Acceptance refuses to invoke A3/A4 because they kill processes. Live daemon must not be signalled.",
+      "next_promotion_gate": "A disposable-fixture autonomy run that does not touch the launchd daemon, or a scoped A1\u2013A2-only criterion.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "VMCP_STATE_LATTICE",
+      "kind": "gate",
+      "roadmap_item": "VMCP_STATE_LATTICE",
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "catalog_symbol": null,
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "SCAFFOLDED",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "tools/headless/vmcp_lattice_disposition.py",
+        "hcli/vmcp_adapter.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "No catalog symbol. Acceptance ACCEPTED FUNCTIONAL_SIM by Calling tools.headless.vmcp_lattice_disposition.prove_* helpers. Headless prove helpers are not a product Call.",
+      "test_verifier": "python3 -m tools.acceptance.vmcp --gate VMCP_STATE_LATTICE (ACCEPTED FUNCTIONAL_SIM)",
+      "receipt": "receipts/acceptance/VMCP_STATE_LATTICE.json",
+      "current_blocker": "accepted-without-wired. DIRECTOR_STATE rejected in measured.n_slots proof.",
+      "next_promotion_gate": "Name an implementing symbol and Call it from hcli, not only the headless disposition script.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "VMCP_DEEP_DIGEST",
+      "kind": "gate",
+      "roadmap_item": "VMCP_DEEP_DIGEST",
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "catalog_symbol": null,
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "SCAFFOLDED",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "tools/headless/vmcp_lattice_disposition.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "No catalog symbol. Acceptance ACCEPTED via prove_deep_digest in the headless script.",
+      "test_verifier": "python3 -m tools.acceptance.vmcp --gate VMCP_DEEP_DIGEST (ACCEPTED FUNCTIONAL_SIM)",
+      "receipt": "receipts/acceptance/VMCP_DEEP_DIGEST.json",
+      "current_blocker": "accepted-without-wired. Same headless script as VMCP_STATE_LATTICE.",
+      "next_promotion_gate": "A product-path Call of the digest function.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "VMCP_TRUTH_LEDGER",
+      "kind": "gate",
+      "roadmap_item": "VMCP_TRUTH_LEDGER",
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "catalog_symbol": null,
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "SCAFFOLDED",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "tools/headless/vmcp_forgery_canary.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "No catalog symbol. Acceptance ACCEPTED FUNCTIONAL_SIM. receipts/headless/VMCP_FORGERY_CANARY.json is a citation.",
+      "test_verifier": "python3 -m tools.acceptance.vmcp --gate VMCP_TRUTH_LEDGER (ACCEPTED FUNCTIONAL_SIM)",
+      "receipt": "receipts/acceptance/VMCP_TRUTH_LEDGER.json",
+      "current_blocker": "accepted-without-wired.",
+      "next_promotion_gate": "Wire a non-test Call of the canary/ledger function from hcli.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "VMCP_RECEIPT_LAW",
+      "kind": "gate",
+      "roadmap_item": "VMCP_RECEIPT_LAW",
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "catalog_symbol": "hcli.agentos.vmcp_gate.run_vmcp_gate",
+      "graph_status": "BUILT",
+      "independent_state": "TESTED",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph BUILT. Independent TESTED: run_vmcp_gate Called from hcli/agentos_cli.py:609. Acceptance ACCEPTED FUNCTIONAL_SIM. CLI gate, not the resident's default path.",
+      "code": [
+        "hcli/agentos/vmcp_gate.py"
+      ],
+      "call_sites": [
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 609,
+          "symbol": "run_vmcp_gate",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        }
+      ],
+      "call_site_blocker": null,
+      "test_verifier": "python3 -m tools.acceptance.vmcp --gate VMCP_RECEIPT_LAW (ACCEPTED FUNCTIONAL_SIM)",
+      "receipt": "receipts/acceptance/VMCP_RECEIPT_LAW.json",
+      "current_blocker": "CLI-invoked. Not shown as a required step of every WorkUnit.",
+      "next_promotion_gate": "Make receipt-law a resident precondition, not only an agentos_cli subcommand.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "VMCP_TOOL_DOCTOR",
+      "kind": "gate",
+      "roadmap_item": "VMCP_TOOL_DOCTOR",
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "catalog_symbol": null,
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "SCAFFOLDED",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "tools/headless/vmcp_capability_probe.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "No catalog symbol. Path is a headless probe. Acceptance ACCEPTED FUNCTIONAL_SIM.",
+      "test_verifier": "python3 -m tools.acceptance.vmcp --gate VMCP_TOOL_DOCTOR (ACCEPTED FUNCTIONAL_SIM)",
+      "receipt": "receipts/acceptance/VMCP_TOOL_DOCTOR.json",
+      "current_blocker": "accepted-without-wired. Probe script is not product wiring.",
+      "next_promotion_gate": "Call tools.vmcp.tool_doctor.profile (or named symbol) from hcli.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "VMCP_FILE_CLASSIFIER",
+      "kind": "gate",
+      "roadmap_item": "VMCP_FILE_CLASSIFIER",
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "catalog_symbol": null,
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "SCAFFOLDED",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "tools/headless/vmcp_capability_probe.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "No catalog symbol. Depends on VMCP_TOOL_DOCTOR. Acceptance ACCEPTED FUNCTIONAL_SIM via the same capability probe.",
+      "test_verifier": "python3 -m tools.acceptance.vmcp --gate VMCP_FILE_CLASSIFIER (ACCEPTED FUNCTIONAL_SIM)",
+      "receipt": "receipts/acceptance/VMCP_FILE_CLASSIFIER.json",
+      "current_blocker": "accepted-without-wired. Shared probe is not a distinct implementing symbol per gate.",
+      "next_promotion_gate": "Give each organ its own called symbol on the product path.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum. Several VMCP organ gates share one probe file \u2014 the ledger names are finer than the code.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "VMCP_VISUAL_DIFF",
+      "kind": "gate",
+      "roadmap_item": "VMCP_VISUAL_DIFF",
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "catalog_symbol": null,
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "SCAFFOLDED",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "tools/headless/vmcp_capability_probe.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "No catalog symbol. Depends on VMCP_TOOL_DOCTOR. Acceptance ACCEPTED FUNCTIONAL_SIM via the same capability probe.",
+      "test_verifier": "python3 -m tools.acceptance.vmcp --gate VMCP_VISUAL_DIFF (ACCEPTED FUNCTIONAL_SIM)",
+      "receipt": "receipts/acceptance/VMCP_VISUAL_DIFF.json",
+      "current_blocker": "accepted-without-wired. Shared probe is not a distinct implementing symbol per gate.",
+      "next_promotion_gate": "Give each organ its own called symbol on the product path.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum. Several VMCP organ gates share one probe file \u2014 the ledger names are finer than the code.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "VMCP_SPATIAL_VALIDATE",
+      "kind": "gate",
+      "roadmap_item": "VMCP_SPATIAL_VALIDATE",
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "catalog_symbol": null,
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "SCAFFOLDED",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "tools/headless/vmcp_capability_probe.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "No catalog symbol. Depends on VMCP_TOOL_DOCTOR. Acceptance ACCEPTED FUNCTIONAL_SIM via the same capability probe.",
+      "test_verifier": "python3 -m tools.acceptance.vmcp --gate VMCP_SPATIAL_VALIDATE (ACCEPTED FUNCTIONAL_SIM)",
+      "receipt": "receipts/acceptance/VMCP_SPATIAL_VALIDATE.json",
+      "current_blocker": "accepted-without-wired. Shared probe is not a distinct implementing symbol per gate.",
+      "next_promotion_gate": "Give each organ its own called symbol on the product path.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum. Several VMCP organ gates share one probe file \u2014 the ledger names are finer than the code.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "VMCP_WEB_CAPTURE",
+      "kind": "gate",
+      "roadmap_item": "VMCP_WEB_CAPTURE",
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "catalog_symbol": null,
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "SCAFFOLDED",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "tools/headless/vmcp_capability_probe.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "No catalog symbol. Acceptance BLOCKED.",
+      "test_verifier": "python3 -m tools.acceptance.vmcp --gate VMCP_WEB_CAPTURE (receipt BLOCKED STATIC)",
+      "receipt": "receipts/acceptance/VMCP_WEB_CAPTURE.json",
+      "current_blocker": "Acceptance BLOCKED. No production Call.",
+      "next_promotion_gate": "Implement and Call a web-capture organ; then re-run acceptance.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "VMCP_PTY_CAPTURE",
+      "kind": "gate",
+      "roadmap_item": "VMCP_PTY_CAPTURE",
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "catalog_symbol": null,
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "SCAFFOLDED",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "tools/headless/vmcp_capability_probe.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "No catalog symbol. Acceptance BLOCKED. tools/vmcp/pty_eye.py exists (called from behavior_lab) but is not this gate's catalog symbol.",
+      "test_verifier": "python3 -m tools.acceptance.vmcp --gate VMCP_PTY_CAPTURE (receipt BLOCKED STATIC)",
+      "receipt": "receipts/acceptance/VMCP_PTY_CAPTURE.json",
+      "current_blocker": "Acceptance BLOCKED. Catalog does not point at tools/vmcp/pty_eye.py.",
+      "next_promotion_gate": "Point the catalog at tools.vmcp.pty_eye.capture and find a non-test Call.",
+      "roadmap_wording_accurate": false,
+      "roadmap_wording_note": "STALE_ROADMAP_TEXT relative to code: pty_eye.py exists and is used by behavior_lab, but this gate's catalog path is the generic capability probe and acceptance is BLOCKED.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "AGENTOS_BEHAVIOR_LAB",
+      "kind": "gate",
+      "roadmap_item": "AGENTOS_BEHAVIOR_LAB",
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "catalog_symbol": null,
+      "graph_status": "ABSENT",
+      "independent_state": "CALLABLE",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "GRAPH ABSENT IS FALSE. tools/vmcp/behavior_lab.py implements BHV-01..23 (FIXTURE_IDS). tools/future/vmcp.py:40 imports run_matrix as bhv_run_matrix and CALLS it at lines 766, 930, 1001. Catalog paths=() so the graph never looked. Acceptance BLOCKED because the catalog listed no code_paths (circular).",
+      "code": [
+        "tools/vmcp/behavior_lab.py",
+        "tools/vmcp/test_behavior_lab.py",
+        "tools/future/vmcp.py"
+      ],
+      "call_sites": [
+        {
+          "file": "tools/future/vmcp.py",
+          "line": 766,
+          "symbol": "bhv_run_matrix",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)",
+          "note": "prove(organ=behavior_lab) \u2192 run_matrix"
+        },
+        {
+          "file": "tools/future/vmcp.py",
+          "line": 930,
+          "symbol": "bhv_run_matrix",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        },
+        {
+          "file": "tools/future/vmcp.py",
+          "line": 1001,
+          "symbol": "bhv_run_matrix",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)",
+          "note": "fixtures BHV-02, BHV-09, BHV-21"
+        }
+      ],
+      "call_site_blocker": null,
+      "test_verifier": "tools/vmcp/test_behavior_lab.py::test_run_matrix_all_twenty_three_and_calls_tabula (exists; not re-run this lane). Acceptance receipt BLOCKED.",
+      "receipt": "receipts/acceptance/AGENTOS_BEHAVIOR_LAB.json",
+      "current_blocker": "Catalog empty paths made the graph report ABSENT. Acceptance then BLOCKED citing the empty catalog. Fixtures_implemented=0 in the receipt contradicts the source (23 named fixtures).",
+      "next_promotion_gate": "Put tools/vmcp/behavior_lab.py in the catalog with symbol run_matrix; re-run acceptance; do not treat catalog emptiness as physical absence.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "H-ROADMAP E.11 BHV-01..23 is the criterion. The code names the same fixtures. Appendix O empty enum.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": [
+        "LOUDEST SURPRISE of this audit. What would settle it: run tools/vmcp/test_behavior_lab.py and python3 tools/future/vmcp.py --act prove --organ behavior_lab in a worktree that materializes tools/vmcp and hcli/workunit.py."
+      ]
+    },
+    {
+      "id": "VMCP_COMPACT_SURFACE",
+      "kind": "gate",
+      "roadmap_item": "VMCP_COMPACT_SURFACE",
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "catalog_symbol": null,
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "SCAFFOLDED",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "hcli/vmcp/__init__.py",
+        "hcli/vmcp_adapter.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "No catalog symbol. Definitions exist (git cat-file). Acceptance ACCEPTED FUNCTIONAL_SIM without a production Call of a named symbol.",
+      "test_verifier": "python3 -m tools.acceptance.vmcp --gate VMCP_COMPACT_SURFACE (ACCEPTED FUNCTIONAL_SIM)",
+      "receipt": "receipts/acceptance/VMCP_COMPACT_SURFACE.json",
+      "current_blocker": "accepted-without-wired.",
+      "next_promotion_gate": "Name the compact-surface function and Call it from hcli product code.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "VMCP_AGENTOS_INTEGRATION",
+      "kind": "gate",
+      "roadmap_item": "VMCP_AGENTOS_INTEGRATION",
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "catalog_symbol": null,
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "SCAFFOLDED",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "hcli/agentos/vmcp_gate.py",
+        "tools/headless/hcli_vmcp_integration.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "No catalog symbol for this gate (run_vmcp_gate belongs to VMCP_RECEIPT_LAW). Acceptance ACCEPTED FUNCTIONAL_SIM.",
+      "test_verifier": "python3 -m tools.acceptance.vmcp --gate VMCP_AGENTOS_INTEGRATION (ACCEPTED FUNCTIONAL_SIM)",
+      "receipt": "receipts/acceptance/VMCP_AGENTOS_INTEGRATION.json",
+      "current_blocker": "accepted-without-wired at this gate id. Shared with VMCP_RECEIPT_LAW's symbol.",
+      "next_promotion_gate": "A distinct integration symbol (not run_vmcp_gate) called from the resident.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "AGENTOS_DETERMINISTIC_OFFLOAD",
+      "kind": "gate",
+      "roadmap_item": "AGENTOS_DETERMINISTIC_OFFLOAD",
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "catalog_symbol": "lab.hcli.claude_offload_bench.run_bench",
+      "graph_status": "WIRED",
+      "independent_state": "CALLABLE",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph WIRED. Independent CALLABLE: lab.hcli.claude_offload_bench.run_bench is the catalog symbol; the production-shaped caller is the lab bench itself. Acceptance BLOCKED.",
+      "code": [
+        "lab/hcli/claude_offload_bench.py",
+        "hcli/delegate.py"
+      ],
+      "call_sites": [
+        {
+          "file": "lab/hcli/claude_offload_bench.py",
+          "line": 1239,
+          "symbol": "run_bench",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)",
+          "note": "lab __main__"
+        },
+        {
+          "file": "lab/hcli/special_unit.py",
+          "line": 2503,
+          "symbol": "run_bench",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        }
+      ],
+      "call_site_blocker": null,
+      "test_verifier": "python3 -m tools.acceptance.vmcp --gate AGENTOS_DETERMINISTIC_OFFLOAD (receipt BLOCKED STATIC)",
+      "receipt": "receipts/acceptance/AGENTOS_DETERMINISTIC_OFFLOAD.json",
+      "current_blocker": "Acceptance BLOCKED. Lab bench is not the resident offload path.",
+      "next_promotion_gate": "Call run_bench (or a resident wrapper) from hcli and pass the acceptance criterion.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": [
+        "Lab bench is the implementing surface, not the resident offload path."
+      ]
+    },
+    {
+      "id": "MODELLAKE_IDENTITY_RESOLVED",
+      "kind": "gate",
+      "roadmap_item": "MODELLAKE_IDENTITY_RESOLVED",
+      "era": "I",
+      "gene": "I-E_ODYSSEY_I",
+      "catalog_symbol": "hcli.agentos.modellake_gate.run_modellake_census",
+      "graph_status": "BUILT",
+      "independent_state": "TESTED",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph BUILT. Independent TESTED at STATIC census grain: run_modellake_census Called from hcli and tools. Acceptance ACCEPTED STATIC. This lane did not re-census 55 specimens. Not PHYSICALLY_MEASURED.",
+      "code": [
+        "hcli/agentos/modellake_gate.py",
+        "tools/odyssey/modellake.py"
+      ],
+      "call_sites": [
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 739,
+          "symbol": "run_modellake_census",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        }
+      ],
+      "call_site_blocker": null,
+      "test_verifier": "python3 -m tools.acceptance.lake --gate MODELLAKE_IDENTITY_RESOLVED (ACCEPTED STATIC)",
+      "receipt": "receipts/acceptance/MODELLAKE_IDENTITY_RESOLVED.json",
+      "current_blocker": "STATIC census, not a re-hash of /Volumes/corpdrive specimens this lane.",
+      "next_promotion_gate": "A receipt that names specimen count and identity mapping produced by run_modellake_census on the live lake (read-only).",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum. Gene I-E mission is 'first real school of model/device facts' \u2014 this gate is identity resolution only.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "MODELLAKE_HASH_VERIFIED",
+      "kind": "gate",
+      "roadmap_item": "MODELLAKE_HASH_VERIFIED",
+      "era": "I",
+      "gene": "I-E_ODYSSEY_I",
+      "catalog_symbol": "tools.odyssey.modellake_watch.reconcile",
+      "graph_status": "WIRED",
+      "independent_state": "SCAFFOLDED",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph WIRED citing only the acceptance harness. Independent: reconcile is a generic name (17 AST hits). No non-harness product Call of tools.odyssey.modellake_watch.reconcile isolated. Acceptance BLOCKED. Not hash-verified. 13-state SCAFFOLDED, not CALLABLE.",
+      "code": [
+        "hcli/agentos/modellake_gate.py",
+        "tools/odyssey/modellake_watch.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "Graph's only runtime_caller was tools/acceptance (harness). Generic name `reconcile` is not unique. Acceptance BLOCKED.",
+      "test_verifier": "python3 -m tools.acceptance.lake --gate MODELLAKE_HASH_VERIFIED (receipt BLOCKED STATIC)",
+      "receipt": "receipts/acceptance/MODELLAKE_HASH_VERIFIED.json",
+      "current_blocker": "Acceptance BLOCKED. Hash verification of sealed specimens was not demonstrated. ModelLake is read-only; this lane did not hash 4.35 TB.",
+      "next_promotion_gate": "A receipt with per-specimen digest comparison that Calls reconcile on the watch path without mutating the lake.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum. Gate name claims hash verification; that bar is unmet.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "MODELLAKE_ATOMIC_PROMOTION",
+      "kind": "gate",
+      "roadmap_item": "MODELLAKE_ATOMIC_PROMOTION",
+      "era": "I",
+      "gene": "I-E_ODYSSEY_I",
+      "catalog_symbol": "tools.odyssey.modellake_promote.promote",
+      "graph_status": "BUILT",
+      "independent_state": "TESTED",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph BUILT. Independent TESTED STATIC: tools.odyssey.modellake_promote.promote is a generic name (65 AST hits). Graph cited 2 tools + 1 acceptance Call. Acceptance ACCEPTED STATIC. Not a live promotion (lake is read-only in this lane).",
+      "code": [
+        "tools/odyssey/modellake_promote.py"
+      ],
+      "call_sites": [
+        {
+          "file": "tools/odyssey/modellake_promote.py",
+          "line": 183,
+          "symbol": "promote",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)",
+          "note": "CLI main of modellake_promote; generic name `promote` is not unique across the tree"
+        }
+      ],
+      "call_site_blocker": null,
+      "test_verifier": "python3 -m tools.acceptance.lake --gate MODELLAKE_ATOMIC_PROMOTION (ACCEPTED STATIC)",
+      "receipt": "receipts/acceptance/MODELLAKE_ATOMIC_PROMOTION.json",
+      "current_blocker": "STATIC. This lane did not promote a specimen. Generic symbol `promote` is unsafe for grep.",
+      "next_promotion_gate": "Fully qualify the catalog symbol; show an atomic promote on a disposable fixture, never on /Volumes/corpdrive/specimens.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "QWEN27_RUNTIME_IDENTITY_FROZEN",
+      "kind": "gate",
+      "roadmap_item": "QWEN27_RUNTIME_IDENTITY_FROZEN",
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "catalog_symbol": "hcli.agentos.qwen27_runtime_identity.run_runtime_archaeology",
+      "graph_status": "BUILT",
+      "independent_state": "TESTED",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph BUILT. Independent TESTED STATIC: run_runtime_archaeology Called from hcli. Acceptance ACCEPTED STATIC. Not a GPU measurement.",
+      "code": [
+        "hcli/agentos/qwen27_runtime_identity.py"
+      ],
+      "call_sites": [
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 702,
+          "symbol": "run_runtime_archaeology",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        }
+      ],
+      "call_site_blocker": null,
+      "test_verifier": "python3 -m tools.acceptance.lake --gate QWEN27_RUNTIME_IDENTITY_FROZEN (ACCEPTED STATIC)",
+      "receipt": "receipts/acceptance/QWEN27_RUNTIME_IDENTITY_FROZEN.json",
+      "current_blocker": "STATIC identity freeze, not a protected benchmark.",
+      "next_promotion_gate": "Keep the freeze; do not treat it as QWEN27_PROTECTED_BASELINE.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "QWEN27_PROTECTED_BASELINE",
+      "kind": "gate",
+      "roadmap_item": "QWEN27_PROTECTED_BASELINE",
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "catalog_symbol": "hcli.agentos.protected_accelerator_benchmark.run_protected_accelerator_benchmark",
+      "graph_status": "WIRED",
+      "independent_state": "CALLABLE",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph WIRED. Independent CALLABLE. Acceptance BLOCKED. Protected GPU baseline is BLOCKED_AUTHORITY for this auditor (must not contend with the live daemon / protected benchmark).",
+      "code": [
+        "hcli/agentos/protected_accelerator_benchmark.py",
+        "hcli/agentos/accelerator_regression.py"
+      ],
+      "call_sites": [
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 1193,
+          "symbol": "run_protected_accelerator_benchmark",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        }
+      ],
+      "call_site_blocker": null,
+      "test_verifier": "python3 -m tools.acceptance.lake --gate QWEN27_PROTECTED_BASELINE (receipt BLOCKED STATIC)",
+      "receipt": "receipts/acceptance/QWEN27_PROTECTED_BASELINE.json",
+      "current_blocker": "Acceptance BLOCKED. This auditor is not authoritative for GPU physical performance. Live daemon must not be contended with.",
+      "next_promotion_gate": "A protected clean-room run when the GPU is free; label the receipt PHYSICALLY_MEASURED only if this machine ran it.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum. Gate name is a bar, unmet.",
+      "evidence_tier": "BLOCKED_AUTHORITY",
+      "notes": [
+        "Never PHYSICALLY_MEASURED in this lane."
+      ]
+    },
+    {
+      "id": "QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED",
+      "kind": "gate",
+      "roadmap_item": "QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED",
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "catalog_symbol": "hcli.agentos.qwen27_mlp_diagnostic.run_qwen27_mlp_diagnostic_ab",
+      "graph_status": "BUILT",
+      "independent_state": "CALLABLE",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "REFUTE GRAPH BUILT. Acceptance ACCEPTED STATIC but explicitly: 'run_qwen27_mlp_diagnostic_ab was not invoked' because it starts a resident. The explanation is identity-mismatch SOURCE_INSPECTION (6 DIFFERENT_VERIFIED dimensions), not the catalog diagnostic A/B. Graph still marks wired+accepted=BUILT. The call-site law's implementing symbol was not invoked in the run that granted accepted.",
+      "code": [
+        "hcli/agentos/qwen27_mlp_diagnostic.py",
+        "hcli/agentos/accelerator_regression.py"
+      ],
+      "call_sites": [
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 714,
+          "symbol": "run_qwen27_mlp_diagnostic_ab",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)",
+          "note": "CLI exists; the ACCEPTED receipt did not invoke it"
+        },
+        {
+          "file": "hcli/agentos/protected_benchmark_watcher.py",
+          "line": 274,
+          "symbol": "run_qwen27_mlp_diagnostic_ab",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        }
+      ],
+      "call_site_blocker": null,
+      "test_verifier": "python3 -m tools.acceptance.lake --gate QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED (ACCEPTED STATIC; live_ab_invoked=false)",
+      "receipt": "receipts/acceptance/QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED.json",
+      "current_blocker": "Catalog symbol not invoked in the acceptance run. Explanation is identity mismatch vs historical ~33.717 TPS, not a bounded regression on the same executable.",
+      "next_promotion_gate": "Either invoke run_qwen27_mlp_diagnostic_ab on a disposable resident, or downgrade the graph from BUILT to WIRED/CALLABLE until the diagnostic actually runs.",
+      "roadmap_wording_accurate": false,
+      "roadmap_wording_note": "Gate name says EXPLAINED_OR_BOUNDED. The receipt explains an identity mismatch, not a regression on a frozen executable. Roadmap wording of the gate as a completed PASS would be false; Appendix O itself does not claim PASS.",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "notes": [
+        "HIGH-VALUE REFUTATION of graph BUILT."
+      ]
+    },
+    {
+      "id": "FLASH_SOURCE_VERIFIED",
+      "kind": "gate",
+      "roadmap_item": "FLASH_SOURCE_VERIFIED",
+      "era": "I",
+      "gene": "I-C_GRAVITY_NOETIC",
+      "catalog_symbol": null,
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "CALLABLE",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph SCAFFOLDED (no catalog symbol) but accepted=True. Independent CALLABLE: acceptance command is tools/flash_organ_census.py --root <specimen> which is a CLI subprocess of the implementing path. Catalog omitted the symbol (main).",
+      "code": [
+        "tools/flash_organ_census.py",
+        "tools/gravity_verify_source.py"
+      ],
+      "call_sites": [
+        {
+          "file": "tools/acceptance/flash/run_gates.py",
+          "line": 189,
+          "symbol": "flash_organ_census_main",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)",
+          "note": "acceptance Called tools.flash_organ_census.main; the producer is a CLI tool"
+        }
+      ],
+      "call_site_blocker": null,
+      "test_verifier": "tools/flash_organ_census.py --root /Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc (ACCEPTED STATIC; not re-run this lane)",
+      "receipt": "receipts/acceptance/FLASH_SOURCE_VERIFIED.json",
+      "current_blocker": "STATIC organ census. Catalog has no symbol so the graph could not mark wired.",
+      "next_promotion_gate": "Put symbol tools.flash_organ_census.main (or census()) in the catalog.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "FLASH_FIRST_GRAVITY_ORGAN",
+      "kind": "gate",
+      "roadmap_item": "FLASH_FIRST_GRAVITY_ORGAN",
+      "era": "I",
+      "gene": "I-C_GRAVITY_NOETIC",
+      "catalog_symbol": "hcli.agentos.flash_science.run_flash_science_gate",
+      "graph_status": "BUILT",
+      "independent_state": "TESTED",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph BUILT. Independent TESTED FUNCTIONAL_SIM: run_flash_science_gate Called from agentos_cli. Not a native executable, not PHYSICALLY_MEASURED.",
+      "code": [
+        "hcli/agentos/flash_science.py"
+      ],
+      "call_sites": [
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 761,
+          "symbol": "run_flash_science_gate",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        }
+      ],
+      "call_site_blocker": null,
+      "test_verifier": "tools/flash_gravity_doctor_cycle.py + hcli.agentos.flash_science.run_flash_science_gate (ACCEPTED FUNCTIONAL_SIM)",
+      "receipt": "receipts/acceptance/FLASH_FIRST_GRAVITY_ORGAN.json",
+      "current_blocker": "FUNCTIONAL_SIM doctor cycle, not a Gravity-native organ on Metal.",
+      "next_promotion_gate": "FLASH_NATIVE_NF_KERNEL kernel dispatch on this M3 Ultra.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum. 'First Gravity organ' as BUILT overclaims vs FUNCTIONAL_SIM.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "FLASH_NATIVE_NF_KERNEL",
+      "kind": "gate",
+      "roadmap_item": "FLASH_NATIVE_NF_KERNEL",
+      "era": "I",
+      "gene": "I-C_GRAVITY_NOETIC",
+      "catalog_symbol": "hcli.agentos.flash_graph_component.run_flash_graph_component",
+      "graph_status": "WIRED",
+      "independent_state": "CALLABLE",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph WIRED accepted=False. Independent CALLABLE. Acceptance BLOCKED HARDWARE_MEASURED with error 'metal: no Metal-capable GPU' in another worktree despite Apple M3 Ultra / Metal Supported. SURPRISE. This lane did not dispatch Metal.",
+      "code": [
+        "hcli/agentos/flash_executable.py",
+        "hcli/agentos/flash_graph_component.py"
+      ],
+      "call_sites": [
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 966,
+          "symbol": "run_flash_graph_component",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        }
+      ],
+      "call_site_blocker": null,
+      "test_verifier": "flash_noetic_q4_kernel_parity example (receipt BLOCKED; metal: no Metal-capable GPU in that process)",
+      "receipt": "receipts/acceptance/FLASH_NATIVE_NF_KERNEL.json",
+      "current_blocker": "Kernel dispatch not demonstrated. Acceptance process could not see Metal. This auditor is not authoritative for Metal runtime behaviour it did not execute.",
+      "next_promotion_gate": "A kernel-parity run on this M3 Ultra that actually dispatches Metal; label PHYSICALLY_MEASURED only if this machine ran it.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum. Gate name is unmet.",
+      "evidence_tier": "BLOCKED_AUTHORITY",
+      "notes": [
+        "SURPRISE: M3 Ultra present; an acceptance process still reported no Metal-capable GPU. What would settle it: run the kernel-parity example unsandboxed on this host."
+      ]
+    },
+    {
+      "id": "FLASH_DENSE_VS_NF_AB",
+      "kind": "gate",
+      "roadmap_item": "FLASH_DENSE_VS_NF_AB",
+      "era": "I",
+      "gene": "I-C_GRAVITY_NOETIC",
+      "catalog_symbol": "hcli.agentos.flash_router_representation_ab.run_flash_router_representation_ab",
+      "graph_status": "BUILT",
+      "independent_state": "TESTED",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph BUILT. Independent TESTED FUNCTIONAL_SIM. Simulation is not board reality. Not PHYSICALLY_MEASURED.",
+      "code": [
+        "hcli/agentos/flash_router_representation_ab.py",
+        "hcli/agentos/representation_ab.py"
+      ],
+      "call_sites": [
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 941,
+          "symbol": "run_flash_router_representation_ab",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        }
+      ],
+      "call_site_blocker": null,
+      "test_verifier": "hcli.agentos.flash_router_representation_ab.run_flash_router_representation_ab (ACCEPTED FUNCTIONAL_SIM)",
+      "receipt": "receipts/acceptance/FLASH_DENSE_VS_NF_AB.json",
+      "current_blocker": "FUNCTIONAL_SIM A/B, not a Metal measurement of dense vs NF.",
+      "next_promotion_gate": "The same A/B with a Metal kernel dispatch and a numeric bar.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "FLASH_FULL_NOETIC_EXECUTABLE",
+      "kind": "gate",
+      "roadmap_item": "FLASH_FULL_NOETIC_EXECUTABLE",
+      "era": "I",
+      "gene": "I-C_GRAVITY_NOETIC",
+      "catalog_symbol": null,
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "SCAFFOLDED",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "tools/odyssey/noetic_compiler.py",
+        "hcli/agentos/flash_executable.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "No catalog symbol. Definitions exist. Acceptance BLOCKED STATIC.",
+      "test_verifier": "tools.odyssey.noetic_compiler.round_trip / flash_executable (receipt BLOCKED)",
+      "receipt": "receipts/acceptance/FLASH_FULL_NOETIC_EXECUTABLE.json",
+      "current_blocker": "Acceptance BLOCKED. Not an executable. Depends on FLASH_DENSE_VS_NF_AB.",
+      "next_promotion_gate": "A round-trip that produces a runnable Noetic executable and names the symbol in the catalog.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum. Gate name is unmet.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "FLASH_COMPLETE_EBPW_LE_1",
+      "kind": "gate",
+      "roadmap_item": "FLASH_COMPLETE_EBPW_LE_1",
+      "era": "I",
+      "gene": "I-C_GRAVITY_NOETIC",
+      "catalog_symbol": "tools.future.complete_ebpw.mix_report",
+      "graph_status": "WIRED",
+      "independent_state": "CALLABLE",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph WIRED accepted=False. Independent CALLABLE. Numeric bar FAILS: receipts/future/COMPLETE_EBPW.json incumbent.complete_ebpw = 3.139300850311054 which is not <= 1. Graph correctly refused accepted. 13-state has no WIRED; CALLABLE is the match.",
+      "code": [
+        "tools/future/complete_ebpw.py"
+      ],
+      "call_sites": [
+        {
+          "file": "tools/future/complete_ebpw.py",
+          "line": 445,
+          "symbol": "mix_report",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)",
+          "note": "same-file"
+        },
+        {
+          "file": "tools/future/capability_byte_elimination.py",
+          "line": 295,
+          "symbol": "mix_report",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        },
+        {
+          "file": "tools/acceptance/flash/run_gates.py",
+          "line": 940,
+          "symbol": "mix_report",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        }
+      ],
+      "call_site_blocker": null,
+      "test_verifier": "python3 -c mix_report(); build() (receipt BLOCKED STATIC; measured 3.139 against <= 1)",
+      "receipt": "receipts/future/COMPLETE_EBPW.json",
+      "current_blocker": "Numeric bar unmet: 3.139 \u2270 1. Also depends on FLASH_FULL_NOETIC_EXECUTABLE which is SCAFFOLDED.",
+      "next_promotion_gate": "A mix whose complete_ebpw <= 1 on the incumbent, compared against this receipt's formula (payload_bytes/parent_params), not a rounded MLP-only 2.25.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Gate name LE_1 is the bar and is still false on disk. Accurate as an unmet obligation.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": [
+        "Independent read of the numeric field; this is not a new measurement."
+      ]
+    },
+    {
+      "id": "FLASH_ACCEPTED_TPS_GE_50",
+      "kind": "gate",
+      "roadmap_item": "FLASH_ACCEPTED_TPS_GE_50",
+      "era": "I",
+      "gene": "I-C_GRAVITY_NOETIC",
+      "catalog_symbol": null,
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "SCAFFOLDED",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "tools/flash_stateful_gate.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "No catalog symbol. receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json has accepted_tps=None, accepted_tokens=1. Acceptance BLOCKED STATIC.",
+      "test_verifier": "tools/flash_stateful_gate.py (receipt BLOCKED)",
+      "receipt": "receipts/acceptance/FLASH_ACCEPTED_TPS_GE_50.json",
+      "current_blocker": "No accepted TPS. This auditor is not authoritative for GPU TPS. Bar >= 50 unmet.",
+      "next_promotion_gate": "A PHYSICALLY_MEASURED accepted-TPS receipt on this M3 Ultra when the GPU is free.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Gate name GE_50 is the unmet bar.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "FPGA_PREBOARD_SCHEMAS",
+      "kind": "gate",
+      "roadmap_item": "FPGA_PREBOARD_SCHEMAS",
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "catalog_symbol": "hcli.agentos.fpga_preboard.FPGADeviceGenome",
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "CALLABLE",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph SCAFFOLDED because FPGADeviceGenome is only constructed inside fpga_preboard.py. Independent: hcli/agentos_cli.py:1019 Calls run_fpga_preboard, which constructs FPGADeviceGenome at fpga_preboard.py:483. That is a product CLI of the preboard school. Catalog symbol is the dataclass, not the CLI.",
+      "code": [
+        "hcli/agentos/fpga_preboard.py"
+      ],
+      "call_sites": [
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 1019,
+          "symbol": "run_fpga_preboard",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        },
+        {
+          "file": "hcli/agentos/fpga_preboard.py",
+          "line": 483,
+          "symbol": "FPGADeviceGenome",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)",
+          "note": "constructed inside run_fpga_preboard"
+        }
+      ],
+      "call_site_blocker": null,
+      "test_verifier": "tools/haider/test_hcli_science_boundaries.py (simulate_partition tests exist; FPGADeviceGenome has no external test Call)",
+      "receipt": null,
+      "current_blocker": "Preboard is SIMULATED schemas, not a device. FPGADeviceGenome comments TARGET_UNSELECTED.",
+      "next_promotion_gate": "Keep schemas; do not promote past FPGA_HWIR until lowering is accepted. Catalog should use run_fpga_preboard as the symbol.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum. FPGA is inside I-D Accelerator per constitution \u2014 ledger placement is correct.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "FPGA_HWIR",
+      "kind": "gate",
+      "roadmap_item": "FPGA_HWIR",
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "catalog_symbol": "tools.future.hwir.HwirGraph",
+      "graph_status": "WIRED",
+      "independent_state": "CALLABLE",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph WIRED (commit 7d642800). Independent CALLABLE at HEAD. HwirGraph constructed from tools/accelerator/backend_contract.py, fusion_bridge.py, tools/future/p6_projection.py. HEAD hwir.py is 6279 lines vs 5444 at graph commit \u2014 pluggable LoweringTarget (HlsStyleEmitter, RustHdlEmitter) landed in f16ec8cdd / 79d98bab9. Graph is stale on this surface. Not accepted, not on FPGA silicon.",
+      "code": [
+        "tools/future/hwir.py",
+        "hcli/agentos/fpga_preboard.py"
+      ],
+      "call_sites": [
+        {
+          "file": "tools/accelerator/backend_contract.py",
+          "line": 1094,
+          "symbol": "HwirGraph",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        },
+        {
+          "file": "tools/accelerator/fusion_bridge.py",
+          "line": 1444,
+          "symbol": "HwirGraph",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        },
+        {
+          "file": "tools/future/p6_projection.py",
+          "line": 857,
+          "symbol": "HwirGraph",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        }
+      ],
+      "call_site_blocker": null,
+      "test_verifier": "tools/future/hwir.py contains in-module graphs/tests; independent AST found 3 TEST Calls of HwirGraph outside def helpers",
+      "receipt": null,
+      "current_blocker": "No acceptance receipt. Lowering is source emission, not bitstream. U50 absent.",
+      "next_promotion_gate": "An acceptance that lower_hwir() emits both HLS-style and Rust-HDL-style artifacts from one HwirGraph, then FPGA_LINK_SIM.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum. Constitution: FPGA lives inside Accelerator/Fusion \u2014 satisfied.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": [
+        "Graph 7 commits stale; hwir.py grew 835 lines including pluggable lowering."
+      ]
+    },
+    {
+      "id": "FPGA_LINK_SIM",
+      "kind": "gate",
+      "roadmap_item": "FPGA_LINK_SIM",
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "catalog_symbol": "hcli.agentos.fpga_preboard.TransportLinkSimulator",
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "SCAFFOLDED",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "hcli/agentos/fpga_preboard.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "TransportLinkSimulator is only constructed inside fpga_preboard.py (def file). No non-test external Call.",
+      "test_verifier": "No dedicated test Call of TransportLinkSimulator found.",
+      "receipt": null,
+      "current_blocker": "SIMULATED link model only. Not board reality.",
+      "next_promotion_gate": "A non-test Call of TransportLinkSimulator, still labelled SIMULATED until a U50 exists.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum. Simulation is not measurement.",
+      "evidence_tier": "SIMULATED",
+      "notes": []
+    },
+    {
+      "id": "FPGA_PARTITION_SIM",
+      "kind": "gate",
+      "roadmap_item": "FPGA_PARTITION_SIM",
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "catalog_symbol": "hcli.agentos.fpga_preboard.simulate_partition",
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "SCAFFOLDED",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "hcli/agentos/fpga_preboard.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "simulate_partition Called from same-file run_fpga_preboard and from tools/haider/test_hcli_science_boundaries.py (tests only).",
+      "test_verifier": "tools/haider/test_hcli_science_boundaries.py (simulate_partition('qwen27') and 'flash-next')",
+      "receipt": null,
+      "current_blocker": "Test-only external Call. SIMULATED partition, not a device.",
+      "next_promotion_gate": "Non-test Call; still SIMULATED until U50.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum.",
+      "evidence_tier": "SIMULATED",
+      "notes": []
+    },
+    {
+      "id": "U50_PURCHASE_ACCEPTANCE",
+      "kind": "gate",
+      "roadmap_item": "U50_PURCHASE_ACCEPTANCE",
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "catalog_symbol": null,
+      "graph_status": "BLOCKED_HARDWARE",
+      "independent_state": "BLOCKED_HARDWARE",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "tools/future/hardware_doctor.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "U50/XCU50/Alveo identity absent on this host (system_profiler SPPCIeDataType + Thunderbolt + ioreg; this lane ran the inventory).",
+      "test_verifier": "tools/future tests may exist; they cannot wake the device.",
+      "receipt": null,
+      "current_blocker": "U50_PRESENT=false. FPGA/U50DD physically ABSENT. This auditor is not authoritative for U50 facts not physically measured.",
+      "next_promotion_gate": "wake_condition U50_PRESENT; then U50_SAFE_COOLING",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum. Pre-board software must not be reported as U50 PASS.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": [
+        "Hardware inventory executed this lane: no Xilinx/Alveo/U50/XCU50 identity."
+      ]
+    },
+    {
+      "id": "U50_SAFE_COOLING",
+      "kind": "gate",
+      "roadmap_item": "U50_SAFE_COOLING",
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "catalog_symbol": null,
+      "graph_status": "BLOCKED_HARDWARE",
+      "independent_state": "BLOCKED_HARDWARE",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "tools/future/hardware_doctor.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "U50/XCU50/Alveo identity absent on this host (system_profiler SPPCIeDataType + Thunderbolt + ioreg; this lane ran the inventory).",
+      "test_verifier": "tools/future tests may exist; they cannot wake the device.",
+      "receipt": null,
+      "current_blocker": "U50_PRESENT=false. FPGA/U50DD physically ABSENT. This auditor is not authoritative for U50 facts not physically measured.",
+      "next_promotion_gate": "wake_condition U50_PRESENT; then U50_DEVICE_PROFILE",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum. Pre-board software must not be reported as U50 PASS.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": [
+        "Hardware inventory executed this lane: no Xilinx/Alveo/U50/XCU50 identity."
+      ]
+    },
+    {
+      "id": "U50_DEVICE_PROFILE",
+      "kind": "gate",
+      "roadmap_item": "U50_DEVICE_PROFILE",
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "catalog_symbol": null,
+      "graph_status": "BLOCKED_HARDWARE",
+      "independent_state": "BLOCKED_HARDWARE",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "tools/odyssey/device_profiles.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "U50/XCU50/Alveo identity absent on this host (system_profiler SPPCIeDataType + Thunderbolt + ioreg; this lane ran the inventory).",
+      "test_verifier": "tools/future tests may exist; they cannot wake the device.",
+      "receipt": null,
+      "current_blocker": "U50_PRESENT=false. FPGA/U50DD physically ABSENT. This auditor is not authoritative for U50 facts not physically measured.",
+      "next_promotion_gate": "wake_condition U50_PRESENT; then U50_DMA_HBM",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum. Pre-board software must not be reported as U50 PASS.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": [
+        "Hardware inventory executed this lane: no Xilinx/Alveo/U50/XCU50 identity."
+      ]
+    },
+    {
+      "id": "U50_DMA_HBM",
+      "kind": "gate",
+      "roadmap_item": "U50_DMA_HBM",
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "catalog_symbol": null,
+      "graph_status": "BLOCKED_HARDWARE",
+      "independent_state": "BLOCKED_HARDWARE",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "tools/future/hbm_doctor.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "U50/XCU50/Alveo identity absent on this host (system_profiler SPPCIeDataType + Thunderbolt + ioreg; this lane ran the inventory).",
+      "test_verifier": "tools/future tests may exist; they cannot wake the device.",
+      "receipt": null,
+      "current_blocker": "U50_PRESENT=false. FPGA/U50DD physically ABSENT. This auditor is not authoritative for U50 facts not physically measured.",
+      "next_promotion_gate": "wake_condition U50_PRESENT; then U50_FIRST_NATIVE_ENGINE",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum. Pre-board software must not be reported as U50 PASS.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": [
+        "Hardware inventory executed this lane: no Xilinx/Alveo/U50/XCU50 identity."
+      ]
+    },
+    {
+      "id": "U50_FIRST_NATIVE_ENGINE",
+      "kind": "gate",
+      "roadmap_item": "U50_FIRST_NATIVE_ENGINE",
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "catalog_symbol": null,
+      "graph_status": "BLOCKED_HARDWARE",
+      "independent_state": "BLOCKED_HARDWARE",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "tools/future/fpga_engines.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "U50/XCU50/Alveo identity absent on this host (system_profiler SPPCIeDataType + Thunderbolt + ioreg; this lane ran the inventory).",
+      "test_verifier": "tools/future tests may exist; they cannot wake the device.",
+      "receipt": null,
+      "current_blocker": "U50_PRESENT=false. FPGA/U50DD physically ABSENT. This auditor is not authoritative for U50 facts not physically measured.",
+      "next_promotion_gate": "wake_condition U50_PRESENT; then U50_MIXED_APPLE_FPGA_GRAPH",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum. Pre-board software must not be reported as U50 PASS.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": [
+        "Hardware inventory executed this lane: no Xilinx/Alveo/U50/XCU50 identity."
+      ]
+    },
+    {
+      "id": "U50_MIXED_APPLE_FPGA_GRAPH",
+      "kind": "gate",
+      "roadmap_item": "U50_MIXED_APPLE_FPGA_GRAPH",
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "catalog_symbol": null,
+      "graph_status": "BLOCKED_HARDWARE",
+      "independent_state": "BLOCKED_HARDWARE",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "hcli/physical_graph.py",
+        "tools/odyssey/physical_graph_compiler.py"
+      ],
+      "call_sites": [
+        {
+          "file": "tools/future/nr_nx_generic.py",
+          "line": 1981,
+          "symbol": "tools/odyssey/physical_graph_compiler.py",
+          "kind": "subprocess",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)",
+          "note": "graph also cited a subprocess; hardware rule still wins"
+        }
+      ],
+      "call_site_blocker": null,
+      "test_verifier": "tools/odyssey/test_physical_graph_compiler_heterogeneous.py",
+      "receipt": null,
+      "current_blocker": "U50_PRESENT=false. A software subprocess of the compiler does not make mixed Apple+FPGA graph real.",
+      "next_promotion_gate": "U50_PRESENT and a heterogeneous executable with a real FPGA region.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "U50_34_TO_40",
+      "kind": "gate",
+      "roadmap_item": "U50_34_TO_40",
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "catalog_symbol": null,
+      "graph_status": "BLOCKED_HARDWARE",
+      "independent_state": "BLOCKED_HARDWARE",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "tools/future/hwir.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "Throughput ladder on a U50 that is not present. HWIR software is not this gate.",
+      "test_verifier": null,
+      "receipt": null,
+      "current_blocker": "U50_PRESENT=false. Depends on U50_MIXED_APPLE_FPGA_GRAPH.",
+      "next_promotion_gate": "U50_PRESENT and a PHYSICALLY_MEASURED accepted-TPS on the named rung.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum. Rung names are aspirations, not measurements.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "U50_40_TO_50",
+      "kind": "gate",
+      "roadmap_item": "U50_40_TO_50",
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "catalog_symbol": null,
+      "graph_status": "BLOCKED_HARDWARE",
+      "independent_state": "BLOCKED_HARDWARE",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "tools/future/hwir.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "Throughput ladder on a U50 that is not present. HWIR software is not this gate.",
+      "test_verifier": null,
+      "receipt": null,
+      "current_blocker": "U50_PRESENT=false. Depends on U50_34_TO_40.",
+      "next_promotion_gate": "U50_PRESENT and a PHYSICALLY_MEASURED accepted-TPS on the named rung.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum. Rung names are aspirations, not measurements.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "U50_50_TO_60",
+      "kind": "gate",
+      "roadmap_item": "U50_50_TO_60",
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "catalog_symbol": null,
+      "graph_status": "BLOCKED_HARDWARE",
+      "independent_state": "BLOCKED_HARDWARE",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "tools/future/hwir.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "Throughput ladder on a U50 that is not present. HWIR software is not this gate.",
+      "test_verifier": null,
+      "receipt": null,
+      "current_blocker": "U50_PRESENT=false. Depends on U50_40_TO_50.",
+      "next_promotion_gate": "U50_PRESENT and a PHYSICALLY_MEASURED accepted-TPS on the named rung.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum. Rung names are aspirations, not measurements.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "U50_60_TO_70",
+      "kind": "gate",
+      "roadmap_item": "U50_60_TO_70",
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "catalog_symbol": null,
+      "graph_status": "BLOCKED_HARDWARE",
+      "independent_state": "BLOCKED_HARDWARE",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "tools/future/hwir.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "Throughput ladder on a U50 that is not present. HWIR software is not this gate.",
+      "test_verifier": null,
+      "receipt": null,
+      "current_blocker": "U50_PRESENT=false. Depends on U50_50_TO_60.",
+      "next_promotion_gate": "U50_PRESENT and a PHYSICALLY_MEASURED accepted-TPS on the named rung.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum. Rung names are aspirations, not measurements.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "U50_70_TO_80",
+      "kind": "gate",
+      "roadmap_item": "U50_70_TO_80",
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "catalog_symbol": null,
+      "graph_status": "BLOCKED_HARDWARE",
+      "independent_state": "BLOCKED_HARDWARE",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "tools/future/hwir.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "Throughput ladder on a U50 that is not present. HWIR software is not this gate.",
+      "test_verifier": null,
+      "receipt": null,
+      "current_blocker": "U50_PRESENT=false. Depends on U50_60_TO_70.",
+      "next_promotion_gate": "U50_PRESENT and a PHYSICALLY_MEASURED accepted-TPS on the named rung.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum. Rung names are aspirations, not measurements.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "U50_80_TO_90",
+      "kind": "gate",
+      "roadmap_item": "U50_80_TO_90",
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "catalog_symbol": null,
+      "graph_status": "BLOCKED_HARDWARE",
+      "independent_state": "BLOCKED_HARDWARE",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "tools/future/hwir.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "Throughput ladder on a U50 that is not present. HWIR software is not this gate.",
+      "test_verifier": null,
+      "receipt": null,
+      "current_blocker": "U50_PRESENT=false. Depends on U50_70_TO_80.",
+      "next_promotion_gate": "U50_PRESENT and a PHYSICALLY_MEASURED accepted-TPS on the named rung.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum. Rung names are aspirations, not measurements.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "HMF_DEVICE_VISIBLE_TRUST",
+      "kind": "gate",
+      "roadmap_item": "HMF_DEVICE_VISIBLE_TRUST",
+      "era": "IV",
+      "gene": "IV-B_HMF_HGVAS",
+      "catalog_symbol": null,
+      "graph_status": "BLOCKED_HARDWARE",
+      "independent_state": "BLOCKED_HARDWARE",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "tools/accelerator/hmf.py",
+        "tools/future/hmf_objects.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "HMF/HGVAS/CXL memory appliance absent (ioreg inventory this lane). Era IV.",
+      "test_verifier": "python3 -c tools.roadmap.hardware.probe('HMF_PRESENT') (receipt BLOCKED STATIC)",
+      "receipt": "receipts/acceptance/HMF_DEVICE_VISIBLE_TRUST.json",
+      "current_blocker": "HMF_PRESENT=false. Era I is sovereign; this gate cannot complete civilization.",
+      "next_promotion_gate": "wake_condition HMF_PRESENT.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum. Software object model is not device-visible trust.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE",
+      "kind": "gate",
+      "roadmap_item": "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE",
+      "era": "IV",
+      "gene": "IV-A_FUSION",
+      "catalog_symbol": null,
+      "graph_status": "UNREACHABLE",
+      "independent_state": "BLOCKED_HARDWARE",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph UNREACHABLE (not in the 13-state vocab). Independent BLOCKED_HARDWARE because the only dependency is HMF_DEVICE_VISIBLE_TRUST and HMF is absent. fusion_planner.py exists (SCAFFOLDED software). UNREACHABLE is a derived auditor status, not a 13-state.",
+      "code": [
+        "tools/accelerator/fusion_planner.py",
+        "tools/future/fusion_sim.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "Depends on HMF_DEVICE_VISIBLE_TRUST. No non-test Call of a fusion-executable symbol found. Acceptance BLOCKED STATIC.",
+      "test_verifier": "receipts/acceptance/FUSION_FIRST_HETEROGENEOUS_EXECUTABLE.json (BLOCKED)",
+      "receipt": "receipts/acceptance/FUSION_FIRST_HETEROGENEOUS_EXECUTABLE.json",
+      "current_blocker": "HMF absent. Apple-alone topology is not a heterogeneous executable.",
+      "next_promotion_gate": "HMF_PRESENT or a redefined Apple+FPGA heterogeneous executable that does not require HMF \u2014 constitution places FPGA inside Fusion, but this gate's catalog dependency is HMF.",
+      "roadmap_wording_accurate": false,
+      "roadmap_wording_note": "Catalog dependency on HMF makes Fusion wait on a device the constitution does not require for Apple+FPGA fusion. STALE relative to 'FPGA lives inside Hawking Accelerator/Fusion'.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": [
+        "SURPRISE: Fusion's first heterogeneous executable is gated on HMF, not on FPGA/U50. What would settle it: a catalog dependency on U50_MIXED_APPLE_FPGA_GRAPH or an Apple-only fusion that is explicitly not this gate."
+      ]
+    },
+    {
+      "id": "THEIA_T0_TRAIN_SUBSTRATE",
+      "kind": "gate",
+      "roadmap_item": "THEIA_T0_TRAIN_SUBSTRATE",
+      "era": "bounty",
+      "gene": null,
+      "catalog_symbol": null,
+      "graph_status": "BLOCKED_EXTERNAL",
+      "independent_state": "CONCEPT_ONLY",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph BLOCKED_EXTERNAL (not in 13-state vocab). Independent CONCEPT_ONLY for the trained-model ladder: catalog paths=() modules=(). The bounty ENGINE at tools/theia/ is a different artifact (CALLABLE CLI python -m tools.theia) and must not be used to inflate these gates. BLOCKED_AUTHORITY also applies: this auditor cannot train Theia.",
+      "code": [],
+      "call_sites": null,
+      "call_site_blocker": "Catalog paths empty. No implementing code for a trained Theia model. tools/theia is the bounty engine, not this gate.",
+      "test_verifier": "tools/theia/test_*.py exist for the engine (not re-run). They do not produce a trained student.",
+      "receipt": null,
+      "current_blocker": "Hawking Train T0 substrate is not a live campaign here (catalog software_blocker). tools/theia/ is the bounty ENGINE, not T0.",
+      "next_promotion_gate": "Do not train in this checkout. Wake is a live T0 teacher registry, not a graph status change.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Constitution: Theia is ONE generalist bounty model, not another civilization. Catalog era='bounty' is correct. Appendix O empty enum.",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "notes": [
+        "verified_absent.theia in the graph verdict=PRESENT (24 tools/theia paths). The field name 'verified_absent' is inverted."
+      ]
+    },
+    {
+      "id": "THEIA_MICRO",
+      "kind": "gate",
+      "roadmap_item": "THEIA_MICRO",
+      "era": "bounty",
+      "gene": null,
+      "catalog_symbol": null,
+      "graph_status": "BLOCKED_EXTERNAL",
+      "independent_state": "CONCEPT_ONLY",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph BLOCKED_EXTERNAL (not in 13-state vocab). Independent CONCEPT_ONLY for the trained-model ladder: catalog paths=() modules=(). The bounty ENGINE at tools/theia/ is a different artifact (CALLABLE CLI python -m tools.theia) and must not be used to inflate these gates. BLOCKED_AUTHORITY also applies: this auditor cannot train Theia.",
+      "code": [],
+      "call_sites": null,
+      "call_site_blocker": "Catalog paths empty. No implementing code for a trained Theia model. tools/theia is the bounty engine, not this gate.",
+      "test_verifier": "tools/theia/test_*.py exist for the engine (not re-run). They do not produce a trained student.",
+      "receipt": null,
+      "current_blocker": "needs a trained ~1B-3B student. Wake: THEIA_T0_TRAIN_SUBSTRATE=PASS.",
+      "next_promotion_gate": "Do not train in this checkout. Wake is a live T0 teacher registry, not a graph status change.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Constitution: Theia is ONE generalist bounty model, not another civilization. Catalog era='bounty' is correct. Appendix O empty enum.",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "notes": [
+        "verified_absent.theia in the graph verdict=PRESENT (24 tools/theia paths). The field name 'verified_absent' is inverted."
+      ]
+    },
+    {
+      "id": "THEIA_LAB",
+      "kind": "gate",
+      "roadmap_item": "THEIA_LAB",
+      "era": "bounty",
+      "gene": null,
+      "catalog_symbol": null,
+      "graph_status": "BLOCKED_EXTERNAL",
+      "independent_state": "CONCEPT_ONLY",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph BLOCKED_EXTERNAL (not in 13-state vocab). Independent CONCEPT_ONLY for the trained-model ladder: catalog paths=() modules=(). The bounty ENGINE at tools/theia/ is a different artifact (CALLABLE CLI python -m tools.theia) and must not be used to inflate these gates. BLOCKED_AUTHORITY also applies: this auditor cannot train Theia.",
+      "code": [],
+      "call_sites": null,
+      "call_site_blocker": "Catalog paths empty. No implementing code for a trained Theia model. tools/theia is the bounty engine, not this gate.",
+      "test_verifier": "tools/theia/test_*.py exist for the engine (not re-run). They do not produce a trained student.",
+      "receipt": null,
+      "current_blocker": "needs a trained ~7B-14B student.",
+      "next_promotion_gate": "Do not train in this checkout. Wake is a live T0 teacher registry, not a graph status change.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Constitution: Theia is ONE generalist bounty model, not another civilization. Catalog era='bounty' is correct. Appendix O empty enum.",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "notes": [
+        "verified_absent.theia in the graph verdict=PRESENT (24 tools/theia paths). The field name 'verified_absent' is inverted."
+      ]
+    },
+    {
+      "id": "THEIA_WORKER",
+      "kind": "gate",
+      "roadmap_item": "THEIA_WORKER",
+      "era": "bounty",
+      "gene": null,
+      "catalog_symbol": null,
+      "graph_status": "BLOCKED_EXTERNAL",
+      "independent_state": "CONCEPT_ONLY",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph BLOCKED_EXTERNAL (not in 13-state vocab). Independent CONCEPT_ONLY for the trained-model ladder: catalog paths=() modules=(). The bounty ENGINE at tools/theia/ is a different artifact (CALLABLE CLI python -m tools.theia) and must not be used to inflate these gates. BLOCKED_AUTHORITY also applies: this auditor cannot train Theia.",
+      "code": [],
+      "call_sites": null,
+      "call_site_blocker": "Catalog paths empty. No implementing code for a trained Theia model. tools/theia is the bounty engine, not this gate.",
+      "test_verifier": "tools/theia/test_*.py exist for the engine (not re-run). They do not produce a trained student.",
+      "receipt": null,
+      "current_blocker": "needs a trained ~20B-40B student.",
+      "next_promotion_gate": "Do not train in this checkout. Wake is a live T0 teacher registry, not a graph status change.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Constitution: Theia is ONE generalist bounty model, not another civilization. Catalog era='bounty' is correct. Appendix O empty enum.",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "notes": [
+        "verified_absent.theia in the graph verdict=PRESENT (24 tools/theia paths). The field name 'verified_absent' is inverted."
+      ]
+    },
+    {
+      "id": "THEIA_RESEARCH",
+      "kind": "gate",
+      "roadmap_item": "THEIA_RESEARCH",
+      "era": "bounty",
+      "gene": null,
+      "catalog_symbol": null,
+      "graph_status": "BLOCKED_EXTERNAL",
+      "independent_state": "CONCEPT_ONLY",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph BLOCKED_EXTERNAL (not in 13-state vocab). Independent CONCEPT_ONLY for the trained-model ladder: catalog paths=() modules=(). The bounty ENGINE at tools/theia/ is a different artifact (CALLABLE CLI python -m tools.theia) and must not be used to inflate these gates. BLOCKED_AUTHORITY also applies: this auditor cannot train Theia.",
+      "code": [],
+      "call_sites": null,
+      "call_site_blocker": "Catalog paths empty. No implementing code for a trained Theia model. tools/theia is the bounty engine, not this gate.",
+      "test_verifier": "tools/theia/test_*.py exist for the engine (not re-run). They do not produce a trained student.",
+      "receipt": null,
+      "current_blocker": "needs a trained ~30B-100B+ flagship.",
+      "next_promotion_gate": "Do not train in this checkout. Wake is a live T0 teacher registry, not a graph status change.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Constitution: Theia is ONE generalist bounty model, not another civilization. Catalog era='bounty' is correct. Appendix O empty enum.",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "notes": [
+        "verified_absent.theia in the graph verdict=PRESENT (24 tools/theia paths). The field name 'verified_absent' is inverted."
+      ]
+    },
+    {
+      "id": "THEIA_GRAVITY_EXECUTABLE",
+      "kind": "gate",
+      "roadmap_item": "THEIA_GRAVITY_EXECUTABLE",
+      "era": "bounty",
+      "gene": null,
+      "catalog_symbol": null,
+      "graph_status": "BLOCKED_EXTERNAL",
+      "independent_state": "CONCEPT_ONLY",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph BLOCKED_EXTERNAL (not in 13-state vocab). Independent CONCEPT_ONLY for the trained-model ladder: catalog paths=() modules=(). The bounty ENGINE at tools/theia/ is a different artifact (CALLABLE CLI python -m tools.theia) and must not be used to inflate these gates. BLOCKED_AUTHORITY also applies: this auditor cannot train Theia.",
+      "code": [],
+      "call_sites": null,
+      "call_site_blocker": "Catalog paths empty. No implementing code for a trained Theia model. tools/theia is the bounty engine, not this gate.",
+      "test_verifier": "tools/theia/test_*.py exist for the engine (not re-run). They do not produce a trained student.",
+      "receipt": null,
+      "current_blocker": "needs a frozen Theia capability baseline (training-before-Gravity).",
+      "next_promotion_gate": "Do not train in this checkout. Wake is a live T0 teacher registry, not a graph status change.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Constitution: Theia is ONE generalist bounty model, not another civilization. Catalog era='bounty' is correct. Appendix O empty enum.",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "notes": [
+        "verified_absent.theia in the graph verdict=PRESENT (24 tools/theia paths). The field name 'verified_absent' is inverted."
+      ]
+    },
+    {
+      "id": "THEIA_BOUNTY_GENERALIST_QUALIFIED",
+      "kind": "gate",
+      "roadmap_item": "THEIA_BOUNTY_GENERALIST_QUALIFIED",
+      "era": "bounty",
+      "gene": null,
+      "catalog_symbol": null,
+      "graph_status": "BLOCKED_EXTERNAL",
+      "independent_state": "CONCEPT_ONLY",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph BLOCKED_EXTERNAL (not in 13-state vocab). Independent CONCEPT_ONLY for the trained-model ladder: catalog paths=() modules=(). The bounty ENGINE at tools/theia/ is a different artifact (CALLABLE CLI python -m tools.theia) and must not be used to inflate these gates. BLOCKED_AUTHORITY also applies: this auditor cannot train Theia.",
+      "code": [
+        "tools/theia/engine.py",
+        "tools/theia/__main__.py"
+      ],
+      "call_sites": [
+        {
+          "file": "tools/theia/__main__.py",
+          "line": 1,
+          "symbol": "tools.theia.engine.main",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)",
+          "note": "engine CLI; not a trained generalist"
+        }
+      ],
+      "call_site_blocker": null,
+      "test_verifier": "tools/theia/test_*.py exist for the engine (not re-run). They do not produce a trained student.",
+      "receipt": null,
+      "current_blocker": "bounty ENGINE exists at tools/theia/ (24 git paths, python -m tools.theia \u2192 engine.main); no qualified generalist MODEL.",
+      "next_promotion_gate": "Do not train in this checkout. Wake is a live T0 teacher registry, not a graph status change.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Constitution: Theia is ONE generalist bounty model, not another civilization. Catalog era='bounty' is correct. Appendix O empty enum.",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "notes": [
+        "verified_absent.theia in the graph verdict=PRESENT (24 tools/theia paths). The field name 'verified_absent' is inverted."
+      ]
+    },
+    {
+      "id": "ODYSSEY_I_DISCOVERY",
+      "kind": "gate",
+      "roadmap_item": "ODYSSEY_I_DISCOVERY",
+      "era": "I",
+      "gene": "I-E_ODYSSEY_I",
+      "catalog_symbol": "tools.odyssey_ctl.pick_acquire_candidate",
+      "graph_status": "BUILT",
+      "independent_state": "CALLABLE",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "REFUTE GRAPH BUILT. pick_acquire_candidate is Called from hcli/acquisition.py:172 (real). Acceptance ACCEPTED STATIC by python3 -c import + pick_acquire_candidate(state, mutate=False) plus a safetensors-header census. That is not Odyssey I 'first real school of model/device facts'. Evidence tier STATIC. mutate=False so the live Odyssey state was not written.",
+      "code": [
+        "tools/odyssey_ctl.py",
+        "tools/odyssey_census.py",
+        "hcli/odyssey.py",
+        "hcli/acquisition.py"
+      ],
+      "call_sites": [
+        {
+          "file": "hcli/acquisition.py",
+          "line": 172,
+          "symbol": "pick_acquire_candidate",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        }
+      ],
+      "call_site_blocker": null,
+      "test_verifier": "python3 -c pick_acquire_candidate(state, mutate=False) (ACCEPTED STATIC)",
+      "receipt": "receipts/acceptance/ODYSSEY_I_DISCOVERY.json",
+      "current_blocker": "STATIC picker+census is not civilization completion. Gene I-E promotion gate (fresh process demonstrates the school) is unmet.",
+      "next_promotion_gate": "A discovery receipt that names a new law/scar/genome from a specimen, not merely that the picker returns.",
+      "roadmap_wording_accurate": false,
+      "roadmap_wording_note": "Gene I-E mission text is still the bar. Treating this gate as BUILT/PASS would be STALE_ROADMAP_TEXT relative to 'school of model/device facts'. Appendix O itself does not claim PASS.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": [
+        "HIGH-VALUE REFUTATION of graph BUILT."
+      ]
+    },
+    {
+      "id": "ODYSSEY_II_TRANSFER",
+      "kind": "gate",
+      "roadmap_item": "ODYSSEY_II_TRANSFER",
+      "era": "II",
+      "gene": "II-A_ODYSSEY_II",
+      "catalog_symbol": "tools.future.qualification_pipeline.load_qualification_queue",
+      "graph_status": "WIRED",
+      "independent_state": "CALLABLE",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph WIRED. Independent CALLABLE. Era II. Acceptance BLOCKED STATIC. Era I is sovereign \u2014 this cannot complete civilization.",
+      "code": [
+        "tools/future/qualification_pipeline.py"
+      ],
+      "call_sites": [
+        {
+          "file": "tools/future/consolidated_run.py",
+          "line": 891,
+          "symbol": "load_qualification_queue",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        },
+        {
+          "file": "tools/future/p6_projection.py",
+          "line": 1537,
+          "symbol": "load_qualification_queue",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        },
+        {
+          "file": "tools/future/protected_window.py",
+          "line": 365,
+          "symbol": "load_qualification_queue",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        }
+      ],
+      "call_site_blocker": null,
+      "test_verifier": "python3 -c load_qualification_queue (receipt BLOCKED STATIC)",
+      "receipt": "receipts/acceptance/ODYSSEY_II_TRANSFER.json",
+      "current_blocker": "Acceptance BLOCKED. Era II. Not a measured reduction in experiments on an unseen model.",
+      "next_promotion_gate": "A transfer receipt with a numeric saved-experiment accounting on an unseen specimen.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum. Section 6 Odyssey II question is unmet.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "ODYSSEY_III_ADVERSARIAL_META_SCIENCE",
+      "kind": "gate",
+      "roadmap_item": "ODYSSEY_III_ADVERSARIAL_META_SCIENCE",
+      "era": "III",
+      "gene": "III-A_ODYSSEY_III",
+      "catalog_symbol": "tools.future.autonomy_scars.scars",
+      "graph_status": "WIRED",
+      "independent_state": "CALLABLE",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph WIRED. Independent CALLABLE. Catalog symbol scars() is a function. Era III. Acceptance BLOCKED. Not adversarial meta-science as a school.",
+      "code": [
+        "tools/future/repro_science.py",
+        "tools/future/autonomy_scars.py"
+      ],
+      "call_sites": [
+        {
+          "file": "tools/future/autonomy_scars.py",
+          "line": 1131,
+          "symbol": "scars",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)",
+          "note": "same-file CLI/report"
+        },
+        {
+          "file": "tools/future/campaign_scars.py",
+          "line": 469,
+          "symbol": "scars",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        }
+      ],
+      "call_site_blocker": null,
+      "test_verifier": "receipts/acceptance/ODYSSEY_III_ADVERSARIAL_META_SCIENCE.json (BLOCKED FUNCTIONAL_SIM)",
+      "receipt": "receipts/acceptance/ODYSSEY_III_ADVERSARIAL_META_SCIENCE.json",
+      "current_blocker": "Acceptance BLOCKED. Era III. A scars() function is not Odyssey III.",
+      "next_promotion_gate": "A falsified law with a durable scar and a corrected prior \u2014 after Odyssey I/II actually transfer.",
+      "roadmap_wording_accurate": true,
+      "roadmap_wording_note": "Appendix O empty enum. Section 6 Odyssey III question is unmet.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    }
+  ],
+  "genes": [
+    {
+      "id": "I-A_AGENTOS_HCLI",
+      "kind": "gene",
+      "roadmap_item": "I-A_AGENTOS_HCLI",
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "catalog_symbol": null,
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "CALLABLE",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph SCAFFOLDED because catalog has no gene-level symbol and looks for a Call of hcli.engine. Independent: hcli/__main__.py Calls cli.main; cli.main Calls delegate.cli_main, agentos_cli.main, resident.main, App(). The control plane is the product. ROADMAP_STATE claims ADVERSARIALLY_VERIFIED \u2014 that is a larger inflation and is also rejected. Gene promotion gate (fresh process demonstrates the whole phenotype) is unmet (retry BLOCKED, circuit-breaker SCAFFOLDED, several VMCP organs SCAFFOLDED). Strongest honest gene-level state: CALLABLE, with several child gates TESTED/END_TO_END.",
+      "code": [
+        "hcli/__main__.py",
+        "hcli/cli.py",
+        "hcli/scheduler.py",
+        "hcli/agentos/resident.py",
+        "hcli/engine.py"
+      ],
+      "call_sites": [
+        {
+          "file": "hcli/__main__.py",
+          "line": 5,
+          "symbol": "main",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)",
+          "note": "python -m hcli"
+        },
+        {
+          "file": "hcli/cli.py",
+          "line": 322,
+          "symbol": "cli_main",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        },
+        {
+          "file": "hcli/cli.py",
+          "line": 338,
+          "symbol": "agentos_main",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        },
+        {
+          "file": "hcli/cli.py",
+          "line": 344,
+          "symbol": "resident_main",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)",
+          "note": "hcli resident | hcli daemon"
+        },
+        {
+          "file": "hcli/cli.py",
+          "line": 350,
+          "symbol": "App",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        }
+      ],
+      "call_site_blocker": null,
+      "test_verifier": "Many hcli/test_*.py and tools/acceptance/agentos (FUNCTIONAL_SIM). Not re-run as a gene.",
+      "receipt": "receipts/headless/HCLI_AGENTOS_HANDOFF.json (citation; not this-lane run)",
+      "current_blocker": "Gene card in Appendix A is identical boilerplate (325 copies of the same Action/Receipt sentences). Promotion gate unmet. Live daemon process inspection blocked (ps not permitted).",
+      "next_promotion_gate": "Fill gene-card AUTHORITY/VERIFIER with real artifacts; get AGENTOS_RETRY_CLASSIFIED accepted; observe the launchd resident.",
+      "roadmap_wording_accurate": false,
+      "roadmap_wording_note": "STALE_ROADMAP_TEXT: Appendix A I-A gene card repeats the same Action/Receipt template as every other gene. Section 5 I-A mission text is still accurate as a mission, not as completion.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "I-B_DOCTOR",
+      "kind": "gene",
+      "roadmap_item": "I-B_DOCTOR",
+      "era": "I",
+      "gene": "I-B_DOCTOR",
+      "catalog_symbol": null,
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "SCAFFOLDED",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph SCAFFOLDED (agree as capability). ROADMAP_STATE PHYSICALLY_RUNNING is a disagreement with disk truth: hcli/doctor/__init__.py exists; tools/future/odyssey_launch.py imports hcli.doctor (import is not a Call). No non-test Call of a doctor implementing symbol isolated this lane.",
+      "code": [
+        "hcli/doctor/__init__.py",
+        "tools/doctor_seal.py",
+        "tools/gravity_doctor_gate.py",
+        "tools/doctor/engine.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "Import of hcli.doctor is not a Call. Catalog gene has no symbol.",
+      "test_verifier": "No gene-level acceptance receipt.",
+      "receipt": null,
+      "current_blocker": "No production Call of a named doctor symbol. ROADMAP_STATE PHYSICALLY_RUNNING is inflation.",
+      "next_promotion_gate": "Call a doctor plan/query function from hcli product code and receipt it.",
+      "roadmap_wording_accurate": false,
+      "roadmap_wording_note": "Appendix A I-B gene card is boilerplate. Section 5 mission text is still the bar.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": [
+        "Disagreement is with ROADMAP_STATE, not with CAPABILITY_GRAPH status (both SCAFFOLDED). disagrees_with_graph=True because ROADMAP_STATE is the committed civilization graph's sibling and claims PHYSICALLY_RUNNING."
+      ]
+    },
+    {
+      "id": "I-C_GRAVITY_NOETIC",
+      "kind": "gene",
+      "roadmap_item": "I-C_GRAVITY_NOETIC",
+      "era": "I",
+      "gene": "I-C_GRAVITY_NOETIC",
+      "catalog_symbol": null,
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "CALLABLE",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph SCAFFOLDED (looked for Call of tools.gravity_ir as a module symbol). Independent: gravity_ir is imported and used across tools/gravity_*.py; FLASH_FIRST_GRAVITY_ORGAN is TESTED FUNCTIONAL_SIM; FLASH_FULL_NOETIC_EXECUTABLE SCAFFOLDED; EBPW 3.14 \u2270 1; TPS unmet. Gene is CALLABLE at IR grain, not a Noetic executable. ROADMAP_STATE ADVERSARIALLY_VERIFIED is rejected.",
+      "code": [
+        "tools/gravity_ir.py",
+        "tools/odyssey/noetic_compiler.py",
+        "tools/future/complete_ebpw.py"
+      ],
+      "call_sites": [
+        {
+          "file": "tools/gravity_container.py",
+          "line": 34,
+          "symbol": "Program",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)",
+          "note": "from gravity_ir import Program"
+        },
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 761,
+          "symbol": "run_flash_science_gate",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        }
+      ],
+      "call_site_blocker": null,
+      "test_verifier": "FLASH_* acceptance receipts as child gates.",
+      "receipt": "receipts/future/COMPLETE_EBPW.json",
+      "current_blocker": "No full Noetic executable. complete_ebpw=3.139. Native NF kernel dispatch blocked in acceptance.",
+      "next_promotion_gate": "FLASH_FULL_NOETIC_EXECUTABLE then EBPW<=1 on the same executable.",
+      "roadmap_wording_accurate": false,
+      "roadmap_wording_note": "Appendix A gene card boilerplate. Section 5 mission 'smallest capability-preserving executable function' is unmet.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "I-D_ACCELERATOR",
+      "kind": "gene",
+      "roadmap_item": "I-D_ACCELERATOR",
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "catalog_symbol": null,
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "CALLABLE",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph SCAFFOLDED. Independent CALLABLE: FPGA_HWIR HwirGraph has non-test Calls; QWEN27 identity TESTED STATIC; U50 ladder BLOCKED_HARDWARE. ROADMAP_STATE ADVERSARIALLY_VERIFIED is rejected. PhysicalGraph module exists (disk_truth_modules).",
+      "code": [
+        "hcli/physical_graph.py",
+        "tools/accelerator/machine_genome.py",
+        "hcli/agentos/fpga_preboard.py",
+        "tools/future/hwir.py"
+      ],
+      "call_sites": [
+        {
+          "file": "tools/accelerator/backend_contract.py",
+          "line": 1094,
+          "symbol": "HwirGraph",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        },
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 1019,
+          "symbol": "run_fpga_preboard",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        }
+      ],
+      "call_site_blocker": null,
+      "test_verifier": "FPGA partition sim tests; QWEN27 identity acceptance STATIC.",
+      "receipt": null,
+      "current_blocker": "U50 absent. Protected Qwen27 baseline not run. FPGA school is simulation + IR.",
+      "next_promotion_gate": "QWEN27_PROTECTED_BASELINE when GPU is free; FPGA_HWIR acceptance of pluggable lowering.",
+      "roadmap_wording_accurate": false,
+      "roadmap_wording_note": "Appendix A boilerplate. Section 5 mission is unmet as a civilization. FPGA-inside-Accelerator constitution holds.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "I-E_ODYSSEY_I",
+      "kind": "gene",
+      "roadmap_item": "I-E_ODYSSEY_I",
+      "era": "I",
+      "gene": "I-E_ODYSSEY_I",
+      "catalog_symbol": null,
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "CALLABLE",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph SCAFFOLDED at gene grain while child ODYSSEY_I_DISCOVERY is BUILT \u2014 internal graph inconsistency. Independent: pick_acquire_candidate Called from hcli/acquisition.py. Gene promotion unmet. ROADMAP_STATE ADVERSARIALLY_VERIFIED rejected.",
+      "code": [
+        "tools/odyssey_ctl.py",
+        "tools/odyssey_census.py",
+        "tools/odyssey/modellake_watch.py",
+        "hcli/acquisition.py"
+      ],
+      "call_sites": [
+        {
+          "file": "hcli/acquisition.py",
+          "line": 172,
+          "symbol": "pick_acquire_candidate",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        }
+      ],
+      "call_site_blocker": null,
+      "test_verifier": "ODYSSEY_I_DISCOVERY acceptance STATIC.",
+      "receipt": "receipts/acceptance/ODYSSEY_I_DISCOVERY.json",
+      "current_blocker": "Picker+census is not a school of laws. ModelLake hash verification BLOCKED.",
+      "next_promotion_gate": "A law/scar/genome receipt from a specimen, plus MODELLAKE_HASH_VERIFIED.",
+      "roadmap_wording_accurate": false,
+      "roadmap_wording_note": "Appendix A boilerplate. Section 5/6 Odyssey I question 'WHAT IS TRUE?' is not answered by a picker function.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "II-A_ODYSSEY_II",
+      "kind": "gene",
+      "roadmap_item": "II-A_ODYSSEY_II",
+      "era": "II",
+      "gene": "II-A_ODYSSEY_II",
+      "catalog_symbol": null,
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "CALLABLE",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph SCAFFOLDED; child ODYSSEY_II_TRANSFER is WIRED. Independent CALLABLE via load_qualification_queue. Era II, not promoted.",
+      "code": [
+        "tools/future/qualification_pipeline.py"
+      ],
+      "call_sites": [
+        {
+          "file": "tools/future/consolidated_run.py",
+          "line": 891,
+          "symbol": "load_qualification_queue",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        }
+      ],
+      "call_site_blocker": null,
+      "test_verifier": null,
+      "receipt": "receipts/acceptance/ODYSSEY_II_TRANSFER.json",
+      "current_blocker": "Era II. Acceptance BLOCKED. Era I sovereign.",
+      "next_promotion_gate": "Numeric transfer saving on an unseen specimen.",
+      "roadmap_wording_accurate": false,
+      "roadmap_wording_note": "Appendix A boilerplate. ROADMAP_STATE NOT_STARTED understates CALLABLE software.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "II-B_NOETIC_COMPILER_V1",
+      "kind": "gene",
+      "roadmap_item": "II-B_NOETIC_COMPILER_V1",
+      "era": "II",
+      "gene": "II-B_NOETIC_COMPILER_V1",
+      "catalog_symbol": null,
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "SCAFFOLDED",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "tools/odyssey/noetic_compiler.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "Definition exists (disk_truth_modules). FLASH_FULL_NOETIC_EXECUTABLE has no catalog symbol and acceptance BLOCKED. No non-test Call of a noetic_compiler entry isolated as product wiring.",
+      "test_verifier": "tools/odyssey tests may exist.",
+      "receipt": "receipts/acceptance/FLASH_FULL_NOETIC_EXECUTABLE.json",
+      "current_blocker": "Era II. Noetic compiler is not a v1 product.",
+      "next_promotion_gate": "A round-trip Call of the compiler that emits a runnable executable.",
+      "roadmap_wording_accurate": false,
+      "roadmap_wording_note": "Appendix A boilerplate.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "II-C_PHYSICAL_GRAPH_COMPILER",
+      "kind": "gene",
+      "roadmap_item": "II-C_PHYSICAL_GRAPH_COMPILER",
+      "era": "II",
+      "gene": "II-C_PHYSICAL_GRAPH_COMPILER",
+      "catalog_symbol": null,
+      "graph_status": "WIRED",
+      "independent_state": "CALLABLE",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph WIRED via subprocess of tools/odyssey/physical_graph_compiler.py from tools/future/nr_nx_generic.py:1981. Independent agrees CALLABLE (exact CLI path). Not accepted. ROADMAP_STATE NOT_STARTED understates this. 13-state has no WIRED.",
+      "code": [
+        "tools/odyssey/physical_graph_compiler.py",
+        "hcli/physical_graph.py"
+      ],
+      "call_sites": [
+        {
+          "file": "tools/future/nr_nx_generic.py",
+          "line": 1981,
+          "symbol": "tools/odyssey/physical_graph_compiler.py",
+          "kind": "subprocess",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)",
+          "note": "exact path; timeout 60s; may fail closed on missing capture \u2014 still a Call"
+        }
+      ],
+      "call_site_blocker": null,
+      "test_verifier": "tools/odyssey/test_physical_graph_compiler_heterogeneous.py",
+      "receipt": null,
+      "current_blocker": "Subprocess is a probe, not a heterogeneous executable. main() still MoE-hardcoded per nr_nx_generic comments.",
+      "next_promotion_gate": "organ_graph on a dense specimen without MoE tensors, accepted.",
+      "roadmap_wording_accurate": false,
+      "roadmap_wording_note": "Appendix A boilerplate. Gene lists transport edges/placement; verified_absent.transport/placement verdict=PRESENT for tools/accelerator/semantic_transport.py and placement.py \u2014 those are not this compiler.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "II-D_STATE_TOKENIZER_DECODING",
+      "kind": "gene",
+      "roadmap_item": "II-D_STATE_TOKENIZER_DECODING",
+      "era": "II",
+      "gene": "II-D_STATE_TOKENIZER_DECODING",
+      "catalog_symbol": null,
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "SCAFFOLDED",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "tools/kv_residency.py",
+        "hcli/agentos/flash_executable.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "No non-test Call of kv_residency isolated. Flash executable not full.",
+      "test_verifier": null,
+      "receipt": null,
+      "current_blocker": "No non-test Call of kv_residency isolated. Flash executable not full.",
+      "next_promotion_gate": "Call kv_residency from the decode path.",
+      "roadmap_wording_accurate": false,
+      "roadmap_wording_note": "Appendix A gene card is boilerplate. Section 5 mission text is the remaining bar.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "II-E_GREEN_MACHINE",
+      "kind": "gene",
+      "roadmap_item": "II-E_GREEN_MACHINE",
+      "era": "II",
+      "gene": "II-E_GREEN_MACHINE",
+      "catalog_symbol": null,
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "SCAFFOLDED",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "tools/future/green_machine.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "Power/energy is BLOCKED_AUTHORITY without sudo powermetrics. Definition exists.",
+      "test_verifier": null,
+      "receipt": null,
+      "current_blocker": "Power/energy is BLOCKED_AUTHORITY without sudo powermetrics. Definition exists.",
+      "next_promotion_gate": "A J/token receipt from a measured run; do not Goodhart.",
+      "roadmap_wording_accurate": false,
+      "roadmap_wording_note": "Appendix A gene card is boilerplate. Section 5 mission text is the remaining bar.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "III-B_LEARNED_PHYSICAL_COMPILER",
+      "kind": "gene",
+      "roadmap_item": "III-B_LEARNED_PHYSICAL_COMPILER",
+      "era": "III",
+      "gene": "III-B_LEARNED_PHYSICAL_COMPILER",
+      "catalog_symbol": null,
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "SCAFFOLDED",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "tools/future/lpc_dataset.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "Era III. Definition exists. No product Call.",
+      "test_verifier": null,
+      "receipt": null,
+      "current_blocker": "Era III. Definition exists. No product Call.",
+      "next_promotion_gate": "Era I completion first.",
+      "roadmap_wording_accurate": false,
+      "roadmap_wording_note": "Appendix A gene card is boilerplate. Section 5 mission text is the remaining bar.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "III-C_RESIDENT_OPTIMIZER",
+      "kind": "gene",
+      "roadmap_item": "III-C_RESIDENT_OPTIMIZER",
+      "era": "III",
+      "gene": "III-C_RESIDENT_OPTIMIZER",
+      "catalog_symbol": null,
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "SCAFFOLDED",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "tools/future/resident_optimizer.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "Definition exists. HCLI_SELF_OPTIMIZATION_BOOTSTRAP CALLABLE but acceptance BLOCKED.",
+      "test_verifier": null,
+      "receipt": null,
+      "current_blocker": "Definition exists. HCLI_SELF_OPTIMIZATION_BOOTSTRAP CALLABLE but acceptance BLOCKED.",
+      "next_promotion_gate": "Disposable autonomy run that does not kill the live daemon.",
+      "roadmap_wording_accurate": false,
+      "roadmap_wording_note": "Appendix A gene card is boilerplate. Section 5 mission text is the remaining bar.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "III-D_BEYOND_DENSE_REPRESENTATION",
+      "kind": "gene",
+      "roadmap_item": "III-D_BEYOND_DENSE_REPRESENTATION",
+      "era": "III",
+      "gene": "III-D_BEYOND_DENSE_REPRESENTATION",
+      "catalog_symbol": null,
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "SCAFFOLDED",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "tools/future/tabula.py",
+        "tools/future/abliteration.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "tabula.evaluate is Called from behavior_lab (Call, not import). That is scoring, not beyond-dense organs.",
+      "test_verifier": null,
+      "receipt": null,
+      "current_blocker": "tabula.evaluate is Called from behavior_lab (Call, not import). That is scoring, not beyond-dense organs.",
+      "next_promotion_gate": "A non-dense organ with a verifier.",
+      "roadmap_wording_accurate": false,
+      "roadmap_wording_note": "Appendix A gene card is boilerplate. Section 5 mission text is the remaining bar.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "III-E_AUTONOMOUS_REPRODUCIBLE_SCIENCE",
+      "kind": "gene",
+      "roadmap_item": "III-E_AUTONOMOUS_REPRODUCIBLE_SCIENCE",
+      "era": "III",
+      "gene": "III-E_AUTONOMOUS_REPRODUCIBLE_SCIENCE",
+      "catalog_symbol": null,
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "SCAFFOLDED",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "tools/future/repro_science.py",
+        "tools/future/scar_reevaluator.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "Definition exists. scars() is Odyssey III's symbol, not this gene's.",
+      "test_verifier": null,
+      "receipt": null,
+      "current_blocker": "Definition exists. scars() is Odyssey III's symbol, not this gene's.",
+      "next_promotion_gate": "Provenance graph that can reject a false result.",
+      "roadmap_wording_accurate": false,
+      "roadmap_wording_note": "Appendix A gene card is boilerplate. Section 5 mission text is the remaining bar.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "IV-A_FUSION",
+      "kind": "gene",
+      "roadmap_item": "IV-A_FUSION",
+      "era": "IV",
+      "gene": "IV-A_FUSION",
+      "catalog_symbol": null,
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "SCAFFOLDED",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "tools/accelerator/fusion_planner.py",
+        "tools/future/fusion_sim.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "Software exists. First heterogeneous executable BLOCKED_HARDWARE (HMF dep).",
+      "test_verifier": null,
+      "receipt": null,
+      "current_blocker": "Software exists. First heterogeneous executable BLOCKED_HARDWARE (HMF dep).",
+      "next_promotion_gate": "Do not wait on HMF for Apple+FPGA fusion if constitution is FPGA-inside-Fusion.",
+      "roadmap_wording_accurate": false,
+      "roadmap_wording_note": "Appendix A gene card is boilerplate. Section 5 mission text is the remaining bar.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "IV-E_FUSION_BRIDGE_TOPOLOGY_ASCENSION",
+      "kind": "gene",
+      "roadmap_item": "IV-E_FUSION_BRIDGE_TOPOLOGY_ASCENSION",
+      "era": "IV",
+      "gene": "IV-E_FUSION_BRIDGE_TOPOLOGY_ASCENSION",
+      "catalog_symbol": null,
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "SCAFFOLDED",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "tools/accelerator/device_ascension.py",
+        "tools/future/device_ascension_pipeline.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "Definition exists. No product Call isolated.",
+      "test_verifier": null,
+      "receipt": null,
+      "current_blocker": "Definition exists. No product Call isolated.",
+      "next_promotion_gate": "Only if evidence justifies dedicated fabric \u2014 constitution.",
+      "roadmap_wording_accurate": false,
+      "roadmap_wording_note": "Appendix A gene card is boilerplate. Section 5 mission text is the remaining bar.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "V-A_PRODUCT_SOVEREIGNTY",
+      "kind": "gene",
+      "roadmap_item": "V-A_PRODUCT_SOVEREIGNTY",
+      "era": "V",
+      "gene": "V-A_PRODUCT_SOVEREIGNTY",
+      "catalog_symbol": null,
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "SCAFFOLDED",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "tools/future/devplatform.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "Era V. Definition exists. hcli install-shims is a related surface.",
+      "test_verifier": null,
+      "receipt": null,
+      "current_blocker": "Era V. Definition exists. hcli install-shims is a related surface.",
+      "next_promotion_gate": "Installability receipt for a fresh machine.",
+      "roadmap_wording_accurate": false,
+      "roadmap_wording_note": "Appendix A gene card is boilerplate. Section 5 mission text is the remaining bar.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "V-B_DEVELOPER_PLATFORM",
+      "kind": "gene",
+      "roadmap_item": "V-B_DEVELOPER_PLATFORM",
+      "era": "V",
+      "gene": "V-B_DEVELOPER_PLATFORM",
+      "catalog_symbol": null,
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "SCAFFOLDED",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "tools/future/devplatform.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "Same module as V-A. Shared module cannot uniquely prove two genes.",
+      "test_verifier": null,
+      "receipt": null,
+      "current_blocker": "Same module as V-A. Shared module cannot uniquely prove two genes.",
+      "next_promotion_gate": "Distinct SDK/API Call, not the same file as V-A.",
+      "roadmap_wording_accurate": false,
+      "roadmap_wording_note": "Appendix A gene card is boilerplate. Section 5 mission text is the remaining bar.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "V-C_CONTINUOUS_VERIFIED_IMPROVEMENT",
+      "kind": "gene",
+      "roadmap_item": "V-C_CONTINUOUS_VERIFIED_IMPROVEMENT",
+      "era": "V",
+      "gene": "V-C_CONTINUOUS_VERIFIED_IMPROVEMENT",
+      "catalog_symbol": null,
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "SCAFFOLDED",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "tools/future/qualification_pipeline.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "Shared with II-A. Shared module cannot uniquely prove two genes.",
+      "test_verifier": null,
+      "receipt": null,
+      "current_blocker": "Shared with II-A. Shared module cannot uniquely prove two genes.",
+      "next_promotion_gate": "A rollout/rollback receipt.",
+      "roadmap_wording_accurate": false,
+      "roadmap_wording_note": "Appendix A gene card is boilerplate. Section 5 mission text is the remaining bar.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "V-D_DOMINANCE_SCOREBOARD",
+      "kind": "gene",
+      "roadmap_item": "V-D_DOMINANCE_SCOREBOARD",
+      "era": "V",
+      "gene": "V-D_DOMINANCE_SCOREBOARD",
+      "catalog_symbol": null,
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "SCAFFOLDED",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "tools/odyssey/pareto_archive.py",
+        "tools/future/tournament.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "Definition exists (disk_truth_modules pareto_archive).",
+      "test_verifier": null,
+      "receipt": null,
+      "current_blocker": "Definition exists (disk_truth_modules pareto_archive).",
+      "next_promotion_gate": "A useful-work scoreboard receipt, not marketing TPS.",
+      "roadmap_wording_accurate": false,
+      "roadmap_wording_note": "Appendix A gene card is boilerplate. Section 5 mission text is the remaining bar.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "III-A_ODYSSEY_III",
+      "kind": "gene",
+      "roadmap_item": "III-A_ODYSSEY_III",
+      "era": "III",
+      "gene": "III-A_ODYSSEY_III",
+      "catalog_symbol": null,
+      "graph_status": "SCAFFOLDED",
+      "independent_state": "CALLABLE",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph SCAFFOLDED; child ODYSSEY_III_ADVERSARIAL_META_SCIENCE is WIRED via scars(). Independent CALLABLE at the scars() grain. Not Odyssey III as a school.",
+      "code": [
+        "tools/future/repro_science.py",
+        "tools/future/autonomy_scars.py"
+      ],
+      "call_sites": [
+        {
+          "file": "tools/future/campaign_scars.py",
+          "line": 469,
+          "symbol": "scars",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "verified_by": "git grep + git show HEAD + AST Call (independent of CAPABILITY_GRAPH)"
+        }
+      ],
+      "call_site_blocker": null,
+      "test_verifier": null,
+      "receipt": "receipts/acceptance/ODYSSEY_III_ADVERSARIAL_META_SCIENCE.json",
+      "current_blocker": "Era III. Acceptance BLOCKED. Era I sovereign.",
+      "next_promotion_gate": "A falsified law after Odyssey I/II actually work.",
+      "roadmap_wording_accurate": false,
+      "roadmap_wording_note": "Appendix A boilerplate.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "IV-B_HMF_HGVAS",
+      "kind": "gene",
+      "roadmap_item": "IV-B_HMF_HGVAS",
+      "era": "IV",
+      "gene": "IV-B_HMF_HGVAS",
+      "catalog_symbol": null,
+      "graph_status": "BLOCKED_HARDWARE",
+      "independent_state": "BLOCKED_HARDWARE",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "tools/accelerator/hmf.py",
+        "tools/future/hmf_objects.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "HMF_PRESENT=false (inventory this lane).",
+      "test_verifier": null,
+      "receipt": "receipts/acceptance/HMF_DEVICE_VISIBLE_TRUST.json",
+      "current_blocker": "No HMF/HGVAS/CXL appliance. Software object model is not the device.",
+      "next_promotion_gate": "wake_condition HMF_PRESENT.",
+      "roadmap_wording_accurate": false,
+      "roadmap_wording_note": "Appendix A boilerplate. Mission 'without claiming false hardware coherence' is the live constraint.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "IV-C_DGX_SPARK",
+      "kind": "gene",
+      "roadmap_item": "IV-C_DGX_SPARK",
+      "era": "IV",
+      "gene": "IV-C_DGX_SPARK",
+      "catalog_symbol": null,
+      "graph_status": "BLOCKED_HARDWARE",
+      "independent_state": "BLOCKED_HARDWARE",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [],
+      "call_sites": null,
+      "call_site_blocker": "Catalog paths empty. nvidia-smi not present. No DGX.",
+      "test_verifier": null,
+      "receipt": null,
+      "current_blocker": "DGX_PRESENT=false. CUDA hardware HARDWARE_BLOCKED per ROADMAP_STATE resident policy.",
+      "next_promotion_gate": "wake_condition DGX_PRESENT. Port CUDA architecture to Apple Silicon is the Era I path.",
+      "roadmap_wording_accurate": false,
+      "roadmap_wording_note": "Appendix A boilerplate. Empty code_paths = CONCEPT_ONLY software + BLOCKED_HARDWARE device.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "IV-D_EGPU",
+      "kind": "gene",
+      "roadmap_item": "IV-D_EGPU",
+      "era": "IV",
+      "gene": "IV-D_EGPU",
+      "catalog_symbol": null,
+      "graph_status": "BLOCKED_HARDWARE",
+      "independent_state": "BLOCKED_HARDWARE",
+      "disagrees_with_graph": false,
+      "disagreement_reason": null,
+      "code": [
+        "tools/accelerator/fusion_planner.py"
+      ],
+      "call_sites": null,
+      "call_site_blocker": "EGPU_PRESENT=false (Thunderbolt/displays inventory this lane). fusion_planner.py is shared with IV-A.",
+      "test_verifier": null,
+      "receipt": null,
+      "current_blocker": "No eGPU enclosure. Shared module with Fusion cannot uniquely prove this gene.",
+      "next_promotion_gate": "wake_condition EGPU_PRESENT.",
+      "roadmap_wording_accurate": false,
+      "roadmap_wording_note": "Appendix A boilerplate.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "notes": []
+    },
+    {
+      "id": "V-E_PERPETUAL_HAWKING",
+      "kind": "gene",
+      "roadmap_item": "V-E_PERPETUAL_HAWKING",
+      "era": "V",
+      "gene": "V-E_PERPETUAL_HAWKING",
+      "catalog_symbol": null,
+      "graph_status": "DORMANT",
+      "independent_state": "CONCEPT_ONLY",
+      "disagrees_with_graph": true,
+      "disagreement_reason": "Graph DORMANT (not in 13-state vocab). Independent CONCEPT_ONLY: catalog paths empty. Also BLOCKED_AUTHORITY in the sense Era I is sovereign \u2014 do not promote. ROADMAP_STATE NOT_STARTED.",
+      "code": [],
+      "call_sites": null,
+      "call_site_blocker": "No git-tracked definition. Era V. Era I sovereign.",
+      "test_verifier": null,
+      "receipt": null,
+      "current_blocker": "Empty paths. Later-era gene must not be promoted.",
+      "next_promotion_gate": "Era I completion. Do not implement this gene now.",
+      "roadmap_wording_accurate": false,
+      "roadmap_wording_note": "Appendix A boilerplate. Section 5 V-E mission is future-tense.",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "notes": []
+    }
+  ]
+}

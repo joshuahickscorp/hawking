@@ -17,6 +17,7 @@ import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+from tools.roadmap import lineage
 
 REPO = Path(__file__).resolve().parents[3]
 ACCEPT = REPO / "receipts" / "acceptance"
@@ -237,7 +238,7 @@ def accept_source_verified() -> dict[str, Any]:
                 "loaded during metadata-only audit."
             ),
             "source": {
-                "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+                "file": str(lineage.roadmap_path()),
                 "line": 360,
             },
             "acceptance_span": {"start_line": 478, "end_line": 505, "section": "I-C"},
@@ -365,7 +366,7 @@ def accept_first_gravity_organ() -> dict[str, Any]:
                 "representation tournament. Gate name is FIRST gravity organ."
             ),
             "source": {
-                "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+                "file": str(lineage.roadmap_path()),
                 "lines": [480, 1755, 3892],
             },
             "acceptance_span": {"start_line": 478, "end_line": 505, "section": "I-C"},
@@ -553,7 +554,7 @@ def accept_native_nf_kernel() -> dict[str, Any]:
                 "kernel qwen_uniform_q4_group64_matvec."
             ),
             "source": {
-                "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+                "file": str(lineage.roadmap_path()),
                 "lines": [1756, 3893],
             },
             "acceptance_span": {"start_line": 478, "end_line": 505, "section": "I-C"},
@@ -669,7 +670,7 @@ def accept_dense_vs_nf_ab() -> dict[str, Any]:
                 "Flash router matrix."
             ),
             "source": {
-                "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+                "file": str(lineage.roadmap_path()),
                 "lines": [1757, 3894],
             },
             "acceptance_span": {"start_line": 478, "end_line": 505, "section": "I-C"},
@@ -865,7 +866,7 @@ def accept_full_noetic_executable() -> dict[str, Any]:
                 "a machine-bound executable, not a metadata seal."
             ),
             "source": {
-                "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+                "file": str(lineage.roadmap_path()),
                 "lines": [496, 1629, 1754, 3901],
             },
             "acceptance_span": {"start_line": 574, "end_line": 594, "section": "II-B"},
@@ -977,7 +978,7 @@ def accept_complete_ebpw() -> dict[str, Any]:
                 "<= 1.00 EBPW + >= 50 accepted TPS is MINIMUM PROMOTION."
             ),
             "source": {
-                "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+                "file": str(lineage.roadmap_path()),
                 "lines": [1607, 1640, 9498],
             },
             "acceptance_span": {"start_line": 478, "end_line": 505, "section": "I-C"},
@@ -1105,7 +1106,7 @@ def accept_tps() -> dict[str, Any]:
                 "accepted TPS."
             ),
             "source": {
-                "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+                "file": str(lineage.roadmap_path()),
                 "lines": [1607, 1640, 1742, 4013, 9499],
             },
             "acceptance_span": {"start_line": 478, "end_line": 505, "section": "I-C"},

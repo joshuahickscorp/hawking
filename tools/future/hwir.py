@@ -3932,6 +3932,17 @@ _HWIR_EMITTED_RE = re.compile(r"HWIR_EMITTED:([A-Za-z0-9_]+)")
 _HWIR_HOLE_RE = re.compile(r"HWIR_HOLE:([A-Za-z0-9_]+)")
 
 
+class UnrepresentableGraph(ValueError):
+    """Raised when lowering is asked for a graph the validator rejects.
+
+    MUTATION_CHECK: delete the `if not report.ok` guard in _finalize_lowering and
+    tools/acceptance/fpga/run_gates.py clause (e) goes from 0 to 10 failures, and
+    tools/future/test_hwir_lowering.py::test_lowering_refuses_an_invalid_graph
+    fails. Emitting a plausible kernel artifact for a graph this module's own
+    validator rejects publishes a lie in a form synthesis will not catch.
+    """
+
+
 class UnknownLoweringTarget(KeyError):
     """No registered lowering target with that id."""
 
@@ -4145,6 +4156,12 @@ def _finalize_lowering(
     artifacts: Sequence[Mapping[str, Any]],
 ) -> dict[str, Any]:
     report = validate(graph)
+    if not report.ok:
+        raise UnrepresentableGraph(
+            f"{target.target_id()} will not lower a graph the validator rejects: "
+            f"{report.codes()}. Six other conditions were already refused below; "
+            "the validator's own verdict was not one of them."
+        )
     cannot = list(target.cannot_express())
     if not cannot:
         raise ValueError(

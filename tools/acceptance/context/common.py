@@ -8,10 +8,13 @@ import subprocess
 import time
 from pathlib import Path
 from typing import Any, Mapping
+from tools.roadmap import lineage
 
 REPO = Path(__file__).resolve().parents[3]
 RECEIPT_DIR = REPO / "receipts" / "acceptance"
-ROADMAP = Path("/Users/scammermike/Downloads/H-ROADMAP.md")
+# The canonical roadmap is external and can vanish; tools.roadmap.lineage
+# falls back to the digest-verified in-repo copy rather than a placeholder.
+ROADMAP = lineage.roadmap_path()
 SCHEMA = "hawking.acceptance.gate.v1"
 
 
@@ -63,7 +66,7 @@ def write_receipt(gate: str, payload: Mapping[str, Any]) -> Path:
     body.setdefault("generated_at", now_utc())
     body.setdefault("git_head", git_head())
     body.setdefault("criterion_altered", False)
-    tmp = path.with_suffix(".json.tmp")
+    tmp = path.with_suffix(f".json.{os.getpid()}.tmp")
     tmp.write_text(json.dumps(body, indent=2, sort_keys=False) + "\n", encoding="utf-8")
     os.replace(tmp, path)
     return path

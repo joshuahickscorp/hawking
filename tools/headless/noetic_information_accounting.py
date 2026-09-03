@@ -1529,7 +1529,7 @@ def main() -> int:
             "ran": (
                 "not in this sparse worktree. tools/haider is DENIED and not "
                 "materialized; git apply of tree-state.patch failed with "
-                "'tools/haider/hcli/*.py: No such file or directory'. pytest "
+                "'hcli/*.py: No such file or directory'. pytest "
                 "tools/headless collection errors with ModuleNotFoundError: hcli. "
                 "Non-haider scripts storage_manager_test and performance_ledger_test "
                 "passed. rollback_integrity_test needs hcli and failed to import."

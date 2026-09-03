@@ -33,7 +33,7 @@ import time
 from pathlib import Path
 
 REPO = Path(os.path.expanduser("~/Downloads/hawking-copy"))
-RUNS = REPO / ".haider/bootstrap-director-v6/runs"
+RUNS = REPO / ".hcli-legacy/bootstrap-director-v6/runs"
 
 
 def find_epoch(epoch: int | None) -> Path:

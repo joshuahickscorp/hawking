@@ -24,6 +24,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
+from tools.roadmap import lineage
 
 REPO = Path(__file__).resolve().parents[2]
 RH = REPO / "receipts/headless"
@@ -243,7 +244,7 @@ def family_inventory() -> dict[str, Any]:
     return {
         "evidence_tier": "STATIC",
         "roadmap": {
-            "path": "/Users/scammermike/Downloads/H-ROADMAP.md",
+            "path": str(lineage.roadmap_path()),
             "section": "10.2",
             "line": 1406,
             "families": list(ROADMAP_CANDIDATE_FAMILIES),

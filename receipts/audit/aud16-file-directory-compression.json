@@ -1,0 +1,2470 @@
+{
+  "schema": "hawking.audit.file_directory_compression.v1",
+  "audit_id": "aud16-file-directory-compression",
+  "title": "File and directory compression audit",
+  "generated_at": "2026-09-02T19:10:00Z",
+  "generated_by": "aud16-file-directory-compression lane",
+  "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+  "commit_short": "04193ccbc",
+  "evidence_tier": "STATIC_VERIFICATION",
+  "authority": {
+    "is_authoritative_for": [
+      "source archaeology",
+      "call-site reachability",
+      "test coverage (static presence of tests, not run results)",
+      "schema/topology",
+      "dependency graphs",
+      "duplication",
+      "naming",
+      "receipt consistency"
+    ],
+    "is_not_authoritative_for": [
+      "GPU physical performance",
+      "Metal runtime behaviour not executed this session",
+      "ANE physical behaviour not executed this session",
+      "U50/FPGA facts not physically measured",
+      "thermal/power",
+      "protected benchmarks"
+    ],
+    "never_measured_this_session": true,
+    "hardware_present": [
+      "Apple M3 Ultra CPU/GPU/UMA",
+      "ANE"
+    ],
+    "hardware_absent": [
+      "FPGA/U50DD",
+      "DGX",
+      "eGPU"
+    ]
+  },
+  "method": {
+    "sparse_checkout": true,
+    "full_tree_via": "git ls-tree -r --name-only HEAD and git ls-tree -r -l HEAD",
+    "content_via": "git show HEAD:<path>",
+    "call_sites_via": "git grep HEAD (index), not worktree grep — sparse cones hide tools/future, tools/headless, hcli, lab/operators",
+    "call_site_law": "A module IMPORT is not a call site. Counted forms are function/method calls, constructors, and exception-type uses of the symbol itself.",
+    "tests_not_run": true,
+    "no_files_moved": true,
+    "no_hcli_edits": true,
+    "no_tools_edits": true,
+    "no_crates_edits": true,
+    "no_civilization_edits": true,
+    "wrote_only": [
+      "receipts/audit/aud16-file-directory-compression.json",
+      "receipts/audit/aud16-file-directory-compression.md"
+    ]
+  },
+  "constitution_unchanged": {
+    "eras": 5,
+    "odysseys": 3,
+    "era_vi": false,
+    "fpga_lives_inside": "Hawking Accelerator/Fusion",
+    "theia": "ONE generalist bounty model, not another civilization",
+    "civilizational_coordinate": 0.7,
+    "north_star": "HAWKING = SELF-OPTIMIZING PHYSICAL AI COMPUTER",
+    "auditor_does_not_propose_changing_these": true
+  },
+  "question": "Not 'can these be concatenated'. Does ONE concept currently require navigating many files that have no independent lifecycle, authority, or reuse reason?",
+  "ebpw_model_note": {
+    "prompt_example": [
+      "ebpw_base",
+      "ebpw_complete",
+      "ebpw_report",
+      "ebpw_accounting",
+      "ebpw_helpers",
+      "ebpw_schema"
+    ],
+    "on_disk": [
+      "tools/future/complete_ebpw.py",
+      "tools/future/ebpw_categories.py",
+      "tools/future/test_complete_ebpw.py",
+      "tools/future/test_ebpw_categories.py"
+    ],
+    "surprise": "The six-way split used as the model does not exist at HEAD. EBPW is two sibling modules plus colocated tests.",
+    "would_settle": "git ls-tree -r --name-only HEAD | grep -i ebpw"
+  },
+  "tree_mass": {
+    "evidence_kind": "SOURCE_INSPECTION",
+    "how": "git ls-tree -r -l HEAD; source ext in {.py,.rs,.c,.m,.metal,.ts,.tsx,.js,.toml,.swift}",
+    "total_files": 15913,
+    "source_files": 3681,
+    "source_bytes": 84836226,
+    "artifact_files": 12232,
+    "artifact_bytes": 3430729895,
+    "top_level_file_counts": {
+      "workspace": 6061,
+      "receipts": 4121,
+      "hawking-experiments": 1953,
+      "tools": 1666,
+      "crates": 1093,
+      "lab": 464,
+      "hcli": 198,
+      "app": 150,
+      "ramanujan": 110,
+      "docs": 28,
+      ".hcli": 18,
+      "evidence": 14,
+      "civilization": 13,
+      "spec": 4,
+      "contracts": 3,
+      "reports": 2,
+      "recipes": 2,
+      "logs": 2
+    },
+    "top_level_source_vs_artifact": {
+      "workspace": {
+        "source": 121,
+        "artifact": 5940
+      },
+      "receipts": {
+        "source": 6,
+        "artifact": 4115
+      },
+      "hawking-experiments": {
+        "source": 166,
+        "artifact": 1787
+      },
+      "tools": {
+        "source": 1564,
+        "artifact": 102
+      },
+      "crates": {
+        "source": 1033,
+        "artifact": 60
+      },
+      "lab": {
+        "source": 458,
+        "artifact": 6
+      },
+      "hcli": {
+        "source": 196,
+        "artifact": 2
+      },
+      "app": {
+        "source": 72,
+        "artifact": 78
+      },
+      "ramanujan": {
+        "source": 54,
+        "artifact": 56
+      },
+      "civilization": {
+        "source": 5,
+        "artifact": 8
+      }
+    },
+    "observation": "Source is a minority of the tree. workspace/ + receipts/ + hawking-experiments/ hold 12135 of 15913 files, almost all artifacts. Compression of *source modules* and compression of *campaign evidence trees* are different jobs."
+  },
+  "current_tree": {
+    "top_level_dirs": [
+      ".github",
+      ".hcli",
+      "app",
+      "civilization",
+      "contracts",
+      "crates",
+      "docs",
+      "evidence",
+      "hawking-experiments",
+      "hcli",
+      "lab",
+      "logs",
+      "ramanujan",
+      "receipts",
+      "recipes",
+      "reports",
+      "spec",
+      "tools",
+      "workspace"
+    ],
+    "character": "Historical campaigns and product organs share the top level. tools/future, tools/headless, receipts/future, receipts/headless, receipts/ascent-2026-08-16, hawking-experiments, ramanujan, workspace/campaign are campaign names, not organs.",
+    "organs_already_named_in_nomenclature": {
+      "source": "docs/HAWKING_NOMENCLATURE.md (git show HEAD)",
+      "pipeline": [
+        "Source Specimen",
+        "Doctor",
+        "Gravity",
+        "Noetic IR / Noetic Program",
+        "Noetic Compiler",
+        "Physical Graph Compiler",
+        "Hawking Accelerator",
+        "Noetic Executable Candidates",
+        "Pareto Frontier",
+        "Singularity",
+        "Resident"
+      ],
+      "era_i_civilizations": [
+        "I-A_AGENTOS_HCLI",
+        "I-B_DOCTOR",
+        "I-C_GRAVITY_NOETIC",
+        "I-D_ACCELERATOR",
+        "I-E_ODYSSEY_I"
+      ],
+      "source_of_civilizations": "civilization/ROADMAP_STATE.json active_civilizations (git show HEAD)"
+    },
+    "tools_second_level": [
+      "accelerator",
+      "acceptance",
+      "adapters",
+      "agentos",
+      "ascent",
+      "audit",
+      "awq_bake",
+      "bench",
+      "campaign",
+      "ci",
+      "condense",
+      "doctor",
+      "eval",
+      "foundry",
+      "future",
+      "graph",
+      "haider",
+      "hcli_resident",
+      "headless",
+      "loc",
+      "odyssey",
+      "orchestrator",
+      "product",
+      "q4k_fast",
+      "qwen38_recon_disc",
+      "roadmap",
+      "sovereign",
+      "sovereignty",
+      "spec",
+      "tests",
+      "theia",
+      "tq_bake",
+      "training",
+      "verify",
+      "vmcp"
+    ],
+    "receipts_second_level_counts": {
+      "headless": 1624,
+      "future": 1054,
+      "ascent-2026-08-16": 716,
+      "odyssey-i": 148,
+      "dsv4f_fullseq_capture_L1": 129,
+      "dsv4f_fullseq_capture_L0_frozen_export": 120,
+      "acceptance": 68,
+      "ascent-2026-08-18": 54,
+      "dsv4f_fullseq_capture_L1_frozen_export": 53,
+      "dsv4f_fullseq_capture_L0": 33,
+      "q80-velocity-pairs": 23,
+      "future/nowait-*": 592
+    }
+  },
+  "proposed_tree": {
+    "do_not_move_any_file": true,
+    "target": "Top-level directories correspond to durable Hawking organs, not historical campaigns.",
+    "organs": [
+      {
+        "organ": "AgentOS/HCLI",
+        "civilization": "I-A_AGENTOS_HCLI",
+        "keep": [
+          "hcli/"
+        ],
+        "absorb_later": [
+          "tools/haider/hcli/tests (fossil tests of live hcli)",
+          "lab/hcli (different product, do not merge blindly)"
+        ],
+        "do_not": "Nest GoalCompiler/WorkUnit/Scheduler under hcli/agentos/ — F24 identity fork. See docs/CURRENT_ARCHITECTURE.md."
+      },
+      {
+        "organ": "Gravity runtime",
+        "civilization": "I-C_GRAVITY_NOETIC",
+        "keep": [
+          "crates/hawking-core",
+          "crates/hawking",
+          "crates/hawking-serve",
+          "crates/hawking-bench",
+          "crates/hawking-speculate"
+        ],
+        "absorb_later": [
+          "crates/hawking-core/examples/*.rs (233 campaign probes mislabeled examples)",
+          "crates/hawking-core/src/gravity_deepseek_v4_*.rs into a crate-internal package",
+          "crates/hawking-core/src/model/qwen{30,38,80}_* into model/{qwen30,qwen38,qwen80}/",
+          "lab/operators/ascension_* and q80_* (runtime operators)",
+          "tools/flash_*.py, selected tools/future and tools/headless gravity/noetic modules"
+        ]
+      },
+      {
+        "organ": "Doctor",
+        "civilization": "I-B_DOCTOR",
+        "keep": [
+          "tools/doctor/",
+          "lab/operators/doctor6/"
+        ],
+        "absorb_later": [
+          "tools/headless/doctor_*.py",
+          "tools/future/hardware_doctor.py (FPGA-axis sidecar; not the same as tools/accelerator/hardware_doctor.py)",
+          "tools/doctor_seal.py",
+          "tools/gravity_doctor_*.py",
+          "tools/flash_doctor_*.py",
+          "tools/headless/noetic_doctor_v2.py"
+        ],
+        "note": "Two live Doctor generations already exist as packages. Do not concatenate them. Give them one organ home."
+      },
+      {
+        "organ": "Hawking Accelerator",
+        "civilization": "I-D_ACCELERATOR",
+        "keep": [
+          "tools/accelerator/"
+        ],
+        "fpga": "FPGA lives inside this organ (constitution). Do not mint a top-level fpga/.",
+        "absorb_later": [
+          "tools/future/fpga_*.py",
+          "tools/future/ane_*.py",
+          "selected receipts/headless/ACCELERATOR_* as evidence not source"
+        ]
+      },
+      {
+        "organ": "Odyssey",
+        "civilization": "I-E_ODYSSEY_I (and II/III later)",
+        "keep": [
+          "tools/odyssey/"
+        ],
+        "absorb_later": [
+          "tools/eval/ (support-halo gate is Odyssey evaluation, not hawking-eval crate)",
+          "receipts/odyssey-i"
+        ]
+      },
+      {
+        "organ": "HIDE product",
+        "civilization": null,
+        "keep": [
+          "crates/hide-core",
+          "crates/hide-protocol",
+          "crates/hide-kernel",
+          "crates/hide-backend",
+          "crates/hide-serve",
+          "crates/hide-acp",
+          "crates/hide-fleet",
+          "app/"
+        ],
+        "thin_unintegrated": [
+          "crates/hide-gateway",
+          "crates/hawking-perception",
+          "crates/hawking-comms"
+        ]
+      },
+      {
+        "organ": "Civilization governance",
+        "keep": [
+          "civilization/",
+          "tools/roadmap/"
+        ],
+        "note": "tools/roadmap already is a coherent package that writes civilization/CAPABILITY_GRAPH.json."
+      },
+      {
+        "organ": "Evidence",
+        "keep": [
+          "receipts/"
+        ],
+        "reindex_later": "By organ (hcli/, doctor/, gravity/, accelerator/, odyssey/), not by campaign (future/, headless/, ascent-DATE/). Never delete receipts."
+      },
+      {
+        "organ": "Theia",
+        "keep": [
+          "tools/theia/"
+        ],
+        "note": "Already a package. Not a civilization. Do not promote to top-level organ alongside Era I."
+      },
+      {
+        "organ": "Documentation",
+        "keep": [
+          "docs/"
+        ],
+        "note": "workspace/docs/ is a second docs tree (plans, reference, implementation). Duplicate location for one concept."
+      }
+    ],
+    "historical_not_organs": [
+      {
+        "path": "tools/future/",
+        "files": 541,
+        "why": "Campaign dump of 259 impl + 276 test python modules sharing _common.py. Split by organ later; do not concatenate."
+      },
+      {
+        "path": "tools/headless/",
+        "files": 282,
+        "why": "Second campaign dump; rival names with tools/future and tools/odyssey."
+      },
+      {
+        "path": "hawking-experiments/",
+        "files": 1953,
+        "why": "Legacy experiment + data tree (frankenstein 1500, superwave 439)."
+      },
+      {
+        "path": "ramanujan/",
+        "files": 110,
+        "why": "Blocked non-authorizing scaffold (README). Keep isolated."
+      },
+      {
+        "path": "workspace/campaign/",
+        "files": 5555,
+        "why": "Records/evidence/governance dump, not source."
+      },
+      {
+        "path": "receipts/future/",
+        "files": 1054,
+        "why": "Campaign receipt tree; 42 basenames also live under receipts/headless/."
+      },
+      {
+        "path": "receipts/headless/",
+        "files": 1624,
+        "why": "Campaign receipt tree."
+      },
+      {
+        "path": "receipts/ascent-2026-08-16/",
+        "files": 716,
+        "why": "Date-stamped campaign."
+      },
+      {
+        "path": "tools/haider/",
+        "why": "Fossil HCLI-v0 plus tests of live hcli/. import tools.haider.hcli raises ImportError (docs/CURRENT_ARCHITECTURE.md)."
+      },
+      {
+        "path": ".hcli/delegations/",
+        "why": "Per-delegation scratch, not an organ."
+      }
+    ],
+    "mapping_current_to_proposed": [
+      {
+        "from": "hcli/",
+        "to": "AgentOS/HCLI organ",
+        "action": "KEEP"
+      },
+      {
+        "from": "crates/hawking-* (runtime)",
+        "to": "Gravity runtime organ",
+        "action": "KEEP crates; package internal gravity_deepseek_v4 and qwen* later"
+      },
+      {
+        "from": "crates/hide-* + app/",
+        "to": "HIDE product organ",
+        "action": "KEEP; do not merge hide-gateway/perception/comms until a non-test caller exists"
+      },
+      {
+        "from": "tools/doctor + lab/operators/doctor6",
+        "to": "Doctor organ",
+        "action": "KEEP both packages; stop adding third/fourth Doctor trees"
+      },
+      {
+        "from": "tools/accelerator",
+        "to": "Accelerator organ",
+        "action": "KEEP"
+      },
+      {
+        "from": "tools/odyssey",
+        "to": "Odyssey organ",
+        "action": "KEEP"
+      },
+      {
+        "from": "tools/future",
+        "to": "split across Doctor/Gravity/Accelerator/Odyssey",
+        "action": "ABSORB later; not one file"
+      },
+      {
+        "from": "tools/headless",
+        "to": "same split; retire rival names",
+        "action": "ABSORB later"
+      },
+      {
+        "from": "tools/flash_*.py (27 files at tools/ root)",
+        "to": "Gravity/Noetic",
+        "action": "ABSORB later"
+      },
+      {
+        "from": "lab/operators/ascension_* (127) and q80_* (19)",
+        "to": "Gravity runtime operators",
+        "action": "ABSORB later"
+      },
+      {
+        "from": "lab/tests/",
+        "to": "stay with the operators they govern, or keep lab/tests as the lab test package",
+        "action": "DECIDE; current split is a lab convention with 109/146 basename pairs"
+      },
+      {
+        "from": "crates/hawking-core/examples (233 .rs)",
+        "to": "Gravity probes, not cargo examples",
+        "action": "RELABEL/ABSORB later; cannot concatenate (each is a cargo example binary)"
+      },
+      {
+        "from": "receipts/{future,headless,ascent-*}",
+        "to": "Evidence organ reindexed by producer organ",
+        "action": "ALIAS not delete"
+      },
+      {
+        "from": "workspace/campaign",
+        "to": "Evidence dump",
+        "action": "KEEP off the source path"
+      },
+      {
+        "from": "hawking-experiments",
+        "to": "Legacy experiments",
+        "action": "KEEP isolated"
+      },
+      {
+        "from": "ramanujan",
+        "to": "Blocked scaffold",
+        "action": "KEEP isolated"
+      },
+      {
+        "from": "civilization + tools/roadmap",
+        "to": "Governance",
+        "action": "KEEP"
+      },
+      {
+        "from": "tools/theia",
+        "to": "Theia bounty",
+        "action": "KEEP; not a civilization"
+      },
+      {
+        "from": "docs/ vs workspace/docs/",
+        "to": "Documentation organ",
+        "action": "ONE docs tree later"
+      }
+    ]
+  },
+  "families": [
+    {
+      "id": "ebpw",
+      "concept": "Complete physical EBPW accounting + typed quantity/promotion refusal",
+      "paths": [
+        "tools/future/complete_ebpw.py",
+        "tools/future/ebpw_categories.py",
+        "tools/future/test_complete_ebpw.py",
+        "tools/future/test_ebpw_categories.py"
+      ],
+      "sizes_bytes": {
+        "complete_ebpw.py": 41877,
+        "ebpw_categories.py": 59296
+      },
+      "lines": {
+        "complete_ebpw.py": 1125,
+        "ebpw_categories.py": 1550
+      },
+      "classification": "INTEGRATED",
+      "classification_note": "Not PHYSICALLY_MEASURED. complete_ebpw.EVIDENCE_CLASS is STATIC_ONLY in source.",
+      "one_canonical_file": false,
+      "one_package_fewer_public_surfaces": true,
+      "split_required_by": [
+        "authority"
+      ],
+      "split_not_required_by": [
+        "language",
+        "build",
+        "runtime"
+      ],
+      "independent_test_reuse": true,
+      "historical_accretion": false,
+      "compression_verdict": "ONE_PACKAGE_FEWER_SURFACES",
+      "why": "Two files, not six. complete_ebpw is arithmetic billing (cost, mix_report, build, incumbent_candidate). ebpw_categories is the typed quantity + can_promote refusal authority. That is an authority boundary: promotion must not be the same module that produces the number. They already share tools.future as a package. Collapsing to one file would mix the bill with the judge.",
+      "call_sites": [
+        {
+          "symbol": "mix_report",
+          "path": "tools/acceptance/flash/run_gates.py",
+          "line": 938,
+          "form": "call"
+        },
+        {
+          "symbol": "build",
+          "path": "tools/acceptance/flash/run_gates.py",
+          "line": 938,
+          "form": "call"
+        },
+        {
+          "symbol": "complete_ebpw.mix_report",
+          "path": "tools/future/capability_byte_elimination.py",
+          "line": 297,
+          "form": "call"
+        },
+        {
+          "symbol": "cost",
+          "path": "tools/theia/self_bounty.py",
+          "line": 377,
+          "form": "call"
+        },
+        {
+          "symbol": "incumbent_candidate",
+          "path": "tools/theia/self_bounty.py",
+          "line": 377,
+          "form": "call"
+        },
+        {
+          "symbol": "can_promote",
+          "path": "tools/audit/reachability_triage.py",
+          "line": 2046,
+          "form": "call"
+        },
+        {
+          "symbol": "validate",
+          "path": "tools/doctor/engine.py",
+          "line": 438,
+          "form": "call"
+        },
+        {
+          "symbol": "judge_dense_rematerialization",
+          "path": "tools/future/deltanet_representation.py",
+          "line": 31,
+          "form": "call"
+        },
+        {
+          "symbol": "judge_dense_rematerialization",
+          "path": "tools/future/mlp_byte_census.py",
+          "line": 31,
+          "form": "call"
+        },
+        {
+          "symbol": "CategoryError",
+          "path": "tools/future/abliteration.py",
+          "line": 46,
+          "form": "exception_use"
+        }
+      ],
+      "non_call_sites_do_not_count": [
+        "JSON key complete_ebpw in tools/flash_complete_byte_ledger.py and tools/accelerator/scoreboard.py — field name, not the module",
+        "civilization/CAPABILITY_GRAPH.json disk_truth_modules lists complete_ebpw.py but not ebpw_categories.py"
+      ],
+      "evidence": [
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "Only four ebpw-named python files exist at HEAD",
+          "refs": [
+            "tools/future/complete_ebpw.py",
+            "tools/future/ebpw_categories.py"
+          ],
+          "how": "git ls-tree -r --name-only HEAD | grep -i ebpw"
+        },
+        {
+          "evidence_kind": "STATIC_VERIFICATION",
+          "claim": "Acceptance gate calls mix_report and build, not merely imports the module",
+          "refs": [
+            "tools/acceptance/flash/run_gates.py:938",
+            "tools/acceptance/flash/run_gates.py:999"
+          ],
+          "how": "git grep HEAD complete_ebpw -- '*.py'"
+        },
+        {
+          "evidence_kind": "STATIC_VERIFICATION",
+          "claim": "Doctor engine calls ebpw_categories.validate",
+          "refs": [
+            "tools/doctor/engine.py:438"
+          ],
+          "how": "git grep HEAD ebpw_categories"
+        },
+        {
+          "evidence_kind": "STATIC_VERIFICATION",
+          "claim": "ebpw_categories is missing from disk_truth_modules despite more callers than complete_ebpw",
+          "refs": [
+            "civilization/CAPABILITY_GRAPH.json disk_truth_modules"
+          ],
+          "how": "parsed CAPABILITY_GRAPH.json; grep ebpw_categories in disk_truth_modules is false"
+        }
+      ]
+    },
+    {
+      "id": "organ_bandwidth_name_collision",
+      "concept": "Per-organ GPU bandwidth table",
+      "paths": [
+        "tools/future/organ_bandwidth.py",
+        "tools/headless/organ_bandwidth.py",
+        "tools/future/test_organ_bandwidth.py",
+        "tools/headless/test_organ_bandwidth.py"
+      ],
+      "classification": "TESTED",
+      "one_canonical_file": false,
+      "one_package_fewer_public_surfaces": true,
+      "split_required_by": [],
+      "historical_accretion": true,
+      "compression_verdict": "ONE_PACKAGE_FEWER_SURFACES",
+      "why": "Same basename, different science, different schemas (hawking.future.organ_bandwidth.v1 vs hawking.headless.organ_bandwidth.v1), different sizes (10957 vs 28536 bytes). Not copies. tools/conftest.py skips headless tests during wide pytest tools/ because import organ_bandwidth hits the future module. That is a real authority hazard from duplicate names, not a reason to keep both.",
+      "call_sites": [
+        {
+          "symbol": "observations_from_organ_bandwidth",
+          "path": "tools/future/physical_compiler_predict.py",
+          "line": 154,
+          "form": "call"
+        },
+        {
+          "symbol": "ORGANS / map_ledger_row",
+          "path": "tools/headless/organ_roof_ledger.py",
+          "line": 33,
+          "form": "call"
+        }
+      ],
+      "evidence": [
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "SHA256 of the two organ_bandwidth.py files differ",
+          "refs": [
+            "tools/future/organ_bandwidth.py",
+            "tools/headless/organ_bandwidth.py"
+          ],
+          "how": "git show HEAD:path | sha256; identical=False; 239 vs 750 lines"
+        },
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "pytest collection guard documents the sys.path collision",
+          "refs": [
+            "tools/conftest.py:_HEADLESS_NAME_COLLISION"
+          ],
+          "how": "git show HEAD:tools/conftest.py"
+        },
+        {
+          "evidence_kind": "STATIC_VERIFICATION",
+          "claim": "future physical_compiler_predict calls observations_from_organ_bandwidth",
+          "refs": [
+            "tools/future/physical_compiler_predict.py:154"
+          ],
+          "how": "git grep HEAD organ_bandwidth -- '*.py'"
+        }
+      ]
+    },
+    {
+      "id": "hardware_doctor_name_collision",
+      "concept": "Hardware Doctor",
+      "paths": [
+        "tools/future/hardware_doctor.py",
+        "tools/accelerator/hardware_doctor.py",
+        "tools/future/test_hardware_doctor.py",
+        "tools/accelerator/test_hardware_doctor.py"
+      ],
+      "classification": "TESTED",
+      "one_canonical_file": false,
+      "one_package_fewer_public_surfaces": false,
+      "split_required_by": [
+        "authority"
+      ],
+      "historical_accretion": false,
+      "compression_verdict": "KEEP_SPLIT_AUTHORITY",
+      "why": "Not copies. future/hardware_doctor.py is an FPGA-axis sidecar (docstring). accelerator/hardware_doctor.py is the host doctor and explicitly says it reasons over genome/ascension/HWIR and that the FPGA sidecar is the other file. accelerator/hardware_doctor.py CALLS tools.roadmap.hardware.probe. Keep two modules; stop sharing the basename. Put both under the Accelerator organ.",
+      "call_sites": [
+        {
+          "symbol": "tools.roadmap.hardware.probe",
+          "path": "tools/accelerator/hardware_doctor.py",
+          "line": 791,
+          "form": "call"
+        },
+        {
+          "symbol": "tools.roadmap.hardware.probe_u50",
+          "path": "tools/accelerator/hardware_doctor.py",
+          "line": 792,
+          "form": "call"
+        }
+      ],
+      "evidence": [
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "Files differ (53169 vs 39464 bytes); accelerator module names the future module as the FPGA sidecar",
+          "refs": [
+            "tools/accelerator/hardware_doctor.py docstring"
+          ],
+          "how": "git show HEAD of both files; sha256 unequal"
+        },
+        {
+          "evidence_kind": "STATIC_VERIFICATION",
+          "claim": "accelerator hardware_doctor records calls to tools.roadmap.hardware.probe",
+          "refs": [
+            "tools/accelerator/hardware_doctor.py:791"
+          ],
+          "how": "git grep HEAD tools.roadmap.hardware"
+        }
+      ]
+    },
+    {
+      "id": "campaign_basename_collisions",
+      "concept": "Same basename, different modules across tools/future, tools/headless, tools/odyssey",
+      "paths": [
+        "tools/future/contamination.py",
+        "tools/odyssey/contamination.py",
+        "tools/future/protected_window.py",
+        "tools/odyssey/protected_window.py",
+        "tools/future/tournament.py",
+        "tools/odyssey/tournament.py",
+        "tools/headless/decoding_gravity.py",
+        "tools/odyssey/decoding_gravity.py",
+        "tools/headless/state_gravity.py",
+        "tools/odyssey/state_gravity.py"
+      ],
+      "classification": "TESTED",
+      "one_canonical_file": false,
+      "one_package_fewer_public_surfaces": true,
+      "split_required_by": [],
+      "historical_accretion": true,
+      "compression_verdict": "ONE_PACKAGE_FEWER_SURFACES",
+      "why": "All pairs are byte-unequal. They are rival campaign implementations of similarly named science (N048/N049 vs G037/G038; FLASH_SINGULARITY tournament vs checkpoint tournament). The split does not protect an authority boundary; it records two campaigns. Canonicalize names under organs; keep both receipts; do not concatenate the source.",
+      "call_sites": [],
+      "evidence": [
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "sha256 unequal for every pair; line counts 1148 vs 266 (contamination), 1943 vs 160 (protected_window), 1414 vs 193 (decoding_gravity)",
+          "refs": [
+            "tools/future/*",
+            "tools/headless/*",
+            "tools/odyssey/*"
+          ],
+          "how": "python hashlib over git show HEAD for each pair"
+        }
+      ]
+    },
+    {
+      "id": "gravity_deepseek_v4",
+      "concept": "DeepSeek-V4 Flash gravity runtime (one model family)",
+      "paths_pattern": "crates/hawking-core/src/gravity_deepseek_v4*.rs",
+      "file_count": 33,
+      "total_bytes": 1701117,
+      "largest": [
+        "gravity_deepseek_v4_native_token_graph.rs 218479",
+        "gravity_deepseek_v4_p6_device.rs 149401"
+      ],
+      "classification": "CALLABLE",
+      "classification_note": "pub mod in hawking-core/src/lib.rs. Integration tests exist (dsv4f_*). Not claimed PHYSICALLY_MEASURED here — this session did not run them.",
+      "one_canonical_file": false,
+      "one_package_fewer_public_surfaces": true,
+      "split_required_by": [
+        "language",
+        "build"
+      ],
+      "historical_accretion": true,
+      "compression_verdict": "ONE_PACKAGE_FEWER_SURFACES",
+      "why": "33 pub mods at crate root, named by campaign stage (p0, p3a, p4b, p6, p7, layer0_*). One file is impossible (1.7 MB Rust; rustc and editors). The split is required as a module tree, not as 33 crate-root public surfaces. Internal crate::gravity_deepseek_v4* uses are real. Outside hawking-core, most hits are examples (44) and python name mentions, not a second Rust product.",
+      "call_sites": [
+        {
+          "symbol": "crate::gravity_deepseek_v4*",
+          "path": "crates/hawking-core/src/gravity_deepseek_v4_native_token_graph.rs",
+          "line": 1,
+          "form": "call"
+        },
+        {
+          "symbol": "crate::gravity_deepseek_v4*",
+          "path": "crates/hawking-core/src/research_server.rs",
+          "line": 1,
+          "form": "call"
+        },
+        {
+          "symbol": "crate::gravity_deepseek_v4*",
+          "path": "crates/hawking-core/src/token_ns/adapt.rs",
+          "line": 1,
+          "form": "call"
+        }
+      ],
+      "evidence": [
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "33 gravity_deepseek_v4* files under crates/hawking-core/src totaling 1701117 bytes; all pub mod in lib.rs",
+          "refs": [
+            "crates/hawking-core/src/lib.rs:16-132"
+          ],
+          "how": "git ls-tree -r -l HEAD crates/hawking-core/src | gravity_deepseek_v4; rg '^pub mod gravity_deepseek_v4'"
+        },
+        {
+          "evidence_kind": "STATIC_VERIFICATION",
+          "claim": "research_server.rs and token_ns/adapt.rs reference crate::gravity_deepseek_v4 (not test-only)",
+          "refs": [
+            "crates/hawking-core/src/research_server.rs",
+            "crates/hawking-core/src/token_ns/adapt.rs"
+          ],
+          "how": "git grep -c crate::gravity_deepseek_v4 HEAD -- crates/hawking-core/src"
+        },
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "44 examples and 6 integration tests mention gravity_deepseek_v4; other hits are python/docs/receipts",
+          "refs": [
+            "crates/hawking-core/examples/gravity_deepseek_v4_*.rs",
+            "crates/hawking-core/tests/dsv4f_*.rs"
+          ],
+          "how": "git grep -l gravity_deepseek_v4 HEAD excluding src"
+        }
+      ]
+    },
+    {
+      "id": "qwen_model_runtimes",
+      "concept": "Qwen 30/38/80 complete runtimes and ledgers inside hawking-core model/",
+      "paths_pattern": "crates/hawking-core/src/model/qwen{30,38,80}_*.rs + qwen_complete_binary/",
+      "file_count": 28,
+      "notable_sizes": [
+        "qwen80_complete_runtime.rs 663073",
+        "qwen38_hybrid_decode.rs 427404",
+        "qwen30_complete_runtime.rs 310618"
+      ],
+      "classification": "CALLABLE",
+      "one_canonical_file": false,
+      "one_package_fewer_public_surfaces": true,
+      "split_required_by": [
+        "language",
+        "build"
+      ],
+      "historical_accretion": true,
+      "compression_verdict": "ONE_PACKAGE_FEWER_SURFACES",
+      "why": "model/mod.rs pub-mods every qwen80_* file at the model root. qwen_complete_binary/ is already a subdirectory. One file is impossible (qwen80_complete_runtime.rs alone is 663 KB). Should be model/{qwen30,qwen38,qwen80}/ packages. Callers outside model/ include decode_family.rs, metal/mod.rs, research_server.rs, token_ns — real, not imports-only.",
+      "call_sites": [
+        {
+          "symbol": "qwen80_*",
+          "path": "crates/hawking-core/src/decode_family.rs",
+          "line": 1,
+          "form": "call"
+        },
+        {
+          "symbol": "qwen80_*",
+          "path": "crates/hawking-core/src/metal/mod.rs",
+          "line": 1,
+          "form": "call"
+        },
+        {
+          "symbol": "qwen80_*",
+          "path": "crates/hawking-core/src/research_server.rs",
+          "line": 1,
+          "form": "call"
+        },
+        {
+          "symbol": "qwen80_*",
+          "path": "crates/hawking-core/src/token_ns/adapt.rs",
+          "line": 1,
+          "form": "call"
+        },
+        {
+          "symbol": "qwen80_*",
+          "path": "crates/hawking-core/src/token_ns/served_weight.rs",
+          "line": 1,
+          "form": "call"
+        }
+      ],
+      "evidence": [
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "model/mod.rs lists many pub mod qwen80_* / qwen38_* / qwen30_* plus qwen_complete_binary",
+          "refs": [
+            "crates/hawking-core/src/model/mod.rs"
+          ],
+          "how": "git show HEAD:crates/hawking-core/src/model/mod.rs | rg '^pub mod'"
+        },
+        {
+          "evidence_kind": "STATIC_VERIFICATION",
+          "claim": "qwen80_ identifier appears in decode_family.rs, metal/mod.rs, research_server.rs, token_ns (not only examples)",
+          "refs": [
+            "crates/hawking-core/src/decode_family.rs"
+          ],
+          "how": "git grep -l qwen80_ HEAD -- '*.rs' ':!crates/hawking-core/src/model/'"
+        }
+      ]
+    },
+    {
+      "id": "hawking_core_examples",
+      "concept": "Campaign probes stored as cargo examples",
+      "paths_pattern": "crates/hawking-core/examples/*.rs",
+      "file_count": 233,
+      "extra_metal": 9,
+      "classification": "CALLABLE",
+      "classification_note": "Each file is a cargo example binary by rustc convention. This session did not run them.",
+      "one_canonical_file": false,
+      "one_package_fewer_public_surfaces": true,
+      "split_required_by": [
+        "language",
+        "build"
+      ],
+      "historical_accretion": true,
+      "compression_verdict": "KEEP_SPLIT_LANGUAGE",
+      "why": "Cannot concatenate: cargo auto-discovers examples/*.rs as separate binaries. The defect is location and naming (examples/ vs probes/), not file count. Names are campaign steps (ascension_qwen30_*, gravity_deepseek_v4_*, flash_noetic_*).",
+      "call_sites": [],
+      "evidence": [
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "233 .rs + 9 .metal under crates/hawking-core/examples",
+          "refs": [
+            "crates/hawking-core/examples"
+          ],
+          "how": "git ls-tree -r --name-only HEAD crates/hawking-core/examples | awk -F. ext counts"
+        }
+      ]
+    },
+    {
+      "id": "tools_future_campaign_dump",
+      "concept": "tools/future as a directory (not one module family)",
+      "paths": [
+        "tools/future/"
+      ],
+      "file_count": 541,
+      "py_impls": 259,
+      "py_tests": 276,
+      "impls_with_colocated_test": 244,
+      "bytes": 15576893,
+      "classification": "TESTED",
+      "one_canonical_file": false,
+      "one_package_fewer_public_surfaces": true,
+      "split_required_by": [
+        "independent_test_reuse"
+      ],
+      "historical_accretion": true,
+      "compression_verdict": "HISTORICAL_ACCRETION",
+      "why": "538 python files. 244/259 impls have a colocated test_ sibling — that is independent testing, not a 6-way split of one concept. They share tools.future._common (write_receipt, seal) imported by 358 tools/future files plus a few outsiders. Do not concatenate. Split later by organ (mlp, deltanet, resident, flash, autonomy, ...).",
+      "call_sites": [
+        {
+          "symbol": "write_receipt / seal",
+          "path": "tools/future/_common.py",
+          "line": 82,
+          "form": "call"
+        }
+      ],
+      "evidence": [
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "tools/future 541 files, 538 py, 15.5MB; 118 files >50KB",
+          "refs": [
+            "tools/future"
+          ],
+          "how": "git ls-tree -r -l HEAD tools/future"
+        },
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "244/259 impls have test_<name>.py; 15 unpaired",
+          "refs": [
+            "tools/future/test_*.py"
+          ],
+          "how": "basename pairing script on git ls-tree"
+        },
+        {
+          "evidence_kind": "STATIC_VERIFICATION",
+          "claim": "372 files import tools.future._common (358 of them under tools/future)",
+          "refs": [
+            "tools/future/_common.py"
+          ],
+          "how": "git grep -l tools.future._common HEAD -- '*.py'"
+        }
+      ]
+    },
+    {
+      "id": "mlp_family",
+      "concept": "MLP byte census / teacher corpus / program / error budget (one Gravity organ slice)",
+      "paths_pattern": "tools/future/mlp_*.py",
+      "file_count": 32,
+      "impl_count": 16,
+      "test_count": 16,
+      "bytes": 1141832,
+      "classification": "TESTED",
+      "one_canonical_file": false,
+      "one_package_fewer_public_surfaces": true,
+      "split_required_by": [
+        "independent_test_reuse"
+      ],
+      "historical_accretion": true,
+      "compression_verdict": "ONE_PACKAGE_FEWER_SURFACES",
+      "why": "16 impl files share one lifecycle: mlp_byte_census, mlp_teacher_corpus, mlp_auxiliary_information, mlp_code_information, mlp_shared_program are imported by the others and by deltanet_*. Independent tests exist per file. Not one file (mlp_structured_operator.py is 105534 bytes; total 1.1MB). Should be tools.future.mlp or a Gravity mlp package with a small public surface (census, corpus, program) instead of 16 importable modules.",
+      "call_sites": [
+        {
+          "symbol": "mlp_byte_census.resolve_artifact_root",
+          "path": "tools/future/mlp_auxiliary_information.py",
+          "line": 32,
+          "form": "call"
+        },
+        {
+          "symbol": "mlp_teacher_corpus.load_x_f16",
+          "path": "tools/future/deltanet_generated_transition.py",
+          "line": 783,
+          "form": "call"
+        },
+        {
+          "symbol": "mlp_shared_program",
+          "path": "tools/future/mlp_nonlinear_program.py",
+          "line": 64,
+          "form": "call"
+        },
+        {
+          "symbol": "mlp_auxiliary_information.parse_catalog_records",
+          "path": "tools/future/deltanet_representation.py",
+          "line": 32,
+          "form": "call"
+        }
+      ],
+      "evidence": [
+        {
+          "evidence_kind": "STATIC_VERIFICATION",
+          "claim": "Cross-family calls: deltanet_* and aux_* call mlp_teacher_corpus / mlp_byte_census symbols",
+          "refs": [
+            "tools/future/deltanet_generated_transition.py:783",
+            "tools/future/mlp_nonlinear_program.py:64"
+          ],
+          "how": "git grep HEAD 'from tools.future.mlp_' -- '*.py'"
+        },
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "16 mlp_ impl files + 16 tests, 1.14MB",
+          "refs": [
+            "tools/future/mlp_*.py"
+          ],
+          "how": "git ls-tree -r -l HEAD tools/future | mlp_"
+        }
+      ]
+    },
+    {
+      "id": "tools_headless_noetic",
+      "concept": "Noetic census/IR/scoreboard/parent probes under tools/headless",
+      "paths_pattern": "tools/headless/noetic_*.py",
+      "file_count": 48,
+      "classification": "TESTED",
+      "one_canonical_file": false,
+      "one_package_fewer_public_surfaces": true,
+      "split_required_by": [
+        "independent_test_reuse"
+      ],
+      "historical_accretion": true,
+      "compression_verdict": "ONE_PACKAGE_FEWER_SURFACES",
+      "why": "44 first-token 'noetic' files in tools/headless (~1.9MB) plus tests. They are campaign probes sharing a brand, not one module. Some have colocated tests (test_noetic_ir, test_noetic_scoreboard, ...). Should become a Noetic package under Gravity; do not concatenate.",
+      "call_sites": [],
+      "evidence": [
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "48 tools/headless paths matching noetic; first-token family n=44 bytes=1908287",
+          "refs": [
+            "tools/headless/noetic_*.py"
+          ],
+          "how": "git ls-tree --name-only HEAD tools/headless | grep noetic"
+        }
+      ]
+    },
+    {
+      "id": "tools_roadmap",
+      "concept": "Capability-graph auditor (already a package)",
+      "paths": [
+        "tools/roadmap/"
+      ],
+      "file_count": 14,
+      "classification": "INTEGRATED",
+      "one_canonical_file": false,
+      "one_package_fewer_public_surfaces": false,
+      "split_required_by": [
+        "independent_test_reuse",
+        "authority"
+      ],
+      "historical_accretion": false,
+      "compression_verdict": "KEEP_SPLIT_REUSE",
+      "why": "Already the desired shape: one package, CLI (__main__), parse/reach/hardware/gitfs/auditor/catalog. External CALL sites: tools.roadmap.hardware.probe from accelerator hardware_doctor and acceptance/odyssey/run.py; auditor writes civilization/CAPABILITY_GRAPH.json. Do not collapse to one file.",
+      "call_sites": [
+        {
+          "symbol": "probe",
+          "path": "tools/accelerator/hardware_doctor.py",
+          "line": 50,
+          "form": "call"
+        },
+        {
+          "symbol": "probe",
+          "path": "tools/acceptance/odyssey/run.py",
+          "line": 678,
+          "form": "call"
+        },
+        {
+          "symbol": "probe_all",
+          "path": "tools/acceptance/odyssey/run.py",
+          "line": 783,
+          "form": "call"
+        },
+        {
+          "symbol": "blocked_hardware_wakes",
+          "path": "tools/lifecycle_events.py",
+          "line": 19,
+          "form": "call"
+        },
+        {
+          "symbol": "audit / write_graph",
+          "path": "tools/roadmap/__main__.py",
+          "line": 10,
+          "form": "call"
+        }
+      ],
+      "evidence": [
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "14 files under tools/roadmap including auditor.py, hardware.py, tests",
+          "refs": [
+            "tools/roadmap"
+          ],
+          "how": "git ls-tree -r --name-only HEAD tools/roadmap"
+        },
+        {
+          "evidence_kind": "STATIC_VERIFICATION",
+          "claim": "Non-test callers of probe/probe_all/blocked_hardware_wakes exist",
+          "refs": [
+            "tools/accelerator/hardware_doctor.py",
+            "tools/acceptance/odyssey/run.py",
+            "tools/lifecycle_events.py"
+          ],
+          "how": "git grep HEAD tools.roadmap -- '*.py'"
+        },
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "CAPABILITY_GRAPH.json generated_by tools/roadmap/auditor.py",
+          "refs": [
+            "civilization/CAPABILITY_GRAPH.json generated_by"
+          ],
+          "how": "json load"
+        }
+      ]
+    },
+    {
+      "id": "thin_unintegrated_crates",
+      "concept": "Workspace crates with unit tests and zero Cargo dependents",
+      "paths": [
+        "crates/hawking-eval",
+        "crates/hawking-perception",
+        "crates/hawking-comms",
+        "crates/hide-gateway"
+      ],
+      "classification": "TESTED",
+      "classification_note": "Each crate has #[test] functions that call its own symbols. No other Cargo.toml depends on them. Python support_halo_gate.py reimplements evaluation and does not call hawking_eval. Not INTEGRATED. Not SCAFFOLDED — code and tests exist.",
+      "one_canonical_file": false,
+      "one_package_fewer_public_surfaces": true,
+      "split_required_by": [],
+      "historical_accretion": true,
+      "compression_verdict": "HISTORICAL_ACCRETION",
+      "why": "Crate boundaries were cut from Ascension Bible sections (eval G5, perception §19, comms §20, gateway §§15–16) before a non-test caller existed. The split is not required by rustc. Do not merge until a caller exists OR delete the crate boundary and keep the modules inside hide-core/hawking-research. Concatenating the four crates together would mix unrelated bible sections — that is the wrong collapse.",
+      "call_sites": [
+        {
+          "symbol": "score",
+          "path": "crates/hawking-eval/src/lib.rs",
+          "line": 241,
+          "form": "call"
+        },
+        {
+          "symbol": "RetrievalGateway / ToolGateway tests",
+          "path": "crates/hide-gateway/src/retrieval/mod.rs",
+          "line": 132,
+          "form": "call"
+        }
+      ],
+      "evidence": [
+        {
+          "evidence_kind": "STATIC_VERIFICATION",
+          "claim": "No Cargo.toml other than the crate itself names hawking-eval, hawking-perception, hawking-comms, hide-gateway as a dependency",
+          "refs": [
+            "crates/*/Cargo.toml",
+            "Cargo.toml workspace members"
+          ],
+          "how": "git grep hawking-eval HEAD -- '**/Cargo.toml' returns only crates/hawking-eval/Cargo.toml"
+        },
+        {
+          "evidence_kind": "STATIC_VERIFICATION",
+          "claim": "hawking_eval/hawking_perception/hawking_comms/hide_gateway rust identifiers outside own crate are absent except json/docs",
+          "refs": [
+            "git grep hawking_eval HEAD excluding Cargo.lock and own crate"
+          ],
+          "how": "git grep HEAD"
+        },
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "hawking-eval lib.rs #[test] calls score(); hide-gateway has 17 #[test]; hawking-perception 6; hawking-comms 6",
+          "refs": [
+            "crates/hawking-eval/src/lib.rs:241",
+            "crates/hide-gateway/src/retrieval/mod.rs"
+          ],
+          "how": "git grep -c '#\\[test\\]'"
+        },
+        {
+          "evidence_kind": "STATIC_VERIFICATION",
+          "claim": "tools/eval/support_halo_gate.py is a Python gate; it does not import hawking_eval. capability_eval.py only cites the rust path as a string.",
+          "refs": [
+            "tools/eval/support_halo_gate.py",
+            "tools/future/capability_eval.py:17"
+          ],
+          "how": "git grep support_halo HEAD -- '*.py'"
+        }
+      ]
+    },
+    {
+      "id": "hawking_index_query",
+      "concept": "CLI over hawking-index python-facts",
+      "paths": [
+        "crates/hawking-index-query/"
+      ],
+      "file_count": 4,
+      "classification": "CALLABLE",
+      "one_canonical_file": false,
+      "one_package_fewer_public_surfaces": true,
+      "split_required_by": [],
+      "historical_accretion": true,
+      "compression_verdict": "ONE_PACKAGE_FEWER_SURFACES",
+      "why": "Cargo.toml comment: lives beside hawking-index so r1 can later inline the same CLI without a second scanner. No rust crate imports hawking_index_query. tools/roadmap/index_client.py invokes the CLI `hawking-index-query python-facts` (and hawking-index python-facts). The crate boundary is anticipatory. Could be a bin of hawking-index (which already has hawking-index and hawking-artifact bins).",
+      "call_sites": [
+        {
+          "symbol": "python_facts:: (CLI main)",
+          "path": "crates/hawking-index-query/src/main.rs",
+          "line": 11,
+          "form": "call"
+        },
+        {
+          "symbol": "hawking-index-query python-facts",
+          "path": "tools/roadmap/index_client.py",
+          "line": 6,
+          "form": "call"
+        }
+      ],
+      "evidence": [
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "Cargo.toml workspace comment describes later inlining; crate has no path-dep on hawking-index in the parsed path-dep graph (own main.rs only)",
+          "refs": [
+            "Cargo.toml",
+            "crates/hawking-index-query/Cargo.toml"
+          ],
+          "how": "path-dep parse of crate Cargo.toml files"
+        },
+        {
+          "evidence_kind": "STATIC_VERIFICATION",
+          "claim": "tools/roadmap/index_client.py documents invoking hawking-index-query python-facts",
+          "refs": [
+            "tools/roadmap/index_client.py:1-9"
+          ],
+          "how": "git show HEAD:tools/roadmap/index_client.py"
+        },
+        {
+          "evidence_kind": "STATIC_VERIFICATION",
+          "claim": "git grep hawking_index_query HEAD outside the crate is empty",
+          "refs": [
+            "crates/hawking-index-query"
+          ],
+          "how": "git grep -l hawking_index_query HEAD"
+        }
+      ]
+    },
+    {
+      "id": "hide_core_objects",
+      "concept": "hide-core object system split across objects_*.rs",
+      "paths_pattern": "crates/hide-core/src/objects*.rs",
+      "file_count": 13,
+      "classification": "INTEGRATED",
+      "one_canonical_file": false,
+      "one_package_fewer_public_surfaces": false,
+      "split_required_by": [
+        "language"
+      ],
+      "historical_accretion": false,
+      "compression_verdict": "KEEP_SPLIT_LANGUAGE",
+      "why": "lib.rs has a single pub mod objects; objects_*.rs are the module's internal split (store 24828, pipeline 15334, ...). hide-backend calls hide_core::objects from hcli_sources.rs and headless.rs. This is a normal rust module split, not campaign accretion. Do not concatenate.",
+      "call_sites": [
+        {
+          "symbol": "hide_core::objects",
+          "path": "crates/hide-backend/src/hcli_sources.rs",
+          "line": 1,
+          "form": "call"
+        },
+        {
+          "symbol": "hide_core::objects",
+          "path": "crates/hide-backend/src/headless.rs",
+          "line": 1,
+          "form": "call"
+        }
+      ],
+      "evidence": [
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "pub mod objects in hide-core lib.rs; 13 objects*.rs files",
+          "refs": [
+            "crates/hide-core/src/lib.rs:26",
+            "crates/hide-core/src/objects_*.rs"
+          ],
+          "how": "git ls-tree -r -l HEAD crates/hide-core/src | objects"
+        },
+        {
+          "evidence_kind": "STATIC_VERIFICATION",
+          "claim": "hide-backend uses hide_core::objects outside the defining crate",
+          "refs": [
+            "crates/hide-backend/src/hcli_sources.rs",
+            "crates/hide-backend/src/headless.rs"
+          ],
+          "how": "git grep hide_core::objects HEAD -- '*.rs' ':!crates/hide-core'"
+        }
+      ]
+    },
+    {
+      "id": "hcli_goal_pipeline",
+      "concept": "Goal compile pipeline (tokenizer, ir, graph, compile, bank, GoalCompiler)",
+      "paths": [
+        "hcli/goal.py",
+        "hcli/goal_bank.py",
+        "hcli/goal_compile.py",
+        "hcli/goal_graph.py",
+        "hcli/goal_ir.py",
+        "hcli/goal_tokenizer.py"
+      ],
+      "tests": [
+        "hcli/test_goal_bank.py",
+        "hcli/test_goal_compile.py",
+        "hcli/test_goal_compiler_acceptance.py",
+        "hcli/test_goal_graph.py",
+        "hcli/test_goal_ir.py",
+        "hcli/test_goal_source_compile.py",
+        "hcli/test_goal_tokenizer.py",
+        "hcli/test_goal_verifier_synthesis.py"
+      ],
+      "classification": "INTEGRATED",
+      "one_canonical_file": false,
+      "one_package_fewer_public_surfaces": false,
+      "split_required_by": [
+        "authority",
+        "independent_test_reuse"
+      ],
+      "historical_accretion": false,
+      "compression_verdict": "KEEP_SPLIT_AUTHORITY",
+      "why": "Pipeline stages with colocated tests. GoalCompiler() is constructed in engine.py and controller.py; GoalBank is used in agentos/resident.py, agentos/runtime.py, controller.py; compile_worker_context is re-exported by context.py. docs/CURRENT_ARCHITECTURE.md forbids nesting these under hcli/agentos/ (incident F24: one file, two dotted names, two class objects). Do not concatenate. Do not make hcli/goal/ a directory if that would shadow hcli.goal.",
+      "call_sites": [
+        {
+          "symbol": "GoalCompiler",
+          "path": "hcli/engine.py",
+          "line": 593,
+          "form": "construct"
+        },
+        {
+          "symbol": "goal_compiler.compile",
+          "path": "hcli/engine.py",
+          "line": 1292,
+          "form": "call"
+        },
+        {
+          "symbol": "GoalCompiler",
+          "path": "hcli/controller.py",
+          "line": 1399,
+          "form": "construct"
+        },
+        {
+          "symbol": "GoalCompiler",
+          "path": "hcli/agentos/runtime.py",
+          "line": 280,
+          "form": "call"
+        },
+        {
+          "symbol": "GoalBank",
+          "path": "hcli/agentos/resident.py",
+          "line": 551,
+          "form": "construct"
+        },
+        {
+          "symbol": "GoalBank.add",
+          "path": "hcli/agentos/resident.py",
+          "line": 1045,
+          "form": "call"
+        },
+        {
+          "symbol": "compile_worker_context",
+          "path": "hcli/context.py",
+          "line": 14,
+          "form": "call"
+        }
+      ],
+      "evidence": [
+        {
+          "evidence_kind": "STATIC_VERIFICATION",
+          "claim": "GoalCompiler() constructed in engine.py and controller.py; compile() called",
+          "refs": [
+            "hcli/engine.py:593",
+            "hcli/engine.py:1292",
+            "hcli/controller.py:1399"
+          ],
+          "how": "git grep HEAD GoalCompiler -- '*.py'"
+        },
+        {
+          "evidence_kind": "STATIC_VERIFICATION",
+          "claim": "GoalBank constructed and .add called in agentos/resident.py",
+          "refs": [
+            "hcli/agentos/resident.py:551",
+            "hcli/agentos/resident.py:1045"
+          ],
+          "how": "git grep HEAD GoalBank -- '*.py'"
+        },
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "CURRENT_ARCHITECTURE.md: files are not nested under hcli/agentos/ (that would recreate F24)",
+          "refs": [
+            "docs/CURRENT_ARCHITECTURE.md ownership table"
+          ],
+          "how": "git show HEAD:docs/CURRENT_ARCHITECTURE.md"
+        }
+      ]
+    },
+    {
+      "id": "hcli_agentos_nested_growth",
+      "concept": "hcli/agentos/ is both a re-export surface and a 50-file nested package",
+      "paths": [
+        "hcli/agentos/"
+      ],
+      "file_count": 50,
+      "classification": "CALLABLE",
+      "one_canonical_file": false,
+      "one_package_fewer_public_surfaces": true,
+      "split_required_by": [
+        "authority"
+      ],
+      "historical_accretion": true,
+      "compression_verdict": "KEEP_SPLIT_AUTHORITY",
+      "why": "SURPRISE. docs/CURRENT_ARCHITECTURE.md says AgentOS implementations stay at hcli.goal etc. and agentos re-exports so ownership is importable, not a comment. That is true for GoalCompiler. It is false that hcli/agentos/ is only re-exports: the directory holds 50 files including flash_*, resident.py, fpga_preboard.py, modellake_*, qwen27_*, tests. Do not collapse flash probes into goal.py. Do not move GoalCompiler into this directory. The nested flash_* files are a second concept (Flash campaign inside AgentOS) with no independent crate, but they do have an identity reason to stay out of hcli.goal.",
+      "call_sites": [
+        {
+          "symbol": "AgentOS",
+          "path": "hcli/agentos/runtime.py",
+          "line": 1,
+          "form": "construct"
+        },
+        {
+          "symbol": "GoalBank",
+          "path": "hcli/agentos/resident.py",
+          "line": 551,
+          "form": "construct"
+        }
+      ],
+      "evidence": [
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "hcli/agentos has 50 files; __init__.py re-exports GoalCompiler and also defines AgentOS from runtime.py",
+          "refs": [
+            "hcli/agentos/__init__.py",
+            "git ls-tree hcli/agentos"
+          ],
+          "how": "git ls-tree -r --name-only HEAD hcli/agentos; git show HEAD:hcli/agentos/__init__.py"
+        },
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "Ownership marker packages hcli/doctor, hcli/gravity, hcli/vmcp are one-file __init__.py directories",
+          "refs": [
+            "hcli/doctor/__init__.py",
+            "hcli/gravity/__init__.py",
+            "hcli/vmcp/__init__.py"
+          ],
+          "how": "git ls-tree HEAD hcli/doctor hcli/gravity hcli/vmcp"
+        }
+      ]
+    },
+    {
+      "id": "doctor_scattered",
+      "concept": "Doctor as one organ implemented in many campaign trees",
+      "paths": [
+        "tools/doctor/",
+        "lab/operators/doctor6/",
+        "tools/headless/doctor_diagnosis.py",
+        "tools/headless/doctor_technique_library.py",
+        "tools/headless/doctor_technique_registry.py",
+        "tools/headless/doctor_transfer.py",
+        "tools/headless/noetic_doctor_v2.py",
+        "tools/future/hardware_doctor.py",
+        "tools/accelerator/hardware_doctor.py",
+        "tools/doctor_seal.py",
+        "tools/gravity_doctor_capability.py",
+        "tools/gravity_doctor_dimensions.py",
+        "tools/gravity_doctor_gate.py",
+        "tools/flash_doctor_bank_screen.py",
+        "tools/flash_doctor_ngram_screen.py",
+        "hcli/doctor/__init__.py"
+      ],
+      "classification": "INTEGRATED",
+      "classification_note": "tools/doctor.engine.diagnose is called from tools/doctor/__main__.py; ebpw_categories calls tools.doctor.zeros. doctor6 is its own package with lab tests. Multiple Doctors are live.",
+      "one_canonical_file": false,
+      "one_package_fewer_public_surfaces": true,
+      "split_required_by": [
+        "authority"
+      ],
+      "historical_accretion": true,
+      "compression_verdict": "ONE_PACKAGE_FEWER_SURFACES",
+      "why": "Doctor is one organ (nomenclature). tools/doctor/ is already a package (engine, zeros, anatomy, order) with tests. lab/operators/doctor6/ is already a package (prescribe/treat/verify/billing/rungs) with lab/tests/test_doctor6_*.py. Those two are different generations (representation zeros vs physical prescription) — keep both, one organ home. The accretion is the third+ copies: headless doctor_*, future vs accelerator hardware_doctor, gravity_doctor_*, flash_doctor_*, hcli.doctor marker.",
+      "call_sites": [
+        {
+          "symbol": "diagnose / build / zeros_controls",
+          "path": "tools/doctor/__main__.py",
+          "line": 13,
+          "form": "call"
+        },
+        {
+          "symbol": "tools.doctor.zeros",
+          "path": "tools/future/ebpw_categories.py",
+          "line": 969,
+          "form": "call"
+        },
+        {
+          "symbol": "prescribe",
+          "path": "lab/operators/doctor6/__main__.py",
+          "line": 149,
+          "form": "call"
+        },
+        {
+          "symbol": "treat",
+          "path": "lab/operators/doctor6/__main__.py",
+          "line": 237,
+          "form": "call"
+        },
+        {
+          "symbol": "verify",
+          "path": "lab/operators/doctor6/__main__.py",
+          "line": 126,
+          "form": "call"
+        }
+      ],
+      "evidence": [
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "Doctor-named python files exist under tools/doctor, lab/operators/doctor6, tools/headless, tools/future, tools/accelerator, tools/gravity_doctor_*, tools/flash_doctor_*, hcli/doctor",
+          "refs": [
+            "git ls-tree grep doctor .py"
+          ],
+          "how": "git ls-tree -r --name-only HEAD | grep -i doctor | grep .py"
+        },
+        {
+          "evidence_kind": "STATIC_VERIFICATION",
+          "claim": "ebpw_categories calls tools.doctor.zeros (cross-package call, not import-only)",
+          "refs": [
+            "tools/future/ebpw_categories.py:969"
+          ],
+          "how": "git grep HEAD tools.doctor.zeros"
+        },
+        {
+          "evidence_kind": "STATIC_VERIFICATION",
+          "claim": "doctor6 CLI __main__ calls prescribe/treat/verify; lab/tests/test_doctor6_*.py exist; several lab/operators mention doctor6",
+          "refs": [
+            "lab/operators/doctor6/__main__.py",
+            "lab/tests/test_doctor6_hgravs01.py"
+          ],
+          "how": "git grep -l lab.operators.doctor6 HEAD -- '*.py' ':!lab/operators/doctor6'"
+        }
+      ]
+    },
+    {
+      "id": "doctor6_package",
+      "concept": "lab.operators.doctor6 (already a package)",
+      "paths": [
+        "lab/operators/doctor6/"
+      ],
+      "file_count": 14,
+      "classification": "TESTED",
+      "one_canonical_file": false,
+      "one_package_fewer_public_surfaces": false,
+      "split_required_by": [
+        "independent_test_reuse"
+      ],
+      "historical_accretion": false,
+      "compression_verdict": "KEEP_SPLIT_REUSE",
+      "why": "Already the EBPW-good shape: one package, CLI, tests in lab/tests/test_doctor6_*.py. Do not concatenate into one file. Tests live one directory away — lab convention, not a defect by itself.",
+      "call_sites": [
+        {
+          "symbol": "prescribe",
+          "path": "lab/operators/doctor6/__main__.py",
+          "line": 149,
+          "form": "call"
+        },
+        {
+          "symbol": "doctor6",
+          "path": "lab/tests/test_doctor6_prescribe_membound.py",
+          "line": 1,
+          "form": "call"
+        }
+      ],
+      "evidence": [
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "14 files including prescribe.py treat.py verify.py billing.py rungs.py __main__.py",
+          "refs": [
+            "lab/operators/doctor6"
+          ],
+          "how": "git ls-tree -r --name-only HEAD lab/operators/doctor6"
+        },
+        {
+          "evidence_kind": "STATIC_VERIFICATION",
+          "claim": "lab/tests/test_doctor6_*.py exist as callers of the package",
+          "refs": [
+            "lab/tests/test_doctor6_hgravs01.py",
+            "lab/tests/test_doctor6_parallel.py",
+            "lab/tests/test_doctor6_prescribe_membound.py",
+            "lab/tests/test_doctor6_waterfill.py"
+          ],
+          "how": "git grep -l doctor6 HEAD -- lab/tests"
+        }
+      ]
+    },
+    {
+      "id": "lab_operators_ascension",
+      "concept": "lab/operators campaign-named operator scripts",
+      "paths_pattern": "lab/operators/ascension_*.py, q80_*.py, qwen38_*.py",
+      "counts": {
+        "ascension_*": 127,
+        "q80_*": 19,
+        "qwen38*": 6,
+        "operators_py_total": 269
+      },
+      "classification": "CALLABLE",
+      "one_canonical_file": false,
+      "one_package_fewer_public_surfaces": true,
+      "split_required_by": [],
+      "historical_accretion": true,
+      "compression_verdict": "HISTORICAL_ACCRETION",
+      "why": "lab/ is documented as campaign governance (docs/CURRENT_ARCHITECTURE.md) but lab/operators holds 272 files of runtime operators. 127 ascension_* names are campaign-prefixed. They are independent scripts (many without tests — 160 operators lack a lab/tests sibling). Not one concept. Do not concatenate. Absorb into Gravity runtime operators later; stop using lab/ as a third tools/.",
+      "call_sites": [],
+      "evidence": [
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "lab/operators 272 files; 127 ascension_*; 19 q80_*; 269 py",
+          "refs": [
+            "lab/operators"
+          ],
+          "how": "git ls-tree -r --name-only HEAD lab/operators | grep -c"
+        },
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "lab/tests 146 py; 109 tests whose impl basename exists in operators; 160 operators without obvious test sibling",
+          "refs": [
+            "lab/tests",
+            "lab/operators"
+          ],
+          "how": "basename pairing script"
+        }
+      ]
+    },
+    {
+      "id": "lab_tests_separated",
+      "concept": "Tests for lab/operators live in lab/tests not beside the operator",
+      "paths": [
+        "lab/tests/",
+        "lab/operators/"
+      ],
+      "classification": "TESTED",
+      "one_canonical_file": false,
+      "one_package_fewer_public_surfaces": false,
+      "split_required_by": [
+        "independent_test_reuse"
+      ],
+      "historical_accretion": false,
+      "compression_verdict": "KEEP_SPLIT_REUSE",
+      "why": "A test package separated from operators is a lab convention (like crates/*/tests). 109/146 tests map to an operator basename. Unmapped tests govern lab/*.py (genesis_pool, execution_sandbox) or doctor6. tools/future colocates tests; lab does not. Either is valid. Not a compression target unless operators move organs.",
+      "call_sites": [],
+      "evidence": [
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "109 lab/tests files pair by basename with lab/operators; 37 unmapped",
+          "refs": [
+            "lab/tests",
+            "lab/operators"
+          ],
+          "how": "basename pairing"
+        }
+      ]
+    },
+    {
+      "id": "receipts_campaign_trees",
+      "concept": "Receipts stored under campaign names after the concepts became generic",
+      "paths": [
+        "receipts/future/",
+        "receipts/headless/",
+        "receipts/ascent-2026-08-16/",
+        "receipts/ascent-2026-08-18/",
+        "receipts/odyssey-i/"
+      ],
+      "counts": {
+        "headless": 1624,
+        "future": 1054,
+        "ascent-2026-08-16": 716,
+        "odyssey-i": 148,
+        "future_nowait": 592
+      },
+      "overlap_future_headless_basenames": 42,
+      "classification": "INTEGRATED",
+      "classification_note": "Receipts are evidence. Never delete. Classification is of the *tree*, not of each claim inside.",
+      "one_canonical_file": false,
+      "one_package_fewer_public_surfaces": true,
+      "split_required_by": [
+        "authority"
+      ],
+      "historical_accretion": true,
+      "compression_verdict": "ONE_PACKAGE_FEWER_SURFACES",
+      "why": "42 JSON basenames exist in both receipts/future/evidence and receipts/headless (ACCELERATOR_*, APPLE_ANE_*, FLASH_META_*, DOCTOR_TRANSFER, ...). ORGAN_LIBRARY_CONSOLIDATION.json already states receipts are never deleted and rivals become aliases. Reindex by organ; alias duplicates; do not merge JSON bodies without a producer-side canonical writer.",
+      "call_sites": [],
+      "evidence": [
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "42 overlapping JSON basenames between receipts/future (excluding nowait) and receipts/headless",
+          "refs": [
+            "receipts/future/evidence/ACCELERATOR_SCOREBOARD.json",
+            "receipts/headless/ACCELERATOR_SCOREBOARD.json"
+          ],
+          "how": "basename intersection script on git ls-tree"
+        },
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "receipts/future/nowait-* = 592 files; receipts/ascent-2026-08-16 = 716",
+          "refs": [
+            "receipts/future",
+            "receipts/ascent-2026-08-16"
+          ],
+          "how": "git ls-tree counts"
+        },
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "ORGAN_LIBRARY_CONSOLIDATION.json law: receipts never deleted; rival spellings become aliases",
+          "refs": [
+            "receipts/headless/ORGAN_LIBRARY_CONSOLIDATION.json"
+          ],
+          "how": "git show HEAD; schema hawking.headless.organ_library_consolidation.v1"
+        }
+      ]
+    },
+    {
+      "id": "workspace_campaign_records",
+      "concept": "workspace/campaign records/evidence/governance",
+      "paths": [
+        "workspace/campaign/"
+      ],
+      "file_count": 5555,
+      "breakdown": {
+        "records": 3571,
+        "evidence": 1433,
+        "governance": 316,
+        "odyssey": 169
+      },
+      "classification": "SCAFFOLDED",
+      "classification_note": "These are artifacts, not capabilities. Do not treat file presence as runtime capability.",
+      "one_canonical_file": false,
+      "one_package_fewer_public_surfaces": true,
+      "split_required_by": [],
+      "historical_accretion": true,
+      "compression_verdict": "HISTORICAL_ACCRETION",
+      "why": "Not source. 5555 files under a campaign directory at top-level-adjacent workspace/. Keep off the organ source path. Do not concatenate.",
+      "call_sites": [],
+      "evidence": [
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "workspace/campaign 5555 files (records 3571 evidence 1433 governance 316)",
+          "refs": [
+            "workspace/campaign"
+          ],
+          "how": "git ls-tree -r --name-only HEAD | awk second-level"
+        }
+      ]
+    },
+    {
+      "id": "superwave_keep_dirs",
+      "concept": "hawking-experiments/superwave one-file .keep directories",
+      "paths_pattern": "hawking-experiments/superwave/g1/{sing,w2}/*/.keep",
+      "keep_count": 50,
+      "classification": "SCAFFOLDED",
+      "one_canonical_file": false,
+      "one_package_fewer_public_surfaces": true,
+      "split_required_by": [],
+      "historical_accretion": true,
+      "compression_verdict": "HISTORICAL_ACCRETION",
+      "why": "50 directories exist only to hold .keep. Nested dirs with no architectural boundary. Legacy experiment tree. Not source modules to concatenate.",
+      "call_sites": [],
+      "evidence": [
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "50 .keep files under hawking-experiments/superwave; many one-file dirs (adversarial, auction, causal, ...)",
+          "refs": [
+            "hawking-experiments/superwave/g1/sing/adversarial/.keep"
+          ],
+          "how": "git ls-tree -r --name-only HEAD hawking-experiments/superwave | grep .keep | wc -l"
+        }
+      ]
+    },
+    {
+      "id": "frankenstein_vs_condense",
+      "concept": "Frankenstein experiment tree vs tools/condense",
+      "paths": [
+        "hawking-experiments/frankenstein/",
+        "tools/condense/"
+      ],
+      "counts": {
+        "frankenstein": 1500,
+        "frankenstein/data": 1440,
+        "tools/condense": 130,
+        "frankenstein/operators": 28,
+        "frankenstein/condense": 31
+      },
+      "classification": "CALLABLE",
+      "one_canonical_file": false,
+      "one_package_fewer_public_surfaces": true,
+      "split_required_by": [],
+      "historical_accretion": true,
+      "compression_verdict": "HISTORICAL_ACCRETION",
+      "why": "hawking-experiments/frankenstein is 1500 files of which 1440 are data. tools/condense is the living tool (130 files). Duplicate location for Condense. Keep tools/condense as source; treat frankenstein/data as evidence.",
+      "call_sites": [],
+      "evidence": [
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "frankenstein 1500 files, 1440 under data/; tools/condense 130; no basename overlap in a py-vs-py check",
+          "refs": [
+            "hawking-experiments/frankenstein",
+            "tools/condense"
+          ],
+          "how": "git ls-tree counts; overlap script condense vs frankenstein py = 0"
+        }
+      ]
+    },
+    {
+      "id": "ramanujan",
+      "concept": "Ramanujan blocked scaffold",
+      "paths": [
+        "ramanujan/"
+      ],
+      "file_count": 110,
+      "classification": "SCAFFOLDED",
+      "one_canonical_file": false,
+      "one_package_fewer_public_surfaces": false,
+      "split_required_by": [
+        "authority"
+      ],
+      "historical_accretion": false,
+      "compression_verdict": "KEEP_SPLIT_AUTHORITY",
+      "why": "README: non-authorizing scaffold blocked on Hawking completion. Nested scaffold/container/governance/records is an authority boundary, not accretion. Do not fold into tools/ or hcli/.",
+      "call_sites": [],
+      "evidence": [
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "ramanujan/README.md states non-authorizing scaffold; HAWKING_COMPLETION_GATE.json is the boundary",
+          "refs": [
+            "ramanujan/README.md",
+            "ramanujan/governance/boundary/HAWKING_COMPLETION_GATE.json"
+          ],
+          "how": "git show HEAD:ramanujan/README.md"
+        }
+      ]
+    },
+    {
+      "id": "tools_haider_fossil",
+      "concept": "Fossil HCLI tree beside live hcli/",
+      "paths": [
+        "tools/haider/",
+        "hcli/"
+      ],
+      "classification": "SUPERSEDED",
+      "one_canonical_file": false,
+      "one_package_fewer_public_surfaces": true,
+      "split_required_by": [
+        "authority"
+      ],
+      "historical_accretion": true,
+      "compression_verdict": "KEEP_SPLIT_AUTHORITY",
+      "why": "docs/CURRENT_ARCHITECTURE.md: import tools.haider.hcli raises ImportError; product is hcli/. Tests stayed under tools/haider/hcli/tests/. That split is required so tests of live hcli do not live in a second package that can be imported as hcli. Do not concatenate fossil and live. The remaining defect is two locations for one test suite.",
+      "call_sites": [],
+      "evidence": [
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "CURRENT_ARCHITECTURE.md locks F24: import tools.haider.hcli raises ImportError; tests stayed under tools/haider/hcli/tests/",
+          "refs": [
+            "docs/CURRENT_ARCHITECTURE.md"
+          ],
+          "how": "git show HEAD:docs/CURRENT_ARCHITECTURE.md"
+        },
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "tools/haider/hcli has 52 files",
+          "refs": [
+            "tools/haider/hcli"
+          ],
+          "how": "git ls-tree counts"
+        }
+      ]
+    },
+    {
+      "id": "tools_root_flash_scripts",
+      "concept": "27 flash_*.py files at tools/ root plus more under future/headless",
+      "paths_pattern": "tools/flash_*.py",
+      "file_count": 27,
+      "classification": "CALLABLE",
+      "one_canonical_file": false,
+      "one_package_fewer_public_surfaces": true,
+      "split_required_by": [],
+      "historical_accretion": true,
+      "compression_verdict": "ONE_PACKAGE_FEWER_SURFACES",
+      "why": "Flash/Noetic probes dropped at tools/ root (no package). Same brand as tools/future/flash_* and tools/headless/FLASH receipts. Not one file. Should live in a Gravity/Noetic package.",
+      "call_sites": [],
+      "evidence": [
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "27 tools/flash_*.py at tools/ root; tools/ also has 154 loose py files",
+          "refs": [
+            "tools/flash_organ_census.py",
+            "tools/flash_meta_representation.py"
+          ],
+          "how": "git ls-tree --name-only HEAD tools/ | grep flash_"
+        }
+      ]
+    },
+    {
+      "id": "token_ns",
+      "concept": "token_ns ledger package inside hawking-core",
+      "paths": [
+        "crates/hawking-core/src/token_ns/"
+      ],
+      "file_count": 7,
+      "classification": "CALLABLE",
+      "one_canonical_file": false,
+      "one_package_fewer_public_surfaces": false,
+      "split_required_by": [
+        "language",
+        "independent_test_reuse"
+      ],
+      "historical_accretion": false,
+      "compression_verdict": "KEEP_SPLIT_REUSE",
+      "why": "Already a package (mod.rs, schema, audit, energy, reconcile, adapt, served_weight). Called from gravity_deepseek_v4_token_ns_ledger and examples. Model of a good split.",
+      "call_sites": [
+        {
+          "symbol": "token_ns",
+          "path": "crates/hawking-core/src/token_ns/adapt.rs",
+          "line": 1,
+          "form": "call"
+        },
+        {
+          "symbol": "token_ns::",
+          "path": "crates/hawking-core/examples/joint_token_ns.rs",
+          "line": 1,
+          "form": "call"
+        }
+      ],
+      "evidence": [
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "7 files under crates/hawking-core/src/token_ns",
+          "refs": [
+            "crates/hawking-core/src/token_ns"
+          ],
+          "how": "git ls-tree"
+        },
+        {
+          "evidence_kind": "STATIC_VERIFICATION",
+          "claim": "token_ns:: used from examples and adapt.rs",
+          "refs": [
+            "crates/hawking-core/examples/joint_token_ns.rs"
+          ],
+          "how": "git grep token_ns:: HEAD -- '*.rs'"
+        }
+      ]
+    },
+    {
+      "id": "theia",
+      "concept": "Theia bounty engine (not a civilization)",
+      "paths": [
+        "tools/theia/"
+      ],
+      "file_count": 24,
+      "classification": "TESTED",
+      "one_canonical_file": false,
+      "one_package_fewer_public_surfaces": false,
+      "split_required_by": [
+        "authority",
+        "independent_test_reuse"
+      ],
+      "historical_accretion": false,
+      "compression_verdict": "KEEP_SPLIT_AUTHORITY",
+      "why": "Already a package with tests. Constitution: Theia is ONE generalist bounty model, not another civilization. self_bounty.py CALLS complete_ebpw.cost / incumbent_candidate. Do not promote to a top-level organ equal to Era I civilizations.",
+      "call_sites": [
+        {
+          "symbol": "cost",
+          "path": "tools/theia/self_bounty.py",
+          "line": 377,
+          "form": "call"
+        },
+        {
+          "symbol": "incumbent_candidate",
+          "path": "tools/theia/self_bounty.py",
+          "line": 377,
+          "form": "call"
+        }
+      ],
+      "evidence": [
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "24 files under tools/theia including engine, bounty, labs, tests",
+          "refs": [
+            "tools/theia"
+          ],
+          "how": "git ls-tree -r --name-only HEAD tools/theia"
+        },
+        {
+          "evidence_kind": "STATIC_VERIFICATION",
+          "claim": "self_bounty.py calls complete_ebpw.cost and incumbent_candidate",
+          "refs": [
+            "tools/theia/self_bounty.py:377"
+          ],
+          "how": "git grep HEAD complete_ebpw -- tools/theia"
+        }
+      ]
+    },
+    {
+      "id": "tools_sovereign_vs_sovereignty",
+      "concept": "Two similarly named tool directories",
+      "paths": [
+        "tools/sovereign/",
+        "tools/sovereignty/"
+      ],
+      "classification": "TESTED",
+      "one_canonical_file": false,
+      "one_package_fewer_public_surfaces": true,
+      "split_required_by": [],
+      "historical_accretion": true,
+      "compression_verdict": "HISTORICAL_ACCRETION",
+      "why": "tools/sovereign/ is g001..g014 gate scripts. tools/sovereignty/ is a 2-file package. Different concepts, colliding names. Rename later; do not concatenate.",
+      "call_sites": [],
+      "evidence": [
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "tools/sovereign has 6 g0xx scripts + 1 test; tools/sovereignty has sovereignty.py + test",
+          "refs": [
+            "tools/sovereign",
+            "tools/sovereignty"
+          ],
+          "how": "git ls-tree -r --name-only HEAD"
+        }
+      ]
+    },
+    {
+      "id": "hide_backend_internal_split",
+      "concept": "hide-backend services_* and lenses_* sibling files",
+      "paths_pattern": "crates/hide-backend/src/{services,lenses,host_support}_*.rs",
+      "file_count_crate": 120,
+      "classification": "INTEGRATED",
+      "one_canonical_file": false,
+      "one_package_fewer_public_surfaces": false,
+      "split_required_by": [
+        "language",
+        "build"
+      ],
+      "historical_accretion": false,
+      "compression_verdict": "KEEP_SPLIT_LANGUAGE",
+      "why": "120 files in one crate is large but hide-backend is the HIDE HTTP surface and is depended on by hide-serve, hide-acp, hide-fleet. Internal sibling files (services_goal/session/job/workspace, lenses_*) are rust module splits with callers inside the crate and from hide-serve. Not a compression target for one-file.",
+      "call_sites": [],
+      "evidence": [
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "hide-backend 120 files; hide-serve and hide-acp path-dep on hide-backend",
+          "refs": [
+            "crates/hide-backend",
+            "crates/hide-serve/Cargo.toml",
+            "crates/hide-acp/Cargo.toml"
+          ],
+          "how": "path-dep parse; git ls-tree count"
+        }
+      ]
+    },
+    {
+      "id": "duplicate_docs_trees",
+      "concept": "docs/ vs workspace/docs/",
+      "paths": [
+        "docs/",
+        "workspace/docs/"
+      ],
+      "counts": {
+        "docs": 28,
+        "workspace/docs": 84
+      },
+      "classification": "STALE_ROADMAP_TEXT",
+      "classification_note": "workspace/docs/reference/ROADMAP.md is a different, historical engine roadmap. H-ROADMAP.md lives outside the repo at /Users/scammermike/Downloads/H-ROADMAP.md per ROADMAP_STATE.json. Auditor did not rewrite it.",
+      "one_canonical_file": false,
+      "one_package_fewer_public_surfaces": true,
+      "split_required_by": [],
+      "historical_accretion": true,
+      "compression_verdict": "HISTORICAL_ACCRETION",
+      "why": "Two documentation roots. docs/CURRENT_ARCHITECTURE.md is current; workspace/docs/reference/ARCHITECTURE.md is labeled HISTORICAL in CURRENT_ARCHITECTURE.md. Duplicate location for architecture prose.",
+      "call_sites": [],
+      "evidence": [
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "docs/ 28 files; workspace/docs 84 files; CURRENT_ARCHITECTURE.md says workspace/docs/reference/ARCHITECTURE.md is HISTORICAL",
+          "refs": [
+            "docs/CURRENT_ARCHITECTURE.md",
+            "workspace/docs/reference/ARCHITECTURE.md"
+          ],
+          "how": "git ls-tree; git show HEAD:docs/CURRENT_ARCHITECTURE.md"
+        },
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "ROADMAP_STATE.json roadmap_path is /Users/scammermike/Downloads/H-ROADMAP.md (outside repo)",
+          "refs": [
+            "civilization/ROADMAP_STATE.json roadmap_path"
+          ],
+          "how": "json load"
+        }
+      ]
+    },
+    {
+      "id": "one_file_ownership_markers",
+      "concept": "One-file directories that are identity markers, not empty leftovers",
+      "paths": [
+        "hcli/doctor/",
+        "hcli/gravity/",
+        "hcli/vmcp/"
+      ],
+      "classification": "CALLABLE",
+      "one_canonical_file": true,
+      "one_package_fewer_public_surfaces": false,
+      "split_required_by": [
+        "authority"
+      ],
+      "historical_accretion": false,
+      "compression_verdict": "KEEP_SPLIT_AUTHORITY",
+      "why": "Each is a one-file __init__.py so ownership is an importable package (CURRENT_ARCHITECTURE.md). Collapsing them away would recreate 'ownership is a comment'. They should stay one file each.",
+      "call_sites": [],
+      "evidence": [
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "hcli/doctor, hcli/gravity, hcli/vmcp each contain only __init__.py",
+          "refs": [
+            "hcli/doctor/__init__.py",
+            "hcli/gravity/__init__.py",
+            "hcli/vmcp/__init__.py"
+          ],
+          "how": "git ls-tree"
+        },
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "CURRENT_ARCHITECTURE.md ownership table: Doctor/Gravity/VMCP ownership markers",
+          "refs": [
+            "docs/CURRENT_ARCHITECTURE.md"
+          ],
+          "how": "git show"
+        }
+      ]
+    },
+    {
+      "id": "integrated_hide_hawking_crates",
+      "concept": "Crates with real path-deps and non-test callers — do not collapse crate boundary",
+      "paths": [
+        "crates/hawking-core",
+        "crates/hawking-serve",
+        "crates/hawking-speculate",
+        "crates/hawking-index",
+        "crates/hawking-context",
+        "crates/hawking-orch",
+        "crates/hawking-research",
+        "crates/hawking-events",
+        "crates/hawking-adapters",
+        "crates/hide-core",
+        "crates/hide-protocol",
+        "crates/hide-kernel",
+        "crates/hide-backend",
+        "crates/hide-serve",
+        "crates/hide-acp",
+        "crates/hide-fleet"
+      ],
+      "classification": "INTEGRATED",
+      "one_canonical_file": false,
+      "one_package_fewer_public_surfaces": false,
+      "split_required_by": [
+        "language",
+        "build",
+        "authority"
+      ],
+      "historical_accretion": false,
+      "compression_verdict": "KEEP_SPLIT_LANGUAGE",
+      "why": "Rust workspace crate boundaries. hide-backend depends on hawking-context/index/orch/research/events and hide-*. hawking-serve depends on hawking-core + hawking-adapters. Default cargo build excludes hide-* (Cargo.toml default-members) — that is a build-time authority boundary, not accretion. Do not merge hide into hawking-core.",
+      "call_sites": [],
+      "evidence": [
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "Cargo.toml default-members vs members: hide-* stay workspace members but are not in default cargo build",
+          "refs": [
+            "Cargo.toml"
+          ],
+          "how": "git show HEAD:Cargo.toml"
+        },
+        {
+          "evidence_kind": "SOURCE_INSPECTION",
+          "claim": "path-dep graph: hide-backend -> hawking-context, hawking-index, hawking-orch, hawking-research, hide-core, hide-kernel, hide-protocol, hide-fleet",
+          "refs": [
+            "crates/hide-backend/Cargo.toml"
+          ],
+          "how": "path-dep parse"
+        }
+      ]
+    }
+  ],
+  "directory_findings": [
+    {
+      "finding": "one_file_source_directories",
+      "count": 53,
+      "note": "Many are Cargo.toml-only crate roots (rust layout, required) or one-file bins. Notable identity markers: hcli/doctor, hcli/gravity, hcli/vmcp. Notable leftovers: tools/tests/ (one test file), tools/haider/tests/ (one test file), hawking-experiments/frankenstein/__init__.py.",
+      "evidence_kind": "SOURCE_INSPECTION",
+      "how": "directories with exactly one source file from git ls-tree -r -l HEAD"
+    },
+    {
+      "finding": "nested_dirs_no_architectural_boundary",
+      "examples": [
+        "hawking-experiments/superwave/g1/sing/* (50 .keep dirs)",
+        "hawking-experiments/frankenstein/data/fullseq_parallelism_probe_20260806/{w2,w4}/workerN/traces",
+        "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L*_L* / layer-N/",
+        "receipts/future/nowait-30m-*/no_wait/",
+        ".hcli/delegations/<id>/.hcli"
+      ],
+      "evidence_kind": "SOURCE_INSPECTION"
+    },
+    {
+      "finding": "legacy_experiment_trees",
+      "examples": [
+        "hawking-experiments/frankenstein (1500, 1440 data)",
+        "hawking-experiments/superwave (439)",
+        "hawking-experiments/prometheus (12)",
+        "ramanujan/ (blocked scaffold)",
+        "workspace/campaign (5555)"
+      ],
+      "evidence_kind": "SOURCE_INSPECTION"
+    },
+    {
+      "finding": "duplicate_future_ops_runtime_core_common_util",
+      "paths": [
+        "tools/future",
+        "receipts/future",
+        "workspace/ops",
+        "ramanujan/scaffold/core",
+        "ramanujan/records/runtime",
+        "workspace/campaign/evidence/runtime",
+        "crates/hawking-core/tests/common"
+      ],
+      "note": "future/ exists as both a python campaign (tools/future, 541) and a receipt tree (receipts/future, 1054). ops/ is workspace/ops (307) not a source organ. core/common/util are not widely duplicated as directory names; the real duplication is campaign brands (future, headless, odyssey, ascent).",
+      "evidence_kind": "SOURCE_INSPECTION",
+      "how": "walk of path components equal to future|ops|runtime|core|common|util|utils|helpers"
+    },
+    {
+      "finding": "multiple_locations_for_one_concept",
+      "examples": [
+        "organ_bandwidth: tools/future vs tools/headless (plus crates/hawking-core/examples/ascension_qwen38_organ_bandwidth.rs)",
+        "hardware_doctor: tools/future vs tools/accelerator",
+        "Doctor: tools/doctor vs lab/operators/doctor6 vs tools/headless/doctor_* vs tools/gravity_doctor_*",
+        "HCLI: hcli/ vs tools/haider/hcli vs lab/hcli",
+        "docs: docs/ vs workspace/docs/",
+        "EBPW receipts: receipts/future/COMPLETE_EBPW.json vs receipts/headless/FLASH_EBPW_BUDGET.json vs receipts/acceptance/FLASH_COMPLETE_EBPW_LE_1.json",
+        "support-halo: crates/hawking-eval vs tools/eval/support_halo_gate.py vs tools/odyssey/contamination.py",
+        "Condense: tools/condense vs hawking-experiments/frankenstein/condense"
+      ],
+      "evidence_kind": "SOURCE_INSPECTION"
+    },
+    {
+      "finding": "tests_separated_without_reason",
+      "keep_as_convention": [
+        "crates/*/tests (rust integration tests)",
+        "lab/tests vs lab/operators (lab test package; 109/146 paired)",
+        "tools/future and tools/headless colocated test_*.py (good)",
+        "hcli/test_*.py colocated (good)"
+      ],
+      "defect": "tools/haider/hcli/tests holds tests of live hcli/ after the package moved. CURRENT_ARCHITECTURE.md states this explicitly.",
+      "evidence_kind": "SOURCE_INSPECTION",
+      "refs": [
+        "docs/CURRENT_ARCHITECTURE.md",
+        "tools/haider/hcli/tests"
+      ]
+    },
+    {
+      "finding": "receipts_spread_across_campaign_trees",
+      "detail": "receipts/future, receipts/headless, receipts/ascent-2026-08-16, receipts/odyssey-i, plus workspace/campaign/records (3571) which is receipts that never entered receipts/.",
+      "overlap": 42,
+      "evidence_kind": "SOURCE_INSPECTION"
+    },
+    {
+      "finding": "sparse_listed_root_src_bins_absent_at_HEAD",
+      "detail": "Sparse-checkout list includes src/bin/fabric_agent.rs, src/lib.rs, src/main.rs at repo root. git ls-tree HEAD src/ is empty. Those bins live under crates/hide-fleet, crates/hawking, crates/hawking-index, crates/hide-acp, crates/hide-protocol, crates/hawking-adapters.",
+      "evidence_kind": "SOURCE_INSPECTION",
+      "surprise": true
+    }
+  ],
+  "surprises": [
+    {
+      "id": "ebpw_is_two_files_not_six",
+      "loud": true,
+      "finding": "The EBPW six-way split used as the audit model does not exist at HEAD. EBPW is two sibling modules plus tests.",
+      "would_settle": "git ls-tree -r --name-only HEAD | grep -i ebpw"
+    },
+    {
+      "id": "duplicate_names_are_rivals_not_copies",
+      "loud": true,
+      "finding": "Every duplicate basename checked (organ_bandwidth, hardware_doctor, contamination, protected_window, tournament, decoding_gravity, state_gravity) is byte-unequal. tools/conftest.py already skips headless tests to avoid importing the wrong organ_bandwidth.",
+      "would_settle": "sha256 of git show HEAD:each pair; git show HEAD:tools/conftest.py"
+    },
+    {
+      "id": "artifact_majority",
+      "loud": true,
+      "finding": "12232/15913 files are non-source. workspace/campaign alone is 5555 files. Source compression is a 3681-file problem; directory compression is mostly evidence trees.",
+      "would_settle": "git ls-tree -r -l HEAD | classify by extension"
+    },
+    {
+      "id": "examples_are_probes",
+      "loud": true,
+      "finding": "crates/hawking-core/examples holds 233 .rs campaign probes, not tutorial examples.",
+      "would_settle": "git ls-tree HEAD crates/hawking-core/examples | wc -l"
+    },
+    {
+      "id": "thin_crates_tested_not_integrated",
+      "loud": true,
+      "finding": "hawking-eval, hawking-perception, hawking-comms, hide-gateway have #[test] callers of their own symbols and zero Cargo dependents. Python support-halo does not call the rust crate.",
+      "would_settle": "git grep hawking-eval HEAD -- '**/Cargo.toml'; git grep hawking_eval HEAD -- '*.rs'"
+    },
+    {
+      "id": "ebpw_categories_missing_from_disk_truth",
+      "loud": true,
+      "finding": "civilization/CAPABILITY_GRAPH.json disk_truth_modules lists complete_ebpw.py (16 modules) but not ebpw_categories.py, which has more non-test callers (doctor.engine.validate, audit.can_promote, mlp/deltanet judge_dense_rematerialization).",
+      "would_settle": "parse CAPABILITY_GRAPH.json disk_truth_modules; git grep ebpw_categories HEAD -- '*.py'"
+    },
+    {
+      "id": "hcli_agentos_is_not_only_reexports",
+      "loud": true,
+      "finding": "CURRENT_ARCHITECTURE.md says AgentOS files are not nested under hcli/agentos/. hcli/agentos/ nevertheless contains 50 files (flash_*, resident, fpga_preboard, modellake_*). The F24 rule was applied to GoalCompiler and then a nested package grew beside it.",
+      "would_settle": "git ls-tree -r --name-only HEAD hcli/agentos; git show HEAD:hcli/agentos/__init__.py; git show HEAD:docs/CURRENT_ARCHITECTURE.md"
+    },
+    {
+      "id": "support_halo_forked_across_languages",
+      "loud": true,
+      "finding": "crates/hawking-eval implements score/wilson; tools/eval/support_halo_gate.py is a separate Python implementation; tools/odyssey/contamination.py verifies a corpus seal. No call from Python into hawking_eval.",
+      "would_settle": "git grep hawking_eval HEAD -- '*.py'; read tools/eval/support_halo_gate.py header"
+    },
+    {
+      "id": "h_roadmap_outside_repo",
+      "loud": false,
+      "finding": "ROADMAP_STATE.json and CAPABILITY_GRAPH.json point at /Users/scammermike/Downloads/H-ROADMAP.md, which is not in this git tree. This audit did not read it as instructions and did not rewrite it.",
+      "would_settle": "civilization/ROADMAP_STATE.json roadmap_path; git ls-tree HEAD | grep H-ROADMAP is empty"
+    },
+    {
+      "id": "sparse_src_bins_ghost",
+      "loud": false,
+      "finding": "Sparse-checkout lists repo-root src/bin/*.rs and src/lib.rs that do not exist at HEAD.",
+      "would_settle": "git ls-tree HEAD src/; git sparse-checkout list"
+    }
+  ],
+  "blockers": [
+    {
+      "id": "tests_not_executed",
+      "class": "BLOCKED_AUTHORITY",
+      "why": "This is a discovery audit. pytest/cargo were not run. Test classification means tests exist and appear to call the symbols, not that they passed on this machine."
+    },
+    {
+      "id": "sparse_checkout",
+      "class": "BLOCKED_AUTHORITY",
+      "why": "Worktree is sparse. Content of unmaterialized paths was read via git show HEAD and git grep HEAD. A missing worktree file is not evidence of absence."
+    },
+    {
+      "id": "hcli_live_daemon",
+      "class": "BLOCKED_AUTHORITY",
+      "why": "Must not edit hcli/. Recommendations about hcli/goal_* and hcli/agentos/ are advisory only."
+    },
+    {
+      "id": "no_gpu_measurement",
+      "class": "BLOCKED_HARDWARE",
+      "why": "Did not run Metal/ANE/FPGA. No PHYSICALLY_MEASURED claims."
+    },
+    {
+      "id": "do_not_move",
+      "class": "BLOCKED_AUTHORITY",
+      "why": "Contract forbids moving, merging, deleting files. Proposed tree is a map, not a patch."
+    }
+  ],
+  "answers_to_the_question": {
+    "can_many_microfiles_collapse": "Some families should become packages with fewer public surfaces. Almost none should become one file. The EBPW model on disk is already two files with an authority split, which is the correct shape.",
+    "largest_real_compression": [
+      "tools/future + tools/headless + tools/flash_*.py + lab/operators/ascension_*  -> organ packages (not concatenation)",
+      "crates/hawking-core/src/gravity_deepseek_v4_*.rs -> crate-internal package, fewer pub mods",
+      "crates/hawking-core/src/model/qwen{30,38,80}_* -> model/{qwen30,qwen38,qwen80}/",
+      "crates/hawking-core/examples 233 probes -> not examples/",
+      "receipts/{future,headless,ascent-*} -> organ-indexed aliases, never delete",
+      "thin crates without dependents: do not crate-split further; do not merge across bible sections without a caller"
+    ],
+    "do_not_collapse": [
+      "hcli.goal_* pipeline (F24 identity)",
+      "hcli/doctor|gravity|vmcp one-file ownership markers",
+      "ramanujan (authority gate)",
+      "tools/roadmap (already a package with callers)",
+      "lab/operators/doctor6 (already a package)",
+      "tools/doctor (already a package; zeros called by ebpw_categories)",
+      "hide-* vs hawking-* crate boundary (Cargo default-members)",
+      "token_ns package",
+      "Theia (not a civilization)",
+      "FPGA as its own top-level (belongs in Accelerator)"
+    ]
+  }
+}

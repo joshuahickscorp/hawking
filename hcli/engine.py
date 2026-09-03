@@ -105,7 +105,9 @@ HCLI_RESULT_SCHEMA: Dict[str, Any] = {
         # contract lives anyway.
         "tool_calls": {
             "type": "array",
-            "maxItems": 8,
+            # Matches MAX_TOOL_CALLS_PER_ROUND. A schema that allows fewer calls
+            # than the executor will run is a cap the model cannot see past.
+            "maxItems": 16,
             "items": {
                 "type": "object",
                 "properties": {
@@ -181,9 +183,20 @@ command, inspect git):
     {"tool": "fs.read", "arguments": [{"name": "path", "value": "hcli/engine.py"}]}
   ]
 }
-Results come back as OBSERVATIONS and you are asked again. Prefer looking over
-guessing: an answer that says evidence is missing when a tool could have
-fetched it is a wrong answer.
+Results come back as OBSERVATIONS and you are asked again.
+
+ASK FOR EVERYTHING YOU NEED IN ONE REPLY. A tool call costs about a
+millisecond. Being asked again costs minutes, and you get at most 6 rounds. Two
+files and a search in one reply is one round; asking for them one at a time is
+three rounds and roughly two hundred times the wall clock for the same answer.
+List up to 16 calls at once. Do not pace yourself.
+
+Never list the SAME call twice. Duplicates are discarded, not executed, and a
+reply that repeats one call sixteen times has asked for one thing. Fill the
+budget with DIFFERENT questions or ask for fewer.
+
+Prefer looking over guessing: an answer that says evidence is missing when a
+tool could have fetched it is a wrong answer.
 
 Rules:
 - every example above is a literal you may copy; every key shown is required
@@ -201,6 +214,43 @@ Rules:
 - do not include reasoning_content, hidden reasoning, chain-of-thought, or <think>
 """
 
+_OBSERVATION_HEADER = "OBSERVATIONS (tool results, this goal):"
+_OBSERVATION_SEP = "\n\n----- "
+
+
+def _observation_blocks(trailing: str) -> List[str]:
+    """Split the observations tail into one entry per tool result.
+
+    Splitting on the rendered separator rather than re-deriving from the
+    observation list: this operates on the block that will actually be posted,
+    which is the only thing whose size the budget cares about.
+    """
+    if not trailing or _OBSERVATION_HEADER not in trailing:
+        return []
+    body = trailing.split(_OBSERVATION_HEADER, 1)[1]
+    parts = body.split(_OBSERVATION_SEP)
+    return [p for p in (part.strip() for part in parts) if p]
+
+
+def _join_observations(blocks: List[str]) -> str:
+    if not blocks:
+        return ""
+    rendered = "\n\n----- ".join(blocks)
+    return (
+        f"{_OBSERVATION_HEADER}\n"
+        f"[earlier tool results dropped to fit the context window]\n\n"
+        f"----- {rendered}"
+    )
+
+
+#: Tokenizer estimates and the real tokenizer disagree by a little. Leave room,
+#: because being over by one token costs the entire call.
+_CTX_ESTIMATE_MARGIN = 96
+#: Observed disagreement between `_estimate_prompt_tokens` and the resident's
+#: real tokenizer, with headroom: 5.8% measured, 12% reserved. Being over by one
+#: token costs the whole call, and the cost of reserving too much is only a
+#: shorter reply.
+_CTX_ESTIMATE_ERROR = 0.12
 _MAX_TOKENS_FLOOR = 512
 _MAX_TOKENS_CEILING = 8192
 _CHARS_PER_TOKEN = 3
@@ -601,6 +651,15 @@ class Engine:
         self._model_inflight = 0
         self.max_model_in_flight = 0
         self._reset_evidence_efficiency()
+        from .prefix_probe import PrefixProbe
+
+        # One rendered prompt per live goal, so a turn can be compared with
+        # the turn before it. Never a transcript.
+        self._prefix_probe = PrefixProbe()
+        self._last_rendered_prompt: str = ""
+        # (tool, args) already executed in the CURRENT goal. Cleared per goal:
+        # a repeat across goals is a different question with the same shape.
+        self._tool_calls_seen: Dict[tuple, Dict[str, Any]] = {}
 
     # -----------------------------------------------------------------
     # Lifecycle
@@ -750,7 +809,19 @@ class Engine:
             raise EngineError("plain-text cognition returned a non-text result")
         return value
 
+    # One constant used to mean two different things: how many ROUNDS the
+    # agentic loop may take, and how many tool calls one round may execute.
+    # They are not the same budget and their costs differ by five orders of
+    # magnitude -- a round is a model call at 92-385 s, a tool call is 1-3 ms.
+    # Capping calls-per-round at the round budget priced milliseconds like
+    # minutes.
     MAX_TOOL_ROUNDS = 6
+    MAX_TOOL_CALLS_PER_ROUND = 16
+    # Kept as an alias: external callers and tests referenced the old name for
+    # the per-round cap, and silently changing what it means is worse than
+    # carrying it.
+    # Bounded: an event stream is a trail, not a transcript.
+    TOOL_ERROR_EVENT_CHARS = 400
 
     def _tool_registry(self):
         """The one already built for the executor. Not a second registry."""
@@ -937,9 +1008,45 @@ class Engine:
         """
         registry = self._tool_registry()
         out: List[Dict[str, Any]] = []
-        for call in calls[: self.MAX_TOOL_ROUNDS]:
+        for call in calls[: self.MAX_TOOL_CALLS_PER_ROUND]:
             name = str((call or {}).get("tool") or "").strip()
             args = self._typed_arguments(registry, name, (call or {}).get("arguments"))
+
+            # A repeated call is the loop signature, not a request. Measured:
+            # one goal spent five of eleven invocations re-issuing fs.read with
+            # the same rejected argument and fs.search with no `pattern`, each
+            # costing a whole round. Re-running it would produce the identical
+            # observation, so answer from the first one and SAY it is a repeat
+            # -- the model cannot break a loop it cannot see.
+            key = (name, json.dumps(args, sort_keys=True, default=str))
+            # Lazy: the cache is an optimization, not an invariant, and callers
+            # that build an Engine without __init__ must still be able to run
+            # tools rather than die on a missing attribute.
+            seen = getattr(self, "_tool_calls_seen", None)
+            if seen is None:
+                seen = {}
+                self._tool_calls_seen = seen
+            prior = seen.get(key)
+            if prior is not None:
+                repeated = dict(prior)
+                note = (
+                    f"REPEAT: you already called {name} with these exact "
+                    f"arguments in this goal and got the result below. Calling "
+                    f"it again cannot change it."
+                )
+                if not prior.get("ok"):
+                    note += (
+                        " It FAILED then and fails now for the same reason. "
+                        "Change the arguments or answer from what you have."
+                    )
+                repeated["text"] = f"{note}\n\n{prior.get('text', '')}"
+                repeated["repeat"] = True
+                out.append(repeated)
+                self._emit("tool_call_repeated", {
+                    "goal_id": goal_id, "tool": name, "ok": prior.get("ok"),
+                })
+                continue
+
             self._emit("tool_call_started", {
                 "goal_id": goal_id, "tool": name,
             })
@@ -971,18 +1078,25 @@ class Engine:
                         )
                         + ")  (* = required)"
                     )
-            out.append({
+            observation = {
                 "tool": name,
                 "ok": ok,
-                "text": text[: self.MAX_EVIDENCE_CHARS_PER_FILE],
-            })
+                "text": self._clamp_observation(text),
+            }
+            seen[key] = observation
+            out.append(observation)
+            # `ok: false` with no reason is not observability. Five fs.read
+            # failures in one goal said only that they failed; the cause (a
+            # directory passed where a file was wanted) had to be reproduced by
+            # hand afterwards. The reason travels with the event now, bounded.
+            failure = None if ok else str(text)[: self.TOOL_ERROR_EVENT_CHARS]
             self._emit("tool_call_finished", {
                 "goal_id": goal_id, "tool": name, "ok": ok,
-                "elapsed_s": elapsed,
+                "elapsed_s": elapsed, "error": failure,
             })
             self._emit("tool_invoked", {
                 "goal_id": goal_id, "tool": name, "ok": ok,
-                "elapsed_s": elapsed,
+                "elapsed_s": elapsed, "error": failure,
             })
         return out
 
@@ -1202,6 +1316,52 @@ class Engine:
             parts.append(
                 "AVAILABLE TOOLS (name(arg:type), * means required):\n" + catalog
             )
+        block = self._observations_block(observations, final=final)
+        if block:
+            parts.append(block)
+        return "\n\n".join(parts)
+
+    def _clamp_observation(self, text: str) -> str:
+        """One tool result must never exceed a fraction of the usable window.
+
+        `MAX_EVIDENCE_CHARS_PER_FILE` was 24,000 characters -- about 8,000
+        tokens -- against a usable input of 5,632. A single `fs.read` of a large
+        file was therefore 1.4x the entire context on its own, so the reduction
+        ladder could shed every other observation and still not fit. Measured:
+        demand stuck at 12,469 against a 8,192 window with one observation left.
+
+        Derived from the live budget rather than hardcoded, so it stays correct
+        if the window changes. A quarter each, so a handful of results coexist
+        with the goal and the schema instruction.
+        """
+        text = str(text or "")
+        limit = self.MAX_EVIDENCE_CHARS_PER_FILE
+        try:
+            usable = int(self._context_budget().usable_input_tokens)
+            if usable > 0:
+                limit = min(limit, max(1200, usable * _CHARS_PER_TOKEN // 4))
+        except Exception:
+            pass
+        if len(text) <= limit:
+            return text
+        return text[:limit] + f"\n[... {len(text) - limit} characters truncated to fit the context window]"
+
+    def _observations_block(
+        self,
+        observations: List[Dict[str, Any]],
+        *,
+        final: bool = False,
+    ) -> str:
+        """The APPEND-ONLY tail. Nothing stable may follow it.
+
+        Observations are the only part of the prompt that grows between rounds,
+        so the resident's KV prefix survives exactly up to where this begins.
+        Measured on the real builder: with the stable blocks (evidence, the
+        durable checkpoint) placed AFTER this, mean reusable prefix was 0.544;
+        with this last, 0.924 -- same content, same order of reading for the
+        model, 1.7x more prefill the resident can skip.
+        """
+        parts: List[str] = []
         if observations:
             rendered = "\n\n".join(
                 f"----- {o['tool']} [{'ok' if o['ok'] else 'FAILED'}] -----\n{o['text']}"
@@ -1237,6 +1397,7 @@ class Engine:
         goal_id = str(uuid.uuid4())
         self._active_goal_id = goal_id
         self._model_calls = []
+        self._tool_calls_seen = {}
         self._last_call_plan = {}
         self._reset_evidence_efficiency()
 
@@ -1318,14 +1479,18 @@ class Engine:
             # fed back, bounded, until the model answers or the budget runs out.
             observations: List[Dict[str, Any]] = []
             for round_index in range(self.MAX_TOOL_ROUNDS):
+                # Observations go LAST in the payload, not into the prompt
+                # body: they are the only part that grows between rounds, and
+                # every stable byte after them is re-prefilled for nothing.
                 raw = self._call_model(
                     self._prompt_with_observations(
                         prompt,
-                        observations,
+                        [],
                         compact_catalog=True,
                     ),
                     evidence,
                     compiled,
+                    trailing=self._observations_block(observations),
                     context_memory=context_memory,
                 )
                 result = self._sanitize_result(raw)
@@ -1347,12 +1512,12 @@ class Engine:
                     self._call_model(
                         self._prompt_with_observations(
                             prompt,
-                            observations,
-                            final=True,
+                            [],
                             compact_catalog=True,
                         ),
                         evidence,
                         compiled,
+                        trailing=self._observations_block(observations, final=True),
                         context_memory=context_memory,
                     )
                 )
@@ -1837,10 +2002,7 @@ class Engine:
 
         under_control_dir = (
             len(rel.parts) > 0
-            and rel.parts[0] in {
-                ".haider",
-                ".hcli",
-            }
+            and rel.parts[0] == ".hcli"
         )
 
         named_like_instruction = any(
@@ -2406,11 +2568,36 @@ class Engine:
         dict before `_post_completion`. context_efficiency must describe
         the posted bytes, not the pre-hook snapshot.
         """
+        # The exact bytes that go on the wire, after the executors hook has
+        # rewritten messages[1]. Comparing anything earlier measures a prompt
+        # that was never sent.
+        try:
+            self._last_rendered_prompt = "\n".join(
+                str((m or {}).get("content") or "")
+                for m in (payload.get("messages") or [])
+                if isinstance(m, dict)
+            )
+        except Exception:
+            self._last_rendered_prompt = ""
         observed = int(
             self._estimate_prompt_tokens(
                 payload.get("messages") or []
             )
         )
+        # Re-derive the completion budget against the POSTED prompt. It was
+        # resolved before `contract.apply` injected the schema instruction, so
+        # the payload grew by ~713 tokens after the budget was set and the sum
+        # overflowed max_seq_len. The prompt is known exactly here; the budget
+        # must follow it rather than a stale estimate.
+        if payload.get("max_tokens") is not None:
+            refreshed, source = self._resolve_max_tokens(observed)
+            if int(refreshed) < int(payload.get("max_tokens") or 0):
+                payload["max_tokens"] = int(refreshed)
+                self._last_call_plan = {
+                    **(self._last_call_plan or {}),
+                    "max_tokens": int(refreshed),
+                    "max_tokens_source": source,
+                }
         plan = dict(self._last_call_plan or {})
         plan["prompt_tokens_est"] = observed
         ce = dict(self._context_efficiency or {})
@@ -2661,7 +2848,24 @@ class Engine:
             runtime_index=runtime_index,
             cached_tokens=self._cached_tokens_from(data),
             prefix_key=prefix_key,
+            native=(data.get("hawking") if isinstance(data, dict) else None),
         )
+
+        # The builder question, asked on the artifact the builder produces.
+        # Same conversation only: comparing prompts across goals measures
+        # nothing, because nothing was supposed to be shared.
+        try:
+            native = data.get("hawking") if isinstance(data, dict) else None
+            self._prefix_probe.observe(
+                self._active_goal_id or "",
+                self._last_rendered_prompt or "",
+                prompt_tokens=prompt_tokens,
+                prefix_reused_tokens=(native or {}).get("prefix_reused_tokens"),
+                prefill_tokens_stepped=(native or {}).get("prefill_tokens_stepped"),
+                active_context_tokens=plan.get("prompt_tokens_est"),
+            )
+        except Exception:
+            pass
 
         if result_obj is None:
             result_obj = completion_from_openai(data, [])
@@ -2831,12 +3035,24 @@ class Engine:
         if explicit is not None and source is not None:
             return max(1, int(explicit)), source
         ctx = self._context_budget().per_request_ctx
-        remaining = int(ctx) - int(prompt_tokens_est)
-        derived = max(
-            _MAX_TOKENS_FLOOR,
-            min(_MAX_TOKENS_CEILING, remaining),
-        )
-        return derived, "derived"
+        # The margin must SCALE. `_estimate_prompt_tokens` divides characters by
+        # a constant; the real tokenizer disagreed by 5.8% on live prompts --
+        # estimated 5,488 where the resident counted 5,804 -- and a flat 96
+        # tokens cannot cover an error proportional to length. Measured
+        # overflow: 5,804 + 2,557 against a 8,192 window.
+        margin = max(_CTX_ESTIMATE_MARGIN, int(prompt_tokens_est * _CTX_ESTIMATE_ERROR))
+        remaining = int(ctx) - int(prompt_tokens_est) - margin
+        # The floor may not push the request PAST the window. `max(floor, ...)`
+        # granted 512 completion tokens even when the prompt had already used
+        # the context, and the runtime refused the whole call:
+        #   "prompt has 5792 tokens and max_new_tokens is 2612;
+        #    resident max_seq_len is 8192"
+        # A request that cannot fit is not worth making, and asking for a floor
+        # that does not exist turns a tight fit into a hard failure.
+        derived = min(_MAX_TOKENS_CEILING, remaining)
+        if derived >= _MAX_TOKENS_FLOOR:
+            return derived, "derived"
+        return max(1, derived), "derived_clamped_to_window"
 
     @staticmethod
     def _render_context_memory(memory: Any) -> str:
@@ -3002,18 +3218,34 @@ class Engine:
 
     def _fit_payload_to_budget(
         self,
-        build: Callable[[Any, Any], Dict[str, Any]],
+        build: Callable[..., Dict[str, Any]],
         evidence: Any,
         context_memory: Any,
+        trailing: str = "",
+        reserve: int = 0,
     ) -> Tuple[Dict[str, Any], Optional[Dict[str, Any]]]:
-        """Build the payload, shrinking re-derivable context until it fits."""
+        """Build the payload, shrinking re-derivable context until it fits.
+
+        `trailing` -- the accumulated tool observations -- is re-derivable too,
+        and it was the one growing block the ladder could not touch. Twelve
+        model calls succeeded at ~2,600 prompt tokens and then the thirteenth
+        was refused at 14,135, because observations accumulate across rounds and
+        nothing could shed them. Evidence would be dropped to zero while the
+        observations that actually caused the overflow were left untouched.
+
+        Observations are shed NEWEST-KEEPING: the last tool result is the one
+        the model asked for and is about to reason over, and the earliest are
+        the ones it has already used. This runs only after evidence and the
+        durable checkpoint are gone, because a file snapshot is cheaper to
+        re-derive than a tool call that has already been paid for.
+        """
         try:
             budget = self._context_budget()
         except Exception:
             return build(evidence, context_memory), None
 
         items = list(evidence or ())
-        attempts: List[Tuple[Any, Any, str]] = []
+        attempts: List[Tuple[Any, ...]] = []
         for fraction in self.EVIDENCE_REDUCTION_STEPS:
             keep = items[: max(0, int(len(items) * fraction))] if items else []
             label = (
@@ -3021,13 +3253,32 @@ class Engine:
                 else f"evidence {len(keep)}/{len(items)}"
             )
             attempts.append((keep, context_memory, label))
-        # Last resorts: drop the durable checkpoint too, then bare goal.
+        # Last resorts: drop the durable checkpoint too, then shed observations
+        # oldest-first. Observations go last because a tool call has already
+        # been paid for, while a file snapshot can be re-read for free.
         attempts.append(([], None, "evidence 0 + no checkpoint"))
+        blocks = _observation_blocks(trailing)
+        if len(blocks) > 1:
+            for keep_n in (len(blocks) * 3 // 4, len(blocks) // 2, len(blocks) // 4, 1):
+                if keep_n < 1 or keep_n >= len(blocks):
+                    continue
+                attempts.append((
+                    [], None,
+                    f"evidence 0 + observations {keep_n}/{len(blocks)}",
+                    _join_observations(blocks[-keep_n:]),
+                ))
 
         last = None
-        for keep, memory, label in attempts:
-            payload = build(keep, memory)
-            demand = self._estimate_prompt_tokens(payload.get("messages") or [])
+        for attempt in attempts:
+            keep, memory, label = attempt[0], attempt[1], attempt[2]
+            # The two-argument form is the contract every existing caller uses.
+            # A third argument appears only for the observation-shedding rungs,
+            # so a build() that knows nothing about `trailing` keeps working.
+            if len(attempt) > 3:
+                payload = build(keep, memory, attempt[3])
+            else:
+                payload = build(keep, memory)
+            demand = self._estimate_prompt_tokens(payload.get("messages") or []) + reserve
             if preflight(budget, demand, kind="root").ok:
                 if label == "full":
                     return payload, None
@@ -3041,7 +3292,28 @@ class Engine:
 
         # Still over budget with nothing re-derivable left. Refuse honestly, and
         # say what was already given up so the refusal is actionable.
+        #
+        # And say what the demand is MADE OF. An offline reconstruction of a
+        # failing unit's payload measured 1,714 tokens while the live refusal
+        # reported 8,707 -- a gap that cannot be closed by reading the code,
+        # because the only thing that knows is the payload that was actually
+        # built. Per-message sizes are cheap and they end that argument.
         payload, demand = last
+        try:
+            breakdown = ", ".join(
+                f"{(m or {}).get('role', '?')}={len(str((m or {}).get('content') or '')) // _CHARS_PER_TOKEN}"
+                for m in (payload.get("messages") or [])
+                if isinstance(m, dict)
+            )
+            self._emit("context_refused", {
+                "demand": demand,
+                "usable_input_tokens": int(budget.usable_input_tokens),
+                "messages": breakdown,
+                "evidence_items": len(items),
+                "observation_blocks": len(blocks),
+            })
+        except Exception:
+            pass
         result = preflight(budget, demand, kind="root")
         raise ContextPreflightError(result)
 
@@ -3054,6 +3326,7 @@ class Engine:
         context_memory: Any = None,
         enable_thinking: Optional[bool] = None,
         response_schema: Optional[bool] = None,
+        trailing: str = "",
     ) -> Dict[str, Any]:
         goal_block = self._goal_block(prompt, compiled)
         evidence = self._assert_evidence_fresh(evidence)
@@ -3076,6 +3349,13 @@ class Engine:
                 "verify against current disk state):\n"
                 + memory_text
             )
+        # LAST, and it must stay last. `trailing` is the only part of the prompt
+        # that grows between rounds of one goal, so every stable byte placed
+        # after it would be re-prefilled every round for no reason. The stable
+        # blocks used to sit here: mean reusable prefix 0.544 against 0.924 with
+        # the growth at the end.
+        if trailing:
+            user += "\n\n" + trailing
         messages = [
             {
                 "role": "system",
@@ -3144,6 +3424,7 @@ class Engine:
         runtime_index: Any = None,
         cached_tokens: Any = None,
         prefix_key: Any = None,
+        native: Any = None,
     ) -> None:
         entry: Dict[str, Any] = {
             "endpoint": endpoint,
@@ -3162,6 +3443,33 @@ class Engine:
             entry["cached_tokens"] = cached_tokens
         if prefix_key is not None:
             entry["prefix_key"] = prefix_key
+        if native is not None:
+            # The resident already reports these and `_record_model_call` was
+            # dropping them, so the only evidence of KV reuse was a wall clock.
+            for key in (
+                "prefix_reused_tokens",
+                "prefill_tokens_stepped",
+                "prefix_source",
+                "prefix_checkpoint_taken_at",
+            ):
+                value = native.get(key)
+                if value is not None:
+                    entry[key] = value
+            trace = ((native.get("native_metrics") or {}).get("step_trace")) or None
+            if isinstance(trace, dict):
+                stepped = native.get("prefill_tokens_stepped")
+                if not isinstance(stepped, int):
+                    stepped = prompt_tokens if isinstance(prompt_tokens, int) else 0
+                try:
+                    from .prefill_profile import attribute, bucket_profile
+
+                    profile = bucket_profile(trace, prefill_steps=int(stepped))
+                    # The raw trace is one number per token. Only the shape is
+                    # kept: a receipt is a trail, not a transcript.
+                    entry["prefill_profile"] = profile
+                    entry["prefill_attribution"] = attribute(profile)
+                except Exception as exc:  # telemetry must never end a goal
+                    entry["prefill_profile_error"] = f"{type(exc).__name__}: {exc}"
         self._model_calls.append(entry)
 
     def _post_completion(
@@ -3224,6 +3532,7 @@ class Engine:
         enable_thinking: Optional[bool] = None,
         response_schema: Optional[bool] = None,
         plain_text: bool = False,
+        trailing: str = "",
     ) -> Any:
         if self.model_client is not None:
             call = getattr(
@@ -3261,6 +3570,7 @@ class Engine:
                     context_memory=context_memory,
                     enable_thinking=enable_thinking,
                     response_schema=response_schema,
+                    trailing=trailing,
                 )
                 est = (self._last_call_plan or {}).get("prompt_tokens_est")
                 with self._model_call_scope(est):
@@ -3318,7 +3628,7 @@ class Engine:
             # the caller explicitly overrode enable_thinking on this call.
             thinking_arg = False
 
-        def _build(ev: Any, cm: Any) -> Dict[str, Any]:
+        def _build(ev: Any, cm: Any, tr: str = trailing) -> Dict[str, Any]:
             return self._build_model_payload(
                 prompt,
                 ev,
@@ -3326,16 +3636,27 @@ class Engine:
                 context_memory=cm,
                 enable_thinking=thinking_arg,
                 response_schema=(False if degrade else response_schema),
+                trailing=tr,
             )
 
+        # Build the contract BEFORE fitting. `contract.apply` injects the schema
+        # instruction -- about 713 tokens -- and it was being added AFTER the
+        # ladder had already declared the payload a fit, so the post-contract
+        # preflight refused a payload the reducer had just approved:
+        #   demand 8739 exceeds per-request ctx 8192
+        # The reducer must shrink against the size that will actually be posted.
+        contract: Optional[StructuredOutputContract] = None
+        reserve = 0
+        if degrade:
+            contract = self._schema_contract(backend)
+            reserve = len(str(contract.instruction or "")) // _CHARS_PER_TOKEN
+
         payload, reduction = self._fit_payload_to_budget(
-            _build, evidence, context_memory
+            _build, evidence, context_memory, trailing=trailing, reserve=reserve
         )
         if reduction:
             self._emit("context_reduced", reduction)
-        contract: Optional[StructuredOutputContract] = None
-        if degrade:
-            contract = self._schema_contract(backend)
+        if contract is not None:
             payload = contract.apply(payload)
         # Re-measure after return: executors.py:359 mutates
         # messages[1]["content"] in place (strips a leading "GOAL:\n")

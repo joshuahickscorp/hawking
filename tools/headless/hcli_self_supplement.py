@@ -33,7 +33,7 @@ from typing import Any, Dict, List
 REPO_ROOT = Path(__file__).resolve().parents[2]
 HAIDER = REPO_ROOT
 
-TESTS = REPO_ROOT / "tools/haider/hcli/tests"
+TESTS = REPO_ROOT / "hcli/tests"
 
 # A real improvement goal: keep the properties this session established true.
 # Absolute paths, because a WorkUnit's verifier runs with the mission workspace

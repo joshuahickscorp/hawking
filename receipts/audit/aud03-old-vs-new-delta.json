@@ -1,0 +1,3544 @@
+{
+  "schema": "hawking.audit.old_vs_new_delta.v1",
+  "lane": "aud03-old-vs-new-delta",
+  "generated_at": "2026-09-02T19:10:22Z",
+  "head": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+  "head_subject": "2026-09-02 14:48:41 -0400 fix(hcli): a graceful stop, and a successful repair, no longer end the mission",
+  "capability_graph": {
+    "path": "civilization/CAPABILITY_GRAPH.json",
+    "generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+    "generated_by": "tools/roadmap/auditor.py",
+    "stale_vs_head": true,
+    "counts_as_emitted": {
+      "BUILT": 18,
+      "SCAFFOLDED": 20,
+      "WIRED": 11,
+      "ABSENT": 1,
+      "BLOCKED_HARDWARE": 13,
+      "UNREACHABLE": 1,
+      "BLOCKED_EXTERNAL": 7
+    },
+    "law_claimed": "kind=import never justifies wired. BUILT requires wired AND accepted."
+  },
+  "constitution": {
+    "eras": 5,
+    "odysseys": 3,
+    "no_era_vi": true,
+    "fpga_lives_in": "Hawking Accelerator/Fusion (I-D / IV-A), not a sixth era",
+    "theia": "ONE generalist bounty model, not another civilization",
+    "civilizational_coordinate": 0.7,
+    "north_star": "HAWKING = SELF-OPTIMIZING PHYSICAL AI COMPUTER"
+  },
+  "methodology": {
+    "call_site_rule": "A capability nothing calls does not exist. A module IMPORT is not a call. A definition is not a call. tools/acceptance is treated as harness (supports TESTED, not INTEGRATED unless an hcli/ caller outside the defining file also exists). Defining-file-only self-calls do not wire.",
+    "acceptance_rule": "A receipt is evidence of the criterion only when verdict=ACCEPTED, criterion_altered is not true, and the catalog symbol was actually invoked (or the receipt names equivalent invocations of that symbol). symbol_invoked=false refuses BUILT.",
+    "tests_are_not_measurements": true,
+    "receipts_do_not_override_broken_producer": true,
+    "strongest_supported_state_only": true,
+    "PHYSICALLY_MEASURED_unused": "This audit did not run GPU/ANE/FPGA workloads. Inventory presence/absence was probed.",
+    "sparse_checkout": "hcli/ and tools/roadmap are git blobs via git show / git grep HEAD, not worktree files.",
+    "did_not_touch": [
+      "hcli/",
+      "tools/",
+      "crates/",
+      "civilization/"
+    ],
+    "scoring": {
+      "ABSENT": 0,
+      "CONCEPT_ONLY": 0,
+      "SCAFFOLDED": 20,
+      "CALLABLE": 40,
+      "TESTED": 50,
+      "END_TO_END": 70,
+      "INTEGRATED": 80,
+      "PHYSICALLY_MEASURED": 90,
+      "ADVERSARIALLY_VERIFIED": 95,
+      "BLOCKED_HARDWARE": 0,
+      "BLOCKED_AUTHORITY": 0,
+      "SUPERSEDED": 0,
+      "STALE_ROADMAP_TEXT": 0
+    },
+    "scoring_note": "INTEGRATED=80, END_TO_END=70, TESTED=50, CALLABLE=40, SCAFFOLDED=20, ABSENT/HW/AUTH=0. Old 25.7% is recorded as stated, not regenerated.",
+    "classification_vocabulary": [
+      "ABSENT",
+      "CONCEPT_ONLY",
+      "SCAFFOLDED",
+      "CALLABLE",
+      "TESTED",
+      "END_TO_END",
+      "INTEGRATED",
+      "PHYSICALLY_MEASURED",
+      "ADVERSARIALLY_VERIFIED",
+      "BLOCKED_HARDWARE",
+      "BLOCKED_AUTHORITY",
+      "SUPERSEDED",
+      "STALE_ROADMAP_TEXT"
+    ],
+    "evidence_tiers_used": [
+      "SOURCE_INSPECTION",
+      "STATIC_VERIFICATION"
+    ],
+    "authority_limits": "Not authoritative for GPU physical performance, Metal runtime behaviour not executed, ANE physical behaviour, U50/FPGA facts not physically measured, thermal/power, protected benchmarks."
+  },
+  "hardware_inventory": {
+    "soc": "Apple M3 Ultra",
+    "hw_model": "Mac15,14",
+    "gpu": "Apple M3 Ultra 60-core built-in, Metal supported (system_profiler SPDisplaysDataType)",
+    "ane_kexts_present": [
+      "AppleH11ANEInterface.kext",
+      "AppleH16ANEInterface.kext",
+      "AppleT6041ANEHAL.kext"
+    ],
+    "u50_present": false,
+    "dgx_present": false,
+    "egpu_present": false,
+    "hmf_present": false,
+    "nvidia_smi": "absent",
+    "xcrun_metal": "not found on PATH",
+    "evidence_tier": "STATIC_VERIFICATION",
+    "note": "Inventory commands were run this session. No GPU/ANE/FPGA performance number is claimed. PHYSICALLY_MEASURED is unused."
+  },
+  "old": {
+    "source": "Directive baseline retained in tools/roadmap/saturation.py BASELINE and receipts/future/ROADMAP_SCAFFOLD_SATURATION.json. Explicitly untrusted: that pass counted MODULE IMPORTS as call sites.",
+    "gates_total": 71,
+    "built_end_to_end": 18,
+    "scaffolded_or_callable": 29,
+    "absent": 11,
+    "hardware_blocked": 13,
+    "authority_blocked": 0,
+    "integrated": null,
+    "mean_pct": 25.7,
+    "software_addressable_mean_pct": 31.1,
+    "software_addressable_n": 58,
+    "scaffolded_or_better": 47,
+    "scaffolded_or_better_pct": 66.2,
+    "genes_mean_pct": 28.9,
+    "genes_scaffolded_or_better_pct": 88.0,
+    "caveat": "Per-gate identity of the old 18 BUILT cannot be recovered from the retained counts. Do not treat 18\u2192N as the same 18 gates."
+  },
+  "current": {
+    "gates_total": 71,
+    "built_end_to_end": 16,
+    "scaffolded_or_callable": 33,
+    "absent": 1,
+    "hardware_blocked": 14,
+    "authority_blocked": 7,
+    "integrated": 15,
+    "tested": 13,
+    "callable": 12,
+    "scaffolded": 8,
+    "end_to_end": 1,
+    "mean_pct": 36.06,
+    "software_addressable": {
+      "n": 50,
+      "mean_pct": 51.2,
+      "scaffolded_or_better": 49,
+      "scaffolded_or_better_pct": 98.0
+    },
+    "scaffolded_or_better": 49,
+    "scaffolded_or_better_pct": 69.0,
+    "by_status": {
+      "INTEGRATED": 15,
+      "SCAFFOLDED": 8,
+      "TESTED": 13,
+      "CALLABLE": 12,
+      "ABSENT": 1,
+      "END_TO_END": 1,
+      "BLOCKED_HARDWARE": 14,
+      "BLOCKED_AUTHORITY": 7
+    },
+    "genes_mean_pct": 22.49,
+    "genes_scaffolded_or_better": 20,
+    "genes_scaffolded_or_better_pct": 80.0,
+    "genes_by_status": {
+      "INTEGRATED": 4,
+      "SCAFFOLDED": 13,
+      "CALLABLE": 3,
+      "BLOCKED_HARDWARE": 4,
+      "CONCEPT_ONLY": 1
+    }
+  },
+  "delta": {
+    "gates_total": 0,
+    "built_end_to_end": -2,
+    "scaffolded_or_callable": 4,
+    "absent": -10,
+    "hardware_blocked": 1,
+    "authority_blocked": 7,
+    "integrated": {
+      "old": null,
+      "current": 15,
+      "note": "old audit did not report INTEGRATED separately"
+    },
+    "mean_pct": 10.36,
+    "software_addressable_mean_pct": 20.1,
+    "scaffolded_or_better_pct": 2.8,
+    "genes_mean_pct": -6.41,
+    "genes_scaffolded_or_better_pct": -8.0,
+    "mapping_notes": [
+      "Old ABSENT=11 included the 7 THEIA model gates (now BLOCKED_AUTHORITY) plus AGENTOS_BEHAVIOR_LAB and likely FUSION/UNREACHABLE-class items.",
+      "Old SCAFFOLDED=29 had no WIRED/TESTED/CALLABLE split; current splits SCAFFOLDED/CALLABLE/TESTED.",
+      "Old BUILT=18 is not the same predicate as current INTEGRATED+END_TO_END: old counted imports as callers; current requires a call of the implementing symbol and refuses acceptance receipts that did not invoke it.",
+      "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE is classified BLOCKED_HARDWARE (HMF dep) rather than UNREACHABLE; that is +1 hardware-blocked vs the old 13.",
+      "Mean % uses the documented SCORE table. Old 25.7% cannot be regenerated without their unpublished per-gate weights; the delta in mean_pct mixes methodology and evidence."
+    ]
+  },
+  "per_era": {
+    "I": {
+      "by_status": {
+        "INTEGRATED": 15,
+        "SCAFFOLDED": 8,
+        "TESTED": 13,
+        "CALLABLE": 10,
+        "ABSENT": 1,
+        "END_TO_END": 1,
+        "BLOCKED_HARDWARE": 12
+      },
+      "built_end_to_end": 16,
+      "integrated": 15,
+      "end_to_end": 1,
+      "tested": 13,
+      "callable": 10,
+      "scaffolded": 8,
+      "scaffolded_or_callable": 31,
+      "absent": 1,
+      "hardware_blocked": 12,
+      "authority_blocked": 0,
+      "scaffolded_or_better": 47,
+      "n": 60,
+      "mean_pct": 41.33,
+      "software_addressable": {
+        "n": 48,
+        "mean_pct": 51.67,
+        "scaffolded_or_better": 47,
+        "scaffolded_or_better_pct": 97.9
+      },
+      "gate_ids": [
+        "AGENTOS_REPAIR_BOUNDED",
+        "AGENTOS_RETRY_CLASSIFIED",
+        "AGENTOS_CIRCUIT_BREAKER",
+        "AGENTOS_CANCELLATION",
+        "AGENTOS_ORPHAN_RECONCILIATION",
+        "AGENTOS_PERSISTENCE_SINGLE_AUTHORITY",
+        "AGENTOS_CHECKPOINT_ATOMICITY",
+        "AGENTOS_RESTART_COHERENCE",
+        "HCLI_CONTEXT_AUTHORITY_UNIFIED",
+        "HCLI_CONTEXT_FOCUSED_WORKUNITS",
+        "HCLI_CONTEXT_INVALIDATION",
+        "HCLI_STATUS_PHYSICAL",
+        "HCLI_MIXED_MAX",
+        "BACKEND_FAILURE_ISOLATION",
+        "HCLI_SELF_SUPPLEMENT",
+        "HCLI_SELF_OPTIMIZATION_BOOTSTRAP",
+        "VMCP_STATE_LATTICE",
+        "VMCP_DEEP_DIGEST",
+        "VMCP_TRUTH_LEDGER",
+        "VMCP_RECEIPT_LAW",
+        "VMCP_TOOL_DOCTOR",
+        "VMCP_FILE_CLASSIFIER",
+        "VMCP_VISUAL_DIFF",
+        "VMCP_SPATIAL_VALIDATE",
+        "VMCP_WEB_CAPTURE",
+        "VMCP_PTY_CAPTURE",
+        "AGENTOS_BEHAVIOR_LAB",
+        "VMCP_COMPACT_SURFACE",
+        "VMCP_AGENTOS_INTEGRATION",
+        "AGENTOS_DETERMINISTIC_OFFLOAD",
+        "MODELLAKE_IDENTITY_RESOLVED",
+        "MODELLAKE_HASH_VERIFIED",
+        "MODELLAKE_ATOMIC_PROMOTION",
+        "QWEN27_RUNTIME_IDENTITY_FROZEN",
+        "QWEN27_PROTECTED_BASELINE",
+        "QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED",
+        "FLASH_SOURCE_VERIFIED",
+        "FLASH_FIRST_GRAVITY_ORGAN",
+        "FLASH_NATIVE_NF_KERNEL",
+        "FLASH_DENSE_VS_NF_AB",
+        "FLASH_FULL_NOETIC_EXECUTABLE",
+        "FLASH_COMPLETE_EBPW_LE_1",
+        "FLASH_ACCEPTED_TPS_GE_50",
+        "FPGA_PREBOARD_SCHEMAS",
+        "FPGA_HWIR",
+        "FPGA_LINK_SIM",
+        "FPGA_PARTITION_SIM",
+        "U50_PURCHASE_ACCEPTANCE",
+        "U50_SAFE_COOLING",
+        "U50_DEVICE_PROFILE",
+        "U50_DMA_HBM",
+        "U50_FIRST_NATIVE_ENGINE",
+        "U50_MIXED_APPLE_FPGA_GRAPH",
+        "U50_34_TO_40",
+        "U50_40_TO_50",
+        "U50_50_TO_60",
+        "U50_60_TO_70",
+        "U50_70_TO_80",
+        "U50_80_TO_90",
+        "ODYSSEY_I_DISCOVERY"
+      ]
+    },
+    "II": {
+      "by_status": {
+        "CALLABLE": 1
+      },
+      "built_end_to_end": 0,
+      "integrated": 0,
+      "end_to_end": 0,
+      "tested": 0,
+      "callable": 1,
+      "scaffolded": 0,
+      "scaffolded_or_callable": 1,
+      "absent": 0,
+      "hardware_blocked": 0,
+      "authority_blocked": 0,
+      "scaffolded_or_better": 1,
+      "n": 1,
+      "mean_pct": 40.0,
+      "software_addressable": {
+        "n": 1,
+        "mean_pct": 40.0,
+        "scaffolded_or_better": 1,
+        "scaffolded_or_better_pct": 100.0
+      },
+      "gate_ids": [
+        "ODYSSEY_II_TRANSFER"
+      ]
+    },
+    "III": {
+      "by_status": {
+        "CALLABLE": 1
+      },
+      "built_end_to_end": 0,
+      "integrated": 0,
+      "end_to_end": 0,
+      "tested": 0,
+      "callable": 1,
+      "scaffolded": 0,
+      "scaffolded_or_callable": 1,
+      "absent": 0,
+      "hardware_blocked": 0,
+      "authority_blocked": 0,
+      "scaffolded_or_better": 1,
+      "n": 1,
+      "mean_pct": 40.0,
+      "software_addressable": {
+        "n": 1,
+        "mean_pct": 40.0,
+        "scaffolded_or_better": 1,
+        "scaffolded_or_better_pct": 100.0
+      },
+      "gate_ids": [
+        "ODYSSEY_III_ADVERSARIAL_META_SCIENCE"
+      ]
+    },
+    "IV": {
+      "by_status": {
+        "BLOCKED_HARDWARE": 2
+      },
+      "built_end_to_end": 0,
+      "integrated": 0,
+      "end_to_end": 0,
+      "tested": 0,
+      "callable": 0,
+      "scaffolded": 0,
+      "scaffolded_or_callable": 0,
+      "absent": 0,
+      "hardware_blocked": 2,
+      "authority_blocked": 0,
+      "scaffolded_or_better": 0,
+      "n": 2,
+      "mean_pct": 0.0,
+      "software_addressable": {
+        "n": 0,
+        "mean_pct": 0.0,
+        "scaffolded_or_better": 0,
+        "scaffolded_or_better_pct": 0.0
+      },
+      "gate_ids": [
+        "HMF_DEVICE_VISIBLE_TRUST",
+        "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE"
+      ]
+    },
+    "bounty": {
+      "by_status": {
+        "BLOCKED_AUTHORITY": 7
+      },
+      "built_end_to_end": 0,
+      "integrated": 0,
+      "end_to_end": 0,
+      "tested": 0,
+      "callable": 0,
+      "scaffolded": 0,
+      "scaffolded_or_callable": 0,
+      "absent": 0,
+      "hardware_blocked": 0,
+      "authority_blocked": 7,
+      "scaffolded_or_better": 0,
+      "n": 7,
+      "mean_pct": 0.0,
+      "software_addressable": {
+        "n": 0,
+        "mean_pct": 0.0,
+        "scaffolded_or_better": 0,
+        "scaffolded_or_better_pct": 0.0
+      },
+      "gate_ids": [
+        "THEIA_T0_TRAIN_SUBSTRATE",
+        "THEIA_MICRO",
+        "THEIA_LAB",
+        "THEIA_WORKER",
+        "THEIA_RESEARCH",
+        "THEIA_GRAVITY_EXECUTABLE",
+        "THEIA_BOUNTY_GENERALIST_QUALIFIED"
+      ]
+    }
+  },
+  "per_gene": [
+    {
+      "id": "I-A_AGENTOS_HCLI",
+      "era": "I",
+      "status": "INTEGRATED",
+      "score_pct": 54.0,
+      "n_member_gates": 30,
+      "member_status_histogram": {
+        "INTEGRATED": 10,
+        "SCAFFOLDED": 3,
+        "TESTED": 12,
+        "CALLABLE": 4,
+        "ABSENT": 1
+      },
+      "member_mean_pct": 54.0,
+      "scaffolded_or_better": true,
+      "hardware_blocked_members": 0,
+      "blocker": null,
+      "call_sites": null
+    },
+    {
+      "id": "I-B_DOCTOR",
+      "era": "I",
+      "status": "SCAFFOLDED",
+      "score_pct": 20,
+      "n_member_gates": 0,
+      "member_status_histogram": null,
+      "member_mean_pct": null,
+      "scaffolded_or_better": true,
+      "hardware_blocked_members": null,
+      "blocker": null,
+      "call_sites": [
+        {
+          "file": "hcli/doctor/__init__.py",
+          "line": 1,
+          "symbol": null,
+          "kind": "definition",
+          "note": "gene has ZERO appendix-O gates; modules exist; graph reports imports only, no production call of a gene-level symbol"
+        }
+      ]
+    },
+    {
+      "id": "I-C_GRAVITY_NOETIC",
+      "era": "I",
+      "status": "INTEGRATED",
+      "score_pct": 47.14,
+      "n_member_gates": 7,
+      "member_status_histogram": {
+        "TESTED": 1,
+        "INTEGRATED": 2,
+        "CALLABLE": 2,
+        "SCAFFOLDED": 2
+      },
+      "member_mean_pct": 47.14,
+      "scaffolded_or_better": true,
+      "hardware_blocked_members": 0,
+      "blocker": null,
+      "call_sites": null
+    },
+    {
+      "id": "I-D_ACCELERATOR",
+      "era": "I",
+      "status": "INTEGRATED",
+      "score_pct": 13.68,
+      "n_member_gates": 19,
+      "member_status_histogram": {
+        "INTEGRATED": 1,
+        "CALLABLE": 3,
+        "SCAFFOLDED": 3,
+        "BLOCKED_HARDWARE": 12
+      },
+      "member_mean_pct": 13.68,
+      "scaffolded_or_better": true,
+      "hardware_blocked_members": 12,
+      "blocker": null,
+      "call_sites": null
+    },
+    {
+      "id": "I-E_ODYSSEY_I",
+      "era": "I",
+      "status": "INTEGRATED",
+      "score_pct": 67.5,
+      "n_member_gates": 4,
+      "member_status_histogram": {
+        "INTEGRATED": 2,
+        "CALLABLE": 1,
+        "END_TO_END": 1
+      },
+      "member_mean_pct": 67.5,
+      "scaffolded_or_better": true,
+      "hardware_blocked_members": 0,
+      "blocker": null,
+      "call_sites": null
+    },
+    {
+      "id": "II-A_ODYSSEY_II",
+      "era": "II",
+      "status": "CALLABLE",
+      "score_pct": 40.0,
+      "n_member_gates": 1,
+      "member_status_histogram": {
+        "CALLABLE": 1
+      },
+      "member_mean_pct": 40.0,
+      "scaffolded_or_better": true,
+      "hardware_blocked_members": 0,
+      "blocker": null,
+      "call_sites": null
+    },
+    {
+      "id": "II-B_NOETIC_COMPILER_V1",
+      "era": "II",
+      "status": "SCAFFOLDED",
+      "score_pct": 20,
+      "n_member_gates": 0,
+      "member_status_histogram": null,
+      "member_mean_pct": null,
+      "scaffolded_or_better": true,
+      "hardware_blocked_members": null,
+      "blocker": {
+        "kind": "no_production_caller_of_gene_symbol",
+        "detail": "gene catalog symbols=[] ; a module import is not a call"
+      },
+      "call_sites": [
+        {
+          "file": "(catalog code_paths)",
+          "line": null,
+          "symbol": null,
+          "kind": "definition",
+          "note": "gene-level catalog has no implementing symbol; auditor status was SCAFFOLDED on definition+imports. Imports are not callers."
+        }
+      ]
+    },
+    {
+      "id": "II-C_PHYSICAL_GRAPH_COMPILER",
+      "era": "II",
+      "status": "CALLABLE",
+      "score_pct": 40,
+      "n_member_gates": 0,
+      "member_status_histogram": null,
+      "member_mean_pct": null,
+      "scaffolded_or_better": true,
+      "hardware_blocked_members": null,
+      "blocker": null,
+      "call_sites": [
+        {
+          "file": "tools/future/nr_nx_generic.py",
+          "line": 1981,
+          "symbol": "tools/odyssey/physical_graph_compiler.py",
+          "kind": "subprocess",
+          "note": "exact path, not a suffix match"
+        }
+      ]
+    },
+    {
+      "id": "II-D_STATE_TOKENIZER_DECODING",
+      "era": "II",
+      "status": "SCAFFOLDED",
+      "score_pct": 20,
+      "n_member_gates": 0,
+      "member_status_histogram": null,
+      "member_mean_pct": null,
+      "scaffolded_or_better": true,
+      "hardware_blocked_members": null,
+      "blocker": {
+        "kind": "no_production_caller_of_gene_symbol",
+        "detail": "gene catalog symbols=[] ; a module import is not a call"
+      },
+      "call_sites": [
+        {
+          "file": "(catalog code_paths)",
+          "line": null,
+          "symbol": null,
+          "kind": "definition",
+          "note": "gene-level catalog has no implementing symbol; auditor status was SCAFFOLDED on definition+imports. Imports are not callers."
+        }
+      ]
+    },
+    {
+      "id": "II-E_GREEN_MACHINE",
+      "era": "II",
+      "status": "SCAFFOLDED",
+      "score_pct": 20,
+      "n_member_gates": 0,
+      "member_status_histogram": null,
+      "member_mean_pct": null,
+      "scaffolded_or_better": true,
+      "hardware_blocked_members": null,
+      "blocker": {
+        "kind": "no_production_caller_of_gene_symbol",
+        "detail": "gene catalog symbols=[] ; a module import is not a call"
+      },
+      "call_sites": [
+        {
+          "file": "(catalog code_paths)",
+          "line": null,
+          "symbol": null,
+          "kind": "definition",
+          "note": "gene-level catalog has no implementing symbol; auditor status was SCAFFOLDED on definition+imports. Imports are not callers."
+        }
+      ]
+    },
+    {
+      "id": "III-A_ODYSSEY_III",
+      "era": "III",
+      "status": "CALLABLE",
+      "score_pct": 40.0,
+      "n_member_gates": 1,
+      "member_status_histogram": {
+        "CALLABLE": 1
+      },
+      "member_mean_pct": 40.0,
+      "scaffolded_or_better": true,
+      "hardware_blocked_members": 0,
+      "blocker": null,
+      "call_sites": null
+    },
+    {
+      "id": "III-B_LEARNED_PHYSICAL_COMPILER",
+      "era": "III",
+      "status": "SCAFFOLDED",
+      "score_pct": 20,
+      "n_member_gates": 0,
+      "member_status_histogram": null,
+      "member_mean_pct": null,
+      "scaffolded_or_better": true,
+      "hardware_blocked_members": null,
+      "blocker": {
+        "kind": "no_production_caller_of_gene_symbol",
+        "detail": "gene catalog symbols=[] ; a module import is not a call"
+      },
+      "call_sites": [
+        {
+          "file": "(catalog code_paths)",
+          "line": null,
+          "symbol": null,
+          "kind": "definition",
+          "note": "gene-level catalog has no implementing symbol; auditor status was SCAFFOLDED on definition+imports. Imports are not callers."
+        }
+      ]
+    },
+    {
+      "id": "III-C_RESIDENT_OPTIMIZER",
+      "era": "III",
+      "status": "SCAFFOLDED",
+      "score_pct": 20,
+      "n_member_gates": 0,
+      "member_status_histogram": null,
+      "member_mean_pct": null,
+      "scaffolded_or_better": true,
+      "hardware_blocked_members": null,
+      "blocker": {
+        "kind": "no_production_caller_of_gene_symbol",
+        "detail": "gene catalog symbols=[] ; a module import is not a call"
+      },
+      "call_sites": [
+        {
+          "file": "(catalog code_paths)",
+          "line": null,
+          "symbol": null,
+          "kind": "definition",
+          "note": "gene-level catalog has no implementing symbol; auditor status was SCAFFOLDED on definition+imports. Imports are not callers."
+        }
+      ]
+    },
+    {
+      "id": "III-D_BEYOND_DENSE_REPRESENTATION",
+      "era": "III",
+      "status": "SCAFFOLDED",
+      "score_pct": 20,
+      "n_member_gates": 0,
+      "member_status_histogram": null,
+      "member_mean_pct": null,
+      "scaffolded_or_better": true,
+      "hardware_blocked_members": null,
+      "blocker": {
+        "kind": "no_production_caller_of_gene_symbol",
+        "detail": "gene catalog symbols=[] ; a module import is not a call"
+      },
+      "call_sites": [
+        {
+          "file": "(catalog code_paths)",
+          "line": null,
+          "symbol": null,
+          "kind": "definition",
+          "note": "gene-level catalog has no implementing symbol; auditor status was SCAFFOLDED on definition+imports. Imports are not callers."
+        }
+      ]
+    },
+    {
+      "id": "III-E_AUTONOMOUS_REPRODUCIBLE_SCIENCE",
+      "era": "III",
+      "status": "SCAFFOLDED",
+      "score_pct": 20,
+      "n_member_gates": 0,
+      "member_status_histogram": null,
+      "member_mean_pct": null,
+      "scaffolded_or_better": true,
+      "hardware_blocked_members": null,
+      "blocker": {
+        "kind": "no_production_caller_of_gene_symbol",
+        "detail": "gene catalog symbols=[] ; a module import is not a call"
+      },
+      "call_sites": [
+        {
+          "file": "(catalog code_paths)",
+          "line": null,
+          "symbol": null,
+          "kind": "definition",
+          "note": "gene-level catalog has no implementing symbol; auditor status was SCAFFOLDED on definition+imports. Imports are not callers."
+        }
+      ]
+    },
+    {
+      "id": "IV-A_FUSION",
+      "era": "IV",
+      "status": "BLOCKED_HARDWARE",
+      "score_pct": 0.0,
+      "n_member_gates": 1,
+      "member_status_histogram": {
+        "BLOCKED_HARDWARE": 1
+      },
+      "member_mean_pct": 0.0,
+      "scaffolded_or_better": false,
+      "hardware_blocked_members": 1,
+      "blocker": null,
+      "call_sites": null
+    },
+    {
+      "id": "IV-B_HMF_HGVAS",
+      "era": "IV",
+      "status": "BLOCKED_HARDWARE",
+      "score_pct": 0.0,
+      "n_member_gates": 1,
+      "member_status_histogram": {
+        "BLOCKED_HARDWARE": 1
+      },
+      "member_mean_pct": 0.0,
+      "scaffolded_or_better": false,
+      "hardware_blocked_members": 1,
+      "blocker": null,
+      "call_sites": null
+    },
+    {
+      "id": "IV-C_DGX_SPARK",
+      "era": "IV",
+      "status": "BLOCKED_HARDWARE",
+      "score_pct": 0,
+      "n_member_gates": 0,
+      "member_status_histogram": null,
+      "member_mean_pct": null,
+      "scaffolded_or_better": false,
+      "hardware_blocked_members": null,
+      "blocker": {
+        "kind": "hardware",
+        "id": "DGX_PRESENT",
+        "detail": "inventory this session: no NVIDIA/DGX; no eGPU enclosure"
+      },
+      "call_sites": []
+    },
+    {
+      "id": "IV-D_EGPU",
+      "era": "IV",
+      "status": "BLOCKED_HARDWARE",
+      "score_pct": 0,
+      "n_member_gates": 0,
+      "member_status_histogram": null,
+      "member_mean_pct": null,
+      "scaffolded_or_better": false,
+      "hardware_blocked_members": null,
+      "blocker": {
+        "kind": "hardware",
+        "id": "EGPU_PRESENT",
+        "detail": "inventory this session: no NVIDIA/DGX; no eGPU enclosure"
+      },
+      "call_sites": []
+    },
+    {
+      "id": "IV-E_FUSION_BRIDGE_TOPOLOGY_ASCENSION",
+      "era": "IV",
+      "status": "SCAFFOLDED",
+      "score_pct": 20,
+      "n_member_gates": 0,
+      "member_status_histogram": null,
+      "member_mean_pct": null,
+      "scaffolded_or_better": true,
+      "hardware_blocked_members": null,
+      "blocker": {
+        "kind": "no_production_caller_of_gene_symbol",
+        "detail": "gene catalog symbols=[] ; a module import is not a call"
+      },
+      "call_sites": [
+        {
+          "file": "(catalog code_paths)",
+          "line": null,
+          "symbol": null,
+          "kind": "definition",
+          "note": "gene-level catalog has no implementing symbol; auditor status was SCAFFOLDED on definition+imports. Imports are not callers."
+        }
+      ]
+    },
+    {
+      "id": "V-A_PRODUCT_SOVEREIGNTY",
+      "era": "V",
+      "status": "SCAFFOLDED",
+      "score_pct": 20,
+      "n_member_gates": 0,
+      "member_status_histogram": null,
+      "member_mean_pct": null,
+      "scaffolded_or_better": true,
+      "hardware_blocked_members": null,
+      "blocker": {
+        "kind": "no_production_caller_of_gene_symbol",
+        "detail": "gene catalog symbols=[] ; a module import is not a call"
+      },
+      "call_sites": [
+        {
+          "file": "(catalog code_paths)",
+          "line": null,
+          "symbol": null,
+          "kind": "definition",
+          "note": "gene-level catalog has no implementing symbol; auditor status was SCAFFOLDED on definition+imports. Imports are not callers."
+        }
+      ]
+    },
+    {
+      "id": "V-B_DEVELOPER_PLATFORM",
+      "era": "V",
+      "status": "SCAFFOLDED",
+      "score_pct": 20,
+      "n_member_gates": 0,
+      "member_status_histogram": null,
+      "member_mean_pct": null,
+      "scaffolded_or_better": true,
+      "hardware_blocked_members": null,
+      "blocker": {
+        "kind": "no_production_caller_of_gene_symbol",
+        "detail": "gene catalog symbols=[] ; a module import is not a call"
+      },
+      "call_sites": [
+        {
+          "file": "(catalog code_paths)",
+          "line": null,
+          "symbol": null,
+          "kind": "definition",
+          "note": "gene-level catalog has no implementing symbol; auditor status was SCAFFOLDED on definition+imports. Imports are not callers."
+        }
+      ]
+    },
+    {
+      "id": "V-C_CONTINUOUS_VERIFIED_IMPROVEMENT",
+      "era": "V",
+      "status": "SCAFFOLDED",
+      "score_pct": 20,
+      "n_member_gates": 0,
+      "member_status_histogram": null,
+      "member_mean_pct": null,
+      "scaffolded_or_better": true,
+      "hardware_blocked_members": null,
+      "blocker": {
+        "kind": "no_production_caller_of_gene_symbol",
+        "detail": "gene catalog symbols=[] ; a module import is not a call"
+      },
+      "call_sites": [
+        {
+          "file": "(catalog code_paths)",
+          "line": null,
+          "symbol": null,
+          "kind": "definition",
+          "note": "gene-level catalog has no implementing symbol; auditor status was SCAFFOLDED on definition+imports. Imports are not callers."
+        }
+      ]
+    },
+    {
+      "id": "V-D_DOMINANCE_SCOREBOARD",
+      "era": "V",
+      "status": "SCAFFOLDED",
+      "score_pct": 20,
+      "n_member_gates": 0,
+      "member_status_histogram": null,
+      "member_mean_pct": null,
+      "scaffolded_or_better": true,
+      "hardware_blocked_members": null,
+      "blocker": {
+        "kind": "no_production_caller_of_gene_symbol",
+        "detail": "gene catalog symbols=[] ; a module import is not a call"
+      },
+      "call_sites": [
+        {
+          "file": "(catalog code_paths)",
+          "line": null,
+          "symbol": null,
+          "kind": "definition",
+          "note": "gene-level catalog has no implementing symbol; auditor status was SCAFFOLDED on definition+imports. Imports are not callers."
+        }
+      ]
+    },
+    {
+      "id": "V-E_PERPETUAL_HAWKING",
+      "era": "V",
+      "status": "CONCEPT_ONLY",
+      "score_pct": 0,
+      "n_member_gates": 0,
+      "member_status_histogram": null,
+      "member_mean_pct": null,
+      "scaffolded_or_better": false,
+      "hardware_blocked_members": null,
+      "blocker": {
+        "kind": "no_definition",
+        "detail": "catalog code_paths empty; Era V not admitted under era sovereignty"
+      },
+      "call_sites": []
+    }
+  ],
+  "unlock_question": {
+    "question": "HAS ANYTHING BUILT SINCE THE LAST AUDIT ACTUALLY UNLOCKED MORE ROADMAP COMPLETION?",
+    "answer": "Less than it looks. Built/end-to-end is 18 \u2192 16 under a call-of-the-symbol rule that also refuses acceptance receipts that did not invoke the catalog symbol. Scaffolded-or-better 66.2% \u2192 69.0% is mostly reclassification (Theia out of ABSENT; existing files the old pass called absent). No new physical carrier appeared. The systems that actually moved a gate's strongest honest state are listed below; none of them closes a hardware gate or the EBPW<=1 / TPS>=50 bars.",
+    "moved_systems": [
+      {
+        "system": "AgentOS / HCLI acceptance receipts (FUNCTIONAL_SIM)",
+        "what_changed": "receipts/acceptance/AGENTOS_*.json and HCLI_CONTEXT_*.json / BACKEND_FAILURE_ISOLATION.json dated 2026-09-02. Pytest/harness demonstrated criteria for repair, cancel, orphan, persistence, checkpoint, restart, context authority, focused workunits, failure isolation.",
+        "effect": "These gates are INTEGRATED or TESTED on STATIC_VERIFICATION of receipts, not PHYSICALLY_MEASURED. They were already source-present; the campaign added acceptance evidence. That is not a new runtime capability.",
+        "unlocks_roadmap": false
+      },
+      {
+        "system": "VMCP acceptance receipts (FUNCTIONAL_SIM)",
+        "what_changed": "Most VMCP_* receipts ACCEPTED. Catalog still has no implementing symbols for 11/13 VMCP gates, so they cannot be INTEGRATED under the call-of-the-symbol law.",
+        "effect": "SCAFFOLDED \u2192 TESTED. Not daemon-integrated except VMCP_RECEIPT_LAW (run_vmcp_gate in agentos_cli.py).",
+        "unlocks_roadmap": false
+      },
+      {
+        "system": "Flash science CLI + two ACCEPTED flash receipts",
+        "what_changed": "FLASH_FIRST_GRAVITY_ORGAN and FLASH_DENSE_VS_NF_AB ACCEPTED FUNCTIONAL_SIM with hcli/agentos_cli.py callers. FLASH_COMPLETE_EBPW_LE_1 still measured 3.139 against <=1. FLASH_ACCEPTED_TPS_GE_50 accepted_tps=None.",
+        "effect": "Two flash gates INTEGRATED on sim receipts. The two promotion bars that would actually move I-C did not move.",
+        "unlocks_roadmap": false
+      },
+      {
+        "system": "FPGA_HWIR / s2-hwir-pluggable-lowering-target",
+        "what_changed": "Commit da3e5c167 (merged f16ec8cdd) added ~1077 lines to tools/future/hwir.py plus test_hwir_lowering.py. HwirGraph( is called from tools/accelerator/backend_contract.py:1094, fusion_bridge.py:1444, tools/future/p6_projection.py:857, propagate.py:695.",
+        "effect": "FPGA_HWIR is CALLABLE. All 12 U50_* gates remain BLOCKED_HARDWARE. Preboard/link/partition stay SCAFFOLDED because catalog symbols are inner types only constructed inside fpga_preboard.py.",
+        "unlocks_roadmap": false
+      },
+      {
+        "system": "hcli graceful-stop (04193ccbc)",
+        "what_changed": "A graceful stop and a successful repair no longer end the mission.",
+        "effect": "Does not add or close an appendix-O gate. May matter to AGENTOS_CANCELLATION/REPAIR behaviour of the live daemon; this sparse worktree cannot see the live uncommitted hcli tree.",
+        "unlocks_roadmap": false
+      },
+      {
+        "system": "QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED receipt",
+        "what_changed": "Auditor graph marks BUILT. Receipt verdict ACCEPTED with symbol_invoked=false (run_qwen27_mlp_diagnostic_ab not invoked because it would start a resident next to the live daemon).",
+        "effect": "This audit demotes it to CALLABLE. That is a quality correction, not an unlock.",
+        "unlocks_roadmap": false
+      }
+    ],
+    "did_not_move": [
+      "U50DD/Alveo still absent (ioreg/Thunderbolt/system_profiler this session)",
+      "HMF/HGVAS, DGX, eGPU still absent",
+      "FLASH complete_ebpw 3.139 \u2270 1",
+      "FLASH accepted_tps is None, not >= 50",
+      "ODYSSEY_II transfer reduction not positive",
+      "ODYSSEY_III no independent law refutation",
+      "Theia: engine at tools/theia/, no trained generalist model",
+      "I-B Doctor: still zero appendix-O gates"
+    ]
+  },
+  "surprises": [
+    {
+      "id": "acceptance_ignores_symbol_invoked",
+      "severity": "high",
+      "what": "tools/roadmap/auditor.py _accepted_fact treats receipts/acceptance/<GATE>.json as accepted when verdict=ACCEPTED, criterion_altered is false, and command is set. It does not read symbol_invoked. QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED is ACCEPTED with symbol_invoked=false.",
+      "what_would_settle": "Change the auditor to refuse accepted when symbol_invoked is false, or regenerate the receipt after actually calling run_qwen27_mlp_diagnostic_ab on a machine where that is allowed."
+    },
+    {
+      "id": "resolve_vs_Path.resolve",
+      "severity": "high",
+      "what": "Catalog symbol for HCLI_CONTEXT_AUTHORITY_UNIFIED is resolve. A name grep of resolve( is pathlib.Path.resolve across hundreds of files. Production correctly binds via `from .context_budget import resolve as resolve_context_budget` in hcli/backends.py, config.py, engine.py, runtime.py.",
+      "what_would_settle": "Rename the catalog symbol to the alias the daemon actually calls, or require AST binding (which the auditor already does when the index is used). Do not use name grep for this gate."
+    },
+    {
+      "id": "graph_line_drift",
+      "severity": "medium",
+      "what": "CAPABILITY_GRAPH.json generated_from_commit=7d6428; HEAD=04193cc. Several graph runtime_caller lines no longer contain the cited symbol (HCLI_CONTEXT_FOCUSED_WORKUNITS mission.py:983 is `with self._lock:` at HEAD; the real call is mission.py:1055).",
+      "what_would_settle": "Regenerate the graph at HEAD. Citations bound to a commit must be re-resolved on drift, not only past-EOF."
+    },
+    {
+      "id": "stale_saturation_prose",
+      "severity": "high",
+      "what": "receipts/future/ROADMAP_SCAFFOLD_SATURATION.json final.by_status.BUILT=18 but remaining_highest_ev_gaps[0] still says 'No gate has demonstrated ACCEPTANCE' / '26 gates are wired and zero are accepted'. Hardcoded gap text in tools/roadmap/saturation.py was not updated when acceptance receipts started being consumed.",
+      "what_would_settle": "Derive the gap list from the graph (wired_but_not_accepted and built_gates), never from a frozen string. Fix the producer, not the artifact."
+    },
+    {
+      "id": "fpga_catalog_inner_types",
+      "severity": "medium",
+      "what": "hcli/agentos_cli.py:1019 calls run_fpga_preboard, which constructs FPGADeviceGenome, TransportLinkSimulator, and simulate_partition. Catalog symbols are those inner types, so FPGA_PREBOARD_SCHEMAS / FPGA_LINK_SIM / FPGA_PARTITION_SIM stay SCAFFOLDED.",
+      "what_would_settle": "Retarget catalog symbols to run_fpga_preboard, then re-audit. Still would not wake U50_*."
+    },
+    {
+      "id": "u50_mixed_false_wire",
+      "severity": "medium",
+      "what": "U50_MIXED_APPLE_FPGA_GRAPH was listed wired via nr_nx_generic.py:1981 subprocess.run. The argv is tools/odyssey/physical_graph_compiler.py \u2014 Odyssey II-C, not a mixed Apple+FPGA executable.",
+      "what_would_settle": "Attribute that subprocess only to II-C_PHYSICAL_GRAPH_COMPILER (already WIRED/CALLABLE). Keep U50_MIXED BLOCKED_HARDWARE."
+    },
+    {
+      "id": "doctor_has_zero_appendix_o_gates",
+      "severity": "medium",
+      "what": "I-B_DOCTOR is a canonical program with civilization/ROADMAP_STATE.json obligations, but zero of the 71 appendix-O gates. Mixing obligation completion (ROADMAP_STATE I-B 66.7%) with gate completion inflates Doctor.",
+      "what_would_settle": "Either add Doctor gates to appendix O or keep gene I-B as SCAFFOLDED-with-no-gates and never average it with the obligation ledger."
+    },
+    {
+      "id": "acceptance_harness_is_not_a_test_path",
+      "severity": "medium",
+      "what": "is_test_path only matches test_* / *_test.py. tools/acceptance/**/harness.py and gates.py count as production callers. Several graph BUILT gates are wired only that way (HCLI_SELF_SUPPLEMENT).",
+      "what_would_settle": "Treat tools/acceptance as test-like for wiring, or require an hcli/ caller outside the defining file for INTEGRATED."
+    },
+    {
+      "id": "live_hcli_uncommitted_not_in_this_worktree",
+      "severity": "medium",
+      "what": "A live HCLI daemon holds ~110 uncommitted files under hcli/. This worktree is sparse and does not materialize hcli/; audit is HEAD 04193cc blobs via git show. Live daemon behaviour may differ.",
+      "what_would_settle": "A read-only census of the daemon's checkout (without signalling it) compared to HEAD, or regenerate the graph against that tree."
+    },
+    {
+      "id": "xcrun_metal_absent_ane_kexts_present",
+      "severity": "low",
+      "what": "xcrun -f metal failed on this PATH. AppleH16ANEInterface.kext / AppleT6041ANEHAL.kext etc. are installed. Inventory only; no ANE performance claimed.",
+      "what_would_settle": "A bounded ANE compile/placement/latency probe, labelled MEASURED, on this M3 Ultra. Out of this audit's authority until run."
+    }
+  ],
+  "disagreements_with_auditor_graph": [
+    {
+      "id": "HCLI_SELF_SUPPLEMENT",
+      "graph": "BUILT",
+      "this_audit": "TESTED",
+      "why": "Graph BUILT via acceptance harness as the only non-defining-file caller. This audit does not promote a defining-file helper + harness into INTEGRATED."
+    },
+    {
+      "id": "QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED",
+      "graph": "BUILT",
+      "this_audit": "CALLABLE",
+      "why": "Production CLI caller exists, so CALLABLE. Acceptance is a STATIC identity explanation, not a run of the catalog symbol."
+    }
+  ],
+  "gates": [
+    {
+      "id": "AGENTOS_REPAIR_BOUNDED",
+      "status": "INTEGRATED",
+      "score_pct": 80,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "hcli/mission.py",
+          "line": 264,
+          "symbol": "Scheduler",
+          "kind": "call",
+          "note": "daemon constructs Scheduler; catalog symbol is the class, not a repair-specific API"
+        },
+        {
+          "file": "hcli/goal_compile.py",
+          "line": 518,
+          "symbol": "Scheduler",
+          "kind": "call"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "BUILT",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/AGENTOS_REPAIR_BOUNDED.json",
+        "verdict": "ACCEPTED",
+        "evidence_tier": "FUNCTIONAL_SIM",
+        "symbol_invoked": null
+      },
+      "accepted": true,
+      "notes": "PROXY_SYMBOL: catalog wires Scheduler(), not a bounded-repair primitive. Acceptance is pytest FUNCTIONAL_SIM, not a physical measurement.",
+      "surprises": []
+    },
+    {
+      "id": "AGENTOS_RETRY_CLASSIFIED",
+      "status": "SCAFFOLDED",
+      "score_pct": 20,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "hcli/scheduler.py",
+          "line": 307,
+          "symbol": "_record_fingerprint",
+          "kind": "call",
+          "note": "self-call inside defining file only; not an external caller"
+        }
+      ],
+      "blocker": {
+        "kind": "no_external_caller",
+        "detail": "only caller of _record_fingerprint is Scheduler in hcli/scheduler.py (defining file). Acceptance BLOCKED: Scheduler.fail does not consult classify_failure."
+      },
+      "evidence_tier": "SOURCE_INSPECTION",
+      "auditor_graph_status": "SCAFFOLDED",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/AGENTOS_RETRY_CLASSIFIED.json",
+        "verdict": "BLOCKED",
+        "evidence_tier": "FUNCTIONAL_SIM"
+      },
+      "accepted": false,
+      "notes": null,
+      "surprises": []
+    },
+    {
+      "id": "AGENTOS_CIRCUIT_BREAKER",
+      "status": "TESTED",
+      "score_pct": 50,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "hcli/scheduler.py",
+          "line": 400,
+          "symbol": "NO_PROGRESS",
+          "kind": "call",
+          "note": "raise NO_PROGRESS( inside defining file; acceptance harness drives Scheduler.complete which raises it"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "SCAFFOLDED",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/AGENTOS_CIRCUIT_BREAKER.json",
+        "verdict": "ACCEPTED",
+        "evidence_tier": "FUNCTIONAL_SIM",
+        "invoked": "NO_PROGRESS via Scheduler.complete"
+      },
+      "accepted": true,
+      "notes": "Accepted FUNCTIONAL_SIM without a non-defining-file production caller of NO_PROGRESS. Not INTEGRATED.",
+      "surprises": []
+    },
+    {
+      "id": "AGENTOS_CANCELLATION",
+      "status": "INTEGRATED",
+      "score_pct": 80,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "hcli/delegate.py",
+          "line": 1470,
+          "symbol": "abort",
+          "kind": "call",
+          "note": "CLI dispatch in the defining module"
+        },
+        {
+          "file": "tools/acceptance/agentos/harness.py",
+          "line": 714,
+          "symbol": "hcli.delegate.abort",
+          "kind": "call",
+          "note": "from hcli import delegate as d; d.abort(ws, ...)"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "BUILT",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/AGENTOS_CANCELLATION.json",
+        "verdict": "ACCEPTED",
+        "evidence_tier": "FUNCTIONAL_SIM"
+      },
+      "accepted": true,
+      "notes": null,
+      "surprises": []
+    },
+    {
+      "id": "AGENTOS_ORPHAN_RECONCILIATION",
+      "status": "INTEGRATED",
+      "score_pct": 80,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "hcli/agentos/handoff.py",
+          "line": 106,
+          "symbol": "BackgroundJobStore",
+          "kind": "call"
+        },
+        {
+          "file": "hcli/agentos/runtime.py",
+          "line": 97,
+          "symbol": "BackgroundJobStore",
+          "kind": "call"
+        },
+        {
+          "file": "hcli/agentos/resident.py",
+          "line": 907,
+          "symbol": "BackgroundJobStore",
+          "kind": "call",
+          "note": "HEAD line; graph citation resident.py:894 drifted"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "BUILT",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/AGENTOS_ORPHAN_RECONCILIATION.json",
+        "verdict": "ACCEPTED",
+        "evidence_tier": "FUNCTIONAL_SIM"
+      },
+      "accepted": true,
+      "notes": null,
+      "surprises": []
+    },
+    {
+      "id": "AGENTOS_PERSISTENCE_SINGLE_AUTHORITY",
+      "status": "INTEGRATED",
+      "score_pct": 80,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "hcli/controller.py",
+          "line": 664,
+          "symbol": "MutationLock",
+          "kind": "call"
+        },
+        {
+          "file": "hcli/scheduler.py",
+          "line": 108,
+          "symbol": "MutationLock",
+          "kind": "call"
+        },
+        {
+          "file": "hcli/delegate.py",
+          "line": 357,
+          "symbol": "MutationLock",
+          "kind": "call"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "BUILT",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/AGENTOS_PERSISTENCE_SINGLE_AUTHORITY.json",
+        "verdict": "ACCEPTED",
+        "evidence_tier": "FUNCTIONAL_SIM"
+      },
+      "accepted": true,
+      "notes": null,
+      "surprises": []
+    },
+    {
+      "id": "AGENTOS_CHECKPOINT_ATOMICITY",
+      "status": "INTEGRATED",
+      "score_pct": 80,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 1220,
+          "symbol": "write_program_checkpoint",
+          "kind": "call"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "BUILT",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/AGENTOS_CHECKPOINT_ATOMICITY.json",
+        "verdict": "ACCEPTED",
+        "evidence_tier": "FUNCTIONAL_SIM"
+      },
+      "accepted": true,
+      "notes": null,
+      "surprises": []
+    },
+    {
+      "id": "AGENTOS_RESTART_COHERENCE",
+      "status": "INTEGRATED",
+      "score_pct": 80,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 584,
+          "symbol": "run_recovery_gate",
+          "kind": "call"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "BUILT",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/AGENTOS_RESTART_COHERENCE.json",
+        "verdict": "ACCEPTED",
+        "evidence_tier": "FUNCTIONAL_SIM"
+      },
+      "accepted": true,
+      "notes": null,
+      "surprises": []
+    },
+    {
+      "id": "HCLI_CONTEXT_AUTHORITY_UNIFIED",
+      "status": "INTEGRATED",
+      "score_pct": 80,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "hcli/backends.py",
+          "line": 34,
+          "symbol": "resolve",
+          "kind": "import_alias",
+          "note": "from .context_budget import resolve as resolve_context_budget"
+        },
+        {
+          "file": "hcli/backends.py",
+          "line": 1361,
+          "symbol": "resolve_context_budget",
+          "kind": "call",
+          "note": "alias of hcli.context_budget.resolve"
+        },
+        {
+          "file": "hcli/config.py",
+          "line": 131,
+          "symbol": "resolve_context_budget",
+          "kind": "call"
+        },
+        {
+          "file": "hcli/engine.py",
+          "line": 1889,
+          "symbol": "resolve_context_budget",
+          "kind": "call"
+        },
+        {
+          "file": "hcli/runtime.py",
+          "line": 649,
+          "symbol": "resolve_context_budget",
+          "kind": "call"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "BUILT",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/HCLI_CONTEXT_AUTHORITY_UNIFIED.json",
+        "verdict": "ACCEPTED",
+        "evidence_tier": "FUNCTIONAL_SIM"
+      },
+      "accepted": true,
+      "notes": null,
+      "surprises": [
+        "Catalog symbol resolve collides with pathlib.Path.resolve; naive name grep is not a call of this gate. Production wires it via alias resolve_context_budget. Graph line numbers (7d6428) drifted vs HEAD."
+      ]
+    },
+    {
+      "id": "HCLI_CONTEXT_FOCUSED_WORKUNITS",
+      "status": "INTEGRATED",
+      "score_pct": 80,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "hcli/mission.py",
+          "line": 1055,
+          "symbol": "compile_worker_context",
+          "kind": "call",
+          "note": "HEAD; graph cited mission.py:983 which at HEAD is 'with self._lock:' (drift)"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "BUILT",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/HCLI_CONTEXT_FOCUSED_WORKUNITS.json",
+        "verdict": "ACCEPTED",
+        "evidence_tier": "FUNCTIONAL_SIM"
+      },
+      "accepted": true,
+      "notes": null,
+      "surprises": []
+    },
+    {
+      "id": "HCLI_CONTEXT_INVALIDATION",
+      "status": "TESTED",
+      "score_pct": 50,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "hcli/goal.py",
+          "line": 918,
+          "symbol": "assert_evidence_fresh",
+          "kind": "definition"
+        },
+        {
+          "file": "tools/acceptance/context/gates.py",
+          "line": 449,
+          "symbol": "assert_evidence_fresh",
+          "kind": "call",
+          "note": "acceptance harness; catalog lists no implementing symbol so auditor cannot mark wired"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "SCAFFOLDED",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/HCLI_CONTEXT_INVALIDATION.json",
+        "verdict": "ACCEPTED",
+        "evidence_tier": "FUNCTIONAL_SIM",
+        "stale_raised": true
+      },
+      "accepted": true,
+      "notes": "Catalog has empty symbols[]. engine.py _assert_evidence_fresh is a different method, not hcli.goal.assert_evidence_fresh.",
+      "surprises": []
+    },
+    {
+      "id": "HCLI_STATUS_PHYSICAL",
+      "status": "CALLABLE",
+      "score_pct": 40,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "hcli/commands.py",
+          "line": 1017,
+          "symbol": "format_status",
+          "kind": "call",
+          "note": "same defining module hcli.commands"
+        },
+        {
+          "file": "tools/headless/control_plane_latency.py",
+          "line": 443,
+          "symbol": "format_status",
+          "kind": "call"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "WIRED",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/HCLI_STATUS_PHYSICAL.json",
+        "verdict": "BLOCKED",
+        "evidence_tier": "FUNCTIONAL_SIM",
+        "blocker": "renderer drops D.9 physical /status fields"
+      },
+      "accepted": false,
+      "notes": null,
+      "surprises": []
+    },
+    {
+      "id": "HCLI_MIXED_MAX",
+      "status": "CALLABLE",
+      "score_pct": 40,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "hcli/controller.py",
+          "line": 337,
+          "symbol": "grok_pool_snapshot",
+          "kind": "call"
+        },
+        {
+          "file": "hcli/controller.py",
+          "line": 431,
+          "symbol": "grok_pool_snapshot",
+          "kind": "call"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "WIRED",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/HCLI_MIXED_MAX.json",
+        "verdict": "BLOCKED",
+        "blocker": "no llama-server listening; mixed campaign refused"
+      },
+      "accepted": false,
+      "notes": null,
+      "surprises": []
+    },
+    {
+      "id": "BACKEND_FAILURE_ISOLATION",
+      "status": "INTEGRATED",
+      "score_pct": 80,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "hcli/runtime.py",
+          "line": 520,
+          "symbol": "terminate_pid",
+          "kind": "call"
+        },
+        {
+          "file": "hcli/runtime.py",
+          "line": 879,
+          "symbol": "terminate_pid",
+          "kind": "call"
+        },
+        {
+          "file": "hcli/runtime.py",
+          "line": 1330,
+          "symbol": "terminate_pid",
+          "kind": "call"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "BUILT",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/BACKEND_FAILURE_ISOLATION.json",
+        "verdict": "ACCEPTED",
+        "evidence_tier": "FUNCTIONAL_SIM"
+      },
+      "accepted": true,
+      "notes": null,
+      "surprises": []
+    },
+    {
+      "id": "HCLI_SELF_SUPPLEMENT",
+      "status": "TESTED",
+      "score_pct": 50,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "hcli/agentos/resident.py",
+          "line": 1012,
+          "symbol": "admit_evidence_children",
+          "kind": "call",
+          "note": "defining file hcli.agentos.resident"
+        },
+        {
+          "file": "tools/acceptance/context/gates.py",
+          "line": 933,
+          "symbol": "admit_evidence_children",
+          "kind": "call"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "BUILT",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/HCLI_SELF_SUPPLEMENT.json",
+        "verdict": "ACCEPTED",
+        "evidence_tier": "FUNCTIONAL_SIM"
+      },
+      "accepted": true,
+      "notes": "Graph BUILT via acceptance harness as the only non-defining-file caller. This audit does not promote a defining-file helper + harness into INTEGRATED.",
+      "surprises": []
+    },
+    {
+      "id": "HCLI_SELF_OPTIMIZATION_BOOTSTRAP",
+      "status": "CALLABLE",
+      "score_pct": 40,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 663,
+          "symbol": "run_autonomy_gate",
+          "kind": "call"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "WIRED",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/HCLI_SELF_OPTIMIZATION_BOOTSTRAP.json",
+        "verdict": "BLOCKED",
+        "blocker": "lane must not SIGTERM the live daemon; prewritten second task is not self-optimization"
+      },
+      "accepted": false,
+      "notes": null,
+      "surprises": []
+    },
+    {
+      "id": "VMCP_STATE_LATTICE",
+      "status": "TESTED",
+      "score_pct": 50,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "tools/headless/vmcp_lattice_disposition.py",
+          "line": 1,
+          "symbol": null,
+          "kind": "definition",
+          "note": "catalog has no implementing symbol; module exists"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "SCAFFOLDED",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/VMCP_STATE_LATTICE.json",
+        "verdict": "ACCEPTED",
+        "evidence_tier": "FUNCTIONAL_SIM"
+      },
+      "accepted": true,
+      "notes": "No catalog symbol, so a module import cannot wire this gate. Acceptance harness demonstrated the named criterion.",
+      "surprises": []
+    },
+    {
+      "id": "VMCP_DEEP_DIGEST",
+      "status": "TESTED",
+      "score_pct": 50,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "tools/headless/vmcp_lattice_disposition.py",
+          "line": 1,
+          "symbol": null,
+          "kind": "definition",
+          "note": "catalog has no implementing symbol; module exists"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "SCAFFOLDED",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/VMCP_DEEP_DIGEST.json",
+        "verdict": "ACCEPTED",
+        "evidence_tier": "FUNCTIONAL_SIM"
+      },
+      "accepted": true,
+      "notes": "No catalog symbol, so a module import cannot wire this gate. Acceptance harness demonstrated the named criterion.",
+      "surprises": []
+    },
+    {
+      "id": "VMCP_TRUTH_LEDGER",
+      "status": "TESTED",
+      "score_pct": 50,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "tools/headless/vmcp_forgery_canary.py",
+          "line": 1,
+          "symbol": null,
+          "kind": "definition",
+          "note": "catalog has no implementing symbol; module exists"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "SCAFFOLDED",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/VMCP_TRUTH_LEDGER.json",
+        "verdict": "ACCEPTED",
+        "evidence_tier": "FUNCTIONAL_SIM"
+      },
+      "accepted": true,
+      "notes": "No catalog symbol, so a module import cannot wire this gate. Acceptance harness demonstrated the named criterion.",
+      "surprises": []
+    },
+    {
+      "id": "VMCP_RECEIPT_LAW",
+      "status": "INTEGRATED",
+      "score_pct": 80,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 609,
+          "symbol": "run_vmcp_gate",
+          "kind": "call"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "BUILT",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/VMCP_RECEIPT_LAW.json",
+        "verdict": "ACCEPTED",
+        "evidence_tier": "FUNCTIONAL_SIM",
+        "invoked_symbols": [
+          "tools.headless.hcli_vmcp_integration.observe_file",
+          "verify_capture",
+          "tools.future.vmcp.prove"
+        ]
+      },
+      "accepted": true,
+      "notes": "Wired symbol is run_vmcp_gate; the acceptance receipt invoked observe_file/verify_capture/prove, not run_vmcp_gate. Both facts recorded; not inflated to PHYSICALLY_MEASURED.",
+      "surprises": []
+    },
+    {
+      "id": "VMCP_TOOL_DOCTOR",
+      "status": "TESTED",
+      "score_pct": 50,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "tools/headless/vmcp_capability_probe.py",
+          "line": 1,
+          "symbol": null,
+          "kind": "definition",
+          "note": "shared probe module; catalog has no per-gate symbol"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "SCAFFOLDED",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/VMCP_TOOL_DOCTOR.json",
+        "verdict": "ACCEPTED",
+        "evidence_tier": "FUNCTIONAL_SIM"
+      },
+      "accepted": true,
+      "notes": null,
+      "surprises": []
+    },
+    {
+      "id": "VMCP_FILE_CLASSIFIER",
+      "status": "TESTED",
+      "score_pct": 50,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "tools/headless/vmcp_capability_probe.py",
+          "line": 1,
+          "symbol": null,
+          "kind": "definition",
+          "note": "shared probe module; catalog has no per-gate symbol"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "SCAFFOLDED",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/VMCP_FILE_CLASSIFIER.json",
+        "verdict": "ACCEPTED",
+        "evidence_tier": "FUNCTIONAL_SIM"
+      },
+      "accepted": true,
+      "notes": null,
+      "surprises": []
+    },
+    {
+      "id": "VMCP_VISUAL_DIFF",
+      "status": "TESTED",
+      "score_pct": 50,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "tools/headless/vmcp_capability_probe.py",
+          "line": 1,
+          "symbol": null,
+          "kind": "definition",
+          "note": "shared probe module; catalog has no per-gate symbol"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "SCAFFOLDED",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/VMCP_VISUAL_DIFF.json",
+        "verdict": "ACCEPTED",
+        "evidence_tier": "FUNCTIONAL_SIM"
+      },
+      "accepted": true,
+      "notes": null,
+      "surprises": []
+    },
+    {
+      "id": "VMCP_SPATIAL_VALIDATE",
+      "status": "TESTED",
+      "score_pct": 50,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "tools/headless/vmcp_capability_probe.py",
+          "line": 1,
+          "symbol": null,
+          "kind": "definition",
+          "note": "shared probe module; catalog has no per-gate symbol"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "SCAFFOLDED",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/VMCP_SPATIAL_VALIDATE.json",
+        "verdict": "ACCEPTED",
+        "evidence_tier": "FUNCTIONAL_SIM"
+      },
+      "accepted": true,
+      "notes": null,
+      "surprises": []
+    },
+    {
+      "id": "VMCP_WEB_CAPTURE",
+      "status": "SCAFFOLDED",
+      "score_pct": 20,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "tools/headless/vmcp_capability_probe.py",
+          "line": 1,
+          "symbol": null,
+          "kind": "definition"
+        }
+      ],
+      "blocker": {
+        "kind": "acceptance_blocked",
+        "detail": "receipts/acceptance/VMCP_WEB_CAPTURE.json verdict BLOCKED: host Chrome/CDP not available in this lane"
+      },
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "SCAFFOLDED",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/VMCP_WEB_CAPTURE.json",
+        "verdict": "BLOCKED"
+      },
+      "accepted": false,
+      "notes": null,
+      "surprises": []
+    },
+    {
+      "id": "VMCP_PTY_CAPTURE",
+      "status": "SCAFFOLDED",
+      "score_pct": 20,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "tools/headless/vmcp_capability_probe.py",
+          "line": 1,
+          "symbol": null,
+          "kind": "definition"
+        }
+      ],
+      "blocker": {
+        "kind": "acceptance_blocked",
+        "detail": "receipts/acceptance/VMCP_PTY_CAPTURE.json verdict BLOCKED: PTY slave open failed"
+      },
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "SCAFFOLDED",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/VMCP_PTY_CAPTURE.json",
+        "verdict": "BLOCKED"
+      },
+      "accepted": false,
+      "notes": null,
+      "surprises": []
+    },
+    {
+      "id": "AGENTOS_BEHAVIOR_LAB",
+      "status": "ABSENT",
+      "score_pct": 0,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [],
+      "blocker": {
+        "kind": "no_definition",
+        "detail": "catalog code_paths=[] ; receipts/acceptance/AGENTOS_BEHAVIOR_LAB.json BLOCKED missing lab/hcli and related fixtures"
+      },
+      "evidence_tier": "SOURCE_INSPECTION",
+      "auditor_graph_status": "ABSENT",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/AGENTOS_BEHAVIOR_LAB.json",
+        "verdict": "BLOCKED"
+      },
+      "accepted": false,
+      "notes": null,
+      "surprises": []
+    },
+    {
+      "id": "VMCP_COMPACT_SURFACE",
+      "status": "TESTED",
+      "score_pct": 50,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "hcli/vmcp/__init__.py",
+          "line": 1,
+          "symbol": null,
+          "kind": "definition"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "SCAFFOLDED",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/VMCP_COMPACT_SURFACE.json",
+        "verdict": "ACCEPTED",
+        "evidence_tier": "FUNCTIONAL_SIM"
+      },
+      "accepted": true,
+      "notes": null,
+      "surprises": []
+    },
+    {
+      "id": "VMCP_AGENTOS_INTEGRATION",
+      "status": "TESTED",
+      "score_pct": 50,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "hcli/agentos/vmcp_gate.py",
+          "line": 1,
+          "symbol": null,
+          "kind": "definition",
+          "note": "no catalog symbol; run_vmcp_gate is attributed to VMCP_RECEIPT_LAW"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "SCAFFOLDED",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/VMCP_AGENTOS_INTEGRATION.json",
+        "verdict": "ACCEPTED",
+        "evidence_tier": "FUNCTIONAL_SIM"
+      },
+      "accepted": true,
+      "notes": null,
+      "surprises": []
+    },
+    {
+      "id": "AGENTOS_DETERMINISTIC_OFFLOAD",
+      "status": "CALLABLE",
+      "score_pct": 40,
+      "era": "I",
+      "gene": "I-A_AGENTOS_HCLI",
+      "call_sites": [
+        {
+          "file": "lab/hcli/special_unit.py",
+          "line": 2503,
+          "symbol": "run_bench",
+          "kind": "call"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "SOURCE_INSPECTION",
+      "auditor_graph_status": "WIRED",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/AGENTOS_DETERMINISTIC_OFFLOAD.json",
+        "verdict": "BLOCKED"
+      },
+      "accepted": false,
+      "notes": "Caller is lab/ not the live daemon. Not INTEGRATED.",
+      "surprises": []
+    },
+    {
+      "id": "MODELLAKE_IDENTITY_RESOLVED",
+      "status": "INTEGRATED",
+      "score_pct": 80,
+      "era": "I",
+      "gene": "I-E_ODYSSEY_I",
+      "call_sites": [
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 739,
+          "symbol": "run_modellake_census",
+          "kind": "call"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "BUILT",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/MODELLAKE_IDENTITY_RESOLVED.json",
+        "verdict": "ACCEPTED",
+        "evidence_tier": "STATIC",
+        "symbol_invoked": true
+      },
+      "accepted": true,
+      "notes": null,
+      "surprises": []
+    },
+    {
+      "id": "MODELLAKE_HASH_VERIFIED",
+      "status": "CALLABLE",
+      "score_pct": 40,
+      "era": "I",
+      "gene": "I-E_ODYSSEY_I",
+      "call_sites": [
+        {
+          "file": "tools/acceptance/lake/hash_verify.py",
+          "line": 41,
+          "symbol": "reconcile",
+          "kind": "call",
+          "note": "mw.reconcile(); catalog module tools.odyssey.modellake_watch"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "WIRED",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/MODELLAKE_HASH_VERIFIED.json",
+        "verdict": "BLOCKED",
+        "evidence_tier": "STATIC",
+        "symbol_invoked": true
+      },
+      "accepted": false,
+      "notes": null,
+      "surprises": []
+    },
+    {
+      "id": "MODELLAKE_ATOMIC_PROMOTION",
+      "status": "END_TO_END",
+      "score_pct": 70,
+      "era": "I",
+      "gene": "I-E_ODYSSEY_I",
+      "call_sites": [
+        {
+          "file": "tools/acceptance/lake/promotion.py",
+          "line": 26,
+          "symbol": "promote",
+          "kind": "call",
+          "note": "mp.promote(tag, go=go); not an hcli daemon caller"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "BUILT",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/MODELLAKE_ATOMIC_PROMOTION.json",
+        "verdict": "ACCEPTED",
+        "evidence_tier": "STATIC",
+        "symbol_invoked": true
+      },
+      "accepted": true,
+      "notes": "Tool-path promote() with STATIC acceptance. Not daemon-INTEGRATED. Generic name promote() has many false hits; this citation is the catalog module.",
+      "surprises": []
+    },
+    {
+      "id": "QWEN27_RUNTIME_IDENTITY_FROZEN",
+      "status": "INTEGRATED",
+      "score_pct": 80,
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "call_sites": [
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 702,
+          "symbol": "run_runtime_archaeology",
+          "kind": "call"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "BUILT",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/QWEN27_RUNTIME_IDENTITY_FROZEN.json",
+        "verdict": "ACCEPTED",
+        "evidence_tier": "STATIC"
+      },
+      "accepted": true,
+      "notes": "STATIC identity freeze, not a GPU performance measurement.",
+      "surprises": []
+    },
+    {
+      "id": "QWEN27_PROTECTED_BASELINE",
+      "status": "CALLABLE",
+      "score_pct": 40,
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "call_sites": [
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 1193,
+          "symbol": "run_protected_accelerator_benchmark",
+          "kind": "call"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "WIRED",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/QWEN27_PROTECTED_BASELINE.json",
+        "verdict": "BLOCKED",
+        "blocker": "machine_quiescence().quiet is not True"
+      },
+      "accepted": false,
+      "notes": "Protected benchmark not executed in this audit. Not PHYSICALLY_MEASURED.",
+      "surprises": []
+    },
+    {
+      "id": "QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED",
+      "status": "CALLABLE",
+      "score_pct": 40,
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "call_sites": [
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 714,
+          "symbol": "run_qwen27_mlp_diagnostic_ab",
+          "kind": "call",
+          "note": "CLI exists; the ACCEPTED receipt did not invoke it"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "SOURCE_INSPECTION",
+      "auditor_graph_status": "BUILT",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED.json",
+        "verdict": "ACCEPTED",
+        "evidence_tier": "STATIC",
+        "symbol_invoked": false
+      },
+      "accepted": false,
+      "notes": "Production CLI caller exists, so CALLABLE. Acceptance is a STATIC identity explanation, not a run of the catalog symbol.",
+      "surprises": [
+        "Auditor treats receipts/acceptance/*.json verdict=ACCEPTED as accepted without reading symbol_invoked. This receipt is ACCEPTED with symbol_invoked=false and live_ab_invoked=false. This audit refuses BUILT/INTEGRATED."
+      ]
+    },
+    {
+      "id": "FLASH_SOURCE_VERIFIED",
+      "status": "TESTED",
+      "score_pct": 50,
+      "era": "I",
+      "gene": "I-C_GRAVITY_NOETIC",
+      "call_sites": [
+        {
+          "file": "tools/flash_organ_census.py",
+          "line": 1,
+          "symbol": null,
+          "kind": "definition"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "SCAFFOLDED",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/FLASH_SOURCE_VERIFIED.json",
+        "verdict": "ACCEPTED",
+        "evidence_tier": "FUNCTIONAL_SIM"
+      },
+      "accepted": true,
+      "notes": null,
+      "surprises": []
+    },
+    {
+      "id": "FLASH_FIRST_GRAVITY_ORGAN",
+      "status": "INTEGRATED",
+      "score_pct": 80,
+      "era": "I",
+      "gene": "I-C_GRAVITY_NOETIC",
+      "call_sites": [
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 761,
+          "symbol": "run_flash_science_gate",
+          "kind": "call"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "BUILT",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/FLASH_FIRST_GRAVITY_ORGAN.json",
+        "verdict": "ACCEPTED",
+        "evidence_tier": "FUNCTIONAL_SIM"
+      },
+      "accepted": true,
+      "notes": null,
+      "surprises": []
+    },
+    {
+      "id": "FLASH_NATIVE_NF_KERNEL",
+      "status": "CALLABLE",
+      "score_pct": 40,
+      "era": "I",
+      "gene": "I-C_GRAVITY_NOETIC",
+      "call_sites": [
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 966,
+          "symbol": "run_flash_graph_component",
+          "kind": "call"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "WIRED",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/FLASH_NATIVE_NF_KERNEL.json",
+        "verdict": "BLOCKED"
+      },
+      "accepted": false,
+      "notes": null,
+      "surprises": []
+    },
+    {
+      "id": "FLASH_DENSE_VS_NF_AB",
+      "status": "INTEGRATED",
+      "score_pct": 80,
+      "era": "I",
+      "gene": "I-C_GRAVITY_NOETIC",
+      "call_sites": [
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 941,
+          "symbol": "run_flash_router_representation_ab",
+          "kind": "call"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "BUILT",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/FLASH_DENSE_VS_NF_AB.json",
+        "verdict": "ACCEPTED",
+        "evidence_tier": "FUNCTIONAL_SIM"
+      },
+      "accepted": true,
+      "notes": null,
+      "surprises": []
+    },
+    {
+      "id": "FLASH_FULL_NOETIC_EXECUTABLE",
+      "status": "SCAFFOLDED",
+      "score_pct": 20,
+      "era": "I",
+      "gene": "I-C_GRAVITY_NOETIC",
+      "call_sites": [
+        {
+          "file": "tools/odyssey/noetic_compiler.py",
+          "line": 1,
+          "symbol": null,
+          "kind": "definition"
+        }
+      ],
+      "blocker": {
+        "kind": "acceptance_blocked",
+        "detail": "FLASH_FULL_NOETIC_EXECUTABLE.json verdict BLOCKED; no catalog symbol"
+      },
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "SCAFFOLDED",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/FLASH_FULL_NOETIC_EXECUTABLE.json",
+        "verdict": "BLOCKED"
+      },
+      "accepted": false,
+      "notes": null,
+      "surprises": []
+    },
+    {
+      "id": "FLASH_COMPLETE_EBPW_LE_1",
+      "status": "CALLABLE",
+      "score_pct": 40,
+      "era": "I",
+      "gene": "I-C_GRAVITY_NOETIC",
+      "call_sites": [
+        {
+          "file": "tools/future/representation_floor.py",
+          "line": 177,
+          "symbol": "mix_report",
+          "kind": "call"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "WIRED",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/FLASH_COMPLETE_EBPW_LE_1.json",
+        "verdict": "BLOCKED",
+        "measured": "incumbent.complete_ebpw=3.139300850311054 against required <= 1"
+      },
+      "accepted": false,
+      "notes": "The campaign's load-bearing negative: a call site is not the bar. Numeric acceptance still fails.",
+      "surprises": []
+    },
+    {
+      "id": "FLASH_ACCEPTED_TPS_GE_50",
+      "status": "SCAFFOLDED",
+      "score_pct": 20,
+      "era": "I",
+      "gene": "I-C_GRAVITY_NOETIC",
+      "call_sites": [
+        {
+          "file": "tools/flash_stateful_gate.py",
+          "line": 1,
+          "symbol": null,
+          "kind": "definition"
+        }
+      ],
+      "blocker": {
+        "kind": "acceptance_blocked",
+        "detail": "accepted_tps=None which is not >= 50; BLOCKED_FIRST_PHYSICAL_BOUNDARY"
+      },
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "SCAFFOLDED",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/FLASH_ACCEPTED_TPS_GE_50.json",
+        "verdict": "BLOCKED"
+      },
+      "accepted": false,
+      "notes": "No TPS number was produced. Not PHYSICALLY_MEASURED.",
+      "surprises": []
+    },
+    {
+      "id": "FPGA_PREBOARD_SCHEMAS",
+      "status": "SCAFFOLDED",
+      "score_pct": 20,
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "call_sites": [
+        {
+          "file": "hcli/agentos/fpga_preboard.py",
+          "line": 483,
+          "symbol": "FPGADeviceGenome",
+          "kind": "call",
+          "note": "construction inside defining file only"
+        }
+      ],
+      "blocker": {
+        "kind": "catalog_symbol_not_called_outside_def",
+        "detail": "agentos_cli.py:1019 calls run_fpga_preboard (different symbol). FPGADeviceGenome() is not called outside hcli/agentos/fpga_preboard.py."
+      },
+      "evidence_tier": "SOURCE_INSPECTION",
+      "auditor_graph_status": "SCAFFOLDED",
+      "acceptance_receipt": null,
+      "accepted": false,
+      "notes": null,
+      "surprises": [
+        "FPGA preboard CLI is reachable via run_fpga_preboard from hcli/agentos_cli.py, but the catalog symbol is the inner type FPGADeviceGenome, so the gate stays SCAFFOLDED under the call-of-the-symbol law."
+      ]
+    },
+    {
+      "id": "FPGA_HWIR",
+      "status": "CALLABLE",
+      "score_pct": 40,
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "call_sites": [
+        {
+          "file": "tools/accelerator/backend_contract.py",
+          "line": 1094,
+          "symbol": "HwirGraph",
+          "kind": "call"
+        },
+        {
+          "file": "tools/accelerator/fusion_bridge.py",
+          "line": 1444,
+          "symbol": "HwirGraph",
+          "kind": "call"
+        },
+        {
+          "file": "tools/future/p6_projection.py",
+          "line": 857,
+          "symbol": "HwirGraph",
+          "kind": "call"
+        },
+        {
+          "file": "tools/future/propagate.py",
+          "line": 695,
+          "symbol": "HwirGraph",
+          "kind": "call"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "SOURCE_INSPECTION",
+      "auditor_graph_status": "WIRED",
+      "acceptance_receipt": null,
+      "accepted": false,
+      "notes": "s2-hwir-pluggable-lowering-target (da3e5c167 / f16ec8cdd) added lowering surface in tools/future/hwir.py. External HwirGraph( callers exist. No acceptance receipt. Does not wake any U50_* gate.",
+      "surprises": []
+    },
+    {
+      "id": "FPGA_LINK_SIM",
+      "status": "SCAFFOLDED",
+      "score_pct": 20,
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "call_sites": [
+        {
+          "file": "hcli/agentos/fpga_preboard.py",
+          "line": 480,
+          "symbol": "TransportLinkSimulator",
+          "kind": "call",
+          "note": "defining file only"
+        }
+      ],
+      "blocker": {
+        "kind": "catalog_symbol_not_called_outside_def",
+        "detail": "TransportLinkSimulator() only inside hcli/agentos/fpga_preboard.py"
+      },
+      "evidence_tier": "SOURCE_INSPECTION",
+      "auditor_graph_status": "SCAFFOLDED",
+      "acceptance_receipt": null,
+      "accepted": false,
+      "notes": null,
+      "surprises": []
+    },
+    {
+      "id": "FPGA_PARTITION_SIM",
+      "status": "SCAFFOLDED",
+      "score_pct": 20,
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "call_sites": [
+        {
+          "file": "hcli/agentos/fpga_preboard.py",
+          "line": 482,
+          "symbol": "simulate_partition",
+          "kind": "call",
+          "note": "defining file only"
+        }
+      ],
+      "blocker": {
+        "kind": "catalog_symbol_not_called_outside_def",
+        "detail": "simulate_partition() only inside hcli/agentos/fpga_preboard.py"
+      },
+      "evidence_tier": "SOURCE_INSPECTION",
+      "auditor_graph_status": "SCAFFOLDED",
+      "acceptance_receipt": null,
+      "accepted": false,
+      "notes": null,
+      "surprises": []
+    },
+    {
+      "id": "U50_PURCHASE_ACCEPTANCE",
+      "status": "BLOCKED_HARDWARE",
+      "score_pct": 0,
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "call_sites": [],
+      "blocker": {
+        "kind": "hardware",
+        "id": "U50_PRESENT",
+        "detail": "No Xilinx/Alveo/U50/XCU50 identity in ioreg/Thunderbolt/system_profiler; nvidia-smi absent. Inventory run this session."
+      },
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "BLOCKED_HARDWARE",
+      "acceptance_receipt": null,
+      "accepted": false,
+      "notes": "Software files exist (hwir.py, hardware_doctor.py, fpga_engines.py, physical_graph.py) but the gate is a physical U50DD/Alveo fact. Not PHYSICALLY_MEASURED performance; inventory absence only.",
+      "surprises": []
+    },
+    {
+      "id": "U50_SAFE_COOLING",
+      "status": "BLOCKED_HARDWARE",
+      "score_pct": 0,
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "call_sites": [],
+      "blocker": {
+        "kind": "hardware",
+        "id": "U50_PRESENT",
+        "detail": "No Xilinx/Alveo/U50/XCU50 identity in ioreg/Thunderbolt/system_profiler; nvidia-smi absent. Inventory run this session."
+      },
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "BLOCKED_HARDWARE",
+      "acceptance_receipt": null,
+      "accepted": false,
+      "notes": "Software files exist (hwir.py, hardware_doctor.py, fpga_engines.py, physical_graph.py) but the gate is a physical U50DD/Alveo fact. Not PHYSICALLY_MEASURED performance; inventory absence only.",
+      "surprises": []
+    },
+    {
+      "id": "U50_DEVICE_PROFILE",
+      "status": "BLOCKED_HARDWARE",
+      "score_pct": 0,
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "call_sites": [],
+      "blocker": {
+        "kind": "hardware",
+        "id": "U50_PRESENT",
+        "detail": "No Xilinx/Alveo/U50/XCU50 identity in ioreg/Thunderbolt/system_profiler; nvidia-smi absent. Inventory run this session."
+      },
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "BLOCKED_HARDWARE",
+      "acceptance_receipt": null,
+      "accepted": false,
+      "notes": "Software files exist (hwir.py, hardware_doctor.py, fpga_engines.py, physical_graph.py) but the gate is a physical U50DD/Alveo fact. Not PHYSICALLY_MEASURED performance; inventory absence only.",
+      "surprises": []
+    },
+    {
+      "id": "U50_DMA_HBM",
+      "status": "BLOCKED_HARDWARE",
+      "score_pct": 0,
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "call_sites": [],
+      "blocker": {
+        "kind": "hardware",
+        "id": "U50_PRESENT",
+        "detail": "No Xilinx/Alveo/U50/XCU50 identity in ioreg/Thunderbolt/system_profiler; nvidia-smi absent. Inventory run this session."
+      },
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "BLOCKED_HARDWARE",
+      "acceptance_receipt": null,
+      "accepted": false,
+      "notes": "Software files exist (hwir.py, hardware_doctor.py, fpga_engines.py, physical_graph.py) but the gate is a physical U50DD/Alveo fact. Not PHYSICALLY_MEASURED performance; inventory absence only.",
+      "surprises": []
+    },
+    {
+      "id": "U50_FIRST_NATIVE_ENGINE",
+      "status": "BLOCKED_HARDWARE",
+      "score_pct": 0,
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "call_sites": [],
+      "blocker": {
+        "kind": "hardware",
+        "id": "U50_PRESENT",
+        "detail": "No Xilinx/Alveo/U50/XCU50 identity in ioreg/Thunderbolt/system_profiler; nvidia-smi absent. Inventory run this session."
+      },
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "BLOCKED_HARDWARE",
+      "acceptance_receipt": null,
+      "accepted": false,
+      "notes": "Software files exist (hwir.py, hardware_doctor.py, fpga_engines.py, physical_graph.py) but the gate is a physical U50DD/Alveo fact. Not PHYSICALLY_MEASURED performance; inventory absence only.",
+      "surprises": []
+    },
+    {
+      "id": "U50_MIXED_APPLE_FPGA_GRAPH",
+      "status": "BLOCKED_HARDWARE",
+      "score_pct": 0,
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "call_sites": [],
+      "blocker": {
+        "kind": "hardware",
+        "id": "U50_PRESENT",
+        "detail": "No Xilinx/Alveo/U50/XCU50 identity in ioreg/Thunderbolt/system_profiler; nvidia-smi absent. Inventory run this session."
+      },
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "BLOCKED_HARDWARE",
+      "acceptance_receipt": null,
+      "accepted": false,
+      "notes": "Software files exist (hwir.py, hardware_doctor.py, fpga_engines.py, physical_graph.py) but the gate is a physical U50DD/Alveo fact. Not PHYSICALLY_MEASURED performance; inventory absence only.",
+      "surprises": [
+        "Graph listed a runtime_caller at tools/future/nr_nx_generic.py:1981 (subprocess.run). That launch is tools/odyssey/physical_graph_compiler.py \u2014 the II-C compiler, not a mixed Apple+FPGA graph. Hardware still absent."
+      ]
+    },
+    {
+      "id": "U50_34_TO_40",
+      "status": "BLOCKED_HARDWARE",
+      "score_pct": 0,
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "call_sites": [],
+      "blocker": {
+        "kind": "hardware",
+        "id": "U50_PRESENT",
+        "detail": "No Xilinx/Alveo/U50/XCU50 identity in ioreg/Thunderbolt/system_profiler; nvidia-smi absent. Inventory run this session."
+      },
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "BLOCKED_HARDWARE",
+      "acceptance_receipt": null,
+      "accepted": false,
+      "notes": "Software files exist (hwir.py, hardware_doctor.py, fpga_engines.py, physical_graph.py) but the gate is a physical U50DD/Alveo fact. Not PHYSICALLY_MEASURED performance; inventory absence only.",
+      "surprises": []
+    },
+    {
+      "id": "U50_40_TO_50",
+      "status": "BLOCKED_HARDWARE",
+      "score_pct": 0,
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "call_sites": [],
+      "blocker": {
+        "kind": "hardware",
+        "id": "U50_PRESENT",
+        "detail": "No Xilinx/Alveo/U50/XCU50 identity in ioreg/Thunderbolt/system_profiler; nvidia-smi absent. Inventory run this session."
+      },
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "BLOCKED_HARDWARE",
+      "acceptance_receipt": null,
+      "accepted": false,
+      "notes": "Software files exist (hwir.py, hardware_doctor.py, fpga_engines.py, physical_graph.py) but the gate is a physical U50DD/Alveo fact. Not PHYSICALLY_MEASURED performance; inventory absence only.",
+      "surprises": []
+    },
+    {
+      "id": "U50_50_TO_60",
+      "status": "BLOCKED_HARDWARE",
+      "score_pct": 0,
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "call_sites": [],
+      "blocker": {
+        "kind": "hardware",
+        "id": "U50_PRESENT",
+        "detail": "No Xilinx/Alveo/U50/XCU50 identity in ioreg/Thunderbolt/system_profiler; nvidia-smi absent. Inventory run this session."
+      },
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "BLOCKED_HARDWARE",
+      "acceptance_receipt": null,
+      "accepted": false,
+      "notes": "Software files exist (hwir.py, hardware_doctor.py, fpga_engines.py, physical_graph.py) but the gate is a physical U50DD/Alveo fact. Not PHYSICALLY_MEASURED performance; inventory absence only.",
+      "surprises": []
+    },
+    {
+      "id": "U50_60_TO_70",
+      "status": "BLOCKED_HARDWARE",
+      "score_pct": 0,
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "call_sites": [],
+      "blocker": {
+        "kind": "hardware",
+        "id": "U50_PRESENT",
+        "detail": "No Xilinx/Alveo/U50/XCU50 identity in ioreg/Thunderbolt/system_profiler; nvidia-smi absent. Inventory run this session."
+      },
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "BLOCKED_HARDWARE",
+      "acceptance_receipt": null,
+      "accepted": false,
+      "notes": "Software files exist (hwir.py, hardware_doctor.py, fpga_engines.py, physical_graph.py) but the gate is a physical U50DD/Alveo fact. Not PHYSICALLY_MEASURED performance; inventory absence only.",
+      "surprises": []
+    },
+    {
+      "id": "U50_70_TO_80",
+      "status": "BLOCKED_HARDWARE",
+      "score_pct": 0,
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "call_sites": [],
+      "blocker": {
+        "kind": "hardware",
+        "id": "U50_PRESENT",
+        "detail": "No Xilinx/Alveo/U50/XCU50 identity in ioreg/Thunderbolt/system_profiler; nvidia-smi absent. Inventory run this session."
+      },
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "BLOCKED_HARDWARE",
+      "acceptance_receipt": null,
+      "accepted": false,
+      "notes": "Software files exist (hwir.py, hardware_doctor.py, fpga_engines.py, physical_graph.py) but the gate is a physical U50DD/Alveo fact. Not PHYSICALLY_MEASURED performance; inventory absence only.",
+      "surprises": []
+    },
+    {
+      "id": "U50_80_TO_90",
+      "status": "BLOCKED_HARDWARE",
+      "score_pct": 0,
+      "era": "I",
+      "gene": "I-D_ACCELERATOR",
+      "call_sites": [],
+      "blocker": {
+        "kind": "hardware",
+        "id": "U50_PRESENT",
+        "detail": "No Xilinx/Alveo/U50/XCU50 identity in ioreg/Thunderbolt/system_profiler; nvidia-smi absent. Inventory run this session."
+      },
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "BLOCKED_HARDWARE",
+      "acceptance_receipt": null,
+      "accepted": false,
+      "notes": "Software files exist (hwir.py, hardware_doctor.py, fpga_engines.py, physical_graph.py) but the gate is a physical U50DD/Alveo fact. Not PHYSICALLY_MEASURED performance; inventory absence only.",
+      "surprises": []
+    },
+    {
+      "id": "HMF_DEVICE_VISIBLE_TRUST",
+      "status": "BLOCKED_HARDWARE",
+      "score_pct": 0,
+      "era": "IV",
+      "gene": "IV-B_HMF_HGVAS",
+      "call_sites": [],
+      "blocker": {
+        "kind": "hardware",
+        "id": "HMF_PRESENT",
+        "detail": "No HMF/HGVAS/CXL memory appliance in inventory this session."
+      },
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "BLOCKED_HARDWARE",
+      "acceptance_receipt": null,
+      "accepted": false,
+      "notes": null,
+      "surprises": []
+    },
+    {
+      "id": "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE",
+      "status": "BLOCKED_HARDWARE",
+      "score_pct": 0,
+      "era": "IV",
+      "gene": "IV-A_FUSION",
+      "call_sites": [
+        {
+          "file": "tools/accelerator/fusion_planner.py",
+          "line": 1,
+          "symbol": null,
+          "kind": "definition"
+        }
+      ],
+      "blocker": {
+        "kind": "hardware_dependency",
+        "id": "HMF_PRESENT",
+        "detail": "catalog deps=['HMF_DEVICE_VISIBLE_TRUST']; HMF absent. Graph status UNREACHABLE. Contract vocabulary has no UNREACHABLE; hardware is the blocker."
+      },
+      "evidence_tier": "SOURCE_INSPECTION",
+      "auditor_graph_status": "UNREACHABLE",
+      "acceptance_receipt": null,
+      "accepted": false,
+      "notes": null,
+      "surprises": []
+    },
+    {
+      "id": "THEIA_T0_TRAIN_SUBSTRATE",
+      "status": "BLOCKED_AUTHORITY",
+      "score_pct": 0,
+      "era": "bounty",
+      "gene": null,
+      "call_sites": [],
+      "blocker": {
+        "kind": "external_training",
+        "detail": "Hawking Train T0 substrate is not a live campaign here: no teacher registry/data lake/trace store/curriculum/checkpoint authority. Wake: T0_TEACHER_REGISTRY_LIVE.",
+        "engine_present": "tools/theia/ (not a catalog code_path of these gates)"
+      },
+      "evidence_tier": "SOURCE_INSPECTION",
+      "auditor_graph_status": "BLOCKED_EXTERNAL",
+      "acceptance_receipt": null,
+      "accepted": false,
+      "notes": "Contract vocabulary has BLOCKED_AUTHORITY not BLOCKED_EXTERNAL. Theia is one generalist bounty model, not a sixth civilization. Gates have empty code_paths.",
+      "surprises": []
+    },
+    {
+      "id": "THEIA_MICRO",
+      "status": "BLOCKED_AUTHORITY",
+      "score_pct": 0,
+      "era": "bounty",
+      "gene": null,
+      "call_sites": [],
+      "blocker": {
+        "kind": "external_training",
+        "detail": "needs a trained ~1B-3B student. Wake: THEIA_T0_TRAIN_SUBSTRATE=PASS.",
+        "engine_present": "tools/theia/ (not a catalog code_path of these gates)"
+      },
+      "evidence_tier": "SOURCE_INSPECTION",
+      "auditor_graph_status": "BLOCKED_EXTERNAL",
+      "acceptance_receipt": null,
+      "accepted": false,
+      "notes": "Contract vocabulary has BLOCKED_AUTHORITY not BLOCKED_EXTERNAL. Theia is one generalist bounty model, not a sixth civilization. Gates have empty code_paths.",
+      "surprises": []
+    },
+    {
+      "id": "THEIA_LAB",
+      "status": "BLOCKED_AUTHORITY",
+      "score_pct": 0,
+      "era": "bounty",
+      "gene": null,
+      "call_sites": [],
+      "blocker": {
+        "kind": "external_training",
+        "detail": "needs a trained ~7B-14B student. Wake: THEIA_MICRO=PASS.",
+        "engine_present": "tools/theia/ (not a catalog code_path of these gates)"
+      },
+      "evidence_tier": "SOURCE_INSPECTION",
+      "auditor_graph_status": "BLOCKED_EXTERNAL",
+      "acceptance_receipt": null,
+      "accepted": false,
+      "notes": "Contract vocabulary has BLOCKED_AUTHORITY not BLOCKED_EXTERNAL. Theia is one generalist bounty model, not a sixth civilization. Gates have empty code_paths.",
+      "surprises": []
+    },
+    {
+      "id": "THEIA_WORKER",
+      "status": "BLOCKED_AUTHORITY",
+      "score_pct": 0,
+      "era": "bounty",
+      "gene": null,
+      "call_sites": [],
+      "blocker": {
+        "kind": "external_training",
+        "detail": "needs a trained ~20B-40B student. Wake: THEIA_LAB=PASS.",
+        "engine_present": "tools/theia/ (not a catalog code_path of these gates)"
+      },
+      "evidence_tier": "SOURCE_INSPECTION",
+      "auditor_graph_status": "BLOCKED_EXTERNAL",
+      "acceptance_receipt": null,
+      "accepted": false,
+      "notes": "Contract vocabulary has BLOCKED_AUTHORITY not BLOCKED_EXTERNAL. Theia is one generalist bounty model, not a sixth civilization. Gates have empty code_paths.",
+      "surprises": []
+    },
+    {
+      "id": "THEIA_RESEARCH",
+      "status": "BLOCKED_AUTHORITY",
+      "score_pct": 0,
+      "era": "bounty",
+      "gene": null,
+      "call_sites": [],
+      "blocker": {
+        "kind": "external_training",
+        "detail": "needs a trained ~30B-100B+ flagship. Wake: THEIA_WORKER=PASS.",
+        "engine_present": "tools/theia/ (not a catalog code_path of these gates)"
+      },
+      "evidence_tier": "SOURCE_INSPECTION",
+      "auditor_graph_status": "BLOCKED_EXTERNAL",
+      "acceptance_receipt": null,
+      "accepted": false,
+      "notes": "Contract vocabulary has BLOCKED_AUTHORITY not BLOCKED_EXTERNAL. Theia is one generalist bounty model, not a sixth civilization. Gates have empty code_paths.",
+      "surprises": []
+    },
+    {
+      "id": "THEIA_GRAVITY_EXECUTABLE",
+      "status": "BLOCKED_AUTHORITY",
+      "score_pct": 0,
+      "era": "bounty",
+      "gene": null,
+      "call_sites": [],
+      "blocker": {
+        "kind": "external_training",
+        "detail": "needs a frozen Theia capability baseline to compress. Wake: THEIA_RESEARCH=PASS.",
+        "engine_present": "tools/theia/ (not a catalog code_path of these gates)"
+      },
+      "evidence_tier": "SOURCE_INSPECTION",
+      "auditor_graph_status": "BLOCKED_EXTERNAL",
+      "acceptance_receipt": null,
+      "accepted": false,
+      "notes": "Contract vocabulary has BLOCKED_AUTHORITY not BLOCKED_EXTERNAL. Theia is one generalist bounty model, not a sixth civilization. Gates have empty code_paths.",
+      "surprises": []
+    },
+    {
+      "id": "THEIA_BOUNTY_GENERALIST_QUALIFIED",
+      "status": "BLOCKED_AUTHORITY",
+      "score_pct": 0,
+      "era": "bounty",
+      "gene": null,
+      "call_sites": [],
+      "blocker": {
+        "kind": "external_training",
+        "detail": "bounty ENGINE exists at tools/theia/ but no qualified generalist MODEL does. Wake: THEIA_RESEARCH=PASS.",
+        "engine_present": "tools/theia/ (not a catalog code_path of these gates)"
+      },
+      "evidence_tier": "SOURCE_INSPECTION",
+      "auditor_graph_status": "BLOCKED_EXTERNAL",
+      "acceptance_receipt": null,
+      "accepted": false,
+      "notes": "Contract vocabulary has BLOCKED_AUTHORITY not BLOCKED_EXTERNAL. Theia is one generalist bounty model, not a sixth civilization. Gates have empty code_paths.",
+      "surprises": []
+    },
+    {
+      "id": "ODYSSEY_I_DISCOVERY",
+      "status": "INTEGRATED",
+      "score_pct": 80,
+      "era": "I",
+      "gene": "I-E_ODYSSEY_I",
+      "call_sites": [
+        {
+          "file": "hcli/acquisition.py",
+          "line": 172,
+          "symbol": "pick_acquire_candidate",
+          "kind": "call"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "BUILT",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/ODYSSEY_I_DISCOVERY.json",
+        "verdict": "ACCEPTED",
+        "evidence_tier": "STATIC"
+      },
+      "accepted": true,
+      "notes": null,
+      "surprises": []
+    },
+    {
+      "id": "ODYSSEY_II_TRANSFER",
+      "status": "CALLABLE",
+      "score_pct": 40,
+      "era": "II",
+      "gene": "II-A_ODYSSEY_II",
+      "call_sites": [
+        {
+          "file": "tools/future/consolidated_run.py",
+          "line": 891,
+          "symbol": "load_qualification_queue",
+          "kind": "call"
+        },
+        {
+          "file": "tools/future/protected_window.py",
+          "line": 365,
+          "symbol": "load_qualification_queue",
+          "kind": "call"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "WIRED",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/ODYSSEY_II_TRANSFER.json",
+        "verdict": "BLOCKED",
+        "blocker": "TRANSFER_REDUCTION_NOT_POSITIVE"
+      },
+      "accepted": false,
+      "notes": null,
+      "surprises": []
+    },
+    {
+      "id": "ODYSSEY_III_ADVERSARIAL_META_SCIENCE",
+      "status": "CALLABLE",
+      "score_pct": 40,
+      "era": "III",
+      "gene": "III-A_ODYSSEY_III",
+      "call_sites": [
+        {
+          "file": "tools/future/campaign_scars.py",
+          "line": 469,
+          "symbol": "scars",
+          "kind": "call"
+        },
+        {
+          "file": "tools/theia/self_bounty.py",
+          "line": 346,
+          "symbol": "scars",
+          "kind": "call",
+          "note": "graph citation; not independently re-lined this pass but git grep of scars() in tools/theia confirmed as a call in the census"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "STATIC_VERIFICATION",
+      "auditor_graph_status": "WIRED",
+      "acceptance_receipt": {
+        "file": "receipts/acceptance/ODYSSEY_III_ADVERSARIAL_META_SCIENCE.json",
+        "verdict": "BLOCKED",
+        "blocker": "NO_INDEPENDENT_LAW_REFUTATION"
+      },
+      "accepted": false,
+      "notes": null,
+      "surprises": []
+    }
+  ],
+  "genes": [
+    {
+      "id": "I-A_AGENTOS_HCLI",
+      "era": "I",
+      "status": "INTEGRATED",
+      "score_pct": 54.0,
+      "n_member_gates": 30,
+      "member_gate_ids": [
+        "AGENTOS_REPAIR_BOUNDED",
+        "AGENTOS_RETRY_CLASSIFIED",
+        "AGENTOS_CIRCUIT_BREAKER",
+        "AGENTOS_CANCELLATION",
+        "AGENTOS_ORPHAN_RECONCILIATION",
+        "AGENTOS_PERSISTENCE_SINGLE_AUTHORITY",
+        "AGENTOS_CHECKPOINT_ATOMICITY",
+        "AGENTOS_RESTART_COHERENCE",
+        "HCLI_CONTEXT_AUTHORITY_UNIFIED",
+        "HCLI_CONTEXT_FOCUSED_WORKUNITS",
+        "HCLI_CONTEXT_INVALIDATION",
+        "HCLI_STATUS_PHYSICAL",
+        "HCLI_MIXED_MAX",
+        "BACKEND_FAILURE_ISOLATION",
+        "HCLI_SELF_SUPPLEMENT",
+        "HCLI_SELF_OPTIMIZATION_BOOTSTRAP",
+        "VMCP_STATE_LATTICE",
+        "VMCP_DEEP_DIGEST",
+        "VMCP_TRUTH_LEDGER",
+        "VMCP_RECEIPT_LAW",
+        "VMCP_TOOL_DOCTOR",
+        "VMCP_FILE_CLASSIFIER",
+        "VMCP_VISUAL_DIFF",
+        "VMCP_SPATIAL_VALIDATE",
+        "VMCP_WEB_CAPTURE",
+        "VMCP_PTY_CAPTURE",
+        "AGENTOS_BEHAVIOR_LAB",
+        "VMCP_COMPACT_SURFACE",
+        "VMCP_AGENTOS_INTEGRATION",
+        "AGENTOS_DETERMINISTIC_OFFLOAD"
+      ],
+      "member_mean_pct": 54.0,
+      "member_status_histogram": {
+        "INTEGRATED": 10,
+        "SCAFFOLDED": 3,
+        "TESTED": 12,
+        "CALLABLE": 4,
+        "ABSENT": 1
+      },
+      "call_sites": null,
+      "blocker": null,
+      "evidence_tier": "SOURCE_INSPECTION",
+      "notes": "Gene score is the unweighted mean of appendix-O member gates. Median member status is the gene label. Imports of gene modules were ignored. Gene label is the strongest non-hardware/non-authority member; score is the unweighted mean of all members (hardware zeros included).",
+      "hardware_blocked_members": 0
+    },
+    {
+      "id": "I-B_DOCTOR",
+      "era": "I",
+      "status": "SCAFFOLDED",
+      "score_pct": 20,
+      "n_member_gates": 0,
+      "member_gate_ids": [],
+      "member_mean_pct": null,
+      "call_sites": [
+        {
+          "file": "hcli/doctor/__init__.py",
+          "line": 1,
+          "symbol": null,
+          "kind": "definition",
+          "note": "gene has ZERO appendix-O gates; modules exist; graph reports imports only, no production call of a gene-level symbol"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "SOURCE_INSPECTION",
+      "auditor_graph_status": "SCAFFOLDED",
+      "notes": "I-B has zero of the 71 appendix-O gates"
+    },
+    {
+      "id": "I-C_GRAVITY_NOETIC",
+      "era": "I",
+      "status": "INTEGRATED",
+      "score_pct": 47.14,
+      "n_member_gates": 7,
+      "member_gate_ids": [
+        "FLASH_SOURCE_VERIFIED",
+        "FLASH_FIRST_GRAVITY_ORGAN",
+        "FLASH_NATIVE_NF_KERNEL",
+        "FLASH_DENSE_VS_NF_AB",
+        "FLASH_FULL_NOETIC_EXECUTABLE",
+        "FLASH_COMPLETE_EBPW_LE_1",
+        "FLASH_ACCEPTED_TPS_GE_50"
+      ],
+      "member_mean_pct": 47.14,
+      "member_status_histogram": {
+        "TESTED": 1,
+        "INTEGRATED": 2,
+        "CALLABLE": 2,
+        "SCAFFOLDED": 2
+      },
+      "call_sites": null,
+      "blocker": null,
+      "evidence_tier": "SOURCE_INSPECTION",
+      "notes": "Gene score is the unweighted mean of appendix-O member gates. Median member status is the gene label. Imports of gene modules were ignored. Gene label is the strongest non-hardware/non-authority member; score is the unweighted mean of all members (hardware zeros included).",
+      "hardware_blocked_members": 0
+    },
+    {
+      "id": "I-D_ACCELERATOR",
+      "era": "I",
+      "status": "INTEGRATED",
+      "score_pct": 13.68,
+      "n_member_gates": 19,
+      "member_gate_ids": [
+        "QWEN27_RUNTIME_IDENTITY_FROZEN",
+        "QWEN27_PROTECTED_BASELINE",
+        "QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED",
+        "FPGA_PREBOARD_SCHEMAS",
+        "FPGA_HWIR",
+        "FPGA_LINK_SIM",
+        "FPGA_PARTITION_SIM",
+        "U50_PURCHASE_ACCEPTANCE",
+        "U50_SAFE_COOLING",
+        "U50_DEVICE_PROFILE",
+        "U50_DMA_HBM",
+        "U50_FIRST_NATIVE_ENGINE",
+        "U50_MIXED_APPLE_FPGA_GRAPH",
+        "U50_34_TO_40",
+        "U50_40_TO_50",
+        "U50_50_TO_60",
+        "U50_60_TO_70",
+        "U50_70_TO_80",
+        "U50_80_TO_90"
+      ],
+      "member_mean_pct": 13.68,
+      "member_status_histogram": {
+        "INTEGRATED": 1,
+        "CALLABLE": 3,
+        "SCAFFOLDED": 3,
+        "BLOCKED_HARDWARE": 12
+      },
+      "call_sites": null,
+      "blocker": null,
+      "evidence_tier": "SOURCE_INSPECTION",
+      "notes": "Gene score is the unweighted mean of appendix-O member gates. Median member status is the gene label. Imports of gene modules were ignored. Gene label is the strongest non-hardware/non-authority member; score is the unweighted mean of all members (hardware zeros included).",
+      "hardware_blocked_members": 12
+    },
+    {
+      "id": "I-E_ODYSSEY_I",
+      "era": "I",
+      "status": "INTEGRATED",
+      "score_pct": 67.5,
+      "n_member_gates": 4,
+      "member_gate_ids": [
+        "MODELLAKE_IDENTITY_RESOLVED",
+        "MODELLAKE_HASH_VERIFIED",
+        "MODELLAKE_ATOMIC_PROMOTION",
+        "ODYSSEY_I_DISCOVERY"
+      ],
+      "member_mean_pct": 67.5,
+      "member_status_histogram": {
+        "INTEGRATED": 2,
+        "CALLABLE": 1,
+        "END_TO_END": 1
+      },
+      "call_sites": null,
+      "blocker": null,
+      "evidence_tier": "SOURCE_INSPECTION",
+      "notes": "Gene score is the unweighted mean of appendix-O member gates. Median member status is the gene label. Imports of gene modules were ignored. Gene label is the strongest non-hardware/non-authority member; score is the unweighted mean of all members (hardware zeros included).",
+      "hardware_blocked_members": 0
+    },
+    {
+      "id": "II-A_ODYSSEY_II",
+      "era": "II",
+      "status": "CALLABLE",
+      "score_pct": 40.0,
+      "n_member_gates": 1,
+      "member_gate_ids": [
+        "ODYSSEY_II_TRANSFER"
+      ],
+      "member_mean_pct": 40.0,
+      "member_status_histogram": {
+        "CALLABLE": 1
+      },
+      "call_sites": null,
+      "blocker": null,
+      "evidence_tier": "SOURCE_INSPECTION",
+      "notes": "Gene score is the unweighted mean of appendix-O member gates. Median member status is the gene label. Imports of gene modules were ignored. Gene label is the strongest non-hardware/non-authority member; score is the unweighted mean of all members (hardware zeros included).",
+      "hardware_blocked_members": 0
+    },
+    {
+      "id": "II-B_NOETIC_COMPILER_V1",
+      "era": "II",
+      "status": "SCAFFOLDED",
+      "score_pct": 20,
+      "n_member_gates": 0,
+      "member_gate_ids": [],
+      "member_mean_pct": null,
+      "call_sites": [
+        {
+          "file": "(catalog code_paths)",
+          "line": null,
+          "symbol": null,
+          "kind": "definition",
+          "note": "gene-level catalog has no implementing symbol; auditor status was SCAFFOLDED on definition+imports. Imports are not callers."
+        }
+      ],
+      "blocker": {
+        "kind": "no_production_caller_of_gene_symbol",
+        "detail": "gene catalog symbols=[] ; a module import is not a call"
+      },
+      "evidence_tier": "SOURCE_INSPECTION",
+      "auditor_graph_status": "SCAFFOLDED",
+      "notes": null
+    },
+    {
+      "id": "II-C_PHYSICAL_GRAPH_COMPILER",
+      "era": "II",
+      "status": "CALLABLE",
+      "score_pct": 40,
+      "n_member_gates": 0,
+      "member_gate_ids": [],
+      "member_mean_pct": null,
+      "call_sites": [
+        {
+          "file": "tools/future/nr_nx_generic.py",
+          "line": 1981,
+          "symbol": "tools/odyssey/physical_graph_compiler.py",
+          "kind": "subprocess",
+          "note": "exact path, not a suffix match"
+        }
+      ],
+      "blocker": null,
+      "evidence_tier": "SOURCE_INSPECTION",
+      "auditor_graph_status": "WIRED",
+      "notes": null
+    },
+    {
+      "id": "II-D_STATE_TOKENIZER_DECODING",
+      "era": "II",
+      "status": "SCAFFOLDED",
+      "score_pct": 20,
+      "n_member_gates": 0,
+      "member_gate_ids": [],
+      "member_mean_pct": null,
+      "call_sites": [
+        {
+          "file": "(catalog code_paths)",
+          "line": null,
+          "symbol": null,
+          "kind": "definition",
+          "note": "gene-level catalog has no implementing symbol; auditor status was SCAFFOLDED on definition+imports. Imports are not callers."
+        }
+      ],
+      "blocker": {
+        "kind": "no_production_caller_of_gene_symbol",
+        "detail": "gene catalog symbols=[] ; a module import is not a call"
+      },
+      "evidence_tier": "SOURCE_INSPECTION",
+      "auditor_graph_status": "SCAFFOLDED",
+      "notes": null
+    },
+    {
+      "id": "II-E_GREEN_MACHINE",
+      "era": "II",
+      "status": "SCAFFOLDED",
+      "score_pct": 20,
+      "n_member_gates": 0,
+      "member_gate_ids": [],
+      "member_mean_pct": null,
+      "call_sites": [
+        {
+          "file": "(catalog code_paths)",
+          "line": null,
+          "symbol": null,
+          "kind": "definition",
+          "note": "gene-level catalog has no implementing symbol; auditor status was SCAFFOLDED on definition+imports. Imports are not callers."
+        }
+      ],
+      "blocker": {
+        "kind": "no_production_caller_of_gene_symbol",
+        "detail": "gene catalog symbols=[] ; a module import is not a call"
+      },
+      "evidence_tier": "SOURCE_INSPECTION",
+      "auditor_graph_status": "SCAFFOLDED",
+      "notes": null
+    },
+    {
+      "id": "III-A_ODYSSEY_III",
+      "era": "III",
+      "status": "CALLABLE",
+      "score_pct": 40.0,
+      "n_member_gates": 1,
+      "member_gate_ids": [
+        "ODYSSEY_III_ADVERSARIAL_META_SCIENCE"
+      ],
+      "member_mean_pct": 40.0,
+      "member_status_histogram": {
+        "CALLABLE": 1
+      },
+      "call_sites": null,
+      "blocker": null,
+      "evidence_tier": "SOURCE_INSPECTION",
+      "notes": "Gene score is the unweighted mean of appendix-O member gates. Median member status is the gene label. Imports of gene modules were ignored. Gene label is the strongest non-hardware/non-authority member; score is the unweighted mean of all members (hardware zeros included).",
+      "hardware_blocked_members": 0
+    },
+    {
+      "id": "III-B_LEARNED_PHYSICAL_COMPILER",
+      "era": "III",
+      "status": "SCAFFOLDED",
+      "score_pct": 20,
+      "n_member_gates": 0,
+      "member_gate_ids": [],
+      "member_mean_pct": null,
+      "call_sites": [
+        {
+          "file": "(catalog code_paths)",
+          "line": null,
+          "symbol": null,
+          "kind": "definition",
+          "note": "gene-level catalog has no implementing symbol; auditor status was SCAFFOLDED on definition+imports. Imports are not callers."
+        }
+      ],
+      "blocker": {
+        "kind": "no_production_caller_of_gene_symbol",
+        "detail": "gene catalog symbols=[] ; a module import is not a call"
+      },
+      "evidence_tier": "SOURCE_INSPECTION",
+      "auditor_graph_status": "SCAFFOLDED",
+      "notes": null
+    },
+    {
+      "id": "III-C_RESIDENT_OPTIMIZER",
+      "era": "III",
+      "status": "SCAFFOLDED",
+      "score_pct": 20,
+      "n_member_gates": 0,
+      "member_gate_ids": [],
+      "member_mean_pct": null,
+      "call_sites": [
+        {
+          "file": "(catalog code_paths)",
+          "line": null,
+          "symbol": null,
+          "kind": "definition",
+          "note": "gene-level catalog has no implementing symbol; auditor status was SCAFFOLDED on definition+imports. Imports are not callers."
+        }
+      ],
+      "blocker": {
+        "kind": "no_production_caller_of_gene_symbol",
+        "detail": "gene catalog symbols=[] ; a module import is not a call"
+      },
+      "evidence_tier": "SOURCE_INSPECTION",
+      "auditor_graph_status": "SCAFFOLDED",
+      "notes": null
+    },
+    {
+      "id": "III-D_BEYOND_DENSE_REPRESENTATION",
+      "era": "III",
+      "status": "SCAFFOLDED",
+      "score_pct": 20,
+      "n_member_gates": 0,
+      "member_gate_ids": [],
+      "member_mean_pct": null,
+      "call_sites": [
+        {
+          "file": "(catalog code_paths)",
+          "line": null,
+          "symbol": null,
+          "kind": "definition",
+          "note": "gene-level catalog has no implementing symbol; auditor status was SCAFFOLDED on definition+imports. Imports are not callers."
+        }
+      ],
+      "blocker": {
+        "kind": "no_production_caller_of_gene_symbol",
+        "detail": "gene catalog symbols=[] ; a module import is not a call"
+      },
+      "evidence_tier": "SOURCE_INSPECTION",
+      "auditor_graph_status": "SCAFFOLDED",
+      "notes": null
+    },
+    {
+      "id": "III-E_AUTONOMOUS_REPRODUCIBLE_SCIENCE",
+      "era": "III",
+      "status": "SCAFFOLDED",
+      "score_pct": 20,
+      "n_member_gates": 0,
+      "member_gate_ids": [],
+      "member_mean_pct": null,
+      "call_sites": [
+        {
+          "file": "(catalog code_paths)",
+          "line": null,
+          "symbol": null,
+          "kind": "definition",
+          "note": "gene-level catalog has no implementing symbol; auditor status was SCAFFOLDED on definition+imports. Imports are not callers."
+        }
+      ],
+      "blocker": {
+        "kind": "no_production_caller_of_gene_symbol",
+        "detail": "gene catalog symbols=[] ; a module import is not a call"
+      },
+      "evidence_tier": "SOURCE_INSPECTION",
+      "auditor_graph_status": "SCAFFOLDED",
+      "notes": null
+    },
+    {
+      "id": "IV-A_FUSION",
+      "era": "IV",
+      "status": "BLOCKED_HARDWARE",
+      "score_pct": 0.0,
+      "n_member_gates": 1,
+      "member_gate_ids": [
+        "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE"
+      ],
+      "member_mean_pct": 0.0,
+      "member_status_histogram": {
+        "BLOCKED_HARDWARE": 1
+      },
+      "call_sites": null,
+      "blocker": null,
+      "evidence_tier": "SOURCE_INSPECTION",
+      "notes": "Gene score is the unweighted mean of appendix-O member gates. Median member status is the gene label. Imports of gene modules were ignored. Gene label is the strongest non-hardware/non-authority member; score is the unweighted mean of all members (hardware zeros included).",
+      "hardware_blocked_members": 1
+    },
+    {
+      "id": "IV-B_HMF_HGVAS",
+      "era": "IV",
+      "status": "BLOCKED_HARDWARE",
+      "score_pct": 0.0,
+      "n_member_gates": 1,
+      "member_gate_ids": [
+        "HMF_DEVICE_VISIBLE_TRUST"
+      ],
+      "member_mean_pct": 0.0,
+      "member_status_histogram": {
+        "BLOCKED_HARDWARE": 1
+      },
+      "call_sites": null,
+      "blocker": null,
+      "evidence_tier": "SOURCE_INSPECTION",
+      "notes": "Gene score is the unweighted mean of appendix-O member gates. Median member status is the gene label. Imports of gene modules were ignored. Gene label is the strongest non-hardware/non-authority member; score is the unweighted mean of all members (hardware zeros included).",
+      "hardware_blocked_members": 1
+    },
+    {
+      "id": "IV-C_DGX_SPARK",
+      "era": "IV",
+      "status": "BLOCKED_HARDWARE",
+      "score_pct": 0,
+      "n_member_gates": 0,
+      "member_gate_ids": [],
+      "member_mean_pct": null,
+      "call_sites": [],
+      "blocker": {
+        "kind": "hardware",
+        "id": "DGX_PRESENT",
+        "detail": "inventory this session: no NVIDIA/DGX; no eGPU enclosure"
+      },
+      "evidence_tier": "SOURCE_INSPECTION",
+      "auditor_graph_status": "BLOCKED_HARDWARE",
+      "notes": null
+    },
+    {
+      "id": "IV-D_EGPU",
+      "era": "IV",
+      "status": "BLOCKED_HARDWARE",
+      "score_pct": 0,
+      "n_member_gates": 0,
+      "member_gate_ids": [],
+      "member_mean_pct": null,
+      "call_sites": [],
+      "blocker": {
+        "kind": "hardware",
+        "id": "EGPU_PRESENT",
+        "detail": "inventory this session: no NVIDIA/DGX; no eGPU enclosure"
+      },
+      "evidence_tier": "SOURCE_INSPECTION",
+      "auditor_graph_status": "BLOCKED_HARDWARE",
+      "notes": null
+    },
+    {
+      "id": "IV-E_FUSION_BRIDGE_TOPOLOGY_ASCENSION",
+      "era": "IV",
+      "status": "SCAFFOLDED",
+      "score_pct": 20,
+      "n_member_gates": 0,
+      "member_gate_ids": [],
+      "member_mean_pct": null,
+      "call_sites": [
+        {
+          "file": "(catalog code_paths)",
+          "line": null,
+          "symbol": null,
+          "kind": "definition",
+          "note": "gene-level catalog has no implementing symbol; auditor status was SCAFFOLDED on definition+imports. Imports are not callers."
+        }
+      ],
+      "blocker": {
+        "kind": "no_production_caller_of_gene_symbol",
+        "detail": "gene catalog symbols=[] ; a module import is not a call"
+      },
+      "evidence_tier": "SOURCE_INSPECTION",
+      "auditor_graph_status": "SCAFFOLDED",
+      "notes": null
+    },
+    {
+      "id": "V-A_PRODUCT_SOVEREIGNTY",
+      "era": "V",
+      "status": "SCAFFOLDED",
+      "score_pct": 20,
+      "n_member_gates": 0,
+      "member_gate_ids": [],
+      "member_mean_pct": null,
+      "call_sites": [
+        {
+          "file": "(catalog code_paths)",
+          "line": null,
+          "symbol": null,
+          "kind": "definition",
+          "note": "gene-level catalog has no implementing symbol; auditor status was SCAFFOLDED on definition+imports. Imports are not callers."
+        }
+      ],
+      "blocker": {
+        "kind": "no_production_caller_of_gene_symbol",
+        "detail": "gene catalog symbols=[] ; a module import is not a call"
+      },
+      "evidence_tier": "SOURCE_INSPECTION",
+      "auditor_graph_status": "SCAFFOLDED",
+      "notes": null
+    },
+    {
+      "id": "V-B_DEVELOPER_PLATFORM",
+      "era": "V",
+      "status": "SCAFFOLDED",
+      "score_pct": 20,
+      "n_member_gates": 0,
+      "member_gate_ids": [],
+      "member_mean_pct": null,
+      "call_sites": [
+        {
+          "file": "(catalog code_paths)",
+          "line": null,
+          "symbol": null,
+          "kind": "definition",
+          "note": "gene-level catalog has no implementing symbol; auditor status was SCAFFOLDED on definition+imports. Imports are not callers."
+        }
+      ],
+      "blocker": {
+        "kind": "no_production_caller_of_gene_symbol",
+        "detail": "gene catalog symbols=[] ; a module import is not a call"
+      },
+      "evidence_tier": "SOURCE_INSPECTION",
+      "auditor_graph_status": "SCAFFOLDED",
+      "notes": null
+    },
+    {
+      "id": "V-C_CONTINUOUS_VERIFIED_IMPROVEMENT",
+      "era": "V",
+      "status": "SCAFFOLDED",
+      "score_pct": 20,
+      "n_member_gates": 0,
+      "member_gate_ids": [],
+      "member_mean_pct": null,
+      "call_sites": [
+        {
+          "file": "(catalog code_paths)",
+          "line": null,
+          "symbol": null,
+          "kind": "definition",
+          "note": "gene-level catalog has no implementing symbol; auditor status was SCAFFOLDED on definition+imports. Imports are not callers."
+        }
+      ],
+      "blocker": {
+        "kind": "no_production_caller_of_gene_symbol",
+        "detail": "gene catalog symbols=[] ; a module import is not a call"
+      },
+      "evidence_tier": "SOURCE_INSPECTION",
+      "auditor_graph_status": "SCAFFOLDED",
+      "notes": null
+    },
+    {
+      "id": "V-D_DOMINANCE_SCOREBOARD",
+      "era": "V",
+      "status": "SCAFFOLDED",
+      "score_pct": 20,
+      "n_member_gates": 0,
+      "member_gate_ids": [],
+      "member_mean_pct": null,
+      "call_sites": [
+        {
+          "file": "(catalog code_paths)",
+          "line": null,
+          "symbol": null,
+          "kind": "definition",
+          "note": "gene-level catalog has no implementing symbol; auditor status was SCAFFOLDED on definition+imports. Imports are not callers."
+        }
+      ],
+      "blocker": {
+        "kind": "no_production_caller_of_gene_symbol",
+        "detail": "gene catalog symbols=[] ; a module import is not a call"
+      },
+      "evidence_tier": "SOURCE_INSPECTION",
+      "auditor_graph_status": "SCAFFOLDED",
+      "notes": null
+    },
+    {
+      "id": "V-E_PERPETUAL_HAWKING",
+      "era": "V",
+      "status": "CONCEPT_ONLY",
+      "score_pct": 0,
+      "n_member_gates": 0,
+      "member_gate_ids": [],
+      "member_mean_pct": null,
+      "call_sites": [],
+      "blocker": {
+        "kind": "no_definition",
+        "detail": "catalog code_paths empty; Era V not admitted under era sovereignty"
+      },
+      "evidence_tier": "SOURCE_INSPECTION",
+      "auditor_graph_status": "DORMANT",
+      "notes": null
+    }
+  ],
+  "commit_attempt": {
+    "status": "BLOCKED_SANDBOX",
+    "error": "git add --sparse -A: Unable to create '.../index.lock': Operation not permitted. git hash-object -w into the real object db also denied. Worktree files are writable; .git/worktrees and .git/objects are not.",
+    "artifacts_on_disk": [
+      "receipts/audit/aud03-old-vs-new-delta.json",
+      "receipts/audit/aud03-old-vs-new-delta.md"
+    ],
+    "note": "Uncommitted work in this worktree is destroyed at cleanup. The launcher must git add these two files with a writable git dir."
+  }
+}

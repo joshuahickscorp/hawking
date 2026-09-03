@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T09:25:33Z",
+  "recorded_at": "2026-09-02T19:05:36Z",
   "recorded_by": "tools/future/expert_bank_school.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -221,9 +221,7 @@
   "Did not take a hardware measurement; every expected effect is qualitative or algebraic. Complete-token ns, tps, and joules remain UNKNOWN.",
   "receipts/future/NEGATIVE_SCIENCE_INDEX.json is not present; builtin scars plus on-disk atlas probes were used. A sibling index will be consulted if it appears.",
   "DSV4F pairwise cosine is still unmeasured (NNS-004 live check). Q80 orthogonality is not transferred.",
-  "tools/accelerator/, tools/headless/, and hcli/agentos/ are not materialized in this sparse checkout; they were recovered via git show during authoring.",
-  "Named Flash doctor / route-conditioned / archetype / bank-screen paths are absent from this worktree (and from HEAD): receipts/headless/FLASH_DOCTOR_EXPERT_BANK_SCREEN_FULL_L44.json",
-  "Atlas files not on disk in this sparse checkout (recovered via git show during authoring, encoded as builtin scars): receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json, receipts/headless/NOETIC_NEGATIVE_SCIENCE.json, receipts/QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE.json, receipts/headless/EXPERT_FAMILY_GENOME.json, receipts/headless/C1SHAREDBASIS_DESIGN.json, receipts/headless/SHARED_BASIS_COHERENT.json, receipts/headless/FLASH_ROUTED_EXPERT_REPRESENTATION_EXPERIMENT.json"
+  "tools/accelerator/, tools/headless/, and hcli/agentos/ are not materialized in this sparse checkout; they were recovered via git show during authoring."
  ],
  "purpose": "Generate structured expert STORAGE-sharing and COMPUTE-sharing candidates that have not been tested, and refuse recorded-dead naive sharing (raw global similarity, trivial shared basis, unchanged archetypes). Candidates only; no specimen fit; no hardware claim.",
  "recovered_implementation": {
@@ -279,14 +277,20 @@
     "role": "current native path: per-expert packed GEMV, independent matrices"
    }
   ],
-  "named_paths_absent_from_this_worktree": [
-   "receipts/headless/FLASH_DOCTOR_EXPERT_BANK_SCREEN_FULL_L44.json"
-  ],
+  "named_paths_absent_from_this_worktree": [],
   "not_duplicating": "expert_family_genome.py and q80_cross_expert_structure.py MEASURE a specimen. shared-basis.md PROPOSES mechanisms in prose. Neither emits a sealed candidate catalog with compute-sharing as a first-class axis and a watched-fail scar guard. This module extends that science; it does not fork a second genome.",
   "note": "Naive expert sharing is already dead science. This module does not rerun it. Existing measurement tools fit specimens; this module generates unfitted structured candidates plus a scar guard. The named Flash doctor / route-conditioned / archetype screens are not in this tree.",
   "qwen80_cross_expert_negative": {
-   "on_disk": false,
-   "path": "receipts/QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE.json"
+   "gate_k90": 84,
+   "gate_pairwise_cosine_mean": 0.004142791032791138,
+   "gate_subspace_overlap_top32": 0.02506876550614834,
+   "layer": 10,
+   "n_experts": 96,
+   "on_disk": true,
+   "path": "receipts/QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE.json",
+   "reading": "Experts in this slice are mutually near-orthogonal as flattened W; a rank-32 shared weight subspace is not present. This kills raw global similarity, not one-sided / clustered / activation-space cousins.",
+   "up_pairwise_cosine_mean": -5.968913319520652e-05,
+   "up_subspace_overlap_top32": 0.020372524857521057
   },
   "scar_sources": {
    "atlas": [
@@ -301,37 +305,37 @@
      "role": "scar_source"
     },
     {
-     "on_disk": false,
+     "on_disk": true,
      "path": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json",
      "role": "scar_source"
     },
     {
-     "on_disk": false,
+     "on_disk": true,
      "path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
      "role": "scar_source"
     },
     {
-     "on_disk": false,
+     "on_disk": true,
      "path": "receipts/QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE.json",
      "role": "scar_source"
     },
     {
-     "on_disk": false,
+     "on_disk": true,
      "path": "receipts/headless/EXPERT_FAMILY_GENOME.json",
      "role": "scar_source"
     },
     {
-     "on_disk": false,
+     "on_disk": true,
      "path": "receipts/headless/C1SHAREDBASIS_DESIGN.json",
      "role": "scar_source"
     },
     {
-     "on_disk": false,
+     "on_disk": true,
      "path": "receipts/headless/SHARED_BASIS_COHERENT.json",
      "role": "scar_source"
     },
     {
-     "on_disk": false,
+     "on_disk": true,
      "path": "receipts/headless/FLASH_ROUTED_EXPERT_REPRESENTATION_EXPERIMENT.json",
      "role": "scar_source"
     }
@@ -341,7 +345,7 @@
    "index_present": true,
    "named_flash_tools": [
     {
-     "on_disk": false,
+     "on_disk": true,
      "path": "receipts/headless/FLASH_DOCTOR_EXPERT_BANK_SCREEN_FULL_L44.json"
     },
     {
@@ -399,37 +403,37 @@
     "role": "scar_source"
    },
    {
-    "on_disk": false,
+    "on_disk": true,
     "path": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json",
     "role": "scar_source"
    },
    {
-    "on_disk": false,
+    "on_disk": true,
     "path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
     "role": "scar_source"
    },
    {
-    "on_disk": false,
+    "on_disk": true,
     "path": "receipts/QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE.json",
     "role": "scar_source"
    },
    {
-    "on_disk": false,
+    "on_disk": true,
     "path": "receipts/headless/EXPERT_FAMILY_GENOME.json",
     "role": "scar_source"
    },
    {
-    "on_disk": false,
+    "on_disk": true,
     "path": "receipts/headless/C1SHAREDBASIS_DESIGN.json",
     "role": "scar_source"
    },
    {
-    "on_disk": false,
+    "on_disk": true,
     "path": "receipts/headless/SHARED_BASIS_COHERENT.json",
     "role": "scar_source"
    },
    {
-    "on_disk": false,
+    "on_disk": true,
     "path": "receipts/headless/FLASH_ROUTED_EXPERT_REPRESENTATION_EXPERIMENT.json",
     "role": "scar_source"
    }
@@ -439,7 +443,7 @@
   "index_present": true,
   "named_flash_tools": [
    {
-    "on_disk": false,
+    "on_disk": true,
     "path": "receipts/headless/FLASH_DOCTOR_EXPERT_BANK_SCREEN_FULL_L44.json"
    },
    {
@@ -461,7 +465,7 @@
   ]
  },
  "schema": "hawking.future.expert_bank_school.v1",
- "seal_sha256": "d1c4d698d6099a8e73d75eb53e3b53caabf35787575e94d08fc9dd1f32c9b2f3",
+ "seal_sha256": "d74ee96c7d0ff832bb8b77e94441fda742b503746007b257c62dca42d8bb3f5c",
  "storage_candidates": [
   {
    "axis": "STORAGE",

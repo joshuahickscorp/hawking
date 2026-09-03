@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-R = Path(__file__).resolve().parents[2] / "receipts/headless/DECODING_GRAVITY.json"
+R = Path(__file__).resolve().parents[2] / "receipts/headless/G038_DECODING_GRAVITY.json"
 pytestmark = pytest.mark.skipif(not R.is_file(), reason="G038 receipt not built")
 
 

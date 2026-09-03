@@ -26,9 +26,13 @@ use std::process;
 use std::time::Instant;
 
 #[cfg(target_os = "macos")]
+use hawking_core::json_constrain::{JsonConstraint, JsonVocabIndex};
+#[cfg(target_os = "macos")]
 use hawking_core::model::qwen38_hybrid_decode::{
-    generate_greedy, load_qwen38_tokenizer, Qwen38HybridDecodeSession,
+    generate_constrained, generate_greedy_reusing_snapshot, load_qwen38_tokenizer,
+    Qwen38HybridDecodeSession,
     Qwen38HybridWeights,
+    Qwen38PrefixCheckpoint,
 };
 
 const PROTOCOL: &str = "hawking.qwen38.resident.v1";
@@ -63,14 +67,10 @@ fn parse_args() -> Args {
                 process::exit(0);
             }
             "--artifact-root" => {
-                artifact_root = Some(PathBuf::from(
-                    args.next().unwrap_or_else(|| fail(usage())),
-                ));
+                artifact_root = Some(PathBuf::from(args.next().unwrap_or_else(|| fail(usage()))));
             }
             "--tokenizer" => {
-                tokenizer = Some(PathBuf::from(
-                    args.next().unwrap_or_else(|| fail(usage())),
-                ));
+                tokenizer = Some(PathBuf::from(args.next().unwrap_or_else(|| fail(usage()))));
             }
             "--max-seq-len" => {
                 max_seq_len = Some(
@@ -142,13 +142,22 @@ fn run_resident(args: Args) -> Result<(), String> {
         .map_err(|e| format!("load artifact: {e}"))?;
     let dense_w_materialized = weights.dense_w_materialized;
     let weights = std::sync::Arc::new(weights);
-    let tokenizer = load_qwen38_tokenizer(&args.tokenizer)
-        .map_err(|e| format!("load tokenizer: {e}"))?;
-    let mut session = Qwen38HybridDecodeSession::attach(
-        std::sync::Arc::clone(&weights),
-        args.max_seq_len,
-    )
-    .map_err(|e| format!("allocate resident session: {e}"))?;
+    let tokenizer =
+        load_qwen38_tokenizer(&args.tokenizer).map_err(|e| format!("load tokenizer: {e}"))?;
+    let mut session =
+        Qwen38HybridDecodeSession::attach(std::sync::Arc::clone(&weights), args.max_seq_len)
+            .map_err(|e| format!("allocate resident session: {e}"))?;
+    // Built on the first grammar=json request, not at startup: indexing the
+    // tokenizer calls decode_one once per vocab id.
+    let mut json_vocab_index: Option<JsonVocabIndex> = None;
+    // Exactly the token sequence currently held in the session's KV and
+    // recurrent state: the last request's prompt followed by what it generated.
+    let mut resident_context: Vec<u32> = Vec::new();
+    // ONE checkpoint, held at the boundary two consecutive prompts agreed on --
+    // in practice the system prompt and tool catalog, which are identical on
+    // every goal and were being re-prefilled every time. A checkpoint is ~157 MB
+    // of host memory, so this is one, not a pool.
+    let mut prefix_checkpoint: Option<(Vec<u32>, Qwen38PrefixCheckpoint)> = None;
 
     let pid = process::id();
     let mut stdout = io::BufWriter::new(io::stdout().lock());
@@ -180,7 +189,10 @@ fn run_resident(args: Args) -> Result<(), String> {
         let body = match parsed {
             Ok(value) if value.is_object() => value,
             Ok(_) => {
-                write_record(&mut stdout, &error_reply("", "request is not a JSON object"))?;
+                write_record(
+                    &mut stdout,
+                    &error_reply("", "request is not a JSON object"),
+                )?;
                 continue;
             }
             Err(error) => {
@@ -192,7 +204,16 @@ fn run_resident(args: Args) -> Result<(), String> {
             }
         };
         let id = request_id(&body);
-        let reply = match serve_request(&mut session, &tokenizer, &args, pid, &body) {
+        let reply = match serve_request(
+            &mut session,
+            &tokenizer,
+            &mut json_vocab_index,
+            &args,
+            pid,
+            &body,
+            &mut resident_context,
+            &mut prefix_checkpoint,
+        ) {
             Ok(reply) => reply,
             Err(error) => error_reply(&id, error),
         };
@@ -202,12 +223,21 @@ fn run_resident(args: Args) -> Result<(), String> {
 }
 
 #[cfg(target_os = "macos")]
+/// Length of the longest common prefix. The whole soundness of KV reuse rests
+/// on this being an EXACT token comparison, not a hash or a heuristic.
+fn shared_prefix_len(a: &[u32], b: &[u32]) -> usize {
+    a.iter().zip(b.iter()).take_while(|(x, y)| x == y).count()
+}
+
 fn serve_request(
     session: &mut Qwen38HybridDecodeSession,
     tokenizer: &hawking_core::tokenizer::Tokenizer,
+    json_vocab_index: &mut Option<JsonVocabIndex>,
     args: &Args,
     pid: u32,
     body: &Value,
+    resident_context: &mut Vec<u32>,
+    prefix_checkpoint: &mut Option<(Vec<u32>, Qwen38PrefixCheckpoint)>,
 ) -> Result<Value, String> {
     let id = request_id(body);
     if id.is_empty() {
@@ -225,8 +255,8 @@ fn serve_request(
     if max_new == 0 {
         return Err("max_new_tokens must be positive".to_owned());
     }
-    let max_new = usize::try_from(max_new)
-        .map_err(|_| "max_new_tokens does not fit in usize".to_owned())?;
+    let max_new =
+        usize::try_from(max_new).map_err(|_| "max_new_tokens does not fit in usize".to_owned())?;
     let requested_seq = body
         .get("max_seq_len")
         .and_then(Value::as_u64)
@@ -240,6 +270,15 @@ fn serve_request(
             ));
         }
     }
+    let constrain_json = match body.get("grammar") {
+        None => false,
+        Some(Value::String(s)) if s == "json" => true,
+        Some(other) => {
+            return Err(format!(
+                "unsupported grammar {other}; only the string \"json\" is accepted"
+            ));
+        }
+    };
 
     let prompt_ids = tokenizer
         .encode(prompt, false)
@@ -251,18 +290,133 @@ fn serve_request(
     if required > args.max_seq_len {
         return Err(format!(
             "prompt has {} tokens and max_new_tokens is {max_new}; resident max_seq_len is {}",
-            prompt_ids.len(), args.max_seq_len
+            prompt_ids.len(),
+            args.max_seq_len
         ));
     }
 
-    // The same session is reused, but recurrent and KV state is never shared
-    // across HCLI requests. generate_greedy also resets defensively; keeping
-    // this explicit here makes the resident isolation contract visible.
-    session.reset();
+    // KV and recurrent state ARE shared across requests now, but only when this
+    // request's prompt begins with exactly the tokens already in the session.
+    //
+    // Measured before this: one trivial goal ("count the .py files in hcli")
+    // cost 13 model calls, 635 s, and 20,935 re-prefilled prompt tokens at
+    // ~33 prompt tok/s. Eleven of those calls carried the SAME prefix_key and
+    // still paid full prefill, because the resident reset unconditionally. A
+    // tool loop appends an observation and re-sends; re-reading the other 1,500
+    // tokens each round is the whole latency.
+    //
+    // PURE APPEND ONLY, and the check is exact. DeltaNet state is recurrent --
+    // a running summary with no per-position index -- so it cannot be rewound
+    // or truncated. A prompt that DIVERGES from the resident context, however
+    // late, resets: reusing a diverged prefix would condition generation on
+    // tokens that are not in the prompt, and nothing downstream could see it.
+    let reuse = shared_prefix_len(resident_context, &prompt_ids);
+    // `generate_constrained` still resets internally, so claiming a reuse there
+    // would skip prompt tokens against a cleared state. Constrained requests
+    // take the full prefill until that path learns the same trick.
+    let reuse = if !constrain_json
+        && reuse == resident_context.len()
+        && reuse > 0
+        && reuse < prompt_ids.len()
+    {
+        reuse
+    } else {
+        0
+    };
+    // Second chance when the append path does not apply: a stored checkpoint
+    // whose tokens are a prefix of this prompt. Restoring it is EXACT -- the
+    // recurrent carry after those tokens is a function of those tokens alone,
+    // and KV at 0..N already holds the same bytes because the tokens match.
+    // Proven bit-identical on this body by
+    // examples/qwen38_prefix_checkpoint_parity.rs.
+    // Captured BEFORE any clear: the boundary this prompt and the last one
+    // agreed on is computed from the PREVIOUS context, and the branches below
+    // overwrite it.
+    let agreed_with_previous = shared_prefix_len(resident_context, &prompt_ids);
+    let mut restored_from_checkpoint = 0usize;
+    if reuse == 0 {
+        let usable = prefix_checkpoint.as_ref().and_then(|(tokens, cp)| {
+            let shared = shared_prefix_len(tokens, &prompt_ids);
+            if shared == tokens.len() && shared > 0 && shared < prompt_ids.len() {
+                Some((shared, cp))
+            } else {
+                None
+            }
+        });
+        match usable {
+            Some((shared, cp)) => {
+                session
+                    .restore_prefix(cp)
+                    .map_err(|e| format!("restore prefix checkpoint: {e}"))?;
+                restored_from_checkpoint = shared;
+                resident_context.clear();
+                resident_context.extend_from_slice(&prompt_ids[..shared]);
+            }
+            _ => {
+                session.reset();
+                resident_context.clear();
+            }
+        }
+    }
+    let reuse = reuse.max(restored_from_checkpoint);
+    // Snapshot where THIS prompt and the last one agreed, which is the stable
+    // head every goal shares. Taken during the prefill we are already paying
+    // for, because the carry cannot be rewound to a boundary once passed.
+    // Re-snapshot when a LONGER stable boundary appears. The first version
+    // took one checkpoint and never revisited it, so the first agreed prefix
+    // -- 691 tokens, measured -- became the permanent ceiling even when later
+    // goals shared more. A checkpoint is only worth replacing if it buys
+    // strictly more skipped prefill.
+    let held = prefix_checkpoint.as_ref().map(|(t, _)| t.len()).unwrap_or(0);
+    let snapshot_at = if restored_from_checkpoint == 0
+        && agreed_with_previous > held.max(16)
+        && agreed_with_previous < prompt_ids.len()
+    {
+        Some(agreed_with_previous)
+    } else {
+        None
+    };
     let started = Instant::now();
-    let result = generate_greedy(session, &prompt_ids, max_new)
-        .map_err(|e| format!("native generation: {e}"))?;
+    let result = if constrain_json {
+        let vocab = json_vocab_index.get_or_insert_with(|| {
+            JsonVocabIndex::build(tokenizer.vocab_size(), |id| {
+                tokenizer.decode_one(id).unwrap_or_default()
+            })
+        });
+        let mut constraint = JsonConstraint::new();
+        generate_constrained(
+            session,
+            tokenizer,
+            vocab,
+            &mut constraint,
+            &prompt_ids,
+            max_new,
+            reuse,
+            snapshot_at,
+        )
+        .map(|(result, snapshot)| {
+            if let Some(cp) = snapshot {
+                *prefix_checkpoint = Some((prompt_ids[..cp.position].to_vec(), cp));
+            }
+            result
+        })
+    } else {
+        generate_greedy_reusing_snapshot(session, &prompt_ids, max_new, reuse, snapshot_at)
+            .map(|(result, snapshot)| {
+                if let Some(cp) = snapshot {
+                    *prefix_checkpoint =
+                        Some((prompt_ids[..cp.position].to_vec(), cp));
+                }
+                result
+            })
+    }
+    .map_err(|e| format!("native generation: {e}"))?;
     let wall_ns = started.elapsed().as_nanos() as u64;
+    // What the session now holds: this prompt plus everything it just produced.
+    // Written only on success -- a failed generation leaves the session in an
+    // unknown state, and the next request must reset rather than trust it.
+    resident_context.clear();
+    resident_context.extend_from_slice(&result.tokens);
     let generated = result.new_tokens().to_vec();
     let generated_count = generated.len();
     let split = result.prompt_len.min(result.gpu_ns.len());
@@ -289,9 +443,8 @@ fn serve_request(
     } else {
         None
     };
-    let gpu_ns_per_generated_token = complete_gpu_ns.map(|value| {
-        value as f64 / generated_count.max(1) as f64
-    });
+    let gpu_ns_per_generated_token =
+        complete_gpu_ns.map(|value| value as f64 / generated_count.max(1) as f64);
     let dispatches_per_generated_token = dispatches as f64 / generated_count.max(1) as f64;
     let complete_tps = if wall_ns > 0 {
         Some(generated_count as f64 / (wall_ns as f64 / 1e9))
@@ -309,6 +462,17 @@ fn serve_request(
         "protocol": PROTOCOL,
         "resident_identity": args.resident_identity,
         "resident_pid": pid,
+        "grammar_enforced": constrain_json,
+        "prefix_reused_tokens": reuse,
+        "prefill_tokens_stepped": prompt_ids.len().saturating_sub(reuse),
+        "prefix_source": if restored_from_checkpoint > 0 {
+            "checkpoint_restore"
+        } else if reuse > 0 {
+            "session_append"
+        } else {
+            "cold"
+        },
+        "prefix_checkpoint_taken_at": snapshot_at,
         "text": text,
         "generated_text": text,
         "new_token_ids": generated,
@@ -402,5 +566,154 @@ fn main() {
     let args = parse_args();
     if let Err(error) = run_resident(args) {
         fail(error);
+    }
+}
+
+#[cfg(test)]
+mod prefix_reuse_tests {
+    use super::shared_prefix_len;
+
+    /// The reuse decision, exactly as `serve_request` makes it.
+    ///
+    /// Kept in one place so the rule can be tested without a 27B model: reuse
+    /// ONLY when the resident context is a proper prefix of the new prompt.
+    fn reuse_for(resident: &[u32], prompt: &[u32], constrain_json: bool) -> usize {
+        let shared = shared_prefix_len(resident, prompt);
+        if !constrain_json && shared == resident.len() && shared > 0 && shared < prompt.len() {
+            shared
+        } else {
+            0
+        }
+    }
+
+    #[test]
+    fn a_pure_append_reuses_everything_already_resident() {
+        // The tool loop: same conversation plus one observation.
+        let resident = [1u32, 2, 3, 4];
+        let prompt = [1u32, 2, 3, 4, 9, 9, 9];
+        assert_eq!(reuse_for(&resident, &prompt, false), 4);
+    }
+
+    #[test]
+    fn divergence_resets_however_late_it_happens() {
+        // The load-bearing one. DeltaNet state is a running summary with no
+        // per-position index: it cannot be rewound. Reusing a diverged prefix
+        // would condition generation on tokens that are not in the prompt, and
+        // nothing downstream could detect it.
+        let resident = [1u32, 2, 3, 4];
+        assert_eq!(reuse_for(&resident, &[1, 2, 3, 5, 6], false), 0, "late divergence");
+        assert_eq!(reuse_for(&resident, &[9, 2, 3, 4, 5], false), 0, "first token differs");
+    }
+
+    #[test]
+    fn a_shorter_prompt_resets_because_state_cannot_be_truncated() {
+        let resident = [1u32, 2, 3, 4, 5, 6];
+        assert_eq!(reuse_for(&resident, &[1, 2, 3], false), 0);
+    }
+
+    #[test]
+    fn an_identical_prompt_resets_so_a_token_is_always_stepped() {
+        // `next` is the argmax the last stepped token produced. With nothing
+        // stepped there is none, so full equality must not claim reuse.
+        let resident = [1u32, 2, 3];
+        assert_eq!(reuse_for(&resident, &[1, 2, 3], false), 0);
+    }
+
+    #[test]
+    fn a_cold_session_resets() {
+        assert_eq!(reuse_for(&[], &[1, 2, 3], false), 0);
+    }
+
+    #[test]
+    fn the_constrained_path_never_claims_reuse() {
+        // generate_constrained still resets internally; claiming reuse there
+        // would skip prompt tokens against a cleared state.
+        let resident = [1u32, 2, 3, 4];
+        let prompt = [1u32, 2, 3, 4, 5];
+        assert_eq!(reuse_for(&resident, &prompt, false), 4);
+        assert_eq!(reuse_for(&resident, &prompt, true), 0);
+    }
+
+    /// The checkpoint decision, exactly as `serve_request` makes it.
+    fn checkpoint_reuse(stored: &[u32], prompt: &[u32], constrain_json: bool) -> usize {
+        let shared = shared_prefix_len(stored, prompt);
+        if !constrain_json && shared == stored.len() && shared > 0 && shared < prompt.len() {
+            shared
+        } else {
+            0
+        }
+    }
+
+    #[test]
+    fn a_stored_prefix_that_this_prompt_begins_with_is_restored() {
+        // Two goals sharing a system prompt and tool catalog.
+        let stored = [1u32, 2, 3, 4, 5];
+        assert_eq!(checkpoint_reuse(&stored, &[1, 2, 3, 4, 5, 90, 91], false), 5);
+    }
+
+    #[test]
+    fn a_checkpoint_that_diverges_is_never_restored() {
+        // The load-bearing one: restoring against a different prefix would
+        // condition generation on tokens that are not in the prompt.
+        let stored = [1u32, 2, 3, 4, 5];
+        assert_eq!(checkpoint_reuse(&stored, &[1, 2, 99, 4, 5, 6], false), 0);
+        assert_eq!(checkpoint_reuse(&stored, &[1, 2, 3], false), 0, "shorter prompt");
+        assert_eq!(checkpoint_reuse(&stored, &[1, 2, 3, 4, 5], false), 0, "nothing to step");
+        assert_eq!(checkpoint_reuse(&[], &[1, 2, 3], false), 0, "no checkpoint");
+        assert_eq!(
+            checkpoint_reuse(&stored, &[1, 2, 3, 4, 5, 6], true),
+            0,
+            "the constrained path resets internally"
+        );
+    }
+
+    #[test]
+    fn shared_prefix_len_is_an_exact_token_comparison() {
+        assert_eq!(shared_prefix_len(&[1, 2, 3], &[1, 2, 3, 4]), 3);
+        assert_eq!(shared_prefix_len(&[1, 2, 3], &[1, 2]), 2);
+        assert_eq!(shared_prefix_len(&[1], &[2]), 0);
+        assert_eq!(shared_prefix_len(&[], &[1]), 0);
+    }
+}
+
+#[cfg(test)]
+mod checkpoint_growth_tests {
+    /// The snapshot decision, exactly as `serve_request` makes it.
+    fn snapshot_at(held: usize, agreed: usize, prompt_len: usize, restored: usize) -> Option<usize> {
+        if restored == 0 && agreed > held.max(16) && agreed < prompt_len {
+            Some(agreed)
+        } else {
+            None
+        }
+    }
+
+    #[test]
+    fn a_longer_agreed_prefix_replaces_a_shorter_checkpoint() {
+        // Measured: the first agreed boundary was 691 tokens. Holding it
+        // forever caps every later goal at that, however much more they share.
+        assert_eq!(snapshot_at(691, 1262, 2137, 0), Some(1262));
+    }
+
+    #[test]
+    fn a_shorter_or_equal_boundary_is_not_worth_replacing_for() {
+        assert_eq!(snapshot_at(1262, 691, 2137, 0), None);
+        assert_eq!(snapshot_at(1262, 1262, 2137, 0), None);
+    }
+
+    #[test]
+    fn a_trivial_shared_head_is_not_worth_157_megabytes() {
+        assert_eq!(snapshot_at(0, 16, 2137, 0), None);
+        assert_eq!(snapshot_at(0, 17, 2137, 0), Some(17));
+    }
+
+    #[test]
+    fn a_restored_request_does_not_re_snapshot() {
+        // It skipped the prefill it would have snapshotted during.
+        assert_eq!(snapshot_at(0, 900, 2137, 691), None);
+    }
+
+    #[test]
+    fn a_boundary_at_or_past_the_prompt_end_is_refused() {
+        assert_eq!(snapshot_at(0, 2137, 2137, 0), None);
     }
 }

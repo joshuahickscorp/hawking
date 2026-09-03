@@ -103,7 +103,7 @@ def run_env(pythonpath: str, extra: Optional[Dict[str, str]] = None) -> Dict[str
 def locate_hcli(repo: Path, extract_root: Path) -> Dict[str, Any]:
     """Prefer on-disk package; otherwise extract HEAD via git archive.
 
-    Live package is top-level ``hcli/`` (``tools/haider/hcli`` is the fossil
+    Live package is top-level ``hcli/`` (``hcli`` is the fossil
     namespace). A missing path in this sparse checkout is not evidence the
     package does not exist in git.
     """
@@ -123,7 +123,7 @@ def locate_hcli(repo: Path, extract_root: Path) -> Dict[str, Any]:
             "mode": "on-disk-haider-fossil",
             "pythonpath": str((repo / "tools" / "haider").resolve()),
             "package": str((repo / "tools" / "haider" / "hcli").resolve()),
-            "reason": "tools/haider/hcli is materialized (fossil namespace)",
+            "reason": "hcli is materialized (fossil namespace)",
             "metal_budget": str(METAL_BUDGET_SRC) if METAL_BUDGET_SRC.is_file() else None,
         }
 
@@ -297,13 +297,13 @@ def worker_import_hcli() -> Dict[str, Any]:
 
 def worker_import_cli() -> Dict[str, Any]:
     t0 = time.perf_counter()
-    from hcli.cli import parse_haider_args  # noqa: F401
+    from hcli.cli import parse_hcli_args  # noqa: F401
 
     cold = (time.perf_counter() - t0) * 1000.0
     warm = []
     for _ in range(N_WARM):
         t1 = time.perf_counter()
-        from hcli.cli import parse_haider_args  # noqa: F401
+        from hcli.cli import parse_hcli_args  # noqa: F401
 
         warm.append((time.perf_counter() - t1) * 1000.0)
     return {"ok": True, "cold_ms": cold, "warm_ms": warm}
@@ -1417,7 +1417,7 @@ def build_ledger(
             ),
             removable=True,
             remove_by=(
-                "Stop importing Controller from tools/haider/hcli/__init__.py on the "
+                "Stop importing Controller from hcli/__init__.py on the "
                 "help path (PEP 562 __getattr__). argparse --help sys.exits before App."
             ),
             category="cli_startup",
@@ -1437,7 +1437,7 @@ def build_ledger(
         ),
         (
             "import_cli",
-            "from hcli.cli import parse_haider_args",
+            "from hcli.cli import parse_hcli_args",
             "import",
             True,
             "Same as import_hcli: package init still imports Controller first.",

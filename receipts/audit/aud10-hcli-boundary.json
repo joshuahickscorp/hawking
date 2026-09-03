@@ -1,0 +1,1491 @@
+{
+  "schema": "hawking.audit.hcli_boundary.v1",
+  "audit_id": "aud10-hcli-boundary",
+  "produced_at": "2026-09-02T19:07:34Z",
+  "produced_by": "aud10-hcli-boundary audit lane",
+  "command": "static call-site scan of HEAD blobs + read-only live disk + pytest on extracted HEAD python (no process signals, no hcli/ edits)",
+  "head": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+  "head_subject": "fix(hcli): a graceful stop, and a successful repair, no longer end the mission",
+  "sparse_worktree": true,
+  "hcli_materialized_in_this_worktree": false,
+  "how_hcli_was_read": "git archive HEAD hcli tools lab civilization docs; git show HEAD:<path>; git grep <commit>",
+  "roadmap_path": "/Users/scammermike/Downloads/H-ROADMAP.md",
+  "roadmap_version_claimed_by_state": "H-ROADMAP_CRISPR_EXECUTION_SPECIFICATION_2026-08-27",
+  "capability_graph_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+  "capability_graph_commit_note": "civilization/CAPABILITY_GRAPH.json is older than HEAD and used gene-level symbols; do not treat I-A SCAFFOLDED as current HCLI truth",
+  "evidence_tier_default": "STATIC_VERIFICATION",
+  "vocab": [
+    "ABSENT",
+    "CONCEPT_ONLY",
+    "SCAFFOLDED",
+    "CALLABLE",
+    "TESTED",
+    "END_TO_END",
+    "PHYSICALLY_MEASURED",
+    "ADVERSARIALLY_VERIFIED",
+    "INTEGRATED",
+    "BLOCKED_HARDWARE",
+    "BLOCKED_AUTHORITY",
+    "SUPERSEDED",
+    "STALE_ROADMAP_TEXT"
+  ],
+  "authority_limits": {
+    "authoritative": [
+      "source archaeology",
+      "call-site reachability",
+      "tests",
+      "schema",
+      "dependency graphs",
+      "receipt consistency"
+    ],
+    "not_authoritative": [
+      "GPU physical performance",
+      "Metal runtime",
+      "ANE physical",
+      "U50/FPGA",
+      "thermal/power",
+      "protected benchmarks"
+    ],
+    "never_measured_this_session": true
+  },
+  "uncommitted": {
+    "this_worktree_at_start": "clean",
+    "contract_claimed_uncommitted_hcli_files": "~110 including goal_bank.py, goal_compile.py, knowledge.py",
+    "head_truth": "goal_bank.py, goal_compile.py, knowledge.py and 198 hcli/ paths are committed at HEAD 04193ccbc",
+    "live_checkout": "/Users/scammermike/Downloads/hawking",
+    "live_hcli_porcelain_first_observation": [
+      " M hcli/backends.py",
+      " M hcli/engine.py",
+      " D hcli/test_absent_required_array_repair.py"
+    ],
+    "live_hcli_porcelain_later_observation": "empty (another session is finishing HCLI; do not treat as this lane's edit)",
+    "findings_that_are_uncommitted": "none of the capability implementations; this audit's receipts only"
+  },
+  "process_state": {
+    "evidence_tier": "SOURCE_INSPECTION",
+    "pid_confirmation": "BLOCKED_AUTHORITY",
+    "pid_blocker": "sandbox: ps Operation not permitted; launchctl list returned empty",
+    "launchd_unit_read": {
+      "label": "com.hawking.genesis",
+      "program": "/Users/scammermike/Downloads/hawking/tools/genesis_forever.sh",
+      "working_directory": "/Users/scammermike/Downloads/hawking",
+      "note": "this launchd unit starts tools/agentos/genesis_resident.py (model body), NOT python -m hcli.hawkingd"
+    },
+    "live_disk": {
+      "mission_id": "8ee9a7d3-64f6-4fc5-a53f-66e30f9a959f",
+      "mission_phase": "cancelled",
+      "cancel_reason": "resident_self_evacuation",
+      "accepted_count": 0,
+      "units": 79,
+      "unit_status": {
+        "pending": 34,
+        "failed": 11,
+        "ready": 34
+      },
+      "resident_body_status": "UNLOADED",
+      "unload_reason": "supervisor_stopped",
+      "worker_pid": null,
+      "resident_behavior": "RESTART_WORKER",
+      "events_jsonl_lines": 5598,
+      "knowledge_schema": "hcli.workspace_knowledge.v1",
+      "goal_bank_queued": 1
+    },
+    "claim_boundary": "disk says the HCLI resident body is UNLOADED and the mission is cancelled. A live hawkingd PID was not confirmed in this sandbox. genesis launchd is a different process."
+  },
+  "pytest_this_session": {
+    "evidence_tier": "STATIC_VERIFICATION",
+    "how": "PYTHONPATH=<git archive extract> python3 -m pytest ... -o addopts=''",
+    "passed": [
+      {
+        "files": [
+          "hcli/test_goal_compile.py",
+          "hcli/test_goal_graph.py",
+          "hcli/test_goal_ir.py",
+          "hcli/test_goal_bank.py",
+          "hcli/test_goal_tokenizer.py",
+          "hcli/test_event_sink.py",
+          "hcli/test_frontier_scheduler.py",
+          "hcli/test_hawkingd_daemon_name.py",
+          "hcli/test_command_registry.py",
+          "hcli/test_escalation.py"
+        ],
+        "result": "151 passed in 3.95s"
+      },
+      {
+        "files": [
+          "hcli/test_goal_compiler_acceptance.py",
+          "hcli/test_goal_source_compile.py",
+          "hcli/test_goal_compile.py"
+        ],
+        "result": "39 passed in 0.97s"
+      }
+    ],
+    "odyssey_extract_run": "18 passed, 3 failed: live-state tests (SEALED/O003 patient) looked at the extract tree, not Downloads/hawking. Failures are environment, not a missing module."
+  },
+  "surprises": [
+    {
+      "id": "S1",
+      "severity": "loud",
+      "finding": "The contract said hcli/ holds ~110 uncommitted daemon-owned files including goal_bank.py, goal_compile.py, knowledge.py. Those three files and 198 hcli/ paths are already in HEAD 04193ccbc. Live dirty hcli was 3 files then empty.",
+      "what_would_settle_it": "git -C /Users/scammermike/Downloads/hawking status --porcelain -- hcli at a moment the finishing session is idle"
+    },
+    {
+      "id": "S2",
+      "severity": "loud",
+      "finding": "civilization/CAPABILITY_GRAPH.json marks I-A_AGENTOS_HCLI SCAFFOLDED with runtime_caller=[] because it searched for a gene-level symbol on engine.py. HEAD has GoalCompiler().compile production callers in hcli/engine.py:1292, hcli/mission.py:316, hcli/controller.py:1399/1651/1783. The graph is the wrong grain and is generated from 7d64280, not HEAD.",
+      "what_would_settle_it": "regenerate tools/roadmap/auditor.py against HEAD with capability-level symbols, not gene-level engine.py"
+    },
+    {
+      "id": "S3",
+      "severity": "loud",
+      "finding": "G001 verifier synthesis receipt is 'completed' but the producer canaries synthetic paths that are not production: def atomic_write (production is atomic_write_text/json), class SwapoutsProbe in hcli/resident.py (production resident is hcli/agentos/resident.py; no SwapoutsProbe found), tools/reach.py (absent; tools/roadmap/reach.py exists).",
+      "what_would_settle_it": "re-run tools/sovereign/g001_verifier_synthesis.py with obligations that name production symbols, plus a negative control that the synthesised grep fails on the real tree if the claimed symbol is missing"
+    },
+    {
+      "id": "S4",
+      "severity": "loud",
+      "finding": "The live mission's compiled IR stored on disk has only acceptance_criteria/goal_summary/invariants/referenced_files \u2014 not obligations. All sampled G001\u2013G005 units carry the same verifier 'python3 -m pytest hcli/test_goal_verifier_synthesis.py' because the live goal named those test files. accepted_count=0; evidence reason NO_EVIDENCE.",
+      "what_would_settle_it": "a mission whose goal names no test file, whose stored compiled IR contains synthesised verify commands, and whose units reach VERIFIED"
+    },
+    {
+      "id": "S5",
+      "severity": "loud",
+      "finding": "class WorkGraph lives in tools/future/workgraph.py (executes=false, evidence_class STATIC_ONLY, schema hawking.future.workgraph.v1). Zero WorkGraph call sites under hcli/. HCLI owns WorkUnitDAG + GoalGraph + DagStore. Attributing WorkGraphs to HCLI is a naming error.",
+      "what_would_settle_it": "either HCLI imports and admits tools.future.workgraph.WorkGraph on the resident path, or the roadmap stops saying HCLI owns WorkGraphs"
+    },
+    {
+      "id": "S6",
+      "severity": "loud",
+      "finding": "10 of 13 sovereign G-receipts the protected HCLI tests gate on are ABSENT (G002, G003, G004, G005, G006, G007, G008, G012, G013, G015). Present: G001, G009, G010, G014. Those tests are red gates on missing producers, not passing proof.",
+      "what_would_settle_it": "the missing receipts produced by named non-stub producers, or an explicit SUPERSEDE of those gates"
+    },
+    {
+      "id": "S7",
+      "severity": "loud",
+      "finding": "hcli.mutation.apply_mutation_operations has no production caller inside hcli/ (engine.py imports compile_python_file only; tool_registry has no mutation apply). The production apply is tools/future/resident_code_tools.py. Self-mutation is not on the HCLI agent loop.",
+      "what_would_settle_it": "a tool_registry or engine call of apply_mutation_operations plus receipts/sovereign/G003_self_mutation.json"
+    },
+    {
+      "id": "S8",
+      "severity": "loud",
+      "finding": "Live HCLI resident body is UNLOADED (supervisor_stopped); mission cancelled with resident_self_evacuation. The launchd unit the contract implied is genesis_forever.sh, not hawkingd. A running HCLI control-plane daemon was not confirmed.",
+      "what_would_settle_it": "an unsandboxed `ps`/`launchctl print` showing hawkingd or ResidentSupervisor, or a live .hcli/resident/body.json with status LOADED and a worker_pid"
+    }
+  ],
+  "capabilities": [
+    {
+      "id": "goal_compiler",
+      "name": "Goal Compiler",
+      "state": "INTEGRATED",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "uncommitted": false,
+      "claim_boundary": "Compile-to-DAG is on the production path. The live mission's stored compiled IR is a reduced subset (no obligations). Live units did not reach VERIFIED (accepted_count=0). Not END_TO_END of a discharged ultragoal.",
+      "implementing_symbols": [
+        {
+          "file": "hcli/goal.py",
+          "line": 183,
+          "symbol": "GoalCompiler"
+        },
+        {
+          "file": "hcli/goal.py",
+          "line": 1338,
+          "symbol": "compile_worker_context"
+        },
+        {
+          "file": "hcli/goal_compile.py",
+          "line": 99,
+          "symbol": "ingest"
+        },
+        {
+          "file": "hcli/goal_compile.py",
+          "line": 245,
+          "symbol": "schedule"
+        },
+        {
+          "file": "hcli/goal_graph.py",
+          "line": 230,
+          "symbol": "GoalGraph"
+        },
+        {
+          "file": "hcli/goal_bank.py",
+          "line": 88,
+          "symbol": "GoalBank"
+        },
+        {
+          "file": "hcli/goal_tokenizer.py",
+          "line": 492,
+          "symbol": "tokenize"
+        }
+      ],
+      "call_sites": [
+        {
+          "file": "hcli/engine.py",
+          "line": 1292,
+          "kind": "call",
+          "symbol": "GoalCompiler.compile",
+          "note": "self.goal_compiler.compile(prompt)"
+        },
+        {
+          "file": "hcli/engine.py",
+          "line": 593,
+          "kind": "call",
+          "symbol": "GoalCompiler",
+          "note": "self.goal_compiler = GoalCompiler()"
+        },
+        {
+          "file": "hcli/mission.py",
+          "line": 316,
+          "kind": "call",
+          "symbol": "GoalCompiler.compile"
+        },
+        {
+          "file": "hcli/mission.py",
+          "line": 1055,
+          "kind": "call",
+          "symbol": "compile_worker_context"
+        },
+        {
+          "file": "hcli/controller.py",
+          "line": 1399,
+          "kind": "call",
+          "symbol": "GoalCompiler.compile"
+        },
+        {
+          "file": "hcli/controller.py",
+          "line": 1651,
+          "kind": "call",
+          "symbol": "GoalCompiler.compile"
+        },
+        {
+          "file": "hcli/controller.py",
+          "line": 1783,
+          "kind": "call",
+          "symbol": "GoalCompiler.compile"
+        },
+        {
+          "file": "hcli/goal_compile.py",
+          "line": 116,
+          "kind": "call",
+          "symbol": "GoalGraph"
+        },
+        {
+          "file": "hcli/controller.py",
+          "line": 148,
+          "kind": "call",
+          "symbol": "GoalBank"
+        },
+        {
+          "file": "hcli/agentos/resident.py",
+          "line": 1045,
+          "kind": "call",
+          "symbol": "GoalBank.add"
+        },
+        {
+          "file": "hcli/agentos/runtime.py",
+          "line": 104,
+          "kind": "call",
+          "symbol": "GoalBank"
+        },
+        {
+          "file": "tools/sovereign/g001_verifier_synthesis.py",
+          "line": 129,
+          "kind": "call",
+          "symbol": "GoalCompiler.compile"
+        }
+      ],
+      "tests_run_this_session": [
+        "hcli/test_goal_compile.py",
+        "hcli/test_goal_compiler_acceptance.py",
+        "hcli/test_goal_ir.py",
+        "hcli/test_goal_graph.py",
+        "hcli/test_goal_tokenizer.py",
+        "hcli/test_goal_bank.py",
+        "hcli/test_goal_source_compile.py"
+      ],
+      "receipts": [
+        "receipts/headless/HCLI_ULTRAGOAL_INGRESS.json (2026-08-23; no verdict/schema \u2014 not used as proof)"
+      ],
+      "disk_artifacts": [
+        "/Users/scammermike/Downloads/hawking/.hcli/mission/state.json compiled + 79 units",
+        "/Users/scammermike/Downloads/hawking/.hcli/goal-bank.json"
+      ],
+      "unlocks": [
+        "workunit_dag",
+        "verifier_commands_on_units",
+        "worker_packets",
+        "ultragoal_ingress",
+        "goal_bank_promotion"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "verifier_synthesis",
+      "name": "self-hosted verifier synthesis",
+      "state": "INTEGRATED",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "uncommitted": false,
+      "claim_boundary": "GoalCompiler._synthesised_verify_command and verifier_pipeline.run_pipeline are on production paths. G001 ran a real absent/present/removed subprocess canary, but against synthetic filenames that are not the production symbols. The live mission named pytest files and so did not exercise synthesis. Distinct from tools/sovereign/g001 (producer) vs hcli/verifier_pipeline.py (in-process pipeline).",
+      "implementing_symbols": [
+        {
+          "file": "hcli/goal.py",
+          "line": 387,
+          "symbol": "GoalCompiler._synthesised_verify_command"
+        },
+        {
+          "file": "hcli/verifier_pipeline.py",
+          "line": 496,
+          "symbol": "synthesize"
+        },
+        {
+          "file": "hcli/verifier_pipeline.py",
+          "line": 526,
+          "symbol": "run_pipeline"
+        },
+        {
+          "file": "hcli/verifier_pipeline.py",
+          "line": 910,
+          "symbol": "command_is_admissible"
+        }
+      ],
+      "call_sites": [
+        {
+          "file": "hcli/goal.py",
+          "line": 358,
+          "kind": "call",
+          "symbol": "_synthesised_verify_command"
+        },
+        {
+          "file": "hcli/verifier_pipeline.py",
+          "line": 565,
+          "kind": "call",
+          "symbol": "synthesize"
+        },
+        {
+          "file": "hcli/delegate.py",
+          "line": 1333,
+          "kind": "call",
+          "symbol": "run_pipeline"
+        },
+        {
+          "file": "hcli/ledger.py",
+          "line": 689,
+          "kind": "call",
+          "symbol": "command_is_admissible"
+        },
+        {
+          "file": "hcli/executors.py",
+          "line": 307,
+          "kind": "call",
+          "symbol": "command_is_admissible"
+        },
+        {
+          "file": "hcli/landing.py",
+          "line": 234,
+          "kind": "call",
+          "symbol": "command_is_admissible"
+        },
+        {
+          "file": "hcli/goal_compile.py",
+          "line": 148,
+          "kind": "call",
+          "symbol": "command_is_admissible"
+        },
+        {
+          "file": "tools/sovereign/g001_verifier_synthesis.py",
+          "line": 129,
+          "kind": "call",
+          "symbol": "GoalCompiler.compile"
+        },
+        {
+          "file": "tools/sovereign/g001_verifier_synthesis.py",
+          "line": 148,
+          "kind": "call",
+          "symbol": "command_is_admissible"
+        }
+      ],
+      "tests": [
+        "hcli/test_goal_verifier_synthesis.py (receipt-gated; G001 present)"
+      ],
+      "receipts": [
+        "receipts/sovereign/G001_verifier_synthesis.json status=completed produced_by=tools/sovereign/g001_verifier_synthesis.py"
+      ],
+      "blockers": [
+        "G001 canaries hcli/persist.py::atomic_write but production exposes atomic_write_text/json",
+        "G001 canaries hcli/resident.py::SwapoutsProbe; that path does not exist (hcli/agentos/resident.py does; no SwapoutsProbe symbol found)",
+        "G001 canaries tools/reach.py which is ABSENT (tools/roadmap/reach.py exists)"
+      ],
+      "unlocks": [
+        "red_gates_without_named_tests",
+        "independent_verifier_authority"
+      ]
+    },
+    {
+      "id": "resident_daemon",
+      "name": "resident daemon",
+      "state": "INTEGRATED",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "uncommitted": false,
+      "claim_boundary": "hawkingd + ResidentSupervisor/ResidentDaemon + CLI are wired. Live disk currently shows body UNLOADED and mission cancelled. PID of hawkingd not confirmed (BLOCKED_AUTHORITY). com.hawking.genesis is genesis_resident.py, not hawkingd. Do not write PHYSICALLY_MEASURED or END_TO_END for a currently unloaded body.",
+      "implementing_symbols": [
+        {
+          "file": "hcli/hawkingd.py",
+          "line": 30,
+          "symbol": "main"
+        },
+        {
+          "file": "hcli/agentos/resident.py",
+          "line": 2361,
+          "symbol": "daemon_main"
+        },
+        {
+          "file": "hcli/agentos/resident.py",
+          "line": 787,
+          "symbol": "ResidentDaemon"
+        },
+        {
+          "file": "hcli/agentos/resident.py",
+          "line": 1066,
+          "symbol": "ResidentSupervisor"
+        },
+        {
+          "file": "hcli/agentos/resident.py",
+          "line": 2033,
+          "symbol": "start_resident"
+        },
+        {
+          "file": "hcli/cli.py",
+          "line": 226,
+          "symbol": "install_shims hawkingd"
+        }
+      ],
+      "call_sites": [
+        {
+          "file": "hcli/hawkingd.py",
+          "line": 31,
+          "kind": "call",
+          "symbol": "daemon_main"
+        },
+        {
+          "file": "hcli/agentos/resident.py",
+          "line": 2369,
+          "kind": "call",
+          "symbol": "ResidentSupervisor.run"
+        },
+        {
+          "file": "hcli/agentos/resident.py",
+          "line": 1072,
+          "kind": "call",
+          "symbol": "ResidentDaemon"
+        },
+        {
+          "file": "hcli/agentos/resident.py",
+          "line": 2247,
+          "kind": "call",
+          "symbol": "start_resident"
+        },
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 1233,
+          "kind": "call",
+          "symbol": "start_resident"
+        },
+        {
+          "file": "hcli/cli.py",
+          "line": 341,
+          "kind": "call",
+          "symbol": "resident.main via hcli resident|daemon"
+        },
+        {
+          "file": "hcli/cli.py",
+          "line": 302,
+          "kind": "call",
+          "symbol": "install_shims writes hawkingd -> hcli.hawkingd"
+        }
+      ],
+      "tests": [
+        "hcli/test_hawkingd_daemon_name.py (passed this session)",
+        "hcli/test_resident_lifecycle_cutover.py",
+        "hcli/test_resident_restart_after_failure.py",
+        "hcli/test_resident_terminal_mission.py"
+      ],
+      "disk_artifacts": [
+        ".hcli/resident/state.json behavior=RESTART_WORKER",
+        ".hcli/resident/body.json status=UNLOADED"
+      ],
+      "blockers": [
+        {
+          "kind": "BLOCKED_AUTHORITY",
+          "detail": "cannot confirm hawkingd PID in this sandbox"
+        }
+      ],
+      "unlocks": [
+        "watch_control_plane",
+        "successor_handoff",
+        "event_sink",
+        "admit_evidence_children",
+        "clean_room"
+      ]
+    },
+    {
+      "id": "watch_control_plane",
+      "name": "watch/control plane",
+      "state": "INTEGRATED",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "uncommitted": false,
+      "claim_boundary": "watch_resident is the production CLI path: read-only disk tail of resident state + events.jsonl, optional steer, no model open. G015 sovereign receipt ABSENT so the protected live-resident proof is not discharged. VERIFIER_MANIFEST notes test_watch_is_read_only_and_opens_no_body was already true at gate creation.",
+      "implementing_symbols": [
+        {
+          "file": "hcli/agentos/resident.py",
+          "line": 1880,
+          "symbol": "watch_resident"
+        }
+      ],
+      "call_sites": [
+        {
+          "file": "hcli/agentos/resident.py",
+          "line": 2281,
+          "kind": "call",
+          "symbol": "watch_resident",
+          "note": "CLI dispatch from resident.main"
+        },
+        {
+          "file": "hcli/agentos/resident.py",
+          "line": 1926,
+          "kind": "call",
+          "symbol": "read_events"
+        }
+      ],
+      "tests": [
+        "hcli/test_resident_watch.py",
+        "hcli/test_resident_watch_control_plane.py (receipt-gated; G015 ABSENT)",
+        "hcli/test_resident_watch_stream.py"
+      ],
+      "receipts": [
+        "receipts/sovereign/G015_control_plane.json ABSENT"
+      ],
+      "blockers": [
+        "G015 receipt absent \u2014 protected live-resident watch proof not discharged"
+      ],
+      "unlocks": [
+        "unattended_observation_without_second_body"
+      ]
+    },
+    {
+      "id": "self_mutation",
+      "name": "self-mutation",
+      "state": "CALLABLE",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "uncommitted": false,
+      "claim_boundary": "apply_mutation_operations exists and is called from tools/future/resident_code_tools.py and tests. It is NOT called from hcli/engine.py (engine imports compile_python_file only) or hcli/tool_registry.py. G003 receipt ABSENT. Do not call this INTEGRATED into the HCLI agent loop.",
+      "implementing_symbols": [
+        {
+          "file": "hcli/mutation.py",
+          "line": 70,
+          "symbol": "apply_mutation_operations"
+        },
+        {
+          "file": "hcli/mutation.py",
+          "line": 173,
+          "symbol": "rollback_mutation"
+        }
+      ],
+      "call_sites": [
+        {
+          "file": "tools/future/resident_code_tools.py",
+          "line": 552,
+          "kind": "call",
+          "symbol": "apply_mutation_operations"
+        },
+        {
+          "file": "tools/future/resident_code_tools.py",
+          "line": 874,
+          "kind": "call",
+          "symbol": "rollback_mutation"
+        },
+        {
+          "file": "tools/headless/hcli_persistence_audit.py",
+          "line": 1203,
+          "kind": "call",
+          "symbol": "apply_mutation_operations"
+        },
+        {
+          "file": "tools/haider/hcli/tests/test_mutation_hash.py",
+          "line": 35,
+          "kind": "call",
+          "symbol": "apply_mutation_operations",
+          "note": "test"
+        }
+      ],
+      "tests": [
+        "hcli/test_self_mutation_e2e.py (receipt-gated; G003 ABSENT)",
+        "tools/haider/hcli/tests/test_mutation_hash.py"
+      ],
+      "receipts": [
+        "receipts/sovereign/G003_self_mutation.json ABSENT"
+      ],
+      "blockers": [
+        "no hcli/engine.py or hcli/tool_registry.py call of apply_mutation_operations",
+        "G003 receipt absent"
+      ],
+      "unlocks": [
+        "self_optimization_bootstrap (blocked until this is on the agent loop)"
+      ]
+    },
+    {
+      "id": "successor_handoff",
+      "name": "successor handoff",
+      "state": "CALLABLE",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "uncommitted": false,
+      "claim_boundary": "retire_incumbent is invoked from start_resident (replace path). That is a production call, not an import. There is no G013 receipt proving a live supervisor PID change with mission preservation and rollback. build_handoff is a different overnight report (hcli/agentos/handoff.py), not successor cutover.",
+      "implementing_symbols": [
+        {
+          "file": "hcli/agentos/resident.py",
+          "line": 1992,
+          "symbol": "retire_incumbent"
+        },
+        {
+          "file": "hcli/agentos/handoff.py",
+          "line": 828,
+          "symbol": "build_handoff"
+        }
+      ],
+      "call_sites": [
+        {
+          "file": "hcli/agentos/resident.py",
+          "line": 2050,
+          "kind": "call",
+          "symbol": "retire_incumbent",
+          "note": "inside start_resident replace path"
+        },
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 1213,
+          "kind": "call",
+          "symbol": "build_handoff",
+          "note": "overnight report, not successor"
+        }
+      ],
+      "tests": [
+        "hcli/test_resident_successor_handoff.py (receipt-gated; G013 ABSENT)"
+      ],
+      "receipts": [
+        "receipts/sovereign/G013_successor.json ABSENT",
+        "receipts/headless/HCLI_BOOTSTRAP_HANDOFF.json (2026-08-23; no verdict)"
+      ],
+      "blockers": [
+        "G013 receipt absent \u2014 no proof of live supervisor switch + mission preservation"
+      ],
+      "unlocks": [
+        "body_replace_without_mission_amnesia"
+      ]
+    },
+    {
+      "id": "context_compiler",
+      "name": "context compiler",
+      "state": "END_TO_END",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "uncommitted": false,
+      "claim_boundary": "compile_worker_context is on Mission dispatch. HCLI_CONTEXT_AUTHORITY_UNIFIED, HCLI_CONTEXT_FOCUSED_WORKUNITS, HCLI_CONTEXT_INVALIDATION receipts are ACCEPTED (produced 2026-09-02 by tools.acceptance.context). Sovereign G004_context_runtime.json is ABSENT so the protected G004 gate remains red. Evidence class of the acceptance receipts is FUNCTIONAL_SIM in the capability graph \u2014 not a physical measurement.",
+      "implementing_symbols": [
+        {
+          "file": "hcli/goal.py",
+          "line": 1338,
+          "symbol": "compile_worker_context"
+        },
+        {
+          "file": "hcli/context_budget.py",
+          "line": 673,
+          "symbol": "preflight"
+        },
+        {
+          "file": "hcli/context_budget.py",
+          "line": 729,
+          "symbol": "preflight_packet"
+        },
+        {
+          "file": "hcli/report_compiler.py",
+          "line": 43,
+          "symbol": "compile_backend_report"
+        }
+      ],
+      "call_sites": [
+        {
+          "file": "hcli/mission.py",
+          "line": 1055,
+          "kind": "call",
+          "symbol": "compile_worker_context"
+        },
+        {
+          "file": "hcli/goal.py",
+          "line": 1520,
+          "kind": "call",
+          "symbol": "preflight_packet"
+        },
+        {
+          "file": "hcli/context_budget.py",
+          "line": 759,
+          "kind": "call",
+          "symbol": "preflight_packet"
+        },
+        {
+          "file": "tools/acceptance/context/gates.py",
+          "line": 199,
+          "kind": "call",
+          "symbol": "compile_worker_context"
+        },
+        {
+          "file": "tools/acceptance/context/gates.py",
+          "line": 193,
+          "kind": "call",
+          "symbol": "preflight_packet"
+        }
+      ],
+      "tests": [
+        "hcli/test_context_compiler_runtime.py (receipt-gated; G004 ABSENT)",
+        "hcli/test_context_pastes.py",
+        "hcli/test_context_reduction.py",
+        "hcli/test_native_context_budget.py"
+      ],
+      "receipts": [
+        "receipts/acceptance/HCLI_CONTEXT_AUTHORITY_UNIFIED.json verdict=ACCEPTED",
+        "receipts/acceptance/HCLI_CONTEXT_FOCUSED_WORKUNITS.json verdict=ACCEPTED",
+        "receipts/acceptance/HCLI_CONTEXT_INVALIDATION.json verdict=ACCEPTED",
+        "receipts/sovereign/G004_context_runtime.json ABSENT"
+      ],
+      "blockers": [
+        "G004 sovereign receipt absent"
+      ],
+      "unlocks": [
+        "focused_workunits",
+        "context_admission",
+        "mixed_max_admission"
+      ]
+    },
+    {
+      "id": "workgraphs",
+      "name": "WorkGraphs",
+      "state": "INTEGRATED",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "uncommitted": false,
+      "hcli_owns": [
+        "WorkUnitDAG",
+        "GoalGraph",
+        "DagStore"
+      ],
+      "hcli_does_not_own": [
+        "tools.future.workgraph.WorkGraph"
+      ],
+      "claim_boundary": "HCLI's graph is WorkUnitDAG + GoalGraph + DagStore, on Mission/Scheduler. The named type WorkGraph is tools/future/workgraph.py: executes=false, evidence_class STATIC_ONLY, emits a schedule and an HCLI WorkUnit projection. Roadmap text that says HCLI owns WorkGraphs should name WorkUnitDAG or move ownership to tools/future. Zero WorkGraph call sites under hcli/.",
+      "implementing_symbols": [
+        {
+          "file": "hcli/goal.py",
+          "line": 55,
+          "symbol": "WorkUnitDAG"
+        },
+        {
+          "file": "hcli/goal_graph.py",
+          "line": 230,
+          "symbol": "GoalGraph"
+        },
+        {
+          "file": "hcli/dag_store.py",
+          "line": 189,
+          "symbol": "DagStore"
+        },
+        {
+          "file": "tools/future/workgraph.py",
+          "line": 673,
+          "symbol": "WorkGraph",
+          "owner": "tools/future"
+        }
+      ],
+      "call_sites": [
+        {
+          "file": "hcli/goal_compile.py",
+          "line": 268,
+          "kind": "call",
+          "symbol": "WorkUnitDAG"
+        },
+        {
+          "file": "hcli/goal.py",
+          "line": 546,
+          "kind": "call",
+          "symbol": "WorkUnitDAG"
+        },
+        {
+          "file": "hcli/goal.py",
+          "line": 157,
+          "kind": "call",
+          "symbol": "DagStore.save"
+        },
+        {
+          "file": "hcli/goal.py",
+          "line": 168,
+          "kind": "call",
+          "symbol": "DagStore.load"
+        },
+        {
+          "file": "hcli/scheduler.py",
+          "line": 107,
+          "kind": "call",
+          "symbol": "DagStore"
+        },
+        {
+          "file": "hcli/mission.py",
+          "line": 286,
+          "kind": "call",
+          "symbol": "DagStore.retire"
+        },
+        {
+          "file": "hcli/goal_compile.py",
+          "line": 116,
+          "kind": "call",
+          "symbol": "GoalGraph"
+        }
+      ],
+      "named_workgraph_call_sites_outside_hcli": [
+        {
+          "file": "tools/future/workgraph.py",
+          "line": 1340,
+          "kind": "call",
+          "symbol": "WorkGraph"
+        },
+        {
+          "file": "tools/future/specimen_events.py",
+          "line": 848,
+          "kind": "call",
+          "symbol": "wg.WorkGraph"
+        }
+      ],
+      "tests": [
+        "hcli/test_goal_graph.py (passed)",
+        "hcli/test_mission_dag_supersession.py"
+      ],
+      "receipts": [
+        "receipts/future/WORKGRAPH_STATE.json schema=hawking.future.workgraph.v1 executes=false"
+      ],
+      "blockers": [
+        "named WorkGraph is not an HCLI symbol; do not attribute it to HCLI"
+      ],
+      "unlocks": [
+        "scheduler",
+        "repair_lineage",
+        "restart_resume"
+      ]
+    },
+    {
+      "id": "maxx_global_scheduling",
+      "name": "MAXX/global scheduling",
+      "state": "INTEGRATED",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "uncommitted": false,
+      "claim_boundary": "Scheduler is constructed from Mission; ResourceLimits.resolve calls max_policy.resolve_grok_admitted; controller status calls grok_pool_snapshot. Mixed MAX (heterogeneous cognition+tools concurrent with a live model backend) is WIRED but acceptance BLOCKED (no llama-server in the acceptance lane). run_grok_ramp is test-only. Do not promote mixed MAX to END_TO_END.",
+      "implementing_symbols": [
+        {
+          "file": "hcli/scheduler.py",
+          "line": 72,
+          "symbol": "Scheduler"
+        },
+        {
+          "file": "hcli/max_policy.py",
+          "line": 50,
+          "symbol": "resolve_grok_admitted"
+        },
+        {
+          "file": "hcli/max_policy.py",
+          "line": 176,
+          "symbol": "grok_pool_snapshot"
+        },
+        {
+          "file": "hcli/max_policy.py",
+          "line": 335,
+          "symbol": "run_grok_ramp"
+        },
+        {
+          "file": "hcli/frontier_scheduler.py",
+          "line": 317,
+          "symbol": "select_next"
+        }
+      ],
+      "call_sites": [
+        {
+          "file": "hcli/mission.py",
+          "line": 264,
+          "kind": "call",
+          "symbol": "Scheduler"
+        },
+        {
+          "file": "hcli/mission.py",
+          "line": 364,
+          "kind": "call",
+          "symbol": "Scheduler.from_workspace"
+        },
+        {
+          "file": "hcli/goal_compile.py",
+          "line": 518,
+          "kind": "call",
+          "symbol": "Scheduler"
+        },
+        {
+          "file": "hcli/resources.py",
+          "line": 118,
+          "kind": "call",
+          "symbol": "resolve_grok_admitted"
+        },
+        {
+          "file": "hcli/controller.py",
+          "line": 337,
+          "kind": "call",
+          "symbol": "grok_pool_snapshot"
+        },
+        {
+          "file": "hcli/controller.py",
+          "line": 431,
+          "kind": "call",
+          "symbol": "grok_pool_snapshot"
+        },
+        {
+          "file": "hcli/tool_registry.py",
+          "line": 1585,
+          "kind": "call",
+          "symbol": "frontier_scheduler.decide"
+        }
+      ],
+      "tests": [
+        "hcli/test_frontier_scheduler.py (passed; fixture data, no I/O)",
+        "tools/haider/hcli/tests/test_max_policy.py"
+      ],
+      "receipts": [
+        "receipts/acceptance/HCLI_MIXED_MAX.json verdict=BLOCKED"
+      ],
+      "blockers": [
+        "HCLI_MIXED_MAX blocked: no cognition backend listening; CPU-only is not mixed MAX"
+      ],
+      "unlocks": [
+        "heterogeneous_concurrency",
+        "grok_rungs",
+        "frontier_switching"
+      ]
+    },
+    {
+      "id": "provider_escalation",
+      "name": "provider escalation",
+      "state": "TESTED",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "uncommitted": false,
+      "claim_boundary": "escalate_to_frontier / propose_swarm / launch_swarm are registered tools and called from tool_registry. test_escalation.py passed this session (fail-closed without credentials is the production behaviour). G009: grok.swarm.launch and grok.swarm.propose are absent from the live model-facing catalog. Not END_TO_END live network escalation.",
+      "implementing_symbols": [
+        {
+          "file": "hcli/escalation.py",
+          "line": 159,
+          "symbol": "escalate_to_frontier"
+        },
+        {
+          "file": "hcli/escalation.py",
+          "line": 283,
+          "symbol": "propose_swarm"
+        },
+        {
+          "file": "hcli/escalation.py",
+          "line": 329,
+          "symbol": "launch_swarm"
+        }
+      ],
+      "call_sites": [
+        {
+          "file": "hcli/tool_registry.py",
+          "line": 1516,
+          "kind": "call",
+          "symbol": "escalate_to_frontier"
+        },
+        {
+          "file": "hcli/tool_registry.py",
+          "line": 1638,
+          "kind": "call",
+          "symbol": "propose_swarm"
+        },
+        {
+          "file": "hcli/tool_registry.py",
+          "line": 1646,
+          "kind": "call",
+          "symbol": "launch_swarm"
+        },
+        {
+          "file": "hcli/escalation.py",
+          "line": 346,
+          "kind": "call",
+          "symbol": "propose_swarm",
+          "note": "launch_swarm calls propose_swarm"
+        }
+      ],
+      "tests": [
+        "hcli/test_escalation.py (passed this session)"
+      ],
+      "receipts": [
+        "receipts/sovereign/G009_reachability.json: grok.swarm.* not in live compact catalog"
+      ],
+      "blockers": [
+        "live model-facing catalog omits grok.swarm.launch/propose (reachable only after tools.catalog focus)"
+      ],
+      "unlocks": [
+        "frontier_teacher",
+        "bounded_swarm"
+      ]
+    },
+    {
+      "id": "modellake_event_ingestion",
+      "name": "ModelLake event ingestion",
+      "state": "CALLABLE",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "uncommitted": false,
+      "claim_boundary": "HCLI EventSink is the resident control-plane event log (heartbeats, session_stopped), not ModelLake specimen arrival. odyssey.ingest is an HCLI-owned ledger on top of the Odyssey driver and is registered as a tool. modellake_supervisor is a CLI/handoff action. tools/future/specimen_events.py is the 'model arriving adds a WorkGraph' path and is not HCLI. G010 is a tools/sovereign retained-bytes measurement, not HCLI ingestion.",
+      "implementing_symbols": [
+        {
+          "file": "hcli/agentos/event_sink.py",
+          "line": 22,
+          "symbol": "EventSink"
+        },
+        {
+          "file": "hcli/events.py",
+          "line": 36,
+          "symbol": "EventBus"
+        },
+        {
+          "file": "hcli/odyssey.py",
+          "line": 278,
+          "symbol": "ingest"
+        },
+        {
+          "file": "hcli/agentos/modellake_supervisor.py",
+          "line": 15,
+          "symbol": "run_model_lake_supervision"
+        }
+      ],
+      "call_sites": [
+        {
+          "file": "hcli/agentos/resident.py",
+          "line": 1560,
+          "kind": "call",
+          "symbol": "EventSink"
+        },
+        {
+          "file": "hcli/agentos/resident.py",
+          "line": 1585,
+          "kind": "call",
+          "symbol": "EventSink.write"
+        },
+        {
+          "file": "hcli/tool_registry.py",
+          "line": 2021,
+          "kind": "mention",
+          "symbol": "odyssey.ingest",
+          "note": "registered tool name; dispatch table"
+        },
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 748,
+          "kind": "call",
+          "symbol": "run_model_lake_supervision"
+        },
+        {
+          "file": "hcli/test_odyssey.py",
+          "line": 142,
+          "kind": "call",
+          "symbol": "odyssey.ingest",
+          "note": "test"
+        }
+      ],
+      "tests": [
+        "hcli/test_event_sink.py (passed)",
+        "hcli/test_odyssey.py::test_ingest_reflects_real_mid_flight_specimens (needs live patients)"
+      ],
+      "receipts": [
+        "receipts/sovereign/G010_modellake_retained.json produced_by=tools/sovereign (not HCLI EventSink)"
+      ],
+      "blockers": [
+        "no production caller that turns a ModelLake specimen-arrival event into HCLI EventSink/WorkUnitDAG admission inside hcli/"
+      ],
+      "unlocks": [
+        "odyssey_visibility",
+        "modellake_supervision_cli"
+      ]
+    },
+    {
+      "id": "odyssey_ownership",
+      "name": "Odyssey ownership",
+      "state": "INTEGRATED",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "uncommitted": false,
+      "claim_boundary": "HCLI owns a confirm-gated facade over the Odyssey driver (hcli/odyssey.py + tool_registry odyssey.*). G009 actually invoked odyssey.status and odyssey.queue through ToolRegistry.invoke. The driver remains tools/odyssey and tools/odyssey_ctl.py. record_law/record_scar have only test callers inside hcli/. ROADMAP_STATE active_odyssey ADVERSARIALLY_VERIFIED is not HCLI-owned Odyssey III science. test_odyssey live-state cases need the live workspace.",
+      "implementing_symbols": [
+        {
+          "file": "hcli/odyssey.py",
+          "line": 94,
+          "symbol": "status"
+        },
+        {
+          "file": "hcli/odyssey.py",
+          "line": 99,
+          "symbol": "queue"
+        },
+        {
+          "file": "hcli/odyssey.py",
+          "line": 278,
+          "symbol": "ingest"
+        },
+        {
+          "file": "hcli/odyssey.py",
+          "line": 333,
+          "symbol": "record_law"
+        },
+        {
+          "file": "hcli/odyssey.py",
+          "line": 352,
+          "symbol": "record_scar"
+        }
+      ],
+      "call_sites": [
+        {
+          "file": "hcli/tool_registry.py",
+          "line": 1962,
+          "kind": "call",
+          "symbol": "odyssey.status registration"
+        },
+        {
+          "file": "hcli/tool_registry.py",
+          "line": 1561,
+          "kind": "call",
+          "symbol": "odyssey.cycle"
+        },
+        {
+          "file": "receipts/sovereign/G009_reachability.json",
+          "line": null,
+          "kind": "invoke",
+          "symbol": "odyssey.status",
+          "note": "invoked_through_registry"
+        },
+        {
+          "file": "receipts/sovereign/G009_reachability.json",
+          "line": null,
+          "kind": "invoke",
+          "symbol": "odyssey.queue",
+          "note": "invoked_through_registry"
+        }
+      ],
+      "tests": [
+        "hcli/test_odyssey.py: 18 confirm-gate tests passed in extract; 3 live-state tests failed off the live workspace"
+      ],
+      "receipts": [
+        "receipts/acceptance/ODYSSEY_I_DISCOVERY.json ACCEPTED",
+        "receipts/acceptance/ODYSSEY_II_TRANSFER.json BLOCKED",
+        "receipts/acceptance/ODYSSEY_III_ADVERSARIAL_META_SCIENCE.json BLOCKED"
+      ],
+      "blockers": [
+        "record_law/record_scar have no non-test hcli caller",
+        "Odyssey II/III acceptance BLOCKED"
+      ],
+      "unlocks": [
+        "school_visibility_from_resident",
+        "gated_odyssey_mutation"
+      ]
+    },
+    {
+      "id": "autonomous_scientific_metabolism",
+      "name": "autonomous scientific metabolism",
+      "state": "CALLABLE",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "uncommitted": false,
+      "claim_boundary": "admit_evidence_children is called from ResidentDaemon (production). frontier_scheduler.decide is a registered tool. HCLI_SELF_SUPPLEMENT is ACCEPTED. The stronger claim \u2014 evidence causes multiple unattended replans (G008) \u2014 has no receipt, and the live mission has accepted_count=0 with evidence reason NO_EVIDENCE and phase cancelled. Do not inflate to END_TO_END or INTEGRATED for metabolism-as-a-loop.",
+      "implementing_symbols": [
+        {
+          "file": "hcli/agentos/resident.py",
+          "line": 736,
+          "symbol": "admit_evidence_children"
+        },
+        {
+          "file": "hcli/frontier_scheduler.py",
+          "line": 360,
+          "symbol": "decide"
+        },
+        {
+          "file": "hcli/frontier_scheduler.py",
+          "line": 317,
+          "symbol": "select_next"
+        }
+      ],
+      "call_sites": [
+        {
+          "file": "hcli/agentos/resident.py",
+          "line": 1012,
+          "kind": "call",
+          "symbol": "admit_evidence_children"
+        },
+        {
+          "file": "hcli/tool_registry.py",
+          "line": 1585,
+          "kind": "call",
+          "symbol": "frontier_scheduler.decide"
+        },
+        {
+          "file": "tools/acceptance/context/gates.py",
+          "line": 933,
+          "kind": "call",
+          "symbol": "admit_evidence_children"
+        }
+      ],
+      "tests": [
+        "hcli/test_frontier_scheduler.py (passed; fixtures)",
+        "hcli/test_autonomous_frontier_metabolism.py (receipt-gated; G008 ABSENT)"
+      ],
+      "receipts": [
+        "receipts/acceptance/HCLI_SELF_SUPPLEMENT.json ACCEPTED",
+        "receipts/acceptance/HCLI_SELF_OPTIMIZATION_BOOTSTRAP.json BLOCKED",
+        "receipts/sovereign/G008_metabolism.json ABSENT"
+      ],
+      "disk_artifacts": [
+        "live mission accepted_count=0, 11 failed units, cancel=resident_self_evacuation"
+      ],
+      "blockers": [
+        "G008 receipt absent",
+        "live mission produced no accepted WorkUnits",
+        "HCLI_SELF_OPTIMIZATION_BOOTSTRAP BLOCKED"
+      ],
+      "unlocks": [
+        "unattended_refill_from_verified_evidence (blocked on actual VERIFIED parents)"
+      ]
+    }
+  ],
+  "counts": {
+    "capabilities": 13,
+    "by_state": {
+      "INTEGRATED": 7,
+      "CALLABLE": 4,
+      "END_TO_END": 1,
+      "TESTED": 1
+    }
+  },
+  "what_hcli_now_owns": {
+    "owns_with_production_callers": [
+      "Goal Compiler (GoalCompiler.compile + compile_worker_context + GoalGraph + GoalBank)",
+      "verifier synthesis on the compile path (and command_is_admissible on ledger/executors/landing)",
+      "resident daemon (hawkingd / ResidentSupervisor / ResidentDaemon / start_resident)",
+      "watch/control plane (watch_resident)",
+      "context compiler (compile_worker_context on Mission dispatch) \u2014 acceptance ACCEPTED",
+      "mission DAG (WorkUnitDAG + GoalGraph + DagStore) \u2014 not the named WorkGraph type",
+      "MAXX DAG scheduler + grok_pool_snapshot + resolve_grok_admitted",
+      "provider escalation tools (fail-closed)",
+      "Odyssey facade (status/queue invoked live via G009)",
+      "EventSink control-plane log",
+      "admit_evidence_children (self-supplement ACCEPTED)"
+    ],
+    "does_not_own_or_not_wired": [
+      "named WorkGraph type (tools/future/workgraph.py)",
+      "apply_mutation_operations on the HCLI agent loop",
+      "ModelLake specimen-arrival ingestion into HCLI events/DAG",
+      "Odyssey driver / Odyssey II transfer / Odyssey III adversarial science",
+      "mixed MAX with a live cognition backend",
+      "G008 unattended multi-replan metabolism",
+      "G013 live successor cutover proof",
+      "genesis launchd model body (not hawkingd)"
+    ]
+  },
+  "roadmap_wording_that_should_change": [
+    {
+      "tag": "STALE_ROADMAP_TEXT",
+      "path": "/Users/scammermike/Downloads/H-ROADMAP.md",
+      "start_line": 351,
+      "end_line": 365,
+      "heading": "# 3. CURRENT AUTHORITY SNAPSHOT",
+      "current_excerpt": "Durable AgentOS missions, background jobs, typed tools, recovery, research, VMCP, Doctor/Gravity/Accelerator surfaces and checkpoint receipts have been implemented in the current campaign. Last reported resident ladder: A1\u2013A6 passed; ... Last reported unattended proof: 3,600 seconds, 55 model calls, 54 accepted WorkUnits ... Last reported full test suite ... 712 passed ... Flash ModelLake acquisition was last reported as a pinned resumable worker with a 144-file partial tree",
+      "problem": "Numbers and 'have been implemented' read as current authority. Live disk: mission cancelled, accepted_count=0, body UNLOADED. Implementation surface is not promotion.",
+      "should_say": "Keep the 'revalidate before use' header. Replace the frozen 712/3600s/A1\u2013A6/144-file bullets with an instruction to read civilization/ROADMAP_STATE.json, .hcli/mission/state.json, .hcli/resident/body.json and receipts/acceptance/*.json. Do not keep a one-hour autonomy count as if it were the live daemon."
+    },
+    {
+      "tag": "STALE_ROADMAP_TEXT",
+      "path": "/Users/scammermike/Downloads/H-ROADMAP.md",
+      "start_line": 428,
+      "end_line": 445,
+      "heading": "## I-A. AgentOS / HCLI \u2014 Genes to express",
+      "current_excerpt": "durable mission authority; exact restart/resume; single mutation writer; provider-neutral model routing; typed tool registry; resource leases; failure isolation; retry/fingerprint/circuit-breaker policy; background jobs; checkpoint/handoff; self-refill under verified evidence; headless product behavior",
+      "problem": "The gene list does not name the organs HCLI actually now owns: Goal Compiler, synthesised verifiers, hawkingd, watch plane, context compiler, WorkUnitDAG, MAXX scheduler, provider escalation, Odyssey facade, EventSink.",
+      "should_say": "Keep the existing homeostasis genes. Add an 'expressed organs (HEAD 04193ccbc)' list with the 13-state classifications from this audit. Explicitly: Goal Compiler INTEGRATED; hawkingd INTEGRATED; context compiler END_TO_END (acceptance) / G004 still red; WorkUnitDAG INTEGRATED; named WorkGraph NOT HCLI; apply_mutation_operations CALLABLE not on the agent loop; mixed MAX BLOCKED; metabolism CALLABLE not proven."
+    },
+    {
+      "tag": "STALE_ROADMAP_TEXT",
+      "path": "/Users/scammermike/Downloads/H-ROADMAP.md",
+      "start_line": 5296,
+      "end_line": 5307,
+      "heading": "## I-A \u2014 AgentOS / HCLI \u2014 GENE CARD SUBGENES",
+      "current_excerpt": "same 12 subgenes as \u00a75 I-A; AUTHORITY/PHENOTYPE/... slots are still the generic CRISPR template ('instantiate a bounded WorkUnit...')",
+      "problem": "Appendix A gene card does not record current artifacts (hawkingd, GoalCompiler, EventSink, .hcli/mission/state.json). The template answers are not phenotype.",
+      "should_say": "Fill AUTHORITY with: .hcli/mission/state.json, .hcli/dag.json, .hcli/resident/{state,body}.json, receipts/acceptance/HCLI_*.json, receipts/sovereign/G00*.json. Fill PHENOTYPE with the observable behaviours that now have production callers. Leave PROMOTION red where G-receipts are absent."
+    },
+    {
+      "tag": "STALE_ROADMAP_TEXT",
+      "path": "/Users/scammermike/Downloads/H-ROADMAP.md",
+      "start_line": 1028,
+      "end_line": 1052,
+      "heading": "# 7. AGENTOS / HCLI \u2014 SOVEREIGN CONTROL PLANE diagram",
+      "current_excerpt": "USER \u2192 HCLI \u2192 MISSION AUTHORITY (Goal DAG, WorkUnits, resource leases, permissions, provider selection, background jobs, recovery, handoff/checkpoint) \u2192 MODEL \u2192 TYPED TOOLS \u2192 PROTECTED VERIFIERS \u2192 RECEIPTS",
+      "problem": "Diagram omits Goal Compiler, hawkingd supervisor/worker split, watch plane, context compiler, EventSink, Odyssey facade.",
+      "should_say": "Insert Goal Compiler before Goal DAG; split HCLI into client vs hawkingd supervisor vs disposable body; add watch as a read-only sibling that must not open a second body; add context compiler on the worker packet edge."
+    },
+    {
+      "tag": "STALE_ROADMAP_TEXT",
+      "path": "/Users/scammermike/Downloads/H-ROADMAP.md",
+      "start_line": 1109,
+      "end_line": 1142,
+      "heading": "## 7.4 Real mixed MAX / ## 7.5 Autonomy ladder",
+      "current_excerpt": "MAXX should schedule heterogeneous cognition... L3 sovereign multi-hour scheduler; L4 heterogeneous multi-day laboratory",
+      "problem": "HCLI_MIXED_MAX is BLOCKED. Live mission is cancelled with zero accepted units. L3/L4 read as present tense capability.",
+      "should_say": "7.4: Scheduler + resource leases exist; mixed MAX remains blocked until a live cognition backend is part of the measured run. 7.5: last 1h proof is historical; current disk is not L3. Do not move the ladder from elapsed-time language into 'HCLI now is L3'."
+    },
+    {
+      "tag": "STALE_ROADMAP_TEXT",
+      "path": "civilization/CAPABILITY_GRAPH.json",
+      "start_line": null,
+      "end_line": null,
+      "heading": "genes.I-A_AGENTOS_HCLI.status = SCAFFOLDED",
+      "current_excerpt": "status SCAFFOLDED; runtime_caller []; generated_from_commit 7d642800",
+      "problem": "Wrong grain (gene-level engine.py) and stale commit vs HEAD. Inflates absence.",
+      "should_say": "Regenerate against HEAD 04193ccbc using the 13 capability symbols in this audit. I-A is not one symbol."
+    },
+    {
+      "tag": "STALE_ROADMAP_TEXT",
+      "path": "civilization/ROADMAP_STATE.json",
+      "start_line": null,
+      "end_line": null,
+      "heading": "active_odyssey.status = ADVERSARIALLY_VERIFIED",
+      "current_excerpt": "active_odyssey: {id: I-E_ODYSSEY_I, status: ADVERSARIALLY_VERIFIED}",
+      "problem": "That status is not HCLI owning Odyssey. Odyssey II/III acceptance receipts are BLOCKED. HCLI owns a facade.",
+      "should_say": "Keep Odyssey I school status separate from HCLI ownership. If this field means the gene I-E, say so; do not let it be read as 'HCLI owns Odyssey end-to-end'."
+    },
+    {
+      "tag": "STALE_ROADMAP_TEXT",
+      "path": "/Users/scammermike/Downloads/H-ROADMAP.md",
+      "start_line": 1959,
+      "end_line": 1959,
+      "heading": "WorkGraph mention in SING/execution graph",
+      "current_excerpt": "WorkGraph.",
+      "problem": "Unqualified WorkGraph will be read as HCLI-owned. The executable type is tools/future/workgraph.py and it refuses execute().",
+      "should_say": "HCLI WorkUnitDAG/GoalGraph is the mission graph. tools/future WorkGraph emits a STATIC_ONLY schedule and an HCLI WorkUnit projection; it does not execute."
+    },
+    {
+      "tag": "STALE_ROADMAP_TEXT",
+      "path": "/Users/scammermike/Downloads/H-ROADMAP.md",
+      "start_line": 7646,
+      "end_line": 7684,
+      "heading": "D.13 HCLI_ULTRAGOAL_INGRESS / HCLI_BOOTSTRAP_HANDOFF / HCLI_REPORT_COMPACTION",
+      "current_excerpt": "Proof obligations for ultragoal ingress, bootstrap handoff, report compaction",
+      "problem": "receipts/headless/HCLI_ULTRAGOAL_INGRESS.json, HCLI_BOOTSTRAP_HANDOFF.json, HCLI_REPORT_COMPACTION.json exist from 2026-08-23 with no schema/verdict. They are not acceptance proof.",
+      "should_say": "Mark those three gates NOT_RUN or INCONCLUSIVE until a hawking.acceptance.gate.v1 receipt exists. Do not let the August 23 files stand as PASS."
+    },
+    {
+      "tag": "STALE_ROADMAP_TEXT",
+      "path": "/Users/scammermike/Downloads/H-ROADMAP.md",
+      "start_line": 5138,
+      "end_line": 5141,
+      "heading": "pocket card HCLI line",
+      "current_excerpt": "HCLI: provider-neutral; model is replaceable; protected verifier owns promotion",
+      "problem": "True as policy, incomplete as inventory. Omits Goal Compiler, hawkingd, context compiler, DAG.",
+      "should_say": "HCLI: provider-neutral client + hawkingd supervisor; GoalCompiler owns ultragoal\u2192DAG; protected verifier owns promotion; context compiler owns worker packets; named WorkGraph is not this organ."
+    },
+    {
+      "tag": "STALE_ROADMAP_TEXT",
+      "path": "hcli/test_odyssey.py",
+      "start_line": 1,
+      "end_line": 8,
+      "heading": "test_odyssey module docstring",
+      "current_excerpt": "Odyssey (tools/odyssey_ctl.py) is real and mid-flight ... but HCLI has no odyssey verb at all.",
+      "problem": "False as of HEAD: tool_registry registers odyssey.status/queue/ingest/cycle and G009 invoked two of them.",
+      "should_say": "HCLI has odyssey.* tools; this file locks confirm-gating and live ingest. (Not a roadmap file; listed because it is stale wording the next HCLI session will keep shipping.)"
+    }
+  ],
+  "cross_unlocks": [
+    {
+      "from": "goal_compiler",
+      "unlocks": [
+        "verifier_synthesis",
+        "workgraphs",
+        "context_compiler",
+        "ultragoal_ingress"
+      ]
+    },
+    {
+      "from": "resident_daemon",
+      "unlocks": [
+        "watch_control_plane",
+        "successor_handoff",
+        "modellake_event_ingestion",
+        "autonomous_scientific_metabolism"
+      ]
+    },
+    {
+      "from": "context_compiler",
+      "unlocks": [
+        "maxx_global_scheduling",
+        "focused_workunits"
+      ]
+    },
+    {
+      "from": "workgraphs",
+      "unlocks": [
+        "maxx_global_scheduling",
+        "resident_restart_resume"
+      ]
+    },
+    {
+      "from": "verifier_synthesis",
+      "unlocks": [
+        "self_mutation_promotion",
+        "odyssey_law_recording"
+      ]
+    },
+    {
+      "from": "self_mutation",
+      "unlocks": [
+        "self_optimization_bootstrap"
+      ],
+      "blocked_until": "agent-loop caller + G003"
+    },
+    {
+      "from": "odyssey_ownership",
+      "unlocks": [
+        "modellake_event_ingestion"
+      ],
+      "blocked_until": "specimen-arrival \u2192 HCLI DAG admission"
+    },
+    {
+      "from": "autonomous_scientific_metabolism",
+      "unlocks": [
+        "unattended_compounding"
+      ],
+      "blocked_until": "G008 + accepted_count>0"
+    }
+  ],
+  "constitution_untouched": {
+    "eras": 5,
+    "odysseys": 3,
+    "no_era_vi": true,
+    "fpga_lives_in": "Hawking Accelerator/Fusion",
+    "theia": "one generalist bounty model",
+    "civilizational_coordinate": 0.7,
+    "north_star": "HAWKING = SELF-OPTIMIZING PHYSICAL AI COMPUTER"
+  },
+  "acceptance_self_check": {
+    "every_capability_has_call_site_or_blocker": true,
+    "n_capabilities": 13,
+    "files_this_lane_may_write": [
+      "receipts/audit/aud10-hcli-boundary.json",
+      "receipts/audit/aud10-hcli-boundary.md"
+    ],
+    "did_not_edit": [
+      "hcli/",
+      "tools/",
+      "crates/",
+      "civilization/",
+      "H-ROADMAP.md"
+    ]
+  }
+}

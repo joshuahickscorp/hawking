@@ -36,7 +36,7 @@ markers = ["slow: real hardware/compile evidence; deselected by default"]
 # tools/future session artifacts (HEAD ls-tree + receipts/future blobs) live
 # in tools/future/conftest.py, not here: addopts cannot carry -n.
 addopts = "-m 'not slow'"
-testpaths = ["tools/haider"]
+testpaths = ["hcli/tests"]
 pythonpath = [
     ".",
     "hawking-experiments/frankenstein/operators",

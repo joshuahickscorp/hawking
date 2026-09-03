@@ -37,7 +37,7 @@
     {
       "detail": {
         "browser": false,
-        "fixture": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-integ-qu8mz4kn/index.html",
+        "fixture": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-integ-s77442hp/index.html",
         "green": true,
         "nodes": 7,
         "note": "local HTML fixture; not Chrome/CDP",
@@ -54,7 +54,7 @@
     {
       "detail": {
         "browser": false,
-        "fixture": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-integ-qu8mz4kn/index.html",
+        "fixture": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-integ-s77442hp/index.html",
         "green": true,
         "nodes": 7,
         "note": "local HTML fixture; not Chrome/CDP",
@@ -94,49 +94,49 @@
     "weakened": false
   },
   "criterion_weakened": false,
-  "elapsed_ms": 31.203,
+  "elapsed_ms": 27.452,
   "evidence_tier": "FUNCTIONAL_SIM",
   "gate": "VMCP_AGENTOS_INTEGRATION",
-  "generated_at": "2026-09-02T18:44:53Z",
+  "generated_at": "2026-09-02T23:16:06Z",
   "gpu_authority": false,
   "invoked_symbols": [
     {
-      "elapsed_ms": 23.489,
+      "elapsed_ms": 20.434,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "tools.headless.hcli_vmcp_integration.observe_file"
     },
     {
-      "elapsed_ms": 1.68,
+      "elapsed_ms": 1.855,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "tools.headless.hcli_vmcp_integration.verify_capture"
     },
     {
-      "elapsed_ms": 0.736,
+      "elapsed_ms": 0.776,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "tools.future.vmcp.prove"
     },
     {
-      "elapsed_ms": 0.098,
+      "elapsed_ms": 0.119,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "visionmcp.worlds.spatial.io.obj.obj_file_counts"
     },
     {
-      "elapsed_ms": 0.083,
+      "elapsed_ms": 0.057,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "visionmcp.worlds.spatial.io.obj.obj_file_counts"
     },
     {
-      "elapsed_ms": 0.083,
+      "elapsed_ms": 0.055,
       "error": null,
       "kind": "call",
       "raised": false,
@@ -153,7 +153,7 @@
     },
     "V11": {
       "browser": false,
-      "fixture": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-integ-qu8mz4kn/index.html",
+      "fixture": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-integ-s77442hp/index.html",
       "green": true,
       "nodes": 7,
       "note": "local HTML fixture; not Chrome/CDP",

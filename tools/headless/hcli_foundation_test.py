@@ -41,31 +41,31 @@ def _reject(argv):
     buf = io.StringIO()
     try:
         with contextlib.redirect_stderr(buf):
-            hcli.cli.parse_haider_args(argv)
+            hcli.cli.parse_hcli_args(argv)
     except SystemExit:
         return
     raise AssertionError(f"expected rejection for {argv!r}")
 
 
 def check_grammar():
-    empty = hcli.cli.parse_haider_args([])
+    empty = hcli.cli.parse_hcli_args([])
     assert empty.runtime_count == 1, empty
     assert empty.prompt is None, empty
     assert empty.interactive is True, empty
 
-    prompt_only = hcli.cli.parse_haider_args(["p"])
+    prompt_only = hcli.cli.parse_hcli_args(["p"])
     assert prompt_only.runtime_count == 1
     assert prompt_only.prompt == "p"
     assert prompt_only.interactive is False
 
-    n_prompt = hcli.cli.parse_haider_args(["3", "p"])
+    n_prompt = hcli.cli.parse_hcli_args(["3", "p"])
     assert n_prompt.runtime_count == 3
     assert n_prompt.prompt == "p"
     assert n_prompt.interactive is False
 
     saved = os.environ.pop("HCLI_RESIDENT_RUNTIME_LIMIT", None)
     try:
-        max_args = hcli.cli.parse_haider_args(["max", "p"])
+        max_args = hcli.cli.parse_hcli_args(["max", "p"])
     finally:
         if saved is not None:
             os.environ["HCLI_RESIDENT_RUNTIME_LIMIT"] = saved

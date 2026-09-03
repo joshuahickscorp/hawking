@@ -12,6 +12,7 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Mapping, Optional
+from tools.roadmap import lineage
 
 RECEIPT_SCHEMA = "hawking.acceptance.gate.v1"
 WORKTREE = Path(__file__).resolve().parents[3]
@@ -21,7 +22,9 @@ SPECIMENS = LAKE / "specimens"
 PARTIAL = LAKE / "partial"
 LAKE_MANIFESTS = LAKE / "manifests"
 RECEIPTS = WORKTREE / "receipts" / "acceptance"
-ROADMAP = Path("/Users/scammermike/Downloads/H-ROADMAP.md")
+# The canonical roadmap is external and can vanish; tools.roadmap.lineage
+# falls back to the digest-verified in-repo copy rather than a placeholder.
+ROADMAP = lineage.roadmap_path()
 
 # Catalog implementing symbols (civilization/CAPABILITY_GRAPH.json).
 GATES: dict[str, dict[str, Any]] = {

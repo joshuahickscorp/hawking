@@ -14,7 +14,7 @@ control that points at a deleted receipt and a command that exits non-zero.
 If that control comes back SUPPORTED, the validator is vacuous and the run
 fails even if every real claim passed.
 
-Staging is promoted to `.haider/HAWKING_HEADLESS_COMPLETION_V3.json` only
+Staging is promoted to `.hcli-legacy/HAWKING_HEADLESS_COMPLETION_V3.json` only
 when every real claim is SUPPORTED and the negative control is UNSUPPORTED.
 
 Run:
@@ -36,8 +36,8 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[1]
-STAGING_REL = ".haider/HAWKING_HEADLESS_COMPLETION_V3.staging.json"
-FINAL_REL = ".haider/HAWKING_HEADLESS_COMPLETION_V3.json"
+STAGING_REL = ".hcli-legacy/HAWKING_HEADLESS_COMPLETION_V3.staging.json"
+FINAL_REL = ".hcli-legacy/HAWKING_HEADLESS_COMPLETION_V3.json"
 
 NEGATIVE_CONTROL = {
     "id": "NEGATIVE_CONTROL_DELETED_RECEIPT",

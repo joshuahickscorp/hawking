@@ -882,7 +882,7 @@ def run_all(*, decode: bool = True, out_receipt: Path = RECEIPT) -> dict[str, An
         "elapsed_s": time.perf_counter() - t0,
     }
     out_receipt.parent.mkdir(parents=True, exist_ok=True)
-    tmp = out_receipt.with_suffix(".json.tmp")
+    tmp = out_receipt.with_suffix(f".json.{os.getpid()}.tmp")
     tmp.write_text(json.dumps(receipt, indent=2) + "\n")
     os.replace(tmp, out_receipt)
     print(f"wrote {out_receipt}", flush=True)

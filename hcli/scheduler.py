@@ -69,6 +69,21 @@ class NO_PROGRESS(Exception):
         )
 
 
+#: A failure reason is a trail, not a transcript. Unbounded, it compounds: a
+#: repair unit carries its parent's failure context into its own prompt, so an
+#: error that quotes ITS parent's error nests once per repair generation. The
+#: live run went 2,531 prompt tokens on the base unit to 12,415 on the third
+#: repair, entirely on nested copies of the same preflight message.
+FAILURE_REASON_CHARS = 400
+
+
+def _bounded_failure_value(value: Any) -> Any:
+    if isinstance(value, str) and len(value) > FAILURE_REASON_CHARS:
+        return value[:FAILURE_REASON_CHARS] + " [truncated]"
+    return value
+
+
+
 class Scheduler:
     """Dispatch existing WorkUnits. Does not invent work.
 
@@ -319,6 +334,21 @@ class Scheduler:
         wu.finished_at = time.time()
         if was_running:
             self._release_unit(wu)
+        # The reason belongs on the unit that FAILED, not only on the descendant
+        # that repairs it. `_integrate` computes the validation and the error and
+        # hands them here, and they were being attached exclusively to the repair
+        # unit -- so anyone reading a failed unit saw `failure_context: {}` and
+        # could not tell whether the verifier bit, the model refused, or the
+        # engine errored. Three units failed in the live run with no reason
+        # recorded anywhere.
+        if isinstance(context, dict) and context:
+            merged = dict(wu.failure_context or {})
+            merged.update({
+                key: _bounded_failure_value(value)
+                for key, value in context.items()
+                if value is not None
+            })
+            wu.failure_context = merged
         repair = self._emit_repair(wu, context)
         self._persist()
         return repair

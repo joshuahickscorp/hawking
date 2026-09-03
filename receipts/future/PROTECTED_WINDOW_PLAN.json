@@ -20,12 +20,12 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T09:39:13Z",
+  "recorded_at": "2026-09-02T19:05:41Z",
   "recorded_by": "tools.future.protected_window.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
- "branch": "grok/s4-tools-future-under-10s-20260902-045214",
+ "branch": "odyssey-i",
  "claim_boundary": "Static sidecar artifact. No hardware measurement.",
  "composed_qualification_stages": [
   "identify_lease_availability",
@@ -60,7 +60,7 @@
   "classification": "BLOCKED",
   "id": "F002",
   "integration_target": "tools/future/candidate_planner.py + static_kernel_verify.py",
-  "path_taken": "/Users/scammermike/.claude-grok/worktrees/s4-tools-future-under-10s-20260902-045214/receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
+  "path_taken": "/Users/scammermike/Downloads/hawking/receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
   "prerequisite": "an existing HCLI protected lease plus machine quiescence",
   "title": "12 Qwen27 candidates are READY_PROTECTED and idle on a GPU window"
  },
@@ -74,7 +74,7 @@
   "blocked physical work is emitted as SLEEPING WorkUnits that HCLI can wake; never a synthetic PROTECTED_ABSOLUTE result",
   "--dry-run walks all envelope stages against the real batch and real lock probe and reports the execution stop (lease on this host)"
  ],
- "head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
+ "head": "0bf5d2f5cca9ac95744437ff0e7e5e806e2613d8",
  "integration": {
   "execute": "execute(*, explicit_execute=False, lease=None, contamination_class=None) -> None  # always raises WindowRefused",
   "load_staged_batch": "load_staged_batch(injected=None) -> dict  # Codex order, not a guess",
@@ -153,7 +153,7 @@
   },
   {
    "composed_as": "cited read-only; runner NOT imported and NOT called",
-   "on_disk_in_this_worktree": false,
+   "on_disk_in_this_worktree": true,
    "path": "hcli/agentos/protected_accelerator_benchmark.py",
    "role": "the real protected lease (LOCK_NAME, _try_lock)"
   },
@@ -213,7 +213,7 @@
   ]
  },
  "schema": "hawking.future.protected_window.v1",
- "seal_sha256": "7bffe0a74a03daecf322f6491be414d6392cb6affbaea5063a224b2964eb8034",
+ "seal_sha256": "4ce81e6af864d5f8b17d8a2ff9d2a539882e67a42840786d852c069d42fe7598",
  "stages_declared": [
   "estimate_qualification_value",
   "decide_eviction",

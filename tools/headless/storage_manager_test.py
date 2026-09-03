@@ -83,7 +83,7 @@ def test_the_active_parent_cannot_be_selected_however_large():
 
 def test_receipts_and_negative_science_are_never_candidates():
     for p in ("/repo/receipts/headless/GPU_ATTACK.json",
-              "/repo/.haider/bootstrap-director-v6/negative-science.jsonl",
+              "/repo/.hcli-legacy/bootstrap-director-v6/negative-science.jsonl",
               "/repo/receipts/headless/MACHINE_GENOME.json"):
         r = row(path=p, classification="REDOWNLOADABLE", size_gib=50.0)
         prot, why = sm.is_protected(r)

@@ -1423,7 +1423,7 @@ def print_report(doc: dict) -> None:
 
 def denied_porcelain() -> dict:
     out = {}
-    for prefix in ("crates", "workspace", "visionmcp", "app", "lab", "tools/haider", "ramanujan"):
+    for prefix in ("crates", "workspace", "visionmcp", "app", "lab", "tools/hcli", "ramanujan"):
         try:
             r = subprocess.run(
                 ["git", "status", "--porcelain", "--", prefix],

@@ -140,3 +140,46 @@ def test_the_reducer_is_actually_on_the_model_call_path(tmp_path):
         "_call_model no longer reduces before preflight; an oversized turn "
         "will be refused outright again"
     )
+
+
+def test_the_reducer_accounts_for_what_the_contract_will_add():
+    """The ladder fit a payload the post-contract preflight then refused.
+
+    `contract.apply` injects the schema instruction -- about 713 tokens -- AFTER
+    the ladder declares a fit. Measured live: the reducer approved a payload and
+    the next check reported `demand 8739 exceeds per-request ctx 8192`.
+
+    A reducer that shrinks against a size nobody posts is not a reducer.
+    """
+    import inspect
+
+    from hcli.engine import Engine
+
+    src = inspect.getsource(Engine._call_model)
+    build_at = src.index("_schema_contract(backend)")
+    fit_at = src.index("_fit_payload_to_budget")
+    assert build_at < fit_at, (
+        "the contract must be built BEFORE fitting, so its cost can be reserved"
+    )
+
+    ladder = inspect.getsource(Engine._fit_payload_to_budget)
+    assert "+ reserve" in ladder, "the reserve must enter the demand the ladder judges"
+
+
+def test_a_reserve_makes_the_ladder_shed_sooner(tmp_path):
+    """The load-bearing behaviour, not just the plumbing.
+
+    Uses the real engine fixture and its real budget: a stub budget invites the
+    test to disagree with production about what a budget even is.
+    """
+    eng = _engine(tmp_path)
+    eng._estimate_prompt_tokens = lambda msgs: 5000
+
+    def build(ev, cm, tr=""):
+        return {"messages": [{"role": "user", "content": "x"}]}
+
+    fits, _ = eng._fit_payload_to_budget(build, [], None, reserve=0)
+    assert fits is not None, "5000 tokens alone must fit"
+
+    with pytest.raises(ContextPreflightError):
+        eng._fit_payload_to_budget(build, [], None, reserve=100_000)

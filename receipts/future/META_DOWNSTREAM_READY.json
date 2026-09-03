@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T09:36:43Z",
+  "recorded_at": "2026-09-02T19:05:33Z",
   "recorded_by": "tools/future/meta_ready.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -123,7 +123,7 @@
  "claim_boundary": "Static sidecar artifact. No hardware measurement.",
  "claim_class": "STATIC_ONLY",
  "coherence_screen_cited": {
-  "evidence_source": "live_headless",
+  "evidence_source": "pinned_snapshot",
   "min_rows_required": 256,
   "status": "UNSAFE_SMALL_PROBE_NOT_PROMOTABLE",
   "teacher_trace_rows": 4,
@@ -269,16 +269,16 @@
   "odysseys": 3
  },
  "evidence_source": {
-  "receipts/headless/FLASH_COMPLETE_V0.nx.json": "live_headless",
-  "receipts/headless/FLASH_COMPLETE_V2.nr.json": "live_headless",
-  "receipts/headless/FLASH_META_COHERENCE_SCREEN_L4.json": "live_headless",
-  "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json": "live_headless",
+  "receipts/headless/FLASH_COMPLETE_V0.nx.json": "pinned_snapshot",
+  "receipts/headless/FLASH_COMPLETE_V2.nr.json": "pinned_snapshot",
+  "receipts/headless/FLASH_META_COHERENCE_SCREEN_L4.json": "pinned_snapshot",
+  "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json": "pinned_snapshot",
   "receipts/headless/FLASH_META_TEACHER_L4_CAPTURE_BOUNDARY.json": "live_headless",
-  "receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json": "live_headless",
-  "receipts/headless/FLASH_ROUTER_SENSITIVITY_MAP_L3_L4.json": "live_headless"
+  "receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json": "pinned_snapshot",
+  "receipts/headless/FLASH_ROUTER_SENSITIVITY_MAP_L3_L4.json": "pinned_snapshot"
  },
  "family_budgets_derived": {
-  "evidence_source": "live_headless",
+  "evidence_source": "pinned_snapshot",
   "families": [
    {
     "family": "routed_experts",
@@ -661,7 +661,7 @@
   }
  },
  "schema": "hawking.future.meta_ready.v1",
- "seal_sha256": "583f52beb9a73f09e51644db2b16ece0ccf481fca9d6c58c8d12810a5afaa1e8",
+ "seal_sha256": "914d3cc338f10348ae4747c1cb10926bf873aa6bfb4c556f12d853bef8b8049f",
  "simulate_arrival": {
   "admission": {
    "accepted": false,
@@ -789,10 +789,10 @@
    "analytical_screen_without_corpus": "router_science allocation and the L3/L4 sensitivity map can be read now. They do not pass gate 4 and must not be used to skip teacher fit.",
    "can_proceed_without_corpus": false,
    "cited_existing_mismatch": {
-    "evidence_source": "live_headless",
+    "evidence_source": "pinned_snapshot",
     "expert_ids_exact_match": false,
     "note": "Cited MISMATCH cannot be reached as a funnel kill until gates 2 and 3 pass. Funnel.advance refuses to skip.",
-    "path": "receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
+    "path": "receipts/future/evidence/FLASH_NOETIC_ROUTER_SELECTION.json",
     "status": "MISMATCH"
    },
    "command_that_would_run_it": "python3 tools/future/meta_funnel.py --build",
@@ -835,8 +835,8 @@
    "predecessor_output": "held_out_numerical",
    "required_input": "route_traces",
    "router_map_cited": {
-    "evidence_source": "live_headless",
-    "path": "receipts/headless/FLASH_ROUTER_SENSITIVITY_MAP_L3_L4.json",
+    "evidence_source": "pinned_snapshot",
+    "path": "receipts/future/evidence/FLASH_ROUTER_SENSITIVITY_MAP_L3_L4.json",
     "present": true
    },
    "still_missing": [
@@ -994,8 +994,8 @@
    "kill_criterion": "Lowering was attempted and failed (irreducible NR, missing organ, hidden dense rematerialization disclosed as a failure).",
    "needs_nothing_but_predecessor_output": true,
    "nr_status_cited": {
-    "evidence_source": "live_headless",
-    "path": "receipts/headless/FLASH_COMPLETE_V2.nr.json",
+    "evidence_source": "pinned_snapshot",
+    "path": "receipts/future/evidence/FLASH_COMPLETE_V2.nr.json",
     "promotion_allowed": false,
     "status": "COMPLETE_HETEROGENEOUS_CANDIDATE_NOT_FOR_PROMOTION"
    },
@@ -1058,8 +1058,8 @@
     "refusal_if": "SCAFFOLD_ONLY / SEALED_METADATA_ONLY_NOT_FOR_PROMOTION"
    },
    "nx_status_cited": {
-    "evidence_source": "live_headless",
-    "path": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+    "evidence_source": "pinned_snapshot",
+    "path": "receipts/future/evidence/FLASH_COMPLETE_V0.nx.json",
     "status": "SEALED_METADATA_ONLY_NOT_FOR_PROMOTION"
    },
    "passing_does_not_prove": "EBPW, protected TPS, or promotion. SCAFFOLD_ONLY / SEALED_METADATA_ONLY_NOT_FOR_PROMOTION is a refusal, not a pass.",

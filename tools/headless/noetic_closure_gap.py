@@ -951,7 +951,7 @@ def print_report(doc: dict) -> None:
     print(
         "  this script does not git add/checkout/restore/stash/clean/reset "
         "and does not touch crates/, workspace/, visionmcp/, app/, lab/, "
-        "tools/haider/."
+        "tools/hcli/bootstrap/."
     )
 
 

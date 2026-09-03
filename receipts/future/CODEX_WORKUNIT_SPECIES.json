@@ -98,7 +98,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T09:22:15Z",
+  "recorded_at": "2026-09-02T19:01:41Z",
   "recorded_by": "tools/future/codex_behaviors.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -138,7 +138,7 @@
  "handoff": {
   "atomic_change_decision": "IMPLEMENTED_OPT_IN_UNMEASURED",
   "atomic_change_name": "device-mHC / SIMD RMSNorm / norm-to-activation-quant fusion",
-  "loaded_from": "/Users/scammermike/.claude-grok/worktrees/s4-tools-future-under-10s-20260902-045214/CODEX_ACCELERATOR_HANDOFF.json",
+  "loaded_from": "/Users/scammermike/Downloads/hawking/CODEX_ACCELERATOR_HANDOFF.json",
   "path": "CODEX_ACCELERATOR_HANDOFF.json",
   "present": true,
   "repatriation_outcome": "IMPLEMENTED_UNMEASURED",
@@ -314,7 +314,7 @@
   ]
  },
  "negative_findings": [
-  "CODEX_ACCELERATOR_HANDOFF.json is not in this sparse worktree git HEAD; loaded from /Users/scammermike/.claude-grok/worktrees/s4-tools-future-under-10s-20260902-045214/CODEX_ACCELERATOR_HANDOFF.json",
+  "CODEX_ACCELERATOR_HANDOFF.json is not in this sparse worktree git HEAD; loaded from /Users/scammermike/Downloads/hawking/CODEX_ACCELERATOR_HANDOFF.json",
   "UPDATE_SCOREBOARD is UNGROUNDED_FROM_HANDOFF: the scoreboard file is named, no update episode is shown",
   "ATTACK_LAW is UNGROUNDED_FROM_HANDOFF: scars and conditional laws exist, no attack episode is shown",
   "physical_laws_promoted_by_effects_ledger is 0; IMPLEMENTED_UNMEASURED is not a win",
@@ -373,7 +373,7 @@
  ],
  "purpose": "Freeze Codex's hand-run optimization loop as schedulable HCLI WorkUnit species so a resident can run it without a human saying 'find another latency seam'.",
  "recovered_implementation": {
-  "CODEX_ACCELERATOR_HANDOFF.json": "training trace loaded from /Users/scammermike/.claude-grok/worktrees/s4-tools-future-under-10s-20260902-045214/CODEX_ACCELERATOR_HANDOFF.json",
+  "CODEX_ACCELERATOR_HANDOFF.json": "training trace loaded from /Users/scammermike/Downloads/hawking/CODEX_ACCELERATOR_HANDOFF.json",
   "hcli.agentos.runtime.AgentOS": "composition facade; Mission/Scheduler remain authorities",
   "hcli.agentos.states.AgentState": "hcli/agentos/states.py \u2014 READY/RUNNING/VERIFIED/BLOCKED; no SLEEPING yet",
   "hcli.scheduler.Scheduler": "hcli/scheduler.py \u2014 dispatch only; does not invent work",
@@ -405,7 +405,7 @@
   "workunit_emitted": "codex.metabolism.<cycle>.<SPECIES_ID> via hcli.workunit.WorkUnit"
  },
  "schema": "hawking.future.codex_behaviors.v1",
- "seal_sha256": "31eb4fb947f9f22bb54225821f7c09ac4cef7904eca502d61aae51f33247757d",
+ "seal_sha256": "0d324222bf004ca9ec92ea25ebd7b1e2e35069dffa5eb3389636822a67b51a65",
  "sleeping": {
   "blockers": [
    "MetalContext reports no Metal-capable GPU for the current execution host",

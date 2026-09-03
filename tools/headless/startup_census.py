@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Cold control-plane startup census: what `python3 -m hcli --help` actually pays for.
 
-This lane changes no HCLI source. The live package lives at tools/haider/hcli/,
+This lane changes no HCLI source. The live package lives at hcli/,
 which is often absent from a sparse checkout; the census reads it from git HEAD
 (or from disk when present), profiles a real `python3 -m hcli --help`, and
 writes receipts/headless/STARTUP_CENSUS.json.
@@ -128,7 +128,7 @@ def sha256_bytes(data: bytes) -> str:
 def locate_hcli(repo: Path, extract_root: Path) -> Dict[str, Any]:
     """Prefer an on-disk package; otherwise extract HEAD via git archive.
 
-    Canonical physical path is <repo>/hcli. The fossil tools/haider/hcli
+    Canonical physical path is <repo>/hcli. The fossil hcli
     tree is gone; a missing hcli/ is not evidence the package does not
     exist in git — this tree may be a sparse checkout.
     """
@@ -189,9 +189,9 @@ def clone_package(src_pkg: Path, dest_parent: Path, init_text: str) -> Path:
 
 
 THIN_INIT = '''"""HCLI product package (census counterfactual: no Controller on import)."""
-from .cli import parse_haider_args, main
+from .cli import parse_hcli_args, main
 
-__all__ = ["parse_haider_args", "main", "Workspace", "Controller", "Event", "EventBus"]
+__all__ = ["parse_hcli_args", "main", "Workspace", "Controller", "Event", "EventBus"]
 
 
 def __getattr__(name):
@@ -829,7 +829,7 @@ def main() -> int:
 
         # Citations that must resolve.
         cites = [
-            cite(src_pkg, "__init__.py", 2, "from .cli import parse_haider_args, main"),
+            cite(src_pkg, "__init__.py", 2, "from .cli import parse_hcli_args, main"),
             cite(src_pkg, "__init__.py", 4, "from .controller import Controller"),
             cite(src_pkg, "__main__.py", 1, "from hcli.cli import main"),
         ]
@@ -1002,7 +1002,7 @@ def main() -> int:
                     "imported during python3 -m hcli --help"
                     if (present_any or in_importtime)
                     else (
-                        "no import statement in tools/haider/hcli/*.py (AST) and "
+                        "no import statement in hcli/*.py (AST) and "
                         "name absent from -X importtime and from sys.modules after --help"
                     )
                 ),
@@ -1022,13 +1022,13 @@ def main() -> int:
                 "move": (
                     "Stop importing Controller, Workspace, Event, EventBus in "
                     f"{HCLI_GIT_PREFIX}/__init__.py (lines 3-5). Keep "
-                    "`from .cli import parse_haider_args, main`. Expose the rest "
+                    "`from .cli import parse_hcli_args, main`. Expose the rest "
                     "via PEP 562 __getattr__ so `from hcli import Controller` still works."
                 ),
                 "behind": "App construction / `from hcli import Controller` / tests that need Controller",
                 "why_help_does_not_need_it": (
                     f"{HCLI_GIT_PREFIX}/cli.py:{app_line} imports App only after "
-                    "parse_haider_args(); argparse --help sys.exits first. "
+                    "parse_hcli_args(); argparse --help sys.exits first. "
                     f"{HCLI_GIT_PREFIX}/__main__.py imports hcli.cli.main, but "
                     "package __init__ currently still runs the Controller import."
                 ),
@@ -1208,7 +1208,7 @@ def main() -> int:
                     {
                         "item": "hcli.index / hcli.mutation production callers",
                         "status": (
-                            "no production importer in tools/haider/hcli/*.py (tests import mutation)"
+                            "no production importer in hcli/*.py (tests import mutation)"
                         ),
                         "reason": "AST/text scan of production modules; tests/ excluded",
                     },

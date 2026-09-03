@@ -233,8 +233,22 @@ def test_is_gqa_layer_matches_geometry():
     assert cim.mixer_kind(0) == "delta_net"
 
 
+_SNAP_CACHE: dict | None = None
+
+
 def _snap() -> dict:
-    return cim.snapshot(consult_index=False)
+    """One snapshot per session, shared by every test that asserts on it.
+
+    snapshot(consult_index=False) is deterministic for a fixed tree and was
+    being recomputed per test: four tests in this file cost 413s + 399s + 325s
+    + 256s of the suite, all rebuilding the SAME object. Sharing it changes no
+    assertion -- every test still asserts against the real computed snapshot,
+    it is simply computed once.
+    """
+    global _SNAP_CACHE
+    if _SNAP_CACHE is None:
+        _SNAP_CACHE = cim.snapshot(consult_index=False)
+    return _SNAP_CACHE
 
 
 def test_real_prefix_is_not_gaussian():

@@ -62,7 +62,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T09:18:23Z",
+  "recorded_at": "2026-09-02T19:05:33Z",
   "recorded_by": "tools/future/tabula.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -244,7 +244,7 @@
  },
  "doctrine": {
   "doctrine": "Gravity finds the cheapest faithful physical realization. Tabula finds the least behaviorally constrained faithful realization. Doctor verifies both. Lower refusal rate is not Tabula success. Targets are preserved capability, increased useful behavioral freedom, minimized suppression, minimized calibration drift, and minimized personality and style drift. Behavioral freedom and external authority are different systems.",
-  "path_taken": "git:HEAD",
+  "path_taken": "worktree",
   "quoted_phrase_present": true,
   "source": "hawking-experiments/superwave/g1/g1-tabula-baseline.md"
  },
@@ -914,7 +914,7 @@
   }
  ],
  "gpu_authority": false,
- "head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
+ "head": "0bf5d2f5cca9ac95744437ff0e7e5e806e2613d8",
  "independent_evaluation": {
   "behavioral_target": 0.5,
   "demo_failure": {
@@ -1140,37 +1140,37 @@
   },
   {
    "in_head": true,
-   "on_disk": false,
+   "on_disk": true,
    "path": "hawking-experiments/superwave/g1/g1-tabula-baseline.md",
-   "path_taken": "git:HEAD",
+   "path_taken": "worktree",
    "what": "G1 doctrine: lower refusal rate is not Tabula success; behavioral freedom and external authority are different systems"
   },
   {
    "in_head": true,
-   "on_disk": false,
+   "on_disk": true,
    "path": "hawking-experiments/superwave/g1/g1-tabula-genome.md",
-   "path_taken": "git:HEAD",
+   "path_taken": "worktree",
    "what": "G1 genome: Tabula/Gravity must be separate sealed content-hashed documents"
   },
   {
    "in_head": true,
-   "on_disk": false,
+   "on_disk": true,
    "path": "receipts/ascent-2026-08-16/G123_TABULA_DRIFT.json",
-   "path_taken": "git:HEAD",
+   "path_taken": "worktree",
    "what": "sealed G123 ladder; does not reproduce the recorded range (constant ~2.5x)"
   },
   {
    "in_head": true,
-   "on_disk": false,
+   "on_disk": true,
    "path": "receipts/ascent-2026-08-18/TABULA_PATIENT.json",
-   "path_taken": "git:HEAD",
+   "path_taken": "worktree",
    "what": "patient Tabula cell: 0/8 refusals treated as behavioural authority \u2014 the collapse this floor refuses"
   },
   {
    "in_head": true,
-   "on_disk": false,
+   "on_disk": true,
    "path": "hcli/agentos/autonomy_gate.py",
-   "path_taken": "git:HEAD",
+   "path_taken": "worktree",
    "what": "live authority: Mission is DAG/receipt, AgentOS is typed-tool/checkpoint, provider is cognition; the model cannot nominate the verifier"
   },
   {
@@ -1181,7 +1181,7 @@
    "what": "child-generation economy; Tabula is one method of CHILD generation and must carry lineage"
   },
   {
-   "in_head": false,
+   "in_head": true,
    "on_disk": true,
    "path": "tools/vmcp/behavior_lab.py",
    "path_taken": "worktree",
@@ -1372,7 +1372,7 @@
   "reasoning",
   "instruction_following"
  ],
- "seal_sha256": "a65b8308bf0303fea5504796ab7fe2c772dfe6639b34541cebe80037ed405082",
+ "seal_sha256": "832502db471d5c6954695ae3c390c308a3c5fe2de4517e04fec417c189cd930a",
  "sleeping_fit": {
   "ready": false,
   "status": "sleeping",

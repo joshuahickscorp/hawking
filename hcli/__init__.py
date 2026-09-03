@@ -1,6 +1,6 @@
 """HCLI product package — command surface / UI / status rendering.
 
-Canonical import name: ``hcli``. ``tools.haider.hcli`` is gone.
+Canonical import name: ``hcli``. There is no second HCLI package.
 Ownership packages: ``hcli.agentos``, ``hcli.genomes``,
 ``hcli.doctor``, ``hcli.gravity``, ``hcli.vmcp``. Runtime lives
 as ``hcli.runtime`` / ``hcli.engine`` / ``hcli.backends``.
@@ -9,9 +9,9 @@ as ``hcli.runtime`` / ``hcli.engine`` / ``hcli.backends``.
 lazy so ``python3 -m hcli --help`` does not import the runtime graph.
 ``from hcli import Controller`` still works.
 """
-from .cli import parse_haider_args, main
+from .cli import parse_hcli_args, main
 
-__all__ = ["parse_haider_args", "main", "Workspace", "Controller", "Event", "EventBus"]
+__all__ = ["parse_hcli_args", "main", "Workspace", "Controller", "Event", "EventBus"]
 
 _LAZY_ATTRS = {
     "Workspace": (".workspace", "Workspace"),

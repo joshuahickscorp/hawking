@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T09:38:58Z",
+  "recorded_at": "2026-09-02T21:33:57Z",
   "recorded_by": "tools/future/status_causality.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -431,7 +431,7 @@
    "causality_verdict": "SUPPORTED",
    "gap": null,
    "gate": "odyssey_launch",
-   "met": false,
+   "met": true,
    "name": "resident_autonomy_trial_pass",
    "present_on_receipt": true,
    "records_five_fields": true
@@ -467,7 +467,7 @@
    "causality_verdict": "SUPPORTED",
    "gap": null,
    "gate": "odyssey_launch",
-   "met": true,
+   "met": false,
    "name": "gravity_callable",
    "present_on_receipt": true,
    "records_five_fields": true
@@ -620,7 +620,7 @@
  ],
  "s015": "AMENDMENT S015 (2026-08-30): Codex is stood down. The sidecar write partition is dissolved: crates/, hcli/, tools/ and receipts/ are writable, and 'is this Codex's surface?' no longer gates work. mutation_surface.CODEX_OWNED remains as history and does not gate this lane. What S015 does not change: no fake completion, no hardware measurement without hardware, no self-certification, evidence still decides promotion, and every gate must still measure what it claims.",
  "schema": "hawking.future.status_causality_coverage.v1",
- "seal_sha256": "1230f05d4c503f25b5eb21fc3b3d887e9ea1a23159e1746155df185576ee7ffa",
+ "seal_sha256": "6ec739f3266ebf63690279a06b6f0848ce31249c7f16771aad7bcf78faee5453",
  "selection_rule": "A module is a consequential gate when its emitted status changes what the campaign does next: whether Odyssey may launch, whether a commit may land, whether a resident/native/autonomy/modellake/vmcp/recovery/research qualification is PASSED, whether a specimen is WHOLE_TREE_VERIFIED, whether a protected window is RUNNABLE, or whether a scanned status was treated as a blocker. Included: (1) every path named in the G007 obligation (odyssey_launch criteria, integration_gate, resident and native gates under hcli/agentos, specimen verification); (2) every hcli/agentos module whose filename matches *gate*.py or that defines run_*_gate (autonomy, modellake, vmcp, native_mission, recovery, research); (3) every receipt already reached by status_causality.scan via KNOWN_RECEIPT_PATHS, except AUTONOMY_SCARS which is an adjudication schema not a gate; (4) qualification_pipeline and protected_scheduler, whose RUNNABLE/REFUSED/BLOCKED verdicts decide whether physical work proceeds. Excluded, and not as a trick to inflate coverage: Metal kernel names containing 'gate', crate tests named *_gate.rs, lab/operators hardware TPS gates, example benches \u2014 those do not decide campaign next-step. This tuple is the list. The rule above is how it was chosen.",
  "sibling_coverage_available": false,
  "unreadable": [],

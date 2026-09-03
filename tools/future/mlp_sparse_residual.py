@@ -51,6 +51,7 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 import numpy as np
+from scipy.linalg import solve_triangular
 
 from tools.future import executable_economics as ee
 from tools.future import mlp_shared_program as msp
@@ -903,9 +904,21 @@ def factor_gram(x: np.ndarray, *, lam: float = RIDGE_LAM) -> dict[str, np.ndarra
 
 
 def solve_residual_map(factor: Mapping[str, np.ndarray], r_cols: np.ndarray) -> np.ndarray:
+    """Cholesky back-substitution, not a general solve.
+
+    factor["L"] comes from np.linalg.cholesky, so it is LOWER TRIANGULAR. Passing
+    it to np.linalg.solve asks LAPACK for a general LU factorization with
+    pivoting -- O(n^3) work to solve a system that back-substitution answers in
+    O(n^2), twice per call. That was 31.0s of a 69.4s build across 144 solves.
+
+    solve_triangular is the algorithm the factorization was computed FOR. It is
+    not an approximation: same system, same solution, correct routine. The
+    equivalence that matters was measured on the emitted receipt, not on the
+    intermediate.
+    """
     rhs = factor["X"].T @ np.ascontiguousarray(r_cols, dtype=np.float64)
-    z = np.linalg.solve(factor["L"], rhs)
-    return np.linalg.solve(factor["L"].T, z)
+    z = solve_triangular(factor["L"], rhs, lower=True, check_finite=False)
+    return solve_triangular(factor["L"].T, z, lower=False, check_finite=False)
 
 
 def apply_linear_residual(

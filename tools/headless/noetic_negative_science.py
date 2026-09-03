@@ -10,7 +10,7 @@ This tool is the archaeology, not a subsection of another receipt. It:
 
   * confirms or corrects the seed refutations against live files
   * sweeps receipts, ledgers, knowledge-plane jsonl, the foundry atlas,
-    the ascent register, .haider/, worktrees and grok/* branches (read-only)
+    the ascent register, .hcli-legacy/, worktrees and grok/* branches (read-only)
   * classifies each closure PROPERTY_OF_IDEA vs ARTIFACT_OF_METHOD
   * records a reopen condition and whether that condition holds TODAY
   * calls out reopen-already-true entries at the top (live opportunities
@@ -1936,7 +1936,7 @@ def sweep_negative_stores() -> dict:
                 pass
         found["ascension_jsonl_records"] = n
         found["ascension_jsonl_mechanisms"] = mechs
-    rel = ".haider/bootstrap-director-v6/negative-science.jsonl"
+    rel = ".hcli-legacy/bootstrap-director-v6/negative-science.jsonl"
     text = read_text(rel)
     if text is not None:
         rows = [ln for ln in text.splitlines() if ln.strip()]

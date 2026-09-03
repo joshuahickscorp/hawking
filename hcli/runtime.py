@@ -467,7 +467,7 @@ def resolve_workspace(workspace: Optional[Union[str, Path]] = None) -> Path:
         return Path(env).expanduser().resolve()
     cur = Path.cwd().resolve()
     for path in (cur, *cur.parents):
-        if (path / ".hcli").exists() or (path / ".haider").exists():
+        if (path / ".hcli").exists():
             return path
     return cur
 

@@ -5,17 +5,63 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T09:19:48Z",
+  "recorded_at": "2026-09-02T19:15:45Z",
   "recorded_by": "tools/future/abi_verdicts.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
- "branch": "grok/s4-tools-future-under-10s-20260902-045214",
+ "branch": "odyssey-i",
  "claim_boundary": "Static sidecar artifact. No hardware measurement.",
  "codex_adjudication": {
-  "available": false,
-  "reason": "receipts/future/CLAUDE_SIDECAR_ABI_ADJUDICATION.json not present",
-  "recorded": []
+  "available": true,
+  "recorded": [],
+  "refused": [
+   {
+    "error": "VerdictRefused: unknown finding_id 'claude-abi-01-kv-append-q8'",
+    "finding_id": "claude-abi-01-kv-append-q8",
+    "verdict": "CONFIRMED_BUG"
+   },
+   {
+    "error": "VerdictRefused: unknown finding_id 'claude-abi-02-qwen-generated-k1'",
+    "finding_id": "claude-abi-02-qwen-generated-k1",
+    "verdict": "GENERATED_KERNEL"
+   },
+   {
+    "error": "VerdictRefused: unknown finding_id 'claude-abi-03-gemv-attn-command-batch'",
+    "finding_id": "claude-abi-03-gemv-attn-command-batch",
+    "verdict": "CONFIRMED_BUG"
+   },
+   {
+    "error": "VerdictRefused: unknown finding_id 'claude-abi-04-gemv-attn-arena'",
+    "finding_id": "claude-abi-04-gemv-attn-arena",
+    "verdict": "CONFIRMED_BUG"
+   },
+   {
+    "error": "VerdictRefused: unknown finding_id 'claude-abi-05-moe-silu'",
+    "finding_id": "claude-abi-05-moe-silu",
+    "verdict": "CONFIRMED_BUG"
+   },
+   {
+    "error": "VerdictRefused: unknown finding_id 'claude-abi-06-moe-route-accumulate'",
+    "finding_id": "claude-abi-06-moe-route-accumulate",
+    "verdict": "CONFIRMED_BUG"
+   }
+  ],
+  "source": "receipts/future/CLAUDE_SIDECAR_ABI_ADJUDICATION.json",
+  "summary": {
+   "blocked_by_generation_resolved": 1,
+   "dead_paths": 0,
+   "intentional_aliases": 0,
+   "outstanding_confirmed_defects": 0,
+   "real_defects_fixed": 5,
+   "reported_findings": 6
+  },
+  "unmapped": [],
+  "verifier_feedback": {
+   "constant_struct_abi": "A Metal constant struct at buffer(N) requires one contiguous host binding with the matching layout; adjacent set_u32 calls at N/N+1 are not equivalent.",
+   "kernel_existence": "Recognize token-pasted entry points only from explicit macro invocation and preserve generated-body ABI as a compiler/runtime boundary.",
+   "physical_gate": "Static resolution clears a protected-window correctness blocker; it does not promote Flash or produce qualified physical EBPW."
+  }
  },
  "codex_files_untouched": true,
  "does_not_substitute_for_protected_measurement": true,
@@ -540,27 +586,27 @@
    "check": "kernel_existence",
    "class_responses": {
     "ABI_MISMATCH": {
-     "harness_action": "reclassify kernel_existence|qwen_q2f_group64_matvec_pair_geo_tpr64_tg128|qwen38_hybrid_decode.rs:4333 to abi_mismatch; do not exempt type_width as a class",
+     "harness_action": "reclassify kernel_existence|qwen_q2f_group64_matvec_pair_geo_tpr64_tg128|qwen38_hybrid_decode.rs:4334 to abi_mismatch; do not exempt type_width as a class",
      "preflight_change": "Reclassify this finding to check=abi_mismatch and keep ERROR. Add a checker for consecutive set_u32 at i,i+1 against a constant struct at i. Primitive kind mismatches (set_u32 onto device*) stay type_width.",
      "would_mean": "The host and shader disagree on the contract (packing / field order / scalar-sequence vs struct), which is not a primitive type_width error."
     },
     "CONFIRMED_BUG": {
-     "harness_action": "install RegressionFixture for kernel_existence|qwen_q2f_group64_matvec_pair_geo_tpr64_tg128|qwen38_hybrid_decode.rs:4333; regression_still_detectable() must keep returning True",
+     "harness_action": "install RegressionFixture for kernel_existence|qwen_q2f_group64_matvec_pair_geo_tpr64_tg128|qwen38_hybrid_decode.rs:4334; regression_still_detectable() must keep returning True",
      "preflight_change": "Keep this finding ERROR. Add a synthetic regression fixture (metal + host pair under the harness, never under crates/) that reproduces kernel_existence for 'qwen_q2f_group64_matvec_pair_geo_tpr64_tg128' so a future checker edit cannot silently drop the class.",
-     "would_mean": "The kernel_existence check was right at crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4333 for 'qwen_q2f_group64_matvec_pair_geo_tpr64_tg128'."
+     "would_mean": "The kernel_existence check was right at crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4334 for 'qwen_q2f_group64_matvec_pair_geo_tpr64_tg128'."
     },
     "DEAD_CODE": {
-     "harness_action": "store reachability for kernel_existence|qwen_q2f_group64_matvec_pair_geo_tpr64_tg128|qwen38_hybrid_decode.rs:4333; re-emit check=reachability severity=WARNING",
+     "harness_action": "store reachability for kernel_existence|qwen_q2f_group64_matvec_pair_geo_tpr64_tg128|qwen38_hybrid_decode.rs:4334; re-emit check=reachability severity=WARNING",
      "preflight_change": "Downgrade this one finding to WARNING and emit a reachability record for encode_fused_q2f_pair. Do not disable kernel_existence. Reachable sites of the same check stay ERROR.",
-     "would_mean": "Host path encode_fused_q2f_pair at crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4333 cannot run, so this mismatch cannot waste a protected GPU window."
+     "would_mean": "Host path encode_fused_q2f_pair at crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4334 cannot run, so this mismatch cannot waste a protected GPU window."
     },
     "FALSE_POSITIVE": {
-     "harness_action": "register ExemptionRule pinned to kernel_existence|qwen_q2f_group64_matvec_pair_geo_tpr64_tg128|qwen38_hybrid_decode.rs:4333's pattern",
-     "preflight_change": "Register a NARROW exemption for this pattern only: check=kernel_existence kernel=qwen_q2f_group64_matvec_pair_geo_tpr64_tg128 host=crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4333 construct=dispatch_threads_literal_name. A different kernel, a different buffer index, or a different host construct of kernel_existence must still fire.",
+     "harness_action": "register ExemptionRule pinned to kernel_existence|qwen_q2f_group64_matvec_pair_geo_tpr64_tg128|qwen38_hybrid_decode.rs:4334's pattern",
+     "preflight_change": "Register a NARROW exemption for this pattern only: check=kernel_existence kernel=qwen_q2f_group64_matvec_pair_geo_tpr64_tg128 host=crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4334 construct=dispatch_threads_literal_name. A different kernel, a different buffer index, or a different host construct of kernel_existence must still fire.",
      "would_mean": "The checker mis-modelled this site. The source may be legal."
     },
     "GENERATED_KERNEL": {
-     "harness_action": "register GeneratorSeam for kernel_existence|qwen_q2f_group64_matvec_pair_geo_tpr64_tg128|qwen38_hybrid_decode.rs:4333; produced_names derived from source, not a count",
+     "harness_action": "register GeneratorSeam for kernel_existence|qwen_q2f_group64_matvec_pair_geo_tpr64_tg128|qwen38_hybrid_decode.rs:4334; produced_names derived from source, not a count",
      "preflight_change": "Teach parse_metal (or this harness's resolver) the generator seam: expand `#define MAC(ARG) kernel void pre##ARG##suf` plus invocations, and/or runtime source strings. Names the seam does not produce still fail kernel_existence.",
      "would_mean": "'qwen_q2f_group64_matvec_pair_geo_tpr64_tg128' is produced by a generator, not a literal kernel void. Current qwen_uniform_q4.metal preprocessor seam produces 7 names; 'qwen_q2f_group64_matvec_pair_geo_tpr64_tg128' is not among them (a different generator would be required)."
     },
@@ -571,29 +617,29 @@
     }
    },
    "codex_status": null,
-   "finding_id": "kernel_existence|qwen_q2f_group64_matvec_pair_geo_tpr64_tg128|qwen38_hybrid_decode.rs:4333",
+   "finding_id": "kernel_existence|qwen_q2f_group64_matvec_pair_geo_tpr64_tg128|qwen38_hybrid_decode.rs:4334",
    "host_site": {
     "enclosing_fn": {
-     "line": 4300,
+     "line": 4301,
      "name": "encode_fused_q2f_pair",
      "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
      "path_taken": "read_from_worktree"
     },
     "extra_host_sites": [
-     "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4333"
+     "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4334"
     ],
     "host_construct": "dispatch_threads_literal_name",
-    "line": 4333,
+    "line": 4334,
     "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
-    "preflight": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4333",
+    "preflight": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4334",
     "snippet": {
-     "end_line": 4337,
-     "line": 4333,
+     "end_line": 4338,
+     "line": 4334,
      "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
      "path_taken": "read_from_worktree",
      "present": true,
-     "start_line": 4329,
-     "text": "4329|            let right_rows = ba.rows;\n4330|            let cols = qkvz.cols;\n4331|            let total = left_rows.saturating_add(right_rows);\n4332|            let grid = total.div_ceil(2).saturating_mul(128).max(128);\n4333|            tcb.dispatch_threads(\n4334|                QWEN38_Q2F_PAIR_GEO_KERNEL,\n4335|                (grid, 1, 1),\n4336|                (128, 1, 1),\n4337|                |enc| {"
+     "start_line": 4330,
+     "text": "4330|            let right_rows = ba.rows;\n4331|            let cols = qkvz.cols;\n4332|            let total = left_rows.saturating_add(right_rows);\n4333|            let grid = total.div_ceil(2).saturating_mul(128).max(128);\n4334|            tcb.dispatch_threads(\n4335|                QWEN38_Q2F_PAIR_GEO_KERNEL,\n4336|                (grid, 1, 1),\n4337|                (128, 1, 1),\n4338|                |enc| {"
     }
    },
    "kernel": "qwen_q2f_group64_matvec_pair_geo_tpr64_tg128",
@@ -711,27 +757,27 @@
    "check": "kernel_existence",
    "class_responses": {
     "ABI_MISMATCH": {
-     "harness_action": "reclassify kernel_existence|qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128|qwen38_hybrid_decode.rs:4277 to abi_mismatch; do not exempt type_width as a class",
+     "harness_action": "reclassify kernel_existence|qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128|qwen38_hybrid_decode.rs:4278 to abi_mismatch; do not exempt type_width as a class",
      "preflight_change": "Reclassify this finding to check=abi_mismatch and keep ERROR. Add a checker for consecutive set_u32 at i,i+1 against a constant struct at i. Primitive kind mismatches (set_u32 onto device*) stay type_width.",
      "would_mean": "The host and shader disagree on the contract (packing / field order / scalar-sequence vs struct), which is not a primitive type_width error."
     },
     "CONFIRMED_BUG": {
-     "harness_action": "install RegressionFixture for kernel_existence|qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128|qwen38_hybrid_decode.rs:4277; regression_still_detectable() must keep returning True",
+     "harness_action": "install RegressionFixture for kernel_existence|qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128|qwen38_hybrid_decode.rs:4278; regression_still_detectable() must keep returning True",
      "preflight_change": "Keep this finding ERROR. Add a synthetic regression fixture (metal + host pair under the harness, never under crates/) that reproduces kernel_existence for 'qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128' so a future checker edit cannot silently drop the class.",
-     "would_mean": "The kernel_existence check was right at crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4277 for 'qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128'."
+     "would_mean": "The kernel_existence check was right at crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4278 for 'qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128'."
     },
     "DEAD_CODE": {
-     "harness_action": "store reachability for kernel_existence|qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128|qwen38_hybrid_decode.rs:4277; re-emit check=reachability severity=WARNING",
+     "harness_action": "store reachability for kernel_existence|qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128|qwen38_hybrid_decode.rs:4278; re-emit check=reachability severity=WARNING",
      "preflight_change": "Downgrade this one finding to WARNING and emit a reachability record for encode_fused_q2f_qkv. Do not disable kernel_existence. Reachable sites of the same check stay ERROR.",
-     "would_mean": "Host path encode_fused_q2f_qkv at crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4277 cannot run, so this mismatch cannot waste a protected GPU window."
+     "would_mean": "Host path encode_fused_q2f_qkv at crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4278 cannot run, so this mismatch cannot waste a protected GPU window."
     },
     "FALSE_POSITIVE": {
-     "harness_action": "register ExemptionRule pinned to kernel_existence|qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128|qwen38_hybrid_decode.rs:4277's pattern",
-     "preflight_change": "Register a NARROW exemption for this pattern only: check=kernel_existence kernel=qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128 host=crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4277 construct=dispatch_threads_literal_name. A different kernel, a different buffer index, or a different host construct of kernel_existence must still fire.",
+     "harness_action": "register ExemptionRule pinned to kernel_existence|qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128|qwen38_hybrid_decode.rs:4278's pattern",
+     "preflight_change": "Register a NARROW exemption for this pattern only: check=kernel_existence kernel=qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128 host=crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4278 construct=dispatch_threads_literal_name. A different kernel, a different buffer index, or a different host construct of kernel_existence must still fire.",
      "would_mean": "The checker mis-modelled this site. The source may be legal."
     },
     "GENERATED_KERNEL": {
-     "harness_action": "register GeneratorSeam for kernel_existence|qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128|qwen38_hybrid_decode.rs:4277; produced_names derived from source, not a count",
+     "harness_action": "register GeneratorSeam for kernel_existence|qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128|qwen38_hybrid_decode.rs:4278; produced_names derived from source, not a count",
      "preflight_change": "Teach parse_metal (or this harness's resolver) the generator seam: expand `#define MAC(ARG) kernel void pre##ARG##suf` plus invocations, and/or runtime source strings. Names the seam does not produce still fail kernel_existence.",
      "would_mean": "'qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128' is produced by a generator, not a literal kernel void. Current qwen_uniform_q4.metal preprocessor seam produces 7 names; 'qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128' is not among them (a different generator would be required)."
     },
@@ -742,29 +788,29 @@
     }
    },
    "codex_status": null,
-   "finding_id": "kernel_existence|qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128|qwen38_hybrid_decode.rs:4277",
+   "finding_id": "kernel_existence|qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128|qwen38_hybrid_decode.rs:4278",
    "host_site": {
     "enclosing_fn": {
-     "line": 4224,
+     "line": 4225,
      "name": "encode_fused_q2f_qkv",
      "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
      "path_taken": "read_from_worktree"
     },
     "extra_host_sites": [
-     "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4277"
+     "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4278"
     ],
     "host_construct": "dispatch_threads_literal_name",
-    "line": 4277,
+    "line": 4278,
     "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
-    "preflight": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4277",
+    "preflight": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4278",
     "snippet": {
-     "end_line": 4281,
-     "line": 4277,
+     "end_line": 4282,
+     "line": 4278,
      "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
      "path_taken": "read_from_worktree",
      "present": true,
-     "start_line": 4273,
-     "text": "4273|            let v_rows = v.rows;\n4274|            let cols = q.cols;\n4275|            let total = q_rows.saturating_add(k_rows).saturating_add(v_rows);\n4276|            let grid = total.div_ceil(2).saturating_mul(128).max(128);\n4277|            tcb.dispatch_threads(\n4278|                QWEN38_Q2F_QKV_GEO_KERNEL,\n4279|                (grid, 1, 1),\n4280|                (128, 1, 1),\n4281|                |enc| {"
+     "start_line": 4274,
+     "text": "4274|            let v_rows = v.rows;\n4275|            let cols = q.cols;\n4276|            let total = q_rows.saturating_add(k_rows).saturating_add(v_rows);\n4277|            let grid = total.div_ceil(2).saturating_mul(128).max(128);\n4278|            tcb.dispatch_threads(\n4279|                QWEN38_Q2F_QKV_GEO_KERNEL,\n4280|                (grid, 1, 1),\n4281|                (128, 1, 1),\n4282|                |enc| {"
     }
    },
    "kernel": "qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128",
@@ -901,7 +947,7 @@
  ],
  "generator_seams": [],
  "gpu_authority": false,
- "head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
+ "head": "0bf5d2f5cca9ac95744437ff0e7e5e806e2613d8",
  "measurement_states_we_are_not": [
   "DIAGNOSTIC_RELATIVE",
   "PROTECTED_ABSOLUTE"
@@ -948,8 +994,8 @@
   },
   {
    "check": "kernel_existence",
-   "finding_id": "kernel_existence|qwen_q2f_group64_matvec_pair_geo_tpr64_tg128|qwen38_hybrid_decode.rs:4333",
-   "host": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4333",
+   "finding_id": "kernel_existence|qwen_q2f_group64_matvec_pair_geo_tpr64_tg128|qwen38_hybrid_decode.rs:4334",
+   "host": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4334",
    "kernel": "qwen_q2f_group64_matvec_pair_geo_tpr64_tg128",
    "message": "host references kernel 'qwen_q2f_group64_matvec_pair_geo_tpr64_tg128' but no shader defines `kernel void qwen_q2f_group64_matvec_pair_geo_tpr64_tg128(`",
    "shader": null,
@@ -957,8 +1003,8 @@
   },
   {
    "check": "kernel_existence",
-   "finding_id": "kernel_existence|qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128|qwen38_hybrid_decode.rs:4277",
-   "host": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4277",
+   "finding_id": "kernel_existence|qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128|qwen38_hybrid_decode.rs:4278",
+   "host": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4278",
    "kernel": "qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128",
    "message": "host references kernel 'qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128' but no shader defines `kernel void qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128(`",
    "shader": null,
@@ -985,8 +1031,8 @@
  "rulings_issued_by_this_sidecar": 0,
  "rulings_recorded_from_external_authority": 0,
  "schema": "hawking.future.abi_verdicts.v1",
- "seal_sha256": "4b70cecc2d6fe752d1b2c700596f568779505db2fad30c346215cd9f8729398d",
- "snapshot_captured_count": 2,
+ "seal_sha256": "684a6096973ac06cc825ec9a41c46117a2a0d9f6a7cbf4fbd42e578a1d75cee4",
+ "snapshot_captured_count": 46,
  "snapshot_manifest": "receipts/future/EVIDENCE_SNAPSHOT.json",
  "snapshot_path_taken": "present",
  "store": {

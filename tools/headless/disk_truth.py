@@ -90,7 +90,7 @@ def hcli_receipt_health(d: Path) -> dict:
 GENOME_TARGETS = {
     "MachineGenome": [
         REPO / "receipts/headless/MACHINE_GENOME.json",
-        REPO / ".haider/bootstrap-director-v6/worker-equilibrium.json",
+        REPO / ".hcli-legacy/bootstrap-director-v6/worker-equilibrium.json",
         Path(os.path.expanduser("~/.config/hcli/machine_genome.json")),
     ],
     "RuntimeGenome": [REPO / "receipts/headless/RUNTIME_GENOME.json"],
@@ -100,7 +100,7 @@ GENOME_TARGETS = {
     "StorageGenome/ArtifactLedger": [REPO / "receipts/headless/ARTIFACT_LEDGER.json"],
     "PerformanceLedger": [REPO / "receipts/headless/PERFORMANCE_LEDGER.jsonl"],
     "NegativeScience": [
-        REPO / ".haider/bootstrap-director-v6/negative-science.jsonl",
+        REPO / ".hcli-legacy/bootstrap-director-v6/negative-science.jsonl",
         RECOVERY / "workspace/campaign/odyssey/NEGATIVE_SCIENCE.json",
     ],
 }
@@ -167,7 +167,7 @@ def main() -> int:
             "source_files": src.get("files", {}),
         },
         "tests": {
-            "hcli_package_tests": tree_hash(REPO / "tools/haider/hcli/tests", "test_*.py"),
+            "hcli_package_tests": tree_hash(REPO / "hcli/tests", "test_*.py"),
             "headless_tools": tree_hash(REPO / "tools/headless"),
         },
         "receipts": {
@@ -179,13 +179,13 @@ def main() -> int:
         },
         "director_state": {
             "worker_equilibrium": (
-                json.loads((REPO / ".haider/bootstrap-director-v6/worker-equilibrium.json").read_text())
-                if (REPO / ".haider/bootstrap-director-v6/worker-equilibrium.json").exists() else None),
+                json.loads((REPO / ".hcli-legacy/bootstrap-director-v6/worker-equilibrium.json").read_text())
+                if (REPO / ".hcli-legacy/bootstrap-director-v6/worker-equilibrium.json").exists() else None),
             "negative_science_lines": len(
-                (REPO / ".haider/bootstrap-director-v6/negative-science.jsonl").read_text().splitlines())
-            if (REPO / ".haider/bootstrap-director-v6/negative-science.jsonl").exists() else 0,
-            "epoch_run_dirs": len(list((REPO / ".haider/bootstrap-director-v6/runs").glob("*")))
-            if (REPO / ".haider/bootstrap-director-v6/runs").is_dir() else 0,
+                (REPO / ".hcli-legacy/bootstrap-director-v6/negative-science.jsonl").read_text().splitlines())
+            if (REPO / ".hcli-legacy/bootstrap-director-v6/negative-science.jsonl").exists() else 0,
+            "epoch_run_dirs": len(list((REPO / ".hcli-legacy/bootstrap-director-v6/runs").glob("*")))
+            if (REPO / ".hcli-legacy/bootstrap-director-v6/runs").is_dir() else 0,
         },
         "genomes": genomes,
         "live_processes_at_census": {

@@ -474,3 +474,199 @@ def test_build_copes_with_or_without_the_corpus():
 
 def test_selftest_is_callable():
     assert callable(rcs.selftest)
+
+
+def test_threaded_expert_factoring_is_bit_identical_to_the_serial_path(monkeypatch):
+    """Parallelism here must be a scheduling change, never a numerical one.
+
+    Each expert's gram and eigendecomposition is independent, so factoring them
+    across threads has to return exactly what the serial loop returned, in the
+    same expert order. A result that merely agrees to a tolerance, or that comes
+    back in completion order, is a different screen.
+    """
+    rng = np.random.default_rng(7)
+    residuals = rng.standard_normal((9, 48, 61), dtype=np.float32)
+
+    monkeypatch.setenv("RCS_EIGH_WORKERS", "1")
+    assert rcs._eigh_workers() == 1
+    serial_u, serial_v = rcs.residual_factors_batch(residuals, 6)
+
+    monkeypatch.setenv("RCS_EIGH_WORKERS", "4")
+    assert rcs._eigh_workers() == 4
+    threaded_u, threaded_v = rcs.residual_factors_batch(residuals, 6)
+
+    assert np.array_equal(serial_u, threaded_u), "threading moved the left factors"
+    assert np.array_equal(serial_v, threaded_v), "threading moved the right factors"
+
+    # Order, not just contents: a shuffled batch must NOT compare equal, or the
+    # assertions above would pass for a result reassembled in completion order.
+    shuffled_u, _ = rcs.residual_factors_batch(residuals[::-1], 6)
+    assert not np.array_equal(serial_u, shuffled_u)
+
+
+def test_rank_sweep_reuses_one_eigendecomposition_and_nothing_else(monkeypatch):
+    """The sweep must pay for the bank's eigenvectors once, and only for that bank.
+
+    right_basis() is asked for ranks 4, 8, 16, 32, 64 of the SAME stacked bank. The
+    gram and its eigendecomposition do not depend on the rank -- only the trailing
+    slice does -- so recomputing them per rank is pure waste. Reuse is only sound if
+    it is keyed on the identity of THIS bank: a different array of the same shape
+    must not be served the first one's eigenvectors.
+    """
+    rng = np.random.default_rng(11)
+    bank = rng.standard_normal((5, 7, 24), dtype=np.float32)
+
+    calls = []
+    real_eigh = np.linalg.eigh
+    monkeypatch.setattr(
+        np.linalg, "eigh", lambda g: (calls.append(g.shape), real_eigh(g))[1]
+    )
+
+    swept = {rank: rcs.right_basis(bank, rank) for rank in (4, 8, 16)}
+    assert len(calls) == 1, f"the rank sweep decomposed the same bank {len(calls)} times"
+
+    # Reuse must not change the answer: every rank is still the trailing slice.
+    full = swept[16]
+    for rank in (4, 8):
+        assert np.array_equal(swept[rank], full[-rank:]), f"rank {rank} drifted"
+
+    # A DIFFERENT bank of the same shape must be decomposed on its own terms.
+    other = rng.standard_normal((5, 7, 24), dtype=np.float32)
+    other_v = rcs.right_basis(other, 4)
+    assert len(calls) == 2, "a different bank was served the first bank's eigenvectors"
+    assert not np.array_equal(other_v, swept[4])
+
+    # And the original bank, asked again after eviction, still answers correctly.
+    monkeypatch.setattr(np.linalg, "eigh", real_eigh)
+    assert np.array_equal(rcs.right_basis(bank, 4), swept[4])
+
+
+def test_top_eigh_is_the_TOP_eigenspace_not_merely_some_k_columns():
+    """The defining property, which nothing else in this file pins.
+
+    _top_eigh underwrites left_basis, right_basis, residual_factors and
+    residual_factors_batch -- every factorization here. Inverting its slice to
+    `evecs[:, :rank]` returns the eigenvectors of the SMALLEST eigenvalues: the
+    worst rank-k subspace instead of the best. That mutation survived all 19 fast
+    tests in this file, because test_left_basis_is_the_output_side asserts only
+    SHAPES (both slices are the same shape) and the threading test compares the
+    serial path against the threaded one (both would be equally wrong).
+
+    A comparison of two paths through the same function cannot detect a fault in
+    that function. This asserts the property against an independent reference.
+    """
+    rng = np.random.default_rng(3)
+    a = rng.standard_normal((40, 12), dtype=np.float32).astype(np.float64)
+    gram = a @ a.T
+    rank = 4
+
+    got = rcs._top_eigh(gram, rank)
+    assert got.shape == (40, rank)
+
+    evals, evecs = np.linalg.eigh(gram)
+    top = evecs[:, -rank:]
+    bottom = evecs[:, :rank]
+
+    # Energy captured, computed independently of which columns were returned.
+    def captured(basis):
+        basis = basis.astype(np.float64, copy=False)
+        return float(np.trace(basis.T @ gram @ basis))
+
+    assert captured(got) > captured(bottom), "returned the WORST rank-k subspace"
+    # rel=1e-6, not tighter: _top_eigh returns float32, the reference is float64,
+    # and the gap between them here is 4e-9 relative -- float32 rounding, not a
+    # different subspace. The load-bearing comparison is the one above, which the
+    # inverted slice fails by a factor of ~100.
+    assert captured(got) == pytest.approx(captured(top), rel=1e-6)
+
+    # And it really is the maximiser: no other rank-k eigen-subspace beats it.
+    best = float(np.sort(evals)[-rank:].sum())
+    assert captured(got) == pytest.approx(best, rel=1e-6)
+
+
+def test_residual_factors_absorb_the_projection_into_V_single_and_batch():
+    """V must be U^T R, not just some r rows of R.
+
+    residual_factors and residual_factors_batch return R ~ U @ V with U spanning
+    the top-r left eigenspace. Replacing V with `R[:r]` -- discarding the
+    projection entirely -- passed all 20 fast tests in this file. The batch case
+    survived even though the threading test calls it, because that test compares
+    the serial path to the threaded one and both would carry the same wrong V.
+
+    Asserted here against the property itself: V is the projection, and U @ V is
+    the orthogonal projection of R onto U's span, which strictly beats taking r
+    raw rows of R.
+    """
+    rng = np.random.default_rng(5)
+    residual = rng.standard_normal((30, 41), dtype=np.float32)
+    rank = 5
+
+    u, v = rcs.residual_factors(residual, rank)
+    assert u.shape == (30, rank)
+    assert v.shape == (rank, 41)
+
+    # V is the projection of R onto U, not an arbitrary slice of R.
+    assert np.allclose(v, u.T @ residual, atol=1e-4), "V is not U^T R"
+
+    # U @ V is therefore the orthogonal projection U U^T R.
+    assert np.allclose(u @ v, (u @ u.T) @ residual, atol=1e-4)
+
+    # And that beats the mutant that drops the projection.
+    def err(pred):
+        return float(np.linalg.norm(pred - residual))
+
+    assert err(u @ v) < err(u @ residual[:rank]), "the projection buys nothing"
+
+    # The batch path must carry the same property, per expert.
+    batch = np.stack([residual, residual[::-1] * 0.5], axis=0)
+    bu, bv = rcs.residual_factors_batch(batch, rank)
+    assert bu.shape == (2, 30, rank)
+    assert bv.shape == (2, rank, 41)
+    for i in range(2):
+        assert np.allclose(bv[i], bu[i].T @ batch[i], atol=1e-4), f"expert {i}: V is not U^T R"
+        projected = float(np.linalg.norm(bu[i] @ bv[i] - batch[i]))
+        raw_rows = float(np.linalg.norm(bu[i] @ batch[i][:rank] - batch[i]))
+        assert projected < raw_rows, f"expert {i}: the projection buys nothing"
+
+
+def test_fused_metrics_are_bit_identical_to_the_separate_ones():
+    """Removing duplicated work must not move a single bit.
+
+    relative_fro and cosine each upcast the SAME two arrays to float64
+    independently, so scoring one pair paid for four temporaries where two
+    suffice. The fused form must produce exactly what the separate calls did --
+    not "within a tolerance", exactly, because a screen that shifts under a
+    refactor cannot be compared against its own committed numbers.
+    """
+    rng = np.random.default_rng(19)
+    for shape in ((5, 31, 17), (2, 64, 8), (9, 3, 40)):
+        pred = rng.standard_normal(shape, dtype=np.float32)
+        teacher = rng.standard_normal(shape, dtype=np.float32)
+        fused = rcs._relative_fro_and_cosine(pred, teacher)
+        assert fused["heldout_relative_fro_error"] == rcs.relative_fro(pred, teacher)
+        assert fused["heldout_cosine"] == rcs.cosine(pred, teacher)
+
+
+def test_the_masked_gather_is_reused_only_for_the_SAME_teacher_and_mask():
+    """A 660 MB gather may be reused, but never across different inputs."""
+    rng = np.random.default_rng(23)
+    teacher = rng.standard_normal((4, 12, 6), dtype=np.float32)
+    mask = np.zeros(12, dtype=bool)
+    mask[::2] = True
+
+    first = rcs._masked_columns(teacher, mask)
+    again = rcs._masked_columns(teacher, mask)
+    assert again is first, "the identical gather was recomputed"
+    assert np.array_equal(first, teacher[:, mask])
+
+    other_mask = np.zeros(12, dtype=bool)
+    other_mask[1::2] = True
+    third = rcs._masked_columns(teacher, other_mask)
+    assert third is not first, "a different mask was served the cached gather"
+    assert np.array_equal(third, teacher[:, other_mask])
+
+    other_teacher = rng.standard_normal((4, 12, 6), dtype=np.float32)
+    fourth = rcs._masked_columns(other_teacher, other_mask)
+    assert np.array_equal(fourth, other_teacher[:, other_mask]), (
+        "a different teacher was served another teacher's columns"
+    )

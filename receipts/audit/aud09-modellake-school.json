@@ -1,0 +1,2357 @@
+{
+  "schema": "hawking.audit.aud09.modellake_school.v1",
+  "lane": "aud09-modellake-school",
+  "kind": "DISCOVERY_AUDIT",
+  "generated_at": "2026-09-02T19:04:04Z",
+  "auditor": "grok-4.6",
+  "worktree": "/Users/scammermike/.claude-grok/worktrees/aud09-modellake-school-20260902-145237",
+  "authority": {
+    "is_authoritative_for": [
+      "source archaeology",
+      "call-site reachability",
+      "test coverage",
+      "schema/topology",
+      "dependency graphs",
+      "duplication",
+      "naming",
+      "receipt consistency"
+    ],
+    "not_authoritative_for": [
+      "GPU physical performance",
+      "Metal runtime behaviour not executed this lane",
+      "ANE physical behaviour",
+      "U50/FPGA facts not physically measured",
+      "thermal/power",
+      "protected benchmarks"
+    ],
+    "hardware_present": [
+      "Apple M3 Ultra CPU/GPU/UMA",
+      "ANE"
+    ],
+    "hardware_absent": [
+      "FPGA/U50DD",
+      "DGX",
+      "eGPU"
+    ],
+    "never_wrote": [
+      "H-ROADMAP.md",
+      "hcli/",
+      "tools/",
+      "crates/",
+      "civilization/",
+      "/Volumes/corpdrive/hawking-modellake/specimens/"
+    ],
+    "never_killed_or_signalled": true
+  },
+  "constitution_held": {
+    "eras": 5,
+    "odysseys": 3,
+    "no_era_vi": true,
+    "fpga_lives_inside": "Hawking Accelerator/Fusion",
+    "theia": "ONE generalist bounty model, not another civilization",
+    "civilizational_coordinate_0_7pct": "not rewritten",
+    "north_star": "HAWKING = SELF-OPTIMIZING PHYSICAL AI COMPUTER"
+  },
+  "classification_vocabulary": [
+    "ABSENT",
+    "CONCEPT_ONLY",
+    "SCAFFOLDED",
+    "CALLABLE",
+    "TESTED",
+    "END_TO_END",
+    "PHYSICALLY_MEASURED",
+    "ADVERSARIALLY_VERIFIED",
+    "INTEGRATED",
+    "BLOCKED_HARDWARE",
+    "BLOCKED_AUTHORITY",
+    "SUPERSEDED",
+    "STALE_ROADMAP_TEXT"
+  ],
+  "evidence_tiers_used": [
+    "PHYSICALLY_MEASURED",
+    "STATIC_VERIFICATION",
+    "SOURCE_INSPECTION",
+    "INFERRED"
+  ],
+  "vocabulary_collisions": [
+    {
+      "term": "sealed",
+      "definitions": [
+        {
+          "authority": "directory presence",
+          "meaning": "a directory exists under specimens/",
+          "count": 55,
+          "evidence": "os.listdir(/Volumes/corpdrive/hawking-modellake/specimens)"
+        },
+        {
+          "authority": "tools.odyssey.modellake_index._file_seals",
+          "meaning": "watch-manifest sizes exist and every declared file matches; empty sizes => UNSEALED",
+          "count_SEALED": 49,
+          "count_UNSEALED": 6,
+          "unsealed_slugs": [
+            "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+            "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+            "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+            "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+            "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+            "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb"
+          ]
+        },
+        {
+          "authority": "tools.future.modellake_events.detection",
+          "meaning": "lake manifest with resolved_sha and bytes, joined to SPECIMEN_REGISTRY",
+          "count": 8,
+          "sealed_ids": [
+            "Qwen--Qwen3-0.6B@c1899de289a0",
+            "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+            "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+            "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+            "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+            "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+            "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+            "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb"
+          ],
+          "receipt": "receipts/future/MODELLAKE_EVENTS.json",
+          "recorded_at": "2026-09-02T18:39:54Z",
+          "n_complete_unsealed": 41
+        }
+      ],
+      "surprise": "the three authorities disagree in opposite directions. Catalog UNSEALED (no watch sizes) includes Flash, DeepSeek-V4-Flash, Qwen3-30B-A3B, Qwen3-VL-30B, Kimi-VL, Falcon-H1. Event-sealed set is those six PLUS Qwen3-0.6B and Mistral-Small. Catalog SEALED (49) is mostly event complete_unsealed (41)."
+    }
+  ],
+  "lake": {
+    "root": "/Volumes/corpdrive/hawking-modellake",
+    "filesystem": "apfs /dev/disk5s1 mounted on /Volumes/corpdrive",
+    "evidence_tier": "PHYSICALLY_MEASURED",
+    "catalog_schema": "hawking.modellake.index.catalog.v1",
+    "catalog_built_at": "2026-09-02T18:58:06Z",
+    "catalog_evidence_tier": "STATIC",
+    "n_specimen_directories": 55,
+    "n_live_lake_manifests": 55,
+    "n_partial_directories": 0,
+    "partial_directory_exists": false,
+    "claims_directory_exists": false,
+    "specimens_bytes_st_size_regular_files": 4352666459500,
+    "specimens_bytes_are": "sum of st_size over regular files in specimens/ and partial/; directory metadata is not included. This is not `du` allocated blocks.",
+    "specimens_tib": 3.959,
+    "partial_bytes": 0,
+    "tier2_budget_bytes": 3500000000000,
+    "tier2_budget_source": "tools/odyssey/modellake.py:TIER2_BUDGET = 3_500 * 10**9",
+    "tier2_overage_bytes": 852666459500,
+    "tier2_overage_gb": 852.666,
+    "over_budget": true,
+    "capacity_bytes_statvfs": 5000771321856,
+    "free_bytes_statvfs": 446232633344,
+    "n_families": 39,
+    "lifecycle_counts": {
+      "CENSUSED": 45,
+      "READY_COLD": 9,
+      "SSD_STAGED": 1
+    },
+    "seal_status_counts": {
+      "SEALED": 49,
+      "UNSEALED": 6
+    },
+    "storage_role_counts": {
+      "TIER2_COLD": 54,
+      "TIER1_HOT": 1
+    },
+    "loaded_weights_during_index": false,
+    "index_never_writes_specimens": true,
+    "retired_manifest_only": [
+      "zai-org--GLM-4.5@cbb2c7cfb52f"
+    ],
+    "newest_specimen_dir": {
+      "slug": "thinkingmachines--Inkling-Small@8cc5877b44d3",
+      "mtime_utc": "2026-09-02T08:38:53Z",
+      "age_hours_at_audit": 10.3
+    }
+  },
+  "storage_destinations": {
+    "TIER2_COLD": {
+      "path": "/Volumes/corpdrive/hawking-modellake/specimens",
+      "law": "sealed verified source bodies; index never writes/moves/deletes/compresses here",
+      "n": 54,
+      "exception_TIER1_HOT": "Qwen--Qwen3-0.6B@c1899de289a0 is catalog storage_role TIER1_HOT because ~/noetic/stage/<slug> exists"
+    },
+    "TIER1_HOT": {
+      "path": "/Users/scammermike/noetic/stage",
+      "budget_source": "tools/odyssey/modellake.py:TIER1_BUDGET = 140 * 2**30",
+      "present": [
+        {
+          "name": "Qwen--Qwen3-0.6B@c1899de289a0",
+          "n_files": 10,
+          "note": "full small body staged"
+        },
+        {
+          "name": "falcon-h1-7b",
+          "note": "stub-like dir, not lake slug"
+        },
+        {
+          "name": "kimi-vl-a3b",
+          "note": "stub-like dir"
+        },
+        {
+          "name": "qwen3-30b-a3b",
+          "note": "stub-like dir"
+        },
+        {
+          "name": "qwen3-vl-30b-a3b",
+          "note": "stub-like dir"
+        }
+      ]
+    },
+    "PARTIAL": {
+      "path": "/Volumes/corpdrive/hawking-modellake/partial",
+      "exists": false,
+      "n": 0,
+      "law": "quarantined until verified and atomically renamed into specimens/"
+    },
+    "GIT_METADATA": {
+      "manifests": "/Volumes/corpdrive/hawking-modellake/manifests",
+      "index": "/Volumes/corpdrive/hawking-modellake/index",
+      "watch_manifests_git": "workspace/campaign/odyssey/watch-manifests",
+      "n_watch_manifests_in_git": 55,
+      "watch_not_in_lake": [
+        "facebook--blt-7b@b65201dce04b",
+        "google--gemma-3-4b-it@093f9f388b31",
+        "meta-llama--Llama-4-Scout-17B-16E-Instruct@92f3b1597a19",
+        "nvidia--personaplex-7b-v1@fdaf4090a61c",
+        "stabilityai--stable-audio-open-1.0@f21265c1e271",
+        "zai-org--GLM-4.5@cbb2c7cfb52f"
+      ],
+      "lake_not_in_watch": [
+        "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+        "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+        "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+        "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+        "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+        "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb"
+      ]
+    },
+    "AUTHORIZED_EXTERNAL_QWEN27": {
+      "path": "/Volumes/corpdrive/personalmodel/correspondent/qwen3.8-27b-abliterated-bf16",
+      "exists": true,
+      "n_files_excluding_cache": 32,
+      "bytes": 55586059478,
+      "gib": 51.769,
+      "owner": "local_directory, NOT a ModelLake specimen",
+      "curriculum_id": "qwen3.8-27b-abliterated-bf16@local",
+      "native_parent": "/Users/scammermike/noetic/NOETIC_PARENT_A"
+    }
+  },
+  "flash": {
+    "slug": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "repo": "Qwen/Qwen3.8-Flash-Next",
+    "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "location": "specimens/",
+    "bytes_measured": 360023286454,
+    "n_files_measured": 144,
+    "n_safetensors_measured": 131,
+    "matches_hcli_flash_next_EXPECTED_BYTES": true,
+    "catalog_seal_status": "UNSEALED",
+    "catalog_has_watch_manifest": false,
+    "catalog_has_lake_manifest": true,
+    "partial_present": false,
+    "newest_file_mtime_utc": "2026-08-27T04:04:03Z",
+    "evidence_tier": "PHYSICALLY_MEASURED",
+    "roadmap_text_invalidated": "H-ROADMAP.md:361 Flash ModelLake acquisition ... 144-file partial tree; atomic final publication was still pending"
+  },
+  "qwen27": {
+    "in_modellake_specimens": false,
+    "curriculum_role": "qwen27_mature_physical",
+    "authorized_external_path": "/Volumes/corpdrive/personalmodel/correspondent/qwen3.8-27b-abliterated-bf16",
+    "bytes_measured": 55586059478,
+    "n_files_measured": 32,
+    "native_parent": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+    "school_store": "tools/future/odyssey2_law_store.py:SCHOOLS['Qwen27']",
+    "keep_as_first_control_school": true,
+    "reason": "Doctor/Gravity/Accelerator scars and protected-baseline contract live on this body; it was never a lake specimen and need not become one to remain the control school"
+  },
+  "process_state": {
+    "evidence_tier": "PHYSICALLY_MEASURED",
+    "modellake_watch_lock": "/Users/scammermike/Downloads/hawking/workspace/campaign/odyssey/.modellake-watch.lock",
+    "lock_pid": 4183,
+    "pgrep": "4183 Python .../Downloads/hawking/tools/odyssey/modellake_watch.py --poll-secs 0.10",
+    "watch_jsonl": "/Users/scammermike/Downloads/hawking/workspace/campaign/odyssey/downloads/modellake-watch.jsonl",
+    "last_events": [
+      {
+        "ts": "2026-09-02T18:39:46Z",
+        "event": "idle_rearm_wait",
+        "seconds": 1800,
+        "active_remaining_bytes": 0
+      },
+      {
+        "ts": "2026-09-02T18:39:54Z",
+        "event": "reconciliation_pass",
+        "anomalies": 8,
+        "promoted": []
+      },
+      {
+        "ts": "2026-09-02T18:39:54Z",
+        "event": "modellake_events_run",
+        "n_new_seal_specimens": 8
+      },
+      {
+        "ts": "2026-09-02T18:47:11Z",
+        "event": "probe_boom_error"
+      },
+      {
+        "ts": "2026-09-02T18:49:00Z",
+        "event": "probe_boom_error"
+      },
+      {
+        "ts": "2026-09-02T18:58:33Z",
+        "event": "probe_boom_error"
+      }
+    ],
+    "live_hf_download": false,
+    "concurrent_index_build_observed": {
+      "pid": 78096,
+      "command": "python3 -m tools.odyssey.modellake_index build",
+      "note": "catalog.json mtime jumped 18:53Z -> 18:58Z during this audit; this lane did not invoke it"
+    }
+  },
+  "retained_verified_bytes_per_wall_second": {
+    "historical_g010": {
+      "receipt": "receipts/sovereign/G010_modellake_retained.json",
+      "produced_at": "2026-09-02T08:00:35Z",
+      "window_s": 660.01,
+      "retained_bytes_per_s": 60527611.855,
+      "status": "measured",
+      "note": "measured this morning while Qwen3-14B and Qwen3-Coder were still growing; those bodies are now in specimens/"
+    },
+    "now": {
+      "evidence_tier": "INFERRED",
+      "value": 0,
+      "why": "partial/ does not exist; watcher active_remaining_bytes=0; newest specimen dir mtime 10.3h ago; no hf download process observed",
+      "not_a_two_point_scan_this_lane": true
+    }
+  },
+  "architecture_families": {
+    "Dream": [
+      "Dream-org--Dream-v0-Instruct-7B@05334cb9faaf"
+    ],
+    "UNKNOWN": [
+      "Wan-AI--Wan2.2-T2V-A14B@c8c270b13ee0",
+      "arcinstitute--evo2_40b@d529aa57c307",
+      "arcinstitute--evo2_7b@bda0089f9258",
+      "boltz-community--boltz-2@6fdef46d763f",
+      "kyutai--moshika-pytorch-bf16@a49141e28b3d",
+      "lerobot--pi0_base@25c379b52ba2",
+      "state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994",
+      "state-spaces--mamba3-siso-1.5b@5cfc721542ec",
+      "tencent--HunyuanVideo@6204ad6aea1a"
+    ],
+    "bitnet": [
+      "microsoft--bitnet-b1.58-2B-4T-bf16@276681394656",
+      "microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361"
+    ],
+    "deepseek_v4": [
+      "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6"
+    ],
+    "depth_anything": [
+      "depth-anything--Depth-Anything-V2-Large-hf@7581137eff8d"
+    ],
+    "falcon_h1": [
+      "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb"
+    ],
+    "glm4_moe": [
+      "zai-org--GLM-4.5-Air@a24ceef6ce4f"
+    ],
+    "glm5_next": [
+      "zai-org--GLM-5.3-Flash@04c4e9e95c5d"
+    ],
+    "granitemoehybrid": [
+      "ibm-granite--granite-4.0-h-micro@d5f01a3ea75f",
+      "ibm-granite--granite-4.0-h-tiny@791e0d3d28c8"
+    ],
+    "illada": [
+      "GSAI-ML--iLLaDA-8B-Base@a1b5b5f8a31a"
+    ],
+    "inkling_mm_model": [
+      "thinkingmachines--Inkling-Small@8cc5877b44d3"
+    ],
+    "jamba": [
+      "ai21labs--AI21-Jamba2-3B@525c6c8e1d9f"
+    ],
+    "kimi_k3": [
+      "moonshotai--Kimi-K3@9f62e4e9fffb"
+    ],
+    "kimi_linear": [
+      "moonshotai--Kimi-Linear-48B-A3B-Instruct@e1df551a4471"
+    ],
+    "kimi_vl": [
+      "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c"
+    ],
+    "lfm2": [
+      "LiquidAI--LFM2.5-1.2B-Instruct@0f604ada3f76",
+      "LiquidAI--LFM2.5-2.6B-Base@c57bdaed1ef1"
+    ],
+    "lfm2_moe": [
+      "LiquidAI--LFM2-24B-A2B@a3bbacd91a67"
+    ],
+    "llama": [
+      "tiiuae--Falcon3-1B-Instruct@28ba2251970a"
+    ],
+    "llava_llama": [
+      "nvidia--audio-flamingo-3@ee26c5842398"
+    ],
+    "mistral3": [
+      "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618"
+    ],
+    "modernbert": [
+      "answerdotai--ModernBERT-large@45bb4654a4d5"
+    ],
+    "musicgen": [
+      "facebook--musicgen-large@15ccdc920998"
+    ],
+    "olmo3": [
+      "allenai--Olmo-3-1025-7B@a81bae42db39"
+    ],
+    "phi3": [
+      "microsoft--Phi-4-mini-instruct@cfbefacb9925",
+      "microsoft--Phi-4-reasoning-plus@69baf8528e1b"
+    ],
+    "phi4mm": [
+      "microsoft--Phi-4-multimodal-instruct@93f923e1a772"
+    ],
+    "qwen2": [
+      "Qwen--Qwen2.5-72B-Instruct@495f39366efe"
+    ],
+    "qwen3": [
+      "Qwen--Qwen3-0.6B@c1899de289a0",
+      "Qwen--Qwen3-14B@40c069824f42",
+      "Qwen--Qwen3-4B-Instruct-2507@cdbee75f17c0",
+      "Qwen--Qwen3-Embedding-0.6B@97b0c614be4d"
+    ],
+    "qwen3_moe": [
+      "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+      "Qwen--Qwen3-Coder-30B-A3B-Instruct@b2cff646eb4b"
+    ],
+    "qwen3_vl": [
+      "Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8"
+    ],
+    "qwen3_vl_moe": [
+      "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba"
+    ],
+    "qwen4_exp": [
+      "Qwen--Qwen3.8-Flash-Next@34567a4712bc"
+    ],
+    "rwkv7": [
+      "RWKV--RWKV7-13.3B-20260805@64ffe5934178"
+    ],
+    "sam2_video": [
+      "facebook--sam2.1-hiera-large@665f8e2ad61c"
+    ],
+    "smolvlm": [
+      "HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02"
+    ],
+    "starcoder2": [
+      "bigcode--starcoder2-7b@bb9afde76d79"
+    ],
+    "t5": [
+      "google--flan-t5-large@0613663d0d48"
+    ],
+    "timesfm": [
+      "google--timesfm-2.0-500m-pytorch@dc2443792ce5"
+    ],
+    "vjepa2": [
+      "facebook--vjepa2-vitg-fpc64-256@875c192b7b70"
+    ],
+    "whisper": [
+      "openai--whisper-large-v3-turbo@41f01f3fe87f"
+    ]
+  },
+  "diversity_roles": {
+    "source": "tools/odyssey/modellake_lineage.py:DIVERSITY_ROLES == H-ROADMAP.md \u00a714.3",
+    "present": [
+      "MoE",
+      "alternative tokenizer",
+      "dense decoder",
+      "extreme expert count",
+      "hybrid recurrent/state-space",
+      "long-context",
+      "multimodal",
+      "state-heavy architecture",
+      "very-low-bit published checkpoint"
+    ],
+    "missing": [
+      "native MTP/speculation",
+      "structured sparsity",
+      "codebook/additive quantization",
+      "new Apple-friendly runtime specimen"
+    ],
+    "unknown_family_slugs": [
+      "Wan-AI--Wan2.2-T2V-A14B@c8c270b13ee0",
+      "arcinstitute--evo2_40b@d529aa57c307",
+      "arcinstitute--evo2_7b@bda0089f9258",
+      "boltz-community--boltz-2@6fdef46d763f",
+      "kyutai--moshika-pytorch-bf16@a49141e28b3d",
+      "lerobot--pi0_base@25c379b52ba2",
+      "state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994",
+      "state-spaces--mamba3-siso-1.5b@5cfc721542ec",
+      "tencent--HunyuanVideo@6204ad6aea1a"
+    ]
+  },
+  "specimens": [
+    {
+      "slug": "Dream-org--Dream-v0-Instruct-7B@05334cb9faaf",
+      "repo": "Dream-org/Dream-v0-Instruct-7B",
+      "revision": "05334cb9faaf763692dcf9d8737c642be2b2a6ae",
+      "architecture_family": "Dream",
+      "lifecycle": "CENSUSED",
+      "seal_status": "SEALED",
+      "role_primary": "dense decoder",
+      "roles": [
+        "dense decoder",
+        "long-context"
+      ],
+      "bytes": 15236443179,
+      "n_files": 18,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "GSAI-ML--iLLaDA-8B-Base@a1b5b5f8a31a",
+      "repo": "GSAI-ML/iLLaDA-8B-Base",
+      "revision": "a1b5b5f8a31a3854a46205ee584178c04b45ec9a",
+      "architecture_family": "illada",
+      "lifecycle": "CENSUSED",
+      "seal_status": "SEALED",
+      "role_primary": "dense decoder",
+      "roles": [
+        "dense decoder"
+      ],
+      "bytes": 16512918618,
+      "n_files": 16,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02",
+      "repo": "HuggingFaceTB/SmolVLM2-2.2B-Instruct",
+      "revision": "482adb537c021c86670beed01cd58990d01e72e4",
+      "architecture_family": "smolvlm",
+      "lifecycle": "CENSUSED",
+      "seal_status": "SEALED",
+      "role_primary": "dense decoder",
+      "roles": [
+        "dense decoder"
+      ],
+      "bytes": 8992155310,
+      "n_files": 16,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "LiquidAI--LFM2-24B-A2B@a3bbacd91a67",
+      "repo": "LiquidAI/LFM2-24B-A2B",
+      "revision": "a3bbacd91a678b97712f0e323e52f8c24ba29542",
+      "architecture_family": "lfm2_moe",
+      "lifecycle": "CENSUSED",
+      "seal_status": "SEALED",
+      "role_primary": "MoE",
+      "roles": [
+        "MoE",
+        "hybrid recurrent/state-space",
+        "state-heavy architecture",
+        "extreme expert count",
+        "long-context"
+      ],
+      "bytes": 47693072354,
+      "n_files": 9,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "LiquidAI--LFM2.5-1.2B-Instruct@0f604ada3f76",
+      "repo": "LiquidAI/LFM2.5-1.2B-Instruct",
+      "revision": "0f604ada3f766f9f257460c4c9f0b5d6f69d431b",
+      "architecture_family": "lfm2",
+      "lifecycle": "CENSUSED",
+      "seal_status": "SEALED",
+      "role_primary": "hybrid recurrent/state-space",
+      "roles": [
+        "hybrid recurrent/state-space",
+        "state-heavy architecture",
+        "long-context"
+      ],
+      "bytes": 2345559281,
+      "n_files": 10,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "LiquidAI--LFM2.5-2.6B-Base@c57bdaed1ef1",
+      "repo": "LiquidAI/LFM2.5-2.6B-Base",
+      "revision": "c57bdaed1ef166fe3095dda07f4a5e789ad5321e",
+      "architecture_family": "lfm2",
+      "lifecycle": "CENSUSED",
+      "seal_status": "SEALED",
+      "role_primary": "hybrid recurrent/state-space",
+      "roles": [
+        "hybrid recurrent/state-space",
+        "state-heavy architecture",
+        "long-context"
+      ],
+      "bytes": 5412362135,
+      "n_files": 9,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "Qwen--Qwen2.5-72B-Instruct@495f39366efe",
+      "repo": "Qwen/Qwen2.5-72B-Instruct",
+      "revision": "495f39366efef23836d0cfae4fbe635880d2be31",
+      "architecture_family": "qwen2",
+      "lifecycle": "CENSUSED",
+      "seal_status": "SEALED",
+      "role_primary": "dense decoder",
+      "roles": [
+        "dense decoder",
+        "long-context"
+      ],
+      "bytes": 145424101604,
+      "n_files": 47,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "Qwen--Qwen3-0.6B@c1899de289a0",
+      "repo": "Qwen/Qwen3-0.6B",
+      "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+      "architecture_family": "qwen3",
+      "lifecycle": "SSD_STAGED",
+      "seal_status": "SEALED",
+      "role_primary": "dense decoder",
+      "roles": [
+        "dense decoder",
+        "long-context"
+      ],
+      "bytes": 1519209243,
+      "n_files": 10,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER1_HOT",
+      "location": "specimens"
+    },
+    {
+      "slug": "Qwen--Qwen3-14B@40c069824f42",
+      "repo": "Qwen/Qwen3-14B",
+      "revision": "40c069824f4251a91eefaf281ebe4c544efd3e18",
+      "architecture_family": "qwen3",
+      "lifecycle": "CENSUSED",
+      "seal_status": "SEALED",
+      "role_primary": "dense decoder",
+      "roles": [
+        "dense decoder",
+        "long-context"
+      ],
+      "bytes": 29552613776,
+      "n_files": 18,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+      "repo": "Qwen/Qwen3-30B-A3B",
+      "revision": "ad44e777bcd18fa416d9da3bd8f70d33ebb85d39",
+      "architecture_family": "qwen3_moe",
+      "lifecycle": "CENSUSED",
+      "seal_status": "UNSEALED",
+      "role_primary": "MoE",
+      "roles": [
+        "MoE",
+        "extreme expert count",
+        "long-context"
+      ],
+      "bytes": 61084187391,
+      "n_files": 26,
+      "has_watch_manifest": false,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "Qwen--Qwen3-4B-Instruct-2507@cdbee75f17c0",
+      "repo": "Qwen/Qwen3-4B-Instruct-2507",
+      "revision": "cdbee75f17c01a7cc42f958dc650907174af0554",
+      "architecture_family": "qwen3",
+      "lifecycle": "CENSUSED",
+      "seal_status": "SEALED",
+      "role_primary": "dense decoder",
+      "roles": [
+        "dense decoder",
+        "long-context"
+      ],
+      "bytes": 8060917568,
+      "n_files": 13,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "Qwen--Qwen3-Coder-30B-A3B-Instruct@b2cff646eb4b",
+      "repo": "Qwen/Qwen3-Coder-30B-A3B-Instruct",
+      "revision": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+      "architecture_family": "qwen3_moe",
+      "lifecycle": "CENSUSED",
+      "seal_status": "SEALED",
+      "role_primary": "MoE",
+      "roles": [
+        "MoE",
+        "extreme expert count",
+        "long-context"
+      ],
+      "bytes": 61079826794,
+      "n_files": 28,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "Qwen--Qwen3-Embedding-0.6B@97b0c614be4d",
+      "repo": "Qwen/Qwen3-Embedding-0.6B",
+      "revision": "97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3",
+      "architecture_family": "qwen3",
+      "lifecycle": "CENSUSED",
+      "seal_status": "SEALED",
+      "role_primary": "dense decoder",
+      "roles": [
+        "dense decoder",
+        "long-context"
+      ],
+      "bytes": 1207489041,
+      "n_files": 12,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+      "repo": "Qwen/Qwen3-VL-30B-A3B-Instruct",
+      "revision": "9c4b90e1e4ba969fd3b5378b57d966d725f1b86c",
+      "architecture_family": "qwen3_vl_moe",
+      "lifecycle": "CENSUSED",
+      "seal_status": "UNSEALED",
+      "role_primary": "multimodal",
+      "roles": [
+        "multimodal",
+        "MoE"
+      ],
+      "bytes": 62153207155,
+      "n_files": 25,
+      "has_watch_manifest": false,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8",
+      "repo": "Qwen/Qwen3-VL-8B-Instruct",
+      "revision": "0c351dd01ed87e9c1b53cbc748cba10e6187ff3b",
+      "architecture_family": "qwen3_vl",
+      "lifecycle": "CENSUSED",
+      "seal_status": "SEALED",
+      "role_primary": "multimodal",
+      "roles": [
+        "multimodal"
+      ],
+      "bytes": 17545915883,
+      "n_files": 16,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+      "repo": "Qwen/Qwen3.8-Flash-Next",
+      "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+      "architecture_family": "qwen4_exp",
+      "lifecycle": "CENSUSED",
+      "seal_status": "UNSEALED",
+      "role_primary": "dense decoder",
+      "roles": [
+        "dense decoder"
+      ],
+      "bytes": 360023286454,
+      "n_files": 144,
+      "has_watch_manifest": false,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "RWKV--RWKV7-13.3B-20260805@64ffe5934178",
+      "repo": "RWKV/RWKV7-13.3B-20260805",
+      "revision": "64ffe5934178f40fb2c6de13f12cffaf9058f243",
+      "architecture_family": "rwkv7",
+      "lifecycle": "CENSUSED",
+      "seal_status": "SEALED",
+      "role_primary": "hybrid recurrent/state-space",
+      "roles": [
+        "hybrid recurrent/state-space",
+        "state-heavy architecture"
+      ],
+      "bytes": 26542898184,
+      "n_files": 22,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "Wan-AI--Wan2.2-T2V-A14B@c8c270b13ee0",
+      "repo": "Wan-AI/Wan2.2-T2V-A14B",
+      "revision": "c8c270b13ee05bfa474194ac9fb07a5868a97cea",
+      "architecture_family": "UNKNOWN",
+      "lifecycle": "READY_COLD",
+      "seal_status": "SEALED",
+      "role_primary": "multimodal",
+      "roles": [
+        "multimodal",
+        "MoE"
+      ],
+      "bytes": 126201624837,
+      "n_files": 32,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "ai21labs--AI21-Jamba2-3B@525c6c8e1d9f",
+      "repo": "ai21labs/AI21-Jamba2-3B",
+      "revision": "525c6c8e1d9f5bddedfbdc1dbb0ade2df84230c9",
+      "architecture_family": "jamba",
+      "lifecycle": "CENSUSED",
+      "seal_status": "SEALED",
+      "role_primary": "hybrid recurrent/state-space",
+      "roles": [
+        "hybrid recurrent/state-space",
+        "state-heavy architecture",
+        "long-context"
+      ],
+      "bytes": 6402697164,
+      "n_files": 13,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "allenai--Olmo-3-1025-7B@a81bae42db39",
+      "repo": "allenai/Olmo-3-1025-7B",
+      "revision": "a81bae42db3975be1671e27b9c9a56da1a9f980f",
+      "architecture_family": "olmo3",
+      "lifecycle": "CENSUSED",
+      "seal_status": "SEALED",
+      "role_primary": "dense decoder",
+      "roles": [
+        "dense decoder",
+        "long-context"
+      ],
+      "bytes": 14605881703,
+      "n_files": 15,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "answerdotai--ModernBERT-large@45bb4654a4d5",
+      "repo": "answerdotai/ModernBERT-large",
+      "revision": "45bb4654a4d5aaff24dd11d4781fa46d39bf8c13",
+      "architecture_family": "modernbert",
+      "lifecycle": "CENSUSED",
+      "seal_status": "SEALED",
+      "role_primary": "dense decoder",
+      "roles": [
+        "dense decoder"
+      ],
+      "bytes": 1585710451,
+      "n_files": 7,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "arcinstitute--evo2_40b@d529aa57c307",
+      "repo": "arcinstitute/evo2_40b",
+      "revision": "d529aa57c30771814217ad89baaeaf6e2315c7d7",
+      "architecture_family": "UNKNOWN",
+      "lifecycle": "READY_COLD",
+      "seal_status": "SEALED",
+      "role_primary": "dense decoder",
+      "roles": [
+        "dense decoder"
+      ],
+      "bytes": 82253494627,
+      "n_files": 5,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "arcinstitute--evo2_7b@bda0089f9258",
+      "repo": "arcinstitute/evo2_7b",
+      "revision": "bda0089f92582d5baabf0f22d9fc85f3588f6b58",
+      "architecture_family": "UNKNOWN",
+      "lifecycle": "READY_COLD",
+      "seal_status": "SEALED",
+      "role_primary": "dense decoder",
+      "roles": [
+        "dense decoder"
+      ],
+      "bytes": 13766624059,
+      "n_files": 4,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "bigcode--starcoder2-7b@bb9afde76d79",
+      "repo": "bigcode/starcoder2-7b",
+      "revision": "bb9afde76d7945da5745592525db122d4d729eb1",
+      "architecture_family": "starcoder2",
+      "lifecycle": "CENSUSED",
+      "seal_status": "SEALED",
+      "role_primary": "dense decoder",
+      "roles": [
+        "dense decoder"
+      ],
+      "bytes": 14351246858,
+      "n_files": 13,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "boltz-community--boltz-2@6fdef46d763f",
+      "repo": "boltz-community/boltz-2",
+      "revision": "6fdef46d763fee7fbb83ca5501ccceff43b85607",
+      "architecture_family": "UNKNOWN",
+      "lifecycle": "READY_COLD",
+      "seal_status": "SEALED",
+      "role_primary": "dense decoder",
+      "roles": [
+        "dense decoder"
+      ],
+      "bytes": 4348702182,
+      "n_files": 4,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+      "repo": "deepseek-ai/DeepSeek-V4-Flash",
+      "revision": "60d8d70770c6776ff598c94bb586a859a38244f1",
+      "architecture_family": "deepseek_v4",
+      "lifecycle": "CENSUSED",
+      "seal_status": "UNSEALED",
+      "role_primary": "extreme expert count",
+      "roles": [
+        "extreme expert count",
+        "dense decoder",
+        "long-context"
+      ],
+      "bytes": 159630041626,
+      "n_files": 73,
+      "has_watch_manifest": false,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "depth-anything--Depth-Anything-V2-Large-hf@7581137eff8d",
+      "repo": "depth-anything/Depth-Anything-V2-Large-hf",
+      "revision": "7581137eff8d4e94f6e796d3baea0e9fa79b22d2",
+      "architecture_family": "depth_anything",
+      "lifecycle": "CENSUSED",
+      "seal_status": "SEALED",
+      "role_primary": "multimodal",
+      "roles": [
+        "multimodal"
+      ],
+      "bytes": 1341331020,
+      "n_files": 5,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "facebook--musicgen-large@15ccdc920998",
+      "repo": "facebook/musicgen-large",
+      "revision": "15ccdc92099879e47b6da12c350cdb71d4eab3ca",
+      "architecture_family": "musicgen",
+      "lifecycle": "READY_COLD",
+      "seal_status": "SEALED",
+      "role_primary": "dense decoder",
+      "roles": [
+        "dense decoder"
+      ],
+      "bytes": 13957873280,
+      "n_files": 9,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "facebook--sam2.1-hiera-large@665f8e2ad61c",
+      "repo": "facebook/sam2.1-hiera-large",
+      "revision": "665f8e2ad61cf5f53d65644ff27c8ee525124610",
+      "architecture_family": "sam2_video",
+      "lifecycle": "CENSUSED",
+      "seal_status": "SEALED",
+      "role_primary": "multimodal",
+      "roles": [
+        "multimodal"
+      ],
+      "bytes": 897929900,
+      "n_files": 8,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "facebook--vjepa2-vitg-fpc64-256@875c192b7b70",
+      "repo": "facebook/vjepa2-vitg-fpc64-256",
+      "revision": "875c192b7b704b87d1e1d99345769632dd5f739a",
+      "architecture_family": "vjepa2",
+      "lifecycle": "CENSUSED",
+      "seal_status": "SEALED",
+      "role_primary": "dense decoder",
+      "roles": [
+        "dense decoder"
+      ],
+      "bytes": 4138867523,
+      "n_files": 7,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "google--flan-t5-large@0613663d0d48",
+      "repo": "google/flan-t5-large",
+      "revision": "0613663d0d48ea86ba8cb3d7a44f0f65dc596a2a",
+      "architecture_family": "t5",
+      "lifecycle": "CENSUSED",
+      "seal_status": "SEALED",
+      "role_primary": "dense decoder",
+      "roles": [
+        "dense decoder"
+      ],
+      "bytes": 3135902327,
+      "n_files": 9,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "google--timesfm-2.0-500m-pytorch@dc2443792ce5",
+      "repo": "google/timesfm-2.0-500m-pytorch",
+      "revision": "dc2443792ce5516872b89b37cf1bc058c3bf0c10",
+      "architecture_family": "timesfm",
+      "lifecycle": "CENSUSED",
+      "seal_status": "SEALED",
+      "role_primary": "dense decoder",
+      "roles": [
+        "dense decoder"
+      ],
+      "bytes": 1995416592,
+      "n_files": 4,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "ibm-granite--granite-4.0-h-micro@d5f01a3ea75f",
+      "repo": "ibm-granite/granite-4.0-h-micro",
+      "revision": "d5f01a3ea75f088947be3aae039f4ad52837dfde",
+      "architecture_family": "granitemoehybrid",
+      "lifecycle": "CENSUSED",
+      "seal_status": "SEALED",
+      "role_primary": "MoE",
+      "roles": [
+        "MoE",
+        "hybrid recurrent/state-space",
+        "state-heavy architecture",
+        "long-context"
+      ],
+      "bytes": 6392637158,
+      "n_files": 14,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "ibm-granite--granite-4.0-h-tiny@791e0d3d28c8",
+      "repo": "ibm-granite/granite-4.0-h-tiny",
+      "revision": "791e0d3d28c86e106c9b6e0b4cecdee0375b6124",
+      "architecture_family": "granitemoehybrid",
+      "lifecycle": "CENSUSED",
+      "seal_status": "SEALED",
+      "role_primary": "MoE",
+      "roles": [
+        "MoE",
+        "hybrid recurrent/state-space",
+        "state-heavy architecture",
+        "long-context"
+      ],
+      "bytes": 13888348686,
+      "n_files": 15,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "kyutai--moshika-pytorch-bf16@a49141e28b3d",
+      "repo": "kyutai/moshika-pytorch-bf16",
+      "revision": "a49141e28b3d9c947cf9aa5314431e1b11cbd2f5",
+      "architecture_family": "UNKNOWN",
+      "lifecycle": "CENSUSED",
+      "seal_status": "SEALED",
+      "role_primary": "dense decoder",
+      "roles": [
+        "dense decoder"
+      ],
+      "bytes": 15760704983,
+      "n_files": 5,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "lerobot--pi0_base@25c379b52ba2",
+      "repo": "lerobot/pi0_base",
+      "revision": "25c379b52ba2ff8788cab921758a3cc3fe3f77f2",
+      "architecture_family": "UNKNOWN",
+      "lifecycle": "CENSUSED",
+      "seal_status": "SEALED",
+      "role_primary": "dense decoder",
+      "roles": [
+        "dense decoder"
+      ],
+      "bytes": 14005628474,
+      "n_files": 6,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "microsoft--Phi-4-mini-instruct@cfbefacb9925",
+      "repo": "microsoft/Phi-4-mini-instruct",
+      "revision": "cfbefacb99257ffa30c83adab238a50856ac3083",
+      "architecture_family": "phi3",
+      "lifecycle": "CENSUSED",
+      "seal_status": "SEALED",
+      "role_primary": "dense decoder",
+      "roles": [
+        "dense decoder",
+        "long-context"
+      ],
+      "bytes": 7694054130,
+      "n_files": 21,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "microsoft--Phi-4-multimodal-instruct@93f923e1a772",
+      "repo": "microsoft/Phi-4-multimodal-instruct",
+      "revision": "93f923e1a7727d1c4f446756212d9d3e8fcc5d81",
+      "architecture_family": "phi4mm",
+      "lifecycle": "CENSUSED",
+      "seal_status": "SEALED",
+      "role_primary": "multimodal",
+      "roles": [
+        "multimodal",
+        "long-context"
+      ],
+      "bytes": 12878588835,
+      "n_files": 55,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "microsoft--Phi-4-reasoning-plus@69baf8528e1b",
+      "repo": "microsoft/Phi-4-reasoning-plus",
+      "revision": "69baf8528e1bcf05f475034d9e5dd32875ed125f",
+      "architecture_family": "phi3",
+      "lifecycle": "CENSUSED",
+      "seal_status": "SEALED",
+      "role_primary": "dense decoder",
+      "roles": [
+        "dense decoder",
+        "long-context"
+      ],
+      "bytes": 29327880349,
+      "n_files": 19,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "microsoft--bitnet-b1.58-2B-4T-bf16@276681394656",
+      "repo": "microsoft/bitnet-b1.58-2B-4T-bf16",
+      "revision": "276681394656abdadb8e80e5b2c3db5e5d7fcaff",
+      "architecture_family": "bitnet",
+      "lifecycle": "CENSUSED",
+      "seal_status": "SEALED",
+      "role_primary": "dense decoder",
+      "roles": [
+        "dense decoder",
+        "very-low-bit published checkpoint"
+      ],
+      "bytes": 4834832435,
+      "n_files": 10,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361",
+      "repo": "microsoft/bitnet-b1.58-2B-4T",
+      "revision": "04c3b9ad9361b824064a1f25ea60a8be9599b127",
+      "architecture_family": "bitnet",
+      "lifecycle": "CENSUSED",
+      "seal_status": "SEALED",
+      "role_primary": "dense decoder",
+      "roles": [
+        "dense decoder",
+        "very-low-bit published checkpoint"
+      ],
+      "bytes": 1187777736,
+      "n_files": 10,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+      "repo": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+      "revision": "68faf511d618ef198fef186659617cfd2eb8e33a",
+      "architecture_family": "mistral3",
+      "lifecycle": "CENSUSED",
+      "seal_status": "SEALED",
+      "role_primary": "dense decoder",
+      "roles": [
+        "dense decoder"
+      ],
+      "bytes": 96077777512,
+      "n_files": 25,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "moonshotai--Kimi-K3@9f62e4e9fffb",
+      "repo": "moonshotai/Kimi-K3",
+      "revision": "9f62e4e9fffbd0a83ddd60e1c209d828994b3569",
+      "architecture_family": "kimi_k3",
+      "lifecycle": "CENSUSED",
+      "seal_status": "SEALED",
+      "role_primary": "multimodal",
+      "roles": [
+        "multimodal",
+        "alternative tokenizer"
+      ],
+      "bytes": 1560998984390,
+      "n_files": 118,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "moonshotai--Kimi-Linear-48B-A3B-Instruct@e1df551a4471",
+      "repo": "moonshotai/Kimi-Linear-48B-A3B-Instruct",
+      "revision": "e1df551a447157d4658b573f9a695d57658590e9",
+      "architecture_family": "kimi_linear",
+      "lifecycle": "CENSUSED",
+      "seal_status": "SEALED",
+      "role_primary": "MoE",
+      "roles": [
+        "MoE",
+        "extreme expert count",
+        "alternative tokenizer"
+      ],
+      "bytes": 98253571658,
+      "n_files": 38,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+      "repo": "moonshotai/Kimi-VL-A3B-Instruct",
+      "revision": "398eede0903cd983a2bfa0cc634e9ac1d843f375",
+      "architecture_family": "kimi_vl",
+      "lifecycle": "CENSUSED",
+      "seal_status": "UNSEALED",
+      "role_primary": "multimodal",
+      "roles": [
+        "multimodal",
+        "MoE",
+        "alternative tokenizer"
+      ],
+      "bytes": 32823063084,
+      "n_files": 25,
+      "has_watch_manifest": false,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "nvidia--audio-flamingo-3@ee26c5842398",
+      "repo": "nvidia/audio-flamingo-3",
+      "revision": "ee26c58423988d7d7cda7b85dd3ce5d97ee8753d",
+      "architecture_family": "llava_llama",
+      "lifecycle": "READY_COLD",
+      "seal_status": "SEALED",
+      "role_primary": "dense decoder",
+      "roles": [
+        "dense decoder"
+      ],
+      "bytes": 17961809773,
+      "n_files": 29,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "openai--whisper-large-v3-turbo@41f01f3fe87f",
+      "repo": "openai/whisper-large-v3-turbo",
+      "revision": "41f01f3fe87f28c78e2fbf8b568835947dd65ed9",
+      "architecture_family": "whisper",
+      "lifecycle": "CENSUSED",
+      "seal_status": "SEALED",
+      "role_primary": "dense decoder",
+      "roles": [
+        "dense decoder"
+      ],
+      "bytes": 1622466054,
+      "n_files": 13,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994",
+      "repo": "state-spaces/mamba3-mimo-1.5b",
+      "revision": "bc6b5d0f7994fe4cb3478242e92da8daf9ee29ec",
+      "architecture_family": "UNKNOWN",
+      "lifecycle": "READY_COLD",
+      "seal_status": "SEALED",
+      "role_primary": "hybrid recurrent/state-space",
+      "roles": [
+        "hybrid recurrent/state-space",
+        "state-heavy architecture"
+      ],
+      "bytes": 2994284299,
+      "n_files": 4,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "state-spaces--mamba3-siso-1.5b@5cfc721542ec",
+      "repo": "state-spaces/mamba3-siso-1.5b",
+      "revision": "5cfc721542ec9ccee768088b2fd6b7e8101219d8",
+      "architecture_family": "UNKNOWN",
+      "lifecycle": "READY_COLD",
+      "seal_status": "SEALED",
+      "role_primary": "hybrid recurrent/state-space",
+      "roles": [
+        "hybrid recurrent/state-space",
+        "state-heavy architecture"
+      ],
+      "bytes": 2989542664,
+      "n_files": 4,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "tencent--HunyuanVideo@6204ad6aea1a",
+      "repo": "tencent/HunyuanVideo",
+      "revision": "6204ad6aea1a77ff5aba337c88278bb9500eb37d",
+      "architecture_family": "UNKNOWN",
+      "lifecycle": "READY_COLD",
+      "seal_status": "SEALED",
+      "role_primary": "dense decoder",
+      "roles": [
+        "dense decoder"
+      ],
+      "bytes": 14171362521,
+      "n_files": 6,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "thinkingmachines--Inkling-Small@8cc5877b44d3",
+      "repo": "thinkingmachines/Inkling-Small",
+      "revision": "8cc5877b44d343f88b92086aa1fb72897950f06a",
+      "architecture_family": "inkling_mm_model",
+      "lifecycle": "CENSUSED",
+      "seal_status": "SEALED",
+      "role_primary": "dense decoder",
+      "roles": [
+        "dense decoder",
+        "alternative tokenizer"
+      ],
+      "bytes": 531944668170,
+      "n_files": 43,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+      "repo": "tiiuae/Falcon-H1-7B-Instruct",
+      "revision": "41e72f27effbab80cd45b6e884688452253a3686",
+      "architecture_family": "falcon_h1",
+      "lifecycle": "CENSUSED",
+      "seal_status": "UNSEALED",
+      "role_primary": "dense decoder",
+      "roles": [
+        "dense decoder",
+        "long-context"
+      ],
+      "bytes": 15182221781,
+      "n_files": 15,
+      "has_watch_manifest": false,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "tiiuae--Falcon3-1B-Instruct@28ba2251970a",
+      "repo": "tiiuae/Falcon3-1B-Instruct",
+      "revision": "28ba2251970a01dd1edc7ba7dad2eb71216ccfdf",
+      "architecture_family": "llama",
+      "lifecycle": "CENSUSED",
+      "seal_status": "SEALED",
+      "role_primary": "dense decoder",
+      "roles": [
+        "dense decoder"
+      ],
+      "bytes": 3348992577,
+      "n_files": 8,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "zai-org--GLM-4.5-Air@a24ceef6ce4f",
+      "repo": "zai-org/GLM-4.5-Air",
+      "revision": "a24ceef6ce4f3536971efe9b778bdaa1bab18daa",
+      "architecture_family": "glm4_moe",
+      "lifecycle": "CENSUSED",
+      "seal_status": "SEALED",
+      "role_primary": "MoE",
+      "roles": [
+        "MoE",
+        "extreme expert count",
+        "long-context"
+      ],
+      "bytes": 220961581797,
+      "n_files": 55,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    },
+    {
+      "slug": "zai-org--GLM-5.3-Flash@04c4e9e95c5d",
+      "repo": "zai-org/GLM-5.3-Flash",
+      "revision": "04c4e9e95c5da8862dced7e5056455116f83a7e0",
+      "architecture_family": "glm5_next",
+      "lifecycle": "CENSUSED",
+      "seal_status": "SEALED",
+      "role_primary": "dense decoder",
+      "roles": [
+        "dense decoder"
+      ],
+      "bytes": 328366172315,
+      "n_files": 72,
+      "has_watch_manifest": true,
+      "has_lake_manifest": true,
+      "storage_role": "TIER2_COLD",
+      "location": "specimens"
+    }
+  ],
+  "curriculum": {
+    "first_wave_roles": [
+      "very_small_dense_procedural_speed",
+      "small_dense_alternate_architecture_transfer",
+      "mid_size_dense_compiler",
+      "qwen27_mature_physical",
+      "flash_heterogeneous_frontier"
+    ],
+    "authority": "tools/future/specimen_curriculum.py:propose_specimen_curriculum",
+    "receipt": "receipts/future/SPECIMEN_CURRICULUM.json",
+    "receipt_recorded_at": "2026-09-02T08:27:31Z",
+    "receipt_n_ready": 5,
+    "receipt_n_roles": 5,
+    "receipt_ready": true,
+    "receipt_not_proposed_count": 51,
+    "hcli_does_not_call_propose_specimen_curriculum": true,
+    "state": "TESTED",
+    "integrated_as_the_39_family_school": false
+  },
+  "capabilities": [
+    {
+      "id": "lake-bodies-present",
+      "name": "55 specimen directories on the live lake",
+      "state": "PHYSICALLY_MEASURED",
+      "evidence_tier": "PHYSICALLY_MEASURED",
+      "claim": "os.listdir(specimens/) returns 55 directories; catalog n_specimens=55; lake manifests=55; partial/ absent.",
+      "call_sites": [
+        {
+          "path": "/Volumes/corpdrive/hawking-modellake/specimens",
+          "symbol": "os.listdir",
+          "kind": "artifact"
+        },
+        {
+          "path": "/Volumes/corpdrive/hawking-modellake/index/catalog.json",
+          "symbol": "n_specimens",
+          "kind": "artifact"
+        }
+      ],
+      "blocker": null,
+      "measured": {
+        "n": 55,
+        "bytes": 4352666459500
+      }
+    },
+    {
+      "id": "flash-body-published",
+      "name": "Flash-Next body is in specimens/, not a partial",
+      "state": "PHYSICALLY_MEASURED",
+      "evidence_tier": "PHYSICALLY_MEASURED",
+      "claim": "Qwen--Qwen3.8-Flash-Next@34567a4712bc holds 144 files / 360023286454 bytes / 131 safetensors under specimens/. Matches hcli.flash_next EXPECTED_BYTES and EXPECTED_FILE_COUNT. partial/ does not exist.",
+      "call_sites": [
+        {
+          "path": "hcli/flash_next.py",
+          "symbol": "EXPECTED_BYTES",
+          "kind": "definition"
+        },
+        {
+          "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+          "symbol": "walk",
+          "kind": "artifact"
+        }
+      ],
+      "blocker": null,
+      "notes": "catalog seal_status=UNSEALED because git watch-manifest is absent for this slug, not because the body is missing"
+    },
+    {
+      "id": "partials-empty",
+      "name": "No in-flight partial trees",
+      "state": "PHYSICALLY_MEASURED",
+      "evidence_tier": "PHYSICALLY_MEASURED",
+      "claim": "Path partial/ does not exist at the lake root. Catalog n_partial=0, partial_bytes=0.",
+      "call_sites": [
+        {
+          "path": "/Volumes/corpdrive/hawking-modellake/partial",
+          "symbol": "exists",
+          "kind": "artifact"
+        }
+      ],
+      "blocker": null,
+      "measured": {
+        "exists": false,
+        "n": 0
+      }
+    },
+    {
+      "id": "tier2-over-budget",
+      "name": "Lake is over TIER2_BUDGET; admit() must refuse new acquires",
+      "state": "CALLABLE",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "claim": "TIER2_BUDGET is 3.5e12. Catalog used 4.352666e12, overage 852.666 GB. tools.odyssey.modellake.admit is the enforcer.",
+      "call_sites": [
+        {
+          "path": "tools/odyssey/modellake.py",
+          "symbol": "admit",
+          "kind": "invoke"
+        },
+        {
+          "path": "tools/odyssey/modellake.py",
+          "symbol": "acquire",
+          "kind": "invoke"
+        },
+        {
+          "path": "tools/odyssey/lake_filler.py",
+          "symbol": "capacity_ok",
+          "kind": "invoke"
+        }
+      ],
+      "blocker": null,
+      "measured": {
+        "budget": 3500000000000,
+        "used": 4352666459500,
+        "overage_gb": 852.666
+      }
+    },
+    {
+      "id": "identity-resolved",
+      "name": "Every lake body has repo+revision",
+      "state": "END_TO_END",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "claim": "Catalog 55/55 have repo and revision. Acceptance gate MODELLAKE_IDENTITY_RESOLVED invoked run_modellake_census and reported identity_resolved=55, unresolved=0.",
+      "call_sites": [
+        {
+          "path": "hcli/agentos/modellake_gate.py",
+          "symbol": "run_modellake_census",
+          "kind": "invoke"
+        },
+        {
+          "path": "tools/acceptance/lake/identity.py",
+          "symbol": "call_run_modellake_census",
+          "kind": "invoke"
+        },
+        {
+          "path": "receipts/acceptance/MODELLAKE_IDENTITY_RESOLVED.json",
+          "symbol": "gate",
+          "kind": "artifact"
+        }
+      ],
+      "blocker": null
+    },
+    {
+      "id": "hash-verified-full-lake",
+      "name": "Every sealed specimen hashed against hub LFS oid",
+      "state": "BLOCKED_AUTHORITY",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "claim": "MODELLAKE_HASH_VERIFIED hashed the canonical Qwen3-0.6B specimen (10/10 oid ok) and size-checked the rest. Full-lake oid hash of 4.35 TB was not run.",
+      "call_sites": [
+        {
+          "path": "tools/odyssey/modellake.py",
+          "symbol": "verify_only",
+          "kind": "invoke"
+        },
+        {
+          "path": "tools/odyssey/modellake_watch.py",
+          "symbol": "reconcile",
+          "kind": "invoke"
+        },
+        {
+          "path": "receipts/acceptance/MODELLAKE_HASH_VERIFIED.json",
+          "symbol": "gate",
+          "kind": "artifact"
+        }
+      ],
+      "blocker": {
+        "kind": "BLOCKED_AUTHORITY",
+        "why": "re-hashing 4.35 TB is a multi-hour HDD pass; this audit lane did not run it; prior gate remaining_unhashed_tb=4.351",
+        "canonical_oid_hashed": "Qwen--Qwen3-0.6B@c1899de289a0",
+        "size_complete_prior_gate": "49/55; 6 lack watch per-file lists"
+      }
+    },
+    {
+      "id": "atomic-promotion",
+      "name": "promote() atomically renames partial/ -> specimens/",
+      "state": "TESTED",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "claim": "tools.odyssey.modellake_promote.promote is the symbol. Acceptance gate MODELLAKE_ATOMIC_PROMOTION invoked it on scratch (PROMOTED/REFUSED/DESTINATION_EXISTS) and live-replayed 55 tags as ALREADY_PROMOTED or REFUSED NO_MANIFEST. Live lake has no partials to promote.",
+      "call_sites": [
+        {
+          "path": "tools/odyssey/modellake_promote.py",
+          "symbol": "promote",
+          "kind": "invoke"
+        },
+        {
+          "path": "tools/odyssey/modellake.py",
+          "symbol": "os.rename(part, final)",
+          "kind": "invoke"
+        },
+        {
+          "path": "receipts/acceptance/MODELLAKE_ATOMIC_PROMOTION.json",
+          "symbol": "gate",
+          "kind": "artifact"
+        },
+        {
+          "path": "tools/odyssey/test_modellake_promote.py",
+          "symbol": "tests",
+          "kind": "test"
+        }
+      ],
+      "blocker": null
+    },
+    {
+      "id": "hcli-specimens-registry",
+      "name": "HCLI tool specimens.registry enumerates lake bodies",
+      "state": "CALLABLE",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "claim": "tool_registry wires handler _specimens_registry which CALLS specimens.registry() / specimens.get(). g009_reachability FRONTIER includes the tool name. test_specimens.py CALLS registry() (tmp_path plus one live-lake cheap enumeration). Not a slash command. Docstring still says 47 specimens. Manifest dir is git watch-manifests, so the 6 lake-not-in-watch slugs report verified_complete=None.",
+      "call_sites": [
+        {
+          "path": "hcli/tool_registry.py",
+          "symbol": "_specimens_registry",
+          "kind": "invoke",
+          "line": 1588
+        },
+        {
+          "path": "hcli/specimens.py",
+          "symbol": "registry",
+          "kind": "invoke"
+        },
+        {
+          "path": "hcli/specimens.py",
+          "symbol": "get",
+          "kind": "invoke"
+        },
+        {
+          "path": "tools/sovereign/g009_reachability.py",
+          "symbol": "FRONTIER specimens.registry",
+          "kind": "invoke"
+        },
+        {
+          "path": "hcli/test_specimens.py",
+          "symbol": "test_real_lake_enumeration_is_cheap",
+          "kind": "test"
+        }
+      ],
+      "blocker": null,
+      "notes": "TESTED on tmp_path; live-lake test asserts n_specimens>=40 and elapsed<120s, not 55 and not completeness."
+    },
+    {
+      "id": "hcli-flash-next-command",
+      "name": "/flash-next still describes acquisition identity",
+      "state": "CALLABLE",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "claim": "CommandHandler._cmd_flash_next CALLS flash_next_profile. Profile still emits status READY_FOR_EXPLICIT_ACQUIRE and a transfer_ledger with bytes_transferred=0. Body is already in specimens/.",
+      "call_sites": [
+        {
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler._cmd_flash_next",
+          "kind": "invoke",
+          "line": 1090
+        },
+        {
+          "path": "hcli/flash_next.py",
+          "symbol": "flash_next_profile",
+          "kind": "invoke"
+        },
+        {
+          "path": "hcli/command_registry.py",
+          "symbol": "/flash-next",
+          "kind": "invoke"
+        }
+      ],
+      "blocker": null,
+      "notes": "STALE_ROADMAP_TEXT in the live command output path"
+    },
+    {
+      "id": "hcli-modellake-census",
+      "name": "agentos_cli modellake-census is Flash-pinned",
+      "state": "CALLABLE",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "claim": "agentos_cli modellake-census CALLS run_modellake_census. Qualification MODELLAKE_CENSUS_PINNED_FLASH_IDENTITY_NO_ACQUISITION. Latest HCLI census 2026-09-02T00:14:32Z already had final_present=True, partial_present=False, but checks.target_not_published_as_verified=True because whole_tree_verified is False (census does not hash 360 GB).",
+      "call_sites": [
+        {
+          "path": "hcli/agentos_cli.py",
+          "symbol": "modellake-census",
+          "kind": "invoke",
+          "line": 736
+        },
+        {
+          "path": "hcli/agentos/modellake_gate.py",
+          "symbol": "run_modellake_census",
+          "kind": "invoke"
+        },
+        {
+          "path": "receipts/headless/HCLI_MODELLAKE_FLASH_CENSUS.json",
+          "symbol": "census",
+          "kind": "artifact"
+        }
+      ],
+      "blocker": null
+    },
+    {
+      "id": "hcli-modellake-supervise",
+      "name": "supervisor is hardcoded to Flash slug",
+      "state": "CALLABLE",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "claim": "run_model_lake_supervision CALLS inventories of specimens/<Flash slug> and partial/<Flash slug> only. Helpful for Flash publication (receipt shows 144 files / expected bytes) but is not a 55-specimen school supervisor.",
+      "call_sites": [
+        {
+          "path": "hcli/agentos/modellake_supervisor.py",
+          "symbol": "run_model_lake_supervision",
+          "kind": "invoke"
+        },
+        {
+          "path": "hcli/agentos_cli.py",
+          "symbol": "modellake-supervise",
+          "kind": "invoke",
+          "line": 747
+        },
+        {
+          "path": "receipts/headless/MODELLAKE_FLASH_NEXT_SUPERVISION.json",
+          "symbol": "supervision",
+          "kind": "artifact"
+        }
+      ],
+      "blocker": null
+    },
+    {
+      "id": "hcli-status-watcher",
+      "name": "HCLI status line reads the ModelLake watcher lock/log",
+      "state": "CALLABLE",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "claim": "hcli/commands.py:_modellake_status is invoked from the machine snapshot used by the status renderer. It tails workspace/campaign/odyssey/downloads/modellake-watch.jsonl. It reports watcher jobs/remaining, not the 55-specimen school.",
+      "call_sites": [
+        {
+          "path": "hcli/commands.py",
+          "symbol": "_modellake_status",
+          "kind": "invoke",
+          "line": 645
+        },
+        {
+          "path": "hcli/commands.py",
+          "symbol": "snap['modellake']",
+          "kind": "invoke",
+          "line": 904
+        }
+      ],
+      "blocker": null
+    },
+    {
+      "id": "hcli-models-slash",
+      "name": "/models discovers ~/models GGUF/MLX, not ModelLake",
+      "state": "CALLABLE",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "claim": "discover_models default root is ~/models. That directory currently has no GGUF/MLX bodies. ModelLake specimens are not in this discovery path.",
+      "call_sites": [
+        {
+          "path": "hcli/commands.py",
+          "symbol": "/models",
+          "kind": "invoke"
+        },
+        {
+          "path": "hcli/models.py",
+          "symbol": "discover_models",
+          "kind": "invoke"
+        }
+      ],
+      "blocker": null,
+      "notes": "~/models listing this lane: serve scripts and logs only; Qwen27 GGUF path from old .hcli receipts is not present there"
+    },
+    {
+      "id": "acquisition-propose",
+      "name": "acquisition.propose ranks next downloads, never starts them",
+      "state": "CALLABLE",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "claim": "tool_registry handler _acquisition_propose CALLS acquisition.propose(). New acquires would be refused by modellake.admit because the lake is over TIER2_BUDGET.",
+      "call_sites": [
+        {
+          "path": "hcli/tool_registry.py",
+          "symbol": "_acquisition_propose",
+          "kind": "invoke",
+          "line": 1599
+        },
+        {
+          "path": "hcli/acquisition.py",
+          "symbol": "propose",
+          "kind": "invoke"
+        }
+      ],
+      "blocker": null
+    },
+    {
+      "id": "curriculum-first-wave",
+      "name": "Five first-wave curriculum roles",
+      "state": "TESTED",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "claim": "propose_specimen_curriculum is CALLED by odyssey_launch._eval_curriculum and tools.future.consolidated_run. Receipt 2026-09-02T08:27:31Z reports 5/5 ready (Qwen3-0.6B, Falcon-H1, Mistral-Small, external Qwen27, Flash) and 51 lake extras not_proposed. No HCLI module calls propose_specimen_curriculum. This is not the 39-family school.",
+      "call_sites": [
+        {
+          "path": "tools/future/specimen_curriculum.py",
+          "symbol": "propose_specimen_curriculum",
+          "kind": "invoke"
+        },
+        {
+          "path": "tools/future/odyssey_launch.py",
+          "symbol": "_eval_curriculum",
+          "kind": "invoke"
+        },
+        {
+          "path": "tools/future/consolidated_run.py",
+          "symbol": "propose_specimen_curriculum",
+          "kind": "invoke"
+        },
+        {
+          "path": "tools/future/test_specimen_curriculum.py",
+          "symbol": "tests",
+          "kind": "test"
+        },
+        {
+          "path": "receipts/future/SPECIMEN_CURRICULUM.json",
+          "symbol": "receipt",
+          "kind": "artifact"
+        }
+      ],
+      "blocker": null,
+      "notes": "Qwen27 ready via authorized external tree digest, not lake listing."
+    },
+    {
+      "id": "event-integration-seal-consumer",
+      "name": "Watcher emits modellake_events_run into the seal consumer",
+      "state": "END_TO_END",
+      "evidence_tier": "PHYSICALLY_MEASURED",
+      "claim": "Live watcher PID 4183 CALLED emit_modellake_events_once at 2026-09-02T18:39:54Z (jsonl event modellake_events_run n_new_seal_specimens=8). That function CALLS tools.future.modellake_events.build/consume. Receipt receipts/future/MODELLAKE_EVENTS.json recorded_at matches. Scheduler-view receipt still claims is_this_wired=false (stale reader artifact).",
+      "call_sites": [
+        {
+          "path": "tools/odyssey/modellake_watch.py",
+          "symbol": "emit_modellake_events_once",
+          "kind": "invoke",
+          "line": 1014
+        },
+        {
+          "path": "tools/future/modellake_events.py",
+          "symbol": "consume",
+          "kind": "invoke"
+        },
+        {
+          "path": "tools/lifecycle_events.py",
+          "symbol": "SPECIMEN_SEALED",
+          "kind": "invoke"
+        },
+        {
+          "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/odyssey/downloads/modellake-watch.jsonl",
+          "symbol": "modellake_events_run",
+          "kind": "process"
+        },
+        {
+          "path": "receipts/future/MODELLAKE_EVENTS.json",
+          "symbol": "receipt",
+          "kind": "artifact"
+        },
+        {
+          "path": "tools/odyssey/test_modellake_watch.py",
+          "symbol": "test_emit_modellake_events_once_runs_the_real_consumer_and_writes_the_receipt",
+          "kind": "test"
+        }
+      ],
+      "blocker": null,
+      "notes": "Wired for 8 event-defined seals, not 55 bodies. Subsequent watcher probe_boom_error at 18:47, 18:49, 18:58."
+    },
+    {
+      "id": "lake-index",
+      "name": "Durable catalog under lake/index",
+      "state": "END_TO_END",
+      "evidence_tier": "PHYSICALLY_MEASURED",
+      "claim": "catalog.json + by-slug/*.json + LAYOUT.md exist on the lake. tools.odyssey.modellake_index build is the producer (observed live PID 78096 this session; this lane did not start it). Index writes only index/, never specimens/.",
+      "call_sites": [
+        {
+          "path": "tools/odyssey/modellake_index.py",
+          "symbol": "build_lake_index / scan_specimen",
+          "kind": "invoke"
+        },
+        {
+          "path": "/Volumes/corpdrive/hawking-modellake/index/catalog.json",
+          "symbol": "catalog",
+          "kind": "artifact"
+        },
+        {
+          "path": "receipts/future/MODELLAKE_INDEX.json",
+          "symbol": "receipt",
+          "kind": "artifact"
+        }
+      ],
+      "blocker": null
+    },
+    {
+      "id": "ssd-stage-q06",
+      "name": "Qwen3-0.6B is SSD-staged",
+      "state": "PHYSICALLY_MEASURED",
+      "evidence_tier": "PHYSICALLY_MEASURED",
+      "claim": "~/noetic/stage/Qwen--Qwen3-0.6B@c1899de289a0 contains 10 files. Catalog lifecycle=SSD_STAGED, storage_role=TIER1_HOT. modellake.stage is the producer.",
+      "call_sites": [
+        {
+          "path": "tools/odyssey/modellake.py",
+          "symbol": "stage",
+          "kind": "invoke"
+        },
+        {
+          "path": "/Users/scammermike/noetic/stage/Qwen--Qwen3-0.6B@c1899de289a0",
+          "symbol": "listdir",
+          "kind": "artifact"
+        }
+      ],
+      "blocker": null
+    },
+    {
+      "id": "qwen27-control-school-body",
+      "name": "Qwen27 control-school weights exist off-lake",
+      "state": "PHYSICALLY_MEASURED",
+      "evidence_tier": "PHYSICALLY_MEASURED",
+      "claim": "Authorized extra specimen path exists (32 files, 55586059478 bytes). NOETIC_PARENT_A native parent exists. Not listed under ModelLake specimens/.",
+      "call_sites": [
+        {
+          "path": "tools/future/specimen_verify.py",
+          "symbol": "EXTRA_SPECIMENS",
+          "kind": "definition"
+        },
+        {
+          "path": "/Volumes/corpdrive/personalmodel/correspondent/qwen3.8-27b-abliterated-bf16",
+          "symbol": "walk",
+          "kind": "artifact"
+        },
+        {
+          "path": "tools/future/odyssey2_law_store.py",
+          "symbol": "SCHOOLS['Qwen27']",
+          "kind": "definition"
+        }
+      ],
+      "blocker": null
+    },
+    {
+      "id": "schools-flash-physical-status",
+      "name": "SCHOOLS['Flash'].physical_status still metadata_only",
+      "state": "STALE_ROADMAP_TEXT",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "claim": "odyssey2_law_store.SCHOOLS['Flash']['physical_status'] == 'metadata_only_weights_not_present' while the 360 GB body is in specimens/.",
+      "call_sites": [
+        {
+          "path": "tools/future/odyssey2_law_store.py",
+          "symbol": "SCHOOLS['Flash']['physical_status']",
+          "kind": "definition"
+        }
+      ],
+      "blocker": {
+        "kind": "STALE_ROADMAP_TEXT",
+        "replacement": "weights_present_in_modellake_specimens; catalog_seal_status UNSEALED (no watch sizes); not a live resident"
+      }
+    },
+    {
+      "id": "rust-lake-school",
+      "name": "Rust crates do not enumerate ModelLake specimens",
+      "state": "ABSENT",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "claim": "git grep modellake over crates/ hits only Flash kernel example names, not a lake registry. Schooling of the 55 bodies is a Python/HCLI/tools.odyssey concern.",
+      "call_sites": [],
+      "blocker": {
+        "kind": "ABSENT",
+        "why": "no crate-level ModelLake caller; Flash examples are kernel research, not specimen-school integration"
+      }
+    },
+    {
+      "id": "mode-007-next-acquisition",
+      "name": "MODE-007 next acquisition manifest",
+      "state": "BLOCKED_AUTHORITY",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "claim": "H-ROADMAP MODE-007 is next acquisition. admit() would refuse any positive-size acquire because used+request > TIER2_BUDGET. Watcher is idle_rearm_wait with remaining_bytes=0.",
+      "call_sites": [
+        {
+          "path": "tools/odyssey/modellake.py",
+          "symbol": "admit",
+          "kind": "invoke"
+        },
+        {
+          "path": "H-ROADMAP.md",
+          "symbol": "MODE-007",
+          "kind": "definition"
+        }
+      ],
+      "blocker": {
+        "kind": "capacity policy",
+        "overage_gb": 852.666,
+        "do_not_retire": true,
+        "retention": "catalog.retention_recommendation.does_not_retire=true; operator_decision_only=true"
+      }
+    }
+  ],
+  "invalidated_roadmap_assumptions": [
+    {
+      "id": "flash-partial-pending",
+      "where": "/Users/scammermike/Downloads/H-ROADMAP.md:361 (H-ROADMAP.md is NOT in this git tree)",
+      "stale_text": "Flash ModelLake acquisition was last reported as a pinned resumable worker with a 144-file partial tree; atomic final publication was still pending.",
+      "state": "STALE_ROADMAP_TEXT",
+      "evidence": "PHYSICALLY_MEASURED 144 files / 360023286454 bytes under specimens/; partial/ absent; newest Flash file mtime 2026-08-27T04:04:03Z",
+      "replace_with": "Flash-Next pinned body Qwen/Qwen3.8-Flash-Next@34567a4712bc is published under specimens/ (144 files, 360,023,286,454 bytes, 131 safetensors). No partial tree. Catalog seal_status=UNSEALED because workspace/campaign/odyssey/watch-manifests lacks this slug's size map; lake manifest is present. Do not restart an acquisition worker for Flash."
+    },
+    {
+      "id": "two-qwen-school-as-the-school",
+      "where": "H-ROADMAP.md TOC '10. CURRENT TWO-QWEN SCHOOL' and \u00a712/\u00a713 as the specimen school",
+      "stale_text": "The specimen school is Qwen3.8-27B + Qwen3.8-Flash-Next.",
+      "state": "STALE_ROADMAP_TEXT",
+      "evidence": "55 lake bodies, 39 architecture families, 9 \u00a714.3 diversity roles filled; Qwen27 is not even on the lake",
+      "replace_with": "Keep Qwen27 as Textbook #1 / first control school (authorized external + NOETIC_PARENT_A). Keep Flash as the heterogeneous/Noetic executable school (now a published lake body). Name the ModelLake specimen school separately: 55 sealed-directory bodies / 39 families, first-wave curriculum 5 roles still useful, 51 additional residents not yet in a second-wave curriculum."
+    },
+    {
+      "id": "flash-weights-not-present",
+      "where": "tools/future/odyssey2_law_store.py SCHOOLS['Flash']['physical_status']",
+      "stale_text": "metadata_only_weights_not_present",
+      "state": "STALE_ROADMAP_TEXT",
+      "evidence": "Flash body physically present; transfer map still treats Flash as metadata-only",
+      "replace_with": "weights_present_in_modellake_specimens; not loaded as a live resident this audit"
+    },
+    {
+      "id": "flash-next-ready-for-explicit-acquire",
+      "where": "hcli/flash_next.py flash_next_profile status",
+      "stale_text": "READY_FOR_EXPLICIT_ACQUIRE; transfer_ledger bytes_transferred=0",
+      "state": "STALE_ROADMAP_TEXT",
+      "evidence": "body already published; acquire would be over-budget anyway",
+      "replace_with": "PUBLISHED_IN_SPECIMENS; next work is watch-manifest backfill + organ science, not download"
+    },
+    {
+      "id": "hcli-specimens-47",
+      "where": "hcli/specimens.py module docstring; hcli/test_specimens.py:197",
+      "stale_text": "47 sealed specimens; 47 specimens holding a combined ~3.4 TiB",
+      "state": "STALE_ROADMAP_TEXT",
+      "evidence": "55 directories, 4.353 TB st_size sum",
+      "replace_with": "55 specimen directories, 4.353 TB regular-file bytes; do not hard-code the count"
+    },
+    {
+      "id": "census-target-not-published-means-absent",
+      "where": "hcli/agentos/modellake_gate.py checks.target_not_published_as_verified; receipts/headless/HCLI_MODELLAKE_FLASH_CENSUS.json",
+      "stale_text": "check name implies Flash is unpublished",
+      "state": "STALE_ROADMAP_TEXT",
+      "evidence": "same census already has flash_target_manifest.final_present=true; the check is whole_tree_verified is False (no 360 GB rehash)",
+      "replace_with": "split 'body present in specimens/' from 'every file oid-hashed'. Flash is present. Full oid hash remains BLOCKED_AUTHORITY."
+    },
+    {
+      "id": "scheduler-view-not-wired",
+      "where": "receipts/future/MODELLAKE_SCHEDULER_VIEW.json seal_contract.is_this_wired=false",
+      "stale_text": "nothing today turns MODEL_SEALED into a WorkGraph",
+      "state": "STALE_ROADMAP_TEXT",
+      "evidence": "live watcher jsonl modellake_events_run at 18:39:54Z; MODELLAKE_EVENTS.json is_this_wired=true, n_emitted_specimens=8, n_emitted_units=48",
+      "replace_with": "seal consumer is wired for the event module's 8-id set. Scheduler-view receipt was not updated. Do not treat the view receipt as the producer."
+    },
+    {
+      "id": "specimen-registry-54-aug31",
+      "where": "receipts/future/SPECIMEN_REGISTRY.json",
+      "stale_text": "n_specimens=54 recorded_at 2026-08-31T22:50:42Z",
+      "state": "STALE_ROADMAP_TEXT",
+      "evidence": "live catalog 55 at 2026-09-02T18:58:06Z",
+      "replace_with": "query lake/index/catalog.json; do not walk 4.35 TB; do not trust the Aug 31 registry count"
+    },
+    {
+      "id": "flas-001-verify-next-shard",
+      "where": "H-ROADMAP.md ledger FLAS-001 verify next completed shard",
+      "stale_text": "implies an in-flight Flash download with remaining shards",
+      "state": "STALE_ROADMAP_TEXT",
+      "evidence": "131/131 safetensors present; 144/144 files present",
+      "replace_with": "FLAS-001 done as acquisition. Remaining Flash work is organ/Gravity/native executable (FLAS-002+), plus watch-manifest backfill so catalog seal_status can become SEALED"
+    },
+    {
+      "id": "g010-live-downloaders-as-current",
+      "where": "receipts/sovereign/G010_modellake_retained.json live_downloaders and complete_but_unpromoted Falcon3",
+      "stale_text": "in-flight partials / Falcon3 unpromoted / Mistral duplicate",
+      "state": "STALE_ROADMAP_TEXT",
+      "evidence": "G010 is 08:00Z this morning. Now: no partial/, Falcon3 and Mistral and Inkling are specimen dirs, watcher remaining_bytes=0",
+      "replace_with": "G010 is a historical rate during the last fill. Current inferred retained_bytes_per_s is 0 because acquisition has stopped on capacity policy."
+    },
+    {
+      "id": "first-wave-equals-the-school",
+      "where": "tools/future/specimen_curriculum.py 'Five first-wave roles. Other lake entries are recorded and deferred.'",
+      "stale_text": "the school is five roles; extras are deferred",
+      "state": "STALE_ROADMAP_TEXT",
+      "evidence": "51 not_proposed including Kimi-K3 (1.45 TB), GLM-5.3-Flash, DeepSeek-V4-Flash, RWKV7, BitNet, Mamba3, Dream, iLLaDA, evo2, VL, etc.",
+      "replace_with": "Keep the five first-wave roles as the control/transfer core (do not drop Qwen27). Add an explicit second-wave curriculum keyed to \u00a714.3 roles now physically present. Deferral of 51 residents is now the stale assumption."
+    }
+  ],
+  "recommendations": {
+    "do_not_implement_this_lane": true,
+    "roadmap_prose": [
+      "Rewrite H-ROADMAP.md \u00a73 Flash bullet to published-in-specimens (see invalidated_roadmap_assumptions[0].replace_with). Do not describe a 144-file partial.",
+      "Retitle 'CURRENT TWO-QWEN SCHOOL' to 'CONTROL PAIR + MODELLAKE SPECIMEN SCHOOL'. Keep \u00a712 Qwen27 as Textbook #1 / control. Keep \u00a713 Flash as Noetic executable school now that the source body is here.",
+      "Add a \u00a714 current-state snapshot: 55 bodies, 4.353 TB, 852.666 GB over TIER2_BUDGET, partials empty, acquisition stalled, do not retire without operator.",
+      "Leave the 0.7% civilizational coordinate untouched."
+    ],
+    "second_wave_curriculum": {
+      "keep_first_wave": [
+        "Qwen3-0.6B procedural speed (SSD_STAGED)",
+        "Falcon-H1 alternate architecture (catalog UNSEALED, body present)",
+        "Mistral-Small mid-size dense",
+        "Qwen27 mature physical (authorized external, not lake)",
+        "Flash heterogeneous frontier (body present, catalog UNSEALED)"
+      ],
+      "propose_second_wave_roles_from_bodies_now_here": [
+        {
+          "role": "qwen3_moe_coder",
+          "slug": "Qwen--Qwen3-Coder-30B-A3B-Instruct@b2cff646eb4b",
+          "why": "MoE + code, watch-SEALED"
+        },
+        {
+          "role": "extreme_expert_deepseek_v4",
+          "slug": "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+          "why": "\u00a714.3 extreme expert count; catalog UNSEALED"
+        },
+        {
+          "role": "multimodal_vl_moe",
+          "slug": "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+          "why": "VL MoE; catalog UNSEALED"
+        },
+        {
+          "role": "kimi_k3_multimodal_bulk",
+          "slug": "moonshotai--Kimi-K3@9f62e4e9fffb",
+          "why": "1.45 TB, 33% of lake; watch-SEALED; residency economics first"
+        },
+        {
+          "role": "glm5_next_dense",
+          "slug": "zai-org--GLM-5.3-Flash@04c4e9e95c5d",
+          "why": "305.8 GiB dense, watch-SEALED"
+        },
+        {
+          "role": "hybrid_rwkv7",
+          "slug": "RWKV--RWKV7-13.3B-20260805@64ffe5934178",
+          "why": "hybrid recurrent/state-space"
+        },
+        {
+          "role": "very_low_bit_bitnet",
+          "slug": "microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361",
+          "why": "\u00a714.3 very-low-bit published checkpoint"
+        },
+        {
+          "role": "state_space_mamba3",
+          "slug": "state-spaces--mamba3-siso-1.5b@5cfc721542ec",
+          "why": "UNKNOWN family in catalog; fills hybrid/state-heavy"
+        },
+        {
+          "role": "diffusion_language_dream_or_illada",
+          "slug": "Dream-org--Dream-v0-Instruct-7B@05334cb9faaf",
+          "why": "architecture novelty vs dense decoder control"
+        },
+        {
+          "role": "linear_attention_kimi_linear",
+          "slug": "moonshotai--Kimi-Linear-48B-A3B-Instruct@e1df551a4471",
+          "why": "MoE + linear attention"
+        }
+      ],
+      "still_missing_14_3_roles": [
+        "native MTP/speculation",
+        "structured sparsity",
+        "codebook/additive quantization",
+        "new Apple-friendly runtime specimen"
+      ]
+    },
+    "seal_vocabulary": "Pick one producer for 'sealed'. Recommended: specimens/ presence + lake manifest resolved_sha is PUBLICATION; watch-manifest size map is WATCH_SEAL; oid hash is HASH_SEAL. Stop using one word for all three.",
+    "watch_manifest_backfill": "Backfill git watch-manifests for the 6 lake-not-in-watch slugs (including Flash) so catalog seal_status can become SEALED. Do not treat this as a download.",
+    "hcli_visibility": "Keep specimens.registry as the school enumerator; stop presenting /flash-next and modellake-census as if the lake were a single Flash acquire. Do not make /models walk 4.35 TB.",
+    "capacity": "Do not acquire. Do not auto-retire. retention_recommendation.does_not_retire=true. Operator-only if anything is ever relegated. covering_set is 143 GiB of family representatives; that is a recommendation, not a delete list.",
+    "events": "Treat MODELLAKE_EVENTS.json as the live producer for seal triggers. Refresh or ignore MODELLAKE_SCHEDULER_VIEW.json. Investigate watcher probe_boom_error (not this lane).",
+    "hash": "Do not claim the 55 bodies are oid-hashed. Curriculum receipt's 144/144 Flash sha256 is a different producer (specimen_verify sidecar pass at 08:27Z) than MODELLAKE_HASH_VERIFIED (1/55 at 09:14Z). Unresolved producer conflict; do not average."
+  },
+  "surprises": [
+    {
+      "id": "three-meanings-of-sealed",
+      "what": "55 / 49 / 8 'sealed' depending on the authority, and the 8 event-sealed ids are mostly the catalog-UNSEALED set.",
+      "would_settle": "One function that, given a slug, returns publication/watch_seal/hash_seal booleans, called from index, events, curriculum, and HCLI."
+    },
+    {
+      "id": "flash-is-catalog-unsealed",
+      "what": "The flagship Flash body is the largest catalog-UNSEALED specimen because its watch-manifest was never committed, while 49 smaller bodies are catalog-SEALED.",
+      "would_settle": "git show HEAD:workspace/campaign/odyssey/watch-manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json (this lane: MISSING) plus a size-map backfill."
+    },
+    {
+      "id": "qwen27-not-on-the-lake",
+      "what": "The first control school is a 51.8 GiB authorized external tree, not one of the 55. Two-Qwen schooling language hid that.",
+      "would_settle": "Keep it external. Do not copy 52 GB onto an over-budget HDD."
+    },
+    {
+      "id": "kimi-k3-is-a-third-of-the-lake",
+      "what": "moonshotai--Kimi-K3@9f62e4e9fffb is 1,560,998,984,390 bytes (~1.45 TiB), about 36% of specimens_bytes. First-wave curriculum does not mention it.",
+      "would_settle": "An explicit residency/economics WorkUnit before any load; not a silent extra."
+    },
+    {
+      "id": "nine-unknown-families",
+      "what": "Wan2.2, evo2 x2, boltz-2, moshika, pi0, mamba3 x2, HunyuanVideo have architecture_family=UNKNOWN. Nine READY_COLD bodies are mostly this set (no organ fingerprint).",
+      "would_settle": "arch_recognizer coverage for those configs, or an explicit UNKNOWN-is-a-role receipt."
+    },
+    {
+      "id": "hash-producer-conflict",
+      "what": "SPECIMEN_CURRICULUM.json 08:27Z claims Flash whole-tree sha256 144/144 bytes_hashed=360023286454. MODELLAKE_HASH_VERIFIED 09:14Z says oid_hashed_specimens=1 remaining 4.351 TB.",
+      "would_settle": "Read specimen_verify.py results for Flash and compare algorithm (HF .metadata vs LFS oid). Do not treat either receipt as the other."
+    },
+    {
+      "id": "watcher-probe-boom",
+      "what": "Live modellake_watch.py is running but emitting probe_boom_error 'sweep exploded' at 18:47, 18:49, 18:58 after a successful events run.",
+      "would_settle": "Read the watcher traceback in the jsonl/stderr of PID 4183. This lane did not attach to the process."
+    },
+    {
+      "id": "catalog-rebuilt-underfoot",
+      "what": "catalog.json built_at moved 18:53:04Z -> 18:58:06Z during this audit; PID 78096 was python3 -m tools.odyssey.modellake_index build from another session. orphaned_watch went from 6 ids to [].",
+      "would_settle": "Treat git watch-vs-lake set-diff as the stable fact; treat catalog.anomalies.orphaned_watch as rebuild-dependent."
+    },
+    {
+      "id": "partial-dir-absent-not-empty",
+      "what": "The lifecycle law talks about partial/ as a place. On disk the directory does not exist at all (LAYOUT.md: transient, exists only during an acquisition).",
+      "would_settle": "Nothing; this is consistent with idle acquisition. Do not create it."
+    }
+  ],
+  "g010_vs_now": {
+    "g010_produced_at": "2026-09-02T08:00:35Z",
+    "g010_defects_then": {
+      "complete_but_unpromoted": [
+        "tiiuae--Falcon3-1B-Instruct@28ba2251970a"
+      ],
+      "duplicate_acquisition": [
+        "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618"
+      ],
+      "stale_partial_n": 6
+    },
+    "now": {
+      "falcon3_in_specimens": true,
+      "mistral_in_specimens": true,
+      "partial_dir_exists": false,
+      "inkling_in_specimens": true
+    }
+  }
+}

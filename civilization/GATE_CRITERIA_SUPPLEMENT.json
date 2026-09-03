@@ -1,0 +1,39 @@
+{
+ "schema": "hawking.roadmap.criteria_supplement.v1",
+ "why": "A gate is acceptable only against a criterion that could have refused it. APPENDIX O of the superseded roadmap owns the acceptance span of every gate it defines, and where that span states a proof obligation it still wins. But 52 of 83 gates share their span with another gate, so 63% of the roster has no obligation of its own, and for some the span states no obligation at all. This file supplies a criterion ONLY for such a gate, and every entry must say in `span_states` what its APPENDIX O span actually contains, so the substitution is visible rather than assumed. The superseded document is preserved lineage and must not be edited.",
+ "law": [
+  "APPENDIX O wins wherever its span states an obligation for that gate alone.",
+  "An entry here is legitimate only when span_states records why the span does not.",
+  "A criterion is authored BEFORE it is run and its authored_at_commit is recorded. A criterion edited after seeing a result is not a criterion; the acceptance receipt carries criterion_altered for exactly this.",
+  "Every clause names the source mutation that must make it FAIL. A clause with no falsifier is prose.",
+  "known_false_at_authoring lists clauses the system does not satisfy yet. Authoring a criterion the system FAILS is the honest direction; quietly authoring one it already passes is not."
+ ],
+ "gates": {
+  "FPGA_HWIR": {
+   "span_states": "APPENDIX O gives FPGA_HWIR acceptance span 9000-9061, shared identically with FPGA_PREBOARD_SCHEMAS, FPGA_LINK_SIM and FPGA_PARTITION_SIM. Lines 9000-9061 are 'APPENDIX K - HARDWARE DOCTOR / FPGA COMPILER DEEP SCHEMAS': a fenced code block declaring TransportGenome, FPGAGenome, HBMGenome and HardwareProfile. That is a data model, not a proof obligation. Nothing in the span can be satisfied or refused, which is why this gate's acceptance had never been run.",
+   "authored_at_commit": "848a0d0ae0a6a8d0a1cbbcbaba30b30d4a13ba13",
+   "evidence_tier_ceiling": "FUNCTIONAL_SIM",
+   "requires_hardware": false,
+   "criterion": "HWIR is a total, fingerprint-stable, honest-hole hardware IR that REFUSES what it cannot represent. Over the corpus C = {from_qgemv(), from_organ_map(FLASH_ORGAN_MAP), from_organ_map(QWEN_ORGAN_MAP)} + the five declared negative controls + one single-node probe graph per primitive in HARDWARE_PRIMITIVE_CATALOG per registered lowering target, all five clauses hold:\n\n(a) ROUND-TRIP CONSERVATION. For every graph G in C, from_json(G.to_json()).to_json() is byte-identical to G.to_json(), the round-tripped fingerprint equals G.fingerprint(), and no wall-clock timestamp appears in the serialisation. An IR whose identity is not conserved across serialisation cannot address an artifact.\n\n(b) VALIDATOR DISCRIMINATION. validate(G).ok is True for exactly the legal graphs and False for exactly the negative controls; each control yields its own declared code; and every observed code is one of the twelve the module declares. A validator that accepts everything, or that reports one code for every defect, discriminates nothing.\n\n(c) LOWERING TOTALITY. For every registered target T, supported(T) and cannot_express(T) are disjoint, their union covers HARDWARE_PRIMITIVE_CATALOG exactly, and handwritten_hdl(T) is a non-empty subset of cannot_express(T). On the per-primitive probe graph, p is emitted if and only if p is supported, and p is reported as a hole if and only if p is in cannot_express. A target may not silently drop a primitive it neither emits nor declares it cannot express.\n\n(d) TARGET INVARIANCE. For every G and every T, lower_hwir(G, T)['graph_fingerprint'] equals G.fingerprint(), the result key set is identical across targets, and every manifest carries preferred=False and toolchain_choice=None. Lowering must not perturb graph identity, and no target may be a ranked default.\n\n(e) REFUSAL. For every negative control, lowering RAISES rather than returning a document. An IR that emits a plausible kernel artifact for a graph its own validator rejects has published a lie in a form synthesis will not catch.",
+   "known_false_at_authoring": {
+    "clause": "e",
+    "measured": "lower_hwir(graph_type_mismatch(), 'hls_style') returns a document with one SOURCE_ARTIFACT and validate.ok=False (codes not even carried through: doc['validate']['codes'] is None)",
+    "cause": "tools/future/hwir.py _finalize_lowering computes report = validate(graph) and records it as body['validate'], but never checks report.ok. It refuses on six other conditions, so the asymmetry is the defect.",
+    "note": "Authored while failing. If clause (e) passes on the first run, this entry was wrong about the defect, not right about the IR."
+   },
+   "falsifiers": {
+    "a": "make to_json emit a wall-clock timestamp, or drop the fingerprint from the body",
+    "b": "make validate() return ok=True unconditionally, or collapse the twelve codes to one",
+    "c": "remove one primitive from a target's cannot_express without adding it to supported",
+    "d": "set PREFERRED_LOWERING_TARGET, or let a target rewrite the graph before fingerprinting",
+    "e": "revert the report.ok check in _finalize_lowering"
+   },
+   "verifier": "tools/acceptance/fpga/run_gates.py",
+   "not_claimed": [
+    "This says nothing about FPGA performance, throughput, HBM bandwidth, Fmax or resource utilisation. U50_PRESENT is false and no clause admits a hardware number.",
+    "A total IR is not a correct compiler. Totality and refusal are necessary, not sufficient.",
+    "This does not accept FPGA_PREBOARD_SCHEMAS, FPGA_LINK_SIM or FPGA_PARTITION_SIM, which share the same empty span and need their own criteria."
+   ]
+  }
+ }
+}

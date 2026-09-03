@@ -103,7 +103,7 @@ def save_kernel(k: dict[str, Any]) -> None:
     """
     k["updated_unix"] = time.time()
     p = kernel_path()
-    tmp = p.with_suffix(p.suffix + ".tmp")
+    tmp = p.with_suffix(p.suffix + f".{os.getpid()}.tmp")
     body = json.dumps(k, indent=1, sort_keys=True) + "\n"
     with tmp.open("w") as f:
         f.write(body)

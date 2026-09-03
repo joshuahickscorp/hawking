@@ -1,0 +1,867 @@
+{
+  "schema": "hawking.audit.aud08-odyssey-48h.v1",
+  "audit_id": "aud08-odyssey-48h",
+  "audited_at": "2026-09-02T19:00:47Z",
+  "git_head": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+  "branch": "grok/aud08-odyssey-48h-20260902-145226",
+  "authority": {
+    "this_lane_is": "source archaeology, call-site reachability, tests, schema, receipts, process state, durable artifacts",
+    "this_lane_is_not": "GPU physical performance, Metal runtime, ANE physical behaviour, FPGA/U50, thermal/power, protected benchmarks",
+    "hardware_present": ["Apple M3 Ultra CPU/GPU/UMA", "ANE"],
+    "hardware_absent": ["FPGA/U50DD", "DGX", "eGPU"],
+    "never_wrote_MEASURED_for_unrun_work": true
+  },
+  "constitution": {
+    "eras": 5,
+    "odysseys": 3,
+    "era_vi": false,
+    "odyssey_iv": false,
+    "theia_is_separate_civilization": false,
+    "fpga_lives_in": "Hawking Accelerator/Fusion",
+    "canonical_questions": {
+      "I": "WHAT IS TRUE",
+      "II": "WHAT DID HAWKING ALREADY LEARN",
+      "III": "WHERE IS HAWKING WRONG"
+    },
+    "wall_budget_hours": 48,
+    "must_not_serialize": true,
+    "source": "SOURCE_INSPECTION of sovereign-goal.txt, H-ROADMAP.md (corpdrive), receipts/future/ODYSSEY_LAUNCH_GATE.json"
+  },
+  "verdict": {
+    "complete_recurring_I_II_III_cycle_le_48h_wall": "ABSENT",
+    "streams_overlap_rather_than_serialize": "SCAFFOLDED",
+    "global_48h_mission_controller_owns_budget": "TESTED",
+    "one_line": "The 48h overlapped I+II+III cycle is not a running system. Admission rules and proposal listeners exist and are unit-tested; no cycle start receipt, no HCLI law ledger, no G011 streaming receipt, Odyssey-I launchd disabled, HCLI resident FAILED.",
+    "strongest_honest_state": "TESTED libraries + one live ModelLake download watcher; not an integrated 48h mission."
+  },
+  "capabilities": [
+    {
+      "id": "streaming_laws",
+      "asked_as": "streaming",
+      "meaning": "Odyssey I streams laws continuously so II/III can consume them without a phase barrier",
+      "classification": "SCAFFOLDED",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "call_sites": [
+        {
+          "file": "hcli/odyssey.py",
+          "line": 333,
+          "symbol": "hcli.odyssey.record_law",
+          "kind": "definition",
+          "note": "Appends to HCLI_LEDGER.json. Does not notify phase_listeners or any bus."
+        },
+        {
+          "file": "hcli/tool_registry.py",
+          "line": 2039,
+          "symbol": "ToolSpec odyssey.record_law",
+          "kind": "registry",
+          "note": "Resident can invoke the verb. Registration is not a production call of record_law itself."
+        },
+        {
+          "file": "hcli/test_odyssey.py",
+          "line": 208,
+          "symbol": "odyssey.record_law(..., confirm=True)",
+          "kind": "test",
+          "note": "Writes an isolated tmp ledger. Not the live campaign ledger."
+        },
+        {
+          "file": "tools/odyssey_ctl.py",
+          "line": 6266,
+          "symbol": "cycle_tick",
+          "kind": "production",
+          "note": "Streams Odyssey-I work-unit harvest/retire/acquire/launch. Does not emit laws."
+        }
+      ],
+      "tests": [
+        "hcli/test_odyssey.py::test_law_then_transfer_and_adversarial_probes_overlap_immediately",
+        "tools/odyssey/test_odyssey_streaming_runtime.py (G011 RED GATE)",
+        "tools/sovereign/test_g011_streaming.py"
+      ],
+      "blocker": {
+        "id": "NO_LIVE_LAW_STREAM",
+        "why": "workspace/campaign/odyssey/HCLI_LEDGER.json is absent from HEAD and from this worktree. receipts/sovereign/G011_odyssey_streaming.json is absent. No non-test caller of record_law() was found. G011 producer tools/sovereign/g011_streaming.py refuses without a ledger."
+      },
+      "do_not_inflate": [
+        "hawking-core streamed layer/expert I/O is token-graph weight streaming, not law streaming",
+        "cycle_tick harvest is work-unit completion streaming inside Odyssey I, not a law-availability stream"
+      ]
+    },
+    {
+      "id": "listeners_watchers",
+      "asked_as": "listeners/watchers",
+      "classification": "CALLABLE",
+      "evidence_tier": "MEASURED",
+      "call_sites": [
+        {
+          "file": "tools/odyssey/modellake_watch.py",
+          "line": 1014,
+          "symbol": "emit_modellake_events_once",
+          "kind": "production",
+          "note": "LIVE process pid 4183 (com.hawking.modellake.watch) polls --poll-secs 0.10 and every 300s detaches emit_modellake_events_once -> modellake_events.build() -> consume()."
+        },
+        {
+          "file": "tools/odyssey/modellake_watch.py",
+          "line": 1034,
+          "symbol": "maybe_emit_modellake_events",
+          "kind": "production"
+        },
+        {
+          "file": "tools/future/phase_listeners.py",
+          "line": 1239,
+          "symbol": "listen",
+          "kind": "cli_or_self",
+          "note": "One-shot. CLI --listen / build() -> listen(). Not a daemon. performs_science=False, evidence_class=STATIC_ONLY. emit_hcli_workunit returns an in-memory dict and does not enqueue."
+        },
+        {
+          "file": "tools/future/wakeup.py",
+          "line": 786,
+          "symbol": "harvest_sealed_specimens",
+          "kind": "library",
+          "note": "Called from tools/odyssey/modellake_watch.py:625 (import harvest_sealed_specimens) and detached_trial harvest loop."
+        },
+        {
+          "file": "tools/future/detached_trial.py",
+          "line": 43,
+          "symbol": "from tools.future.wakeup import Watcher",
+          "kind": "production_sibling",
+          "note": "Receipt-completion bus for detached trials, not Odyssey I/II/III."
+        }
+      ],
+      "tests": [
+        "tools/future/test_phase_listeners.py",
+        "tools/future/test_wakeup.py",
+        "tools/odyssey/test_modellake_watch.py",
+        "tools/test_lifecycle_events.py::test_law_updated_live_consumer_is_phase_listeners_listen"
+      ],
+      "blocker": {
+        "id": "LAW_LISTENER_IS_NOT_A_DAEMON",
+        "why": "The only live watcher is ModelLake download/seal. phase_listeners.listen has no production loop, does not persist WorkUnits, and is not triggered by hcli.odyssey.record_law. lifecycle_events.subscriber_table lists listen() as the LAW_UPDATED consumer, but the cited call site is build()/CLI, which is self-invocation."
+      },
+      "process_state": {
+        "com.hawking.modellake.watch": "RUNNING pid 4183",
+        "com.hawking.odyssey": "DISABLED (LaunchAgents/com.hawking.odyssey.plist.disabled; no enabled plist)",
+        "org.substrate.odyssey7d.telegram": "registered, not running (exit 2)",
+        "evidence_tier": "MEASURED"
+      }
+    },
+    {
+      "id": "law_availability_events",
+      "asked_as": "law-availability events",
+      "classification": "SCAFFOLDED",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "call_sites": [
+        {
+          "file": "tools/future/phase_listeners.py",
+          "line": 1239,
+          "symbol": "listen",
+          "kind": "cli_or_self"
+        },
+        {
+          "file": "tools/future/phase_listeners.py",
+          "line": 1188,
+          "symbol": "spawn_transfer_unit",
+          "kind": "called_by_listen"
+        },
+        {
+          "file": "tools/future/phase_listeners.py",
+          "line": 1133,
+          "symbol": "spawn_attack_unit",
+          "kind": "called_by_listen"
+        },
+        {
+          "file": "tools/lifecycle_events.py",
+          "line": 79,
+          "symbol": "subscriber_table LAW_UPDATED",
+          "kind": "catalog",
+          "note": "A table naming listen() is not a call of listen()."
+        }
+      ],
+      "tests": [
+        "tools/future/test_phase_listeners.py",
+        "tools/test_lifecycle_events.py"
+      ],
+      "blocker": {
+        "id": "NO_PRODUCER_EMITS_LAW_UPDATED",
+        "why": "Two law stores exist and neither fires an event into the other: (1) hcli/odyssey.py HCLI_LEDGER.json laws[] — file absent; (2) tools/future/odyssey2_law_store.py receipts/future/ODYSSEY2_LAW_STORE.json. record_law does not call listen(). listen() reads the Odyssey II store and returns dicts with performs_science=False. emit_hcli_workunit (tools/future/workunit_species.py:687) constructs a WorkUnit.to_dict() and returns it; it does not write a queue a scheduler drains."
+      }
+    },
+    {
+      "id": "specimen_readiness",
+      "asked_as": "specimen readiness",
+      "classification": "CALLABLE",
+      "evidence_tier": "MEASURED",
+      "call_sites": [
+        {
+          "file": "hcli/specimens.py",
+          "line": 1,
+          "symbol": "hcli.specimens.registry / get",
+          "kind": "definition",
+          "note": "Enumerates /Volumes/corpdrive/hawking-modellake/specimens on every call. Docstring still says 47 sealed (STALE vs 55 dirs / 49 SEALED in MODELLAKE_INDEX)."
+        },
+        {
+          "file": "hcli/tool_registry.py",
+          "line": 1588,
+          "symbol": "_specimens_registry -> specimens.registry()",
+          "kind": "production"
+        },
+        {
+          "file": "tools/future/modellake_events.py",
+          "line": 427,
+          "symbol": "consume",
+          "kind": "production",
+          "note": "Invoked by modellake_watch.emit_modellake_events_once on the live watcher."
+        },
+        {
+          "file": "tools/future/wakeup.py",
+          "line": 786,
+          "symbol": "harvest_sealed_specimens",
+          "kind": "library",
+          "note": "Wakes SLEEPING units whose wake_condition is SEALED_SOURCE_READY when the directory is present."
+        },
+        {
+          "file": "tools/future/odyssey2_transfer.py",
+          "line": 224,
+          "symbol": "sealed_specimens / require_sealed",
+          "kind": "library",
+          "note": "Hard-codes a five-specimen first-wave set, not the 55-dir lake."
+        }
+      ],
+      "tests": [
+        "hcli/test_specimens.py",
+        "tools/future/test_specimen_events.py",
+        "tools/odyssey/test_modellake_watch.py"
+      ],
+      "blocker": {
+        "id": "TWO_REGISTRIES_DIVERGE",
+        "why": "ModelLake has 55 specimen directories (MEASURED). receipts/future/MODELLAKE_INDEX.json reports n_specimens=55, seal_status SEALED=49 UNSEALED=6. workspace/campaign/odyssey/ODYSSEY_STATE.json (git) still lists 14 Odyssey-I patients with only O003 and O006 on_disk=True; O001/O004/O005/O007/O009/O010/O011/O013 are ACQUIRING or queued even though their bodies sit in the lake. Readiness for the I-patient controller is therefore a different, stale producer from lake readiness."
+      },
+      "measured": {
+        "lake_root": "/Volumes/corpdrive/hawking-modellake/specimens",
+        "n_directories": 55,
+        "index_n_specimens": 55,
+        "index_n_sealed": 49,
+        "index_n_unsealed": 6,
+        "index_n_partial": 0,
+        "index_n_families": 39,
+        "bytes_tb": 4.3526664595,
+        "unsealed_slugs": [
+          "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+          "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+          "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+          "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+          "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+          "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb"
+        ]
+      }
+    },
+    {
+      "id": "predictive_prefetch",
+      "asked_as": "predictive prefetch",
+      "classification": "SCAFFOLDED",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "call_sites": [
+        {
+          "file": "tools/future/specimen_load_cost.py",
+          "line": 151,
+          "symbol": "prefetch_case",
+          "kind": "library",
+          "note": "Computes cold-load hours that make prefetch mandatory. Does not start a prefetch."
+        },
+        {
+          "file": "tools/future/specimen_scheduler.py",
+          "line": 97,
+          "symbol": "rank",
+          "kind": "library",
+          "note": "Ranks sealed specimens by value/measured load cost. No I/O."
+        },
+        {
+          "file": "tools/future/modellake_events.py",
+          "line": 366,
+          "symbol": "_trigger_copy trigger=='possible prefetch or load'",
+          "kind": "library",
+          "note": "Emits a STATIC_ONLY workunit dict saying 'Consider prefetch or load'. Does not read specimen bytes."
+        },
+        {
+          "file": "crates/hawking-core/src/gravity_deepseek_v4_expert_cache.rs",
+          "line": 394,
+          "symbol": "ExpertCache::prefetch",
+          "kind": "production_other_layer",
+          "note": "NOT Odyssey specimen prefetch. Token-graph expert/attn weight prefetch."
+        }
+      ],
+      "tests": [
+        "tools/future/test_specimen_load_cost.py::test_the_prefetch_case_is_made_with_hours_not_adjectives",
+        "tools/future/test_specimen_scheduler.py"
+      ],
+      "blocker": {
+        "id": "NO_PREFETCH_LOOP",
+        "why": "No caller was found that copies, mlocks, or page-caches the next specimen because a law became eligible or a 48h horizon said so. G102 measured USB cold vs warm rates (receipts/future/SPECIMEN_LOAD_COST.json) and stopped at a ranked recommendation. The receipt still says n_sealed_specimens=8 / 2.8 cold hours — STALE vs 49 SEALED / 4.35 TB."
+      },
+      "do_not_inflate": [
+        "hawking-core expert/attn prefetch is a different capability (token I/O), with real call sites inside gravity_deepseek_v4_native_token_graph.rs"
+      ]
+    },
+    {
+      "id": "multi_model_scheduling",
+      "asked_as": "multi-model scheduling",
+      "classification": "CALLABLE",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "call_sites": [
+        {
+          "file": "tools/odyssey_ctl.py",
+          "line": 6266,
+          "symbol": "cycle_tick -> run_loop",
+          "kind": "production",
+          "note": "HARD_LANE_CAP=14, DEFAULT_MAX_LANES=2, memgate via odyssey_memgate.py, write-scope serialization, disk-aware acquire-next. Odyssey I patients only."
+        },
+        {
+          "file": "tools/odyssey_driver.sh",
+          "line": 72,
+          "symbol": "odyssey_ctl.py cycle --go",
+          "kind": "production_disabled",
+          "note": "launchd com.hawking.odyssey is DISABLED."
+        },
+        {
+          "file": "hcli/tool_registry.py",
+          "line": 1554,
+          "symbol": "_odyssey_cycle -> odyssey.cycle(confirm=True)",
+          "kind": "registry"
+        },
+        {
+          "file": "tools/future/specimen_scheduler.py",
+          "line": 97,
+          "symbol": "rank",
+          "kind": "library",
+          "note": "Ranks lake specimens for one hypothesis. Not wired into cycle_tick or the 48h controller."
+        },
+        {
+          "file": "tools/future/no_wait_scheduler.py",
+          "line": 53,
+          "symbol": "launch_detached / Watcher",
+          "kind": "production_sibling",
+          "note": "Autonomy/detached overlap, not I+II+III."
+        }
+      ],
+      "tests": [
+        "tools/odyssey_ctl.py --self-check (contains cycle_tick dry-run assertions around line 7652)",
+        "hcli/test_odyssey.py (cycle refuses without confirm)",
+        "tools/future/test_specimen_scheduler.py",
+        "tools/future/test_no_wait_scheduler.py"
+      ],
+      "blocker": {
+        "id": "ODYSSEY_I_DRIVER_DISABLED",
+        "why": "com.hawking.odyssey.plist is disabled. HCLI resident state=FAILED, worker_live=False, mission cancelled. Multi-model admission code exists but is not currently scheduling anyone. specimen_scheduler.rank has no production caller outside tests, recurring_operations catalog, and multi_model_trial."
+      }
+    },
+    {
+      "id": "overlap",
+      "asked_as": "overlap",
+      "meaning": "I, II, III run simultaneously; II consumes a law the moment it exists; III attacks immediately; specimens overlap; no global barrier",
+      "classification": "TESTED",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "call_sites": [
+        {
+          "file": "hcli/odyssey.py",
+          "line": 368,
+          "symbol": "create_transfer_probe",
+          "kind": "definition",
+          "note": "Requires only that the law is recorded. Status recorded as PROPOSED. Docstring: 'running the probe is a separate, real job.'"
+        },
+        {
+          "file": "hcli/odyssey.py",
+          "line": 386,
+          "symbol": "create_adversarial_probe",
+          "kind": "definition",
+          "note": "Same: PROPOSED only."
+        },
+        {
+          "file": "hcli/test_odyssey.py",
+          "line": 187,
+          "symbol": "test_law_then_transfer_and_adversarial_probes_overlap_immediately",
+          "kind": "test"
+        },
+        {
+          "file": "tools/future/phase_listeners.py",
+          "line": 1239,
+          "symbol": "listen",
+          "kind": "library",
+          "note": "Emits phase_ii and phase_iii units in one call; phase_ii_depends_on_phase_iii=False and vice versa."
+        },
+        {
+          "file": "tools/future/odyssey_mission_controller.py",
+          "line": 134,
+          "symbol": "phase_entry",
+          "kind": "library",
+          "note": "II opens on n_laws>0, III on n_attackable_laws>0, not on a clock. Only after cycle start, which has not happened."
+        },
+        {
+          "file": "tools/sovereign/g011_streaming.py",
+          "line": 1,
+          "symbol": "assess / stream_spans",
+          "kind": "producer_refused",
+          "note": "Would measure overlap of HCLI_LEDGER timestamps. Refuses today. Even a pass would be overlapping PROPOSED probe timestamps, not overlapping science jobs."
+        }
+      ],
+      "tests": [
+        "hcli/test_odyssey.py::test_law_then_transfer_and_adversarial_probes_overlap_immediately",
+        "tools/future/test_phase_listeners.py",
+        "tools/future/test_odyssey_mission_controller.py::test_phases_open_on_their_input_not_on_a_clock",
+        "tools/odyssey/test_odyssey_streaming_runtime.py (RED: receipt absent)",
+        "tools/future/test_overlap_before_blocking.py (autonomy overlap, not I/II/III)"
+      ],
+      "blocker": {
+        "id": "OVERLAP_IS_PROPOSAL_SHAPED",
+        "why": "The no-barrier rule is encoded and unit-tested on ledgers and WorkUnit dicts. There is no running overlapped I+II+III. G011 receipt absent. odyssey_ctl.cycle_tick is Odyssey-I only (harvest/retire/acquire/run_loop). II/III 'probes' stay status=PROPOSED. phase_listeners.performs_science=False."
+      }
+    },
+    {
+      "id": "mission_controller_48h",
+      "asked_as": "a 48h mission controller",
+      "classification": "TESTED",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "call_sites": [
+        {
+          "file": "tools/future/odyssey_mission_controller.py",
+          "line": 78,
+          "symbol": "horizon",
+          "kind": "definition",
+          "note": "CYCLE_HOURS=48.0. Returns NOT_STARTED unless receipts/future/ODYSSEY_CYCLE_1_START.json exists."
+        },
+        {
+          "file": "tools/future/odyssey_mission_controller.py",
+          "line": 110,
+          "symbol": "admits",
+          "kind": "definition",
+          "note": "Refuses unjustified work >30 min; refuses work that cannot finish before seal when RUNNING."
+        },
+        {
+          "file": "tools/future/odyssey_mission_controller.py",
+          "line": 134,
+          "symbol": "phase_entry",
+          "kind": "definition"
+        },
+        {
+          "file": "tools/future/test_odyssey_mission_controller.py",
+          "line": 13,
+          "symbol": "from tools.future import odyssey_mission_controller as omc",
+          "kind": "test",
+          "note": "ONLY Python import of the module outside itself, recurring_operations catalog, and --build."
+        },
+        {
+          "file": "tools/future/recurring_operations.py",
+          "line": 115,
+          "symbol": "owner catalog row",
+          "kind": "catalog",
+          "note": "Names the file as owner of 'decide whether an experiment is worth starting at this hour'. A catalog row is not a call of admits()."
+        }
+      ],
+      "tests": [
+        "tools/future/test_odyssey_mission_controller.py (14 tests: NOT_STARTED, over-budget, hour-4 vs hour-44, phase_entry, seal contract)"
+      ],
+      "blocker": {
+        "id": "CYCLE_NOT_STARTED_AND_NOT_WIRED",
+        "why": "receipts/future/ODYSSEY_CYCLE_1_START.json ABSENT (MEASURED). receipts/future/ODYSSEY_CYCLE_1.json ABSENT. horizon() is therefore NOT_STARTED by construction. No scheduler, cycle_tick, HCLI tool, or launchd job calls admits()/horizon()/phase_entry(). The module's own build() evidence_class is STATIC_ONLY and gpu_authority False. A green ODYSSEY_LAUNCH_GATE.json / ODYSSEY_I_LAUNCH.json (STATIC sidecar, phase_transition=STARTED) is not this controller starting."
+      },
+      "contradiction_with_launch_receipts": {
+        "ODYSSEY_LAUNCH_GATE.json": "verdict=LAUNCH, 16/16 criteria, odyssey_i_launch_written=true, evidence_class STATIC, claim_boundary 'A launch-gate REFUSED receipt is not Odyssey started'",
+        "ODYSSEY_I_LAUNCH.json": "phase_transition=STARTED, same 16/16, STATIC, no GPU",
+        "odyssey_mission_controller.horizon": "NOT_STARTED",
+        "com.hawking.odyssey": "DISABLED",
+        "how_to_settle": "Stamp ODYSSEY_CYCLE_1_START.json from a real launch that also enables a process calling admits() on every experiment, or treat the launch receipts as STALE_ROADMAP_TEXT relative to the controller's own NOT_STARTED rule."
+      }
+    },
+    {
+      "id": "odyssey_i_what_is_true",
+      "asked_as": "Odyssey I",
+      "classification": "CALLABLE",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "call_sites": [
+        {
+          "file": "tools/odyssey_ctl.py",
+          "line": 1,
+          "symbol": "odyssey_ctl (queue/harvest/packet/cycle/run)",
+          "kind": "production_disabled"
+        },
+        {
+          "file": "hcli/tool_registry.py",
+          "line": 1962,
+          "symbol": "odyssey.status/queue/value/economics/cycle/ingest",
+          "kind": "registry"
+        },
+        {
+          "file": "tools/acceptance/odyssey/run.py",
+          "line": 1,
+          "symbol": "acceptance gate ODYSSEY_I_DISCOVERY",
+          "kind": "acceptance",
+          "note": "receipts/acceptance/ODYSSEY_I_DISCOVERY.json verdict=ACCEPTED, evidence_tier=STATIC, invoked_symbol=tools.odyssey_ctl.pick_acquire_candidate (mutate=False census). That is not a discovery cycle."
+        }
+      ],
+      "tests": [
+        "hcli/test_odyssey.py::test_status_ingests_real_mid_flight_state",
+        "tools/odyssey_ctl.py --self-check"
+      ],
+      "historical_artifacts": {
+        "receipts/odyssey-i/": "harvest_* and gravity/sensitivity/doctor/patient seals for O001/O003/O005/O006 dated 2026-08-19",
+        "GRAVITY_RULEBASE.json": "9 rules",
+        "NEGATIVE_SCIENCE.json": "16 entries",
+        "TRANSFER_MATRIX.json": "9 rows, 3 TRANSFERRED_UNCHANGED cells, 89 NOT_TESTED",
+        "note": "These prove Odyssey I patient science RAN in August. They do not prove a live 48h stream."
+      },
+      "blocker": {
+        "id": "ODYSSEY_I_LOOP_NOT_RUNNING",
+        "why": "launchd driver disabled; HCLI resident FAILED; ODYSSEY_STATE in git still has 12/14 patients not on_disk according to the I-controller's own producer."
+      }
+    },
+    {
+      "id": "odyssey_ii_what_did_hawking_learn",
+      "asked_as": "Odyssey II",
+      "classification": "SCAFFOLDED",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "call_sites": [
+        {
+          "file": "tools/future/odyssey2_transfer.py",
+          "line": 979,
+          "symbol": "run_transfers",
+          "kind": "library",
+          "note": "STATIC_ONLY. Cites named receipts or records UNMEASURED. may_transfer/require_sealed/replicating_specimens refuse identity transfers and unsealed B-sides."
+        },
+        {
+          "file": "tools/future/odyssey2_law_store.py",
+          "line": 1,
+          "symbol": "Law / promote / transfer_candidates",
+          "kind": "library"
+        },
+        {
+          "file": "tools/odyssey/transfer_rehearsal.py",
+          "line": 1,
+          "symbol": "transfer_rehearsal",
+          "kind": "library"
+        },
+        {
+          "file": "tools/odyssey_ctl.py",
+          "line": 1865,
+          "symbol": "apply_transfer",
+          "kind": "production",
+          "note": "Copies TRANSFER_MATRIX.json cells into a patient packet. Odyssey I phase TRANSFER, not stream II."
+        },
+        {
+          "file": "hcli/odyssey.py",
+          "line": 368,
+          "symbol": "create_transfer_probe",
+          "kind": "definition",
+          "note": "Records PROPOSED. No executor."
+        }
+      ],
+      "tests": [
+        "tools/future/test_odyssey2_transfer.py",
+        "tools/odyssey/test_transfer_rehearsal.py",
+        "hcli/test_odyssey.py (probe recording)"
+      ],
+      "acceptance": {
+        "receipt": "receipts/acceptance/ODYSSEY_II_TRANSFER.json",
+        "verdict": "BLOCKED",
+        "blocker_id": "TRANSFER_REDUCTION_NOT_POSITIVE",
+        "missing_input": "delta.evaluations_avoided measured -8; COLD arm 2 evals, TRANSFER arm 10. Odyssey II sidecar actual_saved_experiments=null/UNMEASURED",
+        "invoked_symbol": "tools.future.qualification_pipeline.load_qualification_queue",
+        "evidence_tier": "STATIC"
+      },
+      "blocker": {
+        "id": "TRANSFER_DOES_NOT_SAVE_EXPERIMENTS",
+        "why": "The II mission is measurable reduction on an unseen specimen. The cold-vs-transfer receipt that exists (receipts/headless/ODYSSEY_TRANSFER_PROVEN.json pass=true) reports the COLD arm winning the pre-registered target. Stream II has no live consumer of I laws onto a second lake specimen."
+      }
+    },
+    {
+      "id": "odyssey_iii_where_is_hawking_wrong",
+      "asked_as": "Odyssey III",
+      "classification": "SCAFFOLDED",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "call_sites": [
+        {
+          "file": "tools/future/odyssey3_adversary.py",
+          "line": 655,
+          "symbol": "generate_attacks / execute_attack / selftest",
+          "kind": "library",
+          "note": "STATIC_ONLY specs. selftest applies a synthetic REFUTED verdict. physical_arm='not_run'."
+        },
+        {
+          "file": "tools/future/odyssey3_attack.py",
+          "line": 1,
+          "symbol": "odyssey3_attack",
+          "kind": "library"
+        },
+        {
+          "file": "tools/acceptance/odyssey/run.py",
+          "line": 559,
+          "symbol": "odyssey3_adversary.selftest()",
+          "kind": "acceptance"
+        },
+        {
+          "file": "hcli/odyssey.py",
+          "line": 386,
+          "symbol": "create_adversarial_probe",
+          "kind": "definition"
+        },
+        {
+          "file": "crates/hawking-research/src/verify.rs",
+          "line": 70,
+          "symbol": "AdversarialVerifier",
+          "kind": "other_layer",
+          "note": "Literature-claim verifier in hawking-research. Not Odyssey III law attack."
+        }
+      ],
+      "tests": [
+        "tools/future/test_odyssey3_adversary.py",
+        "tools/future/test_odyssey3_attack.py",
+        "hcli/test_odyssey.py"
+      ],
+      "acceptance": {
+        "receipt": "receipts/acceptance/ODYSSEY_III_ADVERSARIAL_META_SCIENCE.json",
+        "verdict": "BLOCKED",
+        "blocker_id": "NO_INDEPENDENT_LAW_REFUTATION",
+        "missing_input": "synthetic REFUTED; physical_arm not_run; scars() is a registry not a fresh attack",
+        "invoked_symbol": "tools.future.autonomy_scars.scars",
+        "evidence_tier": "FUNCTIONAL_SIM"
+      },
+      "historical_artifacts": {
+        "receipts/odyssey-i/O001_NOVELTY_adversarial-falsifier.json": "novelty lane report; physics_not_measured; not_hawking_nx_win=true",
+        "harvest_odyssey-o001-novelty-adversarial-falsifier-20260819-183202.json": "VERIFIED harvest of a novelty template inside Odyssey I, not stream III"
+      },
+      "blocker": {
+        "id": "NO_SPECIMEN_BACKED_LAW_REFUTATION",
+        "why": "III's output is a named campaign law whose scope moved DOWN with non-STATIC evidence. That has not happened. CPU measurement traps ran on a synthetic vector labelled 'not a model organ'."
+      }
+    }
+  ],
+  "timing": {
+    "note": "The <=48h objective applies to ONE COMPLETE recurring I+II+III cycle, not to first useful output. No 48h cycle has started. Filename/commit times below are INFERRED from August Odyssey-I patient harvests, not a horizon clock.",
+    "time_to_first_useful_law": {
+      "classification": "ABSENT",
+      "evidence_tier": "INFERRED",
+      "value_hours": null,
+      "strongest_claim": "Odyssey I gravity rules exist (GRAVITY_RULEBASE.json, 9 rules, committed 2026-08-19 01:12 -0400). First harvest filename harvest_odyssey-o001-external-science-dense-20260819-015556.json. That is not a 48h-cycle 'first useful law' and not an HCLI ledger law.",
+      "hcli_ledger_laws": 0,
+      "blocker": "No ODYSSEY_CYCLE_1_START.json, so elapsed_hours is undefined. G011 laws_or_scars_added cannot be measured."
+    },
+    "time_to_first_transfer_result": {
+      "classification": "ABSENT",
+      "evidence_tier": "INFERRED",
+      "value_hours": null,
+      "strongest_claim": "Odyssey I template transfer-control on O006 harvested 2026-08-19T13:14Z filename; O006_TRANSFER.json records 2 TRANSFERRED_UNCHANGED cells vs O005. Acceptance gate ODYSSEY_II_TRANSFER is BLOCKED because evaluations_avoided=-8 (transfer arm used more evals than cold).",
+      "positive_experiment_reduction": false
+    },
+    "time_to_first_adversarial_falsification": {
+      "classification": "ABSENT",
+      "evidence_tier": "SOURCE_INSPECTION",
+      "value_hours": null,
+      "strongest_claim": "No independent, non-synthetic, specimen-backed law refutation. Novelty-adversarial-falsifier harvest 2026-08-19T18:32Z is an Odyssey I novelty lane, physics_not_measured. III acceptance BLOCKED.",
+      "synthetic_selftest_exists": true
+    },
+    "time_to_one_complete_I_II_III_cycle": {
+      "classification": "ABSENT",
+      "evidence_tier": "MEASURED",
+      "value_hours": null,
+      "measured_facts": [
+        "ODYSSEY_CYCLE_1_START.json absent",
+        "ODYSSEY_CYCLE_1.json seal absent",
+        "G011_odyssey_streaming.json absent",
+        "HCLI_LEDGER.json absent",
+        "acceptance I ACCEPTED (STATIC census), II BLOCKED, III BLOCKED",
+        "odyssey_mission_controller.horizon state NOT_STARTED"
+      ],
+      "le_48h_objective": "not evaluable; the cycle has not started"
+    }
+  },
+  "specimen_blockers": {
+    "claim_in_contract": "55 specimens are now sealed",
+    "measured": {
+      "directories_in_lake": 55,
+      "index_n_specimens": 55,
+      "index_seal_status_SEALED": 49,
+      "index_seal_status_UNSEALED": 6,
+      "index_n_partial": 0,
+      "surprise": "The campaign sentence '55 sealed' overcounts. Disk has 55 bodies; the index marks 6 UNSEALED. Those 6 include Odyssey I first-wave teachers (Falcon-H1, Kimi-VL, Qwen3-30B-A3B, Qwen3-VL-30B-A3B) plus DSV4F and Qwen3.8-Flash-Next."
+    },
+    "disappeared_because_bodies_are_present": [
+      {
+        "blocker": "HF download of O001 Falcon-H1-7B as a transfer/attack B-side or I teacher",
+        "now": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb is ON DISK (UNSEALED)",
+        "caveat": "ODYSSEY_STATE still says O001 ACQUIRING on_disk=False. The I-controller did not absorb the lake."
+      },
+      {
+        "blocker": "HF download of O003 Kimi-VL-A3B",
+        "now": "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c ON DISK (UNSEALED); ODYSSEY_STATE already on_disk=True"
+      },
+      {
+        "blocker": "HF download of O004 Mistral-Small-3.1-24B",
+        "now": "SEALED in lake; ODYSSEY_STATE still ACQUIRING"
+      },
+      {
+        "blocker": "HF download of O005 Qwen3-30B-A3B (O006 transfer sibling origin)",
+        "now": "ON DISK UNSEALED"
+      },
+      {
+        "blocker": "HF download of O006 Qwen3-VL-30B-A3B",
+        "now": "ON DISK UNSEALED; ODYSSEY_STATE on_disk=True"
+      },
+      {
+        "blocker": "HF download of O007 Kimi-Linear-48B, O009 Qwen2.5-72B, O010 GLM-4.5-Air, O013 Kimi-K3",
+        "now": "all SEALED in lake; ODYSSEY_STATE still queued/acquiring"
+      },
+      {
+        "blocker": "HF download of O011 DSV4F mandatory replay",
+        "now": "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6 ON DISK UNSEALED"
+      },
+      {
+        "blocker": "Odyssey II has no second specimen",
+        "now": "DISAPPEARED as an acquisition blocker. 49 SEALED + 6 present-unsealed bodies, 39 families. II still BLOCKED on experiment-reduction, not on missing B-sides."
+      },
+      {
+        "blocker": "Odyssey III has no hostile architecture to attack with",
+        "now": "DISAPPEARED as an acquisition blocker. FAR-distance specimens exist (Dream, iLLaDA, RWKV7, BitNet, Mamba3, evo2, ...). III still BLOCKED on a non-synthetic law-scope move."
+      }
+    ],
+    "still_present": [
+      {
+        "blocker": "O000/O002 Gemma HF license",
+        "status": "no gemma slug in the 55"
+      },
+      {
+        "blocker": "O008 Jamba-1.5-Mini",
+        "status": "lake has AI21-Jamba2-3B, not Jamba-1.5-Mini"
+      },
+      {
+        "blocker": "O012 GLM-4.5 355B/32B",
+        "status": "absent; lake has GLM-4.5-Air and GLM-5.3-Flash only"
+      },
+      {
+        "blocker": "6 UNSEALED first-wave/teacher bodies",
+        "status": "odyssey2_transfer.require_sealed will refuse Falcon-H1, Kimi-VL, Qwen3-30B, Qwen3-VL, DSV4F, Flash-Next"
+      },
+      {
+        "blocker": "cold load of 4.35 TB from USB APFS",
+        "status": "G102: even the old 8-specimen subset was 2.8 h cold / 77 min for Flash-Next alone. No prefetch loop. Fits-in-UMA is a separate blocker for the largest bodies (Kimi-K3 1.56 TB, Inkling 532 GB, Flash 360 GB)."
+      },
+      {
+        "blocker": "I-controller on_disk producer stale vs lake",
+        "status": "cycle_tick will still acquire-next / skip patients it thinks are missing"
+      }
+    ]
+  },
+  "stale_roadmap_text": [
+    {
+      "path": "/Volumes/corpdrive/H-ROADMAP.md",
+      "lines": "8687-8707",
+      "classification": "STALE_ROADMAP_TEXT",
+      "text": "## 24 HOURS / ## 72 HOURS / ## 1 WEEK cadence. No 48-hour Odyssey cycle. 48h appears only as item number 48 in unrelated lists.",
+      "replacement_in_code": "tools/future/odyssey_mission_controller.py CYCLE_HOURS=48.0"
+    },
+    {
+      "path": "workspace/campaign/odyssey/ODYSSEY.md",
+      "classification": "STALE_ROADMAP_TEXT",
+      "text": "Last canonized 2026-08-19. G3 Cycle-1 ACTIVE, driver re-enabled, O001/O003/O004/O005/O006 on-disk cohort. launchd is now DISABLED; lake has 55 bodies; G-series here is not sovereign G011."
+    },
+    {
+      "path": "hcli/specimens.py",
+      "classification": "STALE_ROADMAP_TEXT",
+      "text": "Docstring: '47 sealed specimens sit under ... today'."
+    },
+    {
+      "path": "receipts/future/SPECIMEN_LOAD_COST.json",
+      "classification": "STALE_ROADMAP_TEXT",
+      "text": "prefetch_case.n_sealed_specimens=8, 2.8 cold hours, plus '29 more complete but unsealed'."
+    },
+    {
+      "path": "LaunchAgents/org.substrate.odyssey7d.telegram",
+      "classification": "STALE_ROADMAP_TEXT",
+      "text": "7-day Odyssey telegram agent still registered (not running)."
+    },
+    {
+      "path": "receipts/future/ODYSSEY_I_LAUNCH.json + ODYSSEY_LAUNCH_GATE.json",
+      "classification": "STALE_ROADMAP_TEXT",
+      "text": "phase_transition=STARTED / verdict=LAUNCH while the 48h controller reports NOT_STARTED and the Odyssey driver is disabled. STATIC sidecars, gpu_authority false."
+    }
+  ],
+  "process_state": {
+    "evidence_tier": "MEASURED",
+    "hcli_resident": {
+      "path": "/Users/scammermike/Downloads/hawking/.hcli/resident/state.json",
+      "state": "FAILED",
+      "worker_live": false,
+      "worker_pid": null,
+      "supervisor_pid": null,
+      "stop_reason": "durable mission cancelled and cannot advance itself",
+      "evacuation_reason": "free RAM below 12 GiB reserve",
+      "workspace": "/Users/scammermike/Downloads/hawking",
+      "cycles": 855,
+      "note": "Contract said a live HCLI daemon holds ~110 uncommitted hcli/ files. The resident worker is not live. modellake_watch is live. This audit did not signal any process."
+    },
+    "launchd": {
+      "com.hawking.modellake.watch": {"pid": 4183, "running": true},
+      "com.hawking.odyssey": {"running": false, "plist": "disabled"},
+      "org.substrate.odyssey7d.telegram": {"running": false, "last_exit": 2}
+    }
+  },
+  "g011": {
+    "gate": "sovereign-goal.txt G011 — Run Odyssey streams I, II and III with no global barrier",
+    "verifier": "tools/odyssey/test_odyssey_streaming_runtime.py",
+    "producer": "tools/sovereign/g011_streaming.py",
+    "receipt": "receipts/sovereign/G011_odyssey_streaming.json",
+    "receipt_present": false,
+    "classification": "ABSENT",
+    "caveat": "Even a future green G011 receipt would measure overlapping recorded_at stamps on HCLI_LEDGER proposals (status=PROPOSED probes), not overlapping physical II/III jobs. The gate as written cannot see whether transfer/attack actually ran."
+  },
+  "hawking_rust_crates": {
+    "note": "hawking-orch scheduler is energy/thermal/RAM admission for inference roles, not a 48h Odyssey controller. hawking-events is an event envelope, not law-availability. hawking-research AdversarialVerifier verifies literature claims. None of these are Odyssey I/II/III.",
+    "do_not_count_as_odyssey_cycle_capability": true,
+    "why": "same-word symbols in other layers; no call site from odyssey_ctl, hcli.odyssey, phase_listeners, or odyssey_mission_controller"
+  },
+  "surprises": [
+    {
+      "id": "FIFTY_FIVE_IS_NOT_FIFTY_FIVE_SEALED",
+      "loud": true,
+      "what": "Contract said 55 sealed. Disk has 55 directories. Index says 49 SEALED + 6 UNSEALED. The 6 unsealed include Falcon-H1, Kimi-VL, Qwen3-30B, Qwen3-VL, DSV4F, Flash-Next — the Odyssey I teachers.",
+      "what_would_settle": "Read MODELLAKE_INDEX.json seal_status and tools/odyssey/modellake_promote.py: why those 6 have bodies but are not SEALED."
+    },
+    {
+      "id": "I_CONTROLLER_DOES_NOT_SEE_THE_LAKE",
+      "loud": true,
+      "what": "ODYSSEY_STATE.json still ACQUIRING/queued for patients whose bodies are in /Volumes/corpdrive/hawking-modellake/specimens. cycle_tick's on_disk producer is a different registry from the lake.",
+      "what_would_settle": "A single readiness function both cycle_tick and odyssey2_transfer.require_sealed call, with a test that fails if Falcon-H1 is on disk and O001.on_disk is false."
+    },
+    {
+      "id": "LAUNCH_RECEIPTS_SAY_STARTED_CONTROLLER_SAYS_NOT_STARTED",
+      "loud": true,
+      "what": "ODYSSEY_I_LAUNCH.json phase_transition=STARTED and ODYSSEY_LAUNCH_GATE 16/16 LAUNCH, while odyssey_mission_controller.horizon is NOT_STARTED, ODYSSEY_CYCLE_1_START.json is absent, and com.hawking.odyssey is disabled. The controller's own docstring forbids reporting hour 0 of 48 for a mission nobody launched.",
+      "what_would_settle": "Either delete/supersede the STARTED sidecar or stamp CYCLE_1_START from a process that actually calls admits()."
+    },
+    {
+      "id": "ODYSSEY_I_ACCEPTANCE_IS_A_CENSUS",
+      "loud": true,
+      "what": "receipts/acceptance/ODYSSEY_I_DISCOVERY.json is ACCEPTED on STATIC pick_acquire_candidate(mutate=False) + safetensors header census. That is not 'WHAT IS TRUE' as a school of laws.",
+      "what_would_settle": "Re-run the acceptance gate against GRAVITY_RULEBASE/NEGATIVE_SCIENCE plus a law that II/III can target, or keep ACCEPTED and stop treating it as cycle-complete."
+    },
+    {
+      "id": "G011_WOULD_PASS_ON_PROPOSALS",
+      "loud": true,
+      "what": "create_transfer_probe/create_adversarial_probe record status=PROPOSED and explicitly do not run the job. G011 measures overlapping recorded_at on those lists plus hcli_owned. A resident that only wrote proposals could green G011 without II or III science.",
+      "what_would_settle": "Extend G011 (through protected review, not silent edit) to require probe status beyond PROPOSED and a non-zero transfer/attack producer distinct from the ledger append."
+    },
+    {
+      "id": "H_ROADMAP_STILL_72H",
+      "loud": false,
+      "what": "/Volumes/corpdrive/H-ROADMAP.md Appendix still schedules 24h/72h/1 week. 48h lives in tools/future/odyssey_mission_controller.py only.",
+      "what_would_settle": "Out of scope for this audit (do not rewrite H-ROADMAP). Named as STALE_ROADMAP_TEXT."
+    },
+    {
+      "id": "RESIDENT_IS_NOT_LIVE",
+      "loud": true,
+      "what": "Downloads hawking .hcli/resident/state.json is FAILED, worker_pid null, mission cancelled. Contract described a live daemon. modellake_watch is the live Odyssey-adjacent process.",
+      "what_would_settle": "This is process state, not a code bug. Do not treat HCLI as currently driving Odyssey."
+    }
+  ],
+  "what_this_audit_did_not_run": [
+    "Did not invoke odyssey_ctl cycle --go (would mutate Odyssey state; DO_NOT_TOUCH tools, and a live daemon rule forbids restarting).",
+    "Did not run pytest: tools/ and hcli/ are not in this sparse checkout on disk; tests were read via git show HEAD:<path>.",
+    "Did not load any specimen onto GPU/ANE. Load-cost numbers cited from receipts/future/SPECIMEN_LOAD_COST.json (G102) are prior measurements, not this lane's.",
+    "Did not write, move, or delete anything under /Volumes/corpdrive/hawking-modellake/specimens."
+  ]
+}

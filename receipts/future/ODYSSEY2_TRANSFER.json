@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T09:42:47Z",
+  "recorded_at": "2026-09-02T20:42:36Z",
   "recorded_by": "tools/future/odyssey2_transfer.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -504,10 +504,10 @@
  },
  "identity_transfer_refused": {
   "law_id": "LAW-L1-MLP-ARITHMETIC-SENSITIVE",
-  "reason": "LAW-L1-MLP-ARITHMETIC-SENSITIVE: target None is the origin; a transfer onto the law's origin is not a transfer",
+  "reason": "LAW-L1-MLP-ARITHMETIC-SENSITIVE: target qwen3.8-27b-abliterated-bf16@local is the origin; a transfer onto the law's origin is not a transfer",
   "reason_code": "not_a_transfer",
   "refused": true,
-  "target_specimen": null
+  "target_specimen": "qwen3.8-27b-abliterated-bf16@local"
  },
  "law_authority": {
   "lattice": [
@@ -543,7 +543,7 @@
   "specimen_verify": "WHOLE_TREE_VERIFIED rows \u2014 consumed"
  },
  "schema": "hawking.future.odyssey2_transfer.v1",
- "seal_sha256": "331ce25eb6e1cdfb1f000c4c9aeb8e9ab7389eaa2399d1318ed9b12073acd02b",
+ "seal_sha256": "02ee60ea30742b0f6a0b64fbdbe9ead8feb901f158840d989a761660ccbf664f",
  "sealed_specimens": {
   "Falcon-H1-7B-Instruct": {
    "alias": "Falcon-H1-7B-Instruct",
@@ -604,16 +604,16 @@
   "qwen27": {
    "alias": "qwen27",
    "architecture_family": "dense_hybrid_transformer",
-   "bytes_hashed": null,
-   "n_files": null,
-   "ready": false,
+   "bytes_hashed": 55586059240,
+   "n_files": 31,
+   "ready": true,
    "repo": "Qwen3.8-27B",
-   "revision": null,
+   "revision": "qwen3.8-27b-abliterated-bf16@local",
    "role": "qwen27_mature_physical",
    "source_of_campaign_laws": true,
-   "specimen_id": null,
-   "specimen_path": null,
-   "whole_tree_verified": false
+   "specimen_id": "qwen3.8-27b-abliterated-bf16@local",
+   "specimen_path": "/Volumes/corpdrive/personalmodel/correspondent/qwen3.8-27b-abliterated-bf16",
+   "whole_tree_verified": true
   }
  },
  "selftest": {

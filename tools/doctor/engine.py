@@ -28,6 +28,7 @@ from tools.doctor.anatomy import (
     resolve_specimen,
 )
 from tools.doctor.order import TECHNIQUE_ORDER, Technique, walk_order
+from tools.roadmap import lineage
 from tools.doctor.zeros import (
     FAIL,
     PASS,
@@ -699,7 +700,7 @@ def build(repo: Path | None = None) -> Path:
             "three_zeros": "9.2",
             "diagnosis_evidence": "9.3",
             "gene_card": "I-B — Doctor",
-            "source": "/Users/scammermike/Downloads/H-ROADMAP.md",
+            "source": str(lineage.roadmap_path()),
         },
         "evidence_tier": EVIDENCE_TIER,
         "claim_boundary": (

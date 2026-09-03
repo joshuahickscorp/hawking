@@ -1,0 +1,2144 @@
+{
+  "audit_id": "aud15-function-merge-candidates",
+  "kind": "discovery_audit",
+  "status": "COMPLETE",
+  "inspected_revision": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+  "inspected_revision_short": "04193ccbc",
+  "inspected_at": "2026-09-02T15:00:00-04:00",
+  "inspected_tree": "git HEAD via git grep / git show (sparse worktree; hcli/ not materialized on disk)",
+  "implementation": false,
+  "authority": {
+    "grade": "SOURCE_INSPECTION",
+    "verification": "STATIC_VERIFICATION",
+    "never_wrote_measured": true,
+    "authoritative_for": [
+      "source archaeology",
+      "call-site reachability",
+      "test-file presence",
+      "schema/topology of helpers",
+      "duplication",
+      "naming",
+      "receipt consistency"
+    ],
+    "not_authoritative_for": [
+      "GPU physical performance",
+      "Metal runtime behaviour",
+      "ANE physical behaviour",
+      "U50/FPGA facts",
+      "thermal/power",
+      "protected benchmarks"
+    ],
+    "call_site_rule": "A module import is not a call site. Only a syntactic call of the symbol itself counts. Tests that only mention the name in a string needle are not callers."
+  },
+  "method": [
+    "git ls-tree -r --name-only HEAD for the full tree (sparse checkout does not prove absence)",
+    "git grep for definitions matching hunt categories",
+    "git show of function bodies to compare behaviour, not identifiers",
+    "git grep of SYMBOL( excluding def SYMBOL to collect callers",
+    "git grep of test files for the same symbols",
+    "no process signals; no hcli/ edits; no crates/tools/civilization edits"
+  ],
+  "known_starting_point": {
+    "claim": "three duplicate _atomic_write_bytes implementations live in flash_component_body.py, flash_vector_component_body.py and flash_matrix_component_body.py",
+    "verified": true,
+    "evidence_grade": "SOURCE_INSPECTION",
+    "bodies_match": true,
+    "canonical_already_exists": "hcli.persist.atomic_write_bytes",
+    "see_candidate": "C01"
+  },
+  "classification_vocabulary": [
+    "EXACT_DUPLICATE",
+    "PARAMETERIZABLE",
+    "SHARED_CORE_WITH_SPECIALIZED_EDGE",
+    "SEMANTICALLY_SIMILAR_BUT_MUST_REMAIN_DISTINCT",
+    "HISTORICAL_DUPLICATE",
+    "NOT_MERGEABLE"
+  ],
+  "capability_vocabulary_used": [
+    "ABSENT",
+    "CALLABLE",
+    "TESTED",
+    "SCAFFOLDED"
+  ],
+  "candidates": [
+    {
+      "id": "C01",
+      "title": "Flash-body _atomic_write_bytes clones vs persist.atomic_write_bytes",
+      "classification": "EXACT_DUPLICATE",
+      "capability_class": "CALLABLE",
+      "evidence_grade": "SOURCE_INSPECTION",
+      "hunt": [
+        "atomic-write helpers"
+      ],
+      "symbols": [
+        "hcli.agentos.flash_component_body._atomic_write_bytes",
+        "hcli.agentos.flash_vector_component_body._atomic_write_bytes",
+        "hcli.agentos.flash_matrix_component_body._atomic_write_bytes",
+        "hcli.persist.atomic_write_bytes"
+      ],
+      "files": [
+        {
+          "path": "hcli/agentos/flash_component_body.py",
+          "def_line": 59
+        },
+        {
+          "path": "hcli/agentos/flash_vector_component_body.py",
+          "def_line": 50
+        },
+        {
+          "path": "hcli/agentos/flash_matrix_component_body.py",
+          "def_line": 62
+        },
+        {
+          "path": "hcli/persist.py",
+          "def_line": 45
+        }
+      ],
+      "behavioural_differences": [
+        "All four: mkdir parents, same-dir temp named .{name}.{pid}.{uuid}.tmp, write, flush, fsync, os.replace, unlink temp on error.",
+        "persist.atomic_write_bytes raises TypeError if payload is not bytes. The three flash clones do not type-check.",
+        "persist uses open(tmp_path,'wb'); clones use Path.open('wb'). Observable write contract is the same.",
+        "The three flash clones import persist.atomic_write_json in the same file and still ship a private bytes writer."
+      ],
+      "callers": [
+        {
+          "path": "hcli/agentos/flash_component_body.py",
+          "line": 213,
+          "call": "_atomic_write_bytes(body_path, encoded_body)"
+        },
+        {
+          "path": "hcli/agentos/flash_matrix_component_body.py",
+          "line": 213,
+          "call": "_atomic_write_bytes(body_path, encoded_body)"
+        },
+        {
+          "path": "hcli/agentos/flash_vector_component_body.py",
+          "line": 141,
+          "call": "_atomic_write_bytes(body_path, raw)"
+        },
+        {
+          "path": "hcli/session.py",
+          "line": 228,
+          "call": "atomic_write_bytes(path, gzip.compress(...))  # persist canonical"
+        }
+      ],
+      "caller_count_note": "4 call sites of the write itself. flash_vector also imports flash_component_body as component_body but does not call that module's writer.",
+      "tests": [
+        {
+          "path": "tools/haider/hcli/tests/test_core_authorities.py",
+          "covers": "atomic_write_text and atomic_write_json and resources/runtime re-exports; does NOT mention atomic_write_bytes and does NOT fail on the three flash clones",
+          "invokes_symbol": false
+        },
+        {
+          "path": null,
+          "covers": "no test file calls persist.atomic_write_bytes or the flash _atomic_write_bytes helpers",
+          "invokes_symbol": false
+        }
+      ],
+      "merge_safety": "HIGH if the TypeError guard is kept. Flash files already depend on hcli.persist. persist.py exists specifically so callers stop shipping private _atomic_write*.",
+      "canonical_api_proposal": "hcli.persist.atomic_write_bytes(path, payload: bytes) -> None  (already exists)",
+      "deletion_opportunity": "Delete the three local defs; `from hcli.persist import atomic_write_bytes`. Optionally extend TestAtomicWriteOneAuthority to grep-fail on new def _atomic_write_bytes.",
+      "risk": "Low. Callers already pass bytes. A str payload would start raising TypeError (stricter, matches persist)."
+    },
+    {
+      "id": "C02",
+      "title": "lab/lineage compare-and-swap atomic write",
+      "classification": "SEMANTICALLY_SIMILAR_BUT_MUST_REMAIN_DISTINCT",
+      "capability_class": "CALLABLE",
+      "evidence_grade": "SOURCE_INSPECTION",
+      "hunt": [
+        "atomic-write helpers"
+      ],
+      "symbols": [
+        "lab.lineage.lifecycle._atomic_write_bytes",
+        "lab.lineage.lifecycle._atomic_write_json"
+      ],
+      "files": [
+        {
+          "path": "lab/lineage/lifecycle.py",
+          "def_line": 107
+        }
+      ],
+      "behavioural_differences": [
+        "Requires expected_previous_sha256. If None, refuses if target appeared during the write. If set, re-reads target and aborts on mismatch.",
+        "Preserves existing file mode via fchmod; fsyncs the parent directory after replace.",
+        "Raises LifecycleError rather than last-writer-wins.",
+        "Callers: lifecycle.py:170 (via _atomic_write_json) and lifecycle.py:863."
+      ],
+      "callers": [
+        {
+          "path": "lab/lineage/lifecycle.py",
+          "line": 170,
+          "call": "_atomic_write_bytes(..., expected_previous_sha256=...)"
+        },
+        {
+          "path": "lab/lineage/lifecycle.py",
+          "line": 863,
+          "call": "_atomic_write_bytes(target, raw, expected_previous_sha256=None)"
+        }
+      ],
+      "caller_count_note": "2 in-module call sites. No hcli caller.",
+      "tests": [],
+      "merge_safety": "UNSAFE to fold into persist. CAS vs replace is an authority boundary for lineage controllers.",
+      "canonical_api_proposal": "Keep lab.lineage.lifecycle._atomic_write_bytes. Do not re-export persist here.",
+      "deletion_opportunity": "None.",
+      "risk": "Merging would drop the compare-and-swap and directory fsync; two controllers could clobber a lineage document."
+    },
+    {
+      "id": "C03",
+      "title": "Rust qwen80_uniform_q4 atomic_write_bytes",
+      "classification": "NOT_MERGEABLE",
+      "capability_class": "CALLABLE",
+      "evidence_grade": "SOURCE_INSPECTION",
+      "hunt": [
+        "atomic-write helpers"
+      ],
+      "symbols": [
+        "crates/hawking-core/.../qwen80_uniform_q4.rs::atomic_write_bytes"
+      ],
+      "files": [
+        {
+          "path": "crates/hawking-core/src/model/qwen_complete_binary/qwen80_uniform_q4.rs",
+          "def_line": 426
+        }
+      ],
+      "behavioural_differences": [
+        "Same contract (create parent, tmp, write, sync_all, rename, cleanup on error) in Rust.",
+        "Tmp name is .{filename}.tmp-{pid} without uuid.",
+        "Returns Result with q80_error; not callable from Python persist."
+      ],
+      "callers": [],
+      "caller_count_note": "In-crate private fn; not grepped for every rust call in this pass. Cross-language merge is not a Python persist deletion.",
+      "tests": [],
+      "merge_safety": "NOT_MERGEABLE across languages. A later crates-only pass could share a small rust helper; this lane must not touch crates.",
+      "canonical_api_proposal": "None for Python. Optional later: hawking_core::fs::atomic_write_bytes.",
+      "deletion_opportunity": "None in this audit.",
+      "risk": "N/A"
+    },
+    {
+      "id": "C04",
+      "title": "Chunked SHA-256 file hasher (soft None vs hard raise)",
+      "classification": "PARAMETERIZABLE",
+      "capability_class": "CALLABLE",
+      "evidence_grade": "SOURCE_INSPECTION",
+      "hunt": [
+        "hashing helpers"
+      ],
+      "symbols": [
+        "_sha256(path) -> Optional[str]",
+        "_sha256(path) -> str",
+        "_sha256_file(path) -> Optional[str]",
+        "hcli.tool_registry._sha256_file -> str"
+      ],
+      "files": [
+        {
+          "path": "hcli/agentos/accelerator_regression.py",
+          "def_line": 43,
+          "mode": "soft_None"
+        },
+        {
+          "path": "hcli/agentos/charge.py",
+          "def_line": 27,
+          "mode": "soft_None"
+        },
+        {
+          "path": "hcli/agentos/flash_component_campaign.py",
+          "def_line": 61,
+          "mode": "soft_None"
+        },
+        {
+          "path": "hcli/agentos/flash_executable.py",
+          "def_line": 95,
+          "mode": "soft_None"
+        },
+        {
+          "path": "hcli/agentos/flash_graph_component.py",
+          "def_line": 44,
+          "mode": "soft_None"
+        },
+        {
+          "path": "hcli/agentos/flash_router_graph.py",
+          "def_line": 39,
+          "mode": "soft_None"
+        },
+        {
+          "path": "hcli/agentos/flash_telemetry.py",
+          "def_line": 91,
+          "mode": "soft_None"
+        },
+        {
+          "path": "hcli/agentos/handoff.py",
+          "def_line": 43,
+          "mode": "soft_None"
+        },
+        {
+          "path": "hcli/agentos/modellake_gate.py",
+          "def_line": 171,
+          "mode": "soft_None"
+        },
+        {
+          "path": "hcli/agentos/qwen27_runtime_identity.py",
+          "def_line": 48,
+          "mode": "soft_None"
+        },
+        {
+          "path": "hcli/agentos/qwen38_fusion_audit.py",
+          "def_line": 59,
+          "mode": "soft_None"
+        },
+        {
+          "path": "hcli/agentos/science_maps.py",
+          "def_line": 19,
+          "mode": "soft_None"
+        },
+        {
+          "path": "hcli/architecture.py",
+          "def_line": 23,
+          "mode": "soft_None_try_around_open"
+        },
+        {
+          "path": "hcli/vmcp_adapter.py",
+          "def_line": 142,
+          "mode": "soft_None_try_around_open"
+        },
+        {
+          "path": "hcli/flash_next.py",
+          "def_line": 185,
+          "mode": "soft_None"
+        },
+        {
+          "path": "hcli/agentos/flash_component_body.py",
+          "def_line": 48,
+          "mode": "soft_None",
+          "name": "_sha256_file"
+        },
+        {
+          "path": "hcli/agentos/flash_matrix_component_body.py",
+          "def_line": 51,
+          "mode": "soft_None",
+          "name": "_sha256_file"
+        },
+        {
+          "path": "hcli/agentos/flash_vector_component_body.py",
+          "def_line": 39,
+          "mode": "soft_None_DEAD",
+          "name": "_sha256_file"
+        },
+        {
+          "path": "hcli/agentos/flash_router_selection.py",
+          "def_line": 52,
+          "mode": "soft_None",
+          "name": "_sha256_file"
+        },
+        {
+          "path": "hcli/agentos/autonomy_gate.py",
+          "def_line": 215,
+          "mode": "hard_raise"
+        },
+        {
+          "path": "hcli/tool_registry.py",
+          "def_line": 193,
+          "mode": "hard_raise",
+          "name": "_sha256_file"
+        }
+      ],
+      "behavioural_differences": [
+        "Algorithm is identical: hashlib.sha256, 1 MiB chunks, hexdigest.",
+        "SOFT: except OSError: return None. Callers often still guard with path.is_file().",
+        "HARD (autonomy_gate, tool_registry): no try; OSError propagates. autonomy_gate uses this as a verifier expected digest \u2014 a missing file must not become None and compare equal.",
+        "architecture.py / vmcp_adapter.py construct the hasher outside the try; observable result on OSError is still None.",
+        "SURPRISE: flash_vector_component_body._sha256_file is defined and never called in that file (only _sha256_bytes is)."
+      ],
+      "callers": [
+        {
+          "path": "hcli/agentos/accelerator_regression.py",
+          "line": 123,
+          "call": "_sha256(source)"
+        },
+        {
+          "path": "hcli/agentos/autonomy_gate.py",
+          "line": 619,
+          "call": "expected = _sha256(marker)  # hard"
+        },
+        {
+          "path": "hcli/agentos/flash_executable.py",
+          "line": 194,
+          "call": "_sha256(path)  # many similar receipt_sha256 lines in this file"
+        },
+        {
+          "path": "hcli/tool_registry.py",
+          "line": 1271,
+          "call": "before = _sha256_file(path) if path.is_file() else None"
+        },
+        {
+          "path": "hcli/agentos/flash_component_body.py",
+          "line": 99,
+          "call": "_sha256_file(manifest_path)"
+        }
+      ],
+      "caller_count_note": "Dozens of in-module calls. Every listed definition except flash_vector._sha256_file has at least one in-file call of the symbol. Imports of hashlib.sha256 itself were not counted as this family.",
+      "tests": [
+        {
+          "path": "hcli/test_architecture.py",
+          "covers": "architecture report includes sha256 fields; does not unit-test the helper in isolation",
+          "invokes_symbol": false
+        }
+      ],
+      "merge_safety": "SAFE if parameterized: missing='none'|'raise'. UNSAFE to replace autonomy_gate/tool_registry hard hasher with the soft one (None == None would forge a match).",
+      "canonical_api_proposal": "hcli.persist.sha256_file(path, *, missing='none'|'raise', chunk=1<<20) -> Optional[str]. Default missing='none' matches the majority. persist is the leaf module with no hcli imports.",
+      "deletion_opportunity": "~21 local defs after the helper exists. Do not delete autonomy_gate's raise behaviour \u2014 pass missing='raise'.",
+      "risk": "Medium if default is wrong. A gate that hashes a missing marker as None can pass a check that should throw."
+    },
+    {
+      "id": "C05",
+      "title": "SHA-256 of bytes -> hex",
+      "classification": "EXACT_DUPLICATE",
+      "capability_class": "CALLABLE",
+      "evidence_grade": "SOURCE_INSPECTION",
+      "hunt": [
+        "hashing helpers"
+      ],
+      "symbols": [
+        "_sha256_bytes",
+        "hcli.engine._sha256_bytes"
+      ],
+      "files": [
+        {
+          "path": "hcli/agentos/flash_component_body.py",
+          "def_line": 44
+        },
+        {
+          "path": "hcli/agentos/flash_vector_component_body.py",
+          "def_line": 35
+        },
+        {
+          "path": "hcli/agentos/flash_matrix_component_body.py",
+          "def_line": 47
+        },
+        {
+          "path": "hcli/agentos/flash_loader_roundtrip.py",
+          "def_line": 50
+        },
+        {
+          "path": "hcli/agentos/flash_representation_experiment.py",
+          "def_line": 74
+        },
+        {
+          "path": "hcli/agentos/flash_router_representation_ab.py",
+          "def_line": 42
+        },
+        {
+          "path": "hcli/agentos/flash_router_selection.py",
+          "def_line": 48
+        },
+        {
+          "path": "hcli/agentos/flash_science.py",
+          "def_line": 87
+        },
+        {
+          "path": "hcli/agentos/flash_tensor_probe.py",
+          "def_line": 44
+        },
+        {
+          "path": "hcli/agentos/flash_transform_parity.py",
+          "def_line": 70
+        },
+        {
+          "path": "hcli/tool_registry.py",
+          "def_line": 189
+        },
+        {
+          "path": "hcli/engine.py",
+          "def_line": 393,
+          "note": "Optional[bytes] -> Optional[str]; None in, None out"
+        }
+      ],
+      "behavioural_differences": [
+        "Ten flash/tool copies: return hashlib.sha256(value).hexdigest() on bytes.",
+        "engine._sha256_bytes(None) returns None. That is the only behavioural extension."
+      ],
+      "callers": [
+        {
+          "path": "hcli/agentos/flash_component_body.py",
+          "line": 214,
+          "call": "body_sha256 = _sha256_bytes(encoded_body)"
+        },
+        {
+          "path": "hcli/agentos/flash_vector_component_body.py",
+          "line": 142,
+          "call": "body_sha256 = _sha256_bytes(raw)"
+        },
+        {
+          "path": "hcli/agentos/flash_loader_roundtrip.py",
+          "line": 100,
+          "call": "_sha256_bytes(manifest_path.read_bytes())"
+        }
+      ],
+      "caller_count_note": "Many in-module calls (flash_representation_experiment alone has 8). engine callers not exhaustively listed; definition exists at engine.py:393.",
+      "tests": [],
+      "merge_safety": "HIGH. hashlib.sha256(data).hexdigest() has no authority boundary.",
+      "canonical_api_proposal": "hcli.persist.sha256_bytes(data: bytes | None) -> str | None  (None-in/None-out covers engine).",
+      "deletion_opportunity": "~11 one-liners.",
+      "risk": "Negligible."
+    },
+    {
+      "id": "C06",
+      "title": "Soft dict _read_json copies vs specialized readers",
+      "classification": "PARAMETERIZABLE",
+      "capability_class": "CALLABLE",
+      "evidence_grade": "SOURCE_INSPECTION",
+      "hunt": [
+        "receipt serialization",
+        "evidence normalization"
+      ],
+      "symbols": [
+        "_read_json",
+        "hcli.agentos.modellake_supervisor._read"
+      ],
+      "files": [
+        {
+          "path": "hcli/agentos/accelerator_regression.py",
+          "def_line": 54,
+          "cluster": "soft_dict"
+        },
+        {
+          "path": "hcli/agentos/autonomy_gate.py",
+          "def_line": 203,
+          "cluster": "soft_dict"
+        },
+        {
+          "path": "hcli/agentos/flash_component_body.py",
+          "def_line": 36,
+          "cluster": "soft_dict"
+        },
+        {
+          "path": "hcli/agentos/flash_component_campaign.py",
+          "def_line": 53,
+          "cluster": "soft_dict"
+        },
+        {
+          "path": "hcli/agentos/flash_executable.py",
+          "def_line": 73,
+          "cluster": "soft_dict"
+        },
+        {
+          "path": "hcli/agentos/flash_graph_component.py",
+          "def_line": 36,
+          "cluster": "soft_dict"
+        },
+        {
+          "path": "hcli/agentos/flash_loader_roundtrip.py",
+          "def_line": 42,
+          "cluster": "soft_dict"
+        },
+        {
+          "path": "hcli/agentos/flash_matrix_component_body.py",
+          "def_line": 39,
+          "cluster": "soft_dict"
+        },
+        {
+          "path": "hcli/agentos/flash_representation_experiment.py",
+          "def_line": 66,
+          "cluster": "soft_dict"
+        },
+        {
+          "path": "hcli/agentos/flash_router_graph.py",
+          "def_line": 31,
+          "cluster": "soft_dict"
+        },
+        {
+          "path": "hcli/agentos/flash_router_representation_ab.py",
+          "def_line": 34,
+          "cluster": "soft_dict"
+        },
+        {
+          "path": "hcli/agentos/flash_router_selection.py",
+          "def_line": 40,
+          "cluster": "soft_dict"
+        },
+        {
+          "path": "hcli/agentos/flash_telemetry.py",
+          "def_line": 83,
+          "cluster": "soft_dict"
+        },
+        {
+          "path": "hcli/agentos/flash_tensor_probe.py",
+          "def_line": 36,
+          "cluster": "soft_dict"
+        },
+        {
+          "path": "hcli/agentos/flash_transform_parity.py",
+          "def_line": 62,
+          "cluster": "soft_dict"
+        },
+        {
+          "path": "hcli/agentos/modellake_gate.py",
+          "def_line": 182,
+          "cluster": "soft_dict"
+        },
+        {
+          "path": "hcli/agentos/qwen27_runtime_identity.py",
+          "def_line": 40,
+          "cluster": "soft_dict"
+        },
+        {
+          "path": "hcli/agentos/qwen38_fusion_audit.py",
+          "def_line": 51,
+          "cluster": "soft_dict"
+        },
+        {
+          "path": "hcli/agentos/modellake_supervisor.py",
+          "def_line": 20,
+          "cluster": "soft_dict",
+          "name": "_read"
+        },
+        {
+          "path": "hcli/delegate.py",
+          "def_line": 122,
+          "cluster": "defect_tuple"
+        },
+        {
+          "path": "hcli/agentos/resident.py",
+          "def_line": 255,
+          "cluster": "any_or_none_method"
+        },
+        {
+          "path": "hcli/frontier_scheduler.py",
+          "def_line": 148,
+          "cluster": "json_any_no_encoding"
+        }
+      ],
+      "behavioural_differences": [
+        "soft_dict (19 copies including _read): utf-8, OSError/UnicodeError/JSONDecodeError -> None, non-dict JSON -> None. Bodies are character-identical across the 18 _read_json defs.",
+        "delegate._read_json returns (value, defect). Missing file is a defect string, not None-silent. Any JSON type is returned. Never guesses. This is the mission/delegate authority.",
+        "resident.ResidentStore._read_json returns Any (list or dict or None) so knowledge/inbox JSON arrays survive. A dict-only helper would empty the inbox.",
+        "frontier_scheduler._read_json uses path.read_text() with no encoding, except (OSError, ValueError), returns json.loads directly so a JSON array is not rejected."
+      ],
+      "callers": [
+        {
+          "path": "hcli/agentos/flash_executable.py",
+          "line": 148,
+          "call": "manifest = _read_json(manifest_path)  # plus ~20 more in this file"
+        },
+        {
+          "path": "hcli/delegate.py",
+          "line": 441,
+          "call": "spec, spec_defect = _read_json(spec_path(ws))"
+        },
+        {
+          "path": "hcli/agentos/resident.py",
+          "line": 295,
+          "call": "value = self._read_json(self.inbox_path)"
+        }
+      ],
+      "caller_count_note": "soft_dict: many in-module calls (flash_executable is the densest). delegate: 10+ calls all unpacking (value, defect). resident: 6 method calls on store files.",
+      "tests": [
+        {
+          "path": "hcli/test_delegate.py",
+          "covers": "reads mission_state_path via json.loads in tests; exercises delegate's defect-aware path",
+          "invokes_symbol": false
+        }
+      ],
+      "merge_safety": "SAFE to merge the 19 soft_dict copies. UNSAFE to replace delegate or resident readers with dict-or-None.",
+      "canonical_api_proposal": "hcli.persist.read_json_object(path) -> Optional[dict]. Leave delegate._read_json and ResidentStore._read_json in place.",
+      "deletion_opportunity": "19 local defs. Zero from delegate/resident/frontier_scheduler.",
+      "risk": "If dict-only helper is used on resident inbox, list JSON becomes {} and work vanishes. If used on delegate, missing-file defects become silent None."
+    },
+    {
+      "id": "C07",
+      "title": "Flash _final_root (HCLI_FLASH_NEXT_ROOT or hardcoded lake specimen)",
+      "classification": "EXACT_DUPLICATE",
+      "capability_class": "CALLABLE",
+      "evidence_grade": "SOURCE_INSPECTION",
+      "hunt": [
+        "ModelLake lifecycle helpers"
+      ],
+      "symbols": [
+        "_final_root"
+      ],
+      "files": [
+        {
+          "path": "hcli/agentos/flash_component_body.py",
+          "def_line": 76
+        },
+        {
+          "path": "hcli/agentos/flash_vector_component_body.py",
+          "def_line": 67
+        },
+        {
+          "path": "hcli/agentos/flash_matrix_component_body.py",
+          "def_line": 79
+        },
+        {
+          "path": "hcli/agentos/flash_loader_roundtrip.py",
+          "def_line": 54
+        },
+        {
+          "path": "hcli/agentos/flash_transform_parity.py",
+          "def_line": 111
+        },
+        {
+          "path": "hcli/agentos/flash_tensor_probe.py",
+          "def_line": 112
+        },
+        {
+          "path": "hcli/agentos/flash_representation_experiment.py",
+          "def_line": 142
+        }
+      ],
+      "behavioural_differences": [
+        "All seven: chosen = value or env HCLI_FLASH_NEXT_ROOT; else (LAKE_ROOT / specimens / LAKE_SLUG).resolve().",
+        "Some bind LAKE_ROOT locally (flash_transform_parity.LAKE_ROOT = Path('/Volumes/corpdrive/hawking-modellake')); others go through transform.LAKE_ROOT or component_body.transform.LAKE_ROOT. Same path when env is unset.",
+        "SURPRISE vs C18: this path does NOT honor HCLI_MODEL_LAKE_ROOT, which specimens.py and tool_registry._model_lake_roots do."
+      ],
+      "callers": [
+        {
+          "path": "hcli/agentos/flash_component_body.py",
+          "line": 125,
+          "call": "final_root = _final_root(root)"
+        },
+        {
+          "path": "hcli/agentos/flash_vector_component_body.py",
+          "line": 85,
+          "call": "final_root = _final_root(root)"
+        },
+        {
+          "path": "hcli/agentos/flash_matrix_component_body.py",
+          "line": 145,
+          "call": "final_root = _final_root(root)"
+        },
+        {
+          "path": "hcli/agentos/flash_loader_roundtrip.py",
+          "line": 184,
+          "call": "final_root = _final_root(root)"
+        },
+        {
+          "path": "hcli/agentos/flash_representation_experiment.py",
+          "line": 313,
+          "call": "final_root = _final_root(root)"
+        },
+        {
+          "path": "hcli/agentos/flash_tensor_probe.py",
+          "line": 184,
+          "call": "final_root = _final_root(root)"
+        },
+        {
+          "path": "hcli/agentos/flash_transform_parity.py",
+          "line": 316,
+          "call": "final_root = _final_root(root)"
+        },
+        {
+          "path": "hcli/agentos/flash_router_representation_ab.py",
+          "line": 145,
+          "call": "transform._final_root(None)  # cross-module call, not a 8th def"
+        }
+      ],
+      "caller_count_note": "7 in-module calls plus one cross-module call of transform._final_root.",
+      "tests": [],
+      "merge_safety": "HIGH as a single helper next to LAKE_SLUG. Decide whether HCLI_MODEL_LAKE_ROOT should apply (see C18) before deleting copies \u2014 that is a behaviour change, not a DRY.",
+      "canonical_api_proposal": "hcli.agentos.flash_transform_parity._final_root (already the LAKE_ROOT owner) or hcli.flash_next.specimen_root().",
+      "deletion_opportunity": "6 of 7 defs; keep one. flash_router_representation_ab already calls through.",
+      "risk": "Low if env semantics stay identical. Medium if someone 'fixes' it to honor HCLI_MODEL_LAKE_ROOT without a receipt \u2014 that would retarget Flash bodies."
+    },
+    {
+      "id": "C08",
+      "title": "agentos _repo_root = parents[2] of this file",
+      "classification": "EXACT_DUPLICATE",
+      "capability_class": "CALLABLE",
+      "evidence_grade": "SOURCE_INSPECTION",
+      "hunt": [
+        "filesystem guards"
+      ],
+      "symbols": [
+        "_repo_root"
+      ],
+      "files": [
+        {
+          "path": "hcli/agentos/accelerator_regression.py",
+          "def_line": 34
+        },
+        {
+          "path": "hcli/agentos/autonomy_gate.py",
+          "def_line": 181
+        },
+        {
+          "path": "hcli/agentos/charge.py",
+          "def_line": 38
+        },
+        {
+          "path": "hcli/agentos/qwen27_runtime_identity.py",
+          "def_line": 31
+        },
+        {
+          "path": "hcli/agentos/qwen38_fusion_audit.py",
+          "def_line": 35
+        }
+      ],
+      "behavioural_differences": [
+        "All five: Path(value).expanduser().resolve() if value else Path(__file__).resolve().parents[2].",
+        "Some spell it as if value: return ...; return parents[2]. Empty string is falsy in both.",
+        "This is NOT find_repo_root (C09). It assumes the module lives at <repo>/hcli/agentos/*.py. A relocated file would point at hcli/ instead of the repo."
+      ],
+      "callers": [
+        {
+          "path": "hcli/agentos/accelerator_regression.py",
+          "line": 393,
+          "call": "repo = _repo_root(repo_root)"
+        },
+        {
+          "path": "hcli/agentos/protected_accelerator_benchmark.py",
+          "line": 397,
+          "call": "repo = _repo_root(repo_root)  # imported from accelerator_regression"
+        },
+        {
+          "path": "hcli/agentos/protected_benchmark_watcher.py",
+          "line": 203,
+          "call": "imported from accelerator_regression"
+        },
+        {
+          "path": "hcli/agentos/qwen27_mlp_diagnostic.py",
+          "line": 173,
+          "call": "imported from qwen27_runtime_identity"
+        },
+        {
+          "path": "hcli/agentos/autonomy_gate.py",
+          "line": 993,
+          "call": "repo = _repo_root(repo_root)"
+        }
+      ],
+      "caller_count_note": "Each of the five defs is called from its own run_* entry. Three additional files import accelerator_regression._repo_root or qwen27_runtime_identity._repo_root \u2014 those are real calls, not extra defs.",
+      "tests": [],
+      "merge_safety": "SAFE among the five. Do not replace with find_repo_root or discover_repo_root (C09).",
+      "canonical_api_proposal": "Keep using hcli.paths.find_repo_root(Path(__file__)) if the intent is 'this repo'; parents[2] is a location assumption. If the intent is 'file's great-grandparent', one private helper is enough.",
+      "deletion_opportunity": "4 of 5 defs; import the remaining one or find_repo_root.",
+      "risk": "Low among themselves. High if swapped for discover_repo_root (git toplevel of cwd) or find_repo_root (Cargo.toml markers)."
+    },
+    {
+      "id": "C09",
+      "title": "Repo-root locators with different markers (must stay distinct)",
+      "classification": "SEMANTICALLY_SIMILAR_BUT_MUST_REMAIN_DISTINCT",
+      "capability_class": "TESTED",
+      "evidence_grade": "SOURCE_INSPECTION",
+      "hunt": [
+        "filesystem guards"
+      ],
+      "symbols": [
+        "hcli.paths.find_repo_root",
+        "hcli.session_ledger.discover_repo_root",
+        "hcli.commands._land_repo_root",
+        "hcli.agentos.runtime._find_repo_root",
+        "hcli.agentos_cli._default_repo_root",
+        "hcli.runtime_iface.default_repo_root",
+        "hcli.genomes.runtime_genome._repo_root",
+        "hcli.resources._default_repo_root",
+        "hcli.machine.default_repo_root"
+      ],
+      "files": [
+        {
+          "path": "hcli/paths.py",
+          "def_line": 12,
+          "markers": ".git or Cargo.toml, plus tools/headless or crates"
+        },
+        {
+          "path": "hcli/session_ledger.py",
+          "def_line": 79,
+          "markers": "git rev-parse --show-toplevel first; find_repo_root only if not a git repo"
+        },
+        {
+          "path": "hcli/commands.py",
+          "def_line": 419,
+          "markers": "wraps discover_repo_root for /land"
+        },
+        {
+          "path": "hcli/agentos/runtime.py",
+          "def_line": 32,
+          "markers": "hcli/ dir + pyproject.toml; fallback to installed package"
+        },
+        {
+          "path": "hcli/agentos_cli.py",
+          "def_line": 33,
+          "markers": "same hcli+pyproject walk from cwd then this file"
+        },
+        {
+          "path": "hcli/runtime_iface.py",
+          "def_line": 527,
+          "markers": "hcli/runtime.py + receipts/headless; else cwd"
+        },
+        {
+          "path": "hcli/genomes/runtime_genome.py",
+          "def_line": 36,
+          "markers": "same as runtime_iface"
+        },
+        {
+          "path": "hcli/resources.py",
+          "def_line": 56,
+          "markers": "re-export find_repo_root(Path(__file__))"
+        },
+        {
+          "path": "hcli/machine.py",
+          "def_line": 83,
+          "markers": "re-export find_repo_root(Path(__file__))"
+        }
+      ],
+      "behavioural_differences": [
+        "find_repo_root is shaped to find THIS hawking checkout and silently falls back to the running code's tree.",
+        "discover_repo_root exists because that silent fallback is exactly what /land push must never do to a scratch git repo. Docstring at session_ledger.py:79 is the authority.",
+        "agentos.runtime._find_repo_root refuses to treat an external mission workspace as a fake repo root.",
+        "runtime_iface / runtime_genome look for receipts/headless + hcli/runtime.py, then cwd \u2014 a third marker set.",
+        "resources._default_repo_root and machine.default_repo_root are re-exports, not clones."
+      ],
+      "callers": [
+        {
+          "path": "hcli/commands.py",
+          "line": 431,
+          "call": "discover_repo_root(root) if root is not None else find_repo_root()"
+        },
+        {
+          "path": "hcli/session_ledger.py",
+          "line": 118,
+          "call": "discover_repo_root(self.workspace)"
+        },
+        {
+          "path": "hcli/test_checkpoint.py",
+          "line": 194,
+          "call": "assert find_repo_root(wt) == wt.resolve()"
+        },
+        {
+          "path": "hcli/test_session_ledger.py",
+          "line": 73,
+          "call": "discover_repo_root(repo)"
+        }
+      ],
+      "caller_count_note": "find_repo_root and discover_repo_root are called from production and tests. resources/machine wrappers are thin.",
+      "tests": [
+        {
+          "path": "hcli/test_checkpoint.py",
+          "covers": "find_repo_root on a worktree",
+          "invokes_symbol": true
+        },
+        {
+          "path": "hcli/test_session_ledger.py",
+          "covers": "discover_repo_root",
+          "invokes_symbol": true
+        },
+        {
+          "path": "hcli/test_machine_status.py",
+          "covers": "find_repo_root looks like hawking root",
+          "invokes_symbol": true
+        }
+      ],
+      "merge_safety": "UNSAFE to collapse discover_repo_root into find_repo_root. Docstring states that as a named incident class. runtime_iface vs find_repo_root also disagree on fallback (cwd vs this package).",
+      "canonical_api_proposal": "Keep find_repo_root (hawking checkout) and discover_repo_root (git toplevel of the workspace). Optionally fold runtime_genome._repo_root into runtime_iface.default_repo_root (same markers) \u2014 PARAMETERIZABLE sub-pair, still not find_repo_root.",
+      "deletion_opportunity": "runtime_genome._repo_root could call runtime_iface.default_repo_root. Nothing else.",
+      "risk": "Collapsing /land onto find_repo_root would retarget git mutations at the live hawking checkout. Named, load-bearing."
+    },
+    {
+      "id": "C10",
+      "title": "AgentOS gate _write_receipt / modellake _write",
+      "classification": "PARAMETERIZABLE",
+      "capability_class": "CALLABLE",
+      "evidence_grade": "SOURCE_INSPECTION",
+      "hunt": [
+        "receipt serialization"
+      ],
+      "symbols": [
+        "_write_receipt",
+        "hcli.agentos.modellake_gate._write"
+      ],
+      "files": [
+        {
+          "path": "hcli/agentos/native_gate.py",
+          "def_line": 391,
+          "default": "receipts/headless/HCLI_AGENTOS_NATIVE_GATE.json"
+        },
+        {
+          "path": "hcli/agentos/native_mission_gate.py",
+          "def_line": 148,
+          "default": "receipts/headless/HCLI_NATIVE_MISSION_GATE.json"
+        },
+        {
+          "path": "hcli/agentos/resident_gate.py",
+          "def_line": 257,
+          "default": "receipts/headless/HCLI_AGENTOS_RESIDENT_GATE.json"
+        },
+        {
+          "path": "hcli/agentos/modellake_gate.py",
+          "def_line": 399,
+          "default": "receipts/headless/HCLI_MODELLAKE_FLASH_CENSUS.json",
+          "name": "_write"
+        }
+      ],
+      "behavioural_differences": [
+        "Bodies are the same 6 lines: dest = emit or repo_root/receipts/headless/NAME; relative dest joins repo_root; report['receipt_path']=resolve(); atomic_write_json(dest, report).",
+        "Only the default filename differs. Persistence goes through persist.atomic_write_json already.",
+        "engine.Engine._write_receipt, grok_bridge.GrokBridge._write_receipt, ledger.Ledger._write_receipt are different schemas (C22)."
+      ],
+      "callers": [
+        {
+          "path": "hcli/agentos/native_gate.py",
+          "line": 709,
+          "call": "_write_receipt(report, emit, repo)"
+        },
+        {
+          "path": "hcli/agentos/native_mission_gate.py",
+          "line": 352,
+          "call": "_write_receipt(report, emit, repo)"
+        },
+        {
+          "path": "hcli/agentos/resident_gate.py",
+          "line": 308,
+          "call": "_write_receipt(report, emit, repo)"
+        },
+        {
+          "path": "hcli/agentos/resident_gate.py",
+          "line": 407,
+          "call": "_write_receipt(report, emit, repo)"
+        },
+        {
+          "path": "hcli/agentos/modellake_gate.py",
+          "line": 404,
+          "call": "atomic_write_json inside _write; _write is the helper"
+        }
+      ],
+      "caller_count_note": "Each helper is called from its run_* once (resident_gate twice: early-fail and success paths).",
+      "tests": [],
+      "merge_safety": "SAFE. This is a default-path parameter, not an authority split. Do not merge with Engine/Grok/Ledger writers.",
+      "canonical_api_proposal": "def write_gate_receipt(report, emit, repo_root, *, default_name: str) -> Path",
+      "deletion_opportunity": "4 near-identical defs.",
+      "risk": "Low. Default names must remain distinct or receipts collide (tools/future/_common already refuses foreign schema overwrite on a shared path)."
+    },
+    {
+      "id": "C11",
+      "title": "Gate causality_payload envelope (shared shape, distinct probe text)",
+      "classification": "SHARED_CORE_WITH_SPECIALIZED_EDGE",
+      "capability_class": "CALLABLE",
+      "evidence_grade": "SOURCE_INSPECTION",
+      "hunt": [
+        "evidence normalization",
+        "receipt serialization"
+      ],
+      "symbols": [
+        "causality_payload"
+      ],
+      "files": [
+        {
+          "path": "hcli/agentos/native_gate.py",
+          "def_line": 400
+        },
+        {
+          "path": "hcli/agentos/native_mission_gate.py",
+          "def_line": 173
+        },
+        {
+          "path": "hcli/agentos/resident_gate.py",
+          "def_line": 161
+        },
+        {
+          "path": "hcli/agentos/vmcp_gate.py",
+          "def_line": 205
+        },
+        {
+          "path": "hcli/agentos/modellake_gate.py",
+          "def_line": 408
+        },
+        {
+          "path": "hcli/agentos/autonomy_gate.py",
+          "def_line": 941
+        },
+        {
+          "path": "hcli/agentos/recovery.py",
+          "def_line": 367
+        },
+        {
+          "path": "hcli/agentos/research.py",
+          "def_line": 270
+        }
+      ],
+      "behavioural_differences": [
+        "Shared empty-report branch returns probe_performed='', direct_observation='', interpretation=status, probe_kind='', claim_kind=None.",
+        "Shared success branch sets probe_kind=sc.PROBE_MEASURED_FLAGS and claim_kind CLAIM_FIELD_VALUE vs CLAIM_MEASURED_UNMET from status=='PASSED'.",
+        "probe_performed, direct_observation, interpretation strings are gate-specific and are the status-causality identity of that gate. Merging those strings would make eight gates indistinguishable in the causality ledger."
+      ],
+      "callers": [
+        {
+          "path": "hcli/agentos/native_gate.py",
+          "line": 707,
+          "call": "payload = causality_payload(report)"
+        },
+        {
+          "path": "hcli/agentos/resident_gate.py",
+          "line": 405,
+          "call": "payload = causality_payload(report)"
+        },
+        {
+          "path": "hcli/agentos/autonomy_gate.py",
+          "line": 1038,
+          "call": "payload = causality_payload(report)"
+        }
+      ],
+      "caller_count_note": "Each of 8 files calls causality_payload from record_* and from the run_* success path (2-3 calls per file). All are in-module; no cross-gate import of another gate's causality_payload.",
+      "tests": [],
+      "merge_safety": "SAFE to extract the empty envelope + claim_kind ternary. UNSAFE to DRY the observation strings. This is the verifier/proposer-adjacent trap named in the brief.",
+      "canonical_api_proposal": "Optional shared _causality_envelope(status, *, probe, observation, interpretation_ok, interpretation_fail). Keep one causality_payload per gate.",
+      "deletion_opportunity": "Boilerplate only. Do not delete per-gate functions.",
+      "risk": "High if observation text is unified. Status-causality matching keys off these strings."
+    },
+    {
+      "id": "C12",
+      "title": "PID liveness helpers (PermissionError and start-token split the family)",
+      "classification": "SEMANTICALLY_SIMILAR_BUT_MUST_REMAIN_DISTINCT",
+      "capability_class": "TESTED",
+      "evidence_grade": "SOURCE_INSPECTION",
+      "hunt": [
+        "process/PID checks",
+        "resident lifecycle checks"
+      ],
+      "symbols": [
+        "hcli.agentos.background._pid_alive",
+        "hcli.goal_bank._pid_alive",
+        "hcli.grok_bridge.process_alive",
+        "hcli.agentos.resident._pid_matches",
+        "hcli.resources.process_start_token"
+      ],
+      "files": [
+        {
+          "path": "hcli/agentos/background.py",
+          "def_line": 46
+        },
+        {
+          "path": "hcli/goal_bank.py",
+          "def_line": 54
+        },
+        {
+          "path": "hcli/grok_bridge.py",
+          "def_line": 402
+        },
+        {
+          "path": "hcli/agentos/resident.py",
+          "def_line": 111
+        },
+        {
+          "path": "hcli/resources.py",
+          "def_line": 335
+        }
+      ],
+      "behavioural_differences": [
+        "background._pid_alive: requires isinstance(pid,int) and pid>0; os.kill(pid,0); any OSError (including PermissionError) -> False.",
+        "goal_bank._pid_alive: int(value) coerce; pid<=1 -> False; PermissionError -> True (exists, not ours); other OSError -> False. Used by _owner_alive so a claimed owner owned by another uid still counts as live.",
+        "grok_bridge.process_alive: `if not pid` (None/0/False); any OSError/Overflow/Value/Type -> False. Tests lock 'false on doubt' including 4_000_000_000.",
+        "resident._pid_matches: kill 0, then process_start_token match so a recycled pid is not treated as the worker. Token None => True after kill succeeds.",
+        "tools copies (genesis_resident.process_alive, odyssey_ctl._pid_alive, autonomy_trial._pid_alive returning bool|None) are additional edges, not HCLI-py canonical."
+      ],
+      "callers": [
+        {
+          "path": "hcli/agentos/background.py",
+          "line": 192,
+          "call": "not _pid_alive(job.pid)"
+        },
+        {
+          "path": "hcli/goal_bank.py",
+          "line": 76,
+          "call": "if not _pid_alive(pid)"
+        },
+        {
+          "path": "hcli/grok_bridge.py",
+          "line": 855,
+          "call": "alive = process_alive(pid)"
+        },
+        {
+          "path": "hcli/mission.py",
+          "line": 145,
+          "call": "return process_alive(pid)  # imports grok_bridge.process_alive"
+        },
+        {
+          "path": "hcli/agentos/resident.py",
+          "line": 632,
+          "call": "_worker_live -> _pid_matches(worker_pid, worker_start_token)"
+        }
+      ],
+      "caller_count_note": "process_alive has many grok_bridge + test_grok_cancel_orphan + test_grok_identity callers. background._pid_alive: 3 in-module. goal_bank: 1 via _owner_alive.",
+      "tests": [
+        {
+          "path": "tools/haider/hcli/tests/test_grok_identity.py",
+          "covers": "process_alive true on self, false on None/0/huge pid",
+          "invokes_symbol": true
+        },
+        {
+          "path": "tools/haider/hcli/tests/test_grok_cancel_orphan.py",
+          "covers": "cancel vs process_alive",
+          "invokes_symbol": true
+        }
+      ],
+      "merge_safety": "UNSAFE as one function. PermissionError and start-token are load-bearing. A parameterized helper with on_permission='alive'|'dead' and optional start_token could exist, but defaulting wrongly is a real regression.",
+      "canonical_api_proposal": "Keep process_alive as the 'false on doubt' helper (already tested). Keep goal_bank._pid_alive for owner claims. Keep _pid_matches for resident. Do not replace any of these with os.kill wrappers from tools/.",
+      "deletion_opportunity": "tools-side copies only, and only after proving they want 'false on doubt' vs PermissionError-alive. Out of scope for a safe first merge.",
+      "risk": "High. Merging goal_bank into process_alive would treat another user's live owner as dead and release the claim."
+    },
+    {
+      "id": "C13",
+      "title": "_json_safe roundtrip",
+      "classification": "PARAMETERIZABLE",
+      "capability_class": "CALLABLE",
+      "evidence_grade": "SOURCE_INSPECTION",
+      "hunt": [
+        "receipt serialization",
+        "evidence normalization"
+      ],
+      "symbols": [
+        "_json_safe"
+      ],
+      "files": [
+        {
+          "path": "hcli/agentos/autonomy_gate.py",
+          "def_line": 196,
+          "sort_keys": true
+        },
+        {
+          "path": "hcli/agentos/runtime.py",
+          "def_line": 25,
+          "sort_keys": true
+        },
+        {
+          "path": "hcli/agentos/resident.py",
+          "def_line": 125,
+          "sort_keys": false
+        }
+      ],
+      "behavioural_differences": [
+        "All three: json.loads(json.dumps(value, default=str)); TypeError/ValueError -> str(value).",
+        "autonomy_gate and runtime pass sort_keys=True. resident does not. Key order in persisted knowledge observations can differ."
+      ],
+      "callers": [
+        {
+          "path": "hcli/agentos/autonomy_gate.py",
+          "line": 473,
+          "call": "_json_safe(agent.last_result) and 7 more in that file"
+        },
+        {
+          "path": "hcli/agentos/resident.py",
+          "line": 290,
+          "call": "_json_safe(dict(observation))"
+        },
+        {
+          "path": "hcli/agentos/runtime.py",
+          "line": 247,
+          "call": "_json_safe(unit.to_dict()) and 4 more"
+        }
+      ],
+      "caller_count_note": "All callers are in-module. No cross-module import of _json_safe.",
+      "tests": [],
+      "merge_safety": "SAFE with an explicit sort_keys parameter defaulting to True. Resident knowledge order is not a verifier.",
+      "canonical_api_proposal": "hcli.persist.json_safe(value, *, sort_keys=True) -> Any",
+      "deletion_opportunity": "3 defs.",
+      "risk": "Low."
+    },
+    {
+      "id": "C14",
+      "title": "Temporary generation-env (HCLI_MODEL_TOKENS + STRUCTURED_OUTPUT_ATTEMPTS)",
+      "classification": "PARAMETERIZABLE",
+      "capability_class": "CALLABLE",
+      "evidence_grade": "SOURCE_INSPECTION",
+      "hunt": [
+        "retry/backoff",
+        "profile parsing"
+      ],
+      "symbols": [
+        "_temporary_generation_env",
+        "_restore_generation_env"
+      ],
+      "files": [
+        {
+          "path": "hcli/agentos/native_gate.py",
+          "def_line": 374,
+          "shape": "contextmanager taking model_tokens"
+        },
+        {
+          "path": "hcli/agentos/native_mission_gate.py",
+          "def_line": 156,
+          "shape": "save dict + _restore_generation_env; tokens hardcoded to 64"
+        }
+      ],
+      "behavioural_differences": [
+        "Same two env vars. native_gate is a contextmanager and takes model_tokens. native_mission_gate saves/restores manually and hardcodes 64.",
+        "Both set HCLI_STRUCTURED_OUTPUT_ATTEMPTS=1. Callers exist: native_gate.py:611 with-block; native_mission_gate.py:246 save, :348 restore."
+      ],
+      "callers": [
+        {
+          "path": "hcli/agentos/native_gate.py",
+          "line": 611,
+          "call": "with _temporary_generation_env(model_tokens):"
+        },
+        {
+          "path": "hcli/agentos/native_mission_gate.py",
+          "line": 246,
+          "call": "old_env = _temporary_generation_env()"
+        },
+        {
+          "path": "hcli/agentos/native_mission_gate.py",
+          "line": 348,
+          "call": "_restore_generation_env(old_env)"
+        }
+      ],
+      "caller_count_note": "3 calls, all in the two gate files.",
+      "tests": [],
+      "merge_safety": "SAFE to use the contextmanager in both. Not a retry-policy merge (structured_output_attempts in backends.py is already the single authority).",
+      "canonical_api_proposal": "Keep native_gate's contextmanager; call it from native_mission_gate with model_tokens=64.",
+      "deletion_opportunity": "native_mission_gate's pair of functions.",
+      "risk": "Low. Restore is in a finally block at native_mission_gate.py:345-348 (controller.shutdown then _restore_generation_env). The contextmanager is still the cleaner form."
+    },
+    {
+      "id": "C15",
+      "title": "Filesystem containment: _within vs Engine._safe_path",
+      "classification": "SEMANTICALLY_SIMILAR_BUT_MUST_REMAIN_DISTINCT",
+      "capability_class": "CALLABLE",
+      "evidence_grade": "SOURCE_INSPECTION",
+      "hunt": [
+        "filesystem guards"
+      ],
+      "symbols": [
+        "hcli.agentos.background._within",
+        "hcli.tool_registry._within",
+        "hcli.engine.Engine._safe_path"
+      ],
+      "files": [
+        {
+          "path": "hcli/agentos/background.py",
+          "def_line": 36
+        },
+        {
+          "path": "hcli/tool_registry.py",
+          "def_line": 201
+        },
+        {
+          "path": "hcli/engine.py",
+          "def_line": 3625
+        }
+      ],
+      "behavioural_differences": [
+        "background._within: path.relative_to(root.resolve(strict=False)) without resolving `path` first. A symlink path may compare as outside/inside differently than its target.",
+        "tool_registry._within: resolves `path` first (OSError -> abspath), then relative_to each root. This is the tool I/O guard.",
+        "Engine._safe_path: rejects absolute paths, rejects '..' after normpath, joins to self.root, then resolved-containment with symlink policy. Mutation authority, not a boolean within()."
+      ],
+      "callers": [
+        {
+          "path": "hcli/agentos/background.py",
+          "line": 166,
+          "call": "if not _within(path, self.allowed_roots)"
+        },
+        {
+          "path": "hcli/tool_registry.py",
+          "line": 249,
+          "call": "if not _within(candidate, self.read_roots)"
+        },
+        {
+          "path": "hcli/tool_registry.py",
+          "line": 1091,
+          "call": "_within(candidate, _model_lake_roots(context))"
+        },
+        {
+          "path": "hcli/engine.py",
+          "line": 1965,
+          "call": "self._safe_path(...)  # plus 2072, 3728, 3850, 4251"
+        }
+      ],
+      "caller_count_note": "tool_registry._within has 6+ call sites. Engine._safe_path has 5. background._within has 1.",
+      "tests": [],
+      "merge_safety": "UNSAFE to replace Engine._safe_path with _within (absolute paths and '..' policy). tool_registry vs background _within differ on whether the candidate is resolved; merging toward the weaker one is a containment regression.",
+      "canonical_api_proposal": "If merged, the canonical is tool_registry._within (resolve candidate first). Engine._safe_path stays. background should call the stricter helper, not the other way around.",
+      "deletion_opportunity": "background._within only, and only after a test that a symlink leaf is classified the same way.",
+      "risk": "High if the weaker (unresolved) within() becomes the tool guard."
+    },
+    {
+      "id": "C16",
+      "title": "Context token estimator: engine._CHARS_PER_TOKEN vs context_budget.estimate_tokens",
+      "classification": "SHARED_CORE_WITH_SPECIALIZED_EDGE",
+      "capability_class": "TESTED",
+      "evidence_grade": "SOURCE_INSPECTION",
+      "hunt": [
+        "context-budget logic"
+      ],
+      "symbols": [
+        "hcli.context_budget.estimate_tokens",
+        "hcli.context_budget.CHARS_PER_TOKEN",
+        "hcli.engine._CHARS_PER_TOKEN",
+        "hcli.engine.Engine._estimate_prompt_tokens"
+      ],
+      "files": [
+        {
+          "path": "hcli/context_budget.py",
+          "def_line": 718
+        },
+        {
+          "path": "hcli/engine.py",
+          "def_line": 206,
+          "note": "_CHARS_PER_TOKEN = 3"
+        },
+        {
+          "path": "hcli/engine.py",
+          "def_line": 2388,
+          "note": "_estimate_prompt_tokens"
+        }
+      ],
+      "behavioural_differences": [
+        "context_budget.estimate_tokens: empty -> 0 so evidence can add cleanly; else max(1, n // cpt).",
+        "Engine._estimate_prompt_tokens: sums message content lengths, returns max(1, chars // 3) \u2014 never 0 for a non-empty messages list with empty contents? empty messages -> max(1,0)=1. That 0-vs-1 split is real.",
+        "context_budget.py:28 comments that it must match engine._CHARS_PER_TOKEN. Two sources of the integer 3.",
+        "The rest of context_budget (per_seq_context, resolve, preflight, native_profile_limits) is a single authority; no second solver found in hcli."
+      ],
+      "callers": [
+        {
+          "path": "hcli/engine.py",
+          "line": 2395,
+          "call": "return max(1, chars // _CHARS_PER_TOKEN)"
+        },
+        {
+          "path": "hcli/goal.py",
+          "line": 1519,
+          "call": "CHARS_PER_TOKEN imported from context_budget"
+        }
+      ],
+      "caller_count_note": "engine uses the private constant in at least 4 places (1905, 2395, 2960, 3240). goal.py imports the public one.",
+      "tests": [
+        {
+          "path": "hcli/test_native_context_budget.py",
+          "covers": "native_profile_limits and Engine._context_budget",
+          "invokes_symbol": true
+        },
+        {
+          "path": "hcli/test_goal_source_compile.py",
+          "covers": "preflight vs _CHARS_PER_TOKEN",
+          "invokes_symbol": true
+        }
+      ],
+      "merge_safety": "SAFE to make engine import CHARS_PER_TOKEN. UNSAFE to replace _estimate_prompt_tokens with estimate_tokens without deciding empty=0 vs empty=1.",
+      "canonical_api_proposal": "hcli.context_budget is already the stated single authority. Engine should import CHARS_PER_TOKEN; keep a local estimator only if the 0-vs-1 contract must stay.",
+      "deletion_opportunity": "engine._CHARS_PER_TOKEN literal.",
+      "risk": "Medium on the empty-string contract. Low on the integer 3."
+    },
+    {
+      "id": "C17",
+      "title": "Memory accounting: phys_footprint vs RSS vs host pressure",
+      "classification": "SEMANTICALLY_SIMILAR_BUT_MUST_REMAIN_DISTINCT",
+      "capability_class": "TESTED",
+      "evidence_grade": "SOURCE_INSPECTION",
+      "hunt": [
+        "resource/memory accounting"
+      ],
+      "symbols": [
+        "hcli.processes._footprint_bytes",
+        "hcli.agentos.resident.memory_decision",
+        "tools.future.resident_health.rss_bytes_of",
+        "tools.agentos.measure_genesis_resident._rss"
+      ],
+      "files": [
+        {
+          "path": "hcli/processes.py",
+          "def_line": 126
+        },
+        {
+          "path": "hcli/agentos/resident.py",
+          "def_line": 403
+        },
+        {
+          "path": "tools/future/resident_health.py",
+          "def_line": 162
+        },
+        {
+          "path": "tools/agentos/measure_genesis_resident.py",
+          "def_line": 35
+        }
+      ],
+      "behavioural_differences": [
+        "_footprint_bytes runs `footprint -p PID` and parses phys_footprint. In-source comment: ps RSS read 1.19 GB while phys_footprint was 12 GB. This is the number Activity Monitor shows.",
+        "rss_bytes_of: libproc PROC_PIDTASKINFO RSS, fallback ps -o rss. Bytes, not GiB-rounded.",
+        "measure_genesis_resident._rss: ps -o rss= * 1024 only.",
+        "memory_decision: host-level pressure/free/swap vs reserve; does not read a pid. Tested by test_memory_admission_is_live.py."
+      ],
+      "callers": [
+        {
+          "path": "hcli/processes.py",
+          "line": 183,
+          "call": "_footprint_bytes(pid_i)"
+        },
+        {
+          "path": "hcli/test_processes.py",
+          "line": 119,
+          "call": "_footprint_bytes(os.getpid())"
+        },
+        {
+          "path": "hcli/agentos/resident.py",
+          "line": 914,
+          "call": "memory_decision(...)"
+        },
+        {
+          "path": "hcli/test_memory_admission_is_live.py",
+          "line": 56,
+          "call": "memory_decision(...)"
+        },
+        {
+          "path": "tools/future/resident_health.py",
+          "line": 663,
+          "call": "rss_bytes_of(pid)"
+        }
+      ],
+      "caller_count_note": "Each symbol is called from its module and at least one test or tool.",
+      "tests": [
+        {
+          "path": "hcli/test_processes.py",
+          "covers": "_footprint_bytes on self pid",
+          "invokes_symbol": true
+        },
+        {
+          "path": "hcli/test_memory_admission_is_live.py",
+          "covers": "memory_decision",
+          "invokes_symbol": true
+        }
+      ],
+      "merge_safety": "UNSAFE. The processes.py comment is a named incident: RSS as footprint made a box under pressure look idle.",
+      "canonical_api_proposal": "Keep all three. If a shared name is needed, call them phys_footprint_bytes, rss_bytes, host_memory_decision \u2014 never 'memory()'.",
+      "deletion_opportunity": "None in hcli. tools/agentos/_rss could call rss_bytes_of if that tools merge is ever in scope.",
+      "risk": "High if RSS replaces phys_footprint in processes.summary."
+    },
+    {
+      "id": "C18",
+      "title": "ModelLake root: HCLI_MODEL_LAKE_ROOT vs hardcoded corpdrive vs HCLI_FLASH_NEXT_ROOT",
+      "classification": "PARAMETERIZABLE",
+      "capability_class": "CALLABLE",
+      "evidence_grade": "SOURCE_INSPECTION",
+      "hunt": [
+        "ModelLake lifecycle helpers"
+      ],
+      "symbols": [
+        "hcli.specimens._lake_root",
+        "hcli.tool_registry._model_lake_roots",
+        "hcli.agentos.flash_transform_parity.LAKE_ROOT",
+        "C07 _final_root"
+      ],
+      "files": [
+        {
+          "path": "hcli/specimens.py",
+          "def_line": 34
+        },
+        {
+          "path": "hcli/tool_registry.py",
+          "def_line": 1076
+        },
+        {
+          "path": "hcli/agentos/flash_transform_parity.py",
+          "def_line": 40
+        }
+      ],
+      "behavioural_differences": [
+        "specimens._lake_root: env HCLI_MODEL_LAKE_ROOT else Path('/Volumes/corpdrive/hawking-modellake').",
+        "tool_registry._model_lake_roots: same default plus context.write_roots, then resolve. Used to constrain downloads.",
+        "flash_transform_parity.LAKE_ROOT: hardcoded Path('/Volumes/corpdrive/hawking-modellake') with no env. _final_root (C07) only overrides via HCLI_FLASH_NEXT_ROOT, not HCLI_MODEL_LAKE_ROOT.",
+        "This is a real behaviour split, not just a name split. A redirected lake is visible to specimens/registry and invisible to Flash body writers."
+      ],
+      "callers": [
+        {
+          "path": "hcli/specimens.py",
+          "line": 157,
+          "call": "specimens_dir = _lake_root() / 'specimens'"
+        },
+        {
+          "path": "hcli/tool_registry.py",
+          "line": 1091,
+          "call": "_within(candidate, _model_lake_roots(context))"
+        }
+      ],
+      "caller_count_note": "_lake_root called from registry() and get(). _model_lake_roots called from download path resolution. LAKE_ROOT used by every _final_root default.",
+      "tests": [
+        {
+          "path": "hcli/test_specimens.py",
+          "covers": "specimens registry; not proven here to set HCLI_MODEL_LAKE_ROOT",
+          "invokes_symbol": false
+        }
+      ],
+      "merge_safety": "SAFE to make Flash LAKE_ROOT call specimens._lake_root(), BUT that is a behaviour change for anyone who set HCLI_MODEL_LAKE_ROOT and not HCLI_FLASH_NEXT_ROOT. Do not silently 'fix' in a DRY pass.",
+      "canonical_api_proposal": "hcli.specimens._lake_root (or a persist-level lake_root) as the single default. Flash keeps HCLI_FLASH_NEXT_ROOT as an overlay on that root's specimens/slug.",
+      "deletion_opportunity": "The hardcoded Path in flash_transform_parity.py, after an explicit overlay decision.",
+      "risk": "Medium. Redirected lakes and the live 4.35 TB ModelLake must not be double-targeted by a helper merge."
+    },
+    {
+      "id": "C19",
+      "title": "Resident-watch test _workspace fixtures",
+      "classification": "SHARED_CORE_WITH_SPECIALIZED_EDGE",
+      "capability_class": "TESTED",
+      "evidence_grade": "SOURCE_INSPECTION",
+      "hunt": [
+        "test harness setup"
+      ],
+      "symbols": [
+        "hcli.test_resident_watch._workspace",
+        "hcli.test_resident_watch_stream._workspace"
+      ],
+      "files": [
+        {
+          "path": "hcli/test_resident_watch.py",
+          "def_line": 17
+        },
+        {
+          "path": "hcli/test_resident_watch_stream.py",
+          "def_line": 143
+        }
+      ],
+      "behavioural_differences": [
+        "Both: ResidentDaemon(tmp).configure(ResidentConfig(..., goal='watch me')); write .hcli/mission/state.json with id m-watch, unit G001.",
+        "stream fixture adds session_id='m-watch' and does not write mission.log.",
+        "watch fixture writes mission.log heartbeat and has no session_id."
+      ],
+      "callers": [
+        {
+          "path": "hcli/test_resident_watch.py",
+          "line": 49,
+          "call": "_workspace(tmp_path)  # plus other tests in that file"
+        },
+        {
+          "path": "hcli/test_resident_watch_stream.py",
+          "line": 158,
+          "call": "workspace = _workspace(tmp_path)"
+        }
+      ],
+      "caller_count_note": "Each fixture is called only from its own test module.",
+      "tests": [
+        {
+          "path": "hcli/test_resident_watch.py",
+          "covers": "is the test",
+          "invokes_symbol": true
+        },
+        {
+          "path": "hcli/test_resident_watch_stream.py",
+          "covers": "is the test",
+          "invokes_symbol": true
+        }
+      ],
+      "merge_safety": "SAFE as a parameterized fixture (session_id=, write_log=). Not production code.",
+      "canonical_api_proposal": "Optional pytest fixture in a shared test module. Low value; tests are allowed to be local.",
+      "deletion_opportunity": "Cosmetic.",
+      "risk": "Low. session_id is load-bearing for the stream test; a naive merge that drops it would false-pass or false-fail that module."
+    },
+    {
+      "id": "C20",
+      "title": "tools/ one-shot sha256_file copies",
+      "classification": "HISTORICAL_DUPLICATE",
+      "capability_class": "CALLABLE",
+      "evidence_grade": "SOURCE_INSPECTION",
+      "hunt": [
+        "hashing helpers"
+      ],
+      "symbols": [
+        "sha256_file",
+        "sha256_bytes",
+        "sha256_hex",
+        "sha256"
+      ],
+      "files_note": "git grep -l 'def sha256_file' HEAD -- tools/**/*.py returned 20 files. Additional sha256_bytes/sha256_hex copies in lab/operators, hawking-experiments/superwave, tools/headless, tools/future/_common.py:577.",
+      "files": [
+        {
+          "path": "tools/future/_common.py",
+          "def_line": 577,
+          "note": "canonical-looking tools helper; still not used by hcli"
+        }
+      ],
+      "behavioural_differences": [
+        "Most are hashlib.sha256 over the file in 1 MiB chunks returning hex. Some cap bytes, some return Optional, some return (digest, size).",
+        "tools/future/_common.sha256_file raises on OSError (hard). lab/provenance.sha256_file is another leaf.",
+        "These are one-shot operators and headless scripts, not a runtime SCC."
+      ],
+      "callers": [],
+      "caller_count_note": "Each script calls its own def. Not traced exhaustively; the claim is 'many independent copies exist', not 'they are all live on the daemon path'.",
+      "tests": [],
+      "merge_safety": "A tools-wide import of _common.sha256_file is optional cleanup, not an HCLI runtime merge. Do not import hcli.persist from tools/headless if that recreates the old SCC the persist docstring forbids in the other direction \u2014 tools importing hcli is fine; hcli importing tools is not.",
+      "canonical_api_proposal": "If a tools helper is wanted: tools.future._common.sha256_file already exists. Do not put tools hashing into hcli.persist unless hcli callers need it (they have C04).",
+      "deletion_opportunity": "Opportunistic, script by script. Not a campaign.",
+      "risk": "Low per script. High if a 'shared hasher' starts hashing ModelLake specimens recursively (modellake_gate explicitly refuses that)."
+    },
+    {
+      "id": "C21",
+      "title": "crates/hawking-core example sha256_hex copies",
+      "classification": "HISTORICAL_DUPLICATE",
+      "capability_class": "SCAFFOLDED",
+      "evidence_grade": "SOURCE_INSPECTION",
+      "hunt": [
+        "hashing helpers"
+      ],
+      "symbols": [
+        "sha256_hex",
+        "sha256_json",
+        "sha256_file"
+      ],
+      "files_note": "git grep -l 'fn sha256_hex' HEAD -- crates/hawking-core/examples/*.rs returned 71 files. Production copies also exist in crates/hawking-core/src/model/qwen80_mixed_catalog.rs:47, qwen80_uniform_q4_hybrid_decode.rs:285, qwen_complete_binary/mod.rs:1290, cache/prefill_disk.rs:589.",
+      "files": [
+        {
+          "path": "crates/hawking-core/src/model/qwen_complete_binary/mod.rs",
+          "def_line": 1290
+        }
+      ],
+      "behavioural_differences": [
+        "Standard sha2/hex of bytes. Examples are standalone binaries, not a library graph."
+      ],
+      "callers": [],
+      "caller_count_note": "Not exhaustively traced. Examples typically call their local fn. This lane must not touch crates.",
+      "tests": [],
+      "merge_safety": "NOT in scope. A later crates pass could add hawking_core::hash::sha256_hex.",
+      "canonical_api_proposal": "None this lane.",
+      "deletion_opportunity": "None this lane (DO_NOT_TOUCH crates).",
+      "risk": "N/A"
+    },
+    {
+      "id": "C22",
+      "title": "Domain receipt writers (Engine, GrokBridge, Ledger)",
+      "classification": "SEMANTICALLY_SIMILAR_BUT_MUST_REMAIN_DISTINCT",
+      "capability_class": "CALLABLE",
+      "evidence_grade": "SOURCE_INSPECTION",
+      "hunt": [
+        "receipt serialization"
+      ],
+      "symbols": [
+        "hcli.engine.Engine._write_receipt",
+        "hcli.grok_bridge.GrokBridge._write_receipt",
+        "hcli.ledger.Ledger._write_receipt"
+      ],
+      "files": [
+        {
+          "path": "hcli/engine.py",
+          "def_line": 4762
+        },
+        {
+          "path": "hcli/grok_bridge.py",
+          "def_line": 1202
+        },
+        {
+          "path": "hcli/ledger.py",
+          "def_line": 935
+        }
+      ],
+      "behavioural_differences": [
+        "Engine: writes <root>/.hcli/receipts/<goal_id>.json via result_envelope.build_result_envelope. Goal/evidence/validation schema.",
+        "GrokBridge: writes per-task grok-run receipt (command_run, dry_run, timestamps, mutation_serialized). Then persist.atomic_write_json.",
+        "Ledger: obligation verify sidecar with output_sha256; also memory buffer then flush. Uses persist.atomic_write_text as _atomic_write_text.",
+        "They share persist as the bytes/text writer. They do not share a document schema. Name collision only."
+      ],
+      "callers": [
+        {
+          "path": "hcli/engine.py",
+          "line": 689,
+          "call": "self._write_receipt(...)"
+        },
+        {
+          "path": "hcli/grok_bridge.py",
+          "line": 1108,
+          "call": "receipt = self._write_receipt(...)"
+        },
+        {
+          "path": "hcli/ledger.py",
+          "line": 604,
+          "call": "self._write_receipt(ob, evidence)"
+        }
+      ],
+      "caller_count_note": "Engine has 6 call sites. GrokBridge 1. Ledger 1 plus _flush_memory_receipts.",
+      "tests": [],
+      "merge_safety": "UNSAFE. Different authorities (cognition receipt vs grok-run receipt vs obligation verify). persist is already the shared I/O.",
+      "canonical_api_proposal": "None. They already call persist.",
+      "deletion_opportunity": "None.",
+      "risk": "High. A unified receipt writer would mix schemas onto the same path class."
+    },
+    {
+      "id": "C23",
+      "title": "tools/future/_common.write_receipt is not persist.atomic_write_json",
+      "classification": "SEMANTICALLY_SIMILAR_BUT_MUST_REMAIN_DISTINCT",
+      "capability_class": "CALLABLE",
+      "evidence_grade": "SOURCE_INSPECTION",
+      "hunt": [
+        "receipt serialization"
+      ],
+      "symbols": [
+        "tools.future._common.write_receipt",
+        "hcli.persist.atomic_write_json"
+      ],
+      "files": [
+        {
+          "path": "tools/future/_common.py",
+          "def_line": 157
+        },
+        {
+          "path": "hcli/persist.py",
+          "def_line": 67
+        }
+      ],
+      "behavioural_differences": [
+        "write_receipt: setdefault bench + claim_boundary, refuse foreign overwrite, skip if same-but-bookkeeping, seal(doc), then Path.write_text (NOT fsync+replace). indent=1.",
+        "atomic_write_json: json.dumps indent=2 sort_keys=True then atomic_write_text (fsync+replace). No seal, no foreign-schema guard.",
+        "SURPRISE: the tools helper that looks like the receipt authority is the one that is not crash-safe."
+      ],
+      "callers": [
+        {
+          "path": "tools/future/abi_verdicts.py",
+          "line": 1442,
+          "call": "return write_receipt(RECEIPT, doc, 'tools/future/abi_verdicts.py')"
+        },
+        {
+          "path": "tools/future/autonomy_trial.py",
+          "line": 3944,
+          "call": "return write_receipt(RECEIPT, doc, RECORDED_BY)"
+        },
+        {
+          "path": "tools/future/ane_probe_lab.py",
+          "line": 967,
+          "call": "return write_receipt(RECEIPT, doc, RECORDED_BY)"
+        }
+      ],
+      "caller_count_note": "tools/future/_common.write_receipt is the sidecar standard: git grep shows dozens of tools/future/*.py callers (abi_verdicts, abliteration, accelerator_workunits, adaptive_verification, addressing_gap, ane_preboard, ane_probe_lab, autonomy_trial, ...). hcli does not call it. persist.atomic_write_json has many hcli/agentos callers listed under C10/C01.",
+      "tests": [],
+      "merge_safety": "UNSAFE. Different contracts (seal/refuse vs crash-safe replace). A merge either drops fsync or drops the foreign-overwrite guard.",
+      "canonical_api_proposal": "Keep both. If tools receipts need crash-safety, have write_receipt call persist.atomic_write_text AFTER seal \u2014 that is an implementation change, not a DRY of two APIs.",
+      "deletion_opportunity": "None as a merge. Optional: make write_receipt use atomic_write_text internally.",
+      "risk": "High if Path.write_text is replaced into hcli persist callers, or if persist's last-writer-wins replace is used on a tools receipt path that _refuse_foreign_overwrite currently protects."
+    },
+    {
+      "id": "C24",
+      "title": "mission_state name collision (enum mapper vs path helper)",
+      "classification": "SEMANTICALLY_SIMILAR_BUT_MUST_REMAIN_DISTINCT",
+      "capability_class": "CALLABLE",
+      "evidence_grade": "SOURCE_INSPECTION",
+      "hunt": [
+        "mission-state accessors"
+      ],
+      "symbols": [
+        "hcli.agentos.states.mission_state",
+        "hcli.mission.mission_state_path"
+      ],
+      "files": [
+        {
+          "path": "hcli/agentos/states.py",
+          "def_line": 42
+        },
+        {
+          "path": "hcli/mission.py",
+          "def_line": 60
+        }
+      ],
+      "behavioural_differences": [
+        "states.mission_state(phase, has_ready, has_running, has_failed) -> AgentState enum. Vocabulary mapper, no I/O.",
+        "mission.mission_state_path(workspace) -> Path to .hcli/mission/state.json. Called from delegate, controller, tui, tests.",
+        "commands._load_mission_state reads JSON from that path. Different symbol."
+      ],
+      "callers": [
+        {
+          "path": "hcli/mission.py",
+          "line": 574,
+          "call": "state: mission_state(...)  # the enum mapper"
+        },
+        {
+          "path": "hcli/delegate.py",
+          "line": 442,
+          "call": "_read_json(mission_state_path(ws))"
+        }
+      ],
+      "caller_count_note": "mission_state_path has many delegate/controller/tui/test callers. mission_state enum is used when rendering phase.",
+      "tests": [
+        {
+          "path": "hcli/test_delegate.py",
+          "covers": "mission_state_path JSON",
+          "invokes_symbol": true
+        },
+        {
+          "path": "hcli/test_abort_checkpoint_atomicity.py",
+          "covers": "mission_state_path",
+          "invokes_symbol": true
+        }
+      ],
+      "merge_safety": "UNSAFE. Same English name, different types (AgentState vs Path). A merge is a rename bug waiting.",
+      "canonical_api_proposal": "None. Optionally rename nothing; the types already disagree.",
+      "deletion_opportunity": "None.",
+      "risk": "High if someone 'helpfully' aliases them."
+    },
+    {
+      "id": "C25",
+      "title": "Trivial _now() -> time.time() wrappers",
+      "classification": "EXACT_DUPLICATE",
+      "capability_class": "CALLABLE",
+      "evidence_grade": "SOURCE_INSPECTION",
+      "hunt": [
+        "resident lifecycle checks"
+      ],
+      "symbols": [
+        "hcli.agentos.background._now",
+        "hcli.agentos.resident._now",
+        "hcli.providers._now",
+        "hcli.odyssey._now"
+      ],
+      "files": [
+        {
+          "path": "hcli/agentos/background.py",
+          "def_line": 32,
+          "returns": "float time.time()"
+        },
+        {
+          "path": "hcli/agentos/resident.py",
+          "def_line": 78,
+          "returns": "float time.time()"
+        },
+        {
+          "path": "hcli/providers.py",
+          "def_line": 67,
+          "returns": "float time.time()"
+        },
+        {
+          "path": "hcli/odyssey.py",
+          "def_line": 200,
+          "returns": "ISO-8601 str via datetime.now(timezone.utc).isoformat()"
+        }
+      ],
+      "behavioural_differences": [
+        "Three float clocks are exact. odyssey._now is a different type and timezone-aware ISO stamp used as recorded_at \u2014 MUST stay.",
+        "Merging time.time() wrappers is not a capability merge."
+      ],
+      "callers": [
+        {
+          "path": "hcli/agentos/resident.py",
+          "line": 268,
+          "call": "payload['updated_at'] = _now()  # many more in this file"
+        },
+        {
+          "path": "hcli/odyssey.py",
+          "line": 312,
+          "call": "recorded_at: _now()"
+        }
+      ],
+      "caller_count_note": "resident._now has 20+ call sites. background several. odyssey several.",
+      "tests": [],
+      "merge_safety": "SAFE among the three floats and pointless. UNSAFE to replace odyssey._now with time.time().",
+      "canonical_api_proposal": "Do not bother. If anything, call time.time() inline.",
+      "deletion_opportunity": "Optional inline. Not a campaign.",
+      "risk": "Low for floats. High if odyssey recorded_at becomes a unix float and breaks ledger readers expecting ISO."
+    }
+  ],
+  "hunt_coverage": {
+    "atomic-write helpers": {
+      "candidates": [
+        "C01",
+        "C02",
+        "C03",
+        "C23"
+      ],
+      "result": "C01 is the live HCLI-py merge. persist.atomic_write_text/json already absorbed the rest of hcli (engine/ledger/resources re-export). lab CAS and rust stay."
+    },
+    "hashing helpers": {
+      "candidates": [
+        "C04",
+        "C05",
+        "C20",
+        "C21"
+      ],
+      "result": "HCLI-py file+bytes hashers are parameterizable. tools/ and rust examples are historical. flash_vector._sha256_file is dead."
+    },
+    "receipt serialization": {
+      "candidates": [
+        "C06",
+        "C10",
+        "C11",
+        "C22",
+        "C23"
+      ],
+      "result": "Gate default-path writers parameterizable. Domain writers and tools seal-writer must remain distinct. persist.atomic_write_json is already the I/O."
+    },
+    "process/PID checks": {
+      "candidates": [
+        "C12"
+      ],
+      "result": "Must remain distinct. PermissionError and start-token are load-bearing."
+    },
+    "filesystem guards": {
+      "candidates": [
+        "C08",
+        "C09",
+        "C15"
+      ],
+      "result": "parents[2] copies are exact. find_repo_root vs discover_repo_root vs _safe_path vs _within are not."
+    },
+    "benchmark arithmetic": {
+      "candidates": [],
+      "result": "No duplicated solver. flash_executable._ebpw_budget is unique. lab/_tps_from_wall_ns is a different domain. Not a merge family."
+    },
+    "context-budget logic": {
+      "candidates": [
+        "C16"
+      ],
+      "result": "context_budget.py is already the stated single authority. Leftover is engine._CHARS_PER_TOKEN and a 0-vs-1 estimator edge."
+    },
+    "mission-state accessors": {
+      "candidates": [
+        "C24"
+      ],
+      "result": "Name collision only. Path helper vs enum mapper."
+    },
+    "resident lifecycle checks": {
+      "candidates": [
+        "C12",
+        "C17",
+        "C19",
+        "C25"
+      ],
+      "result": "resident.py is the HCLI lifecycle authority (memory_decision, _pid_matches, _worker_live). tools/agentos/genesis_resident.body_is_up is a different body. Not merged."
+    },
+    "profile parsing": {
+      "candidates": [
+        "C16"
+      ],
+      "result": "native_profile_limits is unique (hawking-native JSON max_seq_len). tools/odyssey/contracts.load_profile is math-v1. MUST_REMAIN_DISTINCT; no candidate id because they do not share behaviour."
+    },
+    "evidence normalization": {
+      "candidates": [
+        "C11",
+        "C13"
+      ],
+      "result": "No generic normalize_evidence(). Causality payloads and json_safe are the closest. Domain _normalize_* in verifier_pipeline/goal/tools.future stay distinct."
+    },
+    "retry/backoff": {
+      "candidates": [
+        "C14"
+      ],
+      "result": "structured_output_attempts in hcli/backends.py is already the single literal (TestRetryPolicyOneLiteral / DEFAULT_STRUCTURED_OUTPUT_ATTEMPTS=3). grok_bridge time.sleep is poll-wait, not a retry policy. No second retry helper to merge."
+    },
+    "resource/memory accounting": {
+      "candidates": [
+        "C17"
+      ],
+      "result": "Must remain distinct. phys_footprint vs RSS vs host pressure."
+    },
+    "ModelLake lifecycle helpers": {
+      "candidates": [
+        "C07",
+        "C18"
+      ],
+      "result": "_final_root copies are exact. Lake root env overlay is inconsistent with specimens._lake_root."
+    },
+    "test harness setup": {
+      "candidates": [
+        "C19"
+      ],
+      "result": "Two resident-watch fixtures. Other tests use tmp_path inline. No shared make_workspace production helper duplicated."
+    }
+  },
+  "surprises": [
+    {
+      "id": "S01",
+      "severity": "loud",
+      "title": "Canonical atomic_write_bytes already exists; the known starting-point trio ignored it",
+      "detail": "hcli/persist.py:45 defines atomic_write_bytes. session.py:228 calls it. The three flash body modules import atomic_write_json from the same module and still copy a private _atomic_write_bytes. persist.py:8-10 even says callers that used to ship private _atomic_write* re-export these names.",
+      "what_would_settle": "A merge PR that deletes the three defs. A mutation test: grep def _atomic_write_bytes in hcli/ must be empty (or only persist)."
+    },
+    {
+      "id": "S02",
+      "severity": "loud",
+      "title": "G028 TestAtomicWriteOneAuthority does not catch the clones",
+      "detail": "tools/haider/hcli/tests/test_core_authorities.py locks 'one live implementation per aligned concept' for atomic write by asserting resources/runtime re-export persist.atomic_write_text. It never greps for def _atomic_write_bytes and never calls atomic_write_bytes. The test can stay green while C01 exists.",
+      "what_would_settle": "Extend that test with a source grep or import check. Confirm it FAILs while the three defs exist (mutation), then restore."
+    },
+    {
+      "id": "S03",
+      "severity": "medium",
+      "title": "flash_vector_component_body._sha256_file is dead",
+      "detail": "Defined at line 39. The only _sha256_file hit in that file is the def. Calls use _sha256_bytes only. Copied from flash_component_body and not used.",
+      "what_would_settle": "Confirm no getattr/_sha256_file dynamic dispatch (git grep in that file is only the def)."
+    },
+    {
+      "id": "S04",
+      "severity": "loud",
+      "title": "Flash LAKE_ROOT ignores HCLI_MODEL_LAKE_ROOT",
+      "detail": "specimens._lake_root and tool_registry._model_lake_roots honor HCLI_MODEL_LAKE_ROOT. flash_transform_parity.LAKE_ROOT is a hardcoded /Volumes/corpdrive/hawking-modellake. _final_root only overlays HCLI_FLASH_NEXT_ROOT. A redirected lake is split-brain.",
+      "what_would_settle": "Export HCLI_MODEL_LAKE_ROOT to a non-default path and run a flash body writer; if it still opens corpdrive, the split is live. Do not 'fix' this inside a DRY pass without an explicit overlay decision."
+    },
+    {
+      "id": "S05",
+      "severity": "medium",
+      "title": "persist docstring is stale about 'the only crash-safe writer'",
+      "detail": "persist.py:8 says atomic_write_text is the only crash-safe writer in HCLI-py, then defines atomic_write_bytes with the same contract. Not a second algorithm \u2014 a stale sentence.",
+      "what_would_settle": "Doc edit (out of scope here)."
+    },
+    {
+      "id": "S06",
+      "severity": "medium",
+      "title": "tools/future write_receipt is not atomic",
+      "detail": "tools/future/_common.py:157 write_receipt uses Path.write_text after seal. Looks like the receipt authority; is not fsync+replace.",
+      "what_would_settle": "Crash injection during write_receipt vs persist.atomic_write_json."
+    },
+    {
+      "id": "S07",
+      "severity": "loud",
+      "title": "PermissionError splits PID liveness",
+      "detail": "goal_bank._pid_alive: PermissionError -> True. background._pid_alive and process_alive: OSError (supertype) -> False. Same syscall, opposite meaning.",
+      "what_would_settle": "A unit that os.kill-fails with PermissionError against both helpers."
+    },
+    {
+      "id": "S08",
+      "severity": "info",
+      "title": "Live daemon tree not inspected",
+      "detail": "This sparse worktree has no hcli/ on disk. A live launchd daemon holds ~110 uncommitted hcli files against some checkout. HEAD may lag or lead that tree.",
+      "what_would_settle": "Diff the daemon's cwd hcli/ against HEAD:hcli/ before merging anything in C01-C08."
+    }
+  ],
+  "blockers": [
+    {
+      "id": "B01",
+      "kind": "SPARSE_CHECKOUT",
+      "detail": "hcli/ is not on disk in this worktree (ls hcli -> No such file or directory). All hcli evidence is git HEAD via git show/git grep, not the live daemon's uncommitted ~110-file hcli tree.",
+      "what_would_settle": "Materialize hcli/ (or widen sparse roots) and diff HEAD vs the live working tree before any merge campaign."
+    },
+    {
+      "id": "B02",
+      "kind": "TESTS_NOT_EXECUTED",
+      "detail": "python3 -m pytest was not run. 'TESTED' means a test file calls the symbol, not that the test passed on this machine.",
+      "what_would_settle": "Run the named test files with python3 -m pytest ... -o addopts='' after hcli/ is materialized."
+    },
+    {
+      "id": "B03",
+      "kind": "GIT_INDEX_NOT_WRITABLE",
+      "detail": "git add --sparse -A failed: Unable to create worktree index.lock: Operation not permitted. git-dir and git-common-dir (Downloads/hawking/.git) are not writable from this executor (com.apple.macl; objects/ not writable). Receipt files exist on disk under receipts/audit/ but are untracked. Uncommitted work is destroyed at cleanup \u2014 the supervising session must git add --sparse and commit from a process that can write the parent .git.",
+      "what_would_settle": "From an unsandboxed shell in this worktree: git add --sparse receipts/audit/aud15-function-merge-candidates.json receipts/audit/aud15-function-merge-candidates.md && git status && git commit."
+    }
+  ],
+  "do_not_merge_traps": [
+    "Verifier/proposer and per-gate causality_payload observation strings are load-bearing status-causality identity. Sharing the envelope helper is safe; sharing the probe_performed text is not.",
+    "goal_bank._pid_alive returns True on PermissionError (process exists, not ours). grok_bridge.process_alive and background._pid_alive treat PermissionError as False. Merging them would flip owner-liveness.",
+    "processes._footprint_bytes uses macOS `footprint -p` phys_footprint. RSS helpers under-report by 10-20x on this host per in-source comment. Do not merge.",
+    "session_ledger.discover_repo_root asks git rev-parse so /land cannot silently retarget the live hawking checkout. find_repo_root is the opposite policy. Do not merge.",
+    "lab/lineage/_atomic_write_bytes is compare-and-swap with expected_previous_sha256, mode preserve, directory fsync. persist.atomic_write_bytes is last-writer-wins replace. Do not merge.",
+    "tools/future/_common.write_receipt seals and refuses foreign overwrite but uses Path.write_text (not fsync+replace). It is not persist.atomic_write_json."
+  ],
+  "summary_counts": {
+    "candidates": 25,
+    "by_classification": {
+      "EXACT_DUPLICATE": 5,
+      "SEMANTICALLY_SIMILAR_BUT_MUST_REMAIN_DISTINCT": 8,
+      "NOT_MERGEABLE": 1,
+      "PARAMETERIZABLE": 6,
+      "SHARED_CORE_WITH_SPECIALIZED_EDGE": 3,
+      "HISTORICAL_DUPLICATE": 2
+    },
+    "exact_or_parameterizable_in_hcli_py": [
+      "C01",
+      "C04",
+      "C05",
+      "C06",
+      "C07",
+      "C08",
+      "C10",
+      "C13",
+      "C14"
+    ],
+    "must_remain_distinct": [
+      "C02",
+      "C09",
+      "C11",
+      "C12",
+      "C15",
+      "C16",
+      "C17",
+      "C22",
+      "C23",
+      "C24"
+    ]
+  }
+}

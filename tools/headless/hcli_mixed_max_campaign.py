@@ -107,7 +107,7 @@ def real_work() -> List[WorkUnit]:
             _cpu_unit(
                 f"pytest.{slice_name}",
                 f"unit tests matching {expr!r}",
-                f'{PY} -m pytest {REPO_ROOT / "tools/haider/hcli/tests"} -q -k "{expr}"',
+                f'{PY} -m pytest {REPO_ROOT / "hcli/tests"} -q -k "{expr}"',
             )
         )
 
@@ -162,7 +162,7 @@ def real_work() -> List[WorkUnit]:
         _cpu_unit(
             "chain.suite",
             "full unit suite, gated on imports resolving first",
-            f'{PY} -m pytest {REPO_ROOT / "tools/haider/hcli/tests"} -q',
+            f'{PY} -m pytest {REPO_ROOT / "hcli/tests"} -q',
             deps=["chain.compile"],
         )
     )

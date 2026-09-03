@@ -142,7 +142,7 @@ def git_head() -> str:
 
 def atomic_write(path: Path, obj: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp = path.with_suffix(path.suffix + f".{os.getpid()}.tmp")
     tmp.write_text(json.dumps(obj, indent=1) + "\n")
     os.replace(tmp, path)
 

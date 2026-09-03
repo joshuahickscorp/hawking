@@ -398,3 +398,92 @@ def test_no_pytest_skip_in_this_file():
             elif isinstance(func, ast.Name):
                 name = func.id
             assert name != "skip", "pytest.skip that actually fires is a P0"
+
+
+def test_concurrent_writers_do_not_share_one_staging_name(tmp_path):
+    """Two processes packing the same content-addressed part must not collide.
+
+    The staging sibling used to be a fixed `<dest>.tmp`. Two workers writing
+    the same artifact both created that one path, and whichever `os.replace`d
+    it first left the other raising FileNotFoundError on a name that no longer
+    existed. The destination is a content hash, so a concurrent write is
+    legitimate; only the staging name has to be private to the writer.
+    """
+    dest = tmp_path / "embed.deadbeef.mtlarchive"
+
+    # The real race, driven for real: fork a second writer that stages and
+    # replaces the same destination while this one does. Both must succeed.
+    payload = b"\xcb\xfe\xba\xbe" + b"nx" * 4096
+    child = os.fork()
+    if child == 0:  # pragma: no cover - the child exits, never reports
+        try:
+            for _ in range(200):
+                nxp._write_and_hash(dest, payload)
+        except BaseException:
+            os._exit(1)
+        os._exit(0)
+    try:
+        for _ in range(200):
+            size, digest = nxp._write_and_hash(dest, payload)
+            assert size == len(payload)
+            assert digest == hashlib.sha256(payload).hexdigest()
+    finally:
+        _, status = os.waitpid(child, 0)
+    assert os.waitstatus_to_exitcode(status) == 0, "the concurrent writer failed"
+    assert dest.read_bytes() == payload
+    assert not list(tmp_path.glob("*.tmp")), "a staging file was left behind"
+    assert str(os.getpid()) in nxp._tmp_sibling(dest).name
+
+
+def test_no_shared_staging_name_in_a_producer_two_test_files_can_reach():
+    """The nx_packer collision was one instance of a repo-wide shape.
+
+    A producer that stages into a fixed `<dest>.tmp` and then replaces it is safe
+    alone and broken the moment two processes run it: both write that one path,
+    and whichever replaces it first leaves the other with FileNotFoundError. The
+    risk condition is not "unlocked", it is "unlocked AND reachable from more than
+    one test file" -- under `--dist loadfile` a single file's tests share one
+    worker, so one caller cannot race itself. Two callers can, which is exactly
+    how nx_packer got hit from test_power_torture and the nr_nx tests.
+
+    Computed rather than listed, so a new producer with the same shape is caught
+    without anyone remembering to add it here.
+    """
+    import re
+
+    root = Path(__file__).resolve().parents[2]
+    tools = root / "tools"
+    fixed_tmp = re.compile(
+        r'\.with_suffix\("\.json\.tmp"\)'
+        r'|\.with_suffix\(\w+\.suffix \+ "\.tmp"\)'
+        r'|\.with_name\(\w+\.name \+ "\.tmp"\)'
+    )
+
+    producers = {}
+    for path in tools.rglob("*.py"):
+        if path.name.startswith("test_"):
+            continue
+        text = path.read_text(errors="replace")
+        if "flock" in text or "getpid" in text:
+            continue          # serialized, or already process-private
+        if fixed_tmp.search(text):
+            producers[path.stem] = path
+
+    if not producers:
+        return
+
+    offenders = []
+    for stem, path in sorted(producers.items()):
+        word = re.compile(rf"\b(?:import|from)\b.*\b{re.escape(stem)}\b")
+        callers = [
+            t.name
+            for t in tools.rglob("test_*.py")
+            if word.search(t.read_text(errors="replace"))
+        ]
+        if len(callers) > 1:
+            offenders.append(f"{path.relative_to(root)} <- {', '.join(sorted(callers)[:4])}")
+
+    assert not offenders, (
+        "these stage into a shared fixed .tmp and more than one test file can run them "
+        "concurrently:\n  " + "\n  ".join(offenders)
+    )

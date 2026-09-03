@@ -149,12 +149,32 @@ def test_model_download_is_deferable_unless_first_workgraph_requires_it():
     )
 
 
-def test_live_downloads_are_sleeping_wus_from_watcher_state():
+def test_the_live_watcher_sample_is_readable():
+    """Separate from the WU shape below: this is the only thing here that has to
+    be true of the live log, and it stays true whether or not anything is
+    downloading."""
     sample = ss.read_latest_watcher_sample()
     assert sample is not None, "watcher_sample must be readable from the live jsonl"
-    active = list(sample.get("active_jobs") or [])
-    assert len(active) >= 1
-    units = ss.pending_from_watcher_sample(sample)
+    assert "active_jobs" in sample
+
+
+def test_active_downloads_become_sleeping_wus(tmp_path):
+    """Asserted `len(active) >= 1` against the live log -- a bet that a download
+    was in flight at the moment the suite ran. Acquisition is finished, so
+    active_jobs is now permanently []. Hand the reader a sample instead: the
+    behaviour under test is the tag -> sleeping-WU translation, not whether the
+    campaign happens to be mid-download."""
+    log = tmp_path / "watch.jsonl"
+    active = ["Qwen--Qwen3-0.6B@c1899de289a0",
+              "tiiuae--Falcon3-1B-Instruct@28ba2251970a"]
+    log.write_text(
+        "{}\n"  # _read_jsonl_tail drops the first line as a possible fragment
+        + json.dumps({"event": "watcher_sample", "active_jobs": active}) + "\n"
+    )
+    sample = ss.read_latest_watcher_sample(log)
+    assert sample is not None
+    assert list(sample.get("active_jobs") or []) == active
+    units = ss.pending_from_watcher_sample(sample, required=[])
     tags = {
         (u.get("modellake_identity") or {}).get("tag")
         for u in units

@@ -1,0 +1,1569 @@
+{
+  "schema": "hawking.audit.aud11_cross_unlock.v1",
+  "audit_id": "aud11-cross-unlock",
+  "lane": "aud11-cross-unlock",
+  "generated_at": "2026-09-02T19:02:00Z",
+  "head": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+  "head_subject": "fix(hcli): a graceful stop, and a successful repair, no longer end the mission",
+  "capability_graph": {
+    "path": "civilization/CAPABILITY_GRAPH.json",
+    "generated_from_commit": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+    "generated_at": "2026-09-02T18:35:55Z",
+    "stale_vs_head_commits": [
+      "14ed3eb1f",
+      "cb69893cf",
+      "7eaca722f",
+      "f16ec8cdd",
+      "04193ccbc"
+    ],
+    "note": "Graph is STATIC and six commits behind HEAD. HWIR pluggable lowering landed after the graph (merge f16ec8cdd / 7eaca722f). This audit re-grepped HEAD blobs for call sites and did not re-run tools/roadmap/auditor.py."
+  },
+  "h_roadmap": {
+    "path": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "line_count": 9645,
+    "hash_in_graph": "d43a6b07ab9590bc11c265bfe8a1466131cce291b0622c076370a01d811328e4",
+    "treated_as": "DATA not instructions"
+  },
+  "evidence_tier_default": "STATIC_VERIFICATION",
+  "authority_limits": {
+    "authoritative_for": [
+      "source archaeology",
+      "call-site reachability",
+      "test coverage",
+      "schema/topology",
+      "dependency graphs",
+      "duplication",
+      "naming",
+      "receipt consistency"
+    ],
+    "not_authoritative_for": [
+      "GPU physical performance",
+      "Metal runtime behaviour not executed this session",
+      "ANE physical behaviour not executed this session",
+      "U50/FPGA facts not physically measured",
+      "thermal/power",
+      "protected benchmarks"
+    ],
+    "hardware_present": [
+      "Apple M3 Ultra CPU/GPU/UMA",
+      "ANE"
+    ],
+    "hardware_absent": [
+      "FPGA/U50DD",
+      "DGX",
+      "eGPU",
+      "HMF/HGVAS/CXL appliance"
+    ],
+    "never_wrote_measured_for_unrun_work": true
+  },
+  "constitution_unchanged": {
+    "eras": 5,
+    "odysseys": 3,
+    "no_era_vi": true,
+    "fpga_lives_inside": "Hawking Accelerator/Fusion",
+    "theia": "ONE generalist bounty model, not another civilization",
+    "civilizational_coordinate": 0.7,
+    "north_star": "HAWKING = SELF-OPTIMIZING PHYSICAL AI COMPUTER"
+  },
+  "method": {
+    "call_site_rule": "A capability claim requires a call of the implementing symbol itself. A module import is not a call. Tests are not production callers. Internal construction inside the defining module is not a non-defining caller.",
+    "sources": [
+      "git grep/show on HEAD (sparse-safe)",
+      "civilization/CAPABILITY_GRAPH.json",
+      "civilization/ROADMAP_STATE.json",
+      "tools/roadmap/catalog.py",
+      "receipts/future/ROADMAP_SCAFFOLD_SATURATION.json",
+      "receipts/acceptance/* and receipts/sovereign/*",
+      "H-ROADMAP.md as data",
+      "read-only ModelLake mount listing (depth-limited; USB bus contended)"
+    ],
+    "did_not": [
+      "rewrite H-ROADMAP.md",
+      "implement or refactor",
+      "edit hcli/, tools/, crates/, civilization/",
+      "kill/signal/restart any process",
+      "write into ModelLake specimens/",
+      "run tools/roadmap/auditor.py",
+      "run pytest or cargo test",
+      "hash the 4.35 TB school"
+    ]
+  },
+  "denominators": {
+    "note": "Two ledgers exist. Scaffolding that is real on one can be invisible on the other. The civilizational coordinate is a third, frozen, number and is not a ledger-completion statistic.",
+    "appendix_o_gates": {
+      "source": "civilization/CAPABILITY_GRAPH.json counts",
+      "total": 71,
+      "by_status": {
+        "BUILT": 18,
+        "SCAFFOLDED": 20,
+        "WIRED": 11,
+        "ABSENT": 1,
+        "BLOCKED_HARDWARE": 13,
+        "UNREACHABLE": 1,
+        "BLOCKED_EXTERNAL": 7
+      },
+      "wired_gates": 30,
+      "accepted_gates": 30,
+      "built_requires": "wired AND accepted",
+      "movable_per_saturation_receipt": 51,
+      "hardware_blocked": 13,
+      "theia_external": 7,
+      "built_fraction_of_71": 0.2535211267605634
+    },
+    "genes": {
+      "source": "civilization/CAPABILITY_GRAPH.json counts.genes_by_status",
+      "total": 25,
+      "by_status": {
+        "SCAFFOLDED": 20,
+        "WIRED": 1,
+        "BLOCKED_HARDWARE": 3,
+        "DORMANT": 1
+      },
+      "built": 0,
+      "only_wired_gene": "II-C_PHYSICAL_GRAPH_COMPILER",
+      "gene_dependencies_encoded": []
+    },
+    "sovereign_obligations": {
+      "source": "civilization/ROADMAP_STATE.json",
+      "total": 83,
+      "by_status": {
+        "VERIFIED": 52,
+        "BLOCKED": 1,
+        "IN_PROGRESS": 20,
+        "NOT_STARTED": 2,
+        "PENDING": 5,
+        "OPEN": 3
+      },
+      "last_verified_commit": "c5cb8a93d",
+      "last_verified_test_count": 855,
+      "test_count_scope": "tools/accelerator only, `-q`, one directory"
+    },
+    "civilizational_coordinate": {
+      "value": 0.7,
+      "heuristic": true,
+      "basis": "frozen plan against the COMPLETE Hawking system (five eras, twenty-five civilizations). NOT a ledger-completion statistic.",
+      "moved_by_this_scaffolding": false
+    }
+  },
+  "operator_question": {
+    "question": "Did recent scaffolding MATERIALLY move the roadmap denominator, or does it just look like it?",
+    "answer": "less_than_it_appears",
+    "answer_text": "Less than it appears. Recent scaffolding reclassified a lot of already-existing code, discharged a handful of sovereign red gates, and left the Appendix O 71-gate denominator, the 25-gene denominator, and the 0.7 civilizational coordinate essentially unmoved as completion metrics.",
+    "because": [
+      "Appendix O BUILT is 18/71. Genes BUILT is 0/25. Coordinate is frozen at 0.7 by law and is not recomputed from scaffolding.",
+      "ROADMAP_SCAFFOLD_SATURATION.json itself says the start-of-campaign ABSENT baseline was 'materially WRONG' and that BUILT 26\u21920 was a correction of inflated BUILT, not a loss of capability. That is reclassification, not a new foundation unlocking descendants.",
+      "Goal compiler ingest/schedule, Rust ContextCompiler, native prefill, successor-process handoff, and HWIR pluggable lowering are largely ABSENT from the 71 named gates. They cannot move that denominator no matter how real they are.",
+      "FPGA simulator + HWIR being WIRED does not wake any of the 12 U50_* BLOCKED_HARDWARE gates. HMF scaffolds do not wake HMF_DEVICE_VISIBLE_TRUST or Fusion. 55 sealed identities do not hash-verify 4.35 TB and do not wake Theia.",
+      "Several sovereign 'foundations' are red-gate tests whose receipts do not exist (G003, G004, G005, G006, G013). A test file is not a measurement.",
+      "The saturation receipt's remaining_highest_ev_gaps sentence 'No gate has demonstrated ACCEPTANCE / zero are accepted' is false against the same file's final.by_status and against the graph (accepted_gates=30, BUILT=18). Even the campaign's own 'what remains' prose inflates the hole."
+    ]
+  },
+  "surprises": [
+    {
+      "id": "S1_DUAL_LEDGER",
+      "severity": "high",
+      "claim": "Appendix O (71 gates) and the sovereign G-ledger (83 obligations) disagree on the same capabilities.",
+      "evidence": "HCLI_CONTEXT_FOCUSED_WORKUNITS is BUILT in the graph with compile_worker_context callers; sovereign G004 (GoalIR + context compiler on the live runtime path) has no receipts/sovereign/G004_context_runtime.json so its red-gate tests cannot pass. G001 is discharged on the sovereign ledger and is not an Appendix O gate at all.",
+      "what_would_settle": "One mapping table from sovereign Gxxx \u2192 Appendix O gate id (or an explicit 'not in Appendix O' mark), plus producing or SUPERSEDING the missing G004/G005/G006/G013 receipts."
+    },
+    {
+      "id": "S2_DEPENDENCY_NOT_CLOSED",
+      "severity": "high",
+      "claim": "The capability graph does not enforce dependency closure on status.",
+      "evidence": "FPGA_HWIR is WIRED while its prerequisite FPGA_PREBOARD_SCHEMAS is SCAFFOLDED. MODELLAKE_ATOMIC_PROMOTION is BUILT while MODELLAKE_HASH_VERIFIED is WIRED-not-accepted (4.351 TB unhashed). FLASH_FIRST_GRAVITY_ORGAN is BUILT while FLASH_SOURCE_VERIFIED is SCAFFOLDED.",
+      "what_would_settle": "Auditor refuses BUILT/WIRED when a declared dependency is not at least that status, or the catalog drops the edges."
+    },
+    {
+      "id": "S3_TWO_CONTEXT_COMPILERS",
+      "severity": "high",
+      "claim": "There are two ContextCompilers that do not call each other.",
+      "evidence": "hcli.goal.compile_worker_context is called from hcli/mission.py:1055 (HCLI live path). crates/hawking-context ContextCompiler::compile is called from hide-kernel/src/lib.rs:87 and hide-backend (HIDE product). git grep of hcli/ for hawking_context::ContextCompiler is empty. lab/lineage/continuity.py:191 defines a third function of the same name.",
+      "what_would_settle": "A single production call from HCLI daemon or hawking-serve into hawking_context::ContextCompiler, or an explicit documented split with different names."
+    },
+    {
+      "id": "S4_TWO_GOAL_COMPILERS",
+      "severity": "high",
+      "claim": "goal_compile.ingest/schedule is a second compiler with no production caller.",
+      "evidence": "git grep of ingest/schedule imports: only hcli/test_goal_compile.py and hcli/test_goal_compiler_acceptance.py. Live engine/controller/mission call GoalCompiler.compile in hcli/goal.py, not ingest().",
+      "what_would_settle": "A non-test call of ingest() or schedule() from engine.py or mission.py, or deletion of the unused lane."
+    },
+    {
+      "id": "S5_FPGA_SYMBOL_NARROWNESS",
+      "severity": "medium",
+      "claim": "FPGA preboard CLI is reachable; the catalog still rates inner symbols SCAFFOLDED because it demands FPGADeviceGenome / TransportLinkSimulator / simulate_partition rather than run_fpga_preboard.",
+      "evidence": "hcli/agentos_cli.py:1017 calls run_fpga_preboard. That function constructs FPGADeviceGenome() and TransportLinkSimulator() and calls simulate_partition() inside the defining module (fpga_preboard.py:480-483). Catalog symbols are the inner names. Auditor excludes the defining file.",
+      "what_would_settle": "Either add a non-defining call of the inner symbols, or retarget the catalog at run_fpga_preboard. Reclassification would still not wake U50_*."
+    },
+    {
+      "id": "S6_LOWERING_NOT_CONSUMED",
+      "severity": "medium",
+      "claim": "Pluggable LoweringTarget exists and is tested, but the four FPGA_HWIR production HwirGraph callers never call lower_hwir().",
+      "evidence": "git grep lower_hwir( outside tools/future/hwir.py and tests: empty. fusion_bridge.lower_fpga_domain_to_hwir is only called from tools/accelerator/test_fusion_bridge.py. tools/future/test_hwir_lowering.py calls lower_hwir.",
+      "what_would_settle": "A non-test call of lower_hwir(graph, target_id) from fusion_bridge.py or physical_graph_compiler.py."
+    },
+    {
+      "id": "S7_MODELLAKE_PROMOTE_WITHOUT_HASH",
+      "severity": "high",
+      "claim": "Atomic promotion is BUILT while the school is not hash-verified.",
+      "evidence": "receipts/acceptance/MODELLAKE_HASH_VERIFIED.json verdict BLOCKED: missing oid-backed sha256 of 54 sealed specimens (4.351 TB). receipts/acceptance/MODELLAKE_ATOMIC_PROMOTION.json ACCEPTED on a scratch-tree rename. Catalog deps HASH_VERIFIED \u2192 ATOMIC_PROMOTION.",
+      "what_would_settle": "A full-lake verify_only() sha256 pass, or demoting ATOMIC_PROMOTION until HASH_VERIFIED is accepted."
+    },
+    {
+      "id": "S8_SATURATION_PROSE_VS_COUNTS",
+      "severity": "medium",
+      "claim": "ROADMAP_SCAFFOLD_SATURATION remaining_highest_ev_gaps says zero gates are accepted; the same file's final.by_status and the graph say otherwise.",
+      "evidence": "remaining_highest_ev_gaps[0].why: '26 gates are wired and zero are accepted'. final.by_status.BUILT=18, graph counts.accepted_gates=30.",
+      "what_would_settle": "Rewrite that sentence against the counts, or regenerate the receipt from the auditor."
+    },
+    {
+      "id": "S9_HMF_CALLER_VS_GRAPH",
+      "severity": "medium",
+      "claim": "The graph reports 0 runtime callers for HMF_DEVICE_VISIBLE_TRUST, but tools/acceptance/odyssey/run.py calls hmf_objects.establish_clean and device_digest.",
+      "evidence": "tools/acceptance/odyssey/run.py:681-695. Catalog probe for HMF_DEVICE_VISIBLE_TRUST names paths but no symbols, so the auditor has nothing to grep as a call.",
+      "what_would_settle": "Add symbols (establish_clean or device_digest) to the catalog. Status would remain BLOCKED_HARDWARE because HMF_PRESENT is false."
+    },
+    {
+      "id": "S10_G010_RESTARTS",
+      "severity": "medium",
+      "claim": "ModelLake law says never casually restart a healthy acquisition worker; G010 recorded 6 restarts in a 660s window.",
+      "evidence": "receipts/sovereign/G010_modellake_retained.json restarts=6, live_downloaders PIDs 47640/47641, lifecycle_defect_counts.stale_partial=6. This audit did not re-run the producer.",
+      "what_would_settle": "A process-table attribution of those 6 restarts to crash vs operator vs watchdog, against MODELLAKE LAW in H-ROADMAP \u00a714."
+    }
+  ],
+  "foundations": [
+    {
+      "id": "goal_compiler_verifier_synthesis",
+      "title": "Goal Compiler + verifier synthesis",
+      "classification": "INTEGRATED",
+      "classification_scope": "GoalCompiler.compile + _synthesised_verify_command on the HCLI engine/mission/controller path. Not ingest/schedule.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "implementing_symbols": [
+        {
+          "module": "hcli.goal",
+          "symbol": "GoalCompiler.compile"
+        },
+        {
+          "module": "hcli.goal",
+          "symbol": "GoalCompiler._synthesised_verify_command"
+        },
+        {
+          "module": "hcli.verifier_pipeline",
+          "symbol": "command_is_admissible"
+        }
+      ],
+      "call_sites": [
+        {
+          "file": "hcli/engine.py",
+          "line": 1292,
+          "symbol": "GoalCompiler.compile",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "note": "live engine loop"
+        },
+        {
+          "file": "hcli/engine.py",
+          "line": 593,
+          "symbol": "GoalCompiler",
+          "kind": "construct",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+        },
+        {
+          "file": "hcli/controller.py",
+          "line": 1394,
+          "symbol": "GoalCompiler.compile",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+        },
+        {
+          "file": "hcli/controller.py",
+          "line": 1651,
+          "symbol": "GoalCompiler.compile",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+        },
+        {
+          "file": "hcli/controller.py",
+          "line": 1783,
+          "symbol": "GoalCompiler.compile",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+        },
+        {
+          "file": "hcli/mission.py",
+          "line": 316,
+          "symbol": "GoalCompiler.compile",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+        },
+        {
+          "file": "hcli/agentos/runtime.py",
+          "line": 280,
+          "symbol": "GoalCompiler.compile",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+        },
+        {
+          "file": "hcli/executors.py",
+          "line": 307,
+          "symbol": "command_is_admissible",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+        },
+        {
+          "file": "hcli/landing.py",
+          "line": 232,
+          "symbol": "command_is_admissible",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+        },
+        {
+          "file": "hcli/ledger.py",
+          "line": 689,
+          "symbol": "command_is_admissible",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+        },
+        {
+          "file": "tools/sovereign/g001_verifier_synthesis.py",
+          "line": 129,
+          "symbol": "GoalCompiler.compile",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "note": "G001 producer; not the daemon"
+        }
+      ],
+      "explicit_blockers": [
+        {
+          "kind": "no_production_caller",
+          "text": "hcli.goal_compile.ingest and schedule have no non-test caller (only test_goal_compile.py and test_goal_compiler_acceptance.py)."
+        },
+        {
+          "kind": "not_in_appendix_o",
+          "text": "There is no Appendix O gate named GOAL_COMPILER or VERIFIER_SYNTHESIS. This foundation cannot move the 71-gate denominator by construction."
+        }
+      ],
+      "tests": [
+        "hcli/test_goal_compile.py",
+        "hcli/test_goal_compiler_acceptance.py",
+        "hcli/test_goal_verifier_synthesis.py",
+        "hcli/test_goal_ir.py",
+        "hcli/test_goal_tokenizer.py",
+        "hcli/test_goal_graph.py",
+        "hcli/test_goal_source_compile.py"
+      ],
+      "receipts": [
+        {
+          "path": "receipts/sovereign/G001_verifier_synthesis.json",
+          "status": "completed",
+          "produced_by": "tools/sovereign/g001_verifier_synthesis.py",
+          "cases_measured": 4,
+          "how_measured": "each synthesised git-grep verifier ran three times in a scratch git tree: absent / present / removed. Exit codes recorded.",
+          "evidence_tier_of_receipt": "the producer claims subprocess measurement; this audit inspected the receipt, did not re-run it"
+        }
+      ],
+      "previously_blocked_descendants": [
+        "Obligations whose goal text does not name a test*.py file compiled to an empty verifier (GoalCompiler._verify_command old path).",
+        "Sovereign G001 red gate."
+      ],
+      "descendants_now_scaffoldable": [
+        "git-grep definition verifiers for any obligation that names a code-shaped symbol AND a scoped source path.",
+        "goal_ir / goal_tokenizer / goal_graph / ingest lane (TESTED, not live)."
+      ],
+      "descendants_now_testable": [
+        "G001 (receipt present).",
+        "test_goal_compiler_acceptance three-scenario suite against ingest/schedule."
+      ],
+      "descendants_still_physically_blocked": [
+        "Using synthesised verifiers as the live mission VERIFIED bar for the 83-obligation ledger (only 4 toy cases measured).",
+        "goal_compile.check_disk_satisfaction skipping work on the live scheduler (schedule() is test-only).",
+        "Anything that needs a semantic/property verifier rather than a definition grep."
+      ],
+      "moves_appendix_o_denominator": false,
+      "moves_sovereign_denominator": true,
+      "materiality": "Real for HCLI compile-time verifier emission. Looks larger than it is: synthesis is definition-grep, G001 is 4 toy obligations, ingest/schedule is a unused twin compiler, and none of this is an Appendix O gate."
+    },
+    {
+      "id": "context_compiler_long_context_runtime",
+      "title": "Context Compiler + long-context runtime",
+      "classification": "INTEGRATED",
+      "classification_scope": "Python compile_worker_context on HCLI mission path = Appendix O HCLI_CONTEXT_FOCUSED_WORKUNITS BUILT. Rust ContextCompiler is a different product (HIDE). Long-context 131072/262144 is not measured.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "implementing_symbols": [
+        {
+          "module": "hcli.goal",
+          "symbol": "compile_worker_context"
+        },
+        {
+          "module": "hawking_context::compiler",
+          "symbol": "ContextCompiler::compile"
+        }
+      ],
+      "call_sites": [
+        {
+          "file": "hcli/mission.py",
+          "line": 1055,
+          "symbol": "compile_worker_context",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "note": "HCLI production"
+        },
+        {
+          "file": "tools/acceptance/context/gates.py",
+          "line": 199,
+          "symbol": "compile_worker_context",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+        },
+        {
+          "file": "tools/acceptance/context/gates.py",
+          "line": 325,
+          "symbol": "compile_worker_context",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+        },
+        {
+          "file": "tools/genesis_agentos.py",
+          "line": 418,
+          "symbol": "compile_worker_context",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+        },
+        {
+          "file": "tools/headless/control_plane_latency.py",
+          "line": 401,
+          "symbol": "compile_worker_context",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+        },
+        {
+          "file": "crates/hide-kernel/src/lib.rs",
+          "line": 87,
+          "symbol": "ContextCompiler::compile",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "note": "HIDE kernel, not HCLI daemon"
+        },
+        {
+          "file": "crates/hide-backend/src/connectors.rs",
+          "line": 550,
+          "symbol": "ContextCompiler",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+        },
+        {
+          "file": "crates/hide-backend/src/services.rs",
+          "line": 315,
+          "symbol": "context_compiler",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+        }
+      ],
+      "explicit_blockers": [
+        {
+          "kind": "missing_receipt",
+          "text": "receipts/sovereign/G004_context_runtime.json ABSENT. Red-gate hcli/test_context_compiler_runtime.py cannot pass."
+        },
+        {
+          "kind": "missing_receipt",
+          "text": "receipts/sovereign/G006_long_context.json ABSENT. Red-gate hcli/test_long_context_runtime.py cannot pass. No 131072/262144 measurement in this audit."
+        },
+        {
+          "kind": "no_production_caller",
+          "text": "HCLI_CONTEXT_INVALIDATION: graph reports 0 runtime callers of the catalog symbol hcli.goal; accepted via FUNCTIONAL_SIM receipt only."
+        },
+        {
+          "kind": "product_split",
+          "text": "No HCLI/hawking-serve call of hawking_context::ContextCompiler."
+        }
+      ],
+      "tests": [
+        "hcli/test_context_compiler_runtime.py",
+        "hcli/test_long_context_runtime.py",
+        "hcli/test_native_context_budget.py",
+        "hcli/test_context_memory.py",
+        "hcli/test_context_pastes.py",
+        "hcli/test_context_reduction.py",
+        "tools/haider/hcli/tests/test_context_compiler.py",
+        "tools/acceptance/context/test_gates.py",
+        "crates/hawking-context/src/compiler.rs (in-module tests)",
+        "crates/hide-backend/tests/first_model_free_receipt.rs"
+      ],
+      "receipts": [
+        {
+          "path": "receipts/acceptance/HCLI_CONTEXT_FOCUSED_WORKUNITS.json",
+          "graph_status": "BUILT",
+          "evidence_tier": "FUNCTIONAL_SIM"
+        },
+        {
+          "path": "receipts/acceptance/HCLI_CONTEXT_INVALIDATION.json",
+          "graph_status": "SCAFFOLDED (accepted, not wired)",
+          "evidence_tier": "FUNCTIONAL_SIM"
+        },
+        {
+          "path": "receipts/acceptance/HCLI_CONTEXT_AUTHORITY_UNIFIED.json",
+          "graph_status": "BUILT"
+        }
+      ],
+      "previously_blocked_descendants": [
+        "HCLI_CONTEXT_FOCUSED_WORKUNITS",
+        "Per-workunit focused packets"
+      ],
+      "descendants_now_scaffoldable": [
+        "HCLI_CONTEXT_INVALIDATION (accepted, needs a non-test call of the catalog symbol).",
+        "HIDE-side packing via Rust ContextCompiler (already called inside hide-backend)."
+      ],
+      "descendants_now_testable": [
+        "compile_worker_context unit/acceptance tests (on disk under tools/haider and tools/acceptance/context).",
+        "G004/G006 red gates are testable as soon as producers write receipts \u2014 they are not discharged."
+      ],
+      "descendants_still_physically_blocked": [
+        "Native long-context ladder at 131072 and 262144 (G006, no receipt, not run this session).",
+        "Unifying HCLI packets with hawking-context manifests.",
+        "FLASH_ACCEPTED_TPS_GE_50 and resident-at-long-context (different stack; not unlocked by the packet compiler)."
+      ],
+      "moves_appendix_o_denominator": false,
+      "moves_appendix_o_note": "HCLI_CONTEXT_FOCUSED_WORKUNITS is already BUILT. This foundation does not newly unlock a cluster of Appendix O gates.",
+      "materiality": "The HCLI packet compiler is real and already counted. The 'long-context runtime' half is a red gate without a receipt. The Rust compiler is a second system."
+    },
+    {
+      "id": "modellake_sealed_specimens",
+      "title": "ModelLake sealed specimens",
+      "classification": "INTEGRATED",
+      "classification_scope": "Identity census of 55 sealed specimens is BUILT. Cryptographic hash of the school is not. Promotion primitive is BUILT on a scratch tree.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "implementing_symbols": [
+        {
+          "module": "hcli.agentos.modellake_gate",
+          "symbol": "run_modellake_census"
+        },
+        {
+          "module": "tools.odyssey.modellake_watch",
+          "symbol": "reconcile"
+        },
+        {
+          "module": "tools.odyssey.modellake_promote",
+          "symbol": "promote"
+        }
+      ],
+      "call_sites": [
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 739,
+          "symbol": "run_modellake_census",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+        },
+        {
+          "file": "tools/odyssey/lake_filler.py",
+          "line": 151,
+          "symbol": "tools/odyssey/modellake.py",
+          "kind": "subprocess",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+        },
+        {
+          "file": "tools/odyssey/modellake_watch.py",
+          "line": 659,
+          "symbol": "promote",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+        },
+        {
+          "file": "tools/odyssey/modellake_watch.py",
+          "line": 809,
+          "symbol": "promote",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+        },
+        {
+          "file": "tools/acceptance/lake/promotion.py",
+          "line": 26,
+          "symbol": "promote",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+        },
+        {
+          "file": "tools/acceptance/lake/hash_verify.py",
+          "line": 41,
+          "symbol": "reconcile",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "note": "mw.reconcile() on scratch; live lake not promoted"
+        }
+      ],
+      "explicit_blockers": [
+        {
+          "kind": "incomplete_hash",
+          "text": "MODELLAKE_HASH_VERIFIED BLOCKED: oid-backed sha256 of 54 sealed specimens (4.351 TB) not done. Canonical Qwen3-0.6B hashed; size-check is not sha256.",
+          "wake_condition": "full-lake verify_only()"
+        },
+        {
+          "kind": "usb_contention",
+          "text": "ROADMAP_STATE named_gates.FAST_LOCAL_STORAGE and resource_ownership.USB_BUS_corpdrive: fill owns the bus; G048 real-weights execute waits.",
+          "wake_condition": "quiesced USB window or 15.17GB SSD stage"
+        },
+        {
+          "kind": "not_theia",
+          "text": "Sealed specimens do not create a Theia teacher registry / train substrate. THEIA_* remain BLOCKED_EXTERNAL."
+        }
+      ],
+      "tests": [
+        "tools/odyssey/test_modellake.py",
+        "tools/odyssey/test_modellake_promote.py",
+        "tools/odyssey/test_modellake_watch.py",
+        "tools/odyssey/test_modellake_index.py",
+        "tools/acceptance/test_lake_acceptance.py"
+      ],
+      "receipts": [
+        {
+          "path": "receipts/acceptance/MODELLAKE_IDENTITY_RESOLVED.json",
+          "verdict": "ACCEPTED",
+          "sealed_specimens": 55,
+          "identity_resolved": 55,
+          "unresolved": 0,
+          "lifecycle_counts": {
+            "CENSUSED": 9,
+            "MANIFEST_READY": 45,
+            "SSD_STAGED": 1
+          },
+          "lake": "/Volumes/corpdrive/hawking-modellake"
+        },
+        {
+          "path": "receipts/acceptance/MODELLAKE_HASH_VERIFIED.json",
+          "verdict": "BLOCKED"
+        },
+        {
+          "path": "receipts/acceptance/MODELLAKE_ATOMIC_PROMOTION.json",
+          "verdict": "ACCEPTED",
+          "note": "scratch-tree atomic rename, not live-lake hash completeness"
+        },
+        {
+          "path": "receipts/sovereign/G010_modellake_retained.json",
+          "status": "measured",
+          "manifests_scanned": 55,
+          "retained_delta_bytes": 39948865416,
+          "window_s": 660,
+          "restarts": 6,
+          "evidence_tier_of_receipt": "producer claims live measurement; this audit inspected the receipt, did not re-run it"
+        }
+      ],
+      "physical_mount": {
+        "path": "/Volumes/corpdrive/hawking-modellake/specimens",
+        "note": "Mount is present. A recursive du was NOT run (USB bus contended; ROADMAP_STATE says fill owns it). Identity receipt is the sealed-count authority used here. Top-level listing of specimen dirs was observed.",
+        "evidence_tier": "STATIC_VERIFICATION"
+      },
+      "previously_blocked_descendants": [
+        "MODELLAKE_IDENTITY_RESOLVED",
+        "Odyssey I 'school of specimens' as a countable set"
+      ],
+      "descendants_now_scaffoldable": [
+        "Architecture-diverse Doctor/Odyssey experiments that only need repo+revision identity and a mounted body.",
+        "MODELLAKE_HASH_VERIFIED (symbol reconcile is WIRED; the missing input is the 4.35 TB hash pass).",
+        "Index/scheduler views (receipts/future/MODELLAKE_INDEX.json etc. exist as sidecars)."
+      ],
+      "descendants_now_testable": [
+        "Census, promote, watch, admission-cap unit tests.",
+        "Identity acceptance gate."
+      ],
+      "descendants_still_physically_blocked": [
+        "MODELLAKE_HASH_VERIFIED (4.351 TB sha256).",
+        "G048 real weights execute (USB contended / FAST_LOCAL_STORAGE).",
+        "All 7 THEIA_* gates (no train substrate).",
+        "FLASH_FULL_NOETIC_EXECUTABLE (not a lake problem)."
+      ],
+      "moves_appendix_o_denominator": false,
+      "moves_appendix_o_note": "Identity and promotion already BUILT. Hash remains WIRED-not-accepted. No further Appendix O cluster waits only on 'specimens exist'.",
+      "materiality": "The school as a named, identity-resolved set of 55 is real. Treating that as 'the lake is finished' is the inflation: hash is blocked, G010 saw 6 restarts and stale partials, and nothing Theia-shaped woke up."
+    },
+    {
+      "id": "fpga_simulator_hwir",
+      "title": "FPGA simulator + HWIR",
+      "classification": "CALLABLE",
+      "classification_scope": "HwirGraph is WIRED from four non-test files. Preboard inner symbols are SCAFFOLDED (defining-module-only). Pluggable LoweringTarget is TESTED, not consumed. FPGA_HWIR is not accepted. U50 chain is BLOCKED_HARDWARE.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "implementing_symbols": [
+        {
+          "module": "tools.future.hwir",
+          "symbol": "HwirGraph"
+        },
+        {
+          "module": "tools.future.hwir",
+          "symbol": "lower_hwir"
+        },
+        {
+          "module": "hcli.agentos.fpga_preboard",
+          "symbol": "run_fpga_preboard"
+        },
+        {
+          "module": "hcli.agentos.fpga_preboard",
+          "symbol": "FPGADeviceGenome"
+        },
+        {
+          "module": "hcli.agentos.fpga_preboard",
+          "symbol": "TransportLinkSimulator"
+        },
+        {
+          "module": "hcli.agentos.fpga_preboard",
+          "symbol": "simulate_partition"
+        }
+      ],
+      "call_sites": [
+        {
+          "file": "tools/accelerator/backend_contract.py",
+          "line": 1094,
+          "symbol": "HwirGraph",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+        },
+        {
+          "file": "tools/accelerator/fusion_bridge.py",
+          "line": 1444,
+          "symbol": "HwirGraph",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+        },
+        {
+          "file": "tools/future/p6_projection.py",
+          "line": 857,
+          "symbol": "HwirGraph",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+        },
+        {
+          "file": "tools/future/propagate.py",
+          "line": 695,
+          "symbol": "HwirGraph",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+        },
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 1017,
+          "symbol": "run_fpga_preboard",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+        },
+        {
+          "file": "tools/accelerator/hardware_doctor.py",
+          "line": 782,
+          "symbol": "hwir.u50_family_profile",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+        },
+        {
+          "file": "tools/accelerator/hardware_doctor.py",
+          "line": 149,
+          "symbol": "hwir.assert_variant_provenance",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+        }
+      ],
+      "explicit_blockers": [
+        {
+          "kind": "no_production_caller",
+          "text": "FPGADeviceGenome, TransportLinkSimulator, simulate_partition: no non-defining-module caller. FPGA_PREBOARD_SCHEMAS / FPGA_LINK_SIM / FPGA_PARTITION_SIM stay SCAFFOLDED."
+        },
+        {
+          "kind": "no_production_caller",
+          "text": "lower_hwir() has no caller outside tools/future/hwir.py and tools/future/test_hwir_lowering.py."
+        },
+        {
+          "kind": "acceptance_undemonstrated",
+          "text": "FPGA_HWIR WIRED not accepted: no receipt demonstrates Appendix K / preboard acceptance. HWIR_V1.json claim_boundary is PREHARDWARE sidecar; not_an_fpga_backend=true."
+        },
+        {
+          "kind": "hardware",
+          "text": "All U50_* gates wake on U50_PRESENT. Probe: no Xilinx/Alveo/U50/XCU50 in inventory.",
+          "wake_condition": "U50_PRESENT"
+        },
+        {
+          "kind": "hardware",
+          "text": "H-ROADMAP I.23 forbids skipping FPGA SIMULATION \u2192 cheap FPGA \u2192 serious FPGA. Simulator work cannot graduate U50 purchase/cooling/HBM gates."
+        }
+      ],
+      "tests": [
+        "tools/future/test_hwir.py",
+        "tools/future/test_hwir_lowering.py",
+        "tools/future/test_hwir_sealed_predictions.py",
+        "hcli/agentos/test_fpga_preboard.py",
+        "tools/accelerator/test_fusion_bridge.py",
+        "tools/haider/test_hcli_science_boundaries.py (simulate_partition)"
+      ],
+      "receipts": [
+        {
+          "path": "receipts/future/HWIR_V1.json",
+          "claim_boundary": "PREHARDWARE sidecar HWIR artifact. No FPGA board, bitstream, timing, or HARDWARE_MEASURED number.",
+          "lowering_targets_registered": [
+            "hls_style",
+            "rust_hdl_style"
+          ],
+          "preferred": null,
+          "recorded_at": "2026-09-02T18:47:20Z"
+        },
+        {
+          "path": "receipts/future/HWIR_SEALED_PREDICTIONS.json"
+        },
+        {
+          "path": "receipts/future/HWIR_SYNTHETIC_ARRIVAL_REHEARSAL.json"
+        }
+      ],
+      "graph_status": {
+        "FPGA_PREBOARD_SCHEMAS": "SCAFFOLDED",
+        "FPGA_HWIR": "WIRED",
+        "FPGA_LINK_SIM": "SCAFFOLDED",
+        "FPGA_PARTITION_SIM": "SCAFFOLDED",
+        "U50_*": "BLOCKED_HARDWARE x12 (U50_MIXED_APPLE_FPGA_GRAPH is wired-but-blocked)"
+      },
+      "previously_blocked_descendants": [
+        "FPGA_HWIR (now WIRED)",
+        "Preboard CLI surface (run_fpga_preboard)"
+      ],
+      "descendants_now_scaffoldable": [
+        "FPGA_PREBOARD_SCHEMAS / FPGA_LINK_SIM / FPGA_PARTITION_SIM (code exists; need a non-defining call of the catalog symbols, or retarget catalog).",
+        "HLS-style and Rust-HDL-style source emission (PREHARDWARE).",
+        "Sealed predictions staged against U50_PRESENT."
+      ],
+      "descendants_now_testable": [
+        "HWIR validate/serdes/lowering unit tests.",
+        "simulate_partition in haider science-boundary tests.",
+        "fusion_bridge.lower_fpga_domain_to_hwir in accelerator tests."
+      ],
+      "descendants_still_physically_blocked": [
+        "U50_PURCHASE_ACCEPTANCE",
+        "U50_SAFE_COOLING",
+        "U50_DEVICE_PROFILE",
+        "U50_DMA_HBM",
+        "U50_FIRST_NATIVE_ENGINE",
+        "U50_MIXED_APPLE_FPGA_GRAPH",
+        "U50_34_TO_40 through U50_80_TO_90",
+        "Any HARDWARE_MEASURED bandwidth/timing/HBM number"
+      ],
+      "moves_appendix_o_denominator": false,
+      "materiality": "This is the loudest 'looks like a foundation'. A simulator plus an IR plus two source emitters do not move 12 hardware gates. The recent pluggable-lowering merge did not even consume lower_hwir from the HwirGraph callers."
+    },
+    {
+      "id": "native_prefill",
+      "title": "native prefill",
+      "classification": "CALLABLE",
+      "classification_scope": "hawking-core Engine::prefill_slot is implemented for QwenDense and RWKV7 and called from hawking-serve. Default trait method is Unimplemented. Not an Appendix O gate. Sovereign G005 has no receipt.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "implementing_symbols": [
+        {
+          "module": "hawking_core::engine::Engine",
+          "symbol": "prefill_slot"
+        },
+        {
+          "module": "hawking_core::model::qwen_dense::QwenDense",
+          "symbol": "prefill_slot"
+        },
+        {
+          "module": "hawking_core::model::rwkv7",
+          "symbol": "prefill_slot"
+        }
+      ],
+      "call_sites": [
+        {
+          "file": "crates/hawking-serve/src/lib.rs",
+          "line": 875,
+          "symbol": "prefill_slot",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "note": "continuous-batch serve loop"
+        },
+        {
+          "file": "crates/hawking-core/src/engine.rs",
+          "line": 499,
+          "symbol": "prefill_slot",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "note": "default prefill_slots_parallel serial fallback"
+        },
+        {
+          "file": "crates/hawking-core/src/engine.rs",
+          "line": 587,
+          "symbol": "prefill_slot",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "note": "default prefill_slot_from_pos"
+        },
+        {
+          "file": "crates/hawking-core/src/model/qwen_dense.rs",
+          "line": 2997,
+          "symbol": "prefill_slot",
+          "kind": "definition",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+        },
+        {
+          "file": "crates/hawking-core/src/model/rwkv7.rs",
+          "line": 1805,
+          "symbol": "prefill_slot",
+          "kind": "definition",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+        }
+      ],
+      "explicit_blockers": [
+        {
+          "kind": "not_in_appendix_o",
+          "text": "No PREFILL_* gate in the 71-gate ledger."
+        },
+        {
+          "kind": "missing_receipt",
+          "text": "receipts/sovereign/G005_prefill_pipeline.json ABSENT. G005 wants measured f32 GEMM prefill coverage + dispatch gate + tok/s improvement."
+        },
+        {
+          "kind": "unimplemented_default",
+          "text": "hawking-core/src/engine.rs:481 default prefill_slot returns Unimplemented. Gravity engine comments that continuous-batch prefill fails without a real impl."
+        },
+        {
+          "kind": "not_run_this_session",
+          "text": "This audit did not execute hawking-serve or the prefill parity tests. Do not read CALLABLE as PHYSICALLY_MEASURED."
+        }
+      ],
+      "tests": [
+        "crates/hawking-core/tests/prefill_slot_into_multiseq_parity.rs",
+        "crates/hawking-core/tests/p3_batched_prefill_parity.rs",
+        "crates/hawking-core/tests/rwkv7_prefill_slot_multiseq_parity.rs",
+        "hcli/test_qwen38_prefill_pipeline.py (red, no receipt)",
+        "crates/hawking-bench/src/suites/prefill.rs"
+      ],
+      "receipts": [
+        {
+          "path": "receipts/headless/PREFILL_KV.json",
+          "note": "headless KV prefill artifacts exist; they are not G005 and were not re-run"
+        },
+        {
+          "path": "receipts/ascent-2026-08-16/G117_PREFILL_BASELINE.json",
+          "note": "ascent-era; not this campaign's G005"
+        }
+      ],
+      "previously_blocked_descendants": [
+        "Serve-loop prompt ingestion for QwenDense/RWKV7 (code path exists)."
+      ],
+      "descendants_now_scaffoldable": [
+        "Batched/parallel prefill (default serial fallback already calls prefill_slot).",
+        "Prefill disk cache (crates/hawking-core/src/cache/prefill_disk.rs)."
+      ],
+      "descendants_now_testable": [
+        "Parity tests listed above (not executed this session).",
+        "G005 once a producer writes the receipt."
+      ],
+      "descendants_still_physically_blocked": [
+        "G005 Qwen3.8 f32 GEMM prefill coverage (no receipt).",
+        "FLASH_ACCEPTED_TPS_GE_50 / first complete native Flash token (next_decisive_gates rank 1; different model stack).",
+        "Default Engine impls other than QwenDense/RWKV7."
+      ],
+      "moves_appendix_o_denominator": false,
+      "materiality": "A real serve-path symbol for two families. Not a roadmap-denominator mover. The sovereign prefill gate is still red."
+    },
+    {
+      "id": "tool_callsite_reachability",
+      "title": "tool call-site reachability",
+      "classification": "TESTED",
+      "classification_scope": "G009 producer invoked ToolRegistry.invoke through the live registry and reported 0 structurally unreachable tools of 65. Engine/executors call invoke() in production. This is reachability of existing tools, not new tools.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "implementing_symbols": [
+        {
+          "module": "hcli.tool_registry",
+          "symbol": "ToolRegistry.invoke"
+        },
+        {
+          "module": "hcli.tool_registry",
+          "symbol": "default_tool_registry"
+        }
+      ],
+      "call_sites": [
+        {
+          "file": "hcli/engine.py",
+          "line": 948,
+          "symbol": "ToolRegistry.invoke",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+        },
+        {
+          "file": "hcli/executors.py",
+          "line": 403,
+          "symbol": "ToolRegistry.invoke",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+        },
+        {
+          "file": "hcli/engine.py",
+          "line": 766,
+          "symbol": "default_tool_registry",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+        },
+        {
+          "file": "hcli/executors.py",
+          "line": 99,
+          "symbol": "default_tool_registry",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+        },
+        {
+          "file": "hcli/agentos/runtime.py",
+          "line": 91,
+          "symbol": "default_tool_registry",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+        },
+        {
+          "file": "hcli/agentos/checkpoint.py",
+          "line": 653,
+          "symbol": "default_tool_registry",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+        },
+        {
+          "file": "hcli/agentos/recovery.py",
+          "line": 514,
+          "symbol": "default_tool_registry",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+        },
+        {
+          "file": "hcli/agentos/research.py",
+          "line": 342,
+          "symbol": "default_tool_registry",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+        },
+        {
+          "file": "hcli/commands.py",
+          "line": 1066,
+          "symbol": "default_tool_registry",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+        },
+        {
+          "file": "tools/sovereign/g009_reachability.py",
+          "line": 329,
+          "symbol": "default_tool_registry",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+        }
+      ],
+      "explicit_blockers": [
+        {
+          "kind": "catalog_focus",
+          "text": "G009: 9 registered tools absent from the live model-facing compact catalog for the then-current goal (reachable only via tools.catalog focus round)."
+        },
+        {
+          "kind": "not_in_appendix_o",
+          "text": "Reachability is not an Appendix O gate. VMCP_* gates remain SCAFFOLDED despite tools existing."
+        }
+      ],
+      "tests": [
+        "hcli/test_capability_callsite_reachability.py",
+        "hcli/test_tool_registry.py"
+      ],
+      "receipts": [
+        {
+          "path": "receipts/sovereign/G009_reachability.json",
+          "status": "completed",
+          "counts": {
+            "audited_capabilities": 66,
+            "invoked_through_registry": 12,
+            "no_production_call_site": 0,
+            "not_in_live_model_facing_catalog": 9,
+            "registered_tools": 65,
+            "required_by_active_frontier": 13
+          },
+          "finding_G009_F4": "No registered tool is structurally unreachable."
+        },
+        {
+          "path": "receipts/future/DEAD_CALLSITE_SWEEP.json",
+          "note": "inspected by name only this session"
+        },
+        {
+          "path": "receipts/future/BENCH_B_TOOL_REACHABILITY.json",
+          "note": "inspected by name only this session"
+        }
+      ],
+      "previously_blocked_descendants": [
+        "The historical '41 registered tools with zero call sites' failure mode (G009-F4 says that era is over for the current registry)."
+      ],
+      "descendants_now_scaffoldable": [
+        "Adding tools without repeating the unreachable-registration bug (process is now greppable).",
+        "Compact-catalog vs full-catalog split is documented (G009-F2)."
+      ],
+      "descendants_now_testable": [
+        "G009 red gate is discharged by receipt.",
+        "Per-tool invoke through the registry."
+      ],
+      "descendants_still_physically_blocked": [
+        "VMCP tool-doctor / file-classifier / web-capture / visual-diff / spatial-validate / pty-capture (0 runtime callers of catalog symbols).",
+        "AGENTOS_BEHAVIOR_LAB (ABSENT).",
+        "A 'processes' capability the live goal names but the registry does not carry (G009-F1)."
+      ],
+      "moves_appendix_o_denominator": false,
+      "materiality": "Valuable negative result (no dead registry entries). Does not unlock a descendant cluster. The actual high-fanout wiring gap is VMCP, not 'are tools reachable'."
+    },
+    {
+      "id": "self_landing_successor_handoff",
+      "title": "self-landing + successor handoff",
+      "classification": "CALLABLE",
+      "classification_scope": "git.land.propose \u2192 LandingService.land is a production tool path. Successor *process* handoff (G013) has no receipt. retire_incumbent is only called when start_resident(replace=True). Overnight build_handoff is a status snapshot, not a successor.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "implementing_symbols": [
+        {
+          "module": "hcli.landing",
+          "symbol": "propose_landing"
+        },
+        {
+          "module": "hcli.landing",
+          "symbol": "LandingService.land"
+        },
+        {
+          "module": "hcli.agentos.resident",
+          "symbol": "retire_incumbent"
+        },
+        {
+          "module": "hcli.agentos.handoff",
+          "symbol": "build_handoff"
+        }
+      ],
+      "call_sites": [
+        {
+          "file": "hcli/tool_registry.py",
+          "line": 1532,
+          "symbol": "propose_landing",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "note": "git.land.propose handler"
+        },
+        {
+          "file": "hcli/commands.py",
+          "line": 1643,
+          "symbol": "propose_landing",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+        },
+        {
+          "file": "hcli/landing.py",
+          "line": 433,
+          "symbol": "LandingService.land",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "note": "inside propose_landing"
+        },
+        {
+          "file": "hcli/agentos/resident.py",
+          "line": 2050,
+          "symbol": "retire_incumbent",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "note": "only if replace=True"
+        },
+        {
+          "file": "hcli/agentos/resident.py",
+          "line": 2247,
+          "symbol": "start_resident",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+        },
+        {
+          "file": "hcli/agentos_cli.py",
+          "line": 1213,
+          "symbol": "build_handoff",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+        }
+      ],
+      "explicit_blockers": [
+        {
+          "kind": "missing_receipt",
+          "text": "receipts/sovereign/G013_successor.json ABSENT. Red-gate test_resident_successor_handoff.py cannot pass."
+        },
+        {
+          "kind": "missing_receipt",
+          "text": "receipts/sovereign/G003_self_mutation.json ABSENT. Self-mutation e2e is still a red gate."
+        },
+        {
+          "kind": "governance",
+          "text": "LandingService never git push. Always-refused prefixes include landing.py, tool_registry.py, verifier_pipeline.py, executors.py, and the sovereign test files."
+        },
+        {
+          "kind": "not_in_appendix_o",
+          "text": "Self-landing is not an Appendix O gate. AGENTOS_CHECKPOINT_ATOMICITY / RESTART_COHERENCE are already BUILT on different symbols."
+        }
+      ],
+      "tests": [
+        "hcli/test_landing.py",
+        "hcli/test_resident_successor_handoff.py",
+        "hcli/test_self_mutation_e2e.py",
+        "hcli/test_resident_lifecycle_cutover.py",
+        "hcli/test_resident_restart_after_failure.py"
+      ],
+      "receipts": [
+        {
+          "path": "receipts/headless/HCLI_AGENTOS_HANDOFF.json",
+          "note": "overnight snapshot; claim_boundary in source says it does not certify quality/FPGA/sovereignty"
+        }
+      ],
+      "previously_blocked_descendants": [
+        "Resident-initiated local commit (git.land.propose).",
+        "Silent incumbent-return on resident start (cutover tests name a live failure that start_resident now refuses)."
+      ],
+      "descendants_now_scaffoldable": [
+        "Governed self-edits that stay off the always-refused prefixes.",
+        "replace=True incumbent retirement."
+      ],
+      "descendants_now_testable": [
+        "hcli/test_landing.py (on-disk tests exist).",
+        "G013/G003 once producers exist."
+      ],
+      "descendants_still_physically_blocked": [
+        "G013 successor resident handoff with rollback and no mission amnesia (no receipt).",
+        "G003 one useful mutation originating in HCLI and crossing the integration boundary (no receipt).",
+        "Push/remote promotion (explicitly out of scope of LandingService)."
+      ],
+      "moves_appendix_o_denominator": false,
+      "materiality": "Self-landing the commit is real and wired as a tool. 'Successor handoff' as G013 is still a red gate. Lumping them inflates the foundation."
+    },
+    {
+      "id": "hmf_hgvas_scaffolds",
+      "title": "HMF/HGVAS scaffolds",
+      "classification": "BLOCKED_HARDWARE",
+      "classification_scope": "Software object semantics exist and have tests. Device-visible trust is blocked on HMF_PRESENT=false. Fusion is UNREACHABLE until that wakes.",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "implementing_symbols": [
+        {
+          "module": "tools.future.hmf_objects",
+          "symbol": "establish_clean"
+        },
+        {
+          "module": "tools.future.hmf_objects",
+          "symbol": "device_digest"
+        },
+        {
+          "module": "tools.accelerator.hmf",
+          "symbol": "(re-export of humf; catalog names the module, not a symbol)"
+        }
+      ],
+      "call_sites": [
+        {
+          "file": "tools/acceptance/odyssey/run.py",
+          "line": 684,
+          "symbol": "hmf_objects.establish_clean",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "note": "acceptance harness; graph currently reports 0 runtime callers because catalog lists no symbol"
+        },
+        {
+          "file": "tools/acceptance/odyssey/run.py",
+          "line": 695,
+          "symbol": "hmf_objects.device_digest",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+        },
+        {
+          "file": "tools/future/hmf_objects.py",
+          "line": 934,
+          "symbol": "establish_clean",
+          "kind": "call",
+          "commit": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+          "note": "defining module --selftest"
+        }
+      ],
+      "explicit_blockers": [
+        {
+          "kind": "hardware",
+          "text": "HMF_PRESENT=false: no HMF/HGVAS/CXL memory appliance in inventory.",
+          "wake_condition": "HMF_PRESENT"
+        },
+        {
+          "kind": "acceptance_refused",
+          "text": "receipts/acceptance/HMF_DEVICE_VISIBLE_TRUST.json BLOCKED on the same probe."
+        },
+        {
+          "kind": "unreachable_descendant",
+          "text": "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE depends on HMF_DEVICE_VISIBLE_TRUST."
+        }
+      ],
+      "tests": [
+        "tools/future/test_hmf_objects.py",
+        "tools/accelerator/test_hmf.py"
+      ],
+      "receipts": [
+        {
+          "path": "receipts/future/HMF_MANAGED_OBJECTS.json",
+          "claim_class": "STATIC_ONLY",
+          "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+          "bench.measurement_state": "STATIC_ONLY"
+        },
+        {
+          "path": "receipts/acceptance/HMF_DEVICE_VISIBLE_TRUST.json",
+          "verdict": "BLOCKED"
+        },
+        {
+          "path": "receipts/acceptance/ODYSSEY_HMF_FUSION_MANIFEST.json",
+          "note": "manifest; not device-visible trust"
+        }
+      ],
+      "graph_status": {
+        "HMF_DEVICE_VISIBLE_TRUST": "BLOCKED_HARDWARE",
+        "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE": "UNREACHABLE",
+        "IV-B_HMF_HGVAS": "BLOCKED_HARDWARE",
+        "IV-C_DGX_SPARK": "BLOCKED_HARDWARE",
+        "IV-D_EGPU": "BLOCKED_HARDWARE"
+      },
+      "previously_blocked_descendants": [
+        "Object-level trust-state vocabulary (CLEAN/DIRTY/STALE/UNKNOWN) as software."
+      ],
+      "descendants_now_scaffoldable": [
+        "UMA-fixture object semantics, migrate/recompute UNDECIDABLE-when-UNKNOWN, kernel-boundary CLEAN\u2192UNKNOWN.",
+        "HMF tests on Apple host CPU metadata only (receipt says so)."
+      ],
+      "descendants_now_testable": [
+        "tools/future/test_hmf_objects.py selftest path."
+      ],
+      "descendants_still_physically_blocked": [
+        "HMF_DEVICE_VISIBLE_TRUST",
+        "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE",
+        "IV-B gene promotion",
+        "HMF tests that require a CXL/HBM appliance",
+        "eGPU/DGX HMF integration"
+      ],
+      "moves_appendix_o_denominator": false,
+      "materiality": "Scaffolds do not unlock Era IV. The graph is honest here (BLOCKED_HARDWARE). The inflation is any prose that treats HMF_MANAGED_OBJECTS.json as device trust."
+    }
+  ],
+  "discovered_high_fanout_not_in_operator_list": [
+    {
+      "id": "vmcp_capability_probe_wiring",
+      "title": "VMCP capability-probe production call (discovered)",
+      "why_it_matters": "Largest cheap Appendix O denominator move this audit can see. Multiple VMCP gates share one or two symbols, are already accepted=True, and have 0 runtime callers.",
+      "classification": "SCAFFOLDED",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "gates_accepted_but_not_wired": [
+        "VMCP_STATE_LATTICE",
+        "VMCP_DEEP_DIGEST",
+        "VMCP_TRUTH_LEDGER",
+        "VMCP_TOOL_DOCTOR",
+        "VMCP_FILE_CLASSIFIER",
+        "VMCP_VISUAL_DIFF",
+        "VMCP_SPATIAL_VALIDATE",
+        "VMCP_COMPACT_SURFACE",
+        "VMCP_AGENTOS_INTEGRATION"
+      ],
+      "gates_scaffolded_not_accepted": [
+        "VMCP_WEB_CAPTURE",
+        "VMCP_PTY_CAPTURE"
+      ],
+      "absent_descendant": "AGENTOS_BEHAVIOR_LAB",
+      "already_built": [
+        "VMCP_RECEIPT_LAW"
+      ],
+      "call_sites": [],
+      "explicit_blockers": [
+        {
+          "kind": "no_production_caller",
+          "text": "Catalog symbols tools.headless.vmcp_lattice_disposition / vmcp_capability_probe / vmcp_forgery_canary / hcli.vmcp / hcli.agentos.vmcp_gate have 0 non-test runtime callers in the graph. tools/acceptance/vmcp/gates.py calls them from the acceptance harness, which is why accepted=True can coexist with wired=False."
+        }
+      ],
+      "descendants_now_scaffoldable": [
+        "the listed VMCP gates (code exists)"
+      ],
+      "descendants_now_testable": [
+        "tools/acceptance/vmcp/test_acceptance.py"
+      ],
+      "descendants_still_physically_blocked": [
+        "AGENTOS_BEHAVIOR_LAB (ABSENT definition)"
+      ],
+      "hypothetical_unlock": "One non-test production call of vmcp_capability_probe / lattice_disposition would, under current auditor law (BUILT = wired AND accepted), convert the accepted-but-unwired VMCP cluster from SCAFFOLDED to BUILT without new science.",
+      "moves_appendix_o_denominator": "would, if wired; currently does not"
+    },
+    {
+      "id": "flash_source_verified_wiring",
+      "title": "FLASH_SOURCE_VERIFIED production call (discovered)",
+      "classification": "SCAFFOLDED",
+      "evidence_tier": "STATIC_VERIFICATION",
+      "explicit_blockers": [
+        {
+          "kind": "no_production_caller",
+          "text": "Catalog wants a non-test call of tools.flash_organ_census. accepted=True, wired=False."
+        }
+      ],
+      "note": "FLASH_FIRST_GRAVITY_ORGAN is already BUILT despite depending on this gate (S2). Wiring this is hygiene, not a fan-out unlock of the Flash TPS/EBPW gates, which wait on FLASH_FULL_NOETIC_EXECUTABLE."
+    }
+  ],
+  "what_would_actually_move_the_denominator": [
+    {
+      "move": "Wire accepted-but-unwired VMCP symbols",
+      "effect": "Up to ~9 Appendix O gates SCAFFOLDED \u2192 BUILT under current law",
+      "blocked_by": "no production caller",
+      "hardware": false
+    },
+    {
+      "move": "Meet acceptance on the 11 WIRED-not-accepted gates",
+      "effect": "WIRED \u2192 BUILT for HCLI_STATUS_PHYSICAL, HCLI_MIXED_MAX, HCLI_SELF_OPTIMIZATION_BOOTSTRAP, AGENTOS_DETERMINISTIC_OFFLOAD, MODELLAKE_HASH_VERIFIED, QWEN27_PROTECTED_BASELINE, FLASH_NATIVE_NF_KERNEL, FLASH_COMPLETE_EBPW_LE_1, FPGA_HWIR, ODYSSEY_II_TRANSFER, ODYSSEY_III_ADVERSARIAL_META_SCIENCE",
+      "blocked_by": "real acceptance criteria (EBPW<=1 currently 3.139 historically; 4.35TB hash; FPGA PREHARDWARE; etc.)",
+      "hardware": false
+    },
+    {
+      "move": "First complete native Flash token + FLASH_FULL_NOETIC_EXECUTABLE",
+      "effect": "Unblocks FLASH_COMPLETE_EBPW_LE_1 and FLASH_ACCEPTED_TPS_GE_50 in the dependency chain; this is also next_decisive_gates rank 1 in ROADMAP_STATE",
+      "blocked_by": "science, not scaffolding",
+      "hardware": false
+    },
+    {
+      "move": "U50DD arrival",
+      "effect": "Wakes 12 U50_* gates from BLOCKED_HARDWARE to whatever the preboard code can then measure",
+      "blocked_by": "U50_PRESENT",
+      "hardware": true
+    },
+    {
+      "move": "HMF/HGVAS appliance arrival",
+      "effect": "Wakes HMF_DEVICE_VISIBLE_TRUST and therefore FUSION_FIRST_HETEROGENEOUS_EXECUTABLE",
+      "blocked_by": "HMF_PRESENT",
+      "hardware": true
+    },
+    {
+      "move": "Theia training campaign",
+      "effect": "Wakes 7 THEIA_* BLOCKED_EXTERNAL gates",
+      "blocked_by": "T0_TEACHER_REGISTRY_LIVE / no train substrate in this checkout",
+      "hardware": false
+    }
+  ],
+  "cross_unlock_ranking": [
+    {
+      "rank": 1,
+      "foundation": "vmcp_capability_probe_wiring",
+      "fanout": "high",
+      "moves_denominator_now": false,
+      "would_if": "one production call",
+      "materiality": "highest cheap Appendix O move; not in the operator list"
+    },
+    {
+      "rank": 2,
+      "foundation": "modellake_sealed_specimens",
+      "fanout": "medium",
+      "moves_denominator_now": false,
+      "would_if": "4.35TB hash pass",
+      "materiality": "school exists; hash and G048 still block descendants people think are unlocked"
+    },
+    {
+      "rank": 3,
+      "foundation": "goal_compiler_verifier_synthesis",
+      "fanout": "medium_on_sovereign_ledger_low_on_appendix_o",
+      "moves_denominator_now": false,
+      "would_if": "ingest wired + synthesised verifiers used as live VERIFIED bar",
+      "materiality": "real on HCLI compile path; not an Appendix O gate"
+    },
+    {
+      "rank": 4,
+      "foundation": "fpga_simulator_hwir",
+      "fanout": "looks_high_is_hardware_gated",
+      "moves_denominator_now": false,
+      "would_if": "U50_PRESENT",
+      "materiality": "does not unlock U50_*"
+    },
+    {
+      "rank": 5,
+      "foundation": "context_compiler_long_context_runtime",
+      "fanout": "low",
+      "moves_denominator_now": false,
+      "would_if": "G006 measurement + HCLI/Rust unification",
+      "materiality": "packet compiler already BUILT"
+    },
+    {
+      "rank": 6,
+      "foundation": "tool_callsite_reachability",
+      "fanout": "none",
+      "moves_denominator_now": false,
+      "would_if": "n/a",
+      "materiality": "hygiene, not unlock"
+    },
+    {
+      "rank": 7,
+      "foundation": "self_landing_successor_handoff",
+      "fanout": "low",
+      "moves_denominator_now": false,
+      "would_if": "G013/G003 receipts",
+      "materiality": "landing is real; successor is not discharged"
+    },
+    {
+      "rank": 8,
+      "foundation": "native_prefill",
+      "fanout": "low",
+      "moves_denominator_now": false,
+      "would_if": "G005 receipt + Flash native token",
+      "materiality": "serve-path for two families; not in Appendix O"
+    },
+    {
+      "rank": 9,
+      "foundation": "hmf_hgvas_scaffolds",
+      "fanout": "looks_high_is_hardware_gated",
+      "moves_denominator_now": false,
+      "would_if": "HMF_PRESENT",
+      "materiality": "correctly BLOCKED_HARDWARE"
+    }
+  ],
+  "wired_not_accepted_appendix_o": [
+    "HCLI_STATUS_PHYSICAL",
+    "HCLI_MIXED_MAX",
+    "HCLI_SELF_OPTIMIZATION_BOOTSTRAP",
+    "AGENTOS_DETERMINISTIC_OFFLOAD",
+    "MODELLAKE_HASH_VERIFIED",
+    "QWEN27_PROTECTED_BASELINE",
+    "FLASH_NATIVE_NF_KERNEL",
+    "FLASH_COMPLETE_EBPW_LE_1",
+    "FPGA_HWIR",
+    "ODYSSEY_II_TRANSFER",
+    "ODYSSEY_III_ADVERSARIAL_META_SCIENCE"
+  ],
+  "sovereign_red_gates_without_receipts": [
+    {
+      "id": "G003",
+      "file": "hcli/test_self_mutation_e2e.py",
+      "receipt": "receipts/sovereign/G003_self_mutation.json",
+      "present": false
+    },
+    {
+      "id": "G004",
+      "file": "hcli/test_context_compiler_runtime.py",
+      "receipt": "receipts/sovereign/G004_context_runtime.json",
+      "present": false
+    },
+    {
+      "id": "G005",
+      "file": "hcli/test_qwen38_prefill_pipeline.py",
+      "receipt": "receipts/sovereign/G005_prefill_pipeline.json",
+      "present": false
+    },
+    {
+      "id": "G006",
+      "file": "hcli/test_long_context_runtime.py",
+      "receipt": "receipts/sovereign/G006_long_context.json",
+      "present": false
+    },
+    {
+      "id": "G013",
+      "file": "hcli/test_resident_successor_handoff.py",
+      "receipt": "receipts/sovereign/G013_successor.json",
+      "present": false
+    }
+  ],
+  "sovereign_red_gates_with_receipts": [
+    {
+      "id": "G001",
+      "receipt": "receipts/sovereign/G001_verifier_synthesis.json",
+      "present": true
+    },
+    {
+      "id": "G009",
+      "receipt": "receipts/sovereign/G009_reachability.json",
+      "present": true
+    },
+    {
+      "id": "G010",
+      "receipt": "receipts/sovereign/G010_modellake_retained.json",
+      "present": true
+    },
+    {
+      "id": "G014",
+      "receipt": "receipts/sovereign/G014_negative_science.json",
+      "present": true
+    }
+  ]
+}

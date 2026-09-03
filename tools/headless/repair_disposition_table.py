@@ -1591,7 +1591,7 @@ def handoff(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     patches = []
     patches.append(
         {
-            "file": "tools/haider/hcli/scheduler.py",
+            "file": "hcli/scheduler.py",
             "why": "Persist cycle signatures and per-root counts so restart cannot re-open a closed lineage (items 2, 4).",
             "patch": """
 # in Scheduler._persist extra= and Scheduler.from_workspace restore:
@@ -1609,7 +1609,7 @@ if isinstance(counts, dict):
     )
     patches.append(
         {
-            "file": "tools/haider/hcli/scheduler.py + workunit.py",
+            "file": "hcli/scheduler.py + workunit.py",
             "why": "Consult classify_failure / allows_new_assignments (items 5, 6, 8).",
             "patch": """
 # Scheduler.fail, before _emit_repair:
@@ -1631,7 +1631,7 @@ if health is not None and not health.allows_new_assignments(backend):
     )
     patches.append(
         {
-            "file": "tools/haider/hcli/grok_bridge.py + mission.py",
+            "file": "hcli/grok_bridge.py + mission.py",
             "why": "Cancellation of a grok unit must kill launch_pid; wait must treat cancelled/stale-running as terminal (item 9).",
             "patch": """
 # GrokBridge.cancel(task_id):
@@ -1660,7 +1660,7 @@ if state in ("done", "failed", "cancelled", "stale-running", "unknown"):
     )
     patches.append(
         {
-            "file": "tools/haider/hcli/mission.py",
+            "file": "hcli/mission.py",
             "why": "Adopted running grok units must be waited, not declared blocked (item 10).",
             "patch": """
 # _loop: if a unit is status=running with backend_task_id and no inflight
@@ -1703,7 +1703,7 @@ def print_table(rows: List[Dict[str, Any]], probes: Dict[str, Any], head: str) -
         print(f"- {line}")
     print()
     print("=" * 78)
-    print("HANDOFF (tools/haider/hcli is READ-ONLY in this lane)")
+    print("HANDOFF (hcli is READ-ONLY in this lane)")
     print("=" * 78)
     for i, h in enumerate(handoff(rows), 1):
         print(f"\n### HANDOFF {i}: {h['file']}")
@@ -1767,7 +1767,7 @@ def main() -> int:
             "failed": 1,
             "passed": 365,
             "skipped": 1,
-            "expected_failure": "tools/haider/hcli/tests/test_evidence_freshness.py::TestContextEfficiencyReceipt::test_receipt_fields_come_from_observed_assembly (379 != 377)",
+            "expected_failure": "hcli/tests/test_evidence_freshness.py::TestContextEfficiencyReceipt::test_receipt_fields_come_from_observed_assembly (379 != 377)",
         },
         "table": rows,
         "probes": {

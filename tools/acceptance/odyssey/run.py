@@ -17,10 +17,13 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable
+from tools.roadmap import lineage
 
 REPO = Path(__file__).resolve().parents[3]
 RECEIPTS_DIR = REPO / "receipts" / "acceptance"
-ROADMAP = Path("/Users/scammermike/Downloads/H-ROADMAP.md")
+# The canonical roadmap is external and can vanish; tools.roadmap.lineage
+# falls back to the digest-verified in-repo copy rather than a placeholder.
+ROADMAP = lineage.roadmap_path()
 PRIMARY = Path(os.environ.get("HAWKING_PRIMARY", "/Users/scammermike/Downloads/hawking"))
 LAKE = Path("/Volumes/corpdrive/hawking-modellake")
 SPECIMENS = LAKE / "specimens"

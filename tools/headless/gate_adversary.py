@@ -189,7 +189,7 @@ def attack_true_mixed_max() -> dict[str, Any]:
         [
             "bash",
             "-lc",
-            "grep -m1 '^MAX_REPAIR_DEPTH' tools/haider/hcli/scheduler.py | sed 's/[^0-9]//g'",
+            "grep -m1 '^MAX_REPAIR_DEPTH' hcli/scheduler.py | sed 's/[^0-9]//g'",
         ],
         cwd=HAWKING_COPY,
     )
@@ -314,7 +314,7 @@ def attack_true_mixed_max() -> dict[str, Any]:
             "and whether the predicate would accept harness-written bytes."
         ),
         "commands": [
-            "grep -m1 '^MAX_REPAIR_DEPTH' tools/haider/hcli/scheduler.py | sed 's/[^0-9]//g'",
+            "grep -m1 '^MAX_REPAIR_DEPTH' hcli/scheduler.py | sed 's/[^0-9]//g'",
             f"python3 -c \"import json;print(json.load(open('receipts/headless/GROK_MAX_EQUILIBRIUM.json'))['useful_equilibrium'])\"",
             f"ls -la {task_dir}" if task_dir else "ls grok task dir",
         ],
@@ -1102,7 +1102,7 @@ def main() -> int:
         {
             "title": "tree-state.patch could not apply in this sparse worktree",
             "detail": (
-                "git apply failed: tools/haider/hcli/* is not materialized "
+                "git apply failed: hcli/* is not materialized "
                 "(sparse checkout). untracked.tar is also tools/haider only. "
                 "Receipts were read from /Users/scammermike/Downloads/hawking-copy. "
                 "git sparse-checkout add is denied in this sandbox."
@@ -1112,7 +1112,7 @@ def main() -> int:
             "title": "Baseline pytest was 463 passed, 2 skipped, not 464/1",
             "detail": (
                 "HCLI_SWAP_CEILING_GIB=64 python3.14 -m pytest "
-                "tools/haider/hcli/tests -q at hawking-copy: "
+                "hcli/tests -q at hawking-copy: "
                 "463 passed, 2 skipped in 142.69s. 465 collected. "
                 "The extra skip is unittest skipTest on mlx_lm.server --help "
                 "(test_mlx_backend.py); the other is the always-skipped "
@@ -1122,7 +1122,7 @@ def main() -> int:
             "command": (
                 "cd /Users/scammermike/Downloads/hawking-copy && "
                 "HCLI_SWAP_CEILING_GIB=64 /opt/homebrew/opt/python@3.14/bin/python3.14 "
-                "-m pytest tools/haider/hcli/tests -q --tb=no"
+                "-m pytest hcli/tests -q --tb=no"
             ),
         },
         {

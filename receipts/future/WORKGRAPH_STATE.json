@@ -3,13 +3,13 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T09:39:29Z",
+  "recorded_at": "2026-09-02T22:53:57Z",
   "recorded_by": "tools/future/workgraph.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
  "bench_state": "UNKNOWN",
- "branch": "grok/s4-tools-future-under-10s-20260902-045214",
+ "branch": "odyssey-i",
  "claim_boundary": "Static sidecar artifact. WorkGraph emits a schedule. It does not execute, does not take a GPU lease, does not promote, and does not raise evidence class above STATIC_ONLY. SLEEPING hardware work is not a result.",
  "concurrent_tick_proof": {
   "fired": true,
@@ -695,7 +695,7 @@
   ],
   "rule": "blocked physical work becomes a SLEEPING WorkUnit; it never becomes a synthetic result. UNKNOWN is the correct hardware answer."
  },
- "head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
+ "head": "2542c46354972ba73705ee0462972bbac3589648",
  "integration_points": [
   "hcli.scheduler.Scheduler.submit \u2014 consume emit_hcli_workunit() rows (hcli frozen)",
   "tools.future.wakeup \u2014 wake_sleeping(hardware_qualified=True) when Codex qualifies (sibling, not imported)",
@@ -1056,7 +1056,7 @@
   "cost_units"
  ],
  "resident_callable": {
-  "durable_graph": "/Users/scammermike/.claude-grok/worktrees/s4-tools-future-under-10s-20260902-045214/receipts/future/workgraph_workspace/workgraph.json",
+  "durable_graph": "/Users/scammermike/Downloads/hawking/receipts/future/workgraph_workspace/workgraph.json",
   "entry_point": "python3 tools/future/workgraph.py --tick   # or: from tools.future.workgraph import open_resident_graph; open_resident_graph().tick()",
   "fail_closed": [
    "admit() REJECTS a unit missing any required field (does not insert)",
@@ -1099,7 +1099,7 @@
   }
  },
  "schema": "hawking.future.workgraph.v1",
- "seal_sha256": "6c715224d6a262b7a28f8cc952e8fdb02e135de51d7811ef65cc4b3d14df2f2d",
+ "seal_sha256": "0780537c3d194d54b15a1e14f64b400869625196de463e6bbfbaff0c95eb2a7d",
  "selection_rule": {
   "info_domain": [
    1,

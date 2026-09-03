@@ -167,9 +167,6 @@ class Controller:
                 "HCLI_MODEL_PATH"
             )
             or os.environ.get(
-                "HAIDER_MODEL_PATH"
-            )
-            or os.environ.get(
                 "HCLI_HAWKING_NATIVE_CONFIG"
             )
         )
@@ -1036,9 +1033,6 @@ class Controller:
             if self.model_info is not None
             else os.environ.get(
                 "HCLI_MODEL_PATH"
-            )
-            or os.environ.get(
-                "HAIDER_MODEL_PATH"
             )
             or os.environ.get(
                 "HCLI_HAWKING_NATIVE_CONFIG"

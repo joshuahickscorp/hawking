@@ -25,12 +25,12 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T09:38:59Z",
+  "recorded_at": "2026-09-02T18:56:57Z",
   "recorded_by": "tools/future/evidence_dag.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
- "branch": "grok/s4-tools-future-under-10s-20260902-045214",
+ "branch": "odyssey-i",
  "cached_invariant_reuse": {
   "byte_flip_named_the_input": true,
   "cache_key": "recorded input sha256, not claim name",
@@ -117,34 +117,34 @@
  "fpga_note": "FPGA is part of Accelerator / Physical Compiler / Fusion. It is not its own civilization and this module does not build an FPGA backend.",
  "funnel_mapping": [
   {
-   "funnel": "static_validation",
-   "level": "V0-V2",
-   "n_ids": null,
-   "source": "catalog"
+   "funnel": "diagnostic_relative_ab",
+   "level": "not a V-level this module emits; DIAGNOSTIC_RELATIVE never promotes",
+   "n_ids": 0,
+   "source": "receipts/future/evidence/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
   },
   {
    "funnel": "native_parity",
    "level": "V2-V3",
-   "n_ids": null,
-   "source": "catalog"
-  },
-  {
-   "funnel": "diagnostic_relative_ab",
-   "level": "not a V-level this module emits; DIAGNOSTIC_RELATIVE never promotes",
-   "n_ids": null,
-   "source": "catalog"
-  },
-  {
-   "funnel": "protected_absolute_complete_wall",
-   "level": "V8",
-   "n_ids": null,
-   "source": "catalog"
+   "n_ids": 0,
+   "source": "receipts/future/evidence/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
   },
   {
    "funnel": "promotion",
    "level": "V9",
-   "n_ids": null,
-   "source": "catalog"
+   "n_ids": 0,
+   "source": "receipts/future/evidence/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
+  },
+  {
+   "funnel": "protected_absolute_complete_wall",
+   "level": "V8",
+   "n_ids": 13,
+   "source": "receipts/future/evidence/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
+  },
+  {
+   "funnel": "static_validation",
+   "level": "V0-V2",
+   "n_ids": 17,
+   "source": "receipts/future/evidence/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
   }
  ],
  "gaps_closed": [
@@ -162,7 +162,7 @@
   "one input byte, a deleted input, a post-seal family scar, and an empty recorded_inputs list each flip REUSE -> RERUN"
  ],
  "gpu_authority": false,
- "head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
+ "head": "dfaeaab9b8dc9131d676b04a18a576bef3d0f073",
  "host": {
   "gpu_authority": false,
   "note": "Unavailability is an authority fact of this sidecar, not a device query. MetalContext / xcrun were not probed.",
@@ -592,17 +592,17 @@
   },
   {
    "in_git": true,
-   "on_disk": false,
+   "on_disk": true,
    "path": "hcli/dag_store.py"
   },
   {
    "in_git": true,
-   "on_disk": false,
+   "on_disk": true,
    "path": "receipts/future/evidence/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
   },
   {
    "in_git": true,
-   "on_disk": false,
+   "on_disk": true,
    "path": "receipts/future/FUTURE_SUBSTRATE_HANDOFF.json"
   },
   {
@@ -681,7 +681,7 @@
   "work_first_pass": 4
  },
  "schema": "hawking.future.evidence_dag.v1",
- "seal_sha256": "fdd0676a48c55d7cf552dae7fd9f9c8021dc5c8d1e53e37a0cedcedeedeca85a",
+ "seal_sha256": "c9e0e6c394539e3250bb60058b4bc1f39c751ab2bd5e43844af2f91f257065c6",
  "static_ladder": {
   "holds": true,
   "n_proved": 8,

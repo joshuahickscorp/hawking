@@ -1,0 +1,74 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-03T05:12:39Z",
+  "recorded_by": "tools/future/complete_ebpw.py:bar_reachability",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "budget_bytes_at_threshold": 3361999808,
+ "claim_boundary": "STATIC arithmetic over the committed complete-EBPW ledger. It does not argue the bar is wrong and does not move it. It states which term has to change, so that effort is not spent on a lever whose entire remaining range cannot reach the threshold.",
+ "evidence_tier": "STATIC",
+ "finding": "FLASH_COMPLETE_EBPW_LE_1 is the only numeric acceptance spec in the 83-gate catalog and it cannot be reached by MLP density at any value. With the ENTIRE MLP at zero bytes -- a bound no compression scheme can beat -- complete_ebpw is still 1.545, above the threshold of 1. The attention+deltanet term alone, at Q4, is 1.55x the whole byte budget. Driving MLP density from 2.50 to 0.50 bpw moves the total only 3.136 -> 2.10. The bar needs attention/deltanet below Q4 before any MLP result can matter.",
+ "gate": "FLASH_COMPLETE_EBPW_LE_1",
+ "git_head": "68080d411a94ef10b6d716f9b8991faaef5578f9",
+ "measured_complete_ebpw": 3.139301,
+ "mlp": {
+  "bpw": 2.504975,
+  "bytes": 5358380616,
+  "elements": 17112760320
+ },
+ "mlp_density_sensitivity": [
+  {
+   "complete_ebpw": 3.136135,
+   "mlp_bpw": 2.5
+  },
+  {
+   "complete_ebpw": 2.977071,
+   "mlp_bpw": 2.25
+  },
+  {
+   "complete_ebpw": 2.818007,
+   "mlp_bpw": 2.0
+  },
+  {
+   "complete_ebpw": 2.499878,
+   "mlp_bpw": 1.5
+  },
+  {
+   "complete_ebpw": 2.18175,
+   "mlp_bpw": 1.0
+  },
+  {
+   "complete_ebpw": 1.863622,
+   "mlp_bpw": 0.5
+  }
+ ],
+ "non_mlp": {
+  "bpw": 4.248858,
+  "bytes": 5195948240,
+  "params": 9783238144
+ },
+ "over_budget_factor": 3.139301,
+ "parent_params": 26895998464,
+ "payload_bytes": 10554328856,
+ "reachable_by_mlp_density_alone": false,
+ "schema": "hawking.future.ebpw_bar_reachability.v1",
+ "seal_sha256": "7e9a2598deff23a76df05476afc21fb2fb7c57ddac47a585b3172db162306064",
+ "second_lever_required": {
+  "current_bpw": 4.248858,
+  "note": "currently Q4; the bar needs it below Q4 before MLP density matters",
+  "required_bpw_even_with_a_free_mlp": 2.749192,
+  "term": "attention + deltanet"
+ },
+ "threshold": 1.0,
+ "threshold_untouched": true,
+ "verdict": "NEGATIVE_RESULT",
+ "with_the_entire_mlp_at_zero_bytes": {
+  "complete_ebpw": 1.545493,
+  "exceeds_threshold_by": 1.545493,
+  "still_above_threshold": true
+ }
+}

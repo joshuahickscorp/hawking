@@ -1,0 +1,1263 @@
+{
+  "schema": "hawking.audit.lane.v1",
+  "lane": "aud07-accelerator-prefill-context",
+  "title": "Apple GPU / prefill / context surface since freeze",
+  "audited_at": "2026-09-02T19:01:27Z",
+  "git_head": "04193ccbc8ef9fdd2dfd595d65f656760829dddc",
+  "git_head_subject": "fix(hcli): a graceful stop, and a successful repair, no longer end the mission",
+  "worktree": "grok/aud07-accelerator-prefill-context-20260902-145217",
+  "freeze": {
+    "date": "2026-08-27",
+    "source_path": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "source_in_git_head": false,
+    "note": "H-ROADMAP.md is the campaign execution decree and is NOT present at git HEAD. Freeze date is taken from that file's header. Roadmap prose is treated as data, not evidence."
+  },
+  "constitution_held": {
+    "eras": 5,
+    "odysseys": 3,
+    "no_era_vi": true,
+    "fpga_inside_accelerator_fusion": true,
+    "theia_is_one_generalist": true,
+    "civilizational_coordinate": "0.7%",
+    "north_star": "HAWKING = SELF-OPTIMIZING PHYSICAL AI COMPUTER"
+  },
+  "authority": {
+    "this_lane_is_authoritative_for": [
+      "source archaeology",
+      "call-site reachability",
+      "test coverage",
+      "schema/topology",
+      "dependency graphs",
+      "duplication",
+      "naming",
+      "receipt consistency"
+    ],
+    "this_lane_is_not_authoritative_for": [
+      "GPU physical performance",
+      "Metal runtime behaviour not executed here",
+      "ANE physical behaviour",
+      "U50/FPGA facts not physically measured",
+      "thermal/power",
+      "protected benchmarks"
+    ],
+    "hardware_present": ["Apple M3 Ultra CPU/GPU/UMA", "ANE"],
+    "hardware_absent": ["FPGA/U50DD", "DGX", "eGPU"],
+    "did_not_run": [
+      "GPU benchmark",
+      "cargo test",
+      "Metal shader compile",
+      "protected accelerator benchmark",
+      "HCLI daemon restart or signal"
+    ],
+    "process_state": {
+      "classification": "BLOCKED_AUTHORITY",
+      "evidence_kind": "SOURCE_INSPECTION",
+      "note": "ps -ax was refused by the sandbox (operation not permitted). This lane did not signal, kill, or restart any process. A live HCLI daemon is asserted by the contract; it was not independently enumerated here."
+    }
+  },
+  "claim": {
+    "statement": "Native prefill was previously using the SINGLE-TOKEN DECODE path, and a first batched GEMM path now exists.",
+    "verdict": "SPLIT",
+    "on_head": {
+      "clause": "native prefill uses the single-token decode path",
+      "result": "CONFIRMED",
+      "classification": "INTEGRATED",
+      "evidence_kind": "SOURCE_INSPECTION",
+      "call_sites": [
+        {
+          "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+          "line": 7454,
+          "symbol": "Qwen38HybridDecodeSession::step",
+          "role": "generate_greedy loops session.step(token) once per prompt token"
+        },
+        {
+          "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+          "line": 7307,
+          "symbol": "Qwen38HybridDecodeSession::step",
+          "role": "step encodes one token via encode_full_token and commits one command buffer"
+        },
+        {
+          "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+          "line": 4678,
+          "symbol": "encode_full_token",
+          "role": "the same embed+layers+terminal graph used for decode"
+        },
+        {
+          "path": "crates/hawking-core/examples/ascension_qwen38_resident.rs",
+          "line": 263,
+          "symbol": "generate_greedy",
+          "role": "native resident binary production caller"
+        },
+        {
+          "path": "hcli/hawking_native.py",
+          "line": 1388,
+          "symbol": "HawkingNativeConnector.complete_payload",
+          "role": "HCLI posts prompt to resident process; resident calls generate_greedy"
+        }
+      ]
+    },
+    "on_head_batched_gemm": {
+      "clause": "a first batched GEMM path now exists (on HEAD, wired into the native resident)",
+      "result": "REFUTED",
+      "classification": "ABSENT",
+      "evidence_kind": "SOURCE_INSPECTION",
+      "call_sites": [],
+      "blockers": [
+        "HEAD does not contain crates/hawking-core/src/model/qwen38_hybrid_prefill.rs (git cat-file exit 128)",
+        "HEAD does not contain crates/hawking-core/shaders/qwen38_prefill.metal",
+        "HEAD does not contain crates/hawking-core/tests/qwen38_prefill_gemm_parity.rs or qwen38_batched_prefill_greedy.rs",
+        "git grep qwen38_prefill on HEAD crates/hawking-core returns no matches",
+        "git merge-base --is-ancestor 8391a0ef8 HEAD is false"
+      ]
+    },
+    "on_unmerged_branch": {
+      "clause": "a first batched GEMM path now exists",
+      "result": "CONFIRMED_OFF_HEAD",
+      "classification": "CALLABLE",
+      "evidence_kind": "SOURCE_INSPECTION",
+      "branch": "grok/prefill-gemm-20260901-232724",
+      "commit": "8391a0ef82489e6795a88decd6c731cf3bf4293c",
+      "authored_at": "2026-09-02T00:10:49-04:00",
+      "after_freeze": true,
+      "commit_message_admits": "Unmeasured at authoring time: the sandbox had no Metal GPU.",
+      "call_sites": [
+        {
+          "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+          "line": null,
+          "symbol": "Qwen38HybridDecodeSession::prefill_prompt",
+          "role": "generate_greedy calls prefill_prompt(prompt) when qwen38_batched_prefill_enabled(); else falls back to session.step per token",
+          "present_on": "8391a0ef8",
+          "present_on_head": false
+        },
+        {
+          "path": "crates/hawking-core/src/model/qwen38_hybrid_prefill.rs",
+          "line": 698,
+          "symbol": "encode_prefill_chunk",
+          "role": "prefill_prompt chunks the prompt and encodes GEMM layers",
+          "present_on": "8391a0ef8",
+          "present_on_head": false
+        },
+        {
+          "path": "crates/hawking-core/src/model/qwen38_hybrid_prefill.rs",
+          "line": 130,
+          "symbol": "encode_prefill_gemm",
+          "role": "dispatches qwen38_prefill_affine_q2_g64_gemm_mma_n64 or qwen38_prefill_q4_g64_gemm_mma_n64; REFUSES silent matvec fallback",
+          "present_on": "8391a0ef8",
+          "present_on_head": false
+        }
+      ],
+      "gate": "HAWKING_QWEN38_BATCH_PREFILL default ON via env_opt_out; =0 restores sequential step()",
+      "chunk": "HAWKING_QWEN38_PREFILL_CHUNK clamped 1..=64",
+      "not_merged_reason": "branch exists; not an ancestor of odyssey-i HEAD 04193ccbc",
+      "gpu_throughput_claims_in_docs_prefill_md": {
+        "evidence_kind": "INFERRED",
+        "classification": "STALE_ROADMAP_TEXT",
+        "note": "docs/PREFILL.md (landed on HEAD by b4a3857d4 without the GEMM sources) reports 78.3 tok/s vs 42.7 on the sequential path. Those numbers are not a receipt in receipts/. The authoring commit of the kernels says unmeasured. This lane did not re-run Metal. Do not treat 78.3 as PHYSICALLY_MEASURED."
+      }
+    },
+    "generic_qwen_dense_engine": {
+      "clause": "a first batched GEMM path exists somewhere in-tree on HEAD",
+      "result": "CONFIRMED_BUT_NOT_THE_NATIVE_RESIDENT",
+      "classification": "CALLABLE",
+      "evidence_kind": "SOURCE_INSPECTION",
+      "call_sites": [
+        {
+          "path": "crates/hawking-core/src/model/qwen_dense.rs",
+          "line": 1791,
+          "symbol": "HAWKING_QWEN_BATCH_PREFILL",
+          "role": "opt-IN (env_on, default off) gated batched prefill inside generate()"
+        },
+        {
+          "path": "crates/hawking-core/src/model/qwen_dense.rs",
+          "line": 1829,
+          "symbol": "forward_tokens_batch_tcb",
+          "role": "generate() calls this when batch_prefill is true"
+        },
+        {
+          "path": "crates/hawking-core/src/model/qwen_dense.rs",
+          "line": 7842,
+          "symbol": "kernels::gemm_q4_k_m_batched_v3w_mma_n32_pinned_tcb",
+          "role": "batched_proj! macro actually dispatches the GEMM kernel"
+        },
+        {
+          "path": "crates/hawking-core/src/model/qwen_dense.rs",
+          "line": 3037,
+          "symbol": "prefill_slot",
+          "role": "serve path DELIBERATELY does not call forward_tokens_batch_tcb; loops forward_token_greedy_tcb because batched prefill attends only within each chunk"
+        },
+        {
+          "path": "crates/hawking-serve/src/lib.rs",
+          "line": 912,
+          "symbol": "engine.prefill_slots_parallel",
+          "role": "production serve caller of prefill_slot, which is the single-token path"
+        }
+      ],
+      "tests": [
+        {
+          "path": "crates/hawking-core/tests/p3_batched_prefill_parity.rs",
+          "line": 43,
+          "symbol": "batched_prefill_matches_single_token_prefill",
+          "note": "sets HAWKING_QWEN_BATCH_PREFILL=1 and compares greedy ids. Skips if weights missing. Not executed by this audit."
+        },
+        {
+          "path": "crates/hawking-core/tests/q4k_batched_gemm_parity.rs",
+          "note": "kernel-vs-oracle parity for the GEMM primitive. Not a whole-model prefill. Not executed by this audit."
+        }
+      ],
+      "source_comment_admits": "measured prefill still runs near decode speed at default B=8; serve prefill_slot documents a causal-attention defect of the chunked batch path"
+    }
+  },
+  "capabilities": [
+    {
+      "id": "native_resident",
+      "classification": "INTEGRATED",
+      "evidence_kind": "SOURCE_INSPECTION",
+      "summary": "HCLI HawkingNativeConnector drives ascension_qwen38_resident, which attaches Qwen38HybridDecodeSession and calls generate_greedy. Sealed profile max_seq_len is 8192.",
+      "call_sites": [
+        {
+          "path": "hcli/hawking_native.py",
+          "line": 1388,
+          "symbol": "HawkingNativeConnector.complete_payload",
+          "role": "posts prompt to resident.subprocess"
+        },
+        {
+          "path": "hcli/backends.py",
+          "line": 2220,
+          "symbol": "HawkingNativeConnector",
+          "role": "NoeticNativeBackend constructs the connector"
+        },
+        {
+          "path": "crates/hawking-core/examples/ascension_qwen38_resident.rs",
+          "line": 147,
+          "symbol": "Qwen38HybridDecodeSession::attach",
+          "role": "resident process opens shared weights"
+        },
+        {
+          "path": "crates/hawking-core/examples/ascension_qwen38_resident.rs",
+          "line": 263,
+          "symbol": "generate_greedy",
+          "role": "serves one request"
+        },
+        {
+          "path": "hcli/hawking-native.sealed-3.14.json",
+          "line": null,
+          "symbol": "max_seq_len",
+          "role": "profile field = 8192; artifact_root /Users/scammermike/noetic/NOETIC_PARENT_A"
+        }
+      ],
+      "tests": [
+        {
+          "path": "hcli/agentos/resident_gate.py",
+          "line": 276,
+          "symbol": "HawkingNativeConnector",
+          "role": "A2/A3 resident gate names complete_payload as the production symbol"
+        }
+      ],
+      "receipts": [],
+      "blockers": []
+    },
+    {
+      "id": "decode_kernels",
+      "classification": "INTEGRATED",
+      "evidence_kind": "SOURCE_INSPECTION",
+      "summary": "Native decode is a 1-CB / 964-dispatch (unfused) matvec graph. step() -> encode_full_token -> encode_layers (DeltaNet or GQA + MLP) -> encode_terminal (lm_head matvec + argmax). Fusion helpers subtract from 964 toward 756/628. decode_family is a kernel-name picker used by DSV4F and examples, not the Qwen38 hybrid encoder itself.",
+      "call_sites": [
+        {
+          "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+          "line": 7307,
+          "symbol": "step",
+          "role": "production per-token entry"
+        },
+        {
+          "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+          "line": 4678,
+          "symbol": "encode_full_token",
+          "role": "builds the token graph"
+        },
+        {
+          "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+          "line": 6729,
+          "symbol": "encode_layers",
+          "role": "per-layer mixer + encode_dense_mlp"
+        },
+        {
+          "path": "crates/hawking-core/src/model/qwen38_token_ns_ledger.rs",
+          "line": 56,
+          "symbol": "production_dispatches_per_token",
+          "role": "returns 1 + 64*layer + terminal; unit test asserts 964"
+        },
+        {
+          "path": "crates/hawking-core/src/decode_family.rs",
+          "line": 140,
+          "symbol": "matvec_binary",
+          "role": "name picker"
+        },
+        {
+          "path": "crates/hawking-core/src/gravity_deepseek_v4_native_token_graph.rs",
+          "line": 282,
+          "symbol": "family_dispatch_enabled",
+          "role": "actual DSV4F caller of decode_family, not an import-only"
+        }
+      ],
+      "tests": [
+        {
+          "path": "crates/hawking-core/src/model/qwen38_token_ns_ledger.rs",
+          "line": 716,
+          "symbol": "production_dispatch_count_is_964"
+        }
+      ],
+      "receipts": [
+        "receipts/ascent-2026-08-16/G119_PREFILL_RESIDUAL.json"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "prefill_native_qwen38",
+      "classification": "INTEGRATED",
+      "evidence_kind": "SOURCE_INSPECTION",
+      "summary": "Prefill as a PHASE is integrated: generate_greedy walks the prompt through the DECODE graph. Prefill as a distinct GEMM BACKEND is ABSENT on HEAD. generate_greedy_unmeasured and generate_greedy_complete_wall use the same per-token step. generate_greedy always session.reset() first, so no cross-request prefix reuse.",
+      "call_sites": [
+        {
+          "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+          "line": 7452,
+          "symbol": "generate_greedy",
+          "role": "for (i, &token) in prompt.iter().enumerate() { session.step(token)? }"
+        },
+        {
+          "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+          "line": 7540,
+          "symbol": "generate_greedy_unmeasured",
+          "role": "same per-token prefill without timing vectors"
+        },
+        {
+          "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+          "line": 7432,
+          "symbol": "session.reset",
+          "role": "every generate_greedy call drops prior KV/recurrent state"
+        }
+      ],
+      "tests": [],
+      "receipts": [
+        "receipts/headless/PREFILL_KV.json",
+        "receipts/ascent-2026-08-16/G117_PREFILL_BASELINE.json",
+        "receipts/ascent-2026-08-16/G118_PREFILL_SCALING.json",
+        "receipts/ascent-2026-08-16/G119_PREFILL_RESIDUAL.json"
+      ],
+      "blockers": [],
+      "historical_receipts_label": "Those receipts are pre-freeze (G117-G119 ascent-2026-08-16; PREFILL_KV generated_at 2026-08-24). They measure the same topology that HEAD still implements. They are not evidence that GEMM prefill shipped."
+    },
+    {
+      "id": "batched_gemm_prefill_qwen38_hybrid",
+      "classification": "ABSENT",
+      "evidence_kind": "SOURCE_INSPECTION",
+      "summary": "The Qwen3.8 hybrid GEMM prefill module, shaders, and tests exist only on unmerged commit 8391a0ef8. HEAD generate_greedy has no prefill_prompt, no HAWKING_QWEN38_BATCH_PREFILL, no qwen38_prefill_* kernels.",
+      "call_sites": [],
+      "tests": [],
+      "receipts": [],
+      "blockers": [
+        "not an ancestor of HEAD",
+        "qwen38_hybrid_prefill.rs missing at HEAD",
+        "SHADER_QWEN38_PREFILL missing at HEAD",
+        "sovereign receipt receipts/sovereign/G005_prefill_pipeline.json does not exist (G005 red gate)"
+      ],
+      "off_head_artifact": {
+        "commit": "8391a0ef82489e6795a88decd6c731cf3bf4293c",
+        "branch": "grok/prefill-gemm-20260901-232724",
+        "files": [
+          "crates/hawking-core/shaders/qwen38_prefill.metal",
+          "crates/hawking-core/src/model/qwen38_hybrid_prefill.rs",
+          "crates/hawking-core/tests/qwen38_prefill_gemm_parity.rs",
+          "crates/hawking-core/tests/qwen38_batched_prefill_greedy.rs"
+        ],
+        "production_wiring": "include!(\"qwen38_hybrid_prefill.rs\") into Qwen38HybridDecodeSession; generate_greedy calls prefill_prompt when enabled",
+        "classification_if_merged": "CALLABLE (default-on env gate) with tests that skip without artifact/Metal; docs/PREFILL.md claims the in-tree dispatch gate currently FAILS (3.67x vs 4x). Not INTEGRATED until merged AND G005 receipt exists."
+      }
+    },
+    {
+      "id": "batched_gemm_prefill_qwen_dense",
+      "classification": "CALLABLE",
+      "evidence_kind": "SOURCE_INSPECTION",
+      "summary": "Generic QwenDense generate() can chunk the prompt through forward_tokens_batch_tcb and dispatch gemm_q4_k_m_batched_v3w_mma_n32 when HAWKING_QWEN_BATCH_PREFILL=1. Default is off. Serve prefill_slot refuses this path because chunked attention is not prefix-causal. This is not the Qwen3.8 native resident.",
+      "call_sites": [
+        {
+          "path": "crates/hawking-core/src/model/qwen_dense.rs",
+          "line": 1829,
+          "symbol": "forward_tokens_batch_tcb",
+          "role": "invoked from generate() under env gate"
+        },
+        {
+          "path": "crates/hawking-core/src/model/qwen_dense.rs",
+          "line": 7842,
+          "symbol": "gemm_q4_k_m_batched_v3w_mma_n32_pinned_tcb",
+          "role": "actual kernel dispatch inside batched_proj!"
+        }
+      ],
+      "tests": [
+        {
+          "path": "crates/hawking-core/tests/p3_batched_prefill_parity.rs",
+          "line": 43,
+          "symbol": "batched_prefill_matches_single_token_prefill"
+        }
+      ],
+      "receipts": [],
+      "blockers": [
+        "not wired into Qwen38HybridDecodeSession",
+        "prefill_slot (hawking-serve) explicitly uses per-token forward_token_greedy_tcb instead"
+      ]
+    },
+    {
+      "id": "gemm_kernels_generic",
+      "classification": "CALLABLE",
+      "evidence_kind": "SOURCE_INSPECTION",
+      "summary": "Q4_K batched GEMM kernels exist and are dispatched from QwenDense batched_proj!. AIR/Accelerator GEMM receipts exist as a separate school (not the native resident). MPS capture helper is compiled from metal/capture_mps_gemm.m via build.rs.",
+      "call_sites": [
+        {
+          "path": "crates/hawking-core/src/model/qwen_dense.rs",
+          "line": 7842,
+          "symbol": "gemm_q4_k_m_batched_v3w_mma_n32_pinned_tcb",
+          "role": "dispatch"
+        },
+        {
+          "path": "crates/hawking-core/build.rs",
+          "line": 22,
+          "symbol": "hawking_capture_mps_gemm",
+          "role": "compiles capture_mps_gemm.m"
+        }
+      ],
+      "tests": [
+        {"path": "crates/hawking-core/tests/q4k_batched_gemm_parity.rs"},
+        {"path": "crates/hawking-core/tests/gemm_q4k_v4r_predec_parity.rs"},
+        {"path": "crates/hawking-core/tests/v030_gemm_q4_k_simd_parity.rs"}
+      ],
+      "receipts": [
+        "receipts/headless/ACCELERATOR_GEMM.json",
+        "receipts/headless/ACCELERATOR_SIMDGROUP_GEMM.json"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "f32_prefill_gap",
+      "classification": "CONCEPT_ONLY",
+      "evidence_kind": "SOURCE_INSPECTION",
+      "summary": "Catalog constants on HEAD already name the split: 402 Q4 tensors + 353 f32 tensors = 755. That is a packing fact, not a GEMM-coverage hole, until a GEMM prefill path exists. On the unmerged branch, encode_prefill_gemm only accepts Affine-q2 and Q4 group-64 and returns Err on anything else (no silent matvec fallback). f32 tensors on that branch are consumed by rmsnorm/add/swiglu/DeltaNet/GQA-norm kernels and by encode_named_matvec for lm_head. docs/PREFILL.md's claim that 353 f32 tensors 'still go through matvec' is therefore coarser than the code.",
+      "call_sites": [
+        {
+          "path": "crates/hawking-core/src/model/qwen38_pack.rs",
+          "line": 31,
+          "symbol": "QWEN38_EXPECTED_Q4_TENSORS",
+          "role": "const 402"
+        },
+        {
+          "path": "crates/hawking-core/src/model/qwen38_pack.rs",
+          "line": 32,
+          "symbol": "QWEN38_EXPECTED_F32_TENSORS",
+          "role": "const 353"
+        },
+        {
+          "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+          "line": 3259,
+          "symbol": "Qwen38HybridDecodeSession::f32",
+          "role": "loads named f32 buffers (norms / DeltaNet params) on the live decode path"
+        }
+      ],
+      "tests": [
+        {
+          "path": "hcli/test_qwen38_prefill_pipeline.py",
+          "line": 77,
+          "symbol": "test_the_f32_tensors_are_covered",
+          "role": "G005 red gate asserts tensor_census.prefill_uncovered == 0 against a missing receipt"
+        }
+      ],
+      "receipts": [],
+      "blockers": [
+        "GEMM prefill not on HEAD, so there is no prefill GEMM coverage to be gapped",
+        "receipts/sovereign/G005_prefill_pipeline.json absent"
+      ]
+    },
+    {
+      "id": "long_context",
+      "classification": "CALLABLE",
+      "evidence_kind": "SOURCE_INSPECTION",
+      "summary": "Native session accepts a max_seq_len at attach/open. Sealed HCLI profile clamps to 8192. G006 red-gates 131072 and 262144 and has no receipt. G118 (pre-freeze) fitted a quadratic and predicted ~67 min for a 32k walk; 32k itself was not measured. YaRN is not read by qwen38 (docs/PREFILL.md; rope_type ignored).",
+      "call_sites": [
+        {
+          "path": "hcli/hawking-native.sealed-3.14.json",
+          "line": null,
+          "symbol": "max_seq_len",
+          "role": "8192"
+        },
+        {
+          "path": "hcli/context_budget.py",
+          "line": 335,
+          "symbol": "resolve",
+          "role": "reads profile max_seq_len; comments record 12456-token ultragoal vs 8192 resident"
+        },
+        {
+          "path": "hcli/backends.py",
+          "line": 1361,
+          "symbol": "resolve_context_budget",
+          "role": "production caller"
+        },
+        {
+          "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+          "line": 7424,
+          "symbol": "generate_greedy",
+          "role": "no 131k/262k path; prompt is whatever the session max_seq_len allows"
+        }
+      ],
+      "tests": [
+        {
+          "path": "hcli/test_long_context_runtime.py",
+          "line": 80,
+          "symbol": "test_both_rungs_were_actually_served",
+          "role": "G006 requires rungs 131072 and 262144; receipt missing so this is a red gate, not a passing test"
+        }
+      ],
+      "receipts": [
+        "receipts/ascent-2026-08-16/G118_PREFILL_SCALING.json",
+        "receipts/headless/PREFILL_KV.json"
+      ],
+      "blockers": [
+        "receipts/sovereign/G006_long_context.json absent",
+        "sealed profile max_seq_len 8192",
+        "this lane did not run a long-context GPU walk (BLOCKED_AUTHORITY / would be a protected measurement)"
+      ]
+    },
+    {
+      "id": "deltanet_decode_organ",
+      "classification": "INTEGRATED",
+      "evidence_kind": "SOURCE_INSPECTION",
+      "summary": "48 of 64 Qwen3.8 layers are DeltaNet. encode_layers matches mixer_kind and calls encode_deltanet. Fusion/kernel selection (widen_f4, ba_delta) is env-gated and invoked from encode_dn_ba_and_delta, not merely defined.",
+      "call_sites": [
+        {
+          "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+          "line": 6732,
+          "symbol": "encode_deltanet",
+          "role": "called from encode_layers for DeltaNet layers"
+        },
+        {
+          "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+          "line": 4442,
+          "symbol": "encode_dn_ba_and_delta",
+          "role": "production DeltaNet state update; widen_f4 is not a no-op"
+        },
+        {
+          "path": "crates/hawking-core/src/model/qwen38_geometry.rs",
+          "line": 21,
+          "symbol": "QWEN38_DELTANET_LAYERS",
+          "role": "const 48"
+        }
+      ],
+      "tests": [],
+      "receipts": [
+        "receipts/headless/DELTANET_ORGAN.json",
+        "receipts/ascent-2026-08-16/G003_Q80_MIXED_DELTANET_VI_REBASE3.json"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "deltanet_state_checkpoint_reuse",
+      "classification": "SCAFFOLDED",
+      "evidence_kind": "SOURCE_INSPECTION",
+      "summary": "sstate_disk.rs defines SstateDiskCache. git grep for SstateDiskCache:: / sstate_disk:: call sites outside the module returns empty. Qwen38HybridDecodeSession has rec_state_f32_count / conv_state_f32_count accessors but no save/restore/checkpoint API used by generate_greedy. generate_greedy always reset(). G007 is a red sovereign gate with no receipt.",
+      "call_sites": [],
+      "tests": [
+        {
+          "path": "hcli/test_deltanet_state_checkpoint.py",
+          "line": 90,
+          "symbol": "test_prefill_was_actually_avoided",
+          "role": "fails until receipts/sovereign/G007_deltanet_state.json exists"
+        }
+      ],
+      "receipts": [],
+      "blockers": [
+        "SstateDiskCache has no callers outside crates/hawking-core/src/cache/sstate_disk.rs",
+        "receipts/sovereign/G007_deltanet_state.json absent",
+        "native generate_greedy calls session.reset() every request"
+      ]
+    },
+    {
+      "id": "gqa",
+      "classification": "INTEGRATED",
+      "evidence_kind": "SOURCE_INSPECTION",
+      "summary": "16 full-attention layers. encode_layers calls encode_gqa. Production KV is f32 (mha_decode_f32_tcb). int4 KV exists as a flash-MHA test kernel and is not wired into the hybrid session (PREFILL_KV).",
+      "call_sites": [
+        {
+          "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+          "line": 6733,
+          "symbol": "encode_gqa",
+          "role": "called from encode_layers"
+        },
+        {
+          "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+          "line": 6612,
+          "symbol": "encode_gqa",
+          "role": "definition; may delegate to encode_gqa_mixed"
+        },
+        {
+          "path": "crates/hawking-core/src/model/qwen38_geometry.rs",
+          "line": 22,
+          "symbol": "QWEN38_GQA_LAYERS",
+          "role": "const 16"
+        }
+      ],
+      "tests": [
+        {"path": "crates/hawking-core/examples/ascension_qwen80_gqa_kv_cache_device_preflight.rs"}
+      ],
+      "receipts": [
+        "receipts/headless/PREFILL_KV.json",
+        "receipts/headless/NOETIC_GQA_DESIGN.json"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "mlp",
+      "classification": "INTEGRATED",
+      "evidence_kind": "SOURCE_INSPECTION",
+      "summary": "encode_layers calls encode_dense_mlp every layer. HAWKING_QWEN38_FUSE_MLP selects Off / pair / swiglu and is read from env into the live encoder, not a dead constant.",
+      "call_sites": [
+        {
+          "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+          "line": 6735,
+          "symbol": "encode_dense_mlp",
+          "role": "called from encode_layers"
+        },
+        {
+          "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+          "line": 137,
+          "symbol": "qwen38_mlp_fusion_from_env",
+          "role": "HAWKING_QWEN38_FUSE_MLP parsed and applied"
+        }
+      ],
+      "tests": [],
+      "receipts": [
+        "receipts/headless/ACCELERATOR_MLP_OPERAND_REUSE_REFUTED.json"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "lm_head",
+      "classification": "INTEGRATED",
+      "evidence_kind": "SOURCE_INSPECTION",
+      "summary": "encode_terminal dispatches lm_head matvec then sample_argmax_f32_tcb. Isolated measurement helper measure_isolated_lm_head exists and is called from organ-bandwidth examples.",
+      "call_sites": [
+        {
+          "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+          "line": 6753,
+          "symbol": "encode_q4_matvec",
+          "role": "lm_head.weight on the uniform-q4 path"
+        },
+        {
+          "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+          "line": 6760,
+          "symbol": "sample_argmax_f32_tcb",
+          "role": "greedy sample after lm_head"
+        },
+        {
+          "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+          "line": 5565,
+          "symbol": "measure_isolated_lm_head",
+          "role": "organ probe"
+        }
+      ],
+      "tests": [
+        {"path": "crates/hawking-core/tests/v1x_lm_head_simdmat_parity.rs"},
+        {"path": "crates/hawking-core/tests/gravity_glm_lm_head_device_parity.rs"}
+      ],
+      "receipts": [
+        "receipts/ascent-2026-08-16/G090_LM_HEAD_SHARE.json",
+        "receipts/headless/ACCELERATOR_LM_HEAD_EXACT_BOUNDS_REFUTED.json"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "persistent_workspace_buffers",
+      "classification": "INTEGRATED",
+      "evidence_kind": "SOURCE_INSPECTION",
+      "summary": "Qwen38HybridDecodeSession allocates Metal workspace, GQA KV, and DeltaNet rec/conv state once at open/attach and reuses them across tokens. Weights live in an Arc<Qwen38HybridWeights> shared across sessions.",
+      "call_sites": [
+        {
+          "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+          "line": 2464,
+          "symbol": "ctx.new_buffer_checked",
+          "role": "workspace buffers allocated at session construction"
+        },
+        {
+          "path": "crates/hawking-core/examples/ascension_qwen38_resident.rs",
+          "line": 147,
+          "symbol": "Qwen38HybridDecodeSession::attach",
+          "role": "resident reuses shared weights; per-request still reset()s state"
+        }
+      ],
+      "tests": [],
+      "receipts": [],
+      "blockers": []
+    },
+    {
+      "id": "persistent_command_buffers",
+      "classification": "ABSENT",
+      "evidence_kind": "SOURCE_INSPECTION",
+      "summary": "Every step() constructs TokenCommandBuffer::new(&self.context). I-D gene 'persistent execution' is not expressed as a replayable CB on the native token path. serial_token_encoder only groups dispatches inside one newly created CB.",
+      "call_sites": [
+        {
+          "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+          "line": 7315,
+          "symbol": "TokenCommandBuffer::new",
+          "role": "called at the start of every step(); this is the opposite of persistence"
+        }
+      ],
+      "tests": [
+        {
+          "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+          "line": 8085,
+          "symbol": "qwen38_serial_token_encoder_enabled",
+          "role": "unit test of the serial-encoder env flag, not CB reuse"
+        }
+      ],
+      "receipts": [
+        "receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json"
+      ],
+      "blockers": [
+        "no caller reuses a previously encoded MTLCommandBuffer across tokens on the Qwen38 hybrid path"
+      ]
+    },
+    {
+      "id": "dispatch_reduction",
+      "classification": "INTEGRATED",
+      "evidence_kind": "SOURCE_INSPECTION",
+      "summary": "Decode-side fusion is real: theoretical_dispatches subtracts GQA-QKV, DN-inproj, add+rmsnorm, attention-gate, ba_delta from the 964 baseline. Those flags change encode_full_token. Prefill-side dispatch reduction via GEMM chunking is ABSENT on HEAD.",
+      "call_sites": [
+        {
+          "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+          "line": 4695,
+          "symbol": "theoretical_dispatches",
+          "role": "computes fused count from live session flags"
+        },
+        {
+          "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+          "line": 4442,
+          "symbol": "encode_dn_ba_and_delta",
+          "role": "skips ba_to_decay launch when fused-ba kernel is selected"
+        }
+      ],
+      "tests": [],
+      "receipts": [
+        "receipts/ascent-2026-08-16/G119_PREFILL_RESIDUAL.json"
+      ],
+      "blockers": [
+        "prefill dispatch collapse requires the unmerged GEMM path"
+      ]
+    },
+    {
+      "id": "context_kv_state_hybrid_session",
+      "classification": "INTEGRATED",
+      "evidence_kind": "SOURCE_INSPECTION",
+      "summary": "In-session GQA KV + DeltaNet rec/conv state are first-class Metal buffers. They are not a cache across requests: generate_greedy resets. Prefix sharing is not wired into the hybrid session (PREFILL_KV named system_kv_bank as a hawking-serve construct).",
+      "call_sites": [
+        {
+          "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+          "line": 7432,
+          "symbol": "session.reset",
+          "role": "drops state at the start of every generate_greedy"
+        },
+        {
+          "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+          "line": 5584,
+          "symbol": "rec_state_f32_count",
+          "role": "accessor for recurrent state size"
+        },
+        {
+          "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+          "line": 5592,
+          "symbol": "gqa_cache_f32_count",
+          "role": "accessor for GQA KV size"
+        }
+      ],
+      "tests": [],
+      "receipts": [
+        "receipts/headless/PREFILL_KV.json",
+        "receipts/headless/STATE_GRAVITY.json"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "kv_state_tiering_qwen_dense",
+      "classification": "CALLABLE",
+      "evidence_kind": "SOURCE_INSPECTION",
+      "summary": "QwenDense generate() consults InMemoryPrefixCache then PrefillDiskCache and can skip a restored prefix. RAM and disk tiers are mutually exclusive per request. Not used by the Qwen38 hybrid resident.",
+      "call_sites": [
+        {
+          "path": "crates/hawking-core/src/model/qwen_dense.rs",
+          "line": 1700,
+          "symbol": "InMemoryPrefixCache::new",
+          "role": "RAM tier constructed in generate()"
+        },
+        {
+          "path": "crates/hawking-core/src/model/qwen_dense.rs",
+          "line": 1761,
+          "symbol": "PrefillDiskCache::lookup_longest_prefix",
+          "role": "disk tier consulted on RAM miss"
+        },
+        {
+          "path": "crates/hawking-core/src/cache/prefill_disk.rs",
+          "line": 254,
+          "symbol": "lookup_longest_prefix",
+          "role": "definition"
+        }
+      ],
+      "tests": [
+        {"path": "crates/hawking-core/tests/prefix_cache_e2e.rs"},
+        {"path": "crates/hawking-core/tests/prefix_cache_parity.rs"}
+      ],
+      "receipts": [],
+      "blockers": [
+        "not attached to Qwen38HybridDecodeSession"
+      ]
+    },
+    {
+      "id": "system_kv_bank_hawking_serve",
+      "classification": "CALLABLE",
+      "evidence_kind": "SOURCE_INSPECTION",
+      "summary": "hawking-serve HTTP path constructs SystemPromptKvBank and calls it around prefill_slot. This is the generic engine, not the native Qwen38 resident.",
+      "call_sites": [
+        {
+          "path": "crates/hawking-serve/src/lib.rs",
+          "line": 771,
+          "symbol": "hawking_serve_system_kv_bank_default",
+          "role": "bank constructed on serve startup"
+        },
+        {
+          "path": "crates/hawking-serve/src/lib.rs",
+          "line": 952,
+          "symbol": "system_kv_bank.lock",
+          "role": "used during prefill admission"
+        }
+      ],
+      "tests": [
+        {"path": "crates/hawking-serve/tests/system_kv_bank.rs"},
+        {"path": "crates/hawking-serve/tests/system_kv_bank_wiring.rs"}
+      ],
+      "receipts": [],
+      "blockers": [
+        "not attached to Qwen38HybridDecodeSession (PREFILL_KV.prefix_sharing.wired_into_qwen38_hybrid = false)"
+      ]
+    },
+    {
+      "id": "hawking_context_compiler",
+      "classification": "INTEGRATED",
+      "evidence_kind": "SOURCE_INSPECTION",
+      "summary": "crates/hawking-context ContextCompiler is a HIDE prompt-packer (budgeted knapsack + manifest). hide-backend and hide-kernel call .compile(CompileInput{...}). This is not GPU KV and not Qwen38 prefill. Do not conflate with Context Gravity.",
+      "call_sites": [
+        {
+          "path": "crates/hide-backend/src/connectors.rs",
+          "line": 561,
+          "symbol": "ContextCompiler.compile",
+          "role": "production compile of a packed context"
+        },
+        {
+          "path": "crates/hide-backend/src/host_support_1.rs",
+          "line": 442,
+          "symbol": "ContextCompiler.compile",
+          "role": "host support path"
+        },
+        {
+          "path": "crates/hide-kernel/src/lib.rs",
+          "line": 93,
+          "symbol": "ContextCompiler.compile",
+          "role": "kernel path"
+        }
+      ],
+      "tests": [
+        {"path": "crates/hide-backend/tests/first_model_free_receipt.rs"}
+      ],
+      "receipts": [
+        "receipts/acceptance/HCLI_CONTEXT_AUTHORITY_UNIFIED.json",
+        "receipts/acceptance/HCLI_CONTEXT_FOCUSED_WORKUNITS.json",
+        "receipts/acceptance/HCLI_CONTEXT_INVALIDATION.json"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "hcli_context_budget",
+      "classification": "INTEGRATED",
+      "evidence_kind": "SOURCE_INSPECTION",
+      "summary": "hcli/context_budget.py resolve() is called from backends, config, engine. It reads the native profile's max_seq_len instead of assuming 32768. Acceptance receipts ACCEPTED. This is token-budget policy, not GPU prefill.",
+      "call_sites": [
+        {
+          "path": "hcli/backends.py",
+          "line": 1361,
+          "symbol": "resolve_context_budget",
+          "role": "native/provider request path"
+        },
+        {
+          "path": "hcli/config.py",
+          "line": 131,
+          "symbol": "resolve_context_budget",
+          "role": "total_ctx"
+        },
+        {
+          "path": "hcli/engine.py",
+          "line": 1889,
+          "symbol": "resolve_context_budget",
+          "role": "engine budget"
+        }
+      ],
+      "tests": [],
+      "receipts": [
+        "receipts/acceptance/HCLI_CONTEXT_AUTHORITY_UNIFIED.json"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "no_copy_qwen38_hybrid_weights",
+      "classification": "ABSENT",
+      "evidence_kind": "SOURCE_INSPECTION",
+      "summary": "Qwen38HybridWeights::load and load_mixed bind every tensor with new_buffer_with_bytes_checked (copy into a new MTLBuffer). There is no new_buffer_no_copy on this path.",
+      "call_sites": [
+        {
+          "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+          "line": 2033,
+          "symbol": "new_buffer_with_bytes_checked",
+          "role": "Q4 codes copied at load"
+        },
+        {
+          "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+          "line": 2042,
+          "symbol": "new_buffer_with_bytes_checked",
+          "role": "f32 payload copied at load"
+        }
+      ],
+      "tests": [],
+      "receipts": [],
+      "blockers": [
+        "no new_buffer_no_copy caller in qwen38_hybrid_decode.rs"
+      ]
+    },
+    {
+      "id": "no_copy_gguf_engines",
+      "classification": "CALLABLE",
+      "evidence_kind": "SOURCE_INSPECTION",
+      "summary": "GGUF-backed engines mmap and bind with new_buffer_no_copy. Separate from the native Qwen38 resident.",
+      "call_sites": [
+        {
+          "path": "crates/hawking-core/src/model/qwen_dense.rs",
+          "line": 1170,
+          "symbol": "new_buffer_no_copy",
+          "role": "GGUF mmap bind"
+        },
+        {
+          "path": "crates/hawking-core/src/model/llama.rs",
+          "line": 3625,
+          "symbol": "new_buffer_no_copy",
+          "role": "GGUF mmap bind"
+        },
+        {
+          "path": "crates/hawking-core/src/model/mixtral.rs",
+          "line": 633,
+          "symbol": "new_buffer_no_copy",
+          "role": "GGUF mmap bind"
+        },
+        {
+          "path": "crates/hawking-core/src/model/deepseek_v2.rs",
+          "line": 769,
+          "symbol": "new_buffer_no_copy",
+          "role": "GGUF mmap bind"
+        },
+        {
+          "path": "crates/hawking-core/src/model/qwen80_device_expert_table.rs",
+          "line": 626,
+          "symbol": "new_buffer_no_copy_checked",
+          "role": "checked no-copy window"
+        }
+      ],
+      "tests": [],
+      "receipts": [
+        "receipts/DSV4F_NATIVE_PLUS_ZEROCOPY_COMBINED.json"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "hcli_overhead",
+      "classification": "CONCEPT_ONLY",
+      "evidence_kind": "INFERRED",
+      "summary": "docs/PREFILL.md claims HCLI measures ~20.5 tok/s vs 42.7 tok/s driving the same sequential path directly, and calls that 'the cheapest speedup'. No receipt in receipts/ names those two numbers or the 249.2s/272.0s walls. This lane did not measure HCLI vs resident-direct. Do not promote to MEASURED.",
+      "call_sites": [
+        {
+          "path": "hcli/hawking_native.py",
+          "line": 1388,
+          "symbol": "complete_payload",
+          "role": "Python renderer + subprocess JSON protocol around the resident"
+        }
+      ],
+      "tests": [],
+      "receipts": [],
+      "blockers": [
+        "no durable receipt pairing HCLI wall time against a direct generate_greedy control on the same prompt",
+        "BLOCKED_AUTHORITY: this audit must not run a GPU/HCLI benchmark and label it MEASURED"
+      ]
+    },
+    {
+      "id": "protected_benchmark_machinery",
+      "classification": "CALLABLE",
+      "evidence_kind": "SOURCE_INSPECTION",
+      "summary": "hcli/agentos/protected_accelerator_benchmark.py:run_protected_accelerator_benchmark is a real function. QWEN27_PROTECTED_BASELINE.json exists and records verdict BLOCKED because the machine was not quiet. Machinery is callable; a qualified protected measurement is not currently in hand.",
+      "call_sites": [
+        {
+          "path": "hcli/agentos/protected_accelerator_benchmark.py",
+          "line": 381,
+          "symbol": "run_protected_accelerator_benchmark",
+          "role": "definition; invoked from __main__ at line 645"
+        },
+        {
+          "path": "hcli/agentos/protected_accelerator_benchmark.py",
+          "line": 521,
+          "symbol": "HawkingNativeConnector",
+          "role": "benchmark actually constructs the native connector"
+        }
+      ],
+      "tests": [],
+      "receipts": [
+        "receipts/acceptance/QWEN27_PROTECTED_BASELINE.json",
+        "receipts/ascent-2026-08-16/G029_PROTECTED_VERIFICATION.json"
+      ],
+      "blockers": [
+        "QWEN27_PROTECTED_BASELINE.verdict = BLOCKED (machine_quiescence not quiet)",
+        "this lane did not re-run the protected benchmark"
+      ]
+    },
+    {
+      "id": "qwen80_mixed_prefill",
+      "classification": "INTEGRATED",
+      "evidence_kind": "SOURCE_INSPECTION",
+      "summary": "Qwen80 mixed greedy also teacher-forces session.forward_token per prompt token. Same decode graph, labelled kind=prefill in samples.",
+      "call_sites": [
+        {
+          "path": "crates/hawking-core/src/model/qwen80_mixed_hybrid_decode.rs",
+          "line": 4859,
+          "symbol": "Qwen80MixedHybridDecodeSession::forward_token",
+          "role": "generate_mixed_greedy loops forward_token for every prompt id"
+        }
+      ],
+      "tests": [],
+      "receipts": [],
+      "blockers": []
+    },
+    {
+      "id": "llama_packed_prefill",
+      "classification": "SCAFFOLDED",
+      "evidence_kind": "SOURCE_INSPECTION",
+      "summary": "Llama generate() takes packed prefill only when BOTH HAWKING_LLAMA_RESIDENT_B9430_PACKED_PREFILL and _UNSAFE_DIAGNOSTIC are on. Source comment: generic-Q4 packed graph is exact but slower than serial. Default path is per-token forward_token.",
+      "call_sites": [
+        {
+          "path": "crates/hawking-core/src/model/llama.rs",
+          "line": 3754,
+          "symbol": "prefill_tokens_resident_b9430_packed",
+          "role": "called from generate() only under two env flags"
+        }
+      ],
+      "tests": [],
+      "receipts": [],
+      "blockers": [
+        "double env-flag; documented as diagnostic, not production"
+      ]
+    },
+    {
+      "id": "hawking_bench_prefill_suite",
+      "classification": "CALLABLE",
+      "evidence_kind": "SOURCE_INSPECTION",
+      "summary": "hawking-bench suites/prefill.rs runs load_engine + generate(max_new_tokens=1) and records stats.prefill_ms. That is the generic Engine path, not Qwen38HybridDecodeSession.",
+      "call_sites": [
+        {
+          "path": "crates/hawking-bench/src/suites/prefill.rs",
+          "line": 7,
+          "symbol": "run",
+          "role": "definition"
+        },
+        {
+          "path": "crates/hawking-bench/src/lib.rs",
+          "line": 59,
+          "symbol": "prefill::run",
+          "role": "suite dispatch for prefill-tps"
+        }
+      ],
+      "tests": [],
+      "receipts": [],
+      "blockers": []
+    },
+    {
+      "id": "docs_prefill_md_on_head",
+      "classification": "STALE_ROADMAP_TEXT",
+      "evidence_kind": "SOURCE_INSPECTION",
+      "summary": "docs/PREFILL.md is on HEAD (added b4a3857d4, 2026-09-02, in an HCLI commit). It describes GEMM files, shaders, tests, and measured 1.85x as if they were in this tree. They are not. Producer of the prose is not the producer of the kernels, and the kernels are on another branch.",
+      "call_sites": [],
+      "tests": [],
+      "receipts": [],
+      "blockers": [
+        "document describes sources that git cat-file cannot resolve at HEAD"
+      ]
+    }
+  ],
+  "gene_recommendations": [
+    {
+      "name": "PREFILL",
+      "distinct_gene": true,
+      "new_civilization": false,
+      "parent": "I-D. Hawking Accelerator",
+      "not_parent": "II-D. State / Tokenizer / Decoding",
+      "argument_from_code": "On HEAD the native resident already has a named prefill_wall_ns and a prompt loop, but the arithmetic is decode (GEMV, 964 dispatches/token, quadratic GQA). The unmerged 8391a0ef8 work is a different physical program: different shaders, different workspace, different encode_* functions, different env gate, different tests. I-D already lists 'phase-aware backend selection'; that gene is the right parent and is currently unexpressed as a shipped backend. II-D is about non-weight structures (KV, tokenizer, sampling, LM head as an organ). Prefill-as-GEMM is a weight-execution phase, not a state organ. Putting PREFILL only under II-D would hide the kernel/forge work. Adding a sixth era or a new civilization is forbidden.",
+      "existing_gene_overlap": [
+        "I-D phase-aware backend selection",
+        "I-D Metal-native kernels",
+        "I-D dispatch elimination",
+        "11.3 school item 'Phase-aware prefill vs decode backends' (not a gene)"
+      ],
+      "recommendation": "Name PREFILL as an explicit I-D gene (or rename 'phase-aware backend selection' to include PREFILL as the first expressed phase). Do not rewrite the 0.7% coordinate. Do not merge the unmerged branch as part of this audit."
+    },
+    {
+      "name": "Context Computer / Context Gravity",
+      "distinct_gene": false,
+      "split_required": true,
+      "argument_from_code": "Two different things share the word context. (1) crates/hawking-context ContextCompiler is INTEGRATED into hide-backend/hide-kernel as a prompt packer; HCLI context_budget is INTEGRATED. That is product, not a missing gene. (2) GPU session state gravity (KV bytes that grow with seq, DeltaNet rec_state that does not, crossover where state overtakes weights) is measured in PREFILL_KV / STATE_GRAVITY and lives in Qwen38 workspace buffers, but is not a compiler that chooses a representation. Inventing a 'Context Computer' civilization would violate the five-era constitution and duplicate HIDE. II-D already has KV/state compression, persistent recurrent state, and long-context policy.",
+      "recommendation": "Do not add Context Computer as a civilization or gene. If a name is needed for the GPU-state accounting organ, express the existing II-D genes rather than minting a fourth. Keep hawking-context under product/HIDE, not under Accelerator."
+    },
+    {
+      "name": "DeltaNet-state checkpoint+reuse",
+      "distinct_gene": false,
+      "argument_from_code": "II-D already lists 'persistent recurrent state'. The code does not express it: sstate_disk has no callers, generate_greedy always reset(), G007 receipt is absent. A new gene with the same meaning would be nomenclature inflation. The verifier already exists as a red gate.",
+      "recommendation": "Do not add a gene. Express 'persistent recurrent state' by wiring a real checkpoint/restore that generate_greedy (or a resume entry) actually calls, then discharge G007. Until a caller exists, the gene is unexpressed, not missing from the list."
+    },
+    {
+      "name": "KV/state tiering",
+      "distinct_gene": true,
+      "parent": "II-D. State / Tokenizer / Decoding",
+      "argument_from_code": "Compression (II-D KV/state compression) and tiering (where the bytes live: GPU / RAM / disk) are different physical decisions. QwenDense generate() already has RAM+disk prefix tiers with real callers. hawking-serve has SystemPromptKvBank. The native Qwen38 resident has neither: one GPU workspace, reset every request. That split is load-bearing. A gene named only 'compression' will keep scheduling quant recipes (STATE_GRAVITY's H2O/KIVI/rank-32, capability cost ABSENT) and miss the already-callable generic-engine tiers that the resident does not use.",
+      "recommendation": "Yes, add an explicit II-D gene for state tiering (GPU/RAM/disk and prefix-bank vs full reset). Do not treat QwenDense's tiers as if they were on the native resident."
+    },
+    {
+      "name": "long-context physical accounting",
+      "distinct_gene": false,
+      "argument_from_code": "II-D already lists 'long-context policy'. G006 is the verifier (red). G118/PREFILL_KV are the school. The runtime does not expose a live meter on Qwen38HybridDecodeSession (no kv_bytes_per_token_source=measured in-process). The gene exists and is unexpressed as a live organ.",
+      "recommendation": "Do not add a duplicate gene. Express 'long-context policy' as a live accounting object the resident returns per request (prefill_s, kv_bytes, rec_state_bytes, admitted_limit) so G006 can gate on a producer rather than a hand-written JSON."
+    }
+  ],
+  "surprises": [
+    {
+      "id": "gemm_not_on_head",
+      "severity": "high",
+      "text": "The campaign prompt's working hypothesis ('a first batched GEMM path now exists') is true on grok/prefill-gemm-20260901-232724 and false on HEAD. docs/PREFILL.md on HEAD describes that branch as landed. Anyone rewriting H-ROADMAP from the doc without git-ancestry would ship a lie.",
+      "what_would_settle": "Merge 8391a0ef8 (or rebase it) onto odyssey-i and show git merge-base --is-ancestor 8391a0ef8 HEAD; until then HEAD is sequential step()."
+    },
+    {
+      "id": "docs_without_producer",
+      "severity": "high",
+      "text": "docs/PREFILL.md landed in b4a3857d4, an HCLI lifecycle commit that does not touch hawking-core. The kernel authoring commit explicitly says unmeasured. Measured 78.3 tok/s has no receipts/ file.",
+      "what_would_settle": "A receipt produced by a named Metal command on this machine, with generated_token_identity, dispatch counts, and produced_by not a stub — the G005 shape."
+    },
+    {
+      "id": "qwen_dense_already_had_batched_gemm",
+      "severity": "medium",
+      "text": "HEAD already has a batched GEMM prefill on QwenDense, opt-in, and the serve path refuses it because chunked attention is not prefix-causal. So 'first batched GEMM' is ambiguous: a primitive exists; a correct native-resident prefill backend does not.",
+      "what_would_settle": "A call chain from Qwen38HybridDecodeSession::generate_greedy to a GEMM kernel name, on HEAD, with greedy-id identity against step()."
+    },
+    {
+      "id": "encode_prefill_gemm_refuses_matvec_fallback",
+      "severity": "medium",
+      "text": "On 8391a0ef8, missing affine/Q4 in encode_prefill_gemm is an error, not a silent matvec. The f32-gap story in docs/PREFILL.md ('353 tensors still go through matvec') does not match that function. f32 work on that branch is mostly elementwise/DeltaNet/lm_head, not a hidden GEMV of the big projections.",
+      "what_would_settle": "A tensor-kind census of dispatches from a real prefill_prompt run (kernel name × tensor name), not a catalog count."
+    },
+    {
+      "id": "h_roadmap_not_in_git",
+      "severity": "medium",
+      "text": "H-ROADMAP.md (freeze 2026-08-27, II-D gene list, I-D phase-aware backend) is not at git HEAD. The gene argument in this audit is against the Downloads copy the campaign named, plus in-tree docs/PREFILL.md.",
+      "what_would_settle": "Put the freeze-dated H-ROADMAP.md in git, or name the canonical path this civilization actually reads."
+    },
+    {
+      "id": "native_weights_are_copies",
+      "severity": "low",
+      "text": "The 'no-copy/shared memory' school item is real for GGUF engines and false for the native Qwen38 resident, which copies every tensor through new_buffer_with_bytes_checked.",
+      "what_would_settle": "A new_buffer_no_copy_checked call site inside Qwen38HybridWeights::load/load_mixed that refuses a silent copy (the metal helper already errors if the bind copies)."
+    },
+    {
+      "id": "generate_greedy_always_resets",
+      "severity": "medium",
+      "text": "Prefix reuse / DeltaNet checkpoint cannot matter on the native resident until generate_greedy stops calling session.reset() on every HCLI request, or a resume entry is added and called.",
+      "what_would_settle": "A production caller that attaches, prefills once, and serves N completions from saved rec_state+KV without reset."
+    }
+  ],
+  "stale_roadmap_text": [
+    {
+      "path": "docs/PREFILL.md",
+      "git_commit": "b4a3857d4a78082e8a2f636981740461cf3cea88",
+      "claim": "What was built: qwen38_prefill.metal, qwen38_hybrid_prefill.rs, tests, 1.85x measured",
+      "head_reality": "those files are not at HEAD; 1.85x has no receipts/ artifact"
+    },
+    {
+      "path": "docs/PREFILL.md",
+      "claim": "in-tree greedy test currently FAILS (3.67x vs 4x)",
+      "head_reality": "the test file is not at HEAD, so it cannot fail on this tree"
+    },
+    {
+      "path": "/Users/scammermike/Downloads/H-ROADMAP.md",
+      "section": "II-D genes",
+      "claim": "prefill lives under State / Tokenizer / Decoding as long-context policy",
+      "head_reality": "no PREFILL gene; I-D has phase-aware backend selection which is closer to the unmerged work; neither matches HEAD source"
+    }
+  ],
+  "historical_receipts_pre_freeze": [
+    {
+      "path": "receipts/ascent-2026-08-16/G117_PREFILL_BASELINE.json",
+      "commit": "b63352b301ce13f9f3fa320e0b73c0fc300a62d6",
+      "finding": "prompt token costs ~ decode token; zero weight-sweep amortization across 11..688 tokens"
+    },
+    {
+      "path": "receipts/ascent-2026-08-16/G118_PREFILL_SCALING.json",
+      "commit": "87ee085eac8cf39dac78ecce831ddc7fe2fae3df",
+      "finding": "quadratic; 2641-token point; 32k predicted ~3995s; 32k walk not measured"
+    },
+    {
+      "path": "receipts/ascent-2026-08-16/G119_PREFILL_RESIDUAL.json",
+      "finding": "prefill_step.dispatches == decode_step.dispatches == 964; post-batching wall is attention"
+    },
+    {
+      "path": "receipts/headless/PREFILL_KV.json",
+      "generated_at": "2026-08-24T05:32:26Z",
+      "git_head": "eb3525e36a999ac581e89fb948d2d9e4cfffdbaf",
+      "finding": "production_prefill_path is teacher-forced session.step; no batched GEMM on Qwen38HybridDecodeSession; p3 kernels exist on generic engine and are not wired into the hybrid session"
+    }
+  ],
+  "evidence_commands": [
+    {
+      "command": "git rev-parse HEAD",
+      "output": "04193ccbc8ef9fdd2dfd595d65f656760829dddc"
+    },
+    {
+      "command": "git merge-base --is-ancestor 8391a0ef82489e6795a88decd6c731cf3bf4293c HEAD; echo $?",
+      "output": "1"
+    },
+    {
+      "command": "git cat-file -e HEAD:crates/hawking-core/src/model/qwen38_hybrid_prefill.rs; echo $?",
+      "output": "128"
+    },
+    {
+      "command": "test -f receipts/sovereign/G005_prefill_pipeline.json; echo $?",
+      "output": "1"
+    },
+    {
+      "command": "test -f receipts/sovereign/G006_long_context.json; echo $?",
+      "output": "1"
+    },
+    {
+      "command": "test -f receipts/sovereign/G007_deltanet_state.json; echo $?",
+      "output": "1"
+    },
+    {
+      "command": "git branch -a --contains 8391a0ef8",
+      "output": "grok/prefill-gemm-20260901-232724"
+    }
+  ],
+  "acceptance": {
+    "every_capability_has_call_site_or_blocker": true,
+    "imports_not_counted_as_call_sites": true,
+    "no_measured_without_local_run": true
+  }
+}

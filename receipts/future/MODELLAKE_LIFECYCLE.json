@@ -1,0 +1,32 @@
+{
+ "acquiring_now": true,
+ "active_acquisition_workers": [
+  "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python /Users/scammermike/Downloa"
+ ],
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-03T00:08:27Z",
+  "recorded_by": "tools.future.modellake_lifecycle",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "a filesystem census of the specimen lake. It proves what is on disk, not that any specimen is correct, complete or servable.",
+ "curriculum_eligible": 55,
+ "evidence_class": "STATIC_ONLY",
+ "gpu_authority": false,
+ "hcli_visible": 55,
+ "manifests": 55,
+ "partial_specimens": 0,
+ "payload_complete_unpromoted": 0,
+ "retained_verified_bytes_per_wall_second": null,
+ "root": "/Volumes/corpdrive/hawking-modellake",
+ "schema": "hawking.future.modellake_lifecycle.v1",
+ "seal_sha256": "1df55e503aa2a63be967a73c1bb14269f35c24d1779086ad854e84bdaabb9ed4",
+ "sealed_specimens": 55,
+ "startup_reconciliation": "counts are recomputed from the filesystem on every call; there is no cached roster to drift out of date",
+ "state": "READ_FROM_DISK",
+ "unpromoted_examples": [],
+ "why_no_rate": "a throughput rate needs two timestamped observations. Reporting one from a single reading would be a fabricated measurement."
+}

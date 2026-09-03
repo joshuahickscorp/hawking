@@ -1849,6 +1849,7 @@ pub fn load_qwen38_tokenizer(path: impl AsRef<Path>) -> Result<Tokenizer> {
 #[cfg(target_os = "macos")]
 mod device {
     use super::*;
+    use crate::json_constrain::{argmax_f32_metal_tiebreak, JsonConstraint, JsonVocabIndex};
     use crate::kernels::{
         mha_decode_f32_tcb, qwen_next_add_residual_tcb, sample_argmax_f32_tcb,
     };
@@ -4565,6 +4566,10 @@ mod device {
                 "v_proj" => Ok(&self.workspace.v_proj),
                 "qkvz" => Ok(&self.workspace.qkvz),
                 "ba" => Ok(&self.workspace.ba),
+                // The DeltaNet carry. Addressable so a prefix's recurrent state
+                // can be snapshotted and restored; see prefix_checkpoint.
+                "rec_state" => Ok(&self.workspace.rec_state),
+                "conv_state" => Ok(&self.workspace.conv_state),
                 other => Err(Error::Model(format!(
                     "qwen38 unknown workspace buffer {other}"
                 ))),
@@ -5579,6 +5584,50 @@ mod device {
 
         pub fn alloc_profile_buffer(&self, bytes: usize) -> Result<PinnedBuffer> {
             self.context.new_buffer_checked(bytes)
+        }
+
+        /// Everything needed to resume decoding as if a token prefix had just
+        /// been stepped: the DeltaNet carry and the sequence position.
+        ///
+        /// KV is deliberately NOT captured. It is indexed by position, so for a
+        /// prefix of identical tokens the entries at 0..position are already the
+        /// same bytes whichever request wrote them. The recurrent state is the
+        /// only part that cannot be reconstructed by indexing, because it is a
+        /// running summary with no per-position addressing.
+        ///
+        /// This is EXACT, not an approximation: the carry after tokens 0..N is a
+        /// function of those tokens alone, so two prompts sharing a prefix have
+        /// identical state at N by construction.
+        pub fn prefix_checkpoint(&self) -> Result<Qwen38PrefixCheckpoint> {
+            Ok(Qwen38PrefixCheckpoint {
+                position: self.position,
+                rec_state: self.read_f32_workspace("rec_state", self.rec_state_f32_count())?,
+                conv_state: self
+                    .read_f32_workspace("conv_state", self.conv_state_f32_count())?,
+            })
+        }
+
+        /// Resume from a checkpoint. The caller MUST have verified that the
+        /// prompt begins with exactly the tokens the checkpoint was taken over;
+        /// restoring against a different prefix conditions generation on tokens
+        /// that are not in the prompt, and nothing downstream could detect it.
+        pub fn restore_prefix(&mut self, checkpoint: &Qwen38PrefixCheckpoint) -> Result<()> {
+            if checkpoint.rec_state.len() != self.rec_state_f32_count()
+                || checkpoint.conv_state.len() != self.conv_state_f32_count()
+            {
+                return Err(Error::Model(
+                    "qwen38 prefix checkpoint was taken on a different geometry".into(),
+                ));
+            }
+            if checkpoint.position > self.max_seq_len {
+                return Err(Error::Model(
+                    "qwen38 prefix checkpoint position exceeds max_seq_len".into(),
+                ));
+            }
+            self.write_f32_workspace("rec_state", &checkpoint.rec_state)?;
+            self.write_f32_workspace("conv_state", &checkpoint.conv_state)?;
+            self.position = checkpoint.position;
+            Ok(())
         }
 
         pub fn rec_state_f32_count(&self) -> usize {
@@ -7426,10 +7475,75 @@ mod device {
         prompt: &[u32],
         max_new_tokens: usize,
     ) -> Result<Qwen38GenerateResult> {
+        generate_greedy_reusing(session, prompt, max_new_tokens, 0)
+    }
+
+    /// `generate_greedy`, but the first `reuse` prompt tokens are already
+    /// resident in the session's KV and recurrent state and are NOT re-stepped.
+    ///
+    /// `reuse == 0` resets and prefills everything -- byte-identical to the old
+    /// behaviour, which is what `generate_greedy` still is.
+    ///
+    /// PURE APPEND ONLY. The caller must have verified that the resident
+    /// context is an exact prefix of `prompt`. DeltaNet state is RECURRENT: it
+    /// is a running summary with no per-position index, so it cannot be
+    /// truncated or rewound. Reusing a prefix that diverged would silently
+    /// condition generation on tokens that are not in the prompt.
+    pub fn generate_greedy_reusing(
+        session: &mut Qwen38HybridDecodeSession,
+        prompt: &[u32],
+        max_new_tokens: usize,
+        reuse: usize,
+    ) -> Result<Qwen38GenerateResult> {
+        generate_greedy_reusing_snapshot(session, prompt, max_new_tokens, reuse, None)
+            .map(|(result, _)| result)
+    }
+
+    /// As `generate_greedy_reusing`, and additionally captures a prefix
+    /// checkpoint the moment `position` reaches `snapshot_at`.
+    ///
+    /// Taken DURING work already being done: the caller cannot snapshot a
+    /// boundary after prefilling past it, because the recurrent carry has
+    /// already moved on and there is no way to rewind it.
+    pub fn generate_greedy_reusing_snapshot(
+        session: &mut Qwen38HybridDecodeSession,
+        prompt: &[u32],
+        max_new_tokens: usize,
+        reuse: usize,
+        snapshot_at: Option<usize>,
+    ) -> Result<(Qwen38GenerateResult, Option<Qwen38PrefixCheckpoint>)> {
+        let result = generate_greedy_reusing_inner(
+            session,
+            prompt,
+            max_new_tokens,
+            reuse,
+            snapshot_at,
+        )?;
+        Ok(result)
+    }
+
+    fn generate_greedy_reusing_inner(
+        session: &mut Qwen38HybridDecodeSession,
+        prompt: &[u32],
+        max_new_tokens: usize,
+        reuse: usize,
+        snapshot_at: Option<usize>,
+    ) -> Result<(Qwen38GenerateResult, Option<Qwen38PrefixCheckpoint>)> {
+        let mut snapshot: Option<Qwen38PrefixCheckpoint> = None;
         if prompt.is_empty() {
             return Err(Error::Model("qwen38 prompt is empty".into()));
         }
-        session.reset();
+        if reuse >= prompt.len() {
+            // At least one token must be stepped: `next` is the argmax the last
+            // stepped token produced, and with nothing stepped there is none.
+            return Err(Error::Model(format!(
+                "qwen38 reuse {reuse} leaves no prompt token to step (prompt is {})",
+                prompt.len()
+            )));
+        }
+        if reuse == 0 {
+            session.reset();
+        }
         // Every prompt token is stepped once, followed by at most
         // `max_new_tokens` sampled ids. Reserve the complete known envelope so
         // request-result growth never adds realloc/copy work to the measured
@@ -7449,11 +7563,11 @@ mod device {
         let mut next = 0u32;
         let prefill = Instant::now();
         let mut first_step_wall_ns = 0u64;
-        for (i, &token) in prompt.iter().enumerate() {
+        for (i, &token) in prompt.iter().enumerate().skip(reuse) {
             let step_wall = Instant::now();
             let (sampled, timing) = session.step(token)?;
             let step_ns = step_wall.elapsed().as_nanos() as u64;
-            if i == 0 {
+            if i == reuse {
                 first_step_wall_ns = step_ns;
             }
             wall_ns_per_step.push(step_ns);
@@ -7464,6 +7578,13 @@ mod device {
             dispatches.push(timing.dispatches);
             active_weight_bytes.push(session.last_active_weight_bytes());
             next = sampled;
+            if snapshot.is_none() && snapshot_at == Some(i + 1) {
+                // i + 1 prompt tokens have been stepped, so the carry is exactly
+                // the state after that prefix. Captured HERE because it cannot
+                // be recovered once the prefill moves past it: the recurrent
+                // state is a running summary with no rewind.
+                snapshot = Some(session.prefix_checkpoint()?);
+            }
         }
         let prefill_wall_ns = prefill.elapsed().as_nanos() as u64;
         tokens.push(next);
@@ -7492,7 +7613,7 @@ mod device {
         }
         let decode_wall_ns = decode.elapsed().as_nanos() as u64;
         let decode_steps = tokens.len().saturating_sub(prompt.len()).saturating_sub(1);
-        Ok(Qwen38GenerateResult {
+        Ok((Qwen38GenerateResult {
             tokens,
             prompt_len: prompt.len(),
             wall_ns: wall.elapsed().as_nanos() as u64,
@@ -7511,7 +7632,149 @@ mod device {
             decode_wall_ns,
             decode_steps,
             wall_ns_per_step,
-        })
+        }, snapshot))
+    }
+
+    /// Greedy generation with a JSON logit mask applied on the host.
+    ///
+    /// The GPU argmax kernel still runs inside [`Qwen38HybridDecodeSession::step`];
+    /// its answer is discarded. After each wait, logits are read from the
+    /// shared workspace, masked, and reduced with the Metal tie-break
+    /// (strictly greater wins, exact ties keep the lower index).
+    pub fn generate_constrained(
+        session: &mut Qwen38HybridDecodeSession,
+        tokenizer: &Tokenizer,
+        vocab: &JsonVocabIndex,
+        constraint: &mut JsonConstraint,
+        prompt: &[u32],
+        max_new_tokens: usize,
+        reuse: usize,
+        snapshot_at: Option<usize>,
+    ) -> Result<(Qwen38GenerateResult, Option<Qwen38PrefixCheckpoint>)> {
+        if prompt.is_empty() {
+            return Err(Error::Model("qwen38 prompt is empty".into()));
+        }
+        if reuse >= prompt.len() {
+            return Err(Error::Model(format!(
+                "qwen38 reuse {reuse} leaves no prompt token to step (prompt is {})",
+                prompt.len()
+            )));
+        }
+        let mut snapshot: Option<Qwen38PrefixCheckpoint> = None;
+        // The constrained path resets ONLY on a cold request now. It used to
+        // reset unconditionally, which made the grammar channel and the prefix
+        // cache mutually exclusive -- and since the grammar channel is on, the
+        // cache could never fire in the shipped configuration.
+        if reuse == 0 {
+            session.reset();
+        }
+        let step_capacity = prompt.len().saturating_add(max_new_tokens);
+        let token_capacity = step_capacity.saturating_add(1);
+        let mut tokens = Vec::with_capacity(token_capacity);
+        tokens.extend_from_slice(prompt);
+        let mut gpu_ns = Vec::with_capacity(step_capacity);
+        let mut wait_ns = Vec::with_capacity(step_capacity);
+        let mut encode_ns = Vec::with_capacity(step_capacity);
+        let mut submit_ns = Vec::with_capacity(step_capacity);
+        let mut dispatches = Vec::with_capacity(step_capacity);
+        let mut active_weight_bytes = Vec::with_capacity(step_capacity);
+        let mut wall_ns_per_step = Vec::with_capacity(step_capacity);
+        let wall = Instant::now();
+        let prefill = Instant::now();
+        let mut first_step_wall_ns = 0u64;
+        for (i, &token) in prompt.iter().enumerate().skip(reuse) {
+            let step_wall = Instant::now();
+            let (_, timing) = session.step(token)?;
+            let step_ns = step_wall.elapsed().as_nanos() as u64;
+            if i == reuse {
+                first_step_wall_ns = step_ns;
+            }
+            wall_ns_per_step.push(step_ns);
+            gpu_ns.push(timing.gpu_ns);
+            wait_ns.push(timing.wait_ns);
+            encode_ns.push(timing.encode_ns);
+            submit_ns.push(timing.submit_ns);
+            dispatches.push(timing.dispatches);
+            active_weight_bytes.push(session.last_active_weight_bytes());
+            if snapshot.is_none() && snapshot_at == Some(i + 1) {
+                snapshot = Some(session.prefix_checkpoint()?);
+            }
+        }
+        let prefill_wall_ns = prefill.elapsed().as_nanos() as u64;
+        // Last prefill step already dispatched GPU argmax; discard it and pick
+        // the first generated id on the host so the JSON mask applies.
+        let mut logits = session.read_f32_workspace("logits", QWEN38_VOCAB)?;
+        constraint.mask_logits(vocab, &mut logits);
+        // A state where the mask leaves nothing legal must SAY so. Without this
+        // the argmax over an all-NEG_INF vector returns id 0 and the resident
+        // emits token 0 to the budget while still reporting grammar_enforced --
+        // a silent wrong answer wearing an enforcement claim.
+        if !logits.iter().any(|v| v.is_finite()) {
+            return Err(Error::Model(
+                "json constraint masked every token at the first generated position".into(),
+            ));
+        }
+        let mut next = argmax_f32_metal_tiebreak(&logits);
+        tokens.push(next);
+        constraint.advance(&tokenizer.decode_one(next).unwrap_or_default());
+        let decode = Instant::now();
+        let ignore_eos = std::env::var("HAWKING_QWEN38_IGNORE_EOS")
+            .map(|v| v != "0")
+            .unwrap_or(false);
+        while tokens.len() - prompt.len() < max_new_tokens {
+            if constraint.is_done() {
+                break;
+            }
+            if !ignore_eos
+                && (next == crate::model::qwen38_geometry::QWEN38_EOS_IM_END
+                    || next == crate::model::qwen38_geometry::QWEN38_EOS_END_OF_TEXT)
+            {
+                break;
+            }
+            let step_wall = Instant::now();
+            let (_, timing) = session.step(next)?;
+            wall_ns_per_step.push(step_wall.elapsed().as_nanos() as u64);
+            gpu_ns.push(timing.gpu_ns);
+            wait_ns.push(timing.wait_ns);
+            encode_ns.push(timing.encode_ns);
+            submit_ns.push(timing.submit_ns);
+            dispatches.push(timing.dispatches);
+            active_weight_bytes.push(session.last_active_weight_bytes());
+            let mut logits = session.read_f32_workspace("logits", QWEN38_VOCAB)?;
+            constraint.mask_logits(vocab, &mut logits);
+            if !logits.iter().any(|v| v.is_finite()) {
+                return Err(Error::Model(format!(
+                    "json constraint masked every token at generated position {}",
+                    tokens.len() - prompt.len()
+                )));
+            }
+            let sampled = argmax_f32_metal_tiebreak(&logits);
+            tokens.push(sampled);
+            next = sampled;
+            constraint.advance(&tokenizer.decode_one(sampled).unwrap_or_default());
+        }
+        let decode_wall_ns = decode.elapsed().as_nanos() as u64;
+        let decode_steps = tokens.len().saturating_sub(prompt.len()).saturating_sub(1);
+        Ok((Qwen38GenerateResult {
+            tokens,
+            prompt_len: prompt.len(),
+            wall_ns: wall.elapsed().as_nanos() as u64,
+            gpu_ns,
+            wait_ns,
+            encode_ns,
+            submit_ns,
+            dispatches,
+            active_weight_bytes,
+            fallbacks: session.fallbacks,
+            dense_w_materialized: session.dense_w_materialized,
+            resident_weight_bytes: session.resident_weight_bytes(),
+            workspace_resident_bytes: session.workspace_resident_bytes(),
+            first_step_wall_ns,
+            prefill_wall_ns,
+            decode_wall_ns,
+            decode_steps,
+            wall_ns_per_step,
+        }, snapshot))
     }
 
     /// Greedy generation for an explicitly selected resident serving path.
@@ -7911,6 +8174,16 @@ impl Qwen38CompleteWallResult {
     }
 }
 
+/// A resumable point in a token sequence: the DeltaNet carry plus the position
+/// it was taken at. Cheap to hold (state is fixed size, independent of context)
+/// and exact for any prompt that begins with the same tokens.
+#[derive(Debug, Clone)]
+pub struct Qwen38PrefixCheckpoint {
+    pub position: usize,
+    pub rec_state: Vec<f32>,
+    pub conv_state: Vec<f32>,
+}
+
 #[derive(Clone, Debug)]
 pub struct Qwen38GenerateResult {
     pub tokens: Vec<u32>,
@@ -7961,8 +8234,8 @@ impl Qwen38GenerateResult {
 
 #[cfg(target_os = "macos")]
 pub use device::{
-    generate_greedy, generate_greedy_complete_wall, generate_greedy_parallel,
-    generate_greedy_unmeasured,
+    generate_constrained, generate_greedy, generate_greedy_complete_wall, generate_greedy_parallel,
+    generate_greedy_reusing, generate_greedy_reusing_snapshot, generate_greedy_unmeasured,
     measure_shared_weight_fanout, Qwen38HybridDecodeSession, Qwen38HybridWeights,
     Qwen38WeightFanout,
 };

@@ -79,7 +79,7 @@ PRECIOUS_PREFIXES = (
     "visionmcp/benchmarks/",
     "visionmcp/docs/",
     ".preserved/",
-    ".haider/",
+    ".hcli-legacy/",
     ".hcli/",
     ".hide/evidence/",
     "crates/",

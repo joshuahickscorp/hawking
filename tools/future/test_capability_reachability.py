@@ -159,7 +159,7 @@ def test_subprocess_string_mention_without_a_real_launch_is_not_a_call_site(tmp_
 def test_tool_name_requires_dispatch_context_not_bare_string(tmp_path, monkeypatch):
     """Two unrelated systems can reuse the same short tool name
     ('git.status' in both hcli/tool_registry.py and
-    tools/haider/p0_tool_bridge.py's own ALL_TOOLS set). A bare set literal
+    tools/hcli/bootstrap/p0_tool_bridge.py's own ALL_TOOLS set). A bare set literal
     must not count as a call site for THIS registry."""
     monkeypatch.setattr(cr, "REPO", tmp_path)
     cr._TEXT_CACHE.clear()

@@ -211,17 +211,15 @@ def ast_inspect(path: Path) -> dict[str, Any]:
     filename = path.name
     stem = path.stem
     kind = classify_filename(filename)
-    raw = path.read_text(encoding="utf-8", errors="replace")
-    try:
-        tree = ast.parse(raw)
-    except SyntaxError as exc:
+
+    def unreadable(error: str) -> dict[str, Any]:
         return {
             "filename": filename,
             "stem": stem,
             "relpath": rel,
             "kind": kind,
             "parse_ok": False,
-            "parse_error": f"{type(exc).__name__}: {exc}",
+            "parse_error": error,
             "docstring": None,
             "public_callables": [],
             "preferred_callable": None,
@@ -235,6 +233,24 @@ def ast_inspect(path: Path) -> dict[str, Any]:
             "schema_const": None,
             "uses_write_receipt": False,
         }
+
+    try:
+        raw = path.read_text(encoding="utf-8", errors="replace")
+    except OSError as exc:
+        # discover_python_files() globs, and every read happens after that glob:
+        # the listing is a SNAPSHOT of a live tree, not a lock on it. Two of this
+        # repo's own tests write a real `tools/future/test__*_probe_*.py` into the
+        # tree and delete it in a finally, so a concurrent scan lists a probe and
+        # reads it after its owner has cleaned up. That is not this scan's error,
+        # and it is not grounds to abort a survey of 276 other files -- record the
+        # file as unreadable, naming the reason, the same way an unparseable one
+        # is recorded. Any tree scan racing a checkout or a sibling process hits
+        # this; crashing on it made the survey a coin flip under xdist.
+        return unreadable(f"{type(exc).__name__}: {exc}")
+    try:
+        tree = ast.parse(raw)
+    except SyntaxError as exc:
+        return unreadable(f"{type(exc).__name__}: {exc}")
     public = [
         node.name
         for node in tree.body

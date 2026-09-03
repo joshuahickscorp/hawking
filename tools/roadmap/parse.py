@@ -5,15 +5,15 @@ Prose is referenced by source span, never copied.
 """
 from __future__ import annotations
 
+import json
+
 import hashlib
-import os
 import re
 from pathlib import Path
 from typing import Any
 
 from tools.roadmap.gitfs import REPO
-
-DEFAULT_ROADMAP = Path("/Users/scammermike/Downloads/H-ROADMAP.md")
+from tools.roadmap.lineage import roadmap_path
 
 # Must match civilization/build_state.py CANONICAL_PROGRAMS.
 GENE_IDS: tuple[str, ...] = (
@@ -52,13 +52,6 @@ _GATE_LINE = re.compile(
 _GENE_CARD = re.compile(r"^## ((?:I|II|III|IV|V)-[A-E]) — .+ — GENE CARD\s*$")
 _ERA_HEADING = re.compile(r"^## ((?:I|II|III|IV|V)-[A-E])\.\s")
 _SUBGENE = re.compile(r"^- (.+)$")
-
-
-def roadmap_path() -> Path:
-    override = os.environ.get("H_ROADMAP")
-    if override:
-        return Path(override)
-    return DEFAULT_ROADMAP
 
 
 def span(path: str, start: int, end: int, *, note: str | None = None) -> dict[str, Any]:
@@ -126,7 +119,53 @@ def _parse_gates(lines: list[str], road_s: str) -> dict[str, dict[str, Any]]:
         }
     if len(gates) < 71:
         raise ValueError(f"APPENDIX O yielded {len(gates)} gates, expected 71")
+    gates.update(_supplementary_gates(len(gates)))
     return gates
+
+
+# The roster used to be owned SOLELY by APPENDIX O of the roadmap. That made the
+# recompiled roadmap unable to represent any capability the superseded document
+# never listed -- and the superseded document is preserved lineage that must not
+# be edited. A capability the machine has but the roster cannot express is
+# invisible to every audit, which is the failure this supplement removes.
+#
+# Supplementary rows are marked so nothing mistakes them for historical ledger
+# entries, and they are ADDITIVE: APPENDIX O still wins on any id it defines.
+SUPPLEMENT = "civilization/GATE_ROSTER_SUPPLEMENT.json"
+
+
+def _supplementary_gates(appendix_count: int) -> dict[str, dict[str, Any]]:
+    path = REPO / SUPPLEMENT
+    if not path.is_file():
+        return {}
+    try:
+        doc = json.loads(path.read_text())
+    except (OSError, ValueError) as exc:
+        raise ValueError(f"{SUPPLEMENT} is present but unreadable: {exc}") from exc
+    # A real line in a real file, exactly as an APPENDIX O row gets. A gate whose
+    # span cannot be opened is a gate nobody can check the declaration of, so the
+    # invariant that every gate has a locatable source stays intact.
+    lines = path.read_text().splitlines()
+    out: dict[str, dict[str, Any]] = {}
+    for name, row in sorted((doc.get("gates") or {}).items()):
+        line_no = next(
+            (i for i, ln in enumerate(lines, start=1) if f'"{name}"' in ln), 1
+        )
+        out[name] = {
+            "id": name,
+            "kind": "gate",
+            "name": name,
+            "source_span": {
+                "file": SUPPLEMENT,
+                "start_line": line_no,
+                "end_line": line_no,
+                "note": "roster supplement (NOT an APPENDIX O ledger row)",
+            },
+            "ledger_line": line_no,
+            "roster_source": "supplement",
+            "declared_because": row.get("because") or "",
+        }
+    return out
 
 
 def _parse_genes(lines: list[str], road_s: str) -> dict[str, dict[str, Any]]:

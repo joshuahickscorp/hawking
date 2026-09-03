@@ -508,6 +508,16 @@ def _text_limit(value: Any, default: int = 64 * 1024, maximum: int = _MAX_READ_B
 
 def _read_file(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
     path = context.resolve_read_path(args.get("path"))
+    if path.is_dir():
+        # NOT FileNotFoundError. Measured: the model listed `hcli`, called
+        # fs.read on it, was told the path did not exist, concluded it had the
+        # path wrong, and spent five retries and eight model calls hunting a
+        # path that was correct all along. An error that misdescribes the
+        # situation cannot be recovered from -- say what it is and what to use.
+        raise IsADirectoryError(
+            f"{path} is a directory, not a file. Use fs.list to see what is "
+            f"inside it, then fs.read one of the files it names."
+        )
     if not path.is_file():
         raise FileNotFoundError(path)
     limit = _text_limit(args.get("max_bytes"))
@@ -570,7 +580,12 @@ def _list_files(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
         raise NotADirectoryError(root)
     glob = str(args.get("glob") or "*")
     limit = max(1, min(2000, int(args.get("max_results") or 500)))
-    recursive = bool(args.get("recursive", True))
+    # Recursion is OPT-IN. "What is in this directory" is one level, and the
+    # default walked the whole tree: a bare fs.list on this repo took 28.1 s
+    # against fs.read's 6 ms, because the tree holds model artifacts and
+    # capture directories with tens of thousands of files. A tool that costs
+    # half a minute is not a tool the model can afford to look with.
+    recursive = bool(args.get("recursive", False))
     entries: List[Dict[str, Any]] = []
     directories: List[Dict[str, Any]] = []
     truncated = False
@@ -584,6 +599,11 @@ def _list_files(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
             name for name in dirnames
             if name not in {".git", ".venv", "__pycache__", "node_modules"}
         )
+        if len(entries) >= limit and len(directories) >= limit:
+            # Both caps are full: every further stat() is work whose result is
+            # thrown away. The walk used to run to completion regardless.
+            truncated = True
+            break
         for dirname in dirnames:
             if not Path(dirname).match(glob):
                 continue
@@ -598,13 +618,15 @@ def _list_files(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
         for filename in sorted(filenames):
             if not Path(filename).match(glob):
                 continue
+            if len(entries) >= limit:
+                # Check the cap BEFORE the stat(). Sizing a file that will not
+                # be returned is the whole cost of a large tree.
+                truncated = True
+                continue
             path = Path(dirpath) / filename
             try:
                 size = path.stat().st_size
             except OSError:
-                continue
-            if len(entries) >= limit:
-                truncated = True
                 continue
             entries.append({"path": str(path.relative_to(root)), "bytes": size})
         if not recursive:
@@ -1250,15 +1272,32 @@ def _target_receipt(name: str) -> Callable[[ToolContext, Dict[str, Any]], Dict[s
 def _list_tests(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
     raw = args.get("root")
     if raw is None or not str(raw).strip():
-        root = (context.repo_root / "tools/haider/hcli/tests").resolve(strict=False)
+        root = (context.repo_root / "hcli/tests").resolve(strict=False)
     else:
         root = context.resolve_read_path(raw)
     if not _within(root, context.read_roots):
         raise PermissionError(f"test root is outside the AgentOS read roots: {root}")
     if not root.is_dir():
         raise NotADirectoryError(root)
-    paths = sorted(str(path) for path in root.rglob("test_*.py") if path.is_file())
-    return {"root": str(root), "count": len(paths), "paths": paths[:2000], "truncated": len(paths) > 2000}
+    # Bounded WALK, not a bounded slice. Enumerating the whole tree and then
+    # taking the first 2000 costs the whole tree: measured at 2072 ms against
+    # fs.read's 4 ms. Stop when the cap is full.
+    limit = max(1, min(2000, int(args.get("max_results") or 2000)))
+    found: List[str] = []
+    truncated = False
+    for path in root.rglob("test_*.py"):
+        if len(found) >= limit:
+            truncated = True
+            break
+        if path.is_file():
+            found.append(str(path))
+    found.sort()
+    return {
+        "root": str(root),
+        "count": len(found),
+        "paths": found,
+        "truncated": truncated,
+    }
 
 
 def _filesystem_write(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
@@ -1767,8 +1806,13 @@ def default_tool_registry(
          "properties": {"pattern": {"type": "string"}, "root": {"type": "string"}, "glob": {"type": "string"}, "max_results": {"type": "integer"}}},
         handler=_search_files,
     ))
+    # `path` is NOT required: the handler already defaults to the workspace root
+    # and the read-root check still applies, so demanding it bought no safety and
+    # cost real calls. Measured: the model called fs.list with no arguments,
+    # got "missing required property 'path'", and burned the round. "List the
+    # repo" is the common intent and must be expressible.
     list_schema = {
-        "type": "object", "required": ["path"], "additionalProperties": False,
+        "type": "object", "required": [], "additionalProperties": False,
         "properties": {
             "path": {"type": "string"}, "glob": {"type": "string"},
             "recursive": {"type": "boolean"}, "max_results": {"type": "integer"},

@@ -194,7 +194,7 @@ def build_report(root_prompt_tokens: int, generation_reserve: int) -> Dict[str, 
             "hcli_reads_live_server": False,
             "note": (
                 "No attach/discovery path exists: grep for '/props' in "
-                "tools/haider/hcli/{runtime,backends}.py returns nothing, so "
+                "hcli/{runtime,backends}.py returns nothing, so "
                 "HCLI always spawns its own server at its own default and "
                 "never learns the real ceiling of one already running."
             ),

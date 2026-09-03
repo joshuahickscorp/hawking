@@ -393,23 +393,37 @@ GATES: dict[str, dict[str, Any]] = {
         modules=("hcli.agentos.fpga_preboard",),
         symbols=(("hcli.agentos.fpga_preboard", "simulate_partition"),),
     ),
+    # Two files share the basename hardware_doctor.py and the catalog named the
+    # wrong one. tools/future/hardware_doctor.py contains ZERO U50/Alveo/XCU50
+    # lines; tools/accelerator/hardware_doctor.py contains 74 and owns
+    # absent_u50dd/workload_fit/candidate_probes -- the code that consumes the
+    # U50 brochure and the carrier. A gate pointing at a same-named file with
+    # none of the capability is a matcher that cannot see what exists.
     "U50_PURCHASE_ACCEPTANCE": _p(
         era="I", gene=ID, acc=(8888, 8901), hw="U50_PRESENT",
         deps=("FPGA_PARTITION_SIM",),
-        paths=("tools/future/hardware_doctor.py",),
-        modules=("tools.future.hardware_doctor",),
+        paths=("tools/accelerator/hardware_doctor.py",),
+        modules=("tools.accelerator.hardware_doctor",),
+        symbols=(("tools.accelerator.hardware_doctor", "absent_u50dd"),),
     ),
     "U50_SAFE_COOLING": _p(
         era="I", gene=ID, acc=(8903, 8906), hw="U50_PRESENT",
         deps=("U50_PURCHASE_ACCEPTANCE",),
-        paths=("tools/future/hardware_doctor.py",),
-        modules=("tools.future.hardware_doctor",),
+        paths=("tools/accelerator/hardware_doctor.py",),
+        modules=("tools.accelerator.hardware_doctor",),
+        symbols=(("tools.accelerator.hardware_doctor", "workload_fit"),),
     ),
+    # tools/odyssey/device_profiles.py holds two WORKLOAD profiles and resident
+    # economics for two Qwen bodies, and zero U50 numbers of any kind. The real
+    # per-field-provenanced XCU50 device profile is u50_family_profile in
+    # tools/future/hwir.py, which the catalog previously reached only through the
+    # later 34_TO_40..80_TO_90 rungs.
     "U50_DEVICE_PROFILE": _p(
         era="I", gene=ID, acc=(8925, 8940), hw="U50_PRESENT",
         deps=("U50_SAFE_COOLING",),
-        paths=("tools/odyssey/device_profiles.py",),
-        modules=("tools.odyssey.device_profiles",),
+        paths=("tools/future/hwir.py",),
+        modules=("tools.future.hwir",),
+        symbols=(("tools.future.hwir", "u50_family_profile"),),
     ),
     "U50_DMA_HBM": _p(
         era="I", gene=ID, acc=(8942, 8959), hw="U50_PRESENT",
@@ -662,3 +676,387 @@ _THEIA_EXTERNAL_BLOCKERS: dict[str, str] = {
 
 for _gate, _blocker in _THEIA_EXTERNAL_BLOCKERS.items():
     GATES[_gate]["software_blocker"] = _blocker
+
+
+# ---------------------------------------------------------------------------
+# VMCP organs: cite what implements the capability, not what probes a vendor.
+#
+# Six VMCP gates pointed at tools/headless/vmcp_capability_probe.py. That file
+# MEASURES the external visionmcp package -- it is a probe of somebody else's
+# tool, run rather than called -- so the auditor correctly found no call site and
+# correctly read six capabilities as unwired scaffolding. Hawking's own organs
+# live in tools/vmcp/ and ARE reachable: tools/future/vmcp.py calls all four, and
+# tools/acceptance/vmcp/gates.py calls that in turn.
+#
+# tools/vmcp/tool_doctor.report() already probes PTY at runtime rather than
+# trusting its own E3_CLASSES literal, and on this host it reports PTY capture
+# CONNECTED via tools.vmcp.pty_eye.capture. Verified directly: pty_eye.probe()
+# returns used_real_pty=True, method=libutil.openpty, blocker=None, and
+# capture(argv=["/bin/echo", ...]) returns argv, cwd, pid, exit_code, signal and
+# terminal text with CRLF from a genuine PTY. The module docstring's flat claim
+# that "this sandbox has been measured to deny the slave (EPERM)" is STALE for
+# this execution context -- it is a per-context fact stated as a permanent one.
+_VMCP_ORGANS: dict[str, tuple[str, ...]] = {
+    "VMCP_TOOL_DOCTOR": ("tools/vmcp/tool_doctor.py",),
+    "VMCP_FILE_CLASSIFIER": ("tools/vmcp/file_eye.py",),
+    "VMCP_PTY_CAPTURE": ("tools/vmcp/pty_eye.py",),
+}
+
+# The gate must NAME the symbol whose call counts, or no call can ever match it.
+# VMCP_RECEIPT_LAW carries symbols= and reads BUILT; these three carried none, so
+# `runtime_caller` could never populate and they read as unwired scaffolding no
+# matter how many production callers existed. tools/future/vmcp.py calls every one
+# of these -- pty_capture(...), file_observe(...), doctor_report(...),
+# doctor_profile(...) -- through `from X import Y as Z` aliases.
+_VMCP_ORGAN_SYMBOLS: dict[str, tuple[tuple[str, str], ...]] = {
+    "VMCP_TOOL_DOCTOR": (
+        ("tools.vmcp.tool_doctor", "profile"),
+        ("tools.vmcp.tool_doctor", "report"),
+    ),
+    "VMCP_FILE_CLASSIFIER": (("tools.vmcp.file_eye", "observe"),),
+    "VMCP_PTY_CAPTURE": (("tools.vmcp.pty_eye", "capture"),),
+}
+
+for _gate, _syms in _VMCP_ORGAN_SYMBOLS.items():
+    GATES[_gate]["symbols"] = [
+        {"module": _m, "symbol": _y} for _m, _y in _syms
+    ] + list(GATES[_gate].get("symbols") or [])
+
+for _gate, _paths in _VMCP_ORGANS.items():
+    # `code_paths`, NOT `paths`: _p() stores the probe's file list under
+    # code_paths, so assigning to `paths` writes a key nothing reads -- a silent
+    # no-op that still looks like a successful repoint.
+    GATES[_gate]["code_paths"] = list(_paths) + list(GATES[_gate].get("code_paths") or [])
+    GATES[_gate]["modules"] = [
+        _q.removesuffix(".py").replace("/", ".") for _q in _paths
+    ] + list(GATES[_gate].get("modules") or [])
+
+# The three that remain PARKED are blocked on OPTIONAL EXTERNAL PACKAGES, not on
+# unwritten Hawking code, and calling them "software connection remaining" would
+# have pointed this campaign at work that does not exist. tool_doctor.report()
+# names the host for each on this machine.
+_VMCP_EXTERNAL_BLOCKERS: dict[str, str] = {
+    "VMCP_WEB_CAPTURE": (
+        "browser/CDP, HTML/DOM capture and CSS parsing are PARKED on the "
+        "visionmcp web extra plus a host Chrome; no Hawking code is missing. "
+        "Wake: VISIONMCP_WEB_EXTRA_INSTALLED."
+    ),
+    "VMCP_VISUAL_DIFF": (
+        "visual diff is PARKED on the visionmcp compiler residual. "
+        "Wake: VISIONMCP_COMPILER_RESIDUAL_AVAILABLE."
+    ),
+    "VMCP_SPATIAL_VALIDATE": (
+        "OBJ/GLTF parsing, the spatial validator and an independent renderer are "
+        "PARKED on the visionmcp 3d extra plus Blender CLI. "
+        "Wake: VISIONMCP_3D_EXTRA_AND_BLENDER."
+    ),
+}
+
+for _gate, _blocker in _VMCP_EXTERNAL_BLOCKERS.items():
+    GATES[_gate]["software_blocker"] = _blocker
+
+
+# Same defect as the VMCP organs above, three more times: the gate named no
+# symbol, so no call could match it and it read as unwired scaffolding.
+#
+# tools/acceptance/vmcp/gates.py:237-241 calls prove_deep_digest,
+# prove_truth_ledger, prove_asset_lattice and prove_decode_lattice directly.
+# All four live in tools/headless/vmcp_lattice_disposition.py -- including
+# prove_truth_ledger, which is why VMCP_TRUTH_LEDGER also gets that module
+# rather than only the forgery canary its catalogue row pointed at.
+_VMCP_LATTICE_SYMBOLS: dict[str, tuple[tuple[str, str], ...]] = {
+    "VMCP_STATE_LATTICE": (
+        ("tools.headless.vmcp_lattice_disposition", "prove_asset_lattice"),
+        ("tools.headless.vmcp_lattice_disposition", "prove_decode_lattice"),
+    ),
+    "VMCP_DEEP_DIGEST": (
+        ("tools.headless.vmcp_lattice_disposition", "prove_deep_digest"),
+    ),
+    "VMCP_TRUTH_LEDGER": (
+        ("tools.headless.vmcp_lattice_disposition", "prove_truth_ledger"),
+    ),
+}
+
+for _gate, _syms in _VMCP_LATTICE_SYMBOLS.items():
+    GATES[_gate]["symbols"] = [
+        {"module": _m, "symbol": _y} for _m, _y in _syms
+    ] + list(GATES[_gate].get("symbols") or [])
+    _mods = {_m for _m, _ in _syms}
+    GATES[_gate]["modules"] = sorted(_mods | set(GATES[_gate].get("modules") or []))
+    if "tools/headless/vmcp_lattice_disposition.py" not in (GATES[_gate].get("code_paths") or []):
+        GATES[_gate]["code_paths"] = ["tools/headless/vmcp_lattice_disposition.py"] + list(
+            GATES[_gate].get("code_paths") or []
+        )
+
+
+# ---------------------------------------------------------------------------
+# Native runtime. The graph tracked three Qwen27 gates and nothing about prefill,
+# context or state reuse -- which is most of the physical work actually happening.
+# Seven capabilities, not dozens: enough to make the runtime frontier visible
+# without inventing a noun per experiment.
+#
+# Paths point at what EXISTS. Where nothing implements a capability the gate will
+# read ABSENT, and that is the useful answer rather than a silent omission.
+_RUNTIME_GATES: dict[str, dict[str, Any]] = {
+    "RUNTIME_NATIVE_PREFILL": dict(
+        paths=("hcli/prefill_profile.py", "hcli/hawking_native.py"),
+        modules=("hcli.prefill_profile",),
+        note="real batched prefill rather than decode applied token by token",
+    ),
+    "RUNTIME_PREFILL_PHYSICAL_FRONTIER": dict(
+        paths=("hcli/prefill_profile.py",),
+        modules=("hcli.prefill_profile",),
+        note="projection / f32 / full-attention prefill path measured and optimized",
+    ),
+    "RUNTIME_CONTEXT_NATIVE": dict(
+        paths=("hcli/context_budget.py",),
+        modules=("hcli.context_budget",),
+        note="native 131K/262K admission and accounting; YaRN only after the native path",
+    ),
+    "RUNTIME_PREFIX_STATE_REUSE": dict(
+        paths=("hcli/prefix_probe.py",),
+        modules=("hcli.prefix_probe",),
+        symbols=(("hcli.prefix_probe", "longest_common_prefix"),),
+        note=(
+            "exact-token append-only prefix reuse. INSTRUMENTED: prefix_reused_tokens, "
+            "prefill_tokens_stepped, longest_common_prefix_tokens, "
+            "reason_for_prefix_divergence, and reusable_fraction kept DISTINCT from "
+            "realized_reuse_fraction. NOT PROVEN in production: zero receipts across "
+            "800 scanned carry prefix_reused_tokens, so realized reuse has never been "
+            "demonstrated by a run. Do not claim a speedup from wall clock until a "
+            "receipt counter establishes reuse."
+        ),
+    ),
+    "RUNTIME_DELTANET_STATE_REUSE": dict(
+        paths=("tools/headless/prefill_kv.py",),
+        modules=("tools.headless.prefill_kv",),
+        note="recurrent state checkpoint/restore and prefix-state reuse",
+    ),
+    "RUNTIME_DECODE_PROTECTED": dict(
+        paths=("hcli/hawking_native.py",),
+        modules=("hcli.hawking_native",),
+        note="current protected decode authority",
+    ),
+    "RUNTIME_COMPLETE_TOKEN_PROFILE": dict(
+        paths=("hcli/prefill_profile.py",),
+        modules=("hcli.prefill_profile",),
+        note="prefill + decode + host + tools + context accounted together, not separately",
+    ),
+}
+
+for _gate, _spec in _RUNTIME_GATES.items():
+    GATES[_gate] = _p(
+        era="I", gene=ID_ACCEL if "ID_ACCEL" in dir() else "I-D_ACCELERATOR",
+        paths=tuple(_spec["paths"]),
+        modules=tuple(_spec["modules"]),
+        symbols=tuple(_spec.get("symbols") or ()),
+        acc=(478, 505),
+    )
+    GATES[_gate]["runtime_note"] = _spec["note"]
+
+# The multiplier the operator named: maximize the useful stable physical prefix,
+# subject to reasoning quality and context budget. It is a MEASUREMENT programme,
+# so it is declared with what it must measure rather than as a boolean.
+GATES["STABLE_PREFIX_CONTEXT_ALIGNMENT"] = _p(
+    era="I", gene="I-D_ACCELERATOR",
+    paths=("hcli/prefix_probe.py",),
+    modules=("hcli.prefix_probe",),
+    acc=(478, 505),
+)
+GATES["STABLE_PREFIX_CONTEXT_ALIGNMENT"]["runtime_note"] = (
+    "measure previous/current prompt tokens, longest common prefix, realized "
+    "reused tokens, prefill tokens stepped and the divergence reason. Objective: "
+    "maximize the useful stable physical prefix subject to reasoning quality and "
+    "context budget. A wall-clock improvement is NOT evidence of reuse."
+)
+
+
+# ModelLake operational truth, and the post-Odyssey product milestones.
+#
+# The product work is REAL roadmap surface now rather than a vague future idea,
+# but it must not become today's work: reorganizing the repository underneath a
+# running science campaign is how a known-good runtime stops being known-good.
+# Its wake condition is recorded on the gate so nobody has to remember it.
+GATES["MODELLAKE_LIFECYCLE"] = _p(
+    era="I", gene="I-E_ODYSSEY_I",
+    paths=("tools/future/modellake_lifecycle.py",),
+    modules=("tools.future.modellake_lifecycle",),
+    symbols=(("tools.future.modellake_lifecycle", "lifecycle"),),
+    receipts=("receipts/future/MODELLAKE_LIFECYCLE.json",),
+    acc=(478, 505),
+)
+
+_PRODUCT_WAKE = (
+    "HCLI_OPERATIONAL and ODYSSEY_DETACHED and KNOWN_GOOD_RUNTIME_COMMIT frozen. "
+    "Isolated worktree only; merge after parity. Never reorganize underneath an "
+    "active Odyssey."
+)
+for _g in ("HAWKING_PUBLIC_MVP", "REPO_TOPOLOGY_COMPRESSION", "SEMANTIC_COMPRESSION"):
+    GATES[_g] = _p(era="V", gene=None, paths=(), modules=(), acc=(478, 505),
+                   ext=_PRODUCT_WAKE)
+
+
+# Same defect once more: the gate named no symbol, so its real callers could not
+# be matched. tools/headless/state_gravity.py imports session_state_bytes from
+# prefill_kv and calls it three times; that function accounts the recurrent
+# DeltaNet state and GQA KV bytes a session must hold, which IS the capability.
+# Both spellings: state_gravity.py manipulates sys.path and imports the SIBLING
+# name `prefill_kv`, not the dotted `tools.headless.prefill_kv`. Declaring only
+# the dotted form matches nothing, which is how a real caller stays invisible.
+GATES["RUNTIME_DELTANET_STATE_REUSE"]["symbols"] = [
+    {"module": "tools.headless.prefill_kv", "symbol": "session_state_bytes"},
+    {"module": "prefill_kv", "symbol": "session_state_bytes"},
+] + list(GATES["RUNTIME_DELTANET_STATE_REUSE"].get("symbols") or [])
+GATES["RUNTIME_DELTANET_STATE_REUSE"]["modules"] = sorted(
+    {"tools.headless.prefill_kv", "prefill_kv"}
+    | set(GATES["RUNTIME_DELTANET_STATE_REUSE"].get("modules") or [])
+)
+
+
+# ---------------------------------------------------------------------------
+# The declaration sweep. Twelve gates named no symbol, so no call could ever
+# match them however many production callers existed -- the same defect that
+# hid VMCP's organs, the lattice probes and DeltaNet state reuse.
+#
+# Declaring a symbol CANNOT fabricate wiring: the auditor still has to find a
+# real non-test call of it. A gate with no caller stays SCAFFOLDED. This only
+# lets it look, which it previously could not do at all.
+#
+# Symbols chosen to match each gate's DEFINING PROPERTY, not to be convenient.
+# FLASH_ACCEPTED_TPS_GE_50 is deliberately absent: its acceptance span is a
+# shared default cited by six gates, so its criterion is undefined, and it is a
+# physical throughput claim that must never read BUILT on STATIC evidence.
+_DECLARATION_SWEEP: dict[str, tuple[tuple[str, str], ...]] = {
+    # Representation of HCLI truth, per roadmap section 10. Declaring where a
+    # capability lives is NOT implementing it; that campaign still owns the code.
+    "RUNTIME_NATIVE_PREFILL": (("hcli.prefill_profile", "bucket_profile"),),
+    "RUNTIME_PREFILL_PHYSICAL_FRONTIER": (("hcli.prefill_profile", "attribute"),),
+    "RUNTIME_COMPLETE_TOKEN_PROFILE": (("hcli.prefill_profile", "attribute"),),
+    # RUNTIME_CONTEXT_NATIVE is DELIBERATELY ABSENT. Declaring
+    # native_profile_limits / per_seq_context made it read WIRED on a caller
+    # inside hcli/context_budget.py itself -- the module calling its own helper,
+    # which the self-call guard correctly refused. No external caller exists, so
+    # the honest status is SCAFFOLDED and it stays there until one does.
+    "RUNTIME_DECODE_PROTECTED": (("hcli.hawking_native", "config_for_model_path"),),
+    "STABLE_PREFIX_CONTEXT_ALIGNMENT": (
+        ("hcli.prefix_probe", "longest_common_prefix"),
+        ("hcli.prefix_probe", "divergence_reason"),
+    ),
+    # NOT run_vmcp_gate: that is VMCP_RECEIPT_LAW's symbol, and declaring it here
+    # gave two distinct capabilities a byte-identical caller list -- one call
+    # cannot be evidence for two different gates. causality_payload is the
+    # integration-specific symbol.
+    #
+    # THE CLAIM THAT IT IS "called from hcli/agentos/recovery.py:413" WAS FALSE.
+    # recovery.py DEFINES ITS OWN causality_payload at :367 and calls that local
+    # one at :413 and :543; it never imports vmcp_gate at all. Two sibling modules
+    # hold same-named functions and one's call sites were credited to the other.
+    # vmcp_gate.causality_payload is called only at vmcp_gate.py:251 and :336,
+    # which are self-calls the guard correctly refuses. So this gate is genuinely
+    # NOT wired and the declaration stays put: the fix for a missing caller is a
+    # caller, never a re-pointed symbol.
+    "VMCP_AGENTOS_INTEGRATION": (("hcli.agentos.vmcp_gate", "causality_payload"),),
+    # hcli/vmcp/__init__.py is a NINE-LINE MARKER PACKAGE whose whole purpose is to
+    # stop a parallel hcli.vmcp.* implementation from growing. It defines neither
+    # symbol. inspect_vmcp and call_vmcp live in hcli/vmcp_adapter.py at :155 and
+    # :200 -- already named in this gate's own modules tuple -- and are really
+    # called from hcli/connectivity.py:133 and hcli/tool_registry.py:1433,:1442.
+    # The gate read SCAFFOLDED because the catalog looked in the marker.
+    "VMCP_COMPACT_SURFACE": (
+        ("hcli.vmcp_adapter", "inspect_vmcp"),
+        ("hcli.vmcp_adapter", "call_vmcp"),
+    ),
+    "HCLI_CONTEXT_INVALIDATION": (("hcli.goal", "assert_evidence_fresh"),),
+    # This lane's own.
+    "FLASH_SOURCE_VERIFIED": (("tools.flash_organ_census", "census"),),
+    "FLASH_FULL_NOETIC_EXECUTABLE": (
+        ("tools.odyssey.noetic_compiler", "chain_status"),
+        ("tools.odyssey.noetic_compiler", "family_inventory"),
+    ),
+}
+
+for _gate, _syms in _DECLARATION_SWEEP.items():
+    if _gate not in GATES:
+        continue
+    GATES[_gate]["symbols"] = [
+        {"module": _m, "symbol": _y} for _m, _y in _syms
+    ] + list(GATES[_gate].get("symbols") or [])
+    GATES[_gate]["modules"] = sorted(
+        {_m for _m, _ in _syms}
+        # sibling spelling too: sys.path-manipulating modules import the bare name
+        | {_m.rsplit(".", 1)[-1] for _m, _ in _syms}
+        | set(GATES[_gate].get("modules") or [])
+    )
+
+
+# The FLASH gates' acceptance spans pointed at a SHARED DEFAULT section cited by
+# six gates, so their criteria read as undefined and Claude refused to wire them.
+# That was the wrong conclusion from the right evidence: the span was wrong, not
+# the criterion. Both exist and are quotable.
+#
+#   1607  FLASH HARD GATE: promotion requires BOTH complete-system EBPW <= 1.00
+#         AND accepted capability-preserving TPS >= 50. "These are research
+#         targets, not current claims."
+#   1640  the promotion ladder, 50/70/90/120 TPS against 1.00/0.85/0.75/0.60 EBPW
+#   1610  SOURCE / MANIFEST -> EXACT TENSOR CENSUS -> ORGAN GRAPH
+#
+# Pointing a gate at the obligation that already governs it is not inventing a
+# criterion. FLASH_ACCEPTED_TPS_GE_50 still must never read BUILT without a
+# MEASURED TPS: the roadmap says in the same breath that these are targets.
+for _gate, _start, _end in (
+    ("FLASH_ACCEPTED_TPS_GE_50", 1607, 1645),
+    ("FLASH_SOURCE_VERIFIED", 1610, 1634),
+    ("FLASH_FULL_NOETIC_EXECUTABLE", 1610, 1634),
+):
+    GATES[_gate]["acceptance_span"] = {"start_line": _start, "end_line": _end}
+
+
+# With a real criterion, FLASH_SOURCE_VERIFIED can be declared honestly: its
+# obligation IS the tensor census, and tools/flash_organ_census.census performs it.
+# `main` as well as `census`: tools/acceptance/flash/run_gates.py:186 calls
+# flash_organ_census.main and names itself "catalog producer for this gate", so
+# main is the entry point the acceptance actually reaches. Declaring only the
+# inner function matched nothing -- the same wrong-symbol mistake as the sibling
+# import, one level down.
+# ONLY main. `census` is not a top-level function in flash_organ_census -- an
+# earlier AST sweep listed it from a nested scope, and declaring a symbol that
+# does not exist is a claim the module cannot honour.
+GATES["FLASH_SOURCE_VERIFIED"]["symbols"] = [
+    {"module": "tools.flash_organ_census", "symbol": "main"},
+] + list(GATES["FLASH_SOURCE_VERIFIED"].get("symbols") or [])
+
+# FLASH_ACCEPTED_TPS_GE_50 is NOT a software connection and must never be filed
+# as one. Its criterion is a MEASURED accepted capability-preserving TPS >= 50,
+# and the roadmap says in the same sentence that this is a research target, not a
+# current claim. No amount of wiring satisfies it; a protected measurement does.
+GATES["FLASH_ACCEPTED_TPS_GE_50"]["software_blocker"] = (
+    "requires a MEASURED accepted capability-preserving TPS >= 50 under the "
+    "protected window, against complete-system EBPW <= 1.00 (roadmap 13, line "
+    "1607). The roadmap calls these research targets, not current claims. This "
+    "gate is satisfied by a measurement, never by a call site, and must never "
+    "read BUILT on STATIC evidence. Wake: PROTECTED_TPS_CAMPAIGN_MEASURED."
+)
+
+
+# The circuit-breaker and retry-classification gates could never satisfy the
+# call-site rule as catalogued, and neither could be fixed by loosening it.
+#
+#   AGENTOS_CIRCUIT_BREAKER named hcli.scheduler.NO_PROGRESS, which is an
+#   EXCEPTION CLASS (scheduler.py:55). An exception is raised and caught, never
+#   called, so no call site can exist however thoroughly the capability is
+#   exercised -- and tools/acceptance/agentos/harness.py:443 does exercise it,
+#   catching a real NO_PROGRESS after three same-fingerprint completions.
+#
+#   AGENTOS_RETRY_CLASSIFIED named _record_fingerprint, which raises it
+#   (scheduler.py:424). That IS the implementing symbol, but it is only ever
+#   called from complete() inside scheduler.py itself -- a self-call, which the
+#   wiring guard correctly refuses as evidence.
+#
+# Both capabilities are entered through the public Scheduler.complete, which the
+# harness calls three times to trip the breaker. Naming it points each gate at
+# the callable through which its capability is actually reached. The original
+# symbols are KEPT so the evidence still shows what implements the behaviour.
+for _gate in ("AGENTOS_CIRCUIT_BREAKER", "AGENTOS_RETRY_CLASSIFIED"):
+    GATES[_gate]["symbols"] = list(GATES[_gate].get("symbols") or []) + [
+        {"module": "hcli.scheduler", "symbol": "complete"},
+    ]

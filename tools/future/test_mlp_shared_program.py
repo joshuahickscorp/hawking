@@ -362,3 +362,41 @@ def test_economics_projection_uses_the_shared_scorer():
         status=msp.OPEN,
     )
     assert free_scored["net_bytes"] < scored["net_bytes"]
+
+
+def test_function_error_matches_the_two_metrics_it_fused():
+    """Sharing the upcast must not move either metric.
+
+    function_error called mean_l2_ratio and relative_frobenius back to back on
+    the same pair; each cast pred and target to float64 and each formed
+    pred - target, so four large temporaries existed where two suffice. The
+    fused form must return EXACTLY what the standalone functions return -- these
+    are contract metrics, and a value that drifts under a refactor can no longer
+    be compared against a sealed receipt.
+    """
+    import numpy as np
+
+    from tools.future import mlp_shared_program as m
+
+    rng = np.random.default_rng(9)
+    for shape in ((512, 301), (97, 64), (33, 8)):
+        pred = rng.standard_normal(shape, dtype=np.float32)
+        target = rng.standard_normal(shape, dtype=np.float32)
+
+        got = m.function_error(pred, target, split="hold", report_as="held_out")
+
+        assert got["held_out_relative_l2"] == m._r(m.mean_l2_ratio(pred, target)), shape
+        assert got["held_out_relative_fro_diagnostic"] == m._r(
+            m.relative_frobenius(pred, target)
+        ), shape
+
+    # The refusal must survive the fusion: a shape mismatch still refuses.
+    import pytest
+
+    with pytest.raises(m.SharedProgramRefuse):
+        m.function_error(
+            rng.standard_normal((4, 5), dtype=np.float32),
+            rng.standard_normal((4, 6), dtype=np.float32),
+            split="hold",
+            report_as="held_out",
+        )

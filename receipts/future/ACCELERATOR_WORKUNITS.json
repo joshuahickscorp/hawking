@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T09:15:51Z",
+  "recorded_at": "2026-09-02T22:53:53Z",
   "recorded_by": "tools/future/accelerator_workunits.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -403,7 +403,7 @@
   "REPROFILE_AFTER_WIN"
  ],
  "handoff": {
-  "loaded_from": "/Users/scammermike/.claude-grok/worktrees/s4-tools-future-under-10s-20260902-045214/CODEX_ACCELERATOR_HANDOFF.json",
+  "loaded_from": "/Users/scammermike/Downloads/hawking/CODEX_ACCELERATOR_HANDOFF.json",
   "path": "CODEX_ACCELERATOR_HANDOFF.json",
   "present": true
  },
@@ -1057,7 +1057,7 @@
   "tools/future/contamination.py \u2014 QUIESCENT/LIGHT/HEAVY/UNKNOWN; assert_promotable",
   "tools/future/protected_window.py \u2014 eviction envelope; acquire_lease raises",
   "tools/future/qwen27_profile_schema.py \u2014 REQUIRED_METRICS columns FIND_TALLEST ranks",
-  "CODEX_ACCELERATOR_HANDOFF.json \u2014 training trace loaded from /Users/scammermike/.claude-grok/worktrees/s4-tools-future-under-10s-20260902-045214/CODEX_ACCELERATOR_HANDOFF.json",
+  "CODEX_ACCELERATOR_HANDOFF.json \u2014 training trace loaded from /Users/scammermike/Downloads/hawking/CODEX_ACCELERATOR_HANDOFF.json",
   "receipts/future/ROOF_ANCHOR.json \u2014 named roof 497.4 with activation; unstated-roof scar",
   "receipts/future/ADDRESSING_ATTRIBUTION.json \u2014 703-to-337 chain; 703.5 never loads the activation",
   "receipts/future/MLP_STREAM_COUNT.json \u2014 stream count REFUTED at fixed bytes/thread; merging HURTS",
@@ -1075,7 +1075,7 @@
   "workunit": "one CPU_ANALYSIS unit for next_species / emit_loop; GPU species are emitted SLEEPING and are not a work source on this host"
  },
  "schema": "hawking.future.accelerator_workunits.v1",
- "seal_sha256": "b5f8a8e316c3e171a32c41a9c5979cefbe052a36a8812cb4f983351fde514945",
+ "seal_sha256": "dac43cd7ca55bd33e7ca9988788fbacc55dc0215464ec4f1a6ab63a7babeec1e",
  "species": {
   "ATTACK_LAW": {
    "evidence_class": "STATIC_ONLY",

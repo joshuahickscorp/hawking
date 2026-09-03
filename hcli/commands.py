@@ -462,7 +462,7 @@ def _status_roots(
 
     A session opened in a scratch directory must still see the machine, so
     this also tries `resolve_workspace()` -- the existing HCLI_WORKSPACE /
-    `.hcli`-`.haider` ancestor walk-up, already built for exactly this and
+    `.hcli` ancestor walk-up, already built for exactly this and
     already wired into mission commands, but never into /status until now.
     ``repo_root`` overrides the live `find_repo_root()` call; production
     never passes it, tests use it to exercise the stamped-install fallback

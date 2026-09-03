@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T09:26:15Z",
+  "recorded_at": "2026-09-02T18:55:23Z",
   "recorded_by": "tools/future/ane_preboard.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -47,30 +47,102 @@
  ],
  "geometry": {
   "flash": {
-   "atlas_shapes": {},
+   "atlas_shapes": {
+    "flash_expert": [
+     1,
+     640
+    ],
+    "flash_hidden": [
+     1,
+     2560
+    ],
+    "flash_qkv": [
+     1,
+     12288
+    ],
+    "flash_router": [
+     1,
+     512
+    ],
+    "flash_state": [
+     1,
+     48,
+     128,
+     128
+    ],
+    "flash_top_k": [
+     1,
+     10
+    ]
+   },
    "citations": {
     "architecture": "receipts/future/evidence/QWEN38_ACCELERATOR_TRANSFER_MAP.json model_b.architecture",
     "atlas": "receipts/future/evidence/APPLE_ANE_ATLAS.json",
     "census": "receipts/future/evidence/FLASH_ORGAN_CENSUS.json",
     "layer46": "receipts/future/evidence/FLASH_LAYER46_DISPATCH_LEDGER.json"
    },
-   "conv_shapes": null,
-   "expert_gate_up_shape": null,
-   "expert_intermediate": null,
-   "experts_per_token": null,
-   "families": [],
-   "full_attention_layers": null,
-   "hidden_size": null,
-   "hyperconnection_base": null,
-   "layer_count": null,
-   "linear_attention_layers": null,
+   "conv_shapes": [
+    [
+     1,
+     12288,
+     4
+    ],
+    [
+     1,
+     12288,
+     1
+    ]
+   ],
+   "expert_gate_up_shape": [
+    512,
+    1280,
+    2560
+   ],
+   "expert_intermediate": 640,
+   "experts_per_token": 10,
+   "families": [
+    "routed_experts",
+    "ngram_embedding",
+    "linear_attention_hyperconnection",
+    "embedding_lm_head",
+    "full_attention",
+    "mlp_hyperconnection",
+    "shared_expert",
+    "other",
+    "norm"
+   ],
+   "full_attention_layers": 12,
+   "hidden_size": 2560,
+   "hyperconnection_base": [
+    4,
+    2560
+   ],
+   "layer_count": 48,
+   "linear_attention_layers": 36,
    "model": "Qwen/Qwen3.8-Flash-Next",
-   "n_experts": null,
-   "ngram_size": null,
-   "sdpa_shapes": null,
+   "n_experts": 512,
+   "ngram_size": 3,
+   "sdpa_shapes": [
+    [
+     1,
+     2560
+    ],
+    [
+     1,
+     24,
+     1,
+     256
+    ],
+    [
+     1,
+     2,
+     1,
+     256
+    ]
+   ],
    "source": "Flash-Next Qwen4-Exp geometry (census + atlas + transfer map + layer-46 ledger)",
-   "tensor_count": null,
-   "vocab_size": null
+   "tensor_count": 1658,
+   "vocab_size": 248320
   },
   "qwen27": {
    "citations": {
@@ -79,23 +151,142 @@
    },
    "head_counts_status": "UNKNOWN_NOT_IN_CENSUS_OR_BUDGET",
    "head_dim": null,
-   "hidden_size": null,
-   "intermediate_size": null,
-   "kernels": [],
-   "layers": null,
-   "layers_derived_from_mlp_dispatches": null,
+   "hidden_size": 5120,
+   "intermediate_size": 17408,
+   "kernels": [
+    {
+     "dispatches_per_token": 192,
+     "kernel": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+     "roles": [
+      "language_model.model.layers.N.mlp.gate_proj.weight",
+      "language_model.model.layers.N.mlp.up_proj.weight",
+      "language_model.model.layers.N.mlp.down_proj.weight"
+     ]
+    },
+    {
+     "dispatches_per_token": 209,
+     "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+     "roles": [
+      "language_model.model.layers.N.linear_attn.in_proj_qkvz.weight",
+      "language_model.model.layers.N.linear_attn.in_proj_ba.weight",
+      "language_model.model.layers.N.linear_attn.out_proj.weight",
+      "language_model.model.layers.N.self_attn.q_proj.weight",
+      "language_model.model.layers.N.self_attn.k_proj.weight",
+      "language_model.model.layers.N.self_attn.v_proj.weight",
+      "language_model.model.layers.N.self_attn.o_proj.weight",
+      "language_model.lm_head.weight"
+     ]
+    },
+    {
+     "dispatches_per_token": 48,
+     "kernel": "qwen38_qkvz_rearrange_conv_l2_f32",
+     "roles": [
+      "language_model.model.layers.N.linear_attn.conv1d.weight"
+     ]
+    },
+    {
+     "dispatches_per_token": 129,
+     "kernel": "qwen80_residual_rmsnorm_tg",
+     "roles": [
+      "language_model.model.layers.N.input_layernorm.weight",
+      "language_model.model.layers.N.post_attention_layernorm.weight",
+      "language_model.model.norm.weight"
+     ]
+    },
+    {
+     "dispatches_per_token": 16,
+     "kernel": "qwen38_gqa_qk_norm_rope_cache_tg",
+     "roles": [
+      "language_model.model.layers.N.self_attn.q_norm.weight",
+      "language_model.model.layers.N.self_attn.k_norm.weight"
+     ]
+    },
+    {
+     "dispatches_per_token": 48,
+     "kernel": "qwen80_deltanet_gated_rmsnorm_tg",
+     "roles": [
+      "language_model.model.layers.N.linear_attn.norm.weight"
+     ]
+    },
+    {
+     "dispatches_per_token": 48,
+     "kernel": "qwen80_ba_to_decay_beta_f32",
+     "roles": [
+      "language_model.model.layers.N.linear_attn.A_log",
+      "language_model.model.layers.N.linear_attn.dt_bias"
+     ]
+    },
+    {
+     "dispatches_per_token": 1,
+     "kernel": "qwen_uniform_q4_embedding_lookup",
+     "roles": [
+      "language_model.model.embed_tokens.weight"
+     ]
+    },
+    {
+     "dispatches_per_token": 16,
+     "kernel": "qwen38_attention_apply_sigmoid_gate",
+     "roles": []
+    },
+    {
+     "dispatches_per_token": 128,
+     "kernel": "qwen_next_add_residual",
+     "roles": []
+    },
+    {
+     "dispatches_per_token": 64,
+     "kernel": "gk_swiglu_f32",
+     "roles": []
+    },
+    {
+     "dispatches_per_token": 48,
+     "kernel": "qwen38_gated_delta_decode_vi_simd",
+     "roles": []
+    },
+    {
+     "dispatches_per_token": 16,
+     "kernel": "mha_decode_f32",
+     "roles": []
+    },
+    {
+     "dispatches_per_token": 1,
+     "kernel": "sample_argmax_f32",
+     "roles": []
+    }
+   ],
+   "layers": 64,
+   "layers_derived_from_mlp_dispatches": 64,
    "mlp_weight_shapes": {
     "citation": "identities.model.hidden_size/intermediate_size in receipts/future/evidence/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json; standard SwiGLU projection layout, not a measured runtime shape",
-    "down_proj": null,
-    "gate_proj": null,
-    "up_proj": null
+    "down_proj": [
+     5120,
+     17408
+    ],
+    "gate_proj": [
+     17408,
+     5120
+    ],
+    "up_proj": [
+     17408,
+     5120
+    ]
    },
    "model": "qwen3.8-27b-sealed-3.14",
    "n_heads": null,
    "n_kv_heads": null,
-   "organs": [],
+   "organs": [
+    "representation_access",
+    "qkv_and_projection",
+    "attention",
+    "deltanet_and_recurrent_state",
+    "mlp",
+    "lm_head_and_sampling",
+    "dispatch_encode",
+    "command_wait_and_synchronization",
+    "host_ceremony"
+   ],
    "source": "Qwen27 token-ns budget organs/kernels + dispatch-ledger identities.model",
-   "vocab_size": null
+   "vocab_size": 248320
   }
  },
  "graph_corpus": [
@@ -132,7 +323,18 @@
    },
    "public_api": "Core ML MLProgram",
    "shapes": {
-    "atlas_conv": null
+    "atlas_conv": [
+     [
+      1,
+      12288,
+      4
+     ],
+     [
+      1,
+      12288,
+      1
+     ]
+    ]
    },
    "source": "receipts/future/evidence/APPLE_ANE_ATLAS.json"
   },
@@ -171,9 +373,14 @@
    "shapes": {
     "hidden": [
      1,
-     null
+     2560
     ],
-    "state": null
+    "state": [
+     1,
+     48,
+     128,
+     128
+    ]
    },
    "source": "receipts/future/evidence/APPLE_ANE_ATLAS.json"
   },
@@ -212,7 +419,7 @@
    "shapes": {
     "activation": [
      1,
-     null
+     2560
     ]
    },
    "source": "receipts/future/evidence/APPLE_ANE_ATLAS.json"
@@ -252,7 +459,7 @@
    "shapes": {
     "activation": [
      1,
-     null
+     2560
     ]
    },
    "source": "receipts/future/evidence/APPLE_ANE_ATLAS.json"
@@ -292,7 +499,7 @@
    "shapes": {
     "activation": [
      1,
-     null
+     2560
     ]
    },
    "source": "receipts/future/evidence/APPLE_ANE_ATLAS.json"
@@ -332,7 +539,7 @@
    "shapes": {
     "activation": [
      1,
-     null
+     2560
     ]
    },
    "source": "receipts/future/evidence/APPLE_ANE_ATLAS.json"
@@ -372,13 +579,17 @@
    "shapes": {
     "activation": [
      1,
-     null
+     2560
     ],
     "expert_activation": [
      1,
-     null
+     640
     ],
-    "weight": null
+    "weight": [
+     512,
+     1280,
+     2560
+    ]
    },
    "source": "receipts/future/evidence/FLASH_ORGAN_CENSUS.json"
   },
@@ -417,13 +628,16 @@
    "shapes": {
     "expert": [
      1,
-     null
+     640
     ],
     "hidden": [
      1,
-     null
+     2560
     ],
-    "qkv": null
+    "qkv": [
+     1,
+     12288
+    ]
    },
    "source": "receipts/future/evidence/APPLE_ANE_ATLAS.json"
   },
@@ -460,10 +674,13 @@
    },
    "public_api": "Core ML MLProgram",
    "shapes": {
-    "activation": null,
+    "activation": [
+     4,
+     2560
+    ],
     "hidden": [
      1,
-     null
+     2560
     ]
    },
    "source": "receipts/future/evidence/FLASH_LAYER46_DISPATCH_LEDGER.json"
@@ -503,9 +720,12 @@
    "shapes": {
     "activation": [
      1,
-     null
+     2560
     ],
-    "qkv": null
+    "qkv": [
+     1,
+     12288
+    ]
    },
    "source": "receipts/future/evidence/APPLE_ANE_ATLAS.json"
   },
@@ -542,8 +762,14 @@
    },
    "public_api": "Core ML MLProgram",
    "shapes": {
-    "router": null,
-    "top_k": null
+    "router": [
+     1,
+     512
+    ],
+    "top_k": [
+     1,
+     10
+    ]
    },
    "source": "receipts/future/evidence/APPLE_ANE_ATLAS.json"
   },
@@ -580,8 +806,14 @@
    },
    "public_api": "Core ML MLProgram",
    "shapes": {
-    "router": null,
-    "top_k": null
+    "router": [
+     1,
+     512
+    ],
+    "top_k": [
+     1,
+     10
+    ]
    },
    "source": "receipts/future/evidence/APPLE_ANE_ATLAS.json"
   },
@@ -618,10 +850,16 @@
    },
    "public_api": "Core ML MLProgram",
    "shapes": {
-    "k": null,
-    "n_experts": null,
-    "router": null,
-    "top_k": null
+    "k": 10,
+    "n_experts": 512,
+    "router": [
+     1,
+     512
+    ],
+    "top_k": [
+     1,
+     10
+    ]
    },
    "source": "receipts/future/evidence/APPLE_ANE_ATLAS.json + receipts/future/evidence/QWEN38_ACCELERATOR_TRANSFER_MAP.json model_b.architecture"
   },
@@ -658,10 +896,27 @@
    },
    "public_api": "Core ML MLProgram",
    "shapes": {
-    "atlas_sdpa": null,
+    "atlas_sdpa": [
+     [
+      1,
+      2560
+     ],
+     [
+      1,
+      24,
+      1,
+      256
+     ],
+     [
+      1,
+      2,
+      1,
+      256
+     ]
+    ],
     "hidden": [
      1,
-     null
+     2560
     ]
    },
    "source": "receipts/future/evidence/APPLE_ANE_ATLAS.json"
@@ -701,7 +956,7 @@
    "shapes": {
     "activation": [
      1,
-     null
+     2560
     ]
    },
    "source": "receipts/future/evidence/APPLE_ANE_ATLAS.json"
@@ -741,7 +996,7 @@
    "shapes": {
     "activation": [
      1,
-     null
+     5120
     ],
     "kv": "UNKNOWN",
     "q": "UNKNOWN"
@@ -783,7 +1038,7 @@
    "shapes": {
     "activation": [
      1,
-     null
+     5120
     ],
     "state": "UNKNOWN"
    },
@@ -824,9 +1079,12 @@
    "shapes": {
     "activation": [
      1,
-     null
+     5120
     ],
-    "weight": null
+    "weight": [
+     248320,
+     5120
+    ]
    },
    "source": "receipts/future/evidence/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json identities.model"
   },
@@ -865,9 +1123,12 @@
    "shapes": {
     "activation": [
      1,
-     null
+     17408
     ],
-    "weight": null
+    "weight": [
+     5120,
+     17408
+    ]
    },
    "source": "receipts/future/evidence/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json identities.model"
   },
@@ -906,9 +1167,12 @@
    "shapes": {
     "activation": [
      1,
-     null
+     5120
     ],
-    "weight": null
+    "weight": [
+     17408,
+     5120
+    ]
    },
    "source": "receipts/future/evidence/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json identities.model"
   },
@@ -947,7 +1211,7 @@
    "shapes": {
     "activation": [
      1,
-     null
+     17408
     ]
    },
    "source": "receipts/future/evidence/QWEN27_TOKEN_NS_BUDGET.json"
@@ -987,9 +1251,12 @@
    "shapes": {
     "activation": [
      1,
-     null
+     5120
     ],
-    "weight": null
+    "weight": [
+     17408,
+     5120
+    ]
    },
    "source": "receipts/future/evidence/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json identities.model"
   },
@@ -1028,7 +1295,7 @@
    "shapes": {
     "activation": [
      1,
-     null
+     5120
     ]
    },
    "source": "receipts/future/evidence/QWEN27_TOKEN_NS_BUDGET.json"
@@ -1068,7 +1335,7 @@
    "shapes": {
     "activation": [
      1,
-     null
+     5120
     ],
     "head_dim": null,
     "n_heads": null,
@@ -1104,11 +1371,24 @@
    "api": "MLComputePlan.load(contentsOf:configuration:)",
    "compile_api": "not_needed",
    "compiled_model": null,
-   "coreml_deployment_target": null,
+   "coreml_deployment_target": "macOS 14.4+ for MLComputePlan",
    "fixture_citation": "receipts/future/evidence/APPLE_ANE_DEVICE_PROFILE.json mlcomputeplan; this is a fixture, not a live MLComputePlan.load result from this process",
    "is_fixture": true,
    "model_structure": "MLProgram",
-   "operations": [],
+   "operations": [
+    {
+     "estimated_cost_weight": null,
+     "function": "main",
+     "index": 0,
+     "operator": "ios16.mul",
+     "placement_status": "PLANNED",
+     "preferred": "CPU",
+     "supported": [
+      "CPU",
+      "NEURAL_ENGINE"
+     ]
+    }
+   ],
    "public_api_only": true,
    "status": "PLANNED"
   },
@@ -1122,9 +1402,22 @@
    "is_fixture": true,
    "is_live": false,
    "model_structure": "MLProgram",
-   "n_operations": 0,
+   "n_operations": 1,
    "ok": true,
-   "operations": [],
+   "operations": [
+    {
+     "estimated_cost_weight": null,
+     "function": "main",
+     "index": 0,
+     "operator": "ios16.mul",
+     "placement_status": "PLANNED",
+     "preferred": "CPU",
+     "supported": [
+      "CPU",
+      "NEURAL_ENGINE"
+     ]
+    }
+   ],
    "status": "PLANNED"
   },
   "public_api": "MLComputePlan.load(contentsOf:configuration:)"
@@ -1136,8 +1429,12 @@
    "lifetime": "sequence",
    "model": "flash-next",
    "organ": "linear_attention_hyperconnection",
-   "shape": null,
-   "shape_status": "UNKNOWN",
+   "shape": [
+    1,
+    12288,
+    4
+   ],
+   "shape_status": "RECOVERED",
    "source": "receipts/future/evidence/APPLE_ANE_ATLAS.json + receipts/future/evidence/FLASH_LAYER46_DISPATCH_LEDGER.json",
    "tests": "short-conv state that layer-46 names qwen_next_qkv_split_rearrange_conv_l2; whether MLState can hold the conv window or Core ML rewrites it to CPU"
   },
@@ -1147,8 +1444,13 @@
    "lifetime": "sequence",
    "model": "flash-next",
    "organ": "linear_attention_hyperconnection",
-   "shape": null,
-   "shape_status": "UNKNOWN",
+   "shape": [
+    1,
+    48,
+    128,
+    128
+   ],
+   "shape_status": "RECOVERED",
    "source": "receipts/future/evidence/APPLE_ANE_ATLAS.json",
    "tests": "read-modify-write of the 128x128 per-layer DeltaNet state across decode steps without a host round-trip; MLState persistence vs re-feeding the tensor as an input each prediction"
   },
@@ -1159,8 +1461,25 @@
    "model": "flash-next",
    "organ": "full_attention",
    "shape": {
-    "atlas_sdpa": null,
-    "n_full_attn_layers": null
+    "atlas_sdpa": [
+     [
+      1,
+      2560
+     ],
+     [
+      1,
+      24,
+      1,
+      256
+     ],
+     [
+      1,
+      2,
+      1,
+      256
+     ]
+    ],
+    "n_full_attn_layers": 12
    },
    "shape_status": "RECOVERED_ATLAS_KV_HEADS_SEQ_GROWS",
    "source": "receipts/future/evidence/APPLE_ANE_ATLAS.json + receipts/future/evidence/QWEN38_ACCELERATOR_TRANSFER_MAP.json model_b.architecture",
@@ -1172,7 +1491,10 @@
    "lifetime": "layer_and_sequence",
    "model": "flash-next",
    "organ": "linear_attention_hyperconnection",
-   "shape": null,
+   "shape": [
+    4,
+    2560
+   ],
    "shape_status": "RECOVERED",
    "source": "receipts/future/evidence/FLASH_LAYER46_DISPATCH_LEDGER.json",
    "tests": "HC base streams [4,2560] from layer-46; whether they belong in MLState or stay activations. The case records the shape and the question."
@@ -1288,73 +1610,73 @@
  "recovered_implementation": [
   {
    "in_git_head": true,
-   "on_disk": false,
+   "on_disk": true,
    "path": "receipts/future/evidence/APPLE_ANE_ATLAS.json",
    "role": "pinned Codex ANE graph atlas (compile NOT_RUN, placement NOT_MEASURED)",
-   "source": "GIT_HEAD"
+   "source": "ON_DISK"
   },
   {
    "in_git_head": true,
-   "on_disk": false,
+   "on_disk": true,
    "path": "receipts/future/evidence/APPLE_ANE_DEVICE_PROFILE.json",
    "role": "pinned public MLComputePlan serializer; fixture source",
-   "source": "GIT_HEAD"
+   "source": "ON_DISK"
   },
   {
    "in_git_head": true,
-   "on_disk": false,
+   "on_disk": true,
    "path": "receipts/future/evidence/FLASH_ORGAN_CENSUS.json",
    "role": "Flash tensor families and expert gate_up shape [512,1280,2560]",
-   "source": "GIT_HEAD"
+   "source": "ON_DISK"
   },
   {
    "in_git_head": true,
-   "on_disk": false,
+   "on_disk": true,
    "path": "receipts/future/evidence/QWEN27_TOKEN_NS_BUDGET.json",
    "role": "Qwen27 organs, kernels, token-ns slots (all actuals null)",
-   "source": "GIT_HEAD"
+   "source": "ON_DISK"
   },
   {
    "in_git_head": true,
-   "on_disk": false,
+   "on_disk": true,
    "path": "receipts/future/evidence/QWEN27_FPGA_ORGAN_MAP.json",
    "role": "unknown",
-   "source": "GIT_HEAD"
+   "source": "ON_DISK"
   },
   {
    "in_git_head": true,
-   "on_disk": false,
+   "on_disk": true,
    "path": "receipts/future/evidence/FLASH_NEXT_FPGA_ORGAN_MAP.json",
    "role": "unknown",
-   "source": "GIT_HEAD"
+   "source": "ON_DISK"
   },
   {
    "in_git_head": true,
-   "on_disk": false,
+   "on_disk": true,
    "path": "receipts/future/evidence/FLASH_LAYER46_DISPATCH_LEDGER.json",
    "role": "Flash layer-46 dispatch ledger; HC base/[4,2560] and DeltaNet/conv names",
-   "source": "GIT_HEAD"
+   "source": "ON_DISK"
   },
   {
    "in_git_head": true,
-   "on_disk": false,
+   "on_disk": true,
    "path": "receipts/future/evidence/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json",
    "role": "Qwen27 identities.model hidden/intermediate/layers/vocab",
-   "source": "GIT_HEAD"
+   "source": "ON_DISK"
   },
   {
    "in_git_head": true,
-   "on_disk": false,
+   "on_disk": true,
    "path": "receipts/future/evidence/QWEN38_ACCELERATOR_TRANSFER_MAP.json",
    "role": "Flash Qwen4-Exp architecture (layers, experts, hidden, vocab)",
-   "source": "GIT_HEAD"
+   "source": "ON_DISK"
   },
   {
    "in_git_head": true,
-   "on_disk": false,
+   "on_disk": true,
    "path": "receipts/future/evidence/HCLI_FPGA_PREBOARD.json",
    "role": "FPGA preboard receipt analog (NOT an ANE receipt)",
-   "source": "GIT_HEAD"
+   "source": "ON_DISK"
   },
   {
    "in_git_head": true,
@@ -1365,45 +1687,45 @@
   },
   {
    "in_git_head": true,
-   "on_disk": false,
+   "on_disk": true,
    "path": "hcli/ane_provider.py",
    "role": "named HCLI ANE provider seam (contract asked; disk/git answer below)",
-   "source": "GIT_HEAD"
+   "source": "ON_DISK"
   },
   {
    "in_git_head": true,
-   "on_disk": false,
+   "on_disk": true,
    "path": "hcli/test_ane_provider.py",
    "role": "named HCLI ANE provider seam (contract asked; disk/git answer below)",
-   "source": "GIT_HEAD"
+   "source": "ON_DISK"
   },
   {
    "in_git_head": true,
-   "on_disk": false,
+   "on_disk": true,
    "path": "hcli/providers.py",
    "role": "HCLI provider/backend seams; no ANE provider class",
-   "source": "GIT_HEAD"
+   "source": "ON_DISK"
   },
   {
    "in_git_head": true,
-   "on_disk": false,
+   "on_disk": true,
    "path": "hcli/backends.py",
    "role": "HCLI provider/backend seams; no ANE provider class",
-   "source": "GIT_HEAD"
+   "source": "ON_DISK"
   },
   {
    "in_git_head": true,
-   "on_disk": false,
+   "on_disk": true,
    "path": "hcli/agentos/preboard.py",
    "role": "existing FPGA/compiler preboard analog; not an ANE backend",
-   "source": "GIT_HEAD"
+   "source": "ON_DISK"
   },
   {
    "in_git_head": true,
-   "on_disk": false,
+   "on_disk": true,
    "path": "hcli/agentos/fpga_preboard.py",
    "role": "existing FPGA/compiler preboard analog; not an ANE backend",
-   "source": "GIT_HEAD"
+   "source": "ON_DISK"
   },
   {
    "in_git_head": true,
@@ -1442,7 +1764,7 @@
   }
  ],
  "schema": "hawking.future.ane_preboard.v1",
- "seal_sha256": "3c1850987115f9c0dffab622ea57884e3dfd989a8d3d18aaef2f33d6fd407288",
+ "seal_sha256": "7b11b14c66e026637b5e15771c5167946a132d334ef6ad474d2f9b861042711c",
  "test_matrix": [
   {
    "compute_units": "CPU_AND_NEURAL_ENGINE",
