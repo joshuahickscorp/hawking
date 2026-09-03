@@ -117,7 +117,7 @@ workspace:
 ```python
 from hcli import delegate
 delegate.run("the hcli test suite passes on python 3.12",
-             workspace="/Users/you/Downloads/hawking")   # cwd for verifiers
+             workspace="<repo root>")   # cwd for verifiers
 ```
 
 Phrase CLI goals with **absolute** paths if you want them settleable.

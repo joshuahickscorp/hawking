@@ -365,7 +365,7 @@ saving                                            0.775 ms/token
 
 ## 5. Rust integration points
 
-All paths relative to `/Users/scammermike/Downloads/hawking/crates/hawking-core/`.
+All paths relative to `crates/hawking-core/`.
 
 **`src/model/qwen80_device_expert_table.rs`** (the whole codec surface):
 

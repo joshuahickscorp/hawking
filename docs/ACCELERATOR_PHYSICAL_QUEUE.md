@@ -9,7 +9,7 @@ Build or validate it through HCLI:
 
 ```console
 python3 -m hcli agentos accelerator-physical-queue \
-  --repo-root /Users/scammermike/Downloads/hawking \
+  --repo-root . \
   --emit receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json
 
 python3 -m hcli agentos accelerator-physical-queue \
@@ -377,7 +377,7 @@ The companion Qwen27 token budget is emitted through HCLI:
 
 ```console
 python3 -m hcli agentos qwen27-token-budget \
-  --repo-root /Users/scammermike/Downloads/hawking \
+  --repo-root . \
   --emit receipts/headless/QWEN27_TOKEN_NS_BUDGET.json
 ```
 
