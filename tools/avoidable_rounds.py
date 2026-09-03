@@ -70,6 +70,14 @@ LEDGER = [
      None, None, "CLASS",
      "tool_registry.py is 2341 lines; the clamp shows 169; the target is at "
      "582. Unbounded: no number of reads of the head ever reaches line 582"),
+    ("D13", "fs.search refused the file the truncation notice points it at",
+     8, 1, "CLASS",
+     "the notice says 'use fs.search to find the line a symbol is on, then "
+     "fs.read with start_line' and fs.search raised NotADirectoryError on that "
+     "file. The model reconstructed _read_file's signature from memory, emitted "
+     "an anchor missing '])' and ']' that matched zero places with old_text == "
+     "new_text, then answered instead of mutating. 8 calls, 1160s. "
+     "Self-inflicted: the instruction described a workflow the tool lacked"),
     ("D9", "one tool observation could occupy the entire input window",
      None, None, "CLASS",
      "24,000 chars against a 5,632-token usable input: one fs.read was 1.4x "
