@@ -158,3 +158,41 @@ def test_build_state_refuses_to_clobber_a_foreign_schema():
     assert state.read_bytes() == before, "build_state.py overwrote a v3 ledger"
     assert proc.returncode != 0
     assert "refusing to overwrite" in (proc.stderr + proc.stdout)
+
+
+def test_the_lineage_copy_reproduces_every_stored_criterion():
+    """The strongest available proof that the substitution is sound.
+
+    A matching sha256 says the bytes are the same file. This says something
+    harder: re-quoting each receipt's OWN line span out of the resolved roadmap
+    reproduces the criterion text that receipt stored when it could still read
+    ~/Downloads/H-ROADMAP.md. Line numbering, span semantics and content all
+    have to agree, through the real quoting path, at the real spans.
+
+    Receipts prepend a one-line summary header to the span, so the span must be
+    CONTAINED in the stored quote rather than equal to it.
+    """
+    lines = lineage.roadmap_lines()
+    checked = 0
+    for path in sorted((REPO / "receipts" / "acceptance").glob("*.json")):
+        try:
+            doc = json.loads(path.read_text())
+        except (OSError, ValueError):
+            continue
+        if not isinstance(doc, dict):
+            continue
+        src = doc.get("criterion_source")
+        quoted = doc.get("criterion_quoted")
+        if not (isinstance(src, dict) and isinstance(quoted, str) and quoted.strip()):
+            continue
+        start, end = src.get("start_line"), src.get("end_line")
+        if not isinstance(start, int) or not isinstance(end, int):
+            continue
+        span = "\n".join(lines[start - 1:end]).strip()
+        assert span, f"{path.stem}: span {start}-{end} is empty in the resolved roadmap"
+        assert span in quoted, (
+            f"{path.stem}: re-quoting {start}-{end} from {lineage.roadmap_path().name} "
+            "does not reproduce the criterion this receipt stored"
+        )
+        checked += 1
+    assert checked >= 8, f"only {checked} receipts carry a re-checkable criterion span"
