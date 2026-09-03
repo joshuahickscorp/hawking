@@ -24,6 +24,7 @@ from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, Tupl
 from .backends import (
     CompletionResult,
     SchemaViolation,
+    extract_json_object,
     StructuredOutputContract,
     StructuredOutputExhausted,
     backend_supports_response_format,
@@ -824,10 +825,26 @@ def _python_syntax_violation(content: str) -> Optional[str]:
     verifier owns them and this is only about giving the model back the one
     error it can act on.
     """
-    try:
-        parsed = json.loads(content)
-    except (TypeError, ValueError):
-        return None
+    # Parse the reply the way the ENGINE parses it. A bare json.loads returned
+    # None for any reply the model wrapped in a markdown fence or prefaced with
+    # a sentence -- both of which the engine's own extractor tolerates and then
+    # acts on. So the preflight silently did nothing on exactly those replies,
+    # and every correction built on it -- the anchor retry, the syntax retry,
+    # the quoted line -- was skipped without a trace.
+    #
+    # Measured: a 343-character anchor correct but for ONE character,
+    # 'len(raw}' where 'len(raw)}' belongs, reached _apply_operations and
+    # killed the unit with attempts=2 and errors=[] -- the receipt recording
+    # that the contract had found nothing to complain about.
+    #
+    # Two parsers disagreeing about what a reply says is one parser too many.
+    if isinstance(content, dict):
+        parsed = content
+    else:
+        try:
+            parsed = extract_json_object(content)
+        except Exception:
+            return None
     if not isinstance(parsed, dict):
         return None
     # ONLY a reply that is actually applying its operations may be judged on
