@@ -249,7 +249,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T18:56:55Z",
+  "recorded_at": "2026-09-03T05:18:45Z",
   "recorded_by": "tools/future/hbm_doctor.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -814,7 +814,7 @@
   "Flash candidates joined from science organ_graph + EBPW + FPGA map without inventing latency.",
   "bytes_atlas consumed as byte ranking, not forked and not re-emitted as a TPS claim."
  ],
- "head": "dfaeaab9b8dc9131d676b04a18a576bef3d0f073",
+ "head": "d587cdf9f0d6bc23e1efed03474914ce4ef34e6e",
  "headline": {
   "budget_bytes": 8589934592,
   "candidate_count": 14,
@@ -903,14 +903,21 @@
  },
  "negative_findings": [
   "FLASH_TOKEN_NS_BUDGET.organs.*.actual_gpu_ns_per_token is null for every organ (WAITING_FOR_NATIVE_EXECUTION). mac_latency_ns therefore cannot be filled from a receipt.",
-  "FLASH_NEXT_FPGA_ORGAN_MAP.hbm_genome.capacity_bytes is null (TARGET_UNSELECTED). 8 GiB is the workunit default, not a measured board capacity.",
+  "FLASH_NEXT_FPGA_ORGAN_MAP.hbm_genome.capacity_bytes is null (TARGET_UNSELECTED). The budget now comes from the U50DD device profile with its DS965 citation rather than a bare workunit default, so it is SOURCED -- but it is still vendor literature and not a measured board capacity.",
   "No receipt states reuse_count, transport_cost_class, projected_fpga_latency as LOW/MEDIUM/HIGH, or dependency_criticality for Flash organs. Those absences are not filled with defaults.",
   "Census grain is whole-organ. FPGA P0 mapping is selected expert subsets and n-gram lookup rows. Per-expert / hot-row byte vectors are not in the census and are not invented."
  ],
  "objective": {
   "budget_bytes": 8589934592,
   "budget_bytes_default": 8589934592,
-  "budget_source": "workunit default 8 GiB (8 * 1024**3). FPGA hbm_genome.capacity_bytes is null.",
+  "budget_source": {
+   "citation": "DS965 (v1.2-era Table 1) U50DD ES3 column (A-U50DD-P00G-ES3-G) HBM2 total capacity 8 GB",
+   "document_class": "AMD_DATASHEET_DS965",
+   "hardware_measured": false,
+   "pinned": true,
+   "value": 8589934592,
+   "via": "tools/future/hwir.py u50_family_profile('u50dd')"
+  },
   "knapsack": "exact 0/1 over decidable items, maximising cited_weighted_latency subject to sum(bytes) <= budget_bytes",
   "name": "marginal_complete_token_critical_path_reduction_per_resident_byte",
   "score_rule": "cited_weighted_latency / bytes, where cited_weighted_latency = mac_latency_ns * access_probability * reuse_count * dependency_criticality. mac_latency_ns is copied from a real receipt or is None; it is never estimated. projected_fpga_latency is a CLASS and is never converted into nanoseconds. The product is a ranking key, not an FPGA measurement.",
@@ -980,7 +987,7 @@
   }
  ],
  "schema": "hawking.future.hbm_doctor.v1",
- "seal_sha256": "5c5d251522ea603bf336096a67a128e30faf24f9a6c3f809b1c99d674519579e",
+ "seal_sha256": "0fed0f093abb6022798d836329a73aab237c07c320dfa9ae65eef2912bc4715e",
  "solution": {
   "budget_bytes": 8589934592,
   "counts": {

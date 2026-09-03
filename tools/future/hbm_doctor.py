@@ -29,7 +29,44 @@ from typing import Any
 
 SCHEMA = "hawking.future.hbm_doctor.v1"
 RECEIPT = "HBM_DOCTOR.json"
-DEFAULT_BUDGET_BYTES = 8 * 1024 ** 3  # 8 GiB; configurable. Not read off a board.
+def _u50dd_hbm_capacity() -> tuple[int, dict[str, Any]]:
+    """The budget, with its citation, instead of an unattributed 8 GiB literal.
+
+    The number was right and its provenance was missing: an identical, CITED
+    value has been sitting in tools/future/hwir.py's U50DD profile all along
+    (DS965 Table 1, AMD_DATASHEET_DS965, pinned, hardware_measured=false). A
+    budget nobody can trace is the shape this module refuses everywhere else,
+    so it should not be the one input it takes on faith.
+
+    Still vendor literature, never a measurement. If the profile becomes
+    unreadable the literal stands, flagged as unsourced rather than silently
+    identical.
+    """
+    try:
+        from tools.future import hwir
+        profile = hwir.u50_family_profile("u50dd").to_dict()
+        prov = (profile.get("field_provenance") or {}).get("hbm_capacity_bytes")
+        cap = int(profile["hbm_capacity_bytes"])
+        if isinstance(prov, dict) and prov.get("pinned"):
+            return cap, {
+                "value": cap,
+                "pinned": True,
+                "citation": prov.get("citation"),
+                "document_class": prov.get("document_class"),
+                "hardware_measured": False,
+                "via": "tools/future/hwir.py u50_family_profile('u50dd')",
+            }
+        return cap, {"value": cap, "pinned": False,
+                     "note": "device profile carries the value with no provenance"}
+    except Exception as exc:                      # pragma: no cover - defensive
+        return 8 * 1024 ** 3, {
+            "value": 8 * 1024 ** 3, "pinned": False,
+            "note": f"device profile unreadable ({type(exc).__name__}); "
+                    "falling back to an UNSOURCED 8 GiB literal",
+        }
+
+
+DEFAULT_BUDGET_BYTES, DEFAULT_BUDGET_PROVENANCE = _u50dd_hbm_capacity()
 
 FPGA_LATENCY_CLASSES = frozenset({"LOW", "MEDIUM", "HIGH"})
 TRANSPORT_CLASSES = frozenset({"HOST_DRAM", "PCIE", "DISK", "ON_CHIP", "HBM"})
@@ -880,8 +917,10 @@ def build(budget_bytes: int = DEFAULT_BUDGET_BYTES) -> Path:
         if cap is None:
             negative.append(
                 "FLASH_NEXT_FPGA_ORGAN_MAP.hbm_genome.capacity_bytes is null "
-                "(TARGET_UNSELECTED). 8 GiB is the workunit default, not a "
-                "measured board capacity."
+                "(TARGET_UNSELECTED). The budget now comes from the U50DD device "
+                "profile with its DS965 citation rather than a bare workunit "
+                "default, so it is SOURCED -- but it is still vendor literature "
+                "and not a measured board capacity."
             )
     negative.append(
         "No receipt states reuse_count, transport_cost_class, "
@@ -1030,9 +1069,7 @@ def build(budget_bytes: int = DEFAULT_BUDGET_BYTES) -> Path:
             ),
             "budget_bytes_default": DEFAULT_BUDGET_BYTES,
             "budget_bytes": budget_bytes,
-            "budget_source": (
-                "workunit default 8 GiB (8 * 1024**3). FPGA hbm_genome.capacity_bytes is null."
-            ),
+            "budget_source": DEFAULT_BUDGET_PROVENANCE,
         },
         "head": git("rev-parse", "HEAD"),
         "branch": git("rev-parse", "--abbrev-ref", "HEAD"),
