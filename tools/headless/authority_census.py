@@ -219,23 +219,6 @@ CATALOG: List[CatalogRow] = [
         ),
         "callers": ["crates/hide-backend/src/services_goal.rs"],
     },
-    {
-        "id": "haider-v0.haider.py",
-        "concept": "Goal",
-        "path": "tools/hcli/bootstrap/snapshots/haider.py",
-        "needle": "haider — HCLI-v0 bootstrap",
-        "symbol": "haider.py (HCLI-v0 loop)",
-        "classification": "obsolete_implementation",
-        "plane": "haider-v0",
-        "two_real": False,
-        "survives": False,
-        "role": "Gate-zero bootstrap: one llama-server, one scoped edit, one receipt.",
-        "move": (
-            "Leave in tree (historical bootstrap). Do not route live missions "
-            "through it. Live control plane is hcli/."
-        ),
-        "callers": [],
-    },
     # ------------------------------------------------------------------ mission
     {
         "id": "hcli.mission.Mission",
@@ -442,29 +425,6 @@ CATALOG: List[CatalogRow] = [
         ),
         "callers": ["crates/hide-kernel/src/machine.rs"],
     },
-    {
-        "id": "hide-backend.HaiderDag",
-        "concept": "DAG",
-        "path": "crates/hide-backend/src/haider/dag.rs",
-        "needle": "pub struct HaiderDag {",
-        "symbol": "HaiderDag / HaiderNode",
-        "classification": "canonical_authority",
-        "plane": "hide-rs",
-        "two_real": True,
-        "survives": True,
-        "role": (
-            "Rust HAIDER parallel task DAG (disjoint write scopes + MemGate). "
-            "Lives under a fossil namespace; it is not aider."
-        ),
-        "move": (
-            "Keep. Do not rename the crate path in this campaign (haider is a "
-            "fossil namespace, not architecture). Do not merge with HCLI-py DAG."
-        ),
-        "callers": [
-            "crates/hide-backend/src/haider/lanes.rs",
-            "crates/hide-backend/src/haider/mod.rs",
-        ],
-    },
     # ------------------------------------------------------------------ scheduler
     {
         "id": "hcli.scheduler.Scheduler",
@@ -490,27 +450,6 @@ CATALOG: List[CatalogRow] = [
             "hcli/controller.py",
         ],
         "evidence": "receipts/headless/HCLI_SCHEDULER_QUALITY.json",
-    },
-    {
-        "id": "hcli.scheduler._remaining_depth",
-        "concept": "scheduler",
-        "path": "hcli/scheduler.py",
-        "needle": "def _remaining_depth(",
-        "symbol": "_remaining_depth",
-        "classification": "obsolete_implementation",
-        "plane": "hcli-py",
-        "two_real": False,
-        "survives": False,
-        "role": (
-            "Hop-count helper. Dispatch does not call it (ready_at FIFO). "
-            "LOG and MAX_REPAIR_* are redefined after this helper — merge artifact."
-        ),
-        "move": (
-            "Remove on a later source lane together with the duplicated LOG = "
-            "and MAX_REPAIR_* assignments. Do not use it as a scheduling key."
-        ),
-        "callers": [],
-        "evidence": "tools/headless/hcli_scheduler_quality.py",
     },
     {
         "id": "headless.remaining_depth",
@@ -581,20 +520,6 @@ CATALOG: List[CatalogRow] = [
         "role": "HIDE backend agent/job scheduler (policy + metrics + checkpoint refs).",
         "move": "Keep in hide-backend. Not HCLI-py Scheduler.",
         "callers": ["crates/hide-backend/src/agent_scheduler.rs"],
-    },
-    {
-        "id": "hide-backend.LaneScheduler",
-        "concept": "scheduler",
-        "path": "crates/hide-backend/src/haider/lanes.rs",
-        "needle": "pub struct LaneScheduler {",
-        "symbol": "LaneScheduler",
-        "classification": "canonical_authority",
-        "plane": "hide-rs",
-        "two_real": False,
-        "survives": True,
-        "role": "MemGate-controlled HAIDER lane scheduler (Architect/Implementer/Adversary).",
-        "move": "Keep with HaiderDag. Not a second HCLI-py scheduler.",
-        "callers": ["crates/hide-backend/src/haider/lanes.rs"],
     },
     # ------------------------------------------------------------------ checkpoint
     {
@@ -1003,20 +928,6 @@ CATALOG: List[CatalogRow] = [
         "move": "Keep. Different object from RuntimeBackend.",
         "callers": ["crates/hawking-orch/src/registry.rs"],
     },
-    {
-        "id": "haider-v0.allocate_port",
-        "concept": "backend registry",
-        "path": "tools/hcli/bootstrap/snapshots/haider.py",
-        "needle": "def allocate_port() -> int:",
-        "symbol": "allocate_port (HCLI-v0)",
-        "classification": "obsolete_implementation",
-        "plane": "haider-v0",
-        "two_real": False,
-        "survives": False,
-        "role": "Duplicate of backends.allocate_port in the v0 bootstrap.",
-        "move": "Leave the v0 file. Live callers use hcli/backends.py:allocate_port.",
-        "callers": [],
-    },
     # ------------------------------------------------------------------ context budget
     {
         "id": "hcli.context_budget.ContextBudget",
@@ -1079,24 +990,6 @@ CATALOG: List[CatalogRow] = [
             "crates/hawking-context/src/lib.rs",
             "crates/hawking-context/src/compiler.rs",
         ],
-    },
-    {
-        "id": "hide-backend.haider.ContextBudget",
-        "concept": "context budget",
-        "path": "crates/hide-backend/src/haider/lanes.rs",
-        "needle": "pub struct ContextBudget {",
-        "symbol": "haider::lanes::ContextBudget",
-        "classification": "compatibility_wrapper",
-        "plane": "hide-rs",
-        "two_real": False,
-        "survives": True,
-        "role": "Per-lane max_tokens newtype used by EvidencePacket. Not the HCLI authority.",
-        "move": (
-            "Keep as a field on EvidencePacket. Verified caller: "
-            "crates/hide-backend/src/haider/lanes.rs EvidencePacket. "
-            "Do not give it resolve/preflight logic."
-        ),
-        "callers": ["crates/hide-backend/src/haider/lanes.rs"],
     },
     {
         "id": "hawking-context.ContextCompiler",
@@ -1276,20 +1169,6 @@ CATALOG: List[CatalogRow] = [
             "crates/hide-backend/src/bin/hcli.rs",
         ],
     },
-    {
-        "id": "haider-v0.write_receipt",
-        "concept": "receipt",
-        "path": "tools/hcli/bootstrap/snapshots/haider.py",
-        "needle": "def write_receipt(",
-        "symbol": "haider.py write_receipt",
-        "classification": "obsolete_implementation",
-        "plane": "haider-v0",
-        "two_real": False,
-        "survives": False,
-        "role": "HCLI-v0 receipt writer.",
-        "move": "Leave. Historical .hcli-legacy/receipts filenames are evidence.",
-        "callers": [],
-    },
     # ------------------------------------------------------------------ experiment
     {
         "id": "lab.spec.ExperimentSpec",
@@ -1398,20 +1277,6 @@ CATALOG: List[CatalogRow] = [
         ),
         "callers": ["tools/headless/model_registry.py"],
         "evidence": "receipts/headless/MODEL_REGISTRY.json",
-    },
-    {
-        "id": "hawking-comms.ModelIdentity",
-        "concept": "model identity",
-        "path": "crates/hawking-comms/src/level3.rs",
-        "needle": "pub struct ModelIdentity {",
-        "symbol": "ModelIdentity",
-        "classification": "canonical_authority",
-        "plane": "hawking-orch",
-        "two_real": True,
-        "survives": True,
-        "role": "Wire-level model identity in hawking-comms. Not HCLI path selection and not the promotion registry.",
-        "move": "Keep as the comms identity type. Do not merge with ModelRegistry or MODEL_REGISTRY.json.",
-        "callers": ["crates/hawking-comms/src/level3.rs"],
     },
     {
         "id": "hawking-orch.ModelSpec",
@@ -1709,24 +1574,6 @@ CATALOG: List[CatalogRow] = [
         ],
     },
     {
-        "id": "hcli.scheduler.MAX_REPAIR_shadow",
-        "concept": "retry policy",
-        "path": "hcli/scheduler.py",
-        "needle": "MAX_REPAIR_DEPTH = 3",
-        "symbol": "MAX_REPAIR_DEPTH = 3 (shadows the import)",
-        "classification": "obsolete_implementation",
-        "plane": "hcli-py",
-        "two_real": True,
-        "survives": False,
-        "role": (
-            "Imported from workunit.py at line 20, then reassigned at line 79 "
-            "after a duplicated LOG =. Same values today; a drift would split "
-            "the repair cap between emit_repair and `from scheduler import`."
-        ),
-        "move": "Delete the reassignment; keep a re-export comment only.",
-        "callers": ["hcli/tests/test_scheduler_quality.py"],
-    },
-    {
         "id": "hcli.resources.classify_failure",
         "concept": "retry policy",
         "path": "hcli/resources.py",
@@ -1792,20 +1639,6 @@ CATALOG: List[CatalogRow] = [
             "at this binary without an explicit cutover. TWO real HCLI authorities."
         ),
         "callers": ["crates/hide-backend/src/bin/hcli.rs"],
-    },
-    {
-        "id": "hide-backend.bin.haider_empty",
-        "concept": "mission",
-        "path": "crates/hide-backend/src/bin/haider.rs",
-        "needle": "",
-        "symbol": "bin/haider.rs (empty)",
-        "classification": "historical_implementation",
-        "plane": "hide-rs",
-        "two_real": False,
-        "survives": True,
-        "role": "Empty file (git blob e69de29). Fossil namespace, not a runner.",
-        "move": "Do not delete in this campaign (historical name). Do not implement into it.",
-        "callers": [],
     },
 ]
 
