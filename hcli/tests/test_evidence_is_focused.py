@@ -62,5 +62,43 @@ class TestFocusedExcerpt(unittest.TestCase):
         self.assertIn("def call_thing", out)
 
 
+class TestItIsActuallyWired(unittest.TestCase):
+    """The call site, not the helper.
+
+    Third time in this campaign that a helper was tested while the wiring was
+    not, and each time reverting the wiring left every test green: the prompt
+    sanitizer, the JSON token mask, and now this. The helper is never the thing
+    that failed in production.
+    """
+
+    def test_gather_evidence_calls_the_focuser(self):
+        import inspect
+
+        from hcli.engine import Engine
+
+        src = inspect.getsource(Engine._gather_evidence)
+        self.assertIn("_focused_excerpt(content, prompt", src)
+        self.assertNotIn("content = content[\n                :per_file_limit", src)
+
+    def test_a_deep_definition_survives_the_real_path(self):
+        """End to end through _gather_evidence, on a real repository file."""
+        from pathlib import Path
+
+        from hcli.engine import Engine
+
+        eng = Engine.__new__(Engine)
+        eng.MAX_EVIDENCE_FILES = 16
+        eng.MAX_EVIDENCE_CHARS_PER_FILE = 24000
+        eng.MAX_TOTAL_EVIDENCE_CHARS = 120000
+        eng.root = Path(__file__).resolve().parents[2]
+        eng._context_budget = lambda: type("B", (), {"usable_input_tokens": 5632})()
+        eng._chars_per_token = None
+
+        got = eng._gather_evidence("hcli/resources.py add a docstring to pid_is_alive")
+        self.assertTrue(got, "no evidence gathered at all")
+        content = got[0].get("content") or ""
+        self.assertIn("def pid_is_alive", content)
+
+
 if __name__ == "__main__":
     unittest.main()
