@@ -13,6 +13,7 @@ import sys
 import tempfile
 import time
 import unittest
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
@@ -55,7 +56,12 @@ sys.stdout.flush()
 # GENUINELY stale lock, so the rival is right to break it and the trial
 # measures stale recovery instead of mutual exclusion. Holding makes a second
 # acquire a real double-acquire and nothing else.
-time.sleep(0.4)
+#
+# The hold only has to outlast the RIVAL'S ACQUIRE, which is try_break_stale
+# plus a write -- and, on the advisory path, its deliberate 0.02 s window. That
+# is 20-50 ms, so 0.12 s keeps a 3-6x margin. It was 0.4 s, which sat on the
+# critical path of all 80 trials in both tests for no added safety.
+time.sleep(0.12)
 raise SystemExit(0 if ok else 1)
 """
 
@@ -98,11 +104,29 @@ def _race_once(workspace: str, mode: str) -> tuple[bool, bool]:
 
 
 def _race_distribution(mode: str, trials: int = RACE_TRIALS) -> dict:
+    """`trials` independent races, run CONCURRENTLY.
+
+    Each trial is two children contending for one lock; the trials do not
+    contend with each other, so running them one at a time bought nothing but
+    wall clock. Each racer sleeps 0.4 s to open the window, so 80 sequential
+    trials cost ~38 s per test and the two tests were 77 s of a 433 s suite.
+
+    Every trial gets its OWN workspace. Sequentially they shared one directory
+    and so raced against the previous trial's leftovers; per-trial isolation is
+    what makes them independent draws, which is what the counts already claimed
+    they were.
+    """
     double = single = none = 0
-    with tempfile.TemporaryDirectory() as tmp:
-        _race_once(tmp, mode)
-        for _ in range(trials):
-            w1, w2 = _race_once(tmp, mode)
+
+    def _trial(_index: int):
+        with tempfile.TemporaryDirectory() as trial_tmp:
+            _race_once(trial_tmp, mode)  # warm the path, discard
+            return _race_once(trial_tmp, mode)
+
+    # Bounded: each trial is two processes, so this is 2N live children.
+    workers = max(2, min(12, (os.cpu_count() or 4)))
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        for w1, w2 in pool.map(_trial, range(trials)):
             wins = int(w1) + int(w2)
             if wins == 2:
                 double += 1

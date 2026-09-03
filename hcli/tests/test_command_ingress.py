@@ -35,6 +35,22 @@ class TestLiveIngressUnification(unittest.TestCase):
                 self.assertTrue(callable(meth), cmd)
                 if cmd == "/grok":
                     continue
+                if cmd == "/land":
+                    # WIRING, not execution. `/land` re-verifies and re-runs the
+                    # project's own test command, so asking "is it wired?" ran
+                    # the whole suite inside one test: 300.55 s of a 433 s run,
+                    # 70% of everything, for a dispatch check.
+                    #
+                    # Patching the commit path proves MORE than the old call
+                    # did -- that dispatch actually reaches `_land_commit` --
+                    # without performing a landing.
+                    with patch.object(
+                        CommandHandler, "_land_commit", return_value="LANDED"
+                    ) as landed:
+                        result = ctrl.handle_command(cmd)
+                    self.assertTrue(landed.called, "/land did not reach _land_commit")
+                    self.assertEqual(result, "LANDED")
+                    continue
                 result = ctrl.handle_command(cmd)
                 if cmd == "/exit":
                     self.assertIs(result, False)
