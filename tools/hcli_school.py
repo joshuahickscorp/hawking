@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 import time
@@ -57,6 +58,11 @@ RETRY_HINT = (
 )
 
 TERMINAL = {"completed", "failed", "cancelled", "evacuated"}
+#: Below this, pause rather than write. A long unattended run generates
+#: receipts and logs steadily, and filling the disk would take the daemon down
+#: with it. Pause and say so -- never delete, because everything here is
+#: evidence somebody may want to read.
+MIN_FREE_BYTES = 20 * 1024**3
 MAX_RETRIES = 2
 POLL_S = 20
 #: Bound on INACTIVITY, not on total time. A flat wall cut a mission off at
@@ -186,6 +192,28 @@ def landed(receipt: dict) -> bool:
     )
 
 
+def free_bytes() -> int:
+    try:
+        st = os.statvfs(REPO)
+        return st.f_bavail * st.f_frsize
+    except OSError:
+        return MIN_FREE_BYTES + 1
+
+
+def wait_for_disk() -> None:
+    """Hold while the disk is too full to run safely."""
+    warned = False
+    while free_bytes() < MIN_FREE_BYTES:
+        if not warned:
+            gb = free_bytes() / 1024**3
+            print(f"PAUSED: {gb:.1f} GB free, below the {MIN_FREE_BYTES/1024**3:.0f} GB floor", flush=True)
+            record({"phase": "paused_low_disk", "free_gb": round(gb, 1), "landed": False})
+            warned = True
+        time.sleep(300)
+    if warned:
+        print("resumed: disk recovered", flush=True)
+
+
 def record(row: dict) -> None:
     LOG.parent.mkdir(parents=True, exist_ok=True)
     with LOG.open("a", encoding="utf-8") as handle:
@@ -193,6 +221,7 @@ def record(row: dict) -> None:
 
 
 def cycle(level: int, goal: str, attempt: int) -> dict:
+    wait_for_disk()
     started = time.time()
     previous_mission = str(read_json(STATE).get("id") or "")
     start(goal, level, attempt)
