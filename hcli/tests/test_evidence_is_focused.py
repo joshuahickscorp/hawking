@@ -62,6 +62,61 @@ class TestFocusedExcerpt(unittest.TestCase):
         self.assertIn("def call_thing", out)
 
 
+class TestSymbolTargeting(unittest.TestCase):
+    """`ast` knows where a definition is. Do not guess at it.
+
+    Lexical density chose the block where fs.read is REGISTERED over the
+    `_read_file` that implements it -- both mention the name, only one is the
+    thing being changed. The parser has no such ambiguity, so exact symbol wins
+    and density is the fallback.
+    """
+
+    def _engine(self):
+        from pathlib import Path
+
+        from hcli.engine import Engine
+
+        eng = Engine.__new__(Engine)
+        eng.MAX_EVIDENCE_FILES = 16
+        eng.MAX_EVIDENCE_CHARS_PER_FILE = 24000
+        eng.MAX_TOTAL_EVIDENCE_CHARS = 120000
+        eng.root = Path(__file__).resolve().parents[2]
+        eng._context_budget = lambda: type("B", (), {"usable_input_tokens": 5632})()
+        eng._chars_per_token = None
+        return eng
+
+    def test_the_parser_finds_definitions(self):
+        from hcli.engine import _python_symbol_lines
+
+        src = "x = 1\n\n\ndef f():\n    pass\n\n\nclass C:\n    def m(self):\n        pass\n"
+        got = _python_symbol_lines(src)
+        self.assertEqual(got["f"], 4)
+        self.assertEqual(got["C"], 8)
+        self.assertEqual(got["m"], 9)
+        self.assertEqual(got["x"], 1)
+
+    def test_unparseable_python_is_not_fatal(self):
+        """Negative control: a broken file must fall back, not raise."""
+        from hcli.engine import _python_symbol_lines
+
+        self.assertEqual(_python_symbol_lines("def f(:\n"), {})
+
+    def test_exact_symbol_beats_the_registration_block(self):
+        """The measured miss: `_read_file` at 509 vs its registration at ~1830."""
+        got = self._engine()._gather_evidence(
+            "hcli/tool_registry.py change _read_file to report total_lines"
+        )
+        self.assertTrue(got)
+        self.assertIn("def _read_file", got[0].get("content") or "")
+
+    def test_it_works_on_a_large_file(self):
+        got = self._engine()._gather_evidence(
+            "hcli/engine.py change _resolve_max_tokens"
+        )
+        self.assertTrue(got)
+        self.assertIn("def _resolve_max_tokens", got[0].get("content") or "")
+
+
 class TestItIsActuallyWired(unittest.TestCase):
     """The call site, not the helper.
 
@@ -78,6 +133,8 @@ class TestItIsActuallyWired(unittest.TestCase):
 
         src = inspect.getsource(Engine._gather_evidence)
         self.assertIn("_focused_excerpt(content, prompt", src)
+        focus = inspect.getsource(__import__("hcli.engine", fromlist=["x"])._focused_excerpt)
+        self.assertIn("_python_symbol_lines", focus)
         self.assertNotIn("content = content[\n                :per_file_limit", src)
 
     def test_a_deep_definition_survives_the_real_path(self):

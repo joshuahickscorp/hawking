@@ -662,6 +662,40 @@ class _PhaseHeartbeat:
 
 
 _IDENT_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_]{3,}")
+_SYMBOL_CACHE: Dict[str, Dict[str, int]] = {}
+
+
+def _python_symbol_lines(source: str) -> Dict[str, int]:
+    """Every def/class/assignment in a Python file, mapped to its line.
+
+    Deterministic. `ast` knows exactly where `pid_is_alive` is defined, so
+    spending a 150 s resident round -- or a lexical guess that picked the block
+    where fs.read is REGISTERED over the function implementing it -- to locate
+    it is cognition wasted on a solved problem.
+    """
+    key = _sha256_bytes(source.encode("utf-8", errors="replace"))
+    cached = _SYMBOL_CACHE.get(key)
+    if cached is not None:
+        return cached
+    found: Dict[str, int] = {}
+    try:
+        tree = ast.parse(source)
+    except (SyntaxError, ValueError, RecursionError):
+        _SYMBOL_CACHE[key] = found
+        return found
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            found.setdefault(node.name, node.lineno)
+        elif isinstance(node, ast.Assign):
+            for target in node.targets:
+                if isinstance(target, ast.Name):
+                    found.setdefault(target.id, target.lineno)
+        elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+            found.setdefault(node.target.id, node.target.lineno)
+    if len(_SYMBOL_CACHE) > 64:
+        _SYMBOL_CACHE.clear()
+    _SYMBOL_CACHE[key] = found
+    return found
 _DEF_RE = re.compile(r"\s*(?:def|class|fn|pub fn)\s")
 
 
@@ -685,8 +719,17 @@ def _focused_excerpt(content: str, prompt: str, limit: int, path: str) -> str:
     if not wanted or not lines:
         return content[:limit]
 
+    # A DEFINITION the parser found beats every lexical guess. Exact symbol
+    # first; density is the fallback, not the authority.
+    anchor_line: Optional[int] = None
+    if path.endswith(".py"):
+        symbols = _python_symbol_lines(content)
+        named = [(symbols[w], w) for w in wanted if w in symbols]
+        if named:
+            anchor_line = min(named)[0] - 1
+
     hits = [i for i, line in enumerate(lines) if any(w in line for w in wanted)]
-    if not hits:
+    if anchor_line is None and not hits:
         return content[:limit]
 
     # A DEFINITION outweighs a mention. Density alone chose the block where
@@ -698,7 +741,7 @@ def _focused_excerpt(content: str, prompt: str, limit: int, path: str) -> str:
         near = sum(1 for j in hits if abs(j - i) <= 60)
         return (1 if defines else 0, near)
 
-    best = max(hits, key=score)
+    best = anchor_line if anchor_line is not None else max(hits, key=score)
 
     # Grow outward from the chosen line, and NEVER trim with a head slice
     # afterwards: expansion is symmetric, so `[:limit]` cuts the tail and can
