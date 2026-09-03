@@ -8,10 +8,10 @@ Nothing here is complete because a file exists: a field with no evidence prints 
 ## Status census
 
     VERIFIED_INTEGRATED      23
-    SCAFFOLDED               20
+    SCAFFOLDED               18
+    VERIFIED_BUILT           14
     BLOCKED_EVIDENCE         13
     BLOCKED_HARDWARE         13
-    VERIFIED_BUILT           12
     ABSENT                   1
     UNREACHABLE              1
 
@@ -22,9 +22,9 @@ design, not by neglect: simulated is not measured.
 ## Evidence coverage across all gates
 
     defining property available     82 / 83
-    real (non-test) caller          36 / 83
-    any verifier                    57 / 83
-    receipt cited                   12 / 83
+    real (non-test) caller          38 / 83
+    any verifier                    61 / 83
+    receipt cited                   13 / 83
 
 ## A. CONTROL / HCLI / AGENTOS
 
@@ -166,7 +166,7 @@ design, not by neglect: simulated is not measured.
     defining property   `BACKEND_UNAVAILABLE`
     implementation      hcli/backends.py, hcli/providers.py, hcli/engine.py (+1 more)
     real caller         hcli/mission.py:1504, hcli/runtime.py:520, hcli/runtime.py:879 (+2 more)
-    verifier            hcli/test_constrained_decoding.py:40, hcli/test_constrained_decoding.py:50, hcli/test_context_memory.py:8 (+67 more)
+    verifier            hcli/test_constrained_decoding.py:40, hcli/test_constrained_decoding.py:50, hcli/test_context_memory.py:8 (+69 more)
     negative control    hcli/test_context_reduction.py, hcli/test_goal_source_compile.py
     receipt             absent
     evidence level      STATIC
@@ -178,8 +178,8 @@ design, not by neglect: simulated is not measured.
     STATUS              VERIFIED_INTEGRATED
     defining property   **Meaning:** One context-budget authority drives root and worker admission.
     implementation      hcli/context_budget.py, hcli/engine.py, hcli/context_budget.py:476
-    real caller         hcli/backends.py:1320, hcli/config.py:131, hcli/engine.py:1989 (+4 more)
-    verifier            hcli/test_constrained_decoding.py:50, hcli/test_context_memory.py:8, hcli/test_context_reduction.py:16 (+72 more)
+    real caller         hcli/backends.py:1338, hcli/config.py:131, hcli/engine.py:1989 (+4 more)
+    verifier            hcli/test_constrained_decoding.py:50, hcli/test_context_memory.py:8, hcli/test_context_reduction.py:16 (+73 more)
     negative control    hcli/test_context_reduction.py, hcli/test_goal_source_compile.py
     receipt             absent
     evidence level      STATIC
@@ -361,7 +361,7 @@ design, not by neglect: simulated is not measured.
 
 ## C. NATIVE RUNTIME / APPLE ACCELERATOR
 
-11 capabilities. SCAFFOLDED=8, VERIFIED_INTEGRATED=2, VERIFIED_BUILT=1
+11 capabilities. SCAFFOLDED=7, VERIFIED_BUILT=2, VERIFIED_INTEGRATED=2
 
 ### QWEN27_PROTECTED_BASELINE
 
@@ -443,16 +443,16 @@ design, not by neglect: simulated is not measured.
 
 ### RUNTIME_DELTANET_STATE_REUSE
 
-    STATUS              SCAFFOLDED
+    STATUS              VERIFIED_BUILT
     defining property   **Mission:** Find the smallest capability-preserving executable function, not merely the smallest file.
-    implementation      tools/headless/prefill_kv.py
-    real caller         absent — no non-test call site
-    verifier            tools/headless/test_prefill_kv.py:15
-    negative control    absent — no cited test proves it can fail
+    implementation      tools/headless/prefill_kv.py, tools/headless/prefill_kv.py:239
+    real caller         tools/headless/prefill_kv.py:253, tools/headless/state_gravity.py:294, tools/headless/state_gravity.py:324 (+1 more)
+    verifier            tools/headless/test_prefill_kv.py:15, tools/headless/test_prefill_kv.py:49, tools/headless/test_prefill_kv.py:60 (+5 more)
+    negative control    tools/headless/test_state_gravity.py
     receipt             absent
     evidence level      STATIC
     limitations         acceptance not demonstrated: wired is not accepted: no receipt or measurement demonstrates the gate's own acceptance criterion. A receipt on the topic is not the bar.
-    integration         wired=False accepted=False
+    integration         wired=True accepted=False
 
 ### RUNTIME_NATIVE_PREFILL
 
@@ -508,7 +508,7 @@ design, not by neglect: simulated is not measured.
 
 ## D. SCIENCE MEMORY / MODELLAKE / ODYSSEY
 
-7 capabilities. VERIFIED_INTEGRATED=3, VERIFIED_BUILT=3, SCAFFOLDED=1
+7 capabilities. VERIFIED_BUILT=4, VERIFIED_INTEGRATED=3
 
 ### MODELLAKE_ATOMIC_PROMOTION
 
@@ -551,16 +551,16 @@ design, not by neglect: simulated is not measured.
 
 ### MODELLAKE_LIFECYCLE
 
-    STATUS              SCAFFOLDED
+    STATUS              VERIFIED_BUILT
     defining property   **Mission:** Find the smallest capability-preserving executable function, not merely the smallest file.
     implementation      tools/future/modellake_lifecycle.py, tools/future/modellake_lifecycle.py:39
-    real caller         absent — no non-test call site
-    verifier            absent — no test cites this gate
-    negative control    absent — no cited test proves it can fail
-    receipt             absent
+    real caller         tools/future/odyssey_mission_controller.py:292
+    verifier            tools/future/test_modellake_lifecycle.py:6, tools/future/test_modellake_lifecycle.py:10, tools/future/test_modellake_lifecycle.py:26 (+3 more)
+    negative control    tools/future/test_odyssey_mission_controller.py
+    receipt             receipts/future/MODELLAKE_LIFECYCLE.json
     evidence level      STATIC
     limitations         acceptance not demonstrated: wired is not accepted: no receipt or measurement demonstrates the gate's own acceptance criterion. A receipt on the topic is not the bar.
-    integration         wired=False accepted=False
+    integration         wired=True accepted=False
 
 ### ODYSSEY_III_ADVERSARIAL_META_SCIENCE
 
@@ -1009,8 +1009,8 @@ design, not by neglect: simulated is not measured.
     defining property   digest of canonical sensory/execution state
     implementation      tools/headless/vmcp_lattice_disposition.py, tools/headless/vmcp_lattice_disposition.py:562
     real caller         tools/acceptance/vmcp/gates.py:237
-    verifier            absent — no test cites this gate
-    negative control    absent — no cited test proves it can fail
+    verifier            tools/acceptance/vmcp/test_state_lattice_defining_property.py:110
+    negative control    tools/acceptance/vmcp/test_state_lattice_defining_property.py
     receipt             absent
     evidence level      STATIC
     limitations         none recorded
@@ -1074,8 +1074,8 @@ design, not by neglect: simulated is not measured.
     defining property   digest of canonical sensory/execution state
     implementation      tools/headless/vmcp_lattice_disposition.py, hcli/vmcp_adapter.py
     real caller         tools/acceptance/vmcp/gates.py:240, tools/acceptance/vmcp/gates.py:241, tools/headless/vmcp_lattice_disposition.py:1283 (+1 more)
-    verifier            absent — no test cites this gate
-    negative control    absent — no cited test proves it can fail
+    verifier            tools/acceptance/vmcp/test_state_lattice_defining_property.py:110
+    negative control    tools/acceptance/vmcp/test_state_lattice_defining_property.py
     receipt             receipts/headless/VMCP_LATTICE_DISPOSITION.json
     evidence level      STATIC
     limitations         none recorded
@@ -1100,8 +1100,8 @@ design, not by neglect: simulated is not measured.
     defining property   digest of canonical sensory/execution state
     implementation      tools/headless/vmcp_lattice_disposition.py, tools/headless/vmcp_forgery_canary.py
     real caller         tools/acceptance/vmcp/gates.py:239, tools/headless/vmcp_lattice_disposition.py:1282
-    verifier            absent — no test cites this gate
-    negative control    absent — no cited test proves it can fail
+    verifier            tools/acceptance/vmcp/test_state_lattice_defining_property.py:110
+    negative control    tools/acceptance/vmcp/test_state_lattice_defining_property.py
     receipt             receipts/headless/VMCP_FORGERY_CANARY.json
     evidence level      STATIC
     limitations         none recorded

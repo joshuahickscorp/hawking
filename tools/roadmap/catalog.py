@@ -880,3 +880,20 @@ _PRODUCT_WAKE = (
 for _g in ("HAWKING_PUBLIC_MVP", "REPO_TOPOLOGY_COMPRESSION", "SEMANTIC_COMPRESSION"):
     GATES[_g] = _p(era="V", gene=None, paths=(), modules=(), acc=(478, 505),
                    ext=_PRODUCT_WAKE)
+
+
+# Same defect once more: the gate named no symbol, so its real callers could not
+# be matched. tools/headless/state_gravity.py imports session_state_bytes from
+# prefill_kv and calls it three times; that function accounts the recurrent
+# DeltaNet state and GQA KV bytes a session must hold, which IS the capability.
+# Both spellings: state_gravity.py manipulates sys.path and imports the SIBLING
+# name `prefill_kv`, not the dotted `tools.headless.prefill_kv`. Declaring only
+# the dotted form matches nothing, which is how a real caller stays invisible.
+GATES["RUNTIME_DELTANET_STATE_REUSE"]["symbols"] = [
+    {"module": "tools.headless.prefill_kv", "symbol": "session_state_bytes"},
+    {"module": "prefill_kv", "symbol": "session_state_bytes"},
+] + list(GATES["RUNTIME_DELTANET_STATE_REUSE"].get("symbols") or [])
+GATES["RUNTIME_DELTANET_STATE_REUSE"]["modules"] = sorted(
+    {"tools.headless.prefill_kv", "prefill_kv"}
+    | set(GATES["RUNTIME_DELTANET_STATE_REUSE"].get("modules") or [])
+)

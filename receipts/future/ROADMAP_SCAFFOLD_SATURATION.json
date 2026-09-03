@@ -14,7 +14,7 @@
     "base_commit": "caf83078f",
     "graph": "civilization/CAPABILITY_GRAPH.json",
     "graph_generated_by": "tools/roadmap/auditor.py",
-    "head": "0cc97238a29e003a0b3f3a87826c8ccf6e77f932"
+    "head": "acb487ba815cabc02276fc0c23c1fc76c8f01dbf"
   },
   "externally_blocked": [
     {
@@ -76,9 +76,9 @@
       "BLOCKED_EXTERNAL": 13,
       "BLOCKED_HARDWARE": 13,
       "BUILT": 23,
-      "SCAFFOLDED": 20,
+      "SCAFFOLDED": 18,
       "UNREACHABLE": 1,
-      "WIRED": 12
+      "WIRED": 14
     },
     "gates_total": 83,
     "movable_gates": 57,
@@ -170,19 +170,21 @@
       "HCLI_SELF_OPTIMIZATION_BOOTSTRAP",
       "HCLI_STATUS_PHYSICAL",
       "MODELLAKE_HASH_VERIFIED",
+      "MODELLAKE_LIFECYCLE",
       "ODYSSEY_III_ADVERSARIAL_META_SCIENCE",
       "ODYSSEY_II_TRANSFER",
       "QWEN27_PROTECTED_BASELINE",
+      "RUNTIME_DELTANET_STATE_REUSE",
       "U50_MIXED_APPLE_FPGA_GRAPH",
       "VMCP_PTY_CAPTURE"
     ],
-    "wired_but_not_accepted_count": 13
+    "wired_but_not_accepted_count": 15
   },
   "unreachable": [
     "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE"
   ],
   "work": {
-    "commits": 168,
+    "commits": 178,
     "new_crates": [
       "crates/hawking-index-query/Cargo.toml"
     ],
@@ -249,6 +251,7 @@
       "tools/acceptance/test_lake_acceptance.py",
       "tools/acceptance/vmcp/test_acceptance.py",
       "tools/acceptance/vmcp/test_receipt_law_defining_property.py",
+      "tools/acceptance/vmcp/test_state_lattice_defining_property.py",
       "tools/audit/test_artifact_query.py",
       "tools/audit/test_reachability_triage.py",
       "tools/doctor/test_doctor.py",
@@ -258,6 +261,7 @@
       "tools/future/test_hwir_lowering.py",
       "tools/future/test_hwir_sealed_predictions.py",
       "tools/future/test_law_scar_registry.py",
+      "tools/future/test_modellake_lifecycle.py",
       "tools/future/test_physical_compiler_predict.py",
       "tools/future/test_representation_lab.py",
       "tools/future/test_science_corpus.py",
@@ -346,6 +350,7 @@
       "tools/future/conftest.py",
       "tools/future/experiment_policy.py",
       "tools/future/experiment_receipt.py",
+      "tools/future/modellake_lifecycle.py",
       "tools/future/physical_compiler_predict.py",
       "tools/future/representation_lab.py",
       "tools/future/science_corpus.py",
@@ -410,7 +415,7 @@
       "tools/vmcp/receipt.py",
       "tools/vmcp/tool_doctor.py"
     ],
-    "python_lines_added": 91772,
-    "rust_lines_added": 7572
+    "python_lines_added": 92248,
+    "rust_lines_added": 7936
   }
 }

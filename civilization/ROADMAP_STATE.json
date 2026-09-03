@@ -1,6 +1,6 @@
 {
-  "ACTIVE_NONHARDWARE_BURDEN": 53,
-  "TOTAL_UNRESOLVED_GATES": 67,
+  "ACTIVE_NONHARDWARE_BURDEN": 50,
+  "TOTAL_UNRESOLVED_GATES": 64,
   "active_actions": [
     "AGENTOS_CIRCUIT_BREAKER",
     "AGENTOS_RETRY_CLASSIFIED",
@@ -12,23 +12,18 @@
     "FPGA_PARTITION_SIM",
     "FPGA_PREBOARD_SCHEMAS",
     "HCLI_CONTEXT_INVALIDATION",
-    "MODELLAKE_LIFECYCLE",
     "QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED",
     "QWEN27_RUNTIME_IDENTITY_FROZEN",
     "RUNTIME_COMPLETE_TOKEN_PROFILE",
     "RUNTIME_CONTEXT_NATIVE",
     "RUNTIME_DECODE_PROTECTED",
-    "RUNTIME_DELTANET_STATE_REUSE",
     "RUNTIME_NATIVE_PREFILL",
     "RUNTIME_PREFILL_PHYSICAL_FRONTIER",
     "RUNTIME_PREFIX_STATE_REUSE",
     "STABLE_PREFIX_CONTEXT_ALIGNMENT",
     "VMCP_AGENTOS_INTEGRATION",
     "VMCP_COMPACT_SURFACE",
-    "VMCP_DEEP_DIGEST",
-    "VMCP_RECEIPT_LAW",
-    "VMCP_STATE_LATTICE",
-    "VMCP_TRUTH_LEDGER"
+    "VMCP_RECEIPT_LAW"
   ],
   "archived_items": [
     "docs/roadmap-lineage/H-ROADMAP.superseded-2026-09-02.md"
@@ -282,9 +277,9 @@
     "MODELLAKE_LIFECYCLE": {
       "acceptance_state": "UNRUN",
       "evidence_tier": "STATIC",
-      "implementation_state": "SCAFFOLDED",
-      "integration_state": "ISOLATED",
-      "verification_state": "NONE"
+      "implementation_state": "WIRED",
+      "integration_state": "IN_PRODUCTION_PATH",
+      "verification_state": "TEST_PRESENT"
     },
     "ODYSSEY_III_ADVERSARIAL_META_SCIENCE": {
       "acceptance_state": "BLOCKED",
@@ -359,8 +354,8 @@
     "RUNTIME_DELTANET_STATE_REUSE": {
       "acceptance_state": "UNRUN",
       "evidence_tier": "STATIC",
-      "implementation_state": "SCAFFOLDED",
-      "integration_state": "ISOLATED",
+      "implementation_state": "WIRED",
+      "integration_state": "IN_PRODUCTION_PATH",
       "verification_state": "TEST_PRESENT"
     },
     "RUNTIME_NATIVE_PREFILL": {
@@ -550,7 +545,7 @@
       "evidence_tier": "STATIC",
       "implementation_state": "INTEGRATED",
       "integration_state": "REACHABLE",
-      "verification_state": "NONE"
+      "verification_state": "TEST_PRESENT"
     },
     "VMCP_FILE_CLASSIFIER": {
       "acceptance_state": "PASS",
@@ -585,7 +580,7 @@
       "evidence_tier": "STATIC",
       "implementation_state": "INTEGRATED",
       "integration_state": "IN_PRODUCTION_PATH",
-      "verification_state": "NONE"
+      "verification_state": "TEST_PRESENT"
     },
     "VMCP_TOOL_DOCTOR": {
       "acceptance_state": "PASS",
@@ -599,7 +594,7 @@
       "evidence_tier": "STATIC",
       "implementation_state": "INTEGRATED",
       "integration_state": "IN_PRODUCTION_PATH",
-      "verification_state": "NONE"
+      "verification_state": "TEST_PRESENT"
     },
     "VMCP_VISUAL_DIFF": {
       "acceptance_state": "PASS",
@@ -618,21 +613,18 @@
   },
   "blocker_census": {
     "DEFERRED_PROGRAM": 7,
-    "EXPERIMENTATION_REQUIRED": 12,
+    "EXPERIMENTATION_REQUIRED": 14,
     "EXTERNAL_ENVIRONMENT_REQUIRED": 3,
     "LONG_RUN_EVIDENCE_REQUIRED": 3,
     "PHYSICAL_HARDWARE_REQUIRED": 14,
     "SOFTWARE_BUILD_REQUIRED": 1,
-    "SOFTWARE_CONNECTION_REMAINING": 27
+    "SOFTWARE_CONNECTION_REMAINING": 22
   },
   "built_but_no_verifier": [
     "FLASH_DENSE_VS_NF_AB",
     "QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED",
     "QWEN27_RUNTIME_IDENTITY_FROZEN",
-    "VMCP_DEEP_DIGEST",
-    "VMCP_RECEIPT_LAW",
-    "VMCP_STATE_LATTICE",
-    "VMCP_TRUTH_LEDGER"
+    "VMCP_RECEIPT_LAW"
   ],
   "completed_capabilities": [
     "AGENTOS_CANCELLATION",
@@ -1022,7 +1014,7 @@
     "MODELLAKE_ATOMIC_PROMOTION": "INTEGRATED_TEST_PRESENT",
     "MODELLAKE_HASH_VERIFIED": "WIRED_ACCEPTANCE_BLOCKED",
     "MODELLAKE_IDENTITY_RESOLVED": "INTEGRATED_TEST_PRESENT",
-    "MODELLAKE_LIFECYCLE": "SCAFFOLDED_NO_CALLER",
+    "MODELLAKE_LIFECYCLE": "WIRED_ACCEPTANCE_UNRUN",
     "ODYSSEY_III_ADVERSARIAL_META_SCIENCE": "WIRED_ACCEPTANCE_BLOCKED",
     "ODYSSEY_II_TRANSFER": "WIRED_ACCEPTANCE_BLOCKED",
     "ODYSSEY_I_DISCOVERY": "INTEGRATED_TEST_PRESENT",
@@ -1033,7 +1025,7 @@
     "RUNTIME_COMPLETE_TOKEN_PROFILE": "SCAFFOLDED_NO_CALLER",
     "RUNTIME_CONTEXT_NATIVE": "SCAFFOLDED_NO_CALLER",
     "RUNTIME_DECODE_PROTECTED": "SCAFFOLDED_NO_CALLER",
-    "RUNTIME_DELTANET_STATE_REUSE": "SCAFFOLDED_NO_CALLER",
+    "RUNTIME_DELTANET_STATE_REUSE": "WIRED_ACCEPTANCE_UNRUN",
     "RUNTIME_NATIVE_PREFILL": "SCAFFOLDED_NO_CALLER",
     "RUNTIME_PREFILL_PHYSICAL_FRONTIER": "SCAFFOLDED_NO_CALLER",
     "RUNTIME_PREFIX_STATE_REUSE": "SCAFFOLDED_NO_CALLER",
@@ -1060,14 +1052,14 @@
     "U50_SAFE_COOLING": "BLOCKED_HARDWARE",
     "VMCP_AGENTOS_INTEGRATION": "SCAFFOLDED_NO_CALLER",
     "VMCP_COMPACT_SURFACE": "SCAFFOLDED_NO_CALLER",
-    "VMCP_DEEP_DIGEST": "INTEGRATED_UNVERIFIED",
+    "VMCP_DEEP_DIGEST": "INTEGRATED_TEST_PRESENT",
     "VMCP_FILE_CLASSIFIER": "INTEGRATED_TEST_PRESENT",
     "VMCP_PTY_CAPTURE": "WIRED_ACCEPTANCE_BLOCKED",
     "VMCP_RECEIPT_LAW": "INTEGRATED_UNVERIFIED",
     "VMCP_SPATIAL_VALIDATE": "BLOCKED_EXTERNAL",
-    "VMCP_STATE_LATTICE": "INTEGRATED_UNVERIFIED",
+    "VMCP_STATE_LATTICE": "INTEGRATED_TEST_PRESENT",
     "VMCP_TOOL_DOCTOR": "INTEGRATED_TEST_PRESENT",
-    "VMCP_TRUTH_LEDGER": "INTEGRATED_UNVERIFIED",
+    "VMCP_TRUTH_LEDGER": "INTEGRATED_TEST_PRESENT",
     "VMCP_VISUAL_DIFF": "BLOCKED_EXTERNAL",
     "VMCP_WEB_CAPTURE": "BLOCKED_EXTERNAL"
   },
@@ -1091,9 +1083,11 @@
     "HCLI_SELF_OPTIMIZATION_BOOTSTRAP",
     "HCLI_STATUS_PHYSICAL",
     "MODELLAKE_HASH_VERIFIED",
+    "MODELLAKE_LIFECYCLE",
     "ODYSSEY_III_ADVERSARIAL_META_SCIENCE",
     "ODYSSEY_II_TRANSFER",
     "QWEN27_PROTECTED_BASELINE",
+    "RUNTIME_DELTANET_STATE_REUSE",
     "VMCP_PTY_CAPTURE"
   ],
   "external_environment_required": [
@@ -1101,7 +1095,7 @@
     "VMCP_VISUAL_DIFF",
     "VMCP_WEB_CAPTURE"
   ],
-  "future_work_eliminated_count": 16,
+  "future_work_eliminated_count": 19,
   "generated_from": "civilization/CAPABILITY_GRAPH.json",
   "hardware_required": [
     "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE",
@@ -1215,30 +1209,6 @@
     },
     {
       "actionable_now": true,
-      "blocker_class": "SOFTWARE_CONNECTION_REMAINING",
-      "critical_path": true,
-      "depends_on": [],
-      "estimated_wall": "under an hour (guess)",
-      "gate": "VMCP_STATE_LATTICE",
-      "leverage_score": 13,
-      "missing": "wired but nothing verifies it",
-      "multiplier": true,
-      "owner": "this-lane",
-      "parallel_safe_with": "any gate in a different resource_lane",
-      "reopen_if": "the caller is removed, the verifier is deleted, or the gate's acceptance criterion changes",
-      "resource_lane": "cpu",
-      "stop_condition": "a non-test call site reaches the named symbol AND a test fails when that connection is cut",
-      "unlocks_direct": [
-        "VMCP_DEEP_DIGEST"
-      ],
-      "unlocks_transitive": [
-        "VMCP_DEEP_DIGEST",
-        "VMCP_TRUTH_LEDGER"
-      ],
-      "verifier": "must be written"
-    },
-    {
-      "actionable_now": true,
       "blocker_class": "EXPERIMENTATION_REQUIRED",
       "critical_path": true,
       "depends_on": [
@@ -1261,31 +1231,6 @@
         "ODYSSEY_III_ADVERSARIAL_META_SCIENCE"
       ],
       "verifier": "tools/future/test_capability_stages.py"
-    },
-    {
-      "actionable_now": true,
-      "blocker_class": "SOFTWARE_CONNECTION_REMAINING",
-      "critical_path": true,
-      "depends_on": [
-        "VMCP_STATE_LATTICE"
-      ],
-      "estimated_wall": "under an hour (guess)",
-      "gate": "VMCP_DEEP_DIGEST",
-      "leverage_score": 10,
-      "missing": "wired but nothing verifies it",
-      "multiplier": false,
-      "owner": "this-lane",
-      "parallel_safe_with": "any gate in a different resource_lane",
-      "reopen_if": "the caller is removed, the verifier is deleted, or the gate's acceptance criterion changes",
-      "resource_lane": "cpu",
-      "stop_condition": "a non-test call site reaches the named symbol AND a test fails when that connection is cut",
-      "unlocks_direct": [
-        "VMCP_TRUTH_LEDGER"
-      ],
-      "unlocks_transitive": [
-        "VMCP_TRUTH_LEDGER"
-      ],
-      "verifier": "must be written"
     },
     {
       "actionable_now": true,
@@ -1372,6 +1317,46 @@
       "unlocks_direct": [],
       "unlocks_transitive": [],
       "verifier": "tools/future/test_complete_ebpw.py"
+    },
+    {
+      "actionable_now": true,
+      "blocker_class": "EXPERIMENTATION_REQUIRED",
+      "critical_path": false,
+      "depends_on": [],
+      "estimated_wall": "one run, minutes to hours (guess)",
+      "gate": "MODELLAKE_LIFECYCLE",
+      "leverage_score": 5,
+      "missing": "wired and verified; its acceptance criterion has never been run",
+      "multiplier": false,
+      "owner": "this-lane",
+      "parallel_safe_with": "any gate in a different resource_lane",
+      "reopen_if": "the caller is removed, the verifier is deleted, or the gate's acceptance criterion changes",
+      "resource_lane": "cpu",
+      "stop_condition": "the blocker named above clears: wired and verified; its acceptance criterion has never been run",
+      "unlocks_direct": [],
+      "unlocks_transitive": [],
+      "verifier": "tools/future/test_modellake_lifecycle.py"
+    },
+    {
+      "actionable_now": true,
+      "blocker_class": "EXPERIMENTATION_REQUIRED",
+      "critical_path": false,
+      "depends_on": [
+        "ODYSSEY_II_TRANSFER"
+      ],
+      "estimated_wall": "one run, minutes to hours (guess)",
+      "gate": "ODYSSEY_III_ADVERSARIAL_META_SCIENCE",
+      "leverage_score": 5,
+      "missing": "wired and verified; its acceptance criterion has never been run",
+      "multiplier": false,
+      "owner": "this-lane",
+      "parallel_safe_with": "any gate in a different resource_lane",
+      "reopen_if": "the caller is removed, the verifier is deleted, or the gate's acceptance criterion changes",
+      "resource_lane": "cpu",
+      "stop_condition": "the blocker named above clears: wired and verified; its acceptance criterion has never been run",
+      "unlocks_direct": [],
+      "unlocks_transitive": [],
+      "verifier": "tools/future/test_autonomy_scars.py"
     }
   ],
   "integrated_capabilities": [
@@ -1389,8 +1374,11 @@
     "MODELLAKE_ATOMIC_PROMOTION",
     "MODELLAKE_IDENTITY_RESOLVED",
     "ODYSSEY_I_DISCOVERY",
+    "VMCP_DEEP_DIGEST",
     "VMCP_FILE_CLASSIFIER",
-    "VMCP_TOOL_DOCTOR"
+    "VMCP_STATE_LATTICE",
+    "VMCP_TOOL_DOCTOR",
+    "VMCP_TRUTH_LEDGER"
   ],
   "long_run_required": [
     "HAWKING_PUBLIC_MVP",
@@ -1398,7 +1386,7 @@
     "SEMANTIC_COMPRESSION"
   ],
   "multiplier_edges": [],
-  "net_future_burden": 53,
+  "net_future_burden": 50,
   "next_actions": [
     "AGENTOS_CIRCUIT_BREAKER",
     "AGENTOS_RETRY_CLASSIFIED",
@@ -1982,30 +1970,6 @@
       "verifier": "tools/accelerator/test_fusion_bridge.py"
     },
     {
-      "actionable_now": true,
-      "blocker_class": "SOFTWARE_CONNECTION_REMAINING",
-      "critical_path": true,
-      "depends_on": [],
-      "estimated_wall": "under an hour (guess)",
-      "gate": "VMCP_STATE_LATTICE",
-      "leverage_score": 13,
-      "missing": "wired but nothing verifies it",
-      "multiplier": true,
-      "owner": "this-lane",
-      "parallel_safe_with": "any gate in a different resource_lane",
-      "reopen_if": "the caller is removed, the verifier is deleted, or the gate's acceptance criterion changes",
-      "resource_lane": "cpu",
-      "stop_condition": "a non-test call site reaches the named symbol AND a test fails when that connection is cut",
-      "unlocks_direct": [
-        "VMCP_DEEP_DIGEST"
-      ],
-      "unlocks_transitive": [
-        "VMCP_DEEP_DIGEST",
-        "VMCP_TRUTH_LEDGER"
-      ],
-      "verifier": "must be written"
-    },
-    {
       "actionable_now": false,
       "blocker_class": "SOFTWARE_CONNECTION_REMAINING",
       "critical_path": true,
@@ -2110,31 +2074,6 @@
         "ODYSSEY_III_ADVERSARIAL_META_SCIENCE"
       ],
       "verifier": "tools/future/test_capability_stages.py"
-    },
-    {
-      "actionable_now": true,
-      "blocker_class": "SOFTWARE_CONNECTION_REMAINING",
-      "critical_path": true,
-      "depends_on": [
-        "VMCP_STATE_LATTICE"
-      ],
-      "estimated_wall": "under an hour (guess)",
-      "gate": "VMCP_DEEP_DIGEST",
-      "leverage_score": 10,
-      "missing": "wired but nothing verifies it",
-      "multiplier": false,
-      "owner": "this-lane",
-      "parallel_safe_with": "any gate in a different resource_lane",
-      "reopen_if": "the caller is removed, the verifier is deleted, or the gate's acceptance criterion changes",
-      "resource_lane": "cpu",
-      "stop_condition": "a non-test call site reaches the named symbol AND a test fails when that connection is cut",
-      "unlocks_direct": [
-        "VMCP_TRUTH_LEDGER"
-      ],
-      "unlocks_transitive": [
-        "VMCP_TRUTH_LEDGER"
-      ],
-      "verifier": "must be written"
     },
     {
       "actionable_now": true,
@@ -2396,22 +2335,22 @@
     },
     {
       "actionable_now": true,
-      "blocker_class": "SOFTWARE_CONNECTION_REMAINING",
+      "blocker_class": "EXPERIMENTATION_REQUIRED",
       "critical_path": false,
       "depends_on": [],
-      "estimated_wall": "under an hour (guess)",
+      "estimated_wall": "one run, minutes to hours (guess)",
       "gate": "MODELLAKE_LIFECYCLE",
       "leverage_score": 5,
-      "missing": "no non-test call site reaches this capability",
+      "missing": "wired and verified; its acceptance criterion has never been run",
       "multiplier": false,
       "owner": "this-lane",
       "parallel_safe_with": "any gate in a different resource_lane",
       "reopen_if": "the caller is removed, the verifier is deleted, or the gate's acceptance criterion changes",
       "resource_lane": "cpu",
-      "stop_condition": "a non-test call site reaches the named symbol AND a test fails when that connection is cut",
+      "stop_condition": "the blocker named above clears: wired and verified; its acceptance criterion has never been run",
       "unlocks_direct": [],
       "unlocks_transitive": [],
-      "verifier": "must be written"
+      "verifier": "tools/future/test_modellake_lifecycle.py"
     },
     {
       "actionable_now": true,
@@ -2461,19 +2400,19 @@
     },
     {
       "actionable_now": true,
-      "blocker_class": "SOFTWARE_CONNECTION_REMAINING",
+      "blocker_class": "EXPERIMENTATION_REQUIRED",
       "critical_path": false,
       "depends_on": [],
-      "estimated_wall": "under an hour (guess)",
+      "estimated_wall": "one run, minutes to hours (guess)",
       "gate": "RUNTIME_DELTANET_STATE_REUSE",
       "leverage_score": 5,
-      "missing": "no non-test call site reaches this capability",
+      "missing": "wired and verified; its acceptance criterion has never been run",
       "multiplier": false,
       "owner": "this-lane",
       "parallel_safe_with": "any gate in a different resource_lane",
       "reopen_if": "the caller is removed, the verifier is deleted, or the gate's acceptance criterion changes",
       "resource_lane": "cpu",
-      "stop_condition": "a non-test call site reaches the named symbol AND a test fails when that connection is cut",
+      "stop_condition": "the blocker named above clears: wired and verified; its acceptance criterion has never been run",
       "unlocks_direct": [],
       "unlocks_transitive": [],
       "verifier": "tools/headless/test_prefill_kv.py"
@@ -2572,27 +2511,6 @@
       "unlocks_transitive": [
         "VMCP_AGENTOS_INTEGRATION"
       ],
-      "verifier": "must be written"
-    },
-    {
-      "actionable_now": true,
-      "blocker_class": "SOFTWARE_CONNECTION_REMAINING",
-      "critical_path": false,
-      "depends_on": [
-        "VMCP_DEEP_DIGEST"
-      ],
-      "estimated_wall": "under an hour (guess)",
-      "gate": "VMCP_TRUTH_LEDGER",
-      "leverage_score": 5,
-      "missing": "wired but nothing verifies it",
-      "multiplier": false,
-      "owner": "this-lane",
-      "parallel_safe_with": "any gate in a different resource_lane",
-      "reopen_if": "the caller is removed, the verifier is deleted, or the gate's acceptance criterion changes",
-      "resource_lane": "cpu",
-      "stop_condition": "a non-test call site reaches the named symbol AND a test fails when that connection is cut",
-      "unlocks_direct": [],
-      "unlocks_transitive": [],
       "verifier": "must be written"
     },
     {
@@ -3067,7 +2985,7 @@
   "software_build_required": [
     "AGENTOS_BEHAVIOR_LAB"
   ],
-  "software_connection_remaining_count": 27,
+  "software_connection_remaining_count": 22,
   "subsumed_items": [],
   "unknown_research": [],
   "verifiers": {
@@ -3080,7 +2998,7 @@
     "AGENTOS_REPAIR_BOUNDED": "hcli/test_abort_checkpoint_atomicity.py:21, hcli/test_cognition_unit_concurrency.py:14 (+105 more)",
     "AGENTOS_RESTART_COHERENCE": "hcli/agentos/test_resident_mission_corruption.py:23, hcli/agentos/test_resident_orphan.py:17 (+24 more)",
     "AGENTOS_RETRY_CLASSIFIED": "hcli/test_goal_compile.py:257, hcli/tests/test_core_authorities.py:25 (+11 more)",
-    "BACKEND_FAILURE_ISOLATION": "hcli/test_constrained_decoding.py:40, hcli/test_constrained_decoding.py:50 (+68 more)",
+    "BACKEND_FAILURE_ISOLATION": "hcli/test_constrained_decoding.py:40, hcli/test_constrained_decoding.py:50 (+70 more)",
     "FLASH_COMPLETE_EBPW_LE_1": "tools/future/test_complete_ebpw.py:14, tools/future/test_complete_ebpw.py:23 (+6 more)",
     "FLASH_FIRST_GRAVITY_ORGAN": "hcli/tests/test_agentos_general.py:265, hcli/tests/test_hcli_flash_science.py:14",
     "FLASH_FULL_NOETIC_EXECUTABLE": "hcli/tests/test_hcli_flash_science.py:5, hcli/tests/test_hcli_science_boundaries.py:12 (+3 more)",
@@ -3090,7 +3008,7 @@
     "FPGA_PARTITION_SIM": "hcli/agentos/test_fpga_preboard.py:5, hcli/tests/test_hcli_science_boundaries.py:23 (+2 more)",
     "FPGA_PREBOARD_SCHEMAS": "hcli/agentos/test_fpga_preboard.py:5, hcli/tests/test_hcli_science_boundaries.py:23",
     "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE": "tools/future/test_fusion_sim.py:15",
-    "HCLI_CONTEXT_AUTHORITY_UNIFIED": "hcli/test_constrained_decoding.py:50, hcli/test_context_memory.py:8 (+73 more)",
+    "HCLI_CONTEXT_AUTHORITY_UNIFIED": "hcli/test_constrained_decoding.py:50, hcli/test_context_memory.py:8 (+74 more)",
     "HCLI_CONTEXT_FOCUSED_WORKUNITS": "hcli/test_cognition_unit_concurrency.py:12, hcli/test_goal_compile.py (+47 more)",
     "HCLI_CONTEXT_INVALIDATION": "hcli/test_cognition_unit_concurrency.py:12, hcli/test_context_reduction.py:69 (+31 more)",
     "HCLI_MIXED_MAX": "hcli/test_context_memory.py:7, hcli/test_goal_bank.py:7 (+22 more)",
@@ -3101,6 +3019,7 @@
     "MODELLAKE_ATOMIC_PROMOTION": "hcli/test_acquisition.py:37, tools/odyssey/test_modellake_promote.py:12 (+10 more)",
     "MODELLAKE_HASH_VERIFIED": "hcli/test_acquisition.py:95, tools/odyssey/test_modellake_watch.py:27 (+6 more)",
     "MODELLAKE_IDENTITY_RESOLVED": "tools/acceptance/test_lake_acceptance.py:33, tools/odyssey/test_device_profiles_open.py:14 (+3 more)",
+    "MODELLAKE_LIFECYCLE": "tools/future/test_modellake_lifecycle.py:6, tools/future/test_modellake_lifecycle.py:10 (+4 more)",
     "ODYSSEY_III_ADVERSARIAL_META_SCIENCE": "tools/future/test_autonomy_scars.py:10, tools/future/test_autonomy_scars.py:21 (+14 more)",
     "ODYSSEY_II_TRANSFER": "tools/future/test_capability_stages.py:25, tools/future/test_orchestration.py:179 (+3 more)",
     "ODYSSEY_I_DISCOVERY": "hcli/test_acquisition.py:94, hcli/test_odyssey.py:34",
@@ -3108,7 +3027,7 @@
     "RUNTIME_COMPLETE_TOKEN_PROFILE": "hcli/test_prefix_and_prefill_instruments.py:14",
     "RUNTIME_CONTEXT_NATIVE": "hcli/test_context_reduction.py:69, hcli/test_goal_source_compile.py:82 (+6 more)",
     "RUNTIME_DECODE_PROTECTED": "hcli/test_constrained_decoding.py:51, hcli/test_native_json_grammar.py:10 (+2 more)",
-    "RUNTIME_DELTANET_STATE_REUSE": "tools/headless/test_prefill_kv.py:15",
+    "RUNTIME_DELTANET_STATE_REUSE": "tools/headless/test_prefill_kv.py:15, tools/headless/test_prefill_kv.py:49 (+6 more)",
     "RUNTIME_NATIVE_PREFILL": "hcli/test_prefix_and_prefill_instruments.py:14",
     "RUNTIME_PREFILL_PHYSICAL_FRONTIER": "hcli/test_prefix_and_prefill_instruments.py:14",
     "RUNTIME_PREFIX_STATE_REUSE": "hcli/test_prefix_and_prefill_instruments.py:15, hcli/test_prefix_and_prefill_instruments.py:84 (+2 more)",
@@ -3125,8 +3044,11 @@
     "U50_MIXED_APPLE_FPGA_GRAPH": "hcli/test_ane_provider.py:6, hcli/tests/test_hcli_science_boundaries.py:32 (+3 more)",
     "U50_PURCHASE_ACCEPTANCE": "tools/future/test_autonomy_run.py:124, tools/future/test_concurrency_doctor.py:435 (+2 more)",
     "U50_SAFE_COOLING": "tools/future/test_autonomy_run.py:124, tools/future/test_concurrency_doctor.py:435 (+2 more)",
+    "VMCP_DEEP_DIGEST": "tools/acceptance/vmcp/test_state_lattice_defining_property.py:110",
     "VMCP_FILE_CLASSIFIER": "tools/vmcp/test_file_eye.py:10, tools/vmcp/test_file_eye.py:29 (+5 more)",
     "VMCP_PTY_CAPTURE": "tools/acceptance/vmcp/test_receipt_law_defining_property.py:24, tools/acceptance/vmcp/test_receipt_law_defining_property.py:65 (+6 more)",
-    "VMCP_TOOL_DOCTOR": "tools/vmcp/test_tool_doctor.py:6, tools/vmcp/test_tool_doctor.py:10 (+5 more)"
+    "VMCP_STATE_LATTICE": "tools/acceptance/vmcp/test_state_lattice_defining_property.py:110",
+    "VMCP_TOOL_DOCTOR": "tools/vmcp/test_tool_doctor.py:6, tools/vmcp/test_tool_doctor.py:10 (+5 more)",
+    "VMCP_TRUTH_LEDGER": "tools/acceptance/vmcp/test_state_lattice_defining_property.py:110"
   }
 }

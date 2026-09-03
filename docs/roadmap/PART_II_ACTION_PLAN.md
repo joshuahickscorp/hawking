@@ -7,20 +7,20 @@ components yet' from work that genuinely needs an experiment, wall time, or sili
 
 ## Blocker census
 
-    SOFTWARE_CONNECTION_REMAINING    27
-    EXPERIMENTATION_REQUIRED         12
+    SOFTWARE_CONNECTION_REMAINING    22
+    EXPERIMENTATION_REQUIRED         14
     LONG_RUN_EVIDENCE_REQUIRED       13
     PHYSICAL_HARDWARE_REQUIRED       14
     UNKNOWN_RESEARCH                 1
 
-    TOTAL REMAINING                  67
+    TOTAL REMAINING                  64
 
-SOFTWARE_CONNECTION_REMAINING = 27 is the
+SOFTWARE_CONNECTION_REMAINING = 22 is the
 number this campaign exists to drive toward zero. Every other class is honest
 frontier: an experiment that must run, evidence that needs wall time, hardware that
 must physically exist, or a question whose answer nobody has.
 
-## SOFTWARE_CONNECTION_REMAINING (27)
+## SOFTWARE_CONNECTION_REMAINING (22)
 
 ### AGENTOS_CIRCUIT_BREAKER
     missing             no non-test call site reaches this capability
@@ -82,12 +82,6 @@ must physically exist, or a question whose answer nobody has.
     implementation      hcli/goal.py, hcli/context_budget.py
     unlocks             1 declared dependencies
 
-### MODELLAKE_LIFECYCLE
-    missing             no non-test call site reaches this capability
-    shortest verifier   must be written
-    implementation      tools/future/modellake_lifecycle.py, tools/future/modellake_lifecycle.py:39
-    unlocks             0 declared dependencies
-
 ### QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED
     missing             wired but nothing verifies it
     shortest verifier   must be written
@@ -116,12 +110,6 @@ must physically exist, or a question whose answer nobody has.
     missing             no non-test call site reaches this capability
     shortest verifier   hcli/test_constrained_decoding.py:51 (+3 more)
     implementation      hcli/hawking_native.py
-    unlocks             0 declared dependencies
-
-### RUNTIME_DELTANET_STATE_REUSE
-    missing             no non-test call site reaches this capability
-    shortest verifier   tools/headless/test_prefill_kv.py:15
-    implementation      tools/headless/prefill_kv.py
     unlocks             0 declared dependencies
 
 ### RUNTIME_NATIVE_PREFILL
@@ -160,31 +148,13 @@ must physically exist, or a question whose answer nobody has.
     implementation      hcli/vmcp/__init__.py, hcli/vmcp_adapter.py
     unlocks             0 declared dependencies
 
-### VMCP_DEEP_DIGEST
-    missing             wired but nothing verifies it
-    shortest verifier   must be written
-    implementation      tools/headless/vmcp_lattice_disposition.py, tools/headless/vmcp_lattice_disposition.py:562
-    unlocks             1 declared dependencies
-
 ### VMCP_RECEIPT_LAW
     missing             wired but nothing verifies it
     shortest verifier   must be written
     implementation      hcli/agentos/vmcp_gate.py, hcli/agentos/vmcp_gate.py:258
     unlocks             0 declared dependencies
 
-### VMCP_STATE_LATTICE
-    missing             wired but nothing verifies it
-    shortest verifier   must be written
-    implementation      tools/headless/vmcp_lattice_disposition.py, hcli/vmcp_adapter.py
-    unlocks             0 declared dependencies
-
-### VMCP_TRUTH_LEDGER
-    missing             wired but nothing verifies it
-    shortest verifier   must be written
-    implementation      tools/headless/vmcp_lattice_disposition.py, tools/headless/vmcp_forgery_canary.py
-    unlocks             1 declared dependencies
-
-## EXPERIMENTATION_REQUIRED (12)
+## EXPERIMENTATION_REQUIRED (14)
 
 ### AGENTOS_DETERMINISTIC_OFFLOAD
     missing             wired and verified; its acceptance criterion has never been run
@@ -234,6 +204,12 @@ must physically exist, or a question whose answer nobody has.
     implementation      hcli/agentos/modellake_gate.py, tools/odyssey/modellake_watch.py (+1 more)
     unlocks             1 declared dependencies
 
+### MODELLAKE_LIFECYCLE
+    missing             wired and verified; its acceptance criterion has never been run
+    shortest verifier   tools/future/test_modellake_lifecycle.py:6 (+5 more)
+    implementation      tools/future/modellake_lifecycle.py, tools/future/modellake_lifecycle.py:39
+    unlocks             0 declared dependencies
+
 ### ODYSSEY_III_ADVERSARIAL_META_SCIENCE
     missing             wired and verified; its acceptance criterion has never been run
     shortest verifier   tools/future/test_autonomy_scars.py:10 (+15 more)
@@ -251,6 +227,12 @@ must physically exist, or a question whose answer nobody has.
     shortest verifier   hcli/agentos/test_protected_accelerator_benchmark.py:3 (+1 more)
     implementation      hcli/agentos/protected_accelerator_benchmark.py, hcli/agentos/accelerator_regression.py (+1 more)
     unlocks             1 declared dependencies
+
+### RUNTIME_DELTANET_STATE_REUSE
+    missing             wired and verified; its acceptance criterion has never been run
+    shortest verifier   tools/headless/test_prefill_kv.py:15 (+7 more)
+    implementation      tools/headless/prefill_kv.py, tools/headless/prefill_kv.py:239
+    unlocks             0 declared dependencies
 
 ### VMCP_PTY_CAPTURE
     missing             wired and verified; its acceptance criterion has never been run
