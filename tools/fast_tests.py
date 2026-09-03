@@ -37,6 +37,21 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[1]
 #: Split files larger than one shard's share. Measured slower; off.
 SPLIT_OVER_TARGET = True
+
+#: What a file costs BEFORE any of its tests run: pytest imports the module and
+#: everything it pulls in. Recorded test durations do not include it, so a shard
+#: of many tiny files looked free and was not -- one holding 61 files planned at
+#: 2.48 s took 5.47 s and was the slowest shard in the run.
+#:
+#: Tuned against the sharded wall clock, interleaved to cancel box drift: 0.0
+#: and 0.036 both ran 5.1-5.5 s, while 0.12 through 0.25 ran 4.3-4.7 s. 0.15
+#: sits in the middle of that flat region.
+#:
+#: Deriving it from a serial run instead gives 0.036 (42.4 s of wall against
+#: 37.4 s of test time over 138 files) and that is an UNDERESTIMATE: a serial
+#: run imports each module once into one warm interpreter, while every shard is
+#: a fresh interpreter that re-imports the whole shared dependency graph.
+FILE_OVERHEAD_S = float(os.environ.get("FAST_TESTS_FILE_OVERHEAD", "0.15"))
 CACHE = REPO / ".hcli" / "test-timings.json"
 
 #: Red by design. The suite is judged with these excluded; see docs/HANDOFF.md.
@@ -112,7 +127,8 @@ def file_weights(timings: dict[str, float]) -> dict[str, float]:
     """A file costs what its tests cost. Timings are keyed by node."""
     weights: dict[str, float] = {}
     for node, seconds in timings.items():
-        weights[node.split("::")[0]] = weights.get(node.split("::")[0], 0.0) + seconds
+        name = node.split("::")[0]
+        weights[name] = weights.get(name, FILE_OVERHEAD_S) + seconds
     return weights
 
 
@@ -125,10 +141,9 @@ def plan(files: list[str], shards: int, timings: dict[str, float]) -> list[list[
     # A file bigger than one shard's share sets the floor for the whole run on
     # its own, so split THOSE files -- and only those. Splitting every file is
     # what made each shard import every module in the suite.
-    # Splitting oversized files was tried and measured WORSE (6.1-6.8 s against
-    # 5.4 s): the extra module imports and the upfront collect cost more than
-    # the improved balance saved, because contention dominates the wall clock.
-    # The hook is kept but disabled; raise SPLIT_OVER_TARGET to re-enable.
+    # Splitting was measured worse while the lock-race file was saturating the
+    # box; with that fixed it wins, because the node lists now come from the
+    # timings cache instead of a collect that cost 1.3 s of dead time.
     oversized = [f for f in files
                  if SPLIT_OVER_TARGET and target > 0 and weights.get(f, 1.0) > target]
     collected = nodes_of(oversized, timings)
@@ -146,7 +161,7 @@ def plan(files: list[str], shards: int, timings: dict[str, float]) -> list[list[
             i = loads.index(min(loads))
             groups[i].append(node)
             loads[i] += timings.get(node, 0.0)
-        items.extend((g, l) for g, l in zip(groups, loads) if g)
+        items.extend((g, l + FILE_OVERHEAD_S) for g, l in zip(groups, loads) if g)
 
     buckets: list[list[str]] = [[] for _ in range(shards)]
     loads = [0.0] * shards

@@ -29,7 +29,13 @@ def _template(email: str, name: str, filename: str, body: str, branch: str) -> s
     _TEMPLATES.append(root)
     repo = Path(root) / "repo"
     repo.mkdir()
-    init = ["git", "init", "-q"] + (["-b", branch] if branch else [])
+    # An empty template skips git's sample hooks: 27 files in the repo become
+    # 11, and every test copies the smaller tree (5.9 ms -> 3.3 ms). The hooks
+    # are inert samples no test runs.
+    empty_template = Path(root) / "empty-template"
+    empty_template.mkdir()
+    init = ["git", "init", "-q", f"--template={empty_template}"]
+    init += ["-b", branch] if branch else []
     subprocess.run(init, cwd=repo, check=True)
     subprocess.run(["git", "config", "user.email", email], cwd=repo, check=True)
     subprocess.run(["git", "config", "user.name", name], cwd=repo, check=True)

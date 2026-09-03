@@ -170,6 +170,18 @@ class BackgroundJobStore:
         return path
 
     def _refresh(self, job: BackgroundJob) -> BackgroundJob:
+        """Observe the job, and persist ONLY when this call changed something.
+
+        `inspect()` routes through here, so an unconditional write made reading
+        a job a mutation of it. The detached supervisor owns the receipt and
+        writes the terminal record into it; a reader polling in a loop read
+        RUNNING, then wrote its own stale view straight back over the
+        supervisor's COMPLETED. After that the supervisor was gone -- a zombie,
+        which `_pid_alive` reports as alive because os.kill(pid, 0) succeeds on
+        one -- so nothing ever moved the job off RUNNING again and a finished
+        child was reported running forever. Reproduced 1 run in 48 under load.
+        """
+        changed = False
         child_entry = self._children.get(job.job_id)
         if child_entry is not None:
             child, handle = child_entry
@@ -178,6 +190,7 @@ class BackgroundJobStore:
                 job.returncode = int(code)
                 job.finished_at = job.finished_at or _now()
                 job.state = "COMPLETED" if code == 0 else "FAILED"
+                changed = True
                 if handle is not None:
                     try:
                         handle.close()
@@ -189,13 +202,16 @@ class BackgroundJobStore:
                 job.state = "FAILED"
                 job.error = "background job timed out"
                 job.finished_at = _now()
+                changed = True
         elif job.state == "RUNNING" and not _pid_alive(job.pid):
             # After process closure the parent cannot recover an exit code.
             # Preserve that distinction instead of inventing success/failure.
             job.state = "INTERRUPTED"
             job.finished_at = job.finished_at or _now()
             job.error = job.error or "owner process closed or child exited before status was persisted"
-        self._write(job)
+            changed = True
+        if changed:
+            self._write(job)
         return job
 
     def start(
