@@ -29,9 +29,10 @@ use std::time::Instant;
 use hawking_core::json_constrain::{JsonConstraint, JsonVocabIndex};
 #[cfg(target_os = "macos")]
 use hawking_core::model::qwen38_hybrid_decode::{
-    generate_constrained, generate_greedy_reusing, load_qwen38_tokenizer,
+    generate_constrained, generate_greedy_reusing_snapshot, load_qwen38_tokenizer,
     Qwen38HybridDecodeSession,
     Qwen38HybridWeights,
+    Qwen38PrefixCheckpoint,
 };
 
 const PROTOCOL: &str = "hawking.qwen38.resident.v1";
@@ -152,6 +153,11 @@ fn run_resident(args: Args) -> Result<(), String> {
     // Exactly the token sequence currently held in the session's KV and
     // recurrent state: the last request's prompt followed by what it generated.
     let mut resident_context: Vec<u32> = Vec::new();
+    // ONE checkpoint, held at the boundary two consecutive prompts agreed on --
+    // in practice the system prompt and tool catalog, which are identical on
+    // every goal and were being re-prefilled every time. A checkpoint is ~157 MB
+    // of host memory, so this is one, not a pool.
+    let mut prefix_checkpoint: Option<(Vec<u32>, Qwen38PrefixCheckpoint)> = None;
 
     let pid = process::id();
     let mut stdout = io::BufWriter::new(io::stdout().lock());
@@ -206,6 +212,7 @@ fn run_resident(args: Args) -> Result<(), String> {
             pid,
             &body,
             &mut resident_context,
+            &mut prefix_checkpoint,
         ) {
             Ok(reply) => reply,
             Err(error) => error_reply(&id, error),
@@ -230,6 +237,7 @@ fn serve_request(
     pid: u32,
     body: &Value,
     resident_context: &mut Vec<u32>,
+    prefix_checkpoint: &mut Option<(Vec<u32>, Qwen38PrefixCheckpoint)>,
 ) -> Result<Value, String> {
     let id = request_id(body);
     if id.is_empty() {
@@ -315,10 +323,55 @@ fn serve_request(
     } else {
         0
     };
+    // Second chance when the append path does not apply: a stored checkpoint
+    // whose tokens are a prefix of this prompt. Restoring it is EXACT -- the
+    // recurrent carry after those tokens is a function of those tokens alone,
+    // and KV at 0..N already holds the same bytes because the tokens match.
+    // Proven bit-identical on this body by
+    // examples/qwen38_prefix_checkpoint_parity.rs.
+    // Captured BEFORE any clear: the boundary this prompt and the last one
+    // agreed on is computed from the PREVIOUS context, and the branches below
+    // overwrite it.
+    let agreed_with_previous = shared_prefix_len(resident_context, &prompt_ids);
+    let mut restored_from_checkpoint = 0usize;
     if reuse == 0 {
-        session.reset();
-        resident_context.clear();
+        let usable = prefix_checkpoint.as_ref().and_then(|(tokens, cp)| {
+            let shared = shared_prefix_len(tokens, &prompt_ids);
+            if shared == tokens.len() && shared > 0 && shared < prompt_ids.len() {
+                Some((shared, cp))
+            } else {
+                None
+            }
+        });
+        match usable {
+            Some((shared, cp)) if !constrain_json => {
+                session
+                    .restore_prefix(cp)
+                    .map_err(|e| format!("restore prefix checkpoint: {e}"))?;
+                restored_from_checkpoint = shared;
+                resident_context.clear();
+                resident_context.extend_from_slice(&prompt_ids[..shared]);
+            }
+            _ => {
+                session.reset();
+                resident_context.clear();
+            }
+        }
     }
+    let reuse = reuse.max(restored_from_checkpoint);
+    // Snapshot where THIS prompt and the last one agreed, which is the stable
+    // head every goal shares. Taken during the prefill we are already paying
+    // for, because the carry cannot be rewound to a boundary once passed.
+    let snapshot_at = if restored_from_checkpoint == 0
+        && prefix_checkpoint.is_none()
+        && !constrain_json
+        && agreed_with_previous > 16
+        && agreed_with_previous < prompt_ids.len()
+    {
+        Some(agreed_with_previous)
+    } else {
+        None
+    };
     let started = Instant::now();
     let result = if constrain_json {
         let vocab = json_vocab_index.get_or_insert_with(|| {
@@ -336,7 +389,14 @@ fn serve_request(
             max_new,
         )
     } else {
-        generate_greedy_reusing(session, &prompt_ids, max_new, reuse)
+        generate_greedy_reusing_snapshot(session, &prompt_ids, max_new, reuse, snapshot_at)
+            .map(|(result, snapshot)| {
+                if let Some(cp) = snapshot {
+                    *prefix_checkpoint =
+                        Some((prompt_ids[..cp.position].to_vec(), cp));
+                }
+                result
+            })
     }
     .map_err(|e| format!("native generation: {e}"))?;
     let wall_ns = started.elapsed().as_nanos() as u64;
@@ -393,6 +453,14 @@ fn serve_request(
         "grammar_enforced": constrain_json,
         "prefix_reused_tokens": reuse,
         "prefill_tokens_stepped": prompt_ids.len().saturating_sub(reuse),
+        "prefix_source": if restored_from_checkpoint > 0 {
+            "checkpoint_restore"
+        } else if reuse > 0 {
+            "session_append"
+        } else {
+            "cold"
+        },
+        "prefix_checkpoint_taken_at": snapshot_at,
         "text": text,
         "generated_text": text,
         "new_token_ids": generated,
@@ -552,6 +620,39 @@ mod prefix_reuse_tests {
         let prompt = [1u32, 2, 3, 4, 5];
         assert_eq!(reuse_for(&resident, &prompt, false), 4);
         assert_eq!(reuse_for(&resident, &prompt, true), 0);
+    }
+
+    /// The checkpoint decision, exactly as `serve_request` makes it.
+    fn checkpoint_reuse(stored: &[u32], prompt: &[u32], constrain_json: bool) -> usize {
+        let shared = shared_prefix_len(stored, prompt);
+        if !constrain_json && shared == stored.len() && shared > 0 && shared < prompt.len() {
+            shared
+        } else {
+            0
+        }
+    }
+
+    #[test]
+    fn a_stored_prefix_that_this_prompt_begins_with_is_restored() {
+        // Two goals sharing a system prompt and tool catalog.
+        let stored = [1u32, 2, 3, 4, 5];
+        assert_eq!(checkpoint_reuse(&stored, &[1, 2, 3, 4, 5, 90, 91], false), 5);
+    }
+
+    #[test]
+    fn a_checkpoint_that_diverges_is_never_restored() {
+        // The load-bearing one: restoring against a different prefix would
+        // condition generation on tokens that are not in the prompt.
+        let stored = [1u32, 2, 3, 4, 5];
+        assert_eq!(checkpoint_reuse(&stored, &[1, 2, 99, 4, 5, 6], false), 0);
+        assert_eq!(checkpoint_reuse(&stored, &[1, 2, 3], false), 0, "shorter prompt");
+        assert_eq!(checkpoint_reuse(&stored, &[1, 2, 3, 4, 5], false), 0, "nothing to step");
+        assert_eq!(checkpoint_reuse(&[], &[1, 2, 3], false), 0, "no checkpoint");
+        assert_eq!(
+            checkpoint_reuse(&stored, &[1, 2, 3, 4, 5, 6], true),
+            0,
+            "the constrained path resets internally"
+        );
     }
 
     #[test]

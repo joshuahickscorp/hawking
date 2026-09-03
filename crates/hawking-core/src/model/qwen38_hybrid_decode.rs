@@ -7495,6 +7495,41 @@ mod device {
         max_new_tokens: usize,
         reuse: usize,
     ) -> Result<Qwen38GenerateResult> {
+        generate_greedy_reusing_snapshot(session, prompt, max_new_tokens, reuse, None)
+            .map(|(result, _)| result)
+    }
+
+    /// As `generate_greedy_reusing`, and additionally captures a prefix
+    /// checkpoint the moment `position` reaches `snapshot_at`.
+    ///
+    /// Taken DURING work already being done: the caller cannot snapshot a
+    /// boundary after prefilling past it, because the recurrent carry has
+    /// already moved on and there is no way to rewind it.
+    pub fn generate_greedy_reusing_snapshot(
+        session: &mut Qwen38HybridDecodeSession,
+        prompt: &[u32],
+        max_new_tokens: usize,
+        reuse: usize,
+        snapshot_at: Option<usize>,
+    ) -> Result<(Qwen38GenerateResult, Option<Qwen38PrefixCheckpoint>)> {
+        let result = generate_greedy_reusing_inner(
+            session,
+            prompt,
+            max_new_tokens,
+            reuse,
+            snapshot_at,
+        )?;
+        Ok(result)
+    }
+
+    fn generate_greedy_reusing_inner(
+        session: &mut Qwen38HybridDecodeSession,
+        prompt: &[u32],
+        max_new_tokens: usize,
+        reuse: usize,
+        snapshot_at: Option<usize>,
+    ) -> Result<(Qwen38GenerateResult, Option<Qwen38PrefixCheckpoint>)> {
+        let mut snapshot: Option<Qwen38PrefixCheckpoint> = None;
         if prompt.is_empty() {
             return Err(Error::Model("qwen38 prompt is empty".into()));
         }
@@ -7543,6 +7578,13 @@ mod device {
             dispatches.push(timing.dispatches);
             active_weight_bytes.push(session.last_active_weight_bytes());
             next = sampled;
+            if snapshot.is_none() && snapshot_at == Some(i + 1) {
+                // i + 1 prompt tokens have been stepped, so the carry is exactly
+                // the state after that prefix. Captured HERE because it cannot
+                // be recovered once the prefill moves past it: the recurrent
+                // state is a running summary with no rewind.
+                snapshot = Some(session.prefix_checkpoint()?);
+            }
         }
         let prefill_wall_ns = prefill.elapsed().as_nanos() as u64;
         tokens.push(next);
@@ -7571,7 +7613,7 @@ mod device {
         }
         let decode_wall_ns = decode.elapsed().as_nanos() as u64;
         let decode_steps = tokens.len().saturating_sub(prompt.len()).saturating_sub(1);
-        Ok(Qwen38GenerateResult {
+        Ok((Qwen38GenerateResult {
             tokens,
             prompt_len: prompt.len(),
             wall_ns: wall.elapsed().as_nanos() as u64,
@@ -7590,7 +7632,7 @@ mod device {
             decode_wall_ns,
             decode_steps,
             wall_ns_per_step,
-        })
+        }, snapshot))
     }
 
     /// Greedy generation with a JSON logit mask applied on the host.
@@ -8175,7 +8217,7 @@ impl Qwen38GenerateResult {
 #[cfg(target_os = "macos")]
 pub use device::{
     generate_constrained, generate_greedy, generate_greedy_complete_wall, generate_greedy_parallel,
-    generate_greedy_reusing, generate_greedy_unmeasured,
+    generate_greedy_reusing, generate_greedy_reusing_snapshot, generate_greedy_unmeasured,
     measure_shared_weight_fanout, Qwen38HybridDecodeSession, Qwen38HybridWeights,
     Qwen38WeightFanout,
 };
