@@ -1,21 +1,5 @@
 {
-  "blocker": {
-    "failed_checks": 10,
-    "first_failure": {
-      "detail": {
-        "artifacts": 1,
-        "doc_validate_ok": false,
-        "lowered_an_invalid_graph": true,
-        "validator_codes": [
-          "DANGLING_EDGE"
-        ]
-      },
-      "name": "e.refuses[hls_style:graph_dangling_edge]",
-      "ok": false
-    },
-    "missing": "clause(s) e do not hold",
-    "total_checks": 241
-  },
+  "blocker": null,
   "checks": [
     {
       "detail": null,
@@ -1201,129 +1185,83 @@
     },
     {
       "detail": {
-        "artifacts": 1,
-        "doc_validate_ok": false,
-        "lowered_an_invalid_graph": true,
-        "validator_codes": [
-          "DANGLING_EDGE"
-        ]
+        "code": "DANGLING_EDGE",
+        "raised": "UnrepresentableGraph"
       },
       "name": "e.refuses[hls_style:graph_dangling_edge]",
-      "ok": false
+      "ok": true
     },
     {
       "detail": {
-        "artifacts": 1,
-        "doc_validate_ok": false,
-        "lowered_an_invalid_graph": true,
-        "validator_codes": [
-          "DENSE_WEIGHT_MATERIALIZATION",
-          "DENSE_WEIGHT_MATERIALIZATION",
-          "SOURCE_TENSOR_IDENTITY",
-          "SOURCE_TENSOR_IDENTITY"
-        ]
+        "code": "SOURCE_TENSOR_IDENTITY",
+        "raised": "UnrepresentableGraph"
       },
       "name": "e.refuses[hls_style:graph_dense_source_rematerialization]",
-      "ok": false
+      "ok": true
     },
     {
       "detail": {
-        "artifacts": 1,
-        "doc_validate_ok": false,
-        "lowered_an_invalid_graph": true,
-        "validator_codes": [
-          "RESOURCE_OVER_BUDGET"
-        ]
+        "code": "RESOURCE_OVER_BUDGET",
+        "raised": "UnrepresentableGraph"
       },
       "name": "e.refuses[hls_style:graph_over_budget]",
-      "ok": false
+      "ok": true
     },
     {
       "detail": {
-        "artifacts": 1,
-        "doc_validate_ok": false,
-        "lowered_an_invalid_graph": true,
-        "validator_codes": [
-          "STATE_NO_OWNER"
-        ]
+        "code": "STATE_NO_OWNER",
+        "raised": "UnrepresentableGraph"
       },
       "name": "e.refuses[hls_style:graph_state_without_owner]",
-      "ok": false
+      "ok": true
     },
     {
       "detail": {
-        "artifacts": 1,
-        "doc_validate_ok": false,
-        "lowered_an_invalid_graph": true,
-        "validator_codes": [
-          "TYPE_MISMATCH"
-        ]
+        "code": "TYPE_MISMATCH",
+        "raised": "UnrepresentableGraph"
       },
       "name": "e.refuses[hls_style:graph_type_mismatch]",
-      "ok": false
+      "ok": true
     },
     {
       "detail": {
-        "artifacts": 1,
-        "doc_validate_ok": false,
-        "lowered_an_invalid_graph": true,
-        "validator_codes": [
-          "DANGLING_EDGE"
-        ]
+        "code": "DANGLING_EDGE",
+        "raised": "UnrepresentableGraph"
       },
       "name": "e.refuses[rust_hdl_style:graph_dangling_edge]",
-      "ok": false
+      "ok": true
     },
     {
       "detail": {
-        "artifacts": 1,
-        "doc_validate_ok": false,
-        "lowered_an_invalid_graph": true,
-        "validator_codes": [
-          "DENSE_WEIGHT_MATERIALIZATION",
-          "DENSE_WEIGHT_MATERIALIZATION",
-          "SOURCE_TENSOR_IDENTITY",
-          "SOURCE_TENSOR_IDENTITY"
-        ]
+        "code": "SOURCE_TENSOR_IDENTITY",
+        "raised": "UnrepresentableGraph"
       },
       "name": "e.refuses[rust_hdl_style:graph_dense_source_rematerialization]",
-      "ok": false
+      "ok": true
     },
     {
       "detail": {
-        "artifacts": 1,
-        "doc_validate_ok": false,
-        "lowered_an_invalid_graph": true,
-        "validator_codes": [
-          "RESOURCE_OVER_BUDGET"
-        ]
+        "code": "RESOURCE_OVER_BUDGET",
+        "raised": "UnrepresentableGraph"
       },
       "name": "e.refuses[rust_hdl_style:graph_over_budget]",
-      "ok": false
+      "ok": true
     },
     {
       "detail": {
-        "artifacts": 1,
-        "doc_validate_ok": false,
-        "lowered_an_invalid_graph": true,
-        "validator_codes": [
-          "STATE_NO_OWNER"
-        ]
+        "code": "STATE_NO_OWNER",
+        "raised": "UnrepresentableGraph"
       },
       "name": "e.refuses[rust_hdl_style:graph_state_without_owner]",
-      "ok": false
+      "ok": true
     },
     {
       "detail": {
-        "artifacts": 1,
-        "doc_validate_ok": false,
-        "lowered_an_invalid_graph": true,
-        "validator_codes": [
-          "TYPE_MISMATCH"
-        ]
+        "code": "TYPE_MISMATCH",
+        "raised": "UnrepresentableGraph"
       },
       "name": "e.refuses[rust_hdl_style:graph_type_mismatch]",
-      "ok": false
+      "ok": true
     }
   ],
   "claim_boundary": "FUNCTIONAL_SIM acceptance of the hardware IR itself. No board, no synthesis, no bitstream, no clock. Says nothing about FPGA throughput, HBM bandwidth, Fmax or resource utilisation; U50_PRESENT is false. A total, refusing IR is necessary for a physical compiler, not sufficient.",
@@ -1350,19 +1288,8 @@
     },
     "e_refusal": {
       "checks": 10,
-      "failed": 10,
-      "failing": [
-        "e.refuses[hls_style:graph_dangling_edge]",
-        "e.refuses[hls_style:graph_dense_source_rematerialization]",
-        "e.refuses[hls_style:graph_over_budget]",
-        "e.refuses[hls_style:graph_state_without_owner]",
-        "e.refuses[hls_style:graph_type_mismatch]",
-        "e.refuses[rust_hdl_style:graph_dangling_edge]",
-        "e.refuses[rust_hdl_style:graph_dense_source_rematerialization]",
-        "e.refuses[rust_hdl_style:graph_over_budget]",
-        "e.refuses[rust_hdl_style:graph_state_without_owner]",
-        "e.refuses[rust_hdl_style:graph_type_mismatch]"
-      ]
+      "failed": 0,
+      "failing": []
     }
   },
   "command": [
@@ -1379,14 +1306,14 @@
     "why_not_appendix_o": "APPENDIX O gives FPGA_HWIR acceptance span 9000-9061, shared identically with FPGA_PREBOARD_SCHEMAS, FPGA_LINK_SIM and FPGA_PARTITION_SIM. Lines 9000-9061 are 'APPENDIX K - HARDWARE DOCTOR / FPGA COMPILER DEEP SCHEMAS': a fenced code block declaring TransportGenome, FPGAGenome, HBMGenome and HardwareProfile. That is a data model, not a proof obligation. Nothing in the span can be satisfied or refused, which is why this gate's acceptance had never been run."
   },
   "criterion_weakened": false,
-  "elapsed_ms": 71.077,
+  "elapsed_ms": 74.684,
   "evidence_tier": "FUNCTIONAL_SIM",
   "gate": "FPGA_HWIR",
-  "git_head": "e93d73aa479270f21798113beb4b9bab1a94b218",
+  "git_head": "1ed5b7f98f28ccb67cb6c84e8156a7b1638eaa71",
   "gpu_authority": false,
   "hardware_measured": false,
   "measured": {
-    "checks_failed": 10,
+    "checks_failed": 0,
     "checks_total": 241,
     "corpus": {
       "catalog_primitives": 24,
@@ -1401,5 +1328,5 @@
   "recorded_by": "tools/acceptance/fpga/run_gates.py",
   "schema": "hawking.acceptance.gate.v1",
   "u50_present": false,
-  "verdict": "BLOCKED"
+  "verdict": "ACCEPTED"
 }

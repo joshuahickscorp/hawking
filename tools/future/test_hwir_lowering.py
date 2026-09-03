@@ -234,3 +234,34 @@ def test_empty_cannot_express_is_refused(monkeypatch):
     monkeypatch.setattr(target, "cannot_express", lambda: ())
     with pytest.raises(ValueError, match="cannot_express is empty"):
         target.lower(_qgemv_graph())
+
+
+def test_lowering_refuses_an_invalid_graph():
+    """Six conditions were refused here and the validator's verdict was not one.
+
+    Every declared negative control lowered into a document carrying a
+    SOURCE_ARTIFACT on both targets while validate() rejected it by its own code.
+    A kernel emitted for a type-mismatched graph is wrong in a way synthesis does
+    not catch, because the source compiles.
+    """
+    controls = (
+        hwir.graph_dangling_edge,
+        hwir.graph_dense_source_rematerialization,
+        hwir.graph_over_budget,
+        hwir.graph_state_without_owner,
+        hwir.graph_type_mismatch,
+    )
+    for tid in hwir.list_lowering_targets():
+        for make in controls:
+            graph = make()
+            assert not hwir.validate(graph).ok, f"{make.__name__} is not a control any more"
+            with pytest.raises(hwir.UnrepresentableGraph):
+                hwir.lower_hwir(graph, tid)
+
+
+def test_a_legal_graph_still_lowers():
+    """The negative control for the control: refusal must not refuse everything."""
+    for tid in hwir.list_lowering_targets():
+        doc = hwir.lower_hwir(hwir.from_qgemv(), tid)
+        assert doc["artifacts"], f"{tid} emitted nothing for a valid graph"
+        assert doc["validate"]["ok"] is True
