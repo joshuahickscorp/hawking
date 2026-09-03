@@ -4566,6 +4566,10 @@ mod device {
                 "v_proj" => Ok(&self.workspace.v_proj),
                 "qkvz" => Ok(&self.workspace.qkvz),
                 "ba" => Ok(&self.workspace.ba),
+                // The DeltaNet carry. Addressable so a prefix's recurrent state
+                // can be snapshotted and restored; see prefix_checkpoint.
+                "rec_state" => Ok(&self.workspace.rec_state),
+                "conv_state" => Ok(&self.workspace.conv_state),
                 other => Err(Error::Model(format!(
                     "qwen38 unknown workspace buffer {other}"
                 ))),
@@ -5580,6 +5584,50 @@ mod device {
 
         pub fn alloc_profile_buffer(&self, bytes: usize) -> Result<PinnedBuffer> {
             self.context.new_buffer_checked(bytes)
+        }
+
+        /// Everything needed to resume decoding as if a token prefix had just
+        /// been stepped: the DeltaNet carry and the sequence position.
+        ///
+        /// KV is deliberately NOT captured. It is indexed by position, so for a
+        /// prefix of identical tokens the entries at 0..position are already the
+        /// same bytes whichever request wrote them. The recurrent state is the
+        /// only part that cannot be reconstructed by indexing, because it is a
+        /// running summary with no per-position addressing.
+        ///
+        /// This is EXACT, not an approximation: the carry after tokens 0..N is a
+        /// function of those tokens alone, so two prompts sharing a prefix have
+        /// identical state at N by construction.
+        pub fn prefix_checkpoint(&self) -> Result<Qwen38PrefixCheckpoint> {
+            Ok(Qwen38PrefixCheckpoint {
+                position: self.position,
+                rec_state: self.read_f32_workspace("rec_state", self.rec_state_f32_count())?,
+                conv_state: self
+                    .read_f32_workspace("conv_state", self.conv_state_f32_count())?,
+            })
+        }
+
+        /// Resume from a checkpoint. The caller MUST have verified that the
+        /// prompt begins with exactly the tokens the checkpoint was taken over;
+        /// restoring against a different prefix conditions generation on tokens
+        /// that are not in the prompt, and nothing downstream could detect it.
+        pub fn restore_prefix(&mut self, checkpoint: &Qwen38PrefixCheckpoint) -> Result<()> {
+            if checkpoint.rec_state.len() != self.rec_state_f32_count()
+                || checkpoint.conv_state.len() != self.conv_state_f32_count()
+            {
+                return Err(Error::Model(
+                    "qwen38 prefix checkpoint was taken on a different geometry".into(),
+                ));
+            }
+            if checkpoint.position > self.max_seq_len {
+                return Err(Error::Model(
+                    "qwen38 prefix checkpoint position exceeds max_seq_len".into(),
+                ));
+            }
+            self.write_f32_workspace("rec_state", &checkpoint.rec_state)?;
+            self.write_f32_workspace("conv_state", &checkpoint.conv_state)?;
+            self.position = checkpoint.position;
+            Ok(())
         }
 
         pub fn rec_state_f32_count(&self) -> usize {
@@ -8064,6 +8112,16 @@ impl Qwen38CompleteWallResult {
     pub fn steady_decode_steps(&self) -> impl Iterator<Item = &Qwen38CompleteToken> {
         self.steps.iter().filter(|s| s.role == "decode")
     }
+}
+
+/// A resumable point in a token sequence: the DeltaNet carry plus the position
+/// it was taken at. Cheap to hold (state is fixed size, independent of context)
+/// and exact for any prompt that begins with the same tokens.
+#[derive(Debug, Clone)]
+pub struct Qwen38PrefixCheckpoint {
+    pub position: usize,
+    pub rec_state: Vec<f32>,
+    pub conv_state: Vec<f32>,
 }
 
 #[derive(Clone, Debug)]
