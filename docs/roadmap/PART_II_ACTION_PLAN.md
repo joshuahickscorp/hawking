@@ -93,7 +93,7 @@ must physically exist, or a question whose answer nobody has.
 ### AGENTOS_DETERMINISTIC_OFFLOAD
     missing             wired and verified; its acceptance criterion has never been run
     shortest verifier   hcli/test_abort_checkpoint_atomicity.py:18 (+14 more)
-    implementation      lab/hcli/claude_offload_bench.py, hcli/delegate.py (+1 more)
+    implementation      research/lab/hcli/claude_offload_bench.py, hcli/delegate.py (+1 more)
     unlocks             0 declared dependencies
 
 ### FLASH_COMPLETE_EBPW_LE_1

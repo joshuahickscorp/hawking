@@ -16,7 +16,7 @@
   "invocations": [
     {
       "symbol": "hcli.backends.terminate_pid",
-      "pid": 47974
+      "pid": 8031
     },
     {
       "symbol": "hcli.resources.classify_failure"
@@ -202,7 +202,7 @@
     }
   ],
   "terminate_pid": {
-    "pid": 47974,
+    "pid": 8031,
     "term": true,
     "kill": false,
     "gone": true
@@ -246,7 +246,7 @@
       "DISK_HEADROOM_BLOCK"
     ],
     "terminate_pid": {
-      "pid": 47974,
+      "pid": 8031,
       "term": true,
       "kill": false,
       "gone": true
@@ -255,7 +255,7 @@
   "notes": "D.2 names not present in FAILURE_KINDS are listed in d2_missing. They are not treated as implemented under an alias unless D2_ALIASES says so. Isolation is the load-bearing check.",
   "schema": "hawking.acceptance.gate.v1",
   "gate": "BACKEND_FAILURE_ISOLATION",
-  "generated_at": "2026-09-02T18:44:47Z",
-  "git_head": "14ed3eb1f8fc616a29dbc724f3937cffedf15a43",
+  "generated_at": "2026-09-03T05:52:39Z",
+  "git_head": "f97dec9d2b0c2bbff574c28989d55ca00cafcf88",
   "criterion_altered": false
 }

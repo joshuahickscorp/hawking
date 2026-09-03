@@ -8,7 +8,7 @@ Full-model forward of the 92 GB Math-Preserve artifact is not feasible on a
 2. Runs a fixed-prompt CPU-authority path (RMSNorm + fixed projection) twice
    and requires bit-identical float32 logits.
 3. Additionally runs the documented functional-codec CPU authority twice
-   (lab/operators/gravity_functional_codec.execute) for organ-level
+   (research/lab/operators/gravity_functional_codec.execute) for organ-level
    bit-identity.
 
 What is NOT checked: full multi-layer GLM-5.2 forward, full vocab lm_head
@@ -193,7 +193,7 @@ def functional_codec_authority() -> dict[str, Any]:
     return {
         "status": "PASS" if identical else "FAIL",
         "path": path,
-        "module": "lab/operators/gravity_functional_codec.py",
+        "module": "research/lab/operators/gravity_functional_codec.py",
         "bit_identical_two_runs": identical,
         "output_sha256_run1": hashlib.sha256(np.ascontiguousarray(y1).tobytes()).hexdigest(),
         "output_sha256_run2": hashlib.sha256(np.ascontiguousarray(y2).tobytes()).hexdigest(),

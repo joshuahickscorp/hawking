@@ -88,12 +88,12 @@ mod macos {
     const DEFAULT_MAX_SEQ_LEN: usize = 8;
     /// Canonical frozen V0 corpora (same rows GLM teacher-forced freezes).
     const DEFAULT_FROZEN_L0: &str =
-        "hawking-experiments/frankenstein/data/corpus/PROTO_FRANKENSTEIN_V0_L0_CORPUS.jsonl";
+        "research/hawking-experiments/frankenstein/data/corpus/PROTO_FRANKENSTEIN_V0_L0_CORPUS.jsonl";
     const DEFAULT_FROZEN_L1: &str =
-        "hawking-experiments/frankenstein/data/corpus/PROTO_FRANKENSTEIN_V0_L1_CORPUS.jsonl";
+        "research/hawking-experiments/frankenstein/data/corpus/PROTO_FRANKENSTEIN_V0_L1_CORPUS.jsonl";
     /// Official GLM L0 freeze used as the correspondence identity oracle.
     const CANONICAL_FROZEN_L0_JSON: &str =
-        "hawking-experiments/frankenstein/data/teacher_forced/official_L0_stream_full_20260805T200728Z/FROZEN_CORPUS_L0.json";
+        "research/hawking-experiments/frankenstein/data/teacher_forced/official_L0_stream_full_20260805T200728Z/FROZEN_CORPUS_L0.json";
 
     type ProbeResult<T> = Result<T, Box<dyn Error>>;
 

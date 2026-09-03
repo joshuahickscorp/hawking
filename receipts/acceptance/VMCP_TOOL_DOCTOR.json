@@ -75,41 +75,41 @@
   ],
   "criterion": {
     "end_line": 7767,
-    "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "file": "/Users/scammermike/Downloads/hawking/docs/roadmap-lineage/H-ROADMAP.superseded-2026-09-02.md",
     "quoted": "## E.3 Tool Doctor profile\n\n**Required classes:**\n- file classifier\n- hashing\n- archive/compression\n- browser/CDP\n- HTML/DOM capture\n- CSS parser\n- source-map parser\n- visual diff\n- image handling\n- OBJ/GLTF parser\n- spatial validator\n- independent renderer/viewer\n- PTY capture\n- process inspection\n- profiling hooks\n\n**Optional accelerators:**\n- binwalk-like container discovery\n- WASM tools\n- additional binary analyzers\n- Blender CLI\n- meshoptimizer\n- format converters\n- GPU profiler",
     "start_line": 7741,
     "weakened": false
   },
   "criterion_weakened": false,
-  "elapsed_ms": 73.735,
+  "elapsed_ms": 117.028,
   "evidence_tier": "FUNCTIONAL_SIM",
   "gate": "VMCP_TOOL_DOCTOR",
-  "generated_at": "2026-09-02T23:16:06Z",
+  "generated_at": "2026-09-03T05:34:31Z",
   "gpu_authority": false,
   "invoked_symbols": [
     {
-      "elapsed_ms": 14.211,
+      "elapsed_ms": 6.805,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "visionmcp.capabilities.core_doctor_report"
     },
     {
-      "elapsed_ms": 0.326,
+      "elapsed_ms": 0.043,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "visionmcp.acquisition.quarantine._sniff"
     },
     {
-      "elapsed_ms": 0.069,
+      "elapsed_ms": 0.106,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "visionmcp.worlds.spatial.io.obj.obj_file_counts"
     },
     {
-      "elapsed_ms": 0.112,
+      "elapsed_ms": 0.202,
       "error": null,
       "kind": "call",
       "raised": false,
@@ -117,7 +117,7 @@
     }
   ],
   "measured": {
-    "core_doctor_elapsed_ms": 14.20266700006323,
+    "core_doctor_elapsed_ms": 6.79979199776426,
     "core_doctor_ok": true,
     "required": {
       "CSS parser": {
@@ -267,7 +267,7 @@
           "present": false
         }
       ],
-      "elapsed_ms": 14.20266700006323,
+      "elapsed_ms": 6.79979199776426,
       "network_used": false,
       "ok": true,
       "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",

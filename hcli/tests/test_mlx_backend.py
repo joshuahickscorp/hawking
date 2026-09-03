@@ -147,7 +147,7 @@ class _FakeMlxServer(ThreadingHTTPServer):
 
 def _start_fake_server() -> _FakeMlxServer:
     server = _FakeMlxServer(("127.0.0.1", 0), _FakeMlxHandler)
-    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread = threading.Thread(target=lambda: server.serve_forever(poll_interval=0.01), daemon=True)
     thread.start()
     server.thread = thread
     return server

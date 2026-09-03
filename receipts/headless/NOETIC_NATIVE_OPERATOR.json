@@ -1,8 +1,8 @@
 {
   "schema": "hawking.headless.noetic_native_operator.v1",
-  "generated_at": "2026-08-26T10:14:00Z",
-  "git_head": "665110c71c8cc16db6a05af70d621a0266853ab1",
-  "elapsed_s": 0.374,
+  "generated_at": "2026-09-03T06:40:50Z",
+  "git_head": "ee9f9e90c9d65c54cd1ee5944afe5c04a87b636c",
+  "elapsed_s": 0.112,
   "question": "Does the compressed structure EXECUTE DIRECTLY, or does it decompress to dense and call an ordinary matmul?",
   "answer": "The compressed structures that actually run EXECUTE DIRECTLY. Qwen3.8 uniform-q4 geo_tpr64 unpacks nibbles in registers and FMAs into y; peak temporary 3145728 B against parent lm_head 5085593600 B. Q80 HGRAVS01 is y=L@(R@x) with mid[160]. gravity_pq_matvec and binary_group likewise never write W. The reconstruct-then-matmul lowerings exist (decode_vector, L@R then gemv, UV f16 cache) and are labelled ORACLE: their peak temporary reaches parent-tensor shape. The 0.0485 bpw UV structure is 0.0485 active fused and 16.0 active if the dense form is cached \u2014 same structure, two regimes. Presenting the cache regime as native execution is the defect.",
   "convention": {
@@ -1416,9 +1416,9 @@
         "present": true,
         "path": "crates/hawking-core/shaders/qwen_uniform_q4.metal",
         "needles": {
-          "kernel void qwen_uniform_q4_group64_matvec_geo_tpr64_tg128": 7337,
+          "kernel void qwen_uniform_q4_group64_matvec_geo_tpr64_tg128": 9001,
           "Packed decode stays in registers": 7279,
-          "kernel void qwen_uniform_q4_decode_vector": 26439
+          "kernel void qwen_uniform_q4_decode_vector": 28103
         }
       },
       "q80_mixed_decode.metal": {
@@ -1470,7 +1470,7 @@
       },
       {
         "file": "qwen_uniform_q4.metal",
-        "line": 627,
+        "line": 664,
         "name": "qwen_uniform_q4_decode_vector"
       },
       {
@@ -1485,7 +1485,7 @@
     "q80_gather_row_refuses_weight_row": true
   },
   "cpu_microbench": {
-    "numpy": "2.2.6",
+    "numpy": "2.4.6",
     "hgravs": {
       "L_shape": [
         2048,
@@ -1497,14 +1497,14 @@
       ],
       "fused_peak_bytes": 8832,
       "oracle_peak_bytes": 4202496,
-      "fused_wall_s": 5.5709002481307834e-05,
-      "oracle_wall_s": 0.0006070419985917397,
+      "fused_wall_s": 8.008400618564337e-05,
+      "oracle_wall_s": 0.0006682079983875155,
       "y_match_max_abs": 0.0003509521484375,
       "parent_f32_bytes": 4194304,
       "threadgroup_mid_bytes": 640,
       "oracle_reaches_parent": true,
       "fused_reaches_parent": false,
-      "numpy": "2.2.6"
+      "numpy": "2.4.6"
     },
     "generated_uv": {
       "rank": 12,
@@ -1518,8 +1518,8 @@
       ],
       "fused_peak_bytes": 69680,
       "oracle_peak_bytes": 178327552,
-      "fused_wall_s": 6.395899981725961e-05,
-      "oracle_wall_s": 0.32643816599738784,
+      "fused_wall_s": 7.958299829624593e-05,
+      "oracle_wall_s": 0.0698400419933023,
       "y_match_max_abs": 0.2544708251953125,
       "parent_f16_bytes": 178257920,
       "parent_f32_bytes": 356515840,
@@ -1527,7 +1527,7 @@
       "encoded_oracle_peak_bytes": 178327552,
       "oracle_reaches_parent_f16": true,
       "fused_reaches_parent_f16": false,
-      "numpy": "2.2.6"
+      "numpy": "2.4.6"
     },
     "numpy_absent_reason": null
   },
@@ -1576,14 +1576,5 @@
     "every_path_has_side_by_side": true,
     "no_absent_written_as_zero": true
   },
-  "written_to": "/Users/scammermike/Downloads/hawking/receipts/headless/NOETIC_NATIVE_OPERATOR.json",
-  "bench": {
-    "state": "UNKNOWN",
-    "recorded_at": "2026-08-26T00:00:00Z",
-    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
-    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
-    "quiescence": null,
-    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
-    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
-  }
+  "written_to": "/Users/scammermike/Downloads/hawking/receipts/headless/NOETIC_NATIVE_OPERATOR.json"
 }

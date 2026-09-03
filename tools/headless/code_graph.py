@@ -507,7 +507,7 @@ def rel_from_repo(path_str: str) -> Optional[str]:
     for root in CENSUS_ROOTS:
         if s == root or s.startswith(root + "/"):
             return s
-    if s.startswith("tools/") or s.startswith("receipts/") or s.startswith("lab/"):
+    if s.startswith("tools/") or s.startswith("receipts/") or s.startswith("research/lab/"):
         return s
     # strip an absolute prefix that contains the repo
     marker = "/tools/"
@@ -811,9 +811,9 @@ def discover() -> Tuple[Dict[str, Dict[str, Any]], Dict[str, Any], List[Dict[str
         "out_of_census_python": len(git_all)
         - sum(1 for p in git_all if any(p == r or p.startswith(r + "/") for r in CENSUS_ROOTS)),
         "sibling_namespaces_not_parsed": {
-            "lab/hcli": [p for p in git_all if p.startswith("lab/hcli/")],
+            "research/lab/hcli": [p for p in git_all if p.startswith("research/lab/hcli/")],
             "note": (
-                "lab/hcli is a parallel namespace in git. Not parsed (out of census). "
+                "research/lab/hcli is a parallel namespace in git. Not parsed (out of census). "
                 "A later lane that claims a single HCLI authority must compare it, not ignore it."
             ),
         },
@@ -1175,7 +1175,7 @@ def extract_edges(
                         guess_paths = []
                         if mod:
                             dotted_as_path = mod.replace(".", "/") + ".py"
-                            for prefix in ("", "tools/", "lab/", "visionmcp/src/"):
+                            for prefix in ("", "tools/", "research/lab/", "visionmcp/src/"):
                                 guess_paths.append(prefix + dotted_as_path)
                             guess_paths.append(mod.replace(".", "/") + "/__init__.py")
                             guess_paths.append("tools/" + dotted_as_path)
@@ -2031,11 +2031,11 @@ def findings(
             "id": "lab_hcli_sibling",
             "severity": "medium",
             "detail": (
-                "lab/hcli/ exists in git as a sibling namespace and was not parsed "
+                "research/lab/hcli/ exists in git as a sibling namespace and was not parsed "
                 "(out of census, and not materialized in this sparse worktree). "
                 "UNKNOWN whether it still imports or duplicates hcli."
             ),
-            "path": "lab/hcli/",
+            "path": "research/lab/hcli/",
         },
         {
             "id": "duplicate_mutation_authority",
@@ -2395,7 +2395,7 @@ def main() -> int:
                 "tools/headless/**/*.py — harnesses and headless tests",
             ],
             "excludes": [
-                "lab/, ramanujan/, workspace/, visionmcp/, app/ — out of this lane's census",
+                "research/lab/, research/ramanujan/, workspace/, visionmcp/, app/ — out of this lane's census",
                 "tools/condense, tools/graph, tools/odyssey, tools/gravity_*.py — out of census; outbound edges to them are recorded as repo_outside_census",
                 "historical receipts under receipts/ — evidence, not code; dests are persistence targets, never rewritten here",
             ],
@@ -2412,7 +2412,7 @@ def main() -> int:
             "census_union": inventory["census_union"],
             "out_of_census_python": inventory["out_of_census_python"],
             "sibling_namespaces_not_parsed": {
-                "lab/hcli": inventory["sibling_namespaces_not_parsed"]["lab/hcli"],
+                "research/lab/hcli": inventory["sibling_namespaces_not_parsed"]["research/lab/hcli"],
                 "note": inventory["sibling_namespaces_not_parsed"]["note"],
             },
         },

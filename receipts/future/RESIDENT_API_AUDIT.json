@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-03T00:37:50Z",
+  "recorded_at": "2026-09-03T05:51:24Z",
   "recorded_by": "tools/future/resident_api.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -11,14 +11,14 @@
  "bench_state": "UNKNOWN",
  "claim_boundary": "Static sidecar artifact. No hardware measurement.",
  "counts": {
-  "capabilities": 284,
-  "discovered_python": 540,
-  "human_cli_only": 258,
+  "capabilities": 286,
+  "discovered_python": 547,
+  "human_cli_only": 260,
   "import_failures": 0,
-  "not_operational": 159,
+  "not_operational": 162,
   "operational": 104,
-  "scored": 263,
-  "tests": 277,
+  "scored": 266,
+  "tests": 281,
   "work_units": 6
  },
  "five_questions": [
@@ -743,6 +743,7 @@
    "complete_ebpw",
    "concurrency_measure",
    "conftest",
+   "decision_value",
    "decode_tax_target",
    "deltanet_generated_transition",
    "deltanet_multistep",
@@ -767,6 +768,7 @@
    "fast_thought",
    "fidelity_hierarchy",
    "fold_addqx_ab",
+   "fpga_partition",
    "functional_role_probe",
    "gap_ledger_60",
    "geometry_table",
@@ -812,6 +814,7 @@
    "odyssey2_transfer",
    "odyssey3_attack",
    "odyssey_mission_controller",
+   "odyssey_wall",
    "op_class_ablation",
    "orchestration",
    "organ_bandwidth",
@@ -872,6 +875,7 @@
    "causal_budget_71",
    "concurrency_measure",
    "conftest",
+   "decision_value",
    "deltanet_organ_decompose",
    "deltanet_widen_ab",
    "dequant_hoist_ab",
@@ -934,6 +938,7 @@
    "__init__",
    "_common",
    "conftest",
+   "decision_value",
    "experiment_policy",
    "experiment_receipt",
    "hcli_self_hosting_launch",
@@ -973,6 +978,7 @@
    "complete_ebpw",
    "concurrency_measure",
    "conftest",
+   "decision_value",
    "decode_tax_target",
    "deltanet_generated_transition",
    "deltanet_multistep",
@@ -998,6 +1004,7 @@
    "fast_thought",
    "fidelity_hierarchy",
    "fold_addqx_ab",
+   "fpga_partition",
    "functional_role_probe",
    "gap_ledger_60",
    "geometry_table",
@@ -1045,6 +1052,7 @@
    "odyssey2_transfer",
    "odyssey3_attack",
    "odyssey_mission_controller",
+   "odyssey_wall",
    "op_class_ablation",
    "orchestration",
    "organ_bandwidth",
@@ -1230,7 +1238,7 @@
   ],
   "tool_registry_present": true
  },
- "honest_scoring": "104 operational / 159 not operational / 263 scored. A human CLI is not an operational subsystem.",
+ "honest_scoring": "104 operational / 162 not operational / 266 scored. A human CLI is not an operational subsystem.",
  "law": "A subsystem is not operational until the RESIDENT can discover it, invoke it, schedule it and verify it; its result changes a frontier; the result persists; and next work refills. 'It has a CLI a human can run' is NOT enough.",
  "measurement_class": "STATIC_ONLY",
  "modules": [
@@ -6508,7 +6516,8 @@
     "candidate_from_parts",
     "compare_to_incumbent",
     "build",
-    "main"
+    "main",
+    "bar_reachability"
    ],
    "questions": {
     "emits_workunit": {
@@ -6559,7 +6568,8 @@
        "candidate_from_parts",
        "compare_to_incumbent",
        "build",
-       "main"
+       "main",
+       "bar_reachability"
       ]
      },
      "pass": true
@@ -7455,6 +7465,91 @@
    "workunit_constructs": [
     "emit_hcli_workunit"
    ]
+  },
+  {
+   "capabilities": [
+    "future.decision_value"
+   ],
+   "cli_flags": [],
+   "docstring": "Rank candidate measurements by what they can DECIDE, not by how much they move. The FPGA partition lane produced a result worth generalising. Sweeping the model's three unknowns gave: r (FPGA rate / Apple rate) 14.2x speedup swing cannot r\u2026",
+   "filename": "decision_value.py",
+   "gaps": [
+    "no_callable_entry_point_only_main_or_absent",
+    "does_not_emit_workunit",
+    "does_not_produce_receipt",
+    "result_does_not_feed_a_named_frontier"
+   ],
+   "has_if_main": false,
+   "has_main": false,
+   "hcli_tool_registered": false,
+   "human_cli_only": false,
+   "import_error": null,
+   "import_ok": true,
+   "kind": "production",
+   "preferred_callable": null,
+   "public_callables": [
+    "rank_measurements"
+   ],
+   "questions": {
+    "emits_workunit": {
+     "evidence": {
+      "constructs": [],
+      "emitted_by_orchestration_connector": false
+     },
+     "gap": "does_not_emit_workunit",
+     "pass": false
+    },
+    "fail_closed": {
+     "evidence": {
+      "raise_count": 4,
+      "rule": "fail closed means raise (or write_receipt's HardwareClaimError) rather than returning a silent default",
+      "uses_write_receipt": false
+     },
+     "pass": true
+    },
+    "feeds_named_frontier": {
+     "evidence": {
+      "frontier_present": true,
+      "named_as_integration_target": [],
+      "receipt_is_frontier_probe": [],
+      "writes_frontier_document": false
+     },
+     "gap": "result_does_not_feed_a_named_frontier",
+     "pass": false
+    },
+    "hcli_invoke": {
+     "evidence": {
+      "has_if_main": false,
+      "has_main": false,
+      "hcli_future_tools": [],
+      "hcli_tool_count": 49,
+      "hcli_tool_registered": false,
+      "import_error": null,
+      "import_ok": true,
+      "preferred_callable": null,
+      "public_callables": [
+       "rank_measurements"
+      ]
+     },
+     "gap": "no_callable_entry_point_only_main_or_absent",
+     "pass": false
+    },
+    "produces_receipt": {
+     "evidence": {
+      "receipt": null,
+      "uses_write_receipt": false,
+      "write_receipt_names": []
+     },
+     "gap": "does_not_produce_receipt",
+     "pass": false
+    }
+   },
+   "raise_count": 4,
+   "receipt": null,
+   "relpath": "tools/future/decision_value.py",
+   "status": "NOT_OPERATIONAL",
+   "stem": "decision_value",
+   "workunit_constructs": []
   },
   {
    "capabilities": [
@@ -13207,6 +13302,121 @@
   },
   {
    "capabilities": [
+    "future.fpga_partition"
+   ],
+   "cli_flags": [],
+   "docstring": "Within-organ Apple/FPGA partition: where the split helps, where it cannot. Nothing in this repo swept a partition ratio. The one partitioner computes a single deterministic row split from HBM capacity, and the 65/35 Apple/FPGA figure that \u2026",
+   "filename": "fpga_partition.py",
+   "gaps": [
+    "does_not_emit_workunit",
+    "result_does_not_feed_a_named_frontier"
+   ],
+   "has_if_main": true,
+   "has_main": true,
+   "hcli_tool_registered": false,
+   "human_cli_only": true,
+   "import_error": null,
+   "import_ok": true,
+   "kind": "production",
+   "preferred_callable": "build",
+   "public_callables": [
+    "census",
+    "family_bytes",
+    "hbm_capacity_report",
+    "unpinned_ratio",
+    "transport_cost",
+    "critical_path",
+    "optimum_fraction",
+    "speedup",
+    "helps",
+    "break_even_payload_bytes",
+    "phase",
+    "sweep",
+    "envelope",
+    "preboard_link_constant_audit",
+    "sensitivity",
+    "build",
+    "main"
+   ],
+   "questions": {
+    "emits_workunit": {
+     "evidence": {
+      "constructs": [],
+      "emitted_by_orchestration_connector": false
+     },
+     "gap": "does_not_emit_workunit",
+     "pass": false
+    },
+    "fail_closed": {
+     "evidence": {
+      "raise_count": 3,
+      "rule": "fail closed means raise (or write_receipt's HardwareClaimError) rather than returning a silent default",
+      "uses_write_receipt": true
+     },
+     "pass": true
+    },
+    "feeds_named_frontier": {
+     "evidence": {
+      "frontier_present": true,
+      "named_as_integration_target": [],
+      "receipt_is_frontier_probe": [],
+      "writes_frontier_document": false
+     },
+     "gap": "result_does_not_feed_a_named_frontier",
+     "pass": false
+    },
+    "hcli_invoke": {
+     "evidence": {
+      "has_if_main": true,
+      "has_main": true,
+      "hcli_future_tools": [],
+      "hcli_tool_count": 49,
+      "hcli_tool_registered": false,
+      "import_error": null,
+      "import_ok": true,
+      "preferred_callable": "build",
+      "public_callables": [
+       "census",
+       "family_bytes",
+       "hbm_capacity_report",
+       "unpinned_ratio",
+       "transport_cost",
+       "critical_path",
+       "optimum_fraction",
+       "speedup",
+       "helps",
+       "break_even_payload_bytes",
+       "phase",
+       "sweep",
+       "envelope",
+       "preboard_link_constant_audit",
+       "sensitivity",
+       "build",
+       "main"
+      ]
+     },
+     "pass": true
+    },
+    "produces_receipt": {
+     "evidence": {
+      "receipt": "FPGA_PARTITION_ENVELOPE.json",
+      "uses_write_receipt": true,
+      "write_receipt_names": [
+       "FPGA_PARTITION_ENVELOPE.json"
+      ]
+     },
+     "pass": true
+    }
+   },
+   "raise_count": 3,
+   "receipt": "FPGA_PARTITION_ENVELOPE.json",
+   "relpath": "tools/future/fpga_partition.py",
+   "status": "NOT_OPERATIONAL",
+   "stem": "fpga_partition",
+   "workunit_constructs": []
+  },
+  {
+   "capabilities": [
     "future.freshness",
     "future.derived_freshness"
    ],
@@ -15537,7 +15747,7 @@
     },
     "fail_closed": {
      "evidence": {
-      "raise_count": 121,
+      "raise_count": 122,
       "rule": "fail closed means raise (or write_receipt's HardwareClaimError) rather than returning a silent default",
       "uses_write_receipt": true
      },
@@ -15666,7 +15876,7 @@
      "pass": true
     }
    },
-   "raise_count": 121,
+   "raise_count": 122,
    "receipt": "HWIR_V1.json",
    "relpath": "tools/future/hwir.py",
    "status": "OPERATIONAL",
@@ -22880,6 +23090,107 @@
     "emit_hcli_workunit",
     "emit_workunit"
    ]
+  },
+  {
+   "capabilities": [
+    "future.odyssey_wall"
+   ],
+   "cli_flags": [],
+   "docstring": "Where would an Odyssey campaign's hours go, and what has to be true to go faster. This is an accounting STRUCTURE with named holes, not a projection. It cannot be a projection: receipts/future/ODYSSEY_WALL_INSTRUMENTATION.json records that\u2026",
+   "filename": "odyssey_wall.py",
+   "gaps": [
+    "does_not_emit_workunit",
+    "result_does_not_feed_a_named_frontier"
+   ],
+   "has_if_main": true,
+   "has_main": true,
+   "hcli_tool_registered": false,
+   "human_cli_only": true,
+   "import_error": null,
+   "import_ok": true,
+   "kind": "production",
+   "preferred_callable": "build",
+   "public_callables": [
+    "instrumented",
+    "uninstrumented",
+    "measured_components",
+    "projected_wall_hours",
+    "requirements_for",
+    "ladder",
+    "instrumentation_order",
+    "report",
+    "build",
+    "main"
+   ],
+   "questions": {
+    "emits_workunit": {
+     "evidence": {
+      "constructs": [],
+      "emitted_by_orchestration_connector": false
+     },
+     "gap": "does_not_emit_workunit",
+     "pass": false
+    },
+    "fail_closed": {
+     "evidence": {
+      "raise_count": 5,
+      "rule": "fail closed means raise (or write_receipt's HardwareClaimError) rather than returning a silent default",
+      "uses_write_receipt": true
+     },
+     "pass": true
+    },
+    "feeds_named_frontier": {
+     "evidence": {
+      "frontier_present": true,
+      "named_as_integration_target": [],
+      "receipt_is_frontier_probe": [],
+      "writes_frontier_document": false
+     },
+     "gap": "result_does_not_feed_a_named_frontier",
+     "pass": false
+    },
+    "hcli_invoke": {
+     "evidence": {
+      "has_if_main": true,
+      "has_main": true,
+      "hcli_future_tools": [],
+      "hcli_tool_count": 49,
+      "hcli_tool_registered": false,
+      "import_error": null,
+      "import_ok": true,
+      "preferred_callable": "build",
+      "public_callables": [
+       "instrumented",
+       "uninstrumented",
+       "measured_components",
+       "projected_wall_hours",
+       "requirements_for",
+       "ladder",
+       "instrumentation_order",
+       "report",
+       "build",
+       "main"
+      ]
+     },
+     "pass": true
+    },
+    "produces_receipt": {
+     "evidence": {
+      "receipt": "ODYSSEY_WALL_MODEL.json",
+      "uses_write_receipt": true,
+      "write_receipt_names": [
+       "ODYSSEY_WALL_MODEL.json"
+      ]
+     },
+     "pass": true
+    }
+   },
+   "raise_count": 5,
+   "receipt": "ODYSSEY_WALL_MODEL.json",
+   "relpath": "tools/future/odyssey_wall.py",
+   "status": "NOT_OPERATIONAL",
+   "stem": "odyssey_wall",
+   "workunit_constructs": []
   },
   {
    "capabilities": [
@@ -33844,8 +34155,8 @@
   }
  ],
  "negative_findings": [
-  "159 of 263 scored modules are NOT_OPERATIONAL; operational=104. Not rounded up.",
-  "258 scored modules are human-CLI-callable (argparse / __main__) and are not registered in HCLI ToolRegistry.",
+  "162 of 266 scored modules are NOT_OPERATIONAL; operational=104. Not rounded up.",
+  "260 scored modules are human-CLI-callable (argparse / __main__) and are not registered in HCLI ToolRegistry.",
   "hcli/tool_registry.py default_tool_registry lists 49 tools and 0 future.* tools. AgentOS cannot discover the sidecar.",
   "HCLI ToolRegistry.invoke returns ToolResult(ok=False, UNKNOWN_TOOL) instead of raising; resident_api.invoke raises. Fail-closed is this surface, not HCLI's.",
   "Most modules persist a receipt a human can regenerate with `python3 tools/future/<mod>.py --build` but do not emit a WorkUnit and do not feed CLAUDE_GLOBAL_FRONTIER.json.",
@@ -33889,6 +34200,7 @@
   "complete_ebpw",
   "concurrency_measure",
   "conftest",
+  "decision_value",
   "decode_tax_target",
   "deltanet_generated_transition",
   "deltanet_multistep",
@@ -33914,6 +34226,7 @@
   "fast_thought",
   "fidelity_hierarchy",
   "fold_addqx_ab",
+  "fpga_partition",
   "functional_role_probe",
   "gap_ledger_60",
   "geometry_table",
@@ -33961,6 +34274,7 @@
   "odyssey2_transfer",
   "odyssey3_attack",
   "odyssey_mission_controller",
+  "odyssey_wall",
   "op_class_ablation",
   "orchestration",
   "organ_bandwidth",
@@ -38324,6 +38638,26 @@
    "receipt": "FPGA_MULTIFIDELITY.json",
    "status": "OPERATIONAL"
   },
+  "future.fpga_partition": {
+   "aliases": [
+    "future.fpga_partition"
+   ],
+   "argument_contract": {
+    "bindable": true,
+    "cli_flags": [],
+    "params": []
+   },
+   "callable": "build",
+   "frontier": [],
+   "gaps": [
+    "does_not_emit_workunit",
+    "result_does_not_feed_a_named_frontier"
+   ],
+   "import_error": null,
+   "module": "tools/future/fpga_partition.py",
+   "receipt": "FPGA_PARTITION_ENVELOPE.json",
+   "status": "NOT_OPERATIONAL"
+  },
   "future.freshness": {
    "aliases": [
     "future.freshness",
@@ -41966,6 +42300,26 @@
    "receipt": "ODYSSEY_TOOL_DRIVER.json",
    "status": "OPERATIONAL"
   },
+  "future.odyssey_wall": {
+   "aliases": [
+    "future.odyssey_wall"
+   ],
+   "argument_contract": {
+    "bindable": false,
+    "cli_flags": [],
+    "params": []
+   },
+   "callable": "build",
+   "frontier": [],
+   "gaps": [
+    "does_not_emit_workunit",
+    "result_does_not_feed_a_named_frontier"
+   ],
+   "import_error": null,
+   "module": "tools/future/odyssey_wall.py",
+   "receipt": "ODYSSEY_WALL_MODEL.json",
+   "status": "NOT_OPERATIONAL"
+  },
   "future.op_class_ablation": {
    "aliases": [
     "future.op_class_ablation"
@@ -45497,7 +45851,7 @@
   ]
  },
  "schema": "hawking.future.resident_api.v1",
- "seal_sha256": "54d9c18ff91b79d2043265d7ee47501dd96bce96fefb8fb8b4dd33211840e574",
+ "seal_sha256": "b1aa0cbb63b397b264781c253cf5ab2b813df5329a7ac88873d85e65c80a3eca",
  "version": 1,
  "work_units": [
   {
@@ -45507,15 +45861,15 @@
    "backend_task_id": null,
    "claim_boundary": "Proposal only. Sidecar cannot register HCLI tools or rewrite CLAUDE_GLOBAL_FRONTIER.json.",
    "classification": "STATIC_ONLY",
-   "content_hash": "948b4cdfc04209f683e4dec7ec1613619ca2fe4a781d5d325cf7d6af37ca76ba",
+   "content_hash": "77a4c6d3099a5085b8578f1ac74cd22c7860e16f46014b045fe3d5dc21dafe70",
    "dependencies": [],
-   "description": "Close resident-callability gap 'does_not_emit_workunit' for 150 sidecar module(s).",
+   "description": "Close resident-callability gap 'does_not_emit_workunit' for 153 sidecar module(s).",
    "effect_class": "READ_ONLY",
    "failure_context": null,
    "finished_at": null,
    "gap": "does_not_emit_workunit",
    "id": "future.resident_api.close.does_not_emit_workunit",
-   "module_count": 150,
+   "module_count": 153,
    "module_stems": [
     "__init__",
     "_common",
@@ -45549,6 +45903,7 @@
     "complete_ebpw",
     "concurrency_measure",
     "conftest",
+    "decision_value",
     "decode_tax_target",
     "deltanet_generated_transition",
     "deltanet_multistep",
@@ -45573,6 +45928,7 @@
     "fast_thought",
     "fidelity_hierarchy",
     "fold_addqx_ab",
+    "fpga_partition",
     "functional_role_probe",
     "gap_ledger_60",
     "geometry_table",
@@ -45618,6 +45974,7 @@
     "odyssey2_transfer",
     "odyssey3_attack",
     "odyssey_mission_controller",
+    "odyssey_wall",
     "op_class_ablation",
     "orchestration",
     "organ_bandwidth",
@@ -45692,15 +46049,15 @@
    "backend_task_id": null,
    "claim_boundary": "Proposal only. Sidecar cannot register HCLI tools or rewrite CLAUDE_GLOBAL_FRONTIER.json.",
    "classification": "STATIC_ONLY",
-   "content_hash": "51f8f84382a282e4a327278597a8edde8df357be28d4d639a693561dc07ae6ae",
+   "content_hash": "3c964b56396747646371e8aeaf42eec8d99b66b83ab99ede1df2a0dd59d435a4",
    "dependencies": [],
-   "description": "Close resident-callability gap 'does_not_produce_receipt' for 52 sidecar module(s).",
+   "description": "Close resident-callability gap 'does_not_produce_receipt' for 53 sidecar module(s).",
    "effect_class": "READ_ONLY",
    "failure_context": null,
    "finished_at": null,
    "gap": "does_not_produce_receipt",
    "id": "future.resident_api.close.does_not_produce_receipt",
-   "module_count": 52,
+   "module_count": 53,
    "module_stems": [
     "__init__",
     "_common",
@@ -45711,6 +46068,7 @@
     "causal_budget_71",
     "concurrency_measure",
     "conftest",
+    "decision_value",
     "deltanet_organ_decompose",
     "deltanet_widen_ab",
     "dequant_hoist_ab",
@@ -45826,19 +46184,20 @@
    "backend_task_id": null,
    "claim_boundary": "Proposal only. Sidecar cannot register HCLI tools or rewrite CLAUDE_GLOBAL_FRONTIER.json.",
    "classification": "STATIC_ONLY",
-   "content_hash": "a700024c60a74d07081c306389bd994d528047991bba47dd6162ff919e556455",
+   "content_hash": "7b325072da1b822d73e2577eb494447f92dcadbd0be9dfe4a143dabe85fae552",
    "dependencies": [],
-   "description": "Close resident-callability gap 'no_callable_entry_point_only_main_or_absent' for 7 sidecar module(s).",
+   "description": "Close resident-callability gap 'no_callable_entry_point_only_main_or_absent' for 8 sidecar module(s).",
    "effect_class": "READ_ONLY",
    "failure_context": null,
    "finished_at": null,
    "gap": "no_callable_entry_point_only_main_or_absent",
    "id": "future.resident_api.close.no_callable_entry_point_only_main_or_absent",
-   "module_count": 7,
+   "module_count": 8,
    "module_stems": [
     "__init__",
     "_common",
     "conftest",
+    "decision_value",
     "experiment_policy",
     "experiment_receipt",
     "hcli_self_hosting_launch",
@@ -45868,15 +46227,15 @@
    "backend_task_id": null,
    "claim_boundary": "Proposal only. Sidecar cannot register HCLI tools or rewrite CLAUDE_GLOBAL_FRONTIER.json.",
    "classification": "STATIC_ONLY",
-   "content_hash": "b0b05378762df2e95a0f230c8ecaea9c57d3b936578e6a359fdfaab5d1a4017b",
+   "content_hash": "bd6267f4d99b70c1658793268a454e79e4c3f5e5da7c290133e5d120f92e89f1",
    "dependencies": [],
-   "description": "Close resident-callability gap 'result_does_not_feed_a_named_frontier' for 159 sidecar module(s).",
+   "description": "Close resident-callability gap 'result_does_not_feed_a_named_frontier' for 162 sidecar module(s).",
    "effect_class": "READ_ONLY",
    "failure_context": null,
    "finished_at": null,
    "gap": "result_does_not_feed_a_named_frontier",
    "id": "future.resident_api.close.result_does_not_feed_a_named_frontier",
-   "module_count": 159,
+   "module_count": 162,
    "module_stems": [
     "__init__",
     "_common",
@@ -45911,6 +46270,7 @@
     "complete_ebpw",
     "concurrency_measure",
     "conftest",
+    "decision_value",
     "decode_tax_target",
     "deltanet_generated_transition",
     "deltanet_multistep",
@@ -45936,6 +46296,7 @@
     "fast_thought",
     "fidelity_hierarchy",
     "fold_addqx_ab",
+    "fpga_partition",
     "functional_role_probe",
     "gap_ledger_60",
     "geometry_table",
@@ -45983,6 +46344,7 @@
     "odyssey2_transfer",
     "odyssey3_attack",
     "odyssey_mission_controller",
+    "odyssey_wall",
     "op_class_ablation",
     "orchestration",
     "organ_bandwidth",

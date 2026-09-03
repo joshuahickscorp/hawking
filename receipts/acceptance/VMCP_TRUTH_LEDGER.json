@@ -65,55 +65,55 @@
   ],
   "criterion": {
     "end_line": 7738,
-    "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "file": "/Users/scammermike/Downloads/hawking/docs/roadmap-lineage/H-ROADMAP.superseded-2026-09-02.md",
     "quoted": "## E.2 State lattice schemas\n\n```text\nDEEP_DIGEST\n    digest of canonical sensory/execution state\n\nASSET_LATTICE\n    asset_id, source, sha256, type, size, decoded, ownership, uses\n\nDECODE_LATTICE\n    input_hash, transform, output_hash, confidence, recovered artifacts\n\nENTITY_GENOME\n    entity_id, name, kind, evidence, confidence, parent/children\n\nRENDER_GENOME\n    node, text, image, font, color, background, border, radius, shadow, transform, layout\n\nSPATIAL_GENOME\n    object, dimensions, faces, normals, UVs, materials, parts, evidence, origin\n\nREPAIR_VECTOR\n    residual, cause, next_action\n\nDIRECTOR_STATE\n    phase, target, residuals, blocked_gates, next_actions, deep_digest\n\nPERFORMANCE_LEDGER\n    per-act latency, tool p95, build/render/verify costs\n\nTRUTH_LEDGER\n    claims, evidence, counterevidence, confidence, blockers, no_op_detected\n```",
     "start_line": 7706,
     "weakened": false
   },
   "criterion_weakened": false,
-  "elapsed_ms": 237.699,
+  "elapsed_ms": 94.458,
   "evidence_tier": "FUNCTIONAL_SIM",
   "gate": "VMCP_TRUTH_LEDGER",
-  "generated_at": "2026-09-02T23:21:38Z",
+  "generated_at": "2026-09-03T05:34:31Z",
   "gpu_authority": false,
   "invoked_symbols": [
     {
-      "elapsed_ms": 152.035,
+      "elapsed_ms": 0.116,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "tools.headless.vmcp_lattice_disposition._load_vm"
     },
     {
-      "elapsed_ms": 58.874,
+      "elapsed_ms": 83.434,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "tools.headless.vmcp_lattice_disposition.prove_truth_ledger"
     },
     {
-      "elapsed_ms": 3.594,
+      "elapsed_ms": 4.566,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "tools.headless.vmcp_lattice_disposition._bound_graph"
     },
     {
-      "elapsed_ms": 0.088,
+      "elapsed_ms": 0.11,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "visionmcp.evidence_graph.graph.EvidenceGraph.support_for"
     },
     {
-      "elapsed_ms": 0.459,
+      "elapsed_ms": 0.531,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "visionmcp.worldir.canonical.content_digest"
     },
     {
-      "elapsed_ms": 0.447,
+      "elapsed_ms": 0.534,
       "error": null,
       "kind": "call",
       "raised": false,

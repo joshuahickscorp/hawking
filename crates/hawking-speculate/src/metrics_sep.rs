@@ -10,7 +10,7 @@
 //! `ACCELERATED_ACCEPTED_TPS`.
 //!
 //! Ascension bible §10 keeps the same separation for Self-TG gauntlets;
-//! Python scaffold: `lab/operators/ascension_tg_gauntlet.py`.
+//! Python scaffold: `research/lab/operators/ascension_tg_gauntlet.py`.
 
 use core::fmt;
 use core::time::Duration;

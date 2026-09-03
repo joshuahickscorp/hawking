@@ -14,14 +14,14 @@
   "command": "python3 -c \"from tools.roadmap.hardware import probe; probe('HMF_PRESENT')\" and hmf_objects is_coherent/cross_kernel_boundary on an in-memory UMA fixture",
   "criterion": {
     "end_line": 2866,
-    "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "file": "/Users/scammermike/Downloads/hawking/docs/roadmap-lineage/H-ROADMAP.superseded-2026-09-02.md",
     "quote": "# 16. HMF / HGVAS \u2014 SOFTWARE-DEFINED MEMORY TRUTH\n\n```text\nOBJECT\n  identity\n  owner\n  location\n  version\n  representation\n  trust\n  size\n  next-use prediction\n  cost_to_move\n  cost_to_recompute\n  legal_devices\n  materializations\n\nDecision:\nMOVE?\nRECOMPUTE?\nDUPLICATE?\nCOMPRESS?\nPREFETCH?\nEXECUTE REMOTELY?\nKEEP RESIDENT?\nEVICT?\n```\n\n\n## 16.1 Trust states\n\n```text\nABSENT\nMATERIALIZING\nCLEAN\nDIRTY\nSTALE\nUNKNOWN\nCORRUPT\nLOST\nEVICTED\n\nPRESENT != VALID != TRUSTED.\nUNKNOWN != LOST.\nQUARANTINE IS ABOUT TRUST, NOT DIRECTION.\nPLAN SOURCE MUST EQUAL EXECUTED SOURCE.\nREADBACK CORRECTNESS DOES NOT PROVE DEVICE-COMPUTE VISIBILITY.\n```\n\n\n## 16.2 Coherence truth ladder\n\n```text\n0 network serving\n1 distributed execution\n2 HGVAS\n3 software-managed coherence\n4 ownership/versioned object fabric\n5 kernel-boundary coherent HAWKGPU\n6 true hardware cache-coherent UMA\n\nHawking targets 2\u20135 across heterogeneous devices.\nNever falsely claim 6.\n```\n\n",
     "start_line": 2801
   },
   "criterion_altered": false,
   "evidence_tier": "STATIC",
   "gate": "HMF_DEVICE_VISIBLE_TRUST",
-  "generated_at": "2026-09-02T18:44:48Z",
+  "generated_at": "2026-09-03T05:52:31Z",
   "generated_by": "tools.acceptance.odyssey.run",
   "invoked_symbol": {
     "also_called": [
@@ -53,10 +53,10 @@
       "evidence_tier": "FUNCTIONAL_SIM",
       "note": "Apple UMA overlay. PRESENT on UMA is not HMF device-visible trust. Roadmap 16.2: Hawking targets coherence ladder 2-5; never falsely claim 6."
     },
-    "wall_s": 0.247
+    "wall_s": 0.53
   },
   "schema": "hawking.acceptance.gate.v1",
-  "seal_sha256": "ee259be483d904efa327f4747bf58b2580b16831e57185597b891d00d5db504e",
+  "seal_sha256": "a95a597583ad96cda6f0735f50f0dd7b6481b6839368d2cc13269cf33281807e",
   "trust_law": "PRESENT != VALID != TRUSTED. UNKNOWN != LOST. READBACK CORRECTNESS DOES NOT PROVE DEVICE-COMPUTE VISIBILITY.",
   "verdict": "BLOCKED"
 }

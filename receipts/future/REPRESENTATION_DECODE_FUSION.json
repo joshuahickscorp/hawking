@@ -79,7 +79,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-03T00:36:43Z",
+  "recorded_at": "2026-09-03T05:48:19Z",
   "recorded_by": "tools/future/representation_decode_fusion.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -534,7 +534,7 @@
  },
  "recorded_by": "tools/future/representation_decode_fusion.py",
  "schema": "hawking.future.representation_decode_fusion.v1",
- "seal_sha256": "82cd5853b4974b89a2c8f961cdb9cdfe7585766de2b44590a0f9ad8d4edcc5ac",
+ "seal_sha256": "b85bf9d718282638e90f11070ab973bc443152dc784e8939e1b0f2235744deaa",
  "sites": [
   {
    "also": "crates/hawking-core/shaders/q80_mixed_decode.metal",

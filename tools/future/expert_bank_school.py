@@ -1167,7 +1167,7 @@ def recovered_implementation(sources: dict[str, Any]) -> dict[str, Any]:
         "qwen80_cross_expert_negative": _recover_qwen80(),
         "measurement_tools": [
             {
-                "path": "lab/operators/q80_cross_expert_structure.py",
+                "path": "research/lab/operators/q80_cross_expert_structure.py",
                 "role": "produced the Q80 pairwise cosine / subspace-overlap negative",
             },
             {

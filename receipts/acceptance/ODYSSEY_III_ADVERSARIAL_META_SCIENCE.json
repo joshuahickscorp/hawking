@@ -7,14 +7,14 @@
   "command": "python3 -c \"from tools.future.autonomy_scars import scars; scars()\" and odyssey3_adversary.selftest() (no --build, no receipt write)",
   "criterion": {
     "end_line": 683,
-    "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "file": "/Users/scammermike/Downloads/hawking/docs/roadmap-lineage/H-ROADMAP.superseded-2026-09-02.md",
     "quote": "## III-A. Odyssey III \u2014 Adversarial Meta-Science\n\n**Mission:** Attack Hawking laws and search procedures themselves.\n\n**Genes to express:**\n- counterexample generation\n- law falsification\n- blind holdouts\n- causal controls\n- measurement traps\n- Goodhart tests\n- compiler prior attacks\n- negative-transfer tests\n\n**Operating rule:** act only on genes whose prerequisites are physically or artifact-verifiably available. Missing prerequisites become explicit blockers or prerequisite WorkUnits; they do not justify fake completion.\n\n**Promotion gate:** this civilization advances only when a fresh process or unseen specimen/device can demonstrate the promised behavior through independent receipts, not because the implementation surface exists.\n\n**Self-refill triggers:** regression, new specimen, new device, new counterexample, new profiler bottleneck, failed transfer, stale assumption, or a newly available deterministic verifier.\n\n",
     "start_line": 663
   },
   "criterion_altered": false,
   "evidence_tier": "FUNCTIONAL_SIM",
   "gate": "ODYSSEY_III_ADVERSARIAL_META_SCIENCE",
-  "generated_at": "2026-09-02T18:44:47Z",
+  "generated_at": "2026-09-03T05:52:30Z",
   "generated_by": "tools.acceptance.odyssey.run",
   "invoked_symbol": {
     "file": "tools/future/autonomy_scars.py",
@@ -112,10 +112,10 @@
         }
       ]
     },
-    "wall_s": 0.046
+    "wall_s": 0.027
   },
   "schema": "hawking.acceptance.gate.v1",
-  "seal_sha256": "626cb2c14a19ad48569eed12ecc07d39bfa02ac825b746e67d4b3d53380a9a41",
+  "seal_sha256": "7d2e1781f62e163d1a62a27dcfcbf82df17a3a638a250d096dc80de1b632cd29",
   "section_6_output": "broken laws, corrected priors, stronger verifiers, causal robustness",
   "verdict": "BLOCKED"
 }

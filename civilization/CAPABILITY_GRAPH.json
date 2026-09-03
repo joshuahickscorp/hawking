@@ -13801,7 +13801,7 @@
         "value": true,
         "evidence": [
           {
-            "file": "lab/hcli/special_unit.py",
+            "file": "research/lab/hcli/special_unit.py",
             "line": 2503,
             "kind": "call",
             "note": "run_bench",
@@ -13816,7 +13816,7 @@
             "kind": "acceptance_refused",
             "file": "receipts/acceptance/AGENTOS_DETERMINISTIC_OFFLOAD.json",
             "line": null,
-            "note": "acceptance verdict BLOCKED: {'also_missing': ['hcli/scheduler.py'], 'in_git_HEAD': True, 'missing': 'lab/hcli/claude_offload_bench.py', 'why': 'D.7 (acceptance_span 7485-7507) requires a scheduler that observes model/runtime/machine identity, ready-work shape, context demand, KV/slot cost, critical path, verifier backlog, mutation contention, I/O pressure, GPU benchmark contamination, background acquisition and measured marginal throughput, and must never manufacture filler work solely to hit a concurrency number. The catalog implementing symbol is lab.hcli.claude_offload_bench.run_bench. That path is in git HEAD (True) but is not materialized in this sparse checkout, so run_bench cannot be CALLed. hcli/scheduler.py is likewise present on disk.'}",
+            "note": "acceptance verdict BLOCKED: {'also_missing': ['hcli/scheduler.py'], 'in_git_HEAD': True, 'missing': 'research/lab/hcli/claude_offload_bench.py', 'why': 'D.7 (acceptance_span 7485-7507) requires a scheduler that observes model/runtime/machine identity, ready-work shape, context demand, KV/slot cost, critical path, verifier backlog, mutation contention, I/O pressure, GPU benchmark contamination, background acquisition and measured marginal throughput, and must never manufacture filler work solely to hit a concurrency number. The catalog implementing symbol is lab.hcli.claude_offload_bench.run_bench. That path is in git HEAD (True) but is not materialized in this sparse checkout, so run_bench cannot be CALLed. hcli/scheduler.py is likewise present on disk.'}",
             "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
           }
         ]
@@ -13824,7 +13824,7 @@
       "evidence_tier": "STATIC",
       "evidence_refs": [
         {
-          "file": "lab/hcli/claude_offload_bench.py",
+          "file": "research/lab/hcli/claude_offload_bench.py",
           "line": 1,
           "kind": "definition",
           "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
@@ -13836,14 +13836,14 @@
           "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
         },
         {
-          "file": "lab/hcli/claude_offload_bench.py",
+          "file": "research/lab/hcli/claude_offload_bench.py",
           "line": 1123,
           "kind": "symbol",
           "note": "run_bench",
           "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
         },
         {
-          "file": "lab/hcli/special_unit.py",
+          "file": "research/lab/hcli/special_unit.py",
           "line": 2503,
           "kind": "call",
           "note": "run_bench",
@@ -13853,13 +13853,13 @@
           "kind": "acceptance_refused",
           "file": "receipts/acceptance/AGENTOS_DETERMINISTIC_OFFLOAD.json",
           "line": null,
-          "note": "acceptance verdict BLOCKED: {'also_missing': ['hcli/scheduler.py'], 'in_git_HEAD': True, 'missing': 'lab/hcli/claude_offload_bench.py', 'why': 'D.7 (acceptance_span 7485-7507) requires a scheduler that observes model/runtime/machine identity, ready-work shape, context demand, KV/slot cost, critical path, verifier backlog, mutation contention, I/O pressure, GPU benchmark contamination, background acquisition and measured marginal throughput, and must never manufacture filler work solely to hit a concurrency number. The catalog implementing symbol is lab.hcli.claude_offload_bench.run_bench. That path is in git HEAD (True) but is not materialized in this sparse checkout, so run_bench cannot be CALLed. hcli/scheduler.py is likewise present on disk.'}",
+          "note": "acceptance verdict BLOCKED: {'also_missing': ['hcli/scheduler.py'], 'in_git_HEAD': True, 'missing': 'research/lab/hcli/claude_offload_bench.py', 'why': 'D.7 (acceptance_span 7485-7507) requires a scheduler that observes model/runtime/machine identity, ready-work shape, context demand, KV/slot cost, critical path, verifier backlog, mutation contention, I/O pressure, GPU benchmark contamination, background acquisition and measured marginal throughput, and must never manufacture filler work solely to hit a concurrency number. The catalog implementing symbol is lab.hcli.claude_offload_bench.run_bench. That path is in git HEAD (True) but is not materialized in this sparse checkout, so run_bench cannot be CALLed. hcli/scheduler.py is likewise present on disk.'}",
           "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
         }
       ],
       "code_refs": [
         {
-          "file": "lab/hcli/claude_offload_bench.py",
+          "file": "research/lab/hcli/claude_offload_bench.py",
           "line": 1,
           "kind": "definition",
           "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
@@ -13871,7 +13871,7 @@
           "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
         },
         {
-          "file": "lab/hcli/claude_offload_bench.py",
+          "file": "research/lab/hcli/claude_offload_bench.py",
           "line": 1123,
           "kind": "symbol",
           "note": "run_bench",
@@ -13880,7 +13880,7 @@
       ],
       "runtime_caller": [
         {
-          "file": "lab/hcli/special_unit.py",
+          "file": "research/lab/hcli/special_unit.py",
           "line": 2503,
           "kind": "call",
           "symbol": "run_bench",
@@ -13901,7 +13901,7 @@
           "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
         },
         {
-          "file": "lab/hcli/special_unit.py",
+          "file": "research/lab/hcli/special_unit.py",
           "line": 2501,
           "kind": "import",
           "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
@@ -13958,49 +13958,49 @@
           "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
         },
         {
-          "file": "lab/tests/test_special_unit.py",
+          "file": "research/lab/tests/test_special_unit.py",
           "line": 309,
           "kind": "import",
           "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
         },
         {
-          "file": "lab/tests/test_special_unit.py",
+          "file": "research/lab/tests/test_special_unit.py",
           "line": 318,
           "kind": "import",
           "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
         },
         {
-          "file": "lab/tests/test_special_unit.py",
+          "file": "research/lab/tests/test_special_unit.py",
           "line": 354,
           "kind": "import",
           "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
         },
         {
-          "file": "lab/tests/test_special_unit.py",
+          "file": "research/lab/tests/test_special_unit.py",
           "line": 368,
           "kind": "import",
           "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
         },
         {
-          "file": "lab/tests/test_special_unit.py",
+          "file": "research/lab/tests/test_special_unit.py",
           "line": 379,
           "kind": "import",
           "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
         },
         {
-          "file": "lab/tests/test_special_unit.py",
+          "file": "research/lab/tests/test_special_unit.py",
           "line": 710,
           "kind": "import",
           "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
         },
         {
-          "file": "lab/tests/test_special_unit.py",
+          "file": "research/lab/tests/test_special_unit.py",
           "line": 838,
           "kind": "import",
           "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
         },
         {
-          "file": "lab/tests/test_special_unit.py",
+          "file": "research/lab/tests/test_special_unit.py",
           "line": 846,
           "kind": "import",
           "commit": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"

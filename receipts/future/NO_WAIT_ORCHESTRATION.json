@@ -15,7 +15,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-03T00:36:31Z",
+  "recorded_at": "2026-09-03T05:47:35Z",
   "recorded_by": "tools/future/no_wait_orchestration.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -32,16 +32,16 @@
  ],
  "detached_measured": {
   "cited_from_receipt": {
-   "cited_child_pid": "16367",
+   "cited_child_pid": "76893",
    "cited_idle_runnable_seconds": "0.0",
-   "cited_independent_progress_n": "45",
-   "cited_kqueue_latency_s": "0.0005540847778320312",
+   "cited_independent_progress_n": "46",
+   "cited_kqueue_latency_s": "0.0011758804321289062",
    "cited_safe_in_flight_bound": "2",
    "copied_as_strings_not_remeasured": true,
    "present": true,
    "source": "receipts/future/DETACHED_WORK_TRIAL.json"
   },
-  "elapsed_s": 133.57564210891724,
+  "elapsed_s": 133.06275701522827,
   "n_forcing_intervals": 0,
   "n_slow_intervals": 0,
   "reason": "no interval where the loop was blocked while runnable safe work existed",
@@ -88,7 +88,7 @@
   "GPU_EXCLUSIVE",
   "GPU_PROTECTED"
  ],
- "head": "b35af1fa8886aa9d5903e3b9e943503c63cb001e",
+ "head": "6ef2681614fadde7a45d002b5fc3feb108c81625",
  "measurement_class": "STATIC_ONLY",
  "obligation": "NO-WAIT ORCHESTRATION IS AN EXPLICIT FAILURE TARGET. If runnable safe work exists while the whole HCLI loop reports waiting on a subprocess, that is FAIL NO_WAIT_ORCHESTRATION, NOT A SLOW RESIDENT.",
  "odysseys": [
@@ -18562,27 +18562,27 @@
   },
   "detached_work_trial": {
    "cited_from_receipt": {
-    "cited_child_pid": "16367",
+    "cited_child_pid": "76893",
     "cited_idle_runnable_seconds": "0.0",
-    "cited_independent_progress_n": "45",
-    "cited_kqueue_latency_s": "0.0005540847778320312",
+    "cited_independent_progress_n": "46",
+    "cited_kqueue_latency_s": "0.0011758804321289062",
     "cited_safe_in_flight_bound": "2",
     "copied_as_strings_not_remeasured": true,
     "present": true,
     "source": "receipts/future/DETACHED_WORK_TRIAL.json"
    },
-   "elapsed_s": 133.57564210891724,
+   "elapsed_s": 133.06275701522827,
    "fixtures": false,
    "forcing_intervals": [],
    "n_blocked_intervals": 0,
-   "n_events": 145,
+   "n_events": 149,
    "n_forcing_intervals": 0,
    "n_slow_intervals": 0,
    "provenance": {
-    "n_bytes": 98872,
+    "n_bytes": 100923,
     "present": true,
     "rel": "receipts/future/DETACHED_WORK_TRIAL.json",
-    "sha256": "39c8a75c897dc7371fb7eb4dee082df8dfd7ac5573f69f169ad52b2db552efc4"
+    "sha256": "40f2b8e0eafd63dd7b5679ffab07262ae0342628a91fa4621d36d1c9529c914d"
    },
    "reason": "no interval where the loop was blocked while runnable safe work existed",
    "score": null,
@@ -18591,14 +18591,14 @@
    "tail": {
     "applies": false,
     "duration_s": 0.0,
-    "end_s": 133.57564210891724,
+    "end_s": 133.06275701522827,
     "evidence_class": "STATIC_ONLY",
     "forcing_intervals": [],
-    "last_refill_t_s": 128.43751621246338,
+    "last_refill_t_s": 127.46941781044006,
     "leftover_at_end": null,
     "n_decisions_in_tail": 1,
     "n_forcing_intervals": 0,
-    "n_refills_in_tail": 45,
+    "n_refills_in_tail": 47,
     "n_slow_intervals": 0,
     "named_duration_s": 2864.0,
     "not": null,
@@ -18615,10 +18615,10 @@
    "path": "receipts/future/POWER_TORTURE_TIMELINE.json",
    "present": true,
    "provenance": {
-    "n_bytes": 17281,
+    "n_bytes": 17291,
     "present": true,
     "rel": "receipts/future/POWER_TORTURE_TIMELINE.json",
-    "sha256": "d0863ac99ca69b73925bd08a20855da03ed1de9fe0c74c09b30b453944a5b619"
+    "sha256": "93c3f82261dd5ccc2adb1f6b172f13d6d1430a8be171a2e00d36916c35e1882b"
    },
    "reason": "no interval where the loop was blocked while runnable safe work existed",
    "verdict": "PASS"
@@ -18626,7 +18626,7 @@
  },
  "runnable_safe_work_rule": "RUNNABLE SAFE WORK is a unit that can start NOW without waiting on the blocked loop, without seizing a GPU/bench lease this process does not hold, and without a wake condition that is still false. A unit is runnable safe work when every clause holds: (1) IDENTITY \u2014 it has an id and is not already completed, failed, cancelled, or in-flight. (2) DEPENDENCIES \u2014 every dependency id is in the completed set; a dependency that is the in-flight blocked unit is unmet. (3) RESOURCE \u2014 GPU_DECODE / GPU_EXCLUSIVE / GPU_DIRTY_OK require a held GPU lease; GPU_PROTECTED / ANE / FPGA as a hardware class require qualification this sidecar does not have. STATIC_ANALYSIS (including static analysis of GPU kernels, and FPGA.engine-sim launched as STATIC_ANALYSIS) is CPU work and is runnable when the other clauses hold. LIGHT_CONTROL, CPU_HEAVY, COMPILE, TEST, IO_HEAVY, MEMORY_HEAVY, TOOL_WAIT, TEST_AUTHORING, GROK are free on this host. (4) SLEEP \u2014 a unit in SLEEPING state, or a workunit_sleeping row for its resource_class, whose wake_condition is unsatisfied is not runnable. The same unit is runnable only if that wake_condition is recorded satisfied. (5) SAFETY \u2014 if the unit carries a command, detached.refuse_reason is applied; a GPU argv, flock, cargo build, or lease seizure is not runnable. A unit blocked on a GPU lease is not runnable. A unit whose resource is free and whose dependencies are met IS runnable. A sleeping unit whose wake condition is unsatisfied is not.",
  "schema": "hawking.future.no_wait_orchestration.v1",
- "seal_sha256": "c57db89062535a81a348a1127fa1526f875765c217da29fe0ea134335f539458",
+ "seal_sha256": "f5b14b7da3c14ed7c1cf3931ccc7620c6462d4e54283f474af96e6cef1c46b4c",
  "sync_launch_kinds_are_the_blocking_loop": [
   "WORK_LAUNCHED",
   "workunit_launched"

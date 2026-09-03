@@ -1,7 +1,7 @@
 {
  "schema": "hawking.headless.decoding_gravity.v1",
- "generated_at": "2026-08-26T10:12:38Z",
- "git_head": "665110c71c8cc16db6a05af70d621a0266853ab1",
+ "generated_at": "2026-09-03T06:40:45Z",
+ "git_head": "ee9f9e90c9d65c54cd1ee5944afe5c04a87b636c",
  "generated_by": "tools/headless/decoding_gravity.py",
  "obligation": "N049 \u2014 DECODING GRAVITY (S026 \u00a759-64, \u00a794, \u00a795, \u00a7121; DOC-DECODE). Census native MTP / multi-token-prediction heads on OUR Qwen3.8; self-speculative feasibility of reduced-depth / early-exit / the 1.25-bpw binary child as a DRAFT against q2f; reclassify negatives by PURPOSE. Speculative decoding that rejects most proposals LOSES.",
  "hand_authored": false,
@@ -22,249 +22,39 @@
  "answer": "Parent Qwen3.8 BF16 HAS native MTP: text_config.mtp_num_hidden_layers=1, mtp_use_dedicated_embeddings=false, 15 mtp.* tensors, 849,398,784 BF16 bytes, one GQA+MLP layer after the last hidden sharing lm_head. Gravity q4 pack, MLX 4-bit convert/sanitize, and hawking qwen38_pack all drop those heads (n_mtp=0); llama.cpp exposes --spec-type draft-mtp but our Q5_K GGUF is absent here, and a Metal prior on Qwen3.5-9B lost at every n_max. The 1.25-bpw binary is a failed generator (16\u00d7 token 271) and a failed draft: token top-1 vs q2f is 0 at position 0, local SwiGLU channel-argmax mean is 0.3658854166666667, composed-ns is only 15% cheaper than q2f (23.43 vs 27.55 ms) and native greedy tok/s is tied (33.44 vs 33.09). Speculative decoding that rejects most proposals LOSES on accepted-tokens/GPU-second. Full MTP bench deferred.",
  "one_line": "MTP heads exist in the parent and are dropped at every runtime we run; the 1.25 binary is not a useful draft (token \u03b1=0 at pos 0).",
  "native_mtp": {
-  "verdict": "PARENT_HAS_NATIVE_MTP_HEADS_RUNTIMES_DROP_THEM",
-  "parent_has_heads": true,
-  "runtimes_drop_heads": true,
+  "verdict": "SEE_CENSUS",
+  "parent_has_heads": false,
+  "runtimes_drop_heads": false,
   "parent_config": {
-   "present": true,
+   "present": false,
    "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/config.json",
-   "architectures": [
-    "Qwen3_5ForConditionalGeneration"
-   ],
-   "model_type": "qwen3_5",
-   "text_model_type": "qwen3_5_text",
-   "num_hidden_layers": 64,
-   "hidden_size": 5120,
-   "vocab_size": 248320,
-   "tie_word_embeddings": false,
-   "keys_found": {
-    "text_config.mtp_num_hidden_layers": 1,
-    "text_config.mtp_use_dedicated_embeddings": false
-   },
+   "keys_found": {},
    "keys_absent": [
-    "eagle_num_layers",
+    "mtp_num_hidden_layers",
+    "mtp_use_dedicated_embeddings",
     "early_exit",
-    "medusa_num_heads",
-    "multi_token_heads",
-    "n_future_tokens",
-    "num_draft_layers",
     "num_early_exit_layers",
+    "num_draft_layers",
+    "medusa_num_heads",
+    "eagle_num_layers",
+    "n_future_tokens",
+    "multi_token_heads",
     "speculative_length"
-   ],
-   "mtp_num_hidden_layers": 1,
-   "mtp_use_dedicated_embeddings": false
+   ]
   },
   "parent_tensors": {
-   "present": true,
+   "present": false,
    "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/model.safetensors.index.json",
-   "n_weight_map": 1199,
-   "n_mtp_tensors": 15,
-   "mtp_bytes": 849398784,
-   "mtp_elements": 424699392,
-   "tensors": [
-    {
-     "name": "mtp.fc.weight",
-     "shard": "model-00018-of-00018.safetensors",
-     "dtype": "BF16",
-     "shape": [
-      5120,
-      10240
-     ],
-     "bytes": 104857600
-    },
-    {
-     "name": "mtp.layers.0.input_layernorm.weight",
-     "shard": "model-00018-of-00018.safetensors",
-     "dtype": "BF16",
-     "shape": [
-      5120
-     ],
-     "bytes": 10240
-    },
-    {
-     "name": "mtp.layers.0.mlp.down_proj.weight",
-     "shard": "model-00018-of-00018.safetensors",
-     "dtype": "BF16",
-     "shape": [
-      5120,
-      17408
-     ],
-     "bytes": 178257920
-    },
-    {
-     "name": "mtp.layers.0.mlp.gate_proj.weight",
-     "shard": "model-00018-of-00018.safetensors",
-     "dtype": "BF16",
-     "shape": [
-      17408,
-      5120
-     ],
-     "bytes": 178257920
-    },
-    {
-     "name": "mtp.layers.0.mlp.up_proj.weight",
-     "shard": "model-00018-of-00018.safetensors",
-     "dtype": "BF16",
-     "shape": [
-      17408,
-      5120
-     ],
-     "bytes": 178257920
-    },
-    {
-     "name": "mtp.layers.0.post_attention_layernorm.weight",
-     "shard": "model-00018-of-00018.safetensors",
-     "dtype": "BF16",
-     "shape": [
-      5120
-     ],
-     "bytes": 10240
-    },
-    {
-     "name": "mtp.layers.0.self_attn.k_norm.weight",
-     "shard": "model-00018-of-00018.safetensors",
-     "dtype": "BF16",
-     "shape": [
-      256
-     ],
-     "bytes": 512
-    },
-    {
-     "name": "mtp.layers.0.self_attn.k_proj.weight",
-     "shard": "model-00018-of-00018.safetensors",
-     "dtype": "BF16",
-     "shape": [
-      1024,
-      5120
-     ],
-     "bytes": 10485760
-    },
-    {
-     "name": "mtp.layers.0.self_attn.o_proj.weight",
-     "shard": "model-00018-of-00018.safetensors",
-     "dtype": "BF16",
-     "shape": [
-      5120,
-      6144
-     ],
-     "bytes": 62914560
-    },
-    {
-     "name": "mtp.layers.0.self_attn.q_norm.weight",
-     "shard": "model-00018-of-00018.safetensors",
-     "dtype": "BF16",
-     "shape": [
-      256
-     ],
-     "bytes": 512
-    },
-    {
-     "name": "mtp.layers.0.self_attn.q_proj.weight",
-     "shard": "model-00018-of-00018.safetensors",
-     "dtype": "BF16",
-     "shape": [
-      12288,
-      5120
-     ],
-     "bytes": 125829120
-    },
-    {
-     "name": "mtp.layers.0.self_attn.v_proj.weight",
-     "shard": "model-00018-of-00018.safetensors",
-     "dtype": "BF16",
-     "shape": [
-      1024,
-      5120
-     ],
-     "bytes": 10485760
-    },
-    {
-     "name": "mtp.norm.weight",
-     "shard": "model-00018-of-00018.safetensors",
-     "dtype": "BF16",
-     "shape": [
-      5120
-     ],
-     "bytes": 10240
-    },
-    {
-     "name": "mtp.pre_fc_norm_embedding.weight",
-     "shard": "model-00018-of-00018.safetensors",
-     "dtype": "BF16",
-     "shape": [
-      5120
-     ],
-     "bytes": 10240
-    },
-    {
-     "name": "mtp.pre_fc_norm_hidden.weight",
-     "shard": "model-00018-of-00018.safetensors",
-     "dtype": "BF16",
-     "shape": [
-      5120
-     ],
-     "bytes": 10240
-    }
-   ],
-   "expected_names": [
-    "mtp.fc.weight",
-    "mtp.layers.0.input_layernorm.weight",
-    "mtp.layers.0.mlp.down_proj.weight",
-    "mtp.layers.0.mlp.gate_proj.weight",
-    "mtp.layers.0.mlp.up_proj.weight",
-    "mtp.layers.0.post_attention_layernorm.weight",
-    "mtp.layers.0.self_attn.k_norm.weight",
-    "mtp.layers.0.self_attn.k_proj.weight",
-    "mtp.layers.0.self_attn.o_proj.weight",
-    "mtp.layers.0.self_attn.q_norm.weight",
-    "mtp.layers.0.self_attn.q_proj.weight",
-    "mtp.layers.0.self_attn.v_proj.weight",
-    "mtp.norm.weight",
-    "mtp.pre_fc_norm_embedding.weight",
-    "mtp.pre_fc_norm_hidden.weight"
-   ],
-   "expected_present": true,
-   "names_not_in_parent": [],
-   "extra_mtp_names": [],
-   "lm_head": {
-    "name": "lm_head.weight",
-    "shard": "model-00018-of-00018.safetensors",
-    "dtype": "BF16",
-    "shape": [
-     248320,
-     5120
-    ],
-    "bytes": 2542796800,
-    "note": "shared with MTP (mtp_use_dedicated_embeddings=false); not extra"
-   },
-   "method": "safetensors index + header JSON data_offsets; file bodies not read"
+   "tensors": []
   },
   "gravity_q4": {
-   "present": true,
+   "present": false,
    "path": "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1/manifest.json",
-   "schema": "hawking.ascent.qwen38_language_uniform_q4.v1",
-   "tensor_count": 755,
-   "skipped_vision_tensors": 333,
-   "n_named": 755,
-   "n_mtp": 0,
-   "mtp_names": [],
-   "prefixes": [
-    "language_model"
-   ],
-   "note": "Language-only pack. skipped_vision_tensors counts vision; MTP is not a vision tensor and is also not in the packed catalog."
+   "n_mtp": 0
   },
   "mlx_4bit_artifact": {
-   "present": true,
-   "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-mlx/4bit",
-   "architectures": [
-    "Qwen3_5ForConditionalGeneration"
-   ],
-   "mtp_num_hidden_layers": 1,
-   "mtp_use_dedicated_embeddings": false,
-   "n_weight_map": 2180,
-   "n_mtp": 0,
-   "mtp_names": [],
-   "note": "config still carries mtp_num_hidden_layers but the converted weight map contains zero mtp.* tensors"
+   "present": false,
+   "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-mlx/4bit"
   },
   "mlx_sanitize": {
    "present": true,
@@ -817,9 +607,9 @@
    ]
   },
   "extra_head_and_state_bytes": {
-   "mtp_weight_bytes_bf16": 849398784,
-   "mtp_weight_gib_bf16": 0.7910642623901367,
-   "mtp_as_fraction_of_parent_payload": 0.01528716928207521,
+   "mtp_weight_bytes_bf16": 0,
+   "mtp_weight_gib_bf16": 0.0,
+   "mtp_as_fraction_of_parent_payload": 0.0,
    "lm_head_not_extra": true,
    "mtp_kv_bytes_per_token_fp16": 4096,
    "mtp_kv_note": "mtp.layers.0 is self_attn (GQA), not DeltaNet. Extra decode state is one GQA layer of KV: n_kv_heads=4, head_dim=256, K+V, fp16 \u2192 4096 bytes/token. Negligible vs production_active_bytes 9.88e9 (ORGAN_BANDWIDTH).",
@@ -955,9 +745,9 @@
    },
    "native_mtp_perfect_alpha_ceiling": {
     "accepted_tokens_per_pass": 2.0,
-    "bytes": 5662362624.0,
-    "value": 3.5320945209742893e-10,
-    "vs_baseline": 1.6999843208911376,
+    "bytes": 4812963840.0,
+    "value": 4.1554436444716774e-10,
+    "vs_baseline": 2.0,
     "kind": "DERIVED",
     "alpha_mtp": {
      "value": null,
@@ -1167,9 +957,9 @@
    "quote": "Speculative decoding needs a draft several times cheaper, not a quarter cheaper."
   },
   "extra_head_state": {
-   "mtp_weight_bytes_bf16": 849398784,
-   "mtp_weight_gib_bf16": 0.7910642623901367,
-   "mtp_as_fraction_of_parent_payload": 0.01528716928207521,
+   "mtp_weight_bytes_bf16": 0,
+   "mtp_weight_gib_bf16": 0.0,
+   "mtp_as_fraction_of_parent_payload": 0.0,
    "lm_head_not_extra": true,
    "mtp_kv_bytes_per_token_fp16": 4096,
    "mtp_kv_note": "mtp.layers.0 is self_attn (GQA), not DeltaNet. Extra decode state is one GQA layer of KV: n_kv_heads=4, head_dim=256, K+V, fp16 \u2192 4096 bytes/token. Negligible vs production_active_bytes 9.88e9 (ORGAN_BANDWIDTH).",
@@ -1197,14 +987,5 @@
   "crates/hawking-core/src/model/qwen38_geometry.rs",
   "crates/hawking-speculate/src/lib.rs",
   "https://github.com/ggml-org/llama.cpp/issues/23752"
- ],
- "bench": {
-  "state": "UNKNOWN",
-  "recorded_at": "2026-08-26T00:00:00Z",
-  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
-  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
-  "quiescence": null,
-  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
-  "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
- }
+ ]
 }

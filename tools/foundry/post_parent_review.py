@@ -810,7 +810,7 @@ def main(argv=None):
     ap.add_argument("command", choices=["generate", "gate", "stale"])
     ap.add_argument("--evidence", required=True)
     ap.add_argument("--adapters", help="Tier-A adapter registry JSON (list, or {adapters: [...]})")
-    ap.add_argument("--out", default="reports/foundry/post_parent_review")
+    ap.add_argument("--out", default="research/reports/foundry/post_parent_review")
     ap.add_argument("--heavy-lease-held", action="store_true")
     args = ap.parse_args(argv)
 

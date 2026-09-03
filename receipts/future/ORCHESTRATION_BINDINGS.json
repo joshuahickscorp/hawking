@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-03T00:19:10Z",
+  "recorded_at": "2026-09-03T05:51:45Z",
   "recorded_by": "tools/future/orchestration.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -642,7 +642,7 @@
   "distinct_frontier_items": 41,
   "distinct_species": 73,
   "infrastructure_excluded": 5,
-  "unbound_production": 154
+  "unbound_production": 157
  },
  "frontier_view_keys": [
   "ABI_VERDICT_HARNESS.json",
@@ -762,7 +762,7 @@
   "orchestration.py"
  ],
  "negative_findings": [
-  "154 production modules remain unbound and are NOT credited",
+  "157 production modules remain unbound and are NOT credited",
   "0 bindings are broken and credit nothing",
   "binding a module does not make its science correct; it makes the module reachable and its result routable"
  ],
@@ -781,7 +781,7 @@
   "workunit": "tools.future.orchestration.emit_workunit(module)"
  },
  "schema": "hawking.future.orchestration.v1",
- "seal_sha256": "b33f596dc8526dcc9b3e2ea2e907b36114a3e44922b5c794f697e18d3ad133cd",
+ "seal_sha256": "66831ff003b06bcf3c8d0eb3ebf2831d081f6e49b58ff41a96ff341394c9b7b4",
  "unbound_production": [
   "abliteration_run.py",
   "addressing_attribution.py",
@@ -814,6 +814,7 @@
   "complete_ebpw.py",
   "concurrency_measure.py",
   "conftest.py",
+  "decision_value.py",
   "decode_tax_target.py",
   "deltanet_generated_transition.py",
   "deltanet_multistep.py",
@@ -839,6 +840,7 @@
   "fast_thought.py",
   "fidelity_hierarchy.py",
   "fold_addqx_ab.py",
+  "fpga_partition.py",
   "functional_role_probe.py",
   "gap_ledger_60.py",
   "geometry_table.py",
@@ -884,6 +886,7 @@
   "odyssey2_transfer.py",
   "odyssey3_attack.py",
   "odyssey_mission_controller.py",
+  "odyssey_wall.py",
   "op_class_ablation.py",
   "organ_bandwidth.py",
   "organ_decomposition_sealed.py",

@@ -31,7 +31,7 @@ use std::fmt;
 pub const HCLI_JSONL_PROTOCOL: &str = "hcli.machine.v1";
 /// Schema for the small, stable model-optimization identity advertised by
 /// HCLI capability surfaces. The canonical values are derived from the shared
-/// `lab/semantic_taxonomy.json` contract rather than redefined here.
+/// `research/lab/semantic_taxonomy.json` contract rather than redefined here.
 pub const HCLI_MODEL_OPTIMIZATION_IDENTITY_SCHEMA: &str = "hcli.model_optimization.identity.v1";
 /// Schema for HCLI's explicit non-execution boundary around Gravity/Condense.
 ///
@@ -162,7 +162,7 @@ pub struct HcliModelOptimizationExecutionBoundary {
 
 /// HCLI's projection of the shared Condense-to-Gravity compatibility mapping.
 ///
-/// The values below are copied from `lab/semantic_taxonomy.json`; this type is
+/// The values below are copied from `research/lab/semantic_taxonomy.json`; this type is
 /// deliberately descriptive and never rewrites a historical receipt or turns
 /// a legacy command into an HCLI optimization operation.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

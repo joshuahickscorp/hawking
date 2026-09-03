@@ -79,7 +79,7 @@ def subsystem(path: str) -> str:
         return "hide"
     if path.startswith("crates/"):
         return "hawking"
-    if path.startswith("tools/") or path.startswith("ramanujan/"):
+    if path.startswith("tools/") or path.startswith("research/ramanujan/"):
         return "laboratory"
     return "shared"
 

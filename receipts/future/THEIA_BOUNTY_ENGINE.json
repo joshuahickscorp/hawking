@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T09:18:51Z",
+  "recorded_at": "2026-09-03T05:52:53Z",
   "recorded_by": "tools/theia/engine.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -76,13 +76,13 @@
     "lab": "HAWKING SELF-BOUNTY",
     "notes": {
      "artifacts": [
-      "/Users/scammermike/.claude-grok/worktrees/t1-theia-laboratories-real-20260902-045552/receipts/future/AUTONOMY_SCARS.json"
+      "/Users/scammermike/Downloads/hawking/receipts/future/AUTONOMY_SCARS.json"
      ],
      "authorization": {
       "reason": "hawking-internal laboratory work; not a security class",
       "status": "HAWKING_INTERNAL"
      },
-     "discovered": "/Users/scammermike/.claude-grok/worktrees/t1-theia-laboratories-real-20260902-045552/receipts/future/AUTONOMY_SCARS.json",
+     "discovered": "/Users/scammermike/Downloads/hawking/receipts/future/AUTONOMY_SCARS.json",
      "known_solution": false,
      "plan": {
       "actions": [
@@ -148,7 +148,7 @@
       "probability_of_success": {
        "denominator": 1,
        "numerator": 1,
-       "source": "artifact already on disk at /Users/scammermike/.claude-grok/worktrees/t1-theia-laboratories-real-20260902-045552/receipts/future/AUTONOMY_SCARS.json; intake is local parse, not a search"
+       "source": "artifact already on disk at /Users/scammermike/Downloads/hawking/receipts/future/AUTONOMY_SCARS.json; intake is local parse, not a search"
       },
       "risk": {
        "denominator": 1,
@@ -183,7 +183,7 @@
     },
     "security_halt": null,
     "self_bounty_kind": "negative science",
-    "source": "/Users/scammermike/.claude-grok/worktrees/t1-theia-laboratories-real-20260902-045552/receipts/future/AUTONOMY_SCARS.json",
+    "source": "/Users/scammermike/Downloads/hawking/receipts/future/AUTONOMY_SCARS.json",
     "stages_visited": [
      "DISCOVER",
      "AUTHORITY/SCOPE RESOLUTION",
@@ -199,7 +199,7 @@
      "TRAJECTORY + METHOD + NEGATIVE SCIENCE"
     ],
     "verified_result": {
-     "artifact": "/Users/scammermike/.claude-grok/worktrees/t1-theia-laboratories-real-20260902-045552/receipts/future/AUTONOMY_SCARS.json",
+     "artifact": "/Users/scammermike/Downloads/hawking/receipts/future/AUTONOMY_SCARS.json",
      "detail": {
       "independent_module": "tools.future.autonomy_scars.scars",
       "n_scars": 4,
@@ -210,7 +210,7 @@
        "STATUS_LABEL_LAUNDERED_AS_CAUSAL_CLAIM"
       ],
       "schema": "hawking.future.autonomy_scars.v1",
-      "seal_sha256": "099c415914cef2b1fa93b8d3474d16561de39ad50aada313c903618859cbac8c"
+      "seal_sha256": "9ed95ae37c03b81c3f10df2a4430389b666058176ec07c162e0fc3fba45245e7"
      },
      "kind": "receipt_seal",
      "type": "VerifiedResult"
@@ -230,158 +230,13 @@
     "counterexample_search",
     "symbolic_computation"
    ],
-   "ran": true,
+   "ran": false,
    "refused_work": [
     "network_egress",
     "ACTIVE_TEST",
     "train_model"
    ],
-   "result": {
-    "blocked": null,
-    "bounty_id": "math:hawking.theia.math_formal.v1:apple-tg-and-h1",
-    "exit_code": 0,
-    "final_stage": "TRAJECTORY + METHOD + NEGATIVE SCIENCE",
-    "lab": "MATH / FORMAL",
-    "notes": {
-     "artifacts": [
-      "/Users/scammermike/.claude-grok/worktrees/t1-theia-laboratories-real-20260902-045552/receipts/future/THEIA_MATH_FORMAL.json"
-     ],
-     "authorization": {
-      "reason": "hawking-internal laboratory work; not a security class",
-      "status": "HAWKING_INTERNAL"
-     },
-     "discovered": "/Users/scammermike/.claude-grok/worktrees/t1-theia-laboratories-real-20260902-045552/receipts/future/THEIA_MATH_FORMAL.json",
-     "known_solution": false,
-     "plan": {
-      "actions": [
-       "verify_receipt",
-       "score_schedule",
-       "stage"
-      ],
-      "kind": null,
-      "lab": "MATH / FORMAL",
-      "not_actions": [
-       "train",
-       "ACTIVE_TEST",
-       "network",
-       "scan"
-      ]
-     },
-     "schedule_declares_result_true": false,
-     "screen_schema": "hawking.theia.math_formal.v1",
-     "submission": "stage into receipts/future; do not publish externally",
-     "trajectory": {
-      "laws": [],
-      "method": "local receipt intake; no training; no active test",
-      "negative_science": false
-     },
-     "verifier": "tools.theia.intake.verify_receipt",
-     "workunits": [
-      {
-       "bound": 1,
-       "id": "math:hawking.theia.math_formal.v1:apple-tg-and-h1:ingest",
-       "lane": "CPU_ANALYSIS"
-      }
-     ]
-    },
-    "schedule_score": {
-     "declares_result_true": false,
-     "factors": {
-      "compute_cost": {
-       "denominator": 1,
-       "numerator": 1,
-       "source": "declared unit baseline so the H.1 denominator is defined; STATIC_ONLY; not a hardware measurement"
-      },
-      "human_cost": {
-       "denominator": 1,
-       "numerator": 1,
-       "source": "declared unit baseline so the H.1 denominator is defined; STATIC_ONLY; not a hardware measurement"
-      },
-      "information_gain": {
-       "denominator": 1,
-       "numerator": 5,
-       "source": "count of claims that z3.Solver.check confirmed"
-      },
-      "opportunity_cost": {
-       "denominator": 1,
-       "numerator": 1,
-       "source": "declared unit baseline so the H.1 denominator is defined; STATIC_ONLY; not a hardware measurement"
-      },
-      "probability_of_success": {
-       "denominator": 1,
-       "numerator": 1,
-       "source": "local z3 check of already-stated repo laws, not a search"
-      },
-      "risk": {
-       "denominator": 1,
-       "numerator": 1,
-       "source": "local z3; no network, no ACTIVE_TEST, no credentials"
-      },
-      "strategic_relevance": {
-       "denominator": 1,
-       "numerator": 1,
-       "source": "MATH / FORMAL laboratory, \u00a719.12 / H.6"
-      },
-      "transfer_value": {
-       "denominator": 1,
-       "numerator": 5,
-       "source": "theorems plus archived counterexamples reusable as search knowledge"
-      },
-      "verified_reward": {
-       "denominator": 1,
-       "numerator": 1,
-       "source": "H.1: verified_reward may include theorem/proof; MATH/FORMAL H.6"
-      },
-      "wall_time": {
-       "denominator": 1,
-       "numerator": 1,
-       "source": "declared unit baseline so the H.1 denominator is defined; STATIC_ONLY; not a hardware measurement"
-      }
-     },
-     "formula": "verified_reward * probability_of_success * information_gain * transfer_value * strategic_relevance / (wall_time * compute_cost * human_cost * risk * opportunity_cost)",
-     "type": "ScheduleScore",
-     "value_denominator": 1,
-     "value_numerator": 25
-    },
-    "security_halt": null,
-    "self_bounty_kind": null,
-    "source": "/Users/scammermike/.claude-grok/worktrees/t1-theia-laboratories-real-20260902-045552/receipts/future/THEIA_MATH_FORMAL.json",
-    "stages_visited": [
-     "DISCOVER",
-     "AUTHORITY/SCOPE RESOLUTION",
-     "DUPLICATE / KNOWN-SOLUTION CHECK",
-     "VERIFIER DEFINITION",
-     "COST / VALUE ESTIMATE",
-     "CHEAP REPRODUCTION / SCREEN",
-     "PLAN",
-     "BOUNDED WORKUNITS",
-     "ARTIFACTS / TESTS / PROOFS / MEASUREMENTS",
-     "INDEPENDENT VERIFICATION",
-     "SUBMISSION / PROMOTION",
-     "TRAJECTORY + METHOD + NEGATIVE SCIENCE"
-    ],
-    "verified_result": {
-     "artifact": "/Users/scammermike/.claude-grok/worktrees/t1-theia-laboratories-real-20260902-045552/receipts/future/THEIA_MATH_FORMAL.json",
-     "detail": {
-      "ceiling": 1024,
-      "checker": "z3.Solver.check",
-      "claim_ids": [
-       "APPLE_TG_PRODUCT_NEVER_EXCEEDS_CEILING",
-       "POWER_OF_TWO_THREADGROUP_IS_NOT_ALWAYS_LEGAL",
-       "KERNEL_GEOMETRY_OCCUPANCY_IDENTITY_IS_LEGAL",
-       "H1_VALUE_STRICTLY_DECREASES_IN_RISK",
-       "COMPLETE_EBPW_PARTS_SUM_EQUALS_STORED_BYTES"
-      ],
-      "evidence_tier": "STATIC",
-      "independent_module": "tools.theia.math_lab.check_claims",
-      "n_claims": 5,
-      "schema": "hawking.theia.math_formal.v1",
-      "seal_sha256": "f476360a9d2a66b600ce66554ef31328614639eca27cf855a78a937694c363cd"
-     },
-     "kind": "receipt_seal",
-     "type": "VerifiedResult"
-    }
-   },
+   "result": null,
    "runnable": true
   },
   "OPEN SOURCE": {
@@ -432,153 +287,13 @@
     "performance_archaeology",
     "hardware_mapping"
    ],
-   "ran": true,
+   "ran": false,
    "refused_work": [
     "network_egress",
     "ACTIVE_TEST",
     "train_model"
    ],
-   "result": {
-    "blocked": null,
-    "bounty_id": "systems:hawking.theia.systems_compiler.v1:hawking-core-abi-preflight",
-    "exit_code": 0,
-    "final_stage": "TRAJECTORY + METHOD + NEGATIVE SCIENCE",
-    "lab": "SYSTEMS / COMPILER",
-    "notes": {
-     "artifacts": [
-      "/Users/scammermike/.claude-grok/worktrees/t1-theia-laboratories-real-20260902-045552/receipts/future/THEIA_SYSTEMS_COMPILER.json"
-     ],
-     "authorization": {
-      "reason": "hawking-internal laboratory work; not a security class",
-      "status": "HAWKING_INTERNAL"
-     },
-     "discovered": "/Users/scammermike/.claude-grok/worktrees/t1-theia-laboratories-real-20260902-045552/receipts/future/THEIA_SYSTEMS_COMPILER.json",
-     "known_solution": false,
-     "plan": {
-      "actions": [
-       "verify_receipt",
-       "score_schedule",
-       "stage"
-      ],
-      "kind": null,
-      "lab": "SYSTEMS / COMPILER",
-      "not_actions": [
-       "train",
-       "ACTIVE_TEST",
-       "network",
-       "scan"
-      ]
-     },
-     "schedule_declares_result_true": false,
-     "screen_schema": "hawking.theia.systems_compiler.v1",
-     "submission": "stage into receipts/future; do not publish externally",
-     "trajectory": {
-      "laws": [],
-      "method": "local receipt intake; no training; no active test",
-      "negative_science": false
-     },
-     "verifier": "tools.theia.intake.verify_receipt",
-     "workunits": [
-      {
-       "bound": 1,
-       "id": "systems:hawking.theia.systems_compiler.v1:hawking-core-abi-preflight:ingest",
-       "lane": "CPU_ANALYSIS"
-      }
-     ]
-    },
-    "schedule_score": {
-     "declares_result_true": false,
-     "factors": {
-      "compute_cost": {
-       "denominator": 1,
-       "numerator": 1,
-       "source": "declared unit baseline so the H.1 denominator is defined; STATIC_ONLY; not a hardware measurement"
-      },
-      "human_cost": {
-       "denominator": 1,
-       "numerator": 1,
-       "source": "declared unit baseline so the H.1 denominator is defined; STATIC_ONLY; not a hardware measurement"
-      },
-      "information_gain": {
-       "denominator": 1,
-       "numerator": 16,
-       "source": "blocking_defect_count 5 plus KERNEL_GEOMETRY organs whose trips*col_stride==cols (11); STATIC"
-      },
-      "opportunity_cost": {
-       "denominator": 1,
-       "numerator": 1,
-       "source": "declared unit baseline so the H.1 denominator is defined; STATIC_ONLY; not a hardware measurement"
-      },
-      "probability_of_success": {
-       "denominator": 1,
-       "numerator": 1,
-       "source": "local parse of shaders and receipts already on disk"
-      },
-      "risk": {
-       "denominator": 1,
-       "numerator": 1,
-       "source": "local source parse; no network, no ACTIVE_TEST, no credentials, no dispatch"
-      },
-      "strategic_relevance": {
-       "denominator": 1,
-       "numerator": 1,
-       "source": "SYSTEMS / COMPILER laboratory, \u00a719.12 / H.5"
-      },
-      "transfer_value": {
-       "denominator": 1,
-       "numerator": 1,
-       "source": "host/shader ABI preflight method plus occupancy identity reusable as a compiler law"
-      },
-      "verified_reward": {
-       "denominator": 1,
-       "numerator": 1,
-       "source": "H.1: verified_reward may include an accepted patch / compiler finding; SYSTEMS/COMPILER static preflight"
-      },
-      "wall_time": {
-       "denominator": 1,
-       "numerator": 1,
-       "source": "declared unit baseline so the H.1 denominator is defined; STATIC_ONLY; not a hardware measurement"
-      }
-     },
-     "formula": "verified_reward * probability_of_success * information_gain * transfer_value * strategic_relevance / (wall_time * compute_cost * human_cost * risk * opportunity_cost)",
-     "type": "ScheduleScore",
-     "value_denominator": 1,
-     "value_numerator": 16
-    },
-    "security_halt": null,
-    "self_bounty_kind": null,
-    "source": "/Users/scammermike/.claude-grok/worktrees/t1-theia-laboratories-real-20260902-045552/receipts/future/THEIA_SYSTEMS_COMPILER.json",
-    "stages_visited": [
-     "DISCOVER",
-     "AUTHORITY/SCOPE RESOLUTION",
-     "DUPLICATE / KNOWN-SOLUTION CHECK",
-     "VERIFIER DEFINITION",
-     "COST / VALUE ESTIMATE",
-     "CHEAP REPRODUCTION / SCREEN",
-     "PLAN",
-     "BOUNDED WORKUNITS",
-     "ARTIFACTS / TESTS / PROOFS / MEASUREMENTS",
-     "INDEPENDENT VERIFICATION",
-     "SUBMISSION / PROMOTION",
-     "TRAJECTORY + METHOD + NEGATIVE SCIENCE"
-    ],
-    "verified_result": {
-     "artifact": "/Users/scammermike/.claude-grok/worktrees/t1-theia-laboratories-real-20260902-045552/receipts/future/THEIA_SYSTEMS_COMPILER.json",
-     "detail": {
-      "analyze_symbol_was": "tools.future.static_kernel_verify.analyze",
-      "blocking_defect_count": 5,
-      "evidence_tier": "STATIC",
-      "independent_module": "tools.future.static_kernel_verify.parse_metal",
-      "load_symbol": "tools.future.static_kernel_verify.load_repo_sources",
-      "n_geometry_hold": 11,
-      "n_kernels": 766,
-      "schema": "hawking.theia.systems_compiler.v1",
-      "seal_sha256": "cf9f50a6e981ca15d1ed2b5e0a89e55123cebdf01b879692e2ca2a791a1d08c6"
-     },
-     "kind": "receipt_seal",
-     "type": "VerifiedResult"
-    }
-   },
+   "result": null,
    "runnable": true
   }
  },
@@ -753,7 +468,7 @@
   "HAWKING SELF-BOUNTY"
  ],
  "schema": "hawking.theia.bounty_engine.v1",
- "seal_sha256": "191d4529784935f9a8ac9d929b26ceaf8ea58f4449021856f8d9fa9d5d7eb633",
+ "seal_sha256": "5872e19c8c5e6cadd5a7fa861d16fa3002ac171d4f36dec85b39fcb82737f775",
  "security": {
   "ACTIVE_TEST": "modeled; transition refused; cannot be forced",
   "active_test": false,
@@ -763,404 +478,7 @@
   "scanning": false,
   "scope": "immutable once pinned; loaded only from an operator-supplied authority file; never derived from bounty text; fail closed"
  },
- "self_bounty_kinds": {
-  "autonomy/recovery proof": {
-   "bounty_id": "self:AUTONOMY_SCARS:hawking.future.autonomy_scars.v1:autonomy/recovery proof",
-   "exit_code": 0,
-   "final_stage": "TRAJECTORY + METHOD + NEGATIVE SCIENCE",
-   "independent_module": "tools.future.autonomy_scars.scars",
-   "schedule_score": {
-    "declares_result_true": false,
-    "factors": {
-     "compute_cost": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "declared unit baseline so the H.1 denominator is defined; STATIC_ONLY; not a hardware measurement and not complete_ebpw (wrong axes)"
-     },
-     "human_cost": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "declared unit baseline so the H.1 denominator is defined; STATIC_ONLY; not a hardware measurement and not complete_ebpw (wrong axes)"
-     },
-     "information_gain": {
-      "denominator": 1,
-      "numerator": 3,
-      "source": "receipt recovered_implementation entries"
-     },
-     "opportunity_cost": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "declared unit baseline so the H.1 denominator is defined; STATIC_ONLY; not a hardware measurement and not complete_ebpw (wrong axes)"
-     },
-     "probability_of_success": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "artifact already on disk at /Users/scammermike/.claude-grok/worktrees/t1-theia-laboratories-real-20260902-045552/receipts/future/AUTONOMY_SCARS.json; intake is local parse, not a search"
-     },
-     "risk": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "local readonly receipt; no network, no ACTIVE_TEST, no credentials"
-     },
-     "strategic_relevance": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "HAWKING SELF-BOUNTY laboratory, \u00a719.12: autonomy/recovery proof"
-     },
-     "transfer_value": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "receipt general_law"
-     },
-     "verified_reward": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "H.1: verified_reward may include autonomy/recovery proof; schema hawking.future.autonomy_scars.v1"
-     },
-     "wall_time": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "declared unit baseline so the H.1 denominator is defined; STATIC_ONLY; not a hardware measurement and not complete_ebpw (wrong axes)"
-     }
-    },
-    "formula": "verified_reward * probability_of_success * information_gain * transfer_value * strategic_relevance / (wall_time * compute_cost * human_cost * risk * opportunity_cost)",
-    "type": "ScheduleScore",
-    "value_denominator": 1,
-    "value_numerator": 3
-   },
-   "source": "/Users/scammermike/.claude-grok/worktrees/t1-theia-laboratories-real-20260902-045552/receipts/future/AUTONOMY_SCARS.json"
-  },
-  "kernel win": {
-   "bounty_id": "self:KERNEL_GEOMETRY:hawking.future.kernel_geometry.v1",
-   "exit_code": 0,
-   "final_stage": "TRAJECTORY + METHOD + NEGATIVE SCIENCE",
-   "independent_module": "tools.future.static_kernel_verify.APPLE_MAX_THREADS_PER_THREADGROUP",
-   "schedule_score": {
-    "declares_result_true": false,
-    "factors": {
-     "compute_cost": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "declared unit baseline so the H.1 denominator is defined; STATIC_ONLY; not a hardware measurement and not complete_ebpw (wrong axes)"
-     },
-     "human_cost": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "declared unit baseline so the H.1 denominator is defined; STATIC_ONLY; not a hardware measurement and not complete_ebpw (wrong axes)"
-     },
-     "information_gain": {
-      "denominator": 1,
-      "numerator": 11,
-      "source": "organs whose coverage.trips * occupancy_class.col_stride == cols and dropped==0; STATIC arithmetic, not a hardware occupancy counter"
-     },
-     "opportunity_cost": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "declared unit baseline so the H.1 denominator is defined; STATIC_ONLY; not a hardware measurement and not complete_ebpw (wrong axes)"
-     },
-     "probability_of_success": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "artifact already on disk at /Users/scammermike/.claude-grok/worktrees/t1-theia-laboratories-real-20260902-045552/receipts/future/KERNEL_GEOMETRY.json; intake is local parse, not a search"
-     },
-     "risk": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "local readonly receipt; no network, no ACTIVE_TEST, no credentials"
-     },
-     "strategic_relevance": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "HAWKING SELF-BOUNTY laboratory, \u00a719.12: kernel win"
-     },
-     "transfer_value": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "occupancy_class.threadgroup == threads_per_row * rows_per_tg"
-     },
-     "verified_reward": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "H.1: verified_reward may include kernel win (static geometry identity); schema hawking.future.kernel_geometry.v1"
-     },
-     "wall_time": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "declared unit baseline so the H.1 denominator is defined; STATIC_ONLY; not a hardware measurement and not complete_ebpw (wrong axes)"
-     }
-    },
-    "formula": "verified_reward * probability_of_success * information_gain * transfer_value * strategic_relevance / (wall_time * compute_cost * human_cost * risk * opportunity_cost)",
-    "type": "ScheduleScore",
-    "value_denominator": 1,
-    "value_numerator": 11
-   },
-   "source": "/Users/scammermike/.claude-grok/worktrees/t1-theia-laboratories-real-20260902-045552/receipts/future/KERNEL_GEOMETRY.json"
-  },
-  "negative science": {
-   "bounty_id": "self:AUTONOMY_SCARS:hawking.future.autonomy_scars.v1",
-   "exit_code": 0,
-   "final_stage": "TRAJECTORY + METHOD + NEGATIVE SCIENCE",
-   "independent_module": "tools.future.autonomy_scars.scars",
-   "schedule_score": {
-    "declares_result_true": false,
-    "factors": {
-     "compute_cost": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "declared unit baseline so the H.1 denominator is defined; STATIC_ONLY; not a hardware measurement and not complete_ebpw (wrong axes)"
-     },
-     "human_cost": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "declared unit baseline so the H.1 denominator is defined; STATIC_ONLY; not a hardware measurement and not complete_ebpw (wrong axes)"
-     },
-     "information_gain": {
-      "denominator": 1,
-      "numerator": 4,
-      "source": "receipt n_scars (count of recorded defects)"
-     },
-     "opportunity_cost": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "declared unit baseline so the H.1 denominator is defined; STATIC_ONLY; not a hardware measurement and not complete_ebpw (wrong axes)"
-     },
-     "probability_of_success": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "artifact already on disk at /Users/scammermike/.claude-grok/worktrees/t1-theia-laboratories-real-20260902-045552/receipts/future/AUTONOMY_SCARS.json; intake is local parse, not a search"
-     },
-     "risk": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "local readonly receipt; no network, no ACTIVE_TEST, no credentials"
-     },
-     "strategic_relevance": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "HAWKING SELF-BOUNTY laboratory, \u00a719.12: negative science"
-     },
-     "transfer_value": {
-      "denominator": 1,
-      "numerator": 4,
-      "source": "count of scars that state a law, else general_law"
-     },
-     "verified_reward": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "H.1: verified_reward may include negative science; schema hawking.future.autonomy_scars.v1"
-     },
-     "wall_time": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "declared unit baseline so the H.1 denominator is defined; STATIC_ONLY; not a hardware measurement and not complete_ebpw (wrong axes)"
-     }
-    },
-    "formula": "verified_reward * probability_of_success * information_gain * transfer_value * strategic_relevance / (wall_time * compute_cost * human_cost * risk * opportunity_cost)",
-    "type": "ScheduleScore",
-    "value_denominator": 1,
-    "value_numerator": 16
-   },
-   "source": "/Users/scammermike/.claude-grok/worktrees/t1-theia-laboratories-real-20260902-045552/receipts/future/AUTONOMY_SCARS.json"
-  },
-  "new compiler pass": {
-   "bounty_id": "self:DEVICE_COMPILER:hawking.future.device_compiler.v1",
-   "exit_code": 0,
-   "final_stage": "TRAJECTORY + METHOD + NEGATIVE SCIENCE",
-   "independent_module": "tools.future.device_compiler.is_genuine_compiled_identity",
-   "schedule_score": {
-    "declares_result_true": false,
-    "factors": {
-     "compute_cost": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "declared unit baseline so the H.1 denominator is defined; STATIC_ONLY; not a hardware measurement and not complete_ebpw (wrong axes)"
-     },
-     "human_cost": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "declared unit baseline so the H.1 denominator is defined; STATIC_ONLY; not a hardware measurement and not complete_ebpw (wrong axes)"
-     },
-     "information_gain": {
-      "denominator": 1,
-      "numerator": 6,
-      "source": "lowering.n_compiled (organs with compiled identity)"
-     },
-     "opportunity_cost": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "declared unit baseline so the H.1 denominator is defined; STATIC_ONLY; not a hardware measurement and not complete_ebpw (wrong axes)"
-     },
-     "probability_of_success": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "artifact already on disk at /Users/scammermike/.claude-grok/worktrees/t1-theia-laboratories-real-20260902-045552/receipts/future/DEVICE_COMPILER.json; intake is local parse, not a search"
-     },
-     "risk": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "local readonly receipt; no network, no ACTIVE_TEST, no credentials"
-     },
-     "strategic_relevance": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "HAWKING SELF-BOUNTY laboratory, \u00a719.12: new compiler pass"
-     },
-     "transfer_value": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "placeholder compiled identity is refused, not recorded as COMPILED"
-     },
-     "verified_reward": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "H.1: verified_reward may include new compiler pass; schema hawking.future.device_compiler.v1"
-     },
-     "wall_time": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "declared unit baseline so the H.1 denominator is defined; STATIC_ONLY; not a hardware measurement and not complete_ebpw (wrong axes)"
-     }
-    },
-    "formula": "verified_reward * probability_of_success * information_gain * transfer_value * strategic_relevance / (wall_time * compute_cost * human_cost * risk * opportunity_cost)",
-    "type": "ScheduleScore",
-    "value_denominator": 1,
-    "value_numerator": 6
-   },
-   "source": "/Users/scammermike/.claude-grok/worktrees/t1-theia-laboratories-real-20260902-045552/receipts/future/DEVICE_COMPILER.json"
-  },
-  "regressions": {
-   "bounty_id": "self:REPRO_SCIENCE:hawking.future.repro_science.v1",
-   "exit_code": 0,
-   "final_stage": "TRAJECTORY + METHOD + NEGATIVE SCIENCE",
-   "independent_module": "tools.future.repro_science.transitive_downgrade_proof",
-   "schedule_score": {
-    "declares_result_true": false,
-    "factors": {
-     "compute_cost": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "declared unit baseline so the H.1 denominator is defined; STATIC_ONLY; not a hardware measurement and not complete_ebpw (wrong axes)"
-     },
-     "human_cost": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "declared unit baseline so the H.1 denominator is defined; STATIC_ONLY; not a hardware measurement and not complete_ebpw (wrong axes)"
-     },
-     "information_gain": {
-      "denominator": 1,
-      "numerator": 8,
-      "source": "mutation_canaries keys (fail-closed regression probes)"
-     },
-     "opportunity_cost": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "declared unit baseline so the H.1 denominator is defined; STATIC_ONLY; not a hardware measurement and not complete_ebpw (wrong axes)"
-     },
-     "probability_of_success": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "artifact already on disk at /Users/scammermike/.claude-grok/worktrees/t1-theia-laboratories-real-20260902-045552/receipts/future/REPRO_SCIENCE.json; intake is local parse, not a search"
-     },
-     "risk": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "local readonly receipt; no network, no ACTIVE_TEST, no credentials"
-     },
-     "strategic_relevance": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "HAWKING SELF-BOUNTY laboratory, \u00a719.12: regressions"
-     },
-     "transfer_value": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "claim_downgrade.transitivity_holds"
-     },
-     "verified_reward": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "H.1: verified_reward may include regression / fail-closed reproduction; schema hawking.future.repro_science.v1"
-     },
-     "wall_time": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "declared unit baseline so the H.1 denominator is defined; STATIC_ONLY; not a hardware measurement and not complete_ebpw (wrong axes)"
-     }
-    },
-    "formula": "verified_reward * probability_of_success * information_gain * transfer_value * strategic_relevance / (wall_time * compute_cost * human_cost * risk * opportunity_cost)",
-    "type": "ScheduleScore",
-    "value_denominator": 1,
-    "value_numerator": 8
-   },
-   "source": "/Users/scammermike/.claude-grok/worktrees/t1-theia-laboratories-real-20260902-045552/receipts/future/REPRO_SCIENCE.json"
-  },
-  "representation win": {
-   "bounty_id": "self:COMPLETE_EBPW:hawking.future.complete_ebpw.v1",
-   "exit_code": 0,
-   "final_stage": "TRAJECTORY + METHOD + NEGATIVE SCIENCE",
-   "independent_module": "tools.future.complete_ebpw.cost",
-   "schedule_score": {
-    "declares_result_true": false,
-    "factors": {
-     "compute_cost": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "declared unit baseline so the H.1 denominator is defined; STATIC_ONLY; not a hardware measurement and not complete_ebpw (wrong axes)"
-     },
-     "human_cost": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "declared unit baseline so the H.1 denominator is defined; STATIC_ONLY; not a hardware measurement and not complete_ebpw (wrong axes)"
-     },
-     "information_gain": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "one complete-executable-BPW calculator law"
-     },
-     "opportunity_cost": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "declared unit baseline so the H.1 denominator is defined; STATIC_ONLY; not a hardware measurement and not complete_ebpw (wrong axes)"
-     },
-     "probability_of_success": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "artifact already on disk at /Users/scammermike/.claude-grok/worktrees/t1-theia-laboratories-real-20260902-045552/receipts/future/COMPLETE_EBPW.json; intake is local parse, not a search"
-     },
-     "risk": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "local readonly receipt; no network, no ACTIVE_TEST, no credentials"
-     },
-     "strategic_relevance": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "HAWKING SELF-BOUNTY laboratory, \u00a719.12: representation win"
-     },
-     "transfer_value": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "refuse-missing-input doctrine reusable as a cost law"
-     },
-     "verified_reward": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "H.1: verified_reward may include a new compiler law / representation; schema hawking.future.complete_ebpw.v1"
-     },
-     "wall_time": {
-      "denominator": 1,
-      "numerator": 1,
-      "source": "declared unit baseline so the H.1 denominator is defined; STATIC_ONLY; not a hardware measurement and not complete_ebpw (wrong axes)"
-     }
-    },
-    "formula": "verified_reward * probability_of_success * information_gain * transfer_value * strategic_relevance / (wall_time * compute_cost * human_cost * risk * opportunity_cost)",
-    "type": "ScheduleScore",
-    "value_denominator": 1,
-    "value_numerator": 1
-   },
-   "source": "/Users/scammermike/.claude-grok/worktrees/t1-theia-laboratories-real-20260902-045552/receipts/future/COMPLETE_EBPW.json"
-  }
- },
+ "self_bounty_kinds": {},
  "self_bounty_run": {
   "blocked": null,
   "bounty_id": "self:AUTONOMY_SCARS:hawking.future.autonomy_scars.v1",
@@ -1169,13 +487,13 @@
   "lab": "HAWKING SELF-BOUNTY",
   "notes": {
    "artifacts": [
-    "/Users/scammermike/.claude-grok/worktrees/t1-theia-laboratories-real-20260902-045552/receipts/future/AUTONOMY_SCARS.json"
+    "/Users/scammermike/Downloads/hawking/receipts/future/AUTONOMY_SCARS.json"
    ],
    "authorization": {
     "reason": "hawking-internal laboratory work; not a security class",
     "status": "HAWKING_INTERNAL"
    },
-   "discovered": "/Users/scammermike/.claude-grok/worktrees/t1-theia-laboratories-real-20260902-045552/receipts/future/AUTONOMY_SCARS.json",
+   "discovered": "/Users/scammermike/Downloads/hawking/receipts/future/AUTONOMY_SCARS.json",
    "known_solution": false,
    "plan": {
     "actions": [
@@ -1241,7 +559,7 @@
     "probability_of_success": {
      "denominator": 1,
      "numerator": 1,
-     "source": "artifact already on disk at /Users/scammermike/.claude-grok/worktrees/t1-theia-laboratories-real-20260902-045552/receipts/future/AUTONOMY_SCARS.json; intake is local parse, not a search"
+     "source": "artifact already on disk at /Users/scammermike/Downloads/hawking/receipts/future/AUTONOMY_SCARS.json; intake is local parse, not a search"
     },
     "risk": {
      "denominator": 1,
@@ -1276,7 +594,7 @@
   },
   "security_halt": null,
   "self_bounty_kind": "negative science",
-  "source": "/Users/scammermike/.claude-grok/worktrees/t1-theia-laboratories-real-20260902-045552/receipts/future/AUTONOMY_SCARS.json",
+  "source": "/Users/scammermike/Downloads/hawking/receipts/future/AUTONOMY_SCARS.json",
   "stages_visited": [
    "DISCOVER",
    "AUTHORITY/SCOPE RESOLUTION",
@@ -1292,7 +610,7 @@
    "TRAJECTORY + METHOD + NEGATIVE SCIENCE"
   ],
   "verified_result": {
-   "artifact": "/Users/scammermike/.claude-grok/worktrees/t1-theia-laboratories-real-20260902-045552/receipts/future/AUTONOMY_SCARS.json",
+   "artifact": "/Users/scammermike/Downloads/hawking/receipts/future/AUTONOMY_SCARS.json",
    "detail": {
     "independent_module": "tools.future.autonomy_scars.scars",
     "n_scars": 4,
@@ -1303,7 +621,7 @@
      "STATUS_LABEL_LAUNDERED_AS_CAUSAL_CLAIM"
     ],
     "schema": "hawking.future.autonomy_scars.v1",
-    "seal_sha256": "099c415914cef2b1fa93b8d3474d16561de39ad50aada313c903618859cbac8c"
+    "seal_sha256": "9ed95ae37c03b81c3f10df2a4430389b666058176ec07c162e0fc3fba45245e7"
    },
    "kind": "receipt_seal",
    "type": "VerifiedResult"

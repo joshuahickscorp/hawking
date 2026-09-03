@@ -18,7 +18,7 @@ hcli.mutation.rollback_mutation (reversible local edits),
 hcli.agentos.resident_gate / autonomy_gate (lifecycle owners; not invoked),
 tools.future.resident_optimizer.OptimizerBound (FORBIDDEN/ALLOWED + BoundViolation),
 tools.future.mutation_surface.check_disjoint (Codex non-interference),
-lab/execution_sandbox.py (bible §21 policy; not materialized here),
+research/lab/execution_sandbox.py (bible §21 policy; not materialized here),
 crates/hide-kernel security_sandbox (OS Seatbelt; orthogonal).
 """
 from __future__ import annotations
@@ -1278,11 +1278,11 @@ def recovered_implementation() -> list[dict[str, Any]]:
             "check_disjoint / intersects_codex; composed so Codex paths cannot be written",
         ),
         (
-            "lab/execution_sandbox.py",
+            "research/lab/execution_sandbox.py",
             "bible §21 ExecutionSandboxPolicy; recovered via git show; not imported (sparse, different vocabulary)",
         ),
         (
-            "lab/operators/ascension_sandbox.py",
+            "research/lab/operators/ascension_sandbox.py",
             "detached research-sandbox controller; never loads a model; recovered via git show",
         ),
         (
@@ -1552,7 +1552,7 @@ def build() -> Path:
             "HCLI WorkUnit emitted for provision; verifier is not the proposer",
         ],
         "negative_findings": [
-            "lab/execution_sandbox.py is bible §21 policy, not a worktree provisioner; not imported (different action vocabulary); present-or-missing is recorded in recovered_implementation",
+            "research/lab/execution_sandbox.py is bible §21 policy, not a worktree provisioner; not imported (different action vocabulary); present-or-missing is recorded in recovered_implementation",
             "OS-level Seatbelt confinement (hide-kernel security_sandbox) is orthogonal; BoundedFS is the in-process gate",
             "temporary_child_process is a permitted token; provisioning does not spawn, and a raw child could write outside unless OS-confined",
             "this-wave siblings (detached, frontiers, wakeup, super_resident, resident_api, protected_window) are not imported",

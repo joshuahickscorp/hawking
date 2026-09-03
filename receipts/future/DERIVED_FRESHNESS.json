@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-03T00:17:44Z",
+  "recorded_at": "2026-09-03T06:48:53Z",
   "recorded_by": "tools/future/freshness.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -172,6 +172,12 @@
        "evidence_source": "live_headless",
        "kind": "other_worktree",
        "path": "/Users/scammermike/Downloads/hawking/.worktrees/g047-baseline/receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+       "sha256": "3d4291b2cacfe823ac5556268efe0814c24dd0daefee8894226070a48ade02eb"
+      },
+      {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
        "sha256": "3d4291b2cacfe823ac5556268efe0814c24dd0daefee8894226070a48ade02eb"
       },
       {
@@ -358,6 +364,12 @@
        "evidence_source": "live_headless",
        "kind": "other_worktree",
        "path": "/Users/scammermike/Downloads/hawking/.worktrees/g047-baseline/receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+       "sha256": "3d4291b2cacfe823ac5556268efe0814c24dd0daefee8894226070a48ade02eb"
+      },
+      {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
        "sha256": "3d4291b2cacfe823ac5556268efe0814c24dd0daefee8894226070a48ade02eb"
       },
       {
@@ -549,6 +561,12 @@
        "kind": "other_worktree",
        "path": "/Users/scammermike/Downloads/hawking/.worktrees/g047-baseline/receipts/future/CANDIDATE_STAGED_PLAN.json",
        "sha256": "2be7e6032798743302e467fb99daedbfb7411b0897ec7e98acd5a7b434a8ecc0"
+      },
+      {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/future/CANDIDATE_STAGED_PLAN.json",
+       "sha256": "87bd465f567bf177797719657aacb194c5593e330fb7fd607ed5049c7b15b153"
       }
      ],
      "current_candidate_count": null,
@@ -731,6 +749,12 @@
        "sha256": "3d4291b2cacfe823ac5556268efe0814c24dd0daefee8894226070a48ade02eb"
       },
       {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+       "sha256": "3d4291b2cacfe823ac5556268efe0814c24dd0daefee8894226070a48ade02eb"
+      },
+      {
        "evidence_source": "pinned_snapshot",
        "kind": "pinned_snapshot",
        "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
@@ -900,6 +924,12 @@
        "evidence_source": "live_headless",
        "kind": "other_worktree",
        "path": "/Users/scammermike/Downloads/hawking/.worktrees/g047-baseline/receipts/headless/FLASH_COMPLETE_V0.nx.json",
+       "sha256": "0eee8f82b1adf97087f995b7d645a210c6ec5ea975d25bd96450956db75345a9"
+      },
+      {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/FLASH_COMPLETE_V0.nx.json",
        "sha256": "0eee8f82b1adf97087f995b7d645a210c6ec5ea975d25bd96450956db75345a9"
       },
       {
@@ -1075,6 +1105,12 @@
        "sha256": "ebadbf2a038138c43064112e48a779f5ec7167a97ba1c44bf6c442867ef6c3a6"
       },
       {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/FLASH_COMPLETE_V2.nr.json",
+       "sha256": "ebadbf2a038138c43064112e48a779f5ec7167a97ba1c44bf6c442867ef6c3a6"
+      },
+      {
        "evidence_source": "pinned_snapshot",
        "kind": "pinned_snapshot",
        "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_COMPLETE_V2.nr.json",
@@ -1247,6 +1283,12 @@
        "sha256": "a644ca2407ec65af2bffc5a1fba15c63cbce7a492e70334fb9eb96535f47f3f1"
       },
       {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/FLASH_NEXT_MACHINE.nx.json",
+       "sha256": "a644ca2407ec65af2bffc5a1fba15c63cbce7a492e70334fb9eb96535f47f3f1"
+      },
+      {
        "evidence_source": "pinned_snapshot",
        "kind": "pinned_snapshot",
        "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_NEXT_MACHINE.nx.json",
@@ -1416,6 +1458,12 @@
        "evidence_source": "live_headless",
        "kind": "other_worktree",
        "path": "/Users/scammermike/Downloads/hawking/.worktrees/g047-baseline/receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+       "sha256": "993e62421f1ffd77009dbab5c501cfd9f7fda1555c24bd46b309f171cb5849d9"
+      },
+      {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
        "sha256": "993e62421f1ffd77009dbab5c501cfd9f7fda1555c24bd46b309f171cb5849d9"
       },
       {
@@ -1605,6 +1653,12 @@
        "sha256": "3d4291b2cacfe823ac5556268efe0814c24dd0daefee8894226070a48ade02eb"
       },
       {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+       "sha256": "3d4291b2cacfe823ac5556268efe0814c24dd0daefee8894226070a48ade02eb"
+      },
+      {
        "evidence_source": "pinned_snapshot",
        "kind": "pinned_snapshot",
        "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
@@ -1774,6 +1828,12 @@
        "evidence_source": "live_headless",
        "kind": "other_worktree",
        "path": "/Users/scammermike/Downloads/hawking/.worktrees/g047-baseline/receipts/headless/ACCELERATOR_REPATRIATION_QUEUE.json",
+       "sha256": "7fe5eba1709bb2d2210f9fa4097a348a36a7040a5da2ca9ff35845f5dfefd94e"
+      },
+      {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/ACCELERATOR_REPATRIATION_QUEUE.json",
        "sha256": "7fe5eba1709bb2d2210f9fa4097a348a36a7040a5da2ca9ff35845f5dfefd94e"
       },
       {
@@ -1963,6 +2023,12 @@
        "sha256": "0eee8f82b1adf97087f995b7d645a210c6ec5ea975d25bd96450956db75345a9"
       },
       {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/FLASH_COMPLETE_V0.nx.json",
+       "sha256": "0eee8f82b1adf97087f995b7d645a210c6ec5ea975d25bd96450956db75345a9"
+      },
+      {
        "evidence_source": "pinned_snapshot",
        "kind": "pinned_snapshot",
        "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_COMPLETE_V0.nx.json",
@@ -2132,6 +2198,12 @@
        "evidence_source": "live_headless",
        "kind": "other_worktree",
        "path": "/Users/scammermike/Downloads/hawking/.worktrees/g047-baseline/receipts/headless/ACCELERATOR_SCOREBOARD.json",
+       "sha256": "8e4d50aa9898ebdd93b0404b0e7b9f73731c25280c2056220dfd85017a835369"
+      },
+      {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/ACCELERATOR_SCOREBOARD.json",
        "sha256": "8e4d50aa9898ebdd93b0404b0e7b9f73731c25280c2056220dfd85017a835369"
       },
       {
@@ -2324,6 +2396,12 @@
        "sha256": "3d4291b2cacfe823ac5556268efe0814c24dd0daefee8894226070a48ade02eb"
       },
       {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+       "sha256": "3d4291b2cacfe823ac5556268efe0814c24dd0daefee8894226070a48ade02eb"
+      },
+      {
        "evidence_source": "pinned_snapshot",
        "kind": "pinned_snapshot",
        "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
@@ -2493,6 +2571,12 @@
        "evidence_source": "live_headless",
        "kind": "other_worktree",
        "path": "/Users/scammermike/Downloads/hawking/.worktrees/g047-baseline/receipts/headless/ACCELERATOR_SCOREBOARD.json",
+       "sha256": "8e4d50aa9898ebdd93b0404b0e7b9f73731c25280c2056220dfd85017a835369"
+      },
+      {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/ACCELERATOR_SCOREBOARD.json",
        "sha256": "8e4d50aa9898ebdd93b0404b0e7b9f73731c25280c2056220dfd85017a835369"
       },
       {
@@ -2668,6 +2752,12 @@
        "sha256": "7fe5eba1709bb2d2210f9fa4097a348a36a7040a5da2ca9ff35845f5dfefd94e"
       },
       {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/ACCELERATOR_REPATRIATION_QUEUE.json",
+       "sha256": "7fe5eba1709bb2d2210f9fa4097a348a36a7040a5da2ca9ff35845f5dfefd94e"
+      },
+      {
        "evidence_source": "pinned_snapshot",
        "kind": "pinned_snapshot",
        "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/ACCELERATOR_REPATRIATION_QUEUE.json",
@@ -2837,6 +2927,12 @@
        "evidence_source": "live_headless",
        "kind": "other_worktree",
        "path": "/Users/scammermike/Downloads/hawking/.worktrees/g047-baseline/receipts/headless/ACCELERATOR_REPATRIATION_AUDIT.json",
+       "sha256": "c5b77fb1e3a6a167e38911e9c6cd5c460c39043d32494ae5ebb1e3fe714b8915"
+      },
+      {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/ACCELERATOR_REPATRIATION_AUDIT.json",
        "sha256": "c5b77fb1e3a6a167e38911e9c6cd5c460c39043d32494ae5ebb1e3fe714b8915"
       },
       {
@@ -3012,6 +3108,12 @@
        "sha256": "2711382665157b79dba2268aa290ce5c3d8397ac6fb95a409b8f2f1868b0a1e4"
       },
       {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+       "sha256": "2711382665157b79dba2268aa290ce5c3d8397ac6fb95a409b8f2f1868b0a1e4"
+      },
+      {
        "evidence_source": "pinned_snapshot",
        "kind": "pinned_snapshot",
        "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/ACCELERATOR_ARCHITECTURE_ATLAS.json",
@@ -3181,6 +3283,12 @@
        "evidence_source": "live_headless",
        "kind": "other_worktree",
        "path": "/Users/scammermike/Downloads/hawking/.worktrees/g047-baseline/receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json",
+       "sha256": "f627ce102b1257d4f939827d22f069bcd5f31d6631899e84a16e511e51107339"
+      },
+      {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json",
        "sha256": "f627ce102b1257d4f939827d22f069bcd5f31d6631899e84a16e511e51107339"
       },
       {
@@ -3356,6 +3464,12 @@
        "sha256": "17b6bb49a211a9345701e17e0dfddb86c5950135d7e5a4096476177e2e77f4db"
       },
       {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/ACCELERATOR_TRANSFER_VERIFIED.json",
+       "sha256": "17b6bb49a211a9345701e17e0dfddb86c5950135d7e5a4096476177e2e77f4db"
+      },
+      {
        "evidence_source": "pinned_snapshot",
        "kind": "pinned_snapshot",
        "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/ACCELERATOR_TRANSFER_VERIFIED.json",
@@ -3525,6 +3639,12 @@
        "evidence_source": "live_headless",
        "kind": "other_worktree",
        "path": "/Users/scammermike/Downloads/hawking/.worktrees/g047-baseline/receipts/headless/ACCELERATOR_FRONT_F_ODYSSEY_PASS.json",
+       "sha256": "447247d2f48ce7d983a2d6de37b82cd9ae9b520f1415b439b659b0dd80ff4214"
+      },
+      {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/ACCELERATOR_FRONT_F_ODYSSEY_PASS.json",
        "sha256": "447247d2f48ce7d983a2d6de37b82cd9ae9b520f1415b439b659b0dd80ff4214"
       },
       {
@@ -3700,6 +3820,12 @@
        "sha256": "0eee8f82b1adf97087f995b7d645a210c6ec5ea975d25bd96450956db75345a9"
       },
       {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/FLASH_COMPLETE_V0.nx.json",
+       "sha256": "0eee8f82b1adf97087f995b7d645a210c6ec5ea975d25bd96450956db75345a9"
+      },
+      {
        "evidence_source": "pinned_snapshot",
        "kind": "pinned_snapshot",
        "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_COMPLETE_V0.nx.json",
@@ -3869,6 +3995,12 @@
        "evidence_source": "live_headless",
        "kind": "other_worktree",
        "path": "/Users/scammermike/Downloads/hawking/.worktrees/g047-baseline/receipts/headless/FLASH_COMPLETE_V2.nr.json",
+       "sha256": "ebadbf2a038138c43064112e48a779f5ec7167a97ba1c44bf6c442867ef6c3a6"
+      },
+      {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/FLASH_COMPLETE_V2.nr.json",
        "sha256": "ebadbf2a038138c43064112e48a779f5ec7167a97ba1c44bf6c442867ef6c3a6"
       },
       {
@@ -4044,6 +4176,12 @@
        "sha256": "a644ca2407ec65af2bffc5a1fba15c63cbce7a492e70334fb9eb96535f47f3f1"
       },
       {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/FLASH_NEXT_MACHINE.nx.json",
+       "sha256": "a644ca2407ec65af2bffc5a1fba15c63cbce7a492e70334fb9eb96535f47f3f1"
+      },
+      {
        "evidence_source": "pinned_snapshot",
        "kind": "pinned_snapshot",
        "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_NEXT_MACHINE.nx.json",
@@ -4213,6 +4351,12 @@
        "evidence_source": "live_headless",
        "kind": "other_worktree",
        "path": "/Users/scammermike/Downloads/hawking/.worktrees/g047-baseline/receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+       "sha256": "993e62421f1ffd77009dbab5c501cfd9f7fda1555c24bd46b309f171cb5849d9"
+      },
+      {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
        "sha256": "993e62421f1ffd77009dbab5c501cfd9f7fda1555c24bd46b309f171cb5849d9"
       },
       {
@@ -4388,6 +4532,12 @@
        "sha256": "f4de5744f9e1a7cb275cb6347a17069cee261052f9f823020e7b908d800ea588"
       },
       {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/FLASH_META_COHERENCE_SCREEN_L4.json",
+       "sha256": "f4de5744f9e1a7cb275cb6347a17069cee261052f9f823020e7b908d800ea588"
+      },
+      {
        "evidence_source": "pinned_snapshot",
        "kind": "pinned_snapshot",
        "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_META_COHERENCE_SCREEN_L4.json",
@@ -4557,6 +4707,12 @@
        "evidence_source": "live_headless",
        "kind": "other_worktree",
        "path": "/Users/scammermike/Downloads/hawking/.worktrees/g047-baseline/receipts/headless/FLASH_ORGAN_CENSUS.json",
+       "sha256": "5ff766e18f7316005ece2808b43d938c1c728139b2c335556f71dbf344d4555d"
+      },
+      {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/FLASH_ORGAN_CENSUS.json",
        "sha256": "5ff766e18f7316005ece2808b43d938c1c728139b2c335556f71dbf344d4555d"
       },
       {
@@ -4732,6 +4888,12 @@
        "sha256": "4dc9bf25ea300f7c41e9623827a81fae29567c533e11c7c1f2ee85ba0614fa28"
       },
       {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/FLASH_ROUTER_SENSITIVITY_MAP_L3_L4.json",
+       "sha256": "4dc9bf25ea300f7c41e9623827a81fae29567c533e11c7c1f2ee85ba0614fa28"
+      },
+      {
        "evidence_source": "pinned_snapshot",
        "kind": "pinned_snapshot",
        "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_ROUTER_SENSITIVITY_MAP_L3_L4.json",
@@ -4901,6 +5063,12 @@
        "evidence_source": "live_headless",
        "kind": "other_worktree",
        "path": "/Users/scammermike/Downloads/hawking/.worktrees/g047-baseline/receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
+       "sha256": "3f405e0b4339a28f13e74676e297c3a78cf7be32d1502ad41721fe54f0d7b6fa"
+      },
+      {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
        "sha256": "3f405e0b4339a28f13e74676e297c3a78cf7be32d1502ad41721fe54f0d7b6fa"
       },
       {
@@ -5076,6 +5244,12 @@
        "sha256": "5b86c8a01c28c794bfa3804918236fae87d90320fd81626a92fb33cf1f912851"
       },
       {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/FLASH_DOCTOR_EXPERT_BANK_SCREEN_FULL_L44.json",
+       "sha256": "5b86c8a01c28c794bfa3804918236fae87d90320fd81626a92fb33cf1f912851"
+      },
+      {
        "evidence_source": "pinned_snapshot",
        "kind": "pinned_snapshot",
        "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_DOCTOR_EXPERT_BANK_SCREEN_FULL_L44.json",
@@ -5245,6 +5419,12 @@
        "evidence_source": "live_headless",
        "kind": "other_worktree",
        "path": "/Users/scammermike/Downloads/hawking/.worktrees/g047-baseline/receipts/headless/FLASH_LAYER30_CRITICAL_PATH.json",
+       "sha256": "017c7d990b4bb92280a388a5ea13e2fbe693997d9c051685ac8f3cd51a82a3c7"
+      },
+      {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/FLASH_LAYER30_CRITICAL_PATH.json",
        "sha256": "017c7d990b4bb92280a388a5ea13e2fbe693997d9c051685ac8f3cd51a82a3c7"
       },
       {
@@ -5420,6 +5600,12 @@
        "sha256": "20c3684de53a6e682d74dbdd65a2fb7833db53f2520e1de10df94542ce7fe37e"
       },
       {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/FLASH_LAYER10_CRITICAL_PATH.json",
+       "sha256": "20c3684de53a6e682d74dbdd65a2fb7833db53f2520e1de10df94542ce7fe37e"
+      },
+      {
        "evidence_source": "pinned_snapshot",
        "kind": "pinned_snapshot",
        "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_LAYER10_CRITICAL_PATH.json",
@@ -5589,6 +5775,12 @@
        "evidence_source": "live_headless",
        "kind": "other_worktree",
        "path": "/Users/scammermike/Downloads/hawking/.worktrees/g047-baseline/receipts/headless/FLASH_LAYER46_DISPATCH_LEDGER.json",
+       "sha256": "2c65c1cf0ac8da4966a8d70b7779333e5a7d21f2fb48034b97416a9162458017"
+      },
+      {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/FLASH_LAYER46_DISPATCH_LEDGER.json",
        "sha256": "2c65c1cf0ac8da4966a8d70b7779333e5a7d21f2fb48034b97416a9162458017"
       },
       {
@@ -5764,6 +5956,12 @@
        "sha256": "57ead5d81c1974a8152deb8350876be362be33f3013d7e3c4015f90d3c7dcf8c"
       },
       {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
+       "sha256": "57ead5d81c1974a8152deb8350876be362be33f3013d7e3c4015f90d3c7dcf8c"
+      },
+      {
        "evidence_source": "pinned_snapshot",
        "kind": "pinned_snapshot",
        "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_STATEFUL_TPS_GATE_V14.json",
@@ -5933,6 +6131,12 @@
        "evidence_source": "live_headless",
        "kind": "other_worktree",
        "path": "/Users/scammermike/Downloads/hawking/.worktrees/g047-baseline/receipts/headless/FLASH_NEXT_FPGA_ORGAN_MAP.json",
+       "sha256": "fb7ca577696f3dbbd783e6a3d7b5986a30e7f1cbec7a30ed522fc45b3cf88011"
+      },
+      {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/FLASH_NEXT_FPGA_ORGAN_MAP.json",
        "sha256": "fb7ca577696f3dbbd783e6a3d7b5986a30e7f1cbec7a30ed522fc45b3cf88011"
       },
       {
@@ -6108,6 +6312,12 @@
        "sha256": "a403ed8eb3d5b2d1d4c38996809da93f72ea0ddb30cc321a613b8e7f01e4589b"
       },
       {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/FLASH_ATTENTION_ROUTE_UNION_PARITY.json",
+       "sha256": "a403ed8eb3d5b2d1d4c38996809da93f72ea0ddb30cc321a613b8e7f01e4589b"
+      },
+      {
        "evidence_source": "pinned_snapshot",
        "kind": "pinned_snapshot",
        "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_ATTENTION_ROUTE_UNION_PARITY.json",
@@ -6277,6 +6487,12 @@
        "evidence_source": "live_headless",
        "kind": "other_worktree",
        "path": "/Users/scammermike/Downloads/hawking/.worktrees/g047-baseline/receipts/headless/QWEN27_TOKEN_NS_BUDGET.json",
+       "sha256": "64253f9de400d83854826629eca19102c2593e0bcfbeeeecdfff47146474c3a1"
+      },
+      {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/QWEN27_TOKEN_NS_BUDGET.json",
        "sha256": "64253f9de400d83854826629eca19102c2593e0bcfbeeeecdfff47146474c3a1"
       },
       {
@@ -6452,6 +6668,12 @@
        "sha256": "66a606e5ce0319ef828bfed3ec4a49f2904289692bd447bbffcb1f1cbf841aec"
       },
       {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/QWEN27_FPGA_ORGAN_MAP.json",
+       "sha256": "66a606e5ce0319ef828bfed3ec4a49f2904289692bd447bbffcb1f1cbf841aec"
+      },
+      {
        "evidence_source": "pinned_snapshot",
        "kind": "pinned_snapshot",
        "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/QWEN27_FPGA_ORGAN_MAP.json",
@@ -6621,6 +6843,12 @@
        "evidence_source": "live_headless",
        "kind": "other_worktree",
        "path": "/Users/scammermike/Downloads/hawking/.worktrees/g047-baseline/receipts/headless/QWEN38_ACCELERATOR_TRANSFER_MAP.json",
+       "sha256": "d45413916025ccef9e8d178da9bc52d3423efbea7f614735d62fce770cba4c62"
+      },
+      {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/QWEN38_ACCELERATOR_TRANSFER_MAP.json",
        "sha256": "d45413916025ccef9e8d178da9bc52d3423efbea7f614735d62fce770cba4c62"
       },
       {
@@ -6796,6 +7024,12 @@
        "sha256": "f591a8eedf93b071d222c13103bbc750523dffe854981532785126d2c37a9d81"
       },
       {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/APPLE_ANE_ATLAS.json",
+       "sha256": "f591a8eedf93b071d222c13103bbc750523dffe854981532785126d2c37a9d81"
+      },
+      {
        "evidence_source": "pinned_snapshot",
        "kind": "pinned_snapshot",
        "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/APPLE_ANE_ATLAS.json",
@@ -6965,6 +7199,12 @@
        "evidence_source": "live_headless",
        "kind": "other_worktree",
        "path": "/Users/scammermike/Downloads/hawking/.worktrees/g047-baseline/receipts/headless/APPLE_ANE_DEVICE_PROFILE.json",
+       "sha256": "0f25b8bfc36dd7538b4121dfe491773ceb6c855d0ac61b7ab49feca8f6c6fecd"
+      },
+      {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/APPLE_ANE_DEVICE_PROFILE.json",
        "sha256": "0f25b8bfc36dd7538b4121dfe491773ceb6c855d0ac61b7ab49feca8f6c6fecd"
       },
       {
@@ -7140,6 +7380,12 @@
        "sha256": "554108a5652e94778af03c6eb566c95548d4ffe5260df005639e46684914020d"
       },
       {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/HCLI_FPGA_PREBOARD.json",
+       "sha256": "554108a5652e94778af03c6eb566c95548d4ffe5260df005639e46684914020d"
+      },
+      {
        "evidence_source": "pinned_snapshot",
        "kind": "pinned_snapshot",
        "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/HCLI_FPGA_PREBOARD.json",
@@ -7309,6 +7555,12 @@
        "evidence_source": "live_headless",
        "kind": "other_worktree",
        "path": "/Users/scammermike/Downloads/hawking/.worktrees/g047-baseline/receipts/headless/FLASH_FPGA_PREBOARD_CURRENT.json",
+       "sha256": "5bbd75c24f78965b3f8094df5e4fbeda5faa8d2af5888650033e0feef2b981b9"
+      },
+      {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/FLASH_FPGA_PREBOARD_CURRENT.json",
        "sha256": "5bbd75c24f78965b3f8094df5e4fbeda5faa8d2af5888650033e0feef2b981b9"
       },
       {
@@ -7484,6 +7736,12 @@
        "sha256": "b1827e68aac976c87afd940858cd3ad949fb16715c709b8ca29d0f8e90b8797a"
       },
       {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/ODYSSEY_TRANSFER_PROVEN.json",
+       "sha256": "b1827e68aac976c87afd940858cd3ad949fb16715c709b8ca29d0f8e90b8797a"
+      },
+      {
        "evidence_source": "pinned_snapshot",
        "kind": "pinned_snapshot",
        "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/ODYSSEY_TRANSFER_PROVEN.json",
@@ -7653,6 +7911,12 @@
        "evidence_source": "live_headless",
        "kind": "other_worktree",
        "path": "/Users/scammermike/Downloads/hawking/.worktrees/g047-baseline/receipts/headless/ODYSSEY_ADVERSARIAL_SWEEP.json",
+       "sha256": "0e4e20dd5714660eea78122db71331874a1746799ddc6043d03680dcdabc0125"
+      },
+      {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/ODYSSEY_ADVERSARIAL_SWEEP.json",
        "sha256": "0e4e20dd5714660eea78122db71331874a1746799ddc6043d03680dcdabc0125"
       },
       {
@@ -7828,6 +8092,12 @@
        "sha256": "11cc13bb93164d2c992718d17a71e3809482ebcd20260a86b7bfbcf89ceb2e70"
       },
       {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/ODYSSEY_LEARNING_CURVE.json",
+       "sha256": "11cc13bb93164d2c992718d17a71e3809482ebcd20260a86b7bfbcf89ceb2e70"
+      },
+      {
        "evidence_source": "pinned_snapshot",
        "kind": "pinned_snapshot",
        "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/ODYSSEY_LEARNING_CURVE.json",
@@ -7859,7 +8129,7 @@
        "evidence_source": "live_headless",
        "kind": "this_worktree",
        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
-       "sha256": "ba01d42d6e04952a56e5e56e1a36fcfbaddcab7cecc163efb9236bd8ebaf7015"
+       "sha256": "6f18954b4af7f9cefad61a7cae985f7a8e8434f91cd72d76cba2b8e4ccef4c11"
       },
       {
        "evidence_source": "live_headless",
@@ -8000,21 +8270,27 @@
        "sha256": "ba01d42d6e04952a56e5e56e1a36fcfbaddcab7cecc163efb9236bd8ebaf7015"
       },
       {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+       "sha256": "ba01d42d6e04952a56e5e56e1a36fcfbaddcab7cecc163efb9236bd8ebaf7015"
+      },
+      {
        "evidence_source": "pinned_snapshot",
        "kind": "pinned_snapshot",
        "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
-       "sha256": "ba01d42d6e04952a56e5e56e1a36fcfbaddcab7cecc163efb9236bd8ebaf7015"
+       "sha256": "6f18954b4af7f9cefad61a7cae985f7a8e8434f91cd72d76cba2b8e4ccef4c11"
       }
      ],
      "current_candidate_count": null,
-     "current_semantic_fingerprint": "53efe8168d524332e8d46e0852e63104bcd2f0a71c6a3c589fa81516f6817b54",
-     "current_sha256": "ba01d42d6e04952a56e5e56e1a36fcfbaddcab7cecc163efb9236bd8ebaf7015",
+     "current_semantic_fingerprint": "6678dd1a030503b62f39ffd48cece7369d0fabd0b93720698d596ae9b3c1c57c",
+     "current_sha256": "6f18954b4af7f9cefad61a7cae985f7a8e8434f91cd72d76cba2b8e4ccef4c11",
      "evidence_source": "live_headless",
      "historical_path": "/Users/scammermike/Downloads/hawking/receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
      "reason": "byte sha matches; semantic identity follows",
      "recorded_candidate_count": null,
-     "recorded_semantic_fingerprint": "53efe8168d524332e8d46e0852e63104bcd2f0a71c6a3c589fa81516f6817b54",
-     "recorded_sha256": "ba01d42d6e04952a56e5e56e1a36fcfbaddcab7cecc163efb9236bd8ebaf7015",
+     "recorded_semantic_fingerprint": "6678dd1a030503b62f39ffd48cece7369d0fabd0b93720698d596ae9b3c1c57c",
+     "recorded_sha256": "6f18954b4af7f9cefad61a7cae985f7a8e8434f91cd72d76cba2b8e4ccef4c11",
      "rel": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
      "removed_candidate_ids": [],
      "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
@@ -8169,6 +8445,12 @@
        "evidence_source": "live_headless",
        "kind": "other_worktree",
        "path": "/Users/scammermike/Downloads/hawking/.worktrees/g047-baseline/receipts/headless/DOCTOR_TRANSFER.json",
+       "sha256": "de73716bd0cad1b460ad867214bd2f91a7610fa11a0febb8b6df84cec50594ea"
+      },
+      {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/DOCTOR_TRANSFER.json",
        "sha256": "de73716bd0cad1b460ad867214bd2f91a7610fa11a0febb8b6df84cec50594ea"
       },
       {
@@ -8344,6 +8626,12 @@
        "sha256": "a8a6398caed0520147b1966167b6540ab6f50d072ad2bb5c11a9e6944ec7fb32"
       },
       {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/DENSE_SUBBIT_TRANSFER.json",
+       "sha256": "a8a6398caed0520147b1966167b6540ab6f50d072ad2bb5c11a9e6944ec7fb32"
+      },
+      {
        "evidence_source": "pinned_snapshot",
        "kind": "pinned_snapshot",
        "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/DENSE_SUBBIT_TRANSFER.json",
@@ -8516,6 +8804,12 @@
        "sha256": "5401696f43732a052a5935e2aa4ccce56e638a64b2737be739afc5c8ac2530d3"
       },
       {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/HCLI_ACCELERATOR_REGRESSION.json",
+       "sha256": "5401696f43732a052a5935e2aa4ccce56e638a64b2737be739afc5c8ac2530d3"
+      },
+      {
        "evidence_source": "pinned_snapshot",
        "kind": "pinned_snapshot",
        "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/HCLI_ACCELERATOR_REGRESSION.json",
@@ -8685,6 +8979,12 @@
        "evidence_source": "live_headless",
        "kind": "other_worktree",
        "path": "/Users/scammermike/Downloads/hawking/.worktrees/g047-baseline/receipts/headless/HCLI_MODELLAKE_FLASH_CENSUS.json",
+       "sha256": "b96700c2360e75e75bc5789c0c9b4354a807771a45dce2418c78de2b1b9bb4cb"
+      },
+      {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/HCLI_MODELLAKE_FLASH_CENSUS.json",
        "sha256": "b96700c2360e75e75bc5789c0c9b4354a807771a45dce2418c78de2b1b9bb4cb"
       },
       {
@@ -8872,6 +9172,12 @@
        "sha256": "f13e78c9f1568c66af5feec01017b02bb479d07a0fd42a36a461437e70348b05"
       },
       {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE.json",
+       "sha256": "f13e78c9f1568c66af5feec01017b02bb479d07a0fd42a36a461437e70348b05"
+      },
+      {
        "evidence_source": "pinned_snapshot",
        "kind": "pinned_snapshot",
        "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE.json",
@@ -9044,6 +9350,12 @@
        "sha256": "8d6b507c219fee45f808a54e5833834c3f980ec40e8ecf57c3890c7480f0ab1a"
       },
       {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json",
+       "sha256": "8d6b507c219fee45f808a54e5833834c3f980ec40e8ecf57c3890c7480f0ab1a"
+      },
+      {
        "evidence_source": "pinned_snapshot",
        "kind": "pinned_snapshot",
        "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/NEGATIVE_SCIENCE_REGISTER.json",
@@ -9150,6 +9462,12 @@
        "sha256": "fe218618db0b2398a636271846915ddc9daf3affe1d54f53e57985a2938933f0"
       },
       {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/tools/foundry/NEGATIVE_TRANSFER_ATLAS.json",
+       "sha256": "fe218618db0b2398a636271846915ddc9daf3affe1d54f53e57985a2938933f0"
+      },
+      {
        "evidence_source": "pinned_snapshot",
        "kind": "pinned_snapshot",
        "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/NEGATIVE_TRANSFER_ATLAS.json",
@@ -9199,6 +9517,12 @@
        "evidence_source": "live_headless",
        "kind": "other_worktree",
        "path": "/Users/scammermike/Downloads/hawking/.worktrees/g047-baseline/workspace/campaign/odyssey/NEGATIVE_SCIENCE.json",
+       "sha256": "b1ac537b66276f7b6d752e6ab891e195669348e7c1b9803c238a1b770f0dfd83"
+      },
+      {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/workspace/campaign/odyssey/NEGATIVE_SCIENCE.json",
        "sha256": "b1ac537b66276f7b6d752e6ab891e195669348e7c1b9803c238a1b770f0dfd83"
       },
       {
@@ -9374,6 +9698,12 @@
        "sha256": "6c318342c0f934daa38b36383299f0e258d8cf4cf74f4be2c8235efc1f766e53"
       },
       {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/ACCELERATOR_REPATRIATION_EFFECTS.json",
+       "sha256": "6c318342c0f934daa38b36383299f0e258d8cf4cf74f4be2c8235efc1f766e53"
+      },
+      {
        "evidence_source": "pinned_snapshot",
        "kind": "pinned_snapshot",
        "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/ACCELERATOR_REPATRIATION_EFFECTS.json",
@@ -9546,6 +9876,12 @@
        "sha256": "40e580c6b68cafaecbb2cf1f5c8ab4da5cde53a5822a9580dcd36bd8fa8b97af"
       },
       {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/FLASH_META_TEACHER_L4_CAPTURE_BOUNDARY.json",
+       "sha256": "40e580c6b68cafaecbb2cf1f5c8ab4da5cde53a5822a9580dcd36bd8fa8b97af"
+      },
+      {
        "evidence_source": "pinned_snapshot",
        "kind": "pinned_snapshot",
        "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_META_TEACHER_L4_CAPTURE_BOUNDARY.json",
@@ -9715,6 +10051,12 @@
        "evidence_source": "live_headless",
        "kind": "other_worktree",
        "path": "/Users/scammermike/Downloads/hawking/.worktrees/g047-baseline/receipts/headless/ACCELERATOR_FRONT_G_P6.json",
+       "sha256": "07d949a2eaab00e08f6dc092e07d1d462b5ae1aa2836da7ccc91858bb00cb597"
+      },
+      {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/receipts/headless/ACCELERATOR_FRONT_G_P6.json",
        "sha256": "07d949a2eaab00e08f6dc092e07d1d462b5ae1aa2836da7ccc91858bb00cb597"
       },
       {
@@ -9944,6 +10286,12 @@
        "sha256": "2d37d971bf470bd236f0fffb80c7ccfb9420b30012a9bc236fa2460f9069e482"
       },
       {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/.worktrees/spawn-fix/CODEX_ACCELERATOR_HANDOFF.json",
+       "sha256": "2d37d971bf470bd236f0fffb80c7ccfb9420b30012a9bc236fa2460f9069e482"
+      },
+      {
        "evidence_source": "pinned_snapshot",
        "kind": "pinned_snapshot",
        "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/CODEX_ACCELERATOR_HANDOFF.json",
@@ -9978,7 +10326,7 @@
   "STALE_SEMANTIC": 0,
   "UNKNOWN": 4,
   "registered": 6,
-  "unregistered": 333
+  "unregistered": 341
  },
  "eras": [
   "I Genesis of the Laboratory",
@@ -9998,7 +10346,7 @@
   "registry of derived -> source(s) -> producer; unregistered receipts/future/*.json are findings",
   "source resolution copes with live-present, live-absent, and pinned-snapshot copies and records which"
  ],
- "head": "7bde0f0842b29b2bbcd03a8d4300f846c8895adf",
+ "head": "803e811e9b36bb2d144ede4ebcd3cb97e7d34ada",
  "measurement_class": "STATIC_ONLY",
  "negative_findings": [
   "QUALIFICATION_PIPELINE.json, FLASH_NX_COMPLETENESS_AUDIT.json, HCLI_FUTURE_WORKUNITS.json and TOURNAMENT_READINESS.json record no source sha256/semantic fingerprint, so they classify UNKNOWN until those producers start writing the CANDIDATE_STAGED_PLAN.input pattern",
@@ -10007,7 +10355,7 @@
   "no GPU / FPGA / power meter in this lane; no hardware quantity is asserted",
   "--refresh was not invoked by --check/--report; STALE_SEMANTIC artifacts stay on disk until a caller passes --refresh",
   "UNKNOWN artifacts: QUALIFICATION_PIPELINE.json, FLASH_NX_COMPLETENESS_AUDIT.json, HCLI_FUTURE_WORKUNITS.json, TOURNAMENT_READINESS.json",
-  "333 receipts/future/*.json files are not in the freshness registry"
+  "341 receipts/future/*.json files are not in the freshness registry"
  ],
  "no_era_vi": true,
  "no_odyssey_iv": true,
@@ -10172,7 +10520,7 @@
   }
  ],
  "schema": "hawking.future.freshness.v1",
- "seal_sha256": "2f69f95cb69674276bc96b6f848a526641795c100802492c0232e7800a13de4e",
+ "seal_sha256": "de71a21d4ca21ac4a75ef2e1e8c982b79dde05aa95d56c0ca63a388183df1926",
  "unregistered": [
   "ABI_VERDICT_HARNESS.json",
   "ABLITERATION.json",
@@ -10264,6 +10612,7 @@
   "FAST_SPECIMEN_OPEN.json",
   "FIDELITY_HIERARCHY.json",
   "FLASH_BPW_LADDER.json",
+  "FLASH_EBPW_BAR_REACHABILITY.json",
   "FLASH_META_REPLAN.json",
   "FLASH_NR_COMPLETE.json",
   "FLASH_ORGAN_PIVOT.json",
@@ -10273,6 +10622,7 @@
   "FORBIDDEN_FRUIT_LAB_READINESS.json",
   "FPGA_ENGINE_SCHOOL.json",
   "FPGA_MULTIFIDELITY.json",
+  "FPGA_PARTITION_ENVELOPE.json",
   "FRONTIER_STATE.json",
   "FUNCTIONAL_ROLE_PROBE.json",
   "FUSION_BRIDGE.json",
@@ -10313,6 +10663,7 @@
   "LPC_DATASET.json",
   "MAX_RESIDENT_PHYSICAL_ROOF.json",
   "MEASUREMENT_PROVENANCE.json",
+  "MEASUREMENT_PROVENANCE_AUDIT.json",
   "MEMORY_TRAFFIC_PROBE.json",
   "METAL_REACHABILITY.json",
   "META_DOWNSTREAM_READY.json",
@@ -10346,6 +10697,7 @@
   "MULTI_MODEL_TRIAL.json",
   "MUTATION_ENGINE.json",
   "MUTATION_TRIAL.json",
+  "NEGATIVE_SCIENCE_CAMPAIGN.json",
   "NEGATIVE_SCIENCE_INDEX.json",
   "NGRAM_SCHOOL.json",
   "NOMENCLATURE_AUDIT.json",
@@ -10366,6 +10718,8 @@
   "ODYSSEY_LAUNCH_SPRINT_PROFILE.json",
   "ODYSSEY_MISSION_CONTROLLER.json",
   "ODYSSEY_TOOL_DRIVER.json",
+  "ODYSSEY_WALL_INSTRUMENTATION.json",
+  "ODYSSEY_WALL_MODEL.json",
   "OP_CLASS_ABLATION.json",
   "ORCHESTRATION_BINDINGS.json",
   "ORGAN_BANDWIDTH.json",
@@ -10418,6 +10772,7 @@
   "RESIDENT_TPS_RECON.json",
   "RESTART_SUPERVISOR.json",
   "RIVAL_CODEC_SCREEN.json",
+  "ROADMAP_AUTHORITY_REPAIR.json",
   "ROADMAP_SCAFFOLD_SATURATION.json",
   "ROOF_ANCHOR.json",
   "ROUTER_SENSITIVE_ALLOCATION.json",
@@ -10453,6 +10808,7 @@
   "THEIA_MATH_FORMAL.json",
   "THEIA_SYSTEMS_COMPILER.json",
   "TOKEN_NS_OBJECTIVE.json",
+  "TOOL_FRICTION.json",
   "TPS_ESCALATION_CLOCK_START.json",
   "TPS_FALSIFICATIONS.json",
   "TPS_GAP.json",

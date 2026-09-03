@@ -190,9 +190,9 @@ def family_id(path: str) -> str:
         return "PHASEB"
     if "frankenstein/" in p:
         return "FRANKENSTEIN_NON_PT"
-    if p.startswith("hawking-experiments/superwave/g1/"):
+    if p.startswith("research/hawking-experiments/superwave/g1/"):
         return "SUPERWAVE_G1"
-    if p.startswith("ramanujan/"):
+    if p.startswith("research/ramanujan/"):
         return "RAMANUJAN"
     if p.startswith("workspace/campaign/odyssey/ODYSSEY_STATE.json") or p.endswith("/ODYSSEY_STATE.json"):
         return "ODYSSEY_STATE"
@@ -202,7 +202,7 @@ def family_id(path: str) -> str:
         return "GLM52"
     if p.startswith("HAWKING_") and p.endswith((".json", ".html")):
         return "HAWKING_GENERATED_GRAPHS"
-    if p.startswith("reports/condense/"):
+    if p.startswith("research/reports/condense/"):
         return "REPORTS_CONDENSE"
     if p.startswith("crates/"):
         return "CRATES_SOURCE"
@@ -301,7 +301,7 @@ FAMILY_META: dict[str, dict[str, Any]] = {
         ),
         "gitignore": "workspace/campaign/phaseB/ckpt/",
         "in_rewrite_plan": True,
-        "keep_in_head_exception": "hawking-experiments/frankenstein/data/latent_v0_checkpoints/",
+        "keep_in_head_exception": "research/hawking-experiments/frankenstein/data/latent_v0_checkpoints/",
     },
     "NPY_CAPTURES": {
         "class": "HISTORY_REWRITE_CANDIDATE",
@@ -407,14 +407,14 @@ FAMILY_META: dict[str, dict[str, Any]] = {
     },
     "FRANKENSTEIN_NON_PT": {
         "class": "KEEP_GIT",
-        "glob": "hawking-experiments/frankenstein/data/",
+        "glob": "research/hawking-experiments/frankenstein/data/",
         "why": "Non-weight frankenstein evidence (json, scripts). Knowledge. .pt bodies classified separately.",
         "gitignore": None,
         "in_rewrite_plan": False,
     },
     "SUPERWAVE_G1": {
         "class": "LFS_CANDIDATE",
-        "glob": "hawking-experiments/superwave/g1/",
+        "glob": "research/hawking-experiments/superwave/g1/",
         "why": (
             "Currently tracked 10–29 MiB JSON dumps (g1_functional_exceptions.json is the "
             "largest HEAD blob at 29.0 MiB). This is the shape of thing people reach for "
@@ -427,7 +427,7 @@ FAMILY_META: dict[str, dict[str, Any]] = {
     },
     "RAMANUJAN": {
         "class": "KEEP_GIT",
-        "glob": "ramanujan/",
+        "glob": "research/ramanujan/",
         "why": "Research corpora currently ~25 MiB. Compact enough to remain knowledge in git.",
         "gitignore": None,
         "in_rewrite_plan": False,
@@ -462,7 +462,7 @@ FAMILY_META: dict[str, dict[str, Any]] = {
     },
     "REPORTS_CONDENSE": {
         "class": "MOVE_LOCAL_FUTURE",
-        "glob": "reports/condense/",
+        "glob": "research/reports/condense/",
         "why": "Condense measurement dumps including parent logits npy.",
         "gitignore": None,
         "in_rewrite_plan": False,
@@ -740,7 +740,7 @@ def existing_stores() -> dict[str, Any]:
             "in_gitignore": True,
         },
         "hawking_experiments": {
-            "path": "hawking-experiments/",
+            "path": "research/hawking-experiments/",
             "role": "Campaign SOURCE archive (git), not a blob CAS. Only README.md at HEAD. Do not dump weights here.",
             "in_git": True,
         },
@@ -953,7 +953,7 @@ def rewrite_plan(families: list[dict[str, Any]], git_bytes: dict[str, Any], head
         "not_in_plan": [
             "receipts/ascent-* (PRESERVE)",
             "receipts/headless compact JSON (KEEP_GIT)",
-            "crates/, tools/, docs/, lab/ source (KEEP_GIT)",
+            "crates/, tools/, docs/, research/lab/ source (KEEP_GIT)",
             "workspace/campaign/odyssey/ODYSSEY_STATE.json (KEEP_GIT; this lane must not modify odyssey)",
             "frankenstein latent_v0 small fixtures in HEAD (keep_in_head_exception)",
         ],
@@ -1096,7 +1096,7 @@ def build() -> dict[str, Any]:
             "tracked_despite_gitignore_examples": [
                 "crates/hawking-core/tests/fixtures/gravity_pq/*.bin (KEEP_GIT fixtures; *.bin is a weight rule)",
                 "crates/hawking-core/reports/w4a8_activation_dist.csv",
-                "hawking-experiments/superwave/g1/claude-wall/*.log",
+                "research/hawking-experiments/superwave/g1/claude-wall/*.log",
             ],
             "note": "gitignore does not untrack. 8ad51461a ran git rm --cached for RUN_LOG and the q30 tarball only.",
         },

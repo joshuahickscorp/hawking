@@ -10,7 +10,7 @@ Recovered, not rebuilt:
   * tools/odyssey/capture_moe_x.py — truncated-model activation capture
   * tools/odyssey/teacher_assess.py — T1/T3 gap assessment against a ledger
   * tools/odyssey/dedup.py + normalize.py — content hash + 5-gram Jaccard
-  * lab/operators/q80_capture_index.py — per-row layer/token/expert CSR
+  * research/lab/operators/q80_capture_index.py — per-row layer/token/expert CSR
   * hcli/flash_next.py — pinned specimen identity (repo + revision + seal)
   * hcli/workunit.py — WorkUnit shape (emit only; this lane does not admit)
 
@@ -1053,8 +1053,8 @@ def recover_implementation() -> dict[str, Any]:
         "hcli/agentos/modellake_receipts.py",
         "hcli/flash_next.py",
         "hcli/workunit.py",
-        "lab/operators/q80_capture_index.py",
-        "lab/operators/q80_capture_coverage.py",
+        "research/lab/operators/q80_capture_index.py",
+        "research/lab/operators/q80_capture_coverage.py",
         "receipts/headless/QWEN80_CAPTURE_INDEX.json",
         "receipts/headless/QWEN80_CAPTURE_SPEED.json",
         "receipts/QWEN80_CAPTURE_INDEX.json",
@@ -1139,9 +1139,9 @@ def recover_implementation() -> dict[str, Any]:
             ),
             "adequate_for_this_lane": False,
         })
-    if _head_has("lab/operators/q80_capture_index.py"):
+    if _head_has("research/lab/operators/q80_capture_index.py"):
         summaries.append({
-            "path": "lab/operators/q80_capture_index.py",
+            "path": "research/lab/operators/q80_capture_index.py",
             "what": (
                 "Per-row arrays: layer, token_index, probe_index, step_index, "
                 "input_token_id, expert_ids CSR, key_(layer,expert). This is the "
@@ -1286,7 +1286,7 @@ def build() -> Any:
     if "receipts/headless/FLASH_ATTENTION_ROUTE_UNION_PARITY.json" in recovered["missing_from_HEAD"]:
         extra_neg.append(
             "FLASH_ATTENTION_ROUTE_UNION_PARITY.json is not in HEAD; route-union "
-            "shape recovered from lab/operators/q80_capture_index.py key_(layer,expert) "
+            "shape recovered from research/lab/operators/q80_capture_index.py key_(layer,expert) "
             "and receipts/QWEN80_CAPTURE_INDEX.json (24,355 of 24,576 LE pairs)"
         )
     if "receipts/headless/FLASH_ROUTER_SENSITIVITY_MAP_L3_L4.json" in recovered["missing_from_HEAD"]:

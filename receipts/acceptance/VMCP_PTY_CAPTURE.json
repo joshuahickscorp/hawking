@@ -37,20 +37,20 @@
   ],
   "criterion": {
     "end_line": 7881,
-    "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "file": "/Users/scammermike/Downloads/hawking/docs/roadmap-lineage/H-ROADMAP.superseded-2026-09-02.md",
     "quoted": "## E.10 PTY / terminal eye\n\n- process identity\n- argv\n- cwd\n- allowlisted environment metadata\n- terminal text\n- timestamps\n- input/output event boundaries\n- exit code/signal\n- resize/layout\n- tool/subprocess events where observable\n- diff/test markers\n- screenshot state where useful\n\n",
     "start_line": 7866,
     "weakened": false
   },
   "criterion_weakened": false,
-  "elapsed_ms": 31.977,
+  "elapsed_ms": 47.65,
   "evidence_tier": "STATIC",
   "gate": "VMCP_PTY_CAPTURE",
-  "generated_at": "2026-09-02T23:16:06Z",
+  "generated_at": "2026-09-03T05:34:31Z",
   "gpu_authority": false,
   "invoked_symbols": [
     {
-      "elapsed_ms": 0.724,
+      "elapsed_ms": 0.81,
       "error": null,
       "kind": "call",
       "raised": false,
@@ -86,8 +86,8 @@
       "screenshot state where useful": null,
       "terminal text": null,
       "timestamps": {
-        "finished_at": 1788390966.867529,
-        "started_at": 1788390966.8362932
+        "finished_at": 1788413671.653821,
+        "started_at": 1788413671.607019
       },
       "tool/subprocess events where observable": [
         "subprocess.run"

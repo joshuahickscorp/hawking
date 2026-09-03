@@ -164,7 +164,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-03T02:14:46Z",
+  "recorded_at": "2026-09-03T05:57:01Z",
   "recorded_by": "tools/future/nr_nx_generic.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -562,7 +562,7 @@
   "workunit": "one CPU_ANALYSIS unit; probe+adapt+drive compiler stages and pack a source-independent NX on a real specimen; no GPU authority"
  },
  "schema": "hawking.future.nr_nx_generic.v1",
- "seal_sha256": "0e694704a59dd921c9834d2894a007a4d990bb671897274ce537942bb081ef53",
+ "seal_sha256": "bc5a50e56ec46a0fc382d0b158aae3bb7065da6779047832d8092b1a13dd60d6",
  "sleeping_workunit": {
   "blocked_reason": "NX_LOWER blocked at stage None: None",
   "classification": "SLEEPING",
@@ -1505,14 +1505,14 @@
         "score": 2.5
        },
        {
-        "evidence": "measured density frontier 0.53125 bpw; attacks ZERO_INDEPENDENT_INFORMATION, searched before plain representation; unknown organ: conservative prior favours the higher-precision family (0.53125 bpw)",
-        "family": "shared_basis",
-        "score": 1.267
-       },
-       {
         "evidence": "measured density frontier 2.25 bpw; unknown organ: conservative prior favours the higher-precision family (2.25 bpw)",
         "family": "q2_affine",
         "score": 1.07
+       },
+       {
+        "evidence": "measured density frontier 2.216250359030331 bpw; unknown organ: conservative prior favours the higher-precision family (2.216250359030331 bpw)",
+        "family": "binary_sparse_residual",
+        "score": 1.069
        }
       ]
      },
@@ -1530,14 +1530,14 @@
         "score": 2.5
        },
        {
-        "evidence": "measured density frontier 0.53125 bpw; attacks ZERO_INDEPENDENT_INFORMATION, searched before plain representation; unknown organ: conservative prior favours the higher-precision family (0.53125 bpw)",
-        "family": "shared_basis",
-        "score": 1.267
-       },
-       {
         "evidence": "measured density frontier 2.25 bpw; unknown organ: conservative prior favours the higher-precision family (2.25 bpw)",
         "family": "q2_affine",
         "score": 1.07
+       },
+       {
+        "evidence": "measured density frontier 2.216250359030331 bpw; unknown organ: conservative prior favours the higher-precision family (2.216250359030331 bpw)",
+        "family": "binary_sparse_residual",
+        "score": 1.069
        }
       ]
      },
@@ -1555,14 +1555,14 @@
         "score": 2.5
        },
        {
-        "evidence": "measured density frontier 0.53125 bpw; attacks ZERO_INDEPENDENT_INFORMATION, searched before plain representation; unknown organ: conservative prior favours the higher-precision family (0.53125 bpw)",
-        "family": "shared_basis",
-        "score": 1.267
-       },
-       {
         "evidence": "measured density frontier 2.25 bpw; unknown organ: conservative prior favours the higher-precision family (2.25 bpw)",
         "family": "q2_affine",
         "score": 1.07
+       },
+       {
+        "evidence": "measured density frontier 2.216250359030331 bpw; unknown organ: conservative prior favours the higher-precision family (2.216250359030331 bpw)",
+        "family": "binary_sparse_residual",
+        "score": 1.069
        }
       ]
      },
@@ -1575,19 +1575,19 @@
       "organ": "mlp_down",
       "top": [
        {
-        "evidence": "measured coherent on mlp_down for qwen3.8-27b-abliterated; measured density frontier 1.25 bpw",
-        "family": "binary",
-        "score": 3.0
-       },
-       {
         "evidence": "measured coherent on mlp_down for qwen3.8-27b-abliterated; measured density frontier 2.25 bpw",
         "family": "q2_affine",
         "score": 3.0
        },
        {
-        "evidence": "measured density frontier 0.53125 bpw; attacks ZERO_INDEPENDENT_INFORMATION, searched before plain representation; unknown organ: conservative prior favours the higher-precision family (0.53125 bpw)",
-        "family": "shared_basis",
-        "score": 1.267
+        "evidence": "measured density frontier 2.216250359030331 bpw; unknown organ: conservative prior favours the higher-precision family (2.216250359030331 bpw)",
+        "family": "binary_sparse_residual",
+        "score": 1.069
+       },
+       {
+        "evidence": "measured density frontier 1.85 bpw; unknown organ: conservative prior favours the higher-precision family (1.85 bpw)",
+        "family": "ternary",
+        "score": 1.058
        }
       ]
      },
@@ -1600,19 +1600,19 @@
       "organ": "mlp_gate_up",
       "top": [
        {
-        "evidence": "measured coherent on mlp_gate_up for qwen3.8-27b-abliterated; measured density frontier 1.25 bpw",
-        "family": "binary",
-        "score": 3.0
-       },
-       {
         "evidence": "measured coherent on mlp_gate_up for qwen3.8-27b-abliterated; measured density frontier 2.25 bpw",
         "family": "q2_affine",
         "score": 3.0
        },
        {
-        "evidence": "measured density frontier 0.53125 bpw; attacks ZERO_INDEPENDENT_INFORMATION, searched before plain representation; unknown organ: conservative prior favours the higher-precision family (0.53125 bpw)",
-        "family": "shared_basis",
-        "score": 1.267
+        "evidence": "measured density frontier 2.216250359030331 bpw; unknown organ: conservative prior favours the higher-precision family (2.216250359030331 bpw)",
+        "family": "binary_sparse_residual",
+        "score": 1.069
+       },
+       {
+        "evidence": "measured density frontier 1.85 bpw; unknown organ: conservative prior favours the higher-precision family (1.85 bpw)",
+        "family": "ternary",
+        "score": 1.058
        }
       ]
      },
@@ -1630,14 +1630,14 @@
         "score": 2.0
        },
        {
-        "evidence": "measured density frontier 0.53125 bpw; attacks ZERO_INDEPENDENT_INFORMATION, searched before plain representation; unknown organ: conservative prior favours the higher-precision family (0.53125 bpw)",
-        "family": "shared_basis",
-        "score": 1.267
-       },
-       {
         "evidence": "measured density frontier 2.25 bpw; unknown organ: conservative prior favours the higher-precision family (2.25 bpw)",
         "family": "q2_affine",
         "score": 1.07
+       },
+       {
+        "evidence": "measured density frontier 2.216250359030331 bpw; unknown organ: conservative prior favours the higher-precision family (2.216250359030331 bpw)",
+        "family": "binary_sparse_residual",
+        "score": 1.069
        }
       ]
      },
@@ -1655,14 +1655,14 @@
         "score": 2.535
        },
        {
-        "evidence": "measured density frontier 0.53125 bpw; attacks ZERO_INDEPENDENT_INFORMATION, searched before plain representation; unknown organ: conservative prior favours the higher-precision family (0.53125 bpw)",
-        "family": "shared_basis",
-        "score": 1.267
-       },
-       {
         "evidence": "measured density frontier 2.25 bpw; unknown organ: conservative prior favours the higher-precision family (2.25 bpw)",
         "family": "q2_affine",
         "score": 1.07
+       },
+       {
+        "evidence": "measured density frontier 2.216250359030331 bpw; unknown organ: conservative prior favours the higher-precision family (2.216250359030331 bpw)",
+        "family": "binary_sparse_residual",
+        "score": 1.069
        }
       ]
      }
@@ -1766,7 +1766,7 @@
      "template": null,
      "why": "dense MLP has no expert router; router collapse is not an operator on this architecture"
     },
-    "stderr_tail": "Traceback (most recent call last):\n  File \"/Users/scammermike/Downloads/hawking/tools/odyssey/physical_graph_compiler.py\", line 494, in <module>\n    raise SystemExit(main())\n                     ~~~~^^\n  File \"/Users/scammermike/Downloads/hawking/tools/odyssey/physical_graph_compiler.py\", line 130, in main\n    X = np.load(Path(a.capture) / f\"X_layer{a.layer}.npy\").astype(np.float64)\n        ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/lib/python3.14/site-packages/numpy/lib/_npyio_impl.py\", line 454, in load\n    fid = stack.enter_context(open(os.fspath(file), \"rb\"))\n                              ~~~~^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: '/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/nr-nx-generic-pgc-p0rdajch/no-capture/X_layer0.npy'\n",
+    "stderr_tail": "Traceback (most recent call last):\n  File \"/Users/scammermike/Downloads/hawking/tools/odyssey/physical_graph_compiler.py\", line 494, in <module>\n    raise SystemExit(main())\n                     ~~~~^^\n  File \"/Users/scammermike/Downloads/hawking/tools/odyssey/physical_graph_compiler.py\", line 130, in main\n    X = np.load(Path(a.capture) / f\"X_layer{a.layer}.npy\").astype(np.float64)\n        ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/lib/python3.14/site-packages/numpy/lib/_npyio_impl.py\", line 454, in load\n    fid = stack.enter_context(open(os.fspath(file), \"rb\"))\n                              ~~~~^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: '/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/nr-nx-generic-pgc-bdiuuwea/no-capture/X_layer0.npy'\n",
     "stdout_tail": "",
     "used_compiler_silu": true
    },

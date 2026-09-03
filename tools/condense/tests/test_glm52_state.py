@@ -50,7 +50,7 @@ def test_evidence_policies_bind_actual_validator_module_bytes() -> None:
     implementation_sha256 = hashlib.sha256(
         pathlib.Path(gs.__file__).resolve().read_bytes()
     ).hexdigest()
-    # The load-bearing validator was moved under lab/operators during the
+    # The load-bearing validator was moved under research/lab/operators during the
     # authority cutover.  Bind the receipt to the module that the state spine
     # actually imports, not to the retired tools/condense path.
     terminal_sha256 = hashlib.sha256(
@@ -792,7 +792,7 @@ def test_official_source_profile_enforces_exact_282_shards_bytes_and_grounding(
         }
     official_gates["ASSEMBLE_ARTIFACT"]["required_artifacts"] = {
         name: {
-            "path": f"reports/{name}.json",
+            "path": f"research/reports/{name}.json",
             "expected_seal_sha256": HASH_A,
             "expected_schema": f"test.{name}.v1",
             "allowed_statuses": ["PASS"],
@@ -806,7 +806,7 @@ def test_official_source_profile_enforces_exact_282_shards_bytes_and_grounding(
     }
     official_gates["COMPLETE"]["required_artifacts"] = {
         name: {
-            "path": f"reports/{name}.json",
+            "path": f"research/reports/{name}.json",
             "expected_seal_sha256": None,
             "expected_schema": f"test.{name}.v1",
             "allowed_statuses": ["PASS"],
@@ -1752,7 +1752,7 @@ def test_authoritative_terminal_gates_block_incomplete_and_require_closure_evide
         _transition(controller, "SEAL_GLM_RESULT", 113)
         _transition(controller, "FINAL_GRAVITY_AUDIT", 114)
         _terminal_evidence(controller, "COMPLETE")
-        (controller.artifact_root / "reports/GLM52_PHONE_STATUS.json").unlink()
+        (controller.artifact_root / "research/reports/GLM52_PHONE_STATUS.json").unlink()
         bad_claim = "test:terminal:complete-missing-phone:0001"
         with pytest.raises(gs.StateError, match="trusted evidence"):
             controller.prepare_transition("COMPLETE", claim_id=bad_claim)

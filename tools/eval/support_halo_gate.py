@@ -6,7 +6,7 @@ against a live Math-Preserve `.gravity` serve path is optional and deferred
 while the GPU is busy; the pure scoring path needs only a completions JSONL.
 
 House rules: no invented scores. Dimensions that cannot be measured are
-NOT_MEASURABLE with a reason. Do not touch hawking-experiments/prometheus/tools/ or the sealed
+NOT_MEASURABLE with a reason. Do not touch research/hawking-experiments/prometheus/tools/ or the sealed
 Math-Preserve artifact from this script.
 
 Usage:

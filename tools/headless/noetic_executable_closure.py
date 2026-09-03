@@ -1180,7 +1180,7 @@ def main() -> int:
             "workspace/",
             "visionmcp/",
             "app/",
-            "lab/",
+            "research/lab/",
             "tools/hcli/bootstrap/",
         ],
     }

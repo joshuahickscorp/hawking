@@ -141,7 +141,7 @@ def subsystem_for(path: str | None) -> str:
         return "hide"
     if path.startswith("crates/"):
         return "hawking"
-    if path.startswith("tools/") or path.startswith("ramanujan/"):
+    if path.startswith("tools/") or path.startswith("research/ramanujan/"):
         return "laboratory"
     if path.startswith(_VENDOR_PATH_PREFIXES):
         return "vendor"

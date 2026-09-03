@@ -9,7 +9,7 @@
   "gpu_authority": false,
   "machine": "Apple M3 Ultra",
   "measurement_state": "SELF_MEASURED_DIRTY",
-  "recorded_at": "2026-09-03T00:37:37Z",
+  "recorded_at": "2026-09-03T05:52:04Z",
   "recorded_by": "tools/future/mutation_trial.py",
   "rule": "hardware numbers in this receipt are MTLCommandBuffer GPUStartTime/GPUEndTime from this process under an HCLI exclusive flock; they are not PROTECTED_ABSOLUTE",
   "state": "MEASURED",
@@ -33,16 +33,16 @@
    "after": {
     "bytes": 201326592,
     "checksum": "1bdd7e03fbcb4859",
-    "effective_gb_s": 415.32,
-    "gpu_us_median": 484.75,
+    "effective_gb_s": 683.234,
+    "gpu_us_median": 294.667,
     "name": "fused_one_pass"
    },
    "applied": true,
    "before": {
     "bytes": 268435456,
     "checksum": "1bdd7e03fbcb4859",
-    "effective_gb_s": 470.939,
-    "gpu_us_median": 570.0,
+    "effective_gb_s": 479.456,
+    "gpu_us_median": 559.875,
     "name": "two_pass"
    },
    "identity": true,
@@ -50,7 +50,7 @@
    "measured": true,
    "mutation_class": "KERNEL_OR_GPU",
    "proposed": true,
-   "reason": "KERNEL_OR_GPU candidate faster 570.000 -> 484.750 us (saved 85.250 us); token-id analogue is checksum identity of y=w*x",
+   "reason": "KERNEL_OR_GPU candidate faster 559.875 -> 294.667 us (saved 265.208 us); token-id analogue is checksum identity of y=w*x",
    "rollback_digest_match": true,
    "verdict": "KEPT"
   },
@@ -58,41 +58,41 @@
    "after": {
     "bytes": 152043520,
     "checksum": "67710b551945109e",
-    "effective_gb_s": 387.249,
-    "gpu_us_median": 392.625,
+    "effective_gb_s": 672.634,
+    "gpu_us_median": 226.042,
     "name": "u8_exp_dequant"
    },
    "applied": true,
    "before": {
     "bytes": 201326592,
     "checksum": "1bdd7e03fbcb4859",
-    "effective_gb_s": 585.749,
-    "gpu_us_median": 343.708,
+    "effective_gb_s": 507.973,
+    "gpu_us_median": 396.333,
     "name": "f32_weights"
    },
    "identity": false,
-   "kept_or_rolled_back": "rolled_back",
+   "kept_or_rolled_back": "kept",
    "measured": true,
    "mutation_class": "REPRESENTATION_BPW",
    "proposed": true,
-   "reason": "REPRESENTATION_BPW candidate slower 343.708 -> 392.625 us (lost 48.917 us); rolled back; weight bytes removed 49283072; extra exp-dequant billed in the measured GPU us (AUX_U8_NATIVE shape)",
+   "reason": "REPRESENTATION_BPW candidate faster 396.333 -> 226.042 us (saved 170.291 us); weight bytes removed 49283072; extra exp-dequant billed in the measured GPU us (AUX_U8_NATIVE shape)",
    "rollback_digest_match": true,
-   "verdict": "ROLLED_BACK"
+   "verdict": "KEPT"
   },
   {
    "after": {
     "bytes": 201326592,
     "checksum": "1bdd7e03fbcb4859",
-    "effective_gb_s": 506.217,
-    "gpu_us_median": 397.708,
+    "effective_gb_s": 543.513,
+    "gpu_us_median": 370.417,
     "name": "dispatch_x1"
    },
    "applied": true,
    "before": {
     "bytes": 201326592,
     "checksum": "1bdd7e03fbcb4859",
-    "effective_gb_s": 268.525,
-    "gpu_us_median": 749.75,
+    "effective_gb_s": 410.382,
+    "gpu_us_median": 490.583,
     "name": "dispatch_x64"
    },
    "identity": true,
@@ -100,7 +100,7 @@
    "measured": true,
    "mutation_class": "TOKEN_RATE",
    "proposed": true,
-   "reason": "TOKEN_RATE candidate faster 749.750 -> 397.708 us (saved 352.042 us); dispatch fold 64 -> 1",
+   "reason": "TOKEN_RATE candidate faster 490.583 -> 370.417 us (saved 120.166 us); dispatch fold 64 -> 1",
    "rollback_digest_match": true,
    "verdict": "KEPT"
   },
@@ -133,19 +133,19 @@
    "after": {
     "bytes": 201326592,
     "checksum": "1bdd7e03fbcb4859",
-    "effective_gb_s": 415.32,
-    "gpu_us_median": 484.75,
+    "effective_gb_s": 683.234,
+    "gpu_us_median": 294.667,
     "n_reps": 7,
     "name": "fused_one_pass",
     "overlay": "27248090e447137e9d4952a994765e1f749f68d8d7e27f540dc4568efae3e7b8",
     "reps_us": [
-     435.25,
-     484.75,
-     317.542,
-     533.708,
-     344.125,
-     514.833,
-     485.875
+     294.667,
+     288.25,
+     290.625,
+     375.125,
+     435.042,
+     303.958,
+     284
     ],
     "timing_authority": "MTLCommandBuffer GPUStartTime/GPUEndTime after waitUntilCompleted"
    },
@@ -153,19 +153,19 @@
    "before": {
     "bytes": 268435456,
     "checksum": "1bdd7e03fbcb4859",
-    "effective_gb_s": 470.939,
-    "gpu_us_median": 570.0,
+    "effective_gb_s": 479.456,
+    "gpu_us_median": 559.875,
     "n_reps": 7,
     "name": "two_pass",
     "overlay": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "reps_us": [
-     763.25,
-     519,
-     733.875,
-     532.875,
-     531.708,
-     731.833,
-     570
+     477.042,
+     480.5,
+     559.875,
+     601.917,
+     708.333,
+     697.875,
+     479.5
     ],
     "timing_authority": "MTLCommandBuffer GPUStartTime/GPUEndTime after waitUntilCompleted"
    },
@@ -187,7 +187,7 @@
     "before_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
    },
    "proposed": true,
-   "reason": "KERNEL_OR_GPU candidate faster 570.000 -> 484.750 us (saved 85.250 us); token-id analogue is checksum identity of y=w*x",
+   "reason": "KERNEL_OR_GPU candidate faster 559.875 -> 294.667 us (saved 265.208 us); token-id analogue is checksum identity of y=w*x",
    "rollback_digest_match": true,
    "rolled_back": true,
    "verdict": "KEPT"
@@ -240,19 +240,19 @@
    "after": {
     "bytes": 152043520,
     "checksum": "67710b551945109e",
-    "effective_gb_s": 387.249,
-    "gpu_us_median": 392.625,
+    "effective_gb_s": 672.634,
+    "gpu_us_median": 226.042,
     "n_reps": 7,
     "name": "u8_exp_dequant",
     "overlay": "6223c0d4f24476f581e0ef6ceb30b7498160b0d73b8c115dbc7ffcc813473cee",
     "reps_us": [
-     392.625,
-     412.125,
-     209.25,
-     394.583,
-     399.083,
-     213.125,
-     260.458
+     224.625,
+     226.042,
+     225.333,
+     398.208,
+     322.708,
+     418,
+     218.5
     ],
     "timing_authority": "MTLCommandBuffer GPUStartTime/GPUEndTime after waitUntilCompleted"
    },
@@ -260,19 +260,19 @@
    "before": {
     "bytes": 201326592,
     "checksum": "1bdd7e03fbcb4859",
-    "effective_gb_s": 585.749,
-    "gpu_us_median": 343.708,
+    "effective_gb_s": 507.973,
+    "gpu_us_median": 396.333,
     "n_reps": 7,
     "name": "f32_weights",
     "overlay": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "reps_us": [
-     307.792,
-     343.708,
-     435.75,
-     317.667,
-     407.125,
-     438.167,
-     308.167
+     608.125,
+     676.708,
+     290.75,
+     299.25,
+     293.5,
+     396.333,
+     460.125
     ],
     "timing_authority": "MTLCommandBuffer GPUStartTime/GPUEndTime after waitUntilCompleted"
    },
@@ -282,7 +282,7 @@
    "frontier": "FT.MODEL_REPRESENTATION.ngram-school",
    "hypothesis": "on FT.MODEL_REPRESENTATION.ngram-school: set representation rung_id on a scoped artifact; quality/EBPW is unmeasured without a protected window",
    "identity": false,
-   "kept_or_rolled_back": "rolled_back",
+   "kept_or_rolled_back": "kept",
    "measured": true,
    "mutation_class": "REPRESENTATION_BPW",
    "mutation_id": "MUT.REPRESENTATION_BPW.FT_MODEL_REPRESENTATION_ngram-school.3",
@@ -294,28 +294,28 @@
     "before_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
    },
    "proposed": true,
-   "reason": "REPRESENTATION_BPW candidate slower 343.708 -> 392.625 us (lost 48.917 us); rolled back; weight bytes removed 49283072; extra exp-dequant billed in the measured GPU us (AUX_U8_NATIVE shape)",
+   "reason": "REPRESENTATION_BPW candidate faster 396.333 -> 226.042 us (saved 170.291 us); weight bytes removed 49283072; extra exp-dequant billed in the measured GPU us (AUX_U8_NATIVE shape)",
    "rollback_digest_match": true,
    "rolled_back": true,
-   "verdict": "ROLLED_BACK"
+   "verdict": "KEPT"
   },
   "TOKEN_RATE": {
    "after": {
     "bytes": 201326592,
     "checksum": "1bdd7e03fbcb4859",
-    "effective_gb_s": 506.217,
-    "gpu_us_median": 397.708,
+    "effective_gb_s": 543.513,
+    "gpu_us_median": 370.417,
     "n_reps": 7,
     "name": "dispatch_x1",
     "overlay": "9ccfe12f7ab674fac49d79815688c8de2d950b31882a32e61a11cd2652f1f481",
     "reps_us": [
-     397.708,
-     433.917,
-     335,
-     502.417,
-     318.833,
-     403.375,
-     393.333
+     287.25,
+     374.25,
+     296.625,
+     370.417,
+     291,
+     415.75,
+     375.792
     ],
     "timing_authority": "MTLCommandBuffer GPUStartTime/GPUEndTime after waitUntilCompleted"
    },
@@ -323,19 +323,19 @@
    "before": {
     "bytes": 201326592,
     "checksum": "1bdd7e03fbcb4859",
-    "effective_gb_s": 268.525,
-    "gpu_us_median": 749.75,
+    "effective_gb_s": 410.382,
+    "gpu_us_median": 490.583,
     "n_reps": 7,
     "name": "dispatch_x64",
     "overlay": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "reps_us": [
-     1053.875,
-     890.333,
-     457.75,
-     749.75,
-     1005.25,
-     517.708,
-     475.917
+     422.208,
+     573.75,
+     953.583,
+     490.583,
+     431.542,
+     428.958,
+     956.167
     ],
     "timing_authority": "MTLCommandBuffer GPUStartTime/GPUEndTime after waitUntilCompleted"
    },
@@ -357,19 +357,19 @@
     "before_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
    },
    "proposed": true,
-   "reason": "TOKEN_RATE candidate faster 749.750 -> 397.708 us (saved 352.042 us); dispatch fold 64 -> 1",
+   "reason": "TOKEN_RATE candidate faster 490.583 -> 370.417 us (saved 120.166 us); dispatch fold 64 -> 1",
    "rollback_digest_match": true,
    "rolled_back": true,
    "verdict": "KEPT"
   }
  },
  "concurrent_load": {
-  "loadavg": "{ 25.94 14.72 10.85 }",
+  "loadavg": "{ 87.72 62.24 33.66 }",
   "note": "host loadavg; absolute us are measured-under-load",
-  "uptime": "20:37  up 14:42, 4 users, load averages: 25.94 14.72 10.85"
+  "uptime": "1:52  up 19:56, 4 users, load averages: 87.72 62.24 33.66"
  },
  "driven_through_bindings": true,
- "elapsed_s": 3.123,
+ "elapsed_s": 2.311,
  "evidence_class": "SELF_MEASURED_DIRTY",
  "gaps_closed": [
   "orchestration BINDINGS names mutation_engine.py and the resident calls it there",
@@ -416,15 +416,15 @@
  },
  "lease": {
   "acquired": true,
-  "acquired_at": "2026-09-03T00:37:34Z",
+  "acquired_at": "2026-09-03T05:52:02Z",
   "flock": "LOCK_EX",
   "lease_calls": 1,
   "lock_name": "protected-accelerator-bench.lock",
   "lock_path": "/Users/scammermike/Downloads/hawking/.hcli/locks/protected-accelerator-bench.lock",
   "lock_rel": ".hcli/locks/protected-accelerator-bench.lock",
-  "pid": 93531,
+  "pid": 46967,
   "recovered_from": "hcli/agentos/protected_accelerator_benchmark.py LOCK_NAME / _try_lock",
-  "released_at": "2026-09-03T00:37:37Z"
+  "released_at": "2026-09-03T05:52:04Z"
  },
  "lease_calls": 1,
  "metal": {
@@ -530,7 +530,7 @@
   "trial": "tools.future.mutation_trial.run_live_trial()"
  },
  "schema": "hawking.future.mutation_trial.v1",
- "seal_sha256": "89b02a81199ed3f123c35796f264387084c660f497111df9bc36500e6fb348c4",
+ "seal_sha256": "73cac0b188f3cc93a6bf0fa966f2642b4db8e393f865974f5fdaec1dd15c52a7",
  "took_gpu_lease": true,
  "verdict": "PASS",
  "version": 1

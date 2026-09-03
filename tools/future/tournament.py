@@ -13,7 +13,7 @@ tools/odyssey/doctor_tournament.py (technique preconditions),
 tools/odyssey/tournament.py (checkpoint selection),
 tools/odyssey/pareto_archive.py (Qwen body density vs capability),
 tools/pareto_table.py (G150 candidate table), or
-lab/operators/ascension_manager_tournament_protocol.py (Gravity managers).
+research/lab/operators/ascension_manager_tournament_protocol.py (Gravity managers).
 Those are different tournaments. This one is NX-vs-NX dominance.
 """
 from __future__ import annotations
@@ -570,7 +570,7 @@ def build() -> Path:
             {"path": "tools/odyssey/tournament.py", "role": "different tournament: checkpoint selection, newest does not automatically win"},
             {"path": "tools/odyssey/pareto_archive.py", "role": "Qwen-body Pareto + capability floor; consumed as style, not forked"},
             {"path": "tools/pareto_table.py", "role": "G150 candidate Pareto table; different candidates"},
-            {"path": "lab/operators/ascension_manager_tournament_protocol.py", "role": "Gravity manager tournament; different contenders"},
+            {"path": "research/lab/operators/ascension_manager_tournament_protocol.py", "role": "Gravity manager tournament; different contenders"},
             {"path": FLASH_NX_REL, "role": "Flash NX identity; status SEALED_METADATA_ONLY_NOT_FOR_PROMOTION"},
             {"path": QWEN_IDENTITY_REL, "role": "incumbent Qwen27 resident identity (CONTROL, not tournament NX)"},
             {"path": QWEN_SEAL_REL, "role": "HCLI resident seal for sealed-3.14"},

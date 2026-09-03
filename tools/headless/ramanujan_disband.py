@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Retire the Ramanujan campaign by indexing it.
 
-Read-only over ``ramanujan/``. Writes ``receipts/headless/RAMANUJAN_DISBAND.json``.
-Does not delete, restore, or rewrite anything under ``ramanujan/``. The campaign
+Read-only over ``research/ramanujan/``. Writes ``receipts/headless/RAMANUJAN_DISBAND.json``.
+Does not delete, restore, or rewrite anything under ``research/ramanujan/``. The campaign
 is retired; its evidence is not. This script makes that second fact durable.
 """
 from __future__ import annotations
@@ -29,15 +29,15 @@ SCHEMA = "hawking.headless.ramanujan_disband.v1"
 
 # Historical logical paths still named in sealed receipts. layout.py maps them.
 LOGICAL = {
-    "ramanujan/RAMANUJAN_Q0_CLOSURE.json": RAMANUJAN / "records/audits/RAMANUJAN_Q0_CLOSURE.json",
-    "ramanujan/RAMANUJAN_Q0_EVIDENCE_BUNDLE.json": RAMANUJAN / "records/audits/RAMANUJAN_Q0_EVIDENCE_BUNDLE.json",
-    "ramanujan/data/corpora/FREEZE_RECEIPT.json": RAMANUJAN / "scaffold/data/corpora/FREEZE_RECEIPT.json",
-    "ramanujan/data/corpora/GENERATION_RECEIPT.json": RAMANUJAN / "scaffold/data/corpora/GENERATION_RECEIPT.json",
-    "ramanujan/data/corpora/MEMBERSHIP_MANIFEST.json": RAMANUJAN / "scaffold/data/corpora/MEMBERSHIP_MANIFEST.json",
-    "ramanujan/RAMANUJAN_DATA_SOURCE_MATRIX.json": RAMANUJAN / "records/intake/RAMANUJAN_DATA_SOURCE_MATRIX.json",
-    "ramanujan/prover.py": RAMANUJAN / "scaffold/research/prover.py",
-    "ramanujan/ledger.py": RAMANUJAN / "scaffold/core/ledger.py",
-    "ramanujan/RAMANUJAN_ENVIRONMENT_LOCK.json": RAMANUJAN / "records/runtime/RAMANUJAN_ENVIRONMENT_LOCK.json",
+    "research/ramanujan/RAMANUJAN_Q0_CLOSURE.json": RAMANUJAN / "records/audits/RAMANUJAN_Q0_CLOSURE.json",
+    "research/ramanujan/RAMANUJAN_Q0_EVIDENCE_BUNDLE.json": RAMANUJAN / "records/audits/RAMANUJAN_Q0_EVIDENCE_BUNDLE.json",
+    "research/ramanujan/data/corpora/FREEZE_RECEIPT.json": RAMANUJAN / "scaffold/data/corpora/FREEZE_RECEIPT.json",
+    "research/ramanujan/data/corpora/GENERATION_RECEIPT.json": RAMANUJAN / "scaffold/data/corpora/GENERATION_RECEIPT.json",
+    "research/ramanujan/data/corpora/MEMBERSHIP_MANIFEST.json": RAMANUJAN / "scaffold/data/corpora/MEMBERSHIP_MANIFEST.json",
+    "research/ramanujan/RAMANUJAN_DATA_SOURCE_MATRIX.json": RAMANUJAN / "records/intake/RAMANUJAN_DATA_SOURCE_MATRIX.json",
+    "research/ramanujan/prover.py": RAMANUJAN / "scaffold/research/prover.py",
+    "research/ramanujan/ledger.py": RAMANUJAN / "scaffold/core/ledger.py",
+    "research/ramanujan/RAMANUJAN_ENVIRONMENT_LOCK.json": RAMANUJAN / "records/runtime/RAMANUJAN_ENVIRONMENT_LOCK.json",
 }
 
 GIT_ONLY = {
@@ -242,13 +242,13 @@ def probe_failures(inv: dict[str, Any], live: dict[str, Any]) -> list[dict[str, 
 
     # 1. Training checkpoints named by the training receipt are not in the tree.
     named = [
-        "ramanujan/train/checkpoints/formalizer.pt",
-        "ramanujan/train/checkpoints/prover.pt",
-        "ramanujan/train/checkpoints/repair.pt",
-        "ramanujan/train/checkpoints/retriever.pt",
-        "ramanujan/train/checkpoints/value.pt",
-        "ramanujan/scaffold/train/checkpoints/formalizer.pt",
-        "ramanujan/scaffold/train/checkpoints/retriever.pt",
+        "research/ramanujan/train/checkpoints/formalizer.pt",
+        "research/ramanujan/train/checkpoints/prover.pt",
+        "research/ramanujan/train/checkpoints/repair.pt",
+        "research/ramanujan/train/checkpoints/retriever.pt",
+        "research/ramanujan/train/checkpoints/value.pt",
+        "research/ramanujan/scaffold/train/checkpoints/formalizer.pt",
+        "research/ramanujan/scaffold/train/checkpoints/retriever.pt",
     ]
     present = [p for p in named if (REPO / p).exists()]
     watched.append({
@@ -289,17 +289,17 @@ def probe_failures(inv: dict[str, Any], live: dict[str, Any]) -> list[dict[str, 
     })
 
     # 4. restream_guard imports lab.operators, which this sparse tree does not materialize.
-    # Do not import ramanujan.* — CPython will write ramanujan/__pycache__ even when
+    # Do not import ramanujan.* — CPython will write research/ramanujan/__pycache__ even when
     # sys.dont_write_bytecode is set (observed: cpython-314 .pyc from a layout import).
     restream_src = (RAMANUJAN / "scaffold/guards/restream_guard.py").read_text(encoding="utf-8")
     lab_on_disk = (REPO / "lab" / "operators").is_dir()
     watched.append({
         "id": "restream_guard_import",
-        "what": "restream_guard.py imports lab.operators.glm52_common; lab/operators is not in this sparse checkout",
+        "what": "restream_guard.py imports lab.operators.glm52_common; research/lab/operators is not in this sparse checkout",
         "imports_lab_operators": "from lab.operators.glm52_common" in restream_src,
         "lab_operators_on_disk": lab_on_disk,
         "result": "IMPORT_WOULD_FAIL_IN_THIS_SPARSE_TREE" if not lab_on_disk else "OPERATORS_PRESENT_NOT_IMPORTED",
-        "meaning": "The fail-closed launcher still exists as source; it is not executable without the operators tree. This probe reads the source rather than importing, so it cannot mint ramanujan/__pycache__.",
+        "meaning": "The fail-closed launcher still exists as source; it is not executable without the operators tree. This probe reads the source rather than importing, so it cannot mint research/ramanujan/__pycache__.",
     })
 
     # 5. No Noetic tree.
@@ -310,7 +310,7 @@ def probe_failures(inv: dict[str, Any], live: dict[str, Any]) -> list[dict[str, 
         "what": "search HEAD for a Noetic campaign tree",
         "hits": noetic_hits,
         "result": "NO_PATH_NAMED_NOETIC",
-        "meaning": "If Noetic names the doctrine/cognition half of the Hawking split, ramanujan/ is that half as a scaffold. It is not a separate directory.",
+        "meaning": "If Noetic names the doctrine/cognition half of the Hawking split, research/ramanujan/ is that half as a scaffold. It is not a separate directory.",
     })
 
     # 6. The 31-closed / 9-reopen census is not a named receipt in this tree.
@@ -354,7 +354,7 @@ def probe_failures(inv: dict[str, Any], live: dict[str, Any]) -> list[dict[str, 
     watched.append({
         "id": "d4_rerun_owed",
         "what": "CORPUS_DETERMINISM: D4 content leak and ordering were fixed; end-to-end rerun still owed",
-        "receipt": "ramanujan/records/intake/RAMANUJAN_CORPUS_DETERMINISM.json",
+        "receipt": "research/ramanujan/records/intake/RAMANUJAN_CORPUS_DETERMINISM.json",
         "d4_result": live["determinism"]["result"]["D4"],
         "result": "OWED_NOT_CLAIMED",
     })
@@ -374,7 +374,7 @@ def probe_failures(inv: dict[str, Any], live: dict[str, Any]) -> list[dict[str, 
     watched.append({
         "id": "q0_false_achieved",
         "what": "RAMANUJAN_Q0_CLOSURE.history: previous receipt claimed ACHIEVED while the named harness had been deleted by two LOC-reduction passes",
-        "later": "8b0c54053 deleted more of ramanujan/; 5ae13da07 restored it; 8230904e2 closed Q0 for real",
+        "later": "8b0c54053 deleted more of research/ramanujan/; 5ae13da07 restored it; 8230904e2 closed Q0 for real",
         "current_status": live["q0_closure"]["status"],
         "leaf_hashes_match": live["q0_leaves_match"],
         "result": "RE_VERIFIED_PROVEN_AFTER_METHOD_FAILURE",
@@ -384,10 +384,10 @@ def probe_failures(inv: dict[str, Any], live: dict[str, Any]) -> list[dict[str, 
     pycache = RAMANUJAN / "__pycache__"
     watched.append({
         "id": "import_writes_pycache",
-        "what": "CPython 3.14 wrote ramanujan/__pycache__/{__init__,layout}.cpython-314.pyc from `from ramanujan.layout import ramanujan_path` even with sys.dont_write_bytecode=True",
+        "what": "CPython 3.14 wrote research/ramanujan/__pycache__/{__init__,layout}.cpython-314.pyc from `from ramanujan.layout import ramanujan_path` even with sys.dont_write_bytecode=True",
         "result": "BYTECODE_IS_A_TREE_MUTATION",
         "pycache_present_now": pycache.is_dir(),
-        "mitigation": "this script reads ramanujan/ as bytes and JSON; it does not import the package",
+        "mitigation": "this script reads research/ramanujan/ as bytes and JSON; it does not import the package",
     })
 
     # 12. .gravity artifacts deleted with no receipt — restream cannot name a substrate.
@@ -432,7 +432,7 @@ def load_live() -> dict[str, Any]:
     leaf_rows = []
     all_match = True
     for logical, expected in bundle["leaf_sha256"].items():
-        physical = LOGICAL.get(logical, RAMANUJAN / logical.removeprefix("ramanujan/"))
+        physical = LOGICAL.get(logical, RAMANUJAN / logical.removeprefix("research/ramanujan/"))
         if not physical.is_file():
             leaf_rows.append({"logical": logical, "physical": str(physical), "status": "MISSING"})
             all_match = False
@@ -561,16 +561,16 @@ def measured(live: dict[str, Any]) -> list[dict[str, Any]]:
             "replay_network": replay["network"],
             "hawking_commit": q0["hawking_commit"],
         },
-        "ramanujan/records/audits/RAMANUJAN_Q0_CLOSURE.json",
+        "research/ramanujan/records/audits/RAMANUJAN_Q0_CLOSURE.json",
         {"supporting": [
-            "ramanujan/container/REPLAY_RECEIPT.json",
-            "ramanujan/records/audits/RAMANUJAN_Q0_EVIDENCE_BUNDLE.json",
+            "research/ramanujan/container/REPLAY_RECEIPT.json",
+            "research/ramanujan/records/audits/RAMANUJAN_Q0_EVIDENCE_BUNDLE.json",
         ]},
     )
     add(
         "Q0 evidence-bundle leaf hashes still match live bytes",
         live["q0_leaves_match"],
-        "ramanujan/records/audits/RAMANUJAN_Q0_EVIDENCE_BUNDLE.json",
+        "research/ramanujan/records/audits/RAMANUJAN_Q0_EVIDENCE_BUNDLE.json",
         {"leaves": live["q0_leaves"]},
     )
     add(
@@ -582,7 +582,7 @@ def measured(live: dict[str, Any]) -> list[dict[str, Any]]:
             "counts": gen["counts"],
             "jsonl_lines_on_disk": {k: v["lines"] for k, v in live["jsonl_counts"].items()},
         },
-        "ramanujan/scaffold/data/corpora/GENERATION_RECEIPT.json",
+        "research/ramanujan/scaffold/data/corpora/GENERATION_RECEIPT.json",
     )
     add(
         "Scale-up wall clock and contamination negative control",
@@ -594,7 +594,7 @@ def measured(live: dict[str, Any]) -> list[dict[str, Any]]:
             "contamination_total_rejected": scale["contamination"]["total_rejected"],
             "negative_control": scale["contamination"]["negative_control"],
         },
-        "ramanujan/scaffold/data/corpora/SCALEUP_RECEIPT.json",
+        "research/ramanujan/scaffold/data/corpora/SCALEUP_RECEIPT.json",
     )
     add(
         "Frozen membership (current seal)",
@@ -608,7 +608,7 @@ def measured(live: dict[str, Any]) -> list[dict[str, Any]]:
             "n_eval_items_indexed": freeze["contamination"]["n_eval_items_indexed"],
             "negative_control_pass": freeze["negative_control_pass"],
         },
-        "ramanujan/scaffold/data/corpora/FREEZE_RECEIPT.json",
+        "research/ramanujan/scaffold/data/corpora/FREEZE_RECEIPT.json",
     )
     add(
         "Small-system training (CPU, 103.52s) — bound to membership c0c13806, not the later freeze",
@@ -622,8 +622,8 @@ def measured(live: dict[str, Any]) -> list[dict[str, Any]]:
             "teacher_from_math_preserve": t["teacher_from_math_preserve"],
             "RAMANUJAN_RESEARCH_AUTHORIZED": t["RAMANUJAN_RESEARCH_AUTHORIZED"],
         },
-        "ramanujan/scaffold/train/TRAINING_RECEIPT.json",
-        {"metrics_receipt": "ramanujan/scaffold/train/HELD_OUT_METRICS.json"},
+        "research/ramanujan/scaffold/train/TRAINING_RECEIPT.json",
+        {"metrics_receipt": "research/ramanujan/scaffold/train/HELD_OUT_METRICS.json"},
     )
     add(
         "Retriever held-out test (D3 dual-encoder vs token-overlap baseline)",
@@ -633,7 +633,7 @@ def measured(live: dict[str, Any]) -> list[dict[str, Any]]:
             "held_out_test": m["retriever"]["held_out_test"],
             "baseline_test": m["retriever"]["baseline_test"],
         },
-        "ramanujan/scaffold/train/HELD_OUT_METRICS.json",
+        "research/ramanujan/scaffold/train/HELD_OUT_METRICS.json",
     )
     add(
         "Value held-out test (D2 closed-next + remaining-steps)",
@@ -642,7 +642,7 @@ def measured(live: dict[str, Any]) -> list[dict[str, Any]]:
             "improved_vs_baseline": m["value"]["improved_vs_baseline"],
             "held_out_test": m["value"]["held_out_test"],
         },
-        "ramanujan/scaffold/train/HELD_OUT_METRICS.json",
+        "research/ramanujan/scaffold/train/HELD_OUT_METRICS.json",
     )
     add(
         "Formalizer held-out test (D1 first-tactic closed-vocab) — did not beat majority",
@@ -651,7 +651,7 @@ def measured(live: dict[str, Any]) -> list[dict[str, Any]]:
             "improved_vs_baseline": m["formalizer"]["improved_vs_baseline"],
             "held_out_test": m["formalizer"]["held_out_test"],
         },
-        "ramanujan/scaffold/train/HELD_OUT_METRICS.json",
+        "research/ramanujan/scaffold/train/HELD_OUT_METRICS.json",
     )
     add(
         "Prover held-out test (D2 next-tactic closed-vocab) — did not beat majority",
@@ -660,7 +660,7 @@ def measured(live: dict[str, Any]) -> list[dict[str, Any]]:
             "improved_vs_baseline": m["prover"]["improved_vs_baseline"],
             "held_out_test": m["prover"]["held_out_test"],
         },
-        "ramanujan/scaffold/train/HELD_OUT_METRICS.json",
+        "research/ramanujan/scaffold/train/HELD_OUT_METRICS.json",
     )
     add(
         "Repair held-out test (D4) including Lean compile under isolated wrapper",
@@ -670,12 +670,12 @@ def measured(live: dict[str, Any]) -> list[dict[str, Any]]:
             "held_out_test": m["repair"]["held_out_test"],
             "held_out_test_lean": m["repair"]["held_out_test_lean"],
         },
-        "ramanujan/scaffold/train/HELD_OUT_METRICS.json",
+        "research/ramanujan/scaffold/train/HELD_OUT_METRICS.json",
     )
     add(
         "Solver machine-checks (tools execute; not research capability)",
         env.get("proof_solvers_work"),
-        "ramanujan/records/runtime/RAMANUJAN_ENVIRONMENT_LOCK.json",
+        "research/ramanujan/records/runtime/RAMANUJAN_ENVIRONMENT_LOCK.json",
     )
     add(
         "Toolchain selftest verdict",
@@ -685,12 +685,12 @@ def measured(live: dict[str, Any]) -> list[dict[str, Any]]:
             "q0_reproducibility": live["selftest"]["q0_reproducibility"],
             "lean_version_when_probed": live["selftest"]["binaries"]["lean"]["version"],
         },
-        "ramanujan/records/runtime/RAMANUJAN_TOOLCHAIN_SELFTEST.json",
+        "research/ramanujan/records/runtime/RAMANUJAN_TOOLCHAIN_SELFTEST.json",
     )
     add(
         "Green-light storage sample (not a future admission receipt)",
         green["details"]["storage"],
-        "ramanujan/governance/boundary/RAMANUJAN_GREEN_LIGHT_TRANSITION.json",
+        "research/ramanujan/governance/boundary/RAMANUJAN_GREEN_LIGHT_TRANSITION.json",
         {"exact_next_action": green["exact_next_action"], "status": green["status"]},
     )
     add(
@@ -699,17 +699,17 @@ def measured(live: dict[str, Any]) -> list[dict[str, Any]]:
             (fam for fam in audit["large_family_gauntlet"]["families"] if fam["family"] == "Llama-3.3-70B"),
             None,
         ),
-        "ramanujan/records/audits/RAMANUJAN_PRE_RESTREAM_AUDIT.json",
+        "research/ramanujan/records/audits/RAMANUJAN_PRE_RESTREAM_AUDIT.json",
     )
     add(
         "Pre-restream audit: Qwen2.5-72B first-forward swap floor",
         audit["qwen_first_dispatch_closure"]["same_source_reprobe"],
-        "ramanujan/records/audits/RAMANUJAN_PRE_RESTREAM_AUDIT.json",
+        "research/ramanujan/records/audits/RAMANUJAN_PRE_RESTREAM_AUDIT.json",
     )
     add(
         "Pre-restream audit: Q4_K fixture representation matrix (p50 microseconds)",
         audit["qwen_first_dispatch_closure"]["same_fixture_representation_matrix"],
-        "ramanujan/records/audits/RAMANUJAN_PRE_RESTREAM_AUDIT.json",
+        "research/ramanujan/records/audits/RAMANUJAN_PRE_RESTREAM_AUDIT.json",
     )
     add(
         "GLM-5.2 restream schedule (technical, not authorized)",
@@ -724,24 +724,24 @@ def measured(live: dict[str, Any]) -> list[dict[str, Any]]:
             "peak_incremental_bytes": audit["restream_machinery"]["schedule"]["peak_incremental_bytes"],
             "activation_aware_cosine_at_0.167_bpw": restream["representation"]["new_input_since_preregistration"],
         },
-        "ramanujan/governance/contracts/RAMANUJAN_RESTREAM_PLAN.json",
-        {"supporting": ["ramanujan/records/audits/RAMANUJAN_PRE_RESTREAM_AUDIT.json"]},
+        "research/ramanujan/governance/contracts/RAMANUJAN_RESTREAM_PLAN.json",
+        {"supporting": ["research/ramanujan/records/audits/RAMANUJAN_PRE_RESTREAM_AUDIT.json"]},
     )
     add(
         "Code-topology condensation recorded at pre-restream audit",
         audit["code_topology"],
-        "ramanujan/records/audits/RAMANUJAN_PRE_RESTREAM_AUDIT.json",
+        "research/ramanujan/records/audits/RAMANUJAN_PRE_RESTREAM_AUDIT.json",
     )
     add(
         "Research ledger has a single Q0 machine-check event at seq 0",
         {
-            "path": "ramanujan/scaffold/data/records/research_ledger.jsonl",
+            "path": "research/ramanujan/scaffold/data/records/research_ledger.jsonl",
             "lines": 1,
             "payload": json.loads(
                 (RAMANUJAN / "scaffold/data/records/research_ledger.jsonl").read_text(encoding="utf-8").splitlines()[0]
             ),
         },
-        "ramanujan/scaffold/data/records/research_ledger.jsonl",
+        "research/ramanujan/scaffold/data/records/research_ledger.jsonl",
     )
     if live["glm52_fast_intake"]:
         add(
@@ -751,7 +751,7 @@ def measured(live: dict[str, Any]) -> list[dict[str, Any]]:
                 "decode_checked_rows": live["glm52_fast_intake"].get("gates", {}).get("DECODE_PERFORMANCE", {}).get("checked_rows"),
             },
             GIT_ONLY["glm52_fast_intake"],
-            {"note": "git-only sibling; not inside ramanujan/"},
+            {"note": "git-only sibling; not inside research/ramanujan/"},
         )
     if live["handoff"]:
         mp = None
@@ -782,9 +782,9 @@ def refutations(live: dict[str, Any]) -> list[dict[str, Any]]:
                 "forward pass refutes the entire substrate."
             ),
             "receipts": [
-                "ramanujan/governance/boundary/RAMANUJAN_OFFLINE_MANIFEST.json",
-                "ramanujan/scaffold/train/TRAINING_RECEIPT.json#limit_consults",
-                "ramanujan/records/runtime/RAMANUJAN_COGNITION_REGISTER.json#CheapestFalsifier",
+                "research/ramanujan/governance/boundary/RAMANUJAN_OFFLINE_MANIFEST.json",
+                "research/ramanujan/scaffold/train/TRAINING_RECEIPT.json#limit_consults",
+                "research/ramanujan/records/runtime/RAMANUJAN_COGNITION_REGISTER.json#CheapestFalsifier",
                 GIT_ONLY["substrate_capability"],
             ],
             "reopen_condition": (
@@ -805,9 +805,9 @@ def refutations(live: dict[str, Any]) -> list[dict[str, Any]]:
                 "to name. This is sequencing, not a refutation of the freeze-the-giant / train-the-small doctrine."
             ),
             "receipts": [
-                "ramanujan/governance/boundary/HAWKING_COMPLETION_GATE.json",
-                "ramanujan/governance/boundary/RAMANUJAN_GREEN_LIGHT_TRANSITION.json",
-                "ramanujan/governance/contracts/RAMANUJAN_RESTREAM_PLAN.json",
+                "research/ramanujan/governance/boundary/HAWKING_COMPLETION_GATE.json",
+                "research/ramanujan/governance/boundary/RAMANUJAN_GREEN_LIGHT_TRANSITION.json",
+                "research/ramanujan/governance/contracts/RAMANUJAN_RESTREAM_PLAN.json",
                 GIT_ONLY["handoff"],
             ],
             "reopen_condition": (
@@ -831,8 +831,8 @@ def refutations(live: dict[str, Any]) -> list[dict[str, Any]]:
                 "is still DEFINED_CONTROLLER_SCAFFOLD_READY); D5 informal/formal pairs were never acquired."
             ),
             "receipts": [
-                "ramanujan/scaffold/train/HELD_OUT_METRICS.json",
-                "ramanujan/governance/contracts/RAMANUJAN_Q0_Q6_CONTRACTS.json#Q4",
+                "research/ramanujan/scaffold/train/HELD_OUT_METRICS.json",
+                "research/ramanujan/governance/contracts/RAMANUJAN_Q0_Q6_CONTRACTS.json#Q4",
             ],
             "reopen_condition": (
                 "Seq2seq proof generation beyond closed vocab, plus owner-licensed D5 pairs, plus "
@@ -850,7 +850,7 @@ def refutations(live: dict[str, Any]) -> list[dict[str, Any]]:
                 f"(n={m['prover']['held_out_test']['n']}, 381 classes). "
                 "end_to_end_search_policy remains still_scaffold. Tree search was specified, not tried at production scale."
             ),
-            "receipts": ["ramanujan/scaffold/train/HELD_OUT_METRICS.json"],
+            "receipts": ["research/ramanujan/scaffold/train/HELD_OUT_METRICS.json"],
             "reopen_condition": (
                 "Interactive Lean state value from real goals plus best-first search with the "
                 "retriever/value pair that DID converge — not another closed-vocab classifier."
@@ -869,8 +869,8 @@ def refutations(live: dict[str, Any]) -> list[dict[str, Any]]:
                 "D4 is named as the cheapest real training signal."
             ),
             "receipts": [
-                "ramanujan/scaffold/train/HELD_OUT_METRICS.json",
-                "ramanujan/records/intake/RAMANUJAN_CORPUS_DETERMINISM.json",
+                "research/ramanujan/scaffold/train/HELD_OUT_METRICS.json",
+                "research/ramanujan/records/intake/RAMANUJAN_CORPUS_DETERMINISM.json",
             ],
             "reopen_condition": (
                 "A wrapper that preserves typeclass context; D4 content_digest end-to-end rerun "
@@ -884,12 +884,12 @@ def refutations(live: dict[str, Any]) -> list[dict[str, Any]]:
             "classification": "ARTIFACT_OF_METHOD",
             "why": (
                 "Two LOC-reduction passes deleted the harness a receipt still named. 8b0c54053 "
-                "then deleted more of ramanujan/; 5ae13da07 restored it; 8230904e2 closed Q0 for "
+                "then deleted more of research/ramanujan/; 5ae13da07 restored it; 8230904e2 closed Q0 for "
                 "real with five MET requirements and a composing chain. The capsule idea was fine; "
                 "the measurement was a ghost."
             ),
             "receipts": [
-                "ramanujan/records/audits/RAMANUJAN_Q0_CLOSURE.json",
+                "research/ramanujan/records/audits/RAMANUJAN_Q0_CLOSURE.json",
                 "git:8b0c54053",
                 "git:5ae13da07",
                 "git:8230904e2",
@@ -910,7 +910,7 @@ def refutations(live: dict[str, Any]) -> list[dict[str, Any]]:
                 "temp-path leakage into hashed error text, D4 worker-completion ordering, and D7 "
                 "ids built from salted str.__hash__ (30 of 86 ids moved)."
             ),
-            "receipts": ["ramanujan/records/intake/RAMANUJAN_CORPUS_DETERMINISM.json"],
+            "receipts": ["research/ramanujan/records/intake/RAMANUJAN_CORPUS_DETERMINISM.json"],
             "reopen_condition": (
                 "D1/D2/D3/D6 already REPRODUCE. D7 ids verified by recomputation. D4 end-to-end "
                 "rerun under the sorted, path-stripped code is still owed."
@@ -928,8 +928,8 @@ def refutations(live: dict[str, Any]) -> list[dict[str, Any]]:
                 "the second-solver disagreement signal: z3 answers alone."
             ),
             "receipts": [
-                "ramanujan/records/runtime/RAMANUJAN_ENVIRONMENT_LOCK.json",
-                "ramanujan/records/runtime/RAMANUJAN_TOOLCHAIN_SELFTEST.json",
+                "research/ramanujan/records/runtime/RAMANUJAN_ENVIRONMENT_LOCK.json",
+                "research/ramanujan/records/runtime/RAMANUJAN_TOOLCHAIN_SELFTEST.json",
             ],
             "reopen_condition": "Explicit owner authorisation to fetch the cvc5 and GAP release binaries, then pin sha256.",
         },
@@ -943,7 +943,7 @@ def refutations(live: dict[str, Any]) -> list[dict[str, Any]]:
                 "gate refuses anything not listed; absence is UNVERIFIED, also refused. Flipping "
                 "ODYSSEY_LAUNCH_AUTHORIZED still exits 5 — the fence and the capability gate are independent."
             ),
-            "receipts": ["ramanujan/governance/contracts/RAMANUJAN_RESTREAM_PLAN.json"],
+            "receipts": ["research/ramanujan/governance/contracts/RAMANUJAN_RESTREAM_PLAN.json"],
             "reopen_condition": (
                 "(a) rebuild a .gravity and submit it with live generation evidence, or (b) run the "
                 "preregistered representation tournament (A1 first, then A4). (b) subsumes (a)."
@@ -961,8 +961,8 @@ def refutations(live: dict[str, Any]) -> list[dict[str, Any]]:
             ),
             "receipts": [
                 "git:f1c55a302",
-                "ramanujan/scaffold/research/odyssey.py",
-                "ramanujan/README.md",
+                "research/ramanujan/scaffold/research/odyssey.py",
+                "research/ramanujan/README.md",
             ],
             "reopen_condition": "Not a refutation of Odyssey. Reopen live Odyssey only under R2's conditions.",
         },
@@ -973,13 +973,13 @@ def refutations(live: dict[str, Any]) -> list[dict[str, Any]]:
             "classification": "PROPERTY_OF_THE_IDEA",
             "why": (
                 "ramanujan.odyssey proto refuses the independently trained layerwise route. The "
-                "cascade negative lives outside ramanujan/; this tree records the refusal, not a "
+                "cascade negative lives outside research/ramanujan/; this tree records the refusal, not a "
                 "re-derivation of the cascade measurement."
             ),
             "receipts": [
-                "ramanujan/README.md",
-                "ramanujan/scaffold/research/odyssey.py#ProtoStudent",
-                "ramanujan/scaffold/tests/test_odyssey_harness.py",
+                "research/ramanujan/README.md",
+                "research/ramanujan/scaffold/research/odyssey.py#ProtoStudent",
+                "research/ramanujan/scaffold/tests/test_odyssey_harness.py",
             ],
             "reopen_condition": (
                 "Only if new evidence invalidates the Flash cascade negative. Default student remains "
@@ -997,9 +997,9 @@ def refutations(live: dict[str, Any]) -> list[dict[str, Any]]:
                 "the older membership and are not current-freeze evidence."
             ),
             "receipts": [
-                "ramanujan/scaffold/train/TRAINING_RECEIPT.json",
-                "ramanujan/scaffold/data/corpora/FREEZE_RECEIPT.json",
-                "ramanujan/records/runtime/SMALL_SYSTEM_TRAINING_STATUS.json",
+                "research/ramanujan/scaffold/train/TRAINING_RECEIPT.json",
+                "research/ramanujan/scaffold/data/corpora/FREEZE_RECEIPT.json",
+                "research/ramanujan/records/runtime/SMALL_SYSTEM_TRAINING_STATUS.json",
             ],
             "reopen_condition": "Re-train or re-evaluate the five components against membership fec9f85e. Do not cite 0.879 MRR as current-freeze evidence until then.",
         },
@@ -1010,8 +1010,8 @@ def refutations(live: dict[str, Any]) -> list[dict[str, Any]]:
             "classification": "GATED_NOT_REFUTED",
             "why": "Owner never selected licensed D5/D8/D9 sources. Q0-Q6 contracts explicitly forbid treating absence as a score.",
             "receipts": [
-                "ramanujan/governance/contracts/RAMANUJAN_Q0_Q6_CONTRACTS.json",
-                "ramanujan/governance/boundary/RAMANUJAN_OWNER_DECISIONS_REQUIRED.json",
+                "research/ramanujan/governance/contracts/RAMANUJAN_Q0_Q6_CONTRACTS.json",
+                "research/ramanujan/governance/boundary/RAMANUJAN_OWNER_DECISIONS_REQUIRED.json",
             ],
             "reopen_condition": live["owner"]["decisions"][1]["reopen_condition"] if live["owner"].get("decisions") else "owner-signed D8/D9 freeze",
         },
@@ -1022,8 +1022,8 @@ def refutations(live: dict[str, Any]) -> list[dict[str, Any]]:
             "classification": "ARTIFACT_OF_METHOD",
             "why": "The lock itself warns: 'the repository's own tooling targets python3.12; reconcile before locking'. Two authorities on the interpreter.",
             "receipts": [
-                "ramanujan/records/runtime/RAMANUJAN_ENVIRONMENT_LOCK.json",
-                "ramanujan/records/runtime/RAMANUJAN_TOOLCHAIN_SELFTEST.json",
+                "research/ramanujan/records/runtime/RAMANUJAN_ENVIRONMENT_LOCK.json",
+                "research/ramanujan/records/runtime/RAMANUJAN_TOOLCHAIN_SELFTEST.json",
             ],
             "reopen_condition": "Pick one interpreter, write a hashed lockfile, re-run toolchain_selftest.",
         },
@@ -1035,11 +1035,11 @@ def reusable_now(live: dict[str, Any]) -> list[dict[str, Any]]:
         {
             "item": "Fail-closed authority fences",
             "paths": [
-                "ramanujan/governance/boundary/HAWKING_COMPLETION_GATE.json",
-                "ramanujan/scaffold/core/limits.py",
-                "ramanujan/scaffold/core/roles.py",
-                "ramanujan/scaffold/guards/status.py",
-                "ramanujan/scaffold/guards/restream_guard.py",
+                "research/ramanujan/governance/boundary/HAWKING_COMPLETION_GATE.json",
+                "research/ramanujan/scaffold/core/limits.py",
+                "research/ramanujan/scaffold/core/roles.py",
+                "research/ramanujan/scaffold/guards/status.py",
+                "research/ramanujan/scaffold/guards/restream_guard.py",
             ],
             "what": (
                 "RAMANUJAN_RESEARCH_AUTHORIZED has no flip path. Generators cannot promote. "
@@ -1050,9 +1050,9 @@ def reusable_now(live: dict[str, Any]) -> list[dict[str, Any]]:
         {
             "item": "Q0 clean-container recipe and hash-bound capsule",
             "paths": [
-                "ramanujan/container/",
-                "ramanujan/records/audits/RAMANUJAN_Q0_EVIDENCE_BUNDLE.json",
-                "ramanujan/records/audits/RAMANUJAN_Q0_CLOSURE.json",
+                "research/ramanujan/container/",
+                "research/ramanujan/records/audits/RAMANUJAN_Q0_EVIDENCE_BUNDLE.json",
+                "research/ramanujan/records/audits/RAMANUJAN_Q0_CLOSURE.json",
             ],
             "what": (
                 "Dockerfile, pins, replay scripts, two_plus_two capsule, leaf sha256s that still "
@@ -1062,16 +1062,16 @@ def reusable_now(live: dict[str, Any]) -> list[dict[str, Any]]:
         },
         {
             "item": "Historical-path map",
-            "paths": ["ramanujan/layout.py"],
+            "paths": ["research/ramanujan/layout.py"],
             "what": (
-                "Sealed receipts name ramanujan/RAMANUJAN_Q0_CLOSURE.json and ramanujan/ledger.py. "
+                "Sealed receipts name research/ramanujan/RAMANUJAN_Q0_CLOSURE.json and research/ramanujan/ledger.py. "
                 "Those files physically live under records/ and scaffold/. Deleting layout.py "
                 "makes the seals unreadable without archaeology."
             ),
         },
         {
             "item": "Lean-derived corpora D1 D2 D3 D4 D6 D7 plus freeze",
-            "paths": ["ramanujan/scaffold/data/corpora/"],
+            "paths": ["research/ramanujan/scaffold/data/corpora/"],
             "what": (
                 "16188 items, content_digest sealed, contamination negative control (tl02_bpw) "
                 "caught. Regenerable from Mathlib 2ec0166b except D4's owed rerun. This is most "
@@ -1080,7 +1080,7 @@ def reusable_now(live: dict[str, Any]) -> list[dict[str, Any]]:
         },
         {
             "item": "Q0-Q6 qualification lattice",
-            "paths": ["ramanujan/governance/contracts/RAMANUJAN_Q0_Q6_CONTRACTS.json"],
+            "paths": ["research/ramanujan/governance/contracts/RAMANUJAN_Q0_Q6_CONTRACTS.json"],
             "what": (
                 "Q0 PROVEN, Q1 PROVEN_OFFLINE, Q2-Q3 pending owner, Q4-Q6 scaffold-ready. "
                 "File hashes of the bound receipts still match live bytes (lattice path moved, bytes held)."
@@ -1088,7 +1088,7 @@ def reusable_now(live: dict[str, Any]) -> list[dict[str, Any]]:
         },
         {
             "item": "Cognition register with kill conditions",
-            "paths": ["ramanujan/records/runtime/RAMANUJAN_COGNITION_REGISTER.json"],
+            "paths": ["research/ramanujan/records/runtime/RAMANUJAN_COGNITION_REGISTER.json"],
             "what": (
                 "13 mechanisms, each with kill/ablation/self-deception written before implementation. "
                 "Four exist on fixtures: Research Object Graph, Cheapest Falsifier, Calibration, Capsule. "
@@ -1098,8 +1098,8 @@ def reusable_now(live: dict[str, Any]) -> list[dict[str, Any]]:
         {
             "item": "Odyssey fixture control plane (T0-T12 / F0-F12 / Q0-Q12) plus proto contracts",
             "paths": [
-                "ramanujan/scaffold/research/odyssey.py",
-                "ramanujan/scaffold/tests/test_odyssey_harness.py",
+                "research/ramanujan/scaffold/research/odyssey.py",
+                "research/ramanujan/scaffold/tests/test_odyssey_harness.py",
             ],
             "what": (
                 "Fail-closed Director environment; refuses research authorization; ProtoGravityRenderer "
@@ -1109,7 +1109,7 @@ def reusable_now(live: dict[str, Any]) -> list[dict[str, Any]]:
         },
         {
             "item": "Determinism defects already found",
-            "paths": ["ramanujan/records/intake/RAMANUJAN_CORPUS_DETERMINISM.json"],
+            "paths": ["research/ramanujan/records/intake/RAMANUJAN_CORPUS_DETERMINISM.json"],
             "what": (
                 "file-hash freeze, D4 mkdtemp path leak, D4 worker order, D7 PYTHONHASHSEED. "
                 "Do not rediscover these by regenerating."
@@ -1127,9 +1127,9 @@ def reusable_now(live: dict[str, Any]) -> list[dict[str, Any]]:
         {
             "item": "Retriever and value architectures (not their 2026-07-27 weights)",
             "paths": [
-                "ramanujan/scaffold/train/models.py",
-                "ramanujan/scaffold/train/train_components.py",
-                "ramanujan/scaffold/research/search.py",
+                "research/ramanujan/scaffold/train/models.py",
+                "research/ramanujan/scaffold/train/train_components.py",
+                "research/ramanujan/scaffold/research/search.py",
             ],
             "what": (
                 "Dual-encoder retriever beat token-overlap; value beat majority closed. "
@@ -1163,7 +1163,7 @@ def deletion_cost(inv: dict[str, Any], live: dict[str, Any]) -> dict[str, Any]:
             {
                 "lost": "Q0 hash-bound capsule, Dockerfile, pins, replay scripts, and the leaf-seal that still matches",
                 "image_not_in_git_bytes": live["q0_closure"]["image"]["size_bytes"],
-                "image_note": "the 4.64 GiB Docker image is already not in git; deleting ramanujan/ deletes the only recipe that can rebuild it",
+                "image_note": "the 4.64 GiB Docker image is already not in git; deleting research/ramanujan/ deletes the only recipe that can rebuild it",
             },
             {
                 "lost": "layout.py — the map from sealed logical paths to compact physical paths",
@@ -1254,22 +1254,22 @@ def what_it_was(live: dict[str, Any]) -> dict[str, Any]:
             "qualification": [c["id"] + " " + c["name"] + " = " + c["status"] for c in live["q0_q6"]["contracts"]],
             "data": "D1-D4, D6, D7 generated locally from pinned Mathlib; D5/D8/D9 pending owner license",
             "small_system": "retriever, formalizer, prover, repair, value — CPU, fixture-scale, two of five converged",
-            "odyssey_control_plane": "ramanujan/scaffold/research/odyssey.py — fixture-only T0-T12/F0-F12/Q0-Q12",
+            "odyssey_control_plane": "research/ramanujan/scaffold/research/odyssey.py — fixture-only T0-T12/F0-F12/Q0-Q12",
             "restream": "fail-closed launcher + green-light state machine that cannot self-promote",
             "entrypoints": [
-                "ramanujan/scaffold/guards/status.py",
-                "ramanujan/scaffold/guards/restream_guard.py",
-                "ramanujan/scaffold/guards/toolchain_selftest.py",
-                "ramanujan/scaffold/research/odyssey.py",
-                "ramanujan/scaffold/guards/RAMANUJAN_FINAL_PARENT_NEXT_COMMAND.sh",
+                "research/ramanujan/scaffold/guards/status.py",
+                "research/ramanujan/scaffold/guards/restream_guard.py",
+                "research/ramanujan/scaffold/guards/toolchain_selftest.py",
+                "research/ramanujan/scaffold/research/odyssey.py",
+                "research/ramanujan/scaffold/guards/RAMANUJAN_FINAL_PARENT_NEXT_COMMAND.sh",
             ],
         },
         "paths": {
-            "readme": "ramanujan/README.md",
-            "gate": "ramanujan/governance/boundary/HAWKING_COMPLETION_GATE.json",
-            "layout": "ramanujan/layout.py",
+            "readme": "research/ramanujan/README.md",
+            "gate": "research/ramanujan/governance/boundary/HAWKING_COMPLETION_GATE.json",
+            "layout": "research/ramanujan/layout.py",
             "handoff": GIT_ONLY["handoff"],
-            "dependency_doc": "ramanujan/docs/HAWKING_DEPENDENCY.md",
+            "dependency_doc": "research/ramanujan/docs/HAWKING_DEPENDENCY.md",
         },
         "relation_to_current_line": {
             "Hawking": (
@@ -1286,7 +1286,7 @@ def what_it_was(live: dict[str, Any]) -> dict[str, Any]:
                 "All .gravity artifacts were deleted 2026-07-29 with no receipt."
             ),
             "Doctor": (
-                "Zero Doctor code lives under ramanujan/. Doctor is Hawking's adversarial screen "
+                "Zero Doctor code lives under research/ramanujan/. Doctor is Hawking's adversarial screen "
                 "for Gravity representations (tools/gravity_doctor_gate.py: observed vs probed "
                 "cosine; later doctor6 / odyssey-i O00*_DOCTOR_SEAL.json). Ramanujan cannot "
                 "consume a pack that fails Doctor; Doctor is a dependency, not a child."
@@ -1300,7 +1300,7 @@ def what_it_was(live: dict[str, Any]) -> dict[str, Any]:
             ),
             "Noetic": (
                 "No path in HEAD contains the string 'noetic'. If Noetic names the cognition/"
-                "doctrine half of the Hawking split, that half is ramanujan/ as a scaffold — "
+                "doctrine half of the Hawking split, that half is research/ramanujan/ as a scaffold — "
                 "cognition register, YOU-research controller, verification lattice, Tribunal. "
                 "It is not a separate campaign tree in this repository."
             ),
@@ -1448,9 +1448,9 @@ def assemble(inv: dict[str, Any], live: dict[str, Any], watched: list[dict[str, 
             "unchanged": start_tree == end_tree and start_porcelain == end_porcelain,
             "how_verified": [
                 "git status --porcelain -- ramanujan at start and end",
-                "sha256 roll of every regular file and symlink under ramanujan/ before and after writing the receipt",
-                "this script never opens ramanujan/ paths for write",
-                "this script never imports ramanujan.* (CPython 3.14 wrote ramanujan/__pycache__ from a layout import even with sys.dont_write_bytecode)",
+                "sha256 roll of every regular file and symlink under research/ramanujan/ before and after writing the receipt",
+                "this script never opens research/ramanujan/ paths for write",
+                "this script never imports ramanujan.* (CPython 3.14 wrote research/ramanujan/__pycache__ from a layout import even with sys.dont_write_bytecode)",
                 "inventory walk skips __pycache__ and .pyc so bytecode cannot inflate the census",
             ],
         },
@@ -1582,7 +1582,7 @@ def print_report(doc: dict[str, Any]) -> None:
 
 def main() -> int:
     if not RAMANUJAN.is_dir():
-        print("ramanujan/ is not on disk in this worktree", file=sys.stderr)
+        print("research/ramanujan/ is not on disk in this worktree", file=sys.stderr)
         return 2
     start_porcelain = porcelain("ramanujan")
     inv = inventory()
@@ -1598,13 +1598,13 @@ def main() -> int:
     doc = assemble(inv, live, watched, start_porcelain, start_tree, lock_failures)
     RECEIPT_PATH.parent.mkdir(parents=True, exist_ok=True)
     RECEIPT_PATH.write_text(json.dumps(doc, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    # Re-inventory after write: ramanujan/ must not have moved.
+    # Re-inventory after write: research/ramanujan/ must not have moved.
     end_inv = inventory()
     if end_inv["tree_sha256"] != start_tree:
-        print("ERROR: ramanujan/ tree hash changed while writing the receipt", file=sys.stderr)
+        print("ERROR: research/ramanujan/ tree hash changed while writing the receipt", file=sys.stderr)
         return 1
     if porcelain("ramanujan") != start_porcelain:
-        print("ERROR: ramanujan/ git status changed while writing the receipt", file=sys.stderr)
+        print("ERROR: research/ramanujan/ git status changed while writing the receipt", file=sys.stderr)
         return 1
     # Reload receipt and confirm required sections.
     saved = load_json(RECEIPT_PATH)

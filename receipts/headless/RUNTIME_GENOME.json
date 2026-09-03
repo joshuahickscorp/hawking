@@ -62,7 +62,8 @@
     "backend_kinds": [
       "mlx",
       "llamacpp",
-      "noetic_native"
+      "noetic_native",
+      "remote"
     ],
     "default_kind_without_path": "mlx",
     "foreign_classes_defined_here": [],
@@ -70,7 +71,7 @@
     "llamacpp_status": "archived science when the Q5_K GGUF is absent",
     "missing_q5k_kind": "llamacpp",
     "mlx_first_class": true,
-    "noetic_native": "interface reservation; complete() refuses to pretend",
+    "noetic_native": "profile-driven native one-shot/resident connector",
     "planes": {
       "backend": "hcli.backends.RuntimeBackend",
       "context": "hcli.context_budget.ContextBudget (held, not recomputed)",
@@ -152,14 +153,5 @@
   "q5k_gguf_opened": false,
   "q5k_gguf_required": false,
   "remeasured": false,
-  "schema": "hawking.headless.runtime_genome.v1",
-  "bench": {
-    "state": "UNKNOWN",
-    "recorded_at": "2026-08-26T00:00:00Z",
-    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
-    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
-    "quiescence": null,
-    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
-    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
-  }
+  "schema": "hawking.headless.runtime_genome.v1"
 }

@@ -21,7 +21,7 @@ Do not invent a second artifact system. Consolidate.
 
 Git is the knowledge plane. Track:
 
-- Source (`crates/`, `tools/`, `lab/`, `app/`, `src/`, `hcli/`,
+- Source (`crates/`, `tools/`, `research/lab/`, `app/`, `src/`, `hcli/`,
   `workspace/vendor/` absorbed tracks).
 - Configs, schemas, generated **small** ABI/JSON surfaces that are the
   contract (adapter registry, protocol goldens).
@@ -39,7 +39,7 @@ Git is the knowledge plane. Track:
   `latent_v0_checkpoints/` `.pt` files, `crates/hawking-core/tests/fixtures/`
   including the already-tracked `*.bin` PQ fixtures). New weight-sized
   `.bin` files are not fixtures.
-- `hawking-experiments/` as a **source archive** of paused campaigns
+- `research/hawking-experiments/` as a **source archive** of paused campaigns
   (README + future compact notes), never as a blob dump.
 
 If a file is a sentence a later worker must read, it belongs in git. If it
@@ -142,7 +142,7 @@ are already tracked; the rule prevents new weight `.bin` files.
 |---|---|---|
 | `/artifacts/` (gitignored) | **EXISTING Hawking artifact root.** Calibration parquet/npz, learned heads, per-tensor configs. | **CAS root.** Layout below. Do not invent a parallel root or a second sha256 store. |
 | `workspace/ops/local/` | Local weights/checkpoints/models, HF cache helper. | Machine-local parent weights. Not the experiment CAS. |
-| `hawking-experiments/` | Campaign **source** archive (git). README only at HEAD. | Notes and compact pointers, never weights. |
+| `research/hawking-experiments/` | Campaign **source** archive (git). README only at HEAD. | Notes and compact pointers, never weights. |
 | `receipts/headless/ARTIFACT_LEDGER.json` + `tools/headless/storage_manager.py` | Census/reclaim of ≥1 GiB files under `~/models`, HF hub, campaign `runs/`. | Different layer (disk weights, not git history). Keep. Never-delete classes still bind. |
 | `crates/hawking-core/src/artifact.rs` | Gravity shard codec (`GRAVITY\0`). | A file format, not a store. |
 | `.hide/blobs` | HCLI runtime blobs. | Leave it. |
@@ -205,7 +205,7 @@ untouched. 55,625 events. Schema `hawking.odyssey.run_log.v1`.
 | Git | Compact canonical summary: schema, experiment identity, event count, byte count, sha256 of the full log (or of a sealed snapshot), first/last event timestamps, verdict histogram, hash of `ODYSSEY_STATE.json`. |
 | Local (ignored) | The raw JSONL at the well-known path. Optional sealed snapshot in `artifacts/sha256/…`. |
 
-Do not put a second full copy under `hawking-experiments/` or
+Do not put a second full copy under `research/hawking-experiments/` or
 `receipts/`. Do not LFS the log (S020 §26). History still contains 844
 unique blobs (~28.8 GiB logical, ~1.5 MiB zlib disk); stripping them is
 Phase B of the **unexecuted** plan in the ledger, not a task for this
@@ -250,7 +250,7 @@ run. Restore from the bundle/mirror. The 2026-07-01
 
 Do not adopt Git LFS as the storage architecture. S020 §26: LFS pointers
 on new commits leave every historical blob in the pack. The ledger
-classifies `hawking-experiments/superwave/g1/` as `LFS_CANDIDATE` because that is
+classifies `research/hawking-experiments/superwave/g1/` as `LFS_CANDIDATE` because that is
 the size of thing people reach for LFS for (largest current HEAD blob is
 `g1_functional_exceptions.json` at 29.0 MiB). The action is still: local
 CAS + git manifest, not LFS.

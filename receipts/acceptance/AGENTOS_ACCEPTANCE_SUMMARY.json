@@ -29,8 +29,8 @@
     "AGENTOS_CHECKPOINT_ATOMICITY",
     "AGENTOS_RESTART_COHERENCE"
   ],
-  "generated_at": "2026-09-02T18:44:46Z",
-  "git_head": "14ed3eb1f8fc616a29dbc724f3937cffedf15a43",
+  "generated_at": "2026-09-03T05:54:44Z",
+  "git_head": "f9aabd5043518c47fb06b6a8edb17bfd4a20198d",
   "hcli_file": "/Users/scammermike/Downloads/hawking/hcli/__init__.py",
   "receipts": {
     "AGENTOS_CANCELLATION": "/Users/scammermike/Downloads/hawking/receipts/acceptance/AGENTOS_CANCELLATION.json",

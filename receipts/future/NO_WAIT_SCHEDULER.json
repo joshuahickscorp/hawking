@@ -12,7 +12,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-03T00:36:34Z",
+  "recorded_at": "2026-09-03T05:47:37Z",
   "recorded_by": "tools/future/no_wait_scheduler.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -39,7 +39,7 @@
   "rediscover adopts handles that outlived a resident restart and never relaunches"
  ],
  "gpu_authority": false,
- "head": "b35af1fa8886aa9d5903e3b9e943503c63cb001e",
+ "head": "6ef2681614fadde7a45d002b5fc3feb108c81625",
  "module_sha256": "da2bcc7c691cca293749338f2a1886cfa98c110792ecf6e67710de2592621296",
  "negative_findings": [
   "autonomy_run.py still calls subprocess.run; this lane is not allowed to edit it, so the live loop is not yet wired to the scheduler",
@@ -66,7 +66,7 @@
   },
   "cancel_stops": {
    "passed": true,
-   "pid": 95438,
+   "pid": 47866,
    "pid_still_alive": false,
    "process_gone": true,
    "terminal": "cancelled"
@@ -83,10 +83,10 @@
   },
   "overlap_interval": {
    "clock": "time.time() unix seconds; overlap is an interval, not an intent",
-   "fast_finished_at": 1788395793.536127,
+   "fast_finished_at": 1788414456.8476632,
    "fast_ingest": "ingested",
-   "fast_launched_at": 1788395793.0864582,
-   "fast_progress_at": 1788395793.268521,
+   "fast_launched_at": 1788414456.486774,
+   "fast_progress_at": 1788414456.6327791,
    "fast_receipt_present": true,
    "fast_terminal": "completed-with-receipt",
    "independent_named": [
@@ -94,7 +94,7 @@
    ],
    "passed": true,
    "runnable_status_while_slow_open": "RUNNABLE",
-   "slow_launched_at": 1788395792.9556322,
+   "slow_launched_at": 1788414456.405205,
    "slow_open_at_fast_finish": true,
    "slow_open_at_fast_progress": true,
    "slow_terminal_during_window": null,
@@ -173,7 +173,7 @@
   }
  },
  "schema": "hawking.future.no_wait_scheduler.v1",
- "seal_sha256": "b8e0fe2dbcce549aa935ecfacd8a78077a9eb3bc692e27375ed9741935a19e92",
+ "seal_sha256": "648c26e7f151e71e4e47709eec8214ce1f52153bec4621a49c7af8c5c114a3c3",
  "supervisor_poll_rule": "poll is a supervisor operation; the reasoning context is released before this runs. Do not call it from a model-reasoning loop.",
  "version": 1
 }

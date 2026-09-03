@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-03T00:37:02Z",
+  "recorded_at": "2026-09-03T05:51:31Z",
   "recorded_by": "tools/future/specimen_events.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -345,10 +345,10 @@
   "mission_id": "odyssey-i/896dac3f7f92e11b409a9cbf5217a6b801935da5c91f65c391f1198bd9455aba",
   "phase_transition": "STARTED",
   "restarts_odyssey": false,
-  "ts": "2026-09-03T00:37:02Z"
+  "ts": "2026-09-03T05:51:31Z"
  },
  "schema": "hawking.future.specimen_events.v1",
- "seal_sha256": "c92e6674354e5b4085c6a39fce078856d80614f947e6ecff9485c331aeb6978c",
+ "seal_sha256": "85e98878200683df9e81a0e83612ea7714918063530c8fdafd67b03ecc1ee7ca",
  "specimen": {
   "architecture_family": "falcon_h1",
   "bytes_hashed": 15182220635,

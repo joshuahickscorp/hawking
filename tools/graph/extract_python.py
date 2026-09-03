@@ -458,7 +458,7 @@ def extract_python_file(
             path=str(Path(rel).parts[0]) if Path(rel).parts else rel,
             lang="python",
             public=True,
-            subsystem="laboratory" if rel.startswith(("tools/", "ramanujan/")) else "shared",
+            subsystem="laboratory" if rel.startswith(("tools/", "research/ramanujan/")) else "shared",
         ))
         g.ensure_contains("repo", pkg, evidence="ast")
     if pkg:

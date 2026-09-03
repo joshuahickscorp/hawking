@@ -27,7 +27,7 @@ AUDIT = Path("/Users/scammermike/noetic/MODEL2_AUDIT/QWEN30BASE_SOURCE_BODY_AUDI
 RUNTIME = REPO / "crates/hawking-core/src/model/qwen30_complete_runtime.rs"
 NATIVE_CLI = REPO / "crates/hawking-core/examples/ascension_qwen30_complete_native_runtime.rs"
 UNIFORM = REPO / "crates/hawking-core/src/model/qwen_complete_binary/uniform_q4.rs"
-REPACK = REPO / "lab/operators/ascension_qwen30_uniform_q4_repack.py"
+REPACK = REPO / "research/lab/operators/ascension_qwen30_uniform_q4_repack.py"
 OUT = REPO / "receipts/headless/NOETIC_MODEL2_Q4_GENERALIZATION.json"
 SOURCE_REVALIDATION = Path(
     "/Users/scammermike/noetic/MODEL2_Q4_CONTROL/"

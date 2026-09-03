@@ -1,9 +1,9 @@
 //! L3.1 (b) — per-user n-gram draft, grown online from the emitted stream.
 //!
 //! The live speculation mechanism on code is the **user-ngram draft**
-//! (τ≈1.43 generic, `reports/oracle/spec_accept.json`). Trained-head research
+//! (τ≈1.43 generic, `research/reports/oracle/spec_accept.json`). Trained-head research
 //! paths are product-released under BC-ACCEL-009 (see `docs/dead_levers.md`).
-//! The offline warm-start oracle (`reports/oracle/spec_accept_warmstart.json`)
+//! The offline warm-start oracle (`research/reports/oracle/spec_accept_warmstart.json`)
 //! cleared GO: seeding a per-user n-gram index from the user's own prior
 //! tokens lifts the recomputed-suffix draft to τ≈3.40 (+0.888 over a cold
 //! index), **additive to the shipped prefix cache**.

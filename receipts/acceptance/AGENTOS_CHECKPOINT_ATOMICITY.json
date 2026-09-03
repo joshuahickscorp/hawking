@@ -5,13 +5,13 @@
   "criterion_quoted": "A crash must recover one coherent generation or the previous coherent generation, never a random hybrid. Use atomic replacement / generation IDs / checksums as appropriate.\n\n## D.3 Persistence authority audit\n\n```text\nFor every durable field record:\n\nFIELD\nWRITER\nCANONICAL STORE\nGENERATION / CHECKSUM\nCHECKPOINT ORDER\nREADER\nRESTART PATH\nRECONCILIATION RULE\nCANARY\n\nAudit at minimum:\nWorkUnit state\nGoal/DAG\nbackend_task_id\nprovider/runtime provenance\ndependencies\nverifier result\nrepair lineage\nretry state\nmutation lease\nsteering\ncontext calibration\nMAX calibration\nbackend health\ncheckpoint generation\nbackground jobs\nVMCP evidence references\nModelLake worker identity\n```\n\nA crash must recover one coherent generation or the previous coherent generation, never a random hybrid. Use atomic replacement/generation IDs/checksums as appropriate.",
   "criterion_source": {
     "end_line": 7417,
-    "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "file": "/Users/scammermike/Downloads/hawking/docs/roadmap-lineage/H-ROADMAP.superseded-2026-09-02.md",
     "start_line": 7382
   },
   "evidence_tier": "FUNCTIONAL_SIM",
   "gate": "AGENTOS_CHECKPOINT_ATOMICITY",
-  "generated_at": "2026-09-02T18:44:43Z",
-  "git_head": "14ed3eb1f8fc616a29dbc724f3937cffedf15a43",
+  "generated_at": "2026-09-03T05:54:40Z",
+  "git_head": "f9aabd5043518c47fb06b6a8edb17bfd4a20198d",
   "hcli_file": "/Users/scammermike/Downloads/hawking/hcli/__init__.py",
   "measured": {
     "atomic_write_json_symbol": "hcli.persist.atomic_write_json",
@@ -50,7 +50,7 @@
     "Mission.checkpoint writes DAG first. SIGKILL between the two files leaves them disagreeing; Mission.from_workspace recovers the DAG generation (running/interrupted + backend_task_id), not a zip with the stale pending state.",
     "Catalog symbol write_program_checkpoint was invoked with emit= to a temp path."
   ],
-  "output": "atomic_write kill={'pid': 47231, 'returncode': -9, 'saw_sentinel': True, 'is_sigkill': True, 'exited_before_kill': False, 'stderr_tail': ''} live_head='OLD_INTACTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' tmp_leftovers=1\nbetween kill={'returncode': -9, 'saw_sentinel': True, 'is_sigkill': True} dag_status=running dag_task=task-GEN1 state_status=pending state_task=None disagree=True\nrecovered status=interrupted task=task-GEN1 idle=pending coherent=True mixture=False\nwrite_program_checkpoint schema=hcli.agentos.program_checkpoint.v1 bytes=871147 path=/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-ckpt-kzeja_5u/program_checkpoint.json\ntwo checkpoints id-probe:1788374683.629921 -> id-probe:1788374683.630679 dag=id-probe:1788374683.630679 ids_ok=True",
+  "output": "atomic_write kill={'pid': 39115, 'returncode': -9, 'saw_sentinel': True, 'is_sigkill': True, 'exited_before_kill': False, 'stderr_tail': ''} live_head='OLD_INTACTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' tmp_leftovers=1\nbetween kill={'returncode': -9, 'saw_sentinel': True, 'is_sigkill': True} dag_status=running dag_task=task-GEN1 state_status=pending state_task=None disagree=True\nrecovered status=interrupted task=task-GEN1 idle=pending coherent=True mixture=False\nwrite_program_checkpoint schema=hcli.agentos.program_checkpoint.v1 bytes=871088 path=/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-ckpt-9fw22_of/program_checkpoint.json\ntwo checkpoints id-probe:1788414880.879732 -> id-probe:1788414880.880582 dag=id-probe:1788414880.880582 ids_ok=True",
   "schema": "hawking.acceptance.gate.v1",
   "symbols_invoked": [
     {

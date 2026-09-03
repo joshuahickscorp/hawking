@@ -86,13 +86,13 @@ design, not by neglect: simulated is not measured.
 
     STATUS              VERIFIED_BUILT
     defining property   Historical Qwen concurrency measurements are priors, not constants. Recalibrate when model/runtime/machine/context changes.
-    implementation      lab/hcli/claude_offload_bench.py, hcli/delegate.py, lab/hcli/claude_offload_bench.py:1123
-    real caller         lab/hcli/special_unit.py:2503
+    implementation      research/lab/hcli/claude_offload_bench.py, hcli/delegate.py, research/lab/hcli/claude_offload_bench.py:1123
+    real caller         research/lab/hcli/special_unit.py:2503
     verifier            hcli/test_abort_checkpoint_atomicity.py:18, hcli/test_delegate.py:22, hcli/test_delegate.py:918 (+12 more)
     negative control    hcli/test_delegate.py, hcli/test_near_miss_key.py
     receipt             absent
     evidence level      STATIC
-    limitations         acceptance not demonstrated: acceptance verdict BLOCKED: {'also_missing': ['hcli/scheduler.py'], 'in_git_HEAD': True, 'missing': 'lab/hcli/claude_offload_bench.py', 'why': 'D.7 (acceptance_
+    limitations         acceptance not demonstrated: acceptance verdict BLOCKED: {'also_missing': ['hcli/scheduler.py'], 'in_git_HEAD': True, 'missing': 'research/lab/hcli/claude_offload_bench.py', 'why': 'D.7 (acceptance_
     integration         wired=True accepted=False
 
 ### AGENTOS_ORPHAN_RECONCILIATION

@@ -966,8 +966,8 @@ def recovery_contract() -> dict[str, Any]:
             "is the live sequential-proof boundary"
         ),
         "self_evolution": {
-            "path": "lab/hcli/self_evolution.py",
-            "materialized_in_this_worktree": (REPO / "lab/hcli/self_evolution.py").is_file(),
+            "path": "research/lab/hcli/self_evolution.py",
+            "materialized_in_this_worktree": (REPO / "research/lab/hcli/self_evolution.py").is_file(),
             "recovered_principle": "the proposer is never the admitter (tribunal separation)",
         },
         "verifier_pipeline": {
@@ -1262,8 +1262,8 @@ def recovered_implementation() -> list[dict[str, Any]]:
             "what": "WorkUnit constructor, DEFAULT_RETRY_BUDGET=3, MAX_REPAIR_DEPTH=3, MAX_REPAIRS_PER_ROOT=6",
         },
         {
-            "path": "lab/hcli/self_evolution.py",
-            "present": (REPO / "lab/hcli/self_evolution.py").is_file(),
+            "path": "research/lab/hcli/self_evolution.py",
+            "present": (REPO / "research/lab/hcli/self_evolution.py").is_file(),
             "what": (
                 "recovered via git show; tribunal separation: the proposer is never "
                 "the admitter; missing evidence yields PENDING not fabricated ACCEPT"
@@ -1396,7 +1396,7 @@ def build() -> Path:
         ],
         "negative_findings": [
             "hcli/agentos/resident.py does not exist in HEAD",
-            "lab/hcli/self_evolution.py is not materialized in this sparse worktree; recovered via git show",
+            "research/lab/hcli/self_evolution.py is not materialized in this sparse worktree; recovered via git show",
             "tools/accelerator/ and tools/headless/ are not materialized here",
             "this lane produces neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE",
             "IsolatedVerifier cannot settle a physical claim and cannot record VERIFIED/PROMOTED",

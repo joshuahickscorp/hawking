@@ -17,7 +17,7 @@
     "evidence_tier": "STATIC",
     "metadata_bytes_read": 4950,
     "metadata_files_opened": [
-     "/Users/scammermike/.claude-grok/worktrees/d1-doctor-depth-20260902-045450/receipts/QWEN80_BIT_BUDGET_LEDGER.json"
+     "/Users/scammermike/Downloads/hawking/receipts/QWEN80_BIT_BUDGET_LEDGER.json"
     ],
     "rule": "config.json + *.index.json + receipts only; never a weight shard",
     "weight_bytes_loaded": 0,
@@ -1549,7 +1549,7 @@
     "evidence_tier": "STATIC",
     "metadata_bytes_read": 59677,
     "metadata_files_opened": [
-     "/Users/scammermike/.claude-grok/worktrees/d1-doctor-depth-20260902-045450/receipts/headless/FLASH_EBPW_BUDGET.json"
+     "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_EBPW_BUDGET.json"
     ],
     "rule": "config.json + *.index.json + receipts only; never a weight shard",
     "weight_bytes_loaded": 0,
@@ -5477,7 +5477,7 @@
     "hidden_size": 2560,
     "index_present": true,
     "intermediate_size": 640,
-    "lake_manifest_bytes": 360053432320,
+    "lake_manifest_bytes": 360023286454,
     "lake_manifest_n_files": 144,
     "model_type": "qwen4_exp",
     "moe": true,
@@ -5516,7 +5516,7 @@
    },
    "io": {
     "evidence_tier": "STATIC",
-    "metadata_bytes_read": 176008,
+    "metadata_bytes_read": 176149,
     "metadata_files_opened": [
      "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/config.json",
      "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model.safetensors.index.json",
@@ -8560,7 +8560,7 @@
     "hidden_size": 1024,
     "index_present": false,
     "intermediate_size": 3072,
-    "lake_manifest_bytes": 1519280128,
+    "lake_manifest_bytes": 1519209243,
     "lake_manifest_n_files": 10,
     "model_type": "qwen3",
     "moe": false,
@@ -8593,7 +8593,7 @@
    },
    "io": {
     "evidence_tier": "STATIC",
-    "metadata_bytes_read": 1231,
+    "metadata_bytes_read": 1370,
     "metadata_files_opened": [
      "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0/config.json",
      "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3-0.6B@c1899de289a0.json"
@@ -9831,7 +9831,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T09:16:05Z",
+  "recorded_at": "2026-09-03T05:52:32Z",
   "recorded_by": "tools/doctor/engine.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -9857,6 +9857,7 @@
   "called_refuse_if_dead": true,
   "family": "shared_basis",
   "nns_hit_ids": [
+   "QN-SHARED-BASIS-DENSITY",
    "NNS-004"
   ],
   "note": "refuse_if_dead invoked with scars=[] so ingest is not required; NNS receipt is cited"
@@ -9908,13 +9909,13 @@
   "diagnosis_evidence": "9.3",
   "gene_card": "I-B \u2014 Doctor",
   "section": "9",
-  "source": "/Users/scammermike/Downloads/H-ROADMAP.md",
+  "source": "/Users/scammermike/Downloads/hawking/docs/roadmap-lineage/H-ROADMAP.superseded-2026-09-02.md",
   "technique_order": "9.1",
   "three_zeros": "9.2",
   "title": "DOCTOR \u2014 MODEL PHYSICIAN AND EXPERIMENT PLANNER"
  },
  "schema": "hawking.future.doctor_depth.v1",
- "seal_sha256": "f02318676e04f41b28eca83688c3575d27068b7cadf127e8f8d1f154add8464e",
+ "seal_sha256": "7105149e9445c59067600c91a2f7224cddf4d51860d9836b0ced19b6efcb3d53",
  "technique_order": [
   {
    "cheapest_experiment": "cite architecture for unused/duplicated/tied structures; do not load weights",

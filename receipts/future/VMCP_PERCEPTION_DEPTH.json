@@ -52,7 +52,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-03T00:37:52Z",
+  "recorded_at": "2026-09-03T05:52:09Z",
   "recorded_by": "tools/future/vmcp.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -140,7 +140,7 @@
   },
   "tool_doctor": {
    "command": "python3 tools/future/vmcp.py --act check --organ tool_doctor --args '{\"argv\":[\"/bin/echo\",\"perception-depth\"]}'",
-   "elapsed_ms": 29.057792002276983,
+   "elapsed_ms": 10.47383299737703,
    "execution": "REAL",
    "exit_code": 0,
    "invoke": "python3 tools/audit/reachability_triage.py --invoke future.vmcp --args '{\"act\":\"check\",\"organ\":\"tool_doctor\",\"argv\":[\"/bin/echo\",\"perception-depth\"]}'",
@@ -149,7 +149,7 @@
   }
  },
  "schema": "hawking.future.vmcp_perception_depth.v1",
- "seal_sha256": "ba2df34da2eb73d73ff23dd8a80e5fe6f2382c84f6ef74b3ac01ad5a6b0dab69",
+ "seal_sha256": "e5dca8ed190ae5b8566ff3dfcb6a859602cda8ba5ea5343507a646f5f56ad8c2",
  "selftest": {
   "behavior_lab_n_ok": 23,
   "behavior_lab_verdict": "PASS",

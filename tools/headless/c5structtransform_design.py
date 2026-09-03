@@ -390,18 +390,18 @@ def confirm_prior_science() -> dict:
     else:
         rec("G042", "receipts/ascent-2026-08-16/G042_BPW_FAMILY.json", False, "missed")
 
-    share = git_show_json("hawking-experiments/superwave/g1/claude-evidence/g1_share_basis.json")
+    share = git_show_json("research/hawking-experiments/superwave/g1/claude-evidence/g1_share_basis.json")
     if share and "identity" in share:
         ident = share["identity"]
-        rec("G1_SHARE", "hawking-experiments/superwave/g1/claude-evidence/g1_share_basis.json", True, {
+        rec("G1_SHARE", "research/hawking-experiments/superwave/g1/claude-evidence/g1_share_basis.json", True, {
             "one_basis_fullV_bpw": ident.get("one_basis_fullV_bpw"),
             "dense_orth_bpw_64sites": ident.get("dense_orth_bpw_64sites"),
             "note": "COMPONENT amortisation of a dense n×n right basis stored once for 64 sites. NOT a structured-transform BPW.",
         })
     else:
-        rec("G1_SHARE", "hawking-experiments/superwave/g1/claude-evidence/g1_share_basis.json", False, "missed")
+        rec("G1_SHARE", "research/hawking-experiments/superwave/g1/claude-evidence/g1_share_basis.json", False, "missed")
 
-    tens = git_show_json("hawking-experiments/superwave/g1/claude-evidence/g1_tensor_operators.json")
+    tens = git_show_json("research/hawking-experiments/superwave/g1/claude-evidence/g1_tensor_operators.json")
     if tens and tens.get("tensors"):
         t0 = tens["tensors"][0]
         ops = t0.get("operators") or []
@@ -412,7 +412,7 @@ def confirm_prior_science() -> dict:
         kron_e = None
         if t0.get("reshapes"):
             kron_e = (t0["reshapes"][0] or {}).get("kronecker_energy")
-        rec("G1_TENSOR", "hawking-experiments/superwave/g1/claude-evidence/g1_tensor_operators.json", True, {
+        rec("G1_TENSOR", "research/hawking-experiments/superwave/g1/claude-evidence/g1_tensor_operators.json", True, {
             "tensor0": t0.get("name"),
             "n_operators": len(ops),
             "healthy": healthy,
@@ -422,7 +422,7 @@ def confirm_prior_science() -> dict:
             "q4_rel_l2": (t0.get("q4") or {}).get("rel_l2"),
         })
     else:
-        rec("G1_TENSOR", "hawking-experiments/superwave/g1/claude-evidence/g1_tensor_operators.json", False, "missed")
+        rec("G1_TENSOR", "research/hawking-experiments/superwave/g1/claude-evidence/g1_tensor_operators.json", False, "missed")
 
     kc = load_json(KERNEL_CENSUS)
     if kc:

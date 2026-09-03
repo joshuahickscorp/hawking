@@ -197,7 +197,7 @@ def test_bounded_schedule_refuses_a_peak_above_the_envelope() -> None:
 
 
 def test_parent_launcher_cannot_substitute_the_whole_shard_fetcher() -> None:
-    launcher = Path("ramanujan/scaffold/guards/RAMANUJAN_FINAL_PARENT_NEXT_COMMAND.sh").read_text(encoding="utf-8")
+    launcher = Path("research/ramanujan/scaffold/guards/RAMANUJAN_FINAL_PARENT_NEXT_COMMAND.sh").read_text(encoding="utf-8")
     assert "HAWKING_GLM52_RANGE_STREAM_EXECUTOR" in launcher
     assert "ramanujan.status --require-hawking-complete" in launcher
     assert "HAWKING_EVOLUTION_COMPLETE" in launcher

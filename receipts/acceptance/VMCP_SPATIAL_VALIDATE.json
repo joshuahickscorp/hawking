@@ -93,62 +93,62 @@
   ],
   "criterion": {
     "end_line": 7865,
-    "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "file": "/Users/scammermike/Downloads/hawking/docs/roadmap-lineage/H-ROADMAP.superseded-2026-09-02.md",
     "quoted": "## E.9 Spatial Eye\n\n1. Load supported OBJ/GLTF/USDZ/etc through independent parsers where possible.\n2. Inventory geometry, face count, normals, UVs, material regions and semantic parts.\n3. Extract or compare evidence-backed dimensions.\n4. Render independently from multiple views.\n5. Compare silhouette, multi-view images, materials and dimensions.\n6. Run canaries: remove faces, scale, remove normals, alter material/part, corrupt render, no-op.\n7. Require RED \u2192 restore \u2192 GREEN.\n\n",
     "start_line": 7855,
     "weakened": false
   },
   "criterion_weakened": false,
-  "elapsed_ms": 2.025,
+  "elapsed_ms": 2.63,
   "evidence_tier": "FUNCTIONAL_SIM",
   "gate": "VMCP_SPATIAL_VALIDATE",
-  "generated_at": "2026-09-02T23:16:06Z",
+  "generated_at": "2026-09-03T05:34:31Z",
   "gpu_authority": false,
   "invoked_symbols": [
     {
-      "elapsed_ms": 0.073,
+      "elapsed_ms": 0.118,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "visionmcp.worlds.spatial.io.obj.obj_file_counts"
     },
     {
-      "elapsed_ms": 0.053,
+      "elapsed_ms": 0.101,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "visionmcp.worlds.spatial.io.obj.obj_file_counts"
     },
     {
-      "elapsed_ms": 0.051,
+      "elapsed_ms": 0.113,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "visionmcp.worlds.spatial.io.obj.obj_file_counts"
     },
     {
-      "elapsed_ms": 0.159,
+      "elapsed_ms": 0.163,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "tools.acceptance.vmcp.gates._raster_obj"
     },
     {
-      "elapsed_ms": 0.047,
+      "elapsed_ms": 0.059,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "tools.acceptance.vmcp.gates._raster_obj"
     },
     {
-      "elapsed_ms": 0.349,
+      "elapsed_ms": 0.337,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "tools.acceptance.vmcp.gates._pixel_metrics"
     },
     {
-      "elapsed_ms": 0.097,
+      "elapsed_ms": 0.098,
       "error": null,
       "kind": "call",
       "raised": false,

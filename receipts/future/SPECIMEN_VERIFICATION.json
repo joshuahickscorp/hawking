@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T19:59:12Z",
+  "recorded_at": "2026-09-03T06:52:00Z",
   "recorded_by": "tools/future/specimen_verify.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -473,12 +473,12 @@
    "status": "WHOLE_TREE_VERIFIED",
    "unrecognized_digest": 0,
    "verified": 13,
-   "wall_seconds": 6.85,
+   "wall_seconds": 7.45,
    "whole_tree_verified": true
   }
  ],
  "schema": "hawking.future.specimen_verify.v1",
- "seal_sha256": "6d0a5648cee161f9123f8b73d45d578976a1eddb2574cd5f123dcdfa8d8e3ead",
+ "seal_sha256": "992ac7df3d1b560506a3f1f7415e98624a912341b01e8143df3612e2533a8266",
  "verification_rule": "VERIFIED means the hash was recomputed here and matched a published digest. Size agreement is not verification. A specimen is WHOLE_TREE_VERIFIED only when every file carried a digest and every one matched; a single undigested file yields PARTIAL_NO_REMOTE_DIGEST.",
  "version": 1,
  "whole_tree_verified_specimens": [

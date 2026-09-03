@@ -49,13 +49,13 @@ OBSERVED_LINES = (88, 90)
 AXES_LINES = (148, 170)
 PACKERS = [
     {
-        "path": "hawking-experiments/superwave/g1/claude-evidence/g1_func_objective.py",
+        "path": "research/hawking-experiments/superwave/g1/claude-evidence/g1_func_objective.py",
         "fn": "pack_axes",
         "lines": (309, 310),
         "note": "stores only observed/probed/worst_unit; drops gain even if axes() returns it",
     },
     {
-        "path": "hawking-experiments/superwave/g1/claude-evidence/g1_adversarial_frontier.py",
+        "path": "research/hawking-experiments/superwave/g1/claude-evidence/g1_adversarial_frontier.py",
         "fn": "score_pack",
         "lines": (360, 372),
         "note": "packs the three cosine axes + energy_ratio/rel_fro/weight_cos; never persisted gain",
@@ -262,7 +262,7 @@ def load_safetensors_tensor(root: Path, name: str) -> np.ndarray:
 def try_load_l0_gate() -> tuple[np.ndarray | None, dict]:
     info: dict[str, Any] = {"loaded": False, "tried": []}
     candidates: list[tuple[Path, str]] = []
-    pin = resolve("hawking-experiments/superwave/g1/GRAVITY1_SOURCE_PIN.json")
+    pin = resolve("research/hawking-experiments/superwave/g1/GRAVITY1_SOURCE_PIN.json")
     if pin:
         try:
             src = Path(json.loads(pin.read_text())["source_root"])
@@ -413,35 +413,35 @@ CAMPAIGN_SPEC = [
     {
         "id": "G1_ADVERSARIAL_FRONTIER",
         "name": "G1 adversarial frontier (L0 gate constructions)",
-        "receipts": ["hawking-experiments/superwave/g1/claude-evidence/g1_adversarial_frontier.json"],
+        "receipts": ["research/hawking-experiments/superwave/g1/claude-evidence/g1_adversarial_frontier.json"],
         "ranking_metric": "observed cosine; healthy from 3-axis relative gate",
         "notes": "Stores energy_ratio. spanfit_X_and_P0 scored HEALTHY at cosine 1.0 with energy 0.294.",
     },
     {
         "id": "G003_DOCTOR_L0",
         "name": "G003 doctor gate run, L0 gate_proj",
-        "receipts": ["hawking-experiments/superwave/g1/claude-evidence/g003-L0.json"],
+        "receipts": ["research/hawking-experiments/superwave/g1/claude-evidence/g003-L0.json"],
         "ranking_metric": "observed/probed/worst_unit; no gain in results[]",
         "notes": "Same constructions as tools/gravity_doctor_gate.py:run, packed without gain.",
     },
     {
         "id": "G003_DOCTOR_L31",
         "name": "G003 doctor gate run, L31",
-        "receipts": ["hawking-experiments/superwave/g1/claude-evidence/g003-L31.json"],
+        "receipts": ["research/hawking-experiments/superwave/g1/claude-evidence/g003-L31.json"],
         "ranking_metric": "observed/probed/worst_unit",
         "notes": "",
     },
     {
         "id": "G003_DOCTOR_GATE",
         "name": "G003 doctor gate smoke",
-        "receipts": ["hawking-experiments/superwave/g1/claude-evidence/g003-gate.json"],
+        "receipts": ["research/hawking-experiments/superwave/g1/claude-evidence/g003-gate.json"],
         "ranking_metric": "observed/probed/worst_unit",
         "notes": "",
     },
     {
         "id": "G1_TENSOR_OPERATORS",
         "name": "G1 tensor operators (TT / Tucker / Kronecker / low-rank)",
-        "receipts": ["hawking-experiments/superwave/g1/claude-evidence/g1_tensor_operators.json"],
+        "receipts": ["research/hawking-experiments/superwave/g1/claude-evidence/g1_tensor_operators.json"],
         "ranking_metric": "gate.observed / healthy (3 cosine axes)",
         "notes": "373 family rows, 223 with local_bpw<0.5 and healthy=true: 0. Wh not stored; cannot live-rescore.",
     },
@@ -449,8 +449,8 @@ CAMPAIGN_SPEC = [
         "id": "G1_SHARE_BASIS",
         "name": "G1 shared basis vs independent (G-SHARE)",
         "receipts": [
-            "hawking-experiments/superwave/g1/claude-evidence/g1_share_basis.json",
-            "hawking-experiments/superwave/g1/claude-evidence/g1_share_basis_smoke.json",
+            "research/hawking-experiments/superwave/g1/claude-evidence/g1_share_basis.json",
+            "research/hawking-experiments/superwave/g1/claude-evidence/g1_share_basis_smoke.json",
         ],
         "ranking_metric": "axes_shared/axes_indep observed/probed/worst_unit",
         "notes": "Shared vs independent already both UNHEALTHY on worst_unit. Magnitude not the binder.",
@@ -458,7 +458,7 @@ CAMPAIGN_SPEC = [
     {
         "id": "G1_XFORM_HADAMARD",
         "name": "G1 Hadamard-then-qN (G032 / xform)",
-        "receipts": ["hawking-experiments/superwave/g1/claude-evidence/g1_xform_hadamard.json"],
+        "receipts": ["research/hawking-experiments/superwave/g1/claude-evidence/g1_xform_hadamard.json"],
         "ranking_metric": "per-site gate.{id,wh_*,rht_*,bfly*} bits 2/3/4, 3 cosine axes",
         "notes": "axis_margin has only observed/probed/worst_unit. Honest qN, energy tracks cosine.",
     },
@@ -466,9 +466,9 @@ CAMPAIGN_SPEC = [
         "id": "G1_PLANES_TERNARY",
         "name": "G1 binary/ternary planes (G033)",
         "receipts": [
-            "hawking-experiments/superwave/g1/claude-evidence/g1_planes_ternary.json",
-            "hawking-experiments/superwave/g1/claude-evidence/g1_planes_ternary_smoke.json",
-            "hawking-experiments/superwave/g1/claude-evidence/g1_planes_lm_head.json",
+            "research/hawking-experiments/superwave/g1/claude-evidence/g1_planes_ternary.json",
+            "research/hawking-experiments/superwave/g1/claude-evidence/g1_planes_ternary_smoke.json",
+            "research/hawking-experiments/superwave/g1/claude-evidence/g1_planes_lm_head.json",
         ],
         "ranking_metric": "rung observed cosine + healthy",
         "notes": "Some rows store resid_rel_f (weight residual), not activation gain.",
@@ -477,8 +477,8 @@ CAMPAIGN_SPEC = [
         "id": "G1_ALLOC_UNIFIED",
         "name": "G1 unified allocator candidate auction",
         "receipts": [
-            "hawking-experiments/superwave/g1/claude-evidence/g1_alloc_unified_out.json",
-            "hawking-experiments/superwave/g1/claude-evidence/g1_alloc_unified_measure.json",
+            "research/hawking-experiments/superwave/g1/claude-evidence/g1_alloc_unified_out.json",
+            "research/hawking-experiments/superwave/g1/claude-evidence/g1_alloc_unified_measure.json",
         ],
         "ranking_metric": "score (= worst_unit); observed/probed/worst_unit stored, no gain",
         "notes": "26 tensors × 26 codecs (qN, planes, rank_k, shared_k, sparse). Duplicate receipts.",
@@ -487,8 +487,8 @@ CAMPAIGN_SPEC = [
         "id": "G005_ALLOC",
         "name": "G005 bit-allocation curves",
         "receipts": [
-            "hawking-experiments/superwave/g1/claude-evidence/g005-alloc.json",
-            "hawking-experiments/superwave/g1/claude-evidence/g005-curves.json",
+            "research/hawking-experiments/superwave/g1/claude-evidence/g005-alloc.json",
+            "research/hawking-experiments/superwave/g1/claude-evidence/g005-curves.json",
         ],
         "ranking_metric": "observed/probed/worst_unit + damage/score",
         "notes": "",
@@ -496,14 +496,14 @@ CAMPAIGN_SPEC = [
     {
         "id": "G1_RESHAPE_BEFORE_LOWBIT",
         "name": "G1 reshape-before-lowbit",
-        "receipts": ["hawking-experiments/superwave/g1/claude-evidence/g1_reshape_before_lowbit.json"],
+        "receipts": ["research/hawking-experiments/superwave/g1/claude-evidence/g1_reshape_before_lowbit.json"],
         "ranking_metric": "3 cosine axes; axis_margin has no gain",
         "notes": "",
     },
     {
         "id": "G010",
         "name": "G010 object rows",
-        "receipts": ["hawking-experiments/superwave/g1/claude-evidence/g010.json"],
+        "receipts": ["research/hawking-experiments/superwave/g1/claude-evidence/g010.json"],
         "ranking_metric": "observed/probed/worst_unit per (cls, layer, bits)",
         "notes": "",
     },
@@ -511,8 +511,8 @@ CAMPAIGN_SPEC = [
         "id": "G1_CAPABILITY_GATE_Q4_COSINE",
         "name": "G1 capability-gate full q4 weight cosine (306 tensors)",
         "receipts": [
-            "hawking-experiments/superwave/g1/claude-evidence/g1_capability_gate_full_cosine.json",
-            "hawking-experiments/superwave/g1/claude-evidence/g1_capability_gate_measure.json",
+            "research/hawking-experiments/superwave/g1/claude-evidence/g1_capability_gate_full_cosine.json",
+            "research/hawking-experiments/superwave/g1/claude-evidence/g1_capability_gate_measure.json",
         ],
         "ranking_metric": "weight-space cosine (not doctor axes). lowest5 also store rel_l2; measure rows store src_norm/recon_norm",
         "notes": "Different cosine (weights, not X@W). Still scale-invariant. 10 dequant rows have norms → archive gain proxy.",
@@ -530,7 +530,7 @@ CAMPAIGN_SPEC = [
     {
         "id": "G1_ENDPOINT",
         "name": "G1 endpoint.json (ALREADY has gain)",
-        "receipts": ["hawking-experiments/superwave/g1/claude-evidence/endpoint.json"],
+        "receipts": ["research/hawking-experiments/superwave/g1/claude-evidence/endpoint.json"],
         "ranking_metric": "observed/probed/worst_unit/gain",
         "notes": "Negative control: the one G1 receipt that persisted a gain field. Not re-scored as cosine-only.",
         "already_has_gain": True,
@@ -613,7 +613,7 @@ def archive_rescore() -> tuple[list[dict], list[dict], dict]:
     stats = {"peer_sets": 0, "candidates_with_proxy": 0, "candidates_cosine_only_no_proxy": 0}
 
     # --- frontier: the campaign that stored energy_ratio ---
-    data, where = load_json("hawking-experiments/superwave/g1/claude-evidence/g1_adversarial_frontier.json")
+    data, where = load_json("research/hawking-experiments/superwave/g1/claude-evidence/g1_adversarial_frontier.json")
     if data and isinstance(data, dict) and "L0_gate" in data:
         cons = data["L0_gate"].get("constructions") or {}
         rows = flatten_frontier(cons)
@@ -653,7 +653,7 @@ def archive_rescore() -> tuple[list[dict], list[dict], dict]:
         })
 
     # --- q4 dequant rows with src_norm/recon_norm ---
-    meas, mwhere = load_json("hawking-experiments/superwave/g1/claude-evidence/g1_capability_gate_measure.json")
+    meas, mwhere = load_json("research/hawking-experiments/superwave/g1/claude-evidence/g1_capability_gate_measure.json")
     if meas and isinstance(meas, dict) and meas.get("g0_dequant_cosine_rows"):
         rows = []
         for r in meas["g0_dequant_cosine_rows"]:
@@ -686,7 +686,7 @@ def archive_rescore() -> tuple[list[dict], list[dict], dict]:
         })
 
     # --- alloc: 26 tensors, 26 codecs. No energy_ratio. Count only. ---
-    alloc, aw = load_json("hawking-experiments/superwave/g1/claude-evidence/g1_alloc_unified_out.json")
+    alloc, aw = load_json("research/hawking-experiments/superwave/g1/claude-evidence/g1_alloc_unified_out.json")
     if alloc and isinstance(alloc, dict):
         n = 0
         for m in alloc.get("measured") or []:

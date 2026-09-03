@@ -28,16 +28,16 @@
   ],
   "criterion": {
     "end_line": 7507,
-    "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "file": "/Users/scammermike/Downloads/hawking/docs/roadmap-lineage/H-ROADMAP.superseded-2026-09-02.md",
     "quoted": "## D.7 MAX scheduler measured policy\n\nHistorical Qwen concurrency measurements are priors, not constants. Recalibrate when model/runtime/machine/context changes.\n```text\nScheduler observes:\n    model identity\n    runtime identity\n    machine identity\n    model/provider health\n    ready-work shape\n    context demand\n    KV/slot cost\n    critical path\n    verifier backlog\n    mutation contention\n    I/O pressure\n    GPU benchmark contamination\n    background acquisition\n    measured marginal throughput\n\nScheduler must never manufacture filler work solely to hit a concurrency number.\n```\n",
     "start_line": 7485,
     "weakened": false
   },
   "criterion_weakened": false,
-  "elapsed_ms": 14.885,
+  "elapsed_ms": 28.06,
   "evidence_tier": "STATIC",
   "gate": "AGENTOS_DETERMINISTIC_OFFLOAD",
-  "generated_at": "2026-09-02T23:16:06Z",
+  "generated_at": "2026-09-03T05:34:31Z",
   "gpu_authority": false,
   "invoked_symbols": [],
   "measured": {

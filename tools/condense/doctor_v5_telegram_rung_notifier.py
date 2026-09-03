@@ -35,11 +35,11 @@ import urllib.request
 
 
 ROOT = Path(__file__).resolve().parents[2]
-CAMPAIGN = ROOT / "reports/condense/doctor_v5_ultra/campaign.json"
-OBSERVER = ROOT / "reports/condense/doctor_v5_ultra/post_120b/observer_state.json"
-RESULTS = ROOT / "reports/condense/doctor_v5_ultra/results"
-DISPOSITIONS = ROOT / "reports/condense/doctor_v5_ultra/dispositions"
-OUTPUT_ROOT = ROOT / "reports/condense/doctor_v5_unbound/telegram_notifier"
+CAMPAIGN = ROOT / "research/reports/condense/doctor_v5_ultra/campaign.json"
+OBSERVER = ROOT / "research/reports/condense/doctor_v5_ultra/post_120b/observer_state.json"
+RESULTS = ROOT / "research/reports/condense/doctor_v5_ultra/results"
+DISPOSITIONS = ROOT / "research/reports/condense/doctor_v5_ultra/dispositions"
+OUTPUT_ROOT = ROOT / "research/reports/condense/doctor_v5_unbound/telegram_notifier"
 STATE = OUTPUT_ROOT / "state.json"
 LOCK = OUTPUT_ROOT / "notifier.lock"
 LOG = OUTPUT_ROOT / "notifier.log"

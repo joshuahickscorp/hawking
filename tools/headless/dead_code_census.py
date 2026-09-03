@@ -811,7 +811,7 @@ def classify_haider_control_plane() -> List[Dict[str, Any]]:
                         evidence=evidence
                         + [
                             ev("hcli___init___exports", "parse_hcli_args, main, Workspace, Controller, Event, EventBus — no index"),
-                            ev("from_.import_index", "no hits under tools/ receipts/headless lab/"),
+                            ev("from_.import_index", "no hits under tools/ receipts/headless research/lab/"),
                         ],
                         extra={"out_of_write_scope": True, "role": "unreachable_module"},
                     )
@@ -916,7 +916,7 @@ def classify_haider_control_plane() -> List[Dict[str, Any]]:
 def namesake_unknowns() -> List[Dict[str, Any]]:
     """Other HCLI/headless surfaces. Not dead just because they share a name."""
     items = []
-    lab_files = git_ls_tree("lab/hcli")
+    lab_files = git_ls_tree("research/lab/hcli")
     lab_bytes = 0
     lab_lines = 0
     for rel in lab_files:
@@ -926,14 +926,14 @@ def namesake_unknowns() -> List[Dict[str, Any]]:
         lab_lines += n
     items.append(
         item(
-            ident="namesake:lab/hcli",
-            path="lab/hcli/",
+            ident="namesake:research/lab/hcli",
+            path="research/lab/hcli/",
             kind="package",
             classification="UNKNOWN",
             reason=(
                 "namesake only. lab.hcli is Agent-OS scaffolds (Option-C, "
                 "residency, self-evolution), not tools.haider.hcli. Internals "
-                "not AST-censused in this lane (lab/hcli is not in the sparse "
+                "not AST-censused in this lane (research/lab/hcli is not in the sparse "
                 "roots). Not proposed for deletion"
             ),
             bytes_=lab_bytes,
@@ -1502,7 +1502,7 @@ def format_report(
     for cls in ("DELETE", "ARCHIVE", "KEEP", "UNKNOWN"):
         slot = receipt["by_class"].get(cls, {"count": 0, "bytes": 0, "lines": 0})
         a(f"  {cls:<8} {slot['count']:>5}  {slot['bytes']:>10} B  {slot['lines']:>7} L")
-    a("by_class excluding policy trees (receipts/, lab/hcli package, test trees):")
+    a("by_class excluding policy trees (receipts/, research/lab/hcli package, test trees):")
     for cls in ("DELETE", "ARCHIVE", "KEEP", "UNKNOWN"):
         slot = receipt["by_class_excluding_policy_trees"].get(
             cls, {"count": 0, "bytes": 0, "lines": 0}

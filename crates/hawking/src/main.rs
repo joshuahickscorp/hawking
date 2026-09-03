@@ -493,7 +493,7 @@ enum Cmd {
         /// HAWKING_QWEN_USER_DRAFT=1. Greedy (temp=0) + TCB only; lossless
         /// by construction (output is bit-identical to plain greedy). Without
         /// this flag the draft path is never entered (the failing CLI run in
-        /// reports/move2_user_draft_diagnosis.md decoded with draft_accepted=0
+        /// research/reports/move2_user_draft_diagnosis.md decoded with draft_accepted=0
         /// because the flag was unset).
         #[arg(long, default_value_t = false)]
         user_draft: bool,
@@ -4084,7 +4084,7 @@ fn generate_main(
     // L3.1 §2.1b — expose the user-ngram draft (and its propose-first variant)
     // on the CLI by setting the env the core reads via `env_on`. Without this
     // wiring the draft is unreachable from `hawking generate` (the gap
-    // diagnosed in reports/move2_user_draft_diagnosis.md). propose-first
+    // diagnosed in research/reports/move2_user_draft_diagnosis.md). propose-first
     // implies the draft is on.
     if user_draft || user_draft_propose_first {
         std::env::set_var("HAWKING_QWEN_USER_DRAFT", "1");

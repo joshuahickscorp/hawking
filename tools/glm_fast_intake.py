@@ -84,7 +84,7 @@ def default_measurement() -> Path:
 
 
 def default_ramanujan_lock() -> Path:
-    return repo_root() / "ramanujan/records/runtime/RAMANUJAN_ENVIRONMENT_LOCK.json"
+    return repo_root() / "research/ramanujan/records/runtime/RAMANUJAN_ENVIRONMENT_LOCK.json"
 
 
 def load_json(path: Path) -> dict[str, Any]:

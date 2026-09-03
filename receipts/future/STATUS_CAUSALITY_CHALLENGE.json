@@ -13,7 +13,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T20:40:15Z",
+  "recorded_at": "2026-09-03T05:47:35Z",
   "recorded_by": "tools/future/status_causality.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -1154,7 +1154,7 @@
  },
  "scar": "STATUS_LABEL_LAUNDERED_AS_CAUSAL_CLAIM",
  "schema": "hawking.future.status_causality.v1",
- "seal_sha256": "383b729559bbd089ecebcc1afecf1c71e6febd7373db786c6f1c58e94a177705",
+ "seal_sha256": "0dbbe3379fc77889927910b8c7d97e50df09e32a6b5c06ecd0cd5f3847ae31f2",
  "supported_fixtures": [
   {
    "alternatives": [

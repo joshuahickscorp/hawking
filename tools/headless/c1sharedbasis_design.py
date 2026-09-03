@@ -443,7 +443,7 @@ def search_prior_science() -> dict:
             "mlp.down_proj": 0.000061,
             "self_attn.q_proj": 0.007632,
             "note": (
-                "Exact adjacent flattened cosine from hawking-experiments/superwave/g1/g1-shared-basis.md. "
+                "Exact adjacent flattened cosine from research/hawking-experiments/superwave/g1/g1-shared-basis.md. "
                 "Highest class-mean 0.00763 (GQA q_proj). MLP gate 0.00435 is the Q80 expert number. "
                 "Adjacent rel_delta_fro 1.40–1.42 ≈ √2. Shared rank-256 residual 69–93% vs "
                 "per-layer 38–87%."
@@ -545,7 +545,7 @@ def search_prior_science() -> dict:
         },
         "g1_shared_basis_this_parent": {
             "status": "FALSIFIED" if g1_falsified else "UNREAD",
-            "path": "hawking-experiments/superwave/g1/g1-shared-basis.md",
+            "path": "research/hawking-experiments/superwave/g1/g1-shared-basis.md",
             "adjacent_cosine": g1_adj_cos,
             "reopen_bar_mean_cosine": 0.05,
             "loaded_md": g1_md is not None,

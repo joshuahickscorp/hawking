@@ -1,7 +1,7 @@
 {
  "schema": "hawking.headless.doctor_technique_library.v1",
- "generated_at": "2026-08-26T10:12:38Z",
- "git_head": "665110c71c8cc16db6a05af70d621a0266853ab1",
+ "generated_at": "2026-09-03T06:40:45Z",
+ "git_head": "ee9f9e90c9d65c54cd1ee5944afe5c04a87b636c",
  "generated_by": "tools/headless/doctor_technique_library.py",
  "obligation": "N052 \u2014 HARDEN DOCTOR: general TechniqueLibrary (S026 \u00a75, \u00a764, \u00a775, \u00a7107; S028; CPU). Merge N043 (15) + N046 RECOMMENDED_ADDITIONS (24) into one hardened general Doctor toolkit. Applicability is per architecture class. A Qwen-MLP failure is not a prune.",
  "docs": "docs/ultragoals/DOCTOR_TECHNIQUE_LIBRARY.md",

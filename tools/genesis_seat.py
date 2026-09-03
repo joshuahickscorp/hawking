@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Seat the current best verified ancestor as GENESIS, and report the lineage.
 
-The lineage machinery (lab/lineage/) was built and tested but never turned on, so
+The lineage machinery (research/lab/lineage/) was built and tested but never turned on, so
 nothing was actually seated - Genesis existed as a tournament result and a set of
 receipts rather than as a running lineage. This seats it.
 

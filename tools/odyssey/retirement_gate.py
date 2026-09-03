@@ -9,7 +9,7 @@ noted in passing.
 RELEGATION IS NOT DELETION. Bulky parents are classified and the reclaimable figure is
 reported; nothing is removed here. Deleting model weights is the operator's call, and a
 relegation candidate stays a candidate until its recipe metadata is preserved somewhere
-that survives it -- which is why the q4 manifest was copied into recipes/ first.
+that survives it -- which is why the q4 manifest was copied into research/recipes/ first.
 """
 import hashlib, json, os, subprocess, time
 from pathlib import Path
@@ -90,7 +90,7 @@ def main():
     cfg = PARENT_BF16 / "config.json"
     kern = json.load(open(RH / "KERNEL_LIBRARY.json"))
     neg = json.load(open(RH / "NOETIC_NEGATIVE_SCIENCE.json"))
-    q4man = REPO / "recipes/qwen38-gravity-uniform-q4-v1/manifest.json"
+    q4man = REPO / "research/recipes/qwen38-gravity-uniform-q4-v1/manifest.json"
 
     preserved = {
         "final_executable": {

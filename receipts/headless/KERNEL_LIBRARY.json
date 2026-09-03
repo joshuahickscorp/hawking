@@ -1,7 +1,7 @@
 {
  "schema": "hawking.headless.kernel_library.v1",
- "generated_at": "2026-08-26T10:13:53Z",
- "git_head": "665110c71c8cc16db6a05af70d621a0266853ab1",
+ "generated_at": "2026-09-03T06:40:46Z",
+ "git_head": "ee9f9e90c9d65c54cd1ee5944afe5c04a87b636c",
  "generated_by": "tools/headless/genome_libraries.py",
  "obligation": "N034 \u2014 GENOME LIBRARIES + ODYSSEY QUEUE RECOVERY (S023 \u00a712, \u00a713, \u00a714, \u00a734, \u00a770). Seed from verified Qwen science; recover the Odyssey queue from disk; do not invent numbers or HF repo ids.",
  "hand_authored": false,
@@ -517,11 +517,11 @@
    "shader": "crates/hawking-core/shaders/q80_mixed_decode.metal",
    "shader_sha256": {
     "kind": "MEASURED",
-    "value": "28580af822f2ba543c740eef04172383a7c8987c7d5cd650d48cf6b42a4cebd3",
+    "value": "78108658f18e4340e0dd50edf1c4cf4ee09dd8f9400c0a7784e21f7638a25f70",
     "unit": "sha256",
     "command": "sha256(crates/hawking-core/shaders/q80_mixed_decode.metal)",
     "source": "crates/hawking-core/shaders/q80_mixed_decode.metal",
-    "bytes": 187590,
+    "bytes": 205933,
     "absent_reason": null
    },
    "compiled_identity": {
@@ -1530,11 +1530,11 @@
    "shader": "crates/hawking-core/shaders/q80_mixed_decode.metal",
    "shader_sha256": {
     "kind": "MEASURED",
-    "value": "28580af822f2ba543c740eef04172383a7c8987c7d5cd650d48cf6b42a4cebd3",
+    "value": "78108658f18e4340e0dd50edf1c4cf4ee09dd8f9400c0a7784e21f7638a25f70",
     "unit": "sha256",
     "command": "sha256(crates/hawking-core/shaders/q80_mixed_decode.metal)",
     "source": "crates/hawking-core/shaders/q80_mixed_decode.metal",
-    "bytes": 187590,
+    "bytes": 205933,
     "absent_reason": null
    },
    "compiled_identity": {
@@ -2619,14 +2619,5 @@
    ]
   }
  ],
- "n_kernels": 17,
- "bench": {
-  "state": "UNKNOWN",
-  "recorded_at": "2026-08-26T00:00:00Z",
-  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
-  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
-  "quiescence": null,
-  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
-  "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
- }
+ "n_kernels": 17
 }

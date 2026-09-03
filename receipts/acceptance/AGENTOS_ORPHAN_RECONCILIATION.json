@@ -5,13 +5,13 @@
   "criterion_quoted": "Orphan jobs are adopted, reconciled or failed; they are not silently duplicated.\n\n## D.1 Repair lineage and homeostasis\n\n```rust\nWorkUnitLineage {\n    workunit_id,\n    root_workunit_id,\n    parent_workunit_id,\n    repair_depth,\n    attempt,\n    failure_class,\n    failure_fingerprint,\n    provider,\n    backend_task_id?,\n    created_at,\n    deadline?,\n    mutation_lease?,\n    verifier_contract\n}\n```\n\n1. Repair depth is bounded structurally, not by model discretion.\n2. Equivalent deterministic failure fingerprints do not generate semantically identical descendants.\n3. Exhausted chains become FAILED_EXHAUSTED / BLOCKED / REPLAN_REQUIRED.\n4. Transient provider failure may retry with bounded exponential/backoff policy; deterministic verifier failure does not become a blind retry loop.\n5. Cancellation writes a durable terminal state and reconciles children/external jobs.\n6. Orphan jobs are adopted, reconciled or failed; they are not silently duplicated.\n7. No repair child may widen mutation authority, safety authority, or authorization scope inherited from its root.",
   "criterion_source": {
     "end_line": 7358,
-    "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "file": "/Users/scammermike/Downloads/hawking/docs/roadmap-lineage/H-ROADMAP.superseded-2026-09-02.md",
     "start_line": 7332
   },
   "evidence_tier": "FUNCTIONAL_SIM",
   "gate": "AGENTOS_ORPHAN_RECONCILIATION",
-  "generated_at": "2026-09-02T18:42:42Z",
-  "git_head": "14ed3eb1f8fc616a29dbc724f3937cffedf15a43",
+  "generated_at": "2026-09-03T05:52:36Z",
+  "git_head": "f97dec9d2b0c2bbff574c28989d55ca00cafcf88",
   "hcli_file": "/Users/scammermike/Downloads/hawking/hcli/__init__.py",
   "measured": {
     "adopted_running": [
@@ -28,7 +28,7 @@
       "live-grok": "running"
     },
     "duplicate_ids": [],
-    "job_id": "job-a9f25863-f031-489f-8e7d-a4045d0f17b7",
+    "job_id": "job-ba4a3a65-9181-45c2-a0d4-08ad8938e58e",
     "jobs_after_kill": 1,
     "live_state": "RUNNING",
     "n_units_after_recover": 3,
@@ -39,7 +39,7 @@
       "live-grok": "running"
     },
     "second_store_ids": [
-      "job-a9f25863-f031-489f-8e7d-a4045d0f17b7"
+      "job-ba4a3a65-9181-45c2-a0d4-08ad8938e58e"
     ]
   },
   "notes": [
@@ -47,7 +47,7 @@
     "DagStore.load(recover_running=True): live Grok is adopted (status stays running), dead local work is interrupted (not a verifier failure), terminal Grok is failed. No extra unit is created.",
     "Scheduler.from_workspace is the production caller of this reconciliation."
   ],
-  "output": "started job-a9f25863-f031-489f-8e7d-a4045d0f17b7 pid=41260 state=RUNNING\ninspect-live state=RUNNING pid=41260\nsecond store list=['job-a9f25863-f031-489f-8e7d-a4045d0f17b7'] duplicates=[]\nafter SIGKILL+reap state=INTERRUPTED pid=41260 error=owner process closed or child exited before status was persisted returncode=None\ndag recover statuses={'dead-local': 'interrupted', 'grok-failed': 'failed', 'live-grok': 'running'} adopted=[{'unit_id': 'live-grok', 'backend_task_id': 'task-live', 'grok_state': 'running'}] n=3\nScheduler.from_workspace statuses={'dead-local': 'interrupted', 'grok-failed': 'failed', 'live-grok': 'running'}",
+  "output": "started job-ba4a3a65-9181-45c2-a0d4-08ad8938e58e pid=7783 state=RUNNING\ninspect-live state=RUNNING pid=7783\nsecond store list=['job-ba4a3a65-9181-45c2-a0d4-08ad8938e58e'] duplicates=[]\nafter SIGKILL+reap state=INTERRUPTED pid=7783 error=owner process closed or child exited before status was persisted returncode=None\ndag recover statuses={'dead-local': 'interrupted', 'grok-failed': 'failed', 'live-grok': 'running'} adopted=[{'unit_id': 'live-grok', 'backend_task_id': 'task-live', 'grok_state': 'running'}] n=3\nScheduler.from_workspace statuses={'dead-local': 'interrupted', 'grok-failed': 'failed', 'live-grok': 'running'}",
   "schema": "hawking.acceptance.gate.v1",
   "symbols_invoked": [
     {

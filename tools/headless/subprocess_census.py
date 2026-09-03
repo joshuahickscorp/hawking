@@ -2383,7 +2383,7 @@ def main() -> int:
                 "tools/haider / tools/headless; Rust Command::new under crates/ and src/"
             ),
             "not_in_scope": [
-                "lab/**",
+                "research/lab/**",
                 "visionmcp/**",
                 "workspace/**",
                 "tools/*.py gravity/ascent probes outside headless+haider",

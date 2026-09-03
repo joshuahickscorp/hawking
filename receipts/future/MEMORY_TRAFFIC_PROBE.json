@@ -4,7 +4,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-03T00:36:45Z",
+  "recorded_at": "2026-09-03T06:57:58Z",
   "recorded_by": "tools/future/memory_traffic_probe.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -32,9 +32,9 @@
  "dispatch_boundary_samples": [
   {
    "contains_mtl_counter_error_value": false,
-   "gpu_duration_s": 3.699999797390774e-05,
-   "gpu_end_time": 52867.725352,
-   "gpu_start_time": 52867.725315,
+   "gpu_duration_s": 2.354166645091027e-05,
+   "gpu_end_time": 75740.83746366667,
+   "gpu_start_time": 75740.837440125,
    "payload_bytes": 1048576,
    "resolved_byte_count": 16,
    "resolved_u64": [
@@ -50,9 +50,9 @@
   },
   {
    "contains_mtl_counter_error_value": false,
-   "gpu_duration_s": 3.162500070175156e-05,
-   "gpu_end_time": 52867.72729150001,
-   "gpu_start_time": 52867.727259875006,
+   "gpu_duration_s": 3.104167990386486e-05,
+   "gpu_end_time": 75740.83838766668,
+   "gpu_start_time": 75740.838356625,
    "payload_bytes": 4194304,
    "resolved_byte_count": 16,
    "resolved_u64": [
@@ -67,7 +67,7 @@
    "set": "timestamp"
   }
  ],
- "enumerator_stderr": "2026-09-02 20:36:45.225 mtl_traffic_probe[98155:13702409] Error, registring service 0x2a03! (Error Domain=GPURawCounterErrorDomain Code=-1 \"Fail to instantiate AGXGPURawCounterSourceGroup\" UserInfo={NSLocalizedDescription=Fail to instantiate AGXGPURawCounterSourceGroup})",
+ "enumerator_stderr": "2026-09-03 02:57:58.346 mtl_traffic_probe[35975:58839785] Error, registring service 0x2a03! (Error Domain=GPURawCounterErrorDomain Code=-1 \"Fail to instantiate AGXGPURawCounterSourceGroup\" UserInfo={NSLocalizedDescription=Fail to instantiate AGXGPURawCounterSourceGroup})",
  "env_flag": "HAWKING_MEMORY_TRAFFIC",
  "env_flag_meaning": "HAWKING_MEMORY_TRAFFIC=1 opts into sampling a real byte-traffic counter if one exists. It does not license an estimate. On this device the flag still yields UNKNOWN / UnmeasuredMemoryTraffic.",
  "evidence_class": "STATIC_ONLY",
@@ -93,45 +93,45 @@
   "receipt": "receipts/future/MEMORY_TRAFFIC_PROBE.json"
  },
  "schema": "hawking.future.memory_traffic_probe.v1",
- "seal_sha256": "9b3775a615749ecdee2ac0e7138ffcd4d0693f454def970329897188cff7aa02",
+ "seal_sha256": "99c2ba798b1155306c23dc96988f134353fcd42a90c7b1068fd27c61639b34ee",
  "stage_boundary_samples": [
   {
    "contains_mtl_counter_error_value": false,
-   "gpu_duration_s": 2.5000001187436283e-05,
-   "gpu_end_time": 52867.72847504167,
-   "gpu_start_time": 52867.72845004167,
+   "gpu_duration_s": 1.1124997399747372e-05,
+   "gpu_end_time": 75740.83880825,
+   "gpu_start_time": 75740.838797125,
    "payload_bytes": 1048576,
    "resolved_byte_count": 16,
    "resolved_u64": [
-    52867728450083,
-    52867728475083
+    75740838797166,
+    75740838808291
    ],
    "resolved_u64_hex": [
-    "0x30153a2ca223",
-    "0x30153a2d03cb"
+    "0x44e2c9ca9f6e",
+    "0x44e2c9cacae3"
    ],
    "sampled_via": "compute_pass_sampleBufferAttachments_stage_boundary",
    "set": "timestamp",
-   "timestamp_delta_ns": 25000
+   "timestamp_delta_ns": 11125
   },
   {
    "contains_mtl_counter_error_value": false,
-   "gpu_duration_s": 7.399999594781548e-05,
-   "gpu_end_time": 52867.730307375,
-   "gpu_start_time": 52867.730233375005,
+   "gpu_duration_s": 3.058332367800176e-05,
+   "gpu_end_time": 75740.839471,
+   "gpu_start_time": 75740.83944041668,
    "payload_bytes": 4194304,
    "resolved_byte_count": 16,
    "resolved_u64": [
-    52867730233416,
-    52867730307416
+    75740839440458,
+    75740839471041
    ],
    "resolved_u64_hex": [
-    "0x30153a47d848",
-    "0x30153a48f958"
+    "0x44e2c9d4704a",
+    "0x44e2c9d4e7c1"
    ],
    "sampled_via": "compute_pass_sampleBufferAttachments_stage_boundary",
    "set": "timestamp",
-   "timestamp_delta_ns": 74000
+   "timestamp_delta_ns": 30583
   }
  ],
  "status": "NOT_MEASURED_NO_METAL_MEMORY_COUNTER",
@@ -240,7 +240,7 @@
    "n_groups": 0,
    "reachable_without_elevated_privileges": false,
    "reports_memory_traffic": false,
-   "stderr": "2026-09-02 20:36:45.225 mtl_traffic_probe[98155:13702409] Error, registring service 0x2a03! (Error Domain=GPURawCounterErrorDomain Code=-1 \"Fail to instantiate AGXGPURawCounterSourceGroup\" UserInfo={NSLocalizedDescription=Fail to instantiate AGXGPURawCounterSourceGroup})",
+   "stderr": "2026-09-03 02:57:58.346 mtl_traffic_probe[35975:58839785] Error, registring service 0x2a03! (Error Domain=GPURawCounterErrorDomain Code=-1 \"Fail to instantiate AGXGPURawCounterSourceGroup\" UserInfo={NSLocalizedDescription=Fail to instantiate AGXGPURawCounterSourceGroup})",
    "what_it_returned": "dlopen of GPURawCounter.framework succeeded. GRCCopyAllCounterSourceGroupWithError returned 'Fail to instantiate AGXGPURawCounterSourceGroup' with n_groups=0. Instruments-style raw GPU counters are not instantiable from an ordinary Metal process here."
   },
   "IOAccelMemoryInfo": {
@@ -719,15 +719,15 @@
     "IVDM: Max Throttle Percent       "
    ],
    "PerformanceStatistics": {
-    "Alloc system memory": 15401746432,
-    "Allocated PB Size": 98959360,
-    "Device Utilization %": 100,
-    "In use system memory": 14047952896,
+    "Alloc system memory": 16381411328,
+    "Allocated PB Size": 110100480,
+    "Device Utilization %": 0,
+    "In use system memory": 14775910400,
     "In use system memory (driver)": 0,
-    "Renderer Utilization %": 100,
+    "Renderer Utilization %": 0,
     "SplitSceneCount": 0,
     "TiledSceneBytes": 0,
-    "Tiler Utilization %": 100,
+    "Tiler Utilization %": 0,
     "lastRecoveryTime": 0,
     "recoveryCount": 0
    },
@@ -806,8 +806,8 @@
    "what_it_returned": "bytes currently allocated by this process on the device, not bytes transferred"
   },
   "MTLDevice.sampleTimestamps": {
-   "cpu": 52867730665583,
-   "gpu": 52867730665583,
+   "cpu": 75740839610291,
+   "gpu": 75740839610291,
    "is_memory_traffic": false,
    "meaning": "clock samples, not bytes transferred",
    "reports_memory_traffic": false

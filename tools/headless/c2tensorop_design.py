@@ -29,9 +29,9 @@ from collections import Counter
 from pathlib import Path
 
 SCHEMA = "hawking.headless.c2tensorop_design.v1"
-G1_PATH = "hawking-experiments/superwave/g1/claude-evidence/g1_tensor_operators.json"
+G1_PATH = "research/hawking-experiments/superwave/g1/claude-evidence/g1_tensor_operators.json"
 G034_PATH = "receipts/ascent-2026-08-16/G034_TENSOR_OPERATOR.json"
-G1_PY = "hawking-experiments/superwave/g1/claude-evidence/g1_tensor_operators.py"
+G1_PY = "research/hawking-experiments/superwave/g1/claude-evidence/g1_tensor_operators.py"
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[1]

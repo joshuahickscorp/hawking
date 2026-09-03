@@ -86,7 +86,7 @@ Every tensor payload is:
 ```
 
 This is the existing Gravity `_container` envelope
-(`lab/operators/ascension_dual_gravity_worker.py`). Do not invent a
+(`research/lab/operators/ascension_dual_gravity_worker.py`). Do not invent a
 second header.
 
 ### `HGRAVB01` — binary group (gate)

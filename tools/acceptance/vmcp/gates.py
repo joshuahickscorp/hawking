@@ -1928,7 +1928,7 @@ def run_AGENTOS_DETERMINISTIC_OFFLOAD() -> dict[str, Any]:
     bench = C.REPO / "lab" / "hcli" / "claude_offload_bench.py"
     scheduler = C.REPO / "hcli" / "scheduler.py"
     tracked = subprocess.run(
-        ["git", "cat-file", "-e", "HEAD:lab/hcli/claude_offload_bench.py"],
+        ["git", "cat-file", "-e", "HEAD:research/lab/hcli/claude_offload_bench.py"],
         cwd=C.REPO,
         capture_output=True,
         text=True,
@@ -1964,7 +1964,7 @@ def run_AGENTOS_DETERMINISTIC_OFFLOAD() -> dict[str, Any]:
         output={"acceptance_span": "7485-7507 D.7 MAX scheduler measured policy"},
         command=["python3", "-m", "tools.acceptance.vmcp", "--gate", "AGENTOS_DETERMINISTIC_OFFLOAD"],
         blocker={
-            "missing": "lab/hcli/claude_offload_bench.py",
+            "missing": "research/lab/hcli/claude_offload_bench.py",
             "why": why_offload,
             "also_missing": ["hcli/scheduler.py"],
             "in_git_HEAD": in_git,

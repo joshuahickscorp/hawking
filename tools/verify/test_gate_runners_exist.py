@@ -33,10 +33,10 @@ LOAD_BEARING = {
     "tools/adapters/verify_grades.py":
         "the only check that an adapter family does not claim a grade its evidence "
         "cannot support",
-    "ramanujan/container/replay_capsule.sh":
+    "research/ramanujan/container/replay_capsule.sh":
         "replays a proof capsule in a pinned clean container; it is the whole content "
         "of the Q0 reproducibility claim",
-    "ramanujan/container/pins.json":
+    "research/ramanujan/container/pins.json":
         "the offline lock itself: Lean, Mathlib, elan, z3, cadical and the base image "
         "digest. Without it 'pinned' means nothing",
     "tools/graph/hawking_graph.py":

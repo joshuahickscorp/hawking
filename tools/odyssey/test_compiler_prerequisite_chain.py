@@ -15,7 +15,7 @@ def rec():
 
 def test_every_named_producer_that_claims_to_exist_really_does():
     for c in rec()["chain"]:
-        if c.get("producer") and c["producer"].startswith(("lab/", "tools/")):
+        if c.get("producer") and c["producer"].startswith(("research/lab/", "tools/")):
             assert (REPO / c["producer"]).is_file(), c["producer"]
             assert c["producer_exists"] is True
 

@@ -10,8 +10,8 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
 RH = REPO / "receipts/headless"
-AUDIT_PRODUCER = REPO / "lab/operators/ascension_qwen30_physical_campaign.py"
-GRAVITY_PRODUCER = REPO / "lab/operators/ascension_qwen30_complete_gravity.py"
+AUDIT_PRODUCER = REPO / "research/lab/operators/ascension_qwen30_physical_campaign.py"
+GRAVITY_PRODUCER = REPO / "research/lab/operators/ascension_qwen30_complete_gravity.py"
 EXISTING_AUDIT = (REPO / "workspace/campaign/records/ascension-sandbox/physical/qwen30/"
                   "QWEN30_SOURCE_BODY_AUDIT_CANDIDATE.json")
 

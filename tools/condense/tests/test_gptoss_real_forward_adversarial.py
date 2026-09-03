@@ -22,7 +22,7 @@ if _COND not in sys.path:
 _REPO = Path(_COND).resolve().parents[1]                       # tools/condense -> tools -> repo root
 
 pytest.skip(
-    # Retired, not broken. ad03a1bd recomposed science under lab/operators and
+    # Retired, not broken. ad03a1bd recomposed science under research/lab/operators and
     # deleted tools/condense/gptoss_real_forward.py without recomposing it;
     # 3aa9e5b3 had already archived the rest of the gptoss chain
     # (gptoss_block, gptoss_moe_runtime) as superseded. This file kept
@@ -31,7 +31,7 @@ pytest.skip(
     # because a collection error takes the rest of the directory down with it.
     #
     # Reopen condition: restore gptoss_block, gptoss_moe_runtime and
-    # gptoss_real_forward from ad03a1bd^ into lab/operators and delete this
+    # gptoss_real_forward from ad03a1bd^ into research/lab/operators and delete this
     # skip. Do that only if the 120B lane is reopened; it is sealed today.
     "gptoss real-forward lane retired at ad03a1bd; see the reopen condition above",
     allow_module_level=True,

@@ -1,7 +1,7 @@
 {
  "schema": "hawking.headless.organ_library.v1",
- "generated_at": "2026-08-26T10:13:53Z",
- "git_head": "665110c71c8cc16db6a05af70d621a0266853ab1",
+ "generated_at": "2026-09-03T06:40:46Z",
+ "git_head": "ee9f9e90c9d65c54cd1ee5944afe5c04a87b636c",
  "generated_by": "tools/headless/genome_libraries.py",
  "obligation": "N034 \u2014 GENOME LIBRARIES + ODYSSEY QUEUE RECOVERY (S023 \u00a712, \u00a713, \u00a714, \u00a734, \u00a770). Seed from verified Qwen science; recover the Odyssey queue from disk; do not invent numbers or HF repo ids.",
  "hand_authored": false,
@@ -1390,14 +1390,5 @@
  "q4_remainder_not_a_contract_organ": {
   "note": "ORGAN_BANDWIDTH also names q4_remainder (unfused o_proj + out_proj). N034's organ list does not include it; it remains on ORGAN_BANDWIDTH / ORGAN_ROOF_LEDGER.",
   "source": "receipts/headless/ORGAN_BANDWIDTH.json"
- },
- "bench": {
-  "state": "UNKNOWN",
-  "recorded_at": "2026-08-26T00:00:00Z",
-  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
-  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
-  "quiescence": null,
-  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
-  "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
  }
 }

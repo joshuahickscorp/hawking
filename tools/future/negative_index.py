@@ -56,7 +56,7 @@ SEED_SOURCES: tuple[str, ...] = (
     "workspace/campaign/odyssey/NEGATIVE_SCIENCE.json",
     "workspace/campaign/records/ascension-sandbox/knowledge-plane/ASCENSION_NEGATIVE_SCIENCE.jsonl",
     "workspace/campaign/evidence/research/doctor/DOCTOR_NEGATIVE_TRANSFER_ATLAS.json",
-    "hawking-experiments/superwave/g1/g1-arch-negative.md",
+    "research/hawking-experiments/superwave/g1/g1-arch-negative.md",
     "workspace/campaign/evidence/systems/hawking/HAWKING_EXPERT_WAVE_NEGATIVE.json",
     "workspace/campaign/evidence/systems/hawking/HAWKING_RESIDENT_STATE_NEGATIVE.json",
     "workspace/campaign/records/ascension-sandbox/physical/qwen-family/dual-gravity/ASCENSION_NEGATIVE_SCIENCE.jsonl",
@@ -64,7 +64,7 @@ SEED_SOURCES: tuple[str, ...] = (
     "workspace/docs/guides/dead_levers.md",
     "workspace/campaign/governance/odyssey/state/graveyard/GRAVEYARD.json",
     "receipts/ascent-2026-08-18/PHASE_B_HYBRID_REFUTED.json",
-    "lab/operators/ascension_graveyard.py",
+    "research/lab/operators/ascension_graveyard.py",
     # Emitted by tools/future/tps_falsifications.py. Named here because
     # SKIP_PREFIXES excludes receipts/future/ from the discovery sweep,
     # and SEED_SOURCES is appended after that filter.
@@ -1425,7 +1425,7 @@ def recovered_implementation() -> list[dict[str, str]]:
             "gap": "document, not an index",
         },
         {
-            "path": "lab/operators/ascension_graveyard.py",
+            "path": "research/lab/operators/ascension_graveyard.py",
             "role": "in-memory Graveyard with FailureClass taxonomy and bury/revive semantics",
             "adequate": "no",
             "gap": "empty of the campaign corpus; not wired to generators",

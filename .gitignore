@@ -270,3 +270,6 @@ receipts/q80-velocity-pairs/
 # them locally; nothing opens them as a fixture. The hide/systems/runtime
 # subtrees stay tracked because hide-backend tests open them.
 workspace/campaign/evidence/models/
+
+# Campaign log: development narrative, not product documentation.
+docs/HCLI_SCHOOL.md

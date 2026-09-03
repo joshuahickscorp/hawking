@@ -383,7 +383,7 @@ def _is_log(path: str) -> bool:
 
 
 def _is_python_test(path: str) -> bool:
-    if "/tests/" in path or path.startswith("lab/tests/"):
+    if "/tests/" in path or path.startswith("research/lab/tests/"):
         return True
     name = path.rsplit("/", 1)[-1]
     if name.startswith("test_") or name.endswith("_test.py"):
@@ -447,13 +447,13 @@ def classify_site(path: str, text: str) -> Tuple[str, str]:
             return "TEST_HARNESS_PATHS", "this census; not a runtime import of the package"
         return "TEST_HARNESS_PATHS", "headless harness path assumption"
 
-    if path.startswith("lab/hcli/"):
+    if path.startswith("research/lab/hcli/"):
         return (
             "UNKNOWN",
             "package lab.hcli — Agent OS scaffolds, not hcli; do not fold into this move",
         )
 
-    if path.startswith("lab/"):
+    if path.startswith("research/lab/"):
         return (
             "UNKNOWN",
             "lab operator/test filename or string containing hcli/haider; not the Python control-plane package",
@@ -790,7 +790,7 @@ def main() -> int:
         for p in git_ls(root, "crates/hide-backend/src/bin")
         if "hcli" in p or "haider" in p
     ]
-    lab_hcli = git_ls(root, "lab/hcli")
+    lab_hcli = git_ls(root, "research/lab/hcli")
 
     modules = [parse_module(root, p) for p in hcli_modules]
     assigned = []
@@ -1138,7 +1138,7 @@ def main() -> int:
                     "vmcp": "visionmcp/ is already its own package; harnesses sys.path.insert visionmcp/src independently",
                     "genomes": "MachineGenome is hcli.machine; receipts/headless/MACHINE_GENOME.json is a sealed receipt",
                     "evidence": "receipts/ and workspace/campaign/evidence/; preserve, do not relocate",
-                    "experiments": "lab/ is already the experiment package",
+                    "experiments": "research/lab/ is already the experiment package",
                 }[name],
             }
             for name in HINT_LAYOUT
@@ -1187,7 +1187,7 @@ def main() -> int:
                 "resolves": resolves(root, "crates/hide-backend/src/bin/hcli.rs"),
             },
             {
-                "path": "lab/hcli/",
+                "path": "research/lab/hcli/",
                 "files": lab_hcli,
                 "package": "lab.hcli",
                 "action": "already a correctly named lab package. Do not merge into tools/hcli.",
@@ -1280,7 +1280,7 @@ def main() -> int:
             "does": (
                 "PYTHONPATH=tools then `import hcli` / `python -m hcli`. "
                 "Update remaining live path literals. Do not touch receipts/, .hcli/ state, "
-                ".hcli-legacy/ gitignore, lab/hcli, or crates/hide-backend. "
+                ".hcli-legacy/ gitignore, research/lab/hcli, or crates/hide-backend. "
                 "Leave tools/hcli/bootstrap/snapshots/haider.py and p0_tool_bridge.py where they are."
             ),
             "blast": {

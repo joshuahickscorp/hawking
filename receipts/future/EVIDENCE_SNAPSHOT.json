@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-03T00:37:58Z",
+  "recorded_at": "2026-09-03T06:50:44Z",
   "recorded_by": "tools/future/evidence_snapshot.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -59,8 +59,8 @@
    "name": "ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json",
    "sha256": "f627ce102b1257d4f939827d22f069bcd5f31d6631899e84a16e511e51107339",
    "snapshot_path": "receipts/future/evidence/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json",
-   "source_mtime_epoch": 1788331891.867,
-   "source_mtime_utc": "2026-09-02T06:51:31Z",
+   "source_mtime_epoch": 1788417605.738,
+   "source_mtime_utc": "2026-09-03T06:40:05Z",
    "source_path": "receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json"
   },
   {
@@ -307,12 +307,12 @@
    "source_path": "receipts/headless/ODYSSEY_LEARNING_CURVE.json"
   },
   {
-   "bytes": 106368,
+   "bytes": 139410,
    "name": "NOETIC_NEGATIVE_SCIENCE.json",
-   "sha256": "ba01d42d6e04952a56e5e56e1a36fcfbaddcab7cecc163efb9236bd8ebaf7015",
+   "sha256": "6f18954b4af7f9cefad61a7cae985f7a8e8434f91cd72d76cba2b8e4ccef4c11",
    "snapshot_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
-   "source_mtime_epoch": 1787824317.272,
-   "source_mtime_utc": "2026-08-27T09:51:57Z",
+   "source_mtime_epoch": 1788417648.472,
+   "source_mtime_utc": "2026-09-03T06:40:48Z",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
   },
   {
@@ -347,8 +347,8 @@
    "name": "HCLI_MODELLAKE_FLASH_CENSUS.json",
    "sha256": "b96700c2360e75e75bc5789c0c9b4354a807771a45dce2418c78de2b1b9bb4cb",
    "snapshot_path": "receipts/future/evidence/HCLI_MODELLAKE_FLASH_CENSUS.json",
-   "source_mtime_epoch": 1788395860.818,
-   "source_mtime_utc": "2026-09-03T00:37:40Z",
+   "source_mtime_epoch": 1788418225.468,
+   "source_mtime_utc": "2026-09-03T06:50:25Z",
    "source_path": "receipts/headless/HCLI_MODELLAKE_FLASH_CENSUS.json"
   },
   {
@@ -439,6 +439,6 @@
  "purpose": "Pinned copy of the Codex receipts sidecar lanes read. Lanes run in sparse git worktrees where the live, uncommitted receipts are invisible; without this snapshot a lane would silently fall back to a fixture and its conclusions would be attached to nothing.",
  "read_only_guarantee": "Codex originals are opened read-only and never modified.",
  "schema": "hawking.future.evidence_snapshot.v1",
- "seal_sha256": "d33daba5e2979b3790c02b7b8f228612711b6a3cb967ba79f1f684befe92850e",
+ "seal_sha256": "ee2d85d1591245c74319ccd1b3529161bda1cdbcd03afa6bea43d2a1ccdb8f17",
  "version": 1
 }

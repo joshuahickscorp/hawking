@@ -950,7 +950,7 @@ def print_report(doc: dict) -> None:
     print(f"  landed_receipt: {ws['landed_receipt']}")
     print(
         "  this script does not git add/checkout/restore/stash/clean/reset "
-        "and does not touch crates/, workspace/, visionmcp/, app/, lab/, "
+        "and does not touch crates/, workspace/, visionmcp/, app/, research/lab/, "
         "tools/hcli/bootstrap/."
     )
 

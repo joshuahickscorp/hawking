@@ -82,7 +82,10 @@ def _state(tmp_path):
     return json.loads((tmp_path / ".hcli" / "mission" / "state.json").read_text())
 
 
-def test_evacuation_leaves_the_mission_advanceable(tmp_path):
+def test_evacuation_leaves_the_mission_advanceable(tmp_path, monkeypatch):
+    from hcli import mission as mission_mod
+    monkeypatch.setattr(mission_mod, "CANCEL_JOIN_TIMEOUT_S", 0.02)
+
     engine = _BlockingEngine()
     mission = _mission(tmp_path, engine)
     thread = _run_until_inflight(mission, engine)
@@ -106,7 +109,10 @@ def test_evacuation_leaves_the_mission_advanceable(tmp_path):
     assert _mission_has_work(tmp_path) is True
 
 
-def test_the_interrupted_unit_is_re_runnable_not_failed(tmp_path):
+def test_the_interrupted_unit_is_re_runnable_not_failed(tmp_path, monkeypatch):
+    from hcli import mission as mission_mod
+    monkeypatch.setattr(mission_mod, "CANCEL_JOIN_TIMEOUT_S", 0.02)
+
     """INTERRUPTED is process death, not a verifier verdict. It keeps its retries."""
     engine = _BlockingEngine()
     mission = _mission(tmp_path, engine)

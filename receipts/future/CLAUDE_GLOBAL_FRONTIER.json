@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T22:55:36Z",
+  "recorded_at": "2026-09-03T05:38:16Z",
   "recorded_by": "tools/future/global_frontier.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -87,6 +87,7 @@
    },
    "probe_result": {
     "hits": [
+     "./receipts/acceptance/FPGA_HWIR.json",
      "./receipts/future/HWIR_V1.json",
      "./receipts/future/HWIR_SYNTHETIC_ARRIVAL_REHEARSAL.json",
      "./receipts/future/HWIR_SEALED_PREDICTIONS.json",
@@ -619,7 +620,7 @@
  "resolved_entries": [],
  "resolved_meaning": "A MISSING claim whose probe now finds ONLY sidecar files: this campaign closed the gap. The entry is retired, not refuted.",
  "schema": "hawking.future.claude_global_frontier.v1",
- "seal_sha256": "3f5dde99df179f21085b67ea208348ba6e1335138999c0f6ccbd2a319dc87cbb",
+ "seal_sha256": "aa81e86fa40ef2f4f9ca0abae22261f337bb5d2d5f4444bcf4c869a5c602c801",
  "stale_entries": [
   "F003",
   "F004",

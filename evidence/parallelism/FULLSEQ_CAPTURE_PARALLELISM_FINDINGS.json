@@ -192,7 +192,7 @@
   },
   "glm_teacher_forced_investigation": {
     "status": "code_review_only_no_live_benchmark",
-    "path": "lab/operators/frankenstein_teacher_forced_executor.py",
+    "path": "research/lab/operators/frankenstein_teacher_forced_executor.py",
     "architecture": "Layer-major donor capture: stream one layer's weights, run that layer over ALL sequences (microbatch), seal carry, evict, advance. Double-buffer N-1/N/N+1 prefetch.",
     "existing_parallelism_knobs": ["--microbatch", "--max-layers", "--no-prefetch", "--stream"],
     "no_seq_start_end_today": true,

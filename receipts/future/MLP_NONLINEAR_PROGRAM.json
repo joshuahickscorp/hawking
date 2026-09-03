@@ -38,7 +38,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-03T00:37:49Z",
+  "recorded_at": "2026-09-03T05:50:22Z",
   "recorded_by": "tools/future/mlp_nonlinear_program.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -3365,7 +3365,7 @@
   "negative_index queried; proposal families not refused; W-space scars cited as cousins",
   "CAPABILITY_INFORMATION_MAP cited for residual budget; none allocated because nothing survived"
  ],
- "git_head": "b35af1fa8886aa9d5903e3b9e943503c63cb001e",
+ "git_head": "6ef2681614fadde7a45d002b5fc3feb108c81625",
  "go_wider": false,
  "gpu_authority": false,
  "index": {
@@ -3435,17 +3435,9 @@
    {
     "hypothesis_family": "low_rank",
     "model": "qwen3.8-27b",
-    "n_hits": 1,
+    "n_hits": 0,
     "organ": "mlp",
-    "top": [
-     {
-      "hypothesis_family": "low_rank",
-      "level": "MODEL_SPECIFIC",
-      "reopen_condition": "Do not cite 5.9\u00d7. Reopen a recon-cost claim only on a named launch geometry with GPU timestamps, same-vehicle, real X. Cheap codecs previously rejected for recon cost are quality-eligible at tpr64.",
-      "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-011",
-      "verdict": "LIVE_REOPEN_HOLDS"
-     }
-    ]
+    "top": []
    },
    {
     "hypothesis_family": "global_dense_lowrank",
@@ -3690,7 +3682,7 @@
   }
  ],
  "schema": "hawking.future.mlp_nonlinear_program.v1",
- "seal_sha256": "a9f76b634a6e4807c9f563c70dea294b9a723c234dc2b66343f01232c65decac",
+ "seal_sha256": "a63cf20d23a9894232fd437d1fc0fbee8c4f290d84a17bc951f1eb850f2c93c8",
  "selftest": {
   "held_out_leak_codes": [
    "TrainReportedAsHeldOut"

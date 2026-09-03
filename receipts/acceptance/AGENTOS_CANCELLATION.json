@@ -5,13 +5,13 @@
   "criterion_quoted": "Cancellation writes a durable terminal state and reconciles children/external jobs.\n\n## D.1 Repair lineage and homeostasis\n\n```rust\nWorkUnitLineage {\n    workunit_id,\n    root_workunit_id,\n    parent_workunit_id,\n    repair_depth,\n    attempt,\n    failure_class,\n    failure_fingerprint,\n    provider,\n    backend_task_id?,\n    created_at,\n    deadline?,\n    mutation_lease?,\n    verifier_contract\n}\n```\n\n1. Repair depth is bounded structurally, not by model discretion.\n2. Equivalent deterministic failure fingerprints do not generate semantically identical descendants.\n3. Exhausted chains become FAILED_EXHAUSTED / BLOCKED / REPLAN_REQUIRED.\n4. Transient provider failure may retry with bounded exponential/backoff policy; deterministic verifier failure does not become a blind retry loop.\n5. Cancellation writes a durable terminal state and reconciles children/external jobs.\n6. Orphan jobs are adopted, reconciled or failed; they are not silently duplicated.\n7. No repair child may widen mutation authority, safety authority, or authorization scope inherited from its root.",
   "criterion_source": {
     "end_line": 7358,
-    "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "file": "/Users/scammermike/Downloads/hawking/docs/roadmap-lineage/H-ROADMAP.superseded-2026-09-02.md",
     "start_line": 7332
   },
   "evidence_tier": "FUNCTIONAL_SIM",
   "gate": "AGENTOS_CANCELLATION",
-  "generated_at": "2026-09-02T18:42:41Z",
-  "git_head": "14ed3eb1f8fc616a29dbc724f3937cffedf15a43",
+  "generated_at": "2026-09-03T05:52:36Z",
+  "git_head": "f97dec9d2b0c2bbff574c28989d55ca00cafcf88",
   "hcli_file": "/Users/scammermike/Downloads/hawking/hcli/__init__.py",
   "measured": {
     "abort_reason": "acceptance-operator-abort",
@@ -19,12 +19,12 @@
     "coop_disk_phase": "cancelled",
     "coop_phase": "cancelled",
     "coop_repairs": [],
-    "dag_checkpoint_id": "62ece1058cf6:1788374561.840414",
+    "dag_checkpoint_id": "c8c5b21409fb:1788414756.412249",
     "durable_cancel_file": true,
     "lock_free": true,
     "new_generation": true,
-    "post_checkpoint_id": "62ece1058cf6:1788374561.840414",
-    "pre_checkpoint_id": "62ece1058cf6:1788374561.814262",
+    "post_checkpoint_id": "c8c5b21409fb:1788414756.412249",
+    "pre_checkpoint_id": "c8c5b21409fb:1788414756.323032",
     "pre_dag_units": [],
     "shared_checkpoint_id": true,
     "state_cancel_reason": "acceptance-operator-abort",
@@ -34,7 +34,7 @@
     "Catalog symbol abort is hcli.delegate.abort. It writes delegation_cancel.json, signals a live mutation-lock holder, loads the mission, Mission.cancel, then Mission.checkpoint (DAG first, shared checkpoint_id).",
     "Cancel of in-flight units uses _fail_inflight(emit_repair=False) so cancellation does not grow the repair tree."
   ],
-  "output": "delegate.run spawn=False keys=['mission_id', 'spawned', 'spec', 'state', 'workspace', 'writer_pid']\npre checkpoint_id=62ece1058cf6:1788374561.814262 phase=delegated\nabort returned {'verdict': 'ABORTED', 'reason': 'acceptance-operator-abort', 'lock_free': True, 'mission_id': '62ece1058cf6'}\ncancel_file=/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-cancel-_b8ankpg/mission/.hcli/mission/delegation_cancel.json exists=True doc={'at': 1788374561.814934, 'reason': 'acceptance-operator-abort'}\ncoop phase=cancelled repairs=[] disk_phase=cancelled disk_reason=probe-cancel",
+  "output": "delegate.run spawn=False keys=['mission_id', 'spawned', 'spec', 'state', 'workspace', 'writer_pid']\npre checkpoint_id=c8c5b21409fb:1788414756.323032 phase=delegated\nabort returned {'verdict': 'ABORTED', 'reason': 'acceptance-operator-abort', 'lock_free': True, 'mission_id': 'c8c5b21409fb'}\ncancel_file=/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-cancel-ug6jtxfi/mission/.hcli/mission/delegation_cancel.json exists=True doc={'at': 1788414756.32461, 'reason': 'acceptance-operator-abort'}\ncoop phase=cancelled repairs=[] disk_phase=cancelled disk_reason=probe-cancel",
   "schema": "hawking.acceptance.gate.v1",
   "symbols_invoked": [
     {

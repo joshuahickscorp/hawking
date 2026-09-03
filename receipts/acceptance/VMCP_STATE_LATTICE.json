@@ -68,41 +68,41 @@
   ],
   "criterion": {
     "end_line": 7738,
-    "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "file": "/Users/scammermike/Downloads/hawking/docs/roadmap-lineage/H-ROADMAP.superseded-2026-09-02.md",
     "quoted": "## E.2 State lattice schemas\n\n```text\nDEEP_DIGEST\n    digest of canonical sensory/execution state\n\nASSET_LATTICE\n    asset_id, source, sha256, type, size, decoded, ownership, uses\n\nDECODE_LATTICE\n    input_hash, transform, output_hash, confidence, recovered artifacts\n\nENTITY_GENOME\n    entity_id, name, kind, evidence, confidence, parent/children\n\nRENDER_GENOME\n    node, text, image, font, color, background, border, radius, shadow, transform, layout\n\nSPATIAL_GENOME\n    object, dimensions, faces, normals, UVs, materials, parts, evidence, origin\n\nREPAIR_VECTOR\n    residual, cause, next_action\n\nDIRECTOR_STATE\n    phase, target, residuals, blocked_gates, next_actions, deep_digest\n\nPERFORMANCE_LEDGER\n    per-act latency, tool p95, build/render/verify costs\n\nTRUTH_LEDGER\n    claims, evidence, counterevidence, confidence, blockers, no_op_detected\n```",
     "start_line": 7706,
     "weakened": false
   },
   "criterion_weakened": false,
-  "elapsed_ms": 390.429,
+  "elapsed_ms": 694.383,
   "evidence_tier": "FUNCTIONAL_SIM",
   "gate": "VMCP_STATE_LATTICE",
-  "generated_at": "2026-09-02T23:16:06Z",
+  "generated_at": "2026-09-03T05:34:31Z",
   "gpu_authority": false,
   "invoked_symbols": [
     {
-      "elapsed_ms": 0.047,
+      "elapsed_ms": 0.097,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "tools.headless.vmcp_lattice_disposition.locate_visionmcp_src"
     },
     {
-      "elapsed_ms": 55.103,
+      "elapsed_ms": 104.522,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "tools.headless.vmcp_lattice_disposition._load_vm"
     },
     {
-      "elapsed_ms": 175.116,
+      "elapsed_ms": 332.374,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "tools.headless.vmcp_lattice_disposition._name_scan"
     },
     {
-      "elapsed_ms": 153.992,
+      "elapsed_ms": 242.129,
       "error": null,
       "kind": "call",
       "raised": false,
@@ -172,7 +172,7 @@
       "symbol": "tools.headless.vmcp_lattice_disposition.prove_performance_ledger"
     },
     {
-      "elapsed_ms": 0.015,
+      "elapsed_ms": 0.054,
       "error": null,
       "kind": "call",
       "raised": false,

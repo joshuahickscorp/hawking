@@ -36,12 +36,12 @@
       "verdict": "BLOCKED"
     }
   ],
-  "generated_at": "2026-09-02T18:44:48Z",
+  "generated_at": "2026-09-03T05:52:31Z",
   "generated_by": "tools.acceptance.odyssey.run",
   "n_accepted": 1,
   "n_blocked": 4,
   "n_gates": 5,
   "note": "A truthful BLOCKED with the exact missing input is success for this lane. No acceptance criterion was altered.",
   "schema": "hawking.acceptance.manifest.v1",
-  "seal_sha256": "9276ed4389420773d811ff499f9a6e7db17c1958b1a6d517e318f65bb087edd3"
+  "seal_sha256": "108845c2ed8ebe3a85e0bf753e27594b9a991094b247db01075caf9792c3a1a1"
 }

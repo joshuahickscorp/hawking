@@ -262,7 +262,7 @@ GATES: dict[str, dict[str, Any]] = {
     ),
     "AGENTOS_DETERMINISTIC_OFFLOAD": _p(
         era="I", gene=IA, acc=(7485, 7507),
-        paths=("lab/hcli/claude_offload_bench.py", "hcli/delegate.py"),
+        paths=("research/lab/hcli/claude_offload_bench.py", "hcli/delegate.py"),
         modules=("lab.hcli.claude_offload_bench", "hcli.delegate"),
         symbols=(("lab.hcli.claude_offload_bench", "run_bench"),),
     ),

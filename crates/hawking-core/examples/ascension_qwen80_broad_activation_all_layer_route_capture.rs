@@ -273,8 +273,8 @@ fn main() {
             ),
             "next": {
                 "when_gqa_ready": "extend this binary with multi-token multi-layer encode at layer_count=48 and stratified hidden writer (Q30 pattern)",
-                "null_first_operator": "lab/operators/q80_activation_null_first_report.py",
-                "repack_operator": "lab/operators/ascension_qwen80_activation_weighted_svd_repack.py",
+                "null_first_operator": "research/lab/operators/q80_activation_null_first_report.py",
+                "repack_operator": "research/lab/operators/ascension_qwen80_activation_weighted_svd_repack.py",
             }
         });
 

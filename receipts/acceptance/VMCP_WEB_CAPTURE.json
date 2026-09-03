@@ -99,20 +99,20 @@
   ],
   "criterion": {
     "end_line": 7840,
-    "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "file": "/Users/scammermike/Downloads/hawking/docs/roadmap-lineage/H-ROADMAP.superseded-2026-09-02.md",
     "quoted": "## E.7 Web Eye\n\n1. Open controlled/public target or user-authorized page.\n2. Capture network/resource manifest.\n3. Capture HTML/DOM/computed style/layout/text/media references.\n4. Capture screenshots and interaction traces.\n5. Bind assets to nodes and hashes.\n6. Parse styles/source maps where present and authorized.\n7. Generate reference/candidate render states.\n8. Run visual/layout/text/provenance comparisons.\n9. Run canaries: remove image, change text/CSS/layout/hash, corrupt baseline, no-op.\n10. Require RED \u2192 restore \u2192 GREEN before claiming proof.\n\n",
     "start_line": 7827,
     "weakened": false
   },
   "criterion_weakened": false,
-  "elapsed_ms": 1.297,
+  "elapsed_ms": 5.414,
   "evidence_tier": "STATIC",
   "gate": "VMCP_WEB_CAPTURE",
-  "generated_at": "2026-09-02T23:16:06Z",
+  "generated_at": "2026-09-03T05:34:31Z",
   "gpu_authority": false,
   "invoked_symbols": [
     {
-      "elapsed_ms": 0.014,
+      "elapsed_ms": 0.018,
       "error": null,
       "kind": "call",
       "raised": false,

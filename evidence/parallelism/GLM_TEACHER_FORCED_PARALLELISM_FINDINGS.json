@@ -3,7 +3,7 @@
   "code_changes": [
     {
       "change": "Added --seq-start/--seq-end/--worker-id sequence sharding; fail-closed refuse of --stream + sharding without --allow-weight-stream-amplification; shard provenance on receipt; FrozenCorpus.slice_sequences",
-      "path": "lab/operators/frankenstein_teacher_forced_executor.py"
+      "path": "research/lab/operators/frankenstein_teacher_forced_executor.py"
     },
     {
       "change": "Merge disjoint worker out-dirs: concat layer/carry npz axis0, paired traces, merged receipt",

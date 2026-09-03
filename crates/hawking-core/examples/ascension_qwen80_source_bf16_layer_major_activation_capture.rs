@@ -22,7 +22,7 @@
 //! experts and top-10 routing — far worse under the retired per-layer scheme.
 //!
 //! Output layout matches the Q80 broad all-layer capture schema so
-//! `lab/operators/ascension_qwen80_activation_weighted_svd_repack.py` can
+//! `research/lab/operators/ascension_qwen80_activation_weighted_svd_repack.py` can
 //! consume the run directory with no repack changes.
 //!
 //! Modes:

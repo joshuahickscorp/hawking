@@ -4,7 +4,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T09:36:43Z",
+  "recorded_at": "2026-09-03T05:48:49Z",
   "recorded_by": "tools/future/meta_funnel.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -557,33 +557,26 @@
   },
   "noetic_negative_science": {
    "death_fields_observed": [
-    "all_evidence_resolves",
-    "all_numbers_confirmed",
-    "claim_refuted",
+    "capability",
     "evidence",
     "id",
-    "kind",
-    "kind_reasoning",
+    "kernel",
+    "level",
+    "machine",
+    "measured_on_models",
+    "migrated",
+    "model",
+    "organ",
+    "physical_reason",
     "reopen_condition",
-    "reopen_satisfied_today",
-    "reopen_today",
-    "scope",
-    "seed",
-    "seed_correction",
-    "seed_status"
+    "representation",
+    "technique"
    ],
-   "how_to_use": [
-    "Before proposing a representation, match it by id or by the claim string.",
-    "If kind=PROPERTY_OF_IDEA and reopen_satisfied_today=false, do not re-derive it on that parent/organ/regime.",
-    "If kind=ARTIFACT_OF_METHOD, the IDEA is not dead \u2014 retry only under the reopen condition.",
-    "If reopen_satisfied_today=true, that is a live opportunity being sat on; it is at the top of this receipt.",
-    "Cite the settling receipt path, not a later summary that still carries a superseded number.",
-    "DSV4F orthogonality is not settled. Measuring it is a cheap check, not a retry of Q80."
-   ],
-   "n_entries": 32,
+   "how_to_use": null,
+   "n_entries": 40,
    "path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
    "present": true,
-   "schema": "hawking.headless.noetic_negative_science.v1"
+   "schema": "hawking.headless.negative_science.v2"
   },
   "tools_flash_meta_coherence_screen": true,
   "tools_flash_meta_representation": true
@@ -645,6 +638,6 @@
  },
  "scars": [],
  "schema": "hawking.future.meta_funnel.v1",
- "seal_sha256": "7c20ff42321d6e4046a32f6de51f7313ed20f5896d5c8a94b6bcb723e328babe",
+ "seal_sha256": "70f5bb9c2a6afc4afd0206a2ce5e13b12911eeff475a5877d8a28942792fae27",
  "version": 1
 }

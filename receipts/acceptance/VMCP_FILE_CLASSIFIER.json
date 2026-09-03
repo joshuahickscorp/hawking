@@ -89,34 +89,20 @@
   ],
   "criterion": {
     "end_line": 7806,
-    "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "file": "/Users/scammermike/Downloads/hawking/docs/roadmap-lineage/H-ROADMAP.superseded-2026-09-02.md",
     "quoted": "## E.5 Generic file/binary metadata eye\n\n- file classification\n- magic/header identification\n- hash/size\n- container type\n- section inventory\n- string inventory when appropriate\n- imports/exports when supported\n- archive inventory\n- WASM identification/validation\n- embedded-resource inventory\n\nThis is target-independent format awareness. It does not imply authorization to reverse engineer arbitrary proprietary targets.",
     "start_line": 7793,
     "weakened": false
   },
   "criterion_weakened": false,
-  "elapsed_ms": 22.508,
+  "elapsed_ms": 37.095,
   "evidence_tier": "FUNCTIONAL_SIM",
   "gate": "VMCP_FILE_CLASSIFIER",
-  "generated_at": "2026-09-02T23:16:06Z",
+  "generated_at": "2026-09-03T05:34:31Z",
   "gpu_authority": false,
   "invoked_symbols": [
     {
-      "elapsed_ms": 0.031,
-      "error": null,
-      "kind": "call",
-      "raised": false,
-      "symbol": "visionmcp.acquisition.quarantine._sniff"
-    },
-    {
-      "elapsed_ms": 0.018,
-      "error": null,
-      "kind": "call",
-      "raised": false,
-      "symbol": "visionmcp.acquisition.quarantine._sniff"
-    },
-    {
-      "elapsed_ms": 0.016,
+      "elapsed_ms": 0.048,
       "error": null,
       "kind": "call",
       "raised": false,
@@ -130,21 +116,35 @@
       "symbol": "visionmcp.acquisition.quarantine._sniff"
     },
     {
-      "elapsed_ms": 0.017,
+      "elapsed_ms": 0.032,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "visionmcp.acquisition.quarantine._sniff"
     },
     {
-      "elapsed_ms": 0.016,
+      "elapsed_ms": 0.03,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "visionmcp.acquisition.quarantine._sniff"
     },
     {
-      "elapsed_ms": 0.895,
+      "elapsed_ms": 0.022,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "visionmcp.acquisition.quarantine._sniff"
+    },
+    {
+      "elapsed_ms": 0.03,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "visionmcp.acquisition.quarantine._sniff"
+    },
+    {
+      "elapsed_ms": 1.039,
       "error": null,
       "kind": "call",
       "raised": false,
@@ -176,43 +176,43 @@
     "file classification": {
       "html": {
         "magic": "3c21646f63747970",
-        "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-class-y_6__ktn/a.html",
+        "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-class-gcufse_g/a.html",
         "sha256": "910e8d7e7c1ce700d3a1387b66c0487d25a6bb280995c2ec26f903bb37050a8d",
         "size": 180,
         "sniff": "application/octet-stream"
       },
       "json": {
         "magic": "7b226b223a317d0a",
-        "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-class-y_6__ktn/a.json",
+        "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-class-gcufse_g/a.json",
         "sha256": "6a021504b02dc18c0b6bf8dfebdbdca579f0ab4d75eccb09ceeae89880a007ad",
         "size": 8,
         "sniff": "application/json"
       },
       "obj": {
         "magic": "6f20637562650a76",
-        "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-class-y_6__ktn/a.obj",
+        "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-class-gcufse_g/a.obj",
         "sha256": "0239c1c9c587168a41b5f04d48b160bde178a6b9b164e90654a85b4df5949f0b",
         "size": 135,
         "sniff": "application/octet-stream"
       },
       "png": {
         "magic": "89504e470d0a1a0a",
-        "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-class-y_6__ktn/a.png",
+        "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-class-gcufse_g/a.png",
         "sha256": "eaa392e5e7ef0301892198a24aefc6530d83f232054b0b6cbd885dd1f3e2d5ad",
         "size": 75,
         "sniff": "image/png"
       },
       "wasm": {
         "magic": "0061736d01000000",
-        "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-class-y_6__ktn/m.wasm",
+        "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-class-gcufse_g/m.wasm",
         "sha256": "93a44bbb96c751218e4c00d479e4c14358122a389acca16205b1e4d0dc5f9476",
         "size": 8,
         "sniff": "application/octet-stream"
       },
       "zip": {
         "magic": "504b030414000000",
-        "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-class-y_6__ktn/a.zip",
-        "sha256": "3497c163afa8e7bf33360c44f07825d7bd41edfaa7ecec4b61d057099e5ef865",
+        "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-class-gcufse_g/a.zip",
+        "sha256": "11cba45095bef6e693788e1f3f5733874a69bcb922501537a1c123c85882efce",
         "size": 231,
         "sniff": "application/zip"
       }
@@ -239,7 +239,7 @@
         "size": 8
       },
       "zip": {
-        "sha256": "3497c163afa8e7bf33360c44f07825d7bd41edfaa7ecec4b61d057099e5ef865",
+        "sha256": "11cba45095bef6e693788e1f3f5733874a69bcb922501537a1c123c85882efce",
         "size": 231
       }
     },
@@ -270,43 +270,43 @@
     "sniffed": {
       "html": {
         "magic": "3c21646f63747970",
-        "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-class-y_6__ktn/a.html",
+        "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-class-gcufse_g/a.html",
         "sha256": "910e8d7e7c1ce700d3a1387b66c0487d25a6bb280995c2ec26f903bb37050a8d",
         "size": 180,
         "sniff": "application/octet-stream"
       },
       "json": {
         "magic": "7b226b223a317d0a",
-        "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-class-y_6__ktn/a.json",
+        "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-class-gcufse_g/a.json",
         "sha256": "6a021504b02dc18c0b6bf8dfebdbdca579f0ab4d75eccb09ceeae89880a007ad",
         "size": 8,
         "sniff": "application/json"
       },
       "obj": {
         "magic": "6f20637562650a76",
-        "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-class-y_6__ktn/a.obj",
+        "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-class-gcufse_g/a.obj",
         "sha256": "0239c1c9c587168a41b5f04d48b160bde178a6b9b164e90654a85b4df5949f0b",
         "size": 135,
         "sniff": "application/octet-stream"
       },
       "png": {
         "magic": "89504e470d0a1a0a",
-        "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-class-y_6__ktn/a.png",
+        "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-class-gcufse_g/a.png",
         "sha256": "eaa392e5e7ef0301892198a24aefc6530d83f232054b0b6cbd885dd1f3e2d5ad",
         "size": 75,
         "sniff": "image/png"
       },
       "wasm": {
         "magic": "0061736d01000000",
-        "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-class-y_6__ktn/m.wasm",
+        "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-class-gcufse_g/m.wasm",
         "sha256": "93a44bbb96c751218e4c00d479e4c14358122a389acca16205b1e4d0dc5f9476",
         "size": 8,
         "sniff": "application/octet-stream"
       },
       "zip": {
         "magic": "504b030414000000",
-        "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-class-y_6__ktn/a.zip",
-        "sha256": "3497c163afa8e7bf33360c44f07825d7bd41edfaa7ecec4b61d057099e5ef865",
+        "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-class-gcufse_g/a.zip",
+        "sha256": "11cba45095bef6e693788e1f3f5733874a69bcb922501537a1c123c85882efce",
         "size": 231,
         "sniff": "application/zip"
       }

@@ -4,7 +4,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T21:19:38Z",
+  "recorded_at": "2026-09-03T05:47:37Z",
   "recorded_by": "tools/future/flash_meta_replan.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -14,7 +14,7 @@
    "path": "receipts/future/NEGATIVE_SCIENCE_INDEX.json",
    "present": true,
    "schema": "hawking.future.negative_index.v1",
-   "seal_sha256": "0c50ec634ec7d53691a4539081710af422c3409a4e25c41097cb5282db794005",
+   "seal_sha256": "f466a85ac47ca0bb30077d0bdfd6537d3c544f5c6319dd56980187a3ae229910",
    "status": null
   },
   "screen": {
@@ -709,7 +709,7 @@
   "workunit": "one CPU_ANALYSIS unit; cite the real-256 screen, apply NS-014, extrapolate or refuse a rank, re-rank nine SUB1 families; no GPU"
  },
  "schema": "hawking.future.flash_meta_replan.v1",
- "seal_sha256": "e983bd98f93d2ef849078c0122525fdd1c51baab440ec9e30119d0b0498d14e4",
+ "seal_sha256": "7ed060fef3c475bc5dcaf29418e79da66e9ef5ffcea1c6c6d7eaa283b30ac351",
  "underdetermination": {
   "claimed_full_dim": false,
   "index_consulted": true,
@@ -792,7 +792,7 @@
     "source_path": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json"
    },
    {
-    "hypothesis_family": "undersampled_fits_that_a_rank_r_or_full_dim_codec_scored_on_fewer_captured_rows_than_the_fitted_dimension_is_a_score_of_the_codec",
+    "hypothesis_family": "undersampled_fits",
     "original_id": "NNS-007",
     "refuse_eligible": false,
     "reopen_condition": "Re-score only when n_fit \u2265 claimed rank (and for a full-dim claim, n_fit \u2265 dim), with rank not clamped to n_fit. Corpus width is a legitimate lever only above a per-expert retention floor.",

@@ -79,7 +79,7 @@ Get any of these wrong and the output is finite, plausible, and wrong:
 3. **Bit order is LSB-first** (`np.packbits(bitorder="little")`), byte-identical to the shipping HQ30G1B1 sign stream.
 4. **Zero-padding of the flat tail is retained** in the scale mean. A no-op for Q80 (`1,048,576 % 128 == 0`), but the packer must not diverge from the shared base code.
 
-Points 1-4 are exactly the shipping `HQ30G1B1` base semantics (`lab/operators/ascension_qwen30_complete_gravity.py:160-186`, parser `crates/hawking-core/src/model/qwen_complete_binary/mod.rs:133`), so **the entire base half of the packer is reused verbatim** — same float64 mean-abs, same fp16 rounding, same sign rule, same packbits order. Only the residual is new.
+Points 1-4 are exactly the shipping `HQ30G1B1` base semantics (`research/lab/operators/ascension_qwen30_complete_gravity.py:160-186`, parser `crates/hawking-core/src/model/qwen_complete_binary/mod.rs:133`), so **the entire base half of the packer is reused verbatim** — same float64 mean-abs, same fp16 rounding, same sign rule, same packbits order. Only the residual is new.
 
 ### 1.5 File container: HQ80BR1
 
@@ -405,7 +405,7 @@ All paths relative to `crates/hawking-core/`.
 
 **`src/model/qwen_complete_binary/mod.rs:275-374`** — `HQ30GR2` parser is the template for the `HQ80BR1` parser + CPU decoder. Reuse its validation shape.
 
-**Packer** — `lab/operators/ascension_qwen30_complete_gravity.py:160-186` is the base packer, reusable verbatim. `lab/operators/ascension_qwen30_quality_repack.py:238-259` is the **deterministic tie rule** (`np.partition` boundary, strictly-greater, ties by ascending flat index) — use it, **not** the lab's bare `np.argpartition` at `ascension_dual_gravity_worker.py:739`, which has no tie rule and whose output depends on quickselect internals.
+**Packer** — `research/lab/operators/ascension_qwen30_complete_gravity.py:160-186` is the base packer, reusable verbatim. `research/lab/operators/ascension_qwen30_quality_repack.py:238-259` is the **deterministic tie rule** (`np.partition` boundary, strictly-greater, ties by ascending flat index) — use it, **not** the lab's bare `np.argpartition` at `ascension_dual_gravity_worker.py:739`, which has no tie rule and whose output depends on quickselect internals.
 
 **Not touched, and must not be:** `forward_token_device` control flow, command-buffer structure, state-slot arithmetic; `DeviceActivationWorkspace` and `Qwen80DeviceExpertWaveWorkspace` (pure f32/u32, sized only by HIDDEN/MOE_INTERMEDIATE/TOP_K); the router matvec and host top-10; the 512-way `route_ids` indirection and the generation/ready_mask protocol; all 7 kernels in `qwen80_device_activations.metal`; the DeltaNet and GQA mixers; and **the entire non-expert weight path**, which stays on `qwen_uniform_q4_group64_matvec`.
 
@@ -425,7 +425,7 @@ Bit-identity to the Q4 path is impossible (different artifact) and bit-identity 
 
 **Gate 5 — coherence, not tokens.** End-to-end, the binres artifact will not reproduce the Q4 token stream and should not be expected to. The gate is the 0.8604 output-space cosine bar per organ, plus a greedy-generation coherence read. Extend the existing Q80 table test at `qwen80_device_expert_table.rs:1030-1093` (which today pins `Rowblock` and checks correctness only) with a synthetic binres expert for Gates 2-4.
 
-**Known gap:** where the 0.8604 bar is *defined* could not be located — it appears as the `"bar"` field in the frontier receipt, and grepping `lab/operators/doctor6/coherence.py` for it returns nothing. Whether it is per-organ, per-layer or a global aggregate is unresolved and should be settled before it is used as a ship gate.
+**Known gap:** where the 0.8604 bar is *defined* could not be located — it appears as the `"bar"` field in the frontier receipt, and grepping `research/lab/operators/doctor6/coherence.py` for it returns nothing. Whether it is per-organ, per-layer or a global aggregate is unresolved and should be settled before it is used as a ship gate.
 
 ---
 
@@ -474,7 +474,7 @@ Given every mapped fact — 0.79% of the measured ceiling, Q30's 51% GPU-idle, a
 
 ### E2 — the quality gate, ~2 days, Python only, no Rust, no Metal
 
-Independent of E0/E1 and equally capable of killing the design. Rerun `lab/operators/q80_representation_frontier_sweep.py` (fracs list at `:66`) with:
+Independent of E0/E1 and equally capable of killing the design. Rerun `research/lab/operators/q80_representation_frontier_sweep.py` (fracs list at `:66`) with:
 
 - **per-group top-C selection** at C ∈ {1, 2, 3} (densities 0.78%, 1.56%, 2.34%) instead of global top-|residual|;
 - **the 16-bit quantized record** (7-bit offset, sign, 8-bit magnitude) instead of fp16 values, sweeping `RESID_STEP` ∈ {1/32, 1/64, 1/128};
