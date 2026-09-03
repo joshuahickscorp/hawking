@@ -4402,12 +4402,46 @@ class Engine:
             anchor
         )
 
-        if count != 1:
-            raise EngineError(
-                f"anchor must occur exactly once in "
-                f"{path.relative_to(self.root)}; "
-                f"found {count}"
-            )
+        if count == 1:
+            return
+
+        # An anchor that does not match is the LAST MILE of a correct patch,
+        # and "found 0" tells the model nothing it can act on. Measured: a
+        # mutation whose anchor was right except for one position where the
+        # model emitted a literal backslash-n instead of a newline -- every
+        # other line in the same string was correct. It could not see that.
+        #
+        # So show it the real bytes. The nearest actual text is what the anchor
+        # has to equal, and quoting it turns an unfixable rejection into a
+        # correctable one.
+        detail = ""
+        # Try EVERY line of the anchor, not just the first. The first line is
+        # often the one carrying the defect, so probing only it finds nothing
+        # and the model is told "no match" a second time with no new
+        # information.
+        at = -1
+        for probe in (l.strip() for l in anchor.strip().splitlines()):
+            if len(probe) > 5:
+                at = text.find(probe)
+                if at >= 0:
+                    break
+        if True:
+            if at >= 0:
+                start = max(0, text.rfind("\n", 0, at) + 1)
+                actual = text[start:start + max(len(anchor), 240)]
+                detail = (
+                    f"; the file at that point actually reads:\n{actual!r}\n"
+                    f"your anchor was:\n{anchor!r}\n"
+                    f"copy the file's bytes exactly -- a single escaped "
+                    f"newline written as a literal backslash-n will not match"
+                )
+            else:
+                detail = "; no line of your anchor appears in the file at all"
+        raise EngineError(
+            f"anchor must occur exactly once in "
+            f"{path.relative_to(self.root)}; "
+            f"found {count}{detail}"
+        )
 
     def _file_hashes(
         self,

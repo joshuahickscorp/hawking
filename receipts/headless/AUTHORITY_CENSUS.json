@@ -1,7 +1,7 @@
 {
   "schema": "hawking.headless.authority_census.v1",
-  "generated_at": "2026-09-03T20:00:16Z",
-  "git_head": "c21621e030e63adaa1d00789605a3b5972313a3b",
+  "generated_at": "2026-09-03T20:01:46Z",
+  "git_head": "32d21977edbb98b07981fd6944e2f7e59fa2bd03",
   "repo": "/Users/scammermike/Downloads/hawking",
   "method": "HEAD-tree scan (sparse-safe git show/grep) + curated classification with live line recovery. Working-tree grep was not used as evidence of absence.",
   "anti_goodhart": "A 20% LOC reduction that leaves two Goal stores or two HCLI binaries unnamed is a failure. Optimise verified capability over line count. Ten science lanes are in flight against tools/headless and receipts/headless \u2014 this receipt is a plan, not a migration.",
@@ -3599,5 +3599,5 @@
     "two_real_concepts": 16,
     "scan_uncatalogued_production": 11
   },
-  "receipt_sha256_of_body_without_this_field": "87a2dd1058bc291c5f94b26ecf04f448e059979c6ca2300d1390566c4cfb0c46"
+  "receipt_sha256_of_body_without_this_field": "3de8e157626cbee117c631345f4816d3a4b4a63d23a2bb6d21a7793b75edff29"
 }
