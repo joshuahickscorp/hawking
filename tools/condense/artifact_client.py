@@ -24,7 +24,17 @@ def _core_lib():
         names = ("libhawking_core.dylib", "libhawking_core.so", "hawking_core.dll")
         cands = [os.environ["HAWKING_CORE_LIB"]] if "HAWKING_CORE_LIB" in os.environ else []
         roots = ([os.environ["CARGO_TARGET_DIR"]] if "CARGO_TARGET_DIR" in os.environ else []) + [_REPO, os.getcwd()]
-        cands += [os.path.join(r, s, n) for r in roots for s in ("release", "debug", "target/release", "target/debug") for n in names]
+        # workspace/ops/build/rust is where this repo ACTUALLY builds. The list
+        # below had only cargo's defaults (target/release, target/debug), so the
+        # library was built, present and never looked at: 184 tests failed with
+        # "libhawking_core not loadable: None", and that None is the tell -- no
+        # candidate path existed, so nothing was ever tried and there was no
+        # underlying error to report.
+        subs = ("release", "debug", "target/release", "target/debug",
+                "workspace/ops/build/rust/release-fast",
+                "workspace/ops/build/rust/release",
+                "workspace/ops/build/rust/debug")
+        cands += [os.path.join(r, s, n) for r in roots for s in subs for n in names]
         owned = [ctypes.POINTER(ctypes.POINTER(ctypes.c_uint8)), ctypes.POINTER(ctypes.c_size_t)]
         cu, cs, cp = ctypes.c_uint, ctypes.c_size_t, ctypes.c_char_p
         p8, p32 = ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_uint32)

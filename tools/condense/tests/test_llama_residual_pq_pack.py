@@ -1,6 +1,14 @@
 """Executable residual-PQ payload grammar tests (no model download required)."""
 from __future__ import annotations
 
+import pytest
+
+# SKIP, not ERROR, and BEFORE the module under test is exec_module()d below --
+# that import chain is what pulls in gguf. A guard placed after it never runs.
+# A collection ERROR reads as a broken suite and hides the real reason, the same
+# shape that let 17 roadmap invariants sit dead behind a missing file.
+pytest.importorskip("gguf", reason="gguf is not installed in this environment")
+
 import importlib.util
 import struct
 import sys
@@ -39,3 +47,4 @@ def test_required_runtime_tensor_set_is_complete_for_one_layer() -> None:
     assert "model.layers.0.self_attn.q_proj.weight" in expected
     assert "model.layers.0.mlp.down_proj.weight" in expected
     assert "model.norm.weight" in expected
+
