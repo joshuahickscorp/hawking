@@ -3567,6 +3567,18 @@ class Engine:
             return build(evidence, context_memory), None
 
         items = list(evidence or ())
+        blocks = _observation_blocks(trailing)
+        # Where the kept observations START, as an ABSOLUTE index that only ever
+        # moves forward. Keeping "the last N" instead re-cut the block at a
+        # different observation every turn, so the rendered prompt changed at
+        # the point observations begin and the resident's KV prefix could be
+        # reused only up to there. Measured: five consecutive calls pinned at
+        # 1398 reused tokens -- the system prompt, tools and goal -- while the
+        # prompts grew past 4700, every later token re-stepped at 580 dispatches
+        # each. A floor that only advances makes each turn the previous turn
+        # plus an append, which is exactly what a prefix cache can reuse.
+        floor = min(getattr(self, "_observation_floor", 0), max(len(blocks) - 1, 0))
+
         attempts: List[Tuple[Any, ...]] = []
         for fraction in self.EVIDENCE_REDUCTION_STEPS:
             keep = items[: max(0, int(len(items) * fraction))] if items else []
@@ -3574,41 +3586,47 @@ class Engine:
                 "full" if fraction == 1.0
                 else f"evidence {len(keep)}/{len(items)}"
             )
-            attempts.append((keep, context_memory, label))
+            attempts.append((keep, context_memory, label, floor))
         # Last resorts: drop the durable checkpoint too, then shed observations
         # oldest-first. Observations go last because a tool call has already
         # been paid for, while a file snapshot can be re-read for free.
-        attempts.append(([], None, "evidence 0 + no checkpoint"))
-        blocks = _observation_blocks(trailing)
+        attempts.append(([], None, "evidence 0 + no checkpoint", floor))
         if len(blocks) > 1:
             for keep_n in (len(blocks) * 3 // 4, len(blocks) // 2, len(blocks) // 4, 1):
                 if keep_n < 1 or keep_n >= len(blocks):
                     continue
+                advanced = len(blocks) - keep_n
+                # Never rewind: re-admitting an observation already shed would
+                # lengthen the prompt again AND move the cut backwards, losing
+                # the prefix twice over.
+                if advanced <= floor:
+                    continue
                 attempts.append((
                     [], None,
                     f"evidence 0 + observations {keep_n}/{len(blocks)}",
-                    _join_observations(blocks[-keep_n:]),
+                    advanced,
                 ))
 
         last = None
-        for attempt in attempts:
-            keep, memory, label = attempt[0], attempt[1], attempt[2]
+        for keep, memory, label, cut in attempts:
             # The two-argument form is the contract every existing caller uses.
-            # A third argument appears only for the observation-shedding rungs,
-            # so a build() that knows nothing about `trailing` keeps working.
-            if len(attempt) > 3:
-                payload = build(keep, memory, attempt[3])
+            # A third argument appears only once observations are being shed, so
+            # a build() that knows nothing about `trailing` keeps working.
+            if cut:
+                payload = build(keep, memory, _join_observations(blocks[cut:]))
             else:
                 payload = build(keep, memory)
             demand = self._estimate_prompt_tokens(payload.get("messages") or []) + reserve
             if preflight(budget, demand, kind="root").ok:
-                if label == "full":
+                self._observation_floor = cut
+                if label == "full" and not cut:
                     return payload, None
                 return payload, {
                     "reduced_to": label,
                     "prompt_tokens_est": demand,
                     "usable_input_tokens": int(budget.usable_input_tokens),
                     "dropped_evidence": len(items) - len(keep),
+                    "observation_floor": cut,
                 }
             last = (payload, demand)
 
