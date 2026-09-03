@@ -1,7 +1,7 @@
 {
   "schema": "hawking.headless.authority_census.v1",
-  "generated_at": "2026-09-03T19:59:08Z",
-  "git_head": "6963cb133b54e13e7337da437ce0445324944e22",
+  "generated_at": "2026-09-03T20:00:16Z",
+  "git_head": "c21621e030e63adaa1d00789605a3b5972313a3b",
   "repo": "/Users/scammermike/Downloads/hawking",
   "method": "HEAD-tree scan (sparse-safe git show/grep) + curated classification with live line recovery. Working-tree grep was not used as evidence of absence.",
   "anti_goodhart": "A 20% LOC reduction that leaves two Goal stores or two HCLI binaries unnamed is a failure. Optimise verified capability over line count. Ten science lanes are in flight against tools/headless and receipts/headless \u2014 this receipt is a plan, not a migration.",
@@ -3582,8 +3582,7 @@
       "receipts/ascent-2026-08-18"
     ],
     "git_status_porcelain": [
-      " M receipts/headless/AUTHORITY_CENSUS.json",
-      " M tools/headless/authority_census.py"
+      " M receipts/headless/AUTHORITY_CENSUS.json"
     ],
     "outside_write_scope": [],
     "clean_write_scope": true,
@@ -3600,5 +3599,5 @@
     "two_real_concepts": 16,
     "scan_uncatalogued_production": 11
   },
-  "receipt_sha256_of_body_without_this_field": "c3ad1a92025dd4e7fa10300c40066b608b2ffa9d63c5a3bfe1d753854707e9bb"
+  "receipt_sha256_of_body_without_this_field": "87a2dd1058bc291c5f94b26ecf04f448e059979c6ca2300d1390566c4cfb0c46"
 }
