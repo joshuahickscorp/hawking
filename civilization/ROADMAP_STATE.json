@@ -1,21 +1,17 @@
 {
-  "ACTIVE_NONHARDWARE_BURDEN": 48,
-  "TOTAL_UNRESOLVED_GATES": 62,
+  "ACTIVE_NONHARDWARE_BURDEN": 44,
+  "TOTAL_UNRESOLVED_GATES": 58,
   "active_actions": [
     "AGENTOS_CIRCUIT_BREAKER",
     "AGENTOS_RETRY_CLASSIFIED",
-    "FLASH_DENSE_VS_NF_AB",
     "FPGA_LINK_SIM",
     "FPGA_PARTITION_SIM",
     "FPGA_PREBOARD_SCHEMAS",
-    "QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED",
-    "QWEN27_RUNTIME_IDENTITY_FROZEN",
     "RUNTIME_CONTEXT_NATIVE",
     "RUNTIME_PREFIX_STATE_REUSE",
     "STABLE_PREFIX_CONTEXT_ALIGNMENT",
     "VMCP_AGENTOS_INTEGRATION",
-    "VMCP_COMPACT_SURFACE",
-    "VMCP_RECEIPT_LAW"
+    "VMCP_COMPACT_SURFACE"
   ],
   "archived_items": [
     "docs/roadmap-lineage/H-ROADMAP.superseded-2026-09-02.md"
@@ -117,7 +113,7 @@
       "evidence_tier": "STATIC",
       "implementation_state": "INTEGRATED",
       "integration_state": "IN_PRODUCTION_PATH",
-      "verification_state": "NONE"
+      "verification_state": "TEST_PRESENT"
     },
     "FLASH_FIRST_GRAVITY_ORGAN": {
       "acceptance_state": "PASS",
@@ -306,14 +302,14 @@
       "evidence_tier": "STATIC",
       "implementation_state": "INTEGRATED",
       "integration_state": "IN_PRODUCTION_PATH",
-      "verification_state": "NONE"
+      "verification_state": "TEST_PRESENT"
     },
     "QWEN27_RUNTIME_IDENTITY_FROZEN": {
       "acceptance_state": "PASS",
       "evidence_tier": "STATIC",
       "implementation_state": "INTEGRATED",
       "integration_state": "IN_PRODUCTION_PATH",
-      "verification_state": "NONE"
+      "verification_state": "TEST_PRESENT"
     },
     "REPO_TOPOLOGY_COMPRESSION": {
       "acceptance_state": "UNRUN",
@@ -523,7 +519,7 @@
       "evidence_tier": "STATIC",
       "implementation_state": "SCAFFOLDED",
       "integration_state": "ISOLATED",
-      "verification_state": "NONE"
+      "verification_state": "TEST_PRESENT"
     },
     "VMCP_COMPACT_SURFACE": {
       "acceptance_state": "PASS",
@@ -558,7 +554,7 @@
       "evidence_tier": "STATIC",
       "implementation_state": "INTEGRATED",
       "integration_state": "IN_PRODUCTION_PATH",
-      "verification_state": "NONE"
+      "verification_state": "TEST_PRESENT"
     },
     "VMCP_SPATIAL_VALIDATE": {
       "acceptance_state": "PASS",
@@ -610,14 +606,9 @@
     "LONG_RUN_EVIDENCE_REQUIRED": 4,
     "PHYSICAL_HARDWARE_REQUIRED": 14,
     "SOFTWARE_BUILD_REQUIRED": 1,
-    "SOFTWARE_CONNECTION_REMAINING": 14
+    "SOFTWARE_CONNECTION_REMAINING": 10
   },
-  "built_but_no_verifier": [
-    "FLASH_DENSE_VS_NF_AB",
-    "QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED",
-    "QWEN27_RUNTIME_IDENTITY_FROZEN",
-    "VMCP_RECEIPT_LAW"
-  ],
+  "built_but_no_verifier": [],
   "completed_capabilities": [
     "AGENTOS_CANCELLATION",
     "AGENTOS_CHECKPOINT_ATOMICITY",
@@ -986,7 +977,7 @@
     "BACKEND_FAILURE_ISOLATION": "INTEGRATED_TEST_PRESENT",
     "FLASH_ACCEPTED_TPS_GE_50": "BLOCKED_EXTERNAL",
     "FLASH_COMPLETE_EBPW_LE_1": "WIRED_ACCEPTANCE_UNRUN",
-    "FLASH_DENSE_VS_NF_AB": "INTEGRATED_UNVERIFIED",
+    "FLASH_DENSE_VS_NF_AB": "INTEGRATED_TEST_PRESENT",
     "FLASH_FIRST_GRAVITY_ORGAN": "INTEGRATED_TEST_PRESENT",
     "FLASH_FULL_NOETIC_EXECUTABLE": "WIRED_ACCEPTANCE_BLOCKED",
     "FLASH_NATIVE_NF_KERNEL": "WIRED_ACCEPTANCE_BLOCKED",
@@ -1013,8 +1004,8 @@
     "ODYSSEY_II_TRANSFER": "WIRED_ACCEPTANCE_BLOCKED",
     "ODYSSEY_I_DISCOVERY": "INTEGRATED_TEST_PRESENT",
     "QWEN27_PROTECTED_BASELINE": "WIRED_ACCEPTANCE_BLOCKED",
-    "QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED": "INTEGRATED_UNVERIFIED",
-    "QWEN27_RUNTIME_IDENTITY_FROZEN": "INTEGRATED_UNVERIFIED",
+    "QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED": "INTEGRATED_TEST_PRESENT",
+    "QWEN27_RUNTIME_IDENTITY_FROZEN": "INTEGRATED_TEST_PRESENT",
     "REPO_TOPOLOGY_COMPRESSION": "BLOCKED_EXTERNAL",
     "RUNTIME_COMPLETE_TOKEN_PROFILE": "WIRED_ACCEPTANCE_UNRUN",
     "RUNTIME_CONTEXT_NATIVE": "SCAFFOLDED_NO_CALLER",
@@ -1049,7 +1040,7 @@
     "VMCP_DEEP_DIGEST": "INTEGRATED_TEST_PRESENT",
     "VMCP_FILE_CLASSIFIER": "INTEGRATED_TEST_PRESENT",
     "VMCP_PTY_CAPTURE": "WIRED_ACCEPTANCE_BLOCKED",
-    "VMCP_RECEIPT_LAW": "INTEGRATED_UNVERIFIED",
+    "VMCP_RECEIPT_LAW": "INTEGRATED_TEST_PRESENT",
     "VMCP_SPATIAL_VALIDATE": "BLOCKED_EXTERNAL",
     "VMCP_STATE_LATTICE": "INTEGRATED_TEST_PRESENT",
     "VMCP_TOOL_DOCTOR": "INTEGRATED_TEST_PRESENT",
@@ -1094,7 +1085,7 @@
     "VMCP_VISUAL_DIFF",
     "VMCP_WEB_CAPTURE"
   ],
-  "future_work_eliminated_count": 21,
+  "future_work_eliminated_count": 25,
   "generated_from": "civilization/CAPABILITY_GRAPH.json",
   "hardware_required": [
     "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE",
@@ -1336,6 +1327,7 @@
     "AGENTOS_REPAIR_BOUNDED",
     "AGENTOS_RESTART_COHERENCE",
     "BACKEND_FAILURE_ISOLATION",
+    "FLASH_DENSE_VS_NF_AB",
     "FLASH_FIRST_GRAVITY_ORGAN",
     "FLASH_SOURCE_VERIFIED",
     "HCLI_CONTEXT_AUTHORITY_UNIFIED",
@@ -1345,8 +1337,11 @@
     "MODELLAKE_ATOMIC_PROMOTION",
     "MODELLAKE_IDENTITY_RESOLVED",
     "ODYSSEY_I_DISCOVERY",
+    "QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED",
+    "QWEN27_RUNTIME_IDENTITY_FROZEN",
     "VMCP_DEEP_DIGEST",
     "VMCP_FILE_CLASSIFIER",
+    "VMCP_RECEIPT_LAW",
     "VMCP_STATE_LATTICE",
     "VMCP_TOOL_DOCTOR",
     "VMCP_TRUTH_LEDGER"
@@ -1358,18 +1353,18 @@
     "SEMANTIC_COMPRESSION"
   ],
   "multiplier_edges": [],
-  "net_future_burden": 48,
+  "net_future_burden": 44,
   "next_actions": [
     "AGENTOS_CIRCUIT_BREAKER",
     "AGENTOS_RETRY_CLASSIFIED",
-    "FLASH_DENSE_VS_NF_AB",
     "FPGA_LINK_SIM",
     "FPGA_PARTITION_SIM",
     "FPGA_PREBOARD_SCHEMAS",
-    "QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED",
-    "QWEN27_RUNTIME_IDENTITY_FROZEN",
     "RUNTIME_CONTEXT_NATIVE",
-    "RUNTIME_PREFIX_STATE_REUSE"
+    "RUNTIME_PREFIX_STATE_REUSE",
+    "STABLE_PREFIX_CONTEXT_ALIGNMENT",
+    "VMCP_AGENTOS_INTEGRATION",
+    "VMCP_COMPACT_SURFACE"
   ],
   "not_physically_measured": "every gate is evidence_tier STATIC; no present capability rests on a physical measurement",
   "ranked_remaining": [
@@ -1915,33 +1910,6 @@
     },
     {
       "actionable_now": false,
-      "blocker_class": "SOFTWARE_CONNECTION_REMAINING",
-      "critical_path": true,
-      "depends_on": [
-        "FLASH_NATIVE_NF_KERNEL"
-      ],
-      "estimated_wall": "under an hour (guess)",
-      "gate": "FLASH_DENSE_VS_NF_AB",
-      "leverage_score": 11,
-      "missing": "wired but nothing verifies it",
-      "multiplier": true,
-      "owner": "hcli-campaign (do not implement here)",
-      "parallel_safe_with": "any gate in a different resource_lane",
-      "reopen_if": "the caller is removed, the verifier is deleted, or the gate's acceptance criterion changes",
-      "resource_lane": "cpu",
-      "stop_condition": "a non-test call site reaches the named symbol AND a test fails when that connection is cut",
-      "unlocks_direct": [
-        "FLASH_FULL_NOETIC_EXECUTABLE"
-      ],
-      "unlocks_transitive": [
-        "FLASH_ACCEPTED_TPS_GE_50",
-        "FLASH_COMPLETE_EBPW_LE_1",
-        "FLASH_FULL_NOETIC_EXECUTABLE"
-      ],
-      "verifier": "must be written"
-    },
-    {
-      "actionable_now": false,
       "blocker_class": "DEFERRED_PROGRAM",
       "critical_path": true,
       "depends_on": [
@@ -2043,30 +2011,6 @@
         "AGENTOS_BEHAVIOR_LAB"
       ],
       "verifier": "tools/acceptance/vmcp/test_receipt_law_defining_property.py"
-    },
-    {
-      "actionable_now": false,
-      "blocker_class": "SOFTWARE_CONNECTION_REMAINING",
-      "critical_path": true,
-      "depends_on": [],
-      "estimated_wall": "under an hour (guess)",
-      "gate": "QWEN27_RUNTIME_IDENTITY_FROZEN",
-      "leverage_score": 8,
-      "missing": "wired but nothing verifies it",
-      "multiplier": true,
-      "owner": "hcli-campaign (do not implement here)",
-      "parallel_safe_with": "any gate in a different resource_lane",
-      "reopen_if": "the caller is removed, the verifier is deleted, or the gate's acceptance criterion changes",
-      "resource_lane": "cpu",
-      "stop_condition": "a non-test call site reaches the named symbol AND a test fails when that connection is cut",
-      "unlocks_direct": [
-        "QWEN27_PROTECTED_BASELINE"
-      ],
-      "unlocks_transitive": [
-        "QWEN27_PROTECTED_BASELINE",
-        "QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED"
-      ],
-      "verifier": "must be written"
     },
     {
       "actionable_now": false,
@@ -2415,29 +2359,6 @@
     },
     {
       "actionable_now": false,
-      "blocker_class": "SOFTWARE_CONNECTION_REMAINING",
-      "critical_path": true,
-      "depends_on": [],
-      "estimated_wall": "under an hour (guess)",
-      "gate": "VMCP_RECEIPT_LAW",
-      "leverage_score": 5,
-      "missing": "wired but nothing verifies it",
-      "multiplier": false,
-      "owner": "hcli-campaign (do not implement here)",
-      "parallel_safe_with": "any gate in a different resource_lane",
-      "reopen_if": "the caller is removed, the verifier is deleted, or the gate's acceptance criterion changes",
-      "resource_lane": "cpu",
-      "stop_condition": "a non-test call site reaches the named symbol AND a test fails when that connection is cut",
-      "unlocks_direct": [
-        "VMCP_AGENTOS_INTEGRATION"
-      ],
-      "unlocks_transitive": [
-        "VMCP_AGENTOS_INTEGRATION"
-      ],
-      "verifier": "must be written"
-    },
-    {
-      "actionable_now": false,
       "blocker_class": "SOFTWARE_BUILD_REQUIRED",
       "critical_path": false,
       "depends_on": [
@@ -2582,27 +2503,6 @@
       "unlocks_direct": [],
       "unlocks_transitive": [],
       "verifier": "tools/future/test_resident_optimizer.py"
-    },
-    {
-      "actionable_now": false,
-      "blocker_class": "SOFTWARE_CONNECTION_REMAINING",
-      "critical_path": false,
-      "depends_on": [
-        "QWEN27_PROTECTED_BASELINE"
-      ],
-      "estimated_wall": "under an hour (guess)",
-      "gate": "QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED",
-      "leverage_score": 0,
-      "missing": "wired but nothing verifies it",
-      "multiplier": false,
-      "owner": "hcli-campaign (do not implement here)",
-      "parallel_safe_with": "any gate in a different resource_lane",
-      "reopen_if": "the caller is removed, the verifier is deleted, or the gate's acceptance criterion changes",
-      "resource_lane": "cpu",
-      "stop_condition": "a non-test call site reaches the named symbol AND a test fails when that connection is cut",
-      "unlocks_direct": [],
-      "unlocks_transitive": [],
-      "verifier": "must be written"
     },
     {
       "actionable_now": false,
@@ -2837,7 +2737,7 @@
       "stop_condition": "a non-test call site reaches the named symbol AND a test fails when that connection is cut",
       "unlocks_direct": [],
       "unlocks_transitive": [],
-      "verifier": "must be written"
+      "verifier": "tools/acceptance/test_accepted_gates_show_their_evidence.py"
     },
     {
       "actionable_now": false,
@@ -2908,21 +2808,22 @@
   "software_build_required": [
     "AGENTOS_BEHAVIOR_LAB"
   ],
-  "software_connection_remaining_count": 14,
+  "software_connection_remaining_count": 10,
   "subsumed_items": [],
   "unknown_research": [],
   "verifiers": {
-    "AGENTOS_CANCELLATION": "hcli/test_abort_checkpoint_atomicity.py:18, hcli/test_abort_checkpoint_atomicity.py:49 (+31 more)",
+    "AGENTOS_CANCELLATION": "hcli/test_abort_checkpoint_atomicity.py:18, hcli/test_abort_checkpoint_atomicity.py:49 (+32 more)",
     "AGENTOS_CHECKPOINT_ATOMICITY": "hcli/test_goal_bank.py:10, hcli/tests/test_core_authorities.py:22 (+4 more)",
-    "AGENTOS_CIRCUIT_BREAKER": "hcli/test_failed_unit_says_why.py:19, hcli/test_goal_compile.py:257 (+12 more)",
+    "AGENTOS_CIRCUIT_BREAKER": "hcli/test_failed_unit_says_why.py:19, hcli/test_failed_unit_says_why.py:93 (+13 more)",
     "AGENTOS_DETERMINISTIC_OFFLOAD": "hcli/test_abort_checkpoint_atomicity.py:18, hcli/test_delegate.py:22 (+13 more)",
-    "AGENTOS_ORPHAN_RECONCILIATION": "hcli/agentos/test_resident_mission_corruption.py:23, hcli/agentos/test_resident_orphan.py:17 (+39 more)",
+    "AGENTOS_ORPHAN_RECONCILIATION": "hcli/agentos/test_resident_mission_corruption.py:23, hcli/agentos/test_resident_orphan.py:17 (+40 more)",
     "AGENTOS_PERSISTENCE_SINGLE_AUTHORITY": "hcli/test_cognition_unit_concurrency.py:13, hcli/test_delegate.py:24 (+56 more)",
-    "AGENTOS_REPAIR_BOUNDED": "hcli/test_abort_checkpoint_atomicity.py:21, hcli/test_cognition_unit_concurrency.py:14 (+108 more)",
+    "AGENTOS_REPAIR_BOUNDED": "hcli/test_abort_checkpoint_atomicity.py:21, hcli/test_cognition_unit_concurrency.py:14 (+109 more)",
     "AGENTOS_RESTART_COHERENCE": "hcli/agentos/test_resident_mission_corruption.py:23, hcli/agentos/test_resident_orphan.py:17 (+24 more)",
-    "AGENTOS_RETRY_CLASSIFIED": "hcli/test_failed_unit_says_why.py:19, hcli/test_goal_compile.py:257 (+12 more)",
-    "BACKEND_FAILURE_ISOLATION": "hcli/test_constrained_decoding.py:40, hcli/test_constrained_decoding.py:50 (+70 more)",
+    "AGENTOS_RETRY_CLASSIFIED": "hcli/test_failed_unit_says_why.py:19, hcli/test_failed_unit_says_why.py:93 (+13 more)",
+    "BACKEND_FAILURE_ISOLATION": "hcli/test_completion_budget_fits_the_window.py:21, hcli/test_completion_budget_fits_the_window.py:65 (+73 more)",
     "FLASH_COMPLETE_EBPW_LE_1": "tools/future/test_complete_ebpw.py:14, tools/future/test_complete_ebpw.py:23 (+6 more)",
+    "FLASH_DENSE_VS_NF_AB": "tools/acceptance/test_accepted_gates_show_their_evidence.py:30",
     "FLASH_FIRST_GRAVITY_ORGAN": "hcli/tests/test_agentos_general.py:265, hcli/tests/test_hcli_flash_science.py:14",
     "FLASH_FULL_NOETIC_EXECUTABLE": "hcli/tests/test_hcli_flash_science.py:5, hcli/tests/test_hcli_science_boundaries.py:12 (+8 more)",
     "FLASH_NATIVE_NF_KERNEL": "hcli/tests/test_hcli_flash_science.py:5, hcli/tests/test_hcli_science_boundaries.py:12 (+4 more)",
@@ -2932,7 +2833,7 @@
     "FPGA_PARTITION_SIM": "hcli/agentos/test_fpga_preboard.py:5, hcli/tests/test_hcli_science_boundaries.py:23 (+2 more)",
     "FPGA_PREBOARD_SCHEMAS": "hcli/agentos/test_fpga_preboard.py:5, hcli/tests/test_hcli_science_boundaries.py:23",
     "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE": "tools/future/test_fusion_sim.py:15",
-    "HCLI_CONTEXT_AUTHORITY_UNIFIED": "hcli/test_constrained_decoding.py:50, hcli/test_context_memory.py:8 (+74 more)",
+    "HCLI_CONTEXT_AUTHORITY_UNIFIED": "hcli/test_completion_budget_fits_the_window.py:21, hcli/test_completion_budget_fits_the_window.py:65 (+77 more)",
     "HCLI_CONTEXT_FOCUSED_WORKUNITS": "hcli/test_cognition_unit_concurrency.py:12, hcli/test_goal_compile.py (+47 more)",
     "HCLI_CONTEXT_INVALIDATION": "hcli/test_cognition_unit_concurrency.py:12, hcli/test_context_reduction.py:69 (+33 more)",
     "HCLI_MIXED_MAX": "hcli/test_context_memory.py:7, hcli/test_goal_bank.py:7 (+22 more)",
@@ -2948,6 +2849,8 @@
     "ODYSSEY_II_TRANSFER": "tools/future/test_capability_stages.py:25, tools/future/test_orchestration.py:179 (+3 more)",
     "ODYSSEY_I_DISCOVERY": "hcli/test_acquisition.py:94, hcli/test_odyssey.py:34",
     "QWEN27_PROTECTED_BASELINE": "hcli/agentos/test_protected_accelerator_benchmark.py:3, hcli/tests/test_hcli_science_boundaries.py:25",
+    "QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED": "tools/acceptance/test_accepted_gates_show_their_evidence.py:30",
+    "QWEN27_RUNTIME_IDENTITY_FROZEN": "tools/acceptance/test_accepted_gates_show_their_evidence.py:31",
     "RUNTIME_COMPLETE_TOKEN_PROFILE": "hcli/test_prefix_and_prefill_instruments.py:14, hcli/test_prefix_and_prefill_instruments.py:113 (+4 more)",
     "RUNTIME_CONTEXT_NATIVE": "hcli/test_context_reduction.py:69, hcli/test_goal_source_compile.py:82 (+6 more)",
     "RUNTIME_DECODE_PROTECTED": "hcli/test_constrained_decoding.py:51, hcli/test_native_json_grammar.py:10 (+5 more)",
@@ -2968,9 +2871,11 @@
     "U50_MIXED_APPLE_FPGA_GRAPH": "hcli/test_ane_provider.py:6, hcli/tests/test_hcli_science_boundaries.py:32 (+3 more)",
     "U50_PURCHASE_ACCEPTANCE": "tools/future/test_autonomy_run.py:124, tools/future/test_concurrency_doctor.py:435 (+2 more)",
     "U50_SAFE_COOLING": "tools/future/test_autonomy_run.py:124, tools/future/test_concurrency_doctor.py:435 (+2 more)",
+    "VMCP_AGENTOS_INTEGRATION": "tools/acceptance/test_accepted_gates_show_their_evidence.py:31",
     "VMCP_DEEP_DIGEST": "tools/acceptance/vmcp/test_state_lattice_defining_property.py:110",
     "VMCP_FILE_CLASSIFIER": "tools/vmcp/test_file_eye.py:10, tools/vmcp/test_file_eye.py:29 (+5 more)",
     "VMCP_PTY_CAPTURE": "tools/acceptance/vmcp/test_receipt_law_defining_property.py:24, tools/acceptance/vmcp/test_receipt_law_defining_property.py:65 (+6 more)",
+    "VMCP_RECEIPT_LAW": "tools/acceptance/test_accepted_gates_show_their_evidence.py:31",
     "VMCP_STATE_LATTICE": "tools/acceptance/vmcp/test_state_lattice_defining_property.py:110",
     "VMCP_TOOL_DOCTOR": "tools/vmcp/test_tool_doctor.py:6, tools/vmcp/test_tool_doctor.py:10 (+5 more)",
     "VMCP_TRUTH_LEDGER": "tools/acceptance/vmcp/test_state_lattice_defining_property.py:110"

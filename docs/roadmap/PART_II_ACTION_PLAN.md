@@ -7,37 +7,31 @@ components yet' from work that genuinely needs an experiment, wall time, or sili
 
 ## Blocker census
 
-    SOFTWARE_CONNECTION_REMAINING    14
+    SOFTWARE_CONNECTION_REMAINING    10
     EXPERIMENTATION_REQUIRED         19
     LONG_RUN_EVIDENCE_REQUIRED       14
     PHYSICAL_HARDWARE_REQUIRED       14
     UNKNOWN_RESEARCH                 1
 
-    TOTAL REMAINING                  62
+    TOTAL REMAINING                  58
 
-SOFTWARE_CONNECTION_REMAINING = 14 is the
+SOFTWARE_CONNECTION_REMAINING = 10 is the
 number this campaign exists to drive toward zero. Every other class is honest
 frontier: an experiment that must run, evidence that needs wall time, hardware that
 must physically exist, or a question whose answer nobody has.
 
-## SOFTWARE_CONNECTION_REMAINING (14)
+## SOFTWARE_CONNECTION_REMAINING (10)
 
 ### AGENTOS_CIRCUIT_BREAKER
     missing             no non-test call site reaches this capability
-    shortest verifier   hcli/test_failed_unit_says_why.py:19 (+13 more)
+    shortest verifier   hcli/test_failed_unit_says_why.py:19 (+14 more)
     implementation      hcli/scheduler.py, hcli/scheduler.py:55
     unlocks             1 declared dependencies
 
 ### AGENTOS_RETRY_CLASSIFIED
     missing             no non-test call site reaches this capability
-    shortest verifier   hcli/test_failed_unit_says_why.py:19 (+13 more)
-    implementation      hcli/scheduler.py, hcli/scheduler.py:405
-    unlocks             1 declared dependencies
-
-### FLASH_DENSE_VS_NF_AB
-    missing             wired but nothing verifies it
-    shortest verifier   must be written
-    implementation      hcli/agentos/flash_router_representation_ab.py, hcli/agentos/representation_ab.py (+1 more)
+    shortest verifier   hcli/test_failed_unit_says_why.py:19 (+14 more)
+    implementation      hcli/scheduler.py, hcli/scheduler.py:424
     unlocks             1 declared dependencies
 
 ### FPGA_LINK_SIM
@@ -56,18 +50,6 @@ must physically exist, or a question whose answer nobody has.
     missing             no non-test call site reaches this capability
     shortest verifier   hcli/agentos/test_fpga_preboard.py:5 (+1 more)
     implementation      hcli/agentos/fpga_preboard.py, hcli/agentos/fpga_preboard.py:127
-    unlocks             0 declared dependencies
-
-### QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED
-    missing             wired but nothing verifies it
-    shortest verifier   must be written
-    implementation      hcli/agentos/qwen27_mlp_diagnostic.py, hcli/agentos/accelerator_regression.py (+1 more)
-    unlocks             1 declared dependencies
-
-### QWEN27_RUNTIME_IDENTITY_FROZEN
-    missing             wired but nothing verifies it
-    shortest verifier   must be written
-    implementation      hcli/agentos/qwen27_runtime_identity.py, hcli/agentos/qwen27_runtime_identity.py:438
     unlocks             0 declared dependencies
 
 ### RUNTIME_CONTEXT_NATIVE
@@ -90,7 +72,7 @@ must physically exist, or a question whose answer nobody has.
 
 ### VMCP_AGENTOS_INTEGRATION
     missing             no non-test call site reaches this capability
-    shortest verifier   must be written
+    shortest verifier   tools/acceptance/test_accepted_gates_show_their_evidence.py:31
     implementation      hcli/agentos/vmcp_gate.py, tools/headless/hcli_vmcp_integration.py (+1 more)
     unlocks             2 declared dependencies
 
@@ -98,12 +80,6 @@ must physically exist, or a question whose answer nobody has.
     missing             no non-test call site reaches this capability
     shortest verifier   must be written
     implementation      hcli/vmcp/__init__.py, hcli/vmcp_adapter.py
-    unlocks             0 declared dependencies
-
-### VMCP_RECEIPT_LAW
-    missing             wired but nothing verifies it
-    shortest verifier   must be written
-    implementation      hcli/agentos/vmcp_gate.py, hcli/agentos/vmcp_gate.py:258
     unlocks             0 declared dependencies
 
 ## EXPERIMENTATION_REQUIRED (19)

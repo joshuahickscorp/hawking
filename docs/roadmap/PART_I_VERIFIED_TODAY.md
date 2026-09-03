@@ -23,7 +23,7 @@ design, not by neglect: simulated is not measured.
 
     defining property available     82 / 83
     real (non-test) caller          45 / 83
-    any verifier                    62 / 83
+    any verifier                    67 / 83
     receipt cited                   13 / 83
 
 ## A. CONTROL / HCLI / AGENTOS
@@ -49,7 +49,7 @@ design, not by neglect: simulated is not measured.
     defining property   1. Repair depth is bounded structurally, not by model discretion.
     implementation      hcli/scheduler.py, hcli/cli.py, hcli/delegate.py (+1 more)
     real caller         tools/acceptance/agentos/harness.py:714
-    verifier            hcli/test_abort_checkpoint_atomicity.py:18, hcli/test_abort_checkpoint_atomicity.py:49, hcli/test_abort_checkpoint_atomicity.py:97 (+30 more)
+    verifier            hcli/test_abort_checkpoint_atomicity.py:18, hcli/test_abort_checkpoint_atomicity.py:49, hcli/test_abort_checkpoint_atomicity.py:97 (+31 more)
     negative control    hcli/test_delegate.py, hcli/test_failed_unit_says_why.py
     receipt             absent
     evidence level      STATIC
@@ -75,7 +75,7 @@ design, not by neglect: simulated is not measured.
     defining property   1. Repair depth is bounded structurally, not by model discretion.
     implementation      hcli/scheduler.py, hcli/scheduler.py:55
     real caller         absent — no non-test call site
-    verifier            hcli/test_failed_unit_says_why.py:19, hcli/test_goal_compile.py:257, hcli/tests/test_core_authorities.py:25 (+11 more)
+    verifier            hcli/test_failed_unit_says_why.py:19, hcli/test_failed_unit_says_why.py:93, hcli/test_goal_compile.py:257 (+12 more)
     negative control    hcli/test_failed_unit_says_why.py, hcli/tests/test_core_authorities.py
     receipt             absent
     evidence level      STATIC
@@ -101,7 +101,7 @@ design, not by neglect: simulated is not measured.
     defining property   1. Repair depth is bounded structurally, not by model discretion.
     implementation      hcli/scheduler.py, hcli/agentos/resident.py, hcli/agentos/background.py (+1 more)
     real caller         hcli/agentos/handoff.py:106, hcli/agentos/protected_benchmark_watcher.py:65, hcli/agentos/resident.py:907 (+7 more)
-    verifier            hcli/agentos/test_resident_mission_corruption.py:23, hcli/agentos/test_resident_orphan.py:17, hcli/agentos/test_resident_orphan.py:140 (+38 more)
+    verifier            hcli/agentos/test_resident_mission_corruption.py:23, hcli/agentos/test_resident_orphan.py:17, hcli/agentos/test_resident_orphan.py:140 (+39 more)
     negative control    hcli/agentos/test_resident_mission_corruption.py, hcli/agentos/test_resident_orphan.py
     receipt             absent
     evidence level      STATIC
@@ -125,9 +125,9 @@ design, not by neglect: simulated is not measured.
 
     STATUS              VERIFIED_INTEGRATED
     defining property   1. Repair depth is bounded structurally, not by model discretion.
-    implementation      hcli/scheduler.py, hcli/workunit.py, hcli/scheduler.py:72
+    implementation      hcli/scheduler.py, hcli/workunit.py, hcli/scheduler.py:87
     real caller         hcli/goal_compile.py:518, hcli/mission.py:264, hcli/mission.py:374 (+14 more)
-    verifier            hcli/test_abort_checkpoint_atomicity.py:21, hcli/test_cognition_unit_concurrency.py:14, hcli/test_failed_unit_says_why.py:19 (+107 more)
+    verifier            hcli/test_abort_checkpoint_atomicity.py:21, hcli/test_cognition_unit_concurrency.py:14, hcli/test_failed_unit_says_why.py:19 (+108 more)
     negative control    hcli/test_cognition_unit_concurrency.py, hcli/test_failed_unit_says_why.py
     receipt             absent
     evidence level      STATIC
@@ -151,9 +151,9 @@ design, not by neglect: simulated is not measured.
 
     STATUS              SCAFFOLDED
     defining property   `BACKEND_UNAVAILABLE`
-    implementation      hcli/scheduler.py, hcli/scheduler.py:405
+    implementation      hcli/scheduler.py, hcli/scheduler.py:424
     real caller         absent — no non-test call site
-    verifier            hcli/test_failed_unit_says_why.py:19, hcli/test_goal_compile.py:257, hcli/tests/test_core_authorities.py:25 (+11 more)
+    verifier            hcli/test_failed_unit_says_why.py:19, hcli/test_failed_unit_says_why.py:93, hcli/test_goal_compile.py:257 (+12 more)
     negative control    hcli/test_failed_unit_says_why.py, hcli/tests/test_core_authorities.py
     receipt             absent
     evidence level      STATIC
@@ -166,8 +166,8 @@ design, not by neglect: simulated is not measured.
     defining property   `BACKEND_UNAVAILABLE`
     implementation      hcli/backends.py, hcli/providers.py, hcli/engine.py (+1 more)
     real caller         hcli/mission.py:1504, hcli/runtime.py:520, hcli/runtime.py:879 (+2 more)
-    verifier            hcli/test_constrained_decoding.py:40, hcli/test_constrained_decoding.py:50, hcli/test_context_memory.py:8 (+69 more)
-    negative control    hcli/test_context_reduction.py, hcli/test_goal_source_compile.py
+    verifier            hcli/test_completion_budget_fits_the_window.py:21, hcli/test_completion_budget_fits_the_window.py:65, hcli/test_constrained_decoding.py:40 (+72 more)
+    negative control    hcli/test_completion_budget_fits_the_window.py, hcli/test_context_reduction.py
     receipt             absent
     evidence level      STATIC
     limitations         none recorded
@@ -178,9 +178,9 @@ design, not by neglect: simulated is not measured.
     STATUS              VERIFIED_INTEGRATED
     defining property   **Meaning:** One context-budget authority drives root and worker admission.
     implementation      hcli/context_budget.py, hcli/engine.py, hcli/context_budget.py:476
-    real caller         hcli/backends.py:1338, hcli/config.py:131, hcli/engine.py:1989 (+4 more)
-    verifier            hcli/test_constrained_decoding.py:50, hcli/test_context_memory.py:8, hcli/test_context_reduction.py:16 (+73 more)
-    negative control    hcli/test_context_reduction.py, hcli/test_goal_source_compile.py
+    real caller         hcli/backends.py:1338, hcli/config.py:131, hcli/engine.py:2051 (+4 more)
+    verifier            hcli/test_completion_budget_fits_the_window.py:21, hcli/test_completion_budget_fits_the_window.py:65, hcli/test_constrained_decoding.py:50 (+76 more)
+    negative control    hcli/test_completion_budget_fits_the_window.py, hcli/test_context_reduction.py
     receipt             absent
     evidence level      STATIC
     limitations         none recorded
@@ -300,7 +300,7 @@ design, not by neglect: simulated is not measured.
     defining property   **Mission:** Find the smallest capability-preserving executable function, not merely the smallest file.
     implementation      hcli/agentos/flash_router_representation_ab.py, hcli/agentos/representation_ab.py, hcli/agentos/flash_router_representation_ab.py:137
     real caller         hcli/agentos_cli.py:941, tools/acceptance/flash/run_gates.py:629
-    verifier            absent — no test cites this gate
+    verifier            tools/acceptance/test_accepted_gates_show_their_evidence.py:30
     negative control    absent — no cited test proves it can fail
     receipt             absent
     evidence level      STATIC
@@ -382,7 +382,7 @@ design, not by neglect: simulated is not measured.
     defining property   **Mission:** Turn representations and machines into optimized physical programs.
     implementation      hcli/agentos/qwen27_mlp_diagnostic.py, hcli/agentos/accelerator_regression.py, hcli/agentos/qwen27_mlp_diagnostic.py:165
     real caller         hcli/agentos/protected_benchmark_watcher.py:274, hcli/agentos_cli.py:714
-    verifier            absent — no test cites this gate
+    verifier            tools/acceptance/test_accepted_gates_show_their_evidence.py:30
     negative control    absent — no cited test proves it can fail
     receipt             absent
     evidence level      STATIC
@@ -395,7 +395,7 @@ design, not by neglect: simulated is not measured.
     defining property   **Mission:** Turn representations and machines into optimized physical programs.
     implementation      hcli/agentos/qwen27_runtime_identity.py, hcli/agentos/qwen27_runtime_identity.py:438
     real caller         hcli/agentos_cli.py:702
-    verifier            absent — no test cites this gate
+    verifier            tools/acceptance/test_accepted_gates_show_their_evidence.py:31
     negative control    absent — no cited test proves it can fail
     receipt             receipts/headless/QWEN27_HISTORICAL_RUNTIME_IDENTITY.json
     evidence level      STATIC
@@ -407,7 +407,7 @@ design, not by neglect: simulated is not measured.
     STATUS              VERIFIED_BUILT
     defining property   **Mission:** Find the smallest capability-preserving executable function, not merely the smallest file.
     implementation      hcli/prefill_profile.py, hcli/prefill_profile.py:102
-    real caller         hcli/engine.py:3326
+    real caller         hcli/engine.py:3469
     verifier            hcli/test_prefix_and_prefill_instruments.py:14, hcli/test_prefix_and_prefill_instruments.py:113, hcli/test_prefix_and_prefill_instruments.py:121 (+3 more)
     negative control    hcli/test_prefix_and_prefill_instruments.py
     receipt             absent
@@ -459,7 +459,7 @@ design, not by neglect: simulated is not measured.
     STATUS              VERIFIED_BUILT
     defining property   **Mission:** Find the smallest capability-preserving executable function, not merely the smallest file.
     implementation      hcli/prefill_profile.py, hcli/hawking_native.py, hcli/prefill_profile.py:45
-    real caller         hcli/engine.py:3322
+    real caller         hcli/engine.py:3465
     verifier            hcli/test_prefix_and_prefill_instruments.py:14, hcli/test_prefix_and_prefill_instruments.py:112, hcli/test_prefix_and_prefill_instruments.py:121 (+4 more)
     negative control    hcli/test_prefix_and_prefill_instruments.py
     receipt             absent
@@ -472,7 +472,7 @@ design, not by neglect: simulated is not measured.
     STATUS              VERIFIED_BUILT
     defining property   **Mission:** Find the smallest capability-preserving executable function, not merely the smallest file.
     implementation      hcli/prefill_profile.py, hcli/prefill_profile.py:102
-    real caller         hcli/engine.py:3326
+    real caller         hcli/engine.py:3469
     verifier            hcli/test_prefix_and_prefill_instruments.py:14, hcli/test_prefix_and_prefill_instruments.py:113, hcli/test_prefix_and_prefill_instruments.py:121 (+3 more)
     negative control    hcli/test_prefix_and_prefill_instruments.py
     receipt             absent
@@ -779,7 +779,7 @@ design, not by neglect: simulated is not measured.
     STATUS              BLOCKED_HARDWARE
     defining property   The older layer-contiguous partition remains a useful control against within-organ tensor parallelism. Benchmark both where scientifically useful: coarse layer block minimizes boundary crossings; within-organ split maximizes concurrent independent bandwidth. Doctor/PhysicalGraph chooses from evidence.
     implementation      hcli/physical_graph.py, tools/odyssey/physical_graph_compiler.py
-    real caller         tools/future/nr_nx_generic.py:1981
+    real caller         tools/future/nr_nx_generic.py:1988
     verifier            hcli/test_ane_provider.py:6, hcli/tests/test_hcli_science_boundaries.py:32, tools/accelerator/test_fusion_bridge.py:357 (+2 more)
     negative control    hcli/tests/test_hcli_science_boundaries.py, tools/accelerator/test_fusion_bridge.py
     receipt             absent
@@ -983,7 +983,7 @@ design, not by neglect: simulated is not measured.
     defining property   V11 web fixture proof
     implementation      hcli/agentos/vmcp_gate.py, tools/headless/hcli_vmcp_integration.py, hcli/agentos/vmcp_gate.py:205
     real caller         absent — no non-test call site
-    verifier            absent — no test cites this gate
+    verifier            tools/acceptance/test_accepted_gates_show_their_evidence.py:31
     negative control    absent — no cited test proves it can fail
     receipt             receipts/headless/VMCP_AGENTOS_INTEGRATION.json
     evidence level      STATIC
@@ -1048,7 +1048,7 @@ design, not by neglect: simulated is not measured.
     defining property   A truth-affecting tool with no trace is not part of the proof.
     implementation      hcli/agentos/vmcp_gate.py, hcli/agentos/vmcp_gate.py:258
     real caller         hcli/agentos_cli.py:609
-    verifier            absent — no test cites this gate
+    verifier            tools/acceptance/test_accepted_gates_show_their_evidence.py:31
     negative control    absent — no cited test proves it can fail
     receipt             receipts/headless/HCLI_AGENTOS_VMCP_GATE.json
     evidence level      STATIC
