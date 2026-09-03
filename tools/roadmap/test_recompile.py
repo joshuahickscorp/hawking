@@ -53,12 +53,15 @@ def test_part_ii_census_matches_the_state_file():
 def test_every_gate_lands_in_exactly_one_bucket():
     """No gate may be counted twice or vanish between buckets."""
     state = _state()
-    buckets = (
-        "integrated_capabilities", "active_actions", "experiment_required",
-        "long_run_required", "hardware_required", "unknown_research",
-        "software_build_required", "external_environment_required",
-        "deferred_programs",
-    )
+    # DERIVED from the classifier's own bucket map, not retyped. A hardcoded list
+    # silently drops a gate the moment a new blocker class appears -- VERIFIER_MISSING
+    # was added and its gate vanished from the partition while every bucket still
+    # looked internally consistent.
+    from tools.roadmap.blockers import CLASSES
+    from tools.roadmap.recompile import bucket_names
+    buckets = ("integrated_capabilities",) + tuple(bucket_names())
+    missing_class = [c for c in CLASSES if c not in bucket_names.map]
+    assert not missing_class, f"blocker classes with no state bucket: {missing_class}"
     seen: list[str] = []
     for b in buckets:
         seen.extend(state[b])

@@ -15,7 +15,8 @@ from __future__ import annotations
 from typing import Any
 
 CLASSES = (
-    "SOFTWARE_CONNECTION_REMAINING",   # the parts exist; nothing calls or checks them
+    "SOFTWARE_CONNECTION_REMAINING",   # the parts exist; nothing CALLS them
+    "VERIFIER_MISSING",                # wired and accepted; nothing PROVES it
     "SOFTWARE_BUILD_REQUIRED",         # the code does not exist yet and must be written
     "EXPERIMENTATION_REQUIRED",        # built and verified; its criterion has never been run
     "LONG_RUN_EVIDENCE_REQUIRED",      # a run that must occupy real wall time
@@ -69,7 +70,13 @@ def classify(gate: dict[str, Any]) -> tuple[str, str]:
     if not wired:
         return "SOFTWARE_CONNECTION_REMAINING", "no non-test call site reaches this capability"
     if not has_test:
-        return "SOFTWARE_CONNECTION_REMAINING", "wired but nothing verifies it"
+        # NOT a connection problem. Nothing is disconnected -- the capability has
+        # real callers and, for a BUILT gate, a passed acceptance. What is missing
+        # is a test that CITES it. Filing that under the same name as "nothing
+        # calls this" sent an operator hunting for a caller that already exists
+        # three times over, which is precisely the unlike-things-forced-together
+        # defect this module's docstring says the five old classes caused.
+        return "VERIFIER_MISSING", "wired but nothing verifies it"
     if not accepted:
         return "EXPERIMENTATION_REQUIRED", "wired and verified; its acceptance criterion has never been run"
     return "", "already integrated"

@@ -7,20 +7,24 @@ components yet' from work that genuinely needs an experiment, wall time, or sili
 
 ## Blocker census
 
-    SOFTWARE_CONNECTION_REMAINING    10
+    SOFTWARE_CONNECTION_REMAINING    9
+    VERIFIER_MISSING                 1
+    SOFTWARE_BUILD_REQUIRED          1
     EXPERIMENTATION_REQUIRED         18
-    LONG_RUN_EVIDENCE_REQUIRED       14
+    LONG_RUN_EVIDENCE_REQUIRED       4
+    EXTERNAL_ENVIRONMENT_REQUIRED    3
     PHYSICAL_HARDWARE_REQUIRED       14
-    UNKNOWN_RESEARCH                 1
+    DEFERRED_PROGRAM                 7
+    UNKNOWN_RESEARCH                 0
 
     TOTAL REMAINING                  57
 
-SOFTWARE_CONNECTION_REMAINING = 10 is the
+SOFTWARE_CONNECTION_REMAINING = 9 is the
 number this campaign exists to drive toward zero. Every other class is honest
 frontier: an experiment that must run, evidence that needs wall time, hardware that
 must physically exist, or a question whose answer nobody has.
 
-## SOFTWARE_CONNECTION_REMAINING (10)
+## SOFTWARE_CONNECTION_REMAINING (9)
 
 ### AGENTOS_CIRCUIT_BREAKER
     missing             no non-test call site reaches this capability
@@ -76,11 +80,21 @@ must physically exist, or a question whose answer nobody has.
     implementation      hcli/agentos/vmcp_gate.py, tools/headless/hcli_vmcp_integration.py (+1 more)
     unlocks             2 declared dependencies
 
+## VERIFIER_MISSING (1)
+
 ### VMCP_COMPACT_SURFACE
     missing             wired but nothing verifies it
     shortest verifier   must be written
     implementation      hcli/vmcp/__init__.py, hcli/vmcp_adapter.py (+2 more)
     unlocks             0 declared dependencies
+
+## SOFTWARE_BUILD_REQUIRED (1)
+
+### AGENTOS_BEHAVIOR_LAB
+    missing             no implementation exists; the code must be written
+    shortest verifier   must be written
+    implementation      absent
+    unlocks             1 declared dependencies
 
 ## EXPERIMENTATION_REQUIRED (18)
 
@@ -192,10 +206,10 @@ must physically exist, or a question whose answer nobody has.
     implementation      tools/vmcp/pty_eye.py, tools/headless/vmcp_capability_probe.py (+1 more)
     unlocks             1 declared dependencies
 
-## LONG_RUN_EVIDENCE_REQUIRED (14)
+## LONG_RUN_EVIDENCE_REQUIRED (4)
 
 ### FLASH_ACCEPTED_TPS_GE_50
-    missing             requires a MEASURED accepted capability-preserving TPS >= 50 under the protected window, against complete-system EBPW <= 1.00 (roadmap 13, line 1607). The roadmap calls these research targets, not cur
+    missing             requires a MEASURED accepted capability-preserving TPS >= 50 under the protected window, against complete-system EBPW <= 1.00 (roadmap 13, line 1607). The roadmap calls these research targets, not current claims. This ga
     shortest verifier   must be written
     implementation      tools/flash_stateful_gate.py
     unlocks             1 declared dependencies
@@ -218,47 +232,7 @@ must physically exist, or a question whose answer nobody has.
     implementation      absent
     unlocks             0 declared dependencies
 
-### THEIA_BOUNTY_GENERALIST_QUALIFIED
-    missing             the bounty ENGINE exists at tools/theia/ but no qualified generalist MODEL does. Wake: THEIA_RESEARCH=PASS.
-    shortest verifier   must be written
-    implementation      absent
-    unlocks             1 declared dependencies
-
-### THEIA_GRAVITY_EXECUTABLE
-    missing             needs a frozen Theia capability baseline to compress (training-before-Gravity law, roadmap 19.10). Wake: THEIA_RESEARCH=PASS.
-    shortest verifier   must be written
-    implementation      absent
-    unlocks             1 declared dependencies
-
-### THEIA_LAB
-    missing             needs a trained ~7B-14B student. Wake: THEIA_MICRO=PASS.
-    shortest verifier   must be written
-    implementation      absent
-    unlocks             1 declared dependencies
-
-### THEIA_MICRO
-    missing             needs a trained ~1B-3B student. Wake: THEIA_T0_TRAIN_SUBSTRATE=PASS.
-    shortest verifier   must be written
-    implementation      absent
-    unlocks             1 declared dependencies
-
-### THEIA_RESEARCH
-    missing             needs a trained ~30B-100B+ flagship. Wake: THEIA_WORKER=PASS.
-    shortest verifier   must be written
-    implementation      absent
-    unlocks             1 declared dependencies
-
-### THEIA_T0_TRAIN_SUBSTRATE
-    missing             Hawking Train T0 substrate is not a live campaign here: no teacher registry, data lake, trace store, curriculum or checkpoint authority runs in this checkout. Wake: T0_TEACHER_REGISTRY_LIVE.
-    shortest verifier   must be written
-    implementation      absent
-    unlocks             0 declared dependencies
-
-### THEIA_WORKER
-    missing             needs a trained ~20B-40B student. Wake: THEIA_LAB=PASS.
-    shortest verifier   must be written
-    implementation      absent
-    unlocks             1 declared dependencies
+## EXTERNAL_ENVIRONMENT_REQUIRED (3)
 
 ### VMCP_SPATIAL_VALIDATE
     missing             OBJ/GLTF parsing, the spatial validator and an independent renderer are PARKED on the visionmcp 3d extra plus Blender CLI. Wake: VISIONMCP_3D_EXTRA_AND_BLENDER.
@@ -364,10 +338,46 @@ must physically exist, or a question whose answer nobody has.
     implementation      tools/accelerator/hardware_doctor.py, tools/accelerator/hardware_doctor.py:313
     unlocks             1 declared dependencies
 
-## UNKNOWN_RESEARCH (1)
+## DEFERRED_PROGRAM (7)
 
-### AGENTOS_BEHAVIOR_LAB
-    missing             no implementation and no verifier exist yet
+### THEIA_BOUNTY_GENERALIST_QUALIFIED
+    missing             the bounty ENGINE exists at tools/theia/ but no qualified generalist MODEL does. Wake: THEIA_RESEARCH=PASS.
+    shortest verifier   must be written
+    implementation      absent
+    unlocks             1 declared dependencies
+
+### THEIA_GRAVITY_EXECUTABLE
+    missing             needs a frozen Theia capability baseline to compress (training-before-Gravity law, roadmap 19.10). Wake: THEIA_RESEARCH=PASS.
+    shortest verifier   must be written
+    implementation      absent
+    unlocks             1 declared dependencies
+
+### THEIA_LAB
+    missing             needs a trained ~7B-14B student. Wake: THEIA_MICRO=PASS.
+    shortest verifier   must be written
+    implementation      absent
+    unlocks             1 declared dependencies
+
+### THEIA_MICRO
+    missing             needs a trained ~1B-3B student. Wake: THEIA_T0_TRAIN_SUBSTRATE=PASS.
+    shortest verifier   must be written
+    implementation      absent
+    unlocks             1 declared dependencies
+
+### THEIA_RESEARCH
+    missing             needs a trained ~30B-100B+ flagship. Wake: THEIA_WORKER=PASS.
+    shortest verifier   must be written
+    implementation      absent
+    unlocks             1 declared dependencies
+
+### THEIA_T0_TRAIN_SUBSTRATE
+    missing             Hawking Train T0 substrate is not a live campaign here: no teacher registry, data lake, trace store, curriculum or checkpoint authority runs in this checkout. Wake: T0_TEACHER_REGISTRY_LIVE.
+    shortest verifier   must be written
+    implementation      absent
+    unlocks             0 declared dependencies
+
+### THEIA_WORKER
+    missing             needs a trained ~20B-40B student. Wake: THEIA_LAB=PASS.
     shortest verifier   must be written
     implementation      absent
     unlocks             1 declared dependencies

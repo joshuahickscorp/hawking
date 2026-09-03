@@ -10,8 +10,7 @@
     "RUNTIME_CONTEXT_NATIVE",
     "RUNTIME_PREFIX_STATE_REUSE",
     "STABLE_PREFIX_CONTEXT_ALIGNMENT",
-    "VMCP_AGENTOS_INTEGRATION",
-    "VMCP_COMPACT_SURFACE"
+    "VMCP_AGENTOS_INTEGRATION"
   ],
   "archived_items": [
     "docs/roadmap-lineage/H-ROADMAP.superseded-2026-09-02.md"
@@ -606,7 +605,8 @@
     "LONG_RUN_EVIDENCE_REQUIRED": 4,
     "PHYSICAL_HARDWARE_REQUIRED": 14,
     "SOFTWARE_BUILD_REQUIRED": 1,
-    "SOFTWARE_CONNECTION_REMAINING": 10
+    "SOFTWARE_CONNECTION_REMAINING": 9,
+    "VERIFIER_MISSING": 1
   },
   "built_but_no_verifier": [
     "VMCP_COMPACT_SURFACE"
@@ -1332,8 +1332,7 @@
     "RUNTIME_CONTEXT_NATIVE",
     "RUNTIME_PREFIX_STATE_REUSE",
     "STABLE_PREFIX_CONTEXT_ALIGNMENT",
-    "VMCP_AGENTOS_INTEGRATION",
-    "VMCP_COMPACT_SURFACE"
+    "VMCP_AGENTOS_INTEGRATION"
   ],
   "not_physically_measured": "every gate is evidence_tier STATIC; no present capability rests on a physical measurement",
   "ranked_remaining": [
@@ -2267,10 +2266,10 @@
     },
     {
       "actionable_now": false,
-      "blocker_class": "SOFTWARE_CONNECTION_REMAINING",
+      "blocker_class": "VERIFIER_MISSING",
       "critical_path": true,
       "depends_on": [],
-      "estimated_wall": "under an hour (guess)",
+      "estimated_wall": "unestimated",
       "gate": "VMCP_COMPACT_SURFACE",
       "leverage_score": 5,
       "missing": "wired but nothing verifies it",
@@ -2279,7 +2278,7 @@
       "parallel_safe_with": "any gate in a different resource_lane",
       "reopen_if": "the caller is removed, the verifier is deleted, or the gate's acceptance criterion changes",
       "resource_lane": "cpu",
-      "stop_condition": "a non-test call site reaches the named symbol AND a test fails when that connection is cut",
+      "stop_condition": "the blocker named above clears: wired but nothing verifies it",
       "unlocks_direct": [
         "VMCP_AGENTOS_INTEGRATION"
       ],
@@ -2739,9 +2738,12 @@
   "software_build_required": [
     "AGENTOS_BEHAVIOR_LAB"
   ],
-  "software_connection_remaining_count": 10,
+  "software_connection_remaining_count": 9,
   "subsumed_items": [],
   "unknown_research": [],
+  "verifier_missing": [
+    "VMCP_COMPACT_SURFACE"
+  ],
   "verifiers": {
     "AGENTOS_CANCELLATION": "hcli/test_abort_checkpoint_atomicity.py:18, hcli/test_abort_checkpoint_atomicity.py:49 (+32 more)",
     "AGENTOS_CHECKPOINT_ATOMICITY": "hcli/test_goal_bank.py:10, hcli/tests/test_core_authorities.py:22 (+4 more)",

@@ -196,3 +196,46 @@ def test_the_lineage_copy_reproduces_every_stored_criterion():
         )
         checked += 1
     assert checked >= 8, f"only {checked} receipts carry a re-checkable criterion span"
+
+
+def test_there_is_exactly_one_blocker_classifier():
+    """PART II and ROADMAP_STATE.json disagreed about 12 of 83 gates.
+
+    recompile.py defined its own five-class blocker_class while importing the
+    eight-class one from blockers.py for the machine-readable state. The two
+    authorities disagreed in exactly the ways blockers.py's docstring says the
+    old classes caused: seven THEIA programs nobody has started filed as
+    "gather long-run evidence", three VMCP gates waiting on a browser install
+    filed the same way, and unwritten code filed as UNKNOWN_RESEARCH.
+    """
+    from tools.roadmap import recompile
+    from tools.roadmap.blockers import CLASSES, classify
+    graph = json.loads((REPO / "civilization" / "CAPABILITY_GRAPH.json").read_text())
+    disagree = [
+        gid for gid, gate in graph["gates"].items()
+        if recompile.blocker_class(gate)[0] != classify(gate)[0]
+    ]
+    assert not disagree, f"two classifiers disagree about {disagree}"
+    assert tuple(recompile.BLOCKER_CLASSES) == tuple(CLASSES), (
+        "PART II renders a different class vocabulary than the state file"
+    )
+
+
+def test_a_missing_verifier_is_not_filed_as_a_missing_caller():
+    """VERIFIER_MISSING exists because those are different repairs.
+
+    VMCP_COMPACT_SURFACE has three real non-test callers and a passed acceptance,
+    and was still listed under "no non-test call site reaches this capability" --
+    sending an operator to hunt for a caller that already exists three times.
+    """
+    from tools.roadmap.blockers import classify
+    wired_unverified = {
+        "id": "X", "status": "BUILT", "code_refs": [{"file": "a.py"}], "tests": [],
+        "wired": {"value": True}, "accepted": {"value": True},
+    }
+    cls, missing = classify(wired_unverified)
+    assert cls == "VERIFIER_MISSING", cls
+    assert "verifies" in missing
+
+    unwired = dict(wired_unverified, wired={"value": False})
+    assert classify(unwired)[0] == "SOFTWARE_CONNECTION_REMAINING"

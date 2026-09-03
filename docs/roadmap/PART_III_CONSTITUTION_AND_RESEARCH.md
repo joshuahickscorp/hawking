@@ -79,7 +79,6 @@ residual_factors / residual_factors_batch absorbing the projection into V.
 
 ## Open research (do NOT pre-expand into implementation tasks)
 
-    AGENTOS_BEHAVIOR_LAB                       no implementation and no verifier exist yet
 
 Kept alive without pretending they are near-term: generated experts, shared
 substrates, recurrent transition programs, semantic dictionaries, tokenizer

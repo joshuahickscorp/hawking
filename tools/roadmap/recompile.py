@@ -242,48 +242,52 @@ def build() -> Path:
 #   no implementation at all AND no defining property -> unknown research.
 # ---------------------------------------------------------------------------
 
-BLOCKER_CLASSES = (
-    "SOFTWARE_CONNECTION_REMAINING",
-    "EXPERIMENTATION_REQUIRED",
-    "LONG_RUN_EVIDENCE_REQUIRED",
-    "PHYSICAL_HARDWARE_REQUIRED",
-    "UNKNOWN_RESEARCH",
-)
+# ONE classifier, not two. This module used to define its own blocker_class with
+# five classes while importing the eight-class one from tools/roadmap/blockers.py
+# for the machine-readable state, so PART II and ROADMAP_STATE.json disagreed
+# about 12 of 83 gates -- and disagreed in exactly the ways blockers.py's own
+# docstring says the five classes caused:
+#
+#   7 THEIA gates       PART II said LONG_RUN_EVIDENCE_REQUIRED (go run something
+#                       overnight) for programs nobody has started. DEFERRED_PROGRAM.
+#   3 VMCP gates        PART II said LONG_RUN_EVIDENCE_REQUIRED for an absent browser
+#                       extra. Installing a package is not an evidence problem.
+#   AGENTOS_BEHAVIOR_LAB  PART II said UNKNOWN_RESEARCH for code nobody has written,
+#                       which is the sin blockers.py names: "calling it research
+#                       excuses it". SOFTWARE_BUILD_REQUIRED.
+#   VMCP_COMPACT_SURFACE  SOFTWARE_CONNECTION_REMAINING for a gate with three real
+#                       callers. Nothing is disconnected; a verifier is missing.
+#
+# The newer classifier was written to fix these and PART II never switched to it.
+BLOCKER_CLASSES = BLOCKER_CLASSES_V2
+blocker_class = _classify_v2
+
+# Every blocker class needs exactly one state bucket. Module level and exported so
+# a test can DERIVE the partition instead of retyping it: a hardcoded bucket list
+# silently drops a gate the moment a class is added, which VERIFIER_MISSING did.
+BUCKET_OF_CLASS = {
+    "SOFTWARE_CONNECTION_REMAINING": "active_actions",
+    # Its own bucket, not folded into active_actions: "go write a caller" and "go
+    # write a test for a gate that already has three callers and a passed
+    # acceptance" are different repairs, and active_actions is the number this
+    # campaign drives toward zero.
+    "VERIFIER_MISSING": "verifier_missing",
+    "SOFTWARE_BUILD_REQUIRED": "software_build_required",
+    "EXPERIMENTATION_REQUIRED": "experiment_required",
+    "LONG_RUN_EVIDENCE_REQUIRED": "long_run_required",
+    "EXTERNAL_ENVIRONMENT_REQUIRED": "external_environment_required",
+    "DEFERRED_PROGRAM": "deferred_programs",
+    "PHYSICAL_HARDWARE_REQUIRED": "hardware_required",
+    "UNKNOWN_RESEARCH": "unknown_research",
+}
 
 
-def blocker_class(gate: dict) -> tuple[str, str]:
-    """(class, the exact thing that is missing). Derived, never assigned."""
-    if gate.get("hardware_blocker") or gate["status"] == "BLOCKED_HARDWARE":
-        wake = gate.get("wake_condition") or "the board"
-        return "PHYSICAL_HARDWARE_REQUIRED", f"silicon absent; wakes on {wake}"
+def bucket_names() -> tuple[str, ...]:
+    """The state buckets, in class order. The partition test derives from this."""
+    return tuple(dict.fromkeys(BUCKET_OF_CLASS[c] for c in BLOCKER_CLASSES))
 
-    if gate["status"] == "UNREACHABLE":
-        # Its dependencies are unsatisfied, and for this gate they are silicon.
-        # Filing it as a software connection points the campaign at code that
-        # cannot be written until a board exists -- the blocker is inherited,
-        # not local.
-        deps = ", ".join(gate.get("dependencies") or []) or "unnamed dependencies"
-        return "PHYSICAL_HARDWARE_REQUIRED", f"dependencies unsatisfied: {deps}"
 
-    if gate["status"] == "BLOCKED_EXTERNAL":
-        blocker = str(gate.get("software_blocker") or "")
-        # A THEIA rung needs a TRAINED MODEL, which is wall time and compute, not wiring.
-        return "LONG_RUN_EVIDENCE_REQUIRED", blocker[:200] or "external substrate absent"
-
-    wired = bool((gate.get("wired") or {}).get("value"))
-    accepted = bool((gate.get("accepted") or {}).get("value"))
-    has_impl = bool(gate.get("code_refs"))
-    has_test = bool(gate.get("tests"))
-
-    if not has_impl and not has_test:
-        return "UNKNOWN_RESEARCH", "no implementation and no verifier exist yet"
-    if not wired:
-        return "SOFTWARE_CONNECTION_REMAINING", "no non-test call site reaches this capability"
-    if not has_test:
-        return "SOFTWARE_CONNECTION_REMAINING", "wired but nothing verifies it"
-    if not accepted:
-        return "EXPERIMENTATION_REQUIRED", "wired and verified; its acceptance criterion has never been run"
-    return "", "already integrated"
+bucket_names.map = BUCKET_OF_CLASS
 
 
 def render_part_ii() -> str:
@@ -475,23 +479,13 @@ def render_state() -> dict:
     # UNKNOWN_RESEARCH because the census had moved to the expanded taxonomy and
     # the buckets had not -- a state file whose own fields contradict each other
     # is worse than one that is merely coarse.
-    _BUCKET = {
-        "SOFTWARE_CONNECTION_REMAINING": "active_actions",
-        "SOFTWARE_BUILD_REQUIRED": "software_build_required",
-        "EXPERIMENTATION_REQUIRED": "experiment_required",
-        "LONG_RUN_EVIDENCE_REQUIRED": "long_run_required",
-        "EXTERNAL_ENVIRONMENT_REQUIRED": "external_environment_required",
-        "DEFERRED_PROGRAM": "deferred_programs",
-        "PHYSICAL_HARDWARE_REQUIRED": "hardware_required",
-        "UNKNOWN_RESEARCH": "unknown_research",
-    }
     buckets: dict[str, list[str]] = defaultdict(list)
     for gid, gate in sorted(gates.items()):
         cls, _missing = _classify_v2(gate)
         if not cls:
             buckets["integrated_capabilities"].append(gid)
             continue
-        buckets[_BUCKET[cls]].append(gid)
+        buckets[BUCKET_OF_CLASS[cls]].append(gid)
 
     completed = [g for g, v in sorted(gates.items()) if v["status"] == "BUILT"]
     deps = [[gid, d] for gid, v in sorted(gates.items()) for d in (v.get("dependencies") or [])]
@@ -529,6 +523,7 @@ def render_state() -> dict:
         "completed_capabilities": completed,
         "integrated_capabilities": buckets["integrated_capabilities"],
         "active_actions": buckets["active_actions"],
+        "verifier_missing": buckets["verifier_missing"],
         "recurring_operations": [],
         "experiment_required": buckets["experiment_required"],
         "long_run_required": buckets["long_run_required"],
@@ -696,7 +691,35 @@ def render_compression() -> str:
 
 
 if __name__ == "__main__":
-    print(build())
-    print(build_part_ii())
-    for _p in build_rest():
-        print(_p)
+    # Render EVERY document before writing ANY of them. A KeyError in render_state
+    # used to land after PART I and PART II were already on disk, leaving the
+    # human-readable roadmap newer than the machine-readable authority it is
+    # supposed to be derived from -- and the exit code that said so was easy to
+    # swallow with a `>/dev/null` in a shell chain.
+    _part_i = render()
+    _part_ii = render_part_ii()
+    _rest = [
+        ("PART_III_CONSTITUTION_AND_RESEARCH.md", render_part_iii()),
+        ("APPENDIX_LINEAGE.md", render_appendix()),
+        ("COMPRESSION.md", render_compression()),
+    ]
+    _state = render_state()
+
+    _base = REPO / "docs" / "roadmap"
+    _base.mkdir(parents=True, exist_ok=True)
+    for _name, _text in [("PART_I_VERIFIED_TODAY.md", _part_i),
+                         ("PART_II_ACTION_PLAN.md", _part_ii)] + _rest:
+        _out = _base / _name
+        _out.write_text(_text)
+        print(_out)
+    _state_path = REPO / "civilization" / "ROADMAP_STATE.json"
+    if _state_path.is_file():
+        try:
+            _prev = json.loads(_state_path.read_text())
+        except ValueError:
+            _prev = {}
+        for _key in ("capability_graph", "capability_graph_schema", "capability_graph_law"):
+            if _key in _prev:
+                _state.setdefault(_key, _prev[_key])
+    _state_path.write_text(json.dumps(_state, indent=2, sort_keys=True) + "\n")
+    print(_state_path)
