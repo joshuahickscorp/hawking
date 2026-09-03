@@ -53,7 +53,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Iterable, Mapping
 
-from tools.future import hwir
+from tools.future import decision_value, hwir
 
 REPO = Path(__file__).resolve().parents[2]
 CENSUS = REPO / "receipts" / "headless" / "FLASH_ORGAN_CENSUS.json"
@@ -402,58 +402,62 @@ def sensitivity(W: float, activation_bytes: float, reduction_bytes: float,
                 setup: float = 0.0) -> list[dict[str, Any]]:
     """Rank the unknowns by how much the ANSWER moves, not by how unknown they are.
 
-    An experiment pack ordered by curiosity measures the wrong thing first. For
-    each input, hold the others at their grid median and sweep it: report the
-    speedup swing and which PHASES become reachable.
+    The ordering rule lives in tools/future/decision_value.py because it is not an
+    FPGA fact: a measurement is worth its wall time in proportion to its ability to
+    change the DECISION, not the number. This function supplies the domain -- the
+    decision is the phase, the magnitude is the speedup -- and annotates the result
+    with which sealed prediction pins each input.
 
-    The ordering result is not the obvious one. r moves the speedup by ~14x and t
-    by only ~2x, but r cannot reach APPLE_ONLY at any value -- it does not appear
-    in C, and the break-even is C < W. So the FPGA's own speed can only size a
-    win; it can never create or destroy one. The link decides whether there is an
-    architecture at all, and that is what the board must settle first.
+    The outcome here is the case that produced the rule: r moves the speedup ~14x
+    and is measured LAST, because r does not appear in C and the break-even is
+    C < W, so no value of r reaches APPLE_ONLY. The FPGA's own speed sizes a win
+    and can never create or destroy one.
     """
-    r_list, t_list = sorted(r_grid), sorted(t_grid)
-    r_mid, t_mid = r_list[len(r_list) // 2], t_list[len(t_list) // 2]
+    setups = [setup, 0.1 * W, 0.5 * W, W, 2.0 * W]
 
-    def row(name: str, values: list[float], fn) -> dict[str, Any]:
-        out = [fn(v) for v in values]
-        speeds = [x["speedup"] for x in out]
-        phases = {x["phase"] for x in out}
+    def decide(r_fpga_over_apple: float, t_link_over_apple: float, setup_cost: float):
+        C = transport_cost(activation_bytes, reduction_bytes, t_link_over_apple, setup_cost)
         return {
-            "input": name,
-            "swept_over": [values[0], values[-1]],
-            "speedup_min": min(speeds),
-            "speedup_max": max(speeds),
-            "speedup_swing": max(speeds) / min(speeds) if min(speeds) > 0 else float("inf"),
-            "phases_reachable": sorted(phases),
-            "changes_phase": len(phases) > 1,
-            "pinned_by_sealed_predictions": list(PINNED_BY.get(name, ())),
-            "resolvable_without_the_board": name in ("r_fpga_over_apple", "t_link_over_apple"),
-            "how": DENOMINATOR_IS_LOCAL if name in ("r_fpga_over_apple", "t_link_over_apple")
-                   else "needs measured DMA submission and completion cost on the board",
+            "decision": phase(W, r_fpga_over_apple, C),
+            "magnitude": speedup(W, r_fpga_over_apple, C),
         }
 
-    def at(r: float, t: float, s: float) -> dict[str, Any]:
-        C = transport_cost(activation_bytes, reduction_bytes, t, s)
-        return {"speedup": speedup(W, r, C), "phase": phase(W, r, C)}
+    ranking = decision_value.rank_measurements(
+        {
+            "r_fpga_over_apple": sorted(r_grid),
+            "t_link_over_apple": sorted(t_grid),
+            "setup_cost": sorted(set(setups)),
+        },
+        decide,
+        # Hold setup at the caller's stated value, not at the median of a grid
+        # invented to span 0..2W: that median is 0.5W, an assumption that transport
+        # already eats half the organ before any payload moves, and holding the
+        # other sweeps there made r look 8x weaker than it is.
+        hold_at={"setup_cost": setup},
+        notes={
+            "r_fpga_over_apple": DENOMINATOR_IS_LOCAL,
+            "t_link_over_apple": DENOMINATOR_IS_LOCAL,
+            "setup_cost": "needs measured DMA submission and completion cost on the board",
+        },
+    )
 
-    rows = [
-        row("r_fpga_over_apple", r_list, lambda r: at(r, t_mid, setup)),
-        row("t_link_over_apple", t_list, lambda t: at(r_mid, t, setup)),
-        row("setup", [0.0, 0.1 * W, 0.5 * W, W, 2.0 * W],
-            lambda sv: at(r_mid, t_mid, sv)),
-    ]
-    # Rank by what can KILL the design, then by what sizes the win. Ordering by
-    # swing alone puts r first because it moves the speedup 14x -- but r appears
-    # nowhere in C, and the break-even is C < W, so NO value of r can ever make
-    # the FPGA stop helping or start helping. The FPGA's own speed sizes the win;
-    # only the link can decide there is one. A pre-board pack must measure what
-    # can falsify the architecture before what merely scales it.
-    for row_ in rows:
-        row_["can_falsify_the_architecture"] = "APPLE_ONLY" in row_["phases_reachable"]
-    rows.sort(key=lambda x: (x["can_falsify_the_architecture"], x["speedup_swing"]), reverse=True)
-    for i, r in enumerate(rows, 1):
-        r["measure_order"] = i
+    _PIN = {**PINNED_BY, "setup_cost": PINNED_BY["setup"]}
+    rows = []
+    for m in ranking.measurements:
+        row = m.as_dict()
+        row["swept_over"] = row.pop("range_swept")
+        row["speedup_min"] = row.pop("magnitude_min")
+        row["speedup_max"] = row.pop("magnitude_max")
+        row["speedup_swing"] = row.pop("magnitude_swing")
+        row["phases_reachable"] = row.pop("decisions_reachable")
+        row["changes_phase"] = row.pop("changes_decision")
+        row["input"] = row.pop("name")
+        row["can_falsify_the_architecture"] = "APPLE_ONLY" in row["phases_reachable"]
+        row["pinned_by_sealed_predictions"] = list(_PIN.get(row["input"], ()))
+        row["resolvable_without_the_board"] = row["input"] in (
+            "r_fpga_over_apple", "t_link_over_apple")
+        row["how"] = row.pop("note")
+        rows.append(row)
     return rows
 
 

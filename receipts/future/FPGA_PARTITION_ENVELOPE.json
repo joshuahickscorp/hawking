@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-03T05:10:10Z",
+  "recorded_at": "2026-09-03T05:44:01Z",
   "recorded_by": "tools/future/fpga_partition.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -76,8 +76,8 @@
     "measure_order": 1,
     "phases_reachable": [
      "APPLE_ONLY",
-     "COMPUTE_BALANCED",
-     "TRANSPORT_DOMINATED"
+     "TRANSPORT_DOMINATED",
+     "COMPUTE_BALANCED"
     ],
     "pinned_by_sealed_predictions": [
      "u50.coeff.host_device_bytes_per_modelled_cycle",
@@ -96,12 +96,12 @@
     "can_falsify_the_architecture": true,
     "changes_phase": true,
     "how": "needs measured DMA submission and completion cost on the board",
-    "input": "setup",
+    "input": "setup_cost",
     "measure_order": 2,
     "phases_reachable": [
-     "APPLE_ONLY",
      "COMPUTE_BALANCED",
-     "TRANSPORT_DOMINATED"
+     "TRANSPORT_DOMINATED",
+     "APPLE_ONLY"
     ],
     "pinned_by_sealed_predictions": [
      "u50.coeff.host_device_queue_cycles"
@@ -122,8 +122,8 @@
     "input": "r_fpga_over_apple",
     "measure_order": 3,
     "phases_reachable": [
-     "COMPUTE_BALANCED",
-     "FPGA_LIMITED"
+     "FPGA_LIMITED",
+     "COMPUTE_BALANCED"
     ],
     "pinned_by_sealed_predictions": [
      "u50.coeff.hbm_bytes_per_modelled_cycle",
@@ -1504,6 +1504,6 @@
   "why_they_are_different": "DERIVED there is DERIVED = \"[D]\" (line 23), stamped on emitted dicts. It says what the RESULT may claim, never where the INPUT came from."
  },
  "schema": "hawking.future.fpga_partition.v1",
- "seal_sha256": "72c4f14aabe0aaf76504eb21cf72ce0413bcf69d7ae5312b5215a6a642487360",
+ "seal_sha256": "75c0ad352f06f8bac4bfd40dd9f966a0a0d5924757d1b2c0f7d61a40554e0d48",
  "u50_present": false
 }
