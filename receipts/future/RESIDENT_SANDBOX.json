@@ -168,7 +168,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T23:39:01Z",
+  "recorded_at": "2026-09-03T00:36:31Z",
   "recorded_by": "tools/future/sandbox.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -183,19 +183,19 @@
   "mechanism": "BoundedFS.resolve_writable walks components and refuses escape by kind",
   "proofs": [
    {
-    "error": "absolute escape refused for '/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-ip_1tjvf/outside.txt': absolute path /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-ip_1tjvf/outside.txt is outside /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-ip_1tjvf/canonical/.worktrees/resident/writable",
+    "error": "absolute escape refused for '/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-2cyycvik/outside.txt': absolute path /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-2cyycvik/outside.txt is outside /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-2cyycvik/canonical/.worktrees/resident/writable",
     "kind": "absolute",
-    "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-ip_1tjvf/outside.txt",
+    "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-2cyycvik/outside.txt",
     "refused": true
    },
    {
-    "error": "dotdot escape refused for '../ESCAPE_DOTDOT.txt': path /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-ip_1tjvf/canonical/.worktrees/resident/ESCAPE_DOTDOT.txt leaves /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-ip_1tjvf/canonical/.worktrees/resident/writable via .. traversal",
+    "error": "dotdot escape refused for '../ESCAPE_DOTDOT.txt': path /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-2cyycvik/canonical/.worktrees/resident/ESCAPE_DOTDOT.txt leaves /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-2cyycvik/canonical/.worktrees/resident/writable via .. traversal",
     "kind": "dotdot",
     "path": "../ESCAPE_DOTDOT.txt",
     "refused": true
    },
    {
-    "error": "symlink escape refused for 'escape_link': /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-ip_1tjvf/canonical/.worktrees/resident/writable/escape_link -> /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-ip_1tjvf/outside.txt leaves /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-ip_1tjvf/canonical/.worktrees/resident/writable",
+    "error": "symlink escape refused for 'escape_link': /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-2cyycvik/canonical/.worktrees/resident/writable/escape_link -> /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-2cyycvik/outside.txt leaves /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-2cyycvik/canonical/.worktrees/resident/writable",
     "kind": "symlink",
     "path": "escape_link",
     "refused": true
@@ -231,7 +231,7 @@
   "layout_dirs": 5,
   "permitted_autonomous": 10,
   "refused_higher": 9,
-  "source_index_files": 2096
+  "source_index_files": 2099
  },
  "gaps_closed": [
   "isolated git worktree under the canonical repo's own .worktrees/",
@@ -246,7 +246,7 @@
   "HCLI WorkUnit emitted for provision; verifier is not the proposer"
  ],
  "gpu_authority": false,
- "head": "a612af62db43bee98204eb7e19a64d901f1eb571",
+ "head": "b35af1fa8886aa9d5903e3b9e943503c63cb001e",
  "hermetic_source_index": {
   "copes_with_sparse_checkout": true,
   "entries": [
@@ -316,7 +316,7 @@
   }
  ],
  "longevity": {
-  "identity_sha256": "69a5479ec046b53a6516b2c5b17657b8a5b8f001d5dfec1dfd7bbe55546441b3",
+  "identity_sha256": "abe0d09557ba6f2e2702c974f94e9c21fc42a4dda60e3da157bdda4aae566637",
   "reentry_same_identity": true,
   "second_provision_creates_second_sandbox": false,
   "state_survives_process_restart": true
@@ -342,7 +342,7 @@
  "provision": {
   "default_sandbox_id": "resident",
   "git_worktree": "git worktree add --detach --no-checkout --lock (reason: resident-sandbox preserve-artifacts)",
-  "hermetic_proof_worktree": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-ip_1tjvf/canonical/.worktrees/resident",
+  "hermetic_proof_worktree": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-2cyycvik/canonical/.worktrees/resident",
   "idempotent": true,
   "layout_dirs": [
    "build",
@@ -462,7 +462,7 @@
   }
  },
  "schema": "hawking.future.sandbox.v1",
- "seal_sha256": "062efbc365f59fa4dd6d12b9a2d6b92c499e7800bca10f27459136a0fd3d65eb",
+ "seal_sha256": "850d020eeef70e05d605a5050b904fd581e920e0f4a5fcac65ebe17da6ce6af3",
  "sleeping_physical_blockers": [
   "MetalContext reports no Metal-capable GPU on this host",
   "xcrun cannot locate the Metal compiler under CommandLineTools",
@@ -475,7 +475,7 @@
   "copes_with_sparse_checkout": true,
   "entries": [
    {
-    "file_count": 541,
+    "file_count": 543,
     "files_head": [
      "tools/future/__init__.py",
      "tools/future/_common.py",
@@ -553,7 +553,7 @@
     "root": "hcli"
    },
    {
-    "file_count": 1284,
+    "file_count": 1285,
     "files_head": [
      "receipts/future/ABI_VERDICT_HARNESS.json",
      "receipts/future/ABLITERATION.json",
@@ -592,7 +592,7 @@
     "root": "receipts/future"
    }
   ],
-  "file_count_total": 2096,
+  "file_count_total": 2099,
   "missing_roots": [],
   "present_roots": [
    "tools/future",

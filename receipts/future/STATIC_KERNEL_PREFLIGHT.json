@@ -8,7 +8,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T19:06:04Z",
+  "recorded_at": "2026-09-03T00:36:33Z",
   "recorded_by": "tools/future/static_kernel_verify.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -724,7 +724,7 @@
   },
   {
    "check": "dispatch_geometry",
-   "host": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:5651",
+   "host": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:5699",
    "kernel": "qwen80_ba_to_decay_beta_f32",
    "message": "threadgroup product 16 is not a multiple of simdgroup width 32",
    "severity": "WARNING",
@@ -754,7 +754,7 @@
      4
     ]
    },
-   "host": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:6297",
+   "host": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:6345",
    "kernel": "qwen80_residual_rmsnorm_f32",
    "message": "host binds buffers [0, 1, 2, 3, 4, 5] but shader declares [0, 1, 2, 3, 4]",
    "severity": "WARNING",
@@ -784,7 +784,7 @@
      4
     ]
    },
-   "host": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:6297",
+   "host": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:6345",
    "kernel": "qwen80_residual_rmsnorm_tg",
    "message": "host binds buffers [0, 1, 2, 3, 4, 5] but shader declares [0, 1, 2, 3, 4]",
    "severity": "WARNING",
@@ -2042,7 +2042,7 @@
    "verification": "NAME_RECOVERED_FROM_MACRO; body binding and PSO geometry remain compiler/runtime checks"
   }
  },
- "head": "0bf5d2f5cca9ac95744437ff0e7e5e806e2613d8",
+ "head": "b35af1fa8886aa9d5903e3b9e943503c63cb001e",
  "library_membership_files": [
   [
    "attn.metal",
@@ -2223,7 +2223,7 @@
   "metal_mod_trace_name_tests": "crates/hawking-core/src/metal/mod.rs \u2014 static_kernel_name plus per-family `SHADER_X.contains(kernel void {name}()` tests. Compile/trace-name contract, not host bind vs [[buffer(N)]]."
  },
  "schema": "hawking.future.static_kernel_verify.v1",
- "seal_sha256": "f6401c9102748fa1d4284224b5b2dcbb4c98702ab8423a313c7e021ae1e01f2d",
+ "seal_sha256": "a0746f9c33272a563030df6544f6ee42bb8dc35cb2e60336579a9f8f70b212f2",
  "static_correctness_does_not_prove_speed": "Static correctness does NOT prove speed and does NOT substitute for a protected measurement. A finding of no static ERROR is not a tps number, not a token_ns, not a complete-token, and not PROTECTED_ABSOLUTE. This tool exists to stop wasting a protected GPU window on a defect that was detectable from the .metal sources and their Rust hosts. It produces neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE. Everything here is STATIC_ONLY with bench state UNKNOWN.",
  "version": 1,
  "would_waste_a_protected_window": true

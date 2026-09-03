@@ -164,7 +164,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T23:49:45Z",
+  "recorded_at": "2026-09-03T00:47:14Z",
   "recorded_by": "tools/future/nr_nx_generic.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -562,7 +562,7 @@
   "workunit": "one CPU_ANALYSIS unit; probe+adapt+drive compiler stages and pack a source-independent NX on a real specimen; no GPU authority"
  },
  "schema": "hawking.future.nr_nx_generic.v1",
- "seal_sha256": "64d144120521533c236f4352b15f371d3544a4f126257977c3606a4cc38eae90",
+ "seal_sha256": "37479d3bbc569633ac89a960ab0edcaab1b90730858307940a855935ac1e9ab4",
  "sleeping_workunit": {
   "blocked_reason": "NX_LOWER blocked at stage None: None",
   "classification": "SLEEPING",
@@ -1766,7 +1766,7 @@
      "template": null,
      "why": "dense MLP has no expert router; router collapse is not an operator on this architecture"
     },
-    "stderr_tail": "Traceback (most recent call last):\n  File \"/Users/scammermike/Downloads/hawking/tools/odyssey/physical_graph_compiler.py\", line 494, in <module>\n    raise SystemExit(main())\n                     ~~~~^^\n  File \"/Users/scammermike/Downloads/hawking/tools/odyssey/physical_graph_compiler.py\", line 130, in main\n    X = np.load(Path(a.capture) / f\"X_layer{a.layer}.npy\").astype(np.float64)\n        ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/lib/python3.14/site-packages/numpy/lib/_npyio_impl.py\", line 454, in load\n    fid = stack.enter_context(open(os.fspath(file), \"rb\"))\n                              ~~~~^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: '/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/nr-nx-generic-pgc-yqcpap0v/no-capture/X_layer0.npy'\n",
+    "stderr_tail": "Traceback (most recent call last):\n  File \"/Users/scammermike/Downloads/hawking/tools/odyssey/physical_graph_compiler.py\", line 494, in <module>\n    raise SystemExit(main())\n                     ~~~~^^\n  File \"/Users/scammermike/Downloads/hawking/tools/odyssey/physical_graph_compiler.py\", line 130, in main\n    X = np.load(Path(a.capture) / f\"X_layer{a.layer}.npy\").astype(np.float64)\n        ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/lib/python3.14/site-packages/numpy/lib/_npyio_impl.py\", line 454, in load\n    fid = stack.enter_context(open(os.fspath(file), \"rb\"))\n                              ~~~~^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: '/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/nr-nx-generic-pgc-t245ezju/no-capture/X_layer0.npy'\n",
     "stdout_tail": "",
     "used_compiler_silu": true
    },

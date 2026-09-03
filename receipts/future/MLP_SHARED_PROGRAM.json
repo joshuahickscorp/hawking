@@ -32,7 +32,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T23:27:49Z",
+  "recorded_at": "2026-09-03T00:37:36Z",
   "recorded_by": "tools/future/mlp_shared_program.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -2172,7 +2172,7 @@
   "negative_index queried; proposal families not refused; W-space scars cited as cousins",
   "train-set figure cannot be reported as held-out (loud exception)"
  ],
- "git_head": "a612af62db43bee98204eb7e19a64d901f1eb571",
+ "git_head": "b35af1fa8886aa9d5903e3b9e943503c63cb001e",
  "go_wider": false,
  "gpu_authority": false,
  "index": {
@@ -2384,7 +2384,7 @@
  ],
  "round": "cheap_first",
  "schema": "hawking.future.mlp_shared_program.v1",
- "seal_sha256": "2d2c4bc5d074b89cd880211b3f3b37933b2ce4c781167d3864b9131118cfbb1b",
+ "seal_sha256": "b1fedf49d5fd36aae4e6cbb4d793f47e07c02ade95c6cd097dbfc44cacec8716",
  "selftest": {
   "held_out_leak_codes": [
    "TrainReportedAsHeldOut"

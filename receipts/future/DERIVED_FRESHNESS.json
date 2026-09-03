@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T22:53:58Z",
+  "recorded_at": "2026-09-03T00:17:44Z",
   "recorded_by": "tools/future/freshness.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -9978,7 +9978,7 @@
   "STALE_SEMANTIC": 0,
   "UNKNOWN": 4,
   "registered": 6,
-  "unregistered": 332
+  "unregistered": 333
  },
  "eras": [
   "I Genesis of the Laboratory",
@@ -9998,7 +9998,7 @@
   "registry of derived -> source(s) -> producer; unregistered receipts/future/*.json are findings",
   "source resolution copes with live-present, live-absent, and pinned-snapshot copies and records which"
  ],
- "head": "2542c46354972ba73705ee0462972bbac3589648",
+ "head": "7bde0f0842b29b2bbcd03a8d4300f846c8895adf",
  "measurement_class": "STATIC_ONLY",
  "negative_findings": [
   "QUALIFICATION_PIPELINE.json, FLASH_NX_COMPLETENESS_AUDIT.json, HCLI_FUTURE_WORKUNITS.json and TOURNAMENT_READINESS.json record no source sha256/semantic fingerprint, so they classify UNKNOWN until those producers start writing the CANDIDATE_STAGED_PLAN.input pattern",
@@ -10007,7 +10007,7 @@
   "no GPU / FPGA / power meter in this lane; no hardware quantity is asserted",
   "--refresh was not invoked by --check/--report; STALE_SEMANTIC artifacts stay on disk until a caller passes --refresh",
   "UNKNOWN artifacts: QUALIFICATION_PIPELINE.json, FLASH_NX_COMPLETENESS_AUDIT.json, HCLI_FUTURE_WORKUNITS.json, TOURNAMENT_READINESS.json",
-  "332 receipts/future/*.json files are not in the freshness registry"
+  "333 receipts/future/*.json files are not in the freshness registry"
  ],
  "no_era_vi": true,
  "no_odyssey_iv": true,
@@ -10172,7 +10172,7 @@
   }
  ],
  "schema": "hawking.future.freshness.v1",
- "seal_sha256": "b7aed73cb7de51780dc400b7f3c69842c5cfb2d3c6d838a4c8066bfc6bb98556",
+ "seal_sha256": "2f69f95cb69674276bc96b6f848a526641795c100802492c0232e7800a13de4e",
  "unregistered": [
   "ABI_VERDICT_HARNESS.json",
   "ABLITERATION.json",
@@ -10336,6 +10336,7 @@
   "MLP_TEACHER_CORPUS.json",
   "MODELLAKE_EVENTS.json",
   "MODELLAKE_INDEX.json",
+  "MODELLAKE_LIFECYCLE.json",
   "MODELLAKE_SCHEDULER_VIEW.json",
   "MODEL_BEARING.json",
   "MODEL_BEARING_TIMELINE.json",

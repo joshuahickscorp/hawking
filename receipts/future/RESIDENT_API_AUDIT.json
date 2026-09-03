@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T23:40:13Z",
+  "recorded_at": "2026-09-03T00:37:50Z",
   "recorded_by": "tools/future/resident_api.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -11,14 +11,14 @@
  "bench_state": "UNKNOWN",
  "claim_boundary": "Static sidecar artifact. No hardware measurement.",
  "counts": {
-  "capabilities": 283,
-  "discovered_python": 538,
-  "human_cli_only": 257,
+  "capabilities": 284,
+  "discovered_python": 540,
+  "human_cli_only": 258,
   "import_failures": 0,
-  "not_operational": 158,
+  "not_operational": 159,
   "operational": 104,
-  "scored": 262,
-  "tests": 276,
+  "scored": 263,
+  "tests": 277,
   "work_units": 6
  },
  "five_questions": [
@@ -802,6 +802,7 @@
    "mlp_teacher_corpus",
    "model_bearing_torture",
    "modellake_events",
+   "modellake_lifecycle",
    "modellake_scheduler_view",
    "multi_model_trial",
    "multistream_capacity_tree",
@@ -1034,6 +1035,7 @@
    "mlp_teacher_corpus",
    "model_bearing_torture",
    "modellake_events",
+   "modellake_lifecycle",
    "modellake_scheduler_view",
    "multi_model_trial",
    "multistream_capacity_tree",
@@ -1228,7 +1230,7 @@
   ],
   "tool_registry_present": true
  },
- "honest_scoring": "104 operational / 158 not operational / 262 scored. A human CLI is not an operational subsystem.",
+ "honest_scoring": "104 operational / 159 not operational / 263 scored. A human CLI is not an operational subsystem.",
  "law": "A subsystem is not operational until the RESIDENT can discover it, invoke it, schedule it and verify it; its result changes a frontier; the result persists; and next work refills. 'It has a CLI a human can run' is NOT enough.",
  "measurement_class": "STATIC_ONLY",
  "modules": [
@@ -20167,6 +20169,91 @@
   },
   {
    "capabilities": [
+    "future.modellake_lifecycle"
+   ],
+   "cli_flags": [],
+   "docstring": "ModelLake lifecycle state, read from disk at call time. ONE capability with structured fields, not eight new gates. The roadmap already tracks identity, hashing and promotion; what it could not answer was the operational question -- how ma\u2026",
+   "filename": "modellake_lifecycle.py",
+   "gaps": [
+    "does_not_emit_workunit",
+    "result_does_not_feed_a_named_frontier"
+   ],
+   "has_if_main": true,
+   "has_main": false,
+   "hcli_tool_registered": false,
+   "human_cli_only": true,
+   "import_error": null,
+   "import_ok": true,
+   "kind": "production",
+   "preferred_callable": "build",
+   "public_callables": [
+    "lifecycle",
+    "build"
+   ],
+   "questions": {
+    "emits_workunit": {
+     "evidence": {
+      "constructs": [],
+      "emitted_by_orchestration_connector": false
+     },
+     "gap": "does_not_emit_workunit",
+     "pass": false
+    },
+    "fail_closed": {
+     "evidence": {
+      "raise_count": 0,
+      "rule": "fail closed means raise (or write_receipt's HardwareClaimError) rather than returning a silent default",
+      "uses_write_receipt": true
+     },
+     "pass": true
+    },
+    "feeds_named_frontier": {
+     "evidence": {
+      "frontier_present": true,
+      "named_as_integration_target": [],
+      "receipt_is_frontier_probe": [],
+      "writes_frontier_document": false
+     },
+     "gap": "result_does_not_feed_a_named_frontier",
+     "pass": false
+    },
+    "hcli_invoke": {
+     "evidence": {
+      "has_if_main": true,
+      "has_main": false,
+      "hcli_future_tools": [],
+      "hcli_tool_count": 49,
+      "hcli_tool_registered": false,
+      "import_error": null,
+      "import_ok": true,
+      "preferred_callable": "build",
+      "public_callables": [
+       "lifecycle",
+       "build"
+      ]
+     },
+     "pass": true
+    },
+    "produces_receipt": {
+     "evidence": {
+      "receipt": "MODELLAKE_LIFECYCLE.json",
+      "uses_write_receipt": true,
+      "write_receipt_names": [
+       "MODELLAKE_LIFECYCLE.json"
+      ]
+     },
+     "pass": true
+    }
+   },
+   "raise_count": 0,
+   "receipt": "MODELLAKE_LIFECYCLE.json",
+   "relpath": "tools/future/modellake_lifecycle.py",
+   "status": "NOT_OPERATIONAL",
+   "stem": "modellake_lifecycle",
+   "workunit_constructs": []
+  },
+  {
+   "capabilities": [
     "future.modellake_scheduler_view"
    ],
    "cli_flags": [
@@ -33757,8 +33844,8 @@
   }
  ],
  "negative_findings": [
-  "158 of 262 scored modules are NOT_OPERATIONAL; operational=104. Not rounded up.",
-  "257 scored modules are human-CLI-callable (argparse / __main__) and are not registered in HCLI ToolRegistry.",
+  "159 of 263 scored modules are NOT_OPERATIONAL; operational=104. Not rounded up.",
+  "258 scored modules are human-CLI-callable (argparse / __main__) and are not registered in HCLI ToolRegistry.",
   "hcli/tool_registry.py default_tool_registry lists 49 tools and 0 future.* tools. AgentOS cannot discover the sidecar.",
   "HCLI ToolRegistry.invoke returns ToolResult(ok=False, UNKNOWN_TOOL) instead of raising; resident_api.invoke raises. Fail-closed is this surface, not HCLI's.",
   "Most modules persist a receipt a human can regenerate with `python3 tools/future/<mod>.py --build` but do not emit a WorkUnit and do not feed CLAUDE_GLOBAL_FRONTIER.json.",
@@ -33864,6 +33951,7 @@
   "mlp_teacher_corpus",
   "model_bearing_torture",
   "modellake_events",
+  "modellake_lifecycle",
   "modellake_scheduler_view",
   "multi_model_trial",
   "multistream_capacity_tree",
@@ -40957,6 +41045,26 @@
    "receipt": null,
    "status": "NOT_OPERATIONAL"
   },
+  "future.modellake_lifecycle": {
+   "aliases": [
+    "future.modellake_lifecycle"
+   ],
+   "argument_contract": {
+    "bindable": true,
+    "cli_flags": [],
+    "params": []
+   },
+   "callable": "build",
+   "frontier": [],
+   "gaps": [
+    "does_not_emit_workunit",
+    "result_does_not_feed_a_named_frontier"
+   ],
+   "import_error": null,
+   "module": "tools/future/modellake_lifecycle.py",
+   "receipt": "MODELLAKE_LIFECYCLE.json",
+   "status": "NOT_OPERATIONAL"
+  },
   "future.modellake_scheduler_view": {
    "aliases": [
     "future.modellake_scheduler_view"
@@ -45389,7 +45497,7 @@
   ]
  },
  "schema": "hawking.future.resident_api.v1",
- "seal_sha256": "6270333cadfa5d9ea2f7a63838d10f92b9fb6aff87c1758519e6db1735c51622",
+ "seal_sha256": "54d9c18ff91b79d2043265d7ee47501dd96bce96fefb8fb8b4dd33211840e574",
  "version": 1,
  "work_units": [
   {
@@ -45399,15 +45507,15 @@
    "backend_task_id": null,
    "claim_boundary": "Proposal only. Sidecar cannot register HCLI tools or rewrite CLAUDE_GLOBAL_FRONTIER.json.",
    "classification": "STATIC_ONLY",
-   "content_hash": "d475ef8051f31b08f7960c29274d5c0b2cbb70a54fb56c7b20ae19d848079238",
+   "content_hash": "948b4cdfc04209f683e4dec7ec1613619ca2fe4a781d5d325cf7d6af37ca76ba",
    "dependencies": [],
-   "description": "Close resident-callability gap 'does_not_emit_workunit' for 149 sidecar module(s).",
+   "description": "Close resident-callability gap 'does_not_emit_workunit' for 150 sidecar module(s).",
    "effect_class": "READ_ONLY",
    "failure_context": null,
    "finished_at": null,
    "gap": "does_not_emit_workunit",
    "id": "future.resident_api.close.does_not_emit_workunit",
-   "module_count": 149,
+   "module_count": 150,
    "module_stems": [
     "__init__",
     "_common",
@@ -45500,6 +45608,7 @@
     "mlp_teacher_corpus",
     "model_bearing_torture",
     "modellake_events",
+    "modellake_lifecycle",
     "modellake_scheduler_view",
     "multi_model_trial",
     "multistream_capacity_tree",
@@ -45759,15 +45868,15 @@
    "backend_task_id": null,
    "claim_boundary": "Proposal only. Sidecar cannot register HCLI tools or rewrite CLAUDE_GLOBAL_FRONTIER.json.",
    "classification": "STATIC_ONLY",
-   "content_hash": "6adeb62b78a19a1993a9b441c5c0666ddc68e1bf5face1b877dbe267fc19505c",
+   "content_hash": "b0b05378762df2e95a0f230c8ecaea9c57d3b936578e6a359fdfaab5d1a4017b",
    "dependencies": [],
-   "description": "Close resident-callability gap 'result_does_not_feed_a_named_frontier' for 158 sidecar module(s).",
+   "description": "Close resident-callability gap 'result_does_not_feed_a_named_frontier' for 159 sidecar module(s).",
    "effect_class": "READ_ONLY",
    "failure_context": null,
    "finished_at": null,
    "gap": "result_does_not_feed_a_named_frontier",
    "id": "future.resident_api.close.result_does_not_feed_a_named_frontier",
-   "module_count": 158,
+   "module_count": 159,
    "module_stems": [
     "__init__",
     "_common",
@@ -45864,6 +45973,7 @@
     "mlp_teacher_corpus",
     "model_bearing_torture",
     "modellake_events",
+    "modellake_lifecycle",
     "modellake_scheduler_view",
     "multi_model_trial",
     "multistream_capacity_tree",

@@ -53539,7 +53539,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T23:41:12Z",
+  "recorded_at": "2026-09-03T00:38:43Z",
   "recorded_by": "tools/future/codex_ingest.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -69527,7 +69527,7 @@
    "driver_token": "PASSED",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1788392404.192159,
+   "mtime": 1788395860.814039,
    "reason": "status PASSED is an evidence-backed positive result",
    "sha256": "0b6209a16b3d0b546d16b47e23bf07fc23f2f50a100dbbe6d1a74bfceb76d484",
    "size": 132669
@@ -69563,7 +69563,7 @@
    "driver_token": "PASSED",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1788392404.1858692,
+   "mtime": 1788395860.806666,
    "reason": "status PASSED is an evidence-backed positive result",
    "sha256": "45feb7b0f1bfd8e3873bbf14b3c54d24973d4106b8ab4ee72ec83b32436fc5ec",
    "size": 11084
@@ -69587,7 +69587,7 @@
    "driver_token": "PASSED",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1788392404.204466,
+   "mtime": 1788395860.82564,
    "reason": "status PASSED is an evidence-backed positive result",
    "sha256": "47617dd47099811fe178a5be6ddb29107072d097c73f9ea3679afda07317c223",
    "size": 4474
@@ -69599,7 +69599,7 @@
    "driver_token": "PASSED",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1788392404.2066507,
+   "mtime": 1788395860.8273518,
    "reason": "status PASSED is an evidence-backed positive result",
    "sha256": "ec9589bd2ced5e72a157422d5b7db9935f37da44f8a029491aba41f07764a766",
    "size": 13150
@@ -69611,7 +69611,7 @@
    "driver_token": "PASSED",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1788392404.183647,
+   "mtime": 1788395860.805296,
    "reason": "status PASSED is an evidence-backed positive result",
    "sha256": "2350a4f2a12f8ffbdb32e99d68895b6d8273f199584cfa9b5f97ed88c2802439",
    "size": 12677
@@ -69647,7 +69647,7 @@
    "driver_token": "PASSED",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1788392404.1989257,
+   "mtime": 1788395860.8244226,
    "reason": "status PASSED is an evidence-backed positive result",
    "sha256": "46b9377ab2c6743372f37ee6e2f71d9ebc8d985809f8dbf7d9947ef3fbc1145a",
    "size": 8160
@@ -69899,7 +69899,7 @@
    "driver_token": "PASSED",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-09-02T04:02:42Z",
-   "mtime": 1788392404.1971421,
+   "mtime": 1788395860.8181689,
    "reason": "status PASSED is an evidence-backed positive result",
    "sha256": "b96700c2360e75e75bc5789c0c9b4354a807771a45dce2418c78de2b1b9bb4cb",
    "size": 189647
@@ -69911,7 +69911,7 @@
    "driver_token": "PASSED",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1788392404.1891024,
+   "mtime": 1788395860.8084745,
    "reason": "status PASSED is an evidence-backed positive result",
    "sha256": "79c7d5d916bebb31d6900f154c70b83943064c2323b1d7231b3e7f9bf469dcc8",
    "size": 55141
@@ -73658,7 +73658,7 @@
   "--once --assert-idempotent refusal that is capable of firing",
   "read-only open; writes only receipts/future/CODEX_INGEST_STATE.json"
  ],
- "head": "a612af62db43bee98204eb7e19a64d901f1eb571",
+ "head": "e76518be8ccbe48d73c1e865d159213cd7334e5c",
  "idempotence": {
   "assert_idempotent": "exit non-zero iff n_new + n_changed > 0",
   "change_detector": "sha256 of file bytes; mtime is recorded and never consulted",
@@ -73829,7 +73829,7 @@
   "unreadable": []
  },
  "schema": "hawking.future.codex_ingest.v1",
- "seal_sha256": "9de2fe6220d35b2acf03fb25857316a1eafc69ef5cc6e747f9589de8a75efba5",
+ "seal_sha256": "6e43612d326c5284ed4feca75228bb9db5b686202458d660583f5951f12dfb78",
  "version": 1,
  "vocabulary": {
   "bench_state": "UNKNOWN",

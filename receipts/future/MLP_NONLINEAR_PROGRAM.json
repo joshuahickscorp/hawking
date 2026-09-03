@@ -38,7 +38,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T23:28:01Z",
+  "recorded_at": "2026-09-03T00:37:49Z",
   "recorded_by": "tools/future/mlp_nonlinear_program.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -3365,7 +3365,7 @@
   "negative_index queried; proposal families not refused; W-space scars cited as cousins",
   "CAPABILITY_INFORMATION_MAP cited for residual budget; none allocated because nothing survived"
  ],
- "git_head": "a612af62db43bee98204eb7e19a64d901f1eb571",
+ "git_head": "b35af1fa8886aa9d5903e3b9e943503c63cb001e",
  "go_wider": false,
  "gpu_authority": false,
  "index": {
@@ -3690,7 +3690,7 @@
   }
  ],
  "schema": "hawking.future.mlp_nonlinear_program.v1",
- "seal_sha256": "a08c424ea0491e8a672ec26f5d19fda1a54f163b119db3709da175e4f2c8d0da",
+ "seal_sha256": "a9f76b634a6e4807c9f563c70dea294b9a723c234dc2b66343f01232c65decac",
  "selftest": {
   "held_out_leak_codes": [
    "TrainReportedAsHeldOut"

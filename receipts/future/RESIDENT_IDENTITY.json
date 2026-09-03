@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T22:53:54Z",
+  "recorded_at": "2026-09-03T00:36:31Z",
   "recorded_by": "tools/future/resident_identity.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -25,7 +25,7 @@
    "executable_hash": {
     "by_role": {
      "binary": "d34044cffae8f32055cca40aae27ec62beb44f043df081293126da89e51b8e76",
-     "resident_binary": "c108acc6a49eb5f1719ae260ece23c4c019fdbf560f305f491cf6c124880c270"
+     "resident_binary": "510da8937dc75e02fce21f6ec5b902c204be502fe4b30fd6978df45d6474ed83"
     },
     "seal_declared_sha256_16": "d34044cffae8f320",
     "seal_matching_role": "binary"
@@ -371,7 +371,7 @@
     "load": "ON_DISK",
     "on_disk": true,
     "path": "hcli/hawking-native.sealed-3.14.json",
-    "sha256": "d0ccab6562eebde05f81fbc9e7d40698f4aa9a83ae8e19606a7372a1f3abb7ce",
+    "sha256": "413057cd326e49e549cb9b04a53cd630b8ce07599cd156fd4e7d96f335178ca6",
     "source": "ON_DISK"
    },
    "teacher_capture": {
@@ -1278,14 +1278,14 @@
     "exists": true,
     "missing_evidence": [],
     "path": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
-    "sha256": "c108acc6a49eb5f1719ae260ece23c4c019fdbf560f305f491cf6c124880c270",
+    "sha256": "510da8937dc75e02fce21f6ec5b902c204be502fe4b30fd6978df45d6474ed83",
     "source_state": "COMPUTED"
    },
    "seal_runtime_binary": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
    "value": {
     "by_role": {
      "binary": "d34044cffae8f32055cca40aae27ec62beb44f043df081293126da89e51b8e76",
-     "resident_binary": "c108acc6a49eb5f1719ae260ece23c4c019fdbf560f305f491cf6c124880c270"
+     "resident_binary": "510da8937dc75e02fce21f6ec5b902c204be502fe4b30fd6978df45d6474ed83"
     },
     "note": "Two executables are declared. The resident seal's runtime_binary_sha256_16 matches 'binary' (hybrid greedy) when that file is present; resident_binary is a different artifact.",
     "seal_declared_sha256_16": "d34044cffae8f320",
@@ -3407,7 +3407,7 @@
     "hcli/hawking-native.sealed-3.14.json#resident_identity"
    ],
    "missing_evidence": [],
-   "profile_sha256": "d0ccab6562eebde05f81fbc9e7d40698f4aa9a83ae8e19606a7372a1f3abb7ce",
+   "profile_sha256": "413057cd326e49e549cb9b04a53cd630b8ce07599cd156fd4e7d96f335178ca6",
    "source_state": "ON_DISK",
    "value": {
     "model_id": "qwen3.8-27b-sealed-3.14",
@@ -3800,7 +3800,7 @@
   }
  },
  "schema": "hawking.future.resident_identity.v1",
- "seal_sha256": "cf5b606071a2eaac92ca41e8e697ea9742b5fc54d990ce7258a437956a9b76fc",
+ "seal_sha256": "53777809ce3890c08d05fcab7c57ccf5443c70c68e26ff4239dab8ac4d2b88d1",
  "status": "ACCEPTED",
  "version": 1,
  "work_unit": {

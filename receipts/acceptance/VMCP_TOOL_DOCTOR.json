@@ -81,35 +81,35 @@
     "weakened": false
   },
   "criterion_weakened": false,
-  "elapsed_ms": 49.987,
+  "elapsed_ms": 73.735,
   "evidence_tier": "FUNCTIONAL_SIM",
   "gate": "VMCP_TOOL_DOCTOR",
-  "generated_at": "2026-09-02T18:44:53Z",
+  "generated_at": "2026-09-02T23:16:06Z",
   "gpu_authority": false,
   "invoked_symbols": [
     {
-      "elapsed_ms": 0.275,
+      "elapsed_ms": 14.211,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "visionmcp.capabilities.core_doctor_report"
     },
     {
-      "elapsed_ms": 0.034,
+      "elapsed_ms": 0.326,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "visionmcp.acquisition.quarantine._sniff"
     },
     {
-      "elapsed_ms": 0.065,
+      "elapsed_ms": 0.069,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "visionmcp.worlds.spatial.io.obj.obj_file_counts"
     },
     {
-      "elapsed_ms": 0.1,
+      "elapsed_ms": 0.112,
       "error": null,
       "kind": "call",
       "raised": false,
@@ -117,7 +117,7 @@
     }
   ],
   "measured": {
-    "core_doctor_elapsed_ms": 0.27099999715574086,
+    "core_doctor_elapsed_ms": 14.20266700006323,
     "core_doctor_ok": true,
     "required": {
       "CSS parser": {
@@ -148,7 +148,7 @@
           "available": true,
           "error": null,
           "grantpt": true,
-          "ptsname": "/dev/ttys002"
+          "ptsname": "/dev/ttys004"
         },
         "fallback": null,
         "symbol": "os.posix_openpt"
@@ -267,7 +267,7 @@
           "present": false
         }
       ],
-      "elapsed_ms": 0.27099999715574086,
+      "elapsed_ms": 14.20266700006323,
       "network_used": false,
       "ok": true,
       "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",

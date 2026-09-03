@@ -20,7 +20,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T23:27:30Z",
+  "recorded_at": "2026-09-03T00:19:06Z",
   "recorded_by": "tools/future/sleeping_specimens.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -106,7 +106,7 @@
   "workunit": "one IO_HEAVY SLEEPING_SPECIMEN_WU per pending acquisition; wakes on SEALED_SOURCE_READY"
  },
  "schema": "hawking.future.sleeping_specimens.v1",
- "seal_sha256": "dcd9421af4e7dbcb8a5a5717bbecdc9ada774fed12ae33692136cf82ec4a9539",
+ "seal_sha256": "60515ef679c0b25d115eb0a0ccd70abe4397851bc70cba1ab2532a92e7cd008b",
  "sleeping_units": [],
  "species": "SLEEPING_SPECIMEN_WU",
  "version": 1,
@@ -121,6 +121,6 @@
   "pending_jobs": [],
   "read_only": true,
   "source": "watcher_sample.active_jobs UNION recent download_started minus complete",
-  "ts": "2026-09-02T23:11:52.727828+00:00"
+  "ts": "2026-09-03T00:12:10.832484+00:00"
  }
 }

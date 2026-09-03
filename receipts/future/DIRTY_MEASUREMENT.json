@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T23:42:20Z",
+  "recorded_at": "2026-09-03T00:39:52Z",
   "recorded_by": "tools/future/dirty_measure.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -11,50 +11,68 @@
  "claim_boundary": "Static sidecar artifact. No hardware measurement.",
  "competing_workloads": [
   {
-   "cpu_pct": 33.3,
+   "cpu_pct": 241.8,
    "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
-   "pid": 10300,
-   "rss_gib": 19.71
+   "pid": 93450,
+   "rss_gib": 29.45
   },
   {
-   "cpu_pct": 32.2,
+   "cpu_pct": 114.6,
    "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
-   "pid": 10312,
-   "rss_gib": 15.24
+   "pid": 93509,
+   "rss_gib": 6.69
   },
   {
-   "cpu_pct": 0.0,
+   "cpu_pct": 99.1,
    "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
-   "pid": 10553,
-   "rss_gib": 3.81
+   "pid": 93410,
+   "rss_gib": 4.17
   },
   {
-   "cpu_pct": 106.3,
+   "cpu_pct": 169.3,
    "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
-   "pid": 10661,
-   "rss_gib": 1.67
+   "pid": 93434,
+   "rss_gib": 1.54
   },
   {
-   "cpu_pct": 107.5,
+   "cpu_pct": 201.8,
    "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
-   "pid": 10352,
-   "rss_gib": 1.63
+   "pid": 93552,
+   "rss_gib": 1.53
   },
   {
-   "cpu_pct": 20.0,
+   "cpu_pct": 92.6,
    "name": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores",
    "pid": 305,
+   "rss_gib": 0.09
+  },
+  {
+   "cpu_pct": 29.4,
+   "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+   "pid": 13859,
    "rss_gib": 0.07
   },
   {
-   "cpu_pct": 27.0,
-   "name": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
-   "pid": 180,
+   "cpu_pct": 86.1,
+   "name": "/System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged",
+   "pid": 81100,
+   "rss_gib": 0.03
+  },
+  {
+   "cpu_pct": 21.6,
+   "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+   "pid": 14534,
+   "rss_gib": 0.03
+  },
+  {
+   "cpu_pct": 20.3,
+   "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+   "pid": 14529,
    "rss_gib": 0.03
   }
  ],
  "contamination_class": "HEAVY",
- "contamination_fingerprint": "d436d7b4534bf36fab1ecf89adb42dafb6387116a1e46f616093250eb89d7614",
+ "contamination_fingerprint": "3e842ca413896d43bc8a5a1f5557a1ff54424f58e6f502a105ce35d71bc61268",
  "direction_is_not_magnitude": {
   "fixture_ab": {
    "faster_arm": "B",
@@ -112,45 +130,63 @@
   "classification_rule": "UNKNOWN when a required probe failed \u2014 never optimistic QUIESCENT. HEAVY evidence from a probe that succeeded still classifies HEAVY.",
   "competing_workloads": [
    {
-    "cpu_pct": 33.3,
+    "cpu_pct": 241.8,
     "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
-    "pid": 10300,
-    "rss_gib": 19.71
+    "pid": 93450,
+    "rss_gib": 29.45
    },
    {
-    "cpu_pct": 32.2,
+    "cpu_pct": 114.6,
     "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
-    "pid": 10312,
-    "rss_gib": 15.24
+    "pid": 93509,
+    "rss_gib": 6.69
    },
    {
-    "cpu_pct": 0.0,
+    "cpu_pct": 99.1,
     "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
-    "pid": 10553,
-    "rss_gib": 3.81
+    "pid": 93410,
+    "rss_gib": 4.17
    },
    {
-    "cpu_pct": 106.3,
+    "cpu_pct": 169.3,
     "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
-    "pid": 10661,
-    "rss_gib": 1.67
+    "pid": 93434,
+    "rss_gib": 1.54
    },
    {
-    "cpu_pct": 107.5,
+    "cpu_pct": 201.8,
     "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
-    "pid": 10352,
-    "rss_gib": 1.63
+    "pid": 93552,
+    "rss_gib": 1.53
    },
    {
-    "cpu_pct": 20.0,
+    "cpu_pct": 92.6,
     "name": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores",
     "pid": 305,
+    "rss_gib": 0.09
+   },
+   {
+    "cpu_pct": 29.4,
+    "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+    "pid": 13859,
     "rss_gib": 0.07
    },
    {
-    "cpu_pct": 27.0,
-    "name": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
-    "pid": 180,
+    "cpu_pct": 86.1,
+    "name": "/System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged",
+    "pid": 81100,
+    "rss_gib": 0.03
+   },
+   {
+    "cpu_pct": 21.6,
+    "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+    "pid": 14534,
+    "rss_gib": 0.03
+   },
+   {
+    "cpu_pct": 20.3,
+    "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+    "pid": 14529,
     "rss_gib": 0.03
    }
   ],
@@ -158,19 +194,13 @@
   "contamination_evidence": [
    {
     "contributes": "HEAVY",
-    "finding": "max_rss_gib=19.71 >= 8.0",
+    "finding": "max_rss_gib=29.45 >= 8.0",
     "kind": "heavy",
     "probe": "rss"
    },
    {
     "contributes": "LIGHT",
-    "finding": "device_utilization_pct=13 > 0",
-    "kind": "light",
-    "probe": "gpu_occupancy"
-   },
-   {
-    "contributes": "LIGHT",
-    "finding": "load_1m=18.87939453125 > 0.5*ncpu=28",
+    "finding": "load_1m=17.23193359375 > 0.5*ncpu=28",
     "kind": "light",
     "probe": "load"
    },
@@ -181,60 +211,75 @@
     "probe": "memory"
    }
   ],
-  "contamination_fingerprint": "d436d7b4534bf36fab1ecf89adb42dafb6387116a1e46f616093250eb89d7614",
+  "contamination_fingerprint": "3e842ca413896d43bc8a5a1f5557a1ff54424f58e6f502a105ce35d71bc61268",
   "contamination_reason": "at least one HEAVY probe fired",
   "dirty_binding": {
-   "contamination_fingerprint": "d436d7b4534bf36fab1ecf89adb42dafb6387116a1e46f616093250eb89d7614",
+   "contamination_fingerprint": "3e842ca413896d43bc8a5a1f5557a1ff54424f58e6f502a105ce35d71bc61268",
    "evidence_class": "SELF_MEASURED_DIRTY",
    "rule": "SELF_MEASURED_DIRTY values cannot be rebound as PROTECTED_ABSOLUTE; copying this object does not change its evidence class",
-   "token": "259a8177a6395ddd32fef95c3d7631d00e492511ab51bae8a8be4fe76b5ca7df",
+   "token": "b86dbbc61544c3cd80bcb49049ffb819890c5388da3be3589c6146b463d494fc",
    "use": "envelope"
   },
-  "dirty_value_token": "259a8177a6395ddd32fef95c3d7631d00e492511ab51bae8a8be4fe76b5ca7df",
+  "dirty_value_token": "b86dbbc61544c3cd80bcb49049ffb819890c5388da3be3589c6146b463d494fc",
   "evidence_class": "SELF_MEASURED_DIRTY",
   "gpu_authority": false,
   "gpu_processes": {
    "attribution": "enumerated by CPU% and/or RSS; PID-level GPU occupancy is not available without a protected lease. On Apple Silicon RSS is the Metal working-set dimension (ACCELERATOR_QUIESCENCE_INSTRUMENT).",
    "cpu_pct_available": true,
    "method": "ps_enumerate",
-   "n_enumerated": 476,
-   "n_over_threshold": 7,
+   "n_enumerated": 555,
+   "n_over_threshold": 10,
    "no_name_filter": true,
    "processes": [
     {
-     "cpu_pct": 33.3,
+     "cpu_pct": 241.8,
      "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
-     "pid": 10300
+     "pid": 93450
     },
     {
-     "cpu_pct": 32.2,
+     "cpu_pct": 114.6,
      "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
-     "pid": 10312
+     "pid": 93509
     },
     {
-     "cpu_pct": 0.0,
+     "cpu_pct": 99.1,
      "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
-     "pid": 10553
+     "pid": 93410
     },
     {
-     "cpu_pct": 106.3,
+     "cpu_pct": 169.3,
      "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
-     "pid": 10661
+     "pid": 93434
     },
     {
-     "cpu_pct": 107.5,
+     "cpu_pct": 201.8,
      "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
-     "pid": 10352
+     "pid": 93552
     },
     {
-     "cpu_pct": 20.0,
+     "cpu_pct": 92.6,
      "name": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores",
      "pid": 305
     },
     {
-     "cpu_pct": 27.0,
-     "name": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
-     "pid": 180
+     "cpu_pct": 29.4,
+     "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+     "pid": 13859
+    },
+    {
+     "cpu_pct": 86.1,
+     "name": "/System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged",
+     "pid": 81100
+    },
+    {
+     "cpu_pct": 21.6,
+     "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+     "pid": 14534
+    },
+    {
+     "cpu_pct": 20.3,
+     "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+     "pid": 14529
     }
    ],
    "reason": null,
@@ -266,35 +311,35 @@
   "measurement_class": "STATIC_ONLY",
   "memory_pressure": {
    "bytes": {
-    "active": 27737751552,
-    "compressor": 40507080704,
-    "free": 78036992,
-    "inactive": 27448705024,
-    "wired": 6146965504
+    "active": 31785336832,
+    "compressor": 33105674240,
+    "free": 121159680,
+    "inactive": 31699369984,
+    "wired": 5454872576
    },
    "pages": {
-    "\"Translation faults\"": 4078903618,
-    "Anonymous pages": 2915216,
-    "Compressions": 581606157,
-    "Decompressions": 371474191,
-    "File-backed pages": 470148,
-    "Pageins": 184070450,
-    "Pageouts": 18198,
-    "Pages active": 1692978,
-    "Pages copy-on-write": 249369554,
-    "Pages free": 4763,
-    "Pages inactive": 1675336,
-    "Pages occupied by compressor": 2472356,
-    "Pages purgeable": 22239,
-    "Pages purged": 13346258,
-    "Pages reactivated": 237234367,
-    "Pages speculative": 17050,
-    "Pages stored in compressor": 3296362,
+    "\"Translation faults\"": 4488251850,
+    "Anonymous pages": 3028219,
+    "Compressions": 662262655,
+    "Decompressions": 425627325,
+    "File-backed pages": 848564,
+    "Pageins": 215927147,
+    "Pageouts": 19914,
+    "Pages active": 1940023,
+    "Pages copy-on-write": 280626304,
+    "Pages free": 7395,
+    "Pages inactive": 1934776,
+    "Pages occupied by compressor": 2020610,
+    "Pages purgeable": 1366,
+    "Pages purged": 14391899,
+    "Pages reactivated": 267753048,
+    "Pages speculative": 1984,
+    "Pages stored in compressor": 2768745,
     "Pages throttled": 0,
-    "Pages wired down": 375181,
-    "Pages zero filled": 2514267762,
-    "Swapins": 29789736,
-    "Swapouts": 51190382
+    "Pages wired down": 332939,
+    "Pages zero filled": 2711175118,
+    "Swapins": 31950074,
+    "Swapouts": 54779307
    },
    "pressure_level": 1,
    "pressure_name": "warn",
@@ -327,7 +372,7 @@
    "did_not_start_resident": true,
    "model": "UNKNOWN",
    "note": "this sidecar did not start a resident and did not take a GPU lease; process name is not a model identity; model stays UNKNOWN unless declared",
-   "pid": 10300,
+   "pid": 93450,
    "process_name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
    "source": "largest_rss_neighbour",
    "status": "PARTIAL"
@@ -336,45 +381,63 @@
    "benchmark_ordinal": null,
    "competing_workloads": [
     {
-     "cpu_pct": 33.3,
+     "cpu_pct": 241.8,
      "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
-     "pid": 10300,
-     "rss_gib": 19.71
+     "pid": 93450,
+     "rss_gib": 29.45
     },
     {
-     "cpu_pct": 32.2,
+     "cpu_pct": 114.6,
      "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
-     "pid": 10312,
-     "rss_gib": 15.24
+     "pid": 93509,
+     "rss_gib": 6.69
     },
     {
-     "cpu_pct": 0.0,
+     "cpu_pct": 99.1,
      "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
-     "pid": 10553,
-     "rss_gib": 3.81
+     "pid": 93410,
+     "rss_gib": 4.17
     },
     {
-     "cpu_pct": 106.3,
+     "cpu_pct": 169.3,
      "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
-     "pid": 10661,
-     "rss_gib": 1.67
+     "pid": 93434,
+     "rss_gib": 1.54
     },
     {
-     "cpu_pct": 107.5,
+     "cpu_pct": 201.8,
      "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
-     "pid": 10352,
-     "rss_gib": 1.63
+     "pid": 93552,
+     "rss_gib": 1.53
     },
     {
-     "cpu_pct": 20.0,
+     "cpu_pct": 92.6,
      "name": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores",
      "pid": 305,
+     "rss_gib": 0.09
+    },
+    {
+     "cpu_pct": 29.4,
+     "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+     "pid": 13859,
      "rss_gib": 0.07
     },
     {
-     "cpu_pct": 27.0,
-     "name": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
-     "pid": 180,
+     "cpu_pct": 86.1,
+     "name": "/System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged",
+     "pid": 81100,
+     "rss_gib": 0.03
+    },
+    {
+     "cpu_pct": 21.6,
+     "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+     "pid": 14534,
+     "rss_gib": 0.03
+    },
+    {
+     "cpu_pct": 20.3,
+     "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+     "pid": 14529,
      "rss_gib": 0.03
     }
    ],
@@ -382,44 +445,59 @@
     "attribution": "enumerated by CPU% and/or RSS; PID-level GPU occupancy is not available without a protected lease. On Apple Silicon RSS is the Metal working-set dimension (ACCELERATOR_QUIESCENCE_INSTRUMENT).",
     "cpu_pct_available": true,
     "method": "ps_enumerate",
-    "n_enumerated": 476,
-    "n_over_threshold": 7,
+    "n_enumerated": 555,
+    "n_over_threshold": 10,
     "no_name_filter": true,
     "processes": [
      {
-      "cpu_pct": 33.3,
+      "cpu_pct": 241.8,
       "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
-      "pid": 10300
+      "pid": 93450
      },
      {
-      "cpu_pct": 32.2,
+      "cpu_pct": 114.6,
       "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
-      "pid": 10312
+      "pid": 93509
      },
      {
-      "cpu_pct": 0.0,
+      "cpu_pct": 99.1,
       "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
-      "pid": 10553
+      "pid": 93410
      },
      {
-      "cpu_pct": 106.3,
+      "cpu_pct": 169.3,
       "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
-      "pid": 10661
+      "pid": 93434
      },
      {
-      "cpu_pct": 107.5,
+      "cpu_pct": 201.8,
       "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
-      "pid": 10352
+      "pid": 93552
      },
      {
-      "cpu_pct": 20.0,
+      "cpu_pct": 92.6,
       "name": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores",
       "pid": 305
      },
      {
-      "cpu_pct": 27.0,
-      "name": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
-      "pid": 180
+      "cpu_pct": 29.4,
+      "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+      "pid": 13859
+     },
+     {
+      "cpu_pct": 86.1,
+      "name": "/System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged",
+      "pid": 81100
+     },
+     {
+      "cpu_pct": 21.6,
+      "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+      "pid": 14534
+     },
+     {
+      "cpu_pct": 20.3,
+      "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+      "pid": 14529
      }
     ],
     "reason": null,
@@ -443,35 +521,35 @@
    },
    "memory_pressure": {
     "bytes": {
-     "active": 27737751552,
-     "compressor": 40507080704,
-     "free": 78036992,
-     "inactive": 27448705024,
-     "wired": 6146965504
+     "active": 31785336832,
+     "compressor": 33105674240,
+     "free": 121159680,
+     "inactive": 31699369984,
+     "wired": 5454872576
     },
     "pages": {
-     "\"Translation faults\"": 4078903618,
-     "Anonymous pages": 2915216,
-     "Compressions": 581606157,
-     "Decompressions": 371474191,
-     "File-backed pages": 470148,
-     "Pageins": 184070450,
-     "Pageouts": 18198,
-     "Pages active": 1692978,
-     "Pages copy-on-write": 249369554,
-     "Pages free": 4763,
-     "Pages inactive": 1675336,
-     "Pages occupied by compressor": 2472356,
-     "Pages purgeable": 22239,
-     "Pages purged": 13346258,
-     "Pages reactivated": 237234367,
-     "Pages speculative": 17050,
-     "Pages stored in compressor": 3296362,
+     "\"Translation faults\"": 4488251850,
+     "Anonymous pages": 3028219,
+     "Compressions": 662262655,
+     "Decompressions": 425627325,
+     "File-backed pages": 848564,
+     "Pageins": 215927147,
+     "Pageouts": 19914,
+     "Pages active": 1940023,
+     "Pages copy-on-write": 280626304,
+     "Pages free": 7395,
+     "Pages inactive": 1934776,
+     "Pages occupied by compressor": 2020610,
+     "Pages purgeable": 1366,
+     "Pages purged": 14391899,
+     "Pages reactivated": 267753048,
+     "Pages speculative": 1984,
+     "Pages stored in compressor": 2768745,
      "Pages throttled": 0,
-     "Pages wired down": 375181,
-     "Pages zero filled": 2514267762,
-     "Swapins": 29789736,
-     "Swapouts": 51190382
+     "Pages wired down": 332939,
+     "Pages zero filled": 2711175118,
+     "Swapins": 31950074,
+     "Swapouts": 54779307
     },
     "pressure_level": 1,
     "pressure_name": "warn",
@@ -480,53 +558,53 @@
    },
    "probes": {
     "gpu_occupancy": {
-     "device_utilization_pct": 13,
+     "device_utilization_pct": 0,
      "gpu_core_count": 60,
      "method": "ioreg_IOGPU_PerformanceStatistics",
      "no_gpu_lease": true,
      "note": "device occupancy percent, not a kernel timing and not a throughput claim; PID-level GPU attribution is unavailable without a protected lease",
-     "renderer_utilization_pct": 9,
+     "renderer_utilization_pct": 0,
      "status": "OK",
-     "tiler_utilization_pct": 9
+     "tiler_utilization_pct": 0
     },
     "load": {
-     "load_15m": 14.10400390625,
-     "load_1m": 18.87939453125,
-     "load_5m": 18.07958984375,
+     "load_15m": 12.107421875,
+     "load_1m": 17.23193359375,
+     "load_5m": 16.271484375,
      "ncpu": 28,
      "status": "OK"
     },
     "memory": {
      "bytes": {
-      "active": 27737751552,
-      "compressor": 40507080704,
-      "free": 78036992,
-      "inactive": 27448705024,
-      "wired": 6146965504
+      "active": 31785336832,
+      "compressor": 33105674240,
+      "free": 121159680,
+      "inactive": 31699369984,
+      "wired": 5454872576
      },
      "pages": {
-      "\"Translation faults\"": 4078903618,
-      "Anonymous pages": 2915216,
-      "Compressions": 581606157,
-      "Decompressions": 371474191,
-      "File-backed pages": 470148,
-      "Pageins": 184070450,
-      "Pageouts": 18198,
-      "Pages active": 1692978,
-      "Pages copy-on-write": 249369554,
-      "Pages free": 4763,
-      "Pages inactive": 1675336,
-      "Pages occupied by compressor": 2472356,
-      "Pages purgeable": 22239,
-      "Pages purged": 13346258,
-      "Pages reactivated": 237234367,
-      "Pages speculative": 17050,
-      "Pages stored in compressor": 3296362,
+      "\"Translation faults\"": 4488251850,
+      "Anonymous pages": 3028219,
+      "Compressions": 662262655,
+      "Decompressions": 425627325,
+      "File-backed pages": 848564,
+      "Pageins": 215927147,
+      "Pageouts": 19914,
+      "Pages active": 1940023,
+      "Pages copy-on-write": 280626304,
+      "Pages free": 7395,
+      "Pages inactive": 1934776,
+      "Pages occupied by compressor": 2020610,
+      "Pages purgeable": 1366,
+      "Pages purged": 14391899,
+      "Pages reactivated": 267753048,
+      "Pages speculative": 1984,
+      "Pages stored in compressor": 2768745,
       "Pages throttled": 0,
-      "Pages wired down": 375181,
-      "Pages zero filled": 2514267762,
-      "Swapins": 29789736,
-      "Swapouts": 51190382
+      "Pages wired down": 332939,
+      "Pages zero filled": 2711175118,
+      "Swapins": 31950074,
+      "Swapouts": 54779307
      },
      "pressure_level": 1,
      "pressure_name": "warn",
@@ -536,7 +614,7 @@
     "processes": {
      "cpu_pct_available": true,
      "method": "ps_enumerate",
-     "n_enumerated": 476,
+     "n_enumerated": 555,
      "no_name_filter": true,
      "status": "OK"
     },
@@ -547,11 +625,11 @@
     }
    },
    "resident_local_model": {
-    "cpu_pct": 33.3,
+    "cpu_pct": 241.8,
     "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
     "note": "largest RSS neighbour over the quiet threshold; not a model-name guess",
-    "pid": 10300,
-    "rss_gib": 19.71
+    "pid": 93450,
+    "rss_gib": 29.45
    },
    "thermal_state": "UNKNOWN"
   },
@@ -585,44 +663,59 @@
   "attribution": "enumerated by CPU% and/or RSS; PID-level GPU occupancy is not available without a protected lease. On Apple Silicon RSS is the Metal working-set dimension (ACCELERATOR_QUIESCENCE_INSTRUMENT).",
   "cpu_pct_available": true,
   "method": "ps_enumerate",
-  "n_enumerated": 476,
-  "n_over_threshold": 7,
+  "n_enumerated": 555,
+  "n_over_threshold": 10,
   "no_name_filter": true,
   "processes": [
    {
-    "cpu_pct": 33.3,
+    "cpu_pct": 241.8,
     "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
-    "pid": 10300
+    "pid": 93450
    },
    {
-    "cpu_pct": 32.2,
+    "cpu_pct": 114.6,
     "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
-    "pid": 10312
+    "pid": 93509
    },
    {
-    "cpu_pct": 0.0,
+    "cpu_pct": 99.1,
     "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
-    "pid": 10553
+    "pid": 93410
    },
    {
-    "cpu_pct": 106.3,
+    "cpu_pct": 169.3,
     "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
-    "pid": 10661
+    "pid": 93434
    },
    {
-    "cpu_pct": 107.5,
+    "cpu_pct": 201.8,
     "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
-    "pid": 10352
+    "pid": 93552
    },
    {
-    "cpu_pct": 20.0,
+    "cpu_pct": 92.6,
     "name": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores",
     "pid": 305
    },
    {
-    "cpu_pct": 27.0,
-    "name": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
-    "pid": 180
+    "cpu_pct": 29.4,
+    "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+    "pid": 13859
+   },
+   {
+    "cpu_pct": 86.1,
+    "name": "/System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged",
+    "pid": 81100
+   },
+   {
+    "cpu_pct": 21.6,
+    "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+    "pid": 14534
+   },
+   {
+    "cpu_pct": 20.3,
+    "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+    "pid": 14529
    }
   ],
   "reason": null,
@@ -648,35 +741,35 @@
  "measurement_class": "STATIC_ONLY",
  "memory_pressure": {
   "bytes": {
-   "active": 27737751552,
-   "compressor": 40507080704,
-   "free": 78036992,
-   "inactive": 27448705024,
-   "wired": 6146965504
+   "active": 31785336832,
+   "compressor": 33105674240,
+   "free": 121159680,
+   "inactive": 31699369984,
+   "wired": 5454872576
   },
   "pages": {
-   "\"Translation faults\"": 4078903618,
-   "Anonymous pages": 2915216,
-   "Compressions": 581606157,
-   "Decompressions": 371474191,
-   "File-backed pages": 470148,
-   "Pageins": 184070450,
-   "Pageouts": 18198,
-   "Pages active": 1692978,
-   "Pages copy-on-write": 249369554,
-   "Pages free": 4763,
-   "Pages inactive": 1675336,
-   "Pages occupied by compressor": 2472356,
-   "Pages purgeable": 22239,
-   "Pages purged": 13346258,
-   "Pages reactivated": 237234367,
-   "Pages speculative": 17050,
-   "Pages stored in compressor": 3296362,
+   "\"Translation faults\"": 4488251850,
+   "Anonymous pages": 3028219,
+   "Compressions": 662262655,
+   "Decompressions": 425627325,
+   "File-backed pages": 848564,
+   "Pageins": 215927147,
+   "Pageouts": 19914,
+   "Pages active": 1940023,
+   "Pages copy-on-write": 280626304,
+   "Pages free": 7395,
+   "Pages inactive": 1934776,
+   "Pages occupied by compressor": 2020610,
+   "Pages purgeable": 1366,
+   "Pages purged": 14391899,
+   "Pages reactivated": 267753048,
+   "Pages speculative": 1984,
+   "Pages stored in compressor": 2768745,
    "Pages throttled": 0,
-   "Pages wired down": 375181,
-   "Pages zero filled": 2514267762,
-   "Swapins": 29789736,
-   "Swapouts": 51190382
+   "Pages wired down": 332939,
+   "Pages zero filled": 2711175118,
+   "Swapins": 31950074,
+   "Swapouts": 54779307
   },
   "pressure_level": 1,
   "pressure_name": "warn",
@@ -872,13 +965,13 @@
   "did_not_start_resident": true,
   "model": "UNKNOWN",
   "note": "this sidecar did not start a resident and did not take a GPU lease; process name is not a model identity; model stays UNKNOWN unless declared",
-  "pid": 10300,
+  "pid": 93450,
   "process_name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
   "source": "largest_rss_neighbour",
   "status": "PARTIAL"
  },
  "schema": "hawking.future.dirty_measure.v1",
- "seal_sha256": "7534f921651aa7641f60866a75a553d47815153b49c6634bfc0c05f5fb113f8e",
+ "seal_sha256": "a212db343698a438deb686b946c7762fbf3185d18736f60184ee9e353ba0f59c",
  "structural_refusal": {
   "as_protected_absolute": "always raises; field copy is not a path",
   "copy_value_as": "raises when target is PROTECTED_ABSOLUTE",

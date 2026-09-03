@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T23:39:53Z",
+  "recorded_at": "2026-09-03T00:37:33Z",
   "recorded_by": "tools/future/representation_lab.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -92,7 +92,7 @@
   "source_path": "tools/odyssey/families/toy_xor_codes.py"
  },
  "gpu_authority": false,
- "head": "a612af62db43bee98204eb7e19a64d901f1eb571",
+ "head": "b35af1fa8886aa9d5903e3b9e943503c63cb001e",
  "named_receipts_loaded": [
   "receipts/future/COMPLETE_EBPW.json",
   "receipts/future/REPRESENTATION_FLOOR.json",
@@ -131,7 +131,7 @@
   }
  ],
  "schema": "hawking.future.representation_lab.v1",
- "seal_sha256": "656a02e127546cee44b5e95d6e2276a7e7e25fc50cc9ddb37fe866d3a03cb17d",
+ "seal_sha256": "f618229ead422c540ebf598c75071eae4ccad2f929918ab68a474703643c128d",
  "sealed_incumbent_priors": [
   {
    "axes": {

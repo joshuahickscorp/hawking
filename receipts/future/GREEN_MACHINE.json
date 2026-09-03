@@ -4,7 +4,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T23:40:06Z",
+  "recorded_at": "2026-09-03T00:37:40Z",
   "recorded_by": "tools/future/green_machine.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -27,52 +27,52 @@
   "gpu_touched": false,
   "hawkingd_process_present": true,
   "loadavg": [
-   27.75537109375,
-   16.857421875,
-   12.95654296875
+   24.806640625,
+   14.306640625,
+   10.681640625
   ],
   "peers": [
    {
-    "command": "/Users/scammermike/.venvs/hawking-aider/bin/python3 -m hcli.hawkingd --worker /Users/scammermike/Downloads/hawking/.hcli/resident/state.json",
-    "cycles": 131151558227,
-    "energy_nj": 129633095947,
+    "command": "/Users/scammermike/.venvs/hawking-aider/bin/python3 -m hcli.hawkingd --supervise /Users/scammermike/Downloads/hawking/.hcli/resident/state.json",
+    "cycles": 3842769825,
+    "energy_nj": 2557084425,
     "matched": "hawkingd",
-    "phys_footprint": 29655640,
-    "pid": 38155,
+    "phys_footprint": 25526848,
+    "pid": 8581,
     "rusage_ok": true
    },
    {
-    "command": "/Users/scammermike/.venvs/hawking-aider/bin/python3 -m hcli.hawkingd --supervise /Users/scammermike/Downloads/hawking/.hcli/resident/state.json",
-    "cycles": 7997028380,
-    "energy_nj": 5355884511,
+    "command": "/Users/scammermike/.venvs/hawking-aider/bin/python3 -m hcli.hawkingd --worker /Users/scammermike/Downloads/hawking/.hcli/resident/state.json",
+    "cycles": 122154390726,
+    "energy_nj": 119179635670,
     "matched": "hawkingd",
-    "phys_footprint": 35127872,
-    "pid": 80238,
+    "phys_footprint": 46039712,
+    "pid": 38346,
     "rusage_ok": true
    },
    {
     "command": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident --artifact-root /Users/scammermike/noetic/NOETIC_PARENT_A --tokenizer /Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json --m",
-    "cycles": 65848387975,
-    "energy_nj": 38881983610,
+    "cycles": 141724751312,
+    "energy_nj": 96968971436,
     "matched": "ascension_qwen38_resident",
-    "phys_footprint": 12260205760,
-    "pid": 38316,
+    "phys_footprint": 12302574856,
+    "pid": 38450,
     "rusage_ok": true
    }
   ],
   "sandbox_iokit_open_user_client_denied": false,
-  "self_pid": 10411,
+  "self_pid": 93463,
   "signaled": false,
   "why": "proc_pid_rusage and pgrep -lf are read-only. No process was killed, restarted, or sent a signal. IOReport live samples need iokit-open-user-client; when that is denied the GPU/CPU package rails are not this measurement. ri_energy_nj is task-attributed, so peer energy is not in our numerator; peers still contend for the same package (DIRTY frequency/thermal)."
  },
  "cpu_cost": {
-  "active_process_cpu_s": 0.197025,
-  "active_window_s": 0.2000245419985731,
-  "cpu_burn_iters": 4487116,
+  "active_process_cpu_s": 0.18952499999999972,
+  "active_window_s": 0.20001887500256998,
+  "cpu_burn_iters": 4524961,
   "evidence_tier": "HARDWARE_MEASURED",
   "gpu_touched": false,
-  "idle_process_cpu_s": 7.000000000090267e-05,
-  "idle_window_s": 0.20509250000031898,
+  "idle_process_cpu_s": 3.2999999998395424e-05,
+  "idle_window_s": 0.2102719589966,
   "why": "time.process_time() and time.perf_counter() on this process. CPU-seconds, not joules. GPU was not touched."
  },
  "evidence_tiers_present": [
@@ -97,15 +97,15 @@
   "Power-cap policy refuses unless the wattage is HARDWARE_MEASURED; still does not enforce a cap without a GPU lease."
  ],
  "gpu_authority": false,
- "head": "a612af62db43bee98204eb7e19a64d901f1eb571",
+ "head": "b35af1fa8886aa9d5903e3b9e943503c63cb001e",
  "honesty_rule": "Token-attributed metrics (joules_per_token, joules_per_accepted_token, work_units_per_kwh, the contracted idle/active J/s, thermal_state) stay UNKNOWN: this sidecar has no GPU lease and does not wrap TOKEN_NS. Process-attributed ri_energy_nj idle-vs-active on this pid is a real sample and is labeled HARDWARE_MEASURED; it is not joules_per_token. A unit conversion of a sampled integral (nJ to J, J over the same window to mean watts) stays HARDWARE_MEASURED. Multiplying a wattage by a cited ms/token from another receipt is COST_MODEL. FPGA/U50 is absent and is never HARDWARE_MEASURED. write_receipt still refuses a numeric joules_per_token. This sidecar produces STATIC_ONLY for the token contract; it produces neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE.",
  "host": {
   "chip": "Apple M3 Ultra",
   "evidence_tier": "HARDWARE_MEASURED",
   "loadavg": [
-   30.33740234375,
-   17.5732421875,
-   13.23193359375
+   25.94287109375,
+   14.71630859375,
+   10.84716796875
   ],
   "mem_bytes": 103079215104,
   "ncpu": 28,
@@ -116,14 +116,14 @@
  },
  "measurement": {
   "error_budget": {
-   "combined_j": 0.527466378233242,
-   "combined_j_per_iteration": 3.3178953157321226e-08,
+   "combined_j": 0.23708123321099053,
+   "combined_j_per_iteration": 1.3125166192981081e-08,
    "quantization_j": 1e-09,
-   "repeat_stdev_busy_j": 0.26558518370910167,
-   "repeat_stdev_work_j": 0.263733189116621,
+   "repeat_stdev_busy_j": 0.11799616138705868,
+   "repeat_stdev_work_j": 0.11854061660549527,
    "repeats": 3,
    "rule": "max(1 nJ, |busy_watts| * 1 ms, 2 * sample_stdev of idle-subtracted work joules). Bookend sampling, not a Hz rate.",
-   "timing_term_j": 0.0027183473222043234,
+   "timing_term_j": 0.0033259203556405647,
    "timing_uncertainty_s": 0.001
   },
   "gpu_touched": false,
@@ -133,19 +133,19 @@
    "field_unit": "nJ",
    "flavor": "RUSAGE_INFO_V6",
    "header": "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/resource.h rusage_info_v6.ri_energy_nj",
-   "pid": 10411,
+   "pid": 93463,
    "sampling": "bookend snapshots at each window boundary; not a polling rate. Requested idle_s=1.0, busy_s=1.0, repeats=3.",
    "source": "proc_pid_rusage",
    "workload": "idle = time.sleep; busy = _cpu_burn tight integer increment. GPU untouched; no Metal, no TOKEN_NS wrap, no resident call."
   },
   "ok": true,
   "resident_during_measurement": {
-   "cycles_delta": 809755158,
-   "delta_nj": 197683000,
-   "energy_nj_t0": 38883018346,
-   "energy_nj_t1": 39080701346,
+   "cycles_delta": 995471703,
+   "delta_nj": 545534814,
+   "energy_nj_t0": 96970273402,
+   "energy_nj_t1": 97515808216,
    "evidence_tier": "HARDWARE_MEASURED",
-   "pid": 38316,
+   "pid": 38450,
    "why": "proc_pid_rusage on ascension_qwen38_resident over the same wall as this sidecar's idle+busy windows. Read-only; the resident was not signaled."
   },
   "symbol": "measure_process_energy",
@@ -154,11 +154,11 @@
    "defense": "The only useful work this sidecar performed is the CPU-burn loop counted in the busy window. Tokens were not emitted and WorkUnits were not sealed, so J/token and WU/kWh stay UNKNOWN/COST_MODEL. Process CPU-seconds is a time axis (restating watts), not a work axis. Iterations are counted on the same closed wall as the joule integral. This is a calibration of integer-loop work on this M3 Ultra, not a token and not a WorkUnit.",
    "denominator": "cpu_burn_iterations",
    "denominator_definition": "Iterations of a tight integer increment loop completed by this process during the busy window (_cpu_burn).",
-   "error_budget_j_per_iteration": 3.3178953157321226e-08,
+   "error_budget_j_per_iteration": 1.3125166192981081e-08,
    "evidence_tier": "HARDWARE_MEASURED",
-   "iterations_per_kwh": 21066324929203.945,
-   "joules_per_iteration": 1.7090807222086202e-07,
-   "mean_iterations": 15897619.666666666,
+   "iterations_per_kwh": 19557034934683.3,
+   "joules_per_iteration": 1.841174303715729e-07,
+   "mean_iterations": 18063103.333333332,
    "not": "J/token, J/accepted-token, WU/kWh \u2014 those denominators were not produced in this interval."
   }
  },
@@ -441,59 +441,59 @@
  ],
  "process_energy": {
   "billed_energy_unused": {
-   "ri_billed_energy": 23545,
+   "ri_billed_energy": 0,
    "ri_serviced_energy": 0,
    "why": "ri_billed_energy and ri_serviced_energy were 0 on this host in probe; they are not the measurement."
   },
   "busy": {
    "evidence_tier": "HARDWARE_MEASURED",
-   "mean_cpu_burn_iters": 15897619.666666666,
-   "mean_joules": 2.7183579756666667,
-   "mean_watts": 2.7183473222043233,
-   "mean_window_s": 1.0000039443354278,
+   "mean_cpu_burn_iters": 18063103.333333332,
+   "mean_joules": 3.3263571059999997,
+   "mean_watts": 3.3259203556405645,
+   "mean_window_s": 1.0001361529987964,
    "raw_field": "ri_energy_nj",
-   "stdev_joules": 0.26558518370910167
+   "stdev_joules": 0.11799616138705868
   },
   "contention": {
    "ascension_resident_present": true,
    "gpu_touched": false,
    "hawkingd_process_present": true,
    "loadavg": [
-    27.75537109375,
-    16.857421875,
-    12.95654296875
+    24.806640625,
+    14.306640625,
+    10.681640625
    ],
    "peers": [
     {
-     "command": "/Users/scammermike/.venvs/hawking-aider/bin/python3 -m hcli.hawkingd --worker /Users/scammermike/Downloads/hawking/.hcli/resident/state.json",
-     "cycles": 131151558227,
-     "energy_nj": 129633095947,
+     "command": "/Users/scammermike/.venvs/hawking-aider/bin/python3 -m hcli.hawkingd --supervise /Users/scammermike/Downloads/hawking/.hcli/resident/state.json",
+     "cycles": 3842769825,
+     "energy_nj": 2557084425,
      "matched": "hawkingd",
-     "phys_footprint": 29655640,
-     "pid": 38155,
+     "phys_footprint": 25526848,
+     "pid": 8581,
      "rusage_ok": true
     },
     {
-     "command": "/Users/scammermike/.venvs/hawking-aider/bin/python3 -m hcli.hawkingd --supervise /Users/scammermike/Downloads/hawking/.hcli/resident/state.json",
-     "cycles": 7997028380,
-     "energy_nj": 5355884511,
+     "command": "/Users/scammermike/.venvs/hawking-aider/bin/python3 -m hcli.hawkingd --worker /Users/scammermike/Downloads/hawking/.hcli/resident/state.json",
+     "cycles": 122154390726,
+     "energy_nj": 119179635670,
      "matched": "hawkingd",
-     "phys_footprint": 35127872,
-     "pid": 80238,
+     "phys_footprint": 46039712,
+     "pid": 38346,
      "rusage_ok": true
     },
     {
      "command": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident --artifact-root /Users/scammermike/noetic/NOETIC_PARENT_A --tokenizer /Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json --m",
-     "cycles": 65848387975,
-     "energy_nj": 38881983610,
+     "cycles": 141724751312,
+     "energy_nj": 96968971436,
      "matched": "ascension_qwen38_resident",
-     "phys_footprint": 12260205760,
-     "pid": 38316,
+     "phys_footprint": 12302574856,
+     "pid": 38450,
      "rusage_ok": true
     }
    ],
    "sandbox_iokit_open_user_client_denied": false,
-   "self_pid": 10411,
+   "self_pid": 93463,
    "signaled": false,
    "why": "proc_pid_rusage and pgrep -lf are read-only. No process was killed, restarted, or sent a signal. IOReport live samples need iokit-open-user-client; when that is denied the GPU/CPU package rails are not this measurement. ri_energy_nj is task-attributed, so peer energy is not in our numerator; peers still contend for the same package (DIRTY frequency/thermal)."
   },
@@ -501,31 +501,31 @@
    "busy_gt_idle": true,
    "evidence_tier": "HARDWARE_MEASURED",
    "id": "idle_vs_active_joules",
-   "mean_busy_minus_mean_idle_joules": 2.7167215203333335,
-   "mean_work_joules": 2.716725911725632,
+   "mean_busy_minus_mean_idle_joules": 3.3249984939999995,
+   "mean_work_joules": 3.325001577037528,
    "why": "Both windows are proc_pid_rusage ri_energy_nj on this pid. work_joules = busy_joules - idle_watts * busy_window_s. That is a subtraction of two samples, not of two guesses."
   },
   "error": null,
   "error_budget": {
-   "combined_j": 0.527466378233242,
-   "combined_j_per_iteration": 3.3178953157321226e-08,
+   "combined_j": 0.23708123321099053,
+   "combined_j_per_iteration": 1.3125166192981081e-08,
    "quantization_j": 1e-09,
-   "repeat_stdev_busy_j": 0.26558518370910167,
-   "repeat_stdev_work_j": 0.263733189116621,
+   "repeat_stdev_busy_j": 0.11799616138705868,
+   "repeat_stdev_work_j": 0.11854061660549527,
    "repeats": 3,
    "rule": "max(1 nJ, |busy_watts| * 1 ms, 2 * sample_stdev of idle-subtracted work joules). Bookend sampling, not a Hz rate.",
-   "timing_term_j": 0.0027183473222043234,
+   "timing_term_j": 0.0033259203556405647,
    "timing_uncertainty_s": 0.001
   },
   "evidence_tier": "HARDWARE_MEASURED",
   "gpu_touched": false,
   "idle": {
    "evidence_tier": "HARDWARE_MEASURED",
-   "mean_joules": 0.0016364553333333334,
-   "mean_watts": 0.001632057653288571,
-   "mean_window_s": 1.002873917001125,
+   "mean_joules": 0.0013586120000000001,
+   "mean_watts": 0.0013553661033693747,
+   "mean_window_s": 1.0039981110021472,
    "raw_field": "ri_energy_nj",
-   "stdev_joules": 0.001875222075227447
+   "stdev_joules": 0.001384356510531879
   },
   "method": {
    "clock": "time.perf_counter",
@@ -533,130 +533,130 @@
    "field_unit": "nJ",
    "flavor": "RUSAGE_INFO_V6",
    "header": "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/resource.h rusage_info_v6.ri_energy_nj",
-   "pid": 10411,
+   "pid": 93463,
    "sampling": "bookend snapshots at each window boundary; not a polling rate. Requested idle_s=1.0, busy_s=1.0, repeats=3.",
    "source": "proc_pid_rusage",
    "workload": "idle = time.sleep; busy = _cpu_burn tight integer increment. GPU untouched; no Metal, no TOKEN_NS wrap, no resident call."
   },
   "ok": true,
-  "pid": 10411,
+  "pid": 93463,
   "repeats": [
    {
     "busy": {
-     "cpu_burn_iters": 15264792,
-     "cycles_delta": 2536182555,
-     "delta_nj": 2569656825,
-     "energy_nj_t0": 78258536513,
-     "energy_nj_t1": 80828193338,
+     "cpu_burn_iters": 17284152,
+     "cycles_delta": 2665286460,
+     "delta_nj": 3206924050,
+     "energy_nj_t0": 80023968219,
+     "energy_nj_t1": 83230892269,
      "evidence_tier": "HARDWARE_MEASURED",
      "increments": true,
-     "instructions_delta": 10628196639,
-     "joules": 2.569656825,
+     "instructions_delta": 12019854174,
+     "joules": 3.20692405,
      "label": "cpu_busy_gpu_untouched",
      "neural_footprint_t1": 0,
-     "penergy_delta_nj": 2465676243,
-     "watts": 2.5696410859406833,
-     "window_s": 1.000006125002983
+     "penergy_delta_nj": 3171510104,
+     "watts": 3.2056304434833542,
+     "window_s": 1.0004035419988213
     },
     "idle": {
      "cpu_burn_iters": 0,
-     "cycles_delta": 908175,
-     "delta_nj": 851693,
-     "energy_nj_t0": 78257684820,
-     "energy_nj_t1": 78258536513,
+     "cycles_delta": 591954,
+     "delta_nj": 1193368,
+     "energy_nj_t0": 80022774851,
+     "energy_nj_t1": 80023968219,
      "evidence_tier": "HARDWARE_MEASURED",
      "increments": true,
-     "instructions_delta": 330054,
-     "joules": 0.000851693,
+     "instructions_delta": 242366,
+     "joules": 0.001193368,
      "label": "idle",
      "neural_footprint_t1": 0,
-     "penergy_delta_nj": 851693,
-     "watts": 0.0008511951572318687,
-     "window_s": 1.0005848750006407
+     "penergy_delta_nj": 1193368,
+     "watts": 0.0011929358088941199,
+     "window_s": 1.0003622920048656
     },
-    "joules_per_iteration": 1.6828304143477324e-07,
-    "work_joules_idle_subtracted": 2.5688056246291953
+    "joules_per_iteration": 1.854722541662099e-07,
+    "work_joules_idle_subtracted": 3.205730632791405
    },
    {
     "busy": {
-     "cpu_burn_iters": 14764736,
-     "cycles_delta": 2408747614,
-     "delta_nj": 2560434003,
-     "energy_nj_t0": 80828474442,
-     "energy_nj_t1": 83388908445,
+     "cpu_burn_iters": 18847222,
+     "cycles_delta": 2900309642,
+     "delta_nj": 3442861863,
+     "energy_nj_t0": 83230956563,
+     "energy_nj_t1": 86673818426,
      "evidence_tier": "HARDWARE_MEASURED",
      "increments": true,
-     "instructions_delta": 10283139694,
-     "joules": 2.560434003,
+     "instructions_delta": 13108165524,
+     "joules": 3.442861863,
      "label": "cpu_busy_gpu_untouched",
      "neural_footprint_t1": 0,
-     "penergy_delta_nj": 2480259391,
-     "watts": 2.560428242029848,
-     "window_s": 1.0000022500025807
+     "penergy_delta_nj": 3400766323,
+     "watts": 3.442853541621751,
+     "window_s": 1.0000024170003599
     },
     "idle": {
      "cpu_burn_iters": 0,
-     "cycles_delta": 1008179,
-     "delta_nj": 281104,
-     "energy_nj_t0": 80828193338,
-     "energy_nj_t1": 80828474442,
+     "cycles_delta": 482375,
+     "delta_nj": 64294,
+     "energy_nj_t0": 83230892269,
+     "energy_nj_t1": 83230956563,
      "evidence_tier": "HARDWARE_MEASURED",
      "increments": true,
-     "instructions_delta": 549775,
-     "joules": 0.000281104,
+     "instructions_delta": 215307,
+     "joules": 6.4294e-05,
      "label": "idle",
      "neural_footprint_t1": 0,
-     "penergy_delta_nj": 281104,
-     "watts": 0.00027969445629296206,
-     "window_s": 1.0050395840007695
+     "penergy_delta_nj": 0,
+     "watts": 6.375128796288076e-05,
+     "window_s": 1.0085129580038483
     },
-    "joules_per_iteration": 1.7339655161557875e-07,
-    "work_joules_idle_subtracted": 2.560154307914394
+    "joules_per_iteration": 1.8266873025414303e-07,
+    "work_joules_idle_subtracted": 3.4427981115579502
    },
    {
     "busy": {
-     "cpu_burn_iters": 17663331,
-     "cycles_delta": 2863558493,
-     "delta_nj": 3024983099,
-     "energy_nj_t0": 83392685014,
-     "energy_nj_t1": 86417668113,
+     "cpu_burn_iters": 18057936,
+     "cycles_delta": 2785491713,
+     "delta_nj": 3329285405,
+     "energy_nj_t0": 86676636600,
+     "energy_nj_t1": 90005922005,
      "evidence_tier": "HARDWARE_MEASURED",
      "increments": true,
-     "instructions_delta": 12286733899,
-     "joules": 3.024983099,
+     "instructions_delta": 12566011908,
+     "joules": 3.329285405,
      "label": "cpu_busy_gpu_untouched",
      "neural_footprint_t1": 0,
-     "penergy_delta_nj": 2920131380,
-     "watts": 3.024972638642439,
-     "window_s": 1.0000034580007195
+     "penergy_delta_nj": 3292414070,
+     "watts": 3.3292770818165893,
+     "window_s": 1.0000024999972084
     },
     "idle": {
      "cpu_burn_iters": 0,
-     "cycles_delta": 735960,
-     "delta_nj": 3776569,
-     "energy_nj_t0": 83388908445,
-     "energy_nj_t1": 83392685014,
+     "cycles_delta": 634734,
+     "delta_nj": 2818174,
+     "energy_nj_t0": 86673818426,
+     "energy_nj_t1": 86676636600,
      "evidence_tier": "HARDWARE_MEASURED",
      "increments": true,
-     "instructions_delta": 228016,
-     "joules": 0.003776569,
+     "instructions_delta": 219547,
+     "joules": 0.002818174,
      "label": "idle",
      "neural_footprint_t1": 0,
-     "penergy_delta_nj": 3776569,
-     "watts": 0.003765283346340882,
-     "window_s": 1.0029972920019645
+     "penergy_delta_nj": 2818174,
+     "watts": 0.002809411213251123,
+     "window_s": 1.0031190829977277
     },
-    "joules_per_iteration": 1.710446236122341e-07,
-    "work_joules_idle_subtracted": 3.0212178026333065
+    "joules_per_iteration": 1.8421130669436575e-07,
+    "work_joules_idle_subtracted": 3.3264759867632283
    }
   ],
   "resident_during_measurement": {
-   "cycles_delta": 809755158,
-   "delta_nj": 197683000,
-   "energy_nj_t0": 38883018346,
-   "energy_nj_t1": 39080701346,
+   "cycles_delta": 995471703,
+   "delta_nj": 545534814,
+   "energy_nj_t0": 96970273402,
+   "energy_nj_t1": 97515808216,
    "evidence_tier": "HARDWARE_MEASURED",
-   "pid": 38316,
+   "pid": 38450,
    "why": "proc_pid_rusage on ascension_qwen38_resident over the same wall as this sidecar's idle+busy windows. Read-only; the resident was not signaled."
   },
   "token_ns_wrap": false,
@@ -664,11 +664,11 @@
    "defense": "The only useful work this sidecar performed is the CPU-burn loop counted in the busy window. Tokens were not emitted and WorkUnits were not sealed, so J/token and WU/kWh stay UNKNOWN/COST_MODEL. Process CPU-seconds is a time axis (restating watts), not a work axis. Iterations are counted on the same closed wall as the joule integral. This is a calibration of integer-loop work on this M3 Ultra, not a token and not a WorkUnit.",
    "denominator": "cpu_burn_iterations",
    "denominator_definition": "Iterations of a tight integer increment loop completed by this process during the busy window (_cpu_burn).",
-   "error_budget_j_per_iteration": 3.3178953157321226e-08,
+   "error_budget_j_per_iteration": 1.3125166192981081e-08,
    "evidence_tier": "HARDWARE_MEASURED",
-   "iterations_per_kwh": 21066324929203.945,
-   "joules_per_iteration": 1.7090807222086202e-07,
-   "mean_iterations": 15897619.666666666,
+   "iterations_per_kwh": 19557034934683.3,
+   "joules_per_iteration": 1.841174303715729e-07,
+   "mean_iterations": 18063103.333333332,
    "not": "J/token, J/accepted-token, WU/kWh \u2014 those denominators were not produced in this interval."
   }
  },
@@ -677,7 +677,7 @@
  "protected_lease": false,
  "purpose": "II-E Green Machine / H-ROADMAP \u00a724: emit the gene-card SUBGENES with per-value evidence tiers. Token-attributed joules stay UNKNOWN; measurable M3 Ultra observations are HARDWARE_MEASURED; the rest are COST_MODEL.",
  "rail_samples": {
-  "cpu_burn_iters": 4255733,
+  "cpu_burn_iters": 5053931,
   "cpu_busy": {
    "channels": [
     {
@@ -689,7 +689,7 @@
      "raw_t1": null,
      "unit": "mJ",
      "watts": null,
-     "window_s": 0.25914566600113176
+     "window_s": 0.25833824999426724
     },
     {
      "channel": "DIE_1_CPU Energy",
@@ -700,7 +700,7 @@
      "raw_t1": null,
      "unit": "mJ",
      "watts": null,
-     "window_s": 0.25914566600113176
+     "window_s": 0.25833824999426724
     },
     {
      "channel": "DRAM0_0",
@@ -711,7 +711,7 @@
      "raw_t1": null,
      "unit": "mJ",
      "watts": null,
-     "window_s": 0.25914566600113176
+     "window_s": 0.25833824999426724
     },
     {
      "channel": "DRAM0_1",
@@ -722,7 +722,7 @@
      "raw_t1": null,
      "unit": "mJ",
      "watts": null,
-     "window_s": 0.25914566600113176
+     "window_s": 0.25833824999426724
     },
     {
      "channel": "GPU Energy",
@@ -733,11 +733,11 @@
      "raw_t1": null,
      "unit": "nJ",
      "watts": null,
-     "window_s": 0.25914566600113176
+     "window_s": 0.25833824999426724
     }
    ],
    "label": "cpu_busy_gpu_untouched",
-   "window_s": 0.25914566600113176
+   "window_s": 0.25833824999426724
   },
   "create_samples_delta_busy": true,
   "create_samples_delta_idle": true,
@@ -753,7 +753,7 @@
      "raw_t1": null,
      "unit": "mJ",
      "watts": null,
-     "window_s": 0.263330459005374
+     "window_s": 0.27041224999993574
     },
     {
      "channel": "DIE_1_CPU Energy",
@@ -764,7 +764,7 @@
      "raw_t1": null,
      "unit": "mJ",
      "watts": null,
-     "window_s": 0.263330459005374
+     "window_s": 0.27041224999993574
     },
     {
      "channel": "DRAM0_0",
@@ -775,7 +775,7 @@
      "raw_t1": null,
      "unit": "mJ",
      "watts": null,
-     "window_s": 0.263330459005374
+     "window_s": 0.27041224999993574
     },
     {
      "channel": "DRAM0_1",
@@ -786,7 +786,7 @@
      "raw_t1": null,
      "unit": "mJ",
      "watts": null,
-     "window_s": 0.263330459005374
+     "window_s": 0.27041224999993574
     },
     {
      "channel": "GPU Energy",
@@ -797,11 +797,11 @@
      "raw_t1": null,
      "unit": "nJ",
      "watts": null,
-     "window_s": 0.263330459005374
+     "window_s": 0.27041224999993574
     }
    ],
    "label": "idle",
-   "window_s": 0.263330459005374
+   "window_s": 0.27041224999993574
   },
   "note": "GPU-token-active is not sampled: this sidecar has no GPU lease and must not disturb the live resident. cpu_busy is CPU-only. One subscription, three CreateSamples, optional CreateSamplesDelta.",
   "subscription_obtained": true
@@ -974,20 +974,20 @@
      "source": "proc_pid_rusage.ri_energy_nj",
      "token_ns_wrap": false,
      "unit": "W",
-     "value": 0.001632057653288571,
+     "value": 0.0013553661033693747,
      "why": "Mean ri_energy_nj / window_s over idle sleep on this pid. Process-attributed kernel energy, not the GPU rail, not joules_per_token.",
-     "window_s": 1.002873917001125
+     "window_s": 1.0039981110021472
     },
     {
-     "cpu_burn_iters": 15897619.666666666,
+     "cpu_burn_iters": 18063103.333333332,
      "evidence_tier": "HARDWARE_MEASURED",
      "id": "process_energy_watts_busy",
      "source": "proc_pid_rusage.ri_energy_nj",
      "token_ns_wrap": false,
      "unit": "W",
-     "value": 2.7183473222043233,
+     "value": 3.3259203556405645,
      "why": "Mean ri_energy_nj / window_s over a CPU-only burn on this pid. GPU untouched. Not GPU-token-active.",
-     "window_s": 1.0000039443354278
+     "window_s": 1.0001361529987964
     },
     {
      "evidence_tier": "COST_MODEL",
@@ -1067,56 +1067,56 @@
      "evidence_tier": "HARDWARE_MEASURED",
      "id": "idle_process_cpu_s",
      "unit": "s",
-     "value": 7.000000000090267e-05,
+     "value": 3.2999999998395424e-05,
      "why": "time.process_time() and time.perf_counter() on this process. CPU-seconds, not joules. GPU was not touched.",
-     "window_s": 0.20509250000031898
+     "window_s": 0.2102719589966
     },
     {
-     "cpu_burn_iters": 4487116,
+     "cpu_burn_iters": 4524961,
      "evidence_tier": "HARDWARE_MEASURED",
      "id": "active_process_cpu_s",
      "unit": "s",
-     "value": 0.197025,
+     "value": 0.18952499999999972,
      "why": "process CPU-seconds over a CPU-only burn; GPU untouched",
-     "window_s": 0.2000245419985731
+     "window_s": 0.20001887500256998
     },
     {
      "evidence_tier": "HARDWARE_MEASURED",
      "id": "idle_process_energy_j",
      "raw_field": "ri_energy_nj",
      "unit": "J",
-     "value": 0.0016364553333333334,
+     "value": 0.0013586120000000001,
      "why": "Raw sampled ri_energy_nj delta over idle sleep, converted nJ\u2192J. Bookend proc_pid_rusage on this pid.",
-     "window_s": 1.002873917001125
+     "window_s": 1.0039981110021472
     },
     {
-     "cpu_burn_iters": 15897619.666666666,
+     "cpu_burn_iters": 18063103.333333332,
      "evidence_tier": "HARDWARE_MEASURED",
      "id": "active_process_energy_j",
      "raw_field": "ri_energy_nj",
      "unit": "J",
-     "value": 2.7183579756666667,
+     "value": 3.3263571059999997,
      "why": "Raw sampled ri_energy_nj delta over CPU-only burn, converted nJ\u2192J. GPU untouched.",
-     "window_s": 1.0000039443354278
+     "window_s": 1.0001361529987964
     },
     {
-     "error_budget_j": 0.527466378233242,
+     "error_budget_j": 0.23708123321099053,
      "evidence_tier": "HARDWARE_MEASURED",
      "id": "idle_vs_active_joules",
      "token_ns_wrap": false,
      "unit": "J",
-     "value": 2.716725911725632,
+     "value": 3.325001577037528,
      "why": "busy_joules - idle_watts * busy_window_s from two proc_pid_rusage windows on this pid. A real differential of two samples, not two guesses. Process-attributed; not GPU-token-active; not a TOKEN_NS wrap."
     },
     {
      "denominator": "cpu_burn_iterations",
-     "error_budget_j_per_iteration": 3.3178953157321226e-08,
+     "error_budget_j_per_iteration": 1.3125166192981081e-08,
      "evidence_tier": "HARDWARE_MEASURED",
      "id": "joules_per_cpu_burn_iteration",
      "not_j_token": true,
      "token_ns_wrap": false,
      "unit": "J/iteration",
-     "value": 1.7090807222086202e-07,
+     "value": 1.841174303715729e-07,
      "why": "The only useful work this sidecar performed is the CPU-burn loop counted in the busy window. Tokens were not emitted and WorkUnits were not sealed, so J/token and WU/kWh stay UNKNOWN/COST_MODEL. Process CPU-seconds is a time axis (restating watts), not a work axis. Iterations are counted on the same closed wall as the joule integral. This is a calibration of integer-loop work on this M3 Ultra, not a token and not a WorkUnit."
     }
    ]
@@ -1215,6 +1215,6 @@
    "path": "receipts/headless/NOETIC_SCOREBOARD.json"
   }
  },
- "seal_sha256": "84029079d0cb23bd82d379885dc3d348a5725f98d795341fdf7ce0fbe64d5213",
+ "seal_sha256": "ced9ab54105fa300018ea79fb59b2579929a14caef01b174f32a5659ef892a17",
  "version": 1
 }

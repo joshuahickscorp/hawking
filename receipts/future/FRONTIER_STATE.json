@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T23:39:03Z",
+  "recorded_at": "2026-09-03T00:36:33Z",
   "recorded_by": "tools/future/frontiers.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -2338,7 +2338,7 @@
   ]
  },
  "gpu_authority": false,
- "head": "a612af62db43bee98204eb7e19a64d901f1eb571",
+ "head": "b35af1fa8886aa9d5903e3b9e943503c63cb001e",
  "idle_proof": {
   "active": [
    "ACTIVE_BYTES",
@@ -4436,7 +4436,7 @@
   "workunit_emitted": "HCLI WorkUnit via tools.future.workunit_species.emit_hcli_workunit; extras: frontier, required_lanes, wake_condition, redundancy_key, expected_information_gain, hypothesis_family"
  },
  "schema": "hawking.future.frontiers.v1",
- "seal_sha256": "9a917009f8aa7078a54639d8149d4226e3f71dde1fb7ccb5a314bd7e2833606a",
+ "seal_sha256": "3bfb079c215aa12c913ded8e70dc9af03cc295fd9b6ce20bec274512023362ea",
  "sleeping": [
   {
    "assigned_backend": null,

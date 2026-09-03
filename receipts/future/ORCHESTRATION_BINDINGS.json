@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T19:05:40Z",
+  "recorded_at": "2026-09-03T00:19:10Z",
   "recorded_by": "tools/future/orchestration.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -642,7 +642,7 @@
   "distinct_frontier_items": 41,
   "distinct_species": 73,
   "infrastructure_excluded": 5,
-  "unbound_production": 153
+  "unbound_production": 154
  },
  "frontier_view_keys": [
   "ABI_VERDICT_HARNESS.json",
@@ -762,7 +762,7 @@
   "orchestration.py"
  ],
  "negative_findings": [
-  "153 production modules remain unbound and are NOT credited",
+  "154 production modules remain unbound and are NOT credited",
   "0 bindings are broken and credit nothing",
   "binding a module does not make its science correct; it makes the module reachable and its result routable"
  ],
@@ -781,7 +781,7 @@
   "workunit": "tools.future.orchestration.emit_workunit(module)"
  },
  "schema": "hawking.future.orchestration.v1",
- "seal_sha256": "5d4d1d5eb0de6c18c334dc68198885b4b6ad2bdcbe163b48a1394dc6c86cfc14",
+ "seal_sha256": "b33f596dc8526dcc9b3e2ea2e907b36114a3e44922b5c794f697e18d3ad133cd",
  "unbound_production": [
   "abliteration_run.py",
   "addressing_attribution.py",
@@ -874,6 +874,7 @@
   "mlp_teacher_corpus.py",
   "model_bearing_torture.py",
   "modellake_events.py",
+  "modellake_lifecycle.py",
   "modellake_scheduler_view.py",
   "multi_model_trial.py",
   "multistream_capacity_tree.py",

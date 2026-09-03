@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T23:42:26Z",
+  "recorded_at": "2026-09-03T00:39:54Z",
   "recorded_by": "tools/future/autonomy_run.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -16,7 +16,7 @@
  "next_action": "drain queue then refill from frontiers",
  "phase": "running",
  "schema": "hawking.future.autonomy_mission_state.v1",
- "seal_sha256": "1d99460aecdcfa9a0a3ceffccf559d535741394532434dcd39fb75bebca3d6a1",
+ "seal_sha256": "7003921c502aaf5290a053bab7f5f22732d98b783da4b1c6a248e89c4c20e442",
  "trial": "15m",
  "units": [
   "WU.TRIAL.FAST_SPECIMEN_SCIENCE.specimen_verify.Falcon-H1-7B-Instruct",
@@ -67,6 +67,8 @@
   "WU.AUTONOMY.ngram_school.45",
   "WU.AUTONOMY.succession.50",
   "WU.AUTONOMY.evidence_snapshot.51",
+  "WU.AUTONOMY.decode_civilization.52",
+  "WU.AUTONOMY.fpga_engines.53",
   "WU.AUTONOMY.static_kernel_verify.54"
  ]
 }

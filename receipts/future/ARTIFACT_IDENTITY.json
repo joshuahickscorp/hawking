@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T22:54:43Z",
+  "recorded_at": "2026-09-03T00:37:35Z",
   "recorded_by": "tools/future/artifact_identity.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -94,10 +94,10 @@
   },
   "binary": {
    "bytes": 6804600,
-   "mtime_unix": 1788386603.9440713,
+   "mtime_unix": 1788395603.9816654,
    "path": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
    "rel": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
-   "sha256": "c108acc6a49eb5f1719ae260ece23c4c019fdbf560f305f491cf6c124880c270"
+   "sha256": "510da8937dc75e02fce21f6ec5b902c204be502fe4b30fd6978df45d6474ed83"
   },
   "environment": {
    "env_hash": "7f677c8208a879575c8c604f40c573da3d58fa314b6e58e48317ba384789771b",
@@ -162,7 +162,7 @@
     "hcli/hawking-native.sealed-3.14.json#resident_identity"
    ],
    "missing_evidence": [],
-   "profile_sha256": "d0ccab6562eebde05f81fbc9e7d40698f4aa9a83ae8e19606a7372a1f3abb7ce",
+   "profile_sha256": "413057cd326e49e549cb9b04a53cd630b8ce07599cd156fd4e7d96f335178ca6",
    "source_state": "ON_DISK",
    "value": {
     "model_id": "qwen3.8-27b-sealed-3.14",
@@ -180,7 +180,7 @@
     "hcli/hawking-native.sealed-3.14.json#resident_identity"
    ],
    "missing_evidence": [],
-   "profile_sha256": "d0ccab6562eebde05f81fbc9e7d40698f4aa9a83ae8e19606a7372a1f3abb7ce",
+   "profile_sha256": "413057cd326e49e549cb9b04a53cd630b8ce07599cd156fd4e7d96f335178ca6",
    "source_state": "ON_DISK",
    "value": {
     "model_id": "qwen3.8-27b-sealed-3.14",
@@ -211,7 +211,7 @@
    "hcli/hawking-native.sealed-3.14.json#resident_identity"
   ],
   "missing_evidence": [],
-  "profile_sha256": "d0ccab6562eebde05f81fbc9e7d40698f4aa9a83ae8e19606a7372a1f3abb7ce",
+  "profile_sha256": "413057cd326e49e549cb9b04a53cd630b8ce07599cd156fd4e7d96f335178ca6",
   "source_state": "ON_DISK",
   "value": {
    "model_id": "qwen3.8-27b-sealed-3.14",
@@ -236,7 +236,7 @@
   "receipt": "receipts/future/ARTIFACT_IDENTITY.json"
  },
  "schema": "hawking.future.artifact_identity.v1",
- "seal_sha256": "f65d42b4fc8ea505267887179114298f6ac158e56be578ac0f0afa6fb7310f12",
+ "seal_sha256": "ed21a2e158ad90a14b7368709a81d5863473010194d772a890ca6e34cccc4d77",
  "sealed_does_inherit_incumbent": true,
  "sealed_environment": {
   "env_hash": "7f677c8208a879575c8c604f40c573da3d58fa314b6e58e48317ba384789771b",

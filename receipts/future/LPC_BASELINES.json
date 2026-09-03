@@ -1,8 +1,8 @@
 {
  "artifact_identity": {
-  "commit": "a612af62db43bee98204eb7e19a64d901f1eb571",
+  "commit": "b35af1fa8886aa9d5903e3b9e943503c63cb001e",
   "content_sha256": "2c935463f23349f90dc8392562a262613a25c8e0bcab7a59c7f3fb7dff3f1137",
-  "identity_key": "27529019777e6eb040c5f388a13d4db2ff2fe2777c13a76d2372382c09d09e0b",
+  "identity_key": "42c03f052a94613b9e5100c44a800f0287c2e80e4a8db9858c000ac8e15af3aa",
   "inputs": [
    {
     "content_sha256": "efdb1109dd06441abd1d57c13afcf76bc8782ec988097dd067406d3274a6ad17",
@@ -78,7 +78,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T23:27:35Z",
+  "recorded_at": "2026-09-03T00:37:16Z",
   "recorded_by": "tools/future/lpc_baselines.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -87,9 +87,9 @@
  "experiment_receipt": {
   "artifacts": [
    {
-    "commit": "a612af62db43bee98204eb7e19a64d901f1eb571",
+    "commit": "b35af1fa8886aa9d5903e3b9e943503c63cb001e",
     "content_sha256": "2c935463f23349f90dc8392562a262613a25c8e0bcab7a59c7f3fb7dff3f1137",
-    "identity_key": "27529019777e6eb040c5f388a13d4db2ff2fe2777c13a76d2372382c09d09e0b",
+    "identity_key": "42c03f052a94613b9e5100c44a800f0287c2e80e4a8db9858c000ac8e15af3aa",
     "inputs": [
      {
       "content_sha256": "efdb1109dd06441abd1d57c13afcf76bc8782ec988097dd067406d3274a6ad17",
@@ -127,14 +127,14 @@
    },
    {
     "kind": "identity_key",
-    "value": "27529019777e6eb040c5f388a13d4db2ff2fe2777c13a76d2372382c09d09e0b"
+    "value": "42c03f052a94613b9e5100c44a800f0287c2e80e4a8db9858c000ac8e15af3aa"
    }
   ],
   "hypotheses": [],
   "identity": {
-   "commit": "a612af62db43bee98204eb7e19a64d901f1eb571",
+   "commit": "b35af1fa8886aa9d5903e3b9e943503c63cb001e",
    "content_sha256": "2c935463f23349f90dc8392562a262613a25c8e0bcab7a59c7f3fb7dff3f1137",
-   "identity_key": "27529019777e6eb040c5f388a13d4db2ff2fe2777c13a76d2372382c09d09e0b",
+   "identity_key": "42c03f052a94613b9e5100c44a800f0287c2e80e4a8db9858c000ac8e15af3aa",
    "inputs": [
     {
      "content_sha256": "efdb1109dd06441abd1d57c13afcf76bc8782ec988097dd067406d3274a6ad17",
@@ -194,10 +194,10 @@
   ],
   "version": 1
  },
- "head": "a612af62db43bee98204eb7e19a64d901f1eb571",
+ "head": "b35af1fa8886aa9d5903e3b9e943503c63cb001e",
  "purpose": "Honest LPC baselines: nearest measured neighbour, rule cost model, uncertainty, ABSTENTION, held-out splits, and the authority rule that a protected measurement always outranks a model.",
  "schema": "hawking.future.lpc_baselines.v1",
- "seal_sha256": "7b24c9632a40a7d42a36a8cab748c379c9369c212414c6cb1667dccffae41415",
+ "seal_sha256": "5849f6746aa697db343d2ca53ab9639c9141975c257bec82d3d1ea45006aeb32",
  "selftest": "passed",
  "version": 1
 }

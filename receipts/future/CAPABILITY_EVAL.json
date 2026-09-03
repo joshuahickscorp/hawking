@@ -13,9 +13,9 @@
   "heterogeneous"
  ],
  "artifact_identity": {
-  "commit": "a612af62db43bee98204eb7e19a64d901f1eb571",
+  "commit": "b35af1fa8886aa9d5903e3b9e943503c63cb001e",
   "content_sha256": "775f8dab960b15fd8c95027bd2ab6e5333ff0150a70be497736909f633c7d312",
-  "identity_key": "95b97b87eeea51015bd536e04adeaddd54de2140d18f684d511dbc5a51be56b6",
+  "identity_key": "3be3208bd000458e34ec69c0ffedf1f4658ad7e8ec854ea7f0ebf0eeb7ce0190",
   "inputs": [],
   "kind": "experiment_receipt",
   "location": "receipts/future/CAPABILITY_EVAL.json",
@@ -28,7 +28,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T23:39:56Z",
+  "recorded_at": "2026-09-03T00:37:33Z",
   "recorded_by": "tools/future/capability_eval.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -166,9 +166,9 @@
  "experiment_receipt": {
   "artifacts": [
    {
-    "commit": "a612af62db43bee98204eb7e19a64d901f1eb571",
+    "commit": "b35af1fa8886aa9d5903e3b9e943503c63cb001e",
     "content_sha256": "775f8dab960b15fd8c95027bd2ab6e5333ff0150a70be497736909f633c7d312",
-    "identity_key": "95b97b87eeea51015bd536e04adeaddd54de2140d18f684d511dbc5a51be56b6",
+    "identity_key": "3be3208bd000458e34ec69c0ffedf1f4658ad7e8ec854ea7f0ebf0eeb7ce0190",
     "inputs": [],
     "kind": "experiment_receipt",
     "location": "receipts/future/CAPABILITY_EVAL.json",
@@ -208,14 +208,14 @@
    },
    {
     "kind": "identity_key",
-    "value": "95b97b87eeea51015bd536e04adeaddd54de2140d18f684d511dbc5a51be56b6"
+    "value": "3be3208bd000458e34ec69c0ffedf1f4658ad7e8ec854ea7f0ebf0eeb7ce0190"
    }
   ],
   "hypotheses": [],
   "identity": {
-   "commit": "a612af62db43bee98204eb7e19a64d901f1eb571",
+   "commit": "b35af1fa8886aa9d5903e3b9e943503c63cb001e",
    "content_sha256": "775f8dab960b15fd8c95027bd2ab6e5333ff0150a70be497736909f633c7d312",
-   "identity_key": "95b97b87eeea51015bd536e04adeaddd54de2140d18f684d511dbc5a51be56b6",
+   "identity_key": "3be3208bd000458e34ec69c0ffedf1f4658ad7e8ec854ea7f0ebf0eeb7ce0190",
    "inputs": [],
    "kind": "experiment_receipt",
    "location": "receipts/future/CAPABILITY_EVAL.json",
@@ -329,7 +329,7 @@
   "version": 1
  },
  "hardcoded_benchmark": null,
- "head": "a612af62db43bee98204eb7e19a64d901f1eb571",
+ "head": "b35af1fa8886aa9d5903e3b9e943503c63cb001e",
  "live_resident_refusal_fired": true,
  "live_resident_refused": true,
  "negative_control_failing_source": {
@@ -560,6 +560,6 @@
   }
  ],
  "schema": "hawking.future.capability_eval.v1",
- "seal_sha256": "fc3159b364cf5a8e1a4c8ccbbd7be2b5e1128dab8eb7df5a98083cf532feac89",
+ "seal_sha256": "8c95fa80fc9a59083f0e2db2f539066033a5e791861535753f4fb26b3904198d",
  "version": 1
 }

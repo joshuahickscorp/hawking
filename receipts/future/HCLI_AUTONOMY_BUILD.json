@@ -11,7 +11,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T23:39:36Z",
+  "recorded_at": "2026-09-03T00:37:11Z",
   "recorded_by": "tools/future/trial_freeze.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -113,7 +113,7 @@
   "tools/future/test_integration_attack.py",
   "tools/future/test_mlp_byte_census.py"
  ],
- "freeze_time": "2026-09-02T23:39:36Z",
+ "freeze_time": "2026-09-03T00:37:11Z",
  "frontier_digest": "6a40b88c4819da41ca755f7d6e700848c075fd6a2081e2978b9415d9138951a6",
  "frozen_builds": [
   {
@@ -570,7 +570,7 @@
      "routes": [
       "import"
      ],
-     "sha256": "c6a34d4aa774f3f761554e8d6326109ec3e3f786f536c01dbe28069217aeb238",
+     "sha256": "1252f59058e0f0cf9546fe8a224ca820488b3d3e5d548069af2650c11e068036",
      "state": "HASHED"
     },
     {
@@ -736,7 +736,7 @@
    ],
    "driver": "tools/future/autonomy_run.py",
    "evidence_class": "STATIC_ONLY",
-   "freeze_time": "2026-09-02T23:39:36Z",
+   "freeze_time": "2026-09-03T00:37:11Z",
    "frontier_digest": "6a40b88c4819da41ca755f7d6e700848c075fd6a2081e2978b9415d9138951a6",
    "frontier_items": [
     {
@@ -1130,21 +1130,21 @@
     "branch": "odyssey-i",
     "dirty": true,
     "dirty_sample": [
-     " M receipts/future/ABI_VERDICT_HARNESS.json",
-     " M receipts/future/ACCELERATOR_WORKUNITS.json",
      " M receipts/future/ADDRESSING_GAP.json",
-     " M receipts/future/ANE_PREBOARD.json",
      " M receipts/future/ANE_PROBE_LAB.json",
      " M receipts/future/ARTIFACT_IDENTITY.json",
      " M receipts/future/AUTONOMY_DEGENERACY.json",
      " M receipts/future/AUTONOMY_MISSION_STATE.json",
-     " M receipts/future/AUTONOMY_RUN.json",
      " M receipts/future/AUTONOMY_TRIALS.json",
      " M receipts/future/BENCH_B_TOOL_REACHABILITY.json",
-     " M receipts/future/CANDIDATE_STAGED_PLAN.json"
+     " M receipts/future/CAPABILITY_EVAL.json",
+     " M receipts/future/CAPABILITY_STAGES.json",
+     " M receipts/future/CLAIM_SCOPE.json",
+     " M receipts/future/CODEX_INGEST_STATE.json",
+     " M receipts/future/CODEX_MUTATION_SURFACE.json"
     ],
     "dirty_scope": "tools/future + receipts/future",
-    "head": "a612af62db43bee98204eb7e19a64d901f1eb571",
+    "head": "b35af1fa8886aa9d5903e3b9e943503c63cb001e",
     "why": null
    },
    "gpu_authority": false,
@@ -1155,7 +1155,7 @@
     "value": "qwen3.8-27b-sealed-3.14"
    },
    "n_code_files": 74,
-   "n_future_py_on_disk": 538,
+   "n_future_py_on_disk": 540,
    "n_hashed": 74,
    "resident_identity": {
     "gpu_authority": false,
@@ -1267,13 +1267,13 @@
     {
      "path": "receipts/future/ORCHESTRATION_BINDINGS.json",
      "role": "driver_startup_read",
-     "sha256": "2831e13869c718fcaa4548e7a3420c1cd4c295a75af17f5b8c30bf5feb45b3a4",
+     "sha256": "05bc94712760f998cd300d41cd631072fa41e8a3243f1ccaee70ad104106a329",
      "state": "HASHED"
     },
     {
      "path": "receipts/future/RESIDENT_IDENTITY.json",
      "role": "driver_startup_read",
-     "sha256": "1d0682e0934b80ff7a7947a17ad133c6cc8edd3279bd8d151758ea0742d76453",
+     "sha256": "471c32966b675199695fd59082bf7a9eeb1df4dbe9a96d5cd0f26223b7b767b3",
      "state": "HASHED"
     }
    ],
@@ -1737,7 +1737,7 @@
      "routes": [
       "import"
      ],
-     "sha256": "c6a34d4aa774f3f761554e8d6326109ec3e3f786f536c01dbe28069217aeb238",
+     "sha256": "1252f59058e0f0cf9546fe8a224ca820488b3d3e5d548069af2650c11e068036",
      "state": "HASHED"
     },
     {
@@ -1903,7 +1903,7 @@
    ],
    "driver": "tools/future/autonomy_run.py",
    "evidence_class": "STATIC_ONLY",
-   "freeze_time": "2026-09-02T23:39:36Z",
+   "freeze_time": "2026-09-03T00:37:11Z",
    "frontier_digest": "6a40b88c4819da41ca755f7d6e700848c075fd6a2081e2978b9415d9138951a6",
    "frontier_items": [
     {
@@ -2297,21 +2297,21 @@
     "branch": "odyssey-i",
     "dirty": true,
     "dirty_sample": [
-     " M receipts/future/ABI_VERDICT_HARNESS.json",
-     " M receipts/future/ACCELERATOR_WORKUNITS.json",
      " M receipts/future/ADDRESSING_GAP.json",
-     " M receipts/future/ANE_PREBOARD.json",
      " M receipts/future/ANE_PROBE_LAB.json",
      " M receipts/future/ARTIFACT_IDENTITY.json",
      " M receipts/future/AUTONOMY_DEGENERACY.json",
      " M receipts/future/AUTONOMY_MISSION_STATE.json",
-     " M receipts/future/AUTONOMY_RUN.json",
      " M receipts/future/AUTONOMY_TRIALS.json",
      " M receipts/future/BENCH_B_TOOL_REACHABILITY.json",
-     " M receipts/future/CANDIDATE_STAGED_PLAN.json"
+     " M receipts/future/CAPABILITY_EVAL.json",
+     " M receipts/future/CAPABILITY_STAGES.json",
+     " M receipts/future/CLAIM_SCOPE.json",
+     " M receipts/future/CODEX_INGEST_STATE.json",
+     " M receipts/future/CODEX_MUTATION_SURFACE.json"
     ],
     "dirty_scope": "tools/future + receipts/future",
-    "head": "a612af62db43bee98204eb7e19a64d901f1eb571",
+    "head": "b35af1fa8886aa9d5903e3b9e943503c63cb001e",
     "why": null
    },
    "gpu_authority": false,
@@ -2322,7 +2322,7 @@
     "value": "qwen3.8-27b-sealed-3.14"
    },
    "n_code_files": 74,
-   "n_future_py_on_disk": 538,
+   "n_future_py_on_disk": 540,
    "n_hashed": 74,
    "resident_identity": {
     "gpu_authority": false,
@@ -2434,13 +2434,13 @@
     {
      "path": "receipts/future/ORCHESTRATION_BINDINGS.json",
      "role": "driver_startup_read",
-     "sha256": "2831e13869c718fcaa4548e7a3420c1cd4c295a75af17f5b8c30bf5feb45b3a4",
+     "sha256": "05bc94712760f998cd300d41cd631072fa41e8a3243f1ccaee70ad104106a329",
      "state": "HASHED"
     },
     {
      "path": "receipts/future/RESIDENT_IDENTITY.json",
      "role": "driver_startup_read",
-     "sha256": "1d0682e0934b80ff7a7947a17ad133c6cc8edd3279bd8d151758ea0742d76453",
+     "sha256": "471c32966b675199695fd59082bf7a9eeb1df4dbe9a96d5cd0f26223b7b767b3",
      "state": "HASHED"
     }
    ],
@@ -2904,7 +2904,7 @@
      "routes": [
       "import"
      ],
-     "sha256": "c6a34d4aa774f3f761554e8d6326109ec3e3f786f536c01dbe28069217aeb238",
+     "sha256": "1252f59058e0f0cf9546fe8a224ca820488b3d3e5d548069af2650c11e068036",
      "state": "HASHED"
     },
     {
@@ -3070,7 +3070,7 @@
    ],
    "driver": "tools/future/autonomy_run.py",
    "evidence_class": "STATIC_ONLY",
-   "freeze_time": "2026-09-02T23:39:36Z",
+   "freeze_time": "2026-09-03T00:37:11Z",
    "frontier_digest": "6a40b88c4819da41ca755f7d6e700848c075fd6a2081e2978b9415d9138951a6",
    "frontier_items": [
     {
@@ -3464,21 +3464,21 @@
     "branch": "odyssey-i",
     "dirty": true,
     "dirty_sample": [
-     " M receipts/future/ABI_VERDICT_HARNESS.json",
-     " M receipts/future/ACCELERATOR_WORKUNITS.json",
      " M receipts/future/ADDRESSING_GAP.json",
-     " M receipts/future/ANE_PREBOARD.json",
      " M receipts/future/ANE_PROBE_LAB.json",
      " M receipts/future/ARTIFACT_IDENTITY.json",
      " M receipts/future/AUTONOMY_DEGENERACY.json",
      " M receipts/future/AUTONOMY_MISSION_STATE.json",
-     " M receipts/future/AUTONOMY_RUN.json",
      " M receipts/future/AUTONOMY_TRIALS.json",
      " M receipts/future/BENCH_B_TOOL_REACHABILITY.json",
-     " M receipts/future/CANDIDATE_STAGED_PLAN.json"
+     " M receipts/future/CAPABILITY_EVAL.json",
+     " M receipts/future/CAPABILITY_STAGES.json",
+     " M receipts/future/CLAIM_SCOPE.json",
+     " M receipts/future/CODEX_INGEST_STATE.json",
+     " M receipts/future/CODEX_MUTATION_SURFACE.json"
     ],
     "dirty_scope": "tools/future + receipts/future",
-    "head": "a612af62db43bee98204eb7e19a64d901f1eb571",
+    "head": "b35af1fa8886aa9d5903e3b9e943503c63cb001e",
     "why": null
    },
    "gpu_authority": false,
@@ -3489,7 +3489,7 @@
     "value": "qwen3.8-27b-sealed-3.14"
    },
    "n_code_files": 74,
-   "n_future_py_on_disk": 538,
+   "n_future_py_on_disk": 540,
    "n_hashed": 74,
    "resident_identity": {
     "gpu_authority": false,
@@ -3601,13 +3601,13 @@
     {
      "path": "receipts/future/ORCHESTRATION_BINDINGS.json",
      "role": "driver_startup_read",
-     "sha256": "2831e13869c718fcaa4548e7a3420c1cd4c295a75af17f5b8c30bf5feb45b3a4",
+     "sha256": "05bc94712760f998cd300d41cd631072fa41e8a3243f1ccaee70ad104106a329",
      "state": "HASHED"
     },
     {
      "path": "receipts/future/RESIDENT_IDENTITY.json",
      "role": "driver_startup_read",
-     "sha256": "1d0682e0934b80ff7a7947a17ad133c6cc8edd3279bd8d151758ea0742d76453",
+     "sha256": "471c32966b675199695fd59082bf7a9eeb1df4dbe9a96d5cd0f26223b7b767b3",
      "state": "HASHED"
     }
    ],
@@ -4071,7 +4071,7 @@
      "routes": [
       "import"
      ],
-     "sha256": "c6a34d4aa774f3f761554e8d6326109ec3e3f786f536c01dbe28069217aeb238",
+     "sha256": "1252f59058e0f0cf9546fe8a224ca820488b3d3e5d548069af2650c11e068036",
      "state": "HASHED"
     },
     {
@@ -4237,7 +4237,7 @@
    ],
    "driver": "tools/future/autonomy_run.py",
    "evidence_class": "STATIC_ONLY",
-   "freeze_time": "2026-09-02T23:39:36Z",
+   "freeze_time": "2026-09-03T00:37:11Z",
    "frontier_digest": "6a40b88c4819da41ca755f7d6e700848c075fd6a2081e2978b9415d9138951a6",
    "frontier_items": [
     {
@@ -4631,21 +4631,21 @@
     "branch": "odyssey-i",
     "dirty": true,
     "dirty_sample": [
-     " M receipts/future/ABI_VERDICT_HARNESS.json",
-     " M receipts/future/ACCELERATOR_WORKUNITS.json",
      " M receipts/future/ADDRESSING_GAP.json",
-     " M receipts/future/ANE_PREBOARD.json",
      " M receipts/future/ANE_PROBE_LAB.json",
      " M receipts/future/ARTIFACT_IDENTITY.json",
      " M receipts/future/AUTONOMY_DEGENERACY.json",
      " M receipts/future/AUTONOMY_MISSION_STATE.json",
-     " M receipts/future/AUTONOMY_RUN.json",
      " M receipts/future/AUTONOMY_TRIALS.json",
      " M receipts/future/BENCH_B_TOOL_REACHABILITY.json",
-     " M receipts/future/CANDIDATE_STAGED_PLAN.json"
+     " M receipts/future/CAPABILITY_EVAL.json",
+     " M receipts/future/CAPABILITY_STAGES.json",
+     " M receipts/future/CLAIM_SCOPE.json",
+     " M receipts/future/CODEX_INGEST_STATE.json",
+     " M receipts/future/CODEX_MUTATION_SURFACE.json"
     ],
     "dirty_scope": "tools/future + receipts/future",
-    "head": "a612af62db43bee98204eb7e19a64d901f1eb571",
+    "head": "b35af1fa8886aa9d5903e3b9e943503c63cb001e",
     "why": null
    },
    "gpu_authority": false,
@@ -4656,7 +4656,7 @@
     "value": "qwen3.8-27b-sealed-3.14"
    },
    "n_code_files": 74,
-   "n_future_py_on_disk": 538,
+   "n_future_py_on_disk": 540,
    "n_hashed": 74,
    "resident_identity": {
     "gpu_authority": false,
@@ -4768,13 +4768,13 @@
     {
      "path": "receipts/future/ORCHESTRATION_BINDINGS.json",
      "role": "driver_startup_read",
-     "sha256": "2831e13869c718fcaa4548e7a3420c1cd4c295a75af17f5b8c30bf5feb45b3a4",
+     "sha256": "05bc94712760f998cd300d41cd631072fa41e8a3243f1ccaee70ad104106a329",
      "state": "HASHED"
     },
     {
      "path": "receipts/future/RESIDENT_IDENTITY.json",
      "role": "driver_startup_read",
-     "sha256": "1d0682e0934b80ff7a7947a17ad133c6cc8edd3279bd8d151758ea0742d76453",
+     "sha256": "471c32966b675199695fd59082bf7a9eeb1df4dbe9a96d5cd0f26223b7b767b3",
      "state": "HASHED"
     }
    ],
@@ -5238,7 +5238,7 @@
      "routes": [
       "import"
      ],
-     "sha256": "c6a34d4aa774f3f761554e8d6326109ec3e3f786f536c01dbe28069217aeb238",
+     "sha256": "1252f59058e0f0cf9546fe8a224ca820488b3d3e5d548069af2650c11e068036",
      "state": "HASHED"
     },
     {
@@ -5404,7 +5404,7 @@
    ],
    "driver": "tools/future/autonomy_run.py",
    "evidence_class": "STATIC_ONLY",
-   "freeze_time": "2026-09-02T23:39:36Z",
+   "freeze_time": "2026-09-03T00:37:11Z",
    "frontier_digest": "6a40b88c4819da41ca755f7d6e700848c075fd6a2081e2978b9415d9138951a6",
    "frontier_items": [
     {
@@ -5798,21 +5798,21 @@
     "branch": "odyssey-i",
     "dirty": true,
     "dirty_sample": [
-     " M receipts/future/ABI_VERDICT_HARNESS.json",
-     " M receipts/future/ACCELERATOR_WORKUNITS.json",
      " M receipts/future/ADDRESSING_GAP.json",
-     " M receipts/future/ANE_PREBOARD.json",
      " M receipts/future/ANE_PROBE_LAB.json",
      " M receipts/future/ARTIFACT_IDENTITY.json",
      " M receipts/future/AUTONOMY_DEGENERACY.json",
      " M receipts/future/AUTONOMY_MISSION_STATE.json",
-     " M receipts/future/AUTONOMY_RUN.json",
      " M receipts/future/AUTONOMY_TRIALS.json",
      " M receipts/future/BENCH_B_TOOL_REACHABILITY.json",
-     " M receipts/future/CANDIDATE_STAGED_PLAN.json"
+     " M receipts/future/CAPABILITY_EVAL.json",
+     " M receipts/future/CAPABILITY_STAGES.json",
+     " M receipts/future/CLAIM_SCOPE.json",
+     " M receipts/future/CODEX_INGEST_STATE.json",
+     " M receipts/future/CODEX_MUTATION_SURFACE.json"
     ],
     "dirty_scope": "tools/future + receipts/future",
-    "head": "a612af62db43bee98204eb7e19a64d901f1eb571",
+    "head": "b35af1fa8886aa9d5903e3b9e943503c63cb001e",
     "why": null
    },
    "gpu_authority": false,
@@ -5823,7 +5823,7 @@
     "value": "qwen3.8-27b-sealed-3.14"
    },
    "n_code_files": 74,
-   "n_future_py_on_disk": 538,
+   "n_future_py_on_disk": 540,
    "n_hashed": 74,
    "resident_identity": {
     "gpu_authority": false,
@@ -5935,13 +5935,13 @@
     {
      "path": "receipts/future/ORCHESTRATION_BINDINGS.json",
      "role": "driver_startup_read",
-     "sha256": "2831e13869c718fcaa4548e7a3420c1cd4c295a75af17f5b8c30bf5feb45b3a4",
+     "sha256": "05bc94712760f998cd300d41cd631072fa41e8a3243f1ccaee70ad104106a329",
      "state": "HASHED"
     },
     {
      "path": "receipts/future/RESIDENT_IDENTITY.json",
      "role": "driver_startup_read",
-     "sha256": "1d0682e0934b80ff7a7947a17ad133c6cc8edd3279bd8d151758ea0742d76453",
+     "sha256": "471c32966b675199695fd59082bf7a9eeb1df4dbe9a96d5cd0f26223b7b767b3",
      "state": "HASHED"
     }
    ],
@@ -5963,24 +5963,24 @@
   "branch": "odyssey-i",
   "dirty": true,
   "dirty_sample": [
-   " M receipts/future/ABI_VERDICT_HARNESS.json",
-   " M receipts/future/ACCELERATOR_WORKUNITS.json",
    " M receipts/future/ADDRESSING_GAP.json",
-   " M receipts/future/ANE_PREBOARD.json",
    " M receipts/future/ANE_PROBE_LAB.json",
    " M receipts/future/ARTIFACT_IDENTITY.json",
    " M receipts/future/AUTONOMY_DEGENERACY.json",
    " M receipts/future/AUTONOMY_MISSION_STATE.json",
-   " M receipts/future/AUTONOMY_RUN.json",
    " M receipts/future/AUTONOMY_TRIALS.json",
    " M receipts/future/BENCH_B_TOOL_REACHABILITY.json",
-   " M receipts/future/CANDIDATE_STAGED_PLAN.json"
+   " M receipts/future/CAPABILITY_EVAL.json",
+   " M receipts/future/CAPABILITY_STAGES.json",
+   " M receipts/future/CLAIM_SCOPE.json",
+   " M receipts/future/CODEX_INGEST_STATE.json",
+   " M receipts/future/CODEX_MUTATION_SURFACE.json"
   ],
   "dirty_scope": "tools/future + receipts/future",
-  "head": "a612af62db43bee98204eb7e19a64d901f1eb571",
+  "head": "b35af1fa8886aa9d5903e3b9e943503c63cb001e",
   "why": null
  },
- "glob_refused": "tools/future/*.py is 538 files; the driver graph is 74. A glob would false-invalidate on unrelated edits.",
+ "glob_refused": "tools/future/*.py is 540 files; the driver graph is 74. A glob would false-invalidate on unrelated edits.",
  "gpu_authority": false,
  "graph_rule": "AST import graph from autonomy_run.py plus literal tools/future/<name>.py strings in that driver's subprocess argv lists; not tools/future/*.py",
  "model_identity": {
@@ -5989,7 +5989,7 @@
   "value": "qwen3.8-27b-sealed-3.14"
  },
  "n_code_files": 74,
- "n_future_py_on_disk": 538,
+ "n_future_py_on_disk": 540,
  "n_hashed": 74,
  "negative_findings": [
   "resident_model_process is UNAVAILABLE: this sidecar does not start a resident model process",
@@ -6032,7 +6032,7 @@
   "why": "this sidecar does not start a resident model process; autonomy_run records resident_model_cognition UNAVAILABLE as a measurement of that fact, not as a quoted blocker"
  },
  "schema": "hawking.future.trial_freeze.v1",
- "seal_sha256": "2b4dd579cfbf85b2c07d858e2ecc079a3ed17ccf4a3f8609df8a2335abfe6e74",
+ "seal_sha256": "4080f892f078265bd377b5a20aa7fd52a66e43d2aa13b9cdc57a3301104d901d",
  "startup_receipts": [
   {
    "path": "receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
@@ -6043,13 +6043,13 @@
   {
    "path": "receipts/future/ORCHESTRATION_BINDINGS.json",
    "role": "driver_startup_read",
-   "sha256": "2831e13869c718fcaa4548e7a3420c1cd4c295a75af17f5b8c30bf5feb45b3a4",
+   "sha256": "05bc94712760f998cd300d41cd631072fa41e8a3243f1ccaee70ad104106a329",
    "state": "HASHED"
   },
   {
    "path": "receipts/future/RESIDENT_IDENTITY.json",
    "role": "driver_startup_read",
-   "sha256": "1d0682e0934b80ff7a7947a17ad133c6cc8edd3279bd8d151758ea0742d76453",
+   "sha256": "471c32966b675199695fd59082bf7a9eeb1df4dbe9a96d5cd0f26223b7b767b3",
    "state": "HASHED"
   }
  ],

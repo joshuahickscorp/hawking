@@ -4,7 +4,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T23:39:57Z",
+  "recorded_at": "2026-09-03T00:37:34Z",
   "recorded_by": "tools/future/specimen_curriculum.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -1470,7 +1470,7 @@
   "rule": "A blocked role records wake_condition, blocked_reason, required_resource, reevaluation_trigger. That converts an unexplained refusal into a named dependency."
  },
  "schema": "hawking.future.specimen_curriculum.v1",
- "seal_sha256": "fea6584a8e738a67de7eb99a534ce453c6b9982e3f0879aa085e9bb1e1fcd460",
+ "seal_sha256": "467018744bdae25538f1c6ac82cb14a31293d41e85e5c982e3941aca78c3b2da",
  "unready": [
   "very_small_dense_procedural_speed",
   "mid_size_dense_compiler",

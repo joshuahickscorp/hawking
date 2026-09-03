@@ -1,0 +1,46 @@
+diff --git a/crates/hawking-core/src/model/qwen38_hybrid_decode.rs b/crates/hawking-core/src/model/qwen38_hybrid_decode.rs
+index c42c1ccba..c806b7c9f 100644
+--- a/crates/hawking-core/src/model/qwen38_hybrid_decode.rs
++++ b/crates/hawking-core/src/model/qwen38_hybrid_decode.rs
+@@ -7495,6 +7495,41 @@ mod device {
+         max_new_tokens: usize,
+         reuse: usize,
+     ) -> Result<Qwen38GenerateResult> {
++        generate_greedy_reusing_snapshot(session, prompt, max_new_tokens, reuse, None)
++            .map(|(result, _)| result)
++    }
++
++    /// As `generate_greedy_reusing`, and additionally captures a prefix
++    /// checkpoint the moment `position` reaches `snapshot_at`.
++    ///
++    /// Taken DURING work already being done: the caller cannot snapshot a
++    /// boundary after prefilling past it, because the recurrent carry has
++    /// already moved on and there is no way to rewind it.
++    pub fn generate_greedy_reusing_snapshot(
++        session: &mut Qwen38HybridDecodeSession,
++        prompt: &[u32],
++        max_new_tokens: usize,
++        reuse: usize,
++        snapshot_at: Option<usize>,
++    ) -> Result<(Qwen38GenerateResult, Option<Qwen38PrefixCheckpoint>)> {
++        let result = generate_greedy_reusing_inner(
++            session,
++            prompt,
++            max_new_tokens,
++            reuse,
++            snapshot_at,
++        )?;
++        Ok(result)
++    }
++
++    fn generate_greedy_reusing_inner(
++        session: &mut Qwen38HybridDecodeSession,
++        prompt: &[u32],
++        max_new_tokens: usize,
++        reuse: usize,
++        snapshot_at: Option<usize>,
++    ) -> Result<(Qwen38GenerateResult, Option<Qwen38PrefixCheckpoint>)> {
++        let mut snapshot: Option<Qwen38PrefixCheckpoint> = None;
+         if prompt.is_empty() {
+             return Err(Error::Model("qwen38 prompt is empty".into()));
+         }

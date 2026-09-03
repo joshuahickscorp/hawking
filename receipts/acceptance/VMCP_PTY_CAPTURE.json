@@ -2,7 +2,7 @@
   "blocker": {
     "error": null,
     "missing": "PTY slave open (os.open(ptsname))",
-    "ptsname": "/dev/ttys002",
+    "ptsname": "/dev/ttys004",
     "why": "posix_openpt/grantpt/unlockpt/ptsname succeed in this process, but opening the slave node raises PermissionError. script(1) reports openpty: Operation not permitted. E.10 terminal text, ANSI, resize/layout and screenshot-state require a real PTY. A pipe subprocess is process inspection, not PTY capture."
   },
   "checks": [
@@ -11,7 +11,7 @@
         "available": true,
         "error": null,
         "grantpt": true,
-        "ptsname": "/dev/ttys002"
+        "ptsname": "/dev/ttys004"
       },
       "id": "pty_slave_openable",
       "ok": false
@@ -21,10 +21,10 @@
         "available": true,
         "error": null,
         "grantpt": true,
-        "ptsname": "/dev/ttys002"
+        "ptsname": "/dev/ttys004"
       },
       "id": "not_empty_look",
-      "ok": "/dev/ttys002"
+      "ok": "/dev/ttys004"
     }
   ],
   "claim_boundary": "FUNCTIONAL_SIM / STATIC acceptance evidence. No claim that VisionMCP web/3d extras, Blender, Chrome, FPGA, DGX or eGPU ran unless a check records that binary on PATH. An empty collection is not evidence of absence.",
@@ -43,14 +43,14 @@
     "weakened": false
   },
   "criterion_weakened": false,
-  "elapsed_ms": 28.256,
+  "elapsed_ms": 31.977,
   "evidence_tier": "STATIC",
   "gate": "VMCP_PTY_CAPTURE",
-  "generated_at": "2026-09-02T18:44:53Z",
+  "generated_at": "2026-09-02T23:16:06Z",
   "gpu_authority": false,
   "invoked_symbols": [
     {
-      "elapsed_ms": 0.456,
+      "elapsed_ms": 0.724,
       "error": null,
       "kind": "call",
       "raised": false,
@@ -70,7 +70,7 @@
         "TERM": "xterm"
       },
       "argv": [
-        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "/Users/scammermike/Downloads/hawking/workspace/ops/.venv/bin/python",
         "-c",
         "<script>"
       ],
@@ -81,13 +81,13 @@
         "stdout_bytes": 50
       },
       "note": "pipe subprocess is NOT a PTY; listed only so the blocker is not an empty look",
-      "process identity": "/opt/homebrew/opt/python@3.14/bin/python3.14",
+      "process identity": "/Users/scammermike/Downloads/hawking/workspace/ops/.venv/bin/python",
       "resize/layout": null,
       "screenshot state where useful": null,
       "terminal text": null,
       "timestamps": {
-        "finished_at": 1788374693.6693141,
-        "started_at": 1788374693.641532
+        "finished_at": 1788390966.867529,
+        "started_at": 1788390966.8362932
       },
       "tool/subprocess events where observable": [
         "subprocess.run"
@@ -97,7 +97,7 @@
       "available": true,
       "error": null,
       "grantpt": true,
-      "ptsname": "/dev/ttys002"
+      "ptsname": "/dev/ttys004"
     }
   },
   "output": {

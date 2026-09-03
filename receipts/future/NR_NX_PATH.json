@@ -44,7 +44,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T23:39:02Z",
+  "recorded_at": "2026-09-03T00:36:32Z",
   "recorded_by": "tools/future/nr_nx_path.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -441,7 +441,7 @@
   "workunit": "one CPU_ANALYSIS unit; classification + CPU contracts; no GPU authority"
  },
  "schema": "hawking.future.nr_nx_path.v1",
- "seal_sha256": "375aacf9eef70490177099a6826394e055d860753384648e4793020805b5cd23",
+ "seal_sha256": "709f64c472c9852ca8d41096b45f28830be033051ffc4399e239a2a839f5fd24",
  "seven": [
   {
    "audit_cited": [

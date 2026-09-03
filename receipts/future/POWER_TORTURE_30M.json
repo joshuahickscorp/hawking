@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T23:43:09Z",
+  "recorded_at": "2026-09-03T00:40:42Z",
   "recorded_by": "tools/future/power_torture.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -280,7 +280,7 @@
   "verdict": "PASS"
  },
  "duration_s_budget": 1800,
- "elapsed_s": 4.552382946014404,
+ "elapsed_s": 7.532257795333862,
  "evidence_class": "STATIC_ONLY",
  "exercised": [
   "NO_WAIT",
@@ -305,7 +305,7 @@
   "kind": "absent",
   "owner": null,
   "parked": false,
-  "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-gpu-lane-pytest-10126.lock",
+  "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-gpu-lane-pytest-93342.lock",
   "pid": null,
   "pid_alive": null,
   "present": false,
@@ -314,12 +314,12 @@
  "integration_ok": true,
  "judge": {
   "append_only": true,
-  "claimed_sha256": "f850d34ad439f67a693d61aea4acf3c21889b09ab467478762c627670754eaf7",
+  "claimed_sha256": "37733d7992e02a98434703aa884b5270b75c237457db86f2eb10f043f3f5e2fb",
   "correct_refusal_counts_as_exercised": true,
   "correct_refusals": [
    "CONCURRENCY"
   ],
-  "events_sha256": "f850d34ad439f67a693d61aea4acf3c21889b09ab467478762c627670754eaf7",
+  "events_sha256": "37733d7992e02a98434703aa884b5270b75c237457db86f2eb10f043f3f5e2fb",
   "evidence_class": "STATIC_ONLY",
   "exercised": [
    "NO_WAIT",
@@ -399,7 +399,7 @@
     "power": "NO_WAIT",
     "seq": 5,
     "status": "EXERCISED",
-    "why": "detached pid 48621 stayed open while WU.TORTURE.NO_WAIT.ind started, progressed and ingested; idle_runnable was not a wait"
+    "why": "detached pid 16699 stayed open while WU.TORTURE.NO_WAIT.ind started, progressed and ingested; idle_runnable was not a wait"
    },
    "PROTECTED_PARKING": {
     "correct_refusal": false,
@@ -588,7 +588,7 @@
      "kind": "absent",
      "owner": null,
      "parked": false,
-     "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-gpu-lane-pytest-10126.lock",
+     "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-gpu-lane-pytest-93342.lock",
      "pid": null,
      "pid_alive": null,
      "present": false,
@@ -609,18 +609,18 @@
    "counts_toward_pass": true,
    "evidence": {
     "detector_verdict": "NO_WAIT_OK",
-    "fast_finished_at": 1788392586.911533,
+    "fast_finished_at": 1788396036.59831,
     "fast_ingest": "ingested",
-    "pid": 48621,
+    "pid": 16699,
     "runnable_while_open": "RUNNABLE",
-    "slow_launched_at": 1788392586.53879
+    "slow_launched_at": 1788396036.233206
    },
    "exercised": true,
    "failed": false,
    "power": "NO_WAIT",
    "skipped": false,
    "status": "EXERCISED",
-   "why": "detached pid 48621 stayed open while WU.TORTURE.NO_WAIT.ind started, progressed and ingested; idle_runnable was not a wait"
+   "why": "detached pid 16699 stayed open while WU.TORTURE.NO_WAIT.ind started, progressed and ingested; idle_runnable was not a wait"
   },
   "PROTECTED_PARKING": {
    "correct_refusal": false,
@@ -658,7 +658,7 @@
     "cites": [
      "receipts/future/STATUS_CAUSALITY_CHALLENGE.json",
      "receipts/future/DETACHED_WORK_TRIAL.json",
-     "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/pytest-of-scammermike/pytest-676/popen-gw22/power_torture_run0/nowait/results/fast.json"
+     "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/pytest-of-scammermike/pytest-761/popen-gw22/power_torture_run0/nowait/results/fast.json"
     ]
    },
    "exercised": true,
@@ -767,12 +767,12 @@
  "purpose": "30-minute power torture on a frozen build. Judged independently from the sealed timeline against a substrate verified unchanged.",
  "resident_model_attached": false,
  "schema": "hawking.future.power_torture.v2",
- "seal_sha256": "7209adfc696598a3d94d33939fbda917748bf0b8a5a6de07cfe50dca85bd8b4d",
+ "seal_sha256": "24bb3082f90212e4d4999511f792f65f9dd04b90886d3690ba74f40c824ab4a5",
  "skipped": [],
  "skipped_do_not_count_toward_pass": true,
  "substrate": {
-  "after_digest": "17d87f94d576b04a70515d7f394ce7d59b217e93d5bde442dc1557c5963b6a36",
-  "before_digest": "17d87f94d576b04a70515d7f394ce7d59b217e93d5bde442dc1557c5963b6a36",
+  "after_digest": "88b5c6dc7c13a0bb9b3cb8ce776b9d64c819eb9e2dfecff20bf9499bc07242b8",
+  "before_digest": "88b5c6dc7c13a0bb9b3cb8ce776b9d64c819eb9e2dfecff20bf9499bc07242b8",
   "equal": true,
   "files": [
    {
@@ -1076,9 +1076,9 @@
     "state": "HASHED"
    },
    {
-    "bytes": 79918,
+    "bytes": 81636,
     "path": "tools/future/rival_codec_screen.py",
-    "sha256": "c6a34d4aa774f3f761554e8d6326109ec3e3f786f536c01dbe28069217aeb238",
+    "sha256": "1252f59058e0f0cf9546fe8a224ca820488b3d3e5d548069af2650c11e068036",
     "state": "HASHED"
    },
    {
@@ -1205,8 +1205,8 @@
  },
  "timeline": {
   "append_only": true,
-  "elapsed_s": 4.55171,
-  "events_sha256": "f850d34ad439f67a693d61aea4acf3c21889b09ab467478762c627670754eaf7",
+  "elapsed_s": 7.530685,
+  "events_sha256": "37733d7992e02a98434703aa884b5270b75c237457db86f2eb10f043f3f5e2fb",
   "n_events": 27,
   "path": "receipts/future/POWER_TORTURE_TIMELINE.json",
   "receipt": "receipts/future/POWER_TORTURE_TIMELINE.json",
