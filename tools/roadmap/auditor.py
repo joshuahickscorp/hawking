@@ -36,6 +36,7 @@ from typing import Any, Iterable
 
 from tools.roadmap import EVIDENCE_TIER, GRAPH_REL, SCHEMA, VERSION
 from tools.roadmap import catalog
+from tools.roadmap import lineage
 from tools.roadmap.gitfs import (
     REPO,
     SourceView,
@@ -223,6 +224,63 @@ def _criterion_is_real(doc: dict[str, Any]) -> str:
     return ""
 
 
+def _criterion_span(doc: dict[str, Any]) -> tuple[int | None, int | None, str | None]:
+    """(start, end, pointer) across the shapes the corpus uses."""
+    src = doc.get("criterion_source")
+    if not isinstance(src, dict):
+        crit = doc.get("criterion")
+        src = crit if isinstance(crit, dict) else {}
+    start, end = src.get("start_line"), src.get("end_line")
+    return (start if isinstance(start, int) else None,
+            end if isinstance(end, int) else None,
+            src.get("pointer"))
+
+
+def criterion_matches_its_source(doc: dict[str, Any]) -> tuple[str, str]:
+    """Is the stored criterion still what its cited source says? (verdict, why).
+
+    criterion_altered was a HARDCODED FALSE LITERAL at fourteen write sites across
+    all six acceptance lanes and was computed at none of them, so half the BUILT
+    law -- "verdict ACCEPTED and criterion_altered false" -- was satisfied by a
+    constant. A receipt cannot be trusted to report that it did not move its own
+    goalposts; the claim has to be recomputed from the source it cites.
+
+    MATCHES      the span re-quotes into the stored text
+    ALTERED      it does not, so the criterion changed after the receipt was written
+    UNVERIFIABLE the receipt cites no span, so the claim cannot be checked at all
+    """
+    if doc.get("criterion_altered") or doc.get("criterion_weakened"):
+        return "ALTERED", "the receipt says so itself"
+    quoted = _criterion_text(doc)
+    if not quoted.strip():
+        return "UNVERIFIABLE", "the receipt quotes no criterion"
+    start, end, pointer = _criterion_span(doc)
+    if pointer:
+        # Authored in-repo rather than quoted from the roadmap; the supplement is
+        # the source, and it is committed, so compare against it.
+        try:
+            sup = json.loads((REPO / "civilization" / "GATE_CRITERIA_SUPPLEMENT.json").read_text())
+            gate = str(pointer).split(".")[1] if "." in str(pointer) else ""
+            want = ((sup.get("gates") or {}).get(gate) or {}).get("criterion") or ""
+        except Exception:
+            return "UNVERIFIABLE", "the criteria supplement is unreadable"
+        if not want:
+            return "UNVERIFIABLE", f"the supplement declares no criterion for {pointer!r}"
+        return ("MATCHES", "") if want.strip() in quoted else (
+            "ALTERED", "the stored quote no longer matches the criteria supplement")
+    if start is None or end is None:
+        return "UNVERIFIABLE", "the receipt cites no line span to re-quote"
+    try:
+        lines = lineage.roadmap_lines()
+    except OSError:
+        return "UNVERIFIABLE", "the canonical roadmap is unreadable"
+    span = "\n".join(lines[start - 1:end]).strip()
+    if not span:
+        return "ALTERED", f"span {start}-{end} is empty in the roadmap it cites"
+    return ("MATCHES", "") if span in quoted else (
+        "ALTERED", f"span {start}-{end} does not re-quote into the stored criterion")
+
+
 def _accepted_fact(probe: dict[str, Any], look: dict[str, Any], view: SourceView,
                    gate_id: str | None = None) -> dict[str, Any]:
     """The gate's own acceptance criterion, not 'a receipt on this topic exists'."""
@@ -245,9 +303,11 @@ def _accepted_fact(probe: dict[str, Any], look: dict[str, Any], view: SourceView
                 doc = None
             if isinstance(doc, dict):
                 verdict = str(doc.get("verdict") or "").strip().upper()
-                altered = bool(doc.get("criterion_altered"))
                 command = doc.get("command")
                 unreal = _criterion_is_real(doc) if verdict == "ACCEPTED" else ""
+                match, why = (criterion_matches_its_source(doc)
+                              if verdict == "ACCEPTED" else ("", ""))
+                altered = match == "ALTERED"
                 if verdict == "ACCEPTED" and not altered and command and not unreal:
                     return {
                         "value": True,
@@ -258,7 +318,13 @@ def _accepted_fact(probe: dict[str, Any], look: dict[str, Any], view: SourceView
                                 "line": None,
                                 "command": command,
                                 "evidence_tier": doc.get("evidence_tier"),
-                                "note": "the gate's own criterion was demonstrated by a real run",
+                                # RECOMPUTED, not read off the receipt.
+                                "criterion_source_check": match,
+                                "note": (
+                                    "the gate's own criterion was demonstrated by a real run"
+                                    if match == "MATCHES" else
+                                    f"accepted, but the criterion could not be re-checked: {why}"
+                                ),
                             }
                         ],
                     }
@@ -272,7 +338,7 @@ def _accepted_fact(probe: dict[str, Any], look: dict[str, Any], view: SourceView
                                 "line": None,
                                 "note": (
                                     f"acceptance verdict {verdict}"
-                                    + (" (criterion was ALTERED, refused)" if altered else "")
+                                    + (f" (criterion ALTERED, refused: {why})" if altered else "")
                                     + (f" (criterion is not real: {unreal})" if unreal else "")
                                     + (f": {doc.get('blocker')}" if doc.get("blocker") else "")
                                 ),
