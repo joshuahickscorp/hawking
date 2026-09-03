@@ -198,7 +198,14 @@ class GoalCompiler:
         r"(?<![A-Za-z0-9_.-])"
         r"(/?(?:[A-Za-z0-9_.-]+/)*"
         r"[A-Za-z0-9_.-]+\."
-        r"(?:py|pyi|js|jsx|ts|tsx|md|json|yaml|yml|toml|rs|go|txt))"
+        r"(?:jsonl|json|pyi|py|jsx|js|tsx|ts|md|yaml|yml|toml|rs|go|txt))"
+        # A boundary, or a longer extension is truncated to a shorter known
+        # one. `js` precedes `json` here, so COMPILE_ECONOMICS.jsonl became
+        # COMPILE_ECONOMICS.js -- a path that does not exist, so the packet
+        # inlined NO evidence and the model spent a whole tool round asking for
+        # the file the packet had already named. Two extractors had this bug;
+        # this is the one that feeds EVIDENCE_PATHS.
+        r"(?![A-Za-z0-9_])"
     )
 
     _INVARIANT_MARKERS = (

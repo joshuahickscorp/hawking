@@ -327,7 +327,14 @@ _PATH_TOKEN_RE = re.compile(
             (?:\./|\../)?
             [A-Za-z0-9_.@+~/-]+
             \.
-            (?:py|md|txt|json|toml|yaml|yml|js|ts|tsx|jsx|rs|c|cc|cpp|h|hpp|sh)
+            (?:jsonl|json|py|md|txt|toml|yaml|yml|js|ts|tsx|jsx|rs|c|cc|cpp|h|hpp|sh)
+            # A boundary, or a longer extension is silently truncated to a
+            # shorter known one: `COMPILE_ECONOMICS.jsonl` was extracted as
+            # `COMPILE_ECONOMICS.js`, which does not exist, so `_safe_path`
+            # refused it and the packet inlined NO evidence at all. The model
+            # was told which file mattered and then had to spend a whole tool
+            # round -- about 150 s -- asking for the file we had already named.
+            (?![A-Za-z0-9_])
         )
     )""",
     re.VERBOSE,
