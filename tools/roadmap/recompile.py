@@ -18,6 +18,7 @@ import json
 import re
 from collections import Counter, defaultdict
 
+from tools.roadmap import lineage
 from tools.roadmap.axes import EVIDENCE_TIER_MEANING, axes, derived_status
 from tools.roadmap.blockers import CLASSES as BLOCKER_CLASSES_V2
 from tools.roadmap.blockers import classify as _classify_v2
@@ -26,7 +27,6 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
 GRAPH = REPO / "civilization" / "CAPABILITY_GRAPH.json"
-OLD_ROADMAP = Path.home() / "Downloads" / "H-ROADMAP.md"
 
 # The seven organizational VIEWS the directive asks for. These are lenses on the
 # existing genes, deliberately not new civilizations -- the gene stays authority.
@@ -151,7 +151,10 @@ def limitations(gate: dict) -> str:
 def render() -> str:
     graph = json.loads(GRAPH.read_text())
     gates = graph["gates"]
-    roadmap_lines = OLD_ROADMAP.read_text(errors="replace").splitlines() if OLD_ROADMAP.is_file() else []
+    # No silent [] fallback: an empty roadmap makes every defining_property "",
+    # which is how all 83 gates came to print "acceptance_span in the superseded
+    # roadmap" instead of their actual proof obligation.
+    roadmap_lines = lineage.roadmap_lines()
 
     by_view: dict[str, list[dict]] = defaultdict(list)
     for gate in gates.values():

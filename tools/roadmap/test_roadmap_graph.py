@@ -16,8 +16,11 @@ from tools.roadmap.auditor import audit, citation_bound_violations
 from tools.roadmap.gitfs import REPO, SourceView
 from tools.roadmap.parse import parse_roadmap
 from tools.roadmap.__main__ import mutation_check
+from tools.roadmap import lineage
 
-ROADMAP = Path("/Users/scammermike/Downloads/H-ROADMAP.md")
+# The canonical roadmap is external and can vanish; tools.roadmap.lineage
+# falls back to the digest-verified in-repo copy rather than a placeholder.
+ROADMAP = lineage.roadmap_path()
 
 
 @pytest.fixture(scope="session")

@@ -1,0 +1,160 @@
+"""The canonical roadmap vanished and twelve modules kept pointing at it.
+
+These tests exist because the failure was silent in three different ways at once:
+`parse_roadmap` raised (loud, but it took 17 graph-invariant tests down with it as
+collection errors nobody read), `recompile.render` substituted an empty file (so
+all 83 gates printed no defining property), and four acceptance harnesses returned
+a placeholder string that a receipt would store as the criterion it swears it did
+not alter.
+
+Every check below has a negative control: if the load-bearing line is reverted the
+test must FAIL, or it is not evidence.
+"""
+from __future__ import annotations
+
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+import pytest
+
+from tools.roadmap import lineage
+from tools.roadmap.auditor import _criterion_is_real
+from tools.roadmap.parse import parse_roadmap
+
+REPO = lineage.REPO
+
+
+def test_the_preserved_copy_is_still_the_document_preservation_md_recorded():
+    """PRESERVATION.md records the digest; the copy must still match it."""
+    assert lineage.PRESERVED.is_file(), f"lineage copy missing: {lineage.PRESERVED}"
+    assert lineage.preserved_is_intact(), (
+        "the preserved roadmap no longer matches its recorded sha256; the lineage "
+        "record and the file have diverged and one of them is wrong"
+    )
+
+
+def test_the_recorded_digest_is_the_one_preservation_md_documents():
+    """The constant is not free to drift away from the preservation record."""
+    text = (REPO / "docs" / "roadmap-lineage" / "PRESERVATION.md").read_text()
+    assert lineage.PRESERVED_SHA256 in text, (
+        "lineage.PRESERVED_SHA256 does not appear in PRESERVATION.md, so the "
+        "resolver is verifying against a digest no record vouches for"
+    )
+
+
+def test_a_digest_mismatch_refuses_the_preserved_copy(monkeypatch, tmp_path):
+    """NEGATIVE CONTROL for the digest check.
+
+    An EARLIER 9028-line roadmap exists on /Volumes/corpdrive. Acceptance spans
+    are LINE RANGES, so parsing the wrong-length document quotes the wrong text
+    while looking perfectly well formed. Break the digest and the resolver must
+    refuse rather than fall through.
+    """
+    monkeypatch.setattr(lineage, "EXTERNAL", tmp_path / "absent-H-ROADMAP.md")
+    monkeypatch.delenv("H_ROADMAP", raising=False)
+    monkeypatch.setattr(lineage, "PRESERVED_SHA256", "0" * 64)
+    with pytest.raises(FileNotFoundError) as err:
+        lineage.roadmap_path()
+    assert "digest" in str(err.value)
+
+
+def test_the_resolver_falls_back_when_the_external_roadmap_is_absent(monkeypatch, tmp_path):
+    """The regression itself: no ~/Downloads copy must not mean no roadmap."""
+    monkeypatch.setattr(lineage, "EXTERNAL", tmp_path / "absent-H-ROADMAP.md")
+    monkeypatch.delenv("H_ROADMAP", raising=False)
+    assert lineage.roadmap_path() == lineage.PRESERVED
+
+
+def test_the_external_roadmap_still_wins_when_it_is_present(monkeypatch, tmp_path):
+    """The operator's copy is the authority; lineage is only the fallback."""
+    external = tmp_path / "H-ROADMAP.md"
+    external.write_text("# whatever the operator put there\n")
+    monkeypatch.setattr(lineage, "EXTERNAL", external)
+    monkeypatch.delenv("H_ROADMAP", raising=False)
+    assert lineage.roadmap_path() == external
+
+
+def test_the_env_override_wins_over_both(monkeypatch, tmp_path):
+    override = tmp_path / "override.md"
+    override.write_text("x\n")
+    monkeypatch.setenv("H_ROADMAP", str(override))
+    assert lineage.roadmap_path() == override
+
+
+def test_roadmap_lines_raises_rather_than_returning_an_empty_file(monkeypatch, tmp_path):
+    """recompile.render used `[] if not is_file()`, so a missing roadmap read as
+    a roadmap with no content and every defining_property came out empty."""
+    monkeypatch.setattr(lineage, "EXTERNAL", tmp_path / "absent.md")
+    monkeypatch.setattr(lineage, "PRESERVED", tmp_path / "also-absent.md")
+    monkeypatch.delenv("H_ROADMAP", raising=False)
+    with pytest.raises(FileNotFoundError):
+        lineage.roadmap_lines()
+
+
+def test_quote_span_returns_the_real_text_not_a_placeholder():
+    quoted = lineage.quote_span(1, 3)
+    assert quoted.strip(), "quote_span produced nothing"
+    assert "not readable" not in quoted.lower()
+
+
+def test_parse_roadmap_succeeds_with_no_external_roadmap(monkeypatch, tmp_path):
+    """End to end: the whole capability graph parses off the lineage copy.
+
+    83 gates and 25 genes is the census the frozen graph recorded, so this also
+    proves the preserved copy is the same authority the catalog was built from.
+    """
+    monkeypatch.setattr(lineage, "EXTERNAL", tmp_path / "absent-H-ROADMAP.md")
+    monkeypatch.delenv("H_ROADMAP", raising=False)
+    parsed = parse_roadmap()
+    assert len(parsed["gates"]) == 83
+    assert len(parsed["genes"]) == 25
+
+
+def test_a_placeholder_criterion_is_not_accepted():
+    """criterion_altered=false says nothing when the criterion is a placeholder."""
+    assert _criterion_is_real({"criterion_quoted": "Cancellation writes a durable state."}) == ""
+    assert _criterion_is_real({"quote": "Repair depth is bounded structurally."}) == ""
+    assert _criterion_is_real({"criterion": {"quoted": "Orphan jobs are adopted."}}) == ""
+    assert _criterion_is_real({}) != ""
+    assert _criterion_is_real({"criterion_quoted": "   "}) != ""
+    assert _criterion_is_real(
+        {"criterion_quoted": "<H-ROADMAP.md not readable at /Users/x/H-ROADMAP.md>"}
+    ) != ""
+    assert _criterion_is_real(
+        {"criterion_quoted": "(roadmap missing at /Users/x/H-ROADMAP.md; span 10-20)"}
+    ) != ""
+
+
+def test_every_claiming_acceptance_receipt_quotes_a_real_criterion():
+    """The corpus must not already contain a placeholder-criterion acceptance."""
+    bad = []
+    for path in sorted((REPO / "receipts" / "acceptance").glob("*.json")):
+        if "." in path.stem:          # .gate/.run/.cycle sidecars are not verdicts
+            continue
+        try:
+            doc = json.loads(path.read_text())
+        except (OSError, ValueError):
+            continue
+        if not isinstance(doc, dict) or str(doc.get("verdict", "")).upper() != "ACCEPTED":
+            continue
+        why = _criterion_is_real(doc)
+        if why:
+            bad.append(f"{path.stem}: {why}")
+    assert not bad, "ACCEPTED receipts with no real criterion: " + "; ".join(bad)
+
+
+def test_build_state_refuses_to_clobber_a_foreign_schema():
+    """Two generators write civilization/ROADMAP_STATE.json with incompatible
+    schemas and build_state.py parses no arguments, so any invocation used to
+    destroy whichever ledger was on disk. This is that guard, run for real."""
+    state = REPO / "civilization" / "ROADMAP_STATE.json"
+    before = state.read_bytes()
+    proc = subprocess.run(
+        [sys.executable, "civilization/build_state.py"],
+        cwd=REPO, capture_output=True, text=True, timeout=600,
+    )
+    assert state.read_bytes() == before, "build_state.py overwrote a v3 ledger"
+    assert proc.returncode != 0
+    assert "refusing to overwrite" in (proc.stderr + proc.stdout)

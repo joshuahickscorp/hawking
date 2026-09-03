@@ -180,6 +180,49 @@ def _numeric_acceptance(spec: dict[str, Any], view: SourceView) -> dict[str, Any
     return {"value": ok, "evidence": [base]}
 
 
+_CRITERION_PLACEHOLDERS = (
+    "not readable",
+    "roadmap missing",
+    "h-roadmap.md missing",
+)
+
+
+def _criterion_text(doc: dict[str, Any]) -> str:
+    """The quoted criterion, across the three shapes the receipt corpus uses.
+
+    Receipts write `criterion_quoted`, `criterion` (str or {quoted|quote}), or
+    `quote`. Assuming one shape silently mis-reads two thirds of the corpus.
+    """
+    for key in ("criterion_quoted", "criterion", "quote"):
+        val = doc.get(key)
+        if isinstance(val, dict):
+            val = val.get("quoted") or val.get("quote")
+        if isinstance(val, str) and val.strip():
+            return val
+    return ""
+
+
+def _criterion_is_real(doc: dict[str, Any]) -> str:
+    """"" when the receipt quotes a real criterion, else why it does not.
+
+    criterion_altered=false is a claim ABOUT the criterion, so it is worth
+    nothing when the criterion itself is absent or is a "roadmap not readable"
+    placeholder. Four acceptance harnesses used to substitute exactly such a
+    string when the external roadmap was missing, which would let a gate be
+    ACCEPTED against no obligation at all.
+    """
+    text = _criterion_text(doc).strip()
+    if not text:
+        return "the receipt quotes no criterion, so criterion_altered proves nothing"
+    low = text.lower()
+    if any(mark in low for mark in _CRITERION_PLACEHOLDERS):
+        return (
+            "the receipt quotes a roadmap-unreadable placeholder instead of the "
+            f"criterion: {text[:80]!r}"
+        )
+    return ""
+
+
 def _accepted_fact(probe: dict[str, Any], look: dict[str, Any], view: SourceView,
                    gate_id: str | None = None) -> dict[str, Any]:
     """The gate's own acceptance criterion, not 'a receipt on this topic exists'."""
@@ -204,7 +247,8 @@ def _accepted_fact(probe: dict[str, Any], look: dict[str, Any], view: SourceView
                 verdict = str(doc.get("verdict") or "").strip().upper()
                 altered = bool(doc.get("criterion_altered"))
                 command = doc.get("command")
-                if verdict == "ACCEPTED" and not altered and command:
+                unreal = _criterion_is_real(doc) if verdict == "ACCEPTED" else ""
+                if verdict == "ACCEPTED" and not altered and command and not unreal:
                     return {
                         "value": True,
                         "evidence": [
@@ -229,6 +273,7 @@ def _accepted_fact(probe: dict[str, Any], look: dict[str, Any], view: SourceView
                                 "note": (
                                     f"acceptance verdict {verdict}"
                                     + (" (criterion was ALTERED, refused)" if altered else "")
+                                    + (f" (criterion is not real: {unreal})" if unreal else "")
                                     + (f": {doc.get('blocker')}" if doc.get("blocker") else "")
                                 ),
                             }

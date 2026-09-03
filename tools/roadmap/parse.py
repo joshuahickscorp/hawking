@@ -8,14 +8,12 @@ from __future__ import annotations
 import json
 
 import hashlib
-import os
 import re
 from pathlib import Path
 from typing import Any
 
 from tools.roadmap.gitfs import REPO
-
-DEFAULT_ROADMAP = Path("/Users/scammermike/Downloads/H-ROADMAP.md")
+from tools.roadmap.lineage import roadmap_path
 
 # Must match civilization/build_state.py CANONICAL_PROGRAMS.
 GENE_IDS: tuple[str, ...] = (
@@ -54,13 +52,6 @@ _GATE_LINE = re.compile(
 _GENE_CARD = re.compile(r"^## ((?:I|II|III|IV|V)-[A-E]) — .+ — GENE CARD\s*$")
 _ERA_HEADING = re.compile(r"^## ((?:I|II|III|IV|V)-[A-E])\.\s")
 _SUBGENE = re.compile(r"^- (.+)$")
-
-
-def roadmap_path() -> Path:
-    override = os.environ.get("H_ROADMAP")
-    if override:
-        return Path(override)
-    return DEFAULT_ROADMAP
 
 
 def span(path: str, start: int, end: int, *, note: str | None = None) -> dict[str, Any]:

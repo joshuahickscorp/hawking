@@ -8,10 +8,13 @@ import subprocess
 import time
 from pathlib import Path
 from typing import Any, Mapping
+from tools.roadmap import lineage
 
 REPO = Path(__file__).resolve().parents[3]
 RECEIPT_DIR = REPO / "receipts" / "acceptance"
-ROADMAP = Path("/Users/scammermike/Downloads/H-ROADMAP.md")
+# The canonical roadmap is external and can vanish; tools.roadmap.lineage
+# falls back to the digest-verified in-repo copy rather than a placeholder.
+ROADMAP = lineage.roadmap_path()
 SCHEMA = "hawking.acceptance.gate.v1"
 
 
