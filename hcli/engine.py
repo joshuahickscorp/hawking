@@ -768,6 +768,35 @@ def _focused_excerpt(content: str, prompt: str, limit: int, path: str) -> str:
     )
 
 
+def _anchor_violation(path: str, anchor: str, current: str, hits: int) -> str:
+    """A retry instruction for an anchor that did not match exactly once."""
+    probe = ""
+    at = -1
+    for line in (l.strip() for l in anchor.strip().splitlines()):
+        if len(line) > 5:
+            at = current.find(line)
+            if at >= 0:
+                probe = line
+                break
+    if hits > 1:
+        return (
+            f"your old_text for {path} matches {hits} places; it must match "
+            f"exactly one. Include more surrounding lines so it is unique."
+        )
+    if at < 0:
+        return (
+            f"your old_text for {path} matches nothing in the file -- not one "
+            f"line of it. Read the file again and copy the real bytes."
+        )
+    start = max(0, current.rfind("\n", 0, at) + 1)
+    actual = current[start:start + max(len(anchor), 240)]
+    return (
+        f"your old_text for {path} does not appear in the file. It actually "
+        f"reads:\n{actual!r}\nyou sent:\n{anchor!r}\nCopy those bytes exactly. "
+        f"A newline written as a literal backslash-n will not match."
+    )
+
+
 def _python_syntax_violation(content: str) -> Optional[str]:
     """The reply's Python operations must compile, or say why they do not.
 
@@ -806,9 +835,20 @@ def _python_syntax_violation(content: str) -> Optional[str]:
                 current = (Path(path)).read_text(encoding="utf-8", errors="replace")
             except OSError:
                 continue
-            if not isinstance(anchor, str) or anchor not in current:
-                # A missing anchor is the verifier's business, not the parser's.
+            if not isinstance(anchor, str):
                 continue
+            hits = current.count(anchor)
+            if hits != 1:
+                # An anchor that does not match is CORRECTABLE, and until now it
+                # was terminal: _apply_operations runs after the contract has
+                # accepted the reply, so the unit died holding a patch that was
+                # right except for its anchor. Measured: one literal backslash-n
+                # where a newline belonged, every other line correct.
+                #
+                # Route it through the contract's retry instead, and hand back
+                # the file's real bytes so the next attempt has something to
+                # copy rather than something to guess.
+                return _anchor_violation(path, anchor, current, hits)
             candidate = current.replace(anchor, body, 1)
 
         try:

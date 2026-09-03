@@ -65,14 +65,34 @@ class TestFragmentsAreNotCompiledAlone(unittest.TestCase):
         self.assertIsNotNone(got)
         self.assertIn("resulting file", got)
 
-    def test_a_missing_anchor_is_left_to_the_verifier(self):
-        """Not the parser's job to report a bad anchor."""
+    def test_a_missing_anchor_is_a_RETRY_not_a_death(self):
+        """Deliberately changed: this used to be left to the verifier.
+
+        _apply_operations runs AFTER the contract accepts the reply, so an
+        anchor that did not match killed the unit while holding a patch that
+        was right except for its anchor. Measured: one literal backslash-n
+        where a newline belonged, every other line correct. It is correctable,
+        so it now goes back through the contract's retry with the file's real
+        bytes attached.
+        """
         payload = json.dumps({"operations": [{
             "op": "replace", "path": "hcli/tool_registry.py",
             "old_text": "this text is not in the file anywhere",
             "new_text": "    x = 1\n",
         }]})
-        self.assertIsNone(_python_syntax_violation(payload))
+        got = _python_syntax_violation(payload)
+        self.assertIsNotNone(got)
+        self.assertIn("not one line of it", got)
+
+    def test_an_ambiguous_anchor_says_so(self):
+        """Matching many places needs the opposite fix from matching none."""
+        payload = json.dumps({"operations": [{
+            "op": "replace", "path": "hcli/tool_registry.py",
+            "old_text": "\n", "new_text": "x",
+        }]})
+        got = _python_syntax_violation(payload)
+        self.assertIsNotNone(got)
+        self.assertIn("must match", got)
 
     def test_a_create_still_compiles_standalone(self):
         """A created file IS a whole module, so the old rule is right there."""
