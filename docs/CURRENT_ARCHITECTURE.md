@@ -7,7 +7,7 @@ Checked against `receipts/headless/CODE_GRAPH.json` (schema `hawking.headless.co
 
 One installed package: **`hcli`**, physical path **`hcli/`**, `pyproject.toml` name `hcli`, console scripts `hcli` and `jhcli` → `hcli.cli:main`. `python3 -m hcli` is the product entry. `import tools.haider.hcli` raises `ImportError` -- there is no second package and no `tools/haider` at all. Incident F24 (one file, two dotted names, two class objects) is locked by `hcli/tests/test_module_identity.py`, which keeps the fossil dotted name on purpose so a mechanical rename cannot delete the thing it guards against.
 
-Tests live at `hcli/tests/`. The bootstrap-era fossils (`tools/hcli/bootstrap/`) are a dated record, disconnected from the control plane. `lab/hcli/` is a different product.
+Tests live at `hcli/tests/`. The bootstrap-era fossils (`tools/hcli/bootstrap/`) are a dated record, disconnected from the control plane. `research/lab/hcli/` is a different product.
 
 The graph still inventories `hcli/*.py` as `hcli_product` (33 files) -- a stale path; the graph has not been regenerated since the move. Those 33 basenames exist at `hcli/` on HEAD. The graph does not list `hcli/paths.py`, `hcli/persist.py`, or the ownership packages `hcli.agentos`, `hcli.doctor`, `hcli.gravity`, `hcli.vmcp`, `hcli.genomes`.
 
@@ -27,7 +27,7 @@ The graph still inventories `hcli/*.py` as `hcli_product` (33 files) -- a stale 
 
 - **`hawking-*` crates** — Metal inference engine, GGUF/Gravity loaders, serve/bench/speculate. Default `cargo build` surface.
 - **`hide-*` crates** — HIDE agent IDE. Workspace members, not default-members. `hide-backend` talks to `hawking serve` over HTTP.
-- **`lab/`** — campaign governance (`lab.rules`, `lab.receipts`, `lab.science_registry`). Out of the code-graph census.
+- **`research/lab/`** — campaign governance (`lab.rules`, `lab.receipts`, `lab.science_registry`). Out of the code-graph census.
 - **`tools/headless/`** — harnesses and headless tests. Census root of the graph, not a product import of `hcli`.
 - **`workspace/docs/reference/ARCHITECTURE.md`** — HISTORICAL (Rust three-layer hawking binary). Outside `docs/`; not rewritten.
 

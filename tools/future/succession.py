@@ -22,9 +22,9 @@ emits DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. Physical axes stay UNKNOWN.
 Recovered, not forked: resident_optimizer proposer/verifier split and
 BoundViolation-at-construction; tournament multi-axis Pareto (no scalar);
 resident_install 14-phase contract; contamination/dirty_measure promotion
-gate (SELF_MEASURED_DIRTY cannot promote); lab/lineage/promotion.py
+gate (SELF_MEASURED_DIRTY cannot promote); research/lab/lineage/promotion.py
 self-certification refusal (recovered via git show; not imported —
-lab/lineage is out of this lane's import surface).
+research/lab/lineage is out of this lane's import surface).
 """
 from __future__ import annotations
 
@@ -255,7 +255,7 @@ LIFECYCLE_OWNERS: dict[str, str] = {
     "resident_install": "tools/future/resident_install.py",
     "resident_optimizer": "tools/future/resident_optimizer.py",
     "tournament": "tools/future/tournament.py",
-    "lineage_promotion_recovered": "lab/lineage/promotion.py",
+    "lineage_promotion_recovered": "research/lab/lineage/promotion.py",
     "incumbent_identity": "hcli/hawking-native.sealed-3.14.json",
     "contamination": "tools/future/contamination.py",
     "dirty_measure": "tools/future/dirty_measure.py",
@@ -1080,7 +1080,7 @@ def _mission_doc(owner_id: str, units: Sequence[Mapping[str, Any]]) -> dict[str,
 class SuccessionOrchestrator:
     """External succession authority. The child does not invoke this on itself.
 
-    Recovers the lab/lineage/promotion.py principle: parent and child are
+    Recovers the research/lab/lineage/promotion.py principle: parent and child are
     refused if they invoke the gate on themselves. This object is the
     lineage_gate stand-in for the sidecar.
     """
@@ -2461,7 +2461,7 @@ def recovered_implementation() -> list[dict[str, Any]]:
             "what": "fixture recovery gate; not re-run here (would start a fixture process)",
         },
         {
-            **_path_state("lab/lineage/promotion.py"),
+            **_path_state("research/lab/lineage/promotion.py"),
             "what": (
                 "recovered via git show: refuse_self_certification; parent and child "
                 "cannot invoke the gate on themselves; missing evidence is PENDING. "
@@ -2723,7 +2723,7 @@ def build() -> Path:
         ],
         "negative_findings": [
             "hcli/agentos/resident.py is absent from HEAD; resident_gate.py is the live boundary",
-            "lab/lineage/promotion.py is not materialized in this sparse worktree; principles recovered via git show and not imported",
+            "research/lab/lineage/promotion.py is not materialized in this sparse worktree; principles recovered via git show and not imported",
             "this lane produces neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE",
             "physical axes (accepted_tps, token_ns, ebpw, active_bytes, resident_ram, cold/warm start, restart) stay UNKNOWN",
             "teacher capture remains a Codex/physical concern; data_lineage does not invent a capture count",

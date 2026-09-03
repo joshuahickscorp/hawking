@@ -87,7 +87,7 @@ OPTIONAL_FRONTIER_GLOBS = (
 )
 
 PATHY = re.compile(
-    r"^(receipts/|workspace/|docs/|crates/|tools/|lab/|hcli/|hawking-experiments/)"
+    r"^(receipts/|workspace/|docs/|crates/|tools/|research/lab/|hcli/|research/hawking-experiments/)"
 )
 CITE_KEYS = {
     "source",

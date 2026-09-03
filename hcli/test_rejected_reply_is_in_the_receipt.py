@@ -34,7 +34,10 @@ def test_a_long_reply_is_bounded_and_says_so():
     rec = _degraded_structured_record(
         _contract(), attempts=3, exhausted=True, last_text=text
     )
-    assert len(rec["rejected_reply_excerpt"]) == _REJECTED_EXCERPT_CHARS
+    # BOUNDED, not exactly equal: the excerpt now keeps both ends with an
+    # elision marker between them, so it carries a few characters of
+    # bookkeeping. What the receipt must not do is grow with the reply.
+    assert len(rec["rejected_reply_excerpt"]) <= _REJECTED_EXCERPT_CHARS + 64
     assert rec["rejected_reply_chars"] == len(text)
     assert rec["rejected_reply_truncated_in_receipt"] is True
 
@@ -55,3 +58,23 @@ def test_the_engine_passes_last_text_through_on_exhaustion():
     assert "last_text=exc.last_text" in src, (
         "the exhaustion handler no longer forwards the rejected reply"
     )
+
+
+def test_the_receipt_keeps_the_END_of_a_long_reply_not_only_its_head():
+    """The live path, not the helper.
+
+    A reply's `operations` sit at the end and its `content` prose at the start,
+    so a head-only excerpt spent the whole budget on prose and cut off at the
+    word "operations" -- the one part a rejection about an operation needs.
+    Measured: a 2,221-character reply rejected three times for a bracket error
+    inside new_text, and the receipt preserved 800 characters ending at
+    '"op": "replace",'.
+    """
+    text = "HEAD" + "p" * 4000 + '"operations":[{"op":"replace","new_text":"BROKEN("}]'
+    rec = _degraded_structured_record(
+        _contract(), attempts=3, exhausted=True, last_text=text
+    )
+    excerpt = rec["rejected_reply_excerpt"]
+    assert excerpt.startswith("HEAD")
+    assert excerpt.endswith('"new_text":"BROKEN("}]'), excerpt[-60:]
+    assert rec["rejected_reply_chars"] == len(text)

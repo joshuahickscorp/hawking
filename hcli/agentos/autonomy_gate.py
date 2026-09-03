@@ -359,7 +359,7 @@ def _build_census_units(repo: Path, workspace: Path, count: int, prefix: str) ->
         source["tool_arguments"] = dict(source.get("arguments") or {})
         if source["tool"] == "modellake.status":
             source["tool_arguments"] = {}
-        derived_rel = f"evidence/{prefix}-{index + 1:02d}.json"
+        derived_rel = f"research/evidence/{prefix}-{index + 1:02d}.json"
         derived_path = (workspace / derived_rel).resolve()
         source["derived_path"] = str(derived_path)
         source["derived_relative_path"] = derived_rel
@@ -1053,7 +1053,7 @@ def _window_unit(repo: Path, workspace: Path, index: int) -> tuple[WorkUnit, Dic
         source["tool_arguments"] = {}
     else:
         source["tool_arguments"] = dict(source.get("arguments") or {})
-    source["derived_relative_path"] = f"evidence/{source['unit_id']}.json"
+    source["derived_relative_path"] = f"research/evidence/{source['unit_id']}.json"
     source["derived_content"] = json.dumps(
         {
             "schema": "hcli.agentos.evidence_observation.v1",

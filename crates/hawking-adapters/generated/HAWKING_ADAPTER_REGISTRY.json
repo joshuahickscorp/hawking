@@ -357,7 +357,7 @@
           {
             "claim": "M04_SEALED: Rust adapter vs oracle on real flagship .gravity shards",
             "kind": "small_checkpoint_run",
-            "path": "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json"
+            "path": "research/evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json"
           },
           {
             "claim": "GravityEngine dispatches glm_moe_dsa",
@@ -432,7 +432,7 @@
         {
           "claim": "M04_SEALED: Rust adapter vs oracle on real flagship .gravity shards",
           "kind": "small_checkpoint_run",
-          "path": "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json"
+          "path": "research/evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json"
         },
         {
           "claim": "GravityEngine dispatches glm_moe_dsa",
@@ -504,7 +504,7 @@
           {
             "claim": "synthetic CPU reference + bound real-source metal K1 twin",
             "kind": "synthetic_parity",
-            "path": "evidence/kimi-k26/KIMI_K26_ADAPTER_TWIN.json"
+            "path": "research/evidence/kimi-k26/KIMI_K26_ADAPTER_TWIN.json"
           },
           {
             "claim": "load_engine has no kimi arch arm (not serve-registered)",
@@ -569,7 +569,7 @@
         {
           "claim": "synthetic CPU reference + bound real-source metal K1 twin",
           "kind": "synthetic_parity",
-          "path": "evidence/kimi-k26/KIMI_K26_ADAPTER_TWIN.json"
+          "path": "research/evidence/kimi-k26/KIMI_K26_ADAPTER_TWIN.json"
         },
         {
           "claim": "load_engine has no kimi arch arm (not serve-registered)",
@@ -789,7 +789,7 @@
           {
             "claim": "family listed in bridge archaeology; no serve path found",
             "kind": "description",
-            "path": "evidence/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md"
+            "path": "research/evidence/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md"
           }
         ],
         "positional_encoding": {
@@ -846,7 +846,7 @@
         {
           "claim": "family listed in bridge archaeology; no serve path found",
           "kind": "description",
-          "path": "evidence/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md"
+          "path": "research/evidence/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md"
         }
       ],
       "executes": false,

@@ -168,7 +168,7 @@
         },
         {
           "name": "G1_SHARE",
-          "path": "workspace/superwave/g1/claude-evidence/g1_share_basis.json",
+          "path": "workspace/superwave/g1/evidence/g1_share_basis.json",
           "confirmed": true,
           "detail": {
             "one_basis_fullV_bpw": 0.015594527957807665,
@@ -178,7 +178,7 @@
         },
         {
           "name": "G1_TENSOR",
-          "path": "workspace/superwave/g1/claude-evidence/g1_tensor_operators.json",
+          "path": "workspace/superwave/g1/evidence/g1_tensor_operators.json",
           "confirmed": true,
           "detail": {
             "tensor0": "language_model.model.layers.0.mlp.gate_proj.weight",

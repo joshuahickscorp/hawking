@@ -14,7 +14,7 @@
   "command": "python3 -c \"from fusion_planner import topology_apple_alone; topology_apple_alone()\" and fusion_sim.hawking_topology()/simulate_default()",
   "criterion": {
     "end_line": 2971,
-    "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "file": "/Users/scammermike/Downloads/hawking/docs/roadmap-lineage/H-ROADMAP.superseded-2026-09-02.md",
     "quote": "# 17. FUSION / EGPU / DGX SPARK / ADDITIONAL MACS\n\n```text\n               HAWKING\n                  \u2502\n           PHYSICAL GRAPH\n                  \u2502\n    \u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\n    \u25bc             \u25bc             \u25bc\n APPLE          FPGA          CUDA\nMetal/UMA       HBM/RTL       Spark/eGPU\n    \u2502             \u2502             \u2502\n    \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500 HMF / HGVAS \u2500\u2500\u2500\u2500\u2500\u2500\u2518\n                  \u2502\n               HAWKGPU\n```\n\n\n## 17.1 Fusion law\n\nThe target is not to make alien memory domains literally become Apple UMA. The target is to make Hawking code increasingly indifferent to which qualified domain owns an object or operation, while preserving explicit physical cost, version and trust.\n\n\n## 17.2 Priority order\n\n```text\nsoftware Accelerator deepens\n\u2192 U50 FPGA school\n\u2192 eGPU external-device school\n\u2192 DGX Spark / multi-device Fusion\n\u2192 broader synthetic machine\n\nThis is priority, not exclusion.\n```\n\n\n## 17.3 eGPU school\n\n- external PCIe/device discovery\n- BAR/resources\n- DMA\n- VRAM ownership\n- queues/completion\n- synchronization\n- representation translation\n- CUDA kernels\n- Apple+NVIDIA physical graph\n- HMF/HGVAS\n- fault/recovery\n- capability-preserving end-to-end benchmark\n\n\n## 17.4 DGX Spark school\n\n- CUDA differential oracle\n- Blackwell execution domain\n- large coherent local CPU/GPU memory domain\n- Fusion object-space experiment\n- representation translation\n- multi-device scheduling\n- second independent physical civilization against which FPGA-derived laws can transfer or fail\n\n\n## 17.5 Additional Mac school\n\n- distributed Metal\n- distributed UMA domains\n- JACCL/RDMA/TB5 baseline when available\n- model sharding\n- duplicated vs sharded residency\n- KV/state placement\n- topology-aware collectives\n- semantic object-space hiding node choreography\n\n\n# 18. DEVICE ASCENSION \u2014 EVERY NEW MACHINE IS A NEW TEXTBOOK\n\n```text\nOLD MACHINE LAWS\n      \u2193 priors only\nNEW MACHINE DISCOVERY\n      \u2193\nMachineGenome\nTransportGenome\nKernel microbenchmarks\nmemory hierarchy\nphase behavior\nnew APIs / neural accelerators\n      \u2193\nre-run physical graph search\n      \u2193\nnew laws / counterexamples\n```\n\n\n## 18.1 M5/Metal 4/TB5 future school\n\n- Re-profile memory bandwidth/latency.\n- Characterize TensorOps/cooperative tensors/quantized tensor formats rather than trusting feature names.\n- Test neural accelerator for compute-bound prefill separately from decode.\n- Re-test shared/no-copy and synchronization semantics.\n- Re-search TB5 bridge and RDMA paths.\n- Do not transfer M3 split ratios, command-buffer assumptions or kernel winners by faith.\n\n",
     "start_line": 2867
   },
@@ -22,7 +22,7 @@
   "evidence_tier": "STATIC",
   "fusion_law": "The target is not to make alien memory domains literally become Apple UMA. A first heterogeneous executable requires a second qualified domain (FPGA/eGPU/DGX) plus HMF/HGVAS object trust.",
   "gate": "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE",
-  "generated_at": "2026-09-02T18:44:48Z",
+  "generated_at": "2026-09-03T05:52:31Z",
   "generated_by": "tools.acceptance.odyssey.run",
   "invoked_symbol": {
     "also_called": [
@@ -98,9 +98,9 @@
       "speedup": null,
       "timing_decidable": false
     },
-    "wall_s": 0.423
+    "wall_s": 0.534
   },
   "schema": "hawking.acceptance.gate.v1",
-  "seal_sha256": "e5529a74fca409125ddf9d4b45fcf5276a6730984801bbeb6fb0f9745b7b036f",
+  "seal_sha256": "1ed38d00b7d893921b2ee540486e9b94957f6cc73b2f8c11126b4366af82e41b",
   "verdict": "BLOCKED"
 }

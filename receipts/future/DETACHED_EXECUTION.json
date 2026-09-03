@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T21:34:12Z",
+  "recorded_at": "2026-09-03T06:54:59Z",
   "recorded_by": "tools/future/detached.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -29,7 +29,7 @@
   "killed mid-flight classifies crashed (exit observed) and does not hang the caller"
  ],
  "gpu_authority": false,
- "head": "62d6a1514b4debd0d89f0c5d0bc5ce820768ebe8",
+ "head": "90901d1f22f126f3f13c42675bca2ea9f8796454",
  "identity_states": [
   "dead",
   "match",
@@ -197,7 +197,7 @@
    "claim_boundary": "Static sidecar artifact. No hardware measurement. Neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE. A supervision record is identity and lifecycle, not a bench.",
    "classification": "STATIC_ONLY",
    "command": [
-    "/Users/scammermike/Downloads/hawking/workspace/ops/.venv/bin/python",
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
     "/Users/scammermike/Downloads/hawking/tools/future/detached.py",
     "--selftest"
    ],
@@ -279,7 +279,7 @@
   ]
  },
  "schema": "hawking.future.detached.v1",
- "seal_sha256": "3c6810c9336cd041b2c6970b67fa7a2a5e326eb7109c77ee114fc53ac48aab4b",
+ "seal_sha256": "58c1a18d01eafe35003cb3afd435d7a3e89ae993e2b805217736216fa73107b2",
  "supervision_record": {
   "fields": [
    "pid",
@@ -345,7 +345,7 @@
    "spawned": false
   },
   {
-   "argv0": "/Users/scammermike/Downloads/hawking/workspace/ops/.venv/bin/python",
+   "argv0": "/opt/homebrew/opt/python@3.14/bin/python3.14",
    "reason": "command touches GPU/accelerator (protected-accelerator-bench); refuse launch",
    "refused": true,
    "resource_class": "LIGHT_CONTROL",

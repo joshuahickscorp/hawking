@@ -75,7 +75,7 @@ class _GenericResidentEngine:
 class AgentOSGeneralTest(unittest.TestCase):
     def test_remote_endpoint_is_a_first_class_provider(self):
         server = HTTPServer(("127.0.0.1", 0), _Handler)
-        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread = threading.Thread(target=lambda: server.serve_forever(poll_interval=0.01), daemon=True)
         thread.start()
         try:
             url = f"http://127.0.0.1:{server.server_port}"
@@ -111,7 +111,7 @@ class AgentOSGeneralTest(unittest.TestCase):
 
     def test_remote_pool_topology_keeps_endpoint_opaque(self):
         server = HTTPServer(("127.0.0.1", 0), _Handler)
-        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread = threading.Thread(target=lambda: server.serve_forever(poll_interval=0.01), daemon=True)
         thread.start()
         from hcli.runtime import RuntimePool
         try:
@@ -131,7 +131,7 @@ class AgentOSGeneralTest(unittest.TestCase):
 
     def test_controller_executes_through_a_remote_provider_without_qwen_assumptions(self):
         server = HTTPServer(("127.0.0.1", 0), _Handler)
-        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread = threading.Thread(target=lambda: server.serve_forever(poll_interval=0.01), daemon=True)
         thread.start()
         try:
             with tempfile.TemporaryDirectory() as tmp:

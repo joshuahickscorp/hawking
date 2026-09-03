@@ -1112,7 +1112,7 @@ def recovered_implementation() -> list[str]:
         "tools/future/qwen27_profile_schema.py host_ceremony organ — the ceremony bucket the HEADROOM_IS_HOST_CEREMONY verdict names",
         "tools/future/decode_civilization.py accepted_complete_token_cost — useful work, not raw draft throughput",
         "receipts/headless/ACCELERATOR_CONCURRENCY_SWEEP.json — 4 MiB kernel vs whole-body regimes; cited as a qualitative warning, numbers not copied",
-        "hawking-experiments/superwave/g1/g1-worker-concurrency.md — four sessions, decode_concurrency=1; cited as a qualitative warning, numbers not copied",
+        "research/hawking-experiments/superwave/g1/g1-worker-concurrency.md — four sessions, decode_concurrency=1; cited as a qualitative warning, numbers not copied",
     ]
 
 
@@ -1229,7 +1229,7 @@ def build() -> Path:
                 "numbers_copied": False,
             },
             {
-                "path": "hawking-experiments/superwave/g1/g1-worker-concurrency.md",
+                "path": "research/hawking-experiments/superwave/g1/g1-worker-concurrency.md",
                 "what": (
                     "one body, four sessions, decode_concurrency=1; concurrent "
                     "decode recorded as a negative for aggregate useful work; "

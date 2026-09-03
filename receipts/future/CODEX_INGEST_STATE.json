@@ -47945,7 +47945,7 @@
     "sidecar_must_not_promote": true
    },
    "source": "receipts/headless/HAWKING_ACTION_HANDOFF.json",
-   "source_sha256": "935bd6897c23c2035ae38e8e6da01b9d02bbd18c3f348fd6e341c6f70042e8ef"
+   "source_sha256": "aa5963fd0f662910481937903165224a24243d0bc37da812122c2e3c1f453579"
   },
   {
    "architecture_atlas_behaviour_reference": {
@@ -48625,36 +48625,72 @@
    "source_sha256": "46b9377ab2c6743372f37ee6e2f71d9ebc8d985809f8dbf7d9947ef3fbc1145a"
   },
   {
-   "classification": "SCAR",
-   "consumers_notified": [
-    "odyssey_ii_law_store",
-    "odyssey_iii",
-    "negative_index",
-    "learned_physical_compiler"
-   ],
-   "driver": {
-    "confidence": 0.95,
-    "field": "verdict",
-    "label": "SCAR",
-    "reason": "verdict FAIL",
-    "token": "FAIL"
+   "architecture_atlas_behaviour_reference": {
+    "action": "cite as behaviour evidence; do not rewrite the atlas",
+    "atlas_path": "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+    "behaviour": "UNKNOWN"
    },
-   "invalidation": {
-    "action": "feed the negative index; a single model's scar never globally prunes a technique",
-    "kills": [
-     "verdict FAIL"
-    ],
-    "level": "MODEL_SPECIFIC",
-    "makes_redundant": [
-     "retrying the same hypothesis on the same model/organ/machine without a new reopen condition",
-     "promoting a DIAGNOSTIC_RELATIVE number derived from this artifact"
-    ],
+   "classification": "LAW",
+   "driver": {
+    "confidence": 0.85,
+    "field": "verdict",
+    "label": "LAW",
+    "reason": "verdict PASS",
+    "token": "PASS"
+   },
+   "hwir_projection": {
+    "action": "no spatial mapping suggested",
+    "backend": "UNKNOWN",
     "organ": "UNKNOWN",
-    "reopen_condition": "UNKNOWN",
-    "sidecar_must_not_promote": true
+    "reason": "no spatial organ/primitive hint; HWIR projection is a stub",
+    "spatially_meaningful": false
+   },
+   "learned_physical_compiler_row": {
+    "action": "append as a dataset-row skeleton; numbers remain UNKNOWN until a protected measurement",
+    "bench_state": "UNKNOWN",
+    "contamination": "UNKNOWN",
+    "evidence_class": "STATIC_ONLY",
+    "label": "LAW",
+    "machine": "UNKNOWN",
+    "measured": {
+     "bandwidth_gbps": null,
+     "gpu_ns": null,
+     "joules_per_token": null,
+     "token_ns": null,
+     "tps": null
+    },
+    "model": "UNKNOWN",
+    "organ": "UNKNOWN",
+    "representation": "UNKNOWN",
+    "source": "receipts/headless/HCLI_CRASH_CHECKPOINT.json",
+    "source_sha256": "4e409b78cc1ea2b2a6fa630367df843fc7f77e58fcb40714565c08d5face26ca",
+    "technique": "UNKNOWN"
+   },
+   "odyssey_ii_law_candidate": {
+    "action": "admit as a candidate; do not promote past MODEL_LOCAL without independent evidence",
+    "evidence_class": "STATIC_ONLY",
+    "knowledge_level": "UNKNOWN",
+    "model": "UNKNOWN",
+    "organ": "UNKNOWN",
+    "proposed_scope": "MODEL_LOCAL",
+    "scope_reason": "a single Codex receipt is MODEL_LOCAL; the sidecar has no promotion authority",
+    "sidecar_promotion_authority": false,
+    "statement_sketch": "verdict PASS"
+   },
+   "odyssey_iii_attack_target": {
+    "action": "register as an Odyssey III attack; do not treat the candidate as settled",
+    "attack": "refute, bound, or find the contamination in the claimed result",
+    "suggested_angle": "transfer to a second model",
+    "target": "receipts/headless/HCLI_CRASH_CHECKPOINT.json"
+   },
+   "physical_graph_candidate_semantic": {
+    "action": "consider as a candidate semantic; sidecar does not compile a graph",
+    "organ": "UNKNOWN",
+    "qualification": "PLAN_ONLY",
+    "semantic_type": "PhysicalGraphPlan"
    },
    "source": "receipts/headless/HCLI_CRASH_CHECKPOINT.json",
-   "source_sha256": "858fc1adf1533bbd45fe18e854645b3915e752b63b5c0ce4202445b5ed9c84be"
+   "source_sha256": "4e409b78cc1ea2b2a6fa630367df843fc7f77e58fcb40714565c08d5face26ca"
   },
   {
    "architecture_atlas_behaviour_reference": {
@@ -50588,7 +50624,7 @@
     "sidecar_must_not_promote": true
    },
    "source": "receipts/headless/NOETIC_ASCENSION_HANDOFF.json",
-   "source_sha256": "be15ebb136a810b010492f05661e20e5eba1c4ae41ca011063ff4d6dd0aadfb9"
+   "source_sha256": "c4a81b4313eefdd3ec7c63a1e672ed1430bce8b7653b29f012f7f21d4e6e8089"
   },
   {
    "classification": "SCAR",
@@ -51028,6 +51064,39 @@
    },
    "source": "receipts/headless/NOETIC_MODEL2_Q4_GENERALIZATION.json",
    "source_sha256": "4c8dedb00acb64b180d6be170fc61fba1675e7f2bd8fe29effdba8699aaf7ef3"
+  },
+  {
+   "classification": "SCAR",
+   "consumers_notified": [
+    "odyssey_ii_law_store",
+    "odyssey_iii",
+    "negative_index",
+    "learned_physical_compiler"
+   ],
+   "driver": {
+    "confidence": 0.95,
+    "field": "pass",
+    "label": "SCAR",
+    "reason": "top-level pass is false (failed gate)",
+    "token": "false"
+   },
+   "invalidation": {
+    "action": "feed the negative index; a single model's scar never globally prunes a technique",
+    "kills": [
+     "G021 \u2014 NEGATIVE_SCIENCE THREE-LEVEL (directive \u00a780, \u00a781)",
+     "the hypothesis this receipt was testing (pass=false)"
+    ],
+    "level": "MODEL_SPECIFIC",
+    "makes_redundant": [
+     "retrying the same hypothesis on the same model/organ/machine without a new reopen condition",
+     "promoting a DIAGNOSTIC_RELATIVE number derived from this artifact"
+    ],
+    "organ": "UNKNOWN",
+    "reopen_condition": "UNKNOWN",
+    "sidecar_must_not_promote": true
+   },
+   "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+   "source_sha256": "6f18954b4af7f9cefad61a7cae985f7a8e8434f91cd72d76cba2b8e4ccef4c11"
   },
   {
    "architecture_atlas_behaviour_reference": {
@@ -53539,7 +53608,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-03T00:38:43Z",
+  "recorded_at": "2026-09-03T06:50:49Z",
   "recorded_by": "tools/future/codex_ingest.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -53903,7 +53972,7 @@
    "driver_token": "no_verdict",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1788331891.8672369,
+   "mtime": 1788417605.7384129,
    "reason": "no LAW or SCAR driver in well-known fields",
    "sha256": "f627ce102b1257d4f939827d22f069bcd5f31d6631899e84a16e511e51107339",
    "size": 39601
@@ -55966,11 +56035,11 @@
    "driver_field": "<default>",
    "driver_token": "no_verdict",
    "first_seen": "2026-08-31T12:50:05Z",
-   "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1787739372.2454247,
+   "last_classified": "2026-09-03T06:48:51Z",
+   "mtime": 1788417645.2483265,
    "reason": "no LAW or SCAR driver in well-known fields",
-   "sha256": "64eac822d518471f03ccb07e845e618b0ea85438236a0bb29c9b243003c1a488",
-   "size": 42401
+   "sha256": "52f7c09f887db5afc77dff7aa776fbb66c23c209a5438a697086426ac9b9d647",
+   "size": 36644
   },
   "receipts/headless/DELTANET_ORGAN.json": {
    "classification": "NEUTRAL",
@@ -56002,11 +56071,11 @@
    "driver_field": "schema",
    "driver_token": "hawking.headless.density_descent_frontier.v1",
    "first_seen": "2026-08-31T12:50:05Z",
-   "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1787739372.2489905,
+   "last_classified": "2026-09-03T06:48:51Z",
+   "mtime": 1788417645.298445,
    "reason": "metadata / census / index / schema / plan with no verdict",
-   "sha256": "81b94d75d3204efc146f543c19ad10504d24f12168d3bc20d03b0ad5a79102e7",
-   "size": 60833
+   "sha256": "01cf409fc6238f59a255f741da3f08ed9fd6112fff661f106a93b8aa27bb66e0",
+   "size": 60340
   },
   "receipts/headless/DEVICE_PROFILES.json": {
    "classification": "LAW",
@@ -56074,10 +56143,10 @@
    "driver_field": "<default>",
    "driver_token": "no_verdict",
    "first_seen": "2026-08-31T12:50:05Z",
-   "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1787739158.9542716,
+   "last_classified": "2026-09-03T06:48:51Z",
+   "mtime": 1788417645.4349098,
    "reason": "no LAW or SCAR driver in well-known fields",
-   "sha256": "2d14528ecb59024b66e3eea710830eca29171c82f7ed3ba397c9575cc5e97ce5",
+   "sha256": "54492b771a06101b0ee45ab9e95289bcc44c9184ccfa1140c8f74ba5b15a35e2",
    "size": 168092
   },
   "receipts/headless/DOCTOR_TECHNIQUE_REGISTRY.json": {
@@ -56086,11 +56155,11 @@
    "driver_field": "<default>",
    "driver_token": "no_verdict",
    "first_seen": "2026-08-31T12:50:05Z",
-   "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1787739372.2903867,
+   "last_classified": "2026-09-03T06:48:51Z",
+   "mtime": 1788417645.4555242,
    "reason": "no LAW or SCAR driver in well-known fields",
-   "sha256": "5bd3ce7e082bd66d7c74c541da684381470eb212b6b21b839fd933b88f9dc677",
-   "size": 87665
+   "sha256": "85ec0eecd39481cd8d8d63bff4cfe65e5f99df54c467e4bd3b5b5aac007bfe2e",
+   "size": 87173
   },
   "receipts/headless/DOCTOR_TOURNAMENT.json": {
    "classification": "LAW",
@@ -69442,11 +69511,11 @@
    "driver_field": "schema",
    "driver_token": "hawking.headless.gravity_compiler_search.v1",
    "first_seen": "2026-08-31T12:50:05Z",
-   "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1787739372.3173416,
+   "last_classified": "2026-09-03T06:48:51Z",
+   "mtime": 1788417646.3195438,
    "reason": "metadata / census / index / schema / plan with no verdict",
-   "sha256": "2a970e14e623fd18b05ea16ddaff1e0b7b2e17d662d753141b8a14d7d9ee0320",
-   "size": 66448
+   "sha256": "d5692547db28d1082e4d22e071a0e19456d7c689328bc230258addc06571438d",
+   "size": 67248
   },
   "receipts/headless/GROK_DELEGATION_UNAVAILABLE.json": {
    "classification": "LAW",
@@ -69478,11 +69547,11 @@
    "driver_field": "negative_science",
    "driver_token": "negative_science",
    "first_seen": "2026-08-31T12:50:05Z",
-   "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1787739372.3240955,
+   "last_classified": "2026-09-03T06:48:51Z",
+   "mtime": 1788417638.952415,
    "reason": "explicit negative_science block",
-   "sha256": "935bd6897c23c2035ae38e8e6da01b9d02bbd18c3f348fd6e341c6f70042e8ef",
-   "size": 598390
+   "sha256": "aa5963fd0f662910481937903165224a24243d0bc37da812122c2e3c1f453579",
+   "size": 209145
   },
   "receipts/headless/HAWKING_INITIAL_CHARGE.json": {
    "classification": "NEUTRAL",
@@ -69527,7 +69596,7 @@
    "driver_token": "PASSED",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1788395860.814039,
+   "mtime": 1788418225.465614,
    "reason": "status PASSED is an evidence-backed positive result",
    "sha256": "0b6209a16b3d0b546d16b47e23bf07fc23f2f50a100dbbe6d1a74bfceb76d484",
    "size": 132669
@@ -69563,7 +69632,7 @@
    "driver_token": "PASSED",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1788395860.806666,
+   "mtime": 1788418225.461994,
    "reason": "status PASSED is an evidence-backed positive result",
    "sha256": "45feb7b0f1bfd8e3873bbf14b3c54d24973d4106b8ab4ee72ec83b32436fc5ec",
    "size": 11084
@@ -69587,7 +69656,7 @@
    "driver_token": "PASSED",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1788395860.82564,
+   "mtime": 1788418225.4694068,
    "reason": "status PASSED is an evidence-backed positive result",
    "sha256": "47617dd47099811fe178a5be6ddb29107072d097c73f9ea3679afda07317c223",
    "size": 4474
@@ -69599,7 +69668,7 @@
    "driver_token": "PASSED",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1788395860.8273518,
+   "mtime": 1788418225.4704456,
    "reason": "status PASSED is an evidence-backed positive result",
    "sha256": "ec9589bd2ced5e72a157422d5b7db9935f37da44f8a029491aba41f07764a766",
    "size": 13150
@@ -69611,7 +69680,7 @@
    "driver_token": "PASSED",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1788395860.805296,
+   "mtime": 1788418225.4613435,
    "reason": "status PASSED is an evidence-backed positive result",
    "sha256": "2350a4f2a12f8ffbdb32e99d68895b6d8273f199584cfa9b5f97ed88c2802439",
    "size": 12677
@@ -69647,7 +69716,7 @@
    "driver_token": "PASSED",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1788395860.8244226,
+   "mtime": 1788418225.4689956,
    "reason": "status PASSED is an evidence-backed positive result",
    "sha256": "46b9377ab2c6743372f37ee6e2f71d9ebc8d985809f8dbf7d9947ef3fbc1145a",
    "size": 8160
@@ -69761,16 +69830,16 @@
    "size": 5453
   },
   "receipts/headless/HCLI_CRASH_CHECKPOINT.json": {
-   "classification": "SCAR",
-   "confidence": 0.95,
+   "classification": "LAW",
+   "confidence": 0.85,
    "driver_field": "verdict",
-   "driver_token": "FAIL",
+   "driver_token": "PASS",
    "first_seen": "2026-08-31T12:50:05Z",
-   "last_classified": "2026-09-02T04:02:42Z",
-   "mtime": 1788336711.5697021,
-   "reason": "verdict FAIL",
-   "sha256": "858fc1adf1533bbd45fe18e854645b3915e752b63b5c0ce4202445b5ed9c84be",
-   "size": 22642
+   "last_classified": "2026-09-03T06:48:51Z",
+   "mtime": 1788417629.2417898,
+   "reason": "verdict PASS",
+   "sha256": "4e409b78cc1ea2b2a6fa630367df843fc7f77e58fcb40714565c08d5face26ca",
+   "size": 22717
   },
   "receipts/headless/HCLI_DENSE_VS_NF_AB_SCAFFOLD.json": {
    "classification": "NEUTRAL",
@@ -69899,7 +69968,7 @@
    "driver_token": "PASSED",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-09-02T04:02:42Z",
-   "mtime": 1788395860.8181689,
+   "mtime": 1788418225.4680636,
    "reason": "status PASSED is an evidence-backed positive result",
    "sha256": "b96700c2360e75e75bc5789c0c9b4354a807771a45dce2418c78de2b1b9bb4cb",
    "size": 189647
@@ -69911,7 +69980,7 @@
    "driver_token": "PASSED",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1788395860.8084745,
+   "mtime": 1788418225.4633365,
    "reason": "status PASSED is an evidence-backed positive result",
    "sha256": "79c7d5d916bebb31d6900f154c70b83943064c2323b1d7231b3e7f9bf469dcc8",
    "size": 55141
@@ -70282,11 +70351,11 @@
    "driver_field": "<default>",
    "driver_token": "no_verdict",
    "first_seen": "2026-08-31T12:50:05Z",
-   "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1787739372.3359785,
+   "last_classified": "2026-09-03T06:48:51Z",
+   "mtime": 1788417646.0603576,
    "reason": "no LAW or SCAR driver in well-known fields",
-   "sha256": "63a6f29c4e3c7cac5d3ce926e173639ba8026a46fcfa95677d1e125403edc868",
-   "size": 101804
+   "sha256": "484571f35814b781320c9be6b675de39b8aa82036e41a53eee0ec4a9bc3b181b",
+   "size": 101311
   },
   "receipts/headless/KERNEL_PLANNER_MODEL2.json": {
    "classification": "LAW",
@@ -70343,7 +70412,7 @@
    "driver_token": "no_verdict",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1787736939.3495877,
+   "mtime": 1788413868.7203827,
    "reason": "no LAW or SCAR driver in well-known fields",
    "sha256": "978c14421b5b1d1524f0cfe8e4f9cb699dc26598244b85c0d7816217bcf1d10b",
    "size": 127979
@@ -70690,11 +70759,11 @@
    "driver_field": "gate",
    "driver_token": "REJECTED",
    "first_seen": "2026-08-31T12:50:05Z",
-   "last_classified": "2026-09-01T21:03:54Z",
-   "mtime": 1788241967.6366487,
+   "last_classified": "2026-09-03T06:48:51Z",
+   "mtime": 1788417648.568673,
    "reason": "gate is a failed/rejected gate",
-   "sha256": "be15ebb136a810b010492f05661e20e5eba1c4ae41ca011063ff4d6dd0aadfb9",
-   "size": 103096
+   "sha256": "c4a81b4313eefdd3ec7c63a1e672ed1430bce8b7653b29f012f7f21d4e6e8089",
+   "size": 101942
   },
   "receipts/headless/NOETIC_ASCENSION_LOOP.json": {
    "classification": "SCAR",
@@ -70966,10 +71035,10 @@
    "driver_field": "<default>",
    "driver_token": "no_verdict",
    "first_seen": "2026-08-31T12:50:05Z",
-   "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1787739236.0008612,
+   "last_classified": "2026-09-03T06:48:51Z",
+   "mtime": 1788417647.279559,
    "reason": "no LAW or SCAR driver in well-known fields",
-   "sha256": "af8ea1b41cf6998975fac5c33d035f11315990e6f57e7dc267e18525aa8d3024",
+   "sha256": "0f74b3d16b7b1ac1e09cd9d671d907b0d4253797e1c113b723c2821441968887",
    "size": 11547
   },
   "receipts/headless/NOETIC_IR.json": {
@@ -70978,11 +71047,11 @@
    "driver_field": "<default>",
    "driver_token": "no_verdict",
    "first_seen": "2026-08-31T12:50:05Z",
-   "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1787739372.371837,
+   "last_classified": "2026-09-03T06:48:51Z",
+   "mtime": 1788417650.234634,
    "reason": "no LAW or SCAR driver in well-known fields",
-   "sha256": "4be977289acc6e4dd5e407c491a051fa242edd67cb7007d57b3f456743ad4a02",
-   "size": 30566
+   "sha256": "9769c4c0416072eed1b82f40c805ee221fb2247d75095f25481c6733236132bc",
+   "size": 30057
   },
   "receipts/headless/NOETIC_KERNEL_CENSUS.json": {
    "classification": "NEUTRAL",
@@ -71098,23 +71167,23 @@
    "driver_field": "schema",
    "driver_token": "hawking.headless.noetic_native_operator.v1",
    "first_seen": "2026-08-31T12:50:05Z",
-   "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1787739372.3774612,
+   "last_classified": "2026-09-03T06:48:51Z",
+   "mtime": 1788417650.3594265,
    "reason": "metadata / census / index / schema / plan with no verdict",
-   "sha256": "7658ad4bda8cf322e80e4449a27bedf2626ad9a7c85ffbee6511805ec5eff53e",
-   "size": 62932
+   "sha256": "ecf2b09f9119434d3ff4700eb8490bb569a38269d38521dadf9beba6fc4a1e2e",
+   "size": 62421
   },
   "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json": {
-   "classification": "NEUTRAL",
-   "confidence": 0.8,
-   "driver_field": "schema",
-   "driver_token": "hawking.headless.noetic_negative_science.v1",
+   "classification": "SCAR",
+   "confidence": 0.95,
+   "driver_field": "pass",
+   "driver_token": "false",
    "first_seen": "2026-08-31T12:50:05Z",
-   "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1787824317.2724354,
-   "reason": "metadata / census / index / schema / plan with no verdict",
-   "sha256": "ba01d42d6e04952a56e5e56e1a36fcfbaddcab7cecc163efb9236bd8ebaf7015",
-   "size": 106368
+   "last_classified": "2026-09-03T06:48:51Z",
+   "mtime": 1788417648.4717245,
+   "reason": "top-level pass is false (failed gate)",
+   "sha256": "6f18954b4af7f9cefad61a7cae985f7a8e8434f91cd72d76cba2b8e4ccef4c11",
+   "size": 139410
   },
   "receipts/headless/NOETIC_OPERATION_CENSUS.json": {
    "classification": "NEUTRAL",
@@ -71302,10 +71371,10 @@
    "driver_field": "schema",
    "driver_token": "hawking.headless.odyssey_queue_recovered.v1",
    "first_seen": "2026-08-31T12:50:05Z",
-   "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1787739233.363935,
+   "last_classified": "2026-09-03T06:48:51Z",
+   "mtime": 1788417646.0613735,
    "reason": "metadata / census / index / schema / plan with no verdict",
-   "sha256": "4e860f5614b1cf28ae646882b80f39e73541b38715f1597664d003cbbfa8ea5d",
+   "sha256": "178bc421f80d4b1ff916568bad35a5f295c9a23257bfa3f787c891dea95b565b",
    "size": 46801
   },
   "receipts/headless/ODYSSEY_TRANSFER_PROVEN.json": {
@@ -71386,11 +71455,11 @@
    "driver_field": "<default>",
    "driver_token": "no_verdict",
    "first_seen": "2026-08-31T12:50:05Z",
-   "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1787739372.3967657,
+   "last_classified": "2026-09-03T06:48:51Z",
+   "mtime": 1788417646.0595107,
    "reason": "no LAW or SCAR driver in well-known fields",
-   "sha256": "8061c34b6000170ff4eba48866aed29fa1b217476d66ccdd9ee000c60bc94c3f",
-   "size": 52322
+   "sha256": "13c475c7a3fa0b7ba80dc763d541d434afdbbde76bc54eee40b6f7d21fbfd1fe",
+   "size": 51829
   },
   "receipts/headless/ORGAN_LIBRARY_CONSOLIDATION.json": {
    "classification": "NEUTRAL",
@@ -71890,11 +71959,11 @@
    "driver_field": "<default>",
    "driver_token": "no_verdict",
    "first_seen": "2026-08-31T12:50:05Z",
-   "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1787739372.4160504,
+   "last_classified": "2026-09-03T06:48:51Z",
+   "mtime": 1788417666.6901188,
    "reason": "no LAW or SCAR driver in well-known fields",
-   "sha256": "b0b3b3c4c5b7640afdc91d4ed64a0bbc8f066cbe89a60028d505c509a0b3d8c2",
-   "size": 58996
+   "sha256": "f61073082d5b463d770fb040dce1e842c26ed773da9080905346c9b2aa6cc14a",
+   "size": 58503
   },
   "receipts/headless/QWEN_MAX_EQUILIBRIUM.json": {
    "classification": "NEUTRAL",
@@ -72094,11 +72163,11 @@
    "driver_field": "<default>",
    "driver_token": "no_verdict",
    "first_seen": "2026-08-31T12:50:05Z",
-   "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1787739372.4194279,
+   "last_classified": "2026-09-03T06:48:51Z",
+   "mtime": 1788417646.060843,
    "reason": "no LAW or SCAR driver in well-known fields",
-   "sha256": "ec20d554744b32eb3e1fcda004c64b7be27f07878b4a754a3216cc5332769598",
-   "size": 28711
+   "sha256": "92819ef0f017cd6819c53c4865477059114baa5b333d0b6ae7616f901bed3fa8",
+   "size": 28218
   },
   "receipts/headless/RESIDENT_2P60_RUNTIME_PROVENANCE.json": {
    "classification": "LAW",
@@ -72214,11 +72283,11 @@
    "driver_field": "<default>",
    "driver_token": "no_verdict",
    "first_seen": "2026-08-31T12:50:05Z",
-   "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1787739372.421166,
+   "last_classified": "2026-09-03T06:48:51Z",
+   "mtime": 1788417667.595493,
    "reason": "no LAW or SCAR driver in well-known fields",
-   "sha256": "6213c0deac7933cf1c12227a5dfbcac8a8afe57bc8dde98438c617c08d436fb5",
-   "size": 44237
+   "sha256": "75f13b01ff75d3bd55e97848dba79a39f82c6714792581cb68779367be32031c",
+   "size": 47030
   },
   "receipts/headless/RUNTIME_GENOME.json": {
    "classification": "NEUTRAL",
@@ -72226,11 +72295,11 @@
    "driver_field": "<default>",
    "driver_token": "no_verdict",
    "first_seen": "2026-08-31T12:50:05Z",
-   "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1787739372.4214206,
+   "last_classified": "2026-09-03T05:47:35Z",
+   "mtime": 1788417666.7641253,
    "reason": "no LAW or SCAR driver in well-known fields",
-   "sha256": "9ba59cc28824e5a42f887b076cfe8f72fc684a399d101c75e477727c5f3e0d40",
-   "size": 6036
+   "sha256": "9f623812c80d12cf06a7c6d0eaab9b32fc61b2a8c015128db8f7d8168a96338a",
+   "size": 5539
   },
   "receipts/headless/SELF_OPT_CANDIDATE_PROMOTED.json": {
    "classification": "NEUTRAL",
@@ -72238,11 +72307,11 @@
    "driver_field": "<default>",
    "driver_token": "no_verdict",
    "first_seen": "2026-08-31T12:50:05Z",
-   "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1787739372.422431,
+   "last_classified": "2026-09-03T06:48:51Z",
+   "mtime": 1788417672.093798,
    "reason": "no LAW or SCAR driver in well-known fields",
-   "sha256": "ea6efc0764692e8c6613b854548b940dd513f2aaddaf1d38460c325421e646f7",
-   "size": 51592
+   "sha256": "75800a03563ef3433d03d31f6e22cfe4a363a264acd3301fc871b82437e82d8c",
+   "size": 51050
   },
   "receipts/headless/SENSITIVITY_ALLOCATION.json": {
    "classification": "SCAR",
@@ -72562,10 +72631,10 @@
    "driver_field": "<default>",
    "driver_token": "no_verdict",
    "first_seen": "2026-08-31T12:50:05Z",
-   "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1787739272.1647162,
+   "last_classified": "2026-09-03T06:48:51Z",
+   "mtime": 1788417674.7695022,
    "reason": "no LAW or SCAR driver in well-known fields",
-   "sha256": "cf8d789a79726a8d76d38bbc0a253fd7fc806410e415de9e229c741a56395151",
+   "sha256": "6504fe990faa81856d8549f506b21edf3bee3d9ad0c864e62085ae9805a15151",
    "size": 3359
   },
   "receipts/headless/WRITER_AUTHORITY.json": {
@@ -73658,7 +73727,7 @@
   "--once --assert-idempotent refusal that is capable of firing",
   "read-only open; writes only receipts/future/CODEX_INGEST_STATE.json"
  ],
- "head": "e76518be8ccbe48d73c1e865d159213cd7334e5c",
+ "head": "803e811e9b36bb2d144ede4ebcd3cb97e7d34ada",
  "idempotence": {
   "assert_idempotent": "exit non-zero iff n_new + n_changed > 0",
   "change_detector": "sha256 of file bytes; mtime is recorded and never consulted",
@@ -73808,8 +73877,8 @@
  "root": "receipts/headless",
  "scan": {
   "by_class_cursor": {
-   "LAW": 767,
-   "NEUTRAL": 866,
+   "LAW": 768,
+   "NEUTRAL": 865,
    "SCAR": 42
   },
   "by_class_this_scan": {
@@ -73818,7 +73887,7 @@
    "SCAR": 0
   },
   "missing_from_disk": [],
-  "n_active_deltas": 809,
+  "n_active_deltas": 810,
   "n_changed": 0,
   "n_deltas": 0,
   "n_missing_from_disk": 0,
@@ -73829,7 +73898,7 @@
   "unreadable": []
  },
  "schema": "hawking.future.codex_ingest.v1",
- "seal_sha256": "6e43612d326c5284ed4feca75228bb9db5b686202458d660583f5951f12dfb78",
+ "seal_sha256": "a9b1eef7f92aad56459316cab4826df18aac0fea7c875556cd0086a4cb00c062",
  "version": 1,
  "vocabulary": {
   "bench_state": "UNKNOWN",

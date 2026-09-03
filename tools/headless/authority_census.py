@@ -219,23 +219,6 @@ CATALOG: List[CatalogRow] = [
         ),
         "callers": ["crates/hide-backend/src/services_goal.rs"],
     },
-    {
-        "id": "haider-v0.haider.py",
-        "concept": "Goal",
-        "path": "tools/hcli/bootstrap/snapshots/haider.py",
-        "needle": "haider — HCLI-v0 bootstrap",
-        "symbol": "haider.py (HCLI-v0 loop)",
-        "classification": "obsolete_implementation",
-        "plane": "haider-v0",
-        "two_real": False,
-        "survives": False,
-        "role": "Gate-zero bootstrap: one llama-server, one scoped edit, one receipt.",
-        "move": (
-            "Leave in tree (historical bootstrap). Do not route live missions "
-            "through it. Live control plane is hcli/."
-        ),
-        "callers": [],
-    },
     # ------------------------------------------------------------------ mission
     {
         "id": "hcli.mission.Mission",
@@ -278,7 +261,7 @@ CATALOG: List[CatalogRow] = [
     {
         "id": "lab.ExperimentRuntime",
         "concept": "mission",
-        "path": "lab/runtime.py",
+        "path": "research/lab/runtime.py",
         "needle": "class ExperimentRuntime",
         "symbol": "ExperimentRuntime",
         "classification": "canonical_authority",
@@ -290,19 +273,19 @@ CATALOG: List[CatalogRow] = [
             "Keep. Name collision with 'runtime registry' is documented there. "
             "Do not drive HCLI WorkUnits through this."
         ),
-        "callers": ["lab/runtime.py"],
+        "callers": ["research/lab/runtime.py"],
     },
     {
         "id": "lab.hcli.self_evolution",
         "concept": "mission",
-        "path": "lab/hcli/self_evolution.py",
+        "path": "research/lab/hcli/self_evolution.py",
         "needle": "class EvolutionLedger:",
         "symbol": "EvolutionLedger",
         "classification": "obsolete_implementation",
         "plane": "lab",
         "two_real": False,
         "survives": False,
-        "role": "Experimental self-evolution ledger under lab/hcli, not the live HCLI Mission.",
+        "role": "Experimental self-evolution ledger under research/lab/hcli, not the live HCLI Mission.",
         "move": "Leave. Not a migration target for hcli/mission.py.",
         "callers": [],
     },
@@ -372,7 +355,7 @@ CATALOG: List[CatalogRow] = [
     {
         "id": "lab._WorkItem",
         "concept": "WorkUnit",
-        "path": "lab/engine_support.py",
+        "path": "research/lab/engine_support.py",
         "needle": "class _WorkItem:",
         "symbol": "_WorkItem",
         "classification": "canonical_authority",
@@ -381,7 +364,7 @@ CATALOG: List[CatalogRow] = [
         "survives": True,
         "role": "Lab experiment step. Different identity space from HCLI WorkUnit.id.",
         "move": "Keep in lab. Do not alias to hcli.workunit.WorkUnit.",
-        "callers": ["lab/engine_support.py"],
+        "callers": ["research/lab/engine_support.py"],
     },
     # ------------------------------------------------------------------ DAG
     {
@@ -442,29 +425,6 @@ CATALOG: List[CatalogRow] = [
         ),
         "callers": ["crates/hide-kernel/src/machine.rs"],
     },
-    {
-        "id": "hide-backend.HaiderDag",
-        "concept": "DAG",
-        "path": "crates/hide-backend/src/haider/dag.rs",
-        "needle": "pub struct HaiderDag {",
-        "symbol": "HaiderDag / HaiderNode",
-        "classification": "canonical_authority",
-        "plane": "hide-rs",
-        "two_real": True,
-        "survives": True,
-        "role": (
-            "Rust HAIDER parallel task DAG (disjoint write scopes + MemGate). "
-            "Lives under a fossil namespace; it is not aider."
-        ),
-        "move": (
-            "Keep. Do not rename the crate path in this campaign (haider is a "
-            "fossil namespace, not architecture). Do not merge with HCLI-py DAG."
-        ),
-        "callers": [
-            "crates/hide-backend/src/haider/lanes.rs",
-            "crates/hide-backend/src/haider/mod.rs",
-        ],
-    },
     # ------------------------------------------------------------------ scheduler
     {
         "id": "hcli.scheduler.Scheduler",
@@ -492,27 +452,6 @@ CATALOG: List[CatalogRow] = [
         "evidence": "receipts/headless/HCLI_SCHEDULER_QUALITY.json",
     },
     {
-        "id": "hcli.scheduler._remaining_depth",
-        "concept": "scheduler",
-        "path": "hcli/scheduler.py",
-        "needle": "def _remaining_depth(",
-        "symbol": "_remaining_depth",
-        "classification": "obsolete_implementation",
-        "plane": "hcli-py",
-        "two_real": False,
-        "survives": False,
-        "role": (
-            "Hop-count helper. Dispatch does not call it (ready_at FIFO). "
-            "LOG and MAX_REPAIR_* are redefined after this helper — merge artifact."
-        ),
-        "move": (
-            "Remove on a later source lane together with the duplicated LOG = "
-            "and MAX_REPAIR_* assignments. Do not use it as a scheduling key."
-        ),
-        "callers": [],
-        "evidence": "tools/headless/hcli_scheduler_quality.py",
-    },
-    {
         "id": "headless.remaining_depth",
         "concept": "scheduler",
         "path": "tools/headless/hcli_scheduler_quality.py",
@@ -529,7 +468,7 @@ CATALOG: List[CatalogRow] = [
     {
         "id": "lab.engine_support.Scheduler",
         "concept": "scheduler",
-        "path": "lab/engine_support.py",
+        "path": "research/lab/engine_support.py",
         "needle": "class Scheduler:",
         "symbol": "Scheduler",
         "classification": "canonical_authority",
@@ -538,7 +477,7 @@ CATALOG: List[CatalogRow] = [
         "survives": True,
         "role": "Lab experiment-step scheduler over ExperimentSpec.steps.",
         "move": "Keep in lab. Same English name as HCLI Scheduler; different object.",
-        "callers": ["lab/runtime.py"],
+        "callers": ["research/lab/runtime.py"],
     },
     {
         "id": "hawking-orch.Scheduler",
@@ -581,20 +520,6 @@ CATALOG: List[CatalogRow] = [
         "role": "HIDE backend agent/job scheduler (policy + metrics + checkpoint refs).",
         "move": "Keep in hide-backend. Not HCLI-py Scheduler.",
         "callers": ["crates/hide-backend/src/agent_scheduler.rs"],
-    },
-    {
-        "id": "hide-backend.LaneScheduler",
-        "concept": "scheduler",
-        "path": "crates/hide-backend/src/haider/lanes.rs",
-        "needle": "pub struct LaneScheduler {",
-        "symbol": "LaneScheduler",
-        "classification": "canonical_authority",
-        "plane": "hide-rs",
-        "two_real": False,
-        "survives": True,
-        "role": "MemGate-controlled HAIDER lane scheduler (Architect/Implementer/Adversary).",
-        "move": "Keep with HaiderDag. Not a second HCLI-py scheduler.",
-        "callers": ["crates/hide-backend/src/haider/lanes.rs"],
     },
     # ------------------------------------------------------------------ checkpoint
     {
@@ -667,7 +592,7 @@ CATALOG: List[CatalogRow] = [
     {
         "id": "lab.checkpoint.CheckpointStore",
         "concept": "checkpoint",
-        "path": "lab/checkpoint.py",
+        "path": "research/lab/checkpoint.py",
         "needle": "class CheckpointStore:",
         "symbol": "CheckpointStore",
         "classification": "canonical_authority",
@@ -676,12 +601,12 @@ CATALOG: List[CatalogRow] = [
         "survives": True,
         "role": "Lab campaign controller checkpoint + hash-chain event log.",
         "move": "Keep in lab. Same class name as hide-backend and frankenstein; different schema.",
-        "callers": ["lab/runtime.py"],
+        "callers": ["research/lab/runtime.py"],
     },
     {
         "id": "frankenstein.CheckpointStore",
         "concept": "checkpoint",
-        "path": "hawking-experiments/frankenstein/operators/frankenstein_latent_v0.py",
+        "path": "research/hawking-experiments/frankenstein/operators/frankenstein_latent_v0.py",
         "needle": "class CheckpointStore:",
         "symbol": "CheckpointStore (.pt slots)",
         "classification": "canonical_authority",
@@ -690,7 +615,7 @@ CATALOG: List[CatalogRow] = [
         "survives": True,
         "role": "Latent-v0 weight-slot store (slot.pt). Not a controller checkpoint.",
         "move": "Keep local to the operator. Rename would clarify; not required for HCLI.",
-        "callers": ["hawking-experiments/frankenstein/operators/frankenstein_latent_v0.py"],
+        "callers": ["research/hawking-experiments/frankenstein/operators/frankenstein_latent_v0.py"],
     },
     {
         "id": "hawking-context.CheckpointId",
@@ -792,7 +717,7 @@ CATALOG: List[CatalogRow] = [
     {
         "id": "lab.lease.SingletonLease",
         "concept": "mutation lock",
-        "path": "lab/lease.py",
+        "path": "research/lab/lease.py",
         "needle": "class SingletonLease:",
         "symbol": "SingletonLease",
         "classification": "canonical_authority",
@@ -801,12 +726,12 @@ CATALOG: List[CatalogRow] = [
         "survives": True,
         "role": "fcntl exclusive lease for the lab campaign controller.",
         "move": "Keep in lab. Do not replace MutationLock with this, or this with MutationLock.",
-        "callers": ["lab/runtime.py"],
+        "callers": ["research/lab/runtime.py"],
     },
     {
         "id": "lab.glm52.SingletonLease",
         "concept": "mutation lock",
-        "path": "lab/operators/glm52_state.py",
+        "path": "research/lab/operators/glm52_state.py",
         "needle": "class SingletonLease(_EngineSingletonLease):",
         "symbol": "glm52_state.SingletonLease",
         "classification": "compatibility_wrapper",
@@ -815,7 +740,7 @@ CATALOG: List[CatalogRow] = [
         "survives": True,
         "role": "Subclass of lab.lease.SingletonLease for the GLM-52 operator.",
         "move": "Keep as a named subclass. Canonical lock remains lab.lease.SingletonLease.",
-        "callers": ["lab/operators/glm52_state.py"],
+        "callers": ["research/lab/operators/glm52_state.py"],
     },
     {
         "id": "tools.gpu_lane_guard",
@@ -896,7 +821,7 @@ CATALOG: List[CatalogRow] = [
     {
         "id": "lab.VerificationAuthority",
         "concept": "verifier",
-        "path": "lab/verification_authority.py",
+        "path": "research/lab/verification_authority.py",
         "needle": "class VerificationAuthority:",
         "symbol": "VerificationAuthority",
         "classification": "canonical_authority",
@@ -905,7 +830,7 @@ CATALOG: List[CatalogRow] = [
         "survives": True,
         "role": "Lab science certification: models emit candidates, only the controller certifies.",
         "move": "Keep. Not the HCLI WorkUnit verifier.",
-        "callers": ["lab/verification_authority.py"],
+        "callers": ["research/lab/verification_authority.py"],
     },
     {
         "id": "hide-kernel.VerificationGate",
@@ -924,7 +849,7 @@ CATALOG: List[CatalogRow] = [
     {
         "id": "ramanujan.VerifierRegistry",
         "concept": "verifier",
-        "path": "ramanujan/scaffold/research/verifier/registry.py",
+        "path": "research/ramanujan/scaffold/research/verifier/registry.py",
         "needle": "class VerifierRegistry:",
         "symbol": "VerifierRegistry",
         "classification": "canonical_authority",
@@ -933,7 +858,7 @@ CATALOG: List[CatalogRow] = [
         "survives": True,
         "role": "Math verifier backends (lean / sympy / exact numeric).",
         "move": "Keep in ramanujan. Not an HCLI WorkUnit verifier.",
-        "callers": ["ramanujan/scaffold/research/verifier/registry.py"],
+        "callers": ["research/ramanujan/scaffold/research/verifier/registry.py"],
     },
     {
         "id": "hawking-speculate.Verifier",
@@ -1003,20 +928,6 @@ CATALOG: List[CatalogRow] = [
         "move": "Keep. Different object from RuntimeBackend.",
         "callers": ["crates/hawking-orch/src/registry.rs"],
     },
-    {
-        "id": "haider-v0.allocate_port",
-        "concept": "backend registry",
-        "path": "tools/hcli/bootstrap/snapshots/haider.py",
-        "needle": "def allocate_port() -> int:",
-        "symbol": "allocate_port (HCLI-v0)",
-        "classification": "obsolete_implementation",
-        "plane": "haider-v0",
-        "two_real": False,
-        "survives": False,
-        "role": "Duplicate of backends.allocate_port in the v0 bootstrap.",
-        "move": "Leave the v0 file. Live callers use hcli/backends.py:allocate_port.",
-        "callers": [],
-    },
     # ------------------------------------------------------------------ context budget
     {
         "id": "hcli.context_budget.ContextBudget",
@@ -1081,24 +992,6 @@ CATALOG: List[CatalogRow] = [
         ],
     },
     {
-        "id": "hide-backend.haider.ContextBudget",
-        "concept": "context budget",
-        "path": "crates/hide-backend/src/haider/lanes.rs",
-        "needle": "pub struct ContextBudget {",
-        "symbol": "haider::lanes::ContextBudget",
-        "classification": "compatibility_wrapper",
-        "plane": "hide-rs",
-        "two_real": False,
-        "survives": True,
-        "role": "Per-lane max_tokens newtype used by EvidencePacket. Not the HCLI authority.",
-        "move": (
-            "Keep as a field on EvidencePacket. Verified caller: "
-            "crates/hide-backend/src/haider/lanes.rs EvidencePacket. "
-            "Do not give it resolve/preflight logic."
-        ),
-        "callers": ["crates/hide-backend/src/haider/lanes.rs"],
-    },
-    {
         "id": "hawking-context.ContextCompiler",
         "concept": "context budget",
         "path": "crates/hawking-context/src/compiler.rs",
@@ -1151,7 +1044,7 @@ CATALOG: List[CatalogRow] = [
     {
         "id": "lab.runtime.ExperimentRuntime",
         "concept": "runtime registry",
-        "path": "lab/runtime.py",
+        "path": "research/lab/runtime.py",
         "needle": "class ExperimentRuntime",
         "symbol": "ExperimentRuntime",
         "classification": "canonical_authority",
@@ -1160,7 +1053,7 @@ CATALOG: List[CatalogRow] = [
         "survives": True,
         "role": "Lab experiment runner. Name collision with HCLI RuntimePool.",
         "move": "Keep in lab. Do not spawn llama-server from here.",
-        "callers": ["lab/runtime.py"],
+        "callers": ["research/lab/runtime.py"],
     },
     {
         "id": "tools.glm52_gravity.Runtime",
@@ -1194,7 +1087,7 @@ CATALOG: List[CatalogRow] = [
     {
         "id": "lab.receipts.Receipt",
         "concept": "receipt",
-        "path": "lab/receipts.py",
+        "path": "research/lab/receipts.py",
         "needle": "class Receipt:",
         "symbol": "Receipt / ReceiptAuthority / GateEvidence / seal",
         "classification": "canonical_authority",
@@ -1207,9 +1100,9 @@ CATALOG: List[CatalogRow] = [
             "force HCLI engine receipts onto this schema."
         ),
         "callers": [
-            "lab/runtime.py",
-            "lab/verification_authority.py",
-            "lab/checkpoint.py",
+            "research/lab/runtime.py",
+            "research/lab/verification_authority.py",
+            "research/lab/checkpoint.py",
         ],
     },
     {
@@ -1276,25 +1169,11 @@ CATALOG: List[CatalogRow] = [
             "crates/hide-backend/src/bin/hcli.rs",
         ],
     },
-    {
-        "id": "haider-v0.write_receipt",
-        "concept": "receipt",
-        "path": "tools/hcli/bootstrap/snapshots/haider.py",
-        "needle": "def write_receipt(",
-        "symbol": "haider.py write_receipt",
-        "classification": "obsolete_implementation",
-        "plane": "haider-v0",
-        "two_real": False,
-        "survives": False,
-        "role": "HCLI-v0 receipt writer.",
-        "move": "Leave. Historical .hcli-legacy/receipts filenames are evidence.",
-        "callers": [],
-    },
     # ------------------------------------------------------------------ experiment
     {
         "id": "lab.spec.ExperimentSpec",
         "concept": "experiment",
-        "path": "lab/spec.py",
+        "path": "research/lab/spec.py",
         "needle": "class ExperimentSpec:",
         "symbol": "ExperimentSpec (hawking.lab.experiment_spec.v1)",
         "classification": "canonical_authority",
@@ -1304,15 +1183,15 @@ CATALOG: List[CatalogRow] = [
         "role": "Lab campaign spec. lab.runtime and lab.engine_support import this one.",
         "move": "Keep as the campaign spec. Accepts hawking.lab.experiment.v1 as a compatibility schema id.",
         "callers": [
-            "lab/runtime.py",
-            "lab/engine_support.py",
-            "lab/__init__.py",
+            "research/lab/runtime.py",
+            "research/lab/engine_support.py",
+            "research/lab/__init__.py",
         ],
     },
     {
         "id": "lab.bench_harness.ExperimentSpec",
         "concept": "experiment",
-        "path": "lab/bench_harness/spec.py",
+        "path": "research/lab/bench_harness/spec.py",
         "needle": "class ExperimentSpec:",
         "symbol": "ExperimentSpec (hawking.lab.experiment.v1 stages)",
         "classification": "canonical_authority",
@@ -1332,7 +1211,7 @@ CATALOG: List[CatalogRow] = [
     {
         "id": "lab.science_registry",
         "concept": "experiment",
-        "path": "lab/science_registry.py",
+        "path": "research/lab/science_registry.py",
         "needle": "class OperatorRecord:",
         "symbol": "OperatorRegistry / OperatorRecord",
         "classification": "canonical_authority",
@@ -1341,7 +1220,7 @@ CATALOG: List[CatalogRow] = [
         "survives": True,
         "role": "Catalog of lab.operators. Not an ExperimentSpec.",
         "move": "Keep. Runtime looks up operators here.",
-        "callers": ["lab/runtime.py"],
+        "callers": ["research/lab/runtime.py"],
     },
     {
         "id": "headless.runtime_experiment",
@@ -1400,20 +1279,6 @@ CATALOG: List[CatalogRow] = [
         "evidence": "receipts/headless/MODEL_REGISTRY.json",
     },
     {
-        "id": "hawking-comms.ModelIdentity",
-        "concept": "model identity",
-        "path": "crates/hawking-comms/src/level3.rs",
-        "needle": "pub struct ModelIdentity {",
-        "symbol": "ModelIdentity",
-        "classification": "canonical_authority",
-        "plane": "hawking-orch",
-        "two_real": True,
-        "survives": True,
-        "role": "Wire-level model identity in hawking-comms. Not HCLI path selection and not the promotion registry.",
-        "move": "Keep as the comms identity type. Do not merge with ModelRegistry or MODEL_REGISTRY.json.",
-        "callers": ["crates/hawking-comms/src/level3.rs"],
-    },
-    {
         "id": "hawking-orch.ModelSpec",
         "concept": "model identity",
         "path": "crates/hawking-orch/src/registry.rs",
@@ -1444,7 +1309,7 @@ CATALOG: List[CatalogRow] = [
     {
         "id": "lab.operators.ModelSpec.copies",
         "concept": "model identity",
-        "path": "lab/operators/ascension_qwen_state_kv.py",
+        "path": "research/lab/operators/ascension_qwen_state_kv.py",
         "needle": "class ModelSpec:",
         "symbol": "ModelSpec (copied across operators)",
         "classification": "UNKNOWN",
@@ -1458,7 +1323,7 @@ CATALOG: List[CatalogRow] = [
         "move": "Follow-up: diff the four ModelSpec bodies before deleting any.",
         "callers": [],
         "unknown_reason": (
-            "Four lab/operators/* ModelSpec classes exist "
+            "Four research/lab/operators/* ModelSpec classes exist "
             "(ascension_dual_gravity_worker, ascension_physical_gatekeeper, "
             "ascension_qwen_scientific_optimizer, ascension_qwen_state_kv). "
             "This lane did not byte-compare them."
@@ -1679,7 +1544,7 @@ CATALOG: List[CatalogRow] = [
     {
         "id": "ramanujan.Status",
         "concept": "status",
-        "path": "ramanujan/scaffold/research/prover.py",
+        "path": "research/ramanujan/scaffold/research/prover.py",
         "needle": "class Status(",
         "symbol": "Status (ramanujan prover)",
         "classification": "canonical_authority",
@@ -1688,7 +1553,7 @@ CATALOG: List[CatalogRow] = [
         "survives": True,
         "role": "Ramanujan prover enum. Unrelated to HCLI /status.",
         "move": "Keep.",
-        "callers": ["ramanujan/scaffold/research/prover.py"],
+        "callers": ["research/ramanujan/scaffold/research/prover.py"],
     },
     # ------------------------------------------------------------------ retry policy
     {
@@ -1707,24 +1572,6 @@ CATALOG: List[CatalogRow] = [
             "hcli/workunit.py",
             "hcli/scheduler.py",
         ],
-    },
-    {
-        "id": "hcli.scheduler.MAX_REPAIR_shadow",
-        "concept": "retry policy",
-        "path": "hcli/scheduler.py",
-        "needle": "MAX_REPAIR_DEPTH = 3",
-        "symbol": "MAX_REPAIR_DEPTH = 3 (shadows the import)",
-        "classification": "obsolete_implementation",
-        "plane": "hcli-py",
-        "two_real": True,
-        "survives": False,
-        "role": (
-            "Imported from workunit.py at line 20, then reassigned at line 79 "
-            "after a duplicated LOG =. Same values today; a drift would split "
-            "the repair cap between emit_repair and `from scheduler import`."
-        ),
-        "move": "Delete the reassignment; keep a re-export comment only.",
-        "callers": ["hcli/tests/test_scheduler_quality.py"],
     },
     {
         "id": "hcli.resources.classify_failure",
@@ -1792,20 +1639,6 @@ CATALOG: List[CatalogRow] = [
             "at this binary without an explicit cutover. TWO real HCLI authorities."
         ),
         "callers": ["crates/hide-backend/src/bin/hcli.rs"],
-    },
-    {
-        "id": "hide-backend.bin.haider_empty",
-        "concept": "mission",
-        "path": "crates/hide-backend/src/bin/haider.rs",
-        "needle": "",
-        "symbol": "bin/haider.rs (empty)",
-        "classification": "historical_implementation",
-        "plane": "hide-rs",
-        "two_real": False,
-        "survives": True,
-        "role": "Empty file (git blob e69de29). Fossil namespace, not a runner.",
-        "move": "Do not delete in this campaign (historical name). Do not implement into it.",
-        "callers": [],
     },
 ]
 

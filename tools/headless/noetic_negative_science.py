@@ -42,9 +42,9 @@ SWEEP_ROOTS = [
     "workspace/campaign/evidence/systems/hawking",
     "workspace/campaign/evidence/models/glm52",
     "workspace/campaign/evidence/models/deepseek-v4",
-    "hawking-experiments/superwave/g1",
+    "research/hawking-experiments/superwave/g1",
     ".haider",
-    "ramanujan/governance",
+    "research/ramanujan/governance",
     "docs",
 ]
 
@@ -251,7 +251,7 @@ CATALOG: list[dict] = [
             _e("receipts/ascent-2026-08-16/QWEN38_COHERENCE_FLOOR_BRACKETED.json",
                2.0856, "COHERENCE_FLOOR_BRACKETED"),
             _e("receipts/ascent-2026-08-16/QWEN38_DENSITY_ROOT_CAUSE.json",
-               0.8480504639008466, "evidence/mlp_physical_bpw",
+               0.8480504639008466, "research/evidence/mlp_physical_bpw",
                "attention+embed+norms 4.250 BPW = 74% of artifact"),
             _e("receipts/ascent-2026-08-16/QWEN38_BPW_DESCENT.json",
                3.25, "coherence_floor/quality_intact/physical_bpw",
@@ -641,7 +641,7 @@ CATALOG: list[dict] = [
         },
         "evidence": [
             _e("receipts/ascent-2026-08-16/QWEN38_RECONSTRUCTION_IS_FREE.json",
-               15125, "evidence/f32_control_tpr64_ns/gate",
+               15125, "research/evidence/f32_control_tpr64_ns/gate",
                "33 codecs 15124-15541 ns vs 15125; cosine 1.000000 on 32/33"),
             _e("receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json",
                5.9, "entries/NS-006/what_was_measured/slowdown_per_byte_x",
@@ -1945,7 +1945,7 @@ def sweep_negative_stores() -> dict:
             "HCLI tactic-cycle fingerprints, not representation science. "
             "Recorded so a later reader does not re-sweep it expecting codec closures."
         )
-    rel = "hawking-experiments/superwave/g1/g1-arch-negative.md"
+    rel = "research/hawking-experiments/superwave/g1/g1-arch-negative.md"
     text = read_text(rel)
     if text is not None:
         found["g1_arch_negative_rows"] = (
@@ -1988,7 +1988,7 @@ def sweep_worktrees_and_branches() -> dict:
 
 def sweep_untracked() -> dict:
     status = git(["status", "--porcelain", "-u", "--",
-                  "receipts", "reports", ".haider", "hawking-experiments/superwave", "tools/headless"])
+                  "receipts", "reports", ".haider", "research/hawking-experiments/superwave", "tools/headless"])
     untracked = [line[3:] for line in (status or "").splitlines() if line.startswith("?? ")]
     return {
         "untracked_under_science_roots_sample": untracked[:40],

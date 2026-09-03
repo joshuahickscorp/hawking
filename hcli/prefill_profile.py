@@ -99,7 +99,7 @@ def bucket_profile(
     }
 
 
-def attribute(profile: Dict[str, Any]) -> Dict[str, Any]:
+def attribute(profile: Dict[str, Any], layers: Optional[int] = None) -> Dict[str, Any]:
     """Name what the SHAPE implicates, and say what it cannot settle.
 
     This deliberately returns a hypothesis plus the discriminator that would
@@ -181,6 +181,40 @@ def attribute(profile: Dict[str, Any]) -> Dict[str, Any]:
             )
         else:
             out["host_bound"] = False
+    # The structural reading, which the shape alone does not give. Prefill on
+    # this body steps ONE PROMPT TOKEN AT A TIME through the same function
+    # decode uses, so every prompt token costs a full decode step. That is a
+    # property of the loop, not of any kernel, and no kernel change touches it.
+    steps = float(profile.get("prefill_steps") or 0.0)
+    dispatches = float(totals.get("dispatches") or 0.0)
+    if steps > 0 and dispatches > 0:
+        per_step = dispatches / steps
+        out["dispatches_per_step"] = round(per_step, 1)
+        out["total_dispatches"] = int(dispatches)
+        if layers:
+            out["dispatches_per_layer_per_step"] = round(per_step / layers, 2)
+        out["structural"] = (
+            f"prefill stepped {int(steps)} tokens one at a time for "
+            f"{int(dispatches):,} dispatches. Prompt tokens are being paid for "
+            f"at decode prices."
+        )
+        # Whether the per-layer kernel count is itself the problem, or whether
+        # the loop shape is. Under ~12 per layer there is no fat to cut: the
+        # kernels are the ones the architecture needs, and the only lever left
+        # is running many tokens through them at once.
+        if layers and per_step / layers <= 12.0:
+            out["lever"] = (
+                "BATCH THE PREFILL. Per-layer dispatch count is already tight, "
+                "so cutting kernels buys nothing; stepping N tokens together "
+                "turns per-layer GEMV into one GEMM and divides the dispatch "
+                "count by N. Cost: the recurrent state must be advanced "
+                "chunk-wise rather than per position."
+            )
+        elif layers:
+            out["lever"] = (
+                "CUT DISPATCHES PER LAYER first: the per-layer kernel count is "
+                "high enough that fusing adjacent kernels pays before batching."
+            )
     out["cannot_settle"] = (
         "which kernel. Shape narrows the field; only a per-kernel trace "
         "(HAWKING_TRACE_DISPATCH=1) attributes cost to attention vs DeltaNet vs MLP."

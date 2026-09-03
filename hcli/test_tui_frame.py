@@ -183,7 +183,7 @@ def test_live_progress_prints_before_on_input_returns(monkeypatch):
         1,
         stream=rec,
         tty=False,
-        live_interval=0.2,
+        live_interval=0.05,
     )
     calls = {"n": 0}
 
@@ -201,7 +201,7 @@ def test_live_progress_prints_before_on_input_returns(monkeypatch):
         rec.watching = True
         ok = rec.gate.wait(timeout=2.0)
         during.append(rec.text())
-        time.sleep(0.35)
+        time.sleep(0.15)
         rec.watching = False
         assert ok, f"no live output during on_input: {rec.text()!r}"
 

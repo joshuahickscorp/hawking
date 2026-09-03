@@ -4,7 +4,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-03T00:36:32Z",
+  "recorded_at": "2026-09-03T05:47:44Z",
   "recorded_by": "tools/future/scar_reevaluator.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -1251,10 +1251,10 @@
    "tolerance_change_reopens": false
   },
   {
-   "class": "NOT_A_REFUTATION",
+   "class": "STRUCTURALLY_REFUTED",
    "died_at_threshold": "That sub-bit is dead because six families scored negative on Gaussian / synthetic activations.",
    "hypothesis_family": "synthetic_activation",
-   "method": "not_a_current_refutation",
+   "method": "non_fidelity",
    "organ": "routed_experts",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-001",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
@@ -1263,7 +1263,7 @@
   {
    "class": "STRUCTURALLY_REFUTED",
    "died_at_threshold": "That complete (or active) BPW predicts coherence: denser is worse, cheaper is worse, the number is the capability.",
-   "hypothesis_family": "complete_bpw_predicts_coherence_that_complete_or_active_bpw_predicts_coherence_denser_is_worse_cheaper_is_worse_the_number_is_the_capability",
+   "hypothesis_family": "bpw_is_not_capability",
    "method": "non_fidelity",
    "organ": "attention",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-002",
@@ -1273,7 +1273,7 @@
   {
    "class": "POSSIBLY_REOPENABLE",
    "died_at_threshold": "cosine bar 0.99",
-   "hypothesis_family": "sub_1_5_whole_model_dead_that_a_whole_model_artifact_at_complete_bpw_1_5_built_from_the_existing_gravity_families_hgravb01_r02_s01_rice_on_attention_is_coherent_on_qwen3_8_or_is_a_copyable_q30_template",
+   "hypothesis_family": "sub_1_5_whole_model_dead",
    "method": "fidelity_threshold",
    "organ": "attention",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-003",
@@ -1281,40 +1281,40 @@
    "tolerance_change_reopens": true
   },
   {
-   "class": "NOT_A_REFUTATION",
+   "class": "STRUCTURALLY_REFUTED",
    "died_at_threshold": "That routed experts share a basis / codebook / template, so a shared subspace, joint codebook, or same-index cross-layer tying compresses them together.",
    "hypothesis_family": "cross_expert_structure",
-   "method": "not_a_current_refutation",
+   "method": "non_fidelity",
    "organ": "gate",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-004",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
    "tolerance_change_reopens": false
   },
   {
-   "class": "NOT_A_REFUTATION",
+   "class": "STRUCTURALLY_REFUTED",
    "died_at_threshold": "That a fit-quality gate of observed/probed/worst_unit cosine can certify an artifact, including that 1.000000 means the weights were preserved.",
-   "hypothesis_family": "cosine_scale_invariance_that_a_fit_quality_gate_of_observed_probed_worst_unit_cosine_can_certify_an_artifact_including_that_1_000000_means_the_weights_were_preserved",
-   "method": "not_a_current_refutation",
+   "hypothesis_family": "cosine_scale_invariance",
+   "method": "non_fidelity",
    "organ": "unrecorded",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-005",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
    "tolerance_change_reopens": false
   },
   {
-   "class": "NOT_A_REFUTATION",
+   "class": "STRUCTURALLY_REFUTED",
    "died_at_threshold": "That X captured from a degraded / quantized / gibberish baseline is close enough for codec ranking (the 'Q30 fits calibrated on gibberish' campaign).",
-   "hypothesis_family": "q30_gibberish_baseline_that_x_captured_from_a_degraded_quantized_gibberish_baseline_is_close_enough_for_codec_ranking_the_q30_fits_calibrated_on_gibberish_campaign",
-   "method": "not_a_current_refutation",
+   "hypothesis_family": "q30_gibberish_baseline",
+   "method": "non_fidelity",
    "organ": "gate",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-006",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
    "tolerance_change_reopens": false
   },
   {
-   "class": "NOT_A_REFUTATION",
+   "class": "STRUCTURALLY_REFUTED",
    "died_at_threshold": "That a rank-r or full-dim codec scored on fewer captured rows than the fitted dimension is a score of the codec.",
-   "hypothesis_family": "undersampled_fits_that_a_rank_r_or_full_dim_codec_scored_on_fewer_captured_rows_than_the_fitted_dimension_is_a_score_of_the_codec",
-   "method": "not_a_current_refutation",
+   "hypothesis_family": "undersampled_fits",
+   "method": "non_fidelity",
    "organ": "down",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-007",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
@@ -1323,7 +1323,7 @@
   {
    "class": "STRUCTURALLY_REFUTED",
    "died_at_threshold": "That independent per-layer functional students compose across a full MoE model, and that raw activation cosine ~0.86\u20130.90 means the student preserved function.",
-   "hypothesis_family": "student_distillation_closed_that_independent_per_layer_functional_students_compose_across_a_full_moe_model_and_that_raw_activation_cosine_0_86_0_90_means_the_student_preserved_function",
+   "hypothesis_family": "router_distill",
    "method": "non_fidelity",
    "organ": "routed_experts",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-008",
@@ -1331,40 +1331,40 @@
    "tolerance_change_reopens": false
   },
   {
-   "class": "NOT_A_REFUTATION",
-   "died_at_threshold": "That organ cosine ~0.86\u20130.90, or the D23 0.8604 residual-identity bar, is a capability certificate / hard GO-NO-GO.",
-   "hypothesis_family": "nns_009_that_organ_cosine_0_86_0_90_or_the_d23_0_8604_residual_identity_bar_is_a_capability_certificate_hard_go_no_go",
-   "method": "not_a_current_refutation",
+   "class": "POSSIBLY_REOPENABLE",
+   "died_at_threshold": "cosine bar 0.907",
+   "hypothesis_family": "unrecorded_in_source",
+   "method": "fidelity_threshold",
    "organ": "attention",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-009",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
-   "tolerance_change_reopens": false
+   "tolerance_change_reopens": true
   },
   {
-   "class": "NOT_A_REFUTATION",
+   "class": "STRUCTURALLY_REFUTED",
    "died_at_threshold": "That matching the Gaussian rate-distortion function sqrt(2^-2R) proves a post-hoc codec is at the true Shannon floor.",
-   "hypothesis_family": "synthetic_activation",
-   "method": "not_a_current_refutation",
+   "hypothesis_family": "unrecorded_in_source",
+   "method": "non_fidelity",
    "organ": "down",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-010",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
    "tolerance_change_reopens": false
   },
   {
-   "class": "NOT_A_REFUTATION",
+   "class": "STRUCTURALLY_REFUTED",
    "died_at_threshold": "That the 5.9\u00d7 per-byte reconstruction penalty measured on Q80 mixed rice/low-rank is a property of those codecs, and that it transfers to Qwen3.8.",
-   "hypothesis_family": "low_rank",
-   "method": "not_a_current_refutation",
+   "hypothesis_family": "unrecorded_in_source",
+   "method": "non_fidelity",
    "organ": "mlp",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-011",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
    "tolerance_change_reopens": false
   },
   {
-   "class": "NOT_A_REFUTATION",
+   "class": "STRUCTURALLY_REFUTED",
    "died_at_threshold": "That the G3 shared-operator headline 'beats q3 held-out 0.371 vs 0.401 at 24% of the bytes' is a measured successor.",
-   "hypothesis_family": "nns_012_that_the_g3_shared_operator_headline_beats_q3_held_out_0_371_vs_0_401_at_24_of_the_bytes_is_a_measured_successor",
-   "method": "not_a_current_refutation",
+   "hypothesis_family": "unrecorded_in_source",
+   "method": "non_fidelity",
    "organ": "mlp",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-012",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
@@ -1373,7 +1373,7 @@
   {
    "class": "STRUCTURALLY_REFUTED",
    "died_at_threshold": "That a narrow shared / grouped SwiGLU operator (m < 17408) can replace Qwen3.8's MLP at q3 quality and materially fewer active bytes, including after honest methodology.",
-   "hypothesis_family": "nns_013_that_a_narrow_shared_grouped_swiglu_operator_m_17408_can_replace_qwen3_8s_mlp_at_q3_quality_and_materially_fewer_active_bytes_including_after_honest_methodology",
+   "hypothesis_family": "unrecorded_in_source",
    "method": "non_fidelity",
    "organ": "mlp",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-013",
@@ -1383,7 +1383,7 @@
   {
    "class": "STRUCTURALLY_REFUTED",
    "died_at_threshold": "That activation-aware functional low-rank (output-PCA / reduced rank on real post-SwiGLU X) beats q3 at matched bytes held-out.",
-   "hypothesis_family": "low_rank",
+   "hypothesis_family": "unrecorded_in_source",
    "method": "non_fidelity",
    "organ": "down",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-014",
@@ -1391,20 +1391,20 @@
    "tolerance_change_reopens": false
   },
   {
-   "class": "NOT_A_REFUTATION",
+   "class": "STRUCTURALLY_REFUTED",
    "died_at_threshold": "That low-rank + activation-aware correction of the residual beats q3's density-quality point (fewer active bytes at q3 quality, held-out).",
-   "hypothesis_family": "low_rank",
-   "method": "not_a_current_refutation",
+   "hypothesis_family": "unrecorded_in_source",
+   "method": "non_fidelity",
    "organ": "down",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-015",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
    "tolerance_change_reopens": false
   },
   {
-   "class": "NOT_A_REFUTATION",
+   "class": "STRUCTURALLY_REFUTED",
    "died_at_threshold": "That weight-space low-rank / TT / Kronecker factorisation of a single expert tensor is a density win at the coherent point (layers \u2265 1).",
-   "hypothesis_family": "kronecker",
-   "method": "not_a_current_refutation",
+   "hypothesis_family": "unrecorded_in_source",
+   "method": "non_fidelity",
    "organ": "down",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-016",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
@@ -1413,7 +1413,7 @@
   {
    "class": "STRUCTURALLY_REFUTED",
    "died_at_threshold": "That PQ/VQ coding of the RAW frozen weights is a route to one bit or below that preserves capability.",
-   "hypothesis_family": "nns_017_that_pq_vq_coding_of_the_raw_frozen_weights_is_a_route_to_one_bit_or_below_that_preserves_capability",
+   "hypothesis_family": "unrecorded_in_source",
    "method": "non_fidelity",
    "organ": "gate",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-017",
@@ -1423,7 +1423,7 @@
   {
    "class": "STRUCTURALLY_REFUTED",
    "died_at_threshold": "That a single codec family (all-binary, or all low-rank) wins on every Q80 expert organ inside the 1.5 budget.",
-   "hypothesis_family": "low_rank",
+   "hypothesis_family": "unrecorded_in_source",
    "method": "non_fidelity",
    "organ": "down",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-018",
@@ -1432,8 +1432,8 @@
   },
   {
    "class": "POSSIBLY_REOPENABLE",
-   "died_at_threshold": "cosine bar 0.99",
-   "hypothesis_family": "nns_019_that_existing_gravity_expert_families_hgravb01_hgravr02_hgravs01_or_the_q80_mixed_gate_up_down_bundle_transfer_to_attention_at_q4_equivalent_quality",
+   "died_at_threshold": "cosine bar 0.946",
+   "hypothesis_family": "unrecorded_in_source",
    "method": "fidelity_threshold",
    "organ": "attention",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-019",
@@ -1443,7 +1443,7 @@
   {
    "class": "STRUCTURALLY_REFUTED",
    "died_at_threshold": "That storage / complete_physical BPW is the BPW decode moves (active BPW), and that crushing routed experts is therefore the velocity lever.",
-   "hypothesis_family": "nns_020_that_storage_complete_physical_bpw_is_the_bpw_decode_moves_active_bpw_and_that_crushing_routed_experts_is_therefore_the_velocity_lever",
+   "hypothesis_family": "unrecorded_in_source",
    "method": "non_fidelity",
    "organ": "attention",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-020",
@@ -1453,7 +1453,7 @@
   {
    "class": "STRUCTURALLY_REFUTED",
    "died_at_threshold": "That lower storage BPW is faster per token (density is velocity) on mixed codecs whose reconstruction is not in-register.",
-   "hypothesis_family": "nns_021_that_lower_storage_bpw_is_faster_per_token_density_is_velocity_on_mixed_codecs_whose_reconstruction_is_not_in_register",
+   "hypothesis_family": "unrecorded_in_source",
    "method": "non_fidelity",
    "organ": "routed_experts",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-021",
@@ -1463,7 +1463,7 @@
   {
    "class": "STRUCTURALLY_REFUTED",
    "died_at_threshold": "That entropy coding of Lloyd-optimal PQ indices yields a 10\u201325% byte win, or that rANS on Qwen3.8 q3 symbols is an active-byte/TPS lever.",
-   "hypothesis_family": "nns_022_that_entropy_coding_of_lloyd_optimal_pq_indices_yields_a_10_25_byte_win_or_that_rans_on_qwen3_8_q3_symbols_is_an_active_byte_tps_lever",
+   "hypothesis_family": "unrecorded_in_source",
    "method": "non_fidelity",
    "organ": "unrecorded",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-022",
@@ -1473,7 +1473,7 @@
   {
    "class": "STRUCTURALLY_REFUTED",
    "died_at_threshold": "reconstruction_error bar 0.5",
-   "hypothesis_family": "cross_expert_structure",
+   "hypothesis_family": "unrecorded_in_source",
    "method": "non_fidelity",
    "organ": "routed_experts",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-023",
@@ -1483,7 +1483,7 @@
   {
    "class": "STRUCTURALLY_REFUTED",
    "died_at_threshold": "That procedural / generated parameters (shared templates, same-index cross-layer tying, generated expert bases) buy bits on mutually orthogonal experts.",
-   "hypothesis_family": "cross_expert_structure",
+   "hypothesis_family": "unrecorded_in_source",
    "method": "non_fidelity",
    "organ": "routed_experts",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-024",
@@ -1493,7 +1493,7 @@
   {
    "class": "STRUCTURALLY_REFUTED",
    "died_at_threshold": "That selection-policy search over which sub-1.2-bpw organs to replace can recover coherence, or that beating a constant-mean null is the replacement gate.",
-   "hypothesis_family": "nns_025_that_selection_policy_search_over_which_sub_1_2_bpw_organs_to_replace_can_recover_coherence_or_that_beating_a_constant_mean_null_is_the_replacement_gate",
+   "hypothesis_family": "unrecorded_in_source",
    "method": "non_fidelity",
    "organ": "down",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-025",
@@ -1503,7 +1503,7 @@
   {
    "class": "STRUCTURALLY_REFUTED",
    "died_at_threshold": "That low-rank factorization is cheaper than dense 1-bit at sub-1.5 bpw on a [768, 2048] expert organ.",
-   "hypothesis_family": "low_rank",
+   "hypothesis_family": "unrecorded_in_source",
    "method": "non_fidelity",
    "organ": "gate",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-026",
@@ -1511,10 +1511,10 @@
    "tolerance_change_reopens": false
   },
   {
-   "class": "NOT_A_REFUTATION",
+   "class": "STRUCTURALLY_REFUTED",
    "died_at_threshold": "That extrapolating a 4-layer teacher-forced residual probe across 48 layers is a GO, or that per-organ gating without expert-atomic enforcement produces a runnable hybrid.",
-   "hypothesis_family": "nns_027_that_extrapolating_a_4_layer_teacher_forced_residual_probe_across_48_layers_is_a_go_or_that_per_organ_gating_without_expert_atomic_enforcement_produces_a_runnable_hybrid",
-   "method": "not_a_current_refutation",
+   "hypothesis_family": "unrecorded_in_source",
+   "method": "non_fidelity",
    "organ": "routed_experts",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-027",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
@@ -1523,7 +1523,7 @@
   {
    "class": "STRUCTURALLY_REFUTED",
    "died_at_threshold": "That post-hoc scalar gain on a PQ artifact, row-norm-stratified codebooks (the 94% single-codeword premise), ternary vs VQ at matched rate, or 88-token routing-frequency allocation are live levers.",
-   "hypothesis_family": "nns_028_that_post_hoc_scalar_gain_on_a_pq_artifact_row_norm_stratified_codebooks_the_94_single_codeword_premise_ternary_vs_vq_at_matched_rate_or_88_token_routing_frequency_allocation_are_live_levers",
+   "hypothesis_family": "unrecorded_in_source",
    "method": "non_fidelity",
    "organ": "routed_experts",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-028",
@@ -1531,19 +1531,19 @@
    "tolerance_change_reopens": false
   },
   {
-   "class": "STRUCTURALLY_REFUTED",
+   "class": "POSSIBLY_REOPENABLE",
    "died_at_threshold": "That activation sparsity (~2\u00d7 MLP max) or uniform bit-descent below q3 is a clean path under the Qwen3.8 coherent floor.",
-   "hypothesis_family": "nns_029_that_activation_sparsity_2_mlp_max_or_uniform_bit_descent_below_q3_is_a_clean_path_under_the_qwen3_8_coherent_floor",
-   "method": "non_fidelity",
+   "hypothesis_family": "unrecorded_in_source",
+   "method": "fidelity_threshold",
    "organ": "mlp",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-029",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
-   "tolerance_change_reopens": false
+   "tolerance_change_reopens": true
   },
   {
    "class": "STRUCTURALLY_REFUTED",
    "died_at_threshold": "That a family which fails a residual-composition screen to end-to-end cosine \u2265 0.5 can still be a sub-1.5 static DSV4F body.",
-   "hypothesis_family": "nns_030_that_a_family_which_fails_a_residual_composition_screen_to_end_to_end_cosine_0_5_can_still_be_a_sub_1_5_static_dsv4f_body",
+   "hypothesis_family": "unrecorded_in_source",
    "method": "non_fidelity",
    "organ": "unrecorded",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-030",
@@ -1551,22 +1551,102 @@
    "tolerance_change_reopens": false
   },
   {
-   "class": "NOT_A_REFUTATION",
+   "class": "STRUCTURALLY_REFUTED",
    "died_at_threshold": "That routing-frequency allocation calibrated on ~88 tokens, or previous-token route-set prefetch, is a first-touch / allocation win.",
-   "hypothesis_family": "nns_031_that_routing_frequency_allocation_calibrated_on_88_tokens_or_previous_token_route_set_prefetch_is_a_first_touch_allocation_win",
-   "method": "not_a_current_refutation",
+   "hypothesis_family": "unrecorded_in_source",
+   "method": "non_fidelity",
    "organ": "routed_experts",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-031",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
    "tolerance_change_reopens": false
   },
   {
-   "class": "NOT_A_REFUTATION",
+   "class": "STRUCTURALLY_REFUTED",
    "died_at_threshold": "That a bounded low-bit Flash router study with one deterministic vector can establish source-equivalent top-k routing, or that router overlap alone qualifies a native representation.",
-   "hypothesis_family": "nns_032_that_a_bounded_low_bit_flash_router_study_with_one_deterministic_vector_can_establish_source_equivalent_top_k_routing_or_that_router_overlap_alone_qualifies_a_native_representation",
-   "method": "not_a_current_refutation",
+   "hypothesis_family": "unrecorded_in_source",
+   "method": "non_fidelity",
    "organ": "router",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-032",
+   "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+   "tolerance_change_reopens": false
+  },
+  {
+   "class": "STRUCTURALLY_REFUTED",
+   "died_at_threshold": "draft acceptance zero at position 0",
+   "hypothesis_family": "spec_decode",
+   "method": "non_fidelity",
+   "organ": "whole_model",
+   "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#QN-BINARY-AS-DRAFT",
+   "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+   "tolerance_change_reopens": false
+  },
+  {
+   "class": "STRUCTURALLY_REFUTED",
+   "died_at_threshold": "generation incoherent",
+   "hypothesis_family": "protected_islands_healing",
+   "method": "non_fidelity",
+   "organ": "down",
+   "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#QN-BINARY-HEALING",
+   "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+   "tolerance_change_reopens": false
+  },
+  {
+   "class": "STRUCTURALLY_REFUTED",
+   "died_at_threshold": "generation incoherent",
+   "hypothesis_family": "binary_quantization",
+   "method": "non_fidelity",
+   "organ": "down",
+   "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#QN-BINARY-INJURY",
+   "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+   "tolerance_change_reopens": false
+  },
+  {
+   "class": "STRUCTURALLY_REFUTED",
+   "died_at_threshold": "floor unchanged",
+   "hypothesis_family": "coordinate_transform",
+   "method": "non_fidelity",
+   "organ": "down",
+   "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#QN-COORDINATE-TRANSFORM",
+   "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+   "tolerance_change_reopens": false
+  },
+  {
+   "class": "STRUCTURALLY_REFUTED",
+   "died_at_threshold": "refuted before packing",
+   "hypothesis_family": "structural_elimination_heads",
+   "method": "non_fidelity",
+   "organ": "attention",
+   "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#QN-HEAD-REDUNDANCY",
+   "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+   "tolerance_change_reopens": false
+  },
+  {
+   "class": "POSSIBLY_REOPENABLE",
+   "died_at_threshold": "relative_l2 bar 0.4798",
+   "hypothesis_family": "low_rank",
+   "method": "fidelity_threshold",
+   "organ": "down",
+   "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#QN-LOWRANK-HEALING",
+   "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+   "tolerance_change_reopens": true
+  },
+  {
+   "class": "POSSIBLY_REOPENABLE",
+   "died_at_threshold": "held-out activation reconstruction fails; not coherent",
+   "hypothesis_family": "shared_basis",
+   "method": "fidelity_threshold",
+   "organ": "down",
+   "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#QN-SHARED-BASIS-DENSITY",
+   "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+   "tolerance_change_reopens": true
+  },
+  {
+   "class": "STRUCTURALLY_REFUTED",
+   "died_at_threshold": "incoherent and slower",
+   "hypothesis_family": "shared_k_hybrid",
+   "method": "non_fidelity",
+   "organ": "down",
+   "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#QN-SHARED-K-HYBRID",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
    "tolerance_change_reopens": false
   },
@@ -6934,15 +7014,15 @@
  "counts": {
   "by_class": {
    "METHOD_UNRECORDED": 15,
-   "NOT_A_REFUTATION": 22,
-   "POSSIBLY_REOPENABLE": 426,
-   "STRUCTURALLY_REFUTED": 228
+   "NOT_A_REFUTATION": 8,
+   "POSSIBLY_REOPENABLE": 430,
+   "STRUCTURALLY_REFUTED": 246
   },
   "n_method_unrecorded": 15,
-  "n_not_a_refutation": 22,
-  "n_possibly_reopenable": 426,
-  "n_scars": 691,
-  "n_structurally_refuted": 228
+  "n_not_a_refutation": 8,
+  "n_possibly_reopenable": 430,
+  "n_scars": 699,
+  "n_structurally_refuted": 246
  },
  "evidence_class": "STATIC_ONLY",
  "follow_on": {
@@ -6957,8 +7037,8 @@
   "transfer_test_id": "future.TRANSFER_TEST.LAW-COLD-CONTROL-BEAT-TRANSFER-SEED.Falcon-H1-7B-Instruct"
  },
  "gpu_authority": false,
- "head": "b35af1fa8886aa9d5903e3b9e943503c63cb001e",
- "n_scars_ingested": 691,
+ "head": "6ef2681614fadde7a45d002b5fc3feb108c81625",
+ "n_scars_ingested": 699,
  "nothing_relaunched": true,
  "nothing_relaunched_statement": "This module classified existing scars and ranked POSSIBLY_REOPENABLE ones by theoretical EBPW-cut rank, token_ns opportunity rank, and implementation cost rank. It did not relaunch, reschedule, admit, or run any candidate. The resident owning SUB2_EBPW decides.",
  "probe_tolerance": {
@@ -8320,18 +8400,18 @@
       "code_and_build_identity": {
        "binary_sha256_pin": "d34044cffae8f320",
        "dirty_source_label": "DIRTY_SOURCE_DIAGNOSTIC",
-       "git_head": "7bde0f0842b29b2bbcd03a8d4300f846c8895adf",
-       "git_head_short": "7bde0f084",
+       "git_head": "a6f0d42b2c4e712d881a9ec6d7ece46826a6a397",
+       "git_head_short": "a6f0d42b2",
        "source": "git rev-parse HEAD + RESIDENT_IDENTITY executable_hash pin"
       },
       "laws_scars_version": {
-       "digest": "ce1571dc754acb3ed2915e9c604d21bdab2e6e31b93eb46d933d1e6efbcab1cc",
+       "digest": "e642e0734c9d0c891e542202383e89970e38a5b3af945ea8281b8e5d60deeb31",
        "missing": [],
        "pins": {
         "receipts/future/CAMPAIGN_SCARS.json": "8b537f1017fb6cfb5dbc0d7c02b82dea65148be77a22f306b53c53f83b8cde3b",
-        "receipts/future/MLP_STRUCTURED_OPERATOR.json": "9d9f6f3fc0e91621ce749403932c81b4e4cc5165038d03f24391d98a5ee8caca",
+        "receipts/future/MLP_STRUCTURED_OPERATOR.json": "4114714d8fdaf310efae752697cb7aa41476584e5ea6c7733c2ab04ec2077aa6",
         "receipts/future/NEGATIVE_SCIENCE_INDEX.json": "0c50ec634ec7d53691a4539081710af422c3409a4e25c41097cb5282db794005",
-        "receipts/future/ODYSSEY2_LAW_STORE.json": "ce1b6130ffa83c7a33901fc80dafc4e200a40621cffa2d5bea704f30766e11e9"
+        "receipts/future/ODYSSEY2_LAW_STORE.json": "fbb4d43a92028fd5262ebaac78e3e83a74737573e035a28629fb3bb1c255afb9"
        },
        "rule": "an experiment is judged against a named laws/scars version; a later scar does not silently rewrite an earlier verdict"
       },
@@ -8422,18 +8502,18 @@
       "code_and_build_identity": {
        "binary_sha256_pin": "d34044cffae8f320",
        "dirty_source_label": "DIRTY_SOURCE_DIAGNOSTIC",
-       "git_head": "7bde0f0842b29b2bbcd03a8d4300f846c8895adf",
-       "git_head_short": "7bde0f084",
+       "git_head": "a6f0d42b2c4e712d881a9ec6d7ece46826a6a397",
+       "git_head_short": "a6f0d42b2",
        "source": "git rev-parse HEAD + RESIDENT_IDENTITY executable_hash pin"
       },
       "laws_scars_version": {
-       "digest": "ce1571dc754acb3ed2915e9c604d21bdab2e6e31b93eb46d933d1e6efbcab1cc",
+       "digest": "e642e0734c9d0c891e542202383e89970e38a5b3af945ea8281b8e5d60deeb31",
        "missing": [],
        "pins": {
         "receipts/future/CAMPAIGN_SCARS.json": "8b537f1017fb6cfb5dbc0d7c02b82dea65148be77a22f306b53c53f83b8cde3b",
-        "receipts/future/MLP_STRUCTURED_OPERATOR.json": "9d9f6f3fc0e91621ce749403932c81b4e4cc5165038d03f24391d98a5ee8caca",
+        "receipts/future/MLP_STRUCTURED_OPERATOR.json": "4114714d8fdaf310efae752697cb7aa41476584e5ea6c7733c2ab04ec2077aa6",
         "receipts/future/NEGATIVE_SCIENCE_INDEX.json": "0c50ec634ec7d53691a4539081710af422c3409a4e25c41097cb5282db794005",
-        "receipts/future/ODYSSEY2_LAW_STORE.json": "ce1b6130ffa83c7a33901fc80dafc4e200a40621cffa2d5bea704f30766e11e9"
+        "receipts/future/ODYSSEY2_LAW_STORE.json": "fbb4d43a92028fd5262ebaac78e3e83a74737573e035a28629fb3bb1c255afb9"
        },
        "rule": "an experiment is judged against a named laws/scars version; a later scar does not silently rewrite an earlier verdict"
       },
@@ -8524,18 +8604,18 @@
       "code_and_build_identity": {
        "binary_sha256_pin": "d34044cffae8f320",
        "dirty_source_label": "DIRTY_SOURCE_DIAGNOSTIC",
-       "git_head": "7bde0f0842b29b2bbcd03a8d4300f846c8895adf",
-       "git_head_short": "7bde0f084",
+       "git_head": "a6f0d42b2c4e712d881a9ec6d7ece46826a6a397",
+       "git_head_short": "a6f0d42b2",
        "source": "git rev-parse HEAD + RESIDENT_IDENTITY executable_hash pin"
       },
       "laws_scars_version": {
-       "digest": "ce1571dc754acb3ed2915e9c604d21bdab2e6e31b93eb46d933d1e6efbcab1cc",
+       "digest": "e642e0734c9d0c891e542202383e89970e38a5b3af945ea8281b8e5d60deeb31",
        "missing": [],
        "pins": {
         "receipts/future/CAMPAIGN_SCARS.json": "8b537f1017fb6cfb5dbc0d7c02b82dea65148be77a22f306b53c53f83b8cde3b",
-        "receipts/future/MLP_STRUCTURED_OPERATOR.json": "9d9f6f3fc0e91621ce749403932c81b4e4cc5165038d03f24391d98a5ee8caca",
+        "receipts/future/MLP_STRUCTURED_OPERATOR.json": "4114714d8fdaf310efae752697cb7aa41476584e5ea6c7733c2ab04ec2077aa6",
         "receipts/future/NEGATIVE_SCIENCE_INDEX.json": "0c50ec634ec7d53691a4539081710af422c3409a4e25c41097cb5282db794005",
-        "receipts/future/ODYSSEY2_LAW_STORE.json": "ce1b6130ffa83c7a33901fc80dafc4e200a40621cffa2d5bea704f30766e11e9"
+        "receipts/future/ODYSSEY2_LAW_STORE.json": "fbb4d43a92028fd5262ebaac78e3e83a74737573e035a28629fb3bb1c255afb9"
        },
        "rule": "an experiment is judged against a named laws/scars version; a later scar does not silently rewrite an earlier verdict"
       },
@@ -8627,18 +8707,18 @@
       "code_and_build_identity": {
        "binary_sha256_pin": "d34044cffae8f320",
        "dirty_source_label": "DIRTY_SOURCE_DIAGNOSTIC",
-       "git_head": "7bde0f0842b29b2bbcd03a8d4300f846c8895adf",
-       "git_head_short": "7bde0f084",
+       "git_head": "a6f0d42b2c4e712d881a9ec6d7ece46826a6a397",
+       "git_head_short": "a6f0d42b2",
        "source": "git rev-parse HEAD + RESIDENT_IDENTITY executable_hash pin"
       },
       "laws_scars_version": {
-       "digest": "ce1571dc754acb3ed2915e9c604d21bdab2e6e31b93eb46d933d1e6efbcab1cc",
+       "digest": "e642e0734c9d0c891e542202383e89970e38a5b3af945ea8281b8e5d60deeb31",
        "missing": [],
        "pins": {
         "receipts/future/CAMPAIGN_SCARS.json": "8b537f1017fb6cfb5dbc0d7c02b82dea65148be77a22f306b53c53f83b8cde3b",
-        "receipts/future/MLP_STRUCTURED_OPERATOR.json": "9d9f6f3fc0e91621ce749403932c81b4e4cc5165038d03f24391d98a5ee8caca",
+        "receipts/future/MLP_STRUCTURED_OPERATOR.json": "4114714d8fdaf310efae752697cb7aa41476584e5ea6c7733c2ab04ec2077aa6",
         "receipts/future/NEGATIVE_SCIENCE_INDEX.json": "0c50ec634ec7d53691a4539081710af422c3409a4e25c41097cb5282db794005",
-        "receipts/future/ODYSSEY2_LAW_STORE.json": "ce1b6130ffa83c7a33901fc80dafc4e200a40621cffa2d5bea704f30766e11e9"
+        "receipts/future/ODYSSEY2_LAW_STORE.json": "fbb4d43a92028fd5262ebaac78e3e83a74737573e035a28629fb3bb1c255afb9"
        },
        "rule": "an experiment is judged against a named laws/scars version; a later scar does not silently rewrite an earlier verdict"
       },
@@ -8729,18 +8809,18 @@
       "code_and_build_identity": {
        "binary_sha256_pin": "d34044cffae8f320",
        "dirty_source_label": "DIRTY_SOURCE_DIAGNOSTIC",
-       "git_head": "7bde0f0842b29b2bbcd03a8d4300f846c8895adf",
-       "git_head_short": "7bde0f084",
+       "git_head": "a6f0d42b2c4e712d881a9ec6d7ece46826a6a397",
+       "git_head_short": "a6f0d42b2",
        "source": "git rev-parse HEAD + RESIDENT_IDENTITY executable_hash pin"
       },
       "laws_scars_version": {
-       "digest": "ce1571dc754acb3ed2915e9c604d21bdab2e6e31b93eb46d933d1e6efbcab1cc",
+       "digest": "e642e0734c9d0c891e542202383e89970e38a5b3af945ea8281b8e5d60deeb31",
        "missing": [],
        "pins": {
         "receipts/future/CAMPAIGN_SCARS.json": "8b537f1017fb6cfb5dbc0d7c02b82dea65148be77a22f306b53c53f83b8cde3b",
-        "receipts/future/MLP_STRUCTURED_OPERATOR.json": "9d9f6f3fc0e91621ce749403932c81b4e4cc5165038d03f24391d98a5ee8caca",
+        "receipts/future/MLP_STRUCTURED_OPERATOR.json": "4114714d8fdaf310efae752697cb7aa41476584e5ea6c7733c2ab04ec2077aa6",
         "receipts/future/NEGATIVE_SCIENCE_INDEX.json": "0c50ec634ec7d53691a4539081710af422c3409a4e25c41097cb5282db794005",
-        "receipts/future/ODYSSEY2_LAW_STORE.json": "ce1b6130ffa83c7a33901fc80dafc4e200a40621cffa2d5bea704f30766e11e9"
+        "receipts/future/ODYSSEY2_LAW_STORE.json": "fbb4d43a92028fd5262ebaac78e3e83a74737573e035a28629fb3bb1c255afb9"
        },
        "rule": "an experiment is judged against a named laws/scars version; a later scar does not silently rewrite an earlier verdict"
       },
@@ -8818,35 +8898,6 @@
    {
     "flag": "OUT_OF_SCOPE",
     "reason": "scar matches family but not measured scope; retry is not banned",
-    "scar_id": "NNS-004",
-    "scope": {
-     "architecture_family": "",
-     "backend": "",
-     "condition": "weight-space and row-normalized pairwise cosine; shared template energy",
-     "excluded_models": [
-      "deepseek-v4-flash"
-     ],
-     "lattice": "MODEL_SPECIFIC",
-     "machine": "",
-     "machine_tier": "",
-     "model_tier": "",
-     "models": [
-      "qwen3-235b-a22b",
-      "qwen3-80b",
-      "gpt-oss-120b"
-     ],
-     "organ_tier": "",
-     "organs": [
-      "gate",
-      "up"
-     ],
-     "representation": ""
-    },
-    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
-   },
-   {
-    "flag": "OUT_OF_SCOPE",
-    "reason": "scar matches family but not measured scope; retry is not banned",
     "scar_id": "cross_expert_and_cross_layer_tying",
     "scope": {
      "architecture_family": "",
@@ -8890,7 +8941,7 @@
    }
   ]
  },
- "seal_sha256": "5fc3460b1897f03429f1e4470bcd57fd937ac10b48f8ae69fc10907b9d8987e9",
+ "seal_sha256": "49efc694787c48241e09aeea7e00741945cd4dffff403d592efa27b2a1892944",
  "top_reopenable_families": [
   {
    "died_at": {
@@ -9021,7 +9072,7 @@
     "qwen3-30b-a3b",
     "qwen3-80b"
    ],
-   "n_scars": 49,
+   "n_scars": 50,
    "organs": [
     "down",
     "gate",
@@ -9162,13 +9213,13 @@
    "models": [
     "qwen3.8-27b"
    ],
-   "n_scars": 1,
+   "n_scars": 2,
    "organs": [
     "down"
    ],
    "ranking_is_not_a_relaunch": true,
-   "representative_scar_id": "tools/headless/negative_science.py#QN-SHARED-BASIS-DENSITY",
-   "representative_source_path": "tools/headless/negative_science.py",
+   "representative_scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#QN-SHARED-BASIS-DENSITY",
+   "representative_source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
    "theoretical_ebpw_reduction": "shared_basis",
    "theoretical_ebpw_reduction_rank": 3,
    "token_ns_opportunity": "HIGH",
@@ -9350,6 +9401,37 @@
    "representative_source_path": "workspace/campaign/records/ascension-sandbox/physical/qwen-family/dual-gravity/ASCENSION_NEGATIVE_SCIENCE.jsonl",
    "theoretical_ebpw_reduction": "uniform_q4",
    "theoretical_ebpw_reduction_rank": 1,
+   "token_ns_opportunity": "HIGH",
+   "token_ns_opportunity_rank": 5
+  },
+  {
+   "died_at": {
+    "bar": null,
+    "kind": "recorded_claim",
+    "measured": null,
+    "named_on_scar": false,
+    "source": "scar_fields",
+    "summary": "That activation sparsity (~2\u00d7 MLP max) or uniform bit-descent below q3 is a clean path under the Qwen3.8 coherent floor."
+   },
+   "died_at_threshold": "That activation sparsity (~2\u00d7 MLP max) or uniform bit-descent below q3 is a clean path under the Qwen3.8 coherent floor.",
+   "hypothesis_family": "unrecorded_in_source",
+   "implementation_cost": "UNTESTED",
+   "implementation_cost_rank": 0,
+   "models": [
+    "qwen3.8-27b",
+    "glm-5.2",
+    "qwen3-80b"
+   ],
+   "n_scars": 3,
+   "organs": [
+    "mlp",
+    "attention"
+   ],
+   "ranking_is_not_a_relaunch": true,
+   "representative_scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-029",
+   "representative_source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+   "theoretical_ebpw_reduction": "UNTESTED",
+   "theoretical_ebpw_reduction_rank": 0,
    "token_ns_opportunity": "HIGH",
    "token_ns_opportunity_rank": 5
   },
@@ -9559,35 +9641,7 @@
     "summary": "cosine bar 0.99"
    },
    "died_at_threshold": "cosine bar 0.99",
-   "hypothesis_family": "nns_019_that_existing_gravity_expert_families_hgravb01_hgravr02_hgravs01_or_the_q80_mixed_gate_up_down_bundle_transfer_to_attention_at_q4_equivalent_quality",
-   "implementation_cost": "UNTESTED",
-   "implementation_cost_rank": 0,
-   "models": [
-    "qwen3-80b"
-   ],
-   "n_scars": 1,
-   "organs": [
-    "attention"
-   ],
-   "ranking_is_not_a_relaunch": true,
-   "representative_scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-019",
-   "representative_source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
-   "theoretical_ebpw_reduction": "UNTESTED",
-   "theoretical_ebpw_reduction_rank": 0,
-   "token_ns_opportunity": "MEDIUM",
-   "token_ns_opportunity_rank": 3
-  },
-  {
-   "died_at": {
-    "bar": 0.99,
-    "kind": "cosine",
-    "measured": null,
-    "named_on_scar": true,
-    "source": "scar_text",
-    "summary": "cosine bar 0.99"
-   },
-   "died_at_threshold": "cosine bar 0.99",
-   "hypothesis_family": "sub_1_5_whole_model_dead_that_a_whole_model_artifact_at_complete_bpw_1_5_built_from_the_existing_gravity_families_hgravb01_r02_s01_rice_on_attention_is_coherent_on_qwen3_8_or_is_a_copyable_q30_template",
+   "hypothesis_family": "sub_1_5_whole_model_dead",
    "implementation_cost": "UNTESTED",
    "implementation_cost_rank": 0,
    "models": [

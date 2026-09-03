@@ -35,7 +35,7 @@ from lab.receipts import seal as seal_receipt
 from lab.receipts import verify as verify_receipt
 
 # The operators these tests classify moved from tools/condense to
-# lab/operators when the process engine was cut over to lab authority.
+# research/lab/operators when the process engine was cut over to lab authority.
 # tools/condense holds two modules now; the registry classifies the 53 that
 # actually exist, so this is where the Track V contract has to look.
 CONDENSE = Path(__file__).resolve().parents[3] / "lab" / "operators"
@@ -534,7 +534,7 @@ def test_lifecycle_verb_is_known_phase(verb: str) -> None:
 
 
 def test_operator_registry_covers_every_top_level_module() -> None:
-    """Every lab/operators/*.py module is classified (the Track V contract)."""
+    """Every research/lab/operators/*.py module is classified (the Track V contract)."""
     root = CONDENSE
     repo = Path(__file__).resolve().parents[3]
     on_disk = sorted(p.stem for p in root.glob("*.py") if p.stem != "__init__")

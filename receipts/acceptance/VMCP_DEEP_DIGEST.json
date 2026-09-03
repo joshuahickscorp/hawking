@@ -28,12 +28,12 @@
       "ok": true
     },
     {
-      "detail": "7f804e11a069c78ac81a873892e60240843d572e550f0ecf8616b09d00963207",
+      "detail": "c19eab0741dc6cb9809df38de1ccf197690dc679df58c2256d28f3e25948bea1",
       "id": "observe_file_called",
       "ok": true
     },
     {
-      "detail": "1baaff58edfe92bfc69407465d8c232c80e91a9ab2db88b86f14af6116d64bb8",
+      "detail": "dce21c86bd393741c84ee7ac44ff7c46c81fff11fb0e03d6ec6afe031f772c98",
       "id": "digest_of_canonical_sensory_state",
       "ok": true
     },
@@ -58,34 +58,34 @@
   ],
   "criterion": {
     "end_line": 7738,
-    "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "file": "/Users/scammermike/Downloads/hawking/docs/roadmap-lineage/H-ROADMAP.superseded-2026-09-02.md",
     "quoted": "## E.2 State lattice schemas\n\n```text\nDEEP_DIGEST\n    digest of canonical sensory/execution state\n\nASSET_LATTICE\n    asset_id, source, sha256, type, size, decoded, ownership, uses\n\nDECODE_LATTICE\n    input_hash, transform, output_hash, confidence, recovered artifacts\n\nENTITY_GENOME\n    entity_id, name, kind, evidence, confidence, parent/children\n\nRENDER_GENOME\n    node, text, image, font, color, background, border, radius, shadow, transform, layout\n\nSPATIAL_GENOME\n    object, dimensions, faces, normals, UVs, materials, parts, evidence, origin\n\nREPAIR_VECTOR\n    residual, cause, next_action\n\nDIRECTOR_STATE\n    phase, target, residuals, blocked_gates, next_actions, deep_digest\n\nPERFORMANCE_LEDGER\n    per-act latency, tool p95, build/render/verify costs\n\nTRUTH_LEDGER\n    claims, evidence, counterevidence, confidence, blockers, no_op_detected\n```",
     "start_line": 7706,
     "weakened": false
   },
   "criterion_weakened": false,
-  "elapsed_ms": 25.35,
+  "elapsed_ms": 50.128,
   "evidence_tier": "FUNCTIONAL_SIM",
   "gate": "VMCP_DEEP_DIGEST",
-  "generated_at": "2026-09-02T23:16:06Z",
+  "generated_at": "2026-09-03T05:34:31Z",
   "gpu_authority": false,
   "invoked_symbols": [
     {
-      "elapsed_ms": 0.21,
+      "elapsed_ms": 0.602,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "tools.future.vmcp.see"
     },
     {
-      "elapsed_ms": 20.16,
+      "elapsed_ms": 39.263,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "tools.headless.hcli_vmcp_integration.observe_file"
     },
     {
-      "elapsed_ms": 0.009,
+      "elapsed_ms": 0.018,
       "error": null,
       "kind": "call",
       "raised": false,
@@ -113,7 +113,7 @@
       "symbol": "visionmcp.worldir.canonical.content_digest"
     },
     {
-      "elapsed_ms": 0.723,
+      "elapsed_ms": 1.27,
       "error": null,
       "kind": "call",
       "raised": false,
@@ -121,10 +121,10 @@
     }
   ],
   "measured": {
-    "capture_id": "7f804e11a069c78ac81a873892e60240843d572e550f0ecf8616b09d00963207",
+    "capture_id": "c19eab0741dc6cb9809df38de1ccf197690dc679df58c2256d28f3e25948bea1",
     "content_digest": "c2985c5ba6f7d2a55e768f92490ca09388e95bc4cccb9fdf11b15f4d42f93e73",
     "file_sha256": "5981a04b1cf8f91257452311e14b8aacc90e911e1ba84a1ca4c8122263ed23b1",
-    "sensory_digest": "1baaff58edfe92bfc69407465d8c232c80e91a9ab2db88b86f14af6116d64bb8"
+    "sensory_digest": "dce21c86bd393741c84ee7ac44ff7c46c81fff11fb0e03d6ec6afe031f772c98"
   },
   "output": {
     "observe_status": "COMPLETE",
@@ -145,7 +145,7 @@
     "see": {
       "act": "see",
       "artifacts": [
-        "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-digest-66ricfu2/state.txt"
+        "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-digest-9hopmywc/state.txt"
       ],
       "classification": {
         "container": "text",
@@ -154,7 +154,7 @@
         "magic": "63616e6f6e696361"
       },
       "container": "text",
-      "deep_digest": "5f682296ee979549a68d19144fb3eecade7495c0cf88b06a648225ddccd2061f",
+      "deep_digest": "2067ef564cad70e711d7182de7014383668773203d5362c15130f45dadfdc5b7",
       "empty_success": false,
       "evidence": [
         {
@@ -166,7 +166,7 @@
           },
           "hashed_bytes": 27,
           "mode": "0o100644",
-          "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-digest-66ricfu2/state.txt",
+          "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-digest-9hopmywc/state.txt",
           "present": true,
           "sha256": "5981a04b1cf8f91257452311e14b8aacc90e911e1ba84a1ca4c8122263ed23b1",
           "size": 27
@@ -191,12 +191,12 @@
       "next_actions": [],
       "note": "stdlib magic/header classification of a real local file; not CaptureBus, not Ghidra, not a GPU measurement",
       "organ": "file",
-      "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-digest-66ricfu2/state.txt",
+      "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-digest-9hopmywc/state.txt",
       "present": true,
       "residuals": [],
       "sha256": "5981a04b1cf8f91257452311e14b8aacc90e911e1ba84a1ca4c8122263ed23b1",
       "size": 27,
-      "started_at": "2026-09-02T23:16:06Z",
+      "started_at": "2026-09-03T05:34:31Z",
       "status": "CONNECTED",
       "strings": [
         "canonical-sensory-state-v1"

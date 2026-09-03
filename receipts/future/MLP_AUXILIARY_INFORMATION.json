@@ -139,7 +139,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T08:28:16Z",
+  "recorded_at": "2026-09-03T05:51:43Z",
   "recorded_by": "tools/future/mlp_auxiliary_information.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -475,7 +475,7 @@
      "reopen_condition": "Sparsity: a Doctor-holding skip pattern that does not compound over 64 layers. Bit-descent: a codec that actually hits the Shannon bound AND a generate gate at that distortion. Neither is a retry of q2 or of unstructured activation skip.",
      "scar_id": "NNS-029",
      "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
-     "surface": "qwen3.8-27b MLP (sparsity); whole artifact (bit-descent)",
+     "surface": "as recorded in NOETIC_NEGATIVE_SCIENCE",
      "this_specimen": "qwen3.8-27b sealed-3.14 affine-Q2 MLP scale/bias arrays"
     }
    ],
@@ -508,7 +508,7 @@
      "reopen_condition": "L>=1: never at the coherent point. L0: already beating the incumbent \u2014 build the organ-and-layer-specific codec. On a new parent, check the Van Loan spectrum before assuming depth behaviour.",
      "scar_id": "NNS-016",
      "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
-     "surface": "qwen3.8-27b (weight-space SVD); qwen3-235b-a22b:F1 (Kronecker) gate/down; L0 is the exception",
+     "surface": "as recorded in NOETIC_NEGATIVE_SCIENCE",
      "this_specimen": "qwen3.8-27b sealed-3.14 affine-Q2 MLP scale/bias arrays"
     }
    ],
@@ -855,7 +855,7 @@
   "reconstruction": "w = float(q)*scale + bias, q unsigned in {0,1,2,3}"
  },
  "schema": "hawking.future.mlp_auxiliary_information.v1",
- "seal_sha256": "5d17cd506d3f6f5c37b2133c0ae187365bf7c3aa42da4a3ebbc37253d04dc235",
+ "seal_sha256": "2a4eee6505ba85849bf8ef7a17b70bef52f5518b63a99af304180781f205813c",
  "version": 1,
  "what_this_does_not_prove": [
   "capability of u8 aux or of a larger group size (no generate gate)",

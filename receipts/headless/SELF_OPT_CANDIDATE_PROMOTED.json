@@ -4,11 +4,11 @@
   "root_cause": {
     "id": "G021_SCRATCH_IMPORT_SHADOW",
     "unaccounted_overlap_2": "Baseline observed_overlap_ctor=2 with controller_has_h1_wiring=false was not an unaccounted RuntimePool load. observed_overlap on the pool is set only from the constructor argument (runtime.py stores None when the arg is None; the workspace fallback fills overlap_admit_cap, not self.observed_overlap). ctor=2 therefore means the executed Controller passed load_observed_overlap(workspace). That is HEAD's ensure_runtime_pool (controller.py:611). The wiring marker is read from the scratch file the parent just wrote, which had H1 stripped. Two different objects: disk variant vs imported module.",
-    "why_the_imported_module_was_HEAD": "run_controller_admit_probe called _install_fake_pool_patches, which called ensure_hcli_path(), which inserted the invoking worktree (Path(__file__).parents[2]) at sys.path[0]. from hcli.runtime import RuntimePool then bound that tree's package. hcli stayed in sys.modules, so from hcli.controller import Controller ignored the scratch copy even though PYTHONPATH and a later sys.path.insert(0, scratch) named it. The FakeBackend patch therefore attached to whichever RuntimePool the first import found \u2014 the worktree when hcli/ was on disk, the scratch copy when hcli/ was a sparse hole.",
-    "why_the_lane_promoted": "The lane worktree had hcli/ absent (sparse hole, materialized only via git archive into scratch). ensure_hcli_path inserted a directory that did not contain hcli/, so import fell through to scratch. Variants ran. Synthetic original (no workspace, no observed_overlap) admitted 1; H1 admitted 2. stored/loaded on the isolate were null because original does not pass workspace and HCLI_WORKSPACE is the empty isolate. That 1\u21922 is a real delta against a constructor HEAD no longer has.",
+    "why_the_imported_module_was_HEAD": "run_controller_admit_probe called _install_fake_pool_patches, which called ensure_hcli_path(), which inserted the invoking worktree (Path(__file__).parents[2]) at sys.path[0]. from hcli.runtime import RuntimePool then bound that tree's package. hcli stayed in sys.modules, so from hcli.controller import Controller ignored the scratch copy even though PYTHONPATH and a later sys.path.insert(0, scratch) named it. The FakeBackend patch therefore attached to whichever RuntimePool the first import found — the worktree when hcli/ was on disk, the scratch copy when hcli/ was a sparse hole.",
+    "why_the_lane_promoted": "The lane worktree had hcli/ absent (sparse hole, materialized only via git archive into scratch). ensure_hcli_path inserted a directory that did not contain hcli/, so import fell through to scratch. Variants ran. Synthetic original (no workspace, no observed_overlap) admitted 1; H1 admitted 2. stored/loaded on the isolate were null because original does not pass workspace and HCLI_WORKSPACE is the empty isolate. That 1→2 is a real delta against a constructor HEAD no longer has.",
     "why_main_checkout_refused": "The main checkout had hcli/ present. Both arms imported HEAD. HEAD already passes observed_overlap=load_observed_overlap(self.workspace_root) at controller.py:611 and RuntimePool already falls back to load_observed_overlap(self.workspace) at runtime.py:637 when the constructor arg is None. Both arms admitted 2. REFUSED was the correct tree-level verdict, reached for the wrong reason: the baseline arm was not a baseline.",
     "refuted": {
-      "editable_install_meta_path_finder": "Direct test: git archive HEAD hcli to a temp dir, purge sys.modules of hcli*, sys.path.insert(0, scratch), import hcli \u2014 resolves to the scratch copy. The finder does not win. The divergence is a sys.path directory that actually contains hcli/, inserted in front of scratch by ensure_hcli_path."
+      "editable_install_meta_path_finder": "Direct test: git archive HEAD hcli to a temp dir, purge sys.modules of hcli*, sys.path.insert(0, scratch), import hcli — resolves to the scratch copy. The finder does not win. The divergence is a sys.path directory that actually contains hcli/, inserted in front of scratch by ensure_hcli_path."
     },
     "h1_at_head": true,
     "h1_observed_overlap_arg_redundant_with_runtime_fallback": "Once workspace is the Controller workspace, RuntimePool._overlap_admit_cap loads the high-water file itself. Passing observed_overlap=load_observed_overlap(...) changes where the value is named, not whether it is used. HEAD already passes workspace=self.workspace_root, so the extra kwarg is redundant at HEAD.",
@@ -35,8 +35,8 @@
         true
       ],
       "baseline_controller_file": [
-        "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/controller.py",
-        "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/controller.py"
+        "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/controller.py",
+        "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/controller.py"
       ],
       "baseline_stored": [
         2,
@@ -104,7 +104,7 @@
     "pool": "RuntimePool._admit / RuntimePool.complete",
     "backend": "FakeBackend (no live llama-server, no second 27B)",
     "score": "admitted_n with high-water overlap=2 stored on the Controller workspace",
-    "why_not_tok_s": "llama-server on :52484 is not required for this proof. Prior iteration-2 remasurement already refused a tok/s win (24.063 vs 24.010, spread 0.052). Scoring tok/s of FakeBackend would let a NO-OP win on noise \u2014 the original defect.",
+    "why_not_tok_s": "llama-server on :52484 is not required for this proof. Prior iteration-2 remasurement already refused a tok/s win (24.063 vs 24.010, spread 0.052). Scoring tok/s of FakeBackend would let a NO-OP win on noise — the original defect.",
     "does_not_call": [
       "fan_completions",
       "llama_completion as the gated measurement",
@@ -112,17 +112,17 @@
     ]
   },
   "materialize": {
-    "dest": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha",
+    "dest": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca",
     "source": "git archive HEAD hcli",
     "worktree_hcli_present": true,
-    "controller_sha256": "707d1417d3b611c7c7556cd40bba6cb1c04adc67d03458f10957b08fd9ee28e1",
+    "controller_sha256": "87a5d5803047c521269e940aeac29f327836d4567bf7028896ec8019e6535bec",
     "verified_against": "HEAD"
   },
   "variants": {
-    "original_sha256": "9ec3547b758ede65f81183ca08cd59b9d324e44d93642dcf12ed8119919e30c5",
-    "h1_sha256": "707d1417d3b611c7c7556cd40bba6cb1c04adc67d03458f10957b08fd9ee28e1",
-    "noop_sha256": "0943e9d1505a0ec409212db8cd98821a43d14be22b47b690ed60afe5ceb54c44",
-    "bad_sha256": "afa4be95f08b22331b01b003166211192059db6f673d16ec3532752710c49a0e",
+    "original_sha256": "bb4da1634d348f37744028f813866cb88d783f0905838f96d0dbd1bc270359a9",
+    "h1_sha256": "87a5d5803047c521269e940aeac29f327836d4567bf7028896ec8019e6535bec",
+    "noop_sha256": "ee8aeeaf1124040edd3ca81a5c457530d54832016216230454ae020091a16002",
+    "bad_sha256": "901aac3d3e04809b1b370c42cb5e50d74e4e698b8dbabc4e762cdf28195713d3",
     "h1_equals_head": true,
     "noop_equals_original": false,
     "bad_equals_original": false
@@ -187,8 +187,8 @@
       "wiring_test": {
         "ok": false,
         "exit_code": 1,
-        "output_tail": "ntime import RuntimePool, load_observed_overlap' in 'from __future__ import annotations\\n\\nimport json\\nimport os\\nimport re\\nimport time\\nimport urllib.error\\nimport url...\\n\\n        self._shutdown = True\\n\\n        self._emit(\\n            \"session_stopped\",\\n            {},\\n        )\\n'\n=========================== short test summary info ============================\nFAILED ../../../../../../../var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/tools/headless/test_h1_wiring_evidence.py::test_h1_controller_wires_observed_overlap_into_runtimepool\n1 failed in 0.00s\n\n",
-        "test_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/tools/headless/test_h1_wiring_evidence.py",
+        "output_tail": "ntime import RuntimePool, load_observed_overlap' in 'from __future__ import annotations\\n\\nimport inspect\\nimport json\\nimport os\\nimport re\\nimport subprocess\\nimport ti...\\n\\n        self._shutdown = True\\n\\n        self._emit(\\n            \"session_stopped\",\\n            {},\\n        )\\n'\n=========================== short test summary info ============================\nFAILED ../../../../../../../var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/tools/headless/test_h1_wiring_evidence.py::test_h1_controller_wires_observed_overlap_into_runtimepool\n1 failed in 0.00s\n\n",
+        "test_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/tools/headless/test_h1_wiring_evidence.py",
         "wiring_present": false
       }
     },
@@ -251,8 +251,8 @@
       "wiring_test": {
         "ok": false,
         "exit_code": 1,
-        "output_tail": "ntime import RuntimePool, load_observed_overlap' in 'from __future__ import annotations\\n\\nimport json\\nimport os\\nimport re\\nimport time\\nimport urllib.error\\nimport url...\\n\\n        self._shutdown = True\\n\\n        self._emit(\\n            \"session_stopped\",\\n            {},\\n        )\\n'\n=========================== short test summary info ============================\nFAILED ../../../../../../../var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/tools/headless/test_h1_wiring_evidence.py::test_h1_controller_wires_observed_overlap_into_runtimepool\n1 failed in 0.00s\n\n",
-        "test_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/tools/headless/test_h1_wiring_evidence.py",
+        "output_tail": "ntime import RuntimePool, load_observed_overlap' in 'from __future__ import annotations\\n\\nimport inspect\\nimport json\\nimport os\\nimport re\\nimport subprocess\\nimport ti...\\n\\n        self._shutdown = True\\n\\n        self._emit(\\n            \"session_stopped\",\\n            {},\\n        )\\n'\n=========================== short test summary info ============================\nFAILED ../../../../../../../var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/tools/headless/test_h1_wiring_evidence.py::test_h1_controller_wires_observed_overlap_into_runtimepool\n1 failed in 0.00s\n\n",
+        "test_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/tools/headless/test_h1_wiring_evidence.py",
         "wiring_present": false
       }
     },
@@ -429,7 +429,7 @@
       "ok": true,
       "exit_code": 0,
       "output_tail": ".                                                                        [100%]\n1 passed in 0.00s\n\n",
-      "test_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/tools/headless/test_h1_wiring_evidence.py",
+      "test_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/tools/headless/test_h1_wiring_evidence.py",
       "wiring_present": true
     },
     "trials": [
@@ -458,12 +458,12 @@
         "loaded_overlap_on_controller_ws": 2,
         "loaded_overlap_on_pool_ws": 2,
         "loaded_overlap_on_isolate": null,
-        "workspace_pool": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-ws-qwpf1mgq",
-        "workspace_controller": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-ws-qwpf1mgq",
-        "workspace_isolate": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-hbqwg8_n",
-        "hcli_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/__init__.py",
-        "controller_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/controller.py",
-        "runtime_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/runtime.py",
+        "workspace_pool": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-ws-mt3m06_i",
+        "workspace_controller": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-ws-mt3m06_i",
+        "workspace_isolate": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-vpgvo_ot",
+        "hcli_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/__init__.py",
+        "controller_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/controller.py",
+        "runtime_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/runtime.py",
         "import_root_is_scratch": true
       },
       {
@@ -491,12 +491,12 @@
         "loaded_overlap_on_controller_ws": 2,
         "loaded_overlap_on_pool_ws": null,
         "loaded_overlap_on_isolate": null,
-        "workspace_pool": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-j6yd4h0h",
-        "workspace_controller": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-ws-j008d0ax",
-        "workspace_isolate": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-j6yd4h0h",
-        "hcli_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/__init__.py",
-        "controller_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/controller.py",
-        "runtime_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/runtime.py",
+        "workspace_pool": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-itqgovan",
+        "workspace_controller": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-ws-p5uv8kaw",
+        "workspace_isolate": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-itqgovan",
+        "hcli_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/__init__.py",
+        "controller_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/controller.py",
+        "runtime_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/runtime.py",
         "import_root_is_scratch": true
       },
       {
@@ -524,12 +524,12 @@
         "loaded_overlap_on_controller_ws": 2,
         "loaded_overlap_on_pool_ws": 2,
         "loaded_overlap_on_isolate": null,
-        "workspace_pool": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-ws-663na632",
-        "workspace_controller": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-ws-663na632",
-        "workspace_isolate": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-yyrc4104",
-        "hcli_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/__init__.py",
-        "controller_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/controller.py",
-        "runtime_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/runtime.py",
+        "workspace_pool": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-ws-vy35ht6s",
+        "workspace_controller": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-ws-vy35ht6s",
+        "workspace_isolate": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-rrnz_9kj",
+        "hcli_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/__init__.py",
+        "controller_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/controller.py",
+        "runtime_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/runtime.py",
         "import_root_is_scratch": true
       },
       {
@@ -557,12 +557,12 @@
         "loaded_overlap_on_controller_ws": 2,
         "loaded_overlap_on_pool_ws": null,
         "loaded_overlap_on_isolate": null,
-        "workspace_pool": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-nl_cx5_z",
-        "workspace_controller": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-ws-p19z269e",
-        "workspace_isolate": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-nl_cx5_z",
-        "hcli_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/__init__.py",
-        "controller_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/controller.py",
-        "runtime_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/runtime.py",
+        "workspace_pool": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-y588trc4",
+        "workspace_controller": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-ws-v8h18g3y",
+        "workspace_isolate": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-y588trc4",
+        "hcli_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/__init__.py",
+        "controller_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/controller.py",
+        "runtime_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/runtime.py",
         "import_root_is_scratch": true
       }
     ]
@@ -581,10 +581,10 @@
     },
     "files": {
       "hcli/controller.py": {
-        "original_sha256": "9ec3547b758ede65f81183ca08cd59b9d324e44d93642dcf12ed8119919e30c5",
-        "h1_sha256": "707d1417d3b611c7c7556cd40bba6cb1c04adc67d03458f10957b08fd9ee28e1",
-        "noop_sha256": "0943e9d1505a0ec409212db8cd98821a43d14be22b47b690ed60afe5ceb54c44",
-        "bad_sha256": "afa4be95f08b22331b01b003166211192059db6f673d16ec3532752710c49a0e"
+        "original_sha256": "bb4da1634d348f37744028f813866cb88d783f0905838f96d0dbd1bc270359a9",
+        "h1_sha256": "87a5d5803047c521269e940aeac29f327836d4567bf7028896ec8019e6535bec",
+        "noop_sha256": "ee8aeeaf1124040edd3ca81a5c457530d54832016216230454ae020091a16002",
+        "bad_sha256": "901aac3d3e04809b1b370c42cb5e50d74e4e698b8dbabc4e762cdf28195713d3"
       }
     }
   },
@@ -597,22 +597,22 @@
   },
   "decision": "reject",
   "decision_verdict": "REFUSED",
-  "decision_reason": "H1 is already HEAD (h1_equals_head=true). The 1\u21922 admitted_n delta is against a synthetic pre-H1 constructor that is not the tree; applying H1 is a no-op. RuntimePool already loads the high-water file when workspace is passed (runtime.py:637), so the extra observed_overlap= constructor kwarg is redundant at HEAD. No remaining admitted_n candidate at HEAD (only production RuntimePool() site already has the wiring; requested_n=2 with overlap=2 already admits 2).",
+  "decision_reason": "H1 is already HEAD (h1_equals_head=true). The 1→2 admitted_n delta is against a synthetic pre-H1 constructor that is not the tree; applying H1 is a no-op. RuntimePool already loads the high-water file when workspace is passed (runtime.py:637), so the extra observed_overlap= constructor kwarg is redundant at HEAD. No remaining admitted_n candidate at HEAD (only production RuntimePool() site already has the wiring; requested_n=2 with overlap=2 already admits 2).",
   "harness_ok": true,
   "would_refuse_on_failing_gate": true,
   "failing_gate_trial": {
     "hardcoded": false,
     "method": "ran pytest on a temp test that asserts False; fed that exit into compute_decision. separately invoked compute_decision with validation_ok=False reason=NO_EVIDENCE against otherwise-green gates.",
     "pytest_command": [
-      "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3",
+      "/opt/homebrew/opt/python@3.14/bin/python3.14",
       "-m",
       "pytest",
-      "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/failing_gate/failing_gate_trial/test_forced_fail.py",
+      "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/failing_gate/failing_gate_trial/test_forced_fail.py",
       "-q"
     ],
     "pytest_exit_code": 1,
     "pytest_passed_gate": false,
-    "pytest_output_tail": "F                                                                        [100%]\n=================================== FAILURES ===================================\nE   AssertionError: injected failing-gate trial\n    assert False\n/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/failing_gate/failing_gate_trial/test_forced_fail.py:2: AssertionError: injected failing-gate trial\n=========================== short test summary info ============================\nFAILED ../../../../var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/failing_gate/failing_gate_trial/test_forced_fail.py::test_forced_fail\n1 failed in 0.00s\n\n",
+    "pytest_output_tail": "F                                                                        [100%]\n=================================== FAILURES ===================================\nE   AssertionError: injected failing-gate trial\n    assert False\n/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/failing_gate/failing_gate_trial/test_forced_fail.py:2: AssertionError: injected failing-gate trial\n=========================== short test summary info ============================\nFAILED ../../../../var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/failing_gate/failing_gate_trial/test_forced_fail.py::test_forced_fail\n1 failed in 0.00s\n\n",
     "decision_on_failing_correctness": {
       "decision": "reject",
       "verdict": "REFUSED",
@@ -710,12 +710,12 @@
         "loaded_overlap_on_controller_ws": 2,
         "loaded_overlap_on_pool_ws": null,
         "loaded_overlap_on_isolate": null,
-        "workspace_pool": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-nmv0tfi4",
-        "workspace_controller": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-ws-r6g25ot3",
-        "workspace_isolate": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-nmv0tfi4",
-        "hcli_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/__init__.py",
-        "controller_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/controller.py",
-        "runtime_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/runtime.py",
+        "workspace_pool": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-wo8z9j3o",
+        "workspace_controller": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-ws-9lxjz4c8",
+        "workspace_isolate": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-wo8z9j3o",
+        "hcli_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/__init__.py",
+        "controller_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/controller.py",
+        "runtime_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/runtime.py",
         "import_root_is_scratch": true
       },
       {
@@ -743,12 +743,12 @@
         "loaded_overlap_on_controller_ws": 2,
         "loaded_overlap_on_pool_ws": null,
         "loaded_overlap_on_isolate": null,
-        "workspace_pool": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-iqk0xsah",
-        "workspace_controller": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-ws-1u702i5u",
-        "workspace_isolate": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-iqk0xsah",
-        "hcli_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/__init__.py",
-        "controller_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/controller.py",
-        "runtime_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/runtime.py",
+        "workspace_pool": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-03_7s_wh",
+        "workspace_controller": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-ws-ejlv2o4d",
+        "workspace_isolate": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-03_7s_wh",
+        "hcli_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/__init__.py",
+        "controller_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/controller.py",
+        "runtime_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/runtime.py",
         "import_root_is_scratch": true
       },
       {
@@ -776,12 +776,12 @@
         "loaded_overlap_on_controller_ws": 2,
         "loaded_overlap_on_pool_ws": null,
         "loaded_overlap_on_isolate": null,
-        "workspace_pool": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-2l17wbl8",
-        "workspace_controller": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-ws-iotk3mpm",
-        "workspace_isolate": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-2l17wbl8",
-        "hcli_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/__init__.py",
-        "controller_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/controller.py",
-        "runtime_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/runtime.py",
+        "workspace_pool": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-3eomafgg",
+        "workspace_controller": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-ws-4628u6wp",
+        "workspace_isolate": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-3eomafgg",
+        "hcli_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/__init__.py",
+        "controller_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/controller.py",
+        "runtime_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/runtime.py",
         "import_root_is_scratch": true
       },
       {
@@ -809,12 +809,12 @@
         "loaded_overlap_on_controller_ws": 2,
         "loaded_overlap_on_pool_ws": null,
         "loaded_overlap_on_isolate": null,
-        "workspace_pool": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-rigmspqv",
-        "workspace_controller": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-ws-umw_jq7h",
-        "workspace_isolate": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-rigmspqv",
-        "hcli_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/__init__.py",
-        "controller_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/controller.py",
-        "runtime_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/runtime.py",
+        "workspace_pool": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-gtm_88r1",
+        "workspace_controller": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-ws-nojca6zk",
+        "workspace_isolate": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-gtm_88r1",
+        "hcli_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/__init__.py",
+        "controller_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/controller.py",
+        "runtime_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/runtime.py",
         "import_root_is_scratch": true
       }
     ],
@@ -844,12 +844,12 @@
         "loaded_overlap_on_controller_ws": 2,
         "loaded_overlap_on_pool_ws": null,
         "loaded_overlap_on_isolate": null,
-        "workspace_pool": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-_hqhkt4f",
-        "workspace_controller": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-ws-g43f_406",
-        "workspace_isolate": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-_hqhkt4f",
-        "hcli_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/__init__.py",
-        "controller_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/controller.py",
-        "runtime_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/runtime.py",
+        "workspace_pool": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-agv228ep",
+        "workspace_controller": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-ws-erskkfd6",
+        "workspace_isolate": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-agv228ep",
+        "hcli_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/__init__.py",
+        "controller_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/controller.py",
+        "runtime_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/runtime.py",
         "import_root_is_scratch": true
       },
       {
@@ -877,12 +877,12 @@
         "loaded_overlap_on_controller_ws": 2,
         "loaded_overlap_on_pool_ws": null,
         "loaded_overlap_on_isolate": null,
-        "workspace_pool": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-ytijjv2d",
-        "workspace_controller": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-ws-606vz87l",
-        "workspace_isolate": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-ytijjv2d",
-        "hcli_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/__init__.py",
-        "controller_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/controller.py",
-        "runtime_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/runtime.py",
+        "workspace_pool": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-i_u501wf",
+        "workspace_controller": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-ws-cxd2mc2g",
+        "workspace_isolate": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-i_u501wf",
+        "hcli_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/__init__.py",
+        "controller_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/controller.py",
+        "runtime_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/runtime.py",
         "import_root_is_scratch": true
       },
       {
@@ -910,12 +910,12 @@
         "loaded_overlap_on_controller_ws": 2,
         "loaded_overlap_on_pool_ws": null,
         "loaded_overlap_on_isolate": null,
-        "workspace_pool": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-vexfhvo4",
-        "workspace_controller": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-ws-qdop0c7k",
-        "workspace_isolate": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-vexfhvo4",
-        "hcli_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/__init__.py",
-        "controller_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/controller.py",
-        "runtime_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/runtime.py",
+        "workspace_pool": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-mx1w152o",
+        "workspace_controller": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-ws-h9b5t_8t",
+        "workspace_isolate": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-mx1w152o",
+        "hcli_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/__init__.py",
+        "controller_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/controller.py",
+        "runtime_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/runtime.py",
         "import_root_is_scratch": true
       },
       {
@@ -943,12 +943,12 @@
         "loaded_overlap_on_controller_ws": 2,
         "loaded_overlap_on_pool_ws": null,
         "loaded_overlap_on_isolate": null,
-        "workspace_pool": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-pjaa42n5",
-        "workspace_controller": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-ws-quruziti",
-        "workspace_isolate": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-pjaa42n5",
-        "hcli_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/__init__.py",
-        "controller_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/controller.py",
-        "runtime_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/runtime.py",
+        "workspace_pool": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-09hrr6vg",
+        "workspace_controller": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-ws-0kgfx65g",
+        "workspace_isolate": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-09hrr6vg",
+        "hcli_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/__init__.py",
+        "controller_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/controller.py",
+        "runtime_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/runtime.py",
         "import_root_is_scratch": true
       }
     ],
@@ -978,12 +978,12 @@
         "loaded_overlap_on_controller_ws": 2,
         "loaded_overlap_on_pool_ws": 2,
         "loaded_overlap_on_isolate": null,
-        "workspace_pool": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-ws-qwpf1mgq",
-        "workspace_controller": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-ws-qwpf1mgq",
-        "workspace_isolate": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-hbqwg8_n",
-        "hcli_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/__init__.py",
-        "controller_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/controller.py",
-        "runtime_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/runtime.py",
+        "workspace_pool": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-ws-mt3m06_i",
+        "workspace_controller": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-ws-mt3m06_i",
+        "workspace_isolate": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-vpgvo_ot",
+        "hcli_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/__init__.py",
+        "controller_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/controller.py",
+        "runtime_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/runtime.py",
         "import_root_is_scratch": true
       },
       {
@@ -1011,12 +1011,12 @@
         "loaded_overlap_on_controller_ws": 2,
         "loaded_overlap_on_pool_ws": null,
         "loaded_overlap_on_isolate": null,
-        "workspace_pool": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-j6yd4h0h",
-        "workspace_controller": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-ws-j008d0ax",
-        "workspace_isolate": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-j6yd4h0h",
-        "hcli_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/__init__.py",
-        "controller_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/controller.py",
-        "runtime_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/runtime.py",
+        "workspace_pool": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-itqgovan",
+        "workspace_controller": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-ws-p5uv8kaw",
+        "workspace_isolate": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-itqgovan",
+        "hcli_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/__init__.py",
+        "controller_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/controller.py",
+        "runtime_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/runtime.py",
         "import_root_is_scratch": true
       },
       {
@@ -1044,12 +1044,12 @@
         "loaded_overlap_on_controller_ws": 2,
         "loaded_overlap_on_pool_ws": 2,
         "loaded_overlap_on_isolate": null,
-        "workspace_pool": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-ws-663na632",
-        "workspace_controller": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-ws-663na632",
-        "workspace_isolate": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-yyrc4104",
-        "hcli_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/__init__.py",
-        "controller_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/controller.py",
-        "runtime_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/runtime.py",
+        "workspace_pool": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-ws-vy35ht6s",
+        "workspace_controller": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-ws-vy35ht6s",
+        "workspace_isolate": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-rrnz_9kj",
+        "hcli_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/__init__.py",
+        "controller_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/controller.py",
+        "runtime_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/runtime.py",
         "import_root_is_scratch": true
       },
       {
@@ -1077,24 +1077,15 @@
         "loaded_overlap_on_controller_ws": 2,
         "loaded_overlap_on_pool_ws": null,
         "loaded_overlap_on_isolate": null,
-        "workspace_pool": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-nl_cx5_z",
-        "workspace_controller": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-ws-p19z269e",
-        "workspace_isolate": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-nl_cx5_z",
-        "hcli_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/__init__.py",
-        "controller_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/controller.py",
-        "runtime_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha/hcli/runtime.py",
+        "workspace_pool": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-y588trc4",
+        "workspace_controller": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-ws-v8h18g3y",
+        "workspace_isolate": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-admit-iso-y588trc4",
+        "hcli_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/__init__.py",
+        "controller_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/controller.py",
+        "runtime_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca/hcli/runtime.py",
         "import_root_is_scratch": true
       }
     ]
   },
-  "workspace": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-3kuyy6ha",
-  "bench": {
-    "state": "UNKNOWN",
-    "recorded_at": "2026-08-26T00:00:00Z",
-    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
-    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
-    "quiescence": null,
-    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
-    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
-  }
+  "workspace": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-promo-t9s7ctca"
 }

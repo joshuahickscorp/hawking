@@ -237,3 +237,70 @@ def test_the_experiment_pack_measures_what_can_kill_the_design_first():
         "ranked by swing instead of by what can falsify the architecture"
     for r in rows:
         assert r["pinned_by_sealed_predictions"], f"{r['input']} names no sealed prediction"
+
+
+# --- transport shape, not just transport size -----------------------------
+
+def test_useful_fraction_rises_to_one_when_setup_is_paid_once():
+    """One transaction: overhead amortises, so a big enough payload is nearly
+    all bandwidth."""
+    prev = -1.0
+    for payload in (1, 10, 100, 1000, 100000):
+        f = P.useful_payload_fraction(payload, t=1.0, setup=10.0)
+        assert 0.0 <= f <= 1.0
+        assert f > prev
+        prev = f
+    assert P.useful_payload_fraction(1e9, t=1.0, setup=10.0) > 0.999
+
+
+def test_per_transaction_overhead_caps_the_useful_fraction_at_any_size():
+    """The finding. A payload larger than one transaction pays setup AGAIN, so
+    growing it does not improve efficiency past the per-transaction ratio.
+    Batching cannot fix a bus; only a larger transaction can."""
+    fractions = {
+        payload: P.useful_payload_fraction(payload, t=1.0, setup=10.0,
+                                           max_payload_per_transaction=64)
+        for payload in (64, 640, 6400, 640000)
+    }
+    values = list(fractions.values())
+    assert max(values) - min(values) < 1e-9, fractions
+    assert values[0] < 1.0
+    # and the single-transaction model does NOT share that ceiling
+    assert P.useful_payload_fraction(640000, t=1.0, setup=10.0) > values[0]
+
+
+def test_the_minimum_efficient_payload_is_the_closed_form():
+    """p >= s*t*f/(1-f). Below it the link buys setup, not bandwidth."""
+    assert P.minimum_efficient_payload(t=1.0, setup=10.0, target_fraction=0.5) == 10.0
+    assert P.minimum_efficient_payload(t=2.0, setup=10.0, target_fraction=0.5) == 20.0
+    got = P.minimum_efficient_payload(t=1.0, setup=10.0, target_fraction=0.9)
+    assert got == pytest.approx(90.0)
+    at = P.useful_payload_fraction(got, t=1.0, setup=10.0)
+    assert at == pytest.approx(0.9, abs=1e-9)
+
+
+def test_a_free_setup_needs_no_minimum_payload():
+    assert P.minimum_efficient_payload(t=1.0, setup=0.0) == 0.0
+    assert P.useful_payload_fraction(1.0, t=1.0, setup=0.0) == pytest.approx(1.0)
+
+
+def test_a_dead_link_moves_nothing_usefully():
+    assert P.useful_payload_fraction(1000, t=0.0, setup=1.0) == 0.0
+    assert P.minimum_efficient_payload(t=0.0, setup=1.0) == math.inf
+
+
+def test_transaction_granularity_never_makes_transport_cheaper():
+    """Charging setup per transaction is strictly more expensive than once."""
+    for payload in (10, 100, 1000):
+        once = P.transport_cost(payload, 0.0, t=1.0, setup=5.0)
+        chunked = P.transport_cost(payload, 0.0, t=1.0, setup=5.0,
+                                   max_payload_per_transaction=8)
+        assert chunked >= once, (payload, once, chunked)
+
+
+def test_an_unreachable_target_fraction_is_refused_not_approximated():
+    """If per-transaction overhead caps the fraction below the target, there is no
+    payload that reaches it, and saying so beats returning a number that cannot
+    be achieved."""
+    assert P.minimum_efficient_payload(t=1.0, setup=1000.0, target_fraction=0.99,
+                                       max_payload_per_transaction=8) == math.inf

@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-03T00:37:35Z",
+  "recorded_at": "2026-09-03T01:17:10Z",
   "recorded_by": "tools/future/artifact_identity.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -93,11 +93,11 @@
    "sealed_env_hash": "7f677c8208a879575c8c604f40c573da3d58fa314b6e58e48317ba384789771b"
   },
   "binary": {
-   "bytes": 6804600,
-   "mtime_unix": 1788395603.9816654,
+   "bytes": 6788760,
+   "mtime_unix": 1788397632.4172614,
    "path": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
    "rel": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
-   "sha256": "510da8937dc75e02fce21f6ec5b902c204be502fe4b30fd6978df45d6474ed83"
+   "sha256": "7808b8a577bb17d5923756d5da592b6b1f75f4612dd68ca1eafbe664bb5e55bf"
   },
   "environment": {
    "env_hash": "7f677c8208a879575c8c604f40c573da3d58fa314b6e58e48317ba384789771b",
@@ -191,9 +191,9 @@
   },
   "serving_mode": "resident",
   "source": {
-   "commit": "f317a8f1b4a628fd7566e930e8e71dcd46884d50",
-   "commit_iso": "2026-09-02T18:05:17-04:00",
-   "commit_unix": 1788386717.0,
+   "commit": "efc37e13ff7fbdaf6450e8f147c8bcabcd046dcb",
+   "commit_iso": "2026-09-02T21:07:12-04:00",
+   "commit_unix": 1788397632.0,
    "dirty": false,
    "path": "crates/hawking-core/examples/ascension_qwen38_resident.rs"
   },
@@ -236,7 +236,7 @@
   "receipt": "receipts/future/ARTIFACT_IDENTITY.json"
  },
  "schema": "hawking.future.artifact_identity.v1",
- "seal_sha256": "ed21a2e158ad90a14b7368709a81d5863473010194d772a890ca6e34cccc4d77",
+ "seal_sha256": "9a425fe316bbbc8c1d5bdada3f4c3f0efae992c0be11d736311aca6be866e0fc",
  "sealed_does_inherit_incumbent": true,
  "sealed_environment": {
   "env_hash": "7f677c8208a879575c8c604f40c573da3d58fa314b6e58e48317ba384789771b",

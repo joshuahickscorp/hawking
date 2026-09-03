@@ -1,9 +1,0 @@
-{
-  "fingerprint": "544bebf4e9263d9ae56f917c05405cb397dbaddcf9a29356739d519783fc71b0",
-  "negative_receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/tps-gate/negative-science/QWEN30_HCLI_COHERENCE_544bebf4e9263d9ae56f917c05405cb397dbaddcf9a29356739d519783fc71b0.json",
-  "next_retry_unix_seconds": 1786240980.971018,
-  "outcome": "COHERENCE_NEGATIVE",
-  "pid": 33636,
-  "recorded_at": "2026-08-09T01:33:00.971057Z",
-  "schema": "hawking.ascension.physical_base_true_tps_attempt.v1"
-}

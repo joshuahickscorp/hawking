@@ -198,7 +198,14 @@ class GoalCompiler:
         r"(?<![A-Za-z0-9_.-])"
         r"(/?(?:[A-Za-z0-9_.-]+/)*"
         r"[A-Za-z0-9_.-]+\."
-        r"(?:py|pyi|js|jsx|ts|tsx|md|json|yaml|yml|toml|rs|go|txt))"
+        r"(?:jsonl|json|pyi|py|jsx|js|tsx|ts|md|yaml|yml|toml|rs|go|txt))"
+        # A boundary, or a longer extension is truncated to a shorter known
+        # one. `js` precedes `json` here, so COMPILE_ECONOMICS.jsonl became
+        # COMPILE_ECONOMICS.js -- a path that does not exist, so the packet
+        # inlined NO evidence and the model spent a whole tool round asking for
+        # the file the packet had already named. Two extractors had this bug;
+        # this is the one that feeds EVIDENCE_PATHS.
+        r"(?![A-Za-z0-9_])"
     )
 
     _INVARIANT_MARKERS = (
@@ -813,14 +820,50 @@ def contains_goal_dump(text: str) -> bool:
     return bool(_GOAL_DUMP_RE.search(str(text or "")))
 
 
+def root_is_the_whole_objective(text: str, root_goal: str) -> bool:
+    """True when *text* is the root goal itself rather than a body quoting it.
+
+    A single-obligation mission compiles to one WorkUnit whose description IS
+    the goal. Excising the root there does not remove a duplicated dump, it
+    removes the entire instruction: the worker receives
+    ``OBJECTIVE: obligations=G001 [ROOT_GOAL_OMITTED]`` and has nothing to do.
+
+    Measured on a live run. The model answered exactly as it should have --
+    "I need to check the goal state to understand what G001 requires" -- and
+    was recorded as a failure. Earlier missions on longer goals degenerated
+    into echoing their own prompt for the same reason: no instruction ever
+    reached the worker.
+    """
+    raw = str(text or "")
+    root = str(root_goal or "").strip()
+    if not raw or not root or root not in raw:
+        return False
+    return len(raw.replace(root, "").strip()) < MIN_ROOT_EXCISE
+
+
 def _excise_root_goal(text: str, root_goal: str) -> str:
     raw = str(text or "")
     root = str(root_goal or "").strip()
-    if not raw or not root or len(root) < MIN_ROOT_EXCISE:
+    if not raw or not root or len(root) < MIN_ROOT_EXCISE or root not in raw:
         return raw
-    if root in raw:
-        return raw.replace(root, ROOT_GOAL_OMITTED)
-    return raw
+    if root_is_the_whole_objective(raw, root):
+        return raw
+    # Line-aware, because this runs TWICE: once on the bare description and
+    # again on the whole assembled prompt (compile_worker_context line 1452).
+    # On the whole prompt the remainder is the entire packet, so the
+    # whole-objective test above cannot fire and the objective lost its
+    # instruction anyway -- which is why fixing only the description path
+    # changed nothing in three live runs.
+    out: List[str] = []
+    for line in raw.splitlines(keepends=True):
+        stripped = line.strip()
+        if root in line and stripped.startswith("OBJECTIVE:"):
+            body = stripped[len("OBJECTIVE:"):]
+            if root_is_the_whole_objective(body, root):
+                out.append(line)
+                continue
+        out.append(line.replace(root, ROOT_GOAL_OMITTED))
+    return "".join(out)
 
 
 def _redact_goal_dump(text: str) -> str:
@@ -853,7 +896,13 @@ def refuse_goal_dump(prompt: str, root_goal: str = "") -> None:
         raise ValueError("worker packet must not contain GOAL:")
     root = str(root_goal or "").strip()
     if root and len(root) >= MIN_ROOT_EXCISE and root in text:
-        raise ValueError("worker packet must not contain the root goal")
+        # One exemption, as narrow as it can be made: the OBJECTIVE line of a
+        # unit whose objective IS the goal. Every other occurrence is still a
+        # leak. Checked per line, so a dump elsewhere in the packet still
+        # raises even when the objective legitimately carries the root.
+        carriers = [ln for ln in text.splitlines() if root in ln]
+        if not all(ln.lstrip().startswith("OBJECTIVE:") for ln in carriers):
+            raise ValueError("worker packet must not contain the root goal")
 
 
 @dataclass(frozen=True)

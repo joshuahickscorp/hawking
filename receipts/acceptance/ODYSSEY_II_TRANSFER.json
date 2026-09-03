@@ -7,14 +7,14 @@
   "command": "python3 -c \"from tools.future.qualification_pipeline import load_qualification_queue; load_qualification_queue(path)\"",
   "criterion": {
     "end_line": 573,
-    "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "file": "/Users/scammermike/Downloads/hawking/docs/roadmap-lineage/H-ROADMAP.superseded-2026-09-02.md",
     "quote": "## II-A. Odyssey II \u2014 Transfer\n\n**Mission:** Ask what Hawking already learned and make it reduce search cost on unseen models.\n\n**Genes to express:**\n- law retrieval\n- prior-to-experiment planner\n- transfer confidence\n- counterexample search\n- specimen curriculum\n- time-to-first-useful-executable\n- saved-experiment accounting\n\n**Operating rule:** act only on genes whose prerequisites are physically or artifact-verifiably available. Missing prerequisites become explicit blockers or prerequisite WorkUnits; they do not justify fake completion.\n\n**Promotion gate:** this civilization advances only when a fresh process or unseen specimen/device can demonstrate the promised behavior through independent receipts, not because the implementation surface exists.\n\n**Self-refill triggers:** regression, new specimen, new device, new counterexample, new profiler bottleneck, failed transfer, stale assumption, or a newly available deterministic verifier.\n\n",
     "start_line": 554
   },
   "criterion_altered": false,
   "evidence_tier": "STATIC",
   "gate": "ODYSSEY_II_TRANSFER",
-  "generated_at": "2026-09-02T18:44:47Z",
+  "generated_at": "2026-09-03T05:52:30Z",
   "generated_by": "tools.acceptance.odyssey.run",
   "invoked_symbol": {
     "file": "tools/future/qualification_pipeline.py",
@@ -79,10 +79,10 @@
       "specimen": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-30B-A3B@ad44e777bcd1",
       "transfer_evaluations": 10
     },
-    "wall_s": 0.033
+    "wall_s": 0.054
   },
   "schema": "hawking.acceptance.gate.v1",
-  "seal_sha256": "fed610f7eee97ad12f0c57b46e25788d6c3b2e2225abc6b610414e65e9b417d9",
+  "seal_sha256": "147fe67457836d457837857c7246a3af68ba21f8aacc05257186008991ef391f",
   "section_6_output": "measurable reduction in experiments/time/cost on unseen models and devices",
   "verdict": "BLOCKED"
 }

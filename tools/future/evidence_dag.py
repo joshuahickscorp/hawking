@@ -2487,10 +2487,10 @@ RECOVERED_IMPLEMENTATION = [
         "use": "diamond sibling, below-required admission, and V8-raise are the negative controls",
     },
     {
-        "path": "lab/verification_authority.py",
+        "path": "research/lab/verification_authority.py",
         "what": "Models propose; protected controller decides; forbidden self-promotion",
         "use": "this module never emits PROTECTED_ABSOLUTE or DIAGNOSTIC_RELATIVE",
-        "probe": "git show HEAD:lab/verification_authority.py",
+        "probe": "git show HEAD:research/lab/verification_authority.py",
     },
     {
         "path": "hcli/dag_store.py",
@@ -2567,7 +2567,7 @@ GAPS_CLOSED = [
 NEGATIVE_FINDINGS = [
     "this sidecar has no protected GPU lease; V8 and V9 are UNAVAILABLE by authority, not by a Metal probe (Metal was not queried)",
     "xcrun / Metal compiler / qualification HEAVY classification were not re-measured; Codex's blockers are accepted as given and become a sleeping WorkUnit",
-    "tools/headless/composition_ladder.py and lab/verification_authority.py may be hidden by the sparse checkout; recovered via git show, not live import",
+    "tools/headless/composition_ladder.py and research/lab/verification_authority.py may be hidden by the sparse checkout; recovered via git show, not live import",
     "this module does not rewrite receipts/future/CLAUDE_GLOBAL_FRONTIER.json (owner: tools/future/global_frontier.py, prohibited)",
     "this-wave siblings (resident_api, workgraph, wakeup, protected_window, frontiers, super_resident) were not imported; local interfaces are named as integration points",
     "no DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE number was produced; bench.state stays UNKNOWN",
@@ -2708,7 +2708,7 @@ def build() -> Path:
         "recovery_probes": [
             _probe("tools/future/repro_science.py"),
             _probe("tools/headless/composition_ladder.py"),
-            _probe("lab/verification_authority.py"),
+            _probe("research/lab/verification_authority.py"),
             _probe("hcli/dag_store.py"),
             _probe("receipts/future/evidence/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"),
             _probe("receipts/future/FUTURE_SUBSTRATE_HANDOFF.json"),

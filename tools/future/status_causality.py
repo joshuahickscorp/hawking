@@ -298,7 +298,7 @@ SELECTION_RULE = (
     "(4) qualification_pipeline and protected_scheduler, whose RUNNABLE/"
     "REFUSED/BLOCKED verdicts decide whether physical work proceeds. "
     "Excluded, and not as a trick to inflate coverage: Metal kernel names "
-    "containing 'gate', crate tests named *_gate.rs, lab/operators hardware "
+    "containing 'gate', crate tests named *_gate.rs, research/lab/operators hardware "
     "TPS gates, example benches — those do not decide campaign next-step. "
     "This tuple is the list. The rule above is how it was chosen."
 )

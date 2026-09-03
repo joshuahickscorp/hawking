@@ -2,7 +2,7 @@
   "blocker": null,
   "checks": [
     {
-      "detail": "42ea532c9289a850a85a0ed4afc4d11dc5d9534b15df39b2958f1e008ec2095a",
+      "detail": "16b5beb5735cc00554ce6dfbe00b55df033bb5e1b252b47a13f4bd849212541d",
       "id": "observe_file_called",
       "ok": true
     },
@@ -40,9 +40,9 @@
     },
     {
       "detail": {
-        "capture_id": "42ea532c9289a850a85a0ed4afc4d11dc5d9534b15df39b2958f1e008ec2095a",
+        "capture_id": "16b5beb5735cc00554ce6dfbe00b55df033bb5e1b252b47a13f4bd849212541d",
         "failures": [],
-        "manifest_digest": "837ac69546a482bc8a4ae8aea6fbad0ddeb2e30f1f294885a5b938c341e82ed8",
+        "manifest_digest": "fd493817ee0869288e091e2e9976fac3c010a25db02c708863d4ac376bde212d",
         "scope": "stored_capture",
         "status": "COMPLETE",
         "valid": true,
@@ -83,34 +83,34 @@
   ],
   "criterion": {
     "end_line": 7790,
-    "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "file": "/Users/scammermike/Downloads/hawking/docs/roadmap-lineage/H-ROADMAP.superseded-2026-09-02.md",
     "quoted": "## E.4 Tool receipt law\n\n```rust\nToolReceipt {\n    tool,\n    version,\n    invocation,\n    input_ids,\n    input_hashes,\n    output_ids,\n    output_hashes,\n    started_at,\n    elapsed_ms,\n    status,\n    limitations,\n    verifier,\n    canary\n}\n\nA truth-affecting tool with no trace is not part of the proof.\n```",
     "start_line": 7770,
     "weakened": false
   },
   "criterion_weakened": false,
-  "elapsed_ms": 24.18,
+  "elapsed_ms": 43.93,
   "evidence_tier": "FUNCTIONAL_SIM",
   "gate": "VMCP_RECEIPT_LAW",
-  "generated_at": "2026-09-02T23:16:06Z",
+  "generated_at": "2026-09-03T05:34:31Z",
   "gpu_authority": false,
   "invoked_symbols": [
     {
-      "elapsed_ms": 18.382,
+      "elapsed_ms": 33.735,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "tools.headless.hcli_vmcp_integration.observe_file"
     },
     {
-      "elapsed_ms": 1.633,
+      "elapsed_ms": 2.668,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "tools.headless.hcli_vmcp_integration.verify_capture"
     },
     {
-      "elapsed_ms": 0.707,
+      "elapsed_ms": 1.807,
       "error": null,
       "kind": "call",
       "raised": false,
@@ -128,16 +128,16 @@
         "restored": true,
         "stale_after_mutation": true
       },
-      "elapsed_ms": 18.382,
+      "elapsed_ms": 33.735,
       "input_hashes": [
         "abafd07705042100aa13fabf93a32842dff4a55ef0971f91e9f827726c39636e"
       ],
       "input_ids": [
-        "file:/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-receipt-isar4f92/claim.txt"
+        "file:/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-receipt-megbk5q4/claim.txt"
       ],
       "invocation": {
         "adapter": "file.eye",
-        "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-receipt-isar4f92/claim.txt"
+        "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-receipt-megbk5q4/claim.txt"
       },
       "limitations": [
         "none"
@@ -146,9 +146,9 @@
         "abafd07705042100aa13fabf93a32842dff4a55ef0971f91e9f827726c39636e"
       ],
       "output_ids": [
-        "42ea532c9289a850a85a0ed4afc4d11dc5d9534b15df39b2958f1e008ec2095a"
+        "16b5beb5735cc00554ce6dfbe00b55df033bb5e1b252b47a13f4bd849212541d"
       ],
-      "started_at": 1788390966.7059672,
+      "started_at": 1788413671.390795,
       "status": "COMPLETE",
       "tool": "file.eye",
       "verifier": {
@@ -162,7 +162,7 @@
   },
   "output": {
     "observe": {
-      "capture_id": "42ea532c9289a850a85a0ed4afc4d11dc5d9534b15df39b2958f1e008ec2095a",
+      "capture_id": "16b5beb5735cc00554ce6dfbe00b55df033bb5e1b252b47a13f4bd849212541d",
       "status": "COMPLETE"
     }
   },

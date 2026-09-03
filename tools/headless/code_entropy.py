@@ -1263,7 +1263,7 @@ def build() -> Dict[str, Any]:
             "path": "tools/headless/hcli_persistence_audit.py:_gate",
             "tempted": "DELETE",
             "landed": "UNKNOWN",
-            "why": "Zero in-file Loads of this definition, but lab/hcli/option_c.py and lab/operators/sandbox_ready_preflight.py define their own _gate. Common private names are UNKNOWN.",
+            "why": "Zero in-file Loads of this definition, but research/lab/hcli/option_c.py and research/lab/operators/sandbox_ready_preflight.py define their own _gate. Common private names are UNKNOWN.",
         },
         {
             "path": "receipts/headless/*",
@@ -1278,7 +1278,7 @@ def build() -> Dict[str, Any]:
         "Computed getattr/importlib targets: getattr(mod, os.environ['X']), import_module(prefix + suffix) where neither part is a literal. The census does catch getattr(self, f'_cmd_{...}') prefix dispatch.",
         "String concatenation of module paths and JSON keys built at runtime. Artifact path strings that *are* literals inside receipts/headless are searched; assembled paths are not.",
         "Plugin entry points in packaging metadata that is not in this repo (no pyproject.toml/setup.cfg at HEAD). An installed extra could still load a name.",
-        "Trees outside the CODE_GRAPH census (lab/, ramanujan/, visionmcp/, tools/condense, tools/graph). git grep HEAD covers them for DELETE proofs; they are not classified module-by-module.",
+        "Trees outside the CODE_GRAPH census (research/lab/, research/ramanujan/, visionmcp/, tools/condense, tools/graph). git grep HEAD covers them for DELETE proofs; they are not classified module-by-module.",
         "Rust / Swift / shell identity that is not a Python identifier. Prior work found dir_sha as a substring of walkdir_shallow; word-grep is used, but a different language's equal name is still not this definition.",
         "Pickle, eval, exec, and serialized callables.",
         "pytest parametrize ids and GOAL.md / ultragoal check commands outside receipts/headless and tools/.",
@@ -1388,7 +1388,7 @@ def build() -> Dict[str, Any]:
         ],
         "namesakes_out_of_census": [
             {
-                "path": "lab/hcli/",
+                "path": "research/lab/hcli/",
                 "classification": "UNKNOWN",
                 "reason": (
                     "namesake only. lab.hcli is Agent-OS scaffolds, not tools.haider.hcli. "

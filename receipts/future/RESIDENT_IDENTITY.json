@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-03T00:36:31Z",
+  "recorded_at": "2026-09-03T05:47:37Z",
   "recorded_by": "tools/future/resident_identity.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -25,7 +25,7 @@
    "executable_hash": {
     "by_role": {
      "binary": "d34044cffae8f32055cca40aae27ec62beb44f043df081293126da89e51b8e76",
-     "resident_binary": "510da8937dc75e02fce21f6ec5b902c204be502fe4b30fd6978df45d6474ed83"
+     "resident_binary": "7808b8a577bb17d5923756d5da592b6b1f75f4612dd68ca1eafbe664bb5e55bf"
     },
     "seal_declared_sha256_16": "d34044cffae8f320",
     "seal_matching_role": "binary"
@@ -1278,14 +1278,14 @@
     "exists": true,
     "missing_evidence": [],
     "path": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
-    "sha256": "510da8937dc75e02fce21f6ec5b902c204be502fe4b30fd6978df45d6474ed83",
+    "sha256": "7808b8a577bb17d5923756d5da592b6b1f75f4612dd68ca1eafbe664bb5e55bf",
     "source_state": "COMPUTED"
    },
    "seal_runtime_binary": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
    "value": {
     "by_role": {
      "binary": "d34044cffae8f32055cca40aae27ec62beb44f043df081293126da89e51b8e76",
-     "resident_binary": "510da8937dc75e02fce21f6ec5b902c204be502fe4b30fd6978df45d6474ed83"
+     "resident_binary": "7808b8a577bb17d5923756d5da592b6b1f75f4612dd68ca1eafbe664bb5e55bf"
     },
     "note": "Two executables are declared. The resident seal's runtime_binary_sha256_16 matches 'binary' (hybrid greedy) when that file is present; resident_binary is a different artifact.",
     "seal_declared_sha256_16": "d34044cffae8f320",
@@ -1370,7 +1370,7 @@
      },
      {
       "family": "binary_quantization",
-      "n": 102
+      "n": 103
      },
      {
       "family": "blame_10_of_512_gather_vs_sequential_access_for_the_q80_bandwidth_gap",
@@ -1378,6 +1378,10 @@
      },
      {
       "family": "blanket_mtldispatchtype_serial_encoder_for_the_whole_decode_token_wave",
+      "n": 1
+     },
+     {
+      "family": "bpw_is_not_capability",
       "n": 1
      },
      {
@@ -1421,10 +1425,6 @@
       "n": 1
      },
      {
-      "family": "complete_bpw_predicts_coherence_that_complete_or_active_bpw_predicts_coherence_denser_is_worse_cheaper_is_worse_the_number_is_the_capability",
-      "n": 1
-     },
-     {
       "family": "complete_vs_decode_gap_prefill_accounting_not_ceremony",
       "n": 1
      },
@@ -1445,11 +1445,15 @@
       "n": 1
      },
      {
+      "family": "coordinate_transform",
+      "n": 1
+     },
+     {
       "family": "copy_the_q30_static_1_5_representation_approach_to_get_a_coherent_dense_moe_artifact",
       "n": 1
      },
      {
-      "family": "cosine_scale_invariance_that_a_fit_quality_gate_of_observed_probed_worst_unit_cosine_can_certify_an_artifact_including_that_1_000000_means_the_weights_were_preserved",
+      "family": "cosine_scale_invariance",
       "n": 1
      },
      {
@@ -1466,7 +1470,7 @@
      },
      {
       "family": "cross_expert_structure",
-      "n": 11
+      "n": 9
      },
      {
       "family": "cross_layer_weight_delta",
@@ -1650,7 +1654,7 @@
      },
      {
       "family": "kronecker",
-      "n": 5
+      "n": 4
      },
      {
       "family": "kv_working_set_eviction",
@@ -1682,7 +1686,7 @@
      },
      {
       "family": "low_rank",
-      "n": 58
+      "n": 54
      },
      {
       "family": "megakernel",
@@ -1722,66 +1726,6 @@
      },
      {
       "family": "multiseq_v4r_high_b",
-      "n": 1
-     },
-     {
-      "family": "nns_009_that_organ_cosine_0_86_0_90_or_the_d23_0_8604_residual_identity_bar_is_a_capability_certificate_hard_go_no_go",
-      "n": 1
-     },
-     {
-      "family": "nns_012_that_the_g3_shared_operator_headline_beats_q3_held_out_0_371_vs_0_401_at_24_of_the_bytes_is_a_measured_successor",
-      "n": 1
-     },
-     {
-      "family": "nns_013_that_a_narrow_shared_grouped_swiglu_operator_m_17408_can_replace_qwen3_8s_mlp_at_q3_quality_and_materially_fewer_active_bytes_including_after_honest_methodology",
-      "n": 1
-     },
-     {
-      "family": "nns_017_that_pq_vq_coding_of_the_raw_frozen_weights_is_a_route_to_one_bit_or_below_that_preserves_capability",
-      "n": 1
-     },
-     {
-      "family": "nns_019_that_existing_gravity_expert_families_hgravb01_hgravr02_hgravs01_or_the_q80_mixed_gate_up_down_bundle_transfer_to_attention_at_q4_equivalent_quality",
-      "n": 1
-     },
-     {
-      "family": "nns_020_that_storage_complete_physical_bpw_is_the_bpw_decode_moves_active_bpw_and_that_crushing_routed_experts_is_therefore_the_velocity_lever",
-      "n": 1
-     },
-     {
-      "family": "nns_021_that_lower_storage_bpw_is_faster_per_token_density_is_velocity_on_mixed_codecs_whose_reconstruction_is_not_in_register",
-      "n": 1
-     },
-     {
-      "family": "nns_022_that_entropy_coding_of_lloyd_optimal_pq_indices_yields_a_10_25_byte_win_or_that_rans_on_qwen3_8_q3_symbols_is_an_active_byte_tps_lever",
-      "n": 1
-     },
-     {
-      "family": "nns_025_that_selection_policy_search_over_which_sub_1_2_bpw_organs_to_replace_can_recover_coherence_or_that_beating_a_constant_mean_null_is_the_replacement_gate",
-      "n": 1
-     },
-     {
-      "family": "nns_027_that_extrapolating_a_4_layer_teacher_forced_residual_probe_across_48_layers_is_a_go_or_that_per_organ_gating_without_expert_atomic_enforcement_produces_a_runnable_hybrid",
-      "n": 1
-     },
-     {
-      "family": "nns_028_that_post_hoc_scalar_gain_on_a_pq_artifact_row_norm_stratified_codebooks_the_94_single_codeword_premise_ternary_vs_vq_at_matched_rate_or_88_token_routing_frequency_allocation_are_live_levers",
-      "n": 1
-     },
-     {
-      "family": "nns_029_that_activation_sparsity_2_mlp_max_or_uniform_bit_descent_below_q3_is_a_clean_path_under_the_qwen3_8_coherent_floor",
-      "n": 1
-     },
-     {
-      "family": "nns_030_that_a_family_which_fails_a_residual_composition_screen_to_end_to_end_cosine_0_5_can_still_be_a_sub_1_5_static_dsv4f_body",
-      "n": 1
-     },
-     {
-      "family": "nns_031_that_routing_frequency_allocation_calibrated_on_88_tokens_or_previous_token_route_set_prefetch_is_a_first_touch_allocation_win",
-      "n": 1
-     },
-     {
-      "family": "nns_032_that_a_bounded_low_bit_flash_router_study_with_one_deterministic_vector_can_establish_source_equivalent_top_k_routing_or_that_router_overlap_alone_qualifies_a_native_representation",
       "n": 1
      },
      {
@@ -1897,7 +1841,11 @@
       "n": 1
      },
      {
-      "family": "q30_gibberish_baseline_that_x_captured_from_a_degraded_quantized_gibberish_baseline_is_close_enough_for_codec_ranking_the_q30_fits_calibrated_on_gibberish_campaign",
+      "family": "protected_islands_healing",
+      "n": 1
+     },
+     {
+      "family": "q30_gibberish_baseline",
       "n": 1
      },
      {
@@ -2046,7 +1994,7 @@
      },
      {
       "family": "router_distill",
-      "n": 1
+      "n": 2
      },
      {
       "family": "row_norm_stratification_premise_row_norm_stratified_codebooks_declared_r5_rownorm_strat_never_run",
@@ -2082,10 +2030,14 @@
      },
      {
       "family": "shared_basis",
-      "n": 2
+      "n": 3
      },
      {
       "family": "shared_index_bare_commit_sweeps_foreign_stage",
+      "n": 1
+     },
+     {
+      "family": "shared_k_hybrid",
       "n": 1
      },
      {
@@ -2098,7 +2050,7 @@
      },
      {
       "family": "spec_decode",
-      "n": 3
+      "n": 4
      },
      {
       "family": "spec_exactshared_as_is",
@@ -2109,7 +2061,7 @@
       "n": 1
      },
      {
-      "family": "student_distillation_closed_that_independent_per_layer_functional_students_compose_across_a_full_moe_model_and_that_raw_activation_cosine_0_86_0_90_means_the_student_preserved_function",
+      "family": "structural_elimination_heads",
       "n": 1
      },
      {
@@ -2117,7 +2069,7 @@
       "n": 1
      },
      {
-      "family": "sub_1_5_whole_model_dead_that_a_whole_model_artifact_at_complete_bpw_1_5_built_from_the_existing_gravity_families_hgravb01_r02_s01_rice_on_attention_is_coherent_on_qwen3_8_or_is_a_copyable_q30_template",
+      "family": "sub_1_5_whole_model_dead",
       "n": 1
      },
      {
@@ -2134,7 +2086,7 @@
      },
      {
       "family": "synthetic_activation",
-      "n": 5
+      "n": 4
      },
      {
       "family": "ternary",
@@ -2177,7 +2129,7 @@
       "n": 1
      },
      {
-      "family": "undersampled_fits_that_a_rank_r_or_full_dim_codec_scored_on_fewer_captured_rows_than_the_fitted_dimension_is_a_score_of_the_codec",
+      "family": "undersampled_fits",
       "n": 1
      },
      {
@@ -2195,6 +2147,10 @@
      {
       "family": "uniform_subbit_allocation_uniform_sub_bit_allocation_across_organs_and_its_treated_variant",
       "n": 1
+     },
+     {
+      "family": "unrecorded_in_source",
+      "n": 24
      },
      {
       "family": "use_the_535_637_gb_s_reuse_band_also_written_560_647_as_the_decode_ceiling",
@@ -2272,7 +2228,7 @@
      },
      {
       "model": "qwen3.8-27b",
-      "n": 57
+      "n": 65
      },
      {
       "model": "unrecorded",
@@ -2463,8 +2419,8 @@
       "path": "receipts/headless/ACCELERATOR_SPAN_IS_REFUTED_COALESCING_IS_NOT.json"
      },
      {
-      "n_parsed": 32,
-      "n_scars": 32,
+      "n_parsed": 40,
+      "n_scars": 40,
       "n_unparsed": 0,
       "origin": "disk",
       "path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
@@ -2626,15 +2582,15 @@
      "ramanujan.scaffold.core.stores Graveyard (in-process bury/revive, not a corpus index).",
      "Worktrees and grok/* branches the noetic sweeper walked; this index is HEAD + disk only."
     ],
-    "n_parsed": 676,
-    "n_refuse_eligible": 603,
-    "n_scars": 691,
+    "n_parsed": 684,
+    "n_refuse_eligible": 591,
+    "n_scars": 699,
     "n_sources": 48,
     "n_unparsed": 15
    },
    "missing_evidence": [],
-   "n": 64,
-   "n_refuse_eligible": 49,
+   "n": 72,
+   "n_refuse_eligible": 48,
    "note": "compact projection of NEGATIVE_SCIENCE_INDEX; not the full corpus dump",
    "query": {
     "model": "qwen3.8-27b"
@@ -2948,130 +2904,194 @@
     {
      "hypothesis_family": "synthetic_activation",
      "level": "MODEL_SPECIFIC",
-     "refuse_eligible": false,
+     "refuse_eligible": true,
      "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-001",
      "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
-     "verdict": "LIVE_REOPEN_HOLDS"
+     "verdict": "That sub-bit is dead because six families scored negative on Gaussian / synthetic activations."
     },
     {
-     "hypothesis_family": "complete_bpw_predicts_coherence_that_complete_or_active_bpw_predicts_coherence_denser_is_worse_cheaper_is_worse_the_number_is_the_capability",
+     "hypothesis_family": "bpw_is_not_capability",
      "level": "MODEL_SPECIFIC",
-     "refuse_eligible": true,
+     "refuse_eligible": false,
      "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-002",
      "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
-     "verdict": "PROPERTY_OF_IDEA"
+     "verdict": "That complete (or active) BPW predicts coherence: denser is worse, cheaper is worse, the number is the capability."
     },
     {
-     "hypothesis_family": "sub_1_5_whole_model_dead_that_a_whole_model_artifact_at_complete_bpw_1_5_built_from_the_existing_gravity_families_hgravb01_r02_s01_rice_on_attention_is_coherent_on_qwen3_8_or_is_a_copyable_q30_template",
+     "hypothesis_family": "sub_1_5_whole_model_dead",
      "level": "MODEL_SPECIFIC",
-     "refuse_eligible": true,
+     "refuse_eligible": false,
      "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-003",
      "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
-     "verdict": "PROPERTY_OF_IDEA"
+     "verdict": "That a whole-model artifact at complete BPW \u2264 1.5, built from the existing Gravity families (HGRAVB01/R02/S01 + rice on attention), is coherent on Qwen3.8 or is a copyable Q30 template."
     },
     {
-     "hypothesis_family": "cosine_scale_invariance_that_a_fit_quality_gate_of_observed_probed_worst_unit_cosine_can_certify_an_artifact_including_that_1_000000_means_the_weights_were_preserved",
+     "hypothesis_family": "cosine_scale_invariance",
      "level": "MODEL_SPECIFIC",
      "refuse_eligible": false,
      "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-005",
      "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
-     "verdict": "LIVE_REOPEN_HOLDS"
+     "verdict": "That a fit-quality gate of observed/probed/worst_unit cosine can certify an artifact, including that 1.000000 means the weights were preserved."
     },
     {
-     "hypothesis_family": "q30_gibberish_baseline_that_x_captured_from_a_degraded_quantized_gibberish_baseline_is_close_enough_for_codec_ranking_the_q30_fits_calibrated_on_gibberish_campaign",
+     "hypothesis_family": "q30_gibberish_baseline",
      "level": "MODEL_SPECIFIC",
      "refuse_eligible": false,
      "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-006",
      "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
-     "verdict": "LIVE_REOPEN_HOLDS"
+     "verdict": "That X captured from a degraded / quantized / gibberish baseline is close enough for codec ranking (the 'Q30 fits calibrated on gibberish' campaign)."
     },
     {
-     "hypothesis_family": "nns_009_that_organ_cosine_0_86_0_90_or_the_d23_0_8604_residual_identity_bar_is_a_capability_certificate_hard_go_no_go",
+     "hypothesis_family": "unrecorded_in_source",
      "level": "MODEL_SPECIFIC",
-     "refuse_eligible": false,
+     "refuse_eligible": true,
      "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-009",
      "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
-     "verdict": "LIVE_REOPEN_HOLDS"
+     "verdict": "That organ cosine ~0.86\u20130.90, or the D23 0.8604 residual-identity bar, is a capability certificate / hard GO-NO-GO."
     },
     {
-     "hypothesis_family": "low_rank",
+     "hypothesis_family": "unrecorded_in_source",
      "level": "MODEL_SPECIFIC",
      "refuse_eligible": false,
      "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-011",
      "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
-     "verdict": "LIVE_REOPEN_HOLDS"
+     "verdict": "That the 5.9\u00d7 per-byte reconstruction penalty measured on Q80 mixed rice/low-rank is a property of those codecs, and that it transfers to Qwen3.8."
     },
     {
-     "hypothesis_family": "nns_012_that_the_g3_shared_operator_headline_beats_q3_held_out_0_371_vs_0_401_at_24_of_the_bytes_is_a_measured_successor",
+     "hypothesis_family": "unrecorded_in_source",
      "level": "MODEL_SPECIFIC",
      "refuse_eligible": false,
      "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-012",
      "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
-     "verdict": "ARTIFACT_OF_METHOD"
+     "verdict": "That the G3 shared-operator headline 'beats q3 held-out 0.371 vs 0.401 at 24% of the bytes' is a measured successor."
     },
     {
-     "hypothesis_family": "nns_013_that_a_narrow_shared_grouped_swiglu_operator_m_17408_can_replace_qwen3_8s_mlp_at_q3_quality_and_materially_fewer_active_bytes_including_after_honest_methodology",
+     "hypothesis_family": "unrecorded_in_source",
      "level": "MODEL_SPECIFIC",
-     "refuse_eligible": true,
+     "refuse_eligible": false,
      "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-013",
      "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
-     "verdict": "PROPERTY_OF_IDEA"
+     "verdict": "That a narrow shared / grouped SwiGLU operator (m < 17408) can replace Qwen3.8's MLP at q3 quality and materially fewer active bytes, including after honest methodology."
     },
     {
-     "hypothesis_family": "low_rank",
+     "hypothesis_family": "unrecorded_in_source",
      "level": "MODEL_SPECIFIC",
-     "refuse_eligible": true,
+     "refuse_eligible": false,
      "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-014",
      "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
-     "verdict": "PROPERTY_OF_IDEA"
+     "verdict": "That activation-aware functional low-rank (output-PCA / reduced rank on real post-SwiGLU X) beats q3 at matched bytes held-out."
     },
     {
-     "hypothesis_family": "low_rank",
+     "hypothesis_family": "unrecorded_in_source",
      "level": "MODEL_SPECIFIC",
      "refuse_eligible": false,
      "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-015",
      "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
-     "verdict": "LIVE_REOPEN_HOLDS"
+     "verdict": "That low-rank + activation-aware correction of the residual beats q3's density-quality point (fewer active bytes at q3 quality, held-out)."
     },
     {
-     "hypothesis_family": "kronecker",
+     "hypothesis_family": "unrecorded_in_source",
      "level": "MODEL_SPECIFIC",
      "refuse_eligible": false,
      "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-016",
      "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
-     "verdict": "LIVE_REOPEN_HOLDS"
+     "verdict": "That weight-space low-rank / TT / Kronecker factorisation of a single expert tensor is a density win at the coherent point (layers \u2265 1)."
     },
     {
-     "hypothesis_family": "nns_019_that_existing_gravity_expert_families_hgravb01_hgravr02_hgravs01_or_the_q80_mixed_gate_up_down_bundle_transfer_to_attention_at_q4_equivalent_quality",
+     "hypothesis_family": "unrecorded_in_source",
      "level": "MODEL_SPECIFIC",
-     "refuse_eligible": true,
+     "refuse_eligible": false,
      "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-019",
      "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
-     "verdict": "PROPERTY_OF_IDEA"
+     "verdict": "That existing Gravity expert families (HGRAVB01 / HGRAVR02 / HGRAVS01, or the Q80 mixed gate/up/down bundle) transfer to attention at Q4-equivalent quality."
     },
     {
-     "hypothesis_family": "nns_022_that_entropy_coding_of_lloyd_optimal_pq_indices_yields_a_10_25_byte_win_or_that_rans_on_qwen3_8_q3_symbols_is_an_active_byte_tps_lever",
+     "hypothesis_family": "unrecorded_in_source",
      "level": "MODEL_SPECIFIC",
-     "refuse_eligible": true,
+     "refuse_eligible": false,
      "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-022",
      "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
-     "verdict": "PROPERTY_OF_IDEA"
+     "verdict": "That entropy coding of Lloyd-optimal PQ indices yields a 10\u201325% byte win, or that rANS on Qwen3.8 q3 symbols is an active-byte/TPS lever."
     },
     {
-     "hypothesis_family": "nns_029_that_activation_sparsity_2_mlp_max_or_uniform_bit_descent_below_q3_is_a_clean_path_under_the_qwen3_8_coherent_floor",
+     "hypothesis_family": "unrecorded_in_source",
      "level": "MODEL_SPECIFIC",
-     "refuse_eligible": true,
+     "refuse_eligible": false,
      "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-029",
      "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
-     "verdict": "PROPERTY_OF_IDEA"
+     "verdict": "That activation sparsity (~2\u00d7 MLP max) or uniform bit-descent below q3 is a clean path under the Qwen3.8 coherent floor."
     },
     {
-     "hypothesis_family": "nns_032_that_a_bounded_low_bit_flash_router_study_with_one_deterministic_vector_can_establish_source_equivalent_top_k_routing_or_that_router_overlap_alone_qualifies_a_native_representation",
+     "hypothesis_family": "unrecorded_in_source",
      "level": "MODEL_SPECIFIC",
      "refuse_eligible": false,
      "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-032",
      "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
-     "verdict": "LIVE_REOPEN_HOLDS"
+     "verdict": "That a bounded low-bit Flash router study with one deterministic vector can establish source-equivalent top-k routing, or that router overlap alone qualifies a native representation."
+    },
+    {
+     "hypothesis_family": "spec_decode",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": false,
+     "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#QN-BINARY-AS-DRAFT",
+     "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+     "verdict": "draft acceptance zero at position 0"
+    },
+    {
+     "hypothesis_family": "protected_islands_healing",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#QN-BINARY-HEALING",
+     "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+     "verdict": "generation incoherent"
+    },
+    {
+     "hypothesis_family": "binary_quantization",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#QN-BINARY-INJURY",
+     "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+     "verdict": "generation incoherent"
+    },
+    {
+     "hypothesis_family": "coordinate_transform",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": false,
+     "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#QN-COORDINATE-TRANSFORM",
+     "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+     "verdict": "floor unchanged"
+    },
+    {
+     "hypothesis_family": "structural_elimination_heads",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#QN-HEAD-REDUNDANCY",
+     "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+     "verdict": "refuted before packing"
+    },
+    {
+     "hypothesis_family": "low_rank",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": false,
+     "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#QN-LOWRANK-HEALING",
+     "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+     "verdict": "held-out activation reconstruction fails"
+    },
+    {
+     "hypothesis_family": "shared_basis",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": false,
+     "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#QN-SHARED-BASIS-DENSITY",
+     "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+     "verdict": "held-out activation reconstruction fails; not coherent"
+    },
+    {
+     "hypothesis_family": "shared_k_hybrid",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#QN-SHARED-K-HYBRID",
+     "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+     "verdict": "incoherent and slower"
     },
     {
      "hypothesis_family": "spec_decode",
@@ -3800,7 +3820,7 @@
   }
  },
  "schema": "hawking.future.resident_identity.v1",
- "seal_sha256": "53777809ce3890c08d05fcab7c57ccf5443c70c68e26ff4239dab8ac4d2b88d1",
+ "seal_sha256": "3c696c76275dd1ed9d724e2ebdd9f321223ded761e44b01c58c3cd47bcecc9c7",
  "status": "ACCEPTED",
  "version": 1,
  "work_unit": {

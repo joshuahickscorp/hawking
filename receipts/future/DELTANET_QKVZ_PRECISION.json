@@ -447,7 +447,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T09:22:59Z",
+  "recorded_at": "2026-09-03T05:49:10Z",
   "recorded_by": "tools/future/deltanet_qkvz_precision.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -472,7 +472,7 @@
      "reopen_condition": "A NEW attention codec family, scored on real BF16 X, clearing mean-row output cosine \u2265 0.990 vs BF16 AND a multi-prompt generate identity gate. lm_head additionally needs top-1 agreement; cosine 0.99 is not token identity.",
      "scar_id": "NNS-019",
      "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
-     "surface": "qwen3.8-27b and qwen3-80b attention GEMVs Q/K/V/O, DeltaNet in/out, lm_head extra (top-1 \u2260 cosine)",
+     "surface": "as recorded in NOETIC_NEGATIVE_SCIENCE",
      "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet linear_qkvz HQ30UQ4 q/k/v/z"
     },
     {
@@ -481,7 +481,7 @@
      "reopen_condition": "Sparsity: a Doctor-holding skip pattern that does not compound over 64 layers. Bit-descent: a codec that actually hits the Shannon bound AND a generate gate at that distortion. Neither is a retry of q2 or of unstructured activation skip.",
      "scar_id": "NNS-029",
      "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
-     "surface": "qwen3.8-27b MLP (sparsity); whole artifact (bit-descent)",
+     "surface": "as recorded in NOETIC_NEGATIVE_SCIENCE",
      "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet linear_qkvz HQ30UQ4 q/k/v/z"
     }
    ],
@@ -554,7 +554,7 @@
      "reopen_condition": "A NEW attention codec family, scored on real BF16 X, clearing mean-row output cosine \u2265 0.990 vs BF16 AND a multi-prompt generate identity gate. lm_head additionally needs top-1 agreement; cosine 0.99 is not token identity.",
      "scar_id": "NNS-019",
      "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
-     "surface": "qwen3.8-27b and qwen3-80b attention GEMVs Q/K/V/O, DeltaNet in/out, lm_head extra (top-1 \u2260 cosine)",
+     "surface": "as recorded in NOETIC_NEGATIVE_SCIENCE",
      "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet linear_qkvz HQ30UQ4 q/k/v/z"
     }
    ],
@@ -596,7 +596,7 @@
      "reopen_condition": "A NEW attention codec family, scored on real BF16 X, clearing mean-row output cosine \u2265 0.990 vs BF16 AND a multi-prompt generate identity gate. lm_head additionally needs top-1 agreement; cosine 0.99 is not token identity.",
      "scar_id": "NNS-019",
      "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
-     "surface": "qwen3.8-27b and qwen3-80b attention GEMVs Q/K/V/O, DeltaNet in/out, lm_head extra (top-1 \u2260 cosine)",
+     "surface": "as recorded in NOETIC_NEGATIVE_SCIENCE",
      "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet linear_qkvz HQ30UQ4 q/k/v/z"
     }
    ],
@@ -636,7 +636,7 @@
      "reopen_condition": "A NEW attention codec family, scored on real BF16 X, clearing mean-row output cosine \u2265 0.990 vs BF16 AND a multi-prompt generate identity gate. lm_head additionally needs top-1 agreement; cosine 0.99 is not token identity.",
      "scar_id": "NNS-019",
      "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
-     "surface": "qwen3.8-27b and qwen3-80b attention GEMVs Q/K/V/O, DeltaNet in/out, lm_head extra (top-1 \u2260 cosine)",
+     "surface": "as recorded in NOETIC_NEGATIVE_SCIENCE",
      "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet linear_qkvz HQ30UQ4 q/k/v/z"
     }
    ],
@@ -676,7 +676,7 @@
      "reopen_condition": "A NEW attention codec family, scored on real BF16 X, clearing mean-row output cosine \u2265 0.990 vs BF16 AND a multi-prompt generate identity gate. lm_head additionally needs top-1 agreement; cosine 0.99 is not token identity.",
      "scar_id": "NNS-019",
      "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
-     "surface": "qwen3.8-27b and qwen3-80b attention GEMVs Q/K/V/O, DeltaNet in/out, lm_head extra (top-1 \u2260 cosine)",
+     "surface": "as recorded in NOETIC_NEGATIVE_SCIENCE",
      "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet linear_qkvz HQ30UQ4 q/k/v/z"
     }
    ],
@@ -716,7 +716,7 @@
      "reopen_condition": "Sparsity: a Doctor-holding skip pattern that does not compound over 64 layers. Bit-descent: a codec that actually hits the Shannon bound AND a generate gate at that distortion. Neither is a retry of q2 or of unstructured activation skip.",
      "scar_id": "NNS-029",
      "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
-     "surface": "qwen3.8-27b MLP (sparsity); whole artifact (bit-descent)",
+     "surface": "as recorded in NOETIC_NEGATIVE_SCIENCE",
      "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet linear_qkvz HQ30UQ4 q/k/v/z"
     },
     {
@@ -725,7 +725,7 @@
      "reopen_condition": "A NEW attention codec family, scored on real BF16 X, clearing mean-row output cosine \u2265 0.990 vs BF16 AND a multi-prompt generate identity gate. lm_head additionally needs top-1 agreement; cosine 0.99 is not token identity.",
      "scar_id": "NNS-019",
      "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
-     "surface": "qwen3.8-27b and qwen3-80b attention GEMVs Q/K/V/O, DeltaNet in/out, lm_head extra (top-1 \u2260 cosine)",
+     "surface": "as recorded in NOETIC_NEGATIVE_SCIENCE",
      "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet linear_qkvz HQ30UQ4 q/k/v/z"
     }
    ],
@@ -762,7 +762,7 @@
      "reopen_condition": "A future parent uses NON-Lloyd (biased or stratified) codebooks whose measured index entropy is \u2264 0.9 of uniform. rANS as a TPS lever additionally needs a native register-decodable path that changes active bytes/token.",
      "scar_id": "NNS-022",
      "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
-     "surface": "gpt-oss-120b:F0 (PQ indices); qwen3.8 (q3 symbols / rANS catalog) codebook indices / q3 body",
+     "surface": "as recorded in NOETIC_NEGATIVE_SCIENCE",
      "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet linear_qkvz HQ30UQ4 q/k/v/z"
     }
    ],
@@ -1472,7 +1472,7 @@
   "z_binding": "gated RMSNorm only; not gated-delta; not conv"
  },
  "schema": "hawking.future.deltanet_qkvz_precision.v1",
- "seal_sha256": "9ae20efa518b23d0dfd3cc77284b52732df440a1422be31e3f64e26dea3417ac",
+ "seal_sha256": "0207516ea670f5306984fec7bec783b3015f158a5caa6bd0c8eaf7c2838d59fa",
  "sensitivity": {
   "by_subblock": {
    "k": {

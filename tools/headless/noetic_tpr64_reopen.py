@@ -1186,7 +1186,7 @@ def build() -> dict[str, Any]:
         ),
         confirm(
             "free_receipt.f32_gate",
-            gget(free, "evidence/f32_control_tpr64_ns/gate"),
+            gget(free, "research/evidence/f32_control_tpr64_ns/gate"),
             15125,
         ),
         confirm(
@@ -1286,13 +1286,13 @@ def build() -> dict[str, Any]:
         ),
         "the_33rd": measured["recon_excess_nonzero"][0] if measured["recon_excess_nonzero"] else None,
         "prose_vs_table": {
-            "receipt_says_cosine_1_on_32_of_33": gget(free, "evidence/cosine_1.000000_on"),
+            "receipt_says_cosine_1_on_32_of_33": gget(free, "research/evidence/cosine_1.000000_on"),
             "table_cosine_approx_1": measured["counts"]["cosine_approx_1"],
             "table_cosine_none": measured["counts"]["cosine_none"],
             "table_cosine_not_1": measured["counts"]["cosine_not_1"],
             "receipt_says_ns_band_includes_hadamard": True,
             "hadamard_gate_ns": measured["hadamard"][0]["median_gpu_ns"] if measured["hadamard"] else None,
-            "band_claimed": gget(free, "evidence/codecs_at_tpr64_ns"),
+            "band_claimed": gget(free, "research/evidence/codecs_at_tpr64_ns"),
             "correction": (
                 "Trust the per-variant table in QWEN38_RECON_MEASURED.json over the "
                 "summary string in QWEN38_RECONSTRUCTION_IS_FREE.json."

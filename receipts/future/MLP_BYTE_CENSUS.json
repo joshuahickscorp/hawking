@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T08:14:48Z",
+  "recorded_at": "2026-09-03T05:48:45Z",
   "recorded_by": "tools/future/mlp_byte_census.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -6126,7 +6126,7 @@
      "reopen_condition": "Sparsity: a Doctor-holding skip pattern that does not compound over 64 layers. Bit-descent: a codec that actually hits the Shannon bound AND a generate gate at that distortion. Neither is a retry of q2 or of unstructured activation skip.",
      "scar_id": "NNS-029",
      "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
-     "surface": "qwen3.8-27b MLP (sparsity); whole artifact (bit-descent)",
+     "surface": "as recorded in NOETIC_NEGATIVE_SCIENCE",
      "this_specimen": "qwen3.8-27b sealed-3.14 dense SwiGLU MLP"
     },
     {
@@ -6153,7 +6153,19 @@
    "evidence_class": "STATIC_ONLY",
    "gpu_authority": false,
    "id": "lower_bit",
-   "index_refusals": [],
+   "index_refusals": [
+    {
+     "claim_refuted": "generation incoherent",
+     "hypothesis_family": "binary_quantization",
+     "organ": "down",
+     "queried_organ": "gate",
+     "queried_slug": "binary_quantization",
+     "reopen_condition": "a healing scheme that restores coherent generation while the healed body stays faster than q2f_g64 at 27.55 ms COMPLETE_TOKEN_NS",
+     "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#QN-BINARY-INJURY",
+     "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+     "verdict": "generation incoherent"
+    }
+   ],
    "index_slugs": [
     "uniform_q2",
     "binary_quantization",
@@ -6206,7 +6218,7 @@
      "reopen_condition": "A distilled/generated operator, trained to match the MLP function, achieves q3 quality at materially fewer active bytes held-out across layers, with Doctor holding. That experiment has not been run.",
      "scar_id": "NNS-015",
      "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
-     "surface": "qwen3.8-27b down_proj L31, real post_swiglu X",
+     "surface": "as recorded in NOETIC_NEGATIVE_SCIENCE",
      "this_specimen": "qwen3.8-27b sealed-3.14 dense SwiGLU MLP"
     }
    ],
@@ -6298,7 +6310,7 @@
      "reopen_condition": "A hybrid (low-rank prefix + exact/q3 residual) or a distilled operator showing a GENERALIZING matched-byte win over q3 across layers, with Doctor holding. Pure functional low-rank on this sample size is not that. (The hybrid was then tested: NNS-015.)",
      "scar_id": "NNS-014",
      "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
-     "surface": "qwen3.8-27b down_proj L31/L15 (and G034 gate/down L0/L31/L63)",
+     "surface": "as recorded in NOETIC_NEGATIVE_SCIENCE",
      "this_specimen": "qwen3.8-27b sealed-3.14 dense SwiGLU MLP"
     },
     {
@@ -6307,7 +6319,7 @@
      "reopen_condition": "L>=1: never at the coherent point. L0: already beating the incumbent \u2014 build the organ-and-layer-specific codec. On a new parent, check the Van Loan spectrum before assuming depth behaviour.",
      "scar_id": "NNS-016",
      "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
-     "surface": "qwen3.8-27b (weight-space SVD); qwen3-235b-a22b:F1 (Kronecker) gate/down; L0 is the exception",
+     "surface": "as recorded in NOETIC_NEGATIVE_SCIENCE",
      "this_specimen": "qwen3.8-27b sealed-3.14 dense SwiGLU MLP"
     },
     {
@@ -6402,7 +6414,7 @@
      "reopen_condition": "Never on raw frozen weights. A method that CHANGES the source is not this lever and is not blocked by this entry.",
      "scar_id": "NNS-017",
      "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
-     "surface": "qwen3-235b:F1 (and F0 gpt-oss-120b uniform/treated) whole model; dominant_failure_organ = gate",
+     "surface": "as recorded in NOETIC_NEGATIVE_SCIENCE",
      "this_specimen": "qwen3.8-27b sealed-3.14 dense SwiGLU MLP"
     },
     {
@@ -6411,7 +6423,7 @@
      "reopen_condition": "Any cell measuring \u2265 0.5 decades of gap to its OWN Shannon lower bound. Layer 0 already does. Do not transfer 'Lane A is closed' to it.",
      "scar_id": "NNS-010",
      "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
-     "surface": "qwen3-235b-a22b:F1 gate/down; layer 0 is a different source",
+     "surface": "as recorded in NOETIC_NEGATIVE_SCIENCE",
      "this_specimen": "qwen3.8-27b sealed-3.14 dense SwiGLU MLP"
     }
    ],
@@ -6463,7 +6475,7 @@
      "reopen_condition": "Never on raw frozen weights. A method that CHANGES the source is not this lever and is not blocked by this entry.",
      "scar_id": "NNS-017",
      "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
-     "surface": "qwen3-235b:F1 (and F0 gpt-oss-120b uniform/treated) whole model; dominant_failure_organ = gate",
+     "surface": "as recorded in NOETIC_NEGATIVE_SCIENCE",
      "this_specimen": "qwen3.8-27b sealed-3.14 dense SwiGLU MLP"
     },
     {
@@ -6472,7 +6484,7 @@
      "reopen_condition": "A future parent uses NON-Lloyd (biased or stratified) codebooks whose measured index entropy is \u2264 0.9 of uniform. rANS as a TPS lever additionally needs a native register-decodable path that changes active bytes/token.",
      "scar_id": "NNS-022",
      "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
-     "surface": "gpt-oss-120b:F0 (PQ indices); qwen3.8 (q3 symbols / rANS catalog) codebook indices / q3 body",
+     "surface": "as recorded in NOETIC_NEGATIVE_SCIENCE",
      "this_specimen": "qwen3.8-27b sealed-3.14 dense SwiGLU MLP"
     }
    ],
@@ -6523,7 +6535,7 @@
      "reopen_condition": "A distilled/generated operator, trained to match the MLP function, achieves q3 quality at materially fewer active bytes held-out across layers, with Doctor holding. That experiment has not been run.",
      "scar_id": "NNS-015",
      "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
-     "surface": "qwen3.8-27b down_proj L31, real post_swiglu X",
+     "surface": "as recorded in NOETIC_NEGATIVE_SCIENCE",
      "this_specimen": "qwen3.8-27b sealed-3.14 dense SwiGLU MLP"
     },
     {
@@ -6532,7 +6544,7 @@
      "reopen_condition": "A hybrid (low-rank prefix + exact/q3 residual) or a distilled operator showing a GENERALIZING matched-byte win over q3 across layers, with Doctor holding. Pure functional low-rank on this sample size is not that. (The hybrid was then tested: NNS-015.)",
      "scar_id": "NNS-014",
      "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
-     "surface": "qwen3.8-27b down_proj L31/L15 (and G034 gate/down L0/L31/L63)",
+     "surface": "as recorded in NOETIC_NEGATIVE_SCIENCE",
      "this_specimen": "qwen3.8-27b sealed-3.14 dense SwiGLU MLP"
     }
    ],
@@ -6595,7 +6607,7 @@
      "reopen_condition": "L>=1: never at the coherent point. L0: already beating the incumbent \u2014 build the organ-and-layer-specific codec. On a new parent, check the Van Loan spectrum before assuming depth behaviour.",
      "scar_id": "NNS-016",
      "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
-     "surface": "qwen3.8-27b (weight-space SVD); qwen3-235b-a22b:F1 (Kronecker) gate/down; L0 is the exception",
+     "surface": "as recorded in NOETIC_NEGATIVE_SCIENCE",
      "this_specimen": "qwen3.8-27b sealed-3.14 dense SwiGLU MLP"
     }
    ],
@@ -6626,7 +6638,7 @@
      "reopen_condition": "Sparsity: a Doctor-holding skip pattern that does not compound over 64 layers. Bit-descent: a codec that actually hits the Shannon bound AND a generate gate at that distortion. Neither is a retry of q2 or of unstructured activation skip.",
      "scar_id": "NNS-029",
      "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
-     "surface": "qwen3.8-27b MLP (sparsity); whole artifact (bit-descent)",
+     "surface": "as recorded in NOETIC_NEGATIVE_SCIENCE",
      "this_specimen": "qwen3.8-27b sealed-3.14 dense SwiGLU MLP"
     },
     {
@@ -6635,7 +6647,7 @@
      "reopen_condition": "A full-width structured nonlinear (G8 Monarch/butterfly) or a distilled operator trained to match F=down(silu(gate)*up) at q3 quality, held-out across families, with Doctor holding. Narrow m<17408 sharing is not that.",
      "scar_id": "NNS-013",
      "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
-     "surface": "qwen3.8-27b MLP (67\u201368% of GEMV bytes)",
+     "surface": "as recorded in NOETIC_NEGATIVE_SCIENCE",
      "this_specimen": "qwen3.8-27b sealed-3.14 dense SwiGLU MLP"
     }
    ],
@@ -6725,7 +6737,7 @@
      "reopen_condition": "A full-width structured nonlinear (G8 Monarch/butterfly) or a distilled operator trained to match F=down(silu(gate)*up) at q3 quality, held-out across families, with Doctor holding. Narrow m<17408 sharing is not that.",
      "scar_id": "NNS-013",
      "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
-     "surface": "qwen3.8-27b MLP (67\u201368% of GEMV bytes)",
+     "surface": "as recorded in NOETIC_NEGATIVE_SCIENCE",
      "this_specimen": "qwen3.8-27b sealed-3.14 dense SwiGLU MLP"
     },
     {
@@ -6734,7 +6746,7 @@
      "reopen_condition": "The leaked 'beats q3' number stays dead. A full-width structured nonlinear (Monarch/butterfly, not a narrow bottleneck) is G8 and was listed still_untested \u2014 a new family, not a retry of m=6144.",
      "scar_id": "NNS-012",
      "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
-     "surface": "qwen3.8-27b dense MLP all 64 MLPs as one shared operator + FiLM",
+     "surface": "as recorded in NOETIC_NEGATIVE_SCIENCE",
      "this_specimen": "qwen3.8-27b sealed-3.14 dense SwiGLU MLP"
     }
    ],
@@ -6761,7 +6773,7 @@
      "reopen_condition": "A full-width structured nonlinear (G8 Monarch/butterfly) or a distilled operator trained to match F=down(silu(gate)*up) at q3 quality, held-out across families, with Doctor holding. Narrow m<17408 sharing is not that.",
      "scar_id": "NNS-013",
      "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
-     "surface": "qwen3.8-27b MLP (67\u201368% of GEMV bytes)",
+     "surface": "as recorded in NOETIC_NEGATIVE_SCIENCE",
      "this_specimen": "qwen3.8-27b sealed-3.14 dense SwiGLU MLP"
     },
     {
@@ -6770,7 +6782,7 @@
      "reopen_condition": "The leaked 'beats q3' number stays dead. A full-width structured nonlinear (Monarch/butterfly, not a narrow bottleneck) is G8 and was listed still_untested \u2014 a new family, not a retry of m=6144.",
      "scar_id": "NNS-012",
      "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
-     "surface": "qwen3.8-27b dense MLP all 64 MLPs as one shared operator + FiLM",
+     "surface": "as recorded in NOETIC_NEGATIVE_SCIENCE",
      "this_specimen": "qwen3.8-27b sealed-3.14 dense SwiGLU MLP"
     },
     {
@@ -6779,7 +6791,7 @@
      "reopen_condition": "A distilled/generated operator, trained to match the MLP function, achieves q3 quality at materially fewer active bytes held-out across layers, with Doctor holding. That experiment has not been run.",
      "scar_id": "NNS-015",
      "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
-     "surface": "qwen3.8-27b down_proj L31, real post_swiglu X",
+     "surface": "as recorded in NOETIC_NEGATIVE_SCIENCE",
      "this_specimen": "qwen3.8-27b sealed-3.14 dense SwiGLU MLP"
     }
    ],
@@ -6825,7 +6837,19 @@
    "evidence_class": "STATIC_ONLY",
    "gpu_authority": false,
    "id": "capability_sensitive_literal_islands",
-   "index_refusals": [],
+   "index_refusals": [
+    {
+     "claim_refuted": "generation incoherent",
+     "hypothesis_family": "binary_quantization",
+     "organ": "down",
+     "queried_organ": "gate",
+     "queried_slug": "qn_binary_healing",
+     "reopen_condition": "a healing scheme that restores coherent generation while the healed body stays faster than q2f_g64 at 27.55 ms COMPLETE_TOKEN_NS",
+     "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#QN-BINARY-INJURY",
+     "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+     "verdict": "generation incoherent"
+    }
+   ],
    "index_slugs": [
     "protected_islands",
     "qn_binary_healing"
@@ -6880,7 +6904,7 @@
   "sealed_profile": "hcli/hawking-native.sealed-3.14.json"
  },
  "schema": "hawking.future.mlp_byte_census.v1",
- "seal_sha256": "1802f08d5074f633ff263466dbb75ad61d56b88317ed25f17c568ecda034d64a",
+ "seal_sha256": "3b9d305c2e608924abe8b32d48b3c5ab1409a4ad35c71429ff6965c98924068b",
  "version": 1,
  "what_this_does_not_prove": [
   "physical EBPW of a different packing",

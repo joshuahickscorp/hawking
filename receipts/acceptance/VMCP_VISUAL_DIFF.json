@@ -99,27 +99,27 @@
   ],
   "criterion": {
     "end_line": 7854,
-    "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "file": "/Users/scammermike/Downloads/hawking/docs/roadmap-lineage/H-ROADMAP.superseded-2026-09-02.md",
     "quoted": "## E.8 Visual proof engine\n\n- baseline/candidate screenshot\n- pixel diff\n- region diff\n- layout diff\n- text comparison\n- image provenance\n- SSIM where useful\n- per-region metrics\n- known-limit report\n- residual localization\n\n",
     "start_line": 7841,
     "weakened": false
   },
   "criterion_weakened": false,
-  "elapsed_ms": 1.464,
+  "elapsed_ms": 2.6,
   "evidence_tier": "FUNCTIONAL_SIM",
   "gate": "VMCP_VISUAL_DIFF",
-  "generated_at": "2026-09-02T23:16:06Z",
+  "generated_at": "2026-09-03T05:34:31Z",
   "gpu_authority": false,
   "invoked_symbols": [
     {
-      "elapsed_ms": 0.69,
+      "elapsed_ms": 1.513,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "tools.acceptance.vmcp.gates._pixel_metrics"
     },
     {
-      "elapsed_ms": 0.267,
+      "elapsed_ms": 0.331,
       "error": null,
       "kind": "call",
       "raised": false,

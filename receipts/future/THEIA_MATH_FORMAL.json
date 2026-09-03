@@ -4,7 +4,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T09:18:34Z",
+  "recorded_at": "2026-09-03T05:52:44Z",
   "recorded_by": "tools/theia/math_lab.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -73,7 +73,7 @@
    },
    "kind": "theorem",
    "novelty": "not novel; occupancy_class identity already in KERNEL_GEOMETRY.json",
-   "source": "/Users/scammermike/.claude-grok/worktrees/t1-theia-laboratories-real-20260902-045552/receipts/future/KERNEL_GEOMETRY.json",
+   "source": "/Users/scammermike/Downloads/hawking/receipts/future/KERNEL_GEOMETRY.json",
    "work": "theorem_search",
    "z3_result": "sat"
   },
@@ -101,7 +101,7 @@
    "n_parts": 6,
    "novelty": "not novel; restates complete_ebpw's unreconciled-candidate refusal",
    "parts_sum": 10554328856,
-   "source": "/Users/scammermike/.claude-grok/worktrees/t1-theia-laboratories-real-20260902-045552/receipts/future/COMPLETE_EBPW.json",
+   "source": "/Users/scammermike/Downloads/hawking/receipts/future/COMPLETE_EBPW.json",
    "stored_bytes": 10554328856,
    "work": "symbolic_computation",
    "z3_result": "sat"
@@ -110,10 +110,10 @@
  "evidence_class": "STATIC_ONLY",
  "evidence_tier": "STATIC",
  "executable_work": [
-  "counterexample_search",
-  "formalization",
   "symbolic_computation",
-  "theorem_search"
+  "theorem_search",
+  "counterexample_search",
+  "formalization"
  ],
  "h6": {
   "failed_lemmas_archived": [
@@ -131,6 +131,6 @@
  "recipe": "H.6",
  "recorded_by": "tools/theia/math_lab.py",
  "schema": "hawking.theia.math_formal.v1",
- "seal_sha256": "f476360a9d2a66b600ce66554ef31328614639eca27cf855a78a937694c363cd",
+ "seal_sha256": "0c20df207cff7424e4ba2d5888a057fcd671b72fb53c5fb40aecd0aeccef28dd",
  "version": 1
 }

@@ -4,7 +4,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-03T00:37:27Z",
+  "recorded_at": "2026-09-03T06:53:38Z",
   "recorded_by": "tools/future/consolidated_run.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -2084,7 +2084,7 @@
       "note": "durable workgraph exists (selftest / scheduler). It is not an Odyssey I run restart until a descriptor has launched.",
       "odyssey_run": false,
       "schema": "hawking.future.workgraph.durable.v1",
-      "tick": 649
+      "tick": 910
      }
     }
    }
@@ -2278,7 +2278,7 @@
   "verdict": "REFUSED"
  },
  "gpu_authority": false,
- "head": "b35af1fa8886aa9d5903e3b9e943503c63cb001e",
+ "head": "b34f9e294a7a585fe57a449bff62304e361a5d02",
  "met": [
   "resident_autonomy_trial_pass",
   "modellake_identity",
@@ -2341,7 +2341,7 @@
   "workunit": "one CPU_ANALYSIS unit; odyssey-i.consolidated-run; refuses rather than emitting a launch-shaped descriptor"
  },
  "schema": "hawking.future.consolidated_run.v1",
- "seal_sha256": "8e4bedfb983f7c006988e342758534bee9ad1e8792d8aeaa3f0f3573515bc458",
+ "seal_sha256": "7b65e313bac2393a610ee4e5b1d93cd2cd5415ce28edcf93ab3f172f17c95b9b",
  "unmet": [
   "specimen_curriculum_ready",
   "gravity_callable"

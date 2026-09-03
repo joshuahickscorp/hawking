@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-03T00:36:33Z",
+  "recorded_at": "2026-09-03T06:56:09Z",
   "recorded_by": "tools/future/frontiers.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -115,7 +115,7 @@
      "source_f": "F005",
      "species": "hardware_doctor_experiment",
      "title": "Rank HBM residency candidates from organ census; meter fields stay UNKNOWN",
-     "verifier": "future.hbm_doctor.rank"
+     "verifier": "future.hbm_doctor.solve"
     }
    ],
    "open_questions": [],
@@ -610,7 +610,7 @@
      ],
      "species": "fpga_simulation",
      "title": "Simulate FPGA engine-school goldens on CPU; associativity is part of the number",
-     "verifier": "future.fpga_engines.simulate"
+     "verifier": "future.fpga_engines.qgemv"
     },
     {
      "bench_state": "UNKNOWN",
@@ -2338,7 +2338,7 @@
   ]
  },
  "gpu_authority": false,
- "head": "b35af1fa8886aa9d5903e3b9e943503c63cb001e",
+ "head": "90901d1f22f126f3f13c42675bca2ea9f8796454",
  "idle_proof": {
   "active": [
    "ACTIVE_BYTES",
@@ -2469,7 +2469,7 @@
    "candidate_status": "STATIC_ONLY",
    "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
    "classification": "STATIC_ONLY",
-   "content_hash": "73f7802a1f71d2e26231557839812a76d267e2ec24244171e75a15020f0a488a",
+   "content_hash": "65c95d40a36066d782f71173c441dde410da978e595e24ab53914e0affe84cf4",
    "dependencies": [],
    "description": "hbm_doctor.py decides what 8 GB of HBM is for. CPU ranking of ResidentCandidate records; no invented bandwidth_gbps.",
    "effect_class": "READ_ONLY",
@@ -2506,7 +2506,7 @@
    "status": "pending",
    "title": "Rank HBM residency candidates from organ census; meter fields stay UNKNOWN",
    "verification": null,
-   "verifier": "future.hbm_doctor.rank",
+   "verifier": "future.hbm_doctor.solve",
    "workspace": "repo-root"
   },
   {
@@ -2693,7 +2693,7 @@
    "candidate_status": "STATIC_ONLY",
    "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
    "classification": "STATIC_ONLY",
-   "content_hash": "6b57c9d523ce66a5c5db4e5e0b43b1f0f7b6219df52272a02bd37199eae870e9",
+   "content_hash": "a27c9c2d2c8bffc78e494e79f8ba8013eb446d313972334d09668b2496eb436a",
    "dependencies": [],
    "description": "FPGA is Accelerator/Physical Compiler/Fusion, not its own civilization. No HDL emit. No board.",
    "effect_class": "REVERSIBLE",
@@ -2730,7 +2730,7 @@
    "status": "pending",
    "title": "Simulate FPGA engine-school goldens on CPU; associativity is part of the number",
    "verification": null,
-   "verifier": "future.fpga_engines.simulate",
+   "verifier": "future.fpga_engines.qgemv",
    "workspace": "repo-root"
   },
   {
@@ -4436,7 +4436,7 @@
   "workunit_emitted": "HCLI WorkUnit via tools.future.workunit_species.emit_hcli_workunit; extras: frontier, required_lanes, wake_condition, redundancy_key, expected_information_gain, hypothesis_family"
  },
  "schema": "hawking.future.frontiers.v1",
- "seal_sha256": "3bfb079c215aa12c913ded8e70dc9af03cc295fd9b6ce20bec274512023362ea",
+ "seal_sha256": "14bfc5223969999738a12949476614d1c51a2fcb158a6becbeb1e5d204818d5a",
  "sleeping": [
   {
    "assigned_backend": null,

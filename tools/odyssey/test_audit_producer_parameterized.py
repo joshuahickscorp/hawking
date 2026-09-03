@@ -48,7 +48,7 @@ def test_a_second_model_cannot_overwrite_the_first_audit():
 def test_no_read_site_still_uses_the_module_constant():
     """Three sites read SOURCE_REPOSITORY/SOURCE_REVISION directly, which is why the
     operator could only ever audit one model."""
-    src = (REPO / "lab/operators/ascension_qwen30_physical_campaign.py").read_text()
+    src = (REPO / "research/lab/operators/ascension_qwen30_physical_campaign.py").read_text()
     body = src[src.index("class Qwen30PhysicalCampaign"):]
     assert '"repository": SOURCE_REPOSITORY' not in body
     assert '"revision": SOURCE_REVISION' not in body

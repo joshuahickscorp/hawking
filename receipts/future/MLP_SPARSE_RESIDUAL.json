@@ -25,7 +25,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-03T01:49:02Z",
+  "recorded_at": "2026-09-03T05:51:30Z",
   "recorded_by": "tools/future/mlp_sparse_residual.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -13645,7 +13645,7 @@
   "every sweep point scored by executable_economics",
   "train-set figure cannot be reported as held-out (loud exception)"
  ],
- "git_head": "d1e4f06a493fc82e3da62e2ef0b61e0cc6f6eb6d",
+ "git_head": "6ef2681614fadde7a45d002b5fc3feb108c81625",
  "gpu_authority": false,
  "index": {
   "cousins_not_this_object": [
@@ -13696,16 +13696,9 @@
    {
     "hypothesis_family": "low_rank",
     "model": "qwen3.8-27b",
-    "n_hits": 1,
+    "n_hits": 0,
     "organ": "mlp",
-    "top": [
-     {
-      "hypothesis_family": "low_rank",
-      "level": "MODEL_SPECIFIC",
-      "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-011",
-      "verdict": "LIVE_REOPEN_HOLDS"
-     }
-    ]
+    "top": []
    },
    {
     "hypothesis_family": "synthetic_activation",
@@ -13789,7 +13782,7 @@
   "status": "RESIDUAL_RESCUE_CLOSED",
   "why": "Some concentration exists, but even an oracle residual at the 5% MLP-byte MATERIAL bar cannot push held-out relative L2 below 0.25. A residual large enough to carry F is no longer sparse."
  },
- "seal_sha256": "1087e07cd626bbd39a67a0ce5bdf13ae74f369741cd0c046105c78d90cee6d34",
+ "seal_sha256": "d8763d4e553dc39f8f7af44b1ae3599caf79b39a06c9da38a0cc018b9cd40847",
  "selftest": {
   "dense_fixture_gini": 0.401721,
   "held_out_leak_codes": [

@@ -68,7 +68,7 @@ def checker_status() -> dict[str, Any]:
             "path": str(lean) if lean.is_file() else None,
             "used": False,
             "why_unused": (
-                "ramanujan/container/probe/RamanujanProbe.lean is not in this "
+                "research/ramanujan/container/probe/RamanujanProbe.lean is not in this "
                 "sparse checkout; invoking lean would require subprocess, which "
                 "this engine does not do"
             ),

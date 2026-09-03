@@ -284,7 +284,7 @@
     },
     {
       "adapter_module": null,
-      "file": "evidence/hawking/HAWKING_CAMPAIGN_LEDGER.jsonl",
+      "file": "research/evidence/hawking/HAWKING_CAMPAIGN_LEDGER.jsonl",
       "line": 1,
       "name": "campaign JSONL ledgers",
       "notes": "Not product events; stay as campaign receipts. No adapter required.",

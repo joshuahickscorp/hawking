@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T06:16:47Z",
+  "recorded_at": "2026-09-03T05:34:40Z",
   "recorded_by": "tools/audit/reachability_triage.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -13,7 +13,7 @@
    "command": "git --no-optional-locks grep -nE 'tools\\\\.accelerator\\\\.ane_micrograph_author|from tools\\\\.accelerator import ane_micrograph_author|tools/accelerator/ane_micrograph_author\\\\.py' HEAD -- '*.py'",
    "module": "tools/accelerator/ane_micrograph_author.py",
    "n_matches": 3,
-   "output_head": "HEAD:tools/future/ane_preboard.py:93:    \"tools/accelerator/ane_micrograph_author.py\",\nHEAD:tools/future/ane_preboard.py:1682:            \"tools/accelerator/ane_micrograph_author.py, ane_probe.swift, and run_ane_lane.sh do not exist in HEAD\",\nHEAD:tools/future/test_ane_preboard.py:386:        \"tools/accelerator/ane_micrograph_author.py\",",
+   "output_head": "HEAD:tools/future/ane_preboard.py:94:    \"tools/accelerator/ane_micrograph_author.py\",\nHEAD:tools/future/ane_preboard.py:1671:            \"tools/accelerator/ane_micrograph_author.py, ane_probe.swift, and run_ane_lane.sh do not exist in HEAD\",\nHEAD:tools/future/test_ane_preboard.py:386:        \"tools/accelerator/ane_micrograph_author.py\",",
    "production_import_hits": [],
    "verdict": "UNREACHABLE"
   },
@@ -45,14 +45,14 @@
    "command": "git --no-optional-locks grep -nE 'tools\\\\.accelerator\\\\.bytes_atlas|from tools\\\\.accelerator import bytes_atlas|tools/accelerator/bytes_atlas\\\\.py' HEAD -- '*.py'",
    "module": "tools/accelerator/bytes_atlas.py",
    "n_matches": 6,
-   "output_head": "HEAD:tools/future/ebpw_categories.py:1278:            \"path\": \"tools/accelerator/bytes_atlas.py\",\nHEAD:tools/future/ebpw_categories.py:1383:            \"tools/accelerator/bytes_atlas.py is not materialized in this sparse checkout (present in git; recovered via git show).\",\nHEAD:tools/future/hbm_doctor.py:53:BYTES_ATLAS_MODULE = \"tools/accelerator/bytes_atlas.py\"\nHEAD:tools/future/mlp_byte_census.py:253:# Catalog parser. Same HQ38M20 layout as tools/accelerator/bytes_atlas.py;\nHEAD:tools/future/mlp_byte_census.py:1530:            \"catalog_format\": \"HQ38M20 (same layout as tools/accelerator/bytes_atlas.py)\",\nHEAD:tools/future/mlp_byte_census.py:1545:            \"tools/accelerator/bytes_atlas.py is not materialized; parser is duplicated here, not imported\",",
+   "output_head": "HEAD:tools/future/ebpw_categories.py:1382:            \"path\": \"tools/accelerator/bytes_atlas.py\",\nHEAD:tools/future/ebpw_categories.py:1488:            \"tools/accelerator/bytes_atlas.py is not materialized in this sparse checkout (present in git; recovered via git show).\",\nHEAD:tools/future/hbm_doctor.py:90:BYTES_ATLAS_MODULE = \"tools/accelerator/bytes_atlas.py\"\nHEAD:tools/future/mlp_byte_census.py:253:# Catalog parser. Same HQ38M20 layout as tools/accelerator/bytes_atlas.py;\nHEAD:tools/future/mlp_byte_census.py:1530:            \"catalog_format\": \"HQ38M20 (same layout as tools/accelerator/bytes_atlas.py)\",\nHEAD:tools/future/mlp_byte_census.py:1545:            \"tools/accelerator/bytes_atlas.py is not materialized; parser is duplicated here, not imported\",",
    "production_import_hits": [],
    "verdict": "UNREACHABLE"
   },
   {
    "command": "git --no-optional-locks grep -nE 'tools\\\\.accelerator\\\\.accelerator_runner' HEAD -- '*.py'",
    "hcli_hits": [
-    "HEAD:hcli/agentos_cli.py:1033:            from tools.accelerator.accelerator_runner import ("
+    "HEAD:hcli/agentos_cli.py:1040:            from tools.accelerator.accelerator_runner import ("
    ],
    "hcli_invocations": [
     {
@@ -74,58 +74,26 @@
    "hcli_path": "hcli/agentos_cli.py:1049 (call)",
    "module": "tools/accelerator/accelerator_runner.py",
    "n_matches": 3,
-   "output_head": "HEAD:hcli/agentos_cli.py:1033:            from tools.accelerator.accelerator_runner import (\nHEAD:tools/accelerator/repatriation_audit.py:17:from tools.accelerator.accelerator_runner import (\nHEAD:tools/future/workunit_species.py:1236:            \"tools.accelerator.accelerator_runner.workunits_for_specs\": (",
+   "output_head": "HEAD:hcli/agentos_cli.py:1040:            from tools.accelerator.accelerator_runner import (\nHEAD:tools/accelerator/repatriation_audit.py:17:from tools.accelerator.accelerator_runner import (\nHEAD:tools/future/workunit_species.py:1236:            \"tools.accelerator.accelerator_runner.workunits_for_specs\": (",
    "verdict": "CONNECTED"
   },
   {
-   "command": "git --no-optional-locks grep -nE 'tools\\\\.future\\\\.status_causality' HEAD -- '*.py'",
-   "hcli_hits": [],
+   "command": "git --no-optional-locks grep -nE 'tools\\\\.future\\\\.capability_reachability' HEAD -- '*.py'",
+   "hcli_hits": [
+    "HEAD:hcli/goal_compile.py:174:    from tools.future.capability_reachability import assemble",
+    "HEAD:hcli/test_goal_compile.py:360:        \"tools.future.capability_reachability.assemble\","
+   ],
    "hcli_invocations": [
     {
-     "file": "hcli/agentos/autonomy_gate.py",
+     "file": "hcli/goal_compile.py",
      "kind": "call",
-     "line": 101
-    },
-    {
-     "file": "hcli/agentos/autonomy_gate.py",
-     "kind": "call",
-     "line": 154
-    },
-    {
-     "file": "hcli/agentos/modellake_gate.py",
-     "kind": "call",
-     "line": 91
-    },
-    {
-     "file": "hcli/agentos/modellake_gate.py",
-     "kind": "call",
-     "line": 144
-    },
-    {
-     "file": "hcli/agentos/native_gate.py",
-     "kind": "call",
-     "line": 77
-    },
-    {
-     "file": "hcli/agentos/native_gate.py",
-     "kind": "call",
-     "line": 130
-    },
-    {
-     "file": "hcli/agentos/native_mission_gate.py",
-     "kind": "call",
-     "line": 68
-    },
-    {
-     "file": "hcli/agentos/native_mission_gate.py",
-     "kind": "call",
-     "line": 121
+     "line": 176
     }
    ],
-   "hcli_path": "hcli/agentos/autonomy_gate.py:101 (call)",
-   "module": "tools/future/status_causality.py",
-   "n_matches": 13,
-   "output_head": "HEAD:tools/future/campaign_scars.py:26:from tools.future.status_causality import (\nHEAD:tools/future/campaign_scars.py:483:            \"implemented_in\": \"tools.future.status_causality.check_claim\",\nHEAD:tools/future/capability_reachability.py:533:    ToolRegistry -- see tools.future.status_causality for why this matters:\nHEAD:tools/future/status_causality.py:530:    \"calls\": \"tools.future.status_causality.emit\",\nHEAD:tools/future/status_causality.py:1654:        \"emit_entry_point\": \"tools.future.status_causality.emit()\",\nHEAD:tools/future/status_causality.py:2611:            \"entry_point\": \"tools.future.status_causality.challenge()\",\nHEAD:tools/future/status_causality.py:2612:            \"emit_entry_point\": \"tools.future.status_causality.emit()\",\nHEAD:tools/future/status_causality.py:2613:            \"stamp_entry_point\": \"tools.future.status_causality.stamp()\",\nHEAD:tools/future/status_causality.py:2628:            \"entry_point\": \"tools.future.status_causality.emit()\",\nHEAD:tools/future/status_causality.py:2629:            \"stamp\": \"tools.future.status_causality.stamp()\",\nHEAD:tools/future/test_status_causality.py:352:    assert doc[\"resident_callable\"][\"entry_point\"] == \"tools.future.status_causality.challenge()\"\nHEAD:tools/future/test_status_causality.py:626:    assert iii[\"calls\"] == \"tools.future.status_causality.emit\"\nHEAD:tools/future/test_status_causality.py:634:        \"tools.future.status_causality.emit()\"",
+   "hcli_path": "hcli/goal_compile.py:176 (call)",
+   "module": "tools/future/capability_reachability.py",
+   "n_matches": 10,
+   "output_head": "HEAD:hcli/goal_compile.py:174:    from tools.future.capability_reachability import assemble\nHEAD:hcli/test_goal_compile.py:360:        \"tools.future.capability_reachability.assemble\",\nHEAD:tools/future/capability_reachability.py:655:        \"from tools.future.capability_reachability import _fanout_worker_main; \"\nHEAD:tools/roadmap/__init__.py:6:tools.future.capability_reachability), tests, receipts as citations only, and\nHEAD:tools/roadmap/auditor.py:987:            \"tools.future.capability_reachability AST Call/subprocess helpers when \"\nHEAD:tools/roadmap/index_client.py:310:    \"\"\"Port of tools.future.capability_reachability._resolved_from_modules.\"\"\"\nHEAD:tools/roadmap/reach.py:1:\"\"\"Call-site evidence, reused from tools.future.capability_reachability.\nHEAD:tools/roadmap/reach.py:170:    \"\"\"Same rule as tools.future.capability_reachability.is_test_path.\"\"\"\nHEAD:tools/roadmap/reach.py:794:    \"\"\"Original AST path via tools.future.capability_reachability.\"\"\"\nHEAD:tools/roadmap/test_roadmap_graph.py:245:    from tools.future.capability_reachability import assemble, build_repo_index, find_module_import_sites",
    "verdict": "CONNECTED"
   },
   {
@@ -145,17 +113,17 @@
    ],
    "hcli_path": "hcli/acquisition.py:120 (call)",
    "module": "tools/odyssey/modellake_promote.py",
-   "n_matches": 5,
-   "output_head": "HEAD:tools/odyssey/modellake_watch.py:37:# tools.odyssey.modellake_promote.PARTIAL_ROOT would silently not affect the\nHEAD:tools/odyssey/product_boundary.py:313:            \"promote is tools.odyssey.modellake_promote.promote; this plan \"\nHEAD:tools/odyssey/test_modellake_watch.py:363:    tools.odyssey.modellake_promote -- a test (or future caller) patching\nHEAD:tools/roadmap/catalog.py:287:        modules=(\"tools.odyssey.modellake_promote\",),\nHEAD:tools/roadmap/catalog.py:288:        symbols=((\"tools.odyssey.modellake_promote\", \"promote\"),),",
+   "n_matches": 6,
+   "output_head": "HEAD:tools/acceptance/lake/common.py:56:        \"symbol\": \"tools.odyssey.modellake_promote.promote\",\nHEAD:tools/odyssey/modellake_watch.py:37:# tools.odyssey.modellake_promote.PARTIAL_ROOT would silently not affect the\nHEAD:tools/odyssey/product_boundary.py:313:            \"promote is tools.odyssey.modellake_promote.promote; this plan \"\nHEAD:tools/odyssey/test_modellake_watch.py:363:    tools.odyssey.modellake_promote -- a test (or future caller) patching\nHEAD:tools/roadmap/catalog.py:287:        modules=(\"tools.odyssey.modellake_promote\",),\nHEAD:tools/roadmap/catalog.py:288:        symbols=((\"tools.odyssey.modellake_promote\", \"promote\"),),",
    "verdict": "CONNECTED"
   },
   {
    "command": "git --no-optional-locks grep -nE 'tools\\\\.accelerator\\\\.architecture_atlas' HEAD -- '*.py'",
    "hcli_hits": [
     "HEAD:hcli/agentos/test_fpga_preboard.py:9:from tools.accelerator.architecture_atlas import build_atlas",
-    "HEAD:hcli/agentos_cli.py:1017:            from tools.accelerator.architecture_atlas import build_atlas, emit_atlas, validate_atlas",
+    "HEAD:hcli/agentos_cli.py:1024:            from tools.accelerator.architecture_atlas import build_atlas, emit_atlas, validate_atlas",
     "HEAD:hcli/test_architecture.py:4:from tools.accelerator.architecture_atlas import build_atlas",
-    "HEAD:hcli/tool_registry.py:1331:            from tools.accelerator.architecture_atlas import validate_atlas"
+    "HEAD:hcli/tool_registry.py:1460:            from tools.accelerator.architecture_atlas import validate_atlas"
    ],
    "hcli_invocations": [
     {
@@ -176,13 +144,13 @@
     {
      "file": "hcli/tool_registry.py",
      "kind": "call",
-     "line": 1423
+     "line": 1462
     }
    ],
    "hcli_path": "hcli/agentos_cli.py:1029 (call)",
    "module": "tools/accelerator/architecture_atlas.py",
    "n_matches": 7,
-   "output_head": "HEAD:hcli/agentos/test_fpga_preboard.py:9:from tools.accelerator.architecture_atlas import build_atlas\nHEAD:hcli/agentos_cli.py:1017:            from tools.accelerator.architecture_atlas import build_atlas, emit_atlas, validate_atlas\nHEAD:hcli/test_architecture.py:4:from tools.accelerator.architecture_atlas import build_atlas\nHEAD:hcli/tool_registry.py:1331:            from tools.accelerator.architecture_atlas import validate_atlas\nHEAD:tools/accelerator/accelerator_runner.py:33:from tools.accelerator.architecture_atlas import (\nHEAD:tools/accelerator/repatriation_audit.py:21:from tools.accelerator.architecture_atlas import (\nHEAD:tools/accelerator/repatriation_effects.py:22:from tools.accelerator.architecture_atlas import (",
+   "output_head": "HEAD:hcli/agentos/test_fpga_preboard.py:9:from tools.accelerator.architecture_atlas import build_atlas\nHEAD:hcli/agentos_cli.py:1024:            from tools.accelerator.architecture_atlas import build_atlas, emit_atlas, validate_atlas\nHEAD:hcli/test_architecture.py:4:from tools.accelerator.architecture_atlas import build_atlas\nHEAD:hcli/tool_registry.py:1460:            from tools.accelerator.architecture_atlas import validate_atlas\nHEAD:tools/accelerator/accelerator_runner.py:33:from tools.accelerator.architecture_atlas import (\nHEAD:tools/accelerator/repatriation_audit.py:21:from tools.accelerator.architecture_atlas import (\nHEAD:tools/accelerator/repatriation_effects.py:22:from tools.accelerator.architecture_atlas import (",
    "verdict": "CONNECTED"
   },
   {
@@ -213,7 +181,7 @@
  "claim_boundary": "Static sidecar artifact. No hardware measurement.",
  "connected": [
   "tools/accelerator/accelerator_runner.py",
-  "tools/future/status_causality.py",
+  "tools/future/capability_reachability.py",
   "tools/odyssey/modellake_promote.py",
   "tools/accelerator/architecture_atlas.py",
   "tools/accelerator/bench.py"
@@ -221,7 +189,7 @@
  "evidence_tier": "STATIC",
  "purpose": "Mandatory 5 UNREACHABLE + 5 CONNECTED hand verification via git grep -nE",
  "schema": "hawking.audit.reachability_triage_spotchecks.v1",
- "seal_sha256": "7a2bb9f31fa60f4cdce0583dba4a5da96180fad25ee9d95dc41ff29315cf5ca9",
+ "seal_sha256": "1ee135aff0d0aeb9aeabf78c01709a2bc2fbd0f429befe1c6c5782c9a15a3c5a",
  "unreachable": [
   "tools/accelerator/ane_micrograph_author.py",
   "tools/future/abi_verdicts.py",

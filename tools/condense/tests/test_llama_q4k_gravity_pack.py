@@ -1,5 +1,13 @@
 from __future__ import annotations
 
+import pytest
+
+# SKIP, not ERROR. A module that raises at import time is a COLLECTION
+# ERROR, which reads as a broken suite and hides the real reason -- the
+# same shape that let 17 roadmap invariants sit dead behind a missing
+# file. "gguf is not installed" is a fact worth stating plainly.
+pytest.importorskip("gguf", reason="gguf is not installed in this environment")
+
 import importlib.util
 from pathlib import Path
 from types import SimpleNamespace

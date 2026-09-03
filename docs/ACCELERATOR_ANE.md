@@ -87,7 +87,7 @@ an ANE candidate can be promoted. Until then the Physical Graph Compiler may
 describe ANE as a candidate, but it must retain the Metal route.
 
 The current Flash critical path is likewise source-bound: the layer-3 full-
-attention organ probe is [FLASH_NOETIC_FULL_ATTENTION_LAYER3_ORGAN.json](/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_FULL_ATTENTION_LAYER3_ORGAN.json).
+attention organ probe is [FLASH_NOETIC_FULL_ATTENTION_LAYER3_ORGAN.json](receipts/headless/FLASH_NOETIC_FULL_ATTENTION_LAYER3_ORGAN.json).
 It passes HyperConnection read-mix, Q/K/V projection, Q/K norm + RoPE, causal
 GQA, sigmoid gating, O projection, the first HyperConnection combine, routed /
 shared MoE, and the second HyperConnection combine on the exact layer-0..2

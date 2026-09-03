@@ -10,7 +10,7 @@ The existing mixed-q3mlp-q3attn-v1 artifact (3.3448 complete BPW, coherent) IS
 the standalone base and already runs. This script proves the tiered structure
 in numpy. Native-decode of the correction plane is future work.
 
-  python3 tools/matryoshka_pack.py --layers 15,31,47 --out hawking-experiments/superwave/g1/g11-matryoshka.md
+  python3 tools/matryoshka_pack.py --layers 15,31,47 --out research/hawking-experiments/superwave/g1/g11-matryoshka.md
 """
 from __future__ import annotations
 
@@ -889,10 +889,10 @@ def write_report(
     a("```")
     a("")
     a("Codec identity with mixed-q3mlp is the HGRAVU01 rule in")
-    a("`lab/operators/qwen38_mlp_not_r160_pack.py:encode_uniform_payload` and")
-    a("`lab/operators/ascension_dual_gravity_worker.py:_uniform_codec` (group 64,")
+    a("`research/lab/operators/qwen38_mlp_not_r160_pack.py:encode_uniform_payload` and")
+    a("`research/lab/operators/ascension_dual_gravity_worker.py:_uniform_codec` (group 64,")
     a("bound = 2^{bits-1}-1, scale stored f16). This file reimplements that rule so")
-    a("the worktree does not have to materialize `lab/`.")
+    a("the worktree does not have to materialize `research/lab/`.")
     a("")
     a("Why the correction plane has its own scale: a q3 residual lives in")
     a("(-0.5 s_b, 0.5 s_b]. Feeding that residual to q2 *with s_b* rounds every")

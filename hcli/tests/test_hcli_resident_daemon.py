@@ -134,15 +134,22 @@ def test_resident_children_are_explicitly_parented_and_durable() -> None:
         store = ResidentStore(workspace)
         assert job["job_id"] in store.read()["child_job_ids"]
 
-        deadline = time.time() + 5
-        while time.time() < deadline:
-            from hcli.agentos.background import BackgroundJobStore
+        # A bound against hanging, NOT a performance assertion. Five seconds
+        # was a guess at how long a `print('child')` needs to be observed
+        # finished, and under the sharded runner the box is busy enough that
+        # the guess failed about one run in six -- reporting the last polled
+        # state, which was still RUNNING. The wait ends as soon as the job is
+        # terminal, so a generous ceiling costs nothing when it works.
+        from hcli.agentos.background import BackgroundJobStore
 
-            status = BackgroundJobStore(workspace).inspect(job["job_id"])
-            if status["state"] in {"COMPLETED", "FAILED"}:
-                break
+        deadline = time.time() + 60
+        status = BackgroundJobStore(workspace).inspect(job["job_id"])
+        while time.time() < deadline and status["state"] not in {"COMPLETED", "FAILED"}:
             time.sleep(0.05)
-        assert status["state"] == "COMPLETED"
+            status = BackgroundJobStore(workspace).inspect(job["job_id"])
+        assert status["state"] == "COMPLETED", (
+            f"child job ended in {status['state']!r}, not COMPLETED: {status}"
+        )
 
 
 def test_resident_behavior_and_clean_room_are_model_free() -> None:

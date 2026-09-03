@@ -119,4 +119,10 @@ def test_a_broken_budget_falls_back_to_the_constant():
         raise RuntimeError("no budget")
 
     eng._context_budget = boom
-    assert len(eng._clamp_observation("x" * 5000)) < 600
+    # Assert the PAYLOAD is bounded, not payload-plus-notice. The notice is an
+    # explanation of what to do next and is allowed to grow; the thing the
+    # fallback exists to bound is how much observation text survives.
+    clamped = eng._clamp_observation("x" * 5000)
+    payload = clamped.split("\n[...", 1)[0]
+    assert len(payload) <= 500, len(payload)
+    assert "truncated" in clamped

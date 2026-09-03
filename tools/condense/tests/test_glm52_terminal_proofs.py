@@ -372,7 +372,7 @@ def test_historical_instrument_binding_pins_blobs_and_live_drift() -> None:
     # Live common drift is allowed, while the current pinned requirements lock
     # remains present and content-addressed.
     # The sealed receipt intentionally names the historical external path.
-    # The current recomposed implementation lives under lab/operators.
+    # The current recomposed implementation lives under research/lab/operators.
     live_common = REPO_ROOT / "lab" / "operators" / "glm52_common.py"
     assert live_common.is_file()
     assert (

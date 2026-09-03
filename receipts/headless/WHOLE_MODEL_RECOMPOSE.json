@@ -1,7 +1,7 @@
 {
   "schema": "hawking.headless.whole_model_recompose.v1",
   "obligation": "N041 (S025 \u00a710-15) -- BASELINE with current-known floors; N040 refines non-MLP",
-  "git_head": "665110c71c8c",
+  "git_head": "ee9f9e90c9d6",
   "generated_by": "tools/headless/whole_model_recompose.py",
   "hand_authored": false,
   "method": "complete_ebpw = sum(organ_params * organ_coherent_floor_ebpw) / total_params = sum(organ_model_specific_bits) / total_params (executable-closure sum, not one global BPW)",

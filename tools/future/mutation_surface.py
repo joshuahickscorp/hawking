@@ -41,8 +41,8 @@ CODEX_OWNED = (
     "docs/*",
     "receipts/headless/*",
     "receipts/odyssey-i/*",
-    "spec/*",
-    "contracts/*",
+    "docs/spec/*",
+    "docs/contracts/*",
 )
 
 # Quiescence threshold: source untouched for this long means the integration

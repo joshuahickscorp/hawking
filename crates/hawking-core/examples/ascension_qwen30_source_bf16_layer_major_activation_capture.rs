@@ -25,7 +25,7 @@
 //!
 //! Output layout matches
 //! `ascension_qwen30_broad_activation_all_layer_route_capture` so
-//! `lab/operators/ascension_qwen30_activation_weighted_svd_repack.py` can
+//! `research/lab/operators/ascension_qwen30_activation_weighted_svd_repack.py` can
 //! consume the run directory with no repack changes.
 //!
 //! Modes:

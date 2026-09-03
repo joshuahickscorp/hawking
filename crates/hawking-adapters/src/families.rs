@@ -65,7 +65,7 @@ const LLAMA_GAPS: &[&str] = &[
     "no standing PRODUCTION parity receipt",
     "smoke and gravity_llama_forward skip when weights/artifacts are absent",
     "REAL_TENSOR_DECODE / SMALL_REAL_CHECKPOINT require committed fixtures or on-disk parents",
-    // Measured 2026-07-30 on Llama-3.2-1B-Instruct-Q4_K_M, evidence/tg/TG_EXTERNAL_BASELINE.json.
+    // Measured 2026-07-30 on Llama-3.2-1B-Instruct-Q4_K_M, research/evidence/tg/TG_EXTERNAL_BASELINE.json.
     // `executes` stays true by its own definition, a forward does run, but these
     // two are what a reader needs before treating that as working support.
     "executes on CPU only: dispatches_per_forward=0 and device_id=null, so no Metal path is reached",
@@ -245,7 +245,7 @@ const QWEN_ABI: FamilyAbi = FamilyAbi {
     ]),
 };
 const GLM_EVIDENCE: &[Evidence] = &[
-    Evidence { path: "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json", claim: "M04_SEALED: Rust adapter vs oracle on real flagship .gravity shards", kind: EvidenceKind::SmallCheckpointRun },
+    Evidence { path: "research/evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json", claim: "M04_SEALED: Rust adapter vs oracle on real flagship .gravity shards", kind: EvidenceKind::SmallCheckpointRun },
     Evidence { path: "crates/hawking-core/src/model/gravity_engine.rs", claim: "GravityEngine dispatches glm_moe_dsa", kind: EvidenceKind::Description },
     Evidence { path: "crates/hawking-core/tests/gravity_artifact_suite.rs", claim: "committed .gravity artifact registry and integrity suite", kind: EvidenceKind::Description },
     // Stage C: this test runs UNCONDITIONALLY. Unlike the weight-gated tests, it does
@@ -369,7 +369,7 @@ const DEEPSEEK_ABI: FamilyAbi = FamilyAbi {
 };
 const KIMI_EVIDENCE: &[Evidence] = &[
     Evidence {
-        path: "evidence/kimi-k26/KIMI_K26_ADAPTER_TWIN.json",
+        path: "research/evidence/kimi-k26/KIMI_K26_ADAPTER_TWIN.json",
         claim: "synthetic CPU reference + bound real-source metal K1 twin",
         kind: EvidenceKind::SyntheticParity,
     },
@@ -427,7 +427,7 @@ const KIMI_ABI: FamilyAbi = FamilyAbi {
     ]),
 };
 const MINIMAX_EVIDENCE: &[Evidence] = &[Evidence {
-    path: "evidence/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md",
+    path: "research/evidence/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md",
     claim: "family listed in bridge archaeology; no serve path found",
     kind: EvidenceKind::Description,
 }];

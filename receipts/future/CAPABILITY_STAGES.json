@@ -11,7 +11,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-03T00:36:35Z",
+  "recorded_at": "2026-09-03T06:53:12Z",
   "recorded_by": "tools/future/capability_stages.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -104,7 +104,7 @@
      "reason": "judge wall time on caller-supplied evidence in this process; not resident generate time",
      "verdict": "PASS",
      "wall_cost": "MEASURED",
-     "wall_seconds": 6.0874997870996594e-05
+     "wall_seconds": 2.099999983329326e-05
     },
     "counts_as_pass": true,
     "does_not_establish": "Not capability, not next-token identity, not checkable-task competence, not HCLI mission competence, and not qualification. S031 \u00a79 forbids local cosine as the final verdict. A role can carry unequal capability value while carrying equal fidelity value.",
@@ -124,7 +124,7 @@
     "reason": "hidden-state cosine 1.000000 >= bar 0.99",
     "required_input": "hidden_a and hidden_b (incumbent vs candidate hidden state)",
     "verdict": "PASS",
-    "wall_seconds": 6.0874997870996594e-05
+    "wall_seconds": 2.099999983329326e-05
    },
    {
     "cheapest_first_index": 1,
@@ -136,7 +136,7 @@
      "reason": "judge wall time on caller-supplied evidence in this process; not resident generate time",
      "verdict": "PASS",
      "wall_cost": "MEASURED",
-     "wall_seconds": 0.00013991599553264678
+     "wall_seconds": 8.970800263341516e-05
     },
     "counts_as_pass": true,
     "does_not_establish": "Not checkable-task competence, not HCLI mission competence, and not qualification. meta_funnel gate 5: token-level identity on a stated probe is not bounded capability. Argmax agreement is not logit parity (aux_capability_screen.ArgmaxAloneParityRefuse).",
@@ -167,7 +167,7 @@
     "reason": "KL 0.000000 (bar 0.1) top-5 agreement 1.0000 (bar 0.8) argmax_agreement 1.0 (argmax is not the pass criterion)",
     "required_input": "logits_a and logits_b (incumbent vs candidate next-token logits)",
     "verdict": "PASS",
-    "wall_seconds": 0.00013991599553264678
+    "wall_seconds": 8.970800263341516e-05
    },
    {
     "cheapest_first_index": 2,
@@ -179,7 +179,7 @@
      "reason": "judge wall time on caller-supplied evidence in this process; not resident generate time",
      "verdict": "PASS",
      "wall_cost": "MEASURED",
-     "wall_seconds": 9.704099647933617e-05
+     "wall_seconds": 6.666700937785208e-05
     },
     "counts_as_pass": true,
     "does_not_establish": "HCLI mission competence, protected qualification, or that a live resident generate would match these answers. A three-item checkable floor is not the capability contract; the larger headless suite is not imported and is not this stage.",
@@ -226,7 +226,7 @@
     "reason": "3/3 checkable probes passed",
     "required_input": "answers keyed by probe id (fact-capital, fact-choice, fact-arith)",
     "verdict": "PASS",
-    "wall_seconds": 9.704099647933617e-05
+    "wall_seconds": 6.666700937785208e-05
    },
    {
     "cheapest_first_index": 3,
@@ -238,7 +238,7 @@
      "reason": "judge wall time on caller-supplied evidence in this process; not resident generate time",
      "verdict": "PASS",
      "wall_cost": "MEASURED",
-     "wall_seconds": 2.6666995836421847e-05
+     "wall_seconds": 1.4792007277719676e-05
     },
     "counts_as_pass": true,
     "does_not_establish": "Protected qualification, throughput, or that the resident will emit this under a live mission loop. Valid work-request shape is necessary and not sufficient for mission competence.",
@@ -261,7 +261,7 @@
     "reason": "1 valid structured work request(s), 0 invalid",
     "required_input": "emissions: one or more WorkUnit mappings or JSON objects",
     "verdict": "PASS",
-    "wall_seconds": 2.6666995836421847e-05
+    "wall_seconds": 1.4792007277719676e-05
    },
    {
     "cheapest_first_index": 4,
@@ -273,7 +273,7 @@
      "reason": "EXPENSIVE_QUALIFICATION is declared but this sidecar has no GPU authority; qualification_pipeline.execute always refuses. This is a skip, not a pass.",
      "verdict": "SKIPPED",
      "wall_cost": "MEASURED",
-     "wall_seconds": 1.391599653288722e-05
+     "wall_seconds": 7.916998583823442e-06
     },
     "counts_as_pass": false,
     "does_not_establish": "Anything, when SKIPPED. A polite refusal is not a pass and is not a fail of the model. This sidecar has no GPU authority and will not seize an HCLI lease.",
@@ -287,7 +287,7 @@
     "reason": "EXPENSIVE_QUALIFICATION is declared but this sidecar has no GPU authority; qualification_pipeline.execute always refuses. This is a skip, not a pass.",
     "required_input": "a protected GPU lease and a QUIESCENT machine, which this sidecar will not take or coerce",
     "verdict": "SKIPPED",
-    "wall_seconds": 1.391599653288722e-05
+    "wall_seconds": 7.916998583823442e-06
    }
   ],
   "stop_on_fail": true,
@@ -318,7 +318,7 @@
    "reason": "judge wall time on caller-supplied evidence in this process; not resident generate time",
    "verdict": "PASS",
    "wall_cost": "MEASURED",
-   "wall_seconds": 6.0874997870996594e-05
+   "wall_seconds": 2.099999983329326e-05
   },
   {
    "evaluation_cost": "MEASURED",
@@ -328,7 +328,7 @@
    "reason": "judge wall time on caller-supplied evidence in this process; not resident generate time",
    "verdict": "PASS",
    "wall_cost": "MEASURED",
-   "wall_seconds": 0.00013991599553264678
+   "wall_seconds": 8.970800263341516e-05
   },
   {
    "evaluation_cost": "MEASURED",
@@ -338,7 +338,7 @@
    "reason": "judge wall time on caller-supplied evidence in this process; not resident generate time",
    "verdict": "PASS",
    "wall_cost": "MEASURED",
-   "wall_seconds": 9.704099647933617e-05
+   "wall_seconds": 6.666700937785208e-05
   },
   {
    "evaluation_cost": "MEASURED",
@@ -348,7 +348,7 @@
    "reason": "judge wall time on caller-supplied evidence in this process; not resident generate time",
    "verdict": "PASS",
    "wall_cost": "MEASURED",
-   "wall_seconds": 2.6666995836421847e-05
+   "wall_seconds": 1.4792007277719676e-05
   },
   {
    "evaluation_cost": "UNMEASURED",
@@ -358,7 +358,7 @@
    "reason": "EXPENSIVE_QUALIFICATION is declared but this sidecar has no GPU authority; qualification_pipeline.execute always refuses. This is a skip, not a pass.",
    "verdict": "SKIPPED",
    "wall_cost": "MEASURED",
-   "wall_seconds": 1.391599653288722e-05
+   "wall_seconds": 7.916998583823442e-06
   }
  ],
  "purpose": "Staged evaluation API: five increasing depths at which a caller can ask whether a supplied component is still capable, and stop cheaply. LOCAL_FUNCTIONAL_FIDELITY is not capability.",
@@ -371,7 +371,7 @@
   "LOGIT_TOKEN": "aux_capability_screen.kl_divergence, topk_agreement, softmax, report_logit_parity"
  },
  "schema": "hawking.future.capability_stages.v1",
- "seal_sha256": "efe0144d70b6bf12e9e3b13035e830acfc74ed61ddf2ba8418f140ef6b08a29a",
+ "seal_sha256": "ed8640c00db4f9b8010506834e1fe796598e97de4e0d1e5fb9f3acf49d8ab8b3",
  "skip_is_not_a_pass": true,
  "stages": [
   {

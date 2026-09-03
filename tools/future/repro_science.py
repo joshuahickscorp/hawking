@@ -9,7 +9,7 @@ PROTECTED_ABSOLUTE.
     python3 tools/future/repro_science.py --build
 
 Recovered, not forked: tools/future/_common.py seal/write_receipt;
-tools/provenance_chain.py content-not-path hashing; lab/provenance.py pins;
+tools/provenance_chain.py content-not-path hashing; research/lab/provenance.py pins;
 tools/headless/causal_benchmark_law.py (a no-op must not pass);
 tools/headless/disk_truth.py (disk is authority); tools/headless/dirty_tree_preservation.py
 (a gate never seen to fail is not a gate); hcli/agentos/recovery.py (kill + resume);
@@ -1176,7 +1176,7 @@ RECOVERED_IMPLEMENTATION = [
         "use": "law kept: hash content never path strings; CONTROL must be shown to fire. Not forked (Codex tools/ surface)",
     },
     {
-        "path": "lab/provenance.py",
+        "path": "research/lab/provenance.py",
         "what": "pin_digest / verify_pin over canonical JSON",
         "use": "same pin family; not imported (sparse / not this write partition)",
     },
@@ -1216,7 +1216,7 @@ RECOVERED_IMPLEMENTATION = [
         "use": "NOT called. Sidecar has no GPU. We pin identity only.",
     },
     {
-        "path": "lab/verification_authority.py",
+        "path": "research/lab/verification_authority.py",
         "what": "models propose; protected controller decides; forbidden self-promotion",
         "use": "this module never emits PROTECTED_ABSOLUTE or DIAGNOSTIC_RELATIVE",
     },

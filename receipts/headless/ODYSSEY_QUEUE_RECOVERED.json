@@ -1,7 +1,7 @@
 {
  "schema": "hawking.headless.odyssey_queue_recovered.v1",
- "generated_at": "2026-08-26T10:13:53Z",
- "git_head": "665110c71c8cc16db6a05af70d621a0266853ab1",
+ "generated_at": "2026-09-03T06:40:46Z",
+ "git_head": "ee9f9e90c9d65c54cd1ee5944afe5c04a87b636c",
  "generated_by": "tools/headless/genome_libraries.py",
  "obligation": "N034 \u2014 GENOME LIBRARIES + ODYSSEY QUEUE RECOVERY (S023 \u00a712, \u00a713, \u00a714, \u00a734, \u00a770). Seed from verified Qwen science; recover the Odyssey queue from disk; do not invent numbers or HF repo ids.",
  "hand_authored": false,

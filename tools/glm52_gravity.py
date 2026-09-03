@@ -24,7 +24,7 @@ from pathlib import Path
 from typing import Any, Iterator, Mapping, Sequence
 
 
-# These modules moved from tools/condense to lab/operators when the process
+# These modules moved from tools/condense to research/lab/operators when the process
 # engine was cut over to lab authority. The sys.path shim that used to make
 # `import glm52_state` work now points at a directory holding two files, so
 # this CLI has raised ModuleNotFoundError at import since the move.

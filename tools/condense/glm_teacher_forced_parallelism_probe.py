@@ -47,13 +47,13 @@ PUBLIC_PATH_WINNER = (
 )
 OFFICIAL_FULL = (
     _REPO
-    / "hawking-experiments/frankenstein/data/teacher_forced"
+    / "research/hawking-experiments/frankenstein/data/teacher_forced"
     / "official_L0_stream_full_20260805T200728Z"
     / "GLM_TEACHER_FORCED_CAPTURE_RECEIPT.json"
 )
 OFFICIAL_REEXPORT = (
     _REPO
-    / "hawking-experiments/frankenstein/data/teacher_forced"
+    / "research/hawking-experiments/frankenstein/data/teacher_forced"
     / "official_L0_stream_reexport_20260805T214500Z"
     / "GLM_TEACHER_FORCED_CAPTURE_RECEIPT.json"
 )
@@ -377,7 +377,7 @@ def main(argv: list[str] | None = None) -> int:
         "--work",
         type=Path,
         default=_REPO
-        / "hawking-experiments/frankenstein/data"
+        / "research/hawking-experiments/frankenstein/data"
         / "glm_parallelism_probe_20260806",
     )
     parser.add_argument("--workers", type=int, default=2)

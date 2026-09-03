@@ -179,7 +179,7 @@
           "exists": true,
           "is_test": false,
           "kind": "small_checkpoint_run",
-          "path": "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
+          "path": "research/evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
           "role": "evidence",
           "status": "present"
         },
@@ -241,7 +241,7 @@
           "exists": true,
           "is_test": false,
           "kind": "synthetic_parity",
-          "path": "evidence/kimi-k26/KIMI_K26_ADAPTER_TWIN.json",
+          "path": "research/evidence/kimi-k26/KIMI_K26_ADAPTER_TWIN.json",
           "role": "evidence",
           "status": "present"
         },
@@ -401,7 +401,7 @@
           "exists": true,
           "is_test": false,
           "kind": "description",
-          "path": "evidence/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md",
+          "path": "research/evidence/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md",
           "role": "evidence",
           "status": "present"
         },

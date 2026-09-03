@@ -1057,16 +1057,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "hawking-comms"
-version = "0.2.2"
-dependencies = [
- "blake3",
- "serde",
- "serde_json",
- "thiserror 2.0.18",
-]
-
-[[package]]
 name = "hawking-context"
 version = "0.2.2"
 dependencies = [
@@ -1113,18 +1103,6 @@ dependencies = [
  "tempfile",
  "thiserror 2.0.18",
  "tokenizers",
-]
-
-[[package]]
-name = "hawking-eval"
-version = "0.2.2"
-dependencies = [
- "async-trait",
- "reqwest",
- "serde",
- "serde_json",
- "thiserror 2.0.18",
- "tokio",
 ]
 
 [[package]]
@@ -1193,16 +1171,6 @@ dependencies = [
  "tokio",
  "tokio-stream",
  "toml",
-]
-
-[[package]]
-name = "hawking-perception"
-version = "0.2.2"
-dependencies = [
- "blake3",
- "serde",
- "serde_json",
- "thiserror 2.0.18",
 ]
 
 [[package]]
@@ -1347,16 +1315,6 @@ dependencies = [
  "tokio-tungstenite 0.24.0",
  "tracing",
  "ulid",
-]
-
-[[package]]
-name = "hide-gateway"
-version = "0.2.2"
-dependencies = [
- "blake3",
- "serde",
- "serde_json",
- "thiserror 2.0.18",
 ]
 
 [[package]]

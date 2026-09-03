@@ -23,7 +23,7 @@ design, not by neglect: simulated is not measured.
 
     defining property available     82 / 83
     real (non-test) caller          47 / 83
-    any verifier                    65 / 83
+    any verifier                    66 / 83
     receipt cited                   13 / 83
 
 ## A. CONTROL / HCLI / AGENTOS
@@ -86,13 +86,13 @@ design, not by neglect: simulated is not measured.
 
     STATUS              VERIFIED_BUILT
     defining property   Historical Qwen concurrency measurements are priors, not constants. Recalibrate when model/runtime/machine/context changes.
-    implementation      lab/hcli/claude_offload_bench.py, hcli/delegate.py, lab/hcli/claude_offload_bench.py:1123
-    real caller         lab/hcli/special_unit.py:2503
+    implementation      research/lab/hcli/claude_offload_bench.py, hcli/delegate.py, research/lab/hcli/claude_offload_bench.py:1123
+    real caller         research/lab/hcli/special_unit.py:2503
     verifier            hcli/test_abort_checkpoint_atomicity.py:18, hcli/test_delegate.py:22, hcli/test_delegate.py:918 (+12 more)
     negative control    hcli/test_delegate.py, hcli/test_near_miss_key.py
     receipt             absent
     evidence level      STATIC
-    limitations         acceptance not demonstrated: acceptance verdict BLOCKED: {'also_missing': ['hcli/scheduler.py'], 'in_git_HEAD': True, 'missing': 'lab/hcli/claude_offload_bench.py', 'why': 'D.7 (acceptance_
+    limitations         acceptance not demonstrated: acceptance verdict BLOCKED: {'also_missing': ['hcli/scheduler.py'], 'in_git_HEAD': True, 'missing': 'research/lab/hcli/claude_offload_bench.py', 'why': 'D.7 (acceptance_
     integration         wired=True accepted=False
 
 ### AGENTOS_ORPHAN_RECONCILIATION
@@ -994,10 +994,10 @@ design, not by neglect: simulated is not measured.
 
     STATUS              VERIFIED_INTEGRATED
     defining property   absent
-    implementation      hcli/vmcp/__init__.py, hcli/vmcp_adapter.py, hcli/vmcp_adapter.py:155 (+1 more)
-    real caller         hcli/connectivity.py:133, hcli/tool_registry.py:1433, hcli/tool_registry.py:1442
-    verifier            absent — no test cites this gate
-    negative control    absent — no cited test proves it can fail
+    implementation      tools/future/vmcp.py, tools/future/vmcp.py:827
+    real caller         tools/audit/reachability_triage.py:2097
+    verifier            tools/future/test_vmcp.py:16, tools/future/test_vmcp.py:172
+    negative control    tools/future/test_vmcp.py
     receipt             absent
     evidence level      STATIC
     limitations         none recorded

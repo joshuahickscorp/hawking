@@ -90,7 +90,7 @@ SEAL = REPO / "receipts/ascent-2026-08-16/G105_NR_NX_ARTIFACT.json"
 SIDECAR = REPO / "receipts/ascent-2026-08-16/G105_TENSOR_DIGESTS.json"
 NX_SEAL = REPO / "receipts/ascent-2026-08-16/G104_NX_SEAL.json"
 NR_CANDIDATE = REPO / "receipts/ascent-2026-08-16/G103_NR_uniform-q4-v1.json"
-NR_SCHEMA = REPO / "spec/nr_container.schema.json"
+NR_SCHEMA = REPO / "docs/spec/nr_container.schema.json"
 NR_TOOL = REPO / "tools/nr_container.py"
 NX_TOOL = REPO / "tools/nx_genome.py"
 IR_TOOL = REPO / "tools/gravity_ir.py"
@@ -950,7 +950,7 @@ def print_report(doc: dict) -> None:
     print(f"  landed_receipt: {ws['landed_receipt']}")
     print(
         "  this script does not git add/checkout/restore/stash/clean/reset "
-        "and does not touch crates/, workspace/, visionmcp/, app/, lab/, "
+        "and does not touch crates/, workspace/, visionmcp/, app/, research/lab/, "
         "tools/hcli/bootstrap/."
     )
 
@@ -1052,7 +1052,7 @@ def main() -> int:
         },
         {
             "watched": (
-                "spec/nr_container.schema.json types representation as "
+                "docs/spec/nr_container.schema.json types representation as "
                 f"{schema_repr}. There is no required stored_bytes, kernel, "
                 "or reconstruction field. gravity_ir.py:"
                 f"{ir_cannot_line} states the existing recipe vocabulary "

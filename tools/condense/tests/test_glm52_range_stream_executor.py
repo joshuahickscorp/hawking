@@ -36,8 +36,8 @@ _OPERATOR_SHA256 = "e" * 64
 @pytest.fixture(scope="module")
 def rebuilt():
     schedule, policy = build_contract(
-        manifest_path="evidence/glm52/GLM52_OFFICIAL_MANIFEST.json",
-        graph_path="evidence/glm52/GLM52_SHARD_DEPENDENCY_GRAPH.json",
+        manifest_path="research/evidence/glm52/GLM52_OFFICIAL_MANIFEST.json",
+        graph_path="research/evidence/glm52/GLM52_SHARD_DEPENDENCY_GRAPH.json",
     )
     return schedule, policy, rebuild_schedule_ranges(schedule)
 

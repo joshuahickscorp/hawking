@@ -1454,7 +1454,7 @@ def recovered_implementation() -> list[dict[str, Any]]:
             "on_disk_in_this_worktree": (REPO / "tools/odyssey/gpu_cleanliness.py").is_file(),
         },
         {
-            "path": "lab/lease.py",
+            "path": "research/lab/lease.py",
             "role": "campaign SingletonLease (different object from the HCLI protected bench lock)",
             "composed_as": "not imported; not used",
         },
@@ -1498,7 +1498,7 @@ def negative_findings() -> list[str]:
         "this sidecar has no GPU authority and cannot produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE",
         "tools/accelerator/physical_qualification.py is not materialized in this sparse checkout and is not imported",
         "tools/odyssey/gpu_cleanliness.py is not materialized; PAUSE_PATTERN recovered via git show, not imported",
-        "lab/lease.py is a different campaign lease and is not the HCLI protected-accelerator lock",
+        "research/lab/lease.py is a different campaign lease and is not the HCLI protected-accelerator lock",
         "PID-level GPU attribution is unavailable without a protected lease (contamination already records this)",
         "no qualification_pipeline.py existed before this lane; device_ascension_pipeline.py is a different pipe (machine arrival)",
         "native_mission_gate.py is not imported: it would start a live native mission",

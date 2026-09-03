@@ -175,6 +175,29 @@ def is_test_path(rel: str) -> bool:
     return "tests" in p.parts
 
 
+_REPO_PREFIXES: tuple[str, str] | None = None
+
+
+def _repo_prefixes() -> tuple[str, str]:
+    """(REPO as posix, REPO resolved as posix). Both are loop invariants.
+
+    is_exact_cli_path recomputed REPO.resolve() on every call and it is called
+    289,000 times per audit -- 1.16 MILLION lstat syscalls for one constant.
+    REPO is a module-level Path that cannot change while the process runs, so
+    resolving it once is not a cache of a changing fact, it is hoisting a
+    constant out of a hot loop.
+    """
+    global _REPO_PREFIXES
+    if _REPO_PREFIXES is None:
+        posix = REPO.as_posix().rstrip("/")
+        try:
+            resolved = REPO.resolve().as_posix().rstrip("/")
+        except OSError:
+            resolved = posix
+        _REPO_PREFIXES = (posix, resolved)
+    return _REPO_PREFIXES
+
+
 def is_exact_cli_path(rel_path: str, value: str) -> bool:
     """True iff `value` is a launch of this repo-relative path, not a suffix of another.
 
@@ -187,13 +210,9 @@ def is_exact_cli_path(rel_path: str, value: str) -> bool:
     v = value.replace("\\", "/").strip()
     if v == rel_path or v == "./" + rel_path:
         return True
-    repo_posix = REPO.as_posix().rstrip("/")
+    repo_posix, resolved = _repo_prefixes()
     if v == repo_posix + "/" + rel_path:
         return True
-    try:
-        resolved = REPO.resolve().as_posix().rstrip("/")
-    except OSError:
-        resolved = repo_posix
     return v == resolved + "/" + rel_path
 
 

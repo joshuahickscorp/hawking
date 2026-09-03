@@ -14,7 +14,7 @@
     "base_commit": "caf83078f",
     "graph": "civilization/CAPABILITY_GRAPH.json",
     "graph_generated_by": "tools/roadmap/auditor.py",
-    "head": "a6f0d42b2c4e712d881a9ec6d7ece46826a6a397"
+    "head": "7f4cfdf4c24a20201e253cec4fe1c0737bc546ad"
   },
   "externally_blocked": [
     {
@@ -193,13 +193,15 @@
     "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE"
   ],
   "work": {
-    "commits": 223,
+    "commits": 233,
     "new_crates": [
       "crates/hawking-index-query/Cargo.toml"
     ],
     "new_test_files": [
+      "hcli/_test_git.py",
       "hcli/test_abort_checkpoint_atomicity.py",
       "hcli/test_autonomous_frontier_metabolism.py",
+      "hcli/test_cancel_does_not_wait_on_a_zombie.py",
       "hcli/test_capability_callsite_reachability.py",
       "hcli/test_checkpoint.py",
       "hcli/test_cognition_unit_concurrency.py",
@@ -253,6 +255,7 @@
       "hcli/test_tool_registry.py",
       "hcli/test_tool_round_economy.py",
       "hcli/test_tui_autosteer.py",
+      "hcli/tests/test_mutation_lock_race.py",
       "tools/accelerator/test_backend_contract.py",
       "tools/accelerator/test_fusion_bridge.py",
       "tools/accelerator/test_hardware_doctor.py",
@@ -270,6 +273,7 @@
       "tools/audit/test_reachability_triage.py",
       "tools/doctor/test_doctor.py",
       "tools/future/test_capability_eval.py",
+      "tools/future/test_decision_value.py",
       "tools/future/test_ebpw_bar_reachability.py",
       "tools/future/test_experiment_policy.py",
       "tools/future/test_experiment_receipt.py",
@@ -278,6 +282,7 @@
       "tools/future/test_hwir_sealed_predictions.py",
       "tools/future/test_law_scar_registry.py",
       "tools/future/test_modellake_lifecycle.py",
+      "tools/future/test_odyssey_wall.py",
       "tools/future/test_physical_compiler_predict.py",
       "tools/future/test_representation_lab.py",
       "tools/future/test_science_corpus.py",
@@ -296,6 +301,7 @@
       "tools/odyssey/test_specimen_open.py",
       "tools/product/test_product.py",
       "tools/roadmap/test_boot_questions.py",
+      "tools/roadmap/test_facts_cache.py",
       "tools/roadmap/test_index_parity.py",
       "tools/roadmap/test_lineage.py",
       "tools/roadmap/test_recompile.py",
@@ -304,6 +310,7 @@
       "tools/sovereign/test_g011_streaming.py",
       "tools/test_hardware_wake.py",
       "tools/test_lifecycle_events.py",
+      "tools/test_odyssey_costmodel.py",
       "tools/test_pareto_selection.py",
       "tools/theia/test_authority.py",
       "tools/theia/test_boundary.py",
@@ -368,10 +375,12 @@
       "tools/doctor/zeros.py",
       "tools/future/capability_eval.py",
       "tools/future/conftest.py",
+      "tools/future/decision_value.py",
       "tools/future/experiment_policy.py",
       "tools/future/experiment_receipt.py",
       "tools/future/fpga_partition.py",
       "tools/future/modellake_lifecycle.py",
+      "tools/future/odyssey_wall.py",
       "tools/future/physical_compiler_predict.py",
       "tools/future/representation_lab.py",
       "tools/future/science_corpus.py",
@@ -410,6 +419,7 @@
       "tools/roadmap/parse.py",
       "tools/roadmap/reach.py",
       "tools/roadmap/recompile.py",
+      "tools/roadmap/regenerate.py",
       "tools/roadmap/saturation.py",
       "tools/sovereign/g001_verifier_synthesis.py",
       "tools/sovereign/g002_overhead.py",
@@ -437,7 +447,7 @@
       "tools/vmcp/receipt.py",
       "tools/vmcp/tool_doctor.py"
     ],
-    "python_lines_added": 95610,
+    "python_lines_added": 97553,
     "rust_lines_added": 7983
   }
 }

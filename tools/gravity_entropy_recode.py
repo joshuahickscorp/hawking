@@ -42,7 +42,7 @@ def read_container(path):
 
 
 def unpack_codes(body, hdr):
-    """Mirror of lab/operators/ascension_dual_gravity_worker._unpack_unsigned.
+    """Mirror of research/lab/operators/ascension_dual_gravity_worker._unpack_unsigned.
 
     The packer uses bitorder="little" and LSB-first weights. Reading it MSB-first with
     numpy's default bitorder produces plausible-looking but shifted symbols: a q3 stream,

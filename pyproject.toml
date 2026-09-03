@@ -39,7 +39,11 @@ addopts = "-m 'not slow'"
 testpaths = ["hcli/tests"]
 pythonpath = [
     ".",
-    "hawking-experiments/frankenstein/operators",
-    "hawking-experiments/frankenstein/condense",
-    "hawking-experiments/prometheus/tools",
+    # research/ is a source root: `lab.*` and the frankenstein packages are
+    # imported by dotted name from 1,247 sites, and moving the directories
+    # under research/ without this leaves every one of them unresolvable.
+    "research",
+    "research/hawking-experiments/frankenstein/operators",
+    "research/hawking-experiments/frankenstein/condense",
+    "research/hawking-experiments/prometheus/tools",
 ]

@@ -1,0 +1,416 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-03T06:21:24Z",
+  "recorded_by": "tools/future/tool_friction.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "STATIC census of committed event logs. Wall figures are the logs' own elapsed_s sums, not a new measurement. No Odyssey was launched.",
+ "evidence_tier": "STATIC",
+ "failed": 183,
+ "failure_rate": 0.3211,
+ "failures_by_error_class": {
+  "$": 32,
+  "(none)": 16,
+  "FileNotFoundError": 117,
+  "IsADirectoryError": 3,
+  "NotADirectoryError": 2,
+  "PermissionError": 6,
+  "unknown tool": 7
+ },
+ "failures_by_tool": {
+  "context": 2,
+  "fs.list": 10,
+  "fs.read": 138,
+  "fs.search": 21,
+  "git": 2,
+  "modellake.status": 6,
+  "odyssey": 1,
+  "shell.exec": 1,
+  "specimens": 1,
+  "tests": 1
+ },
+ "file_not_found": {
+  "genuinely_absent": 16,
+  "present_now": 59,
+  "recoverable_wrong_directory_or_near_name": 42,
+  "total": 117
+ },
+ "mean_model_call_s": 162.4,
+ "missing_paths": [
+  {
+   "distinct_goals": 55,
+   "hint": "/Users/scammermike/Downloads/hawking/docs/HCLI_SELF_IMPROVEMENT_DIRECTIVE.md",
+   "kind": "PRESENT_NOW",
+   "path": "/Users/scammermike/Downloads/hawking/docs/HCLI_SELF_IMPROVEMENT_DIRECTIVE.md",
+   "requested": 59
+  },
+  {
+   "distinct_goals": 4,
+   "hint": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/reports/condense/general_frontier/OVERNIGHT_HANDOFF/state.json",
+   "kind": "WRONG_DIRECTORY",
+   "path": "/Users/scammermike/Downloads/hawking/hcli/mission/state.json",
+   "requested": 4
+  },
+  {
+   "distinct_goals": 3,
+   "hint": "/Users/scammermike/Downloads/hawking/tools/vmcp/receipt.py",
+   "kind": "WRONG_DIRECTORY",
+   "path": "/Users/scammermike/Downloads/hawking/hcli/receipt.py",
+   "requested": 3
+  },
+  {
+   "distinct_goals": 3,
+   "hint": "/Users/scammermike/Downloads/hawking/workspace/ops/ane/python/sympy/printing/tests/test_c.py",
+   "kind": "NEAR_NAME",
+   "path": "/Users/scammermike/Downloads/hawking/hcli/test.py",
+   "requested": 3
+  },
+  {
+   "distinct_goals": 2,
+   "hint": "/Users/scammermike/Downloads/hawking/tools/theia/test_engine.py",
+   "kind": "WRONG_DIRECTORY",
+   "path": "/Users/scammermike/Downloads/hawking/hcli/tests/test_engine.py",
+   "requested": 2
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "/Users/scammermike/Downloads/hawking/tools/odyssey/modellake.py",
+   "kind": "WRONG_DIRECTORY",
+   "path": "/Users/scammermike/Downloads/hawking/hcli/modellake.py",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "",
+   "kind": "ABSENT",
+   "path": "/Users/scammermike/Downloads/hawking/.hcli/mission/work/G002.work",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "",
+   "kind": "ABSENT",
+   "path": "/Users/scammermike/Downloads/hawking/.hcli/mission/work/G007.work",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "",
+   "kind": "ABSENT",
+   "path": "/Users/scammermike/Downloads/hawking/.hcli/mission/gates/G007",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "",
+   "kind": "ABSENT",
+   "path": "/Users/scammermike/Downloads/hawking/.hcli/mission/work/G015.work",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "",
+   "kind": "ABSENT",
+   "path": "/Users/scammermike/Downloads/hawking/.hcli/mission/work/G006.work",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "",
+   "kind": "ABSENT",
+   "path": "/Users/scammermike/Downloads/hawking/.hcli/mission/receipts/G015.receipt",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "",
+   "kind": "ABSENT",
+   "path": "/Users/scammermike/Downloads/hawking/.hcli/mission/receipts/G006.receipt",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release/.fingerprint/bstr-2625db9f6682ab0e/lib-bstr.json",
+   "kind": "NEAR_NAME",
+   "path": "/Users/scammermike/Downloads/hawking/.hcli/mission/tests/list.json",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "/Users/scammermike/Downloads/hawking/visionmcp/.world-engine/verify-scratch/install-venv/lib/python3.13/site-packages/visionmcp/schemas/measurement.schema.json",
+   "kind": "NEAR_NAME",
+   "path": "/Users/scammermike/Downloads/hawking/.hcli/mission/hardware/measurements.json",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "/Users/scammermike/Downloads/hawking/visionmcp/artifacts/world-engine/step-25/full-suite.json",
+   "kind": "NEAR_NAME",
+   "path": "/Users/scammermike/Downloads/hawking/.hcli/mission/call-sites.json",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "/Users/scammermike/Downloads/hawking/.hide/reachability-index/facts.json",
+   "kind": "NEAR_NAME",
+   "path": "/Users/scammermike/Downloads/hawking/.hcli/mission/artifacts.json",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "/Users/scammermike/Downloads/hawking/hcli/processes.py",
+   "kind": "NEAR_NAME",
+   "path": "/Users/scammermike/Downloads/hawking/.hcli/mission/processes.json",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "/Users/scammermike/Downloads/hawking/visionmcp/artifacts/release/benchmark-box/source/source-map.json",
+   "kind": "NEAR_NAME",
+   "path": "/Users/scammermike/Downloads/hawking/.hcli/mission/source.json",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_DEVICE_RESIDENT_L44_L47_V1/terminal.json",
+   "kind": "NEAR_NAME",
+   "path": "/Users/scammermike/Downloads/hawking/.hcli/mission/steering.json",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "",
+   "kind": "ABSENT",
+   "path": "/Users/scammermike/Downloads/hawking/.hcli/mission/neighborhood.json",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "/Users/scammermike/Downloads/hawking/visionmcp/.world-engine/verify-scratch/install-venv/lib/python3.13/site-packages/visionmcp/schemas/evidence-graph.schema.json",
+   "kind": "NEAR_NAME",
+   "path": "/Users/scammermike/Downloads/hawking/.hcli/mission/evidence-paths.json",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "",
+   "kind": "ABSENT",
+   "path": "/Users/scammermike/Downloads/hawking/.hcli/mission/deterministic-evidence.json",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "",
+   "kind": "ABSENT",
+   "path": "/Users/scammermike/Downloads/hawking/.hcli/mission/root-ref.json",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "/Users/scammermike/Downloads/hawking/ramanujan/scaffold/research/odyssey.py",
+   "kind": "WRONG_DIRECTORY",
+   "path": "/Users/scammermike/Downloads/hawking/tools/odyssey/odyssey.py",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "/Users/scammermike/Downloads/hawking/visionmcp/.world-engine/verify-scratch/install-venv/lib/python3.13/site-packages/visionmcp/delivery/stream.py",
+   "kind": "NEAR_NAME",
+   "path": "/Users/scammermike/Downloads/hawking/tools/odyssey/streaming.py",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "/Users/scammermike/Downloads/hawking/.preserved/main-hcli-pre-migration/runtime.py",
+   "kind": "WRONG_DIRECTORY",
+   "path": "/Users/scammermike/Downloads/hawking/tools/odyssey/runtime.py",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "/Users/scammermike/Downloads/hawking/workspace/ops/ane/python/numpy/f2py/tests/test_string.py",
+   "kind": "NEAR_NAME",
+   "path": "/Users/scammermike/Downloads/hawking/tools/odyssey/test_streaming.py",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "/Users/scammermike/Downloads/hawking/workspace/ops/ane/python/numpy/typing/tests/test_runtime.py",
+   "kind": "WRONG_DIRECTORY",
+   "path": "/Users/scammermike/Downloads/hawking/tools/odyssey/test_runtime.py",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "/Users/scammermike/Downloads/hawking/hcli/test_odyssey.py",
+   "kind": "WRONG_DIRECTORY",
+   "path": "/Users/scammermike/Downloads/hawking/tools/odyssey/test_odyssey.py",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "/Users/scammermike/Downloads/hawking/tools/odyssey/test_odyssey_streaming_runtime.py",
+   "kind": "NEAR_NAME",
+   "path": "/Users/scammermike/Downloads/hawking/tools/odyssey/test_streaming_runtime.py",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "/Users/scammermike/Downloads/hawking/tools/odyssey/test_odyssey_streaming_runtime.py",
+   "kind": "NEAR_NAME",
+   "path": "/Users/scammermike/Downloads/hawking/tools/odyssey/test_odyssey_streaming.py",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "",
+   "kind": "ABSENT",
+   "path": "/Users/scammermike/Downloads/hawking/.hcli/mission/work/G023.work",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "",
+   "kind": "ABSENT",
+   "path": "/Users/scammermike/Downloads/hawking/.hcli/mission/work/G012.work",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/reports/condense/general_frontier/OVERNIGHT_HANDOFF/state.json",
+   "kind": "WRONG_DIRECTORY",
+   "path": "/Users/scammermike/Downloads/hawking/.hcli/mission/modellake/state.json",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "/Users/scammermike/Downloads/hawking/receipts/ascent-2026-08-16/dsv-close-residual/rep1.json",
+   "kind": "NEAR_NAME",
+   "path": "/Users/scammermike/Downloads/hawking/.hcli/mission/root/ref.json",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "/Users/scammermike/Downloads/hawking/tools/odyssey/test_modellake.py",
+   "kind": "WRONG_DIRECTORY",
+   "path": "/Users/scammermike/Downloads/hawking/hcli/tests/test_modellake.py",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "/Users/scammermike/Downloads/hawking/tools/future/test_wave_receipts.py",
+   "kind": "NEAR_NAME",
+   "path": "/Users/scammermike/Downloads/hawking/hcli/tests/test_receipts.py",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "/Users/scammermike/Downloads/hawking/workspace/ops/ane/python/sympy/core/tests/test_facts.py",
+   "kind": "NEAR_NAME",
+   "path": "/Users/scammermike/Downloads/hawking/hcli/tests/test_artifacts.py",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "/Users/scammermike/Downloads/hawking/tools/test_hardware_wake.py",
+   "kind": "NEAR_NAME",
+   "path": "/Users/scammermike/Downloads/hawking/hcli/tests/test_hardware.py",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "/Users/scammermike/Downloads/hawking/workspace/ops/ane/python/sympy/series/tests/test_lseries.py",
+   "kind": "NEAR_NAME",
+   "path": "/Users/scammermike/Downloads/hawking/hcli/tests/test_call_sites.py",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "",
+   "kind": "ABSENT",
+   "path": "/Users/scammermike/Downloads/hawking/hcli/tests/test_do_not_wait.py",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "",
+   "kind": "ABSENT",
+   "path": "/Users/scammermike/Downloads/hawking/hcli/tests/test_pass_sparingly.py",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "/Users/scammermike/Downloads/hawking/workspace/ops/ane/python/numpy/_core/tests/test_overrides.py",
+   "kind": "NEAR_NAME",
+   "path": "/Users/scammermike/Downloads/hawking/hcli/tests/test_every_result.py",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "/Users/scammermike/Downloads/hawking/workspace/ops/ane/python/sympy/physics/units/definitions/unit_definitions.py",
+   "kind": "NEAR_NAME",
+   "path": "/Users/scammermike/Downloads/hawking/hcli/tests/test_definitions.py",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "/Users/scammermike/Downloads/hawking/workspace/ops/ane/python/sympy/concrete/tests/test_products.py",
+   "kind": "NEAR_NAME",
+   "path": "/Users/scammermike/Downloads/hawking/hcli/tests/test_producers.py",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "/Users/scammermike/Downloads/hawking/workspace/ops/ane/python/sympy/categories/tests/test_drawing.py",
+   "kind": "NEAR_NAME",
+   "path": "/Users/scammermike/Downloads/hawking/hcli/tests/test_hawking.py",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "",
+   "kind": "ABSENT",
+   "path": "/Users/scammermike/Downloads/hawking/G002.work",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "",
+   "kind": "ABSENT",
+   "path": "/Users/scammermike/Downloads/hawking/G001.work",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "/Users/scammermike/Downloads/hawking/README.md",
+   "kind": "WRONG_DIRECTORY",
+   "path": "/Users/scammermike/Downloads/hawking/hcli/README.md",
+   "requested": 1
+  },
+  {
+   "distinct_goals": 1,
+   "hint": "/Users/scammermike/Downloads/hawking/pyproject.toml",
+   "kind": "WRONG_DIRECTORY",
+   "path": "/Users/scammermike/Downloads/hawking/hcli/pyproject.toml",
+   "requested": 1
+  }
+ ],
+ "model_calls": 185,
+ "model_wall_s": 30035.6,
+ "schema": "hawking.future.tool_friction.v1",
+ "seal_sha256": "4a789cb44be2201a2b03aafa7f585286856cd5a3b887f987bfce0d6cb779cf39",
+ "source": "HCLI mission event logs (read only; that campaign owns them)",
+ "tool_calls": 570,
+ "tool_execution_share_of_wall": 0.003537,
+ "tool_execution_wall_s": 106.6,
+ "wasted_model_wall": {
+  "calls_per_model_turn": 3.08,
+  "note": "a point estimate between these would be invented; both bounds are stated",
+  "per_turn_upper_bound_s": 29710.9,
+  "pro_rata_s": 9643.0
+ }
+}

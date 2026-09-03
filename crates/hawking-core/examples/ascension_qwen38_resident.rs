@@ -225,6 +225,43 @@ fn run_resident(args: Args) -> Result<(), String> {
 #[cfg(target_os = "macos")]
 /// Length of the longest common prefix. The whole soundness of KV reuse rests
 /// on this being an EXACT token comparison, not a hash or a heuristic.
+/// Where to snapshot a prefix checkpoint, or None to keep the one held.
+///
+/// A checkpoint that MISSED is worth less than any boundary that hits, however
+/// short, so a miss lets a shorter agreement replace it. Requiring every new
+/// snapshot to beat the held length made one over-long checkpoint permanent: it
+/// could not be reused (a checkpoint is valid only when the prompt matches it in
+/// full) and could not be replaced, so the cache missed until a prompt happened
+/// to agree with it again. Measured on one goal: four consecutive calls cold on
+/// the same prefix key -- 2092, 5157, 3218 and 4769 tokens all stepped from
+/// scratch -- then a single hit reusing 2623 of 5262.
+///
+/// A checkpoint that HIT must still be allowed to advance. Refusing to
+/// re-snapshot after a restore froze the checkpoint at whatever the first cold
+/// call happened to capture, so every token past it was re-stepped on every
+/// later call, forever. Measured on one goal: five calls pinned at 1398 reused
+/// tokens while the prompts grew to 4784 -- 3386 tokens stepped at 580
+/// dispatches each for the single last call. Restoring is exact by contract, so
+/// the state after restoring at K and stepping to N is the state a cold prefill
+/// of N would reach; snapshotting there is as sound as snapshotting cold. The
+/// held-length floor below already refuses a snapshot that would not be an
+/// improvement, which is the only thing the refusal was really buying.
+fn snapshot_boundary(
+    restored_from_checkpoint: usize,
+    checkpoint_missed: bool,
+    held: usize,
+    agreed_with_previous: usize,
+    prompt_len: usize,
+) -> Option<usize> {
+    let _ = restored_from_checkpoint;
+    let floor = if checkpoint_missed { 16 } else { held.max(16) };
+    if agreed_with_previous > floor && agreed_with_previous < prompt_len {
+        Some(agreed_with_previous)
+    } else {
+        None
+    }
+}
+
 fn shared_prefix_len(a: &[u32], b: &[u32]) -> usize {
     a.iter().zip(b.iter()).take_while(|(x, y)| x == y).count()
 }
@@ -334,6 +371,7 @@ fn serve_request(
     // overwrite it.
     let agreed_with_previous = shared_prefix_len(resident_context, &prompt_ids);
     let mut restored_from_checkpoint = 0usize;
+    let mut checkpoint_missed = false;
     if reuse == 0 {
         let usable = prefix_checkpoint.as_ref().and_then(|(tokens, cp)| {
             let shared = shared_prefix_len(tokens, &prompt_ids);
@@ -353,6 +391,10 @@ fn serve_request(
                 resident_context.extend_from_slice(&prompt_ids[..shared]);
             }
             _ => {
+                // The held checkpoint did not match this prompt. Remember that,
+                // because the snapshot rule below must be allowed to replace it
+                // with a SHORTER, more reusable boundary.
+                checkpoint_missed = prefix_checkpoint.is_some();
                 session.reset();
                 resident_context.clear();
             }
@@ -367,15 +409,22 @@ fn serve_request(
     // -- 691 tokens, measured -- became the permanent ceiling even when later
     // goals shared more. A checkpoint is only worth replacing if it buys
     // strictly more skipped prefill.
+    // A checkpoint that MISSED is worth less than any boundary that hits, however
+    // short, so a miss lets a shorter agreement replace it. Requiring every new
+    // snapshot to beat the held length made one over-long checkpoint permanent:
+    // it could not be reused (a checkpoint is only valid when the prompt matches
+    // it in full) and could not be replaced, so the cache missed until a prompt
+    // happened to agree with it again. Measured on one goal: four consecutive
+    // calls cold on the same prefix key -- 2092, 5157, 3218 and 4769 tokens all
+    // stepped from scratch -- then a single hit that reused 2623 of 5262.
     let held = prefix_checkpoint.as_ref().map(|(t, _)| t.len()).unwrap_or(0);
-    let snapshot_at = if restored_from_checkpoint == 0
-        && agreed_with_previous > held.max(16)
-        && agreed_with_previous < prompt_ids.len()
-    {
-        Some(agreed_with_previous)
-    } else {
-        None
-    };
+    let snapshot_at = snapshot_boundary(
+        restored_from_checkpoint,
+        checkpoint_missed,
+        held,
+        agreed_with_previous,
+        prompt_ids.len(),
+    );
     let started = Instant::now();
     let result = if constrain_json {
         let vocab = json_vocab_index.get_or_insert_with(|| {
@@ -463,6 +512,15 @@ fn serve_request(
         "resident_identity": args.resident_identity,
         "resident_pid": pid,
         "grammar_enforced": constrain_json,
+        // WHY generation ended: "constraint_done", "eos", "budget", or "" on
+        // the unconstrained path. A reply that fails to parse needs this to be
+        // diagnosable at all -- the constraint believing it closed and the
+        // budget running out are opposite faults.
+        "stop_reason": result.stop_reason,
+        // The body knows its own layer count and the host was guessing at it.
+        // Dispatches per step means nothing until it is divided by this: 580 is
+        // damning at 8 layers and unremarkable at 64.
+        "layers": hawking_core::model::qwen38_geometry::QWEN38_LAYERS,
         "prefix_reused_tokens": reuse,
         "prefill_tokens_stepped": prompt_ids.len().saturating_sub(reuse),
         "prefix_source": if restored_from_checkpoint > 0 {
@@ -571,7 +629,49 @@ fn main() {
 
 #[cfg(test)]
 mod prefix_reuse_tests {
-    use super::shared_prefix_len;
+    use super::{shared_prefix_len, snapshot_boundary};
+
+    #[test]
+    fn a_missed_checkpoint_is_replaced_by_a_shorter_boundary() {
+        // held 2623 and it missed; this prompt only agrees at 1800.
+        assert_eq!(snapshot_boundary(0, true, 2623, 1800, 5000), Some(1800));
+    }
+
+    #[test]
+    fn a_checkpoint_that_still_fits_is_not_replaced_by_a_shorter_one() {
+        // Negative control: without a miss, a shorter boundary must NOT
+        // displace a longer one that is still buying skipped prefill.
+        assert_eq!(snapshot_boundary(0, false, 2623, 1800, 5000), None);
+    }
+
+    #[test]
+    fn a_longer_boundary_still_wins() {
+        assert_eq!(snapshot_boundary(0, false, 2623, 3100, 5000), Some(3100));
+    }
+
+    #[test]
+    fn a_restored_checkpoint_advances_when_the_prompt_agrees_further() {
+        // Deliberately changed: this used to assert None, which froze the
+        // checkpoint at the first cold capture and re-stepped everything past
+        // it on every later call. 4000 > the 2623 held, so it is an
+        // improvement and must be taken.
+        assert_eq!(snapshot_boundary(2623, false, 2623, 4000, 5000), Some(4000));
+    }
+
+    #[test]
+    fn a_restored_checkpoint_is_not_replaced_by_a_worse_one() {
+        // Agreement shorter than what is already held buys nothing, and
+        // throwing away a longer checkpoint for it is a straight loss.
+        assert_eq!(snapshot_boundary(2623, false, 2623, 900, 5000), None);
+        assert_eq!(snapshot_boundary(2623, false, 2623, 2623, 5000), None);
+    }
+
+    #[test]
+    fn a_boundary_at_the_whole_prompt_is_refused() {
+        // Snapshotting the entire prompt saves nothing and cannot be restored
+        // into: there would be no tokens left to step.
+        assert_eq!(snapshot_boundary(0, true, 0, 5000, 5000), None);
+    }
 
     /// The reuse decision, exactly as `serve_request` makes it.
     ///

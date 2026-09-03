@@ -10,7 +10,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T22:54:00Z",
+  "recorded_at": "2026-09-03T03:05:06Z",
   "recorded_by": "tools/future/protected_scheduler.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -354,7 +354,7 @@
   "workunit": "one CPU_ANALYSIS unit; recognize/decide/park/continue_with against declared GPU_EXCLUSIVE without opening a window"
  },
  "schema": "hawking.future.protected_scheduler.v1",
- "seal_sha256": "7f7e66c4247755bf0c7f83c4d10b176d40eecbf952c97152f9f62cfb1f026ce3",
+ "seal_sha256": "e64e2f6541fd3602716c98aedaaeac0ee445eb63fa555573ef4414599acdf694",
  "version": 1,
  "vocabulary": {
   "BLOCKED_ON_PROTECTED_WINDOW": "protected-required, and the window is not available",

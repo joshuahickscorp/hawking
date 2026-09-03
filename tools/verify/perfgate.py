@@ -188,7 +188,7 @@ def inventory(n: int, include_cold: bool) -> list[dict[str, Any]]:
     mok, mwhy = metal_ok(bin_path) if bin_path else (False, "no binary")
     llama, glm = llama_gravity(), glm_math_preserve()
     gtps, gglm = find_example("gravity_tps"), find_example("gravity_glm_tps")
-    fmt, pack = REPO / "tools/condense/artifact_client.py", REPO / "lab/operators/glm52_pack.py"
+    fmt, pack = REPO / "tools/condense/artifact_client.py", REPO / "research/lab/operators/glm52_pack.py"
     rows: list[dict[str, Any]] = []
 
     def add(name: str, fam: str, st: str, reason: str, **kw: Any) -> None:
@@ -505,7 +505,7 @@ print(json.dumps({"bytes_per_s": total / elapsed, "tensors_per_s": 32 * 20 / ela
 """
 
 def cap_transform(n: int) -> list[dict[str, Any]]:
-    py, fmt, pack = sys.executable, REPO / "tools/condense/artifact_client.py", REPO / "lab/operators/glm52_pack.py"
+    py, fmt, pack = sys.executable, REPO / "tools/condense/artifact_client.py", REPO / "research/lab/operators/glm52_pack.py"
     condense = str(REPO / "tools/condense")
     out: list[dict[str, Any]] = []
     if fmt.is_file():

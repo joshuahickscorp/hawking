@@ -793,7 +793,7 @@ def git_caller_inventory() -> list[dict[str, Any]]:
             "signal_handling": "none",
         },
         {
-            "path": "hcli/agentos/checkpoint.py, hcli/workspace.py, lab/receipts.py, tools/branch_skew_guard.py, tools/odyssey/*.py",
+            "path": "hcli/agentos/checkpoint.py, hcli/workspace.py, research/lab/receipts.py, tools/branch_skew_guard.py, tools/odyssey/*.py",
             "invokes": ["git rev-parse HEAD", "git show / git log (read-only)"],
             "takes_index_lock": False,
             "timeout": "usually none",

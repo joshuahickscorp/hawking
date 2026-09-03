@@ -8,7 +8,7 @@
     "required_phone_status_path": null,
     "required_artifacts": {
       "source_manifest": {
-        "path": "reports/GLM52_OFFICIAL_MANIFEST.json",
+        "path": "research/reports/GLM52_OFFICIAL_MANIFEST.json",
         "expected_schema": "test.source_manifest.v1",
         "validator_id": "campaign_artifact_v1"
       }
@@ -24,15 +24,15 @@
     "require_final_source_eviction": true,
     "require_telegram_delivery": true,
     "require_phone_status": true,
-    "required_phone_status_path": "reports/GLM52_PHONE_STATUS.json",
+    "required_phone_status_path": "research/reports/GLM52_PHONE_STATUS.json",
     "required_artifacts": {
       "final_result": {
-        "path": "reports/GLM52_GRAVITY_FINAL.json",
+        "path": "research/reports/GLM52_GRAVITY_FINAL.json",
         "expected_schema": "test.final_result.v1",
         "validator_id": "campaign_artifact_v1"
       },
       "gravity_audit": {
-        "path": "reports/GRAVITY_COMPLETENESS_AUDIT_GLM52_FINAL.json",
+        "path": "research/reports/GRAVITY_COMPLETENESS_AUDIT_GLM52_FINAL.json",
         "expected_schema": "test.gravity_audit.v1",
         "validator_id": "campaign_artifact_v1"
       }

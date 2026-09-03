@@ -538,7 +538,7 @@ def test_run_returns_a_mission_id_and_does_not_block(tmp_path):
 
     deadline = time.time() + 60
     while time.time() < deadline and not d.envelope_path(ws).is_file():
-        time.sleep(0.25)
+        time.sleep(0.02)
     assert d.envelope_path(ws).is_file(), "spawned worker never wrote an envelope"
     env = d.result(ws)
     assert env["verdict"] == "BLOCKED"

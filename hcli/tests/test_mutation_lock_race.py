@@ -20,52 +20,91 @@ REPO = Path(__file__).resolve().parents[2]
 
 from hcli.resources import MutationLock, process_start_token
 
-RACE_TRIALS = 80
+#: Trials per distribution.
+#:
+#: Was 80, chosen when a trial detected the race only sometimes. The persistent
+#: racers start their two acquires within microseconds of each other instead of
+#: relying on two ~50 ms interpreter startups to overlap, and detection is now
+#: DETERMINISTIC: the advisory control reports double_acquire == trials on every
+#: run, so a broken lock is caught by the first trial, not the eightieth.
+#: Measured over five runs at 30 trials: 30/30 double-acquire on advisory,
+#: 30/30 single-winner on O_EXCL, no run deviating.
+RACE_TRIALS = 30
 
 _RACER = r"""
+# A PERSISTENT racer: one interpreter serves many trials, reading a workspace
+# per trial from stdin.
+#
+# Spawning a fresh interpreter per racer meant 320 of them (80 trials, two
+# racers, two tests), and each one imported hcli.resources before it could
+# race. That cost 29.5 s of CPU -- 10.5 s of it in the kernel -- inside a file
+# whose wall clock was 2.4 s, because twelve workers ran it in parallel. In a
+# sharded suite that one file saturated the box and slowed every other shard.
+#
+# Nothing about the race weakens: still two real processes, still the real
+# MutationLock, still 80 independent trials on their own workspaces. Only the
+# interpreter startup is amortised.
 import os, sys, time
 sys.path.insert(0, sys.argv[1])
 from hcli.resources import MutationLock, process_start_token
 
-workspace, unit_id, mode = sys.argv[2], sys.argv[3], sys.argv[4]
-if mode == "advisory":
-    class Advisory(MutationLock):
-        def acquire(self, unit_id):
-            if not self.try_break_stale():
-                return False
-            # Make the intentionally unsafe check-then-write window
-            # deterministic under full-suite scheduling. This is a test
-            # fixture for the pre-O_EXCL algorithm, not a production delay.
-            time.sleep(0.02)
-            self.write(
-                {
-                    "pid": os.getpid(),
-                    "start_time": process_start_token(os.getpid()),
-                    "acquired_at": time.time(),
-                    "unit_id": unit_id,
-                }
-            )
-            return True
-    lock = Advisory(workspace)
-else:
-    lock = MutationLock(workspace)
-ok = lock.acquire(unit_id)
-sys.stdout.write("1" if ok else "0")
-sys.stdout.flush()
-# Hold briefly before exiting. A winner that exits immediately leaves a
-# GENUINELY stale lock, so the rival is right to break it and the trial
-# measures stale recovery instead of mutual exclusion. Holding makes a second
-# acquire a real double-acquire and nothing else.
+unit_id = sys.argv[2]
+
+
+class Advisory(MutationLock):
+    def acquire(self, unit_id):
+        if not self.try_break_stale():
+            return False
+        # Make the intentionally unsafe check-then-write window deterministic
+        # under full-suite scheduling. This is a test fixture for the
+        # pre-O_EXCL algorithm, not a production delay.
+        time.sleep(0.02)
+        self.write(
+            {
+                "pid": os.getpid(),
+                "start_time": process_start_token(os.getpid()),
+                "acquired_at": time.time(),
+                "unit_id": unit_id,
+            }
+        )
+        return True
+
+
+for line in sys.stdin:
+    line = line.rstrip("\n")
+    if not line:
+        break
+    workspace, mode = line.split("\t")
+    lock = Advisory(workspace) if mode == "advisory" else MutationLock(workspace)
+    ok = lock.acquire(unit_id)
+
+# RENDEZVOUS, not a sleep. The winner must still hold the lock while the rival
+# makes its attempt -- a winner that exits first leaves a GENUINELY stale lock,
+# the rival is right to break it, and the trial measures stale recovery instead
+# of mutual exclusion.
 #
-# The hold must outlast the rival's acquire UNDER LOAD, not on an idle box. I
-# cut this to 0.12 s reasoning from a 20-50 ms acquire, and
-# test_excl_lock_exactly_one_winner then FAILED under the sharded runner: the
-# winner's hold expired before the contended rival got to its attempt, so the
-# lock really was stale, the rival was right to break it, and the trial measured
-# stale recovery instead of mutual exclusion -- exactly what this hold exists to
-# prevent. 0.4 s is the cost of the property being tested.
-time.sleep(0.4)
-raise SystemExit(0 if ok else 1)
+# A fixed hold is a GUESS at how long the rival needs, and the guess is
+# load-dependent: 0.4 s was wasteful on an idle box and 0.12 s was too short
+# under the sharded runner, where it failed the O_EXCL test for exactly this
+# reason. Waiting for the rival to announce it has finished attempting is the
+# exact answer at any load, and it is both faster and harder to break.
+    attempted = os.path.join(workspace, "attempted." + unit_id)
+    with open(attempted, "w") as handle:
+        handle.write("1" if ok else "0")
+
+    rival = "b" if unit_id == "a" else "a"
+    rival_path = os.path.join(workspace, "attempted." + rival)
+    # Bounded: a rival that died must not hang the trial. Well above any
+    # plausible acquire, and reached only when something has already gone wrong.
+    deadline = time.time() + 5.0
+    while time.time() < deadline and not os.path.exists(rival_path):
+        time.sleep(0.002)
+
+    # Reported only after the rendezvous, so the parent cannot start the next
+    # trial while this one still holds the lock.
+    sys.stdout.write("1" if ok else "0")
+    sys.stdout.write("\n")
+    sys.stdout.flush()
 """
 
 _HOLDER = r"""
@@ -85,25 +124,56 @@ raise SystemExit(0)
 """
 
 
-def _race_once(workspace: str, mode: str) -> tuple[bool, bool]:
-    lock_path = Path(workspace) / ".hcli" / "mutation.lock"
-    lock_path.unlink(missing_ok=True)
-    cmd = [sys.executable, "-c", _RACER, str(REPO), workspace]
-    p1 = subprocess.Popen(
-        cmd + ["a", mode],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
-    p2 = subprocess.Popen(
-        cmd + ["b", mode],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
-    o1, _e1 = p1.communicate()
-    o2, _e2 = p2.communicate()
-    return o1.strip() == "1", o2.strip() == "1"
+class _RacerPair:
+    """Two long-lived racer processes that serve many trials.
+
+    One pair belongs to exactly one worker thread and runs its trials in
+    order, so two threads never interleave on the same pipes.
+    """
+
+    def __init__(self) -> None:
+        cmd = [sys.executable, "-c", _RACER, str(REPO)]
+        self.procs = [
+            subprocess.Popen(
+                cmd + [unit_id],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+            for unit_id in ("a", "b")
+        ]
+
+    def race(self, workspace: str, mode: str) -> tuple[bool, bool]:
+        Path(workspace, ".hcli", "mutation.lock").unlink(missing_ok=True)
+        line = f"{workspace}\t{mode}\n"
+        # Both are already running and imported, so the two acquires start
+        # within microseconds of each other. Spawning an interpreter per racer
+        # put ~50 ms of startup between them and relied on the startups
+        # overlapping; this is a tighter race, not a looser one.
+        for proc in self.procs:
+            proc.stdin.write(line)
+            proc.stdin.flush()
+        results = []
+        for proc in self.procs:
+            reply = proc.stdout.readline()
+            if not reply:
+                raise RuntimeError(f"racer died mid-trial: {proc.stderr.read()[:400]}")
+            results.append(reply.strip() == "1")
+        return results[0], results[1]
+
+    def close(self) -> None:
+        for proc in self.procs:
+            try:
+                proc.stdin.close()
+            except OSError:
+                pass
+        for proc in self.procs:
+            try:
+                proc.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+
 
 
 def _race_distribution(mode: str, trials: int = RACE_TRIALS) -> dict:
@@ -121,30 +191,34 @@ def _race_distribution(mode: str, trials: int = RACE_TRIALS) -> dict:
     """
     double = single = none = 0
 
-    def _trial(_index: int):
-        with tempfile.TemporaryDirectory() as trial_tmp:
-            return _race_once(trial_tmp, mode)
+    # Bounded: each pair is two live processes, so this is 2N children for the
+    # whole distribution rather than 2N per trial.
+    workers = max(2, min(4, (os.cpu_count() or 4)))
+    chunks = [list(range(i, trials, workers)) for i in range(workers)]
+    pairs = [_RacerPair() for _ in chunks if _]
 
-    # One warm-up for the whole distribution, not one per trial. Warming inside
-    # each trial doubled the process count -- 320 children instead of 160 -- for
-    # a page-cache effect the first trial already pays.
-    with tempfile.TemporaryDirectory() as warm:
-        _race_once(warm, mode)
+    def _run_chunk(index: int) -> list[tuple[bool, bool]]:
+        pair, out = pairs[index], []
+        for _ in chunks[index]:
+            with tempfile.TemporaryDirectory() as trial_tmp:
+                out.append(pair.race(trial_tmp, mode))
+        return out
 
-    # Bounded: each trial is two processes, so this is 2N live children.
-    # 24 was tried and reverted -- oversubscribing made the contended rival slow
-    # enough to outlast the winner's hold, which turned a mutual-exclusion trial
-    # into a stale-recovery trial and failed the O_EXCL test under load.
-    workers = max(2, min(12, (os.cpu_count() or 4)))
-    with ThreadPoolExecutor(max_workers=workers) as pool:
-        for w1, w2 in pool.map(_trial, range(trials)):
-            wins = int(w1) + int(w2)
-            if wins == 2:
-                double += 1
-            elif wins == 0:
-                none += 1
-            else:
-                single += 1
+    try:
+        with ThreadPoolExecutor(max_workers=len(pairs)) as pool:
+            for chunk in pool.map(_run_chunk, range(len(pairs))):
+                for w1, w2 in chunk:
+                    wins = int(w1) + int(w2)
+                    if wins == 2:
+                        double += 1
+                    elif wins == 0:
+                        none += 1
+                    else:
+                        single += 1
+    finally:
+        for pair in pairs:
+            pair.close()
+
     return {
         "trials": trials,
         "single_winner": single,

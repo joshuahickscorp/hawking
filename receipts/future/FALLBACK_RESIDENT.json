@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-03T00:36:42Z",
+  "recorded_at": "2026-09-03T01:16:33Z",
   "recorded_by": "tools/future/fallback_resident.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -98,8 +98,8 @@
    "note": "HCLI_RESIDENT_SEAL.runtime_binary_sha256_16 matches 'binary' (hybrid greedy), not resident_binary. Presence is required; matching the greedy prefix is not.",
    "path": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
    "role": "resident protocol binary (distinct from seal runtime_binary)",
-   "sha256": "510da8937dc75e02fce21f6ec5b902c204be502fe4b30fd6978df45d6474ed83",
-   "size_bytes": 6804600,
+   "sha256": "7808b8a577bb17d5923756d5da592b6b1f75f4612dd68ca1eafbe664bb5e55bf",
+   "size_bytes": 6788760,
    "source": "disk"
   },
   "role": "CURRENT_NONFINAL_HCLI_WORKER",
@@ -463,7 +463,7 @@
   }
  },
  "schema": "hawking.future.fallback_resident.v1",
- "seal_sha256": "5147930b429785237c70b2a5dc1e91ae7b02cb4f00666af85e190f91c50f0cac",
+ "seal_sha256": "c409d40f72ec2ae975d61aaa41a72c511bc626b5f4777e8cb4a636ece887a515",
  "started_model_process": false,
  "took_gpu_lease": false,
  "verify_restorable": {
@@ -615,8 +615,8 @@
      "note": "HCLI_RESIDENT_SEAL.runtime_binary_sha256_16 matches 'binary' (hybrid greedy), not resident_binary. Presence is required; matching the greedy prefix is not.",
      "path": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
      "role": "resident protocol binary (distinct from seal runtime_binary)",
-     "sha256": "510da8937dc75e02fce21f6ec5b902c204be502fe4b30fd6978df45d6474ed83",
-     "size_bytes": 6804600,
+     "sha256": "7808b8a577bb17d5923756d5da592b6b1f75f4612dd68ca1eafbe664bb5e55bf",
+     "size_bytes": 6788760,
      "source": "disk"
     },
     "id": "resident_binary",

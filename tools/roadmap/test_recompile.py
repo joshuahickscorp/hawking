@@ -282,3 +282,29 @@ def test_no_gate_is_wired_solely_by_its_own_module_calling_itself():
         "these gates are WIRED only by their own module calling itself:\n  "
         + "\n  ".join(offenders)
     )
+
+
+def test_the_regeneration_steps_are_in_the_only_correct_order():
+    """Order is load-bearing and was wrong twice by hand.
+
+    --build must precede recompile, because recompile renders the state FROM the
+    graph: reversed, the state renders from the previous graph and the frontier
+    reports a closed gate as the top priority. emit_revised must be last, because
+    it fingerprints the state, so anything rewriting the state after it makes the
+    emitted roadmap instantly stale against its own detector.
+    """
+    from tools.roadmap import regenerate
+    labels = [label for label, _ in regenerate.STEPS]
+    assert labels.index("graph") < labels.index("documents+state")
+    assert labels[-1] == "revised roadmap"
+    assert labels.index("saturation") < labels.index("revised roadmap")
+    for _label, args in regenerate.STEPS:
+        assert args[0] == "-m", args
+
+
+def test_the_freshness_check_agrees_with_the_committed_artifacts():
+    """--check must not report stale immediately after a regeneration."""
+    from tools.roadmap import regenerate
+    assert regenerate.check() == 0, (
+        "regenerate --check reports stale; run python3 -m tools.roadmap.regenerate"
+    )

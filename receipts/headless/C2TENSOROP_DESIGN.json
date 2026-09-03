@@ -46,11 +46,11 @@
               "count": 2
             },
             {
-              "path": "workspace/superwave/g1/claude-evidence/g1_tensor_operators.json",
+              "path": "workspace/superwave/g1/evidence/g1_tensor_operators.json",
               "count": 1
             },
             {
-              "path": "workspace/superwave/g1/claude-evidence/g1_tensor_operators.py",
+              "path": "workspace/superwave/g1/evidence/g1_tensor_operators.py",
               "count": 1
             }
           ]
@@ -76,11 +76,11 @@
           "exit_code": 0,
           "sample": [
             {
-              "path": "workspace/superwave/g1/claude-evidence/g1_tensor_operators.json",
+              "path": "workspace/superwave/g1/evidence/g1_tensor_operators.json",
               "count": 1
             },
             {
-              "path": "workspace/superwave/g1/claude-evidence/g1_tensor_operators.py",
+              "path": "workspace/superwave/g1/evidence/g1_tensor_operators.py",
               "count": 1
             }
           ]
@@ -93,7 +93,7 @@
           "exit_code": 0,
           "sample": [
             {
-              "path": "workspace/superwave/g1/claude-evidence/g1_tensor_operators.py",
+              "path": "workspace/superwave/g1/evidence/g1_tensor_operators.py",
               "count": 3
             }
           ]
@@ -106,11 +106,11 @@
           "exit_code": 0,
           "sample": [
             {
-              "path": "workspace/superwave/g1/claude-evidence/g1_tensor_operators.json",
+              "path": "workspace/superwave/g1/evidence/g1_tensor_operators.json",
               "count": 1
             },
             {
-              "path": "workspace/superwave/g1/claude-evidence/g1_tensor_operators.py",
+              "path": "workspace/superwave/g1/evidence/g1_tensor_operators.py",
               "count": 1
             }
           ]
@@ -131,11 +131,11 @@
               "count": 1
             },
             {
-              "path": "workspace/superwave/g1/claude-evidence/g1_tensor_operators.json",
+              "path": "workspace/superwave/g1/evidence/g1_tensor_operators.json",
               "count": 1
             },
             {
-              "path": "workspace/superwave/g1/claude-evidence/g1_tensor_operators.py",
+              "path": "workspace/superwave/g1/evidence/g1_tensor_operators.py",
               "count": 1
             }
           ]
@@ -148,11 +148,11 @@
           "exit_code": 0,
           "sample": [
             {
-              "path": "workspace/superwave/g1/claude-evidence/g1_tensor_operators.json",
+              "path": "workspace/superwave/g1/evidence/g1_tensor_operators.json",
               "count": 1
             },
             {
-              "path": "workspace/superwave/g1/claude-evidence/g1_tensor_operators.py",
+              "path": "workspace/superwave/g1/evidence/g1_tensor_operators.py",
               "count": 1
             }
           ]
@@ -165,7 +165,7 @@
           "exit_code": 0,
           "sample": [
             {
-              "path": "workspace/superwave/g1/claude-evidence/g1_tensor_operators.py",
+              "path": "workspace/superwave/g1/evidence/g1_tensor_operators.py",
               "count": 3
             }
           ]
@@ -174,7 +174,7 @@
       "reading": "Phrase-grep 'tensor train' files=0 hits=0. Identifier tensor_train files=4 hits=6. The mechanism ran as family=tensor_train (G1, 80 rows) and tt_matrix_unfolding (G034). HGRAVS01 y=L@(R@x) is the 2-core cousin that already exists as a Metal kernel, scoped to Q80 down_proj, rank\u2264160, x\u2264512."
     },
     "g1": {
-      "path": "workspace/superwave/g1/claude-evidence/g1_tensor_operators.json",
+      "path": "workspace/superwave/g1/evidence/g1_tensor_operators.json",
       "schema": "hawking.gravity1.tensor_operators.v1",
       "selfcheck": "PASS",
       "wall_s": 1446.1435189247131,
@@ -1067,10 +1067,10 @@
         "what": "G1 tt_apply vs q4 vs dense on 8 real Qwen3.8 GEMV tensors, doctor gate on Y",
         "wall_s": 1446.1435189247131,
         "result": "373/373 unhealthy; 80/80 tensor_train unhealthy",
-        "path": "workspace/superwave/g1/claude-evidence/g1_tensor_operators.json"
+        "path": "workspace/superwave/g1/evidence/g1_tensor_operators.json"
       },
       "cheapest_kill_no_fit": {
-        "command": "python3 -c \"import json,subprocess; d=json.loads(subprocess.check_output(['git','show','HEAD:workspace/superwave/g1/claude-evidence/g1_tensor_operators.json'])); rows=[op for t in d['tensors'] for op in t['operators']]; h=sum(1 for op in rows if (op.get('gate') or {}).get('healthy')); print('rows',len(rows),'healthy',h); raise SystemExit(0 if h==0 else 1)\"",
+        "command": "python3 -c \"import json,subprocess; d=json.loads(subprocess.check_output(['git','show','HEAD:workspace/superwave/g1/evidence/g1_tensor_operators.json'])); rows=[op for t in d['tensors'] for op in t['operators']]; h=sum(1 for op in rows if (op.get('gate') or {}).get('healthy')); print('rows',len(rows),'healthy',h); raise SystemExit(0 if h==0 else 1)\"",
         "runtime": "<2 s (json parse)",
         "kill_if": "healthy_true == 0 (already true)",
         "this_script_is_that_kill": true
@@ -1080,7 +1080,7 @@
           "W": "language_model.model.layers.0.mlp.gate_proj.weight from Qwen3.8 BF16 parent",
           "X": "activation-capture-v1 hidden/L00.f32  (256 \u00d7 5120), real X, not Gaussian"
         },
-        "method": "Copy tt_svd_4 + tt_apply + gate_from_axes from workspace/superwave/g1/claude-evidence/g1_tensor_operators.py. Fit (136,128)x(40,128) r=(64,64,64). Y_tt = tt_apply(X); Y = X @ W.T; Y_q4 = X @ q4(W).T. Score doctor axes with AXIS_MARGIN observed/probed 0.02, worst_unit 0.10 relative to q4. Count tt_flops vs 2*m*n. Do not use cosine as GO (0.01*W scored 1.000000; null ~0.898).",
+        "method": "Copy tt_svd_4 + tt_apply + gate_from_axes from workspace/superwave/g1/evidence/g1_tensor_operators.py. Fit (136,128)x(40,128) r=(64,64,64). Y_tt = tt_apply(X); Y = X @ W.T; Y_q4 = X @ q4(W).T. Score doctor axes with AXIS_MARGIN observed/probed 0.02, worst_unit 0.10 relative to q4. Count tt_flops vs 2*m*n. Do not use cosine as GO (0.01*W scored 1.000000; null ~0.898).",
         "kill_if": "healthy is False OR flop_ratio >= 1",
         "expected_already_measured": {
           "rel_l2": 0.9869111180305481,

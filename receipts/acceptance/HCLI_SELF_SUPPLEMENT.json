@@ -43,13 +43,13 @@
           },
           "child_workunits": [
             {
-              "id": "child",
               "description": "inspect the verified parent receipt",
               "role": "research",
-              "resource_class": "CPU_SHARED"
+              "resource_class": "CPU_SHARED",
+              "id": "child"
             }
           ],
-          "at": 1788374687.694252
+          "at": 1788414759.4077098
         }
       ]
     },
@@ -100,13 +100,13 @@
           },
           "child_workunits": [
             {
-              "id": "child",
               "description": "inspect the verified parent receipt",
               "role": "research",
-              "resource_class": "CPU_SHARED"
+              "resource_class": "CPU_SHARED",
+              "id": "child"
             }
           ],
-          "at": 1788374687.694252
+          "at": 1788414759.4077098
         }
       ]
     },
@@ -135,7 +135,7 @@
   },
   "schema": "hawking.acceptance.gate.v1",
   "gate": "HCLI_SELF_SUPPLEMENT",
-  "generated_at": "2026-09-02T18:44:47Z",
-  "git_head": "14ed3eb1f8fc616a29dbc724f3937cffedf15a43",
+  "generated_at": "2026-09-03T05:52:39Z",
+  "git_head": "f97dec9d2b0c2bbff574c28989d55ca00cafcf88",
   "criterion_altered": false
 }

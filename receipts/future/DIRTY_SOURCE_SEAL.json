@@ -1,13 +1,13 @@
 {
  "base_head": {
-  "sha": "e76518be8ccbe48d73c1e865d159213cd7334e5c",
-  "subject": "feat(qwen38): DeltaNet state IS a checkpointable primitive that avoids prefill"
+  "sha": "90901d1f22f126f3f13c42675bca2ea9f8796454",
+  "subject": "fix(engine): size the context reserve for the worst payload, not the last one"
  },
  "bench": {
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-03T00:37:29Z",
+  "recorded_at": "2026-09-03T06:55:32Z",
   "recorded_by": "tools/future/dirty_source_seal.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -217,12 +217,10 @@
    "split_hunks_of": []
   }
  ],
- "crate_source_is_dirty": true,
+ "crate_source_is_dirty": false,
  "dirty_crate_files": {
-  "modified": [
-   "crates/hawking-core/src/model/qwen38_hybrid_decode.rs"
-  ],
-  "total": 1,
+  "modified": [],
+  "total": 0,
   "untracked": []
  },
  "dirty_crate_root": "/Users/scammermike/Downloads/hawking",
@@ -250,14 +248,8 @@
   "P-Q80"
  ],
  "measurement_files": {
-  "files": [
-   {
-    "added": 35,
-    "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
-    "removed": 0
-   }
-  ],
-  "uncommitted_lines_added": 35,
+  "files": [],
+  "uncommitted_lines_added": 0,
   "uncommitted_lines_removed": 0
  },
  "measurement_label": "DIRTY_SOURCE_DIAGNOSTIC",
@@ -494,12 +486,12 @@
   }
  ],
  "patch": {
-  "bytes": 1869,
-  "n_files": 1,
-  "n_modified": 1,
+  "bytes": 0,
+  "n_files": 0,
+  "n_modified": 0,
   "n_untracked": 0,
   "path": "receipts/future/patches/dirty-crate-work.patch",
-  "sha256": "5c3b8a3ee70775f747ca9c2e1fa793488eeab773bf37f62a39ac00c66925b7e9"
+  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
  },
  "promoted": false,
  "recorded_by": "tools/future/dirty_source_seal.py",
@@ -522,7 +514,7 @@
   "land": "P-Q30, P-Q80, P-CACHE, P-INSTRUMENT, P-WORKLIST, P-FAST. P-CACHE changes production default (opt-out). Landing it does not promote the TPS numbers."
  },
  "schema": "hawking.future.dirty_source_seal.v1",
- "seal_sha256": "089bf3668758eabb578531543dbcb9f49c4d8ff07bfb70f3a942bff21b3d1b38",
+ "seal_sha256": "129e3ed74a3a2ded30a88afc8fb721c8390bc4aa81fdebae011168a3f1b1f153",
  "sealed_fusion_env": {
   "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
   "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",

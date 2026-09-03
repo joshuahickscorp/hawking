@@ -181,12 +181,12 @@ def test_admission_records_header_only_and_one_copy(artifacts: dict[str, dict]) 
     assert admission['local_runtime']['packages'] == contract.package_versions()
     assert admission['toolchain_binding'] == {
         'generator': {
-            'path': 'lab/operators/glm52_contract.py',
-            'sha256': sha256_file(REPO_ROOT / 'lab/operators/glm52_contract.py'),
+            'path': 'research/lab/operators/glm52_contract.py',
+            'sha256': sha256_file(REPO_ROOT / 'research/lab/operators/glm52_contract.py'),
         },
         'shared_common': {
-            'path': 'lab/operators/glm52_common.py',
-            'sha256': sha256_file(REPO_ROOT / 'lab/operators/glm52_common.py'),
+            'path': 'research/lab/operators/glm52_common.py',
+            'sha256': sha256_file(REPO_ROOT / 'research/lab/operators/glm52_common.py'),
         },
         'requirements_lock': {
             'path': 'tools/condense/requirements-glm52.txt',

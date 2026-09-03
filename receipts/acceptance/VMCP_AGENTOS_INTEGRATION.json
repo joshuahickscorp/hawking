@@ -37,7 +37,7 @@
     {
       "detail": {
         "browser": false,
-        "fixture": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-integ-s77442hp/index.html",
+        "fixture": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-integ-0_wj3e0z/index.html",
         "green": true,
         "nodes": 7,
         "note": "local HTML fixture; not Chrome/CDP",
@@ -54,7 +54,7 @@
     {
       "detail": {
         "browser": false,
-        "fixture": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-integ-s77442hp/index.html",
+        "fixture": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-integ-0_wj3e0z/index.html",
         "green": true,
         "nodes": 7,
         "note": "local HTML fixture; not Chrome/CDP",
@@ -88,55 +88,55 @@
   ],
   "criterion": {
     "end_line": 7630,
-    "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "file": "/Users/scammermike/Downloads/hawking/docs/roadmap-lineage/H-ROADMAP.superseded-2026-09-02.md",
     "quoted": "- V11 web fixture proof\n- V12 spatial fixture proof\n- V13 PTY/Behavior Lab",
     "start_line": 7628,
     "weakened": false
   },
   "criterion_weakened": false,
-  "elapsed_ms": 27.452,
+  "elapsed_ms": 51.111,
   "evidence_tier": "FUNCTIONAL_SIM",
   "gate": "VMCP_AGENTOS_INTEGRATION",
-  "generated_at": "2026-09-02T23:16:06Z",
+  "generated_at": "2026-09-03T05:34:31Z",
   "gpu_authority": false,
   "invoked_symbols": [
     {
-      "elapsed_ms": 20.434,
+      "elapsed_ms": 41.741,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "tools.headless.hcli_vmcp_integration.observe_file"
     },
     {
-      "elapsed_ms": 1.855,
+      "elapsed_ms": 2.188,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "tools.headless.hcli_vmcp_integration.verify_capture"
     },
     {
-      "elapsed_ms": 0.776,
+      "elapsed_ms": 1.223,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "tools.future.vmcp.prove"
     },
     {
-      "elapsed_ms": 0.119,
+      "elapsed_ms": 0.124,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "visionmcp.worlds.spatial.io.obj.obj_file_counts"
     },
     {
-      "elapsed_ms": 0.057,
+      "elapsed_ms": 0.073,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "visionmcp.worlds.spatial.io.obj.obj_file_counts"
     },
     {
-      "elapsed_ms": 0.055,
+      "elapsed_ms": 0.063,
       "error": null,
       "kind": "call",
       "raised": false,
@@ -153,7 +153,7 @@
     },
     "V11": {
       "browser": false,
-      "fixture": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-integ-s77442hp/index.html",
+      "fixture": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-integ-0_wj3e0z/index.html",
       "green": true,
       "nodes": 7,
       "note": "local HTML fixture; not Chrome/CDP",

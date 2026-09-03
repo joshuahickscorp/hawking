@@ -1245,7 +1245,7 @@ pub fn load_l0_to_l1_static_binding_from_child_preflight(
         )?
     {
         return Err(
-            "L0-to-L1 child preflight baseline evidence/seal no longer matches its raw authority"
+            "L0-to-L1 child preflight baseline research/evidence/seal no longer matches its raw authority"
                 .into(),
         );
     }

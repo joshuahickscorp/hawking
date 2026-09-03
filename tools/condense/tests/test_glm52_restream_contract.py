@@ -12,8 +12,8 @@ from ramanujan.restream_guard import validate_bounded_restream
 @pytest.fixture(scope="module")
 def contract() -> tuple[dict[str, object], dict[str, object]]:
     return build_contract(
-        manifest_path="evidence/glm52/GLM52_OFFICIAL_MANIFEST.json",
-        graph_path="evidence/glm52/GLM52_SHARD_DEPENDENCY_GRAPH.json",
+        manifest_path="research/evidence/glm52/GLM52_OFFICIAL_MANIFEST.json",
+        graph_path="research/evidence/glm52/GLM52_SHARD_DEPENDENCY_GRAPH.json",
     )
 
 

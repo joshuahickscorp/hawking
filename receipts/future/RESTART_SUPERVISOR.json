@@ -11,7 +11,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-03T00:36:32Z",
+  "recorded_at": "2026-09-03T05:47:42Z",
   "recorded_by": "tools/future/restart_supervisor.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -41,12 +41,12 @@
   "restore had no artifact-existence check, so a checkpoint could restore a queue for a binary that was gone"
  ],
  "gpu_authority": false,
- "head": "b35af1fa8886aa9d5903e3b9e943503c63cb001e",
+ "head": "6ef2681614fadde7a45d002b5fc3feb108c81625",
  "live_mission_state_present": true,
  "module_sha256": "de5cfd902fff364723c2e1e8dc34c8bef645ef68bae04bcef5de0b327305ba6f",
  "negative_controls": {
   "absent_mission_refuses": {
-   "detail": "mission file not on disk: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/restart-sup-qlr1r5mx/no-mission.json",
+   "detail": "mission file not on disk: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/restart-sup-8y1h4ja0/no-mission.json",
    "fires": true
   },
   "empty_reason_refuses": {
@@ -57,9 +57,9 @@
    "detail": {
     "adopted": false,
     "assumed_complete": false,
-    "expected_receipt_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/restart-sup-qlr1r5mx/results/done.json",
+    "expected_receipt_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/restart-sup-8y1h4ja0/results/done.json",
     "fate": "INGESTED",
-    "job_id": "done-job-c547ed74",
+    "job_id": "done-job-4bc7ec58",
     "observed_complete_with_receipt": true,
     "reason": "finished job ingested; not relaunched",
     "relaunched": false,
@@ -120,11 +120,11 @@
    "fires": true
   },
   "restore_hash_mismatch": {
-   "detail": "artifact bytes do not match checkpoint sha256 at /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/restart-sup-qlr1r5mx/resident_artifact.py; not the named artifact",
+   "detail": "artifact bytes do not match checkpoint sha256 at /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/restart-sup-8y1h4ja0/resident_artifact.py; not the named artifact",
    "fires": true
   },
   "restore_missing_artifact": {
-   "detail": "named artifact no longer exists: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/restart-sup-qlr1r5mx/resident_artifact.py",
+   "detail": "named artifact no longer exists: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/restart-sup-8y1h4ja0/resident_artifact.py",
    "fires": true
   },
   "stop_cooperative": {
@@ -132,7 +132,7 @@
     "channel": "killpg",
     "identity_status": "dead",
     "needed": "cooperative",
-    "pid": 94699,
+    "pid": 48819,
     "reason": "SIGTERM reaped the resident within grace",
     "result": "ok",
     "signal": "SIGTERM",
@@ -145,7 +145,7 @@
     "channel": "killpg",
     "identity_status": "dead",
     "needed": "escalated",
-    "pid": 94740,
+    "pid": 48828,
     "reason": "SIGTERM did not reap within grace; SIGKILL did",
     "result": "ok",
     "signal": "SIGKILL",
@@ -159,7 +159,7 @@
     "stop": {
      "identity_status": "reused",
      "needed": "refused",
-     "pid": 94899,
+     "pid": 48882,
      "reason": "identity_status=reused: will not signal a pid we cannot prove is the resident",
      "result": "refused",
      "signal": null,
@@ -173,7 +173,7 @@
    "fires": true
   },
   "truncated_tmp_sibling": {
-   "detail": "checkpoint missing at /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/restart-sup-qlr1r5mx/ghost.json; leftover tmp ['.ghost.json.1.deadbeef.tmp'] is a mid-write; refusing to half-read",
+   "detail": "checkpoint missing at /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/restart-sup-8y1h4ja0/ghost.json; leftover tmp ['.ghost.json.1.deadbeef.tmp'] is a mid-write; refusing to half-read",
    "fires": true
   }
  },
@@ -202,7 +202,7 @@
  "promoted": false,
  "proofs": {
   "absent_mission_refuses": {
-   "detail": "mission file not on disk: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/restart-sup-qlr1r5mx/no-mission.json",
+   "detail": "mission file not on disk: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/restart-sup-8y1h4ja0/no-mission.json",
    "fires": true
   },
   "all_passed": true,
@@ -214,9 +214,9 @@
    "detail": {
     "adopted": false,
     "assumed_complete": false,
-    "expected_receipt_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/restart-sup-qlr1r5mx/results/done.json",
+    "expected_receipt_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/restart-sup-8y1h4ja0/results/done.json",
     "fate": "INGESTED",
-    "job_id": "done-job-c547ed74",
+    "job_id": "done-job-4bc7ec58",
     "observed_complete_with_receipt": true,
     "reason": "finished job ingested; not relaunched",
     "relaunched": false,
@@ -277,11 +277,11 @@
    "fires": true
   },
   "restore_hash_mismatch": {
-   "detail": "artifact bytes do not match checkpoint sha256 at /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/restart-sup-qlr1r5mx/resident_artifact.py; not the named artifact",
+   "detail": "artifact bytes do not match checkpoint sha256 at /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/restart-sup-8y1h4ja0/resident_artifact.py; not the named artifact",
    "fires": true
   },
   "restore_missing_artifact": {
-   "detail": "named artifact no longer exists: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/restart-sup-qlr1r5mx/resident_artifact.py",
+   "detail": "named artifact no longer exists: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/restart-sup-8y1h4ja0/resident_artifact.py",
    "fires": true
   },
   "stop_cooperative": {
@@ -289,7 +289,7 @@
     "channel": "killpg",
     "identity_status": "dead",
     "needed": "cooperative",
-    "pid": 94699,
+    "pid": 48819,
     "reason": "SIGTERM reaped the resident within grace",
     "result": "ok",
     "signal": "SIGTERM",
@@ -302,7 +302,7 @@
     "channel": "killpg",
     "identity_status": "dead",
     "needed": "escalated",
-    "pid": 94740,
+    "pid": 48828,
     "reason": "SIGTERM did not reap within grace; SIGKILL did",
     "result": "ok",
     "signal": "SIGKILL",
@@ -316,7 +316,7 @@
     "stop": {
      "identity_status": "reused",
      "needed": "refused",
-     "pid": 94899,
+     "pid": 48882,
      "reason": "identity_status=reused: will not signal a pid we cannot prove is the resident",
      "result": "refused",
      "signal": null,
@@ -330,7 +330,7 @@
    "fires": true
   },
   "truncated_tmp_sibling": {
-   "detail": "checkpoint missing at /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/restart-sup-qlr1r5mx/ghost.json; leftover tmp ['.ghost.json.1.deadbeef.tmp'] is a mid-write; refusing to half-read",
+   "detail": "checkpoint missing at /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/restart-sup-8y1h4ja0/ghost.json; leftover tmp ['.ghost.json.1.deadbeef.tmp'] is a mid-write; refusing to half-read",
    "fires": true
   }
  },
@@ -416,7 +416,7 @@
   }
  },
  "schema": "hawking.future.restart_supervisor.v1",
- "seal_sha256": "33650cbed066f30b3f52f5729b27bcc59f6711855560f8b6665c59eb37bbbdc0",
+ "seal_sha256": "21517c0ddd53e4b728285230507d766a2dbd338fd4a5f61a7722486e07484c87",
  "status": "BUILT_NOT_PROMOTED",
  "stop_needed": [
   "cooperative",

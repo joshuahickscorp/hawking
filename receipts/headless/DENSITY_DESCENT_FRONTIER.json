@@ -1,7 +1,7 @@
 {
  "schema": "hawking.headless.density_descent_frontier.v1",
- "generated_at": "2026-08-26T10:12:38Z",
- "git_head": "665110c71c8cc16db6a05af70d621a0266853ab1",
+ "generated_at": "2026-09-03T06:40:45Z",
+ "git_head": "ee9f9e90c9d65c54cd1ee5944afe5c04a87b636c",
  "generated_by": "tools/headless/density_descent_frontier.py",
  "obligation": "N037 \u2014 DENSITY_DESCENT_FRONTIER (S024 \u00a72, \u00a73, \u00a718). Track the two coupled frontiers: COHERENCE (lowest complete EBPW that still generates coherently) and EXECUTION (lowest COMPLETE_TOKEN_NS among coherent candidates). Density ladder 2.25..0.1 are coordinates, not pass literals.",
  "hand_authored": false,
@@ -1694,14 +1694,5 @@
    "receipts/headless/BINARY_HEALING.json",
    "receipts/headless/SHARED_BASIS_COHERENT.json"
   ]
- },
- "bench": {
-  "state": "UNKNOWN",
-  "recorded_at": "2026-08-26T00:00:00Z",
-  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
-  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
-  "quiescence": null,
-  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
-  "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
  }
 }

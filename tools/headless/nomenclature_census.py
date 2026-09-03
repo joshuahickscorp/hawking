@@ -91,7 +91,7 @@ NAMES: list[dict] = [
         "path_prefixes": (
             "hcli/",
             "tools/headless/",
-            "lab/hcli/",
+            "research/lab/hcli/",
             "crates/hide-backend/src/bin/hcli.rs",
             "crates/hide-backend/src/hcli_bridge.rs",
             "crates/hide-backend/src/hcli_profile.rs",
@@ -135,7 +135,7 @@ NAMES: list[dict] = [
             "tools/nr_container.py",
             "tools/nx_genome.py",
             "tools/nvm_minimal.py",
-            "spec/nr_container.schema.json",
+            "docs/spec/nr_container.schema.json",
         ),
         "path_regex": r"(^|/)nos_|nr_container|nx_genome|nx_tps|nvm_minimal|noetic",
         "content_ere": (
@@ -227,7 +227,7 @@ NAMES: list[dict] = [
         "class": "COMPONENT",
         "kind": "mechanism",
         "summary": "Noetic Representation: what the patient IS. Portable. Machine fields refused.",
-        "path_prefixes": ("tools/nr_container.py", "spec/nr_container.schema.json"),
+        "path_prefixes": ("tools/nr_container.py", "docs/spec/nr_container.schema.json"),
         "path_regex": r"nr_container|nr_nx|noetic_representation",
         "content_ere": r"nr_container|nr_nx_artifact|noetic_representation|" + wb("NR"),
         "schema_prefixes": (),
@@ -272,7 +272,7 @@ NAMES: list[dict] = [
         "path_prefixes": (
             "tools/nvm_minimal.py",
             "tools/hide_plan.py",
-            "spec/plans/",
+            "docs/spec/plans/",
         ),
         "path_regex": r"nvm_minimal|hide_plan",
         "content_ere": wb("NVM") + r"|nvm_minimal|hide_plan_swap|hide_plan",
@@ -311,7 +311,7 @@ NAMES: list[dict] = [
         "schema_prefixes": ("hawking.foundry.",),
         "belongs_to": "Gravity",
         "reasoning": (
-            "COMPONENT of Gravity. lab/campaigns.json lists foundry_lab as live. "
+            "COMPONENT of Gravity. research/lab/campaigns.json lists foundry_lab as live. "
             "A mechanism registry, not a campaign brand."
         ),
     },
@@ -419,13 +419,13 @@ NAMES: list[dict] = [
         "class": "VESTIGIAL",
         "kind": "campaign",
         "summary": "Fixture-only scaffold blocked on Hawking completion. Retired as a campaign.",
-        "path_prefixes": ("ramanujan/",),
+        "path_prefixes": ("research/ramanujan/",),
         "path_regex": r"(^|/)ramanujan([^a-z0-9]|$)",
         "content_ere": wb("Ramanujan", "ramanujan", "RAMANUJAN"),
         "schema_prefixes": ("hawking.ramanujan.",),
         "belongs_to": None,
         "reasoning": (
-            "VESTIGIAL. Explicitly retired. ramanujan/ is a non-authorizing scaffold; "
+            "VESTIGIAL. Explicitly retired. research/ramanujan/ is a non-authorizing scaffold; "
             "HAWKING_COMPLETION_GATE.json is BLOCKED_ON_HAWKING_COMPLETION and may "
             "not self-promote. Evidence (gate, handoff contract, fixture tests) stays."
         ),
@@ -462,7 +462,7 @@ NAMES: list[dict] = [
         "schema_prefixes": ("hawking.frankenstein.",),
         "belongs_to": None,
         "reasoning": (
-            "VESTIGIAL campaign. hawking-experiments/frankenstein/operators/frankenstein_* and hawking.frankenstein.* "
+            "VESTIGIAL campaign. research/hawking-experiments/frankenstein/operators/frankenstein_* and hawking.frankenstein.* "
             "receipts (paired functional traces, GLM layer capture) are sealed evidence. "
             "The operator itself refuses to acquire a teacher until Ramanujan/Hawking gates pass."
         ),
@@ -527,7 +527,7 @@ NAMES: list[dict] = [
         "kind": "campaign",
         "summary": "Qwen3.8 continuity / resident-organism campaign. Future Odyssey-II tournament reuses the word.",
         "path_prefixes": (
-            "contracts/genesis/",
+            "docs/contracts/genesis/",
             "tools/agentos/genesis_body",
             "tools/agentos/genesis_contract.py",
             "tools/agentos/genesis_resident.py",
@@ -560,12 +560,12 @@ NAMES: list[dict] = [
         "class": "VESTIGIAL",
         "kind": "campaign",
         "summary": "Math cartography / capability-elimination campaign. lab status: historical.",
-        "path_prefixes": ("hawking-experiments/prometheus/tools/",),
+        "path_prefixes": ("research/hawking-experiments/prometheus/tools/",),
         "path_regex": r"prometheus",
         "content_ere": wb("Prometheus", "prometheus", "PROMETHEUS"),
         "schema_prefixes": ("hawking.prometheus.",),
         "belongs_to": None,
-        "reasoning": "VESTIGIAL. lab/campaigns.json prometheus_math status=historical.",
+        "reasoning": "VESTIGIAL. research/lab/campaigns.json prometheus_math status=historical.",
     },
     {
         "id": "Eco",
@@ -577,7 +577,7 @@ NAMES: list[dict] = [
         "content_ere": wb("eco_activation", "eco_admission", "eco_pipeline") + r"|hawking\.eco\.",
         "schema_prefixes": ("hawking.eco.",),
         "belongs_to": None,
-        "reasoning": "VESTIGIAL. lab/campaigns.json eco status=retired. eco_common remains for importers.",
+        "reasoning": "VESTIGIAL. research/lab/campaigns.json eco status=retired. eco_common remains for importers.",
     },
     {
         "id": "TG",
@@ -636,7 +636,7 @@ NAMES: list[dict] = [
         "content_ere": wb("gptoss", "GPT-OSS", "gpt-oss", "GPTOSS"),
         "schema_prefixes": (),
         "belongs_to": None,
-        "reasoning": "VESTIGIAL. lab/campaigns.json gptoss status=retired.",
+        "reasoning": "VESTIGIAL. research/lab/campaigns.json gptoss status=retired.",
     },
     {
         "id": "Overnight",
@@ -672,7 +672,7 @@ NAMES: list[dict] = [
         "content_ere": wb("Second Light", "second_light", "SecondLight"),
         "schema_prefixes": (),
         "belongs_to": None,
-        "reasoning": "VESTIGIAL. lab/campaigns.json second_light status=retired.",
+        "reasoning": "VESTIGIAL. research/lab/campaigns.json second_light status=retired.",
     },
     {
         "id": "Mechanics",
@@ -684,7 +684,7 @@ NAMES: list[dict] = [
         "content_ere": wb("mech_measure", "mech_run_all") + r"|Mechanics/Thermodynamics",
         "schema_prefixes": (),
         "belongs_to": None,
-        "reasoning": "VESTIGIAL. lab/campaigns.json mechanics status=retired.",
+        "reasoning": "VESTIGIAL. research/lab/campaigns.json mechanics status=retired.",
     },
     {
         "id": "QwenCampaign",
@@ -730,7 +730,7 @@ NAMES: list[dict] = [
         "class": "AMBIGUOUS",
         "kind": "method",
         "summary": "Fan-out orchestration method plus a dated ascent-era state file.",
-        "path_prefixes": ("docs/archive/SUPERWAVE_STATE.md", "hawking-experiments/superwave/"),
+        "path_prefixes": ("docs/archive/SUPERWAVE_STATE.md", "research/hawking-experiments/superwave/"),
         "path_regex": r"superwave|SUPERWAVE",
         "content_ere": wb("Superwave", "superwave", "SUPERWAVE", "SUPERWAVE_STATE"),
         "schema_prefixes": ("hawking.superwave.",),
@@ -738,16 +738,16 @@ NAMES: list[dict] = [
         "reasoning": (
             "AMBIGUOUS. An orchestration method still used around HCLI/Odyssey, and "
             "a campaign state file that still publishes a superseded G013 law at the "
-            "top. Not a surviving brand. Do not treat hawking-experiments/superwave evidence as disposable."
+            "top. Not a surviving brand. Do not treat research/hawking-experiments/superwave evidence as disposable."
         ),
     },
     {
         "id": "Lab",
         "class": "AMBIGUOUS",
         "kind": "engine",
-        "summary": "Experiment engine (lab/operators, lab/campaigns.json). Not a campaign brand.",
-        "path_prefixes": ("lab/",),
-        "path_regex": r"(^|/)lab/",
+        "summary": "Experiment engine (research/lab/operators, research/lab/campaigns.json). Not a campaign brand.",
+        "path_prefixes": ("research/lab/",),
+        "path_regex": r"(^|/)research/lab/",
         "content_ere": r"hawking\.lab\.",
         "schema_prefixes": ("hawking.lab.",),
         "belongs_to": None,
@@ -992,7 +992,7 @@ def schema_brand(s: str) -> str | None:
 
 
 def load_lab_campaigns() -> dict:
-    r = git_ok(["git", "show", "HEAD:lab/campaigns.json"])
+    r = git_ok(["git", "show", "HEAD:research/lab/campaigns.json"])
     try:
         data = json.loads(r.stdout)
     except json.JSONDecodeError:
@@ -1132,19 +1132,19 @@ def evidence_for(spec: dict, owned: list[dict], schemas: list[str]) -> dict:
     if not owned:
         lost.append(
             "owned-path count is 0 because controllers were deleted into the "
-            "lab engine; evidence remains in lab/campaigns.json (status + reopen "
-            "predicates, retain_receipts=true) and lab/retirement_receipts.json"
+            "lab engine; evidence remains in research/lab/campaigns.json (status + reopen "
+            "predicates, retain_receipts=true) and research/lab/retirement_receipts.json"
         )
         notable.extend([
-            "lab/campaigns.json",
-            "lab/retirement_receipts.json",
+            "research/lab/campaigns.json",
+            "research/lab/retirement_receipts.json",
         ])
     if spec["id"] == "HIDE":
         lost.extend([
             "eight hide-* crates and the app/ React front-end (deferred product, still compilable)",
             "workspace/campaign/evidence/hide live-suite receipts (HCLI ran through HIDE)",
             "HIDE archaeology verification: over-built and under-wired, Continuum wiring programme",
-            "G121 hide_plan_swap is NOT this campaign (see NVM); do not delete spec/plans/ as HIDE IDE evidence",
+            "G121 hide_plan_swap is NOT this campaign (see NVM); do not delete docs/spec/plans/ as HIDE IDE evidence",
         ])
     elif spec["id"] == "Ramanujan":
         lost.extend([
@@ -1167,7 +1167,7 @@ def evidence_for(spec: dict, owned: list[dict], schemas: list[str]) -> dict:
     elif spec["id"] == "Frankenstein":
         lost.extend([
             "hawking.frankenstein.paired_functional_trace.v1 and GLM capture shards",
-            "hawking-experiments/frankenstein/operators/frankenstein_pipeline.py fail-closed preflight",
+            "research/hawking-experiments/frankenstein/operators/frankenstein_pipeline.py fail-closed preflight",
         ])
     elif spec["id"] == "Strand":
         lost.extend([
@@ -1276,7 +1276,7 @@ def rename_plan(names_out: list[dict], all_schemas: list[str], g105: dict) -> di
         "HIDE",
     )
     U(
-        "ramanujan/ directory, hawking.ramanujan.* schemas, HAWKING_COMPLETION_GATE.json",
+        "research/ramanujan/ directory, hawking.ramanujan.* schemas, HAWKING_COMPLETION_GATE.json",
         "The gate is the evidence that Ramanujan must not self-promote. Renaming the "
         "scaffold would look like a completion milestone.",
         "Ramanujan",
@@ -1299,8 +1299,8 @@ def rename_plan(names_out: list[dict], all_schemas: list[str], g105: dict) -> di
         "Strand",
     )
     U(
-        "lab/campaigns.json campaign_id strings and retirement receipts",
-        "Reopen predicates and restore lists key off these ids. lab/retirement_receipts.json "
+        "research/lab/campaigns.json campaign_id strings and retirement receipts",
+        "Reopen predicates and restore lists key off these ids. research/lab/retirement_receipts.json "
         "is itself a sealed hawking.condense.retirement_receipts.v1 document.",
         None,
     )
@@ -1429,7 +1429,7 @@ def watched_fail(identity: dict, names_out: list[dict], tree_rows: list[dict]) -
             "trap": "HIDE IDE vs NVM/HIDE plan-as-data",
             "what_failed": (
                 f"HIDE IDE path-owned files={hide['path_owned_files']}. NVM (tools/hide_plan.py, "
-                f"spec/plans, nvm_minimal) path-owned files={nvm['path_owned_files']}. "
+                f"docs/spec/plans, nvm_minimal) path-owned files={nvm['path_owned_files']}. "
                 "G121 schema is hawking.nos.hide_plan_swap.v1 — a Noetic schema, not hawking.hide.*."
             ),
             "correction": "Classified the IDE as VESTIGIAL and the plan-swap as NVM COMPONENT of Noetic.",
@@ -1725,7 +1725,7 @@ def main() -> int:
     section("VESTIGIAL")
     section("AMBIGUOUS")
 
-    print("\n## LAB CAMPAIGNS (from lab/campaigns.json, not re-derived)", flush=True)
+    print("\n## LAB CAMPAIGNS (from research/lab/campaigns.json, not re-derived)", flush=True)
     if lab.get("present"):
         for c in lab["campaigns"]:
             print(f"- {c['campaign_id']:24} status={c['status']}  retain_receipts={c['retain_receipts']}  {c['title']}", flush=True)

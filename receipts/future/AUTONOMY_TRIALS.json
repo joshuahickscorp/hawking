@@ -8,7 +8,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T23:26:54Z",
+  "recorded_at": "2026-09-03T03:14:36Z",
   "recorded_by": "tools/future/autonomy_trial.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -1240,7 +1240,7 @@
    "path_taken": "disk:receipts/future/QUALIFICATION_PIPELINE.json"
   }
  ],
- "head": "a612af62db43bee98204eb7e19a64d901f1eb571",
+ "head": "caaf5933c2b63b03f4a9b140b7d9e5ab95da5bc3",
  "integration_points": {
   "codex_behaviors.py": "Codex blocker list is data in CODEX_REPORTED_BLOCKERS plus pinned evidence.",
   "debugger.py": "Process recovery is judged from process_failed/completed + process_recovered.",
@@ -1282,15 +1282,15 @@
   "fields_are_independent": true,
   "frozen_build": {
    "available": true,
-   "digest": "da0c6948053faf4bed2b4a7f4f212f9946427fa156aeebd1100e27a8196ef885",
+   "digest": "c384da6df715aefdb8585186b58ad2d691ce35c2f3d398da9405970f280a0e7a",
    "freeze_receipt": "receipts/future/HCLI_AUTONOMY_BUILD.json",
-   "freeze_receipt_seal": "204f93711f3be78b6f35c2b2c12e78942b77eee1ac5e3732686d46caa9389c33",
+   "freeze_receipt_seal": "f21df97ff31c917dfe24f26da0d1a9e35f76e74117184acc6d81ca61ad8416e5",
    "path_taken": "disk:receipts/future/HCLI_AUTONOMY_BUILD.json",
-   "substrate_verdict": "INVALIDATED_BY_SUBSTRATE_MUTATION",
+   "substrate_verdict": "CLEAN",
    "trial": "15m",
-   "why": "1 code path(s) moved"
+   "why": "every frozen code digest matches; no graph file is missing"
   },
-  "frozen_build_manifest_digest": "da0c6948053faf4bed2b4a7f4f212f9946427fa156aeebd1100e27a8196ef885",
+  "frozen_build_manifest_digest": "c384da6df715aefdb8585186b58ad2d691ce35c2f3d398da9405970f280a0e7a",
   "gpu_authority": false,
   "launch_eligible_trial": false,
   "n_conditions": 5,
@@ -1310,7 +1310,7 @@
    "why": "timeline has no internal seal_sha256; file digest is the transcript seal"
   },
   "timeline_not_rewritten": true,
-  "timeline_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/pytest-of-scammermike/pytest-761/popen-gw1/test_cli_verify_exit_codes0/bad.json",
+  "timeline_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/pytest-of-scammermike/pytest-7038/test_cli_verify_exit_codes0/bad.json",
   "timeline_seal_digest": "7d1f761ef6230cda5d7bfb9195a57087c3766a1a7d2a737d3ed5357aa4623484",
   "trial": "15m",
   "verdict": "FAIL"
@@ -1461,15 +1461,15 @@
    "fields_are_independent": true,
    "frozen_build": {
     "available": true,
-    "digest": "da0c6948053faf4bed2b4a7f4f212f9946427fa156aeebd1100e27a8196ef885",
+    "digest": "c384da6df715aefdb8585186b58ad2d691ce35c2f3d398da9405970f280a0e7a",
     "freeze_receipt": "receipts/future/HCLI_AUTONOMY_BUILD.json",
-    "freeze_receipt_seal": "204f93711f3be78b6f35c2b2c12e78942b77eee1ac5e3732686d46caa9389c33",
+    "freeze_receipt_seal": "f21df97ff31c917dfe24f26da0d1a9e35f76e74117184acc6d81ca61ad8416e5",
     "path_taken": "disk:receipts/future/HCLI_AUTONOMY_BUILD.json",
-    "substrate_verdict": "INVALIDATED_BY_SUBSTRATE_MUTATION",
+    "substrate_verdict": "CLEAN",
     "trial": "15m",
-    "why": "1 code path(s) moved"
+    "why": "every frozen code digest matches; no graph file is missing"
    },
-   "frozen_build_manifest_digest": "da0c6948053faf4bed2b4a7f4f212f9946427fa156aeebd1100e27a8196ef885",
+   "frozen_build_manifest_digest": "c384da6df715aefdb8585186b58ad2d691ce35c2f3d398da9405970f280a0e7a",
    "gpu_authority": false,
    "launch_eligible_trial": false,
    "n_conditions": 5,
@@ -1489,7 +1489,7 @@
     "why": "timeline has no internal seal_sha256; file digest is the transcript seal"
    },
    "timeline_not_rewritten": true,
-   "timeline_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/pytest-of-scammermike/pytest-761/popen-gw1/test_cli_verify_exit_codes0/bad.json",
+   "timeline_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/pytest-of-scammermike/pytest-7038/test_cli_verify_exit_codes0/bad.json",
    "timeline_seal_digest": "7d1f761ef6230cda5d7bfb9195a57087c3766a1a7d2a737d3ed5357aa4623484",
    "trial": "15m",
    "verdict": "FAIL"
@@ -1727,7 +1727,7 @@
   ]
  },
  "schema": "hawking.future.autonomy_trial.v1",
- "seal_sha256": "089a00b5626dbc2a8c43171ee0d409b993f4d49c782179fd51bdd7e40efd1f4f",
+ "seal_sha256": "a49d2426a6978e6fff8806f3dc5300240e5328c4e02e014cbda508711a380640",
  "thirteen_acceptance_conditions": [
   "recover_state",
   "identify_live_frontier",

@@ -2110,7 +2110,7 @@ def ranked_findings() -> List[Dict[str, Any]]:
             "severity": "duplicate Grok launch / loses grok task record",
             "id": "F-GROK-CONTRACT-THEN-RECEIPT",
             "where": "GrokBridge._launch: _write_contract_file, grok-run, _write_receipt",
-            "watched": "receipt raise left contracts/*.md and zero <id>.json",
+            "watched": "receipt raise left docs/contracts/*.md and zero <id>.json",
             "resume": "_read_receipt returns None; caller retries delegate()",
         },
         {

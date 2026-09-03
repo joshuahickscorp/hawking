@@ -5,13 +5,13 @@
   "criterion_quoted": "For every durable field record FIELD / WRITER / CANONICAL STORE / GENERATION / CHECKSUM / CHECKPOINT ORDER / READER / RESTART PATH / RECONCILIATION RULE / CANARY. A crash must recover one coherent generation or the previous coherent generation, never a random hybrid.\n\n## D.3 Persistence authority audit\n\n```text\nFor every durable field record:\n\nFIELD\nWRITER\nCANONICAL STORE\nGENERATION / CHECKSUM\nCHECKPOINT ORDER\nREADER\nRESTART PATH\nRECONCILIATION RULE\nCANARY\n\nAudit at minimum:\nWorkUnit state\nGoal/DAG\nbackend_task_id\nprovider/runtime provenance\ndependencies\nverifier result\nrepair lineage\nretry state\nmutation lease\nsteering\ncontext calibration\nMAX calibration\nbackend health\ncheckpoint generation\nbackground jobs\nVMCP evidence references\nModelLake worker identity\n```\n\nA crash must recover one coherent generation or the previous coherent generation, never a random hybrid. Use atomic replacement/generation IDs/checksums as appropriate.",
   "criterion_source": {
     "end_line": 7417,
-    "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "file": "/Users/scammermike/Downloads/hawking/docs/roadmap-lineage/H-ROADMAP.superseded-2026-09-02.md",
     "start_line": 7382
   },
   "evidence_tier": "FUNCTIONAL_SIM",
   "gate": "AGENTOS_PERSISTENCE_SINGLE_AUTHORITY",
-  "generated_at": "2026-09-02T18:44:42Z",
-  "git_head": "14ed3eb1f8fc616a29dbc724f3937cffedf15a43",
+  "generated_at": "2026-09-03T05:54:37Z",
+  "git_head": "f9aabd5043518c47fb06b6a8edb17bfd4a20198d",
   "hcli_file": "/Users/scammermike/Downloads/hawking/hcli/__init__.py",
   "measured": {
     "acquire_after_release": true,
@@ -20,7 +20,7 @@
       "Goal/DAG": {
         "canary": true,
         "canonical_store": ".hcli/dag.json plus mission/state.json compiled",
-        "generation_checksum": "e3197325-431f-46c0-8a05-ab4a99b69dff:1788374682.336035",
+        "generation_checksum": "fb39968c-e9a7-42b5-8432-522e59638900:1788414877.207068",
         "reader": "Mission.from_workspace",
         "reconciliation_rule": "same checkpoint_id on both files",
         "restart_path": "Mission.from_workspace",
@@ -54,7 +54,7 @@
         "canary": "units.u.id == 'u' and checkpoint_id shared",
         "canonical_store": ".hcli/dag.json",
         "checkpoint_order": "DAG first, then mission/state.json",
-        "generation_checksum": "e3197325-431f-46c0-8a05-ab4a99b69dff:1788374682.336035",
+        "generation_checksum": "fb39968c-e9a7-42b5-8432-522e59638900:1788414877.207068",
         "reader": "Scheduler.from_workspace / DagStore.load",
         "reconciliation_rule": "DAG is authoritative; state.json is the fallback copy",
         "restart_path": "DagStore.load(recover_running=True)",
@@ -77,7 +77,7 @@
         "writer": "WorkUnit field persisted by DagStore.save"
       },
       "background jobs": {
-        "canary": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-persist-6py2town/m/.hcli/background/jobs",
+        "canary": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-persist-a2ae8woq/m/.hcli/background/jobs",
         "canonical_store": ".hcli/background/jobs/job-*.json",
         "reader": "BackgroundJobStore.inspect/list",
         "reconciliation_rule": "same job_id, never a silent second supervisor",
@@ -88,7 +88,7 @@
         "canary": true,
         "canonical_store": ".hcli/dag.json and .hcli/mission/state.json",
         "checkpoint_order": "DAG then state; same checkpoint_id",
-        "generation_checksum": "e3197325-431f-46c0-8a05-ab4a99b69dff:1788374682.336035",
+        "generation_checksum": "fb39968c-e9a7-42b5-8432-522e59638900:1788414877.207068",
         "reader": "Mission.from_workspace prefers DAG",
         "reconciliation_rule": "crash between writes: recover the DAG generation, never a zip of both",
         "restart_path": "from_workspace",
@@ -144,7 +144,7 @@
       },
       "steering": {
         "canary": true,
-        "canonical_store": ".hcli/steering/e3197325-431f-46c0-8a05-ab4a99b69dff.json",
+        "canonical_store": ".hcli/steering/fb39968c-e9a7-42b5-8432-522e59638900.json",
         "reader": "SteeringQueue._load",
         "reconciliation_rule": "steer changes future work, not verified history",
         "restart_path": "Mission.from_workspace reconstructs the queue",
@@ -159,7 +159,7 @@
         "writer": "Scheduler.complete (refuses UnverifiedCompletion)"
       }
     },
-    "checkpoint_id": "e3197325-431f-46c0-8a05-ab4a99b69dff:1788374682.336035",
+    "checkpoint_id": "fb39968c-e9a7-42b5-8432-522e59638900:1788414877.207068",
     "child_acquired_while_held": false,
     "d3_fields_audited": [
       "Goal/DAG",
@@ -211,7 +211,7 @@
     "hcli.persist.atomic_write_text is the crash-safe writer (tmp + fsync + os.replace).",
     "WorkUnit state has one authoritative store (dag.json); state.json is a stamped copy."
   ],
-  "output": "parent acquire=True child_stdout='CHILD False\\n' child_got=False child_blocked_until_timeout=False\nacquire after release=True\nrace rc=None out='' err=TimeoutExpired timed_out=True\ncheckpoint /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-persist-6py2town/m/.hcli/mission/state.json shared_id=True id=e3197325-431f-46c0-8a05-ab4a99b69dff:1788374682.336035",
+  "output": "parent acquire=True child_stdout='CHILD False\\n' child_got=False child_blocked_until_timeout=False\nacquire after release=True\nrace rc=None out='' err=TimeoutExpired timed_out=True\ncheckpoint /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-persist-a2ae8woq/m/.hcli/mission/state.json shared_id=True id=fb39968c-e9a7-42b5-8432-522e59638900:1788414877.207068",
   "schema": "hawking.acceptance.gate.v1",
   "symbols_invoked": [
     {

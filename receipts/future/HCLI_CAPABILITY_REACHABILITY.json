@@ -1081,6 +1081,17 @@
   {
    "defined": true,
    "definition": {
+    "file": "tools/future/fpga_partition.py",
+    "line": null
+   },
+   "kind": "sidecar_module",
+   "name": "tools.future.fpga_partition",
+   "note": null,
+   "tested": true
+  },
+  {
+   "defined": true,
+   "definition": {
     "file": "tools/future/freshness.py",
     "line": null
    },
@@ -1152,6 +1163,17 @@
    },
    "kind": "sidecar_module",
    "name": "tools.future.harness_reconciliation",
+   "note": null,
+   "tested": true
+  },
+  {
+   "defined": true,
+   "definition": {
+    "file": "tools/future/hawking_health.py",
+    "line": null
+   },
+   "kind": "sidecar_module",
+   "name": "tools.future.hawking_health",
    "note": null,
    "tested": true
   },
@@ -1438,17 +1460,6 @@
    },
    "kind": "sidecar_module",
    "name": "tools.future.mlp_structured_operator",
-   "note": null,
-   "tested": true
-  },
-  {
-   "defined": true,
-   "definition": {
-    "file": "tools/future/modellake_lifecycle.py",
-    "line": null
-   },
-   "kind": "sidecar_module",
-   "name": "tools.future.modellake_lifecycle",
    "note": null,
    "tested": true
   },
@@ -2018,7 +2029,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-03T00:17:44Z",
+  "recorded_at": "2026-09-03T06:53:07Z",
   "recorded_by": "tools/future/capability_reachability.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -2155,7 +2166,7 @@
     {
      "file": "hcli/test_escalation.py",
      "kind": "import",
-     "line": 17
+     "line": 19
     }
    ],
    "tested": true
@@ -2183,17 +2194,17 @@
     {
      "file": "hcli/test_escalation.py",
      "kind": "call",
-     "line": 129
+     "line": 130
     },
     {
      "file": "hcli/test_escalation.py",
      "kind": "call",
-     "line": 171
+     "line": 172
     },
     {
      "file": "hcli/test_escalation.py",
      "kind": "call",
-     "line": 195
+     "line": 196
     }
    ],
    "tested": true
@@ -2221,12 +2232,12 @@
     {
      "file": "hcli/test_escalation.py",
      "kind": "call",
-     "line": 107
+     "line": 108
     },
     {
      "file": "hcli/test_escalation.py",
      "kind": "call",
-     "line": 141
+     "line": 142
     }
    ],
    "tested": true
@@ -2254,17 +2265,17 @@
     {
      "file": "hcli/test_escalation.py",
      "kind": "call",
-     "line": 86
+     "line": 87
     },
     {
      "file": "hcli/test_escalation.py",
      "kind": "call",
-     "line": 92
+     "line": 93
     },
     {
      "file": "hcli/test_escalation.py",
      "kind": "call",
-     "line": 100
+     "line": 101
     }
    ],
    "tested": true
@@ -2399,7 +2410,7 @@
     {
      "file": "hcli/engine.py",
      "kind": "call",
-     "line": 800
+     "line": 854
     },
     {
      "file": "hcli/executors.py",
@@ -2452,12 +2463,12 @@
     {
      "file": "hcli/test_escalation.py",
      "kind": "call",
-     "line": 203
+     "line": 204
     },
     {
      "file": "hcli/test_escalation.py",
      "kind": "call",
-     "line": 231
+     "line": 232
     },
     {
      "file": "hcli/test_forbidden_fruit.py",
@@ -2843,7 +2854,7 @@
     {
      "file": "hcli/test_escalation.py",
      "kind": "literal",
-     "line": 217
+     "line": 218
     }
    ],
    "tested": true
@@ -2853,17 +2864,17 @@
     {
      "file": "hcli/engine.py",
      "kind": "literal",
-     "line": 882
+     "line": 936
     },
     {
      "file": "hcli/engine.py",
      "kind": "literal",
-     "line": 910
+     "line": 964
     },
     {
      "file": "hcli/engine.py",
      "kind": "literal",
-     "line": 932
+     "line": 986
     }
    ],
    "callable": true,
@@ -2926,7 +2937,7 @@
     {
      "file": "hcli/engine.py",
      "kind": "literal",
-     "line": 183
+     "line": 189
     }
    ],
    "callable": true,
@@ -3338,7 +3349,7 @@
     {
      "file": "hcli/test_escalation.py",
      "kind": "literal",
-     "line": 246
+     "line": 247
     }
    ],
    "tested": true
@@ -4442,7 +4453,7 @@
     {
      "file": "tools/acceptance/odyssey/run.py",
      "kind": "import",
-     "line": 558
+     "line": 561
     },
     {
      "file": "tools/future/evidence_dag.py",
@@ -5085,7 +5096,7 @@
     {
      "file": "tools/roadmap/test_roadmap_graph.py",
      "kind": "import",
-     "line": 242
+     "line": 245
     }
    ],
    "tested": true
@@ -5404,7 +5415,7 @@
     {
      "file": "tools/acceptance/flash/run_gates.py",
      "kind": "import",
-     "line": 938
+     "line": 939
     },
     {
      "file": "tools/future/capability_byte_elimination.py",
@@ -5419,7 +5430,7 @@
     {
      "file": "tools/odyssey/noetic_compiler.py",
      "kind": "import",
-     "line": 354
+     "line": 355
     },
     {
      "file": "tools/theia/self_bounty.py",
@@ -5443,6 +5454,11 @@
      "file": "tools/future/test_complete_ebpw.py",
      "kind": "import",
      "line": 14
+    },
+    {
+     "file": "tools/future/test_ebpw_bar_reachability.py",
+     "kind": "import",
+     "line": 15
     },
     {
      "file": "tools/future/test_experiment_policy.py",
@@ -5715,6 +5731,39 @@
      "file": "tools/future/test_debugger.py",
      "kind": "import",
      "line": 20
+    }
+   ],
+   "tested": true
+  },
+  "tools.future.decision_value": {
+   "call_sites": [
+    {
+     "file": "tools/future/fpga_partition.py",
+     "kind": "import",
+     "line": 57
+    },
+    {
+     "file": "tools/future/odyssey_wall.py",
+     "kind": "import",
+     "line": 29
+    }
+   ],
+   "callable": true,
+   "defined": true,
+   "definition": {
+    "file": "tools/future/decision_value.py",
+    "line": null
+   },
+   "kind": "sidecar_module",
+   "name": "tools.future.decision_value",
+   "note": null,
+   "registered": false,
+   "resident_visible": false,
+   "test_only_sites": [
+    {
+     "file": "tools/future/test_decision_value.py",
+     "kind": "import",
+     "line": 8
     }
    ],
    "tested": true
@@ -6445,7 +6494,7 @@
     {
      "file": "tools/doctor/engine.py",
      "kind": "import",
-     "line": 438
+     "line": 439
     },
     {
      "file": "tools/future/abliteration.py",
@@ -6660,7 +6709,7 @@
     {
      "file": "tools/future/mlp_sparse_residual.py",
      "kind": "import",
-     "line": 55
+     "line": 56
     },
     {
      "file": "tools/future/mlp_structured_operator.py",
@@ -7354,6 +7403,33 @@
    ],
    "tested": true
   },
+  "tools.future.fpga_partition": {
+   "call_sites": [],
+   "callable": false,
+   "defined": true,
+   "definition": {
+    "file": "tools/future/fpga_partition.py",
+    "line": null
+   },
+   "kind": "sidecar_module",
+   "name": "tools.future.fpga_partition",
+   "note": null,
+   "registered": false,
+   "resident_visible": false,
+   "test_only_sites": [
+    {
+     "file": "tools/future/test_decision_value.py",
+     "kind": "import",
+     "line": 97
+    },
+    {
+     "file": "tools/future/test_fpga_partition.py",
+     "kind": "import",
+     "line": 14
+    }
+   ],
+   "tested": true
+  },
   "tools.future.freshness": {
    "call_sites": [],
    "callable": false,
@@ -7542,7 +7618,7 @@
     {
      "file": "tools/acceptance/odyssey/run.py",
      "kind": "import",
-     "line": 795
+     "line": 798
     }
    ],
    "callable": true,
@@ -7772,6 +7848,28 @@
    ],
    "tested": true
   },
+  "tools.future.hawking_health": {
+   "call_sites": [],
+   "callable": false,
+   "defined": true,
+   "definition": {
+    "file": "tools/future/hawking_health.py",
+    "line": null
+   },
+   "kind": "sidecar_module",
+   "name": "tools.future.hawking_health",
+   "note": null,
+   "registered": false,
+   "resident_visible": false,
+   "test_only_sites": [
+    {
+     "file": "tools/future/test_hawking_health.py",
+     "kind": "import",
+     "line": 4
+    }
+   ],
+   "tested": true
+  },
   "tools.future.hbm_doctor": {
    "call_sites": [],
    "callable": false,
@@ -7886,7 +7984,7 @@
     {
      "file": "tools/acceptance/odyssey/run.py",
      "kind": "import",
-     "line": 681
+     "line": 684
     }
    ],
    "callable": true,
@@ -7925,6 +8023,21 @@
      "file": "tools/accelerator/hardware_doctor.py",
      "kind": "import",
      "line": 49
+    },
+    {
+     "file": "tools/acceptance/fpga/run_gates.py",
+     "kind": "import",
+     "line": 23
+    },
+    {
+     "file": "tools/future/fpga_partition.py",
+     "kind": "import",
+     "line": 57
+    },
+    {
+     "file": "tools/future/hbm_doctor.py",
+     "kind": "import",
+     "line": 46
     },
     {
      "file": "tools/future/p6_projection.py",
@@ -7968,6 +8081,11 @@
      "file": "tools/accelerator/test_hardware_doctor.py",
      "kind": "import",
      "line": 22
+    },
+    {
+     "file": "tools/future/test_hbm_doctor.py",
+     "kind": "import",
+     "line": 315
     },
     {
      "file": "tools/future/test_hwir.py",
@@ -8324,6 +8442,34 @@
    "resident_visible": false,
    "test_only_sites": [],
    "tested": false
+  },
+  "tools.future.measurement_provenance_audit": {
+   "call_sites": [
+    {
+     "file": "tools/future/hawking_health.py",
+     "kind": "import",
+     "line": 77
+    }
+   ],
+   "callable": true,
+   "defined": true,
+   "definition": {
+    "file": "tools/future/measurement_provenance_audit.py",
+    "line": null
+   },
+   "kind": "sidecar_module",
+   "name": "tools.future.measurement_provenance_audit",
+   "note": null,
+   "registered": false,
+   "resident_visible": false,
+   "test_only_sites": [
+    {
+     "file": "tools/future/test_measurement_provenance_audit.py",
+     "kind": "import",
+     "line": 11
+    }
+   ],
+   "tested": true
   },
   "tools.future.memory_traffic_probe": {
    "call_sites": [],
@@ -8867,7 +9013,7 @@
     {
      "file": "tools/future/mlp_sparse_residual.py",
      "kind": "import",
-     "line": 56
+     "line": 57
     },
     {
      "file": "tools/future/mlp_structured_operator.py",
@@ -8898,6 +9044,11 @@
      "line": 18
     },
     {
+     "file": "tools/future/test_mlp_shared_program.py",
+     "kind": "import",
+     "line": 379
+    },
+    {
      "file": "tools/future/test_mlp_structured_operator.py",
      "kind": "import",
      "line": 24
@@ -8923,6 +9074,11 @@
      "file": "tools/future/test_mlp_sparse_residual.py",
      "kind": "import",
      "line": 18
+    },
+    {
+     "file": "tools/future/test_mlp_sparse_residual.py",
+     "kind": "import",
+     "line": 378
     }
    ],
    "tested": true
@@ -8967,6 +9123,11 @@
      "file": "tools/future/test_mlp_structured_operator.py",
      "kind": "import",
      "line": 25
+    },
+    {
+     "file": "tools/future/test_mlp_structured_operator.py",
+     "kind": "import",
+     "line": 581
     }
    ],
    "tested": true
@@ -9026,7 +9187,7 @@
     {
      "file": "tools/future/mlp_sparse_residual.py",
      "kind": "import",
-     "line": 59
+     "line": 60
     },
     {
      "file": "tools/future/mlp_structured_operator.py",
@@ -9242,8 +9403,14 @@
    "tested": true
   },
   "tools.future.modellake_lifecycle": {
-   "call_sites": [],
-   "callable": false,
+   "call_sites": [
+    {
+     "file": "tools/future/odyssey_mission_controller.py",
+     "kind": "import",
+     "line": 290
+    }
+   ],
+   "callable": true,
    "defined": true,
    "definition": {
     "file": "tools/future/modellake_lifecycle.py",
@@ -9259,6 +9426,11 @@
      "file": "tools/future/test_modellake_lifecycle.py",
      "kind": "import",
      "line": 6
+    },
+    {
+     "file": "tools/future/test_odyssey_mission_controller.py",
+     "kind": "import",
+     "line": 219
     }
    ],
    "tested": true
@@ -9495,7 +9667,7 @@
     {
      "file": "tools/doctor/engine.py",
      "kind": "import",
-     "line": 89
+     "line": 90
     },
     {
      "file": "tools/future/abliteration.py",
@@ -9600,7 +9772,7 @@
     {
      "file": "tools/future/mlp_sparse_residual.py",
      "kind": "import",
-     "line": 57
+     "line": 58
     },
     {
      "file": "tools/future/mlp_structured_operator.py",
@@ -9893,6 +10065,11 @@
      "line": 19
     },
     {
+     "file": "tools/future/test_nr_nx_generic.py",
+     "kind": "import",
+     "line": 1188
+    },
+    {
      "file": "tools/future/test_nx_packer.py",
      "kind": "import",
      "line": 20
@@ -10122,7 +10299,7 @@
     {
      "file": "tools/acceptance/odyssey/run.py",
      "kind": "import",
-     "line": 559
+     "line": 562
     },
     {
      "file": "tools/future/odyssey3_attack.py",
@@ -10381,6 +10558,34 @@
      "file": "tools/future/test_odyssey_tool_driver.py",
      "kind": "import",
      "line": 17
+    }
+   ],
+   "tested": true
+  },
+  "tools.future.odyssey_wall": {
+   "call_sites": [
+    {
+     "file": "tools/future/hawking_health.py",
+     "kind": "import",
+     "line": 96
+    }
+   ],
+   "callable": true,
+   "defined": true,
+   "definition": {
+    "file": "tools/future/odyssey_wall.py",
+    "line": null
+   },
+   "kind": "sidecar_module",
+   "name": "tools.future.odyssey_wall",
+   "note": null,
+   "registered": false,
+   "resident_visible": false,
+   "test_only_sites": [
+    {
+     "file": "tools/future/test_odyssey_wall.py",
+     "kind": "import",
+     "line": 11
     }
    ],
    "tested": true
@@ -10835,7 +11040,7 @@
     {
      "file": "tools/future/mlp_sparse_residual.py",
      "kind": "import",
-     "line": 60
+     "line": 61
     },
     {
      "file": "tools/future/mlp_structured_operator.py",
@@ -11217,7 +11422,7 @@
     {
      "file": "tools/acceptance/odyssey/run.py",
      "kind": "import",
-     "line": 454
+     "line": 457
     },
     {
      "file": "tools/future/capability_stages.py",
@@ -13333,6 +13538,34 @@
    ],
    "tested": true
   },
+  "tools.future.tool_friction": {
+   "call_sites": [
+    {
+     "file": "tools/future/hawking_health.py",
+     "kind": "import",
+     "line": 85
+    }
+   ],
+   "callable": true,
+   "defined": true,
+   "definition": {
+    "file": "tools/future/tool_friction.py",
+    "line": null
+   },
+   "kind": "sidecar_module",
+   "name": "tools.future.tool_friction",
+   "note": null,
+   "registered": false,
+   "resident_visible": false,
+   "test_only_sites": [
+    {
+     "file": "tools/future/test_tool_friction.py",
+     "kind": "import",
+     "line": 6
+    }
+   ],
+   "tested": true
+  },
   "tools.future.tournament": {
    "call_sites": [
     {
@@ -14128,7 +14361,7 @@
     {
      "file": "tools/acceptance/odyssey/run.py",
      "kind": "import",
-     "line": 300
+     "line": 303
     },
     {
      "file": "tools/odyssey_patient_runner.py",
@@ -14159,12 +14392,12 @@
  },
  "claim_boundary": "Static sidecar artifact. No hardware measurement.",
  "counts": {
-  "capabilities": 344,
-  "dead_surface": 183,
+  "capabilities": 350,
+  "dead_surface": 184,
   "named_callable": 12,
   "named_capabilities": 14,
-  "sidecar_callable": 135,
-  "sidecar_modules": 261,
+  "sidecar_callable": 140,
+  "sidecar_modules": 267,
   "sidecar_registered": 0,
   "typed_tools": 68,
   "typed_tools_callable": 13,
@@ -14182,13 +14415,13 @@
  "method": "Static source analysis only (AST import/call graph + quoted-literal search) over every HEAD `*.py` blob (`git ls-tree`). Cannot see runtime-only dispatch (a model-proposed WorkUnit.tool string); see the module docstring's 'Hard limit' section.",
  "negative_findings": [
   "55 of 68 typed tools have zero call sites outside hcli/tool_registry.py and outside every test file.",
-  "261 of 261 tools/future sidecar modules are registered in no ToolSpec; a resident cannot discover them via AgentOS.tools.discover().",
-  "126 of 261 tools/future sidecar modules have zero call sites outside their own test files.",
+  "267 of 267 tools/future sidecar modules are registered in no ToolSpec; a resident cannot discover them via AgentOS.tools.discover().",
+  "127 of 267 tools/future sidecar modules have zero call sites outside their own test files.",
   "hcli.ane_provider.ANEProvider, tools.future.hcli_compactor each have a passing test and zero callers outside it; a green test does not make a capability reachable."
  ],
  "purpose": "Answer, per capability and from evidence only: who calls it. A definition count is not a capability.",
  "schema": "hawking.future.capability_reachability.v1",
- "seal_sha256": "090a55f44984a38253290288f584e21cd7ef5fe5066f5fcef309f2bd9f29d38d",
+ "seal_sha256": "8e5e46e591dcb955f1676582d052a4fc1737816fb348420b8023817e85c54a83",
  "source": "head",
  "version": 1
 }

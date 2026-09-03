@@ -153,7 +153,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T21:09:33Z",
+  "recorded_at": "2026-09-03T05:37:27Z",
   "recorded_by": "tools/future/negative_index.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -232,7 +232,7 @@
    },
    {
     "family": "binary_quantization",
-    "n": 102
+    "n": 103
    },
    {
     "family": "blame_10_of_512_gather_vs_sequential_access_for_the_q80_bandwidth_gap",
@@ -240,6 +240,10 @@
    },
    {
     "family": "blanket_mtldispatchtype_serial_encoder_for_the_whole_decode_token_wave",
+    "n": 1
+   },
+   {
+    "family": "bpw_is_not_capability",
     "n": 1
    },
    {
@@ -283,10 +287,6 @@
     "n": 1
    },
    {
-    "family": "complete_bpw_predicts_coherence_that_complete_or_active_bpw_predicts_coherence_denser_is_worse_cheaper_is_worse_the_number_is_the_capability",
-    "n": 1
-   },
-   {
     "family": "complete_vs_decode_gap_prefill_accounting_not_ceremony",
     "n": 1
    },
@@ -307,11 +307,15 @@
     "n": 1
    },
    {
+    "family": "coordinate_transform",
+    "n": 1
+   },
+   {
     "family": "copy_the_q30_static_1_5_representation_approach_to_get_a_coherent_dense_moe_artifact",
     "n": 1
    },
    {
-    "family": "cosine_scale_invariance_that_a_fit_quality_gate_of_observed_probed_worst_unit_cosine_can_certify_an_artifact_including_that_1_000000_means_the_weights_were_preserved",
+    "family": "cosine_scale_invariance",
     "n": 1
    },
    {
@@ -328,7 +332,7 @@
    },
    {
     "family": "cross_expert_structure",
-    "n": 11
+    "n": 9
    },
    {
     "family": "cross_layer_weight_delta",
@@ -512,7 +516,7 @@
    },
    {
     "family": "kronecker",
-    "n": 5
+    "n": 4
    },
    {
     "family": "kv_working_set_eviction",
@@ -544,7 +548,7 @@
    },
    {
     "family": "low_rank",
-    "n": 58
+    "n": 54
    },
    {
     "family": "megakernel",
@@ -584,66 +588,6 @@
    },
    {
     "family": "multiseq_v4r_high_b",
-    "n": 1
-   },
-   {
-    "family": "nns_009_that_organ_cosine_0_86_0_90_or_the_d23_0_8604_residual_identity_bar_is_a_capability_certificate_hard_go_no_go",
-    "n": 1
-   },
-   {
-    "family": "nns_012_that_the_g3_shared_operator_headline_beats_q3_held_out_0_371_vs_0_401_at_24_of_the_bytes_is_a_measured_successor",
-    "n": 1
-   },
-   {
-    "family": "nns_013_that_a_narrow_shared_grouped_swiglu_operator_m_17408_can_replace_qwen3_8s_mlp_at_q3_quality_and_materially_fewer_active_bytes_including_after_honest_methodology",
-    "n": 1
-   },
-   {
-    "family": "nns_017_that_pq_vq_coding_of_the_raw_frozen_weights_is_a_route_to_one_bit_or_below_that_preserves_capability",
-    "n": 1
-   },
-   {
-    "family": "nns_019_that_existing_gravity_expert_families_hgravb01_hgravr02_hgravs01_or_the_q80_mixed_gate_up_down_bundle_transfer_to_attention_at_q4_equivalent_quality",
-    "n": 1
-   },
-   {
-    "family": "nns_020_that_storage_complete_physical_bpw_is_the_bpw_decode_moves_active_bpw_and_that_crushing_routed_experts_is_therefore_the_velocity_lever",
-    "n": 1
-   },
-   {
-    "family": "nns_021_that_lower_storage_bpw_is_faster_per_token_density_is_velocity_on_mixed_codecs_whose_reconstruction_is_not_in_register",
-    "n": 1
-   },
-   {
-    "family": "nns_022_that_entropy_coding_of_lloyd_optimal_pq_indices_yields_a_10_25_byte_win_or_that_rans_on_qwen3_8_q3_symbols_is_an_active_byte_tps_lever",
-    "n": 1
-   },
-   {
-    "family": "nns_025_that_selection_policy_search_over_which_sub_1_2_bpw_organs_to_replace_can_recover_coherence_or_that_beating_a_constant_mean_null_is_the_replacement_gate",
-    "n": 1
-   },
-   {
-    "family": "nns_027_that_extrapolating_a_4_layer_teacher_forced_residual_probe_across_48_layers_is_a_go_or_that_per_organ_gating_without_expert_atomic_enforcement_produces_a_runnable_hybrid",
-    "n": 1
-   },
-   {
-    "family": "nns_028_that_post_hoc_scalar_gain_on_a_pq_artifact_row_norm_stratified_codebooks_the_94_single_codeword_premise_ternary_vs_vq_at_matched_rate_or_88_token_routing_frequency_allocation_are_live_levers",
-    "n": 1
-   },
-   {
-    "family": "nns_029_that_activation_sparsity_2_mlp_max_or_uniform_bit_descent_below_q3_is_a_clean_path_under_the_qwen3_8_coherent_floor",
-    "n": 1
-   },
-   {
-    "family": "nns_030_that_a_family_which_fails_a_residual_composition_screen_to_end_to_end_cosine_0_5_can_still_be_a_sub_1_5_static_dsv4f_body",
-    "n": 1
-   },
-   {
-    "family": "nns_031_that_routing_frequency_allocation_calibrated_on_88_tokens_or_previous_token_route_set_prefetch_is_a_first_touch_allocation_win",
-    "n": 1
-   },
-   {
-    "family": "nns_032_that_a_bounded_low_bit_flash_router_study_with_one_deterministic_vector_can_establish_source_equivalent_top_k_routing_or_that_router_overlap_alone_qualifies_a_native_representation",
     "n": 1
    },
    {
@@ -759,7 +703,11 @@
     "n": 1
    },
    {
-    "family": "q30_gibberish_baseline_that_x_captured_from_a_degraded_quantized_gibberish_baseline_is_close_enough_for_codec_ranking_the_q30_fits_calibrated_on_gibberish_campaign",
+    "family": "protected_islands_healing",
+    "n": 1
+   },
+   {
+    "family": "q30_gibberish_baseline",
     "n": 1
    },
    {
@@ -908,7 +856,7 @@
    },
    {
     "family": "router_distill",
-    "n": 1
+    "n": 2
    },
    {
     "family": "row_norm_stratification_premise_row_norm_stratified_codebooks_declared_r5_rownorm_strat_never_run",
@@ -944,10 +892,14 @@
    },
    {
     "family": "shared_basis",
-    "n": 2
+    "n": 3
    },
    {
     "family": "shared_index_bare_commit_sweeps_foreign_stage",
+    "n": 1
+   },
+   {
+    "family": "shared_k_hybrid",
     "n": 1
    },
    {
@@ -960,7 +912,7 @@
    },
    {
     "family": "spec_decode",
-    "n": 3
+    "n": 4
    },
    {
     "family": "spec_exactshared_as_is",
@@ -971,7 +923,7 @@
     "n": 1
    },
    {
-    "family": "student_distillation_closed_that_independent_per_layer_functional_students_compose_across_a_full_moe_model_and_that_raw_activation_cosine_0_86_0_90_means_the_student_preserved_function",
+    "family": "structural_elimination_heads",
     "n": 1
    },
    {
@@ -979,7 +931,7 @@
     "n": 1
    },
    {
-    "family": "sub_1_5_whole_model_dead_that_a_whole_model_artifact_at_complete_bpw_1_5_built_from_the_existing_gravity_families_hgravb01_r02_s01_rice_on_attention_is_coherent_on_qwen3_8_or_is_a_copyable_q30_template",
+    "family": "sub_1_5_whole_model_dead",
     "n": 1
    },
    {
@@ -996,7 +948,7 @@
    },
    {
     "family": "synthetic_activation",
-    "n": 5
+    "n": 4
    },
    {
     "family": "ternary",
@@ -1039,7 +991,7 @@
     "n": 1
    },
    {
-    "family": "undersampled_fits_that_a_rank_r_or_full_dim_codec_scored_on_fewer_captured_rows_than_the_fitted_dimension_is_a_score_of_the_codec",
+    "family": "undersampled_fits",
     "n": 1
    },
    {
@@ -1057,6 +1009,10 @@
    {
     "family": "uniform_subbit_allocation_uniform_sub_bit_allocation_across_organs_and_its_treated_variant",
     "n": 1
+   },
+   {
+    "family": "unrecorded_in_source",
+    "n": 24
    },
    {
     "family": "use_the_535_637_gb_s_reuse_band_also_written_560_647_as_the_decode_ceiling",
@@ -1134,7 +1090,7 @@
    },
    {
     "model": "qwen3.8-27b",
-    "n": 57
+    "n": 65
    },
    {
     "model": "unrecorded",
@@ -1325,8 +1281,8 @@
     "path": "receipts/headless/ACCELERATOR_SPAN_IS_REFUTED_COALESCING_IS_NOT.json"
    },
    {
-    "n_parsed": 32,
-    "n_scars": 32,
+    "n_parsed": 40,
+    "n_scars": 40,
     "n_unparsed": 0,
     "origin": "disk",
     "path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
@@ -1488,9 +1444,9 @@
    "ramanujan.scaffold.core.stores Graveyard (in-process bury/revive, not a corpus index).",
    "Worktrees and grok/* branches the noetic sweeper walked; this index is HEAD + disk only."
   ],
-  "n_parsed": 676,
-  "n_refuse_eligible": 603,
-  "n_scars": 691,
+  "n_parsed": 684,
+  "n_refuse_eligible": 591,
+  "n_scars": 699,
   "n_sources": 48,
   "n_unparsed": 15
  },
@@ -1505,7 +1461,7 @@
   "Sparse-checkout ingest via git show HEAD:<path> so missing-on-disk is not treated as missing-in-git."
  ],
  "gpu_authority": false,
- "head": "dcb582b711d1acf3744105155b0ce936efdcea8b",
+ "head": "a6f0d42b2c4e712d881a9ec6d7ece46826a6a397",
  "how_to_use": {
   "proposal_keys": [
    "model",
@@ -4818,11 +4774,11 @@
   },
   {
    "claim_refuted": "That sub-bit is dead because six families scored negative on Gaussian / synthetic activations.",
-   "failure_mechanism": "sub_bit_synthetic_then_real",
+   "failure_mechanism": "The negatives were a property of the PROXY, not of sub-bit. Refitted on real teacher-capsule X the ranking inverted, the null moved 0.126 \u2192 0.651, and activation-aware projection hit 0.755 cosine at 0.167 BPW on 12/12 GLM-5.2 experts. Raw-weight low-rank at 4\u00d7 the rate still went 0/12. Standing law: never evaluate compression on synthetic activations. Sub-bit the IDEA is live; the Gaussian-proxy METHOD is dead.",
    "hypothesis_family": "synthetic_activation",
-   "keys_filled": 5,
+   "keys_filled": 6,
    "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
+   "machine": "m3_ultra",
    "model": "deepseek-v4-flash",
    "models": [
     "deepseek-v4-flash",
@@ -4836,22 +4792,22 @@
    ],
    "original_id": "NNS-001",
    "parse_status": "PARSED",
-   "refuse_eligible": false,
+   "refuse_eligible": true,
    "reopen_condition": "Never as a promotion path on synthetic X. The IDEA reopens (and already has) on real teacher-forced / captured-BF16 X from the named source, with a stated null and a generation gate.",
    "representation": "activation_aware_projection_onto_top_k_activation_covariance",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-001",
    "source_origin": "disk",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
    "unparsed_reason": "",
-   "verdict": "LIVE_REOPEN_HOLDS"
+   "verdict": "That sub-bit is dead because six families scored negative on Gaussian / synthetic activations."
   },
   {
    "claim_refuted": "That complete (or active) BPW predicts coherence: denser is worse, cheaper is worse, the number is the capability.",
-   "failure_mechanism": "complete_bpw_predicts_coherence",
-   "hypothesis_family": "complete_bpw_predicts_coherence_that_complete_or_active_bpw_predicts_coherence_denser_is_worse_cheaper_is_worse_the_number_is_the_capability",
-   "keys_filled": 5,
+   "failure_mechanism": "Multiply measured, not a metric bug. Qwen3.8 mixed-2p0 at 2.0856 BPW is native-INCOHERENT (0 fallbacks) while the Q4 oracle at 4.2527 on the same binary is COHERENT. Independently, Q80 mixed-1p5 at 1.444 BPW GENERATED coherent text after the 0.8604 organ-cosine screen predicted failure. Odyssey O005 mixed-q2q4 at 3.5412 active BPW is DEGRADED while q3-g128 at 3.2508 is CANDIDATE_PASS. GROUND_TRUTH F4: the 3.3448 artifact is ~10% SLOWER than uniform-q4 at 4.256 despite 21% ...",
+   "hypothesis_family": "bpw_is_not_capability",
+   "keys_filled": 6,
    "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
+   "machine": "m3_ultra",
    "model": "qwen3-80b",
    "models": [
     "qwen3-80b",
@@ -4864,22 +4820,22 @@
    ],
    "original_id": "NNS-002",
    "parse_status": "PARSED",
-   "refuse_eligible": true,
+   "refuse_eligible": false,
    "reopen_condition": "Never as an unqualified 'BPW is the capability'. A new codec family may move the floor; it does not restore BPW as a predictor. Any claim that a cheaper pack is coherent (or a dearer pack is faster) must be a generate + complete-token measurement, not an arithmetic on BPW.",
    "representation": "mixed_hgravb_r_s_vs_uniform_q4_vs_q3_g128",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-002",
    "source_origin": "disk",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
    "unparsed_reason": "",
-   "verdict": "PROPERTY_OF_IDEA"
+   "verdict": "That complete (or active) BPW predicts coherence: denser is worse, cheaper is worse, the number is the capability."
   },
   {
    "claim_refuted": "That a whole-model artifact at complete BPW \u2264 1.5, built from the existing Gravity families (HGRAVB01/R02/S01 + rice on attention), is coherent on Qwen3.8 or is a copyable Q30 template.",
-   "failure_mechanism": "sub_1_5_whole_model_dead",
-   "hypothesis_family": "sub_1_5_whole_model_dead_that_a_whole_model_artifact_at_complete_bpw_1_5_built_from_the_existing_gravity_families_hgravb01_r02_s01_rice_on_attention_is_coherent_on_qwen3_8_or_is_a_copyable_q30_template",
-   "keys_filled": 5,
+   "failure_mechanism": "Native generate, 0 fallbacks, 0 dense-W: mixed-sub15 ~1.29 BPW is a degenerate 220/264 cycle; mixed-2p0 2.0856 is fifteen newlines + ')'. The Q4 oracle on the same binary is coherent. This is the artifact, not the runtime. Q30 static \u22641.5 SVD failed the same way (bits reachable, capability not). The idea 'crush experts/MLP and keep attention at Q4' cannot clear 1.5 because attention is the mass. A NEW attention family would be a new premise, not a retry.",
+   "hypothesis_family": "sub_1_5_whole_model_dead",
+   "keys_filled": 6,
    "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
+   "machine": "m3_ultra",
    "model": "qwen3-30b-a3b",
    "models": [
     "qwen3-30b-a3b",
@@ -4894,22 +4850,22 @@
    ],
    "original_id": "NNS-003",
    "parse_status": "PARSED",
-   "refuse_eligible": true,
+   "refuse_eligible": false,
    "reopen_condition": "A new attention codec family, scored on real BF16 X, clearing mean-row output cosine \u2265 0.990 vs BF16 AND a multi-prompt native generate identity gate. The interval (2.0856, 4.2527) on Qwen3.8 with CURRENT codecs is untested \u2014 a coherent point there is a new measurement, not a retry of mixed-sub15 / mixed-2p0. Never copy the Q30 static \u22641.5 SVD as a template.",
    "representation": "binary",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-003",
    "source_origin": "disk",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
    "unparsed_reason": "",
-   "verdict": "PROPERTY_OF_IDEA"
+   "verdict": "That a whole-model artifact at complete BPW \u2264 1.5, built from the existing Gravity families (HGRAVB01/R02/S01 + rice on attention), is coherent on Qwen3.8 or is a copyable Q30 template."
   },
   {
    "claim_refuted": "That routed experts share a basis / codebook / template, so a shared subspace, joint codebook, or same-index cross-layer tying compresses them together.",
-   "failure_mechanism": "shared_basis_across_experts",
+   "failure_mechanism": "Experts on the measured parents are mutually orthogonal. Q80 L10 gate pairwise cosine mean 0.00414 (p95 0.00769); up mean \u2248 0; top-32 subspace overlap 0.020. F1 row-normalization does not rescue it (instrument carried a positive control that WOULD have detected norm-swamping). Best single shared template explains 0.2513 of 4 experts' energy against an orthogonal null of 0.2500. Same-expert-index cross-layer tying is indistinguishable from a different-index control at 1e-7....",
    "hypothesis_family": "cross_expert_structure",
-   "keys_filled": 4,
+   "keys_filled": 5,
    "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
+   "machine": "m3_ultra",
    "model": "deepseek-v4-flash",
    "models": [
     "deepseek-v4-flash",
@@ -4931,15 +4887,15 @@
    "source_origin": "disk",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
    "unparsed_reason": "",
-   "verdict": "LIVE_REOPEN_HOLDS"
+   "verdict": "That routed experts share a basis / codebook / template, so a shared subspace, joint codebook, or same-index cross-layer tying compresses them together."
   },
   {
    "claim_refuted": "That a fit-quality gate of observed/probed/worst_unit cosine can certify an artifact, including that 1.000000 means the weights were preserved.",
-   "failure_mechanism": "cosine_scale_invariance",
-   "hypothesis_family": "cosine_scale_invariance_that_a_fit_quality_gate_of_observed_probed_worst_unit_cosine_can_certify_an_artifact_including_that_1_000000_means_the_weights_were_preserved",
-   "keys_filled": 4,
+   "failure_mechanism": "Cosine is scale-invariant by construction. Measured on real L0 gate_proj: Wh = 0.01*W scores observed/probed/worst_unit = 1.000000 with relative weight error 0.9898; 100*W does the same at error 98.99. A candidate that preserves every direction and destroys every magnitude was HEALTHY on all three original axes. This did not prove the artifacts were good; it proved the metric was blind. A gain axis (min(r, 1/r) on per-row norm ratio) was added because that construction was...",
+   "hypothesis_family": "cosine_scale_invariance",
+   "keys_filled": 5,
    "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
+   "machine": "m3_ultra",
    "model": "qwen3.8-27b",
    "models": [
     "qwen3.8-27b"
@@ -4957,15 +4913,15 @@
    "source_origin": "disk",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
    "unparsed_reason": "",
-   "verdict": "LIVE_REOPEN_HOLDS"
+   "verdict": "That a fit-quality gate of observed/probed/worst_unit cosine can certify an artifact, including that 1.000000 means the weights were preserved."
   },
   {
    "claim_refuted": "That X captured from a degraded / quantized / gibberish baseline is close enough for codec ranking (the 'Q30 fits calibrated on gibberish' campaign).",
-   "failure_mechanism": "q30_gibberish_baseline",
-   "hypothesis_family": "q30_gibberish_baseline_that_x_captured_from_a_degraded_quantized_gibberish_baseline_is_close_enough_for_codec_ranking_the_q30_fits_calibrated_on_gibberish_campaign",
-   "keys_filled": 5,
+   "failure_mechanism": "A prior campaign captured X from a 0.7966-cosine gibberish baseline (Q30 binary, complete BPW 1.1304, emits ' compreh swiper swiper'). Every score ranked the wrong trajectory. Separately, the Q30 sub-bit SVD itself is a PROPERTY failure (NNS-003): perexpert64 from the correct+dense BF16 capture lifts L0 cosine only +0.015 over that gibberish baseline; all-layer mean 0.8255, layer-product ~3.6e-5 vs \u22650.5. Capture was never the wall for THAT representation. The METHOD error ...",
+   "hypothesis_family": "q30_gibberish_baseline",
+   "keys_filled": 6,
    "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
+   "machine": "m3_ultra",
    "model": "deepseek-v4-flash",
    "models": [
     "deepseek-v4-flash",
@@ -4987,15 +4943,15 @@
    "source_origin": "disk",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
    "unparsed_reason": "",
-   "verdict": "LIVE_REOPEN_HOLDS"
+   "verdict": "That X captured from a degraded / quantized / gibberish baseline is close enough for codec ranking (the 'Q30 fits calibrated on gibberish' campaign)."
   },
   {
    "claim_refuted": "That a rank-r or full-dim codec scored on fewer captured rows than the fitted dimension is a score of the codec.",
-   "failure_mechanism": "undersampled_fits",
-   "hypothesis_family": "undersampled_fits_that_a_rank_r_or_full_dim_codec_scored_on_fewer_captured_rows_than_the_fitted_dimension_is_a_score_of_the_codec",
-   "keys_filled": 5,
+   "failure_mechanism": "rows < input_dim is underdetermined for a full-rank score; rows < rank is underdetermined for a rank-r score. A prior Q80 run had median 92 rows against 2048 dims and every score was garbage. The 25k-token capture is still starved: p10=34, p50=258 rows; 24326/24576 gate/up pairs have rows < 2048; 221 never-routed. rank = min(budget, n_fit_rows) silently starves the codec and the score is not the codec's score. Widening the corpus without per-expert retention made Q30 fits ...",
+   "hypothesis_family": "undersampled_fits",
+   "keys_filled": 6,
    "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
+   "machine": "m3_ultra",
    "model": "deepseek-v4-flash",
    "models": [
     "deepseek-v4-flash",
@@ -5018,15 +4974,15 @@
    "source_origin": "disk",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
    "unparsed_reason": "",
-   "verdict": "ARTIFACT_OF_METHOD"
+   "verdict": "That a rank-r or full-dim codec scored on fewer captured rows than the fitted dimension is a score of the codec."
   },
   {
    "claim_refuted": "That independent per-layer functional students compose across a full MoE model, and that raw activation cosine ~0.86\u20130.90 means the student preserved function.",
-   "failure_mechanism": "student_distillation_closed",
-   "hypothesis_family": "student_distillation_closed_that_independent_per_layer_functional_students_compose_across_a_full_moe_model_and_that_raw_activation_cosine_0_86_0_90_means_the_student_preserved_function",
-   "keys_filled": 5,
+   "failure_mechanism": "On DSV4F the killer is structural, not student quality: L3 fits at skill 0.93 with perfect routing, then L4 router top-1 drops below 0.5. Any nonzero per-layer error compounds through a sensitive top-6-of-256 router. A perfect per-layer student is impossible (0.97 skill is 3% error). On GLM the residual stream is expansive at every tested magnitude (worst at the smallest perturbations); a stack of functional students diverges. Raw cosine 0.898 is the constant-mean null \u2014 i...",
+   "hypothesis_family": "router_distill",
+   "keys_filled": 6,
    "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
+   "machine": "m3_ultra",
    "model": "deepseek-v4-flash",
    "models": [
     "deepseek-v4-flash",
@@ -5039,22 +4995,22 @@
    ],
    "original_id": "NNS-008",
    "parse_status": "PARSED",
-   "refuse_eligible": true,
+   "refuse_eligible": false,
    "reopen_condition": "A jointly trained, route-aware / rollout objective that preserves the NEXT layer's routing, judged end-to-end (never per-layer), against a stated null (not raw cosine 0.898), plus generation. A late-layer stabilizer does not help: DSV4F divergence begins at L4.",
    "representation": "glm52_functional_moe_v1_per_layer_student_readout",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-008",
    "source_origin": "disk",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
    "unparsed_reason": "",
-   "verdict": "PROPERTY_OF_IDEA"
+   "verdict": "That independent per-layer functional students compose across a full MoE model, and that raw activation cosine ~0.86\u20130.90 means the student preserved function."
   },
   {
    "claim_refuted": "That organ cosine ~0.86\u20130.90, or the D23 0.8604 residual-identity bar, is a capability certificate / hard GO-NO-GO.",
-   "failure_mechanism": "That organ cosine ~0.86\u20130.90, or the D23 0.8604 residual-identity bar, is a capability certificate / hard GO-NO-GO.",
-   "hypothesis_family": "nns_009_that_organ_cosine_0_86_0_90_or_the_d23_0_8604_residual_identity_bar_is_a_capability_certificate_hard_go_no_go",
-   "keys_filled": 5,
+   "failure_mechanism": "The 0.8604 bar sits BELOW the 0.898 constant-mean null. up_proj rice_q1 at 0.864\u20130.865 is below null. Then the same 1.444 mixed artifact generated coherent text (down_proj holdout cosine 0.7684). The screen predicted failure where generation worked. Conversely mixed-2p0 mean_component_cosine 0.907 is native-INCOHERENT. Cosine is a screen. Generation is the gate.",
+   "hypothesis_family": "unrecorded_in_source",
+   "keys_filled": 6,
    "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
+   "machine": "m3_ultra",
    "model": "glm-5.2",
    "models": [
     "glm-5.2",
@@ -5068,22 +5024,22 @@
    ],
    "original_id": "NNS-009",
    "parse_status": "PARSED",
-   "refuse_eligible": false,
+   "refuse_eligible": true,
    "reopen_condition": "Never as a hard GO/NO-GO. A generation-calibrated bar is a new premise. Do not reopen the 588-recipe organ-cosine grid against 0.8604.",
    "representation": "any",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-009",
    "source_origin": "disk",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
    "unparsed_reason": "",
-   "verdict": "LIVE_REOPEN_HOLDS"
+   "verdict": "That organ cosine ~0.86\u20130.90, or the D23 0.8604 residual-identity bar, is a capability certificate / hard GO-NO-GO."
   },
   {
    "claim_refuted": "That matching the Gaussian rate-distortion function sqrt(2^-2R) proves a post-hoc codec is at the true Shannon floor.",
-   "failure_mechanism": "That matching the Gaussian rate-distortion function sqrt(2^-2R) proves a post-hoc codec is at the true Shannon floor.",
-   "hypothesis_family": "synthetic_activation",
-   "keys_filled": 5,
+   "failure_mechanism": "Among equal-variance sources the Gaussian MAXIMIZES differential entropy, so its D(R) is an UPPER bound on the distortion a same-variance source requires. Matching it proves the codec is as good as if the weights were Gaussian; it proves nothing about the true floor. The correct floor uses measured h. Mid/late layers ARE essentially Gaussian (0.012\u20130.018 bits non-Gaussian) so Lane A is nearly exhausted there. Layer 0 is not: down_proj 3.014 bits non-Gaussian, 1.328 decades...",
+   "hypothesis_family": "unrecorded_in_source",
+   "keys_filled": 6,
    "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
+   "machine": "m3_ultra",
    "model": "qwen3-235b-a22b",
    "models": [
     "qwen3-235b-a22b"
@@ -5102,15 +5058,15 @@
    "source_origin": "disk",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
    "unparsed_reason": "",
-   "verdict": "LIVE_REOPEN_HOLDS"
+   "verdict": "That matching the Gaussian rate-distortion function sqrt(2^-2R) proves a post-hoc codec is at the true Shannon floor."
   },
   {
    "claim_refuted": "That the 5.9\u00d7 per-byte reconstruction penalty measured on Q80 mixed rice/low-rank is a property of those codecs, and that it transfers to Qwen3.8.",
-   "failure_mechanism": "That the 5.9\u00d7 per-byte reconstruction penalty measured on Q80 mixed rice/low-rank is a property of those codecs, and that it transfers to Qwen3.8.",
-   "hypothesis_family": "low_rank",
-   "keys_filled": 5,
+   "failure_mechanism": "The 5.9\u00d7 (2.57 vs 15.2 GB/s) was first measured against Q80's serial 1-thread-per-row extract, then transferred to Qwen3.8 without re-measurement. Both steps were wrong. At production tpr64 on Qwen3.8, 33 codecs on real activations land 15,124\u201315,541 ns against an f32 control of 15,125 ns; 32/33 recon-excess = 0. Same codecs at tg256 ~26,500 ns \u2014 the penalty is LAUNCH GEOMETRY, not the codec. Q80 in-register tiles took gpu_matvec 867.0 \u2192 36.6 ms without changing a codec. C...",
+   "hypothesis_family": "unrecorded_in_source",
+   "keys_filled": 6,
    "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
+   "machine": "m3_ultra",
    "model": "qwen3-80b",
    "models": [
     "qwen3-80b",
@@ -5129,15 +5085,15 @@
    "source_origin": "disk",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
    "unparsed_reason": "",
-   "verdict": "LIVE_REOPEN_HOLDS"
+   "verdict": "That the 5.9\u00d7 per-byte reconstruction penalty measured on Q80 mixed rice/low-rank is a property of those codecs, and that it transfers to Qwen3.8."
   },
   {
    "claim_refuted": "That the G3 shared-operator headline 'beats q3 held-out 0.371 vs 0.401 at 24% of the bytes' is a measured successor.",
-   "failure_mechanism": "That the G3 shared-operator headline 'beats q3 held-out 0.371 vs 0.401 at 24% of the bytes' is a measured successor.",
-   "hypothesis_family": "nns_012_that_the_g3_shared_operator_headline_beats_q3_held_out_0_371_vs_0_401_at_24_of_the_bytes_is_a_measured_successor",
-   "keys_filled": 5,
+   "failure_mechanism": "Three defects each swing more than the 0.0134 margin, all in the operator's favour: (D3a) 80/20 positional split leaks; (D5) operator error is one pooled rel-L2, q3 is a per-layer mean; (B0) trained on post_input_norm, real MLP input is post_attn_norm. Honest retest: operator 4.02 vs q3 0.337. After the method was fixed, the IDEA (narrow shared SwiGLU) failed at Doctor level (NNS-013). The leaked number is not a reopen.",
+   "hypothesis_family": "unrecorded_in_source",
+   "keys_filled": 6,
    "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
+   "machine": "m3_ultra",
    "model": "qwen3.8-27b",
    "models": [
     "qwen3.8-27b"
@@ -5155,15 +5111,15 @@
    "source_origin": "disk",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
    "unparsed_reason": "",
-   "verdict": "ARTIFACT_OF_METHOD"
+   "verdict": "That the G3 shared-operator headline 'beats q3 held-out 0.371 vs 0.401 at 24% of the bytes' is a measured successor."
   },
   {
    "claim_refuted": "That a narrow shared / grouped SwiGLU operator (m < 17408) can replace Qwen3.8's MLP at q3 quality and materially fewer active bytes, including after honest methodology.",
-   "failure_mechanism": "That a narrow shared / grouped SwiGLU operator (m < 17408) can replace Qwen3.8's MLP at q3 quality and materially fewer active bytes, including after honest methodology.",
-   "hypothesis_family": "nns_013_that_a_narrow_shared_grouped_swiglu_operator_m_17408_can_replace_qwen3_8s_mlp_at_q3_quality_and_materially_fewer_active_bytes_including_after_honest_methodology",
-   "keys_filled": 5,
+   "failure_mechanism": "After NNS-012's method bugs were removed: honest single-op plateaus rel 0.59 (1.75\u00d7 q3) in-family and 0.95 cross-family; matching q3's 0.337 requires m ~ 10000\u201312000, at which active bytes approach q3's own \u2014 no Pareto win. Assembled-Doctor: 0/4 GIBBERISH. Grouped K=4 identical to single. The width bottleneck of a 17408-wide MLP is fundamental. Density via this operator family is dead at the contract (Doctor) level, not just a proxy.",
+   "hypothesis_family": "unrecorded_in_source",
+   "keys_filled": 6,
    "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
+   "machine": "m3_ultra",
    "model": "qwen3.8-27b",
    "models": [
     "qwen3.8-27b"
@@ -5174,22 +5130,22 @@
    ],
    "original_id": "NNS-013",
    "parse_status": "PARSED",
-   "refuse_eligible": true,
+   "refuse_eligible": false,
    "reopen_condition": "A full-width structured nonlinear (G8 Monarch/butterfly) or a distilled operator trained to match F=down(silu(gate)*up) at q3 quality, held-out across families, with Doctor holding. Narrow m<17408 sharing is not that.",
    "representation": "shared_grouped_swiglu_m_6144_k_1_and_k_4",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-013",
    "source_origin": "disk",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
    "unparsed_reason": "",
-   "verdict": "PROPERTY_OF_IDEA"
+   "verdict": "That a narrow shared / grouped SwiGLU operator (m < 17408) can replace Qwen3.8's MLP at q3 quality and materially fewer active bytes, including after honest methodology."
   },
   {
    "claim_refuted": "That activation-aware functional low-rank (output-PCA / reduced rank on real post-SwiGLU X) beats q3 at matched bytes held-out.",
-   "failure_mechanism": "That activation-aware functional low-rank (output-PCA / reduced rank on real post-SwiGLU X) beats q3 at matched bytes held-out.",
-   "hypothesis_family": "low_rank",
-   "keys_filled": 5,
+   "failure_mechanism": "Function-space rank is real: 99% output energy at 56.2% of ranks vs 92.5% in weight space (3.4\u00d7). It does not translate. At matched bytes (rank-803 bf16 ~ q3 36.2 MB) the fit-set WIN (0.2017 < 0.2220) collapses on held-out (L31 0.3876 vs q3 0.2216; L15 0.3120 vs 0.2219). A rank-803 operator on ~2048 activation samples memorizes them. G034 at the same matched 3.25 b/elem: low-rank 2\u20133\u00d7 q3 function error.",
+   "hypothesis_family": "unrecorded_in_source",
+   "keys_filled": 6,
    "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
+   "machine": "m3_ultra",
    "model": "qwen3.8-27b",
    "models": [
     "qwen3.8-27b"
@@ -5201,22 +5157,22 @@
    ],
    "original_id": "NNS-014",
    "parse_status": "PARSED",
-   "refuse_eligible": true,
+   "refuse_eligible": false,
    "reopen_condition": "A hybrid (low-rank prefix + exact/q3 residual) or a distilled operator showing a GENERALIZING matched-byte win over q3 across layers, with Doctor holding. Pure functional low-rank on this sample size is not that. (The hybrid was then tested: NNS-015.)",
    "representation": "low_rank",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-014",
    "source_origin": "disk",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
    "unparsed_reason": "",
-   "verdict": "PROPERTY_OF_IDEA"
+   "verdict": "That activation-aware functional low-rank (output-PCA / reduced rank on real post-SwiGLU X) beats q3 at matched bytes held-out."
   },
   {
    "claim_refuted": "That low-rank + activation-aware correction of the residual beats q3's density-quality point (fewer active bytes at q3 quality, held-out).",
-   "failure_mechanism": "That low-rank + activation-aware correction of the residual beats q3's density-quality point (fewer active bytes at q3 quality, held-out).",
-   "hypothesis_family": "low_rank",
-   "keys_filled": 5,
+   "failure_mechanism": "q3+correction rank64 GENERALIZES and beats q3 quality (0.174 vs 0.222) but ADDS bytes (107% of q3) \u2014 a Matryoshka/quality lever, not a speed lever. q2+correction cannot recover q3 quality within a reasonable byte budget (rank256 err 0.396 at 101% of q3 bytes). q3 is Pareto-optimal on this MLP density-quality frontier. PHASE_B_HYBRID named distillation as the sole surviving avenue to fewer active bytes.",
+   "hypothesis_family": "unrecorded_in_source",
+   "keys_filled": 6,
    "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
+   "machine": "m3_ultra",
    "model": "qwen3.8-27b",
    "models": [
     "qwen3.8-27b"
@@ -5235,15 +5191,15 @@
    "source_origin": "disk",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
    "unparsed_reason": "",
-   "verdict": "LIVE_REOPEN_HOLDS"
+   "verdict": "That low-rank + activation-aware correction of the residual beats q3's density-quality point (fewer active bytes at q3 quality, held-out)."
   },
   {
    "claim_refuted": "That weight-space low-rank / TT / Kronecker factorisation of a single expert tensor is a density win at the coherent point (layers \u2265 1).",
-   "failure_mechanism": "That weight-space low-rank / TT / Kronecker factorisation of a single expert tensor is a density win at the coherent point (layers \u2265 1).",
-   "hypothesis_family": "kronecker",
-   "keys_filled": 5,
+   "failure_mechanism": "Qwen3.8 down/gate near-full-rank: 99% energy needs 92\u201395% of ranks; low-rank costs MORE params than full. Function-space matched 3.25 b/elem is 2.93\u00d7 Q3 error. F1 Kronecker at depth: Van Loan spectrum nearly flat, top component 0.27% of gate energy; rank the 2.5 bpw budget buys captures 27% energy, rel_error 0.853 vs incumbent 0.239. THE EXCEPTION: L0 gate Kronecker 0.0301 vs incumbent 0.2252 at a CHEAPER complete rate (2.487 vs 2.501). The lane skipped L0 under a tying-me...",
+   "hypothesis_family": "unrecorded_in_source",
+   "keys_filled": 6,
    "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
+   "machine": "m3_ultra",
    "model": "qwen3-235b-a22b",
    "models": [
     "qwen3-235b-a22b",
@@ -5263,15 +5219,15 @@
    "source_origin": "disk",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
    "unparsed_reason": "",
-   "verdict": "LIVE_REOPEN_HOLDS"
+   "verdict": "That weight-space low-rank / TT / Kronecker factorisation of a single expert tensor is a density win at the coherent point (layers \u2265 1)."
   },
   {
    "claim_refuted": "That PQ/VQ coding of the RAW frozen weights is a route to one bit or below that preserves capability.",
-   "failure_mechanism": "That PQ/VQ coding of the RAW frozen weights is a route to one bit or below that preserves capability.",
-   "hypothesis_family": "nns_017_that_pq_vq_coding_of_the_raw_frozen_weights_is_a_route_to_one_bit_or_below_that_preserves_capability",
-   "keys_filled": 5,
+   "failure_mechanism": "F1 real forward, 6 prompts, 94 layers, healthy parent (ppl 1.61\u201339.33): A1_1p0 at complete 1.0075 BPW collapsed 6/6 (symKL 7.6\u201310.9, argmax 0.0); R2_subhalf at 0.4930 collapsed 6/6. Organ inversion was applied and still collapsed. This kills THAT FAMILY on frozen weights, not the sub-bit program. Methods that change the source (QAT, distillation, compressibility training, structured pruning, learned sharing) are not bound by the original weights' rate-distortion limit and ...",
+   "hypothesis_family": "unrecorded_in_source",
+   "keys_filled": 6,
    "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
+   "machine": "m3_ultra",
    "model": "gpt-oss-120b",
    "models": [
     "gpt-oss-120b",
@@ -5284,22 +5240,22 @@
    ],
    "original_id": "NNS-017",
    "parse_status": "PARSED",
-   "refuse_eligible": true,
+   "refuse_eligible": false,
    "reopen_condition": "Never on raw frozen weights. A method that CHANGES the source is not this lever and is not blocked by this entry.",
    "representation": "a1_1p0_r2_subhalf_uniform_sub_bit",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-017",
    "source_origin": "disk",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
    "unparsed_reason": "",
-   "verdict": "PROPERTY_OF_IDEA"
+   "verdict": "That PQ/VQ coding of the RAW frozen weights is a route to one bit or below that preserves capability."
   },
   {
    "claim_refuted": "That a single codec family (all-binary, or all low-rank) wins on every Q80 expert organ inside the 1.5 budget.",
-   "failure_mechanism": "That a single codec family (all-binary, or all low-rank) wins on every Q80 expert organ inside the 1.5 budget.",
-   "hypothesis_family": "low_rank",
-   "keys_filled": 5,
+   "failure_mechanism": "gate_proj: binary_group clears the in-budget screen on busy organs (L10E453 cosine 0.893). up_proj: binary_g fails the same organ (0.828); binary + rice_q1 residual is the in-budget family. down_proj: binary_g fails on post-SwiGLU X (L1E265 0.826); low-rank is the intended family and INVERTS the ranking. down_proj must be fit on post-SwiGLU X, never the layer hidden. A single-family pack either misses the bar or blows the 1.5 budget.",
+   "hypothesis_family": "unrecorded_in_source",
+   "keys_filled": 6,
    "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
+   "machine": "m3_ultra",
    "model": "qwen3-80b",
    "models": [
     "qwen3-80b"
@@ -5313,22 +5269,22 @@
    ],
    "original_id": "NNS-018",
    "parse_status": "PARSED",
-   "refuse_eligible": true,
+   "refuse_eligible": false,
    "reopen_condition": "Never as a Q80 default. Reopen only if a new organ family, scored on real post-SwiGLU X for down and real hidden for gate/up, beats the mixed recipe on all three organs inside the budget.",
    "representation": "binary",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-018",
    "source_origin": "disk",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
    "unparsed_reason": "",
-   "verdict": "PROPERTY_OF_IDEA"
+   "verdict": "That a single codec family (all-binary, or all low-rank) wins on every Q80 expert organ inside the 1.5 budget."
   },
   {
    "claim_refuted": "That existing Gravity expert families (HGRAVB01 / HGRAVR02 / HGRAVS01, or the Q80 mixed gate/up/down bundle) transfer to attention at Q4-equivalent quality.",
-   "failure_mechanism": "That existing Gravity expert families (HGRAVB01 / HGRAVR02 / HGRAVS01, or the Q80 mixed gate/up/down bundle) transfer to attention at Q4-equivalent quality.",
-   "hypothesis_family": "nns_019_that_existing_gravity_expert_families_hgravb01_hgravr02_hgravs01_or_the_q80_mixed_gate_up_down_bundle_transfer_to_attention_at_q4_equivalent_quality",
-   "keys_filled": 5,
+   "failure_mechanism": "Attention is high-sensitivity (bar 0.99, not 0.8604). Binary max cosine 0.946 typical 0.75\u20130.88. Rice residual max 0.958 typical 0.82\u20130.91. SVD r=512 typical 0.83\u20130.89; 0 clears of 0.99 at ranks that beat Q4 BPW. The sign-scale recipe exploits SwiGLU structure attention does not have; r160/post-SwiGLU/in-dim 512 is a down_proj recipe. Attention in-dim is 2048 or 5120 and is not low-rank under the same fit. This is why Qwen3.8 sub-1.5 failed: MLP is already 0.848, attention...",
+   "hypothesis_family": "unrecorded_in_source",
+   "keys_filled": 6,
    "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
+   "machine": "m3_ultra",
    "model": "qwen3-80b",
    "models": [
     "qwen3-80b",
@@ -5344,22 +5300,22 @@
    ],
    "original_id": "NNS-019",
    "parse_status": "PARSED",
-   "refuse_eligible": true,
+   "refuse_eligible": false,
    "reopen_condition": "A NEW attention codec family, scored on real BF16 X, clearing mean-row output cosine \u2265 0.990 vs BF16 AND a multi-prompt generate identity gate. lm_head additionally needs top-1 agreement; cosine 0.99 is not token identity.",
    "representation": "hgravb01_r02_s01_h01_t01",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-019",
    "source_origin": "disk",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
    "unparsed_reason": "",
-   "verdict": "PROPERTY_OF_IDEA"
+   "verdict": "That existing Gravity expert families (HGRAVB01 / HGRAVR02 / HGRAVS01, or the Q80 mixed gate/up/down bundle) transfer to attention at Q4-equivalent quality."
   },
   {
    "claim_refuted": "That storage / complete_physical BPW is the BPW decode moves (active BPW), and that crushing routed experts is therefore the velocity lever.",
-   "failure_mechanism": "That storage / complete_physical BPW is the BPW decode moves (active BPW), and that crushing routed experts is therefore the velocity lever.",
-   "hypothesis_family": "nns_020_that_storage_complete_physical_bpw_is_the_bpw_decode_moves_active_bpw_and_that_crushing_routed_experts_is_therefore_the_velocity_lever",
-   "keys_filled": 5,
+   "failure_mechanism": "Category error with a physical cause. At batch=1 Q80 reads 10 of 512 experts. mixed-sub655 storage 0.6462 vs active 2.518 (~4\u00d7); mixed-1p5 1.4444 vs 4.98. Per-token bytes: attention 73%, attention+lm_head 86\u201388%, routed experts 9%. Crushing unused experts to zero removes 9% of traffic. Attention is the mass whose compression changes the token. Storage BPW remains a valid disk figure.",
+   "hypothesis_family": "unrecorded_in_source",
+   "keys_filled": 6,
    "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
+   "machine": "m3_ultra",
    "model": "qwen3-80b",
    "models": [
     "qwen3-80b"
@@ -5372,22 +5328,22 @@
    ],
    "original_id": "NNS-020",
    "parse_status": "PARSED",
-   "refuse_eligible": true,
+   "refuse_eligible": false,
    "reopen_condition": "Never as a substitute for active BPW, and never as a token-time lever on Q80 batch=1. Reopen expert compression as velocity only if routing changes so a much larger expert fraction is actually read per token.",
    "representation": "any_mixed_pack_that_leaves_attention_at_q4_q8",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-020",
    "source_origin": "disk",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
    "unparsed_reason": "",
-   "verdict": "PROPERTY_OF_IDEA"
+   "verdict": "That storage / complete_physical BPW is the BPW decode moves (active BPW), and that crushing routed experts is therefore the velocity lever."
   },
   {
    "claim_refuted": "That lower storage BPW is faster per token (density is velocity) on mixed codecs whose reconstruction is not in-register.",
-   "failure_mechanism": "That lower storage BPW is faster per token (density is velocity) on mixed codecs whose reconstruction is not in-register.",
-   "hypothesis_family": "nns_021_that_lower_storage_bpw_is_faster_per_token_density_is_velocity_on_mixed_codecs_whose_reconstruction_is_not_in_register",
-   "keys_filled": 5,
+   "failure_mechanism": "On the mixed G020 vehicle before the in-register fix: Q4 15.2 GB/s vs mixed 2.57 GB/s (5.9\u00d7 slower per byte); token 225 vs 1171 ms. The 5.9\u00d7 NUMBER was later shown to be a serial-extract + transfer artifact (NNS-011) at tpr64; the LAW 'do not assume lower BPW is faster' survives because reconstruction cost is genome-dependent. Always name the vehicle and the launch geometry.",
+   "hypothesis_family": "unrecorded_in_source",
+   "keys_filled": 6,
    "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
+   "machine": "m3_ultra",
    "model": "qwen3-80b",
    "models": [
     "qwen3-80b"
@@ -5398,22 +5354,22 @@
    ],
    "original_id": "NNS-021",
    "parse_status": "PARSED",
-   "refuse_eligible": true,
+   "refuse_eligible": false,
    "reopen_condition": "Never as an unqualified rule. A density-for-speed claim only after reconstruction is in-register or fused into consumption and a same-vehicle GB/s is remeasured at or above the Q4 mark on that genome.",
    "representation": "binary",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-021",
    "source_origin": "disk",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
    "unparsed_reason": "",
-   "verdict": "PROPERTY_OF_IDEA"
+   "verdict": "That lower storage BPW is faster per token (density is velocity) on mixed codecs whose reconstruction is not in-register."
   },
   {
    "claim_refuted": "That entropy coding of Lloyd-optimal PQ indices yields a 10\u201325% byte win, or that rANS on Qwen3.8 q3 symbols is an active-byte/TPS lever.",
-   "failure_mechanism": "That entropy coding of Lloyd-optimal PQ indices yields a 10\u201325% byte win, or that rANS on Qwen3.8 q3 symbols is an active-byte/TPS lever.",
-   "hypothesis_family": "nns_022_that_entropy_coding_of_lloyd_optimal_pq_indices_yields_a_10_25_byte_win_or_that_rans_on_qwen3_8_q3_symbols_is_an_active_byte_tps_lever",
-   "keys_filled": 4,
+   "failure_mechanism": "Lloyd-optimal indices are near-uniform by construction; measured gain 0.0\u20130.7%, inside the noise of the byte plan. Qwen3.8: 0.696 bits/symbol of exploitable redundancy EXISTS as a lossless recode of STORED BPW, but rANS refuted on-disk (all r packs 11245158443 bytes). No native register-decodable path; cuts stored not active-bytes/token. zlib/lzma on q3 symbols come in WORSE than order-0 entropy.",
+   "hypothesis_family": "unrecorded_in_source",
+   "keys_filled": 5,
    "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
+   "machine": "m3_ultra",
    "model": "gpt-oss-120b",
    "models": [
     "gpt-oss-120b",
@@ -5425,22 +5381,22 @@
    ],
    "original_id": "NNS-022",
    "parse_status": "PARSED",
-   "refuse_eligible": true,
+   "refuse_eligible": false,
    "reopen_condition": "A future parent uses NON-Lloyd (biased or stratified) codebooks whose measured index entropy is \u2264 0.9 of uniform. rANS as a TPS lever additionally needs a native register-decodable path that changes active bytes/token.",
    "representation": "entropy_rans_overscale",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-022",
    "source_origin": "disk",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
    "unparsed_reason": "",
-   "verdict": "PROPERTY_OF_IDEA"
+   "verdict": "That entropy coding of Lloyd-optimal PQ indices yields a 10\u201325% byte win, or that rANS on Qwen3.8 q3 symbols is an active-byte/TPS lever."
   },
   {
    "claim_refuted": "That omitted MoE experts can be reconstructed from a learned combination of surviving experts, or that inter-expert redundancy lets you delta-code / cluster-mean-subtract.",
-   "failure_mechanism": "That omitted MoE experts can be reconstructed from a learned combination of surviving experts, or that inter-expert redundancy lets you delta-code / cluster-mean-subtract.",
-   "hypothesis_family": "cross_expert_structure",
-   "keys_filled": 5,
+   "failure_mechanism": "Same wall as orthogonality. Best single surviving expert held-out rel error 0.885/0.993/0.995 at L0/L3/L7; 4-survivor least-squares merge only 0.863/0.988/0.995. ~1.0 means no better than predicting zero. Adversary found in-sample contamination in the merge's FAVOUR, so the true wall is at least this hard. F0 mean pairwise cosine 1e-4: there is no shared component to subtract.",
+   "hypothesis_family": "unrecorded_in_source",
+   "keys_filled": 6,
    "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
+   "machine": "m3_ultra",
    "model": "gpt-oss-120b",
    "models": [
     "gpt-oss-120b",
@@ -5452,22 +5408,22 @@
    ],
    "original_id": "NNS-023",
    "parse_status": "PARSED",
-   "refuse_eligible": true,
+   "refuse_eligible": false,
    "reopen_condition": "A parent measures best-single-survivor reconstruction error \u2264 0.5 on held-out routed tokens at its own keep fraction, AND mean pairwise expert cosine \u2265 0.10.",
    "representation": "low_rank",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-023",
    "source_origin": "disk",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
    "unparsed_reason": "",
-   "verdict": "PROPERTY_OF_IDEA"
+   "verdict": "That omitted MoE experts can be reconstructed from a learned combination of surviving experts, or that inter-expert redundancy lets you delta-code / cluster-mean-subtract."
   },
   {
    "claim_refuted": "That procedural / generated parameters (shared templates, same-index cross-layer tying, generated expert bases) buy bits on mutually orthogonal experts.",
-   "failure_mechanism": "That procedural / generated parameters (shared templates, same-index cross-layer tying, generated expert bases) buy bits on mutually orthogonal experts.",
-   "hypothesis_family": "cross_expert_structure",
-   "keys_filled": 5,
+   "failure_mechanism": "Best single shared template explains 0.2513 of 4 experts' energy against an orthogonal null of exactly 0.2500. Same-expert-index cross-layer tying is indistinguishable from a different-index control at 1e-7. The metric carried a positive control proving it WOULD detect norm-swamping. Generated-params on these parents have nothing to generate from.",
+   "hypothesis_family": "unrecorded_in_source",
+   "keys_filled": 6,
    "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
+   "machine": "m3_ultra",
    "model": "qwen3-235b-a22b",
    "models": [
     "qwen3-235b-a22b"
@@ -5478,22 +5434,22 @@
    ],
    "original_id": "NNS-024",
    "parse_status": "PARSED",
-   "refuse_eligible": true,
+   "refuse_eligible": false,
    "reopen_condition": "A parent measures row-normalized mean off-diagonal expert cosine \u2265 0.10. Until then procedural generation of expert bases is generating near-orthogonal noise.",
    "representation": "shared_basis",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-024",
    "source_origin": "disk",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
    "unparsed_reason": "",
-   "verdict": "PROPERTY_OF_IDEA"
+   "verdict": "That procedural / generated parameters (shared templates, same-index cross-layer tying, generated expert bases) buy bits on mutually orthogonal experts."
   },
   {
    "claim_refuted": "That selection-policy search over which sub-1.2-bpw organs to replace can recover coherence, or that beating a constant-mean null is the replacement gate.",
-   "failure_mechanism": "That selection-policy search over which sub-1.2-bpw organs to replace can recover coherence, or that beating a constant-mean null is the replacement gate.",
-   "hypothesis_family": "nns_025_that_selection_policy_search_over_which_sub_1_2_bpw_organs_to_replace_can_recover_coherence_or_that_beating_a_constant_mean_null_is_the_replacement_gate",
-   "keys_filled": 5,
+   "failure_mechanism": "48-layer composition needs per-organ output cosine ~0.986 to retain half the signal (c^48 \u2265 0.5). Measured p50 0.6854 (SVD) / 0.80 (baseline binary) are two orders of magnitude below that, and the residual stream is EXPANSIVE (1.4\u20132.4\u00d7/layer) so errors amplify. Every artifact at or below 1.13 bpw is gibberish. Scoring against a constant-mean null instead of the incumbent: frac_beats_null_selected reached 1.0 while mean component cosine FELL 0.7966 \u2192 0.6113. Beating a const...",
+   "hypothesis_family": "unrecorded_in_source",
+   "keys_filled": 6,
    "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
+   "machine": "m3_ultra",
    "model": "qwen3-30b-a3b",
    "models": [
     "qwen3-30b-a3b"
@@ -5507,22 +5463,22 @@
    ],
    "original_id": "NNS-025",
    "parse_status": "PARSED",
-   "refuse_eligible": true,
+   "refuse_eligible": false,
    "reopen_condition": "A representation family that reaches ~0.99 per-organ output cosine; then selection policy matters again. Any replacement gate must score against the incumbent on the same rows with the same holdout split, never against a constant.",
    "representation": "binary",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-025",
    "source_origin": "disk",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
    "unparsed_reason": "",
-   "verdict": "PROPERTY_OF_IDEA"
+   "verdict": "That selection-policy search over which sub-1.2-bpw organs to replace can recover coherence, or that beating a constant-mean null is the replacement gate."
   },
   {
    "claim_refuted": "That low-rank factorization is cheaper than dense 1-bit at sub-1.5 bpw on a [768, 2048] expert organ.",
-   "failure_mechanism": "That low-rank factorization is cheaper than dense 1-bit at sub-1.5 bpw on a [768, 2048] expert organ.",
-   "hypothesis_family": "low_rank",
-   "keys_filled": 5,
+   "failure_mechanism": "Rank 256 / 3 bits = (768+2048)*256*3 bits = 1.38 effective bpw versus ~1.13 for dense 1-bit, at output cosine 0.686 versus baseline 0.7966. The factor matrices of a rank-256 approximation of a 1.57M-parameter organ are not small relative to a 1-bit encoding of the whole organ. Low-rank pays more and delivers less in this regime.",
+   "hypothesis_family": "unrecorded_in_source",
+   "keys_filled": 6,
    "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
+   "machine": "m3_ultra",
    "model": "qwen3-30b-a3b",
    "models": [
     "qwen3-30b-a3b"
@@ -5534,22 +5490,22 @@
    ],
    "original_id": "NNS-026",
    "parse_status": "PARSED",
-   "refuse_eligible": true,
+   "refuse_eligible": false,
    "reopen_condition": "Organs with genuinely low intrinsic rank, or a rank low enough (\u2264 64) that the factors are cheap, provided fidelity still reaches ~0.99. Qwen3.8 down 5120\u00d717408 at rank 160 is 3.1% of rows = 0.13 BPW \u2014 that geometry is a different (and still quality-open) premise.",
    "representation": "low_rank",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-026",
    "source_origin": "disk",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
    "unparsed_reason": "",
-   "verdict": "PROPERTY_OF_IDEA"
+   "verdict": "That low-rank factorization is cheaper than dense 1-bit at sub-1.5 bpw on a [768, 2048] expert organ."
   },
   {
    "claim_refuted": "That extrapolating a 4-layer teacher-forced residual probe across 48 layers is a GO, or that per-organ gating without expert-atomic enforcement produces a runnable hybrid.",
-   "failure_mechanism": "That extrapolating a 4-layer teacher-forced residual probe across 48 layers is a GO, or that per-organ gating without expert-atomic enforcement produces a runnable hybrid.",
-   "hypothesis_family": "nns_027_that_extrapolating_a_4_layer_teacher_forced_residual_probe_across_48_layers_is_a_go_or_that_per_organ_gating_without_expert_atomic_enforcement_produces_a_runnable_hybrid",
-   "keys_filled": 5,
+   "failure_mechanism": "Four-layer probe: mixed rel-L2 geo-grows 1.277\u00d7/layer was projected to 16211 at layer 48 from span [0,4] whose ratios are 1.733, 1.229, 0.978 (one of which shrinks). The probe cannot beat its shuffled-weight null; 395/2048 organs were rank-clamped (NNS-007). Per-organ gating without expert-atomic enforcement: the runtime's execution unit is the expert TRIPLE; 841 of 6144 experts got a partial HGRAVS triple and the runtime refused closed at L0 E55 before emitting any token.",
+   "hypothesis_family": "unrecorded_in_source",
+   "keys_filled": 6,
    "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
+   "machine": "m3_ultra",
    "model": "qwen3-30b-a3b",
    "models": [
     "qwen3-30b-a3b",
@@ -5568,15 +5524,15 @@
    "source_origin": "disk",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
    "unparsed_reason": "",
-   "verdict": "ARTIFACT_OF_METHOD"
+   "verdict": "That extrapolating a 4-layer teacher-forced residual probe across 48 layers is a GO, or that per-organ gating without expert-atomic enforcement produces a runnable hybrid."
   },
   {
    "claim_refuted": "That post-hoc scalar gain on a PQ artifact, row-norm-stratified codebooks (the 94% single-codeword premise), ternary vs VQ at matched rate, or 88-token routing-frequency allocation are live levers.",
-   "failure_mechanism": "That post-hoc scalar gain on a PQ artifact, row-norm-stratified codebooks (the 94% single-codeword premise), ternary vs VQ at matched rate, or 88-token routing-frequency allocation are live levers.",
-   "hypothesis_family": "nns_028_that_post_hoc_scalar_gain_on_a_pq_artifact_row_norm_stratified_codebooks_the_94_single_codeword_premise_ternary_vs_vq_at_matched_rate_or_88_token_routing_frequency_allocation_are_live_levers",
-   "keys_filled": 5,
+   "failure_mechanism": "Scalar gain: optimal gain pinned at exactly 1.0; k-means reconstruction is a conditional mean so the residual is orthogonal to the reconstruction, and cosine is gain-invariant \u2014 algebraically pinned. Row-norm stratification: the 94% single-codeword figure belonged to a k=32 geometry and does not transfer to deployed R2 (d16 k1024) where single-codeword share is 0.0267 mean. Ternary loses to VQ at every matched rate tested. 88-token calibration: median routing split only 63...",
+   "hypothesis_family": "unrecorded_in_source",
+   "keys_filled": 6,
    "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
+   "machine": "m3_ultra",
    "model": "gpt-oss-120b",
    "models": [
     "gpt-oss-120b",
@@ -5588,22 +5544,22 @@
    ],
    "original_id": "NNS-028",
    "parse_status": "PARSED",
-   "refuse_eligible": true,
+   "refuse_eligible": false,
    "reopen_condition": "Gain: a NON-conditional-mean quantizer whose residual is measurably non-orthogonal to the reconstruction. Stratification: single-codeword share \u2265 0.20 at the deployed geometry. Ternary: a weight distribution where ternary beats VQ at matched exact rate on a real forward. Routing-frequency: \u2265 1000 calibration tokens.",
    "representation": "pq_vq",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-028",
    "source_origin": "disk",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
    "unparsed_reason": "",
-   "verdict": "PROPERTY_OF_IDEA"
+   "verdict": "That post-hoc scalar gain on a PQ artifact, row-norm-stratified codebooks (the 94% single-codeword premise), ternary vs VQ at matched rate, or 88-token routing-frequency allocation are live levers."
   },
   {
    "claim_refuted": "That activation sparsity (~2\u00d7 MLP max) or uniform bit-descent below q3 is a clean path under the Qwen3.8 coherent floor.",
-   "failure_mechanism": "That activation sparsity (~2\u00d7 MLP max) or uniform bit-descent below q3 is a clean path under the Qwen3.8 coherent floor.",
-   "hypothesis_family": "nns_029_that_activation_sparsity_2_mlp_max_or_uniform_bit_descent_below_q3_is_a_clean_path_under_the_qwen3_8_coherent_floor",
-   "keys_filled": 5,
+   "failure_mechanism": "Activation sparsity ~2\u00d7 MLP max, dynamic, Doctor-risky (compounds over 62 layers) \u2014 marginal, not a clean lever. The MLP is DENSE (audit D2). Uniform bit-descent: 3.3448 complete BPW is the coherent floor; Q2 MLP is dead (output rel-fro 0.578 vs q3 0.198). Shannon bound at coherent distortion is 1.918 b/elem; q3 spends 3.25; sub-1.0 complete is not excluded by information theory but requires hitting the bound AND remaining coherent at 5.8\u00d7 the gated artifact's distortion \u2014...",
+   "hypothesis_family": "unrecorded_in_source",
+   "keys_filled": 6,
    "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
+   "machine": "m3_ultra",
    "model": "qwen3.8-27b",
    "models": [
     "qwen3.8-27b"
@@ -5615,22 +5571,22 @@
    ],
    "original_id": "NNS-029",
    "parse_status": "PARSED",
-   "refuse_eligible": true,
+   "refuse_eligible": false,
    "reopen_condition": "Sparsity: a Doctor-holding skip pattern that does not compound over 64 layers. Bit-descent: a codec that actually hits the Shannon bound AND a generate gate at that distortion. Neither is a retry of q2 or of unstructured activation skip.",
    "representation": "activation_skip_flat_q2_uniform_descent",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-029",
    "source_origin": "disk",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
    "unparsed_reason": "",
-   "verdict": "PROPERTY_OF_IDEA"
+   "verdict": "That activation sparsity (~2\u00d7 MLP max) or uniform bit-descent below q3 is a clean path under the Qwen3.8 coherent floor."
   },
   {
    "claim_refuted": "That a family which fails a residual-composition screen to end-to-end cosine \u2265 0.5 can still be a sub-1.5 static DSV4F body.",
-   "failure_mechanism": "That a family which fails a residual-composition screen to end-to-end cosine \u2265 0.5 can still be a sub-1.5 static DSV4F body.",
-   "hypothesis_family": "nns_030_that_a_family_which_fails_a_residual_composition_screen_to_end_to_end_cosine_0_5_can_still_be_a_sub_1_5_static_dsv4f_body",
-   "keys_filled": 4,
+   "failure_mechanism": "The residual-composition oracle is a rejection instrument, not a capability certificate. A fail means the family cannot compose to end-to-end cosine \u2265 0.5 under the stated model \u2014 sufficient to refuse it as a sub-1.5 static body. A pass is not evidence of a usable model. Naive c^n is the harsher screen; the honest bound is residual-identity (mean r \u2248 0.34 dilutes organ error).",
+   "hypothesis_family": "unrecorded_in_source",
+   "keys_filled": 5,
    "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
+   "machine": "m3_ultra",
    "model": "deepseek-v4-flash",
    "models": [
     "deepseek-v4-flash"
@@ -5641,22 +5597,22 @@
    ],
    "original_id": "NNS-030",
    "parse_status": "PARSED",
-   "refuse_eligible": true,
+   "refuse_eligible": false,
    "reopen_condition": "A family that PASSES the identity-product screen is not thereby promoted; it becomes eligible for a generation gate. A fail stays a fail for sub-1.5 static bodies.",
    "representation": "family_under_test_rejection_only",
    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-030",
    "source_origin": "disk",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
    "unparsed_reason": "",
-   "verdict": "PROPERTY_OF_IDEA"
+   "verdict": "That a family which fails a residual-composition screen to end-to-end cosine \u2265 0.5 can still be a sub-1.5 static DSV4F body."
   },
   {
    "claim_refuted": "That routing-frequency allocation calibrated on ~88 tokens, or previous-token route-set prefetch, is a first-touch / allocation win.",
-   "failure_mechanism": "That routing-frequency allocation calibrated on ~88 tokens, or previous-token route-set prefetch, is a first-touch / allocation win.",
-   "hypothesis_family": "nns_031_that_routing_frequency_allocation_calibrated_on_88_tokens_or_previous_token_route_set_prefetch_is_a_first_touch_allocation_win",
-   "keys_filled": 5,
+   "failure_mechanism": "88 tokens: median routing split only 63.6% stable, 26.1% of cells never route. The lever (frequency-proportional bits) is alive; the 88-token calibration is dead. Prefetch of this token's experts from the previous token's route set cannot see the misses that cost money: those (layer, expert) pairs are exactly the ones the previous token did not use, and Q80 experts are mutually orthogonal so cross-layer overlap is not assumed.",
+   "hypothesis_family": "unrecorded_in_source",
+   "keys_filled": 6,
    "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
+   "machine": "m3_ultra",
    "model": "gpt-oss-120b",
    "models": [
     "gpt-oss-120b",
@@ -5676,15 +5632,15 @@
    "source_origin": "disk",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
    "unparsed_reason": "",
-   "verdict": "ARTIFACT_OF_METHOD"
+   "verdict": "That routing-frequency allocation calibrated on ~88 tokens, or previous-token route-set prefetch, is a first-touch / allocation win."
   },
   {
    "claim_refuted": "That a bounded low-bit Flash router study with one deterministic vector can establish source-equivalent top-k routing, or that router overlap alone qualifies a native representation.",
-   "failure_mechanism": "That a bounded low-bit Flash router study with one deterministic vector can establish source-equivalent top-k routing, or that router overlap alone qualifies a native representation.",
-   "hypothesis_family": "nns_032_that_a_bounded_low_bit_flash_router_study_with_one_deterministic_vector_can_establish_source_equivalent_top_k_routing_or_that_router_overlap_alone_qualifies_a_native_representation",
-   "keys_filled": 5,
+   "failure_mechanism": "The bounded layer-0 study compared the pinned BF16 router against Q4/G64, Q4/G32, Q4/G16, and NF4/G64 candidates. None reproduced the source top-10 exactly: the native-compatible Q4/G64 candidate overlapped 8/10, while NF4/G64 reached 9/10 but has no native kernel. This refuses source equivalence under a one-vector CPU method; it does not kill low-bit router representations. The idea reopens only with held-out routing vectors, a persisted descriptor and body, native-kernel...",
+   "hypothesis_family": "unrecorded_in_source",
+   "keys_filled": 6,
    "level": "MODEL_SPECIFIC",
-   "machine": "unrecorded",
+   "machine": "m3_ultra",
    "model": "qwen3.8-27b",
    "models": [
     "qwen3.8-27b"
@@ -5702,7 +5658,221 @@
    "source_origin": "disk",
    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
    "unparsed_reason": "",
-   "verdict": "LIVE_REOPEN_HOLDS"
+   "verdict": "That a bounded low-bit Flash router study with one deterministic vector can establish source-equivalent top-k routing, or that router overlap alone qualifies a native representation."
+  },
+  {
+   "claim_refuted": "draft acceptance zero at position 0",
+   "failure_mechanism": "the 1.25 binary is not a useful draft: token acceptance alpha = 0 at position 0, so no expensive forward pass is saved",
+   "hypothesis_family": "spec_decode",
+   "keys_filled": 6,
+   "level": "MODEL_SPECIFIC",
+   "machine": "m3_ultra",
+   "model": "qwen3.8-27b",
+   "models": [
+    "qwen3.8-27b"
+   ],
+   "organ": "whole_model",
+   "organs": [
+    "whole_model"
+   ],
+   "original_id": "QN-BINARY-AS-DRAFT",
+   "parse_status": "PARSED",
+   "refuse_eligible": false,
+   "reopen_condition": "a cheap draft whose measured acceptance at position 0 is high enough that accepted tokens per expensive forward pass rises",
+   "representation": "binary",
+   "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#QN-BINARY-AS-DRAFT",
+   "source_origin": "disk",
+   "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+   "unparsed_reason": "",
+   "verdict": "draft acceptance zero at position 0"
+  },
+  {
+   "claim_refuted": "generation incoherent",
+   "failure_mechanism": "the injury is broad, not localized: no small protected island cheaply restored it; 0/4 candidates reached coherent generation",
+   "hypothesis_family": "protected_islands_healing",
+   "keys_filled": 6,
+   "level": "MODEL_SPECIFIC",
+   "machine": "m3_ultra",
+   "model": "qwen3.8-27b",
+   "models": [
+    "qwen3.8-27b"
+   ],
+   "organ": "down",
+   "organs": [
+    "down",
+    "gate"
+   ],
+   "original_id": "QN-BINARY-HEALING",
+   "parse_status": "PARSED",
+   "refuse_eligible": true,
+   "reopen_condition": "a sensitivity map that localizes the injury to a region small enough that protecting it costs less than the 2.25-bpw q2f body",
+   "representation": "binary",
+   "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#QN-BINARY-HEALING",
+   "source_origin": "disk",
+   "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+   "unparsed_reason": "",
+   "verdict": "generation incoherent"
+  },
+  {
+   "claim_refuted": "generation incoherent",
+   "failure_mechanism": "the 1.25-bpw binary body is physically fast but generation-injured; 0 of 4 healing candidates reached coherent generation",
+   "hypothesis_family": "binary_quantization",
+   "keys_filled": 6,
+   "level": "MODEL_SPECIFIC",
+   "machine": "m3_ultra",
+   "model": "qwen3.8-27b",
+   "models": [
+    "qwen3.8-27b"
+   ],
+   "organ": "down",
+   "organs": [
+    "down",
+    "gate"
+   ],
+   "original_id": "QN-BINARY-INJURY",
+   "parse_status": "PARSED",
+   "refuse_eligible": true,
+   "reopen_condition": "a healing scheme that restores coherent generation while the healed body stays faster than q2f_g64 at 27.55 ms COMPLETE_TOKEN_NS",
+   "representation": "binary",
+   "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#QN-BINARY-INJURY",
+   "source_origin": "disk",
+   "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+   "unparsed_reason": "",
+   "verdict": "generation incoherent"
+  },
+  {
+   "claim_refuted": "floor unchanged",
+   "failure_mechanism": "the tested rotation families did not materially move the Qwen MLP information floor; ~2.25 bpw held under coordinate change",
+   "hypothesis_family": "coordinate_transform",
+   "keys_filled": 6,
+   "level": "MODEL_SPECIFIC",
+   "machine": "m3_ultra",
+   "model": "qwen3.8-27b",
+   "models": [
+    "qwen3.8-27b"
+   ],
+   "organ": "down",
+   "organs": [
+    "down",
+    "gate"
+   ],
+   "original_id": "QN-COORDINATE-TRANSFORM",
+   "parse_status": "PARSED",
+   "refuse_eligible": false,
+   "reopen_condition": "a transform family not in the probe (learned orthogonal, Kronecker, head-specific, blockwise) that moves the measured floor below 2.25",
+   "representation": "rotations_structured_orthogonal_bases",
+   "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#QN-COORDINATE-TRANSFORM",
+   "source_origin": "disk",
+   "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+   "unparsed_reason": "",
+   "verdict": "floor unchanged"
+  },
+  {
+   "claim_refuted": "refuted before packing",
+   "failure_mechanism": "Q heads mean cosine 0.0438 and K/V/O similarly near-orthogonal, so there is no shared-head structure to exploit; MLP dead channels 0 of 1114112; near-identity layers 0",
+   "hypothesis_family": "structural_elimination_heads",
+   "keys_filled": 6,
+   "level": "MODEL_SPECIFIC",
+   "machine": "m3_ultra",
+   "model": "qwen3.8-27b",
+   "models": [
+    "qwen3.8-27b"
+   ],
+   "organ": "attention",
+   "organs": [
+    "attention"
+   ],
+   "original_id": "QN-HEAD-REDUNDANCY",
+   "parse_status": "PARSED",
+   "refuse_eligible": true,
+   "reopen_condition": "an organ or model where head cosine similarity is high enough that sharing costs less capability than the bits it saves",
+   "representation": "shared_or_removed_attention_heads",
+   "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#QN-HEAD-REDUNDANCY",
+   "source_origin": "disk",
+   "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+   "unparsed_reason": "",
+   "verdict": "refuted before packing"
+  },
+  {
+   "claim_refuted": "held-out activation reconstruction fails",
+   "failure_mechanism": "no distributed correction under the 1.0 bpw budget restored held-out activations on real X; even r=256 at 1.035 extra bpw pushed the body to 2.285 > 2.25 with rel_fro 0.4798",
+   "hypothesis_family": "low_rank",
+   "keys_filled": 6,
+   "level": "MODEL_SPECIFIC",
+   "machine": "m3_ultra",
+   "model": "qwen3.8-27b",
+   "models": [
+    "qwen3.8-27b"
+   ],
+   "organ": "down",
+   "organs": [
+    "down",
+    "gate"
+   ],
+   "original_id": "QN-LOWRANK-HEALING",
+   "parse_status": "PARSED",
+   "refuse_eligible": false,
+   "reopen_condition": "a correction whose extra bpw keeps the body under 2.25 while rel_fro on real held-out X drops below the q2f baseline",
+   "representation": "low_rank",
+   "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#QN-LOWRANK-HEALING",
+   "source_origin": "disk",
+   "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+   "unparsed_reason": "",
+   "verdict": "held-out activation reconstruction fails"
+  },
+  {
+   "claim_refuted": "held-out activation reconstruction fails; not coherent",
+   "failure_mechanism": "the KERNEL is competent and the byte win does translate to nanoseconds, but no K below ~2.25 bpw composes coherently for the MLP: the local functional probe dies at held-out activation",
+   "hypothesis_family": "shared_basis",
+   "keys_filled": 6,
+   "level": "MODEL_SPECIFIC",
+   "machine": "m3_ultra",
+   "model": "qwen3.8-27b",
+   "models": [
+    "qwen3.8-27b"
+   ],
+   "organ": "down",
+   "organs": [
+    "down",
+    "gate"
+   ],
+   "original_id": "QN-SHARED-BASIS-DENSITY",
+   "parse_status": "PARSED",
+   "refuse_eligible": false,
+   "reopen_condition": "a shared-basis point that is coherent at held-out activation AND beats q2f on both density and COMPLETE_TOKEN_NS",
+   "representation": "shared_basis",
+   "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#QN-SHARED-BASIS-DENSITY",
+   "source_origin": "disk",
+   "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+   "unparsed_reason": "",
+   "verdict": "held-out activation reconstruction fails; not coherent"
+  },
+  {
+   "claim_refuted": "incoherent and slower",
+   "failure_mechanism": "shared K=2 costs 0.531 extra bpw and still fails to restore held-out activations; the hybrid remained slower and incoherent",
+   "hypothesis_family": "shared_k_hybrid",
+   "keys_filled": 6,
+   "level": "MODEL_SPECIFIC",
+   "machine": "m3_ultra",
+   "model": "qwen3.8-27b",
+   "models": [
+    "qwen3.8-27b"
+   ],
+   "organ": "down",
+   "organs": [
+    "down",
+    "gate"
+   ],
+   "original_id": "QN-SHARED-K-HYBRID",
+   "parse_status": "PARSED",
+   "refuse_eligible": true,
+   "reopen_condition": "a shared-K variant that is coherent on held-out X at a total body bpw below 2.25",
+   "representation": "shared_basis",
+   "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#QN-SHARED-K-HYBRID",
+   "source_origin": "disk",
+   "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+   "unparsed_reason": "",
+   "verdict": "incoherent and slower"
   },
   {
    "claim_refuted": "unrecorded",
@@ -19668,6 +19838,6 @@
   }
  ],
  "schema": "hawking.future.negative_index.v1",
- "seal_sha256": "0c50ec634ec7d53691a4539081710af422c3409a4e25c41097cb5282db794005",
+ "seal_sha256": "f466a85ac47ca0bb30077d0bdfd6537d3c544f5c6319dd56980187a3ae229910",
  "version": 1
 }

@@ -10,6 +10,8 @@ import sys
 import time
 from pathlib import Path
 
+from hcli._test_git import scratch_repo
+
 import pytest
 
 from hcli.checkpoint import CheckpointError, checkpoint, list_checkpoints, restore_checkpoint
@@ -21,15 +23,13 @@ def _run(*args: str, cwd: Path) -> subprocess.CompletedProcess:
 
 
 def _repo(tmp_path: Path, name: str = "repo") -> Path:
-    repo = tmp_path / name
-    repo.mkdir()
-    subprocess.run(["git", "init", "-q", "-b", "main"], cwd=repo, check=True)
-    subprocess.run(["git", "config", "user.email", "hcli-checkpoint-test@example.com"], cwd=repo, check=True)
-    subprocess.run(["git", "config", "user.name", "hcli-checkpoint-test"], cwd=repo, check=True)
-    (repo / "tracked.txt").write_text("v1\n", encoding="utf-8")
-    subprocess.run(["git", "add", "tracked.txt"], cwd=repo, check=True)
-    subprocess.run(["git", "commit", "-q", "-m", "init"], cwd=repo, check=True)
-    return repo
+    return scratch_repo(
+        tmp_path / name,
+        email="hcli-checkpoint-test@example.com",
+        name="hcli-checkpoint-test",
+        filename="tracked.txt",
+        body="v1\n",
+    )
 
 
 def _porcelain(repo: Path) -> str:

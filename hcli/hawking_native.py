@@ -526,6 +526,21 @@ def is_hawking_native_path(path: Optional[str]) -> bool:
     )
 
 
+def _sealed_profile() -> "Optional[HawkingNativeConfig]":
+    """The shipped sealed profile that sits beside this module, or None.
+
+    One source of truth for capabilities: the JSON, not a second copy in
+    `defaults()` that can drift away from it silently.
+    """
+    candidate = Path(__file__).resolve().with_name("hawking-native.sealed-3.14.json")
+    if not candidate.is_file():
+        return None
+    try:
+        return HawkingNativeConfig.from_file(str(candidate))
+    except HawkingNativeConfigError:
+        return None
+
+
 def config_for_model_path(model_path: Optional[str]) -> HawkingNativeConfig:
     if model_path:
         candidate = Path(model_path).expanduser()
@@ -535,7 +550,18 @@ def config_for_model_path(model_path: Optional[str]) -> HawkingNativeConfig:
             except HawkingNativeConfigError:
                 raise
         if candidate.is_dir() and is_hawking_native_path(str(candidate)):
-            profile = HawkingNativeConfig.defaults()
+            # Start from the SEALED PROFILE, not bare defaults. `defaults()`
+            # already calls itself resident_identity "sealed-3.14" but carries
+            # capabilities={}, so supports("grammar") was False for the very
+            # resident whose profile declares grammar "supported". The grammar
+            # channel is built, wired and masked in the running binary, and it
+            # was unreachable in the only configuration that ships: an artifact
+            # DIRECTORY, which is how the resident is actually launched.
+            #
+            # Measured cost: replies that could not have broken JSON did --
+            # "the reply is NOT valid JSON, the outermost object failed to
+            # decode" -- and every receipt reported grammar_enforced as None.
+            profile = _sealed_profile() or HawkingNativeConfig.defaults()
             return replace(
                 profile,
                 artifact_root=str(candidate),
@@ -1374,6 +1400,14 @@ class HawkingNativeConnector:
             # fact the resident knows and nothing else can recover.
             "prefix_source": body.get("prefix_source"),
             "prefix_checkpoint_taken_at": body.get("prefix_checkpoint_taken_at"),
+            # WHY generation ended, and the body's own layer count. Both are
+            # facts only the resident holds. A field has to survive THREE hops
+            # to reach a receipt -- the resident emits it, this block relays it,
+            # the engine allowlists it -- and adding it at the first and last
+            # while missing this one is silent: the receipt simply reads None,
+            # exactly as grammar_enforced did before the scar above.
+            "stop_reason": body.get("stop_reason"),
+            "layers": body.get("layers"),
         }
         return {
             "id": f"hawking-chat-{uuid.uuid4()}",

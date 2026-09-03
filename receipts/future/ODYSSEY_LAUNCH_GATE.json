@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-03T00:39:52Z",
+  "recorded_at": "2026-09-03T06:52:06Z",
   "recorded_by": "tools/future/odyssey_launch.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -1547,17 +1547,17 @@
     "would_lower": "a demonstration that the observation is consistent with the claim being false",
     "would_raise": "independent replication of the same probe"
    },
-   "direct_observation": "import_ok=True has_query=True path_taken=worktree found=True n_scars=691 sealed=True flags={'discover': True, 'invoke': True, 'schedule': True, 'verify': True, 'frontier': True, 'persist': True, 'refill': True}",
+   "direct_observation": "import_ok=True has_query=True path_taken=worktree found=True n_scars=699 sealed=True flags={'discover': True, 'invoke': True, 'schedule': True, 'verify': True, 'frontier': True, 'persist': True, 'refill': True}",
    "evidence": [
     {
      "import_ok": true,
-     "n_scars": 691,
+     "n_scars": 699,
      "path_taken": "worktree"
     }
    ],
    "falsifier": "an independent probe of the same object the status names, not a reread of the status",
    "id": "negative_science",
-   "interpretation": "negative-science index is importable, sealed, scars=691, query/refuse_if_dead callable",
+   "interpretation": "negative-science index is importable, sealed, scars=699, query/refuse_if_dead callable",
    "met": true,
    "operational": {
     "cli_is_not_enough": true,
@@ -1577,7 +1577,7 @@
    },
    "probe_kind": "measured_flags",
    "probe_performed": "import tools.future.negative_index; hasattr query; probe_json receipts/future/NEGATIVE_SCIENCE_INDEX.json; read coverage.n_scars",
-   "reason": "negative-science index is importable, sealed, scars=691, query/refuse_if_dead callable"
+   "reason": "negative-science index is importable, sealed, scars=699, query/refuse_if_dead callable"
   },
   {
    "alternatives": [
@@ -2014,16 +2014,16 @@
     "would_lower": "a demonstration that the observation is consistent with the claim being false",
     "would_raise": "independent replication of the same probe"
    },
-   "direct_observation": "dir_present=True n_json=340 path=/Users/scammermike/Downloads/hawking/receipts/future flags={'discover': True, 'invoke': True, 'schedule': True, 'verify': True, 'frontier': True, 'persist': True, 'refill': True}",
+   "direct_observation": "dir_present=True n_json=348 path=/Users/scammermike/Downloads/hawking/receipts/future flags={'discover': True, 'invoke': True, 'schedule': True, 'verify': True, 'frontier': True, 'persist': True, 'refill': True}",
    "evidence": [
     {
-     "n_json": 340,
+     "n_json": 348,
      "receipts_future": "/Users/scammermike/Downloads/hawking/receipts/future"
     }
    ],
    "falsifier": "an independent probe of the same object the status names, not a reread of the status",
    "id": "receipts",
-   "interpretation": "receipts/future is present with n_json=340 (derived); write_receipt seals STATIC_ONLY and raises on hardware fields",
+   "interpretation": "receipts/future is present with n_json=348 (derived); write_receipt seals STATIC_ONLY and raises on hardware fields",
    "met": true,
    "operational": {
     "cli_is_not_enough": true,
@@ -2044,7 +2044,7 @@
    },
    "probe_kind": "measured_flags",
    "probe_performed": "Path.is_dir() and glob('*.json') on receipts/future; write_receipt seals STATIC_ONLY and raises on hardware fields",
-   "reason": "receipts/future is present with n_json=340 (derived); write_receipt seals STATIC_ONLY and raises on hardware fields"
+   "reason": "receipts/future is present with n_json=348 (derived); write_receipt seals STATIC_ONLY and raises on hardware fields"
   }
  ],
  "criterion_ids": [
@@ -2798,7 +2798,7 @@
   "workspace": "repo-root"
  },
  "gpu_authority": false,
- "head": "e76518be8ccbe48d73c1e865d159213cd7334e5c",
+ "head": "803e811e9b36bb2d144ede4ebcd3cb97e7d34ada",
  "integration_points": {
   "autonomy_trial": "tools/future/autonomy_trial.py \u2014 persisted --verify verdict in AUTONOMY_TRIALS.json (plural)",
   "dirty_measure": "tools/future/dirty_measure.py \u2014 dirty-class measurement that cannot launder into PROTECTED_ABSOLUTE",
@@ -4537,7 +4537,7 @@
     "executable_hash": {
      "by_role": {
       "binary": "d34044cffae8f32055cca40aae27ec62beb44f043df081293126da89e51b8e76",
-      "resident_binary": "510da8937dc75e02fce21f6ec5b902c204be502fe4b30fd6978df45d6474ed83"
+      "resident_binary": "7808b8a577bb17d5923756d5da592b6b1f75f4612dd68ca1eafbe664bb5e55bf"
      },
      "seal_declared_sha256_16": "d34044cffae8f320",
      "seal_matching_role": "binary"
@@ -4648,7 +4648,7 @@
    "note": "Identity is not invented. A missing this-wave receipt stays unbound. Bound only when RESIDENT_SANDBOX.json pins identity_sha256 and reentry_same_identity. HCLI prior gates are not this identity.",
    "path_taken": "worktree",
    "pins": {
-    "identity_sha256": "abe0d09557ba6f2e2702c974f94e9c21fc42a4dda60e3da157bdda4aae566637",
+    "identity_sha256": "6de15df926fd2deda12a4cba08b31505d63f489ae70bd3a447699ae9735252a4",
     "reentry_same_identity": true,
     "sandbox_id": "resident"
    },
@@ -5035,7 +5035,7 @@
   ]
  },
  "schema": "hawking.future.odyssey_launch.v1",
- "seal_sha256": "80ed3ae3b5018d630612f7e191333e05b89df97fa780bcdff6c6cd14f196c8a1",
+ "seal_sha256": "e4d2d6563ccfb6297daa022212d7f2916aadf793108bd5b59e68367d1f044377",
  "sleeping_workunits": [
   {
    "assigned_backend": null,

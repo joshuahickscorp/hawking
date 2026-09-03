@@ -47,7 +47,7 @@ def owner(gate: dict[str, Any]) -> str:
         rel = str((ref or {}).get("file") or "")
         if rel.startswith("hcli/"):
             return "hcli-campaign (do not implement here)"
-        if rel.startswith(("tools/", "crates/", "lab/")):
+        if rel.startswith(("tools/", "crates/", "research/lab/")):
             return "this-lane"
     return "unassigned"
 

@@ -1,7 +1,7 @@
 {
  "schema": "hawking.headless.qwen_completion_receipt.v1",
- "generated_at": "2026-08-26T10:14:22Z",
- "git_head": "665110c71c8cc16db6a05af70d621a0266853ab1",
+ "generated_at": "2026-09-03T06:41:06Z",
+ "git_head": "ee9f9e90c9d65c54cd1ee5944afe5c04a87b636c",
  "generated_by": "tools/headless/qwen_completion_receipt.py",
  "obligation": "N039 \u2014 QWEN_COMPLETION_RECEIPT (S024 \u00a784; Odyssey textbook #1, retirement gate; CPU). Records the \u00a784 completion vector for the current Qwen3.8 specimen. Does NOT retire the specimen; records whether the knowledge is sealed.",
  "hand_authored": false,
@@ -1515,14 +1515,5 @@
   "execution_frontier": "q2f_g64",
   "RETIREMENT_READY": false,
   "specimen_retired_by_this_lane": false
- },
- "bench": {
-  "state": "UNKNOWN",
-  "recorded_at": "2026-08-26T00:00:00Z",
-  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
-  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
-  "quiescence": null,
-  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
-  "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
  }
 }

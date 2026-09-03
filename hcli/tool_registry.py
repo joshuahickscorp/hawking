@@ -13,6 +13,7 @@ application explicitly grants the corresponding permission.
 """
 from __future__ import annotations
 
+import difflib
 import hashlib
 import html
 import ipaddress
@@ -97,7 +98,11 @@ _SAFE_SHELL_COMMANDS = frozenset(
 )
 _SAFE_GIT_COMMANDS = frozenset({"status", "diff", "log", "show", "rev-parse"})
 _MAX_READ_BYTES = 2 * 1024 * 1024
-_MAX_SEARCH_FILES = 20_000
+#: Lowered from 20,000. With the byte cap in place a rare pattern over the repo
+#: root still cost 5.7 s at 20,000 files; a code search does not need that
+#: breadth, and the result already reports `truncated` so a caller can narrow
+#: the root rather than be told a silent lie.
+_MAX_SEARCH_FILES = 5_000
 _MAX_LIST_DIRECTORIES = 20_000
 
 
@@ -519,40 +524,144 @@ def _read_file(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
             f"inside it, then fs.read one of the files it names."
         )
     if not path.is_file():
-        raise FileNotFoundError(path)
+        # A miss is CORRECTABLE and used to be a bare traceback, so a model
+        # that guessed a path just guessed it again -- measured: three
+        # identical FileNotFoundError on hcli/tests/test_tool_registry.py in
+        # one goal, one 60-190s model call apiece. The directory case has said
+        # what to do next for a while; the file case never did.
+        parent = path.parent
+        if not parent.is_dir():
+            raise FileNotFoundError(
+                f"{path} does not exist, and neither does {parent}. Use fs.list "
+                f"on a directory that does exist to find the right path."
+            )
+        siblings = sorted(q.name for q in parent.iterdir() if q.is_file())
+        close = difflib.get_close_matches(path.name, siblings, n=3, cutoff=0.72)
+        hint = (
+            f" Did you mean: {', '.join(close)}?" if close
+            else f" {parent} holds {len(siblings)} files; use fs.list to see them."
+        )
+        raise FileNotFoundError(
+            f"{path} does not exist.{hint} If you meant to CREATE it, do not "
+            f"read it first -- emit a create operation for that path."
+        )
     limit = _text_limit(args.get("max_bytes"))
     raw = path.read_bytes()
+    encoding = str(args.get("encoding") or "utf-8")
+
+    # A WINDOW, because without one a large file can only ever be read from the
+    # top. fs.read returned the first 4,001 bytes of a 188,062-byte engine.py,
+    # so a model that had already located `_record_model_call` at line 3514 --
+    # fs.search reports the line -- could never read it, and said so:
+    # "Need to see the actual _record_model_call function ... to implement the
+    # grammar_enforced field correctly". It could find the code and not look at
+    # it. Lines are 1-indexed and inclusive, matching what fs.search returns.
+    start = args.get("start_line")
+    end = args.get("end_line")
+    line_window = start is not None or end is not None
+    if line_window:
+        text = raw.decode(encoding, errors="replace")
+        lines = text.splitlines(keepends=True)
+        first = max(1, int(start or 1))
+        last = min(len(lines), int(end) if end is not None else len(lines))
+        selected = "".join(lines[first - 1:last]) if first <= last else ""
+        body = selected.encode(encoding, errors="replace")
+        clipped = body[:limit]
+        return {
+            "path": str(path),
+            "bytes": len(raw),
+            "start_line": first,
+            "end_line": last,
+            "total_lines": len(lines),
+            "truncated": len(body) > limit,
+            "sha256": _sha256_bytes(raw),
+            "content": clipped.decode(encoding, errors="replace"),
+            "artifact": {"kind": "file", "path": str(path), "sha256": _sha256_bytes(raw), "bytes": len(raw)},
+        }
+
     clipped = raw[:limit]
     return {
         "path": str(path),
         "bytes": len(raw),
         "truncated": len(raw) > limit,
         "sha256": _sha256_bytes(raw),
-        "content": clipped.decode(str(args.get("encoding") or "utf-8"), errors="replace"),
+        "content": clipped.decode(encoding, errors="replace"),
         "artifact": {"kind": "file", "path": str(path), "sha256": _sha256_bytes(raw), "bytes": len(raw)},
     }
 
 
+#: A search reads candidates whole, so an unbounded file size is an unbounded
+#: search. Measured: one fs.search took 23.5 s against a 50 ms budget because
+#: `glob` defaults to `*` and the walk read model artifacts under workspace/.
+_MAX_SEARCH_FILE_BYTES = 2_000_000
+_SEARCH_SKIP_DIRS = {
+    ".git", ".venv", "__pycache__", "node_modules", ".cache",
+    "target", ".worktrees",
+}
+_SEARCH_SKIP_SUFFIXES = {
+    ".safetensors", ".bin", ".gguf", ".pt", ".pth", ".onnx", ".npy", ".npz",
+    ".so", ".dylib", ".a", ".o", ".zip", ".tar", ".gz", ".zst", ".png",
+    ".jpg", ".jpeg", ".pdf", ".mp4", ".mov", ".wav",
+}
+
+
 def _search_files(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
-    root = context.resolve_read_path(args.get("root") or ".")
-    if not root.is_dir():
+    # `path` is an alias for `root`. fs.read, fs.list and fs.write all name
+    # their location `path`; search alone called it `root`, so the consistent
+    # guess was a hard schema error -- "unexpected properties ['path']" --
+    # which the model read as ZERO MATCHES and reported as an absence of
+    # evidence. It then hedged a correct answer because its own search had
+    # apparently found nothing. One inconsistent word cost a whole round and
+    # the confidence of the answer.
+    root = context.resolve_read_path(args.get("root") or args.get("path") or ".")
+    # A FILE is a legitimate place to search. Finding the line a symbol sits on
+    # inside one known file is the whole point of searching before a windowed
+    # read, and refusing it with NotADirectoryError sent the model back to
+    # reading the file's head -- which is where it could not see the symbol in
+    # the first place. Measured: the truncation notice tells the model to
+    # "use fs.search to find the line a symbol is on, then fs.read that file
+    # with start_line and end_line", and fs.search then rejected the file it
+    # had just been pointed at.
+    single_file = None
+    if root.is_file():
+        single_file = root
+        root = root.parent
+    elif not root.is_dir():
         raise NotADirectoryError(root)
     needle = str(args.get("pattern") or "")
     if not needle:
         raise ValueError("pattern is required")
-    glob = str(args.get("glob") or "*")
+    # Naming one file IS the filter, so it overrides any glob rather than
+    # silently returning nothing when the two disagree.
+    glob = single_file.name if single_file is not None else str(args.get("glob") or "*")
     limit = max(1, min(1000, int(args.get("max_results") or 100)))
     matches: List[Dict[str, Any]] = []
     files_seen = 0
+    skipped_large = 0
     for dirpath, dirnames, filenames in os.walk(root):
-        dirnames[:] = sorted(name for name in dirnames if name not in {".git", ".venv", "__pycache__"})
+        dirnames[:] = sorted(
+            name for name in dirnames if name not in _SEARCH_SKIP_DIRS
+        )
         for filename in sorted(filenames):
             if not Path(filename).match(glob):
                 continue
+            path = Path(dirpath) / filename
+            # Bound the BYTES, not only the file count. The count was already
+            # capped and a search still took 23.5 s, because `glob` defaults to
+            # `*` and every candidate was read WHOLE -- including multi-gigabyte
+            # model artifacts under workspace/. Source files that a search is
+            # for are kilobytes; anything above the cap is a specimen, not code.
+            try:
+                if path.stat().st_size > _MAX_SEARCH_FILE_BYTES:
+                    skipped_large += 1
+                    continue
+            except OSError:
+                continue
+            if path.suffix.lower() in _SEARCH_SKIP_SUFFIXES:
+                continue
             files_seen += 1
             if files_seen > _MAX_SEARCH_FILES:
-                return {"root": str(root), "pattern": needle, "matches": matches, "truncated": True, "files_seen": files_seen}
-            path = Path(dirpath) / filename
+                return {"root": str(root), "pattern": needle, "matches": matches, "truncated": True, "files_seen": files_seen, "skipped_large": skipped_large}
             try:
                 data = path.read_text(encoding="utf-8", errors="replace")
             except OSError:
@@ -1790,20 +1899,29 @@ def default_tool_registry(
             "path": {"type": "string"},
             "max_bytes": {"type": "integer"},
             "encoding": {"type": "string"},
+            "start_line": {"type": "integer"},
+            "end_line": {"type": "integer"},
         },
     }
-    registry.register(ToolSpec("fs.read", "Read one known file under an AgentOS read root.", path_schema, handler=_read_file))
+    registry.register(ToolSpec(
+        "fs.read",
+        "Read one known file under an AgentOS read root. Pass start_line and "
+        "end_line (1-indexed, inclusive) to read a window; fs.search reports "
+        "the line a match is on, so search then read that region.",
+        path_schema,
+        handler=_read_file,
+    ))
     registry.register(ToolSpec("filesystem.read", "Read one known file under an AgentOS read root.", path_schema, handler=_read_file))
     registry.register(ToolSpec(
         "fs.search", "Search bounded text files under a read root.",
         {"type": "object", "required": ["pattern"], "additionalProperties": False,
-         "properties": {"pattern": {"type": "string"}, "root": {"type": "string"}, "glob": {"type": "string"}, "max_results": {"type": "integer"}}},
+         "properties": {"pattern": {"type": "string"}, "root": {"type": "string"}, "path": {"type": "string"}, "glob": {"type": "string"}, "max_results": {"type": "integer"}}},
         handler=_search_files,
     ))
     registry.register(ToolSpec(
         "filesystem.search", "Search bounded text files under a read root.",
         {"type": "object", "required": ["pattern"], "additionalProperties": False,
-         "properties": {"pattern": {"type": "string"}, "root": {"type": "string"}, "glob": {"type": "string"}, "max_results": {"type": "integer"}}},
+         "properties": {"pattern": {"type": "string"}, "root": {"type": "string"}, "path": {"type": "string"}, "glob": {"type": "string"}, "max_results": {"type": "integer"}}},
         handler=_search_files,
     ))
     # `path` is NOT required: the handler already defaults to the workspace root
@@ -2118,7 +2236,7 @@ def default_tool_registry(
         mutation=READ_ONLY, deterministic=True, resources=("filesystem",), handler=_architecture_inspect,
     ))
     registry.register(ToolSpec(
-        "doctor.query", "Ask the local Doctor evidence/planning surface for a bounded proposal.",
+        "doctor.query", "Ask the local Doctor research/evidence/planning surface for a bounded proposal.",
         {"type": "object", "additionalProperties": False, "properties": {"operation": {"type": "string"}, "model": {"type": "string"}, "organ": {"type": "string"}, "receipt": {"type": "string"}, "research_query": {"type": "string"}, "max_results": {"type": "integer"}}},
         mutation=RESEARCH, deterministic=False, resources=("filesystem", "network"),
         verifier_expectations=("Doctor proposals require a later measurement receipt",), handler=_doctor_query,

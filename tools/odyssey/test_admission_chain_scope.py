@@ -30,9 +30,9 @@ def test_the_second_binding_really_exists_in_the_source():
 
 
 def test_the_producer_correction_is_recorded():
-    """I claimed no producer existed, having not searched lab/."""
+    """I claimed no producer existed, having not searched research/lab/."""
     c = rec()["CORRECTION_THE_PRODUCER_EXISTS"]
-    assert "did not search lab/" in c["why_that_was_wrong"]
+    assert "did not search research/lab/" in c["why_that_was_wrong"]
     assert (REPO / c["the_producer"]).is_file()
 
 

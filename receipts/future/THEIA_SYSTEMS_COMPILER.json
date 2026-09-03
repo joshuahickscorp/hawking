@@ -4,7 +4,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T09:14:37Z",
+  "recorded_at": "2026-09-03T05:37:53Z",
   "recorded_by": "tools/theia/systems_lab.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -124,7 +124,7 @@
     "trips_times_stride": 5120
    }
   ],
-  "source": "/Users/scammermike/.claude-grok/worktrees/t1-theia-laboratories-real-20260902-045552/receipts/future/KERNEL_GEOMETRY.json",
+  "source": "/Users/scammermike/Downloads/hawking/receipts/future/KERNEL_GEOMETRY.json",
   "under_apple_ceiling": true
  },
  "h5": {
@@ -184,7 +184,7 @@
     },
     {
      "check": "kernel_existence",
-     "host": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4333",
+     "host": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4334",
      "kernel": "qwen_q2f_group64_matvec_pair_geo_tpr64_tg128",
      "message": "host references kernel 'qwen_q2f_group64_matvec_pair_geo_tpr64_tg128' but no shader defines `kernel void qwen_q2f_group64_matvec_pair_geo_tpr64_tg128(`",
      "severity": "ERROR",
@@ -192,7 +192,7 @@
     },
     {
      "check": "kernel_existence",
-     "host": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4277",
+     "host": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4278",
      "kernel": "qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128",
      "message": "host references kernel 'qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128' but no shader defines `kernel void qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128(`",
      "severity": "ERROR",
@@ -207,7 +207,7 @@
   "load_repo_sources": {
    "n_membership": 36,
    "n_metal": 46,
-   "n_rust": 531,
+   "n_rust": 532,
    "symbol": "tools.future.static_kernel_verify.load_repo_sources"
   },
   "parse_metal": {
@@ -1038,10 +1038,10 @@
  "recorded_by": "tools/theia/systems_lab.py",
  "repo_paths": {
   "hosts": "crates/hawking-core",
-  "kernel_geometry_receipt": "/Users/scammermike/.claude-grok/worktrees/t1-theia-laboratories-real-20260902-045552/receipts/future/KERNEL_GEOMETRY.json",
+  "kernel_geometry_receipt": "/Users/scammermike/Downloads/hawking/receipts/future/KERNEL_GEOMETRY.json",
   "shaders": "crates/hawking-core/shaders"
  },
  "schema": "hawking.theia.systems_compiler.v1",
- "seal_sha256": "cf9f50a6e981ca15d1ed2b5e0a89e55123cebdf01b879692e2ca2a791a1d08c6",
+ "seal_sha256": "79cee516a3c56f5943064b50c068ad04a756b0bf56b0f2168886517db791a9cd",
  "version": 1
 }

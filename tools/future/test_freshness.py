@@ -258,7 +258,7 @@ def test_unregistered_finding_lists_sidecar_receipts_not_in_registry():
     for name in names:
         assert name not in registered
         assert name != "DERIVED_FRESHNESS.json"
-        assert not name.startswith("evidence/")
+        assert not name.startswith("research/evidence/")
     # A known sibling receipt must surface as UNREGISTERED so the finding is load-bearing.
     assert "ANE_PREBOARD.json" in names
     assert "CANDIDATE_STAGED_PLAN.json" not in names

@@ -46,5 +46,5 @@
   ],
   "refusals": 4,
   "the_real_candidate_does_not_get_a_clean_PASS": "uniform-q4-v1 with every field populated seals as PASS_WITH_WARNINGS, not PASS, because G123's Tabula instrument is not validated -- its ladder misses the recorded values by a constant 2.5x. The sealer says so instead of emitting a clean PASS on a provisional number.",
-  "commit": "b35af1fa8886aa9d5903e3b9e943503c63cb001e"
+  "commit": "2d678da11b7b2c2141b44effda165a8caa17e935"
 }

@@ -3,6 +3,7 @@ from __future__ import annotations
 import ast
 import hashlib
 import json
+import functools
 import os
 import re
 import shlex
@@ -168,9 +169,15 @@ For a requested code/file change:
       "new_text": "new content"
     }
   ],
-  "tests": ["optional safe workspace-relative Python test paths"],
+  "tests": ["hcli/tests/test_the_thing_you_changed.py"],
   "tool_calls": []
 }
+
+A MUTATION WITH AN EMPTY "tests" LIST CANNOT BE ACCEPTED. The verifier records
+it UNVERIFIED -- reason NO_EVIDENCE -- which is terminal, so the work is thrown
+away no matter how good the change was. Name a test that fails before your
+change and passes after it. If none exists, write one as part of the same
+mutation. Deterministic evidence is the only thing that can accept work here.
 
 To LOOK at something before answering (read a file, search, run a read-only
 command, inspect git):
@@ -247,13 +254,69 @@ def _join_observations(blocks: List[str]) -> str:
 #: because being over by one token costs the entire call.
 _CTX_ESTIMATE_MARGIN = 96
 #: Observed disagreement between `_estimate_prompt_tokens` and the resident's
-#: real tokenizer, with headroom: 5.8% measured, 12% reserved. Being over by one
-#: token costs the whole call, and the cost of reserving too much is only a
-#: shorter reply.
-_CTX_ESTIMATE_ERROR = 0.12
+#: real tokenizer, with headroom. 5.8% on prose; 25% on a payload carrying
+#: Python source -- estimated ~5300 against a real 6605, which overflowed the
+#: window and killed the call outright. 30% reserved.
+#:
+#: A learned ratio cannot cover this on its own: density is a property of the
+#: payload, not of history. The first call of a goal is prose and calibrates
+#: near 3.0; the second carries a source file and is far denser. So the
+#: reserve has to be sized for the worst payload, not the last one.
+#:
+#: Being over by one token costs the whole call. Reserving too much only
+#: shortens a reply.
+_CTX_ESTIMATE_ERROR = 0.30
 _MAX_TOKENS_FLOOR = 512
 _MAX_TOKENS_CEILING = 8192
 _CHARS_PER_TOKEN = 3
+#: The estimator divides characters by a single constant, but the constant is
+#: not one number. Measured on the live resident: markdown prose runs near 3,
+#: Python source near 2.4 -- indentation and punctuation are their own tokens.
+#: A goal that read one 40 KB source file overflowed the window because the
+#: estimate said ~5300 tokens and the tokenizer said 6605, a 25% error against
+#: a 12% reserve, and the whole call was refused. So the ratio is LEARNED from
+#: the real counts the runtime reports, clamped to a sane band, and the
+#: MINIMUM ever seen is used -- the most pessimistic ratio is the safe one,
+#: since being over by a token costs the entire call.
+_CHARS_PER_TOKEN_FLOOR = 2.0
+_CHARS_PER_TOKEN_CEILING = 4.0
+#: Reserve when the count is EXACT. Only the chat template's role markers are
+#: unaccounted for, since the tokenizer is the resident's own.
+_CTX_EXACT_MARGIN = 0.04
+#: The share of the usable input ONE tool observation may occupy.
+#:
+#: It was the whole of it. A single fs.read grew the prompt from 1,925 tokens
+#: to 5,348 against a per-request window of 6,745 -- 3,423 tokens for one
+#: observation -- and the reply was left 1,107 tokens and truncated mid-object.
+#: The scaffolding (system prompt 763, worker packet 110, tool catalog, schema
+#: instruction) is ~1,925 tokens before any evidence arrives, so a cap equal to
+#: the whole usable input can never be satisfied alongside it.
+_MAX_OBSERVATION_SHARE = 0.35
+
+
+@functools.lru_cache(maxsize=1)
+def _exact_tokenizer() -> Any:
+    """The resident's own tokenizer, or None.
+
+    Estimating characters-per-token cost this campaign two opposite failures on
+    the same 8192-token window: a 25% under-count overflowed it and killed the
+    call, and the 30% reserve that fixed the overflow left 1107 completion
+    tokens after a 5422-token prompt, so the reply was truncated mid-object.
+    There is no ratio that satisfies both. The tokenizer is on disk and
+    `tokenizers` is installed, so count instead of guessing.
+    """
+    try:
+        from tokenizers import Tokenizer
+
+        from .hawking_native import _sealed_profile
+
+        profile = _sealed_profile()
+        path = getattr(profile, "tokenizer", "") if profile else ""
+        if not path or not os.path.exists(path):
+            return None
+        return Tokenizer.from_file(path)
+    except Exception:
+        return None
 _THINK_OPEN_RE = re.compile(r"<think\b", re.I)
 
 _PATH_TOKEN_RE = re.compile(
@@ -264,7 +327,14 @@ _PATH_TOKEN_RE = re.compile(
             (?:\./|\../)?
             [A-Za-z0-9_.@+~/-]+
             \.
-            (?:py|md|txt|json|toml|yaml|yml|js|ts|tsx|jsx|rs|c|cc|cpp|h|hpp|sh)
+            (?:jsonl|json|py|md|txt|toml|yaml|yml|js|ts|tsx|jsx|rs|c|cc|cpp|h|hpp|sh)
+            # A boundary, or a longer extension is silently truncated to a
+            # shorter known one: `COMPILE_ECONOMICS.jsonl` was extracted as
+            # `COMPILE_ECONOMICS.js`, which does not exist, so `_safe_path`
+            # refused it and the packet inlined NO evidence at all. The model
+            # was told which file mattered and then had to spend a whole tool
+            # round -- about 150 s -- asking for the file we had already named.
+            (?![A-Za-z0-9_])
         )
     )""",
     re.VERBOSE,
@@ -372,7 +442,7 @@ def _degraded_structured_record(
         # Bounded, and never the prompt -- only what the model wrote back.
         text = str(last_text)
         record["rejected_reply_chars"] = len(text)
-        record["rejected_reply_excerpt"] = text[:_REJECTED_EXCERPT_CHARS]
+        record["rejected_reply_excerpt"] = _rejected_excerpt(text)
         record["rejected_reply_truncated_in_receipt"] = (
             len(text) > _REJECTED_EXCERPT_CHARS
         )
@@ -589,6 +659,257 @@ class _PhaseHeartbeat:
         if thread is not None:
             thread.join(timeout=0.5)
         return False
+
+
+_IDENT_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_]{3,}")
+_SYMBOL_CACHE: Dict[str, Dict[str, int]] = {}
+
+
+def _python_symbol_lines(source: str) -> Dict[str, int]:
+    """Every def/class/assignment in a Python file, mapped to its line.
+
+    Deterministic. `ast` knows exactly where `pid_is_alive` is defined, so
+    spending a 150 s resident round -- or a lexical guess that picked the block
+    where fs.read is REGISTERED over the function implementing it -- to locate
+    it is cognition wasted on a solved problem.
+    """
+    key = _sha256_bytes(source.encode("utf-8", errors="replace"))
+    cached = _SYMBOL_CACHE.get(key)
+    if cached is not None:
+        return cached
+    found: Dict[str, int] = {}
+    try:
+        tree = ast.parse(source)
+    except (SyntaxError, ValueError, RecursionError):
+        _SYMBOL_CACHE[key] = found
+        return found
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            found.setdefault(node.name, node.lineno)
+        elif isinstance(node, ast.Assign):
+            for target in node.targets:
+                if isinstance(target, ast.Name):
+                    found.setdefault(target.id, target.lineno)
+        elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+            found.setdefault(node.target.id, node.target.lineno)
+    if len(_SYMBOL_CACHE) > 64:
+        _SYMBOL_CACHE.clear()
+    _SYMBOL_CACHE[key] = found
+    return found
+_DEF_RE = re.compile(r"\s*(?:def|class|fn|pub fn)\s")
+
+
+def _focused_excerpt(content: str, prompt: str, limit: int, path: str) -> str:
+    """The part of the file the request is ABOUT, not the first `limit` bytes.
+
+    Truncating from the top is the same defect as an fs.read with no offset: a
+    goal about `_read_file` at line 509 of a 100 KB file received the first
+    5,913 characters -- about line 150 -- and had to spend a tool round asking
+    for the rest of a file it had already been handed.
+
+    The window is centred on the densest run of identifiers the prompt and the
+    file share, so the excerpt is the neighbourhood of the thing being changed.
+    Falls back to the head when nothing matches, which is no worse than before.
+    """
+    if len(content) <= limit:
+        return content
+
+    wanted = {w for w in _IDENT_RE.findall(prompt or "") if not w.isupper()}
+    lines = content.splitlines(keepends=True)
+    if not wanted or not lines:
+        return content[:limit]
+
+    # A DEFINITION the parser found beats every lexical guess. Exact symbol
+    # first; density is the fallback, not the authority.
+    anchor_line: Optional[int] = None
+    if path.endswith(".py"):
+        symbols = _python_symbol_lines(content)
+        named = [(symbols[w], w) for w in wanted if w in symbols]
+        if named:
+            anchor_line = min(named)[0] - 1
+
+    hits = [i for i, line in enumerate(lines) if any(w in line for w in wanted)]
+    if anchor_line is None and not hits:
+        return content[:limit]
+
+    # A DEFINITION outweighs a mention. Density alone chose the block where
+    # fs.read is registered over the `_read_file` that implements it -- both
+    # mention the name, only one is the thing being changed.
+    def score(i: int) -> tuple:
+        line = lines[i]
+        defines = bool(_DEF_RE.match(line)) and any(w in line for w in wanted)
+        near = sum(1 for j in hits if abs(j - i) <= 60)
+        return (1 if defines else 0, near)
+
+    best = anchor_line if anchor_line is not None else max(hits, key=score)
+
+    # Grow outward from the chosen line, and NEVER trim with a head slice
+    # afterwards: expansion is symmetric, so `[:limit]` cuts the tail and can
+    # drop the very line the window was centred on. Stop growing at the limit
+    # instead, and keep the anchor line even if it alone exceeds it.
+    lo = hi = best
+    size = len(lines[best])
+    while lo > 0 or hi < len(lines) - 1:
+        grew = False
+        if hi < len(lines) - 1 and size + len(lines[hi + 1]) <= limit:
+            hi += 1
+            size += len(lines[hi])
+            grew = True
+        if lo > 0 and size + len(lines[lo - 1]) <= limit:
+            lo -= 1
+            size += len(lines[lo])
+            grew = True
+        if not grew:
+            break
+    body = "".join(lines[lo:hi + 1])
+    return (
+        f"# {path} lines {lo + 1}-{hi + 1} of {len(lines)}, "
+        f"selected around the code this request names\n" + body
+    )
+
+
+def _anchor_violation(path: str, anchor: str, current: str, hits: int) -> str:
+    """A retry instruction for an anchor that did not match exactly once."""
+    probe = ""
+    at = -1
+    for line in (l.strip() for l in anchor.strip().splitlines()):
+        if len(line) > 5:
+            at = current.find(line)
+            if at >= 0:
+                probe = line
+                break
+    if hits > 1:
+        return (
+            f"your old_text for {path} matches {hits} places; it must match "
+            f"exactly one. Include more surrounding lines so it is unique."
+        )
+    if at < 0:
+        return (
+            f"your old_text for {path} matches nothing in the file -- not one "
+            f"line of it. Read the file again and copy the real bytes."
+        )
+    start = max(0, current.rfind("\n", 0, at) + 1)
+    actual = current[start:start + max(len(anchor), 240)]
+    return (
+        f"your old_text for {path} does not appear in the file. It actually "
+        f"reads:\n{actual!r}\nyou sent:\n{anchor!r}\nCopy those bytes exactly. "
+        f"A newline written as a literal backslash-n will not match."
+    )
+
+
+def _rejected_excerpt(text: str) -> str:
+    """Keep both ENDS of a rejected reply, not just its head.
+
+    A head-only excerpt spent its whole budget on the `content` prose and cut
+    off at the word "operations", which is the one part a rejection about an
+    operation needs. Measured: a 2,221-character reply rejected three times for
+    a bracket error inside new_text, and all the receipt preserved was 800
+    characters of description ending at '"op": "replace",'.
+
+    Half from each end, so the shape of the reply and the thing that broke both
+    survive.
+    """
+    if len(text) <= _REJECTED_EXCERPT_CHARS:
+        return text
+    half = _REJECTED_EXCERPT_CHARS // 2
+    dropped = len(text) - 2 * half
+    return f"{text[:half]}\n[... {dropped} characters elided ...]\n{text[-half:]}"
+
+
+def _python_syntax_violation(content: str) -> Optional[str]:
+    """The reply's Python operations must compile, or say why they do not.
+
+    Returns a retry instruction naming the file, line and error, or None when
+    every Python operation parses. Non-Python paths are not checked here: the
+    verifier owns them and this is only about giving the model back the one
+    error it can act on.
+    """
+    try:
+        parsed = json.loads(content)
+    except (TypeError, ValueError):
+        return None
+    if not isinstance(parsed, dict):
+        return None
+    # ONLY a reply that is actually applying its operations may be judged on
+    # them. A tool_use reply is asking to read the file precisely BECAUSE it
+    # does not yet know the exact bytes, and it fills operations with a
+    # placeholder to satisfy the shape. Judging that placeholder rejected the
+    # tool request three times over -- measured: content "need exact unique
+    # anchor for _read_file total_lines", old_text "x", refused with "matches
+    # 497 places" on every attempt, so the model could never obtain the bytes
+    # the refusal was demanding. The check that was added to make anchors
+    # correctable had made the correction itself unreachable.
+    if str(parsed.get("kind") or "") != "mutation":
+        return None
+    for op in parsed.get("operations") or []:
+        if not isinstance(op, dict):
+            continue
+        path = str(op.get("path") or "")
+        if not path.endswith(".py"):
+            continue
+        body = op.get("new_text")
+        if not isinstance(body, str) or not body.strip():
+            continue
+
+        # Compile the RESULTING FILE, not the fragment. A replace operation's
+        # new_text is spliced into an existing file, so an indented block is
+        # correct as a replacement for an indented block -- compiling it
+        # standalone reported "unexpected indent at line 1" and rejected
+        # patches that were fine. Measured: three consecutive goals died on
+        # that false rejection, having been told to fix code that was not
+        # broken. A check that refuses correct work is worse than no check.
+        candidate = body
+        if str(op.get("op") or "") == "replace":
+            anchor = op.get("old_text")
+            try:
+                current = (Path(path)).read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                continue
+            if not isinstance(anchor, str):
+                continue
+            hits = current.count(anchor)
+            if hits != 1:
+                # An anchor that does not match is CORRECTABLE, and until now it
+                # was terminal: _apply_operations runs after the contract has
+                # accepted the reply, so the unit died holding a patch that was
+                # right except for its anchor. Measured: one literal backslash-n
+                # where a newline belonged, every other line correct.
+                #
+                # Route it through the contract's retry instead, and hand back
+                # the file's real bytes so the next attempt has something to
+                # copy rather than something to guess.
+                return _anchor_violation(path, anchor, current, hits)
+            candidate = current.replace(anchor, body, 1)
+
+        try:
+            compile(candidate, path or "<operation>", "exec")
+        except SyntaxError as exc:
+            # QUOTE the offending line. A line number in the RESULTING file is
+            # a coordinate the model cannot resolve: it never sees that file,
+            # only its own new_text. Measured: three attempts on one goal, each
+            # told "closing parenthesis '}' does not match opening parenthesis
+            # '(' at line 592 of the resulting file", each repeating the same
+            # bracket mistake, because nothing in the message showed the line
+            # it was talking about.
+            where = f"line {exc.lineno}" if exc.lineno else "an unknown line"
+            quoted = ""
+            if exc.lineno:
+                lines = candidate.splitlines()
+                lo = max(0, exc.lineno - 2)
+                window = lines[lo:exc.lineno + 1]
+                if window:
+                    numbered = "\n".join(
+                        f"{lo + i + 1}: {line}" for i, line in enumerate(window)
+                    )
+                    quoted = f"\nthe resulting file reads there:\n{numbered}"
+            return (
+                f"applying your operation to {path} would not compile: "
+                f"{exc.msg} at {where} of the resulting file{quoted}"
+                f"\nfix that operation and keep it short"
+            )
+        except ValueError as exc:
+            return f"operation on {path} could not be compiled: {exc}"
+    return None
 
 
 class Engine:
@@ -1344,7 +1665,24 @@ class Engine:
             pass
         if len(text) <= limit:
             return text
-        return text[:limit] + f"\n[... {len(text) - limit} characters truncated to fit the context window]"
+        # Say what to DO about it. The notice used to report that bytes were
+        # dropped and stop there, which is the deep-code-unreachable failure in
+        # a new costume: hcli/tool_registry.py is 2,341 lines and a whole-file
+        # read shows 169 of them, so a target at line 582 is 413 lines past the
+        # cut. Measured consequence: the model asked to read the file to obtain
+        # an exact anchor, received the head, and sent "x" as the anchor.
+        #
+        # fs.read takes start_line/end_line and fs.search reports the line a
+        # symbol is on, but nothing told the model that at the moment it
+        # mattered, and the system prompt names neither -- deliberately, since
+        # every token there is re-prefilled on every call of every goal.
+        return text[:limit] + (
+            f"\n[... {len(text) - limit} characters truncated to fit the context"
+            f" window. This is the HEAD of the result only; what you are looking"
+            f" for may be past the cut. Use fs.search to find the line a symbol"
+            f" is on, then fs.read that file again with start_line and end_line"
+            f" to read a window around it.]"
+        )
 
     def _observations_block(
         self,
@@ -2064,7 +2402,12 @@ class Engine:
         evidence cannot exceed what the live slot can actually send.
         """
         budget = self._context_budget()
-        cap = max(0, int(budget.usable_input_tokens)) * _CHARS_PER_TOKEN
+        ratio = getattr(self, "_chars_per_token", None) or float(_CHARS_PER_TOKEN)
+        cap = int(
+            max(0, int(budget.usable_input_tokens))
+            * _MAX_OBSERVATION_SHARE
+            * ratio
+        )
         cap = min(self.MAX_TOTAL_EVIDENCE_CHARS, cap)
 
         explicit = os.environ.get(
@@ -2277,9 +2620,7 @@ class Engine:
             except Exception:
                 continue
 
-            content = content[
-                :per_file_limit
-            ]
+            content = _focused_excerpt(content, prompt, per_file_limit, str(path))
 
             rel = str(
                 path.relative_to(
@@ -2551,10 +2892,33 @@ class Engine:
         self,
         messages: List[Dict[str, Any]],
     ) -> int:
-        chars = 0
-        for message in messages:
-            chars += len(str(message.get("content") or ""))
-        return max(1, chars // _CHARS_PER_TOKEN)
+        text = "\n".join(str(m.get("content") or "") for m in messages)
+        tokenizer = _exact_tokenizer()
+        if tokenizer is not None:
+            try:
+                self._last_estimate_exact = True
+                return max(1, len(tokenizer.encode(text).ids))
+            except Exception:
+                pass
+        self._last_estimate_exact = False
+        ratio = getattr(self, "_chars_per_token", None) or float(_CHARS_PER_TOKEN)
+        return max(1, int(len(text) / ratio))
+
+    def _calibrate_chars_per_token(self, real_prompt_tokens: int) -> None:
+        """Learn the ratio from a count the runtime actually measured.
+
+        Keeps the smallest ratio seen, which yields the largest token estimate
+        and so the most conservative completion budget.
+        """
+        rendered = getattr(self, "_last_rendered_prompt", "") or ""
+        if not rendered or not isinstance(real_prompt_tokens, int):
+            return
+        if real_prompt_tokens <= 0:
+            return
+        observed = len(rendered) / float(real_prompt_tokens)
+        observed = max(_CHARS_PER_TOKEN_FLOOR, min(_CHARS_PER_TOKEN_CEILING, observed))
+        current = getattr(self, "_chars_per_token", None) or float(_CHARS_PER_TOKEN)
+        self._chars_per_token = min(current, observed)
 
     def _commit_posted_prompt_estimate(
         self,
@@ -2833,6 +3197,8 @@ class Engine:
         finish_reason = choice0.get("finish_reason")
         usage = data.get("usage") or {}
         prompt_tokens = usage.get("prompt_tokens")
+        if isinstance(prompt_tokens, int):
+            self._calibrate_chars_per_token(prompt_tokens)
         if prompt_tokens is None:
             prompt_tokens = plan.get("prompt_tokens_est")
         completion_tokens = usage.get("completion_tokens")
@@ -2990,6 +3356,19 @@ class Engine:
                 raise EngineError(
                     "degraded structured-output path sent response_format"
                 )
+            syntax = _python_syntax_violation(content)
+            if syntax is not None:
+                # A dropped bracket is a SCHEMA VIOLATION the contract can
+                # retry, not a terminal unit failure. Measured behaviour: a
+                # 2-line source patch was correct while a 15-line test rewrite
+                # in the same reply dropped three closing parens, py_compile
+                # failed AFTER the mutation was applied, and the whole unit --
+                # including the correct half -- was rolled back and lost.
+                #
+                # The model never saw the error. Now it does, with the line and
+                # the caret, on the next attempt, which is the one thing that
+                # makes the failure fixable by the thing that caused it.
+                raise SchemaViolation(syntax, text=content)
             return result
 
         try:
@@ -3040,7 +3419,14 @@ class Engine:
         # estimated 5,488 where the resident counted 5,804 -- and a flat 96
         # tokens cannot cover an error proportional to length. Measured
         # overflow: 5,804 + 2,557 against a 8,192 window.
-        margin = max(_CTX_ESTIMATE_MARGIN, int(prompt_tokens_est * _CTX_ESTIMATE_ERROR))
+        # An exact count needs only the chat template's overhead covered; an
+        # estimated one needs the whole measured disagreement.
+        error = (
+            _CTX_EXACT_MARGIN
+            if getattr(self, "_last_estimate_exact", False)
+            else _CTX_ESTIMATE_ERROR
+        )
+        margin = max(_CTX_ESTIMATE_MARGIN, int(prompt_tokens_est * error))
         remaining = int(ctx) - int(prompt_tokens_est) - margin
         # The floor may not push the request PAST the window. `max(floor, ...)`
         # granted 512 completion tokens even when the prompt had already used
@@ -3245,6 +3631,18 @@ class Engine:
             return build(evidence, context_memory), None
 
         items = list(evidence or ())
+        blocks = _observation_blocks(trailing)
+        # Where the kept observations START, as an ABSOLUTE index that only ever
+        # moves forward. Keeping "the last N" instead re-cut the block at a
+        # different observation every turn, so the rendered prompt changed at
+        # the point observations begin and the resident's KV prefix could be
+        # reused only up to there. Measured: five consecutive calls pinned at
+        # 1398 reused tokens -- the system prompt, tools and goal -- while the
+        # prompts grew past 4700, every later token re-stepped at 580 dispatches
+        # each. A floor that only advances makes each turn the previous turn
+        # plus an append, which is exactly what a prefix cache can reuse.
+        floor = min(getattr(self, "_observation_floor", 0), max(len(blocks) - 1, 0))
+
         attempts: List[Tuple[Any, ...]] = []
         for fraction in self.EVIDENCE_REDUCTION_STEPS:
             keep = items[: max(0, int(len(items) * fraction))] if items else []
@@ -3252,41 +3650,47 @@ class Engine:
                 "full" if fraction == 1.0
                 else f"evidence {len(keep)}/{len(items)}"
             )
-            attempts.append((keep, context_memory, label))
+            attempts.append((keep, context_memory, label, floor))
         # Last resorts: drop the durable checkpoint too, then shed observations
         # oldest-first. Observations go last because a tool call has already
         # been paid for, while a file snapshot can be re-read for free.
-        attempts.append(([], None, "evidence 0 + no checkpoint"))
-        blocks = _observation_blocks(trailing)
+        attempts.append(([], None, "evidence 0 + no checkpoint", floor))
         if len(blocks) > 1:
             for keep_n in (len(blocks) * 3 // 4, len(blocks) // 2, len(blocks) // 4, 1):
                 if keep_n < 1 or keep_n >= len(blocks):
                     continue
+                advanced = len(blocks) - keep_n
+                # Never rewind: re-admitting an observation already shed would
+                # lengthen the prompt again AND move the cut backwards, losing
+                # the prefix twice over.
+                if advanced <= floor:
+                    continue
                 attempts.append((
                     [], None,
                     f"evidence 0 + observations {keep_n}/{len(blocks)}",
-                    _join_observations(blocks[-keep_n:]),
+                    advanced,
                 ))
 
         last = None
-        for attempt in attempts:
-            keep, memory, label = attempt[0], attempt[1], attempt[2]
+        for keep, memory, label, cut in attempts:
             # The two-argument form is the contract every existing caller uses.
-            # A third argument appears only for the observation-shedding rungs,
-            # so a build() that knows nothing about `trailing` keeps working.
-            if len(attempt) > 3:
-                payload = build(keep, memory, attempt[3])
+            # A third argument appears only once observations are being shed, so
+            # a build() that knows nothing about `trailing` keeps working.
+            if cut:
+                payload = build(keep, memory, _join_observations(blocks[cut:]))
             else:
                 payload = build(keep, memory)
             demand = self._estimate_prompt_tokens(payload.get("messages") or []) + reserve
             if preflight(budget, demand, kind="root").ok:
-                if label == "full":
+                self._observation_floor = cut
+                if label == "full" and not cut:
                     return payload, None
                 return payload, {
                     "reduced_to": label,
                     "prompt_tokens_est": demand,
                     "usable_input_tokens": int(budget.usable_input_tokens),
                     "dropped_evidence": len(items) - len(keep),
+                    "observation_floor": cut,
                 }
             last = (payload, demand)
 
@@ -3451,6 +3855,21 @@ class Engine:
                 "prefill_tokens_stepped",
                 "prefix_source",
                 "prefix_checkpoint_taken_at",
+                # Whether the resident's JSON mask actually ran. Without it a
+                # malformed reply cannot be diagnosed: "the reply is NOT valid
+                # JSON" means either the mask is off or the mask is wrong, and
+                # those need opposite fixes. The resident has always reported
+                # this field; the receipt has never carried it.
+                "grammar_enforced",
+                # Why generation ended. "never closed the JSON object" has
+                # opposite causes -- the constraint believing it closed versus
+                # the budget running out -- and the receipt could not tell them
+                # apart.
+                "stop_reason",
+                # The body's own layer count. Dispatches per step is not
+                # interpretable without it, and the host has no other source:
+                # the sealed profile carries capabilities, not geometry.
+                "layers",
             ):
                 value = native.get(key)
                 if value is not None:
@@ -3467,7 +3886,7 @@ class Engine:
                     # The raw trace is one number per token. Only the shape is
                     # kept: a receipt is a trail, not a transcript.
                     entry["prefill_profile"] = profile
-                    entry["prefill_attribution"] = attribute(profile)
+                    entry["prefill_attribution"] = attribute(profile, layers=entry.get("layers"))
                 except Exception as exc:  # telemetry must never end a goal
                     entry["prefill_profile_error"] = f"{type(exc).__name__}: {exc}"
         self._model_calls.append(entry)
@@ -4109,12 +4528,46 @@ class Engine:
             anchor
         )
 
-        if count != 1:
-            raise EngineError(
-                f"anchor must occur exactly once in "
-                f"{path.relative_to(self.root)}; "
-                f"found {count}"
-            )
+        if count == 1:
+            return
+
+        # An anchor that does not match is the LAST MILE of a correct patch,
+        # and "found 0" tells the model nothing it can act on. Measured: a
+        # mutation whose anchor was right except for one position where the
+        # model emitted a literal backslash-n instead of a newline -- every
+        # other line in the same string was correct. It could not see that.
+        #
+        # So show it the real bytes. The nearest actual text is what the anchor
+        # has to equal, and quoting it turns an unfixable rejection into a
+        # correctable one.
+        detail = ""
+        # Try EVERY line of the anchor, not just the first. The first line is
+        # often the one carrying the defect, so probing only it finds nothing
+        # and the model is told "no match" a second time with no new
+        # information.
+        at = -1
+        for probe in (l.strip() for l in anchor.strip().splitlines()):
+            if len(probe) > 5:
+                at = text.find(probe)
+                if at >= 0:
+                    break
+        if True:
+            if at >= 0:
+                start = max(0, text.rfind("\n", 0, at) + 1)
+                actual = text[start:start + max(len(anchor), 240)]
+                detail = (
+                    f"; the file at that point actually reads:\n{actual!r}\n"
+                    f"your anchor was:\n{anchor!r}\n"
+                    f"copy the file's bytes exactly -- a single escaped "
+                    f"newline written as a literal backslash-n will not match"
+                )
+            else:
+                detail = "; no line of your anchor appears in the file at all"
+        raise EngineError(
+            f"anchor must occur exactly once in "
+            f"{path.relative_to(self.root)}; "
+            f"found {count}{detail}"
+        )
 
     def _file_hashes(
         self,

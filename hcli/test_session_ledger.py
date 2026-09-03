@@ -23,21 +23,21 @@ import subprocess
 import sys
 from pathlib import Path
 
+from hcli._test_git import scratch_repo
+
 from hcli.commands import CommandHandler
 from hcli.session_ledger import SessionLedger, changed_paths, discover_repo_root
 
 
 def _repo(tmp_path: Path, name: str = "repo") -> Path:
     """A scratch git repository, never the Hawking repo, fresh per test."""
-    repo = tmp_path / name
-    repo.mkdir()
-    subprocess.run(["git", "init", "-q", "-b", "main"], cwd=repo, check=True)
-    subprocess.run(["git", "config", "user.email", "ledger-test@example.com"], cwd=repo, check=True)
-    subprocess.run(["git", "config", "user.name", "ledger-test"], cwd=repo, check=True)
-    (repo / "f.txt").write_text("a\nb\nc\n", encoding="utf-8")
-    subprocess.run(["git", "add", "f.txt"], cwd=repo, check=True)
-    subprocess.run(["git", "commit", "-q", "-m", "init"], cwd=repo, check=True)
-    return repo
+    return scratch_repo(
+        tmp_path / name,
+        email="ledger-test@example.com",
+        name="ledger-test",
+        filename="f.txt",
+        body="a\nb\nc\n",
+    )
 
 
 def _head(repo: Path, ref: str = "HEAD") -> str:

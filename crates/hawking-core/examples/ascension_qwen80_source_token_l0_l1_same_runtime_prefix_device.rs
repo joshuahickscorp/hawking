@@ -488,7 +488,7 @@ fn binding_matches(
         || field_string(value, "document_sha256", label)? != expected.document_sha256
         || field_string(value, "document_seal_sha256", label)? != expected.seal_sha256
     {
-        return Err(format!("{label} evidence/document identity drifted"));
+        return Err(format!("{label} research/evidence/document identity drifted"));
     }
     Ok(())
 }
@@ -1123,7 +1123,7 @@ fn binding_matches_with_seal_field(
         || field_string(value, "document_sha256", label)? != expected.document_sha256
         || field_string(value, seal_field, label)? != expected.seal_sha256
     {
-        return Err(format!("{label} evidence/document identity drifted"));
+        return Err(format!("{label} research/evidence/document identity drifted"));
     }
     Ok(())
 }

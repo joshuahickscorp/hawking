@@ -31,16 +31,16 @@
   },
   {
    "family": "binary_quantization",
-   "n_query_hits": 103,
-   "n_refuse_eligible": 103,
+   "n_query_hits": 104,
+   "n_refuse_eligible": 104,
    "sample_level": "MODEL_SPECIFIC",
-   "sample_scar_id": "workspace/campaign/records/ascension-sandbox/physical/qwen-family/dual-gravity/ASCENSION_NEGATIVE_SCIENCE.jsonl#negative:qwen30-152172d233408f922a42cc2779f4419e",
-   "sample_source_path": "workspace/campaign/records/ascension-sandbox/physical/qwen-family/dual-gravity/ASCENSION_NEGATIVE_SCIENCE.jsonl"
+   "sample_scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#QN-BINARY-INJURY",
+   "sample_source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
   },
   {
    "family": "cross_expert_structure",
-   "n_query_hits": 11,
-   "n_refuse_eligible": 10,
+   "n_query_hits": 9,
+   "n_refuse_eligible": 8,
    "sample_level": "MODEL_SPECIFIC",
    "sample_scar_id": "receipts/QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE.json#cross_expert_structure",
    "sample_source_path": "receipts/QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE.json"
@@ -146,7 +146,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T18:57:11Z",
+  "recorded_at": "2026-09-03T05:48:24Z",
   "recorded_by": "tools/future/cuda_lowbit_hypotheses.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -1121,8 +1121,8 @@
   "C2M is T0/T1/T2 subset recognition, not CUDA support; warp shuffle, shared memory, graphs, streams are refused by name.",
   "Pinned snapshot is preferred; live receipts/headless may exist in another worktree and is not treated as absence.",
   "Odyssey II scar live for family assume_lower_storage_bpw_is_faster_per_token_density_is_velocity: n_refuse_eligible=1 sample=receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json#NS-006",
-  "Odyssey II scar live for family binary_quantization: n_refuse_eligible=103 sample=workspace/campaign/records/ascension-sandbox/physical/qwen-family/dual-gravity/ASCENSION_NEGATIVE_SCIENCE.jsonl#negative:qwen30-152172d233408f922a42cc2779f4419e",
-  "Odyssey II scar live for family cross_expert_structure: n_refuse_eligible=10 sample=receipts/QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE.json#cross_expert_structure",
+  "Odyssey II scar live for family binary_quantization: n_refuse_eligible=104 sample=receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#QN-BINARY-INJURY",
+  "Odyssey II scar live for family cross_expert_structure: n_refuse_eligible=8 sample=receipts/QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE.json#cross_expert_structure",
   "Odyssey II scar live for family expert_wave: n_refuse_eligible=1 sample=workspace/campaign/evidence/systems/hawking/HAWKING_EXPERT_WAVE_NEGATIVE.json#hawking_expert_wave_negative",
   "Odyssey II scar live for family gather_vs_sequential_as_the_q80_qwen3_8_bandwidth_explanation: n_refuse_eligible=1 sample=hawking-experiments/superwave/g1/g1-arch-negative.md#gather_vs_sequential_as_the_q80_qwen3_8_bandwidth_explanation",
   "Odyssey II scar live for family gemv_kernel_micro_opt_axis_on_qwen3_8: n_refuse_eligible=1 sample=hawking-experiments/superwave/g1/g1-arch-negative.md#gemv_kernel_micro_opt_axis_on_qwen3_8",
@@ -2139,7 +2139,7 @@
   }
  ],
  "schema": "hawking.future.cuda_lowbit.v1",
- "seal_sha256": "4ad3d34032168eb3c54117ab0fe3acb2e602fab39c4496b4d93ea4064a0a03fc",
+ "seal_sha256": "b226054c855813cfcec8bac6fcb65c43ff0508a52534ab3f15fbce2b51fb24dc",
  "version": 1,
  "vocabulary": {
   "cuda_is": "textbook now, physical oracle later; source school, not an execution backend on this Apple host",

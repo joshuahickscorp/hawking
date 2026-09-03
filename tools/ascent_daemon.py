@@ -1386,7 +1386,7 @@ Check no shared-kernel regression with
 
 ## EDIT crates/hawking-core
 ## EDIT receipts/ascent-2026-08-16
-## EDIT lab/operators
+## EDIT research/lab/operators
 
 DENY tools/gpu_lane_lock.sh
 DENY tools/coherence_gate.py

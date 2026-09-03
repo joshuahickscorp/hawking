@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-03T00:40:42Z",
+  "recorded_at": "2026-09-03T05:51:30Z",
   "recorded_by": "tools/future/power_torture.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -280,7 +280,7 @@
   "verdict": "PASS"
  },
  "duration_s_budget": 1800,
- "elapsed_s": 7.532257795333862,
+ "elapsed_s": 8.12967586517334,
  "evidence_class": "STATIC_ONLY",
  "exercised": [
   "NO_WAIT",
@@ -305,7 +305,7 @@
   "kind": "absent",
   "owner": null,
   "parked": false,
-  "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-gpu-lane-pytest-93342.lock",
+  "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-gpu-lane-pytest-46933.lock",
   "pid": null,
   "pid_alive": null,
   "present": false,
@@ -314,12 +314,12 @@
  "integration_ok": true,
  "judge": {
   "append_only": true,
-  "claimed_sha256": "37733d7992e02a98434703aa884b5270b75c237457db86f2eb10f043f3f5e2fb",
+  "claimed_sha256": "3f68a58d25cd91bcc85f49c532e3f8b6e01ef5f3170361bc2c287737444bfdbe",
   "correct_refusal_counts_as_exercised": true,
   "correct_refusals": [
    "CONCURRENCY"
   ],
-  "events_sha256": "37733d7992e02a98434703aa884b5270b75c237457db86f2eb10f043f3f5e2fb",
+  "events_sha256": "3f68a58d25cd91bcc85f49c532e3f8b6e01ef5f3170361bc2c287737444bfdbe",
   "evidence_class": "STATIC_ONLY",
   "exercised": [
    "NO_WAIT",
@@ -367,7 +367,7 @@
     "power": "CONCURRENCY",
     "seq": 18,
     "status": "EXERCISED_REFUSAL",
-    "why": "doctor REFUSED a verdict without observations and is SLEEPING with blocked_reason=\"resident presence is 'UNDECLARED', not PRESENT; will not invent a pid from the largest RSS neighbour; sidecar has no GPU authority and will not take a lease; no protected GPU lease is held; quiescence is 'UNKNOWN', not QUIESCENT; a DIAGNOSTIC_RELATIVE number on a busy machine is not this experiment; this sidecar is structurally unable to execute the protected ladder; a process with PROTECTED_ABSOLUTE authority must run observe() on hardware\"; that is the exercise"
+    "why": "doctor REFUSED a verdict without observations and is SLEEPING with blocked_reason=\"sidecar has no GPU authority and will not take a lease; no protected GPU lease is held; quiescence is 'UNKNOWN', not QUIESCENT; a DIAGNOSTIC_RELATIVE number on a busy machine is not this experiment; this sidecar is structurally unable to execute the protected ladder; a process with PROTECTED_ABSOLUTE authority must run observe() on hardware\"; that is the exercise"
    },
    "FRONTIER_INVALIDATION": {
     "correct_refusal": false,
@@ -399,7 +399,7 @@
     "power": "NO_WAIT",
     "seq": 5,
     "status": "EXERCISED",
-    "why": "detached pid 16699 stayed open while WU.TORTURE.NO_WAIT.ind started, progressed and ingested; idle_runnable was not a wait"
+    "why": "detached pid 99311 stayed open while WU.TORTURE.NO_WAIT.ind started, progressed and ingested; idle_runnable was not a wait"
    },
    "PROTECTED_PARKING": {
     "correct_refusal": false,
@@ -534,7 +534,7 @@
    "correct_refusal": true,
    "counts_toward_pass": true,
    "evidence": {
-    "blocked_reason": "resident presence is 'UNDECLARED', not PRESENT; will not invent a pid from the largest RSS neighbour; sidecar has no GPU authority and will not take a lease; no protected GPU lease is held; quiescence is 'UNKNOWN', not QUIESCENT; a DIAGNOSTIC_RELATIVE number on a busy machine is not this experiment; this sidecar is structurally unable to execute the protected ladder; a process with PROTECTED_ABSOLUTE authority must run observe() on hardware",
+    "blocked_reason": "sidecar has no GPU authority and will not take a lease; no protected GPU lease is held; quiescence is 'UNKNOWN', not QUIESCENT; a DIAGNOSTIC_RELATIVE number on a busy machine is not this experiment; this sidecar is structurally unable to execute the protected ladder; a process with PROTECTED_ABSOLUTE authority must run observe() on hardware",
     "experiment_state": "SLEEPING",
     "ladder": [
      1,
@@ -588,7 +588,7 @@
      "kind": "absent",
      "owner": null,
      "parked": false,
-     "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-gpu-lane-pytest-93342.lock",
+     "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-gpu-lane-pytest-46933.lock",
      "pid": null,
      "pid_alive": null,
      "present": false,
@@ -609,18 +609,18 @@
    "counts_toward_pass": true,
    "evidence": {
     "detector_verdict": "NO_WAIT_OK",
-    "fast_finished_at": 1788396036.59831,
+    "fast_finished_at": 1788414685.2477162,
     "fast_ingest": "ingested",
-    "pid": 16699,
+    "pid": 99311,
     "runnable_while_open": "RUNNABLE",
-    "slow_launched_at": 1788396036.233206
+    "slow_launched_at": 1788414684.348361
    },
    "exercised": true,
    "failed": false,
    "power": "NO_WAIT",
    "skipped": false,
    "status": "EXERCISED",
-   "why": "detached pid 16699 stayed open while WU.TORTURE.NO_WAIT.ind started, progressed and ingested; idle_runnable was not a wait"
+   "why": "detached pid 99311 stayed open while WU.TORTURE.NO_WAIT.ind started, progressed and ingested; idle_runnable was not a wait"
   },
   "PROTECTED_PARKING": {
    "correct_refusal": false,
@@ -658,7 +658,7 @@
     "cites": [
      "receipts/future/STATUS_CAUSALITY_CHALLENGE.json",
      "receipts/future/DETACHED_WORK_TRIAL.json",
-     "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/pytest-of-scammermike/pytest-761/popen-gw22/power_torture_run0/nowait/results/fast.json"
+     "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/pytest-of-scammermike/pytest-3205/popen-gw7/power_torture_run0/nowait/results/fast.json"
     ]
    },
    "exercised": true,
@@ -721,8 +721,8 @@
    "counts_toward_pass": true,
    "evidence": {
     "emit_entry": "emit",
-    "n_gates_named_gap": 1,
-    "n_gates_recording": 17,
+    "n_gates_named_gap": 2,
+    "n_gates_recording": 16,
     "probe_kind": "process_error",
     "verdict": "OVERREACHING"
    },
@@ -767,12 +767,12 @@
  "purpose": "30-minute power torture on a frozen build. Judged independently from the sealed timeline against a substrate verified unchanged.",
  "resident_model_attached": false,
  "schema": "hawking.future.power_torture.v2",
- "seal_sha256": "24bb3082f90212e4d4999511f792f65f9dd04b90886d3690ba74f40c824ab4a5",
+ "seal_sha256": "23293c1d973710b114fdab656a7fe74abb332a321d9799a6b67c06df0e4485fd",
  "skipped": [],
  "skipped_do_not_count_toward_pass": true,
  "substrate": {
-  "after_digest": "88b5c6dc7c13a0bb9b3cb8ce776b9d64c819eb9e2dfecff20bf9499bc07242b8",
-  "before_digest": "88b5c6dc7c13a0bb9b3cb8ce776b9d64c819eb9e2dfecff20bf9499bc07242b8",
+  "after_digest": "531230b8ccf0b1b215a3ce34dd3b352352bed2e4ddef64031ee343043714f703",
+  "before_digest": "531230b8ccf0b1b215a3ce34dd3b352352bed2e4ddef64031ee343043714f703",
   "equal": true,
   "files": [
    {
@@ -896,9 +896,9 @@
     "state": "HASHED"
    },
    {
-    "bytes": 113469,
+    "bytes": 113467,
     "path": "tools/future/frontiers.py",
-    "sha256": "4a47fd9471d44662bb7edfed3b1a4fe87ee513a8bb21a33632edf82de34983b3",
+    "sha256": "f4fef66cbb8317a16c49a4a6ba59edfd6eff4966f8b7b3f9830554acbd530565",
     "state": "HASHED"
    },
    {
@@ -962,9 +962,9 @@
     "state": "HASHED"
    },
    {
-    "bytes": 135849,
+    "bytes": 136470,
     "path": "tools/future/nr_nx_generic.py",
-    "sha256": "724edfef2ce33ee681cf9160d991d89c17ee0c784d94798bc3a0f69824b1b553",
+    "sha256": "1ec70f69d32b3abc0e6ef40f4ff80f2f97dacc9d1b47c240069084acc00ecab0",
     "state": "HASHED"
    },
    {
@@ -1205,8 +1205,8 @@
  },
  "timeline": {
   "append_only": true,
-  "elapsed_s": 7.530685,
-  "events_sha256": "37733d7992e02a98434703aa884b5270b75c237457db86f2eb10f043f3f5e2fb",
+  "elapsed_s": 8.128826,
+  "events_sha256": "3f68a58d25cd91bcc85f49c532e3f8b6e01ef5f3170361bc2c287737444bfdbe",
   "n_events": 27,
   "path": "receipts/future/POWER_TORTURE_TIMELINE.json",
   "receipt": "receipts/future/POWER_TORTURE_TIMELINE.json",

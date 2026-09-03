@@ -83,7 +83,7 @@ def _gates():
     def art(path, schema):
         return policy(path, schema, "campaign_artifact_v1")
     def check(name):
-        return policy(f"evidence/stop_conditions/{name}.json", gs.STOP_CONDITION_EVIDENCE_SCHEMA, "stop_condition_v1")
+        return policy(f"research/evidence/stop_conditions/{name}.json", gs.STOP_CONDITION_EVIDENCE_SCHEMA, "stop_condition_v1")
     base = {
         "require_source_complete": True, "require_tensor_complete": True,
         "require_final_source_eviction": True, "require_telegram_delivery": True,

@@ -2,7 +2,7 @@
 """Execution-grounded quality gate: generate a function, then run its tests.
 
 Rebuilt to the shape the sealed baselines already use, so
-`reports/eval/thesis_gate_qwen7b_q4km.json` (pass@1 0.9333, n=15) stays a
+`research/reports/eval/thesis_gate_qwen7b_q4km.json` (pass@1 0.9333, n=15) stays a
 valid comparison. The metric and the corpora are fixed on purpose: widening
 either one silently invalidates every earlier receipt.
 

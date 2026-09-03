@@ -31,16 +31,16 @@
   ],
   "criterion": {
     "end_line": 7910,
-    "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "file": "/Users/scammermike/Downloads/hawking/docs/roadmap-lineage/H-ROADMAP.superseded-2026-09-02.md",
     "quoted": "## E.11 Behavior Lab fixture matrix\n\nBHV-01 fresh repo onboarding\nBHV-02 one-file edit\nBHV-03 multi-file edit\nBHV-04 bug fix with failing test\nBHV-05 test creation\nBHV-06 build failure recovery\nBHV-07 tool failure\nBHV-08 permission denial\nBHV-09 dangerous command confirmation\nBHV-10 dirty-tree handling\nBHV-11 merge conflict\nBHV-12 context pressure\nBHV-13 restart/resume\nBHV-14 mid-task steering\nBHV-15 cancellation\nBHV-16 replan after contradiction\nBHV-17 tool discovery\nBHV-18 delegation\nBHV-19 parallel independent tasks\nBHV-20 background work\nBHV-21 false-success rejection\nBHV-22 no-op detection\nBHV-23 bad-patch recovery\n\nEvery fixture records initial/final repo hash, diff, WorkUnit trace, tool trace, terminal trace, tests, timing and receipt.\n\n",
     "start_line": 7882,
     "weakened": false
   },
   "criterion_weakened": false,
-  "elapsed_ms": 28.764,
+  "elapsed_ms": 40.308,
   "evidence_tier": "STATIC",
   "gate": "AGENTOS_BEHAVIOR_LAB",
-  "generated_at": "2026-09-02T23:16:06Z",
+  "generated_at": "2026-09-03T05:34:31Z",
   "gpu_authority": false,
   "invoked_symbols": [],
   "measured": {

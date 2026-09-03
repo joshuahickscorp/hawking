@@ -225,8 +225,15 @@ class _ProcessCase(unittest.TestCase):
 
     def tearDown(self):
         for proc in self._procs:
-            pid = int(getattr(proc, "_reported_pid", proc.pid) or 0)
-            _kill_pid(pid)
+            # BOTH pids. The child reports the pid it wants cancelled, which is
+            # not the wrapper Popen -- killing only the reported one left the
+            # wrapper alive, so `wait` burned its full 2 s timeout and then gave
+            # up silently. Four tests paid that: 9.75 s for the file, and a
+            # leaked process each time the except swallowed the timeout.
+            reported = int(getattr(proc, "_reported_pid", 0) or 0)
+            if reported and reported != proc.pid:
+                _kill_pid(reported)
+            _kill_pid(proc.pid)
             try:
                 proc.wait(timeout=2)
             except Exception:

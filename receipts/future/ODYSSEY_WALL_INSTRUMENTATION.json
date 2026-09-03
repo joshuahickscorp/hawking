@@ -1,0 +1,78 @@
+{
+ "answer": "UNANSWERABLE FROM DISK. No wall duration has ever been recorded anywhere in the Odyssey substrate.",
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-03T05:47:21Z",
+  "recorded_by": "tools/odyssey_costmodel.py:record provenance audit",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "STATIC census of two committed ledgers and one fitted model. No hardware measurement, no Odyssey launched, no campaign wall estimated.",
+ "compile_economics": {
+  "distinct_wall_s_values": [
+   "0.0"
+  ],
+  "events": {
+   "acquisition": 9,
+   "cpu": 9544,
+   "grok": 13,
+   "retirement": 7
+  },
+  "evidence_stamp_before_fix": "MEASURED on every row",
+  "path": "workspace/campaign/odyssey/COMPILE_ECONOMICS.jsonl",
+  "patients": {
+   "O000": 1,
+   "O001": 53,
+   "O002": 1,
+   "O003": 49,
+   "O004": 34,
+   "O005": 22,
+   "O006": 9410,
+   "O007": 1,
+   "O008": 1,
+   "O009": 1
+  },
+  "rows": 9573,
+  "rows_with_wall_s_gt_zero": 0,
+  "timestamp_span_hours": 72.47
+ },
+ "consequence_for_the_48h_question": "No projected Odyssey wall may be derived from this ledger, and no rung of a <48h / <36h / <24h ladder may be claimed from it. The first requirement for answering 'can this be done in under 24 hours' is not a better model. It is one recorded duration.",
+ "evidence_tier": "STATIC",
+ "fitted_cost_model": {
+  "n_patients": 0,
+  "note": "The refusal is correct. It declines to emit a point estimate. But it reports n_patients=0 while the ledger holds 6 patients, so the model is not seeing data that exists -- and that data would not help it, because every duration in it is zero.",
+  "path": "workspace/campaign/odyssey/ODYSSEY_COST_MODEL.json",
+  "refusal": "need \u22652 patients of compile-economics data; Cycle-1 trains the ETA model (S003 \u00a710). Refusing to emit a point estimate.",
+  "status": "insufficient data"
+ },
+ "fixed_here": [
+  "record() now stamps UNRECORDED when wall_s is zero and the caller did not state otherwise. An explicit _evidence still wins.",
+  "tools/test_odyssey_costmodel.py pins the guard and records the ledger's current state, failing when real durations start appearing -- which is the signal to rewrite it against data."
+ ],
+ "git_head": "6ef2681614fadde7a45d002b5fc3feb108c81625",
+ "not_fixed_here": [
+  "No completion event with a duration is emitted anywhere. Until one is, the wall decomposition has no inputs. The call sites are in the Odyssey control loop and adding paired start/end accounting changes that loop's behaviour, so it is recorded as a requirement rather than done in passing.",
+  "The existing 9,573 rows are left exactly as they are. They are another campaign's history and rewriting them would be correcting the artifact instead of the producer."
+ ],
+ "question": "Where will an Odyssey campaign's hours go?",
+ "root_cause": {
+  "the_actual_defect": "tools/odyssey_costmodel.py record() stamped _evidence MEASURED regardless, so a start marker asserted a measurement of zero seconds. And nothing anywhere records a COMPLETION event carrying a duration, so no wall can be derived by pairing.",
+  "where": "tools/odyssey_ctl.py record_ctl_event(patient, event, wall_s=0.0, ...)",
+  "why": "All seven call sites record a LAUNCH marker, where no duration exists yet, and take the 0.0 default. Zero is the RIGHT value for a start marker."
+ },
+ "run_log": {
+  "duration_fields": "none; `timing` is a gate flag, not a duration",
+  "kinds": {
+   "grok": 20,
+   "subprocess": 116373
+  },
+  "path": "workspace/campaign/odyssey/RUN_LOG.jsonl",
+  "rows": 152106,
+  "rows_where_timing_is_boolean_false": 116517
+ },
+ "schema": "hawking.future.odyssey_wall_instrumentation.v1",
+ "seal_sha256": "b89b5deae58d508d98d9b562aa233cbe2339213829c462bbc134baa1f521d606",
+ "verdict": "NEGATIVE_RESULT"
+}

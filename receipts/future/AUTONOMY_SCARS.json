@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T09:19:15Z",
+  "recorded_at": "2026-09-03T05:52:04Z",
   "recorded_by": "tools/future/autonomy_scars.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -28,9 +28,9 @@
  "registry": {
   "consult": "tools.future.autonomy_scars.consult",
   "evidence_tier": "STATIC",
-  "in_scope_cross_expert_qwen3_80b_blocked": true,
+  "in_scope_cross_expert_qwen3_80b_blocked": false,
   "n_laws": 33,
-  "n_scoped_scars": 57,
+  "n_scoped_scars": 65,
   "out_of_scope_cross_expert_dsv4f_blocked": false,
   "over_generalization_guard": "a scar scoped to one condition does not block an out-of-scope retry",
   "retrieve_law": "tools.future.autonomy_scars.retrieve_law",
@@ -143,7 +143,7 @@
  ],
  "scars_without_a_regression_test": [],
  "schema": "hawking.future.autonomy_scars.v1",
- "seal_sha256": "d58d8b4909c8b85e94c0d9fdbd79293a669253ed25658692ab2795ebd69675b5",
+ "seal_sha256": "9ed95ae37c03b81c3f10df2a4430389b666058176ec07c162e0fc3fba45245e7",
  "sister_symptoms": [
   "\"model missing\" may be a stale hardcoded path -- three Odyssey tools pointed at a directory that had moved, while the 52GB parent sat on another volume",
   "\"no work\" may be a scheduler taxonomy mismatch",

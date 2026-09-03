@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T08:28:17Z",
+  "recorded_at": "2026-09-03T05:47:43Z",
   "recorded_by": "tools/future/moe_physical_school.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -1335,20 +1335,20 @@
   "implication": "Flash L44 gate_up mean cosine is ~0.0038 (doctor screen). Experts are not similar, so repeated work is structural (same x, same SwiGLU shape, independent W_e), not a license to merge experts or to reopen a trivial shared basis. Megakernel-as-TPS-lever is recorded-dead; fused routed-organ dispatch is a different object from a full-layer megakernel.",
   "index_reachable": true,
   "path": "receipts/future/NEGATIVE_SCIENCE_INDEX.json",
-  "refuse_eligible_count": 19,
+  "refuse_eligible_count": 17,
   "sample_scar_ids": [
    "hawking-experiments/superwave/g1/g1-arch-negative.md#shared_cross_expert_basis_shared_codebook",
    "receipts/QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE.json#cross_expert_structure",
    "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json#NS-010",
    "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-004",
-   "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-023",
-   "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-024",
    "tools/foundry/NEGATIVE_TRANSFER_ATLAS.json#cross_expert_and_cross_layer_tying",
    "tools/foundry/NEGATIVE_TRANSFER_ATLAS.json#inter_expert_redundancy",
    "workspace/campaign/evidence/research/doctor/DOCTOR_NEGATIVE_TRANSFER_ATLAS.json#generated_tied_params",
    "workspace/campaign/odyssey/NEGATIVE_SCIENCE.json#NS-cross-expert-and-cross-layer-tying",
    "workspace/campaign/odyssey/NEGATIVE_SCIENCE.json#NS-inter-expert-redundancy",
-   "tools/foundry/NEGATIVE_TRANSFER_ATLAS.json#expert_merging_omitted_from_survivors"
+   "tools/foundry/NEGATIVE_TRANSFER_ATLAS.json#expert_merging_omitted_from_survivors",
+   "workspace/campaign/evidence/research/doctor/DOCTOR_NEGATIVE_TRANSFER_ATLAS.json#expert_merge",
+   "workspace/campaign/odyssey/NEGATIVE_SCIENCE.json#NS-expert-merging-omitted-from-survivors"
   ]
  },
  "negative_findings": [
@@ -2258,7 +2258,7 @@
   ]
  },
  "schema": "hawking.future.moe_physical.v1",
- "seal_sha256": "42804aaf92cbf9b13501d594ce7aec20c96d7bcc0306049e1eabd810f60a146a",
+ "seal_sha256": "a6294711ea7a60ba1d894fce98013bcaf145d92dd272f7fd87817c5fe23ed0a9",
  "skeleton_cross_reference": {
   "expert_id_is_permitted": true,
   "flash_moe_component": "tools/future/static_skeleton.py::flash_moe_component_skeleton already models Flash router STATIC + expert bank SLOT_INDEXED on EXPERT_ID + shared expert STATIC. this school does not fork it.",

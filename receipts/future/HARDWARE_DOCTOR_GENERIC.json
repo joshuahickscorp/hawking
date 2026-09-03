@@ -360,7 +360,7 @@
   "HARDWARE_MEASURED",
   "STATIC"
  ],
- "generated_at": "2026-09-02T09:15:13Z",
+ "generated_at": "2026-09-03T06:40:14Z",
  "host": {
   "arch": "arm64",
   "cpu_cores": 28,
@@ -1401,12 +1401,12 @@
       "lo0",
       "gif0",
       "stf0",
-      "anpi5",
-      "anpi0",
-      "anpi2",
-      "anpi1",
-      "anpi4",
       "anpi3",
+      "anpi5",
+      "anpi2",
+      "anpi4",
+      "anpi0",
+      "anpi1",
       "en0",
       "en8",
       "en9",
@@ -1431,8 +1431,7 @@
       "utun3",
       "utun4",
       "nan0",
-      "utun5",
-      "utun6"
+      "utun5"
      ],
      "kind": "NETWORK",
      "status": "STATIC_IDENTITY"
@@ -1669,8 +1668,8 @@
       {
        "evidence_tier": "HARDWARE_MEASURED",
        "mount": "/Volumes/corpdrive",
-       "reason": "bounded sequential read of an existing file; not a disk roof",
-       "status": "MEASURED",
+       "reason": "sample elapsed 0.0040s; a sub-5ms window is not a rate",
+       "status": "UNRELIABLE",
        "write_probe": "BLOCKED"
       },
       {
@@ -1944,10 +1943,10 @@
      "resident_bytes": 10554328856,
      "stage_from_corpdrive": {
       "evidence_tier": "COST_MODEL",
-      "from_gb_s": 10.071,
+      "from_gb_s": 16.989,
       "mount": "/Volumes/corpdrive",
       "note": "extrapolated from a HARDWARE_MEASURED sequential sample; not a measured stage of this body",
-      "seconds": 1.048
+      "seconds": 0.621
      },
      "stage_from_ssd": {
       "evidence_tier": "STATIC",
@@ -1963,10 +1962,10 @@
      "resident_bytes": 9265849388,
      "stage_from_corpdrive": {
       "evidence_tier": "COST_MODEL",
-      "from_gb_s": 10.071,
+      "from_gb_s": 16.989,
       "mount": "/Volumes/corpdrive",
       "note": "extrapolated from a HARDWARE_MEASURED sequential sample; not a measured stage of this body",
-      "seconds": 0.92
+      "seconds": 0.545
      },
      "stage_from_ssd": {
       "evidence_tier": "STATIC",
@@ -1979,7 +1978,7 @@
    "evidence_tier": "COST_MODEL",
    "external_accelerator_present": false,
    "fpga_present": false,
-   "note": "Derived affordances (time-to-stage, headroom) are COST_MODEL. G023 INTERACTIVE/MAXX winners are cited STATIC; this function does not re-run the token benchmark.",
+   "note": "Derived affordances (time-to-stage, headroom) are COST_MODEL. G023 INTERACTIVE/MAXX winners are cited STATIC; this function does not re-run the token benchmark. Specimen-open timings are HARDWARE_MEASURED inputs when present; the overlay is COST_MODEL.",
    "selected_resident": {
     "evidence_tier": "COST_MODEL",
     "installed": false,
@@ -2092,7 +2091,7 @@
   }
  ],
  "schema": "hawking.accelerator.hardware_doctor.v1",
- "seal_sha256": "7300488bd9ed8dc9bb6567e29971c716f887597c9f47346c8a271458b2f06a93",
+ "seal_sha256": "050b38787aaea71c10f1dbe654a77f6e4ab6dcd5b71de2beab301ffe27318eae",
  "wakes": {
   "DGX_PRESENT": {
    "description": "NVIDIA DGX Spark or DGX-class node visible: nvidia-smi succeeds and the product name contains DGX.",

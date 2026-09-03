@@ -102,7 +102,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T09:23:03Z",
+  "recorded_at": "2026-09-03T06:54:54Z",
   "recorded_by": "tools/future/deltanet_state_function.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -141,7 +141,7 @@
      "reopen_condition": "L>=1: never at the coherent point. L0: already beating the incumbent \u2014 build the organ-and-layer-specific codec. On a new parent, check the Van Loan spectrum before assuming depth behaviour.",
      "scar_id": "NNS-016",
      "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
-     "surface": "qwen3.8-27b (weight-space SVD); qwen3-235b-a22b:F1 (Kronecker) gate/down; L0 is the exception",
+     "surface": "as recorded in NOETIC_NEGATIVE_SCIENCE",
      "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet gated-delta S"
     },
     {
@@ -323,7 +323,7 @@
      "reopen_condition": "A distilled/generated operator, trained to match the MLP function, achieves q3 quality at materially fewer active bytes held-out across layers, with Doctor holding. That experiment has not been run.",
      "scar_id": "NNS-015",
      "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
-     "surface": "qwen3.8-27b down_proj L31, real post_swiglu X",
+     "surface": "as recorded in NOETIC_NEGATIVE_SCIENCE",
      "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet gated-delta S"
     },
     {
@@ -429,7 +429,7 @@
      "reopen_condition": "L>=1: never at the coherent point. L0: already beating the incumbent \u2014 build the organ-and-layer-specific codec. On a new parent, check the Van Loan spectrum before assuming depth behaviour.",
      "scar_id": "NNS-016",
      "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
-     "surface": "qwen3.8-27b (weight-space SVD); qwen3-235b-a22b:F1 (Kronecker) gate/down; L0 is the exception",
+     "surface": "as recorded in NOETIC_NEGATIVE_SCIENCE",
      "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet gated-delta S"
     }
    ],
@@ -1104,7 +1104,7 @@
      "reopen_condition": "A NEW attention codec family, scored on real BF16 X, clearing mean-row output cosine \u2265 0.990 vs BF16 AND a multi-prompt generate identity gate. lm_head additionally needs top-1 agreement; cosine 0.99 is not token identity.",
      "scar_id": "NNS-019",
      "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
-     "surface": "qwen3.8-27b and qwen3-80b attention GEMVs Q/K/V/O, DeltaNet in/out, lm_head extra (top-1 \u2260 cosine)",
+     "surface": "as recorded in NOETIC_NEGATIVE_SCIENCE",
      "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet gated-delta S"
     },
     {
@@ -1113,7 +1113,7 @@
      "reopen_condition": "Sparsity: a Doctor-holding skip pattern that does not compound over 64 layers. Bit-descent: a codec that actually hits the Shannon bound AND a generate gate at that distortion. Neither is a retry of q2 or of unstructured activation skip.",
      "scar_id": "NNS-029",
      "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
-     "surface": "qwen3.8-27b MLP (sparsity); whole artifact (bit-descent)",
+     "surface": "as recorded in NOETIC_NEGATIVE_SCIENCE",
      "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet gated-delta S"
     }
    ],
@@ -1479,7 +1479,7 @@
   "z_binding": "gated RMSNorm only; not gated-delta; not conv"
  },
  "schema": "hawking.future.deltanet_state_function.v1",
- "seal_sha256": "3ab1dae1bfcf742a3f04c4613e42e4bb7252d7bc36fa85d28faf219d8f8ca2ce",
+ "seal_sha256": "3975dcd5f1f2e8c4d0de28290642c3270a4f510af892b4c04c0c047fee3718d5",
  "spectrum": {
   "coefficients": "isotropic Gaussian q,k,v then L2 like the shader; decay U(0.85,0.99); beta U(0.2,0.9). Not post-norm x and not a generate gate.",
   "dim": 128,

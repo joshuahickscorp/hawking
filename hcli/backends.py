@@ -14,6 +14,7 @@ silent pass.
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import re
@@ -56,6 +57,51 @@ def llama_server_binary() -> str:
 _HELP: Dict[str, str] = {}
 _VERSION: Dict[str, str] = {}
 
+#: Probe results survive the process. A `--help` on a model server costs about
+#: a second -- mlx_lm imports torch to print it -- and the in-memory dict only
+#: helps a process that asks twice. Every HCLI invocation and every test shard
+#: paid it again: measured 1.14 s in a 4.4 s sharded suite, and once per
+#: control-plane start.
+#:
+#: Keyed by binary path AND its mtime+size, so a rebuilt or replaced binary is
+#: re-probed rather than answered from a stale cache. A capability answer that
+#: outlives the thing it describes is worse than no cache.
+_PROBE_CACHE_DIR = Path(os.environ.get("HCLI_PROBE_CACHE", "")) if os.environ.get(
+    "HCLI_PROBE_CACHE"
+) else Path.home() / ".cache" / "hcli" / "probes"
+
+
+def _probe_key(path: str, kind: str) -> str:
+    try:
+        st = os.stat(path)
+        stamp = f"{st.st_mtime_ns}:{st.st_size}"
+    except OSError:
+        stamp = "missing"
+    digest = hashlib.sha256(f"{path}|{stamp}|{kind}".encode()).hexdigest()[:32]
+    return digest
+
+
+def _probe_cached(path: str, kind: str) -> Optional[str]:
+    try:
+        return (_PROBE_CACHE_DIR / _probe_key(path, kind)).read_text(encoding="utf-8")
+    except OSError:
+        return None
+
+
+def _probe_store(path: str, kind: str, text: str) -> None:
+    # Never cache a probe of a binary that is not there. The key would rest on
+    # a "missing" stamp, so the entry would answer for the binary once it DOES
+    # exist -- reporting the capabilities of a file that was absent when asked.
+    # It also made a test state-dependent: the first run saw None and every run
+    # after saw the stored value.
+    try:
+        if not os.path.exists(path):
+            return
+        _PROBE_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+        (_PROBE_CACHE_DIR / _probe_key(path, kind)).write_text(text, encoding="utf-8")
+    except OSError:
+        pass
+
 
 def _capture(binary: str, args: List[str], timeout: float = 15.0) -> str:
     try:
@@ -76,8 +122,13 @@ def llama_help_text(binary: Optional[str] = None) -> str:
     cached = _HELP.get(path)
     if cached is not None:
         return cached
+    on_disk = _probe_cached(path, "llama-help")
+    if on_disk is not None:
+        _HELP[path] = on_disk
+        return on_disk
     text = _capture(path, ["--help"])
     _HELP[path] = text
+    _probe_store(path, "llama-help", text)
     return text
 
 
@@ -109,8 +160,13 @@ def mlx_help_text(binary: Optional[str] = None) -> str:
     cached = _HELP.get(path)
     if cached is not None:
         return cached
+    on_disk = _probe_cached(path, "mlx-help")
+    if on_disk is not None:
+        _HELP[path] = on_disk
+        return on_disk
     text = _capture(path, ["--help"])
     _HELP[path] = text
+    _probe_store(path, "mlx-help", text)
     return text
 
 
@@ -546,6 +602,32 @@ def schema_instruction(schema: Dict[str, Any]) -> str:
     )
 
 
+def _repay_completion_budget(payload: Dict[str, Any], added: str) -> None:
+    """Growing the prompt must shrink the completion budget by as much.
+
+    `max_tokens` is derived ONCE from the prompt the caller built, against a
+    fixed context window. Every retry appends its rejection reason to that same
+    payload, so the prompt grew while the budget it was computed against did
+    not. Measured: three attempts of one goal carried max_tokens 3243 against
+    prompts of 4776, 4876 and 5090. The first two fit the 8192 window; the
+    third asked for 8333 and the runtime truncated the reply mid-object, which
+    was then rejected as malformed -- the retry mechanism defeating itself.
+
+    A whole-token estimate is enough here: the note is small and this only ever
+    makes the request smaller, so an over-estimate costs a few completion
+    tokens and an under-estimate is what we are fixing.
+    """
+    budget = payload.get("max_tokens")
+    if not isinstance(budget, int) or budget <= 0 or not added:
+        return
+    spent = max(1, len(added) // _CHARS_PER_TOKEN_ESTIMATE)
+    payload["max_tokens"] = max(_MIN_COMPLETION_AFTER_RETRY, budget - spent)
+
+
+_CHARS_PER_TOKEN_ESTIMATE = 4
+_MIN_COMPLETION_AFTER_RETRY = 256
+
+
 def append_user_text(
     payload: Dict[str, Any], note: str, skip_if: Optional[str] = None
 ) -> None:
@@ -556,12 +638,14 @@ def append_user_text(
             if skip_if and skip_if in last["content"]:
                 return
             last["content"] = last["content"] + note
+            _repay_completion_budget(payload, note)
         return
     prompt = payload.get("prompt")
     if isinstance(prompt, str):
         if skip_if and skip_if in prompt:
             return
         payload["prompt"] = prompt + note
+        _repay_completion_budget(payload, note)
 
 
 def inject_schema_instruction(payload: Dict[str, Any], instruction: str) -> None:

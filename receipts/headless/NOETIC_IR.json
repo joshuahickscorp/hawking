@@ -1,9 +1,9 @@
 {
   "schema": "hawking.headless.noetic_ir.v1",
   "ir_kind": "hawking.nos.noetic_representation_ir",
-  "generated_at": "2026-08-26T10:13:59Z",
-  "git_head": "665110c71c8cc16db6a05af70d621a0266853ab1",
-  "elapsed_s": 0.0013,
+  "generated_at": "2026-09-03T06:40:50Z",
+  "git_head": "ee9f9e90c9d65c54cd1ee5944afe5c04a87b636c",
+  "elapsed_s": 0.0019,
   "question": "Is there an IR with an executing node \u2014 semantic representation versus machine compilation \u2014 that produces the same numbers as the same computation done directly?",
   "answer": "Yes. Family grouped_absmax_q4 is expressed as a semantic IR node and EXECUTED from it. y_from_ir vs y_direct max_abs_diff=1.907e-06 rel_l2=1.023e-07. Kernel names live on the machine lowering, not the semantic node. A 1 GB planted SharedBasis moves complete_bpw and cannot execute.",
   "doctrine": {
@@ -728,14 +728,5 @@
     "tensor_train_is_not_a_node": true,
     "every_node_type_names_an_experiment": true,
     "no_27b_loaded": true
-  },
-  "bench": {
-    "state": "UNKNOWN",
-    "recorded_at": "2026-08-26T00:00:00Z",
-    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
-    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
-    "quiescence": null,
-    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
-    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
   }
 }

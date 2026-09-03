@@ -1,4 +1,4 @@
-"""Gravity lab/forge/PQ pure-logic (S6 F2 C2 densified)."""
+"""Gravity research/lab/forge/PQ pure-logic (S6 F2 C2 densified)."""
 from __future__ import annotations
 import sys
 from pathlib import Path as _Path_repo
