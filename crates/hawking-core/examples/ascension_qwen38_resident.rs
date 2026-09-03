@@ -362,9 +362,14 @@ fn serve_request(
     // Snapshot where THIS prompt and the last one agreed, which is the stable
     // head every goal shares. Taken during the prefill we are already paying
     // for, because the carry cannot be rewound to a boundary once passed.
+    // Re-snapshot when a LONGER stable boundary appears. The first version
+    // took one checkpoint and never revisited it, so the first agreed prefix
+    // -- 691 tokens, measured -- became the permanent ceiling even when later
+    // goals shared more. A checkpoint is only worth replacing if it buys
+    // strictly more skipped prefill.
+    let held = prefix_checkpoint.as_ref().map(|(t, _)| t.len()).unwrap_or(0);
     let snapshot_at = if restored_from_checkpoint == 0
-        && prefix_checkpoint.is_none()
-        && agreed_with_previous > 16
+        && agreed_with_previous > held.max(16)
         && agreed_with_previous < prompt_ids.len()
     {
         Some(agreed_with_previous)
@@ -668,5 +673,47 @@ mod prefix_reuse_tests {
         assert_eq!(shared_prefix_len(&[1, 2, 3], &[1, 2]), 2);
         assert_eq!(shared_prefix_len(&[1], &[2]), 0);
         assert_eq!(shared_prefix_len(&[], &[1]), 0);
+    }
+}
+
+#[cfg(test)]
+mod checkpoint_growth_tests {
+    /// The snapshot decision, exactly as `serve_request` makes it.
+    fn snapshot_at(held: usize, agreed: usize, prompt_len: usize, restored: usize) -> Option<usize> {
+        if restored == 0 && agreed > held.max(16) && agreed < prompt_len {
+            Some(agreed)
+        } else {
+            None
+        }
+    }
+
+    #[test]
+    fn a_longer_agreed_prefix_replaces_a_shorter_checkpoint() {
+        // Measured: the first agreed boundary was 691 tokens. Holding it
+        // forever caps every later goal at that, however much more they share.
+        assert_eq!(snapshot_at(691, 1262, 2137, 0), Some(1262));
+    }
+
+    #[test]
+    fn a_shorter_or_equal_boundary_is_not_worth_replacing_for() {
+        assert_eq!(snapshot_at(1262, 691, 2137, 0), None);
+        assert_eq!(snapshot_at(1262, 1262, 2137, 0), None);
+    }
+
+    #[test]
+    fn a_trivial_shared_head_is_not_worth_157_megabytes() {
+        assert_eq!(snapshot_at(0, 16, 2137, 0), None);
+        assert_eq!(snapshot_at(0, 17, 2137, 0), Some(17));
+    }
+
+    #[test]
+    fn a_restored_request_does_not_re_snapshot() {
+        // It skipped the prefill it would have snapshotted during.
+        assert_eq!(snapshot_at(0, 900, 2137, 691), None);
+    }
+
+    #[test]
+    fn a_boundary_at_or_past_the_prompt_end_is_refused() {
+        assert_eq!(snapshot_at(0, 2137, 2137, 0), None);
     }
 }
