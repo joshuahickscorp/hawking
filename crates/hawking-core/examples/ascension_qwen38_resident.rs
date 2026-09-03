@@ -503,6 +503,11 @@ fn serve_request(
         "resident_identity": args.resident_identity,
         "resident_pid": pid,
         "grammar_enforced": constrain_json,
+        // WHY generation ended: "constraint_done", "eos", "budget", or "" on
+        // the unconstrained path. A reply that fails to parse needs this to be
+        // diagnosable at all -- the constraint believing it closed and the
+        // budget running out are opposite faults.
+        "stop_reason": result.stop_reason,
         "prefix_reused_tokens": reuse,
         "prefill_tokens_stepped": prompt_ids.len().saturating_sub(reuse),
         "prefix_source": if restored_from_checkpoint > 0 {

@@ -7614,6 +7614,7 @@ mod device {
         let decode_wall_ns = decode.elapsed().as_nanos() as u64;
         let decode_steps = tokens.len().saturating_sub(prompt.len()).saturating_sub(1);
         Ok((Qwen38GenerateResult {
+            stop_reason: "",
             tokens,
             prompt_len: prompt.len(),
             wall_ns: wall.elapsed().as_nanos() as u64,
@@ -7721,14 +7722,21 @@ mod device {
         let ignore_eos = std::env::var("HAWKING_QWEN38_IGNORE_EOS")
             .map(|v| v != "0")
             .unwrap_or(false);
+        // WHY generation stopped. "never closed the JSON object" has three
+        // possible causes -- the constraint believed it closed, the model emitted
+        // EOS, or the budget ran out -- and they need different fixes. Without
+        // this the receipt reports the symptom and the cause has to be guessed.
+        let mut stop_reason = "budget";
         while tokens.len() - prompt.len() < max_new_tokens {
             if constraint.is_done() {
+                stop_reason = "constraint_done";
                 break;
             }
             if !ignore_eos
                 && (next == crate::model::qwen38_geometry::QWEN38_EOS_IM_END
                     || next == crate::model::qwen38_geometry::QWEN38_EOS_END_OF_TEXT)
             {
+                stop_reason = "eos";
                 break;
             }
             let step_wall = Instant::now();
@@ -7756,6 +7764,7 @@ mod device {
         let decode_wall_ns = decode.elapsed().as_nanos() as u64;
         let decode_steps = tokens.len().saturating_sub(prompt.len()).saturating_sub(1);
         Ok((Qwen38GenerateResult {
+            stop_reason: "",
             tokens,
             prompt_len: prompt.len(),
             wall_ns: wall.elapsed().as_nanos() as u64,
@@ -7821,6 +7830,7 @@ mod device {
         let decode_wall_ns = decode.elapsed().as_nanos() as u64;
         let decode_steps = tokens.len().saturating_sub(prompt.len()).saturating_sub(1);
         Ok(Qwen38GenerateResult {
+            stop_reason: "",
             tokens,
             prompt_len: prompt.len(),
             wall_ns: wall.elapsed().as_nanos() as u64,
@@ -8186,6 +8196,12 @@ pub struct Qwen38PrefixCheckpoint {
 
 #[derive(Clone, Debug)]
 pub struct Qwen38GenerateResult {
+    /// Why generation stopped: "constraint_done", "eos" or "budget".
+    ///
+    /// A reply that "never closed the JSON object" has three possible causes
+    /// and they need different fixes. Empty for the unconstrained path, which
+    /// has no constraint to finish.
+    pub stop_reason: &'static str,
     pub tokens: Vec<u32>,
     pub prompt_len: usize,
     pub wall_ns: u64,

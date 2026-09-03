@@ -3739,6 +3739,11 @@ class Engine:
                 # those need opposite fixes. The resident has always reported
                 # this field; the receipt has never carried it.
                 "grammar_enforced",
+                # Why generation ended. "never closed the JSON object" has
+                # opposite causes -- the constraint believing it closed versus
+                # the budget running out -- and the receipt could not tell them
+                # apart.
+                "stop_reason",
             ):
                 value = native.get(key)
                 if value is not None:
