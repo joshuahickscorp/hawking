@@ -57,11 +57,14 @@ sys.stdout.flush()
 # measures stale recovery instead of mutual exclusion. Holding makes a second
 # acquire a real double-acquire and nothing else.
 #
-# The hold only has to outlast the RIVAL'S ACQUIRE, which is try_break_stale
-# plus a write -- and, on the advisory path, its deliberate 0.02 s window. That
-# is 20-50 ms, so 0.12 s keeps a 3-6x margin. It was 0.4 s, which sat on the
-# critical path of all 80 trials in both tests for no added safety.
-time.sleep(0.12)
+# The hold must outlast the rival's acquire UNDER LOAD, not on an idle box. I
+# cut this to 0.12 s reasoning from a 20-50 ms acquire, and
+# test_excl_lock_exactly_one_winner then FAILED under the sharded runner: the
+# winner's hold expired before the contended rival got to its attempt, so the
+# lock really was stale, the rival was right to break it, and the trial measured
+# stale recovery instead of mutual exclusion -- exactly what this hold exists to
+# prevent. 0.4 s is the cost of the property being tested.
+time.sleep(0.4)
 raise SystemExit(0 if ok else 1)
 """
 
@@ -120,10 +123,18 @@ def _race_distribution(mode: str, trials: int = RACE_TRIALS) -> dict:
 
     def _trial(_index: int):
         with tempfile.TemporaryDirectory() as trial_tmp:
-            _race_once(trial_tmp, mode)  # warm the path, discard
             return _race_once(trial_tmp, mode)
 
+    # One warm-up for the whole distribution, not one per trial. Warming inside
+    # each trial doubled the process count -- 320 children instead of 160 -- for
+    # a page-cache effect the first trial already pays.
+    with tempfile.TemporaryDirectory() as warm:
+        _race_once(warm, mode)
+
     # Bounded: each trial is two processes, so this is 2N live children.
+    # 24 was tried and reverted -- oversubscribing made the contended rival slow
+    # enough to outlast the winner's hold, which turned a mutual-exclusion trial
+    # into a stale-recovery trial and failed the O_EXCL test under load.
     workers = max(2, min(12, (os.cpu_count() or 4)))
     with ThreadPoolExecutor(max_workers=workers) as pool:
         for w1, w2 in pool.map(_trial, range(trials)):
