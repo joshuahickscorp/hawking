@@ -525,7 +525,7 @@ pipe `reset_ns` onto one propose reply. Do not take the device lock for it.
   `genesis-agentos-sessions/genesis-{gravity,kernel}/events.jsonl`,
   `genesis-workers.json`, `genesis-agentos-controller.json`,
   `genesis-worker-checkpoints/{gravity,kernel}/checkpoint.json`.
-- Contracts: `contracts/genesis/*.md` bytes+sha as §1.3.
+- Contracts: `docs/contracts/genesis/*.md` bytes+sha as §1.3.
 - Body: `tools/agentos/genesis_body/src/main.rs`.
 - Prefill: `crates/hawking-core/src/model/qwen38_hybrid_decode.rs:1451-1457,3577-3593,3644-3716`.
 - Client: `tools/agentos/genesis_resident.py:42-43,255-343`.

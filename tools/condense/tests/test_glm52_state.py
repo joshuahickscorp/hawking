@@ -143,7 +143,7 @@ def _state_gates():
             for name, spec in body.get("required_artifacts", {}).items()
         }
         checks = {
-            item: policy(f"evidence/{item}.json", gs.STOP_CONDITION_EVIDENCE_SCHEMA, validator="stop_condition_v1")
+            item: policy(f"research/evidence/{item}.json", gs.STOP_CONDITION_EVIDENCE_SCHEMA, validator="stop_condition_v1")
             for item in body.get("required_checklist_items", [])
         }
         out[state] = {
@@ -778,7 +778,7 @@ def test_official_source_profile_enforces_exact_282_shards_bytes_and_grounding(
             "required_artifacts": {},
             "required_checklist": {
                 stop_condition: {
-                    "path": f"evidence/{stop_condition}.json",
+                    "path": f"research/evidence/{stop_condition}.json",
                     "expected_seal_sha256": None,
                     "expected_schema": gs.STOP_CONDITION_EVIDENCE_SCHEMA,
                     "allowed_statuses": ["PASS"],
@@ -837,7 +837,7 @@ def test_official_source_profile_enforces_exact_282_shards_bytes_and_grounding(
         ] = copy.deepcopy(resource_policy)
     official_gates["COMPLETE"]["required_checklist"] = {
         item: {
-            "path": f"evidence/{item}.json",
+            "path": f"research/evidence/{item}.json",
             "expected_seal_sha256": None,
             "expected_schema": gs.STOP_CONDITION_EVIDENCE_SCHEMA,
             "allowed_statuses": ["PASS"],

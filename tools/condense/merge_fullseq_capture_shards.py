@@ -10,7 +10,7 @@ Each worker must have captured a disjoint sequence shard into its own --out-dir
   * seals DSV4F_FULLSEQ_CAPTURE_MERGED_RECEIPT.json with per-worker provenance
 
 Correctness bar for multi-worker: bit-exact npy/hash match vs a single serial
-run of the same sequence set (see evidence/parallelism/FULLSEQ_CAPTURE_PARALLELISM_FINDINGS.json).
+run of the same sequence set (see research/evidence/parallelism/FULLSEQ_CAPTURE_PARALLELISM_FINDINGS.json).
 
 Usage:
   python3 tools/condense/merge_fullseq_capture_shards.py \\

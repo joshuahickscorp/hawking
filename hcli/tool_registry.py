@@ -2201,7 +2201,7 @@ def default_tool_registry(
         mutation=READ_ONLY, deterministic=True, resources=("filesystem",), handler=_architecture_inspect,
     ))
     registry.register(ToolSpec(
-        "doctor.query", "Ask the local Doctor evidence/planning surface for a bounded proposal.",
+        "doctor.query", "Ask the local Doctor research/evidence/planning surface for a bounded proposal.",
         {"type": "object", "additionalProperties": False, "properties": {"operation": {"type": "string"}, "model": {"type": "string"}, "organ": {"type": "string"}, "receipt": {"type": "string"}, "research_query": {"type": "string"}, "max_results": {"type": "integer"}}},
         mutation=RESEARCH, deterministic=False, resources=("filesystem", "network"),
         verifier_expectations=("Doctor proposals require a later measurement receipt",), handler=_doctor_query,

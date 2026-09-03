@@ -2454,7 +2454,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--physical-root", type=Path, default=DEFAULT_PHYSICAL_ROOT)
     commands = parser.add_subparsers(dest="command", required=True)
-    commands.add_parser("once", help="run one deterministic evidence/experiment cycle")
+    commands.add_parser("once", help="run one deterministic research/evidence/experiment cycle")
     watch = commands.add_parser("watch", help="run the detached durable optimizer lane")
     watch.add_argument("--idle-seconds", type=float, default=45.0)
     return parser

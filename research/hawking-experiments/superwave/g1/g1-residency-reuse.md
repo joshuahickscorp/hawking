@@ -336,7 +336,7 @@ A single stream cannot legally produce N future activations (autoregressive). MT
 
 **KILLS:** "N concurrent decode streams amortize the same weight read" on the *current* genome (independent GEMVs), for single-stream TOKEN_NS.
 **THROUGHPUT-ONLY** (unimplemented): true GEMM across streams.
-**REOPEN_IF:** (1) a packed-Q4 GEMM kernel whose N=k GPU time is ≪ k× GEMV, measured on this box; **and** (2) a single-stream source of k activations that does not wait on the critical path (spec/MTP). (1) alone is not a TOKEN_NS win.
+**REOPEN_IF:** (1) a packed-Q4 GEMM kernel whose N=k GPU time is ≪ k× GEMV, measured on this box; **and** (2) a single-stream source of k activations that does not wait on the critical path (docs/spec/MTP). (1) alone is not a TOKEN_NS win.
 
 ---
 

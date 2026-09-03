@@ -724,7 +724,7 @@ def stage_screen(state: Dict[str, Any], repo: Path, ws: Path) -> None:
             "verdict": "SURVIVE" if (h2_ok and applicable) else "REJECTED",
             "reason": (
                 "Removes the NEED for shared-state patching. Engine.execute "
-                "already takes evidence/compiled internally; exposing them as "
+                "already takes research/evidence/compiled internally; exposing them as "
                 "kwargs lets execute_workunit pass a worker packet without "
                 "touching instance attributes. Cheap check: anchors unique, "
                 f"scratch apply+py_compile ok={h2_ok} ({h2_detail}), "

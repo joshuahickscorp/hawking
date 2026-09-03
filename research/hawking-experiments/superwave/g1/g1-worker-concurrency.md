@@ -233,9 +233,9 @@ The sealed set is **hashed into a capsule**, not inlined.
 
 | file | bytes | sha256 |
 |---|---:|---|
-| `contracts/genesis/QWEN38_GENESIS_SYSTEM_DIRECTIVE.md` | 16414 | `881ae469e0287cf386467002d3fc7951524b47054ac6d7f753b94a8e4e3ceff7` |
-| `contracts/genesis/GENESIS_CONTINUITY_DIRECTIVE.md` | 11912 | `c4a58bc06575effb8f759dbb22c49abfc65e1957910b18917d45d02592d1fdbc` |
-| `contracts/genesis/GENESIS_OUTPUT_LAW.md` | 4871 | `9679490e8ae623a6fdb408fd906a15d676bc55926580f6d7ed60e9ea610c9ada` |
+| `docs/contracts/genesis/QWEN38_GENESIS_SYSTEM_DIRECTIVE.md` | 16414 | `881ae469e0287cf386467002d3fc7951524b47054ac6d7f753b94a8e4e3ceff7` |
+| `docs/contracts/genesis/GENESIS_CONTINUITY_DIRECTIVE.md` | 11912 | `c4a58bc06575effb8f759dbb22c49abfc65e1957910b18917d45d02592d1fdbc` |
+| `docs/contracts/genesis/GENESIS_OUTPUT_LAW.md` | 4871 | `9679490e8ae623a6fdb408fd906a15d676bc55926580f6d7ed60e9ea610c9ada` |
 
 THIS_LANE `load_genesis_contracts()`: `binding_sha256 = 3ef47426958200ff830ea2ec5adce53d3b3347098d459bd7fcddc9a5dc9a179f`.
 `runtime_capsule(child_a)` = **5119 B**. System prefix = **5149 B**.

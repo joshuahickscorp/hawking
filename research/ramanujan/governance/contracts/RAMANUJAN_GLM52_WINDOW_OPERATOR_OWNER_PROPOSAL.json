@@ -8,14 +8,14 @@
   },
   "sealed_parent_bindings": {
     "schedule": {
-      "path": "evidence/glm52/GLM52_STREAMING_SCHEDULE_90GB.json",
+      "path": "research/evidence/glm52/GLM52_STREAMING_SCHEDULE_90GB.json",
       "seal_sha256": "baef39952492f16e4b176344358f2f85c6bdc03ecba490ceea40037aa250ce86",
       "peak_incremental_bytes": 58885799936,
       "window_count": 81,
       "range_count": 59585
     },
     "policy": {
-      "path": "evidence/glm52/GLM52_RESOURCE_RESERVE_POLICY_90GB.json",
+      "path": "research/evidence/glm52/GLM52_RESOURCE_RESERVE_POLICY_90GB.json",
       "seal_sha256": "6b74bd6186fcf0beb1d8123bb706fb0d3dfa09a688133a4e440e12ad955b8d59",
       "envelope_bytes": 90000000000,
       "protected_filesystem_floor_bytes": 200005889556

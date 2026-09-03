@@ -175,13 +175,13 @@ def read_artifact(rev: str, name: str) -> str:
 
     Live revisions store these records in
     ``workspace/campaign/evidence/runtime/rebuild/``.  Older revisions used
-    ``evidence/rebuild/`` and the earliest ones placed them at the repository
+    ``research/evidence/rebuild/`` and the earliest ones placed them at the repository
     root.  `read_text` returns "" for a missing blob, so retain every fallback
     when reading an arbitrary historical revision.
     """
     return (
         read_text(rev, f"workspace/campaign/evidence/runtime/rebuild/{name}")
-        or read_text(rev, f"evidence/rebuild/{name}")
+        or read_text(rev, f"research/evidence/rebuild/{name}")
         or read_text(rev, name)
     )
 

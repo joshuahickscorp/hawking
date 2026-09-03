@@ -119,7 +119,7 @@ impl FixtureProvider {
         }
     }
 
-    /// Inspectable catalog for contracts/tests.
+    /// Inspectable catalog for docs/contracts/tests.
     pub fn catalog(&self) -> Value {
         json!({
             "kind": "fixture_provider",

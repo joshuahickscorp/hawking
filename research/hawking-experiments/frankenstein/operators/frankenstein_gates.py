@@ -87,7 +87,7 @@ GATE_MISSING_INFRA: dict[str, str] = {
     ),
     REQUIRES_BENCHMARK_CORPUS: (
         "L0/L1 problem corpus + disjoint memberships may be frozen under "
-        "evidence/models/frankenstein/corpus/, but live held-out eval still needs "
+        "research/evidence/models/frankenstein/corpus/, but live held-out eval still needs "
         "student/teacher forward measurement scores (not corpus assembly alone)."
     ),
     REQUIRES_DSV4F_FORWARD: (

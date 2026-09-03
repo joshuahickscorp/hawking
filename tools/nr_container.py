@@ -26,7 +26,7 @@ import argparse, hashlib, json, pathlib, sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 RUNS = ROOT / "workspace/campaign/records/runs/qwen38-27b"
-SCHEMA = ROOT / "spec/nr_container.schema.json"
+SCHEMA = ROOT / "docs/spec/nr_container.schema.json"
 
 # Fields that can only be true of one machine. Presence of any of these ANYWHERE in
 # an NR document is a rejection, not a warning.

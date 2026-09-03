@@ -21,21 +21,21 @@
       "seal_sha256": "5ea7f853f06f93f4f32786d3d43851a2df14d92f54c61ec3d807d926ab9db63e"
     },
     "qwen_fixture": {
-      "path": "evidence/tg/QWEN_Q4K_METAL_PIPELINE_FIXTURE_V21.json",
+      "path": "research/evidence/tg/QWEN_Q4K_METAL_PIPELINE_FIXTURE_V21.json",
       "seal_sha256": "b7b3d62306d6b0cfeedb957358ab565e2a4c62f7e849a6917c4d9955c558c29a"
     },
     "qwen_current_transfer": {
-      "path": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_QWEN72_2026_08_01_1635.json",
+      "path": "research/evidence/tg/TG_XET_TRANSFER_SCOREBOARD_QWEN72_2026_08_01_1635.json",
       "seal_sha256": "b09242881922cfa40ccc3508917834fff7f9c90de7f5bc566e198db1d8eb9bb2",
       "scope": "bounded official 64 MiB transfer/resume probe only; no model body admitted"
     },
     "metal_icb_replay_substrate": {
-      "path": "evidence/tg/TG_METAL_ICB_REPLAY_SUBSTRATE_2026_08_01.json",
+      "path": "research/evidence/tg/TG_METAL_ICB_REPLAY_SUBSTRATE_2026_08_01.json",
       "seal_sha256": "6e1d66085efe93d297e5af53337eeaf268ca9cc68792259526c45949eab58f9a",
       "scope": "fixed-address fixture graph mechanics only; no whole-model TG promotion"
     },
     "topology_exit": {
-      "path": "evidence/tg/TG_CODE_TOPOLOGY_EXIT_INCLUSIVE.json",
+      "path": "research/evidence/tg/TG_CODE_TOPOLOGY_EXIT_INCLUSIVE.json",
       "seal_sha256": "3b13b6f0f069ed5a279864ae8a54ebca71f5a7f2f1c7bcfb41cf173bcbd17989"
     }
   },
@@ -161,7 +161,7 @@
   },
   "restream_machinery": {
     "schedule": {
-      "path": "evidence/glm52/GLM52_STREAMING_SCHEDULE_90GB.json",
+      "path": "research/evidence/glm52/GLM52_STREAMING_SCHEDULE_90GB.json",
       "seal_sha256": "baef39952492f16e4b176344358f2f85c6bdc03ecba490ceea40037aa250ce86",
       "windows": 81,
       "ranges": 59585,
@@ -169,7 +169,7 @@
       "peak_incremental_bytes": 58885799936
     },
     "policy": {
-      "path": "evidence/glm52/GLM52_RESOURCE_RESERVE_POLICY_90GB.json",
+      "path": "research/evidence/glm52/GLM52_RESOURCE_RESERVE_POLICY_90GB.json",
       "seal_sha256": "6b74bd6186fcf0beb1d8123bb706fb0d3dfa09a688133a4e440e12ad955b8d59",
       "envelope_bytes": 90000000000,
       "rollback_scratch_reserve_bytes": 17179869184

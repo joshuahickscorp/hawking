@@ -18,7 +18,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 RUNS = ROOT / "workspace/campaign/records/runs/qwen38-27b"
 GREEDY = ROOT / "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy"
 LANE = ROOT / "tools/gpu_lane_lock.sh"
-sys.path.insert(0, str(ROOT / "spec/battery"))
+sys.path.insert(0, str(ROOT / "docs/spec/battery"))
 from wide_v1 import items  # noqa: E402
 
 

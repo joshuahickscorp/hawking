@@ -97,7 +97,7 @@
   },
   "formula": "Hub(x) = x + sum_i gate_i(x) * residual_i(x)",
   "implementation": {
-    "config": "evidence/models/frankenstein/MULTI_ADAPTER_HUB_CONFIG.json",
+    "config": "research/evidence/models/frankenstein/MULTI_ADAPTER_HUB_CONFIG.json",
     "module": "lab/operators/frankenstein_adapter_hub.py",
     "tests": "tools/condense/tests/test_frankenstein_adapter_hub.py"
   },

@@ -555,7 +555,7 @@ pub(crate) async fn run_turn_core(
     let derived = if low_context_mode {
         // Compact admission above proved this prompt plus the reserve fits
         // when evidence was selected. Count the actual final native prompt so
-        // the output budget cannot quietly reclaim evidence/headroom.
+        // the output budget cannot quietly reclaim research/evidence/headroom.
         max_input
             .saturating_sub(folded_prompt_tokens)
             .clamp(min_output_reserve, 2048)

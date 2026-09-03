@@ -937,7 +937,7 @@ def evaluate_activation_trigger(
             )
         else:
             reasons.append(
-                "site_collision.confirmed set but no evidence/measurement payload — ignored"
+                "site_collision.confirmed set but no research/evidence/measurement payload — ignored"
             )
 
     if always_on_ablation and always_on_ablation.get("shows_interference") is True:
@@ -1123,7 +1123,7 @@ def hub_design_document() -> dict[str, Any]:
         "implementation": {
             "module": "hawking-experiments/frankenstein/operators/frankenstein_adapter_hub.py",
             "tests": "hawking-experiments/frankenstein/condense/tests/test_frankenstein_adapter_hub.py",
-            "config": f"evidence/models/frankenstein/{DEFAULT_HUB_CONFIG_NAME}",
+            "config": f"research/evidence/models/frankenstein/{DEFAULT_HUB_CONFIG_NAME}",
         },
         "non_goals": [
             "Do not activate for live V0 run",

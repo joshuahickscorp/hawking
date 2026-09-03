@@ -252,9 +252,9 @@ Canonical system directive sha256
 
 Capsule is a hash-bound summary of:
 
-- `contracts/genesis/QWEN38_GENESIS_SYSTEM_DIRECTIVE.md`
-- `contracts/genesis/GENESIS_CONTINUITY_DIRECTIVE.md`
-- `contracts/genesis/GENESIS_OUTPUT_LAW.md`
+- `docs/contracts/genesis/QWEN38_GENESIS_SYSTEM_DIRECTIVE.md`
+- `docs/contracts/genesis/GENESIS_CONTINUITY_DIRECTIVE.md`
+- `docs/contracts/genesis/GENESIS_OUTPUT_LAW.md`
 
 It assigns identity `QWEN3.8 GENESIS`, Genesis-only scope, 100 TPS first rung,
 no self-promotion, machine-minimal output law. That is a **prompt constraint**,

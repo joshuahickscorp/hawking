@@ -244,8 +244,8 @@ def test_windowed_candidate_rejects_cross_window_overlap_and_parallel_overage() 
 def test_real_glm52_organ_candidate_replays_the_blocked_artifact_retention_plan() -> None:
     candidate = plan_glm52_organ_windows(
         "GLM-5.2",
-        manifest_path="evidence/glm52/GLM52_OFFICIAL_MANIFEST.json",
-        graph_path="evidence/glm52/GLM52_SHARD_DEPENDENCY_GRAPH.json",
+        manifest_path="research/evidence/glm52/GLM52_OFFICIAL_MANIFEST.json",
+        graph_path="research/evidence/glm52/GLM52_SHARD_DEPENDENCY_GRAPH.json",
         artifact_bytes_per_window=2_147_483_648,
         metadata_bytes_per_window=67_108_864,
         scratch_multiplier=1.05,

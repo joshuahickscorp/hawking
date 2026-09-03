@@ -29,17 +29,17 @@
     "xet_scoreboards": [
       {
         "family": "Qwen2.5-72B",
-        "path": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_QWEN72_REPROBE.json",
+        "path": "research/evidence/tg/TG_XET_TRANSFER_SCOREBOARD_QWEN72_REPROBE.json",
         "seal_sha256": "a6e5d8f98b884ade0a5de4a6df23ce11494592afe5b4e3daae7f471a14d02c13"
       },
       {
         "family": "Llama-3.3-70B",
-        "path": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_LLAMA70.json",
+        "path": "research/evidence/tg/TG_XET_TRANSFER_SCOREBOARD_LLAMA70.json",
         "seal_sha256": "17c7354a6503ae7c99758ab0edfc933fa1517904064f7daef83ef390d23849b0"
       },
       {
         "family": "GPT-OSS-120B",
-        "path": "evidence/tg/TG_XET_TRANSFER_SCOREBOARD_GPTOSS120.json",
+        "path": "research/evidence/tg/TG_XET_TRANSFER_SCOREBOARD_GPTOSS120.json",
         "seal_sha256": "c5b559bc9d49b23f3b890e6783a7e1f35716dfdc7c35fe6db3e383d9dc5f06dc"
       }
     ]
@@ -53,9 +53,9 @@
     "admission_law": "Recompute free bytes immediately before every window; admit only if free_bytes - exact_window_incremental_bytes >= protected_filesystem_floor_bytes."
   },
   "bounded_parent_contract": {
-    "schedule_path": "evidence/glm52/GLM52_STREAMING_SCHEDULE_90GB.json",
+    "schedule_path": "research/evidence/glm52/GLM52_STREAMING_SCHEDULE_90GB.json",
     "schedule_seal_sha256": "baef39952492f16e4b176344358f2f85c6bdc03ecba490ceea40037aa250ce86",
-    "policy_path": "evidence/glm52/GLM52_RESOURCE_RESERVE_POLICY_90GB.json",
+    "policy_path": "research/evidence/glm52/GLM52_RESOURCE_RESERVE_POLICY_90GB.json",
     "policy_seal_sha256": "6b74bd6186fcf0beb1d8123bb706fb0d3dfa09a688133a4e440e12ad955b8d59",
     "window_count": 81,
     "range_count": 59585,
@@ -103,7 +103,7 @@
   },
   "code_topology_exit": {
     "status": "PASS_ALL_BINDING_DIMENSIONS_AT_OR_BELOW_ENTRY",
-    "receipt": "evidence/tg/TG_CODE_TOPOLOGY_EXIT_INCLUSIVE.json",
+    "receipt": "research/evidence/tg/TG_CODE_TOPOLOGY_EXIT_INCLUSIVE.json",
     "seal_sha256": "d2544ed127dd83a035e5f4e29b756c9bd52eef62e41acb2886908a577a02d5bd",
     "non_ignored_untracked_source_included": true,
     "active_loc_entry": 430284,

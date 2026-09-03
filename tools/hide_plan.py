@@ -41,8 +41,8 @@ def run(plan_path, tokens):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--plans", nargs="+", default=["spec/plans/default.plan.json",
-                                                   "spec/plans/serial-family.plan.json"])
+    ap.add_argument("--plans", nargs="+", default=["docs/spec/plans/default.plan.json",
+                                                   "docs/spec/plans/serial-family.plan.json"])
     ap.add_argument("--tokens", type=int, default=12)
     ap.add_argument("--out", type=pathlib.Path)
     a = ap.parse_args()

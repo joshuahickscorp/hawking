@@ -864,21 +864,21 @@ _RESIDENT_CONTRACT = {
     "integrity_verified": True,
     "contracts": [
         {
-            "canonical_path": "contracts/genesis/QWEN38_GENESIS_SYSTEM_DIRECTIVE.md",
+            "canonical_path": "docs/contracts/genesis/QWEN38_GENESIS_SYSTEM_DIRECTIVE.md",
             "sha256": "881ae469e0287cf386467002d3fc7951524b47054ac6d7f753b94a8e4e3ceff7",
             "size_bytes": 16414,
             "source_provenance": "injected-test",
             "integrity_verified": True,
         },
         {
-            "canonical_path": "contracts/genesis/GENESIS_CONTINUITY_DIRECTIVE.md",
+            "canonical_path": "docs/contracts/genesis/GENESIS_CONTINUITY_DIRECTIVE.md",
             "sha256": "c4a58bc06575effb8f759dbb22c49abfc65e1957910b18917d45d02592d1fdbc",
             "size_bytes": 11912,
             "source_provenance": "injected-test",
             "integrity_verified": True,
         },
         {
-            "canonical_path": "contracts/genesis/GENESIS_OUTPUT_LAW.md",
+            "canonical_path": "docs/contracts/genesis/GENESIS_OUTPUT_LAW.md",
             "sha256": "9679490e8ae623a6fdb408fd906a15d676bc55926580f6d7ed60e9ea610c9ada",
             "size_bytes": 4871,
             "source_provenance": "injected-test",

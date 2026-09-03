@@ -9,7 +9,7 @@
   "parent": {
     "repo": "zai-org/GLM-5.2",
     "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
-    "manifest": "evidence/glm52/GLM52_OFFICIAL_MANIFEST.json",
+    "manifest": "research/evidence/glm52/GLM52_OFFICIAL_MANIFEST.json",
     "manifest_seal_sha256": "ef4e3cbf6b4b6ddc52aa7278d657a9f7f63254fa72d35591cc8f6c5c706c4791",
     "weight_shards": 282,
     "full_parent_source_download_forbidden": true
@@ -17,11 +17,11 @@
   "closed_preconditions": {
     "historical_full_shard_path": {
       "status": "REJECTED",
-      "receipt": "evidence/glm52/GLM52_90GB_FULL_SHARD_LOWER_BOUND.json",
+      "receipt": "research/evidence/glm52/GLM52_90GB_FULL_SHARD_LOWER_BOUND.json",
       "peak_resident_bytes": 96808385288
     },
     "range_schedule": {
-      "path": "evidence/glm52/GLM52_STREAMING_SCHEDULE_90GB.json",
+      "path": "research/evidence/glm52/GLM52_STREAMING_SCHEDULE_90GB.json",
       "seal_sha256": "baef39952492f16e4b176344358f2f85c6bdc03ecba490ceea40037aa250ce86",
       "windows": 81,
       "ranges": 59585,
@@ -32,7 +32,7 @@
       "status": "PASS_OFFLINE_LIVE_ALLOCATION_REQUIRED"
     },
     "resource_policy": {
-      "path": "evidence/glm52/GLM52_RESOURCE_RESERVE_POLICY_90GB.json",
+      "path": "research/evidence/glm52/GLM52_RESOURCE_RESERVE_POLICY_90GB.json",
       "seal_sha256": "6b74bd6186fcf0beb1d8123bb706fb0d3dfa09a688133a4e440e12ad955b8d59",
       "active_model_limit": 1,
       "protected_filesystem_floor_bytes": 200005889556,
@@ -62,7 +62,7 @@
       "six_present_local_sources_current_byte_and_content_hashes_verified": true
     },
     "code_topology_exit": {
-      "receipt": "evidence/tg/TG_CODE_TOPOLOGY_EXIT_INCLUSIVE.json",
+      "receipt": "research/evidence/tg/TG_CODE_TOPOLOGY_EXIT_INCLUSIVE.json",
       "seal_sha256": "3b13b6f0f069ed5a279864ae8a54ebca71f5a7f2f1c7bcfb41cf173bcbd17989",
       "non_ignored_untracked_source_included": true,
       "all_binding_dimensions_at_or_below_entry": true

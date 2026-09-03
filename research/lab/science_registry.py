@@ -166,7 +166,7 @@ IRREDUCIBLE_MODULES: tuple[OperatorRecord, ...] = (
     # simply be deleted. Classified so the Track V contract covers every
     # module in the package rather than every module that happens to be real.
     _m("acquire", UC, "", "Family facade over acquisition."),
-    _m("auth", UC, "", "Family facade over the evidence/grounding auth modules."),
+    _m("auth", UC, "", "Family facade over the research/evidence/grounding auth modules."),
     _m("evaluate", UC, "", "Family facade over the eval rules."),
     _m("forge", UC, "", "Family facade over gravity_forge."),
     _m("gravity_exec", UC, "", "Family facade over the gravity execution modules."),

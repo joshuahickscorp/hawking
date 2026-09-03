@@ -95,7 +95,7 @@ def test_promotion_checkpoints_and_rebinds_two_workers_with_generator_directives
     )
     directives = (
         {
-            "canonical_path": "contracts/genesis/GENESIS_CONTINUITY_DIRECTIVE.md",
+            "canonical_path": "docs/contracts/genesis/GENESIS_CONTINUITY_DIRECTIVE.md",
             "sha256": labeled_sha("continuity-directive"),
             "size_bytes": 1,
             "integrity_verified": True,

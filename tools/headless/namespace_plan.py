@@ -483,7 +483,7 @@ def classify_site(path: str, text: str) -> Tuple[str, str]:
     if path == ".gitignore":
         return "LIVE_IMPLEMENTATION_REFERENCES", "gitignore of .hcli-legacy/ state dir; PRESERVE the ignore rule"
 
-    if path.startswith("contracts/") or path == "README.md" or path == "Cargo.toml":
+    if path.startswith("docs/contracts/") or path == "README.md" or path == "Cargo.toml":
         return "UNKNOWN", "docs/manifest mention; inspect before any rename"
 
     return "UNKNOWN", "matched grep but did not fit a tighter bucket"

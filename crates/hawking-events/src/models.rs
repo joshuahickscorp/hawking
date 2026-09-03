@@ -80,7 +80,7 @@ pub const COMPETING_MODELS: &[CompetingModel] = &[
     },
     CompetingModel {
         name: "campaign JSONL ledgers",
-        file: "evidence/hawking/HAWKING_CAMPAIGN_LEDGER.jsonl",
+        file: "research/evidence/hawking/HAWKING_CAMPAIGN_LEDGER.jsonl",
         line: 1,
         role: "Scientific/receipt campaign ledgers at repo root",
         status: MigrationStatus::CampaignLedger,

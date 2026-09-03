@@ -2,7 +2,7 @@
 """Functional-transfer program seal: 7-layer stack, A–G ablation, built vs gated.
 
 Does not declare PROTO_FRANKENSTEIN from projected weights.  Seals the program
-descriptor and can emit the companion JSON under evidence/.
+descriptor and can emit the companion JSON under research/evidence/.
 """
 from __future__ import annotations
 

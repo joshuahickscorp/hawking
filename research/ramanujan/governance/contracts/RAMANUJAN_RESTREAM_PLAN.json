@@ -8,7 +8,7 @@
     "repo": "zai-org/GLM-5.2",
     "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
     "license": "MIT",
-    "manifest": "evidence/glm52/GLM52_OFFICIAL_MANIFEST.json",
+    "manifest": "research/evidence/glm52/GLM52_OFFICIAL_MANIFEST.json",
     "manifest_seal_sha256_prefix": "ef4e3cbf6b4b6ddc",
     "file_count": 295,
     "weight_shards": 282,
@@ -36,7 +36,7 @@
   },
 
   "representation": {
-    "preregistration": "evidence/hawking/HAWKING_REPRESENTATION_ESCALATION_TOURNAMENT.json",
+    "preregistration": "research/evidence/hawking/HAWKING_REPRESENTATION_ESCALATION_TOURNAMENT.json",
     "status": "PREREGISTERED_NOT_RUN",
     "arms": ["A1 native functional expert replacement", "A2 PQ plus learned residual correction", "A3 additive multi-codebook", "A4 shared latent expert basis with causal gates", "A5 profile-conditioned protected islands", "A6 trajectory-stabilized hybrid"],
     "nulls": ["N1 uniform-rate control", "N2 random-policy control", "N3 constant-mean null for any cosine metric"],
@@ -65,7 +65,7 @@
   },
 
   "executable_restream_command": {
-    "command": "python3.12 -m lab.operators.glm52_source_fetch --revision b4734de4facf877f85769a911abafc5283eab3d9 --manifest evidence/glm52/GLM52_OFFICIAL_MANIFEST.json --rotation n-1-seal-evict --concurrency 4",
+    "command": "python3.12 -m lab.operators.glm52_source_fetch --revision b4734de4facf877f85769a911abafc5283eab3d9 --manifest research/evidence/glm52/GLM52_OFFICIAL_MANIFEST.json --rotation n-1-seal-evict --concurrency 4",
     "then": "python3.12 -m ramanujan.data.generate --all-mathlib   # unrelated to the parent; listed because it is the one restream-adjacent step that runs today",
     "state": "NOT RUNNABLE",
     "refused_by": "odyssey/launch/SUBSTRATE_CAPABILITY.json",

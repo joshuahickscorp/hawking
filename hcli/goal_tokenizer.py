@@ -251,7 +251,7 @@ def _detect_negation_family(padded_lower: str) -> Optional[GoalType]:
     return None
 
 
-# Ordered: evidence/authority/stop/continuation/dependency before the more
+# Ordered: research/evidence/authority/stop/continuation/dependency before the more
 # generic priority/preference/hypothesis/example/future-option markers, so a
 # sentence like "requires approval" lands on AUTHORITY_REQUIRED rather than
 # the bare word "requires" being read as a DEPENDENCY.

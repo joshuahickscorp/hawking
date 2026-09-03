@@ -135,7 +135,7 @@ NAMES: list[dict] = [
             "tools/nr_container.py",
             "tools/nx_genome.py",
             "tools/nvm_minimal.py",
-            "spec/nr_container.schema.json",
+            "docs/spec/nr_container.schema.json",
         ),
         "path_regex": r"(^|/)nos_|nr_container|nx_genome|nx_tps|nvm_minimal|noetic",
         "content_ere": (
@@ -227,7 +227,7 @@ NAMES: list[dict] = [
         "class": "COMPONENT",
         "kind": "mechanism",
         "summary": "Noetic Representation: what the patient IS. Portable. Machine fields refused.",
-        "path_prefixes": ("tools/nr_container.py", "spec/nr_container.schema.json"),
+        "path_prefixes": ("tools/nr_container.py", "docs/spec/nr_container.schema.json"),
         "path_regex": r"nr_container|nr_nx|noetic_representation",
         "content_ere": r"nr_container|nr_nx_artifact|noetic_representation|" + wb("NR"),
         "schema_prefixes": (),
@@ -272,7 +272,7 @@ NAMES: list[dict] = [
         "path_prefixes": (
             "tools/nvm_minimal.py",
             "tools/hide_plan.py",
-            "spec/plans/",
+            "docs/spec/plans/",
         ),
         "path_regex": r"nvm_minimal|hide_plan",
         "content_ere": wb("NVM") + r"|nvm_minimal|hide_plan_swap|hide_plan",
@@ -527,7 +527,7 @@ NAMES: list[dict] = [
         "kind": "campaign",
         "summary": "Qwen3.8 continuity / resident-organism campaign. Future Odyssey-II tournament reuses the word.",
         "path_prefixes": (
-            "contracts/genesis/",
+            "docs/contracts/genesis/",
             "tools/agentos/genesis_body",
             "tools/agentos/genesis_contract.py",
             "tools/agentos/genesis_resident.py",
@@ -1144,7 +1144,7 @@ def evidence_for(spec: dict, owned: list[dict], schemas: list[str]) -> dict:
             "eight hide-* crates and the app/ React front-end (deferred product, still compilable)",
             "workspace/campaign/evidence/hide live-suite receipts (HCLI ran through HIDE)",
             "HIDE archaeology verification: over-built and under-wired, Continuum wiring programme",
-            "G121 hide_plan_swap is NOT this campaign (see NVM); do not delete spec/plans/ as HIDE IDE evidence",
+            "G121 hide_plan_swap is NOT this campaign (see NVM); do not delete docs/spec/plans/ as HIDE IDE evidence",
         ])
     elif spec["id"] == "Ramanujan":
         lost.extend([
@@ -1429,7 +1429,7 @@ def watched_fail(identity: dict, names_out: list[dict], tree_rows: list[dict]) -
             "trap": "HIDE IDE vs NVM/HIDE plan-as-data",
             "what_failed": (
                 f"HIDE IDE path-owned files={hide['path_owned_files']}. NVM (tools/hide_plan.py, "
-                f"spec/plans, nvm_minimal) path-owned files={nvm['path_owned_files']}. "
+                f"docs/spec/plans, nvm_minimal) path-owned files={nvm['path_owned_files']}. "
                 "G121 schema is hawking.nos.hide_plan_swap.v1 — a Noetic schema, not hawking.hide.*."
             ),
             "correction": "Classified the IDE as VESTIGIAL and the plan-swap as NVM COMPONENT of Noetic.",

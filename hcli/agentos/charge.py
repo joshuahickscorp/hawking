@@ -192,7 +192,7 @@ def _specs(repo: Path) -> list[Dict[str, Any]]:
             "dependencies": ["P0-C-precedent-and-transfer-index"],
             "resource_class": "LIGHT_CONTROL",
             "next_experiment": "Use negative receipts to constrain the next experiment and prepare Doctor/VMCP evidence surfaces without touching protected systems or starting Odyssey.",
-            "stop_condition": "Stop at evidence/preparation boundaries; do not declare impossibility from a bounded negative and do not promote Odyssey.",
+            "stop_condition": "Stop at research/evidence/preparation boundaries; do not declare impossibility from a bounded negative and do not promote Odyssey.",
             "allowed_mutations": ["receipts/headless/**"],
             "evidence_paths": ["receipts/headless/HCLI_AGENTOS_PREBOARD.json"],
             "required_verifier": "negative receipt census, explicit boundary, no VMCP/protected-system mutation, no Odyssey launch",
@@ -282,7 +282,7 @@ def create_initial_charge(
     goal = (
         "HAWKING_INITIAL_CHARGE: execute provider-neutral Hawking science across "
         "Qwen3.8-27B control, Flash-Next Gravity/Accelerator, ModelLake, FPGA "
-        "preboard, evidence/negative science, and HCLI self-repair only when a "
+        "preboard, research/evidence/negative science, and HCLI self-repair only when a "
         "real failure exposes it. Disk state, typed tools, and fixed verifiers "
         "remain authoritative."
     )

@@ -8,7 +8,7 @@ Does **not** own extraction (`hawking_graph.py` is G1).
 
 Every output below lands in `workspace/ops/build/graph/` by default, which is gitignored:
 all of it is deterministic and rebuilt from source in about 40s. Nothing here
-is evidence, so nothing here belongs in `evidence/`.
+is evidence, so nothing here belongs in `research/evidence/`.
 
 ```bash
 # 1) Extract the real graph (G1), then the behaviour map — in that order.

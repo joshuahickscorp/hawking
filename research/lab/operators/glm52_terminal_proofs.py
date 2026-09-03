@@ -265,7 +265,7 @@ class _Reader:
         found = sorted((self.root / 'workspace/campaign/evidence').glob(f'*/*/{basename}'))
         if not found:
             # Read-only compatibility for a historical checkout or an isolated
-            # fixture that still uses the former evidence/<campaign> layout.
+            # fixture that still uses the former research/evidence/<campaign> layout.
             found = sorted((self.root / 'evidence').glob(f'*/{basename}'))
         if not found:
             return relative

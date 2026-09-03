@@ -251,7 +251,7 @@ CATALOG: list[dict] = [
             _e("receipts/ascent-2026-08-16/QWEN38_COHERENCE_FLOOR_BRACKETED.json",
                2.0856, "COHERENCE_FLOOR_BRACKETED"),
             _e("receipts/ascent-2026-08-16/QWEN38_DENSITY_ROOT_CAUSE.json",
-               0.8480504639008466, "evidence/mlp_physical_bpw",
+               0.8480504639008466, "research/evidence/mlp_physical_bpw",
                "attention+embed+norms 4.250 BPW = 74% of artifact"),
             _e("receipts/ascent-2026-08-16/QWEN38_BPW_DESCENT.json",
                3.25, "coherence_floor/quality_intact/physical_bpw",
@@ -641,7 +641,7 @@ CATALOG: list[dict] = [
         },
         "evidence": [
             _e("receipts/ascent-2026-08-16/QWEN38_RECONSTRUCTION_IS_FREE.json",
-               15125, "evidence/f32_control_tpr64_ns/gate",
+               15125, "research/evidence/f32_control_tpr64_ns/gate",
                "33 codecs 15124-15541 ns vs 15125; cosine 1.000000 on 32/33"),
             _e("receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json",
                5.9, "entries/NS-006/what_was_measured/slowdown_per_byte_x",

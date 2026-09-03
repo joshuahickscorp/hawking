@@ -720,7 +720,7 @@ def build_schedule(*, paths: HarnessPaths, mode: str = "pilot") -> dict[str, Any
         "resume": {
             "cursor_field": "order",
             # Relative to campaign root so the sealed schedule is host-stable.
-            "progress_path": "evidence/models/frankenstein/progress/FRANKENSTEIN_DIRECT_PROGRESS.jsonl",
+            "progress_path": "research/evidence/models/frankenstein/progress/FRANKENSTEIN_DIRECT_PROGRESS.jsonl",
             "completed_block_ids": [],
         },
     }
@@ -1154,7 +1154,7 @@ def run_first_step(*, paths: HarnessPaths, mode: str = "fixture") -> dict[str, A
     schedule_path = paths.schedule_path.parent / schedule_filename(mode)
     result = run_block(paths=paths, schedule=schedule, order=0, fixture=True)
     # Manifest is mode-qualified so fixture/pilot first-steps do not collide.
-    # Written under evidence/ (trackable); records/runs/ holds only working-set.
+    # Written under research/evidence/ (trackable); records/runs/ holds only working-set.
     run_manifest_path = (
         paths.fusion_spec_path.parent
         / f"FRANKENSTEIN_DIRECT_RUN_MANIFEST_{mode.upper()}.json"
@@ -1214,7 +1214,7 @@ def _parser() -> argparse.ArgumentParser:
         "--out-dir",
         type=Path,
         default=None,
-        help="campaign root for evidence/records (default: <workspace>/campaign)",
+        help="campaign root for research/evidence/records (default: <workspace>/campaign)",
     )
     parser.add_argument(
         "--body-path",

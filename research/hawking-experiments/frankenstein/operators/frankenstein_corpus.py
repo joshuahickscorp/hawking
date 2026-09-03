@@ -920,7 +920,7 @@ def write_corpus_artifacts(
     *,
     out_dir: Path | None = None,
 ) -> dict[str, str]:
-    """Write L0/L1 jsonl + membership + index under evidence/corpus/."""
+    """Write L0/L1 jsonl + membership + index under research/evidence/corpus/."""
 
     base = Path(out_dir) if out_dir is not None else CORPUS_DIR
     base.mkdir(parents=True, exist_ok=True)

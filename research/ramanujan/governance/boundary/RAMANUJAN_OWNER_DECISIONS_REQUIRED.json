@@ -108,8 +108,8 @@
     "final_parent_plan": "ramanujan/RAMANUJAN_FINAL_PARENT_RESTREAM_PLAN.json#9cf78dc272fce40101c48d851b75f7082d0065f311623db980e81407fc2e8b88",
     "Q1_D4_D7_membership": "ramanujan/data/corpora/MEMBERSHIP_MANIFEST.json#36059fb95459c80d50c25a967ced2f6f52a411dc975f2c66181561dcbcadcb29",
     "physical_operator_owner_proposal": "ramanujan/RAMANUJAN_GLM52_WINDOW_OPERATOR_OWNER_PROPOSAL.json#5ea7f853f06f93f4f32786d3d43851a2df14d92f54c61ec3d807d926ab9db63e",
-    "qwen_fixture_representation_receipt": "evidence/tg/QWEN_Q4K_METAL_PIPELINE_FIXTURE_V21.json#b7b3d62306d6b0cfeedb957358ab565e2a4c62f7e849a6917c4d9955c558c29a",
-    "inclusive_topology_exit": "evidence/tg/TG_CODE_TOPOLOGY_EXIT_INCLUSIVE.json#3b13b6f0f069ed5a279864ae8a54ebca71f5a7f2f1c7bcfb41cf173bcbd17989",
+    "qwen_fixture_representation_receipt": "research/evidence/tg/QWEN_Q4K_METAL_PIPELINE_FIXTURE_V21.json#b7b3d62306d6b0cfeedb957358ab565e2a4c62f7e849a6917c4d9955c558c29a",
+    "inclusive_topology_exit": "research/evidence/tg/TG_CODE_TOPOLOGY_EXIT_INCLUSIVE.json#3b13b6f0f069ed5a279864ae8a54ebca71f5a7f2f1c7bcfb41cf173bcbd17989",
     "fail_closed_launcher_sha256": "9a58d88f7e866d03f14d413ea21cfc2e8b0ebe7985609e97b04b9dab9320d8a4"
   },
   "next_safe_action": "Print the authority template, fill and independently review the private owner intake outside the repository, then invoke the freeze command. Supply its resulting public receipt to HAWKING_EXTERNAL_SOURCE_FREEZE_RECEIPT only after it is sealed and independently checked.",

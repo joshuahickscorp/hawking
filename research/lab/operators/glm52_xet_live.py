@@ -1160,7 +1160,7 @@ def validate_autotune_result(result: Mapping[str, Any], *, plan: Mapping[str, An
     for item in largest_refs:
         lane = item['lane']
         if set(item) != {'lane', 'evidence_seal_sha256', 'selected_trial_id', 'observed_sha256'} or not _is_sha256(item.get('evidence_seal_sha256')) or item.get('selected_trial_id') != selections[lane].get('trial_id') or (item.get('observed_sha256') != largest.get('lfs_sha256')):
-            raise Glm52Error('live Xet largest-shard evidence/profile/hash binding is invalid')
+            raise Glm52Error('live Xet largest-shard research/evidence/profile/hash binding is invalid')
     bindings = value.get('bindings')
     if not isinstance(bindings, Mapping) or set(bindings) != {'plan_seal_sha256', 'plan_toolchain_binding_sha256', 'plan_input_refs_sha256', 'source_refs', 'live_executor_sha256', 'resource_reserve_policy'} or bindings.get('plan_seal_sha256') != plan.get('seal_sha256') or (bindings.get('plan_toolchain_binding_sha256') != _canonical_sha256(plan.get('toolchain_binding'))) or (bindings.get('plan_input_refs_sha256') != _canonical_sha256(plan.get('inputs'))) or (bindings.get('live_executor_sha256') != sha256_file(Path(__file__).resolve())):
         raise Glm52Error('live Xet autotune result plan/tool/input binding mismatch')

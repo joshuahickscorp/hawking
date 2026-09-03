@@ -1,6 +1,6 @@
 //! Fail-closed readiness contract for the first real Qwen80 all-ten MoE graph.
 //!
-//! This is deliberately a CPU-only evidence/graph contract.  It consumes the
+//! This is deliberately a CPU-only research/evidence/graph contract.  It consumes the
 //! already sealed component records and says exactly why they cannot yet be
 //! spliced into a production layer: the all-ten CPU oracle has ten source
 //! witnesses but no device buffers, the shared component lacks a same-input

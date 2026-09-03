@@ -5,7 +5,7 @@
   "supersedes_for_current_decisions": [
     "ramanujan/RAMANUJAN_PRE_RESTREAM_AUDIT.json",
     "ramanujan/RAMANUJAN_RESTREAM_PLAN.json",
-    "evidence/tg/TG_ENDPOINT_ASSESSMENT.json"
+    "research/evidence/tg/TG_ENDPOINT_ASSESSMENT.json"
   ],
   "implemented_this_pass": {
     "receipt_authority": "Live promotion requires a sealed GateEvidence envelope linked to a sealed source receipt, exact gate identity, and distinct builder/challenger/verifier roles. An unsealed boolean or an unlinked direct-governance object can no longer promote through either the runtime or governance entrypoint.",
@@ -67,7 +67,7 @@
     }
   ],
   "live_receipt_state": {
-    "tg_audit": "evidence/tg/TG_LIVE_RECEIPT_AUDIT_2026_07_31.json",
+    "tg_audit": "research/evidence/tg/TG_LIVE_RECEIPT_AUDIT_2026_07_31.json",
     "result": "Four family artifacts exist, but none has a promoted TG rung or K0/V2.1-grade full-logit evidence. TG8 was attempted and is false for Llama, Mistral and Qwen; DeepSeek has no resident Metal backend."
   },
   "non_parent_remaining": [
@@ -110,13 +110,13 @@
   ],
   "restream_constraints": {
     "storage": "The current GLM schedule peaks at 134336513960 resident bytes and the current reserve policy admits 225426172293 raw-window bytes. The sealed full-shard interval lower bound is 96808385288 bytes even before one-shard prefetch. All exceed the requested 90-GB incremental envelope.",
-    "storage_lower_bound_receipt": "evidence/glm52/GLM52_90GB_FULL_SHARD_LOWER_BOUND.json",
+    "storage_lower_bound_receipt": "research/evidence/glm52/GLM52_90GB_FULL_SHARD_LOWER_BOUND.json",
     "clean_lease": "A clean heavy GPU lease was not available. No new GPU timing was collected or promoted.",
     "source_controller": "The controller and teacher capture now accept an alternate sealed schedule path, so a newly measured <=90-GB schedule can supersede the historical one without overwriting it.",
     "range_streaming_candidate": "plan_windowed_candidate() accounts exact-once half-open intervals across streamed windows and gates the peak resident window plus carry/prefetch/artifact/metadata charges; it is a non-authoritative candidate until live allocation and capability evidence exist.",
-    "range_streaming_receipt": "evidence/glm52/GLM52_STREAMING_WINDOWED_CANDIDATE_90GB.json replays an 81-window, 59,585-interval offline candidate. Its former 42,734,911,488-byte figure omitted retained per-window artifacts; the corrected retention model peaks at 208,071,098,368 bytes and is BLOCKED. It does not replace the required sealed live schedule.",
-    "xet_plan": "The no-body Xet plan was deterministically rebuilt and resealed against the current lab/operators graph at evidence/glm52/GLM52_XET_AUTOTUNE_PLAN.json (seal cda1b7e83e3bcc132c9d144b469c3ea31ee5511977549e836340c9f5e52b4b70). It remains an offline plan and does not authorize live body acquisition.",
-    "rotation_storage": "evidence/tg/TG_STORAGE_CLEANUP_2026_07_31.json records the active Qwen selection, exact recoverable quarantine, receipt-linked preservation set, and the rule that parallel models require a measured combined <=90000000000-byte allocation.",
+    "range_streaming_receipt": "research/evidence/glm52/GLM52_STREAMING_WINDOWED_CANDIDATE_90GB.json replays an 81-window, 59,585-interval offline candidate. Its former 42,734,911,488-byte figure omitted retained per-window artifacts; the corrected retention model peaks at 208,071,098,368 bytes and is BLOCKED. It does not replace the required sealed live schedule.",
+    "xet_plan": "The no-body Xet plan was deterministically rebuilt and resealed against the current lab/operators graph at research/evidence/glm52/GLM52_XET_AUTOTUNE_PLAN.json (seal cda1b7e83e3bcc132c9d144b469c3ea31ee5511977549e836340c9f5e52b4b70). It remains an offline plan and does not authorize live body acquisition.",
+    "rotation_storage": "research/evidence/tg/TG_STORAGE_CLEANUP_2026_07_31.json records the active Qwen selection, exact recoverable quarantine, receipt-linked preservation set, and the rule that parallel models require a measured combined <=90000000000-byte allocation.",
     "topology": "The LOC authority reports 359896 active monorepo LOC in the working tree versus 349079 at HEAD (+10817), with 936 tracked active files in both snapshots. The requested <=entry code/topology condition is therefore not proven and remains a release blocker."
   },
   "next_artifact": "ramanujan/RAMANUJAN_FINAL_PARENT_RESTREAM_PLAN.json",

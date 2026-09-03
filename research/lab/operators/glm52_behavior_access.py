@@ -767,7 +767,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--write",
         action="store_true",
-        help="write sealed feasibility receipt under evidence/models/glm52/",
+        help="write sealed feasibility receipt under research/evidence/models/glm52/",
     )
     parser.add_argument("--out", type=Path, default=None)
     args = parser.parse_args(argv)

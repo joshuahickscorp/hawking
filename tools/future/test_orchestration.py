@@ -228,7 +228,7 @@ def test_mutation_engine_is_bound_and_callable_through_orchestration(tmp_path):
     """An unbound engine is not resident-callable. This one is bound and called.
 
     autonomy_run.py is not edited. The resident reaches propose/apply/
-    evidence/rollback/verdict through BINDINGS (resident_mutation_engine
+    research/evidence/rollback/verdict through BINDINGS (resident_mutation_engine
     / call_bound). invoke() would rewrite MUTATION_ENGINE.json from a
     module this lane cannot edit.
     """
