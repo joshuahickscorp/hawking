@@ -137,3 +137,47 @@ def test_an_accepted_verdict_shows_evidence_and_did_not_weaken_itself(gate):
     assert weakened in (False, None) and altered in (False, None), (
         f"{gate}: weakened={weakened} altered={altered}"
     )
+
+
+def test_the_canonical_readers_know_every_shape_in_the_corpus():
+    """Sweep every gate verdict with the shared readers, not with a guess.
+
+    This assertion is only trustworthy because the readers were corrected FOUR
+    times, each after a miscount:
+
+        criterion.quoted / criterion.quote / criterion_quoted / bare string
+        checks list / checks dict / measured / comparison / run
+
+    and because BLOCKED verdicts are excluded: a receipt honestly reporting that
+    a gate did not run correctly carries no checks, and demanding evidence from
+    it manufactures findings.
+
+    If a future producer invents a sixth shape, this fails and the reader gets
+    taught -- which is the point. The alternative is another false alarm.
+    """
+    import glob
+
+    from tools.acceptance import criterion_text, evidence_count, verdict_needs_evidence
+
+    missing_criterion, missing_evidence, claiming = [], [], 0
+    for path in sorted(glob.glob(str(ACCEPTANCE / "*.json"))):
+        name = Path(path).stem
+        if "." in name:          # .gate/.run/.cycle sidecars are not verdicts
+            continue
+        try:
+            doc = json.loads(Path(path).read_text())
+        except (OSError, ValueError):
+            continue
+        if not isinstance(doc, dict) or "verdict" not in doc:
+            continue
+        if not verdict_needs_evidence(doc):
+            continue
+        claiming += 1
+        if not criterion_text(doc).strip():
+            missing_criterion.append(name)
+        if evidence_count(doc) == 0:
+            missing_evidence.append(name)
+
+    assert claiming > 0, "no claiming verdicts found; the sweep is not looking at anything"
+    assert not missing_criterion, f"verdicts with no criterion in ANY shape: {missing_criterion}"
+    assert not missing_evidence, f"verdicts with no evidence in ANY shape: {missing_evidence}"
