@@ -1,0 +1,1405 @@
+{
+  "blocker": {
+    "failed_checks": 10,
+    "first_failure": {
+      "detail": {
+        "artifacts": 1,
+        "doc_validate_ok": false,
+        "lowered_an_invalid_graph": true,
+        "validator_codes": [
+          "DANGLING_EDGE"
+        ]
+      },
+      "name": "e.refuses[hls_style:graph_dangling_edge]",
+      "ok": false
+    },
+    "missing": "clause(s) e do not hold",
+    "total_checks": 241
+  },
+  "checks": [
+    {
+      "detail": null,
+      "name": "a.bytes[from_qgemv]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.fingerprint[from_qgemv]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.timeless[from_qgemv]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.bytes[organ_map:FLASH]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.fingerprint[organ_map:FLASH]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.timeless[organ_map:FLASH]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.bytes[organ_map:QWEN]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.fingerprint[organ_map:QWEN]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.timeless[organ_map:QWEN]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.bytes[graph_dangling_edge]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.fingerprint[graph_dangling_edge]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.timeless[graph_dangling_edge]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.bytes[graph_dense_source_rematerialization]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.fingerprint[graph_dense_source_rematerialization]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.timeless[graph_dense_source_rematerialization]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.bytes[graph_over_budget]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.fingerprint[graph_over_budget]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.timeless[graph_over_budget]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.bytes[graph_state_without_owner]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.fingerprint[graph_state_without_owner]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.timeless[graph_state_without_owner]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.bytes[graph_type_mismatch]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.fingerprint[graph_type_mismatch]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.timeless[graph_type_mismatch]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.bytes[probe:AsyncPrefetch]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.fingerprint[probe:AsyncPrefetch]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.timeless[probe:AsyncPrefetch]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.bytes[probe:CollectiveRegion]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.fingerprint[probe:CollectiveRegion]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.timeless[probe:CollectiveRegion]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.bytes[probe:ConditionalPhysicalProgram]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.fingerprint[probe:ConditionalPhysicalProgram]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.timeless[probe:ConditionalPhysicalProgram]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.bytes[probe:DirectRoutedAccumulate]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.fingerprint[probe:DirectRoutedAccumulate]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.timeless[probe:DirectRoutedAccumulate]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.bytes[probe:DoubleBufferedTile]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.fingerprint[probe:DoubleBufferedTile]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.timeless[probe:DoubleBufferedTile]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.bytes[probe:FusedDecodeCompute]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.fingerprint[probe:FusedDecodeCompute]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.timeless[probe:FusedDecodeCompute]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.bytes[probe:GraphReplay]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.fingerprint[probe:GraphReplay]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.timeless[probe:GraphReplay]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.bytes[probe:LayoutTransform]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.fingerprint[probe:LayoutTransform]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.timeless[probe:LayoutTransform]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.bytes[probe:LocalStateMachine]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.fingerprint[probe:LocalStateMachine]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.timeless[probe:LocalStateMachine]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.bytes[probe:MemoryTierIdentity]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.fingerprint[probe:MemoryTierIdentity]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.timeless[probe:MemoryTierIdentity]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.bytes[probe:MoveOrRecompute]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.fingerprint[probe:MoveOrRecompute]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.timeless[probe:MoveOrRecompute]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.bytes[probe:PersistentPhysicalRegion]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.fingerprint[probe:PersistentPhysicalRegion]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.timeless[probe:PersistentPhysicalRegion]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.bytes[probe:SemanticTransportEdge]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.fingerprint[probe:SemanticTransportEdge]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.timeless[probe:SemanticTransportEdge]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.bytes[probe:SparseSkip]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.fingerprint[probe:SparseSkip]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.timeless[probe:SparseSkip]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.bytes[probe:SpatialPipeline]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.fingerprint[probe:SpatialPipeline]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.timeless[probe:SpatialPipeline]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.bytes[probe:StationaryRepresentation]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.fingerprint[probe:StationaryRepresentation]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.timeless[probe:StationaryRepresentation]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.bytes[probe:TiledProjection]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.fingerprint[probe:TiledProjection]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.timeless[probe:TiledProjection]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.bytes[probe:clock_generator]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.fingerprint[probe:clock_generator]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.timeless[probe:clock_generator]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.bytes[probe:dfx_region_wrapper]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.fingerprint[probe:dfx_region_wrapper]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.timeless[probe:dfx_region_wrapper]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.bytes[probe:hbm_memory_controller]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.fingerprint[probe:hbm_memory_controller]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.timeless[probe:hbm_memory_controller]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.bytes[probe:host_link_phy]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.fingerprint[probe:host_link_phy]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.timeless[probe:host_link_phy]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.bytes[probe:interrupt_doorbell]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.fingerprint[probe:interrupt_doorbell]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.timeless[probe:interrupt_doorbell]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.bytes[probe:io_pinout_constraints]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.fingerprint[probe:io_pinout_constraints]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.timeless[probe:io_pinout_constraints]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.bytes[probe:vendor_dsp_primitive]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.fingerprint[probe:vendor_dsp_primitive]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "a.timeless[probe:vendor_dsp_primitive]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "b.legal_ok[from_qgemv]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "b.legal_ok[organ_map:FLASH]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "b.legal_ok[organ_map:QWEN]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "b.control_refused[graph_dangling_edge]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "b.control_own_code[graph_dangling_edge]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "b.control_refused[graph_dense_source_rematerialization]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "b.control_own_code[graph_dense_source_rematerialization]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "b.control_refused[graph_over_budget]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "b.control_own_code[graph_over_budget]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "b.control_refused[graph_state_without_owner]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "b.control_own_code[graph_state_without_owner]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "b.control_refused[graph_type_mismatch]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "b.control_own_code[graph_type_mismatch]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "b.controls_are_distinguishable",
+      "ok": true
+    },
+    {
+      "detail": {
+        "declared_n": 12,
+        "observed_n": 6
+      },
+      "name": "b.codes_are_declared",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.disjoint[hls_style]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.covers_catalog[hls_style]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.handwritten_is_a_hole[hls_style]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[hls_style:AsyncPrefetch]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[hls_style:AsyncPrefetch]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[hls_style:CollectiveRegion]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[hls_style:CollectiveRegion]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[hls_style:ConditionalPhysicalProgram]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[hls_style:ConditionalPhysicalProgram]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[hls_style:DirectRoutedAccumulate]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[hls_style:DirectRoutedAccumulate]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[hls_style:DoubleBufferedTile]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[hls_style:DoubleBufferedTile]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[hls_style:FusedDecodeCompute]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[hls_style:FusedDecodeCompute]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[hls_style:GraphReplay]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[hls_style:GraphReplay]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[hls_style:LayoutTransform]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[hls_style:LayoutTransform]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[hls_style:LocalStateMachine]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[hls_style:LocalStateMachine]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[hls_style:MemoryTierIdentity]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[hls_style:MemoryTierIdentity]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[hls_style:MoveOrRecompute]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[hls_style:MoveOrRecompute]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[hls_style:PersistentPhysicalRegion]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[hls_style:PersistentPhysicalRegion]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[hls_style:SemanticTransportEdge]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[hls_style:SemanticTransportEdge]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[hls_style:SparseSkip]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[hls_style:SparseSkip]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[hls_style:SpatialPipeline]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[hls_style:SpatialPipeline]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[hls_style:StationaryRepresentation]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[hls_style:StationaryRepresentation]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[hls_style:TiledProjection]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[hls_style:TiledProjection]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[hls_style:clock_generator]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[hls_style:clock_generator]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[hls_style:dfx_region_wrapper]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[hls_style:dfx_region_wrapper]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[hls_style:hbm_memory_controller]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[hls_style:hbm_memory_controller]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[hls_style:host_link_phy]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[hls_style:host_link_phy]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[hls_style:interrupt_doorbell]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[hls_style:interrupt_doorbell]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[hls_style:io_pinout_constraints]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[hls_style:io_pinout_constraints]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[hls_style:vendor_dsp_primitive]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[hls_style:vendor_dsp_primitive]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.disjoint[rust_hdl_style]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.covers_catalog[rust_hdl_style]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.handwritten_is_a_hole[rust_hdl_style]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[rust_hdl_style:AsyncPrefetch]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[rust_hdl_style:AsyncPrefetch]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[rust_hdl_style:CollectiveRegion]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[rust_hdl_style:CollectiveRegion]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[rust_hdl_style:ConditionalPhysicalProgram]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[rust_hdl_style:ConditionalPhysicalProgram]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[rust_hdl_style:DirectRoutedAccumulate]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[rust_hdl_style:DirectRoutedAccumulate]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[rust_hdl_style:DoubleBufferedTile]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[rust_hdl_style:DoubleBufferedTile]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[rust_hdl_style:FusedDecodeCompute]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[rust_hdl_style:FusedDecodeCompute]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[rust_hdl_style:GraphReplay]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[rust_hdl_style:GraphReplay]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[rust_hdl_style:LayoutTransform]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[rust_hdl_style:LayoutTransform]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[rust_hdl_style:LocalStateMachine]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[rust_hdl_style:LocalStateMachine]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[rust_hdl_style:MemoryTierIdentity]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[rust_hdl_style:MemoryTierIdentity]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[rust_hdl_style:MoveOrRecompute]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[rust_hdl_style:MoveOrRecompute]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[rust_hdl_style:PersistentPhysicalRegion]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[rust_hdl_style:PersistentPhysicalRegion]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[rust_hdl_style:SemanticTransportEdge]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[rust_hdl_style:SemanticTransportEdge]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[rust_hdl_style:SparseSkip]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[rust_hdl_style:SparseSkip]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[rust_hdl_style:SpatialPipeline]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[rust_hdl_style:SpatialPipeline]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[rust_hdl_style:StationaryRepresentation]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[rust_hdl_style:StationaryRepresentation]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[rust_hdl_style:TiledProjection]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[rust_hdl_style:TiledProjection]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[rust_hdl_style:clock_generator]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[rust_hdl_style:clock_generator]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[rust_hdl_style:dfx_region_wrapper]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[rust_hdl_style:dfx_region_wrapper]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[rust_hdl_style:hbm_memory_controller]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[rust_hdl_style:hbm_memory_controller]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[rust_hdl_style:host_link_phy]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[rust_hdl_style:host_link_phy]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[rust_hdl_style:interrupt_doorbell]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[rust_hdl_style:interrupt_doorbell]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[rust_hdl_style:io_pinout_constraints]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[rust_hdl_style:io_pinout_constraints]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.emit_iff_supported[rust_hdl_style:vendor_dsp_primitive]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "c.hole_iff_cannot[rust_hdl_style:vendor_dsp_primitive]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "d.no_preferred_target",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "d.fingerprint_preserved[from_qgemv:hls_style]",
+      "ok": true
+    },
+    {
+      "detail": {
+        "preferred": false,
+        "toolchain_choice": null
+      },
+      "name": "d.not_preferred[from_qgemv:hls_style]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "d.fingerprint_preserved[from_qgemv:rust_hdl_style]",
+      "ok": true
+    },
+    {
+      "detail": {
+        "preferred": false,
+        "toolchain_choice": null
+      },
+      "name": "d.not_preferred[from_qgemv:rust_hdl_style]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "d.identical_result_shape[from_qgemv]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "d.fingerprint_preserved[organ_map:FLASH:hls_style]",
+      "ok": true
+    },
+    {
+      "detail": {
+        "preferred": false,
+        "toolchain_choice": null
+      },
+      "name": "d.not_preferred[organ_map:FLASH:hls_style]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "d.fingerprint_preserved[organ_map:FLASH:rust_hdl_style]",
+      "ok": true
+    },
+    {
+      "detail": {
+        "preferred": false,
+        "toolchain_choice": null
+      },
+      "name": "d.not_preferred[organ_map:FLASH:rust_hdl_style]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "d.identical_result_shape[organ_map:FLASH]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "d.fingerprint_preserved[organ_map:QWEN:hls_style]",
+      "ok": true
+    },
+    {
+      "detail": {
+        "preferred": false,
+        "toolchain_choice": null
+      },
+      "name": "d.not_preferred[organ_map:QWEN:hls_style]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "d.fingerprint_preserved[organ_map:QWEN:rust_hdl_style]",
+      "ok": true
+    },
+    {
+      "detail": {
+        "preferred": false,
+        "toolchain_choice": null
+      },
+      "name": "d.not_preferred[organ_map:QWEN:rust_hdl_style]",
+      "ok": true
+    },
+    {
+      "detail": null,
+      "name": "d.identical_result_shape[organ_map:QWEN]",
+      "ok": true
+    },
+    {
+      "detail": {
+        "preferred": false,
+        "toolchain_choice": null
+      },
+      "name": "d.manifest_unranked[hls_style]",
+      "ok": true
+    },
+    {
+      "detail": {
+        "preferred": false,
+        "toolchain_choice": null
+      },
+      "name": "d.manifest_unranked[rust_hdl_style]",
+      "ok": true
+    },
+    {
+      "detail": {
+        "artifacts": 1,
+        "doc_validate_ok": false,
+        "lowered_an_invalid_graph": true,
+        "validator_codes": [
+          "DANGLING_EDGE"
+        ]
+      },
+      "name": "e.refuses[hls_style:graph_dangling_edge]",
+      "ok": false
+    },
+    {
+      "detail": {
+        "artifacts": 1,
+        "doc_validate_ok": false,
+        "lowered_an_invalid_graph": true,
+        "validator_codes": [
+          "DENSE_WEIGHT_MATERIALIZATION",
+          "DENSE_WEIGHT_MATERIALIZATION",
+          "SOURCE_TENSOR_IDENTITY",
+          "SOURCE_TENSOR_IDENTITY"
+        ]
+      },
+      "name": "e.refuses[hls_style:graph_dense_source_rematerialization]",
+      "ok": false
+    },
+    {
+      "detail": {
+        "artifacts": 1,
+        "doc_validate_ok": false,
+        "lowered_an_invalid_graph": true,
+        "validator_codes": [
+          "RESOURCE_OVER_BUDGET"
+        ]
+      },
+      "name": "e.refuses[hls_style:graph_over_budget]",
+      "ok": false
+    },
+    {
+      "detail": {
+        "artifacts": 1,
+        "doc_validate_ok": false,
+        "lowered_an_invalid_graph": true,
+        "validator_codes": [
+          "STATE_NO_OWNER"
+        ]
+      },
+      "name": "e.refuses[hls_style:graph_state_without_owner]",
+      "ok": false
+    },
+    {
+      "detail": {
+        "artifacts": 1,
+        "doc_validate_ok": false,
+        "lowered_an_invalid_graph": true,
+        "validator_codes": [
+          "TYPE_MISMATCH"
+        ]
+      },
+      "name": "e.refuses[hls_style:graph_type_mismatch]",
+      "ok": false
+    },
+    {
+      "detail": {
+        "artifacts": 1,
+        "doc_validate_ok": false,
+        "lowered_an_invalid_graph": true,
+        "validator_codes": [
+          "DANGLING_EDGE"
+        ]
+      },
+      "name": "e.refuses[rust_hdl_style:graph_dangling_edge]",
+      "ok": false
+    },
+    {
+      "detail": {
+        "artifacts": 1,
+        "doc_validate_ok": false,
+        "lowered_an_invalid_graph": true,
+        "validator_codes": [
+          "DENSE_WEIGHT_MATERIALIZATION",
+          "DENSE_WEIGHT_MATERIALIZATION",
+          "SOURCE_TENSOR_IDENTITY",
+          "SOURCE_TENSOR_IDENTITY"
+        ]
+      },
+      "name": "e.refuses[rust_hdl_style:graph_dense_source_rematerialization]",
+      "ok": false
+    },
+    {
+      "detail": {
+        "artifacts": 1,
+        "doc_validate_ok": false,
+        "lowered_an_invalid_graph": true,
+        "validator_codes": [
+          "RESOURCE_OVER_BUDGET"
+        ]
+      },
+      "name": "e.refuses[rust_hdl_style:graph_over_budget]",
+      "ok": false
+    },
+    {
+      "detail": {
+        "artifacts": 1,
+        "doc_validate_ok": false,
+        "lowered_an_invalid_graph": true,
+        "validator_codes": [
+          "STATE_NO_OWNER"
+        ]
+      },
+      "name": "e.refuses[rust_hdl_style:graph_state_without_owner]",
+      "ok": false
+    },
+    {
+      "detail": {
+        "artifacts": 1,
+        "doc_validate_ok": false,
+        "lowered_an_invalid_graph": true,
+        "validator_codes": [
+          "TYPE_MISMATCH"
+        ]
+      },
+      "name": "e.refuses[rust_hdl_style:graph_type_mismatch]",
+      "ok": false
+    }
+  ],
+  "claim_boundary": "FUNCTIONAL_SIM acceptance of the hardware IR itself. No board, no synthesis, no bitstream, no clock. Says nothing about FPGA throughput, HBM bandwidth, Fmax or resource utilisation; U50_PRESENT is false. A total, refusing IR is necessary for a physical compiler, not sufficient.",
+  "clauses": {
+    "a_conservation": {
+      "checks": 96,
+      "failed": 0,
+      "failing": []
+    },
+    "b_discrimination": {
+      "checks": 15,
+      "failed": 0,
+      "failing": []
+    },
+    "c_totality": {
+      "checks": 102,
+      "failed": 0,
+      "failing": []
+    },
+    "d_invariance": {
+      "checks": 18,
+      "failed": 0,
+      "failing": []
+    },
+    "e_refusal": {
+      "checks": 10,
+      "failed": 10,
+      "failing": [
+        "e.refuses[hls_style:graph_dangling_edge]",
+        "e.refuses[hls_style:graph_dense_source_rematerialization]",
+        "e.refuses[hls_style:graph_over_budget]",
+        "e.refuses[hls_style:graph_state_without_owner]",
+        "e.refuses[hls_style:graph_type_mismatch]",
+        "e.refuses[rust_hdl_style:graph_dangling_edge]",
+        "e.refuses[rust_hdl_style:graph_dense_source_rematerialization]",
+        "e.refuses[rust_hdl_style:graph_over_budget]",
+        "e.refuses[rust_hdl_style:graph_state_without_owner]",
+        "e.refuses[rust_hdl_style:graph_type_mismatch]"
+      ]
+    }
+  },
+  "command": [
+    "python3",
+    "-m",
+    "tools.acceptance.fpga.run_gates"
+  ],
+  "criterion_altered": false,
+  "criterion_quoted": "HWIR is a total, fingerprint-stable, honest-hole hardware IR that REFUSES what it cannot represent. Over the corpus C = {from_qgemv(), from_organ_map(FLASH_ORGAN_MAP), from_organ_map(QWEN_ORGAN_MAP)} + the five declared negative controls + one single-node probe graph per primitive in HARDWARE_PRIMITIVE_CATALOG per registered lowering target, all five clauses hold:\n\n(a) ROUND-TRIP CONSERVATION. For every graph G in C, from_json(G.to_json()).to_json() is byte-identical to G.to_json(), the round-tripped fingerprint equals G.fingerprint(), and no wall-clock timestamp appears in the serialisation. An IR whose identity is not conserved across serialisation cannot address an artifact.\n\n(b) VALIDATOR DISCRIMINATION. validate(G).ok is True for exactly the legal graphs and False for exactly the negative controls; each control yields its own declared code; and every observed code is one of the twelve the module declares. A validator that accepts everything, or that reports one code for every defect, discriminates nothing.\n\n(c) LOWERING TOTALITY. For every registered target T, supported(T) and cannot_express(T) are disjoint, their union covers HARDWARE_PRIMITIVE_CATALOG exactly, and handwritten_hdl(T) is a non-empty subset of cannot_express(T). On the per-primitive probe graph, p is emitted if and only if p is supported, and p is reported as a hole if and only if p is in cannot_express. A target may not silently drop a primitive it neither emits nor declares it cannot express.\n\n(d) TARGET INVARIANCE. For every G and every T, lower_hwir(G, T)['graph_fingerprint'] equals G.fingerprint(), the result key set is identical across targets, and every manifest carries preferred=False and toolchain_choice=None. Lowering must not perturb graph identity, and no target may be a ranked default.\n\n(e) REFUSAL. For every negative control, lowering RAISES rather than returning a document. An IR that emits a plausible kernel artifact for a graph its own validator rejects has published a lie in a form synthesis will not catch.",
+  "criterion_source": {
+    "authored_at_commit": "848a0d0ae0a6a8d0a1cbbcbaba30b30d4a13ba13",
+    "file": "civilization/GATE_CRITERIA_SUPPLEMENT.json",
+    "pointer": "gates.FPGA_HWIR.criterion",
+    "why_not_appendix_o": "APPENDIX O gives FPGA_HWIR acceptance span 9000-9061, shared identically with FPGA_PREBOARD_SCHEMAS, FPGA_LINK_SIM and FPGA_PARTITION_SIM. Lines 9000-9061 are 'APPENDIX K - HARDWARE DOCTOR / FPGA COMPILER DEEP SCHEMAS': a fenced code block declaring TransportGenome, FPGAGenome, HBMGenome and HardwareProfile. That is a data model, not a proof obligation. Nothing in the span can be satisfied or refused, which is why this gate's acceptance had never been run."
+  },
+  "criterion_weakened": false,
+  "elapsed_ms": 71.077,
+  "evidence_tier": "FUNCTIONAL_SIM",
+  "gate": "FPGA_HWIR",
+  "git_head": "e93d73aa479270f21798113beb4b9bab1a94b218",
+  "gpu_authority": false,
+  "hardware_measured": false,
+  "measured": {
+    "checks_failed": 10,
+    "checks_total": 241,
+    "corpus": {
+      "catalog_primitives": 24,
+      "legal_graphs": 3,
+      "lowering_targets": [
+        "hls_style",
+        "rust_hdl_style"
+      ],
+      "negative_controls": 5
+    }
+  },
+  "recorded_by": "tools/acceptance/fpga/run_gates.py",
+  "schema": "hawking.acceptance.gate.v1",
+  "u50_present": false,
+  "verdict": "BLOCKED"
+}
