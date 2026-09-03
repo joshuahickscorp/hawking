@@ -3280,7 +3280,28 @@ class Engine:
 
         # Still over budget with nothing re-derivable left. Refuse honestly, and
         # say what was already given up so the refusal is actionable.
+        #
+        # And say what the demand is MADE OF. An offline reconstruction of a
+        # failing unit's payload measured 1,714 tokens while the live refusal
+        # reported 8,707 -- a gap that cannot be closed by reading the code,
+        # because the only thing that knows is the payload that was actually
+        # built. Per-message sizes are cheap and they end that argument.
         payload, demand = last
+        try:
+            breakdown = ", ".join(
+                f"{(m or {}).get('role', '?')}={len(str((m or {}).get('content') or '')) // _CHARS_PER_TOKEN}"
+                for m in (payload.get("messages") or [])
+                if isinstance(m, dict)
+            )
+            self._emit("context_refused", {
+                "demand": demand,
+                "usable_input_tokens": int(budget.usable_input_tokens),
+                "messages": breakdown,
+                "evidence_items": len(items),
+                "observation_blocks": len(blocks),
+            })
+        except Exception:
+            pass
         result = preflight(budget, demand, kind="root")
         raise ContextPreflightError(result)
 
