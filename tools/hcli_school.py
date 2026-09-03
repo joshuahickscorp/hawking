@@ -36,6 +36,10 @@ GOALS = REPO / ".hcli" / "school" / "goals"
 #: One imperative sentence each. Levels follow the campaign ladder: read,
 #: patch, patch+test, author a regression test, repair a failure, optimise,
 #: benchmark, then choose its own work.
+LADDER_FILE = REPO / ".hcli" / "school" / "ladder.json"
+
+#: Fallback when no ladder file is present. The file is read fresh before every
+#: cycle, so goals can be added or reordered while the loop is running.
 LADDER = [
     (2, "In hcli/tool_registry.py, make a whole-file fs.read result also report total_lines, the way the windowed read already does."),
     (3, "In hcli/resources.py, add a one-line docstring to pid_is_alive saying it reaps a zombie before testing liveness."),
@@ -182,15 +186,29 @@ def cycle(level: int, goal: str, attempt: int) -> dict:
     return row
 
 
+def ladder() -> list:
+    """Read the ladder fresh each cycle, so it can be steered while running."""
+    try:
+        rows = json.loads(LADDER_FILE.read_text())
+        out = [(int(r["level"]), str(r["goal"])) for r in rows if r.get("goal")]
+        return out or LADDER
+    except (OSError, ValueError, KeyError, TypeError):
+        return LADDER
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--once", action="store_true")
     ap.add_argument("--start-level", type=int, default=2)
     args = ap.parse_args()
 
-    index = next((i for i, (lvl, _) in enumerate(LADDER) if lvl >= args.start_level), 0)
-    while index < len(LADDER):
-        level, goal = LADDER[index]
+    rungs = ladder()
+    index = next((i for i, (lvl, _) in enumerate(rungs) if lvl >= args.start_level), 0)
+    while index < len(rungs):
+        rungs = ladder()
+        if index >= len(rungs):
+            break
+        level, goal = rungs[index]
         for attempt in range(1, MAX_RETRIES + 2):
             text = goal if attempt == 1 else goal + RETRY_HINT
             row = cycle(level, text, attempt)
