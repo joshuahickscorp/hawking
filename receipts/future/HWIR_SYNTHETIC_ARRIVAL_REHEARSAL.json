@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-03T00:17:36Z",
+  "recorded_at": "2026-09-03T05:16:42Z",
   "recorded_by": "tools/future/hwir.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -1264,7 +1264,7 @@
   "synthetic_rehearsal": true,
   "u50": {
    "capability_graph": "civilization/CAPABILITY_GRAPH.json",
-   "capability_graph_sha256": "3193f8f5182de217f57f48ae35bae8d7c7d60d2c60cf1d8e7e0c4286761ac868",
+   "capability_graph_sha256": "1f3b8d6f0c00da9a059154130bef136ab4a0bc83434cab697d41fc08e098328f",
    "evidence_tier": "STATIC",
    "gates_carrying_wake": [
     "U50_PURCHASE_ACCEPTANCE",
@@ -1299,7 +1299,7 @@
   "unpinned_ids": [],
   "wake_condition": "U50_PRESENT"
  },
- "seal_sha256": "8db3298b8e46893ed8a27d9cc3de93bd6c1b23a40b3904dcdaf328592f999fe9",
+ "seal_sha256": "37313f98a186ee35bfd71cc41d86027426744c3b497aa7835c28bcd79560ca78",
  "synthetic_rehearsal": true,
  "u50_present": false,
  "wake_condition": "U50_PRESENT"
