@@ -54,11 +54,33 @@ def test_a_roomy_prompt_still_gets_a_generous_budget():
     assert source == "derived"
 
 
-def test_a_margin_is_left_for_estimator_disagreement():
-    """Being over by one token costs the entire call."""
+def test_the_margin_scales_with_the_prompt():
+    """A flat margin cannot cover an error proportional to length.
+
+    `_estimate_prompt_tokens` divides characters by a constant; the resident's
+    real tokenizer disagreed by 5.8% on live prompts -- 5,488 estimated against
+    5,804 counted -- and 96 flat tokens did not cover it. Measured overflow:
+    5,804 + 2,557 against a 8,192 window.
+    """
+    from hcli.engine import _CTX_ESTIMATE_ERROR
+
     eng = _engine()
-    max_new, _ = eng._resolve_max_tokens(4000)
-    assert 4000 + max_new <= 8192 - _CTX_ESTIMATE_MARGIN + 1
+    small, _ = eng._resolve_max_tokens(1000)
+    large, _ = eng._resolve_max_tokens(6000)
+    assert (8192 - 6000 - large) > (8192 - 1000 - small), (
+        "a longer prompt must reserve MORE, not the same"
+    )
+    assert _CTX_ESTIMATE_ERROR > 0.058, "the reserve must exceed the measured error"
+
+
+@pytest.mark.parametrize("estimated,real", [(5488, 5804), (2531, 2680), (7000, 7420)])
+def test_the_real_token_count_still_fits(estimated, real):
+    """The bar is the tokenizer's count, not the estimator's."""
+    eng = _engine()
+    max_new, _ = eng._resolve_max_tokens(estimated)
+    assert real + max_new <= 8192, (
+        f"real {real} + max_new {max_new} overflows despite an estimate of {estimated}"
+    )
 
 
 def test_an_explicit_configured_budget_still_wins():

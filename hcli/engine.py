@@ -246,6 +246,11 @@ def _join_observations(blocks: List[str]) -> str:
 #: Tokenizer estimates and the real tokenizer disagree by a little. Leave room,
 #: because being over by one token costs the entire call.
 _CTX_ESTIMATE_MARGIN = 96
+#: Observed disagreement between `_estimate_prompt_tokens` and the resident's
+#: real tokenizer, with headroom: 5.8% measured, 12% reserved. Being over by one
+#: token costs the whole call, and the cost of reserving too much is only a
+#: shorter reply.
+_CTX_ESTIMATE_ERROR = 0.12
 _MAX_TOKENS_FLOOR = 512
 _MAX_TOKENS_CEILING = 8192
 _CHARS_PER_TOKEN = 3
@@ -3030,7 +3035,13 @@ class Engine:
         if explicit is not None and source is not None:
             return max(1, int(explicit)), source
         ctx = self._context_budget().per_request_ctx
-        remaining = int(ctx) - int(prompt_tokens_est) - _CTX_ESTIMATE_MARGIN
+        # The margin must SCALE. `_estimate_prompt_tokens` divides characters by
+        # a constant; the real tokenizer disagreed by 5.8% on live prompts --
+        # estimated 5,488 where the resident counted 5,804 -- and a flat 96
+        # tokens cannot cover an error proportional to length. Measured
+        # overflow: 5,804 + 2,557 against a 8,192 window.
+        margin = max(_CTX_ESTIMATE_MARGIN, int(prompt_tokens_est * _CTX_ESTIMATE_ERROR))
+        remaining = int(ctx) - int(prompt_tokens_est) - margin
         # The floor may not push the request PAST the window. `max(floor, ...)`
         # granted 512 completion tokens even when the prompt had already used
         # the context, and the runtime refused the whole call:
