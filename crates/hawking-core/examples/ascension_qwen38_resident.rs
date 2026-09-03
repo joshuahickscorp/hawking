@@ -235,6 +235,17 @@ fn run_resident(args: Args) -> Result<(), String> {
 /// to agree with it again. Measured on one goal: four consecutive calls cold on
 /// the same prefix key -- 2092, 5157, 3218 and 4769 tokens all stepped from
 /// scratch -- then a single hit reusing 2623 of 5262.
+///
+/// A checkpoint that HIT must still be allowed to advance. Refusing to
+/// re-snapshot after a restore froze the checkpoint at whatever the first cold
+/// call happened to capture, so every token past it was re-stepped on every
+/// later call, forever. Measured on one goal: five calls pinned at 1398 reused
+/// tokens while the prompts grew to 4784 -- 3386 tokens stepped at 580
+/// dispatches each for the single last call. Restoring is exact by contract, so
+/// the state after restoring at K and stepping to N is the state a cold prefill
+/// of N would reach; snapshotting there is as sound as snapshotting cold. The
+/// held-length floor below already refuses a snapshot that would not be an
+/// improvement, which is the only thing the refusal was really buying.
 fn snapshot_boundary(
     restored_from_checkpoint: usize,
     checkpoint_missed: bool,
@@ -242,9 +253,7 @@ fn snapshot_boundary(
     agreed_with_previous: usize,
     prompt_len: usize,
 ) -> Option<usize> {
-    if restored_from_checkpoint != 0 {
-        return None;
-    }
+    let _ = restored_from_checkpoint;
     let floor = if checkpoint_missed { 16 } else { held.max(16) };
     if agreed_with_previous > floor && agreed_with_previous < prompt_len {
         Some(agreed_with_previous)
@@ -637,8 +646,20 @@ mod prefix_reuse_tests {
     }
 
     #[test]
-    fn a_restored_checkpoint_is_left_alone() {
-        assert_eq!(snapshot_boundary(2623, false, 2623, 4000, 5000), None);
+    fn a_restored_checkpoint_advances_when_the_prompt_agrees_further() {
+        // Deliberately changed: this used to assert None, which froze the
+        // checkpoint at the first cold capture and re-stepped everything past
+        // it on every later call. 4000 > the 2623 held, so it is an
+        // improvement and must be taken.
+        assert_eq!(snapshot_boundary(2623, false, 2623, 4000, 5000), Some(4000));
+    }
+
+    #[test]
+    fn a_restored_checkpoint_is_not_replaced_by_a_worse_one() {
+        // Agreement shorter than what is already held buys nothing, and
+        // throwing away a longer checkpoint for it is a straight loss.
+        assert_eq!(snapshot_boundary(2623, false, 2623, 900, 5000), None);
+        assert_eq!(snapshot_boundary(2623, false, 2623, 2623, 5000), None);
     }
 
     #[test]
