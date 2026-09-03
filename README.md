@@ -1,125 +1,84 @@
 # Hawking
 
-Hawking is a Rust inference and serving stack for Apple Silicon. It loads
-supported GGUF and `.gravity` artifacts, provides CPU/reference and Metal
-execution paths, and exposes local generation through a CLI and HTTP server.
-The Python HCLI package adds a provider-neutral control surface, structured
-results, resident-worker controls, and evidence capture.
+Hawking is an experimental systems stack for finding and running cheaper
+physical representations of neural models. It pairs a Rust inference runtime on
+Apple Silicon with a Python control plane that plans work, calls tools, runs
+deterministic verifiers, and records evidence for every claim it makes.
 
-This repository contains experimental model runtimes as well as the reusable
-inference and serving substrate. Model weights are local inputs; they are not
-part of the repository.
+The premise is that a model's cost is a property of its representation and its
+execution, and that both can be searched. Hawking measures rather than asserts:
+a result that has no receipt did not happen.
 
-## What runs here
+## What it does
 
-- `hawking-core` owns artifact loading, runtime state, attention/decode,
-  quantized and packed matmul, KV-cache handling, batching, and Metal kernels.
-- `hawking` provides the command-line surface for generation, tokenization,
-  serving, Gravity artifact operations, benchmarking, and related checks.
-- `hawking-serve` exposes the local HTTP surface, including
-  `/v1/chat/completions`, `/v1/completions`, `/v1/embeddings`,
-  `/v1/hawking/generate`, `/v1/hawking/tokens`, `/v1/models`, `/healthz`, and
-  `/metrics`.
-- HCLI accepts local/native or OpenAI-compatible providers and records the
-  selected provider, artifact, tokenizer, runtime, capability, and verification
-  context in structured results.
-- The HCLI resident path can run a model-free supervisor with disposable
-  workers, bounded restart/continuity state, and explicit child-job ownership;
-  status inspection does not open model weights.
-
-The workspace also includes HIDE support crates, research/evaluation tools,
-and application scaffolding. These are workspace members, but not every member
-is part of the default build or a production-ready adapter.
+- Runs GGUF and `.gravity` artifacts through a Metal execution path, with a
+  CPU reference path for parity checking.
+- Serves generation locally over an OpenAI-compatible HTTP surface.
+- Searches quantized and packed representations, and evaluates them against
+  measured quality rather than nominal bit width.
+- Orchestrates long-running work through HCLI: work units, repair budgets,
+  structured output contracts, and durable receipts.
+- Keeps a resident model process alive across restarts, with a model-free
+  supervisor that can inspect status without loading weights.
 
 ## Architecture
 
 ```text
-model artifact -> hawking-core -> hawking CLI / hawking-serve
-                                  \
-                                   -> HCLI provider and resident controls
+  model artifact
+        |
+   hawking-core ......... runtime, attention/decode, quantized matmul,
+        |                  KV cache, Metal kernels
+        +--> hawking ..... command line: generate, serve, bench, gravity ops
+        +--> hawking-serve  HTTP: /v1/chat/completions, /v1/completions,
+        |                   /v1/embeddings, /v1/models, /healthz, /metrics
+        |
+      HCLI ............... control plane: providers, work units, tools,
+                           verifiers, receipts, resident supervision
 ```
 
-The Rust workspace is defined in `Cargo.toml`. The Python package and console
-scripts are defined in `pyproject.toml`. Receipts and benchmark reports record
-the conditions and limitations of measurements; an isolated kernel or organ
-benchmark is not automatically a full-token generation result.
+## Current state
+
+The runtime, the serving surface and the HCLI control plane are live and
+tested. The representation search produces measured results; the strongest of
+them are recorded under `research/`.
+
+Work in progress, stated plainly because the distinction matters:
+
+- HCLI self-improvement is running but has not yet landed an accepted change of
+  its own authorship.
+- Prompt throughput on the resident path is the current bottleneck. Prefill
+  steps one token at a time, so it costs what decode costs.
+- No Odyssey campaign has been run end to end, and no Odyssey wall time has
+  ever been measured. Figures in the ledgers are budgets, not measurements.
+- FPGA work is pre-board. There are no hardware results.
 
 ## Build and run
 
-From the repository root:
-
 ```bash
-cargo check -p hawking
-cargo test -p hawking-core --lib
+cargo build --release
+cargo run -p hawking -- generate --artifact <path> --prompt "hello"
+cargo run -p hawking-serve
 
-cargo run --release -p hawking -- generate \
-  --weights /path/to/model.gguf \
-  --prompt "Write a function that reverses a string."
-
-cargo run --release -p hawking -- serve \
-  --weights /path/to/model.gguf
-
-cargo run --release -p hawking -- gravity serve \
-  --artifact /path/to/artifact
-```
-
-Install the Python/HCLI surface when needed:
-
-```bash
-python3 -m pip install -e .
+pip install -e .
 hcli --help
 ```
 
-Metal execution requires Apple Silicon and the relevant local runtime inputs.
-Use `hawking --help`, `hawking serve --help`, and `hawking gravity --help` for
-the complete command-specific options.
+Model weights are local inputs and are not part of this repository.
 
-## Evidence-bound performance notes
+## Repository
 
-The [full-sequence parallelism report](evidence/parallelism/FULLSEQ_CAPTURE_PARALLELISM_FINDINGS.json)
-records a synthetic resident-weight capture/export fixture: two workers reached
-1.398× and four workers 1.788× the serial receipt baseline, with byte-identical
-merged outputs. This is evidence for sequence-sharded capture on that fixture,
-not a universal inference-throughput claim.
+| path | contents |
+| --- | --- |
+| `crates/` | Rust workspace: runtime, CLI, serving, benchmarks, HIDE crates |
+| `hcli/` | Python control plane, resident supervision, tools and verifiers |
+| `tools/` | Campaign, evaluation and analysis tooling |
+| `app/` | Desktop application and frontend |
+| `docs/` | Architecture, control plane, hardware, specifications |
+| `research/` | Experiments, lab operators, archived work, evidence |
+| `receipts/` | Acceptance and provenance records |
+| `workspace/` | Local build and campaign working tree |
+| `civilization/` | Roadmap and capability-graph state read by the control plane |
 
-The [GLM teacher-forced report](evidence/parallelism/GLM_TEACHER_FORCED_PARALLELISM_FINDINGS.json)
-records a bit-exact safe sequence-shard path and explicitly does not claim a
-full-scale speedup. Link-bound or model-specific results must be measured again
-under their own workload and hardware conditions.
+## License
 
-## Repository layout
-
-- `crates/` — Rust inference, serving, context, evaluation, and support crates.
-- `hcli/`, `lab/`, and `tools/` — Python control, experiments, verification,
-  and maintenance tooling.
-- `docs/` — current architecture and archived state/reference documents.
-- `evidence/` and `receipts/` — measurements, classifications, and sealed
-  provenance records.
-- `app/` — frontend and desktop scaffolding.
-
-The HTTP compatibility surface is intentionally narrower than every provider
-API; for example, `/v1/responses` and `/v1/messages` are not implemented by
-`hawking-serve`.
-
-## Accelerator platform loop
-
-The platform steer is consolidated in the canonical [H-ROADMAP](/Users/scammermike/Downloads/H-ROADMAP.md)
-as the C01–C64 graph plus the P01–P18 compounding queue. The compact,
-receipt-derived scoreboard can be regenerated with:
-
-```bash
-/usr/local/bin/python3 tools/accelerator/scoreboard.py
-```
-
-It records model/backend/representation and physical cost fields while keeping
-unmeasured values unknown. The Physical Graph promotion rule still requires
-measured complete useful work, independent capability evidence, and a protected
-benchmark. The ANE lane remains public-Core-ML-only; CUDA is portability/HWIR
-work on this Apple host, not a CUDA-hardware performance claim.
-
-The Flash continuation now has a reusable `TerminalExecutor` that keeps the
-source index, terminal weights, Metal context, pipelines and workspaces alive
-for a native session. Its build boundary is recorded in
-[FLASH_TERMINAL_EXECUTOR_COMPILE.json](/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_TERMINAL_EXECUTOR_COMPILE.json);
-physical accepted-token and protected performance claims remain gated on the
-next native run.
+See [LICENSE](LICENSE).
