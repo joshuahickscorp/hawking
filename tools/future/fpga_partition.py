@@ -49,6 +49,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Iterable, Mapping
@@ -177,17 +178,69 @@ def unpinned_ratio(name: str, reason: str) -> dict[str, Any]:
 
 
 def transport_cost(activation_bytes: float, reduction_bytes: float,
-                   t: float, setup: float = 0.0) -> float:
+                   t: float, setup: float = 0.0,
+                   max_payload_per_transaction: float | None = None) -> float:
     """C, in Apple-byte-times. t is link rate / Apple rate.
 
     t == 0 is a link that moves nothing, which must cost infinity rather than
     divide by zero -- a zero-bandwidth link that reports a finite cost is how a
     partition model recommends a split across a disconnected card.
+
+    With max_payload_per_transaction set, the fixed `setup` is charged PER
+    TRANSACTION rather than once. That is the difference between a link and a
+    bus: a payload larger than one transaction pays the overhead again for each,
+    so cost stops being linear in bytes and the efficiency of the link becomes a
+    function of how the payload is shaped, not only how big it is.
+
+    Leaving it None keeps the single-transaction model, which is the right
+    default while the transaction size is unpinned -- inventing one would put a
+    guessed constant inside the break-even.
     """
     if t <= 0:
         return float("inf")
     payload = max(0.0, float(activation_bytes)) + max(0.0, float(reduction_bytes))
-    return payload / float(t) + max(0.0, float(setup))
+    setup = max(0.0, float(setup))
+    if max_payload_per_transaction and max_payload_per_transaction > 0:
+        transactions = math.ceil(payload / float(max_payload_per_transaction)) or 1
+        setup *= transactions
+    return payload / float(t) + setup
+
+
+def useful_payload_fraction(payload_bytes: float, t: float, setup: float,
+                            max_payload_per_transaction: float | None = None) -> float:
+    """Share of transport cost that actually moves bytes, in [0, 1].
+
+    Below the knee, per-transaction overhead dominates and the link is mostly
+    paying to start. This is the quantity that says a small activation is not
+    worth crossing a link at ANY bandwidth: raise t without bound and the
+    fraction still tends to 0 while setup > 0.
+    """
+    total = transport_cost(payload_bytes, 0.0, t, setup, max_payload_per_transaction)
+    if total in (0.0, float("inf")) or t <= 0:
+        return 0.0
+    return (payload_bytes / float(t)) / total
+
+
+def minimum_efficient_payload(t: float, setup: float, target_fraction: float = 0.5,
+                              max_payload_per_transaction: float | None = None) -> float:
+    """Smallest payload whose useful fraction reaches `target_fraction`.
+
+    Closed form in the single-transaction case: useful/total = (p/t)/(p/t + s),
+    so reaching f needs p >= s*t*f/(1-f). Below that size the link spends more
+    than (1-f) of its cost on overhead, and moving the activation is buying
+    setup rather than bandwidth.
+    """
+    if t <= 0 or not 0 < target_fraction < 1:
+        return float("inf")
+    if setup <= 0:
+        return 0.0
+    if max_payload_per_transaction and max_payload_per_transaction > 0:
+        # Per-transaction overhead does not vanish with size; the ratio is capped.
+        cap = useful_payload_fraction(max_payload_per_transaction, t, setup,
+                                      max_payload_per_transaction)
+        if cap < target_fraction:
+            return float("inf")
+    return float(setup) * float(t) * target_fraction / (1.0 - target_fraction)
 
 
 def critical_path(f: float, W: float, r: float, C: float) -> float:
