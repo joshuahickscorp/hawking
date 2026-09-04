@@ -838,7 +838,22 @@ def root_is_the_whole_objective(text: str, root_goal: str) -> bool:
     root = str(root_goal or "").strip()
     if not raw or not root or root not in raw:
         return False
-    return len(raw.replace(root, "").strip()) < MIN_ROOT_EXCISE
+    remainder = raw.replace(root, "")
+    # The compiler's OWN boilerplate does not count as a body quoting the goal.
+    # It appends `obligations=G001 ` before the description and
+    # `Relevant files: a.py, b.py` after it, and on a one-sentence goal that
+    # scaffolding alone cleared the threshold -- so the guard concluded the
+    # objective merely quoted the root and excised it. The worker then received
+    # `OBJECTIVE: obligations=G001 [ROOT_GOAL_OMITTED] Relevant files: ...` and
+    # answered with an empty operation, which is the only correct response to
+    # an empty instruction.
+    remainder = re.sub(r"obligations?=[A-Za-z0-9_.,]+", "", remainder)
+    # To END OF LINE only. With re.DOTALL this swallowed the entire rest of the
+    # packet, so the whole-prompt call concluded the root was the objective and
+    # excision was disabled everywhere -- including for a genuine duplicated
+    # dump further down, which is what this function exists to remove.
+    remainder = re.sub(r"Relevant files:[^\n]*", "", remainder)
+    return len(remainder.strip()) < MIN_ROOT_EXCISE
 
 
 def _excise_root_goal(text: str, root_goal: str) -> str:
