@@ -53,3 +53,32 @@ def test_a_file_that_fits_is_returned_whole(tmp_path):
     mod = tmp_path / "small.py"
     mod.write_text("def f():\n    return 1\n")
     assert _focused_excerpt(mod.read_text(), "f", 9999, str(mod)) == mod.read_text()
+
+
+def test_the_most_specific_name_wins_not_the_earliest(tmp_path):
+    """A short common name defined early must not outrank the named target.
+
+    min() on (line, name) picked whichever matching symbol appeared first in
+    the file, so a goal naming _list_files and directories_seen anchored on
+    `path` instead. Measured on hcli/tool_registry.py: the window came out as
+    lines 251-403, containing TOOL_SCHEMA and neither the function the goal
+    names nor the dict it asks to change -- and the model edited the return
+    dict it had actually been shown.
+    """
+    mod = tmp_path / "m.py"
+    mod.write_text(
+        "def path():\n    return 1\n\n\n"
+        + "# filler\n" * 40
+        + "\ndef the_specific_target():\n    marker = 'FOUND_IT'\n    return marker\n"
+    )
+    excerpt = _focused_excerpt(
+        mod.read_text(), "change the_specific_target and its path", 400, str(mod)
+    )
+    assert "FOUND_IT" in excerpt, excerpt[:200]
+
+
+def test_the_real_file_anchors_on_the_named_function():
+    src = TARGET.read_text()
+    ex = _focused_excerpt(src, "add directories_seen to _list_files", 6027, str(TARGET))
+    assert "def _list_files" in ex
+    assert "directories_seen" in ex

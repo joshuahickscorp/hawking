@@ -745,7 +745,18 @@ def _focused_excerpt(content: str, prompt: str, limit: int, path: str) -> str:
         symbols = _python_symbol_lines(content)
         named = [(symbols[w], w) for w in wanted if w in symbols]
         if named:
-            anchor_line = min(named)[0] - 1
+            # The MOST SPECIFIC name, not the earliest-defined one. min() on
+            # (line, name) picks whichever matching symbol appears first in the
+            # file, so a goal naming `_list_files` and `directories_seen` was
+            # anchored on `path` or `glob` -- short names that occur early and
+            # everywhere. Measured: the window came out as lines 251-403, which
+            # contains TOOL_SCHEMA and neither the function the goal names nor
+            # the dict it asks to change, and the model duly edited the return
+            # dict it had actually been shown.
+            #
+            # A longer identifier is a more particular one. Ties go to the
+            # earliest definition, as before.
+            anchor_line = max(named, key=lambda pair: (len(pair[1]), -pair[0]))[0] - 1
 
     hits = [i for i, line in enumerate(lines) if any(w in line for w in wanted)]
     if anchor_line is None and not hits:
