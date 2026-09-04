@@ -508,14 +508,40 @@ from .engine import Engine, EngineError
 from .goal import WorkerPacket
 
 
-def gather_evidence_paths(engine: Any, paths: Sequence[str]) -> List[Dict[str, Any]]:
-    """Read only the listed files. Never scan the ultragoal blob."""
+def gather_evidence_paths(
+    engine: Any,
+    paths: Sequence[str],
+    focus: str = "",
+) -> List[Dict[str, Any]]:
+    """Read only the listed files. Never scan the ultragoal blob.
+
+    The path list decides WHICH files are read. It must not also decide WHERE
+    in them to look. _gather_evidence focuses each file on the identifiers it
+    shares with the text it is given, and the text it was given here was
+    " ".join(paths) -- so for hcli/tool_registry.py the shared identifiers were
+    {hcli, tests, tool_registry}, none of which are symbols in that file. The
+    anchor fell through to density scoring and selected lines 1838-1964, the
+    tool registration block, on every call of every attempt.
+
+    Measured by dumping the bytes actually posted: 25 consecutive calls, the
+    same wrong window each time, while the goal named _list_files at line 677.
+    The model edited what it was shown and was recorded as targeting the wrong
+    code.
+
+    `focus` is the worker packet. It selects the window; `paths` still selects
+    the files.
+    """
     listed = [str(path).strip() for path in paths if str(path).strip()]
     if not listed:
         return []
     gather = getattr(engine, "_gather_evidence", None)
     if not callable(gather):
         return []
+    if focus:
+        try:
+            engine._active_goal_text = focus
+        except Exception:  # a focusing hint must never block evidence
+            pass
     return gather(" ".join(listed))
 
 
@@ -532,7 +558,7 @@ def execute_workunit(self: Any, wu: Any, context: Optional[Dict[str, Any]]) -> D
     compiled = context.get("compiled")
     if not isinstance(compiled, dict):
         compiled = {}
-    evidence = gather_evidence_paths(self, paths)
+    evidence = gather_evidence_paths(self, paths, focus=prompt)
 
     return self.execute(
         prompt,

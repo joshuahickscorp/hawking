@@ -746,6 +746,7 @@ def _list_files(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
         "files": entries,
         "directories": directories,
         "truncated": truncated,
+        "directories_seen": directories_seen,
     }
 
 
