@@ -3940,6 +3940,14 @@ class Engine:
                     advanced,
                 ))
 
+        # LAST RESORT: drop evidence entirely rather than refuse the call.
+        # keep_floor exists so the model is not left inventing a file it cannot
+        # read, but a floor that cannot fit refuses the turn outright --
+        # measured: "context preflight failed (root): demand 10580 exceeds
+        # per-request ctx", which is strictly worse than a degraded prompt.
+        if keep_floor:
+            attempts.append(([], None, "evidence 0 (floor abandoned to fit)", floor))
+
         last = None
         for keep, memory, label, cut in attempts:
             # The two-argument form is the contract every existing caller uses.
