@@ -167,10 +167,6 @@ For a read-only request:
   "tool_calls": []
 }
 
-For a requested code/file change. PREFER old_lines/new_lines: one array element
-per line, no newline escapes anywhere. old_text/new_text still work but every
-newline in them must be escaped, and that is where replies break.
-
 For a requested code/file change:
 {
   "kind": "mutation",
@@ -179,8 +175,8 @@ For a requested code/file change:
     {
       "op": "replace",
       "path": "workspace/relative/path",
-      "old_lines": ["exact anchor lines, copied verbatim"],
-      "new_lines": ["replacement", "one line per array element"]
+      "old_text": "exact anchor, copied verbatim, occurring once",
+      "new_text": "the replacement"
     }
   ],
   "tests": ["hcli/tests/test_the_thing_you_changed.py"],
