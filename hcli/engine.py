@@ -790,6 +790,14 @@ def _focused_excerpt(content: str, prompt: str, limit: int, path: str) -> str:
             # earliest definition, as before.
             anchor_line = max(named, key=lambda pair: (len(pair[1]), -pair[0]))[0] - 1
 
+    if os.environ.get("HCLI_DUMP_EVIDENCE"):
+        try:
+            with open(os.environ["HCLI_DUMP_EVIDENCE"] + ".focus", "a") as h:
+                h.write(f"--- path={path} limit={limit}\n")
+                h.write(f"    focus[:160]={focus[:160]!r}\n")
+                h.write(f"    wanted_sample={sorted(wanted)[:12]}\n")
+        except Exception:
+            pass
     hits = [i for i, line in enumerate(lines) if any(w in line for w in wanted)]
     if anchor_line is None and not hits:
         return content[:limit]
@@ -2012,6 +2020,13 @@ class Engine:
 
         goal_id = str(uuid.uuid4())
         self._active_goal_id = goal_id
+        # The goal, kept for the evidence window. _gather_evidence receives a
+        # string that has already been reduced to path tokens by the time it
+        # reaches _focused_excerpt -- measured, it was literally
+        # "hcli/tool_registry.py hcli/tests/test_...py" -- so focusing on it
+        # anchors on whichever lines mention those paths most densely, which is
+        # the tool registration block, not the function the goal names.
+        self._active_goal_text = prompt
         self._model_calls = []
         self._tool_calls_seen = {}
         self._last_call_plan = {}
@@ -2898,7 +2913,12 @@ class Engine:
             except Exception:
                 continue
 
-            content = _focused_excerpt(content, prompt, per_file_limit, str(path))
+            content = _focused_excerpt(
+                content,
+                getattr(self, "_active_goal_text", None) or prompt,
+                per_file_limit,
+                str(path),
+            )
 
             rel = str(
                 path.relative_to(
