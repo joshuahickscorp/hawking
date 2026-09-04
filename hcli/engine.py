@@ -1444,6 +1444,21 @@ class Engine:
         exist" is information, and a daemon that dies on a bad argument is not
         unattended.
         """
+        # An empty tool bundle means the unit HAS no tools, not that it was
+        # asked nicely not to use them. Suppressing the catalog was not enough:
+        # the reply schema still offers tool_calls, so the model asked anyway
+        # and the executor ran them -- measured, seven tool calls on a goal that
+        # carried its own evidence and had no catalog. Refuse here, and say so
+        # in terms the model can act on.
+        if os.environ.get("HCLI_NO_TOOLS") == "1" and calls:
+            return [{
+                "tool": str((call or {}).get("tool") or "?"),
+                "ok": False,
+                "text": (
+                    "no tools are available for this work unit. Everything you "
+                    "need is already in the goal above. Answer from it."
+                ),
+            } for call in calls[: self.MAX_TOOL_CALLS_PER_ROUND]]
         registry = self._tool_registry()
         out: List[Dict[str, Any]] = []
         for call in calls[: self.MAX_TOOL_CALLS_PER_ROUND]:
