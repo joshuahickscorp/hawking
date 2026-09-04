@@ -817,6 +817,58 @@ def _anchor_violation(path: str, anchor: str, current: str, hits: int) -> str:
     )
 
 
+def _normalize_micro_mutation(parsed: Any) -> Any:
+    """Accept the smallest reply that can express one edit.
+
+    The full envelope asks for kind, content, operations, tests and tool_calls
+    before a single character of the edit. Measured across a day of attempts,
+    the resident reliably decides the right change and unreliably serializes
+    that envelope: replies that stop inside an array, anchors wrong in one
+    character, bodies whose escaped newlines break the file they describe.
+
+    So let it send the edit and nothing else:
+
+        {"path": "...", "find": "...", "replace": "..."}
+
+    `find` must occur exactly once -- the applier already enforces that, and a
+    unique anchor is the whole safety property. Everything downstream keeps
+    seeing the full envelope, because this expands into one before it gets
+    there. One authority, one shape, no second parser.
+
+    Lists are accepted for find/replace as well, so a multi-line edit still
+    needs no newline escaping.
+    """
+    if not isinstance(parsed, dict):
+        return parsed
+    if "operations" in parsed or "kind" in parsed:
+        return parsed
+    path = parsed.get("path")
+    if not isinstance(path, str) or "find" not in parsed:
+        return parsed
+
+    def _text(value: Any) -> Optional[str]:
+        if isinstance(value, list) and all(isinstance(x, str) for x in value):
+            return "\n".join(value) + "\n" if value else ""
+        return value if isinstance(value, str) else None
+
+    find = _text(parsed.get("find"))
+    replace = _text(parsed.get("replace"))
+    if find is None or replace is None:
+        return parsed
+    return {
+        "kind": "mutation",
+        "content": str(parsed.get("content") or "micro mutation"),
+        "operations": [{
+            "op": "replace",
+            "path": path,
+            "old_text": find,
+            "new_text": replace,
+        }],
+        "tests": parsed.get("tests") or [],
+        "tool_calls": [],
+    }
+
+
 def _operation_text(operation: Dict[str, Any], field: str) -> Optional[str]:
     """The text of an operation field, however the model chose to send it.
 
@@ -4273,7 +4325,7 @@ class Engine:
         content: Any,
     ) -> Dict[str, Any]:
         if isinstance(content, dict):
-            return content
+            return _normalize_micro_mutation(content)
 
         text = str(
             content or ""
@@ -4304,7 +4356,7 @@ class Engine:
             parsed = json.loads(text)
 
             if isinstance(parsed, dict):
-                return parsed
+                return _normalize_micro_mutation(parsed)
         except Exception:
             pass
 
@@ -4322,7 +4374,7 @@ class Engine:
                 continue
 
             if isinstance(parsed, dict):
-                return parsed
+                return _normalize_micro_mutation(parsed)
 
         raise EngineError(
             "Model did not return a valid structured JSON object"
