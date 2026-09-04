@@ -1175,12 +1175,11 @@ CATALOG: List[CatalogRow] = [
         "id": "lab.spec.ExperimentSpec",
         "concept": "experiment",
         "path": "research/lab/spec.py",
-        "two_real": False,
         "needle": "class ExperimentSpec:",
         "symbol": "ExperimentSpec (hawking.lab.experiment_spec.v1)",
         "classification": "canonical_authority",
         "plane": "lab",
-        "two_real": True,
+        "two_real": False,
         "survives": True,
         "two_real_note": (
             "No longer a duplicate. The other lab class called ExperimentSpec "
