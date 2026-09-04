@@ -58,11 +58,19 @@ def main() -> int:
 
     ops = r.get("operations") or []
     validation = r.get("validation") or {}
+    # A mutation whose tests were ALREADY GREEN before it is not evidence of
+    # anything. The validator computes this correctly and then records it as
+    # advisory, so `ok` stays true: measured with a literal `assert True`,
+    # red_before_green=False, ok=True. Gate 1 exists to prove HCLI changed
+    # something real, so this report will not call that a pass even though the
+    # harness would.
+    rbg = validation.get("red_before_green")
     landed = (
         r.get("kind") == "mutation"
         and r.get("status") == "completed"
         and not r.get("rolled_back")
         and bool(validation.get("ok"))
+        and rbg is not False
     )
 
     prompt_tokens = sum(c.get("prompt_tokens", 0) for c in calls)
@@ -82,6 +90,8 @@ def main() -> int:
     print(f"context reductions   {reduced}")
     print(f"wall time            {wall:.0f}s")
     print(f"mutations proposed   {len(ops)}")
+    print(f"red before green     {rbg!r}  "
+          f"{'(advisory in the harness; TREATED AS FATAL here)' if rbg is False else ''}")
     print(f"verifier result      {validation.get('ok')}  "
           f"{str(validation.get('reason') or validation.get('detail') or '')[:80]}")
     if r.get("error"):
@@ -92,6 +102,8 @@ def main() -> int:
         print("  a mutation is landed only when it is kind=mutation, completed,")
         print("  not rolled back, AND its validation passed. Anything else is an")
         print("  attempt, however far it got.")
+        if rbg is False:
+            print("  Its tests passed BEFORE the change, so they prove nothing.")
     return 0
 
 
