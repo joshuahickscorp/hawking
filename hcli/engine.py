@@ -719,6 +719,9 @@ def _python_symbol_lines(source: str) -> Dict[str, int]:
 _DEF_RE = re.compile(r"\s*(?:def|class|fn|pub fn)\s")
 
 
+_TOP_LEVEL_DEF_RE = re.compile(r"^(?:async\s+)?(?:def|class)\s")
+
+
 def _focused_excerpt(content: str, prompt: str, limit: int, path: str) -> str:
     """The part of the file the request is ABOUT, not the first `limit` bytes.
 
@@ -767,8 +770,32 @@ def _focused_excerpt(content: str, prompt: str, limit: int, path: str) -> str:
     # afterwards: expansion is symmetric, so `[:limit]` cuts the tail and can
     # drop the very line the window was centred on. Stop growing at the limit
     # instead, and keep the anchor line even if it alone exceeds it.
+    # When the anchor is a DEFINITION, its body comes before its neighbours.
+    # Symmetric growth spent half the budget on code ABOVE the function and
+    # covered only part of it: a goal naming _read_file received the `def` line
+    # and the first half of the body, with the whole-file return dict it was
+    # asked to change past the end of the window. The model could not copy an
+    # anchor it had never been shown, so it invented one.
+    # The next TOP-LEVEL definition, not the next symbol. _python_symbol_lines
+    # also reports locals, so the "next symbol" after `def _read_file` was the
+    # `path` assigned on the line below it -- the body ended before it began,
+    # forward growth did nothing, and the window stopped ten lines short of the
+    # return dict the goal names.
+    symbol_end = len(lines) - 1
+    if anchor_line is not None and path.endswith(".py"):
+        for i in range(best + 1, len(lines)):
+            if _TOP_LEVEL_DEF_RE.match(lines[i]):
+                symbol_end = i - 1
+                break
+
     lo = hi = best
     size = len(lines[best])
+    # Forward to the end of the definition first, then outward as usual.
+    while hi < symbol_end and hi < len(lines) - 1:
+        if size + len(lines[hi + 1]) > limit:
+            break
+        hi += 1
+        size += len(lines[hi])
     while lo > 0 or hi < len(lines) - 1:
         grew = False
         if hi < len(lines) - 1 and size + len(lines[hi + 1]) <= limit:
