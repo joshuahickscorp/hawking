@@ -306,9 +306,25 @@ impl JsonConstraint {
             }
             let text = vocab.text(id as u32);
             if text.is_empty() {
-                // Empty token below known_len (BOS, EOS, <|im_end|>) — allow
-                // so generation can terminate. Padding ids at/beyond known_len
-                // are masked above and must not stay unmaskable.
+                // Empty token below known_len (BOS, EOS, <|im_end|>). Allowing
+                // these UNCONDITIONALLY let the model end the reply in the
+                // middle of the object the constraint exists to complete.
+                // Measured: three attempts, stop_reason "eos", finish_reason
+                // "stop", 868 to 915 completion tokens against a budget of
+                // 5874 -- the model simply stopped inside a "new_lines" array
+                // and the host reported "Expecting ',' delimiter" at the last
+                // character of the reply, while every call recorded
+                // grammar_enforced = true.
+                //
+                // Terminate only once the object is CLOSED. If the model will
+                // not close it, running to the token budget is the honest
+                // outcome: stop_reason "budget" says what happened, where a
+                // permitted EOS produced a truncated reply indistinguishable
+                // from a malformed one.
+                if self.is_done() {
+                    continue;
+                }
+                *logit = NEG_INF;
                 continue;
             }
             // Check the WHOLE token, not just its first character. Tokens are
@@ -643,6 +659,29 @@ mod tests {
     }
 
     #[test]
+    fn eos_becomes_emittable_once_the_object_is_closed() {
+        // The other half of the contract. Masking EOS forever would make a
+        // completed reply impossible to end.
+        const EOS: usize = 0;
+        let vocab = JsonVocabIndex::build(4, |id| match id {
+            0 => String::new(),
+            1 => "{".into(),
+            2 => "}".into(),
+            3 => "true".into(),
+            _ => String::new(),
+        });
+        let mut c = JsonConstraint::new();
+        c.advance("{}");
+        assert!(c.is_done(), "fixture must actually close the object");
+        let mut logits = vec![0.0f32; 8];
+        c.mask_logits(&vocab, &mut logits);
+        assert_ne!(
+            logits[EOS], NEG_INF,
+            "a closed object must be allowed to terminate"
+        );
+    }
+
+    #[test]
     fn padding_ids_at_or_beyond_known_len_are_masked_eos_is_not() {
         // id 0 is EOS (empty text, below known_len). ids 4.. are padding
         // in a logits buffer wider than the tokenizer vocabulary.
@@ -669,16 +708,21 @@ mod tests {
             logits[4], NEG_INF,
             "id 4 is at known_len and must be masked"
         );
-        assert_ne!(
+        assert_eq!(
             logits[EOS], NEG_INF,
-            "EOS id below known_len must stay emittable"
+            "EOS must be masked while the object is still OPEN -- allowing it \
+             unconditionally let three consecutive replies stop inside a JSON \
+             array with grammar_enforced reported true"
         );
         let shrunk = vocab.with_known_len(2);
         let mut logits = vec![5.0f32; 4];
         c.mask_logits(&shrunk, &mut logits);
         assert_eq!(logits[2], NEG_INF);
         assert_eq!(logits[3], NEG_INF);
-        assert_ne!(logits[0], NEG_INF);
+        // id 0 is EOS and the object is still open, so it is masked here for
+        // the same reason as above. id 1 is "{", which is exactly what an
+        // unopened object should be allowed to emit.
+        assert_eq!(logits[0], NEG_INF);
         assert_ne!(logits[1], NEG_INF);
     }
 
