@@ -15,7 +15,7 @@ from lab.operators import storage_modes as sm
 import json
 from lab.bench_harness import HARNESS_VERSION, MeasurementRecorder, ReceiptWriter, ReportRenderer, load_spec, validate_spec
 from lab.bench_harness.runner import Runner
-from lab.bench_harness.spec import SPEC_SCHEMA, ExperimentSpec
+from lab.bench_harness.spec import SPEC_SCHEMA, HarnessSpec
 from fractions import Fraction
 from lab.operators import subbit_closure as sc
 GB = 10 ** 9
@@ -195,7 +195,7 @@ def _spec_dict(**over):
 def test_spec_validation_matrix(raw, ok):
     if ok:
         validate_spec(raw)
-        ExperimentSpec.from_dict(raw)
+        HarnessSpec.from_dict(raw)
     else:
         with pytest.raises(ValueError):
             validate_spec(raw)
@@ -234,7 +234,7 @@ def test_report_renderer_contains_stages():
 def test_runner_dry_run(tmp_path: Path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     (tmp_path / 'tools' / 'foundry' / 'lab_harness').mkdir(parents=True)
-    spec = ExperimentSpec.from_dict(_spec_dict(artifact_dir='art', stages=[{'id': 'echo', 'shell': 'echo hi', 'skip_if_done': False}]))
+    spec = HarnessSpec.from_dict(_spec_dict(artifact_dir='art', stages=[{'id': 'echo', 'shell': 'echo hi', 'skip_if_done': False}]))
     rc = Runner(spec, root=tmp_path, dry_run=True).run()
     assert rc == 0
     assert (tmp_path / 'art' / 'receipt.json').is_file()
@@ -242,7 +242,7 @@ def test_runner_dry_run(tmp_path: Path, monkeypatch):
     assert (tmp_path / 'art' / 'status.json').is_file()
 
 def test_runner_real_echo(tmp_path: Path):
-    spec = ExperimentSpec.from_dict(_spec_dict(artifact_dir='art', stages=[{'id': 'echo', 'argv': ['python3.12', '-c', 'print(1)'], 'skip_if_done': False}]))
+    spec = HarnessSpec.from_dict(_spec_dict(artifact_dir='art', stages=[{'id': 'echo', 'argv': ['python3.12', '-c', 'print(1)'], 'skip_if_done': False}]))
     rc = Runner(spec, root=tmp_path, dry_run=False).run()
     assert rc == 0
     receipt = json.loads((tmp_path / 'art' / 'receipt.json').read_text())
@@ -250,7 +250,7 @@ def test_runner_real_echo(tmp_path: Path):
     assert receipt['stages'][0]['state'] == 'done'
 
 def test_matrix_expands_slots(tmp_path: Path):
-    spec = ExperimentSpec.from_dict(_spec_dict(artifact_dir='art', matrix=[{'n': '1'}, {'n': '2'}], stages=[{'id': 'echo', 'shell': 'echo {n}',
+    spec = HarnessSpec.from_dict(_spec_dict(artifact_dir='art', matrix=[{'n': '1'}, {'n': '2'}], stages=[{'id': 'echo', 'shell': 'echo {n}',
         'skip_if_done': False}]))
     rc = Runner(spec, root=tmp_path, dry_run=True).run()
     assert rc == 0

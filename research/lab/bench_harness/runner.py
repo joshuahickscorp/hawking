@@ -12,7 +12,7 @@ from typing import Any
 from .measure import MeasurementRecorder
 from .receipt import ReceiptWriter
 from .report import ReportRenderer
-from .spec import ExperimentSpec, Stage
+from .spec import HarnessSpec, Stage
 REPO = Path(__file__).resolve().parents[2]
 
 def _stamp() -> str:
@@ -27,7 +27,7 @@ def free_disk_gb(path: Path=REPO) -> int | None:
 
 class Runner:
 
-    def __init__(self, spec: ExperimentSpec, *, root: Path | None=None, dry_run: bool=False):
+    def __init__(self, spec: HarnessSpec, *, root: Path | None=None, dry_run: bool=False):
         self.spec = spec
         self.root = (root or REPO).resolve()
         self.dry_run = dry_run

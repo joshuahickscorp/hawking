@@ -58,6 +58,7 @@ CONCEPTS = (
     "runtime registry",
     "receipt",
     "experiment",
+    "harness spec",
     "model identity",
     "machine identity",
     "status",
@@ -1174,13 +1175,19 @@ CATALOG: List[CatalogRow] = [
         "id": "lab.spec.ExperimentSpec",
         "concept": "experiment",
         "path": "research/lab/spec.py",
+        "two_real": False,
         "needle": "class ExperimentSpec:",
         "symbol": "ExperimentSpec (hawking.lab.experiment_spec.v1)",
         "classification": "canonical_authority",
         "plane": "lab",
         "two_real": True,
         "survives": True,
-        "role": "Lab campaign spec. lab.runtime and lab.engine_support import this one.",
+        "two_real_note": (
+            "No longer a duplicate. The other lab class called ExperimentSpec "
+            "was the bench-harness run spec and is now HarnessSpec, under its "
+            "own concept."
+        ),
+        "role": "Lab campaign spec. lab.runtime, lab.rules and lab.engine_support import this one.",
         "move": "Keep as the campaign spec. Accepts hawking.lab.experiment.v1 as a compatibility schema id.",
         "callers": [
             "research/lab/runtime.py",
@@ -1189,24 +1196,37 @@ CATALOG: List[CatalogRow] = [
         ],
     },
     {
-        "id": "lab.bench_harness.ExperimentSpec",
-        "concept": "experiment",
+        "id": "lab.bench_harness.HarnessSpec",
+        "concept": "harness spec",
         "path": "research/lab/bench_harness/spec.py",
-        "needle": "class ExperimentSpec:",
-        "symbol": "ExperimentSpec (hawking.lab.experiment.v1 stages)",
+        "needle": "class HarnessSpec:",
+        "symbol": "HarnessSpec (hawking.lab.experiment.v1 stages)",
         "classification": "canonical_authority",
         "plane": "lab",
-        "two_real": True,
+        "two_real": False,
         "survives": True,
         "role": (
-            "Second ExperimentSpec: id + stages runner schema. Imported by "
-            "tools/foundry/tests, not by lab.runtime."
+            "The bench-harness RUN spec: an id and a list of stages. A "
+            "DIFFERENT concept from the campaign spec in research/lab/spec.py, "
+            "which owns phases, promotion rules and burial rules. They share no "
+            "importer."
         ),
         "move": (
-            "TWO real authorities. Rename this class to HarnessSpec on a later "
-            "source lane; keep the sealed schema id hawking.lab.experiment.v1."
+            "DONE. Renamed ExperimentSpec -> HarnessSpec so the two are not one "
+            "symbol name in one plane. The sealed schema id "
+            "hawking.lab.experiment.v1 is unchanged: renaming a Python class is "
+            "not a format migration and receipts on disk keep parsing. The "
+            "concept was split here too, because two classes that share no "
+            "caller and no schema are not one authority duplicated -- they were "
+            "catalogued as such only because both were called ExperimentSpec "
+            "and both live under lab."
         ),
-        "callers": ["tools/foundry/tests/test_foundry_tables_lifecycle.py"],
+        "callers": [
+            "research/lab/bench_harness/__init__.py",
+            "research/lab/bench_harness/cli.py",
+            "research/lab/bench_harness/runner.py",
+            "tools/foundry/tests/test_foundry_tables_lifecycle.py",
+        ],
     },
     {
         "id": "lab.science_registry",

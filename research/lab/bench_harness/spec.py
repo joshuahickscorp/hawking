@@ -26,7 +26,23 @@ class Stage:
         return cls(id=str(d['id']), argv=[str(x) for x in d.get('argv', [])], shell=d.get('shell'), env={str(k): str(v) for k, v in (d.get('env') or {}).items()}, cwd=d.get('cwd'), on_fail=str(d.get('on_fail', 'abort')), measure_keys=[str(x) for x in d.get('measure_keys', [])], timeout_s=d.get('timeout_s'), skip_if_done=bool(d.get('skip_if_done', True)))
 
 @dataclass
-class ExperimentSpec:
+class HarnessSpec:
+    """A bench-harness RUN spec: an id and a list of stages.
+
+    Named HarnessSpec, not ExperimentSpec, because research/lab/spec.py already
+    owns a class of that name for a different thing -- the campaign spec, with
+    phases, promotion rules and burial rules, on schema
+    hawking.lab.experiment_spec.v1. Two same-named classes in one plane read as
+    one duplicated authority to any census that matches on symbol name, and
+    that is exactly how they were catalogued.
+
+    They share no importer: lab.runtime, lab.rules and lab.engine_support take
+    the campaign spec; bench_harness.cli and bench_harness.runner take this one.
+    Different concepts, one owner each.
+
+    The sealed schema id hawking.lab.experiment.v1 is UNCHANGED. Renaming a
+    Python class is not a format migration, and receipts on disk keep parsing.
+    """
     schema: str
     id: str
     stages: list[Stage]
@@ -47,7 +63,7 @@ class ExperimentSpec:
     meta: dict[str, Any] = field(default_factory=dict)
 
     @classmethod
-    def from_dict(cls, d: dict[str, Any]) -> 'ExperimentSpec':
+    def from_dict(cls, d: dict[str, Any]) -> 'HarnessSpec':
         validate_spec(d)
         stages = [Stage.from_dict(s) for s in d['stages']]
         return cls(schema=d['schema'], id=str(d['id']), stages=stages, title=str(d.get('title') or d['id']), artifact_dir=str(d.get('artifact_dir', 'artifacts/runs/lab')), status_name=str(d.get('status_name', 'status.json')), log_name=str(d.get('log_name', 'chain.log')), pid_name=str(d.get('pid_name', 'pid')), measures_name=str(d.get('measures_name', 'measures.jsonl')), receipt_name=str(d.get('receipt_name', 'receipt.json')), report_name=str(d.get('report_name', 'report.md')), pause_flag=str(d.get('pause_flag', 'artifacts/runs/PAUSE')), resume_flag=str(d.get('resume_flag', 'artifacts/runs/RESUME')), pause_poll_s=float(d.get('pause_poll_s', 10.0)), matrix=list(d.get('matrix') or []), fixtures=list(d.get('fixtures') or []), receipt_schema=str(d.get('receipt_schema', 'hawking.lab.receipt.v1')), meta=dict(d.get('meta') or {}))
@@ -68,7 +84,7 @@ def validate_spec(d: dict[str, Any]) -> None:
         if not s.get('argv') and (not s.get('shell')):
             raise ValueError(f'stages[{i}] ({s.get('id')}) needs argv or shell')
 
-def load_spec(path: str | Path) -> ExperimentSpec:
+def load_spec(path: str | Path) -> HarnessSpec:
     p = Path(path)
     raw = json.loads(p.read_text(encoding='utf-8'))
-    return ExperimentSpec.from_dict(raw)
+    return HarnessSpec.from_dict(raw)
