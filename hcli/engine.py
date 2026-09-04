@@ -3791,6 +3791,19 @@ class Engine:
             return build(evidence, context_memory), None
 
         items = list(evidence or ())
+        # With NO TOOLS the ladder's premise is inverted. It sheds evidence
+        # first because "a file snapshot can be re-read for free" -- true only
+        # while fs.read exists. Under an empty tool bundle the snapshot is the
+        # ONLY source of truth, and dropping it leaves the model to invent the
+        # file from memory. Measured: evidence_files listed tool_registry.py,
+        # evidence_bytes_inlined was 0, and the model sent an anchor reading
+        # "    if start is None and end is None:" -- a plausible line that is
+        # not in the file.
+        #
+        # So keep the first evidence item and let the rungs below shrink the
+        # rest. Something must still give when the budget is short; it must not
+        # be the only thing the model cannot re-derive.
+        keep_floor = 1 if (os.environ.get("HCLI_NO_TOOLS") == "1" and items) else 0
         blocks = _observation_blocks(trailing)
         # Where the kept observations START, as an ABSOLUTE index that only ever
         # moves forward. Keeping "the last N" instead re-cut the block at a
@@ -3805,7 +3818,10 @@ class Engine:
 
         attempts: List[Tuple[Any, ...]] = []
         for fraction in self.EVIDENCE_REDUCTION_STEPS:
-            keep = items[: max(0, int(len(items) * fraction))] if items else []
+            keep = (
+                items[: max(keep_floor, int(len(items) * fraction))]
+                if items else []
+            )
             label = (
                 "full" if fraction == 1.0
                 else f"evidence {len(keep)}/{len(items)}"
@@ -3814,7 +3830,7 @@ class Engine:
         # Last resorts: drop the durable checkpoint too, then shed observations
         # oldest-first. Observations go last because a tool call has already
         # been paid for, while a file snapshot can be re-read for free.
-        attempts.append(([], None, "evidence 0 + no checkpoint", floor))
+        attempts.append((items[:keep_floor], None, "evidence 0 + no checkpoint", floor))
         if len(blocks) > 1:
             for keep_n in (len(blocks) * 3 // 4, len(blocks) // 2, len(blocks) // 4, 1):
                 if keep_n < 1 or keep_n >= len(blocks):
@@ -3826,8 +3842,8 @@ class Engine:
                 if advanced <= floor:
                     continue
                 attempts.append((
-                    [], None,
-                    f"evidence 0 + observations {keep_n}/{len(blocks)}",
+                    items[:keep_floor], None,
+                    f"evidence {keep_floor} + observations {keep_n}/{len(blocks)}",
                     advanced,
                 ))
 
