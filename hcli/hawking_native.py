@@ -16,6 +16,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+from functools import lru_cache
 import queue
 import subprocess
 import tempfile
@@ -526,6 +527,35 @@ def is_hawking_native_path(path: Optional[str]) -> bool:
     )
 
 
+@lru_cache(maxsize=1)
+def _resident_tokenizer() -> Any:
+    """The sealed resident's own tokenizer.json, or None.
+
+    `tokenizers` is installed and the file is on disk beside the profile, so
+    there is no reason to guess a characters-per-token ratio for a count that
+    decides the generation budget.
+    """
+    try:
+        from tokenizers import Tokenizer
+
+        profile = _sealed_profile()
+        if profile is None or not profile.tokenizer:
+            return None
+        return Tokenizer.from_file(str(profile.tokenizer))
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def _resident_token_count(text: str) -> "Optional[int]":
+    tokenizer = _resident_tokenizer()
+    if tokenizer is None:
+        return None
+    try:
+        return len(tokenizer.encode(text, add_special_tokens=False).ids)
+    except Exception:  # noqa: BLE001
+        return None
+
+
 def _sealed_profile() -> "Optional[HawkingNativeConfig]":
     """The shipped sealed profile that sits beside this module, or None.
 
@@ -792,7 +822,24 @@ class _TokenizerRenderer:
             except Exception:  # noqa: BLE001
                 pass
         if prompt_tokens <= 0:
-            prompt_tokens = max(1, (len(text) + 2) // 3)
+            # The RESIDENT'S OWN tokenizer before any ratio. chars//3 is ~33%
+            # over the real rate for this vocabulary, and this number does not
+            # merely label the prompt -- it is subtracted from max_seq_len to
+            # decide how many tokens generation may have. Over-counting the
+            # prompt therefore STARVES the reply.
+            #
+            # Measured: four calls in one goal reported completion=256 against
+            # a requested 768 and stop_reason "budget". 256 is what
+            # max_seq_len - prompt_tokens - 8 leaves once the prompt is
+            # inflated, and a reply that needs more than 256 tokens can then
+            # never close its own JSON object. Most of a day of "the model
+            # never closed the object" is this line.
+            exact = _resident_token_count(text)
+            if exact is not None:
+                prompt_tokens = exact
+                source = "resident_tokenizer"
+            else:
+                prompt_tokens = max(1, (len(text) + 2) // 3)
         if self._load_error and tokenizer is None:
             source = "estimated_without_transformers"
         return _RenderedPrompt(
