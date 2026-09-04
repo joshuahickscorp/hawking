@@ -1,0 +1,53 @@
+{
+  "arms_alternated": true,
+  "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+  "chunk": 4,
+  "chunked_gpu_ns_median": 15348083,
+  "chunked_gpu_ns_reps": [
+    15334583,
+    15326541,
+    15306916,
+    15427041,
+    15467624,
+    15369833,
+    15348083,
+    15330416,
+    15367333
+  ],
+  "fused_production_gpu_ns_median": 7183124,
+  "fused_production_gpu_ns_reps": [
+    7199833,
+    7205250,
+    7154499,
+    7171000,
+    7183124,
+    7177124,
+    7179249,
+    7194750,
+    7206625
+  ],
+  "fusion_matched_baseline": "measure_isolated_organ_pair_baseline encodes gate_up with with_swiglu=false, matching the multi-position kernel. Dividing by the SwiGLU-fused production baseline would credit batching with a fusion difference.",
+  "gpu_timestamp_authority": "TokenCommandBuffer::commit_and_wait_timed, GPUEndTime-GPUStartTime on the completed command buffer",
+  "max_seq_len": 2048,
+  "noop_control_gpu_ns": 375,
+  "organ": "mlp_gate_up",
+  "pair_baseline_gpu_ns_median": 9321041,
+  "pair_baseline_gpu_ns_reps": [
+    9325916,
+    9321041,
+    9309666,
+    9290999,
+    9310916,
+    9337875,
+    9318374,
+    9339708,
+    9338291
+  ],
+  "reps": 9,
+  "schema": "hawking.cp6a.real_session_chunked_organ.v1",
+  "session_open_s": 1.899361792,
+  "speedup_x_vs_fused_NOT_CLAIMED": 1.8720576374261202,
+  "speedup_x_vs_pair": 2.4292391434161518,
+  "warmup_discarded": 1,
+  "what_is_real_here": "the session's own catalog weights via affine(), all 64 layers, one command buffer per arm -- the same instrument measure_isolated_organ uses for the production organ number. Prior CP receipts measured real SHAPES with buffers this crate filled."
+}

@@ -12,6 +12,7 @@ the block where fs.read is registered over the function that implements it.
 """
 from __future__ import annotations
 
+import pathlib
 import unittest
 
 from hcli.engine import _focused_excerpt
@@ -131,8 +132,12 @@ class TestItIsActuallyWired(unittest.TestCase):
 
         from hcli.engine import Engine
 
+        # BEHAVIOUR, not source text. The old assertion matched the literal
+        # string "_focused_excerpt(content, prompt", so reformatting the call
+        # across several lines broke it while the wiring was intact -- and,
+        # worse, renaming the argument would have kept it green.
         src = inspect.getsource(Engine._gather_evidence)
-        self.assertIn("_focused_excerpt(content, prompt", src)
+        self.assertIn("_focused_excerpt(", src)
         focus = inspect.getsource(__import__("hcli.engine", fromlist=["x"])._focused_excerpt)
         self.assertIn("_python_symbol_lines", focus)
         self.assertNotIn("content = content[\n                :per_file_limit", src)
@@ -159,3 +164,37 @@ class TestItIsActuallyWired(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestTheFocusIsActuallyApplied(unittest.TestCase):
+    """_gather_evidence must return a WINDOW, not the whole file.
+
+    A wiring test that reads source text cannot tell whether the focuser ran,
+    only whether a call to it is written down. This drives the real function.
+    """
+
+    def test_a_large_file_comes_back_focused_on_the_named_symbol(self):
+        import tempfile
+
+        from hcli.engine import Engine
+        from hcli.workspace import Workspace
+
+        class _Pool:
+            model_path = "sealed-3.14"
+            topology = "process"
+            requested_n = 1
+            admitted_n = 1
+            repo_root = "."
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = pathlib.Path(tmp)
+            big = root / "big.py"
+            filler = "\n".join(f"def unrelated_{i}():\n    return {i}  # padding to force a window" for i in range(1200))
+            big.write_text(filler + "\n\n\ndef the_named_one():\n    return 'NEEDLE'\n")
+            eng = Engine(Workspace(str(root)), runtime_provider=lambda: _Pool())
+            eng._active_goal_text = "change the_named_one in big.py"
+            out = eng._gather_evidence("big.py")
+            self.assertTrue(out, "no evidence gathered")
+            content = out[0]["content"]
+            self.assertLess(len(content), len(big.read_text()), "file was not windowed")
+            self.assertIn("NEEDLE", content, "the window missed the symbol the goal names")

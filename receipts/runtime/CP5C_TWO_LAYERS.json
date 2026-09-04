@@ -1,0 +1,150 @@
+{
+  "K": 4,
+  "R": 4,
+  "arms": {
+    "batched": "ONE TokenCommandBuffer holding three multi-position dispatches covering all K positions",
+    "sequential": "K TokenCommandBuffers, each holding the three organ dispatches for one position -- what the per-token prefill loop at qwen38_hybrid_decode.rs:7566 does"
+  },
+  "batched_gpu_ns_median": 1290624,
+  "batched_gpu_ns_reps": [
+    1290624,
+    1297000,
+    1286666,
+    1327374,
+    1281791,
+    1291916,
+    1281208,
+    1289375,
+    1294499
+  ],
+  "command_buffers_batched": 1,
+  "command_buffers_sequential": 4,
+  "correctness": {
+    "max_err_over_tensor_magnitude": 2.0950567032334373e-7,
+    "max_raw_rel_err": 0.0021691973969631237,
+    "per_organ": [
+      {
+        "max_rel_err": 0.0,
+        "organ": "recurrence"
+      },
+      {
+        "err_over_tensor_magnitude": 2.0950567032334373e-7,
+        "largest_reference_magnitude": 2.276010751724243,
+        "max_abs_err": 4.76837158203125e-7,
+        "max_rel_err": 0.0021691973969631237,
+        "organ": "L2_in_proj",
+        "reference_value_at_worst_rel": -0.00008243322372436523
+      },
+      {
+        "err_over_tensor_magnitude": 1.2159565601950783e-7,
+        "largest_reference_magnitude": 0.9803745746612549,
+        "max_abs_err": 1.1920928955078125e-7,
+        "max_rel_err": 0.001497566454511419,
+        "organ": "L2_gate",
+        "reference_value_at_worst_rel": -4.975125193595886e-6
+      },
+      {
+        "err_over_tensor_magnitude": 1.6449779973226338e-7,
+        "largest_reference_magnitude": 1.0870293378829956,
+        "max_abs_err": 1.7881393432617188e-7,
+        "max_rel_err": 0.00021631335485373888,
+        "organ": "L2_up",
+        "reference_value_at_worst_rel": 0.0002238824963569641
+      },
+      {
+        "err_over_tensor_magnitude": 0.0,
+        "largest_reference_magnitude": 3.9608936309814453,
+        "max_abs_err": 0.0,
+        "max_rel_err": 0.0,
+        "organ": "L2_down",
+        "reference_value_at_worst_rel": 0.0
+      },
+      {
+        "err_over_tensor_magnitude": 0.0,
+        "largest_reference_magnitude": 6.908545970916748,
+        "max_abs_err": 0.0,
+        "max_rel_err": 0.0,
+        "organ": "in_proj",
+        "reference_value_at_worst_rel": 0.0
+      },
+      {
+        "err_over_tensor_magnitude": 0.0,
+        "largest_reference_magnitude": 1.9042797088623047,
+        "max_abs_err": 0.0,
+        "max_rel_err": 0.0,
+        "organ": "gate",
+        "reference_value_at_worst_rel": 0.0
+      },
+      {
+        "err_over_tensor_magnitude": 0.0,
+        "largest_reference_magnitude": 1.7952673435211182,
+        "max_abs_err": 0.0,
+        "max_rel_err": 0.0,
+        "organ": "up",
+        "reference_value_at_worst_rel": 0.0
+      },
+      {
+        "err_over_tensor_magnitude": 0.0,
+        "largest_reference_magnitude": 3.9608936309814453,
+        "max_abs_err": 0.0,
+        "max_rel_err": 0.0,
+        "organ": "down",
+        "reference_value_at_worst_rel": 0.0
+      }
+    ],
+    "tolerance_on_scaled": 0.00001,
+    "valid": true,
+    "why_scaled": "raw relative error is meaningless at a near-zero reference; layer 2's worst raw rel of 2.169e-3 sits at a reference of -8.2e-5 while the same disagreement is 4.768e-7 on a 2.276 range. A WRONG LAYOUT would disagree by order 1, not by two ulps."
+  },
+  "dispatches_batched": 14,
+  "dispatches_sequential": 32,
+  "gpu_timestamp_authority": "TokenCommandBuffer::commit_and_wait_timed, GPUEndTime-GPUStartTime on the completed command buffer",
+  "includes_the_recurrence": {
+    "geometry": {
+      "heads": 48,
+      "key_dim": 128,
+      "value_dim": 128
+    },
+    "kernel": "qwen38_gated_delta_decode_vi_simd",
+    "launch": "(kd, heads, vd) / (kd,1,1), 512 B threadgroup -- read off the runtime's encode_gated_delta_fused_ba",
+    "note": "one dispatch per position in BOTH arms; in the batched arm those K dispatches sit INSIDE the same command buffer as the batched projections. The state buffer is reset from the same seed before each arm because the update is order dependent."
+  },
+  "organs": {
+    "down": {
+      "cols": 17408,
+      "kernel_mp": "qwen_affine_q2_matmul_r4k4_geo_tpr64_tg128",
+      "kernel_seq": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+      "rows": 5120
+    },
+    "gate_up": {
+      "cols": 5120,
+      "kernel_mp": "qwen_affine_q2_group64_matmul_gate_up_r4k4_geo_tpr64_tg128",
+      "kernel_seq": "qwen_affine_q2_group64_matvec_gate_up_geo_tpr64_tg128",
+      "rows": 17408
+    },
+    "in_proj": {
+      "cols": 5120,
+      "kernel_mp": "qwen_uniform_q4_group64_matmul_r4k4_geo_tpr64_tg128",
+      "kernel_seq": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "rows": 16384
+    }
+  },
+  "question": "Do the per-organ multi-position wins COMPOSE when the organs share ONE command buffer, which is the shape production runs?",
+  "reps": 9,
+  "schema": "hawking.cp5c.two_layers.v1",
+  "seq_gpu_ns_median": 2753082,
+  "seq_gpu_ns_reps": [
+    2764957,
+    2738040,
+    2758747,
+    2739790,
+    2791914,
+    2753082,
+    2765205,
+    2745333,
+    2749497
+  ],
+  "speedup_x": 2.133140248437965,
+  "still_not_a_layer": "norms, causal conv, the gated RMSNorm and out_proj are absent, as is attention. This is the DeltaNet layer's weight-heavy organs plus its real recurrence, which is what the layer-crossing question turns on.",
+  "warmup_discarded": 1
+}

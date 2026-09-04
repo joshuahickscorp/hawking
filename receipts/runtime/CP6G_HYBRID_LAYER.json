@@ -1,0 +1,75 @@
+{
+  "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+  "checkpoint": "CP6G_HYBRID_LAYER",
+  "note": "mixer sequential, MLP batched; 2K glue dispatches paid inside arm B",
+  "rows": [
+    {
+      "arms_separated": false,
+      "dispatches_hybrid": 1408,
+      "dispatches_sequential": 1408,
+      "hybrid_ns_per_position": {
+        "max": 378575.84375,
+        "median": 363969.3984375,
+        "min": 334054.6875
+      },
+      "k": 2,
+      "layers": 64,
+      "r": 4,
+      "reps_kept": 8,
+      "seq_ns_per_position": {
+        "max": 415424.8046875,
+        "median": 396841.7890625,
+        "min": 371550.7734375
+      },
+      "sequential_drift_second_half_over_first": 0.9296581926892171,
+      "sequential_jitter_frac": 0.11055799177210676,
+      "sequential_series_ns": [
+        53174375,
+        51744625,
+        52783249,
+        50795749,
+        49307083,
+        48410916,
+        48555374,
+        47558499
+      ],
+      "speedup_conservative": 0.9814434269156932,
+      "speedup_generous": 1.2435832222456091,
+      "speedup_median": 1.0903163583700148
+    },
+    {
+      "arms_separated": true,
+      "dispatches_hybrid": 2560,
+      "dispatches_sequential": 2816,
+      "hybrid_ns_per_position": {
+        "max": 313120.60546875,
+        "median": 304104.328125,
+        "min": 298288.734375
+      },
+      "k": 4,
+      "layers": 64,
+      "r": 4,
+      "reps_kept": 8,
+      "seq_ns_per_position": {
+        "max": 390537.109375,
+        "median": 385979.328125,
+        "min": 381399.8984375
+      },
+      "sequential_drift_second_half_over_first": 1.010259524741046,
+      "sequential_jitter_frac": 0.023672798701128626,
+      "sequential_series_ns": [
+        98620625,
+        97687375,
+        97638374,
+        98810708,
+        99977500,
+        99212125,
+        99113000,
+        98483958
+      ],
+      "speedup_conservative": 1.218060682613123,
+      "speedup_generous": 1.3092586623939608,
+      "speedup_median": 1.269233261179847
+    }
+  ]
+}

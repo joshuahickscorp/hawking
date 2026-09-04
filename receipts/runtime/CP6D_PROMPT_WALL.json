@@ -1,0 +1,104 @@
+{
+  "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+  "gpu_timestamp_authority": "per-step gpu_ns from completed command buffers, summed over prefill steps only; prefill_wall_ns is host wall around the same steps",
+  "one_new_token_on_purpose": "decode would otherwise dominate the total and hide the prompt wall, which is the quantity under test.",
+  "projection_basis": {
+    "caveat": "ARITHMETIC over a measured organ share and a measured organ speedup. It is NOT a measured prompt wall, and this campaign has already retracted two projections of that shape. It states what CP6 stage 1 must deliver, so that stage can falsify it.",
+    "gate_up_batched_speedup": 1.903,
+    "gate_up_share_of_step_gpu_ns": 0.359,
+    "source": "receipts/headless/_ORGAN_BANDWIDTH_raw.json isolated_organs",
+    "speedup_source": "CP6a 1.890x, CP6b 1.890x, CP6c 1.903x on real weights, 64 layers, separate lanes"
+  },
+  "rows": [
+    {
+      "dense_w_materialized": 0,
+      "dispatches_per_position": 708.0,
+      "dispatches_total": 90624,
+      "fallbacks": 0,
+      "first_step_wall_ns": 89954041,
+      "fresh_compute_prompt_tok_s": 41.67344549287121,
+      "gpu_fraction_of_prefill_wall": 0.9473302140255828,
+      "gpu_ns_sum_over_prefill_steps": 2909725029,
+      "host_ns_outside_gpu": 161775263,
+      "ns_per_position": 23996096.03125,
+      "prefill_wall_ms": 3071.500292,
+      "prefill_wall_ns": 3071500292,
+      "projected_wall_if_gate_up_batched_ARITHMETIC_NOT_MEASURED": {
+        "fresh_compute_prompt_tok_s": 50.23018208686719,
+        "multiplier": 0.8296495007882291,
+        "prefill_wall_ms": 2548.2686839287
+      },
+      "prompt_tokens": 128,
+      "resident_weight_bytes": 10554259456,
+      "workspace_resident_bytes": 301192004
+    },
+    {
+      "dense_w_materialized": 0,
+      "dispatches_per_position": 708.0,
+      "dispatches_total": 181248,
+      "fallbacks": 0,
+      "first_step_wall_ns": 23204167,
+      "fresh_compute_prompt_tok_s": 41.89782041976895,
+      "gpu_fraction_of_prefill_wall": 0.9639769780497918,
+      "gpu_ns_sum_over_prefill_steps": 5889998666,
+      "host_ns_outside_gpu": 220104376,
+      "ns_per_position": 23867590.0078125,
+      "prefill_wall_ms": 6110.103042,
+      "prefill_wall_ns": 6110103042,
+      "projected_wall_if_gate_up_batched_ARITHMETIC_NOT_MEASURED": {
+        "fresh_compute_prompt_tok_s": 50.50062753001465,
+        "multiplier": 0.8296495007882291,
+        "prefill_wall_ms": 5069.24393855994
+      },
+      "prompt_tokens": 256,
+      "resident_weight_bytes": 10554259456,
+      "workspace_resident_bytes": 301192004
+    },
+    {
+      "dense_w_materialized": 0,
+      "dispatches_per_position": 708.0,
+      "dispatches_total": 362496,
+      "fallbacks": 0,
+      "first_step_wall_ns": 22922042,
+      "fresh_compute_prompt_tok_s": 40.56565638638914,
+      "gpu_fraction_of_prefill_wall": 0.9648511585852537,
+      "gpu_ns_sum_over_prefill_steps": 12177882406,
+      "host_ns_outside_gpu": 443631594,
+      "ns_per_position": 24651394.53125,
+      "prefill_wall_ms": 12621.514,
+      "prefill_wall_ns": 12621514000,
+      "projected_wall_if_gate_up_batched_ARITHMETIC_NOT_MEASURED": {
+        "fresh_compute_prompt_tok_s": 48.89493255627676,
+        "multiplier": 0.8296495007882291,
+        "prefill_wall_ms": 10471.432789291644
+      },
+      "prompt_tokens": 512,
+      "resident_weight_bytes": 10554259456,
+      "workspace_resident_bytes": 301192004
+    },
+    {
+      "dense_w_materialized": 0,
+      "dispatches_per_position": 708.0,
+      "dispatches_total": 724992,
+      "fallbacks": 0,
+      "first_step_wall_ns": 22690375,
+      "fresh_compute_prompt_tok_s": 37.963008814404354,
+      "gpu_fraction_of_prefill_wall": 0.9669688051066138,
+      "gpu_ns_sum_over_prefill_steps": 26082654862,
+      "host_ns_outside_gpu": 890971096,
+      "ns_per_position": 26341431.599609375,
+      "prefill_wall_ms": 26973.625958,
+      "prefill_wall_ns": 26973625958,
+      "projected_wall_if_gate_up_batched_ARITHMETIC_NOT_MEASURED": {
+        "fresh_compute_prompt_tok_s": 45.757887853047166,
+        "multiplier": 0.8296495007882291,
+        "prefill_wall_ms": 22378.655310503116
+      },
+      "prompt_tokens": 1024,
+      "resident_weight_bytes": 10554259456,
+      "workspace_resident_bytes": 301192004
+    }
+  ],
+  "schema": "hawking.cp6d.prompt_wall_baseline.v1",
+  "what_this_is": "the complete PROMPT WALL on the current build -- the sequential baseline G019 requires a chunked path to beat. Every prior CP receipt divides one organ by another; none of them measured this."
+}

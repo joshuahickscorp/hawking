@@ -39,6 +39,30 @@ def _restore_file(
     p.write_text(snapshot["content"], encoding="utf-8")
 
 
+def operation_text(operation: Dict[str, Any], field: str) -> Optional[str]:
+    """The text of an operation field, however the model chose to send it.
+
+    `new_text` is one JSON string and therefore carries every newline as an
+    escape, which the resident gets wrong: receipt 97444aca burned four calls on
+    "unexpected character after line continuation character" and "Invalid
+    \\escape", because the model emitted `\\\\n` where it meant `\\n`.
+    `new_lines` is the same content as a list of plain lines -- nothing to
+    escape, so nothing to get wrong.
+
+    This lives HERE, in the lower-level module, and `engine._operation_text`
+    delegates to it, because two readers disagreeing about what an operation
+    says is exactly the defect that lets a bad anchor reach an applier with the
+    contract reporting no complaint. Before this, `apply_mutation_operations`
+    read `old_text`/`new_text` directly and a line-form operation resolved to
+    the EMPTY STRING -- an empty anchor, which matches everywhere.
+    """
+    lines = operation.get(f"{field.split('_')[0]}_lines")
+    if isinstance(lines, list) and all(isinstance(x, str) for x in lines):
+        return "\n".join(lines) + "\n" if lines else ""
+    value = operation.get(field)
+    return str(value) if value is not None else None
+
+
 def _apply_create(path: str, content: str) -> None:
     p = Path(path)
     p.parent.mkdir(parents=True, exist_ok=True)
@@ -95,7 +119,11 @@ def apply_mutation_operations(guard: Any, operations: List[Dict[str, Any]]) -> D
                 raise MutationError("file not found")
             content = p.read_text(encoding="utf-8")
             if op_type == "replace":
-                new_content = _apply_replace(content, op.get("old_text", ""), op.get("new_text", ""))
+                new_content = _apply_replace(
+                    content,
+                    operation_text(op, "old_text") or "",
+                    operation_text(op, "new_text") or "",
+                )
             else:
                 new_content = _apply_insert(content, op.get("anchor", ""), op.get("text", ""), op_type)
             p.write_text(new_content, encoding="utf-8")

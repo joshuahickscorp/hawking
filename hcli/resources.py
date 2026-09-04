@@ -1007,6 +1007,7 @@ class BackendHealth:
             "version": HEALTH_VERSION,
             "updated_at": updated_at_f,
             "backends": backends,
+            "backend_count": len(backends),
         }
 
     def _persist(self) -> None:

@@ -681,3 +681,155 @@ kernel void qwen80_moe_combine_second_residual_f32(
     const float gate = 1.0f / (1.0f + exp(-gate_logit[0]));
     output[id] = first_residual[id] + routed[id] + shared[id] * gate;
 }
+
+
+// ── interleaved-layout residual RMSNorm for a chunked prefill ─────────────
+//
+// A CORRECTION TO receipts/runtime/CP6_SCOPE.md, found by trying to build the
+// chunked MLP rather than by reading. That document called the norms and
+// elementwise kernels "trivially K-parallel -- launching K x the threads over a
+// K-wide buffer is the whole change". That is WRONG, and the reason is the
+// layout.
+//
+// The multi-position matmul kernels require INTERLEAVED activations,
+// `input[col * K + k]`, because their inner loop reads K contiguous floats at
+// `(col + i) * K` -- one coalesced 16-byte load at K=4 that feeds all R rows.
+// Blocked layout `[k * cols + col]` would make that K strided 4-byte loads and
+// give back the traffic saving batching just bought. Interleaving is a
+// performance requirement, not an incidental choice.
+//
+// So a per-position kernel cannot be reused by binding at an offset: offsets
+// address a BLOCKED layout. Every elementwise and norm kernel on the chunked
+// path needs a strided variant. That is more than a launch change, and it is
+// the honest remaining cost of stage 1.
+//
+// One threadgroup per position. Each reads its own stride of the interleaved
+// buffer, so the reduction is over that position's hidden vector alone.
+// Grid: (tg_size * K, 1, 1), TG (tg_size, 1, 1) -- threadgroup index IS k.
+kernel void qwen38_residual_rmsnorm_tg_interleaved(
+    device const float* input  [[buffer(0)]],
+    device const float* weight [[buffer(1)]],
+    device float* output       [[buffer(2)]],
+    constant uint& hidden      [[buffer(3)]],
+    constant float& eps        [[buffer(4)]],
+    constant uint& chunk       [[buffer(5)]],
+    threadgroup float* scratch [[threadgroup(0)]],
+    uint tid                    [[thread_index_in_threadgroup]],
+    uint tg_size                [[threads_per_threadgroup]],
+    uint group_id               [[threadgroup_position_in_grid]])
+{
+    const uint k = group_id;
+    if (k >= chunk) {
+        return;
+    }
+    float sum = 0.0f;
+    for (uint index = tid; index < hidden; index += tg_size) {
+        const float value = input[index * chunk + k];
+        sum += value * value;
+    }
+    scratch[tid] = sum;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1u) {
+        if (tid < stride) scratch[tid] += scratch[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    const float inverse_rms = 1.0f / sqrt(scratch[0] / float(hidden) + eps);
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint index = tid; index < hidden; index += tg_size) {
+        // Weight is per-hidden-dim and shared across positions, so it is NOT
+        // interleaved -- only the activations are.
+        output[index * chunk + k] =
+            input[index * chunk + k] * inverse_rms * (1.0f + weight[index]);
+    }
+}
+
+
+// Interleaved-layout FUSED add-residual + RMSNorm. This is the one the
+// production MLP path actually runs (fuse_add_rmsnorm), and with it the chunked
+// MLP needs no further new kernels: gate_up+swiglu and down already have
+// multi-position families, and this closes the tail.
+//
+// Same interleaving rule as qwen38_residual_rmsnorm_tg_interleaved: activations
+// are strided by chunk, the norm weight is per-hidden-dim and shared across
+// positions so it stays contiguous. One threadgroup per position.
+// Grid: (tg_size * K, 1, 1), TG (tg_size, 1, 1).
+kernel void qwen38_add_residual_rmsnorm_tg_interleaved(
+    device const float* residual_in  [[buffer(0)]],
+    device const float* delta        [[buffer(1)]],
+    device float* residual_out       [[buffer(2)]],
+    device const float* weight       [[buffer(3)]],
+    device float* x_norm             [[buffer(4)]],
+    constant uint& hidden            [[buffer(5)]],
+    constant float& eps              [[buffer(6)]],
+    constant uint& chunk             [[buffer(7)]],
+    threadgroup float* scratch       [[threadgroup(0)]],
+    uint tid                         [[thread_index_in_threadgroup]],
+    uint tg_size                     [[threads_per_threadgroup]],
+    uint group_id                    [[threadgroup_position_in_grid]])
+{
+    const uint k = group_id;
+    if (k >= chunk) {
+        return;
+    }
+    float sum = 0.0f;
+    for (uint index = tid; index < hidden; index += tg_size) {
+        const uint at = index * chunk + k;
+        const float v = residual_in[at] + delta[at];
+        residual_out[at] = v;
+        sum += v * v;
+    }
+    scratch[tid] = sum;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1u) {
+        if (tid < stride) scratch[tid] += scratch[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    const float inverse_rms = 1.0f / sqrt(scratch[0] / float(hidden) + eps);
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint index = tid; index < hidden; index += tg_size) {
+        const uint at = index * chunk + k;
+        x_norm[at] = residual_out[at] * inverse_rms * (1.0f + weight[index]);
+    }
+}
+
+
+// ── the glue between a SEQUENTIAL mixer and a BATCHED MLP ─────────────────
+//
+// The mixer is genuinely per-position: DeltaNet carries a recurrent state and
+// GQA appends KV, so position k+1 depends on k. The MLP is not -- it is
+// position-independent, and it is 56.8% of the step.
+//
+// So the chunked prefill does not have to wait for a batched mixer. Run the
+// mixer K times as it already runs, scatter each result into slot k of a K-wide
+// interleaved buffer, run the MLP ONCE batched, then gather back. These two
+// kernels are that glue, and they are what makes the hybrid honest: their cost
+// is paid inside the measurement rather than assumed away.
+//
+// One float per thread, grid (hidden, 1, 1).
+kernel void qwen38_scatter_to_interleaved(
+    device const float* blocked      [[buffer(0)]],
+    device float* interleaved        [[buffer(1)]],
+    constant uint& hidden            [[buffer(2)]],
+    constant uint& chunk             [[buffer(3)]],
+    constant uint& slot              [[buffer(4)]],
+    uint gid                         [[thread_position_in_grid]])
+{
+    if (gid >= hidden || slot >= chunk) {
+        return;
+    }
+    interleaved[gid * chunk + slot] = blocked[gid];
+}
+
+kernel void qwen38_gather_from_interleaved(
+    device const float* interleaved  [[buffer(0)]],
+    device float* blocked            [[buffer(1)]],
+    constant uint& hidden            [[buffer(2)]],
+    constant uint& chunk             [[buffer(3)]],
+    constant uint& slot              [[buffer(4)]],
+    uint gid                         [[thread_position_in_grid]])
+{
+    if (gid >= hidden || slot >= chunk) {
+        return;
+    }
+    blocked[gid] = interleaved[gid * chunk + slot];
+}

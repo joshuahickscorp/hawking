@@ -1,0 +1,63 @@
+==========================================================================
+HAWKING PRIMARY DASHBOARD -- directive XXXII
+unknown is the STRING NOT_INSTRUMENTED. Never 0.
+==========================================================================
+regime                        PREFILL_ASCENSION (post-bootstrap; CP3 landed in this window)
+rolling window                0.55 unattended hours, 3 receipts
+
+--- WORKUNITS ---
+accepted useful WorkUnits     0
+useful WorkUnits / hour       0.000  [SMALL SAMPLE, not a throughput claim]
+resident calls (window)       13
+model calls / accepted unit   no accepted unit in window -- ratio UNDEFINED, not 0
+failed calls / accepted unit  UNDEFINED (denominator 0)
+
+--- TOKENS (window) ---
+prompt tokens                 33,434
+output tokens                 11,025
+prefix reused tokens          13,947   (42% of prompt)
+physical prompt positions     19,487
+physical positions avoided    13,947
+
+--- THROUGHPUT ---
+effective prompt tok/s        NOT_INSTRUMENTED for this window (per-call prefill wall not separable here)
+fresh-compute prompt tok/s    ~36.0  [STANDING, from R1_REUSE_PROOF; not re-measured this window]
+decode tok/s                  NOT_INSTRUMENTED
+
+--- WALL DECOMPOSITION ---
+model wall (window)           1245 s  (sum of per-call wall_s)
+prefill wall                  NOT_INSTRUMENTED  -- receipts in this window carry no prefill_profile
+decode wall                   NOT_INSTRUMENTED  -- NOT derived as wall-minus-prefill; that would
+                              REATTRIBUTE an unmeasured prefill to decode (the defect
+                              tools/test_hcli_metric_never_zeroes_unknown.py now pins)
+tool wall                     NOT_INSTRUMENTED
+verifier wall                 NOT_INSTRUMENTED
+complete WorkUnit wall        NOT_INSTRUMENTED (no accepted unit closed in this window)
+
+--- GPU / PHYSICS (CP3, MEASURED THIS WINDOW) ---
+GPU wall, in_proj baseline    74,520 ns/position  (production matvec, 16384x5120 q4)
+GPU wall, multi-position r4k4 30,125 ns/position  ->  2.474x, bit-identical
+bandwidth, cold single sweep  41,943,040 B / 128,750 ns = 326 GB/s
+bandwidth, r4k4 sweep         41,943,040 B / 120,500 ns = 348 GB/s (4 positions)
+machine peak                  778.8 GB/s [STANDING]
+dispatches                    4 -> 1 at r4k4
+
+--- RESIDENCY ---
+resident bytes                10,554,259,456 [STANDING banner] ; measured RSS 11.2-11.3 GB
+loaded 27B residents          never more than 1 (checked by RSS, not process name)
+checkpoint / state bytes      NOT_INSTRUMENTED
+swap                          total = 2048.00M  used = 482.75M  free = 1565.25M  (encrypted)
+
+--- CAUSAL INTERVENTIONS ---
+human actions (lifetime)      8   causal 2
+Claude actions (this window)  3   causal 2
+   [CAUSAL] CLAUDE_PATCHES: hcli/goal.py: _mentioned_and_known_files scanned only wu.description, so a packet rendered EVIDE
+   [CAUSAL] CLAUDE_RESTARTS: killed hcli.hawkingd --worker (pid 91917, started before the fix) so the committed goal.py loads
+   [      ] CLAUDE_GOAL_WRITES: queued bank-17d319d33f8a (tools/hcli_metric.py zero-for-unknown defect) and authored its red tes
+
+HONEST READING: no WorkUnit was ACCEPTED in this window. HCLI produced three
+failed receipts against a structurally impossible task (a packet that named a
+file it could not show), which is why the useful-work rate is 0.000/h and the
+calls-per-accepted-unit ratio is UNDEFINED rather than a number. The window's
+output is the CP3 physical result and the pre-cognition repair, both of which
+are Claude-causal and are counted as such above.

@@ -1,0 +1,26 @@
+{
+  "acceptance_pass": true,
+  "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+  "capability_equivalent": true,
+  "checkpoint": "CP6I_CHUNKED_PROMPT_WALL",
+  "chunk": 4,
+  "chunked_ms": {
+    "max": 2856.798,
+    "median": 2811.344666,
+    "min": 2755.945833
+  },
+  "chunked_tok_s": 45.529814095017834,
+  "r": 4,
+  "reps_kept": 6,
+  "sampled_chunked": 95726,
+  "sampled_sequential": 95726,
+  "sequential_ms": {
+    "max": 4000.96825,
+    "median": 3947.211792,
+    "min": 3919.622417
+  },
+  "sequential_tok_s": 32.42795338710317,
+  "speedup_conservative": 1.3720334503874618,
+  "speedup_median": 1.4040298365892359,
+  "tokens": 128
+}

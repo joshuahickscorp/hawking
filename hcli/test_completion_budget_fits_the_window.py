@@ -47,10 +47,20 @@ def test_a_prompt_that_fills_the_window_is_clamped_not_floored():
 
 
 def test_a_roomy_prompt_still_gets_a_generous_budget():
-    """Negative control: clamping must not starve the normal case."""
+    """Negative control: clamping must not starve the normal case.
+
+    The bar is the CEILING, not a number that happened to be under it. A valid
+    mutation reply is 800 to 1500 tokens, and the ceiling came down to 2048
+    once EOS was masked until the JSON object closes -- before that a model
+    that would not close it stopped early; after it, the model runs whatever
+    budget it is given, measured at 576 seconds on one call.
+    """
+    from hcli.engine import _MAX_TOKENS_CEILING
+
     eng = _engine()
     max_new, source = eng._resolve_max_tokens(1000)
-    assert max_new > 4000
+    assert max_new == _MAX_TOKENS_CEILING
+    assert max_new > 1500, "a normal mutation reply must still fit"
     assert source == "derived"
 
 
@@ -62,12 +72,18 @@ def test_the_margin_scales_with_the_prompt():
     5,804 counted -- and 96 flat tokens did not cover it. Measured overflow:
     5,804 + 2,557 against a 8,192 window.
     """
-    from hcli.engine import _CTX_ESTIMATE_ERROR
+    from hcli.engine import _CTX_ESTIMATE_ERROR, _MAX_TOKENS_CEILING
 
     eng = _engine()
-    small, _ = eng._resolve_max_tokens(1000)
+    # BOTH prompts must be long enough that the ceiling is not what decides
+    # the answer. With a 2048 ceiling, a 1000-token prompt is clamped and the
+    # comparison then measures the clamp instead of the margin it is named for.
+    small, _ = eng._resolve_max_tokens(5000)
     large, _ = eng._resolve_max_tokens(6000)
-    assert (8192 - 6000 - large) > (8192 - 1000 - small), (
+    assert small < _MAX_TOKENS_CEILING and large < _MAX_TOKENS_CEILING, (
+        "both prompts must clear the ceiling or this measures the clamp"
+    )
+    assert (8192 - 6000 - large) > (8192 - 5000 - small), (
         "a longer prompt must reserve MORE, not the same"
     )
     assert _CTX_ESTIMATE_ERROR >= 0.25, (

@@ -1,0 +1,22 @@
+{
+  "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+  "checkpoint": "CP6H_LM_HEAD_WASTE",
+  "lm_head_ns": {
+    "max": 1570374.0,
+    "median": 1253583.0,
+    "min": 886499.0
+  },
+  "lm_head_share": {
+    "conservative": 0.030270789849969056,
+    "generous": 0.05589655207885474,
+    "median": 0.04337332364640076
+  },
+  "note": "encode_full_token always runs encode_terminal; prefill drives one step() per prompt token, so every position computes full-vocab logits and all but the last are discarded",
+  "reps_kept": 10,
+  "token_wall_ns": {
+    "max": 29285625.0,
+    "median": 28902166.0,
+    "min": 28094291.0
+  },
+  "upper_bound_speedup_if_removed": 1.0453398642527179
+}

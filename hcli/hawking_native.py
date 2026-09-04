@@ -16,6 +16,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+from functools import lru_cache
 import queue
 import subprocess
 import tempfile
@@ -526,6 +527,35 @@ def is_hawking_native_path(path: Optional[str]) -> bool:
     )
 
 
+@lru_cache(maxsize=1)
+def _resident_tokenizer() -> Any:
+    """The sealed resident's own tokenizer.json, or None.
+
+    `tokenizers` is installed and the file is on disk beside the profile, so
+    there is no reason to guess a characters-per-token ratio for a count that
+    decides the generation budget.
+    """
+    try:
+        from tokenizers import Tokenizer
+
+        profile = _sealed_profile()
+        if profile is None or not profile.tokenizer:
+            return None
+        return Tokenizer.from_file(str(profile.tokenizer))
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def _resident_token_count(text: str) -> "Optional[int]":
+    tokenizer = _resident_tokenizer()
+    if tokenizer is None:
+        return None
+    try:
+        return len(tokenizer.encode(text, add_special_tokens=False).ids)
+    except Exception:  # noqa: BLE001
+        return None
+
+
 def _sealed_profile() -> "Optional[HawkingNativeConfig]":
     """The shipped sealed profile that sits beside this module, or None.
 
@@ -792,7 +822,24 @@ class _TokenizerRenderer:
             except Exception:  # noqa: BLE001
                 pass
         if prompt_tokens <= 0:
-            prompt_tokens = max(1, (len(text) + 2) // 3)
+            # The RESIDENT'S OWN tokenizer before any ratio. chars//3 is ~33%
+            # over the real rate for this vocabulary, and this number does not
+            # merely label the prompt -- it is subtracted from max_seq_len to
+            # decide how many tokens generation may have. Over-counting the
+            # prompt therefore STARVES the reply.
+            #
+            # Measured: four calls in one goal reported completion=256 against
+            # a requested 768 and stop_reason "budget". 256 is what
+            # max_seq_len - prompt_tokens - 8 leaves once the prompt is
+            # inflated, and a reply that needs more than 256 tokens can then
+            # never close its own JSON object. Most of a day of "the model
+            # never closed the object" is this line.
+            exact = _resident_token_count(text)
+            if exact is not None:
+                prompt_tokens = exact
+                source = "resident_tokenizer"
+            else:
+                prompt_tokens = max(1, (len(text) + 2) // 3)
         if self._load_error and tokenizer is None:
             source = "estimated_without_transformers"
         return _RenderedPrompt(
@@ -1282,6 +1329,7 @@ class HawkingNativeConnector:
         wall_s: float,
         mode: str,
         clamped: bool,
+        payload_max_tokens: Optional[int] = None,
         retry_count: int = 0,
         resident_health: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
@@ -1408,6 +1456,37 @@ class HawkingNativeConnector:
             # exactly as grammar_enforced did before the scar above.
             "stop_reason": body.get("stop_reason"),
             "layers": body.get("layers"),
+            # WHAT WAS ACTUALLY GRANTED, versus what the engine asked for.
+            # Receipt a4339d06 carries max_tokens 2048 and completion 1446 with
+            # stop_reason "budget" and finish_reason "length" -- and those three
+            # cannot all be true, because finish_reason is set from
+            # `generated_count >= max_new_tokens`. Three separate reads of the
+            # request path could not settle which number the resident actually
+            # received, because the only number the receipt ever carried was the
+            # ENGINE'S request. These are the connector's own resolved values
+            # after _limits, which is the arithmetic nobody else can see.
+            "max_new_tokens_granted": max_new_tokens,
+            # The PROFILE ceiling, named as such. The effective position limit
+            # _limits computes can be lower when a caller passes max_seq_len,
+            # and that is not in scope here -- so this is labelled for what it
+            # is rather than mislabelled for what would be more convenient.
+            "profile_max_seq_len": config.max_seq_len,
+            # `prompt_tokens` above PREFERS the resident's own count
+            # (body["prompt_len"]), so relaying it under a "counted by connector"
+            # name was a mislabel and made the two numbers look identical when
+            # they are not. THIS is the one _limits consumed to compute
+            # available = position_limit - prompt - 8, and it is the only number
+            # that explains a 2048-token request being granted 1446.
+            "prompt_tokens_used_for_budget": prompt.prompt_tokens,
+            # WHICH counter produced it. `_limits` grants
+            # min(max_tokens, position_limit - this - 8), so a disagreement
+            # between this and the resident's own prompt_len halves the reply
+            # budget. Solving the observed grants backwards puts this at ~6738
+            # where the resident reported 3581 -- 1.88x on what should be the
+            # same string -- and the source names which tokenizer said so.
+            "prompt_token_count_source": prompt.token_count_source,
+            "payload_max_tokens_received": payload_max_tokens,
+            "rendered_prompt_chars": len(prompt.text),
         }
         return {
             "id": f"hawking-chat-{uuid.uuid4()}",
@@ -1438,6 +1517,13 @@ class HawkingNativeConnector:
         if not isinstance(payload, dict):
             raise HawkingNativeProtocolError("native model payload must be an object")
         prompt = self._render(payload)
+        # The RAW request, before _limits touches it. The receipt records the
+        # engine's PLAN, and _limits with the plan's 2048 and the observed
+        # prompt returns 2048 -- yet the grant was 1446. Either the payload
+        # already carried 1446 and the recorded plan is stale, or _limits
+        # clamped for a reason three reads of it did not find. One field
+        # separates those, and reading the code again will not.
+        self._last_payload_max_tokens = payload.get("max_tokens")
         max_new_tokens, max_seq_len, clamped = self._limits(payload, prompt.prompt_tokens)
         limit = float(timeout if timeout is not None else os.environ.get("HCLI_MODEL_TIMEOUT", "1800"))
         mode = self.mode
@@ -1458,6 +1544,7 @@ class HawkingNativeConnector:
                 wall_s=wall_s,
                 mode=mode,
                 clamped=clamped,
+                payload_max_tokens=getattr(self, "_last_payload_max_tokens", None),
             )
 
         if self.resident is None:
@@ -1514,6 +1601,7 @@ class HawkingNativeConnector:
             wall_s=wall_s,
             mode=mode,
             clamped=clamped,
+            payload_max_tokens=getattr(self, "_last_payload_max_tokens", None),
             retry_count=retry_count,
             resident_health=self.resident.health(),
         )

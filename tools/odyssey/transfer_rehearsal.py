@@ -50,6 +50,9 @@ def audit(reads):
         try:
             p = str(Path(r).resolve())
         except Exception:
+            unresable = str(r)
+            if any(unresable.startswith(f) for f in FORBIDDEN_PREFIXES):
+                forbidden.append(unresable)
             continue
         if not p.startswith(str(REPO)) and not p.startswith(str(Path.home())):
             continue                                   # stdlib, site-packages, /dev, /usr

@@ -1,0 +1,100 @@
+{
+  "K": 4,
+  "R": 4,
+  "arms": {
+    "batched": "ONE TokenCommandBuffer holding three multi-position dispatches covering all K positions",
+    "sequential": "K TokenCommandBuffers, each holding the three organ dispatches for one position -- what the per-token prefill loop at qwen38_hybrid_decode.rs:7566 does"
+  },
+  "batched_gpu_ns_median": 648499,
+  "batched_gpu_ns_reps": [
+    651458,
+    650750,
+    651624,
+    648624,
+    648499,
+    644374,
+    643666,
+    642125,
+    643625
+  ],
+  "command_buffers_batched": 1,
+  "command_buffers_sequential": 4,
+  "correctness": {
+    "max_rel_err": 0.0,
+    "per_organ": [
+      {
+        "max_rel_err": 0.0,
+        "organ": "recurrence"
+      },
+      {
+        "max_rel_err": 0.0,
+        "organ": "in_proj"
+      },
+      {
+        "max_rel_err": 0.0,
+        "organ": "gate"
+      },
+      {
+        "max_rel_err": 0.0,
+        "organ": "up"
+      },
+      {
+        "max_rel_err": 0.0,
+        "organ": "down"
+      }
+    ],
+    "tolerance": 0.0001,
+    "valid": true
+  },
+  "dispatches_batched": 7,
+  "dispatches_sequential": 16,
+  "gpu_timestamp_authority": "TokenCommandBuffer::commit_and_wait_timed, GPUEndTime-GPUStartTime on the completed command buffer",
+  "includes_the_recurrence": {
+    "geometry": {
+      "heads": 48,
+      "key_dim": 128,
+      "value_dim": 128
+    },
+    "kernel": "qwen38_gated_delta_decode_vi_simd",
+    "launch": "(kd, heads, vd) / (kd,1,1), 512 B threadgroup -- read off the runtime's encode_gated_delta_fused_ba",
+    "note": "one dispatch per position in BOTH arms; in the batched arm those K dispatches sit INSIDE the same command buffer as the batched projections. The state buffer is reset from the same seed before each arm because the update is order dependent."
+  },
+  "organs": {
+    "down": {
+      "cols": 17408,
+      "kernel_mp": "qwen_affine_q2_matmul_r4k4_geo_tpr64_tg128",
+      "kernel_seq": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+      "rows": 5120
+    },
+    "gate_up": {
+      "cols": 5120,
+      "kernel_mp": "qwen_affine_q2_group64_matmul_gate_up_r4k4_geo_tpr64_tg128",
+      "kernel_seq": "qwen_affine_q2_group64_matvec_gate_up_geo_tpr64_tg128",
+      "rows": 17408
+    },
+    "in_proj": {
+      "cols": 5120,
+      "kernel_mp": "qwen_uniform_q4_group64_matmul_r4k4_geo_tpr64_tg128",
+      "kernel_seq": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "rows": 16384
+    }
+  },
+  "question": "Do the per-organ multi-position wins COMPOSE when the organs share ONE command buffer, which is the shape production runs?",
+  "reps": 9,
+  "schema": "hawking.cp5b.layer_with_recurrence.v1",
+  "seq_gpu_ns_median": 1382998,
+  "seq_gpu_ns_reps": [
+    1382998,
+    1382247,
+    1385831,
+    1385080,
+    1383580,
+    1379331,
+    1375081,
+    1371373,
+    1385623
+  ],
+  "speedup_x": 2.132613928471748,
+  "still_not_a_layer": "norms, causal conv, the gated RMSNorm and out_proj are absent, as is attention. This is the DeltaNet layer's weight-heavy organs plus its real recurrence, which is what the layer-crossing question turns on.",
+  "warmup_discarded": 1
+}

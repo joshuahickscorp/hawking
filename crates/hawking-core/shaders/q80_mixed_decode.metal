@@ -4884,3 +4884,495 @@ kernel void qwen38_ssq_prepared_rmsnorm_tg(
         x_norm[index] = hidden[index] * inverse_rms * (1.0f + weight[index]);
     }
 }
+
+// ── multi-position affine-q2 gate_up: the 56.8% organ, batched ────────────
+//
+// CP3 (receipts/runtime/CP3_RESULT.md) measured 2.474x from batching K
+// positions through ONE weight sweep on the uniform-q4 DeltaNet in_proj. That
+// kernel family does not reach the organ that actually dominates: the live
+// resident dispatches qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128
+// for mlp_gate_up (35.9% of per-step GPU ns) and a group32 affine matvec for
+// mlp_down (20.9%), and no affine-q2 kernel in any shader was multi-position.
+//
+// Structurally this is the same skeleton as the q4 RxK kernel -- geo_tpr64,
+// kSplit 2, 2*R rows per threadgroup, 8-wide unpack, simd_sum reduction. The
+// difference that matters is the register budget: gate and up are accumulated
+// TOGETHER, so this holds 2*R*K accumulators against the q4 kernel's R*K, plus
+// a third half-plane read per group for the bias.
+//
+//   live floats/thread ~= 2*R*K + K + 6*R
+//     r2k2  22      r2k4  32      r4k2  42      r4k4  60
+//
+// CP3 measured the q4 curve winning at 32 live floats and collapsing by 50-56,
+// so the PREDICTION this kernel exists to test is that the affine knee lands at
+// (R=2,K=4) or (R=4,K=2), not at (4,4). If r4k4 wins here anyway, the register
+// story from CP3 is wrong and that is worth more than the speedup.
+//
+// Activation layout is input[col * K + k] and output is out[row * K + k], the
+// same interleave the q4 family uses, so a caller can drive both identically.
+// Grid: ceil(rows / (2*R)) * 128, TG (128,1,1).
+
+template <uint R, uint K>
+static inline void affine_q2_g64_gate_up_matmul_rk_body(
+    device const uchar* gate_codes,
+    device const half*  gate_scales,
+    device const half*  gate_biases,
+    device const uchar* up_codes,
+    device const half*  up_scales,
+    device const half*  up_biases,
+    device const float* input,
+    device float*       gate_out,
+    device float*       up_out,
+    uint rows,
+    uint cols,
+    threadgroup float* red,
+    uint group_id,
+    uint simd_lane,
+    uint simd_id)
+{
+    constexpr uint kSplit = 2u;
+    const uint team = simd_id / kSplit;
+    const uint split = simd_id % kSplit;
+    const uint lane_in_row = split * 32u + simd_lane;
+    const uint row0 = (group_id * 2u + team) * R;
+
+    float acc_g[R * K];
+    float acc_u[R * K];
+    for (uint i = 0u; i < R * K; ++i) {
+        acc_g[i] = 0.0f;
+        acc_u[i] = 0.0f;
+    }
+
+    if ((cols % 64u) != 0u) {
+        return;
+    }
+    const uint groups_per_row = cols >> 6u;
+
+    for (uint col = lane_in_row * 8u; col + 8u <= cols; col += 512u) {
+        const uint group = col >> 6u;
+        const uint local = col & 63u;
+
+        uint gp[R];
+        uint up[R];
+        float gs[R], gb[R], us[R], ub[R];
+        for (uint r = 0u; r < R; ++r) {
+            const uint row = row0 + r;
+            // Clamp the ADDRESS but zero the SCALE, so an out-of-range row
+            // reads a valid page and contributes nothing. Branching per row
+            // instead would diverge every lane in the simdgroup.
+            const uint safe = row < rows ? row : (rows - 1u);
+            const uint rgb = safe * groups_per_row + group;
+            const uint byte0 = rgb * 16u + (local >> 2u);
+            gp[r] = uint(*((device const ushort*)(gate_codes + byte0)));
+            up[r] = uint(*((device const ushort*)(up_codes + byte0)));
+            const float live = row < rows ? 1.0f : 0.0f;
+            gs[r] = float(gate_scales[rgb]) * live;
+            gb[r] = float(gate_biases[rgb]) * live;
+            us[r] = float(up_scales[rgb]) * live;
+            ub[r] = float(up_biases[rgb]) * live;
+        }
+
+        for (uint i = 0u; i < 8u; ++i) {
+            // One activation fetch per position feeds all R rows, which is the
+            // whole point: R fixes the activation:code ratio that killed the
+            // K-only kernel.
+            float xv[K];
+            const uint xbase = (col + i) * K;
+            for (uint k = 0u; k < K; ++k) {
+                xv[k] = input[xbase + k];
+            }
+            const uint sh = 2u * i;
+            for (uint r = 0u; r < R; ++r) {
+                const float wg = float((gp[r] >> sh) & 3u) * gs[r] + gb[r];
+                const float wu = float((up[r] >> sh) & 3u) * us[r] + ub[r];
+                for (uint k = 0u; k < K; ++k) {
+                    acc_g[r * K + k] = fma(wg, xv[k], acc_g[r * K + k]);
+                    acc_u[r * K + k] = fma(wu, xv[k], acc_u[r * K + k]);
+                }
+            }
+        }
+    }
+
+    for (uint i = 0u; i < R * K; ++i) {
+        const float sg = simd_sum(acc_g[i]);
+        const float su = simd_sum(acc_u[i]);
+        if (simd_lane == 0u) {
+            red[i * 4u + simd_id] = sg;
+            red[4u * R * K + i * 4u + simd_id] = su;
+        }
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (split == 0u && simd_lane == 0u) {
+        for (uint r = 0u; r < R; ++r) {
+            const uint row = row0 + r;
+            if (row >= rows) {
+                break;
+            }
+            for (uint k = 0u; k < K; ++k) {
+                const uint i = r * K + k;
+                const uint t = team * kSplit;
+                gate_out[row * K + k] = red[i * 4u + t] + red[i * 4u + t + 1u];
+                up_out[row * K + k] =
+                    red[4u * R * K + i * 4u + t] + red[4u * R * K + i * 4u + t + 1u];
+            }
+        }
+    }
+}
+
+#define AFFINE_Q2_G64_GATE_UP_MATMUL_RK(RVAL, KVAL)                            \
+kernel void qwen_affine_q2_group64_matmul_gate_up_r##RVAL##k##KVAL##_geo_tpr64_tg128( \
+    device const uchar* gate_codes  [[buffer(0)]],                             \
+    device const half*  gate_scales [[buffer(1)]],                             \
+    device const half*  gate_biases [[buffer(2)]],                             \
+    device const uchar* up_codes    [[buffer(3)]],                             \
+    device const half*  up_scales   [[buffer(4)]],                             \
+    device const half*  up_biases   [[buffer(5)]],                             \
+    device const float* input       [[buffer(6)]],                             \
+    device float*       gate_out    [[buffer(7)]],                             \
+    device float*       up_out      [[buffer(8)]],                             \
+    constant uint& rows             [[buffer(9)]],                             \
+    constant uint& cols             [[buffer(10)]],                            \
+    uint group_id                    [[threadgroup_position_in_grid]],         \
+    uint simd_lane                   [[thread_index_in_simdgroup]],            \
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])       \
+{                                                                              \
+    threadgroup float red[8u * RVAL * KVAL];                                   \
+    affine_q2_g64_gate_up_matmul_rk_body<RVAL, KVAL>(                          \
+        gate_codes, gate_scales, gate_biases, up_codes, up_scales, up_biases,  \
+        input, gate_out, up_out, rows, cols, red, group_id, simd_lane, simd_id);\
+}
+
+AFFINE_Q2_G64_GATE_UP_MATMUL_RK(1, 1)
+// R-only baselines. Without these the RxK table cannot separate a KERNEL TILING
+// win -- more rows served per activation load, available at K=1 and needing no
+// multi-token machinery at all -- from a genuine MULTI-TOKEN win. CP3 carried
+// them (r2k1 1.044, r4k1 1.012, r8k1 0.980, r16k1 0.680) and that is the only
+// reason its 2.474x could be attributed to batching rather than to tiling.
+AFFINE_Q2_G64_GATE_UP_MATMUL_RK(2, 1)
+AFFINE_Q2_G64_GATE_UP_MATMUL_RK(4, 1)
+AFFINE_Q2_G64_GATE_UP_MATMUL_RK(2, 2)
+AFFINE_Q2_G64_GATE_UP_MATMUL_RK(2, 4)
+AFFINE_Q2_G64_GATE_UP_MATMUL_RK(4, 2)
+AFFINE_Q2_G64_GATE_UP_MATMUL_RK(4, 4)
+
+#undef AFFINE_Q2_G64_GATE_UP_MATMUL_RK
+
+
+// ── multi-position affine-q2 single-tensor matvec: mlp_down, 20.9% ────────
+//
+// CP4 batched gate_up (35.9%) at 2.49x. mlp_down runs the GENERIC affine
+// matvec `qwen_affine_q2_group32_matvec_geo_tpr64_tg128`, which branches on a
+// runtime group_size, and had no multi-position variant either. Same skeleton,
+// one tensor instead of a pair, so R*K accumulators rather than 2*R*K:
+//
+//   live floats/thread ~= R*K + K + 3*R
+//
+// CP4 refuted CP3's register threshold (r4k4 won at 60 live floats where the
+// q4 curve had collapsed by 50-56), so no knee is predicted here. The grid is
+// swept and the measurement decides.
+//
+// Activation layout input[col * K + k], output out[row * K + k], matching both
+// existing multi-position families so one caller drives all three.
+// Grid: ceil(rows / (2*R)) * 128, TG (128,1,1).
+
+template <uint R, uint K>
+static inline void affine_q2_matmul_rk_body(
+    device const uchar* codes,
+    device const half*  scales,
+    device const half*  biases,
+    device const float* input,
+    device float*       output,
+    uint rows,
+    uint cols,
+    uint group_size,
+    threadgroup float* red,
+    uint group_id,
+    uint simd_lane,
+    uint simd_id)
+{
+    constexpr uint kSplit = 2u;
+    const uint team = simd_id / kSplit;
+    const uint split = simd_id % kSplit;
+    const uint lane_in_row = split * 32u + simd_lane;
+    const uint row0 = (group_id * 2u + team) * R;
+
+    float acc[R * K];
+    for (uint i = 0u; i < R * K; ++i) {
+        acc[i] = 0.0f;
+    }
+
+    if (affine_q2_group_ok(group_size, cols)) {
+        const bool g32 = (group_size == 32u);
+        const uint gshift = g32 ? 5u : 6u;
+        const uint gmask = g32 ? 31u : 63u;
+        const uint gbytes = g32 ? 8u : 16u;
+        const uint groups_per_row = cols >> gshift;
+
+        for (uint col = lane_in_row * 8u; col + 8u <= cols; col += 512u) {
+            const uint group = col >> gshift;
+            const uint local = col & gmask;
+
+            uint packed[R];
+            float sc[R], bi[R];
+            for (uint r = 0u; r < R; ++r) {
+                const uint row = row0 + r;
+                // Clamp the ADDRESS but zero the SCALE and BIAS, so a row past
+                // the end reads a valid page and contributes nothing. Branching
+                // per row would diverge every lane in the simdgroup.
+                const uint safe = row < rows ? row : (rows - 1u);
+                const uint rgb = safe * groups_per_row + group;
+                const float live = row < rows ? 1.0f : 0.0f;
+                sc[r] = float(scales[rgb]) * live;
+                bi[r] = float(biases[rgb]) * live;
+                packed[r] = uint(*((device const ushort*)(codes + rgb * gbytes + (local >> 2u))));
+            }
+
+            for (uint i = 0u; i < 8u; ++i) {
+                float xv[K];
+                const uint xbase = (col + i) * K;
+                for (uint k = 0u; k < K; ++k) {
+                    xv[k] = input[xbase + k];
+                }
+                const uint sh = 2u * i;
+                for (uint r = 0u; r < R; ++r) {
+                    const float w = float((packed[r] >> sh) & 3u) * sc[r] + bi[r];
+                    for (uint k = 0u; k < K; ++k) {
+                        acc[r * K + k] = fma(w, xv[k], acc[r * K + k]);
+                    }
+                }
+            }
+        }
+    }
+
+    for (uint i = 0u; i < R * K; ++i) {
+        const float summed = simd_sum(acc[i]);
+        if (simd_lane == 0u) {
+            red[i * 4u + simd_id] = summed;
+        }
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (split == 0u && simd_lane == 0u) {
+        for (uint r = 0u; r < R; ++r) {
+            const uint row = row0 + r;
+            if (row >= rows) {
+                break;
+            }
+            for (uint k = 0u; k < K; ++k) {
+                const uint i = r * K + k;
+                const uint t = team * kSplit;
+                output[row * K + k] = red[i * 4u + t] + red[i * 4u + t + 1u];
+            }
+        }
+    }
+}
+
+#define AFFINE_Q2_MATMUL_RK(RVAL, KVAL)                                        \
+kernel void qwen_affine_q2_matmul_r##RVAL##k##KVAL##_geo_tpr64_tg128(          \
+    device const uchar* codes       [[buffer(0)]],                             \
+    device const half*  scales      [[buffer(1)]],                             \
+    device const half*  biases      [[buffer(2)]],                             \
+    device const float* input       [[buffer(3)]],                             \
+    device float*       output      [[buffer(4)]],                             \
+    constant uint& rows             [[buffer(5)]],                             \
+    constant uint& cols             [[buffer(6)]],                             \
+    constant uint& group_size       [[buffer(7)]],                             \
+    uint group_id                    [[threadgroup_position_in_grid]],         \
+    uint simd_lane                   [[thread_index_in_simdgroup]],            \
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])       \
+{                                                                              \
+    threadgroup float red[4u * RVAL * KVAL];                                   \
+    affine_q2_matmul_rk_body<RVAL, KVAL>(                                      \
+        codes, scales, biases, input, output, rows, cols, group_size,          \
+        red, group_id, simd_lane, simd_id);                                    \
+}
+
+AFFINE_Q2_MATMUL_RK(1, 1)
+// R-only baselines, so kernel tiling cannot masquerade as multi-token batching.
+AFFINE_Q2_MATMUL_RK(2, 1)
+AFFINE_Q2_MATMUL_RK(4, 1)
+AFFINE_Q2_MATMUL_RK(2, 2)
+AFFINE_Q2_MATMUL_RK(2, 4)
+AFFINE_Q2_MATMUL_RK(4, 2)
+AFFINE_Q2_MATMUL_RK(4, 4)
+AFFINE_Q2_MATMUL_RK(4, 8)
+AFFINE_Q2_MATMUL_RK(2, 8)
+
+#undef AFFINE_Q2_MATMUL_RK
+
+
+// ── multi-position affine gate_up WITH swiglu AND bitcast unpack ──────────
+//
+// CP6a measured the gap this closes. On real catalog weights over 64 layers:
+//
+//   pair baseline (unfused)   9,321,041 ns   1 position
+//   swiglu-fused production   7,183,124 ns   1 position
+//   multi-position r4k4      15,348,083 ns   4 positions
+//
+//   batching alone, fusion-matched                       2.429x
+//   against the fused path that actually runs            1.872x
+//   what production's fusion + bitcast buy on their own  1.298x
+//
+// The multi-position kernel had neither the SwiGLU fusion nor the bitcast
+// unpack, so replacing production with it gave up 1.298x of what production
+// already had. This kernel is all three at once, and it is the thing that turns
+// 1.872x into something near 2.4x on the real path.
+//
+// Unpack is the bitcast form: 0x40000000 | (q << 21) reinterpreted as float is
+// 2.0 + q*0.5 for q in 0..3, so passing scale*2 and bias - scale*4 recovers
+// q*scale + bias with one OR and one bitcast instead of a convert.
+//
+// Epilogue is SwiGLU, so ONE output per (row, position) instead of two:
+//   act_out[row * K + k] = silu(gate) * up
+//
+// Registers: 2*R*K accumulators, K staged activations, 3R weight terms per row.
+// CP4b showed the governing variable is grid width against core count rather
+// than register count, and gate_up is 17408 rows -- 2176 threadgroups at R=4,
+// against 60 GPU cores -- so R=4 is not grid-starved here.
+//
+// Activation layout input[col*K + k], output act_out[row*K + k], matching every
+// other multi-position kernel so one caller drives them all.
+// Grid: ceil(rows / (2*R)) * 128, TG (128,1,1).
+
+template <uint R, uint K>
+static inline void affine_q2_g64_gate_up_swiglu_matmul_rk_bitcast_body(
+    device const uchar* gate_codes,
+    device const half*  gate_scales,
+    device const half*  gate_biases,
+    device const uchar* up_codes,
+    device const half*  up_scales,
+    device const half*  up_biases,
+    device const float* input,
+    device float*       act_out,
+    uint rows,
+    uint cols,
+    threadgroup float* red,
+    uint group_id,
+    uint simd_lane,
+    uint simd_id)
+{
+    constexpr uint kSplit = 2u;
+    const uint team = simd_id / kSplit;
+    const uint split = simd_id % kSplit;
+    const uint lane_in_row = split * 32u + simd_lane;
+    const uint row0 = (group_id * 2u + team) * R;
+
+    float acc_g[R * K];
+    float acc_u[R * K];
+    for (uint i = 0u; i < R * K; ++i) {
+        acc_g[i] = 0.0f;
+        acc_u[i] = 0.0f;
+    }
+
+    if ((cols % 64u) != 0u) {
+        return;
+    }
+    const uint groups_per_row = cols >> 6u;
+
+    for (uint col = lane_in_row * 8u; col + 8u <= cols; col += 512u) {
+        const uint group = col >> 6u;
+        const uint local = col & 63u;
+
+        uint gp[R], up[R];
+        float gs2[R], gb4[R], us2[R], ub4[R];
+        for (uint r = 0u; r < R; ++r) {
+            const uint row = row0 + r;
+            // Clamp the ADDRESS, zero the SCALE. An out-of-range row reads a
+            // valid page and contributes nothing; branching per row would
+            // diverge every lane in the simdgroup.
+            const uint safe = row < rows ? row : (rows - 1u);
+            const uint rgb = safe * groups_per_row + group;
+            const uint byte0 = rgb * 16u + (local >> 2u);
+            gp[r] = uint(*((device const ushort*)(gate_codes + byte0)));
+            up[r] = uint(*((device const ushort*)(up_codes + byte0)));
+            const float live = row < rows ? 1.0f : 0.0f;
+            const float gs = float(gate_scales[rgb]) * live;
+            const float us = float(up_scales[rgb]) * live;
+            gs2[r] = gs * 2.0f;
+            us2[r] = us * 2.0f;
+            gb4[r] = fma(gs, -4.0f, float(gate_biases[rgb]) * live);
+            ub4[r] = fma(us, -4.0f, float(up_biases[rgb]) * live);
+        }
+
+        for (uint i = 0u; i < 8u; ++i) {
+            // One activation fetch per position feeds all R rows. R is what
+            // fixes the activation:code ratio that killed the K-only kernel.
+            float xv[K];
+            const uint xbase = (col + i) * K;
+            for (uint k = 0u; k < K; ++k) {
+                xv[k] = input[xbase + k];
+            }
+            const uint sh = 2u * i;
+            for (uint r = 0u; r < R; ++r) {
+                const uint gb = 0x40000000u | (((gp[r] >> sh) & 3u) << 21u);
+                const uint ub = 0x40000000u | (((up[r] >> sh) & 3u) << 21u);
+                const float wg = fma(gs2[r], as_type<float>(gb), gb4[r]);
+                const float wu = fma(us2[r], as_type<float>(ub), ub4[r]);
+                for (uint k = 0u; k < K; ++k) {
+                    acc_g[r * K + k] = fma(wg, xv[k], acc_g[r * K + k]);
+                    acc_u[r * K + k] = fma(wu, xv[k], acc_u[r * K + k]);
+                }
+            }
+        }
+    }
+
+    for (uint i = 0u; i < R * K; ++i) {
+        const float sg = simd_sum(acc_g[i]);
+        const float su = simd_sum(acc_u[i]);
+        if (simd_lane == 0u) {
+            red[i * 4u + simd_id] = sg;
+            red[4u * R * K + i * 4u + simd_id] = su;
+        }
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (split == 0u && simd_lane == 0u) {
+        for (uint r = 0u; r < R; ++r) {
+            const uint row = row0 + r;
+            if (row >= rows) {
+                break;
+            }
+            for (uint k = 0u; k < K; ++k) {
+                const uint i = r * K + k;
+                const uint t = team * kSplit;
+                const float g = red[i * 4u + t] + red[i * 4u + t + 1u];
+                const float u =
+                    red[4u * R * K + i * 4u + t] + red[4u * R * K + i * 4u + t + 1u];
+                act_out[row * K + k] = (g / (1.0f + exp(-g))) * u;
+            }
+        }
+    }
+}
+
+#define AFFINE_Q2_G64_GATE_UP_SWIGLU_MATMUL_RK(RVAL, KVAL)                     \
+kernel void qwen_affine_q2_group64_matmul_gate_up_swiglu_r##RVAL##k##KVAL##_geo_tpr64_tg128_bitcast( \
+    device const uchar* gate_codes  [[buffer(0)]],                             \
+    device const half*  gate_scales [[buffer(1)]],                             \
+    device const half*  gate_biases [[buffer(2)]],                             \
+    device const uchar* up_codes    [[buffer(3)]],                             \
+    device const half*  up_scales   [[buffer(4)]],                             \
+    device const half*  up_biases   [[buffer(5)]],                             \
+    device const float* input       [[buffer(6)]],                             \
+    device float*       act_out     [[buffer(7)]],                             \
+    constant uint& rows             [[buffer(8)]],                             \
+    constant uint& cols             [[buffer(9)]],                             \
+    uint group_id                    [[threadgroup_position_in_grid]],         \
+    uint simd_lane                   [[thread_index_in_simdgroup]],            \
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])       \
+{                                                                              \
+    threadgroup float red[8u * RVAL * KVAL];                                   \
+    affine_q2_g64_gate_up_swiglu_matmul_rk_bitcast_body<RVAL, KVAL>(           \
+        gate_codes, gate_scales, gate_biases, up_codes, up_scales, up_biases,  \
+        input, act_out, rows, cols, red, group_id, simd_lane, simd_id);        \
+}
+
+AFFINE_Q2_G64_GATE_UP_SWIGLU_MATMUL_RK(1, 1)
+AFFINE_Q2_G64_GATE_UP_SWIGLU_MATMUL_RK(2, 2)
+AFFINE_Q2_G64_GATE_UP_SWIGLU_MATMUL_RK(2, 4)
+AFFINE_Q2_G64_GATE_UP_SWIGLU_MATMUL_RK(4, 2)
+AFFINE_Q2_G64_GATE_UP_SWIGLU_MATMUL_RK(4, 4)
+// K=8. The single-tensor MATMUL_RK family already reaches (4,8); the fused
+// swiglu pair stopped at (4,4), which capped CP6i's chunk at 4 for no reason
+// other than that no one had asked for a wider cell.
+AFFINE_Q2_G64_GATE_UP_SWIGLU_MATMUL_RK(4, 8)
+AFFINE_Q2_G64_GATE_UP_SWIGLU_MATMUL_RK(2, 8)
+
+#undef AFFINE_Q2_G64_GATE_UP_SWIGLU_MATMUL_RK

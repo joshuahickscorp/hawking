@@ -24,6 +24,7 @@ from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, Tupl
 from .backends import (
     CompletionResult,
     SchemaViolation,
+    extract_json_object,
     StructuredOutputContract,
     StructuredOutputExhausted,
     backend_supports_response_format,
@@ -84,6 +85,15 @@ HCLI_RESULT_SCHEMA: Dict[str, Any] = {
                     "path": {"type": "string"},
                     "old_text": {"type": "string"},
                     "new_text": {"type": "string"},
+                    # LINES, as an alternative to the escaped string above.
+                    # Measured: the resident emitted a test body whose bytes
+                    # literal carried \\n inside a JSON string and produced
+                    # "unexpected character after line continuation character".
+                    # A list of plain lines needs no newline escaping at all,
+                    # which removes that whole failure mode rather than
+                    # returning a better error about it.
+                    "old_lines": {"type": "array", "items": {"type": "string"}},
+                    "new_lines": {"type": "array", "items": {"type": "string"}},
                 },
                 "required": ["op", "path"],
                 "additionalProperties": False,
@@ -165,13 +175,20 @@ For a requested code/file change:
     {
       "op": "replace",
       "path": "workspace/relative/path",
-      "old_text": "exact anchor when required",
-      "new_text": "new content"
+      "old_lines": ["exact anchor lines, copied verbatim, occurring once"],
+      "new_lines": ["the replacement", "one entry per line, no trailing newline"]
     }
   ],
   "tests": ["hcli/tests/test_the_thing_you_changed.py"],
   "tool_calls": []
 }
+
+USE old_lines/new_lines, NOT old_text/new_text, for anything with more than one
+line. One entry per line, no trailing "\n" of your own. A JSON string has to
+escape every newline and you get that wrong: a reply that sent "\\n" where "\n"
+belonged produced "unexpected character after line continuation character" and
+lost three attempts and four calls. A list of plain lines has nothing to escape.
+old_text/new_text remain valid for a short single-line anchor.
 
 A MUTATION WITH AN EMPTY "tests" LIST CANNOT BE ACCEPTED. The verifier records
 it UNVERIFIED -- reason NO_EVIDENCE -- which is terminal, so the work is thrown
@@ -267,7 +284,13 @@ _CTX_ESTIMATE_MARGIN = 96
 #: shortens a reply.
 _CTX_ESTIMATE_ERROR = 0.30
 _MAX_TOKENS_FLOOR = 512
-_MAX_TOKENS_CEILING = 8192
+# A valid mutation reply is 800 to 1500 tokens. Granting 5,874 cost nothing
+# while an unclosed object could stop early; now that EOS is masked until the
+# object closes, a model that will not close it runs the WHOLE budget instead.
+# Measured: one call 576s and still generating. Bound the damage -- a
+# well-formed reply never approaches this, and stop_reason "budget" names what
+# happened when one does.
+_MAX_TOKENS_CEILING = 2048
 _CHARS_PER_TOKEN = 3
 #: The estimator divides characters by a single constant, but the constant is
 #: not one number. Measured on the live resident: markdown prose runs near 3,
@@ -699,6 +722,9 @@ def _python_symbol_lines(source: str) -> Dict[str, int]:
 _DEF_RE = re.compile(r"\s*(?:def|class|fn|pub fn)\s")
 
 
+_TOP_LEVEL_DEF_RE = re.compile(r"^(?:async\s+)?(?:def|class)\s")
+
+
 def _focused_excerpt(content: str, prompt: str, limit: int, path: str) -> str:
     """The part of the file the request is ABOUT, not the first `limit` bytes.
 
@@ -714,7 +740,39 @@ def _focused_excerpt(content: str, prompt: str, limit: int, path: str) -> str:
     if len(content) <= limit:
         return content
 
-    wanted = {w for w in _IDENT_RE.findall(prompt or "") if not w.isupper()}
+    # Symbols from the OBJECTIVE, not the whole packet. The compiled packet
+    # carries INVARIANTS, ACCEPTANCE, NEIGHBORHOOD and any failure context, and
+    # those name code the goal never mentioned. Measured: every one of 25
+    # consecutive calls anchored on lines 1838-1964, where
+    # `default_tool_registry` is defined -- a 21-character name that outranks
+    # the `directories_seen` the goal actually names, and which reached `wanted`
+    # only through the packet's own scaffolding. The model was shown the tool
+    # registration block on every attempt and duly edited it.
+    # The OBJECTIVE LINE, when there is one. Cutting at a list of known section
+    # headers is a guess about the packet's shape and missed whichever section
+    # actually carried the noise: 25 consecutive calls still anchored on
+    # `default_tool_registry`. The objective line is where the goal lives, and
+    # it is the only part guaranteed to be about the task.
+    # The GOAL SENTENCE inside the objective line. A repair objective reads
+    #   OBJECTIVE: repair of implement.repair.1: repair of implement:
+    #   obligations=G001 <the goal> Relevant files: ...
+    # and carries the prior failure's text with it, which is how
+    # `default_tool_registry` -- a symbol from the attempt being repaired --
+    # reached the symbol set and pulled the window to lines 1838-1964 on every
+    # call of every attempt. The goal sits between the obligations marker and
+    # the file list.
+    focus = prompt or ""
+    for line in focus.splitlines():
+        if line.lstrip().startswith("OBJECTIVE:"):
+            focus = line
+            marker = re.search(r"obligations?=[A-Za-z0-9_.,]+\s*", focus)
+            if marker:
+                focus = focus[marker.end():]
+            cut = focus.find("Relevant files:")
+            if cut > 0:
+                focus = focus[:cut]
+            break
+    wanted = {w for w in _IDENT_RE.findall(focus) if not w.isupper()}
     lines = content.splitlines(keepends=True)
     if not wanted or not lines:
         return content[:limit]
@@ -726,8 +784,27 @@ def _focused_excerpt(content: str, prompt: str, limit: int, path: str) -> str:
         symbols = _python_symbol_lines(content)
         named = [(symbols[w], w) for w in wanted if w in symbols]
         if named:
-            anchor_line = min(named)[0] - 1
+            # The MOST SPECIFIC name, not the earliest-defined one. min() on
+            # (line, name) picks whichever matching symbol appears first in the
+            # file, so a goal naming `_list_files` and `directories_seen` was
+            # anchored on `path` or `glob` -- short names that occur early and
+            # everywhere. Measured: the window came out as lines 251-403, which
+            # contains TOOL_SCHEMA and neither the function the goal names nor
+            # the dict it asks to change, and the model duly edited the return
+            # dict it had actually been shown.
+            #
+            # A longer identifier is a more particular one. Ties go to the
+            # earliest definition, as before.
+            anchor_line = max(named, key=lambda pair: (len(pair[1]), -pair[0]))[0] - 1
 
+    if os.environ.get("HCLI_DUMP_EVIDENCE"):
+        try:
+            with open(os.environ["HCLI_DUMP_EVIDENCE"] + ".focus", "a") as h:
+                h.write(f"--- path={path} limit={limit}\n")
+                h.write(f"    focus[:160]={focus[:160]!r}\n")
+                h.write(f"    wanted_sample={sorted(wanted)[:12]}\n")
+        except Exception:
+            pass
     hits = [i for i, line in enumerate(lines) if any(w in line for w in wanted)]
     if anchor_line is None and not hits:
         return content[:limit]
@@ -747,8 +824,32 @@ def _focused_excerpt(content: str, prompt: str, limit: int, path: str) -> str:
     # afterwards: expansion is symmetric, so `[:limit]` cuts the tail and can
     # drop the very line the window was centred on. Stop growing at the limit
     # instead, and keep the anchor line even if it alone exceeds it.
+    # When the anchor is a DEFINITION, its body comes before its neighbours.
+    # Symmetric growth spent half the budget on code ABOVE the function and
+    # covered only part of it: a goal naming _read_file received the `def` line
+    # and the first half of the body, with the whole-file return dict it was
+    # asked to change past the end of the window. The model could not copy an
+    # anchor it had never been shown, so it invented one.
+    # The next TOP-LEVEL definition, not the next symbol. _python_symbol_lines
+    # also reports locals, so the "next symbol" after `def _read_file` was the
+    # `path` assigned on the line below it -- the body ended before it began,
+    # forward growth did nothing, and the window stopped ten lines short of the
+    # return dict the goal names.
+    symbol_end = len(lines) - 1
+    if anchor_line is not None and path.endswith(".py"):
+        for i in range(best + 1, len(lines)):
+            if _TOP_LEVEL_DEF_RE.match(lines[i]):
+                symbol_end = i - 1
+                break
+
     lo = hi = best
     size = len(lines[best])
+    # Forward to the end of the definition first, then outward as usual.
+    while hi < symbol_end and hi < len(lines) - 1:
+        if size + len(lines[hi + 1]) > limit:
+            break
+        hi += 1
+        size += len(lines[hi])
     while lo > 0 or hi < len(lines) - 1:
         grew = False
         if hi < len(lines) - 1 and size + len(lines[hi + 1]) <= limit:
@@ -797,6 +898,167 @@ def _anchor_violation(path: str, anchor: str, current: str, hits: int) -> str:
     )
 
 
+_PATCH_BLOCK_RE = re.compile(
+    r"PATH:[ \t]*(?P<path>\S+)\s*\n"
+    r"FIND:[ \t]*\n(?P<find>.*?)\n?REPLACE:[ \t]*\n(?P<replace>.*?)\n?END\b",
+    re.S,
+)
+
+
+def _patch_block_to_operations(text: str) -> Optional[Dict[str, Any]]:
+    """A patch the model cannot syntactically break.
+
+    JSON asks for quotes, escapes, brackets and a closing brace before the edit
+    is expressible. Measured under every precondition finally satisfied at once
+    -- correct objective, evidence containing the target, zero tools, the unique
+    anchor supplied, a 2048-token budget -- the resident produced 1,338 to 1,446
+    tokens on three consecutive attempts and never closed the object. That is
+    the model's own frontier, and no better error message moves it.
+
+    This form has nothing to close:
+
+        PATH: hcli/tool_registry.py
+        FIND:
+            clipped = raw[:limit]
+        REPLACE:
+            clipped = raw[:limit]
+            total = len(text.splitlines())
+        END
+
+    Leading and trailing blank lines are stripped; the interior is taken
+    verbatim, so indentation survives. FIND must still match exactly once --
+    the applier enforces that, and it is the whole safety property.
+    """
+    match = _PATCH_BLOCK_RE.search(str(text or ""))
+    if match is None:
+        return None
+    find = match.group("find").strip("\n")
+    replace = match.group("replace").strip("\n")
+    if not find.strip():
+        return None
+    return {
+        "kind": "mutation",
+        "content": "patch block",
+        "operations": [{
+            "op": "replace",
+            "path": match.group("path").strip().rstrip(","),
+            "old_text": find,
+            "new_text": replace,
+        }],
+        "tests": [],
+        "tool_calls": [],
+    }
+
+
+def _normalize_micro_mutation(parsed: Any) -> Any:
+    """Accept the smallest reply that can express one edit.
+
+    The full envelope asks for kind, content, operations, tests and tool_calls
+    before a single character of the edit. Measured across a day of attempts,
+    the resident reliably decides the right change and unreliably serializes
+    that envelope: replies that stop inside an array, anchors wrong in one
+    character, bodies whose escaped newlines break the file they describe.
+
+    So let it send the edit and nothing else:
+
+        {"path": "...", "find": "...", "replace": "..."}
+
+    `find` must occur exactly once -- the applier already enforces that, and a
+    unique anchor is the whole safety property. Everything downstream keeps
+    seeing the full envelope, because this expands into one before it gets
+    there. One authority, one shape, no second parser.
+
+    Lists are accepted for find/replace as well, so a multi-line edit still
+    needs no newline escaping.
+    """
+    if not isinstance(parsed, dict):
+        return parsed
+    if "operations" in parsed or "kind" in parsed:
+        return parsed
+    path = parsed.get("path")
+    if not isinstance(path, str) or "find" not in parsed:
+        return parsed
+
+    def _text(value: Any) -> Optional[str]:
+        if isinstance(value, list) and all(isinstance(x, str) for x in value):
+            return "\n".join(value) + "\n" if value else ""
+        return value if isinstance(value, str) else None
+
+    find = _text(parsed.get("find"))
+    replace = _text(parsed.get("replace"))
+    if find is None or replace is None:
+        return parsed
+    return {
+        "kind": "mutation",
+        "content": str(parsed.get("content") or "micro mutation"),
+        "operations": [{
+            "op": "replace",
+            "path": path,
+            "old_text": find,
+            "new_text": replace,
+        }],
+        "tests": parsed.get("tests") or [],
+        "tool_calls": [],
+    }
+
+
+def _operation_text(operation: Dict[str, Any], field: str) -> Optional[str]:
+    """The text of an operation field, however the model chose to send it.
+
+    `new_text` is one JSON string and therefore carries every newline as an
+    escape. The resident got that wrong in a way no better error message fixes:
+    a test body containing a bytes literal came back with a stray line
+    continuation, three attempts running.
+
+    `new_lines` is the same content as a list of plain lines. There is nothing
+    to escape, so there is nothing to get wrong. Lines carry no trailing
+    newline of their own; the block ends with one, which is what a Python file
+    or a spliced block always does.
+
+    ONE resolver for both the applier and the preflight. Two readers disagreeing
+    about what an operation says is exactly the defect that let a bad anchor
+    reach _apply_operations with the contract reporting no complaint.
+    """
+    # Delegates. The resolver lives in hcli/mutation.py so the applier there and
+    # the preflight here cannot drift apart -- which they had, and a line-form
+    # operation through mutation.py resolved to an EMPTY anchor.
+    from .mutation import operation_text
+
+    return operation_text(operation, field)
+
+
+def blast_radius(before: str, after: str) -> Dict[str, Any]:
+    """What a whole-file write did to the file, as a number the receipt keeps.
+
+    Receipt ecf6d616 was ACCEPTED -- mutation, completed, py_compile exit 0,
+    4 of 4 tests green, red_before_green True -- for a `replace_file` that cut a
+    202-line dashboard to 72 lines and left two names read but never bound. The
+    recorded operation carried `op`, `path` and `new_text`, so the only account
+    of what the change DID was the model's own prose, which said "add two
+    helpers". A narrow test then licensed the deletion and nothing anywhere
+    contradicted it.
+
+    This does NOT refuse the write. Legitimate rewrites exist, and a guard that
+    blocked them would be a worse defect than the one it closes. It makes the
+    size of the change VISIBLE, which is what was missing.
+    """
+    before_lines = before.count("\n") + (1 if before and not before.endswith("\n") else 0)
+    after_lines = after.count("\n") + (1 if after and not after.endswith("\n") else 0)
+    removed = max(0, before_lines - after_lines)
+    fraction = (removed / before_lines) if before_lines else 0.0
+    return {
+        "lines_before": before_lines,
+        "lines_after": after_lines,
+        "lines_removed": removed,
+        "fraction_removed": round(fraction, 4),
+        "bytes_before": len(before.encode("utf-8")),
+        "bytes_after": len(after.encode("utf-8")),
+        # A third of a file is a lot to lose to an operation whose stated purpose
+        # was to add something. The threshold is a REPORTING trigger, not a veto.
+        "mostly_deleted": fraction >= 0.34,
+    }
+
+
 def _rejected_excerpt(text: str) -> str:
     """Keep both ENDS of a rejected reply, not just its head.
 
@@ -824,10 +1086,26 @@ def _python_syntax_violation(content: str) -> Optional[str]:
     verifier owns them and this is only about giving the model back the one
     error it can act on.
     """
-    try:
-        parsed = json.loads(content)
-    except (TypeError, ValueError):
-        return None
+    # Parse the reply the way the ENGINE parses it. A bare json.loads returned
+    # None for any reply the model wrapped in a markdown fence or prefaced with
+    # a sentence -- both of which the engine's own extractor tolerates and then
+    # acts on. So the preflight silently did nothing on exactly those replies,
+    # and every correction built on it -- the anchor retry, the syntax retry,
+    # the quoted line -- was skipped without a trace.
+    #
+    # Measured: a 343-character anchor correct but for ONE character,
+    # 'len(raw}' where 'len(raw)}' belongs, reached _apply_operations and
+    # killed the unit with attempts=2 and errors=[] -- the receipt recording
+    # that the contract had found nothing to complain about.
+    #
+    # Two parsers disagreeing about what a reply says is one parser too many.
+    if isinstance(content, dict):
+        parsed = content
+    else:
+        try:
+            parsed = extract_json_object(content)
+        except Exception:
+            return None
     if not isinstance(parsed, dict):
         return None
     # ONLY a reply that is actually applying its operations may be judged on
@@ -847,7 +1125,7 @@ def _python_syntax_violation(content: str) -> Optional[str]:
         path = str(op.get("path") or "")
         if not path.endswith(".py"):
             continue
-        body = op.get("new_text")
+        body = _operation_text(op, "new_text")
         if not isinstance(body, str) or not body.strip():
             continue
 
@@ -859,8 +1137,20 @@ def _python_syntax_violation(content: str) -> Optional[str]:
         # that false rejection, having been told to fix code that was not
         # broken. A check that refuses correct work is worse than no check.
         candidate = body
+        if str(op.get("op") or "") == "create" and Path(path).exists():
+            # CORRECTABLE, and it was terminal: _apply_operations runs after
+            # the contract accepts, so a unit that offered to create a file
+            # already on disk died holding whatever else it had proposed.
+            # Measured twice on the same goal, whose spec file the model kept
+            # trying to author even though the goal said it already existed.
+            return (
+                f"{path} already exists, so it cannot be created. If you meant "
+                f"to change it, use a replace operation with an exact anchor. "
+                f"If it already says what you need, leave it out of your "
+                f"operations entirely."
+            )
         if str(op.get("op") or "") == "replace":
-            anchor = op.get("old_text")
+            anchor = _operation_text(op, "old_text")
             try:
                 current = (Path(path)).read_text(encoding="utf-8", errors="replace")
             except OSError:
@@ -1136,7 +1426,12 @@ class Engine:
     # magnitude -- a round is a model call at 92-385 s, a tool call is 1-3 ms.
     # Capping calls-per-round at the round budget priced milliseconds like
     # minutes.
-    MAX_TOOL_ROUNDS = 6
+    # Overridable because a goal that carries its own evidence needs ZERO tool
+    # rounds, and each unused round is a full model call. Measured: a 249-token
+    # goal that said "do not read any file" made 6 tool calls and arrived at
+    # the mutation with a 4,943-token prompt, most of it observations of a file
+    # whose bytes were already in the goal.
+    MAX_TOOL_ROUNDS = int(os.environ.get("HCLI_MAX_TOOL_ROUNDS", "6"))
     MAX_TOOL_CALLS_PER_ROUND = 16
     # Kept as an alias: external callers and tests referenced the old name for
     # the per-round cap, and silently changing what it means is worse than
@@ -1327,6 +1622,21 @@ class Engine:
         exist" is information, and a daemon that dies on a bad argument is not
         unattended.
         """
+        # An empty tool bundle means the unit HAS no tools, not that it was
+        # asked nicely not to use them. Suppressing the catalog was not enough:
+        # the reply schema still offers tool_calls, so the model asked anyway
+        # and the executor ran them -- measured, seven tool calls on a goal that
+        # carried its own evidence and had no catalog. Refuse here, and say so
+        # in terms the model can act on.
+        if os.environ.get("HCLI_NO_TOOLS") == "1" and calls:
+            return [{
+                "tool": str((call or {}).get("tool") or "?"),
+                "ok": False,
+                "text": (
+                    "no tools are available for this work unit. Everything you "
+                    "need is already in the goal above. Answer from it."
+                ),
+            } for call in calls[: self.MAX_TOOL_CALLS_PER_ROUND]]
         registry = self._tool_registry()
         out: List[Dict[str, Any]] = []
         for call in calls[: self.MAX_TOOL_CALLS_PER_ROUND]:
@@ -1617,6 +1927,22 @@ class Engine:
         pose as deterministic evidence and quietly weaken the freshness gate.
         """
         registry = self._tool_registry()
+        # An EMPTY TOOL BUNDLE, scoped to one WorkUnit. A goal that already
+        # carries its objective, its target's exact bytes and its failing spec
+        # needs no exploratory tool, and offering six is not neutral: measured,
+        # a 249-token self-contained goal that said "do not read any file" still
+        # spent six tool calls and arrived at the mutation with a 4,943-token
+        # prompt, nearly all of it observations of a file already quoted to it.
+        #
+        # Saying "do not use tools" while advertising them is not scoping. This
+        # is. Off by default; the caller opts in per unit.
+        if os.environ.get("HCLI_NO_TOOLS") == "1":
+            self._tool_catalog_chars = 0
+            self._tool_catalog_mode = "none"
+            parts = [prompt]
+            if observations:
+                parts.append(self._observations_block(observations, final=True))
+            return "\n\n".join(part for part in parts if part)
         catalog = (
             self._compact_tool_catalog(
                 registry,
@@ -1734,6 +2060,13 @@ class Engine:
 
         goal_id = str(uuid.uuid4())
         self._active_goal_id = goal_id
+        # The goal, kept for the evidence window. _gather_evidence receives a
+        # string that has already been reduced to path tokens by the time it
+        # reaches _focused_excerpt -- measured, it was literally
+        # "hcli/tool_registry.py hcli/tests/test_...py" -- so focusing on it
+        # anchors on whichever lines mention those paths most densely, which is
+        # the tool registration block, not the function the goal names.
+        self._active_goal_text = prompt
         self._model_calls = []
         self._tool_calls_seen = {}
         self._last_call_plan = {}
@@ -2620,7 +2953,12 @@ class Engine:
             except Exception:
                 continue
 
-            content = _focused_excerpt(content, prompt, per_file_limit, str(path))
+            content = _focused_excerpt(
+                content,
+                getattr(self, "_active_goal_text", None) or prompt,
+                per_file_limit,
+                str(path),
+            )
 
             rel = str(
                 path.relative_to(
@@ -3222,6 +3560,15 @@ class Engine:
         # nothing, because nothing was supposed to be shared.
         try:
             native = data.get("hawking") if isinstance(data, dict) else None
+            # The budget the connector GRANTED, which is what the resident was
+            # actually allowed. `plan["max_tokens"]` is the pre-reduction value
+            # and diverges from it: receipt 5b2e060a recorded plan 2048 against a
+            # payload of 1446, and the retry instruction built from the plan told
+            # the model it had 2048 and "the runtime stopped 710 tokens SHORT",
+            # when the runtime had delivered its budget exactly.
+            granted = (native or {}).get("max_new_tokens_granted")
+            if isinstance(granted, int) and granted > 0:
+                self._last_granted_max_tokens = granted
             self._prefix_probe.observe(
                 self._active_goal_id or "",
                 self._last_rendered_prompt or "",
@@ -3276,7 +3623,10 @@ class Engine:
             parsed = self._extract_json_object(content)
         except EngineError:
             if str(finish_reason) == "length":
-                budget = plan.get("max_tokens")
+                budget = (
+                    getattr(self, "_last_granted_max_tokens", None)
+                    or plan.get("max_tokens")
+                )
                 raise EngineError(
                     _truncation_message(budget, completion_tokens, prompt_tokens)
                 )
@@ -3333,7 +3683,22 @@ class Engine:
                 try:
                     contract.validate(content)
                 except Exception:
-                    budget = plan.get("max_tokens")
+                    # A PATCH BLOCK is complete even when the JSON around it is
+                    # not. This check has to sit here rather than in the
+                    # extractor: the truncation violation is raised before any
+                    # extraction runs, so a block-form reply was rejected three
+                    # times over without the parser for it ever being reached.
+                    if _patch_block_to_operations(content) is not None:
+                        return result
+                    # The granted budget, not the plan's pre-reduction one.
+                    # Quoting the plan made a model that EXHAUSTED its budget be
+                    # told it had stopped short of a larger one and should
+                    # "answer far more briefly" -- advice against a ceiling it
+                    # had already hit, spent three attempts over.
+                    budget = (
+                        getattr(self, "_last_granted_max_tokens", None)
+                        or plan.get("max_tokens")
+                    )
                     prompt_tokens = result.prompt_tokens
                     if prompt_tokens is None:
                         prompt_tokens = plan.get("prompt_tokens_est")
@@ -3631,6 +3996,19 @@ class Engine:
             return build(evidence, context_memory), None
 
         items = list(evidence or ())
+        # With NO TOOLS the ladder's premise is inverted. It sheds evidence
+        # first because "a file snapshot can be re-read for free" -- true only
+        # while fs.read exists. Under an empty tool bundle the snapshot is the
+        # ONLY source of truth, and dropping it leaves the model to invent the
+        # file from memory. Measured: evidence_files listed tool_registry.py,
+        # evidence_bytes_inlined was 0, and the model sent an anchor reading
+        # "    if start is None and end is None:" -- a plausible line that is
+        # not in the file.
+        #
+        # So keep the first evidence item and let the rungs below shrink the
+        # rest. Something must still give when the budget is short; it must not
+        # be the only thing the model cannot re-derive.
+        keep_floor = 1 if (os.environ.get("HCLI_NO_TOOLS") == "1" and items) else 0
         blocks = _observation_blocks(trailing)
         # Where the kept observations START, as an ABSOLUTE index that only ever
         # moves forward. Keeping "the last N" instead re-cut the block at a
@@ -3645,7 +4023,10 @@ class Engine:
 
         attempts: List[Tuple[Any, ...]] = []
         for fraction in self.EVIDENCE_REDUCTION_STEPS:
-            keep = items[: max(0, int(len(items) * fraction))] if items else []
+            keep = (
+                items[: max(keep_floor, int(len(items) * fraction))]
+                if items else []
+            )
             label = (
                 "full" if fraction == 1.0
                 else f"evidence {len(keep)}/{len(items)}"
@@ -3654,7 +4035,7 @@ class Engine:
         # Last resorts: drop the durable checkpoint too, then shed observations
         # oldest-first. Observations go last because a tool call has already
         # been paid for, while a file snapshot can be re-read for free.
-        attempts.append(([], None, "evidence 0 + no checkpoint", floor))
+        attempts.append((items[:keep_floor], None, "evidence 0 + no checkpoint", floor))
         if len(blocks) > 1:
             for keep_n in (len(blocks) * 3 // 4, len(blocks) // 2, len(blocks) // 4, 1):
                 if keep_n < 1 or keep_n >= len(blocks):
@@ -3666,10 +4047,18 @@ class Engine:
                 if advanced <= floor:
                     continue
                 attempts.append((
-                    [], None,
-                    f"evidence 0 + observations {keep_n}/{len(blocks)}",
+                    items[:keep_floor], None,
+                    f"evidence {keep_floor} + observations {keep_n}/{len(blocks)}",
                     advanced,
                 ))
+
+        # LAST RESORT: drop evidence entirely rather than refuse the call.
+        # keep_floor exists so the model is not left inventing a file it cannot
+        # read, but a floor that cannot fit refuses the turn outright --
+        # measured: "context preflight failed (root): demand 10580 exceeds
+        # per-request ctx", which is strictly worse than a degraded prompt.
+        if keep_floor:
+            attempts.append(([], None, "evidence 0 (floor abandoned to fit)", floor))
 
         last = None
         for keep, memory, label, cut in attempts:
@@ -3797,6 +4186,26 @@ class Engine:
             inlined += len(
                 str(item.get("content") or "").encode("utf-8")
             )
+        # One-shot instrument: write the evidence actually POSTED. Byte counts
+        # cannot answer "which 6027 characters", and inferring the window from
+        # the code produced two wrong conclusions in a row.
+        if os.environ.get("HCLI_DUMP_EVIDENCE"):
+            try:
+                with open(os.environ["HCLI_DUMP_EVIDENCE"], "a") as handle:
+                    # APPEND, with the objective. Overwriting made every read
+                    # ambiguous: the file held whichever call ran last, so a
+                    # correct first call and a wrong later one were
+                    # indistinguishable.
+                    handle.write("\n########## CALL ##########\n")
+                    obj = [ln for ln in str(prompt or "").splitlines()
+                           if ln.lstrip().startswith("OBJECTIVE:")]
+                    handle.write(f"PROMPT_CHARS: {len(str(prompt or ''))}\n")
+                    handle.write(f"OBJECTIVE_LINE: {obj[0][:200] if obj else '(NONE FOUND)'}\n")
+                    for item in evidence:
+                        head = str(item.get("content") or "").splitlines()[:1]
+                        handle.write(f"===== {item.get('path')} :: {head}\n")
+            except Exception:  # an instrument must never end a goal
+                pass
         # Snapshot of this assembled payload. _call_model re-measures
         # after any Engine._build_model_payload hook mutates messages.
         self._context_efficiency = self._snapshot_context_efficiency(
@@ -3870,6 +4279,19 @@ class Engine:
                 # interpretable without it, and the host has no other source:
                 # the sealed profile carries capabilities, not geometry.
                 "layers",
+                # The budget the connector actually GRANTED after _limits, and
+                # the position limit it computed it from. The receipt has only
+                # ever carried the ENGINE'S request, so a reply truncated at
+                # 1446 against a recorded max_tokens of 2048 was unattributable
+                # -- three reads of the request path could not say which number
+                # the resident received. A field has to survive three hops and
+                # these were dying on the second.
+                "max_new_tokens_granted",
+                "profile_max_seq_len",
+                "prompt_tokens_used_for_budget",
+                "prompt_token_count_source",
+                "payload_max_tokens_received",
+                "rendered_prompt_chars",
             ):
                 value = native.get(key)
                 if value is not None:
@@ -4192,7 +4614,7 @@ class Engine:
         content: Any,
     ) -> Dict[str, Any]:
         if isinstance(content, dict):
-            return content
+            return _normalize_micro_mutation(content)
 
         text = str(
             content or ""
@@ -4223,7 +4645,7 @@ class Engine:
             parsed = json.loads(text)
 
             if isinstance(parsed, dict):
-                return parsed
+                return _normalize_micro_mutation(parsed)
         except Exception:
             pass
 
@@ -4241,7 +4663,16 @@ class Engine:
                 continue
 
             if isinstance(parsed, dict):
-                return parsed
+                return _normalize_micro_mutation(parsed)
+
+        # LAST: a patch block, which has nothing to close. This is reached only
+        # when every JSON path has failed, so it costs nothing when the model
+        # produces valid JSON and rescues the one failure mode that no error
+        # message moved -- 1,338 to 1,446 tokens emitted on three consecutive
+        # attempts with the object left open.
+        block = _patch_block_to_operations(text)
+        if block is not None:
+            return block
 
         raise EngineError(
             "Model did not return a valid structured JSON object"
@@ -4623,22 +5054,11 @@ class Engine:
                 allow_missing=True,
             )
 
-            old_text = str(
-                operation.get(
-                    "old_text",
-                    "",
-                )
-            )
+            old_text = _operation_text(operation, "old_text") or ""
 
-            has_new_text = (
-                "new_text" in operation
-                and operation.get("new_text") is not None
-            )
-            new_text = (
-                str(operation.get("new_text", ""))
-                if has_new_text
-                else ""
-            )
+            resolved_new = _operation_text(operation, "new_text")
+            has_new_text = resolved_new is not None
+            new_text = resolved_new or ""
 
             if op == "create":
                 if not has_new_text:
@@ -4681,6 +5101,23 @@ class Engine:
                 if current == new_text:
                     raise NoOpMutation(
                         "replace_file content unchanged"
+                    )
+
+                # Record what this write DOES to the file, onto the operation
+                # the receipt echoes. Without it the receipt's only account of a
+                # whole-file replace is the model's own summary of it.
+                radius = blast_radius(current, new_text)
+                try:
+                    operation["blast_radius"] = radius
+                except Exception:  # noqa: BLE001 - a frozen mapping must not fail the write
+                    pass
+                if radius["mostly_deleted"]:
+                    self._emit(
+                        "mutation_blast_radius",
+                        {
+                            "path": str(path.relative_to(self.root)),
+                            **radius,
+                        },
                     )
 
                 # ATOMIC. A SIGKILL during an in-place write_text left a

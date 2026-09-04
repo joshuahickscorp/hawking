@@ -1,0 +1,115 @@
+{
+  "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+  "checkpoint": "CP6F_CHUNKED_MLP_CORRECTNESS",
+  "failures": 0,
+  "rows": [
+    {
+      "bar": null,
+      "dispatches_chunked": 4,
+      "dispatches_sequential": 4,
+      "is_family_change_floor": true,
+      "k": 1,
+      "layer": 0,
+      "max_abs_norm": 0.0,
+      "max_abs_resid": 3.5762786865234375e-7,
+      "pass": true,
+      "r": 1
+    },
+    {
+      "bar": 7.152557373046875e-7,
+      "dispatches_chunked": 4,
+      "dispatches_sequential": 8,
+      "is_family_change_floor": false,
+      "k": 2,
+      "layer": 0,
+      "max_abs_norm": 0.0,
+      "max_abs_resid": 3.8743019104003906e-7,
+      "pass": true,
+      "r": 4
+    },
+    {
+      "bar": 7.152557373046875e-7,
+      "dispatches_chunked": 4,
+      "dispatches_sequential": 16,
+      "is_family_change_floor": false,
+      "k": 4,
+      "layer": 0,
+      "max_abs_norm": 0.0,
+      "max_abs_resid": 4.76837158203125e-7,
+      "pass": true,
+      "r": 4
+    },
+    {
+      "bar": null,
+      "dispatches_chunked": 4,
+      "dispatches_sequential": 4,
+      "is_family_change_floor": true,
+      "k": 1,
+      "layer": 31,
+      "max_abs_norm": 0.0,
+      "max_abs_resid": 1.0728836059570312e-6,
+      "pass": true,
+      "r": 1
+    },
+    {
+      "bar": 2.1457672119140625e-6,
+      "dispatches_chunked": 4,
+      "dispatches_sequential": 8,
+      "is_family_change_floor": false,
+      "k": 2,
+      "layer": 31,
+      "max_abs_norm": 0.0,
+      "max_abs_resid": 1.0728836059570312e-6,
+      "pass": true,
+      "r": 4
+    },
+    {
+      "bar": 2.1457672119140625e-6,
+      "dispatches_chunked": 4,
+      "dispatches_sequential": 16,
+      "is_family_change_floor": false,
+      "k": 4,
+      "layer": 31,
+      "max_abs_norm": 0.0,
+      "max_abs_resid": 1.0728836059570312e-6,
+      "pass": true,
+      "r": 4
+    },
+    {
+      "bar": null,
+      "dispatches_chunked": 4,
+      "dispatches_sequential": 4,
+      "is_family_change_floor": true,
+      "k": 1,
+      "layer": 63,
+      "max_abs_norm": 0.0,
+      "max_abs_resid": 2.4437904357910156e-6,
+      "pass": true,
+      "r": 1
+    },
+    {
+      "bar": 4.887580871582031e-6,
+      "dispatches_chunked": 4,
+      "dispatches_sequential": 8,
+      "is_family_change_floor": false,
+      "k": 2,
+      "layer": 63,
+      "max_abs_norm": 0.0,
+      "max_abs_resid": 2.4437904357910156e-6,
+      "pass": true,
+      "r": 4
+    },
+    {
+      "bar": 4.887580871582031e-6,
+      "dispatches_chunked": 4,
+      "dispatches_sequential": 16,
+      "is_family_change_floor": false,
+      "k": 4,
+      "layer": 63,
+      "max_abs_norm": 0.0,
+      "max_abs_resid": 2.4437904357910156e-6,
+      "pass": true,
+      "r": 4
+    }
+  ]
+}
