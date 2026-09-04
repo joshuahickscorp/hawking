@@ -85,6 +85,15 @@ HCLI_RESULT_SCHEMA: Dict[str, Any] = {
                     "path": {"type": "string"},
                     "old_text": {"type": "string"},
                     "new_text": {"type": "string"},
+                    # LINES, as an alternative to the escaped string above.
+                    # Measured: the resident emitted a test body whose bytes
+                    # literal carried \\n inside a JSON string and produced
+                    # "unexpected character after line continuation character".
+                    # A list of plain lines needs no newline escaping at all,
+                    # which removes that whole failure mode rather than
+                    # returning a better error about it.
+                    "old_lines": {"type": "array", "items": {"type": "string"}},
+                    "new_lines": {"type": "array", "items": {"type": "string"}},
                 },
                 "required": ["op", "path"],
                 "additionalProperties": False,
@@ -158,6 +167,10 @@ For a read-only request:
   "tool_calls": []
 }
 
+For a requested code/file change. PREFER old_lines/new_lines: one array element
+per line, no newline escapes anywhere. old_text/new_text still work but every
+newline in them must be escaped, and that is where replies break.
+
 For a requested code/file change:
 {
   "kind": "mutation",
@@ -166,8 +179,8 @@ For a requested code/file change:
     {
       "op": "replace",
       "path": "workspace/relative/path",
-      "old_text": "exact anchor when required",
-      "new_text": "new content"
+      "old_lines": ["exact anchor lines, copied verbatim"],
+      "new_lines": ["replacement", "one line per array element"]
     }
   ],
   "tests": ["hcli/tests/test_the_thing_you_changed.py"],
@@ -798,6 +811,30 @@ def _anchor_violation(path: str, anchor: str, current: str, hits: int) -> str:
     )
 
 
+def _operation_text(operation: Dict[str, Any], field: str) -> Optional[str]:
+    """The text of an operation field, however the model chose to send it.
+
+    `new_text` is one JSON string and therefore carries every newline as an
+    escape. The resident got that wrong in a way no better error message fixes:
+    a test body containing a bytes literal came back with a stray line
+    continuation, three attempts running.
+
+    `new_lines` is the same content as a list of plain lines. There is nothing
+    to escape, so there is nothing to get wrong. Lines carry no trailing
+    newline of their own; the block ends with one, which is what a Python file
+    or a spliced block always does.
+
+    ONE resolver for both the applier and the preflight. Two readers disagreeing
+    about what an operation says is exactly the defect that let a bad anchor
+    reach _apply_operations with the contract reporting no complaint.
+    """
+    lines = operation.get(f"{field.split('_')[0]}_lines")
+    if isinstance(lines, list) and all(isinstance(x, str) for x in lines):
+        return "\n".join(lines) + "\n" if lines else ""
+    value = operation.get(field)
+    return str(value) if value is not None else None
+
+
 def _rejected_excerpt(text: str) -> str:
     """Keep both ENDS of a rejected reply, not just its head.
 
@@ -864,7 +901,7 @@ def _python_syntax_violation(content: str) -> Optional[str]:
         path = str(op.get("path") or "")
         if not path.endswith(".py"):
             continue
-        body = op.get("new_text")
+        body = _operation_text(op, "new_text")
         if not isinstance(body, str) or not body.strip():
             continue
 
@@ -877,7 +914,7 @@ def _python_syntax_violation(content: str) -> Optional[str]:
         # broken. A check that refuses correct work is worse than no check.
         candidate = body
         if str(op.get("op") or "") == "replace":
-            anchor = op.get("old_text")
+            anchor = _operation_text(op, "old_text")
             try:
                 current = (Path(path)).read_text(encoding="utf-8", errors="replace")
             except OSError:
@@ -4640,22 +4677,11 @@ class Engine:
                 allow_missing=True,
             )
 
-            old_text = str(
-                operation.get(
-                    "old_text",
-                    "",
-                )
-            )
+            old_text = _operation_text(operation, "old_text") or ""
 
-            has_new_text = (
-                "new_text" in operation
-                and operation.get("new_text") is not None
-            )
-            new_text = (
-                str(operation.get("new_text", ""))
-                if has_new_text
-                else ""
-            )
+            resolved_new = _operation_text(operation, "new_text")
+            has_new_text = resolved_new is not None
+            new_text = resolved_new or ""
 
             if op == "create":
                 if not has_new_text:
