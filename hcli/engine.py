@@ -281,7 +281,13 @@ _CTX_ESTIMATE_MARGIN = 96
 #: shortens a reply.
 _CTX_ESTIMATE_ERROR = 0.30
 _MAX_TOKENS_FLOOR = 512
-_MAX_TOKENS_CEILING = 8192
+# A valid mutation reply is 800 to 1500 tokens. Granting 5,874 cost nothing
+# while an unclosed object could stop early; now that EOS is masked until the
+# object closes, a model that will not close it runs the WHOLE budget instead.
+# Measured: one call 576s and still generating. Bound the damage -- a
+# well-formed reply never approaches this, and stop_reason "budget" names what
+# happened when one does.
+_MAX_TOKENS_CEILING = 2048
 _CHARS_PER_TOKEN = 3
 #: The estimator divides characters by a single constant, but the constant is
 #: not one number. Measured on the live resident: markdown prose runs near 3,
@@ -1190,7 +1196,12 @@ class Engine:
     # magnitude -- a round is a model call at 92-385 s, a tool call is 1-3 ms.
     # Capping calls-per-round at the round budget priced milliseconds like
     # minutes.
-    MAX_TOOL_ROUNDS = 6
+    # Overridable because a goal that carries its own evidence needs ZERO tool
+    # rounds, and each unused round is a full model call. Measured: a 249-token
+    # goal that said "do not read any file" made 6 tool calls and arrived at
+    # the mutation with a 4,943-token prompt, most of it observations of a file
+    # whose bytes were already in the goal.
+    MAX_TOOL_ROUNDS = int(os.environ.get("HCLI_MAX_TOOL_ROUNDS", "6"))
     MAX_TOOL_CALLS_PER_ROUND = 16
     # Kept as an alias: external callers and tests referenced the old name for
     # the per-round cap, and silently changing what it means is worse than
