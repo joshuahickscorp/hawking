@@ -733,7 +733,21 @@ def _focused_excerpt(content: str, prompt: str, limit: int, path: str) -> str:
     if len(content) <= limit:
         return content
 
-    wanted = {w for w in _IDENT_RE.findall(prompt or "") if not w.isupper()}
+    # Symbols from the OBJECTIVE, not the whole packet. The compiled packet
+    # carries INVARIANTS, ACCEPTANCE, NEIGHBORHOOD and any failure context, and
+    # those name code the goal never mentioned. Measured: every one of 25
+    # consecutive calls anchored on lines 1838-1964, where
+    # `default_tool_registry` is defined -- a 21-character name that outranks
+    # the `directories_seen` the goal actually names, and which reached `wanted`
+    # only through the packet's own scaffolding. The model was shown the tool
+    # registration block on every attempt and duly edited it.
+    focus = prompt or ""
+    for marker in ("\nINVARIANTS:", "\nACCEPTANCE:", "\nEVIDENCE_PATHS:",
+                   "\nNEIGHBORHOOD:", "\nSTEERING:"):
+        cut = focus.find(marker)
+        if cut > 0:
+            focus = focus[:cut]
+    wanted = {w for w in _IDENT_RE.findall(focus) if not w.isupper()}
     lines = content.splitlines(keepends=True)
     if not wanted or not lines:
         return content[:limit]
@@ -4074,6 +4088,22 @@ class Engine:
             inlined += len(
                 str(item.get("content") or "").encode("utf-8")
             )
+        # One-shot instrument: write the evidence actually POSTED. Byte counts
+        # cannot answer "which 6027 characters", and inferring the window from
+        # the code produced two wrong conclusions in a row.
+        if os.environ.get("HCLI_DUMP_EVIDENCE"):
+            try:
+                with open(os.environ["HCLI_DUMP_EVIDENCE"], "a") as handle:
+                    # APPEND, with the objective. Overwriting made every read
+                    # ambiguous: the file held whichever call ran last, so a
+                    # correct first call and a wrong later one were
+                    # indistinguishable.
+                    handle.write("\n########## CALL ##########\n")
+                    for item in evidence:
+                        head = str(item.get("content") or "").splitlines()[:1]
+                        handle.write(f"===== {item.get('path')} :: {head}\n")
+            except OSError:
+                pass
         # Snapshot of this assembled payload. _call_model re-measures
         # after any Engine._build_model_payload hook mutates messages.
         self._context_efficiency = self._snapshot_context_efficiency(
