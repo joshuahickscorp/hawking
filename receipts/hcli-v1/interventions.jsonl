@@ -1,0 +1,9 @@
+{"ts": 1788503782.844486, "kind": "HUMAN_GOAL_WRITES", "causal": false, "note": "wrote the Gate 1 goal (task, not answer)"}
+{"ts": 1788503782.844486, "kind": "HUMAN_GOAL_WRITES", "causal": false, "note": "wrote the Gate 2 goal"}
+{"ts": 1788503782.844486, "kind": "HUMAN_GOAL_WRITES", "causal": false, "note": "wrote the self-hosting goal"}
+{"ts": 1788503782.844486, "kind": "HUMAN_VERIFIER_CHANGES", "causal": false, "note": "wrote the three RED specs; specs are the task"}
+{"ts": 1788503782.844486, "kind": "HUMAN_TARGET_HINTS", "causal": true, "note": "Gate 1/2 goals named the exact anchor line -- causal"}
+{"ts": 1788503782.844486, "kind": "HUMAN_RESTARTS", "causal": false, "note": "many daemon restarts to load fixes; not the answer"}
+{"ts": 1788503782.844486, "kind": "HUMAN_RESTARTS", "causal": false, "note": "controlled mid-mission restart for the durability proof"}
+{"ts": 1788503782.844486, "kind": "HUMAN_PATCHES", "causal": true, "note": "~30 harness fixes without which no unit was acceptable"}
+{"ts": 1788503782.844486, "kind": "EXTERNAL_MODEL_SCOUTS", "causal": false, "note": "sonnet read-only scouts located the self-host target"}

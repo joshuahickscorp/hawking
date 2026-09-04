@@ -24,6 +24,38 @@ import sys
 
 REPO = pathlib.Path(__file__).resolve().parent.parent
 RECEIPTS = REPO / ".hcli" / "receipts"
+# TRACKED, not under .hcli/. That directory is gitignored, and an autonomy
+# record that cannot be audited by anyone but the process that wrote it is not
+# a record.
+LEDGER = REPO / "receipts" / "hcli-v1" / "interventions.jsonl"
+
+#: Named regimes. A clean production window must not be compared to the bootstrap
+#: window unlabelled: during BOOTSTRAP the harness itself was being repaired
+#: between almost every call, so its failed-call rate measures the harness, not
+#: the resident. Epoch seconds, start-inclusive.
+REGIMES = [
+    ("BOOTSTRAP", 0, 1788500000),
+    ("POST_BOOTSTRAP_RUNTIME", 1788500000, 1 << 62),
+]
+
+
+def regime_of(ts: float) -> str:
+    for name, lo, hi in REGIMES:
+        if lo <= ts < hi:
+            return name
+    return "UNLABELLED"
+
+
+def interventions() -> list:
+    if not LEDGER.is_file():
+        return []
+    out = []
+    for line in LEDGER.read_text().splitlines():
+        try:
+            out.append(json.loads(line))
+        except ValueError:
+            continue
+    return out
 
 
 def load() -> list:
@@ -115,10 +147,54 @@ def main() -> int:
     print(f"resident calls / accepted   {total_calls / len(good):.1f}")
     print(f"failed calls / accepted     {failed_calls / len(good):.1f}")
     print()
-    print("tool wall, verifier wall, human interventions and external-model")
-    print("escalations are not yet instrumented per WorkUnit. They are reported")
-    print("as unknown rather than zero: a zero here would read as 'no human")
-    print("touched it', which for this run would be false.")
+    # ---------------------------------------------------------------- regimes
+    print()
+    print("REGIMES")
+    for name, lo, hi in REGIMES:
+        units = [r for r in good if lo <= r["_mtime"] < hi]
+        allr = [r for r in receipts if lo <= r["_mtime"] < hi]
+        if not allr:
+            continue
+        span = (max(r["_mtime"] for r in allr) - min(r["_mtime"] for r in allr)) / 3600.0
+        rate = len(units) / span if span > 0 else float("nan")
+        # A rate from a couple of units over a fraction of an hour is a number
+        # that will be quoted and should not be. Say so beside it rather than
+        # letting it travel alone.
+        weak = " [SMALL SAMPLE, not a throughput claim]" if (
+            len(units) < 5 or span < 2.0
+        ) else ""
+        print(f"  {name:<24} {len(units)} units over {span:5.1f}h  = {rate:.3f}/h{weak}")
+
+    # ------------------------------------------------------- human dependence
+    rows = interventions()
+    print()
+    print("HUMAN DEPENDENCE")
+    if not rows:
+        print("  ledger absent. NOT reported as zero: an unrecorded human action")
+        print("  is exactly the kind that inflates an autonomy number.")
+        return 0
+    kinds = {}
+    for r in rows:
+        k = r.get("kind", "?")
+        kinds.setdefault(k, [0, 0])
+        kinds[k][0] += 1
+        kinds[k][1] += 1 if r.get("causal") else 0
+    for k in sorted(kinds):
+        n, c = kinds[k]
+        print(f"  {k:<26} {n:>3}  causal {c}")
+    causal = sum(c for _, c in kinds.values())
+    print()
+    print(f"  total human actions        {len(rows)}")
+    print(f"  CAUSAL human interventions {causal}")
+    if causal:
+        print(f"  ACCEPTED WORK / CAUSAL     {len(good) / causal:.2f}")
+    print()
+    print("  A human watching is not a human fixing. Writing the goal is not")
+    print("  causal -- the goal is the task. Naming the exact anchor IS causal,")
+    print("  and both Gate 1 and Gate 2 goals did that, so they are counted.")
+    print()
+    print("  tool wall and verifier wall remain uninstrumented per WorkUnit and")
+    print("  are reported as unknown rather than zero.")
     return 0
 
 
