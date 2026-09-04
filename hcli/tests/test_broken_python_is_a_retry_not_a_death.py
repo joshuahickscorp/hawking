@@ -189,3 +189,29 @@ class TestOnlyAMutationIsJudgedOnItsOperations(unittest.TestCase):
                 "old_text": "x", "new_text": "x",
             }],
         })))
+
+
+class TestCreatingAnExistingFileIsARetry(unittest.TestCase):
+    """Offering to create a file that exists is correctable, not fatal.
+
+    _apply_operations runs after the contract accepts, so this killed the unit
+    outright. Measured twice on one goal: the model kept offering to author the
+    RED spec file, which the goal had told it already existed, and each attempt
+    died holding whatever else it had proposed alongside it.
+    """
+
+    def _payload(self, path):
+        return json.dumps({"kind": "mutation", "operations": [
+            {"op": "create", "path": path, "new_text": "x = 1\n"},
+        ]})
+
+    def test_creating_an_existing_file_returns_a_correction(self):
+        got = _python_syntax_violation(self._payload("hcli/tool_registry.py"))
+        self.assertIsNotNone(got)
+        self.assertIn("already exists", got)
+        self.assertIn("replace operation", got)
+
+    def test_creating_a_new_file_is_still_allowed(self):
+        self.assertIsNone(
+            _python_syntax_violation(self._payload("hcli/tests/_no_such_file.py"))
+        )

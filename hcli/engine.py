@@ -971,6 +971,18 @@ def _python_syntax_violation(content: str) -> Optional[str]:
         # that false rejection, having been told to fix code that was not
         # broken. A check that refuses correct work is worse than no check.
         candidate = body
+        if str(op.get("op") or "") == "create" and Path(path).exists():
+            # CORRECTABLE, and it was terminal: _apply_operations runs after
+            # the contract accepts, so a unit that offered to create a file
+            # already on disk died holding whatever else it had proposed.
+            # Measured twice on the same goal, whose spec file the model kept
+            # trying to author even though the goal said it already existed.
+            return (
+                f"{path} already exists, so it cannot be created. If you meant "
+                f"to change it, use a replace operation with an exact anchor. "
+                f"If it already says what you need, leave it out of your "
+                f"operations entirely."
+            )
         if str(op.get("op") or "") == "replace":
             anchor = _operation_text(op, "old_text")
             try:
