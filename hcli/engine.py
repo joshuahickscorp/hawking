@@ -741,12 +741,16 @@ def _focused_excerpt(content: str, prompt: str, limit: int, path: str) -> str:
     # the `directories_seen` the goal actually names, and which reached `wanted`
     # only through the packet's own scaffolding. The model was shown the tool
     # registration block on every attempt and duly edited it.
+    # The OBJECTIVE LINE, when there is one. Cutting at a list of known section
+    # headers is a guess about the packet's shape and missed whichever section
+    # actually carried the noise: 25 consecutive calls still anchored on
+    # `default_tool_registry`. The objective line is where the goal lives, and
+    # it is the only part guaranteed to be about the task.
     focus = prompt or ""
-    for marker in ("\nINVARIANTS:", "\nACCEPTANCE:", "\nEVIDENCE_PATHS:",
-                   "\nNEIGHBORHOOD:", "\nSTEERING:"):
-        cut = focus.find(marker)
-        if cut > 0:
-            focus = focus[:cut]
+    for line in focus.splitlines():
+        if line.lstrip().startswith("OBJECTIVE:"):
+            focus = line
+            break
     wanted = {w for w in _IDENT_RE.findall(focus) if not w.isupper()}
     lines = content.splitlines(keepends=True)
     if not wanted or not lines:
