@@ -1682,6 +1682,22 @@ class Engine:
         pose as deterministic evidence and quietly weaken the freshness gate.
         """
         registry = self._tool_registry()
+        # An EMPTY TOOL BUNDLE, scoped to one WorkUnit. A goal that already
+        # carries its objective, its target's exact bytes and its failing spec
+        # needs no exploratory tool, and offering six is not neutral: measured,
+        # a 249-token self-contained goal that said "do not read any file" still
+        # spent six tool calls and arrived at the mutation with a 4,943-token
+        # prompt, nearly all of it observations of a file already quoted to it.
+        #
+        # Saying "do not use tools" while advertising them is not scoping. This
+        # is. Off by default; the caller opts in per unit.
+        if os.environ.get("HCLI_NO_TOOLS") == "1":
+            self._tool_catalog_chars = 0
+            self._tool_catalog_mode = "none"
+            parts = [prompt]
+            if observations:
+                parts.append(self._observations_block(observations, final=True))
+            return "\n\n".join(part for part in parts if part)
         catalog = (
             self._compact_tool_catalog(
                 registry,
