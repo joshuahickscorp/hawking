@@ -746,10 +746,24 @@ def _focused_excerpt(content: str, prompt: str, limit: int, path: str) -> str:
     # actually carried the noise: 25 consecutive calls still anchored on
     # `default_tool_registry`. The objective line is where the goal lives, and
     # it is the only part guaranteed to be about the task.
+    # The GOAL SENTENCE inside the objective line. A repair objective reads
+    #   OBJECTIVE: repair of implement.repair.1: repair of implement:
+    #   obligations=G001 <the goal> Relevant files: ...
+    # and carries the prior failure's text with it, which is how
+    # `default_tool_registry` -- a symbol from the attempt being repaired --
+    # reached the symbol set and pulled the window to lines 1838-1964 on every
+    # call of every attempt. The goal sits between the obligations marker and
+    # the file list.
     focus = prompt or ""
     for line in focus.splitlines():
         if line.lstrip().startswith("OBJECTIVE:"):
             focus = line
+            marker = re.search(r"obligations?=[A-Za-z0-9_.,]+\s*", focus)
+            if marker:
+                focus = focus[marker.end():]
+            cut = focus.find("Relevant files:")
+            if cut > 0:
+                focus = focus[:cut]
             break
     wanted = {w for w in _IDENT_RE.findall(focus) if not w.isupper()}
     lines = content.splitlines(keepends=True)
@@ -4103,10 +4117,14 @@ class Engine:
                     # correct first call and a wrong later one were
                     # indistinguishable.
                     handle.write("\n########## CALL ##########\n")
+                    obj = [ln for ln in str(prompt or "").splitlines()
+                           if ln.lstrip().startswith("OBJECTIVE:")]
+                    handle.write(f"PROMPT_CHARS: {len(str(prompt or ''))}\n")
+                    handle.write(f"OBJECTIVE_LINE: {obj[0][:200] if obj else '(NONE FOUND)'}\n")
                     for item in evidence:
                         head = str(item.get("content") or "").splitlines()[:1]
                         handle.write(f"===== {item.get('path')} :: {head}\n")
-            except OSError:
+            except Exception:  # an instrument must never end a goal
                 pass
         # Snapshot of this assembled payload. _call_model re-measures
         # after any Engine._build_model_payload hook mutates messages.
