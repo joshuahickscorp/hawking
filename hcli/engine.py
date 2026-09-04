@@ -844,6 +844,58 @@ def _anchor_violation(path: str, anchor: str, current: str, hits: int) -> str:
     )
 
 
+_PATCH_BLOCK_RE = re.compile(
+    r"PATH:[ \t]*(?P<path>\S+)\s*\n"
+    r"FIND:[ \t]*\n(?P<find>.*?)\n?REPLACE:[ \t]*\n(?P<replace>.*?)\n?END\b",
+    re.S,
+)
+
+
+def _patch_block_to_operations(text: str) -> Optional[Dict[str, Any]]:
+    """A patch the model cannot syntactically break.
+
+    JSON asks for quotes, escapes, brackets and a closing brace before the edit
+    is expressible. Measured under every precondition finally satisfied at once
+    -- correct objective, evidence containing the target, zero tools, the unique
+    anchor supplied, a 2048-token budget -- the resident produced 1,338 to 1,446
+    tokens on three consecutive attempts and never closed the object. That is
+    the model's own frontier, and no better error message moves it.
+
+    This form has nothing to close:
+
+        PATH: hcli/tool_registry.py
+        FIND:
+            clipped = raw[:limit]
+        REPLACE:
+            clipped = raw[:limit]
+            total = len(text.splitlines())
+        END
+
+    Leading and trailing blank lines are stripped; the interior is taken
+    verbatim, so indentation survives. FIND must still match exactly once --
+    the applier enforces that, and it is the whole safety property.
+    """
+    match = _PATCH_BLOCK_RE.search(str(text or ""))
+    if match is None:
+        return None
+    find = match.group("find").strip("\n")
+    replace = match.group("replace").strip("\n")
+    if not find.strip():
+        return None
+    return {
+        "kind": "mutation",
+        "content": "patch block",
+        "operations": [{
+            "op": "replace",
+            "path": match.group("path").strip().rstrip(","),
+            "old_text": find,
+            "new_text": replace,
+        }],
+        "tests": [],
+        "tool_calls": [],
+    }
+
+
 def _normalize_micro_mutation(parsed: Any) -> Any:
     """Accept the smallest reply that can express one edit.
 
@@ -4445,6 +4497,15 @@ class Engine:
 
             if isinstance(parsed, dict):
                 return _normalize_micro_mutation(parsed)
+
+        # LAST: a patch block, which has nothing to close. This is reached only
+        # when every JSON path has failed, so it costs nothing when the model
+        # produces valid JSON and rescues the one failure mode that no error
+        # message moved -- 1,338 to 1,446 tokens emitted on three consecutive
+        # attempts with the object left open.
+        block = _patch_block_to_operations(text)
+        if block is not None:
+            return block
 
         raise EngineError(
             "Model did not return a valid structured JSON object"
