@@ -3572,6 +3572,13 @@ class Engine:
                 try:
                     contract.validate(content)
                 except Exception:
+                    # A PATCH BLOCK is complete even when the JSON around it is
+                    # not. This check has to sit here rather than in the
+                    # extractor: the truncation violation is raised before any
+                    # extraction runs, so a block-form reply was rejected three
+                    # times over without the parser for it ever being reached.
+                    if _patch_block_to_operations(content) is not None:
+                        return result
                     budget = plan.get("max_tokens")
                     prompt_tokens = result.prompt_tokens
                     if prompt_tokens is None:
