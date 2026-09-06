@@ -242,6 +242,17 @@ fails before your change and passes after it. If none exists, write one as part
 of the same mutation. Deterministic evidence is the only thing that can accept
 work here.
 
+ADMISSIBLE TEST FORMS -- anything else is refused as NOT_ADMITTED and your
+mutation is ROLLED BACK, however correct it was:
+  path/to/test_x.py                  a bare path to a Python file
+  pytest path/to/test_x.py           pytest, optionally with -q -v -x -s --tb=
+  python -m pytest path/to/test_x.py
+  python path/to/script.py           exactly two tokens
+NOT admissible: python -c "...", shell pipelines, &&, redirection, cd, env
+assignments, or any command that is not one of the four forms above. If your
+check needs arbitrary code, WRITE IT INTO A .py FILE in the same mutation and
+name that file as the test.
+
 For an implementation mutation, emit exactly one operation and keep the
 combined old/new replacement text under 900 UTF-8 bytes. Make the smallest
 executable change justified by the supplied evidence; do not serialize a whole
