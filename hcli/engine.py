@@ -4972,6 +4972,13 @@ class Engine:
             # after enable_thinking=false; a JSON schema alone was not
             # sufficient. Force thinking off on the degraded path unless
             # the caller explicitly overrode enable_thinking on this call.
+            #
+            # NOT a bug that config/env is ignored here: tests/
+            # test_engine_schema_degrade.py::
+            # test_enable_thinking_false_on_degraded_unless_overridden sets
+            # config enable_thinking=True and asserts thinking is STILL forced
+            # off. Only a per-call override wins, deliberately, because the
+            # stall this guards against recovered only when thinking was off.
             thinking_arg = False
 
         def _build(
