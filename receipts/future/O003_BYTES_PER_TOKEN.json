@@ -1,0 +1,68 @@
+{
+ "specimen": "O003",
+ "date": "2026-09-06",
+ "device": "Apple M3 Ultra",
+ "peak_bw_GB_s_assumed": 800.0,
+ "obligation": "G008 - measured CPU/GPU physical consequence: bytes/token and dispatch",
+ "method": "active bytes/token = all non-expert stored bytes + one embedding ROW + (topk/n_experts) x expert stored bytes. topk=6, n_routed_experts=64, 26 MoE layers of 27. Experts kept in PACKED quantized form (nn.quantize, 78/78 QuantizedSwitchLinear asserted), not dequantized to dense.",
+ "rows": [
+  {
+   "config": "bf16",
+   "stored_bytes": 31920220416,
+   "active_bytes_per_token": 5158467840,
+   "active_frac_of_stored": 0.1616,
+   "decode_tok_s": 87.67,
+   "tok_s_source": "6-rep warm median",
+   "tok_s_min": 87.46,
+   "tok_s_max": 87.94,
+   "achieved_GB_s": 452.2,
+   "bandwidth_utilization": 0.565
+  },
+  {
+   "config": "q4-g64-experts",
+   "stored_bytes": 8982644992,
+   "active_bytes_per_token": 1455902080,
+   "active_frac_of_stored": 0.1621,
+   "decode_tok_s": 127.48,
+   "tok_s_source": "6-rep warm median",
+   "tok_s_min": 119.1,
+   "tok_s_max": 128.26,
+   "achieved_GB_s": 185.6,
+   "bandwidth_utilization": 0.232
+  },
+  {
+   "config": "q3-g64-experts",
+   "stored_bytes": 7183288576,
+   "active_bytes_per_token": 1287212416,
+   "active_frac_of_stored": 0.1792,
+   "decode_tok_s": 132.12,
+   "tok_s_source": "single warm run",
+   "tok_s_min": null,
+   "tok_s_max": null,
+   "achieved_GB_s": 170.1,
+   "bandwidth_utilization": 0.213
+  },
+  {
+   "config": "q2-g64-experts",
+   "stored_bytes": 5383932160,
+   "active_bytes_per_token": 1118522752,
+   "active_frac_of_stored": 0.2078,
+   "decode_tok_s": 128.97,
+   "tok_s_source": "6-rep warm median",
+   "tok_s_min": 126.01,
+   "tok_s_max": 134.48,
+   "achieved_GB_s": 144.3,
+   "bandwidth_utilization": 0.18
+  }
+ ],
+ "FINDING_bandwidth_bound_only_above_q4": "bf16 achieves 452 GB/s, about 57% of peak - genuinely bandwidth-bound. Every quantized config achieves 144-186 GB/s, 18-23% of peak. Below q4 the decode is NOT bandwidth-bound, which is the MECHANISM behind the saturation recorded in O003_PARETO_MEASURED.json. The ~128 tok/s ceiling is a per-token fixed cost - dispatch, routing, expert gather, dequantisation - not traffic. Removing bytes below q4 cannot buy decode speed because bytes stopped being the constraint.",
+ "CORRECTION_to_earlier_TPS_numbers": "Warm 6-rep medians: bf16 87.67 (min 87.46 max 87.94, spread 0.5%), q4-g64 127.48 (119.10-128.26, 7.7%), q2-g64 128.97 (126.01-134.48, 6.7%). The earlier absolute figures (bf16 69.97 and 73.63, q4 98.24, q2-g32 100.01) were taken with two repeats and one warmup and are systematically LOW. The RANKING held but the magnitudes were wrong: the real bf16->q4 gain is +45.4%, not +35.8%, and bf16's range does not overlap q4's (87.94 max vs 119.10 min).",
+ "CORRECTION_q4_to_q2_is_not_resolvable": "q4-g64 127.48 (119.10-128.26) and q2-g64 128.97 (126.01-134.48) OVERLAP heavily. The q4->q2 difference is not measurable at this precision. Saturation below q4 is confirmed and now carries a real error bar instead of a bare +1.8% point estimate.",
+ "MY_DRIFT_DIAGNOSTIC_WAS_SELF_DEFEATING": "variance.py sorted the samples before computing monotone_drift_check, so that field just repeats spread_pct and says nothing about ordering. Drift cannot be assessed from this data. The ordered series must be retained to separate DVFS ramp from jitter.",
+ "DISPATCH_COUNT_NOT_MEASURED": "mx.metal exposes only start_capture/stop_capture, which emit a .gputrace requiring Xcode to read. There is no dispatch counter in the Python API. Not estimated, not inferred - simply unmeasured.",
+ "CAVEATS": [
+  "Peak bandwidth 800 GB/s is the M3 Ultra spec figure, not measured on this machine; utilization percentages inherit that assumption.",
+  "active bytes/token assumes every routed token hits exactly topk distinct experts and ignores KV/state growth, so it is a lower bound on real traffic.",
+  "q3-g64 TPS is a single warm run, not a 6-rep median like the others."
+ ]
+}
