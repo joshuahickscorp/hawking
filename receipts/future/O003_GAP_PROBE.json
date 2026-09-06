@@ -1,0 +1,38 @@
+{
+ "specimen": "O003",
+ "date": "2026-09-06",
+ "why": "The complete frontier had NOTHING measured between 2.9597 (fails) and 3.5024 (passes). The capability transition lives in that gap, so it was probed.",
+ "NEW_LOWEST_PASSING": {
+  "spec": "q3-g128-experts",
+  "complete_ebpw": 3.283076506800004,
+  "ppl": 3.1353,
+  "median_4gram": 0.1075,
+  "previous_lowest_passing": "q3-g64-experts at 3.5024",
+  "improvement": 0.2193
+ },
+ "NON_MONOTONICITY": {
+  "observation": "q4-g128-experts has MORE bytes (4.1604 vs 3.2831) and BETTER perplexity (3.032 vs 3.135) and FAILS the gate, while q3-g128-experts passes. The failure is entirely on generation: 4-gram 0.3978 against a 0.1614 gate, versus 0.1075 for q3-g128.",
+  "status": "UNEXPLAINED. Not a measurement artefact - see reproducibility below. Both arms share group 128 and differ only in expert bit width, so a monotone expectation is reasonable and it does not hold."
+ },
+ "REPRODUCIBILITY_the_metric_is_EXACT": "Both configs re-measured 3 times: ppl and median 4-gram identical to 4 decimals every time (q4-g128 ppl 3.032 / 4-gram 0.3978 x3; q3-g128 3.135 / 0.1075 x3). Greedy decoding over a fixed model state is deterministic, so within this evaluator the gate has NO run-to-run noise.",
+ "CORRECTION_my_earlier_diagnosis_was_WRONG": "I recorded a 'reproducibility weakness' after q2-g64 read 0.6398 in one script and 0.7527 in another, and blamed an unstable order statistic. The metric is exactly reproducible, so that diagnosis was wrong. Part of the gap IS definitional: the old script used statistics.median (the mean of the 4th and 5th of 8) while the evaluator uses r4s[len//2] (the 5th). Verified on a bimodal sample, that accounts for about 0.015. It does NOT account for the remaining ~0.10, which stays UNEXPLAINED. Operative rule: only numbers produced by this evaluator are mutually comparable; cross-script comparisons in earlier receipts are not.",
+ "arms": [
+  {
+   "spec": "q3-g128-experts",
+   "complete_ebpw": 3.283076506800004,
+   "ppl": 3.1353,
+   "median_4gram": 0.1075,
+   "cosine": 0.9788675469008431,
+   "passes": true
+  },
+  {
+   "spec": "q4-g128-experts",
+   "complete_ebpw": 4.160401687792979,
+   "ppl": 3.0318,
+   "median_4gram": 0.3978,
+   "cosine": 0.9950008366977645,
+   "passes": false
+  }
+ ],
+ "CAVEAT": "The gate is a single order statistic over 8 prompts. It is deterministic but COARSE: which prompts fall either side of the 5th position decides the verdict. A larger prompt set would make it less brittle without making it less reproducible."
+}
