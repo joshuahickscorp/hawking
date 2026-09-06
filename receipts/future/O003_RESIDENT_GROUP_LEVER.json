@@ -1,0 +1,53 @@
+{
+ "specimen": "O003",
+ "date": "2026-09-06",
+ "provenance": "Spec PROPOSED BY THE RESIDENT in HCLI ladder run 4, rounds 3-5 (binarypercal-g256), with its own correct arithmetic '1+16/256=1.0625 bits/weight'. My validator REFUSED it three times with a wrong reason. Once the validator was fixed the proposal executed and moved the byte frontier. The model chose the target; the machine measured it.",
+ "arms": [
+  {
+   "spec": "binarypercal-g128",
+   "complete_ebpw": 1.4187604971899312,
+   "ppl": 11.414,
+   "median_4gram": 0.9032,
+   "worst_max_run": 1,
+   "effective_groups": null,
+   "capability_ok": false
+  },
+  {
+   "spec": "binarypercal-g256",
+   "complete_ebpw": 1.382205281315224,
+   "ppl": 11.4941,
+   "median_4gram": 0.9032,
+   "worst_max_run": 1,
+   "effective_groups": {
+    "128": 26,
+    "256": 52
+   },
+   "capability_ok": false
+  },
+  {
+   "spec": "binarypercal-g512",
+   "complete_ebpw": 1.3639276733778702,
+   "ppl": 11.5089,
+   "median_4gram": 0.8925,
+   "worst_max_run": 1,
+   "effective_groups": {
+    "128": 26,
+    "512": 52
+   },
+   "capability_ok": false
+  }
+ ],
+ "CAMPAIGN_LOW": {
+  "spec": "binarypercal-g512",
+  "complete_ebpw": 1.3639276733778702,
+  "note": "lowest complete EBPW measured on O003 in this campaign"
+ },
+ "THE_VALIDATOR_WAS_WRONG": "_group() rejected any group outside mx.quantize's (32,64,128) for EVERY class. But the binary and residual-binary paths never call mx.quantize -- they use reshape/mean/sign only. Their real constraint is divisibility of each tensor's last dim. Expert in-dims are 2048 (gate/up) and 1408 (down); gcd is 128, so no UNIFORM group above 128 exists, but per-tensor a larger group is fine. Groups are now chosen per tensor (2048 takes 256/512, 1408 falls back to 128) and the byte count uses the ACTUAL scale count rather than a nominal formula.",
+ "RESULT": "Bytes fall 1.4188 -> 1.3822 -> 1.3639 (-3.9%) for a perplexity cost of +0.8% (11.414 -> 11.509). The lever is real and nearly free. It does not approach the capability gate: 11.5 against 3.617, with median 4-gram 0.8925 against bf16's 0.0538.",
+ "WHY_THE_RESIDENT_WAS_RIGHT_AND_ITS_ESTIMATE_WAS_NOT": "It predicted 1+16/256 = 1.0625 bits/weight uniformly, which would give ~1.09 EBPW. That assumed g256 applies everywhere. down_proj is 1408 = 2^7 * 11 and cannot take it, so the achieved rate is 1.0833 bits/weight at g256 and 1.0625 only on the 2/3 of expert weights that are gate/up. Right mechanism, right arithmetic, wrong assumption about tensor shapes -- which it had no way to know, because the prompt never gave it the expert dimensions.",
+ "CAVEATS": [
+  "Still fails the capability gate by 3.2x on perplexity.",
+  "No kernel for this form, so no TPS.",
+  "g512 buys only 0.018 EBPW over g256; the lever is nearly exhausted since down_proj is pinned at 128 and dominates the remaining scale overhead."
+ ]
+}

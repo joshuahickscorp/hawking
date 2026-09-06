@@ -66,10 +66,22 @@ NLL_TEXT = (
 _SUPPORTED_GROUPS = (32, 64, 128)
 
 
-def _group(g: int, spec: str) -> int:
-    if g not in _SUPPORTED_GROUPS:
+def _group(g: int, spec: str, affine: bool = True) -> int:
+    if affine and g not in _SUPPORTED_GROUPS:
         raise ValueError(
             f"spec {spec!r} names group {g}; mx.quantize supports {_SUPPORTED_GROUPS}")
+    if not affine:
+        # sign/mean path: any power of two. Per tensor it falls back to the
+        # largest divisor of that tensor's last dim, since down_proj is 1408 =
+        # 2^7 * 11 and so admits no uniform group above 128.
+        if g < 8 or (g & (g - 1)):
+            raise ValueError(f"spec {spec!r} names group {g}; need a power of two >= 8")
+    return g
+
+
+def _eff_group(g: int, in_dim: int) -> int:
+    while in_dim % g:
+        g //= 2
     return g
 
 
@@ -102,7 +114,7 @@ def parse_spec(spec: str) -> dict[str, Any]:
     if m:
         return {"form": "binary", "calibrated": True, "per_expert": True,
                 "frac": float(m.group(1) or 0.0),
-                "group": _group(int(m.group(2)), s), "bits": 1}
+                "group": _group(int(m.group(2)), s, affine=False), "bits": 1}
     m = re.fullmatch(r"binarycal(?:([0-9.]+))?-g(\d+)", s, re.I)
     if m:
         return {"form": "binary", "calibrated": True, "frac": float(m.group(1) or 0.0),
@@ -110,7 +122,7 @@ def parse_spec(spec: str) -> dict[str, Any]:
     m = re.fullmatch(r"binary(?:([0-9.]+))?-g(\d+)", s, re.I)
     if m:
         return {"form": "binary", "calibrated": False, "frac": float(m.group(1) or 0.0),
-                "group": _group(int(m.group(2)), s), "bits": 1}
+                "group": _group(int(m.group(2)), s, affine=False), "bits": 1}
     m = re.fullmatch(r"outlier([0-9.]+)-g(\d+)", s, re.I)
     if m:
         return {"form": "outlier_split", "frac": float(m.group(1)),
@@ -257,14 +269,19 @@ def evaluate(candidate) -> dict[str, Any]:
     act = (collect_activation_moments(model, tok, per_expert=plan.get("per_expert", False))
            if plan.get("calibrated") else {})
     kept = 0
+    n_scales = 0            # ACTUAL scale count, from the per-tensor group used
+    eff_groups: dict[int, int] = {}
     # Magnitude adequacy over the whole expert organ. Cosine alone is
     # scale-invariant, so 0.01*W scores 1.0 on direction -- the ratio is what
     # actually catches a magnitude-destroyed representation.
     s_w2 = s_h2 = s_dot = 0.0
     if plan["form"] != "bf16":
-        g, bits, frac = plan["group"], plan["bits"], plan["frac"]
+        g0, bits, frac = plan["group"], plan["bits"], plan["frac"]
         for _, m in sw:
             W = m.weight.astype(mx.float32)
+            g = _eff_group(g0, W.shape[-1]) if (BIN or RES) else g0
+            eff_groups[g] = eff_groups.get(g, 0) + 1
+            n_scales += W.size // g
             if frac > 0:
                 flat = mx.abs(W).reshape(-1)
                 k = int(flat.size * frac)
@@ -343,12 +360,11 @@ def evaluate(candidate) -> dict[str, Any]:
     else:
         # binary stores 1 bit/weight + ONE fp16 scale per group (no zero point).
         if plan["form"] == "binary":
-            per_w = 1 + 16 / plan["group"]
+            expert_bits = n_tot * 1 + n_scales * 16 + kept * 32
         elif plan["form"] == "resbinary":
-            per_w = 2 + 32 / plan["group"]        # 2 sign bits + 2 fp16 scales
+            expert_bits = n_tot * 2 + n_scales * 32 + kept * 32
         else:
-            per_w = plan["bits"] + 32 / plan["group"]
-        expert_bits = n_tot * per_w + kept * 32
+            expert_bits = n_tot * (plan["bits"] + 32 / plan["group"]) + kept * 32
     complete_bytes = int(expert_bits / 8 + _leaf_bytes(model.parameters(), "switch_mlp"))
     complete_ebpw = complete_bytes * 8 / SRC_PARAMS
 
@@ -396,6 +412,7 @@ def evaluate(candidate) -> dict[str, Any]:
         "magnitude_ratio": magnitude_ratio,
         "direction_similarity": direction_similarity,
         "n_calibrated_tensors": len(act),
+        "effective_groups": {str(k): v for k, v in sorted(eff_groups.items())},
         "capability_ok": capability_ok,
         "capability_status": "CANDIDATE_PASS" if capability_ok else "CAPABILITY_LOSS",
         "capability": {"ppl": round(ppl, 4), "nll": round(nll, 5),

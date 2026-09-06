@@ -30,7 +30,7 @@ SPEC_RE = re.compile(r"^\s*SPEC:\s*(\S+)\s*$", re.M | re.I)
 PLAN_RE = re.compile(r"^\s*PLAN:\s*(.+)$", re.M | re.I)
 
 
-def prompt_for(evidence: list[dict]) -> str:
+def prompt_for(evidence: list[dict], rejected: list[str] | None = None) -> str:
     lines = [f"  {e['spec']:20} {e['ebpw']:.4f} {'PASS' if e['pass'] else 'FAIL'}"
              for e in evidence]
     best = min([e for e in evidence if e["pass"]], key=lambda e: e["ebpw"], default=None)
@@ -51,7 +51,10 @@ def prompt_for(evidence: list[dict]) -> str:
         "                   an outlier channel ADDS frac * 32 bits per weight.\n"
         "  So a larger outlier frac RAISES EBPW. A larger group LOWERS it.\n"
         "Propose a rung whose computed EBPW is LOWER than the lowest one above.\n"
-        "Do not repeat any spec above.\n\n"
+        "Do not repeat any spec above.\n"
+        + ("ALREADY REJECTED this session, do not propose again:\n"
+           + "".join(f"  {r}\n" for r in (rejected or [])) if rejected else "")
+        + "\n"
         "Reply with EXACTLY two lines and nothing else:\n"
         "SPEC: <one spec from the grammar>\n"
         "PLAN: <one sentence: a mechanism OUTSIDE this grammar that could reach 1.0 EBPW, "
@@ -92,9 +95,10 @@ def main() -> int:
         {"spec": "outlier0.02-g128", "ebpw": 2.9597, "pass": False},
     ]
     seen = {e["spec"] for e in evidence}
+    rejected: list[str] = []
     for rnd in range(1, rounds + 1):
         t0 = time.time()
-        raw = ask(prompt_for(evidence))
+        raw = ask(prompt_for(evidence, rejected))
         m, pm = SPEC_RE.search(raw), PLAN_RE.search(raw)
         rec = {"round": rnd, "wall_s": round(time.time() - t0, 1),
                "spec_proposed": m.group(1) if m else None,
@@ -104,6 +108,7 @@ def main() -> int:
             rec["outcome"] = "NO_SPEC_EMITTED"
         elif m.group(1) in seen:
             rec["outcome"] = "REPEATED_A_SPEC_ALREADY_ON_THE_TABLE"
+            rejected.append(f"{m.group(1)} -> already measured, do not repeat.")
         else:
             try:
                 plan = G.parse_spec(m.group(1))
@@ -114,6 +119,8 @@ def main() -> int:
                 if pred >= floor:
                     rec["outcome"] = (f"WRONG_DIRECTION: predicted {pred:.4f} >= "
                                       f"current lowest {floor:.4f}, not executed")
+                    rejected.append(f"{m.group(1)} -> {pred:.4f} EBPW, which is HIGHER "
+                                    f"than {floor:.4f}. An outlier channel ADDS bytes.")
                     raise _Skip()
                 r = G.evaluate(Cand(m.group(1)))
                 rec.update({"outcome": "EXECUTED", "ebpw": r["complete_ebpw"],
