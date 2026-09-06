@@ -1,0 +1,13 @@
+{
+ "date": "2026-09-06",
+ "obligation": "G024 / S010 \u00a75",
+ "specimen": "O003 harness",
+ "FINDING": "The existing resource machinery is CORRECT and was never consulted by the experiments that crashed the machine.",
+ "what_already_exists_and_is_right": {
+  "swap_latch_is_already_handled": "hcli/machine.py:110 swap_highwater_bytes() documents that vm.swapusage used= is a monotone high-water mark and that comparing it to a ceiling 'is a latch by construction'. swap_pressure_bytes() instead returns the Swapouts DELTA since the previous probe. That is the correct live signal and matches the independent conclusion in my own notes.",
+  "free_ram_reserve_would_have_fired": "resident.py:430 reserve = max(12 GiB, 15% of total) = 14.4 GiB on this 96 GB host. Free memory at the panic was 14.4 MB. free < reserve is TRUE by a factor of 1000, so the rule was right."
+ },
+ "THE_ACTUAL_GAP": "It is an ADMISSION gate, evaluated once before a model load on the daemon path. The PQ and gravity experiments ran as bare python processes on the one-shot path and consulted nothing. Nothing monitored them DURING execution, which is exactly what S010 \u00a75 asks for: 'During execution monitor them.'",
+ "SECOND_GAP": "swap_pressure_bytes returns bytes paged out SINCE THE LAST PROBE -- a rate -- and it is compared against swap_ceiling_bytes, a quantity named and reasoned about as a LEVEL (S010 \u00a76's 20 GB). A rate compared to a level is a category error even when both are individually sensible, and the first probe in any process returns 0 by construction, so a short-lived process can never trip it.",
+ "WHY_THIS_MATTERS_MORE_THAN_A_NEW_THRESHOLD": "The lesson is not that a number was wrong. It is that a correct rule protected a path nobody was running. Adding another threshold would repeat the mistake; the fix is to make the guard CONTINUOUS and to put it on the path experiments actually take."
+}

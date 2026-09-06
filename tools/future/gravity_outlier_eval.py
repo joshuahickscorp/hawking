@@ -362,10 +362,10 @@ def evaluate(candidate) -> dict[str, Any]:
     # exceeded its budget. The 2026-09-06 watchdog panic happened during this
     # exact kind of experiment. Guard BEFORE the load, not after.
     try:
-        from campaign_memory_guard import require_ok
+        from campaign_memory_guard import require_ok, watch
         _guard = require_ok(f"gravity evaluate({candidate})")
     except ImportError:
-        _guard = None
+        _guard, watch = None, None
     """Execute one representation and return a gauntlet receipt."""
     plan = parse_spec(getattr(candidate, "spec", candidate))
     t0 = time.perf_counter()

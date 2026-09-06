@@ -22,6 +22,8 @@ from __future__ import annotations
 
 import re
 import subprocess
+import threading
+from contextlib import contextmanager
 from dataclasses import dataclass, asdict
 from pathlib import Path
 
@@ -112,6 +114,55 @@ def sample() -> Snapshot:
                     round(wired * PAGE / GB, 2), state, why)
 
 
+class Abort(RuntimeError):
+    """Raised in the worker when the watcher sees STOP mid-experiment."""
+
+
+@dataclass
+class Watch:
+    """Live state a long experiment polls between chunks."""
+    state: str = "OK"
+    reasons: tuple = ()
+    samples: int = 0
+    worst: str = "OK"
+
+    def check(self) -> None:
+        """Call between chunks of expensive work. Raises Abort on STOP.
+
+        S010 §5: the OS must never be the first component to discover Hawking
+        exceeded its budget. An admission check alone cannot do that -- the
+        2026-09-06 panic developed DURING an experiment whose free RAM was fine
+        when it started.
+        """
+        if self.state == "STOP":
+            raise Abort(f"campaign guard STOP mid-experiment: {'; '.join(self.reasons)}")
+
+
+@contextmanager
+def watch(interval_s: float = 5.0):
+    """Sample in the background for the duration of the block."""
+    w = Watch()
+    stop = threading.Event()
+
+    def loop():
+        order = {"OK": 0, "WARN": 1, "STOP": 2}
+        while not stop.wait(interval_s):
+            try:
+                s = sample()
+            except Exception:
+                continue
+            w.state, w.reasons, w.samples = s.state, s.reasons, w.samples + 1
+            if order[s.state] > order[w.worst]:
+                w.worst = s.state
+    t = threading.Thread(target=loop, daemon=True, name="campaign-guard")
+    t.start()
+    try:
+        yield w
+    finally:
+        stop.set()
+        t.join(timeout=interval_s + 1.0)
+
+
 def require_ok(what: str) -> Snapshot:
     """Call BEFORE an expensive experiment. Raises on STOP."""
     s = sample()
@@ -142,8 +193,40 @@ def _selftest() -> None:
     # WARN must be reachable and distinct from STOP.
     assert classify(60.0, 17.0, 0)[0] == "WARN", "WARN unreachable on compressor"
     assert classify(3.0, 1.0, 0)[0] == "WARN", "WARN unreachable on free"
+    # the watcher must actually raise when it sees STOP
+    w = Watch(state="STOP", reasons=("synthetic",))
+    try:
+        w.check()
+        raise AssertionError("Watch.check did NOT raise on STOP")
+    except Abort:
+        pass
+    Watch(state="WARN", reasons=("x",)).check()   # WARN must NOT abort
+    Watch().check()                                # OK must NOT abort
+
+    # The watcher must PROPAGATE state, not merely tick. Mutating the
+    # propagation line to only increment `samples` passed an earlier version of
+    # this check -- a watcher that samples forever and never reports STOP would
+    # have shipped. Inject a STOP-returning sample and require it to arrive.
+    import time as _t
+    _real_sample = globals()["sample"]
+    globals()["sample"] = lambda: Snapshot(0.01, 60.0, 100, 20.0, "STOP", ("injected",))
+    try:
+        with watch(interval_s=0.05) as live:
+            _t.sleep(0.2)
+        assert live.samples >= 1, f"watcher never sampled ({live.samples})"
+        assert live.state == "STOP", f"watcher did not PROPAGATE state: {live.state!r}"
+        assert live.worst == "STOP", f"watcher did not record worst: {live.worst!r}"
+        assert live.reasons, "watcher propagated no reasons"
+        try:
+            live.check()
+            raise AssertionError("a propagated STOP did not abort")
+        except Abort:
+            pass
+    finally:
+        globals()["sample"] = _real_sample
+
     print("  selftest: PASS (fires STOP on the real panic state, allows a healthy one,"
-          " all 3 signals live, WARN reachable)")
+          " all 3 signals live, WARN reachable, watcher samples and aborts)")
 
 
 if __name__ == "__main__":
