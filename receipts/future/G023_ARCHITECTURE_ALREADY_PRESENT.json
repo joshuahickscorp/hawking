@@ -1,0 +1,20 @@
+{
+ "date": "2026-09-06",
+ "obligation": "G023 / S010",
+ "specimen": "O003 harness",
+ "HEADLINE": "HCLI ALREADY HAS A PERSISTENT-RESIDENT ARCHITECTURE. The 211.3 s/round reload is not an architectural gap -- it is the one-shot path being used for repeated work while a daemon path exists.",
+ "EVIDENCE_read_from_source": {
+  "reaper_spares_claimed_bodies": "crates/hide-backend/src/process_inspector.rs:289 is_orphaned() = role=='resident-body' && ppid==1 && !claimed.contains(pid). Claims are read from <root>/.hcli/resident/state.json keys worker_pid, supervisor_pid, body_pid. A claimed body is ALREADY spared -- no Rust change is needed to adopt one.",
+  "self_exit_has_an_intentional_detachment_path": "hcli/agentos/resident.py:642 orphan_exit_reason() docstring: 'start_resident deliberately daemonises the supervisor, and such a supervisor also reaches pid 1. The two are told apart by launch_ppid, which is 1 exactly when DETACHED_ENV said the detachment was intentional.' Line 1301 sets launch_ppid = 1 if DETACHED_ENV else getppid(); line 2103 sets env[DETACHED_ENV]='1' inside start_resident.",
+  "pid_reuse_defence_already_exists": "hcli/commands.py:601 reads state 'worker_pid' alongside 'worker_start_token' -- the same start-identity defence I built independently in tools/future/resident_adoption.py.",
+  "daemon_entry_point": "hcli/agentos_cli.py:1230 imports and calls start_resident. The main hcli.cli path -- the one every measurement in this session used -- is the ONE-SHOT path."
+ },
+ "WHAT_THIS_CORRECTS": "Two turns ago I recorded that a persistent resident 'needs an ownership record the next pool can adopt rather than reap' and that this is 'a lifetime/ownership feature with its own failure mode, not a patch'. That was wrong in an important way: the ownership record, the claim-based sparing, the intentional-detachment flag and the start-token are ALL already implemented. I diagnosed a missing feature by reading only the path I happened to be driving.",
+ "THIRD_TIME_THIS_SESSION": "The same error shape as the drive_resident scorer, the missing cost function, and the missing rejection feedback: concluding a capability is absent after exercising one route to it. My own standing rule -- grep for CALL SITES, and check for a sibling that already does it -- would have caught this earlier.",
+ "WHAT_G023_ACTUALLY_NEEDS_NOW": [
+  "Verify empirically that the daemon path reuses a loaded resident across rounds (round-2 complete_payload < 60 s, the pre-committed kill).",
+  "Put the verified decide() in FRONT of that reuse so a stale, wrong-model, wrong-config or unhealthy daemon is refused rather than blindly reused -- the daemon path spares by CLAIM alone, which is exactly the 'never adopt on a bare PID' failure S010 forbids.",
+  "Confirm no double resident and SIGKILL recovery on the daemon path."
+ ],
+ "THE_ADOPTION_CORE_IS_STILL_THE_RIGHT_WORK": "is_orphaned() spares any body whose pid appears in state.json. It does not check model hash, config hash, readiness, responsiveness, heartbeat age or footprint. That is adoption on a bare PID, which is the specific thing S010 3 forbids, so the 17-control decide() belongs in front of it rather than replacing it."
+}
