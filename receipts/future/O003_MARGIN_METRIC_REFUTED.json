@@ -1,0 +1,97 @@
+{
+ "specimen": "O003",
+ "date": "2026-09-06",
+ "hypothesis": "Batch-divergence threshold measures decision margin and would order representations on an axis perplexity and 4-gram cannot see. Proposed by me one step earlier.",
+ "arms": [
+  {
+   "config": "bf16",
+   "margin_score": 14.666666666666666,
+   "per_prompt": [
+    {
+     "prompt": 0,
+     "first_divergent_batch": 8
+    },
+    {
+     "prompt": 1,
+     "first_divergent_batch": 4
+    },
+    {
+     "prompt": 2,
+     "first_divergent_batch": null
+    }
+   ],
+   "ppl": 2.894,
+   "median_4gram": 0.0538,
+   "passes_gate": true
+  },
+  {
+   "config": "q4-g64-experts",
+   "margin_score": 12.0,
+   "per_prompt": [
+    {
+     "prompt": 0,
+     "first_divergent_batch": 2
+    },
+    {
+     "prompt": 1,
+     "first_divergent_batch": 2
+    },
+    {
+     "prompt": 2,
+     "first_divergent_batch": null
+    }
+   ],
+   "ppl": 3.044,
+   "median_4gram": 0.043,
+   "passes_gate": true
+  },
+  {
+   "config": "q3-g128-experts",
+   "margin_score": 2.6666666666666665,
+   "per_prompt": [
+    {
+     "prompt": 0,
+     "first_divergent_batch": 2
+    },
+    {
+     "prompt": 1,
+     "first_divergent_batch": 4
+    },
+    {
+     "prompt": 2,
+     "first_divergent_batch": 2
+    }
+   ],
+   "ppl": 3.135,
+   "median_4gram": 0.1075,
+   "passes_gate": true
+  },
+  {
+   "config": "q2-g128-experts",
+   "margin_score": 12.666666666666666,
+   "per_prompt": [
+    {
+     "prompt": 0,
+     "first_divergent_batch": 2
+    },
+    {
+     "prompt": 1,
+     "first_divergent_batch": null
+    },
+    {
+     "prompt": 2,
+     "first_divergent_batch": 4
+    }
+   ],
+   "ppl": 4.085,
+   "median_4gram": 0.7849,
+   "passes_gate": false
+  }
+ ],
+ "REFUTED": "The ordering is wrong. q2-g128-experts scores 12.7 -- HIGHER than q3-g128-experts at 2.7 -- while being the arm that emits 87 consecutive identical tokens and fails the gate on both terms. The passing representation looks WORSE on this metric than a destroyed one.",
+ "WHY_IT_IS_CONFOUNDED": "A model locked in a repetition attractor is maximally STABLE under perturbation: it will re-emit the same token whatever the accumulation order. So a high margin score conflates 'far from decision boundaries' with 'stuck'. Degeneracy and robustness are indistinguishable to this measure, and degeneracy is exactly what the gate exists to catch.",
+ "ALSO_TOO_NOISY": "n=3 prompts, and a single prompt surviving to B=16 contributes 32 to the mean, swinging it by ~10. bf16 itself ranges from B=4 to survival across three prompts.",
+ "NOT_ADOPTED": "The metric is not added as a third gate axis. The one real observation behind it survives on its own: bf16 tolerates B=2 while q3-g128 does not, on the SAME prompt. That is a pairwise statement about two arms, not a scalar that orders a frontier.",
+ "WHAT_A_CORRECTED_VERSION_NEEDS": "Condition on non-degeneracy: measure divergence only on prompts whose own B=1 output is already non-repetitive, so a locked model scores nothing rather than scoring well. That is a different metric and it is untested.",
+ "PROCESS_NOTE": "Proposed, measured and refuted within one step, at a cost of four generations per arm. The constitution's 'when a result looks too good, attack it' applied to my own proposal."
+}
