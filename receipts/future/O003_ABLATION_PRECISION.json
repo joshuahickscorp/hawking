@@ -1,0 +1,14 @@
+{
+ "specimen": "O003",
+ "date": "2026-09-06",
+ "what_happened": "Isolated measurement put gather_qmm at 2.048 ms; the ablation put expert matmuls at 1.530. I hypothesised the gap was SwitchGLU orchestration counted on one side only. Measured directly, that orchestration is 0.404 ms -- too small to explain a 0.518 ms gap. The hypothesis is REFUTED.",
+ "actual_explanation": "Precision. The ablation figures are DIFFERENCES of two full-step wall measurements, each ~8.8 ms with a measured 6-rep spread of 0.60 ms. Propagated, each 'owns' figure carries roughly +/- 0.85 ms. The 1.530 vs 2.048 gap sits inside that.",
+ "CORRECTION_TO_MY_OWN_HEADLINE": {
+  "as_reported": "expert matmuls 17.4%, router+gather+combine 28.2%, attention 40.8%",
+  "with_uncertainty": "17.4 +/- 9.6pp, 28.2 +/- 9.6pp, 40.8 +/- 9.6pp",
+  "reading": "The ORDERING survives -- attention > router path > expert matmuls, and the isolated measurements agree on that ordering by an independent method. The individual percentages do NOT carry two significant figures and I reported them as though they did."
+ },
+ "what_is_solid": "Isolated direct measurements, which are single measurements of 50 reps rather than differences: MoE block 4.319, attention 3.488, switch_mlp whole 2.452, SwitchGLU orchestration 0.404, gather_qmm 2.048. These do not compound two uncertainties.",
+ "what_this_does_not_change": "The fixed-cost finding (wall = 7.320 + 1.348*B, 83.3% fixed at B=1) is a REGRESSION over five batch sizes, not a difference of two numbers, and is unaffected. So is the conclusion that byte reduction cannot move decode below q4.",
+ "method_note": "Difference-of-large-numbers has poor precision for small stages. Prefer direct isolation, and when an ablation difference is used, propagate the measured spread rather than reporting the point estimate."
+}
