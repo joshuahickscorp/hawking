@@ -88,6 +88,16 @@ def parse_spec(spec: str) -> dict[str, Any]:
     # binarypercal: per-EXPERT activation moments. Same bytes again; the
     # statistic is now accumulated separately per routed expert id, which is the
     # mismatch that pooled calibration is suspected to have died on.
+    # resbinary: the resident's ladder proposal, executed. Two-stage residual
+    # binarisation -- W ~= s1*sign(W) + s2*sign(W - s1*sign(W)). Costs 2
+    # bits/weight + TWO fp16 scales per group, i.e. exactly the same bytes as
+    # q2-g<group> affine, which makes it a controlled comparison of the same
+    # budget spent two ways.
+    m = re.fullmatch(r"resbinary(percal)?-g(\d+)", s, re.I)
+    if m:
+        return {"form": "resbinary", "calibrated": bool(m.group(1)),
+                "per_expert": bool(m.group(1)), "frac": 0.0,
+                "group": _group(int(m.group(2)), s), "bits": 2}
     m = re.fullmatch(r"binarypercal(?:([0-9.]+))?-g(\d+)", s, re.I)
     if m:
         return {"form": "binary", "calibrated": True, "per_expert": True,
@@ -216,6 +226,7 @@ def evaluate(candidate) -> dict[str, Any]:
     mx.random.seed(0)
     n_tot = sum(m.weight.size for _, m in sw)
     BIN = plan["form"] == "binary"
+    RES = plan["form"] == "resbinary"
     act = (collect_activation_moments(model, tok, per_expert=plan.get("per_expert", False))
            if plan.get("calibrated") else {})
     kept = 0
@@ -236,7 +247,23 @@ def evaluate(candidate) -> dict[str, Any]:
                 kept += int(mx.sum(mask).item())
             else:
                 mask, base = None, W
-            if BIN:
+            if RES:
+                flatg = base.reshape(-1, g)
+                d = act.get(id(m))
+                def _scale(t):
+                    if d is None:
+                        return mx.mean(mx.abs(t), axis=1, keepdims=True)
+                    dd = (mx.broadcast_to(d.reshape(d.shape[0], 1, d.shape[1]), base.shape)
+                          if d.ndim == 2 else
+                          mx.broadcast_to(d.reshape(1, -1),
+                                          base.reshape(-1, base.shape[-1]).shape)).reshape(-1, g)
+                    return (mx.sum(dd * mx.abs(t), axis=1, keepdims=True)
+                            / mx.maximum(mx.sum(dd, axis=1, keepdims=True), 1e-9))
+                s1 = _scale(flatg); b1 = mx.sign(flatg)
+                r1 = flatg - s1 * b1
+                s2 = _scale(r1); b2 = mx.sign(r1)
+                rec = (s1 * b1 + s2 * b2).reshape(base.shape)
+            elif BIN:
                 flatg = base.reshape(-1, g)
                 d = act.get(id(m))
                 if d is None:
@@ -288,8 +315,12 @@ def evaluate(candidate) -> dict[str, Any]:
         expert_bits = n_tot * 16.0
     else:
         # binary stores 1 bit/weight + ONE fp16 scale per group (no zero point).
-        per_w = (1 + 16 / plan["group"]) if plan["form"] == "binary" else \
-                (plan["bits"] + 32 / plan["group"])
+        if plan["form"] == "binary":
+            per_w = 1 + 16 / plan["group"]
+        elif plan["form"] == "resbinary":
+            per_w = 2 + 32 / plan["group"]        # 2 sign bits + 2 fp16 scales
+        else:
+            per_w = plan["bits"] + 32 / plan["group"]
         expert_bits = n_tot * per_w + kept * 32
     complete_bytes = int(expert_bits / 8 + _leaf_bytes(model.parameters(), "switch_mlp"))
     complete_ebpw = complete_bytes * 8 / SRC_PARAMS
@@ -321,7 +352,8 @@ def evaluate(candidate) -> dict[str, Any]:
         "schema": "hawking.hcli.odyssey.gravity_outlier_eval.v1",
         "specimen": getattr(candidate, "specimen", "O003"),
         "spec": getattr(candidate, "spec", str(candidate)),
-        "representation_class": ("BINARY_ACT_PER_EXPERT" if plan.get("per_expert")
+        "representation_class": ("RESIDUAL_BINARY" if plan["form"] == "resbinary"
+                                 else "BINARY_ACT_PER_EXPERT" if plan.get("per_expert")
                                  else "BINARY_ACT_CALIBRATED" if plan.get("calibrated")
                                  else "BINARY_SCALED" if plan["form"] == "binary"
                                  else "OUTLIER_SPLIT" if plan["form"] == "outlier_split"
