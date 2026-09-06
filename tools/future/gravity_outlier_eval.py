@@ -123,6 +123,16 @@ def _parse_expert_spec(spec: str) -> dict[str, Any]:
     # bits/weight + TWO fp16 scales per group, i.e. exactly the same bytes as
     # q2-g<group> affine, which makes it a controlled comparison of the same
     # budget spent two ways.
+    # SPARSE_BINARY: keep the top `density` of weights per group by |w|, zero
+    # the rest, binarise survivors with a per-group scale. Stored as index+sign
+    # per survivor plus one fp16 scale per group, so the rate is
+    #   density * (log2(group) + 1) + 16/group
+    # which is the only family measured here that can go BELOW one bit/weight.
+    m = re.fullmatch(r"sparse([0-9.]+)(percal)?-g(\d+)", s, re.I)
+    if m:
+        return {"form": "sparse", "density": float(m.group(1)),
+                "calibrated": bool(m.group(2)), "per_expert": bool(m.group(2)),
+                "frac": 0.0, "group": _group(int(m.group(3)), s, affine=False), "bits": 1}
     m = re.fullmatch(r"resbinary(percal)?-g(\d+)", s, re.I)
     if m:
         return {"form": "resbinary", "calibrated": bool(m.group(1)),
@@ -172,7 +182,10 @@ def predict_ebpw(spec: str) -> float:
     direction check -- it never lets an upward proposal look downward."""
     p = parse_spec(spec)
     g = p["group"]
-    if p["form"] == "binary":
+    if p["form"] == "sparse":
+        import math
+        per_w = p["density"] * (math.log2(g) + 1) + 16 / g
+    elif p["form"] == "binary":
         per_w = 1 + 16 / g
     elif p["form"] == "resbinary":
         per_w = 2 + 32 / g
@@ -288,10 +301,12 @@ def evaluate(candidate) -> dict[str, Any]:
     n_tot = sum(m.weight.size for _, m in sw)
     BIN = plan["form"] == "binary"
     RES = plan["form"] == "resbinary"
+    SPARSE = plan["form"] == "sparse"
     act = (collect_activation_moments(model, tok, per_expert=plan.get("per_expert", False))
            if plan.get("calibrated") else {})
     kept = 0
     n_scales = 0            # ACTUAL scale count, from the per-tensor group used
+    n_survivors = 0.0       # ACTUAL non-zero count for the sparse form
     eff_groups: dict[int, int] = {}
     # Magnitude adequacy over the whole expert organ. Cosine alone is
     # scale-invariant, so 0.01*W scores 1.0 on direction -- the ratio is what
@@ -313,7 +328,20 @@ def evaluate(candidate) -> dict[str, Any]:
                 kept += int(mx.sum(mask).item())
             else:
                 mask, base = None, W
-            if RES:
+            if SPARSE:
+                dens = plan["density"]
+                flatg = base.reshape(-1, g)
+                k = max(1, int(round(g * dens)))
+                # per-group magnitude threshold: keep the k largest |w|
+                srt = mx.sort(mx.abs(flatg), axis=1)
+                thr = srt[:, g - k][:, None]
+                keep = (mx.abs(flatg) >= thr).astype(mx.float32)
+                kept_g = mx.sum(keep, axis=1, keepdims=True)
+                sc = (mx.sum(mx.abs(flatg) * keep, axis=1, keepdims=True)
+                      / mx.maximum(kept_g, 1.0))
+                rec = (sc * mx.sign(flatg) * keep).reshape(base.shape)
+                n_survivors += float(mx.sum(keep))
+            elif RES:
                 flatg = base.reshape(-1, g)
                 d = act.get(id(m))
                 def _scale(t):
@@ -383,7 +411,11 @@ def evaluate(candidate) -> dict[str, Any]:
         expert_bits = n_tot * 16.0
     else:
         # binary stores 1 bit/weight + ONE fp16 scale per group (no zero point).
-        if plan["form"] == "binary":
+        if plan["form"] == "sparse":
+            import math
+            idx_bits = math.log2(plan["group"])
+            expert_bits = n_survivors * (idx_bits + 1) + n_scales * 16 + kept * 32
+        elif plan["form"] == "binary":
             expert_bits = n_tot * 1 + n_scales * 16 + kept * 32
         elif plan["form"] == "resbinary":
             expert_bits = n_tot * 2 + n_scales * 32 + kept * 32
@@ -420,7 +452,8 @@ def evaluate(candidate) -> dict[str, Any]:
         "specimen": getattr(candidate, "specimen", "O003"),
         "spec": getattr(candidate, "spec", str(candidate)),
         "non_expert_bits": plan["ne_bits"], "non_expert_group": plan["ne_group"],
-        "representation_class": ("RESIDUAL_BINARY" if plan["form"] == "resbinary"
+        "representation_class": ("SPARSE_BINARY" if plan["form"] == "sparse"
+                                 else "RESIDUAL_BINARY" if plan["form"] == "resbinary"
                                  else "BINARY_ACT_PER_EXPERT" if plan.get("per_expert")
                                  else "BINARY_ACT_CALIBRATED" if plan.get("calibrated")
                                  else "BINARY_SCALED" if plan["form"] == "binary"
@@ -437,6 +470,7 @@ def evaluate(candidate) -> dict[str, Any]:
         "magnitude_ratio": magnitude_ratio,
         "direction_similarity": direction_similarity,
         "n_calibrated_tensors": len(act),
+        "density_actual": (n_survivors / n_tot) if plan["form"] == "sparse" else None,
         "effective_groups": {str(k): v for k, v in sorted(eff_groups.items())},
         "capability_ok": capability_ok,
         "capability_status": "CANDIDATE_PASS" if capability_ok else "CAPABILITY_LOSS",
