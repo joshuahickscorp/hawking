@@ -1,0 +1,1 @@
+{"specimen":"O003","arch":"MoE","total_bytes":32815315552,"expert_bytes":28789702656,"killed":["clustering","common_delta","low_rank","alignment","function_sharing","entropy_coding"],"best_ebpw":3.0639,"ceiling_ebpw":10.47}
