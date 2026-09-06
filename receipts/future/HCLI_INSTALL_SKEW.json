@@ -1,0 +1,27 @@
+{
+ "date": "2026-09-06",
+ "obligation": "G023 / G024 / G004 / G009",
+ "severity": "reframes every daemon-path result",
+ "HEADLINE": "THE DAEMON RUNS A DIFFERENT COPY OF HCLI THAN THE REPOSITORY. Every daemon measurement this session executed a build from 2026-09-03, not the working tree.",
+ "MECHANISM": "hcli/agentos/resident.py daemon_argv() prefers the `hawkingd` console script over the module form. /Users/scammermike/.local/bin/hawkingd is a shell wrapper that sets PYTHONPATH=$HOME/.local/share/hcli/current, a symlink to build-20260903-064029.",
+ "SKEW": {
+  "installed_engine_py_lines": 5224,
+  "repo_engine_py_lines": 7000,
+  "line_gap": 1776,
+  "commits_to_hcli_since_the_build": 113,
+  "build_date": "2026-09-03 06:40",
+  "today": "2026-09-06"
+ },
+ "WHICH_PATH_RUNS_WHICH_CODE": {
+  "one_shot python -m hcli.cli": "the REPOSITORY working tree",
+  "daemon hawkingd --supervise": "the INSTALLED 2026-09-03 build"
+ },
+ "WHAT_THIS_EXPLAINS": [
+  "My engine.py fix to surface the validation reason had no effect on the daemon: the installed copy has no validation_failure_message at all (grep count 0). The bare 'Deterministic validation failed' I kept reading came from three-day-old code.",
+  "It is NOT the 'running worker keeps its old imports' trap I first blamed. A fresh daemon still ran old code, because the staleness is on disk, not in a live process."
+ ],
+ "WHAT_IT_DOES_NOT_INVALIDATE": "The G023 attach observations -- one owner, refusal by name, SIGKILL recovery, intentional detachment, populated start token, clean teardown, and the body's lifetime equalling the supervisor's -- are real behaviour OF THE INSTALLED BUILD. They are evidence about a shipped artifact, which is worth having, but they are not evidence about the repository's current code and must not be quoted as such.",
+ "WHAT_IT_DOES_CONFOUND": "Every comparison between the one-shot and daemon paths in this session compared two different codebases three days and 113 commits apart. The 211.3 s figure was measured on the repo one-shot path; the daemon behaviour was measured on the install. Any conclusion drawn from the DIFFERENCE between them is now suspect.",
+ "THE_GENERAL_LESSON": "'Grep for call sites' was not enough here. daemon_argv resolves to an executable whose contents are decided by a symlink outside the repository, so reading the repository could not reveal what would run. The check that settles it is asking the resolved argv what code it loads, not reading the caller.",
+ "IMMEDIATE_CONSEQUENCE": "No harness fix in hcli/ reaches the daemon until that install is refreshed. Refreshing it is a real action with real blast radius -- 113 commits of change to a component that supervises 9.9 GB bodies -- and is not something to do unannounced at the end of a long session."
+}
