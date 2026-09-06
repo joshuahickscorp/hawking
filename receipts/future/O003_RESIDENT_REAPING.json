@@ -1,0 +1,16 @@
+{
+ "specimen": "O003",
+ "date": "2026-09-06",
+ "obligation": "G022 / S009",
+ "COMPLETE_CAUSAL_CHAIN": [
+  "1. Each cli_main builds a NEW runtime pool; the previous pool's runtimes are not inherited.",
+  "2. Pool startup calls _reap_orphans_once() (hcli/runtime.py:154) -> reap_orphaned_bodies().",
+  "3. The resident spawned by the PREVIOUS cli_main has no live owner, so it is an orphan and is REAPED -- killed deliberately.",
+  "4. The new pool then spawns a fresh resident, which pays the 211.3 s lazy weight load again."
+ ],
+ "IT_IS_DELIBERATE_NOT_A_BUG": "The reaper's own comment: 'a daemon meets SIGKILL routinely - OOM kill, crash, kill -9, power loss. Measured: SIGKILLing the CLI mid-run left TWO orphaned bodies.' Reaping exists because orphaned 9.9 GB bodies leak memory. Removing it would trade a 211 s cost for a resource leak.",
+ "THEREFORE_THE_DESIGN_REQUIREMENT": "A persistent resident must not be an ORPHAN. It needs to be a supervised long-lived body that the reaper recognises and spares -- an ownership record the next pool can adopt rather than reap. That is a lifetime/ownership feature, not a patch.",
+ "WHY_MY_CACHE_PATCH_COULD_NEVER_HAVE_WORKED": "It memoised the Python object. The child was killed by a different subsystem entirely, one whose job is to kill exactly that child.",
+ "MEASURED_PRIZE": "211.3 s per round; 6.2x on a 23-round ladder (92 min -> 15 min).",
+ "STATUS": "Diagnosed to the line. NOT implemented -- adoption-instead-of-reaping is a real feature with a real failure mode (leaked bodies) and belongs in the harness with its own controls, not in a sidecar patch written at the end of a long session."
+}
