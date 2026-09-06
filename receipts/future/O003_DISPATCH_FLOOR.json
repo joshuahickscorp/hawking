@@ -1,0 +1,38 @@
+{
+ "specimen": "O003",
+ "date": "2026-09-06",
+ "measurement": "MLX per-op cost from the SLOPE of wall vs chained-op count on a trivial (1,64) tensor: 6.32 us/op, with 224 us of eval/sync overhead paid once.",
+ "MY_PROBE_PRINTED_A_WRONG_LINE": "The script also reported 151 us per 'forced dispatch' by calling mx.eval between ops. That measures the eval/sync round trip, not a launch, and produced stage floors of 900-1500% of measured wall -- impossible on its face. The slope is the correct figure and the impossibility is what caught it.",
+ "stages": [
+  {
+   "stage": "router gate",
+   "measured_us": 1063.0,
+   "ops_est": 104,
+   "op_floor_us": 657.1,
+   "floor_share": 0.618,
+   "recoverable_by_full_fusion_us": 492.8,
+   "recoverable_share_of_step": 0.0559
+  },
+  {
+   "stage": "MoE block",
+   "measured_us": 4025.0,
+   "ops_est": 260,
+   "op_floor_us": 1642.7,
+   "floor_share": 0.408,
+   "recoverable_by_full_fusion_us": 1478.4,
+   "recoverable_share_of_step": 0.1677
+  },
+  {
+   "stage": "attention",
+   "measured_us": 3488.0,
+   "ops_est": 216,
+   "op_floor_us": 1364.7,
+   "floor_share": 0.391,
+   "recoverable_by_full_fusion_us": 1194.1,
+   "recoverable_share_of_step": 0.1354
+  }
+ ],
+ "BOUND_ON_ALL_REMAINING_OPTIMISATION": "Op-count reduction can recover about 3165 us of an 8816 us step, roughly 36%, for a ceiling near 1.56x decode -- and that assumes perfect fusion to one kernel per layer per stage, which no real implementation reaches. It is the same order as the 1.69x attention ceiling from ablation, by an independent route.",
+ "WHAT_IT_MEANS_FOR_THE_FIX": "A fused router-select kernel would remove ~3 of ~4 ops per layer, about 493 us, or 5.6% of the step. Real but small. The larger prize is attention at ~8 ops x 27 layers. Neither changes the conclusion that representation work is capped near 1.2x on decode.",
+ "CAVEAT": "6.32 us/op is measured on a trivial kernel. Real kernels cost launch PLUS work, so the floor is a lower bound on the launch component and the recoverable estimate is optimistic."
+}
