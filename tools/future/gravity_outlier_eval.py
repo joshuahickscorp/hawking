@@ -124,6 +124,33 @@ def parse_spec(spec: str) -> dict[str, Any]:
     raise ValueError(f"spec {spec!r} is not executable by this evaluator")
 
 
+EXPERT_WEIGHTS = 14394851328          # measured
+NON_EXPERT_BYTES_AT_4B_G64 = 885541120  # measured: dense + embed table
+
+
+def predict_ebpw(spec: str) -> float:
+    """Byte cost of a spec, by arithmetic, with no model load. Lets a proposal
+    be checked for DIRECTION before spending ~4 minutes executing it.
+
+    Exact for every non-outlier form (validated to <1e-4 against 7 measured
+    specs). Outlier forms read ~0.004-0.008 EBPW HIGH because the magnitude
+    threshold keeps slightly fewer weights than the requested fraction
+    (0.004849 actual for 0.005 requested). That bias is conservative for a
+    direction check -- it never lets an upward proposal look downward."""
+    p = parse_spec(spec)
+    g = p["group"]
+    if p["form"] == "binary":
+        per_w = 1 + 16 / g
+    elif p["form"] == "resbinary":
+        per_w = 2 + 32 / g
+    elif p["form"] == "bf16":
+        per_w = 16.0
+    else:
+        per_w = p["bits"] + 32 / g
+    bits = EXPERT_WEIGHTS * per_w + EXPERT_WEIGHTS * p.get("frac", 0.0) * 32
+    return (bits / 8 + NON_EXPERT_BYTES_AT_4B_G64) * 8 / SRC_PARAMS
+
+
 def _load():
     from mlx_lm.models import kimi_vl as KV
     if not getattr(KV.Model, "_hawking_mla_patched", False):

@@ -45,7 +45,13 @@ def prompt_for(evidence: list[dict]) -> str:
         "  binary-g<group>            1 bit/weight, scale = mean|W| per group\n"
         "  binarypercal-g<group>      1 bit, scale fitted to per-expert activations (best at 1 bit)\n"
         "  binarypercal<frac>-g<group>  the same, plus an outlier channel\n"
-        "Propose a rung LOWER than the lowest passing one. Do not repeat a spec above.\n\n"
+        "COST, so you can compute your own proposal before making it:\n"
+        "  complete EBPW = (14394851328 * bits_per_weight / 8 + 885541120) * 8 / 16407657776\n"
+        "  bits_per_weight: affine = bits + 32/group;  binary = 1 + 16/group;\n"
+        "                   an outlier channel ADDS frac * 32 bits per weight.\n"
+        "  So a larger outlier frac RAISES EBPW. A larger group LOWERS it.\n"
+        "Propose a rung whose computed EBPW is LOWER than the lowest one above.\n"
+        "Do not repeat any spec above.\n\n"
         "Reply with EXACTLY two lines and nothing else:\n"
         "SPEC: <one spec from the grammar>\n"
         "PLAN: <one sentence: a mechanism OUTSIDE this grammar that could reach 1.0 EBPW, "
@@ -61,6 +67,10 @@ def ask(prompt: str, timeout: int = 1800) -> str:
          "--model", str(PROFILE), "--max-cycles", "2"],
         cwd=str(W), capture_output=True, text=True, timeout=timeout)
     return (r.stdout or "") + (r.stderr or "")
+
+
+class _Skip(Exception):
+    """Proposal rejected on arithmetic before any GPU time is spent."""
 
 
 class Cand:
@@ -98,6 +108,13 @@ def main() -> int:
             try:
                 plan = G.parse_spec(m.group(1))
                 rec["parsed"] = plan
+                pred = G.predict_ebpw(m.group(1))
+                rec["predicted_ebpw"] = round(pred, 4)
+                floor = min(e["ebpw"] for e in evidence)
+                if pred >= floor:
+                    rec["outcome"] = (f"WRONG_DIRECTION: predicted {pred:.4f} >= "
+                                      f"current lowest {floor:.4f}, not executed")
+                    raise _Skip()
                 r = G.evaluate(Cand(m.group(1)))
                 rec.update({"outcome": "EXECUTED", "ebpw": r["complete_ebpw"],
                             "capability_ok": r["capability_ok"],
@@ -108,6 +125,8 @@ def main() -> int:
                 evidence.append({"spec": m.group(1), "ebpw": r["complete_ebpw"],
                                  "pass": r["capability_ok"]})
                 seen.add(m.group(1))
+            except _Skip:
+                pass
             except ValueError as e:
                 rec["outcome"] = f"REFUSED_UNRUNNABLE: {e}"
             except Exception as e:                       # keep failures as evidence

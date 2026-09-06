@@ -55,3 +55,25 @@ def test_spec_naming_an_unrunnable_group_is_refused_at_the_door():
         G.parse_spec("outlier0.005-g256")
     for g in (32, 64, 128):
         assert G.parse_spec(f"outlier0.005-g{g}")["group"] == g
+
+
+def test_cost_predictor_matches_measured_bytes():
+    """A direction check is worthless if its arithmetic disagrees with the
+    executor. Every non-outlier form must be exact."""
+    measured = {"q4-g64-experts": 4.3797, "q3-g64-experts": 3.5024,
+                "q2-g64-experts": 2.6251, "q2-g128-experts": 2.4058,
+                "binary-g128": 1.4188, "binary-g64": 1.5284,
+                "resbinary-g128": 2.4058}
+    for spec, want in measured.items():
+        got = G.predict_ebpw(spec)
+        assert abs(got - want) < 1e-3, f"{spec}: predicted {got}, measured {want}"
+
+
+def test_outlier_prediction_is_biased_HIGH_never_low():
+    """The threshold keeps fewer weights than requested, so the estimate reads
+    high. High is the safe direction: it can never make an upward proposal look
+    like a descent."""
+    for spec, measured in (("outlier0.005-g128", 2.5419), ("outlier0.02-g128", 2.9597)):
+        got = G.predict_ebpw(spec)
+        assert got >= measured, f"{spec}: {got} < {measured} -- bias went the unsafe way"
+        assert got - measured < 0.01, f"{spec}: bias {got - measured} too large to be useful"
