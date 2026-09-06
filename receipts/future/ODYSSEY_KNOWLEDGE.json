@@ -1,0 +1,173 @@
+{
+ "schema": "hawking.odyssey.knowledge.v1",
+ "n_entries": 7,
+ "entries": [
+  {
+   "id": "K001",
+   "scope": "FAMILY_PRIOR",
+   "claim": "Per-EXPERT activation statistics beat pooled ones for scale fitting, at identical bytes. Pooled weighting is WORSE than no weighting at all.",
+   "architecture_condition": {
+    "families": [
+     "kimi_vl",
+     "qwen3_moe",
+     "qwen3_vl_moe",
+     "lfm2_moe",
+     "granitemoehybrid",
+     "glm4_moe",
+     "deepseek_v4",
+     "kimi_k3"
+    ],
+    "requires": "routed mixture-of-experts; the statistic must be accumulated per routed expert id"
+   },
+   "measurement": "3 classes, always at identical byte cost: plain binary -7.1% and -10.3% ppl, residual binary -11.7%. Pooled: +1.9%, +1.0% (worse than uncalibrated).",
+   "oracle_strength": "strong: 5 paired comparisons, byte-identical arms, deterministic ppl",
+   "sources": [
+    {
+     "specimen": "O003",
+     "model": "moonshotai/Kimi-VL-A3B-Instruct"
+    },
+    {
+     "receipt": "receipts/future/O003_PER_EXPERT_CALIBRATION.json"
+    }
+   ],
+   "counterexamples": [],
+   "reopen_condition": "a routed MoE where pooled >= per-expert at equal bytes",
+   "why_it_should_transfer": "it follows from ROUTING: each expert sees a different token sub-distribution, so a pooled statistic mismatches the parameter it weights"
+  },
+  {
+   "id": "K002",
+   "scope": "FAMILY_PRIOR",
+   "claim": "Routing frequency does NOT predict representational importance. Rarely-routed experts are not safe to compress. Allocate by sensitivity, never by traffic.",
+   "architecture_condition": {
+    "families": [
+     "kimi_vl",
+     "qwen3_moe",
+     "qwen3_vl_moe",
+     "lfm2_moe",
+     "granitemoehybrid",
+     "glm4_moe"
+    ],
+    "requires": "top-k routing over many experts"
+   },
+   "measurement": "Exact equal-byte control at 3.2830765066781096 EBPW: uniform q3-g128 PASSES (ppl 3.135, 4-gram 0.1075); hot/cold 4-bit on the busiest half and 2-bit on the rest FAILS (ppl 3.070, 4-gram 0.5806) despite BETTER perplexity. Routing is genuinely skewed (top-8 of 64 take 37.5% vs a uniform 12.5%), so the skew is real and is the wrong axis.",
+   "oracle_strength": "strong: byte-identical to 16 digits, both terms of the gate measured",
+   "sources": [
+    {
+     "specimen": "O003",
+     "model": "moonshotai/Kimi-VL-A3B-Instruct"
+    },
+    {
+     "receipt": "receipts/future/O003_HOT_COLD.json"
+    }
+   ],
+   "counterexamples": [],
+   "reopen_condition": "an MoE where a traffic-proportional budget beats a uniform one at equal bytes on BOTH gate terms"
+  },
+  {
+   "id": "K003",
+   "scope": "MACHINE_LAW",
+   "host": "Apple M3 Ultra 96GB, MLX Metal",
+   "claim": "Below roughly 4-bit weights, decode stops being bandwidth-bound, so further byte reduction buys no decode speed.",
+   "measurement": "bf16 achieves 452.2 GB/s = 56.5% of peak; q4/q3/q2 achieve 185.6/170.1/144.3 GB/s = 23.2/21.3/18.0%. Decode tok/s saturates: q4 127.48, q2 128.97, ranges overlap.",
+   "oracle_strength": "strong: 6-repeat warm medians with spread reported; earlier 2-repeat figures were low by up to 35% and are superseded",
+   "sources": [
+    {
+     "specimen": "O003",
+     "model": "moonshotai/Kimi-VL-A3B-Instruct"
+    },
+    {
+     "receipt": "receipts/future/O003_BYTES_PER_TOKEN.json"
+    }
+   ],
+   "counterexamples": [],
+   "reopen_condition": "a body on this host where decode scales with bytes below q4"
+  },
+  {
+   "id": "K004",
+   "scope": "MACHINE_LAW",
+   "host": "Apple M3 Ultra 96GB, MLX Metal",
+   "claim": "For a top-k MoE, expert matmuls are a MINORITY of a quantized decode step, so all representation work is capped at a small decode speedup. Attention and the router/gather/combine path dominate.",
+   "measurement": "Verified ablation at seq=1 over 40 decode steps: expert matmuls 17.4%, router+gather+combine 28.2%, attention 40.8%. Ceilings if each were FREE: experts 1.21x, router 1.39x, attention 1.69x.",
+   "oracle_strength": "strong: every ablation gated on changing the output logits; an earlier instance-level patch measured 0% and was rejected",
+   "sources": [
+    {
+     "specimen": "O003",
+     "model": "moonshotai/Kimi-VL-A3B-Instruct"
+    },
+    {
+     "receipt": "receipts/future/O003_G017_DECOMPOSITION.json"
+    }
+   ],
+   "counterexamples": [],
+   "reopen_condition": "an MoE on this host where expert matmuls exceed half the step",
+   "architecture_condition": {
+    "families": [
+     "kimi_vl",
+     "qwen3_moe",
+     "qwen3_vl_moe",
+     "lfm2_moe",
+     "granitemoehybrid",
+     "glm4_moe",
+     "deepseek_v4",
+     "kimi_k3"
+    ],
+    "requires": "top-k routing; a dense body has no expert gather to amortise"
+   }
+  },
+  {
+   "id": "K005",
+   "scope": "MACHINE_LAW",
+   "host": "any",
+   "claim": "A capability gate scored on perplexity alone will pass a model that cannot generate. The gate needs a generation term and >= 8 prompts.",
+   "measurement": "5 measured dissociations on one specimen, including ppl 4.085 (only 41% above the bf16 reference) while emitting 87 consecutive identical tokens. An n=1 coherence verdict of 0.000 became 0.6398 at n=8.",
+   "oracle_strength": "strong: 5 independent instances; mechanism identified (teacher forcing conditions on ground truth and cannot see error compounding)",
+   "sources": [
+    {
+     "specimen": "O003",
+     "model": "moonshotai/Kimi-VL-A3B-Instruct"
+    },
+    {
+     "receipt": "receipts/future/O003_HOT_COLD.json"
+    }
+   ],
+   "counterexamples": [],
+   "reopen_condition": "a specimen where ppl and generation never dissociate across 10+ representations"
+  },
+  {
+   "id": "K006",
+   "scope": "SPECIMEN",
+   "claim": "O003's lowest capability-preserving representation is q3-g128-experts at 3.2831 complete EBPW; its non-expert organ is an irreducible 0.4318 EBPW floor.",
+   "measurement": "22 points across 8 classes; 3 pass. Non-expert reduction fails at 3b/g128 (ppl 3.714) and 4b/g128 (4-gram 0.2903), and destroys at 2b/g128 (ppl 19398).",
+   "oracle_strength": "strong for this body; says nothing about another",
+   "sources": [
+    {
+     "specimen": "O003",
+     "model": "moonshotai/Kimi-VL-A3B-Instruct"
+    },
+    {
+     "receipt": "receipts/future/O003_NON_EXPERT_FLOOR.json"
+    }
+   ],
+   "counterexamples": [],
+   "reopen_condition": "any calibrated or fine-tuned method reaching the gate below 3.2831"
+  },
+  {
+   "id": "K007",
+   "scope": "SPECIMEN",
+   "claim": "O003's 64 experts per layer carry no shared linear structure: shared-basis, clustered dictionary, low-rank-across-experts and cross-expert sharing are all dead.",
+   "measurement": "Centred Gram spectrum over 12 probes: k90 = 56-57 of 64. NULL control of 64 independent gaussians gives k90 = 56. Indistinguishable.",
+   "oracle_strength": "strong within layers; does NOT test cross-layer, nonlinear, or post-permutation-alignment structure",
+   "sources": [
+    {
+     "specimen": "O003",
+     "model": "moonshotai/Kimi-VL-A3B-Instruct"
+    },
+    {
+     "receipt": "receipts/future/O003_WHY_THE_BYTES_EXIST.json"
+    }
+   ],
+   "counterexamples": [],
+   "reopen_condition": "a spectrum probe after permutation alignment, or across layers"
+  }
+ ]
+}
