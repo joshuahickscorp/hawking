@@ -39,8 +39,12 @@ def prompt_for(evidence: list[dict]) -> str:
         "Complete EBPW measured, capability gated against the bf16 source:\n"
         + "\n".join(lines)
         + f"\n\nLowest PASSING: {best['spec']} at {best['ebpw']:.4f}. Target is <=1.0.\n"
-        "Grammar you can execute: q<bits>-g<group>-experts  OR  outlier<frac>-g<group>\n"
-        "  bits 2..8, group is 32, 64 or 128, frac like 0.005.\n"
+        "Grammar you can execute (group is 32, 64 or 128):\n"
+        "  q<bits>-g<group>-experts   bits 2..8, plain affine\n"
+        "  outlier<frac>-g<group>     2-bit base + top-|w| frac kept at full precision\n"
+        "  binary-g<group>            1 bit/weight, scale = mean|W| per group\n"
+        "  binarypercal-g<group>      1 bit, scale fitted to per-expert activations (best at 1 bit)\n"
+        "  binarypercal<frac>-g<group>  the same, plus an outlier channel\n"
         "Propose a rung LOWER than the lowest passing one. Do not repeat a spec above.\n\n"
         "Reply with EXACTLY two lines and nothing else:\n"
         "SPEC: <one spec from the grammar>\n"
@@ -67,6 +71,9 @@ def main() -> int:
     rounds = int(sys.argv[1]) if len(sys.argv) > 1 else 4
     evidence = [
         {"spec": "q4-g64-experts", "ebpw": 4.3797, "pass": True},
+        {"spec": "binary-g128", "ebpw": 1.4188, "pass": False},
+        {"spec": "binarypercal-g128", "ebpw": 1.4188, "pass": False},
+        {"spec": "binarypercal-g64", "ebpw": 1.5284, "pass": False},
         {"spec": "q3-g64-experts", "ebpw": 3.5024, "pass": True},
         {"spec": "q2-g64-experts", "ebpw": 2.6251, "pass": False},
         {"spec": "q2-g128-experts", "ebpw": 2.4058, "pass": False},
