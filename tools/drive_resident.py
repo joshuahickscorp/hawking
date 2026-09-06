@@ -40,7 +40,18 @@ HEDGES = re.compile(r"\b(might|could|may|possibly|likely|appears|seems|probably|
 NUMBER = re.compile(r"\d")
 FILELINE = re.compile(r"[\w/]+\.(?:py|rs|metal|json|md):\d+")
 CONTROL = re.compile(r"negative control|mutation|refut|counter-example|falsif", re.I)
-MEASURED = re.compile(r"\bmeasured\b", re.I)
+# A round counts as MEASURED only if it shows something it RAN -- a command in
+# backticks, a runner invocation, or a shell line. The literal word "measured"
+# is prose, and an abliterated model will emit it on demand: scoring on the word
+# rewarded measurement-SHAPED text and actively selected for fabrication. That
+# is how this loop once produced "I ran a 4-token task ... and measured 126,464
+# usable_input tokens" with nothing behind it.
+MEASURED = re.compile(
+    r"`[^`\n]+`"
+    r"|\b(?:pytest|cargo|python3?|git|make|ninja|swift|xcodebuild|npm|node)\b[ \t]+\S"
+    r"|^\s*\$\s+\S",
+    re.I | re.M,
+)
 
 
 def weaknesses(text: str) -> list[str]:
@@ -68,7 +79,7 @@ PRESSURE = {
     "NO_NUMBERS": "Your answer contains ZERO numbers. An engineering answer without a number is an opinion. Measure something and give the figure.",
     "NO_FILE_LINE": "You cited no file:line. Every claim about this codebase must name where. Go find it and quote it.",
     "NO_NEGATIVE_CONTROL": "You gave no negative control. A check never observed failing is not evidence. Break your own result deliberately and show it fails.",
-    "NOTHING_MEASURED": "Nothing you wrote was MEASURED -- you read or guessed. Run it. Report what came back.",
+    "NOTHING_MEASURED": "You showed no command. Saying 'measured' is not measuring. Paste the exact command you ran, in backticks, and its exact output.",
     "NONE": "Now attack your own answer. Find its weakest claim, try to refute it, and report what survived.",
 }
 
