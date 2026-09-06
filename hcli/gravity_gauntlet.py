@@ -361,7 +361,13 @@ class GravityGauntlet:
             return
         current_id = self.state.get("best_candidate_id")
         current = next((x for x in self.state["iterations"] if x["candidate"]["id"] == current_id), None)
-        if current is None or float(observation["complete_ebpw"]) < float(current["observation"]["complete_ebpw"]):
+        # Capability first, then bytes. Ranking on EBPW alone crowns whatever is
+        # smallest, including a body that cannot generate -- the headline number
+        # would then advertise a broken artifact.
+        def rank(obs: Mapping[str, Any]) -> tuple[int, float]:
+            return (0 if obs.get("capability_signal") else 1, float(obs["complete_ebpw"]))
+
+        if current is None or rank(observation) < rank(current["observation"]):
             self.state["best_candidate_id"] = candidate.id
 
     def step(self, candidate: Candidate, receipt: Mapping[str, Any] | str | Path) -> dict[str, Any]:
@@ -438,8 +444,15 @@ class GravityGauntlet:
         return self.state
 
     def best_complete_ebpw(self) -> float | None:
-        vals = [x["observation"].get("complete_ebpw") for x in self.state["iterations"]]
-        vals = [float(x) for x in vals if x is not None]
+        # The EBPW OF the best candidate, not the minimum over all of them.
+        # A bare min disagrees with best_candidate_id whenever the smallest body
+        # is one that lost capability, putting two different meanings of "best"
+        # in the same terminal block.
+        best_id = self.state.get("best_candidate_id")
+        row = next((x for x in self.state["iterations"] if x["candidate"]["id"] == best_id), None)
+        if row is not None and row["observation"].get("complete_ebpw") is not None:
+            return float(row["observation"]["complete_ebpw"])
+        vals = [float(x) for x in (y["observation"].get("complete_ebpw") for y in self.state["iterations"]) if x is not None]
         return min(vals) if vals else None
 
     def run(self, evaluator: Callable[[Candidate], Mapping[str, Any] | str | Path], max_steps: int | None = None) -> dict[str, Any]:

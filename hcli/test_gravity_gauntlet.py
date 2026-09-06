@@ -27,6 +27,8 @@ def measured(*, complete: float, verdict: str = "CANDIDATE_PASS", full: bool = F
     if full:
         d.update({"capability_ok": True, "execution_complete": True, "verifier_independent": True, "magnitude_ratio": 1.0})
     d.update(extra)
+    if "capability_ok" in extra:
+        d["capability_ok"] = extra["capability_ok"]
     return d
 
 
@@ -142,3 +144,19 @@ def test_specs_without_precision_do_not_outrank_measured_ones():
     ranked = sorted(["q4-g64-experts", "q2-g64-experts", "outlier0.005-g128"],
                     key=lambda s: _candidate_priority(c(s), capability_signal=True))
     assert ranked[-1] == "outlier0.005-g128", ranked
+
+
+def test_best_never_crowns_a_capability_losing_candidate(tmp_path):
+    """A search whose headline 'best' is a model that cannot generate is
+    advertising a broken artifact. Lowest EBPW is not best on its own."""
+    cs = candidate_space("O003", ["q3-g64-experts", "q2-g128-experts"])
+    scores = {"q3-g64-experts": (3.50, True), "q2-g128-experts": (2.40, False)}
+
+    def evaluate(c):
+        ebpw, cap = scores[c.spec]
+        return measured(complete=ebpw, magnitude_ratio=1.0, capability_ok=cap,
+                        verdict="CANDIDATE_PASS" if cap else "CAPABILITY_LOSS")
+
+    state = GravityGauntlet(tmp_path / "s.json", "O003", cs, budget=2).run(evaluate)
+    assert state["terminal"]["best_candidate_id"] == "O003-q3-g64-experts", state["terminal"]
+    assert state["terminal"]["best_complete_ebpw"] == 3.50

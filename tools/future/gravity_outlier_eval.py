@@ -60,6 +60,19 @@ NLL_TEXT = (
 ) * 3
 
 
+# mx.quantize supports exactly these. A spec naming any other group parses fine
+# and then dies inside the search -- registration is not capability, so refuse it
+# at the door instead. outlier0.005-g256 was accepted and failed this way.
+_SUPPORTED_GROUPS = (32, 64, 128)
+
+
+def _group(g: int, spec: str) -> int:
+    if g not in _SUPPORTED_GROUPS:
+        raise ValueError(
+            f"spec {spec!r} names group {g}; mx.quantize supports {_SUPPORTED_GROUPS}")
+    return g
+
+
 def parse_spec(spec: str) -> dict[str, Any]:
     """Grammar extension. Returns a plan, or raises so an unrunnable spec can
     never be silently accepted as a candidate."""
@@ -67,11 +80,11 @@ def parse_spec(spec: str) -> dict[str, Any]:
     m = re.fullmatch(r"outlier([0-9.]+)-g(\d+)", s, re.I)
     if m:
         return {"form": "outlier_split", "frac": float(m.group(1)),
-                "group": int(m.group(2)), "bits": 2}
+                "group": _group(int(m.group(2)), s), "bits": 2}
     m = re.fullmatch(r"q(\d+)-g(\d+)(?:-experts)?", s, re.I)
     if m:
         return {"form": "affine", "bits": int(m.group(1)),
-                "group": int(m.group(2)), "frac": 0.0}
+                "group": _group(int(m.group(2)), s), "frac": 0.0}
     if s == "bf16":
         return {"form": "bf16", "bits": 16, "group": 0, "frac": 0.0}
     raise ValueError(f"spec {spec!r} is not executable by this evaluator")
@@ -130,6 +143,10 @@ def evaluate(candidate) -> dict[str, Any]:
     mx.random.seed(0)
     n_tot = sum(m.weight.size for _, m in sw)
     kept = 0
+    # Magnitude adequacy over the whole expert organ. Cosine alone is
+    # scale-invariant, so 0.01*W scores 1.0 on direction -- the ratio is what
+    # actually catches a magnitude-destroyed representation.
+    s_w2 = s_h2 = s_dot = 0.0
     if plan["form"] != "bf16":
         g, bits, frac = plan["group"], plan["bits"], plan["frac"]
         for _, m in sw:
@@ -147,9 +164,13 @@ def evaluate(candidate) -> dict[str, Any]:
             rec = mx.dequantize(q, s, b, group_size=g, bits=bits).astype(mx.float32)
             if mask is not None:
                 rec = mx.where(mask, W, rec)
-            m.weight = rec.astype(mx.bfloat16)
+            rec_b = rec.astype(mx.bfloat16)
+            s_w2 += float(mx.sum(W * W))
+            s_h2 += float(mx.sum(rec * rec))
+            s_dot += float(mx.sum(W * rec))
+            m.weight = rec_b
             mx.eval(m.weight)
-            del W, base, rec, q, s, b
+            del W, base, rec, rec_b, q, s, b
 
         def pred(path, mm):
             if "switch_mlp" in path or not hasattr(mm, "to_quantized"):
@@ -161,6 +182,11 @@ def evaluate(candidate) -> dict[str, Any]:
         nn.quantize(model, group_size=64, bits=4, class_predicate=pred)
     mx.eval(model.parameters())
     mx.synchronize()
+    if plan["form"] == "bf16":
+        magnitude_ratio, direction_similarity = 1.0, 1.0
+    else:
+        magnitude_ratio = (s_h2 / s_w2) ** 0.5 if s_w2 else None
+        direction_similarity = (s_dot / (s_w2 * s_h2) ** 0.5) if s_w2 and s_h2 else None
 
     if plan["form"] == "bf16":
         expert_bits = n_tot * 16.0
@@ -206,6 +232,8 @@ def evaluate(candidate) -> dict[str, Any]:
         "accounting": {"complete_bytes": complete_bytes,
                        "expert_bits_per_weight": round(expert_bits / n_tot, 4),
                        "expert_weights": n_tot, "outliers_kept": kept},
+        "magnitude_ratio": magnitude_ratio,
+        "direction_similarity": direction_similarity,
         "capability_ok": capability_ok,
         "capability_status": "CANDIDATE_PASS" if capability_ok else "CAPABILITY_LOSS",
         "capability": {"ppl": round(ppl, 4), "nll": round(nll, 5),
@@ -232,7 +260,7 @@ def main() -> int:
 
     specs = ["q4-g64-experts", "q3-g64-experts", "q2-g64-experts",
              "outlier0.005-g128", "outlier0.01-g128", "outlier0.02-g128",
-             "outlier0.005-g256", "q2-g128-experts"]
+             "outlier0.005-g64", "q2-g128-experts"]
     for s in specs:
         parse_spec(s)  # refuse to start a search containing an unrunnable spec
     out = Path("receipts/future/O003_GAUNTLET_DEEP.json")

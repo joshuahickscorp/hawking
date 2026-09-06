@@ -46,3 +46,12 @@ def test_capability_gate_rejects_the_best_arm_too():
 def test_outlier_class_never_claims_execution():
     # The sparse channel has no kernel; a TPS claim for it would be fabrication.
     assert G.parse_spec("outlier0.005-g128")["form"] == "outlier_split"
+
+
+def test_spec_naming_an_unrunnable_group_is_refused_at_the_door():
+    # mx.quantize supports 32/64/128. outlier0.005-g256 parsed cleanly and then
+    # died inside the search, costing a whole budget slot.
+    with pytest.raises(ValueError, match="group 256"):
+        G.parse_spec("outlier0.005-g256")
+    for g in (32, 64, 128):
+        assert G.parse_spec(f"outlier0.005-g{g}")["group"] == g
