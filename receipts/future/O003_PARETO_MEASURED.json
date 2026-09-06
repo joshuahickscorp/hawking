@@ -1,0 +1,91 @@
+{
+ "specimen": "O003",
+ "model": "moonshotai/Kimi-VL-A3B-Instruct",
+ "revision": "398eede0903cd983a2bfa0cc634e9ac1d843f375",
+ "host": "M3 Ultra 96GB, MLX Metal",
+ "measured_by": "Claude directly",
+ "date": "2026-09-06",
+ "what_this_is": "FIRST Pareto frontier in the corpus with MEASURED execution per representation. Every prior Gravity receipt carried tps_specimen, a per-specimen CONSTANT identical across all variants (O003=51.627 for q2-g32-experts, mixed-q2q3, q4-g128 and q4-g64 alike). No variant had ever been executed. These four were.",
+ "frontier": [
+  {
+   "config": "bf16",
+   "complete_bytes": 31920220416,
+   "complete_gib": 29.728,
+   "complete_ebpw": 15.5636,
+   "decode_tok_s": 73.63,
+   "prefill_tok_s": 2485.46,
+   "nll_fixed_passage": 1.0625,
+   "ppl": 2.894,
+   "active_gb": 29.99,
+   "peak_gb": 30.53,
+   "decode_vs_bf16": 1.0,
+   "ppl_vs_bf16": 1.0,
+   "bytes_vs_bf16": 1.0
+  },
+  {
+   "config": "q8-g64",
+   "complete_bytes": 16960932096,
+   "complete_gib": 15.796,
+   "source_params_bf16_bytes": 32815315552,
+   "complete_ebpw": 8.2698,
+   "decode_tok_s": 81.65,
+   "prefill_tok_s": 2804.06,
+   "nll_fixed_passage": 1.0603,
+   "ppl": 2.887,
+   "active_gb": 16.06,
+   "peak_gb": 32.0,
+   "decode_vs_bf16": 1.1089,
+   "ppl_vs_bf16": 0.9976,
+   "bytes_vs_bf16": 0.5314
+  },
+  {
+   "config": "q4-g64",
+   "complete_bytes": 8982644992,
+   "complete_gib": 8.366,
+   "source_params_bf16_bytes": 32815315552,
+   "complete_ebpw": 4.3797,
+   "decode_tok_s": 98.24,
+   "prefill_tok_s": 2803.07,
+   "nll_fixed_passage": 1.11321,
+   "ppl": 3.044,
+   "active_gb": 8.63,
+   "peak_gb": 30.93,
+   "decode_vs_bf16": 1.3342,
+   "ppl_vs_bf16": 1.0518,
+   "bytes_vs_bf16": 0.2814
+  },
+  {
+   "config": "q2-g32-experts",
+   "complete_bytes": 6283610368,
+   "complete_gib": 5.852,
+   "source_params_bf16_bytes": 32815315552,
+   "complete_ebpw": 3.0637,
+   "decode_tok_s": 100.01,
+   "prefill_tok_s": 2788.58,
+   "nll_fixed_passage": 1.2679,
+   "ppl": 3.553,
+   "active_gb": 6.11,
+   "peak_gb": 30.42,
+   "decode_vs_bf16": 1.3583,
+   "ppl_vs_bf16": 1.2277,
+   "bytes_vs_bf16": 0.1969
+  }
+ ],
+ "REPRODUCES_EXISTING_ACCOUNTING": "q2-g32-experts complete_bytes 6283610368 EXACTLY matches receipts/**/O003_GRAVITY_q2-g32-experts.json live_bytes/disk_tensor_bytes 6283610368; EBPW 3.0637 vs its 3.0639. The byte accounting in the 55 Gravity receipts is INDEPENDENTLY CONFIRMED CORRECT. Only their TPS column was never a measurement.",
+ "FINDINGS": {
+  "1_tps_rises_as_bytes_fall": "73.63 -> 81.65 -> 98.24 -> 100.01 tok/s as complete EBPW falls 15.56 -> 8.27 -> 4.38 -> 3.06. +35.8% decode for 5.08x fewer bytes. S006's claim that EBPW and TPS correlate is CONFIRMED on this specimen: decode is bandwidth-bound, so bytes ARE the speed.",
+  "2_the_gain_saturates_at_q4": "q8->q4 buys +20.3% TPS for 1.89x fewer bytes. q4->q2-experts buys only +1.8% TPS for a further 1.43x. The knee is q4-g64. Below it, bytes keep falling and TPS stops responding - so sub-bit work must be justified by RESIDENCY (fitting more/bigger models) not by decode speed.",
+  "3_capability_cost_is_not_linear": "ppl 2.894 -> 2.887 -> 3.044 -> 3.553. q8 is FREE (2.887 < 2.894, within noise). q4 costs +5.2%. q2-experts costs +22.8%. The capability cliff and the TPS knee are at the SAME place (q4).",
+  "4_prefill_is_flat": "2485 -> 2804 -> 2803 -> 2789 tok/s. Prefill is compute-bound, not bandwidth-bound, so it gains once (dequant path) then ignores further byte reduction entirely."
+ },
+ "NEGATIVE_CONTROLS_THAT_FIRED": [
+  "Run 1: predicate accepted only nn.Linear/nn.Embedding. q4-g64 and q2-g32-experts returned BYTE-IDENTICAL results (29756639488) and identical NLL - the 78 SwitchLinear modules holding 26.81 of 29.72 GiB (90.2%) were silently skipped. Two configs agreeing to the byte is the tell.",
+  "Run 2: a bad edit deleted the dispatch block, so quantize() never ran. arrays stayed 430 (the bf16 count) and complete_bytes equalled bf16 exactly. Fixed by adding `assert nq>0, 'PREDICATE MATCHED NOTHING'` so a no-op can never again be reported as a result.",
+  "Run 3 (this one): quantized modules = 296 for all three configs, arrays 430 -> 1022."
+ ],
+ "CAVEATS": [
+  "ppl is measured on ONE fixed 512-token passage. It is a capability PROXY, not a capability eval. It ranks these four consistently but must not be quoted as a benchmark score.",
+  "bf16 decode measured 73.63 here vs 69.97 in O003_TPS_BASELINE.json - 5.2% run-to-run spread. Treat differences under ~6% as noise; the 35.8% headline is well outside it.",
+  "Quantization is post-hoc affine (mx.quantize), no calibration data. A calibrated method would likely move the capability column, not the byte or TPS columns."
+ ]
+}

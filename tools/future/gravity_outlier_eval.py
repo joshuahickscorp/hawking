@@ -1,0 +1,263 @@
+"""An EXECUTING evaluator for GravityGauntlet.
+
+The gauntlet takes `evaluator(candidate) -> receipt`. Until now the only
+evaluators either replayed receipts that already existed on disk or shelled out
+to the patient runner, whose --gravity grammar is bits/group only (uniform |
+mixed | tiers in tools/odyssey_ctl.py parse_gravity_grammar). That is why every
+recorded search stayed inside the quantization class: the ceiling was the
+EVALUATOR and the spec grammar, never the gauntlet, whose Candidate.spec is a
+free string and whose representation_class is unconstrained.
+
+This module executes two classes for real and measures the same axes for both:
+
+  AFFINE_QUANT   q<bits>-g<group>-experts   experts affine, rest 4b/g64
+  OUTLIER_SPLIT  outlier<frac>-g<group>     top-|w| fraction kept at full
+                 precision in a sparse side-channel over a coarse affine base
+
+Capability gate is calibrated against a measured bf16 reference, not asserted.
+"""
+from __future__ import annotations
+
+import json
+import re
+import time
+from pathlib import Path
+from typing import Any
+
+import mlx.core as mx
+import mlx.nn as nn
+
+SNAP = ("/Users/scammermike/.cache/huggingface/hub/models--moonshotai--"
+        "Kimi-VL-A3B-Instruct/snapshots/398eede0903cd983a2bfa0cc634e9ac1d843f375")
+SRC_PARAMS = 32815315552 // 2
+
+# Measured on this machine, receipts/future/O003_OUTLIER_SPLIT.json (bf16 arm,
+# 8 prompts, greedy, 96 tokens). These are observations, not constants of nature.
+BF16_R4 = 0.0538
+BF16_PPL = 2.8936
+# Gate: <=3x the reference repetition rate and <=1.25x the reference perplexity.
+# Negative control for the gate itself: base-g128 (r4 0.7204, ppl 4.0847) MUST
+# fail it and the bf16 arm MUST pass it. Both verified in test_gravity_outlier.py.
+R4_MAX = 3.0 * BF16_R4
+PPL_MAX = 1.25 * BF16_PPL
+
+PROMPTS = [
+    "Explain how a mixture-of-experts layer routes tokens to experts.",
+    "What is the capital of France, and why did it become the capital?",
+    "Write a short Python function that reverses a linked list.",
+    "Summarize why bandwidth, not compute, limits transformer decoding.",
+    "A farmer has 17 sheep and all but 9 run away. How many are left?",
+    "Describe the difference between a scale and a zero point in quantization.",
+    "List three reasons a neural network might fail to converge.",
+    "Translate to French: The weather is cold today.",
+]
+NLL_TEXT = (
+    "The mixture-of-experts architecture routes each token to a small subset of "
+    "feed-forward networks, so the number of parameters activated per token is much "
+    "smaller than the total parameter count. A router network produces a distribution "
+    "over experts and the top-k are selected. This makes the model sparse in compute "
+    "while remaining dense in memory, which is why storage dominates the cost."
+) * 3
+
+
+def parse_spec(spec: str) -> dict[str, Any]:
+    """Grammar extension. Returns a plan, or raises so an unrunnable spec can
+    never be silently accepted as a candidate."""
+    s = str(spec).strip()
+    m = re.fullmatch(r"outlier([0-9.]+)-g(\d+)", s, re.I)
+    if m:
+        return {"form": "outlier_split", "frac": float(m.group(1)),
+                "group": int(m.group(2)), "bits": 2}
+    m = re.fullmatch(r"q(\d+)-g(\d+)(?:-experts)?", s, re.I)
+    if m:
+        return {"form": "affine", "bits": int(m.group(1)),
+                "group": int(m.group(2)), "frac": 0.0}
+    if s == "bf16":
+        return {"form": "bf16", "bits": 16, "group": 0, "frac": 0.0}
+    raise ValueError(f"spec {spec!r} is not executable by this evaluator")
+
+
+def _load():
+    from mlx_lm.models import kimi_vl as KV
+    if not getattr(KV.Model, "_hawking_mla_patched", False):
+        orig = KV.Model.sanitize
+
+        def sanitize(self, w):
+            w = orig(self, w)
+            a = self.args.text_config
+            nh, nope, vhd = a.num_attention_heads, a.qk_nope_head_dim, a.v_head_dim
+            hd = nope + vhd
+            for l in range(a.num_hidden_layers):
+                p = f"language_model.model.layers.{l}.self_attn"
+                k = f"{p}.kv_b_proj.weight"
+                if k in w:
+                    v = w.pop(k).reshape(nh, hd, -1)
+                    w[f"{p}.embed_q.weight"] = mx.contiguous(v[:, :nope, :].swapaxes(-1, -2))
+                    w[f"{p}.unembed_out.weight"] = mx.contiguous(v[:, nope:, :])
+            return w
+
+        KV.Model.sanitize = sanitize
+        KV.Model._hawking_mla_patched = True
+    from mlx_lm import load
+    return load(SNAP, tokenizer_config={"trust_remote_code": True})
+
+
+def _leaf_bytes(params, skip: str) -> int:
+    total = 0
+    stack = [("", params)]
+    while stack:
+        pre, node = stack.pop()
+        if isinstance(node, dict):
+            stack += [(f"{pre}.{k}", v) for k, v in node.items()]
+        elif isinstance(node, list):
+            stack += [(f"{pre}.{i}", v) for i, v in enumerate(node)]
+        elif isinstance(node, mx.array) and skip not in pre:
+            total += node.nbytes
+    return total
+
+
+def evaluate(candidate) -> dict[str, Any]:
+    """Execute one representation and return a gauntlet receipt."""
+    plan = parse_spec(getattr(candidate, "spec", candidate))
+    t0 = time.perf_counter()
+    from mlx_lm import generate
+    model, tok = _load()
+    sw = [(p, m) for p, m in model.named_modules()
+          if "switch_mlp" in p and isinstance(getattr(m, "weight", None), mx.array)]
+    if len(sw) != 78:
+        raise RuntimeError(f"expected 78 expert tensors, found {len(sw)}")
+
+    mx.random.seed(0)
+    n_tot = sum(m.weight.size for _, m in sw)
+    kept = 0
+    if plan["form"] != "bf16":
+        g, bits, frac = plan["group"], plan["bits"], plan["frac"]
+        for _, m in sw:
+            W = m.weight.astype(mx.float32)
+            if frac > 0:
+                flat = mx.abs(W).reshape(-1)
+                k = int(flat.size * frac)
+                thr = mx.sort(flat)[flat.size - k - 1]
+                mask = (flat > thr).reshape(W.shape)
+                base = mx.where(mask, mx.zeros_like(W), W)
+                kept += int(mx.sum(mask).item())
+            else:
+                mask, base = None, W
+            q, s, b = mx.quantize(base.astype(mx.bfloat16), group_size=g, bits=bits)
+            rec = mx.dequantize(q, s, b, group_size=g, bits=bits).astype(mx.float32)
+            if mask is not None:
+                rec = mx.where(mask, W, rec)
+            m.weight = rec.astype(mx.bfloat16)
+            mx.eval(m.weight)
+            del W, base, rec, q, s, b
+
+        def pred(path, mm):
+            if "switch_mlp" in path or not hasattr(mm, "to_quantized"):
+                return False
+            w = getattr(mm, "weight", None)
+            return ({"bits": 4, "group_size": 64}
+                    if w is not None and w.shape[-1] % 64 == 0 else False)
+
+        nn.quantize(model, group_size=64, bits=4, class_predicate=pred)
+    mx.eval(model.parameters())
+    mx.synchronize()
+
+    if plan["form"] == "bf16":
+        expert_bits = n_tot * 16.0
+    else:
+        expert_bits = n_tot * (plan["bits"] + 32 / plan["group"]) + kept * 32
+    complete_bytes = int(expert_bits / 8 + _leaf_bytes(model.parameters(), "switch_mlp"))
+    complete_ebpw = complete_bytes * 8 / SRC_PARAMS
+
+    ids = mx.array([tok.encode(NLL_TEXT)[:512]])
+    lg = model(ids[:, :-1]).astype(mx.float32)
+    lp = lg - mx.logsumexp(lg, axis=-1, keepdims=True)
+    nll = float(-mx.take_along_axis(lp, ids[:, 1:, None], axis=-1).squeeze(-1).mean())
+    ppl = 2.718281828459045 ** nll
+
+    r4s, dis, worst = [], [], 1
+    for pr in PROMPTS:
+        tx = generate(model, tok, prompt=pr, max_tokens=96, verbose=False)
+        tt = tok.encode(tx)
+        run = cur = 1
+        for i in range(1, len(tt)):
+            cur = cur + 1 if tt[i] == tt[i - 1] else 1
+            run = max(run, cur)
+        worst = max(worst, run)
+        gr = [tuple(tt[i:i + 4]) for i in range(max(0, len(tt) - 3))]
+        r4s.append(1 - len(set(gr)) / max(1, len(gr)))
+        dis.append(len(set(tt)) / max(1, len(tt)))
+    r4s.sort(); dis.sort()
+    med_r4 = r4s[len(r4s) // 2]
+    med_dis = dis[len(dis) // 2]
+    capability_ok = bool(med_r4 <= R4_MAX and ppl <= PPL_MAX)
+
+    return {
+        "schema": "hawking.hcli.odyssey.gravity_outlier_eval.v1",
+        "specimen": getattr(candidate, "specimen", "O003"),
+        "spec": getattr(candidate, "spec", str(candidate)),
+        "representation_class": ("OUTLIER_SPLIT" if plan["form"] == "outlier_split"
+                                 else "AFFINE_QUANT" if plan["form"] == "affine"
+                                 else "SOURCE_BF16"),
+        "_evidence": "MEASURED (executed in-process on MLX Metal)",
+        "complete_bpw": complete_ebpw,
+        "complete_ebpw": complete_ebpw,
+        "stored_bytes": complete_bytes,
+        "accounting": {"complete_bytes": complete_bytes,
+                       "expert_bits_per_weight": round(expert_bits / n_tot, 4),
+                       "expert_weights": n_tot, "outliers_kept": kept},
+        "capability_ok": capability_ok,
+        "capability_status": "CANDIDATE_PASS" if capability_ok else "CAPABILITY_LOSS",
+        "capability": {"ppl": round(ppl, 4), "nll": round(nll, 5),
+                       "median_4gram_repeat": round(med_r4, 4),
+                       "median_distinct_ratio": round(med_dis, 4),
+                       "worst_max_repeat_run": worst, "n_prompts": len(PROMPTS),
+                       "gate_r4_max": round(R4_MAX, 4), "gate_ppl_max": round(PPL_MAX, 4),
+                       "reference_bf16_r4": BF16_R4, "reference_bf16_ppl": BF16_PPL},
+        # OUTLIER_SPLIT reconstructs to dense bf16 and has NO sparse kernel, so
+        # its execution is not the represented form. Never claim otherwise.
+        "execution_complete": plan["form"] in ("affine", "bf16"),
+        "execution_note": ("sparse side-channel has no kernel; measured capability and "
+                           "bytes are exact, TPS for the represented form is UNMEASURED"
+                           if plan["form"] == "outlier_split" else "executes natively"),
+        "verifier_independent": False,
+        "wall_s": round(time.perf_counter() - t0, 3),
+    }
+
+
+def main() -> int:
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+    from hcli.gravity_gauntlet import GravityGauntlet, candidate_space
+
+    specs = ["q4-g64-experts", "q3-g64-experts", "q2-g64-experts",
+             "outlier0.005-g128", "outlier0.01-g128", "outlier0.02-g128",
+             "outlier0.005-g256", "q2-g128-experts"]
+    for s in specs:
+        parse_spec(s)  # refuse to start a search containing an unrunnable spec
+    out = Path("receipts/future/O003_GAUNTLET_DEEP.json")
+    state = Path("workspace/campaign/odyssey/gauntlets/O003_deep.json")
+    state.parent.mkdir(parents=True, exist_ok=True)
+    cands = candidate_space("O003", specs)
+    eng = GravityGauntlet(state, "O003", cands, budget=len(specs))
+    rows = []
+
+    def evaluator(c):
+        r = evaluate(c)
+        rows.append(r)
+        print(json.dumps({k: r[k] for k in
+                          ("spec", "representation_class", "complete_ebpw",
+                           "capability_ok", "execution_complete")}), flush=True)
+        print("   " + json.dumps(r["capability"]), flush=True)
+        return r
+
+    final = eng.run(evaluator)
+    out.write_text(json.dumps({"state": final, "receipts": rows}, indent=1) + "\n")
+    print(f"\nterminal: {final.get('terminal', {}).get('disposition')}")
+    print(f"budget used: {final['budget']['used']} / {final['budget']['max_evaluations']}")
+    print(f"best: {final.get('best_candidate_id')} @ {eng.best_complete_ebpw()}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

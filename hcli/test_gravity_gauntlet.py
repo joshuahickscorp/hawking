@@ -116,3 +116,29 @@ def test_hcli_wrapper_is_the_mutation_boundary(tmp_path):
         confirm=True,
     )
     assert state["terminal"]["disposition"] == BUDGET_EXHAUSTED
+
+
+def test_unparseable_spec_is_not_given_a_fabricated_precision():
+    """A spec with no q-form carries NO precision information. Returning 4 makes
+    an unrunnable string indistinguishable from q4 and feeds a number nobody
+    measured into the search order."""
+    from hcli.gravity_gauntlet import _spec_bits, _spec_group
+
+    assert _spec_bits("q2-g64-experts") == 2
+    assert _spec_group("q2-g64-experts") == 64
+    assert _spec_bits("outlier0.005-g128") is None
+    assert _spec_bits("totally-unparseable") is None
+    assert _spec_group("totally-unparseable") is None
+
+
+def test_specs_without_precision_do_not_outrank_measured_ones():
+    """Ordering must not interleave a no-precision class at a made-up bit depth."""
+    from hcli.gravity_gauntlet import _candidate_priority, Candidate
+
+    def c(spec):
+        return Candidate(id=spec, specimen="O003", spec=spec, parent_id=None,
+                         mutation="m", expected_effect="e")
+
+    ranked = sorted(["q4-g64-experts", "q2-g64-experts", "outlier0.005-g128"],
+                    key=lambda s: _candidate_priority(c(s), capability_signal=True))
+    assert ranked[-1] == "outlier0.005-g128", ranked

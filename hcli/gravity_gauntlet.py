@@ -50,14 +50,18 @@ def _slug(value: str) -> str:
     return re.sub(r"[^a-zA-Z0-9_.-]+", "_", value).strip("_") or "candidate"
 
 
-def _spec_bits(spec: str) -> int:
+def _spec_bits(spec: str) -> int | None:
+    # None means "this spec carries no precision information", which is NOT the
+    # same as q4. Returning a default here made an unrunnable string
+    # indistinguishable from a measured 4-bit candidate and fed a number nobody
+    # measured into the search order.
     m = re.search(r"q(\d+)", spec)
-    return int(m.group(1)) if m else 4
+    return int(m.group(1)) if m else None
 
 
-def _spec_group(spec: str) -> int:
+def _spec_group(spec: str) -> int | None:
     m = re.search(r"g(\d+)", spec)
-    return int(m.group(1)) if m else 64
+    return int(m.group(1)) if m else None
 
 
 def candidate_space(specimen: str, specs: Iterable[str]) -> list[Candidate]:
@@ -81,17 +85,22 @@ def candidate_space(specimen: str, specs: Iterable[str]) -> list[Candidate]:
                 spec=spec,
                 parent_id=None,
                 mutation="initial_representation" if i == 0 else "frontier_candidate",
-                expected_effect=(
-                    "deliberately destroys magnitude while preserving direction"
-                    if rep_class.startswith("NEGATIVE_CONTROL")
-                    else f"test q{_spec_bits(spec)} / group{_spec_group(spec)} storage frontier"
-                ),
+                expected_effect=_expected_effect(spec, rep_class),
                 representation_class=rep_class,
             )
         )
     if not out:
         raise ValueError("candidate space is empty")
     return out
+
+
+def _expected_effect(spec: str, rep_class: str) -> str:
+    if rep_class.startswith("NEGATIVE_CONTROL"):
+        return "deliberately destroys magnitude while preserving direction"
+    bits, group = _spec_bits(spec), _spec_group(spec)
+    if bits is None:
+        return f"test the {spec} representation frontier (no uniform precision)"
+    return f"test q{bits} / group{group if group is not None else 'unset'} storage frontier"
 
 
 def _candidate_doc(candidate: Candidate) -> dict[str, Any]:
@@ -249,6 +258,10 @@ def observe(candidate: Candidate, receipt: Mapping[str, Any] | str | Path, *, ta
 
 def _candidate_priority(candidate: Candidate, *, capability_signal: bool) -> tuple[int]:
     bits = _spec_bits(candidate.spec)
+    if bits is None:
+        # No precision to descend or climb. Rank after every candidate that has
+        # one; Python's stable sort then preserves explicit frontier order here.
+        return (1 << 16,)
     # After a capability-preserving result, descend bits first. After a
     # capability loss, climb precision first. Group choices stay in the
     # explicit frontier order supplied by the Doctor.
