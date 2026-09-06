@@ -85,9 +85,27 @@ def _eff_group(g: int, in_dim: int) -> int:
     return g
 
 
+def _split_non_expert(spec: str) -> tuple[str, int, int]:
+    """`<expert-spec>+o<bits>g<group>` overrides the non-expert organ, which has
+    been pinned at 4 bits / group 64 in every arm measured so far. It costs
+    0.4318 complete EBPW on its own -- 43% of a 1.0 target -- so leaving it
+    fixed put a floor under every result."""
+    m = re.fullmatch(r"(.+)\+o(\d+)g(\d+)", str(spec).strip(), re.I)
+    if not m:
+        return str(spec).strip(), 4, 64
+    return m.group(1), int(m.group(2)), _group(int(m.group(3)), spec)
+
+
 def parse_spec(spec: str) -> dict[str, Any]:
     """Grammar extension. Returns a plan, or raises so an unrunnable spec can
     never be silently accepted as a candidate."""
+    s, ne_bits, ne_group = _split_non_expert(spec)
+    plan = _parse_expert_spec(s)
+    plan["ne_bits"], plan["ne_group"] = ne_bits, ne_group
+    return plan
+
+
+def _parse_expert_spec(spec: str) -> dict[str, Any]:
     s = str(spec).strip()
     # BINARY_SCALED: W ~= scale_g * sign(W), scale = mean(|W|) over the group,
     # which is the L2-optimal scale for a sign quantiser. Costs 1 bit/weight +
@@ -138,6 +156,9 @@ def parse_spec(spec: str) -> dict[str, Any]:
 
 EXPERT_WEIGHTS = 14394851328          # measured
 NON_EXPERT_BYTES_AT_4B_G64 = 885541120  # measured: dense + embed table
+# Back out the non-expert weight count from that measurement so the term can be
+# repriced at any bits/group instead of being pinned at 4b/g64.
+NON_EXPERT_WEIGHTS = int(NON_EXPERT_BYTES_AT_4B_G64 * 8 / (4 + 32 / 64))
 
 
 def predict_ebpw(spec: str) -> float:
@@ -160,7 +181,8 @@ def predict_ebpw(spec: str) -> float:
     else:
         per_w = p["bits"] + 32 / g
     bits = EXPERT_WEIGHTS * per_w + EXPERT_WEIGHTS * p.get("frac", 0.0) * 32
-    return (bits / 8 + NON_EXPERT_BYTES_AT_4B_G64) * 8 / SRC_PARAMS
+    ne_bits = NON_EXPERT_WEIGHTS * (p["ne_bits"] + 32 / p["ne_group"])
+    return (bits / 8 + ne_bits / 8) * 8 / SRC_PARAMS
 
 
 def _load():
@@ -339,14 +361,16 @@ def evaluate(candidate) -> dict[str, Any]:
             mx.eval(m.weight)
             del W, base, rec, rec_b
 
+        nb, ng = plan["ne_bits"], plan["ne_group"]
+
         def pred(path, mm):
             if "switch_mlp" in path or not hasattr(mm, "to_quantized"):
                 return False
             w = getattr(mm, "weight", None)
-            return ({"bits": 4, "group_size": 64}
-                    if w is not None and w.shape[-1] % 64 == 0 else False)
+            return ({"bits": nb, "group_size": ng}
+                    if w is not None and w.shape[-1] % ng == 0 else False)
 
-        nn.quantize(model, group_size=64, bits=4, class_predicate=pred)
+        nn.quantize(model, group_size=ng, bits=nb, class_predicate=pred)
     mx.eval(model.parameters())
     mx.synchronize()
     if plan["form"] == "bf16":
@@ -395,6 +419,7 @@ def evaluate(candidate) -> dict[str, Any]:
         "schema": "hawking.hcli.odyssey.gravity_outlier_eval.v1",
         "specimen": getattr(candidate, "specimen", "O003"),
         "spec": getattr(candidate, "spec", str(candidate)),
+        "non_expert_bits": plan["ne_bits"], "non_expert_group": plan["ne_group"],
         "representation_class": ("RESIDUAL_BINARY" if plan["form"] == "resbinary"
                                  else "BINARY_ACT_PER_EXPERT" if plan.get("per_expert")
                                  else "BINARY_ACT_CALIBRATED" if plan.get("calibrated")
