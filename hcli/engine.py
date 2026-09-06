@@ -560,6 +560,29 @@ def validation_failure_message(validation: Any) -> str:
         if value in (None, "", [], {}):
             continue
         bits.append(f"{key}={str(value)[:300]}")
+    # The per-test reasons live in `checks`, not at the top level. Omitting it
+    # produced a message that named the file the model wrote and nothing about
+    # why the run was rejected -- true, useless, and it cost a full diagnostic
+    # cycle to notice.
+    checks = validation.get("checks")
+    if isinstance(checks, list):
+        bad = []
+        for c in checks:
+            if not isinstance(c, dict):
+                continue
+            if c.get("reason") or c.get("fatal") or c.get("exit_code") not in (None, 0):
+                # `requested` is the single most useful field on a rejected
+                # test -- it is the command the model actually asked for, and
+                # without it NOT_ADMITTED says a form was refused but not which.
+                keep = {k: c[k] for k in ("kind", "path", "reason", "exit_code",
+                                          "cmd", "requested")
+                        if c.get(k) not in (None, "")}
+                stderr = str(c.get("stderr") or "")[-200:]
+                if stderr:
+                    keep["stderr_tail"] = stderr
+                bad.append(keep)
+        if bad:
+            bits.append(f"failing_checks={str(bad)[:600]}")
     if not bits:
         return f"{head}: validation={str(validation)[:300]}"
     return f"{head}: " + "; ".join(bits)

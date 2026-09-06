@@ -1,0 +1,24 @@
+{
+ "date": "2026-09-06",
+ "obligation": "G004 / G009 root cause",
+ "severity": "this is the autonomy blocker",
+ "THE_CHAIN_END_TO_END": [
+  "1. The resident writes the file correctly. py_compile records exit_code 0 -- the code compiles.",
+  "2. The resident proposes a test: python -c \"import probe; assert probe.VALUE == 7\".",
+  "3. _admit_test (engine.py:6004) refuses that FORM: it admits a bare .py path or a pytest-shaped command, and `python -c ...` is neither. The check records reason NOT_ADMITTED.",
+  "4. _validate sets ok=False with NO top-level reason, because the reason lives on the CHECK.",
+  "5. The caller raises EngineError and rolls back -- the correct file is DELETED.",
+  "6. The mission records a failure that, before this session's fixes, said only 'Deterministic validation failed'."
+ ],
+ "THE_FINDING": "The model did the work correctly and proposed a reasonable test. The harness refused the test's FORM and then deleted the correct work. G004 and G009 are not blocked by the resident's capability; they are blocked by a test-form mismatch the resident is never told about.",
+ "FIFTH_INSTANCE_OF_ONE_PATTERN": "The scorer that keyed on the word 'measured'; the ladder with no cost function; the ladder with no rejection feedback; the ladder with no tensor shapes; and now an acceptance gate that refuses a test form it never publishes. Every time, the harness scored the model on something it had not communicated, and every time the first reading was that the model was incapable.",
+ "WHAT_I_FIXED_HERE": "The failure message now carries the reason, the structured validator fields, the failing checks, and -- decisively -- `requested`, the exact command that was refused. Without it NOT_ADMITTED says a form was rejected but not which, which is what cost a full diagnostic cycle.",
+ "WHAT_I_HAVE_NOT_DONE": "I have NOT widened _admit_test. Admission is a security boundary: it decides which commands the harness will execute on the model's say-so, and `python -c <arbitrary string>` is precisely the shape a narrow allowlist exists to refuse. The right fix is to TELL the resident which forms are admissible, not to accept arbitrary code execution because a convenient test was rejected.",
+ "MEASURED_EVIDENCE": {
+  "py_compile_exit_code": 0,
+  "refused_test": "python -c \"import probe; assert probe.VALUE == 7\"",
+  "check_reason": "NOT_ADMITTED",
+  "file_after_rollback": "ABSENT",
+  "attempts": 2
+ }
+}

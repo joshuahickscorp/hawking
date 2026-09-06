@@ -43,3 +43,45 @@ def test_huge_stderr_is_truncated():
     out = msg({"stderr": "x" * 5000})
     assert len(out) < 600, f"unbounded output reached the message ({len(out)})"
     assert "x" * 300 in out, "truncated too aggressively to be useful"
+
+
+def test_failing_checks_are_surfaced():
+    out = msg({"ok": False, "checks": [
+        {"kind": "test", "cmd": "pytest x", "reason": "TEST_FAILED", "exit_code": 1,
+         "stderr": "E   assert 1 == 2"},
+        {"kind": "py_compile", "path": "a.py", "exit_code": 0},
+    ]})
+    assert "TEST_FAILED" in out, out
+    assert "assert 1 == 2" in out, out
+    assert "py_compile" not in out, "a passing check should not be reported as failing"
+
+
+def test_fatal_check_is_surfaced_even_without_a_reason():
+    out = msg({"ok": False, "checks": [{"kind": "no_checker_available",
+                                        "path": "k.metal", "fatal": True}]})
+    assert "no_checker_available" in out and "k.metal" in out, out
+
+
+def test_checks_block_is_bounded():
+    out = msg({"ok": False, "checks": [
+        {"kind": "test", "reason": "TEST_FAILED", "stderr": "y" * 9000}] * 40})
+    assert len(out) < 1200, f"failing_checks was unbounded ({len(out)})"
+
+
+def test_stderr_keeps_the_TAIL_not_the_head():
+    # The outer cap alone would let a head-slice pass, and the head of a
+    # traceback is the least informative part of it.
+    out = msg({"ok": False, "checks": [
+        {"kind": "test", "reason": "TEST_FAILED",
+         "stderr": "HEAD" + "." * 4000 + "REAL_ERROR_HERE"}]})
+    assert "REAL_ERROR_HERE" in out, "the informative tail of stderr was dropped"
+    assert "HEAD" not in out, "kept the head instead of the tail"
+
+
+def test_rejected_test_command_is_named():
+    # NOT_ADMITTED without the command says a form was refused but not which,
+    # which is what cost a full diagnostic cycle on the daemon path.
+    out = msg({"ok": False, "checks": [
+        {"kind": "test", "reason": "NOT_ADMITTED", "admitted": False,
+         "requested": 'python -c "import probe; assert probe.VALUE == 7"'}]})
+    assert "import probe" in out, f"the refused command is not in the message: {out}"
