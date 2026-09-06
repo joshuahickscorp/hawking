@@ -538,6 +538,33 @@ def _degraded_structured_record(
     return record
 
 
+def validation_failure_message(validation: Any) -> str:
+    """Say WHY deterministic validation failed.
+
+    The reason was previously extracted and discarded, so every failure reached
+    the mission log as the bare string below. That opacity blocked three
+    obligations at once: a failed unit could not be diagnosed from its own
+    receipt without re-running it.
+
+    Pure, so it can be tested by calling it rather than by reading the source
+    around it -- the first version of this test asserted substrings in a window
+    of engine.py and passed under every mutation.
+    """
+    head = "Deterministic validation failed"
+    if not isinstance(validation, dict):
+        return f"{head}: validation={str(validation)[:300]}"
+    bits = []
+    for key in ("reason", "failed", "failures", "returncode",
+                "command", "stderr", "tests", "files"):
+        value = validation.get(key)
+        if value in (None, "", [], {}):
+            continue
+        bits.append(f"{key}={str(value)[:300]}")
+    if not bits:
+        return f"{head}: validation={str(validation)[:300]}"
+    return f"{head}: " + "; ".join(bits)
+
+
 class EngineError(RuntimeError):
     pass
 
@@ -2678,8 +2705,16 @@ class Engine:
                     # but keep the mutation. A refused or failing test
                     # still rolls back.
                     if reason != "NO_EVIDENCE":
+                        # The reason was extracted three lines up and then
+                        # thrown away, so every failure here reached the
+                        # mission log as the bare string "Deterministic
+                        # validation failed". That opacity blocked three
+                        # separate obligations: a unit could not be diagnosed
+                        # without re-running it under a debugger. Carry the
+                        # reason, and whatever structured detail the validator
+                        # actually produced, into the message.
                         raise EngineError(
-                            "Deterministic validation failed"
+                            validation_failure_message(validation)
                         )
 
                 status = self._status_from_validation(validation)
