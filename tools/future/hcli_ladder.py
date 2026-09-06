@@ -25,6 +25,11 @@ sys.path.insert(0, str(W)); sys.path.insert(0, str(W / "tools" / "future"))
 import gravity_outlier_eval as G                                   # noqa: E402
 
 PROFILE = W / "ascension_envelope.hawking.json"
+# S008 section 7. A STABLE prefix: byte-identical on every call so a prefix cache
+# can reuse it, and first in the prompt so nothing shifts its token positions.
+# 129 resident tokens against a ~667-token usable budget -- deliberately small,
+# because a manifesto here would displace the evidence it is meant to govern.
+CONSTITUTION = (W / "hcli" / "CONSTITUTION.txt").read_text().rstrip() + "\n\n"
 LOG = W / "receipts/future/O003_HCLI_LADDER.jsonl"
 SPEC_RE = re.compile(r"^\s*SPEC:\s*(\S+)\s*$", re.M | re.I)
 PLAN_RE = re.compile(r"^\s*PLAN:\s*(.+)$", re.M | re.I)
@@ -33,13 +38,23 @@ PLAN_RE = re.compile(r"^\s*PLAN:\s*(.+)$", re.M | re.I)
 def prompt_for(evidence: list[dict], rejected: list[str] | None = None) -> str:
     lines = [f"  {e['spec']:20} {e['ebpw']:.4f} {'PASS' if e['pass'] else 'FAIL'}"
              for e in evidence]
-    best = min([e for e in evidence if e["pass"]], key=lambda e: e["ebpw"], default=None)
+    passing = [e for e in evidence if e["pass"]]
+    best = min(passing, key=lambda e: e["ebpw"], default=None)
     return (
-        "O003 Kimi-VL MoE. 26 MoE layers, 64 experts, top-6. Expert organ = 90.2% of weights.\n"
+        CONSTITUTION
+        + "O003 Kimi-VL MoE. 26 MoE layers, 64 experts, top-6. Expert organ = 90.2% of weights.\n"
+        "Expert tensor shapes, which bound the group size:\n"
+        "  gate_proj, up_proj  [64, 1408, 2048]  last dim 2048 -> group up to 2048\n"
+        "  down_proj           [64, 2048, 1408]  last dim 1408 = 2^7*11 -> group CAPPED at 128\n"
+        "  A group must DIVIDE the last dim. down_proj admits no group above 128, so a larger\n"
+        "  group only helps the 2/3 of expert weights in gate/up.\n"
         "Complete EBPW measured, capability gated against the bf16 source:\n"
         + "\n".join(lines)
-        + f"\n\nLowest PASSING: {best['spec']} at {best['ebpw']:.4f}. Target is <=1.0.\n"
-        "Grammar you can execute (group is 32, 64 or 128):\n"
+        + (f"\n\nLowest PASSING: {best['spec']} at {best['ebpw']:.4f}. Target is <=1.0.\n"
+           if best else
+           "\n\nNOTHING above passes the capability gate. Target is <=1.0. Propose a rung that "
+           "trades bytes for capability, not the reverse.\n")
+        + "Grammar you can execute (group is 32, 64 or 128):\n"
         "  q<bits>-g<group>-experts   bits 2..8, plain affine\n"
         "  outlier<frac>-g<group>     2-bit base + top-|w| frac kept at full precision\n"
         "  binary-g<group>            1 bit/weight, scale = mean|W| per group\n"
@@ -87,6 +102,8 @@ def main() -> int:
         {"spec": "binary-g128", "ebpw": 1.4188, "pass": False},
         {"spec": "binarypercal-g128", "ebpw": 1.4188, "pass": False},
         {"spec": "binarypercal-g64", "ebpw": 1.5284, "pass": False},
+        {"spec": "binarypercal-g256", "ebpw": 1.3822, "pass": False},
+        {"spec": "binarypercal-g512", "ebpw": 1.3639, "pass": False},
         {"spec": "q3-g64-experts", "ebpw": 3.5024, "pass": True},
         {"spec": "q2-g64-experts", "ebpw": 2.6251, "pass": False},
         {"spec": "q2-g128-experts", "ebpw": 2.4058, "pass": False},
