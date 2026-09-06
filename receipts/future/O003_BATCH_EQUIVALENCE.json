@@ -1,0 +1,32 @@
+{
+ "specimen": "O003",
+ "date": "2026-09-06",
+ "why": "G017 identified batching as the measured fix for an ~85%-fixed-cost decode step (3.38x on the harness's own 8-prompt evaluation). Before adopting it, the control: batched output must equal sequential output, or every capability number in this campaign silently moves.",
+ "SPEEDUP_IS_REAL": {
+  "sequential_8_prompts_s": 6.94,
+  "batched_s": 2.05,
+  "speedup": 3.38
+ },
+ "BUT_IT_IS_NOT_OUTPUT_EQUIVALENT": {
+  "identical_outputs": "3/8 on the real prompt set",
+  "padding_is_NOT_the_cause": "8 IDENTICAL copies of one prompt, no padding required, give 0/8 matching the sequential result. Batching itself changes the numerics.",
+  "it_is_deterministic": "all rows within a batch are identical to each other, so this is kernel selection by shape, not nondeterminism"
+ },
+ "THE_DIVERGENCE_THRESHOLD_IS_A_CAPABILITY_SIGNAL": {
+  "bf16": {
+   "B1": "matches",
+   "B2": "matches",
+   "B8": "DIVERGES"
+  },
+  "q3-g128-experts": {
+   "B1": "matches",
+   "B2": "DIVERGES",
+   "B8": "DIVERGES"
+  },
+  "reading": "The quantized body diverges at a SMALLER batch than the source. Batching perturbs accumulation order by a tiny amount; a model whose greedy choices flip under that perturbation is sitting close to its decision boundaries. bf16 absorbs B=2, q3-g128 does not.",
+  "why_it_matters": "q3-g128-experts is this campaign's LOWEST PASSING representation. It clears the perplexity and generation gates and is measurably more fragile than the source under a perturbation neither gate can see. Margin is a THIRD axis, currently unmeasured."
+ },
+ "DECISION": "The 3.38x is NOT adopted for capability measurement. Adopting it would re-baseline every number in this campaign against a numerically different path, and the gate would then be measuring the batched path while the receipts describe the sequential one. It remains available for throughput work where output identity does not gate a verdict.",
+ "CORRECTION": "I first reported batch_generate as crashing with a ZeroDivisionError and called it an upstream defect. That was my call shape: it takes List[List[int]] token ids, not strings, so prompt_tokens was 0 and its own stats divided by zero. The library was fine.",
+ "CHEAPEST_NEXT_DISCRIMINATOR": "Sweep the batch size at which each representation first diverges from its own B=1 output. That is a margin metric costing one generation per batch size, needs no reference model, and would order representations on an axis perplexity and 4-gram cannot see."
+}
