@@ -25,6 +25,7 @@ import subprocess
 import threading
 from contextlib import contextmanager
 from dataclasses import dataclass, asdict
+from typing import Any
 from pathlib import Path
 
 PAGE = 16384
@@ -49,6 +50,10 @@ class Snapshot:
     wired_gb: float
     state: str
     reasons: tuple
+    residents: int = 0          # S010 §5: resident COUNT, not just host memory
+    resident_rss_gb: float = 0.0
+    expected_gb: float = 0.0    # what the experiment says it will take
+    headroom_gb: float = 0.0    # free - expected, the number that decides
 
     def as_dict(self) -> dict:
         d = asdict(self)
@@ -64,6 +69,50 @@ def _vm_stat() -> dict:
         if m:
             d[m.group(1).strip()] = int(m.group(2))
     return d
+
+
+def _parse_residents(out: str) -> tuple:
+    """Count resident bodies and total RSS from `ps` output.
+
+    Split out from the ps call so it can be tested with a fixture. The first
+    version asserted only `residents >= 0`, which a function returning a
+    constant zero satisfies -- mutation caught it.
+    """
+    n, rss = 0, 0
+    for line in out.splitlines()[1:]:
+        if not ("resident-body" in line or "--supervise" in line or "hawkingd" in line):
+            continue
+        # `ps` output is data, and this process's own matcher appears in it --
+        # already walked into once this campaign.
+        #
+        # The filter must be token-aware. A bare `"awk" in line` matches
+        # "hAWKingd", so the substring form excluded the very daemon this
+        # function exists to count, and would have under-reported residents on
+        # a real host. Caught by the fixture, not by reading it.
+        if (" ps -Ao" in line or "/bin/sh -c" in line
+                or " grep " in line or line.rstrip().endswith(" grep")
+                or " awk " in line or "| awk" in line):
+            continue
+        parts = line.split(None, 2)
+        if len(parts) >= 2 and parts[1].isdigit():
+            n += 1
+            rss += int(parts[1])
+    return n, rss * 1024 / GB
+
+
+def _residents() -> tuple:
+    """Count resident bodies and their total RSS.
+
+    S010 §5 asks for resident count and RSS before launch, not only host
+    totals: two 9.9 GB bodies on a 96 GB host is a different situation from one,
+    and the host figure alone cannot tell them apart.
+    """
+    try:
+        out = subprocess.run(["ps", "-Ao", "pid,rss,command"],
+                             capture_output=True, text=True, timeout=10).stdout
+    except Exception:
+        return 0, 0.0
+    return _parse_residents(out)
 
 
 def _swapfiles() -> int:
@@ -102,16 +151,27 @@ def classify(free_gb: float, compressor_gb: float, swapfiles: int) -> tuple:
     return state, tuple(reasons)
 
 
-def sample() -> Snapshot:
+def sample(expected_gb: float = 0.0) -> Snapshot:
     v = _vm_stat()
     free_pages = v.get("Pages free", 0) + v.get("Pages speculative", 0)
     comp = v.get("Pages occupied by compressor", 0)
     wired = v.get("Pages wired down", 0)
     sf = _swapfiles()
     free_gb, comp_gb = free_pages * PAGE / GB, comp * PAGE / GB
+    n_res, rss_gb = _residents()
+    headroom = free_gb - expected_gb
     state, why = classify(free_gb, comp_gb, sf)
+    if expected_gb and headroom < FREE_STOP_GB:
+        state = "STOP"
+        why = why + (f"expected {expected_gb:.1f} GB leaves {headroom:.1f} GB headroom, "
+                     f"below {FREE_STOP_GB} GB",)
+    elif expected_gb and headroom < FREE_WARN_GB and state == "OK":
+        state = "WARN"
+        why = why + (f"expected {expected_gb:.1f} GB leaves only {headroom:.1f} GB",)
     return Snapshot(round(free_gb, 2), round(comp_gb, 2), sf,
-                    round(wired * PAGE / GB, 2), state, why)
+                    round(wired * PAGE / GB, 2), state, why,
+                    residents=n_res, resident_rss_gb=round(rss_gb, 2),
+                    expected_gb=expected_gb, headroom_gb=round(headroom, 2))
 
 
 class Abort(RuntimeError):
@@ -163,12 +223,48 @@ def watch(interval_s: float = 5.0):
         t.join(timeout=interval_s + 1.0)
 
 
-def require_ok(what: str) -> Snapshot:
-    """Call BEFORE an expensive experiment. Raises on STOP."""
-    s = sample()
+def require_ok(what: str, expected_gb: float = 0.0) -> Snapshot:
+    """Call BEFORE an expensive experiment. Raises on STOP.
+
+    `expected_gb` is what the experiment expects to need. Supplying it turns the
+    check from "is the host healthy now" into "will it still be healthy after
+    this runs", which is the question the 2026-09-06 panic answered the hard way.
+    """
+    s = sample(expected_gb)
     if s.state == "STOP":
         raise RuntimeError(f"campaign guard STOP before {what}: {'; '.join(s.reasons)}")
     return s
+
+
+def checkpoint_and_release(what: str, checkpoint: Any = None,
+                           release: Any = None) -> dict:
+    """S010 §5 on approaching the ceiling: checkpoint, release, VERIFY release.
+
+    Verifying is the part that is easy to skip and the only part that proves
+    anything: a release that freed nothing looks identical to one that worked
+    unless the freed bytes are read back off the machine.
+    """
+    before = sample()
+    saved = None
+    if checkpoint is not None:
+        saved = checkpoint()
+    released = None
+    if release is not None:
+        released = release()
+    after = sample()
+    freed = after.free_gb - before.free_gb
+    return {
+        "what": what,
+        "checkpointed": saved is not None,
+        "checkpoint": saved,
+        "released": released is not None,
+        "free_gb_before": before.free_gb,
+        "free_gb_after": after.free_gb,
+        "freed_gb": round(freed, 2),
+        "release_verified": bool(freed > 0.5),
+        "state_before": before.state,
+        "state_after": after.state,
+    }
 
 
 def _selftest() -> None:
@@ -225,8 +321,44 @@ def _selftest() -> None:
     finally:
         globals()["sample"] = _real_sample
 
+    # S010 §5: expected experiment memory must be able to STOP a launch that
+    # the host would survive but the EXPERIMENT would not.
+    s_ok = sample(expected_gb=0.0)
+    assert s_ok.state in ("OK", "WARN", "STOP")
+    huge = sample(expected_gb=s_ok.free_gb + 50.0)
+    assert huge.state == "STOP", f"a 50GB-over-budget experiment was allowed: {huge}"
+    assert huge.headroom_gb < 0, huge.headroom_gb
+    assert any("headroom" in r or "expected" in r for r in huge.reasons), huge.reasons
+
+    # Resident accounting, against a fixture -- two real bodies plus the
+    # matcher line that `ps` shows for the query itself.
+    FIX = (
+        "  PID    RSS COMMAND\n"
+        " 1001 10380000 /path/hawkingd --supervise /w/state.json\n"
+        " 1002 10380000 hcli-resident-body --role resident-body\n"
+        " 1003     900 /bin/sh -c ps -Ao pid,rss,command | grep resident-body\n"
+        " 1005     800 ps -Ao pid,rss,command hawkingd\n"
+        " 1006     700 awk /resident-body/ {print}\n"
+        " 1004  120000 /usr/bin/python3 -m unrelated.thing\n")
+    n, rss = _parse_residents(FIX)
+    assert n == 2, f"resident count wrong: {n} (matcher or unrelated line counted?)"
+    assert 19.0 < rss < 20.5, f"resident RSS wrong: {rss:.2f} GB"
+    assert _parse_residents("  PID    RSS COMMAND\n")[0] == 0
+    # each exclusion clause independently: a bare ps, and a bare awk
+    assert _parse_residents("H\n 9 1 ps -Ao pid,rss,command hawkingd\n")[0] == 0
+    assert _parse_residents("H\n 9 1 awk /resident-body/ {print}\n")[0] == 0
+    assert _parse_residents("H\n 9 1 grep resident-body /var/log/x\n")[0] == 0
+
+    # checkpoint_and_release must VERIFY, not assume
+    rep = checkpoint_and_release("selftest", checkpoint=lambda: {"mark": 1},
+                                 release=lambda: True)
+    assert rep["checkpointed"] is True and rep["released"] is True
+    assert "release_verified" in rep and "freed_gb" in rep
+    assert rep["release_verified"] is (rep["freed_gb"] > 0.5), rep
+
     print("  selftest: PASS (fires STOP on the real panic state, allows a healthy one,"
-          " all 3 signals live, WARN reachable, watcher samples and aborts)")
+          " all 3 signals live, WARN reachable, watcher samples and aborts,"
+          " expected-memory STOPs an over-budget launch, release is verified)")
 
 
 if __name__ == "__main__":

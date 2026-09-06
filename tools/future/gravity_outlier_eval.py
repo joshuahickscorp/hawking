@@ -363,7 +363,10 @@ def evaluate(candidate) -> dict[str, Any]:
     # exact kind of experiment. Guard BEFORE the load, not after.
     try:
         from campaign_memory_guard import require_ok, watch
-        _guard = require_ok(f"gravity evaluate({candidate})")
+        # bf16 O003 is ~30 GB resident; a quantised arm still peaks near it
+        # during dequantisation, so the launch check is told what to expect
+        # rather than only asked whether the host looks healthy right now.
+        _guard = require_ok(f"gravity evaluate({candidate})", expected_gb=32.0)
     except ImportError:
         _guard, watch = None, None
     """Execute one representation and return a gauntlet receipt."""
