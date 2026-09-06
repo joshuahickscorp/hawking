@@ -1,0 +1,43 @@
+{
+ "specimen": "O003",
+ "date": "2026-09-06",
+ "obligation": "G017 - decompose the per-token fixed cost",
+ "method": "Ablate one stage at a time at seq=1 over 40 real decode steps with a live KV cache, patching __call__ at the TYPE. Every arm is verified to CHANGE THE LOGITS; a first attempt patched the INSTANCE, which Python ignores for dunder lookup, and produced a 100% unattributed residual that would have read as 'all overhead' if the control had not caught it.",
+ "bf16": {
+  "full_ms": 13.1997,
+  "tok_s": 75.76,
+  "expert_matmul_ms": 4.1708,
+  "router_gather_combine_ms": 3.1003,
+  "attention_ms": 3.8567,
+  "expert_pct": 31.6,
+  "router_pct": 23.5,
+  "attn_pct": 29.2,
+  "other_pct": 15.7
+ },
+ "q3_g128": {
+  "full_ms": 8.8159,
+  "tok_s": 113.43,
+  "expert_matmul_ms": 1.5296,
+  "router_gather_combine_ms": 2.4881,
+  "attention_ms": 3.6001,
+  "expert_pct": 17.4,
+  "router_pct": 28.2,
+  "attn_pct": 40.8,
+  "other_pct": 13.6
+ },
+ "ANSWER_why_quantized_decode_sits_at_18_23_pct_of_peak": "Because only 17.4% of a quantized decode step is expert matmuls -- the ONLY stage byte reduction touches. Router+gather+combine is 28.2% and attention is 40.8%, and neither moves with expert bytes: 3.100 -> 2.488 ms (-20%) and 3.857 -> 3.600 ms (-6.7%) going from bf16 to q3, against expert matmuls 4.171 -> 1.530 ms (-63%). Quantization did exactly what it should to the part it governs; that part is a minority of the step.",
+ "CEILINGS_this_reorders_the_whole_optimisation_priority": {
+  "experts_free_tok_s": 137.2,
+  "experts_free_speedup": 1.21,
+  "router_free_tok_s": 158.0,
+  "router_free_speedup": 1.393,
+  "attention_free_tok_s": 191.7,
+  "attention_free_speedup": 1.69,
+  "reading": "Making the expert organ COMPLETELY FREE -- the limit of all Gravity work on this specimen -- buys at most 1.21x decode. Attention is the largest single lever at 1.69x and the router/gather/combine path is 1.39x. The campaign has spent its entire effort on the smallest of the three."
+ },
+ "CAVEATS": [
+  "seq=8 prefill then 40 decode steps, so the KV cache is short and attention's share is dominated by fixed per-call cost rather than cache traffic; at long context attention would grow further, strengthening the conclusion.",
+  "Ablation replaces a stage with a zero tensor of the right shape, so it removes the stage's compute AND its output; downstream work on that output is also removed. The shares are therefore upper bounds on each stage, and they sum to more than 100% for that reason.",
+  "Dispatch COUNT is still unmeasured; this attributes wall time to stages, not to kernel launches."
+ ]
+}
