@@ -140,6 +140,16 @@ def _parse_expert_spec(spec: str) -> dict[str, Any]:
     # top-8 of 64 experts take 37.5% of routing against a uniform 12.5%, and
     # 1.8 experts per tensor are never routed at all. This is a structural class,
     # not a precision variation: the same nominal bits buy a different allocation.
+    # PRODUCT QUANTIZATION. Split each row into sub-vectors of length d, store
+    # an index into a codebook of size K learned per tensor by k-means.
+    # Rate = log2(K)/d bits/weight + a per-tensor codebook of K*d fp16 values.
+    # Discriminator already passed: at 2.000 b/w PQ's relative reconstruction
+    # error is 0.101 against affine q2-g128's 0.182 at 2.250 b/w -- fewer bits
+    # AND 45% less error, on all three projections.
+    m = re.fullmatch(r"pq(\d+)k(\d+)", s, re.I)
+    if m:
+        return {"form": "pq", "sub_dim": int(m.group(1)), "codebook": int(m.group(2)),
+                "frac": 0.0, "group": 128, "bits": 2}
     m = re.fullmatch(r"hotcold([0-9.]+)h(\d+)c(\d+)-g(\d+)", s, re.I)
     if m:
         return {"form": "hotcold", "hot_frac": float(m.group(1)),
@@ -204,7 +214,10 @@ def predict_ebpw(spec: str) -> float:
     direction check -- it never lets an upward proposal look downward."""
     p = parse_spec(spec)
     g = p["group"]
-    if p["form"] == "hotcold":
+    if p["form"] == "pq":
+        import math
+        per_w = math.log2(p["codebook"]) / p["sub_dim"]
+    elif p["form"] == "hotcold":
         per_w = (p["hot_frac"] * p["hot_bits"] + (1 - p["hot_frac"]) * p["cold_bits"]
                  + 32 / g)
     elif p["form"] == "binary_ef":
@@ -345,6 +358,14 @@ def collect_activation_moments(model, tok, per_expert: bool = False) -> dict[int
 
 
 def evaluate(candidate) -> dict[str, Any]:
+    # S010 §5: the OS must never be the first component to discover Hawking
+    # exceeded its budget. The 2026-09-06 watchdog panic happened during this
+    # exact kind of experiment. Guard BEFORE the load, not after.
+    try:
+        from campaign_memory_guard import require_ok
+        _guard = require_ok(f"gravity evaluate({candidate})")
+    except ImportError:
+        _guard = None
     """Execute one representation and return a gauntlet receipt."""
     plan = parse_spec(getattr(candidate, "spec", candidate))
     t0 = time.perf_counter()
@@ -360,6 +381,8 @@ def evaluate(candidate) -> dict[str, Any]:
     BIN = plan["form"] == "binary"
     RES = plan["form"] == "resbinary"
     SPARSE = plan["form"] == "sparse"
+    PQ = plan["form"] == "pq"
+    pq_cb_values = 0
     EF = plan["form"] == "binary_ef"
     act = (collect_activation_moments(model, tok, per_expert=plan.get("per_expert", False))
            if plan.get("calibrated") else {})
@@ -389,7 +412,29 @@ def evaluate(candidate) -> dict[str, Any]:
                 kept += int(mx.sum(mask).item())
             else:
                 mask, base = None, W
-            if plan["form"] == "hotcold":
+            if PQ:
+                d, K = plan["sub_dim"], plan["codebook"]
+                X = base.reshape(-1, d)
+                n = X.shape[0]
+                smp = X[mx.random.randint(0, n, shape=(min(200_000, n),))]
+                C = smp[mx.random.randint(0, smp.shape[0], shape=(K,))]
+                for _ in range(12):
+                    d2 = (mx.sum(smp * smp, axis=1, keepdims=True) - 2 * (smp @ C.T)
+                          + mx.sum(C * C, axis=1)[None, :])
+                    a = mx.argmin(d2, axis=1)
+                    oh = (a[:, None] == mx.arange(K)[None, :]).astype(mx.float32)
+                    C = (oh.T @ smp) / mx.maximum(mx.sum(oh, axis=0)[:, None], 1.0)
+                    mx.eval(C)
+                parts = []
+                CH = 2_000_000
+                for i in range(0, n, CH):
+                    x = X[i:i + CH]
+                    d2 = (mx.sum(x * x, axis=1, keepdims=True) - 2 * (x @ C.T)
+                          + mx.sum(C * C, axis=1)[None, :])
+                    parts.append(C[mx.argmin(d2, axis=1)])
+                rec = mx.concatenate(parts, axis=0).reshape(base.shape)
+                pq_cb_values += K * d
+            elif plan["form"] == "hotcold":
                 cnt = route.get(id(m))
                 n_exp = W.shape[0]
                 n_hot = max(1, int(round(n_exp * plan["hot_frac"])))
@@ -510,7 +555,11 @@ def evaluate(candidate) -> dict[str, Any]:
         expert_bits = n_tot * 16.0
     else:
         # binary stores 1 bit/weight + ONE fp16 scale per group (no zero point).
-        if plan["form"] == "hotcold":
+        if plan["form"] == "pq":
+            import math
+            expert_bits = (n_tot * math.log2(plan["codebook"]) / plan["sub_dim"]
+                           + pq_cb_values * 16)
+        elif plan["form"] == "hotcold":
             expert_bits = (hot_w * plan["hot_bits"] + cold_w * plan["cold_bits"]
                            + n_scales * 32)
         elif plan["form"] == "binary_ef":
@@ -556,7 +605,8 @@ def evaluate(candidate) -> dict[str, Any]:
         "specimen": getattr(candidate, "specimen", "O003"),
         "spec": getattr(candidate, "spec", str(candidate)),
         "non_expert_bits": plan["ne_bits"], "non_expert_group": plan["ne_group"],
-        "representation_class": ("HOT_COLD_ROUTED" if plan["form"] == "hotcold"
+        "representation_class": ("PRODUCT_QUANTIZATION" if plan["form"] == "pq"
+                                 else "HOT_COLD_ROUTED" if plan["form"] == "hotcold"
                                  else "BINARY_ERROR_FEEDBACK" if plan["form"] == "binary_ef"
                                  else "SPARSE_BINARY" if plan["form"] == "sparse"
                                  else "RESIDUAL_BINARY" if plan["form"] == "resbinary"
