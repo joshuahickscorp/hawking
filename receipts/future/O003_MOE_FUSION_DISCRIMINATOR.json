@@ -1,0 +1,19 @@
+{
+ "specimen": "O003",
+ "date": "2026-09-06",
+ "source": "Discriminator DESIGNED BY a Grok lane (repr-physical) with its kill threshold stated BEFORE the measurement, then executed by the supervisor. The lane did not get to move the bar after seeing the number.",
+ "claim_under_test": "Fusing the MoE block can move tok/s.",
+ "pre_stated_kill": "isolated 26-layer routed+shared MoE wall < 2.5 ms would mean the fixed cost lives in MLA / lm_head / graph and MoE fusion cannot help.",
+ "measured": {
+  "isolated_moe_block_ms": 4.3192,
+  "isolated_expert_matmuls_ms": 2.4104,
+  "moe_wrapper_ms": 1.909,
+  "isolated_attention_ms": 3.488,
+  "full_step_ms": 8.816
+ },
+ "VERDICT": "SURVIVES. 4.319 ms against a 2.5 ms kill threshold. MoE fusion is worth building.",
+ "WHAT_IT_LOCATES": "The MoE WRAPPER -- router, shared expert, score-weighted combine -- costs 1.909 ms, 21.7% of the step, and is pure orchestration rather than expert arithmetic. Fusing it is worth up to 1.28x on decode.",
+ "INDEPENDENT_CROSS_VALIDATION": "Two different methods now agree. Removal-based ablation put attention at 3.600 ms and the MoE block at 4.018; direct isolation gives 3.488 and 4.319 -- within 3-7%. The ablation's caveat (removing a stage also removes downstream work) and the isolation's caveat (no residual/norm context) are opposite biases, so agreement between them is stronger evidence than either alone.",
+ "STILL_TRUE": "Attention at 3.488 ms isolated remains the single largest stage, larger than the entire MoE wrapper. The 1.69x attention ceiling stands above the ~1.28x MoE-fusion ceiling.",
+ "NOTE_ON_MY_OWN_INSTRUMENT": "The lane correctly identified that the quality evaluator's weight -> dense bf16 -> forward path CANNOT measure this: it materialises dense tiles and hides the packed-gather stage entirely. TPS work must not go through the evaluator, which is why no binary/sparse/residual arm in this campaign has a TPS number and why none should be inferred."
+}
