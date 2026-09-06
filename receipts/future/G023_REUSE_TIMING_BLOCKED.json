@@ -1,0 +1,15 @@
+{
+ "date": "2026-09-06",
+ "obligation": "G023 reuse timing",
+ "result": "BLOCKED, with the blocker measured",
+ "WHAT_THE_MEMORY_TRACE_PROVES": "A body DID load and DID persist for the supervisor's whole life. Free RAM fell 41.94 -> 30.2 GB (about 11.7 GB, consistent with the 9.9 GB resident), held for roughly 240 s across the supervisor's run, and returned to 42.1 GB the moment the supervisor exited. That is direct evidence the body's lifetime is the SUPERVISOR's lifetime, not the cycle's -- which is the mechanism the 6.2x depends on.",
+ "WHY_THE_TIMING_NUMBER_IS_STILL_NOT_SHOWN": "The mission failed on cycle 1 with 'Deterministic validation failed' after 2 attempts, so there was never a cycle 2 to time. This is the SAME validation defect localised earlier this session and deliberately left unfixed.",
+ "A_NEW_DEFECT_THIS_EXPOSED": {
+  "observation": "body.status and body.loaded_at stayed None in .hcli/resident/state.json for the entire run, while ~11.7 GB of RAM was demonstrably held by a loaded body.",
+  "why_it_matters_for_G023": "The adoption and reaping decisions read that record. A record saying body: None while an 11.7 GB body exists is exactly the condition under which a reaper cannot see what to spare and an adopter cannot verify what it is adopting. It also means the footprint field an ownership record is supposed to carry would be empty.",
+  "status": "localised, NOT fixed -- it sits inside the daemon's body accounting, and fixing it blind at the end of a long session is how the earlier cache-layer mistake happened."
+ },
+ "FIRST_ATTEMPT_FAILED_DIFFERENTLY_AND_THAT_WAS_MY_BUG": "--model ascension_envelope.hawking.json resolved RELATIVE TO THE WORKSPACE, giving a path inside the scratch dir that does not exist. Same class as the drive_resident.py wrong-root defect fixed earlier. An absolute path fixed it and the body then loaded.",
+ "EXACT_MISSING_INPUT": "One daemon mission that reaches cycle 2. That needs either the deterministic-validation failure resolved, or a goal whose unit passes validation on the first attempt, so two complete_payload calls occur in one supervisor's lifetime.",
+ "PRE_COMMITTED_KILL_UNCHANGED": "round-2 complete_payload < 60 s. If a second call in a persisting supervisor is not far below the 241 s first call, the body is not being reused and the whole 6.2x projection is wrong."
+}
