@@ -1,0 +1,65 @@
+{
+ "specimen": "O003",
+ "date": "2026-09-06",
+ "obligation": "G017 - locate and fix the dominant stage",
+ "method": "Direct isolation, 50-100 reps per component. No differences of large numbers, after those were shown to carry +/-0.85 ms.",
+ "moe_block_split_ms": {
+  "whole_moe_block": 4.0253,
+  "gate_router_only": 1.105,
+  "shared_experts_only": 0.9236,
+  "switch_mlp_only": 2.1147,
+  "combine_only": 0.5378,
+  "sum_of_parts": 4.6811
+ },
+ "router_split_ms": {
+  "gate_full": 1.06314,
+  "matmul_with_.T": 0.43502,
+  "matmul_pretransposed": 0.43872,
+  "select_only": 0.72392,
+  "transpose_saving_ms": -0.00371
+ },
+ "RANKED_TARGETS_in_an_8.816_ms_q3_step": [
+  {
+   "stage": "attention (27 layers)",
+   "ms": 3.488,
+   "pct": 39.6,
+   "note": "largest single stage; MLA runs ~6 module calls + 2 RoPEs + sdpa per layer"
+  },
+  {
+   "stage": "routed expert matmuls (gather_qmm)",
+   "ms": 2.048,
+   "pct": 23.2,
+   "note": "the only stage byte reduction touches"
+  },
+  {
+   "stage": "router SELECTION (argpartition/take/sum/div/mul)",
+   "ms": 0.724,
+   "pct": 8.2,
+   "note": "68.1% of the gate. Picks 6 of 64 values per layer and costs MORE than the shared experts, which do 130x the arithmetic. Pure dispatch."
+  },
+  {
+   "stage": "shared_experts (dense MLP)",
+   "ms": 0.924,
+   "pct": 10.5
+  },
+  {
+   "stage": "router matmul (2048x64)",
+   "ms": 0.435,
+   "pct": 4.9
+  },
+  {
+   "stage": "score-weighted combine",
+   "ms": 0.538,
+   "pct": 6.1
+  },
+  {
+   "stage": "SwitchGLU orchestration",
+   "ms": 0.404,
+   "pct": 4.6
+  }
+ ],
+ "REFUTED_HYPOTHESIS": "The router computes `x @ self.weight.T` per call, per layer, per token, so a per-call transpose looked like free waste. Pre-transposing to a contiguous [2048,64] saves -0.0037 ms -- indistinguishable from zero. MLX resolves the transpose as a view. Not a lever.",
+ "WHERE_THE_ROUTER_COST_ACTUALLY_IS": "Selection, not projection. 0.724 of the gate's 1.063 ms. For top-6-of-64 on ONE token that is sigmoid + bias-add + argpartition + take_along_axis + sum + divide + scale, roughly 7 launches x 26 layers = ~180 dispatches for arithmetic that would fit in a single small kernel. It is already @mx.compile'd, so the remaining cost is launch, not Python.",
+ "DEAD_CODE_FOUND": "n_group=1 on this specimen, so the entire group-limited routing branch of group_expert_select (unflatten/topk/argpartition/put_along_axis/flatten) never executes. Any fused replacement only has to implement the n_group==1 path.",
+ "HONEST_STATUS": "The dominant stage is LOCATED and RANKED by direct isolation, and one candidate fix was tested and refuted. The remaining fixes -- a fused router-select kernel (~0.7 ms, 8%) or an MLA rewrite (~3.5 ms, 40%) -- both require writing Metal, which is a build, not a measurement. G017 asks for both halves and only the first is done."
+}
