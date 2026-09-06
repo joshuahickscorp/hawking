@@ -1,0 +1,18 @@
+{
+ "specimen": "O003",
+ "date": "2026-09-06",
+ "obligation": "G022 / S009",
+ "HYPOTHESIS_REFUTED": "The 60.7 s marginal cycle is over-generation against max_new_tokens=2048.",
+ "test": "Same trivial task ('reply OK') at max_new_tokens 128, 512 and 2048.",
+ "result": {
+  "cap_128_s": 267.0,
+  "cap_512_s": 225.7,
+  "cap_2048_s": "177.6 and 237.3 on two runs"
+ },
+ "verdict": "REFUTED. The 128-token cap was SLOWER than 512. Generation length does not drive the cycle cost.",
+ "ALSO_REFUTED_python_import": "import hcli.engine costs 0.07 s. Not a factor.",
+ "THE_REAL_PROBLEM_IS_VARIANCE": "Four measurements of the SAME command span 177.6-267.0 s, a 50% spread. Every absolute loop-latency number I have reported inherits it, including the 237.3 s floor and the 116.9/60.7 setup-versus-marginal split.",
+ "WHAT_SURVIVES": "The RATIO. Three cycles cost 1.68x one cycle within a SINGLE measurement pair, so most of a round is one-time setup regardless of which absolute baseline is taken. Persistence remains the right fix; its projected 2.7x is now uncertain in magnitude.",
+ "WHAT_I_SHOULD_HAVE_DONE": "Measured the spread BEFORE quoting 237.3 s as 'the floor'. I did exactly this correctly for decode TPS -- 6-rep warm medians with ranges -- and then quoted single-shot loop numbers to three digits. The discipline did not transfer across the boundary of the thing I was studying.",
+ "NEXT": "Instrument HCLI itself with phase timings. Four external stopwatch readings cannot separate resident load from prompt compilation from generation, and no amount of repetition will fix that."
+}
