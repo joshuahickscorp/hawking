@@ -81,9 +81,17 @@ def parse_spec(spec: str) -> dict[str, Any]:
     # which is the L2-optimal scale for a sign quantiser. Costs 1 bit/weight +
     # 16 bits per group. MLX cannot express this -- mx.quantize floors at 2 bits
     # -- and it is the rung the resident asked for and could not have.
+    # binarycal: SAME bytes as binary (1 bit + one fp16 scale per group). The
+    # only difference is how the scale is fitted -- against measured activation
+    # second moments rather than the plain mean of |W|. A pure capability
+    # comparison at fixed EBPW.
+    m = re.fullmatch(r"binarycal(?:([0-9.]+))?-g(\d+)", s, re.I)
+    if m:
+        return {"form": "binary", "calibrated": True, "frac": float(m.group(1) or 0.0),
+                "group": _group(int(m.group(2)), s), "bits": 1}
     m = re.fullmatch(r"binary(?:([0-9.]+))?-g(\d+)", s, re.I)
     if m:
-        return {"form": "binary", "frac": float(m.group(1) or 0.0),
+        return {"form": "binary", "calibrated": False, "frac": float(m.group(1) or 0.0),
                 "group": _group(int(m.group(2)), s), "bits": 1}
     m = re.fullmatch(r"outlier([0-9.]+)-g(\d+)", s, re.I)
     if m:
@@ -137,6 +145,36 @@ def _leaf_bytes(params, skip: str) -> int:
     return total
 
 
+def collect_activation_moments(model, tok) -> dict[int, "mx.array"]:
+    """Per-input-channel second moment for every expert matrix, from a real
+    forward pass. Diagonal approximation to E[xx^T]: what the layer actually
+    sees, not a Gaussian proxy -- every sub-bit negative on this machine that
+    later reversed had been measured against a proxy."""
+    from mlx_lm.models import switch_layers as SL
+    stats: dict[int, Any] = {}
+    orig = SL.SwitchLinear.__call__
+
+    def capture(self, x, indices, sorted_indices=False):
+        f = x.astype(mx.float32).reshape(-1, x.shape[-1])
+        d = mx.mean(mx.square(f), axis=0)
+        k = id(self)
+        stats[k] = d if k not in stats else stats[k] + d
+        return orig(self, x, indices, sorted_indices=sorted_indices)
+
+    SL.SwitchLinear.__call__ = capture
+    try:
+        for text in (NLL_TEXT, " ".join(PROMPTS)):
+            ids = mx.array([tok.encode(text)[:512]])
+            mx.eval(model(ids))
+    finally:
+        SL.SwitchLinear.__call__ = orig
+    for k in stats:
+        mx.eval(stats[k])
+    if not stats:
+        raise RuntimeError("calibration captured NOTHING -- refusing to pass it off as calibrated")
+    return stats
+
+
 def evaluate(candidate) -> dict[str, Any]:
     """Execute one representation and return a gauntlet receipt."""
     plan = parse_spec(getattr(candidate, "spec", candidate))
@@ -151,6 +189,7 @@ def evaluate(candidate) -> dict[str, Any]:
     mx.random.seed(0)
     n_tot = sum(m.weight.size for _, m in sw)
     BIN = plan["form"] == "binary"
+    act = collect_activation_moments(model, tok) if plan.get("calibrated") else {}
     kept = 0
     # Magnitude adequacy over the whole expert organ. Cosine alone is
     # scale-invariant, so 0.01*W scores 1.0 on direction -- the ratio is what
@@ -171,7 +210,17 @@ def evaluate(candidate) -> dict[str, Any]:
                 mask, base = None, W
             if BIN:
                 flatg = base.reshape(-1, g)
-                sc = mx.mean(mx.abs(flatg), axis=1, keepdims=True)
+                d = act.get(id(m))
+                if d is None:
+                    sc = mx.mean(mx.abs(flatg), axis=1, keepdims=True)
+                else:
+                    # s* minimising sum_j d_j (W_ij - s*sign(W_ij))^2 is the
+                    # d-weighted mean of |W| over the group.
+                    dg = mx.broadcast_to(d.reshape(1, -1),
+                                         base.reshape(-1, base.shape[-1]).shape
+                                         ).reshape(-1, g)
+                    sc = (mx.sum(dg * mx.abs(flatg), axis=1, keepdims=True)
+                          / mx.maximum(mx.sum(dg, axis=1, keepdims=True), 1e-9))
                 rec = (sc * mx.sign(flatg)).reshape(base.shape)
             else:
                 q, s, b = mx.quantize(base.astype(mx.bfloat16), group_size=g, bits=bits)
@@ -239,7 +288,8 @@ def evaluate(candidate) -> dict[str, Any]:
         "schema": "hawking.hcli.odyssey.gravity_outlier_eval.v1",
         "specimen": getattr(candidate, "specimen", "O003"),
         "spec": getattr(candidate, "spec", str(candidate)),
-        "representation_class": ("BINARY_SCALED" if plan["form"] == "binary"
+        "representation_class": ("BINARY_ACT_CALIBRATED" if plan.get("calibrated")
+                                 else "BINARY_SCALED" if plan["form"] == "binary"
                                  else "OUTLIER_SPLIT" if plan["form"] == "outlier_split"
                                  else "AFFINE_QUANT" if plan["form"] == "affine"
                                  else "SOURCE_BF16"),
@@ -252,6 +302,7 @@ def evaluate(candidate) -> dict[str, Any]:
                        "expert_weights": n_tot, "outliers_kept": kept},
         "magnitude_ratio": magnitude_ratio,
         "direction_similarity": direction_similarity,
+        "n_calibrated_tensors": len(act),
         "capability_ok": capability_ok,
         "capability_status": "CANDIDATE_PASS" if capability_ok else "CAPABILITY_LOSS",
         "capability": {"ppl": round(ppl, 4), "nll": round(nll, 5),
