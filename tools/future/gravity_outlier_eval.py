@@ -685,3 +685,8 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+
+def down_proj_scale_overhead_bpw(group: int) -> float:
+    """Irreducible scale overhead contributed by down_proj, bits per weight."""
+    return (1.0 / 3.0) * (16.0 / group)
