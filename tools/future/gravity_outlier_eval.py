@@ -135,6 +135,16 @@ def _parse_expert_spec(spec: str) -> dict[str, Any]:
     # binary -- same 1 bit + one scale per group -- so it isolates the effect of
     # feedback alone. This is the cheapest member of the family named as G010's
     # reopen condition.
+    # HOT/COLD: allocate bytes by MEASURED routing frequency, not uniformly.
+    # Probe 2 (O003_WHY_THE_BYTES_EXIST.json) measured 3.0x concentration --
+    # top-8 of 64 experts take 37.5% of routing against a uniform 12.5%, and
+    # 1.8 experts per tensor are never routed at all. This is a structural class,
+    # not a precision variation: the same nominal bits buy a different allocation.
+    m = re.fullmatch(r"hotcold([0-9.]+)h(\d+)c(\d+)-g(\d+)", s, re.I)
+    if m:
+        return {"form": "hotcold", "hot_frac": float(m.group(1)),
+                "hot_bits": int(m.group(2)), "cold_bits": int(m.group(3)),
+                "frac": 0.0, "group": _group(int(m.group(4)), s), "bits": int(m.group(2))}
     m = re.fullmatch(r"binaryef(percal)?-g(\d+)", s, re.I)
     if m:
         return {"form": "binary_ef", "calibrated": bool(m.group(1)),
@@ -194,7 +204,10 @@ def predict_ebpw(spec: str) -> float:
     direction check -- it never lets an upward proposal look downward."""
     p = parse_spec(spec)
     g = p["group"]
-    if p["form"] == "binary_ef":
+    if p["form"] == "hotcold":
+        per_w = (p["hot_frac"] * p["hot_bits"] + (1 - p["hot_frac"]) * p["cold_bits"]
+                 + 32 / g)
+    elif p["form"] == "binary_ef":
         per_w = 1 + 16 / g
     elif p["form"] == "sparse":
         import math
@@ -249,6 +262,37 @@ def _leaf_bytes(params, skip: str) -> int:
         elif isinstance(node, mx.array) and skip not in pre:
             total += node.nbytes
     return total
+
+
+def collect_routing_counts(model, tok) -> dict[int, "mx.array"]:
+    """How often each expert is actually selected, per tensor, from real tokens.
+    Refuses to return an all-uniform result silently -- a flat count would make
+    hot/cold identical to uniform allocation and the arm would look like a null
+    when it was really a broken hook."""
+    from mlx_lm.models import switch_layers as SL
+    counts: dict[int, Any] = {}
+    orig = SL.SwitchLinear.__call__
+
+    def cap(self, x, indices, sorted_indices=False):
+        k = id(self)
+        n = self["weight"].shape[0]
+        oh = (indices.reshape(-1)[:, None] == mx.arange(n)[None, :]).astype(mx.float32)
+        c = mx.sum(oh, axis=0)
+        counts[k] = c if k not in counts else counts[k] + c
+        return orig(self, x, indices, sorted_indices=sorted_indices)
+
+    SL.SwitchLinear.__call__ = cap
+    try:
+        for text in (NLL_TEXT, " ".join(PROMPTS)):
+            mx.eval(model(mx.array([tok.encode(text)[:512]])))
+    finally:
+        SL.SwitchLinear.__call__ = orig
+    if not counts:
+        raise RuntimeError("routing capture got NOTHING")
+    spread = max(float(mx.max(c) / mx.maximum(mx.mean(c), 1e-9)) for c in counts.values())
+    if spread < 1.2:
+        raise RuntimeError(f"routing looks uniform (max/mean {spread:.2f}); hot/cold would be a no-op")
+    return counts
 
 
 def collect_activation_moments(model, tok, per_expert: bool = False) -> dict[int, "mx.array"]:
@@ -319,6 +363,8 @@ def evaluate(candidate) -> dict[str, Any]:
     EF = plan["form"] == "binary_ef"
     act = (collect_activation_moments(model, tok, per_expert=plan.get("per_expert", False))
            if plan.get("calibrated") else {})
+    route = collect_routing_counts(model, tok) if plan["form"] == "hotcold" else {}
+    hot_w = cold_w = 0
     kept = 0
     n_scales = 0            # ACTUAL scale count, from the per-tensor group used
     n_survivors = 0.0       # ACTUAL non-zero count for the sparse form
@@ -343,7 +389,24 @@ def evaluate(candidate) -> dict[str, Any]:
                 kept += int(mx.sum(mask).item())
             else:
                 mask, base = None, W
-            if EF:
+            if plan["form"] == "hotcold":
+                cnt = route.get(id(m))
+                n_exp = W.shape[0]
+                n_hot = max(1, int(round(n_exp * plan["hot_frac"])))
+                order = mx.argsort(-cnt)                 # busiest first
+                hot_ids = set(int(i) for i in order[:n_hot])
+                parts = []
+                for e in range(n_exp):
+                    b = plan["hot_bits"] if e in hot_ids else plan["cold_bits"]
+                    We = W[e:e + 1]
+                    q, s_, b_ = mx.quantize(We.astype(mx.bfloat16), group_size=g, bits=b)
+                    parts.append(mx.dequantize(q, s_, b_, group_size=g, bits=b).astype(mx.float32))
+                    if e in hot_ids:
+                        hot_w += We.size
+                    else:
+                        cold_w += We.size
+                rec = mx.concatenate(parts, axis=0)
+            elif EF:
                 flatg = base.reshape(-1, g)
                 d = act.get(id(m))
                 if d is None:
@@ -447,7 +510,10 @@ def evaluate(candidate) -> dict[str, Any]:
         expert_bits = n_tot * 16.0
     else:
         # binary stores 1 bit/weight + ONE fp16 scale per group (no zero point).
-        if plan["form"] == "binary_ef":
+        if plan["form"] == "hotcold":
+            expert_bits = (hot_w * plan["hot_bits"] + cold_w * plan["cold_bits"]
+                           + n_scales * 32)
+        elif plan["form"] == "binary_ef":
             expert_bits = n_tot * 1 + n_scales * 16 + kept * 32
         elif plan["form"] == "sparse":
             import math
@@ -490,7 +556,8 @@ def evaluate(candidate) -> dict[str, Any]:
         "specimen": getattr(candidate, "specimen", "O003"),
         "spec": getattr(candidate, "spec", str(candidate)),
         "non_expert_bits": plan["ne_bits"], "non_expert_group": plan["ne_group"],
-        "representation_class": ("BINARY_ERROR_FEEDBACK" if plan["form"] == "binary_ef"
+        "representation_class": ("HOT_COLD_ROUTED" if plan["form"] == "hotcold"
+                                 else "BINARY_ERROR_FEEDBACK" if plan["form"] == "binary_ef"
                                  else "SPARSE_BINARY" if plan["form"] == "sparse"
                                  else "RESIDUAL_BINARY" if plan["form"] == "resbinary"
                                  else "BINARY_ACT_PER_EXPERT" if plan.get("per_expert")
@@ -510,6 +577,8 @@ def evaluate(candidate) -> dict[str, Any]:
         "direction_similarity": direction_similarity,
         "n_calibrated_tensors": len(act),
         "density_actual": (n_survivors / n_tot) if plan["form"] == "sparse" else None,
+        "hot_weights": hot_w, "cold_weights": cold_w,
+        "hot_share_actual": (hot_w / (hot_w + cold_w)) if (hot_w + cold_w) else None,
         "effective_groups": {str(k): v for k, v in sorted(eff_groups.items())},
         "capability_ok": capability_ok,
         "capability_status": "CANDIDATE_PASS" if capability_ok else "CAPABILITY_LOSS",
