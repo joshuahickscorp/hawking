@@ -85,6 +85,14 @@ def parse_spec(spec: str) -> dict[str, Any]:
     # only difference is how the scale is fitted -- against measured activation
     # second moments rather than the plain mean of |W|. A pure capability
     # comparison at fixed EBPW.
+    # binarypercal: per-EXPERT activation moments. Same bytes again; the
+    # statistic is now accumulated separately per routed expert id, which is the
+    # mismatch that pooled calibration is suspected to have died on.
+    m = re.fullmatch(r"binarypercal(?:([0-9.]+))?-g(\d+)", s, re.I)
+    if m:
+        return {"form": "binary", "calibrated": True, "per_expert": True,
+                "frac": float(m.group(1) or 0.0),
+                "group": _group(int(m.group(2)), s), "bits": 1}
     m = re.fullmatch(r"binarycal(?:([0-9.]+))?-g(\d+)", s, re.I)
     if m:
         return {"form": "binary", "calibrated": True, "frac": float(m.group(1) or 0.0),
@@ -145,7 +153,7 @@ def _leaf_bytes(params, skip: str) -> int:
     return total
 
 
-def collect_activation_moments(model, tok) -> dict[int, "mx.array"]:
+def collect_activation_moments(model, tok, per_expert: bool = False) -> dict[int, "mx.array"]:
     """Per-input-channel second moment for every expert matrix, from a real
     forward pass. Diagonal approximation to E[xx^T]: what the layer actually
     sees, not a Gaussian proxy -- every sub-bit negative on this machine that
@@ -155,10 +163,26 @@ def collect_activation_moments(model, tok) -> dict[int, "mx.array"]:
     orig = SL.SwitchLinear.__call__
 
     def capture(self, x, indices, sorted_indices=False):
-        f = x.astype(mx.float32).reshape(-1, x.shape[-1])
-        d = mx.mean(mx.square(f), axis=0)
         k = id(self)
-        stats[k] = d if k not in stats else stats[k] + d
+        inp = x.shape[-1]
+        if not per_expert:
+            d = mx.mean(mx.square(x.astype(mx.float32).reshape(-1, inp)), axis=0)
+            stats[k] = d if k not in stats else stats[k] + d
+            return orig(self, x, indices, sorted_indices=sorted_indices)
+        # Route each row to the expert that actually consumed it. gate/up share
+        # one token vector across the top-k experts (x has N rows, idx has N*K),
+        # so those rows repeat; down_proj already carries one row per expert.
+        n_exp = self["weight"].shape[0]
+        K = indices.shape[-1]
+        xf = x.astype(mx.float32).reshape(-1, inp)
+        idf = indices.reshape(-1)
+        if xf.shape[0] != idf.shape[0]:
+            xf = mx.repeat(xf, K, axis=0)
+        oh = (idf[:, None] == mx.arange(n_exp)[None, :]).astype(mx.float32)
+        acc = oh.T @ mx.square(xf)            # (n_exp, inp)
+        cnt = mx.sum(oh, axis=0)              # (n_exp,)
+        prev = stats.get(k)
+        stats[k] = (acc, cnt) if prev is None else (prev[0] + acc, prev[1] + cnt)
         return orig(self, x, indices, sorted_indices=sorted_indices)
 
     SL.SwitchLinear.__call__ = capture
@@ -168,6 +192,9 @@ def collect_activation_moments(model, tok) -> dict[int, "mx.array"]:
             mx.eval(model(ids))
     finally:
         SL.SwitchLinear.__call__ = orig
+    if per_expert:
+        for k, (acc, cnt) in list(stats.items()):
+            stats[k] = acc / mx.maximum(cnt, 1.0)[:, None]     # (n_exp, inp)
     for k in stats:
         mx.eval(stats[k])
     if not stats:
@@ -189,7 +216,8 @@ def evaluate(candidate) -> dict[str, Any]:
     mx.random.seed(0)
     n_tot = sum(m.weight.size for _, m in sw)
     BIN = plan["form"] == "binary"
-    act = collect_activation_moments(model, tok) if plan.get("calibrated") else {}
+    act = (collect_activation_moments(model, tok, per_expert=plan.get("per_expert", False))
+           if plan.get("calibrated") else {})
     kept = 0
     # Magnitude adequacy over the whole expert organ. Cosine alone is
     # scale-invariant, so 0.01*W scores 1.0 on direction -- the ratio is what
@@ -216,9 +244,14 @@ def evaluate(candidate) -> dict[str, Any]:
                 else:
                     # s* minimising sum_j d_j (W_ij - s*sign(W_ij))^2 is the
                     # d-weighted mean of |W| over the group.
-                    dg = mx.broadcast_to(d.reshape(1, -1),
-                                         base.reshape(-1, base.shape[-1]).shape
-                                         ).reshape(-1, g)
+                    if d.ndim == 2:            # per-expert: (n_exp, in)
+                        dg = mx.broadcast_to(
+                            d.reshape(d.shape[0], 1, d.shape[1]), base.shape
+                        ).reshape(-1, g)
+                    else:                       # pooled: (in,)
+                        dg = mx.broadcast_to(d.reshape(1, -1),
+                                             base.reshape(-1, base.shape[-1]).shape
+                                             ).reshape(-1, g)
                     sc = (mx.sum(dg * mx.abs(flatg), axis=1, keepdims=True)
                           / mx.maximum(mx.sum(dg, axis=1, keepdims=True), 1e-9))
                 rec = (sc * mx.sign(flatg)).reshape(base.shape)
@@ -288,7 +321,8 @@ def evaluate(candidate) -> dict[str, Any]:
         "schema": "hawking.hcli.odyssey.gravity_outlier_eval.v1",
         "specimen": getattr(candidate, "specimen", "O003"),
         "spec": getattr(candidate, "spec", str(candidate)),
-        "representation_class": ("BINARY_ACT_CALIBRATED" if plan.get("calibrated")
+        "representation_class": ("BINARY_ACT_PER_EXPERT" if plan.get("per_expert")
+                                 else "BINARY_ACT_CALIBRATED" if plan.get("calibrated")
                                  else "BINARY_SCALED" if plan["form"] == "binary"
                                  else "OUTLIER_SPLIT" if plan["form"] == "outlier_split"
                                  else "AFFINE_QUANT" if plan["form"] == "affine"
