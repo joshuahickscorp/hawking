@@ -1,6 +1,6 @@
 {
  "schema": "hawking.odyssey.knowledge.v1",
- "n_entries": 7,
+ "n_entries": 8,
  "entries": [
   {
    "id": "K001",
@@ -168,6 +168,25 @@
    ],
    "counterexamples": [],
    "reopen_condition": "a spectrum probe after permutation alignment, or across layers"
+  },
+  {
+   "id": "K008",
+   "scope": "MACHINE_LAW",
+   "host": "any",
+   "claim": "A delegated search lane can only reason over what its CONTRACT carries. A task requiring repository grounding, dispatched to a profile without file-content tools, returns a directory listing and burns its whole budget.",
+   "architecture_condition": null,
+   "measurement": "Same session, same model, two waves: 12 representation lanes with fully self-contained contracts returned 4-30 required fields each, including a discriminator that survived its own pre-committed kill threshold. 12 latency lanes whose contracts invited source inspection returned 0 required fields; the two that completed produced filename inventories, one stating explicitly that it had list_dir but no Grep or Read.",
+   "oracle_strength": "strong: a controlled contrast within one session, differing only in whether the contract was self-contained",
+   "sources": [
+    {
+     "specimen": "O003"
+    },
+    {
+     "receipt": "GOAL.md 2026-09-06 grok dispatch section"
+    }
+   ],
+   "counterexamples": [],
+   "reopen_condition": "a lane profile that can read files, making repo-grounded contracts viable"
   }
  ]
 }
