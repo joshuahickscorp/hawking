@@ -77,6 +77,14 @@ def parse_spec(spec: str) -> dict[str, Any]:
     """Grammar extension. Returns a plan, or raises so an unrunnable spec can
     never be silently accepted as a candidate."""
     s = str(spec).strip()
+    # BINARY_SCALED: W ~= scale_g * sign(W), scale = mean(|W|) over the group,
+    # which is the L2-optimal scale for a sign quantiser. Costs 1 bit/weight +
+    # 16 bits per group. MLX cannot express this -- mx.quantize floors at 2 bits
+    # -- and it is the rung the resident asked for and could not have.
+    m = re.fullmatch(r"binary(?:([0-9.]+))?-g(\d+)", s, re.I)
+    if m:
+        return {"form": "binary", "frac": float(m.group(1) or 0.0),
+                "group": _group(int(m.group(2)), s), "bits": 1}
     m = re.fullmatch(r"outlier([0-9.]+)-g(\d+)", s, re.I)
     if m:
         return {"form": "outlier_split", "frac": float(m.group(1)),
@@ -142,6 +150,7 @@ def evaluate(candidate) -> dict[str, Any]:
 
     mx.random.seed(0)
     n_tot = sum(m.weight.size for _, m in sw)
+    BIN = plan["form"] == "binary"
     kept = 0
     # Magnitude adequacy over the whole expert organ. Cosine alone is
     # scale-invariant, so 0.01*W scores 1.0 on direction -- the ratio is what
@@ -160,8 +169,13 @@ def evaluate(candidate) -> dict[str, Any]:
                 kept += int(mx.sum(mask).item())
             else:
                 mask, base = None, W
-            q, s, b = mx.quantize(base.astype(mx.bfloat16), group_size=g, bits=bits)
-            rec = mx.dequantize(q, s, b, group_size=g, bits=bits).astype(mx.float32)
+            if BIN:
+                flatg = base.reshape(-1, g)
+                sc = mx.mean(mx.abs(flatg), axis=1, keepdims=True)
+                rec = (sc * mx.sign(flatg)).reshape(base.shape)
+            else:
+                q, s, b = mx.quantize(base.astype(mx.bfloat16), group_size=g, bits=bits)
+                rec = mx.dequantize(q, s, b, group_size=g, bits=bits).astype(mx.float32)
             if mask is not None:
                 rec = mx.where(mask, W, rec)
             rec_b = rec.astype(mx.bfloat16)
@@ -170,7 +184,7 @@ def evaluate(candidate) -> dict[str, Any]:
             s_dot += float(mx.sum(W * rec))
             m.weight = rec_b
             mx.eval(m.weight)
-            del W, base, rec, rec_b, q, s, b
+            del W, base, rec, rec_b
 
         def pred(path, mm):
             if "switch_mlp" in path or not hasattr(mm, "to_quantized"):
@@ -191,7 +205,10 @@ def evaluate(candidate) -> dict[str, Any]:
     if plan["form"] == "bf16":
         expert_bits = n_tot * 16.0
     else:
-        expert_bits = n_tot * (plan["bits"] + 32 / plan["group"]) + kept * 32
+        # binary stores 1 bit/weight + ONE fp16 scale per group (no zero point).
+        per_w = (1 + 16 / plan["group"]) if plan["form"] == "binary" else \
+                (plan["bits"] + 32 / plan["group"])
+        expert_bits = n_tot * per_w + kept * 32
     complete_bytes = int(expert_bits / 8 + _leaf_bytes(model.parameters(), "switch_mlp"))
     complete_ebpw = complete_bytes * 8 / SRC_PARAMS
 
@@ -222,7 +239,8 @@ def evaluate(candidate) -> dict[str, Any]:
         "schema": "hawking.hcli.odyssey.gravity_outlier_eval.v1",
         "specimen": getattr(candidate, "specimen", "O003"),
         "spec": getattr(candidate, "spec", str(candidate)),
-        "representation_class": ("OUTLIER_SPLIT" if plan["form"] == "outlier_split"
+        "representation_class": ("BINARY_SCALED" if plan["form"] == "binary"
+                                 else "OUTLIER_SPLIT" if plan["form"] == "outlier_split"
                                  else "AFFINE_QUANT" if plan["form"] == "affine"
                                  else "SOURCE_BF16"),
         "_evidence": "MEASURED (executed in-process on MLX Metal)",
