@@ -1,0 +1,32 @@
+{
+ "date": "2026-09-06",
+ "obligation": "G004 attempt on a real O003 scientific unit",
+ "OUTCOME": "NOT ACCEPTED, and correctly so. The resident's implementation was broken and its own test caught it.",
+ "WHAT_THE_RESIDENT_DID": [
+  "Modified tools/future/gravity_outlier_eval.py -- py_compile exit 0.",
+  "Created tools/future/test_gravity_outlier_eval.py -- py_compile exit 0.",
+  "Proposed a test in an ADMISSIBLE form: admitted=True, collected=2, executed=2."
+ ],
+ "WHY_IT_WAS_REJECTED": {
+  "check": "test",
+  "exit_code": 1,
+  "reason": "TEST_FAILED",
+  "failures": [
+   "test_asym_spec - ValueError",
+   "test_asym_bad - IndexError: list index out of range"
+  ],
+  "red_before_green": "post_mutation_tests_did_not_pass",
+  "rolled_back": true
+ },
+ "THIS_IS_THE_HARNESS_WORKING": "Before this session the same attempt produced 'Deterministic validation failed' with no reason, no admitted test, and no way to tell a broken implementation from a refused test form. Now: the mutation applied, the test was admitted, it ran, it failed on the model's own assertions, the tracebacks are in the receipt, and the tree was rolled back clean. The rejection is correct -- the code raises on its own inputs.",
+ "DISTANCE_TO_G004": "One working implementation. The loop, the contract, the admission gate, the diagnostics and the rollback are all now demonstrably functional; what failed is the resident's code, which is the thing that SHOULD decide acceptance.",
+ "MEASURED_PROGRESSION_THIS_SESSION": [
+  "opaque 'Deterministic validation failed', no reason, work deleted",
+  "-> reason surfaced (engine fix)",
+  "-> failing checks surfaced",
+  "-> refused command named (requested field)",
+  "-> admissible forms published in the contract",
+  "-> accepted_count 0 -> 2 on a harness probe",
+  "-> a real scientific unit now applies, admits its test, runs it, and fails on its own logic"
+ ]
+}
