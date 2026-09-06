@@ -128,6 +128,18 @@ def _parse_expert_spec(spec: str) -> dict[str, Any]:
     # per survivor plus one fp16 scale per group, so the rate is
     #   density * (log2(group) + 1) + 16/group
     # which is the only family measured here that can go BELOW one bit/weight.
+    # binaryef: binary with ERROR FEEDBACK along the group. Quantising w_j
+    # leaves a residual; that residual is carried into w_{j+1} before it is
+    # quantised, so the group's running error stays bounded instead of
+    # accumulating independently per weight. Byte cost is IDENTICAL to plain
+    # binary -- same 1 bit + one scale per group -- so it isolates the effect of
+    # feedback alone. This is the cheapest member of the family named as G010's
+    # reopen condition.
+    m = re.fullmatch(r"binaryef(percal)?-g(\d+)", s, re.I)
+    if m:
+        return {"form": "binary_ef", "calibrated": bool(m.group(1)),
+                "per_expert": bool(m.group(1)), "frac": 0.0,
+                "group": _group(int(m.group(2)), s, affine=False), "bits": 1}
     m = re.fullmatch(r"sparse([0-9.]+)(percal)?-g(\d+)", s, re.I)
     if m:
         return {"form": "sparse", "density": float(m.group(1)),
@@ -182,7 +194,9 @@ def predict_ebpw(spec: str) -> float:
     direction check -- it never lets an upward proposal look downward."""
     p = parse_spec(spec)
     g = p["group"]
-    if p["form"] == "sparse":
+    if p["form"] == "binary_ef":
+        per_w = 1 + 16 / g
+    elif p["form"] == "sparse":
         import math
         per_w = p["density"] * (math.log2(g) + 1) + 16 / g
     elif p["form"] == "binary":
@@ -302,6 +316,7 @@ def evaluate(candidate) -> dict[str, Any]:
     BIN = plan["form"] == "binary"
     RES = plan["form"] == "resbinary"
     SPARSE = plan["form"] == "sparse"
+    EF = plan["form"] == "binary_ef"
     act = (collect_activation_moments(model, tok, per_expert=plan.get("per_expert", False))
            if plan.get("calibrated") else {})
     kept = 0
@@ -328,7 +343,28 @@ def evaluate(candidate) -> dict[str, Any]:
                 kept += int(mx.sum(mask).item())
             else:
                 mask, base = None, W
-            if SPARSE:
+            if EF:
+                flatg = base.reshape(-1, g)
+                d = act.get(id(m))
+                if d is None:
+                    sc = mx.mean(mx.abs(flatg), axis=1, keepdims=True)
+                else:
+                    dd = (mx.broadcast_to(d.reshape(d.shape[0], 1, d.shape[1]), base.shape)
+                          if d.ndim == 2 else
+                          mx.broadcast_to(d.reshape(1, -1),
+                                          base.reshape(-1, base.shape[-1]).shape)).reshape(-1, g)
+                    sc = (mx.sum(dd * mx.abs(flatg), axis=1, keepdims=True)
+                          / mx.maximum(mx.sum(dd, axis=1, keepdims=True), 1e-9))
+                # Sequential along the group, vectorised across every group at once.
+                err = mx.zeros((flatg.shape[0], 1))
+                cols = []
+                for j in range(g):
+                    v = flatg[:, j:j + 1] + err
+                    qj = sc * mx.sign(v)
+                    err = v - qj
+                    cols.append(qj)
+                rec = mx.concatenate(cols, axis=1).reshape(base.shape)
+            elif SPARSE:
                 dens = plan["density"]
                 flatg = base.reshape(-1, g)
                 k = max(1, int(round(g * dens)))
@@ -411,7 +447,9 @@ def evaluate(candidate) -> dict[str, Any]:
         expert_bits = n_tot * 16.0
     else:
         # binary stores 1 bit/weight + ONE fp16 scale per group (no zero point).
-        if plan["form"] == "sparse":
+        if plan["form"] == "binary_ef":
+            expert_bits = n_tot * 1 + n_scales * 16 + kept * 32
+        elif plan["form"] == "sparse":
             import math
             idx_bits = math.log2(plan["group"])
             expert_bits = n_survivors * (idx_bits + 1) + n_scales * 16 + kept * 32
@@ -452,7 +490,8 @@ def evaluate(candidate) -> dict[str, Any]:
         "specimen": getattr(candidate, "specimen", "O003"),
         "spec": getattr(candidate, "spec", str(candidate)),
         "non_expert_bits": plan["ne_bits"], "non_expert_group": plan["ne_group"],
-        "representation_class": ("SPARSE_BINARY" if plan["form"] == "sparse"
+        "representation_class": ("BINARY_ERROR_FEEDBACK" if plan["form"] == "binary_ef"
+                                 else "SPARSE_BINARY" if plan["form"] == "sparse"
                                  else "RESIDUAL_BINARY" if plan["form"] == "resbinary"
                                  else "BINARY_ACT_PER_EXPERT" if plan.get("per_expert")
                                  else "BINARY_ACT_CALIBRATED" if plan.get("calibrated")

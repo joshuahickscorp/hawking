@@ -1,0 +1,114 @@
+{
+ "specimen": "O003",
+ "date": "2026-09-06",
+ "measured_by": "Claude directly",
+ "question": "S007 section 3: WHY DO 28+ GB OF EXPERT WEIGHTS NEED TO BE STORED INDEPENDENTLY? Answered by measurement before spending any implementation effort on a structural class.",
+ "probe_1_cross_expert_spectrum": {
+  "method": "Stack a layer's 64 experts as [64, D], centre across experts (so the question is about SHARED structure, not the mean), take the Gram eigenspectrum. 12 probes: layers 1/8/15/25 x gate/up/down.",
+  "result": {
+   "L1.gate_proj": {
+    "rank_for_50pct": 30,
+    "rank_for_90pct": 57,
+    "rank_for_99pct": 63,
+    "top1_share": 0.0179,
+    "flat_baseline_k90": 58
+   },
+   "L1.up_proj": {
+    "rank_for_50pct": 31,
+    "rank_for_90pct": 57,
+    "rank_for_99pct": 63,
+    "top1_share": 0.0177,
+    "flat_baseline_k90": 58
+   },
+   "L1.down_proj": {
+    "rank_for_50pct": 31,
+    "rank_for_90pct": 57,
+    "rank_for_99pct": 63,
+    "top1_share": 0.0171,
+    "flat_baseline_k90": 58
+   },
+   "L8.gate_proj": {
+    "rank_for_50pct": 31,
+    "rank_for_90pct": 57,
+    "rank_for_99pct": 63,
+    "top1_share": 0.0189,
+    "flat_baseline_k90": 58
+   },
+   "L8.up_proj": {
+    "rank_for_50pct": 30,
+    "rank_for_90pct": 57,
+    "rank_for_99pct": 63,
+    "top1_share": 0.0183,
+    "flat_baseline_k90": 58
+   },
+   "L8.down_proj": {
+    "rank_for_50pct": 31,
+    "rank_for_90pct": 57,
+    "rank_for_99pct": 63,
+    "top1_share": 0.0182,
+    "flat_baseline_k90": 58
+   },
+   "L15.gate_proj": {
+    "rank_for_50pct": 30,
+    "rank_for_90pct": 56,
+    "rank_for_99pct": 63,
+    "top1_share": 0.0193,
+    "flat_baseline_k90": 58
+   },
+   "L15.up_proj": {
+    "rank_for_50pct": 31,
+    "rank_for_90pct": 57,
+    "rank_for_99pct": 63,
+    "top1_share": 0.0179,
+    "flat_baseline_k90": 58
+   },
+   "L15.down_proj": {
+    "rank_for_50pct": 31,
+    "rank_for_90pct": 57,
+    "rank_for_99pct": 63,
+    "top1_share": 0.0178,
+    "flat_baseline_k90": 58
+   },
+   "L25.gate_proj": {
+    "rank_for_50pct": 30,
+    "rank_for_90pct": 57,
+    "rank_for_99pct": 63,
+    "top1_share": 0.0185,
+    "flat_baseline_k90": 58
+   },
+   "L25.up_proj": {
+    "rank_for_50pct": 31,
+    "rank_for_90pct": 57,
+    "rank_for_99pct": 63,
+    "top1_share": 0.0183,
+    "flat_baseline_k90": 58
+   },
+   "L25.down_proj": {
+    "rank_for_50pct": 31,
+    "rank_for_90pct": 57,
+    "rank_for_99pct": 63,
+    "top1_share": 0.0176,
+    "flat_baseline_k90": 58
+   }
+  },
+  "summary": "k50=30-31, k90=56-57, k99=63 of 64. top-1 share 0.017-0.019.",
+  "NULL_CONTROL": "64 INDEPENDENT gaussian matrices of the same shape give k50=29, k90=56, k99=63, top1=0.0200. The real experts are STATISTICALLY INDISTINGUISHABLE from independent random matrices in shared linear structure.",
+  "VERDICT_KILLS_FOUR_FAMILIES": "SHARED EXPERT BASIS, CLUSTERED EXPERT DICTIONARY, LOW-RANK RESIDUAL ACROSS EXPERTS, and CROSS-EXPERT SHARING are all DEAD on arithmetic. Capturing 90% of the centred variance needs 57 of 64 basis vectors, each of dimension 1408x2048; storing that basis plus 64 coordinate vectors costs MORE than storing the 64 experts. The answer to 'why do these bytes exist' is that they are genuinely near-orthogonal information.",
+  "note": "This supplies the NUMBER that O003_PROV.json's earlier kill of clustering/low_rank/common_delta was missing, which G014 flagged as the gap."
+ },
+ "probe_2_routing_skew": {
+  "method": "Count how often each of the 64 experts is selected, over 1024 real tokens, by hooking the gather indices on all 78 expert tensors.",
+  "result": {
+   "n_tensors": 78,
+   "mean_top8_of_64_share": 0.3747,
+   "uniform_would_be": 0.125,
+   "mean_bottom32_share": 0.1661,
+   "mean_max_over_mean": 5.327,
+   "mean_never_routed": 1.81
+  },
+  "summary": "top-8 of 64 take 37.47% of all routing against a uniform 12.5% -- 3.0x concentration. The bottom 32 take 16.61% against a uniform 50%. Max/mean is 5.33x. On average 1.81 experts per tensor are NEVER routed.",
+  "VERDICT_ONE_FAMILY_SURVIVES": "HOT/COLD EXPERT REPRESENTATION is SUPPORTED by measurement. Routing is strongly skewed, so an unequal byte budget across experts has a real basis. This also explains the per-expert calibration result: experts differ because they SEE different amounts and kinds of traffic."
+ },
+ "WHAT_THIS_DOES_TO_THE_SEARCH": "Of the twelve structural families dispatched to Grok, four are killed by probe 1 before any lane reports, and one is confirmed viable by probe 2. That is the redirection S007 demanded: not more enumeration, but a discriminator that removes families from the space. The surviving structural directions are hot/cold, router-conditioned, sensitivity-weighted, generated, structured factorization (which imposes structure rather than discovering it, so probe 1 does NOT kill it), and the physical rewrite.",
+ "CAVEAT": "Probe 1 tests LINEAR shared structure across experts within a layer. It does not test nonlinear structure, cross-LAYER structure, or structure in a transformed basis (e.g. after permutation alignment). Cross-layer was not probed here and remains open."
+}
