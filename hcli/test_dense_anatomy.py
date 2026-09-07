@@ -195,3 +195,35 @@ def test_a_genuinely_separated_ordering_is_still_ordered():
     o = [("k", 41.24, 0.04), ("q", 38.81, 0.04), ("o", 23.68, 0.04), ("up", 11.59, 0.04)]
     ranks = [x["rank"] for x in da.resolved_ordering(o)]
     assert ranks == [0, 1, 2, 3], ranks
+
+
+def test_expert_as_a_substring_is_not_an_expert_organ(tmp_path):
+    """pi0_base fell through BOTH anatomy modules and was measured by neither.
+
+    Its keys read paligemma_with_expert.gemma_expert..., a SUBMODULE NAME, and
+    767 of them matched a substring test. dense_anatomy refused it as "has
+    experts, the other module owns it" while representational_anatomy refused it
+    as "not a per-expert layout". Same shape as counting `hawkingd` because it
+    contains `awk`.
+    """
+    rng = np.random.default_rng(3)
+    tensors = {
+        f"paligemma_with_expert.paligemma.model.layers.{i}.self_attn.q_proj.weight":
+        rng.standard_normal((8, 8), dtype=np.float32) for i in range(3)
+    }
+    _write_safetensors(str(tmp_path / "m.safetensors"), tensors)
+    try:
+        da.anatomy_from_safetensors(str(tmp_path))
+    except da.DenseAnatomyUnavailable as exc:
+        assert "HAS expert tensors" not in str(exc), (
+            "refused on the substring again: " + str(exc))
+
+
+def test_a_real_indexed_expert_set_is_still_refused(tmp_path):
+    """The fix must not let a genuine MoE body into the dense path."""
+    rng = np.random.default_rng(4)
+    tensors = {f"model.layers.0.mlp.experts.{i}.down_proj.weight":
+               rng.standard_normal((8, 8), dtype=np.float32) for i in range(12)}
+    _write_safetensors(str(tmp_path / "m.safetensors"), tensors)
+    with pytest.raises(da.DenseAnatomyUnavailable, match="HAS expert tensors"):
+        da.anatomy_from_safetensors(str(tmp_path))

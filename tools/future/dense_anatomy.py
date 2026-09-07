@@ -578,9 +578,20 @@ def anatomy_from_safetensors(snapshot: str) -> dict:
     _NULL_EIGS.clear()
     shards, index, offsets = _index_snapshot(snapshot)
 
-    # Expert bodies are the other module's job -- refuse even if they also
-    # have dense attention tensors. Checking the raw keys, not our organ parse.
-    expert_keys = [k for k, (_f, _e) in index.items() if "expert" in k.lower()]
+    # Expert bodies are the other module's job -- refuse even if they also have
+    # dense attention tensors.
+    #
+    # BUT "expert" AS A SUBSTRING IS NOT AN EXPERT ORGAN. pi0_base's keys read
+    # paligemma_with_expert.gemma_expert..., which is a SUBMODULE NAME, and 767
+    # of them matched. It was refused here as "has experts, the other module owns
+    # it" AND refused by representational_anatomy as "not a per-expert layout",
+    # so it fell through both and was measured by neither. An MoE organ is an
+    # INDEXED set of experts or a stacked tensor whose first axis is the expert
+    # axis; lake_scheme_census._is_expert_organ is that test and this defers to it.
+    from lake_scheme_census import _is_expert_organ as _real_expert_organ
+
+    expert_keys = [k for k, (_f, _e) in index.items()
+                   if _real_expert_organ(k.split("::", 1)[-1], _e)]
     if expert_keys:
         raise DenseAnatomyUnavailable(
             f"{snapshot}: body HAS expert tensors ({len(expert_keys)} keys, e.g. "
