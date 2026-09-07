@@ -1988,6 +1988,61 @@ def _odyssey_anatomy(context: ToolContext, args: Dict[str, Any]) -> Dict[str, An
     return _lead_with(out, "hypotheses", "layer", "scheme", "storage", "snapshot")
 
 
+def _odyssey_record_measurement(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """Move one ledger axis from OWED to MEASURED or REFUSED. The write door.
+
+    odyssey.anatomy RETURNS an anatomy and persists nothing; odyssey.ingest is
+    read_only; record_law and record_scar record Laws and Scars, not axis cells.
+    So a round that measured something correctly saw the ledger unchanged and
+    asked again -- which is what closed round 6 on the all-repeat closer after six
+    successful observations and zero failures.
+
+    The guards are odyssey_ledger's own, imported rather than restated: a value
+    without a receipt is not evidence, and a refusal under 20 characters is how an
+    unmeasured axis disguises itself as a finding. Those two functions existed with
+    ZERO callers anywhere in the repo -- built and never connected.
+
+    `path` is REQUIRED and has no default. A write tool whose default target is the
+    campaign's own live ledger is a foot-gun, and the caller has to name what it is
+    writing to.
+    """
+    m = _future("odyssey_ledger")
+    import json as _json
+    # The schema makes `path` REQUIRED, which stops a caller omitting it. It does not
+    # stop an EMPTY string, and that is the case this check owns -- deleting it is
+    # detectable, deleting a restatement of the schema was not.
+    path = str(args.get("path") or "").strip()
+    if not path:
+        raise ValueError(
+            "path is empty: this tool WRITES, and it will not guess which ledger")
+    target = context.resolve_write_path(path) if hasattr(context, "resolve_write_path") \
+        else Path(path)
+    led = _json.loads(Path(target).read_text())
+    slug = str(args.get("slug") or "").strip()
+    rec = next((r for r in led["specimens"] if r["slug"] == slug), None)
+    if rec is None:
+        raise KeyError(f"{slug!r} is not a specimen in {path}")
+    axis = str(args.get("axis") or "").strip()
+    reason = args.get("reason")
+    if reason not in (None, ""):
+        m.refused(rec, axis, str(reason))
+    else:
+        # No receipt check here on purpose: odyssey_ledger.measured already refuses a
+        # value without one, and restating a guard is how two copies drift apart. A
+        # mutation that deleted a duplicate check here stayed green, which is the tell.
+        m.measured(rec, axis, args.get("value"), str(args.get("receipt") or "").strip())
+    tmp = Path(str(target) + ".tmp")
+    tmp.write_text(_json.dumps(led, indent=1) + "\n")
+    tmp.replace(target)
+    prog = m.progress(led)
+    return _lead_with(
+        {"recorded": {"slug": slug, "axis": axis, **rec["axes"][axis]},
+         "axes_resolved": prog.get("axes_resolved"),
+         "axes_owed": prog.get("axes_owed"),
+         "path": path},
+        "recorded", "axes_owed", "axes_resolved")
+
+
 def _campaign_guard(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
     """Host memory and swap headroom before an expensive run.
 
@@ -2251,6 +2306,21 @@ def default_tool_registry(
                         "layer": {"type": ["integer", "null"]}}},
         resources=("filesystem",), timeout_s=1800.0, deterministic=False,
         handler=_odyssey_anatomy,
+    ))
+    registry.register(ToolSpec(
+        "odyssey.record_measurement",
+        "Record one specimen/axis result into the Odyssey ledger: a value WITH a receipt, or a refusal whose reason names a mechanism. This is how a measured round closes.",
+        {"type": "object", "required": ["path", "slug", "axis"],
+         "additionalProperties": False,
+         "properties": {"path": {"type": "string"},
+                        "slug": {"type": "string"},
+                        "axis": {"type": "string"},
+                        "value": {},
+                        "receipt": {"type": ["string", "null"]},
+                        "reason": {"type": ["string", "null"]}}},
+        mutation=REVERSIBLE_REPO,
+        resources=("filesystem",), deterministic=False,
+        handler=_odyssey_record_measurement,
     ))
     registry.register(ToolSpec(
         "campaign.guard",

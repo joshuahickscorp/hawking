@@ -1710,6 +1710,20 @@ class Engine:
     # handed is exactly the confused plan the original closer was written for.
     TOOL_FAILURE_TOLERANCE = int(os.environ.get("HCLI_TOOL_FAILURE_TOLERANCE", "1"))
 
+    # The one wording, used by both closing paths. It lived only inside
+    # _prompt_with_observations, which the budget-exhausted path never calls --
+    # that path reuses the stable cognition_prompt on purpose, because rebuilding
+    # it would lose the prefix and prefill is 93% of an autonomous round's wall.
+    # So the instruction travels in the mutable tail there instead.
+    REPORT_THE_FINDING = (
+        "REPORT THE FINDING. The observations above are what you measured. "
+        "State what you measured, on which specimen, the numbers you got, "
+        "and what it means for the campaign. DO NOT DESCRIBE THE TOOL STATE "
+        "and do not restate your plan: the tools already ran and their "
+        "output is above. If an observation was a refusal, report the "
+        "refusal and its named mechanism -- that is a finding too."
+    )
+
     @staticmethod
     def _answer_validation(observations, rounds: int, failed_rounds: int, closure):
         """What an ANSWER's receipt should say, given what the round actually did.
@@ -2270,6 +2284,16 @@ class Engine:
         final: bool = False,
         compact_catalog: bool = False,
         tools_allowed: bool = True,
+        # Whether the round MEASURED anything, passed separately from the
+        # observations themselves. Both closing paths build their prompt with an
+        # EMPTY observation list and supply the observations as `trailing`, so a
+        # guard reading `observations` was evaluated against [] every time and the
+        # report request never fired -- round 6 measured six things across five
+        # tools and still answered with the closing instruction. Rendering and
+        # deciding are separate concerns; conflating them either duplicates the
+        # observations in a prompt that already carries them or loses the fact
+        # that they exist.
+        measured: bool = False,
     ) -> str:
         """Tool output rides beside the goal, NOT inside `evidence`.
 
@@ -2309,18 +2333,11 @@ class Engine:
             # Only when at least one observation SUCCEEDED. A round that observed nothing,
             # or whose every observation failed, has nothing to report, and asking it to
             # report anyway invites the invention this whole discipline exists to stop.
-            if any(
+            if measured or any(
                 isinstance(item, dict) and item.get("ok")
                 for item in (observations or [])
             ):
-                parts.append(
-                    "REPORT THE FINDING. The observations above are what you measured. "
-                    "State what you measured, on which specimen, the numbers you got, "
-                    "and what it means for the campaign. DO NOT DESCRIBE THE TOOL STATE "
-                    "and do not restate your plan: the tools already ran and their "
-                    "output is above. If an observation was a refusal, report the "
-                    "refusal and its named mechanism -- that is a finding too."
-                )
+                parts.append(self.REPORT_THE_FINDING)
             if (
                 "ROLE: implementation" in str(prompt)
                 or "OBJECTIVE: repair" in str(prompt)
@@ -2680,6 +2697,16 @@ class Engine:
                 # the SAME stable cognition_prompt, so the closing call still
                 # reuses the prefix; only the history tail differs.
                 self._tools_closed_for_round = True
+                _measured = any(
+                    isinstance(item, dict) and item.get("ok")
+                    for item in observations
+                )
+                _tail = self._observations_block(
+                    self._compact_closed_observations(observations),
+                    final=True,
+                )
+                if _measured:
+                    _tail = _tail + "\n\n" + self.REPORT_THE_FINDING
                 try:
                     result = self._sanitize_result(
                         self._call_model(
@@ -2688,17 +2715,7 @@ class Engine:
                             compiled,
                             context_memory=context_memory,
                             history=conversation_history
-                            + [
-                                {
-                                    "role": "user",
-                                    "content": self._observations_block(
-                                        self._compact_closed_observations(
-                                            observations
-                                        ),
-                                        final=True,
-                                    ),
-                                }
-                            ],
+                            + [{"role": "user", "content": _tail}],
                         )
                     )
                 finally:
@@ -2713,11 +2730,16 @@ class Engine:
                 # start another expensive duplicate round.
                 self._tools_closed_for_round = True
                 try:
+                    _measured = any(
+                        isinstance(item, dict) and item.get("ok")
+                        for item in observations
+                    )
                     final_prompt = self._prompt_with_observations(
                         prompt,
                         [],
                         compact_catalog=False,
                         tools_allowed=False,
+                        measured=_measured,
                     )
                     self._emit(
                         "final_turn_prepared",
