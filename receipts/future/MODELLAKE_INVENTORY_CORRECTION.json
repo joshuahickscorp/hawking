@@ -1,0 +1,16 @@
+{
+ "date": "2026-09-07",
+ "obligation": "G034 inventory correction",
+ "FINDING": "The lake holds 56 specimens and 4.29 TiB, not 55 and 3.96 TiB.",
+ "what_was_wrong": "receipts/future/modellake-index/catalog.json was built 2026-09-02T21:05:46Z. A 335 GB body -- windowsxp811203--Qwen3.8-Flash-Next-Abliterated@deb02632504b -- was acquired 2026-09-05 01:33, three days later. Every inventory statement in this campaign, including ones I made repeatedly today, quoted the stale file: 55 specimens, 3.96 TiB, 41 families.",
+ "corrected": {
+  "specimens": 56,
+  "bytes_tib": 4.29,
+  "delta_specimens": 1,
+  "delta_tib": 0.33
+ },
+ "A_CORRECTION_TO_MY_OWN_DIAGNOSIS": "I first said the catalogue's orphan DETECTOR was wrong because anomalies.orphaned_bodies read []. It is not wrong. A fresh build flags the body correctly. The repo copy was simply five days stale, and [] was an accurate answer to a question asked before the body existed. The defect is staleness of a cached artifact, not a broken check.",
+ "TWO_LOCATIONS": "modellake_index.py writes the authoritative index into the LAKE (/Volumes/corpdrive/hawking-modellake/index/) and repo_index_dir() is a FALLBACK at receipts/future/modellake-index/. Tools read the fallback. A rebuild updates the lake copy and leaves the fallback stale, which is exactly how a five-day-old inventory kept being quoted as current. Same shape as the roadmap that vanished because the canonical copy lived outside the repo.",
+ "WHY_IT_MATTERS_FOR_G034": "The complete-lake obligation is defined over the inventory. A campaign that plans against 55 bodies silently omits a 335 GB one, and the omitted body is an ABLITERATED variant of qwen4_exp -- a family with no mlx_lm module, and the same abliteration property the current HCLI resident has.",
+ "ACTION_TAKEN": "Rebuilt the index and synced the repo fallback. Both now read 56 / 4.29 TiB."
+}
