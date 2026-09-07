@@ -1,0 +1,72 @@
+{
+ "obligation": "G013 \u2014 settle the O003 decode disagreement on the current runtime",
+ "result": {
+  "marginal_tok_s": {
+   "min": 84.37,
+   "median": 85.635,
+   "max": 86.7,
+   "spread_pct": 2.7
+  },
+  "reps": [
+   {
+    "order": [
+     16,
+     80
+    ],
+    "w16_s": 0.277,
+    "w80_s": 1.036,
+    "marginal_tok_s": 84.37,
+    "absolute80_tok_s": 77.24
+   },
+   {
+    "order": [
+     80,
+     16
+    ],
+    "w16_s": 0.275,
+    "w80_s": 1.013,
+    "marginal_tok_s": 86.7,
+    "absolute80_tok_s": 78.99
+   },
+   {
+    "order": [
+     16,
+     80
+    ],
+    "w16_s": 0.274,
+    "w80_s": 1.019,
+    "marginal_tok_s": 85.87,
+    "absolute80_tok_s": 78.51
+   },
+   {
+    "order": [
+     80,
+     16
+    ],
+    "w16_s": 0.282,
+    "w80_s": 1.032,
+    "marginal_tok_s": 85.4,
+    "absolute80_tok_s": 77.55
+   }
+  ],
+  "active_gib": 29.73,
+  "peak_gib": 30.76
+ },
+ "route": {
+  "runtime": "mlx_lm 0.31.3",
+  "shim": "tools/future/kimi_vl_loader.split_kv_b_proj (the checkpoint does NOT load without it)",
+  "materialisation": "430 parameter arrays forced in 18 command buffers over 178.3s. A lazy 30 GB model puts its whole realisation inside the first forward's command buffer and trips Metal's watchdog -- two GPU timeouts before this.",
+  "method": "marginal (80-16)/(w80-w16), arms ALTERNATED across 4 reps so the DVFS ramp cancels",
+  "workload": "single chat prompt, temp 0.0, greedy",
+  "concurrent_load": "five Grok lanes running; free RAM 46-64 GB throughout"
+ },
+ "disposition": {
+  "verdict": "PROVENANCE_FULL's 87.67 is CORROBORATED. TPS_BASELINE's 69.97 is the outlier.",
+  "internal_consistency": "the receipt's own bytes/token is 5.158 GB. 87.67 x 5.158 = 452.2 GB/s, matching its recorded achieved bandwidth EXACTLY, and 452.2/800 = 56.5%, matching its recorded utilisation. 69.97 x 5.158 = 360.9 GB/s = 45.1%, which appears nowhere. Today's 85.64 gives 441.8 GB/s and 55.2%.",
+  "residency_agrees": "active 29.73 GiB today against 29.73 GiB in TPS_BASELINE's RESIDENCY block -- identical to the hundredth. The specimen and its load are the same; only the throughput differs, which points at the COMPUTE PATH, not the model.",
+  "most_likely_cause": "the attention implementation changed. mlx_lm 0.31.3 requires kv_b_proj to be SPLIT into embed_q/unembed_out -- an absorbed-projection MLA formulation. The 69.97 measurement predates that and ran the unsplit path. Under directive 38 these are DIFFERENT ROUTES and are not contradictory; the error was carrying both as one specimen's decode rate.",
+  "not_claimed": "that 69.97 was wrong when measured. Its route cannot be reconstructed without the mlx_lm version it ran on, which neither receipt records."
+ },
+ "scar_reinforced": "every physical receipt from here pins its runtime version and its execution route",
+ "g007_premise": "the 56.5% bf16 utilisation G007 attacks is CONFIRMED at 55.2% today. The premise stands and the comparison against compressed variants at 18-23% is worth pursuing."
+}
