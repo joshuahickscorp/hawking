@@ -85,6 +85,10 @@ AUDITED_TOOLS = {
     # Audited 2026-09-07 when it shipped: total output 234 chars, `recorded` first via
     # _lead_with, so the whole result survives BUDGET with room to spare. This entry
     # exists because the audit test CAUGHT the tool shipping without one.
+    # Audited live 2026-09-07: organ_ordering leads via _lead_with, so the ranked organs
+    # and their deficits are what a 500-char head keeps. Measured on the real body in
+    # 16.7 s, k_proj 41.09% first.
+    "odyssey.dense_anatomy": "compliant",
     "odyssey.record_measurement": "compliant",
     "odyssey.queue": "compliant",
     "odyssey.record_law": "compliant",

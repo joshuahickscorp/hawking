@@ -1886,16 +1886,32 @@ def _frontier_decide(context: ToolContext, args: Dict[str, Any]) -> Dict[str, An
 
 
 def _future(name: str):
-    """Import a tools/future module without putting the repo root on sys.path."""
+    """Import a tools/future module without putting the REPO ROOT on sys.path.
+
+    tools/future itself IS placed on sys.path, once, and that is the narrow part of the
+    original intent that had to give. Modules there import their siblings by plain name --
+    dense_anatomy imports lake_scheme_census, dense_sweep imports both dense_anatomy and
+    campaign_memory_guard -- and registering under a private `_hcli_future_` key means
+    those plain-name imports resolve against nothing. Every sidecar module with a sibling
+    was therefore unreachable through this loader, which is the same
+    built-but-not-connected shape this session has now hit five times.
+
+    The repo root stays off: that would expose `hcli`, `tools`, `receipts` and the rest.
+    The sidecar partition is a much narrower surface, and it is the one these modules were
+    written to import from.
+    """
     import importlib.util
     import pathlib
-    here = pathlib.Path(__file__).resolve().parents[1] / "tools" / "future" / f"{name}.py"
+    import sys as _sys
+    future_dir = pathlib.Path(__file__).resolve().parents[1] / "tools" / "future"
+    if str(future_dir) not in _sys.path:
+        _sys.path.append(str(future_dir))
+    here = future_dir / f"{name}.py"
     if not here.is_file():
         raise FileNotFoundError(
             f"{here} is missing: this tool names a module that does not exist, which is "
             f"how a registered capability becomes unreachable without anyone noticing")
     key = f"_hcli_future_{name}"
-    import sys as _sys
     cached = _sys.modules.get(key)
     if cached is not None:
         return cached
@@ -2101,6 +2117,53 @@ def _odyssey_record_measurement(context: ToolContext, args: Dict[str, Any]) -> D
          "axes_owed": prog.get("axes_owed"),
          "path": path},
         "recorded", "axes_owed", "axes_resolved")
+
+
+def _odyssey_dense_anatomy(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """Within-tensor anatomy of one DENSE specimen's organs, against a same-shape null.
+
+    odyssey.anatomy measures the EXPERT organ and refuses a dense body by saying so:
+    "no key contains 'expert'; this looks dense, not MoE". A round that read that refusal
+    correctly then had nowhere to go, because dense anatomy had no door -- the capability
+    measured 34 bodies for G002 through dense_anatomy.anatomy_from_safetensors and was
+    simply unreachable from here. Use odyssey.anatomy for a MoE body and this for a dense
+    one; each refusal names the other.
+
+    The guard is asked BEFORE the body is opened, from a header-only size estimate. Dense
+    anatomy ran 796 s at 6.59 GiB peak on the largest body in the sweep, so a STOP verdict
+    has to be a refusal with its numbers rather than a machine at risk.
+    """
+    cmg = _future("campaign_memory_guard")
+    da = _future("dense_anatomy")
+    sweep = _future("dense_sweep")
+    snapshot = str(args.get("snapshot") or "").strip()
+    if not snapshot:
+        raise ValueError("snapshot path is required")
+    est = sweep.estimate_from_headers(snapshot)
+    snap = cmg.sample(expected_gb=float(est.get("expected_gb") or 0.0))
+    if snap.state == "STOP":
+        return _lead_with({
+            "refused": (f"{snapshot}: campaign guard says STOP before any payload was read "
+                        f"-- free {snap.free_gb} GB, compressor {snap.compressor_gb} GB, "
+                        f"swapfiles {snap.swapfiles}, this body needs about "
+                        f"{est.get('expected_gb')} GB. Refusal, not a crash."),
+            "anatomy": None, "guard": snap.as_dict(), "snapshot": snapshot,
+        }, "refused", "guard", "snapshot")
+    try:
+        out = da.anatomy_from_safetensors(snapshot)
+    except da.DenseAnatomyUnavailable as exc:
+        return _lead_with({"refused": str(exc), "anatomy": None, "snapshot": snapshot,
+                           "guard": snap.as_dict()},
+                          "refused", "snapshot")
+    ordering = sweep.organ_ordering_from_anatomy(out)
+    return _lead_with({
+        "organ_ordering": ordering,
+        "hypotheses": out.get("hypotheses"),
+        "n_organs": len(ordering),
+        "snapshot": snapshot,
+        "guard": snap.as_dict(),
+        "anatomy": out,
+    }, "organ_ordering", "hypotheses", "n_organs", "snapshot")
 
 
 def _campaign_guard(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
@@ -2366,6 +2429,14 @@ def default_tool_registry(
                         "layer": {"type": ["integer", "null"]}}},
         resources=("filesystem",), timeout_s=1800.0, deterministic=False,
         handler=_odyssey_anatomy,
+    ))
+    registry.register(ToolSpec(
+        "odyssey.dense_anatomy",
+        "Within-tensor organ anatomy of one DENSE specimen against a same-shape null. Use odyssey.anatomy instead for a MoE body; each refuses toward the other by name.",
+        {"type": "object", "required": ["snapshot"], "additionalProperties": False,
+         "properties": {"snapshot": {"type": "string"}}},
+        resources=("filesystem",), timeout_s=1800.0, deterministic=False,
+        handler=_odyssey_dense_anatomy,
     ))
     registry.register(ToolSpec(
         "odyssey.record_measurement",
