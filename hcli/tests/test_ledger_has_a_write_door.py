@@ -66,11 +66,21 @@ def _reg():
 
 
 def _owed_slug(path: Path, axis: str) -> str:
+    """A slug owing `axis` in the SCRATCH copy, forced there if the campaign closed it.
+
+    This read the live ledger for a genuinely-OWED cell, which made the test depend on
+    campaign progress: the anatomy axis reached 0 OWED the moment the last two bodies
+    were recorded, and three tests that had nothing to do with anatomy went red. A
+    fixture that breaks when the science advances is measuring the wrong thing.
+    """
     doc = json.loads(path.read_text())
     for r in doc["specimens"]:
         if r["axes"][axis]["state"] == "OWED":
             return r["slug"]
-    raise AssertionError(f"no specimen owes {axis}")
+    row = doc["specimens"][0]
+    row["axes"][axis] = {"state": "OWED", "value": None, "reason": None, "receipt": None}
+    path.write_text(json.dumps(doc, indent=1))
+    return row["slug"]
 
 
 def test_the_tool_exists_and_is_not_read_only():

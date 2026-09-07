@@ -2759,10 +2759,18 @@ class Engine:
                             final_prompt,
                             evidence,
                             compiled,
-                            # Preserve the bounded observations that caused
-                            # closure; the fit ladder sheds older blocks when
-                            # the mutation contract needs more room.
+                            # Observations travel as HISTORY, the same channel the
+                            # budget-exhausted closing path already uses. They were sent
+                            # on `trailing` alone, which the fit ladder's own comment
+                            # calls "the legacy field" that real tool rounds no longer
+                            # read -- so this turn was handed nothing. Two rounds with
+                            # DIFFERENT observations produced a byte-identical closing
+                            # prompt, 1,553 tokens and 6,292 chars, and both answered
+                            # "No observations were provided". A prompt that does not
+                            # vary with the observations it reports on does not have them.
                             trailing=final_trailing,
+                            history=conversation_history
+                            + [{"role": "user", "content": final_trailing}],
                             context_memory=context_memory,
                         )
                     )
