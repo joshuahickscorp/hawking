@@ -1800,6 +1800,121 @@ def _frontier_decide(context: ToolContext, args: Dict[str, Any]) -> Dict[str, An
     return frontier_scheduler.decide().to_dict()
 
 
+def _future(name: str):
+    """Import a tools/future module without putting the repo root on sys.path."""
+    import importlib.util
+    import pathlib
+    here = pathlib.Path(__file__).resolve().parents[1] / "tools" / "future" / f"{name}.py"
+    if not here.is_file():
+        raise FileNotFoundError(
+            f"{here} is missing: this tool names a module that does not exist, which is "
+            f"how a registered capability becomes unreachable without anyone noticing")
+    key = f"_hcli_future_{name}"
+    import sys as _sys
+    cached = _sys.modules.get(key)
+    if cached is not None:
+        return cached
+    spec = importlib.util.spec_from_file_location(key, here)
+    mod = importlib.util.module_from_spec(spec)
+    # Register BEFORE executing: @dataclass resolves cls.__module__ through
+    # sys.modules, and without this campaign_memory_guard's Snapshot raised
+    # "AttributeError: 'NoneType' object has no attribute '__dict__'" at import.
+    _sys.modules[key] = mod
+    try:
+        spec.loader.exec_module(mod)
+    except Exception:
+        _sys.modules.pop(key, None)
+        raise
+    return mod
+
+
+def _lake_census(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """Reachability and complete EBPW for every specimen, from headers only.
+
+    Reads no payload bytes: the whole 4.29 TiB lake classifies in about twelve
+    seconds. Answers, per body, whether an expert organ exists, whether it is
+    pre-quantized on disk, and what it actually costs in bits per source
+    parameter.
+    """
+    m = _future("lake_scheme_census")
+    catalog = str(args.get("catalog") or "receipts/future/modellake-index/catalog.json")
+    slug = str(args.get("slug") or "").strip()
+    if slug:
+        import json as _json
+        cat = _json.load(open(catalog))
+        row = next((x for x in cat["specimens"] if x["slug"] == slug), None)
+        if row is None:
+            raise KeyError(f"{slug} is not in {catalog}")
+        out = m.classify(row["path"])
+        try:
+            out.update(m.accounting(row["path"], m.confirm_pack_factor(row["path"])))
+        except Exception as exc:
+            out["accounting_error"] = f"{type(exc).__name__}: {exc}"
+        out["slug"] = slug
+        return out
+    return m.census(catalog)
+
+
+def _odyssey_ledger(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """What each specimen has measured, refused, or still owes.
+
+    Every specimen owes seven axes or an explicit recorded reason. This is the
+    state HCLI needs to choose what to work on next without a human naming it.
+    """
+    m = _future("odyssey_ledger")
+    import json as _json
+    path = str(args.get("path") or "receipts/future/G034_ODYSSEY_LEDGER.json")
+    led = _json.load(open(path))
+    prog = m.progress(led)
+    slug = str(args.get("slug") or "").strip()
+    if slug:
+        rec = next((r for r in led["specimens"] if r["slug"] == slug), None)
+        if rec is None:
+            raise KeyError(f"{slug} is not in {path}")
+        return {"specimen": rec, "progress": prog}
+    if args.get("owed_only"):
+        owed = [{"slug": r["slug"], "gib": r["gib"], "class": r["class"],
+                 "owed": [a for a, v in r["axes"].items() if v["state"] == "OWED"]}
+                for r in led["specimens"]
+                if any(v["state"] == "OWED" for v in r["axes"].values())]
+        owed.sort(key=lambda r: (-len(r["owed"]), r["gib"]))
+        return {"progress": prog, "owed": owed}
+    return {"progress": prog, "n": len(led["specimens"])}
+
+
+def _odyssey_anatomy(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """Representational anatomy of one specimen's expert organ.
+
+    Refuses with a named mechanism rather than returning an empty anatomy: a
+    body with no safetensors, no expert organ, or a pre-quantized payload is
+    recorded as measured-and-impossible, never as measured-and-silent.
+    """
+    m = _future("representational_anatomy")
+    snapshot = str(args.get("snapshot") or "").strip()
+    if not snapshot:
+        raise ValueError("snapshot path is required")
+    layer = args.get("layer", 0)
+    try:
+        return m.anatomy_from_safetensors(snapshot, layer=layer)
+    except m.AnatomyUnavailable as exc:
+        return {"snapshot": snapshot, "anatomy": None, "refused": str(exc)}
+
+
+def _campaign_guard(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """Host memory and swap headroom before an expensive run.
+
+    Reads free pages, compressor size, swapfile count and resident RSS. The
+    swapfile count is the live signal: vm.swapusage used is a boot high-water
+    mark, not a current reading.
+    """
+    m = _future("campaign_memory_guard")
+    snap = m.sample(expected_gb=float(args.get("expected_gb") or 0.0))
+    return {"state": snap.state, "reasons": list(snap.reasons),
+            "free_gb": snap.free_gb, "compressor_gb": snap.compressor_gb,
+            "swapfiles": snap.swapfiles, "wired_gb": snap.wired_gb,
+            "expected_gb": snap.expected_gb, "headroom_gb": snap.headroom_gb}
+
+
 def _specimens_registry(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
     """Every sealed specimen, enumerated from disk. SEALED != LOAD NOW."""
     from . import specimens
@@ -1953,6 +2068,40 @@ def default_tool_registry(
         handler=lambda _context, args: registry.describe(
             args.get("focus"), max_results=args.get("max_results", 12)
         ),
+    ))
+    registry.register(ToolSpec(
+        "lake.census",
+        "Reachability and complete EBPW for every ModelLake specimen, from safetensors headers only; reads no payload bytes.",
+        {"type": "object", "additionalProperties": False,
+         "properties": {"catalog": {"type": "string"}, "slug": {"type": "string"}}},
+        resources=("filesystem",), timeout_s=300.0,
+        handler=_lake_census,
+    ))
+    registry.register(ToolSpec(
+        "odyssey.ledger",
+        "Per-specimen Odyssey axis state: what is measured, what is refused with a reason, and what is still owed.",
+        {"type": "object", "additionalProperties": False,
+         "properties": {"path": {"type": "string"}, "slug": {"type": "string"},
+                        "owed_only": {"type": "boolean"}}},
+        resources=("filesystem",),
+        handler=_odyssey_ledger,
+    ))
+    registry.register(ToolSpec(
+        "odyssey.anatomy",
+        "Representational anatomy of one specimen's expert organ; refuses with a named mechanism rather than returning an empty result.",
+        {"type": "object", "required": ["snapshot"], "additionalProperties": False,
+         "properties": {"snapshot": {"type": "string"},
+                        "layer": {"type": ["integer", "null"]}}},
+        resources=("filesystem",), timeout_s=1800.0, deterministic=False,
+        handler=_odyssey_anatomy,
+    ))
+    registry.register(ToolSpec(
+        "campaign.guard",
+        "Host memory and swap headroom before an expensive run; the swapfile count is the live signal, not vm.swapusage.",
+        {"type": "object", "additionalProperties": False,
+         "properties": {"expected_gb": {"type": "number"}}},
+        resources=("processes",), deterministic=False,
+        handler=_campaign_guard,
     ))
     registry.register(ToolSpec(
         "context.recall",
