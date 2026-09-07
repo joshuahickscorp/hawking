@@ -51,13 +51,6 @@ STATUSES = ("ANATOMY", "REFUSED", "GUARD_STOP")
 _RUNNING = False  # in-process mutex: two anatomies in one process is a defect
 
 
-def _refuse_volumes_write(path: str) -> None:
-    """The lake is read-only for this driver. A write under /Volumes is a bug."""
-    abs_path = os.path.abspath(path)
-    if abs_path == "/Volumes" or abs_path.startswith("/Volumes/"):
-        raise RuntimeError(f"refusing to write under /Volumes: {abs_path}")
-
-
 def _jsonable(x: Any) -> Any:
     if isinstance(x, dict):
         return {str(k): _jsonable(v) for k, v in x.items()}
@@ -78,7 +71,7 @@ def _jsonable(x: Any) -> Any:
 
 
 def _atomic_write(path: str, doc: dict) -> None:
-    _refuse_volumes_write(path)
+    cmg.refuse_volumes_write(path)
     os.makedirs(os.path.dirname(os.path.abspath(path)) or ".", exist_ok=True)
     payload = json.dumps(_jsonable(doc), indent=1) + "\n"
     fd, tmp = tempfile.mkstemp(prefix=".g002-", suffix=".tmp",
@@ -322,7 +315,7 @@ def _measure_anatomy(snapshot: str) -> dict:
 
 
 def _run_one_body_child(snapshot: str, row_out: str) -> None:
-    _refuse_volumes_write(row_out)
+    cmg.refuse_volumes_write(row_out)
     row = _measure_anatomy(snapshot)
     _atomic_write(row_out, row)
     status = row["status"]
@@ -446,7 +439,7 @@ class ReceiptLock:
         self.fd = None
 
     def __enter__(self):
-        _refuse_volumes_write(self.lock_path)
+        cmg.refuse_volumes_write(self.lock_path)
         os.makedirs(os.path.dirname(os.path.abspath(self.lock_path)) or ".", exist_ok=True)
         self.fd = os.open(self.lock_path, os.O_CREAT | os.O_RDWR, 0o644)
         try:
@@ -691,7 +684,7 @@ def _selfcheck() -> None:
 
     # Volumes writes are refused -- the lake is read-only.
     try:
-        _refuse_volumes_write("/Volumes/corpdrive/hawking-modellake/specimens/x.json")
+        cmg.refuse_volumes_write("/Volumes/corpdrive/hawking-modellake/specimens/x.json")
         raise AssertionError("wrote under /Volumes")
     except RuntimeError as exc:
         assert "/Volumes" in str(exc)

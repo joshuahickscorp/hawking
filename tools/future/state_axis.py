@@ -13,6 +13,8 @@ import collections
 import hashlib
 import json
 import os
+
+import campaign_memory_guard as cmg
 import subprocess
 import sys
 from pathlib import Path
@@ -94,12 +96,6 @@ class StateRefused(Exception):
         self.path = path
         self.mechanism = mechanism
         super().__init__(mechanism)
-
-
-def _refuse_volumes_write(path: str) -> None:
-    abs_path = os.path.abspath(path)
-    if abs_path == "/Volumes" or abs_path.startswith("/Volumes/"):
-        raise RuntimeError(f"refusing to write under /Volumes: {abs_path}")
 
 
 # ---------------------------------------------------------------------------
@@ -1563,7 +1559,7 @@ def write_state_axis_receipt(
     controls: dict[str, Any] | None = None,
     mutations: list[dict[str, Any]] | None = None,
 ) -> Path:
-    _refuse_volumes_write(str(RECEIPTS / RECEIPT_NAME))
+    cmg.refuse_volumes_write(str(RECEIPTS / RECEIPT_NAME))
     doc = build_receipt(catalog_path, controls=controls, mutations=mutations)
     return write_receipt(RECEIPT_NAME, doc, RECORDED_BY)
 

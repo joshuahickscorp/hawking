@@ -154,6 +154,32 @@ def _residents() -> tuple:
 SWAP_DIRS = ("/System/Volumes/VM", "/private/var/vm")
 
 
+LAKE_ROOTS = ("/Volumes",)
+
+
+def refuse_volumes_write(path: str) -> None:
+    """The lake is READ-ONLY BY POLICY, not by mount. This is what actually enforces it.
+
+    Verified on this host: /Volumes/corpdrive mounts apfs with no `read-only` flag, while
+    / carries one. Nothing in the kernel stops a write to 4.29 TiB of irreplaceable source
+    weights, and the policy has already failed once -- a detached drive let the lake
+    catalog be rewritten as "empty and under budget".
+
+    REALPATH, not abspath. abspath normalises `..` and does not follow links, so a symlink
+    named outside /Volumes pointing inside it walked straight through the two copies of
+    this check that used to exist in dense_sweep and state_axis.
+
+    One implementation on purpose. [S008 3] ONE OWNER, ONE GUARD: two copies of a guard
+    become two future truths and only one of them gets fixed.
+    """
+    real = os.path.realpath(os.path.abspath(path))
+    for root in LAKE_ROOTS:
+        if real == root or real.startswith(root.rstrip("/") + "/"):
+            raise RuntimeError(
+                f"refusing to write under {root}: {path} resolves to {real}. The lake is "
+                f"read-only by policy and the mount does not enforce it.")
+
+
 def _swap_gb() -> float:
     """Swap actually allocated on disk, in GB.
 
