@@ -37,6 +37,19 @@ SWAPFILE_CAP = 100          # macOS segment cap; the panic hit exactly this
 SWAPFILE_WARN = 40
 SWAPFILE_STOP = 60
 
+# [S008 3, 4] THE CAMPAIGN SWAP CEILING IS 30 GB, in bytes, in THIS guard -- the single
+# resource authority. Swap MAY be used all the way to the ceiling when science earns it;
+# optimising for zero swap is explicitly not the goal.
+#   under 24  NORMAL        use the machine aggressively
+#   24 - 27   PRESSURE AWARE  no new large speculative workload
+#   27 - 30   PROTECT         checkpoint, shed low-value background work
+#   30+       HARD STOP       no new heavy Hawking allocation
+# The swapfile COUNT axis below stays; it is a different signal (macOS segment cap) and
+# cannot answer "are we under 30 GB", because swapfiles are not a fixed size.
+SWAP_GB_WARN = 24.0
+SWAP_GB_PROTECT = 27.0
+SWAP_GB_CEILING = 30.0
+
 COMPRESSOR_WARN_GB = 16.0   # S010: 20 GB is the ceiling, warn before it
 COMPRESSOR_STOP_GB = 20.0
 
@@ -58,6 +71,7 @@ class Snapshot:
     headroom_gb: float = 0.0    # available - expected, the number that decides
     strictly_free_gb: float = 0.0   # "Pages free" alone -- kept VISIBLE so the
     reclaimable_gb: float = 0.0     # gap between free and available is auditable
+    swap_gb: float = 0.0            # [S008 3] measured swap bytes against the 30 GB ceiling
 
     def as_dict(self) -> dict:
         d = asdict(self)
@@ -140,6 +154,41 @@ def _residents() -> tuple:
 SWAP_DIRS = ("/System/Volumes/VM", "/private/var/vm")
 
 
+def _swap_gb() -> float:
+    """Swap actually allocated on disk, in GB.
+
+    NOT `sysctl vm.swapusage used`. That field is a BOOT HIGH-WATER MARK, and this campaign
+    already paid for reading it as live: compared against a ceiling it latched the gate off
+    permanently, holding the resident at cycles=0 with 42.6 GB free and swapouts flat. A
+    high-water mark cannot go down, so a ceiling built on it is a one-way door.
+
+    Summing the swapfiles the kernel currently has open is live, auditable, and falls when
+    the kernel removes them. Same directories as the swapfile COUNT axis, so the two agree
+    about where swap lives.
+    """
+    total = 0
+    for d in SWAP_DIRS:
+        try:
+            for entry in Path(d).iterdir():
+                if entry.name.startswith("swapfile"):
+                    try:
+                        total += entry.stat().st_size
+                    except OSError:
+                        continue
+        except (FileNotFoundError, PermissionError, NotADirectoryError):
+            continue
+    return total / GB
+
+
+def classify_swap_gb(swap_gb: float) -> str:
+    """The band this much swap falls in. Pure, so every boundary is testable."""
+    if swap_gb >= SWAP_GB_CEILING:
+        return "STOP"
+    if swap_gb >= SWAP_GB_WARN:
+        return "WARN"
+    return "OK"
+
+
 def _swapfiles() -> int:
     """Count swapfiles across every known store.
 
@@ -157,7 +206,8 @@ def _swapfiles() -> int:
     return seen if readable else -1
 
 
-def classify(free_gb: float, compressor_gb: float, swapfiles: int) -> tuple:
+def classify(free_gb: float, compressor_gb: float, swapfiles: int,
+             swap_gb: float = 0.0) -> tuple:
     """Pure, so the panic's recorded numbers can be replayed through it."""
     reasons = []
     state = "OK"
@@ -181,6 +231,12 @@ def classify(free_gb: float, compressor_gb: float, swapfiles: int) -> tuple:
     if swapfiles < 0:
         return "STOP", ("swapfile store unreadable: the swap axis of this guard is "
                         "BLIND, and a blind guard must not report OK",)
+    swap_band = classify_swap_gb(swap_gb)
+    if swap_band == "STOP":
+        esc("STOP", f"swap {swap_gb:.1f} GB >= the {SWAP_GB_CEILING:.0f} GB campaign ceiling")
+    elif swap_band == "WARN":
+        esc("WARN", (f"swap {swap_gb:.1f} GB in the "
+                     f"{SWAP_GB_WARN:.0f}-{SWAP_GB_CEILING:.0f} GB pressure band"))
     if swapfiles >= SWAPFILE_STOP:
         esc("STOP", f"{swapfiles} swapfiles >= {SWAPFILE_STOP} (cap {SWAPFILE_CAP})")
     elif swapfiles >= SWAPFILE_WARN:
@@ -210,12 +266,13 @@ def sample(expected_gb: float = 0.0) -> Snapshot:
     comp = v.get("Pages occupied by compressor", 0)
     wired = v.get("Pages wired down", 0)
     sf = _swapfiles()
+    swap_gb = _swap_gb()
     free_gb, comp_gb = available_pages * PAGE / GB, comp * PAGE / GB
     strictly_free_gb = free_pages * PAGE / GB
     reclaimable_gb = reclaimable * PAGE / GB
     n_res, rss_gb = _residents()
     headroom = free_gb - expected_gb
-    state, why = classify(free_gb, comp_gb, sf)
+    state, why = classify(free_gb, comp_gb, sf, swap_gb=swap_gb)
     if expected_gb and headroom < FREE_STOP_GB:
         state = "STOP"
         why = why + (f"expected {expected_gb:.1f} GB leaves {headroom:.1f} GB headroom, "
@@ -228,7 +285,8 @@ def sample(expected_gb: float = 0.0) -> Snapshot:
                     residents=n_res, resident_rss_gb=round(rss_gb, 2),
                     expected_gb=expected_gb, headroom_gb=round(headroom, 2),
                     strictly_free_gb=round(strictly_free_gb, 2),
-                    reclaimable_gb=round(reclaimable_gb, 2))
+                    reclaimable_gb=round(reclaimable_gb, 2),
+                    swap_gb=round(swap_gb, 2))
 
 
 class Abort(RuntimeError):
