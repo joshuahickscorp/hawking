@@ -1,0 +1,152 @@
+{
+ "obligation": "G007 precursor / G006 round economics",
+ "what": "Where an autonomous HCLI science round's wall actually goes, from the round's own receipt",
+ "source_receipt": ".hcli/receipts/c8fb0f07-ce2c-406d-afdc-c867b65ddabe.json",
+ "specimen": "sealed-3.14 resident (qwen3.8-27b, hawking-native)",
+ "runtime": "hawking-native resident, endpoint hawking-native://sealed-3.14/resident, 64 layers",
+ "measurement_contract": {
+  "path": "the engine's agentic tool loop, 6 model calls in one round",
+  "not_a_benchmark": "these are the round's OWN production calls, not a synthetic workload",
+  "concurrency": 1,
+  "runtime_count": 1
+ },
+ "per_call": [
+  {
+   "call": 1,
+   "prompt_tokens": 5320,
+   "prefill_steps": 5320,
+   "prefill_wall_s": 217.45,
+   "prefill_tok_per_s": 24.47,
+   "dispatches": 3085600,
+   "gpu_share_of_prefill_wall": 0.974,
+   "prefix_source": "cold",
+   "prefix_reused_tokens": 0,
+   "shared_prefix_tokens": 0,
+   "checkpoint_missed": false,
+   "completion_tokens": 54,
+   "call_wall_s": 226.579,
+   "wall_growth_last_over_first": 2.2892
+  },
+  {
+   "call": 2,
+   "prompt_tokens": 1948,
+   "prefill_steps": 1948,
+   "prefill_wall_s": 57.26,
+   "prefill_tok_per_s": 34.02,
+   "dispatches": 1129840,
+   "gpu_share_of_prefill_wall": 0.964,
+   "prefix_source": "cold",
+   "prefix_reused_tokens": 0,
+   "shared_prefix_tokens": 696,
+   "checkpoint_missed": false,
+   "completion_tokens": 87,
+   "call_wall_s": 61.772,
+   "wall_growth_last_over_first": 1.5446
+  },
+  {
+   "call": 3,
+   "prompt_tokens": 3064,
+   "prefill_steps": 2368,
+   "prefill_wall_s": 84.85,
+   "prefill_tok_per_s": 27.91,
+   "dispatches": 1373440,
+   "gpu_share_of_prefill_wall": 0.9697,
+   "prefix_source": "checkpoint_restore",
+   "prefix_reused_tokens": 696,
+   "shared_prefix_tokens": 1818,
+   "checkpoint_missed": false,
+   "completion_tokens": 133,
+   "call_wall_s": 92.799,
+   "wall_growth_last_over_first": 1.502
+  },
+  {
+   "call": 4,
+   "prompt_tokens": 4409,
+   "prefill_steps": 2591,
+   "prefill_wall_s": 114.86,
+   "prefill_tok_per_s": 22.56,
+   "dispatches": 1502780,
+   "gpu_share_of_prefill_wall": 0.9748,
+   "prefix_source": "checkpoint_restore",
+   "prefix_reused_tokens": 1818,
+   "shared_prefix_tokens": 2934,
+   "checkpoint_missed": false,
+   "completion_tokens": 91,
+   "call_wall_s": 121.11,
+   "wall_growth_last_over_first": 1.4724
+  },
+  {
+   "call": 5,
+   "prompt_tokens": 2459,
+   "prefill_steps": 2459,
+   "prefill_wall_s": 77.02,
+   "prefill_tok_per_s": 31.93,
+   "dispatches": 1426220,
+   "gpu_share_of_prefill_wall": 0.9639,
+   "prefix_source": "cold",
+   "prefix_reused_tokens": 0,
+   "shared_prefix_tokens": 834,
+   "checkpoint_missed": true,
+   "completion_tokens": 144,
+   "call_wall_s": 84.923,
+   "wall_growth_last_over_first": 1.6649
+  },
+  {
+   "call": 6,
+   "prompt_tokens": 1301,
+   "prefill_steps": 1301,
+   "prefill_wall_s": 35.52,
+   "prefill_tok_per_s": 36.62,
+   "dispatches": 754580,
+   "gpu_share_of_prefill_wall": 0.959,
+   "prefix_source": "cold",
+   "prefix_reused_tokens": 0,
+   "shared_prefix_tokens": 609,
+   "checkpoint_missed": true,
+   "completion_tokens": 172,
+   "call_wall_s": 43.399,
+   "wall_growth_last_over_first": 1.3422
+  }
+ ],
+ "totals": {
+  "prefill_tokens": 15987,
+  "prefill_wall_s": 587.0,
+  "prefill_tok_per_s": 27.24,
+  "completion_tokens": 681,
+  "model_call_wall_s": 630.6,
+  "prefill_share_of_model_wall": 0.9308,
+  "dispatches": 9272460,
+  "dispatches_per_prefill_token": 580.0,
+  "dispatches_per_layer_per_token": 9.06,
+  "prompt_tokens_per_generated_token": 23.5,
+  "prefix_tokens_reused": 2514,
+  "prefix_reuse_fraction": 0.1573
+ },
+ "findings": [
+  "PREFILL RUNS AT DECODE SPEED. 15,987 prompt tokens took 587.0 s = 27.24 tok/s. The sealed qualification path measures decode at 24.41 TPS. Prefill is 1.12x decode, not the order of magnitude a batched prefill would give. The receipt's own attribution says it plainly: prompt tokens are being paid for at decode prices.",
+  "PREFILL IS 93.1% OF THE ROUND. 587.0 s of 630.6 s of model wall, to produce 681 output tokens. The round read 23.5 prompt tokens for every token it generated.",
+  "IT IS NOT HOST BOUND. GPU is 97.0% of prefill wall; host control is 1.4-2.3% per call. Nothing here is fixed by making the Python faster.",
+  "580 DISPATCHES PER TOKEN, 9.06 per layer, identical on every call and every position bucket. 9,272,460 dispatches for one round. Per-layer dispatch count is already tight, so cutting kernels buys little; stepping N tokens together is what divides it.",
+  "COST RISES WITH POSITION, 1.34x-2.29x from first to last bucket within a single call, which implicates full attention over a growing KV rather than a flat per-token cost.",
+  "THE PREFIX CACHE MISSES. Only 2,514 of 15,987 prompt tokens were reused: 15.7%. Two of six calls report checkpoint_missed with a real shared prefix (834 and 609 tokens) and went fully cold anyway, costing 42.8 s = 7.3% of prefill wall."
+ ],
+ "cheapest_levers_in_order": [
+  {
+   "lever": "fix the missed checkpoints",
+   "measured_cost_now_s": 42.7,
+   "share_of_prefill_wall": 0.0728,
+   "why": "two calls shared a prefix and still prefilled from zero; this is above the Metal layer"
+  },
+  {
+   "lever": "raise prefix reuse coverage",
+   "measured": "15.7% of prompt tokens reused",
+   "why": "calls 3 and 4 reused 2,514 of 7,473 prompt tokens; the rest was re-prefilled"
+  },
+  {
+   "lever": "batch the prefill",
+   "why": "the remaining ~84%. Turns per-layer GEMV into one GEMM and divides the dispatch count by N. Cost: the recurrent state must advance chunk-wise rather than per position. This is a Metal change and should follow the two cheap ones."
+  }
+ ],
+ "cannot_settle": "WHICH KERNEL. The rising-with-position shape narrows the field to attention over a growing KV, but only a per-kernel trace (HAWKING_TRACE_DISPATCH=1) attributes the growth to GQA attention vs DeltaNet vs the MLP GEMMs. The discriminator: DeltaNet and the MLP must stay FLAT across position buckets if this is attention.",
+ "honest_limit": "One round, six calls. The per-call spread of prefill rate is 22.6-36.6 tok/s, so the 27.24 aggregate carries a real spread and is not a three-digit number."
+}
