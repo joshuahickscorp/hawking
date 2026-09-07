@@ -247,7 +247,14 @@ mutation is ROLLED BACK, however correct it was:
   path/to/test_x.py                  a bare path to a Python file
   pytest path/to/test_x.py           pytest, optionally with -q -v -x -s --tb=
   python -m pytest path/to/test_x.py
-  python path/to/script.py           exactly two tokens
+  python path/to/test_x.py           exactly two tokens
+
+EVERY named test is executed with pytest, whichever form you use -- the two
+python forms above are rewritten to `python -m pytest <path>`. So the file MUST
+define test functions (`def test_...`). A file of module-level asserts collects
+nothing, pytest exits 5, and the run is recorded NO_EVIDENCE: not accepted.
+Measured: a resident wrote `from probe import VALUE` / `assert VALUE == 7`,
+which is correct Python and proves nothing to this verifier.
 NOT admissible: python -c "...", shell pipelines, &&, redirection, cd, env
 assignments, or any command that is not one of the four forms above. If your
 check needs arbitrary code, WRITE IT INTO A .py FILE in the same mutation and

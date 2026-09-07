@@ -18,7 +18,11 @@ def test_contract_names_every_admissible_form():
     assert "pytest" in block
     assert "python -m pytest" in block
     assert re.search(r"path/to/test_x\.py", block), "bare-path form not published"
-    assert re.search(r"python path/to/script\.py", block), "two-token form not published"
+    # the example was renamed from script.py to test_x.py when the contract
+    # started stating that every form runs under pytest -- a file named
+    # script.py invites exactly the module-level-assert file that collects
+    # nothing.
+    assert re.search(r"python path/to/test_x\.py", block), "two-token form not published"
 
 
 def test_contract_names_the_refused_form_that_actually_blocked_a_unit():
@@ -68,3 +72,27 @@ def test_contract_does_not_forbid_the_test_operation_it_demands():
     assert "TWO operations" in block, "the count a function-plus-test needs is not stated"
     assert "exactly one operation" not in block, \
         "the contradictory phrasing survives"
+
+
+def test_contract_states_that_every_form_runs_under_pytest():
+    # Measured: the contract advertised a `python script.py` form, the runner
+    # rewrites all forms to pytest, and a resident duly wrote a module-level
+    # assert. pytest collected nothing, exit 5, NO_EVIDENCE, no acceptance.
+    block = SRC[SRC.index("ADMISSIBLE TEST FORMS"):][:1400]
+    assert "pytest" in block and "rewritten" in block, \
+        "the contract does not say every form is run under pytest"
+    assert "def test_" in block, "the requirement to define test functions is unstated"
+    assert "exits 5" in block or "NO_EVIDENCE" in block, \
+        "the consequence of a non-collecting file is unstated"
+
+
+def test_all_three_forms_really_do_resolve_to_pytest():
+    from pathlib import Path
+    from hcli.engine import Engine
+    e = Engine.__new__(Engine)
+    e.root = Path(__file__).resolve().parent.parent
+    for form in ("hcli/test_engine_tool_loop.py",
+                 "python hcli/test_engine_tool_loop.py",
+                 "pytest hcli/test_engine_tool_loop.py"):
+        argv = Engine._admit_test(e, form).get("argv") or []
+        assert "pytest" in argv, f"{form} does not resolve to pytest: {argv}"
