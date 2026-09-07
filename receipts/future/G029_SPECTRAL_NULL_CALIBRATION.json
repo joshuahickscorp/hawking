@@ -50,5 +50,41 @@
   "verdict forced DEAD -> the rank-3 positive control fails",
   "deficit hardcoded 0 -> the positive control fails"
  ],
- "tool": "tools/future/spectral_null.py (--selfcheck)"
+ "tool": "tools/future/spectral_null.py (--selfcheck)",
+ "lowrank_threshold_defects": {
+  "d1_null_is_aspect_ratio_dependent": {
+   "claim": "LOWRANK_LIVE_BELOW = 0.40 is compared against a moving target",
+   "measured_null_ratios": {
+    "1024x1024": 0.6063,
+    "2048x1024": 0.7788,
+    "3072x1024": 0.8465,
+    "4096x4096": 0.6065,
+    "2048x768": 0.8286
+   },
+   "consequence": "a square organ and a 3:1 organ have completely different noise floors. 0.40 never false-positives (all nulls >= 0.60) but is far too conservative for wide matrices: a 3072x1024 organ at 0.45 is called DEAD while sitting 47% below its own null."
+  },
+  "d2_cost_claim_is_arithmetically_false": {
+   "shipped_text": "a rank-{rank_90} factor costs more than dense",
+   "measured": "O003's expert tensor is 2048x768 with rank_90 495. Dense is 1,572,864 elements; the factors are 2048x495 + 495x768 = 1,393,920. The factor costs 88.6% of dense -- it SAVES 11.4%.",
+   "missing_mechanism": "break-even rank is mn/(m+n) = 558.5 for this shape, and the tool never computes it. Whether structure EXISTS (deficit vs null) and whether factoring PAYS (rank vs mn/(m+n)) are two different questions the shipped rule conflated into one threshold.",
+   "caveat": "rank_90 captures 90% of spectral ENERGY, which is nowhere near enough to preserve capability. The engineering conclusion that low-rank does not pay here may well survive -- but the stated reason for it was false."
+  },
+  "d3_within_expert_was_not_dead": {
+   "old_verdict": "low-rank factorisation is DEAD (ratio 0.7171 >= 0.4)",
+   "null_calibrated": "the null for shape [2048,768] is 0.8286, so 0.7171 is a 13.5% deficit",
+   "consequence": "real but modest structure, not the absence the threshold reported"
+  }
+ },
+ "dense_organ_heterogeneity": {
+  "specimen": "Qwen3-0.6B, mid-depth layer",
+  "measured_deficit_vs_matched_null": {
+   "k_proj": 41.37,
+   "q_proj": 38.84,
+   "o_proj": 23.62,
+   "gate_proj": 20.17,
+   "up_proj": 11.6
+  },
+  "finding": "within-tensor structure is genuinely ALIVE and strongly organ-dependent -- a 3.6x spread in deficit across organs of one layer -- while cross-layer sharing on the same body is 0.01% from its null. The two questions have opposite answers, and the shipped thresholds got both backwards: it would call the MLP organs' cross-layer sharing LIVE (it is noise) and call within-tensor low-rank DEAD (it is 12-41% real).",
+  "consequence": "this is the unequal-allocation evidence S012 sections 22 and 32 require, and it costs seconds per body to measure"
+ }
 }
