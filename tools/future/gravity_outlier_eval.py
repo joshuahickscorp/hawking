@@ -152,6 +152,27 @@ def _parse_expert_spec(spec: str) -> dict[str, Any]:
     # writes into the residual stream, so it is where output diversity shows;
     # gate/up set the likelihood. Spend the fine geometry where diversity is
     # made and the coarse geometry where it is not.
+    # pqmixrev: the discriminating reverse. The forward mix scored WORSE on
+    # perplexity than both pure arms, which suggests perplexity tracks
+    # down_proj rather than gate/up. Swapping the geometries tests exactly that
+    # and costs fewer bytes while doing it.
+    # pqalloc: the ONE measurement-driven allocation change S011 §3 permits.
+    # Swapping only down_proj's geometry moved BOTH axes (ppl 4.4601 -> 3.9910,
+    # r4 0.5591 -> 0.7419), so the trade is localised there and gate/up barely
+    # matters. Keep the 2-D shape that buys diversity and double the codes to
+    # buy back likelihood; gate/up keeps the cheap 4-D geometry.
+    m = re.fullmatch(r"pqalloc(percal)?", s, re.I)
+    if m:
+        return {"form": "pq", "sub_dim": 4, "codebook": 512,
+                "down_sub_dim": 2, "down_codebook": 32, "mixed": True,
+                "calibrated": bool(m.group(1)), "per_expert": bool(m.group(1)),
+                "frac": 0.0, "group": 128, "bits": 2}
+    m = re.fullmatch(r"pqmixrev(percal)?", s, re.I)
+    if m:
+        return {"form": "pq", "sub_dim": 2, "codebook": 16,
+                "down_sub_dim": 4, "down_codebook": 512, "mixed": True,
+                "calibrated": bool(m.group(1)), "per_expert": bool(m.group(1)),
+                "frac": 0.0, "group": 128, "bits": 2}
     m = re.fullmatch(r"pqmix(percal)?", s, re.I)
     if m:
         return {"form": "pq", "sub_dim": 4, "codebook": 512,

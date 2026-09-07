@@ -1,0 +1,79 @@
+{
+ "date": "2026-09-06",
+ "kind": "SCAR",
+ "class": "PRODUCT_QUANTIZATION",
+ "specimen": "O003",
+ "verdict": "PQ cannot satisfy the complete capability gate below 2.5 complete EBPW.",
+ "arms_measured": [
+  {
+   "spec": "pq4k256",
+   "ebpw": 2.1865,
+   "ppl": 4.2697,
+   "median_4gram": 0.7849,
+   "ppl_passes": false,
+   "r4_multiple_of_gate": 4.86
+  },
+  {
+   "spec": "pqpercal2k16",
+   "ebpw": 2.1864,
+   "ppl": 4.3945,
+   "median_4gram": 0.3226,
+   "ppl_passes": false,
+   "r4_multiple_of_gate": 2.0
+  },
+  {
+   "spec": "pqmixrevpercal",
+   "ebpw": 2.2596,
+   "ppl": 3.991,
+   "median_4gram": 0.7419,
+   "ppl_passes": false,
+   "r4_multiple_of_gate": 4.6
+  },
+  {
+   "spec": "pqmixpercal",
+   "ebpw": 2.3327,
+   "ppl": 4.4601,
+   "median_4gram": 0.5591,
+   "ppl_passes": false,
+   "r4_multiple_of_gate": 3.46
+  },
+  {
+   "spec": "pq4k512",
+   "ebpw": 2.4059,
+   "ppl": 3.6236,
+   "median_4gram": 0.7849,
+   "ppl_passes": false,
+   "r4_multiple_of_gate": 4.86
+  },
+  {
+   "spec": "pqpercal4k512",
+   "ebpw": 2.4059,
+   "ppl": 3.5128,
+   "median_4gram": 0.6667,
+   "ppl_passes": true,
+   "r4_multiple_of_gate": 4.13
+  },
+  {
+   "spec": "pqallocpercal",
+   "ebpw": 2.479,
+   "ppl": 3.5927,
+   "median_4gram": 0.5054,
+   "ppl_passes": true,
+   "r4_multiple_of_gate": 3.13
+  }
+ ],
+ "BEST_ON_EACH_AXIS": {
+  "perplexity": "pqpercal4k512 3.5128 PASSES",
+  "repetition": "pqpercal2k16 0.3226, still 2.0x the 0.1614 limit"
+ },
+ "NO_ARM_PASSES_BOTH": "Seven configurations across three geometries (d=2, d=4, and two mixed allocations) and two calibrations. The best repetition anywhere below 2.5 EBPW is 0.3226 -- 3x worse than the affine point at 3.2831 EBPW, which achieves 0.1075 and passes.",
+ "THE_ALLOCATION_REASONING_WAS_CORRECT_AND_INSUFFICIENT": "Swapping only down_proj's geometry moved BOTH axes (ppl 4.4601 -> 3.9910, r4 0.5591 -> 0.7419), localising the trade there. The one measurement-driven change that followed -- keep the 2-D shape on down_proj, double its codes 16 -> 32 -- improved BOTH against the forward mix (ppl 4.4601 -> 3.5927, r4 0.5591 -> 0.5054) and cleared perplexity. Repetition remained 3.1x from its limit. The reasoning was right; the class is the constraint.",
+ "MECHANISM_RETAINED": "Product quantization maps many distinct sub-vectors onto one centroid, narrowing the range of expert outputs. Every code budget reachable under 2.5 EBPW leaves that range too narrow to generate without looping. More codes buys likelihood faster than it buys diversity.",
+ "REOPEN_CONDITION": "PQ returns as a COMPONENT of a structural representation -- a codebook over residuals after shared structure is removed, where the surviving signal has less range to preserve -- not as the whole representation of the expert organ.",
+ "WHAT_TRANSFERS": [
+  "per-expert calibration beats pooled in 4 classes, always at fixed bytes",
+  "reconstruction error misranks capability on this organism (PQ had 45% lower error than affine at fewer bits and worse capability)",
+  "likelihood and generation diversity diverge; a conjunction gate is required",
+  "the likelihood/diversity trade localises to down_proj, not gate/up"
+ ]
+}
