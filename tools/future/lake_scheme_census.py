@@ -33,6 +33,25 @@ DTYPE_BITS = {"BOOL": 8, "U8": 8, "I8": 8, "F8_E4M3": 8, "F8_E5M2": 8, "F8_E8M0"
               "U32": 32, "I32": 32, "F32": 32, "U64": 64, "I64": 64, "F64": 64}
 _LAYER_RE = re.compile(r"layers\.(\d+)")
 
+# An MoE organ is an INDEXED SET of experts, or a stacked tensor whose first axis
+# IS the expert axis. A substring match on "expert" is not enough: pi0_base's keys
+# read `paligemma_with_expert.paligemma.model.vision_tower...`, where the word is
+# part of a submodule name, and that alone classified a body with no MoE organ as
+# MOE-FLOAT. Same shape as the filter that excluded "hawkingd" because it contains
+# "awk".
+_EXPERT_INDEXED = re.compile(r"experts?\.(\d+)\.")
+_EXPERT_STACKED = re.compile(r"\.experts?\.[A-Za-z_][\w]*$")
+
+
+def _is_expert_organ(key: str, entry: dict) -> bool:
+    if "shared" in key:
+        return False
+    if _EXPERT_INDEXED.search(key):
+        return True
+    # stacked: `...mlp.experts.gate_up_proj` with the expert axis first
+    shape = entry.get("shape") or []
+    return bool(_EXPERT_STACKED.search(key) and len(shape) == 3 and (shape[0] or 0) >= 8)
+
 
 def read_header(path: str) -> dict:
     with open(path, "rb") as fh:
@@ -67,6 +86,7 @@ def classify(path: str) -> dict:
                 "present_extensions": dict(present)}
 
     n_tensors = 0
+    index_keys: list = []
     expert_dtypes: collections.Counter = collections.Counter()
     expert_layers: set[int] = set()
     scale_keys: set[str] = set()
@@ -74,7 +94,10 @@ def classify(path: str) -> dict:
     for f in shards:
         for k, e in read_header(f).items():
             n_tensors += 1
-            if "expert" not in k.lower():
+            index_keys.append(k)
+            if not _is_expert_organ(k, e):
+                if "expert" in k.lower() and k.endswith(SCALE_SUFFIXES):
+                    scale_keys.add(k.rsplit(".", 1)[-1])
                 continue
             if k.endswith(SCALE_SUFFIXES):
                 scale_keys.add(k.rsplit(".", 1)[-1])
@@ -93,9 +116,13 @@ def classify(path: str) -> dict:
            "key_pattern": patterns.most_common(1)[0][0] if patterns else None}
 
     if not expert_dtypes:
+        namesake = any("expert" in k.lower() for k in index_keys)
         out.update(klass="DENSE",
-                   blocked_by="no key contains 'expert'; expert-organ anatomy is "
-                              "undefined for this body -- it owes a DENSE anatomy instead")
+                   blocked_by=("keys contain the word 'expert' but as a SUBMODULE NAME, not an "
+                               "indexed expert set or a stacked expert axis; there is no MoE "
+                               "organ here" if namesake else
+                               "no key contains 'expert'; expert-organ anatomy is undefined for "
+                               "this body -- it owes a DENSE anatomy instead"))
         return out
     nonfloat = {d for d in expert_dtypes if d not in FLOAT_DTYPES}
     if nonfloat:
@@ -291,6 +318,26 @@ def _selfcheck() -> None:
         assert r["klass"] != "NO-SAFETENSORS", r
         assert r["n_shards"] == 1, r
         shutil.move(os.path.join(nest, "m.safetensors"), os.path.join(d, "m.safetensors"))
+
+        # The word "expert" inside a SUBMODULE NAME is not an MoE organ.
+        # pi0_base's keys read paligemma_with_expert.paligemma.model.vision_tower...
+        # and a substring match classified it MOE-FLOAT.
+        hdr = {"paligemma_with_expert.paligemma.model.vision_tower.encoder.layers.0.weight":
+               {"dtype": "BF16", "shape": [4, 4], "data_offsets": [0, 32]}}
+        blob = json.dumps(hdr).encode()
+        with open(os.path.join(d, "m.safetensors"), "wb") as fh:
+            fh.write(struct.pack("<Q", len(blob)) + blob + b"\0" * 32)
+        r = classify(d)
+        assert r["klass"] == "DENSE", r
+        assert "SUBMODULE NAME" in r["blocked_by"], r["blocked_by"]
+
+        # A shared expert is a different organ and must not count either.
+        hdr = {"model.layers.0.mlp.shared_experts.down_proj.weight":
+               {"dtype": "BF16", "shape": [4, 4], "data_offsets": [0, 32]}}
+        blob = json.dumps(hdr).encode()
+        with open(os.path.join(d, "m.safetensors"), "wb") as fh:
+            fh.write(struct.pack("<Q", len(blob)) + blob + b"\0" * 32)
+        assert classify(d)["klass"] == "DENSE", classify(d)
 
         # No experts at all is DENSE, not an empty MoE answer.
         hdr = {"model.layers.0.self_attn.q_proj.weight":

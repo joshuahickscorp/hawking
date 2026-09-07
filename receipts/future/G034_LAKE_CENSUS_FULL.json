@@ -2,8 +2,8 @@
  "n": 56,
  "tally": {
   "MOE-PREQUANTIZED": 3,
-  "MOE-FLOAT": 11,
-  "DENSE": 35,
+  "MOE-FLOAT": 10,
+  "DENSE": 36,
   "NO-SAFETENSORS": 7
  },
  "rows": [
@@ -11,7 +11,6 @@
    "n_shards": 96,
    "n_tensors": 497220,
    "expert_dtypes": {
-    "BF16": 552,
     "U8": 247296
    },
    "expert_layers": [
@@ -38,7 +37,7 @@
    "n_shards": 33,
    "n_tensors": 1048,
    "expert_dtypes": {
-    "BF16": 160
+    "BF16": 80
    },
    "expert_layers": [
     2,
@@ -62,7 +61,7 @@
    "n_shards": 131,
    "n_tensors": 1658,
    "expert_dtypes": {
-    "BF16": 294
+    "BF16": 98
    },
    "expert_layers": [
     0,
@@ -86,7 +85,7 @@
    "n_shards": 131,
    "n_tensors": 1658,
    "expert_dtypes": {
-    "BF16": 294
+    "BF16": 98
    },
    "expert_layers": [
     0,
@@ -110,7 +109,7 @@
    "n_shards": 62,
    "n_tensors": 76108,
    "expert_dtypes": {
-    "F8_E4M3": 37281
+    "F8_E4M3": 37152
    },
    "expert_layers": [
     3,
@@ -136,7 +135,7 @@
    "n_shards": 47,
    "n_tensors": 18329,
    "expert_dtypes": {
-    "BF16": 17802
+    "BF16": 17664
    },
    "expert_layers": [
     1,
@@ -160,7 +159,6 @@
    "n_shards": 46,
    "n_tensors": 69187,
    "expert_dtypes": {
-    "F8_E4M3": 132,
     "I8": 33792
    },
    "expert_layers": [
@@ -172,7 +170,7 @@
    ],
    "key_pattern": "layers.N.ffn.experts.N.w1.weight",
    "klass": "MOE-PREQUANTIZED",
-   "blocked_by": "expert payload is ['F8_E4M3', 'I8'] with ['scale'] scale tensors -- a spectrum over quantization codes measures the codebook, not the organism",
+   "blocked_by": "expert payload is ['I8'] with ['scale'] scale tensors -- a spectrum over quantization codes measures the codebook, not the organism",
    "stored_bytes": 159609485896,
    "source_params": 149210695634,
    "complete_ebpw": 8.558,
@@ -225,7 +223,7 @@
    "n_shards": 20,
    "n_tensors": 20493,
    "expert_dtypes": {
-    "BF16": 20046
+    "BF16": 19968
    },
    "expert_layers": [
     1,
@@ -359,7 +357,6 @@
    "n_shards": 1,
    "n_tensors": 7610,
    "expert_dtypes": {
-    "F32": 38,
     "BF16": 7296
    },
    "expert_layers": [
@@ -384,7 +381,7 @@
    "n_shards": 7,
    "n_tensors": 5679,
    "expert_dtypes": {
-    "BF16": 5070
+    "BF16": 4992
    },
    "expert_layers": [
     1,
@@ -634,17 +631,12 @@
   {
    "n_shards": 1,
    "n_tensors": 777,
-   "expert_dtypes": {
-    "F32": 767
-   },
-   "expert_layers": [
-    0,
-    26
-   ],
+   "expert_dtypes": {},
+   "expert_layers": null,
    "scale_keys": [],
-   "key_pattern": "paligemma_with_expert.paligemma.model.vision_tower.vision_model.encoder.layers.N.layer_norm1.bias",
-   "klass": "MOE-FLOAT",
-   "blocked_by": "",
+   "key_pattern": null,
+   "klass": "DENSE",
+   "blocked_by": "keys contain the word 'expert' but as a SUBMODULE NAME, not an indexed expert set or a stacked expert axis; there is no MoE organ here",
    "stored_bytes": 14005488704,
    "source_params": 3501372176,
    "complete_ebpw": 32.0,
@@ -1143,7 +1135,7 @@
    "family": "sam2_video"
   }
  ],
- "expert_anatomy_reachable": 11,
- "reachable_gib": 1723.0,
- "blocked_gib": 2666.0
+ "expert_anatomy_reachable": 10,
+ "reachable_gib": 1710.0,
+ "blocked_gib": 2679.0
 }

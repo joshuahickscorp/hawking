@@ -1507,7 +1507,7 @@
    "slug": "lerobot--pi0_base@25c379b52ba2",
    "gib": 13.0,
    "family": "UNKNOWN",
-   "class": "MOE-FLOAT",
+   "class": "DENSE",
    "axes": {
     "anatomy": {
      "state": "OWED",
