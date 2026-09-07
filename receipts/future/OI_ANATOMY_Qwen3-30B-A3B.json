@@ -1,0 +1,46 @@
+{
+ "snapshot": "/Users/scammermike/.cache/huggingface/hub/models--Qwen--Qwen3-30B-A3B-Instruct-2507/snapshots/0d7cf23991f47feeb3a57ecb4c9cee8ea4a17bfe/",
+ "layer": 0,
+ "storage": "per-expert",
+ "cross_expert": [
+  {
+   "n": 128,
+   "participation": 125.39,
+   "ratio": 0.9796,
+   "rank_90": 110,
+   "top1_share": 0.0101,
+   "tensor": "down_proj"
+  },
+  {
+   "n": 128,
+   "participation": 123.44,
+   "ratio": 0.9644,
+   "rank_90": 108,
+   "top1_share": 0.0115,
+   "tensor": "gate_proj"
+  },
+  {
+   "n": 128,
+   "participation": 122.35,
+   "ratio": 0.9559,
+   "rank_90": 106,
+   "top1_share": 0.0122,
+   "tensor": "up_proj"
+  }
+ ],
+ "within_expert": {
+  "shape": [
+   2048,
+   768
+  ],
+  "full_rank": 768,
+  "participation": 550.7,
+  "ratio": 0.7171,
+  "rank_90": 495
+ },
+ "hypotheses": [
+  "cross-expert sharing is DEAD (ratio 0.9559 >= 0.95): skip shared basis, common+delta, clustering, alignment",
+  "low-rank factorisation is DEAD (ratio 0.7171 >= 0.4): a rank-495 factor costs more than dense",
+  "NO LINEAR STRUCTURE AVAILABLE: go non-linear (generated coefficients, procedural reconstruction, router-conditioned representation) or accept quantization as the ceiling for this organism"
+ ]
+}
