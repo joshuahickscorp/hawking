@@ -1,0 +1,348 @@
+{
+ "TEXT-DECODER": [
+  {
+   "gib": 1453.8,
+   "slug": "moonshotai--Kimi-K3@9f62e4e9fffb",
+   "model_type": "kimi_linear",
+   "why": ""
+  },
+  {
+   "gib": 495.4,
+   "slug": "thinkingmachines--Inkling-Small@8cc5877b44d3",
+   "model_type": "inkling_mm_model",
+   "why": ""
+  },
+  {
+   "gib": 335.3,
+   "slug": "windowsxp811203--Qwen3.8-Flash-Next-Abliterated@deb02632504b",
+   "model_type": "qwen4_exp_text",
+   "why": ""
+  },
+  {
+   "gib": 335.3,
+   "slug": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+   "model_type": "qwen4_exp_text",
+   "why": ""
+  },
+  {
+   "gib": 305.8,
+   "slug": "zai-org--GLM-5.3-Flash@04c4e9e95c5d",
+   "model_type": "glm5_next_text",
+   "why": ""
+  },
+  {
+   "gib": 205.8,
+   "slug": "zai-org--GLM-4.5-Air@a24ceef6ce4f",
+   "model_type": "glm4_moe",
+   "why": ""
+  },
+  {
+   "gib": 148.7,
+   "slug": "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+   "model_type": "deepseek_v4",
+   "why": ""
+  },
+  {
+   "gib": 135.4,
+   "slug": "Qwen--Qwen2.5-72B-Instruct@495f39366efe",
+   "model_type": "qwen2",
+   "why": ""
+  },
+  {
+   "gib": 91.5,
+   "slug": "moonshotai--Kimi-Linear-48B-A3B-Instruct@e1df551a4471",
+   "model_type": "kimi_linear",
+   "why": ""
+  },
+  {
+   "gib": 89.5,
+   "slug": "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+   "model_type": "mistral",
+   "why": ""
+  },
+  {
+   "gib": 57.9,
+   "slug": "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+   "model_type": "qwen3_vl_moe_text",
+   "why": ""
+  },
+  {
+   "gib": 56.9,
+   "slug": "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+   "model_type": "qwen3_moe",
+   "why": ""
+  },
+  {
+   "gib": 56.9,
+   "slug": "Qwen--Qwen3-Coder-30B-A3B-Instruct@b2cff646eb4b",
+   "model_type": "qwen3_moe",
+   "why": ""
+  },
+  {
+   "gib": 44.4,
+   "slug": "LiquidAI--LFM2-24B-A2B@a3bbacd91a67",
+   "model_type": "lfm2_moe",
+   "why": ""
+  },
+  {
+   "gib": 30.6,
+   "slug": "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+   "model_type": "kimi_vl",
+   "why": ""
+  },
+  {
+   "gib": 27.5,
+   "slug": "Qwen--Qwen3-14B@40c069824f42",
+   "model_type": "qwen3",
+   "why": ""
+  },
+  {
+   "gib": 27.3,
+   "slug": "microsoft--Phi-4-reasoning-plus@69baf8528e1b",
+   "model_type": "phi3",
+   "why": ""
+  },
+  {
+   "gib": 24.7,
+   "slug": "RWKV--RWKV7-13.3B-20260805@64ffe5934178",
+   "model_type": "rwkv7",
+   "why": ""
+  },
+  {
+   "gib": 16.3,
+   "slug": "Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8",
+   "model_type": "qwen3_vl_text",
+   "why": ""
+  },
+  {
+   "gib": 15.4,
+   "slug": "GSAI-ML--iLLaDA-8B-Base@a1b5b5f8a31a",
+   "model_type": "illada",
+   "why": ""
+  },
+  {
+   "gib": 14.2,
+   "slug": "Dream-org--Dream-v0-Instruct-7B@05334cb9faaf",
+   "model_type": "dream",
+   "why": ""
+  },
+  {
+   "gib": 14.1,
+   "slug": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+   "model_type": "falcon_h1",
+   "why": ""
+  },
+  {
+   "gib": 13.6,
+   "slug": "allenai--Olmo-3-1025-7B@a81bae42db39",
+   "model_type": "olmo3",
+   "why": ""
+  },
+  {
+   "gib": 13.4,
+   "slug": "bigcode--starcoder2-7b@bb9afde76d79",
+   "model_type": "starcoder2",
+   "why": ""
+  },
+  {
+   "gib": 12.9,
+   "slug": "ibm-granite--granite-4.0-h-tiny@791e0d3d28c8",
+   "model_type": "granitemoehybrid",
+   "why": ""
+  },
+  {
+   "gib": 12.0,
+   "slug": "microsoft--Phi-4-multimodal-instruct@93f923e1a772",
+   "model_type": "phi4mm",
+   "why": ""
+  },
+  {
+   "gib": 8.4,
+   "slug": "HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02",
+   "model_type": "llama",
+   "why": ""
+  },
+  {
+   "gib": 7.5,
+   "slug": "Qwen--Qwen3-4B-Instruct-2507@cdbee75f17c0",
+   "model_type": "qwen3",
+   "why": ""
+  },
+  {
+   "gib": 7.2,
+   "slug": "microsoft--Phi-4-mini-instruct@cfbefacb9925",
+   "model_type": "phi3",
+   "why": ""
+  },
+  {
+   "gib": 6.0,
+   "slug": "ai21labs--AI21-Jamba2-3B@525c6c8e1d9f",
+   "model_type": "jamba",
+   "why": ""
+  },
+  {
+   "gib": 6.0,
+   "slug": "ibm-granite--granite-4.0-h-micro@d5f01a3ea75f",
+   "model_type": "granitemoehybrid",
+   "why": ""
+  },
+  {
+   "gib": 5.0,
+   "slug": "LiquidAI--LFM2.5-2.6B-Base@c57bdaed1ef1",
+   "model_type": "lfm2",
+   "why": ""
+  },
+  {
+   "gib": 4.5,
+   "slug": "microsoft--bitnet-b1.58-2B-4T-bf16@276681394656",
+   "model_type": "bitnet",
+   "why": ""
+  },
+  {
+   "gib": 3.1,
+   "slug": "tiiuae--Falcon3-1B-Instruct@28ba2251970a",
+   "model_type": "llama",
+   "why": ""
+  },
+  {
+   "gib": 2.9,
+   "slug": "google--flan-t5-large@0613663d0d48",
+   "model_type": "t5",
+   "why": ""
+  },
+  {
+   "gib": 2.2,
+   "slug": "LiquidAI--LFM2.5-1.2B-Instruct@0f604ada3f76",
+   "model_type": "lfm2",
+   "why": ""
+  },
+  {
+   "gib": 1.5,
+   "slug": "openai--whisper-large-v3-turbo@41f01f3fe87f",
+   "model_type": "whisper",
+   "why": ""
+  },
+  {
+   "gib": 1.4,
+   "slug": "Qwen--Qwen3-0.6B@c1899de289a0",
+   "model_type": "qwen3",
+   "why": ""
+  },
+  {
+   "gib": 1.1,
+   "slug": "Qwen--Qwen3-Embedding-0.6B@97b0c614be4d",
+   "model_type": "qwen3",
+   "why": ""
+  },
+  {
+   "gib": 1.1,
+   "slug": "microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361",
+   "model_type": "bitnet",
+   "why": ""
+  }
+ ],
+ "NON-TEXT": [
+  {
+   "gib": 117.5,
+   "slug": "Wan-AI--Wan2.2-T2V-A14B@c8c270b13ee0",
+   "model_type": "",
+   "why": "model_type (absent), architectures (absent): not a text sequence model"
+  },
+  {
+   "gib": 76.6,
+   "slug": "arcinstitute--evo2_40b@d529aa57c307",
+   "model_type": "",
+   "why": "model_type (absent), architectures (absent): not a text sequence model"
+  },
+  {
+   "gib": 13.2,
+   "slug": "tencent--HunyuanVideo@6204ad6aea1a",
+   "model_type": "",
+   "why": "model_type (absent), architectures (absent): not a text sequence model"
+  },
+  {
+   "gib": 13.0,
+   "slug": "facebook--musicgen-large@15ccdc920998",
+   "model_type": "musicgen",
+   "why": "model_type musicgen, architectures MusicgenForConditionalGeneration: not a text sequence model"
+  },
+  {
+   "gib": 12.8,
+   "slug": "arcinstitute--evo2_7b@bda0089f9258",
+   "model_type": "",
+   "why": "model_type (absent), architectures (absent): not a text sequence model"
+  },
+  {
+   "gib": 4.1,
+   "slug": "boltz-community--boltz-2@6fdef46d763f",
+   "model_type": "",
+   "why": "model_type (absent), architectures (absent): not a text sequence model"
+  },
+  {
+   "gib": 3.9,
+   "slug": "facebook--vjepa2-vitg-fpc64-256@875c192b7b70",
+   "model_type": "vjepa2",
+   "why": "model_type vjepa2, architectures VJEPA2Model: not a text sequence model"
+  },
+  {
+   "gib": 1.9,
+   "slug": "google--timesfm-2.0-500m-pytorch@dc2443792ce5",
+   "model_type": "timesfm",
+   "why": "model_type timesfm, architectures TimesFmModelForPrediction: not a text sequence model"
+  },
+  {
+   "gib": 1.2,
+   "slug": "depth-anything--Depth-Anything-V2-Large-hf@7581137eff8d",
+   "model_type": "depth_anything",
+   "why": "model_type depth_anything, architectures DepthAnythingForDepthEstimation: not a text sequence model"
+  },
+  {
+   "gib": 0.8,
+   "slug": "facebook--sam2.1-hiera-large@665f8e2ad61c",
+   "model_type": "sam2_video",
+   "why": "model_type sam2_video, architectures Sam2VideoModel: not a text sequence model"
+  }
+ ],
+ "UNCERTAIN": [
+  {
+   "gib": 16.7,
+   "slug": "nvidia--audio-flamingo-3@ee26c5842398",
+   "model_type": "llava_llama",
+   "why": "no vocab_size and no architectures in config -- cannot classify from disk"
+  },
+  {
+   "gib": 14.7,
+   "slug": "kyutai--moshika-pytorch-bf16@a49141e28b3d",
+   "model_type": "",
+   "why": "no vocab_size and no architectures in config -- cannot classify from disk"
+  },
+  {
+   "gib": 13.0,
+   "slug": "lerobot--pi0_base@25c379b52ba2",
+   "model_type": "",
+   "why": "no vocab_size and no architectures in config -- cannot classify from disk"
+  }
+ ],
+ "TEXT-NO-TOKENIZER": [
+  {
+   "gib": 2.8,
+   "slug": "state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994",
+   "model_type": "",
+   "why": "vocab 128256 but no tokenizer file on disk"
+  },
+  {
+   "gib": 2.8,
+   "slug": "state-spaces--mamba3-siso-1.5b@5cfc721542ec",
+   "model_type": "",
+   "why": "vocab 128256 but no tokenizer file on disk"
+  }
+ ],
+ "ENCODER": [
+  {
+   "gib": 1.5,
+   "slug": "answerdotai--ModernBERT-large@45bb4654a4d5",
+   "model_type": "modernbert",
+   "why": "ModernBertForMaskedLM: a masked encoder, not an autoregressive decoder"
+  }
+ ]
+}

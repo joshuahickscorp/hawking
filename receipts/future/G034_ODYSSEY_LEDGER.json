@@ -453,15 +453,15 @@
      "receipt": null
     },
     "nr_candidate": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type (absent), architectures (absent): not a text sequence model. That gate is undefined for this body, so an NR candidate cannot be qualified and an NX disposition cannot be reached. REOPEN CONDITION: a role-specific capability gate is defined for this modality (directive 115 allows role specialisation), or the body is re-scoped as a component of a text organism rather than an organism itself.",
      "receipt": null
     },
     "nx_disposition": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type (absent), architectures (absent): not a text sequence model. That gate is undefined for this body, so an NR candidate cannot be qualified and an NX disposition cannot be reached. REOPEN CONDITION: a role-specific capability gate is defined for this modality (directive 115 allows role specialisation), or the body is re-scoped as a component of a text organism rather than an organism itself.",
      "receipt": null
     }
    }
@@ -609,15 +609,15 @@
      "receipt": null
     },
     "nr_candidate": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type (absent), architectures (absent): not a text sequence model. That gate is undefined for this body, so an NR candidate cannot be qualified and an NX disposition cannot be reached. REOPEN CONDITION: a role-specific capability gate is defined for this modality (directive 115 allows role specialisation), or the body is re-scoped as a component of a text organism rather than an organism itself.",
      "receipt": null
     },
     "nx_disposition": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type (absent), architectures (absent): not a text sequence model. That gate is undefined for this body, so an NR candidate cannot be qualified and an NX disposition cannot be reached. REOPEN CONDITION: a role-specific capability gate is defined for this modality (directive 115 allows role specialisation), or the body is re-scoped as a component of a text organism rather than an organism itself.",
      "receipt": null
     }
    }
@@ -1490,15 +1490,15 @@
      "receipt": null
     },
     "nr_candidate": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type (absent), architectures (absent): not a text sequence model. That gate is undefined for this body, so an NR candidate cannot be qualified and an NX disposition cannot be reached. REOPEN CONDITION: a role-specific capability gate is defined for this modality (directive 115 allows role specialisation), or the body is re-scoped as a component of a text organism rather than an organism itself.",
      "receipt": null
     },
     "nx_disposition": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type (absent), architectures (absent): not a text sequence model. That gate is undefined for this body, so an NR candidate cannot be qualified and an NX disposition cannot be reached. REOPEN CONDITION: a role-specific capability gate is defined for this modality (directive 115 allows role specialisation), or the body is re-scoped as a component of a text organism rather than an organism itself.",
      "receipt": null
     }
    }
@@ -1590,15 +1590,15 @@
      "receipt": null
     },
     "nr_candidate": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type musicgen, architectures MusicgenForConditionalGeneration: not a text sequence model. That gate is undefined for this body, so an NR candidate cannot be qualified and an NX disposition cannot be reached. REOPEN CONDITION: a role-specific capability gate is defined for this modality (directive 115 allows role specialisation), or the body is re-scoped as a component of a text organism rather than an organism itself.",
      "receipt": null
     },
     "nx_disposition": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type musicgen, architectures MusicgenForConditionalGeneration: not a text sequence model. That gate is undefined for this body, so an NR candidate cannot be qualified and an NX disposition cannot be reached. REOPEN CONDITION: a role-specific capability gate is defined for this modality (directive 115 allows role specialisation), or the body is re-scoped as a component of a text organism rather than an organism itself.",
      "receipt": null
     }
    }
@@ -1690,15 +1690,15 @@
      "receipt": null
     },
     "nr_candidate": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type (absent), architectures (absent): not a text sequence model. That gate is undefined for this body, so an NR candidate cannot be qualified and an NX disposition cannot be reached. REOPEN CONDITION: a role-specific capability gate is defined for this modality (directive 115 allows role specialisation), or the body is re-scoped as a component of a text organism rather than an organism itself.",
      "receipt": null
     },
     "nx_disposition": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type (absent), architectures (absent): not a text sequence model. That gate is undefined for this body, so an NR candidate cannot be qualified and an NX disposition cannot be reached. REOPEN CONDITION: a role-specific capability gate is defined for this modality (directive 115 allows role specialisation), or the body is re-scoped as a component of a text organism rather than an organism itself.",
      "receipt": null
     }
    }
@@ -2140,15 +2140,15 @@
      "receipt": null
     },
     "nr_candidate": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type (absent), architectures (absent): not a text sequence model. That gate is undefined for this body, so an NR candidate cannot be qualified and an NX disposition cannot be reached. REOPEN CONDITION: a role-specific capability gate is defined for this modality (directive 115 allows role specialisation), or the body is re-scoped as a component of a text organism rather than an organism itself.",
      "receipt": null
     },
     "nx_disposition": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type (absent), architectures (absent): not a text sequence model. That gate is undefined for this body, so an NR candidate cannot be qualified and an NX disposition cannot be reached. REOPEN CONDITION: a role-specific capability gate is defined for this modality (directive 115 allows role specialisation), or the body is re-scoped as a component of a text organism rather than an organism itself.",
      "receipt": null
     }
    }
@@ -2190,15 +2190,15 @@
      "receipt": null
     },
     "nr_candidate": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type vjepa2, architectures VJEPA2Model: not a text sequence model. That gate is undefined for this body, so an NR candidate cannot be qualified and an NX disposition cannot be reached. REOPEN CONDITION: a role-specific capability gate is defined for this modality (directive 115 allows role specialisation), or the body is re-scoped as a component of a text organism rather than an organism itself.",
      "receipt": null
     },
     "nx_disposition": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type vjepa2, architectures VJEPA2Model: not a text sequence model. That gate is undefined for this body, so an NR candidate cannot be qualified and an NX disposition cannot be reached. REOPEN CONDITION: a role-specific capability gate is defined for this modality (directive 115 allows role specialisation), or the body is re-scoped as a component of a text organism rather than an organism itself.",
      "receipt": null
     }
    }
@@ -2490,15 +2490,15 @@
      "receipt": null
     },
     "nr_candidate": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type timesfm, architectures TimesFmModelForPrediction: not a text sequence model. That gate is undefined for this body, so an NR candidate cannot be qualified and an NX disposition cannot be reached. REOPEN CONDITION: a role-specific capability gate is defined for this modality (directive 115 allows role specialisation), or the body is re-scoped as a component of a text organism rather than an organism itself.",
      "receipt": null
     },
     "nx_disposition": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type timesfm, architectures TimesFmModelForPrediction: not a text sequence model. That gate is undefined for this body, so an NR candidate cannot be qualified and an NX disposition cannot be reached. REOPEN CONDITION: a role-specific capability gate is defined for this modality (directive 115 allows role specialisation), or the body is re-scoped as a component of a text organism rather than an organism itself.",
      "receipt": null
     }
    }
@@ -2690,15 +2690,15 @@
      "receipt": null
     },
     "nr_candidate": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type depth_anything, architectures DepthAnythingForDepthEstimation: not a text sequence model. That gate is undefined for this body, so an NR candidate cannot be qualified and an NX disposition cannot be reached. REOPEN CONDITION: a role-specific capability gate is defined for this modality (directive 115 allows role specialisation), or the body is re-scoped as a component of a text organism rather than an organism itself.",
      "receipt": null
     },
     "nx_disposition": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type depth_anything, architectures DepthAnythingForDepthEstimation: not a text sequence model. That gate is undefined for this body, so an NR candidate cannot be qualified and an NX disposition cannot be reached. REOPEN CONDITION: a role-specific capability gate is defined for this modality (directive 115 allows role specialisation), or the body is re-scoped as a component of a text organism rather than an organism itself.",
      "receipt": null
     }
    }
@@ -2840,15 +2840,15 @@
      "receipt": null
     },
     "nr_candidate": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type sam2_video, architectures Sam2VideoModel: not a text sequence model. That gate is undefined for this body, so an NR candidate cannot be qualified and an NX disposition cannot be reached. REOPEN CONDITION: a role-specific capability gate is defined for this modality (directive 115 allows role specialisation), or the body is re-scoped as a component of a text organism rather than an organism itself.",
      "receipt": null
     },
     "nx_disposition": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type sam2_video, architectures Sam2VideoModel: not a text sequence model. That gate is undefined for this body, so an NR candidate cannot be qualified and an NX disposition cannot be reached. REOPEN CONDITION: a role-specific capability gate is defined for this modality (directive 115 allows role specialisation), or the body is re-scoped as a component of a text organism rather than an organism itself.",
      "receipt": null
     }
    }
