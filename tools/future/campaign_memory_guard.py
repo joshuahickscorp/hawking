@@ -23,6 +23,7 @@ from __future__ import annotations
 import re
 import subprocess
 import threading
+import time
 from contextlib import contextmanager
 from dataclasses import dataclass, asdict
 from typing import Any
@@ -216,6 +217,61 @@ class Watch:
         """
         if self.state == "STOP":
             raise Abort(f"campaign guard STOP mid-experiment: {'; '.join(self.reasons)}")
+
+
+@contextmanager
+def resource_cost(interval_s: float = 2.0, label: str = ""):
+    """Bracket an experiment and yield its measured resource cost.
+
+    G026's metric is progress per wall per RESOURCE per intervention, and the
+    resource term was unmeasurable: watch() tracks the WORST STATE seen but
+    records no delta and no peak, so nothing could say what a run actually cost.
+
+    Peak is reported as None, never as the entry reading, when the sampler got
+    no observations -- a run shorter than one interval has an UNKNOWN peak, and
+    quoting its starting value as the peak would understate every fast
+    experiment while looking like a measurement.
+    """
+    start = sample()
+    t0 = time.time()
+    peak_comp, peak_rss, low_free, n = start.compressor_gb, start.resident_rss_gb, start.free_gb, 0
+    stop = threading.Event()
+
+    def loop():
+        nonlocal peak_comp, peak_rss, low_free, n
+        while not stop.wait(interval_s):
+            try:
+                s2 = sample()
+            except Exception:
+                continue
+            n += 1
+            peak_comp = max(peak_comp, s2.compressor_gb)
+            peak_rss = max(peak_rss, s2.resident_rss_gb)
+            low_free = min(low_free, s2.free_gb)
+    t = threading.Thread(target=loop, daemon=True, name="campaign-resource")
+    t.start()
+    cost: dict = {"label": label}
+    try:
+        yield cost
+    finally:
+        stop.set()
+        t.join(timeout=interval_s * 2)
+        end = sample()
+        cost.update({
+            "wall_s": round(time.time() - t0, 2),
+            "samples": n,
+            "free_gb_start": start.free_gb, "free_gb_end": end.free_gb,
+            "free_gb_low": low_free if n else None,
+            "compressor_gb_start": start.compressor_gb,
+            "compressor_gb_peak": peak_comp if n else None,
+            "resident_rss_gb_peak": peak_rss if n else None,
+            "swapfiles_start": start.swapfiles, "swapfiles_end": end.swapfiles,
+            "swapfiles_delta": end.swapfiles - start.swapfiles,
+            "peak_unknown_reason": (None if n else
+                f"the sampler observed nothing in {round(time.time() - t0, 2)}s at a "
+                f"{interval_s}s interval, so the peak is UNKNOWN; the entry reading is "
+                f"not a peak and is not reported as one"),
+        })
 
 
 @contextmanager

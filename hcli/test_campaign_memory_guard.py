@@ -52,3 +52,36 @@ def test_sample_reports_a_real_swapfile_count():
     s = g.sample()
     assert s.swapfiles == g._swapfiles()
     assert s.swapfiles >= 0, "sample() is blind to swap"
+
+
+def test_resource_cost_reports_unknown_peak_rather_than_the_entry_reading():
+    """A run shorter than one interval has an UNKNOWN peak, not a starting value."""
+    import time
+    with g.resource_cost(interval_s=5.0, label="short") as c:
+        time.sleep(0.05)
+    assert c["samples"] == 0
+    assert c["resident_rss_gb_peak"] is None
+    assert c["compressor_gb_peak"] is None
+    assert c["free_gb_low"] is None
+    assert "UNKNOWN" in c["peak_unknown_reason"]
+
+
+def test_resource_cost_measures_a_real_run():
+    import time
+    with g.resource_cost(interval_s=0.3, label="real") as c:
+        blocks = [bytearray(40 * 1024 * 1024) for _ in range(6)]
+        time.sleep(1.2)
+        del blocks
+    assert c["samples"] > 0, "the sampler never ran"
+    assert c["peak_unknown_reason"] is None
+    assert c["wall_s"] >= 1.0
+    assert c["free_gb_low"] is not None and c["free_gb_low"] <= c["free_gb_start"]
+    assert isinstance(c["swapfiles_delta"], int)
+
+
+def test_resource_cost_reports_swapfile_movement():
+    """Swap growth during an experiment is the signal S010 cares about."""
+    with g.resource_cost(interval_s=0.3) as c:
+        pass
+    assert c["swapfiles_start"] == g._swapfiles()
+    assert c["swapfiles_delta"] == c["swapfiles_end"] - c["swapfiles_start"]
