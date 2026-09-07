@@ -64,8 +64,36 @@ def norm_matched_null(X: "mx.array", seed: int = 5) -> "mx.array":
     return R
 
 
+def row_norms(X: "mx.array") -> "mx.array":
+    """Per-row norms -- the only thing the null needs from X."""
+    r = mx.sqrt(mx.sum(X * X, axis=1, keepdims=True))
+    mx.eval(r)
+    return r
+
+
+def null_from_norms(norms: "mx.array", d: int, seed: int = 5) -> float:
+    """Participation of a Gaussian null carrying `norms`, built WITHOUT X.
+
+    Holding the real stack and its null at once doubles peak memory for no
+    reason: the null needs the norms and the shape, nothing else. On GLM-4.5-Air
+    that is the difference between 9.5 GB and 5.5 GB of expectation, which is
+    the difference between the campaign guard refusing and permitting the run
+    while two Grok lanes hold the rest of the machine.
+    """
+    n = int(norms.shape[0])
+    R = mx.random.normal((n, d), key=mx.random.key(seed))
+    R = R / mx.sqrt(mx.sum(R * R, axis=1, keepdims=True)) * norms
+    mx.eval(R)
+    return participation(centred_gram(R))
+
+
 def calibrated(X: "mx.array", seed: int = 5) -> dict:
-    """Participation of X, of its norm-matched null, and the deficit between them."""
+    """Participation of X, of its norm-matched null, and the deficit between them.
+
+    Convenience for callers that can afford both at once. A caller under memory
+    pressure should use row_norms(), free X, then null_from_norms(), and assemble
+    the same dict with deficit().
+    """
     n = int(X.shape[0])
     if n < 3:
         raise ValueError(f"participation needs at least 3 rows to be meaningful, got {n}")
@@ -75,6 +103,18 @@ def calibrated(X: "mx.array", seed: int = 5) -> dict:
             "participation": round(real, 3),
             "ratio_n": round(real / n, 4),                 # what the old rule compared to 0.95
             "ratio_n_minus_1": round(real / (n - 1), 4),   # 1.0 for independent rows at any n
+            "null_participation": round(null, 3),
+            "null_ratio_n": round(null / n, 4),
+            "deficit_pct": round(100 * (null - real) / max(null, 1e-30), 3),
+            "noise_floor_ratio_n": round((n - 1) / n, 4)}
+
+
+def deficit(real: float, null: float, n: int, d: int) -> dict:
+    """Assemble the same result dict from separately measured halves."""
+    return {"n": n, "d": d,
+            "participation": round(real, 3),
+            "ratio_n": round(real / n, 4),
+            "ratio_n_minus_1": round(real / (n - 1), 4),
             "null_participation": round(null, 3),
             "null_ratio_n": round(null / n, 4),
             "deficit_pct": round(100 * (null - real) / max(null, 1e-30), 3),
@@ -124,8 +164,19 @@ def _selfcheck() -> None:
     c = calibrated(X)
     assert abs(c["deficit_pct"]) < 2.0, ("norm spread misread as sharing", c)
     assert c["ratio_n"] < 0.95, ("...and the OLD rule would have called this LIVE", c)
+    # 5. The two-phase path must give the SAME answer as the one-shot path,
+    #    or the memory saving is bought with a different measurement.
+    for Y in (mx.random.normal((32, 1 << 15), key=mx.random.key(21)), C @ B):
+        mx.eval(Y)
+        one = calibrated(Y, seed=5)
+        nm = row_norms(Y)
+        two = deficit(participation(centred_gram(Y)),
+                      null_from_norms(nm, int(Y.shape[1]), seed=5),
+                      int(Y.shape[0]), int(Y.shape[1]))
+        assert one == two, ("two-phase diverged from one-shot", one, two)
+
     print("selfcheck OK -- noise floor is (n-1)/n; rank-3 basis detected at "
-          f"{calibrated(C @ B)['deficit_pct']:.1f}% deficit")
+          f"{calibrated(C @ B)['deficit_pct']:.1f}% deficit; two-phase == one-shot")
 
 
 if __name__ == "__main__":

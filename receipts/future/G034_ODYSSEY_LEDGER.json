@@ -259,10 +259,17 @@
    "class": "MOE-FLOAT",
    "axes": {
     "anatomy": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "cross_expert_deficit_pct": 0.0,
+      "n_experts": 128,
+      "projection": "down_proj",
+      "layer": 1,
+      "peak_rss_gib": 1.43,
+      "body_over_rss": 144
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/G034_MOE_ANATOMY_NULL_CALIBRATED.json"
     },
     "ebpw": {
      "state": "MEASURED",

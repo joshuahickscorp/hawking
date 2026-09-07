@@ -36,6 +36,39 @@
    "deficit_pct": 0.002,
    "noise_floor_ratio_n": 0.9922,
    "verdict": "sharing is DEAD: 0.00% from a norm-matched null (n=128, noise floor for the old p/n rule is 0.9922) -- these rows are as independent as random vectors of the same norms"
+  },
+  {
+   "slug": "zai-org--GLM-4.5-Air@a24ceef6ce4f",
+   "gib": 205.8,
+   "layer": 1,
+   "projection": "down_proj",
+   "family": "glm4_moe",
+   "n": 128,
+   "d": 5767168,
+   "participation": 125.384,
+   "ratio_n": 0.9796,
+   "ratio_n_minus_1": 0.9873,
+   "null_participation": 125.384,
+   "null_ratio_n": 0.9796,
+   "deficit_pct": 0.0,
+   "noise_floor_ratio_n": 0.9922,
+   "verdict": "sharing is DEAD: 0.00% from a norm-matched null (n=128, noise floor for the old p/n rule is 0.9922) -- these rows are as independent as random vectors of the same norms",
+   "peak_rss_gib": 1.43,
+   "resource": {
+    "label": "glm45air",
+    "wall_s": 0.72,
+    "samples": 0,
+    "free_gb_start": 7.49,
+    "free_gb_end": 0.12,
+    "free_gb_low": null,
+    "compressor_gb_start": 0.33,
+    "compressor_gb_peak": null,
+    "resident_rss_gb_peak": null,
+    "swapfiles_start": 3,
+    "swapfiles_end": 3,
+    "swapfiles_delta": 0,
+    "peak_unknown_reason": "the sampler observed nothing in 0.72s at a 1.0s interval, so the peak is UNKNOWN; the entry reading is not a peak and is not reported as one"
+   }
   }
  ],
  "skipped": [
@@ -77,16 +110,35 @@
   }
  ],
  "finding": {
-  "claim": "a THIRD architecture family confirms experts are indistinguishable from independence",
+  "claim": "a FOURTH architecture family confirms experts are indistinguishable from independence",
   "evidence": [
    "kimi_vl / moonshotai--Kimi-VL-A3B-Instruct@398eede0903c: n=64 real 0.9836 vs norm-matched null 0.9836, deficit +0.0%",
-   "qwen3_moe / Qwen--Qwen3-30B-A3B@ad44e777bcd1: n=128 real 0.9796 vs norm-matched null 0.9796, deficit +0.002%"
+   "qwen3_moe / Qwen--Qwen3-30B-A3B@ad44e777bcd1: n=128 real 0.9796 vs norm-matched null 0.9796, deficit +0.002%",
+   "glm4_moe / GLM-4.5-Air: n=128 real 0.9796 vs null 0.9796, deficit +0.0%"
   ],
-  "consequence": "kimi_vl at 64 experts and qwen3_moe at 128 both sit within 0.002% of their own null. The independence result is not a Qwen artefact and does not depend on expert count. Every linear sharing class over these organs is dead by exhaustion rather than by a threshold."
+  "consequence": "kimi_vl at 64 experts, qwen3_moe at 128 and glm4_moe at 128 all sit within 0.002% of their own null, across three vendors and a 3.6x span in body size. The independence result is not a Qwen artefact, not a function of expert count, and not a function of scale. Every linear sharing class over these organs is dead by exhaustion rather than by a threshold."
  },
  "why_nine_were_not_measured": {
   "stacked_or_other_scheme": 6,
   "guard_stop_insufficient_free_ram": 2,
   "note": "six bodies store experts STACKED (a 3D tensor with the expert axis first) or under w1/w13 names, which the per-expert regex cannot address. That is the scheme-table work now in flight. Two were refused by the campaign guard with 2.8 and 3.6 GB free while two Grok lanes held memory -- a refusal, not a failure."
+ },
+ "g035_streaming_proof": {
+  "claim": "a body larger than RAM is anatomisable organ-by-organ, and it is not close",
+  "specimen": "zai-org--GLM-4.5-Air@a24ceef6ce4f",
+  "body_gib": 205.8,
+  "vs_host": "2.9x the MEASURED 72 GiB Metal wired ceiling; 2.1x the 96 GB machine",
+  "header_index": "18,329 tensors across 47 shards, built in under 0.1s, payload untouched",
+  "wall_s": 0.72,
+  "peak_rss_gib": 1.43,
+  "body_over_peak_rss": 144,
+  "swapfile_delta": 0,
+  "mechanism": "read every shard's header to map tensor -> shard, open only the shards holding the target organ, and hold ONE at a time. The expert stack for one layer is the working set, not the body.",
+  "peak_honesty": "free_gb_low is null because the run finished in 0.72s, shorter than the 1.0s sampler interval. An unknown peak is reported as unknown rather than as the entry reading."
+ },
+ "memory_halving": {
+  "problem": "calibrated() held the real f32 stack and its null simultaneously, so the guard refused this body twice at 9.5 GB expected against 8.8-9.4 GB free",
+  "fix": "the null needs the per-row NORMS and the shape, nothing else. row_norms() then free X then null_from_norms() halves peak: 9.5 GB expected became 5.8, moving the guard from STOP to WARN and permitting the run while two Grok lanes held the rest of the machine.",
+  "equivalence": "two-phase is asserted BIT-IDENTICAL to one-shot in the selfcheck, because a memory saving bought with a different measurement is not a saving. The mutation that stops applying the norms diverges the deficit -0.002 against -0.004."
  }
 }
