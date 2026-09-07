@@ -1,0 +1,39 @@
+{
+ "obligation": "G003 / G015 \u2014 the non-trivial Noetic discriminator, and it returns a NEGATIVE",
+ "why_this_qualifies": "its principal mechanism is not bit width, group size, local scalar quantization, PQ geometry, or linear basis sharing. It is a FOURTH-MOMENT statistic against a COORDINATE-PERMUTATION null -- a different question about the same organ.",
+ "statistic": "centred participation of the ELEMENTWISE-SQUARED expert stack, against a per-row coordinate-permutation null, 5 draws, deficit_stderr_pct reported. LIVE requires deficit >= 2% AND > 2x the null's own stderr.",
+ "why_a_spectrum_cannot_see_it": "a participation ratio is a second-moment statistic. Uncorrelated is not independent: rows can share a magnitude profile while their signs are independent, and the spectrum is blind to it by construction.",
+ "why_the_null_is_a_PERMUTATION_and_not_a_gaussian": "the permutation independently reorders each energy row's coordinates, preserving EVERY marginal of that expert's magnitude histogram -- L2, kurtosis, sparsity -- and destroying only cross-expert coordinate alignment. A Gaussian matched only on energy-row-norms reports +7.8% 'sharing' on a sparse/dense mixture that the permutation null scores at -0.34%. THAT IS THE SAME DEFECT CLASS as the unmatched-norm linear null which licensed a 1.27% shared-structure claim on this very body.",
+ "four_controls": {
+  "negative_iid_gaussian": {
+   "linear": "+0.011% DEAD",
+   "energy": "-0.022% DEAD"
+  },
+  "positive_tanh_rank3_shared_map": {
+   "linear": "+77.6% LIVE",
+   "energy": "+37.0% LIVE"
+  },
+  "linear_rank3": {
+   "linear": "+82.7% LIVE",
+   "energy": "+59.7% LIVE"
+  },
+  "nonlinear_not_linear": {
+   "construction": "shared |m|, independent signs",
+   "linear": "+0.62% DEAD",
+   "energy": "+94.7% LIVE",
+   "meaning": "THE DECISIVE ONE. The spectrum MISSES it; the energy statistic CATCHES it. The probe adds something a spectrum cannot."
+  }
+ },
+ "real_organ": {
+  "specimen": "Qwen3-30B-A3B layer 0 down_proj, 128 experts x 2048x768",
+  "energy_deficit_pct": 0.71,
+  "energy_stderr_pp": 0.0004,
+  "spectral_deficit_pct": 0.002,
+  "spectral_stderr_pp": 0.0001,
+  "live_bar_pct": 2.0,
+  "independent_reproduction": "the linear digits match G034_MOE_ANATOMY_NULL_CALIBRATED.json BIT-FOR-BIT -- participation 125.39, ratio 0.9796, deficit 0.002% -- so this lane reproduced my measurement with a different implementation before disagreeing with nothing."
+ },
+ "verdict": "NON-LINEAR SHARING IS ALSO DEAD on the honest test organ. The energy gap is RESOLVED (0.71% against a 0.0004 pp stderr, far above noise) and ECONOMICALLY NOTHING -- the same instrument scores +94.7% on the sign-magnitude control. Experts are as energy-independent as randomly aligned vectors carrying the same per-row magnitude histograms.",
+ "what_it_narrows": "linear cross-expert sharing was already dead across six families. COORDINATE-ALIGNED FOURTH-MOMENT sharing is now dead on the organ that was the honest linear-null case. A joint description of these experts, if one exists, is not second-order and not fourth-order-coordinate-aligned. That is a publishable negative and it removes two whole classes.",
+ "still_open": "representations that do not require coordinate alignment at all -- permutation/gauge alignment before sharing, router-conditioned reconstruction, procedural generation, activation-conditioned structure. This probe does not touch those."
+}
