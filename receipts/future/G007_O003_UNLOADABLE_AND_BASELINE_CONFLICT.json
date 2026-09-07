@@ -1,0 +1,47 @@
+{
+ "obligation": "G007 precursor / physical authority",
+ "headline": "O003 does not load on the current runtime, so neither of its two decode baselines is reproducible",
+ "the_disagreement": {
+  "receipt_a": {
+   "file": "receipts/future/O003_TPS_BASELINE.json",
+   "decode_tok_s": 69.97,
+   "method": "marginal (80-16)/(w80-w16), min of 2 repeats, mlx_lm.generate",
+   "stated": true
+  },
+  "receipt_b": {
+   "file": "receipts/future/O003_PROVENANCE_FULL.json",
+   "decode_tok_s": 87.67,
+   "field": "reference.bf16_decode_tok_s",
+   "method": null,
+   "stated": false
+  },
+  "same": [
+   "model moonshotai/Kimi-VL-A3B-Instruct",
+   "revision 398eede0903cd983a2bfa0cc634e9ac1d843f375",
+   "host M3 Ultra 96GB MLX Metal",
+   "date 2026-09-06",
+   "measured_by Claude directly",
+   "bf16"
+  ],
+  "gap_pct": 25.3,
+  "note": "the directive's handoff snapshot carries 87.67 as the physical reference, and the 56.5% bandwidth utilisation that G007 is defined against is computed from it. Only one of the two receipts states a method."
+ },
+ "root_cause": {
+  "error": "ValueError: Received 27 parameters not in model: language_model.model.layers.<N>.self_attn.kv_b_proj.weight",
+  "mechanism": "mlx_lm 0.31.3's kimi_vl.py takes its attention from deepseek_v3.py, whose sanitizer DOES consume kv_b_proj -- it splits each into embed_q and unembed_out. But that sanitizer builds its prefix as 'model.layers.{l}.self_attn' while the Kimi-VL checkpoint stores 'language_model.model.layers.{l}.self_attn.kv_b_proj.weight'. kimi_vl.py's own sanitizer knows the language_model. prefix -- it uses it to stack experts -- but never applies the kv_b_proj split under it. The 27 tensors are never split, never consumed, and load_weights rejects them as extras.",
+  "verified_by": [
+   "grep: kimi_vl.py contains ZERO mentions of kv_b_proj",
+   "grep: deepseek_v3.py builds prefix = f'model.layers.{l}.self_attn'",
+   "headers: the checkpoint key is language_model.model.layers.0.self_attn.kv_b_proj.weight",
+   "count: exactly 27, one per text layer, matching the error"
+  ]
+ },
+ "consequence": "BOTH O003 physical baselines were produced under an earlier mlx_lm and neither can be re-measured on this runtime without the shim or a pinned version. A campaign whose physical reference number cannot be reproduced does not have a physical reference number -- it has a memory of one.",
+ "fix": {
+  "tool": "tools/future/kimi_vl_loader.py",
+  "what": "a LOADER SHIM, not a patch to the vendored package. split_kv_b_proj() applies deepseek_v3's exact split -- reshape to (num_heads, qk_nope_head_dim + v_head_dim, -1), first qk_nope rows transposed as embed_q, the rest as unembed_out -- under the prefix the checkpoint actually uses. mlx_lm is untouched.",
+  "refuses": "raises when it matches nothing, so a future layout change cannot make it silently a no-op",
+  "verified": "27 kv_b_proj -> 0 after the split; model.load_weights then accepts the checkpoint"
+ },
+ "scar": "A PHYSICAL BASELINE IS ONLY AS DURABLE AS ITS RUNTIME. Pin the runtime version in every physical receipt, or the number becomes unreproducible the next time a vendor package reorganises a weight layout. Neither O003 receipt records its mlx_lm version."
+}
