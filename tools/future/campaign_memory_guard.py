@@ -54,7 +54,9 @@ class Snapshot:
     residents: int = 0          # S010 §5: resident COUNT, not just host memory
     resident_rss_gb: float = 0.0
     expected_gb: float = 0.0    # what the experiment says it will take
-    headroom_gb: float = 0.0    # free - expected, the number that decides
+    headroom_gb: float = 0.0    # available - expected, the number that decides
+    strictly_free_gb: float = 0.0   # "Pages free" alone -- kept VISIBLE so the
+    reclaimable_gb: float = 0.0     # gap between free and available is auditable
 
     def as_dict(self) -> dict:
         d = asdict(self)
@@ -174,11 +176,29 @@ def classify(free_gb: float, compressor_gb: float, swapfiles: int) -> tuple:
 
 def sample(expected_gb: float = 0.0) -> Snapshot:
     v = _vm_stat()
+    # AVAILABLE, not FREE. "Pages free" was 0.44 GB while 17.34 GB sat inactive
+    # and 16.64 GB was file-backed page cache from streaming the lake -- clean
+    # pages the kernel hands to the next allocation on demand. The guard read the
+    # 0.44 and refused the campaign's authoritative experiment three times over a
+    # machine that had ~18 GB available. That is the same error class as reading
+    # vm.swapusage's boot high-water mark as live swap: a number whose NAME is not
+    # what it MEASURES.
+    #
+    # Available = free + speculative + purgeable + the file-backed part of
+    # inactive. File-backed inactive pages are clean and evictable. Dirty
+    # anonymous inactive pages are NOT counted -- they must be compressed or
+    # swapped first, so claiming them would be the opposite mistake.
     free_pages = v.get("Pages free", 0) + v.get("Pages speculative", 0)
+    reclaimable = v.get("Pages purgeable", 0) + min(
+        v.get("Pages inactive", 0), v.get("File-backed pages", 0)
+    )
+    available_pages = free_pages + reclaimable
     comp = v.get("Pages occupied by compressor", 0)
     wired = v.get("Pages wired down", 0)
     sf = _swapfiles()
-    free_gb, comp_gb = free_pages * PAGE / GB, comp * PAGE / GB
+    free_gb, comp_gb = available_pages * PAGE / GB, comp * PAGE / GB
+    strictly_free_gb = free_pages * PAGE / GB
+    reclaimable_gb = reclaimable * PAGE / GB
     n_res, rss_gb = _residents()
     headroom = free_gb - expected_gb
     state, why = classify(free_gb, comp_gb, sf)
@@ -192,7 +212,9 @@ def sample(expected_gb: float = 0.0) -> Snapshot:
     return Snapshot(round(free_gb, 2), round(comp_gb, 2), sf,
                     round(wired * PAGE / GB, 2), state, why,
                     residents=n_res, resident_rss_gb=round(rss_gb, 2),
-                    expected_gb=expected_gb, headroom_gb=round(headroom, 2))
+                    expected_gb=expected_gb, headroom_gb=round(headroom, 2),
+                    strictly_free_gb=round(strictly_free_gb, 2),
+                    reclaimable_gb=round(reclaimable_gb, 2))
 
 
 class Abort(RuntimeError):

@@ -85,3 +85,52 @@ def test_resource_cost_reports_swapfile_movement():
         pass
     assert c["swapfiles_start"] == g._swapfiles()
     assert c["swapfiles_delta"] == c["swapfiles_end"] - c["swapfiles_start"]
+
+
+def test_the_guard_reads_AVAILABLE_not_merely_free():
+    """"Pages free" is not available memory, and the gap blocked real experiments.
+
+    Measured on this host mid-campaign: Pages free 0.44 GB while 17.34 GB sat
+    inactive and 16.64 GB was file-backed page cache from streaming the lake --
+    clean pages the kernel hands to the next allocation. The guard read the 0.44
+    and refused the authoritative experiment three times.
+
+    Same error class as reading vm.swapusage's boot high-water mark as live swap:
+    a number whose NAME is not what it MEASURES.
+    """
+    s = g.sample()
+    assert s.free_gb >= s.strictly_free_gb, (s.free_gb, s.strictly_free_gb)
+    assert s.reclaimable_gb >= 0.0
+    assert abs(s.free_gb - (s.strictly_free_gb + s.reclaimable_gb)) < 0.05, (
+        "available must be strictly-free plus reclaimable, and both stay visible")
+
+
+def test_dirty_anonymous_inactive_is_NOT_counted_as_available(monkeypatch):
+    """The opposite mistake: claiming inactive pages that must be swapped first.
+
+    Only the FILE-BACKED part of inactive is clean and evictable. With 1000
+    inactive pages but only 100 file-backed, at most 100 may be counted.
+    """
+    INACTIVE, FILE_BACKED, FREE = 1_000_000, 100_000, 200_000   # pages, not toys
+    monkeypatch.setattr(g, "_vm_stat", lambda: {
+        "Pages free": FREE, "Pages speculative": 0, "Pages purgeable": 0,
+        "Pages inactive": INACTIVE, "File-backed pages": FILE_BACKED,
+        "Pages occupied by compressor": 0, "Pages wired down": 0,
+    })
+    s = g.sample()
+    assert s.reclaimable_gb == round(FILE_BACKED * g.PAGE / g.GB, 2), s.reclaimable_gb
+    assert s.strictly_free_gb == round(FREE * g.PAGE / g.GB, 2)
+    # the whole point: 1M inactive pages exist, only 100k are claimable
+    assert s.reclaimable_gb < round(INACTIVE * g.PAGE / g.GB, 2)
+
+
+def test_a_machine_with_no_reclaimable_cache_is_unchanged(monkeypatch):
+    """With nothing cached, available must equal strictly free -- no free lunch."""
+    monkeypatch.setattr(g, "_vm_stat", lambda: {
+        "Pages free": 500_000, "Pages speculative": 0, "Pages purgeable": 0,
+        "Pages inactive": 0, "File-backed pages": 0,
+        "Pages occupied by compressor": 0, "Pages wired down": 0,
+    })
+    s = g.sample()
+    assert s.free_gb == s.strictly_free_gb
+    assert s.reclaimable_gb == 0.0
