@@ -109,10 +109,17 @@
    "class": "MOE-FLOAT",
    "axes": {
     "anatomy": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "cross_expert_deficit_pct": 0.002,
+      "n_experts": 512,
+      "storage": "stacked",
+      "projection": "down_proj",
+      "layer": 0,
+      "peak_rss_gib": 1.98
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/G034_MOE_ANATOMY_NULL_CALIBRATED.json"
     },
     "ebpw": {
      "state": "MEASURED",
@@ -622,10 +629,17 @@
    "class": "MOE-FLOAT",
    "axes": {
     "anatomy": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "cross_expert_deficit_pct": 0.002,
+      "n_experts": 128,
+      "storage": "stacked",
+      "projection": "down_proj",
+      "layer": 0,
+      "peak_rss_gib": 0.42
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/G034_MOE_ANATOMY_NULL_CALIBRATED.json"
     },
     "ebpw": {
      "state": "MEASURED",
