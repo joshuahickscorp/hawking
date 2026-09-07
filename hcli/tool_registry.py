@@ -2145,10 +2145,31 @@ def _odyssey_record_measurement(context: ToolContext, args: Dict[str, Any]) -> D
             )
         m.refused(rec, axis, text)
     else:
-        # No receipt check here on purpose: odyssey_ledger.measured already refuses a
+        receipt = str(args.get("receipt") or "").strip()
+        # SAME invariant as the refusal guard above, other field: a cell's evidence cannot
+        # be the file the cell lives in. Round 16 closed the loop and wrote
+        # nr_candidate = "16.0" citing receipts/future/G034_ODYSSEY_LEDGER.json -- circular,
+        # and both existing guards let it through, because the refusal guard only inspects
+        # `reason` and the existence check passes on a file that obviously exists.
+        if receipt and (Path(receipt).name == Path(path).name
+                        or os.path.realpath(receipt) == os.path.realpath(str(target))):
+            raise m.LedgerError(
+                f"{slug}/{axis}: the ledger cannot be its own receipt. A cell's evidence "
+                f"must be a file that records the MEASUREMENT, not the file the cell lives "
+                f"in. Write one first with filesystem.write, then cite it here.")
+        # Existence is enforced by odyssey_ledger.measured, but its message cannot know
+        # about tools. A round that has no way to MAKE a receipt will cite whatever file it
+        # already knows -- so the failure names the write path rather than adding a second
+        # one. [S008 3] ONE OWNER, ONE GUARD, ONE WRITE PATH.
+        if receipt and not Path(receipt).exists():
+            raise m.LedgerError(
+                f"{slug}/{axis}: receipt {receipt!r} does not exist yet. Write the finding "
+                f"with filesystem.write (path under receipts/future/), then record the cell "
+                f"citing that path.")
+        # No receipt-EMPTY check here on purpose: odyssey_ledger.measured already refuses a
         # value without one, and restating a guard is how two copies drift apart. A
         # mutation that deleted a duplicate check here stayed green, which is the tell.
-        m.measured(rec, axis, args.get("value"), str(args.get("receipt") or "").strip())
+        m.measured(rec, axis, args.get("value"), receipt)
     tmp = Path(str(target) + ".tmp")
     tmp.write_text(_json.dumps(led, indent=1) + "\n")
     tmp.replace(target)

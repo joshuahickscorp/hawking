@@ -97,3 +97,35 @@ def test_a_receipt_path_is_still_citable(ledger):
         "reason": "no CPU path exists for this architecture; see "
                   "receipts/future/G009_GPU_OWED_MLX_MODULES.json for the module survey"})
     assert res.ok, res.error
+
+
+def test_the_LEDGER_cannot_be_its_own_receipt(ledger):
+    """Round 16 closed the loop and cited the ledger as the evidence for its own cell.
+
+    It wrote nr_candidate = "16.0" with receipt receipts/future/G034_ODYSSEY_LEDGER.json --
+    circular, and both existing guards let it through. The refusal guard only inspects
+    `reason`, and the existence check passes because the ledger obviously exists.
+
+    Same invariant as the refusal case, other field: a cell's evidence cannot be the file
+    the cell lives in.
+    """
+    res = _reg().invoke("odyssey.record_measurement", {
+        "path": str(ledger), "slug": _slug(ledger), "axis": "nr_candidate",
+        "value": "16.0", "receipt": str(ledger)})
+    assert not res.ok, "the ledger was accepted as evidence for a cell inside itself"
+    assert "own receipt" in str(res.error).lower() or "circular" in str(res.error).lower(), res.error
+
+
+def test_the_error_names_HOW_to_make_a_receipt(ledger):
+    """A round that cannot make a receipt will cite whatever file it already knows.
+
+    HCLI has filesystem.write (reversible_repo) and could have written one. Nothing told
+    it that, and nothing in the failure said so either, so it reached for the only path in
+    its context. The error is the place to say it -- not a second write tool. [S008 3]
+    ONE OWNER, ONE GUARD, ONE WRITE PATH.
+    """
+    res = _reg().invoke("odyssey.record_measurement", {
+        "path": str(ledger), "slug": _slug(ledger), "axis": "gpu",
+        "value": {"tps": 1.0}, "receipt": "receipts/future/NOT_WRITTEN_YET.json"})
+    assert not res.ok
+    assert "filesystem.write" in str(res.error), res.error

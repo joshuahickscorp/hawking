@@ -107,14 +107,20 @@ def test_a_refusal_without_a_mechanism_is_refused(ledger):
 
 
 def test_an_unknown_axis_and_an_unknown_slug_are_both_refused(ledger):
+    """Uses a REAL receipt so the axis/slug error is what surfaces.
+
+    With an invented one the receipt-existence check now fires first and the message is
+    about the receipt, which is correct behaviour but tests the wrong thing here.
+    """
     slug = _owed_slug(ledger, "anatomy")
+    real = "receipts/future/G002_ORGAN_PRIOR.json"
     r = _reg()
     bad_axis = r.invoke("odyssey.record_measurement", {
-        "path": str(ledger), "slug": slug, "axis": "vibes", "value": 1, "receipt": "x.json"})
+        "path": str(ledger), "slug": slug, "axis": "vibes", "value": 1, "receipt": real})
     assert not bad_axis.ok and "axis" in str(bad_axis.error).lower()
     bad_slug = r.invoke("odyssey.record_measurement", {
         "path": str(ledger), "slug": "not-a-body@0000", "axis": "anatomy",
-        "value": 1, "receipt": "x.json"})
+        "value": 1, "receipt": real})
     assert not bad_slug.ok
 
 
