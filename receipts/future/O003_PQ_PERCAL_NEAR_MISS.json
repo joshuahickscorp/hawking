@@ -1,0 +1,19 @@
+{
+ "date": "2026-09-06",
+ "obligation": "G010",
+ "result": "closest approach yet; NOT a pass",
+ "candidate": "pqpercal4k512 -- product quantization, sub-dim 4, codebook 512, k-means weighted by per-expert activation mass",
+ "measured": {
+  "complete_ebpw": 2.405907100874676,
+  "ppl": 3.5128,
+  "median_4gram_repeat": 0.6667,
+  "worst_max_repeat_run": 2,
+  "magnitude_ratio": 0.9588,
+  "direction_similarity": 0.9626,
+  "capability_ok": false
+ },
+ "IT_PASSES_PERPLEXITY_AND_FAILS_GENERATION": "ppl 3.5128 is BELOW the 3.617 gate -- the first sub-2.5 EBPW representation to clear perplexity at all. The 4-gram repeat rate is 0.6667 against a limit of 0.1614, a 4.1x failure. capability_ok is false and that is correct: the gate is a conjunction and a body that scores well on perplexity while repeating itself is exactly what the second condition exists to catch.",
+ "FOURTH_CONFIRMATION_OF_PER_EXPERT_CALIBRATION": "At IDENTICAL bytes (2.405907100874676 for both), weighting the k-means by activation mass moved ppl 3.6236 -> 3.5128 (-3.1%) and the 4-gram rate 0.7849 -> 0.6667 (-15%). Direction matches the three earlier classes (-7.1%, -10.3%, -11.7%); the magnitude is smaller. Four classes, same direction, always free.",
+ "PERPLEXITY_AND_GENERATION_DISAGREE_AGAIN": "Third instance on this specimen. Residual binary beat affine on repetition while losing on perplexity; PQ now clears perplexity while failing repetition. Any single-number capability proxy would have accepted or rejected the wrong candidate in at least one of those cases.",
+ "WHERE_G010_STANDS": "Lowest capability-preserving point remains q3-g128-experts at 3.2831 EBPW. Sub-2.5 with capability preserved is still NOT reached. What changed is the failure mode: at 2.4059 EBPW the blocker is no longer perplexity -- it is generation repetition, isolated to a single measured quantity 4.1x from its limit."
+}

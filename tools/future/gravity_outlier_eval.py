@@ -146,9 +146,15 @@ def _parse_expert_spec(spec: str) -> dict[str, Any]:
     # Discriminator already passed: at 2.000 b/w PQ's relative reconstruction
     # error is 0.101 against affine q2-g128's 0.182 at 2.250 b/w -- fewer bits
     # AND 45% less error, on all three projections.
-    m = re.fullmatch(r"pq(\d+)k(\d+)", s, re.I)
+    m = re.fullmatch(r"pq(percal)?(\d+)k(\d+)", s, re.I)
     if m:
-        return {"form": "pq", "sub_dim": int(m.group(1)), "codebook": int(m.group(2)),
+        # percal: weight the k-means by per-expert activation mass. That effect
+        # is the most reproducible one measured on this specimen -- it improved
+        # plain binary by 7.1% and 10.3% and residual binary by 11.7%, always at
+        # identical bytes. pq4k512 misses the capability gate by 0.0066 ppl
+        # (3.6236 vs 3.617), so a percent of the same effect decides it.
+        return {"form": "pq", "sub_dim": int(m.group(2)), "codebook": int(m.group(3)),
+                "calibrated": bool(m.group(1)), "per_expert": bool(m.group(1)),
                 "frac": 0.0, "group": 128, "bits": 2}
     m = re.fullmatch(r"hotcold([0-9.]+)h(\d+)c(\d+)-g(\d+)", s, re.I)
     if m:
@@ -419,14 +425,32 @@ def evaluate(candidate) -> dict[str, Any]:
                 d, K = plan["sub_dim"], plan["codebook"]
                 X = base.reshape(-1, d)
                 n = X.shape[0]
-                smp = X[mx.random.randint(0, n, shape=(min(200_000, n),))]
+                # Per-sub-vector weight from real activation mass, so the
+                # codebook spends its entries where the layer actually looks.
+                dact = act.get(id(m))
+                if dact is None:
+                    W_ = None
+                else:
+                    dd = (mx.broadcast_to(dact.reshape(dact.shape[0], 1, dact.shape[1]),
+                                          base.shape)
+                          if dact.ndim == 2 else
+                          mx.broadcast_to(dact.reshape(1, -1),
+                                          base.reshape(-1, base.shape[-1]).shape))
+                    W_ = mx.mean(dd.reshape(-1, d), axis=1)      # one weight per sub-vector
+                idx = mx.random.randint(0, n, shape=(min(200_000, n),))
+                smp = X[idx]
+                w = None if W_ is None else W_[idx]
                 C = smp[mx.random.randint(0, smp.shape[0], shape=(K,))]
                 for _ in range(12):
                     d2 = (mx.sum(smp * smp, axis=1, keepdims=True) - 2 * (smp @ C.T)
                           + mx.sum(C * C, axis=1)[None, :])
                     a = mx.argmin(d2, axis=1)
                     oh = (a[:, None] == mx.arange(K)[None, :]).astype(mx.float32)
-                    C = (oh.T @ smp) / mx.maximum(mx.sum(oh, axis=0)[:, None], 1.0)
+                    if w is not None:
+                        ohw = oh * w[:, None]
+                        C = (ohw.T @ smp) / mx.maximum(mx.sum(ohw, axis=0)[:, None], 1e-9)
+                    else:
+                        C = (oh.T @ smp) / mx.maximum(mx.sum(oh, axis=0)[:, None], 1.0)
                     mx.eval(C)
                 parts = []
                 CH = 2_000_000
@@ -608,7 +632,9 @@ def evaluate(candidate) -> dict[str, Any]:
         "specimen": getattr(candidate, "specimen", "O003"),
         "spec": getattr(candidate, "spec", str(candidate)),
         "non_expert_bits": plan["ne_bits"], "non_expert_group": plan["ne_group"],
-        "representation_class": ("PRODUCT_QUANTIZATION" if plan["form"] == "pq"
+        "representation_class": (("PRODUCT_QUANTIZATION_PER_EXPERT"
+                                  if plan.get("per_expert") else "PRODUCT_QUANTIZATION")
+                                 if plan["form"] == "pq"
                                  else "HOT_COLD_ROUTED" if plan["form"] == "hotcold"
                                  else "BINARY_ERROR_FEEDBACK" if plan["form"] == "binary_ef"
                                  else "SPARSE_BINARY" if plan["form"] == "sparse"
