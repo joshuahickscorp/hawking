@@ -931,6 +931,83 @@ def harvest_reliability(pool: _Pool) -> None:
         pool.notes.append(f"reliability harvested as accepted_rate on {n_set} serving identities")
 
 
+def harvest_role_suitability(pool: _Pool) -> None:
+    """G016: role_suitability is n_measured_requirements, never a grade.
+
+    The axis is higher-is-better. The harvested number is the named count
+    `n_measured_requirements` computed by tools/future/role_suitability.py.
+    That count is coverage of the role contract, not a blend of the
+    requirement magnitudes. The vector itself is attached as
+    `role_suitability_contract` so a blend cannot sneak in as the
+    comparable value.
+
+    A candidate with an empty covered set is not harvested (absent, not
+    zero). A role the candidate cannot fill is REFUSED with a mechanism,
+    not a low score. Different roles are different organisms and never
+    dominate each other; today only HCLI Resident has a contract on disk.
+    """
+    path = RECEIPTS / "G016_ROLE_SUITABILITY.json"
+    doc = _read_json(path)
+    if not isinstance(doc, dict):
+        pool.notes.append(
+            "G016_ROLE_SUITABILITY.json unreadable; role_suitability stays unmeasured"
+        )
+        return
+    src = str(path.relative_to(REPO)) if path.is_relative_to(REPO) else str(path)
+    n_set = 0
+    for row in doc.get("candidates") or []:
+        if not isinstance(row, dict):
+            continue
+        role = row.get("role")
+        name = row.get("name")
+        if not role or not name:
+            continue
+        if row.get("status") == "REFUSED":
+            organism = row.get("organism") or f"role:{role}"
+            kind = row.get("kind") or "role_contract"
+            point = pool.get(str(organism), str(name), str(kind), src)
+            slot = point["axis_meta"].setdefault("role_suitability", {
+                "epistemic": None, "receipts": [], "state": OWED, "reason": None,
+            })
+            if not has_value(point, "role_suitability"):
+                slot["state"] = REFUSED
+                ref = row.get("refusal") or {}
+                slot["reason"] = ref.get("mechanism") or ref.get("cause") or (
+                    f"role {role} refused for {name}"
+                )
+                if src not in slot["receipts"]:
+                    slot["receipts"].append(_receipt_name(src))
+            continue
+        value = row.get("comparable_value")
+        if value is None:
+            continue
+        if not isinstance(value, (int, float)) or isinstance(value, bool):
+            continue
+        organism = row.get("organism") or f"role:{role}"
+        kind = row.get("kind") or "role_contract"
+        point = pool.get(str(organism), str(name), str(kind), src)
+        _set_axis(point, "role_suitability", float(value), epistemic="accepted", source=src)  # LOAD_BEARING_HARVEST
+        point["role_suitability_contract"] = {
+            "named_value": "n_measured_requirements",
+            "not_a_blend": True,
+            "role": role,
+            "n_measured_requirements": row.get("n_measured_requirements"),
+            "n_requirements": row.get("n_requirements"),
+            "covered": list(row.get("covered") or []),
+            "uncovered": list(row.get("uncovered") or []),
+            "requirements": row.get("requirements"),
+        }
+        n_set += 1
+    if n_set == 0:
+        pool.notes.append(
+            "G016_ROLE_SUITABILITY.json had no candidate with a comparable value"
+        )
+    else:
+        pool.notes.append(
+            f"role_suitability harvested as n_measured_requirements on {n_set} points"
+        )
+
+
 def harvest(receipts_dir: Path | None = None) -> dict[str, Any]:
     """Build candidates from what is on disk (and Gravity via git). Always live."""
     global RECEIPTS
@@ -954,6 +1031,7 @@ def _harvest() -> dict[str, Any]:
     harvest_census(pool)
     harvest_ledger(pool)
     harvest_reliability(pool)
+    harvest_role_suitability(pool)
     harvest_state_axis(pool)
 
     candidates = list(pool.by_id.values())
@@ -1019,7 +1097,8 @@ def _public(p: dict) -> dict:
         "conflicts": p.get("conflicts") or [],
         "disposition": p.get("disposition"),
     }
-    for extra in ("slug", "klass", "gib", "ppl", "median_4gram", "reliability_contract"):
+    for extra in ("slug", "klass", "gib", "ppl", "median_4gram",
+                  "reliability_contract", "role_suitability_contract"):
         if extra in p:
             out[extra] = p[extra]
     return out
@@ -1240,6 +1319,16 @@ def _selfcheck() -> None:
         harvest_state_axis(pool)
         n_state = sum(1 for p in pool.by_id.values() if has_value(p, "state"))
         assert n_state > 0, "G016_STATE_AXIS.json is on disk but harvest set no state values"
+
+    g016_role = RECEIPTS / "G016_ROLE_SUITABILITY.json"
+    if g016_role.is_file():
+        pool = _Pool()
+        harvest_role_suitability(pool)
+        n_role = sum(1 for p in pool.by_id.values() if has_value(p, "role_suitability"))
+        assert n_role > 0, (
+            "G016_ROLE_SUITABILITY.json is on disk but harvest set no "
+            "role_suitability values"
+        )
 
     print("selfcheck OK")
 

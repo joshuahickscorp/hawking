@@ -245,16 +245,19 @@ def test_measurement_debt_names_axes_with_no_values():
     # accepted_rate = is_accepted_work / n_runs from the engine receipts and
     # campaign_pareto harvests it onto serving identities. Asserting it is still
     # unmeasured would now pin the debt in place and turn a fix into a failure.
-    # `state` left it too, when the G016 state axis landed: state_axis.py derives
-    # per-token state cost from each body's own config and campaign_pareto harvests it.
-    assert "role_suitability" in debt["unmeasured_for_everyone"], debt["n_with_axis"]
-    # The axes that MOVED must stay measured. This is the regression guard: without it
-    # either could silently fall back to zero coverage and only the shrinking list above
-    # would notice, which is the "reward for not measuring" this frontier was corrected
-    # to remove in the first place.
-    for a in ("reliability", "state"):
-        assert a not in debt["unmeasured_for_everyone"], debt["n_with_axis"]
-        assert debt["n_with_axis"][a] > 0, debt["n_with_axis"]
+    # This assertion has been rewritten three times as the three G016 axes landed --
+    # state, reliability, role_suitability -- and each rewrite was a hardcoded list that
+    # a fix then falsified. So state the INVARIANT instead: the debt list is exactly the
+    # axes with no values, whatever those turn out to be.
+    zero = {a for a in C.CAMPAIGN_AXES if debt["n_with_axis"][a] == 0}
+    assert set(debt["unmeasured_for_everyone"]) == zero, debt["n_with_axis"]
+    # And the three that were bought must STAY bought. Without this guard an axis could
+    # silently fall back to zero coverage and the invariant above would happily agree --
+    # which is the reward-for-not-measuring this frontier was corrected to remove.
+    for a in ("reliability", "state", "role_suitability"):
+        assert debt["n_with_axis"][a] > 0, f"{a} lost its coverage: {debt['n_with_axis']}"
+    assert debt["unmeasured_for_everyone"] == [], (
+        f"an axis went back to zero coverage: {debt['unmeasured_for_everyone']}")
 
 
 def test_disposition_is_reused_not_forked():
