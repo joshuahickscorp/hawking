@@ -1,0 +1,23 @@
+{
+ "obligation": "G008 \u2014 demonstrate COMPOUNDING with a measured cost avoided, not an asserted one",
+ "the_mechanism": {
+  "expensive_build_run_ONCE": "O003 sharedbasis8: a shared basis of 8 components plus 64 coefficient vectors plus a mean per tensor -- the first O003 NR that does NOT represent every expert independently. complete_ebpw 2.4058, ppl 27.7692 against a bf16 reference of 2.8936, median_4gram_repeat 0.9892, worst_max_repeat_run 96, capability_ok FALSE. It collapsed.",
+  "the_prediction_was_recorded_BEFORE_the_run": "receipts/future/O003_SHAREDBASIS_PREDICTION.json predicted catastrophic failure with double-digit perplexity from rank50=30 and participation 62.88/64 -- i.e. 8 components capture a fifth of the variance. The build confirmed it.",
+  "what_that_licensed": "a five-minute Gram spectrum predicted the outcome of a full build-and-evaluate, which promotes the spectrum from a diagnostic to a SCREEN. The quantitative link is magnitude_ratio 0.3917: losing 61% of weight magnitude is what capturing a fifth of the variance looks like downstream."
+ },
+ "the_compounding_measured": {
+  "screen_cost_per_body_s": {
+   "min": 0.13,
+   "median": 0.47,
+   "max": 1.18,
+   "n": 6
+  },
+  "bodies_screened": 8,
+  "families_screened": 7,
+  "all_returned": "INDEPENDENT -- max |deficit| 0.007% against norm-matched nulls",
+  "builds_not_attempted": 7,
+  "claim": "every one of those bodies would otherwise have needed its own shared-basis build-and-evaluate to reach the same conclusion. The screen answered each in about a second of wall and under 2 GiB of peak RSS."
+ },
+ "the_second_prior_compounding_on_the_first": "the nonlinear probe (5e86293c1) then removed a SECOND class -- coordinate-aligned fourth-moment sharing -- on the organ that was the honest linear-null case, again without building anything. Two representation classes are now screened out by cheap statistics that each cost seconds.",
+ "the_honest_limit": "this is compounding WITHIN one representation question across many specimens. It is NOT yet 'the tenth model costs less than the first' end to end, because the dense-anatomy and EBPW axes still run in full on every body. And the low-rank prior demonstrably does NOT transfer (Qwen3-30B-A3B 13.49% vs O003 3.06% on the matched organ), so not every prior compounds -- which is itself the finding directive 81 asks for: classify, do not assume."
+}
