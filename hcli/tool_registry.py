@@ -106,7 +106,15 @@ _MAX_SEARCH_FILES = 5_000
 _MAX_LIST_DIRECTORIES = 20_000
 
 
-def _redact(value: Any, *, limit: int = 4000) -> Any:
+#: Every string in a ToolResult is clipped to this before it reaches a caller, in
+#: `to_dict`. It is the LAST truncation and for a long time the only undisclosed one:
+#: fs.read clipped a 299,504-byte ledger to 65,536 and reported that, and then this
+#: clipped the content to 4,001 and reported nothing. A round read the ledger, received
+#: 1.3% of it, and was told it had 21.9%.
+_RESULT_STRING_LIMIT = 4000
+
+
+def _redact(value: Any, *, limit: int = _RESULT_STRING_LIMIT) -> Any:
     """Redact likely credentials before anything enters a result/receipt."""
     if isinstance(value, dict):
         out: Dict[str, Any] = {}
@@ -630,7 +638,7 @@ def _read_file(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
             "start_line": first,
             "end_line": last,
             "total_lines": len(lines),
-            "truncated": len(body) > limit,
+            **_truncation_fields(len(clipped), len(body)),
             "sha256": _sha256_bytes(raw),
             "content": clipped.decode(encoding, errors="replace"),
             "artifact": {"kind": "file", "path": str(path), "sha256": _sha256_bytes(raw), "bytes": len(raw)},
@@ -640,10 +648,37 @@ def _read_file(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
     return {
         "path": str(path),
         "bytes": len(raw),
-        "truncated": len(raw) > limit,
+        **_truncation_fields(len(clipped), len(raw)),
         "sha256": _sha256_bytes(raw),
         "content": clipped.decode(encoding, errors="replace"),
         "artifact": {"kind": "file", "path": str(path), "sha256": _sha256_bytes(raw), "bytes": len(raw)},
+    }
+
+
+def _truncation_fields(shown: int, total: int) -> Dict[str, Any]:
+    """Say HOW MUCH survived, not merely that a cut happened.
+
+    `truncated: True` is technically honest and operationally useless: it cannot tell a
+    caller 99% from 1.3%. A round read the 299,504-byte Odyssey ledger through fs.read,
+    received 4,001 characters, reasoned soundly over the handful of specimens in that
+    1.3%, and never learned that the two bodies still owing anatomy were outside it.
+    """
+    # What the caller RECEIVES, not what this handler clipped to. `to_dict` redacts
+    # every string down to _RESULT_STRING_LIMIT afterwards, so reporting the handler's
+    # own limit overstates it by 16x on a large file -- which is exactly the failure
+    # this function exists to stop, one layer up.
+    delivered = min(shown, _RESULT_STRING_LIMIT)
+    if delivered >= total:
+        return {"truncated": False, "shown_bytes": delivered}
+    pct = (delivered / total * 100.0) if total else 0.0
+    return {
+        "truncated": True,
+        "shown_bytes": delivered,
+        "truncation_note": (
+            f"TRUNCATED: you are seeing {delivered} of {total} bytes ({pct:.1f}%). "
+            f"Do not conclude anything about what is NOT shown. Narrow with "
+            f"start/end lines, or use the purpose-built tool for this file if one exists."
+        ),
     }
 
 
@@ -1945,7 +1980,11 @@ def _odyssey_ledger(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any
         rec = next((r for r in led["specimens"] if r["slug"] == slug), None)
         if rec is None:
             raise KeyError(f"{slug} is not in {path}")
-        return {"specimen": rec, "progress": prog}
+        # `path` travels with the answer so a round can chain ledger -> record without
+        # anyone pasting the literal file in. Round 7 read the ledger with fs.read --
+        # and got 1.3% of it -- because the record tool's example in its prompt carried
+        # the raw path, which put a file in front of it.
+        return {"specimen": rec, "progress": prog, "path": path}
     if args.get("owed_only"):
         owed = [{"slug": r["slug"], "gib": r["gib"], "class": r["class"],
                  "owed": [a for a, v in r["axes"].items() if v["state"] == "OWED"]}
@@ -1963,10 +2002,11 @@ def _odyssey_ledger(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any
             "owed": owed[:top],
             "n_owed": len(owed),
             "shown": min(top, len(owed)),
+            "path": path,
             "summary": (f"{prog['axes_resolved']}/{prog['axes_total']} axes resolved "
                         f"({prog['pct']}%), {prog['specimens_complete']} specimens complete"),
         }
-    return {"progress": prog, "n": len(led["specimens"])}
+    return {"progress": prog, "n": len(led["specimens"]), "path": path}
 
 
 def _odyssey_anatomy(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
