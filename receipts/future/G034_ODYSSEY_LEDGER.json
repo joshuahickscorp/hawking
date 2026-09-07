@@ -21,21 +21,21 @@
      "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"kimi_k3\"",
      "receipt": null
     },
     "cpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"kimi_k3\"",
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"kimi_k3\"",
      "receipt": null
     },
     "nr_candidate": {
@@ -71,21 +71,21 @@
      "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"inkling_mm_model\"",
      "receipt": null
     },
     "cpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"inkling_mm_model\"",
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"inkling_mm_model\"",
      "receipt": null
     },
     "nr_candidate": {
@@ -121,21 +121,21 @@
      "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"qwen4_exp\"",
      "receipt": null
     },
     "cpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"qwen4_exp\"",
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"qwen4_exp\"",
      "receipt": null
     },
     "nr_candidate": {
@@ -171,21 +171,21 @@
      "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"qwen4_exp\"",
      "receipt": null
     },
     "cpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"qwen4_exp\"",
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"qwen4_exp\"",
      "receipt": null
     },
     "nr_candidate": {
@@ -221,21 +221,21 @@
      "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"glm5_next\"",
      "receipt": null
     },
     "cpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"glm5_next\"",
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"glm5_next\"",
      "receipt": null
     },
     "nr_candidate": {
@@ -321,21 +321,21 @@
      "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"deepseek_v4\"",
      "receipt": null
     },
     "cpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"deepseek_v4\"",
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"deepseek_v4\"",
      "receipt": null
     },
     "nr_candidate": {
@@ -421,21 +421,21 @@
      "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: no model_type in config (<no config: FileNotFoundError>)",
      "receipt": null
     },
     "cpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: no model_type in config (<no config: FileNotFoundError>)",
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: no model_type in config (<no config: FileNotFoundError>)",
      "receipt": null
     },
     "nr_candidate": {
@@ -571,21 +571,21 @@
      "receipt": null
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
      "receipt": null
     },
     "cpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
      "receipt": null
     },
     "nr_candidate": {
@@ -1021,21 +1021,21 @@
      "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"llava_llama\"",
      "receipt": null
     },
     "cpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"llava_llama\"",
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"llava_llama\"",
      "receipt": null
     },
     "nr_candidate": {
@@ -1121,21 +1121,21 @@
      "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"illada\"",
      "receipt": null
     },
     "cpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"illada\"",
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"illada\"",
      "receipt": null
     },
     "nr_candidate": {
@@ -1171,21 +1171,21 @@
      "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: no model_type in config (<no config: FileNotFoundError>)",
      "receipt": null
     },
     "cpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: no model_type in config (<no config: FileNotFoundError>)",
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: no model_type in config (<no config: FileNotFoundError>)",
      "receipt": null
     },
     "nr_candidate": {
@@ -1221,21 +1221,21 @@
      "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"Dream\"",
      "receipt": null
     },
     "cpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"Dream\"",
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"Dream\"",
      "receipt": null
     },
     "nr_candidate": {
@@ -1421,21 +1421,21 @@
      "receipt": null
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
      "receipt": null
     },
     "cpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
      "receipt": null
     },
     "nr_candidate": {
@@ -1471,21 +1471,21 @@
      "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: no model_type in config (None)",
      "receipt": null
     },
     "cpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: no model_type in config (None)",
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: no model_type in config (None)",
      "receipt": null
     },
     "nr_candidate": {
@@ -1521,21 +1521,21 @@
      "receipt": null
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
      "receipt": null
     },
     "cpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
      "receipt": null
     },
     "nr_candidate": {
@@ -1621,21 +1621,21 @@
      "receipt": null
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
      "receipt": null
     },
     "cpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
      "receipt": null
     },
     "nr_candidate": {
@@ -1671,21 +1671,21 @@
      "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"phi4mm\"",
      "receipt": null
     },
     "cpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"phi4mm\"",
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"phi4mm\"",
      "receipt": null
     },
     "nr_candidate": {
@@ -1721,21 +1721,21 @@
      "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"smolvlm\"",
      "receipt": null
     },
     "cpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"smolvlm\"",
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"smolvlm\"",
      "receipt": null
     },
     "nr_candidate": {
@@ -2071,21 +2071,21 @@
      "receipt": null
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
      "receipt": null
     },
     "cpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
      "receipt": null
     },
     "nr_candidate": {
@@ -2121,21 +2121,21 @@
      "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"vjepa2\"",
      "receipt": null
     },
     "cpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"vjepa2\"",
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"vjepa2\"",
      "receipt": null
     },
     "nr_candidate": {
@@ -2221,21 +2221,21 @@
      "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"t5\"",
      "receipt": null
     },
     "cpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"t5\"",
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"t5\"",
      "receipt": null
     },
     "nr_candidate": {
@@ -2271,21 +2271,21 @@
      "receipt": null
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
      "receipt": null
     },
     "cpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
      "receipt": null
     },
     "nr_candidate": {
@@ -2321,21 +2321,21 @@
      "receipt": null
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
      "receipt": null
     },
     "cpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
      "receipt": null
     },
     "nr_candidate": {
@@ -2421,21 +2421,21 @@
      "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"timesfm\"",
      "receipt": null
     },
     "cpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"timesfm\"",
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"timesfm\"",
      "receipt": null
     },
     "nr_candidate": {
@@ -2471,21 +2471,21 @@
      "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"whisper\"",
      "receipt": null
     },
     "cpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"whisper\"",
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"whisper\"",
      "receipt": null
     },
     "nr_candidate": {
@@ -2521,21 +2521,21 @@
      "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"modernbert\"",
      "receipt": null
     },
     "cpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"modernbert\"",
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"modernbert\"",
      "receipt": null
     },
     "nr_candidate": {
@@ -2621,21 +2621,21 @@
      "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"depth_anything\"",
      "receipt": null
     },
     "cpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"depth_anything\"",
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"depth_anything\"",
      "receipt": null
     },
     "nr_candidate": {
@@ -2771,21 +2771,21 @@
      "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"sam2_video\"",
      "receipt": null
     },
     "cpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"sam2_video\"",
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"sam2_video\"",
      "receipt": null
     },
     "nr_candidate": {
