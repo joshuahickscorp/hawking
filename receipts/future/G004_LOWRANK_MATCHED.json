@@ -1,0 +1,739 @@
+{
+ "incumbent_spec": "q2-g128",
+ "organs": [
+  {
+   "spectral": {
+    "shape": [
+     2048,
+     1408
+    ],
+    "full_rank": 1408,
+    "participation": 967.8,
+    "ratio": 0.6874,
+    "rank_90": 828,
+    "null_ratio": 0.7091,
+    "null_rank_90": 845,
+    "deficit_pct": 3.063,
+    "break_even_rank": 834.3703703703703,
+    "byte_ratio": 0.9924,
+    "pays": true,
+    "dense_elems": 2883584,
+    "factored_elems": 2861568,
+    "save_pct": 0.76,
+    "structure_real": false
+   },
+   "verdict": "low-rank structure is ABSENT (3.06% from a matched null): a rank-828 factor at 0.992x dense would be compressing noise, not a win",
+   "incumbent_spec": "q2-g128",
+   "matched_pair": [
+    "D",
+    "E"
+   ],
+   "capability": {
+    "status": "NOT_MEASURED",
+    "capability_ok": null,
+    "reason": "capability not measured, because Metal is blocked (RuntimeError: [metal::load_device] No Metal device available. This typically occurs in headless, sandboxed, or virtualized macOS sessions where the GPU is not accessible.). gravity_outlier_eval.evaluate loads Kimi-VL-A3B on MLX and cannot run here; this module does not invent a parallel scorer. The anatomy receipt organ is Qwen3-30B-A3B down_proj 2048x768; the evaluator's O003 organ is Kimi-VL-A3B down_proj 2048x1408. Reconstruction/cosine is NOT a substitute for the conjunction gate.",
+    "metal_ok": false,
+    "metal_detail": "RuntimeError: [metal::load_device] No Metal device available. This typically occurs in headless, sandboxed, or virtualized macOS sessions where the GPU is not accessible.",
+    "gate": {
+     "R4_MAX": 0.1614,
+     "PPL_MAX": 3.617,
+     "BF16_PPL": 2.8936,
+     "BF16_R4": 0.0538,
+     "conjunction": "perplexity AND n-gram diversity",
+     "evaluator": "tools/future/gravity_outlier_eval.py::evaluate",
+     "evaluator_specimen": "Kimi-VL-A3B (O003 gravity), not the Qwen organ"
+    }
+   },
+   "arms": [
+    {
+     "arm": "A",
+     "spec": "dense-bf16",
+     "rank": null,
+     "shape": [
+      2048,
+      1408
+     ],
+     "source_params": 2883584,
+     "complete_bytes": 5767168,
+     "complete_ebpw": 16.0,
+     "factor_precisions": {
+      "A": {
+       "bits": 16,
+       "group": 0
+      },
+      "B": null
+     },
+     "residual_k": 0,
+     "include_scales": true,
+     "parts": {
+      "A_payload": 0,
+      "A_scales": 0,
+      "A_zeros": 0,
+      "B_payload": 0,
+      "B_scales": 0,
+      "B_zeros": 0,
+      "residual_values": 0,
+      "residual_indices": 0,
+      "codebook": 0,
+      "pq_indices": 0,
+      "dense_payload": 5767168,
+      "metadata": 0
+     },
+     "metrics": {
+      "rel_fro": 0.0,
+      "cosine": 1.0,
+      "magnitude_ratio": 1.0,
+      "direction_similarity": 1.0
+     },
+     "stores_more_than_dense": false,
+     "notes": []
+    },
+    {
+     "arm": "B",
+     "spec": "lowrank-r828-f16x16",
+     "rank": 828,
+     "shape": [
+      2048,
+      1408
+     ],
+     "source_params": 2883584,
+     "complete_bytes": 5723160,
+     "complete_ebpw": 15.877907492897727,
+     "factor_precisions": {
+      "A": {
+       "bits": 16,
+       "group": 0
+      },
+      "B": {
+       "bits": 16,
+       "group": 0
+      }
+     },
+     "residual_k": 0,
+     "include_scales": true,
+     "parts": {
+      "A_payload": 3391488,
+      "A_scales": 0,
+      "A_zeros": 0,
+      "B_payload": 2331648,
+      "B_scales": 0,
+      "B_zeros": 0,
+      "residual_values": 0,
+      "residual_indices": 0,
+      "codebook": 0,
+      "pq_indices": 0,
+      "dense_payload": 0,
+      "metadata": 24
+     },
+     "metrics": {
+      "rel_fro": 0.31563817454055676,
+      "cosine": 0.9488796250186685,
+      "magnitude_ratio": 0.9488813289838062,
+      "direction_similarity": 0.9488796250186685
+     },
+     "stores_more_than_dense": false,
+     "notes": []
+    },
+    {
+     "arm": "C",
+     "spec": "lowrank-r828-A4g64-B2g128",
+     "rank": 828,
+     "shape": [
+      2048,
+      1408
+     ],
+     "source_params": 2883584,
+     "complete_bytes": 1282280,
+     "complete_ebpw": 3.557461825284091,
+     "factor_precisions": {
+      "A": {
+       "bits": 4,
+       "group": 64
+      },
+      "B": {
+       "bits": 2,
+       "group": 128
+      }
+     },
+     "residual_k": 0,
+     "include_scales": true,
+     "parts": {
+      "A_payload": 847872,
+      "A_scales": 53248,
+      "A_zeros": 53248,
+      "B_payload": 291456,
+      "B_scales": 18216,
+      "B_zeros": 18216,
+      "residual_values": 0,
+      "residual_indices": 0,
+      "codebook": 0,
+      "pq_indices": 0,
+      "dense_payload": 0,
+      "metadata": 24
+     },
+     "metrics": {
+      "rel_fro": 0.5805553933995612,
+      "cosine": 0.8460379400123127,
+      "magnitude_ratio": 1.0758743182156472,
+      "direction_similarity": 0.8460379400123127
+     },
+     "stores_more_than_dense": false,
+     "notes": [
+      "unequal factor precision"
+     ]
+    },
+    {
+     "arm": "C",
+     "spec": "lowrank-r835-A2g128-B2g128",
+     "rank": 835,
+     "shape": [
+      2048,
+      1408
+     ],
+     "source_params": 2883584,
+     "complete_bytes": 815548,
+     "complete_ebpw": 2.262595436789773,
+     "factor_precisions": {
+      "A": {
+       "bits": 2,
+       "group": 128
+      },
+      "B": {
+       "bits": 2,
+       "group": 128
+      }
+     },
+     "residual_k": 0,
+     "include_scales": true,
+     "parts": {
+      "A_payload": 427520,
+      "A_scales": 28672,
+      "A_zeros": 28672,
+      "B_payload": 293920,
+      "B_scales": 18370,
+      "B_zeros": 18370,
+      "residual_values": 0,
+      "residual_indices": 0,
+      "codebook": 0,
+      "pq_indices": 0,
+      "dense_payload": 0,
+      "metadata": 24
+     },
+     "metrics": {
+      "rel_fro": 0.7884998337169745,
+      "cosine": 0.7616178462803258,
+      "magnitude_ratio": 1.2108324181103267,
+      "direction_similarity": 0.7616178462803258
+     },
+     "stores_more_than_dense": false,
+     "notes": []
+    },
+    {
+     "arm": "D",
+     "spec": "lowrank-r828-A2g128-B2g128-k306",
+     "rank": 828,
+     "shape": [
+      2048,
+      1408
+     ],
+     "source_params": 2883584,
+     "complete_bytes": 811028,
+     "complete_ebpw": 2.2500554865056817,
+     "factor_precisions": {
+      "A": {
+       "bits": 2,
+       "group": 128
+      },
+      "B": {
+       "bits": 2,
+       "group": 128
+      }
+     },
+     "residual_k": 306,
+     "include_scales": true,
+     "parts": {
+      "A_payload": 423936,
+      "A_scales": 28672,
+      "A_zeros": 28672,
+      "B_payload": 291456,
+      "B_scales": 18216,
+      "B_zeros": 18216,
+      "residual_values": 612,
+      "residual_indices": 1224,
+      "codebook": 0,
+      "pq_indices": 0,
+      "dense_payload": 0,
+      "metadata": 24
+     },
+     "metrics": {
+      "rel_fro": 0.7884776278721397,
+      "cosine": 0.7608272360689721,
+      "magnitude_ratio": 1.208660969500543,
+      "direction_similarity": 0.7608272360689721
+     },
+     "stores_more_than_dense": false,
+     "notes": [
+      "sparse residual k=306 billed values AND indices",
+      "matched residual k=306 at r=828 to incumbent affine-q2-g128 (811032 bytes); leftover after residual 4B"
+     ]
+    },
+    {
+     "arm": "E",
+     "spec": "affine-q2-g128",
+     "rank": null,
+     "shape": [
+      2048,
+      1408
+     ],
+     "source_params": 2883584,
+     "complete_bytes": 811032,
+     "complete_ebpw": 2.2500665838068183,
+     "factor_precisions": {
+      "A": {
+       "bits": 2,
+       "group": 128
+      },
+      "B": null
+     },
+     "residual_k": 0,
+     "include_scales": true,
+     "parts": {
+      "A_payload": 0,
+      "A_scales": 45056,
+      "A_zeros": 45056,
+      "B_payload": 0,
+      "B_scales": 0,
+      "B_zeros": 0,
+      "residual_values": 0,
+      "residual_indices": 0,
+      "codebook": 0,
+      "pq_indices": 0,
+      "dense_payload": 720896,
+      "metadata": 24
+     },
+     "metrics": {
+      "rel_fro": 0.5001731011951436,
+      "cosine": 0.89635961258319,
+      "magnitude_ratio": 1.1279490903862837,
+      "direction_similarity": 0.89635961258319
+     },
+     "stores_more_than_dense": false,
+     "notes": []
+    },
+    {
+     "arm": "broken",
+     "spec": "broken-magnitude-0.01",
+     "rank": null,
+     "shape": [
+      2048,
+      1408
+     ],
+     "source_params": 2883584,
+     "complete_bytes": 5767192,
+     "complete_ebpw": 16.000066583806817,
+     "factor_precisions": {
+      "A": {
+       "bits": 16,
+       "group": 0
+      },
+      "B": null
+     },
+     "residual_k": 0,
+     "include_scales": true,
+     "parts": {
+      "A_payload": 0,
+      "A_scales": 0,
+      "A_zeros": 0,
+      "B_payload": 0,
+      "B_scales": 0,
+      "B_zeros": 0,
+      "residual_values": 0,
+      "residual_indices": 0,
+      "codebook": 0,
+      "pq_indices": 0,
+      "dense_payload": 5767168,
+      "metadata": 24
+     },
+     "metrics": {
+      "rel_fro": 0.9899999049468065,
+      "cosine": 0.9999986312257312,
+      "magnitude_ratio": 0.010000108879345732,
+      "direction_similarity": 0.9999986312257312
+     },
+     "stores_more_than_dense": true,
+     "notes": [
+      "deliberate magnitude-destroyed negative control"
+     ]
+    }
+   ],
+   "table": "=== matched-EBPW comparison ===\norgan: /Users/scammermike/.cache/huggingface/hub/models--moonshotai--Kimi-VL-A3B-Instruct/snapshots/398eede0903cd983a2bfa0cc634e9ac1d843f375/model-00001-of-00007.safetensors::language_model.model.layers.10.mlp.experts.0.down_proj.weight shape=(2048, 1408) source_params=2883584 (Kimi-VL-A3B expert down_proj; gravity_outlier_eval O003 organ)\nspectral: ratio=0.6874 null=0.7091 deficit=3.063% rank_90=828 break_even=834.37 structure_real=False\nlow-rank structure is ABSENT (3.06% from a matched null): a rank-828 factor at 0.992x dense would be compressing noise, not a win\narm    rank A            B                  k      bytes     EBPW   rel_fro   cosine  capability\n------------------------------------------------------------------------------------------------\nA         - bf16         -                  0    5767168  16.0000    0.0000   1.0000  NOT_MEASURED\n     spec=dense-bf16  parts={dense_payload=5767168}\nB       828 bf16         bf16               0    5723160  15.8779    0.3156   0.9489  NOT_MEASURED\n     spec=lowrank-r828-f16x16  parts={A_payload=3391488, B_payload=2331648, metadata=24}\nC       828 q4g64        q2g128             0    1282280   3.5575    0.5806   0.8460  NOT_MEASURED\n     spec=lowrank-r828-A4g64-B2g128  parts={A_payload=847872, A_scales=53248, A_zeros=53248, B_payload=291456, B_scales=18216, B_zeros=18216, metadata=24}\nC       835 q2g128       q2g128             0     815548   2.2626    0.7885   0.7616  NOT_MEASURED\n     spec=lowrank-r835-A2g128-B2g128  parts={A_payload=427520, A_scales=28672, A_zeros=28672, B_payload=293920, B_scales=18370, B_zeros=18370, metadata=24}\nD       828 q2g128       q2g128           306     811028   2.2501    0.7885   0.7608  NOT_MEASURED\n     spec=lowrank-r828-A2g128-B2g128-k306  parts={A_payload=423936, A_scales=28672, A_zeros=28672, B_payload=291456, B_scales=18216, B_zeros=18216, residual_values=612, residual_indices=1224, metadata=24}\nE         - q2g128       -                  0     811032   2.2501    0.5002   0.8964  NOT_MEASURED\n     spec=affine-q2-g128  parts={A_scales=45056, A_zeros=45056, dense_payload=720896, metadata=24}\nbroken      - bf16         -                  0    5767192  16.0001    0.9900   1.0000  NOT_MEASURED\n     spec=broken-magnitude-0.01  parts={dense_payload=5767168, metadata=24}\n\ncapability not measured, because Metal is blocked (RuntimeError: [metal::load_device] No Metal device available. This typically occurs in headless, sandboxed, or virtualized macOS sessions where the GPU is not accessible.). gravity_outlier_eval.evaluate loads Kimi-VL-A3B on MLX and cannot run here; this module does not invent a parallel scorer. The anatomy receipt organ is Qwen3-30B-A3B down_proj 2048x768; the evaluator's O003 organ is Kimi-VL-A3B down_proj 2048x1408. Reconstruction/cosine is NOT a substitute for the conjunction gate.\nreconstruction is a cheap filter only; capability is the conjunction gate (perplexity AND n-gram diversity) and was NOT substituted by cosine/rel_fro.\nWHAT THE APPROXIMATION LOSES (phenotype, not measured here): likelihood -- discarded tail singular vectors are not 10% of NLL; diversity -- rows live in an r-dimensional subspace, the same output-range narrowing the PQ scar measured as repetition; state -- this organ is FFN down_proj, state is not stored here; routing -- the router is a different organ, but collapsed expert outputs make downstream residual-stream directions less distinguishable."
+  },
+  {
+   "spectral": {
+    "shape": [
+     2048,
+     768
+    ],
+    "full_rank": 768,
+    "participation": 550.7,
+    "ratio": 0.7171,
+    "rank_90": 495,
+    "null_ratio": 0.8289,
+    "null_rank_90": 547,
+    "deficit_pct": 13.491,
+    "break_even_rank": 558.5454545454545,
+    "byte_ratio": 0.8862,
+    "pays": true,
+    "dense_elems": 1572864,
+    "factored_elems": 1393920,
+    "save_pct": 11.38,
+    "structure_real": true
+   },
+   "verdict": "low-rank structure is REAL (13.49% below a matched null); a rank-495 factor stores 0.886x dense (UNDER the 559 break-even rank). rank_90 is 90% of spectral ENERGY, not of behaviour: this says the BYTES work, not that capability survives",
+   "incumbent_spec": "q2-g128",
+   "matched_pair": [
+    "D",
+    "E"
+   ],
+   "capability": {
+    "status": "NOT_MEASURED",
+    "capability_ok": null,
+    "reason": "capability not measured, because Metal is blocked (RuntimeError: [metal::load_device] No Metal device available. This typically occurs in headless, sandboxed, or virtualized macOS sessions where the GPU is not accessible.). gravity_outlier_eval.evaluate loads Kimi-VL-A3B on MLX and cannot run here; this module does not invent a parallel scorer. The anatomy receipt organ is Qwen3-30B-A3B down_proj 2048x768; the evaluator's O003 organ is Kimi-VL-A3B down_proj 2048x1408. Reconstruction/cosine is NOT a substitute for the conjunction gate.",
+    "metal_ok": false,
+    "metal_detail": "RuntimeError: [metal::load_device] No Metal device available. This typically occurs in headless, sandboxed, or virtualized macOS sessions where the GPU is not accessible.",
+    "gate": {
+     "R4_MAX": 0.1614,
+     "PPL_MAX": 3.617,
+     "BF16_PPL": 2.8936,
+     "BF16_R4": 0.0538,
+     "conjunction": "perplexity AND n-gram diversity",
+     "evaluator": "tools/future/gravity_outlier_eval.py::evaluate",
+     "evaluator_specimen": "Kimi-VL-A3B (O003 gravity), not the Qwen organ"
+    }
+   },
+   "arms": [
+    {
+     "arm": "A",
+     "spec": "dense-bf16",
+     "rank": null,
+     "shape": [
+      2048,
+      768
+     ],
+     "source_params": 1572864,
+     "complete_bytes": 3145728,
+     "complete_ebpw": 16.0,
+     "factor_precisions": {
+      "A": {
+       "bits": 16,
+       "group": 0
+      },
+      "B": null
+     },
+     "residual_k": 0,
+     "include_scales": true,
+     "parts": {
+      "A_payload": 0,
+      "A_scales": 0,
+      "A_zeros": 0,
+      "B_payload": 0,
+      "B_scales": 0,
+      "B_zeros": 0,
+      "residual_values": 0,
+      "residual_indices": 0,
+      "codebook": 0,
+      "pq_indices": 0,
+      "dense_payload": 3145728,
+      "metadata": 0
+     },
+     "metrics": {
+      "rel_fro": 0.0,
+      "cosine": 1.0,
+      "magnitude_ratio": 1.0,
+      "direction_similarity": 1.0
+     },
+     "stores_more_than_dense": false,
+     "notes": []
+    },
+    {
+     "arm": "B",
+     "spec": "lowrank-r495-f16x16",
+     "rank": 495,
+     "shape": [
+      2048,
+      768
+     ],
+     "source_params": 1572864,
+     "complete_bytes": 2787864,
+     "complete_ebpw": 14.1798095703125,
+     "factor_precisions": {
+      "A": {
+       "bits": 16,
+       "group": 0
+      },
+      "B": {
+       "bits": 16,
+       "group": 0
+      }
+     },
+     "residual_k": 0,
+     "include_scales": true,
+     "parts": {
+      "A_payload": 2027520,
+      "A_scales": 0,
+      "A_zeros": 0,
+      "B_payload": 760320,
+      "B_scales": 0,
+      "B_zeros": 0,
+      "residual_values": 0,
+      "residual_indices": 0,
+      "codebook": 0,
+      "pq_indices": 0,
+      "dense_payload": 0,
+      "metadata": 24
+     },
+     "metrics": {
+      "rel_fro": 0.31597224763472964,
+      "cosine": 0.9487684326164656,
+      "magnitude_ratio": 0.9487662259748518,
+      "direction_similarity": 0.9487684326164656
+     },
+     "stores_more_than_dense": false,
+     "notes": []
+    },
+    {
+     "arm": "C",
+     "spec": "lowrank-r495-A4g64-B2g128",
+     "rank": 495,
+     "shape": [
+      2048,
+      768
+     ],
+     "source_params": 1572864,
+     "complete_bytes": 679360,
+     "complete_ebpw": 3.4554036458333335,
+     "factor_precisions": {
+      "A": {
+       "bits": 4,
+       "group": 64
+      },
+      "B": {
+       "bits": 2,
+       "group": 128
+      }
+     },
+     "residual_k": 0,
+     "include_scales": true,
+     "parts": {
+      "A_payload": 506880,
+      "A_scales": 32768,
+      "A_zeros": 32768,
+      "B_payload": 95040,
+      "B_scales": 5940,
+      "B_zeros": 5940,
+      "residual_values": 0,
+      "residual_indices": 0,
+      "codebook": 0,
+      "pq_indices": 0,
+      "dense_payload": 0,
+      "metadata": 24
+     },
+     "metrics": {
+      "rel_fro": 0.5949616303009654,
+      "cosine": 0.8399360036551741,
+      "magnitude_ratio": 1.0838044759237777,
+      "direction_similarity": 0.8399360036551741
+     },
+     "stores_more_than_dense": false,
+     "notes": [
+      "unequal factor precision"
+     ]
+    },
+    {
+     "arm": "C",
+     "spec": "lowrank-r559-A2g128-B2g128",
+     "rank": 559,
+     "shape": [
+      2048,
+      768
+     ],
+     "source_params": 1572864,
+     "complete_bytes": 447936,
+     "complete_ebpw": 2.2783203125,
+     "factor_precisions": {
+      "A": {
+       "bits": 2,
+       "group": 128
+      },
+      "B": {
+       "bits": 2,
+       "group": 128
+      }
+     },
+     "residual_k": 0,
+     "include_scales": true,
+     "parts": {
+      "A_payload": 286208,
+      "A_scales": 20480,
+      "A_zeros": 20480,
+      "B_payload": 107328,
+      "B_scales": 6708,
+      "B_zeros": 6708,
+      "residual_values": 0,
+      "residual_indices": 0,
+      "codebook": 0,
+      "pq_indices": 0,
+      "dense_payload": 0,
+      "metadata": 24
+     },
+     "metrics": {
+      "rel_fro": 0.8036616046603897,
+      "cosine": 0.7665712550626677,
+      "magnitude_ratio": 1.2497932163741212,
+      "direction_similarity": 0.7665712550626677
+     },
+     "stores_more_than_dense": false,
+     "notes": []
+    },
+    {
+     "arm": "D",
+     "spec": "lowrank-r495-A2g128-B2g128-k8206",
+     "rank": 495,
+     "shape": [
+      2048,
+      768
+     ],
+     "source_params": 1572864,
+     "complete_bytes": 442388,
+     "complete_ebpw": 2.2501017252604165,
+     "factor_precisions": {
+      "A": {
+       "bits": 2,
+       "group": 128
+      },
+      "B": {
+       "bits": 2,
+       "group": 128
+      }
+     },
+     "residual_k": 8206,
+     "include_scales": true,
+     "parts": {
+      "A_payload": 253440,
+      "A_scales": 16384,
+      "A_zeros": 16384,
+      "B_payload": 95040,
+      "B_scales": 5940,
+      "B_zeros": 5940,
+      "residual_values": 16412,
+      "residual_indices": 32824,
+      "codebook": 0,
+      "pq_indices": 0,
+      "dense_payload": 0,
+      "metadata": 24
+     },
+     "metrics": {
+      "rel_fro": 0.7901181243784888,
+      "cosine": 0.761678629937234,
+      "magnitude_ratio": 1.2138301374814011,
+      "direction_similarity": 0.761678629937234
+     },
+     "stores_more_than_dense": false,
+     "notes": [
+      "sparse residual k=8206 billed values AND indices",
+      "matched residual k=8206 at r=495 to incumbent affine-q2-g128 (442392 bytes); leftover after residual 4B"
+     ]
+    },
+    {
+     "arm": "E",
+     "spec": "affine-q2-g128",
+     "rank": null,
+     "shape": [
+      2048,
+      768
+     ],
+     "source_params": 1572864,
+     "complete_bytes": 442392,
+     "complete_ebpw": 2.2501220703125,
+     "factor_precisions": {
+      "A": {
+       "bits": 2,
+       "group": 128
+      },
+      "B": null
+     },
+     "residual_k": 0,
+     "include_scales": true,
+     "parts": {
+      "A_payload": 0,
+      "A_scales": 24576,
+      "A_zeros": 24576,
+      "B_payload": 0,
+      "B_scales": 0,
+      "B_zeros": 0,
+      "residual_values": 0,
+      "residual_indices": 0,
+      "codebook": 0,
+      "pq_indices": 0,
+      "dense_payload": 393216,
+      "metadata": 24
+     },
+     "metrics": {
+      "rel_fro": 0.5067639359481416,
+      "cosine": 0.8939205006125416,
+      "magnitude_ratio": 1.1303598124728187,
+      "direction_similarity": 0.8939205006125416
+     },
+     "stores_more_than_dense": false,
+     "notes": []
+    },
+    {
+     "arm": "broken",
+     "spec": "broken-magnitude-0.01",
+     "rank": null,
+     "shape": [
+      2048,
+      768
+     ],
+     "source_params": 1572864,
+     "complete_bytes": 3145752,
+     "complete_ebpw": 16.0001220703125,
+     "factor_precisions": {
+      "A": {
+       "bits": 16,
+       "group": 0
+      },
+      "B": null
+     },
+     "residual_k": 0,
+     "include_scales": true,
+     "parts": {
+      "A_payload": 0,
+      "A_scales": 0,
+      "A_zeros": 0,
+      "B_payload": 0,
+      "B_scales": 0,
+      "B_zeros": 0,
+      "residual_values": 0,
+      "residual_indices": 0,
+      "codebook": 0,
+      "pq_indices": 0,
+      "dense_payload": 3145728,
+      "metadata": 24
+     },
+     "metrics": {
+      "rel_fro": 0.9899998988998736,
+      "cosine": 0.9999986373749246,
+      "magnitude_ratio": 0.01000011486417394,
+      "direction_similarity": 0.9999986373749246
+     },
+     "stores_more_than_dense": true,
+     "notes": [
+      "deliberate magnitude-destroyed negative control"
+     ]
+    }
+   ],
+   "table": "=== matched-EBPW comparison ===\norgan: /Users/scammermike/.cache/huggingface/hub/models--Qwen--Qwen3-30B-A3B-Instruct-2507/snapshots/0d7cf23991f47feeb3a57ecb4c9cee8ea4a17bfe/model-00001-of-00016.safetensors::model.layers.0.mlp.experts.0.down_proj.weight shape=(2048, 768) source_params=1572864 (Qwen3-30B-A3B expert down_proj; the anatomy-receipt organ)\nspectral: ratio=0.7171 null=0.8289 deficit=13.491% rank_90=495 break_even=558.55 structure_real=True\nlow-rank structure is REAL (13.49% below a matched null); a rank-495 factor stores 0.886x dense (UNDER the 559 break-even rank). rank_90 is 90% of spectral ENERGY, not of behaviour: this says the BYTES work, not that capability survives\narm    rank A            B                  k      bytes     EBPW   rel_fro   cosine  capability\n------------------------------------------------------------------------------------------------\nA         - bf16         -                  0    3145728  16.0000    0.0000   1.0000  NOT_MEASURED\n     spec=dense-bf16  parts={dense_payload=3145728}\nB       495 bf16         bf16               0    2787864  14.1798    0.3160   0.9488  NOT_MEASURED\n     spec=lowrank-r495-f16x16  parts={A_payload=2027520, B_payload=760320, metadata=24}\nC       495 q4g64        q2g128             0     679360   3.4554    0.5950   0.8399  NOT_MEASURED\n     spec=lowrank-r495-A4g64-B2g128  parts={A_payload=506880, A_scales=32768, A_zeros=32768, B_payload=95040, B_scales=5940, B_zeros=5940, metadata=24}\nC       559 q2g128       q2g128             0     447936   2.2783    0.8037   0.7666  NOT_MEASURED\n     spec=lowrank-r559-A2g128-B2g128  parts={A_payload=286208, A_scales=20480, A_zeros=20480, B_payload=107328, B_scales=6708, B_zeros=6708, metadata=24}\nD       495 q2g128       q2g128          8206     442388   2.2501    0.7901   0.7617  NOT_MEASURED\n     spec=lowrank-r495-A2g128-B2g128-k8206  parts={A_payload=253440, A_scales=16384, A_zeros=16384, B_payload=95040, B_scales=5940, B_zeros=5940, residual_values=16412, residual_indices=32824, metadata=24}\nE         - q2g128       -                  0     442392   2.2501    0.5068   0.8939  NOT_MEASURED\n     spec=affine-q2-g128  parts={A_scales=24576, A_zeros=24576, dense_payload=393216, metadata=24}\nbroken      - bf16         -                  0    3145752  16.0001    0.9900   1.0000  NOT_MEASURED\n     spec=broken-magnitude-0.01  parts={dense_payload=3145728, metadata=24}\n\ncapability not measured, because Metal is blocked (RuntimeError: [metal::load_device] No Metal device available. This typically occurs in headless, sandboxed, or virtualized macOS sessions where the GPU is not accessible.). gravity_outlier_eval.evaluate loads Kimi-VL-A3B on MLX and cannot run here; this module does not invent a parallel scorer. The anatomy receipt organ is Qwen3-30B-A3B down_proj 2048x768; the evaluator's O003 organ is Kimi-VL-A3B down_proj 2048x1408. Reconstruction/cosine is NOT a substitute for the conjunction gate.\nreconstruction is a cheap filter only; capability is the conjunction gate (perplexity AND n-gram diversity) and was NOT substituted by cosine/rel_fro.\nWHAT THE APPROXIMATION LOSES (phenotype, not measured here): likelihood -- discarded tail singular vectors are not 10% of NLL; diversity -- rows live in an r-dimensional subspace, the same output-range narrowing the PQ scar measured as repetition; state -- this organ is FFN down_proj, state is not stored here; routing -- the router is a different organ, but collapsed expert outputs make downstream residual-stream directions less distinguishable."
+  }
+ ]
+}

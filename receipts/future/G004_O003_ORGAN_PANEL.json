@@ -1,0 +1,179 @@
+{
+ "specimen": "Kimi-VL-A3B (gravity O003)",
+ "expert": 0,
+ "layers_picked": [
+  1,
+  14,
+  26
+ ],
+ "n_layers_total": 26,
+ "live_deficit_pct": 10.0,
+ "rows": [
+  {
+   "layer": 1,
+   "proj": "down_proj",
+   "key": "language_model.model.layers.1.mlp.experts.0.down_proj.weight",
+   "shape": [
+    2048,
+    1408
+   ],
+   "ratio": 0.6733,
+   "null_ratio": 0.7091,
+   "deficit_pct": 5.054,
+   "rank_90": 820,
+   "break_even_rank": 834.3703703703703,
+   "byte_ratio": 0.9828,
+   "pays": true,
+   "structure_real": false,
+   "verdict": "low-rank structure is ABSENT (5.05% from a matched null): a rank-820 factor at 0.983x dense would be compressing noise, not a win"
+  },
+  {
+   "layer": 1,
+   "proj": "gate_proj",
+   "key": "language_model.model.layers.1.mlp.experts.0.gate_proj.weight",
+   "shape": [
+    1408,
+    2048
+   ],
+   "ratio": 0.6638,
+   "null_ratio": 0.7092,
+   "deficit_pct": 6.394,
+   "rank_90": 812,
+   "break_even_rank": 834.3703703703703,
+   "byte_ratio": 0.9732,
+   "pays": true,
+   "structure_real": false,
+   "verdict": "low-rank structure is ABSENT (6.39% from a matched null): a rank-812 factor at 0.973x dense would be compressing noise, not a win"
+  },
+  {
+   "layer": 1,
+   "proj": "up_proj",
+   "key": "language_model.model.layers.1.mlp.experts.0.up_proj.weight",
+   "shape": [
+    1408,
+    2048
+   ],
+   "ratio": 0.6683,
+   "null_ratio": 0.7092,
+   "deficit_pct": 5.764,
+   "rank_90": 815,
+   "break_even_rank": 834.3703703703703,
+   "byte_ratio": 0.9768,
+   "pays": true,
+   "structure_real": false,
+   "verdict": "low-rank structure is ABSENT (5.76% from a matched null): a rank-815 factor at 0.977x dense would be compressing noise, not a win"
+  },
+  {
+   "layer": 14,
+   "proj": "down_proj",
+   "key": "language_model.model.layers.14.mlp.experts.0.down_proj.weight",
+   "shape": [
+    2048,
+    1408
+   ],
+   "ratio": 0.6399,
+   "null_ratio": 0.7091,
+   "deficit_pct": 9.759,
+   "rank_90": 793,
+   "break_even_rank": 834.3703703703703,
+   "byte_ratio": 0.9504,
+   "pays": true,
+   "structure_real": false,
+   "verdict": "low-rank structure is ABSENT (9.76% from a matched null): a rank-793 factor at 0.950x dense would be compressing noise, not a win"
+  },
+  {
+   "layer": 14,
+   "proj": "gate_proj",
+   "key": "language_model.model.layers.14.mlp.experts.0.gate_proj.weight",
+   "shape": [
+    1408,
+    2048
+   ],
+   "ratio": 0.6196,
+   "null_ratio": 0.7092,
+   "deficit_pct": 12.625,
+   "rank_90": 782,
+   "break_even_rank": 834.3703703703703,
+   "byte_ratio": 0.9372,
+   "pays": true,
+   "structure_real": true,
+   "verdict": "low-rank structure is REAL (12.62% below a matched null); a rank-782 factor stores 0.937x dense (UNDER the 834 break-even rank). rank_90 is 90% of spectral ENERGY, not of behaviour: this says the BYTES work, not that capability survives"
+  },
+  {
+   "layer": 14,
+   "proj": "up_proj",
+   "key": "language_model.model.layers.14.mlp.experts.0.up_proj.weight",
+   "shape": [
+    1408,
+    2048
+   ],
+   "ratio": 0.66,
+   "null_ratio": 0.7092,
+   "deficit_pct": 6.941,
+   "rank_90": 803,
+   "break_even_rank": 834.3703703703703,
+   "byte_ratio": 0.9624,
+   "pays": true,
+   "structure_real": false,
+   "verdict": "low-rank structure is ABSENT (6.94% from a matched null): a rank-803 factor at 0.962x dense would be compressing noise, not a win"
+  },
+  {
+   "layer": 26,
+   "proj": "down_proj",
+   "key": "language_model.model.layers.26.mlp.experts.0.down_proj.weight",
+   "shape": [
+    2048,
+    1408
+   ],
+   "ratio": 0.6685,
+   "null_ratio": 0.7091,
+   "deficit_pct": 5.724,
+   "rank_90": 807,
+   "break_even_rank": 834.3703703703703,
+   "byte_ratio": 0.9672,
+   "pays": true,
+   "structure_real": false,
+   "verdict": "low-rank structure is ABSENT (5.72% from a matched null): a rank-807 factor at 0.967x dense would be compressing noise, not a win"
+  },
+  {
+   "layer": 26,
+   "proj": "gate_proj",
+   "key": "language_model.model.layers.26.mlp.experts.0.gate_proj.weight",
+   "shape": [
+    1408,
+    2048
+   ],
+   "ratio": 0.6162,
+   "null_ratio": 0.7092,
+   "deficit_pct": 13.111,
+   "rank_90": 794,
+   "break_even_rank": 834.3703703703703,
+   "byte_ratio": 0.9516,
+   "pays": true,
+   "structure_real": true,
+   "verdict": "low-rank structure is REAL (13.11% below a matched null); a rank-794 factor stores 0.952x dense (UNDER the 834 break-even rank). rank_90 is 90% of spectral ENERGY, not of behaviour: this says the BYTES work, not that capability survives"
+  },
+  {
+   "layer": 26,
+   "proj": "up_proj",
+   "key": "language_model.model.layers.26.mlp.experts.0.up_proj.weight",
+   "shape": [
+    1408,
+    2048
+   ],
+   "ratio": 0.6563,
+   "null_ratio": 0.7092,
+   "deficit_pct": 7.455,
+   "rank_90": 808,
+   "break_even_rank": 834.3703703703703,
+   "byte_ratio": 0.9684,
+   "pays": true,
+   "structure_real": false,
+   "verdict": "low-rank structure is ABSENT (7.46% from a matched null): a rank-808 factor at 0.968x dense would be compressing noise, not a win"
+  }
+ ],
+ "any_structure_real": true,
+ "max_deficit_pct": 13.111,
+ "wall_s": 7.62,
+ "capability": "NOT_MEASURED (Metal blocked)"
+}
