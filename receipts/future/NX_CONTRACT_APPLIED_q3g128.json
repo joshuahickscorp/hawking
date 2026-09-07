@@ -1,0 +1,66 @@
+{
+ "promotable": false,
+ "conditions": {
+  "standalone_execution": {
+   "ok": false,
+   "why": "no receipt cited; a bare claim is not evidence",
+   "checked": "refused"
+  },
+  "complete_persistent_accounting": {
+   "ok": false,
+   "why": "counted_bytes absent or not an integer",
+   "checked": "mechanically"
+  },
+  "no_hidden_dense_parent": {
+   "ok": false,
+   "why": "external_references absent -- absence of a field is not absence of a parent",
+   "checked": "mechanically"
+  },
+  "capability_qualification": {
+   "ok": true,
+   "why": "receipt receipts/future/O003_PARETO_COMPLETE.json",
+   "checked": "by receipt"
+  },
+  "oiii_adversarial_qualification": {
+   "ok": false,
+   "why": "no receipt cited; a bare claim is not evidence",
+   "checked": "refused"
+  },
+  "physical_qualification": {
+   "ok": true,
+   "why": "receipt receipts/future/O003_BYTES_PER_TOKEN.json",
+   "checked": "by receipt"
+  },
+  "restart_recovery_qualification": {
+   "ok": false,
+   "why": "no receipt cited; a bare claim is not evidence",
+   "checked": "refused"
+  },
+  "machine_runtime_contract": {
+   "ok": false,
+   "why": "no receipt cited; a bare claim is not evidence",
+   "checked": "refused"
+  },
+  "independent_verification": {
+   "ok": false,
+   "why": "no receipt cited; a bare claim is not evidence",
+   "checked": "refused"
+  },
+  "immutable_artifact_identity": {
+   "ok": false,
+   "why": "no artifact",
+   "checked": "mechanically"
+  }
+ },
+ "missing": [
+  "standalone_execution",
+  "complete_persistent_accounting",
+  "no_hidden_dense_parent",
+  "oiii_adversarial_qualification",
+  "restart_recovery_qualification",
+  "machine_runtime_contract",
+  "independent_verification",
+  "immutable_artifact_identity"
+ ],
+ "verdict": "NR-derived candidate; promotion refused"
+}
