@@ -2297,6 +2297,30 @@ class Engine:
                 "Use the observations already present and return the shortest "
                 "valid answer or mutation now.",
             ]
+            # A round that MEASURED must be asked for the finding, not for brevity.
+            # Round 5 made 5 tool rounds and 7 successful observations across all four
+            # campaign tools, closed on the observation BUDGET rather than a failure --
+            # and answered "Tool access is closed for this round; no tool calls are
+            # emitted." That string was then recorded in its receipt as a verified_fact.
+            # Seven real measurements were taken and not one reached the report, because
+            # the instruction above asks for the shortest valid answer and a sentence
+            # about the closure is the shortest valid answer.
+            #
+            # Only when at least one observation SUCCEEDED. A round that observed nothing,
+            # or whose every observation failed, has nothing to report, and asking it to
+            # report anyway invites the invention this whole discipline exists to stop.
+            if any(
+                isinstance(item, dict) and item.get("ok")
+                for item in (observations or [])
+            ):
+                parts.append(
+                    "REPORT THE FINDING. The observations above are what you measured. "
+                    "State what you measured, on which specimen, the numbers you got, "
+                    "and what it means for the campaign. DO NOT DESCRIBE THE TOOL STATE "
+                    "and do not restate your plan: the tools already ran and their "
+                    "output is above. If an observation was a refusal, report the "
+                    "refusal and its named mechanism -- that is a finding too."
+                )
             if (
                 "ROLE: implementation" in str(prompt)
                 or "OBJECTIVE: repair" in str(prompt)
