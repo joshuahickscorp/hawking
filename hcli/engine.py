@@ -549,6 +549,28 @@ def _degraded_structured_record(
     return record
 
 
+def is_accepted_work(validation: Any, result: Any = None) -> bool:
+    """True only for a mutation that applied AND passed a real check.
+
+    The ok flag alone is not that predicate: an ANSWER also sets ok=True, and
+    five consecutive fabricated completions were recorded that way. Counting
+    accepted work by ok would have scored all five as successes.
+    """
+    if not isinstance(validation, dict) or validation.get("ok") is not True:
+        return False
+    if validation.get("accepted_work") is False:
+        return False
+    if validation.get("kind") == "read_only":
+        return False
+    checks = validation.get("checks")
+    if not isinstance(checks, list):
+        return False
+    return any(
+        isinstance(c, dict) and c.get("kind") == "test" and c.get("exit_code") == 0
+        for c in checks
+    )
+
+
 def validation_failure_message(validation: Any) -> str:
     """Say WHY deterministic validation failed.
 
@@ -1768,6 +1790,14 @@ class Engine:
             validation = {
                 "ok": True,
                 "kind": "read_only",
+                # An answer carries NO deterministic evidence. Measured: five
+                # autonomous rounds returned answers claiming a function was
+                # "already present ... the test passes as expected"; the name
+                # existed nowhere, and every one was recorded ok=True. On the
+                # ok field alone those receipts were indistinguishable from a
+                # verified mutation. This field is what tells them apart.
+                "evidence": "none",
+                "accepted_work": False,
                 "tool": "fs.list",
                 "observed_files": len(value.get("files", [])),
                 "observed_directories": len(value.get("directories", [])),
@@ -2579,6 +2609,8 @@ class Engine:
                     validation={
                         "ok": True,
                         "kind": "read_only",
+                        "evidence": "none",
+                        "accepted_work": False,
                     },
                     rolled_back=False,
                     started=started,
