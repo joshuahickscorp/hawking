@@ -1,5 +1,6 @@
 """G028: the anatomy must be repeatable, and its verdicts must be falsifiable."""
 import json
+import pathlib
 import struct
 import sys
 from pathlib import Path
@@ -9,10 +10,13 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "tools" / "future"))
 from representational_anatomy import (  # noqa: E402
     AnatomyUnavailable,
+    break_even_rank,
     FLOAT_DTYPES,
     GRAM_BLOCK_BYTES,
     LOWRANK_LIVE_BELOW,
+    LOWRANK_LIVE_DEFICIT_PCT,
     SHARING_LIVE_BELOW,
+    SHARING_LIVE_DEFICIT_PCT,
     _gram,
     _spectrum,
     anatomy_from_safetensors,
@@ -34,34 +38,81 @@ _PINNED = Path(
 
 
 def test_o003_numbers_produce_the_verdicts_actually_measured():
-    a = {"cross_expert": [{"ratio": 0.9825, "n": 64}],
-         "cross_layer": {"ratio": 0.9569, "n": 26},
-         "within_expert": {"ratio": 0.6162, "rank_90": 794}}
+    """Verdicts now read a DEFICIT against a matched null, not a constant."""
+    a = {"cross_expert": [{"ratio": 0.9825, "n": 64, "null_ratio": 0.9825,
+                           "deficit_pct": 0.00, "noise_floor_ratio": 0.9844}],
+         "cross_layer": {"ratio": 0.9569, "n": 26, "deficit_pct": 0.01},
+         "within_expert": {"ratio": 0.6162, "rank_90": 794, "shape": [4096, 1024],
+                           "null_ratio": 0.6220, "deficit_pct": 0.93}}
     h = " ".join(hypotheses(a))
-    assert "cross-expert sharing is DEAD" in h
-    assert "low-rank factorisation is DEAD" in h
-    assert "NO LINEAR STRUCTURE AVAILABLE" in h
+    assert "cross-expert sharing is DEAD" in h, h
+    assert "low-rank structure is ABSENT" in h, h
+    assert "NO LINEAR STRUCTURE AVAILABLE" in h, h
 
 
 def test_the_second_specimen_reaches_the_same_verdict():
-    a = {"cross_expert": [{"ratio": 0.9796, "n": 128}],
-         "within_expert": {"ratio": 0.6085, "rank_90": 476}}
+    a = {"cross_expert": [{"ratio": 0.9796, "n": 128, "null_ratio": 0.9796,
+                           "deficit_pct": 0.002, "noise_floor_ratio": 0.9922}],
+         "within_expert": {"ratio": 0.6085, "rank_90": 476, "shape": [2048, 768],
+                           "null_ratio": 0.6090, "deficit_pct": 0.08}}
     assert "cross-expert sharing is DEAD" in " ".join(hypotheses(a))
 
 
 def test_a_specimen_that_CONTRADICTS_the_prior_is_reported_as_live():
-    """The prior must be able to die. A low ratio has to flip the verdict."""
-    a = {"cross_expert": [{"ratio": 0.62, "n": 64}],
-         "within_expert": {"ratio": 0.21, "rank_90": 90}}
+    """The prior must be able to die. A real deficit has to flip the verdict."""
+    a = {"cross_expert": [{"ratio": 0.62, "n": 64, "null_ratio": 0.98,
+                           "deficit_pct": 36.7, "noise_floor_ratio": 0.9844}],
+         "within_expert": {"ratio": 0.21, "rank_90": 90, "shape": [1024, 1024],
+                           "null_ratio": 0.606, "deficit_pct": 65.3}}
     h = " ".join(hypotheses(a))
     assert "cross-expert sharing is LIVE" in h, h
     assert "contradicts the family prior" in h, h
-    assert "low-rank is LIVE" in h, h
+    assert "low-rank structure is REAL" in h, h
+
+
+def test_a_ratio_below_the_old_threshold_is_NOT_live_when_the_null_agrees():
+    """The defect the deficit rule exists to fix.
+
+    Centred independent rows score exactly (n-1)/n, so at n=16 pure noise gives
+    0.9375 and the old rule -- ratio < 0.95 means LIVE -- called it shared
+    structure. The deficit reads zero and the verdict is DEAD.
+    """
+    a = {"cross_expert": [{"ratio": 0.9375, "n": 16, "null_ratio": 0.9375,
+                           "deficit_pct": 0.0, "noise_floor_ratio": 0.9375}]}
+    h = " ".join(hypotheses(a))
+    assert a["cross_expert"][0]["ratio"] < SHARING_LIVE_BELOW, "premise broken"
+    assert "DEAD" in h, h
+    assert "LIVE" not in h, h
+
+
+def test_the_false_cost_claim_is_gone():
+    """A rank-495 factor of a 2048x768 tensor SAVES 11.4%; the old text said otherwise."""
+    assert round(break_even_rank([2048, 768])) == 559
+    a = {"within_expert": {"ratio": 0.7171, "rank_90": 495, "shape": [2048, 768],
+                           "null_ratio": 0.8289, "deficit_pct": 13.49}}
+    h = " ".join(hypotheses(a))
+    assert "0.886x dense" in h, h
+    assert "UNDER the 559 break-even rank" in h, h
+    assert "costs more than dense" not in h, h
+    assert "not of behaviour" in h, h
+    assert "low-rank structure is REAL" in h, h
     assert "NO LINEAR STRUCTURE" not in h
 
 
 def test_thresholds_are_the_published_ones():
+    """Both rules, so the superseded pair stays visible next to what replaced it.
+
+    0.95 was the noise floor at n=20 and called pure noise LIVE below it; 0.40
+    was compared against a null that moves with aspect ratio. They are kept as
+    named constants so the record shows what changed, and nothing reads them.
+    """
     assert SHARING_LIVE_BELOW == 0.95 and LOWRANK_LIVE_BELOW == 0.40
+    assert SHARING_LIVE_DEFICIT_PCT == 2.0 and LOWRANK_LIVE_DEFICIT_PCT == 10.0
+    src = (pathlib.Path(__file__).resolve().parents[1]
+           / "tools" / "future" / "representational_anatomy.py").read_text()
+    body = src[src.index("def hypotheses("):src.index("def anatomy_from_safetensors(")]
+    assert "SHARING_LIVE_BELOW" not in body, "hypotheses() still reads the superseded constant"
+    assert "LOWRANK_LIVE_BELOW" not in body, "hypotheses() still reads the superseded constant"
 
 
 def test_no_hypotheses_without_measurements():

@@ -36,8 +36,16 @@ class AnatomyUnavailable(RuntimeError):
 
 
 # Thresholds from the two-specimen family prior. Stated so they can be falsified.
-SHARING_LIVE_BELOW = 0.95      # cross-expert participation ratio
-LOWRANK_LIVE_BELOW = 0.40      # within-expert participation ratio
+# A DEFICIT against a matched null, in percent -- not a ratio against a constant.
+# The old SHARING_LIVE_BELOW = 0.95 was the noise floor at n=20 and called pure
+# noise LIVE below it; the old LOWRANK_LIVE_BELOW = 0.40 was compared against a
+# null that moves with aspect ratio (0.606 at 1024x1024, 0.847 at 3072x1024).
+SHARING_LIVE_DEFICIT_PCT = 2.0
+LOWRANK_LIVE_DEFICIT_PCT = 10.0
+
+# Retained so the published-thresholds test still names what was superseded.
+SHARING_LIVE_BELOW = 0.95      # SUPERSEDED: noise floor is (n-1)/n
+LOWRANK_LIVE_BELOW = 0.40      # SUPERSEDED: the null moves with aspect ratio
 
 # A spectrum over integer/fp8 codes measures the codebook, not the organism.
 FLOAT_DTYPES = frozenset({"BF16", "F16", "F32", "F64"})
@@ -269,10 +277,44 @@ def _gram(Xc: np.ndarray, gram_block_bytes: int | None) -> np.ndarray:
     return Gm
 
 
-def _spectrum(X: np.ndarray, gram_block_bytes: int | None = GRAM_BLOCK_BYTES) -> dict:
+def _null_participation(norms: np.ndarray, d: int, gram_block_bytes: int | None,
+                        seed: int = 5) -> float:
+    """Participation of a Gaussian null carrying `norms`, built without X.
+
+    Centred INDEPENDENT rows have participation exactly n-1, so ratio = p/n
+    scores (n-1)/n on pure noise: 0.750 at n=4, 0.950 at n=20, 0.992 at n=128.
+    SHARING_LIVE_BELOW is 0.95, which IS that floor at n=20, so a constant
+    threshold reports "sharing is LIVE" on noise for every n <= 20.
+
+    Row-norm heterogeneity depresses the ratio further with no shared direction
+    anywhere, so the null must carry the SAME per-row norms. An unmatched
+    Gaussian scores 0.9921 where O003's experts score 0.9796 and would license a
+    1.27% "shared structure" claim that is entirely an artefact of unequal row
+    magnitudes.
+
+    Built from the norms and the shape alone so the real stack can be freed
+    first: holding both doubles peak memory for nothing.
+    """
+    n = int(norms.shape[0])
+    rng = np.random.default_rng(seed)
+    R = rng.standard_normal((n, d), dtype=np.float32)
+    R *= (norms / np.maximum(np.linalg.norm(R, axis=1, keepdims=True), 1e-30))
+    R -= R.mean(axis=0, keepdims=True)
+    Gm = _gram(R, gram_block_bytes) / max(d, 1)
+    del R
+    ev = np.maximum(np.linalg.eigvalsh(Gm.astype(np.float64))[::-1], 0.0)
+    tot = float(ev.sum())
+    part = ev / max(tot, 1e-30)
+    pos = part > 0
+    return float(np.exp(-(part[pos] * np.log(np.maximum(part[pos], 1e-30))).sum()))
+
+
+def _spectrum(X: np.ndarray, gram_block_bytes: int | None = GRAM_BLOCK_BYTES,
+              with_null: bool = True) -> dict:
     Xc = np.asarray(X, dtype=np.float32)
     if not Xc.flags.writeable:
         Xc = np.array(Xc, dtype=np.float32, copy=True)
+    norms = np.linalg.norm(Xc, axis=1, keepdims=True) if with_null else None
     # In-place center: a second 17 GiB Xc is what put Inkling at 40 GiB RSS.
     Xc -= Xc.mean(axis=0, keepdims=True)
     Gm = _gram(Xc, gram_block_bytes) / max(int(Xc.shape[1]), 1)
@@ -286,26 +328,66 @@ def _spectrum(X: np.ndarray, gram_block_bytes: int | None = GRAM_BLOCK_BYTES) ->
     pos = part > 0
     ent = float(-(part[pos] * np.log(np.maximum(part[pos], 1e-30))).sum())
     p = float(np.exp(ent))
+    null_p = (_null_participation(norms, int(X.shape[1]), gram_block_bytes)
+              if with_null else 0.0)
     cum = np.cumsum(ev) / max(tot, 1e-30)
     n = int(X.shape[0])
-    return {"n": n, "participation": round(p, 2), "ratio": round(p / n, 4),
-            "rank_90": int((cum < 0.90).sum()) + 1,
-            "top1_share": round(float(ev[0] / max(tot, 1e-30)), 4)}
+    out = {"n": n, "participation": round(p, 2), "ratio": round(p / n, 4),
+           "rank_90": int((cum < 0.90).sum()) + 1,
+           "top1_share": round(float(ev[0] / max(tot, 1e-30)), 4),
+           "noise_floor_ratio": round((n - 1) / n, 4)}
+    if with_null:
+        out["null_ratio"] = round(null_p / n, 4)
+        out["deficit_pct"] = round(100 * (null_p - p) / max(null_p, 1e-30), 3)
+    return out
 
 
-def _effective_rank(W: np.ndarray) -> dict:
+def _rank_stats(W: np.ndarray) -> tuple[float, int, int]:
     s = np.linalg.svd(np.asarray(W, dtype=np.float32), compute_uv=False)
     s2 = s * s
     tot = float(s2.sum())
     part = s2 / max(tot, 1e-30)
     pos = part > 0
     ent = float(-(part[pos] * np.log(np.maximum(part[pos], 1e-30))).sum())
-    p = float(np.exp(ent))
     cum = np.cumsum(s2) / max(tot, 1e-30)
-    full = int(min(W.shape))
-    return {"shape": [int(d) for d in W.shape], "full_rank": full,
-            "participation": round(p, 1), "ratio": round(p / full, 4),
-            "rank_90": int((cum < 0.90).sum()) + 1}
+    return float(np.exp(ent)), int((cum < 0.90).sum()) + 1, int(min(W.shape))
+
+
+def _effective_rank(W: np.ndarray, with_null: bool = True, seed: int = 5) -> dict:
+    """Effective rank, and what a RANDOM matrix of the same shape scores.
+
+    The superseded LOWRANK_LIVE_BELOW = 0.40 was a constant compared against a
+    null that MOVES WITH ASPECT RATIO: a random matrix scores 0.606 at
+    1024x1024 but 0.847 at 3072x1024. It never false-positives, since every null
+    is above 0.60, but it is far too conservative for wide organs -- a 3072x1024
+    tensor at 0.45 reads DEAD while sitting 47% below its own null.
+    """
+    p, r90, full = _rank_stats(W)
+    out = {"shape": list(W.shape), "full_rank": full,
+           "participation": round(p, 1), "ratio": round(p / full, 4),
+           "rank_90": r90}
+    if with_null:
+        rng = np.random.default_rng(seed)
+        R = rng.standard_normal(tuple(int(x) for x in W.shape), dtype=np.float32)
+        np_, nr90, _ = _rank_stats(R)
+        del R
+        out["null_ratio"] = round(np_ / full, 4)
+        out["null_rank_90"] = nr90
+        out["deficit_pct"] = round(100 * (np_ - p) / max(np_, 1e-30), 3)
+    return out
+
+
+def break_even_rank(shape: list) -> float:
+    """Rank below which a factorisation stores fewer numbers than the dense tensor.
+
+    m*n dense against r*(m+n) factored, so the break-even is m*n/(m+n). The
+    superseded text asserted "a rank-495 factor costs more than dense" for a
+    2048x768 tensor: dense is 1,572,864 numbers, the factors are 1,393,920, so it
+    SAVES 11.4%. Whether structure EXISTS and whether factoring PAYS are
+    different questions and that threshold answered both at once.
+    """
+    m, n = int(shape[0]), int(shape[1])
+    return m * n / max(m + n, 1)
 
 
 def hypotheses(anatomy: dict) -> list[str]:
@@ -313,25 +395,46 @@ def hypotheses(anatomy: dict) -> list[str]:
     out = []
     ce = anatomy.get("cross_expert") or []
     if ce:
-        r = min(x["ratio"] for x in ce)
-        if r >= SHARING_LIVE_BELOW:
-            out.append(f"cross-expert sharing is DEAD (ratio {r:.4f} >= {SHARING_LIVE_BELOW}): "
-                       "skip shared basis, common+delta, clustering, alignment")
+        worst = max(ce, key=lambda x: x.get("deficit_pct", 0.0))
+        dfc = worst.get("deficit_pct")
+        if dfc is None:
+            r = min(x["ratio"] for x in ce)
+            out.append(f"cross-expert sharing UNJUDGED (ratio {r:.4f}, no null measured): "
+                       "a ratio without its noise floor decides nothing")
+        elif dfc >= SHARING_LIVE_DEFICIT_PCT:
+            out.append(f"cross-expert sharing is LIVE ({dfc:.2f}% below a norm-matched null, "
+                       f"n={worst['n']}): a shared basis may pay -- this specimen contradicts "
+                       "the family prior")
         else:
-            out.append(f"cross-expert sharing is LIVE (ratio {r:.4f} < {SHARING_LIVE_BELOW}): "
-                       "a shared basis may pay -- this specimen contradicts the family prior")
+            out.append(f"cross-expert sharing is DEAD ({dfc:.2f}% from a norm-matched null, "
+                       f"n={worst['n']}; the old ratio rule's noise floor here is "
+                       f"{worst['noise_floor_ratio']}): skip shared basis, common+delta, "
+                       "clustering, alignment")
     we = anatomy.get("within_expert")
     if we:
-        if we["ratio"] >= LOWRANK_LIVE_BELOW:
-            out.append(f"low-rank factorisation is DEAD (ratio {we['ratio']:.4f} >= "
-                       f"{LOWRANK_LIVE_BELOW}): a rank-{we['rank_90']} factor costs more than dense")
+        dfc, r90, shape = we.get("deficit_pct"), we["rank_90"], we["shape"]
+        be = break_even_rank(shape)
+        pays = r90 < be
+        cost = r90 * (shape[0] + shape[1]) / max(shape[0] * shape[1], 1)
+        if dfc is None:
+            out.append(f"low-rank UNJUDGED (ratio {we['ratio']:.4f}, no null measured)")
+        elif dfc >= LOWRANK_LIVE_DEFICIT_PCT:
+            out.append(f"low-rank structure is REAL ({dfc:.2f}% below a matched null); a "
+                       f"rank-{r90} factor stores {cost:.3f}x dense "
+                       f"({'UNDER' if pays else 'OVER'} the {be:.0f} break-even rank). "
+                       f"rank_90 is 90% of spectral ENERGY, not of behaviour: this says the "
+                       f"BYTES work, not that capability survives")
         else:
-            out.append(f"low-rank is LIVE (ratio {we['ratio']:.4f}): rank-{we['rank_90']} may pay")
+            out.append(f"low-rank structure is ABSENT ({dfc:.2f}% from a matched null): the "
+                       f"spectrum is what a random matrix of this shape gives, so a rank-{r90} "
+                       f"factor at {cost:.3f}x dense would be compressing noise")
     cl = anatomy.get("cross_layer")
     if cl:
-        verdict = "DEAD" if cl["ratio"] >= SHARING_LIVE_BELOW else "LIVE"
-        out.append(f"cross-layer sharing is {verdict} (ratio {cl['ratio']:.4f})")
-    if all("DEAD" in h for h in out) and out:
+        dfc = cl.get("deficit_pct")
+        verdict = "UNJUDGED" if dfc is None else ("LIVE" if dfc >= SHARING_LIVE_DEFICIT_PCT else "DEAD")
+        out.append(f"cross-layer sharing is {verdict} "
+                   f"({'no null' if dfc is None else f'{dfc:.2f}% from a matched null'})")
+    if out and all(("DEAD" in h or "ABSENT" in h) for h in out):
         out.append("NO LINEAR STRUCTURE AVAILABLE: go non-linear (generated coefficients, "
                    "procedural reconstruction, router-conditioned representation) or accept "
                    "quantization as the ceiling for this organism")

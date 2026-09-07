@@ -1,6 +1,14 @@
 {
- "snapshot": "/Users/scammermike/.cache/huggingface/hub/models--Qwen--Qwen3-30B-A3B-Instruct-2507/snapshots/0d7cf23991f47feeb3a57ecb4c9cee8ea4a17bfe/",
+ "snapshot": "/Users/scammermike/.cache/huggingface/hub/models--Qwen--Qwen3-30B-A3B-Instruct-2507/snapshots/0d7cf23991f47feeb3a57ecb4c9cee8ea4a17bfe",
  "layer": 0,
+ "layers_with_experts": [
+  0,
+  25
+ ],
+ "shared_expert_present": false,
+ "scheme": "A",
+ "n_shards": 8,
+ "n_tensors": 9888,
  "storage": "per-expert",
  "cross_expert": [
   {
@@ -9,7 +17,11 @@
    "ratio": 0.9796,
    "rank_90": 110,
    "top1_share": 0.0101,
-   "tensor": "down_proj"
+   "noise_floor_ratio": 0.9922,
+   "null_ratio": 0.9797,
+   "deficit_pct": 0.002,
+   "tensor": "down_proj",
+   "n_experts_total": 128
   },
   {
    "n": 128,
@@ -17,7 +29,11 @@
    "ratio": 0.9644,
    "rank_90": 108,
    "top1_share": 0.0115,
-   "tensor": "gate_proj"
+   "noise_floor_ratio": 0.9922,
+   "null_ratio": 0.9644,
+   "deficit_pct": 0.004,
+   "tensor": "gate_proj",
+   "n_experts_total": 128
   },
   {
    "n": 128,
@@ -25,7 +41,11 @@
    "ratio": 0.9559,
    "rank_90": 106,
    "top1_share": 0.0122,
-   "tensor": "up_proj"
+   "noise_floor_ratio": 0.9922,
+   "null_ratio": 0.9559,
+   "deficit_pct": 0.002,
+   "tensor": "up_proj",
+   "n_experts_total": 128
   }
  ],
  "within_expert": {
@@ -36,11 +56,19 @@
   "full_rank": 768,
   "participation": 550.7,
   "ratio": 0.7171,
-  "rank_90": 495
+  "rank_90": 495,
+  "null_ratio": 0.8289,
+  "null_rank_90": 547,
+  "deficit_pct": 13.491
  },
  "hypotheses": [
+  "cross-expert sharing is DEAD (0.00% from a norm-matched null, n=128; the old ratio rule's noise floor here is 0.9922): skip shared basis, common+delta, clustering, alignment",
+  "low-rank structure is REAL (13.49% below a matched null); a rank-495 factor stores 0.886x dense (UNDER the 559 break-even rank). rank_90 is 90% of spectral ENERGY, not of behaviour: this says the BYTES work, not that capability survives"
+ ],
+ "superseded_hypotheses": [
   "cross-expert sharing is DEAD (ratio 0.9559 >= 0.95): skip shared basis, common+delta, clustering, alignment",
   "low-rank factorisation is DEAD (ratio 0.7171 >= 0.4): a rank-495 factor costs more than dense",
   "NO LINEAR STRUCTURE AVAILABLE: go non-linear (generated coefficients, procedural reconstruction, router-conditioned representation) or accept quantization as the ceiling for this organism"
- ]
+ ],
+ "supersession_reason": "The verdicts were wrong in both directions and the digits were right. SHARING_LIVE_BELOW 0.95 is the noise floor (n-1)/n at n=20, so the old rule reported cross-expert sharing LIVE on pure noise for every n <= 20; it happened to give the right answer here only because n=128, where the floor is 0.9922. LOWRANK_LIVE_BELOW 0.40 was compared against a null that moves with aspect ratio -- 0.606 at 1024x1024, 0.847 at 3072x1024 -- and this organ's 0.7171 is 13.49% BELOW its own null of 0.8289, so low-rank structure is real, not dead. And the cost claim was arithmetically false: 2048x768 dense is 1,572,864 numbers while a rank-495 factor is 1,393,920, which STORES 0.886x dense, under the 559 break-even rank of m*n/(m+n). Whether structure exists and whether factoring pays are different questions that one threshold was answering at once."
 }
