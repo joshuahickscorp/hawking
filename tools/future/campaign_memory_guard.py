@@ -20,6 +20,7 @@ heavy work until pressure falls and the cause is classified.
 """
 from __future__ import annotations
 
+import os
 import re
 import subprocess
 import threading
@@ -83,7 +84,20 @@ def _parse_residents(out: str) -> tuple:
     """
     n, rss = 0, 0
     for line in out.splitlines()[1:]:
-        if not ("resident-body" in line or "--supervise" in line or "hawkingd" in line):
+        parts0 = line.split(None, 2)
+        exe = ""
+        if len(parts0) >= 3 and parts0[2].strip():
+            exe = os.path.basename(parts0[2].split()[0])
+        # A resident is named by its EXECUTABLE, not by a phrase that happens to
+        # appear somewhere in an argv. The three phrases below were the whole
+        # matcher, and the resident actually carrying this campaign --
+        # workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident,
+        # 12 GB RSS, live -- matched none of them. The guard reported
+        # residents=0 while it ran. Found by recording a contention decision
+        # against the guard and noticing the count could not be true.
+        if not (exe.endswith("_resident") or exe == "hawkingd"
+                or "resident-body" in line or "--supervise" in line
+                or "hawkingd" in line):
             continue
         # `ps` output is data, and this process's own matcher appears in it --
         # already walked into once this campaign.
@@ -366,6 +380,22 @@ def checkpoint_and_release(what: str, checkpoint: Any = None,
 
 
 def _selftest() -> None:
+    # The resident matcher must find a resident by its EXECUTABLE NAME. This is
+    # the verbatim `ps -Ao pid,rss,command` line of the body that was live while
+    # the guard reported residents=0, and an argv-phrase matcher scores it zero.
+    live = ("  PID    RSS COMMAND\n"
+            "45305 12039792 /Users/x/hawking/workspace/ops/build/rust/"
+            "release-fast/examples/ascension_qwen38_resident --artifact-root /Users/x/n\n")
+    n, rss = _parse_residents(live)
+    assert n == 1, f"resident matcher missed a live resident: n={n}"
+    assert 11.0 < rss < 12.0, f"resident RSS wrong: {rss} GB"
+    # and it must still refuse its own scaffolding
+    noise = ("  PID    RSS COMMAND\n"
+             "111 100 /bin/sh -c ps -Ao pid,rss,command | grep resident\n"
+             "112 100 grep _resident\n"
+             "113 100 /usr/bin/awk {print}\n")
+    assert _parse_residents(noise) == (0, 0.0), "matcher counted its own scaffolding"
+
     # NEGATIVE CONTROL: the real numbers from the 2026-09-06 panic. If the guard
     # does not say STOP on the state that actually crashed the machine, it is
     # not a guard.
