@@ -799,6 +799,76 @@ def harvest_gravity(pool: _Pool) -> int:
     return n
 
 
+def harvest_reliability(pool: _Pool) -> None:
+    """G016: reliability is accepted_rate from HCLI receipts, never a grade.
+
+    The axis is higher-is-better. The harvested number is the named rate
+    `accepted_rate` = is_accepted_work / n_runs, computed by
+    tools/future/reliability_axis.py. The rest of that receipt's vector
+    (recovery, structured-action failure, tool failure, rolled_back,
+    variance) is attached as contract metadata so a blend cannot sneak in
+    as the comparable value.
+
+    Serving identities are their own organisms. A 28-run 4B endpoint must
+    not dominate the 312-run resident under coverage-subset; different
+    organisms never dominate each other. n < 2 is not repeated-trial
+    evidence (S006.39) and is not harvested.
+    """
+    path = RECEIPTS / "G016_RELIABILITY_AXIS.json"
+    doc = _read_json(path)
+    if not isinstance(doc, dict):
+        pool.notes.append(
+            "G016_RELIABILITY_AXIS.json unreadable; reliability stays unmeasured"
+        )
+        return
+    src = str(path.relative_to(REPO)) if path.is_relative_to(REPO) else str(path)
+    n_set = 0
+    for row in doc.get("models") or []:
+        if not isinstance(row, dict):
+            continue
+        model = row.get("model")
+        acc = row.get("accepted_rate") if isinstance(row.get("accepted_rate"), dict) else {}
+        value = acc.get("value")
+        n_runs = row.get("n_runs")
+        if model is None or value is None:
+            continue
+        if not isinstance(n_runs, int) or n_runs < 2:
+            continue
+        if str(model).startswith("http"):
+            name = str(model)
+        else:
+            name = Path(str(model)).name
+        organism = f"serving:{name}"
+        point = pool.get(organism, name, "serving_identity", src)
+        _set_axis(
+            point, "reliability", float(value),
+            epistemic="accepted", source=src,
+        )
+        rec = row.get("recovery_rate") if isinstance(row.get("recovery_rate"), dict) else {}
+        so = row.get("structured_action_failure_rate") if isinstance(
+            row.get("structured_action_failure_rate"), dict
+        ) else {}
+        tool = row.get("tool_failure_rate") if isinstance(row.get("tool_failure_rate"), dict) else {}
+        rolled = row.get("rolled_back_rate") if isinstance(row.get("rolled_back_rate"), dict) else {}
+        point["reliability_contract"] = {
+            "named_rate": "accepted_rate",
+            "not_a_blend": True,
+            "predicate": "hcli.engine.is_accepted_work(validation, result_envelope)",
+            "n_runs": n_runs,
+            "accepted_rate": value,
+            "recovery_rate": rec.get("value"),
+            "structured_action_failure_rate": so.get("value"),
+            "tool_failure_rate": tool.get("value"),
+            "tool_failure_rate_missing": tool.get("missing"),
+            "rolled_back_rate": rolled.get("value"),
+        }
+        n_set += 1
+    if n_set == 0:
+        pool.notes.append("G016_RELIABILITY_AXIS.json had no identity with n_runs>=2")
+    else:
+        pool.notes.append(f"reliability harvested as accepted_rate on {n_set} serving identities")
+
+
 def harvest(receipts_dir: Path | None = None) -> dict[str, Any]:
     """Build candidates from what is on disk (and Gravity via git). Always live."""
     global RECEIPTS
@@ -821,6 +891,7 @@ def _harvest() -> dict[str, Any]:
     n_gravity = harvest_gravity(pool)
     harvest_census(pool)
     harvest_ledger(pool)
+    harvest_reliability(pool)
 
     candidates = list(pool.by_id.values())
     for p in candidates:
@@ -885,7 +956,7 @@ def _public(p: dict) -> dict:
         "conflicts": p.get("conflicts") or [],
         "disposition": p.get("disposition"),
     }
-    for extra in ("slug", "klass", "gib", "ppl", "median_4gram"):
+    for extra in ("slug", "klass", "gib", "ppl", "median_4gram", "reliability_contract"):
         if extra in p:
             out[extra] = p[extra]
     return out

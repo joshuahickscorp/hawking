@@ -241,9 +241,17 @@ def test_measurement_debt_names_axes_with_no_values():
     for a in debt["unmeasured_for_everyone"]:
         assert debt["n_with_axis"][a] == 0
         assert a in C.CAMPAIGN_AXES
-    # These three have no comparable value on any harvested candidate today.
-    for a in ("state", "reliability", "role_suitability"):
+    # `reliability` LEFT this list when G016 landed: reliability_axis.py derives
+    # accepted_rate = is_accepted_work / n_runs from the engine receipts and
+    # campaign_pareto harvests it onto serving identities. Asserting it is still
+    # unmeasured would now pin the debt in place and turn a fix into a failure.
+    for a in ("state", "role_suitability"):
         assert a in debt["unmeasured_for_everyone"], debt["n_with_axis"]
+    # and the axis that moved must STAY measured -- this is the regression guard,
+    # without which reliability could silently fall back to zero coverage and only
+    # the (now shorter) list above would notice.
+    assert "reliability" not in debt["unmeasured_for_everyone"], debt["n_with_axis"]
+    assert debt["n_with_axis"]["reliability"] > 0, debt["n_with_axis"]
 
 
 def test_disposition_is_reused_not_forked():
