@@ -434,12 +434,16 @@ class ToolRegistry:
             scored.sort(key=lambda item: (-item[0], item[1]))
         else:
             scored.sort(key=lambda item: item[1])
-        matches = [spec.to_dict() for _score, _name, spec in scored[:limit]]
+        chosen = [spec for _score, _name, spec in scored[:limit]]
+        matches = [spec.to_dict() for spec in chosen]
+        names = [spec.name for spec in chosen]
         return {
-            "focus": query,
+            "names": names,
             "matches": matches,
+            "shown": len(matches),
             "match_count": len(scored),
             "truncated": len(scored) > limit,
+            "focus": query,
             "provenance": "hcli.tool_registry.ToolRegistry.describe",
         }
 
@@ -537,6 +541,31 @@ def _text_limit(value: Any, default: int = 64 * 1024, maximum: int = _MAX_READ_B
         return max(1, min(maximum, int(value if value is not None else default)))
     except (TypeError, ValueError):
         return default
+
+
+#: Default number of decision-relevant entries a list tool emits. The closed-turn
+#: observation budget is 500 characters; twelve compact rows fit, an unbounded
+#: lake or process table does not.
+_ACTIONABLE_SHOW_DEFAULT = 12
+
+
+def _shown_limit(value: Any, default: int = _ACTIONABLE_SHOW_DEFAULT, maximum: int = 32) -> int:
+    try:
+        return max(1, min(maximum, int(value if value is not None else default)))
+    except (TypeError, ValueError):
+        return default
+
+
+def _lead_with(payload: Mapping[str, Any], *first: str) -> Dict[str, Any]:
+    """Rebuild a dict so json.dumps emits decision-relevant keys first."""
+    out: Dict[str, Any] = {}
+    for key in first:
+        if key in payload:
+            out[key] = payload[key]
+    for key, value in payload.items():
+        if key not in out:
+            out[key] = value
+    return out
 
 
 def _read_file(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
@@ -805,7 +834,22 @@ def _git_log(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
         limit = max(1, min(100, int(args.get("limit") or 10)))
     except (TypeError, ValueError):
         limit = 10
-    return _run_readonly(["git", "-C", str(cwd), "log", f"-{limit}", "--oneline", "--decorate"], cwd=cwd)
+    raw = _run_readonly(["git", "-C", str(cwd), "log", f"-{limit}", "--oneline", "--decorate"], cwd=cwd)
+    commits: List[Dict[str, Any]] = []
+    for line in str(raw.get("stdout") or "").splitlines():
+        token = line.split(None, 1)
+        if token:
+            commits.append({"hash": token[0], "line": line[:160]})
+    return {
+        "commits": commits,
+        "n": len(commits),
+        "shown": len(commits),
+        "returncode": raw.get("returncode"),
+        "stdout": raw.get("stdout"),
+        "stderr": raw.get("stderr"),
+        "argv": raw.get("argv"),
+        "cwd": raw.get("cwd"),
+    }
 
 
 def _shell_readonly(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
@@ -1554,15 +1598,21 @@ def _tests_run(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
         raise ValueError("runner must be pytest, unittest, or cargo")
     timeout = min(900.0, max(0.1, float(args.get("timeout_s") or 300.0)))
     started = time.time()
-    result = _run_readonly(argv, cwd=root, timeout=timeout)
-    result.update({
+    raw = _run_readonly(argv, cwd=root, timeout=timeout)
+    stdout = str(raw.get("stdout") or "")
+    return {
+        "verified": raw.get("returncode") == 0,
+        "returncode": raw.get("returncode"),
         "runner": runner,
         "root": str(root),
+        "n_stdout_chars": len(stdout),
+        "stdout": stdout,
+        "stderr": raw.get("stderr"),
+        "argv": raw.get("argv"),
+        "cwd": raw.get("cwd"),
         "started_at": started,
         "finished_at": time.time(),
-        "verified": result.get("returncode") == 0,
-    })
-    return result
+    }
 
 
 def _vmcp_inspect(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
@@ -1851,8 +1901,32 @@ def _lake_census(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
         except Exception as exc:
             out["accounting_error"] = f"{type(exc).__name__}: {exc}"
         out["slug"] = slug
-        return out
-    return m.census(catalog)
+        return _lead_with(out, "slug", "klass", "complete_ebpw", "pack_factor", "blocked_by")
+    census = m.census(catalog)
+    rows = list(census.get("rows") or [])
+    compact = [
+        {
+            "slug": row.get("slug"),
+            "klass": row.get("klass"),
+            "gib": row.get("gib"),
+            "complete_ebpw": row.get("complete_ebpw"),
+            "pack_factor": row.get("pack_factor"),
+            "blocked_by": row.get("blocked_by"),
+            "family": row.get("family"),
+        }
+        for row in rows
+    ]
+    top = _shown_limit(args.get("limit"))
+    return {
+        "rows": compact[:top],
+        "n": census.get("n", len(rows)),
+        "shown": min(top, len(compact)),
+        "truncated": len(compact) > top,
+        "tally": census.get("tally"),
+        "expert_anatomy_reachable": census.get("expert_anatomy_reachable"),
+        "reachable_gib": census.get("reachable_gib"),
+        "blocked_gib": census.get("blocked_gib"),
+    }
 
 
 def _odyssey_ledger(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
@@ -1908,9 +1982,10 @@ def _odyssey_anatomy(context: ToolContext, args: Dict[str, Any]) -> Dict[str, An
         raise ValueError("snapshot path is required")
     layer = args.get("layer", 0)
     try:
-        return m.anatomy_from_safetensors(snapshot, layer=layer)
+        out = m.anatomy_from_safetensors(snapshot, layer=layer)
     except m.AnatomyUnavailable as exc:
-        return {"snapshot": snapshot, "anatomy": None, "refused": str(exc)}
+        return {"refused": str(exc), "anatomy": None, "snapshot": snapshot}
+    return _lead_with(out, "hypotheses", "layer", "scheme", "storage", "snapshot")
 
 
 def _campaign_guard(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
@@ -1936,7 +2011,30 @@ def _specimens_registry(context: ToolContext, args: Dict[str, Any]) -> Dict[str,
     if name:
         found = specimens.get(name)
         return {"name": name, "specimen": found, "found": found is not None}
-    return specimens.registry()
+    data = specimens.registry()
+    rows = list(data.get("specimens") or [])
+    compact = [
+        {
+            "id": row.get("id"),
+            "size_bytes": row.get("size_bytes"),
+            "model_type": (row.get("architecture") or {}).get("model_type"),
+            "verified_complete": row.get("verified_complete"),
+        }
+        for row in rows
+    ]
+    top = _shown_limit(args.get("limit"))
+    return {
+        "specimens": compact[:top],
+        "n_specimens": data.get("n_specimens"),
+        "shown": min(top, len(compact)),
+        "truncated": len(compact) > top,
+        "mounted": data.get("mounted"),
+        "lake": data.get("lake"),
+        "specimens_dir": data.get("specimens_dir"),
+        "schema": data.get("schema"),
+        "reason": data.get("reason"),
+        "sealed_does_not_mean_resident": data.get("sealed_does_not_mean_resident"),
+    }
 
 
 def _acquisition_propose(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
@@ -1944,7 +2042,27 @@ def _acquisition_propose(context: ToolContext, args: Dict[str, Any]) -> Dict[str
     download - that stays behind explicit confirmation elsewhere."""
     from . import acquisition
 
-    return acquisition.propose()
+    raw = acquisition.propose()
+    if not isinstance(raw, dict):
+        return raw
+    ranked = list(raw.get("ranked") or [])
+    top = _shown_limit(None)
+    leading = {
+        "recommended": raw.get("recommended"),
+        "recommendation_reason": raw.get("recommendation_reason"),
+        "ranked": ranked[:top],
+        "n_ranked": len(ranked),
+        "shown": min(top, len(ranked)),
+        "truncated": len(ranked) > top,
+        "list_order_pick": raw.get("list_order_pick"),
+        "list_order_would_redownload_sealed": raw.get("list_order_would_redownload_sealed"),
+    }
+    rest = {
+        key: value for key, value in raw.items()
+        if key not in leading
+    }
+    leading.update(rest)
+    return leading
 
 
 def _odyssey_read_verb(name: str, required: Sequence[str] = ()):
@@ -2009,11 +2127,23 @@ def _processes_list(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any
     del args
     from . import processes
 
+    procs = list(processes.live_processes(workspace=context.workspace))
+    index = [
+        {
+            "pid": p.pid,
+            "role": p.role,
+            "rss_gib": round(p.rss_bytes / 1024 ** 3, 3),
+            "safe_to_stop": p.safe_to_stop,
+        }
+        for p in procs
+    ]
+    top = _shown_limit(None)
     return {
-        "processes": [
-            p.to_dict()
-            for p in processes.live_processes(workspace=context.workspace)
-        ]
+        "index": index[:top],
+        "n_processes": len(procs),
+        "shown": min(top, len(index)),
+        "truncated": len(index) > top,
+        "processes": [p.to_dict() for p in procs],
     }
 
 
@@ -2036,11 +2166,23 @@ def _processes_orphaned(context: ToolContext, args: Dict[str, Any]) -> Dict[str,
     del args
     from . import processes
 
+    procs = list(processes.orphaned_resident_bodies(workspace=context.workspace))
+    index = [
+        {
+            "pid": p.pid,
+            "role": p.role,
+            "rss_gib": round(p.rss_bytes / 1024 ** 3, 3),
+            "safe_to_stop": p.safe_to_stop,
+        }
+        for p in procs
+    ]
+    top = _shown_limit(None)
     return {
-        "orphaned": [
-            p.to_dict()
-            for p in processes.orphaned_resident_bodies(workspace=context.workspace)
-        ]
+        "index": index[:top],
+        "n_orphaned": len(procs),
+        "shown": min(top, len(index)),
+        "truncated": len(index) > top,
+        "orphaned": [p.to_dict() for p in procs],
     }
 
 
@@ -2086,7 +2228,8 @@ def default_tool_registry(
         "lake.census",
         "Reachability and complete EBPW for every ModelLake specimen, from safetensors headers only; reads no payload bytes.",
         {"type": "object", "additionalProperties": False,
-         "properties": {"catalog": {"type": "string"}, "slug": {"type": "string"}}},
+         "properties": {"catalog": {"type": "string"}, "slug": {"type": "string"},
+                        "limit": {"type": "integer"}}},
         resources=("filesystem",), timeout_s=300.0,
         handler=_lake_census,
     ))
@@ -2425,7 +2568,7 @@ def default_tool_registry(
         "specimens.registry",
         "Every sealed specimen enumerated from disk. Sealed does not mean loadable.",
         {"type": "object", "additionalProperties": False,
-         "properties": {"name": {"type": "string"}}},
+         "properties": {"name": {"type": "string"}, "limit": {"type": "integer"}}},
         handler=_specimens_registry,
     ))
     registry.register(ToolSpec(
