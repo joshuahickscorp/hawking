@@ -1998,10 +1998,30 @@ def _odyssey_ledger(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any
         # only part that names one was in the truncated tail. A tool whose useful
         # half does not survive the caller's budget is a tool that does not work.
         top = int(args.get("limit") or 12)
+        shown = min(top, len(owed))
+        tail = owed[shown:]
+        # DESCRIBE THE TAIL, do not make the caller go and find it. Bounding the view
+        # fixed the original defect -- an 8 KB summary naming not one specimen -- and
+        # created a new one: a careful caller told that 34 items are hidden goes looking
+        # for them. Two consecutive rounds spent their entire observation budget on that
+        # search. Round 11 correctly DERIVED that the hidden bodies must all be >= the
+        # largest visible one, because this list is sorted smallest-first within an owed
+        # count, and then read the 301 KB ledger in ten windows to confirm it. It should
+        # not have had to do either.
+        hidden = {
+            "n": len(tail),
+            "gib_min": min((r["gib"] for r in tail), default=None),
+            "gib_max": max((r["gib"] for r in tail), default=None),
+        }
         return {
             "owed": owed[:top],
             "n_owed": len(owed),
-            "shown": min(top, len(owed)),
+            "shown": shown,
+            "hidden": hidden,
+            # The list IS sorted and never said how, so "the worst" was ambiguous: most
+            # axes owed, or the largest body? Say it, in the view itself.
+            "ordering": ("most axes owed first, then smallest GiB first "
+                         "(cheapest to measure among equals)"),
             "path": path,
             "summary": (f"{prog['axes_resolved']}/{prog['axes_total']} axes resolved "
                         f"({prog['pct']}%), {prog['specimens_complete']} specimens complete"),
