@@ -1,0 +1,140 @@
+{
+ "schema": "hawking.gravity.representation_vocabulary.v1",
+ "date": "2026-09-06",
+ "obligation": "G031 [S012 \u00a729,75,92,103]",
+ "capability_gate": {
+  "ppl_max": 3.617,
+  "median_4gram_max": 0.1614,
+  "bf16_reference": {
+   "ppl": 2.8936,
+   "r4": 0.0538
+  },
+  "note": "CONJUNCTION. Vindicated four times: ppl and generation diversity disagreed in residual-binary vs affine, PQ d=4, PQ d=2, and the sparse correction."
+ },
+ "MECHANISMS": [
+  {
+   "mechanism": "affine quantized payload",
+   "measured_on": "O003",
+   "best_arm": "q3-g128-experts",
+   "ebpw": 3.2831,
+   "ppl": 3.135,
+   "r4": 0.1075,
+   "passes_gate": true,
+   "property": "the ONLY class that passes both gate conditions on this specimen. Group size trades scale overhead against fidelity; g128 beats g64 at equal bits."
+  },
+  {
+   "mechanism": "vector code / product quantization",
+   "measured_on": "O003",
+   "best_arm": "pqpercal4k512",
+   "ebpw": 2.4059,
+   "ppl": 3.5128,
+   "r4": 0.6667,
+   "passes_gate": false,
+   "property": "clears perplexity below 2.5 EBPW and fails repetition by 4x. Collapses many sub-vectors onto one centroid, narrowing expert output range. Sub-vector dimension is a TRADE AXIS: d=2 halves repetition and costs likelihood; d=4 reverses it. SCARRED as a whole representation; retained as a residual primitive."
+  },
+  {
+   "mechanism": "sparse correction / outlier channel",
+   "measured_on": "O003",
+   "best_arm": "pqsparse0.002percal",
+   "ebpw": 2.4639,
+   "ppl": 3.3454,
+   "r4": 0.7312,
+   "passes_gate": false,
+   "property": "MAGNITUDE information. Restoring the top 0.2% by |w| gives the best perplexity of any sub-2.5 arm and makes repetition WORSE. Buys likelihood, never geometry."
+  },
+  {
+   "mechanism": "binary scaled payload",
+   "measured_on": "O003",
+   "best_arm": "binarypercal-g512",
+   "ebpw": 1.3639,
+   "ppl": 11.5089,
+   "r4": 0.8925,
+   "passes_gate": false,
+   "property": "the 1-bit grammar bottoms out at 1.3457 EBPW; down_proj is 1408=2^7*11 so its group is pinned at 128 and contributes 0.0417 b/w of irreducible scale overhead. Dead at every rate."
+  },
+  {
+   "mechanism": "residual binary",
+   "measured_on": "O003",
+   "best_arm": "resbinarypercal-g128",
+   "ebpw": 2.4058,
+   "ppl": 4.79,
+   "r4": 0.7634,
+   "passes_gate": false,
+   "property": "at IDENTICAL bytes to affine q2 it loses on perplexity and ELIMINATES the 87-token repetition collapse. Same budget buys either likelihood or loop-freedom."
+  },
+  {
+   "mechanism": "shared basis (cross-expert)",
+   "measured_on": "O003 + Qwen3-30B-A3B",
+   "best_arm": "sharedbasis8",
+   "ebpw": 2.4058,
+   "ppl": 27.7692,
+   "r4": 0.9892,
+   "passes_gate": false,
+   "property": "REFUTED BY SPECTRUM on two architectures. Experts span ~0.98 of maximum possible directions, so no basis of R<n captures them. magnitude and cosine collapse TOGETHER (0.39, 0.39), unlike every quantization arm."
+  },
+  {
+   "mechanism": "sparsity (magnitude pruning)",
+   "measured_on": "O003",
+   "best_arm": "sparse0.25-g128",
+   "ebpw": 2.304,
+   "ppl": 11.4773,
+   "r4": 0.9333,
+   "passes_gate": false,
+   "property": "dominated everywhere: worse perplexity than PQ at higher cost."
+  },
+  {
+   "mechanism": "per-expert calibration (modifier)",
+   "measured_on": "O003",
+   "property": "NOT a representation - a modifier that improves FOUR classes at IDENTICAL bytes: binary -7.1% and -10.3%, residual binary -11.7%, PQ -3.1%. The most reproducible effect measured. Strongest transfer candidate.",
+   "passes_gate": null
+  },
+  {
+   "mechanism": "low-rank factorisation (within expert)",
+   "measured_on": "O003",
+   "property": "REFUTED BY ARITHMETIC. A single 1408x2048 expert has participation 867.6/1408; a rank-794 factorisation costs 15.23 b/w and rank-1216 costs 23.32 -- MORE than dense at 16.",
+   "passes_gate": false
+  }
+ ],
+ "FINDINGS_CLASSIFIED": [
+  {
+   "finding": "MoE expert organs are near-maximally independent across experts (~0.98 of maximum) and ~0.61 effective rank within each matrix",
+   "class": "ARCHITECTURE-FAMILY PRIOR",
+   "evidence": "O003 0.9825/0.6162, Qwen3-30B-A3B 0.9796/0.6085",
+   "falsifier": "cross-expert ratio below ~0.95 or within-expert below ~0.4",
+   "action": "skip every linear sharing class on sight; run the 5-minute screen first"
+  },
+  {
+   "finding": "weight-space reconstruction error does not rank capability",
+   "class": "TRANSFERABLE LAW (candidate)",
+   "evidence": "PQ had 45% lower error than affine at FEWER bits and worse capability; cosine ranked resbinary highest and it had the worst perplexity",
+   "falsifier": "a specimen where error ordering matches capability ordering across classes",
+   "action": "use error as a cheap filter only; never rank final candidates by it"
+  },
+  {
+   "finding": "likelihood and generation diversity are separate axes that move independently",
+   "class": "TRANSFERABLE LAW (candidate)",
+   "evidence": "four disagreements on O003",
+   "falsifier": "a specimen where the two never diverge across classes",
+   "action": "the capability gate must stay a conjunction"
+  },
+  {
+   "finding": "per-expert activation calibration beats pooled at identical bytes",
+   "class": "ARCHITECTURE-FAMILY PRIOR (candidate)",
+   "evidence": "four classes on O003, same direction",
+   "falsifier": "a specimen where per-expert is neutral or worse",
+   "action": "apply by default; test on specimen 2"
+  },
+  {
+   "finding": "byte reduction below q4 does not buy decode speed",
+   "class": "PHYSICAL-MACHINE LAW",
+   "evidence": "bf16 452 GB/s at 56.5% of peak; every quantized arm 18-23%. Below q4 decode is not bandwidth-bound.",
+   "falsifier": "a kernel that reaches >40% of peak on a quantized body",
+   "action": "fix the compressed GPU path before spending more on bytes"
+  }
+ ],
+ "COMPOUNDING_EVIDENCE": {
+  "specimen_1_cost": "hours - built a shared-basis NR to learn experts are independent",
+  "specimen_2_cost": "five minutes - three spectra gave the same answer before any construction",
+  "ratio": "the screen replaces the build"
+ }
+}
