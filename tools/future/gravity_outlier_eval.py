@@ -19,6 +19,7 @@ Capability gate is calibrated against a measured bf16 reference, not asserted.
 from __future__ import annotations
 
 import json
+import math
 import re
 import time
 from pathlib import Path
@@ -146,6 +147,17 @@ def _parse_expert_spec(spec: str) -> dict[str, Any]:
     # Discriminator already passed: at 2.000 b/w PQ's relative reconstruction
     # error is 0.101 against affine q2-g128's 0.182 at 2.250 b/w -- fewer bits
     # AND 45% less error, on all three projections.
+    # pqmix: measured trade axis. d=2 halves the repeat rate and costs
+    # perplexity; d=4 K=512 clears perplexity and fails repetition. down_proj
+    # writes into the residual stream, so it is where output diversity shows;
+    # gate/up set the likelihood. Spend the fine geometry where diversity is
+    # made and the coarse geometry where it is not.
+    m = re.fullmatch(r"pqmix(percal)?", s, re.I)
+    if m:
+        return {"form": "pq", "sub_dim": 4, "codebook": 512,
+                "down_sub_dim": 2, "down_codebook": 16, "mixed": True,
+                "calibrated": bool(m.group(1)), "per_expert": bool(m.group(1)),
+                "frac": 0.0, "group": 128, "bits": 2}
     m = re.fullmatch(r"pq(percal)?(\d+)k(\d+)", s, re.I)
     if m:
         # percal: weight the k-means by per-expert activation mass. That effect
@@ -221,7 +233,6 @@ def predict_ebpw(spec: str) -> float:
     p = parse_spec(spec)
     g = p["group"]
     if p["form"] == "pq":
-        import math
         per_w = math.log2(p["codebook"]) / p["sub_dim"]
     elif p["form"] == "hotcold":
         per_w = (p["hot_frac"] * p["hot_bits"] + (1 - p["hot_frac"]) * p["cold_bits"]
@@ -229,7 +240,6 @@ def predict_ebpw(spec: str) -> float:
     elif p["form"] == "binary_ef":
         per_w = 1 + 16 / g
     elif p["form"] == "sparse":
-        import math
         per_w = p["density"] * (math.log2(g) + 1) + 16 / g
     elif p["form"] == "binary":
         per_w = 1 + 16 / g
@@ -398,6 +408,7 @@ def evaluate(candidate) -> dict[str, Any]:
     route = collect_routing_counts(model, tok) if plan["form"] == "hotcold" else {}
     hot_w = cold_w = 0
     kept = 0
+    pq_index_bits = 0.0       # accumulated per tensor: mixed geometry is not uniform
     n_scales = 0            # ACTUAL scale count, from the per-tensor group used
     n_survivors = 0.0       # ACTUAL non-zero count for the sparse form
     eff_groups: dict[int, int] = {}
@@ -407,7 +418,7 @@ def evaluate(candidate) -> dict[str, Any]:
     s_w2 = s_h2 = s_dot = 0.0
     if plan["form"] != "bf16":
         g0, bits, frac = plan["group"], plan["bits"], plan["frac"]
-        for _, m in sw:
+        for name, m in sw:
             W = m.weight.astype(mx.float32)
             g = _eff_group(g0, W.shape[-1]) if (BIN or RES) else g0
             eff_groups[g] = eff_groups.get(g, 0) + 1
@@ -423,6 +434,8 @@ def evaluate(candidate) -> dict[str, Any]:
                 mask, base = None, W
             if PQ:
                 d, K = plan["sub_dim"], plan["codebook"]
+                if plan.get("mixed") and "down_proj" in name:
+                    d, K = plan["down_sub_dim"], plan["down_codebook"]
                 X = base.reshape(-1, d)
                 n = X.shape[0]
                 # Per-sub-vector weight from real activation mass, so the
@@ -461,6 +474,7 @@ def evaluate(candidate) -> dict[str, Any]:
                     parts.append(C[mx.argmin(d2, axis=1)])
                 rec = mx.concatenate(parts, axis=0).reshape(base.shape)
                 pq_cb_values += K * d
+                pq_index_bits += base.size * math.log2(K) / d
             elif plan["form"] == "hotcold":
                 cnt = route.get(id(m))
                 n_exp = W.shape[0]
@@ -583,16 +597,15 @@ def evaluate(candidate) -> dict[str, Any]:
     else:
         # binary stores 1 bit/weight + ONE fp16 scale per group (no zero point).
         if plan["form"] == "pq":
-            import math
-            expert_bits = (n_tot * math.log2(plan["codebook"]) / plan["sub_dim"]
-                           + pq_cb_values * 16)
+            # Summed per tensor, so a mixed geometry is counted honestly rather
+            # than by a single nominal rate.
+            expert_bits = pq_index_bits + pq_cb_values * 16
         elif plan["form"] == "hotcold":
             expert_bits = (hot_w * plan["hot_bits"] + cold_w * plan["cold_bits"]
                            + n_scales * 32)
         elif plan["form"] == "binary_ef":
             expert_bits = n_tot * 1 + n_scales * 16 + kept * 32
         elif plan["form"] == "sparse":
-            import math
             idx_bits = math.log2(plan["group"])
             expert_bits = n_survivors * (idx_bits + 1) + n_scales * 16 + kept * 32
         elif plan["form"] == "binary":

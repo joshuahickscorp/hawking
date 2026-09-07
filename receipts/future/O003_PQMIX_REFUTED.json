@@ -1,0 +1,38 @@
+{
+ "date": "2026-09-06",
+ "obligation": "G010",
+ "result": "HYPOTHESIS REFUTED",
+ "hypothesis": "down_proj writes into the residual stream so it governs output DIVERSITY, while gate/up govern LIKELIHOOD. Therefore d=2 on down_proj plus d=4 K=512 on gate/up should inherit d=4's perplexity and d=2's repetition.",
+ "prediction": "ppl near 3.51, 4-gram near 0.32, at about 2.33 EBPW",
+ "measured": {
+  "spec": "pqmixpercal",
+  "complete_ebpw": 2.33274555543119,
+  "ppl": 4.4601,
+  "median_4gram_repeat": 0.5591,
+  "capability_ok": false
+ },
+ "comparison": [
+  {
+   "spec": "pqpercal4k512 (all d=4)",
+   "ebpw": 2.4059,
+   "ppl": 3.5128,
+   "r4": 0.6667
+  },
+  {
+   "spec": "pqpercal2k16 (all d=2)",
+   "ebpw": 2.1864,
+   "ppl": 4.3945,
+   "r4": 0.3226
+  },
+  {
+   "spec": "pqmixpercal (d4 gate/up, d2 down)",
+   "ebpw": 2.3327,
+   "ppl": 4.4601,
+   "r4": 0.5591
+  }
+ ],
+ "WHY_IT_IS_A_REFUTATION": "The mix is WORSE on perplexity than BOTH pure arms (4.4601 against 3.5128 and 4.3945) and only intermediate on repetition. It inherited the bad half of each. If the two metrics were separable by tensor role, the mix would have sat near the good corner; it sat outside the interval on one axis entirely.",
+ "WHAT_THE_DATA_SUGGESTS_INSTEAD": "Perplexity tracks down_proj far more strongly than the hypothesis allowed: putting the coarsest geometry (d=2 K=16, 4.00 levels/dim) on down_proj cost more likelihood than applying it everywhere. The reverse mix -- fine cells on down_proj, coarse on gate/up -- is the discriminating experiment and is NOT yet run.",
+ "SECOND_REFUTED_HYPOTHESIS_THIS_STRETCH": "The router hypothesis was refuted by inspection before any run (mlp.gate.weight is already bfloat16). This one required the run and cost about fifteen minutes. Both were plausible; both were wrong; recording them is what keeps the next one cheaper.",
+ "UNCHANGED": "Lowest capability-preserving point remains q3-g128-experts at 3.2831 EBPW. Nothing below 2.5 satisfies both gate conditions."
+}
