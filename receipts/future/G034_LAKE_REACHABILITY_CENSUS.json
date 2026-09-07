@@ -1,0 +1,887 @@
+{
+ "obligation": "G034/G035",
+ "what": "header-only reachability census of the entire ModelLake",
+ "method": "safetensors headers only -- 8-byte little-endian length then JSON of {dtype,shape,data_offsets}. Zero payload bytes read. Whole 4.29 TiB lake classified in 1.7s wall.",
+ "tool": "tools/future/lake_scheme_census.py",
+ "catalog": "receipts/future/modellake-index/catalog.json (n=56, corrected 2026-09-07)",
+ "tally": {
+  "MOE-PREQUANTIZED": 3,
+  "MOE-FLOAT": 11,
+  "DENSE": 35,
+  "NO-SAFETENSORS": 7
+ },
+ "expert_anatomy_reachable_now": {
+  "bodies": 11,
+  "gib": 1723.0
+ },
+ "blocked_gib": 2666.0,
+ "findings": [
+  {
+   "id": "F1",
+   "claim": "43.5% of the lake by bytes is ALREADY QUANTIZED ON DISK",
+   "evidence": "Kimi-K3 1453.8 GiB U8 weight_packed + weight_scale; GLM-5.3-Flash 305.8 GiB F8_E4M3 + weight_scale_inv; DeepSeek-V4-Flash 148.7 GiB I8/F8_E4M3 + scale. Total 1908.3 GiB of 4386 GiB.",
+   "consequence": "G035's premise -- 'kimi_k3 alone at 1453.8 GiB = 15x machine RAM' framed as a compression target -- is wrong for these three. Those bytes are already a compressed representation, so a complete-EBPW figure computed against their on-disk byte count uses the wrong denominator. Their bf16 source-parameter equivalent must be recovered from config, not from du."
+  },
+  {
+   "id": "F2",
+   "claim": "six distinct expert key schemes exist; the anatomy regex matched ONE",
+   "evidence": "A per-expert .{gate,up,down}_proj.weight | B stacked .gate_up_proj [512,1280,2560] | C stacked .w13_weight [256,4096,4096] | D per-expert .w1.weight I8+.scale | E per-expert .w1.weight_packed U8 | F per-expert _proj.weight F8_E4M3+weight_scale_inv",
+   "consequence": "11 MoE-float bodies, of which only the scheme-A ones were reachable before."
+  },
+  {
+   "id": "F3",
+   "claim": "expert layers do not start at 0 for 5 of 14 MoE bodies",
+   "evidence": "GLM-4.5-Air L1-46, Inkling-Small L2-41, LFM2-24B-A2B L2-39, GLM-5.3-Flash L3-45, Kimi-K3 L1-92",
+   "consequence": "a hardcoded layer=0 silently addresses a dense layer on those bodies"
+  },
+  {
+   "id": "F4",
+   "claim": "MY OWN CENSUS SHIPPED THE DEFECT IT WAS BUILT TO CATCH",
+   "evidence": "the first run used a NON-RECURSIVE glob and reported Wan2.2-T2V-A14B (117.5 GiB, 12 nested safetensors, 2190 tensors) and audio-flamingo-3 (16.7 GiB, 7 nested, 1222 tensors) as having no safetensors at all. Found by listing the directory rather than trusting the classification. 134.2 GiB reclassified.",
+   "consequence": "2 of 9 NO-SAFETENSORS verdicts were false. The mutation that reverts recursive=True prints 'NO-SAFETENSORS' while its own blocked_by field lists '1x.safetensors' -- the check is now self-incriminating when broken."
+  }
+ ],
+ "rows": [
+  {
+   "n_shards": 96,
+   "n_tensors": 497220,
+   "expert_dtypes": {
+    "BF16": 552,
+    "U8": 247296
+   },
+   "expert_layers": [
+    1,
+    92
+   ],
+   "scale_keys": [
+    "weight_scale"
+   ],
+   "key_pattern": "language_model.model.layers.N.block_sparse_moe.experts.N.w1.weight_packed",
+   "klass": "MOE-PREQUANTIZED",
+   "blocked_by": "expert payload is ['U8'] with ['weight_scale'] scale tensors -- a spectrum over quantization codes measures the codebook, not the organism",
+   "slug": "moonshotai--Kimi-K3@9f62e4e9fffb",
+   "gib": 1453.8,
+   "family": "kimi_k3"
+  },
+  {
+   "n_shards": 33,
+   "n_tensors": 1048,
+   "expert_dtypes": {
+    "BF16": 160
+   },
+   "expert_layers": [
+    2,
+    41
+   ],
+   "scale_keys": [],
+   "key_pattern": "model.llm.layers.N.mlp.experts.w13_weight",
+   "klass": "MOE-FLOAT",
+   "blocked_by": "",
+   "slug": "thinkingmachines--Inkling-Small@8cc5877b44d3",
+   "gib": 495.4,
+   "family": "inkling_mm_model"
+  },
+  {
+   "n_shards": 131,
+   "n_tensors": 1658,
+   "expert_dtypes": {
+    "BF16": 294
+   },
+   "expert_layers": [
+    0,
+    47
+   ],
+   "scale_keys": [],
+   "key_pattern": "model.language_model.layers.N.mlp.experts.gate_up_proj",
+   "klass": "MOE-FLOAT",
+   "blocked_by": "",
+   "slug": "windowsxp811203--Qwen3.8-Flash-Next-Abliterated@deb02632504b",
+   "gib": 335.3,
+   "family": "qwen4_exp"
+  },
+  {
+   "n_shards": 131,
+   "n_tensors": 1658,
+   "expert_dtypes": {
+    "BF16": 294
+   },
+   "expert_layers": [
+    0,
+    47
+   ],
+   "scale_keys": [],
+   "key_pattern": "model.language_model.layers.N.mlp.experts.gate_up_proj",
+   "klass": "MOE-FLOAT",
+   "blocked_by": "",
+   "slug": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+   "gib": 335.3,
+   "family": "qwen4_exp"
+  },
+  {
+   "n_shards": 62,
+   "n_tensors": 76108,
+   "expert_dtypes": {
+    "F8_E4M3": 37281
+   },
+   "expert_layers": [
+    3,
+    45
+   ],
+   "scale_keys": [
+    "weight_scale_inv"
+   ],
+   "key_pattern": "model.language_model.layers.N.mlp.experts.N.down_proj.weight",
+   "klass": "MOE-PREQUANTIZED",
+   "blocked_by": "expert payload is ['F8_E4M3'] with ['weight_scale_inv'] scale tensors -- a spectrum over quantization codes measures the codebook, not the organism",
+   "slug": "zai-org--GLM-5.3-Flash@04c4e9e95c5d",
+   "gib": 305.8,
+   "family": "glm5_next"
+  },
+  {
+   "n_shards": 47,
+   "n_tensors": 18329,
+   "expert_dtypes": {
+    "BF16": 17802
+   },
+   "expert_layers": [
+    1,
+    46
+   ],
+   "scale_keys": [],
+   "key_pattern": "model.layers.N.mlp.experts.N.down_proj.weight",
+   "klass": "MOE-FLOAT",
+   "blocked_by": "",
+   "slug": "zai-org--GLM-4.5-Air@a24ceef6ce4f",
+   "gib": 205.8,
+   "family": "glm4_moe"
+  },
+  {
+   "n_shards": 46,
+   "n_tensors": 69187,
+   "expert_dtypes": {
+    "F8_E4M3": 132,
+    "I8": 33792
+   },
+   "expert_layers": [
+    0,
+    42
+   ],
+   "scale_keys": [
+    "scale"
+   ],
+   "key_pattern": "layers.N.ffn.experts.N.w1.weight",
+   "klass": "MOE-PREQUANTIZED",
+   "blocked_by": "expert payload is ['F8_E4M3', 'I8'] with ['scale'] scale tensors -- a spectrum over quantization codes measures the codebook, not the organism",
+   "slug": "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+   "gib": 148.7,
+   "family": "deepseek_v4"
+  },
+  {
+   "n_shards": 37,
+   "n_tensors": 963,
+   "expert_dtypes": {},
+   "expert_layers": null,
+   "scale_keys": [],
+   "key_pattern": null,
+   "klass": "DENSE",
+   "blocked_by": "no key contains 'expert'; expert-organ anatomy is undefined for this body -- it owes a DENSE anatomy instead",
+   "slug": "Qwen--Qwen2.5-72B-Instruct@495f39366efe",
+   "gib": 135.4,
+   "family": "qwen2"
+  },
+  {
+   "n_shards": 12,
+   "n_tensors": 2190,
+   "expert_dtypes": {},
+   "expert_layers": null,
+   "scale_keys": [],
+   "key_pattern": null,
+   "klass": "DENSE",
+   "blocked_by": "no key contains 'expert'; expert-organ anatomy is undefined for this body -- it owes a DENSE anatomy instead",
+   "slug": "Wan-AI--Wan2.2-T2V-A14B@c8c270b13ee0",
+   "gib": 117.5,
+   "family": "UNKNOWN"
+  },
+  {
+   "n_shards": 20,
+   "n_tensors": 20493,
+   "expert_dtypes": {
+    "BF16": 20046
+   },
+   "expert_layers": [
+    1,
+    26
+   ],
+   "scale_keys": [],
+   "key_pattern": "model.layers.N.block_sparse_moe.experts.N.w1.weight",
+   "klass": "MOE-FLOAT",
+   "blocked_by": "",
+   "slug": "moonshotai--Kimi-Linear-48B-A3B-Instruct@e1df551a4471",
+   "gib": 91.5,
+   "family": "kimi_linear"
+  },
+  {
+   "n_shards": 11,
+   "n_tensors": 1170,
+   "expert_dtypes": {},
+   "expert_layers": null,
+   "scale_keys": [],
+   "key_pattern": null,
+   "klass": "DENSE",
+   "blocked_by": "no key contains 'expert'; expert-organ anatomy is undefined for this body -- it owes a DENSE anatomy instead",
+   "slug": "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+   "gib": 89.5,
+   "family": "mistral3"
+  },
+  {
+   "klass": "NO-SAFETENSORS",
+   "n_shards": 0,
+   "n_tensors": 0,
+   "blocked_by": "weights are 5x.lock, 5x.metadata, 2x<noext>, 1x.json",
+   "present_extensions": {
+    ".json": 1,
+    ".md": 1,
+    ".part1": 1,
+    ".part0": 1,
+    "<noext>": 2,
+    ".TAG": 1,
+    ".lock": 5,
+    ".metadata": 5
+   },
+   "slug": "arcinstitute--evo2_40b@d529aa57c307",
+   "gib": 76.6,
+   "family": "stripedhyena2"
+  },
+  {
+   "n_shards": 13,
+   "n_tensors": 882,
+   "expert_dtypes": {
+    "BF16": 96
+   },
+   "expert_layers": [
+    0,
+    47
+   ],
+   "scale_keys": [],
+   "key_pattern": "model.language_model.layers.N.mlp.experts.down_proj",
+   "klass": "MOE-FLOAT",
+   "blocked_by": "",
+   "slug": "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+   "gib": 57.9,
+   "family": "qwen3_vl_moe"
+  },
+  {
+   "n_shards": 16,
+   "n_tensors": 18867,
+   "expert_dtypes": {
+    "BF16": 18432
+   },
+   "expert_layers": [
+    0,
+    47
+   ],
+   "scale_keys": [],
+   "key_pattern": "model.layers.N.mlp.experts.N.down_proj.weight",
+   "klass": "MOE-FLOAT",
+   "blocked_by": "",
+   "slug": "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+   "gib": 56.9,
+   "family": "qwen3_moe"
+  },
+  {
+   "n_shards": 16,
+   "n_tensors": 18867,
+   "expert_dtypes": {
+    "BF16": 18432
+   },
+   "expert_layers": [
+    0,
+    47
+   ],
+   "scale_keys": [],
+   "key_pattern": "model.layers.N.mlp.experts.N.down_proj.weight",
+   "klass": "MOE-FLOAT",
+   "blocked_by": "",
+   "slug": "Qwen--Qwen3-Coder-30B-A3B-Instruct@b2cff646eb4b",
+   "gib": 56.9,
+   "family": "qwen3_moe"
+  },
+  {
+   "n_shards": 1,
+   "n_tensors": 7610,
+   "expert_dtypes": {
+    "F32": 38,
+    "BF16": 7296
+   },
+   "expert_layers": [
+    2,
+    39
+   ],
+   "scale_keys": [],
+   "key_pattern": "model.layers.N.feed_forward.experts.N.w1.weight",
+   "klass": "MOE-FLOAT",
+   "blocked_by": "",
+   "slug": "LiquidAI--LFM2-24B-A2B@a3bbacd91a67",
+   "gib": 44.4,
+   "family": "lfm2_moe"
+  },
+  {
+   "n_shards": 7,
+   "n_tensors": 5679,
+   "expert_dtypes": {
+    "BF16": 5070
+   },
+   "expert_layers": [
+    1,
+    26
+   ],
+   "scale_keys": [],
+   "key_pattern": "language_model.model.layers.N.mlp.experts.N.down_proj.weight",
+   "klass": "MOE-FLOAT",
+   "blocked_by": "",
+   "slug": "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+   "gib": 30.6,
+   "family": "kimi_vl"
+  },
+  {
+   "n_shards": 8,
+   "n_tensors": 443,
+   "expert_dtypes": {},
+   "expert_layers": null,
+   "scale_keys": [],
+   "key_pattern": null,
+   "klass": "DENSE",
+   "blocked_by": "no key contains 'expert'; expert-organ anatomy is undefined for this body -- it owes a DENSE anatomy instead",
+   "slug": "Qwen--Qwen3-14B@40c069824f42",
+   "gib": 27.5,
+   "family": "qwen3"
+  },
+  {
+   "n_shards": 6,
+   "n_tensors": 243,
+   "expert_dtypes": {},
+   "expert_layers": null,
+   "scale_keys": [],
+   "key_pattern": null,
+   "klass": "DENSE",
+   "blocked_by": "no key contains 'expert'; expert-organ anatomy is undefined for this body -- it owes a DENSE anatomy instead",
+   "slug": "microsoft--Phi-4-reasoning-plus@69baf8528e1b",
+   "gib": 27.3,
+   "family": "phi3"
+  },
+  {
+   "n_shards": 6,
+   "n_tensors": 2019,
+   "expert_dtypes": {},
+   "expert_layers": null,
+   "scale_keys": [],
+   "key_pattern": null,
+   "klass": "DENSE",
+   "blocked_by": "no key contains 'expert'; expert-organ anatomy is undefined for this body -- it owes a DENSE anatomy instead",
+   "slug": "RWKV--RWKV7-13.3B-20260805@64ffe5934178",
+   "gib": 24.7,
+   "family": "rwkv7"
+  },
+  {
+   "n_shards": 7,
+   "n_tensors": 1222,
+   "expert_dtypes": {},
+   "expert_layers": null,
+   "scale_keys": [],
+   "key_pattern": null,
+   "klass": "DENSE",
+   "blocked_by": "no key contains 'expert'; expert-organ anatomy is undefined for this body -- it owes a DENSE anatomy instead",
+   "slug": "nvidia--audio-flamingo-3@ee26c5842398",
+   "gib": 16.7,
+   "family": "llava_llama"
+  },
+  {
+   "n_shards": 4,
+   "n_tensors": 750,
+   "expert_dtypes": {},
+   "expert_layers": null,
+   "scale_keys": [],
+   "key_pattern": null,
+   "klass": "DENSE",
+   "blocked_by": "no key contains 'expert'; expert-organ anatomy is undefined for this body -- it owes a DENSE anatomy instead",
+   "slug": "Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8",
+   "gib": 16.3,
+   "family": "qwen3_vl"
+  },
+  {
+   "n_shards": 4,
+   "n_tensors": 291,
+   "expert_dtypes": {},
+   "expert_layers": null,
+   "scale_keys": [],
+   "key_pattern": null,
+   "klass": "DENSE",
+   "blocked_by": "no key contains 'expert'; expert-organ anatomy is undefined for this body -- it owes a DENSE anatomy instead",
+   "slug": "GSAI-ML--iLLaDA-8B-Base@a1b5b5f8a31a",
+   "gib": 15.4,
+   "family": "illada"
+  },
+  {
+   "n_shards": 2,
+   "n_tensors": 673,
+   "expert_dtypes": {},
+   "expert_layers": null,
+   "scale_keys": [],
+   "key_pattern": null,
+   "klass": "DENSE",
+   "blocked_by": "no key contains 'expert'; expert-organ anatomy is undefined for this body -- it owes a DENSE anatomy instead",
+   "slug": "kyutai--moshika-pytorch-bf16@a49141e28b3d",
+   "gib": 14.7,
+   "family": "UNKNOWN"
+  },
+  {
+   "n_shards": 4,
+   "n_tensors": 339,
+   "expert_dtypes": {},
+   "expert_layers": null,
+   "scale_keys": [],
+   "key_pattern": null,
+   "klass": "DENSE",
+   "blocked_by": "no key contains 'expert'; expert-organ anatomy is undefined for this body -- it owes a DENSE anatomy instead",
+   "slug": "Dream-org--Dream-v0-Instruct-7B@05334cb9faaf",
+   "gib": 14.2,
+   "family": "Dream"
+  },
+  {
+   "n_shards": 4,
+   "n_tensors": 751,
+   "expert_dtypes": {},
+   "expert_layers": null,
+   "scale_keys": [],
+   "key_pattern": null,
+   "klass": "DENSE",
+   "blocked_by": "no key contains 'expert'; expert-organ anatomy is undefined for this body -- it owes a DENSE anatomy instead",
+   "slug": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+   "gib": 14.1,
+   "family": "falcon_h1"
+  },
+  {
+   "n_shards": 3,
+   "n_tensors": 355,
+   "expert_dtypes": {},
+   "expert_layers": null,
+   "scale_keys": [],
+   "key_pattern": null,
+   "klass": "DENSE",
+   "blocked_by": "no key contains 'expert'; expert-organ anatomy is undefined for this body -- it owes a DENSE anatomy instead",
+   "slug": "allenai--Olmo-3-1025-7B@a81bae42db39",
+   "gib": 13.6,
+   "family": "olmo3"
+  },
+  {
+   "n_shards": 3,
+   "n_tensors": 515,
+   "expert_dtypes": {},
+   "expert_layers": null,
+   "scale_keys": [],
+   "key_pattern": null,
+   "klass": "DENSE",
+   "blocked_by": "no key contains 'expert'; expert-organ anatomy is undefined for this body -- it owes a DENSE anatomy instead",
+   "slug": "bigcode--starcoder2-7b@bb9afde76d79",
+   "gib": 13.4,
+   "family": "starcoder2"
+  },
+  {
+   "klass": "NO-SAFETENSORS",
+   "n_shards": 0,
+   "n_tensors": 0,
+   "blocked_by": "weights are 6x.metadata, 6x.lock, 3x.pt, 2x.json",
+   "present_extensions": {
+    ".json": 2,
+    ".md": 1,
+    ".pt": 3,
+    ".TAG": 1,
+    "<noext>": 1,
+    ".metadata": 6,
+    ".lock": 6
+   },
+   "slug": "tencent--HunyuanVideo@6204ad6aea1a",
+   "gib": 13.2,
+   "family": "UNKNOWN"
+  },
+  {
+   "n_shards": 1,
+   "n_tensors": 777,
+   "expert_dtypes": {
+    "F32": 767
+   },
+   "expert_layers": [
+    0,
+    26
+   ],
+   "scale_keys": [],
+   "key_pattern": "paligemma_with_expert.paligemma.model.vision_tower.vision_model.encoder.layers.N.layer_norm1.bias",
+   "klass": "MOE-FLOAT",
+   "blocked_by": "",
+   "slug": "lerobot--pi0_base@25c379b52ba2",
+   "gib": 13.0,
+   "family": "UNKNOWN"
+  },
+  {
+   "klass": "NO-SAFETENSORS",
+   "n_shards": 0,
+   "n_tensors": 0,
+   "blocked_by": "weights are 9x.metadata, 9x.lock, 6x.json, 3x.bin",
+   "present_extensions": {
+    ".bin": 3,
+    ".json": 6,
+    ".TAG": 1,
+    "<noext>": 1,
+    ".metadata": 9,
+    ".lock": 9
+   },
+   "slug": "facebook--musicgen-large@15ccdc920998",
+   "gib": 13.0,
+   "family": "musicgen"
+  },
+  {
+   "n_shards": 3,
+   "n_tensors": 586,
+   "expert_dtypes": {},
+   "expert_layers": null,
+   "scale_keys": [],
+   "key_pattern": null,
+   "klass": "DENSE",
+   "blocked_by": "no key contains 'expert'; expert-organ anatomy is undefined for this body -- it owes a DENSE anatomy instead",
+   "slug": "ibm-granite--granite-4.0-h-tiny@791e0d3d28c8",
+   "gib": 12.9,
+   "family": "granitemoehybrid"
+  },
+  {
+   "klass": "NO-SAFETENSORS",
+   "n_shards": 0,
+   "n_tensors": 0,
+   "blocked_by": "weights are 4x.metadata, 4x.lock, 2x<noext>, 1x.json",
+   "present_extensions": {
+    ".json": 1,
+    ".md": 1,
+    ".pt": 1,
+    "<noext>": 2,
+    ".TAG": 1,
+    ".metadata": 4,
+    ".lock": 4
+   },
+   "slug": "arcinstitute--evo2_7b@bda0089f9258",
+   "gib": 12.8,
+   "family": "stripedhyena2"
+  },
+  {
+   "n_shards": 5,
+   "n_tensors": 2559,
+   "expert_dtypes": {},
+   "expert_layers": null,
+   "scale_keys": [],
+   "key_pattern": null,
+   "klass": "DENSE",
+   "blocked_by": "no key contains 'expert'; expert-organ anatomy is undefined for this body -- it owes a DENSE anatomy instead",
+   "slug": "microsoft--Phi-4-multimodal-instruct@93f923e1a772",
+   "gib": 12.0,
+   "family": "phi4mm"
+  },
+  {
+   "n_shards": 2,
+   "n_tensors": 657,
+   "expert_dtypes": {},
+   "expert_layers": null,
+   "scale_keys": [],
+   "key_pattern": null,
+   "klass": "DENSE",
+   "blocked_by": "no key contains 'expert'; expert-organ anatomy is undefined for this body -- it owes a DENSE anatomy instead",
+   "slug": "HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02",
+   "gib": 8.4,
+   "family": "smolvlm"
+  },
+  {
+   "n_shards": 3,
+   "n_tensors": 398,
+   "expert_dtypes": {},
+   "expert_layers": null,
+   "scale_keys": [],
+   "key_pattern": null,
+   "klass": "DENSE",
+   "blocked_by": "no key contains 'expert'; expert-organ anatomy is undefined for this body -- it owes a DENSE anatomy instead",
+   "slug": "Qwen--Qwen3-4B-Instruct-2507@cdbee75f17c0",
+   "gib": 7.5,
+   "family": "qwen3"
+  },
+  {
+   "n_shards": 2,
+   "n_tensors": 194,
+   "expert_dtypes": {},
+   "expert_layers": null,
+   "scale_keys": [],
+   "key_pattern": null,
+   "klass": "DENSE",
+   "blocked_by": "no key contains 'expert'; expert-organ anatomy is undefined for this body -- it owes a DENSE anatomy instead",
+   "slug": "microsoft--Phi-4-mini-instruct@cfbefacb9925",
+   "gib": 7.2,
+   "family": "phi3"
+  },
+  {
+   "n_shards": 2,
+   "n_tensors": 463,
+   "expert_dtypes": {},
+   "expert_layers": null,
+   "scale_keys": [],
+   "key_pattern": null,
+   "klass": "DENSE",
+   "blocked_by": "no key contains 'expert'; expert-organ anatomy is undefined for this body -- it owes a DENSE anatomy instead",
+   "slug": "ai21labs--AI21-Jamba2-3B@525c6c8e1d9f",
+   "gib": 6.0,
+   "family": "jamba"
+  },
+  {
+   "n_shards": 2,
+   "n_tensors": 466,
+   "expert_dtypes": {},
+   "expert_layers": null,
+   "scale_keys": [],
+   "key_pattern": null,
+   "klass": "DENSE",
+   "blocked_by": "no key contains 'expert'; expert-organ anatomy is undefined for this body -- it owes a DENSE anatomy instead",
+   "slug": "ibm-granite--granite-4.0-h-micro@d5f01a3ea75f",
+   "gib": 6.0,
+   "family": "granitemoehybrid"
+  },
+  {
+   "n_shards": 1,
+   "n_tensors": 266,
+   "expert_dtypes": {},
+   "expert_layers": null,
+   "scale_keys": [],
+   "key_pattern": null,
+   "klass": "DENSE",
+   "blocked_by": "no key contains 'expert'; expert-organ anatomy is undefined for this body -- it owes a DENSE anatomy instead",
+   "slug": "LiquidAI--LFM2.5-2.6B-Base@c57bdaed1ef1",
+   "gib": 5.0,
+   "family": "lfm2"
+  },
+  {
+   "n_shards": 1,
+   "n_tensors": 332,
+   "expert_dtypes": {},
+   "expert_layers": null,
+   "scale_keys": [],
+   "key_pattern": null,
+   "klass": "DENSE",
+   "blocked_by": "no key contains 'expert'; expert-organ anatomy is undefined for this body -- it owes a DENSE anatomy instead",
+   "slug": "microsoft--bitnet-b1.58-2B-4T-bf16@276681394656",
+   "gib": 4.5,
+   "family": "bitnet"
+  },
+  {
+   "klass": "NO-SAFETENSORS",
+   "n_shards": 0,
+   "n_tensors": 0,
+   "blocked_by": "weights are 4x.metadata, 4x.lock, 2x.ckpt, 2x<noext>",
+   "present_extensions": {
+    ".ckpt": 2,
+    ".md": 1,
+    "<noext>": 2,
+    ".TAG": 1,
+    ".metadata": 4,
+    ".lock": 4
+   },
+   "slug": "boltz-community--boltz-2@6fdef46d763f",
+   "gib": 4.1,
+   "family": "UNKNOWN"
+  },
+  {
+   "n_shards": 1,
+   "n_tensors": 843,
+   "expert_dtypes": {},
+   "expert_layers": null,
+   "scale_keys": [],
+   "key_pattern": null,
+   "klass": "DENSE",
+   "blocked_by": "no key contains 'expert'; expert-organ anatomy is undefined for this body -- it owes a DENSE anatomy instead",
+   "slug": "facebook--vjepa2-vitg-fpc64-256@875c192b7b70",
+   "gib": 3.9,
+   "family": "vjepa2"
+  },
+  {
+   "n_shards": 1,
+   "n_tensors": 165,
+   "expert_dtypes": {},
+   "expert_layers": null,
+   "scale_keys": [],
+   "key_pattern": null,
+   "klass": "DENSE",
+   "blocked_by": "no key contains 'expert'; expert-organ anatomy is undefined for this body -- it owes a DENSE anatomy instead",
+   "slug": "tiiuae--Falcon3-1B-Instruct@28ba2251970a",
+   "gib": 3.1,
+   "family": "llama"
+  },
+  {
+   "n_shards": 1,
+   "n_tensors": 558,
+   "expert_dtypes": {},
+   "expert_layers": null,
+   "scale_keys": [],
+   "key_pattern": null,
+   "klass": "DENSE",
+   "blocked_by": "no key contains 'expert'; expert-organ anatomy is undefined for this body -- it owes a DENSE anatomy instead",
+   "slug": "google--flan-t5-large@0613663d0d48",
+   "gib": 2.9,
+   "family": "t5"
+  },
+  {
+   "klass": "NO-SAFETENSORS",
+   "n_shards": 0,
+   "n_tensors": 0,
+   "blocked_by": "weights are 4x.metadata, 4x.lock, 2x<noext>, 1x.json",
+   "present_extensions": {
+    ".json": 1,
+    ".md": 1,
+    "<noext>": 2,
+    ".bin": 1,
+    ".TAG": 1,
+    ".metadata": 4,
+    ".lock": 4
+   },
+   "slug": "state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994",
+   "gib": 2.8,
+   "family": "mamba3"
+  },
+  {
+   "klass": "NO-SAFETENSORS",
+   "n_shards": 0,
+   "n_tensors": 0,
+   "blocked_by": "weights are 4x.metadata, 4x.lock, 2x<noext>, 1x.json",
+   "present_extensions": {
+    ".json": 1,
+    ".md": 1,
+    "<noext>": 2,
+    ".bin": 1,
+    ".TAG": 1,
+    ".metadata": 4,
+    ".lock": 4
+   },
+   "slug": "state-spaces--mamba3-siso-1.5b@5cfc721542ec",
+   "gib": 2.8,
+   "family": "mamba3"
+  },
+  {
+   "n_shards": 1,
+   "n_tensors": 148,
+   "expert_dtypes": {},
+   "expert_layers": null,
+   "scale_keys": [],
+   "key_pattern": null,
+   "klass": "DENSE",
+   "blocked_by": "no key contains 'expert'; expert-organ anatomy is undefined for this body -- it owes a DENSE anatomy instead",
+   "slug": "LiquidAI--LFM2.5-1.2B-Instruct@0f604ada3f76",
+   "gib": 2.2,
+   "family": "lfm2"
+  },
+  {
+   "n_shards": 1,
+   "n_tensors": 813,
+   "expert_dtypes": {},
+   "expert_layers": null,
+   "scale_keys": [],
+   "key_pattern": null,
+   "klass": "DENSE",
+   "blocked_by": "no key contains 'expert'; expert-organ anatomy is undefined for this body -- it owes a DENSE anatomy instead",
+   "slug": "google--timesfm-2.0-500m-pytorch@dc2443792ce5",
+   "gib": 1.9,
+   "family": "timesfm"
+  },
+  {
+   "n_shards": 1,
+   "n_tensors": 587,
+   "expert_dtypes": {},
+   "expert_layers": null,
+   "scale_keys": [],
+   "key_pattern": null,
+   "klass": "DENSE",
+   "blocked_by": "no key contains 'expert'; expert-organ anatomy is undefined for this body -- it owes a DENSE anatomy instead",
+   "slug": "openai--whisper-large-v3-turbo@41f01f3fe87f",
+   "gib": 1.5,
+   "family": "whisper"
+  },
+  {
+   "n_shards": 1,
+   "n_tensors": 173,
+   "expert_dtypes": {},
+   "expert_layers": null,
+   "scale_keys": [],
+   "key_pattern": null,
+   "klass": "DENSE",
+   "blocked_by": "no key contains 'expert'; expert-organ anatomy is undefined for this body -- it owes a DENSE anatomy instead",
+   "slug": "answerdotai--ModernBERT-large@45bb4654a4d5",
+   "gib": 1.5,
+   "family": "modernbert"
+  },
+  {
+   "n_shards": 1,
+   "n_tensors": 311,
+   "expert_dtypes": {},
+   "expert_layers": null,
+   "scale_keys": [],
+   "key_pattern": null,
+   "klass": "DENSE",
+   "blocked_by": "no key contains 'expert'; expert-organ anatomy is undefined for this body -- it owes a DENSE anatomy instead",
+   "slug": "Qwen--Qwen3-0.6B@c1899de289a0",
+   "gib": 1.4,
+   "family": "qwen3"
+  },
+  {
+   "n_shards": 1,
+   "n_tensors": 503,
+   "expert_dtypes": {},
+   "expert_layers": null,
+   "scale_keys": [],
+   "key_pattern": null,
+   "klass": "DENSE",
+   "blocked_by": "no key contains 'expert'; expert-organ anatomy is undefined for this body -- it owes a DENSE anatomy instead",
+   "slug": "depth-anything--Depth-Anything-V2-Large-hf@7581137eff8d",
+   "gib": 1.2,
+   "family": "depth_anything"
+  },
+  {
+   "n_shards": 1,
+   "n_tensors": 310,
+   "expert_dtypes": {},
+   "expert_layers": null,
+   "scale_keys": [],
+   "key_pattern": null,
+   "klass": "DENSE",
+   "blocked_by": "no key contains 'expert'; expert-organ anatomy is undefined for this body -- it owes a DENSE anatomy instead",
+   "slug": "Qwen--Qwen3-Embedding-0.6B@97b0c614be4d",
+   "gib": 1.1,
+   "family": "qwen3"
+  },
+  {
+   "n_shards": 1,
+   "n_tensors": 542,
+   "expert_dtypes": {},
+   "expert_layers": null,
+   "scale_keys": [],
+   "key_pattern": null,
+   "klass": "DENSE",
+   "blocked_by": "no key contains 'expert'; expert-organ anatomy is undefined for this body -- it owes a DENSE anatomy instead",
+   "slug": "microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361",
+   "gib": 1.1,
+   "family": "bitnet"
+  },
+  {
+   "n_shards": 1,
+   "n_tensors": 901,
+   "expert_dtypes": {},
+   "expert_layers": null,
+   "scale_keys": [],
+   "key_pattern": null,
+   "klass": "DENSE",
+   "blocked_by": "no key contains 'expert'; expert-organ anatomy is undefined for this body -- it owes a DENSE anatomy instead",
+   "slug": "facebook--sam2.1-hiera-large@665f8e2ad61c",
+   "gib": 0.8,
+   "family": "sam2_video"
+  }
+ ]
+}
