@@ -23,6 +23,14 @@ import struct
 
 FLOAT_DTYPES = frozenset({"BF16", "F16", "F32", "F64"})
 SCALE_SUFFIXES = (".scale", ".weight_scale", ".weight_scale_inv")
+
+# Complete EBPW = every persistent byte / source-parameter count. Scales, zero
+# points and shapes are OVERHEAD: they belong in the numerator and must never be
+# counted as source parameters, which would flatter the ratio by ~5% on the two
+# block-scaled bodies here.
+DTYPE_BITS = {"BOOL": 8, "U8": 8, "I8": 8, "F8_E4M3": 8, "F8_E5M2": 8, "F8_E8M0": 8,
+              "U16": 16, "I16": 16, "F16": 16, "BF16": 16,
+              "U32": 32, "I32": 32, "F32": 32, "U64": 64, "I64": 64, "F64": 64}
 _LAYER_RE = re.compile(r"layers\.(\d+)")
 
 
@@ -100,6 +108,124 @@ def classify(path: str) -> dict:
     return out
 
 
+def accounting(path: str, pack: int | None = None) -> dict:
+    """Complete-EBPW accounting from headers alone.
+
+    `pack` is logical values per stored byte for packed integer payloads. It is
+    not guessed: it is CONFIRMED against the companion scale tensor's group
+    geometry, because a wrong packing factor silently halves or doubles the
+    denominator. Kimi-K3's w1 stores [3072,1792] U8 beside a [3072,112] scale --
+    1792*2/112 = 32 elements per group, which is MXFP4's block size, so pack=2.
+    """
+    shards = sorted(glob.glob(path.rstrip("/") + "/**/*.safetensors", recursive=True))
+    stored = src = scale_bytes = 0
+    packed_seen = False
+    for f in shards:
+        for k, e in read_header(f).items():
+            n = 1
+            for d in e["shape"]:
+                n *= int(d)
+            b = n * DTYPE_BITS.get(e["dtype"], 16) // 8
+            stored += b
+            if k.endswith(SCALE_SUFFIXES):
+                scale_bytes += b
+                continue
+            if pack > 1 and e["dtype"] not in FLOAT_DTYPES:
+                src += n * pack
+                packed_seen = True
+            else:
+                src += n
+    if not src:
+        raise ValueError(f"{path}: no source parameters found; refusing to divide by zero")
+    return {"stored_bytes": stored, "source_params": src,
+            "complete_ebpw": round(stored * 8 / src, 3),
+            "scale_overhead_pct": round(100 * scale_bytes / stored, 2),
+            "packed_payload": packed_seen, "pack_factor": pack if packed_seen else 1,
+            "n_shards": len(shards)}
+
+
+def confirm_pack_factor(path: str) -> int:
+    """Logical values per stored byte, from the model's own quantization_config,
+    CROSS-CHECKED against the scale tensors' group geometry.
+
+    Deriving this from geometry alone is ambiguous and I got it wrong once:
+    Kimi-K3's w1 stores [3072,1792] beside a [3072,112] scale, and 1792/112 = 16
+    is a perfectly standard block size, so pack=1 "confirms" just as readily as
+    pack=2 (which gives 32). Only config.json settles it -- num_bits 4,
+    group_size 32 -- and the geometry then agrees with exactly one of them.
+    Two independent sources that must AGREE, not one source that merely looks
+    plausible.
+    """
+    cfg_path = os.path.join(path, "config.json")
+    if not os.path.exists(cfg_path):
+        return 1
+    cfg = json.load(open(cfg_path))
+    q = (cfg.get("quantization_config")
+         or (cfg.get("text_config") or {}).get("quantization_config"))
+    if not q:
+        return 1
+    w = ((q.get("config_groups") or {}).get("group_0") or {}).get("weights") or {}
+    num_bits, group_size = w.get("num_bits"), w.get("group_size")
+
+    if not num_bits:
+        # An 8-bit format cannot pack sub-byte, so its factor is 1 by definition
+        # and no calibration is needed. DeepSeek-V4-Flash declares fmt "e4m3"
+        # with no num_bits and names its projections w1/w2/w3, so the
+        # shape-calibration path below would refuse a body that was never packed.
+        fmt = str(q.get("fmt") or q.get("format") or q.get("quant_method") or "").lower()
+        if any(t in fmt for t in ("e4m3", "e5m2", "fp8", "int8", "i8")):
+            return 1
+
+        # A quantized body that does not declare num_bits still packs something --
+        # bitnet-b1.58 stores down_proj as [640, 6912] where the bf16 twin is
+        # [2560, 6912], four ternary values to a byte, under the ordinary name
+        # ".weight" with no "packed" marker anywhere. Recover the factor from the
+        # architecture's own hidden_size, and REFUSE if it does not divide
+        # cleanly. Reporting 11.095 EBPW for a 3.909 body, which is what guessing
+        # 1 did here, is worse than reporting nothing.
+        hidden = cfg.get("hidden_size") or (cfg.get("text_config") or {}).get("hidden_size")
+        if not hidden:
+            raise ValueError(f"{path}: quantization_config present ({q.get('quant_method')}) "
+                             f"but neither num_bits nor hidden_size is declared -- "
+                             f"the packing factor is undetermined and EBPW would be fiction")
+        for f in sorted(glob.glob(path.rstrip("/") + "/**/*.safetensors", recursive=True)):
+            for k, e in read_header(f).items():
+                if not k.endswith("down_proj.weight") or len(e["shape"]) != 2:
+                    continue
+                rows = e["shape"][0]
+                if e["dtype"] in FLOAT_DTYPES:
+                    return 1                        # stored dense after all
+                if hidden % rows:
+                    raise ValueError(
+                        f"{path}: {k} stores {e['shape']} against hidden_size {hidden}; "
+                        f"{hidden}/{rows} is not integral -- refusing to guess a denominator")
+                return hidden // rows
+        raise ValueError(f"{path}: quantized per config but no down_proj weight found "
+                         f"to calibrate the packing factor against")
+
+    if num_bits >= 8:
+        return 1                                    # nothing sub-byte is packed
+    pack = 8 // num_bits
+
+    for f in sorted(glob.glob(path.rstrip("/") + "/**/*.safetensors", recursive=True)):
+        hdr = read_header(f)
+        for k, e in hdr.items():
+            if not k.endswith(".weight_packed"):
+                continue
+            sc = hdr.get(k[: -len("weight_packed")] + "weight_scale")
+            if not sc or len(e["shape"]) < 2 or len(sc["shape"]) < 2:
+                continue
+            observed = e["shape"][-1] * pack / sc["shape"][-1]
+            if group_size and observed != group_size:
+                raise ValueError(
+                    f"{path}: config declares num_bits={num_bits} group_size={group_size}, "
+                    f"but {k} stores {e['shape']} beside scale {sc['shape']}, giving "
+                    f"{observed:g} elements per group. The two sources disagree -- "
+                    f"refusing to pick a denominator.")
+            return pack
+    return pack
+
+
 def census(catalog_path: str) -> dict:
     cat = json.load(open(catalog_path))
     rows = []
@@ -108,6 +234,11 @@ def census(catalog_path: str) -> dict:
             r = classify(s["path"])
         except Exception as exc:                       # a header we cannot parse is a FINDING
             r = {"klass": "HEADER-UNREADABLE", "blocked_by": f"{type(exc).__name__}: {exc}"}
+        if r["klass"] not in ("NO-SAFETENSORS", "HEADER-UNREADABLE"):
+            try:
+                r.update(accounting(s["path"], confirm_pack_factor(s["path"])))
+            except Exception as exc:
+                r["accounting_error"] = f"{type(exc).__name__}: {exc}"
         r.update(slug=s["slug"], gib=round(s["bytes"] / 2 ** 30, 1),
                  family=s["architecture_family"])
         rows.append(r)
@@ -168,12 +299,60 @@ def _selfcheck() -> None:
         with open(os.path.join(d, "m.safetensors"), "wb") as fh:
             fh.write(struct.pack("<Q", len(blob)) + blob + b"\0" * 32)
         assert classify(d)["klass"] == "DENSE", classify(d)
+
+        # A bf16 body must account to EXACTLY 16.000 EBPW. This is the control
+        # that catches a wrong denominator: Qwen3-30B-A3B lands on 16.000.
+        a = accounting(d, 1)
+        assert a["complete_ebpw"] == 16.0, a
+        assert a["scale_overhead_pct"] == 0.0, a
+
+        # Scales are overhead. Adding one must RAISE ebpw above 16, never leave
+        # it at 16 -- which is what counting them as source params would do.
+        hdr = {"model.layers.0.mlp.experts.0.down_proj.weight":
+               {"dtype": "BF16", "shape": [4, 4], "data_offsets": [0, 32]},
+               "model.layers.0.mlp.experts.0.down_proj.weight_scale":
+               {"dtype": "F32", "shape": [4], "data_offsets": [32, 48]}}
+        blob = json.dumps(hdr).encode()
+        with open(os.path.join(d, "m.safetensors"), "wb") as fh:
+            fh.write(struct.pack("<Q", len(blob)) + blob + b"\0" * 48)
+        a = accounting(d, 1)
+        assert a["source_params"] == 16, a
+        assert a["complete_ebpw"] == 24.0, a
+        assert a["scale_overhead_pct"] == 33.33, a
     print("selfcheck OK")
+
+
+def _lakecheck(lake: str = "/Volumes/corpdrive/hawking-modellake/specimens") -> None:
+    """The twin-pair control, run against the real lake.
+
+    bitnet-b1.58-2B-4T ships twice: once packed, once bf16. They are the SAME
+    organism, so their source-parameter counts must be identical to the digit --
+    which is the only reason the packed body's 4-values-per-byte factor is
+    knowable at all. This control is what caught the census reporting 11.095
+    EBPW for a body that actually sits at 3.908, and it will catch the next
+    packing scheme the pack-factor logic does not understand.
+    """
+    packed = os.path.join(lake, "microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361")
+    dense = os.path.join(lake, "microsoft--bitnet-b1.58-2B-4T-bf16@276681394656")
+    if not (os.path.isdir(packed) and os.path.isdir(dense)):
+        raise SystemExit(f"LAKECHECK NOT RUN -- twin pair absent under {lake}. "
+                         f"This control did not execute; do not read its silence as a pass.")
+    a = accounting(packed, confirm_pack_factor(packed))
+    b = accounting(dense, confirm_pack_factor(dense))
+    assert a["source_params"] == b["source_params"], (
+        f"twin pair disagrees: packed {a['source_params']} vs bf16 {b['source_params']} "
+        f"-- the packing factor is wrong")
+    assert b["complete_ebpw"] == 16.0, b
+    assert a["complete_ebpw"] < 4.0, a
+    print(f"lakecheck OK -- twin pair agrees at {a['source_params'] / 1e9:.3f}B params; "
+          f"packed {a['complete_ebpw']} EBPW vs bf16 {b['complete_ebpw']}")
 
 
 if __name__ == "__main__":
     import sys
     if "--selfcheck" in sys.argv:
         _selfcheck()
+    elif "--lakecheck" in sys.argv:
+        _lakecheck()
     else:
         print(json.dumps(census(sys.argv[1]), indent=1))

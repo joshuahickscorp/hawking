@@ -39,6 +39,24 @@
    "claim": "MY OWN CENSUS SHIPPED THE DEFECT IT WAS BUILT TO CATCH",
    "evidence": "the first run used a NON-RECURSIVE glob and reported Wan2.2-T2V-A14B (117.5 GiB, 12 nested safetensors, 2190 tensors) and audio-flamingo-3 (16.7 GiB, 7 nested, 1222 tensors) as having no safetensors at all. Found by listing the directory rather than trusting the classification. 134.2 GiB reclassified.",
    "consequence": "2 of 9 NO-SAFETENSORS verdicts were false. The mutation that reverts recursive=True prints 'NO-SAFETENSORS' while its own blocked_by field lists '1x.safetensors' -- the check is now self-incriminating when broken."
+  },
+  {
+   "id": "F5",
+   "claim": "the lake holds 4.472 TRILLION source parameters, 62% of them in one body",
+   "evidence": "Kimi-K3 accounts to 2779.9B source parameters at 4.492 complete EBPW; its bf16 parent would be 5.2 TiB, larger than the entire lake.",
+   "consequence": "Kimi-K3 is not an oversized obstacle. It is a published, capability-preserving sub-5-bit representation at trillion scale -- an existence proof sitting inside the search space the campaign is exploring, classified until now as unmeasurable."
+  },
+  {
+   "id": "F6",
+   "claim": "bitnet-b1.58 has a COMPLETE EBPW of 3.908, not 1.58",
+   "evidence": "its packed body stores down_proj as [640,6912] where the bf16 twin is [2560,6912] -- four ternary values per byte, i.e. 2 bits each, not 1.58 -- and the embeddings stay bf16. 0.521B U8 + 0.329B BF16 = 1.179 GB over 2.413B parameters.",
+   "consequence": "the nominal-vs-complete gap is 2.47x on a model whose headline number IS its name. Exactly the denominator discipline the campaign applies to its own candidates, found in a published checkpoint."
+  },
+  {
+   "id": "F7",
+   "claim": "MY CENSUS REPORTED 11.095 EBPW FOR THAT BODY AND THE TWIN-PAIR CONTROL CAUGHT IT",
+   "evidence": "the packed weights are named plainly '.weight' with no 'packed' marker and no num_bits in config, so the pack factor defaulted to 1 and the denominator was 4x too small. Two bodies of the same organism must report identical source parameters; they differed 0.850B vs 2.413B.",
+   "consequence": "the derivation was ALSO ambiguous where it appeared to work: Kimi-K3's 1792/112 = 16 is a standard block size, so pack=1 'confirmed' as readily as pack=2 gives 32. Only config.json (num_bits 4, group_size 32) settles it. The tool now requires two sources to agree and refuses otherwise."
   }
  ],
  "rows": [
@@ -883,5 +901,35 @@
    "gib": 0.8,
    "family": "sam2_video"
   }
- ]
+ ],
+ "complete_ebpw_accounting": {
+  "method": "stored bytes from safetensors headers (all tensors, scales included) divided by source-parameter count (scale/zero-point tensors EXCLUDED). Packing factor is never guessed: it comes from the model's own quantization_config and must AGREE with the scale tensors' group geometry, or the body is refused.",
+  "control": "a bf16 body must account to exactly 16.000, and Qwen3-30B-A3B does. The twin-pair control is stronger: bitnet-b1.58-2B-4T ships packed and bf16, the same organism twice, so their source-parameter counts must be identical -- 2.413B both.",
+  "accounted": 49,
+  "refused": 0,
+  "no_safetensors": 7,
+  "lake_source_params_trillion": 4.472,
+  "below_bf16": [
+   {
+    "slug": "microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361",
+    "complete_ebpw": 3.908,
+    "source_params_B": 2.4
+   },
+   {
+    "slug": "moonshotai--Kimi-K3@9f62e4e9fffb",
+    "complete_ebpw": 4.492,
+    "source_params_B": 2779.9
+   },
+   {
+    "slug": "zai-org--GLM-5.3-Flash@04c4e9e95c5d",
+    "complete_ebpw": 8.174,
+    "source_params_B": 321.3
+   },
+   {
+    "slug": "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+    "complete_ebpw": 8.558,
+    "source_params_B": 149.2
+   }
+  ]
+ }
 }
