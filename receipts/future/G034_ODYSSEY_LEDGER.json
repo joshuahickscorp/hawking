@@ -1,0 +1,2806 @@
+{
+ "schema": "odyssey-ledger-1",
+ "source_census": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json",
+ "specimens": [
+  {
+   "slug": "moonshotai--Kimi-K3@9f62e4e9fffb",
+   "gib": 1453.8,
+   "family": "kimi_k3",
+   "class": "MOE-PREQUANTIZED",
+   "axes": {
+    "anatomy": {
+     "state": "REFUSED",
+     "value": null,
+     "reason": "expert organ is pre-quantized on disk: expert payload is ['U8'] with ['weight_scale'] scale tensors -- a spectrum over quantization codes measures the codebook, not the organism. A spectrum over quantization codes measures the codebook, not the organism.",
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 4.492,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "thinkingmachines--Inkling-Small@8cc5877b44d3",
+   "gib": 495.4,
+   "family": "inkling_mm_model",
+   "class": "MOE-FLOAT",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 16.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "windowsxp811203--Qwen3.8-Flash-Next-Abliterated@deb02632504b",
+   "gib": 335.3,
+   "family": "qwen4_exp",
+   "class": "MOE-FLOAT",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 16.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+   "gib": 335.3,
+   "family": "qwen4_exp",
+   "class": "MOE-FLOAT",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 16.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "zai-org--GLM-5.3-Flash@04c4e9e95c5d",
+   "gib": 305.8,
+   "family": "glm5_next",
+   "class": "MOE-PREQUANTIZED",
+   "axes": {
+    "anatomy": {
+     "state": "REFUSED",
+     "value": null,
+     "reason": "expert organ is pre-quantized on disk: expert payload is ['F8_E4M3'] with ['weight_scale_inv'] scale tensors -- a spectrum over quantization codes measures the codebook, not the organism. A spectrum over quantization codes measures the codebook, not the organism.",
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 8.174,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "zai-org--GLM-4.5-Air@a24ceef6ce4f",
+   "gib": 205.8,
+   "family": "glm4_moe",
+   "class": "MOE-FLOAT",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 16.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+   "gib": 148.7,
+   "family": "deepseek_v4",
+   "class": "MOE-PREQUANTIZED",
+   "axes": {
+    "anatomy": {
+     "state": "REFUSED",
+     "value": null,
+     "reason": "expert organ is pre-quantized on disk: expert payload is ['F8_E4M3', 'I8'] with ['scale'] scale tensors -- a spectrum over quantization codes measures the codebook, not the organism. A spectrum over quantization codes measures the codebook, not the organism.",
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 8.558,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "Qwen--Qwen2.5-72B-Instruct@495f39366efe",
+   "gib": 135.4,
+   "family": "qwen2",
+   "class": "DENSE",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 16.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "Wan-AI--Wan2.2-T2V-A14B@c8c270b13ee0",
+   "gib": 117.5,
+   "family": "UNKNOWN",
+   "class": "DENSE",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 32.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "moonshotai--Kimi-Linear-48B-A3B-Instruct@e1df551a4471",
+   "gib": 91.5,
+   "family": "kimi_linear",
+   "class": "MOE-FLOAT",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 16.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+   "gib": 89.5,
+   "family": "mistral3",
+   "class": "DENSE",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 16.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "arcinstitute--evo2_40b@d529aa57c307",
+   "gib": 76.6,
+   "family": "stripedhyena2",
+   "class": "NO-SAFETENSORS",
+   "axes": {
+    "anatomy": {
+     "state": "REFUSED",
+     "value": null,
+     "reason": "no safetensors under the snapshot: weights are 5x.lock, 5x.metadata, 2x<noext>, 1x.json",
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "REFUSED",
+     "value": null,
+     "reason": "no safetensors to account: weights are 5x.lock, 5x.metadata, 2x<noext>, 1x.json",
+     "receipt": null
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+   "gib": 57.9,
+   "family": "qwen3_vl_moe",
+   "class": "MOE-FLOAT",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 16.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+   "gib": 56.9,
+   "family": "qwen3_moe",
+   "class": "MOE-FLOAT",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 16.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "Qwen--Qwen3-Coder-30B-A3B-Instruct@b2cff646eb4b",
+   "gib": 56.9,
+   "family": "qwen3_moe",
+   "class": "MOE-FLOAT",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 16.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "LiquidAI--LFM2-24B-A2B@a3bbacd91a67",
+   "gib": 44.4,
+   "family": "lfm2_moe",
+   "class": "MOE-FLOAT",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 16.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+   "gib": 30.6,
+   "family": "kimi_vl",
+   "class": "MOE-FLOAT",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 16.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "Qwen--Qwen3-14B@40c069824f42",
+   "gib": 27.5,
+   "family": "qwen3",
+   "class": "DENSE",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 16.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "microsoft--Phi-4-reasoning-plus@69baf8528e1b",
+   "gib": 27.3,
+   "family": "phi3",
+   "class": "DENSE",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 16.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "RWKV--RWKV7-13.3B-20260805@64ffe5934178",
+   "gib": 24.7,
+   "family": "rwkv7",
+   "class": "DENSE",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 16.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "nvidia--audio-flamingo-3@ee26c5842398",
+   "gib": 16.7,
+   "family": "llava_llama",
+   "class": "DENSE",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 16.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8",
+   "gib": 16.3,
+   "family": "qwen3_vl",
+   "class": "DENSE",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 16.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "GSAI-ML--iLLaDA-8B-Base@a1b5b5f8a31a",
+   "gib": 15.4,
+   "family": "illada",
+   "class": "DENSE",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 16.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "kyutai--moshika-pytorch-bf16@a49141e28b3d",
+   "gib": 14.7,
+   "family": "UNKNOWN",
+   "class": "DENSE",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 16.198,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "Dream-org--Dream-v0-Instruct-7B@05334cb9faaf",
+   "gib": 14.2,
+   "family": "Dream",
+   "class": "DENSE",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 16.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+   "gib": 14.1,
+   "family": "falcon_h1",
+   "class": "DENSE",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 16.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "allenai--Olmo-3-1025-7B@a81bae42db39",
+   "gib": 13.6,
+   "family": "olmo3",
+   "class": "DENSE",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 16.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "bigcode--starcoder2-7b@bb9afde76d79",
+   "gib": 13.4,
+   "family": "starcoder2",
+   "class": "DENSE",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 16.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "tencent--HunyuanVideo@6204ad6aea1a",
+   "gib": 13.2,
+   "family": "UNKNOWN",
+   "class": "NO-SAFETENSORS",
+   "axes": {
+    "anatomy": {
+     "state": "REFUSED",
+     "value": null,
+     "reason": "no safetensors under the snapshot: weights are 6x.metadata, 6x.lock, 3x.pt, 2x.json",
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "REFUSED",
+     "value": null,
+     "reason": "no safetensors to account: weights are 6x.metadata, 6x.lock, 3x.pt, 2x.json",
+     "receipt": null
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "lerobot--pi0_base@25c379b52ba2",
+   "gib": 13.0,
+   "family": "UNKNOWN",
+   "class": "MOE-FLOAT",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 32.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "facebook--musicgen-large@15ccdc920998",
+   "gib": 13.0,
+   "family": "musicgen",
+   "class": "NO-SAFETENSORS",
+   "axes": {
+    "anatomy": {
+     "state": "REFUSED",
+     "value": null,
+     "reason": "no safetensors under the snapshot: weights are 9x.metadata, 9x.lock, 6x.json, 3x.bin",
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "REFUSED",
+     "value": null,
+     "reason": "no safetensors to account: weights are 9x.metadata, 9x.lock, 6x.json, 3x.bin",
+     "receipt": null
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "ibm-granite--granite-4.0-h-tiny@791e0d3d28c8",
+   "gib": 12.9,
+   "family": "granitemoehybrid",
+   "class": "DENSE",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 16.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "arcinstitute--evo2_7b@bda0089f9258",
+   "gib": 12.8,
+   "family": "stripedhyena2",
+   "class": "NO-SAFETENSORS",
+   "axes": {
+    "anatomy": {
+     "state": "REFUSED",
+     "value": null,
+     "reason": "no safetensors under the snapshot: weights are 4x.metadata, 4x.lock, 2x<noext>, 1x.json",
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "REFUSED",
+     "value": null,
+     "reason": "no safetensors to account: weights are 4x.metadata, 4x.lock, 2x<noext>, 1x.json",
+     "receipt": null
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "microsoft--Phi-4-multimodal-instruct@93f923e1a772",
+   "gib": 12.0,
+   "family": "phi4mm",
+   "class": "DENSE",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 16.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02",
+   "gib": 8.4,
+   "family": "smolvlm",
+   "class": "DENSE",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 32.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "Qwen--Qwen3-4B-Instruct-2507@cdbee75f17c0",
+   "gib": 7.5,
+   "family": "qwen3",
+   "class": "DENSE",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 16.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "microsoft--Phi-4-mini-instruct@cfbefacb9925",
+   "gib": 7.2,
+   "family": "phi3",
+   "class": "DENSE",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 16.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "ai21labs--AI21-Jamba2-3B@525c6c8e1d9f",
+   "gib": 6.0,
+   "family": "jamba",
+   "class": "DENSE",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 16.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "ibm-granite--granite-4.0-h-micro@d5f01a3ea75f",
+   "gib": 6.0,
+   "family": "granitemoehybrid",
+   "class": "DENSE",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 16.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "LiquidAI--LFM2.5-2.6B-Base@c57bdaed1ef1",
+   "gib": 5.0,
+   "family": "lfm2",
+   "class": "DENSE",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 16.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "microsoft--bitnet-b1.58-2B-4T-bf16@276681394656",
+   "gib": 4.5,
+   "family": "bitnet",
+   "class": "DENSE",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 16.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "boltz-community--boltz-2@6fdef46d763f",
+   "gib": 4.1,
+   "family": "UNKNOWN",
+   "class": "NO-SAFETENSORS",
+   "axes": {
+    "anatomy": {
+     "state": "REFUSED",
+     "value": null,
+     "reason": "no safetensors under the snapshot: weights are 4x.metadata, 4x.lock, 2x.ckpt, 2x<noext>",
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "REFUSED",
+     "value": null,
+     "reason": "no safetensors to account: weights are 4x.metadata, 4x.lock, 2x.ckpt, 2x<noext>",
+     "receipt": null
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "facebook--vjepa2-vitg-fpc64-256@875c192b7b70",
+   "gib": 3.9,
+   "family": "vjepa2",
+   "class": "DENSE",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 32.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "tiiuae--Falcon3-1B-Instruct@28ba2251970a",
+   "gib": 3.1,
+   "family": "llama",
+   "class": "DENSE",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 16.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "google--flan-t5-large@0613663d0d48",
+   "gib": 2.9,
+   "family": "t5",
+   "class": "DENSE",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 32.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994",
+   "gib": 2.8,
+   "family": "mamba3",
+   "class": "NO-SAFETENSORS",
+   "axes": {
+    "anatomy": {
+     "state": "REFUSED",
+     "value": null,
+     "reason": "no safetensors under the snapshot: weights are 4x.metadata, 4x.lock, 2x<noext>, 1x.json",
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "REFUSED",
+     "value": null,
+     "reason": "no safetensors to account: weights are 4x.metadata, 4x.lock, 2x<noext>, 1x.json",
+     "receipt": null
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "state-spaces--mamba3-siso-1.5b@5cfc721542ec",
+   "gib": 2.8,
+   "family": "mamba3",
+   "class": "NO-SAFETENSORS",
+   "axes": {
+    "anatomy": {
+     "state": "REFUSED",
+     "value": null,
+     "reason": "no safetensors under the snapshot: weights are 4x.metadata, 4x.lock, 2x<noext>, 1x.json",
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "REFUSED",
+     "value": null,
+     "reason": "no safetensors to account: weights are 4x.metadata, 4x.lock, 2x<noext>, 1x.json",
+     "receipt": null
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "LiquidAI--LFM2.5-1.2B-Instruct@0f604ada3f76",
+   "gib": 2.2,
+   "family": "lfm2",
+   "class": "DENSE",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 16.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "google--timesfm-2.0-500m-pytorch@dc2443792ce5",
+   "gib": 1.9,
+   "family": "timesfm",
+   "class": "DENSE",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 32.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "openai--whisper-large-v3-turbo@41f01f3fe87f",
+   "gib": 1.5,
+   "family": "whisper",
+   "class": "DENSE",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 16.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "answerdotai--ModernBERT-large@45bb4654a4d5",
+   "gib": 1.5,
+   "family": "modernbert",
+   "class": "DENSE",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 32.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "Qwen--Qwen3-0.6B@c1899de289a0",
+   "gib": 1.4,
+   "family": "qwen3",
+   "class": "DENSE",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 16.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "depth-anything--Depth-Anything-V2-Large-hf@7581137eff8d",
+   "gib": 1.2,
+   "family": "depth_anything",
+   "class": "DENSE",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 32.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "Qwen--Qwen3-Embedding-0.6B@97b0c614be4d",
+   "gib": 1.1,
+   "family": "qwen3",
+   "class": "DENSE",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 16.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361",
+   "gib": 1.1,
+   "family": "bitnet",
+   "class": "DENSE",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 3.908,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  },
+  {
+   "slug": "facebook--sam2.1-hiera-large@665f8e2ad61c",
+   "gib": 0.8,
+   "family": "sam2_video",
+   "class": "DENSE",
+   "axes": {
+    "anatomy": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "ebpw": {
+     "state": "MEASURED",
+     "value": 32.0,
+     "reason": null,
+     "receipt": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/e9cc97c5-64f7-416a-b938-1a02934455b5/scratchpad/census5.json"
+    },
+    "gpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "cpu": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "tps": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nr_candidate": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    },
+    "nx_disposition": {
+     "state": "OWED",
+     "value": null,
+     "reason": null,
+     "receipt": null
+    }
+   }
+  }
+ ]
+}
