@@ -1656,6 +1656,20 @@ class Engine:
     # whose bytes were already in the goal.
     MAX_TOOL_ROUNDS = int(os.environ.get("HCLI_MAX_TOOL_ROUNDS", "6"))
     MAX_TOOL_CALLS_PER_ROUND = 16
+    # How many SUCCESSFUL observations a unit may accumulate before the catalog
+    # closes. This was the literal `len(observations) >= 1` below, which made the
+    # loop single-round no matter how well it was going: a unit could batch calls
+    # within one round but could never CONDITION a second round on the first's
+    # results. MAX_TOOL_ROUNDS 6 was therefore unreachable in practice.
+    #
+    # That bound is fatal for campaign work. "Call odyssey.ledger owed_only, read
+    # what is owed, choose a specimen, guard it, anatomise it" is four steps where
+    # each depends on the last, and it cannot be expressed as one batch.
+    #
+    # Default stays 1 so behaviour is UNCHANGED until a measurement says
+    # otherwise; raise it per run with HCLI_MAX_TOOL_OBSERVATIONS. The failed-call
+    # and all-repeat closers below are untouched and still fire first.
+    MAX_TOOL_OBSERVATIONS = int(os.environ.get("HCLI_MAX_TOOL_OBSERVATIONS", "1"))
     # Kept as an alias: external callers and tests referenced the old name for
     # the per-round cap, and silently changing what it means is worse than
     # carrying it.
@@ -2507,7 +2521,7 @@ class Engine:
                         item.get("repeat") or not item.get("ok")
                         for item in round_observations
                     )
-                    or len(observations) >= 1
+                    or len(observations) >= self.MAX_TOOL_OBSERVATIONS
                 ):
                     self._emit(
                         "tool_loop_closed",
@@ -2517,7 +2531,9 @@ class Engine:
                                 "failed_call"
                                 if any(not item.get("ok") for item in round_observations)
                                 else (
-                                    "bounded_observation_round"
+                                    f"observation_budget_{self.MAX_TOOL_OBSERVATIONS}"
+                                    if len(observations) >= self.MAX_TOOL_OBSERVATIONS
+                                    else "bounded_observation_round"
                                     if len(observations) >= 1
                                     else "repeated_or_failed"
                                 )
