@@ -1,0 +1,13 @@
+{
+ "supervisor_commits": 6,
+ "grok_lanes_dispatched": 6,
+ "interventions": 12,
+ "accepted_results": 34,
+ "axes_resolved": 150,
+ "distinct_receipts": 1,
+ "distinct_reasons": 33,
+ "unattributable_axes": 0,
+ "ephemeral_receipts": [],
+ "interventions_per_accepted_result": 0.3529,
+ "note": "a dispatched lane counts as a supervisor intervention: delegating the typing does not make the campaign autonomous, and counting lanes as free would let the ratio improve by fanning out harder"
+}
