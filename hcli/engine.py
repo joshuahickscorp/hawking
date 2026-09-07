@@ -4593,6 +4593,28 @@ class Engine:
     # on disk. Nothing is truncated mid-token; whole items are dropped.
     EVIDENCE_REDUCTION_STEPS = (1.0, 0.5, 0.25, 0.0)
 
+    def _observation_start(self, blocks: List[str]) -> int:
+        """Which observation the prompt starts at.
+
+        The floor is forward-only so each RETRIEVAL turn is the previous turn plus an
+        append, which is the shape a KV prefix can reuse -- without it five consecutive
+        calls sat pinned at 1,398 reused tokens while the prompts grew past 4,700.
+
+        But the CLOSING turn is a decision turn, not another retrieval turn. Its job is
+        to report on everything the round measured, and it runs once. Applying the
+        advanced floor there meant a round with five successful observations was handed
+        the tail of them and answered "No observations were provided; no measurement was
+        made or recorded" -- 1,553 prompt tokens against 4,700-5,800 on every earlier
+        call. The observations are already compacted to CLOSED_OBSERVATION_CHARS each,
+        so the full tail is small, and one call's worth of prefix is worth less than the
+        round's only product.
+        """
+        if not blocks:
+            return 0
+        if bool(getattr(self, "_tools_closed_for_round", False)):
+            return 0
+        return min(getattr(self, "_observation_floor", 0), len(blocks) - 1)
+
     def _fit_payload_to_budget(
         self,
         build: Callable[..., Dict[str, Any]],
@@ -4655,7 +4677,7 @@ class Engine:
         # prompts grew past 4700, every later token re-stepped at 580 dispatches
         # each. A floor that only advances makes each turn the previous turn
         # plus an append, which is exactly what a prefix cache can reuse.
-        floor = min(getattr(self, "_observation_floor", 0), max(len(blocks) - 1, 0))
+        floor = self._observation_start(blocks)
 
         attempts: List[Tuple[Any, ...]] = []
         for fraction in self.EVIDENCE_REDUCTION_STEPS:
