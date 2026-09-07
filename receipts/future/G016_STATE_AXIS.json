@@ -1,0 +1,2554 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-07T10:09:17Z",
+  "recorded_by": "tools/future/state_axis.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "catalog": "/Users/scammermike/Downloads/hawking/receipts/future/modellake-index/catalog.json",
+ "claim_boundary": "Static sidecar artifact. Config/header only. No tensor payload, no GPU, no hardware measurement.",
+ "controls": {
+  "gqa_negative": {
+   "gqa_bytes_per_token": 114688,
+   "grouping_factor": 2.0,
+   "measured_bytes_per_token": 114688,
+   "measured_ratio_mha_over_gqa": 2.0,
+   "mha_bytes_per_token": 229376,
+   "name": "gqa_negative",
+   "passed": true,
+   "predicted_ratio": 2.0
+  },
+  "lake_gqa_negative": {
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0/config.json",
+   "gqa_bytes_per_token": 114688,
+   "grouping_factor": 2.0,
+   "measured_ratio_mha_over_gqa": 2.0,
+   "mha_bytes_per_token": 229376,
+   "name": "lake_gqa_negative",
+   "passed": true,
+   "predicted_ratio": 2.0,
+   "slug": "Qwen--Qwen3-0.6B@c1899de289a0"
+  },
+  "mla": {
+   "measured_bytes_per_token": 31104,
+   "mla_bytes_per_token": 31104,
+   "name": "mla",
+   "passed": true,
+   "wrong_mha_bytes_per_token": 221184
+  },
+  "twin_pair": {
+   "a": {
+    "head_dim": 128,
+    "n_kv_heads": 8,
+    "n_layers": 28,
+    "slug": "Qwen--Qwen3-0.6B@c1899de289a0",
+    "state_bytes_per_token": 114688
+   },
+   "b": {
+    "head_dim": 128,
+    "n_kv_heads": 8,
+    "n_layers": 40,
+    "slug": "Qwen--Qwen3-14B@40c069824f42",
+    "state_bytes_per_token": 163840
+   },
+   "family": "qwen3",
+   "measured_ratio": 1.4285714285714286,
+   "name": "twin_pair",
+   "passed": true,
+   "predicted_ratio": 1.4285714285714286
+  }
+ },
+ "mutations": [
+  {
+   "anchor": "gqa_kv_heads",
+   "applied": true,
+   "healthy_returncode": 0,
+   "mutant_failed": true,
+   "mutant_returncode": 1,
+   "new": "n_kv = int(body.get(\"num_attention_heads\", n_kv))  # MUTATION_LIVE ANCHOR:gqa_kv_heads",
+   "old": "n_kv = int(body.get(\"num_key_value_heads\", n_kv))  # ANCHOR:gqa_kv_heads",
+   "sha256_after": "ce28ff3551ed35258f08cdf096ff33205edd8f957ceac12bf2fff5f49b097483",
+   "sha256_before": "2fe97592ca85249fd44ef574f27da6494fbfc85da76e9d2967dce750a2a03c3f",
+   "sha256_restored": "2fe97592ca85249fd44ef574f27da6494fbfc85da76e9d2967dce750a2a03c3f"
+  },
+  {
+   "anchor": "mla_latent",
+   "applied": true,
+   "healthy_returncode": 0,
+   "mutant_failed": true,
+   "mutant_returncode": 1,
+   "new": "per_layer = int(kv_lora_rank) * int(qk_rope_head_dim)  # MUTATION_LIVE ANCHOR:mla_latent",
+   "old": "per_layer = int(kv_lora_rank) + int(qk_rope_head_dim)  # ANCHOR:mla_latent",
+   "sha256_after": "9a40e243e2ee90564d7d1eb215b323467451ea685ff282077e1b8628aa469249",
+   "sha256_before": "2fe97592ca85249fd44ef574f27da6494fbfc85da76e9d2967dce750a2a03c3f",
+   "sha256_restored": "2fe97592ca85249fd44ef574f27da6494fbfc85da76e9d2967dce750a2a03c3f"
+  },
+  {
+   "anchor": "recurrent_zero_per_token",
+   "applied": true,
+   "healthy_returncode": 0,
+   "mutant_failed": true,
+   "mutant_returncode": 1,
+   "new": "per_token = 12345  # MUTATION_LIVE ANCHOR:recurrent_zero_per_token",
+   "old": "per_token = 0  # ANCHOR:recurrent_zero_per_token",
+   "sha256_after": "f532a2d63927aee43fb73b8d2a6080a72a3d8eebdda35794496df1d6184c2002",
+   "sha256_before": "2fe97592ca85249fd44ef574f27da6494fbfc85da76e9d2967dce750a2a03c3f",
+   "sha256_restored": "2fe97592ca85249fd44ef574f27da6494fbfc85da76e9d2967dce750a2a03c3f"
+  },
+  {
+   "anchor": "window_bound",
+   "applied": true,
+   "healthy_returncode": 0,
+   "mutant_failed": true,
+   "mutant_returncode": 1,
+   "new": "return int(max_pos)  # MUTATION_LIVE ANCHOR:window_bound",
+   "old": "return min(int(max_pos), int(window))  # ANCHOR:window_bound",
+   "sha256_after": "d2082a9dbb2b7ca2cdfdf94587d1bf6698020427d0521348259a5ad304dd0a67",
+   "sha256_before": "2fe97592ca85249fd44ef574f27da6494fbfc85da76e9d2967dce750a2a03c3f",
+   "sha256_restored": "2fe97592ca85249fd44ef574f27da6494fbfc85da76e9d2967dce750a2a03c3f"
+  },
+  {
+   "anchor": "hybrid_attn_separate",
+   "applied": true,
+   "healthy_returncode": 0,
+   "mutant_failed": true,
+   "mutant_returncode": 1,
+   "new": "attention_per_token += layer_kv + 1  # MUTATION_LIVE ANCHOR:hybrid_attn_separate",
+   "old": "attention_per_token += layer_kv  # ANCHOR:hybrid_attn_separate",
+   "sha256_after": "1260303278d5962d2bdd10ca3e99b055aadf71874c3eba79a2c97d182335c037",
+   "sha256_before": "2fe97592ca85249fd44ef574f27da6494fbfc85da76e9d2967dce750a2a03c3f",
+   "sha256_restored": "2fe97592ca85249fd44ef574f27da6494fbfc85da76e9d2967dce750a2a03c3f"
+  },
+  {
+   "anchor": "refuse_missing",
+   "applied": true,
+   "healthy_returncode": 0,
+   "mutant_failed": true,
+   "mutant_returncode": 1,
+   "new": "return 0  # MUTATION_LIVE\n        raise StateRefused(\n            key, path,\n            f\"config at {path} is missing {key!r}\",\n        )",
+   "old": "raise StateRefused(\n            key, path,\n            f\"config at {path} is missing {key!r}\",\n        )",
+   "sha256_after": "58f14bf8ac4c9c97dcf2b7edb853659089be567966dd59d93a72ae5bf59c9da9",
+   "sha256_before": "2fe97592ca85249fd44ef574f27da6494fbfc85da76e9d2967dce750a2a03c3f",
+   "sha256_restored": "2fe97592ca85249fd44ef574f27da6494fbfc85da76e9d2967dce750a2a03c3f"
+  }
+ ],
+ "n": 56,
+ "n_catalog": 56,
+ "recorded_by": "tools/future/state_axis.py",
+ "rows": [
+  {
+   "attn_class": null,
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/Dream-org--Dream-v0-Instruct-7B@05334cb9faaf/config.json",
+   "dtype_bytes": null,
+   "dtype_name": null,
+   "family": "Dream",
+   "fields_read": {
+    "architectures": [
+     "DreamModel"
+    ],
+    "model_type": "Dream"
+   },
+   "formula": "masked-diffusion body: no AR per-token decode state",
+   "growth": "NONE",
+   "layer_mix": {
+    "none": 1
+   },
+   "max_position_embeddings": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/Dream-org--Dream-v0-Instruct-7B@05334cb9faaf",
+   "refusal": null,
+   "slug": "Dream-org--Dream-v0-Instruct-7B@05334cb9faaf",
+   "state_bytes_at_ctx": 0,
+   "state_bytes_fixed": 0,
+   "state_bytes_per_token": 0,
+   "state_class": "NONE",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": "KV_GQA",
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/GSAI-ML--iLLaDA-8B-Base@a1b5b5f8a31a/config.json",
+   "dtype_bytes": 2,
+   "dtype_name": "bfloat16",
+   "family": "illada",
+   "fields_read": {
+    "architectures": [
+     "ILLaDAForCausalLM"
+    ],
+    "attn_formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+    "dtype": "bfloat16",
+    "head_dim": 128,
+    "head_dim_source": "hidden_size/num_attention_heads",
+    "hidden_size": 4096,
+    "max_position_embeddings": 8192,
+    "model_type": "illada",
+    "n_heads": 32,
+    "n_kv_heads": 8,
+    "n_kv_heads_used": 8,
+    "num_attention_heads": 32,
+    "num_hidden_layers": 32,
+    "num_key_value_heads": 8
+   },
+   "formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+   "growth": "LINEAR",
+   "layer_mix": {
+    "attention_layers": 32,
+    "n_layers": 32,
+    "names": {
+     "attention": 32
+    },
+    "recurrent_layers": 0
+   },
+   "max_position_embeddings": 8192,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/GSAI-ML--iLLaDA-8B-Base@a1b5b5f8a31a",
+   "refusal": null,
+   "slug": "GSAI-ML--iLLaDA-8B-Base@a1b5b5f8a31a",
+   "state_bytes_at_ctx": 1073741824,
+   "state_bytes_fixed": 0,
+   "state_bytes_per_token": 131072,
+   "state_class": "KV_GQA",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": null,
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02/config.json#text_config",
+   "dtype_bytes": null,
+   "dtype_name": null,
+   "family": "smolvlm",
+   "fields_read": {},
+   "formula": null,
+   "growth": null,
+   "layer_mix": null,
+   "max_position_embeddings": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02",
+   "refusal": {
+    "mechanism": "config at /Volumes/corpdrive/hawking-modellake/specimens/HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02/config.json#text_config is missing 'decoder_attention_heads' (also tried 'decoder_attention_heads', 'num_attention_heads', 'num_heads', 'n_heads', 'n_head')",
+    "missing_key": "decoder_attention_heads",
+    "path": "/Volumes/corpdrive/hawking-modellake/specimens/HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02/config.json#text_config"
+   },
+   "slug": "HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02",
+   "state_bytes_at_ctx": null,
+   "state_bytes_fixed": null,
+   "state_bytes_per_token": null,
+   "state_class": "NONE",
+   "status": "REFUSED",
+   "window": null
+  },
+  {
+   "attn_class": "KV_GQA",
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/LiquidAI--LFM2-24B-A2B@a3bbacd91a67/config.json",
+   "dtype_bytes": 2,
+   "dtype_name": "bfloat16",
+   "family": "lfm2_moe",
+   "fields_read": {
+    "architectures": [
+     "Lfm2MoeForCausalLM"
+    ],
+    "attn_formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+    "conv_L_cache": 3,
+    "conv_dim": 2048,
+    "dtype": "bfloat16",
+    "head_dim": 64,
+    "head_dim_source": "hidden_size/num_attention_heads",
+    "hidden_size": 2048,
+    "max_position_embeddings": 128000,
+    "model_type": "lfm2_moe",
+    "n_heads": 32,
+    "n_kv_heads": 8,
+    "n_kv_heads_used": 8,
+    "num_attention_heads": 32,
+    "num_hidden_layers": 40,
+    "num_key_value_heads": 8,
+    "recurrent_formula": "conv_dim * conv_L_cache"
+   },
+   "formula": "attn[n_kv_heads * head_dim * 2 * dtype_bytes]; recurrent[conv_dim * conv_L_cache] \u2014 counted separately, not averaged",
+   "growth": "LINEAR",
+   "layer_mix": {
+    "attention_layers": 10,
+    "n_layers": 40,
+    "names": {
+     "conv": 30,
+     "full_attention": 10
+    },
+    "recurrent_layers": 30
+   },
+   "max_position_embeddings": 128000,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/LiquidAI--LFM2-24B-A2B@a3bbacd91a67",
+   "refusal": null,
+   "slug": "LiquidAI--LFM2-24B-A2B@a3bbacd91a67",
+   "state_bytes_at_ctx": 2621808640,
+   "state_bytes_fixed": 368640,
+   "state_bytes_per_token": 20480,
+   "state_class": "HYBRID",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": "KV_GQA",
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/LiquidAI--LFM2.5-1.2B-Instruct@0f604ada3f76/config.json",
+   "dtype_bytes": 2,
+   "dtype_name": "bfloat16",
+   "family": "lfm2",
+   "fields_read": {
+    "architectures": [
+     "Lfm2ForCausalLM"
+    ],
+    "attn_formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+    "conv_L_cache": 3,
+    "conv_dim": 2048,
+    "dtype": "bfloat16",
+    "head_dim": 64,
+    "head_dim_source": "hidden_size/num_attention_heads",
+    "hidden_size": 2048,
+    "max_position_embeddings": 128000,
+    "model_type": "lfm2",
+    "n_heads": 32,
+    "n_kv_heads": 8,
+    "n_kv_heads_used": 8,
+    "num_attention_heads": 32,
+    "num_hidden_layers": 16,
+    "num_key_value_heads": 8,
+    "recurrent_formula": "conv_dim * conv_L_cache"
+   },
+   "formula": "attn[n_kv_heads * head_dim * 2 * dtype_bytes]; recurrent[conv_dim * conv_L_cache] \u2014 counted separately, not averaged",
+   "growth": "LINEAR",
+   "layer_mix": {
+    "attention_layers": 6,
+    "n_layers": 16,
+    "names": {
+     "conv": 10,
+     "full_attention": 6
+    },
+    "recurrent_layers": 10
+   },
+   "max_position_embeddings": 128000,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/LiquidAI--LFM2.5-1.2B-Instruct@0f604ada3f76",
+   "refusal": null,
+   "slug": "LiquidAI--LFM2.5-1.2B-Instruct@0f604ada3f76",
+   "state_bytes_at_ctx": 1572986880,
+   "state_bytes_fixed": 122880,
+   "state_bytes_per_token": 12288,
+   "state_class": "HYBRID",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": "KV_GQA",
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/LiquidAI--LFM2.5-2.6B-Base@c57bdaed1ef1/config.json",
+   "dtype_bytes": 2,
+   "dtype_name": "bfloat16",
+   "family": "lfm2",
+   "fields_read": {
+    "architectures": [
+     "Lfm2ForCausalLM"
+    ],
+    "attn_formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+    "conv_L_cache": 3,
+    "conv_dim": 2048,
+    "dtype": "bfloat16",
+    "head_dim": 64,
+    "head_dim_source": "hidden_size/num_attention_heads",
+    "hidden_size": 2048,
+    "max_position_embeddings": 128000,
+    "model_type": "lfm2",
+    "n_heads": 32,
+    "n_kv_heads": 8,
+    "n_kv_heads_used": 8,
+    "num_attention_heads": 32,
+    "num_hidden_layers": 30,
+    "num_key_value_heads": 8,
+    "recurrent_formula": "conv_dim * conv_L_cache"
+   },
+   "formula": "attn[n_kv_heads * head_dim * 2 * dtype_bytes]; recurrent[conv_dim * conv_L_cache] \u2014 counted separately, not averaged",
+   "growth": "LINEAR",
+   "layer_mix": {
+    "attention_layers": 8,
+    "n_layers": 30,
+    "names": {
+     "conv": 22,
+     "full_attention": 8
+    },
+    "recurrent_layers": 22
+   },
+   "max_position_embeddings": 128000,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/LiquidAI--LFM2.5-2.6B-Base@c57bdaed1ef1",
+   "refusal": null,
+   "slug": "LiquidAI--LFM2.5-2.6B-Base@c57bdaed1ef1",
+   "state_bytes_at_ctx": 2097422336,
+   "state_bytes_fixed": 270336,
+   "state_bytes_per_token": 16384,
+   "state_class": "HYBRID",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": "KV_GQA",
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen2.5-72B-Instruct@495f39366efe/config.json",
+   "dtype_bytes": 2,
+   "dtype_name": "bfloat16",
+   "family": "qwen2",
+   "fields_read": {
+    "architectures": [
+     "Qwen2ForCausalLM"
+    ],
+    "attn_formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+    "head_dim": 128,
+    "head_dim_source": "hidden_size/num_attention_heads",
+    "hidden_size": 8192,
+    "max_position_embeddings": 32768,
+    "model_type": "qwen2",
+    "n_heads": 64,
+    "n_kv_heads": 8,
+    "n_kv_heads_used": 8,
+    "num_attention_heads": 64,
+    "num_hidden_layers": 80,
+    "num_key_value_heads": 8,
+    "torch_dtype": "bfloat16"
+   },
+   "formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+   "growth": "LINEAR",
+   "layer_mix": {
+    "attention_layers": 80,
+    "n_layers": 80,
+    "names": {
+     "attention": 80
+    },
+    "recurrent_layers": 0
+   },
+   "max_position_embeddings": 32768,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen2.5-72B-Instruct@495f39366efe",
+   "refusal": null,
+   "slug": "Qwen--Qwen2.5-72B-Instruct@495f39366efe",
+   "state_bytes_at_ctx": 10737418240,
+   "state_bytes_fixed": 0,
+   "state_bytes_per_token": 327680,
+   "state_class": "KV_GQA",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": "KV_GQA",
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0/config.json",
+   "dtype_bytes": 2,
+   "dtype_name": "bfloat16",
+   "family": "qwen3",
+   "fields_read": {
+    "architectures": [
+     "Qwen3ForCausalLM"
+    ],
+    "attn_formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+    "head_dim": 128,
+    "head_dim_source": "head_dim",
+    "max_position_embeddings": 40960,
+    "model_type": "qwen3",
+    "n_heads": 16,
+    "n_kv_heads": 8,
+    "n_kv_heads_used": 8,
+    "num_attention_heads": 16,
+    "num_hidden_layers": 28,
+    "num_key_value_heads": 8,
+    "torch_dtype": "bfloat16"
+   },
+   "formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+   "growth": "LINEAR",
+   "layer_mix": {
+    "attention_layers": 28,
+    "n_layers": 28,
+    "names": {
+     "attention": 28
+    },
+    "recurrent_layers": 0
+   },
+   "max_position_embeddings": 40960,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0",
+   "refusal": null,
+   "slug": "Qwen--Qwen3-0.6B@c1899de289a0",
+   "state_bytes_at_ctx": 4697620480,
+   "state_bytes_fixed": 0,
+   "state_bytes_per_token": 114688,
+   "state_class": "KV_GQA",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": "KV_GQA",
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-14B@40c069824f42/config.json",
+   "dtype_bytes": 2,
+   "dtype_name": "bfloat16",
+   "family": "qwen3",
+   "fields_read": {
+    "architectures": [
+     "Qwen3ForCausalLM"
+    ],
+    "attn_formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+    "head_dim": 128,
+    "head_dim_source": "head_dim",
+    "max_position_embeddings": 40960,
+    "model_type": "qwen3",
+    "n_heads": 40,
+    "n_kv_heads": 8,
+    "n_kv_heads_used": 8,
+    "num_attention_heads": 40,
+    "num_hidden_layers": 40,
+    "num_key_value_heads": 8,
+    "torch_dtype": "bfloat16"
+   },
+   "formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+   "growth": "LINEAR",
+   "layer_mix": {
+    "attention_layers": 40,
+    "n_layers": 40,
+    "names": {
+     "attention": 40
+    },
+    "recurrent_layers": 0
+   },
+   "max_position_embeddings": 40960,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-14B@40c069824f42",
+   "refusal": null,
+   "slug": "Qwen--Qwen3-14B@40c069824f42",
+   "state_bytes_at_ctx": 6710886400,
+   "state_bytes_fixed": 0,
+   "state_bytes_per_token": 163840,
+   "state_class": "KV_GQA",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": "KV_GQA",
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-30B-A3B@ad44e777bcd1/config.json",
+   "dtype_bytes": 2,
+   "dtype_name": "bfloat16",
+   "family": "qwen3_moe",
+   "fields_read": {
+    "architectures": [
+     "Qwen3MoeForCausalLM"
+    ],
+    "attn_formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+    "head_dim": 128,
+    "head_dim_source": "head_dim",
+    "max_position_embeddings": 40960,
+    "model_type": "qwen3_moe",
+    "n_heads": 32,
+    "n_kv_heads": 4,
+    "n_kv_heads_used": 4,
+    "num_attention_heads": 32,
+    "num_hidden_layers": 48,
+    "num_key_value_heads": 4,
+    "torch_dtype": "bfloat16"
+   },
+   "formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+   "growth": "LINEAR",
+   "layer_mix": {
+    "attention_layers": 48,
+    "n_layers": 48,
+    "names": {
+     "attention": 48
+    },
+    "recurrent_layers": 0
+   },
+   "max_position_embeddings": 40960,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+   "refusal": null,
+   "slug": "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+   "state_bytes_at_ctx": 4026531840,
+   "state_bytes_fixed": 0,
+   "state_bytes_per_token": 98304,
+   "state_class": "KV_GQA",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": "KV_GQA",
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-4B-Instruct-2507@cdbee75f17c0/config.json",
+   "dtype_bytes": 2,
+   "dtype_name": "bfloat16",
+   "family": "qwen3",
+   "fields_read": {
+    "architectures": [
+     "Qwen3ForCausalLM"
+    ],
+    "attn_formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+    "head_dim": 128,
+    "head_dim_source": "head_dim",
+    "max_position_embeddings": 262144,
+    "model_type": "qwen3",
+    "n_heads": 32,
+    "n_kv_heads": 8,
+    "n_kv_heads_used": 8,
+    "num_attention_heads": 32,
+    "num_hidden_layers": 36,
+    "num_key_value_heads": 8,
+    "torch_dtype": "bfloat16"
+   },
+   "formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+   "growth": "LINEAR",
+   "layer_mix": {
+    "attention_layers": 36,
+    "n_layers": 36,
+    "names": {
+     "attention": 36
+    },
+    "recurrent_layers": 0
+   },
+   "max_position_embeddings": 262144,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-4B-Instruct-2507@cdbee75f17c0",
+   "refusal": null,
+   "slug": "Qwen--Qwen3-4B-Instruct-2507@cdbee75f17c0",
+   "state_bytes_at_ctx": 38654705664,
+   "state_bytes_fixed": 0,
+   "state_bytes_per_token": 147456,
+   "state_class": "KV_GQA",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": "KV_GQA",
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-Coder-30B-A3B-Instruct@b2cff646eb4b/config.json",
+   "dtype_bytes": 2,
+   "dtype_name": "bfloat16",
+   "family": "qwen3_moe",
+   "fields_read": {
+    "architectures": [
+     "Qwen3MoeForCausalLM"
+    ],
+    "attn_formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+    "head_dim": 128,
+    "head_dim_source": "head_dim",
+    "max_position_embeddings": 262144,
+    "model_type": "qwen3_moe",
+    "n_heads": 32,
+    "n_kv_heads": 4,
+    "n_kv_heads_used": 4,
+    "num_attention_heads": 32,
+    "num_hidden_layers": 48,
+    "num_key_value_heads": 4,
+    "torch_dtype": "bfloat16"
+   },
+   "formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+   "growth": "LINEAR",
+   "layer_mix": {
+    "attention_layers": 48,
+    "n_layers": 48,
+    "names": {
+     "attention": 48
+    },
+    "recurrent_layers": 0
+   },
+   "max_position_embeddings": 262144,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-Coder-30B-A3B-Instruct@b2cff646eb4b",
+   "refusal": null,
+   "slug": "Qwen--Qwen3-Coder-30B-A3B-Instruct@b2cff646eb4b",
+   "state_bytes_at_ctx": 25769803776,
+   "state_bytes_fixed": 0,
+   "state_bytes_per_token": 98304,
+   "state_class": "KV_GQA",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": "KV_GQA",
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-Embedding-0.6B@97b0c614be4d/config.json",
+   "dtype_bytes": 2,
+   "dtype_name": "bfloat16",
+   "family": "qwen3",
+   "fields_read": {
+    "architectures": [
+     "Qwen3ForCausalLM"
+    ],
+    "attn_formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+    "head_dim": 128,
+    "head_dim_source": "head_dim",
+    "max_position_embeddings": 32768,
+    "model_type": "qwen3",
+    "n_heads": 16,
+    "n_kv_heads": 8,
+    "n_kv_heads_used": 8,
+    "num_attention_heads": 16,
+    "num_hidden_layers": 28,
+    "num_key_value_heads": 8,
+    "torch_dtype": "bfloat16"
+   },
+   "formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+   "growth": "LINEAR",
+   "layer_mix": {
+    "attention_layers": 28,
+    "n_layers": 28,
+    "names": {
+     "attention": 28
+    },
+    "recurrent_layers": 0
+   },
+   "max_position_embeddings": 32768,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-Embedding-0.6B@97b0c614be4d",
+   "refusal": null,
+   "slug": "Qwen--Qwen3-Embedding-0.6B@97b0c614be4d",
+   "state_bytes_at_ctx": 3758096384,
+   "state_bytes_fixed": 0,
+   "state_bytes_per_token": 114688,
+   "state_class": "KV_GQA",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": "KV_GQA",
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba/config.json#text_config",
+   "dtype_bytes": 2,
+   "dtype_name": "bfloat16",
+   "family": "qwen3_vl_moe",
+   "fields_read": {
+    "architectures": [
+     "Qwen3VLMoeForConditionalGeneration"
+    ],
+    "attn_formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+    "dtype": "bfloat16",
+    "head_dim": 128,
+    "head_dim_source": "head_dim",
+    "max_position_embeddings": 262144,
+    "model_type": "qwen3_vl_moe_text",
+    "n_heads": 32,
+    "n_kv_heads": 4,
+    "n_kv_heads_used": 4,
+    "nested_body": "text_config",
+    "num_attention_heads": 32,
+    "num_hidden_layers": 48,
+    "num_key_value_heads": 4
+   },
+   "formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+   "growth": "LINEAR",
+   "layer_mix": {
+    "attention_layers": 48,
+    "n_layers": 48,
+    "names": {
+     "attention": 48
+    },
+    "recurrent_layers": 0
+   },
+   "max_position_embeddings": 262144,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+   "refusal": null,
+   "slug": "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+   "state_bytes_at_ctx": 25769803776,
+   "state_bytes_fixed": 0,
+   "state_bytes_per_token": 98304,
+   "state_class": "KV_GQA",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": "KV_GQA",
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8/config.json#text_config",
+   "dtype_bytes": 2,
+   "dtype_name": "bfloat16",
+   "family": "qwen3_vl",
+   "fields_read": {
+    "architectures": [
+     "Qwen3VLForConditionalGeneration"
+    ],
+    "attn_formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+    "dtype": "bfloat16",
+    "head_dim": 128,
+    "head_dim_source": "head_dim",
+    "max_position_embeddings": 262144,
+    "model_type": "qwen3_vl_text",
+    "n_heads": 32,
+    "n_kv_heads": 8,
+    "n_kv_heads_used": 8,
+    "nested_body": "text_config",
+    "num_attention_heads": 32,
+    "num_hidden_layers": 36,
+    "num_key_value_heads": 8
+   },
+   "formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+   "growth": "LINEAR",
+   "layer_mix": {
+    "attention_layers": 36,
+    "n_layers": 36,
+    "names": {
+     "attention": 36
+    },
+    "recurrent_layers": 0
+   },
+   "max_position_embeddings": 262144,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8",
+   "refusal": null,
+   "slug": "Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8",
+   "state_bytes_at_ctx": 38654705664,
+   "state_bytes_fixed": 0,
+   "state_bytes_per_token": 147456,
+   "state_class": "KV_GQA",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": "KV_GQA",
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/config.json#text_config",
+   "dtype_bytes": 2,
+   "dtype_name": "bfloat16",
+   "family": "qwen4_exp",
+   "fields_read": {
+    "architectures": [
+     "Qwen4ExpForConditionalGeneration"
+    ],
+    "attn_formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+    "dtype": "bfloat16",
+    "head_dim": 256,
+    "head_dim_source": "head_dim",
+    "linear_conv_kernel_dim": 4,
+    "linear_key_head_dim": 128,
+    "linear_num_key_heads": 16,
+    "linear_num_value_heads": 48,
+    "linear_value_head_dim": 128,
+    "mamba_ssm_dtype": "float32",
+    "max_position_embeddings": 262144,
+    "model_type": "qwen4_exp_text",
+    "n_heads": 24,
+    "n_kv_heads": 2,
+    "n_kv_heads_used": 2,
+    "nested_body": "text_config",
+    "num_attention_heads": 24,
+    "num_hidden_layers": 48,
+    "num_key_value_heads": 2,
+    "recurrent_formula": "n_v_heads * d_k * d_v (+ short conv)"
+   },
+   "formula": "attn[n_kv_heads * head_dim * 2 * dtype_bytes]; recurrent[n_v_heads * d_k * d_v (+ short conv)] \u2014 counted separately, not averaged",
+   "growth": "LINEAR",
+   "layer_mix": {
+    "attention_layers": 12,
+    "n_layers": 48,
+    "names": {
+     "full_attention": 12,
+     "linear_attention": 36
+    },
+    "recurrent_layers": 36
+   },
+   "max_position_embeddings": 262144,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+   "refusal": null,
+   "slug": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+   "state_bytes_at_ctx": 6561890304,
+   "state_bytes_fixed": 119439360,
+   "state_bytes_per_token": 24576,
+   "state_class": "HYBRID",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": null,
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/RWKV--RWKV7-13.3B-20260805@64ffe5934178/config.json",
+   "dtype_bytes": 2,
+   "dtype_name": "bfloat16",
+   "family": "rwkv7",
+   "fields_read": {
+    "architectures": [
+     "Rwkv7ForCausalLM"
+    ],
+    "dtype": "bfloat16",
+    "head_dim": 64,
+    "hidden_size": 4096,
+    "model_type": "rwkv7",
+    "num_heads": 64,
+    "num_hidden_layers": 61,
+    "recurrent_formula": "n_heads * head_dim * head_dim (wkv) + hidden_size (shift)",
+    "wkv_state_dtype": "float32"
+   },
+   "formula": "n_heads * head_dim * head_dim (wkv) + hidden_size (shift)",
+   "growth": "NONE",
+   "layer_mix": {
+    "attention_layers": 0,
+    "n_layers": 61,
+    "names": {
+     "rwkv7": 61
+    },
+    "recurrent_layers": 61
+   },
+   "max_position_embeddings": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/RWKV--RWKV7-13.3B-20260805@64ffe5934178",
+   "refusal": null,
+   "slug": "RWKV--RWKV7-13.3B-20260805@64ffe5934178",
+   "state_bytes_at_ctx": 64462848,
+   "state_bytes_fixed": 64462848,
+   "state_bytes_per_token": 0,
+   "state_class": "RECURRENT",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": null,
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/Wan-AI--Wan2.2-T2V-A14B@c8c270b13ee0/high_noise_model/config.json",
+   "dtype_bytes": null,
+   "dtype_name": null,
+   "family": "UNKNOWN",
+   "fields_read": {
+    "architectures": null,
+    "model_type": "t2v"
+   },
+   "formula": "model_type 't2v' has no persistent per-token decode state",
+   "growth": "NONE",
+   "layer_mix": {
+    "none": 1
+   },
+   "max_position_embeddings": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/Wan-AI--Wan2.2-T2V-A14B@c8c270b13ee0",
+   "refusal": null,
+   "slug": "Wan-AI--Wan2.2-T2V-A14B@c8c270b13ee0",
+   "state_bytes_at_ctx": 0,
+   "state_bytes_fixed": 0,
+   "state_bytes_per_token": 0,
+   "state_class": "NONE",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": "KV_MQA",
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/ai21labs--AI21-Jamba2-3B@525c6c8e1d9f/config.json",
+   "dtype_bytes": 2,
+   "dtype_name": "bfloat16",
+   "family": "jamba",
+   "fields_read": {
+    "architectures": [
+     "JambaForCausalLM"
+    ],
+    "attn_formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+    "dtype": "bfloat16",
+    "head_dim": 128,
+    "head_dim_source": "hidden_size/num_attention_heads",
+    "hidden_size": 2560,
+    "mamba_d_conv": 4,
+    "mamba_d_state": 16,
+    "mamba_expand": 2,
+    "max_position_embeddings": 262144,
+    "model_type": "jamba",
+    "n_heads": 20,
+    "n_kv_heads": 1,
+    "n_kv_heads_used": 1,
+    "num_attention_heads": 20,
+    "num_hidden_layers": 28,
+    "num_key_value_heads": 1,
+    "recurrent_formula": "mamba1: (hidden*expand) * (d_state + d_conv)"
+   },
+   "formula": "attn[n_kv_heads * head_dim * 2 * dtype_bytes]; recurrent[mamba1: (hidden*expand) * (d_state + d_conv)] \u2014 counted separately, not averaged",
+   "growth": "LINEAR",
+   "layer_mix": {
+    "attention_layers": 2,
+    "n_layers": 28,
+    "names": {
+     "attention": 2,
+     "mamba": 26
+    },
+    "recurrent_layers": 26
+   },
+   "max_position_embeddings": 262144,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/ai21labs--AI21-Jamba2-3B@525c6c8e1d9f",
+   "refusal": null,
+   "slug": "ai21labs--AI21-Jamba2-3B@525c6c8e1d9f",
+   "state_bytes_at_ctx": 273760256,
+   "state_bytes_fixed": 5324800,
+   "state_bytes_per_token": 1024,
+   "state_class": "HYBRID",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": "KV_FULL",
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/allenai--Olmo-3-1025-7B@a81bae42db39/config.json",
+   "dtype_bytes": 2,
+   "dtype_name": "bfloat16",
+   "family": "olmo3",
+   "fields_read": {
+    "architectures": [
+     "Olmo3ForCausalLM"
+    ],
+    "attn_formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+    "dtype": "bfloat16",
+    "head_dim": 128,
+    "head_dim_source": "hidden_size/num_attention_heads",
+    "hidden_size": 4096,
+    "max_position_embeddings": 65536,
+    "model_type": "olmo3",
+    "n_heads": 32,
+    "n_kv_heads": 32,
+    "n_kv_heads_used": 32,
+    "num_attention_heads": 32,
+    "num_hidden_layers": 32,
+    "num_key_value_heads": 32,
+    "sliding_window": 4096
+   },
+   "formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+   "growth": "LINEAR",
+   "layer_mix": {
+    "attention_layers": 32,
+    "n_layers": 32,
+    "names": {
+     "full_attention": 8,
+     "sliding_attention": 24
+    },
+    "recurrent_layers": 0
+   },
+   "max_position_embeddings": 65536,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/allenai--Olmo-3-1025-7B@a81bae42db39",
+   "refusal": null,
+   "slug": "allenai--Olmo-3-1025-7B@a81bae42db39",
+   "state_bytes_at_ctx": 10200547328,
+   "state_bytes_fixed": 0,
+   "state_bytes_per_token": 524288,
+   "state_class": "KV_FULL",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": null,
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/answerdotai--ModernBERT-large@45bb4654a4d5/config.json",
+   "dtype_bytes": null,
+   "dtype_name": null,
+   "family": "modernbert",
+   "fields_read": {
+    "architectures": [
+     "ModernBertForMaskedLM"
+    ],
+    "model_type": "modernbert"
+   },
+   "formula": "architecture ['ModernBertForMaskedLM'] is not an autoregressive decoder",
+   "growth": "NONE",
+   "layer_mix": {
+    "none": 1
+   },
+   "max_position_embeddings": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/answerdotai--ModernBERT-large@45bb4654a4d5",
+   "refusal": null,
+   "slug": "answerdotai--ModernBERT-large@45bb4654a4d5",
+   "state_bytes_at_ctx": 0,
+   "state_bytes_fixed": 0,
+   "state_bytes_per_token": 0,
+   "state_class": "NONE",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": null,
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/arcinstitute--evo2_40b@d529aa57c307/config.json",
+   "dtype_bytes": null,
+   "dtype_name": null,
+   "family": "stripedhyena2",
+   "fields_read": {},
+   "formula": null,
+   "growth": null,
+   "layer_mix": null,
+   "max_position_embeddings": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/arcinstitute--evo2_40b@d529aa57c307",
+   "refusal": {
+    "mechanism": "config at /Volumes/corpdrive/hawking-modellake/specimens/arcinstitute--evo2_40b@d529aa57c307/config.json is missing 'dtype'/'torch_dtype' and no floating safetensors header was available",
+    "missing_key": "dtype",
+    "path": "/Volumes/corpdrive/hawking-modellake/specimens/arcinstitute--evo2_40b@d529aa57c307/config.json"
+   },
+   "slug": "arcinstitute--evo2_40b@d529aa57c307",
+   "state_bytes_at_ctx": null,
+   "state_bytes_fixed": null,
+   "state_bytes_per_token": null,
+   "state_class": "NONE",
+   "status": "REFUSED",
+   "window": null
+  },
+  {
+   "attn_class": null,
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/arcinstitute--evo2_7b@bda0089f9258/config.json",
+   "dtype_bytes": null,
+   "dtype_name": null,
+   "family": "stripedhyena2",
+   "fields_read": {},
+   "formula": null,
+   "growth": null,
+   "layer_mix": null,
+   "max_position_embeddings": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/arcinstitute--evo2_7b@bda0089f9258",
+   "refusal": {
+    "mechanism": "config at /Volumes/corpdrive/hawking-modellake/specimens/arcinstitute--evo2_7b@bda0089f9258/config.json is missing 'dtype'/'torch_dtype' and no floating safetensors header was available",
+    "missing_key": "dtype",
+    "path": "/Volumes/corpdrive/hawking-modellake/specimens/arcinstitute--evo2_7b@bda0089f9258/config.json"
+   },
+   "slug": "arcinstitute--evo2_7b@bda0089f9258",
+   "state_bytes_at_ctx": null,
+   "state_bytes_fixed": null,
+   "state_bytes_per_token": null,
+   "state_class": "NONE",
+   "status": "REFUSED",
+   "window": null
+  },
+  {
+   "attn_class": "KV_GQA",
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/bigcode--starcoder2-7b@bb9afde76d79/config.json",
+   "dtype_bytes": 2,
+   "dtype_name": "bfloat16",
+   "family": "starcoder2",
+   "fields_read": {
+    "architectures": [
+     "Starcoder2ForCausalLM"
+    ],
+    "attn_formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+    "head_dim": 128,
+    "head_dim_source": "hidden_size/num_attention_heads",
+    "hidden_size": 4608,
+    "max_position_embeddings": 16384,
+    "model_type": "starcoder2",
+    "n_heads": 36,
+    "n_kv_heads": 4,
+    "n_kv_heads_used": 4,
+    "num_attention_heads": 36,
+    "num_hidden_layers": 32,
+    "num_key_value_heads": 4,
+    "sliding_window": 4096,
+    "torch_dtype": "bfloat16"
+   },
+   "formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+   "growth": "BOUNDED",
+   "layer_mix": {
+    "attention_layers": 32,
+    "n_layers": 32,
+    "names": {
+     "attention": 32
+    },
+    "recurrent_layers": 0
+   },
+   "max_position_embeddings": 16384,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/bigcode--starcoder2-7b@bb9afde76d79",
+   "refusal": null,
+   "slug": "bigcode--starcoder2-7b@bb9afde76d79",
+   "state_bytes_at_ctx": 268435456,
+   "state_bytes_fixed": 0,
+   "state_bytes_per_token": 65536,
+   "state_class": "KV_GQA",
+   "status": "MEASURED",
+   "window": 4096
+  },
+  {
+   "attn_class": null,
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/boltz-community--boltz-2@6fdef46d763f",
+   "dtype_bytes": null,
+   "dtype_name": null,
+   "family": "UNKNOWN",
+   "fields_read": {},
+   "formula": null,
+   "growth": null,
+   "layer_mix": null,
+   "max_position_embeddings": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/boltz-community--boltz-2@6fdef46d763f",
+   "refusal": {
+    "mechanism": "config.json is missing under /Volumes/corpdrive/hawking-modellake/specimens/boltz-community--boltz-2@6fdef46d763f",
+    "missing_key": "config.json",
+    "path": "/Volumes/corpdrive/hawking-modellake/specimens/boltz-community--boltz-2@6fdef46d763f"
+   },
+   "slug": "boltz-community--boltz-2@6fdef46d763f",
+   "state_bytes_at_ctx": null,
+   "state_bytes_fixed": null,
+   "state_bytes_per_token": null,
+   "state_class": "NONE",
+   "status": "REFUSED",
+   "window": null
+  },
+  {
+   "attn_class": "KV_MQA",
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6/config.json",
+   "dtype_bytes": 2,
+   "dtype_name": "bfloat16",
+   "family": "deepseek_v4",
+   "fields_read": {
+    "architectures": [
+     "DeepseekV4ForCausalLM"
+    ],
+    "attn_formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+    "head_dim": 512,
+    "head_dim_source": "head_dim",
+    "max_position_embeddings": 1048576,
+    "model_type": "deepseek_v4",
+    "n_heads": 64,
+    "n_kv_heads": 1,
+    "n_kv_heads_used": 1,
+    "num_attention_heads": 64,
+    "num_hidden_layers": 43,
+    "num_key_value_heads": 1,
+    "sliding_window": 128,
+    "torch_dtype": "bfloat16"
+   },
+   "formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+   "growth": "BOUNDED",
+   "layer_mix": {
+    "attention_layers": 43,
+    "n_layers": 43,
+    "names": {
+     "attention": 43
+    },
+    "recurrent_layers": 0
+   },
+   "max_position_embeddings": 1048576,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+   "refusal": null,
+   "slug": "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+   "state_bytes_at_ctx": 11272192,
+   "state_bytes_fixed": 0,
+   "state_bytes_per_token": 88064,
+   "state_class": "KV_MQA",
+   "status": "MEASURED",
+   "window": 128
+  },
+  {
+   "attn_class": null,
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/depth-anything--Depth-Anything-V2-Large-hf@7581137eff8d/config.json",
+   "dtype_bytes": null,
+   "dtype_name": null,
+   "family": "depth_anything",
+   "fields_read": {
+    "architectures": [
+     "DepthAnythingForDepthEstimation"
+    ],
+    "model_type": "depth_anything"
+   },
+   "formula": "architecture ['DepthAnythingForDepthEstimation'] is not an autoregressive decoder",
+   "growth": "NONE",
+   "layer_mix": {
+    "none": 1
+   },
+   "max_position_embeddings": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/depth-anything--Depth-Anything-V2-Large-hf@7581137eff8d",
+   "refusal": null,
+   "slug": "depth-anything--Depth-Anything-V2-Large-hf@7581137eff8d",
+   "state_bytes_at_ctx": 0,
+   "state_bytes_fixed": 0,
+   "state_bytes_per_token": 0,
+   "state_class": "NONE",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": "KV_FULL",
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/facebook--musicgen-large@15ccdc920998/config.json#decoder",
+   "dtype_bytes": 4,
+   "dtype_name": "float32",
+   "family": "musicgen",
+   "fields_read": {
+    "architectures": [
+     "MusicgenForConditionalGeneration"
+    ],
+    "attn_formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+    "head_dim": 64,
+    "head_dim_source": "hidden_size/num_attention_heads",
+    "hidden_size": 2048,
+    "max_position_embeddings": 2048,
+    "model_type": "musicgen_decoder",
+    "n_heads": 32,
+    "n_kv_heads": 32,
+    "n_kv_heads_used": 32,
+    "nested_body": "decoder",
+    "num_attention_heads": 32,
+    "num_hidden_layers": 48,
+    "num_key_value_heads_absent": true,
+    "torch_dtype": "float32"
+   },
+   "formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+   "growth": "LINEAR",
+   "layer_mix": {
+    "attention_layers": 48,
+    "n_layers": 48,
+    "names": {
+     "attention": 48
+    },
+    "recurrent_layers": 0
+   },
+   "max_position_embeddings": 2048,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/facebook--musicgen-large@15ccdc920998",
+   "refusal": null,
+   "slug": "facebook--musicgen-large@15ccdc920998",
+   "state_bytes_at_ctx": 1610612736,
+   "state_bytes_fixed": 0,
+   "state_bytes_per_token": 786432,
+   "state_class": "KV_FULL",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": null,
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/facebook--sam2.1-hiera-large@665f8e2ad61c/config.json",
+   "dtype_bytes": null,
+   "dtype_name": null,
+   "family": "sam2_video",
+   "fields_read": {
+    "architectures": [
+     "Sam2VideoModel"
+    ],
+    "model_type": "sam2_video"
+   },
+   "formula": "architecture ['Sam2VideoModel'] is not an autoregressive decoder",
+   "growth": "NONE",
+   "layer_mix": {
+    "none": 1
+   },
+   "max_position_embeddings": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/facebook--sam2.1-hiera-large@665f8e2ad61c",
+   "refusal": null,
+   "slug": "facebook--sam2.1-hiera-large@665f8e2ad61c",
+   "state_bytes_at_ctx": 0,
+   "state_bytes_fixed": 0,
+   "state_bytes_per_token": 0,
+   "state_class": "NONE",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": null,
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/facebook--vjepa2-vitg-fpc64-256@875c192b7b70/config.json",
+   "dtype_bytes": null,
+   "dtype_name": null,
+   "family": "vjepa2",
+   "fields_read": {
+    "architectures": [
+     "VJEPA2Model"
+    ],
+    "model_type": "vjepa2"
+   },
+   "formula": "model_type 'vjepa2' has no persistent per-token decode state",
+   "growth": "NONE",
+   "layer_mix": {
+    "none": 1
+   },
+   "max_position_embeddings": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/facebook--vjepa2-vitg-fpc64-256@875c192b7b70",
+   "refusal": null,
+   "slug": "facebook--vjepa2-vitg-fpc64-256@875c192b7b70",
+   "state_bytes_at_ctx": 0,
+   "state_bytes_fixed": 0,
+   "state_bytes_per_token": 0,
+   "state_class": "NONE",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": "KV_FULL",
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/google--flan-t5-large@0613663d0d48/config.json",
+   "dtype_bytes": 4,
+   "dtype_name": "safetensors_header:F32:model.safetensors",
+   "family": "t5",
+   "fields_read": {
+    "architectures": [
+     "T5ForConditionalGeneration"
+    ],
+    "attn_formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+    "d_kv": 64,
+    "head_dim": 64,
+    "head_dim_source": "d_kv",
+    "model_type": "t5",
+    "n_heads": 16,
+    "n_kv_heads": 16,
+    "n_kv_heads_used": 16,
+    "n_positions": 512,
+    "num_decoder_layers": 24,
+    "num_heads": 16,
+    "num_key_value_heads_absent": true,
+    "safetensors_header.dtype": "safetensors_header:F32:model.safetensors"
+   },
+   "formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+   "growth": "LINEAR",
+   "layer_mix": {
+    "attention_layers": 24,
+    "n_layers": 24,
+    "names": {
+     "attention": 24
+    },
+    "recurrent_layers": 0
+   },
+   "max_position_embeddings": 512,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/google--flan-t5-large@0613663d0d48",
+   "refusal": null,
+   "slug": "google--flan-t5-large@0613663d0d48",
+   "state_bytes_at_ctx": 100663296,
+   "state_bytes_fixed": 0,
+   "state_bytes_per_token": 196608,
+   "state_class": "KV_FULL",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": "KV_FULL",
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/google--timesfm-2.0-500m-pytorch@dc2443792ce5/config.json",
+   "dtype_bytes": 4,
+   "dtype_name": "float32",
+   "family": "timesfm",
+   "fields_read": {
+    "architectures": [
+     "TimesFmModelForPrediction"
+    ],
+    "attn_formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+    "context_length": 2048,
+    "head_dim": 80,
+    "head_dim_source": "head_dim",
+    "model_type": "timesfm",
+    "n_heads": 16,
+    "n_kv_heads": 16,
+    "n_kv_heads_used": 16,
+    "num_attention_heads": 16,
+    "num_hidden_layers": 50,
+    "num_key_value_heads_absent": true,
+    "torch_dtype": "float32"
+   },
+   "formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+   "growth": "LINEAR",
+   "layer_mix": {
+    "attention_layers": 50,
+    "n_layers": 50,
+    "names": {
+     "attention": 50
+    },
+    "recurrent_layers": 0
+   },
+   "max_position_embeddings": 2048,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/google--timesfm-2.0-500m-pytorch@dc2443792ce5",
+   "refusal": null,
+   "slug": "google--timesfm-2.0-500m-pytorch@dc2443792ce5",
+   "state_bytes_at_ctx": 1048576000,
+   "state_bytes_fixed": 0,
+   "state_bytes_per_token": 512000,
+   "state_class": "KV_FULL",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": "KV_GQA",
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/ibm-granite--granite-4.0-h-micro@d5f01a3ea75f/config.json",
+   "dtype_bytes": 2,
+   "dtype_name": "bfloat16",
+   "family": "granitemoehybrid",
+   "fields_read": {
+    "architectures": [
+     "GraniteMoeHybridForCausalLM"
+    ],
+    "attn_formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+    "head_dim": 64,
+    "head_dim_source": "hidden_size/num_attention_heads",
+    "hidden_size": 2048,
+    "mamba_d_conv": 4,
+    "mamba_d_head": 64,
+    "mamba_d_ssm": 4096,
+    "mamba_d_state": 128,
+    "mamba_n_groups": 1,
+    "mamba_n_heads": 64,
+    "max_position_embeddings": 131072,
+    "model_type": "granitemoehybrid",
+    "n_heads": 32,
+    "n_kv_heads": 8,
+    "n_kv_heads_used": 8,
+    "num_attention_heads": 32,
+    "num_hidden_layers": 40,
+    "num_key_value_heads": 8,
+    "recurrent_formula": "mamba2: n_heads * d_head * d_state + (d_ssm + 2*n_groups*d_state)*d_conv",
+    "torch_dtype": "bfloat16"
+   },
+   "formula": "attn[n_kv_heads * head_dim * 2 * dtype_bytes]; recurrent[mamba2: n_heads * d_head * d_state + (d_ssm + 2*n_groups*d_state)*d_conv] \u2014 counted separately, not averaged",
+   "growth": "LINEAR",
+   "layer_mix": {
+    "attention_layers": 4,
+    "n_layers": 40,
+    "names": {
+     "attention": 4,
+     "mamba": 36
+    },
+    "recurrent_layers": 36
+   },
+   "max_position_embeddings": 131072,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/ibm-granite--granite-4.0-h-micro@d5f01a3ea75f",
+   "refusal": null,
+   "slug": "ibm-granite--granite-4.0-h-micro@d5f01a3ea75f",
+   "state_bytes_at_ctx": 1112743936,
+   "state_bytes_fixed": 39002112,
+   "state_bytes_per_token": 8192,
+   "state_class": "HYBRID",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": "KV_GQA",
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/ibm-granite--granite-4.0-h-tiny@791e0d3d28c8/config.json",
+   "dtype_bytes": 2,
+   "dtype_name": "bfloat16",
+   "family": "granitemoehybrid",
+   "fields_read": {
+    "architectures": [
+     "GraniteMoeHybridForCausalLM"
+    ],
+    "attn_formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+    "head_dim": 128,
+    "head_dim_source": "hidden_size/num_attention_heads",
+    "hidden_size": 1536,
+    "mamba_d_conv": 4,
+    "mamba_d_head": 64,
+    "mamba_d_ssm": 3072,
+    "mamba_d_state": 128,
+    "mamba_n_groups": 1,
+    "mamba_n_heads": 48,
+    "max_position_embeddings": 131072,
+    "model_type": "granitemoehybrid",
+    "n_heads": 12,
+    "n_kv_heads": 4,
+    "n_kv_heads_used": 4,
+    "num_attention_heads": 12,
+    "num_hidden_layers": 40,
+    "num_key_value_heads": 4,
+    "recurrent_formula": "mamba2: n_heads * d_head * d_state + (d_ssm + 2*n_groups*d_state)*d_conv",
+    "torch_dtype": "bfloat16"
+   },
+   "formula": "attn[n_kv_heads * head_dim * 2 * dtype_bytes]; recurrent[mamba2: n_heads * d_head * d_state + (d_ssm + 2*n_groups*d_state)*d_conv] \u2014 counted separately, not averaged",
+   "growth": "LINEAR",
+   "layer_mix": {
+    "attention_layers": 4,
+    "n_layers": 40,
+    "names": {
+     "attention": 4,
+     "mamba": 36
+    },
+    "recurrent_layers": 36
+   },
+   "max_position_embeddings": 131072,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/ibm-granite--granite-4.0-h-tiny@791e0d3d28c8",
+   "refusal": null,
+   "slug": "ibm-granite--granite-4.0-h-tiny@791e0d3d28c8",
+   "state_bytes_at_ctx": 1103011840,
+   "state_bytes_fixed": 29270016,
+   "state_bytes_per_token": 8192,
+   "state_class": "HYBRID",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": null,
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/kyutai--moshika-pytorch-bf16@a49141e28b3d",
+   "dtype_bytes": null,
+   "dtype_name": null,
+   "family": "UNKNOWN",
+   "fields_read": {},
+   "formula": null,
+   "growth": null,
+   "layer_mix": null,
+   "max_position_embeddings": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/kyutai--moshika-pytorch-bf16@a49141e28b3d",
+   "refusal": {
+    "mechanism": "config.json is missing under /Volumes/corpdrive/hawking-modellake/specimens/kyutai--moshika-pytorch-bf16@a49141e28b3d",
+    "missing_key": "config.json",
+    "path": "/Volumes/corpdrive/hawking-modellake/specimens/kyutai--moshika-pytorch-bf16@a49141e28b3d"
+   },
+   "slug": "kyutai--moshika-pytorch-bf16@a49141e28b3d",
+   "state_bytes_at_ctx": null,
+   "state_bytes_fixed": null,
+   "state_bytes_per_token": null,
+   "state_class": "NONE",
+   "status": "REFUSED",
+   "window": null
+  },
+  {
+   "attn_class": null,
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/lerobot--pi0_base@25c379b52ba2/config.json",
+   "dtype_bytes": null,
+   "dtype_name": null,
+   "family": "UNKNOWN",
+   "fields_read": {
+    "architectures": null,
+    "model_type": null
+   },
+   "formula": "pi0 policy config carries no decoder attention fields",
+   "growth": "NONE",
+   "layer_mix": {
+    "none": 1
+   },
+   "max_position_embeddings": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/lerobot--pi0_base@25c379b52ba2",
+   "refusal": null,
+   "slug": "lerobot--pi0_base@25c379b52ba2",
+   "state_bytes_at_ctx": 0,
+   "state_bytes_fixed": 0,
+   "state_bytes_per_token": 0,
+   "state_class": "NONE",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": "KV_GQA",
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/microsoft--Phi-4-mini-instruct@cfbefacb9925/config.json",
+   "dtype_bytes": 2,
+   "dtype_name": "bfloat16",
+   "family": "phi3",
+   "fields_read": {
+    "architectures": [
+     "Phi3ForCausalLM"
+    ],
+    "attn_formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+    "head_dim": 128,
+    "head_dim_source": "hidden_size/num_attention_heads",
+    "hidden_size": 3072,
+    "max_position_embeddings": 131072,
+    "model_type": "phi3",
+    "n_heads": 24,
+    "n_kv_heads": 8,
+    "n_kv_heads_used": 8,
+    "num_attention_heads": 24,
+    "num_hidden_layers": 32,
+    "num_key_value_heads": 8,
+    "torch_dtype": "bfloat16"
+   },
+   "formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+   "growth": "LINEAR",
+   "layer_mix": {
+    "attention_layers": 32,
+    "n_layers": 32,
+    "names": {
+     "attention": 32
+    },
+    "recurrent_layers": 0
+   },
+   "max_position_embeddings": 131072,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/microsoft--Phi-4-mini-instruct@cfbefacb9925",
+   "refusal": null,
+   "slug": "microsoft--Phi-4-mini-instruct@cfbefacb9925",
+   "state_bytes_at_ctx": 17179869184,
+   "state_bytes_fixed": 0,
+   "state_bytes_per_token": 131072,
+   "state_class": "KV_GQA",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": "KV_GQA",
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/microsoft--Phi-4-multimodal-instruct@93f923e1a772/config.json",
+   "dtype_bytes": 2,
+   "dtype_name": "bfloat16",
+   "family": "phi4mm",
+   "fields_read": {
+    "architectures": [
+     "Phi4MMForCausalLM"
+    ],
+    "attn_formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+    "head_dim": 128,
+    "head_dim_source": "hidden_size/num_attention_heads",
+    "hidden_size": 3072,
+    "max_position_embeddings": 131072,
+    "model_type": "phi4mm",
+    "n_heads": 24,
+    "n_kv_heads": 8,
+    "n_kv_heads_used": 8,
+    "num_attention_heads": 24,
+    "num_hidden_layers": 32,
+    "num_key_value_heads": 8,
+    "torch_dtype": "bfloat16"
+   },
+   "formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+   "growth": "LINEAR",
+   "layer_mix": {
+    "attention_layers": 32,
+    "n_layers": 32,
+    "names": {
+     "attention": 32
+    },
+    "recurrent_layers": 0
+   },
+   "max_position_embeddings": 131072,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/microsoft--Phi-4-multimodal-instruct@93f923e1a772",
+   "refusal": null,
+   "slug": "microsoft--Phi-4-multimodal-instruct@93f923e1a772",
+   "state_bytes_at_ctx": 17179869184,
+   "state_bytes_fixed": 0,
+   "state_bytes_per_token": 131072,
+   "state_class": "KV_GQA",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": "KV_GQA",
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/microsoft--Phi-4-reasoning-plus@69baf8528e1b/config.json",
+   "dtype_bytes": 2,
+   "dtype_name": "bfloat16",
+   "family": "phi3",
+   "fields_read": {
+    "architectures": [
+     "Phi3ForCausalLM"
+    ],
+    "attn_formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+    "head_dim": 128,
+    "head_dim_source": "hidden_size/num_attention_heads",
+    "hidden_size": 5120,
+    "max_position_embeddings": 32768,
+    "model_type": "phi3",
+    "n_heads": 40,
+    "n_kv_heads": 10,
+    "n_kv_heads_used": 10,
+    "num_attention_heads": 40,
+    "num_hidden_layers": 40,
+    "num_key_value_heads": 10,
+    "torch_dtype": "bfloat16"
+   },
+   "formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+   "growth": "LINEAR",
+   "layer_mix": {
+    "attention_layers": 40,
+    "n_layers": 40,
+    "names": {
+     "attention": 40
+    },
+    "recurrent_layers": 0
+   },
+   "max_position_embeddings": 32768,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/microsoft--Phi-4-reasoning-plus@69baf8528e1b",
+   "refusal": null,
+   "slug": "microsoft--Phi-4-reasoning-plus@69baf8528e1b",
+   "state_bytes_at_ctx": 6710886400,
+   "state_bytes_fixed": 0,
+   "state_bytes_per_token": 204800,
+   "state_class": "KV_GQA",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": "KV_GQA",
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/microsoft--bitnet-b1.58-2B-4T-bf16@276681394656/config.json",
+   "dtype_bytes": 2,
+   "dtype_name": "bfloat16",
+   "family": "bitnet",
+   "fields_read": {
+    "architectures": [
+     "BitNetForCausalLM"
+    ],
+    "attn_formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+    "head_dim": 128,
+    "head_dim_source": "hidden_size/num_attention_heads",
+    "hidden_size": 2560,
+    "max_position_embeddings": 4096,
+    "model_type": "bitnet",
+    "n_heads": 20,
+    "n_kv_heads": 5,
+    "n_kv_heads_used": 5,
+    "num_attention_heads": 20,
+    "num_hidden_layers": 30,
+    "num_key_value_heads": 5,
+    "torch_dtype": "bfloat16"
+   },
+   "formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+   "growth": "LINEAR",
+   "layer_mix": {
+    "attention_layers": 30,
+    "n_layers": 30,
+    "names": {
+     "attention": 30
+    },
+    "recurrent_layers": 0
+   },
+   "max_position_embeddings": 4096,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/microsoft--bitnet-b1.58-2B-4T-bf16@276681394656",
+   "refusal": null,
+   "slug": "microsoft--bitnet-b1.58-2B-4T-bf16@276681394656",
+   "state_bytes_at_ctx": 314572800,
+   "state_bytes_fixed": 0,
+   "state_bytes_per_token": 76800,
+   "state_class": "KV_GQA",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": "KV_GQA",
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361/config.json",
+   "dtype_bytes": 2,
+   "dtype_name": "bfloat16",
+   "family": "bitnet",
+   "fields_read": {
+    "architectures": [
+     "BitNetForCausalLM"
+    ],
+    "attn_formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+    "head_dim": 128,
+    "head_dim_source": "hidden_size/num_attention_heads",
+    "hidden_size": 2560,
+    "max_position_embeddings": 4096,
+    "model_type": "bitnet",
+    "n_heads": 20,
+    "n_kv_heads": 5,
+    "n_kv_heads_used": 5,
+    "num_attention_heads": 20,
+    "num_hidden_layers": 30,
+    "num_key_value_heads": 5,
+    "torch_dtype": "bfloat16"
+   },
+   "formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+   "growth": "LINEAR",
+   "layer_mix": {
+    "attention_layers": 30,
+    "n_layers": 30,
+    "names": {
+     "attention": 30
+    },
+    "recurrent_layers": 0
+   },
+   "max_position_embeddings": 4096,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361",
+   "refusal": null,
+   "slug": "microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361",
+   "state_bytes_at_ctx": 314572800,
+   "state_bytes_fixed": 0,
+   "state_bytes_per_token": 76800,
+   "state_class": "KV_GQA",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": "KV_GQA",
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618/config.json#text_config",
+   "dtype_bytes": 2,
+   "dtype_name": "bfloat16",
+   "family": "mistral3",
+   "fields_read": {
+    "architectures": [
+     "Mistral3ForConditionalGeneration"
+    ],
+    "attn_formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+    "head_dim": 128,
+    "head_dim_source": "head_dim",
+    "max_position_embeddings": 131072,
+    "model_type": "mistral",
+    "n_heads": 32,
+    "n_kv_heads": 8,
+    "n_kv_heads_used": 8,
+    "nested_body": "text_config",
+    "num_attention_heads": 32,
+    "num_hidden_layers": 40,
+    "num_key_value_heads": 8,
+    "torch_dtype": "bfloat16"
+   },
+   "formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+   "growth": "LINEAR",
+   "layer_mix": {
+    "attention_layers": 40,
+    "n_layers": 40,
+    "names": {
+     "attention": 40
+    },
+    "recurrent_layers": 0
+   },
+   "max_position_embeddings": 131072,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+   "refusal": null,
+   "slug": "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+   "state_bytes_at_ctx": 21474836480,
+   "state_bytes_fixed": 0,
+   "state_bytes_per_token": 163840,
+   "state_class": "KV_GQA",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": "KV_MLA",
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-K3@9f62e4e9fffb/config.json#text_config",
+   "dtype_bytes": 2,
+   "dtype_name": "bfloat16",
+   "family": "kimi_k3",
+   "fields_read": {
+    "architectures": [
+     "KimiK3ForConditionalGeneration"
+    ],
+    "attn_formula": "kv_lora_rank + qk_rope_head_dim",
+    "dtype": "bfloat16",
+    "kv_lora_rank": 512,
+    "linear_attn_config.head_dim": 128,
+    "linear_attn_config.num_heads": 96,
+    "linear_attn_config.short_conv_kernel_size": 4,
+    "max_position_embeddings": 1048576,
+    "model_type": "kimi_linear",
+    "nested_body": "text_config",
+    "num_hidden_layers": 93,
+    "qk_rope_head_dim": 64,
+    "recurrent_formula": "n_heads * head_dim * head_dim (+ short conv)"
+   },
+   "formula": "attn[kv_lora_rank + qk_rope_head_dim]; recurrent[n_heads * head_dim * head_dim (+ short conv)] \u2014 counted separately, not averaged",
+   "growth": "LINEAR",
+   "layer_mix": {
+    "attention_layers": 24,
+    "n_layers": 93,
+    "names": {
+     "full_attention": 24,
+     "kda": 69
+    },
+    "recurrent_layers": 69
+   },
+   "max_position_embeddings": 1048576,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-K3@9f62e4e9fffb",
+   "refusal": null,
+   "slug": "moonshotai--Kimi-K3@9f62e4e9fffb",
+   "state_bytes_at_ctx": 29223346176,
+   "state_bytes_fixed": 232316928,
+   "state_bytes_per_token": 27648,
+   "state_class": "HYBRID",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": "KV_MLA",
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-Linear-48B-A3B-Instruct@e1df551a4471/config.json",
+   "dtype_bytes": 2,
+   "dtype_name": "bfloat16",
+   "family": "kimi_linear",
+   "fields_read": {
+    "architectures": [
+     "KimiLinearForCausalLM"
+    ],
+    "attn_formula": "kv_lora_rank + qk_rope_head_dim",
+    "dtype": "bfloat16",
+    "kv_lora_rank": 512,
+    "linear_attn_config.head_dim": 128,
+    "linear_attn_config.num_heads": 32,
+    "linear_attn_config.short_conv_kernel_size": 4,
+    "model_max_length": 1048576,
+    "model_type": "kimi_linear",
+    "num_hidden_layers": 27,
+    "qk_rope_head_dim": 64,
+    "recurrent_formula": "n_heads * head_dim * head_dim (+ short conv)"
+   },
+   "formula": "attn[kv_lora_rank + qk_rope_head_dim]; recurrent[n_heads * head_dim * head_dim (+ short conv)] \u2014 counted separately, not averaged",
+   "growth": "LINEAR",
+   "layer_mix": {
+    "attention_layers": 7,
+    "n_layers": 27,
+    "names": {
+     "full_attention": 7,
+     "kda": 20
+    },
+    "recurrent_layers": 20
+   },
+   "max_position_embeddings": 1048576,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-Linear-48B-A3B-Instruct@e1df551a4471",
+   "refusal": null,
+   "slug": "moonshotai--Kimi-Linear-48B-A3B-Instruct@e1df551a4471",
+   "state_bytes_at_ctx": 8478162944,
+   "state_bytes_fixed": 22446080,
+   "state_bytes_per_token": 8064,
+   "state_class": "HYBRID",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": "KV_MLA",
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c/config.json#text_config",
+   "dtype_bytes": 2,
+   "dtype_name": "bfloat16",
+   "family": "kimi_vl",
+   "fields_read": {
+    "architectures": [
+     "KimiVLForConditionalGeneration"
+    ],
+    "attn_formula": "kv_lora_rank + qk_rope_head_dim",
+    "kv_lora_rank": 512,
+    "max_position_embeddings": 131072,
+    "model_type": "kimi_vl",
+    "nested_body": "text_config",
+    "num_hidden_layers": 27,
+    "qk_rope_head_dim": 64,
+    "torch_dtype": "bfloat16"
+   },
+   "formula": "kv_lora_rank + qk_rope_head_dim",
+   "growth": "LINEAR",
+   "layer_mix": {
+    "attention_layers": 27,
+    "n_layers": 27,
+    "names": {
+     "attention": 27
+    },
+    "recurrent_layers": 0
+   },
+   "max_position_embeddings": 131072,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+   "refusal": null,
+   "slug": "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+   "state_bytes_at_ctx": 4076863488,
+   "state_bytes_fixed": 0,
+   "state_bytes_per_token": 31104,
+   "state_class": "KV_MLA",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": "KV_GQA",
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/nvidia--audio-flamingo-3@ee26c5842398/config.json#llm_cfg",
+   "dtype_bytes": 2,
+   "dtype_name": "bfloat16",
+   "family": "llava_llama",
+   "fields_read": {
+    "architectures": [
+     "LlavaLlamaModel"
+    ],
+    "attn_formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+    "head_dim": 128,
+    "head_dim_source": "hidden_size/num_attention_heads",
+    "hidden_size": 3584,
+    "max_position_embeddings": 32768,
+    "model_type": "qwen2",
+    "n_heads": 28,
+    "n_kv_heads": 4,
+    "n_kv_heads_used": 4,
+    "nested_body": "llm_cfg",
+    "num_attention_heads": 28,
+    "num_hidden_layers": 28,
+    "num_key_value_heads": 4,
+    "torch_dtype": "bfloat16"
+   },
+   "formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+   "growth": "LINEAR",
+   "layer_mix": {
+    "attention_layers": 28,
+    "n_layers": 28,
+    "names": {
+     "attention": 28
+    },
+    "recurrent_layers": 0
+   },
+   "max_position_embeddings": 32768,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/nvidia--audio-flamingo-3@ee26c5842398",
+   "refusal": null,
+   "slug": "nvidia--audio-flamingo-3@ee26c5842398",
+   "state_bytes_at_ctx": 1879048192,
+   "state_bytes_fixed": 0,
+   "state_bytes_per_token": 57344,
+   "state_class": "KV_GQA",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": "KV_FULL",
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/openai--whisper-large-v3-turbo@41f01f3fe87f/config.json",
+   "dtype_bytes": 2,
+   "dtype_name": "float16",
+   "family": "whisper",
+   "fields_read": {
+    "architectures": [
+     "WhisperForConditionalGeneration"
+    ],
+    "attn_formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+    "d_model": 1280,
+    "decoder_attention_heads": 20,
+    "decoder_layers": 4,
+    "head_dim": 64,
+    "head_dim_source": "d_model/num_attention_heads",
+    "max_target_positions": 448,
+    "model_type": "whisper",
+    "n_heads": 20,
+    "n_kv_heads": 20,
+    "n_kv_heads_used": 20,
+    "num_key_value_heads_absent": true,
+    "torch_dtype": "float16"
+   },
+   "formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+   "growth": "LINEAR",
+   "layer_mix": {
+    "attention_layers": 4,
+    "n_layers": 4,
+    "names": {
+     "attention": 4
+    },
+    "recurrent_layers": 0
+   },
+   "max_position_embeddings": 448,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/openai--whisper-large-v3-turbo@41f01f3fe87f",
+   "refusal": null,
+   "slug": "openai--whisper-large-v3-turbo@41f01f3fe87f",
+   "state_bytes_at_ctx": 9175040,
+   "state_bytes_fixed": 0,
+   "state_bytes_per_token": 20480,
+   "state_class": "KV_FULL",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": null,
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994/config.json",
+   "dtype_bytes": null,
+   "dtype_name": null,
+   "family": "mamba3",
+   "fields_read": {},
+   "formula": null,
+   "growth": null,
+   "layer_mix": null,
+   "max_position_embeddings": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994",
+   "refusal": {
+    "mechanism": "config at /Volumes/corpdrive/hawking-modellake/specimens/state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994/config.json is missing 'dtype'/'torch_dtype' and no floating safetensors header was available",
+    "missing_key": "dtype",
+    "path": "/Volumes/corpdrive/hawking-modellake/specimens/state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994/config.json"
+   },
+   "slug": "state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994",
+   "state_bytes_at_ctx": null,
+   "state_bytes_fixed": null,
+   "state_bytes_per_token": null,
+   "state_class": "RECURRENT",
+   "status": "REFUSED",
+   "window": null
+  },
+  {
+   "attn_class": null,
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/state-spaces--mamba3-siso-1.5b@5cfc721542ec/config.json",
+   "dtype_bytes": null,
+   "dtype_name": null,
+   "family": "mamba3",
+   "fields_read": {},
+   "formula": null,
+   "growth": null,
+   "layer_mix": null,
+   "max_position_embeddings": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/state-spaces--mamba3-siso-1.5b@5cfc721542ec",
+   "refusal": {
+    "mechanism": "config at /Volumes/corpdrive/hawking-modellake/specimens/state-spaces--mamba3-siso-1.5b@5cfc721542ec/config.json is missing 'dtype'/'torch_dtype' and no floating safetensors header was available",
+    "missing_key": "dtype",
+    "path": "/Volumes/corpdrive/hawking-modellake/specimens/state-spaces--mamba3-siso-1.5b@5cfc721542ec/config.json"
+   },
+   "slug": "state-spaces--mamba3-siso-1.5b@5cfc721542ec",
+   "state_bytes_at_ctx": null,
+   "state_bytes_fixed": null,
+   "state_bytes_per_token": null,
+   "state_class": "RECURRENT",
+   "status": "REFUSED",
+   "window": null
+  },
+  {
+   "attn_class": null,
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/tencent--HunyuanVideo@6204ad6aea1a/config.json",
+   "dtype_bytes": null,
+   "dtype_name": null,
+   "family": "UNKNOWN",
+   "fields_read": {},
+   "formula": null,
+   "growth": null,
+   "layer_mix": null,
+   "max_position_embeddings": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/tencent--HunyuanVideo@6204ad6aea1a",
+   "refusal": {
+    "mechanism": "config at /Volumes/corpdrive/hawking-modellake/specimens/tencent--HunyuanVideo@6204ad6aea1a/config.json is not valid JSON: Expecting property name enclosed in double quotes: line 5 column 1 (char 38)",
+    "missing_key": "config.json",
+    "path": "/Volumes/corpdrive/hawking-modellake/specimens/tencent--HunyuanVideo@6204ad6aea1a/config.json"
+   },
+   "slug": "tencent--HunyuanVideo@6204ad6aea1a",
+   "state_bytes_at_ctx": null,
+   "state_bytes_fixed": null,
+   "state_bytes_per_token": null,
+   "state_class": "NONE",
+   "status": "REFUSED",
+   "window": null
+  },
+  {
+   "attn_class": "KV_GQA",
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/thinkingmachines--Inkling-Small@8cc5877b44d3/config.json#text_config",
+   "dtype_bytes": 2,
+   "dtype_name": "bfloat16",
+   "family": "inkling_mm_model",
+   "fields_read": {
+    "architectures": [
+     "InklingForConditionalGeneration"
+    ],
+    "attn_formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+    "head_dim": 128,
+    "head_dim_source": "head_dim",
+    "model_max_length": 1048576,
+    "model_type": "inkling_mm_model",
+    "n_heads": 32,
+    "n_kv_heads": 8,
+    "n_kv_heads_used": 8,
+    "nested_body": "text_config",
+    "num_attention_heads": 32,
+    "num_hidden_layers": 42,
+    "num_key_value_heads": 8,
+    "sliding_window_size": 512,
+    "torch_dtype": "bfloat16"
+   },
+   "formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+   "growth": "LINEAR",
+   "layer_mix": {
+    "attention_layers": 42,
+    "n_layers": 42,
+    "names": {
+     "attention": 42
+    },
+    "recurrent_layers": 0
+   },
+   "max_position_embeddings": 1048576,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/thinkingmachines--Inkling-Small@8cc5877b44d3",
+   "refusal": null,
+   "slug": "thinkingmachines--Inkling-Small@8cc5877b44d3",
+   "state_bytes_at_ctx": 30138171392,
+   "state_bytes_fixed": 0,
+   "state_bytes_per_token": 172032,
+   "state_class": "KV_GQA",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": "KV_GQA",
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb/config.json",
+   "dtype_bytes": 2,
+   "dtype_name": "bfloat16",
+   "family": "falcon_h1",
+   "fields_read": {
+    "architectures": [
+     "FalconH1ForCausalLM"
+    ],
+    "attn_formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+    "head_dim": 128,
+    "head_dim_source": "head_dim",
+    "mamba_d_conv": 4,
+    "mamba_d_head": 128,
+    "mamba_d_ssm": 3072,
+    "mamba_d_state": 256,
+    "mamba_n_groups": 1,
+    "mamba_n_heads": 24,
+    "max_position_embeddings": 262144,
+    "model_type": "falcon_h1",
+    "n_heads": 12,
+    "n_kv_heads": 2,
+    "n_kv_heads_used": 2,
+    "num_attention_heads": 12,
+    "num_hidden_layers": 44,
+    "num_key_value_heads": 2,
+    "recurrent_formula": "mamba2: n_heads * d_head * d_state + (d_ssm + 2*n_groups*d_state)*d_conv",
+    "torch_dtype": "bfloat16"
+   },
+   "formula": "attn[n_kv_heads * head_dim * 2 * dtype_bytes]; recurrent[mamba2: n_heads * d_head * d_state + (d_ssm + 2*n_groups*d_state)*d_conv] \u2014 counted separately, not averaged",
+   "growth": "LINEAR",
+   "layer_mix": {
+    "attention_layers": 44,
+    "n_layers": 44,
+    "names": {
+     "attn+mamba": 44
+    },
+    "recurrent_layers": 44
+   },
+   "max_position_embeddings": 262144,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+   "refusal": null,
+   "slug": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+   "state_bytes_at_ctx": 11881627648,
+   "state_bytes_fixed": 70467584,
+   "state_bytes_per_token": 45056,
+   "state_class": "HYBRID",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": "KV_GQA",
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/tiiuae--Falcon3-1B-Instruct@28ba2251970a/config.json",
+   "dtype_bytes": 2,
+   "dtype_name": "bfloat16",
+   "family": "llama",
+   "fields_read": {
+    "architectures": [
+     "LlamaForCausalLM"
+    ],
+    "attn_formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+    "head_dim": 256,
+    "head_dim_source": "head_dim",
+    "max_position_embeddings": 8192,
+    "model_type": "llama",
+    "n_heads": 8,
+    "n_kv_heads": 4,
+    "n_kv_heads_used": 4,
+    "num_attention_heads": 8,
+    "num_hidden_layers": 18,
+    "num_key_value_heads": 4,
+    "torch_dtype": "bfloat16"
+   },
+   "formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+   "growth": "LINEAR",
+   "layer_mix": {
+    "attention_layers": 18,
+    "n_layers": 18,
+    "names": {
+     "attention": 18
+    },
+    "recurrent_layers": 0
+   },
+   "max_position_embeddings": 8192,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/tiiuae--Falcon3-1B-Instruct@28ba2251970a",
+   "refusal": null,
+   "slug": "tiiuae--Falcon3-1B-Instruct@28ba2251970a",
+   "state_bytes_at_ctx": 603979776,
+   "state_bytes_fixed": 0,
+   "state_bytes_per_token": 73728,
+   "state_class": "KV_GQA",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": "KV_GQA",
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/windowsxp811203--Qwen3.8-Flash-Next-Abliterated@deb02632504b/config.json#text_config",
+   "dtype_bytes": 2,
+   "dtype_name": "bfloat16",
+   "family": "qwen4_exp",
+   "fields_read": {
+    "architectures": [
+     "Qwen4ExpForConditionalGeneration"
+    ],
+    "attn_formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+    "dtype": "bfloat16",
+    "head_dim": 256,
+    "head_dim_source": "head_dim",
+    "linear_conv_kernel_dim": 4,
+    "linear_key_head_dim": 128,
+    "linear_num_key_heads": 16,
+    "linear_num_value_heads": 48,
+    "linear_value_head_dim": 128,
+    "mamba_ssm_dtype": "float32",
+    "max_position_embeddings": 262144,
+    "model_type": "qwen4_exp_text",
+    "n_heads": 24,
+    "n_kv_heads": 2,
+    "n_kv_heads_used": 2,
+    "nested_body": "text_config",
+    "num_attention_heads": 24,
+    "num_hidden_layers": 48,
+    "num_key_value_heads": 2,
+    "recurrent_formula": "n_v_heads * d_k * d_v (+ short conv)"
+   },
+   "formula": "attn[n_kv_heads * head_dim * 2 * dtype_bytes]; recurrent[n_v_heads * d_k * d_v (+ short conv)] \u2014 counted separately, not averaged",
+   "growth": "LINEAR",
+   "layer_mix": {
+    "attention_layers": 12,
+    "n_layers": 48,
+    "names": {
+     "full_attention": 12,
+     "linear_attention": 36
+    },
+    "recurrent_layers": 36
+   },
+   "max_position_embeddings": 262144,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/windowsxp811203--Qwen3.8-Flash-Next-Abliterated@deb02632504b",
+   "refusal": null,
+   "slug": "windowsxp811203--Qwen3.8-Flash-Next-Abliterated@deb02632504b",
+   "state_bytes_at_ctx": 6561890304,
+   "state_bytes_fixed": 119439360,
+   "state_bytes_per_token": 24576,
+   "state_class": "HYBRID",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": "KV_GQA",
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/zai-org--GLM-4.5-Air@a24ceef6ce4f/config.json",
+   "dtype_bytes": 2,
+   "dtype_name": "bfloat16",
+   "family": "glm4_moe",
+   "fields_read": {
+    "architectures": [
+     "Glm4MoeForCausalLM"
+    ],
+    "attn_formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+    "head_dim": 128,
+    "head_dim_source": "head_dim",
+    "max_position_embeddings": 131072,
+    "model_type": "glm4_moe",
+    "n_heads": 96,
+    "n_kv_heads": 8,
+    "n_kv_heads_used": 8,
+    "num_attention_heads": 96,
+    "num_hidden_layers": 46,
+    "num_key_value_heads": 8,
+    "torch_dtype": "bfloat16"
+   },
+   "formula": "n_kv_heads * head_dim * 2 * dtype_bytes",
+   "growth": "LINEAR",
+   "layer_mix": {
+    "attention_layers": 46,
+    "n_layers": 46,
+    "names": {
+     "attention": 46
+    },
+    "recurrent_layers": 0
+   },
+   "max_position_embeddings": 131072,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/zai-org--GLM-4.5-Air@a24ceef6ce4f",
+   "refusal": null,
+   "slug": "zai-org--GLM-4.5-Air@a24ceef6ce4f",
+   "state_bytes_at_ctx": 24696061952,
+   "state_bytes_fixed": 0,
+   "state_bytes_per_token": 188416,
+   "state_class": "KV_GQA",
+   "status": "MEASURED",
+   "window": null
+  },
+  {
+   "attn_class": "KV_MLA",
+   "config_path": "/Volumes/corpdrive/hawking-modellake/specimens/zai-org--GLM-5.3-Flash@04c4e9e95c5d/config.json#text_config",
+   "dtype_bytes": 2,
+   "dtype_name": "bfloat16",
+   "family": "glm5_next",
+   "fields_read": {
+    "architectures": [
+     "Glm5NextForConditionalGeneration"
+    ],
+    "attn_formula": "kv_lora_rank + qk_rope_head_dim",
+    "dtype": "bfloat16",
+    "kv_lora_rank": 512,
+    "linear_attn_config.head_dim": 128,
+    "linear_attn_config.num_heads": 64,
+    "linear_attn_config.short_conv_kernel_size": 4,
+    "max_position_embeddings": 1048576,
+    "model_type": "glm5_next_text",
+    "nested_body": "text_config",
+    "num_hidden_layers": 45,
+    "qk_rope_head_dim": 0,
+    "recurrent_formula": "n_heads * head_dim * head_dim (+ short conv)"
+   },
+   "formula": "attn[kv_lora_rank + qk_rope_head_dim]; recurrent[n_heads * head_dim * head_dim (+ short conv)] \u2014 counted separately, not averaged",
+   "growth": "LINEAR",
+   "layer_mix": {
+    "attention_layers": 11,
+    "n_layers": 45,
+    "names": {
+     "deepseek_sparse_attention": 11,
+     "linear_attention": 34
+    },
+    "recurrent_layers": 34
+   },
+   "max_position_embeddings": 1048576,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/zai-org--GLM-5.3-Flash@04c4e9e95c5d",
+   "refusal": null,
+   "slug": "zai-org--GLM-5.3-Flash@04c4e9e95c5d",
+   "state_bytes_at_ctx": 11887476736,
+   "state_bytes_fixed": 76316672,
+   "state_bytes_per_token": 11264,
+   "state_class": "HYBRID",
+   "status": "MEASURED",
+   "window": null
+  }
+ ],
+ "schema": "hawking.future.state_axis.v1",
+ "seal_sha256": "caf52d7b4bc6ee2140b72077aff228ea9679d6f6003f16968e058eebc7a8e36a",
+ "state_classes": [
+  "KV_FULL",
+  "KV_GQA",
+  "KV_MQA",
+  "KV_MLA",
+  "RECURRENT",
+  "HYBRID",
+  "NONE"
+ ],
+ "summary": {
+  "cheapest_at_ctx": {
+   "family": "Dream",
+   "growth": "NONE",
+   "slug": "Dream-org--Dream-v0-Instruct-7B@05334cb9faaf",
+   "state_bytes_at_ctx": 0,
+   "state_bytes_fixed": 0,
+   "state_bytes_per_token": 0,
+   "state_class": "NONE",
+   "window": null
+  },
+  "cheapest_per_token": {
+   "family": "Dream",
+   "growth": "NONE",
+   "slug": "Dream-org--Dream-v0-Instruct-7B@05334cb9faaf",
+   "state_bytes_at_ctx": 0,
+   "state_bytes_fixed": 0,
+   "state_bytes_per_token": 0,
+   "state_class": "NONE",
+   "window": null
+  },
+  "cheapest_positive_per_token": {
+   "family": "jamba",
+   "growth": "LINEAR",
+   "slug": "ai21labs--AI21-Jamba2-3B@525c6c8e1d9f",
+   "state_bytes_at_ctx": 273760256,
+   "state_bytes_fixed": 5324800,
+   "state_bytes_per_token": 1024,
+   "state_class": "HYBRID",
+   "window": null
+  },
+  "most_expensive_at_ctx": {
+   "family": "qwen3_vl",
+   "growth": "LINEAR",
+   "slug": "Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8",
+   "state_bytes_at_ctx": 38654705664,
+   "state_bytes_fixed": 0,
+   "state_bytes_per_token": 147456,
+   "state_class": "KV_GQA",
+   "window": null
+  },
+  "most_expensive_per_token": {
+   "family": "musicgen",
+   "growth": "LINEAR",
+   "slug": "facebook--musicgen-large@15ccdc920998",
+   "state_bytes_at_ctx": 1610612736,
+   "state_bytes_fixed": 0,
+   "state_bytes_per_token": 786432,
+   "state_class": "KV_FULL",
+   "window": null
+  },
+  "n_measured": 48,
+  "n_refused": 8,
+  "refusals": [
+   {
+    "family": "smolvlm",
+    "mechanism": "config at /Volumes/corpdrive/hawking-modellake/specimens/HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02/config.json#text_config is missing 'decoder_attention_heads' (also tried 'decoder_attention_heads', 'num_attention_heads', 'num_heads', 'n_heads', 'n_head')",
+    "missing_key": "decoder_attention_heads",
+    "path": "/Volumes/corpdrive/hawking-modellake/specimens/HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02/config.json#text_config",
+    "slug": "HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02"
+   },
+   {
+    "family": "stripedhyena2",
+    "mechanism": "config at /Volumes/corpdrive/hawking-modellake/specimens/arcinstitute--evo2_40b@d529aa57c307/config.json is missing 'dtype'/'torch_dtype' and no floating safetensors header was available",
+    "missing_key": "dtype",
+    "path": "/Volumes/corpdrive/hawking-modellake/specimens/arcinstitute--evo2_40b@d529aa57c307/config.json",
+    "slug": "arcinstitute--evo2_40b@d529aa57c307"
+   },
+   {
+    "family": "stripedhyena2",
+    "mechanism": "config at /Volumes/corpdrive/hawking-modellake/specimens/arcinstitute--evo2_7b@bda0089f9258/config.json is missing 'dtype'/'torch_dtype' and no floating safetensors header was available",
+    "missing_key": "dtype",
+    "path": "/Volumes/corpdrive/hawking-modellake/specimens/arcinstitute--evo2_7b@bda0089f9258/config.json",
+    "slug": "arcinstitute--evo2_7b@bda0089f9258"
+   },
+   {
+    "family": "UNKNOWN",
+    "mechanism": "config.json is missing under /Volumes/corpdrive/hawking-modellake/specimens/boltz-community--boltz-2@6fdef46d763f",
+    "missing_key": "config.json",
+    "path": "/Volumes/corpdrive/hawking-modellake/specimens/boltz-community--boltz-2@6fdef46d763f",
+    "slug": "boltz-community--boltz-2@6fdef46d763f"
+   },
+   {
+    "family": "UNKNOWN",
+    "mechanism": "config.json is missing under /Volumes/corpdrive/hawking-modellake/specimens/kyutai--moshika-pytorch-bf16@a49141e28b3d",
+    "missing_key": "config.json",
+    "path": "/Volumes/corpdrive/hawking-modellake/specimens/kyutai--moshika-pytorch-bf16@a49141e28b3d",
+    "slug": "kyutai--moshika-pytorch-bf16@a49141e28b3d"
+   },
+   {
+    "family": "mamba3",
+    "mechanism": "config at /Volumes/corpdrive/hawking-modellake/specimens/state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994/config.json is missing 'dtype'/'torch_dtype' and no floating safetensors header was available",
+    "missing_key": "dtype",
+    "path": "/Volumes/corpdrive/hawking-modellake/specimens/state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994/config.json",
+    "slug": "state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994"
+   },
+   {
+    "family": "mamba3",
+    "mechanism": "config at /Volumes/corpdrive/hawking-modellake/specimens/state-spaces--mamba3-siso-1.5b@5cfc721542ec/config.json is missing 'dtype'/'torch_dtype' and no floating safetensors header was available",
+    "missing_key": "dtype",
+    "path": "/Volumes/corpdrive/hawking-modellake/specimens/state-spaces--mamba3-siso-1.5b@5cfc721542ec/config.json",
+    "slug": "state-spaces--mamba3-siso-1.5b@5cfc721542ec"
+   },
+   {
+    "family": "UNKNOWN",
+    "mechanism": "config at /Volumes/corpdrive/hawking-modellake/specimens/tencent--HunyuanVideo@6204ad6aea1a/config.json is not valid JSON: Expecting property name enclosed in double quotes: line 5 column 1 (char 38)",
+    "missing_key": "config.json",
+    "path": "/Volumes/corpdrive/hawking-modellake/specimens/tencent--HunyuanVideo@6204ad6aea1a/config.json",
+    "slug": "tencent--HunyuanVideo@6204ad6aea1a"
+   }
+  ],
+  "state_class_distribution": {
+   "HYBRID": 12,
+   "KV_FULL": 5,
+   "KV_GQA": 21,
+   "KV_MLA": 1,
+   "KV_MQA": 1,
+   "NONE": 13,
+   "RECURRENT": 3
+  }
+ },
+ "what": "Per-token persistent decode state from each ModelLake specimen's own config.json. KV bodies report bytes added per generated token; recurrent/DeltaNet/Mamba report fixed state and zero per-token growth; hybrids count each kind separately. A missing field is a named refusal."
+}

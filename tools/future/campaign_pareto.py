@@ -654,6 +654,68 @@ def harvest_ledger(pool: _Pool) -> None:
                       source=tps.get("receipt") or src)
 
 
+def harvest_state_axis(pool: _Pool) -> None:
+    """G016: per-token persistent decode state from each specimen's own config.
+
+    Lower is better. 0.0 is a value (recurrent / non-AR). A refusal is a named
+    mechanism, not a missing key and not a zero. Config-derived, so the
+    epistemic label is architecturally_supported — not a GPU measurement.
+    """
+    path = RECEIPTS / "G016_STATE_AXIS.json"
+    doc = _read_json(path)
+    if not isinstance(doc, dict):
+        pool.notes.append("G016_STATE_AXIS.json unreadable")
+        return
+    src = str(path.relative_to(REPO)) if path.is_relative_to(REPO) else str(path)
+    attached_org: dict[str, float] = {}
+    for row in doc.get("rows") or []:
+        if not isinstance(row, dict) or not row.get("slug"):
+            continue
+        slug = row["slug"]
+        organism = _organism_from_slug(slug, pool.src_to_oxx)
+        if organism.startswith("O") and len(organism) == 4:
+            name, kind = "bf16", "representation"
+        else:
+            name, kind = slug, "lake_body"
+        point = pool.get(organism, name, kind, src)
+        if row.get("status") == "REFUSED":
+            slot = point["axis_meta"].setdefault("state", {
+                "epistemic": None, "receipts": [], "state": OWED, "reason": None,
+            })
+            if not has_value(point, "state"):
+                slot["state"] = REFUSED
+                ref = row.get("refusal") or {}
+                slot["reason"] = ref.get("mechanism") or ref.get("missing_key")
+                if src not in slot["receipts"]:
+                    slot["receipts"].append(_receipt_name(src))
+            continue
+        bytes_pt = row.get("state_bytes_per_token")
+        if bytes_pt is None:
+            continue
+        # int 0 is a real measurement (RWKV / measured NONE).
+        if not isinstance(bytes_pt, (int, float)) or isinstance(bytes_pt, bool):
+            continue
+        value = float(bytes_pt)
+        _set_axis(point, "state", value,
+                  epistemic="architecturally_supported", source=src)
+        attached_org[organism] = value
+        point.setdefault("slug", slug)
+        point.setdefault("state_class", row.get("state_class"))
+        point.setdefault("state_bytes_fixed", row.get("state_bytes_fixed"))
+        point.setdefault("state_growth", row.get("growth"))
+
+    # Decode-state is an architecture fact. PQ/NR variants of the same organism
+    # inherit it unless they already measured their own.
+    for p in list(pool.by_id.values()):
+        org = p.get("organism")
+        if org in attached_org and not has_value(p, "state"):
+            meta = p.get("axis_meta", {}).get("state") or {}
+            if meta.get("state") == REFUSED:
+                continue
+            _set_axis(p, "state", attached_org[org],
+                      epistemic="architecturally_supported", source=src)
+
+
 def harvest_measured_execution(pool: _Pool) -> None:
     """O003_PARETO_MEASURED: the first per-variant decode/prefill/memory numbers."""
     path = RECEIPTS / "O003_PARETO_MEASURED.json"
@@ -892,6 +954,7 @@ def _harvest() -> dict[str, Any]:
     harvest_census(pool)
     harvest_ledger(pool)
     harvest_reliability(pool)
+    harvest_state_axis(pool)
 
     candidates = list(pool.by_id.values())
     for p in candidates:
@@ -1160,6 +1223,23 @@ def _selfcheck() -> None:
     assert disclosed["axis_meta"]["complete_ebpw"]["state"] == MEASURED
     assert disclosed["axis_meta"]["tps"]["state"] == OWED
     assert not has_value(disclosed, "tps")
+
+    # State is lower-better: a GQA number must beat the inflated MHA number.
+    cheap_kv = {**same, "state": 114688.0}
+    fat_kv = {**same, "state": 229376.0}
+    assert dominates(cheap_kv, fat_kv) and not dominates(fat_kv, cheap_kv)
+    # 0.0 is a value (recurrent), not "unmeasured".
+    rec = {**same, "state": 0.0, "complete_ebpw": 4.0}
+    kv = {**same, "state": 114688.0, "complete_ebpw": 4.0}
+    assert has_value(rec, "state")
+    assert dominates(rec, kv)
+
+    g016 = RECEIPTS / "G016_STATE_AXIS.json"
+    if g016.is_file():
+        pool = _Pool()
+        harvest_state_axis(pool)
+        n_state = sum(1 for p in pool.by_id.values() if has_value(p, "state"))
+        assert n_state > 0, "G016_STATE_AXIS.json is on disk but harvest set no state values"
 
     print("selfcheck OK")
 

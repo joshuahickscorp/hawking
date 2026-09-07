@@ -245,13 +245,16 @@ def test_measurement_debt_names_axes_with_no_values():
     # accepted_rate = is_accepted_work / n_runs from the engine receipts and
     # campaign_pareto harvests it onto serving identities. Asserting it is still
     # unmeasured would now pin the debt in place and turn a fix into a failure.
-    for a in ("state", "role_suitability"):
-        assert a in debt["unmeasured_for_everyone"], debt["n_with_axis"]
-    # and the axis that moved must STAY measured -- this is the regression guard,
-    # without which reliability could silently fall back to zero coverage and only
-    # the (now shorter) list above would notice.
-    assert "reliability" not in debt["unmeasured_for_everyone"], debt["n_with_axis"]
-    assert debt["n_with_axis"]["reliability"] > 0, debt["n_with_axis"]
+    # `state` left it too, when the G016 state axis landed: state_axis.py derives
+    # per-token state cost from each body's own config and campaign_pareto harvests it.
+    assert "role_suitability" in debt["unmeasured_for_everyone"], debt["n_with_axis"]
+    # The axes that MOVED must stay measured. This is the regression guard: without it
+    # either could silently fall back to zero coverage and only the shrinking list above
+    # would notice, which is the "reward for not measuring" this frontier was corrected
+    # to remove in the first place.
+    for a in ("reliability", "state"):
+        assert a not in debt["unmeasured_for_everyone"], debt["n_with_axis"]
+        assert debt["n_with_axis"][a] > 0, debt["n_with_axis"]
 
 
 def test_disposition_is_reused_not_forked():
