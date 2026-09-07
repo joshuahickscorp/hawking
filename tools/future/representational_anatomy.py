@@ -17,9 +17,9 @@ import json
 import os
 import re
 import struct
-from typing import Any
+from typing import Any, NamedTuple
 
-import mlx.core as mx
+import numpy as np
 
 
 class AnatomyUnavailable(RuntimeError):
@@ -34,24 +34,82 @@ class AnatomyUnavailable(RuntimeError):
     not hypothetical: it was 4 of 56 records that would have been fiction.
     """
 
+
 # Thresholds from the two-specimen family prior. Stated so they can be falsified.
 SHARING_LIVE_BELOW = 0.95      # cross-expert participation ratio
 LOWRANK_LIVE_BELOW = 0.40      # within-expert participation ratio
 
-_EXPERT_RE = re.compile(r"\.layers\.(\d+)\..*experts?\.(\d+)\.(\w+proj)\.weight$")
+# A spectrum over integer/fp8 codes measures the codebook, not the organism.
+FLOAT_DTYPES = frozenset({"BF16", "F16", "F32", "F64"})
+
+# Each Gram feature-block is kept at or under this many bytes of float32.
+GRAM_BLOCK_BYTES = 256 * 1024 * 1024
+
+_SCALE_SUFFIXES = (".weight_scale_inv", ".weight_scale", ".scale")
+
+
+class ExpertKey(NamedTuple):
+    """One expert payload tensor, identified from its safetensors key alone."""
+    layer: int
+    expert_id: int | None  # None => stacked, expert axis is 0 of a 3D tensor
+    projection: str
+    scheme: str
+
+
+# Ordered table: first match wins. A seventh layout is one more row.
+# Named groups: layer, proj, and expert (absent => stacked).
+# `(?:^|\.)layers.` accepts both `model.layers.0` and DeepSeek's `layers.0`.
+# `shared_expert(s)` is a different organ and is filtered before this table.
+_SCHEMES: tuple[tuple[str, re.Pattern[str]], ...] = (
+    (
+        "E",
+        re.compile(
+            r"(?:^|\.)layers\.(?P<layer>\d+)\..*?(?<!shared_)experts?\."
+            r"(?P<expert>\d+)\.(?P<proj>\w+)\.weight_packed$"
+        ),
+    ),
+    (
+        "D",
+        re.compile(
+            r"(?:^|\.)layers\.(?P<layer>\d+)\..*?(?<!shared_)experts?\."
+            r"(?P<expert>\d+)\.(?P<proj>w\d+)\.weight$"
+        ),
+    ),
+    (
+        "A",
+        re.compile(
+            r"(?:^|\.)layers\.(?P<layer>\d+)\..*?(?<!shared_)experts?\."
+            r"(?P<expert>\d+)\.(?P<proj>\w+)\.weight$"
+        ),
+    ),
+    (
+        "C",
+        re.compile(
+            r"(?:^|\.)layers\.(?P<layer>\d+)\..*?(?<!shared_)experts?\."
+            r"(?P<proj>w\d+_weight)$"
+        ),
+    ),
+    (
+        "B",
+        re.compile(
+            r"(?:^|\.)layers\.(?P<layer>\d+)\..*?(?<!shared_)experts?\."
+            r"(?P<proj>[A-Za-z]\w*)$"
+        ),
+    ),
+)
 
 # A body 15x larger than RAM must still be anatomisable (G035), so the shard scan
 # reads HEADERS ONLY: 8 bytes little-endian u64 header length, then that many bytes
 # of JSON mapping tensor name -> {dtype, shape, data_offsets}. Shapes and dtypes
 # therefore cost kilobytes per shard instead of gigabytes, and only the shards that
 # actually hold the target organ are ever opened for payload.
-_DTYPE_BYTES = {"BOOL": 1, "U8": 1, "I8": 1, "F8_E4M3": 1, "F8_E5M2": 1,
+_DTYPE_BYTES = {"BOOL": 1, "U8": 1, "I8": 1, "F8_E4M3": 1, "F8_E5M2": 1, "F8_E8M0": 1,
                 "U16": 2, "I16": 2, "F16": 2, "BF16": 2,
                 "U32": 4, "I32": 4, "F32": 4, "U64": 8, "I64": 8, "F64": 8}
 
 
-def read_header(path: str) -> dict:
-    """Tensor name -> {dtype, shape, data_offsets} without touching the payload."""
+def _read_header_ex(path: str) -> tuple[dict, int]:
+    """Header dict plus the JSON header length (payload starts at 8 + that)."""
     with open(path, "rb") as fh:
         raw = fh.read(8)
         if len(raw) != 8:
@@ -60,7 +118,49 @@ def read_header(path: str) -> dict:
         if not 0 < n < (1 << 31):
             raise AnatomyUnavailable(f"{path}: implausible header length {n}; not safetensors")
         hdr = json.loads(fh.read(n))
-    return {k: v for k, v in hdr.items() if k != "__metadata__"}
+    return {k: v for k, v in hdr.items() if k != "__metadata__"}, n
+
+
+def read_header(path: str) -> dict:
+    """Tensor name -> {dtype, shape, data_offsets} without touching the payload."""
+    hdr, _ = _read_header_ex(path)
+    return hdr
+
+
+def _load_float_tensor(path: str, header_len: int, entry: dict) -> np.ndarray:
+    """Read ONE tensor's payload as float32. Never maps the rest of the shard.
+
+    BF16 is expanded by bit-shift (high 16 bits of f32), which is how the pinned
+    Qwen3-30B-A3B receipt was reproduced without Metal.
+    """
+    dt = entry.get("dtype", "")
+    if dt not in FLOAT_DTYPES:
+        raise AnatomyUnavailable(f"{path}: refusing to decode non-float dtype {dt}")
+    start, end = entry["data_offsets"]
+    shape = tuple(int(d) for d in (entry.get("shape") or ()))
+    n_el = 1
+    for d in shape:
+        n_el *= d
+    elem = _DTYPE_BYTES[dt]
+    # Stream ~1M elements at a time so a BF16 tensor is never held as
+    # raw + u32 + f32 together (that triple copy put Inkling over 40 GiB).
+    out = np.empty(n_el, dtype=np.float32)
+    step = 1 << 20
+    with open(path, "rb") as fh:
+        fh.seek(8 + header_len + start)
+        for s in range(0, n_el, step):
+            e = min(n_el, s + step)
+            chunk = fh.read((e - s) * elem)
+            if dt == "BF16":
+                bits = np.frombuffer(chunk, dtype="<u2").astype(np.uint32) << 16
+                out[s:e] = bits.view(np.float32)
+            elif dt == "F16":
+                out[s:e] = np.frombuffer(chunk, dtype="<f2").astype(np.float32)
+            elif dt == "F32":
+                out[s:e] = np.frombuffer(chunk, dtype="<f4")
+            else:
+                out[s:e] = np.frombuffer(chunk, dtype="<f8").astype(np.float32)
+    return out.reshape(shape)
 
 
 def _nbytes(entry: dict) -> int:
@@ -70,33 +170,142 @@ def _nbytes(entry: dict) -> int:
     return n * _DTYPE_BYTES.get(entry.get("dtype", ""), 2)
 
 
-def _spectrum(X: "mx.array") -> dict:
-    Xc = X - mx.mean(X, axis=0, keepdims=True)
-    Gm = (Xc @ Xc.T).astype(mx.float32) / max(Xc.shape[1], 1)
-    ev = mx.maximum(mx.sort(mx.linalg.eigvalsh(Gm, stream=mx.cpu))[::-1], 0.0)
-    tot = float(mx.sum(ev))
+def parse_expert_key(key: str) -> ExpertKey | None:
+    """Map a tensor name to (layer, expert_id, projection, scheme), or None.
+
+    Scale tensors and the shared-expert organ are not the routed expert group.
+    """
+    if "shared_expert" in key:
+        return None
+    if key.endswith(_SCALE_SUFFIXES):
+        return None
+    for name, rx in _SCHEMES:
+        m = rx.search(key)
+        if m:
+            gd = m.groupdict()
+            eid = gd.get("expert")
+            return ExpertKey(int(gd["layer"]), None if eid is None else int(eid),
+                             gd["proj"], name)
+    return None
+
+
+def scan_expert_index(index: dict[str, Any]) -> tuple[
+        dict[int, dict[str, dict[int | None, str]]],
+        dict[int, set[str]],
+        bool]:
+    """Header pass: group expert payload keys by layer and projection.
+
+    Returns (by_layer[layer][proj][expert_id] = key, schemes_at, shared_expert_present).
+    Scale tensors and the shared-expert organ are excluded from by_layer.
+    """
+    by_layer: dict[int, dict[str, dict[int | None, str]]] = collections.defaultdict(
+        lambda: collections.defaultdict(dict)
+    )
+    schemes_at: dict[int, set[str]] = collections.defaultdict(set)
+    shared_expert_present = False
+    for k in index:
+        if "shared_expert" in k:
+            shared_expert_present = True
+            continue
+        parsed = parse_expert_key(k)
+        if parsed is None:
+            continue
+        by_layer[parsed.layer][parsed.projection][parsed.expert_id] = k
+        schemes_at[parsed.layer].add(parsed.scheme)
+    return by_layer, schemes_at, shared_expert_present
+
+
+def resolve_layer(by_layer: dict[int, Any], layer: int | None) -> int:
+    """Pick the measured layer. None => lowest layer with a complete expert group."""
+    layers_seen = sorted(by_layer)
+    if not layers_seen:
+        raise KeyError("no expert layers")
+    if layer is None:
+        return layers_seen[0]
+    if layer not in by_layer:
+        raise KeyError(layer)
+    return layer
+
+
+def _companion_scale(index: dict[str, Any], key: str) -> str | None:
+    """Name of the scale tensor that sits alongside a pre-quantized payload, if any."""
+    stems: list[str] = []
+    for suf in (".weight_packed", ".weight"):
+        if key.endswith(suf):
+            stems.append(key[: -len(suf)])
+    stems.append(key)
+    seen: set[str] = set()
+    for stem in stems:
+        if stem in seen:
+            continue
+        seen.add(stem)
+        for suf in _SCALE_SUFFIXES:
+            cand = stem + suf
+            if cand in index and cand != key:
+                return cand
+    return None
+
+
+def _gram(Xc: np.ndarray, gram_block_bytes: int | None) -> np.ndarray:
+    """Xc @ Xc.T, accumulated along the feature axis in bounded blocks.
+
+    The previous mlx single-matmul of Xc (512, 3_276_800) tripped Metal's
+    watchdog (~880 GFLOP, one command buffer). Host GEMM in <=256 MB slices
+    is the same algebra and does not depend on a GPU.
+
+    gram_block_bytes is the max float32 footprint of one Xc[:, s:e] slice.
+    None (or <= 0) computes the matmul in one shot -- used to prove the chunked
+    path matches the unchunked path.
+    """
+    n, f = int(Xc.shape[0]), int(Xc.shape[1])
+    Xc32 = np.asarray(Xc, dtype=np.float32)
+    if gram_block_bytes is None or gram_block_bytes <= 0:
+        return Xc32 @ Xc32.T
+    cols = max(1, gram_block_bytes // (4 * max(n, 1)))
+    Gm = np.zeros((n, n), dtype=np.float32)
+    for s in range(0, f, cols):
+        blk = Xc32[:, s:min(f, s + cols)]
+        Gm = Gm + blk @ blk.T
+    return Gm
+
+
+def _spectrum(X: np.ndarray, gram_block_bytes: int | None = GRAM_BLOCK_BYTES) -> dict:
+    Xc = np.asarray(X, dtype=np.float32)
+    if not Xc.flags.writeable:
+        Xc = np.array(Xc, dtype=np.float32, copy=True)
+    # In-place center: a second 17 GiB Xc is what put Inkling at 40 GiB RSS.
+    Xc -= Xc.mean(axis=0, keepdims=True)
+    Gm = _gram(Xc, gram_block_bytes) / max(int(Xc.shape[1]), 1)
+    del Xc
+    # n x n eigensolve in float64; the Gram itself stays float32. This is the
+    # combination that reproduced the pinned Qwen3-30B-A3B receipt exactly.
+    ev = np.linalg.eigvalsh(Gm.astype(np.float64))[::-1]
+    ev = np.maximum(ev, 0.0)
+    tot = float(ev.sum())
     part = ev / max(tot, 1e-30)
-    ent = float(-mx.sum(mx.where(part > 0, part * mx.log(mx.maximum(part, 1e-30)), 0.0)))
-    cum = mx.cumsum(ev) / max(tot, 1e-30)
+    pos = part > 0
+    ent = float(-(part[pos] * np.log(np.maximum(part[pos], 1e-30))).sum())
+    p = float(np.exp(ent))
+    cum = np.cumsum(ev) / max(tot, 1e-30)
     n = int(X.shape[0])
-    p = float(mx.exp(mx.array(ent)).item())
     return {"n": n, "participation": round(p, 2), "ratio": round(p / n, 4),
-            "rank_90": int(mx.sum(cum < 0.90).item()) + 1,
+            "rank_90": int((cum < 0.90).sum()) + 1,
             "top1_share": round(float(ev[0] / max(tot, 1e-30)), 4)}
 
 
-def _effective_rank(W: "mx.array") -> dict:
-    s = mx.linalg.svd(W.astype(mx.float32), compute_uv=False, stream=mx.cpu)
+def _effective_rank(W: np.ndarray) -> dict:
+    s = np.linalg.svd(np.asarray(W, dtype=np.float32), compute_uv=False)
     s2 = s * s
-    tot = float(mx.sum(s2))
+    tot = float(s2.sum())
     part = s2 / max(tot, 1e-30)
-    ent = float(-mx.sum(mx.where(part > 0, part * mx.log(mx.maximum(part, 1e-30)), 0.0)))
-    cum = mx.cumsum(s2) / max(tot, 1e-30)
+    pos = part > 0
+    ent = float(-(part[pos] * np.log(np.maximum(part[pos], 1e-30))).sum())
+    p = float(np.exp(ent))
+    cum = np.cumsum(s2) / max(tot, 1e-30)
     full = int(min(W.shape))
-    p = float(mx.exp(mx.array(ent)).item())
-    return {"shape": list(W.shape), "full_rank": full,
+    return {"shape": [int(d) for d in W.shape], "full_rank": full,
             "participation": round(p, 1), "ratio": round(p / full, 4),
-            "rank_90": int(mx.sum(cum < 0.90).item()) + 1}
+            "rank_90": int((cum < 0.90).sum()) + 1}
 
 
 def hypotheses(anatomy: dict) -> list[str]:
@@ -129,12 +338,13 @@ def hypotheses(anatomy: dict) -> list[str]:
     return out
 
 
-def anatomy_from_safetensors(snapshot: str, layer: int = 0, max_proj: int = 3,
-                             max_group_gb: float = 8.0) -> dict:
+def anatomy_from_safetensors(snapshot: str, layer: int | None = 0,
+                             max_proj: int = 3, max_group_gb: float = 8.0) -> dict:
     """Anatomy of one layer's expert organ, read organ-by-organ from headers.
 
     Raises AnatomyUnavailable rather than returning an empty anatomy, and never
     holds more than one shard's payload, so a body larger than RAM is reachable.
+    layer=None selects the lowest layer that actually has a complete expert group.
     """
     snapshot = snapshot.rstrip("/")
     shards = sorted(glob.glob(snapshot + "/*.safetensors"))
@@ -152,54 +362,82 @@ def anatomy_from_safetensors(snapshot: str, layer: int = 0, max_proj: int = 3,
 
     # Pass 1 -- headers only. Kilobytes per shard even on a 1.4 TiB body.
     index: dict[str, tuple[str, dict]] = {}
+    header_lens: dict[str, int] = {}
     for f in shards:
-        for k, e in read_header(f).items():
+        hdr, n = _read_header_ex(f)
+        header_lens[f] = n
+        for k, e in hdr.items():
             index[k] = (f, e)
     if not index:
         raise AnatomyUnavailable(f"{snapshot}: {len(shards)} shards, zero tensors in their headers")
 
-    groups: dict[str, dict[int, str]] = collections.defaultdict(dict)
-    stacked: list[str] = []
-    layers_seen: set[int] = set()
-    for k, (f, e) in index.items():
-        m = _EXPERT_RE.search(k)
-        if m:
-            layers_seen.add(int(m.group(1)))
-            if int(m.group(1)) == layer:
-                groups[m.group(3)][int(m.group(2))] = k
-        elif len(e.get("shape") or []) == 3 and (e["shape"][0] or 0) >= 8 and "expert" in k:
-            stacked.append(k)
+    by_layer, schemes_at, shared_expert_present = scan_expert_index(index)
+    layers_seen = sorted(by_layer)
+    requested = layer
 
-    if not groups and not stacked:
+    if not layers_seen:
         expert_keys = [k for k in index if "expert" in k.lower()]
         detail = (f"{len(expert_keys)} keys contain 'expert' but none matched the "
                   f"per-expert or stacked layout (e.g. {expert_keys[0]})"
                   if expert_keys else
                   f"no key contains 'expert'; this looks dense, not MoE "
                   f"(e.g. {sorted(index)[0]})")
-        if layers_seen:
-            detail += f"; experts exist at layers {min(layers_seen)}..{max(layers_seen)}, not {layer}"
+        layer_shown = "any layer" if requested is None else requested
         raise AnatomyUnavailable(
             f"{snapshot}: {len(index)} tensors across {len(shards)} shards, but no expert "
-            f"organ is measurable at layer {layer}. {detail}"
+            f"organ is measurable at layer {layer_shown}. {detail}"
         )
 
-    # Pass 2 -- payload, one shard resident at a time.
-    held: dict[str, Any] = {}
+    try:
+        layer = resolve_layer(by_layer, layer)
+    except KeyError:
+        # Keep the original range clause -- callers use it to rediscover the organ.
+        detail = f"experts exist at layers {layers_seen[0]}..{layers_seen[-1]}, not {requested}"
+        raise AnatomyUnavailable(
+            f"{snapshot}: {len(index)} tensors across {len(shards)} shards, but no expert "
+            f"organ is measurable at layer {requested}. {detail}"
+        ) from None
 
-    def tensor(key: str):
-        f = index[key][0]
-        if f not in held:
-            held.clear()               # organ-by-organ: never two shards at once
-            held[f] = mx.load(f)
-        return held[f][key]
+    layer_groups = by_layer[layer]
+
+    # Refuse pre-quantized organs from the header dtype -- never load the codes.
+    for proj, emap in sorted(layer_groups.items()):
+        for eid, key in sorted(emap.items(), key=lambda kv: (kv[0] is None, kv[0])):
+            dt = index[key][1].get("dtype", "")
+            if dt not in FLOAT_DTYPES:
+                scale = _companion_scale(index, key)
+                scale_txt = scale if scale is not None else (
+                    "no companion .scale/.weight_scale/.weight_scale_inv"
+                )
+                raise AnatomyUnavailable(
+                    f"{snapshot}: expert organ is PRE-QUANTIZED on disk "
+                    f"({proj} is {dt}, with {scale_txt} alongside). "
+                    "A spectrum over quantization codes measures the codebook, "
+                    "not the organism. Dequantize first or record this body as "
+                    "anatomy-blocked-by-format."
+                )
+
+    indexed = any(eid is not None for emap in layer_groups.values() for eid in emap)
+    storage = "per-expert" if indexed else "stacked"
+    scheme_name = ",".join(sorted(schemes_at[layer]))
+
+    # Pass 2 -- payload, ONE TENSOR at a time. A 17 GiB shard is never mapped.
+    def tensor(key: str) -> np.ndarray:
+        f, e = index[key]
+        return _load_float_tensor(f, header_lens[f], e)
 
     out: dict[str, Any] = {"snapshot": snapshot, "layer": layer,
+                           "layers_with_experts": [layers_seen[0], layers_seen[-1]],
+                           "shared_expert_present": shared_expert_present,
+                           "scheme": scheme_name,
                            "n_shards": len(shards), "n_tensors": len(index),
-                           "storage": "per-expert" if groups else "stacked",
+                           "storage": storage,
                            "cross_expert": []}
 
-    if groups:
+    if storage == "per-expert":
+        groups = {proj: {int(eid): k for eid, k in emap.items() if eid is not None}
+                  for proj, emap in layer_groups.items()}
+        groups = {p: d for p, d in groups.items() if d}
         for proj, d in sorted(groups.items())[:max_proj]:
             ids = sorted(d)
             need = sum(_nbytes(index[d[e]][1]) for e in ids) * 2  # bf16 payload -> f32 stack
@@ -207,9 +445,11 @@ def anatomy_from_safetensors(snapshot: str, layer: int = 0, max_proj: int = 3,
             if need > max_group_gb * 2 ** 30:
                 n_use = max(8, int(len(ids) * max_group_gb * 2 ** 30 / need))
                 ids = ids[:n_use]
-            # Group the loads by shard so each shard is opened once, not once per expert.
+            # Group the loads by shard so each file is opened for a run of experts.
             ids.sort(key=lambda e: index[d[e]][0])
-            X = mx.stack([tensor(d[e]).astype(mx.float32).reshape(-1) for e in ids])
+            rows = [tensor(d[e]).reshape(-1) for e in ids]
+            X = np.stack(rows, axis=0)
+            del rows
             r = _spectrum(X)
             r["tensor"] = proj
             r["n_experts_total"] = len(d)
@@ -218,18 +458,23 @@ def anatomy_from_safetensors(snapshot: str, layer: int = 0, max_proj: int = 3,
             out["cross_expert"].append(r)
             del X
         first = groups[sorted(groups)[0]]
-        out["within_expert"] = _effective_rank(tensor(first[sorted(first)[0]]).astype(mx.float32))
+        out["within_expert"] = _effective_rank(tensor(first[sorted(first)[0]]))
     else:
-        stacked.sort(key=lambda k: index[k][0])
-        for k in stacked[:max_proj]:
+        stacked = [(proj, emap[None]) for proj, emap in sorted(layer_groups.items())
+                   if None in emap][:max_proj]
+        stacked.sort(key=lambda item: index[item[1]][0])
+        within = None
+        for i, (proj, k) in enumerate(stacked):
             v = tensor(k)
-            r = _spectrum(v.astype(mx.float32).reshape(v.shape[0], -1))
-            r["tensor"] = k.split(".")[-2]
-            r["n_experts_total"] = int(v.shape[0])
+            n_exp = int(v.shape[0])
+            if i == 0:
+                within = np.array(v[0], dtype=np.float32, copy=True)
+            r = _spectrum(v.reshape(n_exp, -1))
+            r["tensor"] = proj
+            r["n_experts_total"] = n_exp
             out["cross_expert"].append(r)
-        out["within_expert"] = _effective_rank(tensor(stacked[0])[0].astype(mx.float32))
-
-    held.clear()
+            del v
+        out["within_expert"] = _effective_rank(within)
     out["hypotheses"] = hypotheses(out)
     if not out["hypotheses"]:
         raise AnatomyUnavailable(
@@ -237,3 +482,38 @@ def anatomy_from_safetensors(snapshot: str, layer: int = 0, max_proj: int = 3,
             f"record an anatomy that says nothing"
         )
     return out
+
+
+def main(argv: list[str] | None = None) -> int:
+    """CLI so HCLI can own OI as a subprocess without importing mlx.
+
+    Exit 0: JSON anatomy on stdout.
+    Exit 2: AnatomyUnavailable on stderr (named refusal, not a crash).
+    """
+    import argparse
+    import sys
+    p = argparse.ArgumentParser(
+        prog="representational_anatomy",
+        description="Odyssey-I representational anatomy of one snapshot directory.",
+    )
+    p.add_argument("snapshot", help="directory of .safetensors shards")
+    p.add_argument("--layer", default="0",
+                   help="layer index, or 'auto' for the lowest complete expert group")
+    args = p.parse_args(argv)
+    layer: int | None
+    if str(args.layer).lower() in ("auto", "none"):
+        layer = None
+    else:
+        layer = int(args.layer)
+    try:
+        out = anatomy_from_safetensors(args.snapshot, layer=layer)
+    except AnatomyUnavailable as e:
+        sys.stderr.write(str(e) + "\n")
+        return 2
+    json.dump(out, sys.stdout, indent=2)
+    sys.stdout.write("\n")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

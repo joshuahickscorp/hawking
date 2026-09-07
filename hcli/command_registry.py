@@ -64,6 +64,13 @@ COMMANDS: Tuple[Command, ...] = (
         "/flash-next",
     ),
     Command(
+        "/anatomy",
+        "Odyssey-I representational anatomy of a snapshot or lake specimen",
+        False,
+        "read_only",
+        "/anatomy SNAPSHOT auto",
+    ),
+    Command(
         "/receipts",
         "list durable run receipts newest first",
         False,
