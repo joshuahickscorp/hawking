@@ -1,0 +1,8 @@
+{
+ "spec": "sharedbasis8",
+ "ebpw_expected": 2.1864,
+ "basis_of": "8 shared components across 64 experts, per tensor",
+ "SPECTRAL_PREDICTION_MADE_BEFORE_THE_RUN": "The measured spectrum says rank50=30 and participation 62.88/64, so 8 components capture well under half the variance -- roughly 15-20%. Prediction: CATASTROPHIC failure, perplexity far above the 3.617 gate and worse than any PQ arm, most likely in the double digits like the dead 1.35 EBPW binary bodies (ppl 11.5).",
+ "WHAT_A_MATCH_BUYS": "If the built NR fails as the spectrum predicts, the 5-minute spectral probe is validated as a substitute for a multi-hour build, and every future MoE specimen can be screened for sharing before any representation is constructed (G031).",
+ "WHAT_A_MISMATCH_WOULD_MEAN": "If it does BETTER than predicted, weight-space variance is not the right currency for capability -- which would be consistent with reconstruction error already having been demoted, and would make the spectral probe unsafe as a screen."
+}

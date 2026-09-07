@@ -1,0 +1,27 @@
+{
+ "date": "2026-09-06",
+ "obligation": "G029",
+ "specimen": "O003",
+ "BOUNDARY_CROSSED": "This is the first O003 NR that does NOT represent every expert independently. Per tensor it stores a shared basis of 8 components plus 64 coefficient vectors plus a mean -- storage is no longer one object per parent weight. S012 \u00a790's boundary, built and measured end to end rather than argued.",
+ "measured": {
+  "spec": "sharedbasis8",
+  "complete_ebpw": 2.4057902695739406,
+  "representation_class": "SHARED_BASIS_NO_INDEPENDENT_EXPERTS",
+  "ppl": 27.7692,
+  "median_4gram_repeat": 0.9892,
+  "worst_max_repeat_run": 96,
+  "magnitude_ratio": 0.3917,
+  "direction_similarity": 0.3917,
+  "capability_ok": false
+ },
+ "PREDICTION_WAS_RECORDED_BEFORE_THE_RUN": {
+  "file": "receipts/future/O003_SHAREDBASIS_PREDICTION.json",
+  "predicted": "catastrophic failure, perplexity in double digits like the dead 1.35 EBPW bodies at 11.5, because rank50=30 and participation 62.88/64 mean 8 components capture 15-20% of variance",
+  "actual": "ppl 27.7692, 9.6x the gate, worse than predicted",
+  "verdict": "CONFIRMED"
+ },
+ "THE_SPECTRAL_PROBE_IS_NOW_A_VALIDATED_SCREEN": "A five-minute Gram spectrum predicted the outcome of a full build-and-evaluate. That licenses screening every future MoE specimen for sharing BEFORE constructing any representation (G031). The magnitude_ratio of 0.3917 is the quantitative link: losing 61% of weight magnitude is what capturing a fifth of the variance looks like downstream.",
+ "WHAT_THE_FAILURE_PHENOTYPE_SAYS_S012_42": "worst_max_repeat_run 96 and 4-gram 0.9892 -- total generative collapse, not degradation. Both magnitude AND geometry are gone (ratio 0.39, cosine 0.39 move together here, unlike every quantization arm where they diverged). A shared basis this small destroys the organism rather than approximating it.",
+ "G029_STATUS": "Boundary crossed and measured; execution forced (it ran, produced tokens, and was scored by the same gate as every other arm). Transfer to a second MoE specimen remains, and the spectral screen is what that transfer test should start from.",
+ "HONEST_READING": "O003's experts genuinely need their independence. Three spectra said so and a built NR confirmed it. For this specimen the Noetic win is not going to come from linear sharing at any rank that saves bytes."
+}
