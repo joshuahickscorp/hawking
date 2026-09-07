@@ -8,7 +8,8 @@
   "path": "the engine's agentic tool loop, 6 model calls in one round",
   "not_a_benchmark": "these are the round's OWN production calls, not a synthetic workload",
   "concurrency": 1,
-  "runtime_count": 1
+  "runtime_count": 1,
+  "nr": "native-packed sealed-3.14, physical_ebpw 3.1393, artifact ~9.9 GB at /Users/scammermike/noetic/NOETIC_PARENT_A"
  },
  "per_call": [
   {
