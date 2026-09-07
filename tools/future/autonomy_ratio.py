@@ -35,7 +35,10 @@ CONTENTION = ROOT / "receipts" / "future" / "CONTENTION_DECISIONS.jsonl"
 GOAL_START = "2026-09-07 02:00:00"
 
 sys.path.insert(0, str(ROOT))
-from hcli.engine import is_accepted_work  # noqa: E402  the authority, not a copy
+from hcli.engine import (  # noqa: E402  the authority, not a copy
+    is_accepted_work,
+    is_accepted_measurement,
+)
 
 
 def _epoch(stamp: str) -> float:
@@ -63,6 +66,14 @@ def hcli_rounds(since: float) -> list[dict]:
             "n_operations": len(ops),
             "status": r.get("status"),
             "accepted": is_accepted_work(r.get("validation"), r.get("result_envelope")),
+            # A science round MEASURES; it does not mutate. Counting only mutations
+            # scored every autonomous science round zero whatever it found, so the two
+            # are counted apart -- never summed, for the same reason the two top-level
+            # counters are never summed.
+            "measured": is_accepted_measurement(r.get("validation")),
+            "closure_reason": (r.get("validation") or {}).get("closure_reason"),
+            "tool_rounds": (r.get("validation") or {}).get("tool_rounds"),
+            "observations_ok": (r.get("validation") or {}).get("observations_ok"),
         })
     return out
 
@@ -147,6 +158,8 @@ def report() -> dict:
     selected = [r for r in rounds if r["open_target"]]
     accepted = [r for r in rounds if r["accepted"]]
     sel_and_acc = [r for r in rounds if r["open_target"] and r["accepted"]]
+    measured = [r for r in rounds if r["measured"]]
+    sel_and_meas = [r for r in rounds if r["open_target"] and r["measured"]]
     return {
         "window_start": GOAL_START,
         "claude_progress": {"artifacts": len(claude), "commits": claude[:40]},
@@ -155,6 +168,9 @@ def report() -> dict:
             "self_selected_target": len(selected),
             "accepted_work": len(accepted),
             "selected_AND_accepted": len(sel_and_acc),
+            "accepted_measurement": len(measured),
+            "selected_AND_measured": len(sel_and_meas),
+            "closures": [r["closure_reason"] for r in rounds if r["closure_reason"]],
         },
         "contention": {"usable": usable, "refused": refused},
         # Deliberately absent: any ratio of the two. See the module docstring.
@@ -170,6 +186,11 @@ def _selftest() -> None:
          "checks": [{"kind": "test", "exit_code": 0}]}) is False, "read_only must not count"
     assert is_accepted_work(
         {"ok": True, "checks": [{"kind": "test", "exit_code": 0}]}) is True, "real pass must count"
+    # measurement is counted APART from mutation, and neither leaks into the other
+    assert is_accepted_measurement({"ok": True, "kind": "read_only", "observations_ok": 2}) is True
+    assert is_accepted_measurement({"ok": True, "kind": "read_only", "observations_ok": 0}) is False
+    assert is_accepted_measurement({"ok": True, "checks": [{"kind": "test", "exit_code": 0}]}) is False
+    assert is_accepted_work({"ok": True, "kind": "read_only", "observations_ok": 9}) is False
 
     # A contention entry without a guard reading is refused, never silently counted.
     import tempfile
@@ -214,8 +235,11 @@ if __name__ == "__main__":
     c, h, k = rep["claude_progress"], rep["hcli_autonomy"], rep["contention"]
     print(f"  window since {rep['window_start']}")
     print(f"  CLAUDE-PROGRESS   artifacts={c['artifacts']}")
-    print(f"  HCLI-AUTONOMY     rounds={h['rounds']}  self-selected={h['self_selected_target']}"
-          f"  accepted={h['accepted_work']}  BOTH={h['selected_AND_accepted']}")
+    print(f"  HCLI-AUTONOMY     rounds={h['rounds']}  self-selected={h['self_selected_target']}")
+    print(f"    mutation work    accepted={h['accepted_work']}  selected+accepted={h['selected_AND_accepted']}")
+    print(f"    measurement work accepted={h['accepted_measurement']}  selected+measured={h['selected_AND_measured']}")
+    if h["closures"]:
+        print(f"    tool loop closed: {', '.join(h['closures'])}")
     print(f"  CONTENTION        usable={len(k['usable'])}  refused={len(k['refused'])}")
     for e in k["usable"]:
         g = e["guard"]

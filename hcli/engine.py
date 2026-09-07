@@ -586,6 +586,30 @@ def is_accepted_work(validation: Any, result: Any = None) -> bool:
     )
 
 
+def is_accepted_measurement(validation: Any) -> bool:
+    """True for a round that MEASURED something, which is not the same as mutating.
+
+    `is_accepted_work` is the mutation gate and stays exactly as strict as it is: it
+    demands an applied mutation and a passing test, because five autonomous rounds once
+    returned answers claiming a function was "already present ... the test passes as
+    expected" when the name existed nowhere.
+
+    But the campaign also asks HCLI to be a scientist, and a scientist MEASURES. Under
+    the mutation gate alone a measurement WorkUnit is unscoreable by construction --
+    four autonomous science rounds ran and none of them could ever have been accepted,
+    whatever they found. This is the separate predicate, and it is deliberately NOT
+    reachable by a model claim: it requires observations the ENGINE produced by running
+    a tool, so the thing being trusted is tool output, not text.
+
+    A mutation validation is not a measurement; the two are counted apart on purpose.
+    """
+    if not isinstance(validation, dict) or validation.get("ok") is not True:
+        return False
+    if validation.get("kind") != "read_only":
+        return False
+    return int(validation.get("observations_ok") or 0) >= 1
+
+
 def validation_failure_message(validation: Any) -> str:
     """Say WHY deterministic validation failed.
 
@@ -1687,6 +1711,40 @@ class Engine:
     TOOL_FAILURE_TOLERANCE = int(os.environ.get("HCLI_TOOL_FAILURE_TOLERANCE", "1"))
 
     @staticmethod
+    def _answer_validation(observations, rounds: int, failed_rounds: int, closure):
+        """What an ANSWER's receipt should say, given what the round actually did.
+
+        This was four hardcoded fields -- ok, kind, evidence "none", accepted_work
+        False -- written on the answer path regardless of whether the round had made
+        ten successful tool calls or none at all. `evidence: "none"` is simply false
+        when the engine ran a tool and got output back, and it made every autonomous
+        science round indistinguishable from a fabricated completion in its own receipt.
+
+        `accepted_work` stays False here always: an answer is not a mutation and must
+        never pass the mutation gate. What changes is that the receipt now says what
+        happened, and WHY THE TOOL LOOP CLOSED -- four rounds ended closed and not one
+        could say which of the three closers fired.
+
+        Observations that only ever FAILED are still evidence "none": a round that got
+        errors back measured nothing.
+        """
+        obs = list(observations or [])
+        ok = [o for o in obs if isinstance(o, dict) and o.get("ok")]
+        failed = [o for o in obs if isinstance(o, dict) and not o.get("ok")]
+        return {
+            "ok": True,
+            "kind": "read_only",
+            "evidence": "tool_observations" if ok else "none",
+            "accepted_work": False,
+            "observations_ok": len(ok),
+            "observations_failed": len(failed),
+            "tools_used": sorted({str(o.get("tool")) for o in ok}),
+            "tool_rounds": int(rounds),
+            "failed_rounds": int(failed_rounds),
+            "closure_reason": closure,
+        }
+
+    @staticmethod
     def _tool_loop_closure(
         round_observations,
         total_observations: int,
@@ -2495,6 +2553,8 @@ class Engine:
             observations: List[Dict[str, Any]] = []
             conversation_history: List[Dict[str, Any]] = []
             failed_rounds = 0
+            closure_reason = None
+            tool_rounds = 0
             self._agentic_execution = True
             # An evidence-complete resident lane must enter the closed-turn budget
             # path on its FIRST call. HCLI_NO_TOOLS used to suppress the catalog
@@ -2550,6 +2610,7 @@ class Engine:
                         {"role": "assistant", "content": assistant_text}
                     )
                 round_observations = self._run_tool_calls(calls, goal_id)
+                tool_rounds += 1
                 observations.extend(round_observations)
                 conversation_history.append(
                     {
@@ -2574,6 +2635,7 @@ class Engine:
                     self.TOOL_FAILURE_TOLERANCE,
                 )
                 if closure is not None:
+                    closure_reason = closure
                     self._emit(
                         "tool_loop_closed",
                         {
@@ -2679,12 +2741,9 @@ class Engine:
                     goal=prompt,
                     result=result,
                     evidence=evidence,
-                    validation={
-                        "ok": True,
-                        "kind": "read_only",
-                        "evidence": "none",
-                        "accepted_work": False,
-                    },
+                    validation=self._answer_validation(
+                        observations, tool_rounds, failed_rounds, closure_reason
+                    ),
                     rolled_back=False,
                     started=started,
                 )
