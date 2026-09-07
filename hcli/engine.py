@@ -1670,6 +1670,54 @@ class Engine:
     # otherwise; raise it per run with HCLI_MAX_TOOL_OBSERVATIONS. The failed-call
     # and all-repeat closers below are untouched and still fire first.
     MAX_TOOL_OBSERVATIONS = int(os.environ.get("HCLI_MAX_TOOL_OBSERVATIONS", "1"))
+    # How many ROUNDS containing a failed call are forgiven before the catalog
+    # closes. It was effectively 0: any failed call ended the round.
+    #
+    # That is correct for a repair unit, where a path miss means the plan is
+    # confused. It is wrong for an exploration unit, which is told to CHOOSE ITS
+    # OWN TARGET and whose first move is necessarily a guess. The registry
+    # answers a wrong guess usefully -- lake.census on an unknown slug returns
+    # "... is not in receipts/future/modellake-index/catalog.json", which names
+    # the file to read next -- and the old rule threw that error away instead of
+    # handing it back. Three consecutive autonomous science rounds ended with
+    # tool_catalog_mode "none" and zero measurements this way.
+    #
+    # One forgiven round, not more: a model that cannot use the error it was just
+    # handed is exactly the confused plan the original closer was written for.
+    TOOL_FAILURE_TOLERANCE = int(os.environ.get("HCLI_TOOL_FAILURE_TOLERANCE", "1"))
+
+    @staticmethod
+    def _tool_loop_closure(
+        round_observations,
+        total_observations: int,
+        failed_rounds: int,
+        max_observations: int,
+        failure_tolerance: int,
+    ):
+        """Why the tool catalog should close now, or None to keep it open.
+
+        Pure, so the policy can be tested without a model, a resident or a
+        registry -- the previous version was an inline boolean nothing could
+        reach except by running a full round.
+
+        `failed_rounds` counts rounds containing a failure INCLUDING this one,
+        so tolerance 1 forgives the first and closes on the second, and
+        tolerance 0 restores the original any-failure rule exactly.
+        """
+        if not round_observations:
+            return None
+        failed = any(not item.get("ok") for item in round_observations)
+        # The budget is checked FIRST: forgiving a failure must not reopen the
+        # bound the budget exists to enforce.
+        if total_observations >= max_observations:
+            return f"observation_budget_{max_observations}"
+        if failed:
+            if failed_rounds > failure_tolerance:
+                return "failed_call"
+            return None
+        if all(item.get("repeat") for item in round_observations):
+            return "bounded_observation_round"
+        return None
     # Kept as an alias: external callers and tests referenced the old name for
     # the per-round cap, and silently changing what it means is worse than
     # carrying it.
@@ -2446,6 +2494,7 @@ class Engine:
             # fed back, bounded, until the model answers or the budget runs out.
             observations: List[Dict[str, Any]] = []
             conversation_history: List[Dict[str, Any]] = []
+            failed_rounds = 0
             self._agentic_execution = True
             # An evidence-complete resident lane must enter the closed-turn budget
             # path on its FIRST call. HCLI_NO_TOOLS used to suppress the catalog
@@ -2515,29 +2564,22 @@ class Engine:
                 # several minutes on a mixed success/failure loop. The post-loop
                 # block below still gives it one final no-tools call, so this
                 # break does not discard its remaining chance to act.
-                if round_observations and (
-                    any(not item.get("ok") for item in round_observations)
-                    or all(
-                        item.get("repeat") or not item.get("ok")
-                        for item in round_observations
-                    )
-                    or len(observations) >= self.MAX_TOOL_OBSERVATIONS
-                ):
+                if any(not item.get("ok") for item in round_observations):
+                    failed_rounds += 1
+                closure = self._tool_loop_closure(
+                    round_observations,
+                    len(observations),
+                    failed_rounds,
+                    self.MAX_TOOL_OBSERVATIONS,
+                    self.TOOL_FAILURE_TOLERANCE,
+                )
+                if closure is not None:
                     self._emit(
                         "tool_loop_closed",
                         {
                             "goal_id": goal_id,
-                            "reason": (
-                                "failed_call"
-                                if any(not item.get("ok") for item in round_observations)
-                                else (
-                                    f"observation_budget_{self.MAX_TOOL_OBSERVATIONS}"
-                                    if len(observations) >= self.MAX_TOOL_OBSERVATIONS
-                                    else "bounded_observation_round"
-                                    if len(observations) >= 1
-                                    else "repeated_or_failed"
-                                )
-                            ),
+                            "reason": closure,
+                            "failed_rounds": failed_rounds,
                             "observation_count": len(round_observations),
                             "successful": sum(
                                 bool(item.get("ok")) for item in round_observations

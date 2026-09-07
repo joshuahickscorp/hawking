@@ -45,10 +45,10 @@
   "Qwen--Qwen2.5-72B-Instruct@495f39366efe"
  ],
  "tally": {
-  "ANATOMY": 28,
+  "ANATOMY": 34,
   "REFUSED": 2,
   "GUARD_STOP": 0,
-  "n_rows": 30
+  "n_rows": 36
  },
  "rows": [
   {
@@ -7828,10 +7828,1504 @@
     "swapfiles_delta": 0,
     "peak_unknown_reason": null
    }
+  },
+  {
+   "slug": "RWKV--RWKV7-13.3B-20260805@64ffe5934178",
+   "gib": 24.7,
+   "family": "rwkv7",
+   "status": "ANATOMY",
+   "wall_s": 109.9,
+   "peak_rss_gib": 6.298,
+   "swapfile_delta": 0,
+   "organ_ordering": [
+    {
+     "organ": "receptance",
+     "deficit_pct": 27.29,
+     "stderr_pct": 0.0052,
+     "rank": 0
+    },
+    {
+     "organ": "output",
+     "deficit_pct": 23.19,
+     "stderr_pct": 0.0055,
+     "rank": 1
+    },
+    {
+     "organ": "att.key",
+     "deficit_pct": 22.92,
+     "stderr_pct": 0.0055,
+     "rank": 2
+    },
+    {
+     "organ": "att.value",
+     "deficit_pct": 22.25,
+     "stderr_pct": 0.0056,
+     "rank": 3
+    },
+    {
+     "organ": "ffn.key",
+     "deficit_pct": 13.62,
+     "stderr_pct": 0.0025,
+     "rank": 4
+    },
+    {
+     "organ": "ffn.value",
+     "deficit_pct": 9.57,
+     "stderr_pct": 0.0023,
+     "rank": 5
+    }
+   ],
+   "cross_layer": [
+    {
+     "organ": "att.key",
+     "deficit_pct": 0.212,
+     "verdict": "sharing is DEAD: 0.21% from a norm-matched null (n=61, noise floor for the old p/n rule is 0.9836) -- these rows are as independent as random vectors of the same norms",
+     "n": 61,
+     "d": 4400581,
+     "participation": 59.614,
+     "null_participation": 59.741,
+     "ratio_n": 0.9773,
+     "null_ratio_n": 0.9794,
+     "subsampled_features": 4400581
+    },
+    {
+     "organ": "att.value",
+     "deficit_pct": 0.519,
+     "verdict": "sharing is DEAD: 0.52% from a norm-matched null (n=61, noise floor for the old p/n rule is 0.9836) -- these rows are as independent as random vectors of the same norms",
+     "n": 61,
+     "d": 4400581,
+     "participation": 59.625,
+     "null_participation": 59.936,
+     "ratio_n": 0.9775,
+     "null_ratio_n": 0.9826,
+     "subsampled_features": 4400581
+    },
+    {
+     "organ": "ffn.key",
+     "deficit_pct": 1.406,
+     "verdict": "sharing is DEAD: 1.41% from a norm-matched null (n=61, noise floor for the old p/n rule is 0.9836) -- these rows are as independent as random vectors of the same norms",
+     "n": 61,
+     "d": 4400581,
+     "participation": 59.039,
+     "null_participation": 59.881,
+     "ratio_n": 0.9678,
+     "null_ratio_n": 0.9816,
+     "subsampled_features": 4400581
+    },
+    {
+     "organ": "ffn.value",
+     "deficit_pct": 0.529,
+     "verdict": "sharing is DEAD: 0.53% from a norm-matched null (n=61, noise floor for the old p/n rule is 0.9836) -- these rows are as independent as random vectors of the same norms",
+     "n": 61,
+     "d": 4400581,
+     "participation": 59.354,
+     "null_participation": 59.669,
+     "ratio_n": 0.973,
+     "null_ratio_n": 0.9782,
+     "subsampled_features": 4400581
+    },
+    {
+     "organ": "output",
+     "deficit_pct": 0.871,
+     "verdict": "sharing is DEAD: 0.87% from a norm-matched null (n=61, noise floor for the old p/n rule is 0.9836) -- these rows are as independent as random vectors of the same norms",
+     "n": 61,
+     "d": 4400581,
+     "participation": 59.391,
+     "null_participation": 59.913,
+     "ratio_n": 0.9736,
+     "null_ratio_n": 0.9822,
+     "subsampled_features": 4400581
+    },
+    {
+     "organ": "receptance",
+     "deficit_pct": 0.272,
+     "verdict": "sharing is DEAD: 0.27% from a norm-matched null (n=61, noise floor for the old p/n rule is 0.9836) -- these rows are as independent as random vectors of the same norms",
+     "n": 61,
+     "d": 4400581,
+     "participation": 59.524,
+     "null_participation": 59.686,
+     "ratio_n": 0.9758,
+     "null_ratio_n": 0.9785,
+     "subsampled_features": 4400581
+    }
+   ],
+   "refusal": null,
+   "expected_gb": 0.5,
+   "estimate": {
+    "expected_gb": 0.5,
+    "largest": {
+     "key": "rwkv7.blocks.0.ffn.key.weight",
+     "shape": [
+      16384,
+      4096
+     ],
+     "tensor_f32_gib": 0.25,
+     "null_f32_gib": 0.25
+    },
+    "unavailable": null,
+    "n_float_organs": 366
+   },
+   "guard": {
+    "free_gb": 59.42,
+    "compressor_gb": 0.45,
+    "swapfiles": 2,
+    "wired_gb": 16.85,
+    "state": "OK",
+    "reasons": [],
+    "residents": 0,
+    "resident_rss_gb": 0.0,
+    "expected_gb": 0.5,
+    "headroom_gb": 58.92,
+    "strictly_free_gb": 10.09,
+    "reclaimable_gb": 49.33
+   },
+   "hypotheses": [
+    "receptance is the most compressible organ by within-tensor deficit (27.29% below a same-shape random null at mid-depth); full organ ordering: receptance 27.29%, output 23.19%, att.key 22.92%, att.value 22.25%, ffn.key 13.62%, ffn.value 9.57%",
+    "within-tensor structure is ALIVE and strongly organ-dependent (mid-depth deficits 9.57%..27.29%) -- a constant LOWRANK_LIVE_BELOW would miss the spread",
+    "low-rank factoring PAYS (break-even arithmetic, separate from whether structure exists): receptance rank_90=1738 vs break-even 2048.0 (byte ratio 0.849, saves 15.1%); output rank_90=1797 vs break-even 2048.0 (byte ratio 0.877, saves 12.3%); att.key rank_90=1810 vs break-even 2048.0 (byte ratio 0.884, saves 11.6%); att.value rank_90=1817 vs break-even 2048.0 (byte ratio 0.887, saves 11.3%); ffn.key rank_90=2891 vs break-even 3276.8 (byte ratio 0.882, saves 11.8%); ffn.value rank_90=2928 vs break-even 3276.8 (byte ratio 0.894, saves 10.6%)",
+    "cross-layer sharing is DEAD against a norm-matched null, not a constant threshold: sharing is DEAD: 1.41% from a norm-matched null (n=61, noise floor for the old p/n rule is 0.9836) -- these rows are as independent as random vectors of the same norms (6/6 organs indistinguishable from noise; highest-deficit organ is ffn.key)"
+   ],
+   "n_layers": 61,
+   "organs": [
+    "att.key",
+    "att.value",
+    "ffn.key",
+    "ffn.value",
+    "output",
+    "receptance"
+   ],
+   "n_shards": 6,
+   "resource": {
+    "wall_s": 109.9,
+    "samples": 39,
+    "free_gb_start": 59.44,
+    "free_gb_end": 58.17,
+    "free_gb_low": 52.52,
+    "compressor_gb_start": 0.45,
+    "compressor_gb_peak": 0.45,
+    "resident_rss_gb_peak": 0.0,
+    "swapfiles_start": 2,
+    "swapfiles_end": 2,
+    "swapfiles_delta": 0,
+    "peak_unknown_reason": null
+   }
+  },
+  {
+   "slug": "microsoft--Phi-4-reasoning-plus@69baf8528e1b",
+   "gib": 27.3,
+   "family": "phi3",
+   "status": "ANATOMY",
+   "wall_s": 167.66,
+   "peak_rss_gib": 7.2,
+   "swapfile_delta": 0,
+   "organ_ordering": [
+    {
+     "organ": "qkv_proj",
+     "deficit_pct": 43.98,
+     "stderr_pct": 0.0012,
+     "rank": 0
+    },
+    {
+     "organ": "o_proj",
+     "deficit_pct": 27.82,
+     "stderr_pct": 0.0054,
+     "rank": 1
+    },
+    {
+     "organ": "gate_up_proj",
+     "deficit_pct": 14.59,
+     "stderr_pct": 0.0008,
+     "rank": 2
+    },
+    {
+     "organ": "down_proj",
+     "deficit_pct": 13.04,
+     "stderr_pct": 0.0021,
+     "rank": 3
+    }
+   ],
+   "cross_layer": [
+    {
+     "organ": "down_proj",
+     "deficit_pct": 0.0,
+     "verdict": "sharing is DEAD: 0.00% from a norm-matched null (n=40, noise floor for the old p/n rule is 0.975) -- these rows are as independent as random vectors of the same norms",
+     "n": 40,
+     "d": 6710886,
+     "participation": 38.952,
+     "null_participation": 38.952,
+     "ratio_n": 0.9738,
+     "null_ratio_n": 0.9738,
+     "subsampled_features": 6710886
+    },
+    {
+     "organ": "gate_up_proj",
+     "deficit_pct": 0.001,
+     "verdict": "sharing is DEAD: 0.00% from a norm-matched null (n=40, noise floor for the old p/n rule is 0.975) -- these rows are as independent as random vectors of the same norms",
+     "n": 40,
+     "d": 6710886,
+     "participation": 38.92,
+     "null_participation": 38.921,
+     "ratio_n": 0.973,
+     "null_ratio_n": 0.973,
+     "subsampled_features": 6710886
+    },
+    {
+     "organ": "o_proj",
+     "deficit_pct": 0.0,
+     "verdict": "sharing is DEAD: 0.00% from a norm-matched null (n=40, noise floor for the old p/n rule is 0.975) -- these rows are as independent as random vectors of the same norms",
+     "n": 40,
+     "d": 6710886,
+     "participation": 37.902,
+     "null_participation": 37.903,
+     "ratio_n": 0.9476,
+     "null_ratio_n": 0.9476,
+     "subsampled_features": 6710886
+    },
+    {
+     "organ": "qkv_proj",
+     "deficit_pct": 0.005,
+     "verdict": "sharing is DEAD: 0.01% from a norm-matched null (n=40, noise floor for the old p/n rule is 0.975) -- these rows are as independent as random vectors of the same norms",
+     "n": 40,
+     "d": 6710886,
+     "participation": 38.437,
+     "null_participation": 38.439,
+     "ratio_n": 0.9609,
+     "null_ratio_n": 0.961,
+     "subsampled_features": 6710886
+    }
+   ],
+   "refusal": null,
+   "expected_gb": 1.3671875,
+   "estimate": {
+    "expected_gb": 1.3671875,
+    "largest": {
+     "key": "model.layers.0.mlp.gate_up_proj.weight",
+     "shape": [
+      35840,
+      5120
+     ],
+     "tensor_f32_gib": 0.68359375,
+     "null_f32_gib": 0.68359375
+    },
+    "unavailable": null,
+    "n_float_organs": 160
+   },
+   "guard": {
+    "free_gb": 59.64,
+    "compressor_gb": 0.45,
+    "swapfiles": 2,
+    "wired_gb": 17.29,
+    "state": "OK",
+    "reasons": [],
+    "residents": 0,
+    "resident_rss_gb": 0.0,
+    "expected_gb": 1.3671875,
+    "headroom_gb": 58.27,
+    "strictly_free_gb": 9.64,
+    "reclaimable_gb": 50.0
+   },
+   "hypotheses": [
+    "qkv_proj is the most compressible organ by within-tensor deficit (43.98% below a same-shape random null at mid-depth); full organ ordering: qkv_proj 43.98%, o_proj 27.82%, gate_up_proj 14.59%, down_proj 13.04%",
+    "within-tensor structure is ALIVE and strongly organ-dependent (mid-depth deficits 13.04%..43.98%) -- a constant LOWRANK_LIVE_BELOW would miss the spread",
+    "low-rank factoring PAYS (break-even arithmetic, separate from whether structure exists): qkv_proj rank_90=2281 vs break-even 3072.0 (byte ratio 0.743, saves 25.8%); o_proj rank_90=2097 vs break-even 2560.0 (byte ratio 0.819, saves 18.1%); gate_up_proj rank_90=3784 vs break-even 4480.0 (byte ratio 0.845, saves 15.5%); down_proj rank_90=3547 vs break-even 3982.22 (byte ratio 0.891, saves 10.9%)",
+    "cross-layer sharing is DEAD against a norm-matched null, not a constant threshold: sharing is DEAD: 0.01% from a norm-matched null (n=40, noise floor for the old p/n rule is 0.975) -- these rows are as independent as random vectors of the same norms (4/4 organs indistinguishable from noise; highest-deficit organ is qkv_proj)"
+   ],
+   "n_layers": 40,
+   "organs": [
+    "down_proj",
+    "gate_up_proj",
+    "o_proj",
+    "qkv_proj"
+   ],
+   "n_shards": 6,
+   "resource": {
+    "wall_s": 167.66,
+    "samples": 36,
+    "free_gb_start": 59.6,
+    "free_gb_end": 55.84,
+    "free_gb_low": 52.65,
+    "compressor_gb_start": 0.45,
+    "compressor_gb_peak": 0.45,
+    "resident_rss_gb_peak": 0.0,
+    "swapfiles_start": 2,
+    "swapfiles_end": 2,
+    "swapfiles_delta": 0,
+    "peak_unknown_reason": null
+   }
+  },
+  {
+   "slug": "Qwen--Qwen3-14B@40c069824f42",
+   "gib": 27.5,
+   "family": "qwen3",
+   "status": "ANATOMY",
+   "wall_s": 158.02,
+   "peak_rss_gib": 7.026,
+   "swapfile_delta": 0,
+   "organ_ordering": [
+    {
+     "organ": "q_proj",
+     "deficit_pct": 39.97,
+     "stderr_pct": 0.0045,
+     "rank": 0
+    },
+    {
+     "organ": "k_proj",
+     "deficit_pct": 34.18,
+     "stderr_pct": 0.007,
+     "rank": 1
+    },
+    {
+     "organ": "o_proj",
+     "deficit_pct": 24.7,
+     "stderr_pct": 0.0056,
+     "rank": 2
+    },
+    {
+     "organ": "gate_proj",
+     "deficit_pct": 14.61,
+     "stderr_pct": 0.0024,
+     "rank": 3
+    },
+    {
+     "organ": "down_proj",
+     "deficit_pct": 7.51,
+     "stderr_pct": 0.002,
+     "rank": 4
+    },
+    {
+     "organ": "v_proj",
+     "deficit_pct": 7.07,
+     "stderr_pct": 0.0098,
+     "rank": 5
+    },
+    {
+     "organ": "up_proj",
+     "deficit_pct": 6.55,
+     "stderr_pct": 0.0026,
+     "rank": 6
+    }
+   ],
+   "cross_layer": [
+    {
+     "organ": "down_proj",
+     "deficit_pct": 0.0,
+     "verdict": "sharing is DEAD: 0.00% from a norm-matched null (n=40, noise floor for the old p/n rule is 0.975) -- these rows are as independent as random vectors of the same norms",
+     "n": 40,
+     "d": 6710886,
+     "participation": 38.142,
+     "null_participation": 38.142,
+     "ratio_n": 0.9535,
+     "null_ratio_n": 0.9536,
+     "subsampled_features": 6710886
+    },
+    {
+     "organ": "gate_proj",
+     "deficit_pct": 0.018,
+     "verdict": "sharing is DEAD: 0.02% from a norm-matched null (n=40, noise floor for the old p/n rule is 0.975) -- these rows are as independent as random vectors of the same norms",
+     "n": 40,
+     "d": 6710886,
+     "participation": 38.285,
+     "null_participation": 38.292,
+     "ratio_n": 0.9571,
+     "null_ratio_n": 0.9573,
+     "subsampled_features": 6710886
+    },
+    {
+     "organ": "k_proj",
+     "deficit_pct": 0.001,
+     "verdict": "sharing is DEAD: 0.00% from a norm-matched null (n=40, noise floor for the old p/n rule is 0.975) -- these rows are as independent as random vectors of the same norms",
+     "n": 40,
+     "d": 5242880,
+     "participation": 38.74,
+     "null_participation": 38.74,
+     "ratio_n": 0.9685,
+     "null_ratio_n": 0.9685
+    },
+    {
+     "organ": "o_proj",
+     "deficit_pct": 0.0,
+     "verdict": "sharing is DEAD: 0.00% from a norm-matched null (n=40, noise floor for the old p/n rule is 0.975) -- these rows are as independent as random vectors of the same norms",
+     "n": 40,
+     "d": 6710886,
+     "participation": 38.941,
+     "null_participation": 38.941,
+     "ratio_n": 0.9735,
+     "null_ratio_n": 0.9735,
+     "subsampled_features": 6710886
+    },
+    {
+     "organ": "q_proj",
+     "deficit_pct": 0.001,
+     "verdict": "sharing is DEAD: 0.00% from a norm-matched null (n=40, noise floor for the old p/n rule is 0.975) -- these rows are as independent as random vectors of the same norms",
+     "n": 40,
+     "d": 6710886,
+     "participation": 38.655,
+     "null_participation": 38.656,
+     "ratio_n": 0.9664,
+     "null_ratio_n": 0.9664,
+     "subsampled_features": 6710886
+    },
+    {
+     "organ": "up_proj",
+     "deficit_pct": 0.0,
+     "verdict": "sharing is DEAD: 0.00% from a norm-matched null (n=40, noise floor for the old p/n rule is 0.975) -- these rows are as independent as random vectors of the same norms",
+     "n": 40,
+     "d": 6710886,
+     "participation": 37.508,
+     "null_participation": 37.509,
+     "ratio_n": 0.9377,
+     "null_ratio_n": 0.9377,
+     "subsampled_features": 6710886
+    },
+    {
+     "organ": "v_proj",
+     "deficit_pct": -0.0,
+     "verdict": "sharing is DEAD: -0.00% from a norm-matched null (n=40, noise floor for the old p/n rule is 0.975) -- these rows are as independent as random vectors of the same norms",
+     "n": 40,
+     "d": 5242880,
+     "participation": 38.779,
+     "null_participation": 38.779,
+     "ratio_n": 0.9695,
+     "null_ratio_n": 0.9695
+    }
+   ],
+   "refusal": null,
+   "expected_gb": 0.6640625,
+   "estimate": {
+    "expected_gb": 0.6640625,
+    "largest": {
+     "key": "model.layers.0.mlp.down_proj.weight",
+     "shape": [
+      5120,
+      17408
+     ],
+     "tensor_f32_gib": 0.33203125,
+     "null_f32_gib": 0.33203125
+    },
+    "unavailable": null,
+    "n_float_organs": 280
+   },
+   "guard": {
+    "free_gb": 59.02,
+    "compressor_gb": 0.45,
+    "swapfiles": 2,
+    "wired_gb": 17.72,
+    "state": "OK",
+    "reasons": [],
+    "residents": 0,
+    "resident_rss_gb": 0.0,
+    "expected_gb": 0.6640625,
+    "headroom_gb": 58.36,
+    "strictly_free_gb": 7.05,
+    "reclaimable_gb": 51.97
+   },
+   "hypotheses": [
+    "q_proj is the most compressible organ by within-tensor deficit (39.97% below a same-shape random null at mid-depth); full organ ordering: q_proj 39.97%, k_proj 34.18%, o_proj 24.70%, gate_proj 14.61%, down_proj 7.51%, v_proj 7.07%, up_proj 6.55%",
+    "within-tensor structure is ALIVE and strongly organ-dependent (mid-depth deficits 6.55%..39.97%) -- a constant LOWRANK_LIVE_BELOW would miss the spread",
+    "low-rank factoring PAYS (break-even arithmetic, separate from whether structure exists): q_proj rank_90=1938 vs break-even 2560.0 (byte ratio 0.757, saves 24.3%); k_proj rank_90=591 vs break-even 853.33 (byte ratio 0.693, saves 30.7%); o_proj rank_90=2129 vs break-even 2560.0 (byte ratio 0.832, saves 16.8%); gate_proj rank_90=3518 vs break-even 3956.36 (byte ratio 0.889, saves 11.1%); down_proj rank_90=3651 vs break-even 3956.36 (byte ratio 0.923, saves 7.7%); v_proj rank_90=741 vs break-even 853.33 (byte ratio 0.868, saves 13.2%); up_proj rank_90=3648 vs break-even 3956.36 (byte ratio 0.922, saves 7.8%)",
+    "cross-layer sharing is DEAD against a norm-matched null, not a constant threshold: sharing is DEAD: 0.02% from a norm-matched null (n=40, noise floor for the old p/n rule is 0.975) -- these rows are as independent as random vectors of the same norms (7/7 organs indistinguishable from noise; highest-deficit organ is gate_proj)"
+   ],
+   "n_layers": 40,
+   "organs": [
+    "down_proj",
+    "gate_proj",
+    "k_proj",
+    "o_proj",
+    "q_proj",
+    "up_proj",
+    "v_proj"
+   ],
+   "n_shards": 8,
+   "resource": {
+    "wall_s": 158.02,
+    "samples": 37,
+    "free_gb_start": 58.99,
+    "free_gb_end": 57.21,
+    "free_gb_low": 49.73,
+    "compressor_gb_start": 0.45,
+    "compressor_gb_peak": 0.45,
+    "resident_rss_gb_peak": 0.0,
+    "swapfiles_start": 2,
+    "swapfiles_end": 2,
+    "swapfiles_delta": 0,
+    "peak_unknown_reason": null
+   }
+  },
+  {
+   "slug": "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+   "gib": 89.5,
+   "family": "mistral3",
+   "status": "ANATOMY",
+   "wall_s": 172.25,
+   "peak_rss_gib": 8.191,
+   "swapfile_delta": 0,
+   "organ_ordering": [
+    {
+     "organ": "self_attn.q_proj",
+     "deficit_pct": 48.1,
+     "stderr_pct": 0.0045,
+     "rank": 0
+    },
+    {
+     "organ": "attention.q_proj",
+     "deficit_pct": 40.38,
+     "stderr_pct": 0.0228,
+     "rank": 1
+    },
+    {
+     "organ": "self_attn.k_proj",
+     "deficit_pct": 39.03,
+     "stderr_pct": 0.0065,
+     "rank": 2
+    },
+    {
+     "organ": "attention.k_proj",
+     "deficit_pct": 37.9,
+     "stderr_pct": 0.0237,
+     "rank": 3
+    },
+    {
+     "organ": "attention.v_proj",
+     "deficit_pct": 29.3,
+     "stderr_pct": 0.027,
+     "rank": 4
+    },
+    {
+     "organ": "self_attn.o_proj",
+     "deficit_pct": 27.29,
+     "stderr_pct": 0.0045,
+     "rank": 5
+    },
+    {
+     "organ": "feed_forward.gate_proj",
+     "deficit_pct": 23.13,
+     "stderr_pct": 0.0062,
+     "rank": 6
+    },
+    {
+     "organ": "attention.o_proj",
+     "deficit_pct": 18.55,
+     "stderr_pct": 0.0311,
+     "rank": 7
+    },
+    {
+     "organ": "mlp.gate_proj",
+     "deficit_pct": 18.37,
+     "stderr_pct": 0.0009,
+     "rank": 8
+    },
+    {
+     "organ": "feed_forward.up_proj",
+     "deficit_pct": 16.0,
+     "stderr_pct": 0.0068,
+     "rank": 9
+    },
+    {
+     "organ": "feed_forward.down_proj",
+     "deficit_pct": 15.86,
+     "stderr_pct": 0.012,
+     "rank": 10
+    },
+    {
+     "organ": "mlp.down_proj",
+     "deficit_pct": 10.29,
+     "stderr_pct": 0.0015,
+     "rank": 11
+    },
+    {
+     "organ": "mlp.up_proj",
+     "deficit_pct": 8.09,
+     "stderr_pct": 0.001,
+     "rank": 12
+    },
+    {
+     "organ": "self_attn.v_proj",
+     "deficit_pct": 7.41,
+     "stderr_pct": 0.0098,
+     "rank": 13
+    }
+   ],
+   "cross_layer": [
+    {
+     "organ": "attention.k_proj",
+     "deficit_pct": -0.001,
+     "verdict": "sharing is DEAD: -0.00% from a norm-matched null (n=24, noise floor for the old p/n rule is 0.9583) -- these rows are as independent as random vectors of the same norms",
+     "n": 24,
+     "d": 1048576,
+     "participation": 22.766,
+     "null_participation": 22.766,
+     "ratio_n": 0.9486,
+     "null_ratio_n": 0.9486
+    },
+    {
+     "organ": "attention.o_proj",
+     "deficit_pct": 0.006,
+     "verdict": "sharing is DEAD: 0.01% from a norm-matched null (n=24, noise floor for the old p/n rule is 0.9583) -- these rows are as independent as random vectors of the same norms",
+     "n": 24,
+     "d": 1048576,
+     "participation": 20.551,
+     "null_participation": 20.552,
+     "ratio_n": 0.8563,
+     "null_ratio_n": 0.8563
+    },
+    {
+     "organ": "attention.q_proj",
+     "deficit_pct": 0.001,
+     "verdict": "sharing is DEAD: 0.00% from a norm-matched null (n=24, noise floor for the old p/n rule is 0.9583) -- these rows are as independent as random vectors of the same norms",
+     "n": 24,
+     "d": 1048576,
+     "participation": 22.732,
+     "null_participation": 22.732,
+     "ratio_n": 0.9472,
+     "null_ratio_n": 0.9472
+    },
+    {
+     "organ": "attention.v_proj",
+     "deficit_pct": 0.0,
+     "verdict": "sharing is DEAD: 0.00% from a norm-matched null (n=24, noise floor for the old p/n rule is 0.9583) -- these rows are as independent as random vectors of the same norms",
+     "n": 24,
+     "d": 1048576,
+     "participation": 21.15,
+     "null_participation": 21.15,
+     "ratio_n": 0.8812,
+     "null_ratio_n": 0.8812
+    },
+    {
+     "organ": "feed_forward.down_proj",
+     "deficit_pct": -0.002,
+     "verdict": "sharing is DEAD: -0.00% from a norm-matched null (n=24, noise floor for the old p/n rule is 0.9583) -- these rows are as independent as random vectors of the same norms",
+     "n": 24,
+     "d": 4194304,
+     "participation": 22.69,
+     "null_participation": 22.69,
+     "ratio_n": 0.9454,
+     "null_ratio_n": 0.9454
+    },
+    {
+     "organ": "feed_forward.gate_proj",
+     "deficit_pct": -0.053,
+     "verdict": "sharing is DEAD: -0.05% from a norm-matched null (n=24, noise floor for the old p/n rule is 0.9583) -- these rows are as independent as random vectors of the same norms",
+     "n": 24,
+     "d": 4194304,
+     "participation": 22.735,
+     "null_participation": 22.723,
+     "ratio_n": 0.9473,
+     "null_ratio_n": 0.9468
+    },
+    {
+     "organ": "feed_forward.up_proj",
+     "deficit_pct": -0.002,
+     "verdict": "sharing is DEAD: -0.00% from a norm-matched null (n=24, noise floor for the old p/n rule is 0.9583) -- these rows are as independent as random vectors of the same norms",
+     "n": 24,
+     "d": 4194304,
+     "participation": 22.678,
+     "null_participation": 22.678,
+     "ratio_n": 0.9449,
+     "null_ratio_n": 0.9449
+    },
+    {
+     "organ": "mlp.down_proj",
+     "deficit_pct": 0.0,
+     "verdict": "sharing is DEAD: 0.00% from a norm-matched null (n=40, noise floor for the old p/n rule is 0.975) -- these rows are as independent as random vectors of the same norms",
+     "n": 40,
+     "d": 6710886,
+     "participation": 38.859,
+     "null_participation": 38.859,
+     "ratio_n": 0.9715,
+     "null_ratio_n": 0.9715,
+     "subsampled_features": 6710886
+    },
+    {
+     "organ": "mlp.gate_proj",
+     "deficit_pct": 0.004,
+     "verdict": "sharing is DEAD: 0.00% from a norm-matched null (n=40, noise floor for the old p/n rule is 0.975) -- these rows are as independent as random vectors of the same norms",
+     "n": 40,
+     "d": 6710886,
+     "participation": 38.736,
+     "null_participation": 38.737,
+     "ratio_n": 0.9684,
+     "null_ratio_n": 0.9684,
+     "subsampled_features": 6710886
+    },
+    {
+     "organ": "mlp.up_proj",
+     "deficit_pct": -0.001,
+     "verdict": "sharing is DEAD: -0.00% from a norm-matched null (n=40, noise floor for the old p/n rule is 0.975) -- these rows are as independent as random vectors of the same norms",
+     "n": 40,
+     "d": 6710886,
+     "participation": 38.69,
+     "null_participation": 38.689,
+     "ratio_n": 0.9672,
+     "null_ratio_n": 0.9672,
+     "subsampled_features": 6710886
+    },
+    {
+     "organ": "self_attn.k_proj",
+     "deficit_pct": 0.004,
+     "verdict": "sharing is DEAD: 0.00% from a norm-matched null (n=40, noise floor for the old p/n rule is 0.975) -- these rows are as independent as random vectors of the same norms",
+     "n": 40,
+     "d": 5242880,
+     "participation": 37.433,
+     "null_participation": 37.434,
+     "ratio_n": 0.9358,
+     "null_ratio_n": 0.9359
+    },
+    {
+     "organ": "self_attn.o_proj",
+     "deficit_pct": 0.0,
+     "verdict": "sharing is DEAD: 0.00% from a norm-matched null (n=40, noise floor for the old p/n rule is 0.975) -- these rows are as independent as random vectors of the same norms",
+     "n": 40,
+     "d": 6710886,
+     "participation": 37.144,
+     "null_participation": 37.144,
+     "ratio_n": 0.9286,
+     "null_ratio_n": 0.9286,
+     "subsampled_features": 6710886
+    },
+    {
+     "organ": "self_attn.q_proj",
+     "deficit_pct": 0.003,
+     "verdict": "sharing is DEAD: 0.00% from a norm-matched null (n=40, noise floor for the old p/n rule is 0.975) -- these rows are as independent as random vectors of the same norms",
+     "n": 40,
+     "d": 6710886,
+     "participation": 38.521,
+     "null_participation": 38.522,
+     "ratio_n": 0.963,
+     "null_ratio_n": 0.9631,
+     "subsampled_features": 6710886
+    },
+    {
+     "organ": "self_attn.v_proj",
+     "deficit_pct": -0.001,
+     "verdict": "sharing is DEAD: -0.00% from a norm-matched null (n=40, noise floor for the old p/n rule is 0.975) -- these rows are as independent as random vectors of the same norms",
+     "n": 40,
+     "d": 5242880,
+     "participation": 34.545,
+     "null_participation": 34.544,
+     "ratio_n": 0.8636,
+     "null_ratio_n": 0.8636
+    }
+   ],
+   "refusal": null,
+   "expected_gb": 1.25,
+   "estimate": {
+    "expected_gb": 1.25,
+    "largest": {
+     "key": "language_model.model.layers.0.mlp.down_proj.weight",
+     "shape": [
+      5120,
+      32768
+     ],
+     "tensor_f32_gib": 0.625,
+     "null_f32_gib": 0.625
+    },
+    "unavailable": null,
+    "n_float_organs": 448
+   },
+   "guard": {
+    "free_gb": 60.22,
+    "compressor_gb": 0.45,
+    "swapfiles": 2,
+    "wired_gb": 5.3,
+    "state": "OK",
+    "reasons": [],
+    "residents": 0,
+    "resident_rss_gb": 0.0,
+    "expected_gb": 1.25,
+    "headroom_gb": 58.97,
+    "strictly_free_gb": 13.2,
+    "reclaimable_gb": 47.02
+   },
+   "hypotheses": [
+    "self_attn.q_proj is the most compressible organ by within-tensor deficit (48.10% below a same-shape random null at mid-depth); full organ ordering: self_attn.q_proj 48.10%, attention.q_proj 40.38%, self_attn.k_proj 39.03%, attention.k_proj 37.90%, attention.v_proj 29.30%, self_attn.o_proj 27.29%, feed_forward.gate_proj 23.13%, attention.o_proj 18.55%, mlp.gate_proj 18.37%, feed_forward.up_proj 16.00%, feed_forward.down_proj 15.86%, mlp.down_proj 10.29%, mlp.up_proj 8.09%, self_attn.v_proj 7.41%",
+    "within-tensor structure is ALIVE and strongly organ-dependent (mid-depth deficits 7.41%..48.10%) -- a constant LOWRANK_LIVE_BELOW would miss the spread",
+    "low-rank factoring PAYS (break-even arithmetic, separate from whether structure exists): self_attn.q_proj rank_90=1509 vs break-even 2275.56 (byte ratio 0.663, saves 33.7%); attention.q_proj rank_90=376 vs break-even 512.0 (byte ratio 0.734, saves 26.6%); self_attn.k_proj rank_90=522 vs break-even 853.33 (byte ratio 0.612, saves 38.8%); attention.k_proj rank_90=380 vs break-even 512.0 (byte ratio 0.742, saves 25.8%); attention.v_proj rank_90=398 vs break-even 512.0 (byte ratio 0.777, saves 22.3%); self_attn.o_proj rank_90=1831 vs break-even 2275.56 (byte ratio 0.805, saves 19.5%); feed_forward.gate_proj rank_90=661 vs break-even 819.2 (byte ratio 0.807, saves 19.3%); attention.o_proj rank_90=438 vs break-even 512.0 (byte ratio 0.856, saves 14.4%); mlp.gate_proj rank_90=3736 vs break-even 4428.11 (byte ratio 0.844, saves 15.6%); feed_forward.up_proj rank_90=680 vs break-even 819.2 (byte ratio 0.830, saves 17.0%); feed_forward.down_proj rank_90=698 vs break-even 819.2 (byte ratio 0.852, saves 14.8%); mlp.down_proj rank_90=3818 vs break-even 4428.11 (byte ratio 0.862, saves 13.8%); mlp.up_proj rank_90=3879 vs break-even 4428.11 (byte ratio 0.876, saves 12.4%); self_attn.v_proj rank_90=733 vs break-even 853.33 (byte ratio 0.859, saves 14.1%)",
+    "cross-layer sharing is DEAD against a norm-matched null, not a constant threshold: sharing is DEAD: 0.01% from a norm-matched null (n=24, noise floor for the old p/n rule is 0.9583) -- these rows are as independent as random vectors of the same norms (14/14 organs indistinguishable from noise; highest-deficit organ is attention.o_proj)"
+   ],
+   "n_layers": 40,
+   "organs": [
+    "attention.k_proj",
+    "attention.o_proj",
+    "attention.q_proj",
+    "attention.v_proj",
+    "feed_forward.down_proj",
+    "feed_forward.gate_proj",
+    "feed_forward.up_proj",
+    "mlp.down_proj",
+    "mlp.gate_proj",
+    "mlp.up_proj",
+    "self_attn.k_proj",
+    "self_attn.o_proj",
+    "self_attn.q_proj",
+    "self_attn.v_proj"
+   ],
+   "n_shards": 10,
+   "resource": {
+    "wall_s": 172.25,
+    "samples": 44,
+    "free_gb_start": 59.47,
+    "free_gb_end": 55.31,
+    "free_gb_low": 51.96,
+    "compressor_gb_start": 0.45,
+    "compressor_gb_peak": 0.45,
+    "resident_rss_gb_peak": 0.0,
+    "swapfiles_start": 2,
+    "swapfiles_end": 2,
+    "swapfiles_delta": 0,
+    "peak_unknown_reason": null
+   }
+  },
+  {
+   "slug": "Wan-AI--Wan2.2-T2V-A14B@c8c270b13ee0",
+   "gib": 117.5,
+   "family": "UNKNOWN",
+   "status": "ANATOMY",
+   "wall_s": 544.79,
+   "peak_rss_gib": 6.527,
+   "swapfile_delta": 0,
+   "organ_ordering": [
+    {
+     "organ": "high_noise_model.self_attn.k",
+     "deficit_pct": 42.08,
+     "stderr_pct": 0.0043,
+     "rank": 0
+    },
+    {
+     "organ": "high_noise_model.self_attn.q",
+     "deficit_pct": 36.56,
+     "stderr_pct": 0.0047,
+     "rank": 1
+    },
+    {
+     "organ": "low_noise_model.self_attn.k",
+     "deficit_pct": 35.88,
+     "stderr_pct": 0.0048,
+     "rank": 2
+    },
+    {
+     "organ": "low_noise_model.self_attn.q",
+     "deficit_pct": 30.87,
+     "stderr_pct": 0.0052,
+     "rank": 3
+    },
+    {
+     "organ": "high_noise_model.ffn.0",
+     "deficit_pct": 27.73,
+     "stderr_pct": 0.0015,
+     "rank": 4
+    },
+    {
+     "organ": "high_noise_model.cross_attn.q",
+     "deficit_pct": 25.31,
+     "stderr_pct": 0.0056,
+     "rank": 5
+    },
+    {
+     "organ": "low_noise_model.ffn.0",
+     "deficit_pct": 25.27,
+     "stderr_pct": 0.0016,
+     "rank": 6
+    },
+    {
+     "organ": "high_noise_model.self_attn.v",
+     "deficit_pct": 24.06,
+     "stderr_pct": 0.0057,
+     "rank": 7
+    },
+    {
+     "organ": "high_noise_model.cross_attn.o",
+     "deficit_pct": 22.3,
+     "stderr_pct": 0.0058,
+     "rank": 8
+    },
+    {
+     "organ": "high_noise_model.ffn.2",
+     "deficit_pct": 21.47,
+     "stderr_pct": 0.0013,
+     "rank": 9
+    },
+    {
+     "organ": "low_noise_model.self_attn.v",
+     "deficit_pct": 20.13,
+     "stderr_pct": 0.006,
+     "rank": 10
+    },
+    {
+     "organ": "high_noise_model.cross_attn.k",
+     "deficit_pct": 19.58,
+     "stderr_pct": 0.006,
+     "rank": 11
+    },
+    {
+     "organ": "high_noise_model.self_attn.o",
+     "deficit_pct": 18.95,
+     "stderr_pct": 0.006,
+     "rank": 12
+    },
+    {
+     "organ": "low_noise_model.ffn.2",
+     "deficit_pct": 17.54,
+     "stderr_pct": 0.0013,
+     "rank": 13
+    },
+    {
+     "organ": "low_noise_model.self_attn.o",
+     "deficit_pct": 15.5,
+     "stderr_pct": 0.0063,
+     "rank": 14
+    },
+    {
+     "organ": "low_noise_model.cross_attn.o",
+     "deficit_pct": 11.33,
+     "stderr_pct": 0.0066,
+     "rank": 15
+    },
+    {
+     "organ": "low_noise_model.cross_attn.q",
+     "deficit_pct": 10.92,
+     "stderr_pct": 0.0066,
+     "rank": 16
+    },
+    {
+     "organ": "high_noise_model.cross_attn.v",
+     "deficit_pct": 9.69,
+     "stderr_pct": 0.0067,
+     "rank": 17
+    },
+    {
+     "organ": "low_noise_model.cross_attn.k",
+     "deficit_pct": 9.64,
+     "stderr_pct": 0.0067,
+     "rank": 18
+    },
+    {
+     "organ": "low_noise_model.cross_attn.v",
+     "deficit_pct": 5.51,
+     "stderr_pct": 0.007,
+     "rank": 19
+    }
+   ],
+   "cross_layer": [
+    {
+     "organ": "high_noise_model.cross_attn.k",
+     "deficit_pct": -0.003,
+     "verdict": "sharing is DEAD: -0.00% from a norm-matched null (n=40, noise floor for the old p/n rule is 0.975) -- these rows are as independent as random vectors of the same norms",
+     "n": 40,
+     "d": 6710886,
+     "participation": 36.464,
+     "null_participation": 36.463,
+     "ratio_n": 0.9116,
+     "null_ratio_n": 0.9116,
+     "subsampled_features": 6710886
+    },
+    {
+     "organ": "high_noise_model.cross_attn.o",
+     "deficit_pct": 0.001,
+     "verdict": "sharing is DEAD: 0.00% from a norm-matched null (n=40, noise floor for the old p/n rule is 0.975) -- these rows are as independent as random vectors of the same norms",
+     "n": 40,
+     "d": 6710886,
+     "participation": 36.111,
+     "null_participation": 36.111,
+     "ratio_n": 0.9028,
+     "null_ratio_n": 0.9028,
+     "subsampled_features": 6710886
+    },
+    {
+     "organ": "high_noise_model.cross_attn.q",
+     "deficit_pct": 0.0,
+     "verdict": "sharing is DEAD: 0.00% from a norm-matched null (n=40, noise floor for the old p/n rule is 0.975) -- these rows are as independent as random vectors of the same norms",
+     "n": 40,
+     "d": 6710886,
+     "participation": 35.991,
+     "null_participation": 35.991,
+     "ratio_n": 0.8998,
+     "null_ratio_n": 0.8998,
+     "subsampled_features": 6710886
+    },
+    {
+     "organ": "high_noise_model.cross_attn.v",
+     "deficit_pct": 0.0,
+     "verdict": "sharing is DEAD: 0.00% from a norm-matched null (n=40, noise floor for the old p/n rule is 0.975) -- these rows are as independent as random vectors of the same norms",
+     "n": 40,
+     "d": 6710886,
+     "participation": 36.855,
+     "null_participation": 36.856,
+     "ratio_n": 0.9214,
+     "null_ratio_n": 0.9214,
+     "subsampled_features": 6710886
+    },
+    {
+     "organ": "high_noise_model.ffn.0",
+     "deficit_pct": -0.033,
+     "verdict": "sharing is DEAD: -0.03% from a norm-matched null (n=40, noise floor for the old p/n rule is 0.975) -- these rows are as independent as random vectors of the same norms",
+     "n": 40,
+     "d": 6710886,
+     "participation": 37.831,
+     "null_participation": 37.818,
+     "ratio_n": 0.9458,
+     "null_ratio_n": 0.9455,
+     "subsampled_features": 6710886
+    },
+    {
+     "organ": "high_noise_model.ffn.2",
+     "deficit_pct": -0.0,
+     "verdict": "sharing is DEAD: -0.00% from a norm-matched null (n=40, noise floor for the old p/n rule is 0.975) -- these rows are as independent as random vectors of the same norms",
+     "n": 40,
+     "d": 6710886,
+     "participation": 37.712,
+     "null_participation": 37.712,
+     "ratio_n": 0.9428,
+     "null_ratio_n": 0.9428,
+     "subsampled_features": 6710886
+    },
+    {
+     "organ": "high_noise_model.self_attn.k",
+     "deficit_pct": 0.001,
+     "verdict": "sharing is DEAD: 0.00% from a norm-matched null (n=40, noise floor for the old p/n rule is 0.975) -- these rows are as independent as random vectors of the same norms",
+     "n": 40,
+     "d": 6710886,
+     "participation": 37.597,
+     "null_participation": 37.597,
+     "ratio_n": 0.9399,
+     "null_ratio_n": 0.9399,
+     "subsampled_features": 6710886
+    },
+    {
+     "organ": "high_noise_model.self_attn.o",
+     "deficit_pct": 0.0,
+     "verdict": "sharing is DEAD: 0.00% from a norm-matched null (n=40, noise floor for the old p/n rule is 0.975) -- these rows are as independent as random vectors of the same norms",
+     "n": 40,
+     "d": 6710886,
+     "participation": 38.358,
+     "null_participation": 38.358,
+     "ratio_n": 0.9589,
+     "null_ratio_n": 0.9589,
+     "subsampled_features": 6710886
+    },
+    {
+     "organ": "high_noise_model.self_attn.q",
+     "deficit_pct": -0.001,
+     "verdict": "sharing is DEAD: -0.00% from a norm-matched null (n=40, noise floor for the old p/n rule is 0.975) -- these rows are as independent as random vectors of the same norms",
+     "n": 40,
+     "d": 6710886,
+     "participation": 37.606,
+     "null_participation": 37.606,
+     "ratio_n": 0.9402,
+     "null_ratio_n": 0.9401,
+     "subsampled_features": 6710886
+    },
+    {
+     "organ": "high_noise_model.self_attn.v",
+     "deficit_pct": -0.0,
+     "verdict": "sharing is DEAD: -0.00% from a norm-matched null (n=40, noise floor for the old p/n rule is 0.975) -- these rows are as independent as random vectors of the same norms",
+     "n": 40,
+     "d": 6710886,
+     "participation": 38.302,
+     "null_participation": 38.302,
+     "ratio_n": 0.9575,
+     "null_ratio_n": 0.9575,
+     "subsampled_features": 6710886
+    },
+    {
+     "organ": "low_noise_model.cross_attn.k",
+     "deficit_pct": -0.002,
+     "verdict": "sharing is DEAD: -0.00% from a norm-matched null (n=40, noise floor for the old p/n rule is 0.975) -- these rows are as independent as random vectors of the same norms",
+     "n": 40,
+     "d": 6710886,
+     "participation": 37.913,
+     "null_participation": 37.912,
+     "ratio_n": 0.9478,
+     "null_ratio_n": 0.9478,
+     "subsampled_features": 6710886
+    },
+    {
+     "organ": "low_noise_model.cross_attn.o",
+     "deficit_pct": -0.0,
+     "verdict": "sharing is DEAD: -0.00% from a norm-matched null (n=40, noise floor for the old p/n rule is 0.975) -- these rows are as independent as random vectors of the same norms",
+     "n": 40,
+     "d": 6710886,
+     "participation": 37.683,
+     "null_participation": 37.683,
+     "ratio_n": 0.9421,
+     "null_ratio_n": 0.9421,
+     "subsampled_features": 6710886
+    },
+    {
+     "organ": "low_noise_model.cross_attn.q",
+     "deficit_pct": -0.0,
+     "verdict": "sharing is DEAD: -0.00% from a norm-matched null (n=40, noise floor for the old p/n rule is 0.975) -- these rows are as independent as random vectors of the same norms",
+     "n": 40,
+     "d": 6710886,
+     "participation": 37.533,
+     "null_participation": 37.533,
+     "ratio_n": 0.9383,
+     "null_ratio_n": 0.9383,
+     "subsampled_features": 6710886
+    },
+    {
+     "organ": "low_noise_model.cross_attn.v",
+     "deficit_pct": 0.001,
+     "verdict": "sharing is DEAD: 0.00% from a norm-matched null (n=40, noise floor for the old p/n rule is 0.975) -- these rows are as independent as random vectors of the same norms",
+     "n": 40,
+     "d": 6710886,
+     "participation": 38.171,
+     "null_participation": 38.171,
+     "ratio_n": 0.9543,
+     "null_ratio_n": 0.9543,
+     "subsampled_features": 6710886
+    },
+    {
+     "organ": "low_noise_model.ffn.0",
+     "deficit_pct": -0.039,
+     "verdict": "sharing is DEAD: -0.04% from a norm-matched null (n=40, noise floor for the old p/n rule is 0.975) -- these rows are as independent as random vectors of the same norms",
+     "n": 40,
+     "d": 6710886,
+     "participation": 37.975,
+     "null_participation": 37.96,
+     "ratio_n": 0.9494,
+     "null_ratio_n": 0.949,
+     "subsampled_features": 6710886
+    },
+    {
+     "organ": "low_noise_model.ffn.2",
+     "deficit_pct": -0.001,
+     "verdict": "sharing is DEAD: -0.00% from a norm-matched null (n=40, noise floor for the old p/n rule is 0.975) -- these rows are as independent as random vectors of the same norms",
+     "n": 40,
+     "d": 6710886,
+     "participation": 38.179,
+     "null_participation": 38.179,
+     "ratio_n": 0.9545,
+     "null_ratio_n": 0.9545,
+     "subsampled_features": 6710886
+    },
+    {
+     "organ": "low_noise_model.self_attn.k",
+     "deficit_pct": 0.001,
+     "verdict": "sharing is DEAD: 0.00% from a norm-matched null (n=40, noise floor for the old p/n rule is 0.975) -- these rows are as independent as random vectors of the same norms",
+     "n": 40,
+     "d": 6710886,
+     "participation": 37.99,
+     "null_participation": 37.99,
+     "ratio_n": 0.9497,
+     "null_ratio_n": 0.9498,
+     "subsampled_features": 6710886
+    },
+    {
+     "organ": "low_noise_model.self_attn.o",
+     "deficit_pct": -0.0,
+     "verdict": "sharing is DEAD: -0.00% from a norm-matched null (n=40, noise floor for the old p/n rule is 0.975) -- these rows are as independent as random vectors of the same norms",
+     "n": 40,
+     "d": 6710886,
+     "participation": 38.581,
+     "null_participation": 38.581,
+     "ratio_n": 0.9645,
+     "null_ratio_n": 0.9645,
+     "subsampled_features": 6710886
+    },
+    {
+     "organ": "low_noise_model.self_attn.q",
+     "deficit_pct": -0.0,
+     "verdict": "sharing is DEAD: -0.00% from a norm-matched null (n=40, noise floor for the old p/n rule is 0.975) -- these rows are as independent as random vectors of the same norms",
+     "n": 40,
+     "d": 6710886,
+     "participation": 38.014,
+     "null_participation": 38.014,
+     "ratio_n": 0.9504,
+     "null_ratio_n": 0.9504,
+     "subsampled_features": 6710886
+    },
+    {
+     "organ": "low_noise_model.self_attn.v",
+     "deficit_pct": -0.0,
+     "verdict": "sharing is DEAD: -0.00% from a norm-matched null (n=40, noise floor for the old p/n rule is 0.975) -- these rows are as independent as random vectors of the same norms",
+     "n": 40,
+     "d": 6710886,
+     "participation": 38.434,
+     "null_participation": 38.433,
+     "ratio_n": 0.9608,
+     "null_ratio_n": 0.9608,
+     "subsampled_features": 6710886
+    }
+   ],
+   "refusal": null,
+   "expected_gb": 0.52734375,
+   "estimate": {
+    "expected_gb": 0.52734375,
+    "largest": {
+     "key": "blocks.0.ffn.0.weight",
+     "shape": [
+      13824,
+      5120
+     ],
+     "tensor_f32_gib": 0.263671875,
+     "null_f32_gib": 0.263671875
+    },
+    "unavailable": null,
+    "n_float_organs": 800
+   },
+   "guard": {
+    "free_gb": 58.03,
+    "compressor_gb": 0.45,
+    "swapfiles": 2,
+    "wired_gb": 17.71,
+    "state": "OK",
+    "reasons": [],
+    "residents": 0,
+    "resident_rss_gb": 0.0,
+    "expected_gb": 0.52734375,
+    "headroom_gb": 57.51,
+    "strictly_free_gb": 17.99,
+    "reclaimable_gb": 40.04
+   },
+   "hypotheses": [
+    "high_noise_model.self_attn.k is the most compressible organ by within-tensor deficit (42.08% below a same-shape random null at mid-depth); full organ ordering: high_noise_model.self_attn.k 42.08%, high_noise_model.self_attn.q 36.56%, low_noise_model.self_attn.k 35.88%, low_noise_model.self_attn.q 30.87%, high_noise_model.ffn.0 27.73%, high_noise_model.cross_attn.q 25.31%, low_noise_model.ffn.0 25.27%, high_noise_model.self_attn.v 24.06%, high_noise_model.cross_attn.o 22.30%, high_noise_model.ffn.2 21.47%, low_noise_model.self_attn.v 20.13%, high_noise_model.cross_attn.k 19.58%, high_noise_model.self_attn.o 18.95%, low_noise_model.ffn.2 17.54%, low_noise_model.self_attn.o 15.50%, low_noise_model.cross_attn.o 11.33%, low_noise_model.cross_attn.q 10.92%, high_noise_model.cross_attn.v 9.69%, low_noise_model.cross_attn.k 9.64%, low_noise_model.cross_attn.v 5.51%",
+    "within-tensor structure is ALIVE and strongly organ-dependent (mid-depth deficits 5.51%..42.08%) -- a constant LOWRANK_LIVE_BELOW would miss the spread",
+    "low-rank factoring PAYS (break-even arithmetic, separate from whether structure exists): high_noise_model.self_attn.k rank_90=2102 vs break-even 2560.0 (byte ratio 0.821, saves 17.9%); high_noise_model.self_attn.q rank_90=2150 vs break-even 2560.0 (byte ratio 0.840, saves 16.0%); low_noise_model.self_attn.k rank_90=2189 vs break-even 2560.0 (byte ratio 0.855, saves 14.5%); low_noise_model.self_attn.q rank_90=2238 vs break-even 2560.0 (byte ratio 0.874, saves 12.6%); high_noise_model.ffn.0 rank_90=3115 vs break-even 3736.22 (byte ratio 0.834, saves 16.6%); high_noise_model.cross_attn.q rank_90=2423 vs break-even 2560.0 (byte ratio 0.947, saves 5.3%); low_noise_model.ffn.0 rank_90=3156 vs break-even 3736.22 (byte ratio 0.845, saves 15.5%); high_noise_model.self_attn.v rank_90=2266 vs break-even 2560.0 (byte ratio 0.885, saves 11.5%); high_noise_model.cross_attn.o rank_90=2430 vs break-even 2560.0 (byte ratio 0.949, saves 5.1%); high_noise_model.ffn.2 rank_90=3168 vs break-even 3736.22 (byte ratio 0.848, saves 15.2%); low_noise_model.self_attn.v rank_90=2336 vs break-even 2560.0 (byte ratio 0.912, saves 8.8%); high_noise_model.cross_attn.k rank_90=2479 vs break-even 2560.0 (byte ratio 0.968, saves 3.2%); high_noise_model.self_attn.o rank_90=2302 vs break-even 2560.0 (byte ratio 0.899, saves 10.1%); low_noise_model.ffn.2 rank_90=3286 vs break-even 3736.22 (byte ratio 0.879, saves 12.1%); low_noise_model.self_attn.o rank_90=2373 vs break-even 2560.0 (byte ratio 0.927, saves 7.3%); low_noise_model.cross_attn.o rank_90=2518 vs break-even 2560.0 (byte ratio 0.984, saves 1.6%); low_noise_model.cross_attn.q rank_90=2526 vs break-even 2560.0 (byte ratio 0.987, saves 1.3%); high_noise_model.cross_attn.v rank_90=2544 vs break-even 2560.0 (byte ratio 0.994, saves 0.6%); low_noise_model.cross_attn.k rank_90=2558 vs break-even 2560.0 (byte ratio 0.999, saves 0.1%)",
+    "low-rank factoring does NOT pay for: low_noise_model.cross_attn.v rank_90=2576 vs break-even 2560.0 (byte ratio 1.006) -- rank_90 is 90% of spectral energy, not capability",
+    "cross-layer sharing is DEAD against a norm-matched null, not a constant threshold: sharing is DEAD: 0.00% from a norm-matched null (n=40, noise floor for the old p/n rule is 0.975) -- these rows are as independent as random vectors of the same norms (20/20 organs indistinguishable from noise; highest-deficit organ is low_noise_model.self_attn.k)"
+   ],
+   "n_layers": 40,
+   "organs": [
+    "high_noise_model.cross_attn.k",
+    "high_noise_model.cross_attn.o",
+    "high_noise_model.cross_attn.q",
+    "high_noise_model.cross_attn.v",
+    "high_noise_model.ffn.0",
+    "high_noise_model.ffn.2",
+    "high_noise_model.self_attn.k",
+    "high_noise_model.self_attn.o",
+    "high_noise_model.self_attn.q",
+    "high_noise_model.self_attn.v",
+    "low_noise_model.cross_attn.k",
+    "low_noise_model.cross_attn.o",
+    "low_noise_model.cross_attn.q",
+    "low_noise_model.cross_attn.v",
+    "low_noise_model.ffn.0",
+    "low_noise_model.ffn.2",
+    "low_noise_model.self_attn.k",
+    "low_noise_model.self_attn.o",
+    "low_noise_model.self_attn.q",
+    "low_noise_model.self_attn.v"
+   ],
+   "n_shards": 12,
+   "resource": {
+    "wall_s": 544.79,
+    "samples": 167,
+    "free_gb_start": 57.75,
+    "free_gb_end": 55.17,
+    "free_gb_low": 51.19,
+    "compressor_gb_start": 0.45,
+    "compressor_gb_peak": 0.45,
+    "resident_rss_gb_peak": 0.0,
+    "swapfiles_start": 2,
+    "swapfiles_end": 2,
+    "swapfiles_delta": 0,
+    "peak_unknown_reason": null
+   }
+  },
+  {
+   "slug": "Qwen--Qwen2.5-72B-Instruct@495f39366efe",
+   "gib": 135.4,
+   "family": "qwen2",
+   "status": "ANATOMY",
+   "wall_s": 796.14,
+   "peak_rss_gib": 6.588,
+   "swapfile_delta": 0,
+   "organ_ordering": [
+    {
+     "organ": "q_proj",
+     "deficit_pct": 26.49,
+     "stderr_pct": 0.0022,
+     "rank": 0
+    },
+    {
+     "organ": "k_proj",
+     "deficit_pct": 25.67,
+     "stderr_pct": 0.0032,
+     "rank": 1
+    },
+    {
+     "organ": "o_proj",
+     "deficit_pct": 18.43,
+     "stderr_pct": 0.0024,
+     "rank": 2
+    },
+    {
+     "organ": "down_proj",
+     "deficit_pct": 11.6,
+     "stderr_pct": 0.0012,
+     "rank": 3
+    },
+    {
+     "organ": "gate_proj",
+     "deficit_pct": 10.47,
+     "stderr_pct": 0.0009,
+     "rank": 4
+    },
+    {
+     "organ": "v_proj",
+     "deficit_pct": 7.98,
+     "stderr_pct": 0.004,
+     "rank": 5
+    },
+    {
+     "organ": "up_proj",
+     "deficit_pct": 5.85,
+     "stderr_pct": 0.0009,
+     "rank": 6
+    }
+   ],
+   "cross_layer": [
+    {
+     "organ": "down_proj",
+     "deficit_pct": 0.0,
+     "verdict": "sharing is DEAD: 0.00% from a norm-matched null (n=80, noise floor for the old p/n rule is 0.9875) -- these rows are as independent as random vectors of the same norms",
+     "n": 80,
+     "d": 3355443,
+     "participation": 78.357,
+     "null_participation": 78.357,
+     "ratio_n": 0.9795,
+     "null_ratio_n": 0.9795,
+     "subsampled_features": 3355443
+    },
+    {
+     "organ": "gate_proj",
+     "deficit_pct": -0.005,
+     "verdict": "sharing is DEAD: -0.01% from a norm-matched null (n=80, noise floor for the old p/n rule is 0.9875) -- these rows are as independent as random vectors of the same norms",
+     "n": 80,
+     "d": 3355443,
+     "participation": 78.171,
+     "null_participation": 78.167,
+     "ratio_n": 0.9771,
+     "null_ratio_n": 0.9771,
+     "subsampled_features": 3355443
+    },
+    {
+     "organ": "k_proj",
+     "deficit_pct": 0.001,
+     "verdict": "sharing is DEAD: 0.00% from a norm-matched null (n=80, noise floor for the old p/n rule is 0.9875) -- these rows are as independent as random vectors of the same norms",
+     "n": 80,
+     "d": 3355443,
+     "participation": 76.455,
+     "null_participation": 76.456,
+     "ratio_n": 0.9557,
+     "null_ratio_n": 0.9557,
+     "subsampled_features": 3355443
+    },
+    {
+     "organ": "o_proj",
+     "deficit_pct": 0.0,
+     "verdict": "sharing is DEAD: 0.00% from a norm-matched null (n=80, noise floor for the old p/n rule is 0.9875) -- these rows are as independent as random vectors of the same norms",
+     "n": 80,
+     "d": 3355443,
+     "participation": 77.615,
+     "null_participation": 77.616,
+     "ratio_n": 0.9702,
+     "null_ratio_n": 0.9702,
+     "subsampled_features": 3355443
+    },
+    {
+     "organ": "q_proj",
+     "deficit_pct": 0.002,
+     "verdict": "sharing is DEAD: 0.00% from a norm-matched null (n=80, noise floor for the old p/n rule is 0.9875) -- these rows are as independent as random vectors of the same norms",
+     "n": 80,
+     "d": 3355443,
+     "participation": 74.428,
+     "null_participation": 74.429,
+     "ratio_n": 0.9303,
+     "null_ratio_n": 0.9304,
+     "subsampled_features": 3355443
+    },
+    {
+     "organ": "up_proj",
+     "deficit_pct": -0.0,
+     "verdict": "sharing is DEAD: -0.00% from a norm-matched null (n=80, noise floor for the old p/n rule is 0.9875) -- these rows are as independent as random vectors of the same norms",
+     "n": 80,
+     "d": 3355443,
+     "participation": 77.96,
+     "null_participation": 77.96,
+     "ratio_n": 0.9745,
+     "null_ratio_n": 0.9745,
+     "subsampled_features": 3355443
+    },
+    {
+     "organ": "v_proj",
+     "deficit_pct": -0.001,
+     "verdict": "sharing is DEAD: -0.00% from a norm-matched null (n=80, noise floor for the old p/n rule is 0.9875) -- these rows are as independent as random vectors of the same norms",
+     "n": 80,
+     "d": 3355443,
+     "participation": 71.747,
+     "null_participation": 71.746,
+     "ratio_n": 0.8968,
+     "null_ratio_n": 0.8968,
+     "subsampled_features": 3355443
+    }
+   ],
+   "refusal": null,
+   "expected_gb": 1.8046875,
+   "estimate": {
+    "expected_gb": 1.8046875,
+    "largest": {
+     "key": "model.layers.0.mlp.gate_proj.weight",
+     "shape": [
+      29568,
+      8192
+     ],
+     "tensor_f32_gib": 0.90234375,
+     "null_f32_gib": 0.90234375
+    },
+    "unavailable": null,
+    "n_float_organs": 560
+   },
+   "guard": {
+    "free_gb": 61.68,
+    "compressor_gb": 0.45,
+    "swapfiles": 2,
+    "wired_gb": 18.04,
+    "state": "OK",
+    "reasons": [],
+    "residents": 0,
+    "resident_rss_gb": 0.0,
+    "expected_gb": 1.8046875,
+    "headroom_gb": 59.88,
+    "strictly_free_gb": 12.97,
+    "reclaimable_gb": 48.71
+   },
+   "hypotheses": [
+    "q_proj is the most compressible organ by within-tensor deficit (26.49% below a same-shape random null at mid-depth); full organ ordering: q_proj 26.49%, k_proj 25.67%, o_proj 18.43%, down_proj 11.60%, gate_proj 10.47%, v_proj 7.98%, up_proj 5.85%",
+    "within-tensor structure is ALIVE and strongly organ-dependent (mid-depth deficits 5.85%..26.49%) -- a constant LOWRANK_LIVE_BELOW would miss the spread",
+    "low-rank factoring PAYS (break-even arithmetic, separate from whether structure exists): q_proj rank_90=3470 vs break-even 4096.0 (byte ratio 0.847, saves 15.3%); k_proj rank_90=671 vs break-even 910.22 (byte ratio 0.737, saves 26.3%); o_proj rank_90=3726 vs break-even 4096.0 (byte ratio 0.910, saves 9.0%); down_proj rank_90=5742 vs break-even 6414.75 (byte ratio 0.895, saves 10.5%); gate_proj rank_90=5814 vs break-even 6414.75 (byte ratio 0.906, saves 9.4%); v_proj rank_90=760 vs break-even 910.22 (byte ratio 0.835, saves 16.5%); up_proj rank_90=5890 vs break-even 6414.75 (byte ratio 0.918, saves 8.2%)",
+    "cross-layer sharing is DEAD against a norm-matched null, not a constant threshold: sharing is DEAD: 0.00% from a norm-matched null (n=80, noise floor for the old p/n rule is 0.9875) -- these rows are as independent as random vectors of the same norms (7/7 organs indistinguishable from noise; highest-deficit organ is q_proj)"
+   ],
+   "n_layers": 80,
+   "organs": [
+    "down_proj",
+    "gate_proj",
+    "k_proj",
+    "o_proj",
+    "q_proj",
+    "up_proj",
+    "v_proj"
+   ],
+   "n_shards": 37,
+   "resource": {
+    "wall_s": 796.14,
+    "samples": 95,
+    "free_gb_start": 61.59,
+    "free_gb_end": 72.39,
+    "free_gb_low": 54.11,
+    "compressor_gb_start": 0.45,
+    "compressor_gb_peak": 0.45,
+    "resident_rss_gb_peak": 0.0,
+    "swapfiles_start": 2,
+    "swapfiles_end": 2,
+    "swapfiles_delta": 0,
+    "peak_unknown_reason": null
+   }
   }
  ],
  "started_at": "2026-09-07T08:05:24Z",
- "updated_at": "2026-09-07T08:43:10Z",
+ "updated_at": "2026-09-07T09:15:42Z",
  "peak_rss_cap_gib": 20.0,
  "census_meta": {
   "census_n": 56,
@@ -7844,12 +9338,6 @@
   "dense_count": 36,
   "census_dense_tally": 36
  },
- "pending_slugs": [
-  "RWKV--RWKV7-13.3B-20260805@64ffe5934178",
-  "microsoft--Phi-4-reasoning-plus@69baf8528e1b",
-  "Qwen--Qwen3-14B@40c069824f42",
-  "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
-  "Wan-AI--Wan2.2-T2V-A14B@c8c270b13ee0",
-  "Qwen--Qwen2.5-72B-Instruct@495f39366efe"
- ]
+ "pending_slugs": [],
+ "finished_at": "2026-09-07T09:15:42Z"
 }

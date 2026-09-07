@@ -35,12 +35,17 @@ def test_the_default_is_unchanged_behaviour():
 
 
 def test_the_loop_reads_the_budget_and_not_a_literal():
-    """The closer must consult the constant. A literal 1 is the defect."""
-    src = (pathlib.Path(__file__).resolve().parents[1] / "hcli" / "engine.py").read_text()
-    assert "len(observations) >= self.MAX_TOOL_OBSERVATIONS" in src
-    # the exact defective line must be gone
-    assert "or len(observations) >= 1\n" not in src, (
-        "the unconditional one-observation cap is back")
+    """The closer must consult the budget it is GIVEN, at any value.
+
+    This was a substring search for `len(observations) >= self.MAX_TOOL_OBSERVATIONS`.
+    That pinned one spelling in one place and broke the moment the policy moved into
+    a function, while proving nothing about behaviour. The policy is pure now, so
+    ask it directly: a literal 1 cannot answer these two budgets differently.
+    """
+    ok = [{"tool": "t", "ok": True, "repeat": False}]
+    assert Engine._tool_loop_closure(ok, 1, 0, 1, 1) == "observation_budget_1"
+    assert Engine._tool_loop_closure(ok, 1, 0, 5, 1) is None, "a literal 1 is back"
+    assert Engine._tool_loop_closure(ok, 5, 0, 5, 1) == "observation_budget_5"
 
 
 def test_the_env_override_is_honoured(monkeypatch):
@@ -60,16 +65,27 @@ def test_the_env_override_is_honoured(monkeypatch):
 def test_the_failure_closers_are_untouched():
     """Raising the budget must NOT weaken the failed-call or all-repeat closers.
 
-    Those two exist so a resident cannot spend minutes replaying a confused plan.
-    Only the success-path cap moved.
+    Those exist so a resident cannot spend minutes replaying a confused plan. What
+    changed is only WHEN the failed-call closer fires: the first failing round is
+    now forgiven so its error text can go back as an observation, and the second
+    still closes. Tolerance 0 restores the original any-failure rule exactly.
     """
+    failed = [{"tool": "t", "ok": False, "repeat": False}]
+    repeated = [{"tool": "t", "ok": True, "repeat": True}]
+
+    # tolerance 0 == the original rule: any failure closes immediately
+    assert Engine._tool_loop_closure(failed, 0, 1, 8, 0) == "failed_call"
+    # tolerance 1: the first failing round is forgiven, the second is not
+    assert Engine._tool_loop_closure(failed, 0, 1, 8, 1) is None
+    assert Engine._tool_loop_closure(failed, 0, 2, 8, 1) == "failed_call"
+    # the all-repeat closer is unchanged
+    assert Engine._tool_loop_closure(repeated, 0, 0, 8, 1) == "bounded_observation_round"
+    # and forgiving a failure must never outrank the budget
+    assert Engine._tool_loop_closure(failed, 8, 1, 8, 1) == "observation_budget_8"
+
+
+def test_the_loop_actually_calls_the_policy():
+    """A policy nothing calls is not a policy. Grep the CALL SITE, not the def."""
     src = (pathlib.Path(__file__).resolve().parents[1] / "hcli" / "engine.py").read_text()
-    # Check the CLOSER CONDITION, not any occurrence of the string. The same text
-    # appears again in the reason expression below it, so a substring search
-    # passes even with the condition gutted -- which is exactly what happened the
-    # first time this test was written.
-    i = src.index("if round_observations and (")
-    cond = src[i:src.index("):", i)]
-    assert 'any(not item.get("ok") for item in round_observations)' in cond, cond
-    assert 'item.get("repeat") or not item.get("ok")' in cond, cond
-    assert "len(observations) >= self.MAX_TOOL_OBSERVATIONS" in cond, cond
+    assert src.count("self._tool_loop_closure(") >= 1, (
+        "_tool_loop_closure is defined but never invoked by the loop")
