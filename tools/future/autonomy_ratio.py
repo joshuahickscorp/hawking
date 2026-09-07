@@ -141,6 +141,17 @@ def ratio(repo: str, ledger_path: str, since: str, since_epoch: int,
         raise RatioRefused(
             "zero attributable results: the ratio would be a division by zero dressed "
             "up as infinite supervision. Record a result with a receipt first.")
+    # G026 asks for progress per WALL per RESOURCE per intervention. Wall comes
+    # from the commit timestamps that bound the window -- it is the only term of
+    # the four that is already recorded by something other than this module.
+    # A degenerate wall must REFUSE, not divide by 1e-9 and report a billion
+    # artifacts an hour. That is exactly what the epsilon here did: with no
+    # commits in the window it printed artifacts_per_wall_hour 1000000000.0,
+    # a plausible-shaped number standing in for an unmeasured quantity.
+    stamps = sorted(c["at"] for c in sup)
+    wall_s = (stamps[-1] - since_epoch) if stamps else 0
+    wall_h = wall_s / 3600.0 if wall_s >= 60 else None
+
     return {
         "supervisor_commits": len(sup),
         "grok_lanes_dispatched": len(lanes),
@@ -152,6 +163,26 @@ def ratio(repo: str, ledger_path: str, since: str, since_epoch: int,
         "unattributable_axes": acc["unattributable_axes"],
         "ephemeral_receipts": acc["ephemeral_receipts"],
         "interventions_per_accepted_result": round(interventions / acc["attributable"], 4),
+        "wall_hours": round(wall_h, 3) if wall_h else None,
+        "artifacts_per_wall_hour": (round(acc["attributable"] / wall_h, 2)
+                                    if wall_h else None),
+        "artifacts_per_wall_hour_per_intervention": (
+            round(acc["attributable"] / wall_h / max(interventions, 1), 4)
+            if wall_h else None),
+        "wall_gap": (None if wall_h else
+                     f"window spans {wall_s}s of commits, under the 60s floor: a rate "
+                     f"over a wall that short is division noise, not throughput"),
+        "resource_term": None,
+        "resource_gap": (
+            "G026's metric is progress per wall per RESOURCE per intervention, and the "
+            "resource term is NOT MEASURED. It is left null rather than substituted, "
+            "because a throughput figure computed over three of four terms and reported "
+            "as the metric is exactly the arithmetic G026 forbids. THE EXACT MISSING "
+            "MECHANISM: campaign_memory_guard.sample() already reads free pages, "
+            "compressor size, swapfile count and RSS, but nothing calls it at the START "
+            "and END of an experiment and writes the delta into the receipt. Until a "
+            "measured run brackets itself with two samples, resource is unknown and "
+            "saying so is the honest reading."),
         "note": ("a dispatched lane counts as a supervisor intervention: delegating the "
                  "typing does not make the campaign autonomous, and counting lanes as "
                  "free would let the ratio improve by fanning out harder"),
@@ -220,6 +251,18 @@ def _selfcheck() -> None:
         rr = ratio(os.getcwd(), p4, "HEAD", 0, grok_root=gk)
         assert rr["grok_lanes_dispatched"] == 3, rr
         assert rr["interventions"] >= 3, rr
+
+        # G026's fourth term must be null-or-measured, never both and never
+        # quietly filled. A throughput number computed over three of four terms
+        # and presented as the metric is the arithmetic G026 forbids.
+        assert (rr["resource_term"] is None) == bool(rr["resource_gap"]), rr
+        # A degenerate wall reports nothing rather than a billion per hour.
+        assert rr["wall_hours"] is None and rr["artifacts_per_wall_hour"] is None, rr
+        assert "division noise" in rr["wall_gap"], rr
+        if rr["resource_term"] is None:
+            assert "EXACT MISSING MECHANISM" in rr["resource_gap"], rr
+            assert "artifacts_per_wall_hour_per_resource" not in rr, (
+                "a per-resource figure was reported while resource is unmeasured")
 
         # Zero attributable results must REFUSE, not report infinite autonomy.
         json.dump({"schema": "odyssey-ledger-1", "specimens": [{"slug": "x", "axes": {
