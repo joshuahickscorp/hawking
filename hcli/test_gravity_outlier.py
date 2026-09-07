@@ -77,3 +77,20 @@ def test_outlier_prediction_is_biased_HIGH_never_low():
         got = G.predict_ebpw(spec)
         assert got >= measured, f"{spec}: {got} < {measured} -- bias went the unsafe way"
         assert got - measured < 0.01, f"{spec}: bias {got - measured} too large to be useful"
+
+
+def test_pq_sparse_correction_is_counted_in_the_bytes():
+    """A sparse channel the representation requires must cost EBPW.
+
+    Measured 2026-09-06: pqsparse0.002percal reported 2.405907100874676, byte
+    for byte identical to pqpercal4k512 which has no sparse channel at all. The
+    0.2% of weights kept at full precision were free in the accounting. S012 §77
+    -- do not exclude something from the count because of what it is called.
+    """
+    import re
+    from pathlib import Path
+    src = (Path(__file__).resolve().parent.parent
+           / "tools" / "future" / "gravity_outlier_eval.py").read_text()
+    i = src.index("expert_bits = pq_index_bits")
+    line = src[i:src.index("\n", i)]
+    assert "kept * 32" in line, f"sparse correction is not counted: {line}"

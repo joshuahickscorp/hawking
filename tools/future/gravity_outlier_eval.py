@@ -161,6 +161,18 @@ def _parse_expert_spec(spec: str) -> dict[str, Any]:
     # r4 0.5591 -> 0.7419), so the trade is localised there and gate/up barely
     # matters. Keep the 2-D shape that buys diversity and double the codes to
     # buy back likelihood; gate/up keeps the cheap 4-D geometry.
+    # pqsparse: the compound S011 §9 names -- PQ over the bulk with a SPARSE
+    # CORRECTION restoring the largest weights at full precision. Targets the
+    # scarred mechanism directly: PQ collapses many sub-vectors onto one
+    # centroid, narrowing expert output RANGE, and the repetition gate is what
+    # measures that narrowing. The extremes are exactly what a centroid map
+    # destroys and what a sparse channel can give back.
+    m = re.fullmatch(r"pqsparse([0-9.]+)(percal)?", s, re.I)
+    if m:
+        return {"form": "pq", "sub_dim": 4, "codebook": 512,
+                "sparse_frac": float(m.group(1)),
+                "calibrated": bool(m.group(2)), "per_expert": bool(m.group(2)),
+                "frac": 0.0, "group": 128, "bits": 2}
     m = re.fullmatch(r"pqalloc(percal)?", s, re.I)
     if m:
         return {"form": "pq", "sub_dim": 4, "codebook": 512,
@@ -496,6 +508,17 @@ def evaluate(candidate) -> dict[str, Any]:
                 rec = mx.concatenate(parts, axis=0).reshape(base.shape)
                 pq_cb_values += K * d
                 pq_index_bits += base.size * math.log2(K) / d
+                sf = plan.get("sparse_frac") or 0.0
+                if sf > 0.0:
+                    # Restore the top-|w| fraction exactly. Threshold per tensor
+                    # so every expert keeps its own extremes rather than losing
+                    # them to a global cut dominated by the loudest expert.
+                    flat = mx.abs(base).reshape(-1)
+                    k = max(1, int(flat.size * sf))
+                    thr = mx.sort(flat)[-k]
+                    mask = mx.abs(base) >= thr
+                    rec = mx.where(mask, base, rec)
+                    kept += int(mx.sum(mask).item())
             elif plan["form"] == "hotcold":
                 cnt = route.get(id(m))
                 n_exp = W.shape[0]
@@ -619,8 +642,13 @@ def evaluate(candidate) -> dict[str, Any]:
         # binary stores 1 bit/weight + ONE fp16 scale per group (no zero point).
         if plan["form"] == "pq":
             # Summed per tensor, so a mixed geometry is counted honestly rather
-            # than by a single nominal rate.
-            expert_bits = pq_index_bits + pq_cb_values * 16
+            # than by a single nominal rate. `kept * 32` is the sparse
+            # correction: MEASURED once as 2.4059 with the outlier channel
+            # silently free, identical to the arm without it. S012 §15 and §77
+            # forbid exactly that -- a representation does not save bytes it
+            # still requires, and a channel omitted from the denominator is a
+            # denominator game whoever wrote it.
+            expert_bits = pq_index_bits + pq_cb_values * 16 + kept * 32
         elif plan["form"] == "hotcold":
             expert_bits = (hot_w * plan["hot_bits"] + cold_w * plan["cold_bits"]
                            + n_scales * 32)
