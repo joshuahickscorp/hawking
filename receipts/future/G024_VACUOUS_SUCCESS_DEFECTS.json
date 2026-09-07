@@ -1,0 +1,53 @@
+{
+ "obligation": "G024/G034 \u2014 two vacuous-success defects in live campaign infrastructure",
+ "found_by": "a 45-agent adversarial sweep (6 lenses, then one refutation agent per claim, 4.6M subagent tokens). Both survived refutation; both independently reproduced here before being acted on.",
+ "defects": [
+  {
+   "id": "D1",
+   "severity": "CRITICAL \u2014 destroys the campaign's ground truth",
+   "file": "tools/odyssey/modellake_index.py",
+   "symbol": "build",
+   "mechanism": "list_dir_slugs() returns [] for a missing directory. With the volume detached, live_slugs is empty, so EVERY catalogued slug falls into `dropped` and its by-slug record is unlinked. The catalog is rewritten as a well-formed, schema-valid document asserting an empty lake. No exception; exit code 0.",
+   "reproduced": {
+    "before": "n_specimens=56 tier2_used_gb=4712.69 over_budget=True by_slug=55",
+    "after": "n_specimens=0 tier2_used_bytes=0 over_budget=False dropped=56 by_slug=0",
+    "note": "run against a COPY of the live index, never the real one"
+   },
+   "why_reachable": "with no explicit --index-dir, resolve_index_dir(create=True) cannot mkdir under /Volumes (root:wheel 755), does not raise, and falls back to receipts/future/modellake-index -- the directory holding the 56-specimen record. So the destructive path is the DEFAULT path, not a contrived one.",
+   "worst_case": "the real lake is 852 GB OVER budget. The rewritten catalog claims over_budget=False and the artifact recording the overage is deleted in the same call, so nothing survives to contradict it.",
+   "sibling": "tools/future/specimen_registry.py:72 has carried exactly this guard since it was written, with the comment 'an empty registry would read as no specimens exist rather than the disk is not attached'. This module never got it.",
+   "fix": "two guards. _require_mounted refuses when neither specimens/ nor partial/ exists. _refuse_mass_drop refuses when EVERY known specimen is absent, which catches the remounted-empty and stale-mountpoint cases that pass the first."
+  },
+  {
+   "id": "D2",
+   "severity": "HIGH \u2014 the S010 safety guard was blind on one axis",
+   "file": "tools/future/campaign_memory_guard.py",
+   "symbol": "_swapfiles",
+   "mechanism": "counted /private/var/vm/swapfile*, which is EMPTY on Darwin 27. The real store is /System/Volumes/VM, holding swapfile0/1/2. Any OSError was additionally swallowed to 0, so absence and zero shared an encoding.",
+   "reproduced": {
+    "guard_reported": 0,
+    "actually_on_disk": 3,
+    "sysctl": "vm.swapusage: total = 3072.00M used = 1758.69M",
+    "consequence": "SWAPFILE_WARN 40 and SWAPFILE_STOP 60 were unreachable"
+   },
+   "worst_case": "this guard exists BECAUSE a panic hit exactly SWAPFILE_CAP 100 with free memory at 924 pages. Its swapfile limb could never have fired. It is live code -- gravity_outlier_eval.py imports require_ok and watch from it.",
+   "fix": "read every known store; return -1 (never 0) when none is readable, and classify() returns STOP on -1: a blind guard must not report OK."
+  }
+ ],
+ "tests": {
+  "new": [
+   "hcli/test_campaign_memory_guard.py (6)",
+   "hcli/test_modellake_index_mount_guard.py (7)"
+  ],
+  "note": "there was NO test file for campaign_memory_guard at all, which is how a dead axis survived"
+ },
+ "mutations_checked": [
+  "swap: revert to the single wrong directory -> host-has-swapfiles test fails",
+  "swap: unreadable store encoded as 0 -> absence/zero test fails",
+  "swap: blind guard allowed OK -> blind-refusal test fails",
+  "index: mount guard removed -> fresh-index test fails (it passed 6/6 until that test existed)",
+  "index: mass-drop guard removed -> mounted-but-empty test fails",
+  "index: mass-drop fires on ANY drop -> genuine-single-deletion test fails"
+ ],
+ "self_correction": "the first mutation of the mount guard left all six tests GREEN, proving the mass-drop guard shadowed it and the mount guard was load-bearing for nothing I had written. A seventh test -- a FRESH index against a detached drive, where there is nothing to drop -- was added, and the mutation then failed correctly."
+}

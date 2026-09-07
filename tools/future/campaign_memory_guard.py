@@ -115,12 +115,29 @@ def _residents() -> tuple:
     return _parse_residents(out)
 
 
+# macOS moved the swap store. On Darwin 27 /private/var/vm is EMPTY and the real
+# swapfiles live under /System/Volumes/VM. Reading only the old path made
+# _swapfiles() return 0 unconditionally, so SWAPFILE_WARN 40 and SWAPFILE_STOP 60
+# were unreachable and this guard's swapfile axis was structurally dead -- in the
+# guard written BECAUSE the panic hit exactly SWAPFILE_CAP 100.
+SWAP_DIRS = ("/System/Volumes/VM", "/private/var/vm")
+
+
 def _swapfiles() -> int:
-    try:
-        return len([p for p in Path("/private/var/vm").iterdir()
-                    if p.name.startswith("swapfile")])
-    except Exception:
-        return 0
+    """Count swapfiles across every known store.
+
+    Returns -1, never 0, when no store could be read at all. A count of zero is a
+    real and reassuring measurement; an unreadable store is not, and the two must
+    not share an encoding -- that equivalence is what kept this axis silent.
+    """
+    seen, readable = 0, False
+    for d in SWAP_DIRS:
+        try:
+            seen += len([p for p in Path(d).iterdir() if p.name.startswith("swapfile")])
+            readable = True
+        except Exception:
+            continue
+    return seen if readable else -1
 
 
 def classify(free_gb: float, compressor_gb: float, swapfiles: int) -> tuple:
@@ -144,6 +161,9 @@ def classify(free_gb: float, compressor_gb: float, swapfiles: int) -> tuple:
         esc("STOP", f"compressor {compressor_gb:.1f} GB >= {COMPRESSOR_STOP_GB} GB ceiling")
     elif compressor_gb >= COMPRESSOR_WARN_GB:
         esc("WARN", f"compressor {compressor_gb:.1f} GB approaching {COMPRESSOR_STOP_GB} GB")
+    if swapfiles < 0:
+        return "STOP", ("swapfile store unreadable: the swap axis of this guard is "
+                        "BLIND, and a blind guard must not report OK",)
     if swapfiles >= SWAPFILE_STOP:
         esc("STOP", f"{swapfiles} swapfiles >= {SWAPFILE_STOP} (cap {SWAPFILE_CAP})")
     elif swapfiles >= SWAPFILE_WARN:
