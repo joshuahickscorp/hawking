@@ -28,6 +28,9 @@ Rules that decide whether your result is accepted:
  - state what you measured, on which specimen, and what it means for the campaign.
  - a measurement you do not RECORD does not exist. Call odyssey.record_measurement so
    the axis leaves OWED. A value needs a receipt path; a refusal needs a mechanism.
+ - a receipt is a FILE YOU WRITE holding the numbers you measured. Write it with
+   filesystem.write under receipts/future/, then cite that path. The ledger is not a
+   receipt for a cell inside itself.
 
 Report: the specimen you chose, WHY that one over the alternatives, the tool calls
 you made, the numbers you got, and what you would measure next.
