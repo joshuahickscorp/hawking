@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import json
 import os
+from pathlib import Path
 from typing import Any
 
 AXES = ("anatomy", "ebpw", "gpu", "cpu", "tps", "nr_candidate", "nx_disposition")
@@ -44,6 +45,15 @@ def measured(rec: dict, axis: str, value: Any, receipt: str) -> None:
     if not receipt:
         raise LedgerError(
             f"{rec['slug']}/{axis}: a measurement without a receipt is not evidence")
+    # ...and a receipt that does not EXIST is not evidence either. This checked only for
+    # emptiness, so any non-empty string passed: recording
+    # "receipts/future/THIS_FILE_DOES_NOT_EXIST.json" was accepted as MEASURED, verified
+    # live. Nothing downstream would have caught it -- tps_contract, the tool that would
+    # notice an unreadable physical receipt, has no caller outside its own test.
+    if not Path(receipt).exists():
+        raise LedgerError(
+            f"{rec['slug']}/{axis}: receipt {receipt!r} does not exist. A path that names "
+            f"nothing is not evidence; write the receipt first, then record the cell.")
     rec["axes"][axis] = {"state": MEASURED, "value": value, "reason": None,
                          "receipt": receipt}
 

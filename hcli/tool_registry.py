@@ -1947,6 +1947,11 @@ def _lake_census(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
         if row is None:
             raise KeyError(f"{slug} is not in {catalog}")
         out = m.classify(row["path"])
+        # The catalog knew the path all along and the census kept it to itself. A round
+        # that selects a body here and reaches for an anatomy tool needs a DIRECTORY, and
+        # a slug is not one -- rounds 13 and 15 both handed the anatomy tool the ledger's
+        # own path because it was the only path they had.
+        out["snapshot"] = row["path"]
         try:
             out.update(m.accounting(row["path"], m.confirm_pack_factor(row["path"])))
         except Exception as exc:
@@ -2000,10 +2005,28 @@ def _odyssey_ledger(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any
         # anyone pasting the literal file in. Round 7 read the ledger with fs.read --
         # and got 1.3% of it -- because the record tool's example in its prompt carried
         # the raw path, which put a file in front of it.
-        return {"specimen": rec, "progress": prog, "path": path}
+        snap = None
+        try:
+            with open("receipts/future/modellake-index/catalog.json") as fh:
+                snap = next((x["path"] for x in _json.load(fh)["specimens"]
+                             if x["slug"] == slug), None)
+        except Exception:
+            snap = None
+        return {"specimen": rec, "progress": prog, "path": path, "snapshot": snap}
     if args.get("owed_only"):
+        # Carry the SNAPSHOT PATH, not just the slug. Every anatomy tool takes a directory
+        # and every discovery tool returned a name, with nothing in the registry converting
+        # one to the other -- so a round that selected correctly still had to guess, and
+        # twice guessed the ledger's own path.
+        paths = {}
+        try:
+            with open("receipts/future/modellake-index/catalog.json") as fh:
+                paths = {x["slug"]: x["path"] for x in _json.load(fh)["specimens"]}
+        except Exception:
+            paths = {}
         owed = [{"slug": r["slug"], "gib": r["gib"], "class": r["class"],
-                 "owed": [a for a, v in r["axes"].items() if v["state"] == "OWED"]}
+                 "owed": [a for a, v in r["axes"].items() if v["state"] == "OWED"],
+                 "snapshot": paths.get(r["slug"])}
                 for r in led["specimens"]
                 if any(v["state"] == "OWED" for v in r["axes"].values())]
         owed.sort(key=lambda r: (-len(r["owed"]), r["gib"]))

@@ -125,12 +125,17 @@ def test_a_real_record_CHANGES_THE_FILE_and_reads_back(ledger):
     before = json.loads(ledger.read_text())
     res = r.invoke("odyssey.record_measurement", {
         "path": str(ledger), "slug": slug, "axis": "anatomy",
-        "value": {"deficit_pct": 4.02}, "receipt": "receipts/future/X.json"})
+        "value": {"deficit_pct": 4.02},
+        # A REAL receipt path. The fixture used to invent "receipts/future/X.json", which
+        # the ledger now refuses -- a path that names nothing is not evidence, and the old
+        # check only tested for emptiness.
+        "receipt": "receipts/future/G002_ORGAN_PRIOR.json"})
     assert res.ok, res.error
     after = json.loads(ledger.read_text())
     assert after != before, "the tool reported success and changed nothing on disk"
     cell = next(x for x in after["specimens"] if x["slug"] == slug)["axes"]["anatomy"]
-    assert cell["state"] == "MEASURED" and cell["receipt"] == "receipts/future/X.json"
+    assert cell["state"] == "MEASURED"
+    assert cell["receipt"] == "receipts/future/G002_ORGAN_PRIOR.json"
     # and the READ tool must now see it -- a write only the writer can see is not a write
     back = r.invoke("odyssey.ledger", {"path": str(ledger), "slug": slug})
     assert back.ok and back.value["specimen"]["axes"]["anatomy"]["state"] == "MEASURED"
@@ -163,3 +168,19 @@ def test_the_live_ledger_is_not_the_default_target():
         "path": "", "slug": "x", "axis": "anatomy", "value": 1, "receipt": "y.json"})
     assert not empty.ok, "an empty path was accepted"
     assert "empty" in str(empty.error).lower(), empty.error
+
+
+def test_a_receipt_that_does_not_EXIST_is_refused(ledger):
+    """"A measurement without a receipt is not evidence" checked only for EMPTINESS.
+
+    Any non-empty string passed. Verified live before the fix: recording
+    "receipts/future/THIS_FILE_DOES_NOT_EXIST.json" was accepted as MEASURED. Nothing
+    downstream would have caught it -- tps_contract, the tool that would notice an
+    unreadable physical receipt, has no caller outside its own test, and 78 of the 79
+    physical receipts on disk currently fail its comparability contract anyway.
+    """
+    res = _reg().invoke("odyssey.record_measurement", {
+        "path": str(ledger), "slug": _owed_slug(ledger, "gpu"), "axis": "gpu",
+        "value": {"tps": 24.41}, "receipt": "receipts/future/THIS_FILE_DOES_NOT_EXIST.json"})
+    assert not res.ok, "a path that names nothing was accepted as evidence"
+    assert "does not exist" in str(res.error).lower(), res.error
