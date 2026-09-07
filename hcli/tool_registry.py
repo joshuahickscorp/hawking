@@ -1878,7 +1878,20 @@ def _odyssey_ledger(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any
                 for r in led["specimens"]
                 if any(v["state"] == "OWED" for v in r["axes"].values())]
         owed.sort(key=lambda r: (-len(r["owed"]), r["gib"]))
-        return {"progress": prog, "owed": owed}
+        # ACTIONABLE FIRST, AND BOUNDED. The full list is 8091 characters and the
+        # closed-turn compactor keeps 500 -- so with `progress` emitted first, the
+        # resident received the aggregate summary and NONE of the specimen names.
+        # It called this tool four times and could not choose a target, because the
+        # only part that names one was in the truncated tail. A tool whose useful
+        # half does not survive the caller's budget is a tool that does not work.
+        top = int(args.get("limit") or 12)
+        return {
+            "owed": owed[:top],
+            "n_owed": len(owed),
+            "shown": min(top, len(owed)),
+            "summary": (f"{prog['axes_resolved']}/{prog['axes_total']} axes resolved "
+                        f"({prog['pct']}%), {prog['specimens_complete']} specimens complete"),
+        }
     return {"progress": prog, "n": len(led["specimens"])}
 
 
@@ -2082,7 +2095,8 @@ def default_tool_registry(
         "Per-specimen Odyssey axis state: what is measured, what is refused with a reason, and what is still owed.",
         {"type": "object", "additionalProperties": False,
          "properties": {"path": {"type": "string"}, "slug": {"type": "string"},
-                        "owed_only": {"type": "boolean"}}},
+                        "owed_only": {"type": "boolean"},
+                        "limit": {"type": "integer"}}},
         resources=("filesystem",),
         handler=_odyssey_ledger,
     ))

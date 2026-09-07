@@ -71,7 +71,10 @@ def test_the_ledger_can_name_what_is_still_owed(registry, tmp_path):
     slugs = [x["slug"] for x in r.value["owed"]]
     assert slugs == ["partial--body"], f"a complete specimen was offered as work: {slugs}"
     assert "ebpw" not in r.value["owed"][0]["owed"], "a measured axis was reported as owed"
-    assert r.value["progress"]["specimens_complete"] == 1
+    assert r.value["n_owed"] == 1 and r.value["shown"] == 1
+    # the complete specimen is counted in the summary, not offered as work
+    full = registry.invoke("odyssey.ledger", {"path": str(led)})
+    assert full.value["progress"]["specimens_complete"] == 1
 
     live = registry.invoke("odyssey.ledger", {"owed_only": True})
     assert live.ok, live.error
@@ -109,3 +112,37 @@ def test_a_missing_future_module_raises_rather_than_returning_nothing(registry):
     from hcli import tool_registry as tr
     with pytest.raises(FileNotFoundError, match="unreachable"):
         tr._future("a_module_that_does_not_exist")
+
+
+def test_a_tools_useful_half_survives_the_closed_turn_budget(registry):
+    """A tool whose actionable part is truncated away is a tool that does not work.
+
+    odyssey.ledger owed_only returned 8091 characters with the aggregate progress
+    block FIRST. The engine's closed-turn compactor keeps CLOSED_OBSERVATION_CHARS
+    (500) per observation, so the resident received the summary and NONE of the
+    specimen names. It called the tool four times across four rounds and still
+    could not choose a target, because the only part naming one was in the tail.
+    """
+    from hcli.engine import Engine
+
+    r = registry.invoke("odyssey.ledger", {"owed_only": True})
+    assert r.ok, r.error
+    text = json.dumps(r.value, default=str)
+    head = text[: Engine.CLOSED_OBSERVATION_CHARS]
+    assert '"owed"' in head, "the owed list does not start inside the kept head"
+    assert '"slug"' in head, "no specimen is named in the part the resident keeps"
+    named = head.count('"slug"')
+    assert named >= 2, f"only {named} specimen(s) survive truncation; a choice needs several"
+    assert len(text) < 4000, (
+        f"{len(text)} chars for a tool whose caller keeps "
+        f"{Engine.CLOSED_OBSERVATION_CHARS}; bound the payload at the tool")
+
+
+def test_the_owed_list_is_bounded_and_says_so(registry):
+    """Truncation must be DISCLOSED, not silent -- shown vs n_owed."""
+    r = registry.invoke("odyssey.ledger", {"owed_only": True, "limit": 3})
+    assert r.ok, r.error
+    v = r.value
+    assert len(v["owed"]) == 3
+    assert v["shown"] == 3 and v["n_owed"] >= 3
+    assert v["n_owed"] >= v["shown"]
