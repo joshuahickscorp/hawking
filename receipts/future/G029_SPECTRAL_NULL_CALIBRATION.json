@@ -1,0 +1,54 @@
+{
+ "obligation": "G028/G029/G031 \u2014 method correction",
+ "headline": "a participation ratio compared to a constant is not evidence; the noise floor is (n-1)/n",
+ "analytic_result": {
+  "claim": "centred independent rows have participation EXACTLY n-1, so ratio=p/n equals (n-1)/n",
+  "measured": {
+   "n=4": 0.75,
+   "n=8": 0.875,
+   "n=12": 0.9166,
+   "n=16": 0.9375,
+   "n=20": 0.95,
+   "n=24": 0.9583,
+   "n=28": 0.9642,
+   "n=32": 0.9687,
+   "n=64": 0.9843,
+   "n=128": 0.9919
+  },
+  "mechanism": "centring removes one degree of freedom; nothing else is shared"
+ },
+ "defect": {
+  "shipped_rule": "representational_anatomy.SHARING_LIVE_BELOW = 0.95 against ratio = participation/n",
+  "consequence": "0.95 IS the noise floor at n=20, so the rule reports 'cross-expert sharing is LIVE' on PURE NOISE for every n <= 20. Verified at n = 4, 8, 12, 16, 20.",
+  "why_it_did_not_bite_yet": "both specimens measured so far have 128 experts, where the floor is 0.9919 and the verdict DEAD is correct. The rule was validated only where it happens to work."
+ },
+ "stronger_finding": {
+  "claim": "O003's experts are not merely 'near-maximally independent' -- they are INDISTINGUISHABLE from independence",
+  "evidence": "Qwen3-30B-A3B layer 0, n=128: down_proj real 0.9796 vs norm-matched null 0.9797; gate_proj 0.9644 vs 0.9644; up_proj 0.9559 vs 0.9559. Deficit +0.00% on all three.",
+  "interpretation": "the entire 1.27% gap from 1.0 is explained by ROW-NORM HETEROGENEITY, not by any shared direction. An unmatched Gaussian null scores 0.9921 and would have licensed a 1.27% 'shared structure' claim that is pure artefact.",
+  "consequence": "this STRENGTHENS the campaign's existing conclusion. Every linear sharing class over this expert organ is dead not by a threshold but by exhaustion: there is no residual linear structure left for a shared basis, common+delta, clustering or alignment to find."
+ },
+ "cross_layer_result": {
+  "specimen": "Qwen3-0.6B (dense, 28 layers)",
+  "measured": {
+   "q_proj": 0.9585,
+   "k_proj": 0.9519,
+   "v_proj": 0.957,
+   "o_proj": 0.9536,
+   "gate_proj": 0.9253,
+   "up_proj": 0.9347,
+   "down_proj": 0.9354
+  },
+  "naive_reading": "three MLP projections fall below 0.95, so cross-layer sharing looks LIVE",
+  "control": "gaussian null 0.9255 and sign-flip null 0.9254 for gate_proj; real is 0.02% away",
+  "verdict": "REFUTED. cross-layer sharing in this dense body is not distinguishable from noise."
+ },
+ "positive_control": "rows built from a rank-3 basis are detected at an 85.0% deficit, so the statistic is not merely conservative",
+ "mutations_checked": [
+  "null no longer norm-matched -> pure norm spread reports a 91.17% deficit",
+  "normalise by n instead of n-1 -> independent rows stop scoring 1.0",
+  "verdict forced DEAD -> the rank-3 positive control fails",
+  "deficit hardcoded 0 -> the positive control fails"
+ ],
+ "tool": "tools/future/spectral_null.py (--selfcheck)"
+}
