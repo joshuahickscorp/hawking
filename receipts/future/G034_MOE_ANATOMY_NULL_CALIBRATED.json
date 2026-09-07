@@ -1,0 +1,92 @@
+{
+ "obligation": "G034 anatomy axis / G029 transfer",
+ "what": "null-calibrated cross-expert participation on every reachable MoE-float body",
+ "method": "participation ratio of the layer's expert stack against a GAUSSIAN NULL CARRYING THE SAME PER-ROW NORMS. The shipped threshold (ratio < 0.95 = sharing LIVE) is the noise floor at n=20 and reports LIVE on pure noise below it, so a constant cannot decide this. Gram accumulated in feature blocks to stay under Metal's watchdog; one shard resident at a time; per-body memory expectation computed from headers and cleared with the campaign guard before each run.",
+ "measured": [
+  {
+   "slug": "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+   "gib": 30.6,
+   "family": "kimi_vl",
+   "layer": 1,
+   "projection": "down_proj",
+   "n": 64,
+   "d": 2883584,
+   "participation": 62.952,
+   "ratio_n": 0.9836,
+   "ratio_n_minus_1": 0.9992,
+   "null_participation": 62.952,
+   "null_ratio_n": 0.9836,
+   "deficit_pct": 0.0,
+   "noise_floor_ratio_n": 0.9844,
+   "verdict": "sharing is DEAD: 0.00% from a norm-matched null (n=64, noise floor for the old p/n rule is 0.9844) -- these rows are as independent as random vectors of the same norms"
+  },
+  {
+   "slug": "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+   "gib": 56.9,
+   "family": "qwen3_moe",
+   "layer": 0,
+   "projection": "down_proj",
+   "n": 128,
+   "d": 1572864,
+   "participation": 125.39,
+   "ratio_n": 0.9796,
+   "ratio_n_minus_1": 0.9873,
+   "null_participation": 125.393,
+   "null_ratio_n": 0.9796,
+   "deficit_pct": 0.002,
+   "noise_floor_ratio_n": 0.9922,
+   "verdict": "sharing is DEAD: 0.00% from a norm-matched null (n=128, noise floor for the old p/n rule is 0.9922) -- these rows are as independent as random vectors of the same norms"
+  }
+ ],
+ "skipped": [
+  {
+   "slug": "lerobot--pi0_base@25c379b52ba2",
+   "reason": "no per-expert group at layer 0"
+  },
+  {
+   "slug": "LiquidAI--LFM2-24B-A2B@a3bbacd91a67",
+   "reason": "no per-expert group at layer 2"
+  },
+  {
+   "slug": "Qwen--Qwen3-Coder-30B-A3B-Instruct@b2cff646eb4b",
+   "reason": "guard STOP: needs 5.5 GB, free 3.6"
+  },
+  {
+   "slug": "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+   "reason": "no per-expert group at layer 0"
+  },
+  {
+   "slug": "moonshotai--Kimi-Linear-48B-A3B-Instruct@e1df551a4471",
+   "reason": "no per-expert group at layer 1"
+  },
+  {
+   "slug": "zai-org--GLM-4.5-Air@a24ceef6ce4f",
+   "reason": "guard STOP: needs 9.5 GB, free 2.8"
+  },
+  {
+   "slug": "windowsxp811203--Qwen3.8-Flash-Next-Abliterated@deb02632504b",
+   "reason": "no per-expert group at layer 0"
+  },
+  {
+   "slug": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+   "reason": "no per-expert group at layer 0"
+  },
+  {
+   "slug": "thinkingmachines--Inkling-Small@8cc5877b44d3",
+   "reason": "no per-expert group at layer 2"
+  }
+ ],
+ "finding": {
+  "claim": "a THIRD architecture family confirms experts are indistinguishable from independence",
+  "evidence": [
+   "kimi_vl / moonshotai--Kimi-VL-A3B-Instruct@398eede0903c: n=64 real 0.9836 vs norm-matched null 0.9836, deficit +0.0%",
+   "qwen3_moe / Qwen--Qwen3-30B-A3B@ad44e777bcd1: n=128 real 0.9796 vs norm-matched null 0.9796, deficit +0.002%"
+  ],
+  "consequence": "kimi_vl at 64 experts and qwen3_moe at 128 both sit within 0.002% of their own null. The independence result is not a Qwen artefact and does not depend on expert count. Every linear sharing class over these organs is dead by exhaustion rather than by a threshold."
+ },
+ "why_nine_were_not_measured": {
+  "stacked_or_other_scheme": 6,
+  "guard_stop_insufficient_free_ram": 2,
+  "note": "six bodies store experts STACKED (a 3D tensor with the expert axis first) or under w1/w13 names, which the per-expert regex cannot address. That is the scheme-table work now in flight. Two were refused by the campaign guard with 2.8 and 3.6 GB free while two Grok lanes held memory -- a refusal, not a failure."
+ }
+}

@@ -659,10 +659,16 @@
    "class": "MOE-FLOAT",
    "axes": {
     "anatomy": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "cross_expert_deficit_pct": 0.002,
+      "n_experts": 128,
+      "projection": "down_proj",
+      "layer": 0,
+      "verdict": "sharing is DEAD: 0.00% from a norm-matched null (n=128, noise floor for the old p/n rule is 0.9922) -- these rows are as independent as random vectors of the same norms"
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/G034_MOE_ANATOMY_NULL_CALIBRATED.json"
     },
     "ebpw": {
      "state": "MEASURED",
@@ -809,10 +815,16 @@
    "class": "MOE-FLOAT",
    "axes": {
     "anatomy": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "cross_expert_deficit_pct": 0.0,
+      "n_experts": 64,
+      "projection": "down_proj",
+      "layer": 1,
+      "verdict": "sharing is DEAD: 0.00% from a norm-matched null (n=64, noise floor for the old p/n rule is 0.9844) -- these rows are as independent as random vectors of the same norms"
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/G034_MOE_ANATOMY_NULL_CALIBRATED.json"
     },
     "ebpw": {
      "state": "MEASURED",
