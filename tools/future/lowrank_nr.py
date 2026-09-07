@@ -571,14 +571,46 @@ def structure_verdict(spectral: dict[str, Any]) -> str:
 # ---------------------------------------------------------------------------
 
 def metal_status() -> tuple[bool, str]:
+    """Can this process actually EVALUATE on the GPU?
+
+    This set the default device to mx.cpu, allocated there, and returned
+    "mlx cpu usable" -- a true sentence about the wrong device. It would answer True on
+    a machine with no GPU at all, because it never touched one.
+
+    A lane found that the expensive way. `mx.default_device()` reported Device(gpu, 0),
+    which NAMES a default rather than loading a device, and the next real allocation
+    raised "[metal::load_device] No Metal device available. This typically occurs in
+    headless, sandboxed, or virtualized macOS sessions." The G004 capability arm is
+    gated on this answer, so a check that cannot say no converts a resource refusal into
+    a mid-run crash inside mlx_lm.
+
+    The device is restored afterwards: this is a probe, not a mode change, and leaving
+    the default pinned is how the original version poisoned every later allocation.
+    """
     try:
         import mlx.core as mx
-        mx.set_default_device(mx.cpu)
-        x = mx.zeros((2, 2))
-        mx.eval(x)
-        return True, "mlx cpu usable"
     except Exception as e:
         return False, f"{type(e).__name__}: {e}"
+    previous = None
+    try:
+        previous = mx.default_device()
+    except Exception:
+        pass
+    try:
+        # Allocate AND evaluate on the gpu device. Naming it is not loading it.
+        x = mx.ones((8, 8), dtype=mx.float32) if hasattr(mx, "ones") else mx.zeros((8, 8))
+        with mx.stream(mx.gpu):
+            y = x + x
+            mx.eval(y)
+        return True, "metal usable: evaluated on mx.gpu"
+    except Exception as e:
+        return False, f"metal unavailable: {type(e).__name__}: {e}"
+    finally:
+        if previous is not None:
+            try:
+                mx.set_default_device(previous)
+            except Exception:
+                pass
 
 
 def capability_record() -> dict[str, Any]:
