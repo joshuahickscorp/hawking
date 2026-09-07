@@ -2101,7 +2101,26 @@ def _odyssey_record_measurement(context: ToolContext, args: Dict[str, Any]) -> D
     axis = str(args.get("axis") or "").strip()
     reason = args.get("reason")
     if reason not in (None, ""):
-        m.refused(rec, axis, str(reason))
+        text = str(reason)
+        # A refusal is EVIDENCE ABOUT A SPECIMEN. The ledger being written to is never
+        # evidence about anything inside it, and self-reference is how a bad tool call
+        # gets stored as a scientific finding. Round 13 passed this very file to
+        # odyssey.dense_anatomy as a snapshot, got a correct complaint about that
+        # argument, and wrote it onto a specimen's nr_candidate axis. The existing guard
+        # could not see it: the reason is long and does name a mechanism -- just not one
+        # about the body.
+        #
+        # Deliberately narrow. "Is this reason RELEVANT" cannot be checked, and demanding
+        # the slug would reject both legitimate refusals already on disk, neither of which
+        # names its own.
+        target_name = Path(path).name
+        if target_name in text or str(target) in text or path in text:
+            raise m.LedgerError(
+                f"{slug}/{axis}: this refusal is about {target_name}, the ledger being "
+                f"written to, not about the specimen. A tool-call error is not a finding. "
+                f"Record what the BODY refuses, with the mechanism the body gave you."
+            )
+        m.refused(rec, axis, text)
     else:
         # No receipt check here on purpose: odyssey_ledger.measured already refuses a
         # value without one, and restating a guard is how two copies drift apart. A
