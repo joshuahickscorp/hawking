@@ -81,10 +81,7 @@ pub fn snapshot() -> StartupTimingSnapshot {
         .get()
         .map(|t| duration_ms(t.elapsed()))
         .unwrap_or(0);
-    let phases = PHASES
-        .lock()
-        .map(|g| g.clone())
-        .unwrap_or_default();
+    let phases = PHASES.lock().map(|g| g.clone()).unwrap_or_default();
     StartupTimingSnapshot {
         enabled: enabled(),
         process_wall_ms,

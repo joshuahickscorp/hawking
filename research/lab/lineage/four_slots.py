@@ -5,7 +5,7 @@ import importlib.util
 import sys
 from pathlib import Path
 
-_PATH = Path(__file__).resolve().parents[2] / "tools" / "agentos" / "slots.py"
+_PATH = Path(__file__).resolve().parents[3] / "tools" / "agentos" / "slots.py"
 if not _PATH.is_file():
     raise ImportError(f"four-slot scheduler missing at {_PATH}")
 _spec = importlib.util.spec_from_file_location("hawking_agentos_slots", _PATH)

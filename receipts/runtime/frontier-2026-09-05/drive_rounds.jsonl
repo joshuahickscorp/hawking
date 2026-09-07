@@ -1,0 +1,1 @@
+{"round": 1, "elapsed_s": 569.5, "weaknesses": ["NO_FILE_LINE", "NO_NEGATIVE_CONTROL", "NOTHING_MEASURED"], "stalled": 0, "chars": 60, "tail": "structured output rejected after 3 attempts: empty response\n"}

@@ -1,32 +1,3 @@
-use crate::personalize::{
-    DynPersonalizationStore, InMemoryPersonalizationStore, JsonlPersonalizationStore,
-};
-use hawking_context::{
-    ClassedMemorySystem, ContextCompiler, DynClassedMemory, InMemoryMemoryStore, MemoryStore,
-    SqliteMemoryStore, TokenCounter,
-};
-use hawking_index::{CodeIndex, InMemoryCodeIndex, SqliteCodeIndex};
-use hawking_orch::RoleRegistry;
-use hawking_research::{DynResearchLedger, InMemoryResearchLedger, JsonlResearchLedger};
-use hide_core::config::HideConfig;
-use hide_core::event::JsonlEventLog;
-use hide_core::ids::{now_ms, EventId, SessionId};
-use hide_core::persistence::{
-    DynBlobStore, DynEventLog, DynEventLogIntegrity, DynKeyValueStore, DynProjectionStore,
-    FileBlobStore, FileKeyValueStore, FileProjectionStore, InMemoryBlobStore,
-    InMemoryKeyValueStore, InMemoryProjectionStore,
-};
-use hide_core::project::WorkspaceLayout;
-use hide_core::Result;
-use hide_kernel::security::audit::EventChainAuditor;
-use parking_lot::Mutex;
-use serde::{Deserialize, Serialize};
-use std::path::{Path, PathBuf};
-use std::sync::Arc;
-
-/// Shared code-index handle consumed by grounding / context compile / connectors.
-use super::*;
-
 // --- Durable Goal + Checkpoint records (bible sec 14, sec 15.4, sec 78.1 #3) ---
 
 /// The lifecycle of a durable [`GoalRecord`] (bible sec 14): a persisted
@@ -314,3 +285,4 @@ pub(crate) fn subbit_id(prefix: &str, session: &SessionId, seed: u128) -> String
     let hex = blake3::hash(material.as_bytes()).to_hex();
     format!("{prefix}_{}", &hex.as_str()[..24])
 }
+use super::*;

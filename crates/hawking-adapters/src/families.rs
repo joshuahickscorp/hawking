@@ -245,7 +245,7 @@ const QWEN_ABI: FamilyAbi = FamilyAbi {
     ]),
 };
 const GLM_EVIDENCE: &[Evidence] = &[
-    Evidence { path: "research/evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json", claim: "M04_SEALED: Rust adapter vs oracle on real flagship .gravity shards", kind: EvidenceKind::SmallCheckpointRun },
+    Evidence { path: "adapters/receipts/ADAPTER_GLM_RECEIPT.json", claim: "GLM adapter receipt; parity remains bounded", kind: EvidenceKind::SmallCheckpointRun },
     Evidence { path: "crates/hawking-core/src/model/gravity_engine.rs", claim: "GravityEngine dispatches glm_moe_dsa", kind: EvidenceKind::Description },
     Evidence { path: "crates/hawking-core/tests/gravity_artifact_suite.rs", claim: "committed .gravity artifact registry and integrity suite", kind: EvidenceKind::Description },
     // Stage C: this test runs UNCONDITIONALLY. Unlike the weight-gated tests, it does
@@ -369,8 +369,9 @@ const DEEPSEEK_ABI: FamilyAbi = FamilyAbi {
 };
 const KIMI_EVIDENCE: &[Evidence] = &[
     Evidence {
-        path: "research/evidence/kimi-k26/KIMI_K26_ADAPTER_TWIN.json",
-        claim: "synthetic CPU reference + bound real-source metal K1 twin",
+        path: "workspace/campaign/odyssey/watch-manifests/moonshotai--Kimi-K3@9f62e4e9fffb.json",
+        claim:
+            "Kimi source registry entry; adapter twin remains synthetic and not serve-registered",
         kind: EvidenceKind::SyntheticParity,
     },
     Evidence {
@@ -427,8 +428,8 @@ const KIMI_ABI: FamilyAbi = FamilyAbi {
     ]),
 };
 const MINIMAX_EVIDENCE: &[Evidence] = &[Evidence {
-    path: "research/evidence/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md",
-    claim: "family listed in bridge archaeology; no serve path found",
+    path: "workspace/campaign/evidence/systems/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md",
+    claim: "fabrication-control receipt; MiniMax remains declared and has no serve path",
     kind: EvidenceKind::Description,
 }];
 const MINIMAX_GAPS: &[&str] = &[

@@ -375,6 +375,10 @@ pub const SHADER_QWEN80_DEVICE_ACTIVATIONS: &str =
 /// Does not change the Q80-locked kernels above.
 pub const SHADER_QWEN38_DEVICE_ACTIVATIONS: &str =
     include_str!("../../shaders/qwen38_device_activations.metal");
+/// Batched prefill GEMM + chunkwise mixer for the Qwen3.8 hybrid resident.
+/// Concatenated after the Q38 activation file so it can call
+/// `qwen38_causal_conv_update_f32` / `qwen38_ba_decay_beta_f32`.
+pub const SHADER_QWEN38_PREFILL: &str = include_str!("../../shaders/qwen38_prefill.metal");
 /// Exact packed uniform-Q4 + FP16 group-scale Qwen component matvec. The
 /// fixed group-64 layout is a bounded operator primitive, not a complete
 /// decoder or model TPS surface.
@@ -459,6 +463,7 @@ pub fn all_shader_sources() -> String {
     srcs.push(SHADER_DSV4F_NATIVE_TOKEN_GRAPH);
     srcs.push(SHADER_DSV4F_ACTIVATION_X_BATCH);
     srcs.push(SHADER_QWEN38_DEVICE_ACTIVATIONS);
+    srcs.push(SHADER_QWEN38_PREFILL);
     // The TQ bitslice family is feature-gated: only compiled into the library
     // when `tq` is on.
     #[cfg(feature = "tq")]
@@ -1844,9 +1849,7 @@ mod imp {
             "deepseek_v4_fp8_gate_up_swiglu_bf16_fused" => {
                 "deepseek_v4_fp8_gate_up_swiglu_bf16_fused"
             }
-            "deepseek_v4_fp8_down_bf16_combine_fused" => {
-                "deepseek_v4_fp8_down_bf16_combine_fused"
-            }
+            "deepseek_v4_fp8_down_bf16_combine_fused" => "deepseek_v4_fp8_down_bf16_combine_fused",
             "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_simdgroup_v4_splitk_candidate" => {
                 "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_simdgroup_v4_splitk_candidate"
             }
@@ -2293,6 +2296,22 @@ mod imp {
             "rwkv7_sigmoid_bias_multiseq" => "rwkv7_sigmoid_bias_multiseq",
             "rwkv7_value_residual_mix_multiseq" => "rwkv7_value_residual_mix_multiseq",
             "rwkv7_add_into_flat" => "rwkv7_add_into_flat",
+            "qwen38_prefill_affine_q2_g64_gemm_mma_n64" => {
+                "qwen38_prefill_affine_q2_g64_gemm_mma_n64"
+            }
+            "qwen38_prefill_q4_g64_gemm_mma_n64" => "qwen38_prefill_q4_g64_gemm_mma_n64",
+            "qwen38_prefill_rmsnorm_f32" => "qwen38_prefill_rmsnorm_f32",
+            "qwen38_prefill_add_residual_f32" => "qwen38_prefill_add_residual_f32",
+            "qwen38_prefill_add_residual_rmsnorm_f32" => "qwen38_prefill_add_residual_rmsnorm_f32",
+            "qwen38_prefill_swiglu_f32" => "qwen38_prefill_swiglu_f32",
+            "qwen38_prefill_q4_embed" => "qwen38_prefill_q4_embed",
+            "qwen38_prefill_copy_row" => "qwen38_prefill_copy_row",
+            "qwen38_prefill_qkvz_rearrange_conv" => "qwen38_prefill_qkvz_rearrange_conv",
+            "qwen38_prefill_gated_delta_ba_f4" => "qwen38_prefill_gated_delta_ba_f4",
+            "qwen38_prefill_gated_rmsnorm" => "qwen38_prefill_gated_rmsnorm",
+            "qwen38_prefill_gqa_rope_cache" => "qwen38_prefill_gqa_rope_cache",
+            "qwen38_prefill_gqa_attn" => "qwen38_prefill_gqa_attn",
+            "qwen38_prefill_sigmoid_gate" => "qwen38_prefill_sigmoid_gate",
             _ => "other",
         }
     }
@@ -2770,16 +2789,8 @@ mod imp {
                 "qwen_affine_q2_group64_matvec_gate_up_swiglu_biasprep_drop_tpr64_tg128",
                 "qwen_q2f_group64_matvec",
                 "qwen_q2f_group64_matvec_geo_tpr64_tg128",
-                "qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128",
-                "qwen_q2f_group64_matvec_pair_geo_tpr64_tg128",
                 "qwen_q2f_group64_matvec_gate_up_geo_tpr64_tg128",
                 "qwen_q2f_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
-                "qwen_q2f_group64_matvec_pipe_tpr64_tg128",
-                "qwen_q2f_group64_matvec_splitk4_tg256",
-                "qwen_q2f_group64_matvec_gate_up_pipe_tpr64_tg128",
-                "qwen_q2f_group64_matvec_gate_up_swiglu_pipe_tpr64_tg128",
-                "qwen_q2f_group64_matvec_gate_up_splitk4_tg256",
-                "qwen_q2f_group64_matvec_gate_up_swiglu_splitk4_tg256",
                 "qwen_uniform_q3_group64_matvec_geo_tpr64_tg128",
                 "qwen_uniform_q3_group128_matvec_geo_tpr64_tg128",
             ] {
@@ -2789,11 +2800,60 @@ mod imp {
                     "{kernel} must compile from q80_mixed_decode.metal"
                 );
             }
+            // These fused Q2F attention names remain in the host taxonomy for
+            // fallback diagnostics, but no current shader defines them. The
+            // runtime must therefore use the per-tensor path instead of
+            // advertising an impossible pipeline.
+            assert!(!SHADER_Q80_MIXED_DECODE
+                .contains("kernel void qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128("));
+            assert!(!SHADER_Q80_MIXED_DECODE
+                .contains("kernel void qwen_q2f_group64_matvec_pair_geo_tpr64_tg128("));
+            for kernel in [
+                "qwen_q2f_group64_matvec_pipe_tpr64_tg128",
+                "qwen_q2f_group64_matvec_splitk4_tg256",
+                "qwen_q2f_group64_matvec_gate_up_pipe_tpr64_tg128",
+                "qwen_q2f_group64_matvec_gate_up_swiglu_pipe_tpr64_tg128",
+                "qwen_q2f_group64_matvec_gate_up_splitk4_tg256",
+                "qwen_q2f_group64_matvec_gate_up_swiglu_splitk4_tg256",
+            ] {
+                assert!(
+                    !SHADER_Q80_MIXED_DECODE.contains(&format!("kernel void {kernel}(")),
+                    "unsupported Q2F geometry {kernel} must not be advertised"
+                );
+            }
             for &kernel in KERNELS {
                 assert_eq!(static_kernel_name(kernel), kernel);
                 assert!(
                     SHADER_QWEN38_DEVICE_ACTIVATIONS.contains(&format!("kernel void {kernel}(")),
                     "{kernel} must compile from qwen38_device_activations.metal"
+                );
+            }
+        }
+
+        #[test]
+        fn qwen38_prefill_kernels_are_trace_named_and_compiled() {
+            use crate::metal::SHADER_QWEN38_PREFILL;
+            const KERNELS: &[&str] = &[
+                "qwen38_prefill_affine_q2_g64_gemm_mma_n64",
+                "qwen38_prefill_q4_g64_gemm_mma_n64",
+                "qwen38_prefill_rmsnorm_f32",
+                "qwen38_prefill_add_residual_f32",
+                "qwen38_prefill_add_residual_rmsnorm_f32",
+                "qwen38_prefill_swiglu_f32",
+                "qwen38_prefill_q4_embed",
+                "qwen38_prefill_copy_row",
+                "qwen38_prefill_qkvz_rearrange_conv",
+                "qwen38_prefill_gated_delta_ba_f4",
+                "qwen38_prefill_gated_rmsnorm",
+                "qwen38_prefill_gqa_rope_cache",
+                "qwen38_prefill_gqa_attn",
+                "qwen38_prefill_sigmoid_gate",
+            ];
+            for &kernel in KERNELS {
+                assert_eq!(static_kernel_name(kernel), kernel);
+                assert!(
+                    SHADER_QWEN38_PREFILL.contains(&format!("kernel void {kernel}(")),
+                    "{kernel} must compile from qwen38_prefill.metal"
                 );
             }
         }
@@ -3002,6 +3062,15 @@ mod imp {
 
         pub fn new_with_trace(trace_dispatch: bool) -> Result<Self> {
             crate::startup_timing::time_ms_result("metal_context_new_with_trace", || {
+                // Dummy Metal devices still abort at buffer allocation, so this
+                // must fire before any Metal call. Present and not 0/false/off/no.
+                if std::env::var_os("HAWKING_NO_GPU").is_some()
+                    && crate::env_opt_out("HAWKING_NO_GPU")
+                {
+                    return Err(Error::Metal(
+                        "HAWKING_NO_GPU is set; skipping Metal device construction".into(),
+                    ));
+                }
                 let device = Device::system_default()
                     .ok_or_else(|| Error::Metal("no Metal-capable GPU".into()))?;
                 let queue = device.new_command_queue();
@@ -3038,6 +3107,14 @@ mod imp {
             crate::startup_timing::time_ms_result(
                 "metal_context_new_with_trace_strict_math",
                 || {
+                    // Same abort-before-Metal gate as new_with_trace.
+                    if std::env::var_os("HAWKING_NO_GPU").is_some()
+                        && crate::env_opt_out("HAWKING_NO_GPU")
+                    {
+                        return Err(Error::Metal(
+                            "HAWKING_NO_GPU is set; skipping Metal device construction".into(),
+                        ));
+                    }
                     let device = Device::system_default()
                         .ok_or_else(|| Error::Metal("no Metal-capable GPU".into()))?;
                     let queue = device.new_command_queue();
@@ -4900,7 +4977,9 @@ mod imp {
         #[test]
         #[ignore = "requires a Metal device with compute indirect-command-buffer support"]
         fn replayable_icb_reuses_addresses_and_one_submit() {
-            let ctx = MetalContext::new_with_trace(true).unwrap();
+            let Ok(ctx) = MetalContext::new_with_trace(true) else {
+                return;
+            };
             let n = 257u32;
             let bytes = n as usize * std::mem::size_of::<f32>();
             let output = ctx.new_buffer(bytes);
@@ -5013,7 +5092,9 @@ mod imp {
         #[test]
         #[ignore = "requires a Metal device with compute indirect-command-buffer support"]
         fn replayable_icb_binds_scalar_buffers_for_b9430_rmsnorm() {
-            let ctx = MetalContext::new().unwrap();
+            let Ok(ctx) = MetalContext::new() else {
+                return;
+            };
             let x = ctx.new_buffer_with_bytes(bytemuck::cast_slice(&[1.0_f32; 8]));
             let weight = ctx.new_buffer_with_bytes(bytemuck::cast_slice(&[1.0_f32; 8]));
             let out = ctx.new_buffer(8 * std::mem::size_of::<f32>());
@@ -5085,7 +5166,9 @@ mod imp {
             use std::time::Instant;
             const N: u32 = 257;
             const SAMPLES: usize = 257;
-            let ctx = MetalContext::new_with_trace(true).unwrap();
+            let Ok(ctx) = MetalContext::new_with_trace(true) else {
+                return;
+            };
             let output = ctx.new_buffer(N as usize * std::mem::size_of::<f32>());
             let n_buffer = ctx.new_buffer_with_bytes(&N.to_ne_bytes());
             let split_9 =

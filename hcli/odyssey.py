@@ -2,22 +2,25 @@
 
 Odyssey is real and running under ``tools/odyssey_ctl.py`` (~8k lines: queue,
 patient packets, harvester, compiler-rule inference, run loop). O003 is
-already SEALED. HCLI has no odyssey verb, so a resident cannot see or drive
-any of it. This module is the connector, not a rewrite: every function here
+already SEALED. HCLI exposes a resident-facing Odyssey surface through this
+module. This module is the connector, not a rewrite: every driver function
 shells out to the existing driver's own subcommands. It adds nothing to the
 curriculum and encodes none of it.
 
 Two capability classes:
 
 * **inspect** -- ``status``, ``queue``, ``value``, ``economics``,
-  ``completions()``, ``patient()``, ``admit_check()``. Read-only, run
-  unconditionally, never write anything or spend a resource. ``admit_check``
-  is named after the CLI's ``admit`` verb but that verb only prints a
-  memgate/worker_gate/disk decision -- it never touches queue state -- so it
-  is read-only despite the name.
+  ``completions()``, ``patient()``. Read-only, run unconditionally, never
+  write anything or spend a resource. ``admit_check`` was listed here on the
+  ground that the CLI's ``admit`` verb only prints a memgate/worker_gate/disk
+  decision. It does not: ``cmd_admit`` calls ``reclaim_if_tight()``, which
+  runs ``tools/reclaim_safe.sh`` below ``DISK_WARN_GIB``, so it can delete
+  build caches and finished lane directories. It is not registered, and the
+  reason is recorded at its definition.
 
 * **continue** -- ``harvest``, ``write_packet``, ``run``, ``cycle``,
-  ``retire``, ``acquire_next``, ``completions(rebuild=True)``. Every one of
+  ``retire``, ``acquire_next``, ``completions(rebuild=True)``,
+  ``gravity_gauntlet``. Every one of
   these can mutate persistent Odyssey state, spawn a subprocess, or start a
   download. Each requires ``confirm=True`` or raises ``PermissionError``,
   mirroring the gate ``benchmark.run``/``accelerator.benchmark`` already use
@@ -72,12 +75,28 @@ def _run(args: list[str], timeout_s: float = 60.0) -> dict[str, Any]:
         text=True,
         timeout=timeout_s,
     )
+    stdout = proc.stdout
+    if (
+        args[:1] == ["acquire-next"]
+        and "--dry-run" in args
+        and proc.returncode == 1
+        and proc.stdout.startswith("REFUSE")
+    ):
+        stdout += "DRY-RUN: admission refusal; no download launched.\n"
     return {
         "schema": "hcli.odyssey.ctl.v1",
         "argv": args,
         "exit_code": proc.returncode,
-        "ok": proc.returncode == 0,
-        "stdout": proc.stdout,
+        # A dry-run acquisition can safely conclude REFUSE (disk/memory
+        # admission) and still completed its requested planning operation.
+        # Preserve the refusal in stdout/exit_code; ``ok`` describes the
+        # read-only HCLI call, not whether admission was granted.
+        "ok": proc.returncode == 0 or (
+            args[:1] == ["acquire-next"]
+            and "--dry-run" in args
+            and proc.stdout.startswith("REFUSE")
+        ),
+        "stdout": stdout,
         "stderr": proc.stderr,
     }
 
@@ -134,8 +153,11 @@ def patient(oxx: str) -> dict:
     }
 
 
+# cli-only: NOT read-only despite the name -- odyssey_ctl's cmd_admit ends in reclaim_if_tight(), which shells out to tools/reclaim_safe.sh (rm -rf build caches, finished lane dirs, dead worktrees) whenever free disk is under DISK_WARN_GIB, so registering it as an inspect verb would advertise a lie.
 def admit_check(slug: str, est_gib: float) -> dict:
-    """Memgate/worker_gate/disk-floor GO-or-REFUSE check. Prints only; writes nothing."""
+    """Memgate/worker_gate/disk-floor GO-or-REFUSE check. Never touches queue
+    state, but a REFUSE on the disk floor triggers a reclaim sweep on the way
+    out -- see the cli-only note above."""
     return _run(["admit", slug, str(est_gib)])
 
 
@@ -155,6 +177,7 @@ def write_packet(oxx: str, confirm: bool = False) -> dict:
     return _run(["packet", oxx])
 
 
+# cli-only: odyssey_ctl's cycle_tick() already calls run_loop() with the same lane caps, and odyssey.cycle is registered, so a second registered lane-spawner is duplicate COSTLY surface with no reachable behaviour of its own.
 def run(confirm: bool = False, dry_run: bool = True, max_lanes: int = 2, grok_lanes: int = 0) -> dict:
     args = ["run", "--max-lanes", str(max_lanes), "--grok-lanes", str(grok_lanes)]
     if dry_run:
@@ -185,11 +208,36 @@ def retire(oxx: str, confirm: bool = False) -> dict:
     return _run(["retire", oxx])
 
 
+# cli-only: --go starts a multi-hundred-GiB Hugging Face download; cycle_tick() already acquires when no obligation is ready, and acquisition.propose covers the read side, so nothing needs a bare registered download starter.
 def acquire_next(confirm: bool = False, dry_run: bool = True) -> dict:
     if dry_run:
         return _run(["acquire-next", "--dry-run"])
     _require_confirm(confirm, "acquire-next --go (starts a Hugging Face download)")
     return _run(["acquire-next", "--go"])
+
+
+def gravity_gauntlet(
+    oxx: str,
+    candidate_specs: list[str],
+    budget: int = 2,
+    state_path: Optional[str] = None,
+    receipt_dir: Optional[str] = None,
+    confirm: bool = False,
+) -> dict:
+    """Run one bounded, resumable Gravity search from existing patient receipts.
+
+    HCLI owns the checkpoint and next-candidate decision; the existing patient
+    runner remains the evaluator. This helper intentionally requires explicit
+    confirmation because it writes the gauntlet checkpoint.
+    """
+    _require_confirm(confirm, "odyssey.gravity_gauntlet")
+    if not candidate_specs:
+        raise ValueError("candidate_specs must not be empty")
+    from .gravity_gauntlet import run_from_receipts
+
+    state = state_path or str(ODYSSEY_DIR / "gauntlets" / f"{oxx}.json")
+    receipts = receipt_dir or str(REPO / "receipts" / "odyssey-i")
+    return run_from_receipts(state, oxx, candidate_specs, budget, receipts)
 
 
 # --------------------------------------------------------------------------

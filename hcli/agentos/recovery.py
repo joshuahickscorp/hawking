@@ -12,7 +12,7 @@ from pathlib import Path as _CausalityPath
 _CAUSALITY_ROOT = _CausalityPath(__file__).resolve().parents[2]
 if str(_CAUSALITY_ROOT) not in sys.path:
     sys.path.insert(0, str(_CAUSALITY_ROOT))
-from tools.future import status_causality as sc
+from tools.verify import status_causality as sc
 
 import argparse
 import io

@@ -96,7 +96,7 @@ SCARS: tuple[dict[str, Any], ...] = (
         "claim_refuted": "that naming a tool in source is evidence the tool was driven",
         "what_happened": (
             "the Odyssey gate's resident-schedulability probe accepted any AST Assign "
-            "containing a tool's path as proof a module drives it. odyssey_launch names "
+            "containing a tool's path as proof a module drives it. retired launch tooling names "
             "Doctor's scripts in an `owned = [...]` literal, so the gate certified "
             "ITSELF as Doctor's resident driver and scored schedule and frontier true."
         ),
@@ -108,7 +108,7 @@ SCARS: tuple[dict[str, Any], ...] = (
         "law": "DECLARED CAPABILITY != EXECUTED CAPABILITY. Require invocation, a "
                "resulting receipt, and the link between them.",
         "reopen_condition": "never",
-        "regression_test": "tools/future/test_odyssey_launch.py::"
+        "regression_test": "tools/verify/status_causality.py"
                            "test_negative_control_the_gate_cannot_certify_itself_as_the_driver",
     },
     {

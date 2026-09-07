@@ -83,6 +83,8 @@ class TestFragmentsAreNotCompiledAlone(unittest.TestCase):
         got = _python_syntax_violation(payload)
         self.assertIsNotNone(got)
         self.assertIn("not one line of it", got)
+        self.assertIn("trailing spaces", got)
+        self.assertLess(len(got), 400)
 
     def test_an_ambiguous_anchor_says_so(self):
         """Matching many places needs the opposite fix from matching none."""

@@ -1,4 +1,4 @@
-"""Call-site evidence, reused from tools.future.capability_reachability.
+"""Call-site evidence, reused from tools.roadmap.capability_reachability.
 
 This is not a second analyzer. It scopes that module's reader to a SourceView
 so sparse-checkout holes and mutation overlays are visible, then calls its
@@ -28,7 +28,7 @@ _WEAK_KIND = "weak_signal"
 
 
 def _load_cr():
-    from tools.future import capability_reachability as cr
+    from tools.roadmap import capability_reachability as cr
 
     return cr
 
@@ -167,7 +167,7 @@ def assemble_snapshot(view: SourceView) -> dict[str, Any]:
 
 
 def is_test_path(rel: str) -> bool:
-    """Same rule as tools.future.capability_reachability.is_test_path."""
+    """Same rule as tools.roadmap.capability_reachability.is_test_path."""
     p = Path(rel)
     name = p.name
     if name.startswith("test_") or name.endswith("_test.py"):
@@ -810,7 +810,7 @@ def scan_probe_ast(
     *,
     unique_paths: set[str],
 ) -> dict[str, Any]:
-    """Original AST path via tools.future.capability_reachability."""
+    """Original AST path via tools.roadmap.capability_reachability."""
     with install_view(view) as cr:
         pairs = _pairs(probe)
         needles: list[str] = []

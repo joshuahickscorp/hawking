@@ -26,7 +26,14 @@ from __future__ import annotations
 import inspect
 import unittest
 
+import re
+
 from hcli.engine import _SYSTEM_PROMPT, Engine
+
+# The prompt's JSON examples are written compactly to save prompt tokens.
+# Scrape on a whitespace-free view so the assertions test the CONTENT of the
+# example rather than how many spaces follow a colon.
+_COMPACT = re.sub(r"\s+", "", _SYSTEM_PROMPT)
 
 
 class TestContractMatchesVerifier(unittest.TestCase):
@@ -52,8 +59,8 @@ class TestContractMatchesVerifier(unittest.TestCase):
 
     def test_the_mutation_example_names_a_real_test_path(self):
         """An example is what the model copies, so the example must be valid."""
-        self.assertIn('"tests": ["hcli/', _SYSTEM_PROMPT)
-        self.assertNotIn('"tests": []\n  ,', _SYSTEM_PROMPT)
+        self.assertIn('"tests":["hcli/', _COMPACT)
+        self.assertNotIn('"tests":[],', _COMPACT)
 
     def test_read_only_answers_still_need_no_tests(self):
         """Negative control: only MUTATIONS require evidence.
@@ -61,8 +68,15 @@ class TestContractMatchesVerifier(unittest.TestCase):
         An `answer` has nothing to verify, and demanding a test for one would
         make every read-only question unanswerable.
         """
-        answer_block = _SYSTEM_PROMPT.split('"kind": "answer"')[1].split("}")[0]
-        self.assertIn('"tests": []', answer_block)
+        answer_block = _COMPACT.split('"kind":"answer"')[1].split("}")[0]
+        # The example demands no evidence for a read-only answer. It shows this by
+        # carrying no `tests` key at all, which is what the prompt's own "Omit
+        # mode-specific empty arrays" rule requires; an empty list is equally valid.
+        self.assertNotRegex(
+            answer_block,
+            r'"tests":\["',
+            "the answer example asks a read-only reply to name a test",
+        )
 
 
 if __name__ == "__main__":

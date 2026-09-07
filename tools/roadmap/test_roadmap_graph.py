@@ -242,7 +242,7 @@ def test_catalog_covers_every_appendix_o_gate(parsed):
 
 
 def test_capability_reachability_assemble_is_importable():
-    from tools.future.capability_reachability import assemble, build_repo_index, find_module_import_sites
+    from tools.roadmap.capability_reachability import assemble, build_repo_index, find_module_import_sites
 
     assert callable(assemble)
     assert callable(build_repo_index)

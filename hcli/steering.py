@@ -53,6 +53,12 @@ class SteerEvent:
     applied: bool = False
     applied_at: Optional[float] = None
     kind: str = "knowledge"
+    # Provenance. A supervisor injecting from a DETACHED process is the normal
+    # case, so the record has to say which mission the steer was aimed at and
+    # which session aimed it -- otherwise an orphaned steer is indistinguishable
+    # from an applied one.
+    mission_id: Optional[str] = None
+    source_session_id: Optional[str] = None
 
     def __post_init__(self) -> None:
         if self.kind not in STEER_KINDS:
@@ -66,6 +72,8 @@ class SteerEvent:
             "id": self.id,
             "text": self.text,
             "session_id": self.session_id,
+            "mission_id": self.mission_id,
+            "source_session_id": self.source_session_id,
             "timestamp": self.timestamp,
             "applied": self.applied,
             "applied_at": self.applied_at,
@@ -82,6 +90,12 @@ class SteerEvent:
             applied=data.get("applied", False),
             applied_at=data.get("applied_at"),
             kind=data.get("kind", "knowledge"),
+            # Round-trip the provenance. Writing it in to_dict without reading it
+            # back here lost it on every reload, which is precisely the state this
+            # provenance exists to prevent: an orphaned steer indistinguishable
+            # from a delivered one.
+            mission_id=data.get("mission_id"),
+            source_session_id=data.get("source_session_id"),
         )
 
 
@@ -93,7 +107,12 @@ class SteeringQueue:
         os.makedirs(self._dir, exist_ok=True)
         self._path = os.path.join(self._dir, f"{session_id}.json")
         self._events: List[SteerEvent] = []
+        self._seen_mtime: Optional[float] = None
         self._load()
+        try:
+            self._seen_mtime = os.path.getmtime(self._path) if os.path.isfile(self._path) else None
+        except OSError:
+            self._seen_mtime = None
 
     def _load(self):
         if os.path.isfile(self._path):
@@ -107,13 +126,22 @@ class SteeringQueue:
     def _save(self):
         atomic_write_json(self._path, [e.to_dict() for e in self._events])
 
-    def enqueue(self, text: str, kind: str = "knowledge") -> SteerEvent:
+    def enqueue(
+        self,
+        text: str,
+        kind: str = "knowledge",
+        *,
+        mission_id: Optional[str] = None,
+        source_session_id: Optional[str] = None,
+    ) -> SteerEvent:
         event = SteerEvent(
             id=str(uuid.uuid4()),
             text=text,
             session_id=self.session_id,
             timestamp=time.time(),
             kind=kind,
+            mission_id=mission_id,
+            source_session_id=source_session_id,
         )
         self._events.append(event)
         self._save()
@@ -138,7 +166,40 @@ class SteeringQueue:
         self._save()
 
     def all(self) -> List[SteerEvent]:
+        """Every steer, INCLUDING any a detached supervisor appended since load.
+
+        The queue is loaded once at construction, so a running mission held a
+        stale in-memory copy and never saw an externally injected steer. Routing
+        the steer to the right file (Controller.queue_steer) was only half the
+        path; this is the half that lets the mission read it.
+
+        Merge, never replace: the mission's own unsaved events must survive, so
+        only ids not already in memory are adopted.
+        """
+        self._absorb_external()
         return list(self._events)
+
+    def _absorb_external(self) -> None:
+        try:
+            mtime = os.path.getmtime(self._path) if os.path.isfile(self._path) else None
+        except OSError:
+            return
+        if mtime is None or mtime == getattr(self, "_seen_mtime", None):
+            return
+        self._seen_mtime = mtime
+        try:
+            with open(self._path) as f:
+                data = json.load(f)
+        except Exception:
+            return
+        known = {e.id for e in self._events}
+        for raw in data:
+            try:
+                event = SteerEvent.from_dict(raw)
+            except Exception:
+                continue
+            if event.id not in known:
+                self._events.append(event)
 
     def apply_constraint(self, event: SteerEvent, ledger: "Ledger") -> None:
         """Amend ``ledger`` from a constraint steer. Never marks VERIFIED.

@@ -191,7 +191,7 @@ def group_rust_tests() -> list[dict]:
 
 
 def group_python_tests() -> list[dict]:
-    rc, out = sh([PY, "-m", "pytest", "tools/", "research/ramanujan/scaffold/", "workspace/campaign/governance/odyssey/",
+    rc, out = sh([PY, "-m", "pytest", "tools/", "workspace/campaign/governance/odyssey/",
                   "-q", "--no-header", "--tb=no", "-p", "no:cacheprovider"], timeout=5400)
     mm = re.search(
         r"(?:(\d+) failed)?(?:, )?(\d+) passed(?:, (\d+) skipped)?"

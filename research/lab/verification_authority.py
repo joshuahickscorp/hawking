@@ -1,11 +1,10 @@
 #!/usr/bin/env python3.12
 """Verification authority + report-only model authority (Ascension Bible §2, §22).
 
-Generalizes the pattern already proven in:
-  - ``hawking-experiments/frankenstein/operators/frankenstein_promotion_gate.py`` (PENDING / ACCEPT / REJECT;
-    never fabricates ACCEPT; frozen targets; claim_boundary)
-  - ``hawking-experiments/frankenstein/operators/frankenstein_v0_seal.py`` independent ``verify`` (builder ≠
-    challenger ≠ verifier; seal integrity)
+Generalizes the pattern already proven in the sealed Frankenstein campaign:
+  - PENDING / ACCEPT / REJECT; never fabricates ACCEPT; frozen targets;
+    claim_boundary
+  - independent builder/challenger/verifier roles and seal integrity
   - ``lab/rules.py`` author-is-not-admitter
   - ``lab/receipts.GateEvidence`` (builder / challenger / verifier independence)
   - session grok-orchestration (Claude reviews, Grok proposes, nothing
@@ -76,7 +75,7 @@ class AuthorityPrincipal(str, Enum):
     HUMAN_OPERATOR = "human_operator"
 
 
-# Promotion-gate style aggregate (frankenstein_promotion_gate.evaluate_promotion)
+# Promotion-gate style aggregate, generalized from the sealed campaign.
 # maps into §22 classifications without fabricating certainty.
 _PROMOTION_GATE_TO_CLASSIFICATION: dict[str, ResultClassification] = {
     "ACCEPT": ResultClassification.PROMOTED_MECHANISM,
@@ -262,7 +261,7 @@ def map_promotion_gate_verdict(verdict: str) -> ResultClassification:
 def classify_check_aggregate(
     statuses: Sequence[str],
 ) -> ResultClassification:
-    """Generalize frankenstein_promotion_gate status aggregation.
+    """Generalize sealed-campaign promotion status aggregation.
 
     - any FAIL → REJECTED_MECHANISM
     - all PASS → PROMOTED_MECHANISM (still requires certify() to be authoritative)

@@ -8,7 +8,7 @@ from pathlib import Path
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
 from lab.operators.glm52_common import canonical, seal
-from ramanujan.restream_guard import (
+from tools.verify.restream_guard import (
     ACCOUNTING_COMPONENTS,
     ALIGNMENT_BYTES,
     ENVELOPE_BYTES,
@@ -199,7 +199,7 @@ def test_bounded_schedule_refuses_a_peak_above_the_envelope() -> None:
 def test_parent_launcher_cannot_substitute_the_whole_shard_fetcher() -> None:
     launcher = Path("research/ramanujan/scaffold/guards/RAMANUJAN_FINAL_PARENT_NEXT_COMMAND.sh").read_text(encoding="utf-8")
     assert "HAWKING_GLM52_RANGE_STREAM_EXECUTOR" in launcher
-    assert "ramanujan.status --require-hawking-complete" in launcher
+    assert "tools.verify.ramanujan_boundary --require-hawking-complete" in launcher
     assert "HAWKING_EVOLUTION_COMPLETE" in launcher
     assert "tools/condense/glm52_range_stream_executor.py" in launcher
     assert 'tools/condense/glm52_source_fetch.py run' not in launcher

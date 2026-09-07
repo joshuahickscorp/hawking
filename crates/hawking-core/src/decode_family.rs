@@ -42,10 +42,8 @@ pub const SWIGLU_BF16_WORKLIST: &str = "gk_swiglu_bf16_worklist";
 /// The fused path preserves the two authority matvec accumulation orders,
 /// the intermediate BF16 round-trip, and the route-weighted epilogue while
 /// removing the two FP32->BF16 staging dispatches.
-pub const WORKLIST_FP4_GATE_UP_SWIGLU_BF16: &str =
-    "gk_worklist_fp4_gate_up_swiglu_bf16";
-pub const WORKLIST_FP4_GATE_UP_SWIGLU_BF16_SIMD: &str =
-    "gk_worklist_fp4_gate_up_swiglu_bf16_simd";
+pub const WORKLIST_FP4_GATE_UP_SWIGLU_BF16: &str = "gk_worklist_fp4_gate_up_swiglu_bf16";
+pub const WORKLIST_FP4_GATE_UP_SWIGLU_BF16_SIMD: &str = "gk_worklist_fp4_gate_up_swiglu_bf16_simd";
 /// DSV4F (and Q80-if-worklisted) combine.
 pub const COMBINE_BF16: &str = "gk_combine_bf16";
 /// Device worklist pack. Default K=6; specialize kGkWorklistK=10 for Q80.
@@ -123,8 +121,7 @@ pub const LEGACY_WORKLIST_FP4: &str = "dsv4f_worklist_fp4_matvec";
 pub const LEGACY_WORKLIST_FP4_SIMD: &str = "dsv4f_worklist_fp4_matvec_simd";
 pub const LEGACY_SWIGLU_F32: &str = "qwen80_silu_mul_f32";
 pub const LEGACY_SWIGLU_BF16_WORKLIST: &str = "dsv4f_worklist_swiglu";
-pub const LEGACY_WORKLIST_FP4_GATE_UP_SWIGLU_BF16: &str =
-    "dsv4f_worklist_fp4_gate_up_swiglu_bf16";
+pub const LEGACY_WORKLIST_FP4_GATE_UP_SWIGLU_BF16: &str = "dsv4f_worklist_fp4_gate_up_swiglu_bf16";
 pub const LEGACY_WORKLIST_FP4_GATE_UP_SWIGLU_BF16_SIMD: &str =
     "dsv4f_worklist_fp4_gate_up_swiglu_bf16_simd";
 pub const LEGACY_COMBINE_BF16: &str = "dsv4f_worklist_combine";
@@ -237,20 +234,11 @@ mod tests {
     #[test]
     fn occupancy_tiles_keep_the_shipping_q80_names() {
         assert_eq!(MATVEC_BINARY_TILES, "q80_binary_group_matvec_tg256");
-        assert_eq!(
-            MATVEC_BINARY_CSR_TILES,
-            "q80_binary_group_csr_matvec_tg256"
-        );
+        assert_eq!(MATVEC_BINARY_CSR_TILES, "q80_binary_group_csr_matvec_tg256");
         assert_eq!(MATVEC_HGRAVS_TILES, "q80_hgravs01_factor_matvec_simd3");
-        assert_eq!(
-            MATVEC_HGRAVS_NBIT_TILES,
-            "q80_hgravs01_factor_matvec_simd"
-        );
+        assert_eq!(MATVEC_HGRAVS_NBIT_TILES, "q80_hgravs01_factor_matvec_simd");
         assert_eq!(MATVEC_UNIFORM8_TILES, "q80_uniform8_matvec_tg256");
-        assert_eq!(
-            MATVEC_UNIFORM8_SIMD_BYTES,
-            "q80_uniform8_matvec_simd_bytes"
-        );
+        assert_eq!(MATVEC_UNIFORM8_SIMD_BYTES, "q80_uniform8_matvec_simd_bytes");
         assert_eq!(matvec_binary_tiles(), MATVEC_BINARY_TILES);
         assert_eq!(matvec_binary_csr_tiles(), MATVEC_BINARY_CSR_TILES);
         assert_eq!(matvec_hgravs_tiles(), MATVEC_HGRAVS_TILES);
@@ -294,10 +282,7 @@ mod tests {
         let src = crate::metal::SHADER_GK_FAMILY;
         assert!(src.contains("n_heads == 24u && n_kv_heads == 4u"));
         assert!(src.contains("rope_theta == 10000000.0f"));
-        let gates = include_str!(concat!(
-            env!("CARGO_MANIFEST_DIR"),
-            "/src/kernels/mod.rs"
-        ));
+        let gates = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/src/kernels/mod.rs"));
         assert!(gates.contains("matches!(heads, 32 | 48)"));
         assert!(gates.contains("matches!(values_per_key_head, 2 | 3)"));
     }

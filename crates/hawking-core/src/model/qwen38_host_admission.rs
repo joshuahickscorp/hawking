@@ -16,10 +16,8 @@ use std::process::Command;
 /// same `uniform-q4-v1` artifact, `--max-seq-len 2048`, spawned together.
 pub const MEASURED_FOUR_CHILD_SUM_RSS_BYTES: u64 = 35_090_000_000;
 pub const MEASURED_FOUR_CHILD_MACHINE_BYTES: u64 = 40_670_000_000;
-pub const MEASURED_PROCESS_CHILD_RSS_BYTES: u64 =
-    MEASURED_FOUR_CHILD_SUM_RSS_BYTES / 4;
-pub const MEASURED_PROCESS_CHILD_MACHINE_BYTES: u64 =
-    MEASURED_FOUR_CHILD_MACHINE_BYTES / 4;
+pub const MEASURED_PROCESS_CHILD_RSS_BYTES: u64 = MEASURED_FOUR_CHILD_SUM_RSS_BYTES / 4;
+pub const MEASURED_PROCESS_CHILD_MACHINE_BYTES: u64 = MEASURED_FOUR_CHILD_MACHINE_BYTES / 4;
 pub const MEASURED_FREE_AT_FOUR_CHILD_LOAD_SPIKE_BYTES: u64 = 370_000_000;
 pub const MEASURED_FREE_ONCE_WARM_BYTES: u64 = 5_110_000_000;
 pub const MEASURED_FREE_BASELINE_BEFORE_BYTES: u64 = 45_780_000_000;
@@ -129,10 +127,7 @@ pub fn host_memory_snapshot() -> Result<HostMemory> {
         .output()
         .map_err(|error| Error::Model(format!("vm_stat: {error}")))?;
     if !output.status.success() {
-        return Err(Error::Model(format!(
-            "vm_stat exited {}",
-            output.status
-        )));
+        return Err(Error::Model(format!("vm_stat exited {}", output.status)));
     }
     let text = String::from_utf8_lossy(&output.stdout);
     let mut snap = parse_vm_stat(&text)?;

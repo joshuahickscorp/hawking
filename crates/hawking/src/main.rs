@@ -1,4 +1,6 @@
-// bench_kernel + bench_server extracted to the hawking-bench pack (NUCLEAR PASTA CLI collapse).
+// Benchmark suites live under the canonical hawking CLI package so one binary
+// owns dispatch, runtime, and benchmark lifecycle.
+mod bench;
 mod capture;
 // `studio` (quant-campaign orchestration) extracted to the hawking-lab pack (Architecture B).
 
@@ -718,7 +720,8 @@ enum Cmd {
     /// Print the SHA-256 prefix of all compiled Metal shader sources.
     /// Used to update kernel-profile JSON after shader changes.
     ShaderHash,
-    // BenchServer + BenchKernel extracted to the hawking-bench pack (NUCLEAR PASTA CLI collapse).
+    // Benchmark server/kernel helpers remain private implementation details of
+    // the canonical hawking CLI package.
     /// Verify model file integrity: compute SHA-256, print size, check sidecar.
     ///
     /// Usage:
@@ -1232,7 +1235,7 @@ fn main() -> Result<()> {
             max_new_tokens,
             backend,
             trace_dispatch,
-        } => hawking_bench::run(hawking_bench::BenchOptions {
+        } => bench::run(bench::BenchOptions {
             weights,
             model_id: model,
             suite,

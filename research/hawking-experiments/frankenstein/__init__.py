@@ -2,7 +2,8 @@
 
 The parent directory ``hawking-experiments`` is not a valid Python package
 name (dash). This module puts ``operators`` and ``condense`` on ``sys.path``
-so ``import frankenstein_ablation`` and the other 57 modules resolve.
+so the retained teacher-forced evidence operator and other current experiment
+modules resolve by their historical bare names.
 """
 from __future__ import annotations
 

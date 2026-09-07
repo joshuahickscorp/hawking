@@ -26,8 +26,8 @@ mod macos {
         analyze_stream, binary_weight_from_interleaved, deinterleave_fp4_blocks,
         deinterleave_q4_groups, dsv4f_expert_colocated_stream, dsv4f_expert_six_chunk_stream,
         dsv4f_fp4_interleaved_stream, dsv4f_fp4_split_stream, greedy_coreoute_order,
-        interleave_binary_group, interleave_fp4_blocks, interleave_q4_groups,
-        pack_triplet_blob, pair_mean_abs_distance, q4_weight_from_interleaved, q4_weight_from_split,
+        interleave_binary_group, interleave_fp4_blocks, interleave_q4_groups, pack_triplet_blob,
+        pair_mean_abs_distance, q4_weight_from_interleaved, q4_weight_from_split,
         q80_binary_interleaved_stream, q80_binary_split_stream, q80_expert_colocated_stream,
         q80_expert_six_file_stream, q80_q4_interleaved_stream, q80_q4_split_stream, rank_streams,
         read_npy_i16, read_npy_i32, scale_stream_to_token, unpack_triplet_blob, StreamStats,
@@ -691,7 +691,10 @@ mod macos {
                 },
             )?;
             let q4_b_err = max_abs(&q4_oracle, &read_f32(&out_b, Q80_GATE_ROWS));
-            let q4_ab = max_abs(&read_f32(&out_a, Q80_GATE_ROWS), &read_f32(&out_b, Q80_GATE_ROWS));
+            let q4_ab = max_abs(
+                &read_f32(&out_a, Q80_GATE_ROWS),
+                &read_f32(&out_b, Q80_GATE_ROWS),
+            );
             if q4_a_err > BINARY_TOL || q4_b_err > BINARY_TOL {
                 return Err(format!("q4 matvec vs oracle a={q4_a_err} b={q4_b_err}").into());
             }
@@ -702,7 +705,8 @@ mod macos {
             // Binary A/B
             let bin_oracle = binary_group_matvec_f32(&gate_bin, &x)?;
             let bin_sign_buf = ctx.new_buffer_with_bytes_checked(&gate_bin.signs)?;
-            let bin_scale_buf = ctx.new_buffer_with_bytes_checked(&as_u8_u16(&gate_bin.scales_f16))?;
+            let bin_scale_buf =
+                ctx.new_buffer_with_bytes_checked(&as_u8_u16(&gate_bin.scales_f16))?;
             let bin_inter_buf = ctx.new_buffer_with_bytes_checked(&gate_inter)?;
             write_f32(&out_a, &zeros);
             ctx.dispatch_threads(
@@ -768,8 +772,13 @@ mod macos {
                 fp4_packed_cols,
                 fp4_scale_cols,
             );
-            let fp4_inter =
-                interleave_fp4_blocks(&fp4_packed, &fp4_scales, fp4_rows, fp4_packed_cols, fp4_scale_cols)?;
+            let fp4_inter = interleave_fp4_blocks(
+                &fp4_packed,
+                &fp4_scales,
+                fp4_rows,
+                fp4_packed_cols,
+                fp4_scale_cols,
+            )?;
             let (fp4_p2, fp4_s2) =
                 deinterleave_fp4_blocks(&fp4_inter, fp4_rows, fp4_packed_cols, fp4_scale_cols)?;
             if fp4_p2 != fp4_packed || fp4_s2 != fp4_scales {
@@ -1131,7 +1140,10 @@ mod macos {
         if let Some(parent) = args.out.parent() {
             fs::create_dir_all(parent)?;
         }
-        fs::write(&args.out, format!("{}\n", serde_json::to_string_pretty(&receipt)?))?;
+        fs::write(
+            &args.out,
+            format!("{}\n", serde_json::to_string_pretty(&receipt)?),
+        )?;
         eprintln!("wrote {}", args.out.display());
         let _ = Q4_TOL;
         Ok(())

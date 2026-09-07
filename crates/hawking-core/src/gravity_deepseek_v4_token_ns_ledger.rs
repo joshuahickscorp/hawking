@@ -339,11 +339,8 @@ impl TokenNsCollector {
         // encode+submit+wait is host work between commit and wait (shared I/O
         // during attn GPU, prefetch_fill during moe GPU). Raw observation;
         // TOKEN_NS partitions it into exclusive serial classes.
-        let overlap_ns = host_wall_ns.saturating_sub(
-            encode_ns
-                .saturating_add(submit_ns)
-                .saturating_add(wait_ns),
-        );
+        let overlap_ns = host_wall_ns
+            .saturating_sub(encode_ns.saturating_add(submit_ns).saturating_add(wait_ns));
         self.add_stage("metal.cb_overlap_host", overlap_ns, 1, 0);
         if let Some(gpu) = gpu_ns {
             self.add_stage("metal.gpu", gpu, 1, 0);
@@ -368,7 +365,14 @@ impl TokenNsCollector {
         self.last_cb_end = Some(Instant::now());
     }
 
-    pub fn record_sync(&mut self, name: &str, layer: Option<usize>, force: &str, block_ns: u64, bytes: u64) {
+    pub fn record_sync(
+        &mut self,
+        name: &str,
+        layer: Option<usize>,
+        force: &str,
+        block_ns: u64,
+        bytes: u64,
+    ) {
         self.add_stage(name, block_ns, 1, bytes);
         self.host_syncs.push(HostSyncRow {
             name: name.to_owned(),
@@ -379,13 +383,7 @@ impl TokenNsCollector {
         });
     }
 
-    pub fn record_route_readback(
-        &mut self,
-        layer: usize,
-        ns: u64,
-        blocks: &str,
-        force: &str,
-    ) {
+    pub fn record_route_readback(&mut self, layer: usize, ns: u64, blocks: &str, force: &str) {
         let index = self.route_id_readbacks.len();
         self.route_id_readbacks.push(RouteReadbackRow {
             layer,
@@ -397,7 +395,13 @@ impl TokenNsCollector {
         self.add_stage("host.route_id_readback", ns, 1, 6 * 4);
     }
 
-    pub fn record_isolated(&mut self, name: &str, layer: usize, overhead_ns: u64, timing: &MetalBatchTiming) {
+    pub fn record_isolated(
+        &mut self,
+        name: &str,
+        layer: usize,
+        overhead_ns: u64,
+        timing: &MetalBatchTiming,
+    ) {
         self.probe_overhead_ns = self.probe_overhead_ns.saturating_add(overhead_ns);
         self.isolated_kernels.push(IsolatedKernelRow {
             name: name.to_owned(),
@@ -414,13 +418,7 @@ impl TokenNsCollector {
         self.probe_overhead_ns
     }
 
-    pub fn finish(
-        self,
-        body_ns: u64,
-        init_ns: u64,
-        wall_ns: u64,
-        verify_ns: u64,
-    ) -> TokenNsLedger {
+    pub fn finish(self, body_ns: u64, init_ns: u64, wall_ns: u64, verify_ns: u64) -> TokenNsLedger {
         let production_command_buffers = self.command_buffers.len() as u64;
         let production_dispatches = self
             .command_buffers
@@ -436,8 +434,8 @@ impl TokenNsCollector {
             .iter()
             .filter(|cb| cb.gpu_ns.is_some())
             .count() as u64;
-        let metal_gpu_ns_missing_cbs = production_command_buffers
-            .saturating_sub(metal_gpu_ns_observed_cbs);
+        let metal_gpu_ns_missing_cbs =
+            production_command_buffers.saturating_sub(metal_gpu_ns_observed_cbs);
         let metal_host_wall_ns = self
             .command_buffers
             .iter()
@@ -505,7 +503,10 @@ impl TokenNsCollector {
     }
 }
 
-fn account_gpu_gaps(cbs: &[CommandBufferRow], host_between_cb_exclusive_ns: u64) -> GpuGapAccounting {
+fn account_gpu_gaps(
+    cbs: &[CommandBufferRow],
+    host_between_cb_exclusive_ns: u64,
+) -> GpuGapAccounting {
     let mut observed = 0u64;
     let mut missing = 0u64;
     let mut first_start = None;
@@ -557,7 +558,8 @@ fn account_gpu_gaps(cbs: &[CommandBufferRow], host_between_cb_exclusive_ns: u64)
         Some(busy as f64 / encoders as f64)
     };
     GpuGapAccounting {
-        timestamp_authority: "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait; never a CPU-wall proxy",
+        timestamp_authority:
+            "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait; never a CPU-wall proxy",
         intra_cb_kernel_gaps_visible: false,
         observed_timestamp_pairs: observed,
         missing_timestamp_pairs: missing,
@@ -611,7 +613,11 @@ fn operator_class_rows(
     body_ns: u64,
 ) -> Vec<StageRow> {
     let mut classes: BTreeMap<&'static str, StageAccum> = BTreeMap::new();
-    let bump = |map: &mut BTreeMap<&'static str, StageAccum>, name: &'static str, ns: u64, calls: u64, bytes: u64| {
+    let bump = |map: &mut BTreeMap<&'static str, StageAccum>,
+                name: &'static str,
+                ns: u64,
+                calls: u64,
+                bytes: u64| {
         let row = map.entry(name).or_default();
         row.ns = row.ns.saturating_add(ns);
         row.calls = row.calls.saturating_add(calls);
@@ -646,13 +652,7 @@ fn operator_class_rows(
     }
     for row in isolated {
         let class = isolated_class(&row.name);
-        bump(
-            &mut classes,
-            class,
-            row.gpu_ns.unwrap_or(row.wait_ns),
-            1,
-            0,
-        );
+        bump(&mut classes, class, row.gpu_ns.unwrap_or(row.wait_ns), 1, 0);
         let fine = isolated_fine(&row.name);
         bump(&mut classes, fine, row.gpu_ns.unwrap_or(row.wait_ns), 1, 0);
     }
@@ -766,7 +766,10 @@ fn isolated_class(name: &str) -> &'static str {
         || name.contains("per_head")
     {
         "isolated.mla"
-    } else if name.contains("w1") || name.contains("w2") || name.contains("w3") || name.contains("swiglu")
+    } else if name.contains("w1")
+        || name.contains("w2")
+        || name.contains("w3")
+        || name.contains("swiglu")
     {
         if name.contains("shared") {
             "isolated.shared_expert"
@@ -883,9 +886,7 @@ fn diagnose(
     }
     if gpu_pct >= 55.0 {
         let isolated_note = if isolated_gpu > 0 {
-            format!(
-                " isolated-kernel GPU sum={isolated_gpu}ns wait={isolated_wait}ns"
-            )
+            format!(" isolated-kernel GPU sum={isolated_gpu}ns wait={isolated_wait}ns")
         } else {
             String::new()
         };
@@ -1150,12 +1151,10 @@ mod tests {
         c.add_stage("host.attn_weight_io", 2_000_000_000, 43, 8_000_000_000);
         let ledger = c.finish(3_000_000_000, 200_000_000, 3_200_000_000, 1_200_000_000);
         assert_eq!(ledger.diagnosis, TokenBodyDiagnosis::IoBound);
-        assert!(
-            ledger
-                .host_wall_classes
-                .iter()
-                .any(|row| row.name == "file_source_reads" && row.ns == 2_000_000_000)
-        );
+        assert!(ledger
+            .host_wall_classes
+            .iter()
+            .any(|row| row.name == "file_source_reads" && row.ns == 2_000_000_000));
     }
 
     #[test]
@@ -1165,7 +1164,10 @@ mod tests {
         assert_eq!(host_wall_class("host.attn_weight_io_prefetch"), None);
         assert_eq!(host_wall_class("host.memcpy"), Some("memcpy"));
         assert_eq!(host_wall_class("host.mhc_pre"), Some("state_movement"));
-        assert_eq!(host_wall_class("host.expert_slab_io"), Some("file_source_reads"));
+        assert_eq!(
+            host_wall_class("host.expert_slab_io"),
+            Some("file_source_reads")
+        );
     }
 
     #[test]

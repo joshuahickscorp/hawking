@@ -7,13 +7,13 @@
 
 use super::{
     absolute_path, admission_warm_receipt, canonical_directory, canonical_expected_regular_path,
-    canonical_regular_path, expected_tensor_path, is_sha256, model_error, parse_complete_binary_header,
-    parse_json_no_duplicate_keys, quality_payload_verification_lanes, read_regular_file,
-    require_exact_regular_path, require_exact_string, require_safe_filename, required_array,
-    required_bool, required_f64, required_object, required_sha256, required_string, required_u64,
-    sha256_hex, validate_source_chain_at, verify_sealed_document, CompleteBinaryAdmission,
-    CompleteBinaryArtifact, CompleteBinaryHeader, CompleteBinaryTensor, QwenCompleteBinaryModel,
-    COMPLETE_BINARY_CANDIDATE_STATUS, COMPLETE_BINARY_VERSION,
+    canonical_regular_path, expected_tensor_path, is_sha256, model_error,
+    parse_complete_binary_header, parse_json_no_duplicate_keys, quality_payload_verification_lanes,
+    read_regular_file, require_exact_regular_path, require_exact_string, require_safe_filename,
+    required_array, required_bool, required_f64, required_object, required_sha256, required_string,
+    required_u64, sha256_hex, validate_source_chain_at, verify_sealed_document,
+    CompleteBinaryAdmission, CompleteBinaryArtifact, CompleteBinaryHeader, CompleteBinaryTensor,
+    QwenCompleteBinaryModel, COMPLETE_BINARY_CANDIDATE_STATUS, COMPLETE_BINARY_VERSION,
 };
 use crate::{Error, Result};
 use half::f16;
@@ -74,7 +74,8 @@ pub const QWEN30_ACTIVATION_WEIGHTED_SVD_TERMINAL_SCHEMA: &str =
 pub const QWEN30_ACTIVATION_WEIGHTED_SVD_BRANCH_ID: &str = "qwen30-activation-weighted-svd-v1";
 pub const QWEN30_ACTIVATION_WEIGHTED_SVD_MODEL_ID: &str =
     "Qwen3-Coder-30B-A3B-Instruct-activation-weighted-svd-v1";
-pub const QWEN30_ACTIVATION_WEIGHTED_SVD_ARTIFACT_PREFIX: &str = "QWEN30_ACTIVATION_WEIGHTED_SVD_V1";
+pub const QWEN30_ACTIVATION_WEIGHTED_SVD_ARTIFACT_PREFIX: &str =
+    "QWEN30_ACTIVATION_WEIGHTED_SVD_V1";
 pub const QWEN30_ACTIVATION_WEIGHTED_SVD_TENSOR_COUNT: usize = 18_867;
 const QWEN30_ACTIVATION_WEIGHTED_SVD_MAX_PAYLOAD_VERIFY_WORKERS: usize = 4;
 pub const QWEN30_ACTIVATION_WEIGHTED_SVD_PAYLOAD_VERIFY_MODE: &str =
@@ -228,10 +229,12 @@ impl Qwen30ActivationWeightedSvdArtifact {
                         "activation-weighted HGRAVS01 tensor {tensor_name:?} snapshot header differs from admission"
                     )));
                 }
-                Ok(Qwen30ActivationWeightedVerifiedTensor::ActivationWeightedSvd {
-                    header: observed,
-                    payload,
-                })
+                Ok(
+                    Qwen30ActivationWeightedVerifiedTensor::ActivationWeightedSvd {
+                        header: observed,
+                        payload,
+                    },
+                )
             }
         }
     }
@@ -280,11 +283,13 @@ impl Qwen30ActivationWeightedSvdArtifact {
             );
             verified_payloads.insert(name.clone(), payload);
         }
-        if tensors.len() + self.selected_hgravs_organs.len() != QWEN30_ACTIVATION_WEIGHTED_SVD_TENSOR_COUNT
+        if tensors.len() + self.selected_hgravs_organs.len()
+            != QWEN30_ACTIVATION_WEIGHTED_SVD_TENSOR_COUNT
             || verified_payloads.len() != tensors.len()
         {
             return Err(Error::Model(
-                "activation-weighted direct-base view does not retain every non-HGRAVS organ".into(),
+                "activation-weighted direct-base view does not retain every non-HGRAVS organ"
+                    .into(),
             ));
         }
         Ok(CompleteBinaryArtifact {
@@ -307,8 +312,7 @@ fn json_usize(value: &Value, label: &str) -> Result<usize> {
     let number = value
         .as_u64()
         .ok_or_else(|| Error::Model(format!("{label} must be an unsigned integer")))?;
-    usize::try_from(number)
-        .map_err(|_| Error::Model(format!("{label} does not fit this platform")))
+    usize::try_from(number).map_err(|_| Error::Model(format!("{label} does not fit this platform")))
 }
 
 fn json_shape(value: &Value, label: &str) -> Result<Vec<usize>> {
@@ -356,15 +360,17 @@ fn parse_uniform_factor(meta: &Map<String, Value>, label: &str) -> Result<Hgravs
             "uniform factor elements disagree with shape product",
         ));
     }
-    let bits = u8::try_from(required_u64(meta, "bits", label)?).map_err(|_| {
-        model_error(label, "uniform factor bits do not fit u8")
-    })?;
+    let bits = u8::try_from(required_u64(meta, "bits", label)?)
+        .map_err(|_| model_error(label, "uniform factor bits do not fit u8"))?;
     if bits < 2 || bits > 8 {
         return Err(model_error(label, "uniform factor bits must be in 2..=8"));
     }
     let group_size = required_u64(meta, "group_size", label)? as usize;
     if group_size == 0 {
-        return Err(model_error(label, "uniform factor group_size must be positive"));
+        return Err(model_error(
+            label,
+            "uniform factor group_size must be positive",
+        ));
     }
     let groups = required_u64(meta, "groups", label)? as usize;
     let expected_groups = elements.div_ceil(group_size);
@@ -389,7 +395,8 @@ fn parse_uniform_factor(meta: &Map<String, Value>, label: &str) -> Result<Hgravs
             "uniform factor code_bytes disagree with packed geometry",
         ));
     }
-    let retained_padding_elements = required_u64(meta, "retained_padding_elements", label)? as usize;
+    let retained_padding_elements =
+        required_u64(meta, "retained_padding_elements", label)? as usize;
     if retained_padding_elements != groups * group_size - elements {
         return Err(model_error(
             label,
@@ -430,9 +437,11 @@ fn unpack_unsigned(body: &[u8], count: usize, bits: u8) -> Result<Vec<u8>> {
             let bit_value = bits_out[index * usize::from(bits) + usize::from(bit)];
             value |= u16::from(bit_value) << bit;
         }
-        codes.push(u8::try_from(value).map_err(|_| {
-            Error::Model("HGRAVS01 uniform code exceeds u8 after unpack".into())
-        })?);
+        codes.push(
+            u8::try_from(value).map_err(|_| {
+                Error::Model("HGRAVS01 uniform code exceeds u8 after unpack".into())
+            })?,
+        );
     }
     Ok(codes)
 }
@@ -448,7 +457,11 @@ pub fn decode_hgravs01_uniform_factor_f32(
         ));
     }
     let scales = &body[..factor.scale_bytes];
-    let codes = unpack_unsigned(&body[factor.scale_bytes..], factor.groups * factor.group_size, factor.bits)?;
+    let codes = unpack_unsigned(
+        &body[factor.scale_bytes..],
+        factor.groups * factor.group_size,
+        factor.bits,
+    )?;
     let bound = (1u16 << (factor.bits - 1)) - 1;
     let mut values = Vec::with_capacity(factor.elements);
     for element in 0..factor.elements {
@@ -464,7 +477,8 @@ pub fn decode_hgravs01_uniform_factor_f32(
             )));
         }
         let unsigned = u16::from(codes[element]);
-        let signed = i16::try_from(unsigned).unwrap_or(i16::MAX) - i16::try_from(bound).unwrap_or(0);
+        let signed =
+            i16::try_from(unsigned).unwrap_or(i16::MAX) - i16::try_from(bound).unwrap_or(0);
         values.push(f32::from(signed) * scale);
     }
     Ok(values)
@@ -477,7 +491,8 @@ pub fn parse_hgravs01_header(payload: &[u8]) -> Result<Hgravs01Header> {
             "activation-weighted SVD magic does not match HGRAVS01".into(),
         ));
     }
-    let header_len = u32::from_le_bytes([payload[8], payload[9], payload[10], payload[11]]) as usize;
+    let header_len =
+        u32::from_le_bytes([payload[8], payload[9], payload[10], payload[11]]) as usize;
     let body_offset = 12usize
         .checked_add(header_len)
         .ok_or_else(|| Error::Model("HGRAVS01 header length overflows".into()))?;
@@ -511,9 +526,7 @@ pub fn parse_hgravs01_header(payload: &[u8]) -> Result<Hgravs01Header> {
         "HGRAVS01 matrix_shape",
     )?;
     if matrix_shape.len() != 2 {
-        return Err(Error::Model(
-            "HGRAVS01 matrix_shape must be rank-2".into(),
-        ));
+        return Err(Error::Model("HGRAVS01 matrix_shape must be rank-2".into()));
     }
     let matrix_shape = [matrix_shape[0], matrix_shape[1]];
     let elements = required_u64(header, "elements", "HGRAVS01 header")? as usize;
@@ -522,7 +535,8 @@ pub fn parse_hgravs01_header(payload: &[u8]) -> Result<Hgravs01Header> {
             .checked_mul(*dimension)
             .ok_or_else(|| Error::Model("HGRAVS01 shape product overflows".into()))
     })?;
-    if elements == 0 || elements != shape_elements || elements != matrix_shape[0] * matrix_shape[1] {
+    if elements == 0 || elements != shape_elements || elements != matrix_shape[0] * matrix_shape[1]
+    {
         return Err(Error::Model(
             "HGRAVS01 elements disagree with shape/matrix_shape".into(),
         ));
@@ -533,8 +547,7 @@ pub fn parse_hgravs01_header(payload: &[u8]) -> Result<Hgravs01Header> {
     }
     let factor_bits = u8::try_from(required_u64(header, "factor_bits", "HGRAVS01 header")?)
         .map_err(|_| Error::Model("HGRAVS01 factor_bits do not fit u8".into()))?;
-    let factor_group_size =
-        required_u64(header, "factor_group_size", "HGRAVS01 header")? as usize;
+    let factor_group_size = required_u64(header, "factor_group_size", "HGRAVS01 header")? as usize;
     let left = parse_uniform_factor(
         required_object(header, "left", "HGRAVS01 header")?,
         "HGRAVS01 left factor",
@@ -612,9 +625,7 @@ pub fn parse_hgravs01_header(payload: &[u8]) -> Result<Hgravs01Header> {
 }
 
 /// Decode HGRAVS01 factors to host f32 without forming dense `W`.
-pub fn decode_hgravs01_factors_f32(
-    payload: &[u8],
-) -> Result<(Hgravs01Header, Vec<f32>, Vec<f32>)> {
+pub fn decode_hgravs01_factors_f32(payload: &[u8]) -> Result<(Hgravs01Header, Vec<f32>, Vec<f32>)> {
     let header = parse_hgravs01_header(payload)?;
     let left = decode_hgravs01_uniform_factor_f32(
         &header.left,
@@ -707,8 +718,10 @@ fn resolve_candidate_tensor_path(
 ) -> Result<PathBuf> {
     let expected = canonical_regular_path(&expected_tensor_path(root, tensor_name)?, label)?;
     let declared_path = PathBuf::from(declared);
-    if !path_basename_eq(&declared_path, expected.file_name().and_then(|v| v.to_str()).unwrap_or(""))
-    {
+    if !path_basename_eq(
+        &declared_path,
+        expected.file_name().and_then(|v| v.to_str()).unwrap_or(""),
+    ) {
         return Err(model_error(
             label,
             format!(
@@ -961,8 +974,13 @@ fn validate_aw_file_binding(
     let declared = absolute_path(required_string(binding, "path", label)?, label)?;
     if declared.exists() {
         require_exact_regular_path(binding, "path", expected_path, label)?;
-    } else if !path_basename_eq(&declared, expected_path.file_name().and_then(|v| v.to_str()).unwrap_or(""))
-    {
+    } else if !path_basename_eq(
+        &declared,
+        expected_path
+            .file_name()
+            .and_then(|v| v.to_str())
+            .unwrap_or(""),
+    ) {
         return Err(model_error(
             label,
             "file binding basename differs from protected document",
@@ -995,8 +1013,10 @@ fn validate_aw_selection_and_snapshot(
         &admission.expected_source_snapshot_path,
         "protected activation-weighted source snapshot",
     )?;
-    let selection_raw =
-        read_regular_file(&expected_selection_path, "activation-weighted selection receipt")?;
+    let selection_raw = read_regular_file(
+        &expected_selection_path,
+        "activation-weighted selection receipt",
+    )?;
     let selection =
         parse_json_no_duplicate_keys(&selection_raw, "activation-weighted selection receipt")?;
     let selection_seal =
@@ -1007,8 +1027,10 @@ fn validate_aw_selection_and_snapshot(
             "selection receipt seal differs from protected handoff binding",
         ));
     }
-    let snapshot_raw =
-        read_regular_file(&expected_snapshot_path, "activation-weighted source snapshot")?;
+    let snapshot_raw = read_regular_file(
+        &expected_snapshot_path,
+        "activation-weighted source snapshot",
+    )?;
     let snapshot =
         parse_json_no_duplicate_keys(&snapshot_raw, "activation-weighted source snapshot")?;
     let snapshot_seal = verify_sealed_document(&snapshot, "activation-weighted source snapshot")?;
@@ -1064,9 +1086,12 @@ fn validate_aw_selection_and_snapshot(
         ));
     }
 
-    let snapshot_root = snapshot
-        .as_object()
-        .ok_or_else(|| model_error("activation-weighted source snapshot", "root must be an object"))?;
+    let snapshot_root = snapshot.as_object().ok_or_else(|| {
+        model_error(
+            "activation-weighted source snapshot",
+            "root must be an object",
+        )
+    })?;
     require_exact_string(
         snapshot_root,
         "schema",
@@ -1079,8 +1104,11 @@ fn validate_aw_selection_and_snapshot(
         "EARNED_IMMUTABLE_SOURCE_AND_CAPTURE_BINDING",
         "activation-weighted source snapshot",
     )?;
-    let snapshot_binding =
-        required_object(snapshot_root, "binding", "activation-weighted source snapshot")?;
+    let snapshot_binding = required_object(
+        snapshot_root,
+        "binding",
+        "activation-weighted source snapshot",
+    )?;
     require_exact_string(
         snapshot_binding,
         "branch_id",
@@ -1100,9 +1128,12 @@ fn validate_aw_selection_and_snapshot(
         "activation-weighted source snapshot immutable revalidation",
     )?;
 
-    let selection_root = selection
-        .as_object()
-        .ok_or_else(|| model_error("activation-weighted selection receipt", "root must be an object"))?;
+    let selection_root = selection.as_object().ok_or_else(|| {
+        model_error(
+            "activation-weighted selection receipt",
+            "root must be an object",
+        )
+    })?;
     // Sealed selection coverage is the binding authority for the anti-partial
     // floor (mirrors representation.coverage already checked on the manifest).
     let selection_coverage = required_object(
@@ -1110,10 +1141,7 @@ fn validate_aw_selection_and_snapshot(
         "coverage",
         "activation-weighted selection receipt",
     )?;
-    validate_aw_coverage_floor(
-        selection_coverage,
-        "activation-weighted selection receipt",
-    )?;
+    validate_aw_coverage_floor(selection_coverage, "activation-weighted selection receipt")?;
     let selection_snapshot = required_object(
         selection_root,
         "source_binding_snapshot",
@@ -1156,7 +1184,12 @@ fn validate_aw_terminal(
         label,
     )?;
     let binding = required_object(object, "binding", label)?;
-    require_exact_string(binding, "model_id", QWEN30_ACTIVATION_WEIGHTED_SVD_MODEL_ID, label)?;
+    require_exact_string(
+        binding,
+        "model_id",
+        QWEN30_ACTIVATION_WEIGHTED_SVD_MODEL_ID,
+        label,
+    )?;
     require_exact_string(
         binding,
         "artifact_prefix",
@@ -1191,7 +1224,8 @@ fn validate_aw_terminal(
     let candidate = required_object(object, "candidate", label)?;
     // Portable path binding: require basename + seal/document identity rather
     // than the cleaned packing worktree absolute path.
-    let declared_manifest = absolute_path(required_string(candidate, "manifest_path", label)?, label)?;
+    let declared_manifest =
+        absolute_path(required_string(candidate, "manifest_path", label)?, label)?;
     if declared_manifest.exists() {
         require_exact_regular_path(candidate, "manifest_path", manifest_path, label)?;
     } else if !path_basename_eq(
@@ -1376,10 +1410,9 @@ fn warm_geometry_from_receipt_entry(
             .as_ref()
             .and_then(|value| hgravs01_header_from_json(value, "warm receipt hgravs01").ok())
             .map(WarmGeometryCache::ActivationWeightedSvd),
-        admission_warm_receipt::LAYOUT_KIND_HQ30G1B1 => entry
-            .header
-            .clone()
-            .map(WarmGeometryCache::Direct),
+        admission_warm_receipt::LAYOUT_KIND_HQ30G1B1 => {
+            entry.header.clone().map(WarmGeometryCache::Direct)
+        }
         _ => None,
     }
 }
@@ -1529,8 +1562,10 @@ fn validate_aw_tensor_row_with_payload(
                 "selected organ was not marked as the explicit activation-weighted mutation",
             ));
         }
-        let selection_declared =
-            absolute_path(required_string(mutation, "selection_receipt_path", label)?, label)?;
+        let selection_declared = absolute_path(
+            required_string(mutation, "selection_receipt_path", label)?,
+            label,
+        )?;
         if selection_declared.exists() {
             require_exact_regular_path(mutation, "selection_receipt_path", selection_path, label)?;
         } else if !path_basename_eq(
@@ -1787,15 +1822,11 @@ fn validate_aw_tensor_rows_bounded_parallel_with_warm(
                                 "activation-weighted SVD manifest tensor",
                             )?;
                             let warm = if let Some(map) = warm_payloads {
-                                Some(
-                                    map.get(name)
-                                        .cloned()
-                                        .ok_or_else(|| {
-                                            Error::Model(format!(
-                                                "warm admission missing preloaded payload for {name:?}"
-                                            ))
-                                        })?,
-                                )
+                                Some(map.get(name).cloned().ok_or_else(|| {
+                                    Error::Model(format!(
+                                        "warm admission missing preloaded payload for {name:?}"
+                                    ))
+                                })?)
                             } else {
                                 None
                             };
@@ -2123,12 +2154,13 @@ fn admit_qwen30_activation_weighted_svd_artifact_inner(
 
     // ---- Terminal seal (always) ----
     let phase = Instant::now();
-    let terminal_raw =
-        read_regular_file(&expected_terminal_path, "activation-weighted terminal receipt")?;
+    let terminal_raw = read_regular_file(
+        &expected_terminal_path,
+        "activation-weighted terminal receipt",
+    )?;
     let terminal =
         parse_json_no_duplicate_keys(&terminal_raw, "activation-weighted terminal receipt")?;
-    let terminal_seal =
-        verify_sealed_document(&terminal, "activation-weighted terminal receipt")?;
+    let terminal_seal = verify_sealed_document(&terminal, "activation-weighted terminal receipt")?;
     if terminal_seal != admission.expected_terminal_seal_sha256 {
         return Err(Error::Model(
             "activation-weighted terminal receipt seal differs from protected handoff binding"
@@ -2147,8 +2179,11 @@ fn admit_qwen30_activation_weighted_svd_artifact_inner(
     let terminal_object = terminal.as_object().ok_or_else(|| {
         Error::Model("activation-weighted terminal receipt root must be an object".into())
     })?;
-    let terminal_binding =
-        required_object(terminal_object, "binding", "activation-weighted terminal receipt")?;
+    let terminal_binding = required_object(
+        terminal_object,
+        "binding",
+        "activation-weighted terminal receipt",
+    )?;
     if required_sha256(
         terminal_binding,
         "source_body_audit_seal_sha256",
@@ -2281,10 +2316,9 @@ fn try_warm_aw_payload_admission(
     if !admission_warm_receipt::receipt_covers_manifest_rows(&receipt, rows, root, source)? {
         return Ok(None);
     }
-    let identity_ok =
-        crate::startup_timing::time_ms_result("admit_warm_identity_recheck", || {
-            admission_warm_receipt::receipt_identities_still_match(&receipt)
-        })?;
+    let identity_ok = crate::startup_timing::time_ms_result("admit_warm_identity_recheck", || {
+        admission_warm_receipt::receipt_identities_still_match(&receipt)
+    })?;
     if !identity_ok {
         // Any single identity mismatch forces FULL cold rehash of the catalog.
         return Ok(None);
@@ -2305,8 +2339,8 @@ fn try_warm_aw_payload_admission(
             warm_geometry_from_receipt_entry(entry).map(|geometry| (name.clone(), geometry))
         })
         .collect();
-    let geometry_hit = !warm_geometry.is_empty()
-        && admission_warm_receipt::receipt_geometry_complete(&receipt);
+    let geometry_hit =
+        !warm_geometry.is_empty() && admission_warm_receipt::receipt_geometry_complete(&receipt);
     if geometry_hit {
         crate::startup_timing::record_ms("admit_payload_warm_geometry_cache_hit", 1);
     } else {
@@ -2345,15 +2379,16 @@ fn try_warm_aw_payload_admission(
     // Upgrade older identity-only receipts (or any incomplete geometry set)
     // so subsequent warm hits get the full geometry skip.
     if !geometry_hit {
-        let _ = crate::startup_timing::time_ms_result("admit_warm_receipt_geometry_upgrade", || {
-            let specs = aw_receipt_specs_from_artifact(&artifact);
-            let upgraded = admission_warm_receipt::build_receipt_from_specs(
-                &artifact.manifest_path,
-                &artifact.manifest_seal_sha256,
-                &specs,
-            )?;
-            admission_warm_receipt::write_receipt(&upgraded)
-        });
+        let _ =
+            crate::startup_timing::time_ms_result("admit_warm_receipt_geometry_upgrade", || {
+                let specs = aw_receipt_specs_from_artifact(&artifact);
+                let upgraded = admission_warm_receipt::build_receipt_from_specs(
+                    &artifact.manifest_path,
+                    &artifact.manifest_seal_sha256,
+                    &specs,
+                )?;
+                admission_warm_receipt::write_receipt(&upgraded)
+            });
     }
 
     Ok(Some(artifact))
@@ -2420,8 +2455,11 @@ fn assemble_aw_artifact(
     }
     let (source_weight_elements, tensor_payload_bytes) =
         validate_aw_ledger(manifest_object, &tensors, manifest_raw_len)?;
-    let terminal_candidate =
-        required_object(terminal_object, "candidate", "activation-weighted terminal receipt")?;
+    let terminal_candidate = required_object(
+        terminal_object,
+        "candidate",
+        "activation-weighted terminal receipt",
+    )?;
     if required_u64(
         terminal_candidate,
         "all_required_weight_artifact_bytes",
@@ -2432,10 +2470,9 @@ fn assemble_aw_artifact(
             "activation-weighted terminal byte ledger differs from scanned manifest".into(),
         ));
     }
-    let exact_bpw = (tensor_payload_bytes + u64::try_from(manifest_raw_len).unwrap_or(u64::MAX))
-        as f64
-        * 8.0
-        / source_weight_elements as f64;
+    let exact_bpw =
+        (tensor_payload_bytes + u64::try_from(manifest_raw_len).unwrap_or(u64::MAX)) as f64 * 8.0
+            / source_weight_elements as f64;
     if (required_f64(
         terminal_candidate,
         "complete_physical_bpw",
@@ -2520,7 +2557,10 @@ mod tests {
         }
         let code_bytes = pack_unsigned(&codes, bits);
         let mut meta = Map::new();
-        meta.insert("schema".into(), Value::String(HGRAVS01_UNIFORM_SCHEMA.into()));
+        meta.insert(
+            "schema".into(),
+            Value::String(HGRAVS01_UNIFORM_SCHEMA.into()),
+        );
         meta.insert(
             "representation".into(),
             Value::String(format!("uniform_q{bits}_group_scale")),
@@ -2582,7 +2622,10 @@ mod tests {
         header.insert("factor_group_size".into(), Value::from(64u64));
         header.insert("left".into(), Value::Object(left_meta));
         header.insert("right".into(), Value::Object(right_meta));
-        header.insert("left_body_bytes".into(), Value::from(left_body.len() as u64));
+        header.insert(
+            "left_body_bytes".into(),
+            Value::from(left_body.len() as u64),
+        );
         header.insert(
             "right_body_bytes".into(),
             Value::from(right_body.len() as u64),
@@ -2634,10 +2677,9 @@ mod tests {
             assert!((native_value - dense_value).abs() < 1e-5);
         }
         // Direct HQ30G1B1 path must refuse the payload.
-        assert!(crate::model::qwen_complete_binary::complete_binary_matvec_f64(
-            &payload,
-            &input_f64
-        )
-        .is_err());
+        assert!(
+            crate::model::qwen_complete_binary::complete_binary_matvec_f64(&payload, &input_f64)
+                .is_err()
+        );
     }
 }

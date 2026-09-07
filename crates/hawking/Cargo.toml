@@ -23,7 +23,6 @@ tq = ["hawking-serve/tq", "hawking-core/tq"]
 [dependencies]
 hawking-core = { path = "../hawking-core" }
 hawking-serve = { path = "../hawking-serve" }
-hawking-bench = { path = "../hawking-bench" }
 hawking-speculate = { path = "../hawking-speculate" }
 anyhow = { workspace = true }
 clap = { workspace = true }

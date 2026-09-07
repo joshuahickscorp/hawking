@@ -2,7 +2,8 @@
 
 **Status:** SCAFFOLD SEALED (framework/formats/harnesses real; runtime stages gated)  
 **Seal companion:** `hawking-experiments/frankenstein/data/FUNCTIONAL_TRANSFER_PROGRAM.json`  
-**Related:** `FRANKENSTEIN_PROGRAM.md` (multi-stage product path); this doc is the
+**Related:** `research/hawking-experiments/frankenstein/data/FRANKENSTEIN_PROGRAM_PLAN.json`
+(multi-stage product path); this doc is the
 **trained functional-transfer** lane that must exist before any honest
 `PROTO_FRANKENSTEIN` capability claim.
 

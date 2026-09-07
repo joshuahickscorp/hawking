@@ -186,7 +186,10 @@ fn reps_cb(
         let g = t
             .gpu_ns
             .ok_or_else(|| format!("{label}: driver did not expose GPUEndTime-GPUStartTime"))?;
-        eprintln!("    rep{i} gpu={g} wait={} disp={}", t.wait_ns, t.dispatches);
+        eprintln!(
+            "    rep{i} gpu={g} wait={} disp={}",
+            t.wait_ns, t.dispatches
+        );
         gpu.push(g);
         wait.push(t.wait_ns);
         disp = t.dispatches;
@@ -318,7 +321,10 @@ fn run(args: Args) {
     let mut session = Qwen38HybridDecodeSession::open(&args.artifact_root, args.max_seq_len)
         .unwrap_or_else(|e| fail(e));
     let session_open_s = open_started.elapsed().as_secs_f64();
-    eprintln!("session open {session_open_s:.3}s dense_w={}", session.dense_w_materialized);
+    eprintln!(
+        "session open {session_open_s:.3}s dense_w={}",
+        session.dense_w_materialized
+    );
 
     session.apply_fusion(Qwen38MlpFusion::GateUpSwiglu, true, true);
     session.set_fuse_add_rmsnorm(true, false);
@@ -364,7 +370,10 @@ fn run(args: Args) {
             // Empty CB: the driver sometimes omits GPUStart/End. That is 0 ns
             // of GPU work, not a failed measurement.
             let g = t.gpu_ns.unwrap_or(0);
-            eprintln!("    rep{i} gpu={g} wait={} disp={}", t.wait_ns, t.dispatches);
+            eprintln!(
+                "    rep{i} gpu={g} wait={} disp={}",
+                t.wait_ns, t.dispatches
+            );
             gpu.push(g);
             wait.push(t.wait_ns);
             disp = t.dispatches;

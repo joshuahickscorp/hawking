@@ -49,7 +49,6 @@ import worker_gate  # noqa: E402
 import odyssey_candgen as candgen  # noqa: E402
 import odyssey_costmodel as costmodel  # noqa: E402
 import odyssey_memgate as memgate  # noqa: E402
-import odyssey_novelty as novelty  # noqa: E402
 
 ODYSSEY = REPO / "workspace" / "campaign" / "odyssey"
 STATE = ODYSSEY / "ODYSSEY_STATE.json"
@@ -77,6 +76,9 @@ HAWKING_REPO = Path("/Users/scammermike/Downloads/hawking")
 PREFERRED_PY = "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3"
 HF_BIN = Path("/Library/Frameworks/Python.framework/Versions/3.12/bin/hf")
 HF_HUB = Path.home() / ".cache" / "huggingface" / "hub"
+# The ModelLake volume. The one named place the lake lives; every other lake
+# path in this module is derived from it.
+MODELLAKE_ROOT = Path("/Volumes/corpdrive/hawking-modellake")
 
 DISK_FLOOR_GIB = 15.0
 DISK_WARN_GIB = 40.0
@@ -108,7 +110,6 @@ PHASES = (
 )
 PHASE_INDEX = {name: i for i, name in enumerate(PHASES)}
 TRANSFER_REF = {"O006": "O005"}
-NOVELTY_TEMPLATES = tuple(f"novelty-{lane}" for lane in novelty.LANES)
 TEMPLATES = (
     "external-science-moe",
     "external-science-dense",
@@ -124,7 +125,7 @@ TEMPLATES = (
     "nx-gather-moe",
     "nx-state-hybrid",
     "nx-dense",
-) + NOVELTY_TEMPLATES
+)
 # Known runner invocations. No novelty, no code change — the orchestrator
 # execs tools/odyssey_patient_runner.py itself (S004 §52/§55).
 DETERMINISTIC_TEMPLATES = frozenset({
@@ -173,7 +174,6 @@ TEMPLATE_MECHANISM = {
     "nx-gather-moe": "nx-gather-moe",
     "nx-state-hybrid": "nx-state-hybrid",
     "nx-dense": "nx-dense",
-    **{t: t for t in NOVELTY_TEMPLATES},
 }
 # Agreed runner flags (parallel lane owns the runner; these names are the contract).
 GRAVITY_SPEC = {
@@ -263,7 +263,6 @@ RECEIPT_PATTERN = {
     "transfer-control": "{oxx}_TRANSFER.json",
     **GRAVITY_RECEIPT,
     **NX_RECEIPT,
-    **{f"novelty-{lane}": "{oxx}_NOVELTY_" + lane + ".json" for lane in novelty.LANES},
     "patient-sealed": "{oxx}_PATIENT_SEAL.json",
 }
 # Bounded required set per class (steer S002 — do not over-deepen).
@@ -1136,8 +1135,6 @@ def write_scope(ob: dict) -> dict:
     writes: list[str] = []
     if template in RUNNER_WRITE_TEMPLATES or template in CODE_EDIT_TEMPLATES:
         writes = [RUNNER_REL, packet, rec]
-    elif template.startswith("novelty-"):
-        writes = [rec] if rec else []
     elif template == "transfer-control":
         writes = [
             packet,
@@ -1442,9 +1439,7 @@ def parse_science_task(name: str) -> tuple[str, str] | None:
         r"sensitivity-map|transfer-control|"
         r"gravity-aggressive-moe|gravity-aggressive-dense|gravity-aggressive-hybrid|"
         r"gravity-moe|gravity-dense|gravity-hybrid|"
-        r"nx-gather-moe|nx-state-hybrid|nx-dense|"
-        r"novelty-representation|novelty-numerical|novelty-arch|novelty-kernel|"
-        r"novelty-adversarial-falsifier|novelty-compression"
+        r"nx-gather-moe|nx-state-hybrid|nx-dense"
         r")(?:-\d{8}-\d{6})?$",
         name or "",
         re.I,
@@ -2073,138 +2068,11 @@ def oxx_from_task(name: str, parsed: dict) -> str | None:
     return f"O{m.group(1)}" if m else None
 
 
-def should_escalate(text: str, evidence: str) -> tuple[str, str] | None:
-    if evidence == "REFUTED":
-        return "CONTRADICTION", "evidence classified REFUTED"
-    if re.search(r"two (high-quality )?receipts disagree", text, re.I):
-        return "CONTRADICTION", "receipts disagree"
-    if re.search(r"\bANOMALY\b|\bESCALATE(?: TO OPUS)?\b", text):
-        return "ANOMALY", "explicit nomination"
-    if re.search(r"\bHARMFUL\b.*\btransfer\b", text, re.I):
-        return "MAJOR FALSE WIN", "harmful transfer"
-    return None
-
-
 def _task_status(task_dir: Path) -> str:
     p = task_dir / "status"
     if not p.is_file():
         return "unknown"
     return p.read_text(errors="replace").strip().splitlines()[0].strip().lower()
-
-
-def harvest(*, tasks_root: Path | None = None, receipt_dir: Path | None = None,
-            escalate_path: Path | None = None, state: dict | None = None,
-            classify: bool = False, dry_run: bool = False,
-            worktrees_root: Path | None = None, dest_root: Path | None = None,
-            review_queue: Path | None = None, cleanup_fn=None,
-            persist: bool | None = None) -> list[dict]:
-    """Scan completed odyssey-* grok lanes. Reject reports with no structured result.
-
-    classify/dry_run: hardened lane harvest (DATA-ONLY vs CODE). Default stays
-    the original report harvester so --self-check fixtures keep working.
-    """
-    if classify or dry_run:
-        return harvest_lanes(
-            tasks_root=tasks_root, receipt_dir=receipt_dir,
-            escalate_path=escalate_path, state=state, dry_run=dry_run,
-            worktrees_root=worktrees_root, dest_root=dest_root,
-            review_queue=review_queue, cleanup_fn=cleanup_fn, persist=persist,
-        )
-    root = Path(tasks_root) if tasks_root else GROK_TASKS
-    out_dir = Path(receipt_dir) if receipt_dir else RECEIPT_DIR
-    esc_path = Path(escalate_path) if escalate_path else ESCALATIONS
-    st = state if state is not None else ensure_state()
-    already = set(st.get("harvested") or [])
-    rows = []
-    if not root.is_dir():
-        return rows
-    out_dir.mkdir(parents=True, exist_ok=True)
-    for d in sorted(p for p in root.iterdir() if p.is_dir() and p.name.startswith("odyssey-")):
-        report = d / "grok-report.md"
-        stat = _task_status(d)
-        if stat in {"running", "queued", "starting"}:
-            continue
-        rec = {
-            "schema": "hawking.odyssey.harvest.v1",
-            "task": d.name,
-            "slug": re.sub(r"-\d{8}-\d{6}$", "", d.name),
-            "task_status": stat,
-            "verdict": "REJECTED",
-            "reason": "",
-            "evidence": "UNKNOWN",
-            "oxx": None,
-            "patient_hash": None,
-            "representation_hash": None,
-            "nx_hash": None,
-            "machine_state": None,
-            "command": "harvest",
-            "inputs": {"task_dir": str(d)},
-            "outputs": {},
-            "controls": [],
-            "assumptions": ["only odyssey-* slugs; running lanes skipped"],
-            "reopen_if": "structured result later appears in grok-report.md",
-            "_evidence": "DERIVED (harvester)",
-        }
-        if not report.is_file():
-            rec["reason"] = "malformed: no grok-report.md"
-        else:
-            try:
-                text = report.read_text(errors="replace")
-            except OSError as exc:
-                rec["reason"] = f"malformed: unreadable report ({exc})"
-                text = ""
-            if text:
-                parsed = parse_report(text)
-                rec["oxx"] = oxx_from_task(d.name, parsed)
-                rec["evidence"] = parsed["evidence"]
-                rec["_evidence"] = parsed["evidence"]
-                if not parsed["ok"]:
-                    rec["reason"] = "malformed: no structured result"
-                else:
-                    rec["verdict"] = "ACCEPTED"
-                    rec["reason"] = "ok"
-                    rec["outputs"] = {
-                        "finding": (parsed.get("completion") or "")[:400],
-                        "structured": parsed.get("structured"),
-                    }
-                    trig = should_escalate(text, parsed["evidence"])
-                    if trig:
-                        rec["escalation"] = {"trigger": trig[0], "note": trig[1]}
-                        esc_path.parent.mkdir(parents=True, exist_ok=True)
-                        with esc_path.open("a") as fh:
-                            fh.write(json.dumps({
-                                "task": d.name,
-                                "oxx": rec["oxx"],
-                                "trigger": trig[0],
-                                "note": trig[1],
-                                "evidence": parsed["evidence"],
-                                "_evidence": "INFERRED (harvester nomination, bible §9/§12)",
-                            }) + "\n")
-                    if receipt_dir is None:
-                        record_ctl_event(
-                            rec["oxx"], "grok", 0.0,
-                            grok_lane=d.name,
-                            opus=bool(trig),
-                            extra={"verdict": rec["verdict"], "harvest": "report"},
-                            persist=True,
-                        )
-        dest = out_dir / f"{d.name}.json"
-        write_json(dest, rec)
-        rows.append({"task": d.name, "verdict": rec["verdict"],
-                     "reason": rec["reason"], "oxx": rec["oxx"],
-                     "receipt": str(dest)})
-        if rec["verdict"] == "ACCEPTED" and rec["oxx"] and receipt_dir is None:
-            # only mutate real packets when writing to the real receipt dir
-            try:
-                write_packet(rec["oxx"], st)
-            except SystemExit:
-                pass
-        if d.name not in already:
-            already.add(d.name)
-    st["harvested"] = sorted(already)
-    if receipt_dir is None and escalate_path is None and tasks_root is None:
-        save_state(st)
-    return rows
 
 
 # ---------------------------------------------------------------------------
@@ -2902,10 +2770,6 @@ def arch_kind(oxx: str, pkt: dict | None, census: dict | None) -> str:
     return "dense"
 
 
-def has_census(oxx: str) -> bool:
-    return census_path(oxx).is_file()
-
-
 def load_census(oxx: str) -> dict | None:
     p = census_path(oxx)
     if not p.is_file():
@@ -2924,14 +2788,6 @@ def _unknownish(val) -> bool:
     return False
 
 
-def has_routing(pkt: dict | None) -> bool:
-    r = (pkt or {}).get("routing") or {}
-    if _unknownish(r.get("entropy")):
-        return False
-    ev = evidence_class(r.get("_evidence"))
-    return ev not in (None, "UNKNOWN")
-
-
 def has_baseline(pkt: dict | None) -> bool:
     ex = (pkt or {}).get("execution") or {}
     tps = ex.get("baseline_tps")
@@ -2943,21 +2799,6 @@ def has_baseline(pkt: dict | None) -> bool:
     if ev in (None, "UNKNOWN") and _unknownish(ex.get("baseline_tps")):
         # specimen tps still counts as a baseline for sensitivity gating
         return not _unknownish(ex.get("tps_specimen"))
-    return True
-
-
-def missing_sensitivity(pkt: dict | None) -> bool:
-    rep = (pkt or {}).get("representation") or {}
-    return rep.get("per_organ_sensitivity") in (None, "", {}, [])
-
-
-def needs_ssm_accounting(pkt: dict | None, kind: str) -> bool:
-    if kind != "hybrid":
-        return False
-    rep = (pkt or {}).get("representation") or {}
-    organs = rep.get("organs_bytes_GB") or {}
-    if "ssm" in organs:
-        return False
     return True
 
 
@@ -3152,132 +2993,6 @@ def pick_aggressive_spec(oxx: str, template: str,
     return default
 
 
-def _families_tried(oxx: str, pkt: dict | None, entries: list | None) -> list:
-    tried: list = []
-    grav = (pkt or {}).get("gravity") or {}
-    for key in ("wins", "kills"):
-        for item in grav.get(key) or []:
-            tried.append(item)
-    last = grav.get("last")
-    if isinstance(last, dict):
-        tried.append(last)
-    for e in entries or []:
-        if e.get("patient_id") != oxx:
-            continue
-        mech = str(e.get("mechanism_id") or "")
-        if mech.startswith("gravity") or is_aggressive_mechanism(mech):
-            tried.append(e)
-    return tried
-
-
-def _patient_best_class(oxx: str, pkt: dict | None, entries: list | None) -> str:
-    grav = (pkt or {}).get("gravity") or {}
-    if grav.get("candidate_class"):
-        return str(grav["candidate_class"])
-    last = grav.get("last") if isinstance(grav.get("last"), dict) else {}
-    if last.get("candidate_class"):
-        return str(last["candidate_class"])
-    for e in reversed(list(entries or [])):
-        if e.get("patient_id") == oxx and e.get("candidate_class"):
-            return str(e["candidate_class"])
-    if conventional_anchor_exists(oxx, entries):
-        return "CONVENTIONAL_ANCHOR"
-    return ""
-
-
-def _patient_target_delta(oxx: str, pkt: dict | None):
-    man = manifest_entry(oxx)
-    pressure = None
-    raw_p = man.get("stored_bpw_pressure")
-    try:
-        if raw_p is not None and raw_p != "UNKNOWN":
-            pressure = float(raw_p)
-    except (TypeError, ValueError):
-        pressure = None
-    if pressure is None:
-        zones = load_odyssey_policy().get("target_pressure_zones_bpw") or {}
-        try:
-            pressure = float(zones.get("pressure") or 2.5)
-        except (TypeError, ValueError):
-            pressure = 2.5
-    stored = None
-    grav = (pkt or {}).get("gravity") or {}
-    last = grav.get("last") if isinstance(grav.get("last"), dict) else {}
-    for src in (last, (pkt or {}).get("representation") or {}):
-        if not isinstance(src, dict):
-            continue
-        for key in ("complete_bpw", "stored_bpw", "best_stored_bpw_eq"):
-            if src.get(key) is None:
-                continue
-            try:
-                stored = float(src[key])
-                break
-            except (TypeError, ValueError):
-                continue
-        if stored is not None:
-            break
-    if stored is None:
-        return None
-    return stored - float(pressure)
-
-
-def should_novelty_escalate(oxx: str, pkt: dict | None,
-                            entries: list | None,
-                            state: dict | None = None) -> bool:
-    if not aggressive_probe_attempted(oxx, entries):
-        return False
-    tried = _families_tried(oxx, pkt, entries)
-    xfer_done = science_is_done(oxx, "transfer-control", entries) or not reference_sibling(
-        oxx, state
-    )
-    patient = {
-        "oxx": oxx,
-        "deterministic_search": True,
-        "deterministic_exhausted": True,
-        "rule_transfer": xfer_done,
-        "stages_completed": ["deterministic_search"] + (
-            ["rule_transfer"] if xfer_done else []
-        ),
-    }
-    return novelty.should_escalate(
-        patient,
-        _patient_best_class(oxx, pkt, entries),
-        _patient_target_delta(oxx, pkt),
-        tried,
-        load_odyssey_policy(),
-    )
-
-
-def _frontier_novelty_packet(oxx: str) -> dict:
-    pkt = load_packet(oxx) or {}
-    recs: list = []
-    if RECEIPT_DIR.is_dir():
-        for path in sorted(RECEIPT_DIR.glob(f"{oxx}_*.json")):
-            try:
-                recs.append(read_json(path))
-            except (OSError, json.JSONDecodeError):
-                continue
-    xfer_done = science_is_done(oxx, "transfer-control") or not reference_sibling(oxx)
-    patient = {
-        "oxx": oxx,
-        "kind": arch_kind(oxx, pkt, load_census(oxx)),
-        "deterministic_search": True,
-        "rule_transfer": xfer_done,
-        "stages_completed": ["deterministic_search"] + (
-            ["rule_transfer"] if xfer_done else []
-        ),
-    }
-    return novelty.build_packet(
-        patient,
-        pkt,
-        recs,
-        RULEBASE if RULEBASE.is_file() else {},
-        TRANSFER if TRANSFER.is_file() else {},
-        NEGATIVE if NEGATIVE.is_file() else {},
-        load_odyssey_policy(),
-    )
-
-
 def _ob_record(work: dict, template: str, *, source: str) -> dict:
     oxx = work["oxx"]
     man = manifest_entry(oxx)
@@ -3442,11 +3157,6 @@ def synthesize_for_patient(oxx: str, meta: dict, pkt: dict | None,
             rec["write_set"] = scope["write_set"]
             rec["exclusive_resources"] = scope["exclusive_resources"]
             out.append(rec)
-    if should_novelty_escalate(oxx, pkt, entries):
-        for lane in novelty.LANES:
-            add(f"novelty-{lane}", 9, 1, 0,
-                f"frontier novelty / {lane} (Grok; nonconventional)",
-                "novelty")
     return out
 
 
@@ -4067,23 +3777,6 @@ RENDERERS = {
     "nx-dense": lambda f, ob: render_nx(f, "nx-dense"),
 }
 
-
-def render_novelty_lane(f: dict, ob: dict) -> str:
-    oxx = f["oxx"]
-    lane = (ob.get("template") or "").removeprefix("novelty-")
-    packet = _frontier_novelty_packet(oxx)
-    dest_dir = f.get("_auto_dir")
-    novelty.render_lane_contracts(packet, auto_dir=dest_dir)
-    path = Path(dest_dir or AUTO_DIR) / f"{oxx.lower()}_novelty-{lane}.md"
-    if path.is_file():
-        return path.read_text()
-    return novelty._lane_contract_text(packet, lane)  # noqa: SLF001 — module API
-
-
-for _nov in NOVELTY_TEMPLATES:
-    RENDERERS[_nov] = lambda f, ob, _t=_nov: render_novelty_lane(f, ob)
-
-
 def render_contract(ob: dict, auto_dir: Path | None = None) -> Path:
     template = ob["template"]
     if template not in RENDERERS:
@@ -4137,7 +3830,7 @@ def odyssey_running_ids(
     now_epoch: float | None = None,
     pid_alive_fn=None,
 ) -> set[str]:
-    """Concurrent science lanes: live subprocess PIDs + live grok-novelty.
+    """Concurrent science lanes: live deterministic subprocess PIDs.
 
     Age-capped. Dead subprocess PIDs do not consume --max-lanes.
     The controller itself may run as odyssey-autonomous-loop-*; that is not a
@@ -4277,7 +3970,10 @@ def _started_epoch(w: dict) -> float | None:
 
 def resolve_patient_weights(oxx: str, pkt: dict | None = None,
                             census: dict | None = None) -> str:
-    """HF snapshot / census model_dir for --weights. Empty if unknown."""
+    """Weights dir for --weights, in order: an existing census model_dir /
+    packet on_disk, the HF hub cache snapshot, the ModelLake specimen for the
+    same revision, packet on_disk. Empty (or the recorded-but-absent path) if
+    nothing resolves."""
     census_d = census if census is not None else load_census(oxx)
     pkt_d = pkt if pkt is not None else load_packet(oxx)
     w = weights_dir(oxx, pkt_d, census_d)
@@ -4287,10 +3983,16 @@ def resolve_patient_weights(oxx: str, pkt: dict | None = None,
             return str(p)
     man = manifest_entry(oxx)
     src = (man.get("canonical_source") or "") if man else ""
+    ident = (pkt_d or {}).get("identity") or {}
     snap = hf_cache_snapshot(src)
     if snap is not None:
         return str(snap)
-    ident = (pkt_d or {}).get("identity") or {}
+    lake = modellake_snapshot(
+        src or str(ident.get("source_repo") or ""),
+        (man.get("canonical_revision") if man else None) or ident.get("revision"),
+    )
+    if lake is not None:
+        return str(lake)
     on_disk = ident.get("on_disk")
     if on_disk:
         p = Path(os.path.expanduser(str(on_disk)))
@@ -5725,9 +5427,42 @@ def hf_cache_snapshot(repo: str) -> Path | None:
     return None
 
 
+def modellake_snapshot(repo: str, revision: str | None = None) -> Path | None:
+    """Same body on the ModelLake volume, when the HF hub cache does not have it.
+
+    Sealed specimens live at ``specimens/<org>--<repo>@<rev12>`` in exactly the
+    flat layout a hub snapshot dir has (config.json beside the shards), so the
+    runner takes one without knowing the difference. This box's hub cache is
+    ~37 MB -- every model_dir a census recorded points into it and none of them
+    exist -- while the lake holds the same revisions.
+
+    A revision, when known, must match: a lake dir for a DIFFERENT revision is
+    not this patient's weights, and returning it silently would run the wrong
+    body. Only when no revision is known anywhere does an unambiguous
+    single-directory match stand in.
+    """
+    if not repo or "/" not in repo:
+        return None
+    specimens = MODELLAKE_ROOT / "specimens"
+    rev = str(revision or "").strip()
+    slug = repo.replace("/", "--")
+    if rev:
+        cands = [specimens / f"{slug}@{rev[:12]}"]
+    else:
+        cands = sorted(p for p in specimens.glob(f"{slug}@*") if p.is_dir())
+        if len(cands) != 1:
+            return None
+    for cand in cands:
+        if not (cand / "config.json").is_file():
+            continue
+        if list(cand.glob("*.safetensors")) or list(cand.glob("*.bin")):
+            return cand
+    return None
+
+
 # Where the watcher's --local-dir actually points. Kept beside the resolver so
 # the two cannot drift apart silently.
-MODELLAKE_PARTIAL_ROOT = Path("/Volumes/corpdrive/hawking-modellake/partial")
+MODELLAKE_PARTIAL_ROOT = MODELLAKE_ROOT / "partial"
 
 
 def modellake_destination() -> Path:
@@ -6859,42 +6594,7 @@ def _self_check() -> int:
     for sec in schema.get("fields") or {}:
         assert sec in assemble_packet("O005", st2), sec
 
-    # 5. harvest tolerates a malformed task dir
-    with tempfile.TemporaryDirectory() as td:
-        td = Path(td)
-        tasks, recs, esc = td / "tasks", td / "recs", td / "esc.jsonl"
-        mal = tasks / "odyssey-malformed-xyz"
-        mal.mkdir(parents=True)
-        (mal / "status").write_text("done\n")
-        (mal / "grok-report.md").write_text("just chatting, no result\n")
-        empty = tasks / "odyssey-empty-xyz"
-        empty.mkdir()
-        (empty / "status").write_text("done\n")
-        running = tasks / "odyssey-running-xyz"
-        running.mkdir()
-        (running / "status").write_text("running\n")
-        ignore = tasks / "not-odyssey-xyz"
-        ignore.mkdir()
-        (ignore / "grok-report.md").write_text("**Completion report**\n\nok\n")
-        good = tasks / "odyssey-o005-fixture-xyz"
-        good.mkdir()
-        (good / "status").write_text("done\n")
-        (good / "grok-report.md").write_text(
-            "**Completion report**\n\n"
-            "```json\n"
-            + json.dumps({"oxx": "O005", "finding": "fixture", "evidence": "HYPOTHESIS"})
-            + "\n```\n"
-        )
-        rows = harvest(tasks_root=tasks, receipt_dir=recs, escalate_path=esc, state=dict(st2))
-        by_task = {r["task"]: r for r in rows}
-        assert "odyssey-running-xyz" not in by_task
-        assert by_task["odyssey-malformed-xyz"]["verdict"] == "REJECTED"
-        assert by_task["odyssey-empty-xyz"]["verdict"] == "REJECTED"
-        assert by_task["odyssey-o005-fixture-xyz"]["verdict"] == "ACCEPTED"
-        assert by_task["odyssey-o005-fixture-xyz"]["oxx"] == "O005"
-        assert (recs / "odyssey-malformed-xyz.json").is_file()
-
-    # 6. governors: worker_gate refuses injected pressure; doctor_seal refuses empty
+    # 5. governors: worker_gate refuses injected pressure; doctor_seal refuses empty
     obs = {
         "total_gb": 100.0, "wired_gb": 4.63, "free_gb": 50.0, "inactive_gb": 10.0,
         "compressed_gb": 0.05, "swap_used_mb": 512.0, "workers_resident": 0,
@@ -7795,7 +7495,6 @@ def _self_check() -> int:
         ("external-science-dense", "O001"),
         ("route-map", "O003"),
         ("transfer-control", "O006"),
-        ("novelty-representation", "O005"),
     ):
         ws = write_scope({"oxx": oxx, "template": tmpl})
         assert RUNNER_REL not in ws["write_set"], (tmpl, ws)
@@ -7830,7 +7529,6 @@ def _self_check() -> int:
     assert is_deterministic_obligation({
         "template": "external-science-dense", "oxx": "O001",
     })
-    assert not is_deterministic_obligation("novelty-arch")
     assert not is_deterministic_obligation({
         "template": "gravity-moe", "code_building": True,
     })
@@ -8004,12 +7702,6 @@ def _self_check() -> int:
                     "template": "nx-gather-moe", "oxx": "O003", "task": "pid:999003",
                 },
                 {
-                    "status": "RUNNING", "kind": "grok",
-                    "task": "odyssey-o005-novelty-arch", "id": "d",
-                    "template": "novelty-arch", "oxx": "O005",
-                    "started_epoch": 50, "timeout_s": 100,
-                },
-                {
                     "status": "RUNNING", "kind": "subprocess", "pid": 999004,
                     "started_epoch": 0, "timeout_s": 10, "id": "e",
                     "template": "sensitivity-map", "oxx": "O006",
@@ -8026,14 +7718,13 @@ def _self_check() -> int:
             )
         finally:
             mod.live_odyssey_lanes = _orig_live2
-        # live PIDs 999001/999002 + live grok novelty; dead 999003 and
-        # over-timeout 999004 (even if we marked it live) excluded.
+        # live PIDs 999001/999002; dead 999003 and over-timeout 999004
+        # (even if we marked it live) are excluded.
         assert "pid:999001" in ids_cap, ids_cap
         assert "pid:999002" in ids_cap, ids_cap
         assert "pid:999003" not in ids_cap, ids_cap
         assert "pid:999004" not in ids_cap, ids_cap
-        assert "odyssey-o005-novelty-arch" in ids_cap, ids_cap
-        assert len(ids_cap) == 3, ids_cap
+        assert len(ids_cap) == 2, ids_cap
 
     print("self-check ok")
     return 0

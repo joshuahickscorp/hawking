@@ -7,23 +7,21 @@
 //! run; there is no reconstruct-to-Q4 path.
 
 use super::qwen38_64_layer_execution_schedule::qwen38_assert_schedule_intact;
-use super::qwen38_geometry::{ARGMAX_GROUPS, 
-    qwen38_layer_name,
-    Qwen38DeltaNetLayout, Qwen38MixerKind, QWEN38_DELTANET_LAYERS, QWEN38_FULL_ATTENTION_INTERVAL,
-    QWEN38_GQA_HEAD_DIM,
-    QWEN38_GQA_HEADS, QWEN38_GQA_KV_HEADS, QWEN38_GQA_LAYERS, QWEN38_GQA_ROTARY_DIM,
-    QWEN38_HIDDEN, QWEN38_INTERMEDIATE, QWEN38_LAYERS, QWEN38_RMS_EPS, QWEN38_ROPE_THETA,
+use super::qwen38_geometry::{
+    qwen38_layer_name, Qwen38DeltaNetLayout, Qwen38MixerKind, ARGMAX_GROUPS,
+    QWEN38_DELTANET_LAYERS, QWEN38_FULL_ATTENTION_INTERVAL, QWEN38_GQA_HEADS, QWEN38_GQA_HEAD_DIM,
+    QWEN38_GQA_KV_HEADS, QWEN38_GQA_LAYERS, QWEN38_GQA_ROTARY_DIM, QWEN38_HIDDEN,
+    QWEN38_INTERMEDIATE, QWEN38_LAYERS, QWEN38_PREFILL_CHUNK, QWEN38_RMS_EPS, QWEN38_ROPE_THETA,
     QWEN38_VOCAB,
 };
 use super::qwen38_pack::{
     load_qwen38_manifest, read_qwen38_f32_payload, QWEN38_EXPECTED_CATALOG_TENSORS,
 };
 use super::qwen_complete_binary::{
-    expand_rice_indices, mixed_gpu_layout, parse_uniform_q4_header, rice_q1_row_ptr,
-    uniform_factor_value, BinaryGroupPacked, MixedGpuKind, RiceQ1Packed, UniformFactorPacked,
-    MAGIC_AFFINE, MAGIC_BINARY, MAGIC_HGRAVS01, MAGIC_RESIDUAL_COMPACT, MAGIC_UNIFORM,
-    UNIFORM_Q4_GROUP_SIZE, UNIFORM_Q4_GROUP_SIZE_128, affine_group_size_supported,
-    uniform_q4_group_size_supported,
+    affine_group_size_supported, expand_rice_indices, mixed_gpu_layout, parse_uniform_q4_header,
+    rice_q1_row_ptr, uniform_factor_value, uniform_q4_group_size_supported, BinaryGroupPacked,
+    MixedGpuKind, RiceQ1Packed, UniformFactorPacked, MAGIC_AFFINE, MAGIC_BINARY, MAGIC_HGRAVS01,
+    MAGIC_RESIDUAL_COMPACT, MAGIC_UNIFORM, UNIFORM_Q4_GROUP_SIZE, UNIFORM_Q4_GROUP_SIZE_128,
 };
 use crate::tokenizer::Tokenizer;
 use crate::{Error, Result};
@@ -36,8 +34,7 @@ pub const QWEN38_MIXED_CATALOG_MAGIC: [u8; 8] = *b"HQ38M20\0";
 pub const QWEN38_MIXED_CATALOG_VERSION: u32 = 1;
 pub const QWEN38_MIXED_RECORD_SIZE: usize = 128;
 pub const QWEN38_MIXED_CATALOG_NAME: &str = "catalog.hq38m20";
-pub const QWEN38_MIXED_SCHEMA: &str =
-    "hawking.ascension.qwen38_mixed_representation_candidate.v1";
+pub const QWEN38_MIXED_SCHEMA: &str = "hawking.ascension.qwen38_mixed_representation_candidate.v1";
 pub const QWEN38_MIXED_HGRAVS_RANK: usize = 160;
 pub const QWEN38_MIXED_HGRAVS_BITS: u8 = 3;
 pub const QWEN38_MIXED_HGRAVS_GROUP: usize = 64;
@@ -74,7 +71,11 @@ fn fast_default_bool(name: &str, fast: bool) -> bool {
 }
 
 #[inline]
-fn qwen38_family_kernel(family_dispatch: bool, family: &'static str, legacy: &'static str) -> &'static str {
+fn qwen38_family_kernel(
+    family_dispatch: bool,
+    family: &'static str,
+    legacy: &'static str,
+) -> &'static str {
     if family_dispatch {
         family
     } else {
@@ -169,9 +170,7 @@ impl Qwen38MlpFusion {
             Ok(v) => match v.trim().to_ascii_lowercase().as_str() {
                 "" | "0" | "off" | "false" | "no" => Self::Off,
                 "pair" | "gate_up" => Self::GateUpPair,
-                "swiglu" | "gate_up_swiglu" | "1" | "true" | "on" | "yes" => {
-                    Self::GateUpSwiglu
-                }
+                "swiglu" | "gate_up_swiglu" | "1" | "true" | "on" | "yes" => Self::GateUpSwiglu,
                 other => panic!(
                     "HAWKING_QWEN38_FUSE_MLP={other:?} is not a recognised value; \
                      use pair | swiglu | 1 | 0. Falling back to Off here would \
@@ -259,6 +258,16 @@ fn qwen38_fuse_add_rmsnorm_from_env_with_fast(fast: bool) -> (bool, bool) {
 
 pub fn qwen38_fuse_add_rmsnorm_enabled() -> bool {
     qwen38_fuse_add_rmsnorm_from_env().0
+}
+
+pub fn qwen38_batched_prefill_enabled() -> bool {
+    crate::env_opt_out("HAWKING_QWEN38_BATCH_PREFILL")
+}
+
+/// Tokens per prefill GEMM chunk. Clamped to 1..=64 (the MMA N tile).
+pub fn qwen38_prefill_chunk_tokens() -> usize {
+    crate::env_usize("HAWKING_QWEN38_PREFILL_CHUNK", QWEN38_PREFILL_CHUNK)
+        .clamp(1, QWEN38_PREFILL_CHUNK)
 }
 
 /// Mixer residual + MLP RMSNorm, and MLP residual + next mixer RMSNorm
@@ -442,14 +451,12 @@ pub fn qwen38_fused_dispatches_per_token_full(
     n
 }
 
-pub const QWEN38_Q4_GATE_UP_KERNEL: &str =
-    "qwen_uniform_q4_group64_matvec_gate_up_geo_tpr64_tg128";
+pub const QWEN38_Q4_GATE_UP_KERNEL: &str = "qwen_uniform_q4_group64_matvec_gate_up_geo_tpr64_tg128";
 pub const QWEN38_Q4_GATE_UP_SWIGLU_KERNEL: &str =
     "qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128";
 pub const QWEN38_Q4_PAIR_CONCAT_KERNEL: &str =
     "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128";
-pub const QWEN38_Q4_QKV_GEO_KERNEL: &str =
-    "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128";
+pub const QWEN38_Q4_QKV_GEO_KERNEL: &str = "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128";
 
 /// bitcast siblings of the three uniform-q4 matvecs the resident dispatches.
 /// Same binds, same geometry; the nibble is unpacked straight into an f32
@@ -457,8 +464,7 @@ pub const QWEN38_Q4_QKV_GEO_KERNEL: &str =
 /// MEASURED BIT-IDENTICAL on a real qkvz projection at 1.1444x
 /// (receipts/future/Q4_BITCAST_AB.json). Default is OFF; opt in with
 /// HAWKING_Q4_UNPACK=bitcast.
-pub const QWEN38_Q4_MATVEC_BITCAST: &str =
-    "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_bitcast";
+pub const QWEN38_Q4_MATVEC_BITCAST: &str = "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_bitcast";
 pub const QWEN38_Q4_QKV_GEO_BITCAST: &str =
     "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128_bitcast";
 pub const QWEN38_Q4_PAIR_CONCAT_BITCAST: &str =
@@ -481,7 +487,7 @@ pub fn qwen38_q4_bitcast_on() -> bool {
 /// Production name, or its bitcast sibling when the lever is on. Any q4 matvec
 /// name that has no bitcast sibling is returned unchanged rather than having
 /// "_bitcast" appended, because naming a kernel that does not exist binds a
-/// pipeline that fails at launch - the defect SplitK4Vec still carries.
+/// pipeline that fails at launch.
 pub fn qwen38_q4_kernel(name: &'static str) -> &'static str {
     if !qwen38_q4_bitcast_on() {
         return name;
@@ -518,8 +524,7 @@ pub const QWEN38_AFFINE_GATE_UP_SWIGLU_TGX: &str =
 pub const QWEN38_AFFINE_Q2_TGSB: &str = "qwen_affine_q2_group64_matvec_tgsb_tpr64_tg128";
 pub const QWEN38_AFFINE_Q2_PIPE: &str = "qwen_affine_q2_group64_matvec_pipe_tpr64_tg128";
 pub const QWEN38_AFFINE_Q2_SPLITK4: &str = "qwen_affine_q2_group64_matvec_splitk4_tg256";
-pub const QWEN38_AFFINE_Q2_SPLITK4_VEC: &str =
-    "qwen_affine_q2_group64_matvec_splitk4_vec_tg256";
+pub const QWEN38_AFFINE_Q2_SPLITK4_VEC: &str = "qwen_affine_q2_group64_matvec_splitk4_vec_tg256";
 pub const QWEN38_AFFINE_Q2_ACCFUSE: &str = "qwen_affine_q2_group64_matvec_accfuse_tpr64_tg128";
 pub const QWEN38_AFFINE_GATE_UP_TGSB: &str =
     "qwen_affine_q2_group64_matvec_gate_up_tgsb_tpr64_tg128";
@@ -557,8 +562,7 @@ pub const QWEN38_AFFINE_GATE_UP_SWIGLU_FOLD_ADDQX: &str =
 /// put that convert at 44% of this kernel's arithmetic
 /// (receipts/future/OP_CLASS_ABLATION.json). Default production stays Tpr64;
 /// opt-in via HAWKING_AFFINE2_GEO=bitcast. Reversible: unset the lever.
-pub const QWEN38_AFFINE_Q2_BITCAST: &str =
-    "qwen_affine_q2_group32_matvec_geo_tpr64_tg128_bitcast";
+pub const QWEN38_AFFINE_Q2_BITCAST: &str = "qwen_affine_q2_group32_matvec_geo_tpr64_tg128_bitcast";
 pub const QWEN38_AFFINE_GATE_UP_SWIGLU_BITCAST: &str =
     "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128_bitcast";
 
@@ -1037,7 +1041,9 @@ pub fn census_qwen38_mixed_catalog(root: impl AsRef<Path>) -> Result<MixedCatalo
                 },
                 Err(error) => {
                     census.refused += 1;
-                    census.refusals.push(format!("{} layout: {error}", row.name));
+                    census
+                        .refusals
+                        .push(format!("{} layout: {error}", row.name));
                 }
             },
             Ok(MixedCatalogLane::Hq30Uq4) => match parse_uniform_q4_header(&payload) {
@@ -1057,7 +1063,9 @@ pub fn census_qwen38_mixed_catalog(root: impl AsRef<Path>) -> Result<MixedCatalo
                 Ok(_) => census.affine += 1,
                 Err(error) => {
                     census.refused += 1;
-                    census.refusals.push(format!("{} affine: {error}", row.name));
+                    census
+                        .refusals
+                        .push(format!("{} affine: {error}", row.name));
                 }
             },
             Err(error) => {
@@ -1114,15 +1122,16 @@ fn resolve_mixed_segment_path(root: &Path, filename: &str) -> PathBuf {
 
 fn parse_qwen38_mixed_catalog(root: &Path) -> Result<Vec<Qwen38MixedCatalogRow>> {
     let catalog_path = root.join(QWEN38_MIXED_CATALOG_NAME);
-    let raw = fs::read(&catalog_path).map_err(|error| {
-        mixed_error(format!("cannot read {}: {error}", catalog_path.display()))
-    })?;
+    let raw = fs::read(&catalog_path)
+        .map_err(|error| mixed_error(format!("cannot read {}: {error}", catalog_path.display())))?;
     if raw.len() < 32 || raw[..8] != QWEN38_MIXED_CATALOG_MAGIC {
         return Err(mixed_error("catalog magic is not HQ38M20"));
     }
     let version = read_u32_at(&raw, 8)?;
     if version != QWEN38_MIXED_CATALOG_VERSION {
-        return Err(mixed_error(format!("unsupported catalog version {version}")));
+        return Err(mixed_error(format!(
+            "unsupported catalog version {version}"
+        )));
     }
     let n_tensors = read_u32_at(&raw, 12)? as usize;
     let n_segments = read_u32_at(&raw, 16)? as usize;
@@ -1154,8 +1163,7 @@ fn parse_qwen38_mixed_catalog(root: &Path) -> Result<Vec<Qwen38MixedCatalogRow>>
         .ok_or_else(|| mixed_error("catalog name blob truncated"))?;
     let mut rows = Vec::with_capacity(n_tensors);
     for index in 0..n_tensors {
-        let rec = &table[index * QWEN38_MIXED_RECORD_SIZE
-            ..(index + 1) * QWEN38_MIXED_RECORD_SIZE];
+        let rec = &table[index * QWEN38_MIXED_RECORD_SIZE..(index + 1) * QWEN38_MIXED_RECORD_SIZE];
         let name_off = read_u32_at(rec, 0)? as usize;
         let name_len = read_u16_at(rec, 4)? as usize;
         let codec = rec[6];
@@ -1200,9 +1208,8 @@ fn read_catalog_payload(row: &Qwen38MixedCatalogRow) -> Result<Vec<u8>> {
             row.segment_path.display()
         ))
     })?;
-    file.seek(SeekFrom::Start(row.offset)).map_err(|error| {
-        mixed_error(format!("seek {}: {error}", row.name))
-    })?;
+    file.seek(SeekFrom::Start(row.offset))
+        .map_err(|error| mixed_error(format!("seek {}: {error}", row.name)))?;
     let n = usize::try_from(row.nbytes).map_err(|_| mixed_error("payload exceeds usize"))?;
     let mut payload = vec![0u8; n];
     file.read_exact(&mut payload)
@@ -1256,8 +1263,7 @@ pub const QWEN38_Q4_ADDR_PROBE_KERNEL: &str =
 pub const QWEN38_Q4_DECODE_PROBE_KERNEL: &str =
     "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_decode_probe";
 pub const QWEN38_F32_STREAM_PROBE_KERNEL: &str = "qwen38_f32_stream_probe";
-pub const QWEN38_HGRAVU01_Q3_GEO_TPR64: &str =
-    "qwen_uniform_q3_group64_matvec_geo_tpr64_tg128";
+pub const QWEN38_HGRAVU01_Q3_GEO_TPR64: &str = "qwen_uniform_q3_group64_matvec_geo_tpr64_tg128";
 pub const QWEN38_HGRAVU01_Q3_G128_GEO_TPR64: &str =
     "qwen_uniform_q3_group128_matvec_geo_tpr64_tg128";
 pub const QWEN38_HGRAVU01_Q4_GEO_TPR64: &str =
@@ -1266,22 +1272,18 @@ pub const QWEN38_AFFINE_Q2_SERIAL: &str = "qwen_affine_q2_group32_matvec";
 pub const QWEN38_AFFINE_Q2_GEO_TPR64: &str = "qwen_affine_q2_group32_matvec_geo_tpr64_tg128";
 pub const QWEN38_Q2F_SERIAL: &str = "qwen_q2f_group64_matvec";
 pub const QWEN38_Q2F_GEO_TPR64: &str = "qwen_q2f_group64_matvec_geo_tpr64_tg128";
-pub const QWEN38_Q2F_QKV_GEO_KERNEL: &str =
-    "qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128";
-pub const QWEN38_Q2F_PAIR_GEO_KERNEL: &str =
-    "qwen_q2f_group64_matvec_pair_geo_tpr64_tg128";
+pub const QWEN38_Q2F_QKV_GEO_KERNEL: &str = "qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128";
+pub const QWEN38_Q2F_PAIR_GEO_KERNEL: &str = "qwen_q2f_group64_matvec_pair_geo_tpr64_tg128";
 pub const QWEN38_Q2F_GATE_UP_KERNEL: &str = "qwen_q2f_group64_matvec_gate_up_geo_tpr64_tg128";
 pub const QWEN38_Q2F_GATE_UP_SWIGLU_KERNEL: &str =
     "qwen_q2f_group64_matvec_gate_up_swiglu_geo_tpr64_tg128";
 pub const QWEN38_Q2F_PIPE: &str = "qwen_q2f_group64_matvec_pipe_tpr64_tg128";
 pub const QWEN38_Q2F_SPLITK4: &str = "qwen_q2f_group64_matvec_splitk4_tg256";
 pub const QWEN38_Q2F_SPLITK4_VEC: &str = "qwen_q2f_group64_matvec_splitk4_vec_tg256";
-pub const QWEN38_Q2F_GATE_UP_PIPE: &str =
-    "qwen_q2f_group64_matvec_gate_up_pipe_tpr64_tg128";
+pub const QWEN38_Q2F_GATE_UP_PIPE: &str = "qwen_q2f_group64_matvec_gate_up_pipe_tpr64_tg128";
 pub const QWEN38_Q2F_GATE_UP_SWIGLU_PIPE: &str =
     "qwen_q2f_group64_matvec_gate_up_swiglu_pipe_tpr64_tg128";
-pub const QWEN38_Q2F_GATE_UP_SPLITK4: &str =
-    "qwen_q2f_group64_matvec_gate_up_splitk4_tg256";
+pub const QWEN38_Q2F_GATE_UP_SPLITK4: &str = "qwen_q2f_group64_matvec_gate_up_splitk4_tg256";
 pub const QWEN38_Q2F_GATE_UP_SWIGLU_SPLITK4: &str =
     "qwen_q2f_group64_matvec_gate_up_swiglu_splitk4_tg256";
 pub const QWEN38_Q2F_GATE_UP_SPLITK4_VEC: &str =
@@ -1294,16 +1296,13 @@ fn qwen38_q2f_matvec_launch(
     geo: Affine2Geo,
     rows: u32,
 ) -> (&'static str, (u32, u32, u32), (u32, u32, u32)) {
-    let tg = match geo {
-        Affine2Geo::SplitK4 | Affine2Geo::SplitK4Vec => 256u32,
-        _ => 128u32,
-    };
-    let name = match geo {
-        Affine2Geo::Pipe => QWEN38_Q2F_PIPE,
-        Affine2Geo::SplitK4 => QWEN38_Q2F_SPLITK4,
-        Affine2Geo::SplitK4Vec => QWEN38_Q2F_SPLITK4_VEC,
-        _ => QWEN38_Q2F_GEO_TPR64,
-    };
+    // The current shader surface only compiles the Q2F serial and geo_tpr64
+    // families. Geometry names retained for historical A/B records must not
+    // become launch names until their shader exists; fall back to the
+    // compiled geo family while preserving the requested selector in config.
+    let _ = geo;
+    let tg = 128u32;
+    let name = QWEN38_Q2F_GEO_TPR64;
     let grid = rows.div_ceil(2).saturating_mul(tg).max(tg);
     (name, (grid, 1, 1), (tg, 1, 1))
 }
@@ -1313,19 +1312,13 @@ fn qwen38_q2f_gate_up_launch(
     with_swiglu: bool,
     rows: u32,
 ) -> (&'static str, (u32, u32, u32), (u32, u32, u32)) {
-    let tg = match geo {
-        Affine2Geo::SplitK4 | Affine2Geo::SplitK4Vec => 256u32,
-        _ => 128u32,
-    };
-    let name = match (geo, with_swiglu) {
-        (Affine2Geo::Pipe, false) => QWEN38_Q2F_GATE_UP_PIPE,
-        (Affine2Geo::Pipe, true) => QWEN38_Q2F_GATE_UP_SWIGLU_PIPE,
-        (Affine2Geo::SplitK4, false) => QWEN38_Q2F_GATE_UP_SPLITK4,
-        (Affine2Geo::SplitK4, true) => QWEN38_Q2F_GATE_UP_SWIGLU_SPLITK4,
-        (Affine2Geo::SplitK4Vec, false) => QWEN38_Q2F_GATE_UP_SPLITK4_VEC,
-        (Affine2Geo::SplitK4Vec, true) => QWEN38_Q2F_GATE_UP_SWIGLU_SPLITK4_VEC,
-        (_, false) => QWEN38_Q2F_GATE_UP_KERNEL,
-        (_, true) => QWEN38_Q2F_GATE_UP_SWIGLU_KERNEL,
+    // As above, only the geo_tpr64 Q2F gate/up pair is currently compiled.
+    let _ = geo;
+    let tg = 128u32;
+    let name = if with_swiglu {
+        QWEN38_Q2F_GATE_UP_SWIGLU_KERNEL
+    } else {
+        QWEN38_Q2F_GATE_UP_KERNEL
     };
     let grid = rows.div_ceil(2).saturating_mul(tg).max(tg);
     (name, (grid, 1, 1), (tg, 1, 1))
@@ -1365,10 +1358,7 @@ fn qwen38_affine_q2_launch_with_recon_fuse(
     cols: u32,
     recon_fuse: bool,
 ) -> Option<(&'static str, (u32, u32, u32), (u32, u32, u32))> {
-    if !recon_fuse
-        || !affine_group_size_supported(group_size as usize)
-        || cols % group_size != 0
-    {
+    if !recon_fuse || !affine_group_size_supported(group_size as usize) || cols % group_size != 0 {
         return None;
     }
     if geo.is_g64_specialized() && group_size != 64 {
@@ -1383,7 +1373,11 @@ fn qwen38_affine_q2_launch_with_recon_fuse(
         Affine2Geo::RuntimeDiv => {
             let tg = 128u32;
             let grid = rows.div_ceil(2).saturating_mul(tg).max(tg);
-            Some((QWEN38_AFFINE_Q2_GEO_TPR64_RUNTIME_DIV, (grid, 1, 1), (tg, 1, 1)))
+            Some((
+                QWEN38_AFFINE_Q2_GEO_TPR64_RUNTIME_DIV,
+                (grid, 1, 1),
+                (tg, 1, 1),
+            ))
         }
         Affine2Geo::QmvFast => {
             let tg = 64u32;
@@ -1418,7 +1412,10 @@ fn qwen38_affine_q2_launch_with_recon_fuse(
         Affine2Geo::SplitK4Vec => {
             let tg = 256u32;
             let grid = rows.div_ceil(2).saturating_mul(tg).max(tg);
-            Some((QWEN38_AFFINE_Q2_SPLITK4_VEC, (grid, 1, 1), (tg, 1, 1)))
+            // N035's vector sibling has no compiled shader in the current
+            // surface. Keep the opt-in selector observable, but never emit a
+            // pipeline name that cannot be loaded at launch.
+            Some((QWEN38_AFFINE_Q2_SPLITK4, (grid, 1, 1), (tg, 1, 1)))
         }
         Affine2Geo::AccFuse => {
             let tg = 128u32;
@@ -1515,8 +1512,8 @@ fn qwen38_affine_gate_up_launch(
             let tg = 256u32;
             let grid = rows.div_ceil(2).saturating_mul(tg).max(tg);
             let name = match with_swiglu {
-                true => QWEN38_AFFINE_GATE_UP_SWIGLU_SPLITK4_VEC,
-                false => QWEN38_AFFINE_GATE_UP_SPLITK4_VEC,
+                true => QWEN38_AFFINE_GATE_UP_SWIGLU_SPLITK4,
+                false => QWEN38_AFFINE_GATE_UP_SPLITK4,
             };
             (name, (grid, 1, 1), (tg, 1, 1))
         }
@@ -1929,13 +1926,30 @@ pub fn load_qwen38_tokenizer(path: impl AsRef<Path>) -> Result<Tokenizer> {
 mod device {
     use super::*;
     use crate::json_constrain::{argmax_f32_metal_tiebreak, JsonConstraint, JsonVocabIndex};
-    use crate::kernels::{
-        mha_decode_f32_tcb, qwen_next_add_residual_tcb, sample_argmax_f32_tcb,
-    };
+    use crate::kernels::{mha_decode_f32_tcb, qwen_next_add_residual_tcb, sample_argmax_f32_tcb};
     use crate::metal::{CommandBufferTiming, MetalContext, PinnedBuffer, TokenCommandBuffer};
     use std::cell::Cell;
+    use std::fs::OpenOptions;
+    use std::io::Write;
     use std::thread;
-    use std::time::Instant;
+    use std::time::{Instant, SystemTime, UNIX_EPOCH};
+
+    fn boundary_trace(event: &str, detail: &str) {
+        let Ok(path) = std::env::var("HCLI_BOUNDARY_TRACE") else {
+            return;
+        };
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map(|value| value.as_nanos())
+            .unwrap_or(0);
+        let line = format!(
+            "{{\"component\":\"resident.native\",\"event\":\"{event}\",\"pid\":{},\"wall_ns\":{now},\"detail\":\"{detail}\"}}\n",
+            std::process::id()
+        );
+        if let Ok(mut file) = OpenOptions::new().create(true).append(true).open(path) {
+            let _ = file.write_all(line.as_bytes());
+        }
+    }
 
     fn zero_buffer(buffer: &PinnedBuffer) {
         let len = buffer.length() as usize;
@@ -2160,12 +2174,7 @@ mod device {
                     eprintln!("qwen38-decode mixed upload {i}/{}", rows.len());
                 }
                 let payload = read_catalog_payload(row)?;
-                match classify_qwen38_mixed_payload(
-                    row.codec,
-                    &payload,
-                    &row.name,
-                    &row.shape,
-                )? {
+                match classify_qwen38_mixed_payload(row.codec, &payload, &row.name, &row.shape)? {
                     MixedCatalogLane::Packed(codec) => {
                         mixed.insert(
                             row.name.clone(),
@@ -2217,9 +2226,7 @@ mod device {
                         let values = read_qwen38_f32_payload(&payload)?;
                         f32s.insert(
                             row.name.clone(),
-                            context.new_buffer_with_bytes_checked(bytemuck::cast_slice(
-                                &values,
-                            ))?,
+                            context.new_buffer_with_bytes_checked(bytemuck::cast_slice(&values))?,
                         );
                         census.f32 += 1;
                     }
@@ -2227,9 +2234,7 @@ mod device {
                         let values = dequant_hgravu_vector(&payload, &row.name)?;
                         f32s.insert(
                             row.name.clone(),
-                            context.new_buffer_with_bytes_checked(bytemuck::cast_slice(
-                                &values,
-                            ))?,
+                            context.new_buffer_with_bytes_checked(bytemuck::cast_slice(&values))?,
                         );
                         census.f32 += 1;
                     }
@@ -2262,8 +2267,7 @@ mod device {
                                     let bits = u16::from_le_bytes([chunk[0], chunk[1]]);
                                     let delta = half::f16::from_bits(bits).to_f32();
                                     let bias = half::f16::from_f32(-1.5 * delta).to_bits();
-                                    derived[i * 2..i * 2 + 2]
-                                        .copy_from_slice(&bias.to_le_bytes());
+                                    derived[i * 2..i * 2 + 2].copy_from_slice(&bias.to_le_bytes());
                                 }
                                 Some(context.new_buffer_with_bytes_checked(&derived)?)
                             } else {
@@ -2367,14 +2371,9 @@ mod device {
                         QWEN38_Q2F_SERIAL
                     }
                 } else if qwen38_recon_fuse_enabled() {
-                    qwen38_affine_q2_launch(
-                        Affine2Geo::from_env(),
-                        group,
-                        2,
-                        group.max(1),
-                    )
-                    .map(|launch| launch.0)
-                    .unwrap_or(QWEN38_AFFINE_Q2_SERIAL)
+                    qwen38_affine_q2_launch(Affine2Geo::from_env(), group, 2, group.max(1))
+                        .map(|launch| launch.0)
+                        .unwrap_or(QWEN38_AFFINE_Q2_SERIAL)
                 } else {
                     QWEN38_AFFINE_Q2_SERIAL
                 };
@@ -2407,7 +2406,11 @@ mod device {
                 .map(|w| w.codes.length() + w.scales.length())
                 .sum();
             let f32s: u64 = self.f32s.values().map(|b| b.length()).sum();
-            let mixed: u64 = self.mixed.values().map(MixedGpuWeight::resident_bytes).sum();
+            let mixed: u64 = self
+                .mixed
+                .values()
+                .map(MixedGpuWeight::resident_bytes)
+                .sum();
             q4 + f32s + mixed
         }
 
@@ -2631,11 +2634,7 @@ mod device {
         /// `chunk == 1` must allocate exactly what [`Self::allocate`] does. The
         /// test pins that, because a foundation that quietly differs at K=1 is
         /// one that makes every later comparison suspect.
-        fn allocate_chunked(
-            ctx: &MetalContext,
-            max_seq_len: usize,
-            chunk: usize,
-        ) -> Result<Self> {
+        fn allocate_chunked(ctx: &MetalContext, max_seq_len: usize, chunk: usize) -> Result<Self> {
             if chunk == 0 {
                 return Err(Error::Model("qwen38 chunk must be positive".into()));
             }
@@ -2866,6 +2865,33 @@ mod device {
         }
     }
 
+    struct Qwen38PrefillWorkspace {
+        cap: usize,
+        tokens: PinnedBuffer,
+        hidden: PinnedBuffer,
+        normalized: PinnedBuffer,
+        mixer: PinnedBuffer,
+        first_residual: PinnedBuffer,
+        down: PinnedBuffer,
+        gate: PinnedBuffer,
+        up: PinnedBuffer,
+        act: PinnedBuffer,
+        qkvz: PinnedBuffer,
+        ba: PinnedBuffer,
+        repeated_q: PinnedBuffer,
+        repeated_k: PinnedBuffer,
+        conv_v: PinnedBuffer,
+        z: PinnedBuffer,
+        rec_out: PinnedBuffer,
+        gated: PinnedBuffer,
+        q_proj: PinnedBuffer,
+        k_proj: PinnedBuffer,
+        v_proj: PinnedBuffer,
+        query: PinnedBuffer,
+        attn: PinnedBuffer,
+        gated_attn: PinnedBuffer,
+    }
+
     pub struct Qwen38HybridDecodeSession {
         context: MetalContext,
         weights: Arc<Qwen38HybridWeights>,
@@ -2959,6 +2985,9 @@ mod device {
         /// for Qwen3.8, so decoding it once at attach removes repeated modulo
         /// and error-path construction from the token graph.
         mixer_kinds: [Qwen38MixerKind; QWEN38_LAYERS],
+        /// Token-chunk activation buffers. Allocated on first batched prefill
+        /// so a decode-only session never pays for them.
+        prefill: Option<Qwen38PrefillWorkspace>,
     }
 
     impl Qwen38HybridDecodeSession {
@@ -2997,8 +3026,7 @@ mod device {
             let recon_fuse = qwen38_recon_fuse_enabled();
             let decode_family = crate::decode_family::family_dispatch_enabled();
             let concurrent_independent = qwen38_concurrent_independent_enabled();
-            let (fuse_add_rmsnorm, fuse_add_rmsnorm_bad) =
-                qwen38_fuse_add_rmsnorm_from_env();
+            let (fuse_add_rmsnorm, fuse_add_rmsnorm_bad) = qwen38_fuse_add_rmsnorm_from_env();
             let (fuse_ba_delta, fuse_ba_delta_bad) = qwen38_fuse_ba_delta_from_env();
             let session = Self {
                 context: weights.context.clone(),
@@ -3046,6 +3074,7 @@ mod device {
                 active_weight_accounting: true,
                 layer_names: Qwen38LayerNameCache::new(),
                 mixer_kinds,
+                prefill: None,
             };
             // `MetalContext` clones share `Arc<DispatchTrace>`. If that ever
             // becomes a fresh buffer, `drain_trace` on the session would miss
@@ -3100,9 +3129,7 @@ mod device {
         #[inline]
         fn deltanet_state_slot(&self, layer: usize) -> Result<usize> {
             match self.mixer_kind(layer)? {
-                Qwen38MixerKind::DeltaNet => {
-                    Ok(layer - layer / QWEN38_FULL_ATTENTION_INTERVAL)
-                }
+                Qwen38MixerKind::DeltaNet => Ok(layer - layer / QWEN38_FULL_ATTENTION_INTERVAL),
                 Qwen38MixerKind::Gqa => Err(Error::Model(format!(
                     "qwen38 layer {layer} is GQA; DeltaNet slot is undefined"
                 ))),
@@ -3162,8 +3189,7 @@ mod device {
             let Some(seen) = self.seen_kernels.as_ref() else {
                 return Vec::new();
             };
-            let mut rows: Vec<(String, u64)> =
-                seen.iter().map(|(k, v)| (k.clone(), *v)).collect();
+            let mut rows: Vec<(String, u64)> = seen.iter().map(|(k, v)| (k.clone(), *v)).collect();
             rows.sort_by(|a, b| b.1.cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
             rows
         }
@@ -3183,8 +3209,6 @@ mod device {
             names.dedup();
             names
         }
-
-
 
         fn assert_mixed_mlp_native(mixed: &HashMap<String, MixedGpuWeight>) -> Result<()> {
             assert_mixed_mlp_native_kinds(|name| {
@@ -3209,11 +3233,7 @@ mod device {
                 1 => &MAGIC_RESIDUAL_COMPACT[..],
                 2 => &MAGIC_HGRAVS01[..],
                 3 => &MAGIC_UNIFORM[..],
-                other => {
-                    return Err(mixed_error(format!(
-                        "{name} upload unknown codec {other}"
-                    )))
-                }
+                other => return Err(mixed_error(format!("{name} upload unknown codec {other}"))),
             };
             if payload.len() < 8 || payload[..8] != *expected {
                 return Err(mixed_error(format!(
@@ -3234,8 +3254,9 @@ mod device {
                 } => Ok(MixedGpuWeight::Binary(GpuBinary {
                     signs: context
                         .new_buffer_with_bytes_checked(&payload[sign_off..sign_off + sign_bytes])?,
-                    scales: context
-                        .new_buffer_with_bytes_checked(&payload[scale_off..scale_off + scale_bytes])?,
+                    scales: context.new_buffer_with_bytes_checked(
+                        &payload[scale_off..scale_off + scale_bytes],
+                    )?,
                     rows: layout.rows,
                     cols: layout.cols,
                     group_size,
@@ -3261,7 +3282,9 @@ mod device {
                         groups_per_row,
                     } = binary.as_ref()
                     else {
-                        return Err(mixed_error(format!("{name} residual binary layout drifted")));
+                        return Err(mixed_error(format!(
+                            "{name} residual binary layout drifted"
+                        )));
                     };
                     let rice = RiceQ1Packed {
                         binary: BinaryGroupPacked {
@@ -3283,10 +3306,8 @@ mod device {
                     let indices = expand_rice_indices(&rice)?;
                     let row_ptr =
                         rice_q1_row_ptr(&indices, layout.rows as usize, layout.cols as usize)?;
-                    let idx_bytes: Vec<u8> =
-                        indices.iter().flat_map(|v| v.to_le_bytes()).collect();
-                    let ptr_bytes: Vec<u8> =
-                        row_ptr.iter().flat_map(|v| v.to_le_bytes()).collect();
+                    let idx_bytes: Vec<u8> = indices.iter().flat_map(|v| v.to_le_bytes()).collect();
+                    let ptr_bytes: Vec<u8> = row_ptr.iter().flat_map(|v| v.to_le_bytes()).collect();
                     Ok(MixedGpuWeight::Residual(GpuResidual {
                         binary: GpuBinary {
                             signs: context.new_buffer_with_bytes_checked(
@@ -3434,11 +3455,9 @@ mod device {
                 && q.cols == k.cols
                 && q.cols == v.cols
                 && q.cols % 64 == 0
-                && [q, k, v].iter().all(|body| {
-                    body.bits == 2
-                        && body.group_size == 64
-                        && body.biases.is_none()
-                })
+                && [q, k, v]
+                    .iter()
+                    .all(|body| body.bits == 2 && body.group_size == 64 && body.biases.is_none())
         }
 
         /// Same rule as can_fuse_q2f_qkv: no kernel, no fused path. See there.
@@ -3455,9 +3474,9 @@ mod device {
                 && ba.rows > 0
                 && qkvz.cols == ba.cols
                 && qkvz.cols % 64 == 0
-                && [qkvz, ba].iter().all(|body| {
-                    body.bits == 2 && body.group_size == 64 && body.biases.is_none()
-                })
+                && [qkvz, ba]
+                    .iter()
+                    .all(|body| body.bits == 2 && body.group_size == 64 && body.biases.is_none())
         }
 
         fn f32(&self, name: &str) -> Result<&PinnedBuffer> {
@@ -3489,10 +3508,7 @@ mod device {
 
         fn record_q4_weight(&self, weight: &Q4Weight) {
             self.add_active_weight_bytes(
-                weight
-                    .codes
-                    .length()
-                    .saturating_add(weight.scales.length()),
+                weight.codes.length().saturating_add(weight.scales.length()),
             );
         }
 
@@ -3517,7 +3533,13 @@ mod device {
                     .codes
                     .length()
                     .saturating_add(weight.scales.length())
-                    .saturating_add(weight.biases.as_ref().map(|buffer| buffer.length()).unwrap_or(0)),
+                    .saturating_add(
+                        weight
+                            .biases
+                            .as_ref()
+                            .map(|buffer| buffer.length())
+                            .unwrap_or(0),
+                    ),
             );
         }
 
@@ -3529,7 +3551,11 @@ mod device {
         }
 
         fn record_affine_embedding_row(&self, weight: &GpuAffine) {
-            let bias_bytes = weight.biases.as_ref().map(|buffer| buffer.length()).unwrap_or(0);
+            let bias_bytes = weight
+                .biases
+                .as_ref()
+                .map(|buffer| buffer.length())
+                .unwrap_or(0);
             self.add_active_weight_bytes(Self::bytes_per_row(
                 weight.rows as u64,
                 &[weight.codes.length(), weight.scales.length(), bias_bytes],
@@ -3751,12 +3777,9 @@ mod device {
                     self.encode_q2f_args(enc, body, input, output)
                 });
             }
-            tcb.dispatch_threads(
-                QWEN38_Q2F_SERIAL,
-                (body.rows, 1, 1),
-                (256, 1, 1),
-                |enc| self.encode_q2f_args(enc, body, input, output),
-            )
+            tcb.dispatch_threads(QWEN38_Q2F_SERIAL, (body.rows, 1, 1), (256, 1, 1), |enc| {
+                self.encode_q2f_args(enc, body, input, output)
+            })
         }
 
         fn dispatch_affine(
@@ -3992,15 +4015,20 @@ mod device {
             let vpk = layout.values_per_key as u32;
             let kd = layout.key_head_dim as u32;
             let vd = layout.value_head_dim as u32;
-            tcb.dispatch_threads("qwen38_fuse_split_qkvz_f32", (n, 1, 1), (256, 1, 1), |enc| {
-                enc.set_buffer(0, Some(qkv), 0);
-                enc.set_buffer(1, Some(z), 0);
-                enc.set_buffer(2, Some(fused), 0);
-                set_u32(enc, 3, kh);
-                set_u32(enc, 4, vpk);
-                set_u32(enc, 5, kd);
-                set_u32(enc, 6, vd);
-            })
+            tcb.dispatch_threads(
+                "qwen38_fuse_split_qkvz_f32",
+                (n, 1, 1),
+                (256, 1, 1),
+                |enc| {
+                    enc.set_buffer(0, Some(qkv), 0);
+                    enc.set_buffer(1, Some(z), 0);
+                    enc.set_buffer(2, Some(fused), 0);
+                    set_u32(enc, 3, kh);
+                    set_u32(enc, 4, vpk);
+                    set_u32(enc, 5, kd);
+                    set_u32(enc, 6, vd);
+                },
+            )
         }
 
         fn encode_fuse_ba(
@@ -4167,17 +4195,20 @@ mod device {
                     gate.bits, up.bits, gate.group_size, up.group_size
                 )));
             }
-            let gate_b = gate.biases.as_ref().ok_or_else(|| {
-                mixed_error("fused affine gate/up on a delta-only (q2f) tensor")
-            })?;
-            let up_b = up.biases.as_ref().ok_or_else(|| {
-                mixed_error("fused affine gate/up on a delta-only (q2f) tensor")
-            })?;
+            let gate_b = gate
+                .biases
+                .as_ref()
+                .ok_or_else(|| mixed_error("fused affine gate/up on a delta-only (q2f) tensor"))?;
+            let up_b = up
+                .biases
+                .as_ref()
+                .ok_or_else(|| mixed_error("fused affine gate/up on a delta-only (q2f) tensor"))?;
             self.record_affine_weight(gate);
             self.record_affine_weight(up);
             let rows = gate.rows;
             let cols = gate.cols;
-            let (name, grid, tg) = qwen38_affine_gate_up_launch(self.affine2_geo, with_swiglu, rows);
+            let (name, grid, tg) =
+                qwen38_affine_gate_up_launch(self.affine2_geo, with_swiglu, rows);
             let xsum = self.affine2_geo.uses_xsum();
             if with_swiglu {
                 tcb.dispatch_threads(name, grid, tg, |enc| {
@@ -4363,19 +4394,24 @@ mod device {
             let gpr = (a.cols / UNIFORM_Q4_GROUP_SIZE) as u32;
             let total = a_rows.saturating_add(b_rows);
             let (grid, tg) = Qwen38MatvecKernel::GeoTpr64Tg128.launch(total);
-            tcb.dispatch_threads(qwen38_q4_kernel(QWEN38_Q4_PAIR_CONCAT_KERNEL), grid, tg, |enc| {
-                enc.set_buffer(0, Some(&a.codes), 0);
-                enc.set_buffer(1, Some(&a.scales), 0);
-                enc.set_buffer(2, Some(&b.codes), 0);
-                enc.set_buffer(3, Some(&b.scales), 0);
-                enc.set_buffer(4, Some(&self.workspace.normalized), 0);
-                enc.set_buffer(5, Some(a_out), 0);
-                enc.set_buffer(6, Some(b_out), 0);
-                set_u32(enc, 7, a_rows);
-                set_u32(enc, 8, b_rows);
-                set_u32(enc, 9, cols);
-                set_u32(enc, 10, gpr);
-            })
+            tcb.dispatch_threads(
+                qwen38_q4_kernel(QWEN38_Q4_PAIR_CONCAT_KERNEL),
+                grid,
+                tg,
+                |enc| {
+                    enc.set_buffer(0, Some(&a.codes), 0);
+                    enc.set_buffer(1, Some(&a.scales), 0);
+                    enc.set_buffer(2, Some(&b.codes), 0);
+                    enc.set_buffer(3, Some(&b.scales), 0);
+                    enc.set_buffer(4, Some(&self.workspace.normalized), 0);
+                    enc.set_buffer(5, Some(a_out), 0);
+                    enc.set_buffer(6, Some(b_out), 0);
+                    set_u32(enc, 7, a_rows);
+                    set_u32(enc, 8, b_rows);
+                    set_u32(enc, 9, cols);
+                    set_u32(enc, 10, gpr);
+                },
+            )
         }
 
         fn encode_fused_qkv(&self, tcb: &mut TokenCommandBuffer<'_>, layer: usize) -> Result<()> {
@@ -4406,38 +4442,47 @@ mod device {
             let gpr = (q.cols / UNIFORM_Q4_GROUP_SIZE) as u32;
             let total = q_rows.saturating_add(k_rows).saturating_add(v_rows);
             let (grid, tg) = Qwen38MatvecKernel::GeoTpr64Tg128.launch(total);
-            tcb.dispatch_threads(qwen38_q4_kernel(QWEN38_Q4_QKV_GEO_KERNEL), grid, tg, |enc| {
-                enc.set_buffer(0, Some(&q.codes), 0);
-                enc.set_buffer(1, Some(&q.scales), 0);
-                enc.set_buffer(2, Some(&k.codes), 0);
-                enc.set_buffer(3, Some(&k.scales), 0);
-                enc.set_buffer(4, Some(&v.codes), 0);
-                enc.set_buffer(5, Some(&v.scales), 0);
-                enc.set_buffer(6, Some(&self.workspace.normalized), 0);
-                enc.set_buffer(7, Some(&self.workspace.q_proj), 0);
-                enc.set_buffer(8, Some(&self.workspace.k_proj), 0);
-                enc.set_buffer(9, Some(&self.workspace.v_proj), 0);
-                set_u32(enc, 10, q_rows);
-                set_u32(enc, 11, k_rows);
-                set_u32(enc, 12, v_rows);
-                set_u32(enc, 13, cols);
-                set_u32(enc, 14, gpr);
-            })
+            tcb.dispatch_threads(
+                qwen38_q4_kernel(QWEN38_Q4_QKV_GEO_KERNEL),
+                grid,
+                tg,
+                |enc| {
+                    enc.set_buffer(0, Some(&q.codes), 0);
+                    enc.set_buffer(1, Some(&q.scales), 0);
+                    enc.set_buffer(2, Some(&k.codes), 0);
+                    enc.set_buffer(3, Some(&k.scales), 0);
+                    enc.set_buffer(4, Some(&v.codes), 0);
+                    enc.set_buffer(5, Some(&v.scales), 0);
+                    enc.set_buffer(6, Some(&self.workspace.normalized), 0);
+                    enc.set_buffer(7, Some(&self.workspace.q_proj), 0);
+                    enc.set_buffer(8, Some(&self.workspace.k_proj), 0);
+                    enc.set_buffer(9, Some(&self.workspace.v_proj), 0);
+                    set_u32(enc, 10, q_rows);
+                    set_u32(enc, 11, k_rows);
+                    set_u32(enc, 12, v_rows);
+                    set_u32(enc, 13, cols);
+                    set_u32(enc, 14, gpr);
+                },
+            )
         }
 
-        fn encode_fused_q2f_qkv(&self, tcb: &mut TokenCommandBuffer<'_>, layer: usize) -> Result<()> {
+        fn encode_fused_q2f_qkv(
+            &self,
+            tcb: &mut TokenCommandBuffer<'_>,
+            layer: usize,
+        ) -> Result<()> {
             let q_name = self.layer_name(layer, "self_attn.q_proj.weight");
             let k_name = self.layer_name(layer, "self_attn.k_proj.weight");
             let v_name = self.layer_name(layer, "self_attn.v_proj.weight");
-            let q = self.affine(&q_name).ok_or_else(|| {
-                mixed_error(format!("qwen38 fused Q2F QKV missing {q_name}"))
-            })?;
-            let k = self.affine(&k_name).ok_or_else(|| {
-                mixed_error(format!("qwen38 fused Q2F QKV missing {k_name}"))
-            })?;
-            let v = self.affine(&v_name).ok_or_else(|| {
-                mixed_error(format!("qwen38 fused Q2F QKV missing {v_name}"))
-            })?;
+            let q = self
+                .affine(&q_name)
+                .ok_or_else(|| mixed_error(format!("qwen38 fused Q2F QKV missing {q_name}")))?;
+            let k = self
+                .affine(&k_name)
+                .ok_or_else(|| mixed_error(format!("qwen38 fused Q2F QKV missing {k_name}")))?;
+            let v = self
+                .affine(&v_name)
+                .ok_or_else(|| mixed_error(format!("qwen38 fused Q2F QKV missing {v_name}")))?;
             if q.rows == 0 || k.rows == 0 || v.rows == 0 || q.cols != k.cols || q.cols != v.cols {
                 return Err(mixed_error(format!(
                     "qwen38 fused Q2F QKV shape mismatch layer {layer}: {}x{}, {}x{}, {}x{}",
@@ -4518,9 +4563,9 @@ mod device {
                 || ba.rows == 0
                 || qkvz.cols != ba.cols
                 || qkvz.cols % 64 != 0
-                || [qkvz, ba].iter().any(|body| {
-                    body.bits != 2 || body.group_size != 64 || body.biases.is_some()
-                })
+                || [qkvz, ba]
+                    .iter()
+                    .any(|body| body.bits != 2 || body.group_size != 64 || body.biases.is_some())
             {
                 return Err(mixed_error(format!(
                     "qwen38 fused Q2F QKVZ/BA refuses shapes {}x{} and {}x{} or non-Q2F codec",
@@ -4562,11 +4607,7 @@ mod device {
             tcb.commit_and_wait_timed()
         }
 
-        fn encode_gated_delta(
-            &self,
-            tcb: &mut TokenCommandBuffer<'_>,
-            rec_off: u64,
-        ) -> Result<()> {
+        fn encode_gated_delta(&self, tcb: &mut TokenCommandBuffer<'_>, rec_off: u64) -> Result<()> {
             let layout = Qwen38DeltaNetLayout::source_exact();
             let heads = layout.value_heads as u32;
             let kd = layout.key_head_dim as u32;
@@ -4585,10 +4626,7 @@ mod device {
                     (kd, heads, vd),
                 )
             } else {
-                (
-                    "qwen80_gated_delta_decode_tg",
-                    (kd, heads, 1),
-                )
+                ("qwen80_gated_delta_decode_tg", (kd, heads, 1))
             };
             tcb.dispatch_threads(kernel, grid, (kd, 1, 1), |encoder| {
                 encoder.set_buffer(0, Some(&self.workspace.rec_state), rec_off);
@@ -4623,7 +4661,9 @@ mod device {
             } else {
                 match self.dn_state_kernel {
                     Qwen38DeltaNetStateKernel::WidenF4 => (vd / 4, 512u64),
-                    Qwen38DeltaNetStateKernel::CoalesceTg32 => (vd / 32, QWEN38_DN_STATE_TG32_BYTES),
+                    Qwen38DeltaNetStateKernel::CoalesceTg32 => {
+                        (vd / 32, QWEN38_DN_STATE_TG32_BYTES)
+                    }
                     Qwen38DeltaNetStateKernel::Baseline => (vd, 512u64),
                 }
             };
@@ -4792,11 +4832,7 @@ mod device {
             }
             let mut out = vec![0.0f32; n];
             unsafe {
-                std::ptr::copy_nonoverlapping(
-                    buffer.contents() as *const f32,
-                    out.as_mut_ptr(),
-                    n,
-                );
+                std::ptr::copy_nonoverlapping(buffer.contents() as *const f32, out.as_mut_ptr(), n);
             }
             Ok(out)
         }
@@ -4883,11 +4919,7 @@ mod device {
             }
         }
 
-        fn encode_full_token(
-            &self,
-            tcb: &mut TokenCommandBuffer<'_>,
-            token: u32,
-        ) -> Result<()> {
+        fn encode_full_token(&self, tcb: &mut TokenCommandBuffer<'_>, token: u32) -> Result<()> {
             if self.serial_token_encoder {
                 tcb.begin_serial_group()?;
             }
@@ -4933,7 +4965,10 @@ mod device {
 
         /// Encode one complete token and return the TCB dispatch count.
         /// Mutates recurrent/KV state — caller should `reset` around a probe.
-        pub fn measure_token_dispatches(&mut self, token: u32) -> Result<(u32, u64, CommandBufferTiming)> {
+        pub fn measure_token_dispatches(
+            &mut self,
+            token: u32,
+        ) -> Result<(u32, u64, CommandBufferTiming)> {
             let (sampled, timing) = self.step(token)?;
             Ok((sampled, timing.dispatches, timing))
         }
@@ -5159,7 +5194,11 @@ mod device {
                 let buf = &self.workspace.first_residual;
                 let mut out = vec![0.0f32; n];
                 unsafe {
-                    std::ptr::copy_nonoverlapping(buf.contents() as *const f32, out.as_mut_ptr(), n);
+                    std::ptr::copy_nonoverlapping(
+                        buf.contents() as *const f32,
+                        out.as_mut_ptr(),
+                        n,
+                    );
                 }
                 out
             };
@@ -5181,7 +5220,11 @@ mod device {
                 let buf = &self.workspace.first_residual;
                 let mut out = vec![0.0f32; n];
                 unsafe {
-                    std::ptr::copy_nonoverlapping(buf.contents() as *const f32, out.as_mut_ptr(), n);
+                    std::ptr::copy_nonoverlapping(
+                        buf.contents() as *const f32,
+                        out.as_mut_ptr(),
+                        n,
+                    );
                 }
                 out
             };
@@ -5226,19 +5269,21 @@ mod device {
                     .map(|i| ((i % modulus) as f32) * scale - bias)
                     .collect()
             };
-            let write_buf = |buf: &PinnedBuffer, values: &[f32]| {
-                unsafe {
-                    std::ptr::copy_nonoverlapping(
-                        values.as_ptr(),
-                        buf.contents() as *mut f32,
-                        values.len(),
-                    );
-                }
+            let write_buf = |buf: &PinnedBuffer, values: &[f32]| unsafe {
+                std::ptr::copy_nonoverlapping(
+                    values.as_ptr(),
+                    buf.contents() as *mut f32,
+                    values.len(),
+                );
             };
             let read_buf = |buf: &PinnedBuffer, n: usize| -> Vec<f32> {
                 let mut out = vec![0.0f32; n];
                 unsafe {
-                    std::ptr::copy_nonoverlapping(buf.contents() as *const f32, out.as_mut_ptr(), n);
+                    std::ptr::copy_nonoverlapping(
+                        buf.contents() as *const f32,
+                        out.as_mut_ptr(),
+                        n,
+                    );
                 }
                 out
             };
@@ -5278,17 +5323,14 @@ mod device {
             }
             self.fuse_ba_delta = true;
             self.fuse_ba_delta_bad = bad;
-            let fused = self.timed_cb(|tcb| self.encode_gated_delta_fused_ba(tcb, rec_off, layer))?;
+            let fused =
+                self.timed_cb(|tcb| self.encode_gated_delta_fused_ba(tcb, rec_off, layer))?;
             let rec_out_f = read_buf(&self.workspace.rec_out, v_n);
             self.fuse_ba_delta = saved_on;
             self.fuse_ba_delta_bad = saved_bad;
             let diff = Self::max_abs_diff(&rec_out_u, &rec_out_f);
             Ok(Qwen38FusionParity {
-                fusion: if bad {
-                    "ba_delta_identity"
-                } else {
-                    "ba_delta"
-                },
+                fusion: if bad { "ba_delta_identity" } else { "ba_delta" },
                 layer,
                 unfused_dispatches: unfused.dispatches,
                 fused_pair_dispatches: fused.dispatches,
@@ -5333,7 +5375,11 @@ mod device {
             let read_buf = |buf: &PinnedBuffer, n: usize| -> Vec<f32> {
                 let mut out = vec![0.0f32; n];
                 unsafe {
-                    std::ptr::copy_nonoverlapping(buf.contents() as *const f32, out.as_mut_ptr(), n);
+                    std::ptr::copy_nonoverlapping(
+                        buf.contents() as *const f32,
+                        out.as_mut_ptr(),
+                        n,
+                    );
                 }
                 out
             };
@@ -5373,13 +5419,15 @@ mod device {
             self.fuse_ba_delta = true;
             self.fuse_ba_delta_bad = false;
             self.dn_state_kernel = Qwen38DeltaNetStateKernel::Baseline;
-            let base = self.timed_cb(|tcb| self.encode_gated_delta_fused_ba(tcb, rec_off, layer))?;
+            let base =
+                self.timed_cb(|tcb| self.encode_gated_delta_fused_ba(tcb, rec_off, layer))?;
             let rec_out_b = read_buf(&self.workspace.rec_out, v_n);
             let rec_state_b = read_rec();
             write_rec(&rec);
             self.dn_state_kernel = candidate;
             self.fuse_ba_delta_bad = bad;
-            let cand = self.timed_cb(|tcb| self.encode_gated_delta_fused_ba(tcb, rec_off, layer))?;
+            let cand =
+                self.timed_cb(|tcb| self.encode_gated_delta_fused_ba(tcb, rec_off, layer))?;
             let rec_out_c = read_buf(&self.workspace.rec_out, v_n);
             let rec_state_c = read_rec();
             self.fuse_ba_delta = saved_on;
@@ -5558,8 +5606,7 @@ mod device {
                         &self.workspace.ba,
                     )?;
                 }
-            } else if self.has_weight(self.layer_name(layer, "linear_attn.in_proj_qkv.weight"))
-            {
+            } else if self.has_weight(self.layer_name(layer, "linear_attn.in_proj_qkv.weight")) {
                 self.encode_split_deltanet_projections(tcb, layer)?;
             } else {
                 return Err(Error::Model(format!(
@@ -5597,11 +5644,19 @@ mod device {
                 (Some(g), Some(u)) => {
                     out.push_str(&format!(
                         "  affine gate rows={} cols={} group={} bits={} biases={}\n",
-                        g.rows, g.cols, g.group_size, g.bits, g.biases.is_some()
+                        g.rows,
+                        g.cols,
+                        g.group_size,
+                        g.bits,
+                        g.biases.is_some()
                     ));
                     out.push_str(&format!(
                         "  affine up   rows={} cols={} group={} bits={} biases={}\n",
-                        u.rows, u.cols, u.group_size, u.bits, u.biases.is_some()
+                        u.rows,
+                        u.cols,
+                        u.group_size,
+                        u.bits,
+                        u.biases.is_some()
                     ));
                     let branch = if g.biases.is_none() && u.biases.is_none() {
                         "encode_fused_q2f_gate_up"
@@ -5688,8 +5743,9 @@ mod device {
             match organ {
                 // The unfused pair form, which the fusion-matched baseline divides.
                 "mlp_gate_up" => {
-                    let kernel =
-                        format!("qwen_affine_q2_group64_matmul_gate_up_r{r}k{chunk}_geo_tpr64_tg128");
+                    let kernel = format!(
+                        "qwen_affine_q2_group64_matmul_gate_up_r{r}k{chunk}_geo_tpr64_tg128"
+                    );
                     // Sized from the first layer's real geometry, not a constant.
                     let g0 = self
                         .affine(&self.layer_name(0, "mlp.gate_proj.weight"))
@@ -5756,9 +5812,7 @@ mod device {
                     let g0 = self
                         .affine(&self.layer_name(0, "mlp.gate_proj.weight"))
                         .ok_or_else(|| {
-                            Error::Model(
-                                "chunked fused gate_up needs an affine gate_proj".into(),
-                            )
+                            Error::Model("chunked fused gate_up needs an affine gate_proj".into())
                         })?;
                     let rows = g0.rows as usize;
                     let cols = g0.cols as usize;
@@ -5945,7 +5999,11 @@ mlp_gate_up and mlp_gate_up_swiglu are wired"
 
             let tgs = |rows: usize| ((rows + 2 * r - 1) / (2 * r) * 128) as u32;
             let tg128 = (128u32, 1, 1);
-            let rms_tg = if self.rmsnorm_tg > 0 { self.rmsnorm_tg } else { 256 };
+            let rms_tg = if self.rmsnorm_tg > 0 {
+                self.rmsnorm_tg
+            } else {
+                256
+            };
             let (gr, gc) = (gate.rows, gate.cols);
             let (dr, dc) = (down.rows, down.cols);
             let hid_u = hidden as u32;
@@ -6019,13 +6077,7 @@ mlp_gate_up and mlp_gate_up_swiglu are wired"
                     // That is the real rule the norms violate: strided variants
                     // are needed for a REDUCTION or a SHARED operand, not for
                     // being on the chunked path.
-                    qwen_next_add_residual_tcb(
-                        tcb,
-                        &b_rin,
-                        &b_down,
-                        &b_rout,
-                        hidden * chunk,
-                    )?;
+                    qwen_next_add_residual_tcb(tcb, &b_rin, &b_down, &b_rout, hidden * chunk)?;
                 }
                 chunk_dispatches = tcb.dispatch_count();
                 Ok(())
@@ -6091,7 +6143,9 @@ mlp_gate_up and mlp_gate_up_swiglu are wired"
                 return Err(Error::Model("chunk and r must be positive".into()));
             }
             if layers.is_empty() {
-                return Err(Error::Model("measure_hybrid_layers needs at least one layer".into()));
+                return Err(Error::Model(
+                    "measure_hybrid_layers needs at least one layer".into(),
+                ));
             }
             let hidden = QWEN38_HIDDEN;
             let inter = QWEN38_INTERMEDIATE;
@@ -6138,129 +6192,140 @@ mlp_gate_up and mlp_gate_up_swiglu are wired"
 
             let tgs = |rows: usize| ((rows + 2 * r - 1) / (2 * r) * 128) as u32;
             let tg128 = (128u32, 1, 1);
-            let rms_tg = if self.rmsnorm_tg > 0 { self.rmsnorm_tg } else { 256 };
+            let rms_tg = if self.rmsnorm_tg > 0 {
+                self.rmsnorm_tg
+            } else {
+                256
+            };
             let hid_u = hidden as u32;
             let ck = chunk as u32;
 
             let mut hyb_d = 0usize;
             let hyb = self.timed_cb(|tcb| {
                 for &layer in layers {
-                let gate = self
-                    .affine(&self.layer_name(layer, "mlp.gate_proj.weight"))
-                    .ok_or_else(|| Error::Model(format!("layer {layer} gate_proj is not affine")))?;
-                let up = self
-                    .affine(&self.layer_name(layer, "mlp.up_proj.weight"))
-                    .ok_or_else(|| Error::Model(format!("layer {layer} up_proj is not affine")))?;
-                let down = self
-                    .affine(&self.layer_name(layer, "mlp.down_proj.weight"))
-                    .ok_or_else(|| Error::Model(format!("layer {layer} down_proj is not affine")))?;
-                let gb = gate.biases.as_ref().ok_or_else(|| {
-                    Error::Model("hybrid layer on a delta-only (q2f) gate".into())
-                })?;
-                let ub = up.biases.as_ref().ok_or_else(|| {
-                    Error::Model("hybrid layer on a delta-only (q2f) up".into())
-                })?;
-                let db = down.biases.as_ref().ok_or_else(|| {
-                    Error::Model("hybrid layer on a delta-only (q2f) down".into())
-                })?;
-                let (gr, gc) = (gate.rows, gate.cols);
-                let (dr, dc) = (down.rows, down.cols);
-                let next_w = self.next_norm_weight_name(layer);
-                let w_norm = self.f32(&next_w)?;
-                let head_w = self.f32(&self.layer_name(layer, "post_attention_layernorm.weight"))?;
-                // K mixers, each scattered into its slot. This is the glue's
-                // real cost: one extra dispatch per position.
-                for k in 0..chunk {
-                    encode_mixer(tcb, layer)?;
-                    let slot = k as u32;
-                    tcb.dispatch_threads(
-                        "qwen38_scatter_to_interleaved",
-                        (hid_u, 1, 1),
-                        (256, 1, 1),
-                        |enc| {
-                            enc.set_buffer(0, Some(&self.workspace.hidden), 0);
-                            enc.set_buffer(1, Some(&b_rin), 0);
-                            enc.set_bytes(2, 4, &hid_u as *const u32 as *const _);
-                            enc.set_bytes(3, 4, &ck as *const u32 as *const _);
-                            enc.set_bytes(4, 4, &slot as *const u32 as *const _);
-                        },
-                    )?;
-                }
-                // ONE MLP for all K positions.
-                if !fused_tail {
-                    tcb.dispatch_threads(
-                        "qwen38_residual_rmsnorm_tg_interleaved",
-                        (rms_tg * ck, 1, 1),
-                        (rms_tg, 1, 1),
-                        |enc| {
-                            enc.set_buffer(0, Some(&b_rin), 0);
-                            enc.set_buffer(1, Some(head_w), 0);
-                            enc.set_buffer(2, Some(&b_xin), 0);
-                            enc.set_bytes(3, 4, &hid_u as *const u32 as *const _);
-                            enc.set_bytes(4, 4, &QWEN38_RMS_EPS as *const f32 as *const _);
-                            enc.set_bytes(5, 4, &ck as *const u32 as *const _);
-                            enc.set_threadgroup_memory_length(0, (rms_tg as u64) * 4);
-                        },
-                    )?;
-                }
-                tcb.dispatch_threads(&k_gu, (tgs(gr as usize), 1, 1), tg128, |enc| {
-                    enc.set_buffer(0, Some(&gate.codes), 0);
-                    enc.set_buffer(1, Some(&gate.scales), 0);
-                    enc.set_buffer(2, Some(gb), 0);
-                    enc.set_buffer(3, Some(&up.codes), 0);
-                    enc.set_buffer(4, Some(&up.scales), 0);
-                    enc.set_buffer(5, Some(ub), 0);
-                    enc.set_buffer(6, Some(&b_xin), 0);
-                    enc.set_buffer(7, Some(&b_act), 0);
-                    set_u32(enc, 8, gr);
-                    set_u32(enc, 9, gc);
-                })?;
-                tcb.dispatch_threads(&k_dn, (tgs(dr as usize), 1, 1), tg128, |enc| {
-                    enc.set_buffer(0, Some(&down.codes), 0);
-                    enc.set_buffer(1, Some(&down.scales), 0);
-                    enc.set_buffer(2, Some(db), 0);
-                    enc.set_buffer(3, Some(&b_act), 0);
-                    enc.set_buffer(4, Some(&b_down), 0);
-                    set_u32(enc, 5, dr);
-                    set_u32(enc, 6, dc);
-                    set_u32(enc, 7, 64);
-                })?;
-                if fused_tail {
-                    tcb.dispatch_threads(
-                        "qwen38_add_residual_rmsnorm_tg_interleaved",
-                        (rms_tg * ck, 1, 1),
-                        (rms_tg, 1, 1),
-                        |enc| {
-                            enc.set_buffer(0, Some(&b_rin), 0);
-                            enc.set_buffer(1, Some(&b_down), 0);
-                            enc.set_buffer(2, Some(&b_rout), 0);
-                            enc.set_buffer(3, Some(w_norm), 0);
-                            enc.set_buffer(4, Some(&b_norm), 0);
-                            enc.set_bytes(5, 4, &hid_u as *const u32 as *const _);
-                            enc.set_bytes(6, 4, &QWEN38_RMS_EPS as *const f32 as *const _);
-                            enc.set_bytes(7, 4, &ck as *const u32 as *const _);
-                            enc.set_threadgroup_memory_length(0, (rms_tg as u64) * 4);
-                        },
-                    )?;
-                } else {
-                    qwen_next_add_residual_tcb(tcb, &b_rin, &b_down, &b_rout, hidden * chunk)?;
-                }
-                // K gathers back to the per-position layout the next mixer wants.
-                for k in 0..chunk {
-                    let slot = k as u32;
-                    tcb.dispatch_threads(
-                        "qwen38_gather_from_interleaved",
-                        (hid_u, 1, 1),
-                        (256, 1, 1),
-                        |enc| {
-                            enc.set_buffer(0, Some(&b_rout), 0);
-                            enc.set_buffer(1, Some(&self.workspace.hidden), 0);
-                            enc.set_bytes(2, 4, &hid_u as *const u32 as *const _);
-                            enc.set_bytes(3, 4, &ck as *const u32 as *const _);
-                            enc.set_bytes(4, 4, &slot as *const u32 as *const _);
-                        },
-                    )?;
-                }
+                    let gate = self
+                        .affine(&self.layer_name(layer, "mlp.gate_proj.weight"))
+                        .ok_or_else(|| {
+                            Error::Model(format!("layer {layer} gate_proj is not affine"))
+                        })?;
+                    let up = self
+                        .affine(&self.layer_name(layer, "mlp.up_proj.weight"))
+                        .ok_or_else(|| {
+                            Error::Model(format!("layer {layer} up_proj is not affine"))
+                        })?;
+                    let down = self
+                        .affine(&self.layer_name(layer, "mlp.down_proj.weight"))
+                        .ok_or_else(|| {
+                            Error::Model(format!("layer {layer} down_proj is not affine"))
+                        })?;
+                    let gb = gate.biases.as_ref().ok_or_else(|| {
+                        Error::Model("hybrid layer on a delta-only (q2f) gate".into())
+                    })?;
+                    let ub = up.biases.as_ref().ok_or_else(|| {
+                        Error::Model("hybrid layer on a delta-only (q2f) up".into())
+                    })?;
+                    let db = down.biases.as_ref().ok_or_else(|| {
+                        Error::Model("hybrid layer on a delta-only (q2f) down".into())
+                    })?;
+                    let (gr, gc) = (gate.rows, gate.cols);
+                    let (dr, dc) = (down.rows, down.cols);
+                    let next_w = self.next_norm_weight_name(layer);
+                    let w_norm = self.f32(&next_w)?;
+                    let head_w =
+                        self.f32(&self.layer_name(layer, "post_attention_layernorm.weight"))?;
+                    // K mixers, each scattered into its slot. This is the glue's
+                    // real cost: one extra dispatch per position.
+                    for k in 0..chunk {
+                        encode_mixer(tcb, layer)?;
+                        let slot = k as u32;
+                        tcb.dispatch_threads(
+                            "qwen38_scatter_to_interleaved",
+                            (hid_u, 1, 1),
+                            (256, 1, 1),
+                            |enc| {
+                                enc.set_buffer(0, Some(&self.workspace.hidden), 0);
+                                enc.set_buffer(1, Some(&b_rin), 0);
+                                enc.set_bytes(2, 4, &hid_u as *const u32 as *const _);
+                                enc.set_bytes(3, 4, &ck as *const u32 as *const _);
+                                enc.set_bytes(4, 4, &slot as *const u32 as *const _);
+                            },
+                        )?;
+                    }
+                    // ONE MLP for all K positions.
+                    if !fused_tail {
+                        tcb.dispatch_threads(
+                            "qwen38_residual_rmsnorm_tg_interleaved",
+                            (rms_tg * ck, 1, 1),
+                            (rms_tg, 1, 1),
+                            |enc| {
+                                enc.set_buffer(0, Some(&b_rin), 0);
+                                enc.set_buffer(1, Some(head_w), 0);
+                                enc.set_buffer(2, Some(&b_xin), 0);
+                                enc.set_bytes(3, 4, &hid_u as *const u32 as *const _);
+                                enc.set_bytes(4, 4, &QWEN38_RMS_EPS as *const f32 as *const _);
+                                enc.set_bytes(5, 4, &ck as *const u32 as *const _);
+                                enc.set_threadgroup_memory_length(0, (rms_tg as u64) * 4);
+                            },
+                        )?;
+                    }
+                    tcb.dispatch_threads(&k_gu, (tgs(gr as usize), 1, 1), tg128, |enc| {
+                        enc.set_buffer(0, Some(&gate.codes), 0);
+                        enc.set_buffer(1, Some(&gate.scales), 0);
+                        enc.set_buffer(2, Some(gb), 0);
+                        enc.set_buffer(3, Some(&up.codes), 0);
+                        enc.set_buffer(4, Some(&up.scales), 0);
+                        enc.set_buffer(5, Some(ub), 0);
+                        enc.set_buffer(6, Some(&b_xin), 0);
+                        enc.set_buffer(7, Some(&b_act), 0);
+                        set_u32(enc, 8, gr);
+                        set_u32(enc, 9, gc);
+                    })?;
+                    tcb.dispatch_threads(&k_dn, (tgs(dr as usize), 1, 1), tg128, |enc| {
+                        enc.set_buffer(0, Some(&down.codes), 0);
+                        enc.set_buffer(1, Some(&down.scales), 0);
+                        enc.set_buffer(2, Some(db), 0);
+                        enc.set_buffer(3, Some(&b_act), 0);
+                        enc.set_buffer(4, Some(&b_down), 0);
+                        set_u32(enc, 5, dr);
+                        set_u32(enc, 6, dc);
+                        set_u32(enc, 7, 64);
+                    })?;
+                    if fused_tail {
+                        tcb.dispatch_threads(
+                            "qwen38_add_residual_rmsnorm_tg_interleaved",
+                            (rms_tg * ck, 1, 1),
+                            (rms_tg, 1, 1),
+                            |enc| {
+                                enc.set_buffer(0, Some(&b_rin), 0);
+                                enc.set_buffer(1, Some(&b_down), 0);
+                                enc.set_buffer(2, Some(&b_rout), 0);
+                                enc.set_buffer(3, Some(w_norm), 0);
+                                enc.set_buffer(4, Some(&b_norm), 0);
+                                enc.set_bytes(5, 4, &hid_u as *const u32 as *const _);
+                                enc.set_bytes(6, 4, &QWEN38_RMS_EPS as *const f32 as *const _);
+                                enc.set_bytes(7, 4, &ck as *const u32 as *const _);
+                                enc.set_threadgroup_memory_length(0, (rms_tg as u64) * 4);
+                            },
+                        )?;
+                    } else {
+                        qwen_next_add_residual_tcb(tcb, &b_rin, &b_down, &b_rout, hidden * chunk)?;
+                    }
+                    // K gathers back to the per-position layout the next mixer wants.
+                    for k in 0..chunk {
+                        let slot = k as u32;
+                        tcb.dispatch_threads(
+                            "qwen38_gather_from_interleaved",
+                            (hid_u, 1, 1),
+                            (256, 1, 1),
+                            |enc| {
+                                enc.set_buffer(0, Some(&b_rout), 0);
+                                enc.set_buffer(1, Some(&self.workspace.hidden), 0);
+                                enc.set_bytes(2, 4, &hid_u as *const u32 as *const _);
+                                enc.set_bytes(3, 4, &ck as *const u32 as *const _);
+                                enc.set_bytes(4, 4, &slot as *const u32 as *const _);
+                            },
+                        )?;
+                    }
                 }
                 hyb_d = tcb.dispatch_count();
                 Ok(())
@@ -6394,7 +6459,11 @@ mlp_gate_up and mlp_gate_up_swiglu are wired"
             }
         }
 
-        pub fn measure_named_matvec(&self, name: &str, output: &str) -> Result<CommandBufferTiming> {
+        pub fn measure_named_matvec(
+            &self,
+            name: &str,
+            output: &str,
+        ) -> Result<CommandBufferTiming> {
             match output {
                 "gate" | "up" | "down" | "logits" | "mixer" | "qkvz" | "hidden" => {}
                 other => {
@@ -6453,12 +6522,7 @@ mlp_gate_up and mlp_gate_up_swiglu are wired"
                         "up" => (&self.workspace.normalized, &self.workspace.up),
                         _ => (&self.workspace.act, &self.workspace.down),
                     };
-                    self.encode_q4_matvec(
-                        tcb,
-                        self.layer_name(layer, suffix),
-                        input,
-                        output,
-                    )?;
+                    self.encode_q4_matvec(tcb, self.layer_name(layer, suffix), input, output)?;
                 }
                 Ok(())
             })
@@ -6523,8 +6587,7 @@ mlp_gate_up and mlp_gate_up_swiglu are wired"
             Ok(Qwen38PrefixCheckpoint {
                 position: self.position,
                 rec_state: self.read_f32_workspace("rec_state", self.rec_state_f32_count())?,
-                conv_state: self
-                    .read_f32_workspace("conv_state", self.conv_state_f32_count())?,
+                conv_state: self.read_f32_workspace("conv_state", self.conv_state_f32_count())?,
             })
         }
 
@@ -6560,8 +6623,7 @@ mlp_gate_up and mlp_gate_up_swiglu are wired"
         }
 
         pub fn gqa_cache_f32_count(&self) -> usize {
-            (self.workspace.gqa_key.length() as usize
-                + self.workspace.gqa_value.length() as usize)
+            (self.workspace.gqa_key.length() as usize + self.workspace.gqa_value.length() as usize)
                 / 4
         }
 
@@ -6644,31 +6706,32 @@ mlp_gate_up and mlp_gate_up_swiglu are wired"
             let norm_w = self.f32(self.layer_name(layer, "linear_attn.norm.weight"))?;
             let dn_tg = self.dn_rmsnorm_tg;
             let (dn_name, dn_grid, dn_tgd) = if dn_tg > 0 {
-                ("qwen80_deltanet_gated_rmsnorm_tg",
-                 (layout.value_heads as u32 * dn_tg, 1, 1), (dn_tg, 1, 1))
+                (
+                    "qwen80_deltanet_gated_rmsnorm_tg",
+                    (layout.value_heads as u32 * dn_tg, 1, 1),
+                    (dn_tg, 1, 1),
+                )
             } else {
-                ("qwen80_deltanet_gated_rmsnorm_f32",
-                 (layout.value_heads as u32, 1, 1), (16, 1, 1))
+                (
+                    "qwen80_deltanet_gated_rmsnorm_f32",
+                    (layout.value_heads as u32, 1, 1),
+                    (16, 1, 1),
+                )
             };
-            tcb.dispatch_threads(
-                dn_name,
-                dn_grid,
-                dn_tgd,
-                |encoder| {
-                    if dn_tg > 0 {
-                        encoder.set_threadgroup_memory_length(0, (dn_tg as u64) * 4);
-                    }
-                    encoder.set_buffer(0, Some(&self.workspace.rec_out), 0);
-                    encoder.set_buffer(1, Some(&self.workspace.z), 0);
-                    encoder.set_buffer(2, Some(norm_w), 0);
-                    encoder.set_buffer(3, Some(&self.workspace.gated), 0);
-                    let heads = layout.value_heads as u32;
-                    let dim = layout.value_head_dim as u32;
-                    encoder.set_bytes(4, 4, &heads as *const u32 as *const _);
-                    encoder.set_bytes(5, 4, &dim as *const u32 as *const _);
-                    encoder.set_bytes(6, 4, &QWEN38_RMS_EPS as *const f32 as *const _);
-                },
-            )
+            tcb.dispatch_threads(dn_name, dn_grid, dn_tgd, |encoder| {
+                if dn_tg > 0 {
+                    encoder.set_threadgroup_memory_length(0, (dn_tg as u64) * 4);
+                }
+                encoder.set_buffer(0, Some(&self.workspace.rec_out), 0);
+                encoder.set_buffer(1, Some(&self.workspace.z), 0);
+                encoder.set_buffer(2, Some(norm_w), 0);
+                encoder.set_buffer(3, Some(&self.workspace.gated), 0);
+                let heads = layout.value_heads as u32;
+                let dim = layout.value_head_dim as u32;
+                encoder.set_bytes(4, 4, &heads as *const u32 as *const _);
+                encoder.set_bytes(5, 4, &dim as *const u32 as *const _);
+                encoder.set_bytes(6, 4, &QWEN38_RMS_EPS as *const f32 as *const _);
+            })
         }
 
         fn encode_rope_cache(&self, tcb: &mut TokenCommandBuffer<'_>, layer: usize) -> Result<()> {
@@ -6679,42 +6742,43 @@ mlp_gate_up and mlp_gate_up_swiglu are wired"
             let k_norm = self.f32(self.layer_name(layer, "self_attn.k_norm.weight"))?;
             let rope_tg = self.rope_tg;
             let (rope_name, rope_grid, rope_tgd) = if rope_tg > 0 {
-                ("qwen38_gqa_qk_norm_rope_cache_tg",
-                 (QWEN38_GQA_HEADS as u32 * rope_tg, 1, 1), (rope_tg, 1, 1))
+                (
+                    "qwen38_gqa_qk_norm_rope_cache_tg",
+                    (QWEN38_GQA_HEADS as u32 * rope_tg, 1, 1),
+                    (rope_tg, 1, 1),
+                )
             } else {
-                ("qwen38_gqa_qk_norm_rope_cache_f32",
-                 (QWEN38_GQA_HEADS as u32, 1, 1), (QWEN38_GQA_HEADS as u32, 1, 1))
+                (
+                    "qwen38_gqa_qk_norm_rope_cache_f32",
+                    (QWEN38_GQA_HEADS as u32, 1, 1),
+                    (QWEN38_GQA_HEADS as u32, 1, 1),
+                )
             };
-            tcb.dispatch_threads(
-                rope_name,
-                rope_grid,
-                rope_tgd,
-                |encoder| {
-                    if rope_tg > 0 {
-                        encoder.set_threadgroup_memory_length(0, (rope_tg as u64) * 4);
-                    }
-                    encoder.set_buffer(0, Some(&self.workspace.q_proj), 0);
-                    encoder.set_buffer(1, Some(&self.workspace.k_proj), 0);
-                    encoder.set_buffer(2, Some(&self.workspace.v_proj), 0);
-                    encoder.set_buffer(3, Some(q_norm), 0);
-                    encoder.set_buffer(4, Some(k_norm), 0);
-                    encoder.set_buffer(5, Some(&self.workspace.query), 0);
-                    encoder.set_buffer(6, Some(&self.workspace.gqa_key), cache_off);
-                    encoder.set_buffer(7, Some(&self.workspace.gqa_value), cache_off);
-                    let pos = self.position.saturating_sub(1).min(self.max_seq_len - 1) as u32;
-                    let nh = QWEN38_GQA_HEADS as u32;
-                    let nkv = QWEN38_GQA_KV_HEADS as u32;
-                    let hd = QWEN38_GQA_HEAD_DIM as u32;
-                    let rd = QWEN38_GQA_ROTARY_DIM as u32;
-                    encoder.set_bytes(8, 4, &pos as *const u32 as *const _);
-                    encoder.set_bytes(9, 4, &nh as *const u32 as *const _);
-                    encoder.set_bytes(10, 4, &nkv as *const u32 as *const _);
-                    encoder.set_bytes(11, 4, &hd as *const u32 as *const _);
-                    encoder.set_bytes(12, 4, &rd as *const u32 as *const _);
-                    encoder.set_bytes(13, 4, &QWEN38_ROPE_THETA as *const f32 as *const _);
-                    encoder.set_bytes(14, 4, &QWEN38_RMS_EPS as *const f32 as *const _);
-                },
-            )
+            tcb.dispatch_threads(rope_name, rope_grid, rope_tgd, |encoder| {
+                if rope_tg > 0 {
+                    encoder.set_threadgroup_memory_length(0, (rope_tg as u64) * 4);
+                }
+                encoder.set_buffer(0, Some(&self.workspace.q_proj), 0);
+                encoder.set_buffer(1, Some(&self.workspace.k_proj), 0);
+                encoder.set_buffer(2, Some(&self.workspace.v_proj), 0);
+                encoder.set_buffer(3, Some(q_norm), 0);
+                encoder.set_buffer(4, Some(k_norm), 0);
+                encoder.set_buffer(5, Some(&self.workspace.query), 0);
+                encoder.set_buffer(6, Some(&self.workspace.gqa_key), cache_off);
+                encoder.set_buffer(7, Some(&self.workspace.gqa_value), cache_off);
+                let pos = self.position.saturating_sub(1).min(self.max_seq_len - 1) as u32;
+                let nh = QWEN38_GQA_HEADS as u32;
+                let nkv = QWEN38_GQA_KV_HEADS as u32;
+                let hd = QWEN38_GQA_HEAD_DIM as u32;
+                let rd = QWEN38_GQA_ROTARY_DIM as u32;
+                encoder.set_bytes(8, 4, &pos as *const u32 as *const _);
+                encoder.set_bytes(9, 4, &nh as *const u32 as *const _);
+                encoder.set_bytes(10, 4, &nkv as *const u32 as *const _);
+                encoder.set_bytes(11, 4, &hd as *const u32 as *const _);
+                encoder.set_bytes(12, 4, &rd as *const u32 as *const _);
+                encoder.set_bytes(13, 4, &QWEN38_ROPE_THETA as *const f32 as *const _);
+                encoder.set_bytes(14, 4, &QWEN38_RMS_EPS as *const f32 as *const _);
+            })
         }
 
         fn encode_mha(&self, tcb: &mut TokenCommandBuffer<'_>, layer: usize) -> Result<()> {
@@ -6822,19 +6886,14 @@ mlp_gate_up and mlp_gate_up_swiglu are wired"
                     enc.set_threadgroup_memory_length(1, 256 * 4);
                 },
             )?;
-            tcb.dispatch_threads(
-                "sample_argmax_f32_pass2",
-                (256, 1, 1),
-                (256, 1, 1),
-                |enc| {
-                    enc.set_buffer(0, Some(&self.workspace.argmax_part_v), 0);
-                    enc.set_buffer(1, Some(&self.workspace.argmax_part_i), 0);
-                    enc.set_buffer(2, Some(&self.workspace.sampled), 0);
-                    enc.set_bytes(3, 4, &groups as *const u32 as *const _);
-                    enc.set_threadgroup_memory_length(0, 256 * 4);
-                    enc.set_threadgroup_memory_length(1, 256 * 4);
-                },
-            )
+            tcb.dispatch_threads("sample_argmax_f32_pass2", (256, 1, 1), (256, 1, 1), |enc| {
+                enc.set_buffer(0, Some(&self.workspace.argmax_part_v), 0);
+                enc.set_buffer(1, Some(&self.workspace.argmax_part_i), 0);
+                enc.set_buffer(2, Some(&self.workspace.sampled), 0);
+                enc.set_bytes(3, 4, &groups as *const u32 as *const _);
+                enc.set_threadgroup_memory_length(0, 256 * 4);
+                enc.set_threadgroup_memory_length(1, 256 * 4);
+            })
         }
 
         fn encode_f32_stream(
@@ -6856,10 +6915,7 @@ mlp_gate_up and mlp_gate_up_swiglu are wired"
             )
         }
 
-        pub fn measure_isolated_family(
-            &self,
-            family: &str,
-        ) -> Result<CommandBufferTiming> {
+        pub fn measure_isolated_family(&self, family: &str) -> Result<CommandBufferTiming> {
             match family {
                 "input_norms" => self.timed_cb(|tcb| {
                     for layer in 0..QWEN38_LAYERS {
@@ -7172,9 +7228,7 @@ mlp_gate_up and mlp_gate_up_swiglu are wired"
                         kernel,
                     )
                 }),
-                other => Err(Error::Model(format!(
-                    "qwen38 unknown gemv class {other}"
-                ))),
+                other => Err(Error::Model(format!("qwen38 unknown gemv class {other}"))),
             }
         }
 
@@ -7257,34 +7311,32 @@ mlp_gate_up and mlp_gate_up_swiglu are wired"
             let rms_tg = self.rmsnorm_tg;
             let xsum = self.affine2_geo.uses_xsum();
             let (rms_name, rms_n) = if xsum {
-                (QWEN38_RMSNORM_XSUM64_KERNEL, if rms_tg > 0 { rms_tg } else { 256 })
+                (
+                    QWEN38_RMSNORM_XSUM64_KERNEL,
+                    if rms_tg > 0 { rms_tg } else { 256 },
+                )
             } else if rms_tg > 0 {
                 ("qwen80_residual_rmsnorm_tg", rms_tg)
             } else {
                 ("qwen80_residual_rmsnorm_f32", 256)
             };
-            tcb.dispatch_threads(
-                rms_name,
-                (rms_n, 1, 1),
-                (rms_n, 1, 1),
-                |encoder| {
-                    encoder.set_buffer(0, Some(input), 0);
-                    encoder.set_buffer(1, Some(weight), 0);
-                    encoder.set_buffer(2, Some(output), 0);
-                    if xsum {
-                        encoder.set_buffer(3, Some(&self.workspace.xsum64), 0);
-                        encoder.set_bytes(4, 4, &hidden as *const u32 as *const _);
-                        encoder.set_bytes(5, 4, &QWEN38_RMS_EPS as *const f32 as *const _);
-                    } else {
-                        encoder.set_bytes(3, 4, &hidden as *const u32 as *const _);
-                        encoder.set_bytes(4, 4, &QWEN38_RMS_EPS as *const f32 as *const _);
-                    }
-                    // sized to the ACTUAL threadgroup: the scratch is one float per thread and
-                    // a hardcoded 256 silently under-allocates for any larger tg, which showed
-                    // up immediately as diverged tokens rather than as a crash
-                    encoder.set_threadgroup_memory_length(0, (rms_n as u64) * 4);
-                },
-            )
+            tcb.dispatch_threads(rms_name, (rms_n, 1, 1), (rms_n, 1, 1), |encoder| {
+                encoder.set_buffer(0, Some(input), 0);
+                encoder.set_buffer(1, Some(weight), 0);
+                encoder.set_buffer(2, Some(output), 0);
+                if xsum {
+                    encoder.set_buffer(3, Some(&self.workspace.xsum64), 0);
+                    encoder.set_bytes(4, 4, &hidden as *const u32 as *const _);
+                    encoder.set_bytes(5, 4, &QWEN38_RMS_EPS as *const f32 as *const _);
+                } else {
+                    encoder.set_bytes(3, 4, &hidden as *const u32 as *const _);
+                    encoder.set_bytes(4, 4, &QWEN38_RMS_EPS as *const f32 as *const _);
+                }
+                // sized to the ACTUAL threadgroup: the scratch is one float per thread and
+                // a hardcoded 256 silently under-allocates for any larger tg, which showed
+                // up immediately as diverged tokens rather than as a crash
+                encoder.set_threadgroup_memory_length(0, (rms_n as u64) * 4);
+            })
         }
 
         fn add_rmsnorm_kernel(&self) -> &'static str {
@@ -7457,11 +7509,7 @@ mlp_gate_up and mlp_gate_up_swiglu are wired"
             }
         }
 
-        fn encode_deltanet(
-            &self,
-            tcb: &mut TokenCommandBuffer<'_>,
-            layer: usize,
-        ) -> Result<()> {
+        fn encode_deltanet(&self, tcb: &mut TokenCommandBuffer<'_>, layer: usize) -> Result<()> {
             if !self.weights.mixed.is_empty() {
                 return self.encode_deltanet_mixed(tcb, layer);
             }
@@ -7528,31 +7576,32 @@ mlp_gate_up and mlp_gate_up_swiglu are wired"
             let norm_w = self.f32(self.layer_name(layer, "linear_attn.norm.weight"))?;
             let dn_tg = self.dn_rmsnorm_tg;
             let (dn_name, dn_grid, dn_tgd) = if dn_tg > 0 {
-                ("qwen80_deltanet_gated_rmsnorm_tg",
-                 (layout.value_heads as u32 * dn_tg, 1, 1), (dn_tg, 1, 1))
+                (
+                    "qwen80_deltanet_gated_rmsnorm_tg",
+                    (layout.value_heads as u32 * dn_tg, 1, 1),
+                    (dn_tg, 1, 1),
+                )
             } else {
-                ("qwen80_deltanet_gated_rmsnorm_f32",
-                 (layout.value_heads as u32, 1, 1), (16, 1, 1))
+                (
+                    "qwen80_deltanet_gated_rmsnorm_f32",
+                    (layout.value_heads as u32, 1, 1),
+                    (16, 1, 1),
+                )
             };
-            tcb.dispatch_threads(
-                dn_name,
-                dn_grid,
-                dn_tgd,
-                |encoder| {
-                    if dn_tg > 0 {
-                        encoder.set_threadgroup_memory_length(0, (dn_tg as u64) * 4);
-                    }
-                    encoder.set_buffer(0, Some(&self.workspace.rec_out), 0);
-                    encoder.set_buffer(1, Some(&self.workspace.z), 0);
-                    encoder.set_buffer(2, Some(norm_w), 0);
-                    encoder.set_buffer(3, Some(&self.workspace.gated), 0);
-                    let heads = layout.value_heads as u32;
-                    let dim = layout.value_head_dim as u32;
-                    encoder.set_bytes(4, 4, &heads as *const u32 as *const _);
-                    encoder.set_bytes(5, 4, &dim as *const u32 as *const _);
-                    encoder.set_bytes(6, 4, &QWEN38_RMS_EPS as *const f32 as *const _);
-                },
-            )?;
+            tcb.dispatch_threads(dn_name, dn_grid, dn_tgd, |encoder| {
+                if dn_tg > 0 {
+                    encoder.set_threadgroup_memory_length(0, (dn_tg as u64) * 4);
+                }
+                encoder.set_buffer(0, Some(&self.workspace.rec_out), 0);
+                encoder.set_buffer(1, Some(&self.workspace.z), 0);
+                encoder.set_buffer(2, Some(norm_w), 0);
+                encoder.set_buffer(3, Some(&self.workspace.gated), 0);
+                let heads = layout.value_heads as u32;
+                let dim = layout.value_head_dim as u32;
+                encoder.set_bytes(4, 4, &heads as *const u32 as *const _);
+                encoder.set_bytes(5, 4, &dim as *const u32 as *const _);
+                encoder.set_bytes(6, 4, &QWEN38_RMS_EPS as *const f32 as *const _);
+            })?;
             self.encode_q4_matvec(
                 tcb,
                 self.layer_name(layer, "linear_attn.out_proj.weight"),
@@ -7633,42 +7682,43 @@ mlp_gate_up and mlp_gate_up_swiglu are wired"
             let k_norm = self.f32(self.layer_name(layer, "self_attn.k_norm.weight"))?;
             let rope_tg = self.rope_tg;
             let (rope_name, rope_grid, rope_tgd) = if rope_tg > 0 {
-                ("qwen38_gqa_qk_norm_rope_cache_tg",
-                 (QWEN38_GQA_HEADS as u32 * rope_tg, 1, 1), (rope_tg, 1, 1))
+                (
+                    "qwen38_gqa_qk_norm_rope_cache_tg",
+                    (QWEN38_GQA_HEADS as u32 * rope_tg, 1, 1),
+                    (rope_tg, 1, 1),
+                )
             } else {
-                ("qwen38_gqa_qk_norm_rope_cache_f32",
-                 (QWEN38_GQA_HEADS as u32, 1, 1), (QWEN38_GQA_HEADS as u32, 1, 1))
+                (
+                    "qwen38_gqa_qk_norm_rope_cache_f32",
+                    (QWEN38_GQA_HEADS as u32, 1, 1),
+                    (QWEN38_GQA_HEADS as u32, 1, 1),
+                )
             };
-            tcb.dispatch_threads(
-                rope_name,
-                rope_grid,
-                rope_tgd,
-                |encoder| {
-                    if rope_tg > 0 {
-                        encoder.set_threadgroup_memory_length(0, (rope_tg as u64) * 4);
-                    }
-                    encoder.set_buffer(0, Some(&self.workspace.q_proj), 0);
-                    encoder.set_buffer(1, Some(&self.workspace.k_proj), 0);
-                    encoder.set_buffer(2, Some(&self.workspace.v_proj), 0);
-                    encoder.set_buffer(3, Some(q_norm), 0);
-                    encoder.set_buffer(4, Some(k_norm), 0);
-                    encoder.set_buffer(5, Some(&self.workspace.query), 0);
-                    encoder.set_buffer(6, Some(&self.workspace.gqa_key), cache_off);
-                    encoder.set_buffer(7, Some(&self.workspace.gqa_value), cache_off);
-                    let pos = self.position as u32;
-                    let nh = QWEN38_GQA_HEADS as u32;
-                    let nkv = QWEN38_GQA_KV_HEADS as u32;
-                    let hd = QWEN38_GQA_HEAD_DIM as u32;
-                    let rd = QWEN38_GQA_ROTARY_DIM as u32;
-                    encoder.set_bytes(8, 4, &pos as *const u32 as *const _);
-                    encoder.set_bytes(9, 4, &nh as *const u32 as *const _);
-                    encoder.set_bytes(10, 4, &nkv as *const u32 as *const _);
-                    encoder.set_bytes(11, 4, &hd as *const u32 as *const _);
-                    encoder.set_bytes(12, 4, &rd as *const u32 as *const _);
-                    encoder.set_bytes(13, 4, &QWEN38_ROPE_THETA as *const f32 as *const _);
-                    encoder.set_bytes(14, 4, &QWEN38_RMS_EPS as *const f32 as *const _);
-                },
-            )?;
+            tcb.dispatch_threads(rope_name, rope_grid, rope_tgd, |encoder| {
+                if rope_tg > 0 {
+                    encoder.set_threadgroup_memory_length(0, (rope_tg as u64) * 4);
+                }
+                encoder.set_buffer(0, Some(&self.workspace.q_proj), 0);
+                encoder.set_buffer(1, Some(&self.workspace.k_proj), 0);
+                encoder.set_buffer(2, Some(&self.workspace.v_proj), 0);
+                encoder.set_buffer(3, Some(q_norm), 0);
+                encoder.set_buffer(4, Some(k_norm), 0);
+                encoder.set_buffer(5, Some(&self.workspace.query), 0);
+                encoder.set_buffer(6, Some(&self.workspace.gqa_key), cache_off);
+                encoder.set_buffer(7, Some(&self.workspace.gqa_value), cache_off);
+                let pos = self.position as u32;
+                let nh = QWEN38_GQA_HEADS as u32;
+                let nkv = QWEN38_GQA_KV_HEADS as u32;
+                let hd = QWEN38_GQA_HEAD_DIM as u32;
+                let rd = QWEN38_GQA_ROTARY_DIM as u32;
+                encoder.set_bytes(8, 4, &pos as *const u32 as *const _);
+                encoder.set_bytes(9, 4, &nh as *const u32 as *const _);
+                encoder.set_bytes(10, 4, &nkv as *const u32 as *const _);
+                encoder.set_bytes(11, 4, &hd as *const u32 as *const _);
+                encoder.set_bytes(12, 4, &rd as *const u32 as *const _);
+                encoder.set_bytes(13, 4, &QWEN38_ROPE_THETA as *const f32 as *const _);
+                encoder.set_bytes(14, 4, &QWEN38_RMS_EPS as *const f32 as *const _);
+            })?;
             self.encode_gqa_mha_and_gate(tcb, cache_off as usize, self.position + 1)?;
             self.encode_q4_matvec(
                 tcb,
@@ -7993,31 +8043,32 @@ mlp_gate_up and mlp_gate_up_swiglu are wired"
             let norm_w = self.f32(self.layer_name(layer, "linear_attn.norm.weight"))?;
             let dn_tg = self.dn_rmsnorm_tg;
             let (dn_name, dn_grid, dn_tgd) = if dn_tg > 0 {
-                ("qwen80_deltanet_gated_rmsnorm_tg",
-                 (layout.value_heads as u32 * dn_tg, 1, 1), (dn_tg, 1, 1))
+                (
+                    "qwen80_deltanet_gated_rmsnorm_tg",
+                    (layout.value_heads as u32 * dn_tg, 1, 1),
+                    (dn_tg, 1, 1),
+                )
             } else {
-                ("qwen80_deltanet_gated_rmsnorm_f32",
-                 (layout.value_heads as u32, 1, 1), (16, 1, 1))
+                (
+                    "qwen80_deltanet_gated_rmsnorm_f32",
+                    (layout.value_heads as u32, 1, 1),
+                    (16, 1, 1),
+                )
             };
-            tcb.dispatch_threads(
-                dn_name,
-                dn_grid,
-                dn_tgd,
-                |encoder| {
-                    if dn_tg > 0 {
-                        encoder.set_threadgroup_memory_length(0, (dn_tg as u64) * 4);
-                    }
-                    encoder.set_buffer(0, Some(&self.workspace.rec_out), 0);
-                    encoder.set_buffer(1, Some(&self.workspace.z), 0);
-                    encoder.set_buffer(2, Some(norm_w), 0);
-                    encoder.set_buffer(3, Some(&self.workspace.gated), 0);
-                    let heads = layout.value_heads as u32;
-                    let dim = layout.value_head_dim as u32;
-                    encoder.set_bytes(4, 4, &heads as *const u32 as *const _);
-                    encoder.set_bytes(5, 4, &dim as *const u32 as *const _);
-                    encoder.set_bytes(6, 4, &QWEN38_RMS_EPS as *const f32 as *const _);
-                },
-            )?;
+            tcb.dispatch_threads(dn_name, dn_grid, dn_tgd, |encoder| {
+                if dn_tg > 0 {
+                    encoder.set_threadgroup_memory_length(0, (dn_tg as u64) * 4);
+                }
+                encoder.set_buffer(0, Some(&self.workspace.rec_out), 0);
+                encoder.set_buffer(1, Some(&self.workspace.z), 0);
+                encoder.set_buffer(2, Some(norm_w), 0);
+                encoder.set_buffer(3, Some(&self.workspace.gated), 0);
+                let heads = layout.value_heads as u32;
+                let dim = layout.value_head_dim as u32;
+                encoder.set_bytes(4, 4, &heads as *const u32 as *const _);
+                encoder.set_bytes(5, 4, &dim as *const u32 as *const _);
+                encoder.set_bytes(6, 4, &QWEN38_RMS_EPS as *const f32 as *const _);
+            })?;
             self.encode_named_matvec(
                 tcb,
                 self.layer_name(layer, "linear_attn.out_proj.weight"),
@@ -8098,42 +8149,43 @@ mlp_gate_up and mlp_gate_up_swiglu are wired"
             let k_norm = self.f32(self.layer_name(layer, "self_attn.k_norm.weight"))?;
             let rope_tg = self.rope_tg;
             let (rope_name, rope_grid, rope_tgd) = if rope_tg > 0 {
-                ("qwen38_gqa_qk_norm_rope_cache_tg",
-                 (QWEN38_GQA_HEADS as u32 * rope_tg, 1, 1), (rope_tg, 1, 1))
+                (
+                    "qwen38_gqa_qk_norm_rope_cache_tg",
+                    (QWEN38_GQA_HEADS as u32 * rope_tg, 1, 1),
+                    (rope_tg, 1, 1),
+                )
             } else {
-                ("qwen38_gqa_qk_norm_rope_cache_f32",
-                 (QWEN38_GQA_HEADS as u32, 1, 1), (QWEN38_GQA_HEADS as u32, 1, 1))
+                (
+                    "qwen38_gqa_qk_norm_rope_cache_f32",
+                    (QWEN38_GQA_HEADS as u32, 1, 1),
+                    (QWEN38_GQA_HEADS as u32, 1, 1),
+                )
             };
-            tcb.dispatch_threads(
-                rope_name,
-                rope_grid,
-                rope_tgd,
-                |encoder| {
-                    if rope_tg > 0 {
-                        encoder.set_threadgroup_memory_length(0, (rope_tg as u64) * 4);
-                    }
-                    encoder.set_buffer(0, Some(&self.workspace.q_proj), 0);
-                    encoder.set_buffer(1, Some(&self.workspace.k_proj), 0);
-                    encoder.set_buffer(2, Some(&self.workspace.v_proj), 0);
-                    encoder.set_buffer(3, Some(q_norm), 0);
-                    encoder.set_buffer(4, Some(k_norm), 0);
-                    encoder.set_buffer(5, Some(&self.workspace.query), 0);
-                    encoder.set_buffer(6, Some(&self.workspace.gqa_key), cache_off);
-                    encoder.set_buffer(7, Some(&self.workspace.gqa_value), cache_off);
-                    let pos = self.position as u32;
-                    let nh = QWEN38_GQA_HEADS as u32;
-                    let nkv = QWEN38_GQA_KV_HEADS as u32;
-                    let hd = QWEN38_GQA_HEAD_DIM as u32;
-                    let rd = QWEN38_GQA_ROTARY_DIM as u32;
-                    encoder.set_bytes(8, 4, &pos as *const u32 as *const _);
-                    encoder.set_bytes(9, 4, &nh as *const u32 as *const _);
-                    encoder.set_bytes(10, 4, &nkv as *const u32 as *const _);
-                    encoder.set_bytes(11, 4, &hd as *const u32 as *const _);
-                    encoder.set_bytes(12, 4, &rd as *const u32 as *const _);
-                    encoder.set_bytes(13, 4, &QWEN38_ROPE_THETA as *const f32 as *const _);
-                    encoder.set_bytes(14, 4, &QWEN38_RMS_EPS as *const f32 as *const _);
-                },
-            )?;
+            tcb.dispatch_threads(rope_name, rope_grid, rope_tgd, |encoder| {
+                if rope_tg > 0 {
+                    encoder.set_threadgroup_memory_length(0, (rope_tg as u64) * 4);
+                }
+                encoder.set_buffer(0, Some(&self.workspace.q_proj), 0);
+                encoder.set_buffer(1, Some(&self.workspace.k_proj), 0);
+                encoder.set_buffer(2, Some(&self.workspace.v_proj), 0);
+                encoder.set_buffer(3, Some(q_norm), 0);
+                encoder.set_buffer(4, Some(k_norm), 0);
+                encoder.set_buffer(5, Some(&self.workspace.query), 0);
+                encoder.set_buffer(6, Some(&self.workspace.gqa_key), cache_off);
+                encoder.set_buffer(7, Some(&self.workspace.gqa_value), cache_off);
+                let pos = self.position as u32;
+                let nh = QWEN38_GQA_HEADS as u32;
+                let nkv = QWEN38_GQA_KV_HEADS as u32;
+                let hd = QWEN38_GQA_HEAD_DIM as u32;
+                let rd = QWEN38_GQA_ROTARY_DIM as u32;
+                encoder.set_bytes(8, 4, &pos as *const u32 as *const _);
+                encoder.set_bytes(9, 4, &nh as *const u32 as *const _);
+                encoder.set_bytes(10, 4, &nkv as *const u32 as *const _);
+                encoder.set_bytes(11, 4, &hd as *const u32 as *const _);
+                encoder.set_bytes(12, 4, &rd as *const u32 as *const _);
+                encoder.set_bytes(13, 4, &QWEN38_ROPE_THETA as *const f32 as *const _);
+                encoder.set_bytes(14, 4, &QWEN38_RMS_EPS as *const f32 as *const _);
+            })?;
             self.encode_gqa_mha_and_gate(tcb, cache_off as usize, self.position + 1)?;
             self.encode_named_matvec(
                 tcb,
@@ -8307,7 +8359,9 @@ mlp_gate_up and mlp_gate_up_swiglu are wired"
             }
             let chunk = tokens.len();
             if chunk == 0 || r == 0 {
-                return Err(Error::Model("prefill_chunk needs tokens and a positive r".into()));
+                return Err(Error::Model(
+                    "prefill_chunk needs tokens and a positive r".into(),
+                ));
             }
             if self.mlp_fusion != Qwen38MlpFusion::GateUpSwiglu {
                 return Err(Error::Model(format!(
@@ -8333,7 +8387,11 @@ mlp_gate_up and mlp_gate_up_swiglu are wired"
             );
             let k_dn = format!("qwen_affine_q2_matmul_r{r}k{chunk}_geo_tpr64_tg128");
             let fused_tail = self.fuse_add_rmsnorm;
-            let rms_tg = if self.rmsnorm_tg > 0 { self.rmsnorm_tg } else { 256 };
+            let rms_tg = if self.rmsnorm_tg > 0 {
+                self.rmsnorm_tg
+            } else {
+                256
+            };
             let tg128 = (128u32, 1, 1);
 
             self.reset_active_weight_bytes();
@@ -8654,6 +8712,8 @@ mlp_gate_up and mlp_gate_up_swiglu are wired"
         }
     }
 
+    include!("qwen38_hybrid_prefill.rs");
+
     pub fn generate_greedy(
         session: &mut Qwen38HybridDecodeSession,
         prompt: &[u32],
@@ -8696,13 +8756,8 @@ mlp_gate_up and mlp_gate_up_swiglu are wired"
         reuse: usize,
         snapshot_at: Option<usize>,
     ) -> Result<(Qwen38GenerateResult, Option<Qwen38PrefixCheckpoint>)> {
-        let result = generate_greedy_reusing_inner(
-            session,
-            prompt,
-            max_new_tokens,
-            reuse,
-            snapshot_at,
-        )?;
+        let result =
+            generate_greedy_reusing_inner(session, prompt, max_new_tokens, reuse, snapshot_at)?;
         Ok(result)
     }
 
@@ -8747,28 +8802,78 @@ mlp_gate_up and mlp_gate_up_swiglu are wired"
         let mut next = 0u32;
         let prefill = Instant::now();
         let mut first_step_wall_ns = 0u64;
-        for (i, &token) in prompt.iter().enumerate().skip(reuse) {
+        let mut prefill_step_count = prompt.len().saturating_sub(reuse);
+        let prefill_gpu_ns;
+        let prefill_dispatches;
+        // The batched path consumes the WHOLE prompt in one pass, so it can
+        // honour neither `reuse` (which skips an already-computed prefix) nor
+        // `snapshot_at` (which needs the recurrent state part-way through the
+        // prefill, and that state is a running summary with no rewind). Taking
+        // the batched path anyway would silently drop both — a faster wall and
+        // a different answer. It is therefore selected only when neither is in
+        // play, and prefix reuse keeps its own sequential route.
+        let batched_prefill =
+            qwen38_batched_prefill_enabled() && reuse == 0 && snapshot_at.is_none();
+        if batched_prefill {
             let step_wall = Instant::now();
-            let (sampled, timing) = session.step(token)?;
+            let (sampled, timing) = session.prefill_prompt(prompt)?;
             let step_ns = step_wall.elapsed().as_nanos() as u64;
-            if i == reuse {
-                first_step_wall_ns = step_ns;
-            }
+            first_step_wall_ns = step_ns;
             wall_ns_per_step.push(step_ns);
             gpu_ns.push(timing.gpu_ns);
             wait_ns.push(timing.wait_ns);
             encode_ns.push(timing.encode_ns);
             submit_ns.push(timing.submit_ns);
             dispatches.push(timing.dispatches);
-            active_weight_bytes.push(session.last_active_weight_bytes());
+            active_weight_bytes.push(timing.active_weight_bytes);
+            prefill_gpu_ns = timing.gpu_ns;
+            prefill_dispatches = timing.dispatches;
+            prefill_step_count = 1;
             next = sampled;
-            if snapshot.is_none() && snapshot_at == Some(i + 1) {
-                // i + 1 prompt tokens have been stepped, so the carry is exactly
-                // the state after that prefix. Captured HERE because it cannot
-                // be recovered once the prefill moves past it: the recurrent
-                // state is a running summary with no rewind.
-                snapshot = Some(session.prefix_checkpoint()?);
+        } else {
+            for (i, &token) in prompt.iter().enumerate().skip(reuse) {
+                let step_wall = Instant::now();
+                let (sampled, timing) = session.step(token)?;
+                let step_ns = step_wall.elapsed().as_nanos() as u64;
+                if i == reuse {
+                    first_step_wall_ns = step_ns;
+                }
+                wall_ns_per_step.push(step_ns);
+                gpu_ns.push(timing.gpu_ns);
+                wait_ns.push(timing.wait_ns);
+                encode_ns.push(timing.encode_ns);
+                submit_ns.push(timing.submit_ns);
+                dispatches.push(timing.dispatches);
+                active_weight_bytes.push(session.last_active_weight_bytes());
+                next = sampled;
+                if snapshot.is_none() && snapshot_at == Some(i + 1) {
+                    // i + 1 prompt tokens have been stepped, so the carry is exactly
+                    // the state after that prefix. Captured HERE because it cannot
+                    // be recovered once the prefill moves past it: the recurrent
+                    // state is a running summary with no rewind.
+                    snapshot = Some(session.prefix_checkpoint()?);
+                }
             }
+            prefill_gpu_ns = {
+                let mut total = 0u64;
+                let mut any = false;
+                let mut missing = false;
+                for value in gpu_ns.iter().copied() {
+                    match value {
+                        Some(v) => {
+                            total = total.saturating_add(v);
+                            any = true;
+                        }
+                        None => missing = true,
+                    }
+                }
+                if any && !missing {
+                    Some(total)
+                } else {
+                    None
+                }
+            };
+            prefill_dispatches = dispatches.iter().copied().fold(0u64, u64::saturating_add);
         }
         let prefill_wall_ns = prefill.elapsed().as_nanos() as u64;
         tokens.push(next);
@@ -8797,27 +8902,34 @@ mlp_gate_up and mlp_gate_up_swiglu are wired"
         }
         let decode_wall_ns = decode.elapsed().as_nanos() as u64;
         let decode_steps = tokens.len().saturating_sub(prompt.len()).saturating_sub(1);
-        Ok((Qwen38GenerateResult {
-            stop_reason: "",
-            tokens,
-            prompt_len: prompt.len(),
-            wall_ns: wall.elapsed().as_nanos() as u64,
-            gpu_ns,
-            wait_ns,
-            encode_ns,
-            submit_ns,
-            dispatches,
-            active_weight_bytes,
-            fallbacks: session.fallbacks,
-            dense_w_materialized: session.dense_w_materialized,
-            resident_weight_bytes: session.resident_weight_bytes(),
-            workspace_resident_bytes: session.workspace_resident_bytes(),
-            first_step_wall_ns,
-            prefill_wall_ns,
-            decode_wall_ns,
-            decode_steps,
-            wall_ns_per_step,
-        }, snapshot))
+        Ok((
+            Qwen38GenerateResult {
+                stop_reason: "",
+                tokens,
+                prompt_len: prompt.len(),
+                prefill_step_count,
+                wall_ns: wall.elapsed().as_nanos() as u64,
+                gpu_ns,
+                wait_ns,
+                encode_ns,
+                submit_ns,
+                dispatches,
+                active_weight_bytes,
+                fallbacks: session.fallbacks,
+                dense_w_materialized: session.dense_w_materialized,
+                resident_weight_bytes: session.resident_weight_bytes(),
+                workspace_resident_bytes: session.workspace_resident_bytes(),
+                first_step_wall_ns,
+                prefill_wall_ns,
+                prefill_gpu_ns,
+                prefill_dispatches,
+                batched_prefill,
+                decode_wall_ns,
+                decode_steps,
+                wall_ns_per_step,
+            },
+            snapshot,
+        ))
     }
 
     /// Greedy generation with a JSON logit mask applied on the host.
@@ -8866,26 +8978,165 @@ mlp_gate_up and mlp_gate_up_swiglu are wired"
         let mut wall_ns_per_step = Vec::with_capacity(step_capacity);
         let wall = Instant::now();
         let prefill = Instant::now();
+        boundary_trace("prefill_begin", &format!("prompt_tokens={}", prompt.len()));
         let mut first_step_wall_ns = 0u64;
-        for (i, &token) in prompt.iter().enumerate().skip(reuse) {
+        let mut prefill_step_count = 0usize;
+        // The JSON mask applies to SAMPLING, and prefill samples nothing except
+        // at the final position -- so a constrained decode does not need a
+        // sequential prefill, it needs host-side logits for ONE position. Both
+        // routes leave exactly that: `encode_prefill_terminal` runs lm_head into
+        // `workspace.logits` -- the buffer read a few lines below -- before its
+        // own argmax, and this path already discards that argmax to pick under
+        // the mask on the host. Prefilling one token at a time to satisfy a
+        // constraint that only reads the last position was paying decode prices
+        // for every prompt token: measured on a real mission packet, 6616 prompt
+        // tokens took 313.8 s at 916 dispatches each, 73% of the whole call.
+        //
+        // The two REAL blockers are the ones the unconstrained path already
+        // names: the batched route consumes the whole prompt in one pass, so it
+        // can honour neither `reuse` (which skips an already-computed prefix)
+        // nor `snapshot_at` (which needs the recurrent state part-way through,
+        // and that state is a running summary with no rewind). Both keep the
+        // sequential route, and taking the batched one anyway would buy a faster
+        // wall and a different answer.
+        let batched_prefill =
+            qwen38_batched_prefill_enabled() && reuse == 0 && snapshot_at.is_none();
+        if batched_prefill {
             let step_wall = Instant::now();
-            let (_, timing) = session.step(token)?;
+            // The sampled id is discarded on purpose: the constraint picks the
+            // first new token from masked logits below, exactly as it does after
+            // a sequential prefill's final step.
+            let (_, timing) = session.prefill_prompt(prompt)?;
             let step_ns = step_wall.elapsed().as_nanos() as u64;
-            if i == reuse {
-                first_step_wall_ns = step_ns;
-            }
+            first_step_wall_ns = step_ns;
             wall_ns_per_step.push(step_ns);
             gpu_ns.push(timing.gpu_ns);
             wait_ns.push(timing.wait_ns);
             encode_ns.push(timing.encode_ns);
             submit_ns.push(timing.submit_ns);
             dispatches.push(timing.dispatches);
-            active_weight_bytes.push(session.last_active_weight_bytes());
-            if snapshot.is_none() && snapshot_at == Some(i + 1) {
-                snapshot = Some(session.prefix_checkpoint()?);
+            active_weight_bytes.push(timing.active_weight_bytes);
+            prefill_step_count = 1;
+        } else {
+            let requested_chunk = std::env::var("HAWKING_QWEN38_PREFILL_CHUNK")
+                .ok()
+                .and_then(|value| value.parse::<usize>().ok())
+                .unwrap_or(1)
+                .clamp(1, 4);
+            if requested_chunk > 1 {
+                if session.mlp_fusion != Qwen38MlpFusion::GateUpSwiglu {
+                    return Err(Error::Model(format!(
+                        "HAWKING_QWEN38_PREFILL_CHUNK needs GateUpSwiglu; this session is {:?}",
+                        session.mlp_fusion
+                    )));
+                }
+                let mut cursor = reuse;
+                while cursor < prompt.len() {
+                    let mut end = (cursor + requested_chunk).min(prompt.len());
+                    // A recurrent prefix checkpoint is exact only at the requested
+                    // boundary. Split one chunk around it instead of silently
+                    // losing the reusable state that later O003 turns depend on.
+                    if let Some(boundary) = snapshot_at {
+                        if boundary > cursor && boundary < end {
+                            end = boundary;
+                        }
+                    }
+                    if end - cursor == requested_chunk {
+                        let chunk_t0 = Instant::now();
+                        let (_, timing) = session.prefill_chunk(&prompt[cursor..end], 4)?;
+                        let chunk_wall_ns = chunk_t0.elapsed().as_nanos() as u64;
+                        if first_step_wall_ns == 0 {
+                            first_step_wall_ns = chunk_wall_ns;
+                        }
+                        wall_ns_per_step.push(chunk_wall_ns);
+                        gpu_ns.push(timing.gpu_ns);
+                        wait_ns.push(timing.wait_ns);
+                        encode_ns.push(timing.encode_ns);
+                        submit_ns.push(timing.submit_ns);
+                        dispatches.push(timing.dispatches);
+                        active_weight_bytes.push(session.last_active_weight_bytes());
+                        prefill_step_count += 1;
+                    } else {
+                        // The current fused kernel family is instantiated only at
+                        // k4. Checkpoint-aligned tails (for example k3 before the
+                        // 895-token checkpoint) stay sequential rather than
+                        // inventing an unsupported k3 kernel or losing the exact
+                        // recurrent boundary.
+                        for (offset, &token) in prompt[cursor..end].iter().enumerate() {
+                            let step_wall = Instant::now();
+                            let (_, timing) = session.step(token)?;
+                            let step_ns = step_wall.elapsed().as_nanos() as u64;
+                            if first_step_wall_ns == 0 {
+                                first_step_wall_ns = step_ns;
+                            }
+                            wall_ns_per_step.push(step_ns);
+                            gpu_ns.push(timing.gpu_ns);
+                            wait_ns.push(timing.wait_ns);
+                            encode_ns.push(timing.encode_ns);
+                            submit_ns.push(timing.submit_ns);
+                            dispatches.push(timing.dispatches);
+                            active_weight_bytes.push(session.last_active_weight_bytes());
+                            prefill_step_count += 1;
+                            if snapshot.is_none() && snapshot_at == Some(cursor + offset + 1) {
+                                snapshot = Some(session.prefix_checkpoint()?);
+                            }
+                        }
+                    }
+                    cursor = end;
+                    if snapshot.is_none() && snapshot_at == Some(cursor) {
+                        snapshot = Some(session.prefix_checkpoint()?);
+                    }
+                }
+            } else {
+                for (i, &token) in prompt.iter().enumerate().skip(reuse) {
+                    let step_wall = Instant::now();
+                    let (_, timing) = session.step(token)?;
+                    let step_ns = step_wall.elapsed().as_nanos() as u64;
+                    if i == reuse {
+                        first_step_wall_ns = step_ns;
+                    }
+                    wall_ns_per_step.push(step_ns);
+                    gpu_ns.push(timing.gpu_ns);
+                    wait_ns.push(timing.wait_ns);
+                    encode_ns.push(timing.encode_ns);
+                    submit_ns.push(timing.submit_ns);
+                    dispatches.push(timing.dispatches);
+                    active_weight_bytes.push(session.last_active_weight_bytes());
+                    prefill_step_count += 1;
+                    if snapshot.is_none() && snapshot_at == Some(i + 1) {
+                        snapshot = Some(session.prefix_checkpoint()?);
+                    }
+                }
             }
         }
         let prefill_wall_ns = prefill.elapsed().as_nanos() as u64;
+        boundary_trace(
+            "prefill_end",
+            &format!("prompt_tokens={} wall_ns={prefill_wall_ns}", prompt.len()),
+        );
+        // Captured HERE, before decode appends to the same vectors. Summing at
+        // the initializer would silently fold decode into the prefill figures.
+        let prefill_dispatches = dispatches.iter().copied().fold(0u64, u64::saturating_add);
+        let prefill_gpu_ns = {
+            let mut total = 0u64;
+            let mut any = false;
+            let mut missing = false;
+            for value in gpu_ns.iter().copied() {
+                match value {
+                    Some(v) => {
+                        total = total.saturating_add(v);
+                        any = true;
+                    }
+                    None => missing = true,
+                }
+            }
+            // A partial sum would read as a smaller prefill than actually ran.
+            if any && !missing {
+                Some(total)
+            } else {
+                None
+            }
+        };
         // Last prefill step already dispatched GPU argmax; discard it and pick
         // the first generated id on the host so the JSON mask applies.
         let mut logits = session.read_f32_workspace("logits", QWEN38_VOCAB)?;
@@ -8902,6 +9153,13 @@ mlp_gate_up and mlp_gate_up_swiglu are wired"
         let mut next = argmax_f32_metal_tiebreak(&logits);
         tokens.push(next);
         constraint.advance(&tokenizer.decode_one(next).unwrap_or_default());
+        boundary_trace(
+            "first_decode_token",
+            &format!(
+                "token_index={} token_id={next}",
+                tokens.len() - prompt.len() - 1
+            ),
+        );
         let decode = Instant::now();
         let ignore_eos = std::env::var("HAWKING_QWEN38_IGNORE_EOS")
             .map(|v| v != "0")
@@ -8947,27 +9205,48 @@ mlp_gate_up and mlp_gate_up_swiglu are wired"
         }
         let decode_wall_ns = decode.elapsed().as_nanos() as u64;
         let decode_steps = tokens.len().saturating_sub(prompt.len()).saturating_sub(1);
-        Ok((Qwen38GenerateResult {
-            stop_reason,
-            tokens,
-            prompt_len: prompt.len(),
-            wall_ns: wall.elapsed().as_nanos() as u64,
-            gpu_ns,
-            wait_ns,
-            encode_ns,
-            submit_ns,
-            dispatches,
-            active_weight_bytes,
-            fallbacks: session.fallbacks,
-            dense_w_materialized: session.dense_w_materialized,
-            resident_weight_bytes: session.resident_weight_bytes(),
-            workspace_resident_bytes: session.workspace_resident_bytes(),
-            first_step_wall_ns,
-            prefill_wall_ns,
-            decode_wall_ns,
-            decode_steps,
-            wall_ns_per_step,
-        }, snapshot))
+        boundary_trace(
+            "last_decode_token",
+            &format!(
+                "generated_tokens={} decode_steps={decode_steps}",
+                tokens.len() - prompt.len()
+            ),
+        );
+        boundary_trace(
+            "generation_termination",
+            &format!(
+                "stop_reason={stop_reason} generated_tokens={}",
+                tokens.len() - prompt.len()
+            ),
+        );
+        Ok((
+            Qwen38GenerateResult {
+                stop_reason,
+                tokens,
+                prompt_len: prompt.len(),
+                prefill_step_count,
+                wall_ns: wall.elapsed().as_nanos() as u64,
+                gpu_ns,
+                wait_ns,
+                encode_ns,
+                submit_ns,
+                dispatches,
+                active_weight_bytes,
+                fallbacks: session.fallbacks,
+                dense_w_materialized: session.dense_w_materialized,
+                resident_weight_bytes: session.resident_weight_bytes(),
+                workspace_resident_bytes: session.workspace_resident_bytes(),
+                first_step_wall_ns,
+                prefill_wall_ns,
+                prefill_gpu_ns,
+                prefill_dispatches,
+                batched_prefill,
+                decode_wall_ns,
+                decode_steps,
+                wall_ns_per_step,
+            },
+            snapshot,
+        ))
     }
 
     /// Greedy generation for an explicitly selected resident serving path.
@@ -8986,14 +9265,29 @@ mlp_gate_up and mlp_gate_up_swiglu are wired"
             return Err(Error::Model("qwen38 prompt is empty".into()));
         }
         session.reset();
-        let capacity = prompt.len().saturating_add(max_new_tokens).saturating_add(1);
+        let capacity = prompt
+            .len()
+            .saturating_add(max_new_tokens)
+            .saturating_add(1);
         let mut tokens = Vec::with_capacity(capacity);
         tokens.extend_from_slice(prompt);
         let wall = Instant::now();
         let prefill = Instant::now();
         let mut next = 0u32;
-        for &token in prompt {
-            next = session.step_unmeasured(token)?;
+        let mut prefill_gpu_ns = None;
+        let mut prefill_dispatches = 0u64;
+        let mut prefill_step_count = prompt.len();
+        let batched_prefill = qwen38_batched_prefill_enabled();
+        if batched_prefill {
+            let (sampled, timing) = session.prefill_prompt(prompt)?;
+            prefill_gpu_ns = timing.gpu_ns;
+            prefill_dispatches = timing.dispatches;
+            prefill_step_count = 1;
+            next = sampled;
+        } else {
+            for &token in prompt {
+                next = session.step_unmeasured(token)?;
+            }
         }
         let prefill_wall_ns = prefill.elapsed().as_nanos() as u64;
         tokens.push(next);
@@ -9017,6 +9311,7 @@ mlp_gate_up and mlp_gate_up_swiglu are wired"
             stop_reason: "",
             tokens,
             prompt_len: prompt.len(),
+            prefill_step_count,
             wall_ns: wall.elapsed().as_nanos() as u64,
             gpu_ns: Vec::new(),
             wait_ns: Vec::new(),
@@ -9030,6 +9325,9 @@ mlp_gate_up and mlp_gate_up_swiglu are wired"
             workspace_resident_bytes: session.workspace_resident_bytes(),
             first_step_wall_ns: 0,
             prefill_wall_ns,
+            prefill_gpu_ns,
+            prefill_dispatches,
+            batched_prefill,
             decode_wall_ns,
             decode_steps,
             wall_ns_per_step: Vec::new(),
@@ -9058,33 +9356,82 @@ mlp_gate_up and mlp_gate_up_swiglu are wired"
         let wall = Instant::now();
         let mut next = 0u32;
         let prefill = Instant::now();
-        for (i, &token) in prompt.iter().enumerate() {
+        // The batched route consumes the whole prompt in one pass, so it emits
+        // ONE record covering every prompt token rather than one per token.
+        // Fabricating N per-token rows from a single measurement would invent
+        // per-token detail that was never measured; the role name and
+        // `tokens_covered` say plainly what the row represents.
+        //
+        // This function always resets and takes neither `reuse` nor
+        // `snapshot_at`, so the guard those need elsewhere does not apply here.
+        let batched_prefill = qwen38_batched_prefill_enabled();
+        if batched_prefill {
             let complete = Instant::now();
-            let (sampled, step) = session.step_complete(token)?;
-            let last_prompt = i + 1 == prompt.len();
-            let (tokenizer_decode_ns, bookkeeping_ns) = if last_prompt {
-                finish_new_token(tokenizer, &mut tokens, sampled)?
-            } else {
-                next = sampled;
-                (0, 0)
-            };
-            if last_prompt {
-                next = sampled;
-            }
+            let (sampled, timing) = session.prefill_prompt(prompt)?;
+            let (tokenizer_decode_ns, bookkeeping_ns) =
+                finish_new_token(tokenizer, &mut tokens, sampled)?;
+            next = sampled;
             steps.push(Qwen38CompleteToken {
-                role: if last_prompt {
-                    "prefill_emits_first_new"
-                } else {
-                    "prefill"
-                },
-                step_index: i,
-                token_in: token,
+                role: "prefill_batched_emits_first_new",
+                step_index: 0,
+                token_in: prompt[0],
                 token_out: sampled,
-                step,
+                step: Qwen38StepWall {
+                    wall_ns: complete.elapsed().as_nanos() as u64,
+                    encode_ns: timing.encode_ns,
+                    submit_ns: timing.submit_ns,
+                    wait_ns: timing.wait_ns,
+                    gpu_ns: timing.gpu_ns,
+                    gpu_start_s: None,
+                    gpu_end_s: None,
+                    gpu_start_ns: None,
+                    gpu_end_ns: None,
+                    // NOT_INSTRUMENTED on this route rather than zero: the
+                    // batched encoder does not break these out, and a zero
+                    // would read as "measured, and free".
+                    allocation_ns: 0,
+                    encoder_count: 0,
+                    commit_epilogue_ns: 0,
+                    sample_readback_ns: 0,
+                    state_update_ns: 0,
+                    tcb_encode_ns: 0,
+                    dispatches: timing.dispatches,
+                    command_buffers: 0,
+                    active_weight_bytes: timing.active_weight_bytes,
+                },
                 tokenizer_decode_ns,
                 bookkeeping_ns,
                 complete_wall_ns: complete.elapsed().as_nanos() as u64,
             });
+        } else {
+            for (i, &token) in prompt.iter().enumerate() {
+                let complete = Instant::now();
+                let (sampled, step) = session.step_complete(token)?;
+                let last_prompt = i + 1 == prompt.len();
+                let (tokenizer_decode_ns, bookkeeping_ns) = if last_prompt {
+                    finish_new_token(tokenizer, &mut tokens, sampled)?
+                } else {
+                    next = sampled;
+                    (0, 0)
+                };
+                if last_prompt {
+                    next = sampled;
+                }
+                steps.push(Qwen38CompleteToken {
+                    role: if last_prompt {
+                        "prefill_emits_first_new"
+                    } else {
+                        "prefill"
+                    },
+                    step_index: i,
+                    token_in: token,
+                    token_out: sampled,
+                    step,
+                    tokenizer_decode_ns,
+                    bookkeeping_ns,
+                    complete_wall_ns: complete.elapsed().as_nanos() as u64,
+                });
+            }
         }
         let prefill_wall_ns = prefill.elapsed().as_nanos() as u64;
         let decode = Instant::now();
@@ -9222,9 +9569,8 @@ mlp_gate_up and mlp_gate_up_swiglu are wired"
             joins
                 .into_iter()
                 .map(|join| {
-                    join.join().unwrap_or_else(|_| {
-                        Err(Error::Model("session thread panicked".into()))
-                    })
+                    join.join()
+                        .unwrap_or_else(|_| Err(Error::Model("session thread panicked".into())))
                 })
                 .collect()
         })
@@ -9388,6 +9734,11 @@ pub struct Qwen38GenerateResult {
     pub stop_reason: &'static str,
     pub tokens: Vec<u32>,
     pub prompt_len: usize,
+    /// Number of physical command-buffer steps used for prefill. This can be
+    /// less than prompt_len when production batching is enabled; keep it
+    /// separate so phase attribution does not mistake chunk timing for token
+    /// timing.
+    pub prefill_step_count: usize,
     pub wall_ns: u64,
     pub gpu_ns: Vec<Option<u64>>,
     pub wait_ns: Vec<u64>,
@@ -9401,6 +9752,13 @@ pub struct Qwen38GenerateResult {
     pub workspace_resident_bytes: u64,
     pub first_step_wall_ns: u64,
     pub prefill_wall_ns: u64,
+    /// GPU nanoseconds spent on the prompt, from command-buffer timestamps.
+    /// Sequential path sums per-token `gpu_ns`; batched path is the chunk sum.
+    pub prefill_gpu_ns: Option<u64>,
+    pub prefill_dispatches: u64,
+    /// True when `prefill_prompt` ran. A test that stays green with this
+    /// false is comparing the sequential path to itself.
+    pub batched_prefill: bool,
     pub decode_wall_ns: u64,
     pub decode_steps: usize,
     pub wall_ns_per_step: Vec<u64>,
@@ -9436,8 +9794,8 @@ impl Qwen38GenerateResult {
 pub use device::{
     generate_constrained, generate_greedy, generate_greedy_complete_wall, generate_greedy_parallel,
     generate_greedy_reusing, generate_greedy_reusing_snapshot, generate_greedy_unmeasured,
-    measure_shared_weight_fanout, qwen38_probe_chunk_workspace_bytes,
-    Qwen38HybridDecodeSession, Qwen38HybridWeights, Qwen38WeightFanout,
+    measure_shared_weight_fanout, qwen38_probe_chunk_workspace_bytes, Qwen38HybridDecodeSession,
+    Qwen38HybridWeights, Qwen38WeightFanout,
 };
 
 #[cfg(not(target_os = "macos"))]
@@ -9517,7 +9875,10 @@ mod mlp_fusion_env_tests {
             Qwen38MlpFusion::GateUpSwiglu,
             "=1 must mean the strongest fusion, as it does for every sibling lever"
         );
-        assert_eq!(Qwen38MlpFusion::from_env().saved_dispatches_per_token(), 128);
+        assert_eq!(
+            Qwen38MlpFusion::from_env().saved_dispatches_per_token(),
+            128
+        );
 
         // 2. The named values still mean what the shader and the receipts say.
         std::env::set_var(K, "pair");
@@ -9538,7 +9899,10 @@ mod mlp_fusion_env_tests {
         std::env::set_var(K, "swigly");
         let typo = std::panic::catch_unwind(Qwen38MlpFusion::from_env);
         std::env::remove_var(K);
-        assert!(typo.is_err(), "an unrecognised value must panic, not mean Off");
+        assert!(
+            typo.is_err(),
+            "an unrecognised value must panic, not mean Off"
+        );
 
         // 5. The explicit fastest profile is a composition of the individually
         // measured candidates, but every named override still wins.
@@ -9548,13 +9912,19 @@ mod mlp_fusion_env_tests {
         assert!(qwen38_fuse_dn_inproj_enabled());
         assert_eq!(qwen38_fuse_add_rmsnorm_from_env(), (true, false));
         assert_eq!(qwen38_fuse_ba_delta_from_env(), (true, false));
-        assert_eq!(Qwen38DeltaNetStateKernel::from_env(), Qwen38DeltaNetStateKernel::WidenF4);
+        assert_eq!(
+            Qwen38DeltaNetStateKernel::from_env(),
+            Qwen38DeltaNetStateKernel::WidenF4
+        );
         // G126 PROMOTED: the fast profile used to select SplitK4, which no
         // protected lease ever timed. Bitcast is the measured arm and is now the
         // default everywhere, so fast composes with it instead of overriding it.
         assert_eq!(Affine2Geo::from_env(), Affine2Geo::Bitcast);
         assert_eq!(qwen38_q2f_geo_from_env(), Affine2Geo::Bitcast);
-        assert_eq!(Qwen38MatvecKernel::from_env(), Qwen38MatvecKernel::GeoTpr64Tg128);
+        assert_eq!(
+            Qwen38MatvecKernel::from_env(),
+            Qwen38MatvecKernel::GeoTpr64Tg128
+        );
         assert!(qwen38_serial_token_encoder_enabled());
         assert!(qwen38_fuse_attention_gate_enabled());
         std::env::set_var(GQA, "0");
@@ -9567,16 +9937,25 @@ mod mlp_fusion_env_tests {
         std::env::set_var(ATTENTION_GATE, "0");
         assert!(!qwen38_fuse_gqa_qkv_enabled());
         assert_eq!(Qwen38MlpFusion::from_env(), Qwen38MlpFusion::Off);
-        assert_eq!(Qwen38DeltaNetStateKernel::from_env(), Qwen38DeltaNetStateKernel::Baseline);
+        assert_eq!(
+            Qwen38DeltaNetStateKernel::from_env(),
+            Qwen38DeltaNetStateKernel::Baseline
+        );
         assert_eq!(Affine2Geo::from_env(), Affine2Geo::Tpr64);
         assert_eq!(qwen38_q2f_geo_from_env(), Affine2Geo::SplitK4Vec);
-        assert_eq!(Qwen38MatvecKernel::from_env(), Qwen38MatvecKernel::VecgroupX64);
+        assert_eq!(
+            Qwen38MatvecKernel::from_env(),
+            Qwen38MatvecKernel::VecgroupX64
+        );
         assert!(!qwen38_serial_token_encoder_enabled());
         assert!(!qwen38_fuse_attention_gate_enabled());
 
         std::env::set_var(Q4_GEO, "not-a-geometry");
         let q4_typo = std::panic::catch_unwind(Qwen38MatvecKernel::from_env);
-        assert!(q4_typo.is_err(), "an unrecognised Q4 geometry must fail loudly");
+        assert!(
+            q4_typo.is_err(),
+            "an unrecognised Q4 geometry must fail loudly"
+        );
 
         for (key, value) in [
             (K, restore),
@@ -9694,10 +10073,7 @@ mod mixed_catalog_contract_tests {
     fn absolute_segment_filename_does_not_join_segments() {
         let root = Path::new("/artifact/mixed-sub15-v1");
         let abs = "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/mixed-2p0-v1/segments/L00.hq38seg";
-        assert_eq!(
-            resolve_mixed_segment_path(root, abs),
-            PathBuf::from(abs)
-        );
+        assert_eq!(resolve_mixed_segment_path(root, abs), PathBuf::from(abs));
         assert_eq!(
             resolve_mixed_segment_path(root, "L00.hq38seg"),
             root.join("segments").join("L00.hq38seg")
@@ -10017,7 +10393,10 @@ mod mixed_catalog_contract_tests {
         write_tiny_hq38m20(root, "tensor.x", 6, &payload);
         let census = census_qwen38_mixed_catalog(root).unwrap();
         assert_eq!(census.refused, 1);
-        assert!(census.refusals.iter().any(|s| s.contains("unknown mixed codec 6")));
+        assert!(census
+            .refusals
+            .iter()
+            .any(|s| s.contains("unknown mixed codec 6")));
     }
 
     #[test]
@@ -10054,8 +10433,7 @@ mod mixed_catalog_contract_tests {
         );
         let mixed = camp.join("mixed-2p0-v1");
         let sub15 = camp.join("mixed-sub15-v1");
-        if !mixed.join(QWEN38_MIXED_CATALOG_NAME).is_file() || !sub15.join("packed/attn").is_dir()
-        {
+        if !mixed.join(QWEN38_MIXED_CATALOG_NAME).is_file() || !sub15.join("packed/attn").is_dir() {
             eprintln!("skip: mixed-2p0 / mixed-sub15 artifacts not on this host");
             return;
         }
@@ -10072,7 +10450,11 @@ mod mixed_catalog_contract_tests {
             assert_eq!(row.codec, codec);
             let payload = read_catalog_payload(row).unwrap();
             let layout = mixed_gpu_layout(codec, &payload).expect(suffix);
-            assert!(layout.cols == 5120 || layout.cols == 17408, "{suffix} cols {}", layout.cols);
+            assert!(
+                layout.cols == 5120 || layout.cols == 17408,
+                "{suffix} cols {}",
+                layout.cols
+            );
         }
 
         fn rice(name: &str) -> std::path::PathBuf {
@@ -10198,14 +10580,12 @@ mod mixed_catalog_contract_tests {
             .contains("kernel void qwen_affine_q2_group32_matvec_geo_tpr64_tg128"));
         assert!(crate::metal::SHADER_Q80_MIXED_DECODE
             .contains("kernel void qwen_affine_q2_group32_matvec("));
-        assert!(crate::metal::SHADER_Q80_MIXED_DECODE.contains(
-            "kernel void qwen_affine_q2_group32_matvec_geo_tpr64_tg128_runtime_div("
-        ));
+        assert!(crate::metal::SHADER_Q80_MIXED_DECODE
+            .contains("kernel void qwen_affine_q2_group32_matvec_geo_tpr64_tg128_runtime_div("));
         assert!(crate::metal::SHADER_Q80_MIXED_DECODE
             .contains("kernel void qwen_affine_q2_group64_matvec_gate_up_geo_tpr64_tg128("));
-        assert!(crate::metal::SHADER_Q80_MIXED_DECODE.contains(
-            "kernel void qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128("
-        ));
+        assert!(crate::metal::SHADER_Q80_MIXED_DECODE
+            .contains("kernel void qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128("));
         assert!(crate::metal::SHADER_Q80_MIXED_DECODE.contains("const uint group = col >> 6u;"));
         assert_eq!(
             QWEN38_AFFINE_GATE_UP_KERNEL,
@@ -10257,8 +10637,7 @@ mod mixed_catalog_contract_tests {
             580
         );
         assert_eq!(
-            qwen38_affine_q2_launch(Affine2Geo::QmvFast, 64, 17408, 5120)
-                .map(|l| l.0),
+            qwen38_affine_q2_launch(Affine2Geo::QmvFast, 64, 17408, 5120).map(|l| l.0),
             Some(QWEN38_AFFINE_Q2_QMVFAST)
         );
         assert!(qwen38_affine_q2_launch(Affine2Geo::QmvFast, 32, 17408, 5120).is_none());
@@ -10275,17 +10654,16 @@ mod mixed_catalog_contract_tests {
             Some((QWEN38_AFFINE_Q2_SPLITK4, (256, 1, 1)))
         );
         assert_eq!(
-            qwen38_affine_q2_launch(Affine2Geo::SplitK4Vec, 64, 17408, 5120)
-                .map(|l| (l.0, l.2)),
-            Some((QWEN38_AFFINE_Q2_SPLITK4_VEC, (256, 1, 1)))
+            qwen38_affine_q2_launch(Affine2Geo::SplitK4Vec, 64, 17408, 5120).map(|l| (l.0, l.2)),
+            Some((QWEN38_AFFINE_Q2_SPLITK4, (256, 1, 1)))
         );
         assert_eq!(
             qwen38_affine_gate_up_launch(Affine2Geo::SplitK4Vec, false, 17408).0,
-            QWEN38_AFFINE_GATE_UP_SPLITK4_VEC
+            QWEN38_AFFINE_GATE_UP_SPLITK4
         );
         assert_eq!(
             qwen38_affine_gate_up_launch(Affine2Geo::SplitK4Vec, true, 17408).0,
-            QWEN38_AFFINE_GATE_UP_SWIGLU_SPLITK4_VEC
+            QWEN38_AFFINE_GATE_UP_SWIGLU_SPLITK4
         );
         assert_eq!(
             qwen38_affine_q2_launch(Affine2Geo::AccFuse, 64, 17408, 5120).map(|l| l.0),
@@ -10310,10 +10688,7 @@ mod mixed_catalog_contract_tests {
         // bitcast: the convert-free unpack. Selected only when asked for, and
         // the unfused gate_up form falls back to production because that kernel
         // was deliberately not written - the resident never dispatches it.
-        assert_eq!(
-            Affine2Geo::from_value("bitcast"),
-            Affine2Geo::Bitcast
-        );
+        assert_eq!(Affine2Geo::from_value("bitcast"), Affine2Geo::Bitcast);
         assert_eq!(Affine2Geo::Bitcast.as_str(), "bitcast");
         assert_eq!(
             qwen38_affine_q2_launch(Affine2Geo::Bitcast, 64, 17408, 5120).map(|l| l.0),
@@ -10329,24 +10704,23 @@ mod mixed_catalog_contract_tests {
         );
         assert_eq!(
             qwen38_affine_gate_up_launch(Affine2Geo::Bitcast, false, 17408).0,
-            QWEN38_AFFINE_GATE_UP_SWIGLU_KERNEL,
+            QWEN38_AFFINE_GATE_UP_KERNEL,
             "the unfused bitcast kernel does not exist; naming it would bind a \
              pipeline that fails to compile at launch"
         );
-        assert!(crate::metal::SHADER_Q80_MIXED_DECODE.contains(
-            "kernel void qwen_affine_q2_group32_matvec_geo_tpr64_tg128_bitcast("
-        ));
+        assert!(crate::metal::SHADER_Q80_MIXED_DECODE
+            .contains("kernel void qwen_affine_q2_group32_matvec_geo_tpr64_tg128_bitcast("));
         assert!(crate::metal::SHADER_Q80_MIXED_DECODE.contains(
             "kernel void qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128_bitcast("
         ));
         // The refold is only correct if the mantissa step is 0.5 per code.
         // A 0.25 step compiles, runs 1.2x, and returns garbage.
-        assert!(crate::metal::SHADER_Q80_MIXED_DECODE
-            .contains("w = (2*scale)*f + (bias - 4*scale)"));
+        assert!(
+            crate::metal::SHADER_Q80_MIXED_DECODE.contains("w = (2*scale)*f + (bias - 4*scale)")
+        );
 
-        assert!(crate::metal::SHADER_Q80_MIXED_DECODE.contains(
-            "kernel void qwen_affine_q2_group32_matvec_geo_tpr64_tg128_fold_addqx("
-        ));
+        assert!(crate::metal::SHADER_Q80_MIXED_DECODE
+            .contains("kernel void qwen_affine_q2_group32_matvec_geo_tpr64_tg128_fold_addqx("));
         assert!(crate::metal::SHADER_Q80_MIXED_DECODE.contains(
             "kernel void qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128_fold_addqx("
         ));
@@ -10361,15 +10735,16 @@ mod mixed_catalog_contract_tests {
         assert!(crate::metal::SHADER_Q80_MIXED_DECODE.contains(
             "kernel void qwen_affine_q2_group64_matvec_gate_up_swiglu_biasprep_drop_tpr64_tg128("
         ));
-        assert!(crate::metal::SHADER_Q80_MIXED_DECODE.contains(
-            "kernel void qwen_affine_q2_group64_matvec_splitk4_vec_tg256("
-        ));
-        assert!(crate::metal::SHADER_Q80_MIXED_DECODE.contains(
-            "kernel void qwen_affine_q2_group64_matvec_gate_up_splitk4_vec_tg256("
-        ));
-        assert!(crate::metal::SHADER_Q80_MIXED_DECODE.contains(
-            "kernel void qwen_affine_q2_group64_matvec_gate_up_swiglu_splitk4_vec_tg256("
-        ));
+        for kernel in [
+            "qwen_affine_q2_group64_matvec_splitk4_vec_tg256",
+            "qwen_affine_q2_group64_matvec_gate_up_splitk4_vec_tg256",
+            "qwen_affine_q2_group64_matvec_gate_up_swiglu_splitk4_vec_tg256",
+        ] {
+            assert!(
+                !crate::metal::SHADER_Q80_MIXED_DECODE.contains(&format!("kernel void {kernel}(")),
+                "unsupported affine2 geometry {kernel} must not be advertised"
+            );
+        }
         assert!(crate::metal::SHADER_QWEN80_DEVICE_ACTIVATIONS
             .contains("kernel void qwen80_residual_rmsnorm_tg_xsum64("));
         assert!(crate::metal::SHADER_QWEN80_DEVICE_ACTIVATIONS
@@ -10381,15 +10756,18 @@ mod mixed_catalog_contract_tests {
         assert!(qwen38_affine_q2_launch(Affine2Geo::Tgsb, 32, 17408, 5120).is_none());
         assert!(crate::metal::SHADER_Q80_MIXED_DECODE
             .contains("kernel void qwen_q2f_group64_matvec_geo_tpr64_tg128("));
-        assert!(crate::metal::SHADER_Q80_MIXED_DECODE
+        assert!(!crate::metal::SHADER_Q80_MIXED_DECODE
             .contains("kernel void qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128("));
-        assert!(crate::metal::SHADER_Q80_MIXED_DECODE
+        assert!(!crate::metal::SHADER_Q80_MIXED_DECODE
             .contains("kernel void qwen_q2f_group64_matvec_pair_geo_tpr64_tg128("));
-        assert!(crate::metal::SHADER_Q80_MIXED_DECODE
-            .contains("kernel void qwen_q2f_group64_matvec("));
-        assert!(crate::metal::SHADER_Q80_MIXED_DECODE
-            .contains("(float(q) - 1.5f) * delta"));
-        assert_eq!(QWEN38_Q2F_GEO_TPR64, "qwen_q2f_group64_matvec_geo_tpr64_tg128");
+        assert!(
+            crate::metal::SHADER_Q80_MIXED_DECODE.contains("kernel void qwen_q2f_group64_matvec(")
+        );
+        assert!(crate::metal::SHADER_Q80_MIXED_DECODE.contains("(float(q) - 1.5f) * delta"));
+        assert_eq!(
+            QWEN38_Q2F_GEO_TPR64,
+            "qwen_q2f_group64_matvec_geo_tpr64_tg128"
+        );
         assert_eq!(
             QWEN38_Q2F_QKV_GEO_KERNEL,
             "qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128"
@@ -10404,54 +10782,53 @@ mod mixed_catalog_contract_tests {
         );
         assert_eq!(
             qwen38_q2f_matvec_launch(Affine2Geo::Pipe, 17408).0,
-            QWEN38_Q2F_PIPE
+            QWEN38_Q2F_GEO_TPR64
         );
         assert_eq!(
             qwen38_q2f_matvec_launch(Affine2Geo::SplitK4, 17408).0,
-            QWEN38_Q2F_SPLITK4
+            QWEN38_Q2F_GEO_TPR64
         );
         assert_eq!(
             qwen38_q2f_gate_up_launch(Affine2Geo::Pipe, true, 17408).0,
-            QWEN38_Q2F_GATE_UP_SWIGLU_PIPE
+            QWEN38_Q2F_GATE_UP_SWIGLU_KERNEL
         );
         assert_eq!(
             qwen38_q2f_gate_up_launch(Affine2Geo::SplitK4, false, 17408).0,
-            QWEN38_Q2F_GATE_UP_SPLITK4
+            QWEN38_Q2F_GATE_UP_KERNEL
         );
         assert_eq!(
             qwen38_q2f_gate_up_launch(Affine2Geo::SplitK4, true, 17408).0,
-            QWEN38_Q2F_GATE_UP_SWIGLU_SPLITK4
+            QWEN38_Q2F_GATE_UP_SWIGLU_KERNEL
         );
         assert_eq!(
             qwen38_q2f_matvec_launch(Affine2Geo::SplitK4Vec, 17408).0,
-            QWEN38_Q2F_SPLITK4_VEC
+            QWEN38_Q2F_GEO_TPR64
         );
         assert_eq!(
             qwen38_q2f_gate_up_launch(Affine2Geo::SplitK4Vec, false, 17408).0,
-            QWEN38_Q2F_GATE_UP_SPLITK4_VEC
+            QWEN38_Q2F_GATE_UP_KERNEL
         );
         assert_eq!(
             qwen38_q2f_gate_up_launch(Affine2Geo::SplitK4Vec, true, 17408).0,
-            QWEN38_Q2F_GATE_UP_SWIGLU_SPLITK4_VEC
+            QWEN38_Q2F_GATE_UP_SWIGLU_KERNEL
         );
-        assert!(crate::metal::SHADER_Q80_MIXED_DECODE
-            .contains("kernel void qwen_q2f_group64_matvec_pipe_tpr64_tg128("));
-        assert!(crate::metal::SHADER_Q80_MIXED_DECODE
-            .contains("kernel void qwen_q2f_group64_matvec_splitk4_tg256("));
-        assert!(crate::metal::SHADER_Q80_MIXED_DECODE
+        for kernel in [
+            "qwen_q2f_group64_matvec_pipe_tpr64_tg128",
+            "qwen_q2f_group64_matvec_splitk4_tg256",
+            "qwen_q2f_group64_matvec_gate_up_swiglu_pipe_tpr64_tg128",
+            "qwen_q2f_group64_matvec_gate_up_swiglu_splitk4_tg256",
+        ] {
+            assert!(
+                !crate::metal::SHADER_Q80_MIXED_DECODE.contains(&format!("kernel void {kernel}(")),
+                "unsupported Q2F geometry {kernel} must not be advertised"
+            );
+        }
+        assert!(!crate::metal::SHADER_Q80_MIXED_DECODE
             .contains("kernel void qwen_q2f_group64_matvec_splitk4_vec_tg256("));
-        assert!(crate::metal::SHADER_Q80_MIXED_DECODE.contains(
-            "kernel void qwen_q2f_group64_matvec_gate_up_swiglu_pipe_tpr64_tg128("
-        ));
-        assert!(crate::metal::SHADER_Q80_MIXED_DECODE.contains(
-            "kernel void qwen_q2f_group64_matvec_gate_up_swiglu_splitk4_tg256("
-        ));
-        assert!(crate::metal::SHADER_Q80_MIXED_DECODE.contains(
-            "kernel void qwen_q2f_group64_matvec_gate_up_splitk4_vec_tg256("
-        ));
-        assert!(crate::metal::SHADER_Q80_MIXED_DECODE.contains(
-            "kernel void qwen_q2f_group64_matvec_gate_up_swiglu_splitk4_vec_tg256("
-        ));
+        assert!(!crate::metal::SHADER_Q80_MIXED_DECODE
+            .contains("kernel void qwen_q2f_group64_matvec_gate_up_splitk4_vec_tg256("));
+        assert!(!crate::metal::SHADER_Q80_MIXED_DECODE
+            .contains("kernel void qwen_q2f_group64_matvec_gate_up_swiglu_splitk4_vec_tg256("));
     }
 
     #[cfg(target_os = "macos")]
@@ -10553,28 +10930,16 @@ mod mixed_catalog_contract_tests {
                     enc.set_bytes(index, 4, &value as *const u32 as *const _);
                 }
             };
-            let inc_grid = (
-                factor.rows.div_ceil(8).saturating_mul(256).max(256),
-                1,
-                1,
-            );
+            let inc_grid = (factor.rows.div_ceil(8).saturating_mul(256).max(256), 1, 1);
             let mut tcb = crate::metal::TokenCommandBuffer::new(&context);
-            tcb.dispatch_threads(incumbent, inc_grid, (256, 1, 1), |enc| {
-                bind(enc, &out_inc)
-            })
-            .unwrap();
-            tcb.dispatch_threads(geo_name, geo_grid, geo_tg, |enc| {
-                bind(enc, &out_geo)
-            })
-            .unwrap();
+            tcb.dispatch_threads(incumbent, inc_grid, (256, 1, 1), |enc| bind(enc, &out_inc))
+                .unwrap();
+            tcb.dispatch_threads(geo_name, geo_grid, geo_tg, |enc| bind(enc, &out_geo))
+                .unwrap();
             tcb.commit_and_wait().unwrap();
             let n = factor.rows as usize;
-            let inc = unsafe {
-                std::slice::from_raw_parts(out_inc.contents() as *const f32, n)
-            };
-            let geo = unsafe {
-                std::slice::from_raw_parts(out_geo.contents() as *const f32, n)
-            };
+            let inc = unsafe { std::slice::from_raw_parts(out_inc.contents() as *const f32, n) };
+            let geo = unsafe { std::slice::from_raw_parts(out_geo.contents() as *const f32, n) };
             let inc_nonzero = inc.iter().filter(|v| v.abs() > 0.0).count();
             let geo_nonzero = geo.iter().filter(|v| v.abs() > 0.0).count();
             let inc_max = inc.iter().fold(0.0f32, |a, &b| a.max(b.abs()));
@@ -10807,9 +11172,9 @@ mod mixed_catalog_contract_tests {
         assert!(src.contains(
             "kernel void qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128("
         ));
-        assert!(src.contains(
-            "kernel void qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128("
-        ));
+        assert!(
+            src.contains("kernel void qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128(")
+        );
         assert!(src.contains("kernel void qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128("));
         assert!(
             !src.contains("element * bits"),
@@ -10834,14 +11199,12 @@ mod mixed_catalog_contract_tests {
         );
         assert!(crate::metal::SHADER_GK_FAMILY.contains("gk_packed_lsb_byte"));
         assert_eq!(
-            qwen38_hgravu01_geo_tpr64_launch(4, 64, 248320, 5120)
-                .map(|(name, _, _)| name),
+            qwen38_hgravu01_geo_tpr64_launch(4, 64, 248320, 5120).map(|(name, _, _)| name),
             Some(QWEN38_HGRAVU01_Q4_GEO_TPR64),
             "HGRAVU bits=4 still binds geo; G0 HQ30UQ4 bind is a different kernel"
         );
         assert_eq!(
-            qwen38_uniform_q4_geo_tpr64_launch(64, 248320, 5120)
-                .map(|(name, _, _)| name),
+            qwen38_uniform_q4_geo_tpr64_launch(64, 248320, 5120).map(|(name, _, _)| name),
             Some(qwen38_q4_kernel(QWEN38_Q4_MATVEC_KERNEL))
         );
     }
@@ -10904,9 +11267,7 @@ mod mixed_catalog_contract_tests {
     }
 
     fn ramp_x(cols: usize) -> Vec<f32> {
-        (0..cols)
-            .map(|i| (i % 17) as f32 * 0.125 - 1.0)
-            .collect()
+        (0..cols).map(|i| (i % 17) as f32 * 0.125 - 1.0).collect()
     }
 
     #[cfg(target_os = "macos")]
@@ -11203,7 +11564,10 @@ mod mixed_catalog_contract_tests {
         eprintln!(
             "G0_LM_HEAD_SUMMARY rows={rows_n} cols={cols} wrap={WRAP} max_d_serial={max_serial:.8e} max_d_cpu={max_cpu:.8e} n_geo_ne_serial={n_serial_mismatch}"
         );
-        assert_eq!(n_serial_mismatch, 0, "G0 geo must be bit-identical to serial");
+        assert_eq!(
+            n_serial_mismatch, 0,
+            "G0 geo must be bit-identical to serial"
+        );
     }
 
     #[test]
@@ -11217,9 +11581,7 @@ mod mixed_catalog_contract_tests {
         let x = ramp_x(COLS);
         let one = half::f16::from_f32(1.0).to_bits();
         let probe = [WRAP - 1, WRAP, WRAP + 1, 248319];
-        eprintln!(
-            "G128_ADDR_ORACLE header: row cpu kernel abs_d rgb0 u32_rgb0_wraps"
-        );
+        eprintln!("G128_ADDR_ORACLE header: row cpu kernel abs_d rgb0 u32_rgb0_wraps");
         for &row in &probe {
             let mut codes = vec![0u8; GPR * 64];
             let mut scales = vec![0u16; GPR];
@@ -11248,14 +11610,17 @@ mod mixed_catalog_contract_tests {
                     let code_off = rgb * 64 + (local as u64 / 2);
                     // Plane is stored as one row; rgb's group index is `group`.
                     let local_off = (code_off - rgb0 * 64) as usize;
-                    let packed = u32::from_le_bytes(codes[local_off..local_off + 4].try_into().unwrap());
+                    let packed =
+                        u32::from_le_bytes(codes[local_off..local_off + 4].try_into().unwrap());
                     let scale = half::f16::from_bits(scales[group]).to_f32();
                     for i in 0..4u32 {
                         let byte = (packed >> (8 * i)) & 0xff;
                         let c0 = col + 2 * i;
                         let c1 = c0 + 1;
-                        kernel += (i32::from((byte & 0x0f) as u8) - 8) as f32 * scale * x[c0 as usize];
-                        kernel += (i32::from((byte >> 4) as u8) - 8) as f32 * scale * x[c1 as usize];
+                        kernel +=
+                            (i32::from((byte & 0x0f) as u8) - 8) as f32 * scale * x[c0 as usize];
+                        kernel +=
+                            (i32::from((byte >> 4) as u8) - 8) as f32 * scale * x[c1 as usize];
                     }
                     col += 512;
                 }
@@ -11302,9 +11667,7 @@ mod mixed_catalog_contract_tests {
         const ROWS: u64 = 248320;
         const COLS: u64 = 5120;
         let elements = ROWS * COLS;
-        eprintln!(
-            "WRAP_TABLE header: bits wrap_el first_row lm_head_elements reaches"
-        );
+        eprintln!("WRAP_TABLE header: bits wrap_el first_row lm_head_elements reaches");
         for bits in [3u32, 4, 5, 6, 7, 8] {
             let wrap_el = (1u64 << 32) / u64::from(bits);
             let first_row = wrap_el / COLS;
@@ -11323,6 +11686,7 @@ mod mixed_catalog_contract_tests {
 
     #[cfg(target_os = "macos")]
     #[test]
+    #[ignore = "requires the three external HGRAVU01 catalogs and a Metal device"]
     fn incumbent_extract_matches_cpu_oracle_above_uint32_overflow() {
         // The production geo_tpr64 bind only covers bits 3/4. bits 5–8
         // still dispatch the incumbent, which used `uint bit0 = element * bits`.
@@ -11370,10 +11734,7 @@ mod mixed_catalog_contract_tests {
                 let MixedGpuKind::Uniform(factor) = layout.kind else {
                     panic!("{artifact} {name} is not HGRAVU01 Uniform");
                 };
-                assert_eq!(
-                    factor.bits, expect_bits,
-                    "{artifact} {name} bits"
-                );
+                assert_eq!(factor.bits, expect_bits, "{artifact} {name} bits");
                 assert_eq!(factor.rows, 248320, "{artifact} {name} rows");
                 assert_eq!(factor.cols, 5120, "{artifact} {name} cols");
                 let kernel = overflowing_incumbent_kernel(factor.bits);
@@ -11407,11 +11768,7 @@ mod mixed_catalog_contract_tests {
                 let out = context
                     .new_buffer_checked(factor.rows as usize * 4)
                     .unwrap();
-                let inc_grid = (
-                    factor.rows.div_ceil(8).saturating_mul(256).max(256),
-                    1,
-                    1,
-                );
+                let inc_grid = (factor.rows.div_ceil(8).saturating_mul(256).max(256), 1, 1);
                 let mut tcb = crate::metal::TokenCommandBuffer::new(&context);
                 tcb.dispatch_threads(kernel, inc_grid, (256, 1, 1), |enc| {
                     enc.set_buffer(0, Some(&codes), 0);

@@ -29,14 +29,39 @@ HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[1]
 sys.path.insert(0, str(HERE))
 
-from first_noetic_executable import (  # noqa: E402
-    PARENT_PARAMS,
-    PROMPT as SHORT_USER_PROMPT,
-    Q4_INCUMBENT_EBPW,
-    Q4_ROOT,
-    TOKENIZER,
-    find_decode_binary,
+PARENT_PARAMS = 26_895_998_464
+Q4_INCUMBENT_EBPW = 4.252735126866492
+Q4_ROOT = Path(
+    os.environ.get(
+        "QWEN38_Q4_ARTIFACT",
+        str(Path.home() / "models/qwen38-gravity-uniform-q4-v1"),
+    )
 )
+TOKENIZER = Path(
+    os.environ.get(
+        "QWEN38_PARENT_BF16",
+        str(Path.home() / "models/qwen3.8-27b-abliterated-bf16"),
+    )
+) / "tokenizer.json"
+SHORT_USER_PROMPT = (
+    "Explain, in ordinary prose and at length, how a compiler turns a "
+    "for-loop into basic blocks and then into machine code. Start from the AST."
+)
+
+
+def find_decode_binary() -> Path:
+    env = os.environ.get("QWEN38_DECODE_BIN")
+    candidates = [
+        Path(env) if env else None,
+        REPO / "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
+        Path.home() / "Downloads/hawking-copy/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
+    ]
+    for candidate in candidates:
+        if candidate and candidate.is_file():
+            return candidate
+    raise FileNotFoundError(
+        "ascension_qwen38_hybrid_greedy is not built; build the hawking-core example"
+    )
 from gpu_ledger import (  # noqa: E402
     ABSENT,
     DERIVED,

@@ -1,0 +1,92 @@
+{
+  "arms": {
+    "grammar_json": {
+      "client_call_wall_s": 10.75160895899171,
+      "complete_wall_ns": 4757567208,
+      "complete_wall_ns_per_generated_token": 37168493.8125,
+      "connector_wall_ms": 6946.8528329744,
+      "decode": {
+        "dispatches": 73660,
+        "generated_tokens_after_prefill": 127,
+        "gpu_ns": 2850247015,
+        "steps": 127,
+        "wall_ns": 3871770834,
+        "wall_ns_per_step": 30486384.51968504
+      },
+      "dispatches": 74449,
+      "dispatches_per_generated_token": 581.6328125,
+      "generated_tokens": 128,
+      "generation_wall_ns": 4757535083,
+      "gpu_ns": 3575436431,
+      "grammar_enforced": true,
+      "grammar_requested": true,
+      "prefill": {
+        "batched": true,
+        "dispatches": 789,
+        "gpu_ns": 725189416,
+        "steps": 28,
+        "tok_s": 38.61060211612355,
+        "wall_ns": 779041167,
+        "wall_ns_per_step": 27822898.82142857
+      },
+      "wall_minus_gpu_ns": 1182130777
+    },
+    "plain": {
+      "client_call_wall_s": 9.759510083007626,
+      "complete_wall_ns": 3731752250,
+      "complete_wall_ns_per_generated_token": 29154314.453125,
+      "connector_wall_ms": 5938.573874998838,
+      "decode": {
+        "dispatches": 73660,
+        "generated_tokens_after_prefill": 127,
+        "gpu_ns": 2847566098,
+        "steps": 127,
+        "wall_ns": 2950892416,
+        "wall_ns_per_step": 23235373.354330707
+      },
+      "dispatches": 74449,
+      "dispatches_per_generated_token": 581.6328125,
+      "generated_tokens": 128,
+      "generation_wall_ns": 3731698750,
+      "gpu_ns": 3570203681,
+      "grammar_enforced": false,
+      "grammar_requested": false,
+      "prefill": {
+        "batched": true,
+        "dispatches": 789,
+        "gpu_ns": 722637583,
+        "steps": 28,
+        "tok_s": 38.74694682188983,
+        "wall_ns": 775151167,
+        "wall_ns_per_step": 27683970.25
+      },
+      "wall_minus_gpu_ns": 161548569
+    }
+  },
+  "binding_term": "model_compute_gpu_ns_per_token",
+  "binding_term_evidence": "GPU is 96.5% of the decode wall; dispatch and synchronisation together are 3.5%. Removing ALL host overhead could not reach the >=50 tok/s rung from 43.04 tok/s. Two concurrent streams return 1.002x (G012), so there is no idle GPU to harvest either. The work is inside the model at 581.6 dispatches per token.",
+  "command": "python3 tools/sovereign/g006_decode_decomposition.py",
+  "dispatches_per_generated_token": 581.6328125,
+  "method": "the resident's own native_metrics for a real generation; two arms differing only in the JSON grammar mask, each in a FRESH process",
+  "produced_at": "2026-09-05T19:11:03.860994+00:00",
+  "produced_by": "tools/sovereign/g006_decode_decomposition.py",
+  "rates": {
+    "complete_tok_s_including_prefill": 34.30024059073053,
+    "decode_tok_s_grammar_json": 32.8015281495351,
+    "decode_tok_s_plain": 43.03782791652951
+  },
+  "schema": "hawking.decode.whole_token_decomposition.v1",
+  "shares_of_decode_wall": {
+    "dispatch_and_sync": 0.035015277900256735,
+    "model_compute_gpu": 0.9649847220997433
+  },
+  "whole_token_ns": {
+    "constrained_decoding_ns_per_token": 7251011.165354334,
+    "dispatch_and_sync_ns_per_token": 813593.0551181103,
+    "hcli_connector_overhead_ns_per_call": 2206875124.9988375,
+    "model_compute_gpu_ns_per_token": 22421780.299212597,
+    "prefill_ns_per_prompt_token": 27683970.25,
+    "sampling_ns_per_token": "NOT SEPARABLE from the GPU span with these counters",
+    "state_movement_ns_per_token": "NOT SEPARABLE from the GPU span with these counters"
+  }
+}

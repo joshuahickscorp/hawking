@@ -11,7 +11,7 @@ from lab.lineage.state import LineageState
 from lab.receipts import verify
 
 
-REPO = Path(__file__).resolve().parents[2]
+REPO = Path(__file__).resolve().parents[3]
 MODULE = REPO / "tools" / "genesis_agentos.py"
 
 

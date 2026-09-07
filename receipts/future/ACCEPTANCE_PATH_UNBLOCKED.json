@@ -1,0 +1,23 @@
+{
+ "date": "2026-09-06",
+ "obligation": "acceptance-path unblock (NOT G004 itself)",
+ "CHANGE": "One block of contract text in engine.py publishing the four admissible test forms, and naming the consequence (mutation ROLLED BACK) for anything else.",
+ "BEFORE": "Every unit failed. The resident wrote correct code, proposed python -c \"...\", the admission gate refused the FORM, validation failed with no top-level reason, and the rollback deleted the correct file. Two attempts, then terminal.",
+ "AFTER": {
+  "phase": "completed",
+  "accepted_count": 2,
+  "unit_status": "completed",
+  "attempts": 1
+ },
+ "INDEPENDENTLY_VERIFIED": {
+  "probe.py_on_disk": "VALUE = 7",
+  "test_probe.py_on_disk": "from probe import VALUE / def test_value(): assert VALUE == 7",
+  "test_run_by_supervisor_outside_hcli": "1 passed",
+  "verification_ok": true,
+  "test_check_exit_code": 0
+ },
+ "WHY_THIS_IS_NOT_G004": "G004 requires an accepted O003 SCIENTIFIC WorkUnit. This was a harness probe -- write a constant and a test for it. It proves the acceptance PATH works end to end, which was the blocker, and it does not itself satisfy the obligation.",
+ "WHY_THIS_IS_NOT_G009_EITHER": "G009 requires three consecutive accepted units with NO Claude target engineering between them. I wrote this goal and named both files in it.",
+ "A_WEAKNESS_IN_THE_ACCEPTANCE_ITSELF": "red_before_green is None on both accepted units. The gate is still the known hole -- enforcement is skipped when pre_mutation is None, and the mission path passes None. So these units are accepted on a test that PASSES AFTER the change without any evidence it FAILED BEFORE. A test asserting VALUE == 7 against a file the same mutation created cannot fail before, so red-before-green is not merely unrecorded here, it is unattainable for a create-a-file goal.",
+ "THE_PATTERN_THIS_CLOSES": "Fifth and clearest instance: the harness demanded tests, refused a reasonable test form, published neither the accepted forms nor the reason for refusal, and discarded correct work. The model was never incapable. Publishing the contract cost one paragraph and moved accepted_count from 0 to 2 on the first attempt."
+}

@@ -110,7 +110,9 @@ mod macos {
     ) -> Result<u64, Box<dyn Error>> {
         match (t.gpu_start_ns, t.gpu_end_ns) {
             (Some(s), Some(e)) if e > s => Ok(e - s),
-            _ => Err(format!("{label}: MTLCommandBuffer GPUStartTime/GPUEndTime unavailable").into()),
+            _ => {
+                Err(format!("{label}: MTLCommandBuffer GPUStartTime/GPUEndTime unavailable").into())
+            }
         }
     }
 
@@ -120,7 +122,9 @@ mod macos {
     ) -> Result<u64, Box<dyn Error>> {
         match (t.gpu_start_ns, t.gpu_end_ns) {
             (Some(s), Some(e)) if e > s => Ok(e - s),
-            _ => Err(format!("{label}: MTLCommandBuffer GPUStartTime/GPUEndTime unavailable").into()),
+            _ => {
+                Err(format!("{label}: MTLCommandBuffer GPUStartTime/GPUEndTime unavailable").into())
+            }
         }
     }
 
@@ -180,14 +184,7 @@ mod macos {
     }
 
     impl VehicleBudget {
-        fn build(
-            name: &'static str,
-            storage: f64,
-            gate: f64,
-            up: f64,
-            down: f64,
-            ne: f64,
-        ) -> Self {
+        fn build(name: &'static str, storage: f64, gate: f64, up: f64, down: f64, ne: f64) -> Self {
             let gate_organ = align16(bytes_from_bpw(ORGAN_ELEMS, gate));
             let up_organ = align16(bytes_from_bpw(ORGAN_ELEMS, up));
             let down_organ = align16(bytes_from_bpw(ORGAN_ELEMS, down));
@@ -351,7 +348,14 @@ mod macos {
             .unwrap_or(0.0);
 
         let honest_ceiling = control_unique_med.max(1.0);
-        let req = restate_requirement(&m15, &s655, &q4, honest_ceiling, control_reuse_lo, control_reuse_hi);
+        let req = restate_requirement(
+            &m15,
+            &s655,
+            &q4,
+            honest_ceiling,
+            control_reuse_lo,
+            control_reuse_hi,
+        );
 
         let caps = rank_caps(
             &dispatch,
@@ -421,7 +425,9 @@ mod macos {
         Ok(())
     }
 
-    fn measure_reuse_control(ctx: &hawking_core::metal::MetalContext) -> Result<Value, Box<dyn Error>> {
+    fn measure_reuse_control(
+        ctx: &hawking_core::metal::MetalContext,
+    ) -> Result<Value, Box<dyn Error>> {
         let probe_bytes: usize = 64 * 1024 * 1024;
         let iters: u32 = 4096;
         let buf = ctx.new_buffer_checked(probe_bytes)?;
@@ -635,7 +641,9 @@ mod macos {
         }))
     }
 
-    fn measure_dispatch_tax(ctx: &hawking_core::metal::MetalContext) -> Result<Value, Box<dyn Error>> {
+    fn measure_dispatch_tax(
+        ctx: &hawking_core::metal::MetalContext,
+    ) -> Result<Value, Box<dyn Error>> {
         let n_nop = 256usize;
         let outb = ctx.new_buffer_checked(n_nop * 4)?;
         let nop_one = || -> Result<(u64, u64), Box<dyn Error>> {
@@ -895,10 +903,13 @@ mod macos {
         ctx: &hawking_core::metal::MetalContext,
         v: &VehicleBudget,
     ) -> Result<Value, Box<dyn Error>> {
-        let attn_dn = align16(v.attn_bytes * DELTANET_LAYERS / (DELTANET_LAYERS + GQA_LAYERS)) as usize;
+        let attn_dn =
+            align16(v.attn_bytes * DELTANET_LAYERS / (DELTANET_LAYERS + GQA_LAYERS)) as usize;
         let attn_gqa = align16(v.attn_bytes - attn_dn as u64) as usize;
-        let dn_layer = align16((attn_dn as u64 / DELTANET_LAYERS) + (v.router_bytes / Q80_LAYERS)) as usize;
-        let gqa_layer = align16((attn_gqa as u64 / GQA_LAYERS) + (v.router_bytes / Q80_LAYERS)) as usize;
+        let dn_layer =
+            align16((attn_dn as u64 / DELTANET_LAYERS) + (v.router_bytes / Q80_LAYERS)) as usize;
+        let gqa_layer =
+            align16((attn_gqa as u64 / GQA_LAYERS) + (v.router_bytes / Q80_LAYERS)) as usize;
         let lm = v.lm_head_bytes as usize;
         let organ = v.triplet as usize;
         let table = organ * Q80_EXPERTS as usize;
@@ -1178,15 +1189,16 @@ mod macos {
             .unwrap_or(0);
 
         let organs_per_token = Q80_LAYERS * (Q80_TOP_K + 1);
-        let geometry_tax = one_organ.saturating_mul(organs_per_token).saturating_sub(
-            if thirty > 0 {
-                // 30 organs per dispatch → how many dispatches for all expert organs
-                let disp = organs_per_token.div_ceil(30);
-                thirty.saturating_mul(disp)
-            } else {
-                0
-            },
-        );
+        let geometry_tax =
+            one_organ
+                .saturating_mul(organs_per_token)
+                .saturating_sub(if thirty > 0 {
+                    // 30 organs per dispatch → how many dispatches for all expert organs
+                    let disp = organs_per_token.div_ceil(30);
+                    thirty.saturating_mul(disp)
+                } else {
+                    0
+                });
         let gather_tax = gath.saturating_sub(seq10).saturating_mul(Q80_LAYERS);
         let residency_tax = cold.saturating_sub(warm);
         let cb_tax = cbs_host.saturating_sub(cbs_gpu);
@@ -1228,8 +1240,6 @@ mod macos {
     }
 
     fn bytemuck_u32(values: &[u32]) -> &[u8] {
-        unsafe {
-            std::slice::from_raw_parts(values.as_ptr() as *const u8, values.len() * 4)
-        }
+        unsafe { std::slice::from_raw_parts(values.as_ptr() as *const u8, values.len() * 4) }
     }
 }

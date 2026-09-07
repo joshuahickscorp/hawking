@@ -11,12 +11,6 @@ Core workloads:
 - `cache_miss_taxonomy.json`: exact, near, and divergent prefix cases.
 - `spec_decode_gate.json`: speculative decoding on/off gate shape.
 
-Generate issue-derived workloads from the pain ledger:
-
-```bash
-python tools/bench/workloads/from_pain_radar.py
-```
-
 Use plan-only mode before any measured run:
 
 ```bash

@@ -53,7 +53,12 @@ pub const ADMISSION_WARM_RECEIPT_VERSION: u32 = 1;
 /// Disable with `HAWKING_ADMISSION_WARM_RECEIPT=0`. Default: enabled.
 pub fn warm_receipt_enabled() -> bool {
     match std::env::var("HAWKING_ADMISSION_WARM_RECEIPT") {
-        Ok(v) if matches!(v.as_str(), "0" | "false" | "FALSE" | "no" | "NO" | "off" | "OFF") => {
+        Ok(v)
+            if matches!(
+                v.as_str(),
+                "0" | "false" | "FALSE" | "no" | "NO" | "off" | "OFF"
+            ) =>
+        {
             false
         }
         _ => true,
@@ -117,9 +122,7 @@ pub fn file_identity(path: &Path, label: &str) -> Result<FileIdentity> {
             .modified()
             .ok()
             .and_then(|t| t.duration_since(UNIX_EPOCH).ok())
-            .map(|d| {
-                i128::from(d.as_secs()) * 1_000_000_000i128 + i128::from(d.subsec_nanos())
-            })
+            .map(|d| i128::from(d.as_secs()) * 1_000_000_000i128 + i128::from(d.subsec_nanos()))
             .unwrap_or(0);
         Ok(FileIdentity {
             size: metadata.len(),
@@ -245,9 +248,7 @@ fn required_i128_field(object: &Map<String, Value>, key: &str, label: &str) -> R
                 .as_i64()
                 .map(i128::from)
                 .or_else(|| value.as_u64().map(i128::from))
-                .or_else(|| {
-                    value.as_str().and_then(|s| s.parse::<i128>().ok())
-                })
+                .or_else(|| value.as_str().and_then(|s| s.parse::<i128>().ok()))
         })
         .ok_or_else(|| model_error(label, format!("missing signed integer field {key:?}")))
 }
@@ -423,7 +424,8 @@ pub fn load_receipt(manifest_seal_sha256: &str) -> Result<Option<WarmAdmissionRe
     if object.get("schema").and_then(Value::as_str) != Some(ADMISSION_WARM_RECEIPT_SCHEMA) {
         return Ok(None);
     }
-    if object.get("version").and_then(Value::as_u64) != Some(u64::from(ADMISSION_WARM_RECEIPT_VERSION))
+    if object.get("version").and_then(Value::as_u64)
+        != Some(u64::from(ADMISSION_WARM_RECEIPT_VERSION))
     {
         return Ok(None);
     }
@@ -454,8 +456,11 @@ pub fn load_receipt(manifest_seal_sha256: &str) -> Result<Option<WarmAdmissionRe
             .as_object()
             .ok_or_else(|| model_error("warm admission receipt", "entry must be an object"))?;
         let tensor_name = required_string(row, "tensor_name", "warm admission receipt")?.to_owned();
-        let artifact_path =
-            PathBuf::from(required_string(row, "artifact_path", "warm admission receipt")?);
+        let artifact_path = PathBuf::from(required_string(
+            row,
+            "artifact_path",
+            "warm admission receipt",
+        )?);
         let artifact_sha256 =
             required_sha256(row, "artifact_sha256", "warm admission receipt")?.to_owned();
         let identity = FileIdentity {
@@ -643,11 +648,14 @@ pub fn receipt_covers_manifest_rows(
 /// validated geometry blob. Older receipts written before geometry caching
 /// return false so a warm hit re-parses once and can upgrade the receipt.
 pub fn receipt_geometry_complete(receipt: &WarmAdmissionReceipt) -> bool {
-    receipt.entries.values().all(|entry| match entry.layout_kind.as_str() {
-        LAYOUT_KIND_HQ30G1B1 => entry.header.is_some(),
-        LAYOUT_KIND_HGRAVS01 => entry.hgravs01_header.is_some(),
-        _ => true,
-    })
+    receipt
+        .entries
+        .values()
+        .all(|entry| match entry.layout_kind.as_str() {
+            LAYOUT_KIND_HQ30G1B1 => entry.header.is_some(),
+            LAYOUT_KIND_HGRAVS01 => entry.hgravs01_header.is_some(),
+            _ => true,
+        })
 }
 
 #[cfg(test)]
@@ -667,14 +675,29 @@ mod tests {
     fn device_shift_alone_still_matches() {
         // A remount reassigns st_dev without touching the file: same file,
         // must remain a warm hit (else every reboot pays a full cold rehash).
-        let base = id(4_000_000_000, 1_786_064_136_014_875_545, 16_777_234, 197_011_751);
-        let remounted = id(4_000_000_000, 1_786_064_136_014_875_545, 16_777_233, 197_011_751);
+        let base = id(
+            4_000_000_000,
+            1_786_064_136_014_875_545,
+            16_777_234,
+            197_011_751,
+        );
+        let remounted = id(
+            4_000_000_000,
+            1_786_064_136_014_875_545,
+            16_777_233,
+            197_011_751,
+        );
         assert!(identity_matches(&remounted, &base));
     }
 
     #[test]
     fn content_change_signals_still_invalidate() {
-        let base = id(4_000_000_000, 1_786_064_136_014_875_545, 16_777_234, 197_011_751);
+        let base = id(
+            4_000_000_000,
+            1_786_064_136_014_875_545,
+            16_777_234,
+            197_011_751,
+        );
         // A rewrite bumps mtime and/or size; a swap changes inode. Each must
         // still force a cold re-verify.
         assert!(!identity_matches(
@@ -691,4 +714,3 @@ mod tests {
         ));
     }
 }
-

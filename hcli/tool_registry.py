@@ -284,10 +284,11 @@ class ToolSpec:
     resources: Tuple[str, ...] = ()
     verifier_expectations: Tuple[str, ...] = ()
     provenance: str = "hcli.tool_registry"
+    alias_of: Optional[str] = None
     handler: Callable[[ToolContext, Dict[str, Any]], Any] = field(repr=False, compare=False, default=lambda _c, _a: None)
 
     def to_dict(self) -> Dict[str, Any]:
-        return {
+        result = {
             "schema": TOOL_SCHEMA,
             "name": self.name,
             "description": self.description,
@@ -301,6 +302,9 @@ class ToolSpec:
             "verifier_expectations": list(self.verifier_expectations),
             "provenance": self.provenance,
         }
+        if self.alias_of:
+            result["alias_of"] = self.alias_of
+        return result
 
 
 @dataclass
@@ -356,18 +360,40 @@ class ToolRegistry:
             raise ValueError(f"tool already registered: {name}")
         if spec.mutation not in MUTATION_CLASSES:
             raise ValueError(f"unknown mutation class: {spec.mutation}")
+        if spec.alias_of and spec.alias_of not in self._tools:
+            raise ValueError(f"alias target is not registered: {spec.alias_of}")
         self._tools[name] = spec
         return spec
 
     def get(self, name: str) -> Optional[ToolSpec]:
         return self._tools.get(str(name or "").strip())
 
-    def discover(self, *, role: Optional[str] = None) -> List[Dict[str, Any]]:
+    def discover(
+        self,
+        *,
+        role: Optional[str] = None,
+        include_aliases: bool = False,
+    ) -> List[Dict[str, Any]]:
+        """Return canonical tools with compatibility aliases as metadata.
+
+        Aliases remain callable through :meth:`get` and :meth:`invoke`, but
+        are not independent model-facing capabilities. ``include_aliases``
+        is available for diagnostics and migration audits.
+        """
+        aliases: Dict[str, List[str]] = {}
+        for item in self._tools.values():
+            if item.alias_of:
+                aliases.setdefault(item.alias_of, []).append(item.name)
         result = []
         for spec in sorted(self._tools.values(), key=lambda item: item.name):
+            if spec.alias_of and not include_aliases:
+                continue
             if role and spec.roles and role not in spec.roles:
                 continue
-            result.append(spec.to_dict())
+            item = spec.to_dict()
+            if not spec.alias_of and aliases.get(spec.name):
+                item["aliases"] = sorted(aliases[spec.name])
+            result.append(item)
         return result
 
     def describe(self, focus: str = "", *, max_results: int = 12) -> Dict[str, Any]:
@@ -388,6 +414,8 @@ class ToolRegistry:
 
         scored: List[Tuple[int, str, ToolSpec]] = []
         for spec in self._tools.values():
+            if spec.alias_of:
+                continue
             name = spec.name.lower()
             haystack = " ".join(
                 (spec.name, spec.description, *spec.roles, *spec.resources)
@@ -1451,7 +1479,7 @@ def _git_diff(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def _git_safe_revert_refusal(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
-    del context, args
+    del args
     return {
         "status": "REFUSED",
         "reason": "safe checkout/revert requires a caller-owned backup and explicit destructive policy; use git.diff first",
@@ -1589,10 +1617,23 @@ def _doctor_query(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
         "schema": "hcli.doctor.query.v1",
         "operation": operation,
         "status": "PROPOSED",
-        "authority": "measurement/verifier, not Doctor",
+        "authority": "tools.doctor.engine",
         "external_research_used": False,
         "physical_execution": False,
     }
+    target = args.get("receipt") or args.get("model")
+    if target:
+        from tools.doctor.engine import diagnose
+
+        result["diagnosis"] = diagnose(target)
+        result["status"] = "DIAGNOSED"
+        result["producer"] = "tools.doctor.engine.diagnose"
+    else:
+        from tools.doctor.engine import zeros_controls
+
+        result["doctor_controls"] = zeros_controls()
+        result["status"] = "CONTROLLED_PROPOSAL"
+        result["producer"] = "tools.doctor.engine.zeros_controls"
     if args.get("model"):
         result["architecture"] = _architecture_inspect(context, {"path": args["model"]})
     if args.get("receipt"):
@@ -1624,8 +1665,16 @@ def _gravity_experiment(context: ToolContext, args: Dict[str, Any]) -> Dict[str,
     if args.get("receipt"):
         result["prior_evidence"] = _receipt_read(context, {"path": args["receipt"]})
     if args.get("execute"):
-        result["status"] = "REFUSED_NOT_IMPLEMENTED"
-        result["blocker"] = "HCLI does not claim physical Gravity execution from a metadata tool"
+        from hcli.agentos.flash_representation_experiment import (
+            run_flash_representation_experiment,
+        )
+
+        experiment = run_flash_representation_experiment(root=args.get("model"))
+        result["experiment"] = experiment
+        result["status"] = "EXECUTED"
+        result["producer"] = "hcli.agentos.flash_representation_experiment.run_flash_representation_experiment"
+        result["physical_execution"] = False
+        result["capability_claim"] = "none"
     return result
 
 
@@ -1710,6 +1759,23 @@ def _odyssey_cycle(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]
     return odyssey.cycle(confirm=True, max_lanes=args.get("max_lanes"))
 
 
+def _odyssey_gravity_gauntlet(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    from . import odyssey
+
+    if args.get("confirm") is not True:
+        raise PermissionError("odyssey.gravity_gauntlet writes search state and requires confirm=True")
+    state_path = context.resolve_write_path(args["state_path"]) if args.get("state_path") else None
+    receipt_dir = context.resolve_read_path(args["receipt_dir"]) if args.get("receipt_dir") else None
+    return odyssey.gravity_gauntlet(
+        oxx=str(args["oxx"]),
+        candidate_specs=list(args["candidate_specs"]),
+        budget=int(args.get("budget") or 2),
+        state_path=str(state_path) if state_path else None,
+        receipt_dir=str(receipt_dir) if receipt_dir else None,
+        confirm=True,
+    )
+
+
 def _forbidden_fruit_lab(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
     """Run the ANE probe lab and report OBSERVED placement.
 
@@ -1753,11 +1819,15 @@ def _acquisition_propose(context: ToolContext, args: Dict[str, Any]) -> Dict[str
     return acquisition.propose()
 
 
-def _odyssey_read_verb(name: str):
+def _odyssey_read_verb(name: str, required: Sequence[str] = ()):
+    """Read-only Odyssey verbs. ``required`` names the positional arguments the
+    connector declares; a verb that takes one and is wired without it raises
+    TypeError on first call, so the names are forwarded rather than dropped."""
+
     def handler(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
         from . import odyssey
 
-        return getattr(odyssey, name)()
+        return getattr(odyssey, name)(*(str(args[key]) for key in required))
 
     return handler
 
@@ -1802,40 +1872,48 @@ def _grok_swarm_launch(context: ToolContext, args: Dict[str, Any]) -> Dict[str, 
 
 
 def _processes_list(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
-    """Every live Hawking process, classified by argv. Read-only: this wraps
-    hcli.processes.live_processes() and nothing else. Killing a process is
+    """Every live Hawking process, classified by the native Rust authority.
+    Read-only: this wraps the Python compatibility skin and nothing else. Killing a process is
     deliberately NOT reachable here -- that stays on the owned-signal path in
     hcli/agentos/resident.py (_owned_signal), which checks a
     process_start_token before it will ever send a signal.
     """
-    del context, args
+    del args
     from . import processes
 
-    return {"processes": [p.to_dict() for p in processes.live_processes()]}
+    return {
+        "processes": [
+            p.to_dict()
+            for p in processes.live_processes(workspace=context.workspace)
+        ]
+    }
 
 
 def _processes_summary(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
     """Roll-up counts and total footprint for every live Hawking process --
-    the same hcli.processes.summary() entry point the process audit receipt
-    uses. Read-only."""
-    del context, args
+    the same native Rust entry point the process audit receipt uses. Read-only."""
+    del args
     from . import processes
 
-    return processes.summary()
+    return processes.summary(workspace=context.workspace)
 
 
 def _processes_orphaned(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
     """Resident model bodies with no live owner (reparented to pid 1, unclaimed
-    by any resident state file). Enumeration only: this calls
-    hcli.processes.orphaned_resident_bodies(), never reap_orphaned_bodies(),
-    which sends SIGTERM. Reaping stays a startup-only self-heal in
+    by any resident state file). Enumeration only: this calls the native Rust
+    inspector, never the reaper, which sends SIGTERM. Reaping stays a startup-only self-heal in
     hcli/runtime.py._reap_orphans_once, not something the model can trigger
     through the tool surface.
     """
-    del context, args
+    del args
     from . import processes
 
-    return {"orphaned": [p.to_dict() for p in processes.orphaned_resident_bodies()]}
+    return {
+        "orphaned": [
+            p.to_dict()
+            for p in processes.orphaned_resident_bodies(workspace=context.workspace)
+        ]
+    }
 
 
 def default_tool_registry(
@@ -1912,7 +1990,7 @@ def default_tool_registry(
         path_schema,
         handler=_read_file,
     ))
-    registry.register(ToolSpec("filesystem.read", "Read one known file under an AgentOS read root.", path_schema, handler=_read_file))
+    registry.register(ToolSpec("filesystem.read", "Read one known file under an AgentOS read root.", path_schema, alias_of="fs.read", handler=_read_file))
     registry.register(ToolSpec(
         "fs.search", "Search bounded text files under a read root.",
         {"type": "object", "required": ["pattern"], "additionalProperties": False,
@@ -1923,7 +2001,7 @@ def default_tool_registry(
         "filesystem.search", "Search bounded text files under a read root.",
         {"type": "object", "required": ["pattern"], "additionalProperties": False,
          "properties": {"pattern": {"type": "string"}, "root": {"type": "string"}, "path": {"type": "string"}, "glob": {"type": "string"}, "max_results": {"type": "integer"}}},
-        handler=_search_files,
+        alias_of="fs.search", handler=_search_files,
     ))
     # `path` is NOT required: the handler already defaults to the workspace root
     # and the read-root check still applies, so demanding it bought no safety and
@@ -1943,7 +2021,7 @@ def default_tool_registry(
     ))
     registry.register(ToolSpec(
         "filesystem.list", "List files and directory entries under a read root, optionally filtered by glob.",
-        list_schema, handler=_list_files,
+        list_schema, alias_of="fs.list", handler=_list_files,
     ))
     registry.register(ToolSpec(
         "filesystem.write", "Atomically write a workspace/repository file under reversible permission.",
@@ -1976,16 +2054,8 @@ def default_tool_registry(
     # and gave the resident no way to look at one. These three close that gap
     # by wrapping hcli/processes.py's existing read paths only -- nothing new
     # is taught to reap or signal anything. Killing a process is not reachable
-    # through this registry at all; see the handler docstrings.
-    # G009 (receipts/sovereign/G009_reachability.json) found process truth
-    # REACHABLE FROM PRODUCTION CODE (hcli/runtime.py's startup reaper,
-    # hcli/commands.py's /processes command) but UNREACHABLE FROM THE MODEL:
-    # no registered tool named a process, and shell.readonly above refuses
-    # `ps` outright. The live goal's first law names processes as authority
-    # and gave the resident no way to look at one. These three close that gap
-    # by wrapping hcli/processes.py's existing read paths only -- nothing new
-    # is taught to reap or signal anything. Killing a process is not reachable
-    # through this registry at all; see the handler docstrings.
+    # through this registry at all; see the handler docstrings. Observation is
+    # now owned by hide-backend::process_inspector.
     registry.register(ToolSpec(
         "processes.list",
         "Every live Hawking process, classified by argv: role, PID, memory, "
@@ -2029,6 +2099,7 @@ def default_tool_registry(
             {"type": "object", "additionalProperties": False, "properties": {"path": {"type": "string"}, "paths": {"type": "array", "items": {"type": "string"}}}},
             mutation=DESTRUCTIVE,
             deterministic=True,
+            alias_of=None if name == "git.checkout-safe" else "git.checkout-safe",
             handler=_git_safe_revert_refusal,
         ))
     registry.register(ToolSpec(
@@ -2082,7 +2153,7 @@ def default_tool_registry(
     registry.register(ToolSpec(
         "huggingface.manifest", "Resolve a Hugging Face revision and return a bounded manifest.",
         {"type": "object", "required": ["repo"], "additionalProperties": False, "properties": {"repo": {"type": "string"}, "revision": {"type": "string"}}},
-        mutation=RESEARCH, deterministic=False, resources=("network",), handler=_huggingface_resolve,
+        mutation=RESEARCH, deterministic=False, resources=("network",), alias_of="huggingface.resolve", handler=_huggingface_resolve,
     ))
     registry.register(ToolSpec(
         "huggingface.fetch_file", "Fetch a bounded text/metadata file from a public or already-authorized Hugging Face repo.",
@@ -2102,7 +2173,7 @@ def default_tool_registry(
         verifier_expectations=("hash must be checked before atomic publish",), handler=_huggingface_download,
     ))
     registry.register(ToolSpec("receipt.read", "Read a JSON/text receipt under the repository or mission state roots.", path_schema, handler=_receipt_read))
-    registry.register(ToolSpec("receipt.inspect", "Inspect a JSON/text receipt under the repository or mission state roots.", path_schema, handler=_receipt_read))
+    registry.register(ToolSpec("receipt.inspect", "Inspect a JSON/text receipt under the repository or mission state roots.", path_schema, alias_of="receipt.read", handler=_receipt_read))
     for name, description in (
         ("roadmap.read", "Read the persisted civilization roadmap."),
         ("vmcp.capabilities", "Read the latest VMCP capability census."),
@@ -2140,6 +2211,26 @@ def default_tool_registry(
          "properties": {"confirm": {"type": "boolean"}, "max_lanes": {"type": "integer"}}},
         mutation=COSTLY, deterministic=False, resources=("cpu",),
         handler=_odyssey_cycle,
+    ))
+    registry.register(ToolSpec(
+        "odyssey.gravity_gauntlet",
+        "Run one bounded, resumable, evidence-guided Gravity search; requires confirm=True.",
+        {"type": "object", "additionalProperties": False,
+         "required": ["oxx", "candidate_specs", "confirm"],
+         "properties": {
+             "oxx": {"type": "string"},
+             "candidate_specs": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+             "budget": {"type": "integer", "minimum": 1},
+             "state_path": {"type": "string"},
+             "receipt_dir": {"type": "string"},
+             "confirm": {"type": "boolean"},
+         }},
+        mutation=COSTLY, deterministic=False, resources=("cpu", "ssd"),
+        verifier_expectations=(
+            "TARGET_HIT requires complete EBPW <= 1 plus independent capability/execution verification",
+            "BUDGET_EXHAUSTED is never a pass",
+        ),
+        handler=_odyssey_gravity_gauntlet,
     ))
     registry.register(ToolSpec(
         "forbidden_fruit.lab",
@@ -2186,6 +2277,39 @@ def default_tool_registry(
         {"type": "object", "additionalProperties": False, "properties": {}},
         handler=_odyssey_read_verb("ingest"),
     ))
+    # The other three read-only connectors. Same reason as the block above: a
+    # verb absent from this registry is absent from the resident's only call
+    # path, so it did not exist. `completions` is registered without its
+    # `rebuild` flag and `harvest` without its apply flag -- both of those
+    # write, and both are already what odyssey.cycle does on confirm.
+    for verb, required, description in (
+        ("completions", (), "List recorded Odyssey completions. Read-only; the --rebuild backfill stays on the CLI."),
+        ("patient", ("oxx",), "Read one Odyssey patient packet already on disk. Never writes one."),
+        ("harvest", (), "Dry-run harvest: which finished lanes would be applied. Applying is odyssey.cycle."),
+    ):
+        registry.register(ToolSpec(
+            "odyssey." + verb, description,
+            {"type": "object", "additionalProperties": False,
+             "required": list(required),
+             "properties": {key: {"type": "string"} for key in required}},
+            deterministic=False,
+            handler=_odyssey_read_verb(verb, required),
+        ))
+    # Targeted per-specimen driver mutations, gated like odyssey.cycle. Neither
+    # is reachable through cycle: cycle retires whatever it selects itself and
+    # never writes a packet for a named oxx.
+    for verb, description in (
+        ("retire", "Retire one named Odyssey patient. Writes the driver's own state; requires confirm=True."),
+        ("write_packet", "Write the patient packet for one named Odyssey oxx. Requires confirm=True."),
+    ):
+        registry.register(ToolSpec(
+            "odyssey." + verb, description,
+            {"type": "object", "additionalProperties": False,
+             "required": ["confirm", "oxx"],
+             "properties": {"confirm": {"type": "boolean"}, "oxx": {"type": "string"}}},
+            mutation=COSTLY, deterministic=False,
+            handler=_odyssey_mutating(verb, ("oxx",)),
+        ))
     for verb, required in (
         ("add_to_eligibility", ("oxx",)),
         ("park_specimen", ("oxx",)),
@@ -2263,12 +2387,12 @@ def default_tool_registry(
     registry.register(ToolSpec(
         "roadmap.inspect", "Inspect the persisted civilization roadmap receipt.",
         {"type": "object", "additionalProperties": False, "properties": {"path": {"type": "string"}}},
-        handler=_target_receipt("roadmap.read"),
+        alias_of="roadmap.read", handler=_target_receipt("roadmap.read"),
     ))
     registry.register(ToolSpec(
         "benchmark.inspect", "Inspect benchmark evidence through a named receipt path.",
         {"type": "object", "required": ["path"], "additionalProperties": False, "properties": {"path": {"type": "string"}}},
-        handler=_receipt_read,
+        alias_of="receipt.read", handler=_receipt_read,
     ))
     artifact_item_schema = {
         "type": "object",

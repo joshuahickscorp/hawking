@@ -44,7 +44,7 @@ mod macos {
     };
     use serde_json::{json, Value};
     use sha2::{Digest, Sha256};
-    use std::collections::{HashSet, BTreeSet};
+    use std::collections::{BTreeSet, HashSet};
     use std::env;
     use std::fs::{self, File, OpenOptions};
     use std::io::{Read, Write};
@@ -599,10 +599,8 @@ mod macos {
                 probe_index % arguments.probe_shard_count == arguments.probe_shard
             })
             .collect();
-        let shard_token_budget: usize = shard_probe_indices
-            .iter()
-            .map(|&i| probes[i].1.len())
-            .sum();
+        let shard_token_budget: usize =
+            shard_probe_indices.iter().map(|&i| probes[i].1.len()).sum();
         let shard_hidden_positions: usize = hidden_positions
             .iter()
             .filter(|(probe_index, _)| {

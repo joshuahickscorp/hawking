@@ -126,7 +126,8 @@ def test_the_posted_estimate_lowers_a_stale_budget():
     }
     eng._commit_posted_prompt_estimate(payload)
     assert payload["max_tokens"] < 6000
-    assert payload["max_tokens"] + 5792 <= 8192
+    observed = eng._estimate_prompt_tokens(payload["messages"])
+    assert payload["max_tokens"] + observed <= 8192
 
 
 def test_a_budget_that_already_fits_is_left_alone():

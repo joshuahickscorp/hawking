@@ -17,6 +17,7 @@ from pathlib import Path
 import pytest
 
 from hcli.engine import Engine, HCLI_RESULT_SCHEMA
+from hcli.backends import StructuredOutputContract, schema_instruction
 from hcli.tool_registry import default_tool_registry
 from hcli.workspace import Workspace
 
@@ -32,8 +33,11 @@ def test_the_schema_can_express_a_tool_call_at_all():
     props = HCLI_RESULT_SCHEMA["properties"]
     assert "tool_calls" in props, "no field a tool call could occupy"
     assert "tool_use" in props["kind"]["enum"]
-    # strict mode: every property must be required or the backend rejects it
-    assert set(HCLI_RESULT_SCHEMA["required"]) == set(props)
+    # Only the universal envelope fields are required. Mode-specific arrays
+    # are defaulted by Engine._sanitize_result, which keeps short answers
+    # short without weakening the mutation evidence gate.
+    assert set(HCLI_RESULT_SCHEMA["required"]) == {"kind", "content"}
+    assert {"operations", "tests", "tool_calls"}.issubset(props)
     item = props["tool_calls"]["items"]["properties"]
     assert set(item) == {"tool", "arguments"}
     # Arguments must NOT be a JSON-encoded string. That version was tried and
@@ -225,6 +229,90 @@ def test_tool_output_never_enters_the_evidence_list():
     assert "TOOL BUDGET EXHAUSTED" not in text
     final = engine._prompt_with_observations("the goal", [], final=True)
     assert "TOOL BUDGET EXHAUSTED" in final
+
+
+def test_observation_round_keeps_the_tool_catalog_prefix_stable():
+    engine = Engine.__new__(Engine)
+    engine._tools_cached = _registry()
+    before = engine._prompt_with_observations("the goal", [])
+    after = engine._prompt_with_observations(
+        "the goal",
+        [{"tool": "fs.read", "ok": True, "text": "new observation"}],
+    )
+    before_catalog = before.split("OBSERVATIONS", 1)[0].rstrip()
+    after_catalog = after.split("OBSERVATIONS", 1)[0].rstrip()
+    assert before_catalog == after_catalog
+
+
+def test_tool_round_history_keeps_schema_in_the_stable_user_turn(tmp_path):
+    engine = Engine(Workspace(str(tmp_path)))
+    payload = engine._build_model_payload(
+        "the goal",
+        [],
+        None,
+        history=[
+            {"role": "assistant", "content": '{"kind":"tool_use"}'},
+            {"role": "user", "content": "OBSERVATIONS (tool results):\nresult"},
+        ],
+    )
+    prepared = StructuredOutputContract(
+        HCLI_RESULT_SCHEMA, schema_instruction(HCLI_RESULT_SCHEMA)
+    ).apply(payload)
+    assert prepared["messages"][1]["role"] == "user"
+    assert "MUST satisfy this JSON Schema" in prepared["messages"][1]["content"]
+    assert "MUST satisfy this JSON Schema" not in prepared["messages"][-1]["content"]
+def test_failed_tool_loop_can_close_catalog_for_one_final_model_call():
+    engine = Engine.__new__(Engine)
+    engine._tools_cached = _registry()
+    closed = engine._prompt_with_observations(
+        "finish the goal",
+        [{"tool": "fs.read", "ok": False, "repeat": True, "text": "missing"}],
+        tools_allowed=False,
+    )
+    assert "TOOL ACCESS IS CLOSED" in closed
+    assert "AVAILABLE TOOLS" not in closed
+    assert "missing" in closed
+
+
+def test_implementation_close_requires_a_real_existing_proof_path():
+    engine = Engine.__new__(Engine)
+    engine._tools_cached = _registry()
+    closed = engine._prompt_with_observations(
+        "ROLE: implementation\nOBJECTIVE: repair the engine",
+        [],
+        tools_allowed=False,
+    )
+    assert "hcli/test_engine_tool_loop.py" in closed
+    assert "hcli/tests/test_engine.py" not in closed
+    assert "comment-only" in closed
+    assert "exactly one operation" in closed
+    assert "under 900 UTF-8 bytes" in closed
+    assert "never use `create`" in closed
+    assert "never trailing spaces" in closed
+
+
+def test_no_tools_enters_the_closed_budget_path_on_the_first_call(monkeypatch):
+    engine = Engine.__new__(Engine)
+    engine._cancelled = False
+    engine.MAX_TOOL_ROUNDS = 4
+    prompts = []
+    engine._prompt_with_observations = (
+        lambda *args, **kwargs: prompts.append(kwargs) or "closed"
+    )
+    engine._call_model = lambda *args, **kwargs: {
+        "kind": "answer",
+        "content": "bounded",
+    }
+    engine._sanitize_result = lambda value: value
+    engine._emit = lambda *args, **kwargs: None
+    engine._write_receipt = lambda **kwargs: "receipt"
+    monkeypatch.setenv("HCLI_NO_TOOLS", "1")
+
+    result = engine.execute("ROLE: implementation\nOBJECTIVE: repair", evidence=[], compiled={})
+
+    assert result["kind"] == "answer"
+    assert len(prompts) == 1
+    assert prompts[0]["tools_allowed"] is False
 
 
 def test_sanitizer_accepts_tool_use_and_drops_nameless_calls():

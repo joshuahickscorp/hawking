@@ -1,0 +1,27 @@
+{
+ "date": "2026-09-06",
+ "obligation": "S010 crash forensics",
+ "host": "Mac Studio M3 Ultra 96GB, macOS 27.0",
+ "VERDICT": "KERNEL WATCHDOG PANIC caused by VM compressor segment exhaustion. NOT an OOM kill, NOT jetsam, NOT a GPU/Metal fault, NOT disk-full, NOT thermal.",
+ "panic_string": "watchdog timeout: no checkins from watchdogd in 94 seconds (38811 total checkins)",
+ "panic_file": "/Library/Logs/DiagnosticReports/Retired/panic-full-2026-09-06-174721.0002.panic",
+ "boot_faults": "wdog,reset_in_1 btn_shdn",
+ "DECISIVE_LINE": "Compressor Info: 26% of compressed pages limit (OK) and 100% of segments limit (BAD) with 100 swapfiles and LOW swap space",
+ "memory_at_panic_GB": {
+  "wired": 20.8,
+  "active": 10.3,
+  "inactive": 10.3,
+  "free_MB": 14.4,
+  "compressed": 53.7,
+  "resident_total": 41.4
+ },
+ "WHAT_I_DID_NOT_ASSUME": "S010 forbade assuming PQ, swap, resident or memory caused it. Each was checked: no jetsam events, no AGX/Metal/IOGPU string in the panic, no thermal string, and the boot volume has 391 GB free so 'LOW swap space' is NOT disk exhaustion -- it is the compressor hitting the 100-swapfile SEGMENT cap.",
+ "THE_ACTUAL_BOUNDARY": "53.7 GB compressed plus 41.4 GB resident on a 96 GB machine drove the compressor to 100% of its segment limit with 100 swapfiles. Free memory fell to 924 pages (15 MB). Nothing could be paged out because the compressor could take no more segments, so the system livelocked and watchdogd was starved for 94 seconds.",
+ "A_TRAP_THIS_EXPOSES": "memoryPressure reads FALSE in the panic record while free memory was 15 MB and the compressor was at its cap. The pressure flag is NOT a usable guard signal. Neither is sysctl vm.swapusage 'used', which is a boot high-water mark, and which reads 0.00M right now purely because the machine rebooted.",
+ "WHAT_A_GUARD_MUST_ACTUALLY_WATCH": [
+  "vm_stat free + speculative pages (fell to 15 MB)",
+  "compressor size in pages (53.7 GB)",
+  "swapfile COUNT against the 100 cap",
+  "NOT memoryPressure, NOT vm.swapusage used"
+ ]
+}

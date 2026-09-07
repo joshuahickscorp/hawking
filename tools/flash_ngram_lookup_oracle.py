@@ -74,6 +74,9 @@ def main() -> int:
         "source": {"root": str(root), "rows_per_shard_requested": max(1, a.rows)},
         "claim_boundary": "Selected real n-gram shard rows and a portable packed-row decode oracle only; no native Metal lookup, complete model, accepted TPS, EBPW, capability, or promotion claim.",
         "promotion_allowed": False,
+        # read_row is a ranged file read of one row after the header; quantize
+        # is numpy math on it. No shard is opened as a model and nothing runs.
+        "classification": "STATIC_STREAMABLE",
     }
     if not root.is_dir() or not (root / "model.safetensors.index.json").is_file():
         doc.update({"status": "BLOCKED_SOURCE_UNAVAILABLE", "error": "pinned Flash safetensors root or index is not mounted"})

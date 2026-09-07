@@ -12,8 +12,8 @@ use hawking_core::model::qwen80_complete_runtime::qwen80_assert_native_operator_
 use hawking_core::model::qwen80_mixed_catalog::Qwen80MixedStreamingCatalog;
 use hawking_core::model::qwen80_mixed_hybrid_decode::{
     discover_qwen80_mixed_root, generate_mixed_greedy, load_mixed_tokenizer, MixedDegradeConfig,
-    MixedTokenSample, Qwen80MixedGreedyResult, Qwen80MixedHybridDecodeSession,
-    QWEN80_MIXED_CLAIM, QWEN80_MIXED_EXPECTED_MANIFEST_SEAL,
+    MixedTokenSample, Qwen80MixedGreedyResult, Qwen80MixedHybridDecodeSession, QWEN80_MIXED_CLAIM,
+    QWEN80_MIXED_EXPECTED_MANIFEST_SEAL,
 };
 use hawking_core::model::qwen80_uniform_q4_hybrid_decode::{
     discover_qwen80_tokenizer, qwen80_default_tokenizer_path, render_qwen80_source_user_chat,
@@ -190,7 +190,10 @@ fn classify_text(text: &str, needles: &[&str]) -> &'static str {
     let has_answer = needles.iter().any(|needle| lower.contains(needle));
     let repeated = {
         let words: Vec<&str> = lower.split_whitespace().collect();
-        words.len() >= 6 && words.windows(3).any(|w| words.iter().filter(|x| **x == w[0]).count() >= 4)
+        words.len() >= 6
+            && words
+                .windows(3)
+                .any(|w| words.iter().filter(|x| **x == w[0]).count() >= 4)
     };
     if has_answer && !repeated {
         "COHERENT"
@@ -203,7 +206,9 @@ const DEFAULT_NEEDLES: &[&str] = &[
     "def ", "function", "reverse", "string", "python", "here's", "here is",
 ];
 
-const GREEDY_ORACLE_12: [u32; 12] = [8420, 748, 264, 729, 429, 17431, 288, 264, 914, 320, 72, 1734];
+const GREEDY_ORACLE_12: [u32; 12] = [
+    8420, 748, 264, 729, 429, 17431, 288, 264, 914, 320, 72, 1734,
+];
 
 fn median_u64(values: &[u64]) -> u64 {
     if values.is_empty() {
@@ -448,10 +453,7 @@ fn run() -> Result<(), String> {
                 result.generated_token_ids == GREEDY_ORACLE_12
             );
             print_host_prep("rep1", &result);
-            println!(
-                "cached_geometry_count={}",
-                session.cached_geometry_count()
-            );
+            println!("cached_geometry_count={}", session.cached_geometry_count());
         } else {
             println!(
                 "rep{} generated_text={:?} wall_ns_per_token={:.0} gpu_matvec_ns_per_token={:.0} bind_ns={:.0} wait_minus_gpu_ns={:.0} cbs={:.1} disp={:.1} deltanet_host={:.0} isolated_gpu={} isolated_host={} ids_match={}",
@@ -480,7 +482,10 @@ fn run() -> Result<(), String> {
         let first = &reps[0];
         let wall: Vec<f64> = reps.iter().map(|r| r.wall_ns_per_token).collect();
         let gpu: Vec<f64> = reps.iter().map(|r| r.gpu_matvec_ns_per_token).collect();
-        let bind: Vec<f64> = reps.iter().map(|r| r.host_expert_bind_ns_per_token).collect();
+        let bind: Vec<f64> = reps
+            .iter()
+            .map(|r| r.host_expert_bind_ns_per_token)
+            .collect();
         let wait_minus: Vec<f64> = reps.iter().map(|r| r.wait_minus_gpu_ns_per_token).collect();
         let cbs: Vec<f64> = reps.iter().map(|r| r.command_buffers_per_token).collect();
         let disps: Vec<f64> = reps.iter().map(|r| r.dispatches_per_token).collect();

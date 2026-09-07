@@ -222,7 +222,7 @@ def attach_heterogeneous_plan(compiler_output, plan_dict=None):
     accelerator package (this script's main() needs checkpoint weights;
     the annotation does not). compile_heterogeneous_physical_graph() is
     the path that constructs and validates a multi-domain plan.
-    tools/odyssey/fusion_bridge_adapter.py remains the overlay helper.
+    tools/accelerator/fusion_bridge.py remains the overlay helper.
     """
     out = dict(compiler_output)
     dag = list(out.get("transformation_dag") or [])

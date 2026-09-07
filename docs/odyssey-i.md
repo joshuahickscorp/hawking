@@ -3,7 +3,7 @@
 Odyssey I is the first discovery campaign: find cheaper physical
 representations of real models, and find out what transfers between them.
 
-Readiness is measured, not asserted — `python3 tools/odyssey_ready.py` reports
+Readiness is measured, not asserted — the current capability reachability audit reports
 each required capability as READY only when a module exists **and** has a live
 caller. Existence alone is not readiness; this codebase has carried
 capabilities that were built, declared, and structurally unreachable.
@@ -78,7 +78,8 @@ worker, not scoring on a leaderboard.
 
 ## Current state
 
-Required capabilities: 13 READY (`tools/odyssey_ready.py`).
+Required capabilities: 13 READY in the historical Odyssey-I readiness snapshot; current
+reachability is owned by `tools/roadmap/capability_reachability.py`.
 
 Known constraints going in, measured:
 

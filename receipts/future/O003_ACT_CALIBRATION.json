@@ -1,0 +1,55 @@
+{
+ "specimen": "O003",
+ "date": "2026-09-06",
+ "measured_by": "Claude directly",
+ "experiment": "Does activation-weighted scale fitting beat the plain mean-|W| scale for 1-bit experts? Byte cost is IDENTICAL between arms (1 bit/weight + one fp16 scale per group); only the objective the scale is fitted against changes. A pure capability comparison at fixed EBPW.",
+ "method": "Per-input-channel second moments captured from REAL forward passes by wrapping SwitchLinear.__call__ over 2x512 tokens (78/78 tensors captured, asserted non-empty). Scale becomes the d-weighted mean of |W| over the group, which minimises sum_j d_j (W_ij - s*sign(W_ij))^2.",
+ "pairs": [
+  {
+   "uncalibrated": "binary-g128",
+   "calibrated": "binarycal-g128",
+   "complete_ebpw": 1.4187604971899312,
+   "ppl_uncal": 12.2917,
+   "ppl_cal": 12.5221,
+   "ppl_delta_pct": 1.87,
+   "cos_uncal": 0.7994817535303975,
+   "cos_cal": 0.7970431544520048,
+   "mag_uncal": 0.7994817529461875,
+   "mag_cal": 0.8024640582044813,
+   "n_calibrated_tensors": 78
+  },
+  {
+   "uncalibrated": "binary-g64",
+   "calibrated": "binarycal-g64",
+   "complete_ebpw": 1.528426144814053,
+   "ppl_uncal": 12.2678,
+   "ppl_cal": 12.3965,
+   "ppl_delta_pct": 1.05,
+   "cos_uncal": 0.8012566886093581,
+   "cos_cal": 0.7991280532413696,
+   "mag_uncal": 0.8012566886093581,
+   "mag_cal": 0.8039411128710603,
+   "n_calibrated_tensors": 78
+  },
+  {
+   "uncalibrated": "binary0.005-g128",
+   "calibrated": "binarycal0.005-g128",
+   "complete_ebpw": 1.5548856552406436,
+   "ppl_uncal": 10.9562,
+   "ppl_cal": 11.1632,
+   "ppl_delta_pct": 1.89,
+   "cos_uncal": 0.8163282290392229,
+   "cos_cal": 0.8140971762804242,
+   "mag_uncal": 0.8123733330012757,
+   "mag_cal": 0.8149329887327539,
+   "n_calibrated_tensors": 78
+  }
+ ],
+ "RESULT_REFUTED": "Activation calibration is WORSE on all three pairs: ppl +1.9%, +1.0%, +1.9%, and cosine falls in every case (0.7995->0.7970, 0.8013->0.7991, 0.8163->0.8141). This REFUTES the prediction I recorded one step earlier, that activation-aware binarisation was where the next real information would be. It is not, in this form.",
+ "IDENTITY_BROKE_EXACTLY_WHERE_THEORY_SAYS": "For the uncalibrated arms magnitude_ratio == direction_similarity to 9 digits. For the calibrated arms they SEPARATE (0.8025 vs 0.7970). The proof only holds for the unweighted mean scale, so this is a second, independent confirmation of that derivation rather than a new anomaly. Note the direction: the weighted scale RAISES the reconstruction norm while LOWERING directional agreement -- it inflates scales in high-activation groups.",
+ "WHY_IT_PROBABLY_FAILED_and_what_would_test_it": "The scale is fitted per (expert, output row, group), but d was pooled across every token routed through that SwitchLinear -- shared by all 64 experts. Experts are ROUTED and each sees a different token sub-distribution, so the statistic does not match the parameter it is weighting. The discriminating experiment is PER-EXPERT moments (accumulate d separately per routed expert id), which this harness does not yet collect. Until that is run, the honest claim is narrow: POOLED activation weighting fails. Activation-awareness as such is NOT refuted.",
+ "CAVEATS": [
+  "Calibration set is 2x512 tokens from the same corpus the NLL is scored on; a larger or disjoint set could change the magnitude but is unlikely to flip a consistent 3/3 negative.",
+  "Diagonal approximation to E[xx^T]; no cross-channel correlation modelled."
+ ]
+}

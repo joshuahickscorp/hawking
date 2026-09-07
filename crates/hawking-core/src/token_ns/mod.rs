@@ -22,8 +22,8 @@ pub use energy::{
 };
 pub use reconcile::{
     ascent_2026_08_16_claims, ascent_2026_08_16_kinds, ascent_2026_08_16_measured,
-    ascent_2026_08_16_reports, reconcile, with_kinds, DiscrepancyKind, LaneClaim, LaneReconciliation,
-    MeasuredToken, ModelReconciliation,
+    ascent_2026_08_16_reports, reconcile, with_kinds, DiscrepancyKind, LaneClaim,
+    LaneReconciliation, MeasuredToken, ModelReconciliation,
 };
 pub use schema::{
     ClosureReport, Confidence, CriticalPath, EmitMeta, MeasurementLabel, RemovableOrNecessary,
@@ -31,7 +31,7 @@ pub use schema::{
     DEFAULT_RESIDUAL_LIMIT, GPU_TIMESTAMP_AUTHORITY, TOKEN_NS_SCHEMA,
 };
 pub use served_weight::{
-    dsv4f_geometry, q80_geometry, qwen38_geometry, ActiveWeightGeometry, ModelId, ServedWeightHonesty,
-    ServedWeightMetrics, AMORTIZED_CAVEAT, FS_PER_WEIGHT_SERVED_FIELD, HARDWARE_PS_PER_BIT,
-    M3_ULTRA_96GB_PEAK_BYTES_PER_S,
+    dsv4f_geometry, q80_geometry, qwen38_geometry, ActiveWeightGeometry, ModelId,
+    ServedWeightHonesty, ServedWeightMetrics, AMORTIZED_CAVEAT, FS_PER_WEIGHT_SERVED_FIELD,
+    HARDWARE_PS_PER_BIT, M3_ULTRA_96GB_PEAK_BYTES_PER_S,
 };

@@ -1,0 +1,19 @@
+{
+ "specimen": "O003",
+ "date": "2026-09-06",
+ "obligation": "G022 / S009",
+ "goal": "Reuse the loaded resident across HCLI rounds, worth a measured 6.2x on a 23-round ladder.",
+ "MEASURED_TARGET": {
+  "lazy_weight_load_s": 211.3,
+  "per_call_generation_s": 29.8,
+  "call_1_s": 241.1,
+  "call_2_same_process_s": 29.8
+ },
+ "ATTEMPT": "Memoise ResidentProcess by (binary, artifact_root, resident_binary, fusion_env, runtime_env) so successive engines share the child.",
+ "RESULT": "FAILED. Two ResidentProcess.start calls, zero live shared children, call2/call1 = 0.973 -- 4.0 s saved out of a possible 211.",
+ "WHY_IT_FAILED": "Caching the wrong layer. The object was reused; its CHILD had already been killed. hcli/runtime.py registers _atexit_stop() which calls pool.stop(), and the pool stops the backend (backends.py:2475 NoeticNativeBackend.stop), which calls connector.stop(), which calls resident.stop(). Every cli_main tears the resident down on the way out, so on the next call ResidentProcess.start() finds _alive() False and spawns again -- its reuse guard is correct and simply never gets the chance to fire.",
+ "THE_FIX_IS_LOCATED_PRECISELY": "Not construction, TEARDOWN. A persistent-resident mode needs the pool to leave the child running (or to attach to an externally supervised one) rather than stopping it at exit. That is a lifetime change in hcli/runtime.py, not a caching trick in a sidecar.",
+ "A_BUG_I_MADE_AND_FIXED_ON_THE_WAY": "The first version of the patch wrote obj.__hawking_fresh inside the class body, which mangles to _Shared__hawking_fresh, and read it back with getattr(self, '__hawking_fresh'), which does NOT mangle. The flag was written under one name and read under another, so __init__ never ran and _alive() hit a missing attribute. Fixed by using a single-underscore name.",
+ "HONEST_STATUS": "The 6.2x remains available and is NOT yet realised. What this attempt bought is the exact location of the blocker, which the projection alone did not give.",
+ "PRE_COMMITTED_KILL_FOR_THE_REAL_FIX": "If the pool is made to leave the resident running and a second cli_main still shows a complete_payload above 60 s, the load is not what persists and the lifetime change is the wrong fix."
+}

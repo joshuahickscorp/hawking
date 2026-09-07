@@ -1,11 +1,13 @@
-//! HCLI — Hawking's headless local-model product surface.
+//! HCLI — Hawking's headless local-model product surface and HIDE backend.
 //!
-//! This is intentionally a CLI-first shell over the real HIDE/Hawking backend:
+//! This is the current Rust backend authority behind the HCLI product surface:
+//! a CLI-first shell over the real HIDE/Hawking backend:
 //! durable contextual sessions, local model calls, agent receipts, evidence
 //! procurement, safe tool invocation, throughput measurement, and a parallel
 //! analysis swarm.  It does not claim a graphical interface, cloud proxy,
 //! full-source V4 parity, unlimited uploads, or an isolated concurrent write
-//! swarm.
+//! swarm. The visual/IDE layer is intentionally deferred until the VMCP boundary
+//! is hardened; it is not a second active authority here.
 
 use anyhow::{anyhow, bail, Context, Result};
 use hide_backend::hcli_bridge::{
@@ -98,6 +100,7 @@ fn usage() -> &'static str {
        hcli source list [--workspace PATH] [--json]\n\
        hcli source show (--ref OREF | --hash BLAKE3) [--workspace PATH] [--json]\n\
        hcli source context --attach OREF_OR_BLAKE3 [--attach OREF_OR_BLAKE3]... [--workspace PATH] [--json]\n\
+       hcli processes [--workspace PATH] [--no-footprint] [--json]\n\
        hcli bench --prompt TEXT --model-url URL [--warmup N] [--runs N]\n\
                   [--max-output-tokens N] [--receipt PATH]\n\
        hcli bridge jsonl [--workspace PATH] [--model-url URL]\n\
@@ -129,7 +132,17 @@ fn usage() -> &'static str {
 }
 
 fn parse_options(args: &[String]) -> Result<Options> {
-    const BOOL_FLAGS: &[&str] = &["json", "allow-incomplete", "help", "stdin", "no-synthesis"];
+    const BOOL_FLAGS: &[&str] = &[
+        "json",
+        "allow-incomplete",
+        "help",
+        "stdin",
+        "no-synthesis",
+        "no-footprint",
+        "orphaned",
+        "reap",
+        "dry-run",
+    ];
     let mut parsed = Options::default();
     let mut index = 0usize;
     while index < args.len() {
@@ -255,6 +268,36 @@ fn command_envelope(command: &str, value: Value) -> Value {
         "command": command,
         "result": value,
     })
+}
+
+fn cmd_processes(options: &Options) -> Result<Value> {
+    let root = workspace(options)?;
+    if options.flag("reap") && options.flag("orphaned") {
+        bail!("--reap and --orphaned are mutually exclusive");
+    }
+    if options.flag("reap") {
+        return Ok(command_envelope(
+            "processes.reap",
+            serde_json::to_value(hide_backend::reap_host_processes(
+                &root,
+                options.flag("dry-run"),
+            ))?,
+        ));
+    }
+    if options.flag("orphaned") {
+        return Ok(command_envelope(
+            "processes.orphaned",
+            json!({
+                "orphaned": hide_backend::orphaned_host_processes(&root),
+            }),
+        ));
+    }
+    Ok(command_envelope(
+        "processes",
+        serde_json::to_value(hide_backend::inspect_host_processes(
+            !options.flag("no-footprint"),
+        ))?,
+    ))
 }
 
 fn emit(value: Value, compact: bool) -> Result<()> {
@@ -1486,7 +1529,7 @@ async fn bridge_dispatch(
             limits: Default::default(),
             notes: vec![
                 "HCLI is local-endpoint oriented and does not proxy model traffic.".to_string(),
-                "Gravity is the canonical public model-optimization identity; Condense is its engine operation. This bridge reports identity only and does not claim optimization execution or promote a live V4 diagnostic into a full-model, numeric-parity, Metal, or TPS result.".to_string(),
+                "Gravity/Condense identity only; this bridge never executes optimization or promotes V4 diagnostics into full-model, parity, Metal, or TPS claims.".to_string(),
                 "Machine requests report effective behavior and reject unsupported controls instead of silently downgrading them.".to_string(),
             ],
         })),
@@ -1759,8 +1802,7 @@ HCLI slash commands (only real HCLI operations are listed):
 
 Profiles are balanced, power, or maximum.  They expand bounded exploration,
 not tool permissions.  The wider HIDE protocol command catalog contains
-surface-specific UI commands that are not silently exposed through HCLI.
-Legacy colon commands remain available unchanged; use :help for their list.";
+surface-specific UI commands that are not silently exposed through HCLI.";
 
     match topic.map(|value| value.trim().to_ascii_lowercase()) {
         None => GENERAL.to_string(),
@@ -2570,7 +2612,7 @@ async fn cmd_repl(options: &Options) -> Result<()> {
     let host = BackendHost::open_workspace(&root)?;
     let mut session = ReplSession::named(&host, options.value("session").unwrap_or("hcli"));
     eprintln!(
-        "HCLI REPL — session={}; /help for slash commands, :help for legacy commands, /quit to leave.",
+        "HCLI REPL — session={}; /help for commands, /quit to leave.",
         session.label
     );
     let stdin = io::stdin();
@@ -2601,87 +2643,6 @@ async fn cmd_repl(options: &Options) -> Result<()> {
                 Err(error) => {
                     eprintln!("invalid slash command: {error}\nTry /help for supported operations.")
                 }
-            }
-            continue;
-        }
-        if let Some(command) = line.strip_prefix(':') {
-            match command.trim() {
-                "quit" | "q" | "exit" => break,
-                "help" => {
-                    eprintln!(":help  :quit  :session NAME  :status  :agent GOAL  :swarm GOAL  :research TOPIC\nplain text sends a contextual model turn");
-                }
-                "status" => {
-                    let projection = host.rebuild_session_projection(session.id.clone()).await?;
-                    emit(
-                        json!({ "session": session.label, "session_id": session.id, "projection": projection }),
-                        false,
-                    )?;
-                }
-                other if other.starts_with("session ") => {
-                    let name = other.trim_start_matches("session ").trim();
-                    if name.is_empty() {
-                        eprintln!("usage: :session NAME");
-                    } else {
-                        session = ReplSession::named(&host, name);
-                    }
-                }
-                other if other.starts_with("agent ") => {
-                    let goal = other.trim_start_matches("agent ").trim();
-                    let result = run_headless_audit(
-                        &host,
-                        HeadlessRunConfig {
-                            goal: goal.to_string(),
-                            model_url: Some(endpoint.clone()),
-                            session_id: None,
-                            max_transitions: HcliProfile::Power.budget().max_steps,
-                            profile: HcliProfile::Power,
-                            source_context: None,
-                        },
-                    )
-                    .await?;
-                    emit(
-                        json!({ "status": result.status.as_str(), "receipt": result.receipt }),
-                        false,
-                    )?;
-                }
-                other if other.starts_with("swarm ") => {
-                    let goal = other.trim_start_matches("swarm ").trim();
-                    let power = HcliProfile::Power;
-                    let result = run_parallel_analysis_swarm(
-                        &host,
-                        HcliSwarmConfig {
-                            goal: goal.to_string(),
-                            model_url: Some(endpoint.clone()),
-                            profile: power,
-                            lanes: power.budget().search_breadth as usize,
-                            max_concurrency: power.budget().search_breadth as usize,
-                            max_transitions: power.budget().max_steps,
-                            synthesize: true,
-                        },
-                    )
-                    .await?;
-                    emit(
-                        json!({ "complete": result.complete, "receipt": result.receipt }),
-                        false,
-                    )?;
-                }
-                other if other.starts_with("research ") => {
-                    let topic = other.trim_start_matches("research ").trim();
-                    let result = run_hcli_research(
-                        &host,
-                        HcliResearchConfig {
-                            topic: topic.to_string(),
-                            model_url: Some(endpoint.clone()),
-                            ..HcliResearchConfig::default()
-                        },
-                    )
-                    .await?;
-                    emit(
-                        json!({ "complete": result.complete, "receipt": result.receipt }),
-                        false,
-                    )?;
-                }
-                _ => eprintln!("unknown command; :help"),
             }
             continue;
         }
@@ -2819,6 +2780,7 @@ async fn main() -> Result<()> {
         "swarm" => cmd_swarm(&options).await?,
         "research" => cmd_research(&options).await?,
         "bench" => cmd_bench(&options).await?,
+        "processes" => cmd_processes(&options)?,
         "session" => cmd_session(subcommand, &options).await?,
         "source" => cmd_source(subcommand, &options).await?,
         "tool" => cmd_tool(subcommand, &options).await?,

@@ -10,6 +10,7 @@ from typing import Any, Dict, Optional
 from hcli.flash_next import EXPECTED_BYTES, PINNED_REVISION, REPO_ID
 from hcli.nomenclature import NOMENCLATURE_VERSION
 from hcli.persist import atomic_write_json
+from hcli.processes import NativeProcessError, live_processes
 
 
 SCHEMA = "hcli.agentos.modellake_supervision.v1"
@@ -70,15 +71,12 @@ def run_model_lake_supervision(
     free_bytes = usage.f_bavail * usage.f_frsize if usage else None
     process_alive = False
     try:
-        import subprocess
-
-        ps = subprocess.run(["ps", "-Ao", "pid=,command="], capture_output=True, text=True, timeout=5.0, check=False)
         process_alive = any(
-            ("modellake.py acquire" in line.lower() or "hf download" in line.lower())
-            and REPO_ID.lower() in line.lower()
-            for line in (ps.stdout or "").splitlines()
+            ("modellake.py acquire" in process.command.lower() or "hf download" in process.command.lower())
+            and REPO_ID.lower() in f"{process.command} {process.body or ''}".lower()
+            for process in live_processes(footprint=False, workspace=repo)
         )
-    except (OSError, subprocess.SubprocessError):
+    except (NativeProcessError, OSError):
         process_alive = False
     argv = (job or {}).get("argv") if isinstance(job, dict) else []
     expected_argv = ["python3", "tools/odyssey/modellake.py", "acquire", "--repo", REPO_ID, "--revision", PINNED_REVISION]

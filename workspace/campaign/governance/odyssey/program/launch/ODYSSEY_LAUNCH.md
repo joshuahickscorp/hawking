@@ -1,6 +1,9 @@
 # Odyssey Launch Packet
 
-Odyssey is **prepared and not started**. `ODYSSEY_LAUNCH_AUTHORIZED` is `false`.
+Odyssey's original T0 launch packet is **retired and not executable**.
+`ODYSSEY_LAUNCH_AUTHORIZED` remains `false`; the historical launcher and its
+missing-artifact-dependent T0 verifier were compressed into the Event Horizon
+archive. Current Odyssey/ModelLake owners are separate from this packet.
 
 ## What is ready
 
@@ -20,9 +23,10 @@ tensor coverage, every shard hash, the frozen per-tensor allocation, and actual
 whole-package compliance with the one-bit law.
 
 
-## To start Odyssey in the next session
+## Historical launch command (retained as provenance only)
 
-Authorize deliberately, then run the stage runner:
+The former stage runner is preserved in Git history but is no longer present
+in active HEAD:
 
 ```bash
 printf 'true\n' > workspace/campaign/governance/odyssey/program/launch/ODYSSEY_LAUNCH_AUTHORIZED && python3.12 workspace/campaign/governance/odyssey/program/training/run.py T0

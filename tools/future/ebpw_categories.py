@@ -1345,9 +1345,9 @@ def selftest() -> dict[str, Any]:
 def _recovered_implementation() -> list[dict[str, str]]:
     return [
         {
-            "path": "tools/odyssey/metric_audit.py",
+            "path": "receipts/headless/PHYSICAL_METRIC_AUDIT.json",
             "what": (
-                "DESIGN_EXPECTED vs ARTIFACT_PHYSICAL vs RUNTIME_MEASURED naming "
+                "Historical DESIGN_EXPECTED vs ARTIFACT_PHYSICAL vs RUNTIME_MEASURED naming "
                 "for the same kind of byte/EBPW figure. Watched-failing canaries. "
                 "Does not type-separate the five quantities and does not make "
                 "cross-category arithmetic a type error."

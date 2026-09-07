@@ -57,7 +57,10 @@ fn main() {
                     .next()
                     .unwrap_or_else(|| fail(format!("missing value for {flag}; {}", usage())));
                 if revalidation.replace(PathBuf::from(value)).is_some() {
-                    fail(format!("--revalidation was supplied more than once; {}", usage()));
+                    fail(format!(
+                        "--revalidation was supplied more than once; {}",
+                        usage()
+                    ));
                 }
             }
             "--root" => {

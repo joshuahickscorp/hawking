@@ -41,6 +41,7 @@ class _Handler(BaseHTTPRequestHandler):
                 "content": "controller remote ok",
                 "operations": [],
                 "tests": [],
+                "tool_calls": [],
             })
         body = json.dumps({
             "choices": [{"message": {"role": "assistant", "content": content}, "finish_reason": "stop"}],

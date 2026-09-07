@@ -60,9 +60,7 @@ mod macos {
     }
 
     fn deterministic_input(cols: usize) -> Vec<f32> {
-        (0..cols)
-            .map(|i| (i % 17) as f32 * 0.125 - 1.0)
-            .collect()
+        (0..cols).map(|i| (i % 17) as f32 * 0.125 - 1.0).collect()
     }
 
     fn widen_f16(bits: &[u16]) -> Vec<f32> {
@@ -317,7 +315,10 @@ mod macos {
         println!("max_abs_diff_matvec: {:.6e}", max_abs_diff_y);
         println!("max_abs_diff_geo_tpr64: {:.6e}", max_abs_diff_geo);
         println!("max_abs_diff_reuse_affine2: {:.6e}", max_abs_diff_reuse);
-        println!("max_abs_diff_fused_swiglu: {:.6e}", max_abs_diff_fused_swiglu);
+        println!(
+            "max_abs_diff_fused_swiglu: {:.6e}",
+            max_abs_diff_fused_swiglu
+        );
         println!("tolerance: {:.6e}", PASS_TOL);
         println!(
             "dense_w_materialized_on_oracle_dequant: {dense_w_materialized_on_oracle_dequant}"

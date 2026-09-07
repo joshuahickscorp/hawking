@@ -4,7 +4,7 @@
 //! This is NOT a second AST scanner. It walks the same `tree_sitter_python`
 //! CST `parse::parse_source` uses, and emits the import / bound-name / Call /
 //! subprocess / tool-dispatch facts that
-//! `tools/future/capability_reachability.py` currently derives with CPython's
+//! `tools/roadmap/capability_reachability.py` currently derives with CPython's
 //! `ast` module. The Python assembler keeps its verdict rules; this crate
 //! supplies the facts so it does not have to walk the tree itself.
 //!
@@ -734,7 +734,7 @@ pub fn collect_reachability_facts(opts: &CollectOptions) -> Result<ReachabilityD
             }
         });
         if let Some(facts) = cache_hit {
-            if !merkle_dirty || contents.get(rel).is_none() {
+            if !merkle_dirty || !contents.contains_key(rel) {
                 per_file.insert(rel.clone(), facts);
                 reused += 1;
                 continue;

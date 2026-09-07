@@ -1,7 +1,8 @@
 # TOKENIZER GRAVITY
 
 Source: S026 §30-38, §82, §93, §109, §118. Measurement:
-`receipts/headless/TOKENIZER_GRAVITY.json` via `tools/headless/tokenizer_gravity.py`.
+`receipts/headless/TOKENIZER_GRAVITY.json`; the one-shot producer was retired
+after the measurement was sealed.
 
 Tokenizer topology is part of the model's physical program. Vocab size
 changes model bytes, output-head work, sequence length, and KV growth.

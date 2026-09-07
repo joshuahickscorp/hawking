@@ -18,7 +18,7 @@ from lab.operators.glm52_framed_window_operator import (
     frame_stream,
 )
 from lab.operators.glm52_range_stream_executor import RangeExecutorError, read_frame, write_frame
-from ramanujan.restream_guard import ACCOUNTING_COMPONENTS, ALIGNMENT_BYTES
+from tools.verify.restream_guard import ACCOUNTING_COMPONENTS, ALIGNMENT_BYTES
 
 
 def _round_up(value: int) -> int:

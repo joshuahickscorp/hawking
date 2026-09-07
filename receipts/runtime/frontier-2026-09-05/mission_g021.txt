@@ -1,0 +1,21 @@
+MISSION: Make 262,144 context physically real on this resident, and collapse context admission into ONE dynamic authority.
+
+You build the plan, the DAG, the experiments and the repairs. Nothing below is a step list; it is the standing evidence you start from.
+
+STANDING EVIDENCE
+- The transport hardcodes max_seq_len=8192 as a Python default at hcli/hawking_native.py:350, overridable by HCLI_HAWKING_MAX_SEQ_LEN. That 8192 is a seal, not a physical property. The model is Qwen3_5 with a 262,144 native positional configuration.
+- Context admission currently overstates or refuses. The budget resolver reached the right ceiling only after being taught to consult config_for_model_path; before that it claimed 32768 against a resident enforcing 8192.
+- The packet floor currently EXCEEDS the whole window: a small mission produced demand 8194 against per-request ctx 8192, usable_input 3584. The context compiler does not resist large prompts.
+- Attention KV is reported to grow at roughly 65,536 bytes/token across the attention-bearing layers. The body has 16 full-attention layers and 48 recurrent/Delta layers.
+- hcli/wall_profile.py is instrumented and env-gated by HAWKING_WALL_PROFILE; it writes one JSONL record per WorkUnit and per mission, with an explicit UNEXPLAINED bucket.
+
+WHAT MUST BE TRUE TO CALL A RUNG REAL
+Walk 16K, 32K, 64K, 128K, 192K, 262K. At each rung: admission passes, prefill completes, generation completes, no corruption, no position wrap, semantic probes pass, prefix restore still works, and live memory accounting is complete -- weights, KV, recurrent state, conv state, temporary peak, prefix state, total RSS, system free memory, and swap measured as a Swapouts DELTA, never the boot high-water mark. SWAP = 0 during qualification.
+
+DO NOT PREALLOCATE. A 4K task must allocate 4K-class state. Grow incrementally, release cold state, and measure the block size (128/256/512/1024 tokens) rather than assuming one.
+
+"Memory fits" is NOT acceptance. If 262K admits but takes hours, the answer is that full attention is the wall, and the deliverable is the measured complete long-prompt wall plus the physical cause.
+
+CENSUS BEFORE YOU BUILD. There are already context-budget owners (hcli/context_budget.py and its callers). Census them and COLLAPSE into one authority. Do not add a duplicate.
+
+If a rung physically refuses, prove the refusal, record the Scar with its exact reopen condition, and move to the next rung. Report what you measured, not what you expected.

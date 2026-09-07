@@ -661,7 +661,7 @@ def run_status() -> Dict[str, Any]:
 def run_mixed_max() -> Dict[str, Any]:
     """HCLI_MIXED_MAX — heterogeneous useful work, measured throughput + isolation.
 
-    tools/headless/hcli_true_mixed_max.py refuses to call a CPU-only NullEngine
+    The retired headless mixed-max harness refused to call a CPU-only NullEngine
     run 'mixed'. This lane follows that rule: without a live llama-server the
     gate is BLOCKED, not accepted on a weaker substitute.
     """
@@ -723,7 +723,7 @@ def run_mixed_max() -> Dict[str, Any]:
             "no llama-server is listening (socket probe "
             f"{llama_ports}, lsof_port={lsof_port}, lsof_error={lsof_error}). "
             "A mixed campaign without a cognition backend is the CPU-only "
-            "campaign again; tools/headless/hcli_true_mixed_max.py refuses "
+            "campaign again; the retired mixed-max harness refuses "
             "that substitution and so does this lane. Failure isolation is "
             "recorded under BACKEND_FAILURE_ISOLATION, not here."
         )

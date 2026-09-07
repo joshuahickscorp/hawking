@@ -28,11 +28,12 @@ import re
 import statistics
 import struct
 import subprocess
+import time
 from collections.abc import Iterable, Mapping
 from typing import Any
 
 from tools.future._common import write_receipt, load_json, REPO
-from tools.future import status_causality as sc
+from tools.verify import status_causality as sc
 
 RECEIPT = "CONTAMINATION_SCIENCE.json"
 SCHEMA = "hawking.future.contamination.v1"
@@ -324,6 +325,154 @@ def probe_gpu_occupancy() -> dict[str, Any]:
             "device occupancy percent, not a kernel timing and not a throughput claim; "
             "PID-level GPU attribution is unavailable without a protected lease"
         ),
+    }
+
+
+def _pid_rss_bytes(pid: int) -> int | None:
+    """RSS in bytes for one live pid via `ps`. None if the pid is gone."""
+    rc, out, _err = _run(["ps", "-o", "rss=", "-p", str(pid)], timeout=3)
+    text = (out or "").strip()
+    return int(text) * 1024 if rc == 0 and text.isdigit() else None
+
+
+def _iostat_sample(interval_s: float) -> dict[str, Any]:
+    """Disk MB/s over one interval. `iostat -w` blocks for the interval and
+    reports the delta directly (row 2), so this call is also the tick's sleep."""
+    secs = max(1, round(interval_s))
+    rc, out, err = _run(["iostat", "-d", "-c", "2", "-w", str(secs)], timeout=secs + 15)
+    lines = [ln for ln in (out or "").splitlines() if ln.strip()]
+    if rc != 0 or len(lines) < 3:
+        return {"status": "FAILED", "reason": (err or "iostat unavailable")[:160], "mb_s_total": None}
+    cols = lines[0].split()
+    data = lines[-1].split()
+    mb_idx = [i for i, c in enumerate(cols) if c == "MB/s"]
+    try:
+        total = sum(float(data[i]) for i in mb_idx)
+    except (ValueError, IndexError):
+        return {"status": "FAILED", "reason": "iostat column parse mismatch", "mb_s_total": None}
+    return {"status": "OK", "mb_s_total": round(total, 2), "n_disks": len(mb_idx)}
+
+
+BOUND_CLASSES: tuple[str, ...] = ("GPU_BOUND", "IO_BOUND", "CPU_BOUND", "IDLE", "UNKNOWN")
+
+# Real weight-streaming reads run tens to hundreds of MB/s on this box's SSD;
+# this floor is well above filesystem-metadata noise. A CLASS boundary, not a
+# measured result, same status as HEAVY_GPU_UTIL_PCT above.
+IO_BOUND_DISK_MB_S = 20.0
+
+
+def sample_gravity_run(
+    pid: int | None = None,
+    *,
+    duration_s: float = 5.0,
+    interval_s: float = 1.0,
+) -> dict[str, Any]:
+    """Poll GPU occupancy, disk throughput, and (if `pid` is given) that
+    process's RSS at `interval_s` cadence for `duration_s`, then summarize
+    peak/mean and classify GPU_BOUND / IO_BOUND / CPU_BOUND / IDLE / UNKNOWN.
+
+    device_utilization_pct is MACHINE-WIDE (see probe_gpu_occupancy — no
+    per-PID GPU attribution exists on this box without a protected lease), so
+    a concurrent GPU consumer contaminates every specimen sampled while it
+    runs; `contaminated_by` names any such process seen at sampling time.
+    working set is process RSS (unified memory: the documented proxy for GPU
+    cost on this box — see tools/headless/metal_budget.py), not a Metal
+    device-side allocation counter, because none is readable live for a
+    specific pid without that lease either.
+    """
+    n_ticks = max(1, int(round(duration_s / max(interval_s, 0.1))))
+    samples: list[dict[str, Any]] = []
+    for _ in range(n_ticks):
+        gpu = probe_gpu_occupancy()
+        rss = _pid_rss_bytes(pid) if pid is not None else None
+        disk = _iostat_sample(interval_s)  # also this tick's sleep
+        samples.append(
+            {
+                "t_wall": time.time(),
+                "device_utilization_pct": gpu.get("device_utilization_pct"),
+                "gpu_status": gpu.get("status"),
+                "disk_mb_s": disk.get("mb_s_total"),
+                "disk_status": disk.get("status"),
+                "rss_bytes": rss,
+            }
+        )
+        if pid is not None and rss is None:
+            break  # target process exited; do not keep polling a dead pid
+
+    def _nums(key: str) -> list[float]:
+        return [s[key] for s in samples if isinstance(s[key], (int, float))]
+
+    def _mean(v: list[float]) -> float | None:
+        return round(sum(v) / len(v), 2) if v else None
+
+    util_vals, disk_vals, rss_vals = _nums("device_utilization_pct"), _nums("disk_mb_s"), _nums("rss_bytes")
+    gpu_mean, gpu_peak = _mean(util_vals), (max(util_vals) if util_vals else None)
+    disk_mean, disk_peak = _mean(disk_vals), (max(disk_vals) if disk_vals else None)
+    rss_mean, rss_peak = _mean(rss_vals), (max(rss_vals) if rss_vals else None)
+
+    if not util_vals and not disk_vals:
+        bound_class, why = "UNKNOWN", "no GPU or disk sample succeeded"
+    elif gpu_mean is not None and gpu_mean >= HEAVY_GPU_UTIL_PCT:
+        bound_class = "GPU_BOUND"
+        why = f"mean device_utilization_pct {gpu_mean} >= {HEAVY_GPU_UTIL_PCT}"
+    elif disk_peak is not None and disk_peak >= IO_BOUND_DISK_MB_S:
+        bound_class = "IO_BOUND"
+        why = f"GPU quiet (mean {gpu_mean}) while disk peaked at {disk_peak} MB/s"
+    elif pid is not None and rss_mean is not None:
+        bound_class = "CPU_BOUND"
+        why = f"target process resident (rss_mean {rss_mean} bytes) with GPU and disk both quiet"
+    else:
+        bound_class, why = "IDLE", "GPU and disk both below their engaged thresholds"
+
+    contaminants: list[dict[str, Any]] = []
+    if gpu_mean is not None and gpu_mean >= HEAVY_GPU_UTIL_PCT:
+        procs = probe_processes()
+        for row in (procs.get("all") or []):
+            if row.get("pid") != pid and (row.get("cpu_pct") or 0) > 5:
+                contaminants.append({"pid": row.get("pid"), "name": row.get("name")})
+
+    return {
+        "schema": "hawking.future.contamination.gravity_utilization.v1",
+        "pid": pid,
+        "n_samples": len(samples),
+        "duration_s": duration_s,
+        "interval_s": interval_s,
+        "samples": samples,
+        "gpu_device_utilization_pct": {"mean": gpu_mean, "peak": gpu_peak},
+        "disk_mb_s": {"mean": disk_mean, "peak": disk_peak},
+        "working_set_bytes": {
+            "mean": rss_mean,
+            "peak": rss_peak,
+            "source": "ps RSS of pid" if pid is not None else "UNKNOWN (no pid given)",
+        },
+        "bound_class": bound_class,
+        "bound_class_reason": why,
+        "no_gpu_lease": True,
+        "contaminated_by": contaminants[:5],
+        "note": (
+            "device_utilization_pct is machine-wide (ioreg IOGPU PerformanceStatistics), "
+            "not attributable to `pid` without a protected GPU lease; a concurrent GPU "
+            "consumer inflates this reading for every specimen sampled while it runs."
+        ),
+    }
+
+
+def specimen_utilization_record(specimen: str, run: Mapping[str, Any]) -> dict[str, Any]:
+    """Per-specimen utilization summary from one sample_gravity_run() result,
+    so a specimen that used 20% of the machine is visibly distinct from one
+    that used 95% (bound_class + peak, not a mean that could hide either)."""
+    return {
+        "schema": "hawking.future.contamination.specimen_utilization.v1",
+        "specimen": specimen,
+        "pid": run.get("pid"),
+        "bound_class": run.get("bound_class"),
+        "bound_class_reason": run.get("bound_class_reason"),
+        "gpu_device_utilization_pct": run.get("gpu_device_utilization_pct"),
+        "disk_mb_s": run.get("disk_mb_s"),
+        "working_set_bytes": run.get("working_set_bytes"),
+        "contaminated_by": run.get("contaminated_by") or [],
+        "n_samples": run.get("n_samples"),
+        "duration_s": run.get("duration_s"),
     }
 
 

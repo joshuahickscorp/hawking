@@ -11,7 +11,7 @@ export type ApprovalPolicy = "auto" | "ask" | "require_sandbox" | "deny";
 /**
  * How a surface reaches the backend for this command.
  *
- * - [`BackendBinding::Intent`] names a real `hide-core` `Intent` variant (`crates/hide-core/src/api.rs`); the shipped FE already posts these to `/v1/hide/intent`. - [`BackendBinding::Custom`] names an `Intent::Custom{name}` the host already handles AND `wire.ts` `CUSTOM_NAMES` exposes, mirrored here as [`WIRE_CUSTOM_NAMES`]. There is no pending tier: a name the host does not handle is not on the contract at all. - [`BackendBinding::Rpc`] names an elevated capability: either a real [`Method`](crate::protocol::Method) string or a census-confirmed host capability in [`HOST_CAPABILITIES`]. - [`BackendBinding::LocalOnly`] is a pure FE action with no backend call.
+ * - [`BackendBinding::Intent`] names a real `hide-core` `Intent` variant (`crates/hide-core/src/api.rs`) for the HCLI backend bridge. - [`BackendBinding::Custom`] names an `Intent::Custom{name}` the HCLI host handles and exposes through [`WIRE_CUSTOM_NAMES`]. There is no pending tier: a name the host does not handle is not on the contract at all. - [`BackendBinding::Rpc`] names an elevated capability: either a real [`Method`](crate::protocol::Method) string or a census-confirmed host capability in [`HOST_CAPABILITIES`]. - [`BackendBinding::LocalOnly`] is a client-local action with no backend call.
  */
 export type BackendBinding = { kind: "intent"; target: string; } | { kind: "custom"; target: string; } | { kind: "rpc"; target: string; } | { kind: "local_only"; };
 

@@ -179,6 +179,204 @@ def descend(curves, targets, bits_list, inv=None):
     return out
 
 
+# ---------------------------------------------------------------- gauntlet
+#
+# odyssey_patient_runner's --gravity <spec> builds ONE mix (its own docstring:
+# "not a sweep"). This is the search that replaces "one sample": propose an
+# MLP-density mix, measure complete EBPW the same way tools/future/
+# complete_ebpw.py bills the sealed incumbent (mix_report -> cost), localize
+# a miss with the SAME organ-sensitivity ranking odyssey_ctl already uses for
+# capability failures, and stop on exactly one of three distinct outcomes.
+#
+# TARGET_HIT requires adequacy to be POSITIVELY verified (healthy is True),
+# never just "not proven bad" -- an UNKNOWN adequacy (no real tensors/capture
+# on disk in this lane) must never be silently read as a pass.
+
+TARGET_HIT = "TARGET_HIT"
+PROVEN_UNABLE = "PROVEN_UNABLE"
+BUDGET_EXHAUSTED = "BUDGET_EXHAUSTED"
+GAUNTLET_OUTCOMES = (TARGET_HIT, PROVEN_UNABLE, BUDGET_EXHAUSTED)
+
+# Default MLP-bpw ladder: identical values to complete_ebpw.bar_reachability's
+# own mlp_density_sensitivity sweep, so the two are directly cross-checkable.
+# Stops at 0.5 -- this codec's scale+bias overhead is a fixed 0.5 bpw at its
+# current group size (affine_group=64 in MIX_REPORT), so 0.5 is the lowest
+# total this rebilling can express without also searching group size.
+MLP_BPW_LADDER = (2.5, 2.25, 2.0, 1.5, 1.0, 0.5)
+
+
+def non_searchable_floor_bpw(mix=None):
+    """complete EBPW if the searched MLP term were free (zero bytes).
+
+    Same bucket tools/future/complete_ebpw.py:bar_reachability uses (q4
+    attention+DeltaNet; f32 is <0.003 bpw and stays folded into the searched
+    side). This is arithmetic over MEASURED bytes in the real MIX_REPORT, not
+    an estimate: no value the searched term can take will beat it.
+    """
+    from tools.future.complete_ebpw import mix_report
+    mix = mix or mix_report()
+    return 8.0 * int(mix["q4_bytes"]) / int(mix["parent_params"])
+
+
+def mlp_mix_candidate(total_mlp_bpw, mix=None):
+    """A sealed-incumbent candidate with ONLY the MLP body rebilled at
+    `total_mlp_bpw` (codes+scale+bias combined). Every other byte -- q4
+    attention/DeltaNet, f32, headers -- is the real incumbent value from
+    MIX_REPORT; only the searched term moves.
+    """
+    from tools.future import complete_ebpw as ce
+    mix = mix or ce.mix_report()
+    billing = mix["affine_bpw_billing"]
+    aux_bpw = float(billing["scale_bpw"]) + float(billing["bias_bpw"])
+    codes_bpw = float(total_mlp_bpw) - aux_bpw
+    if codes_bpw < 0:
+        raise ce.CompleteEbpwRefused(
+            f"total_mlp_bpw {total_mlp_bpw} does not leave room for the "
+            f"{aux_bpw} bpw of scale+bias overhead this codec already carries "
+            "(fixed by its group size; shrinking below this needs a bigger "
+            "group, which this rebilling does not search)"
+        )
+    cand = ce.incumbent_candidate()
+    for region in cand["regions"]:
+        if region["name"] == "mlp_codes":
+            region["bitwidth"] = codes_bpw
+    cand["stated_total_bytes"] = sum(
+        int(p["bytes"]) for p in ce._parts_of(cand)
+    )
+    cand["id"] = f"gravity_mlp_{total_mlp_bpw}bpw"
+    return cand
+
+
+def mlp_ladder_propose(attempt, history, localization, ladder=MLP_BPW_LADDER):
+    """Default proposer: descend the MLP-bpw ladder in order.
+
+    Deterministic, not blind sampling -- each rung is strictly denser than
+    the last. `localization` (the prior localize_gravity_failure() result) is
+    accepted so a multi-lever proposer can steer on it; this one has a single
+    lever (MLP density) and always takes the next rung down.
+    """
+    if attempt > len(ladder):
+        return None
+    return ladder[attempt - 1]
+
+
+def _adequacy_unknown(candidate):
+    return {
+        "healthy": None,
+        "magnitude_aware": None,
+        "evidence": (
+            "UNKNOWN (no adequacy_fn supplied; a missing check is not a pass -- "
+            "see tools/gravity_doctor_gate.py:axes for the magnitude-aware check "
+            "this should be wired to once real tensors/activation-capture exist "
+            "for this candidate)"
+        ),
+    }
+
+
+def gauntlet(
+    *,
+    target=1.00,
+    max_attempts=8,
+    propose_fn=mlp_ladder_propose,
+    measure_fn=None,
+    adequacy_fn=None,
+    localize_fn=None,
+    per_organ_sensitivity=None,
+    threshold=None,
+):
+    """Target-seeking search over complete EBPW. Does not stop at one sample.
+
+    Exactly one of TARGET_HIT / PROVEN_UNABLE / BUDGET_EXHAUSTED terminates
+    the loop, recorded distinctly in the return value's "outcome". Only
+    TARGET_HIT is a pass -- BUDGET_EXHAUSTED is returned with is_pass=False
+    and must never be read as success by a caller.
+    """
+    from tools.future import complete_ebpw as ce
+    from tools.odyssey_ctl import (
+        localize_gravity_failure as _default_localize,
+        gravity_pass_threshold,
+    )
+
+    localize_fn = localize_fn or _default_localize
+    adequacy_fn = adequacy_fn or _adequacy_unknown
+    thresh = gravity_pass_threshold() if threshold is None else threshold
+    mix = ce.mix_report()
+
+    floor = non_searchable_floor_bpw(mix)
+    if floor > target:
+        return {
+            "outcome": PROVEN_UNABLE,
+            "is_pass": False,
+            "attempts": 0,
+            "history": [],
+            "bound": {
+                "floor_ebpw": floor,
+                "target": target,
+                "reason": (
+                    "non-searched bytes (q4 attention+DeltaNet) alone cost "
+                    f"{floor:.6f} ebpw, already above the {target} target "
+                    "with the entire searched MLP term at zero bytes; no "
+                    "value of the searched term can close this gap"
+                ),
+                "evidence": "MEASURED (mix_report q4_bytes / parent_params)",
+            },
+        }
+
+    def _default_measure(candidate):
+        return float(ce.cost(candidate)["complete_ebpw"])
+
+    measure_fn = measure_fn or _default_measure
+
+    history = []
+    localization = None
+    for attempt in range(1, max_attempts + 1):
+        proposal = propose_fn(attempt, history, localization)
+        if proposal is None:
+            return {
+                "outcome": BUDGET_EXHAUSTED,
+                "is_pass": False,
+                "attempts": attempt - 1,
+                "history": history,
+                "exhausted": "proposer_ladder",
+            }
+        candidate = mlp_mix_candidate(proposal, mix=mix)
+        ebpw = measure_fn(candidate)
+        adequacy = adequacy_fn(candidate)
+        under_target = ebpw <= target
+        hit = under_target and adequacy.get("healthy") is True
+        record = {
+            "attempt": attempt,
+            "proposal": proposal,
+            "ebpw": ebpw,
+            "under_target": under_target,
+            "adequacy": adequacy,
+        }
+        if hit:
+            history.append(record)
+            return {
+                "outcome": TARGET_HIT,
+                "is_pass": True,
+                "attempts": attempt,
+                "history": history,
+                "candidate": candidate,
+                "ebpw": ebpw,
+                "adequacy": adequacy,
+            }
+        localization = localize_fn(
+            record.get("delta_hits"), per_organ_sensitivity, thresh
+        )
+        record["localization"] = localization
+        history.append(record)
+
+    return {
+        "outcome": BUDGET_EXHAUSTED,
+        "is_pass": False,
+        "attempts": max_attempts,
+        "history": history,
+        "exhausted": "max_attempts",
+    }
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--layers", default="0,31,63")

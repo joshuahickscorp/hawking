@@ -26,49 +26,14 @@ from tools.roadmap.parse import parse_roadmap
 REPO = lineage.REPO
 
 
-def test_the_preserved_copy_is_still_the_document_preservation_md_recorded():
-    """PRESERVATION.md records the digest; the copy must still match it."""
-    assert lineage.PRESERVED.is_file(), f"lineage copy missing: {lineage.PRESERVED}"
-    assert lineage.preserved_is_intact(), (
-        "the preserved roadmap no longer matches its recorded sha256; the lineage "
-        "record and the file have diverged and one of them is wrong"
-    )
-
-
 def test_the_recorded_digest_is_the_one_preservation_md_documents():
-    """The constant is not free to drift away from the preservation record."""
+    """The historical identity remains recorded after the duplicate is removed."""
     text = (REPO / "docs" / "roadmap-lineage" / "PRESERVATION.md").read_text()
-    assert lineage.PRESERVED_SHA256 in text, (
-        "lineage.PRESERVED_SHA256 does not appear in PRESERVATION.md, so the "
-        "resolver is verifying against a digest no record vouches for"
-    )
-
-
-def test_a_digest_mismatch_refuses_the_preserved_copy(monkeypatch, tmp_path):
-    """NEGATIVE CONTROL for the digest check.
-
-    An EARLIER 9028-line roadmap exists on /Volumes/corpdrive. Acceptance spans
-    are LINE RANGES, so parsing the wrong-length document quotes the wrong text
-    while looking perfectly well formed. Break the digest and the resolver must
-    refuse rather than fall through.
-    """
-    monkeypatch.setattr(lineage, "EXTERNAL", tmp_path / "absent-H-ROADMAP.md")
-    monkeypatch.delenv("H_ROADMAP", raising=False)
-    monkeypatch.setattr(lineage, "PRESERVED_SHA256", "0" * 64)
-    with pytest.raises(FileNotFoundError) as err:
-        lineage.roadmap_path()
-    assert "digest" in str(err.value)
-
-
-def test_the_resolver_falls_back_when_the_external_roadmap_is_absent(monkeypatch, tmp_path):
-    """The regression itself: no ~/Downloads copy must not mean no roadmap."""
-    monkeypatch.setattr(lineage, "EXTERNAL", tmp_path / "absent-H-ROADMAP.md")
-    monkeypatch.delenv("H_ROADMAP", raising=False)
-    assert lineage.roadmap_path() == lineage.PRESERVED
+    assert "d43a6b07ab9590bc11c265bfe8a1466131cce291b0622c076370a01d811328e4" in text
 
 
 def test_the_external_roadmap_still_wins_when_it_is_present(monkeypatch, tmp_path):
-    """The operator's copy is the authority; lineage is only the fallback."""
+    """The operator's copy is the authority; history is not a fallback."""
     external = tmp_path / "H-ROADMAP.md"
     external.write_text("# whatever the operator put there\n")
     monkeypatch.setattr(lineage, "EXTERNAL", external)
@@ -87,7 +52,6 @@ def test_roadmap_lines_raises_rather_than_returning_an_empty_file(monkeypatch, t
     """recompile.render used `[] if not is_file()`, so a missing roadmap read as
     a roadmap with no content and every defining_property came out empty."""
     monkeypatch.setattr(lineage, "EXTERNAL", tmp_path / "absent.md")
-    monkeypatch.setattr(lineage, "PRESERVED", tmp_path / "also-absent.md")
     monkeypatch.delenv("H_ROADMAP", raising=False)
     with pytest.raises(FileNotFoundError):
         lineage.roadmap_lines()
@@ -97,19 +61,6 @@ def test_quote_span_returns_the_real_text_not_a_placeholder():
     quoted = lineage.quote_span(1, 3)
     assert quoted.strip(), "quote_span produced nothing"
     assert "not readable" not in quoted.lower()
-
-
-def test_parse_roadmap_succeeds_with_no_external_roadmap(monkeypatch, tmp_path):
-    """End to end: the whole capability graph parses off the lineage copy.
-
-    83 gates and 25 genes is the census the frozen graph recorded, so this also
-    proves the preserved copy is the same authority the catalog was built from.
-    """
-    monkeypatch.setattr(lineage, "EXTERNAL", tmp_path / "absent-H-ROADMAP.md")
-    monkeypatch.delenv("H_ROADMAP", raising=False)
-    parsed = parse_roadmap()
-    assert len(parsed["gates"]) == 83
-    assert len(parsed["genes"]) == 25
 
 
 def test_a_placeholder_criterion_is_not_accepted():
@@ -158,44 +109,6 @@ def test_build_state_refuses_to_clobber_a_foreign_schema():
     assert state.read_bytes() == before, "build_state.py overwrote a v3 ledger"
     assert proc.returncode != 0
     assert "refusing to overwrite" in (proc.stderr + proc.stdout)
-
-
-def test_the_lineage_copy_reproduces_every_stored_criterion():
-    """The strongest available proof that the substitution is sound.
-
-    A matching sha256 says the bytes are the same file. This says something
-    harder: re-quoting each receipt's OWN line span out of the resolved roadmap
-    reproduces the criterion text that receipt stored when it could still read
-    ~/Downloads/H-ROADMAP.md. Line numbering, span semantics and content all
-    have to agree, through the real quoting path, at the real spans.
-
-    Receipts prepend a one-line summary header to the span, so the span must be
-    CONTAINED in the stored quote rather than equal to it.
-    """
-    lines = lineage.roadmap_lines()
-    checked = 0
-    for path in sorted((REPO / "receipts" / "acceptance").glob("*.json")):
-        try:
-            doc = json.loads(path.read_text())
-        except (OSError, ValueError):
-            continue
-        if not isinstance(doc, dict):
-            continue
-        src = doc.get("criterion_source")
-        quoted = doc.get("criterion_quoted")
-        if not (isinstance(src, dict) and isinstance(quoted, str) and quoted.strip()):
-            continue
-        start, end = src.get("start_line"), src.get("end_line")
-        if not isinstance(start, int) or not isinstance(end, int):
-            continue
-        span = "\n".join(lines[start - 1:end]).strip()
-        assert span, f"{path.stem}: span {start}-{end} is empty in the resolved roadmap"
-        assert span in quoted, (
-            f"{path.stem}: re-quoting {start}-{end} from {lineage.roadmap_path().name} "
-            "does not reproduce the criterion this receipt stored"
-        )
-        checked += 1
-    assert checked >= 8, f"only {checked} receipts carry a re-checkable criterion span"
 
 
 def test_there_is_exactly_one_blocker_classifier():

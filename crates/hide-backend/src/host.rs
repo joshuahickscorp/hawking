@@ -38,7 +38,6 @@ use hide_fleet::{
     PriorityClass,
 };
 use hide_kernel::govern::{Autonomy, Interrupt};
-use hide_kernel::machine::state::{AgentState, ApprovalRequest, Phase};
 use hide_kernel::session::SessionProjection;
 use hide_kernel::{AgentKernel, Grounding};
 // Bible Book IX sec 28-29 / sec 78.1 #6: the deterministic verification plane.

@@ -1,7 +1,7 @@
 //! Compat bridge: `hide_core::api` (Intent + UiEvent) <-> this authority.
 //!
 //! `hide-core`'s `Intent`/`UiEvent` pair is HIDE's CURRENT transport ("Wire-B"
-//! in the Bible: intent-in, events-out over HTTP/WS to `hide-serve`). This
+//! in the Bible: intent-in, events-out over the HCLI backend bridge). This
 //! crate is where that transport CONVERGES: the semantic object model
 //! (sec 14) and protocol (sec 15) are the authority Wire-B elevates onto. This
 //! module makes that elevation reconcilable in BOTH directions WITHOUT

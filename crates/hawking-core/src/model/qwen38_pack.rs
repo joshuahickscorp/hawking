@@ -162,14 +162,12 @@ impl SourceIndex {
             .get(name)
             .ok_or_else(|| Error::Model(format!("source lacks {name}")))?;
         let mut raw = vec![0u8; loc.nbytes];
-        let file = File::open(&loc.shard).map_err(|error| {
-            Error::Model(format!("open {}: {error}", loc.shard.display()))
-        })?;
+        let file = File::open(&loc.shard)
+            .map_err(|error| Error::Model(format!("open {}: {error}", loc.shard.display())))?;
         #[cfg(unix)]
         {
-            file.read_exact_at(&mut raw, loc.data_offset).map_err(|error| {
-                Error::Model(format!("pread {name}: {error}"))
-            })?;
+            file.read_exact_at(&mut raw, loc.data_offset)
+                .map_err(|error| Error::Model(format!("pread {name}: {error}")))?;
         }
         #[cfg(not(unix))]
         {
@@ -518,7 +516,12 @@ pub fn pack_qwen38_language_uniform_q4(request: &Qwen38PackRequest) -> Result<Qw
                     let fused = fuse_in_proj_qkvz(&qkv, &z, QWEN38_HIDDEN)?;
                     drop(qkv);
                     drop(z);
-                    rows.push(pack_q4_named(&tensors_dir, &fused_name, &fused, &fused_shape)?);
+                    rows.push(pack_q4_named(
+                        &tensors_dir,
+                        &fused_name,
+                        &fused,
+                        &fused_shape,
+                    )?);
                 }
 
                 let ba_name = qwen38_layer_name(layer, "linear_attn.in_proj_ba.weight");
@@ -634,19 +637,28 @@ pub fn pack_qwen38_language_uniform_q4(request: &Qwen38PackRequest) -> Result<Qw
             &source,
             &tensors_dir,
             &qwen38_layer_name(layer, "mlp.gate_proj.weight"),
-            &[crate::model::qwen38_geometry::QWEN38_INTERMEDIATE, QWEN38_HIDDEN],
+            &[
+                crate::model::qwen38_geometry::QWEN38_INTERMEDIATE,
+                QWEN38_HIDDEN,
+            ],
         )?);
         rows.push(pack_q4_from_source(
             &source,
             &tensors_dir,
             &qwen38_layer_name(layer, "mlp.up_proj.weight"),
-            &[crate::model::qwen38_geometry::QWEN38_INTERMEDIATE, QWEN38_HIDDEN],
+            &[
+                crate::model::qwen38_geometry::QWEN38_INTERMEDIATE,
+                QWEN38_HIDDEN,
+            ],
         )?);
         rows.push(pack_q4_from_source(
             &source,
             &tensors_dir,
             &qwen38_layer_name(layer, "mlp.down_proj.weight"),
-            &[QWEN38_HIDDEN, crate::model::qwen38_geometry::QWEN38_INTERMEDIATE],
+            &[
+                QWEN38_HIDDEN,
+                crate::model::qwen38_geometry::QWEN38_INTERMEDIATE,
+            ],
         )?);
     }
 
@@ -722,17 +734,11 @@ pub fn pack_qwen38_language_uniform_q4(request: &Qwen38PackRequest) -> Result<Qw
 pub fn load_qwen38_manifest(root: impl AsRef<Path>) -> Result<(PathBuf, Vec<Qwen38CatalogRow>)> {
     let manifest_path = root.as_ref().join("manifest.json");
     let raw = fs::read(&manifest_path).map_err(|error| {
-        Error::Model(format!(
-            "cannot read {}: {error}",
-            manifest_path.display()
-        ))
+        Error::Model(format!("cannot read {}: {error}", manifest_path.display()))
     })?;
     let value: Value = serde_json::from_slice(&raw)
         .map_err(|error| Error::Model(format!("qwen38 manifest JSON: {error}")))?;
-    let schema = value
-        .get("schema")
-        .and_then(Value::as_str)
-        .unwrap_or("");
+    let schema = value.get("schema").and_then(Value::as_str).unwrap_or("");
     if schema != QWEN38_UNIFORM_Q4_SCHEMA {
         return Err(Error::Model(format!(
             "qwen38 manifest schema {schema:?} != {QWEN38_UNIFORM_Q4_SCHEMA}"

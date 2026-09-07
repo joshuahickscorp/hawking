@@ -94,7 +94,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         let ledger_path = args
             .out
             .as_ref()
-            .and_then(|path| path.parent().map(|parent| parent.join("DSV4F_TOKEN_NS_LEDGER.json")))
+            .and_then(|path| {
+                path.parent()
+                    .map(|parent| parent.join("DSV4F_TOKEN_NS_LEDGER.json"))
+            })
             .unwrap_or_else(|| PathBuf::from("receipts/DSV4F_TOKEN_NS_LEDGER.json"));
         if let Some(parent) = ledger_path.parent() {
             fs::create_dir_all(parent)?;

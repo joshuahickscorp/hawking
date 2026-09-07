@@ -6,17 +6,67 @@
     "S004 §71"
   ],
   "policy_ref": "workspace/campaign/odyssey/ODYSSEY_POLICY.json",
-  "n_patients": 0,
-  "patients": [],
-  "status": "insufficient data",
-  "estimates": {},
-  "per_input_feature": {},
-  "frontier_depth_summary": {},
+  "n_patients": 3,
+  "patients": [
+    {
+      "oxx": "O001",
+      "role": "small/cheap hybrid canary",
+      "candidate_evaluations": 2,
+      "candidate_wall_s": [14.025, 15.123],
+      "search_wall_s": 29.148,
+      "best_complete_ebpw": 5.6745,
+      "terminal": "BUDGET_EXHAUSTED",
+      "source": "workspace/campaign/odyssey/gauntlets/O001.json"
+    },
+    {
+      "oxx": "O005",
+      "role": "current relevant MoE canary",
+      "candidate_evaluations": 2,
+      "candidate_wall_s": [15.72, 18.362],
+      "search_wall_s": 34.082,
+      "best_complete_ebpw": 3.0759,
+      "terminal": "BUDGET_EXHAUSTED",
+      "source": "workspace/campaign/odyssey/gauntlets/O005.json"
+    },
+    {
+      "oxx": "O003",
+      "role": "materially different multimodal MoE canary",
+      "candidate_evaluations": 2,
+      "candidate_wall_s": [13.193, 12.0],
+      "search_wall_s": 25.193,
+      "best_complete_ebpw": 3.0639,
+      "terminal": "BUDGET_EXHAUSTED",
+      "source": "workspace/campaign/odyssey/gauntlets/O003.json"
+    }
+  ],
+  "status": "CANARY_MEASURED_FULL_CAMPAIGN_UNRESOLVED",
+  "estimates": {
+    "measured_candidate_wall_s_mean": 14.7372,
+    "measured_two_candidate_search_wall_s_mean": 29.4743,
+    "hypothetical_two_candidate_search_for_14_roster_entries_s": 412.64,
+    "hypothetical_two_candidate_search_for_14_roster_entries_minutes": 6.877,
+    "scope": "derived from three two-candidate canaries; excludes acquisition, static census, deep search, verification, and offload"
+  },
+  "per_input_feature": {
+    "patient_roster_entries": 14,
+    "odyssey_state_on_disk_entries": 2,
+    "canary_receipt_backed_entries": 3,
+    "candidate_evaluations_observed": 6,
+    "candidate_selection": "capability signal preserved -> lower-bit candidate; capability weak -> higher-precision survivor",
+    "complete_ebpw_target": 1.0,
+    "hardware_utilization": "NOT_MEASURED in these reused external receipts"
+  },
+  "frontier_depth_summary": {
+    "TIER_0_static_elimination": "not timed by this gauntlet",
+    "TIER_1_shallow_two_candidate": "MEASURED 25.193-34.082 s per canary",
+    "TIER_2_deeper_search": "NOT_MEASURED",
+    "TIER_3_finalist_gauntlet": "NOT_MEASURED"
+  },
   "cycle2_prediction_then_reality": [],
-  "uncertainty": "insufficient patients — do not treat any number as a fact",
-  "_label": "UNKNOWN",
+  "uncertainty": "three canaries are enough to measure Tier-1 candidate cost, not enough to predict full campaign cost or prove transfer across the roster",
+  "_label": "MEASURED_CANARY_WITH_DERIVED_RANGE",
   "_not_fact": true,
-  "_evidence": "UNKNOWN",
+  "_evidence": "MEASURED (six reused patient candidate receipts; no hardware authority)",
   "warning": "Estimates carry UNCERTAINTY and must not be treated as measurements or facts (bible §18; S003 §10). A point estimate is never the answer.",
-  "reason": "need ≥2 patients of compile-economics data; Cycle-1 trains the ETA model (S003 §10). Refusing to emit a point estimate."
+  "reason": "Tier-1 canary timing is now measured; the full schedule remains unresolved until acquisition, static census, deep-search, verification, and utilization costs are separately measured."
 }

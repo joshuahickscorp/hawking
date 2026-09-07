@@ -51,6 +51,7 @@ HF_BIN = Path("/Library/Frameworks/Python.framework/Versions/3.12/bin/hf")
 PYTHON_BIN = Path("/Library/Frameworks/Python.framework/Versions/3.12/bin/python3")
 LOG = DOWNLOAD_DIR / "modellake-watch.jsonl"
 LOCK_PATH = ODYSSEY / ".modellake-watch.lock"
+WAKE_SEALED_SOURCE_READY = "SEALED_SOURCE_READY"
 # Keep a dedicated sparse APFS cache volume on the internal SSD.  The image is
 # deliberately larger than the requested free-space floor, while admission is
 # governed by the live internal-volume free bytes.  The older 50 GB image is
@@ -618,7 +619,7 @@ def _notify_sealed_source(tag: str, action: object, *, source: str) -> None:
     if action not in {"PROMOTED", "ALREADY_PROMOTED"}:
         return
     try:
-        from tools.future.sleeping_specimens import (
+        from tools.odyssey.modellake_watch import (
             WAKE_SEALED_SOURCE_READY,
             notify_sealed_source_ready,
         )
@@ -742,6 +743,68 @@ def _tail_json_lines(path: Path, max_lines: int) -> list[dict[str, object]]:
         except ValueError:
             continue
     return out
+
+
+def watcher_log_path() -> Path | None:
+    """Return the watcher log when it exists; never start or touch the watcher."""
+    return LOG if LOG.is_file() else None
+
+
+def _read_jsonl_tail(path: Path, nbytes: int = 768_000) -> list[dict[str, object]]:
+    """Read a bounded byte tail for consumers that need recent watcher events."""
+    try:
+        size = path.stat().st_size
+        with path.open("rb") as handle:
+            handle.seek(max(0, size - int(nbytes)))
+            raw = handle.read()
+    except OSError:
+        return []
+    lines = raw.decode("utf-8", "replace").splitlines()
+    if size > nbytes:
+        lines = lines[1:]
+    out: list[dict[str, object]] = []
+    for line in lines:
+        try:
+            row = json.loads(line)
+        except (TypeError, ValueError):
+            continue
+        if isinstance(row, dict):
+            out.append(row)
+    return out
+
+
+def read_latest_watcher_sample(path: Path | None = None) -> dict[str, object] | None:
+    """Return the latest watcher sample from the append-only log."""
+    sample = None
+    for row in _read_jsonl_tail(path or LOG):
+        if row.get("event") == "watcher_sample":
+            sample = row
+    return sample
+
+
+def sealed_source_ready(tag: str, *, specimen_root: Path | None = None) -> bool:
+    """A sealed source is a non-empty specimen directory on disk."""
+    if not str(tag or "").strip():
+        return False
+    root = specimen_root or SPECIMEN_ROOT
+    try:
+        path = root / str(tag)
+        return path.is_dir() and any(path.iterdir())
+    except OSError:
+        return False
+
+
+def notify_sealed_source_ready(
+    tag: str, *, source: str, specimen_root: Path | None = None
+) -> dict[str, object]:
+    """Emit the data-only wake token when disk confirms a sealed specimen."""
+    return {
+        "wake_condition": WAKE_SEALED_SOURCE_READY,
+        "tag": str(tag),
+        "source": str(source),
+        "ready": sealed_source_ready(tag, specimen_root=specimen_root),
+        "evidence_tier": "STATIC",
+    }
 
 
 def _download_history(max_lines: int = 20_000) -> tuple[dict[str, int], set[str]]:

@@ -38,14 +38,11 @@ pub mod compat_instructions;
 pub mod connectors;
 pub mod digest;
 /// Transport-neutral JSONL machine-control contract for the HCLI surface.
-// `src/hcli/` (formerly `src/haider/`) is DELIBERATELY NOT DECLARED, and that is
-// the finding, not an oversight: it never was. 2709 lines across 9 files, plus
-// `src/bin/hcli-backend.rs` and `tests/hcli_parallel.rs` that reference it, have
-// never been part of any build -- `cargo build -p hide-backend` has been failing
-// on that binary alone. Declaring it produces 14 compile errors (borrow, type,
-// unresolved name), so the code is not merely unreferenced, it does not compile.
-// Renamed with the rest of the sweep so no borrowed name survives; adopting or
-// deleting it is a separate decision with evidence now attached to it.
+// The former undeclared `src/hcli/` scaffold, its `hcli-backend` wrapper, and
+// `hcli_parallel` integration test were removed in Phase III. They had never
+// been part of a build, and declaring the scaffold exposed 14 compile errors;
+// the live Rust HCLI surface is the declared bridge/profile/research/source/
+// swarm set below.
 pub mod hcli_bridge;
 /// Named, bounded compute profiles for the HCLI surface.
 pub mod hcli_profile;
@@ -69,6 +66,8 @@ pub mod plan_domain;
 pub mod planning_diagnostic;
 pub mod policy;
 pub mod process;
+/// Canonical Rust owner for host-wide HCLI process observation and safe startup reaping.
+pub mod process_inspector;
 pub mod program;
 pub mod replay;
 pub mod rewind;
@@ -116,6 +115,10 @@ pub use policy::{
     derive_policy_decision, tool_declared_effects, PolicyDecision, PolicyDecisionRecord,
 };
 pub use process::{ProcessState, ProcessStatus, ProcessSupervisor, StartSpec};
+pub use process_inspector::{
+    inspect as inspect_host_processes, orphaned as orphaned_host_processes,
+    reap_orphaned as reap_host_processes, HostProcess, HostProcessReport, ReapFailure, ReapReport,
+};
 pub use program::{default_program_limits, HostProgramHandles, ProgramRunError, ProgramRunResult};
 pub use replay::{BackendReplayService, TranscriptHit, TranscriptQuery};
 pub use rewind::{

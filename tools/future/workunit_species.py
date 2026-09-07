@@ -484,7 +484,7 @@ def _species_specs() -> tuple[dict[str, Any], ...]:
             ),
             evidence_parents=(
                 "tools/headless/adversarial_sweep.py",
-                "tools/headless/frontier_adversary.py",
+                "receipts/headless/FRONTIER_ADVERSARY.json",
                 "tools/headless/negative_science.py",
             ),
             bounded_authority=(

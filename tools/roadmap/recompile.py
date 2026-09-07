@@ -442,10 +442,10 @@ def render_part_iii() -> str:
 def render_appendix() -> str:
     out = ["# APPENDIX — HISTORICAL / SUBSUMED / ARCHIVED LINEAGE", ""]
     out += [
-        "The superseded canonical roadmap is preserved verbatim, not summarized:",
+        "The superseded canonical roadmap is identified by digest; its bytes remain",
+        "recoverable from Git history and are not duplicated in active HEAD:",
         "",
-        "    docs/roadmap-lineage/H-ROADMAP.superseded-2026-09-02.md",
-        "    docs/roadmap-lineage/PRESERVATION.md   hash, HEAD, worktrees, preserved refs",
+        "    docs/roadmap-lineage/PRESERVATION.md   hash, HEAD, and provenance",
         "",
         "It remains the historical authority for anything this recompilation does not",
         "carry forward. The new document became ACTIVE AUTHORITY only once it and the",
@@ -533,7 +533,7 @@ def render_state() -> dict:
         "external_environment_required": buckets["external_environment_required"],
         "deferred_programs": buckets["deferred_programs"],
         "subsumed_items": [],
-        "archived_items": ["docs/roadmap-lineage/H-ROADMAP.superseded-2026-09-02.md"],
+        "archived_items": ["2026-09-02 H-ROADMAP snapshot (Git history; digest in PRESERVATION.md)"],
         "dependency_edges": deps,
         "multiplier_edges": [],
         "verifiers": verifiers,

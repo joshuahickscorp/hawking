@@ -290,3 +290,51 @@ def test_overlay_loads_the_real_receipt():
     assert out["evidence_tier"] == "COST_MODEL"
     assert out["sequential_evidence_tier"] == "HARDWARE_MEASURED"
     assert out["specimens"][0]["metadata_touched_weight_bytes"] is False
+
+
+def test_census_specimen_computes_params_and_dtype_histogram_header_only(tmp_path):
+    """census_specimen must derive everything from read_header's output.
+
+    tiny.weight is F32 shape [1] (1 param), body.weight is U8 shape [52]
+    (52 params) -- 53 params total, split 1/52 across two dtypes. Wrong
+    arithmetic (e.g. treating shape as a count of dims, or dropping a
+    tensor) changes these numbers.
+    """
+    root = _specimen(tmp_path / "spec")
+    rec = so.census_specimen(root)
+    assert rec["classification"] == "STATIC_STREAMABLE"
+    assert rec["touched_weight_bytes"] is False
+    assert rec["n_shards"] == 1
+    assert rec["n_tensors"] == 2
+    assert rec["total_parameters"] == 53
+    assert rec["dtype_histogram"]["F32"] == {"tensors": 1, "parameters": 1}
+    assert rec["dtype_histogram"]["U8"] == {"tensors": 1, "parameters": 52}
+    assert rec["architecture_family"] == "toy"
+    assert rec["architecture_family_source"] == "config.model_type"
+    # bytes_read is the header sum only -- read_header's own guard already
+    # proves that; this checks census_specimen didn't add a second read.
+    assert rec["bytes_read"] == rec["header_bytes"]
+
+
+def test_census_lake_walks_every_specimen_and_skips_non_safetensors(tmp_path):
+    lake = tmp_path / "specimens"
+    _specimen(lake / "specA")
+    _specimen(lake / "specB", n_shards=2)
+    bogus = lake / "specC--not-safetensors"
+    bogus.mkdir(parents=True)
+    (bogus / "README.md").write_text("no shards here")
+
+    doc = so.census_lake(lake)
+    assert doc["n_specimens_censused"] == 2
+    assert doc["n_specimens_failed"] == 1
+    assert doc["errors"][0]["slug"] == "specC--not-safetensors"
+    assert doc["wall_seconds"] >= 0
+    slugs = {r["slug"] for r in doc["specimens"]}
+    assert slugs == {"specA", "specB"}
+    assert doc["total_bytes_read"] == sum(r["bytes_read"] for r in doc["specimens"])
+    assert all(r["classification"] == "STATIC_STREAMABLE" for r in doc["specimens"])
+    assert all(r["touched_weight_bytes"] is False for r in doc["specimens"])
+    # specB has 2 shards each with the same 53-param layout as specA's 1.
+    specB = next(r for r in doc["specimens"] if r["slug"] == "specB")
+    assert specB["n_shards"] == 2
+    assert specB["total_parameters"] == 53 * 2

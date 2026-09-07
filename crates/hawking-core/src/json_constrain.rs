@@ -476,9 +476,15 @@ mod tests {
         let mut c = JsonConstraint::new();
         c.advance("{\"a\": \"code");
         let valid = c.valid_first_bytes();
-        assert!(!c.byte_allowed('\n', &valid), "a raw newline must be refused");
+        assert!(
+            !c.byte_allowed('\n', &valid),
+            "a raw newline must be refused"
+        );
         assert!(!c.byte_allowed('\t', &valid), "a raw tab must be refused");
-        assert!(!c.byte_allowed('\u{0}', &valid), "a raw NUL must be refused");
+        assert!(
+            !c.byte_allowed('\u{0}', &valid),
+            "a raw NUL must be refused"
+        );
     }
 
     /// Negative control: escaping and ordinary text must still be accepted, or
@@ -503,8 +509,14 @@ mod tests {
         // After a closed string value the only legal next characters are , } or
         // whitespace. A BPE piece like ":x" starts illegally; one like ",,"
         // starts LEGALLY and is still invalid.
-        assert!(!c.token_allowed(",,"), "a legal first char must not admit an illegal tail");
-        assert!(c.token_allowed(","), "the legal single character must stay allowed");
+        assert!(
+            !c.token_allowed(",,"),
+            "a legal first char must not admit an illegal tail"
+        );
+        assert!(
+            c.token_allowed(","),
+            "the legal single character must stay allowed"
+        );
     }
 
     /// Inside a string, a token carrying a raw newline must be refused even
@@ -513,9 +525,15 @@ mod tests {
     fn a_string_token_carrying_a_raw_newline_is_refused() {
         let mut c = JsonConstraint::new();
         c.advance("{\"a\": \"code");
-        assert!(!c.token_allowed("x\ny"), "a raw newline in the tail must be refused");
+        assert!(
+            !c.token_allowed("x\ny"),
+            "a raw newline in the tail must be refused"
+        );
         assert!(c.token_allowed("xy"), "ordinary text must stay allowed");
-        assert!(c.token_allowed("x\\ny"), "an ESCAPED newline must stay allowed");
+        assert!(
+            c.token_allowed("x\\ny"),
+            "an ESCAPED newline must stay allowed"
+        );
     }
 
     /// Through mask_logits, not the helper.
@@ -560,7 +578,10 @@ mod tests {
         logits[RAW_NEWLINE] = 100.0;
         c.mask_logits(&vocab, &mut logits);
 
-        assert_eq!(logits[RAW_NEWLINE], NEG_INF, "raw newline admitted inside a string");
+        assert_eq!(
+            logits[RAW_NEWLINE], NEG_INF,
+            "raw newline admitted inside a string"
+        );
         assert_ne!(logits[2], NEG_INF, "ordinary text must survive");
     }
 

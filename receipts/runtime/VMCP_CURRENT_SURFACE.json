@@ -1,0 +1,56 @@
+{
+  "checkpoint": "G002_VMCP_HCLI_ANYWHERE_CENSUS",
+  "date": "2026-09-04",
+  "method": "call-site census. A capability nothing calls does not exist. A caller that is only the component's own test file does NOT count as wired. Every wired:true names a call site outside the component's own tests.",
+  "headline": "Three different things wear the VMCP / HCLI Anywhere name and they have three different verdicts. VMCP itself is real and works. The HCLI tools that reach it have no call site. And the one path the model has to typed tools lost its tool binding on disk.",
+  "components": [
+    {"area": "VisionMCP package", "exists": "visionmcp/src/visionmcp/ (1770 modules)", "wired": "n/a (external)", "accepted": "10 ACCEPTED / 2 BLOCKED", "runtime_tested": true,
+     "risk": "UNTRACKED AND GITIGNORED (.gitignore:199), nested foreign git repo. Vanishes on a fresh clone with no commit recording it. Same disease as the external H-ROADMAP."},
+    {"area": "CaptureBus.observe", "exists": "visionmcp/src/visionmcp/perception/bus.py:78", "wired": "via adapter allowlist", "accepted": "VMCP_AGENTOS_INTEGRATION.json", "runtime_tested": true},
+    {"area": "ArtifactStore / ProjectStore", "exists": "artifacts/store.py:16, projects/store.py:1272", "wired": "via adapter allowlist", "accepted": true, "runtime_tested": true},
+    {"area": "hcli/vmcp_adapter.py", "exists": ":155 inspect_vmcp, :200 call_vmcp", "wired": "hcli/connectivity.py:131, tool_registry.py:1541,1547", "runtime_tested": "YES - executed live: importable true, live_core_surface.constructed true, 15 tools"},
+    {"area": "hcli/agentos/vmcp_gate.py", "exists": "run_vmcp_gate", "wired": "hcli/agentos_cli.py:150 (hcli agentos vmcp-gate)", "accepted": "VMCP_RECEIPT_LAW", "runtime_tested": true},
+    {"area": "vmcp.inspect / vmcp.query / vmcp.capabilities", "exists": "tool_registry", "wired": false, "note": "no call site outside the registry; nothing in the resident or executor path names them"},
+    {"area": "hcli/acquisition.py", "exists": ":140 propose()", "wired": "tool_registry.py:1751 (tool only)", "runtime_tested": "own test only",
+     "note": "NOT AN ACQUISITION SYSTEM. No fetch, no hashing, no MIME, no provenance, no export. Line 26 says so: 'This module never downloads anything.' It is a read-only ModelLake ladder ranker."},
+    {"area": "real acquisition verification", "exists": "visionmcp/.../acquisition/quarantine.py:189-244 (verify_hash/format/license/rights)", "wired": false,
+     "note": "UNREACHABLE from HCLI: the adapter allowlist (vmcp_adapter.py:27-37) carries 9 read-only vision tools and no acquisition tool."},
+    {"area": "web.fetch / web.search", "exists": "tool_registry.py:2061,2063", "wired": "agentos/recovery.py:515, research.py:362-363, vmcp_gate.py:279", "runtime_tested": "YES, real urllib"},
+    {"area": "hcli/ane_provider.py", "exists": ":22 ANEProvider", "wired": false, "runtime_tested": "own test only",
+     "note": "NEVER REACHES THE ANE. Self-declared line 3: 'deliberately an evidence adapter, not an ANE driver.' It json.loads two receipts. Class constructed nowhere but its own test."},
+    {"area": "Workspace types", "exists": "hcli/workspace.py:8 (30 lines)", "wired": "engine.py:51, controller.py:27, app.py:10", "runtime_tested": true,
+     "missing": "no WorkspaceType enum (zero hits repo-wide); no ~/.hcli (.hcli is always workspace-relative)"},
+    {"area": "hcli chat", "exists": false, "missing": "no subcommand"},
+    {"area": "hcli task", "exists": false, "missing": "only --task / --task-file flags exist"},
+    {"area": "export to a user path", "exists": false, "note": "ACTIVELY FORBIDDEN: write roots hard-bounded to {workspace, repo_root} (tool_registry.py:242-267) with no way to widen them from a tool call."},
+    {"area": "ToolRegistry", "exists": "tool_registry.py:1841, 68 tools", "wired": "5 real invoke sites: engine.py:1686, executors.py:403, agentos/runtime.py:591, agentos/research.py:265, agentos/vmcp_gate.py:275", "runtime_tested": true,
+     "note": "The old '41 tools, zero call sites' finding NO LONGER HOLDS. Live chain traced: controller.py:1148 -> Engine.execute -> _run_tool_calls -> invoke."},
+    {"area": "FrontierEngine", "exists": false, "note": "no class, no bottleneck-ranking, no WorkUnit-generation. hcli/frontier_scheduler.py is a real scheduler whose only references are its own test and a triage listing (tools/audit/reachability_triage.py:98) -- unwired."},
+    {"area": "WorkUnit authorship", "exists": false, "note": "hcli/workunit.py:33, 28 fields, none records who authored the unit. Blocks the C1..C4 Claude-removal measurement outright."}
+  ],
+  "root_cause_found_and_fixed": {
+    "defect": "WorkUnit.tool and tool_arguments were declared fields but absent from to_dict() and from dag_store._PERSISTED_EXTRAS",
+    "consequence": "Any dag.json write/reload SILENTLY demoted a typed-tool unit to cognition -- no tool, no arguments, no error. It worked in-memory in one process and lost the binding on restart. This sat under all 68 tools at once and killed the resident's only path to typed tools (resident.py _child_workunit sets tool= -> executors.py:403 registry.invoke).",
+    "independently_verified": "yes, read at source: to_dict() lists 27 keys, none of them tool; _PERSISTED_EXTRAS lists 7, none of them tool",
+    "irony": "`provider`, declared immediately above `tool`, carries the comment 'persisted so a restart does not silently route a specialist unit through the current resident'. The same concern, handled there and missed here.",
+    "fix": "hcli/dag_store.py _PERSISTED_EXTRAS += tool, tool_arguments",
+    "test": "hcli/test_tool_survives_persistence.py, red-before-green (2 failed -> 3 passed), mutation-checked, with a negative control proving persistence does not FABRICATE a tool binding"
+  },
+  "receipts_this_census_falsified": [
+    {"file": "receipts/future/HCLI_CAPABILITY_REACHABILITY.json", "claim": "typed_tools_dead: 55 of 68; tool:web.search callable:false call_sites:[] 'no other reference names this tool'",
+     "refutation": "hcli/agentos/research.py:362 and vmcp_gate.py:279 both name web.search as a string literal into registry.invoke. Its cited definition line (tool_registry.py:1944) is also wrong; actual :2063. Every line number in it has drifted.",
+     "status": "STALE, OVERCOUNTS DEAD TOOLS"},
+    {"file": "hcli/test_capability_callsite_reachability.py", "claim": "gates capability reachability",
+     "refutation": "It executes nothing -- it reads receipts/sovereign/G009_reachability.json. Its load-bearing `assert sites` (:91) passes for any registered tool forever because all 66 capabilities carry the SAME boilerplate call-site list. Teeth engage only for the 13 entries where required_by_active_frontier is true, a flag the audited producer sets itself.",
+     "status": "NEAR-VACUOUS - the standing 'suite reads its tool's checked-in receipt instead of running it' pattern"}
+  ],
+  "named_things_that_are_not_what_the_name_says": [
+    "hcli/acquisition.py acquires nothing",
+    "hcli/ane_provider.py never reaches the ANE",
+    "9 of 68 tools are file readers, not capabilities (_RECEIPT_TARGETS, tool_registry.py:1365-1372): roadmap.read/inspect, vmcp.capabilities, doctor.inspect, gravity.inspect, accelerator.inspect, modellake.status, benchmark.inspect, receipt.read/inspect. doctor.inspect does not run the Doctor; benchmark.inspect does not benchmark. No freshness check."
+  ],
+  "blocked_external": [
+    {"gate": "VMCP_WEB_CAPTURE", "reason": "chrome=None, playwright=False", "wake_condition": "a headless browser available to the VMCP capture bus", "note": "a local HTML parse is correctly REFUSED as acceptance"},
+    {"gate": "VMCP_PTY_CAPTURE", "reason": "posix_openpt succeeds, opening the slave raises PermissionError", "wake_condition": "pty slave open permitted in this sandbox"}
+  ]
+}

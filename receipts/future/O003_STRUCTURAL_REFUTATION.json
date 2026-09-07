@@ -1,0 +1,47 @@
+{
+ "date": "2026-09-06",
+ "obligation": "G029 / G028 / G031",
+ "specimen": "O003",
+ "QUESTION_S012_19": "HOW MANY INDEPENDENT DEGREES OF FREEDOM DO THESE EXPERTS REALLY CONTAIN?",
+ "ANSWER": "Nearly all of them, at every level tested.",
+ "MEASURED": {
+  "cross_expert_within_layer": {
+   "participation_ratio": 62.88,
+   "of": 64,
+   "rank_90": 57,
+   "rank_99": 63,
+   "top1_eigenvalue_share": 0.0207,
+   "uniform_would_be": 0.0156,
+   "reading": "the 64 experts span ~62.9 of 64 possible directions -- near-orthogonal. A basis of R=57 captures only 90% of variance and costs 14.25 bits/weight equivalent, far worse than the 2-3 bits/weight quantization already achieves."
+  },
+  "cross_layer": {
+   "participation_ratio": 24.88,
+   "of": 26,
+   "rank_90": 23,
+   "rank_99": 25,
+   "reading": "expert 0's gate_proj across all 26 MoE layers is also near-independent. Layers do not repeat one computation."
+  },
+  "within_expert": {
+   "shape": [
+    1408,
+    2048
+   ],
+   "full_rank": 1408,
+   "participation_ratio": 867.6,
+   "rank_90": 794,
+   "rank_99": 1216,
+   "bits_per_weight_at_rank_90": 15.23,
+   "bits_per_weight_at_rank_99": 23.32,
+   "reading": "a single expert matrix is itself high-rank. A rank-794 factorisation costs 15.23 bits/weight and a rank-1216 one costs 23.32 -- MORE than storing the matrix densely at 16 bits. Low-rank is not a saving here at any useful fidelity."
+  }
+ },
+ "WHY_THIS_IS_A_DIFFERENT_CLAIM_FROM_THE_EARLIER_KILL": "The existing provenance killed expert SIMILARITY -- whether experts resemble each other pairwise, under optimal permutation, and in function space. This measures whether they span a low-dimensional SUBSPACE, which mutually dissimilar vectors can still do. They do not. The two results agree and the second is stronger: the experts are not merely dissimilar, they are close to maximally independent.",
+ "CONSEQUENCE_FOR_O003": "The expert organ has essentially NO exploitable linear structure. Shared basis, cross-layer sharing and low-rank factorisation are all refuted by measurement rather than assumption, joining clustering, common-delta, alignment, function-sharing and entropy coding from the earlier provenance, and PQ from today's Scar.",
+ "WHAT_REMAINS_UNREFUTED": "Only NON-LINEAR structure: generated coefficients, procedural reconstruction, router-conditioned representation. The linear probes say nothing about those, and they are materially harder to build. For this specimen the parent tensors may be close to linearly minimal -- which would mean a Noetic win here must be non-linear, or must accept a capability loss the gate currently refuses.",
+ "COST": "Three spectra, about five minutes total, against a multi-hour build of a shared-basis NR that the first spectrum would have doomed. S012 \u00a77: cheapest causal discriminator first.",
+ "TRANSFERABLE_PRIOR_G031": {
+  "claim": "an MoE expert organ may be near-full-rank across experts, across layers, and within each expert matrix",
+  "status": "specimen-specific until tested elsewhere",
+  "test_on_next_MoE": "run the same three spectra FIRST, before any representation search. If the next specimen shows lower participation ratios, sharing is live there and O003 is the outlier; if it shows the same, this becomes an architecture-family prior and every sharing class can be skipped on sight."
+ }
+}

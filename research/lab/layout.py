@@ -17,9 +17,7 @@ HAWKING_EXPERIMENTS_ROOT: Final = REPO_ROOT / "hawking-experiments"
 FRANKENSTEIN_ROOT: Final = HAWKING_EXPERIMENTS_ROOT / "frankenstein"
 FRANKENSTEIN_DATA_ROOT: Final = FRANKENSTEIN_ROOT / "data"
 FRANKENSTEIN_OPERATORS_ROOT: Final = FRANKENSTEIN_ROOT / "operators"
-FRANKENSTEIN_CONDENSE_ROOT: Final = FRANKENSTEIN_ROOT / "condense"
 PROMETHEUS_ROOT: Final = HAWKING_EXPERIMENTS_ROOT / "prometheus"
-PROMETHEUS_TOOLS_ROOT: Final = PROMETHEUS_ROOT / "tools"
 PROMETHEUS_CONFIG_ROOT: Final = PROMETHEUS_ROOT / "config"
 PROMETHEUS_EVIDENCE_ROOT: Final = PROMETHEUS_ROOT / "evidence"
 SUPERWAVE_ROOT: Final = HAWKING_EXPERIMENTS_ROOT / "superwave"
@@ -117,23 +115,20 @@ EVIDENCE_AREAS: Final = {
 
 
 def experiment_pythonpath() -> tuple[Path, ...]:
-    """Directories that expose frankenstein_* and prometheus as importable modules.
+    """Directories that expose retained Frankenstein modules as importable modules.
 
     ``hawking-experiments`` contains a dash, so it is not a Python package.
-    Putting these three directories on ``sys.path`` makes the moved modules
-    importable by their bare filenames (``import frankenstein_ablation``,
-    ``import prometheus``). Operators is last-inserted / first-searched so it
+    Putting the operator directory on ``sys.path`` makes retained modules
+    importable by their bare filenames. Operators is inserted first so it
     wins the frankenstein_* name collision with the thin condense CLI wrappers.
     """
     return (
-        PROMETHEUS_TOOLS_ROOT,
-        FRANKENSTEIN_CONDENSE_ROOT,
         FRANKENSTEIN_OPERATORS_ROOT,
     )
 
 
 def ensure_experiment_imports() -> None:
-    """Put moved frankenstein/prometheus module dirs on ``sys.path``."""
+    """Put the retained Frankenstein module dir on ``sys.path``."""
     for path in experiment_pythonpath():
         rendered = str(path)
         if path.is_dir() and rendered not in sys.path:
@@ -215,10 +210,7 @@ def resolve_workspace_path(value: str | Path) -> Path:
         (("workspace", "campaign", "config", "profiles", "prometheus"), PROMETHEUS_CONFIG_ROOT),
         (("workspace", "campaign", "evidence", "research", "prometheus"), PROMETHEUS_EVIDENCE_ROOT),
         (("workspace", "superwave"), SUPERWAVE_ROOT),
-        (("tools", "prometheus"), PROMETHEUS_TOOLS_ROOT),
         (("lab", "operators"), FRANKENSTEIN_OPERATORS_ROOT),
-        (("tools", "condense", "tests"), FRANKENSTEIN_CONDENSE_ROOT / "tests"),
-        (("tools", "condense"), FRANKENSTEIN_CONDENSE_ROOT),
     )
     for prefix, dest in moved_prefixes:
         n = len(prefix)
@@ -227,7 +219,7 @@ def resolve_workspace_path(value: str | Path) -> Path:
         rest = path.parts[n:]
         # lab/operators and tools/condense prefixes are only remapped for
         # frankenstein_* module files that actually moved.
-        if dest in {FRANKENSTEIN_OPERATORS_ROOT, FRANKENSTEIN_CONDENSE_ROOT, FRANKENSTEIN_CONDENSE_ROOT / "tests"}:
+        if dest is FRANKENSTEIN_OPERATORS_ROOT:
             leaf = str(rest[0]) if rest else ""
             if not leaf.startswith(("frankenstein", "test_frankenstein")):
                 continue
@@ -254,7 +246,7 @@ def resolve_workspace_path(value: str | Path) -> Path:
     if head == "ramanujan":
         # Ramanujan retains sealed logical paths while its scaffold, records,
         # and governance material live in a compact local hierarchy.
-        from ramanujan.layout import resolve_ramanujan_path
+        from tools.verify.ramanujan_layout import resolve_ramanujan_path
 
         return resolve_ramanujan_path(path)
     if head == "odyssey":

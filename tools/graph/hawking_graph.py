@@ -29,7 +29,8 @@ See graph_model.SIDE_EFFECT_PATTERNS.
 
 Runtime hotness is STATIC only (workspace/docs/reference/BENCHMARKS.md,
 workspace/docs/reference/kernels.md,
-hawking-bench, Metal kernels, 2-hop from decode/dispatch) — not traced.
+the benchmark module under `crates/hawking/src/bench`, Metal kernels, and
+2-hop from decode/dispatch) — not traced.
 """
 
 from __future__ import annotations

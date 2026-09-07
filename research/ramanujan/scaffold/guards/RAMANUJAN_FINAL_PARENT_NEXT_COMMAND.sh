@@ -4,7 +4,7 @@
 # operator before a parent body byte can be admitted.
 set -euo pipefail
 
-repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"
 cd "$repo_root"
 
 schedule="${GLM52_STREAMING_SCHEDULE_PATH:-workspace/campaign/evidence/models/glm52/GLM52_STREAMING_SCHEDULE_90GB.json}"
@@ -18,7 +18,7 @@ production_lease_receipt="${HAWKING_PRODUCTION_GPU_LEASE_RECEIPT:-}"
 operator_approval_receipt="${HAWKING_GLM52_OPERATOR_APPROVAL_RECEIPT:-}"
 owner_authorization="${HAWKING_OWNER_GREEN_LIGHT_AUTHORIZATION:-}"
 owner_public_key="$({ "$python_bin" - <<'PY'
-from ramanujan.restream_guard import pinned_owner_public_key_path
+from tools.verify.restream_guard import pinned_owner_public_key_path
 print(pinned_owner_public_key_path())
 PY
 } 2>/dev/null || true)"
@@ -72,7 +72,7 @@ fi
 if [[ ! -x "$python_bin" ]]; then
   refuse "PINNED_GLM52_RUNTIME: missing or non-executable Python: $python_bin"
 fi
-if [[ -x "$python_bin" ]] && ! "$python_bin" -m ramanujan.status --require-hawking-complete >/dev/null; then
+if [[ -x "$python_bin" ]] && ! "$python_bin" -m tools.verify.ramanujan_boundary --require-hawking-complete >/dev/null; then
   refuse "HAWKING_EVOLUTION_COMPLETE: Ramanujan remains a local scaffold until Hawking's prepared handoff gate is validated and opened."
 fi
 if [[ ! -f "$range_executor" || ! -x "$range_executor" ]]; then
@@ -136,7 +136,7 @@ import sys
 from pathlib import Path
 
 from lab.operators.glm52_common import read_sealed_json
-from ramanujan.restream_guard import RestreamGuardError, validate_bounded_restream
+from tools.verify.restream_guard import RestreamGuardError, validate_bounded_restream
 
 expected = {"hf_xet": "1.5.2", "huggingface-hub": "1.24.0"}
 observed = {name: importlib.metadata.version(name) for name in expected}
@@ -163,7 +163,7 @@ fi
 # above remain only as friendly diagnostics; they cannot promote this result.
 green_light_result=""
 if [[ -f "$schedule" && -f "$policy" && -x "$python_bin" ]]; then
-  if ! green_light_result="$("$python_bin" -m ramanujan.restream_guard status --schedule "$schedule" --policy "$policy")"; then
+  if ! green_light_result="$("$python_bin" -m tools.verify.restream_guard status --schedule "$schedule" --policy "$policy")"; then
     refuse "ATOMIC_GREEN_LIGHT_TRANSITION: ${green_light_result//$'\n'/ }"
   fi
 fi

@@ -499,6 +499,109 @@ def read_specimen_headers(
     }
 
 
+def census_specimen(root: str | Path, *, nocache: bool = False) -> dict[str, Any]:
+    """Header-only static census of one specimen: params, dtypes, family.
+
+    Goes through read_specimen_headers (which itself goes through
+    read_header's hard 8+header_len cap) -- no second reader, no weight
+    bytes. Everything here is arithmetic over the JSON header already in
+    hand: shape -> element count, dtype -> histogram bucket.
+    """
+    root = Path(root)
+    meta = read_specimen_headers(root, nocache=nocache, use_cache=False)
+    dtype_hist: dict[str, dict[str, int]] = {}
+    total_params = 0
+    for shard_view in meta["headers"]:
+        for spec in shard_view["tensors"].values():
+            n = 1
+            for d in spec["shape"]:
+                n *= int(d)
+            total_params += n
+            bucket = dtype_hist.setdefault(spec["dtype"], {"tensors": 0, "parameters": 0})
+            bucket["tensors"] += 1
+            bucket["parameters"] += n
+
+    cfg = None
+    cfg_path = root / "config.json"
+    if cfg_path.is_file():
+        try:
+            cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            cfg = None
+    try:
+        from tools.odyssey.modellake_index import family_from_config
+        family, family_source = family_from_config(cfg, {})
+    except Exception:
+        family, family_source = "UNKNOWN", "family_from_config unavailable"
+
+    return {
+        "schema": "hawking.odyssey.specimen_static_census.v1",
+        "slug": root.name,
+        "path": str(root),
+        "architecture_family": family,
+        "architecture_family_source": family_source,
+        "total_parameters": total_params,
+        "dtype_histogram": dtype_hist,
+        "n_tensors": meta["n_tensors"],
+        "n_shards": meta["n_shards"],
+        "header_bytes": meta["header_bytes"],
+        "bytes_read": meta["bytes_read"],
+        "file_bytes": meta["file_bytes"],
+        "touched_weight_bytes": False,
+        "classification": "STATIC_STREAMABLE",
+        "evidence_tier": meta["evidence_tier"],
+    }
+
+
+def census_lake(
+    lake_root: str | Path = TIER2,
+    *,
+    nocache: bool = True,
+    slugs: list[str] | None = None,
+) -> dict[str, Any]:
+    """Header-only static census over every specimen directory in the lake.
+
+    Per specimen: census_specimen. Non-safetensors bodies (a different
+    checkpoint format, or a directory with no shards) are recorded in
+    `errors` rather than aborting the whole run -- one odd specimen must
+    not blank the other 55.
+    """
+    lake_root = Path(lake_root)
+    if slugs is None:
+        try:
+            from tools.odyssey.modellake_index import list_dir_slugs
+            slugs = list_dir_slugs(lake_root)
+        except Exception:
+            slugs = sorted(
+                p.name for p in lake_root.iterdir()
+                if p.is_dir() and not p.name.startswith(".")
+            ) if lake_root.is_dir() else []
+
+    t0 = time.perf_counter()
+    rows: list[dict[str, Any]] = []
+    errors: list[dict[str, str]] = []
+    for slug in slugs:
+        try:
+            rows.append(census_specimen(lake_root / slug, nocache=nocache))
+        except (SpecimenOpenRefused, WeightBytesRefused, OSError) as exc:
+            errors.append({"slug": slug, "error": str(exc)})
+    wall = time.perf_counter() - t0
+    return {
+        "schema": "hawking.odyssey.lake_static_census.v1",
+        "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "lake_root": str(lake_root),
+        "n_specimens_censused": len(rows),
+        "n_specimens_failed": len(errors),
+        "errors": errors,
+        "total_bytes_read": sum(r["bytes_read"] for r in rows),
+        "wall_seconds": round(wall, 6),
+        "specimens": rows,
+        "touched_weight_bytes": False,
+        "classification": "STATIC_STREAMABLE",
+        "evidence_tier": "HARDWARE_MEASURED" if nocache else "FUNCTIONAL_SIM",
+    }
+
+
 def _first_usable(root: Path, *, nocache: bool, use_mmap: bool, prefer: str) -> dict[str, Any]:
     """Header (metadata) then one tensor. The tensor read is a range, not a full shard."""
     t0 = time.perf_counter()
@@ -669,6 +772,11 @@ def measure_open(
             "retained_weight_bytes": 0,
             "evidence_tier": "HARDWARE_MEASURED",
         },
+        # Same key/value census_specimen and census_lake already use above
+        # (and test_specimen_open.py already asserts on). Every branch in
+        # measure_open is a header/tensor/shard byte read; none constructs or
+        # runs the model, so this is never EXECUTION_REQUIRES_RESIDENCY_OR_OFFLOAD.
+        "classification": "STATIC_STREAMABLE",
     }
     # Before/after for the common path on THIS specimen, from the same run.
     naive_meta_s = rec["full_shards"]["cold_s"] if rec["full_shards"] else None
@@ -876,6 +984,11 @@ def main(argv: list[str] | None = None) -> int:
     p_m.add_argument("--emit", type=Path, default=REPO / RECEIPT_REL)
     p_m.add_argument("--skip-full", action="store_true")
 
+    p_c = sub.add_parser("census", help="header-only static census of every specimen in the lake")
+    p_c.add_argument("--root", type=Path, default=TIER2)
+    p_c.add_argument("--warm", action="store_true", help="skip F_NOCACHE (faster, not bus-honest)")
+    p_c.add_argument("--emit", type=Path, default=None)
+
     args = ap.parse_args(argv)
     if args.cmd == "header":
         p = Path(args.path)
@@ -894,6 +1007,21 @@ def main(argv: list[str] | None = None) -> int:
         r = read_tensor(args.path, args.name, use_mmap=args.mmap, prefer=args.prefer)
         r.pop("payload", None)
         print(json.dumps(r, indent=1, default=str))
+        return 0
+    if args.cmd == "census":
+        doc = census_lake(args.root, nocache=not args.warm)
+        if args.emit:
+            write_receipt(doc, args.emit)
+        print(json.dumps({
+            "n_specimens_censused": doc["n_specimens_censused"],
+            "n_specimens_failed": doc["n_specimens_failed"],
+            "errors": doc["errors"],
+            "total_bytes_read": doc["total_bytes_read"],
+            "wall_seconds": doc["wall_seconds"],
+            "evidence_tier": doc["evidence_tier"],
+        }, indent=1))
+        if args.emit:
+            print(f"wrote {args.emit}")
         return 0
     slugs = list(args.slugs or DEFAULT_SLUGS)
     if args.root:

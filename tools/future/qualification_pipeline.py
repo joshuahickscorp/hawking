@@ -39,7 +39,7 @@ from tools.future import repro_science as rs
 from tools.future import static_kernel_verify as skv
 from tools.future import workunit_species as ws
 from tools.future._common import HARDWARE_FIELDS, git
-from tools.future import status_causality as sc
+from tools.verify import status_causality as sc
 
 RECEIPT = "QUALIFICATION_PIPELINE.json"
 SCHEMA = "hawking.future.qualification_pipeline.v1"
@@ -1444,7 +1444,7 @@ def recovered_implementation() -> list[dict[str, Any]]:
             "composed_as": "named, not imported, not run",
         },
         {
-            "path": "receipts/future/evidence/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+            "path": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
             "role": "binding queue_policy.protected_start_requires_existing_hcli_lease and protected_start_requires_machine_quiescence",
         },
         {
@@ -1552,7 +1552,7 @@ def build(pipeline: Mapping[str, Any] | None = None) -> Path:
             "protected_start_requires_existing_hcli_lease": True,
             "protected_start_requires_machine_quiescence": True,
             "diagnostic_results_do_not_promote": True,
-            "source": "receipts/future/evidence/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json queue_policy",
+            "source": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json queue_policy",
         },
         "head": git("rev-parse", "HEAD"),
         "branch": git("rev-parse", "--abbrev-ref", "HEAD"),

@@ -1,13 +1,14 @@
 # Roadmap lineage — preservation record
 
 Taken before the 2026-09-02 recompilation, per the reconstruction directive
-section 1 ("preserve old authority first"). Nothing here is rewritten; this
-directory is the historical authority the new roadmap supersedes.
+section 1 ("preserve old authority first"). The superseded bytes are retained
+in Git history; this compact record preserves their identity and provenance
+without keeping a second active roadmap representation.
 
 ## The superseded canonical roadmap
 
     path       ~/Downloads/H-ROADMAP.md
-    copy       docs/roadmap-lineage/H-ROADMAP.superseded-2026-09-02.md
+    copy       Git history (removed from active HEAD by Event Horizon compression)
     lines      9645
     bytes      362774
     sha256     d43a6b07ab9590bc11c265bfe8a1466131cce291b0622c076370a01d811328e4

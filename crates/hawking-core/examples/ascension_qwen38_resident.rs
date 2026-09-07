@@ -20,22 +20,43 @@
 
 use serde_json::{json, Value};
 use std::env;
+use std::fs::OpenOptions;
 use std::io::{self, BufRead, BufReader, Write};
 use std::path::PathBuf;
 use std::process;
-use std::time::Instant;
+use std::time::{Instant, SystemTime, UNIX_EPOCH};
 
 #[cfg(target_os = "macos")]
 use hawking_core::json_constrain::{JsonConstraint, JsonVocabIndex};
 #[cfg(target_os = "macos")]
 use hawking_core::model::qwen38_hybrid_decode::{
     generate_constrained, generate_greedy_reusing_snapshot, load_qwen38_tokenizer,
-    Qwen38HybridDecodeSession,
-    Qwen38HybridWeights,
-    Qwen38PrefixCheckpoint,
+    Qwen38HybridDecodeSession, Qwen38HybridWeights, Qwen38PrefixCheckpoint,
 };
 
 const PROTOCOL: &str = "hawking.qwen38.resident.v1";
+
+fn boundary_trace(event: &str, body: &Value) {
+    let Ok(path) = env::var("HCLI_BOUNDARY_TRACE") else {
+        return;
+    };
+    let wall_ns = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|value| value.as_nanos())
+        .unwrap_or(0);
+    let record = json!({
+        "component": "resident.native",
+        "event": event,
+        "pid": process::id(),
+        "wall_ns": wall_ns,
+        "id": body.get("id"),
+        "status": body.get("status"),
+    });
+    if let Ok(mut file) = OpenOptions::new().create(true).append(true).open(path) {
+        let _ = serde_json::to_writer(&mut file, &record);
+        let _ = file.write_all(b"\n");
+    }
+}
 
 fn usage() -> &'static str {
     "usage: ascension_qwen38_resident --artifact-root DIR --tokenizer PATH \
@@ -105,7 +126,9 @@ fn write_record(stdout: &mut impl Write, body: &Value) -> Result<(), String> {
         .map_err(|e| format!("write JSONL reply: {e}"))?;
     stdout
         .flush()
-        .map_err(|e| format!("flush JSONL reply: {e}"))
+        .map_err(|e| format!("flush JSONL reply: {e}"))?;
+    boundary_trace("response_bytes_emitted", body);
+    Ok(())
 }
 
 fn request_id(body: &Value) -> String {
@@ -204,6 +227,7 @@ fn run_resident(args: Args) -> Result<(), String> {
             }
         };
         let id = request_id(&body);
+        boundary_trace("resident_request_received", &body);
         let reply = match serve_request(
             &mut session,
             &tokenizer,
@@ -347,15 +371,13 @@ fn serve_request(
     // or truncated. A prompt that DIVERGES from the resident context, however
     // late, resets: reusing a diverged prefix would condition generation on
     // tokens that are not in the prompt, and nothing downstream could see it.
+    let resident_context_tokens_before = resident_context.len();
     let reuse = shared_prefix_len(resident_context, &prompt_ids);
-    // `generate_constrained` still resets internally, so claiming a reuse there
-    // would skip prompt tokens against a cleared state. Constrained requests
-    // take the full prefill until that path learns the same trick.
-    let reuse = if !constrain_json
-        && reuse == resident_context.len()
-        && reuse > 0
-        && reuse < prompt_ids.len()
-    {
+    // Both greedy and constrained generation now preserve the resident state
+    // when the prompt is an exact proper prefix. The constrained path used to
+    // reset internally; that restriction was removed in qwen38_hybrid_decode,
+    // but this dispatcher guard remained and made every grammar request cold.
+    let reuse = if reuse == resident_context.len() && reuse > 0 && reuse < prompt_ids.len() {
         reuse
     } else {
         0
@@ -417,7 +439,10 @@ fn serve_request(
     // happened to agree with it again. Measured on one goal: four consecutive
     // calls cold on the same prefix key -- 2092, 5157, 3218 and 4769 tokens all
     // stepped from scratch -- then a single hit that reused 2623 of 5262.
-    let held = prefix_checkpoint.as_ref().map(|(t, _)| t.len()).unwrap_or(0);
+    let held = prefix_checkpoint
+        .as_ref()
+        .map(|(t, _)| t.len())
+        .unwrap_or(0);
     let snapshot_at = snapshot_boundary(
         restored_from_checkpoint,
         checkpoint_missed,
@@ -450,14 +475,14 @@ fn serve_request(
             result
         })
     } else {
-        generate_greedy_reusing_snapshot(session, &prompt_ids, max_new, reuse, snapshot_at)
-            .map(|(result, snapshot)| {
+        generate_greedy_reusing_snapshot(session, &prompt_ids, max_new, reuse, snapshot_at).map(
+            |(result, snapshot)| {
                 if let Some(cp) = snapshot {
-                    *prefix_checkpoint =
-                        Some((prompt_ids[..cp.position].to_vec(), cp));
+                    *prefix_checkpoint = Some((prompt_ids[..cp.position].to_vec(), cp));
                 }
                 result
-            })
+            },
+        )
     }
     .map_err(|e| format!("native generation: {e}"))?;
     let wall_ns = started.elapsed().as_nanos() as u64;
@@ -468,8 +493,8 @@ fn serve_request(
     resident_context.extend_from_slice(&result.tokens);
     let generated = result.new_tokens().to_vec();
     let generated_count = generated.len();
-    let split = result.prompt_len.min(result.gpu_ns.len());
-    let dispatch_split = result.prompt_len.min(result.dispatches.len());
+    let split = result.prefill_step_count.min(result.gpu_ns.len());
+    let dispatch_split = result.prefill_step_count.min(result.dispatches.len());
     let prefill_gpu_ns = sum_optional(&result.gpu_ns[..split]);
     let decode_gpu_ns = sum_optional(&result.gpu_ns[split..]);
     let complete_gpu_ns = sum_optional(&result.gpu_ns);
@@ -521,8 +546,16 @@ fn serve_request(
         // Dispatches per step means nothing until it is divided by this: 580 is
         // damning at 8 layers and unremarkable at 64.
         "layers": hawking_core::model::qwen38_geometry::QWEN38_LAYERS,
+        // Prefix diagnosis: reuse=0 alone cannot distinguish a prompt that
+        // diverged at token 0 from a valid common prefix rejected by the
+        // checkpoint/session policy. Preserve the resident-side comparison.
+        "resident_context_tokens_before": resident_context_tokens_before,
+        "shared_prefix_tokens": agreed_with_previous,
+        "checkpoint_missed": checkpoint_missed,
+        "checkpoint_restored_tokens": restored_from_checkpoint,
         "prefix_reused_tokens": reuse,
         "prefill_tokens_stepped": prompt_ids.len().saturating_sub(reuse),
+        "prefill_step_count": result.prefill_step_count,
         "prefix_source": if restored_from_checkpoint > 0 {
             "checkpoint_restore"
         } else if reuse > 0 {
@@ -677,9 +710,9 @@ mod prefix_reuse_tests {
     ///
     /// Kept in one place so the rule can be tested without a 27B model: reuse
     /// ONLY when the resident context is a proper prefix of the new prompt.
-    fn reuse_for(resident: &[u32], prompt: &[u32], constrain_json: bool) -> usize {
+    fn reuse_for(resident: &[u32], prompt: &[u32]) -> usize {
         let shared = shared_prefix_len(resident, prompt);
-        if !constrain_json && shared == resident.len() && shared > 0 && shared < prompt.len() {
+        if shared == resident.len() && shared > 0 && shared < prompt.len() {
             shared
         } else {
             0
@@ -691,7 +724,7 @@ mod prefix_reuse_tests {
         // The tool loop: same conversation plus one observation.
         let resident = [1u32, 2, 3, 4];
         let prompt = [1u32, 2, 3, 4, 9, 9, 9];
-        assert_eq!(reuse_for(&resident, &prompt, false), 4);
+        assert_eq!(reuse_for(&resident, &prompt), 4);
     }
 
     #[test]
@@ -701,14 +734,18 @@ mod prefix_reuse_tests {
         // would condition generation on tokens that are not in the prompt, and
         // nothing downstream could detect it.
         let resident = [1u32, 2, 3, 4];
-        assert_eq!(reuse_for(&resident, &[1, 2, 3, 5, 6], false), 0, "late divergence");
-        assert_eq!(reuse_for(&resident, &[9, 2, 3, 4, 5], false), 0, "first token differs");
+        assert_eq!(reuse_for(&resident, &[1, 2, 3, 5, 6]), 0, "late divergence");
+        assert_eq!(
+            reuse_for(&resident, &[9, 2, 3, 4, 5]),
+            0,
+            "first token differs"
+        );
     }
 
     #[test]
     fn a_shorter_prompt_resets_because_state_cannot_be_truncated() {
         let resident = [1u32, 2, 3, 4, 5, 6];
-        assert_eq!(reuse_for(&resident, &[1, 2, 3], false), 0);
+        assert_eq!(reuse_for(&resident, &[1, 2, 3]), 0);
     }
 
     #[test]
@@ -716,28 +753,27 @@ mod prefix_reuse_tests {
         // `next` is the argmax the last stepped token produced. With nothing
         // stepped there is none, so full equality must not claim reuse.
         let resident = [1u32, 2, 3];
-        assert_eq!(reuse_for(&resident, &[1, 2, 3], false), 0);
+        assert_eq!(reuse_for(&resident, &[1, 2, 3]), 0);
     }
 
     #[test]
     fn a_cold_session_resets() {
-        assert_eq!(reuse_for(&[], &[1, 2, 3], false), 0);
+        assert_eq!(reuse_for(&[], &[1, 2, 3]), 0);
     }
 
     #[test]
-    fn the_constrained_path_never_claims_reuse() {
-        // generate_constrained still resets internally; claiming reuse there
-        // would skip prompt tokens against a cleared state.
+    fn the_constrained_path_reuses_an_exact_prefix() {
+        // Grammar no longer disables the cache: generate_constrained preserves
+        // the same recurrent/KV state contract as the greedy path.
         let resident = [1u32, 2, 3, 4];
         let prompt = [1u32, 2, 3, 4, 5];
-        assert_eq!(reuse_for(&resident, &prompt, false), 4);
-        assert_eq!(reuse_for(&resident, &prompt, true), 0);
+        assert_eq!(reuse_for(&resident, &prompt), 4);
     }
 
     /// The checkpoint decision, exactly as `serve_request` makes it.
-    fn checkpoint_reuse(stored: &[u32], prompt: &[u32], constrain_json: bool) -> usize {
+    fn checkpoint_reuse(stored: &[u32], prompt: &[u32]) -> usize {
         let shared = shared_prefix_len(stored, prompt);
-        if !constrain_json && shared == stored.len() && shared > 0 && shared < prompt.len() {
+        if shared == stored.len() && shared > 0 && shared < prompt.len() {
             shared
         } else {
             0
@@ -748,7 +784,7 @@ mod prefix_reuse_tests {
     fn a_stored_prefix_that_this_prompt_begins_with_is_restored() {
         // Two goals sharing a system prompt and tool catalog.
         let stored = [1u32, 2, 3, 4, 5];
-        assert_eq!(checkpoint_reuse(&stored, &[1, 2, 3, 4, 5, 90, 91], false), 5);
+        assert_eq!(checkpoint_reuse(&stored, &[1, 2, 3, 4, 5, 90, 91]), 5);
     }
 
     #[test]
@@ -756,15 +792,14 @@ mod prefix_reuse_tests {
         // The load-bearing one: restoring against a different prefix would
         // condition generation on tokens that are not in the prompt.
         let stored = [1u32, 2, 3, 4, 5];
-        assert_eq!(checkpoint_reuse(&stored, &[1, 2, 99, 4, 5, 6], false), 0);
-        assert_eq!(checkpoint_reuse(&stored, &[1, 2, 3], false), 0, "shorter prompt");
-        assert_eq!(checkpoint_reuse(&stored, &[1, 2, 3, 4, 5], false), 0, "nothing to step");
-        assert_eq!(checkpoint_reuse(&[], &[1, 2, 3], false), 0, "no checkpoint");
+        assert_eq!(checkpoint_reuse(&stored, &[1, 2, 99, 4, 5, 6]), 0);
+        assert_eq!(checkpoint_reuse(&stored, &[1, 2, 3]), 0, "shorter prompt");
         assert_eq!(
-            checkpoint_reuse(&stored, &[1, 2, 3, 4, 5, 6], true),
+            checkpoint_reuse(&stored, &[1, 2, 3, 4, 5]),
             0,
-            "the constrained path resets internally"
+            "nothing to step"
         );
+        assert_eq!(checkpoint_reuse(&[], &[1, 2, 3]), 0, "no checkpoint");
     }
 
     #[test]
@@ -779,7 +814,12 @@ mod prefix_reuse_tests {
 #[cfg(test)]
 mod checkpoint_growth_tests {
     /// The snapshot decision, exactly as `serve_request` makes it.
-    fn snapshot_at(held: usize, agreed: usize, prompt_len: usize, restored: usize) -> Option<usize> {
+    fn snapshot_at(
+        held: usize,
+        agreed: usize,
+        prompt_len: usize,
+        restored: usize,
+    ) -> Option<usize> {
         if restored == 0 && agreed > held.max(16) && agreed < prompt_len {
             Some(agreed)
         } else {

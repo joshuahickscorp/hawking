@@ -323,7 +323,9 @@ mod isolated {
         (0..n).map(|i| (i % 17) as f32 * 0.125 - 1.0).collect()
     }
     fn xsum64_cpu(x: &[f32]) -> Vec<f32> {
-        x.chunks(64).map(|c| c.iter().copied().sum::<f32>()).collect()
+        x.chunks(64)
+            .map(|c| c.iter().copied().sum::<f32>())
+            .collect()
     }
     fn silu(g: f32) -> f32 {
         g / (1.0 + (-g).exp())
@@ -504,8 +506,21 @@ mod isolated {
             let enc = cmd.new_compute_command_encoder();
             enc.set_compute_pipeline_state(pipe);
             bind_fused(
-                enc, arm, &gc_buf, &gs_buf, &gb_buf, &uc_buf, &us_buf, &ub_buf, &in_buf,
-                &act_buf, &go_buf, &uo_buf, &xs_buf, parity_rows as u32, parity_cols as u32,
+                enc,
+                arm,
+                &gc_buf,
+                &gs_buf,
+                &gb_buf,
+                &uc_buf,
+                &us_buf,
+                &ub_buf,
+                &in_buf,
+                &act_buf,
+                &go_buf,
+                &uo_buf,
+                &xs_buf,
+                parity_rows as u32,
+                parity_cols as u32,
             );
             enc.end_encoding();
             cmd.commit();
@@ -546,8 +561,21 @@ mod isolated {
             let enc = cmd.new_compute_command_encoder();
             enc.set_compute_pipeline_state(pipe);
             bind_fused(
-                enc, arm, &gc_buf, &gs_buf, &gb_buf, &uc_buf, &us_buf, &ub_buf, &in_buf,
-                &act_buf, &go_buf, &uo_buf, &xs_buf, parity_rows as u32, parity_cols as u32,
+                enc,
+                arm,
+                &gc_buf,
+                &gs_buf,
+                &gb_buf,
+                &uc_buf,
+                &us_buf,
+                &ub_buf,
+                &in_buf,
+                &act_buf,
+                &go_buf,
+                &uo_buf,
+                &xs_buf,
+                parity_rows as u32,
+                parity_cols as u32,
             );
             enc.end_encoding();
             cmd.commit();
@@ -584,7 +612,8 @@ mod isolated {
         let ub = fill_u16(ROWS as usize * groups, 0xC2);
         let input = fill_f32(COLS as usize);
         let xsum = xsum64_cpu(&input);
-        let payload = (gc.len() + uc.len() + (gs.len() + gb.len() + us.len() + ub.len()) * 2) as u64;
+        let payload =
+            (gc.len() + uc.len() + (gs.len() + gb.len() + us.len() + ub.len()) * 2) as u64;
         let gc_buf = new_buf(as_bytes_u8(&gc));
         let gs_buf = new_buf(as_bytes_u16(&gs));
         let gb_buf = new_buf(as_bytes_u16(&gb));
@@ -593,12 +622,18 @@ mod isolated {
         let ub_buf = new_buf(as_bytes_u16(&ub));
         let in_buf = new_buf(as_bytes_f32(&input));
         let xs_buf = new_buf(as_bytes_f32(&xsum));
-        let act_buf =
-            device.new_buffer((ROWS as usize * 4) as u64, MTLResourceOptions::StorageModeShared);
-        let go_buf =
-            device.new_buffer((ROWS as usize * 4) as u64, MTLResourceOptions::StorageModeShared);
-        let uo_buf =
-            device.new_buffer((ROWS as usize * 4) as u64, MTLResourceOptions::StorageModeShared);
+        let act_buf = device.new_buffer(
+            (ROWS as usize * 4) as u64,
+            MTLResourceOptions::StorageModeShared,
+        );
+        let go_buf = device.new_buffer(
+            (ROWS as usize * 4) as u64,
+            MTLResourceOptions::StorageModeShared,
+        );
+        let uo_buf = device.new_buffer(
+            (ROWS as usize * 4) as u64,
+            MTLResourceOptions::StorageModeShared,
+        );
 
         let mut arms_json = Vec::new();
         for (arm, pipe) in ARMS.iter().zip(pipes.iter()) {
@@ -628,7 +663,10 @@ mod isolated {
             let med = median_u64(gpu.clone());
             let min = gpu.iter().copied().min();
             let max = gpu.iter().copied().max();
-            eprintln!("  {} median_gpu_ns={:?} launches={}", arm.id, med, arm.launches);
+            eprintln!(
+                "  {} median_gpu_ns={:?} launches={}",
+                arm.id, med, arm.launches
+            );
             arms_json.push(json!({
                 "id": arm.id,
                 "kernel": arm.kernel,
@@ -698,8 +736,8 @@ mod production {
 
     pub fn measure(args: &Args, root: &Path, tokenizer: &Path) -> Result<Value, String> {
         eprintln!("production: load {}", root.display());
-        let mut session = Qwen38HybridDecodeSession::open(root, args.max_seq_len)
-            .map_err(|e| e.to_string())?;
+        let mut session =
+            Qwen38HybridDecodeSession::open(root, args.max_seq_len).map_err(|e| e.to_string())?;
         session.apply_fusion(Qwen38MlpFusion::GateUpSwiglu, true, true);
         session.set_fuse_add_rmsnorm(true, false);
         session.set_fuse_ba_delta(true, false);

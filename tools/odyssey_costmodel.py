@@ -326,6 +326,157 @@ def record(patient, event, wall_s, bytes_scanned=0, bytes_transformed=0,
 
 
 # ---------------------------------------------------------------------------
+# NX / NR per-specimen storage accounting (operator directive 2026-09-05)
+#
+# Census of tools/flash_nx_genome.py + tools/flash_complete_nr.py +
+# tools/nr_container.py, established from the code rather than the names:
+#
+#   NR ("NR is what the patient IS", tools/nr_container.py) is the portable
+#   representation. Its JSON descriptor is small, but a *materialized* NR
+#   candidate -- a content-addressed catalog plus a segments/ tree of
+#   per-tensor quantized files -- is the real payload it describes, and that
+#   materialization is what actually costs storage (measured on this machine:
+#   a real Genesis-patient NR materialization is ~9.9 GB). It has no
+#   machine-specific field (nr_container.MACHINE_SPECIFIC is enforced), so it
+#   is disposable/reproducible scratch: transient by construction.
+#
+#   NX ("NX is how one machine runs it", tools/flash_nx_genome.py) is a small
+#   machine-bound seal: source/shader hashes, the machine genome, and a
+#   pointer (sha256) at the NR it lowers -- it never embeds the NR payload.
+#   It is the keeper: cheap to retain, and it is what a resident promotion is
+#   eventually sealed against.
+#
+# So: NX bytes are almost always small (a JSON seal); NR *descriptor* bytes
+# are also small; NR *payload* bytes are the ones that can fill a volume
+# across dozens of specimens, and are the ones this accounting watches.
+# ---------------------------------------------------------------------------
+
+def _path_bytes(p) -> int:
+    """Real on-disk size of a file, or the recursive sum of a directory. 0 if absent."""
+    if not p:
+        return 0
+    p = Path(p)
+    if p.is_file():
+        return p.stat().st_size
+    if p.is_dir():
+        return sum(f.stat().st_size for f in p.rglob("*") if f.is_file())
+    return 0
+
+
+def _gpu_snapshot() -> dict:
+    """Best-effort GPU working-set/utilization snapshot for 'while producing NX'.
+
+    Reuses hcli.machine.metal_device_info() (already the codebase's one GPU
+    working-set probe) rather than adding a second one. Never guesses: when
+    the probe is unavailable this reports None/UNKNOWN, not an estimate
+    dressed up as a measurement.
+    """
+    try:
+        if str(REPO) not in sys.path:
+            sys.path.insert(0, str(REPO))
+        from hcli.machine import metal_device_info
+        info = metal_device_info()
+    except Exception:
+        return {"gpu_working_set_bytes": None, "gpu_allocated_bytes": None,
+                "gpu_share": None, "gpu_source": "UNKNOWN"}
+    working = _as_float(info.get("recommendedMaxWorkingSetSize"), None)
+    allocated = _as_float(info.get("currentAllocatedSize"), None)
+    return {
+        "gpu_working_set_bytes": int(working) if working is not None else None,
+        "gpu_allocated_bytes": int(allocated) if allocated is not None else None,
+        "gpu_share": _rate(allocated, working),
+        "gpu_source": info.get("source") or "UNKNOWN",
+    }
+
+
+def specimen_storage(nx_path=None, nr_descriptor_path=None, nr_payload_path=None) -> dict:
+    """Real byte counts for one specimen's NX seal, NR descriptor, and NR payload.
+
+    `nr_payload_path` is the materialized representation (a catalog file, or a
+    segments/ directory of quantized tensors) -- the thing that actually costs
+    storage. All three are independently optional: pass whichever artifacts
+    exist for this specimen right now.
+    """
+    return {
+        "nx_bytes": _path_bytes(nx_path),
+        "nr_descriptor_bytes": _path_bytes(nr_descriptor_path),
+        "nr_payload_bytes": _path_bytes(nr_payload_path),
+        "nr_payload_present": bool(nr_payload_path and Path(nr_payload_path).exists()),
+    }
+
+
+def record_nx_nr_accounting(patient, *, nx_path=None, nr_descriptor_path=None,
+                             nr_payload_path=None, nr_released=None, gpu=None,
+                             nx_bytes_override=None, nr_descriptor_bytes_override=None,
+                             nr_payload_bytes_override=None, ts=None, path=None,
+                             paths: Paths | None = None) -> dict:
+    """Append one NX/NR accounting event (extends `record`, same ledger).
+
+    Records nx_bytes, nr_descriptor_bytes, nr_payload_bytes, whether the NR
+    payload was released after this specimen's NX/NR transition, and a GPU
+    snapshot. `nr_released` is a caller assertion (did you delete the
+    materialization?), not an inference -- when omitted it defaults to
+    "released iff nothing is left on disk to release", which is the honest
+    default for a caller that only measured, and did not itself clean up.
+
+    The `*_override` kwargs let a caller who already measured bytes elsewhere
+    (or is reconstructing a past accounting row) record them without a path
+    on disk right now.
+    """
+    storage = specimen_storage(nx_path, nr_descriptor_path, nr_payload_path)
+    nx_bytes = _as_int(nx_bytes_override, storage["nx_bytes"]) if nx_bytes_override is not None else storage["nx_bytes"]
+    nr_descriptor_bytes = (_as_int(nr_descriptor_bytes_override, storage["nr_descriptor_bytes"])
+                            if nr_descriptor_bytes_override is not None else storage["nr_descriptor_bytes"])
+    nr_payload_bytes = (_as_int(nr_payload_bytes_override, storage["nr_payload_bytes"])
+                         if nr_payload_bytes_override is not None else storage["nr_payload_bytes"])
+    if nr_released is None:
+        nr_released = not storage["nr_payload_present"]
+    extra = {
+        "nx_bytes": nx_bytes,
+        "nr_descriptor_bytes": nr_descriptor_bytes,
+        "nr_payload_bytes": nr_payload_bytes,
+        "nr_released": bool(nr_released),
+        **(gpu if gpu is not None else _gpu_snapshot()),
+    }
+    return record(patient, "nx_nr_accounting", 0.0, extra=extra, ts=ts, path=path, paths=paths)
+
+
+def nr_retention_violations(rows: list[dict] | None = None, *, path=None,
+                             paths: Paths | None = None) -> list[dict]:
+    """Specimens whose NR payload is still on disk, un-released, after an NX seal.
+
+    'NR is TRANSIENT' (operator directive 2026-09-05): once sealed into a
+    machine-bound NX, the NR materialization is disposable. This flags any
+    patient whose latest nx_nr_accounting event shows a sealed NX (nx_bytes
+    > 0) with a non-empty NR payload that was not released -- at real
+    per-specimen scale (multi-GB materializations, dozens of specimens) that
+    is exactly the volume-filling failure the operator named.
+    """
+    if rows is None:
+        ps = _resolve_paths(paths)
+        econ_p = Path(path) if path is not None else ps.economics
+        rows = _read_jsonl(econ_p)
+    violations = []
+    for patient in _patients_in_log(rows):
+        events = [e for e in _events_for(patient, rows) if _event_name(e) == "nx_nr_accounting"]
+        if not events:
+            continue
+        last = events[-1]
+        nx_bytes = _as_int(last.get("nx_bytes"), 0)
+        nr_payload_bytes = _as_int(last.get("nr_payload_bytes"), 0)
+        released = bool(last.get("nr_released"))
+        if nx_bytes > 0 and nr_payload_bytes > 0 and not released:
+            violations.append({
+                "patient": patient,
+                "nx_bytes": nx_bytes,
+                "nr_payload_bytes": nr_payload_bytes,
+                "nr_released": released,
+                "ts": last.get("ts"),
+            })
+    return violations
+
+
+# ---------------------------------------------------------------------------
 # patient features / transfer
 # ---------------------------------------------------------------------------
 

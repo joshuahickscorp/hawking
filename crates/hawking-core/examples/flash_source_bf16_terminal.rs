@@ -27,7 +27,8 @@ mod macos {
     use std::path::PathBuf;
     use std::time::Instant;
 
-    const ROOT: &str = "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc";
+    const ROOT: &str =
+        "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc";
     const STATE: &str = "receipts/headless/FLASH_PREFIX_FED_LAYER47_STATE.f32";
     const HIDDEN: usize = 2560;
     const STREAMS: usize = 4;
@@ -43,7 +44,10 @@ mod macos {
     }
 
     fn f32_bytes(values: &[f32]) -> Vec<u8> {
-        values.iter().flat_map(|value| value.to_le_bytes()).collect()
+        values
+            .iter()
+            .flat_map(|value| value.to_le_bytes())
+            .collect()
     }
 
     fn bf16(bytes: &[u8], i: usize) -> f32 {
@@ -69,37 +73,55 @@ mod macos {
         up_w: &[u8],
     ) -> Result<Vec<f32>, String> {
         if state.len() != HC {
-            return Err(format!("final state has {} elements, expected {HC}", state.len()));
+            return Err(format!(
+                "final state has {} elements, expected {HC}",
+                state.len()
+            ));
         }
         let mut normed = vec![0.0f32; HC];
         for stream in 0..STREAMS {
             let start = stream * HIDDEN;
-            let mean = state[start..start + HIDDEN].iter().map(|v| v * v).sum::<f32>() / HIDDEN as f32;
+            let mean = state[start..start + HIDDEN]
+                .iter()
+                .map(|v| v * v)
+                .sum::<f32>()
+                / HIDDEN as f32;
             let inv = (mean + EPS).sqrt().recip();
             for i in 0..HIDDEN {
                 normed[start + i] = state[start + i] * inv * (1.0 + bf16(&norm_w, start + i));
             }
         }
         let low = matvec(&down_w, LOWRANK, HC, &normed);
-        let low_act: Vec<f32> = low.iter().map(|v| {
-            let x = *v / STREAMS as f32;
-            x / (1.0 + (-x).exp())
-        }).collect();
+        let low_act: Vec<f32> = low
+            .iter()
+            .map(|v| {
+                let x = *v / STREAMS as f32;
+                x / (1.0 + (-x).exp())
+            })
+            .collect();
         let gates = matvec(&up_w, HC, LOWRANK, &low_act);
-        Ok((0..HIDDEN).map(|i| {
-            let mut sum = 0.0f32;
-            for stream in 0..STREAMS {
-                let offset = stream * HIDDEN + i;
-                sum += (1.0 / (1.0 + (-gates[offset]).exp())) * normed[offset];
-            }
-            sum / STREAMS as f32
-        }).collect())
+        Ok((0..HIDDEN)
+            .map(|i| {
+                let mut sum = 0.0f32;
+                for stream in 0..STREAMS {
+                    let offset = stream * HIDDEN + i;
+                    sum += (1.0 / (1.0 + (-gates[offset]).exp())) * normed[offset];
+                }
+                sum / STREAMS as f32
+            })
+            .collect())
     }
 
     fn source_hc_readout(index: &SourceBf16Index, state: &[f32]) -> Result<Vec<f32>, String> {
-        let norm_w = index.read_raw("model.language_model.hyper_connection_mixer.hc_norm.weight").map_err(|e| e.to_string())?;
-        let down_w = index.read_raw("model.language_model.hyper_connection_mixer.input_mix_weight_down.weight").map_err(|e| e.to_string())?;
-        let up_w = index.read_raw("model.language_model.hyper_connection_mixer.input_mix_weight_up.weight").map_err(|e| e.to_string())?;
+        let norm_w = index
+            .read_raw("model.language_model.hyper_connection_mixer.hc_norm.weight")
+            .map_err(|e| e.to_string())?;
+        let down_w = index
+            .read_raw("model.language_model.hyper_connection_mixer.input_mix_weight_down.weight")
+            .map_err(|e| e.to_string())?;
+        let up_w = index
+            .read_raw("model.language_model.hyper_connection_mixer.input_mix_weight_up.weight")
+            .map_err(|e| e.to_string())?;
         source_hc_readout_with_weights(state, &norm_w, &down_w, &up_w)
     }
 
@@ -108,7 +130,10 @@ mod macos {
         if bytes.len() != HC * 4 {
             return Err(format!("state bytes {} != {}", bytes.len(), HC * 4));
         }
-        Ok(bytes.chunks_exact(4).map(|c| f32::from_le_bytes(c.try_into().unwrap())).collect())
+        Ok(bytes
+            .chunks_exact(4)
+            .map(|c| f32::from_le_bytes(c.try_into().unwrap()))
+            .collect())
     }
 
     fn metrics(expected: &[f32], observed: &[f32]) -> serde_json::Value {
@@ -180,27 +205,57 @@ mod macos {
                 .read_raw("model.language_model.hyper_connection_mixer.hc_norm.weight")
                 .map_err(|e| e.to_string())?;
             let hc_down = index
-                .read_raw("model.language_model.hyper_connection_mixer.input_mix_weight_down.weight")
+                .read_raw(
+                    "model.language_model.hyper_connection_mixer.input_mix_weight_down.weight",
+                )
                 .map_err(|e| e.to_string())?;
             let hc_up = index
                 .read_raw("model.language_model.hyper_connection_mixer.input_mix_weight_up.weight")
                 .map_err(|e| e.to_string())?;
-            let lm_head = index.read_raw("lm_head.weight").map_err(|e| e.to_string())?;
+            let lm_head = index
+                .read_raw("lm_head.weight")
+                .map_err(|e| e.to_string())?;
             if lm_head.len() != VOCAB * HIDDEN * 2 {
-                return Err(format!("lm_head bytes {} != {}", lm_head.len(), VOCAB * HIDDEN * 2));
+                return Err(format!(
+                    "lm_head bytes {} != {}",
+                    lm_head.len(),
+                    VOCAB * HIDDEN * 2
+                ));
             }
             let context = MetalContext::new_with_trace(true).map_err(|e| e.to_string())?;
-            let state_buf = context.new_buffer_checked(HC * 4).map_err(|e| e.to_string())?;
-            let hc_norm_buf = context.new_buffer_with_bytes_checked(&hc_norm).map_err(|e| e.to_string())?;
-            let hc_down_buf = context.new_buffer_with_bytes_checked(&hc_down).map_err(|e| e.to_string())?;
-            let hc_up_buf = context.new_buffer_with_bytes_checked(&hc_up).map_err(|e| e.to_string())?;
-            let normalized = context.new_buffer_checked(HC * 4).map_err(|e| e.to_string())?;
-            let low = context.new_buffer_checked(LOWRANK * 4).map_err(|e| e.to_string())?;
-            let low_activation = context.new_buffer_checked(LOWRANK * 4).map_err(|e| e.to_string())?;
-            let gates = context.new_buffer_checked(HC * 4).map_err(|e| e.to_string())?;
-            let input = context.new_buffer_checked(HIDDEN * 4).map_err(|e| e.to_string())?;
-            let lm_head_buf = context.new_buffer_with_bytes_checked(&lm_head).map_err(|e| e.to_string())?;
-            let logits = context.new_buffer_checked(VOCAB * 4).map_err(|e| e.to_string())?;
+            let state_buf = context
+                .new_buffer_checked(HC * 4)
+                .map_err(|e| e.to_string())?;
+            let hc_norm_buf = context
+                .new_buffer_with_bytes_checked(&hc_norm)
+                .map_err(|e| e.to_string())?;
+            let hc_down_buf = context
+                .new_buffer_with_bytes_checked(&hc_down)
+                .map_err(|e| e.to_string())?;
+            let hc_up_buf = context
+                .new_buffer_with_bytes_checked(&hc_up)
+                .map_err(|e| e.to_string())?;
+            let normalized = context
+                .new_buffer_checked(HC * 4)
+                .map_err(|e| e.to_string())?;
+            let low = context
+                .new_buffer_checked(LOWRANK * 4)
+                .map_err(|e| e.to_string())?;
+            let low_activation = context
+                .new_buffer_checked(LOWRANK * 4)
+                .map_err(|e| e.to_string())?;
+            let gates = context
+                .new_buffer_checked(HC * 4)
+                .map_err(|e| e.to_string())?;
+            let input = context
+                .new_buffer_checked(HIDDEN * 4)
+                .map_err(|e| e.to_string())?;
+            let lm_head_buf = context
+                .new_buffer_with_bytes_checked(&lm_head)
+                .map_err(|e| e.to_string())?;
+            let logits = context
+                .new_buffer_checked(VOCAB * 4)
+                .map_err(|e| e.to_string())?;
             let sampled = context.new_buffer_checked(4).map_err(|e| e.to_string())?;
             Ok(Self {
                 root,
@@ -234,7 +289,8 @@ mod macos {
             let state = read_state(state_path)?;
             let state_read_ns = state_read_started.elapsed().as_nanos() as u64;
             let readout_started = Instant::now();
-            let hidden = source_hc_readout_with_weights(&state, &self.hc_norm, &self.hc_down, &self.hc_up)?;
+            let hidden =
+                source_hc_readout_with_weights(&state, &self.hc_norm, &self.hc_down, &self.hc_up)?;
             let cpu_readout_ns = readout_started.elapsed().as_nanos() as u64;
             if hidden.iter().any(|v| !v.is_finite()) {
                 return Err("HyperConnection readout produced non-finite values".into());
@@ -244,13 +300,62 @@ mod macos {
             let device_upload_ns = upload_started.elapsed().as_nanos() as u64;
             let encode_started = Instant::now();
             let mut tcb = TokenCommandBuffer::new(&self.context);
-            qwen_next_hyperconnection_grouped_rmsnorm_tcb(&mut tcb, &self.state_buf, &self.hc_norm_buf, &self.normalized, HIDDEN, STREAMS, EPS).map_err(|e| e.to_string())?;
-            native_bf16_gemv_seq_tcb(&mut tcb, &self.hc_down_buf, &self.normalized, &self.low, LOWRANK, HC).map_err(|e| e.to_string())?;
-            qwen_next_hyperconnection_silu_scale_tcb(&mut tcb, &self.low, &self.low_activation, LOWRANK, STREAMS as f32).map_err(|e| e.to_string())?;
-            native_bf16_gemv_seq_tcb(&mut tcb, &self.hc_up_buf, &self.low_activation, &self.gates, HC, LOWRANK).map_err(|e| e.to_string())?;
-            qwen_next_hyperconnection_read_mix_tcb(&mut tcb, &self.normalized, &self.gates, &self.input, HIDDEN, STREAMS).map_err(|e| e.to_string())?;
-            native_bf16_gemv_seq_tcb(&mut tcb, &self.lm_head_buf, &self.input, &self.logits, VOCAB, HIDDEN).map_err(|e| e.to_string())?;
-            sample_argmax_f32_tcb(&mut tcb, &self.logits, &self.sampled, VOCAB).map_err(|e| e.to_string())?;
+            qwen_next_hyperconnection_grouped_rmsnorm_tcb(
+                &mut tcb,
+                &self.state_buf,
+                &self.hc_norm_buf,
+                &self.normalized,
+                HIDDEN,
+                STREAMS,
+                EPS,
+            )
+            .map_err(|e| e.to_string())?;
+            native_bf16_gemv_seq_tcb(
+                &mut tcb,
+                &self.hc_down_buf,
+                &self.normalized,
+                &self.low,
+                LOWRANK,
+                HC,
+            )
+            .map_err(|e| e.to_string())?;
+            qwen_next_hyperconnection_silu_scale_tcb(
+                &mut tcb,
+                &self.low,
+                &self.low_activation,
+                LOWRANK,
+                STREAMS as f32,
+            )
+            .map_err(|e| e.to_string())?;
+            native_bf16_gemv_seq_tcb(
+                &mut tcb,
+                &self.hc_up_buf,
+                &self.low_activation,
+                &self.gates,
+                HC,
+                LOWRANK,
+            )
+            .map_err(|e| e.to_string())?;
+            qwen_next_hyperconnection_read_mix_tcb(
+                &mut tcb,
+                &self.normalized,
+                &self.gates,
+                &self.input,
+                HIDDEN,
+                STREAMS,
+            )
+            .map_err(|e| e.to_string())?;
+            native_bf16_gemv_seq_tcb(
+                &mut tcb,
+                &self.lm_head_buf,
+                &self.input,
+                &self.logits,
+                VOCAB,
+                HIDDEN,
+            )
+            .map_err(|e| e.to_string())?;
+            sample_argmax_f32_tcb(&mut tcb, &self.logits, &self.sampled, VOCAB)
+                .map_err(|e| e.to_string())?;
             let encode_wall_ns = encode_started.elapsed().as_nanos() as u64;
             let timing = tcb.commit_and_wait_timed().map_err(|e| e.to_string())?;
             let token = unsafe { *(self.sampled.contents() as *const u32) } as usize;
@@ -317,7 +422,11 @@ mod macos {
         }
     }
 
-    pub(crate) fn run_with(root: PathBuf, state_path: PathBuf, out_path: Option<PathBuf>) -> Result<(), String> {
+    pub(crate) fn run_with(
+        root: PathBuf,
+        state_path: PathBuf,
+        out_path: Option<PathBuf>,
+    ) -> Result<(), String> {
         let started = Instant::now();
         let index = SourceBf16Index::open(&root).map_err(|e| e.to_string())?;
         let state = read_state(&state_path)?;
@@ -325,40 +434,106 @@ mod macos {
         if hidden.iter().any(|v| !v.is_finite()) {
             return Err("HyperConnection readout produced non-finite values".into());
         }
-        let hc_norm = index.read_raw("model.language_model.hyper_connection_mixer.hc_norm.weight").map_err(|e| e.to_string())?;
-        let hc_down = index.read_raw("model.language_model.hyper_connection_mixer.input_mix_weight_down.weight").map_err(|e| e.to_string())?;
-        let hc_up = index.read_raw("model.language_model.hyper_connection_mixer.input_mix_weight_up.weight").map_err(|e| e.to_string())?;
-        let lm_head = index.read_raw("lm_head.weight").map_err(|e| e.to_string())?;
+        let hc_norm = index
+            .read_raw("model.language_model.hyper_connection_mixer.hc_norm.weight")
+            .map_err(|e| e.to_string())?;
+        let hc_down = index
+            .read_raw("model.language_model.hyper_connection_mixer.input_mix_weight_down.weight")
+            .map_err(|e| e.to_string())?;
+        let hc_up = index
+            .read_raw("model.language_model.hyper_connection_mixer.input_mix_weight_up.weight")
+            .map_err(|e| e.to_string())?;
+        let lm_head = index
+            .read_raw("lm_head.weight")
+            .map_err(|e| e.to_string())?;
         if lm_head.len() != VOCAB * HIDDEN * 2 {
-            return Err(format!("lm_head bytes {} != {}", lm_head.len(), VOCAB * HIDDEN * 2));
+            return Err(format!(
+                "lm_head bytes {} != {}",
+                lm_head.len(),
+                VOCAB * HIDDEN * 2
+            ));
         }
         let context = MetalContext::new_with_trace(true).map_err(|e| e.to_string())?;
-        let state_buf = context.new_buffer_checked(HC * 4).map_err(|e| e.to_string())?;
-        MetalContext::write_buffer_bytes(&state_buf, &state.iter().flat_map(|v| v.to_le_bytes()).collect::<Vec<_>>());
-        let hc_norm_buf = context.new_buffer_with_bytes_checked(&hc_norm).map_err(|e| e.to_string())?;
-        let hc_down_buf = context.new_buffer_with_bytes_checked(&hc_down).map_err(|e| e.to_string())?;
-        let hc_up_buf = context.new_buffer_with_bytes_checked(&hc_up).map_err(|e| e.to_string())?;
-        let normalized = context.new_buffer_checked(HC * 4).map_err(|e| e.to_string())?;
-        let low = context.new_buffer_checked(LOWRANK * 4).map_err(|e| e.to_string())?;
-        let low_activation = context.new_buffer_checked(LOWRANK * 4).map_err(|e| e.to_string())?;
-        let gates = context.new_buffer_checked(HC * 4).map_err(|e| e.to_string())?;
-        let input = context.new_buffer_checked(HIDDEN * 4).map_err(|e| e.to_string())?;
-        let lm_head_buf = context.new_buffer_with_bytes_checked(&lm_head).map_err(|e| e.to_string())?;
-        let logits = context.new_buffer_checked(VOCAB * 4).map_err(|e| e.to_string())?;
+        let state_buf = context
+            .new_buffer_checked(HC * 4)
+            .map_err(|e| e.to_string())?;
+        MetalContext::write_buffer_bytes(
+            &state_buf,
+            &state
+                .iter()
+                .flat_map(|v| v.to_le_bytes())
+                .collect::<Vec<_>>(),
+        );
+        let hc_norm_buf = context
+            .new_buffer_with_bytes_checked(&hc_norm)
+            .map_err(|e| e.to_string())?;
+        let hc_down_buf = context
+            .new_buffer_with_bytes_checked(&hc_down)
+            .map_err(|e| e.to_string())?;
+        let hc_up_buf = context
+            .new_buffer_with_bytes_checked(&hc_up)
+            .map_err(|e| e.to_string())?;
+        let normalized = context
+            .new_buffer_checked(HC * 4)
+            .map_err(|e| e.to_string())?;
+        let low = context
+            .new_buffer_checked(LOWRANK * 4)
+            .map_err(|e| e.to_string())?;
+        let low_activation = context
+            .new_buffer_checked(LOWRANK * 4)
+            .map_err(|e| e.to_string())?;
+        let gates = context
+            .new_buffer_checked(HC * 4)
+            .map_err(|e| e.to_string())?;
+        let input = context
+            .new_buffer_checked(HIDDEN * 4)
+            .map_err(|e| e.to_string())?;
+        let lm_head_buf = context
+            .new_buffer_with_bytes_checked(&lm_head)
+            .map_err(|e| e.to_string())?;
+        let logits = context
+            .new_buffer_checked(VOCAB * 4)
+            .map_err(|e| e.to_string())?;
         let sampled = context.new_buffer_checked(4).map_err(|e| e.to_string())?;
         let mut tcb = TokenCommandBuffer::new(&context);
-        qwen_next_hyperconnection_grouped_rmsnorm_tcb(&mut tcb, &state_buf, &hc_norm_buf, &normalized, HIDDEN, STREAMS, EPS).map_err(|e| e.to_string())?;
-        native_bf16_gemv_seq_tcb(&mut tcb, &hc_down_buf, &normalized, &low, LOWRANK, HC).map_err(|e| e.to_string())?;
-        qwen_next_hyperconnection_silu_scale_tcb(&mut tcb, &low, &low_activation, LOWRANK, STREAMS as f32).map_err(|e| e.to_string())?;
-        native_bf16_gemv_seq_tcb(&mut tcb, &hc_up_buf, &low_activation, &gates, HC, LOWRANK).map_err(|e| e.to_string())?;
-        qwen_next_hyperconnection_read_mix_tcb(&mut tcb, &normalized, &gates, &input, HIDDEN, STREAMS).map_err(|e| e.to_string())?;
-        native_bf16_gemv_seq_tcb(&mut tcb, &lm_head_buf, &input, &logits, VOCAB, HIDDEN).map_err(|e| e.to_string())?;
+        qwen_next_hyperconnection_grouped_rmsnorm_tcb(
+            &mut tcb,
+            &state_buf,
+            &hc_norm_buf,
+            &normalized,
+            HIDDEN,
+            STREAMS,
+            EPS,
+        )
+        .map_err(|e| e.to_string())?;
+        native_bf16_gemv_seq_tcb(&mut tcb, &hc_down_buf, &normalized, &low, LOWRANK, HC)
+            .map_err(|e| e.to_string())?;
+        qwen_next_hyperconnection_silu_scale_tcb(
+            &mut tcb,
+            &low,
+            &low_activation,
+            LOWRANK,
+            STREAMS as f32,
+        )
+        .map_err(|e| e.to_string())?;
+        native_bf16_gemv_seq_tcb(&mut tcb, &hc_up_buf, &low_activation, &gates, HC, LOWRANK)
+            .map_err(|e| e.to_string())?;
+        qwen_next_hyperconnection_read_mix_tcb(
+            &mut tcb,
+            &normalized,
+            &gates,
+            &input,
+            HIDDEN,
+            STREAMS,
+        )
+        .map_err(|e| e.to_string())?;
+        native_bf16_gemv_seq_tcb(&mut tcb, &lm_head_buf, &input, &logits, VOCAB, HIDDEN)
+            .map_err(|e| e.to_string())?;
         sample_argmax_f32_tcb(&mut tcb, &logits, &sampled, VOCAB).map_err(|e| e.to_string())?;
         let timing = tcb.commit_and_wait_timed().map_err(|e| e.to_string())?;
         let token = unsafe { *(sampled.contents() as *const u32) };
-        let observed_hidden = unsafe {
-            std::slice::from_raw_parts(input.contents() as *const f32, HIDDEN).to_vec()
-        };
+        let observed_hidden =
+            unsafe { std::slice::from_raw_parts(input.contents() as *const f32, HIDDEN).to_vec() };
         let hidden_metrics = metrics(&hidden, &observed_hidden);
         let device = context.device_name();
         let receipt = json!({

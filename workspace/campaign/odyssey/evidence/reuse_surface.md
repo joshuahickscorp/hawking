@@ -1,4 +1,4 @@
-I'll scout the Hawking repo read-only and map the exact reusable APIs. Starting with the named files and a wide search for callers, schemas, and Odyssey patient-queue machinery.Key files are located. Next I’ll read the gate/controller/pipeline sources and fan out greps for callers, schemas, and TPS receipts.Core gate files are in. Next I’ll pull doctor/seal/dispatch/odyssey sources plus TPS receipts and the ascent state schema.Doctor and dispatch sources are in. I’ll now pull the ascent state schema, spawn callers, TPS receipts, and Odyssey patient-queue surfaces.The 29.3 TPS specimen is in the A3B recon receipt. Next I’ll read that pipeline plus remaining gate, contract, and Odyssey patient-queue sources.I’ve confirmed the 29.3 TPS number is an mlx_lm specimen. Next I’ll pull remaining APIs: spawn callers, Metal headroom, contract formation, and Odyssey patient surfaces.Worker_gate is only imported by the NOS pipeline. Next I’ll map Metal admission, contract formation, remaining architectures, and Odyssey patient machinery.Architecture dispatch is Qwen/Llama/DeepSeek/RWKV plus Gravity artifacts. I’ll now fill Metal admission, Mixtral/Falcon/Mamba edges, TPS scripts, and Odyssey patient machinery.A few contradictions remain (Mixtral in-tree vs extra pack, no Metal headroom in worker_gate). I’ll read the remaining admission, target, Odyssey, and baseline sources.I still need the ascent target schema, Mixtral dispatch truth, DeepSeek-V4 load path, spawn callers, and Odyssey patient-queue files.I have the controller/state loop. Next I’ll close remaining gaps: Gravity load dispatch, spawn-gating callers, Odyssey/foundry patient machinery, and the mlx vs transformers baseline.A few contradictions remain (Mixtral in-tree vs extra-pack comments). I’ll read spawn admission, Gravity arch match, Odyssey modules, and the generate/TPS entrypoints.A few last facts: native TPS measurement, hawking generate entry, Odyssey module inventory, and whether ascent is G001-hardwired.# ODYSSEY-I reuse-surface recon
+# ODYSSEY-I reuse-surface recon
 
 Read-only scout of `/Users/scammermike/Downloads/hawking`. No files were edited. There is no `tools/machine_state.py`; the live module is `tools/agentos/machine_state.py`.
 
@@ -601,9 +601,16 @@ python3 -m tools.odyssey.cli teacher
 python3 -m tools.odyssey.cli all
 ```
 
-Schemas: `hawking.odyssey.data_inventory.v1`, `.membership_record.v1`, `.contamination_barrier.v1`, plus T0 `hawking.odyssey.t0.v1` (`t0_run.py`), tournament `hawking.odyssey.checkpoint_tournament.v1` (math-profile + support-halo, **training checkpoints**, not NX patients).
+Schemas: `hawking.odyssey.data_inventory.v1`, `.membership_record.v1`, and
+`.contamination_barrier.v1`. The former T0 launcher/checkpoint schemas are
+archival only; their implementation generation was retired under Event
+Horizon after its required campaign artifacts were no longer present.
 
-Source files present: `ingest, dedup, contamination, inventory, membership, normalize, data_verify, feasibility, hidden_memberships, known_failures, runtime_authority, substrate_*, teacher_assess, tournament, contracts, t0_run, cli`. `__pycache__` still has deleted modules (`scheduler, apparatus, trainer, qat, trajectory, …`) — **not on disk as `.py`**.
+Current source files present: `ingest, dedup, contamination, inventory,
+membership, normalize, known_failures, runtime_authority, teacher_assess,
+tournament, cli`. The former `data_verify`, `feasibility`, `hidden_memberships`,
+`substrate_*`, `contracts`, and `t0_run` generation is preserved by Git and
+receipts, not carried as active executable support.
 
 Governance tree: `workspace/campaign/governance/odyssey/` (fence, T0 receipts, eval contracts, checkpoints). This is the **training launch** program.
 

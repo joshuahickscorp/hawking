@@ -1500,7 +1500,10 @@ class CommandHandler:
         """
         from .processes import render
 
-        return render(width=STATUS_LINE_CHARS)
+        return render(
+            width=STATUS_LINE_CHARS,
+            workspace=_workspace_root(self.controller),
+        )
 
     def _cmd_receipts(self, arg: str) -> str:
         """Durable run receipts, newest first. hcli.engine writes one per goal."""

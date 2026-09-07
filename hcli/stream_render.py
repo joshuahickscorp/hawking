@@ -87,6 +87,13 @@ def _status_word(raw: Any) -> str:
     return "working"
 
 
+# Shared boundary functions used by the TUI and resident watcher. Keeping one
+# implementation prevents their phase and transcript policies from drifting.
+sanitize_output = _sanitize_output
+summarize_paste = _summarize_paste
+status_word = _status_word
+
+
 def _tool_name(data: Dict[str, Any]) -> str:
     return str(data.get("tool") or data.get("name") or "tool").strip() or "tool"
 

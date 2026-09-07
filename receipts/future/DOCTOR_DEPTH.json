@@ -17,7 +17,7 @@
     "evidence_tier": "STATIC",
     "metadata_bytes_read": 4950,
     "metadata_files_opened": [
-     "/Users/scammermike/Downloads/hawking/receipts/QWEN80_BIT_BUDGET_LEDGER.json"
+     "/Users/scammermike/Downloads/hawking/.worktrees/event-horizon/receipts/QWEN80_BIT_BUDGET_LEDGER.json"
     ],
     "rule": "config.json + *.index.json + receipts only; never a weight shard",
     "weight_bytes_loaded": 0,
@@ -1549,7 +1549,7 @@
     "evidence_tier": "STATIC",
     "metadata_bytes_read": 59677,
     "metadata_files_opened": [
-     "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_EBPW_BUDGET.json"
+     "/Users/scammermike/Downloads/hawking/.worktrees/event-horizon/receipts/headless/FLASH_EBPW_BUDGET.json"
     ],
     "rule": "config.json + *.index.json + receipts only; never a weight shard",
     "weight_bytes_loaded": 0,
@@ -9831,7 +9831,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-03T05:52:32Z",
+  "recorded_at": "2026-09-05T21:57:57Z",
   "recorded_by": "tools/doctor/engine.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -9848,8 +9848,7 @@
  ],
  "n_artifacts": 4,
  "negative_findings": [
-  "tools/headless/doctor_diagnosis.py still requires parent tensors; this lane does not call it.",
-  "tools/odyssey/doctor_tournament.py.probes() opens safetensors; not called.",
+  "Historical parent-tensor diagnosis is receipt-only; this lane does not load parent weights.",
   "Activation/logit/hidden-state probes and Hessian are ABSENT (named, not invented).",
   "FPGA/U50, DGX, eGPU are ABSENT hardware; DEVICE COMPILE stays STATIC_ONLY."
  ],
@@ -9865,16 +9864,12 @@
  "purpose": "Deepen I-B Doctor so it diagnoses real receipts and sealed specimen metadata, walking the 9.1 technique order and treating the 9.2 three zeros as checks that can FAIL.",
  "recovered_implementation": [
   {
-   "path": "tools/headless/doctor_diagnosis.py",
-   "what": "N047 organ diagnosis on parent tensors. Not called: it streams BF16 weights."
+   "path": "receipts/headless/DOCTOR_DIAGNOSIS.json",
+   "what": "Historical N047 organ diagnosis evidence on parent tensors; the producer is retired because it was not called by the product path."
   },
   {
-   "path": "tools/headless/doctor_transfer.py",
-   "what": "CANONICAL_ORDER + THREE_ZEROS as documentation. Extended here as fail-able checks."
-  },
-  {
-   "path": "tools/odyssey/doctor_tournament.py",
-   "what": "9.1-like order with safetensors probes. probes() is not called."
+   "path": "receipts/headless/DOCTOR_TRANSFER.json",
+   "what": "Historical CANONICAL_ORDER + THREE_ZEROS evidence retained as a receipt; the redundant producer is retired."
   },
   {
    "path": "tools/future/specimen_events.py",
@@ -9889,8 +9884,8 @@
    "what": "validate() calls doctor_zeros_for_doc \u2192 check_three_zeros."
   },
   {
-   "path": "tools/future/flash_schools.py",
-   "what": "THREE_ZEROS as school questions. This lane makes them FAIL-able checks."
+   "path": "receipts/headless/FLASH_ORGAN_SCHOOLS.json",
+   "what": "Historical representation-school findings retained as a receipt; the static generator was retired after its generic falsifier contract moved into adaptive verification."
   },
   {
    "path": "tools/doctor_seal.py",
@@ -9909,13 +9904,13 @@
   "diagnosis_evidence": "9.3",
   "gene_card": "I-B \u2014 Doctor",
   "section": "9",
-  "source": "/Users/scammermike/Downloads/hawking/docs/roadmap-lineage/H-ROADMAP.superseded-2026-09-02.md",
+  "source": "/Users/scammermike/Downloads/H-ROADMAP.md",
   "technique_order": "9.1",
   "three_zeros": "9.2",
   "title": "DOCTOR \u2014 MODEL PHYSICIAN AND EXPERIMENT PLANNER"
  },
  "schema": "hawking.future.doctor_depth.v1",
- "seal_sha256": "7105149e9445c59067600c91a2f7224cddf4d51860d9836b0ced19b6efcb3d53",
+ "seal_sha256": "1a518095d6aea594756b6d408e7f5e70e4feb836d292cbdb179ba7c530407120",
  "technique_order": [
   {
    "cheapest_experiment": "cite architecture for unused/duplicated/tied structures; do not load weights",

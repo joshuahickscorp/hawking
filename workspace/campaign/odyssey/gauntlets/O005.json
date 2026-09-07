@@ -1,0 +1,166 @@
+{
+  "authority": "HCLI single writer; verifier decides target status",
+  "best_candidate_id": "O005-q2-g32-experts",
+  "budget": {
+    "max_evaluations": 2,
+    "used": 2
+  },
+  "candidate_space": {
+    "O005-q2-g32-experts": {
+      "expected_effect": "test q2 / group32 storage frontier",
+      "id": "O005-q2-g32-experts",
+      "mutation": "frontier_candidate",
+      "parent_id": null,
+      "representation_class": "candidate",
+      "spec": "q2-g32-experts",
+      "specimen": "O005"
+    },
+    "O005-q3-g32-experts": {
+      "expected_effect": "test q3 / group32 storage frontier",
+      "id": "O005-q3-g32-experts",
+      "mutation": "initial_representation",
+      "parent_id": null,
+      "representation_class": "candidate",
+      "spec": "q3-g32-experts",
+      "specimen": "O005"
+    }
+  },
+  "cost": {
+    "candidate_evaluations": 2,
+    "resource_cost": {},
+    "verification_wall_s": 0.0,
+    "wall_s": 34.082
+  },
+  "created_at": 1788645563.092447,
+  "frontier": [
+    "O005-q3-g32-experts",
+    "O005-q2-g32-experts"
+  ],
+  "iterations": [
+    {
+      "candidate": {
+        "expected_effect": "test q3 / group32 storage frontier",
+        "id": "O005-q3-g32-experts",
+        "mutation": "initial_representation",
+        "parent_id": null,
+        "representation_class": "candidate",
+        "spec": "q3-g32-experts",
+        "specimen": "O005"
+      },
+      "decision": {
+        "next_candidate_id": "O005-q2-g32-experts",
+        "reason": "capability signal preserved; descend bits/group for information gain"
+      },
+      "observation": {
+        "accounting_reason": "complete accounting reconciles",
+        "capability_signal": true,
+        "capability_status": "CANDIDATE_PASS",
+        "complete_accounting": true,
+        "complete_ebpw": 4.0254,
+        "complete_ebpw_measured": true,
+        "execution_complete": false,
+        "magnitude_adequacy": {
+          "adequate": false,
+          "direction_similarity": null,
+          "magnitude_ratio": null,
+          "reason": "magnitude adequacy was not measured",
+          "verdict": "UNVALIDATED"
+        },
+        "nr_release_verified": false,
+        "persistent_bytes": 15362682880,
+        "receipt": "/Users/scammermike/Downloads/hawking/receipts/odyssey-i/O005_GRAVITY_q3-g32-experts.json",
+        "reject_reasons": [
+          "magnitude adequacy was not measured"
+        ],
+        "resource_measurements": null,
+        "source_sha256": "bc559e4e194db2706b01e3db1225d7b6107ee8668927b8503edafee867fdeb7c",
+        "target_eligible": false,
+        "utilization_measured": false,
+        "verification_wall_s": null,
+        "verifier_independent": false,
+        "wall_s": 15.72
+      },
+      "wall_s": 0.000163
+    },
+    {
+      "candidate": {
+        "expected_effect": "test q2 / group32 storage frontier",
+        "id": "O005-q2-g32-experts",
+        "mutation": "evidence_guided_precision_step",
+        "parent_id": "O005-q3-g32-experts",
+        "representation_class": "candidate",
+        "spec": "q2-g32-experts",
+        "specimen": "O005"
+      },
+      "decision": {
+        "next_candidate_id": null,
+        "reason": "capability signal preserved; descend bits/group for information gain"
+      },
+      "observation": {
+        "accounting_reason": "complete accounting reconciles",
+        "capability_signal": true,
+        "capability_status": "CANDIDATE_PASS",
+        "complete_accounting": true,
+        "complete_ebpw": 3.0759,
+        "complete_ebpw_measured": true,
+        "execution_complete": false,
+        "magnitude_adequacy": {
+          "adequate": false,
+          "direction_similarity": null,
+          "magnitude_ratio": null,
+          "reason": "magnitude adequacy was not measured",
+          "verdict": "UNVALIDATED"
+        },
+        "nr_release_verified": false,
+        "persistent_bytes": 11738804224,
+        "receipt": "/Users/scammermike/Downloads/hawking/receipts/odyssey-i/O005_GRAVITY_q2-g32-experts.json",
+        "reject_reasons": [
+          "magnitude adequacy was not measured"
+        ],
+        "resource_measurements": null,
+        "source_sha256": "8a8a5a2ff6c94d09b3ad66a9baca7a7a9969a76d5089bde5228e189e5f4fbca5",
+        "target_eligible": false,
+        "utilization_measured": false,
+        "verification_wall_s": null,
+        "verifier_independent": false,
+        "wall_s": 18.362
+      },
+      "wall_s": 0.000138
+    }
+  ],
+  "nr": {
+    "current_candidate_id": "O005-q2-g32-experts",
+    "release_verified": false,
+    "released_candidate_ids": [
+      "O005-q3-g32-experts"
+    ]
+  },
+  "schema": "hawking.hcli.odyssey.gravity_gauntlet.v1",
+  "specimen": "O005",
+  "target": {
+    "complete_ebpw_lte": 1.0,
+    "requires": [
+      "complete accounting",
+      "capability",
+      "execution",
+      "independent verifier",
+      "magnitude adequacy",
+      "validated utilization"
+    ]
+  },
+  "terminal": {
+    "best_candidate_id": "O005-q2-g32-experts",
+    "best_capability_status": "CANDIDATE_PASS",
+    "best_complete_ebpw": 3.0759,
+    "best_execution_complete": false,
+    "best_verifier_independent": false,
+    "disposition": "BUDGET_EXHAUSTED",
+    "reason": "allocated search ended before target hit",
+    "remaining_frontier": []
+  },
+  "updated_at": 1788645563.093045,
+  "writer": {
+    "mode": "single_writer",
+    "pid": 34897
+  }
+}

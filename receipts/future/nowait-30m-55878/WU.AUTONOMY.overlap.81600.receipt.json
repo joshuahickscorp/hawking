@@ -1,1 +1,0 @@
-{"module": "fusion_sim.py", "entry_point": "build", "receipt": "receipts/future/FUSION_SIMULATION.json", "routed_to_frontier": "FT.MODEL_EXECUTION.fusion-sim", "species": "FUSION_SIMULATION", "wall_seconds": 0.03, "evidence_class": "STATIC_ONLY"}

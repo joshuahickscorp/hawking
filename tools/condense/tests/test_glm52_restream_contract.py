@@ -6,7 +6,7 @@ import pytest
 
 from lab.operators.glm52_common import verify_sealed
 from lab.operators.glm52_restream_contract import build_contract, live_window_admission
-from ramanujan.restream_guard import validate_bounded_restream
+from tools.verify.restream_guard import validate_bounded_restream
 
 
 @pytest.fixture(scope="module")

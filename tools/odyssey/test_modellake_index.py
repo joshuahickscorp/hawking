@@ -533,3 +533,50 @@ def test_a_reclassified_family_makes_its_larger_member_retirable(tmp_path):
     unknown = [dict(r, architecture_family="UNKNOWN") for r in rows]
     rec2 = mx.retention_recommendation(unknown, budget=1, used=95_800_000_000)
     assert not {r["slug"] for r in rec2["ranked_redundant_bulk"]}
+
+
+# --- execution-class size tiering (operator decision 2026-09-05) ----------
+
+def test_scan_specimen_calls_tiering_pieces():
+    """A capability nothing calls does not exist -- check the call site."""
+    names = mx.scan_specimen.__code__.co_names
+    for needed in ("size_tier_for", "execution_eligible_for"):
+        assert needed in names, needed
+
+
+def test_scan_specimen_record_carries_size_tier_and_eligibility(tmp_path):
+    lake = _lake(tmp_path)
+    _add_specimen(lake, CANON, model_type="qwen3", architectures=["Qwen3ForCausalLM"])
+    _add_specimen(
+        lake, "moonshotai--Kimi-K3@9f62e4e9fffb",
+        model_type="kimi", architectures=["KimiForCausalLM"],
+    )
+    cat = _build(lake, force=True)
+    rows = {r["slug"]: mx.query_specimen(r["slug"], index_dir=lake / "index", lake=lake)
+            for r in cat["specimens"]}
+    tiny = rows[CANON]
+    giant = rows["moonshotai--Kimi-K3@9f62e4e9fffb"]
+    assert tiny["size_tier"] == "A_TINY"
+    assert tiny["execution_eligible"] is True
+    assert giant["execution_eligible"] is False
+
+
+def test_tiering_census_over_a_fake_lake(tmp_path):
+    lake = _lake(tmp_path)
+    _add_specimen(lake, CANON, model_type="qwen3", architectures=["Qwen3ForCausalLM"])
+    _add_specimen(
+        lake, "moonshotai--Kimi-K3@9f62e4e9fffb",
+        model_type="kimi", architectures=["KimiForCausalLM"], extra_bytes=4096,
+    )
+    out = mx.tiering_census(lake=lake)
+    assert out["n_specimens"] == 2
+    by_repo = {row["repo"]: row for row in out["specimens"]}
+    qwen = by_repo["Qwen/Qwen3-0.6B"]
+    kimi = by_repo["moonshotai/Kimi-K3"]
+    assert qwen["execution_eligible"] is True
+    assert kimi["execution_eligible"] is False
+    assert kimi["deferred_reason"]
+    assert out["deferred_bytes"] == kimi["bytes"]
+    assert out["eligible_bytes"] == qwen["bytes"]
+    assert out["by_tier"]["A_TINY"]["count"] == 2
+    assert out["by_tier"]["A_TINY"]["bytes"] == qwen["bytes"] + kimi["bytes"]

@@ -14,8 +14,7 @@ use crate::kernels::{
     mha_decode_f32_tcb, qwen_binary_sign_scale_matvec_component_tcb, qwen_next_add_residual_tcb,
     qwen_next_ba_to_decay_beta_tcb, qwen_next_deltanet_gated_rmsnorm_tcb,
     qwen_next_direct_packed_input_rmsnorm_tcb,
-    qwen_next_gated_delta_decode_single_at_state_offset_tcb,
-    qwen_next_qkvz_rearrange_conv_l2_tcb,
+    qwen_next_gated_delta_decode_single_at_state_offset_tcb, qwen_next_qkvz_rearrange_conv_l2_tcb,
 };
 use crate::metal::{PinnedBuffer, TokenCommandBuffer};
 use crate::model::qwen80_48_layer_execution_schedule::{
@@ -130,7 +129,10 @@ impl Qwen80SameRuntimeDeltaNetLayerPrefixEncoder {
         Qwen80CompleteNativeRuntime::require_parity(
             &cpu.mixer.mixer_residual_output,
             &self.expected_first_residual,
-            &format!("same-runtime layer {} full CPU oracle first residual", self.layer),
+            &format!(
+                "same-runtime layer {} full CPU oracle first residual",
+                self.layer
+            ),
             0.0,
         )?;
         Ok(cpu)
@@ -250,11 +252,17 @@ impl Qwen80SameRuntimeDeltaNetLayerPrefixEncoder {
             )?,
             rollback_conv_state_buffer_identity_sha256: qwen80_pinned_buffer_identity_sha256(
                 &self.rollback_conv_state,
-                &format!("same-runtime layer {} rollback convolution buffer", self.layer),
+                &format!(
+                    "same-runtime layer {} rollback convolution buffer",
+                    self.layer
+                ),
             )?,
             rollback_recurrent_state_buffer_identity_sha256: qwen80_pinned_buffer_identity_sha256(
                 &self.rollback_recurrent_state,
-                &format!("same-runtime layer {} rollback recurrent buffer", self.layer),
+                &format!(
+                    "same-runtime layer {} rollback recurrent buffer",
+                    self.layer
+                ),
             )?,
             input_max_abs_error,
             first_residual_max_abs_error,
@@ -448,7 +456,9 @@ impl Qwen80SameRuntimeGqaLayerPrefixEncoder {
         &self,
         runtime: &Qwen80CompleteNativeRuntime,
     ) -> Result<Qwen80CanonicalGqaMoECpuOracleResult> {
-        let contract = runtime.catalog.canonical_gqa_moe_operator_contract(self.layer)?;
+        let contract = runtime
+            .catalog
+            .canonical_gqa_moe_operator_contract(self.layer)?;
         if contract.mixer.layer != self.layer
             || contract.mixer.full_attention_state_slot != self.full_attention_state_slot
         {
@@ -471,7 +481,10 @@ impl Qwen80SameRuntimeGqaLayerPrefixEncoder {
         Qwen80CompleteNativeRuntime::require_parity(
             &cpu.mixer.mixer_residual_output,
             &self.expected_first_residual,
-            &format!("same-runtime GQA layer {} full CPU oracle first residual", self.layer),
+            &format!(
+                "same-runtime GQA layer {} full CPU oracle first residual",
+                self.layer
+            ),
             0.0,
         )?;
         Ok(cpu)
@@ -592,11 +605,17 @@ impl Qwen80SameRuntimeGqaLayerPrefixEncoder {
             )?,
             device_first_residual_f32le_sha256: qwen80_f32_vector_sha256(
                 &device_first_residual,
-                &format!("same-runtime GQA layer {} device first residual", self.layer),
+                &format!(
+                    "same-runtime GQA layer {} device first residual",
+                    self.layer
+                ),
             )?,
             first_residual_buffer_identity_sha256: qwen80_pinned_buffer_identity_sha256(
                 &self.first_residual,
-                &format!("same-runtime GQA layer {} first residual buffer", self.layer),
+                &format!(
+                    "same-runtime GQA layer {} first residual buffer",
+                    self.layer
+                ),
             )?,
             device_key_row_f32le_sha256: qwen80_f32_vector_sha256(
                 &device_key_row,
@@ -628,7 +647,10 @@ impl Qwen80SameRuntimeGqaLayerPrefixEncoder {
             )?,
             rollback_value_cache_buffer_identity_sha256: qwen80_pinned_buffer_identity_sha256(
                 &self.rollback_value_cache,
-                &format!("same-runtime GQA layer {} rollback value buffer", self.layer),
+                &format!(
+                    "same-runtime GQA layer {} rollback value buffer",
+                    self.layer
+                ),
             )?,
             input_max_abs_error,
             first_residual_max_abs_error,
@@ -897,8 +919,9 @@ impl Qwen80CompleteNativeRuntime {
                 live_state.linear_state_slot, contract.linear_state_slot
             )));
         }
-        let cpu_input =
-            Qwen80CanonicalLinearLayerCpuInput::with_zero_state(previous_second_residual_cpu.to_vec());
+        let cpu_input = Qwen80CanonicalLinearLayerCpuInput::with_zero_state(
+            previous_second_residual_cpu.to_vec(),
+        );
         cpu_input.validate()?;
         if cpu_input
             .state
@@ -1289,9 +1312,7 @@ impl Qwen80SameRuntimeLayer1DeltaNetPrefixEncoder {
                 ))
             })?;
             let end = start.checked_add(QWEN80_HIDDEN).ok_or_else(|| {
-                model_error(format!(
-                    "same-runtime layer {layer} route range overflowed"
-                ))
+                model_error(format!("same-runtime layer {layer} route range overflowed"))
             })?;
             let observed = route_weighted.get(start..end).ok_or_else(|| {
                 model_error(format!(
@@ -1480,10 +1501,12 @@ impl Qwen80SameRuntimeLayer1DeltaNetPrefixEncoder {
                 )));
             }
         }
-        self.l0_continuation.runtime_state_arena_owner.require_runtime_owner(
-            runtime,
-            "multi-layer finalizer refuses a runtime other than the opaque continuation owner",
-        )?;
+        self.l0_continuation
+            .runtime_state_arena_owner
+            .require_runtime_owner(
+                runtime,
+                "multi-layer finalizer refuses a runtime other than the opaque continuation owner",
+            )?;
         self.l0_continuation.require_l0_trace()?;
 
         // Structural kernel trace from the 48-layer execution schedule authority
@@ -1503,7 +1526,10 @@ impl Qwen80SameRuntimeLayer1DeltaNetPrefixEncoder {
         qwen80_require_exact_structural_kernel_trace(
             command.structural_kernel_names(),
             &expected_kernels,
-            &format!("same-runtime multi-layer L0..L{} finalizer", layer_count - 1),
+            &format!(
+                "same-runtime multi-layer L0..L{} finalizer",
+                layer_count - 1
+            ),
         )?;
         let structural_kernel_names = command
             .structural_kernel_names()
@@ -1649,7 +1675,10 @@ impl Qwen80CompleteNativeRuntime {
             layout,
             contract.full_attention_state_slot,
             self.state.max_seq_len,
-            contract.minimum_device_resources.direct_packed_payload_bytes.clone(),
+            contract
+                .minimum_device_resources
+                .direct_packed_payload_bytes
+                .clone(),
         )?;
         if position >= resources.max_seq_len {
             return Err(model_error(format!(
@@ -1717,12 +1746,20 @@ impl Qwen80CompleteNativeRuntime {
         let o_proj = self.upload_direct_tensor(&contract.mixer.o_proj.name)?;
 
         // Rollback is the pre-encode (zero) key/value *row* for this position.
-        let rollback_key_cache = self
-            .context
-            .new_buffer_with_bytes_checked(bytemuck::cast_slice(&expected.key_row.iter().map(|_| 0.0f32).collect::<Vec<_>>()))?;
-        let rollback_value_cache = self
-            .context
-            .new_buffer_with_bytes_checked(bytemuck::cast_slice(&expected.value_row.iter().map(|_| 0.0f32).collect::<Vec<_>>()))?;
+        let rollback_key_cache =
+            self.context
+                .new_buffer_with_bytes_checked(bytemuck::cast_slice(
+                    &expected.key_row.iter().map(|_| 0.0f32).collect::<Vec<_>>(),
+                ))?;
+        let rollback_value_cache =
+            self.context
+                .new_buffer_with_bytes_checked(bytemuck::cast_slice(
+                    &expected
+                        .value_row
+                        .iter()
+                        .map(|_| 0.0f32)
+                        .collect::<Vec<_>>(),
+                ))?;
 
         let normalized = self.context.new_buffer_checked(bytes_for_f32(
             layout.hidden_elements,

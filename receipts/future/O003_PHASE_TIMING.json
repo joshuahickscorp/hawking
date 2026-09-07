@@ -1,0 +1,24 @@
+{
+ "specimen": "O003",
+ "date": "2026-09-06",
+ "obligation": "G022 / S009",
+ "instrumentation": "Type-level phase timing inside one HCLI run, restored on exit. Four external stopwatch readings could not separate load from generation; this can.",
+ "MEASURED_PHASES_one_cycle": {
+  "total_wall_s": 151.58,
+  "engine._call_model": 144.45,
+  "HawkingNativeConnector.complete_payload": 144.17,
+  "_TokenizerRenderer._load": 3.57,
+  "subprocess.run_22_calls": 4.66,
+  "ResidentProcess.start": 2.19,
+  "engine._build_model_payload": 0.26
+ },
+ "RESULT": "95.1% of a cycle is ONE call to complete_payload. Prompt compilation is 0.26 s. Resident process spawn is 2.19 s. The cost is the model call itself.",
+ "I_REFUTED_MY_OWN_PERSISTENCE_CLAIM": {
+  "what_I_claimed": "A 237 s per-round floor is process + resident LOAD, split 116.9 s setup vs 60.7 s marginal cycle, so persistence is worth 2.7x on the loop. It passed a pre-committed kill of 150 s.",
+  "why_it_is_wrong": "That test compared --max-cycles 1 (177.6 s) against --max-cycles 3 (299.0 s) and attributed the difference to two extra cycles. Instrumented, --max-cycles 3 on the SAME task makes exactly ONE complete_payload call: the task closes after one answer regardless of the cycle cap. The two runs did IDENTICAL work. The 121 s difference was variance, in a quantity already measured to span 177.6-267.0 s.",
+  "what_the_kill_test_actually_showed": "Nothing. A pre-committed threshold does not rescue a comparison whose two arms are not different.",
+  "what_persistence_is_actually_worth": "ResidentProcess.start is 2.19 s and the tokenizer load is 3.57 s. If the 9.9 GB weight load is lazy inside the first complete_payload it could still be large, but that is now UNMEASURED, not established. The honest upper bound from this run is ~6 s of spawn plus tokenizer, not 117 s."
+ },
+ "WHAT_STANDS": "95% of a cycle is one model call, prompt compilation is negligible (0.26 s), and the loop's wall is the resident generating. That is measured directly and does not depend on any difference of runs.",
+ "NEXT_DISCRIMINATOR": "A task that forces SEVERAL model calls in one process, so per-call complete_payload times can be compared. If call 1 is much larger than calls 2+, the weight load is lazy and persistence is worth that difference. If they are equal, persistence is worth about 6 s and the 146 s is pure generation."
+}

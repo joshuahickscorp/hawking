@@ -210,9 +210,9 @@ fn run_probe(args: &Args) {
         shared_session_attach_cost_bytes, AdmissionRequest, AdmissionVerdict,
     };
     use hawking_core::model::qwen38_hybrid_decode::{
-        generate_greedy, generate_greedy_parallel, load_qwen38_tokenizer, measure_shared_weight_fanout,
-        qwen38_workspace_bytes, render_qwen38_user_chat, Qwen38HybridDecodeSession,
-        Qwen38HybridWeights,
+        generate_greedy, generate_greedy_parallel, load_qwen38_tokenizer,
+        measure_shared_weight_fanout, qwen38_workspace_bytes, render_qwen38_user_chat,
+        Qwen38HybridDecodeSession, Qwen38HybridWeights,
     };
 
     if args.sessions == 0 {
@@ -430,8 +430,8 @@ fn run_gravity_recipe(args: &Args) {
     };
     let (artifact, tokenizer_path) = require_paths(args);
     let weights = Arc::new(Qwen38HybridWeights::load(&artifact).unwrap_or_else(|e| fail(e)));
-    let mut session = Qwen38HybridDecodeSession::attach(weights, args.max_seq_len)
-        .unwrap_or_else(|e| fail(e));
+    let mut session =
+        Qwen38HybridDecodeSession::attach(weights, args.max_seq_len).unwrap_or_else(|e| fail(e));
     let tokenizer = load_qwen38_tokenizer(&tokenizer_path).unwrap_or_else(|e| fail(e));
     let prompt = render_qwen38_user_chat(
         "Propose one gravity pack recipe for Qwen3.8-27B that attacks \
@@ -440,7 +440,8 @@ fn run_gravity_recipe(args: &Args) {
          Be concrete. No projections.",
     );
     let ids = tokenizer.encode(&prompt, false).unwrap_or_else(|e| fail(e));
-    let result = generate_greedy(&mut session, &ids, args.max_new_tokens).unwrap_or_else(|e| fail(e));
+    let result =
+        generate_greedy(&mut session, &ids, args.max_new_tokens).unwrap_or_else(|e| fail(e));
     let text = result.decode_new(&tokenizer).unwrap_or_else(|e| fail(e));
     println!("GENERATED_TEXT_VERBATIM: {text}");
     let body = json!({

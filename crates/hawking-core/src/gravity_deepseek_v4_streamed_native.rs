@@ -623,7 +623,9 @@ impl StreamedNativeSession {
             return Err(native_error("fp8_linear_batched geometry is invalid"));
         }
         if weights.len() != rows * logical_k {
-            return Err(native_error("fp8_linear_batched weight byte count mismatch"));
+            return Err(native_error(
+                "fp8_linear_batched weight byte count mismatch",
+            ));
         }
         let scale_cols = logical_k / ACT_QUANT_BLOCK;
         if scales.len() != (rows / ACT_QUANT_BLOCK) * scale_cols {
@@ -684,16 +686,11 @@ impl StreamedNativeSession {
                     set_u32(encoder, 8, &batch_u);
                 },
             )?;
-            batch_enc.dispatch_threads(
-                CAST_KERNEL,
-                (gemm_grid, 1, 1),
-                (cast_tg, 1, 1),
-                |encoder| {
-                    encoder.set_buffer(0, Some(&out_f32_buf), 0);
-                    encoder.set_buffer(1, Some(&out_bf16_buf), 0);
-                    set_u32(encoder, 2, &gemm_grid);
-                },
-            )
+            batch_enc.dispatch_threads(CAST_KERNEL, (gemm_grid, 1, 1), (cast_tg, 1, 1), |encoder| {
+                encoder.set_buffer(0, Some(&out_f32_buf), 0);
+                encoder.set_buffer(1, Some(&out_bf16_buf), 0);
+                set_u32(encoder, 2, &gemm_grid);
+            })
         })?;
         self.dispatches += 3;
         read_u16_buffer(&out_bf16_buf, batch * rows)
@@ -784,16 +781,11 @@ impl StreamedNativeSession {
                     set_u32(encoder, 8, &batch_u);
                 },
             )?;
-            batch_enc.dispatch_threads(
-                CAST_KERNEL,
-                (gemm_grid, 1, 1),
-                (cast_tg, 1, 1),
-                |encoder| {
-                    encoder.set_buffer(0, Some(&out_f32_buf), 0);
-                    encoder.set_buffer(1, Some(&out_bf16_buf), 0);
-                    set_u32(encoder, 2, &gemm_grid);
-                },
-            )
+            batch_enc.dispatch_threads(CAST_KERNEL, (gemm_grid, 1, 1), (cast_tg, 1, 1), |encoder| {
+                encoder.set_buffer(0, Some(&out_f32_buf), 0);
+                encoder.set_buffer(1, Some(&out_bf16_buf), 0);
+                set_u32(encoder, 2, &gemm_grid);
+            })
         })?;
         self.dispatches += 3;
         read_u16_buffer(&out_bf16_buf, batch * rows)
@@ -808,7 +800,9 @@ impl StreamedNativeSession {
         batch: usize,
     ) -> Result<Vec<u16>> {
         if batch == 0 || attention_bf16.len() != batch * O_GROUPS * WO_A_COLS {
-            return Err(native_error("wo_a_batched attention is not [batch, 8, 4096]"));
+            return Err(native_error(
+                "wo_a_batched attention is not [batch, 8, 4096]",
+            ));
         }
         if weights.len() != WO_A_ROWS * WO_A_COLS {
             return Err(native_error("wo_a_batched weight byte count mismatch"));

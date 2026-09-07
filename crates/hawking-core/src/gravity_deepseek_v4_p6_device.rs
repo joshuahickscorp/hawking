@@ -62,8 +62,7 @@ const ACT_QUANT_SIMD_VECTOR_WIDTH: u32 = 4;
 /// It preserves the scalar authority block grammar while packing the seven
 /// independent resource bindings behind one dispatch.
 pub const P6_BATCHED_DOWN_QAT_ENV: &str = "HAWKING_DSV4F_P6_BATCHED_DOWN_QAT";
-const P6_BATCHED_DOWN_QAT_KERNEL: &str =
-    "deepseek_v4_p6a_act_quant_bf16_ue8m0_fixed7_authority";
+const P6_BATCHED_DOWN_QAT_KERNEL: &str = "deepseek_v4_p6a_act_quant_bf16_ue8m0_fixed7_authority";
 const P6_BATCHED_DOWN_QAT_TENSORS: u32 = 7;
 const FP8_KERNEL: &str = "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_authority";
 const FP8_SIMD_KERNEL: &str =
@@ -85,8 +84,7 @@ const P6_FP4_GATE_UP_SWIGLU_SIMD_KERNEL: &str =
 const P6_FP4_GATE_UP_SWIGLU_SIMD_THREADS_X: u32 = 256;
 const P6_FP4_GATE_UP_SWIGLU_SIMD_ROWS_PER_TG: u32 = 8;
 const P6_FP4_DOWN_BF16_KERNEL: &str = "deepseek_v4_p6a_fp4_down_bf16_fused_authority";
-const P6_FP4_DOWN_BF16_SIMD_KERNEL: &str =
-    "deepseek_v4_p6a_fp4_down_bf16_fused_simd_candidate";
+const P6_FP4_DOWN_BF16_SIMD_KERNEL: &str = "deepseek_v4_p6a_fp4_down_bf16_fused_simd_candidate";
 const P6_FP4_DOWN_BF16_SIMD_THREADS_X: u32 = 256;
 const P6_FP4_DOWN_BF16_SIMD_ROWS_PER_TG: u32 = 8;
 /// Full downstream candidate: routed FP4 W2, shared FP8 W2, and final
@@ -101,15 +99,13 @@ const P6_FP4_DOWN_SHARED_COMBINE_FUSED_KERNEL: &str =
 /// explicit BF16 round-trips, and clamped SwiGLU are one guarded primitive.
 pub const P6_SHARED_FP8_GATE_UP_SWIGLU_FUSED_ENV: &str =
     "HAWKING_DSV4F_FP8_SHARED_GATE_UP_SWIGLU_FUSED";
-const P6_SHARED_FP8_GATE_UP_SWIGLU_FUSED_KERNEL: &str =
-    "deepseek_v4_fp8_gate_up_swiglu_bf16_fused";
+const P6_SHARED_FP8_GATE_UP_SWIGLU_FUSED_KERNEL: &str = "deepseek_v4_fp8_gate_up_swiglu_bf16_fused";
 /// Opt-in shared FP8 W2/BF16/combine fusion. The routed outputs have already
 /// crossed their BF16 boundary, so this one launch preserves the source
 /// combine order while removing shared W2 staging and the standalone combine.
 pub const P6_SHARED_FP8_DOWN_COMBINE_FUSED_ENV: &str =
     "HAWKING_DSV4F_FP8_SHARED_DOWN_COMBINE_FUSED";
-const P6_SHARED_FP8_DOWN_COMBINE_FUSED_KERNEL: &str =
-    "deepseek_v4_fp8_down_bf16_combine_fused";
+const P6_SHARED_FP8_DOWN_COMBINE_FUSED_KERNEL: &str = "deepseek_v4_fp8_down_bf16_combine_fused";
 const P5B_SWIGLU_KERNEL: &str = "deepseek_v4_p5b_swiglu_route_bf16_authority";
 // Admitted by the isolated P0 Gate-reduction sweep only. The C4 kernel maps
 // one 32-thread SIMDgroup to each Gate row and must remain a single P6 Gate
@@ -173,16 +169,8 @@ const GATE_BIAS_BYTES: usize = ROUTED_EXPERTS * size_of::<f32>();
 const P6_DORMANT_BUFFER_BYTES: usize = 1;
 
 #[inline]
-fn allocate_p6_scratch(
-    metal: &MetalContext,
-    bytes: usize,
-    live: bool,
-) -> Result<metal::Buffer> {
-    metal.new_buffer_checked(if live {
-        bytes
-    } else {
-        P6_DORMANT_BUFFER_BYTES
-    })
+fn allocate_p6_scratch(metal: &MetalContext, bytes: usize, live: bool) -> Result<metal::Buffer> {
+    metal.new_buffer_checked(if live { bytes } else { P6_DORMANT_BUFFER_BYTES })
 }
 
 /// Exact fixed topology of one hash-gate `DeepSeekV4Layer0P6MetalExecutor::execute`
@@ -715,18 +703,16 @@ impl DeepSeekV4Layer0P6MetalExecutor {
         let fused_gate_up_swiglu = crate::env_on(P6_FP4_GATE_UP_SWIGLU_FUSED_ENV);
         let fused_gate_up_swiglu_simd =
             fused_gate_up_swiglu && crate::env_on(P6_FP4_GATE_UP_SWIGLU_SIMD_ENV);
-        let shared_fp8_gate_up_swiglu =
-            crate::env_on(P6_SHARED_FP8_GATE_UP_SWIGLU_FUSED_ENV);
+        let shared_fp8_gate_up_swiglu = crate::env_on(P6_SHARED_FP8_GATE_UP_SWIGLU_FUSED_ENV);
         let fused_down_bf16 = crate::env_on(P6_FP4_DOWN_BF16_FUSED_ENV);
         let fused_down_shared_combine =
             fused_down_bf16 && crate::env_on(P6_FP4_DOWN_SHARED_COMBINE_FUSED_ENV);
         let shared_fp8_down_combine =
             !fused_down_shared_combine && crate::env_on(P6_SHARED_FP8_DOWN_COMBINE_FUSED_ENV);
         let batched_down_qat = crate::env_on(P6_BATCHED_DOWN_QAT_ENV);
-        let fused_down_bf16_simd =
-            fused_down_bf16
-                && !fused_down_shared_combine
-                && crate::env_on(P6_FP4_DOWN_BF16_SIMD_ENV);
+        let fused_down_bf16_simd = fused_down_bf16
+            && !fused_down_shared_combine
+            && crate::env_on(P6_FP4_DOWN_BF16_SIMD_ENV);
         let threads = precompile_threads(
             metal,
             fused_gate_up_swiglu,
@@ -890,18 +876,16 @@ impl DeepSeekV4Layer0P6MetalExecutor {
         let fused_gate_up_swiglu = crate::env_on(P6_FP4_GATE_UP_SWIGLU_FUSED_ENV);
         let fused_gate_up_swiglu_simd =
             fused_gate_up_swiglu && crate::env_on(P6_FP4_GATE_UP_SWIGLU_SIMD_ENV);
-        let shared_fp8_gate_up_swiglu =
-            crate::env_on(P6_SHARED_FP8_GATE_UP_SWIGLU_FUSED_ENV);
+        let shared_fp8_gate_up_swiglu = crate::env_on(P6_SHARED_FP8_GATE_UP_SWIGLU_FUSED_ENV);
         let fused_down_bf16 = crate::env_on(P6_FP4_DOWN_BF16_FUSED_ENV);
         let fused_down_shared_combine =
             fused_down_bf16 && crate::env_on(P6_FP4_DOWN_SHARED_COMBINE_FUSED_ENV);
         let shared_fp8_down_combine =
             !fused_down_shared_combine && crate::env_on(P6_SHARED_FP8_DOWN_COMBINE_FUSED_ENV);
         let batched_down_qat = crate::env_on(P6_BATCHED_DOWN_QAT_ENV);
-        let fused_down_bf16_simd =
-            fused_down_bf16
-                && !fused_down_shared_combine
-                && crate::env_on(P6_FP4_DOWN_BF16_SIMD_ENV);
+        let fused_down_bf16_simd = fused_down_bf16
+            && !fused_down_shared_combine
+            && crate::env_on(P6_FP4_DOWN_BF16_SIMD_ENV);
         let threads = precompile_threads(
             metal,
             fused_gate_up_swiglu,
@@ -1440,8 +1424,7 @@ impl DeepSeekV4Layer0P6MetalExecutor {
                     upload_cached_fp4(metal, bundle, ExpertOperator::W1, FP4_W1_W3)?;
                 let (w3, w3_name) =
                     upload_cached_fp4(metal, bundle, ExpertOperator::W3, FP4_W1_W3)?;
-                let (w2, w2_name) =
-                    upload_cached_fp4(metal, bundle, ExpertOperator::W2, FP4_W2)?;
+                let (w2, w2_name) = upload_cached_fp4(metal, bundle, ExpertOperator::W2, FP4_W2)?;
                 CachedP6ExpertGpu {
                     w1,
                     w3,
@@ -1699,9 +1682,10 @@ impl DeepSeekV4Layer0P6MetalExecutor {
             batch.begin_concurrent_group()?;
         }
         if self.threads.batched_down_qat {
-            let refs = self.batched_down_qat_refs.as_ref().ok_or_else(|| {
-                p6_error("P6 batched down-QAT was enabled without indirect refs")
-            })?;
+            let refs = self
+                .batched_down_qat_refs
+                .as_ref()
+                .ok_or_else(|| p6_error("P6 batched down-QAT was enabled without indirect refs"))?;
             dispatch_batched_down_qat(
                 batch,
                 refs,
@@ -1739,8 +1723,7 @@ impl DeepSeekV4Layer0P6MetalExecutor {
             // dependency boundary. The shared and routed weights are read
             // only by the following dispatch and need no write-side barrier.
             let qat_output_resources: Vec<&metal::ResourceRef> = self.batched_down_qat_resources
-                [P6_BATCHED_DOWN_QAT_TENSORS as usize
-                    ..P6_BATCHED_DOWN_QAT_TENSORS as usize * 3]
+                [P6_BATCHED_DOWN_QAT_TENSORS as usize..P6_BATCHED_DOWN_QAT_TENSORS as usize * 3]
                 .iter()
                 .map(|buffer| -> &metal::ResourceRef { &**buffer })
                 .collect();
@@ -2172,26 +2155,10 @@ fn allocate_routed_expert(
         w1,
         w3,
         w2,
-        gate_f32: allocate_p6_scratch(
-            metal,
-            MOE_INTER_DIM * size_of::<f32>(),
-            !fused_gate_up,
-        )?,
-        up_f32: allocate_p6_scratch(
-            metal,
-            MOE_INTER_DIM * size_of::<f32>(),
-            !fused_gate_up,
-        )?,
-        gate_bf16: allocate_p6_scratch(
-            metal,
-            MOE_INTER_DIM * size_of::<u16>(),
-            !fused_gate_up,
-        )?,
-        up_bf16: allocate_p6_scratch(
-            metal,
-            MOE_INTER_DIM * size_of::<u16>(),
-            !fused_gate_up,
-        )?,
+        gate_f32: allocate_p6_scratch(metal, MOE_INTER_DIM * size_of::<f32>(), !fused_gate_up)?,
+        up_f32: allocate_p6_scratch(metal, MOE_INTER_DIM * size_of::<f32>(), !fused_gate_up)?,
+        gate_bf16: allocate_p6_scratch(metal, MOE_INTER_DIM * size_of::<u16>(), !fused_gate_up)?,
+        up_bf16: allocate_p6_scratch(metal, MOE_INTER_DIM * size_of::<u16>(), !fused_gate_up)?,
         swiglu_bf16: metal.new_buffer_checked(MOE_INTER_DIM * size_of::<u16>())?,
         down_quant: metal.new_buffer_checked(MOE_INTER_DIM)?,
         down_scales: metal.new_buffer_checked(MOE_INTER_DIM / ACT_QUANT_BLOCK)?,
@@ -2410,26 +2377,10 @@ fn allocate_shared_expert(
         w1,
         w3,
         w2,
-        gate_f32: allocate_p6_scratch(
-            metal,
-            MOE_INTER_DIM * size_of::<f32>(),
-            !fused_gate_up,
-        )?,
-        up_f32: allocate_p6_scratch(
-            metal,
-            MOE_INTER_DIM * size_of::<f32>(),
-            !fused_gate_up,
-        )?,
-        gate_bf16: allocate_p6_scratch(
-            metal,
-            MOE_INTER_DIM * size_of::<u16>(),
-            !fused_gate_up,
-        )?,
-        up_bf16: allocate_p6_scratch(
-            metal,
-            MOE_INTER_DIM * size_of::<u16>(),
-            !fused_gate_up,
-        )?,
+        gate_f32: allocate_p6_scratch(metal, MOE_INTER_DIM * size_of::<f32>(), !fused_gate_up)?,
+        up_f32: allocate_p6_scratch(metal, MOE_INTER_DIM * size_of::<f32>(), !fused_gate_up)?,
+        gate_bf16: allocate_p6_scratch(metal, MOE_INTER_DIM * size_of::<u16>(), !fused_gate_up)?,
+        up_bf16: allocate_p6_scratch(metal, MOE_INTER_DIM * size_of::<u16>(), !fused_gate_up)?,
         swiglu_bf16: metal.new_buffer_checked(MOE_INTER_DIM * size_of::<u16>())?,
         down_quant: metal.new_buffer_checked(MOE_INTER_DIM)?,
         down_scales: metal.new_buffer_checked(MOE_INTER_DIM / ACT_QUANT_BLOCK)?,
@@ -3161,23 +3112,18 @@ fn dispatch_fused_down_bf16(
             "P6 fused down indirect resource count is not fixed-six",
         ));
     }
-    batch.dispatch_threads_in_concurrent_group(
-        kernel,
-        (grid, 1, 1),
-        tg,
-        |encoder| {
-            encoder.set_buffer(0, Some(refs), 0);
-            set_u32(encoder, 1, &(HIDDEN_SIZE as u32));
-            set_u32(encoder, 2, &(MOE_INTER_DIM as u32 / 2));
-            set_u32(encoder, 3, &(MOE_INTER_DIM as u32 / 32));
-            let resource_refs: [&metal::ResourceRef; ACTIVATED_EXPERTS * 4] =
-                std::array::from_fn(|index| &**resources[index]);
-            encoder.use_resources(&resource_refs, metal::MTLResourceUsage::Read);
-            let output_refs: [&metal::ResourceRef; ACTIVATED_EXPERTS] =
-                std::array::from_fn(|index| &**output_resources[index]);
-            encoder.use_resources(&output_refs, metal::MTLResourceUsage::Write);
-        },
-    )
+    batch.dispatch_threads_in_concurrent_group(kernel, (grid, 1, 1), tg, |encoder| {
+        encoder.set_buffer(0, Some(refs), 0);
+        set_u32(encoder, 1, &(HIDDEN_SIZE as u32));
+        set_u32(encoder, 2, &(MOE_INTER_DIM as u32 / 2));
+        set_u32(encoder, 3, &(MOE_INTER_DIM as u32 / 32));
+        let resource_refs: [&metal::ResourceRef; ACTIVATED_EXPERTS * 4] =
+            std::array::from_fn(|index| &**resources[index]);
+        encoder.use_resources(&resource_refs, metal::MTLResourceUsage::Read);
+        let output_refs: [&metal::ResourceRef; ACTIVATED_EXPERTS] =
+            std::array::from_fn(|index| &**output_resources[index]);
+        encoder.use_resources(&output_refs, metal::MTLResourceUsage::Write);
+    })
 }
 
 fn dispatch_fp8(
@@ -3624,10 +3570,12 @@ mod tests {
         assert_eq!(DSV4F_P6_DEVICE_DISPATCHES, 60);
         assert_eq!(DSV4F_P6_FUSED_DOWN_BF16_DISPATCHES, 49);
         assert_eq!(DSV4F_P6_FUSED_GATE_UP_AND_DOWN_DISPATCHES, 20);
-        assert_eq!(DSV4F_P6_DEVICE_DISPATCHES - DSV4F_P6_FUSED_DOWN_BF16_DISPATCHES, 11);
         assert_eq!(
-            DSV4F_P6_FUSED_GATE_UP_SWIGLU_DISPATCHES
-                - DSV4F_P6_FUSED_GATE_UP_AND_DOWN_DISPATCHES,
+            DSV4F_P6_DEVICE_DISPATCHES - DSV4F_P6_FUSED_DOWN_BF16_DISPATCHES,
+            11
+        );
+        assert_eq!(
+            DSV4F_P6_FUSED_GATE_UP_SWIGLU_DISPATCHES - DSV4F_P6_FUSED_GATE_UP_AND_DOWN_DISPATCHES,
             11
         );
     }
@@ -3640,8 +3588,7 @@ mod tests {
         assert_eq!(DSV4F_P6_DEVICE_DISPATCHES, 60);
         assert_eq!(DSV4F_P6_SHARED_FP8_GATE_UP_SWIGLU_FUSED_DISPATCHES, 56);
         assert_eq!(
-            DSV4F_P6_DEVICE_DISPATCHES
-                - DSV4F_P6_SHARED_FP8_GATE_UP_SWIGLU_FUSED_DISPATCHES,
+            DSV4F_P6_DEVICE_DISPATCHES - DSV4F_P6_SHARED_FP8_GATE_UP_SWIGLU_FUSED_DISPATCHES,
             4
         );
         assert_eq!(
@@ -3662,10 +3609,7 @@ mod tests {
             2
         );
         assert_eq!(DSV4F_P6_FUSED_EPILOGUE_STACK_DISPATCHES, 8);
-        assert_eq!(
-            DSV4F_P6_FUSED_EPILOGUE_STACK_FULL_DOWN_COMPUTE_ENCODERS,
-            4
-        );
+        assert_eq!(DSV4F_P6_FUSED_EPILOGUE_STACK_FULL_DOWN_COMPUTE_ENCODERS, 4);
     }
 
     #[test]

@@ -183,16 +183,22 @@ pub fn pack_unsigned_msb(codes: &[u8], bits: u8) -> Result<Vec<u8>> {
     Ok(pack_bits_lsb(bit_iter))
 }
 
-pub fn split_gravity_container<'a>(payload: &'a [u8], magic: &[u8; 8]) -> Result<(&'a [u8], &'a [u8])> {
+pub fn split_gravity_container<'a>(
+    payload: &'a [u8],
+    magic: &[u8; 8],
+) -> Result<(&'a [u8], &'a [u8])> {
     if payload.len() < 12 || payload[..8] != magic[..] {
         return Err(Error::Model("gravity container magic mismatch".into()));
     }
-    let header_len = u32::from_le_bytes([payload[8], payload[9], payload[10], payload[11]]) as usize;
+    let header_len =
+        u32::from_le_bytes([payload[8], payload[9], payload[10], payload[11]]) as usize;
     let body_offset = 12usize
         .checked_add(header_len)
         .ok_or_else(|| Error::Model("gravity container header length overflows".into()))?;
     if body_offset > payload.len() {
-        return Err(Error::Model("gravity container header exceeds payload".into()));
+        return Err(Error::Model(
+            "gravity container header exceeds payload".into(),
+        ));
     }
     Ok((&payload[12..body_offset], &payload[body_offset..]))
 }
@@ -240,10 +246,14 @@ pub fn pack_binary_group(
     group_size: usize,
 ) -> Result<BinaryGroupPacked> {
     if rows == 0 || cols == 0 || group_size == 0 {
-        return Err(Error::Model("binary_group requires positive geometry".into()));
+        return Err(Error::Model(
+            "binary_group requires positive geometry".into(),
+        ));
     }
     if weights.len() != rows * cols {
-        return Err(Error::Model("binary_group weight length disagrees with shape".into()));
+        return Err(Error::Model(
+            "binary_group weight length disagrees with shape".into(),
+        ));
     }
     if cols % group_size != 0 {
         return Err(Error::Model(
@@ -251,7 +261,9 @@ pub fn pack_binary_group(
         ));
     }
     if weights.iter().any(|v| !v.is_finite()) {
-        return Err(Error::Model("binary_group refuses non-finite weights".into()));
+        return Err(Error::Model(
+            "binary_group refuses non-finite weights".into(),
+        ));
     }
     let groups_per_row = cols / group_size;
     let groups = rows * groups_per_row;
@@ -282,8 +294,9 @@ pub fn pack_binary_group(
 
 pub fn binary_group_weight(packed: &BinaryGroupPacked, row: usize, col: usize) -> f32 {
     let flat = row * packed.cols + col;
-    let scale = f16::from_bits(packed.scales_f16[row * packed.groups_per_row + col / packed.group_size])
-        .to_f32();
+    let scale =
+        f16::from_bits(packed.scales_f16[row * packed.groups_per_row + col / packed.group_size])
+            .to_f32();
     let positive = ((packed.signs[flat >> 3] >> (flat & 7)) & 1) != 0;
     if positive {
         scale
@@ -295,7 +308,9 @@ pub fn binary_group_weight(packed: &BinaryGroupPacked, row: usize, col: usize) -
 /// Serial left-to-right f32 matvec of the packed binary_group artifact.
 pub fn binary_group_matvec_f32(packed: &BinaryGroupPacked, input: &[f32]) -> Result<Vec<f32>> {
     if input.len() != packed.cols || input.iter().any(|v| !v.is_finite()) {
-        return Err(Error::Model("binary_group matvec input is not finite cols".into()));
+        return Err(Error::Model(
+            "binary_group matvec input is not finite cols".into(),
+        ));
     }
     let mut output = vec![0.0f32; packed.rows];
     for row in 0..packed.rows {
@@ -443,7 +458,9 @@ pub fn pack_binary_rice_q1(
     outlier_ratio: f64,
 ) -> Result<RiceQ1Packed> {
     if !(0.0 < outlier_ratio && outlier_ratio <= 0.1) {
-        return Err(Error::Model("rice_q1 outlier ratio must be in (0, 0.1]".into()));
+        return Err(Error::Model(
+            "rice_q1 outlier ratio must be in (0, 0.1]".into(),
+        ));
     }
     let binary = pack_binary_group(weights, rows, cols, Q80_BINARY_GROUP_SIZE)?;
     let n = rows * cols;
@@ -490,7 +507,9 @@ pub fn pack_binary_rice_q1(
         let mut diffs = Vec::with_capacity(indices.len() - 1);
         for pair in indices.windows(2) {
             if pair[1] <= pair[0] {
-                return Err(Error::Model("rice residual requires strictly increasing indices".into()));
+                return Err(Error::Model(
+                    "rice residual requires strictly increasing indices".into(),
+                ));
             }
             diffs.push(pair[1] - pair[0]);
         }
@@ -528,14 +547,18 @@ pub fn rice_q1_row_ptr(indices: &[u32], rows: usize, cols: usize) -> Result<Vec<
             .ok_or_else(|| Error::Model("rice CSR row pointer overflow".into()))?;
     }
     if row_ptr[rows] as usize != indices.len() {
-        return Err(Error::Model("rice CSR count disagrees with outlier count".into()));
+        return Err(Error::Model(
+            "rice CSR count disagrees with outlier count".into(),
+        ));
     }
     Ok(row_ptr)
 }
 
 pub fn expand_rice_indices(packed: &RiceQ1Packed) -> Result<Vec<u32>> {
     if packed.outlier_count == 0 {
-        return Err(Error::Model("rice residual requires at least one outlier".into()));
+        return Err(Error::Model(
+            "rice residual requires at least one outlier".into(),
+        ));
     }
     if packed.outlier_count == 1 {
         return Ok(vec![packed.first_index]);
@@ -561,7 +584,9 @@ pub fn binary_rice_q1_matvec_f32(packed: &RiceQ1Packed, input: &[f32]) -> Result
     let mut output = binary_group_matvec_f32(&packed.binary, input)?;
     let indices = expand_rice_indices(packed)?;
     if indices.len() != packed.outlier_count {
-        return Err(Error::Model("rice expand produced a different outlier count".into()));
+        return Err(Error::Model(
+            "rice expand produced a different outlier count".into(),
+        ));
     }
     let cols = packed.binary.cols;
     let scale = f16::from_bits(packed.residual_scale_f16).to_f32();
@@ -588,10 +613,14 @@ pub fn pack_uniform_factor(
         return Err(Error::Model("uniform factor geometry is invalid".into()));
     }
     if values.len() != rows * cols {
-        return Err(Error::Model("uniform factor length disagrees with shape".into()));
+        return Err(Error::Model(
+            "uniform factor length disagrees with shape".into(),
+        ));
     }
     if values.iter().any(|v| !v.is_finite()) {
-        return Err(Error::Model("uniform factor refuses non-finite values".into()));
+        return Err(Error::Model(
+            "uniform factor refuses non-finite values".into(),
+        ));
     }
     let elements = rows * cols;
     let groups = elements.div_ceil(group_size);
@@ -650,7 +679,9 @@ pub fn uniform_factor_value(packed: &UniformFactorPacked, row: usize, col: usize
 
 pub fn uniform_factor_matvec_f32(packed: &UniformFactorPacked, input: &[f32]) -> Result<Vec<f32>> {
     if input.len() != packed.cols || input.iter().any(|v| !v.is_finite()) {
-        return Err(Error::Model("uniform factor matvec input is not finite cols".into()));
+        return Err(Error::Model(
+            "uniform factor matvec input is not finite cols".into(),
+        ));
     }
     let mut output = vec![0.0f32; packed.rows];
     for row in 0..packed.rows {
@@ -682,10 +713,14 @@ pub fn pack_affine_factor_group(
         )));
     }
     if values.len() != rows * cols {
-        return Err(Error::Model("affine factor length disagrees with shape".into()));
+        return Err(Error::Model(
+            "affine factor length disagrees with shape".into(),
+        ));
     }
     if values.iter().any(|v| !v.is_finite()) {
-        return Err(Error::Model("affine factor refuses non-finite values".into()));
+        return Err(Error::Model(
+            "affine factor refuses non-finite values".into(),
+        ));
     }
     let groups_per_row = cols / group_size;
     let groups = rows
@@ -747,7 +782,9 @@ pub fn pack_q2f_factor_group(
         )));
     }
     if values.len() != rows * cols {
-        return Err(Error::Model("q2f factor length disagrees with shape".into()));
+        return Err(Error::Model(
+            "q2f factor length disagrees with shape".into(),
+        ));
     }
     if values.iter().any(|v| !v.is_finite()) {
         return Err(Error::Model("q2f factor refuses non-finite values".into()));
@@ -824,7 +861,9 @@ pub fn affine_factor_value(packed: &AffineFactorPacked, row: usize, col: usize) 
 
 pub fn affine_factor_matvec_f32(packed: &AffineFactorPacked, input: &[f32]) -> Result<Vec<f32>> {
     if input.len() != packed.cols || input.iter().any(|v| !v.is_finite()) {
-        return Err(Error::Model("affine factor matvec input is not finite cols".into()));
+        return Err(Error::Model(
+            "affine factor matvec input is not finite cols".into(),
+        ));
     }
     let mut output = vec![0.0f32; packed.rows];
     for row in 0..packed.rows {
@@ -894,7 +933,9 @@ pub fn hgravs01_two_stage_matvec_f32(
         return Err(Error::Model("hgravs01 factor rank disagrees".into()));
     }
     if right.cols != input.len() {
-        return Err(Error::Model("hgravs01 right factor cols disagree with input".into()));
+        return Err(Error::Model(
+            "hgravs01 right factor cols disagree with input".into(),
+        ));
     }
     let mid = uniform_factor_matvec_f32(right, input)?;
     uniform_factor_matvec_f32(left, &mid)
@@ -925,10 +966,12 @@ pub fn max_abs_error(a: &[f32], b: &[f32]) -> f32 {
         .fold(0.0f32, f32::max)
 }
 
-fn header_object<'a>(header_bytes: &'a [u8], label: &str) -> Result<serde_json::Map<String, serde_json::Value>> {
-    let value: serde_json::Value = serde_json::from_slice(header_bytes).map_err(|error| {
-        Error::Model(format!("{label} header is not JSON: {error}"))
-    })?;
+fn header_object<'a>(
+    header_bytes: &'a [u8],
+    label: &str,
+) -> Result<serde_json::Map<String, serde_json::Value>> {
+    let value: serde_json::Value = serde_json::from_slice(header_bytes)
+        .map_err(|error| Error::Model(format!("{label} header is not JSON: {error}")))?;
     value
         .as_object()
         .cloned()
@@ -1107,13 +1150,17 @@ pub fn parse_binary_group_container(payload: &[u8]) -> Result<BinaryGroupPacked>
     let scale_bytes = header_usize(&header, "scale_bytes", "HGRAVB01")?;
     let sign_bytes = header_usize(&header, "sign_bytes", "HGRAVB01")?;
     if group_size == 0 || groups != elements.div_ceil(group_size) {
-        return Err(Error::Model("HGRAVB01 group ledger disagrees with elements".into()));
+        return Err(Error::Model(
+            "HGRAVB01 group ledger disagrees with elements".into(),
+        ));
     }
     if scale_bytes != groups * 2 || sign_bytes != (groups * group_size).div_ceil(8) {
         return Err(Error::Model("HGRAVB01 scale/sign ledger is invalid".into()));
     }
     if body.len() != scale_bytes + sign_bytes {
-        return Err(Error::Model("HGRAVB01 body length disagrees with ledger".into()));
+        return Err(Error::Model(
+            "HGRAVB01 body length disagrees with ledger".into(),
+        ));
     }
     let (rows, cols) = matrix_rows_cols(&shape, elements, "HGRAVB01")?;
     if cols % group_size != 0 {
@@ -1145,7 +1192,9 @@ pub fn parse_rice_q1_container(payload: &[u8]) -> Result<RiceQ1Packed> {
     require_header_str(&header, "schema", SCHEMA_RESIDUAL, "HGRAVR02")?;
     require_header_str(&header, "index_mode", "rice", "HGRAVR02")?;
     if header_usize(&header, "value_bits", "HGRAVR02")? != 1 {
-        return Err(Error::Model("HGRAVR02 value_bits must be 1 for rice_q1".into()));
+        return Err(Error::Model(
+            "HGRAVR02 value_bits must be 1 for rice_q1".into(),
+        ));
     }
     require_header_str(&header, "value_scale", "rms", "HGRAVR02")?;
     let shape = header_shape(&header, "shape", "HGRAVR02")?;
@@ -1165,10 +1214,14 @@ pub fn parse_rice_q1_container(payload: &[u8]) -> Result<RiceQ1Packed> {
         return Err(Error::Model("HGRAVR02 first_index_bytes must be 4".into()));
     }
     if index_bytes != first_index_bytes + rice_bytes_len {
-        return Err(Error::Model("HGRAVR02 index ledger disagrees with rice_bytes".into()));
+        return Err(Error::Model(
+            "HGRAVR02 index ledger disagrees with rice_bytes".into(),
+        ));
     }
     if residual_scale_bytes != 2 {
-        return Err(Error::Model("HGRAVR02 rice_q1 requires one fp16 residual scale".into()));
+        return Err(Error::Model(
+            "HGRAVR02 rice_q1 requires one fp16 residual scale".into(),
+        ));
     }
     let expected = scale_bytes
         .checked_add(sign_bytes)
@@ -1177,11 +1230,15 @@ pub fn parse_rice_q1_container(payload: &[u8]) -> Result<RiceQ1Packed> {
         .and_then(|v| v.checked_add(residual_bytes))
         .ok_or_else(|| Error::Model("HGRAVR02 body ledger overflows".into()))?;
     if body.len() != expected {
-        return Err(Error::Model("HGRAVR02 body length disagrees with ledger".into()));
+        return Err(Error::Model(
+            "HGRAVR02 body length disagrees with ledger".into(),
+        ));
     }
     let (rows, cols) = matrix_rows_cols(&shape, elements, "HGRAVR02")?;
     if cols % group_size != 0 || groups != rows * (cols / group_size) {
-        return Err(Error::Model("HGRAVR02 binary groups are not row-aligned".into()));
+        return Err(Error::Model(
+            "HGRAVR02 binary groups are not row-aligned".into(),
+        ));
     }
     let mut cursor = 0usize;
     let scales = copy_f16_scales(&body[cursor..cursor + scale_bytes], groups, "HGRAVR02")?;
@@ -1463,11 +1520,12 @@ pub fn mixed_gpu_layout(codec: u8, payload: &[u8]) -> Result<MixedGpuLayout> {
             let shape = header_shape(&header, "shape", "HGRAVB01")?;
             let elements = header_usize(&header, "elements", "HGRAVB01")?;
             let group_size = header_usize(&header, "group_size", "HGRAVB01")?;
-            let groups = header_usize(&header, "groups", "HGRAVB01")?;
             let scale_bytes = header_usize(&header, "scale_bytes", "HGRAVB01")?;
             let sign_bytes = header_usize(&header, "sign_bytes", "HGRAVB01")?;
             if body.len() != scale_bytes + sign_bytes {
-                return Err(Error::Model("HGRAVB01 body length disagrees with ledger".into()));
+                return Err(Error::Model(
+                    "HGRAVB01 body length disagrees with ledger".into(),
+                ));
             }
             let (rows, cols) = matrix_rows_cols(&shape, elements, "HGRAVB01")?;
             if cols % group_size != 0 {
@@ -1508,7 +1566,11 @@ pub fn mixed_gpu_layout(codec: u8, payload: &[u8]) -> Result<MixedGpuLayout> {
             let first_index = read_u32_le(body, scale_bytes + sign_bytes, "HGRAVR02")?;
             let rice_off = first_off + 4;
             let residual_scale_off = rice_off + rice_bytes_len;
-            let residual_scale_f16 = u32::from(read_u16_le(body, residual_scale_off - body_off, "HGRAVR02")?);
+            let residual_scale_f16 = u32::from(read_u16_le(
+                body,
+                residual_scale_off - body_off,
+                "HGRAVR02",
+            )?);
             let residual_sign_off = residual_scale_off + 2;
             Ok(MixedGpuLayout {
                 rows: rows as u32,
@@ -1693,11 +1755,19 @@ pub fn parse_affine_container(payload: &[u8]) -> Result<AffineFactorPacked> {
     else {
         return Err(Error::Model("HGRAVF01 layout is not Affine".into()));
     };
-    let scales_f16 = copy_f16_scales(&payload[scale_off..scale_off + scale_bytes], scale_bytes / 2, "HGRAVF01")?;
+    let scales_f16 = copy_f16_scales(
+        &payload[scale_off..scale_off + scale_bytes],
+        scale_bytes / 2,
+        "HGRAVF01",
+    )?;
     let biases_f16 = if bias_bytes == 0 {
         Vec::new()
     } else {
-        copy_f16_scales(&payload[bias_off..bias_off + bias_bytes], bias_bytes / 2, "HGRAVF01")?
+        copy_f16_scales(
+            &payload[bias_off..bias_off + bias_bytes],
+            bias_bytes / 2,
+            "HGRAVF01",
+        )?
     };
     Ok(AffineFactorPacked {
         rows: layout.rows as usize,
@@ -1732,7 +1802,9 @@ impl MixedPackedTensor {
             Self::Residual(packed) => Ok((packed.binary.rows, packed.binary.cols)),
             Self::Hgravs { left, right } => {
                 if left.cols != right.rows {
-                    return Err(Error::Model("hgravs packed factors disagree on rank".into()));
+                    return Err(Error::Model(
+                        "hgravs packed factors disagree on rank".into(),
+                    ));
                 }
                 Ok((left.rows, right.cols))
             }
@@ -1788,7 +1860,8 @@ impl MixedPackedTensor {
                     .ok_or_else(|| Error::Model("uniform vector length overflows".into()))?;
                 if elements > 65_536 {
                     return Err(Error::Model(
-                        "decode_vector_f32 refuses a tensor larger than 65536 elements (dense W)".into(),
+                        "decode_vector_f32 refuses a tensor larger than 65536 elements (dense W)"
+                            .into(),
                     ));
                 }
                 let mut values = Vec::with_capacity(elements);
@@ -1935,13 +2008,8 @@ mod tests {
     fn parse_rice_container_expands_indices() {
         let rows = 8;
         let cols = 128;
-        let packed = pack_binary_rice_q1(
-            &deterministic_matrix(rows, cols, 23),
-            rows,
-            cols,
-            0.02,
-        )
-        .unwrap();
+        let packed =
+            pack_binary_rice_q1(&deterministic_matrix(rows, cols, 23), rows, cols, 0.02).unwrap();
         let mut body = Vec::new();
         for scale in &packed.binary.scales_f16 {
             body.extend_from_slice(&scale.to_le_bytes());
@@ -1988,14 +2056,8 @@ mod tests {
     fn parse_uniform_q8_container_roundtrip() {
         let rows = 3;
         let cols = 64;
-        let packed = pack_uniform_factor(
-            &deterministic_matrix(rows, cols, 29),
-            rows,
-            cols,
-            8,
-            64,
-        )
-        .unwrap();
+        let packed =
+            pack_uniform_factor(&deterministic_matrix(rows, cols, 29), rows, cols, 8, 64).unwrap();
         let mut body = Vec::new();
         for scale in &packed.scales_f16 {
             body.extend_from_slice(&scale.to_le_bytes());
@@ -2022,14 +2084,8 @@ mod tests {
 
     #[test]
     fn decode_vector_refuses_a_weight_sized_matrix() {
-        let packed = pack_uniform_factor(
-            &deterministic_matrix(512, 256, 31),
-            512,
-            256,
-            8,
-            64,
-        )
-        .unwrap();
+        let packed =
+            pack_uniform_factor(&deterministic_matrix(512, 256, 31), 512, 256, 8, 64).unwrap();
         let tensor = MixedPackedTensor::Uniform8(packed);
         let error = tensor.decode_vector_f32().unwrap_err().to_string();
         assert!(error.contains("dense W"), "{error}");
@@ -2163,7 +2219,8 @@ mod tests {
         assert_eq!(packed.group_size, 64);
         let payload = wrap_affine_factor(&packed).unwrap();
         let header_len = u32::from_le_bytes(payload[8..12].try_into().unwrap()) as usize;
-        let header: serde_json::Value = serde_json::from_slice(&payload[12..12 + header_len]).unwrap();
+        let header: serde_json::Value =
+            serde_json::from_slice(&payload[12..12 + header_len]).unwrap();
         assert_eq!(header["bias_bytes"], 0);
         assert_eq!(header["representation"], Q2F_REPRESENTATION);
         let parsed = parse_affine_container(&payload).unwrap();

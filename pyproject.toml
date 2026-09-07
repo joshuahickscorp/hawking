@@ -32,11 +32,11 @@ markers = ["slow: real hardware/compile evidence; deselected by default"]
 # the Framework python that runs tools/odyssey has no xdist -- it failed with
 # "unrecognized arguments: -n". Parallelism is opt-in per invocation instead:
 #     python3 -m pytest hcli/ -n auto      # 77.82s -> ~3.0s on this host
-#     python3 tools/run_tools_pytest.py tools/future
-# tools/future session artifacts (HEAD ls-tree + receipts/future blobs) live
-# in tools/future/conftest.py, not here: addopts cannot carry -n.
 addopts = "-m 'not slow'"
-testpaths = ["hcli/tests"]
+# Collect the live HCLI package, including its root-level contract tests and
+# the deeper hcli/tests suite. Retained tools/future modules are exercised by
+# current acceptance/audit callers; the uncalled producer/test farm is retired.
+testpaths = ["hcli"]
 pythonpath = [
     ".",
     # research/ is a source root: `lab.*` and the frankenstein packages are
@@ -44,6 +44,5 @@ pythonpath = [
     # under research/ without this leaves every one of them unresolvable.
     "research",
     "research/hawking-experiments/frankenstein/operators",
-    "research/hawking-experiments/frankenstein/condense",
     "research/hawking-experiments/prometheus/tools",
 ]

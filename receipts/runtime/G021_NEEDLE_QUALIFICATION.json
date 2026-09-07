@@ -1,0 +1,35 @@
+{
+  "schema": "hawking.context_needle_qualification.v1",
+  "date": "2026-09-05",
+  "method": "needle planted at ~25% prompt depth; greedy continuation cued to complete it; the search runs ONLY over the model generation, never the log, because the log contains the prompt and grepping it yields a false positive at any length",
+  "needle": "XK7291QZ",
+  "rows": [
+    {
+      "rung": "8K",
+      "generation_chars": 406,
+      "generation_nonempty": true,
+      "needle_index_in_generation": 274,
+      "retrieved": true,
+      "prefill_wall_ns": 106146184458,
+      "generation_head": "<think>\nThe user is asking me to find the authorization code for the Hawking runtime from a large block of text. Let me search through the text for \"Hawking\" an"
+    },
+    {
+      "rung": "16K",
+      "generation_chars": 364,
+      "generation_nonempty": true,
+      "needle_index_in_generation": -1,
+      "retrieved": false,
+      "prefill_wall_ns": 492151246958,
+      "generation_head": "<think>\nThe user is asking me to find the authorization code for the \"Hawking runtime\" from a very long, complex text that appears to be a jumbled collection of"
+    },
+    {
+      "rung": "32K",
+      "generation_chars": 11,
+      "generation_nonempty": true,
+      "needle_index_in_generation": -1,
+      "retrieved": false,
+      "prefill_wall_ns": 1137349892625,
+      "generation_head": "<think> the"
+    }
+  ]
+}

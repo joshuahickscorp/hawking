@@ -333,7 +333,9 @@ pub struct Qwen80LayerExecutionSchedule {
 }
 
 /// Build the exact execution schedule for one layer in `0..48`.
-pub fn qwen80_layer_execution_schedule(layer: usize) -> Result<Qwen80LayerExecutionSchedule, String> {
+pub fn qwen80_layer_execution_schedule(
+    layer: usize,
+) -> Result<Qwen80LayerExecutionSchedule, String> {
     let mixer = qwen80_execution_mixer_kind(layer)?;
     let (state_slot, prefix, full) = match mixer {
         Qwen80ExecutionMixerKind::DeltaNet => {
@@ -588,11 +590,26 @@ mod tests {
         }
         assert_eq!(dn, 36);
         assert_eq!(gqa, 12);
-        assert_eq!(qwen80_execution_mixer_kind(0).unwrap(), Qwen80ExecutionMixerKind::DeltaNet);
-        assert_eq!(qwen80_execution_mixer_kind(1).unwrap(), Qwen80ExecutionMixerKind::DeltaNet);
-        assert_eq!(qwen80_execution_mixer_kind(2).unwrap(), Qwen80ExecutionMixerKind::DeltaNet);
-        assert_eq!(qwen80_execution_mixer_kind(3).unwrap(), Qwen80ExecutionMixerKind::Gqa);
-        assert_eq!(qwen80_execution_mixer_kind(47).unwrap(), Qwen80ExecutionMixerKind::Gqa);
+        assert_eq!(
+            qwen80_execution_mixer_kind(0).unwrap(),
+            Qwen80ExecutionMixerKind::DeltaNet
+        );
+        assert_eq!(
+            qwen80_execution_mixer_kind(1).unwrap(),
+            Qwen80ExecutionMixerKind::DeltaNet
+        );
+        assert_eq!(
+            qwen80_execution_mixer_kind(2).unwrap(),
+            Qwen80ExecutionMixerKind::DeltaNet
+        );
+        assert_eq!(
+            qwen80_execution_mixer_kind(3).unwrap(),
+            Qwen80ExecutionMixerKind::Gqa
+        );
+        assert_eq!(
+            qwen80_execution_mixer_kind(47).unwrap(),
+            Qwen80ExecutionMixerKind::Gqa
+        );
     }
 
     #[test]
@@ -624,19 +641,32 @@ mod tests {
             layers[0].full_layer_kernel_names,
             QWEN80_DELTANET_FULL_LAYER_KERNELS
         );
-        assert_eq!(layers[3].full_layer_kernel_names, QWEN80_GQA_FULL_LAYER_KERNELS);
+        assert_eq!(
+            layers[3].full_layer_kernel_names,
+            QWEN80_GQA_FULL_LAYER_KERNELS
+        );
         assert_eq!(
             layers[3].mixer_prefix_kernel_names,
             QWEN80_GQA_MIXER_PREFIX_KERNELS
         );
-        assert_eq!(layers[3].mixer_prefix_dispatch_count, QWEN80_MIXER_PREFIX_DISPATCHES);
-        assert_eq!(layers[3].full_layer_dispatch_count, QWEN80_GQA_FULL_LAYER_DISPATCHES);
         assert_eq!(
-            layers[3].state_slot.device_buffers_required_before_execution,
+            layers[3].mixer_prefix_dispatch_count,
+            QWEN80_MIXER_PREFIX_DISPATCHES
+        );
+        assert_eq!(
+            layers[3].full_layer_dispatch_count,
+            QWEN80_GQA_FULL_LAYER_DISPATCHES
+        );
+        assert_eq!(
+            layers[3]
+                .state_slot
+                .device_buffers_required_before_execution,
             vec!["gqa_key_cache", "gqa_value_cache"]
         );
         assert_eq!(
-            layers[3].state_slot.rollback_buffers_required_before_execution,
+            layers[3]
+                .state_slot
+                .rollback_buffers_required_before_execution,
             vec!["gqa_key_cache_rollback", "gqa_value_cache_rollback"]
         );
         assert!(layers[3].state_slot.exclusive_caller_owned_slot);
@@ -653,10 +683,7 @@ mod tests {
         let with_gqa = qwen80_multi_layer_structural_kernel_trace(4, false).unwrap();
         assert_eq!(with_gqa.len(), 92);
         assert_eq!(&with_gqa[69..92], &QWEN80_GQA_FULL_LAYER_KERNELS);
-        assert_eq!(
-            qwen80_multi_layer_total_dispatches(4, false).unwrap(),
-            92
-        );
+        assert_eq!(qwen80_multi_layer_total_dispatches(4, false).unwrap(), 92);
         let err = qwen80_multi_layer_structural_kernel_trace(0, false).unwrap_err();
         assert!(err.contains("layer_count=0"), "{err}");
         assert!(err.contains("1..=48"), "{err}");
@@ -718,11 +745,16 @@ mod tests {
                 vec!["gqa_key_cache", "gqa_value_cache"]
             );
             assert_eq!(
-                schedule.state_slot.rollback_buffers_required_before_execution,
+                schedule
+                    .state_slot
+                    .rollback_buffers_required_before_execution,
                 vec!["gqa_key_cache_rollback", "gqa_value_cache_rollback"]
             );
             assert!(schedule.state_slot.exclusive_caller_owned_slot);
-            assert_eq!(schedule.full_layer_kernel_names, QWEN80_GQA_FULL_LAYER_KERNELS);
+            assert_eq!(
+                schedule.full_layer_kernel_names,
+                QWEN80_GQA_FULL_LAYER_KERNELS
+            );
         }
     }
 

@@ -4,7 +4,7 @@ import hashlib
 import json
 import time
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterable, List, Optional
 
 from .resources import (
     MutationLock,
@@ -70,6 +70,12 @@ class WorkUnit:
     # else uses. `verifier` remains a shell command; this is not that.
     tool: Optional[str] = None
     tool_arguments: Optional[Dict[str, Any]] = None
+    # Who created this unit: "hcli", "claude", or "human". The Claude-removal
+    # ladder is a RATIO of this field, so it defaults to None -- unrecorded --
+    # rather than to "hcli". Defaulting to the value the goal is trying to move
+    # would make every legacy unit count as autonomous the moment the field
+    # existed, which is measuring the instrument instead of the machine.
+    author: Optional[str] = None
 
     def __post_init__(self) -> None:
         self.resource_class = normalize_resource_class(self.resource_class)
@@ -400,6 +406,10 @@ def emit_repair(
         description=f"repair of {wu.id}: {wu.description}",
         dependencies=[wu.id],
         resource_class=wu.resource_class,
+        # A repair of an HCLI-authored unit is HCLI's work. Inheriting keeps the
+        # ratio honest in both directions: repairs neither inflate autonomy nor
+        # silently drop units out of the recorded population.
+        author=getattr(wu, "author", None),
         repairs=wu.id,
         failure_context=failure_context,
         verifier=getattr(wu, "verifier", None),
@@ -574,3 +584,43 @@ def assign_ready(
         used_slots.setdefault(rc, set()).add(slot)
         assignments.append((wu, slot))
     return assignments
+
+
+AUTHOR_HCLI = "hcli"
+AUTHOR_CLAUDE = "claude"
+AUTHOR_HUMAN = "human"
+
+
+def authorship_report(units: Iterable["WorkUnit"]) -> Dict[str, Any]:
+    """Authorship counts, and the HCLI fraction over RECORDED units only.
+
+    The unrecorded count travels beside the fraction on purpose: a ledger where
+    one unit is recorded and ninety-nine are blind would otherwise report a
+    clean 100% autonomous. With zero recorded units the fraction is None and the
+    basis says NOT_INSTRUMENTED -- neither 0.0 nor 1.0 is an honest answer.
+    """
+    counts: Dict[str, int] = {}
+    unrecorded = 0
+    total = 0
+    for unit in units:
+        total += 1
+        author = getattr(unit, "author", None)
+        if not author:
+            unrecorded += 1
+            continue
+        counts[str(author)] = counts.get(str(author), 0) + 1
+    recorded = total - unrecorded
+    if recorded <= 0:
+        fraction: Optional[float] = None
+        basis = "NOT_INSTRUMENTED"
+    else:
+        fraction = counts.get(AUTHOR_HCLI, 0) / recorded
+        basis = "recorded"
+    return {
+        "counts": counts,
+        "unrecorded": unrecorded,
+        "recorded": recorded,
+        "total": total,
+        "hcli_fraction": fraction,
+        "hcli_fraction_basis": basis,
+    }

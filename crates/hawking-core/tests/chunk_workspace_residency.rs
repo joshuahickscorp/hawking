@@ -28,7 +28,10 @@ fn only_the_activations_scale() {
     assert_eq!(k4.gqa_kv_bytes, k128.gqa_kv_bytes);
     assert_eq!(k4.terminal_bytes, k128.terminal_bytes);
     // And the one it does.
-    assert_eq!(k128.scaled_activation_bytes, 32 * k4.scaled_activation_bytes);
+    assert_eq!(
+        k128.scaled_activation_bytes,
+        32 * k4.scaled_activation_bytes
+    );
 }
 
 #[test]

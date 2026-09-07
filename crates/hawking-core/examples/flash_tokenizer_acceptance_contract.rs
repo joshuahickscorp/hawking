@@ -23,19 +23,27 @@ fn sha256(bytes: &[u8]) -> String {
 }
 
 fn flag(args: &[String], name: &str) -> Option<String> {
-    args.windows(2).find(|pair| pair[0] == name).map(|pair| pair[1].clone())
+    args.windows(2)
+        .find(|pair| pair[0] == name)
+        .map(|pair| pair[1].clone())
 }
 
 fn token_ids(raw: Option<String>) -> Result<Vec<u32>, Box<dyn std::error::Error>> {
     let raw = raw.unwrap_or_else(|| "17,248044".to_owned());
-    let ids = raw.split(',').map(|part| part.trim().parse::<u32>()).collect::<Result<Vec<_>, _>>()?;
-    if ids.is_empty() { return Err("at least one token id is required".into()); }
+    let ids = raw
+        .split(',')
+        .map(|part| part.trim().parse::<u32>())
+        .collect::<Result<Vec<_>, _>>()?;
+    if ids.is_empty() {
+        return Err("at least one token id is required".into());
+    }
     Ok(ids)
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = env::args().collect();
-    let tokenizer_path = PathBuf::from(flag(&args, "--tokenizer").unwrap_or_else(|| DEFAULT_TOKENIZER.to_owned()));
+    let tokenizer_path =
+        PathBuf::from(flag(&args, "--tokenizer").unwrap_or_else(|| DEFAULT_TOKENIZER.to_owned()));
     let prompt = flag(&args, "--prompt").unwrap_or_else(|| DEFAULT_PROMPT.to_owned());
     let ids = token_ids(flag(&args, "--token-ids"))?;
     let out = flag(&args, "--out").map(PathBuf::from);
@@ -43,14 +51,27 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let tokenizer_bytes = fs::read(&tokenizer_path)?;
     let tokenizer = Tokenizer::from_file(&tokenizer_path)?;
     let encoded = tokenizer.encode(&prompt, false)?;
-    if encoded.is_empty() { return Err("prompt encoded to zero tokens".into()); }
-    if encoded.iter().any(|id| *id as usize >= tokenizer.vocab_size()) {
+    if encoded.is_empty() {
+        return Err("prompt encoded to zero tokens".into());
+    }
+    if encoded
+        .iter()
+        .any(|id| *id as usize >= tokenizer.vocab_size())
+    {
         return Err("prompt encoding produced an out-of-vocabulary id".into());
     }
     let prompt_roundtrip = tokenizer.decode(&encoded, false)?;
-    if prompt_roundtrip.is_empty() { return Err("prompt decode was empty".into()); }
-    let decoded_one = ids.iter().map(|id| tokenizer.decode_one(*id)).collect::<Result<Vec<_>, _>>()?;
-    let eog = ids.iter().map(|id| tokenizer.is_eog(*id)).collect::<Vec<_>>();
+    if prompt_roundtrip.is_empty() {
+        return Err("prompt decode was empty".into());
+    }
+    let decoded_one = ids
+        .iter()
+        .map(|id| tokenizer.decode_one(*id))
+        .collect::<Result<Vec<_>, _>>()?;
+    let eog = ids
+        .iter()
+        .map(|id| tokenizer.is_eog(*id))
+        .collect::<Vec<_>>();
     let doc = json!({
         "schema": "hawking.flash.tokenizer_acceptance_contract.v1",
         "status": "PASSED_TOKENIZER_SESSION_PREREQUISITE",
@@ -100,7 +121,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     sealed["seal_sha256"] = json!(seal);
     let text = serde_json::to_string_pretty(&sealed)? + "\n";
     if let Some(path) = out {
-        if let Some(parent) = path.parent() { fs::create_dir_all(parent)?; }
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent)?;
+        }
         fs::write(path, text)?;
     } else {
         print!("{text}");

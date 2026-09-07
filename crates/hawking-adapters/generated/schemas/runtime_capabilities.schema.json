@@ -102,16 +102,16 @@
         },
         {
           "endpoint": "ACP",
-          "entry_path": "crates/hide-acp (DeferredTurnHandler / capability negotiate)",
-          "status": "partial",
+          "entry_path": "deferred VMCP boundary (no active ACP server)",
+          "status": "not_implemented",
           "tests": []
         },
         {
-          "endpoint": "SDK Transport -> hide-serve",
-          "entry_path": "crates/hide-sdk/src/client.rs (MockTransport only; real transport deferred)",
+          "endpoint": "SDK Transport -> HCLI",
+          "entry_path": "hide-protocol::sdk::client::Transport (MockTransport only; real transport deferred)",
           "status": "not_implemented",
           "tests": [
-            "crates/hide-sdk/tests/client.rs"
+            "crates/hide-protocol/tests/sdk_golden.rs"
           ]
         }
       ],

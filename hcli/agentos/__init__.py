@@ -47,7 +47,6 @@ from hcli.providers import (
     ResidentProvider,
     RolePolicy,
     RoleRouter,
-    RuntimeGenome,
 )
 from hcli.physical_graph import (
     DIAGNOSTIC_BENCHMARK_CLASSES,
@@ -182,7 +181,6 @@ __all__ = [
     "ResidentProvider",
     "RolePolicy",
     "RoleRouter",
-    "RuntimeGenome",
     "PhysicalGraph",
     "DIAGNOSTIC_BENCHMARK_CLASSES",
     "NR_PRIMITIVES",

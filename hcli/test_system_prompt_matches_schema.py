@@ -68,7 +68,7 @@ def test_each_worked_example_validates(index):
 
 def test_the_probe_reads_the_live_schema_not_a_copy():
     """The measuring instrument had its own stale duplicate with no tool_calls."""
-    import tools.headless.structured_output_probe as probe
+    from tools.bench import structured_output_probe as probe
 
     assert probe.RESULT_SCHEMA is HCLI_RESULT_SCHEMA
     assert probe.SYSTEM is _SYSTEM_PROMPT

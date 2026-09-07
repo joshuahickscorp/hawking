@@ -558,14 +558,27 @@ def execute_workunit(self: Any, wu: Any, context: Optional[Dict[str, Any]]) -> D
     compiled = context.get("compiled")
     if not isinstance(compiled, dict):
         compiled = {}
-    evidence = gather_evidence_paths(self, paths, focus=prompt)
-
-    return self.execute(
-        prompt,
-        evidence=evidence,
-        compiled=compiled,
-        context_memory=context.get("context_memory"),
-    )
+    # Keep the inline evidence cache bounded for the real worker path.  The
+    # named files remain authoritative and tools can retrieve any omitted
+    # detail; this flag must cover evidence gathering as well as execution.
+    previous_worker = getattr(self, "_worker_execution", False)
+    self._worker_execution = True
+    try:
+        evidence = gather_evidence_paths(self, paths, focus=prompt)
+        return self.execute(
+            prompt,
+            evidence=evidence,
+            compiled=compiled,
+            # Mission context_memory is a durable, whole-history cache and
+            # can be tens of thousands of characters. The worker packet,
+            # named evidence, and disk-backed tools already provide the next
+            # decision's authority; replaying that cache defeated the compact
+            # O003 envelope and pushed the resident back into multi-thousand
+            # token prefill. Keep the full memory on disk/receipts.
+            context_memory=None,
+        )
+    finally:
+        self._worker_execution = previous_worker
 
 
 def dispatch_workunit(engine: Any, wu: Any, context: Optional[Dict[str, Any]]) -> Any:

@@ -130,14 +130,6 @@ class TestTopologyKeysOnce(unittest.TestCase):
         self.assertEqual(src.count("TOPOLOGY_KEYS = ("), 1)
 
 
-class TestContextReexportSameObject(unittest.TestCase):
-    def test_worker_packet_is_goal_worker_packet(self):
-        from hcli.context import WorkerPacket as FromContext
-        from hcli.goal import WorkerPacket as FromGoal
-
-        self.assertIs(FromContext, FromGoal)
-
-
 class TestReceiptExists(unittest.TestCase):
     def test_core_authorities_receipt_covers_every_concept(self):
         path = REPO / "receipts" / "headless" / "CORE_AUTHORITIES.json"

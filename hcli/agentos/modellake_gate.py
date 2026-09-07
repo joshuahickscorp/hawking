@@ -13,7 +13,7 @@ from pathlib import Path as _CausalityPath
 _CAUSALITY_ROOT = _CausalityPath(__file__).resolve().parents[2]
 if str(_CAUSALITY_ROOT) not in sys.path:
     sys.path.insert(0, str(_CAUSALITY_ROOT))
-from tools.future import status_causality as sc
+from tools.verify import status_causality as sc
 
 import sys
 
@@ -29,6 +29,7 @@ from typing import Any, Dict, Iterable, Mapping, Optional
 
 from hcli.flash_next import EXPECTED_BYTES, EXPECTED_FILE_COUNT, PINNED_REVISION, REPO_ID
 from hcli.persist import atomic_write_json
+from hcli.processes import NativeProcessError, live_processes
 
 
 SCHEMA = "hcli.agentos.modellake_census.v1"
@@ -279,28 +280,25 @@ def _children(root: Path, *, now: float) -> Dict[str, Any]:
 def _processes() -> Dict[str, Any]:
     needles = ("modellake", "huggingface", "hf download", "hf_transfer", "lake_filler", "autoadvance")
     try:
-        result = subprocess.run(
-            ["ps", "-Ao", "pid=,pcpu=,rss=,command="],
-            capture_output=True,
-            text=True,
-            timeout=5.0,
-            check=False,
-        )
-    except (OSError, subprocess.TimeoutExpired) as exc:
+        observed = live_processes(footprint=False)
+    except (NativeProcessError, OSError) as exc:
         return {"status": "UNKNOWN", "needles": list(needles), "error": type(exc).__name__, "matches": []}
     matches = []
-    for line in (result.stdout or "").splitlines():
-        lower = line.lower()
+    for process in observed:
+        command = process.command
+        lower = f"{command} {process.body or ''}".lower()
         if not any(needle in lower for needle in needles):
             continue
-        fields = line.split(None, 3)
         matches.append({
-            "pid": fields[0] if fields else None,
-            "cpu_pct": fields[1] if len(fields) > 1 else None,
-            "rss_kib": fields[2] if len(fields) > 2 else None,
-            "command": fields[3] if len(fields) > 3 else line,
+            "pid": process.pid,
+            "cpu_pct": process.cpu_percent,
+            "rss_kib": process.rss_bytes // 1024,
+            "command": command,
+            "role": process.role,
+            "class": process.process_class,
+            "safe_to_stop": process.safe_to_stop,
         })
-    return {"status": "AVAILABLE" if result.returncode == 0 else "UNKNOWN", "needles": list(needles), "matches": matches}
+    return {"status": "AVAILABLE", "needles": list(needles), "matches": matches}
 
 
 def _manifest_inventory(root: Path) -> Dict[str, Any]:

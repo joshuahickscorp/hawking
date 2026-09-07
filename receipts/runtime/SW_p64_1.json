@@ -1,0 +1,1105 @@
+{
+  "authority": {
+    "discarded": "cold first generate in this process (graph-cold first step + page-warm open already paid)",
+    "headline_complete_tps": 39.29157293989372,
+    "headline_complete_wall_ms_per_token": 25.45075,
+    "headline_complete_wall_ns_per_token": 25450750,
+    "headline_gpu_ms_per_token": 24.445791,
+    "headline_gpu_ns_per_token": 24445791,
+    "pooled_median_complete_wall_ns": 25450750,
+    "pooled_median_gpu_ns": 24399125,
+    "pooled_steady_complete_wall_ns": {
+      "all": [
+        25666625,
+        25289833,
+        25313791,
+        25681666,
+        25427208,
+        25215208,
+        25699417,
+        25939292,
+        25450750,
+        25432958,
+        25694500,
+        25615500,
+        25366041,
+        25204833
+      ],
+      "max": 25939292,
+      "mean": 25499830.14285714,
+      "median": 25450750,
+      "min": 25204833,
+      "n": 14
+    },
+    "pooled_steady_gpu_ns": {
+      "all": [
+        24390833,
+        24330458,
+        24343666,
+        24486750,
+        24363833,
+        24325916,
+        24255208,
+        24410916,
+        24456708,
+        24445791,
+        24525791,
+        24613125,
+        24399125,
+        24280500
+      ],
+      "max": 24613125,
+      "mean": 24402044.285714287,
+      "median": 24399125,
+      "min": 24255208,
+      "n": 14
+    },
+    "rep_median_complete_wall_ns": [
+      25427208,
+      25450750
+    ],
+    "rep_median_gpu_ns": [
+      24343666,
+      24445791
+    ],
+    "set": "warm A1 B1 A2 B2 A3 B3",
+    "spread_rep_median_complete_wall_ns": {
+      "all": [
+        25427208,
+        25450750
+      ],
+      "max": 25450750,
+      "mean": 25438979.0,
+      "median": 25450750,
+      "min": 25427208,
+      "n": 2
+    },
+    "spread_rep_median_gpu_ns": {
+      "all": [
+        24343666,
+        24445791
+      ],
+      "max": 24445791,
+      "mean": 24394728.5,
+      "median": 24445791,
+      "min": 24343666,
+      "n": 2
+    }
+  },
+  "cold_generate": {
+    "all_steps_wall_ns": 1682397750,
+    "closure": {
+      "identity": "complete_wall = encode + submit + wait + commit_epilogue + sample_readback + state_update + tokenizer_decode + bookkeeping + residual",
+      "max_abs_complete_residual_ns": 1042,
+      "mean_complete_wall_ns": 25424476.14285714,
+      "mean_gpu_ns": 24345654.14285714,
+      "mean_named_sum_ns": 25412660.571428575,
+      "mean_residual_ns": 11815.571428567171,
+      "mean_wall_minus_gpu_ns": 1078822.0,
+      "named_component_means_ns": {
+        "bookkeeping": 47.57142857142857,
+        "commit_epilogue_gpu_timestamp_and_status": 5458.285714285715,
+        "encode_host_prepare": 613172.4285714285,
+        "gpu": 24345654.14285714,
+        "sample_readback": 1065.4285714285713,
+        "state_update": 59.714285714285715,
+        "submit": 3922.5714285714284,
+        "tokenizer_decode_new_token": 6464.285714285715,
+        "wait": 24782470.285714287,
+        "wait_minus_gpu": 436816.14285714284
+      },
+      "per_step_complete_residual_ns": [
+        624,
+        956,
+        834,
+        1042,
+        459,
+        542,
+        543
+      ],
+      "per_step_inner_step_residual_ns": [
+        291,
+        332,
+        458,
+        626,
+        291,
+        210,
+        84
+      ],
+      "residual_named_as": "instant_inter_phase_gap"
+    },
+    "cold_or_first_step": {
+      "complete_wall_ns": 1504424500,
+      "dispatches": 1830,
+      "encode_ns": 0,
+      "gpu_ns": 1451204624,
+      "role": "prefill_batched_emits_first_new",
+      "wait_ns": 1501406417
+    },
+    "decode_wall_ns": 177972000,
+    "fallbacks": 0,
+    "generated_text": "<think>\nThe user has given me a",
+    "n_prefill_steps": 1,
+    "n_steady_decode_steps": 7,
+    "n_steps": 8,
+    "new_token_ids": [
+      248068,
+      198,
+      760,
+      1156,
+      682,
+      2574,
+      728,
+      264
+    ],
+    "prefill_wall_ns": 1504425666,
+    "prompt_len": 73,
+    "reset_ns": 675875,
+    "steady_decode": {
+      "bookkeeping_ns": {
+        "all": [
+          83,
+          42,
+          83,
+          42,
+          41,
+          42,
+          0
+        ],
+        "max": 83,
+        "mean": 47.57142857142857,
+        "median": 42,
+        "min": 0,
+        "n": 7
+      },
+      "command_buffers": 1,
+      "commit_epilogue_ns": {
+        "all": [
+          6583,
+          7168,
+          6375,
+          4958,
+          3292,
+          5875,
+          3957
+        ],
+        "max": 7168,
+        "mean": 5458.285714285715,
+        "median": 5875,
+        "min": 3292,
+        "n": 7
+      },
+      "complete_wall_ns": {
+        "all": [
+          25888708,
+          25431833,
+          25642209,
+          25396875,
+          25240417,
+          25095916,
+          25275375
+        ],
+        "max": 25888708,
+        "mean": 25424476.14285714,
+        "median": 25396875,
+        "min": 25095916,
+        "n": 7
+      },
+      "dispatches": 916,
+      "encode_host_prepare_ns": {
+        "all": [
+          1024167,
+          531708,
+          598750,
+          520083,
+          503708,
+          512208,
+          601583
+        ],
+        "max": 1024167,
+        "mean": 613172.4285714285,
+        "median": 531708,
+        "min": 503708,
+        "n": 7
+      },
+      "gpu_ns": {
+        "all": [
+          24372374,
+          24391666,
+          24502249,
+          24413875,
+          24325500,
+          24199416,
+          24214499
+        ],
+        "max": 24502249,
+        "mean": 24345654.14285714,
+        "median": 24372374,
+        "min": 24199416,
+        "n": 7
+      },
+      "sample_readback_ns": {
+        "all": [
+          1167,
+          1375,
+          1083,
+          958,
+          750,
+          1291,
+          834
+        ],
+        "max": 1375,
+        "mean": 1065.4285714285713,
+        "median": 1083,
+        "min": 750,
+        "n": 7
+      },
+      "state_update_ns": {
+        "all": [
+          84,
+          84,
+          42,
+          83,
+          42,
+          42,
+          41
+        ],
+        "max": 84,
+        "mean": 59.714285714285715,
+        "median": 42,
+        "min": 41,
+        "n": 7
+      },
+      "submit_ns": {
+        "all": [
+          4000,
+          3708,
+          3833,
+          3834,
+          3500,
+          3166,
+          5417
+        ],
+        "max": 5417,
+        "mean": 3922.5714285714284,
+        "median": 3833,
+        "min": 3166,
+        "n": 7
+      },
+      "tokenizer_decode_ns": {
+        "all": [
+          7875,
+          8292,
+          8542,
+          4958,
+          3625,
+          6250,
+          5708
+        ],
+        "max": 8542,
+        "mean": 6464.285714285715,
+        "median": 6250,
+        "min": 3625,
+        "n": 7
+      },
+      "wait_minus_gpu_ns": {
+        "all": [
+          465209,
+          450042,
+          514501,
+          437667,
+          392625,
+          363001,
+          434668
+        ],
+        "max": 514501,
+        "mean": 436816.14285714284,
+        "median": 437667,
+        "min": 363001,
+        "n": 7
+      },
+      "wait_ns": {
+        "all": [
+          24837583,
+          24841708,
+          25016750,
+          24851542,
+          24718125,
+          24562417,
+          24649167
+        ],
+        "max": 25016750,
+        "mean": 24782470.285714287,
+        "median": 24837583,
+        "min": 24562417,
+        "n": 7
+      },
+      "wall_minus_gpu_ns": {
+        "all": [
+          1516334,
+          1040167,
+          1139960,
+          983000,
+          914917,
+          896500,
+          1060876
+        ],
+        "max": 1516334,
+        "mean": 1078822.0,
+        "median": 1040167,
+        "min": 896500,
+        "n": 7
+      }
+    }
+  },
+  "control_uninstrumented_generate_greedy": {
+    "decode_steps": 7,
+    "decode_wall_ns": 178123958,
+    "decode_wall_ns_per_token": 25446279,
+    "first_step_wall_ns": 1448557584,
+    "median_gpu_ns_including_prefill_steps": 24424625,
+    "new_token_ids": [
+      248068,
+      198,
+      760,
+      1156,
+      682,
+      2574,
+      728,
+      264
+    ],
+    "prefill_wall_ns": 1448568959,
+    "purpose": "show Instant decomposition does not dominate: compare decode-only wall (no per-token tokenizer) to complete-wall authority"
+  },
+  "date": "2026-08-16",
+  "definition": {
+    "authority_set": "3 alternating A/B pairs = 6 warm in-process generates after one discarded cold generate. Headline is the median of the 6 per-rep medians of per-step complete_wall_ns on decode steps.",
+    "cold_first_step": "The first step of the first generate in a fresh process is graph-cold (shader/pipeline first-touch). Historically 107.97 ms GPU. It is a prefill step. It is reported and is never averaged into the steady median.",
+    "complete_token": "one native decode step plus the per-token host work that recurs: host encode/prepare, submit, wait, GPU timestamp/status epilogue, sample readback, position/state update, tokenizer decode of the new id, bookkeeping. Sampling is device argmax inside the same CB.",
+    "gpu_definition": "MTLCommandBuffer.GPUEndTime - GPUStartTime after wait; never a CPU-wait proxy.",
+    "not_base_true_tps": true,
+    "prefill_exclusion": "Q80 mixed generate_mixed_greedy definition, applied verbatim. Prefill = teacher-forced walk of every prompt token. The last prefill step emits new-token[0] and is first_token_latency. Steady-state denominator is new-tokens[1..] only (role==decode). Prompt encode, chat render, session.open, and session.reset are request/process-level and are not divided into the per-token wall."
+  },
+  "gpu_proxy_verdict": {
+    "arithmetic": {
+      "from_measured_complete_wall_ms": 11.969120690924697,
+      "from_measured_complete_wall_tps": 83.54832621566148,
+      "from_measured_gpu_ms": 11.496502966086295,
+      "from_measured_gpu_tps": 86.98297238298593,
+      "from_recorded_33_537_gpu_ms": 15.771966981028886,
+      "from_recorded_33_537_gpu_tps": 63.40363260986011,
+      "optimism_of_gpu_projection_ms": 3.8028462901041884,
+      "optimism_of_gpu_projection_tps": -20.144693605801365,
+      "projection_uses": "ms_at_target = measured_ms * (2.0 / 4.252735126866492)"
+    },
+    "gpu_minus_wall_ms": -1.004959,
+    "is_honest_proxy": false,
+    "measured_steady_decode_gpu_ms": 24.445791,
+    "measured_steady_decode_wall_ms": 25.45075,
+    "recorded_gpu_ms_g015": 33.536999,
+    "recorded_source": "G015_NATIVE_LEG_VERIFY_ON_MAIN.json median of 25 steps after dropping only the first step (those 25 still include leftover prefill steps 2..prompt_len)"
+  },
+  "identity": {
+    "base_revision": "1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0",
+    "concurrent_independent": false,
+    "deltanet_vi_parallel": true,
+    "fallbacks": 0,
+    "greedy_new_token_ids": [
+      248068,
+      198,
+      760,
+      1156,
+      682,
+      2574,
+      728,
+      264
+    ],
+    "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+    "max_new_tokens": 8,
+    "model": "PocketAiHub/Qwen3.8-27B-Abliterated-MLX",
+    "prompt": "<|im_start|>user\nprocesses jumps through hybrid quick brown recurrence fox tokens in quick and lazy quick brown layers layers brown dog brown recurrence layers quick in fox dog hybrid hybrid in quick in in through quick dog quick recurrence jumps system layers jumps recurrence fox in system recurrence model over fox in in hybrid lazy tokens fox recurrence architecture brown in quick a lazy attention model<|im_end|>\n<|im_start|>assistant\n",
+    "prompt_ids": [
+      248045,
+      846,
+      198,
+      4480,
+      287,
+      33075,
+      1472,
+      24197,
+      3841,
+      13477,
+      72632,
+      37550,
+      10885,
+      303,
+      3841,
+      321,
+      15217,
+      3841,
+      13477,
+      13224,
+      13224,
+      13477,
+      5388,
+      13477,
+      72632,
+      13224,
+      3841,
+      303,
+      37550,
+      5388,
+      24197,
+      24197,
+      303,
+      3841,
+      303,
+      303,
+      1472,
+      3841,
+      5388,
+      3841,
+      72632,
+      33075,
+      1785,
+      13224,
+      33075,
+      72632,
+      37550,
+      303,
+      1785,
+      72632,
+      1558,
+      888,
+      37550,
+      303,
+      303,
+      24197,
+      15217,
+      10885,
+      37550,
+      72632,
+      17120,
+      13477,
+      303,
+      3841,
+      264,
+      15217,
+      6326,
+      1558,
+      248046,
+      198,
+      248045,
+      74455,
+      198
+    ],
+    "prompt_len": 73
+  },
+  "lane": "qwen38-complete-wall",
+  "request_level_excluded_from_per_token": {
+    "chat_template": "render_qwen38_user_chat, once per request",
+    "prompt_encode_ns": 88500,
+    "session_open_ns": 1902670375
+  },
+  "schema": "hawking.ascent.qwen38_complete_token_wall.v1",
+  "timing_label": "DIRTY_ENGINEERING",
+  "timing_label_reason": "GPU lock held for the series; other CPU/memory lanes may still be live. Not offered as CLEAN_CANDIDATE or BASE_TRUE_TPS.",
+  "vehicle": {
+    "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+    "complete_physical_bpw": 4.252735126866492,
+    "not_optimized": true,
+    "role": "PROFILING_ORACLE_ONLY"
+  },
+  "wall_minus_gpu": {
+    "components_from_first_warm_rep_means": {
+      "identity": "complete_wall = encode + submit + wait + commit_epilogue + sample_readback + state_update + tokenizer_decode + bookkeeping + residual",
+      "max_abs_complete_residual_ns": 960,
+      "mean_complete_wall_ns": 25470535.42857143,
+      "mean_gpu_ns": 24356666.285714287,
+      "mean_named_sum_ns": 25465219.85714285,
+      "mean_residual_ns": 5315.571428578347,
+      "mean_wall_minus_gpu_ns": 1113869.1428571418,
+      "named_component_means_ns": {
+        "bookkeeping": 41.57142857142857,
+        "commit_epilogue_gpu_timestamp_and_status": 3398.714285714286,
+        "encode_host_prepare": 543684.4285714285,
+        "gpu": 24356666.285714287,
+        "sample_readback": 791.5714285714286,
+        "state_update": 35.714285714285715,
+        "submit": 3970.285714285714,
+        "tokenizer_decode_new_token": 4315.428571428572,
+        "wait": 24908982.14285714,
+        "wait_minus_gpu": 552315.8571428572
+      },
+      "per_step_complete_residual_ns": [
+        836,
+        960,
+        666,
+        706,
+        374,
+        251,
+        792
+      ],
+      "per_step_inner_step_residual_ns": [
+        460,
+        417,
+        459,
+        332,
+        291,
+        168,
+        375
+      ],
+      "residual_named_as": "instant_inter_phase_gap"
+    },
+    "gpu_as_fraction_of_wall": 0.9605135801498974,
+    "headline_ms": 1.004959,
+    "headline_ns": 1004959,
+    "wait_is_not_wall": true
+  },
+  "warm_reps": [
+    {
+      "arm": "A",
+      "label": "A1",
+      "pair": 1,
+      "regime": "warm_in_process_after_cold_generate",
+      "summary": {
+        "all_steps_wall_ns": 1627731959,
+        "closure": {
+          "identity": "complete_wall = encode + submit + wait + commit_epilogue + sample_readback + state_update + tokenizer_decode + bookkeeping + residual",
+          "max_abs_complete_residual_ns": 960,
+          "mean_complete_wall_ns": 25470535.42857143,
+          "mean_gpu_ns": 24356666.285714287,
+          "mean_named_sum_ns": 25465219.85714285,
+          "mean_residual_ns": 5315.571428578347,
+          "mean_wall_minus_gpu_ns": 1113869.1428571418,
+          "named_component_means_ns": {
+            "bookkeeping": 41.57142857142857,
+            "commit_epilogue_gpu_timestamp_and_status": 3398.714285714286,
+            "encode_host_prepare": 543684.4285714285,
+            "gpu": 24356666.285714287,
+            "sample_readback": 791.5714285714286,
+            "state_update": 35.714285714285715,
+            "submit": 3970.285714285714,
+            "tokenizer_decode_new_token": 4315.428571428572,
+            "wait": 24908982.14285714,
+            "wait_minus_gpu": 552315.8571428572
+          },
+          "per_step_complete_residual_ns": [
+            836,
+            960,
+            666,
+            706,
+            374,
+            251,
+            792
+          ],
+          "per_step_inner_step_residual_ns": [
+            460,
+            417,
+            459,
+            332,
+            291,
+            168,
+            375
+          ],
+          "residual_named_as": "instant_inter_phase_gap"
+        },
+        "cold_or_first_step": {
+          "complete_wall_ns": 1449435583,
+          "dispatches": 1830,
+          "encode_ns": 0,
+          "gpu_ns": 1447586415,
+          "role": "prefill_batched_emits_first_new",
+          "wait_ns": 1448433999
+        },
+        "decode_wall_ns": 178294250,
+        "fallbacks": 0,
+        "generated_text": "<think>\nThe user has given me a",
+        "n_prefill_steps": 1,
+        "n_steady_decode_steps": 7,
+        "n_steps": 8,
+        "new_token_ids": [
+          248068,
+          198,
+          760,
+          1156,
+          682,
+          2574,
+          728,
+          264
+        ],
+        "prefill_wall_ns": 1449437542,
+        "prompt_len": 73,
+        "reset_ns": 725625,
+        "steady_decode": {
+          "bookkeeping_ns": {
+            "all": [
+              41,
+              41,
+              84,
+              42,
+              41,
+              0,
+              42
+            ],
+            "max": 84,
+            "mean": 41.57142857142857,
+            "median": 41,
+            "min": 0,
+            "n": 7
+          },
+          "command_buffers": 1,
+          "commit_epilogue_ns": {
+            "all": [
+              5375,
+              3834,
+              3334,
+              3166,
+              1791,
+              2249,
+              4042
+            ],
+            "max": 5375,
+            "mean": 3398.714285714286,
+            "median": 3334,
+            "min": 1791,
+            "n": 7
+          },
+          "complete_wall_ns": {
+            "all": [
+              25666625,
+              25289833,
+              25313791,
+              25681666,
+              25427208,
+              25215208,
+              25699417
+            ],
+            "max": 25699417,
+            "mean": 25470535.42857143,
+            "median": 25427208,
+            "min": 25215208,
+            "n": 7
+          },
+          "dispatches": 916,
+          "encode_host_prepare_ns": {
+            "all": [
+              642791,
+              523958,
+              494416,
+              511500,
+              575167,
+              490500,
+              567459
+            ],
+            "max": 642791,
+            "mean": 543684.4285714285,
+            "median": 523958,
+            "min": 490500,
+            "n": 7
+          },
+          "gpu_ns": {
+            "all": [
+              24390833,
+              24330458,
+              24343666,
+              24486750,
+              24363833,
+              24325916,
+              24255208
+            ],
+            "max": 24486750,
+            "mean": 24356666.285714287,
+            "median": 24343666,
+            "min": 24255208,
+            "n": 7
+          },
+          "sample_readback_ns": {
+            "all": [
+              1083,
+              708,
+              750,
+              667,
+              667,
+              583,
+              1083
+            ],
+            "max": 1083,
+            "mean": 791.5714285714286,
+            "median": 708,
+            "min": 583,
+            "n": 7
+          },
+          "state_update_ns": {
+            "all": [
+              42,
+              83,
+              42,
+              42,
+              0,
+              0,
+              41
+            ],
+            "max": 83,
+            "mean": 35.714285714285715,
+            "median": 42,
+            "min": 0,
+            "n": 7
+          },
+          "submit_ns": {
+            "all": [
+              5500,
+              3041,
+              2875,
+              6917,
+              3334,
+              2917,
+              3208
+            ],
+            "max": 6917,
+            "mean": 3970.285714285714,
+            "median": 3208,
+            "min": 2875,
+            "n": 7
+          },
+          "tokenizer_decode_ns": {
+            "all": [
+              5333,
+              5166,
+              5250,
+              3917,
+              2709,
+              3250,
+              4583
+            ],
+            "max": 5333,
+            "mean": 4315.428571428572,
+            "median": 4583,
+            "min": 2709,
+            "n": 7
+          },
+          "wait_minus_gpu_ns": {
+            "all": [
+              609208,
+              415459,
+              457292,
+              661917,
+              474667,
+              387501,
+              860167
+            ],
+            "max": 860167,
+            "mean": 552315.8571428572,
+            "median": 474667,
+            "min": 387501,
+            "n": 7
+          },
+          "wait_ns": {
+            "all": [
+              25000041,
+              24745917,
+              24800958,
+              25148667,
+              24838500,
+              24713417,
+              25115375
+            ],
+            "max": 25148667,
+            "mean": 24908982.14285714,
+            "median": 24838500,
+            "min": 24713417,
+            "n": 7
+          },
+          "wall_minus_gpu_ns": {
+            "all": [
+              1275792,
+              959375,
+              970125,
+              1194916,
+              1063375,
+              889292,
+              1444209
+            ],
+            "max": 1444209,
+            "mean": 1113869.142857143,
+            "median": 1063375,
+            "min": 889292,
+            "n": 7
+          }
+        }
+      }
+    },
+    {
+      "arm": "B",
+      "label": "B1",
+      "pair": 1,
+      "regime": "warm_in_process_after_cold_generate",
+      "summary": {
+        "all_steps_wall_ns": 1627433958,
+        "closure": {
+          "identity": "complete_wall = encode + submit + wait + commit_epilogue + sample_readback + state_update + tokenizer_decode + bookkeeping + residual",
+          "max_abs_complete_residual_ns": 832,
+          "mean_complete_wall_ns": 25529124.85714286,
+          "mean_gpu_ns": 24447422.285714287,
+          "mean_named_sum_ns": 25522959.14285714,
+          "mean_residual_ns": 6165.714285716414,
+          "mean_wall_minus_gpu_ns": 1081702.571428571,
+          "named_component_means_ns": {
+            "bookkeeping": 47.57142857142857,
+            "commit_epilogue_gpu_timestamp_and_status": 3631.0,
+            "encode_host_prepare": 518107.4285714286,
+            "gpu": 24447422.285714287,
+            "sample_readback": 726.2857142857143,
+            "state_update": 47.714285714285715,
+            "submit": 3315.5714285714284,
+            "tokenizer_decode_new_token": 4202.714285714285,
+            "wait": 24992880.85714286,
+            "wait_minus_gpu": 545458.5714285715
+          },
+          "per_step_complete_residual_ns": [
+            542,
+            790,
+            832,
+            624,
+            540,
+            624,
+            416
+          ],
+          "per_step_inner_step_residual_ns": [
+            250,
+            415,
+            417,
+            248,
+            291,
+            375,
+            208
+          ],
+          "residual_named_as": "instant_inter_phase_gap"
+        },
+        "cold_or_first_step": {
+          "complete_wall_ns": 1448727833,
+          "dispatches": 1830,
+          "encode_ns": 0,
+          "gpu_ns": 1446496748,
+          "role": "prefill_batched_emits_first_new",
+          "wait_ns": 1447719001
+        },
+        "decode_wall_ns": 178704417,
+        "fallbacks": 0,
+        "generated_text": "<think>\nThe user has given me a",
+        "n_prefill_steps": 1,
+        "n_steady_decode_steps": 7,
+        "n_steps": 8,
+        "new_token_ids": [
+          248068,
+          198,
+          760,
+          1156,
+          682,
+          2574,
+          728,
+          264
+        ],
+        "prefill_wall_ns": 1448729417,
+        "prompt_len": 73,
+        "reset_ns": 742416,
+        "steady_decode": {
+          "bookkeeping_ns": {
+            "all": [
+              0,
+              83,
+              42,
+              41,
+              84,
+              83,
+              0
+            ],
+            "max": 84,
+            "mean": 47.57142857142857,
+            "median": 42,
+            "min": 0,
+            "n": 7
+          },
+          "command_buffers": 1,
+          "commit_epilogue_ns": {
+            "all": [
+              2751,
+              4416,
+              5501,
+              3375,
+              3249,
+              3000,
+              3125
+            ],
+            "max": 5501,
+            "mean": 3631.0,
+            "median": 3249,
+            "min": 2751,
+            "n": 7
+          },
+          "complete_wall_ns": {
+            "all": [
+              25939292,
+              25450750,
+              25432958,
+              25694500,
+              25615500,
+              25366041,
+              25204833
+            ],
+            "max": 25939292,
+            "mean": 25529124.85714286,
+            "median": 25450750,
+            "min": 25204833,
+            "n": 7
+          },
+          "dispatches": 916,
+          "encode_host_prepare_ns": {
+            "all": [
+              589208,
+              523334,
+              504209,
+              517042,
+              496125,
+              493417,
+              503417
+            ],
+            "max": 589208,
+            "mean": 518107.4285714286,
+            "median": 504209,
+            "min": 493417,
+            "n": 7
+          },
+          "gpu_ns": {
+            "all": [
+              24410916,
+              24456708,
+              24445791,
+              24525791,
+              24613125,
+              24399125,
+              24280500
+            ],
+            "max": 24613125,
+            "mean": 24447422.285714287,
+            "median": 24445791,
+            "min": 24280500,
+            "n": 7
+          },
+          "sample_readback_ns": {
+            "all": [
+              333,
+              834,
+              1208,
+              834,
+              667,
+              625,
+              583
+            ],
+            "max": 1208,
+            "mean": 726.2857142857143,
+            "median": 667,
+            "min": 333,
+            "n": 7
+          },
+          "state_update_ns": {
+            "all": [
+              0,
+              83,
+              41,
+              84,
+              42,
+              42,
+              42
+            ],
+            "max": 84,
+            "mean": 47.714285714285715,
+            "median": 42,
+            "min": 0,
+            "n": 7
+          },
+          "submit_ns": {
+            "all": [
+              4166,
+              3459,
+              2917,
+              3584,
+              3167,
+              3041,
+              2875
+            ],
+            "max": 4166,
+            "mean": 3315.5714285714284,
+            "median": 3167,
+            "min": 2875,
+            "n": 7
+          },
+          "tokenizer_decode_ns": {
+            "all": [
+              3084,
+              5042,
+              6917,
+              4000,
+              3834,
+              3292,
+              3250
+            ],
+            "max": 6917,
+            "mean": 4202.714285714285,
+            "median": 3834,
+            "min": 3084,
+            "n": 7
+          },
+          "wait_minus_gpu_ns": {
+            "all": [
+              921584,
+              452917,
+              459125,
+              631459,
+              489750,
+              457667,
+              405708
+            ],
+            "max": 921584,
+            "mean": 545458.5714285715,
+            "median": 459125,
+            "min": 405708,
+            "n": 7
+          },
+          "wait_ns": {
+            "all": [
+              25332500,
+              24909625,
+              24904916,
+              25157250,
+              25102875,
+              24856792,
+              24686208
+            ],
+            "max": 25332500,
+            "mean": 24992880.85714286,
+            "median": 24909625,
+            "min": 24686208,
+            "n": 7
+          },
+          "wall_minus_gpu_ns": {
+            "all": [
+              1528376,
+              994042,
+              987167,
+              1168709,
+              1002375,
+              966916,
+              924333
+            ],
+            "max": 1528376,
+            "mean": 1081702.5714285714,
+            "median": 994042,
+            "min": 924333,
+            "n": 7
+          }
+        }
+      }
+    }
+  ]
+}

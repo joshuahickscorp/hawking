@@ -1,0 +1,23 @@
+{
+ "one_cycle_s": 177.6,
+ "three_cycles_s": 299.0,
+ "marginal_cycle_s": 60.7,
+ "setup_s": 116.9,
+ "kill_threshold_s": 150,
+ "killed": false,
+ "specimen": "O003",
+ "date": "2026-09-06",
+ "obligation": "G022 / S009",
+ "claim": "The 237 s per-round floor is process + resident LOAD, so a persistent resident removes it.",
+ "pre_committed_kill": "marginal cost of a second cycle in an already-warm process > 150 s would mean the floor is per-cycle and persistence does not help. Stated before measuring.",
+ "result": "CONFIRMED at 60.7 s marginal. Three cycles cost 1.68x one cycle, not 3x.",
+ "split": {
+  "one_time_setup_s": 116.9,
+  "per_cycle_s": 60.7,
+  "setup_share_of_a_single_round": 0.658
+ },
+ "PROJECTED_WIN": "A 23-round ladder goes from ~68 min to ~25 min, 2.7x, on the campaign's dominant cost. For comparison, the MoE fusion fix shipped earlier this session is worth 2.0% of an 8.816 ms decode step.",
+ "VARIANCE_CAVEAT": "The same one-cycle command measured 237.3 s earlier and 177.6 s here, a 34% spread. The absolute figures inherit that. What does NOT depend on it is the SHAPE: three cycles cost 1.68x one cycle within a single measurement pair, so most of a round is one-time setup no matter which absolute baseline is used. The 60.7 s marginal is far below the 150 s kill threshold with room to spare.",
+ "WHAT_IT_DOES_NOT_FIX": "60.7 s per cycle is still 2.8x the 21.35 s cost of a COMPLETE evaluated arm. Even with persistence, the loop spends more wall deciding than measuring. Persistence takes the ratio from 12.8x to 2.8x; it does not invert it.",
+ "NEXT": "Where does the remaining 60.7 s go? That is prompt compilation, generation, and structured output repair -- none of it measured yet."
+}

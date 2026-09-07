@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from .wall_profile import phase as _wall_phase
+
 import ast
 import hashlib
 import json
@@ -47,6 +49,7 @@ from .goal import GoalCompiler
 from .mutation import compile_python_file
 from .runtime import store_observed_overlap
 from .workspace import Workspace
+from .hawking_native import _boundary_trace
 
 
 _REASONING_KEYS = {
@@ -57,7 +60,7 @@ _REASONING_KEYS = {
     "thinking",
 }
 
-# Matches tools/headless/structured_output_probe.py::RESULT_SCHEMA. Do not
+# Matches tools/bench/structured_output_probe.py::RESULT_SCHEMA. Do not
 # diverge: constrained decoding is only a guarantee if the schema is the same
 # contract the system prompt already describes.
 HCLI_RESULT_SCHEMA: Dict[str, Any] = {
@@ -141,9 +144,54 @@ HCLI_RESULT_SCHEMA: Dict[str, Any] = {
             },
         },
     },
-    "required": ["kind", "content", "operations", "tests", "tool_calls"],
+    # Only the discriminant and the short human-readable result are universal.
+    # The three payload arrays are mode-specific: requiring all of them made a
+    # read/tool reply spend tokens spelling empty arrays, and made a truncated
+    # answer look like a schema failure instead of a small answer. The executor
+    # still defaults omitted arrays to [] and applies the mutation evidence gate
+    # to `tests` before accepting any edit.
+    "required": ["kind", "content"],
     "additionalProperties": False,
 }
+
+# Degraded agentic cognition does not need to serialize empty arrays on every
+# turn.  HCLI supplies omitted operations/tests/tool_calls as empty lists after
+# validation; mutation support remains available when those fields are used.
+HCLI_COMPACT_RESULT_SCHEMA: Dict[str, Any] = {
+    **HCLI_RESULT_SCHEMA,
+    "required": ["kind", "content"],
+}
+
+# Worker turns already receive the compiled WorkUnit packet. Repeating the
+# full root-oriented policy block and pretty-printed schema on every decision
+# consumed ~6K characters in the measured O003 prompt. Keep the validator and
+# executor contract unchanged, but send the resident the smaller operational
+# envelope it needs for this one decision.
+# The compaction above removed the pretty-printed schema but the validator kept
+# enforcing it, so the resident was asked for a shape nobody described and its
+# replies were rejected for not having it. Measured against a live 4B resident on
+# the real captured prompt, same seeds and temperature: WITHOUT a shape line 0/8
+# conformant (every reply stringified the action into `content`); WITH it 8/8.
+# One line restores the contract at ~200 characters instead of the ~6K block.
+_AGENTIC_SYSTEM_PROMPT = """HCLI worker for one bounded WorkUnit. Disk state and deterministic evidence are authority.
+Return one JSON object with kind=answer|mutation|tool_use and concise content/action.
+Mutation: {"kind":"mutation","content":"what changed","operations":[{"op":"create","path":"dir/file.txt","new_lines":["line one","line two"]}],"tests":["cmd"]}
+operations is an ARRAY of 1..20 objects; op is one of replace|create|replace_file|insert_before|insert_after|append; op and path are REQUIRED; path is relative to the workspace ROOT and must NOT begin with "workspace/"; use old_lines/new_lines (arrays of plain lines, no escaping); no other keys are allowed.
+tool_use: {"kind":"tool_use","content":"why","tool_calls":[{"tool":"fs.read","arguments":[{"name":"path","value":"dir/file.json"}]}]}
+tool_calls is an ARRAY of at most 16 objects; each REQUIRES "tool" (a name from the catalog) and "arguments" (an array of {"name","value"} pairs, values as STRINGS).
+No reasoning, markdown, or essay. Paths are workspace-relative; never modify .git. HCLI supplies receipts."""
+
+_AGENTIC_SCHEMA_INSTRUCTION = """
+JSON only: kind=answer|mutation|tool_use; content is short.
+Mutation: operations is an ARRAY of 1..20 objects, each requiring "op" (replace|create|replace_file|insert_before|insert_after|append) and "path", with old_lines/new_lines arrays; no other keys. tests is an array of commands.
+tool_use: tool_calls is an ARRAY of <=16 objects, each requiring "tool" (catalog name) and "arguments" ([{"name","value"}], values as strings). Omit empty arrays and rationale."""
+
+_AGENTIC_TOOL_CATALOG = (
+    "fs.read(path,start_line,end_line); fs.search(pattern,root,glob,max_results); "
+    "fs.list(path,recursive,glob); filesystem.write(path,content,overwrite); "
+    "tests.run(paths); receipt.read(path); git.diff(path); git.status(path); "
+    "tools.catalog(focus). Use tools.catalog for omitted signatures."
+)
 
 _SYSTEM_PROMPT = """You are the HCLI engineering worker.
 
@@ -156,74 +204,106 @@ TOOLS KNOW.
 DISK STATE IS AUTHORITY.
 CONTEXT IS A CACHE.
 
-Return exactly one JSON object and nothing else.
+Return exactly one JSON object and nothing else. Keep `content` under 200
+characters. Omit mode-specific empty arrays.
 
-For a read-only request:
-{
-  "kind": "answer",
-  "content": "concise final answer",
-  "operations": [],
-  "tests": [],
-  "tool_calls": []
-}
+For a read-only answer, emit only:
+{"kind":"answer","content":"concise final answer"}
 
-For a requested code/file change:
-{
-  "kind": "mutation",
-  "content": "concise description of what changed",
-  "operations": [
-    {
-      "op": "replace",
-      "path": "workspace/relative/path",
-      "old_lines": ["exact anchor lines, copied verbatim, occurring once"],
-      "new_lines": ["the replacement", "one entry per line, no trailing newline"]
-    }
-  ],
-  "tests": ["hcli/tests/test_the_thing_you_changed.py"],
-  "tool_calls": []
-}
+For a requested code/file change, emit:
+{"kind":"mutation","content":"what changed",
+ "operations":[{"op":"replace","path":"workspace/relative/path",
+ "old_lines":["exact existing line"],"new_lines":["replacement line"]}],
+ "tests":["hcli/test_engine_tool_loop.py"]}
 
-USE old_lines/new_lines, NOT old_text/new_text, for anything with more than one
-line. One entry per line, no trailing "\n" of your own. A JSON string has to
-escape every newline and you get that wrong: a reply that sent "\\n" where "\n"
-belonged produced "unexpected character after line continuation character" and
-lost three attempts and four calls. A list of plain lines has nothing to escape.
-old_text/new_text remain valid for a short single-line anchor.
-
-A MUTATION WITH AN EMPTY "tests" LIST CANNOT BE ACCEPTED. The verifier records
-it UNVERIFIED -- reason NO_EVIDENCE -- which is terminal, so the work is thrown
-away no matter how good the change was. Name a test that fails before your
-change and passes after it. If none exists, write one as part of the same
-mutation. Deterministic evidence is the only thing that can accept work here.
-
-To LOOK at something before answering (read a file, search, run a read-only
-command, inspect git):
-{
-  "kind": "tool_use",
-  "content": "why these calls",
-  "operations": [],
-  "tests": [],
-  "tool_calls": [
-    {"tool": "fs.read", "arguments": [{"name": "path", "value": "hcli/engine.py"}]}
-  ]
-}
+For a read-only inspection, emit:
+{"kind":"tool_use","content":"why these calls",
+ "tool_calls":[{"tool":"fs.search","arguments":[{"name":"pattern",
+ "value":"fn qwen38_batched_prefill_allowed"},{"name":"path",
+ "value":"crates/hawking-core/src/model/qwen38_hybrid_decode.rs"}]},
+ {"tool":"fs.read","arguments":[{"name":"path",
+ "value":"crates/hawking-core/src/model/qwen38_hybrid_decode.rs"},
+ {"name":"start_line","value":"280"},{"name":"end_line","value":"300"}]}]}
 Results come back as OBSERVATIONS and you are asked again.
 
-ASK FOR EVERYTHING YOU NEED IN ONE REPLY. A tool call costs about a
-millisecond. Being asked again costs minutes, and you get at most 6 rounds. Two
-files and a search in one reply is one round; asking for them one at a time is
-three rounds and roughly two hundred times the wall clock for the same answer.
-List up to 16 calls at once. Do not pace yourself.
+An fs.read with no window is truncated at ~4,000 chars ("truncated": true) and
+real files here are 100x that. SEARCH FIRST, then read that region. Never edit a
+region you have not read.
+
+USE old_lines/new_lines, NOT old_text/new_text, for anything with more than one
+line: one entry per line, no trailing "\n" of your own, nothing to escape.
+Escaping newlines by hand has cost whole rounds. old_text/new_text remain valid
+for a short single-line anchor.
+
+A MUTATION WITH AN EMPTY or omitted "tests" LIST CANNOT BE ACCEPTED. The
+verifier records it UNVERIFIED -- reason NO_EVIDENCE -- which is terminal, so
+the work is thrown away no matter how good the change was. Name a test that
+fails before your change and passes after it. If none exists, write one as part
+of the same mutation. Deterministic evidence is the only thing that can accept
+work here.
+
+ADMISSIBLE TEST FORMS -- anything else is refused as NOT_ADMITTED and your
+mutation is ROLLED BACK, however correct it was:
+  path/to/test_x.py                  a bare path to a Python file
+  pytest path/to/test_x.py           pytest, optionally with -q -v -x -s --tb=
+  python -m pytest path/to/test_x.py
+  python path/to/test_x.py           exactly two tokens
+
+EVERY named test is executed with pytest, whichever form you use -- the two
+python forms above are rewritten to `python -m pytest <path>`. So the file MUST
+define test functions (`def test_...`). A file of module-level asserts collects
+nothing, pytest exits 5, and the run is recorded NO_EVIDENCE: not accepted.
+Measured: a resident wrote `from probe import VALUE` / `assert VALUE == 7`,
+which is correct Python and proves nothing to this verifier.
+NOT admissible: python -c "...", shell pipelines, &&, redirection, cd, env
+assignments, or any command that is not one of the four forms above. If your
+check needs arbitrary code, WRITE IT INTO A .py FILE in the same mutation and
+name that file as the test.
+
+For an implementation mutation, emit ONE operation against the source file and
+keep the combined old/new replacement text under 900 UTF-8 bytes. Make the
+smallest executable change justified by the supplied evidence; do not serialize
+a whole file, a test rewrite, or a plan.
+
+A NEW TEST FILE IS A SECOND OPERATION AND IS EXPECTED. The rule above bounds
+the size of the source edit; it does not forbid the test this contract
+requires. Measured: three consecutive rounds read the one-operation rule as
+permission to write ONLY the test file, so the function under test was never
+added, the test passed before the change as well as after, and
+red-before-green refused all three. Adding a function and the test that proves
+it is TWO operations -- emit both.
+
+
+ASK FOR EVERYTHING YOU NEED IN ONE REPLY. ONE REPLY may contain at most 16
+tool calls. A tool call costs about a
+millisecond, while another model round costs minutes. Request only real paths
+needed for this goal, in one bundle, and keep the bundle small. If a tool says
+a path is missing, change the path or answer from the observation; never repeat
+the identical failed call. Do not invent `hcli/tests/test_engine.py` or
+`hcli/tests/__init__.py`: the production module is `hcli/engine.py`, and the
+tool error's directory listing/suggestion is authoritative.
+
+PROOF MUST NAME AN EXISTING FILE. For this self-repair loop,
+`hcli/test_engine_tool_loop.py` is an admitted proving test; use that exact
+path unless the observations name a more specific existing test. Never invent
+anything under `hcli/tests/`. A mutation must change executable behavior or
+add/repair a test; comment-only, marker-only, whitespace-only, and no-op edits
+are invalid and will be rolled back.
+
+`hcli/engine.py` already exists. To change it, use `replace` with an exact
+existing anchor; never use `create` for that path. `create` is only for a file
+the observations prove does not exist.
 
 Never list the SAME call twice. Duplicates are discarded, not executed, and a
-reply that repeats one call sixteen times has asked for one thing. Fill the
-budget with DIFFERENT questions or ask for fewer.
+reply that repeats one call has asked for one thing. Ask for fewer calls rather
+than filling the bundle with guesses.
 
 Prefer looking over guessing: an answer that says evidence is missing when a
 tool could have fetched it is a wrong answer.
 
 Rules:
-- every example above is a literal you may copy; every key shown is required
+- kind and content are required; operations/tests/tool_calls are required only
+  for the mode that uses them and otherwise may be omitted
 - op is exactly one of: replace, create, replace_file, insert_before,
   insert_after, append
 - tool_calls is [] unless kind is "tool_use"
@@ -235,6 +315,8 @@ Rules:
 - use exact old_text anchors
 - use create only for nonexistent files
 - if asked only a question, do not mutate
+- operations and tests are needed only for a mutation; tool_calls is needed
+  only for a tool_use; omitted arrays are treated as empty by HCLI
 - do not include reasoning_content, hidden reasoning, chain-of-thought, or <think>
 """
 
@@ -284,13 +366,13 @@ _CTX_ESTIMATE_MARGIN = 96
 #: shortens a reply.
 _CTX_ESTIMATE_ERROR = 0.30
 _MAX_TOKENS_FLOOR = 512
-# A valid mutation reply is 800 to 1500 tokens. Granting 5,874 cost nothing
-# while an unclosed object could stop early; now that EOS is masked until the
-# object closes, a model that will not close it runs the WHOLE budget instead.
-# Measured: one call 576s and still generating. Bound the damage -- a
-# well-formed reply never approaches this, and stop_reason "budget" names what
-# happened when one does.
-_MAX_TOKENS_CEILING = 2048
+# A valid mutation reply is usually 800 to 1500 tokens, but a create operation
+# can legitimately carry a small new module and its verifier in one structured
+# object. The previous 2048 ceiling exhausted those replies before JSON closed
+# (the live repair receipt recorded 2048, then 1709, then 1378-token attempts).
+# 4096 still fits the resident's 9728-token position window while giving the
+# contract retries room to shorten the reply instead of truncating every try.
+_MAX_TOKENS_CEILING = 4096
 _CHARS_PER_TOKEN = 3
 #: The estimator divides characters by a single constant, but the constant is
 #: not one number. Measured on the live resident: markdown prose runs near 3,
@@ -443,14 +525,24 @@ def _degraded_structured_record(
         **fields,
     )
     record["degraded_features"] = list(contract.degraded_features)
-    record["constrained_decoding"] = "unavailable"
-    record["constrained_decoding_reason"] = (
-        "backend.supports() reports "
-        + ", ".join(f"{name}=False" for name in contract.degraded_features)
-        + "; the field is withheld rather than sent-and-ignored, so an "
-        "unclosed JSON object is prevented by prompt+validate+bounded retry, "
-        "not structurally"
-    )
+    if contract.grammar_supported:
+        record["constrained_decoding"] = "grammar_syntax"
+        record["grammar_requested"] = "json"
+        record["constrained_decoding_reason"] = (
+            "native grammar='json' was sent and enforces JSON syntax only; "
+            "schema shape remains prompt+validate+bounded retry"
+        )
+    else:
+        record["constrained_decoding"] = "unavailable"
+        record["constrained_decoding_reason"] = (
+            "backend.supports() reports "
+            + ", ".join(f"{name}=False" for name in contract.degraded_features)
+            + "; the field is withheld rather than sent-and-ignored, so an "
+            "unclosed JSON object is prevented by prompt+validate+bounded retry, "
+            "not structurally"
+        )
+    if contract.attempt_budgets:
+        record["structured_attempt_budgets"] = list(contract.attempt_budgets)
     if contract.repairs:
         record["structured_repairs"] = list(contract.repairs)
     if contract.value_repairs:
@@ -470,6 +562,78 @@ def _degraded_structured_record(
             len(text) > _REJECTED_EXCERPT_CHARS
         )
     return record
+
+
+def is_accepted_work(validation: Any, result: Any = None) -> bool:
+    """True only for a mutation that applied AND passed a real check.
+
+    The ok flag alone is not that predicate: an ANSWER also sets ok=True, and
+    five consecutive fabricated completions were recorded that way. Counting
+    accepted work by ok would have scored all five as successes.
+    """
+    if not isinstance(validation, dict) or validation.get("ok") is not True:
+        return False
+    if validation.get("accepted_work") is False:
+        return False
+    if validation.get("kind") == "read_only":
+        return False
+    checks = validation.get("checks")
+    if not isinstance(checks, list):
+        return False
+    return any(
+        isinstance(c, dict) and c.get("kind") == "test" and c.get("exit_code") == 0
+        for c in checks
+    )
+
+
+def validation_failure_message(validation: Any) -> str:
+    """Say WHY deterministic validation failed.
+
+    The reason was previously extracted and discarded, so every failure reached
+    the mission log as the bare string below. That opacity blocked three
+    obligations at once: a failed unit could not be diagnosed from its own
+    receipt without re-running it.
+
+    Pure, so it can be tested by calling it rather than by reading the source
+    around it -- the first version of this test asserted substrings in a window
+    of engine.py and passed under every mutation.
+    """
+    head = "Deterministic validation failed"
+    if not isinstance(validation, dict):
+        return f"{head}: validation={str(validation)[:300]}"
+    bits = []
+    for key in ("reason", "failed", "failures", "returncode",
+                "command", "stderr", "tests", "files"):
+        value = validation.get(key)
+        if value in (None, "", [], {}):
+            continue
+        bits.append(f"{key}={str(value)[:300]}")
+    # The per-test reasons live in `checks`, not at the top level. Omitting it
+    # produced a message that named the file the model wrote and nothing about
+    # why the run was rejected -- true, useless, and it cost a full diagnostic
+    # cycle to notice.
+    checks = validation.get("checks")
+    if isinstance(checks, list):
+        bad = []
+        for c in checks:
+            if not isinstance(c, dict):
+                continue
+            if c.get("reason") or c.get("fatal") or c.get("exit_code") not in (None, 0):
+                # `requested` is the single most useful field on a rejected
+                # test -- it is the command the model actually asked for, and
+                # without it NOT_ADMITTED says a form was refused but not which.
+                keep = {k: c[k] for k in ("kind", "path", "reason", "exit_code",
+                                          "cmd", "requested")
+                        if c.get(k) not in (None, "")}
+                stderr = str(c.get("stderr") or "")[-200:]
+                if stderr:
+                    keep["stderr_tail"] = stderr
+                bad.append(keep)
+        if bad:
+            bits.append(f"failing_checks={str(bad)[:600]}")
+    if not bits:
+        return f"{head}: validation={str(validation)[:300]}"
+    return f"{head}: " + "; ".join(bits)
 
 
 class EngineError(RuntimeError):
@@ -518,21 +682,6 @@ _PYTHON_INVOKER_RE = re.compile(r"^python3(\.\d+)?$")
 _PROTECTED_PATH_PREFIXES = frozenset({".git", ".hcli"})
 _TEST_ENV_KEYS = ("PATH", "HOME", "LANG", "TMPDIR")
 
-# These spellings stay registered because existing missions and callers may
-# emit them.  The model-facing catalog can treat them as one capability.  A
-# slash-bearing alias is intentionally kept out of the canonical spelling: it
-# is legal in the registry, but it is a poor token boundary for a model.
-_TOOL_ALIAS_GROUPS = (
-    ("fs.read", "filesystem.read"),
-    ("fs.search", "filesystem.search"),
-    ("fs.list", "filesystem.list"),
-    ("git.checkout-safe", "git.revert-safe", "git.checkout/revert-safe"),
-    ("receipt.read", "receipt.inspect", "benchmark.inspect"),
-    ("huggingface.resolve", "huggingface.manifest"),
-    ("roadmap.read", "roadmap.inspect"),
-)
-
-
 def _sha256_bytes(data: Optional[bytes]) -> Optional[str]:
     if data is None:
         return None
@@ -568,6 +717,12 @@ def _if_is_main_guard(node: ast.If) -> bool:
     return (is_name(left) and is_main(right)) or (
         is_main(left) and is_name(right)
     )
+
+
+def _looks_like_a_test_filename(path: Path) -> bool:
+    """`test_*.py` / `*_test.py`. A file that calls itself a test is one."""
+    name = path.name
+    return name.endswith(".py") and (name.startswith("test_") or name.endswith("_test.py"))
 
 
 def _ast_is_pytest_idiom(tree: ast.AST) -> bool:
@@ -887,14 +1042,19 @@ def _anchor_violation(path: str, anchor: str, current: str, hits: int) -> str:
     if at < 0:
         return (
             f"your old_text for {path} matches nothing in the file -- not one "
-            f"line of it. Read the file again and copy the real bytes."
+            f"line of it. Re-copy the exact bytes from the supplied evidence; "
+            f"do not add trailing spaces or a literal backslash-n."
         )
-    start = max(0, current.rfind("\n", 0, at) + 1)
-    actual = current[start:start + max(len(anchor), 240)]
+    # The source snapshot is already in the evidence packet. Returning a full
+    # actual/sent excerpt here made the retry spend its completion reserve
+    # repeating bytes the model could already see; one such repair fell from
+    # 1536 to 867 tokens and exhausted all three structured attempts. Keep the
+    # diagnosis actionable and bounded, especially for one trailing-space byte.
     return (
-        f"your old_text for {path} does not appear in the file. It actually "
-        f"reads:\n{actual!r}\nyou sent:\n{anchor!r}\nCopy those bytes exactly. "
-        f"A newline written as a literal backslash-n will not match."
+        f"your old_text for {path} does not appear in the file. Re-copy the "
+        f"exact bytes from the supplied evidence, including newlines but no "
+        f"trailing spaces or literal backslash-n escapes. Keep the operation "
+        f"short."
     )
 
 
@@ -1202,6 +1362,60 @@ def _python_syntax_violation(content: str) -> Optional[str]:
     return None
 
 
+_UNCHECKABLE_SOURCE_SUFFIXES = frozenset(
+    {".metal", ".c", ".cc", ".cpp", ".h", ".hpp", ".m", ".mm", ".swift", ".go"}
+)
+
+
+def _owning_cargo_package(path: Path, root: Path) -> Optional[str]:
+    """The Cargo package that owns `path`, from the nearest Cargo.toml ancestor."""
+    here = path.parent if path.is_file() or path.suffix else path
+    while True:
+        manifest = here / "Cargo.toml"
+        if manifest.is_file():
+            try:
+                text = manifest.read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                return None
+            in_package = False
+            for line in text.splitlines():
+                stripped = line.strip()
+                if stripped.startswith("["):
+                    in_package = stripped == "[package]"
+                    continue
+                if in_package and stripped.startswith("name"):
+                    _, _, value = stripped.partition("=")
+                    return value.strip().strip('"').strip("'") or None
+            return None
+        if here == root or here.parent == here:
+            return None
+        here = here.parent
+
+
+def check_rust_file(path: Path, root: Path) -> Dict[str, Any]:
+    """`cargo check` the package owning `path`. Absent cargo is NOT a pass."""
+    package = _owning_cargo_package(path, root)
+    argv = ["cargo", "check", "--offline"]
+    if package:
+        argv += ["-p", package]
+    try:
+        proc = subprocess.run(
+            argv, cwd=str(root), capture_output=True, text=True, timeout=900
+        )
+        return {
+            "package": package,
+            "exit_code": proc.returncode,
+            "stdout": proc.stdout,
+            "stderr": proc.stderr,
+        }
+    except FileNotFoundError:
+        return {"package": package, "exit_code": 127, "stdout": "",
+                "stderr": "cargo not found; a Rust mutation cannot be verified here"}
+    except subprocess.TimeoutExpired:
+        return {"package": package, "exit_code": 124, "stdout": "",
+                "stderr": "cargo check timed out"}
+
+
 class Engine:
     """Native HCLI execution boundary.
 
@@ -1228,6 +1442,15 @@ class Engine:
     MAX_EVIDENCE_CHARS_PER_FILE = 24000
     MAX_TOTAL_EVIDENCE_CHARS = 120000
     MAX_OPERATIONS = 20
+    # A closed tool turn must leave room for the structured mutation itself.
+    # The resident's usable window is larger, but allowing a 6K observation
+    # transcript here made a second retrieval call consume the whole turn and
+    # left no dependable path to an HCLI-authored operation.
+    CLOSED_TURN_TARGET_TOKENS = 3900
+    # A closed turn also reserves the structured-output instruction. Keep one
+    # newest observation small enough that evidence can be abandoned only when
+    # necessary and the mutation still has room to decode.
+    CLOSED_OBSERVATION_CHARS = 500
 
     def __init__(
         self,
@@ -1582,6 +1805,14 @@ class Engine:
             validation = {
                 "ok": True,
                 "kind": "read_only",
+                # An answer carries NO deterministic evidence. Measured: five
+                # autonomous rounds returned answers claiming a function was
+                # "already present ... the test passes as expected"; the name
+                # existed nowhere, and every one was recorded ok=True. On the
+                # ok field alone those receipts were indistinguishable from a
+                # verified mutation. This field is what tells them apart.
+                "evidence": "none",
+                "accepted_work": False,
                 "tool": "fs.list",
                 "observed_files": len(value.get("files", [])),
                 "observed_directories": len(value.get("directories", [])),
@@ -1610,6 +1841,7 @@ class Engine:
         self.last_result = result
         return result
 
+    @_wall_phase("tools")
     def _run_tool_calls(
         self,
         calls: List[Dict[str, Any]],
@@ -1825,13 +2057,10 @@ class Engine:
 
         used = set()
         alias_lines: List[str] = []
-        for group in _TOOL_ALIAS_GROUPS:
-            present = [name for name in group if name in specs]
-            if not any(name.split(".", 1)[0] in selected_prefixes for name in present):
+        for name, spec in sorted(specs.items()):
+            if name.split(".", 1)[0] not in selected_prefixes:
                 continue
-            if not present:
-                continue
-            if group[0].startswith("git.checkout") and not any(
+            if name.startswith("git.checkout-safe") and not any(
                 word in focus_text
                 for word in ("checkout", "revert", "restore", "reset", "discard")
             ):
@@ -1839,10 +2068,12 @@ class Engine:
                 # read rounds. It re-enters only when the goal explicitly asks
                 # about rollback semantics, and even then no mutation is done.
                 continue
-            advertised = [name for name in present if "/" not in name]
-            if advertised:
-                alias_lines.append("|".join(advertised) + signature(specs[present[0]]))
-            used.update(present)
+            aliases = spec.get("aliases", [])
+            advertised = [name]
+            advertised.extend(alias for alias in aliases if "/" not in alias)
+            if aliases:
+                alias_lines.append("|".join(advertised) + signature(spec))
+                used.add(name)
 
         by_prefix: Dict[str, List[str]] = {}
         for name in sorted(specs):
@@ -1918,6 +2149,7 @@ class Engine:
         *,
         final: bool = False,
         compact_catalog: bool = False,
+        tools_allowed: bool = True,
     ) -> str:
         """Tool output rides beside the goal, NOT inside `evidence`.
 
@@ -1936,28 +2168,56 @@ class Engine:
         #
         # Saying "do not use tools" while advertising them is not scoping. This
         # is. Off by default; the caller opts in per unit.
-        if os.environ.get("HCLI_NO_TOOLS") == "1":
+        if os.environ.get("HCLI_NO_TOOLS") == "1" or not tools_allowed:
             self._tool_catalog_chars = 0
             self._tool_catalog_mode = "none"
-            parts = [prompt]
+            parts = [
+                prompt,
+                "TOOL ACCESS IS CLOSED FOR THIS ROUND. Do not emit tool_calls. "
+                "Use the observations already present and return the shortest "
+                "valid answer or mutation now.",
+            ]
+            if (
+                "ROLE: implementation" in str(prompt)
+                or "OBJECTIVE: repair" in str(prompt)
+            ):
+                parts.append(
+                    "IMPLEMENTATION CLOSE: This is an implementation/repair "
+                    "WorkUnit. Do not answer with measurements, a plan, or a "
+                    "status summary. Emit kind=mutation now with the smallest "
+                    "justified executable-behavior operation. Emit exactly one "
+                    "operation and keep its combined old/new replacement text "
+                    "under 900 UTF-8 bytes. Use the existing "
+                    "hcli/test_engine_tool_loop.py proving test. Never emit a "
+                    "comment-only or invented-test mutation. `hcli/engine.py` "
+                    "already exists: never use `create` for it; use `replace` "
+                    "with an exact anchor. Old_text is byte-exact: include "
+                    "real newlines, never a literal backslash-n, and never "
+                    "trailing spaces after the final newline."
+                )
             if observations:
                 parts.append(self._observations_block(observations, final=True))
             return "\n\n".join(part for part in parts if part)
-        catalog = (
-            self._compact_tool_catalog(
-                registry,
-                focus=" ".join(
-                    [
-                        str(prompt or ""),
-                        *(str(item.get("tool") or "") for item in observations),
-                    ]
-                ),
+        if compact_catalog and getattr(self, "_agentic_execution", False):
+            catalog = _AGENTIC_TOOL_CATALOG
+            catalog_mode = "agentic-minimal"
+        else:
+            catalog = (
+                self._compact_tool_catalog(
+                    registry,
+                    # The catalog is part of the stable prefix. Including the
+                    # names of tools already observed made its contents change
+                    # on every round, defeating prefix reuse exactly where
+                    # Odyssey pays for long prefill. Observation text remains
+                    # the only mutable suffix below.
+                    focus=str(prompt or ""),
+                )
+                if compact_catalog
+                else self._tool_catalog(registry)
             )
-            if compact_catalog
-            else self._tool_catalog(registry)
-        )
+            catalog_mode = "compact" if compact_catalog else "full"
         self._tool_catalog_chars = len(catalog)
-        self._tool_catalog_mode = "compact" if compact_catalog else "full"
+        self._tool_catalog_mode = catalog_mode
         parts = [prompt]
         if catalog:
             parts.append(
@@ -2039,6 +2299,26 @@ class Engine:
             )
         return "\n\n".join(parts)
 
+    def _compact_closed_observations(
+        self,
+        observations: List[Dict[str, Any]],
+    ) -> List[Dict[str, Any]]:
+        """Bound already-paid tool evidence before the mutation turn."""
+        limit = int(self.CLOSED_OBSERVATION_CHARS)
+        compacted: List[Dict[str, Any]] = []
+        for observation in observations:
+            item = dict(observation)
+            text = str(item.get("text") or "")
+            if len(text) > limit:
+                marker = "\n[... closed-turn observation elided ...]\n"
+                room = max(0, limit - len(marker))
+                head = room // 2
+                tail = room - head
+                text = text[:head] + marker + (text[-tail:] if tail else "")
+            item["text"] = text
+            compacted.append(item)
+        return compacted
+
     def execute(
         self,
         prompt: str,
@@ -2069,7 +2349,9 @@ class Engine:
         self._active_goal_text = prompt
         self._model_calls = []
         self._tool_calls_seen = {}
+        self._last_model_text = None
         self._last_call_plan = {}
+        self._agentic_execution = False
         self._reset_evidence_efficiency()
 
         started = datetime.now(timezone.utc)
@@ -2149,22 +2431,46 @@ class Engine:
             # answer "no evidence provided". Now a tool_use reply is executed and
             # fed back, bounded, until the model answers or the budget runs out.
             observations: List[Dict[str, Any]] = []
+            conversation_history: List[Dict[str, Any]] = []
+            self._agentic_execution = True
+            # An evidence-complete resident lane must enter the closed-turn budget
+            # path on its FIRST call. HCLI_NO_TOOLS used to suppress the catalog
+            # text but left the reducer flag false, so the initial call could
+            # consume the whole worker packet before the reducer was allowed to
+            # protect the source snapshot.
+            tools_closed = os.environ.get("HCLI_NO_TOOLS") == "1"
+            # Built ONCE, outside the loop: observations travel as conversation
+            # history rather than as a rebuilt prompt body, so every stable byte
+            # stays prefix-reusable between rounds.
+            cognition_prompt = self._prompt_with_observations(
+                prompt,
+                [],
+                compact_catalog=True,
+                tools_allowed=not tools_closed,
+            )
             for round_index in range(self.MAX_TOOL_ROUNDS):
                 # Observations go LAST in the payload, not into the prompt
                 # body: they are the only part that grows between rounds, and
                 # every stable byte after them is re-prefilled for nothing.
-                raw = self._call_model(
-                    self._prompt_with_observations(
-                        prompt,
-                        [],
-                        compact_catalog=True,
-                    ),
-                    evidence,
-                    compiled,
-                    trailing=self._observations_block(observations),
-                    context_memory=context_memory,
-                )
+                self._tools_closed_for_round = tools_closed
+                try:
+                    raw = self._call_model(
+                        cognition_prompt,
+                        evidence,
+                        compiled,
+                        context_memory=context_memory,
+                        history=conversation_history,
+                    )
+                finally:
+                    self._tools_closed_for_round = False
                 result = self._sanitize_result(raw)
+                if tools_closed:
+                    # There is no executable retrieval path in this lane. A
+                    # tool_use reply is therefore an answer failure, not a
+                    # reason to reopen the catalog or spend another round.
+                    if result.get("kind") == "tool_use":
+                        result["kind"] = "answer"
+                    break
                 if result.get("kind") != "tool_use":
                     break
                 calls = result.get("tool_calls") or []
@@ -2175,25 +2481,131 @@ class Engine:
                     break
                 if self._cancelled:
                     return self._cancel_result(goal_id, evidence)
-                observations.extend(self._run_tool_calls(calls, goal_id))
+                assistant_text = getattr(self, "_last_model_text", None)
+                if isinstance(assistant_text, str) and assistant_text:
+                    conversation_history.append(
+                        {"role": "assistant", "content": assistant_text}
+                    )
+                round_observations = self._run_tool_calls(calls, goal_id)
+                observations.extend(round_observations)
+                conversation_history.append(
+                    {
+                        "role": "user",
+                        "content": self._observations_block(observations),
+                    }
+                )
+                # A round containing a failed call has already identified a
+                # path/tool mismatch; continuing to decode beside one lucky
+                # success only replays the same confused plan. Close the catalog
+                # before the next model call so a local resident cannot spend
+                # several minutes on a mixed success/failure loop. The post-loop
+                # block below still gives it one final no-tools call, so this
+                # break does not discard its remaining chance to act.
+                if round_observations and (
+                    any(not item.get("ok") for item in round_observations)
+                    or all(
+                        item.get("repeat") or not item.get("ok")
+                        for item in round_observations
+                    )
+                    or len(observations) >= 1
+                ):
+                    self._emit(
+                        "tool_loop_closed",
+                        {
+                            "goal_id": goal_id,
+                            "reason": (
+                                "failed_call"
+                                if any(not item.get("ok") for item in round_observations)
+                                else (
+                                    "bounded_observation_round"
+                                    if len(observations) >= 1
+                                    else "repeated_or_failed"
+                                )
+                            ),
+                            "observation_count": len(round_observations),
+                            "successful": sum(
+                                bool(item.get("ok")) for item in round_observations
+                            ),
+                        },
+                    )
+                    tools_closed = True
+                    break
             else:
                 # Budget exhausted still asking to look. Answer from what was
-                # actually observed rather than reporting nothing.
-                result = self._sanitize_result(
-                    self._call_model(
-                        self._prompt_with_observations(
-                            prompt,
-                            [],
-                            compact_catalog=True,
-                        ),
-                        evidence,
-                        compiled,
-                        trailing=self._observations_block(observations, final=True),
-                        context_memory=context_memory,
+                # actually observed rather than reporting nothing. The prompt is
+                # the SAME stable cognition_prompt, so the closing call still
+                # reuses the prefix; only the history tail differs.
+                self._tools_closed_for_round = True
+                try:
+                    result = self._sanitize_result(
+                        self._call_model(
+                            cognition_prompt,
+                            evidence,
+                            compiled,
+                            context_memory=context_memory,
+                            history=conversation_history
+                            + [
+                                {
+                                    "role": "user",
+                                    "content": self._observations_block(
+                                        self._compact_closed_observations(
+                                            observations
+                                        ),
+                                        final=True,
+                                    ),
+                                }
+                            ],
+                        )
                     )
-                )
+                finally:
+                    self._tools_closed_for_round = False
                 if result.get("kind") == "tool_use":
                     result["kind"] = "answer"
+
+            if tools_closed and result.get("kind") == "tool_use":
+                # The loop breaker above intentionally does not discard the
+                # model's one remaining chance to act. Remove the catalog and
+                # make the no-tools instruction explicit so this call cannot
+                # start another expensive duplicate round.
+                self._tools_closed_for_round = True
+                try:
+                    final_prompt = self._prompt_with_observations(
+                        prompt,
+                        [],
+                        compact_catalog=False,
+                        tools_allowed=False,
+                    )
+                    self._emit(
+                        "final_turn_prepared",
+                        {
+                            "goal_id": goal_id,
+                            "prompt_chars": len(final_prompt),
+                            "observations_replayed": len(observations),
+                            "tools_allowed": False,
+                        },
+                    )
+                    final_trailing = self._observations_block(
+                        self._compact_closed_observations(observations),
+                        final=True,
+                    )
+                    result = self._sanitize_result(
+                        self._call_model(
+                            final_prompt,
+                            evidence,
+                            compiled,
+                            # Preserve the bounded observations that caused
+                            # closure; the fit ladder sheds older blocks when
+                            # the mutation contract needs more room.
+                            trailing=final_trailing,
+                            context_memory=context_memory,
+                        )
+                    )
+                finally:
+                    self._tools_closed_for_round = False
+                if result.get("kind") == "tool_use":
+                    result["kind"] = "answer"
+
+            self._agentic_execution = False
 
             if self._cancelled:
                 return self._cancel_result(goal_id, evidence)
@@ -2212,6 +2624,8 @@ class Engine:
                     validation={
                         "ok": True,
                         "kind": "read_only",
+                        "evidence": "none",
+                        "accepted_work": False,
                     },
                     rolled_back=False,
                     started=started,
@@ -2293,28 +2707,6 @@ class Engine:
             apply_result: Optional[Dict[str, Any]] = None
 
             try:
-                if tests:
-                    existing = [
-                        p
-                        for p in paths
-                        if p.exists() and p.is_file()
-                    ]
-                    try:
-                        pre_validation = self._validate(
-                            existing,
-                            tests,
-                        )
-                    except Exception as exc:
-                        pre_validation = {
-                            "ok": False,
-                            "reason": (
-                                "pre_mutation_exception:"
-                                f"{type(exc).__name__}"
-                            ),
-                            "error": str(exc),
-                            "checks": [],
-                        }
-
                 apply_result = self._apply_operations(
                     operations
                 )
@@ -2341,6 +2733,26 @@ class Engine:
                         "goal_id": goal_id,
                     },
                 )
+
+                if tests:
+                    try:
+                        pre_validation = (
+                            self._run_proving_tests_against_pre_mutation_producers(
+                                snapshot,
+                                paths,
+                                tests,
+                            )
+                        )
+                    except Exception as exc:
+                        pre_validation = {
+                            "ok": False,
+                            "reason": (
+                                "pre_mutation_exception:"
+                                f"{type(exc).__name__}"
+                            ),
+                            "error": str(exc),
+                            "checks": [],
+                        }
 
                 validation = self._validate(
                     paths,
@@ -2374,8 +2786,16 @@ class Engine:
                     # but keep the mutation. A refused or failing test
                     # still rolls back.
                     if reason != "NO_EVIDENCE":
+                        # The reason was extracted three lines up and then
+                        # thrown away, so every failure here reached the
+                        # mission log as the bare string "Deterministic
+                        # validation failed". That opacity blocked three
+                        # separate obligations: a unit could not be diagnosed
+                        # without re-running it under a debugger. Carry the
+                        # reason, and whatever structured detail the validator
+                        # actually produced, into the message.
                         raise EngineError(
-                            "Deterministic validation failed"
+                            validation_failure_message(validation)
                         )
 
                 status = self._status_from_validation(validation)
@@ -2753,6 +3173,15 @@ class Engine:
             except ValueError:
                 pass
 
+        # A WorkUnit already carries the exact named paths and a bounded
+        # packet. Keep only a small inline cache for the next decision; the
+        # complete files remain disk authority and are available through the
+        # worker's tools. The real O003 A/B reached 20.951 s at 400 chars and
+        # the 1,200-char setting retains more specimen evidence while staying
+        # near the sub-30-second prefill target.
+        if getattr(self, "_worker_execution", False):
+            return max(0, min(1200, cap))
+
         return max(0, cap)
 
     def _reset_evidence_efficiency(self) -> None:
@@ -2761,6 +3190,11 @@ class Engine:
         self._evidence_reread_ran = False
         self._evidence_reread_bytes = 0
         self._context_efficiency: Dict[str, Any] = {}
+        # The observation cut is monotone within one goal so the resident can
+        # reuse its KV prefix. It must start fresh for the next goal: carrying
+        # a prior goal's cut forward can skip every shedding rung and refuse a
+        # closed turn that would fit after dropping the oldest observation.
+        self._observation_floor = 0
 
     def _read_evidence_text(self, path: Path) -> str:
         return path.read_text(
@@ -3340,16 +3774,18 @@ class Engine:
     def _schema_contract(
         self,
         backend: Any,
+        schema: Optional[Dict[str, Any]] = None,
     ) -> StructuredOutputContract:
+        active_schema = schema or HCLI_RESULT_SCHEMA
         contract = make_structured_output_contract(
             backend,
-            HCLI_RESULT_SCHEMA,
+            active_schema,
         )
         if contract is not None:
             return contract
         return StructuredOutputContract(
-            schema=HCLI_RESULT_SCHEMA,
-            instruction=schema_instruction(HCLI_RESULT_SCHEMA),
+            schema=active_schema,
+            instruction=schema_instruction(active_schema),
             max_attempts=structured_output_attempts(),
             degraded_features=["response_format"],
         )
@@ -3736,6 +4172,15 @@ class Engine:
                 raise SchemaViolation(syntax, text=content)
             return result
 
+        _boundary_trace(
+            "structured_parser_begin",
+            attempts=getattr(contract, "max_attempts", None),
+            prompt_tokens=plan.get("prompt_tokens_est"),
+            goal_id=self._active_goal_id,
+            prompt_sha256=hashlib.sha256(
+                (self._last_rendered_prompt or "").encode("utf-8")
+            ).hexdigest()[:16],
+        )
         try:
             result = contract.enforce(complete_fn, payload, timeout)
         except StructuredOutputExhausted as exc:
@@ -3751,7 +4196,19 @@ class Engine:
                 last_text=exc.last_text,
             )
             self._last_call_plan = plan
+            _boundary_trace(
+                "structured_parser_end",
+                outcome="exhausted",
+                attempts=int(exc.attempts),
+                error=str(exc),
+            )
             raise
+
+        # Preserve the exact provider text for the next tool round. The
+        # resident already has this assistant turn in its recurrent/KV state;
+        # replaying it as a real assistant message is what makes the following
+        # user observation a pure append and unlocks prefix reuse.
+        self._last_model_text = result.text
 
         attempts = int(
             getattr(result, "schema_attempts", None)
@@ -3769,6 +4226,12 @@ class Engine:
             parsed = result.raw.get("_structured")
         if not isinstance(parsed, dict):
             parsed = contract.validate(result.text)
+        _boundary_trace(
+            "structured_parser_end",
+            outcome="success",
+            attempts=attempts,
+            result_kind=parsed.get("kind") if isinstance(parsed, dict) else None,
+        )
         return parsed
 
     def _resolve_max_tokens(
@@ -3974,6 +4437,7 @@ class Engine:
         context_memory: Any,
         trailing: str = "",
         reserve: int = 0,
+        history: Optional[List[Dict[str, Any]]] = None,
     ) -> Tuple[Dict[str, Any], Optional[Dict[str, Any]]]:
         """Build the payload, shrinking re-derivable context until it fits.
 
@@ -4006,9 +4470,18 @@ class Engine:
         # not in the file.
         #
         # So keep the first evidence item and let the rungs below shrink the
-        # rest. Something must still give when the budget is short; it must not
-        # be the only thing the model cannot re-derive.
-        keep_floor = 1 if (os.environ.get("HCLI_NO_TOOLS") == "1" and items) else 0
+        # rest. Tool catalogs and observations are re-derivable; the explicit
+        # task evidence is the authority the model must not lose merely because
+        # it asked for one extra read. Something must still give when the
+        # budget is short, but it must not be the only source of truth.
+        tools_closed = bool(getattr(self, "_tools_closed_for_round", False))
+        keep_floor = 1 if items else 0
+        # The final no-tools turn is a decision turn, not another retrieval
+        # turn. It still needs the bounded result that caused closure: dropping
+        # that result made the resident answer read-only from the disk snapshot
+        # even though the failed path was the evidence that should have driven
+        # the mutation. Keep the newest useful block if the full tail will not
+        # fit; the ladder below sheds older blocks monotonically.
         blocks = _observation_blocks(trailing)
         # Where the kept observations START, as an ABSOLUTE index that only ever
         # moves forward. Keeping "the last N" instead re-cut the block at a
@@ -4035,7 +4508,7 @@ class Engine:
         # Last resorts: drop the durable checkpoint too, then shed observations
         # oldest-first. Observations go last because a tool call has already
         # been paid for, while a file snapshot can be re-read for free.
-        attempts.append((items[:keep_floor], None, "evidence 0 + no checkpoint", floor))
+        attempts.append((items[:keep_floor], None, f"evidence {keep_floor} + no checkpoint", floor))
         if len(blocks) > 1:
             for keep_n in (len(blocks) * 3 // 4, len(blocks) // 2, len(blocks) // 4, 1):
                 if keep_n < 1 or keep_n >= len(blocks):
@@ -4059,18 +4532,90 @@ class Engine:
         # per-request ctx", which is strictly worse than a degraded prompt.
         if keep_floor:
             attempts.append(([], None, "evidence 0 (floor abandoned to fit)", floor))
+            if len(blocks) > 1:
+                for keep_n in (len(blocks) * 3 // 4, len(blocks) // 2, len(blocks) // 4, 1):
+                    if keep_n < 1 or keep_n >= len(blocks):
+                        continue
+                    advanced = len(blocks) - keep_n
+                    if advanced <= floor:
+                        continue
+                    attempts.append((
+                        [], None,
+                        f"evidence 0 + observations {keep_n}/{len(blocks)}",
+                        advanced,
+                    ))
+
+        # Real tool rounds use chat history, not the legacy ``trailing`` field.
+        # Keep the immediate assistant/tool-result pair when possible, but make
+        # older rounds re-derivable just like old observations.  Before this
+        # ladder knew about history, an O003 tool round could pass its first
+        # model call and then refuse the next one at 25K tokens because the
+        # reducer had no way to shed the history it had just added.
+        history_values: List[Optional[List[Dict[str, Any]]]] = [history]
+        if history:
+            raw_latest_pair = list(history[-2:])
+            if raw_latest_pair != history:
+                history_values.append(raw_latest_pair)
+
+            # A raw latest pair can still be too large even after every older
+            # turn is dropped: tool output is deliberately bounded, but the
+            # base O003 packet plus the schema reserve can leave only a small
+            # remainder.  Preserve a compact decision trace before abandoning
+            # the observation entirely.  The tool can always be re-run from
+            # the durable evidence; an identical base prompt cannot tell the
+            # resident why its previous request was made.
+            compacted: List[Dict[str, Any]] = []
+            for item in history[-2:]:
+                if not isinstance(item, dict):
+                    continue
+                value = dict(item)
+                content = value.get("content")
+                if isinstance(content, str):
+                    cap = 1200 if value.get("role") == "assistant" else 2400
+                    if len(content) > cap:
+                        value["content"] = content[:cap] + (
+                            f"\n[history content truncated from {len(content)} "
+                            "characters; use the durable evidence/tool result "
+                            "rather than reconstructing the omitted tail]"
+                        )
+                compacted.append(value)
+            if compacted and compacted != raw_latest_pair:
+                history_values.append(compacted)
+            for keep_n in (1, 0):
+                if keep_n < len(history):
+                    history_values.append(list(history[-keep_n:]) if keep_n else [])
+
+        try:
+            import inspect
+
+            accepts_history = "history" in inspect.signature(build).parameters
+        except Exception:
+            accepts_history = False
+
+        def invoke_build(
+            keep: Any,
+            memory: Any,
+            observed: str,
+            hist: Optional[List[Dict[str, Any]]],
+        ) -> Dict[str, Any]:
+            if accepts_history:
+                return build(keep, memory, observed, history=hist)
+            if observed:
+                return build(keep, memory, observed)
+            return build(keep, memory)
 
         last = None
         for keep, memory, label, cut in attempts:
             # The two-argument form is the contract every existing caller uses.
             # A third argument appears only once observations are being shed, so
             # a build() that knows nothing about `trailing` keeps working.
-            if cut:
-                payload = build(keep, memory, _join_observations(blocks[cut:]))
-            else:
-                payload = build(keep, memory)
+            observed = _join_observations(blocks[cut:]) if cut else ""
+            payload = invoke_build(keep, memory, observed, history_values[0])
             demand = self._estimate_prompt_tokens(payload.get("messages") or []) + reserve
-            if preflight(budget, demand, kind="root").ok:
+            fits = preflight(budget, demand, kind="root").ok
+            if tools_closed and demand > self.CLOSED_TURN_TARGET_TOKENS:
+                fits = False
+            if fits:
                 self._observation_floor = cut
                 if label == "full" and not cut:
                     return payload, None
@@ -4080,6 +4625,41 @@ class Engine:
                     "usable_input_tokens": int(budget.usable_input_tokens),
                     "dropped_evidence": len(items) - len(keep),
                     "observation_floor": cut,
+                }
+            last = (payload, demand)
+
+        # If the complete chat history still cannot fit after re-derivable
+        # context has been shed, retain the most recent pair, then only the
+        # latest observation, before refusing.  This is deliberately after the
+        # normal evidence/memory ladder: a prior assistant turn and its latest
+        # tool result are more decision-relevant than a durable checkpoint.
+        for history_index, hist in enumerate(history_values[1:], start=1):
+            payload = invoke_build([], None, "", hist)
+            demand = self._estimate_prompt_tokens(payload.get("messages") or []) + reserve
+            if preflight(budget, demand, kind="root").ok:
+                self._observation_floor = 0
+                kept = len(hist or [])
+                compacted_history = bool(
+                    hist
+                    and any(
+                        isinstance(item, dict)
+                        and isinstance(item.get("content"), str)
+                        and "history content truncated from " in item["content"]
+                        for item in hist
+                    )
+                )
+                return payload, {
+                    "reduced_to": (
+                        f"compact history {kept}/{len(history or [])}"
+                        if compacted_history
+                        else f"history {kept}/{len(history or [])}"
+                    ),
+                    "prompt_tokens_est": demand,
+                    "usable_input_tokens": int(budget.usable_input_tokens),
+                    "dropped_evidence": len(items),
+                    "dropped_history": len(history or []) - kept,
+                    "history_compacted": compacted_history,
+                    "observation_floor": 0,
                 }
             last = (payload, demand)
 
@@ -4120,8 +4700,18 @@ class Engine:
         enable_thinking: Optional[bool] = None,
         response_schema: Optional[bool] = None,
         trailing: str = "",
+        history: Optional[List[Dict[str, Any]]] = None,
     ) -> Dict[str, Any]:
-        goal_block = self._goal_block(prompt, compiled)
+        # Mission worker packets are already the compiled, bounded control
+        # context. Wrapping one in the legacy ``GOAL:\n`` envelope would make
+        # the worker seam look like a root-goal call again and defeats the
+        # packet compiler's no-parent-dump invariant. Keep ordinary/root calls
+        # on the established goal-block path.
+        is_worker_packet = (
+            str(prompt or "").lstrip().startswith("PHASE:")
+            and "\nWORKUNIT:" in str(prompt)
+        )
+        goal_block = prompt if is_worker_packet else self._goal_block(prompt, compiled)
         evidence = self._assert_evidence_fresh(evidence)
         evidence_text = "\n\n".join(
             (
@@ -4147,18 +4737,36 @@ class Engine:
         # after it would be re-prefilled every round for no reason. The stable
         # blocks used to sit here: mean reusable prefix 0.544 against 0.924 with
         # the growth at the end.
-        if trailing:
+        if trailing and not history:
             user += "\n\n" + trailing
+        system_prompt = (
+            _AGENTIC_SYSTEM_PROMPT
+            if getattr(self, "_agentic_execution", False)
+            else _SYSTEM_PROMPT
+        )
         messages = [
             {
                 "role": "system",
-                "content": _SYSTEM_PROMPT,
+                "content": system_prompt,
             },
             {
                 "role": "user",
                 "content": user,
             },
         ]
+        if history:
+            # Keep the original user turn (including the schema instruction)
+            # as the stable prefix. The resident's previous assistant JSON and
+            # tool observations are appended as real chat turns, so the next
+            # rendered prompt begins with the exact resident context instead
+            # of diverging at the old user-turn terminator.
+            messages.extend(
+                dict(item)
+                for item in history
+                if isinstance(item, dict)
+            )
+            if trailing:
+                messages.append({"role": "user", "content": trailing})
         thinking = self._resolve_enable_thinking(enable_thinking)
         use_schema = self._resolve_response_schema(response_schema)
         prompt_tokens_est = self._estimate_prompt_tokens(messages)
@@ -4172,6 +4780,10 @@ class Engine:
                 "enable_thinking": bool(thinking),
             },
         }
+        if history:
+            # StructuredOutputContract.apply() must inject its schema into the
+            # stable base user turn, never into the mutable observation turn.
+            payload["_schema_instruction_user_index"] = 1
         if use_schema:
             payload["response_format"] = {
                 "type": "json_schema",
@@ -4262,7 +4874,12 @@ class Engine:
             for key in (
                 "prefix_reused_tokens",
                 "prefill_tokens_stepped",
+                "prefill_step_count",
                 "prefix_source",
+                "resident_context_tokens_before",
+                "shared_prefix_tokens",
+                "checkpoint_missed",
+                "checkpoint_restored_tokens",
                 "prefix_checkpoint_taken_at",
                 # Whether the resident's JSON mask actually ran. Without it a
                 # malformed reply cannot be diagnosed: "the reply is NOT valid
@@ -4363,6 +4980,7 @@ class Engine:
         )
         return isinstance(reasoning, str) and bool(reasoning.strip())
 
+    @_wall_phase("resident")
     def _call_model(
         self,
         prompt: str,
@@ -4374,7 +4992,9 @@ class Engine:
         response_schema: Optional[bool] = None,
         plain_text: bool = False,
         trailing: str = "",
+        history: Optional[List[Dict[str, Any]]] = None,
     ) -> Any:
+        agentic = bool(getattr(self, "_agentic_execution", False))
         if self.model_client is not None:
             call = getattr(
                 self.model_client,
@@ -4412,6 +5032,7 @@ class Engine:
                     enable_thinking=enable_thinking,
                     response_schema=response_schema,
                     trailing=trailing,
+                    history=history,
                 )
                 est = (self._last_call_plan or {}).get("prompt_tokens_est")
                 with self._model_call_scope(est):
@@ -4467,9 +5088,22 @@ class Engine:
             # after enable_thinking=false; a JSON schema alone was not
             # sufficient. Force thinking off on the degraded path unless
             # the caller explicitly overrode enable_thinking on this call.
+            #
+            # NOT a bug that config/env is ignored here: tests/
+            # test_engine_schema_degrade.py::
+            # test_enable_thinking_false_on_degraded_unless_overridden sets
+            # config enable_thinking=True and asserts thinking is STILL forced
+            # off. Only a per-call override wins, deliberately, because the
+            # stall this guards against recovered only when thinking was off.
             thinking_arg = False
 
-        def _build(ev: Any, cm: Any, tr: str = trailing) -> Dict[str, Any]:
+        def _build(
+            ev: Any,
+            cm: Any,
+            tr: str = trailing,
+            *,
+            history: Optional[List[Dict[str, Any]]] = history,
+        ) -> Dict[str, Any]:
             return self._build_model_payload(
                 prompt,
                 ev,
@@ -4478,6 +5112,7 @@ class Engine:
                 enable_thinking=thinking_arg,
                 response_schema=(False if degrade else response_schema),
                 trailing=tr,
+                history=history,
             )
 
         # Build the contract BEFORE fitting. `contract.apply` injects the schema
@@ -4489,11 +5124,30 @@ class Engine:
         contract: Optional[StructuredOutputContract] = None
         reserve = 0
         if degrade:
-            contract = self._schema_contract(backend)
+            contract = self._schema_contract(
+                backend,
+                schema=(
+                    HCLI_COMPACT_RESULT_SCHEMA
+                    if history is not None
+                    else HCLI_RESULT_SCHEMA
+                ),
+            )
+            # Contract factories may clone the schema, so identity is not a
+            # reliable indication that this is the compact worker contract.
+            # `history is not None` is the call-site distinction: agentic
+            # worker turns always pass a history list, while direct/root calls
+            # retain the full result contract.
+            if agentic and history is not None:
+                contract.instruction = _AGENTIC_SCHEMA_INSTRUCTION
             reserve = len(str(contract.instruction or "")) // _CHARS_PER_TOKEN
 
         payload, reduction = self._fit_payload_to_budget(
-            _build, evidence, context_memory, trailing=trailing, reserve=reserve
+            _build,
+            evidence,
+            context_memory,
+            trailing=trailing,
+            reserve=reserve,
+            history=history,
         )
         if reduction:
             self._emit("context_reduced", reduction)
@@ -4514,6 +5168,17 @@ class Engine:
                 mode="enforced"
             )
         self._last_call_plan = plan
+        if getattr(self, "_tools_closed_for_round", False):
+            self._emit(
+                "closed_model_payload_prepared",
+                {
+                    "goal_id": self._active_goal_id,
+                    "prompt_tokens": int(plan.get("prompt_tokens_est") or 0),
+                    "prompt_chars": len(self._last_rendered_prompt),
+                    "evidence_items": len(evidence or []),
+                    "max_tokens": int(plan.get("max_tokens") or 0),
+                },
+            )
         pf = preflight(
             self._context_budget(),
             int(plan.get("prompt_tokens_est") or 1),
@@ -4521,6 +5186,20 @@ class Engine:
         )
         if not pf.ok:
             raise ContextPreflightError(pf)
+
+        _boundary_trace(
+            "model_payload_ready",
+            goal_id=self._active_goal_id,
+            history_messages=len(history or []),
+            message_roles=[
+                str((message or {}).get("role") or "")
+                for message in (payload.get("messages") or [])
+                if isinstance(message, dict)
+            ],
+            prompt_sha256=hashlib.sha256(
+                (self._last_rendered_prompt or "").encode("utf-8")
+            ).hexdigest()[:16],
+        )
 
         endpoint, provenance = self._runtime_endpoint()
         thinking_on = bool(
@@ -5232,6 +5911,35 @@ class Engine:
             raise NoOpMutation(
                 files=files,
             )
+        # Bytes changing is not enough for a Python mutation: a model can add
+        # a marker/comment or whitespace, pass py_compile and still claim
+        # executable progress. Reject that at the transaction boundary and
+        # restore the snapshot so direct callers get the same atomic result as
+        # the execute() rollback path.
+        for raw_path, before_bytes in before.items():
+            path = Path(raw_path)
+            if before_bytes is None or path.suffix.lower() != ".py":
+                continue
+            try:
+                before_tree = ast.parse(
+                    before_bytes.decode("utf-8"),
+                    filename=str(path),
+                )
+                after_tree = ast.parse(
+                    path.read_text(encoding="utf-8"),
+                    filename=str(path),
+                )
+            except (UnicodeDecodeError, SyntaxError):
+                continue
+            if ast.dump(before_tree, include_attributes=False) == ast.dump(
+                after_tree,
+                include_attributes=False,
+            ):
+                self._restore(before)
+                raise NoOpMutation(
+                    "Python mutation changes no executable syntax",
+                    files=files,
+                )
 
         return {
             "files": files,
@@ -5495,7 +6203,25 @@ class Engine:
                 "argv": None,
             }
 
-        use_pytest = wants_pytest or self._file_is_pytest_idiom(path)
+        # A file that NAMES ITSELF a test is scored as a test, always.
+        #
+        # _file_is_pytest_idiom inspects CONTENT, so a file with no test
+        # functions is not "pytest idiom" and used to fall through to the
+        # `script` runner -- plain `python file.py`, scored on exit code alone.
+        # Measured 2026-09-05: HCLI named tools/sovereign/test_g002_attribution.py
+        # as its proving test, wrote a file containing only a docstring, and the
+        # mutation was ACCEPTED on runner=script exit 0 with collected=None.
+        # Its two previous attempts wrote real tests and were correctly rejected
+        # (runner=pytest, collected 1, passed 0, TEST_FAILED) -- so the heuristic
+        # routed the EMPTY file to the one runner that cannot notice it is empty.
+        #
+        # Under pytest an empty test file returns rc 5, which _pytest_evidence
+        # already scores as NO_EVIDENCE. Forcing pytest by NAME closes the hole.
+        use_pytest = (
+            wants_pytest
+            or _looks_like_a_test_filename(path)
+            or self._file_is_pytest_idiom(path)
+        )
         if use_pytest:
             if not self._pytest_importable():
                 return {
@@ -5606,6 +6332,19 @@ class Engine:
         pre_mutation: Optional[Dict[str, Any]],
         post: Dict[str, Any],
     ) -> Tuple[Optional[bool], Optional[str]]:
+        # What this CAN establish:
+        #   False -- every pre-mutation proving test passed (already green)
+        #   True  -- post tests passed AND pre tests were not green: an
+        #            admitted failure, or an admitted run that did not pass
+        #            (collection/import error scored NO_EVIDENCE). A proving
+        #            test that cannot even collect against the pre-mutation
+        #            producer is not green.
+        # What this CANNOT establish (caller must fail closed, not accept):
+        #   pre_mutation is None              -- pre_mutation_pass_not_run
+        #   no post test records              -- no post-mutation test records
+        #   no pre test records               -- pre_mutation_tests_did_not_run
+        #   pre tests not admitted / mixed    -- could_not_establish
+        #   pre not-green but post not green  -- post_mutation_tests_did_not_pass
         if pre_mutation is None:
             return None, "pre_mutation_pass_not_run"
 
@@ -5639,10 +6378,19 @@ class Engine:
 
         if pre_all_pass:
             return False, None
-        if pre_any_fail and post_all_pass:
+        if not post_all_pass:
+            if pre_any_fail:
+                return None, "post_mutation_tests_did_not_pass"
+            return None, "could_not_establish"
+        if pre_any_fail:
             return True, None
-        if pre_any_fail and not post_all_pass:
-            return None, "post_mutation_tests_did_not_pass"
+        pre_admitted = [
+            c for c in pre_tests if c.get("admitted") is True
+        ]
+        if pre_admitted and all(
+            not self._test_record_passed(c) for c in pre_admitted
+        ):
+            return True, None
         return None, "could_not_establish"
 
     def _safe_test_argv(
@@ -5656,6 +6404,139 @@ class Engine:
         if not argv:
             return None
         return list(argv)
+
+    def _path_token_from_test_request(
+        self,
+        raw: str,
+    ) -> Optional[Path]:
+        text = str(raw or "").strip()
+        if not text:
+            return None
+        token: Optional[str] = None
+        if text.endswith(".py") and " " not in text:
+            token = text
+        else:
+            try:
+                parts = shlex.split(text)
+            except Exception:
+                parts = text.split()
+            for tok in reversed(parts):
+                if tok.endswith(".py") and not tok.startswith("-"):
+                    token = tok
+                    break
+        if not token:
+            return None
+        try:
+            return self._safe_path(
+                token,
+                allow_missing=True,
+            )
+        except EngineError:
+            return None
+
+    def _named_proving_test_paths(
+        self,
+        tests: List[str],
+    ) -> List[Path]:
+        found: List[Path] = []
+        seen = set()
+        for raw in tests:
+            admitted = self._admit_test(raw)
+            got = admitted.get("path")
+            path: Optional[Path]
+            if got is not None:
+                path = Path(got)
+            else:
+                path = self._path_token_from_test_request(raw)
+            if path is None:
+                continue
+            key = str(path)
+            if key in seen:
+                continue
+            seen.add(key)
+            found.append(path)
+        return found
+
+    def _snapshot_key_is_proving_test(
+        self,
+        raw: str,
+        test_keys: set,
+    ) -> bool:
+        if raw in test_keys:
+            return True
+        try:
+            return str(Path(raw).resolve()) in test_keys
+        except Exception:
+            return False
+
+    def _run_proving_tests_against_pre_mutation_producers(
+        self,
+        snapshot: Dict[str, Optional[bytes]],
+        paths: List[Path],
+        tests: List[str],
+    ) -> Dict[str, Any]:
+        """Run the named proving tests against the pre-mutation producer.
+
+        After apply, test files may be new or rewritten. Red-before-green
+        asks whether THOSE tests pass without the producer changes. Running
+        the old test files (if any) before apply cannot see a newly written
+        proving test, which is how an import-smoke file was accepted as
+        evidence of a producer change that never happened.
+
+        A proving-test path is left at its post-mutation bytes; every other
+        snapshot path is restored for the duration of this run.
+        """
+        test_keys = {
+            str(p)
+            for p in self._named_proving_test_paths(tests)
+        }
+        extra = set()
+        for key in test_keys:
+            try:
+                extra.add(str(Path(key).resolve()))
+            except Exception:
+                pass
+        test_keys |= extra
+
+        producer_snapshot: Dict[str, Optional[bytes]] = {}
+        for raw, original in snapshot.items():
+            if self._snapshot_key_is_proving_test(raw, test_keys):
+                continue
+            producer_snapshot[raw] = original
+
+        post_producer: Dict[str, Optional[bytes]] = {}
+        for raw in producer_snapshot:
+            path = Path(raw)
+            if path.exists() and path.is_file():
+                post_producer[raw] = path.read_bytes()
+            else:
+                post_producer[raw] = None
+
+        try:
+            if producer_snapshot:
+                self._restore(producer_snapshot)
+            existing = [
+                p
+                for p in paths
+                if p.exists() and p.is_file()
+            ]
+            return self._validate(
+                existing,
+                tests,
+            )
+        except Exception as exc:
+            return {
+                "ok": False,
+                "reason": (
+                    "pre_mutation_exception:"
+                    f"{type(exc).__name__}"
+                ),
+                "error": str(exc),
+                "checks": [],
+            }
+        finally:
+            if post_producer:
+                self._restore(post_producer)
 
     def _validate(
         self,
@@ -5677,13 +6558,44 @@ class Engine:
             except ValueError:
                 rel = str(path)
 
-            if path.suffix != ".py":
+            if path.suffix == ".rs":
+                # A Rust mutation used to record `no_checker_available` and pass,
+                # so acceptance rested entirely on whatever test the reply named
+                # -- and a Python test passes no matter what the Rust says.
+                # Measured: a mutation that deleted the correctness guard in
+                # qwen38_batched_prefill_allowed (reuse == 0 && snapshot_at
+                # .is_none()) was ACCEPTED on `test hcli/test_engine_tool_loop.py
+                # exit 0`. That change compiles and produces a faster wall with a
+                # different answer, which is the one outcome the guard exists to
+                # prevent. `cargo check` on the owning crate costs 13.5 s.
+                checked = check_rust_file(path, self.root)
                 checks.append(
                     {
-                        "kind": "no_checker_available",
+                        "kind": "cargo_check",
                         "path": rel,
+                        "package": checked.get("package"),
+                        "exit_code": checked["exit_code"],
+                        "stdout": checked["stdout"][-4000:],
+                        "stderr": checked["stderr"][-4000:],
                     }
                 )
+                if checked["exit_code"] != 0:
+                    ok = False
+                continue
+
+            if path.suffix != ".py":
+                record = {"kind": "no_checker_available", "path": rel}
+                if path.suffix.lower() in _UNCHECKABLE_SOURCE_SUFFIXES:
+                    # Source the verifier cannot check must not be accepted on
+                    # unrelated evidence. Silence here is not a passing check.
+                    record["fatal"] = True
+                    record["reason"] = (
+                        f"{path.suffix} is source and this verifier has no checker "
+                        "for it; a mutation to it cannot be accepted on a test in "
+                        "another language"
+                    )
+                    ok = False
+                checks.append(record)
                 continue
 
             compiled = compile_python_file(path)
@@ -5797,9 +6709,24 @@ class Engine:
             result,
         )
         result["red_before_green"] = rbg
+        # Continuity: receipts still carry this flag. It is NOT the
+        # acceptance decision. A proving test that was already green
+        # (red_before_green is False) or whose before-state cannot be
+        # established (None) is refused below when this is a post-mutation
+        # pass (pre_mutation provided). Direct _validate probes, including
+        # the pre-mutation run itself, pass pre_mutation=None and are not
+        # refused here.
         result["red_before_green_advisory"] = True
         if rbg is None and rbg_reason:
             result["red_before_green_reason"] = rbg_reason
+
+        if result.get("ok") and pre_mutation is not None:
+            if rbg is False:
+                result["ok"] = False
+                result["reason"] = "NOT_RED_BEFORE"
+            elif rbg is None:
+                result["ok"] = False
+                result["reason"] = "RED_BEFORE_UNESTABLISHED"
 
         if pre_mutation is not None:
             result["pre_mutation"] = {
@@ -6094,6 +7021,12 @@ class Engine:
         # raised JSONDecodeError on read -- and this file is the PROOF OF
         # ACCEPTANCE. An unreadable receipt makes verified work indistinguishable
         # from work that never ran.
+        _boundary_trace(
+            "receipt_write_begin",
+            goal_id=goal_id,
+            receipt_path=str(path),
+            status=receipt.get("status"),
+        )
         _atomic_write_text(
             path,
             json.dumps(
@@ -6104,5 +7037,45 @@ class Engine:
                 sort_keys=True,
             ),
         )
+        _boundary_trace(
+            "receipt_write_end",
+            goal_id=goal_id,
+            receipt_path=str(path),
+            bytes=path.stat().st_size if path.exists() else None,
+        )
 
         return str(path)
+class FrontierEngine:
+    def ranked_candidate(self, frontier_input):
+        if not isinstance(frontier_input, dict):
+            raise TypeError("frontier input must be a dict")
+        candidates = frontier_input.get("candidates", [])
+        if not isinstance(candidates, list):
+            raise TypeError("candidates must be a list")
+        ranked = sorted(candidates, key=lambda c: (c.get("score", 0), str(c.get("id", ""))), reverse=True)
+        return {"ranked": ranked, "count": len(ranked)}
+
+    def bounded_result(self, frontier_input):
+        if not isinstance(frontier_input, dict):
+            raise TypeError("frontier input must be a dict")
+        return {
+            "kind": "answer",
+            "content": "frontier",
+            "operations": [],
+            "tests": [],
+            "status": "completed",
+            "bounded": True,
+        }
+
+    def run(self, frontier_input=None):
+        result = {
+            "kind": "answer",
+            "content": "frontier",
+            "operations": [],
+            "tests": [],
+            "status": "completed",
+        }
+        if frontier_input is not None:
+            result.update(self.ranked_candidate(fronter_input))
+            result.update(self.bounded_result(frontier_input))
+        return result

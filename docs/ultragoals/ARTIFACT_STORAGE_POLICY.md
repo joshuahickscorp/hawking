@@ -21,7 +21,7 @@ Do not invent a second artifact system. Consolidate.
 
 Git is the knowledge plane. Track:
 
-- Source (`crates/`, `tools/`, `research/lab/`, `app/`, `src/`, `hcli/`,
+- Source (`crates/`, `tools/`, `research/lab/`, `src/`, `hcli/`,
   `workspace/vendor/` absorbed tracks).
 - Configs, schemas, generated **small** ABI/JSON surfaces that are the
   contract (adapter registry, protocol goldens).

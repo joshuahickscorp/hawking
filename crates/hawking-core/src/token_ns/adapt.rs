@@ -13,9 +13,7 @@ use super::schema::{
 };
 use super::served_weight::ServedWeightMetrics;
 use crate::gravity_deepseek_v4_token_ns_ledger::TokenNsLedger as DsvLedger;
-use crate::model::qwen38_token_ns_ledger::{
-    Qwen38TokenNsLedger, QWEN38_TOKEN_NS_LEDGER_SCHEMA,
-};
+use crate::model::qwen38_token_ns_ledger::{Qwen38TokenNsLedger, QWEN38_TOKEN_NS_LEDGER_SCHEMA};
 use crate::model::qwen80_token_ns_ledger::{
     Qwen80TokenNsLedger, Qwen80TokenNsToken, QWEN80_TOKEN_NS_LEDGER_SCHEMA,
 };
@@ -461,11 +459,10 @@ pub fn from_dsv4f_ledger(ledger: &DsvLedger, meta: &EmitMeta) -> TokenNsDocument
         &meta.commit,
     );
     let gpu_busy = ledger.metal_vs_host.metal_gpu_ns;
-    let gpu_gap = ledger.gpu_gaps.inter_cb_device_gap_ns.max(
-        ledger
-            .metal_vs_host
-            .host_between_first_last_cb_gap_ns,
-    );
+    let gpu_gap = ledger
+        .gpu_gaps
+        .inter_cb_device_gap_ns
+        .max(ledger.metal_vs_host.host_between_first_last_cb_gap_ns);
     let gpu_idle = ledger
         .gpu_gaps
         .gpu_idle_in_span_ns
@@ -474,9 +471,7 @@ pub fn from_dsv4f_ledger(ledger: &DsvLedger, meta: &EmitMeta) -> TokenNsDocument
         .stages
         .iter()
         .filter(|s| {
-            s.name.contains("_io")
-                && !s.name.contains("prefetch")
-                && !s.name.starts_with("reader.")
+            s.name.contains("_io") && !s.name.contains("prefetch") && !s.name.starts_with("reader.")
         })
         .map(|s| s.bytes)
         .sum();
@@ -631,7 +626,12 @@ pub fn from_q80_ledger(ledger: &Qwen80TokenNsLedger, meta: &EmitMeta) -> TokenNs
         .diagnosis
         .as_ref()
         .map(|d| d.host_sync_ns)
-        .or_else(|| ledger.steady_state_mean.as_ref().map(|m| m.host_sync_ns.round() as u64))
+        .or_else(|| {
+            ledger
+                .steady_state_mean
+                .as_ref()
+                .map(|m| m.host_sync_ns.round() as u64)
+        })
         .unwrap_or(0);
     let total = wall;
     let commit = meta.commit.clone();
@@ -973,12 +973,7 @@ pub fn from_dsv4f_json(root: &Value, meta: &EmitMeta) -> Result<TokenNsDocument,
             ));
         }
     }
-    ensure_dsv_overlap_serial(
-        &mut stages,
-        cb_holes_from_json(ledger),
-        total,
-        &meta.commit,
-    );
+    ensure_dsv_overlap_serial(&mut stages, cb_holes_from_json(ledger), total, &meta.commit);
     let gpu_busy = json_u64(ledger, &["metal_vs_host", "metal_gpu_ns"]);
     let gpu_gap = json_u64(ledger, &["gpu_gaps", "inter_cb_device_gap_ns"]).max(json_u64(
         ledger,
@@ -1021,7 +1016,10 @@ pub fn from_dsv4f_json(root: &Value, meta: &EmitMeta) -> Result<TokenNsDocument,
         .unwrap_or(0);
     let buffer_creates = json_u64(root, &["metal", "total_buffer_creations"]);
     let buffer_rebinds = json_u64(root, &["metal", "total_buffer_rebinds"]);
-    let mapped = json_u64(root, &["chunk_verification", "host_read", "mapped_window_bytes"]);
+    let mapped = json_u64(
+        root,
+        &["chunk_verification", "host_read", "mapped_window_bytes"],
+    );
     Ok(TokenNsDocument {
         schema: TOKEN_NS_SCHEMA,
         model: "dsv4f".to_owned(),
@@ -1248,7 +1246,10 @@ pub fn from_q80_json(root: &Value, meta: &EmitMeta) -> Result<TokenNsDocument, S
 
 /// Adapt Q80_BASELINE_2026_08_16.json: the 15.23 s named-stage sum vs the
 /// 15.60 s run. This is the residual the lane brief names.
-pub fn from_q80_baseline_run_json(root: &Value, meta: &EmitMeta) -> Result<TokenNsDocument, String> {
+pub fn from_q80_baseline_run_json(
+    root: &Value,
+    meta: &EmitMeta,
+) -> Result<TokenNsDocument, String> {
     let prefill = json_f64(root, &["timing", "prefill_secs"]);
     let decode = json_f64(root, &["timing", "decode_secs"]);
     let tokens = json_f64(root, &["timing", "steady_state_tokens"]).max(1.0);
@@ -1418,7 +1419,10 @@ mod tests {
         assert!(resolve.pct_of_token > 100.0);
         assert_eq!(doc.closure.sum_serial_stage_ns, 650_000_000);
         assert_eq!(doc.closure.residual_ns, 350_000_000);
-        assert!(doc.closure.failed, "350 ms residual on a 1 s token fails 5%");
+        assert!(
+            doc.closure.failed,
+            "350 ms residual on a 1 s token fails 5%"
+        );
         assert_eq!(
             doc.closure.sum_serial_stage_ns + doc.closure.residual_ns,
             doc.totals.total_token_ns as i128
@@ -1437,26 +1441,25 @@ mod tests {
             box_note: "test",
             theoretical_weight_bytes:
                 crate::model::qwen80_token_ns_ledger::theoretical_weight_bytes_per_token(),
-            theoretical_temp_bytes:
-                crate::model::qwen80_token_ns_ledger::theoretical_temp_bytes(64),
-            tokens: Vec::new(),
-            steady_state_mean: Some(
-                crate::model::qwen80_token_ns_ledger::SteadyStateMean {
-                    n: 2,
-                    wall_ns: 1_000_000.0,
-                    gpu_execution_ns: 400_000.0,
-                    cpu_wait_ns: 500_000.0,
-                    submit_ns: 10_000.0,
-                    encode_ns: 5_000.0,
-                    host_sync_ns: 1_000.0,
-                    host_work_ns: 480_000.0,
-                    command_buffers: 10.0,
-                    dispatches: 20.0,
-                    weight_bytes: 1_000.0,
-                    gpu_gap_ns: 0.0,
-                    gpu_gap_edges: 0.0,
-                },
+            theoretical_temp_bytes: crate::model::qwen80_token_ns_ledger::theoretical_temp_bytes(
+                64,
             ),
+            tokens: Vec::new(),
+            steady_state_mean: Some(crate::model::qwen80_token_ns_ledger::SteadyStateMean {
+                n: 2,
+                wall_ns: 1_000_000.0,
+                gpu_execution_ns: 400_000.0,
+                cpu_wait_ns: 500_000.0,
+                submit_ns: 10_000.0,
+                encode_ns: 5_000.0,
+                host_sync_ns: 1_000.0,
+                host_work_ns: 480_000.0,
+                command_buffers: 10.0,
+                dispatches: 20.0,
+                weight_bytes: 1_000.0,
+                gpu_gap_ns: 0.0,
+                gpu_gap_edges: 0.0,
+            }),
             ranked_aggregate: Vec::new(),
             stage_table: Vec::new(),
             identity: None,
@@ -1468,12 +1471,8 @@ mod tests {
         assert_eq!(doc.closure.sum_serial_stage_ns, 996_000);
         assert_eq!(doc.closure.residual_ns, 4_000);
         assert!(!doc.closure.failed);
-        assert!(
-            doc.stages
-                .iter()
-                .any(|s| s.stage == "metal_gpu"
-                    && s.serial_or_overlappable == SerialOrOverlappable::Overlappable)
-        );
+        assert!(doc.stages.iter().any(|s| s.stage == "metal_gpu"
+            && s.serial_or_overlappable == SerialOrOverlappable::Overlappable));
         assert_eq!(doc.served_weight.active_weights_per_token, 3_562_274_816);
         assert!(doc.served_weight.honesty.not_latency);
         assert!(doc.served_weight.fs_per_weight_served > 0.0);
@@ -1619,9 +1618,7 @@ mod tests {
         assert!(
             doc.closure.residual_within_limit,
             "residual {} (frac {}) must be under 5%: {:?}",
-            doc.closure.residual_ns,
-            doc.closure.residual_fraction,
-            doc.closure.failure
+            doc.closure.residual_ns, doc.closure.residual_fraction, doc.closure.failure
         );
         assert!(!doc.closure.failed, "{:?}", doc.closure.failure);
         assert!(

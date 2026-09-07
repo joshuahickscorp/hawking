@@ -4,8 +4,8 @@
 //! bodies stay on disk until requested. This is not a Metal kernel, a
 //! generation runtime, or a ≤1.5 coherence claim.
 
-use crate::model::qwen_complete_binary::MixedPackedTensor;
 use crate::model::qwen80_uniform_q4_hybrid_decode::qwen80_payload_rehash_enabled;
+use crate::model::qwen_complete_binary::MixedPackedTensor;
 use crate::{Error, Result};
 use memmap2::{Mmap, MmapOptions};
 use serde_json::Value;
@@ -20,8 +20,7 @@ use std::time::Instant;
 pub const QWEN80_MIXED_CATALOG_MAGIC: [u8; 8] = *b"HQ80M15\0";
 pub const QWEN80_MIXED_CATALOG_VERSION: u32 = 1;
 pub const QWEN80_MIXED_RECORD_SIZE: usize = 128;
-pub const QWEN80_MIXED_SCHEMA: &str =
-    "hawking.ascension.qwen80_mixed_representation_candidate.v1";
+pub const QWEN80_MIXED_SCHEMA: &str = "hawking.ascension.qwen80_mixed_representation_candidate.v1";
 pub const QWEN80_MIXED_MANIFEST_NAME: &str =
     "QWEN80_MIXED_1P5_V1_COMPLETE_BINARY_GRAVITY_CANDIDATE.json";
 pub const QWEN80_MIXED_CATALOG_NAME: &str = "catalog.hq80m15";
@@ -449,7 +448,9 @@ fn parse_catalog_bytes(
     }
     let version = read_u32(raw, 8)?;
     if version != QWEN80_MIXED_CATALOG_VERSION {
-        return Err(mixed_error(format!("unsupported catalog version {version}")));
+        return Err(mixed_error(format!(
+            "unsupported catalog version {version}"
+        )));
     }
     let n_tensors = read_u32(raw, 12)? as usize;
     let n_segments = read_u32(raw, 16)? as usize;
@@ -494,8 +495,7 @@ fn parse_catalog_bytes(
         .ok_or_else(|| mixed_error("catalog name blob truncated"))?;
     let mut rows = HashMap::with_capacity(n_tensors);
     for index in 0..n_tensors {
-        let rec = &table[index * QWEN80_MIXED_RECORD_SIZE
-            ..(index + 1) * QWEN80_MIXED_RECORD_SIZE];
+        let rec = &table[index * QWEN80_MIXED_RECORD_SIZE..(index + 1) * QWEN80_MIXED_RECORD_SIZE];
         let name_off = read_u32(rec, 0)? as usize;
         let name_len = read_u16(rec, 4)? as usize;
         let codec = rec[6];

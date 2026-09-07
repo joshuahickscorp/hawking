@@ -576,6 +576,9 @@ def scan_specimen(
     return {
         "schema": SCHEMA_SPECIMEN,
         "evidence_tier": EVIDENCE_TIER,
+        # header/config/dir-walk only -- never opens a weight tensor. Same
+        # value+key specimen_open.py's census_specimen/measure_open use.
+        "classification": "STATIC_STREAMABLE",
         "slug": slug,
         "repo": repo,
         "revision": rev,
@@ -605,6 +608,8 @@ def scan_specimen(
             "loaded_weights": False,
         },
         "storage_role": tier.get("role"),
+        "size_tier": lin.size_tier_for(walked["bytes"]),
+        "execution_eligible": lin.execution_eligible_for(str(repo)),
         "lifecycle": life,
         "lifecycle_derived_from": why,
         "seal_status": seal_status,
@@ -903,6 +908,49 @@ def query_specimen(
     if rec is None:
         raise IndexError(f"no index record for {slug!r}; run index or index-update")
     return rec
+
+
+def tiering_census(*, lake: str | Path | None = None) -> dict[str, Any]:
+    """Size tier + execution eligibility over the real lake.
+
+    Read-only: stats every specimen's files (walk_specimen_files) but never
+    writes a catalog, receipt, or anything else. Does not need a built index.
+    """
+    lake_p = Path(lake) if lake is not None else _default_lake()
+    root = _specimens_root(lake_p)
+    rows: list[dict[str, Any]] = []
+    for slug in list_dir_slugs(root):
+        repo, _rev = _identity_from_slug(slug)
+        nbytes = walk_specimen_files(root / slug)["bytes"]
+        rows.append({
+            "slug": slug,
+            "repo": repo,
+            "bytes": nbytes,
+            "size_tier": lin.size_tier_for(nbytes),
+            "execution_eligible": lin.execution_eligible_for(repo),
+            "deferred_reason": lin.deferred_reason_for(repo),
+        })
+    by_tier = {t: {"count": 0, "bytes": 0} for t in lin.SIZE_TIERS}
+    eligible_bytes = 0
+    deferred_bytes = 0
+    for row in rows:
+        bucket = by_tier[row["size_tier"]]
+        bucket["count"] += 1
+        bucket["bytes"] += row["bytes"]
+        if row["execution_eligible"]:
+            eligible_bytes += row["bytes"]
+        else:
+            deferred_bytes += row["bytes"]
+    return {
+        "schema": "hawking.odyssey.tiering_census.v1",
+        "lake": str(lake_p),
+        "n_specimens": len(rows),
+        "by_tier": by_tier,
+        "eligible_bytes": eligible_bytes,
+        "deferred_bytes": deferred_bytes,
+        "deferred_note": lin.DEFERRED_NOTE,
+        "specimens": rows,
+    }
 
 
 def _empty_catalog(lake: Path, index_dir: Path, budget: int) -> dict[str, Any]:

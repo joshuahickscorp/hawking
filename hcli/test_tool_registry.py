@@ -16,10 +16,14 @@ worked fine when called straight).
 """
 from __future__ import annotations
 
+import inspect
+from pathlib import Path
+
 import pytest
 
+from hcli import odyssey
 from hcli import processes as processes_module
-from hcli.tool_registry import READ_ONLY, default_tool_registry
+from hcli.tool_registry import COSTLY, READ_ONLY, default_tool_registry
 
 PROCESS_TOOLS = ("processes.list", "processes.summary", "processes.orphaned")
 
@@ -129,3 +133,111 @@ def test_processes_list_matches_process_to_dict_shape(tmp_path):
     assert {p["pid"] for p in rows} == {p["pid"] for p in direct}
     if rows:
         assert set(rows[0]) == set(direct[0])
+
+
+# --------------------------------------------------------------------------
+# Odyssey verb reachability. Same disease G009 found in hcli.processes, one
+# module over: hcli/odyssey.py defined 20 connector verbs and registered 12,
+# so 8 were reachable only by importing the module by hand -- never through
+# WorkUnit.tool -> _run_tool -> ToolRegistry.invoke, the resident's only path.
+# A verb is allowed to stay off the registry, but the reason has to be
+# written down at its definition rather than left as an omission.
+# --------------------------------------------------------------------------
+
+CLI_ONLY_MARKER = "# cli-only:"
+
+
+def _odyssey_verbs() -> set[str]:
+    """Every public connector function defined in hcli/odyssey.py."""
+    return {
+        name
+        for name, obj in vars(odyssey).items()
+        if inspect.isfunction(obj)
+        and not name.startswith("_")
+        and obj.__module__ == odyssey.__name__
+    }
+
+
+def _cli_only_verbs() -> set[str]:
+    """Verbs deliberately withheld from the registry, read from the marker
+    comment that must sit on the line directly above their `def`. Reading the
+    source rather than a hardcoded list keeps the comment load-bearing: delete
+    the comment and the verb goes back to counting as unreachable.
+    """
+    lines = Path(odyssey.__file__).read_text(encoding="utf-8").splitlines()
+    return {
+        line.split("def ", 1)[1].split("(", 1)[0]
+        for previous, line in zip(lines, lines[1:])
+        if line.startswith("def ") and previous.strip().startswith(CLI_ONLY_MARKER)
+    }
+
+
+def test_every_odyssey_verb_is_registered_or_marked_cli_only(tmp_path):
+    """No silently unreachable verb. Registered, or carrying its own
+    one-line reason for staying on the CLI -- nothing in between.
+    """
+    registry = _registry(tmp_path)
+    unreachable = sorted(
+        verb
+        for verb in _odyssey_verbs() - _cli_only_verbs()
+        if registry.get(f"odyssey.{verb}") is None
+    )
+    assert not unreachable, (
+        "hcli/odyssey.py defines these verbs but nothing can call them: "
+        f"{unreachable}. Register them in hcli/tool_registry.py, or write a "
+        f"'{CLI_ONLY_MARKER} ...' line above the def saying why not."
+    )
+
+
+def test_registered_odyssey_handlers_pass_the_arguments_their_verb_declares(
+    tmp_path, monkeypatch
+):
+    """A registration whose handler drops a required positional argument
+    raises TypeError the first time it is invoked -- the way an unchecked
+    wiring fails in production, long after the registry was written. Each
+    handler is driven through registry.invoke with the real connector
+    replaced by a recorder that binds against the genuine signature, so a
+    mismatch fails here and no subprocess is spawned.
+    """
+    seen: dict[str, tuple] = {}
+
+    def recorder(real):
+        signature = inspect.signature(real)
+
+        def stub(*args, **kwargs):
+            signature.bind(*args, **kwargs)  # TypeError on a wiring mismatch
+            seen[real.__name__] = (args, kwargs)
+            return {"recorded": real.__name__}
+
+        return stub
+
+    for verb in ("patient", "completions", "harvest", "retire", "write_packet"):
+        monkeypatch.setattr(odyssey, verb, recorder(getattr(odyssey, verb)))
+
+    registry = _registry(tmp_path, permissions=(READ_ONLY, COSTLY))
+    for name, args in (
+        ("odyssey.patient", {"oxx": "O003"}),
+        ("odyssey.completions", {}),
+        ("odyssey.harvest", {}),
+        ("odyssey.retire", {"oxx": "O003", "confirm": True}),
+        ("odyssey.write_packet", {"oxx": "O003", "confirm": True}),
+    ):
+        result = registry.invoke(name, args)
+        assert result.ok, f"{name} failed through the registry: {result.error!r}"
+
+    assert seen["patient"] == (("O003",), {})
+    assert seen["retire"] == ((), {"confirm": True, "oxx": "O003"})
+    assert seen["write_packet"] == ((), {"confirm": True, "oxx": "O003"})
+
+
+@pytest.mark.parametrize("name", ("odyssey.retire", "odyssey.write_packet"))
+def test_mutating_odyssey_verbs_refuse_without_confirm(tmp_path, name):
+    """These write the driver's own state, so they are gated exactly like
+    odyssey.cycle: no confirm, no call. The schema refuses the payload before
+    the handler runs, so a missing confirm cannot reach odyssey_ctl.py.
+    """
+    registry = _registry(tmp_path, permissions=(READ_ONLY, COSTLY))
+    assert registry.get(name).mutation == COSTLY
+    result = registry.invoke(name, {"oxx": "O003"})
+    assert not result.ok
+    assert result.failure_class == "INVALID_ARGUMENTS"

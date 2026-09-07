@@ -538,7 +538,7 @@ class TestStatusParserIndependentOfSubprocess(unittest.TestCase):
 
 @unittest.skip(
     "live grok-run audit spends a real Grok session; this lane uses "
-    "GROK_DRYRUN=1. See tools/headless/hcli_grokbridge_test.py."
+    "GROK_DRYRUN=1. The live bridge contract is covered by this suite."
 )
 def test_live_audit_skipped():
     raise AssertionError("this test must stay skipped")

@@ -1,0 +1,41 @@
+{
+ "specimen": "O003",
+ "date": "2026-09-06",
+ "measured_by": "Claude directly",
+ "obligation": "G016 - a representation class that is NOT a precision/group-size variation",
+ "class": "HOT_COLD_ROUTED. Byte budget allocated by MEASURED routing frequency: the busiest hot_frac of the 64 experts per tensor get hot_bits, the rest get cold_bits. The allocation is driven by a measured property of the organism, not a uniform rule. Routing counts are captured from real tokens and the collector REFUSES a near-uniform result (max/mean < 1.2) so a broken hook cannot masquerade as a null effect.",
+ "arms": [
+  {
+   "spec": "q3-g128-experts (UNIFORM 3b)",
+   "complete_ebpw": 3.2831,
+   "ppl": 3.135,
+   "median_4gram": 0.1075,
+   "passes": true,
+   "note": "control: same bytes, uniform allocation"
+  },
+  {
+   "spec": "hotcold0.5h4c2-g128",
+   "complete_ebpw": 3.2831,
+   "ppl": 3.0699,
+   "median_4gram": 0.5806,
+   "passes": false,
+   "hot_share": 0.5
+  },
+  {
+   "spec": "hotcold0.25h4c2-g128",
+   "complete_ebpw": 2.8444,
+   "ppl": 3.2342,
+   "median_4gram": 0.828,
+   "passes": false,
+   "hot_share": 0.25
+  }
+ ],
+ "THE_EQUAL_BYTE_CONTROL_IS_DECISIVE": "hotcold0.5h4c2-g128 costs 3.2830765066781096 complete EBPW. q3-g128-experts costs 3.2830765066781096 -- identical to 16 digits, because half at 4 bits plus half at 2 bits is exactly 3 bits. Same budget, different allocation. Uniform PASSES the gate (ppl 3.135, 4-gram 0.1075). Hot/cold FAILS (ppl 3.070, 4-gram 0.5806) despite BETTER perplexity.",
+ "WHAT_THIS_KILLS": "Routing frequency does NOT predict representational importance on this specimen. Rarely-routed experts are not safe to compress: dropping the cold 50% to 2 bits destroys generation even though those experts take only a small share of traffic. The 3.0x routing concentration measured in probe 2 is real, and it is the WRONG axis to spend bytes along.",
+ "MECHANISM_that_explains_all_FIVE_dissociations": "Perplexity is teacher-forced: every position is conditioned on GROUND TRUTH, so a rarely-taken bad path is visited rarely and contributes little. Generation is autoregressive: once a cold expert emits a bad token, the model conditions on its own error and the damage compounds. That is why hot/cold improves ppl (average-case quality rises with more bits on hot experts) while destroying generation (worst-case paths get worse). The same mechanism explains q2-g128's 87 identical tokens at ppl 4.085, q4-g128 vs q3-g128, residual-binary vs affine, and non-expert 4b/g128. Five instances, one cause.",
+ "CAVEATS": [
+  "Routing measured on 1024 tokens from 9 prompts; a different corpus would reorder the hot set, though the 3.0x concentration itself was stable across all 78 tensors.",
+  "Only the 4/2 bit split was tested at two fractions. A gentler split (4/3) costs exactly the 3.5024 of q3-g64 and was not run.",
+  "No kernel: mixed-precision experts would need per-expert dispatch, so no TPS."
+ ]
+}

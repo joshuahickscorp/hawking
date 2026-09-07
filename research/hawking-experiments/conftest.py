@@ -6,7 +6,6 @@ from pathlib import Path
 
 _REPO = Path(__file__).resolve().parent.parent
 for _p in (
-    _REPO / "hawking-experiments" / "prometheus" / "tools",
     _REPO / "hawking-experiments" / "frankenstein" / "condense",
     _REPO / "hawking-experiments" / "frankenstein" / "operators",
 ):

@@ -99,7 +99,7 @@ export const FAMILY_ADAPTERS: FamilyAdapterEntry[] = [
     displayName: "GLM (gravity glm_moe_dsa)",
     level: "SMALL_REAL_CHECKPOINT",
     evidence: [
-      { path: "evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json", claim: "M04_SEALED: Rust adapter vs oracle on real flagship .gravity shards", kind: "small_checkpoint_run" },
+      { path: "adapters/receipts/ADAPTER_GLM_RECEIPT.json", claim: "GLM adapter receipt; parity remains bounded", kind: "small_checkpoint_run" },
       { path: "crates/hawking-core/src/model/gravity_engine.rs", claim: "GravityEngine dispatches glm_moe_dsa", kind: "description" },
       { path: "crates/hawking-core/tests/gravity_artifact_suite.rs", claim: "committed .gravity artifact registry and integrity suite", kind: "description" },
       { path: "crates/hawking-core/tests/gravity_glm_forward.rs", claim: "unconditional: real .gravity container decoded, complete token executed, matches numpy oracle reading the same container (3 passed, 0.04s)", kind: "real_tensor_decode" },
@@ -119,7 +119,7 @@ export const FAMILY_ADAPTERS: FamilyAdapterEntry[] = [
     displayName: "Kimi K2.x",
     level: "SYNTHETIC_PARITY",
     evidence: [
-      { path: "evidence/kimi-k26/KIMI_K26_ADAPTER_TWIN.json", claim: "synthetic CPU reference + bound real-source metal K1 twin", kind: "synthetic_parity" },
+      { path: "workspace/campaign/odyssey/watch-manifests/moonshotai--Kimi-K3@9f62e4e9fffb.json", claim: "Kimi source registry entry; adapter twin remains synthetic and not serve-registered", kind: "synthetic_parity" },
       { path: "crates/hawking-core/src/model/mod.rs", claim: "load_engine has no kimi arch arm (not serve-registered)", kind: "description" },
     ],
     module: "KIMI_K26_ADAPTER_TWIN.json (reference twin; no in-tree serve module)",
@@ -160,7 +160,7 @@ export const FAMILY_ADAPTERS: FamilyAdapterEntry[] = [
     displayName: "MiniMax",
     level: "DECLARED",
     evidence: [
-      { path: "evidence/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md", claim: "family listed in bridge archaeology; no serve path found", kind: "description" },
+      { path: "workspace/campaign/evidence/systems/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md", claim: "fabrication-control receipt; MiniMax remains declared and has no serve path", kind: "description" },
     ],
     module: "(none — declared only)",
     executes: false,

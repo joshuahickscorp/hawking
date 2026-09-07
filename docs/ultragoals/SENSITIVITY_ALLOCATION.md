@@ -9,8 +9,11 @@ whole-model floor.** Composition failures at 1.25 (binary) and 1.85 (ternary)
 on the MLP remain closed for those families; starving a channel to those
 densities is a ranking, not a reopen.
 
-Receipt: `receipts/headless/SENSITIVITY_ALLOCATION.json`
-Generator: `tools/headless/sensitivity_allocation.py`
+Canonical receipt: `receipts/headless/SENSITIVITY_ALLOCATION.json`
+
+The one-shot generator has been retired from active HEAD. The sealed receipt
+and this bounded interpretation are the retained signal; the generator is
+recoverable from Git if the measurement must be independently reproduced.
 
 ---
 

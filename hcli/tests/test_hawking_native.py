@@ -147,7 +147,9 @@ class TestNativeConnector(TestCase):
             self.assertEqual(raw["choices"][0]["message"]["content"], "fixture answer")
             self.assertEqual(raw["usage"]["completion_tokens"], 2)
             self.assertEqual(raw["hawking"]["fallbacks"], 3)
-            self.assertTrue(raw["hawking"]["generation_clamped"])
+            # An explicit request is allowed to exceed the profile's default
+            # max_new_tokens; only the native context window may clamp it.
+            self.assertFalse(raw["hawking"]["generation_clamped"])
             self.assertEqual(raw["hawking"]["mode"], "one_shot")
 
     def test_malformed_one_shot_artifact_is_rejected(self):

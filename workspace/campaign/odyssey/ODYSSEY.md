@@ -92,8 +92,7 @@ run/cycle/retire/acquire-next. Driver `tools/odyssey_driver.sh` under launchd `c
 - **Modules (super-detachment fan-out, 2026-08-19)**: `odyssey_memgate.py` (multi-model swap≤30 admit),
   `odyssey_candgen.py` + `candidate_families.json` (aggressive search-space AS DATA, deterministic
   gen/prune, no LLM per candidate), `ODYSSEY_MANIFEST.json` (predeclared O000-O013 sources+targets),
-  `odyssey_costmodel.py` (compile-economics + frontier-depth + detachment metrics → `ODYSSEY_COST_MODEL.json`),
-  `odyssey_novelty.py` (FRONTIER_NOVELTY_PACKET → Grok fanout when families converge conventional).
+  `odyssey_costmodel.py` (compile-economics + frontier-depth + detachment metrics → `ODYSSEY_COST_MODEL.json`).
 - **Runner** `tools/odyssey_patient_runner.py` — mlx SPECIMEN external science (external/route/sensitivity/
   gravity `--gravity <spec>`/nx-gather/ssm) for archs the Rust `load_engine` can't run (Qwen3-MoE/Falcon/
   Gemma/Mamba). Native NX = new Rust primitive (bible §53, deferred). Census `tools/odyssey_census.py`.

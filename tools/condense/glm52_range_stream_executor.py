@@ -15,8 +15,8 @@ if str(ROOT) not in sys.path:
 from lab.operators.glm52_common import atomic_json, read_sealed_json  # noqa: E402
 from lab.operators.glm52_range_stream_executor import RangeExecutorError, execute  # noqa: E402
 from lab.layout import LOCAL_ROOT, evidence_dir  # noqa: E402
-from ramanujan.layout import BOUNDARY_ROOT, resolve_ramanujan_path  # noqa: E402
-from ramanujan.restream_guard import (  # noqa: E402
+from tools.verify.ramanujan_layout import BOUNDARY_ROOT, resolve_ramanujan_path  # noqa: E402
+from tools.verify.restream_guard import (  # noqa: E402
     green_light_status_main,
     owner_authorization_claim_path,
     owner_authorization_ledger_dir,

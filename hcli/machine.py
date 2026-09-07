@@ -49,11 +49,32 @@ def _parse_vm_stat() -> Dict[str, int]:
     return result
 
 
+_MEMSIZE_CACHE: Optional[int] = None
+
+
+def _hw_memsize() -> int:
+    # Total physical RAM is a hardware constant for the process's life.
+    global _MEMSIZE_CACHE
+    if _MEMSIZE_CACHE is not None:
+        return _MEMSIZE_CACHE
+    out = _run_cmd(["sysctl", "-n", "hw.memsize"])
+    _MEMSIZE_CACHE = int(out) if out and out.isdigit() else 0
+    return _MEMSIZE_CACHE
+
+
+_PAGE_SIZE_CACHE: Optional[int] = None
+
+
 def _get_page_size() -> int:
+    # The kernel's page size never changes within a process's life; this was
+    # spawning `sysctl vm.pagesize` twice per host_snapshot() call (once
+    # directly, once via swap_pressure_bytes) plus once per other caller.
+    global _PAGE_SIZE_CACHE
+    if _PAGE_SIZE_CACHE is not None:
+        return _PAGE_SIZE_CACHE
     out = _run_cmd(["sysctl", "-n", "vm.pagesize"])
-    if out and out.isdigit():
-        return int(out)
-    return 16384
+    _PAGE_SIZE_CACHE = int(out) if out and out.isdigit() else 16384
+    return _PAGE_SIZE_CACHE
 
 
 def _read_positive_int(value: object) -> Optional[int]:
@@ -155,10 +176,7 @@ def host_snapshot() -> Dict[str, Any]:
     page = _get_page_size()
     raw = _parse_vm_stat()
     counts = {k: int(v) * page for k, v in raw.items()}
-    total = 0
-    mem_out = _run_cmd(["sysctl", "-n", "hw.memsize"])
-    if mem_out and mem_out.isdigit():
-        total = int(mem_out)
+    total = _hw_memsize()
     free = (
         counts.get("Pages free", 0)
         + counts.get("Pages inactive", 0)
@@ -601,19 +619,30 @@ def _as_unix(
     return dt.timestamp()
 
 
-def live_machine_identity() -> Dict[str, Any]:
+_IDENTITY_CACHE: Optional[Dict[str, Any]] = None
+
+
+def live_machine_identity(force: bool = False) -> Dict[str, Any]:
+    """Static hardware facts (model, CPU, core count, RAM). Cached like
+    :func:`metal_device_info`: none of these change during a process's life,
+    and re-reading them was ~4 sysctl spawns on every uncached caller."""
+    global _IDENTITY_CACHE
+    if _IDENTITY_CACHE is not None and not force:
+        return dict(_IDENTITY_CACHE)
     hw_model = _run_cmd(["sysctl", "-n", "hw.model"])
     cpu = _run_cmd(["sysctl", "-n", "machdep.cpu.brand_string"])
     ncpu_s = _run_cmd(["sysctl", "-n", "hw.ncpu"])
     mem_s = _run_cmd(["sysctl", "-n", "hw.memsize"])
     ncpu = int(ncpu_s) if ncpu_s and str(ncpu_s).strip().lstrip("-").isdigit() else None
     mem_bytes = int(mem_s) if mem_s and str(mem_s).strip().isdigit() else None
-    return {
+    info = {
         "hw_model": hw_model or None,
         "cpu": cpu or None,
         "ncpu": ncpu,
         "mem_bytes": mem_bytes,
     }
+    _IDENTITY_CACHE = dict(info)
+    return info
 
 
 def _norm_model_path(path: Optional[str]) -> Optional[str]:
@@ -1028,8 +1057,8 @@ class MachineGenome:
     clobber the operator-qualified genome. The default path stays under
     ``HCLI_HOME`` so the two files cannot alias.
 
-    Verified caller: ``tools/headless/hcli_persistence_audit.py`` (crash
-    demo of save). Admission must not import this class.
+    Persistence is covered by sealed ``receipts/headless/HCLI_PERSISTENCE_AUDIT.json``;
+    admission must not import a one-shot audit runner.
     """
 
     path: Path

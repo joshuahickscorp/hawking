@@ -1322,7 +1322,6 @@ def build() -> Any:
         "negative_science": {
             "tools": [
                 "tools/headless/negative_science.py",
-                "tools/headless/noetic_negative_science.py",
             ],
             "receipt": NNS_RECEIPT,
             "what_it_is": "append-only death corpus with reopen conditions; match by id or claim string",

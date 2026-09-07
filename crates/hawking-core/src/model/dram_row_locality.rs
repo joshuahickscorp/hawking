@@ -90,7 +90,12 @@ fn locality_error(detail: impl Into<String>) -> Error {
 }
 
 /// Analyse one address stream. Touches should be in issue order.
-pub fn analyze_stream(name: &str, layout: &str, touches: &[AddressTouch], note: &str) -> StreamStats {
+pub fn analyze_stream(
+    name: &str,
+    layout: &str,
+    touches: &[AddressTouch],
+    note: &str,
+) -> StreamStats {
     let mut bytes = 0u64;
     let mut runs: Vec<u64> = Vec::new();
     let mut run_bytes = 0u64;
@@ -155,11 +160,7 @@ pub fn analyze_stream(name: &str, layout: &str, touches: &[AddressTouch], note: 
     } else {
         runs.iter().sum::<u64>() as f64 / n_runs as f64
     };
-    let p50 = if n_runs == 0 {
-        0
-    } else {
-        sorted[n_runs / 2]
-    };
+    let p50 = if n_runs == 0 { 0 } else { sorted[n_runs / 2] };
     let p90 = if n_runs == 0 {
         0
     } else {
@@ -238,11 +239,7 @@ pub fn q80_binary_split_stream(rows: usize, cols: usize, group: usize) -> Vec<Ad
     let mut out = Vec::with_capacity(rows * groups * 2);
     for row in 0..rows {
         for g in 0..groups {
-            push_run(
-                &mut out,
-                scale_base + ((row * groups + g) * 2) as u64,
-                2,
-            );
+            push_run(&mut out, scale_base + ((row * groups + g) * 2) as u64, 2);
             push_run(
                 &mut out,
                 sign_base + (row * sign_bytes_per_row + g * (group / 8)) as u64,
@@ -276,15 +273,10 @@ pub fn q80_q4_split_stream(rows: usize, cols: usize) -> Vec<AddressTouch> {
     let mut out = Vec::with_capacity(rows * groups * 2);
     for row in 0..rows {
         for g in 0..groups {
+            push_run(&mut out, scale_base + ((row * groups + g) * 2) as u64, 2);
             push_run(
                 &mut out,
-                scale_base + ((row * groups + g) * 2) as u64,
-                2,
-            );
-            push_run(
-                &mut out,
-                code_base
-                    + ((row * groups + g) * UNIFORM_Q4_CODE_BYTES_PER_GROUP) as u64,
+                code_base + ((row * groups + g) * UNIFORM_Q4_CODE_BYTES_PER_GROUP) as u64,
                 UNIFORM_Q4_CODE_BYTES_PER_GROUP as u32,
             );
         }
@@ -309,7 +301,11 @@ pub fn q80_q4_interleaved_stream(rows: usize, cols: usize) -> Vec<AddressTouch> 
 
 /// DSV4F worklist FP4: packed weights and E8M0 scales in two buffers.
 /// One thread owns (slot, row); we emit one expert's one projection.
-pub fn dsv4f_fp4_split_stream(rows: usize, packed_cols: usize, scale_cols: usize) -> Vec<AddressTouch> {
+pub fn dsv4f_fp4_split_stream(
+    rows: usize,
+    packed_cols: usize,
+    scale_cols: usize,
+) -> Vec<AddressTouch> {
     let packed_base = region(7);
     let scale_base = region(8);
     let mut out = Vec::with_capacity(rows * scale_cols * 2);
@@ -320,11 +316,7 @@ pub fn dsv4f_fp4_split_stream(rows: usize, packed_cols: usize, scale_cols: usize
                 packed_base + (row * packed_cols + block * (DSV4F_FP4_BLOCK / 2)) as u64,
                 (DSV4F_FP4_BLOCK / 2) as u32,
             );
-            push_run(
-                &mut out,
-                scale_base + (row * scale_cols + block) as u64,
-                1,
-            );
+            push_run(&mut out, scale_base + (row * scale_cols + block) as u64, 1);
         }
     }
     out
@@ -414,9 +406,8 @@ pub fn scale_stream_to_token(stats: &StreamStats, copies: u64) -> StreamStats {
     scaled.unique_pages_4k = stats.unique_pages_4k.saturating_mul(copies as usize);
     scaled.unique_pages_16k = stats.unique_pages_16k.saturating_mul(copies as usize);
     scaled.unique_dram_rows = stats.unique_dram_rows.saturating_mul(copies as usize);
-    scaled.min_possible_dram_rows = ((scaled.bytes + DRAM_ROW_BYTES_MODEL - 1)
-        / DRAM_ROW_BYTES_MODEL)
-        .max(1) as usize;
+    scaled.min_possible_dram_rows =
+        ((scaled.bytes + DRAM_ROW_BYTES_MODEL - 1) / DRAM_ROW_BYTES_MODEL).max(1) as usize;
     scaled.scatter_ratio =
         scaled.unique_dram_rows as f64 / scaled.min_possible_dram_rows.max(1) as f64;
     scaled
@@ -430,7 +421,11 @@ pub const FP4_INTERLEAVED_STRIDE: usize = 1 + DSV4F_FP4_BLOCK / 2;
 
 /// `[fp16 scale | 32 code bytes]` per group of 64. Same bytes as split.
 pub fn interleave_q4_groups(scales_f16: &[u16], codes: &[u8]) -> Result<Vec<u8>> {
-    if scales_f16.len().saturating_mul(UNIFORM_Q4_CODE_BYTES_PER_GROUP) != codes.len() {
+    if scales_f16
+        .len()
+        .saturating_mul(UNIFORM_Q4_CODE_BYTES_PER_GROUP)
+        != codes.len()
+    {
         return Err(locality_error("q4 scale/code length disagree"));
     }
     let mut out = vec![0u8; scales_f16.len() * Q4_INTERLEAVED_STRIDE];
@@ -446,7 +441,9 @@ pub fn interleave_q4_groups(scales_f16: &[u16], codes: &[u8]) -> Result<Vec<u8>>
 
 pub fn deinterleave_q4_groups(body: &[u8]) -> Result<(Vec<u16>, Vec<u8>)> {
     if body.len() % Q4_INTERLEAVED_STRIDE != 0 {
-        return Err(locality_error("q4 interleaved body is not a whole number of groups"));
+        return Err(locality_error(
+            "q4 interleaved body is not a whole number of groups",
+        ));
     }
     let groups = body.len() / Q4_INTERLEAVED_STRIDE;
     let mut scales = vec![0u16; groups];
@@ -547,10 +544,14 @@ pub fn interleave_fp4_blocks(
     scale_cols: usize,
 ) -> Result<Vec<u8>> {
     if packed.len() != rows * packed_cols || scales.len() != rows * scale_cols {
-        return Err(locality_error("fp4 packed/scale length disagrees with geometry"));
+        return Err(locality_error(
+            "fp4 packed/scale length disagrees with geometry",
+        ));
     }
     if packed_cols * 2 != scale_cols * DSV4F_FP4_BLOCK {
-        return Err(locality_error("fp4 packed_cols and scale_cols are not a 32-block pair"));
+        return Err(locality_error(
+            "fp4 packed_cols and scale_cols are not a 32-block pair",
+        ));
     }
     let packed_per_block = DSV4F_FP4_BLOCK / 2;
     let mut out = vec![0u8; rows * scale_cols * FP4_INTERLEAVED_STRIDE];
@@ -573,7 +574,9 @@ pub fn deinterleave_fp4_blocks(
     scale_cols: usize,
 ) -> Result<(Vec<u8>, Vec<u8>)> {
     if body.len() != rows * scale_cols * FP4_INTERLEAVED_STRIDE {
-        return Err(locality_error("fp4 interleaved length disagrees with geometry"));
+        return Err(locality_error(
+            "fp4 interleaved length disagrees with geometry",
+        ));
     }
     let packed_per_block = DSV4F_FP4_BLOCK / 2;
     let mut packed = vec![0u8; rows * packed_cols];
@@ -605,7 +608,9 @@ pub fn pack_triplet_blob(gate: &[u8], up: &[u8], down: &[u8]) -> Vec<u8> {
 
 pub fn unpack_triplet_blob(body: &[u8]) -> Result<(Vec<u8>, Vec<u8>, Vec<u8>)> {
     if body.len() < 24 {
-        return Err(locality_error("triplet blob shorter than the length prefix"));
+        return Err(locality_error(
+            "triplet blob shorter than the length prefix",
+        ));
     }
     let g = u64::from_le_bytes(body[0..8].try_into().unwrap()) as usize;
     let u = u64::from_le_bytes(body[8..16].try_into().unwrap()) as usize;
@@ -630,7 +635,8 @@ pub fn unpack_triplet_blob(body: &[u8]) -> Result<(Vec<u8>, Vec<u8>, Vec<u8>)> {
 
 /// Cheap npy v1/v2 reader. Used for the existing capture-index route table.
 pub fn read_npy_i32(path: &std::path::Path) -> Result<Vec<i32>> {
-    let raw = std::fs::read(path).map_err(|e| locality_error(format!("read {}: {e}", path.display())))?;
+    let raw =
+        std::fs::read(path).map_err(|e| locality_error(format!("read {}: {e}", path.display())))?;
     let (_header, data) = split_npy(&raw)?;
     if data.len() % 4 != 0 {
         return Err(locality_error("npy i32 payload is not a multiple of 4"));
@@ -642,7 +648,8 @@ pub fn read_npy_i32(path: &std::path::Path) -> Result<Vec<i32>> {
 }
 
 pub fn read_npy_i16(path: &std::path::Path) -> Result<Vec<i16>> {
-    let raw = std::fs::read(path).map_err(|e| locality_error(format!("read {}: {e}", path.display())))?;
+    let raw =
+        std::fs::read(path).map_err(|e| locality_error(format!("read {}: {e}", path.display())))?;
     let (_header, data) = split_npy(&raw)?;
     if data.len() % 2 != 0 {
         return Err(locality_error("npy i16 payload is not a multiple of 2"));
@@ -687,11 +694,7 @@ pub fn greedy_coreoute_order(freq: &[u32], pair: &[u32], n: usize) -> Vec<u32> {
     debug_assert_eq!(freq.len(), n);
     debug_assert_eq!(pair.len(), n * n);
     let mut remaining: Vec<u32> = (0..n as u32).collect();
-    remaining.sort_by(|&a, &b| {
-        freq[b as usize]
-            .cmp(&freq[a as usize])
-            .then(a.cmp(&b))
-    });
+    remaining.sort_by(|&a, &b| freq[b as usize].cmp(&freq[a as usize]).then(a.cmp(&b)));
     let mut order = Vec::with_capacity(n);
     let mut used = vec![false; n];
     if remaining.is_empty() {
@@ -714,7 +717,9 @@ pub fn greedy_coreoute_order(freq: &[u32], pair: &[u32], n: usize) -> Vec<u32> {
             let better = match best {
                 None => true,
                 Some(_) => {
-                    score > best_score || (score == best_score && (f > best_freq || (f == best_freq && cand < best.unwrap())))
+                    score > best_score
+                        || (score == best_score
+                            && (f > best_freq || (f == best_freq && cand < best.unwrap())))
                 }
             };
             if better {

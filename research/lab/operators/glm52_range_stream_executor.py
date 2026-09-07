@@ -32,7 +32,7 @@ from lab.layout import resolve_workspace_path
 from lab.operators.glm52_common import canonical, read_sealed_json, seal, verify_sealed
 from lab.operators.glm52_restream_contract import REPO_ID, REVISION, live_window_admission
 from lab.operators.gravity_range_scheduler import plan_glm52_organ_windows
-from ramanujan.restream_guard import (
+from tools.verify.restream_guard import (
     TRANSITION_SCHEMA,
     load_pinned_owner_public_key,
     start_claimed_owner_authorization,

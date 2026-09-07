@@ -79,6 +79,64 @@ DIVERSITY_ROLES = (
 EVIDENCE_TIER = "STATIC"
 HEADER_CAP = 32 * 1024 * 1024
 
+# Execution-class SIZE tiering. Distinct axis from STORAGE_ROLES above:
+# that is *where* a specimen sits (SSD vs HDD); this is *how big* it is on
+# disk, independent of location. Thresholds are on-disk bytes, GiB.
+GIB = 1024 ** 3
+SIZE_TIERS = ("A_TINY", "B_MID", "C_LARGE", "D_GIANT")
+_SIZE_TIER_MAX_BYTES = {"A_TINY": 8 * GIB, "B_MID": 40 * GIB, "C_LARGE": 80 * GIB}
+
+# Operator decision 2026-09-05, encoded not re-litigated: the top 3 lake
+# specimens by on-disk size are DEFERRED from execution-class Odyssey work.
+# In the operator's words -- they scale a lot, deferring them buys speed,
+# and by the time the program reaches them a faster/lighter/smarter resident
+# should be ready to tackle them. Keyed by HF repo id (revision-agnostic: a
+# re-acquired revision of the same repo is still the same giant).
+DEFERRED_GIANTS = {
+    "moonshotai/Kimi-K3": (
+        "operator 2026-09-05: largest lake specimen (~1.45 TB); deferred to "
+        "buy execution-class speed now, revisit once a lighter/faster/smarter "
+        "resident exists"
+    ),
+    "thinkingmachines/Inkling-Small": (
+        "operator 2026-09-05: 2nd-largest lake specimen (~496 GB); same "
+        "deferral rationale as Kimi-K3"
+    ),
+    "windowsxp811203/Qwen3.8-Flash-Next-Abliterated": (
+        "operator 2026-09-05: 3rd-largest lake specimen (~336 GB); same "
+        "deferral rationale as Kimi-K3"
+    ),
+}
+# Deferred does NOT mean dropped: they stay in the static census and remain
+# eligible for a later pass.
+DEFERRED_NOTE = (
+    "deferred does not mean dropped: these specimens stay in the static "
+    "census and remain eligible for a later pass"
+)
+
+
+def size_tier_for(nbytes: int) -> str:
+    """A_TINY / B_MID / C_LARGE / D_GIANT from on-disk bytes."""
+    for name in SIZE_TIERS[:-1]:
+        if nbytes <= _SIZE_TIER_MAX_BYTES[name]:
+            return name
+    return "D_GIANT"
+
+
+def deferred_reason_for(repo: str) -> str | None:
+    return DEFERRED_GIANTS.get(repo)
+
+
+def execution_eligible_for(repo: str, nbytes: int | None = None) -> bool:
+    """False only for the named DEFERRED_GIANTS; True otherwise.
+
+    nbytes is accepted for symmetry with size_tier_for (a future caller may
+    want to gate on tier); today eligibility is decided by the named set,
+    not by tier alone -- other D_GIANT specimens are not automatically
+    excluded.
+    """
+    return repo not in DEFERRED_GIANTS
+
 
 class LineageError(ValueError):
     """A specimen identity cannot be formed from the evidence on hand."""
@@ -553,3 +611,9 @@ def lake_layout(**kwargs: Any) -> dict[str, Any]:
     """CALL modellake_index.layout. §14.1 storage roles as a queryable object."""
     from tools.odyssey.modellake_index import layout
     return layout(**kwargs)
+
+
+def lake_tiering(**kwargs: Any) -> dict[str, Any]:
+    """CALL modellake_index.tiering_census. Read-only size-tier + eligibility."""
+    from tools.odyssey.modellake_index import tiering_census
+    return tiering_census(**kwargs)

@@ -8,11 +8,12 @@
 //! - `generated/command_catalog.json` - the serialized ONE command registry (data);
 //! - `goldens/commands.d.ts` - CommandSpec types (counted source);
 //! - `fixtures/events.json` - the canonical event fixtures;
-//! - `app/src/generated/command_catalog.json` - FE mirror (sole writer for this path).
+//! External clients consume the crate-owned schema and catalog artifacts; no
+//! frontend mirror is generated in the headless HCLI phase.
 //!
 //! The golden-file tests regenerate these in memory and compare against the
-//! committed copies, so a protocol change that would break the frontend fails
-//! the build until these are refreshed by running this binary.
+//! committed copies, so an intentional protocol change fails the build until
+//! these are refreshed by running this binary.
 //!
 //! Model-free: pure deterministic codegen, no network and no model.
 //!
@@ -25,8 +26,7 @@
 //!
 //! # One writer per output
 //!
-//! This binary is the sole writer of both protocol and app `command_catalog.json`
-//! mirrors. The app scripts must not also write the FE catalog.
+//! This binary is the sole writer of the crate-owned protocol artifacts.
 
 use std::fs;
 use std::path::PathBuf;
@@ -35,22 +35,15 @@ use anyhow::{Context, Result};
 
 fn main() -> Result<()> {
     let crate_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    let workspace = crate_root
-        .parent()
-        .and_then(|p| p.parent())
-        .map(PathBuf::from)
-        .context("resolve workspace root from crate dir")?;
     let goldens_data = crate_root.join("generated");
     let goldens_source = crate_root.join("goldens");
     let fixtures = crate_root.join("fixtures");
-    let app_generated = workspace.join("app/src/generated");
     fs::create_dir_all(&goldens_data).context("create generated dir")?;
     fs::create_dir_all(&goldens_source).context("create goldens dir")?;
     fs::create_dir_all(&fixtures).context("create fixtures dir")?;
-    fs::create_dir_all(&app_generated).context("create app generated dir")?;
 
     let catalog_json = hide_protocol::sdk::command::command_catalog_json();
-    let artifacts: [(PathBuf, String); 6] = [
+    let artifacts: [(PathBuf, String); 5] = [
         (
             goldens_data.join("protocol.schema.json"),
             hide_protocol::sdk::schema::protocol_schema_json(),
@@ -71,8 +64,6 @@ fn main() -> Result<()> {
             fixtures.join("events.json"),
             hide_protocol::sdk::fixtures::events_json(),
         ),
-        // Sole writer of the FE command catalog mirror.
-        (app_generated.join("command_catalog.json"), catalog_json),
     ];
 
     for (path, contents) in &artifacts {

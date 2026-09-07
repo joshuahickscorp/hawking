@@ -13,54 +13,26 @@ from typing import Any, Callable, Dict, List, Optional, TextIO
 from .events import Event, EventBus
 from .mission import mission_state_path
 from .session_ledger import SessionLedger
-from .stream_render import event_phase, is_terminal_event, render_event
+from .stream_render import (
+    _PASTE_ECHO_LIMIT,
+    _TERMINAL_STATUSES,
+    event_phase,
+    is_terminal_event,
+    render_event,
+    sanitize_output,
+    status_word,
+    summarize_paste,
+)
 
-_THINK_RE = re.compile(r"<think>.*?</think>", re.DOTALL)
-_REASONING_RE = re.compile(r"reasoning_content\s*[:=].*?(?=\n\n|$)", re.DOTALL)
-_RAW_PARENT_RE = re.compile(r"RAW PARENT", re.IGNORECASE)
-_TOOL_JSON_RE = re.compile(r"\{\s*\"tool\"\s*:.*?\}", re.DOTALL)
-_HTTP_RE = re.compile(r"HTTP/[0-9.]+\s+[0-9]{3}", re.MULTILINE)
 _ANSI_RE = re.compile(r"\x1b\[[0-9;?]*[ -/]*[@-~]")
 
 # The frame is measured in terminal COLUMNS, never in len(): the rows carry
 # box-drawing characters, and model output carries CJK and emoji, which occupy
 # two columns each. Counting code points is what made every row a different
 # width and left the right border ragged.
-# A pasted ultragoal is tens of thousands of characters. Echoed verbatim it
-# wraps to thousands of frame rows, buries every other line of the session, and
-# is re-rendered on EVERY turn because the transcript keeps the last 20 entries.
-# Above this many characters the transcript shows a receipt for the paste, not
-# the paste. The full text still reaches the controller untouched.
-_PASTE_ECHO_LIMIT = 600
 _MIN_WIDTH = 40
 _MAX_WIDTH = 100
 _FALLBACK_WIDTH = 80
-
-
-def sanitize_output(text: str) -> str:
-    text = _THINK_RE.sub("", text)
-    text = _REASONING_RE.sub("", text)
-    text = _RAW_PARENT_RE.sub("", text)
-    text = _TOOL_JSON_RE.sub("", text)
-    text = _HTTP_RE.sub("", text)
-    return text.strip()
-
-
-def summarize_paste(text: str, limit: int = _PASTE_ECHO_LIMIT) -> str:
-    """Render a large input as a receipt instead of echoing it.
-
-    Returns `text` unchanged when it is small enough to read in the frame.
-    """
-    body = text or ""
-    if len(body) <= limit:
-        return body
-    lines = body.splitlines() or [""]
-    head = " ".join(lines[0].split())
-    if len(head) > 72:
-        head = head[:71].rstrip() + "…"
-    return (
-        f"[pasted text, {len(body):,} chars, {len(lines):,} lines] {head}"
-    )
 
 
 def _char_width(ch: str) -> int:
@@ -128,36 +100,10 @@ def _rows(text: str, width: int) -> List[str]:
     return out
 
 
-_STATUS_ALIASES = {
-    "thinking": "thinking",
-    "model": "thinking",
-    "model_call": "thinking",
-    "working": "working",
-    "evidence": "evidence",
-    "gathering": "evidence",
-    "evidence_gathering": "evidence",
-    "compiling": "compiling",
-    "validating": "validating",
-    "mutating": "mutating",
-    "idle": "idle",
-}
-_STATUS_WORD_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$")
-_TERMINAL_STATUSES = {"error", "failed", "cancelled", "unverified"}
 # Braille dots, Claude-Code-style live spinner. Plain ASCII columns (width 1
 # each under _char_width, none are East-Asian-wide), so the \r-overwrite math
 # in _write_status_live needs no special case for them.
 _SPINNER_FRAMES = "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
-
-
-def _status_word(raw: Any) -> str:
-    """Map an event label to a short status word. Never pass through prose."""
-    text = str(raw or "").replace("…", "").strip()
-    key = text.lower().replace("-", "_").replace(" ", "_")
-    if key in _STATUS_ALIASES:
-        return _STATUS_ALIASES[key]
-    if text and _STATUS_WORD_RE.fullmatch(text):
-        return text
-    return "working"
 
 
 class TUI:
@@ -282,13 +228,13 @@ class TUI:
         return "\n".join(parts)
 
     def _set_phase(self, word: str) -> None:
-        self._phase = _status_word(word)
+        self._phase = status_word(word)
         self._phase_t0 = time.monotonic()
         self.status = self._format_status()
 
     def _format_status(self) -> str:
         # Never assembled from event text/content -- only the closed phase
-        # vocabulary (_status_word) and small counters land here. That is
+        # vocabulary (status_word) and small counters land here. That is
         # the whole chain-of-thought-leak boundary; see _on_event.
         word = self._phase or "idle"
         if word == "idle" or word in _TERMINAL_STATUSES:
@@ -573,7 +519,7 @@ class TUI:
             # fallback (no data["phase"]) lands flat on "thinking". TUI has
             # that state, so it keeps the richer fallback chain here rather
             # than losing it by calling through the pure function.
-            phase = _status_word(data.get("phase") or self._phase or "thinking")
+            phase = status_word(data.get("phase") or self._phase or "thinking")
             self._phase = phase
             elapsed = data.get("elapsed_s")
             if isinstance(elapsed, (int, float)):

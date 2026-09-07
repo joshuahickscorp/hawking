@@ -52,7 +52,10 @@ def main() -> int:
         deq = (q.astype(np.float32) * scale).reshape(x.shape[0], usable)
         aa = x[:, :usable].ravel(); bb = deq.ravel()
         cosine = float(np.dot(aa, bb) / (np.linalg.norm(aa) * np.linalg.norm(bb)))
-        candidates.append({"candidate": f"uniform_q{bits}_g{group}", "sample_cosine": cosine, "sample_mae": float(np.mean(np.abs(aa - bb))), "nominal_bpw": bits + 16 / group, "native_ready": False})
+        # Cosine is scale-invariant (a 0.01x-magnitude candidate still scores 1.0);
+        # rel_fro is the magnitude term the campaign's own scar says is missing.
+        rel_fro = float(np.linalg.norm(aa - bb) / np.linalg.norm(aa))
+        candidates.append({"candidate": f"uniform_q{bits}_g{group}", "sample_cosine": cosine, "sample_rel_fro": rel_fro, "sample_mae": float(np.mean(np.abs(aa - bb))), "nominal_bpw": bits + 16 / group, "native_ready": False})
     doc = {
         "schema": "hawking.flash.doctor_ngram_screen.v1", "status": "REAL_WEIGHT_STAGE_A_NGRAM_SCREEN", "model": "Qwen/Qwen3.8-Flash-Next", "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
         "source": {"root": str(root), "shards": len(names), "rows_read": len(rows), "row_width": int(x.shape[1]) if len(x) else 0, "sample": "first row of every ngram shard"},

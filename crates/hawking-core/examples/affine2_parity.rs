@@ -25,8 +25,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 mod macos {
     use half::f16;
     use hawking_core::model::qwen_complete_binary::{
-        affine_factor_matvec_f32, affine_factor_value, pack_affine_factor_group, wrap_affine_factor,
-        AffineFactorPacked, AFFINE_GROUP_SIZE, AFFINE_GROUP_SIZE_64,
+        affine_factor_matvec_f32, affine_factor_value, pack_affine_factor_group,
+        wrap_affine_factor, AffineFactorPacked, AFFINE_GROUP_SIZE, AFFINE_GROUP_SIZE_64,
     };
     use metal::{CompileOptions, Device, MTLResourceOptions, MTLSize};
     use std::env;
@@ -65,9 +65,7 @@ mod macos {
     }
 
     fn deterministic_input(cols: usize) -> Vec<f32> {
-        (0..cols)
-            .map(|i| (i % 17) as f32 * 0.125 - 1.0)
-            .collect()
+        (0..cols).map(|i| (i % 17) as f32 * 0.125 - 1.0).collect()
     }
 
     fn codes_as_u32(packed: &AffineFactorPacked) -> Vec<u32> {
@@ -253,9 +251,7 @@ mod macos {
         println!("mode: synthetic");
         println!("shape: [{}, {}]", packed.rows, packed.cols);
         println!("groups: {}", packed.groups);
-        println!(
-            "storage_bpw_body: {body_bpw:.1} (2-bit codes + f16 scale + f16 bias @ g{group})"
-        );
+        println!("storage_bpw_body: {body_bpw:.1} (2-bit codes + f16 scale + f16 bias @ g{group})");
         println!("kernel: affine2_group32_matvec (in-register dequant, no dense W on GEMV)");
         println!("kernel_geo: affine2_group32_matvec_geo_tpr64_tg128");
         println!("max_abs_diff: {:.6e}", max_abs_diff_w);

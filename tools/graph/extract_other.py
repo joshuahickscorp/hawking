@@ -998,12 +998,12 @@ def mark_runtime_hot(repo: Path, g: Graph, indexes: dict[str, Any]) -> None:
 
     seeds: set[str] = set()
 
-    # functions in hawking-bench / kernel_bench
+    # functions in the canonical hawking benchmark module / kernel_bench
     for nid, n in g.nodes.items():
         if n.type != "function":
             continue
         if n.path and (
-            n.path.startswith("crates/hawking-bench/")
+            n.path.startswith("crates/hawking/src/bench/")
             or "kernel_bench" in (n.path or "")
         ):
             n.attrs["runtime_hot"] = True

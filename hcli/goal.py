@@ -418,7 +418,7 @@ class GoalCompiler:
         a check that only asserts a named file EXISTS goes green on an empty
         file, and an unscoped repo-wide search goes green because some
         unrelated file among 15k already defines a same-named symbol -- which
-        `goal_compile.check_disk_satisfaction` would read as "already done"
+        a disk-satisfaction helper would read as "already done"
         and skip the work entirely.
         """
         symbols = self._claim_symbols(blob)
@@ -1175,6 +1175,19 @@ def _mentioned_and_known_files(
     hits: List[str] = []
     if known:
         known_set = set(known)
+        # An implementation packet must lead with the exact source bytes when
+        # the source is one of its declared files.  A test/spec snapshot can
+        # be useful context, but spending the whole evidence budget on it
+        # leaves a closed mutation lane inventing old_text anchors for the
+        # source it must actually edit.  Keep this narrowly tied to the
+        # source-backed implementation lane; other packets retain their
+        # authored ordering.
+        source_first = (
+            "hcli/engine.py"
+            if str(getattr(wu, "role", "") or "").lower() == "implementation"
+            and "hcli/engine.py" in known_set
+            else None
+        )
         for path in mentioned:
             if path in known_set:
                 hits.append(path)
@@ -1190,6 +1203,8 @@ def _mentioned_and_known_files(
         # compiled ABOUT a file it could not show. Re-mentioned files stay
         # FIRST, so they are the ones that survive; the goal's remaining files
         # follow, and the packet char cap below trims from the tail.
+        if source_first:
+            hits = [source_first, *hits]
         hits.extend(known)
         return tuple(dict.fromkeys(hits))
     return tuple(dict.fromkeys(mentioned))
@@ -1329,6 +1344,9 @@ def _workunit_block(
         f"WORKUNIT: {wu.id}",
         f"ROLE: {wu.role}",
         f"OBJECTIVE: {_sanitize_goal_header(description, root_goal)}",
+        "NEXT ACTION CONTRACT: advance one useful verifiable action; keep content concise;",
+        "if using tools, emit at most four distinct calls needed for that action and no duplicates;",
+        "do not restate the evidence history or write a complete research essay.",
     ]
     if failure_context:
         try:

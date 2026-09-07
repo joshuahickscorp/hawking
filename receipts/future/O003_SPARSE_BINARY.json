@@ -1,0 +1,56 @@
+{
+ "specimen": "O003",
+ "date": "2026-09-06",
+ "class": "SPARSE_BINARY: keep the top `density` of weights per group by |w|, zero the rest, binarise survivors with a per-group scale. Stored as index+sign per survivor plus one fp16 scale per group: density*(log2(group)+1) + 16/group bits per weight. The ONLY family measured in this campaign that can go below one bit per weight.",
+ "arms": [
+  {
+   "spec": "sparse0.5-g128",
+   "density_actual": 0.5013,
+   "complete_ebpw": 4.0596,
+   "ppl": 6.3728,
+   "median_4gram": 0.6129,
+   "worst_max_run": 2,
+   "cosine": 0.8984,
+   "passes": false
+  },
+  {
+   "spec": "sparse0.25-g128",
+   "density_actual": 0.2511,
+   "complete_ebpw": 2.304,
+   "ppl": 11.4773,
+   "median_4gram": 0.9333,
+   "worst_max_run": 18,
+   "cosine": 0.8224,
+   "passes": false
+  },
+  {
+   "spec": "sparse0.1-g128",
+   "density_actual": 0.1026,
+   "complete_ebpw": 1.2617,
+   "ppl": 21.1733,
+   "median_4gram": 0.9892,
+   "worst_max_run": 96,
+   "cosine": 0.654,
+   "passes": false
+  },
+  {
+   "spec": "sparse0.05-g128",
+   "density_actual": 0.0474,
+   "complete_ebpw": 0.8744,
+   "ppl": 41.3378,
+   "median_4gram": 0.9892,
+   "worst_max_run": 96,
+   "cosine": 0.5086,
+   "passes": false
+  }
+ ],
+ "HEADLINE_the_target_is_BYTE_REACHABLE": "sparse0.05-g128 measures 0.8744 complete EBPW -- BELOW the 1.0 target, and the first time any representation in this campaign has crossed it. Its perplexity is 41.34 against a gate of 3.617, its median 4-gram repetition is 0.9892 against 0.0538, and it emits 96 identical tokens in a row. The bytes are reachable. Nothing that survives is.",
+ "SPARSITY_IS_DOMINATED_BY_QUANTISATION": "At ~4 EBPW: sparse0.5 ppl 6.373 vs affine q4-g64 ppl 3.044 (which PASSES). At ~2.3-2.4: sparse0.25 ppl 11.477 vs affine q2-g128 ppl 4.085. Magnitude pruning at 50% density already costs more capability than 3-bit quantisation of everything. Sparsity extends the BYTE frontier below binary but is dominated on capability everywhere the two overlap.",
+ "the_cosine_collapse_is_monotone_here": "0.8984 -> 0.8224 -> 0.6540 -> 0.5086 as density falls. Unlike the calibration and residual results, cosine tracks capability cleanly WITHIN this class -- which is consistent with it being a coarse cross-class screen that fails as a fine within-class ordering.",
+ "WHAT_THIS_SETTLES_FOR_G010": "Eight representation classes have now been measured on O003: affine, outlier-split, binary, pooled-calibrated binary, per-expert-calibrated binary, residual binary, sparse binary, and the bf16 source. The <=1.0 target is byte-reachable (0.8744 measured) and capability-unreachable by every one of them. The capability-preserving floor stands at 3.2831 EBPW, 3.8x the target.",
+ "CAVEATS": [
+  "Magnitude pruning, one-shot, no retraining or error feedback. Sparse methods that recover accuracy normally require fine-tuning, which is Odyssey II work and was not done.",
+  "No sparse kernel exists, so no TPS; the arms reconstruct to dense bf16.",
+  "Index cost assumes log2(group) bits per survivor with no entropy coding of the index stream."
+ ]
+}

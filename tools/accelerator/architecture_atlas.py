@@ -786,7 +786,10 @@ def build_atlas(*, repo_root: str | Path | None = None) -> dict[str, Any]:
         "receipts/headless/FLASH_NEXT_FPGA_ORGAN_MAP.json",
     ]
     evidence_inputs = [
-        {"path": str(root / relative), "present": (root / relative).is_file()}
+        # Keep the generated artifact portable across worktrees. Absolute
+        # checkout paths made an otherwise identical atlas fingerprint stale
+        # whenever the repository moved or was inspected from a worktree.
+        {"path": relative, "present": (root / relative).is_file()}
         for relative in artifact_inputs
     ]
     body: dict[str, Any] = {

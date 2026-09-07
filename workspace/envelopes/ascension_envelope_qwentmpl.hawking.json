@@ -1,0 +1,27 @@
+{
+ "runtime": "hawking-native",
+ "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+ "binary": "/Users/scammermike/Downloads/hawking/.worktrees/ascension/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
+ "resident_binary": "/Users/scammermike/Downloads/hawking/.worktrees/ascension/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+ "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json",
+ "max_seq_len": 9728,
+ "generation": {
+  "max_new_tokens": 2048,
+  "temperature": 0.0,
+  "top_k": 1,
+  "top_p": 1.0,
+  "do_sample": false,
+  "enable_thinking": false
+ },
+ "resident_identity": "sealed-3.14",
+ "mode": "auto",
+ "family": "qwen3.8",
+ "architecture": "unknown",
+ "param_class": "?B",
+ "quantisation": "unknown",
+ "prompt_contract": {
+  "renderer": "qwen-chat-template-or-closed-think-fallback",
+  "fallback_template": "qwen_closed_think",
+  "token_count_authority": "native-resident"
+ }
+}

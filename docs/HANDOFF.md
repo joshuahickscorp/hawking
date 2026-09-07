@@ -1,5 +1,15 @@
 # HCLI handoff — 2026-09-02
 
+## Current Phase III disposition — 2026-09-04
+
+HCLI is the current product surface. The Rust `hcli` binary in
+`crates/hide-backend` is the consolidated HIDE backend authority, while Python
+`hcli` remains the orchestration/resident skin where Python has comparative
+advantage. The obsolete visual frontend, `hide-serve` localhost transport, and
+`hide-acp` editor server are removed from this product branch. They remain
+recoverable through Git history and must be rebuilt only behind a hardened VMCP
+boundary; no visual work is required for the current phase.
+
 ## Where this stands
 
 The daemon stays alive perfectly and has never completed a single unit of work.
@@ -67,12 +77,12 @@ than deleting it — a terminal mission is still the evidence for why the previo
 run ended.
 
 ```bash
-hcli resident replace --goal-file sovereign-goal.txt --interval-s 30
+hcli resident replace --goal-file civilization/sovereign-goal.txt --interval-s 30
 hcli resident watch
 ```
 
 `--goal-file` did not exist when this line was first written, and
-`sovereign-goal.txt` was a 2810-char variant with no G001-G015 in it, so the
+`civilization/sovereign-goal.txt` was a 2810-char variant with no G001-G015 in it, so the
 documented command both failed to parse and would have dropped the whole
 obligation ledger if it had run. Both are fixed: the flag is real and the file is
 the live 5444-char goal. `hcli/test_sovereign_goal_file.py` fails if either
@@ -208,7 +218,7 @@ audit and the written plan are missing.
 | The system prompt's `answer` and `mutation` examples omitted `tool_calls`, which the schema **requires** — a model copying what it was shown was rejected every attempt. The `op` example was a `a\|b\|c` placeholder, also invalid | `engine.py` `_SYSTEM_PROMPT` | `hcli/test_system_prompt_matches_schema.py` (5) |
 | `structured_output_probe.py` held a stale hand-copy of the schema with **no `tool_calls` at all** — the instrument understated the failure it measures. It now imports the live values | `tools/headless/structured_output_probe.py` | same |
 | A structured-output rejection now carries the reply it rejected. Every prior receipt said "response is not a JSON object" and none said what the reply was | `engine.py` `_degraded_structured_record` | `hcli/test_rejected_reply_is_in_the_receipt.py` (4) |
-| `--goal-file` did not exist and `sovereign-goal.txt` was missing G001-G015 | `resident.py` `_add_goal_arguments`, `sovereign-goal.txt` | `hcli/test_sovereign_goal_file.py` (18) |
+| `--goal-file` did not exist and `civilization/sovereign-goal.txt` was missing G001-G015 | `resident.py` `_add_goal_arguments`, `civilization/sovereign-goal.txt` | `hcli/test_sovereign_goal_file.py` (18) |
 | The recovery gate's fixture child looped `while True` under a comment calling it bounded; 10 orphans were alive at PPID 1, one per suite run | `agentos/recovery.py` | `hcli/test_recovery_fixture_does_not_leak.py` (2, mutation-checked) |
 
 Gates-excluded baseline is now **686 passed, 1 skipped**. The handoff's 637 and
@@ -254,9 +264,9 @@ real hardware. A receipt must never claim a capability that did not act.
 dependency was already gone and audited; the name and the framing were not.
 Both are now.
 
-- 65 test files moved to `hcli/tests/`; bootstrap history to `tools/hcli/bootstrap/`
-  with a README saying why its contents still read "haider" (a snapshot named for
-  a file that really was called that is a record).
+- 65 test files moved to `hcli/tests/`; the dated bootstrap prose was compressed
+  into the Event Horizon archive note after its implementation history was
+  superseded.
 - `tools/haider/aider_patches/` held a VERBATIM copy of upstream aider's
   `CoderPrompts` plus a patch. Nothing read it. Deleted.
 - `HAIDER_SYSTEM_PROMPT.txt` ("You are HAIDER, the bootstrap form of HCLI") had
@@ -268,12 +278,11 @@ Both are now.
 
 Three findings that were not renames:
 
-1. **`hide_backend::haider` has never compiled.** `mod haider` was never in
-   lib.rs, so the module, its binary and its integration test -- 2823 lines --
-   were in no build, and `cargo build -p hide-backend` has been failing on that
-   binary before and after this change. Declaring it yields 14 compile errors.
-   The library builds clean. Documented in lib.rs. Adopt or delete is a
-   separate call, now with evidence.
+1. **The former `hide_backend::haider` scaffold never compiled.** `mod haider`
+   was never in lib.rs, so the module, its binary, and its integration test were
+   in no build. Declaring it exposed 14 compile errors. Phase III removed that
+   historical scaffold after preserving this finding; the declared backend
+   surface is now the only Rust HCLI owner.
 2. **`tools/headless/conftest.py` would have skipped everything.** It gated on
    `tools/haider/hcli` existing; after the move that is permanently false and
    every hcli-importing module below it would have been skipped silently. It

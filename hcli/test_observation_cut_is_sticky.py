@@ -49,6 +49,13 @@ def _shared_prefix(a: str, b: str) -> int:
     return n
 
 
+def test_a_new_goal_starts_with_a_fresh_observation_cut(tmp_path):
+    eng = _engine(tmp_path)
+    eng._observation_floor = 7
+    eng._reset_evidence_efficiency()
+    assert eng._observation_floor == 0
+
+
 def _run(tmp_path, monkeypatch, turns=24, chars=4000):
     """Drive the reducer the way the agent loop does: append, then rebuild.
 

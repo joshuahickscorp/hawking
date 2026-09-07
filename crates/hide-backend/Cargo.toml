@@ -6,7 +6,7 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 authors.workspace = true
-description = "Backend composition and connector facade for HIDE"
+description = "HCLI backend composition and control-plane host for HIDE"
 
 [features]
 # TQ: read a `.tq` (strand v2) artifact for a measured effective-context multiplier.

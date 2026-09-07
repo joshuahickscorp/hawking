@@ -428,7 +428,12 @@ mod tests {
         assert_ne!(caps.total_memory_bytes, FIXED_FAKE_MEMORY_BYTES);
         #[cfg(any(target_os = "macos", target_os = "linux"))]
         {
-            assert!(caps.total_memory_bytes > FIXED_FAKE_MEMORY_BYTES);
+            // Not "> 32 GiB": a real machine may legitimately have less, and
+            // hosted CI runners have 14 GB. The claim under test is that the
+            // probe read the OS rather than returning the fixed placeholder,
+            // which assert_ne! above already establishes. This only rules out a
+            // nonsense reading.
+            assert!(caps.total_memory_bytes > 1024 * 1024 * 1024);
             assert!(caps.physical_cores >= 1);
             assert!(caps.logical_cores >= caps.physical_cores);
         }

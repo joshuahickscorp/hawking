@@ -31,6 +31,27 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 PROTOCOL_SCHEMA = "hawking.native.resident.v1"
 QWEN38_PROTOCOL_SCHEMA = "hawking.qwen38.resident.v1"
 
+
+def _boundary_trace(event: str, **fields: Any) -> None:
+    """Append opt-in cross-process boundary telemetry without touching payloads."""
+    destination = os.environ.get("HCLI_BOUNDARY_TRACE")
+    if not destination:
+        return
+    record = {
+        "component": "hcli.python",
+        "event": str(event),
+        "pid": os.getpid(),
+        "wall_ns": time.time_ns(),
+        "monotonic_ns": time.monotonic_ns(),
+    }
+    record.update({str(key): _safe(value) for key, value in fields.items()})
+    try:
+        with open(destination, "a", encoding="utf-8") as handle:
+            handle.write(json.dumps(record, separators=(",", ":")) + "\n")
+    except OSError:
+        # Telemetry must never change the model-call result.
+        return
+
 REQUIRED_FUSION_ENV: Dict[str, str] = {
     "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
     "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
@@ -948,6 +969,7 @@ class ResidentProcess:
                     for line in stream:
                         self._lines.put(line.rstrip("\r\n"))
             finally:
+                _boundary_trace("pipe_stdout_eof", resident_pid=process.pid)
                 self._lines.put(None)
 
         self._reader = threading.Thread(
@@ -1011,8 +1033,20 @@ class ResidentProcess:
             try:
                 if self.process is None or self.process.stdin is None:
                     raise HawkingNativeProtocolError("resident stdin is unavailable")
-                self.process.stdin.write(json.dumps(body, separators=(",", ":")) + "\n")
+                encoded = json.dumps(body, separators=(",", ":")) + "\n"
+                _boundary_trace(
+                    "resident_request_write_begin",
+                    request_id=request_id,
+                    request_bytes=len(encoded.encode("utf-8")),
+                    max_new_tokens=body.get("max_new_tokens"),
+                )
+                self.process.stdin.write(encoded)
                 self.process.stdin.flush()
+                _boundary_trace(
+                    "request_submitted",
+                    request_id=request_id,
+                    request_bytes=len(encoded.encode("utf-8")),
+                )
             except (BrokenPipeError, OSError) as exc:
                 raise HawkingNativeProtocolError(
                     self._dead_message(f"resident write failed: {exc}")
@@ -1033,6 +1067,12 @@ class ResidentProcess:
                         self._dead_message("resident closed stdout")
                     )
                 response = self._parse_line(item)
+                _boundary_trace(
+                    "hcli_parent_receive",
+                    request_id=response.get("id"),
+                    response_bytes=len(item.encode("utf-8")),
+                    response_status=response.get("status"),
+                )
                 response_id = response.get("id")
                 if response_id == request_id:
                     return response
@@ -1444,6 +1484,11 @@ class HawkingNativeConnector:
             # distinguish "reuse worked" from "the prompt was shorter".
             "prefix_reused_tokens": body.get("prefix_reused_tokens"),
             "prefill_tokens_stepped": body.get("prefill_tokens_stepped"),
+            "prefill_step_count": body.get("prefill_step_count"),
+            "resident_context_tokens_before": body.get("resident_context_tokens_before"),
+            "shared_prefix_tokens": body.get("shared_prefix_tokens"),
+            "checkpoint_missed": body.get("checkpoint_missed"),
+            "checkpoint_restored_tokens": body.get("checkpoint_restored_tokens"),
             # cold / session_append / checkpoint_restore. Which path ran is a
             # fact the resident knows and nothing else can recover.
             "prefix_source": body.get("prefix_source"),
@@ -1575,6 +1620,17 @@ class HawkingNativeConnector:
             and response_format.get("type") == "json_object"
         ):
             request["grammar"] = "json"
+        _boundary_trace(
+            "request_constructed",
+            request_id=request_id,
+            prompt_tokens=prompt.prompt_tokens,
+            prompt_sha256=hashlib.sha256(prompt.text.encode("utf-8")).hexdigest()[:16],
+            rendered_prompt_chars=len(prompt.text),
+            max_new_tokens=max_new_tokens,
+            max_seq_len=max_seq_len,
+            grammar=request.get("grammar"),
+            mode=mode,
+        )
         started = time.perf_counter()
         try:
             body = self.resident.request(request, limit)
@@ -1593,6 +1649,25 @@ class HawkingNativeConnector:
         wall_s = time.perf_counter() - started
         if body.get("status") == "error":
             raise HawkingNativeError(str(body.get("error") or "resident request failed"))
+        _boundary_trace(
+            "resident_response_received",
+            request_id=body.get("id") or request_id,
+            response_status=body.get("status"),
+            generated_tokens=len(body.get("new_token_ids") or []),
+            prompt_tokens=body.get("prompt_tokens"),
+            prefix_reused_tokens=body.get("prefix_reused_tokens"),
+            prefill_tokens_stepped=body.get("prefill_tokens_stepped"),
+            prefill_step_count=body.get("prefill_step_count"),
+            prefix_source=body.get("prefix_source"),
+            resident_context_tokens_before=body.get("resident_context_tokens_before"),
+            shared_prefix_tokens=body.get("shared_prefix_tokens"),
+            checkpoint_missed=body.get("checkpoint_missed"),
+            checkpoint_restored_tokens=body.get("checkpoint_restored_tokens"),
+            stop_reason=body.get("stop_reason"),
+            native_wall_ns=body.get("wall_ns"),
+            prefill_wall_ns=body.get("prefill_wall_ns"),
+            decode_wall_ns=body.get("decode_wall_ns"),
+        )
         return self._native_body_to_openai(
             body,
             config=self.config,

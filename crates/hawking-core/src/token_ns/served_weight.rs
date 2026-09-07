@@ -328,7 +328,9 @@ pub fn qwen38_geometry() -> ActiveWeightGeometry {
                 how: "dense model reads every weight except the embedding table".into(),
             },
         ],
-        derivation: "Dense Qwen3.8: MLP + linear-attn GEMVs + GQA GEMVs + lm_head. Embed table excluded.".into(),
+        derivation:
+            "Dense Qwen3.8: MLP + linear-attn GEMVs + GQA GEMVs + lm_head. Embed table excluded."
+                .into(),
         matches_physical_floor_q80: None,
     }
 }
@@ -438,10 +440,9 @@ impl ServedWeightMetrics {
                 (None, None, None, None)
             } else {
                 let ps_bit = token_ns as f64 * 1.0e3 / bits as f64;
-                let floor = bytes_moved_per_token as f64
-                    / M3_ULTRA_96GB_PEAK_BYTES_PER_S
-                    / w as f64
-                    * 1.0e15;
+                let floor =
+                    bytes_moved_per_token as f64 / M3_ULTRA_96GB_PEAK_BYTES_PER_S / w as f64
+                        * 1.0e15;
                 let dist = if floor > 0.0 {
                     Some(fs_per_weight_served / floor)
                 } else {

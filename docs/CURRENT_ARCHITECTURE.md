@@ -1,72 +1,144 @@
 <!-- DOC_STATUS: CURRENT -->
-# CURRENT ARCHITECTURE
+# Current architecture
 
-Checked against `receipts/headless/CODE_GRAPH.json` (schema `hawking.headless.code_graph.v1`, graph `git_head` `cba2bb657`) and the HEAD tree `fef695d26`. Where this document and the graph disagree, the graph wins for the snapshot it recorded; the disagreement is in `receipts/headless/ARCHITECTURE_CANON.json`. This file describes what **is** at HEAD, not what the graph still names.
+Updated 2026-09-04 on the Event Horizon refactor branch. This document is the
+human-readable architecture source of truth. Census files, capability graphs,
+and receipts are point-in-time evidence; they may describe an older commit and
+must not be treated as a second architecture map.
 
-## Control plane
+## Operating shape
 
-One installed package: **`hcli`**, physical path **`hcli/`**, `pyproject.toml` name `hcli`, console scripts `hcli` and `jhcli` → `hcli.cli:main`. `python3 -m hcli` is the product entry. `import tools.haider.hcli` raises `ImportError` -- there is no second package and no `tools/haider` at all. Incident F24 (one file, two dotted names, two class objects) is locked by `hcli/tests/test_module_identity.py`, which keeps the fossil dotted name on purpose so a mechanical rename cannot delete the thing it guards against.
+```text
+model/specimen metadata ──┐
+                          v
+                      HCLI ── Python AgentOS control plane + Rust hcli backend,
+                          │  typed tools, work units, gates, missions, receipts
+                          v
+                hawking-core / hawking / hawking-serve
+                          │
+                 CPU reference + Apple Metal runtime
+```
 
-Tests live at `hcli/tests/`. The bootstrap-era fossils (`tools/hcli/bootstrap/`) are a dated record, disconnected from the control plane. `research/lab/hcli/` is a different product.
+HCLI is the single product/control-plane name. Python owns the comparative-
+advantage orchestration and resident supervision; the Rust `hcli` binary in
+`hide-backend` owns the consolidated HIDE backend, durable backend protocol,
+tools, sessions, and runtime-facing composition. Rust also owns model execution
+and serving. A receipt or a plan never raises the capability ceiling of an
+unmeasured artifact.
 
-The graph still inventories `hcli/*.py` as `hcli_product` (33 files) -- a stale path; the graph has not been regenerated since the move. Those 33 basenames exist at `hcli/` on HEAD. The graph does not list `hcli/paths.py`, `hcli/persist.py`, or the ownership packages `hcli.agentos`, `hcli.doctor`, `hcli.gravity`, `hcli.vmcp`, `hcli.genomes`.
+## Ownership map
 
-## Ownership (importable, not comments)
-
-| Plane | Means | Where a program finds it |
+| Concern | Canonical home | Boundary |
 |---|---|---|
-| **HCLI** | Command surface, UI, headless entry, status rendering | `hcli.{cli,app,commands,tui,controller,events,workspace,grok_bridge,report_compiler}` |
-| **AgentOS** | Goal, WorkUnit DAG, scheduler, repair, mutation, verifier orchestration, steering | `hcli.agentos` re-exports the same class objects as `hcli.{goal,workunit,scheduler,mission,ledger,steering,mutation,verifier_pipeline,dag_store,executors,resources,index}`. Files are not nested under `hcli/agentos/` (that would recreate F24). |
-| **Runtime** | Execution, sessions, context, backends | `hcli.{runtime,engine,backends,session,context,context_budget,models,machine,max_policy,config}`. `hcli/runtime.py` is the module; a `hcli/runtime/` package would shadow it. |
-| **Doctor** | Measures and prescribes | Ownership marker `hcli.doctor`; instruments stay `tools/doctor_seal.py`, `tools/gravity_doctor_*.py` (`nos_pipeline` stage 3). |
-| **Gravity** | Search and compile | Ownership marker `hcli.gravity`; product stays `tools/gravity_*.py` plus hawking crates. |
-| **VMCP** | Sensory evidence | Ownership marker `hcli.vmcp`; product is the `visionmcp/` package. |
-| **Genomes** | Learned science | `hcli.genomes` re-exports `hcli.machine.MachineGenome` (same class object). |
+| Product CLI and command ingress | Python `hcli.cli`, `hcli.commands`, `hcli.controller` plus Rust `hide-backend`/`hcli` | One HCLI product surface; Python is the orchestration skin and Rust is the backend authority |
+| AgentOS work and lifecycle | `hcli.agentos` plus canonical `hcli.goal`, `hcli.workunit`, `hcli.scheduler`, `hcli.mission`, `hcli.verifier_pipeline` | Scheduling/proposal is not verification |
+| Runtime and provider execution | `hcli.runtime`, `hcli.engine`, `hcli.backends`, `hcli.session`, `hcli.models` | Provider output is evidence only after the verifier accepts it |
+| Crash-safe persistence | `hcli.persist` | The shared text/bytes/JSON atomic writers; specialized compare-and-swap remains in its owner |
+| Doctor diagnosis | `tools.doctor.engine` and `tools.doctor.*` | Metadata/receipt diagnosis; no weight loading or hardware claim |
+| Gravity representation search | `hcli.gravity`, `hcli.agentos.flash_representation_experiment`, `tools/gravity_*.py`, Rust runtime crates | Search/compile is distinct from physical qualification |
+| Status verification | `tools.verify.status_causality` | A status may assert only what its actual probe establishes |
+| Roadmap and reachability | `tools.roadmap`, especially `tools.roadmap.capability_reachability` | Definitions/imports are not calls; receipts are citations, not callers |
+| Odyssey and ModelLake | `tools.odyssey`, including `tools.odyssey.modellake_promote` | Specimen lifecycle and promotion stay separate from Doctor/Gravity |
+| Sensory evidence | `hcli.vmcp` and the `visionmcp/` package | External VMCP surface; no duplicate sensory authority |
+| Machine/runtime identity | `hcli.machine`, `hcli.genomes`, `hcli.runtime_iface` | Identity and learned metadata do not authorize physical results |
+| Visual/IDE/ACP surface | Deferred; rebuild behind hardened VMCP | No active visual authority is shipped in this phase |
 
-## Rest of the tree (not the control plane)
+`hcli.agentos` is a public namespace and ownership surface; it is not a second
+copy of the core lifecycle classes. Goal compilation, WorkUnit identity,
+Mission state, and verifier orchestration each retain their established
+canonical modules.
 
-- **`hawking-*` crates** — Metal inference engine, GGUF/Gravity loaders, serve/bench/speculate. Default `cargo build` surface.
-- **`hide-*` crates** — HIDE agent IDE. Workspace members, not default-members. `hide-backend` talks to `hawking serve` over HTTP.
-- **`research/lab/`** — campaign governance (`lab.rules`, `lab.receipts`, `lab.science_registry`). Out of the code-graph census.
-- **`tools/headless/`** — harnesses and headless tests. Census root of the graph, not a product import of `hcli`.
-- **`workspace/docs/reference/ARCHITECTURE.md`** — HISTORICAL (Rust three-layer hawking binary). Outside `docs/`; not rewritten.
+`tools/future/` is now a small retained set of call-path sidecars, not a second
+product authority. The uncalled producer/test farm was removed; its fixtures
+and receipts remain available for audit and reproducibility. The retained
+scientific metabolism and resident-supervisor records use explicit sidecar
+names so they cannot be mistaken for `hcli.workunit.WorkUnit` or the live
+resident control loop. The dated `tools/hcli/bootstrap/` notes were retired;
+their disposition is recorded in
+`workspace/docs/plans/ASCENSION_PLAN_ARCHIVE.md`.
 
-## Graph vs HEAD (graph wins for its snapshot)
+## Rust workspace boundary
 
-Graph `git_head` `cba2bb657` is an ancestor of HEAD `fef695d26`. G026 (`a76efc875`) landed between them.
+The default build surface is the Hawking inference/serving workspace plus its
+context, index, orchestration, research, event, adapter, and bake tools. HCLI
+backend/core/protocol crates are workspace members but are outside
+`default-members`. `hawking-serve` serves the runtime; Rust `hcli` composes the
+HIDE backend against it. The old visual `hide-serve` transport and ACP server
+are intentionally absent from the active workspace.
 
-| Graph fact | HEAD fact |
-|---|---|
-| Census roots were `tools/haider`, `tools/headless` | Now `hcli`, `tools/headless` |
-| Finding `dual_import_identity` severity high | Fossil name raises `ImportError` |
-| Import SCC `dag_store → max_policy → resources → workunit` | Broken by extracting `hcli.persist.atomic_write_json` |
-| 88-class `sys.path.insert` coupling | Fossil inserts deleted; remaining inserts are foreign packages / harnesses |
-| Product entrypoints once included `hcli/__main__.py` | Installed `hcli.__main__` / `hcli.cli:main` |
-| `hcli.ledger` ↔ `hcli.steering` import cycle | Still present; import-time safe (`TYPE_CHECKING` / function-level) |
+Cargo metadata currently shows six Hawking-to-HIDE edges through shared errors,
+IDs, blobs, and UI event types (`hawking-context`, `hawking-index`,
+`hawking-orch`, `hawking-research`, and `hawking-events`). They are documented
+debt, not silently reclassified as clean layering. Removing those edges needs a
+separate neutral-primitive/UI-vocabulary change and is outside the no-physical-
+optimization refactor lane.
 
-The graph is not rewritten. Successor evidence: `receipts/headless/NAMESPACE_MIGRATION.json`.
+The undeclared `crates/hide-backend/src/hcli/` tree, its `hcli-backend` wrapper,
+and its integration test were removed in Phase III. They had never built and
+were not a second runtime authority. The live Rust HCLI surface is the declared
+`hcli` binary plus its `hcli_bridge`, profile, research, source, and swarm
+modules. The previous frontend, `hide-serve`, and `hide-acp` are removed from
+the product branch; their replacement condition is a hardened VMCP boundary.
 
-## Production truth that still scrapes terminal prose
+## Deferred visual boundary
 
-`hcli.grok_bridge.parse_grok_status` parses `grok-run status --id` **human text** (`status: running (exit -)`). `GrokBridge.status()` and `extract_task_id()` take task identity and terminal state from stdout. Occupancy in `hcli.max_policy` is a process check, not this parser; `_scan_throttle` still reads task `stdout`/`stderr` for 429 text.
+The desktop/frontend and editor-facing HIDE layer is not a current product
+requirement. It was removed from this branch together with its dedicated
+localhost transport and ACP server so it cannot form a second command or state
+authority. Rebuild it only after VMCP is hardened, using the Rust HCLI backend
+and `hide-protocol` as the contract boundary.
 
-## Laws (machine-readable homes)
+## Authority rules
 
-Each law is resolved by a program loading a JSON receipt and/or importing a symbol. English is not the resolver. Full map: `receipts/headless/ARCHITECTURE_CANON.json` → `laws`.
+1. `hcli.workunit.WorkUnit` is the live WorkUnit identity. Scientific sidecar
+   records must use a distinct name when their fields are not the HCLI shape.
+2. `hcli.persist.atomic_write_text`, `atomic_write_bytes`, and
+   `atomic_write_json` own ordinary crash-safe writes. Compare-and-swap lineage
+   writes remain specialized and are not collapsed into last-writer-wins I/O.
+3. `tools.verify.status_causality` owns probe-to-status entailment. Historical
+   receipt schema strings remain readable; new executable callers use this path.
+4. `tools.roadmap.capability_reachability` owns static reachability analysis.
+   Its Rust parity binary is an accelerator for the same facts, not a second
+   semantic verdict.
+5. `tools.doctor.engine` owns Doctor diagnosis. `doctor.query` dispatches to it;
+   `gravity.experiment` dispatches to the bounded Flash representation runner
+   only when explicitly requested.
+6. `tools.odyssey.modellake_promote` owns ModelLake promotion policy. A sealed
+   specimen, registry entry, or benchmark receipt alone is not promotion.
+7. Physical performance claims require a protected window, live samples,
+   independent verification, negative controls, and reproducible provenance.
+   This refactor changes structure and callers only; it does not optimize a
+   kernel, acquire weights, or reinterpret a static result as measured speed.
 
-1. **tools know** — disk JSON is knowledge. Load `receipts/headless/MACHINE_GENOME.json` (`schema` `hawking.headless.machine_genome.v1`) or `hcli.machine.MachineGenome`. Do not scrape TUI text.
-2. **evidence promotes** — `hcli.verifier_pipeline.command_is_admissible`; `lab.rules.apply_governance`; receipt `AGENTOS_VERIFIER_AUTHORITY.json` `attacks_closed.self_promotion_from_prose`.
-3. **adversary attacks** — `python3 tools/headless/gate_adversary.py` → `NOETIC_GATE_ADVERSARY.json` (default REFUTED).
-4. **no-op proves causality** — `hcli.mutation` raises `NO_OP_MUTATION`; Doctor seal refuses without a control watched to fail; live conventional control is `CONVENTIONAL_CONTROL_SET.json`.
-5. **atomic truth** — `hcli.persist.atomic_write_json` (temp + `os.replace`); `MutationLock.acquire` via `os.link` of a fully-written temp.
-6. **candidate preservation** — `DIRTY_TREE_PRESERVATION.json`; `CODE_ENTROPY.json` `never_delete.receipts/`; `NOETIC_NEGATIVE_SCIENCE.json`.
-7. **content-fresh evidence** — `hcli.goal.assert_evidence_fresh` (size + `mtime_ns` + sha256); stale → `StaleEvidenceError`.
-8. **single writer** — `hcli.resources.MutationLock`; receipt `AGENTOS_SINGLE_WRITER.json` `result`.
-9. **focused context** — `hcli.goal.compile_worker_context`; workers get `ROOT_REF`, not the inlined root goal. Receipt `HCLI_WORKUNIT_FOCUSED_CONTEXT.json`.
-10. **MAX equilibrium** — `hcli.max_policy.load_equilibrium` / `.hcli/max-equilibrium.json`; measured rungs in `GROK_MAX_EQUILIBRIUM.json` (`useful_equilibrium`) and `QWEN_MAX_EQUILIBRIUM.json`. Occupancy = live `grok-run` processes.
-11. **historical science preservation** — `CODE_ENTROPY.json` `never_delete`; nomenclature `vestigial_means` (vestigial ≠ reclaimable); negative-science register.
-12. **Noetic ontology** — `NOETIC_ARCHAEOLOGY_INDEX.json` `classification_key` {RAN, CODE_ONLY, REFUTED, PROSE_ONLY}; surviving brands in `NOMENCLATURE_CENSUS.json`.
-13. **native operators** — `NOETIC_NATIVE_OPERATOR.json`: NATIVE vs ORACLE by `peak_temporary_materialization` vs parent-tensor shape.
-14. **no hidden information accounting** — `NOETIC_INFORMATION_ACCOUNTING.json` seven buckets + canary `completeness`.
-15. **routes as physical cost** — `NOETIC_ROUTE_LEDGER.json`; every route count is paired with parent-weight equivalents.
-16. **function-space fitting** — `FRACTIONAL_BIT_CANON.json` `survival_rule`; score `Y=X@W.T` on real X (`tools/gravity_function_space_rank.py`), not weight cosine.
+## State and evidence placement
+
+- `civilization/` holds roadmap and launch-goal state.
+- `receipts/` holds acceptance, provenance, and preserved historical evidence.
+  Sealed bytes are not rewritten merely to make names prettier.
+- `workspace/`, `.hcli/`, Cargo targets, Python caches, and campaign runtime
+  outputs are generated/local state and belong outside the source authority.
+- Model weights and external ModelLake payloads are local inputs, never source
+  files in this repository.
+
+## Entry points and verification
+
+```bash
+python3 -m hcli --help
+python3 -m hcli.agentos.resident --help
+python3 -m tools.doctor --selftest
+python3 -m tools.roadmap --help
+cargo run -p hide-backend --bin hcli -- --help
+cargo check --workspace
+python3 -m pytest
+```
+
+The default pytest target is the complete live `hcli/` package. Current
+acceptance and audit tests invoke retained sidecars directly; there is no
+separate uncalled `tools/future/` test harness.
+
+For isolated work, set `CARGO_TARGET_DIR`, `PYTHONPYCACHEPREFIX`, and the
+pytest cache directory to a temporary refactor-specific location. Compare
+before/after census counts, test results, Rust checks, CLI smoke, HCLI
+restart/resume, protected verifiers, capability-graph/roadmap checks, VMCP,
+ModelLake identity, NR/NX, and negative controls. A failure that predates the
+refactor remains classified as pre-existing until its cause changes.

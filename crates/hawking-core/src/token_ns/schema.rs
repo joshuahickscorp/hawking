@@ -195,10 +195,8 @@ impl ClosureReport {
             .filter(|s| s.counts_toward_closure())
             .map(|s| s.ns_per_token.round() as i128)
             .sum();
-        let naive_all_stage_sum_ns: i128 = stages
-            .iter()
-            .map(|s| s.ns_per_token.round() as i128)
-            .sum();
+        let naive_all_stage_sum_ns: i128 =
+            stages.iter().map(|s| s.ns_per_token.round() as i128).sum();
         let total = total_token_ns as i128;
         let residual_ns = total - sum_serial_stage_ns;
         let identity_holds = sum_serial_stage_ns + residual_ns == total;
@@ -207,8 +205,8 @@ impl ClosureReport {
         } else {
             residual_ns as f64 / total as f64
         };
-        let residual_within_limit = residual_ns >= 0
-            && residual_fraction.abs() <= residual_limit_fraction + f64::EPSILON;
+        let residual_within_limit =
+            residual_ns >= 0 && residual_fraction.abs() <= residual_limit_fraction + f64::EPSILON;
         let naive_overcount_ns = naive_all_stage_sum_ns - total;
         let failure = if !identity_holds {
             Some(format!(
@@ -287,13 +285,12 @@ pub struct TokenNsDocument {
 
 impl TokenNsDocument {
     pub fn seal(mut self) -> Self {
-        self.stages
-            .sort_by(|a, b| {
-                b.ns_per_token
-                    .partial_cmp(&a.ns_per_token)
-                    .unwrap_or(std::cmp::Ordering::Equal)
-                    .then_with(|| a.substage.cmp(&b.substage))
-            });
+        self.stages.sort_by(|a, b| {
+            b.ns_per_token
+                .partial_cmp(&a.ns_per_token)
+                .unwrap_or(std::cmp::Ordering::Equal)
+                .then_with(|| a.substage.cmp(&b.substage))
+        });
         self.closure = ClosureReport::compute(
             self.totals.total_token_ns,
             &self.stages,
@@ -424,7 +421,11 @@ mod tests {
         let stages = vec![
             stage("a", 400.0, SerialOrOverlappable::Serial),
             stage("b", 500.0, SerialOrOverlappable::Serial),
-            stage("parallel", 9_000.0, SerialOrOverlappable::ParallelSumNotLatency),
+            stage(
+                "parallel",
+                9_000.0,
+                SerialOrOverlappable::ParallelSumNotLatency,
+            ),
         ];
         let c = ClosureReport::compute(1_000, &stages, 0.15);
         assert!(c.identity_holds);

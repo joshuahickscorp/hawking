@@ -17,11 +17,19 @@ fn run_metal_topk(logits: &[f32], n_experts: usize, top_k: usize) -> (Vec<u32>, 
     let weights_buf = ctx.new_buffer(top_k * std::mem::size_of::<f32>());
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
-        kernels::moe_topk_gate_tcb(&mut tcb, &logits_buf, &ids_buf, &weights_buf, n_experts, top_k)
-            .expect("moe_topk_gate_tcb encode");
+        kernels::moe_topk_gate_tcb(
+            &mut tcb,
+            &logits_buf,
+            &ids_buf,
+            &weights_buf,
+            n_experts,
+            top_k,
+        )
+        .expect("moe_topk_gate_tcb encode");
         tcb.commit_and_wait().expect("moe_topk_gate commit");
     }
-    let ids = unsafe { std::slice::from_raw_parts(ids_buf.contents() as *const u32, top_k).to_vec() };
+    let ids =
+        unsafe { std::slice::from_raw_parts(ids_buf.contents() as *const u32, top_k).to_vec() };
     let weights =
         unsafe { std::slice::from_raw_parts(weights_buf.contents() as *const f32, top_k).to_vec() };
     (ids, weights)
@@ -149,7 +157,10 @@ fn no_ties_randomish_matches_serial() {
     let mut sorted = logits.clone();
     sorted.sort_by(|a, b| a.partial_cmp(b).unwrap());
     for w in sorted.windows(2) {
-        assert!(w[0] < w[1], "fixture must be strictly increasing when sorted");
+        assert!(
+            w[0] < w[1],
+            "fixture must be strictly increasing when sorted"
+        );
     }
     assert_serial_parallel_match(&logits, n_experts, top_k, "no-ties-128x8");
 }

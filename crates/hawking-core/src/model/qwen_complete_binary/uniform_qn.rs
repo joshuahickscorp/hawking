@@ -77,7 +77,9 @@ pub fn parse_uniform_qn_header(
     bits: UniformQnBits,
 ) -> Result<CompleteBinaryHeader> {
     if payload.len() < COMPLETE_BINARY_HEADER_BYTES {
-        return Err(Error::Model("uniform Qn payload truncated at header".into()));
+        return Err(Error::Model(
+            "uniform Qn payload truncated at header".into(),
+        ));
     }
     if payload[..8] != bits.magic() {
         return Err(Error::Model(format!(
@@ -102,7 +104,9 @@ pub fn parse_uniform_qn_header(
     let element_u64 = read_u64(payload, 20)?;
     let reserved_tail = read_u32(payload, 28)?;
     if reserved != 0 || reserved_tail != 0 {
-        return Err(Error::Model("uniform Qn reserved fields must be zero".into()));
+        return Err(Error::Model(
+            "uniform Qn reserved fields must be zero".into(),
+        ));
     }
     if rank == 0 {
         return Err(Error::Model("uniform Qn rank must be positive".into()));
@@ -185,11 +189,12 @@ pub fn parse_uniform_qn_header(
 
 fn expected_qn_tensor_path(root: &Path, tensor_name: &str, bits: UniformQnBits) -> Result<PathBuf> {
     let tensors = root.join("tensors");
-    let metadata = fs::symlink_metadata(&tensors).map_err(|error| {
-        Error::Model(format!("uniform Qn tensors dir: {error}"))
-    })?;
+    let metadata = fs::symlink_metadata(&tensors)
+        .map_err(|error| Error::Model(format!("uniform Qn tensors dir: {error}")))?;
     if metadata.file_type().is_symlink() || !metadata.is_dir() {
-        return Err(Error::Model("uniform Qn tensors must be a real directory".into()));
+        return Err(Error::Model(
+            "uniform Qn tensors must be a real directory".into(),
+        ));
     }
     Ok(tensors.join(format!(
         "{}.{}",
@@ -210,7 +215,9 @@ fn validate_qn_tensor_row(
     require_safe_filename(source_shard, label)?;
     let source_shard_sha256 = required_sha256(row, "source_shard_sha256", label)?;
     let expected_source_hash = source.shard_hashes.get(source_shard).ok_or_else(|| {
-        Error::Model(format!("{label}: shard {source_shard:?} missing from receipt"))
+        Error::Model(format!(
+            "{label}: shard {source_shard:?} missing from receipt"
+        ))
     })?;
     if &source_shard_sha256 != expected_source_hash {
         return Err(Error::Model(format!(
@@ -316,8 +323,7 @@ fn admit_qwen30_uniform_qn_artifact_inner(
             "uniform Qn admission requires protected seals and revision".into(),
         ));
     }
-    let manifest_path =
-        canonical_regular_path(manifest_path.as_ref(), "uniform Qn manifest")?;
+    let manifest_path = canonical_regular_path(manifest_path.as_ref(), "uniform Qn manifest")?;
     let root = manifest_path
         .parent()
         .ok_or_else(|| Error::Model("uniform Qn manifest has no parent".into()))?;
@@ -330,7 +336,12 @@ fn admit_qwen30_uniform_qn_artifact_inner(
     if manifest_seal != admission.expected_manifest_seal_sha256 {
         return Err(Error::Model("uniform Qn manifest seal mismatch".into()));
     }
-    require_exact_string(manifest_object, "schema", bits.schema(), "uniform Qn manifest")?;
+    require_exact_string(
+        manifest_object,
+        "schema",
+        bits.schema(),
+        "uniform Qn manifest",
+    )?;
     require_exact_string(
         manifest_object,
         "status",
@@ -346,10 +357,8 @@ fn admit_qwen30_uniform_qn_artifact_inner(
         return Err(Error::Model("uniform Qn audit seal mismatch".into()));
     }
 
-    let terminal_path = canonical_regular_path(
-        &admission.expected_terminal_path,
-        "uniform Qn terminal",
-    )?;
+    let terminal_path =
+        canonical_regular_path(&admission.expected_terminal_path, "uniform Qn terminal")?;
     let terminal_raw = read_regular_file(&terminal_path, "uniform Qn terminal")?;
     let terminal = parse_json_no_duplicate_keys(&terminal_raw, "uniform Qn terminal")?;
     let terminal_seal = verify_sealed_document(&terminal, "uniform Qn terminal")?;
@@ -362,8 +371,7 @@ fn admit_qwen30_uniform_qn_artifact_inner(
         "uniform Qn revalidation",
     )?;
     let revalidation_raw = read_regular_file(&revalidation_path, "uniform Qn revalidation")?;
-    let revalidation =
-        parse_json_no_duplicate_keys(&revalidation_raw, "uniform Qn revalidation")?;
+    let revalidation = parse_json_no_duplicate_keys(&revalidation_raw, "uniform Qn revalidation")?;
     let revalidation_seal = verify_sealed_document(&revalidation, "uniform Qn revalidation")?;
     if revalidation_seal != admission.expected_revalidation_seal_sha256 {
         return Err(Error::Model("uniform Qn revalidation seal mismatch".into()));
@@ -396,13 +404,20 @@ fn admit_qwen30_uniform_qn_artifact_inner(
         &manifest_audit_seal,
     )?;
 
-    let representation =
-        required_object(manifest_object, "representation", "uniform Qn manifest")?;
-    require_exact_string(representation, "family", bits.family(), "uniform Qn representation")?;
+    let representation = required_object(manifest_object, "representation", "uniform Qn manifest")?;
+    require_exact_string(
+        representation,
+        "family",
+        bits.family(),
+        "uniform Qn representation",
+    )?;
     if required_u64(representation, "group_size", "uniform Qn representation")?
         != u64::try_from(UNIFORM_QN_GROUP_SIZE).unwrap()
-        || required_u64(representation, "bits_per_weight", "uniform Qn representation")?
-            != u64::from(bits.as_u32())
+        || required_u64(
+            representation,
+            "bits_per_weight",
+            "uniform Qn representation",
+        )? != u64::from(bits.as_u32())
     {
         return Err(Error::Model(
             "uniform Qn representation group/bits mismatch".into(),
@@ -420,7 +435,12 @@ fn admit_qwen30_uniform_qn_artifact_inner(
     let mut verified_payloads = BTreeMap::new();
     let (lanes, workers) = quality_payload_verification_lanes(rows);
     let mut handles: Vec<
-        thread::JoinHandle<Result<(BTreeMap<String, CompleteBinaryTensor>, BTreeMap<String, Arc<[u8]>>)>>,
+        thread::JoinHandle<
+            Result<(
+                BTreeMap<String, CompleteBinaryTensor>,
+                BTreeMap<String, Arc<[u8]>>,
+            )>,
+        >,
     > = Vec::with_capacity(workers);
     for lane in lanes {
         let lane_rows: Vec<Value> = lane.iter().map(|&i| rows[i].clone()).collect();
@@ -449,9 +469,10 @@ fn admit_qwen30_uniform_qn_artifact_inner(
             .join()
             .map_err(|_| Error::Model("uniform Qn worker panicked".into()))??;
         for (name, tensor) in local_tensors {
-            let payload = local_payloads.get(&name).cloned().ok_or_else(|| {
-                Error::Model("uniform Qn lane missing payload".into())
-            })?;
+            let payload = local_payloads
+                .get(&name)
+                .cloned()
+                .ok_or_else(|| Error::Model("uniform Qn lane missing payload".into()))?;
             if tensors.insert(name.clone(), tensor).is_some() {
                 return Err(Error::Model("uniform Qn duplicate tensor".into()));
             }
@@ -459,12 +480,9 @@ fn admit_qwen30_uniform_qn_artifact_inner(
         }
     }
     if tensors.keys().ne(source.weight_map.keys()) {
-        return Err(Error::Model(
-            "uniform Qn tensor set != source index".into(),
-        ));
+        return Err(Error::Model("uniform Qn tensor set != source index".into()));
     }
-    let (elements, payload_bytes) =
-        validate_ledger(manifest_object, &tensors, manifest_raw.len())?;
+    let (elements, payload_bytes) = validate_ledger(manifest_object, &tensors, manifest_raw.len())?;
     Ok(CompleteBinaryArtifact {
         model: QwenCompleteBinaryModel::Qwen30Coder,
         manifest_path,

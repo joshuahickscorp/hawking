@@ -47,6 +47,13 @@ _PERSISTED_EXTRAS = (
     "verification",
     "classification",
     "provider",
+    # Naming a tool is what routes a unit to the ToolRegistry instead of to
+    # cognition. Omitting these meant any dag.json round-trip silently demoted
+    # a typed-tool unit to cognition -- no tool, no arguments, no error. Same
+    # concern `provider` above already handles.
+    "tool",
+    "tool_arguments",
+    "author",
 )
 
 GrokLiveness = Callable[[str], Any]

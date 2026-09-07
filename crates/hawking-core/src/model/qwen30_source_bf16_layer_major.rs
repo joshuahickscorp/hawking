@@ -66,12 +66,7 @@ pub fn widen_bf16_mat(weight_le: &[u8], rows: usize, cols: usize) -> Result<Vec<
 }
 
 /// BF16-LE → f32 widen into a caller-owned buffer (avoids per-call alloc when reused).
-pub fn widen_bf16_into(
-    weight_le: &[u8],
-    rows: usize,
-    cols: usize,
-    out: &mut [f32],
-) -> Result<()> {
+pub fn widen_bf16_into(weight_le: &[u8], rows: usize, cols: usize, out: &mut [f32]) -> Result<()> {
     let n = rows
         .checked_mul(cols)
         .ok_or_else(|| model_err("widen_bf16_into size overflow"))?;
@@ -125,19 +120,16 @@ fn widen_bf16_slice(weight_le: &[u8], out: &mut [f32]) {
     let mut i = 0usize;
     while i + 8 <= n {
         let b = i * 2;
-        out[i] = f32::from_bits((u16::from_le_bytes([weight_le[b], weight_le[b + 1]]) as u32) << 16);
-        out[i + 1] = f32::from_bits(
-            (u16::from_le_bytes([weight_le[b + 2], weight_le[b + 3]]) as u32) << 16,
-        );
-        out[i + 2] = f32::from_bits(
-            (u16::from_le_bytes([weight_le[b + 4], weight_le[b + 5]]) as u32) << 16,
-        );
-        out[i + 3] = f32::from_bits(
-            (u16::from_le_bytes([weight_le[b + 6], weight_le[b + 7]]) as u32) << 16,
-        );
-        out[i + 4] = f32::from_bits(
-            (u16::from_le_bytes([weight_le[b + 8], weight_le[b + 9]]) as u32) << 16,
-        );
+        out[i] =
+            f32::from_bits((u16::from_le_bytes([weight_le[b], weight_le[b + 1]]) as u32) << 16);
+        out[i + 1] =
+            f32::from_bits((u16::from_le_bytes([weight_le[b + 2], weight_le[b + 3]]) as u32) << 16);
+        out[i + 2] =
+            f32::from_bits((u16::from_le_bytes([weight_le[b + 4], weight_le[b + 5]]) as u32) << 16);
+        out[i + 3] =
+            f32::from_bits((u16::from_le_bytes([weight_le[b + 6], weight_le[b + 7]]) as u32) << 16);
+        out[i + 4] =
+            f32::from_bits((u16::from_le_bytes([weight_le[b + 8], weight_le[b + 9]]) as u32) << 16);
         out[i + 5] = f32::from_bits(
             (u16::from_le_bytes([weight_le[b + 10], weight_le[b + 11]]) as u32) << 16,
         );
@@ -151,7 +143,8 @@ fn widen_bf16_slice(weight_le: &[u8], out: &mut [f32]) {
     }
     while i < n {
         let b = i * 2;
-        out[i] = f32::from_bits((u16::from_le_bytes([weight_le[b], weight_le[b + 1]]) as u32) << 16);
+        out[i] =
+            f32::from_bits((u16::from_le_bytes([weight_le[b], weight_le[b + 1]]) as u32) << 16);
         i += 1;
     }
 }
@@ -222,12 +215,7 @@ fn expert_batched_moe_compute(
 }
 
 #[inline]
-fn scatter_expert_down(
-    members: &[(usize, f32)],
-    down: &[f32],
-    h: usize,
-    moe_out: &mut [f32],
-) {
+fn scatter_expert_down(members: &[(usize, f32)], down: &[f32], h: usize, moe_out: &mut [f32]) {
     for (i, &(t, _)) in members.iter().enumerate() {
         let src = &down[i * h..(i + 1) * h];
         let dst = &mut moe_out[t * h..(t + 1) * h];
@@ -422,15 +410,7 @@ fn moe_all_experts_grouped_mps(
         }
 
         let mut gu_out = vec![0.0f32; sum_n * gu_rows];
-        gpu.gemm_x_wt_grouped_var_m(
-            &x_pack,
-            &w_gu,
-            &mut gu_out,
-            &counts,
-            &offsets,
-            gu_rows,
-            h,
-        )?;
+        gpu.gemm_x_wt_grouped_var_m(&x_pack, &w_gu, &mut gu_out, &counts, &offsets, gu_rows, h)?;
         drop(x_pack);
         drop(w_gu);
 
@@ -722,9 +702,7 @@ impl CaptureComputeBackend {
                 }
             }
             other => {
-                eprintln!(
-                    "warning: unknown HAWKING_CAPTURE_COMPUTE={other:?}; using host"
-                );
+                eprintln!("warning: unknown HAWKING_CAPTURE_COMPUTE={other:?}; using host");
                 Self::Host
             }
         }
@@ -1037,12 +1015,9 @@ fn mha_prefill_causal(
         for t in 0..seq_len {
             let qs = t * q_dim + h * head_dim;
             let ks = t * kv_dim + kv_h * head_dim;
-            q_h[t * head_dim..(t + 1) * head_dim]
-                .copy_from_slice(&q[qs..qs + head_dim]);
-            k_h[t * head_dim..(t + 1) * head_dim]
-                .copy_from_slice(&k[ks..ks + head_dim]);
-            v_h[t * head_dim..(t + 1) * head_dim]
-                .copy_from_slice(&v[ks..ks + head_dim]);
+            q_h[t * head_dim..(t + 1) * head_dim].copy_from_slice(&q[qs..qs + head_dim]);
+            k_h[t * head_dim..(t + 1) * head_dim].copy_from_slice(&k[ks..ks + head_dim]);
+            v_h[t * head_dim..(t + 1) * head_dim].copy_from_slice(&v[ks..ks + head_dim]);
         }
         // scores = Q @ Kᵀ   →  [seq, seq]
         // Using gemm_w_times_x with W=K (rows=seq, cols=head_dim), X=Q (n_batch=seq):
@@ -1139,7 +1114,13 @@ pub fn gemm_bf16(
 /// single-token decode path where weights are not reused enough to amortise a
 /// widen. Capture uses [`gemm_bf16`] / [`gemm_f32`] instead so each expert is
 /// widened once and multiplied against a token batch.
-pub fn gemv_bf16(weight_le: &[u8], rows: usize, cols: usize, x: &[f32], out: &mut [f32]) -> Result<()> {
+pub fn gemv_bf16(
+    weight_le: &[u8],
+    rows: usize,
+    cols: usize,
+    x: &[f32],
+    out: &mut [f32],
+) -> Result<()> {
     if x.len() != cols || out.len() != rows {
         return Err(model_err(format!(
             "gemv_bf16 geometry: x={} out={} rows={rows} cols={cols}",
@@ -1202,7 +1183,13 @@ pub fn gemv_bf16(weight_le: &[u8], rows: usize, cols: usize, x: &[f32], out: &mu
 }
 
 /// Row-major GEMV with f32 weights (after a one-shot BF16 widen of a layer tensor).
-pub fn gemv_f32_rows(w: &[f32], rows: usize, cols: usize, x: &[f32], out: &mut [f32]) -> Result<()> {
+pub fn gemv_f32_rows(
+    w: &[f32],
+    rows: usize,
+    cols: usize,
+    x: &[f32],
+    out: &mut [f32],
+) -> Result<()> {
     if x.len() != cols || out.len() != rows || w.len() < rows * cols {
         return Err(model_err(format!(
             "gemv_f32 geometry: w={} x={} out={} rows={rows} cols={cols}",
@@ -1215,13 +1202,12 @@ pub fn gemv_f32_rows(w: &[f32], rows: usize, cols: usize, x: &[f32], out: &mut [
 }
 
 #[derive(Clone, Debug)]
-struct TensorLoc {
+pub(crate) struct TensorLoc {
     shard: PathBuf,
     /// Absolute byte offset of tensor payload inside the shard file.
     data_offset: u64,
     nbytes: usize,
     shape: Vec<usize>,
-    dtype: String,
 }
 
 /// Index over the source BF16 safetensors shards. Opens shard headers once;
@@ -1254,7 +1240,10 @@ impl SourceBf16Index {
             let shard = shard_v
                 .as_str()
                 .ok_or_else(|| model_err(format!("weight_map entry {name} is not a string")))?;
-            by_shard.entry(shard.to_string()).or_default().push(name.clone());
+            by_shard
+                .entry(shard.to_string())
+                .or_default()
+                .push(name.clone());
         }
 
         let mut map = HashMap::new();
@@ -1275,7 +1264,9 @@ impl SourceBf16Index {
                 }
                 let (begin, end) = info.data_offsets;
                 if end < begin {
-                    return Err(model_err(format!("tensor {name} has inverted data_offsets")));
+                    return Err(model_err(format!(
+                        "tensor {name} has inverted data_offsets"
+                    )));
                 }
                 let nbytes = (end - begin) as usize;
                 map.insert(
@@ -1285,7 +1276,6 @@ impl SourceBf16Index {
                         data_offset: 8 + header_len + begin,
                         nbytes,
                         shape: info.shape.clone(),
-                        dtype: info.dtype.clone(),
                     },
                 );
             }
@@ -1301,7 +1291,7 @@ impl SourceBf16Index {
         self.map.len()
     }
 
-    pub fn require(&self, name: &str) -> Result<&TensorLoc> {
+    pub(crate) fn require(&self, name: &str) -> Result<&TensorLoc> {
         self.map
             .get(name)
             .ok_or_else(|| model_err(format!("source index lacks tensor {name}")))
@@ -1468,9 +1458,11 @@ impl SourceBf16Index {
         let row_bytes = QWEN30_HIDDEN * 2;
         let offset = loc
             .data_offset
-            .checked_add((token as u64).checked_mul(row_bytes as u64).ok_or_else(|| {
-                model_err("embed row offset overflow")
-            })?)
+            .checked_add(
+                (token as u64)
+                    .checked_mul(row_bytes as u64)
+                    .ok_or_else(|| model_err("embed row offset overflow"))?,
+            )
             .ok_or_else(|| model_err("embed absolute offset overflow"))?;
         let mut handles = self
             .handles
@@ -1485,9 +1477,8 @@ impl SourceBf16Index {
             handles.insert(loc.shard.clone(), f);
             handles.get_mut(&loc.shard).unwrap()
         };
-        file.seek(SeekFrom::Start(offset)).map_err(|e| {
-            model_err(format!("seek embed row {token}: {e}"))
-        })?;
+        file.seek(SeekFrom::Start(offset))
+            .map_err(|e| model_err(format!("seek embed row {token}: {e}")))?;
         let mut buf = vec![0u8; row_bytes];
         file.read_exact(&mut buf)
             .map_err(|e| model_err(format!("read embed row {token}: {e}")))?;
@@ -1507,11 +1498,15 @@ struct SafetensorsTensorInfo {
 }
 
 fn read_safetensors_header(path: &Path) -> Result<SafetensorsHeader> {
-    let mut file = File::open(path)
-        .map_err(|e| model_err(format!("cannot open {}: {e}", path.display())))?;
+    let mut file =
+        File::open(path).map_err(|e| model_err(format!("cannot open {}: {e}", path.display())))?;
     let mut len_buf = [0u8; 8];
-    file.read_exact(&mut len_buf)
-        .map_err(|e| model_err(format!("cannot read header length of {}: {e}", path.display())))?;
+    file.read_exact(&mut len_buf).map_err(|e| {
+        model_err(format!(
+            "cannot read header length of {}: {e}",
+            path.display()
+        ))
+    })?;
     let header_nbytes = u64::from_le_bytes(len_buf);
     if header_nbytes == 0 || header_nbytes > 64 * 1024 * 1024 {
         return Err(model_err(format!(
@@ -1522,11 +1517,18 @@ fn read_safetensors_header(path: &Path) -> Result<SafetensorsHeader> {
     let mut raw = vec![0u8; header_nbytes as usize];
     file.read_exact(&mut raw)
         .map_err(|e| model_err(format!("cannot read header of {}: {e}", path.display())))?;
-    let value: Value = serde_json::from_slice(&raw)
-        .map_err(|e| model_err(format!("safetensors header JSON invalid in {}: {e}", path.display())))?;
-    let object = value
-        .as_object()
-        .ok_or_else(|| model_err(format!("safetensors header is not an object in {}", path.display())))?;
+    let value: Value = serde_json::from_slice(&raw).map_err(|e| {
+        model_err(format!(
+            "safetensors header JSON invalid in {}: {e}",
+            path.display()
+        ))
+    })?;
+    let object = value.as_object().ok_or_else(|| {
+        model_err(format!(
+            "safetensors header is not an object in {}",
+            path.display()
+        ))
+    })?;
     let mut tensors = HashMap::new();
     for (name, info_v) in object {
         if name == "__metadata__" {
@@ -1556,7 +1558,9 @@ fn read_safetensors_header(path: &Path) -> Result<SafetensorsHeader> {
             .and_then(Value::as_array)
             .ok_or_else(|| model_err(format!("tensor {name} lacks data_offsets")))?;
         if offsets.len() != 2 {
-            return Err(model_err(format!("tensor {name} data_offsets is not a pair")));
+            return Err(model_err(format!(
+                "tensor {name} data_offsets is not a pair"
+            )));
         }
         let begin = offsets[0]
             .as_u64()
@@ -1642,16 +1646,14 @@ impl LoadedLayer {
             )));
         }
         let mut experts = Vec::with_capacity(QWEN30_EXPERTS);
-        let mut resident = (input_layernorm.len()
-            + post_attention_layernorm.len()
-            + q_norm.len()
-            + k_norm.len())
-            * 4
-            + q_proj.len()
-            + k_proj.len()
-            + v_proj.len()
-            + o_proj.len()
-            + router.len();
+        let mut resident =
+            (input_layernorm.len() + post_attention_layernorm.len() + q_norm.len() + k_norm.len())
+                * 4
+                + q_proj.len()
+                + k_proj.len()
+                + v_proj.len()
+                + o_proj.len()
+                + router.len();
         // Drain triples (gate, up, down) without cloning payloads.
         let mut payloads = expert_payloads.drain(..);
         for _ in 0..QWEN30_EXPERTS {
@@ -1707,10 +1709,7 @@ fn rmsnorm_rows(x: &mut [f32], weight: &[f32], n_heads: usize, head_dim: usize) 
 }
 
 /// Top-k over softmax with `norm_topk_prob=true` (renormalize selected weights).
-pub fn router_topk_norm(
-    logits: &[f32],
-    top_k: usize,
-) -> Result<(Vec<u32>, Vec<f32>)> {
+pub fn router_topk_norm(logits: &[f32], top_k: usize) -> Result<(Vec<u32>, Vec<f32>)> {
     if logits.len() != QWEN30_EXPERTS {
         return Err(model_err(format!(
             "router logits len {} != {QWEN30_EXPERTS}",
@@ -1982,10 +1981,7 @@ pub fn embed_probes(
 }
 
 /// Final RMSNorm + lm_head logits for the last residual of a sequence.
-pub fn logits_from_final_hidden(
-    index: &SourceBf16Index,
-    hidden: &[f32],
-) -> Result<Vec<f32>> {
+pub fn logits_from_final_hidden(index: &SourceBf16Index, hidden: &[f32]) -> Result<Vec<f32>> {
     if hidden.len() != QWEN30_HIDDEN {
         return Err(model_err("final hidden width mismatch"));
     }
@@ -2117,7 +2113,11 @@ pub fn capture_all_layers(
     // captures[probe][token][layer]
     let mut captures: Vec<Vec<Vec<LayerTokenCapture>>> = probes
         .iter()
-        .map(|(_, toks)| (0..toks.len()).map(|_| Vec::with_capacity(QWEN30_LAYERS)).collect())
+        .map(|(_, toks)| {
+            (0..toks.len())
+                .map(|_| Vec::with_capacity(QWEN30_LAYERS))
+                .collect()
+        })
         .collect();
 
     let total_tokens: usize = probes.iter().map(|(_, t)| t.len()).sum();
@@ -2619,7 +2619,12 @@ fn forward_layer_token(
     )?;
     gemv_bf16(&layer.o_proj, QWEN30_HIDDEN, q_dim, &attn, &mut attn_proj)?;
     add_inplace(x, &attn_proj);
-    rmsnorm(x, &layer.post_attention_layernorm, QWEN30_RMS_EPS, &mut x_norm);
+    rmsnorm(
+        x,
+        &layer.post_attention_layernorm,
+        QWEN30_RMS_EPS,
+        &mut x_norm,
+    );
     gemv_bf16(
         &layer.router,
         QWEN30_EXPERTS,
@@ -2719,7 +2724,9 @@ pub fn greedy_decode_user_prompt(
     let eos = [151645u32, 151643u32];
 
     for _step in 0..max_new_tokens {
-        let last = residuals.last().ok_or_else(|| model_err("empty residual"))?;
+        let last = residuals
+            .last()
+            .ok_or_else(|| model_err("empty residual"))?;
         let logits = logits_from_final_hidden(index, last)?;
         let next = argmax_f32(&logits);
         if generated.is_empty() {
@@ -2787,10 +2794,7 @@ pub fn is_coherent_paris_continuation(text: &str) -> bool {
     if words.len() >= 3 && words[0] == words[1] && words[1] == words[2] {
         return false;
     }
-    if lower.starts_with("paris")
-        || lower.starts_with("**paris")
-        || lower.starts_with("*paris")
-    {
+    if lower.starts_with("paris") || lower.starts_with("**paris") || lower.starts_with("*paris") {
         return true;
     }
     // Multi-token correct answers.
@@ -2938,9 +2942,7 @@ mod tests {
         // expert's first-N set is unambiguous.
         let max_n = 3usize;
         let mut counts = vec![0usize; 8];
-        let routes: Vec<Vec<u32>> = (0..20u32)
-            .map(|t| vec![t % 4, 4 + (t % 4)])
-            .collect();
+        let routes: Vec<Vec<u32>> = (0..20u32).map(|t| vec![t % 4, 4 + (t % 4)]).collect();
         let mut retained_mask = Vec::new();
         for ids in &routes {
             retained_mask.push(credit_expert_first_n_retention(&mut counts, ids, max_n));

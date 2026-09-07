@@ -8,7 +8,7 @@ phase, records what happened, and decides whether to advance or retry.
 
 Two things are load-bearing and were learned the hard way:
 
-  * ONE IMPERATIVE SENTENCE per goal. `goal_tokenizer` emits one WorkUnit per
+  * ONE IMPERATIVE SENTENCE per goal. `GoalCompiler` emits one WorkUnit per
     sentence, so explanatory prose becomes fake obligations -- a five-sentence
     goal produced eleven units, six of them sentence fragments.
 

@@ -79,6 +79,10 @@ def test_run_forbidden_fruit_lab_refuses_a_missing_fixture(tmp_path):
 
 
 @pytest.mark.slow
+@pytest.mark.skipif(
+    not ff.DEFAULT_FIXTURE.is_dir(),
+    reason="requires the checked-in Core ML compiled fixture",
+)
 def test_run_forbidden_fruit_lab_runs_the_real_fixture_and_reports_observed_placement(tmp_path):
     """End-to-end: compiles and runs the real probes against the real fixture.
 

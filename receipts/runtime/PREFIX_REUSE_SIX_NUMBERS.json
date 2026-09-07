@@ -1,0 +1,45 @@
+{
+  "calls": [
+    {
+      "effective_tok_s": 65.16444938635534,
+      "fresh_compute_tok_s": 65.16444938635534,
+      "fresh_positions": 3923,
+      "label": "1_cold",
+      "prefill_wall_s": 60.201536834,
+      "prefix_source": "cold",
+      "prompt_positions": 3923,
+      "reuse_fraction": 0.0,
+      "reused_positions": 0,
+      "wall_s": 66.33555141696706
+    },
+    {
+      "effective_tok_s": 26.094722955939073,
+      "fresh_compute_tok_s": 26.094722955939073,
+      "fresh_positions": 3924,
+      "label": "2_restore_path",
+      "prefill_wall_s": 150.375231292,
+      "prefix_source": "cold",
+      "prompt_positions": 3924,
+      "reuse_fraction": 0.0,
+      "reused_positions": 0,
+      "wall_s": 150.53860787500162
+    },
+    {
+      "effective_tok_s": 4170.527714745437,
+      "fresh_compute_tok_s": 19.116246209681147,
+      "fresh_positions": 18,
+      "label": "3_append_path",
+      "prefill_wall_s": 0.941607458,
+      "prefix_source": "checkpoint_restore",
+      "prompt_positions": 3927,
+      "reuse_fraction": 0.9954163483575248,
+      "reused_positions": 3909,
+      "wall_s": 1.066399957984686
+    }
+  ],
+  "command": "python3 tools/sovereign/g008_prefix_reuse_report.py",
+  "law": "fresh_compute_tok_s and effective_tok_s are ALWAYS reported together. effective counts reused positions the machine did not recompute; quoting it alone as a prefill rate hides the fresh work.",
+  "produced_at": "2026-09-05T14:42:56.426136+00:00",
+  "produced_by": "tools/sovereign/g008_prefix_reuse_report.py",
+  "schema": "hawking.prefix_reuse.six_numbers.v1"
+}

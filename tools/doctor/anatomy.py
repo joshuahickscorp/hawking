@@ -1,6 +1,6 @@
 """Architecture fingerprint and organ graph from metadata only.
 
-Reuses the algorithm in tools.future.specimen_events.fingerprint_from_config
+Reuses the compact fingerprint rule preserved from the retired specimen-events producer.
 (config.json + optional index, weights_opened=False) without importing that
 module: it pulls hcli.persist, which is not materialized in this sparse
 checkout. Opening a safetensors shard is out of scope.
@@ -54,7 +54,7 @@ def fingerprint_from_config(
 ) -> dict[str, Any]:
     """Metadata fingerprint. Opening a safetensors shard is out of scope.
 
-    Mirrors tools.future.specimen_events.fingerprint_from_config.
+    Mirrors the retired specimen-events fingerprint rule without importing its producer.
     """
     text = _text_cfg(cfg)
     arches = cfg.get("architectures") if isinstance(cfg.get("architectures"), list) else []

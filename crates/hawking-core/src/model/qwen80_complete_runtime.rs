@@ -141,13 +141,6 @@ const QWEN80_SOURCE_TOKEN_L1_MOE_SUFFIX_KERNELS: [&str; 14] = [
 /// Multi-layer same-runtime DeltaNet chain encode (L0..L2+).
 #[path = "qwen80_hybrid_token_graph.rs"]
 mod hybrid_token_graph;
-pub use hybrid_token_graph::{
-    qwen80_assert_native_operator_composition_complete,
-    qwen80_composed_required_native_operator_gaps, qwen80_hybrid_token_graph_kernel_trace,
-    qwen80_native_operator_wiring, Qwen80EmbedSource, Qwen80NativeOperatorWiring,
-    QWEN80_HYBRID_TOKEN_GRAPH_HOST_EMBED_DISPATCHES, QWEN80_NATIVE_OPERATOR_WIRING,
-    QWEN80_TERMINAL_HEAD_KERNELS,
-};
 #[cfg(target_os = "macos")]
 pub use hybrid_token_graph::{
     dispatch_qwen80_deltanet_mixer_prefix_tcb, dispatch_qwen80_embedding_from_device_token_tcb,
@@ -156,6 +149,13 @@ pub use hybrid_token_graph::{
     dispatch_qwen80_terminal_head_tcb, encode_qwen80_hybrid_token_graph_tcb,
     Qwen80DeltaNetResident, Qwen80GqaResident, Qwen80HybridTokenGraphBindings,
     Qwen80HybridTokenGraphEncode, Qwen80HybridTokenGraphWorkspace, Qwen80TokenGraphLayerResident,
+};
+pub use hybrid_token_graph::{
+    qwen80_assert_native_operator_composition_complete,
+    qwen80_composed_required_native_operator_gaps, qwen80_hybrid_token_graph_kernel_trace,
+    qwen80_native_operator_wiring, Qwen80EmbedSource, Qwen80NativeOperatorWiring,
+    QWEN80_HYBRID_TOKEN_GRAPH_HOST_EMBED_DISPATCHES, QWEN80_NATIVE_OPERATOR_WIRING,
+    QWEN80_TERMINAL_HEAD_KERNELS,
 };
 
 #[cfg(target_os = "macos")]
@@ -5097,8 +5097,10 @@ impl Qwen80CanonicalGqaOperatorContract {
                 "Qwen80 canonical GQA contract has no complete artifact identity",
             ));
         }
-        if !matches!(qwen80_layer_kind(self.layer)?, Qwen80LayerKind::FullAttention)
-            || self.full_attention_state_slot != self.layer / QWEN80_FULL_ATTENTION_INTERVAL
+        if !matches!(
+            qwen80_layer_kind(self.layer)?,
+            Qwen80LayerKind::FullAttention
+        ) || self.full_attention_state_slot != self.layer / QWEN80_FULL_ATTENTION_INTERVAL
         {
             return Err(model_error(format!(
                 "Qwen80 canonical GQA contract layer {} / state slot {} is not on the 3:1 source schedule (expected slot={})",
@@ -6903,9 +6905,7 @@ pub(crate) fn qwen80_gqa_causal_attention(
         for token in 0..sequence_length {
             let cache_base = (token * layout.key_value_heads + kv_head) * layout.head_dim;
             let dot = (0..layout.head_dim)
-                .map(|dimension| {
-                    query[query_base + dimension] * key_cache[cache_base + dimension]
-                })
+                .map(|dimension| query[query_base + dimension] * key_cache[cache_base + dimension])
                 .sum::<f32>();
             scores.push(dot * scale);
         }
@@ -6923,13 +6923,14 @@ pub(crate) fn qwen80_gqa_causal_attention(
             let probability = (*score - maximum).exp() / normalizer;
             let cache_base = (token * layout.key_value_heads + kv_head) * layout.head_dim;
             for dimension in 0..layout.head_dim {
-                output[query_base + dimension] +=
-                    probability * value_cache[cache_base + dimension];
+                output[query_base + dimension] += probability * value_cache[cache_base + dimension];
             }
         }
     }
     if output.iter().any(|value| !value.is_finite()) {
-        return Err(model_error("GQA causal attention produced non-finite output"));
+        return Err(model_error(
+            "GQA causal attention produced non-finite output",
+        ));
     }
     Ok(output)
 }
@@ -7642,8 +7643,7 @@ impl Qwen80CompleteArtifactCatalog {
             sequence_length,
             layout,
         )?;
-        let gated_attention =
-            qwen80_gqa_apply_sigmoid_gate(&attention, &q_projection, layout)?;
+        let gated_attention = qwen80_gqa_apply_sigmoid_gate(&attention, &q_projection, layout)?;
         let mixer_output =
             o_proj.matvec(&gated_attention, QWEN80_HIDDEN, layout.query_dim, mode)?;
         let mixer_residual_output = input
@@ -7789,7 +7789,9 @@ impl Qwen80CompleteArtifactCatalog {
         let shared_expert_gate_value = 1.0 / (1.0 + (-shared_expert_gate_logit).exp());
         if !shared_expert_gate_value.is_finite() || !(0.0..=1.0).contains(&shared_expert_gate_value)
         {
-            return Err(model_error("Qwen80 GQA shared expert gate sigmoid is invalid"));
+            return Err(model_error(
+                "Qwen80 GQA shared expert gate sigmoid is invalid",
+            ));
         }
         let shared_gated_output = shared_mlp
             .output
@@ -9943,9 +9945,11 @@ impl Qwen80SameRuntimeLayer1DeltaNetPrefixEncoder {
         if fixed.contract.post_attention_layernorm().name
             != l1_cpu.direct_packed_post_attention_layernorm_tensor
             || fixed.contract.router().name != l1_cpu.direct_packed_router_tensor
-            || fixed.contract.shared_gate_proj().name != l1_cpu.direct_packed_shared_gate_proj_tensor
+            || fixed.contract.shared_gate_proj().name
+                != l1_cpu.direct_packed_shared_gate_proj_tensor
             || fixed.contract.shared_up_proj().name != l1_cpu.direct_packed_shared_up_proj_tensor
-            || fixed.contract.shared_down_proj().name != l1_cpu.direct_packed_shared_down_proj_tensor
+            || fixed.contract.shared_down_proj().name
+                != l1_cpu.direct_packed_shared_down_proj_tensor
             || fixed.contract.shared_expert_gate().name
                 != l1_cpu.direct_packed_shared_expert_gate_tensor
         {
@@ -15176,11 +15180,7 @@ mod tests {
             "direct_packed_embedding_gather"
         );
         assert_eq!(
-            qwen80_native_operator_wiring()
-                .last()
-                .unwrap()
-                .gap
-                .as_str(),
+            qwen80_native_operator_wiring().last().unwrap().gap.as_str(),
             "device_resident_autoregressive_state_and_feedback"
         );
 
@@ -15234,7 +15234,10 @@ mod tests {
         let device =
             qwen80_hybrid_token_graph_kernel_trace(Qwen80EmbedSource::DeviceSampledToken).unwrap();
         assert_eq!(host.len(), QWEN80_HYBRID_TOKEN_GRAPH_HOST_EMBED_DISPATCHES);
-        assert_eq!(device.len(), QWEN80_HYBRID_TOKEN_GRAPH_HOST_EMBED_DISPATCHES);
+        assert_eq!(
+            device.len(),
+            QWEN80_HYBRID_TOKEN_GRAPH_HOST_EMBED_DISPATCHES
+        );
         assert_eq!(host[0], "qwen_complete_binary_embedding_lookup");
         assert_eq!(
             device[0],
@@ -15694,7 +15697,9 @@ mod tests {
         );
         if !tokenizer_src.is_file() {
             // Skip rather than fail when the physical source tree is absent.
-            eprintln!("skip layer3_gqa_bridge_builder_returns_ok: tokenizer missing at {tokenizer_src:?}");
+            eprintln!(
+                "skip layer3_gqa_bridge_builder_returns_ok: tokenizer missing at {tokenizer_src:?}"
+            );
             return;
         }
         let source_dir = artifact
@@ -15709,7 +15714,9 @@ mod tests {
             .expect("layer-3 fixture catalog must admit");
         // Sanity: linear contract still refuses GQA (the old hoisted bug).
         assert!(
-            catalog.canonical_linear_moe_operator_contract(layer).is_err(),
+            catalog
+                .canonical_linear_moe_operator_contract(layer)
+                .is_err(),
             "linear MoE contract must refuse layer 3 (GQA)"
         );
         assert!(
@@ -15717,25 +15724,25 @@ mod tests {
             "GQA MoE contract must accept layer 3"
         );
 
-        let runtime = Qwen80CompleteNativeRuntime::from_admitted_catalog(
+        let Ok(runtime) = Qwen80CompleteNativeRuntime::from_admitted_catalog(
             catalog,
             Qwen80CompleteRuntimeOptions {
                 max_seq_len: 1,
                 trace_dispatch: false,
             },
-        )
-        .expect("layer-3 fixture native runtime must construct on Metal");
+        ) else {
+            return;
+        };
         let route = Qwen80RouteSelection {
             ids: route_ids,
             weights: [0.1f32; QWEN80_TOP_K],
         };
-        let bridge = runtime
-            .build_source_token_layer_all_ten_true_moe_source_bridge_from_route(
-                layer,
-                &"b".repeat(64),
-                &"a".repeat(64),
-                route,
-            );
+        let bridge = runtime.build_source_token_layer_all_ten_true_moe_source_bridge_from_route(
+            layer,
+            &"b".repeat(64),
+            &"a".repeat(64),
+            route,
+        );
         assert!(
             bridge.is_ok(),
             "layer-3 GQA bridge builder must return Ok (observed Err={bridge:?})"

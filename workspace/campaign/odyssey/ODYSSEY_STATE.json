@@ -486,7 +486,7 @@
       "template": "sensitivity-map",
       "task": "odyssey-o003-sensitivity-map-20260819-144202",
       "started": "2026-08-19T18:42:07Z",
-      "contract": "workspace/campaign/odyssey/contracts/auto/o003_sensitivity-map.md",
+      "contract": "workspace/docs/plans/ASCENSION_PLAN_ARCHIVE.md",
       "harvest_reason": "DATA-ONLY"
     },
     {
@@ -502,7 +502,7 @@
       "template": "sensitivity-map",
       "task": "odyssey-o006-sensitivity-map-20260819-150812",
       "started": "2026-08-19T19:08:17Z",
-      "contract": "workspace/campaign/odyssey/contracts/auto/o006_sensitivity-map.md",
+      "contract": "workspace/docs/plans/ASCENSION_PLAN_ARCHIVE.md",
       "harvest_reason": "DATA-ONLY"
     },
     {
@@ -518,7 +518,7 @@
       "template": "gravity-hybrid",
       "task": "odyssey-o001-gravity-hybrid-20260819-150817",
       "started": "2026-08-19T19:08:23Z",
-      "contract": "workspace/campaign/odyssey/contracts/auto/o001_gravity-hybrid.md",
+      "contract": "workspace/docs/plans/ASCENSION_PLAN_ARCHIVE.md",
       "harvest_reason": "DATA-ONLY"
     },
     {

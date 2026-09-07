@@ -1,0 +1,20 @@
+{
+ "date": "2026-09-06",
+ "obligation": "G010 / PQ Scar addendum / S012 \u00a742 \u00a777",
+ "spec": "pqsparse0.002percal",
+ "complete_ebpw": 2.463945705835887,
+ "ppl": 3.3454,
+ "median_4gram_repeat": 0.7312,
+ "capability_ok": false,
+ "A_BYTE_ACCOUNTING_BUG_I_MADE_AND_CAUGHT": {
+  "reported_first": 2.405907100874676,
+  "why_it_was_wrong": "byte-for-byte identical to pqpercal4k512, which has NO sparse channel. The 0.2% of weights kept at full precision were free in the accounting: the PQ byte formula summed index bits and codebook values and never added kept*32.",
+  "corrected": 2.463945705835887,
+  "delta": 0.058,
+  "why_it_matters": "S012 \u00a715 and \u00a777 forbid exactly this -- a representation does not save bytes it still requires, and a channel omitted from the denominator is a denominator game whatever it is called. Had I reported 2.4059 the arm would have looked cheaper than it is AND tied with a strictly weaker representation.",
+  "now_guarded": "hcli/test_gravity_outlier.py asserts kept*32 is in the expert_bits line; mutation removing it fails the suite."
+ },
+ "RESULT_CONFIRMS_THE_MECHANISM_S012_42": "Restoring the top 0.2% by magnitude gave the BEST perplexity of any sub-2.5 arm (3.3454, against the 3.617 gate and q3-g128's passing 3.135) and made repetition WORSE (0.7312 vs 0.6667). Outliers are MAGNITUDE information: they buy likelihood and do nothing for output geometry. S012 \u00a742 predicts precisely this split -- likelihood failure implicates magnitude/statistical information, diversity failure implicates collapsed output geometry.",
+ "PQ_SCAR_UNCHANGED": "Eight arms now. Best perplexity 3.3454 (passes), best repetition 0.3226 (2.0x from its limit), no arm passes both below 2.5 EBPW. The sparse correction is a useful PRIMITIVE for likelihood and is not the missing piece for diversity.",
+ "WHAT_THIS_TELLS_G029": "Diversity needs GEOMETRY restored, not magnitude. A shared-basis representation that keeps distinct expert directions while sharing their magnitude structure is the opposite trade to the one PQ makes, which is why the class jump is the right next move rather than another PQ point."
+}

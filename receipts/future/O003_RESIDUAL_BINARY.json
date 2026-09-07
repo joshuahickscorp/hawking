@@ -1,0 +1,39 @@
+{
+ "specimen": "O003",
+ "date": "2026-09-06",
+ "provenance": "Mechanism PROPOSED BY THE RESIDENT in HCLI ladder rounds 1-2 ('a per-expert 2-bit base with a 1-bit residual'), implemented and executed by the supervisor. The model chose the target; the machine measured it.",
+ "class": "RESIDUAL_BINARY: W ~= s1*sign(W) + s2*sign(W - s1*sign(W)). 2 bits/weight + TWO fp16 scales per group = EXACTLY the byte cost of q2-g<group> affine, so this is the same budget spent two ways.",
+ "all_arms_at_complete_ebpw": 2.4057513258070284,
+ "arms": [
+  {
+   "spec": "q2-g128-experts (affine)",
+   "ppl": 4.085,
+   "r4": 0.7849,
+   "worst_run": 87,
+   "cos": 0.914463
+  },
+  {
+   "spec": "resbinary-g128",
+   "ppl": 5.4246,
+   "r4": 0.7849,
+   "worst_run": 1,
+   "cos": 0.9358187200613075
+  },
+  {
+   "spec": "resbinarypercal-g128",
+   "ppl": 4.79,
+   "r4": 0.7634,
+   "worst_run": 1,
+   "cos": 0.920300372649779
+  }
+ ],
+ "RESULT_it_loses_to_affine_on_perplexity": "Affine q2-g128 scores ppl 4.085; residual binary 5.425 uncalibrated and 4.790 with per-expert calibration. At identical bytes the ordinary affine quantiser is BETTER on perplexity. The resident's proposal does not beat the baseline it was aimed at.",
+ "BUT_it_removes_the_catastrophic_collapse": "q2-g128 affine emits 87 consecutive identical tokens (worst_max_repeat_run 87). Both residual arms score 1, and resbinarypercal also has a slightly lower median 4-gram (0.7634 vs 0.7849). So the same byte budget buys either better perplexity (affine) or a body that does not lock into a repetition loop (residual). Neither passes the gate; both are far from it.",
+ "THIRD_INDEPENDENT_CONFIRMATION_of_per_expert_calibration": "Per-expert calibration improves residual binary by 11.7% (5.425 -> 4.790), after -7.1% and -10.3% on plain binary. Three classes, same direction, always at identical bytes. This is now the most reproducible effect measured on this specimen.",
+ "cosine_again_fails_to_rank": "resbinary has the HIGHEST cosine of the three (0.9358 vs affine's 0.9145) and the WORST perplexity (5.425 vs 4.085). Weight-space agreement continues to be a bad ordering of capability, consistent with the per-expert calibration result.",
+ "CAVEATS": [
+  "Two-stage residual only; deeper residual stages untested.",
+  "Both residual scales use the same fitting objective; a mixed scheme is untested.",
+  "No kernel exists for this form, so no TPS."
+ ]
+}

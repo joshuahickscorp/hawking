@@ -1,7 +1,7 @@
 """Client for the hawking-index python-facts JSON surface.
 
-Lane r1 may later expose the same command on the `hawking-index` binary.
-This client accepts either:
+ The query binary is now owned by the `hawking-index` package. This client
+ accepts either the compatibility executable name or the primary index name:
 
     hawking-index-query python-facts --git-head --commit <sha> --repo <repo>
     hawking-index python-facts --git-head --commit <sha> --repo <repo>
@@ -81,7 +81,8 @@ def resolve_backend() -> str:
             raise FileNotFoundError(
                 "ROADMAP_REACH_BACKEND=index but hawking-index-query (or "
                 "hawking-index) is not built. cargo build -p hawking-index-query "
-                "--release (CARGO_TARGET_DIR=workspace/ops/build/rust)"
+                "--bin hawking-index-query --release "
+                "(CARGO_TARGET_DIR=workspace/ops/build/rust)"
             )
         return "index"
     return "index" if find_index_bin() is not None else "ast"
@@ -386,7 +387,7 @@ def _resolved_from_modules(
     *,
     known_files: set[str] | frozenset[str] | None = None,
 ) -> list[str]:
-    """Port of tools.future.capability_reachability._resolved_from_modules."""
+    """Port of tools.roadmap.capability_reachability._resolved_from_modules."""
     bases: list[str] = []
     level = int(imp.get("level") or 0)
     if imp.get("form") == "from" and level > 0:

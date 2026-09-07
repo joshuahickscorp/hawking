@@ -1,0 +1,1151 @@
+{
+ "classification": "STATIC_STREAMABLE",
+ "errors": [
+  {
+   "error": "no safetensors shards under /Volumes/corpdrive/hawking-modellake/specimens/Wan-AI--Wan2.2-T2V-A14B@c8c270b13ee0",
+   "slug": "Wan-AI--Wan2.2-T2V-A14B@c8c270b13ee0"
+  },
+  {
+   "error": "no safetensors shards under /Volumes/corpdrive/hawking-modellake/specimens/arcinstitute--evo2_40b@d529aa57c307",
+   "slug": "arcinstitute--evo2_40b@d529aa57c307"
+  },
+  {
+   "error": "no safetensors shards under /Volumes/corpdrive/hawking-modellake/specimens/arcinstitute--evo2_7b@bda0089f9258",
+   "slug": "arcinstitute--evo2_7b@bda0089f9258"
+  },
+  {
+   "error": "no safetensors shards under /Volumes/corpdrive/hawking-modellake/specimens/boltz-community--boltz-2@6fdef46d763f",
+   "slug": "boltz-community--boltz-2@6fdef46d763f"
+  },
+  {
+   "error": "no safetensors shards under /Volumes/corpdrive/hawking-modellake/specimens/facebook--musicgen-large@15ccdc920998",
+   "slug": "facebook--musicgen-large@15ccdc920998"
+  },
+  {
+   "error": "no safetensors shards under /Volumes/corpdrive/hawking-modellake/specimens/nvidia--audio-flamingo-3@ee26c5842398",
+   "slug": "nvidia--audio-flamingo-3@ee26c5842398"
+  },
+  {
+   "error": "no safetensors shards under /Volumes/corpdrive/hawking-modellake/specimens/state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994",
+   "slug": "state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994"
+  },
+  {
+   "error": "no safetensors shards under /Volumes/corpdrive/hawking-modellake/specimens/state-spaces--mamba3-siso-1.5b@5cfc721542ec",
+   "slug": "state-spaces--mamba3-siso-1.5b@5cfc721542ec"
+  },
+  {
+   "error": "no safetensors shards under /Volumes/corpdrive/hawking-modellake/specimens/tencent--HunyuanVideo@6204ad6aea1a",
+   "slug": "tencent--HunyuanVideo@6204ad6aea1a"
+  }
+ ],
+ "evidence_tier": "HARDWARE_MEASURED",
+ "generated_at": "2026-09-05T21:11:22Z",
+ "lake_root": "/Volumes/corpdrive/hawking-modellake/specimens",
+ "n_specimens_censused": 47,
+ "n_specimens_failed": 9,
+ "schema": "hawking.odyssey.lake_static_census.v1",
+ "seal_sha256": "3d17428a4951864f7741efd36373d0581bdf45a2d827ad3af85268df6be094a9",
+ "specimens": [
+  {
+   "architecture_family": "Dream",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 38840,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "BF16": {
+     "parameters": 7615616512,
+     "tensors": 339
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 15231271864,
+   "header_bytes": 38840,
+   "n_shards": 4,
+   "n_tensors": 339,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/Dream-org--Dream-v0-Instruct-7B@05334cb9faaf",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "Dream-org--Dream-v0-Instruct-7B@05334cb9faaf",
+   "total_parameters": 7615616512,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "illada",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 33864,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "BF16": {
+     "parameters": 8250462208,
+     "tensors": 291
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 16500958280,
+   "header_bytes": 33864,
+   "n_shards": 4,
+   "n_tensors": 291,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/GSAI-ML--iLLaDA-8B-Base@a1b5b5f8a31a",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "GSAI-ML--iLLaDA-8B-Base@a1b5b5f8a31a",
+   "total_parameters": 8250462208,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "smolvlm",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 84536,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "F32": {
+     "parameters": 2246784880,
+     "tensors": 657
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 8987224056,
+   "header_bytes": 84536,
+   "n_shards": 2,
+   "n_tensors": 657,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02",
+   "total_parameters": 2246784880,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "lfm2_moe",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 978040,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "BF16": {
+     "parameters": 23843659008,
+     "tensors": 7572
+    },
+    "F32": {
+     "parameters": 2432,
+     "tensors": 38
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 47688305784,
+   "header_bytes": 978040,
+   "n_shards": 1,
+   "n_tensors": 7610,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/LiquidAI--LFM2-24B-A2B@a3bbacd91a67",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "LiquidAI--LFM2-24B-A2B@a3bbacd91a67",
+   "total_parameters": 23843661440,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "lfm2",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 16720,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "BF16": {
+     "parameters": 1170340608,
+     "tensors": 148
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 2340697936,
+   "header_bytes": 16720,
+   "n_shards": 1,
+   "n_tensors": 148,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/LiquidAI--LFM2.5-1.2B-Instruct@0f604ada3f76",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "LiquidAI--LFM2.5-1.2B-Instruct@0f604ada3f76",
+   "total_parameters": 1170340608,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "lfm2",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 30264,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "BF16": {
+     "parameters": 2697198592,
+     "tensors": 266
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 5394427448,
+   "header_bytes": 30264,
+   "n_shards": 1,
+   "n_tensors": 266,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/LiquidAI--LFM2.5-2.6B-Base@c57bdaed1ef1",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "LiquidAI--LFM2.5-2.6B-Base@c57bdaed1ef1",
+   "total_parameters": 2697198592,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "qwen2",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 112016,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "BF16": {
+     "parameters": 72706203648,
+     "tensors": 963
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 145412519312,
+   "header_bytes": 112016,
+   "n_shards": 37,
+   "n_tensors": 963,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen2.5-72B-Instruct@495f39366efe",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "Qwen--Qwen2.5-72B-Instruct@495f39366efe",
+   "total_parameters": 72706203648,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "qwen3",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 35560,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "BF16": {
+     "parameters": 751632384,
+     "tensors": 311
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 1503300328,
+   "header_bytes": 35560,
+   "n_shards": 1,
+   "n_tensors": 311,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "Qwen--Qwen3-0.6B@c1899de289a0",
+   "total_parameters": 751632384,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "qwen3",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 51240,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "BF16": {
+     "parameters": 14768307200,
+     "tensors": 443
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 29536665640,
+   "header_bytes": 51240,
+   "n_shards": 8,
+   "n_tensors": 443,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-14B@40c069824f42",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "Qwen--Qwen3-14B@40c069824f42",
+   "total_parameters": 14768307200,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "qwen3_moe",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 2330400,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "BF16": {
+     "parameters": 30532122624,
+     "tensors": 18867
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 61066575648,
+   "header_bytes": 2330400,
+   "n_shards": 16,
+   "n_tensors": 18867,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+   "total_parameters": 30532122624,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "qwen3",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 45808,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "BF16": {
+     "parameters": 4022468096,
+     "tensors": 398
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 8044982000,
+   "header_bytes": 45808,
+   "n_shards": 3,
+   "n_tensors": 398,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-4B-Instruct-2507@cdbee75f17c0",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "Qwen--Qwen3-4B-Instruct-2507@cdbee75f17c0",
+   "total_parameters": 4022468096,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "qwen3_moe",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 2330408,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "BF16": {
+     "parameters": 30532122624,
+     "tensors": 18867
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 61066575656,
+   "header_bytes": 2330408,
+   "n_shards": 16,
+   "n_tensors": 18867,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-Coder-30B-A3B-Instruct@b2cff646eb4b",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "Qwen--Qwen3-Coder-30B-A3B-Instruct@b2cff646eb4b",
+   "total_parameters": 30532122624,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "qwen3",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 33392,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "BF16": {
+     "parameters": 595776512,
+     "tensors": 310
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 1191586416,
+   "header_bytes": 33392,
+   "n_shards": 1,
+   "n_tensors": 310,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-Embedding-0.6B@97b0c614be4d",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "Qwen--Qwen3-Embedding-0.6B@97b0c614be4d",
+   "total_parameters": 595776512,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "qwen3_vl_moe",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 109952,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "BF16": {
+     "parameters": 31070754032,
+     "tensors": 882
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 62141618016,
+   "header_bytes": 109952,
+   "n_shards": 13,
+   "n_tensors": 882,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+   "total_parameters": 31070754032,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "qwen3_vl",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 92120,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "BF16": {
+     "parameters": 8767123696,
+     "tensors": 750
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 17534339512,
+   "header_bytes": 92120,
+   "n_shards": 4,
+   "n_tensors": 750,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8",
+   "total_parameters": 8767123696,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "qwen4_exp",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 229760,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "BF16": {
+     "parameters": 179999981424,
+     "tensors": 1655
+    },
+    "I64": {
+     "parameters": 35,
+     "tensors": 3
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 360000192888,
+   "header_bytes": 229760,
+   "n_shards": 131,
+   "n_tensors": 1658,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+   "total_parameters": 179999981459,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "rwkv7",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 205840,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "BF16": {
+     "parameters": 13270298624,
+     "tensors": 2019
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 26540803088,
+   "header_bytes": 205840,
+   "n_shards": 6,
+   "n_tensors": 2019,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/RWKV--RWKV7-13.3B-20260805@64ffe5934178",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "RWKV--RWKV7-13.3B-20260805@64ffe5934178",
+   "total_parameters": 13270298624,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "jamba",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 52032,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "BF16": {
+     "parameters": 3197109632,
+     "tensors": 463
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 6394271296,
+   "header_bytes": 52032,
+   "n_shards": 2,
+   "n_tensors": 463,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/ai21labs--AI21-Jamba2-3B@525c6c8e1d9f",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "ai21labs--AI21-Jamba2-3B@525c6c8e1d9f",
+   "total_parameters": 3197109632,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "olmo3",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 41440,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "BF16": {
+     "parameters": 7298011136,
+     "tensors": 355
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 14596063712,
+   "header_bytes": 41440,
+   "n_shards": 3,
+   "n_tensors": 355,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/allenai--Olmo-3-1025-7B@a81bae42db39",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "allenai--Olmo-3-1025-7B@a81bae42db39",
+   "total_parameters": 7298011136,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "modernbert",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 18184,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "F32": {
+     "parameters": 395881664,
+     "tensors": 173
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 1583544840,
+   "header_bytes": 18184,
+   "n_shards": 1,
+   "n_tensors": 173,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/answerdotai--ModernBERT-large@45bb4654a4d5",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "answerdotai--ModernBERT-large@45bb4654a4d5",
+   "total_parameters": 395881664,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "starcoder2",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 57832,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "BF16": {
+     "parameters": 7173923840,
+     "tensors": 515
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 14347905512,
+   "header_bytes": 57832,
+   "n_shards": 3,
+   "n_tensors": 515,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/bigcode--starcoder2-7b@bb9afde76d79",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "bigcode--starcoder2-7b@bb9afde76d79",
+   "total_parameters": 7173923840,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "deepseek_v4",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 7663144,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "BF16": {
+     "parameters": 1415259264,
+     "tensors": 433
+    },
+    "F32": {
+     "parameters": 36168018,
+     "tensors": 417
+    },
+    "F8_E4M3": {
+     "parameters": 6023020544,
+     "tensors": 375
+    },
+    "F8_E8M0": {
+     "parameters": 8858737664,
+     "tensors": 34167
+    },
+    "I64": {
+     "parameters": 2327040,
+     "tensors": 3
+    },
+    "I8": {
+     "parameters": 141733920768,
+     "tensors": 33792
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 159617149040,
+   "header_bytes": 7663144,
+   "n_shards": 46,
+   "n_tensors": 69187,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+   "total_parameters": 158069433298,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "depth_anything",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 60272,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "F32": {
+     "parameters": 335315649,
+     "tensors": 503
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 1341322868,
+   "header_bytes": 60272,
+   "n_shards": 1,
+   "n_tensors": 503,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/depth-anything--Depth-Anything-V2-Large-hf@7581137eff8d",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "depth-anything--Depth-Anything-V2-Large-hf@7581137eff8d",
+   "total_parameters": 335315649,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "sam2_video",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 108800,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "F32": {
+     "parameters": 224447154,
+     "tensors": 901
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 897897416,
+   "header_bytes": 108800,
+   "n_shards": 1,
+   "n_tensors": 901,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/facebook--sam2.1-hiera-large@665f8e2ad61c",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "facebook--sam2.1-hiera-large@665f8e2ad61c",
+   "total_parameters": 224447154,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "vjepa2",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 90552,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "F32": {
+     "parameters": 1034555264,
+     "tensors": 843
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 4138311608,
+   "header_bytes": 90552,
+   "n_shards": 1,
+   "n_tensors": 843,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/facebook--vjepa2-vitg-fpc64-256@875c192b7b70",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "facebook--vjepa2-vitg-fpc64-256@875c192b7b70",
+   "total_parameters": 1034555264,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "t5",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 68484,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "F32": {
+     "parameters": 783150080,
+     "tensors": 558
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 3132668804,
+   "header_bytes": 68484,
+   "n_shards": 1,
+   "n_tensors": 558,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/google--flan-t5-large@0613663d0d48",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "google--flan-t5-large@0613663d0d48",
+   "total_parameters": 783150080,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "timesfm",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 91136,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "F32": {
+     "parameters": 498828960,
+     "tensors": 813
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 1995406976,
+   "header_bytes": 91136,
+   "n_shards": 1,
+   "n_tensors": 813,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/google--timesfm-2.0-500m-pytorch@dc2443792ce5",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "google--timesfm-2.0-500m-pytorch@dc2443792ce5",
+   "total_parameters": 498828960,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "granitemoehybrid",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 51856,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "BF16": {
+     "parameters": 3191396096,
+     "tensors": 466
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 6382844048,
+   "header_bytes": 51856,
+   "n_shards": 2,
+   "n_tensors": 466,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/ibm-granite--granite-4.0-h-micro@d5f01a3ea75f",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "ibm-granite--granite-4.0-h-micro@d5f01a3ea75f",
+   "total_parameters": 3191396096,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "granitemoehybrid",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 67760,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "BF16": {
+     "parameters": 6939037248,
+     "tensors": 586
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 13878142256,
+   "header_bytes": 67760,
+   "n_shards": 3,
+   "n_tensors": 586,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/ibm-granite--granite-4.0-h-tiny@791e0d3d28c8",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "ibm-granite--granite-4.0-h-tiny@791e0d3d28c8",
+   "total_parameters": 6939037248,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "UNKNOWN",
+   "architecture_family_source": "no architecture evidence in the body",
+   "bytes_read": 41832,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "BF16": {
+     "parameters": 7687729152,
+     "tensors": 355
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 15375500136,
+   "header_bytes": 41832,
+   "n_shards": 1,
+   "n_tensors": 355,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/kyutai--moshika-pytorch-bf16@a49141e28b3d",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "kyutai--moshika-pytorch-bf16@a49141e28b3d",
+   "total_parameters": 7687729152,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "UNKNOWN",
+   "architecture_family_source": "no architecture evidence in the body",
+   "bytes_read": 129880,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "F32": {
+     "parameters": 3501372176,
+     "tensors": 777
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 14005618584,
+   "header_bytes": 129880,
+   "n_shards": 1,
+   "n_tensors": 777,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/lerobot--pi0_base@25c379b52ba2",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "lerobot--pi0_base@25c379b52ba2",
+   "total_parameters": 3501372176,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "phi3",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 22696,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "BF16": {
+     "parameters": 3836021760,
+     "tensors": 194
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 7672066216,
+   "header_bytes": 22696,
+   "n_shards": 2,
+   "n_tensors": 194,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/microsoft--Phi-4-mini-instruct@cfbefacb9925",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "microsoft--Phi-4-mini-instruct@cfbefacb9925",
+   "total_parameters": 3836021760,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "phi4mm",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 306440,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "BF16": {
+     "parameters": 5574460384,
+     "tensors": 2047
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 11149227208,
+   "header_bytes": 306440,
+   "n_shards": 3,
+   "n_tensors": 2047,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/microsoft--Phi-4-multimodal-instruct@93f923e1a772",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "microsoft--Phi-4-multimodal-instruct@93f923e1a772",
+   "total_parameters": 5574460384,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "phi3",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 28592,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "BF16": {
+     "parameters": 14659507200,
+     "tensors": 243
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 29319042992,
+   "header_bytes": 28592,
+   "n_shards": 6,
+   "n_tensors": 243,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/microsoft--Phi-4-reasoning-plus@69baf8528e1b",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "microsoft--Phi-4-reasoning-plus@69baf8528e1b",
+   "total_parameters": 14659507200,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "bitnet",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 38440,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "BF16": {
+     "parameters": 2412820480,
+     "tensors": 332
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 4825679400,
+   "header_bytes": 38440,
+   "n_shards": 1,
+   "n_tensors": 332,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/microsoft--bitnet-b1.58-2B-4T-bf16@276681394656",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "microsoft--bitnet-b1.58-2B-4T-bf16@276681394656",
+   "total_parameters": 2412820480,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "bitnet",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 61008,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "BF16": {
+     "parameters": 328775890,
+     "tensors": 332
+    },
+    "U8": {
+     "parameters": 521011200,
+     "tensors": 210
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 1178623988,
+   "header_bytes": 61008,
+   "n_shards": 1,
+   "n_tensors": 542,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361",
+   "total_parameters": 849787090,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "mistral3",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 78000,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "BF16": {
+     "parameters": 24011361280,
+     "tensors": 585
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 48022800560,
+   "header_bytes": 78000,
+   "n_shards": 10,
+   "n_tensors": 585,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+   "total_parameters": 24011361280,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "kimi_k3",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 75766584,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "BF16": {
+     "parameters": 57179884544,
+     "tensors": 2122
+    },
+    "F32": {
+     "parameters": 11122432,
+     "tensors": 506
+    },
+    "U8": {
+     "parameters": 1446456066048,
+     "tensors": 494592
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 1560936091448,
+   "header_bytes": 75766584,
+   "n_shards": 96,
+   "n_tensors": 497220,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-K3@9f62e4e9fffb",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "moonshotai--Kimi-K3@9f62e4e9fffb",
+   "total_parameters": 1503647073024,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "kimi_linear",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 2695544,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "BF16": {
+     "parameters": 49122599168,
+     "tensors": 20453
+    },
+    "F32": {
+     "parameters": 82560,
+     "tensors": 40
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 98248224120,
+   "header_bytes": 2695544,
+   "n_shards": 20,
+   "n_tensors": 20493,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-Linear-48B-A3B-Instruct@e1df551a4471",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "moonshotai--Kimi-Linear-48B-A3B-Instruct@e1df551a4471",
+   "total_parameters": 49122681728,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "kimi_vl",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 782976,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "BF16": {
+     "parameters": 16407657776,
+     "tensors": 5679
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 32816098528,
+   "header_bytes": 782976,
+   "n_shards": 7,
+   "n_tensors": 5679,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+   "total_parameters": 16407657776,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "whisper",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 68704,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "F16": {
+     "parameters": 808878080,
+     "tensors": 587
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 1617824864,
+   "header_bytes": 68704,
+   "n_shards": 1,
+   "n_tensors": 587,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/openai--whisper-large-v3-turbo@41f01f3fe87f",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "openai--whisper-large-v3-turbo@41f01f3fe87f",
+   "total_parameters": 808878080,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "inkling_mm_model",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 123536,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "BF16": {
+     "parameters": 265956428810,
+     "tensors": 968
+    },
+    "F32": {
+     "parameters": 10280,
+     "tensors": 80
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 531913022276,
+   "header_bytes": 123536,
+   "n_shards": 33,
+   "n_tensors": 1048,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/thinkingmachines--Inkling-Small@8cc5877b44d3",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "thinkingmachines--Inkling-Small@8cc5877b44d3",
+   "total_parameters": 265956439090,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "falcon_h1",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 84544,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "BF16": {
+     "parameters": 7585654880,
+     "tensors": 751
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 15171394304,
+   "header_bytes": 84544,
+   "n_shards": 4,
+   "n_tensors": 751,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+   "total_parameters": 7585654880,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "llama",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 19096,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "BF16": {
+     "parameters": 1669408768,
+     "tensors": 165
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 3338836632,
+   "header_bytes": 19096,
+   "n_shards": 1,
+   "n_tensors": 165,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/tiiuae--Falcon3-1B-Instruct@28ba2251970a",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "tiiuae--Falcon3-1B-Instruct@28ba2251970a",
+   "total_parameters": 1669408768,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "qwen4_exp",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 229760,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "BF16": {
+     "parameters": 179999981424,
+     "tensors": 1655
+    },
+    "I64": {
+     "parameters": 35,
+     "tensors": 3
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 360000192888,
+   "header_bytes": 229760,
+   "n_shards": 131,
+   "n_tensors": 1658,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/windowsxp811203--Qwen3.8-Flash-Next-Abliterated@deb02632504b",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "windowsxp811203--Qwen3.8-Flash-Next-Abliterated@deb02632504b",
+   "total_parameters": 179999981459,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "glm4_moe",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 2282016,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "BF16": {
+     "parameters": 110468818944,
+     "tensors": 18283
+    },
+    "F32": {
+     "parameters": 5888,
+     "tensors": 46
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 220939943456,
+   "header_bytes": 2282016,
+   "n_shards": 47,
+   "n_tensors": 18329,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/zai-org--GLM-4.5-Air@a24ceef6ce4f",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "zai-org--GLM-4.5-Air@a24ceef6ce4f",
+   "total_parameters": 110468824832,
+   "touched_weight_bytes": false
+  },
+  {
+   "architecture_family": "glm5_next",
+   "architecture_family_source": "config.model_type",
+   "bytes_read": 10684096,
+   "classification": "STATIC_STREAMABLE",
+   "dtype_histogram": {
+    "BF16": {
+     "parameters": 6926096640,
+     "tensors": 1141
+    },
+    "F32": {
+     "parameters": 19484766,
+     "tensors": 37629
+    },
+    "F8_E4M3": {
+     "parameters": 314396639232,
+     "tensors": 37338
+    }
+   },
+   "evidence_tier": "HARDWARE_MEASURED",
+   "file_bytes": 328337455672,
+   "header_bytes": 10684096,
+   "n_shards": 62,
+   "n_tensors": 76108,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/zai-org--GLM-5.3-Flash@04c4e9e95c5d",
+   "schema": "hawking.odyssey.specimen_static_census.v1",
+   "slug": "zai-org--GLM-5.3-Flash@04c4e9e95c5d",
+   "total_parameters": 321342220638,
+   "touched_weight_bytes": false
+  }
+ ],
+ "total_bytes_read": 108573996,
+ "touched_weight_bytes": false,
+ "wall_seconds": 15.426019
+}

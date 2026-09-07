@@ -23,7 +23,7 @@ from pathlib import Path
 from typing import Any
 
 from tools.future._common import write_receipt
-from tools.future.status_causality import (
+from tools.verify.status_causality import (
     CAMPAIGN_CLAIM_CASES,
     CLAIM_CHECK_VERDICTS,
     CONTRADICTED,
@@ -480,7 +480,7 @@ def build() -> Path:
         ),
         "claim_checker": {
             "entry_point": "tools.future.campaign_scars.check_claim",
-            "implemented_in": "tools.future.status_causality.check_claim",
+            "implemented_in": "tools.verify.status_causality.check_claim",
             "verdicts": list(CLAIM_CHECK_VERDICTS),
             "n_seeded_cases": len(claims),
             "n_author_overreaches": len(author_overreaches),
@@ -498,7 +498,7 @@ def build() -> Path:
             "tools/future/autonomy_run.py::_detach_priority documents that 0 is a priority",
             "tools/future/autonomy_trial.py::_detached_overlap is interval arithmetic",
             "tools/future/index_provenance.py records the mixed commit fb4240dad",
-            "tools/future/status_causality.py already classified STATUS overreach; this extends it to (observation, conclusion)",
+            "tools/verify/status_causality.py already classified STATUS overreach; this extends it to (observation, conclusion)",
             "tools/future/artifact_identity.py is the refuse-on-stale-binary helper",
         ],
         "gaps_closed": [

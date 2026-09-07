@@ -164,14 +164,10 @@ const GATE_KERNEL: &str = "deepseek_v4_p6a_gate_bf16_matvec_authority";
 const HASH_ROUTE_KERNEL: &str = "deepseek_v4_p6a_hash_route_sqrtsoftplus_authority";
 const LEARNED_ROUTE_KERNEL: &str = "deepseek_v4_p6a_learned_bias_route_sqrtsoftplus_authority";
 const SHARED_SWIGLU_KERNEL: &str = "deepseek_v4_p5b_swiglu_route_bf16_authority";
-const SHARED_FP8_GATE_UP_SWIGLU_FUSED_ENV: &str =
-    "HAWKING_DSV4F_FP8_SHARED_GATE_UP_SWIGLU_FUSED";
-const SHARED_FP8_GATE_UP_SWIGLU_FUSED_KERNEL: &str =
-    "deepseek_v4_fp8_gate_up_swiglu_bf16_fused";
-const SHARED_FP8_DOWN_COMBINE_FUSED_ENV: &str =
-    "HAWKING_DSV4F_FP8_SHARED_DOWN_COMBINE_FUSED";
-const SHARED_FP8_DOWN_COMBINE_FUSED_KERNEL: &str =
-    "deepseek_v4_fp8_down_bf16_combine_fused";
+const SHARED_FP8_GATE_UP_SWIGLU_FUSED_ENV: &str = "HAWKING_DSV4F_FP8_SHARED_GATE_UP_SWIGLU_FUSED";
+const SHARED_FP8_GATE_UP_SWIGLU_FUSED_KERNEL: &str = "deepseek_v4_fp8_gate_up_swiglu_bf16_fused";
+const SHARED_FP8_DOWN_COMBINE_FUSED_ENV: &str = "HAWKING_DSV4F_FP8_SHARED_DOWN_COMBINE_FUSED";
+const SHARED_FP8_DOWN_COMBINE_FUSED_KERNEL: &str = "deepseek_v4_fp8_down_bf16_combine_fused";
 
 /// Opt-in only: the shared FP8 gate/up fusion remains unqualified until it
 /// earns source-independent parity and protected complete-token timing on the
@@ -252,8 +248,7 @@ const DEVICE_MHC_NORM_ACT_QUANT_KERNEL: &str =
     "deepseek_v4_p7_ffn_rmsnorm_act_quant_bf16_ue8m0_simdgroup_candidate";
 const DEVICE_MHC_NORM_SIMD_ENV: &str = "HAWKING_DSV4F_MHC_NORM_SIMD";
 const DEVICE_MHC_POST_KERNEL: &str = "deepseek_v4_p7_mhc_ffn_post_authority";
-const DEVICE_MHC_ATTN_POST_F32_KERNEL: &str =
-    "deepseek_v4_p7_mhc_ffn_post_from_f32_authority";
+const DEVICE_MHC_ATTN_POST_F32_KERNEL: &str = "deepseek_v4_p7_mhc_ffn_post_from_f32_authority";
 
 fn device_mhc_pre_kernel(simd: bool) -> &'static str {
     if simd {
@@ -1029,20 +1024,15 @@ mod macos {
     impl Scratch {
         fn new(metal: &MetalContext, device_mhc: bool) -> Result<Self> {
             let bf16_h = HIDDEN_SIZE * size_of::<u16>();
-            let device_only = |bytes: usize| {
-                metal.new_buffer_checked(if device_mhc { bytes } else { 1 })
-            };
+            let device_only =
+                |bytes: usize| metal.new_buffer_checked(if device_mhc { bytes } else { 1 });
             Ok(Self {
                 hc_state_a: device_only(HC_FLAT_WIDTH * size_of::<u16>())?,
                 hc_state_b: device_only(HC_FLAT_WIDTH * size_of::<u16>())?,
-                hc_attn_fn: device_only(
-                    HC_MIX_WIDTH * HC_FLAT_WIDTH * size_of::<f32>(),
-                )?,
+                hc_attn_fn: device_only(HC_MIX_WIDTH * HC_FLAT_WIDTH * size_of::<f32>())?,
                 hc_attn_base: device_only(HC_MIX_WIDTH * size_of::<f32>())?,
                 hc_attn_scale: device_only(3 * size_of::<f32>())?,
-                hc_ffn_fn: device_only(
-                    HC_MIX_WIDTH * HC_FLAT_WIDTH * size_of::<f32>(),
-                )?,
+                hc_ffn_fn: device_only(HC_MIX_WIDTH * HC_FLAT_WIDTH * size_of::<f32>())?,
                 hc_ffn_base: device_only(HC_MIX_WIDTH * size_of::<f32>())?,
                 hc_ffn_scale: device_only(3 * size_of::<f32>())?,
                 hc_reduced: device_only(bf16_h)?,
@@ -1322,13 +1312,11 @@ mod macos {
         ) -> Result<(usize, SubmittedBatch)> {
             let mut n = 0usize;
             let submitted = if self.pipeline_cache_reuse {
-                self.metal.submit_batch_with_pipeline_cache(
-                    &mut self.pipeline_cache,
-                    |batch| {
+                self.metal
+                    .submit_batch_with_pipeline_cache(&mut self.pipeline_cache, |batch| {
                         n = encode(batch, &self.scratch)?;
                         Ok(())
-                    },
-                )?
+                    })?
             } else {
                 self.metal.submit_batch(|batch| {
                     n = encode(batch, &self.scratch)?;
@@ -1470,12 +1458,9 @@ mod macos {
                 memory_stall_proxy_gbps: None,
             }
         };
-        let (aq_h_th, aq_h_tg, aq_h_tptg, aq_h_sg) =
-            act_quant_geometry(HIDDEN_SIZE as u32, act_tg);
-        let (aq_q_th, aq_q_tg, aq_q_tptg, aq_q_sg) =
-            act_quant_geometry(Q_LORA_RANK as u32, act_tg);
-        let (aq_o_th, aq_o_tg, aq_o_tptg, aq_o_sg) =
-            act_quant_geometry(WO_B_COLS as u32, act_tg);
+        let (aq_h_th, aq_h_tg, aq_h_tptg, aq_h_sg) = act_quant_geometry(HIDDEN_SIZE as u32, act_tg);
+        let (aq_q_th, aq_q_tg, aq_q_tptg, aq_q_sg) = act_quant_geometry(Q_LORA_RANK as u32, act_tg);
+        let (aq_o_th, aq_o_tg, aq_o_tptg, aq_o_sg) = act_quant_geometry(WO_B_COLS as u32, act_tg);
         let fp8_tg = fp8_tg.max(1);
         let fp8_occ_tg = align_simd(fp8_occ_tg.max(SIMD_WIDTH));
         let cast_tg = cast_tg.max(1);
@@ -2208,13 +2193,18 @@ mod macos {
     ) -> Result<()> {
         if rms_simd && width >= SIMD_WIDTH {
             let threads = align_simd(width.min(rms_tg.max(SIMD_WIDTH)));
-            batch.dispatch_threads(RMSNORM_SIMD_KERNEL, (threads, 1, 1), (threads, 1, 1), |enc| {
-                enc.set_buffer(0, Some(input), 0);
-                enc.set_buffer(1, Some(weight), 0);
-                enc.set_buffer(2, Some(output), 0);
-                set_u32(enc, 3, &width);
-                set_f32(enc, 4, &eps);
-            })
+            batch.dispatch_threads(
+                RMSNORM_SIMD_KERNEL,
+                (threads, 1, 1),
+                (threads, 1, 1),
+                |enc| {
+                    enc.set_buffer(0, Some(input), 0);
+                    enc.set_buffer(1, Some(weight), 0);
+                    enc.set_buffer(2, Some(output), 0);
+                    set_u32(enc, 3, &width);
+                    set_f32(enc, 4, &eps);
+                },
+            )
         } else {
             batch.dispatch_threads(RMSNORM_KERNEL, (1, 1, 1), (1, 1, 1), |enc| {
                 enc.set_buffer(0, Some(input), 0);
@@ -2288,36 +2278,31 @@ mod macos {
         let mix_width = HC_MIX_WIDTH as u32;
         let sinkhorn_iters = HC_SINKHORN_ITERS as u32;
         let kernel = device_mhc_pre_kernel(simd);
-        batch.dispatch_threads(
-            kernel,
-            (threads, 1, 1),
-            (threads, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(residual_hc), 0);
-                enc.set_buffer(1, Some(hc_fn), 0);
-                enc.set_buffer(2, Some(hc_scale), 0);
-                enc.set_buffer(3, Some(hc_base), 0);
-                enc.set_buffer(4, Some(reduced), 0);
-                enc.set_buffer(5, Some(flat_rsqrt), 0);
-                enc.set_buffer(6, Some(mixes), 0);
-                enc.set_buffer(7, Some(pre), 0);
-                enc.set_buffer(8, Some(post), 0);
-                enc.set_buffer(9, Some(comb), 0);
-                set_u32(enc, 10, &hidden);
-                set_u32(enc, 11, &hc_mult);
-                set_u32(enc, 12, &mix_width);
-                set_u32(enc, 13, &sinkhorn_iters);
-                set_f32(enc, 14, &RMS_NORM_EPS);
-                set_f32(enc, 15, &HC_EPS);
-                if simd {
-                    // P7 consumes a real lane-major [4, hidden] state. The
-                    // shared candidate also serves P4B's replicated row, so
-                    // make this distinction explicit in the ABI.
-                    let replicated_input = 0u32;
-                    set_u32(enc, 16, &replicated_input);
-                }
-            },
-        )
+        batch.dispatch_threads(kernel, (threads, 1, 1), (threads, 1, 1), |enc| {
+            enc.set_buffer(0, Some(residual_hc), 0);
+            enc.set_buffer(1, Some(hc_fn), 0);
+            enc.set_buffer(2, Some(hc_scale), 0);
+            enc.set_buffer(3, Some(hc_base), 0);
+            enc.set_buffer(4, Some(reduced), 0);
+            enc.set_buffer(5, Some(flat_rsqrt), 0);
+            enc.set_buffer(6, Some(mixes), 0);
+            enc.set_buffer(7, Some(pre), 0);
+            enc.set_buffer(8, Some(post), 0);
+            enc.set_buffer(9, Some(comb), 0);
+            set_u32(enc, 10, &hidden);
+            set_u32(enc, 11, &hc_mult);
+            set_u32(enc, 12, &mix_width);
+            set_u32(enc, 13, &sinkhorn_iters);
+            set_f32(enc, 14, &RMS_NORM_EPS);
+            set_f32(enc, 15, &HC_EPS);
+            if simd {
+                // P7 consumes a real lane-major [4, hidden] state. The
+                // shared candidate also serves P4B's replicated row, so
+                // make this distinction explicit in the ABI.
+                let replicated_input = 0u32;
+                set_u32(enc, 16, &replicated_input);
+            }
+        })
     }
 
     fn dispatch_device_mhc_post(
@@ -2585,11 +2570,7 @@ mod macos {
         }
     }
 
-    fn no_copy_verified(
-        metal: &MetalContext,
-        bytes: &[u8],
-        name: &str,
-    ) -> Result<metal::Buffer> {
+    fn no_copy_verified(metal: &MetalContext, bytes: &[u8], name: &str) -> Result<metal::Buffer> {
         if bytes.is_empty()
             || (bytes.as_ptr() as usize) % PAGE_ALIGN != 0
             || bytes.len() % PAGE_ALIGN != 0
@@ -3254,12 +3235,8 @@ mod macos {
             0,
         );
         profiler.add_stage("probe.second_touch", second_touch_probe_ns, 1, 0);
-        let token_ns_ledger = Some(profiler.finish(
-            body_ns,
-            init_ns,
-            wall_ns,
-            chunk_verification.verify_ns,
-        ));
+        let token_ns_ledger =
+            Some(profiler.finish(body_ns, init_ns, wall_ns, chunk_verification.verify_ns));
 
         Ok(NativeTokenGraphReport {
             schema: NATIVE_TOKEN_GRAPH_SCHEMA,
@@ -3313,14 +3290,7 @@ mod macos {
     ) -> Result<Vec<u16>> {
         let preloaded = attn_prefetch.take();
         let (attn_hc, preload) = execute_attention(
-            graph,
-            reader,
-            layer,
-            hc_in,
-            token_id,
-            ledger,
-            profiler,
-            preloaded,
+            graph, reader, layer, hc_in, token_id, ledger, profiler, preloaded,
         )?;
         execute_moe(
             graph,
@@ -3428,7 +3398,12 @@ mod macos {
                 par_read_views(reader, &jobs)
             })?
         };
-        profiler.add_stage("host.mla.wq_a_bytes", 0, 1, (Q_LORA_RANK * HIDDEN_SIZE) as u64);
+        profiler.add_stage(
+            "host.mla.wq_a_bytes",
+            0,
+            1,
+            (Q_LORA_RANK * HIDDEN_SIZE) as u64,
+        );
         profiler.add_stage(
             "host.mla.wq_b_bytes",
             0,
@@ -3477,11 +3452,11 @@ mod macos {
             (attn_norm_row, post_f32, comb_f32)
         };
         let mut bind_or_fill = |dest_w: &metal::Buffer,
-                            dest_s: &metal::Buffer,
-                            w_name: &str,
-                            s_name: &str,
-                            weight: &[u8],
-                            scale: &[u8]| {
+                                dest_s: &metal::Buffer,
+                                w_name: &str,
+                                s_name: &str,
+                                weight: &[u8],
+                                scale: &[u8]| {
             if attn_ready {
                 ledger.acquire(w_name, weight.len())?;
                 ledger.acquire(s_name, scale.len())?;
@@ -3944,9 +3919,10 @@ mod macos {
             ));
         }
         let moe_io_bytes: usize = jobs.iter().map(|job| job.1).sum();
-        let blobs = profiler.time_bytes_result("host.moe_control_io", moe_io_bytes as u64, || {
-            par_read_views(reader, &jobs)
-        })?;
+        let blobs =
+            profiler.time_bytes_result("host.moe_control_io", moe_io_bytes as u64, || {
+                par_read_views(reader, &jobs)
+            })?;
         let (hc_fn, hc_base, hc_scale, ffn_norm_w) = if graph.controls.device_mhc {
             // FFN controls have their own slots because this preload runs while
             // attention is still in flight.  The next CB consumes them only
@@ -4056,14 +4032,16 @@ mod macos {
             Some(profiler.time_bytes_result(
                 "host.expert_slab_io_overlapped",
                 expert_bytes,
-                || bind_expert_payloads(
-                    graph,
-                    reader,
-                    ledger,
-                    layer,
-                    graph.controls.expert_slab_pack,
-                    &exec,
-                ),
+                || {
+                    bind_expert_payloads(
+                        graph,
+                        reader,
+                        ledger,
+                        layer,
+                        graph.controls.expert_slab_pack,
+                        &exec,
+                    )
+                },
             )?)
         } else {
             None
@@ -4104,7 +4082,11 @@ mod macos {
         decode_family: bool,
     }
 
-    fn encode_route(batch: &mut CommandBatch<'_>, s: &Scratch, p: &RouteEncode<'_>) -> Result<usize> {
+    fn encode_route(
+        batch: &mut CommandBatch<'_>,
+        s: &Scratch,
+        p: &RouteEncode<'_>,
+    ) -> Result<usize> {
         let mut n = 0usize;
         let rows = ROUTED_EXPERTS as u32;
         let cols = HIDDEN_SIZE as u32;
@@ -4146,19 +4128,14 @@ mod macos {
             })?;
         }
         n += 1;
-        batch.dispatch_threads(
-            pack_kernel(p.decode_family),
-            (1, 1, 1),
-            (1, 1, 1),
-            |enc| {
+        batch.dispatch_threads(pack_kernel(p.decode_family), (1, 1, 1), (1, 1, 1), |enc| {
             enc.set_buffer(0, Some(&s.route_ids), 0);
             enc.set_buffer(1, Some(&s.route_weights), 0);
             enc.set_buffer(2, Some(&s.worklist), 0);
             enc.set_buffer(3, Some(&s.pack_valid), 0);
             set_u32(enc, 4, &p.top_k);
             set_u32(enc, 5, &p.experts_u);
-            },
-        )?;
+        })?;
         n += 1;
         Ok(n)
     }
@@ -4275,7 +4252,13 @@ mod macos {
                 p.cast_tg,
             )?;
             n += 1;
-            dispatch_cast(batch, &s.expert_up_f32, &s.expert_up_bf16, gate_count, p.cast_tg)?;
+            dispatch_cast(
+                batch,
+                &s.expert_up_f32,
+                &s.expert_up_bf16,
+                gate_count,
+                p.cast_tg,
+            )?;
             n += 1;
             batch.dispatch_threads(
                 worklist_swiglu_kernel(p.decode_family),
@@ -4348,7 +4331,13 @@ mod macos {
             p.decode_family,
         )?;
         n += 1;
-        dispatch_cast(batch, &s.expert_down_f32, &s.expert_down_bf16, grid_w2, p.cast_tg)?;
+        dispatch_cast(
+            batch,
+            &s.expert_down_f32,
+            &s.expert_down_bf16,
+            grid_w2,
+            p.cast_tg,
+        )?;
         n += 1;
         if p.shared_fp8_gate_up_swiglu_fused {
             dispatch_shared_fp8_gate_up_swiglu(
@@ -4504,17 +4493,16 @@ mod macos {
         if let Some(next) = next_layer {
             let started = Instant::now();
             let (bind, prefetched) = std::thread::scope(|scope| -> Result<_> {
-                let expert =
-                    scope.spawn(|| {
-                        bind_expert_payloads(
-                            graph,
-                            reader,
-                            ledger,
-                            layer,
-                            graph.controls.expert_slab_pack,
-                            exec,
-                        )
-                    });
+                let expert = scope.spawn(|| {
+                    bind_expert_payloads(
+                        graph,
+                        reader,
+                        ledger,
+                        layer,
+                        graph.controls.expert_slab_pack,
+                        exec,
+                    )
+                });
                 let attn = scope.spawn(|| {
                     let jobs = attn_read_jobs(next);
                     par_read_views(reader, &jobs)
@@ -4708,8 +4696,8 @@ mod macos {
             gate_tg,
             decode_family: graph.controls.decode_family,
         };
-        let expert_bytes = (ACTIVATED_EXPERTS
-            * (2 * W1_PACKED + W2_PACKED + 2 * W1_SCALES + W2_SCALES)) as u64;
+        let expert_bytes =
+            (ACTIVATED_EXPERTS * (2 * W1_PACKED + W2_PACKED + 2 * W1_SCALES + W2_SCALES)) as u64;
         let merge_hash = collapse && is_hash;
 
         let expert_bind = if merge_hash {
@@ -4747,8 +4735,7 @@ mod macos {
                 collapse,
                 fp4_occupancy: graph.controls.fp4_occupancy,
                 fp4_gate_up_swiglu_fused: graph.controls.fp4_gate_up_swiglu_fused,
-                shared_fp8_gate_up_swiglu_fused:
-                    graph.controls.shared_fp8_gate_up_swiglu_fused,
+                shared_fp8_gate_up_swiglu_fused: graph.controls.shared_fp8_gate_up_swiglu_fused,
                 shared_fp8_down_combine_fused: graph.controls.shared_fp8_down_combine_fused,
                 fp8_simd: graph.controls.mla_fp8_simd,
                 decode_family: graph.controls.decode_family,
@@ -4941,8 +4928,7 @@ mod macos {
                 collapse,
                 fp4_occupancy: graph.controls.fp4_occupancy,
                 fp4_gate_up_swiglu_fused: graph.controls.fp4_gate_up_swiglu_fused,
-                shared_fp8_gate_up_swiglu_fused:
-                    graph.controls.shared_fp8_gate_up_swiglu_fused,
+                shared_fp8_gate_up_swiglu_fused: graph.controls.shared_fp8_gate_up_swiglu_fused,
                 shared_fp8_down_combine_fused: graph.controls.shared_fp8_down_combine_fused,
                 fp8_simd: graph.controls.mla_fp8_simd,
                 decode_family: graph.controls.decode_family,
@@ -5196,144 +5182,212 @@ mod macos {
         let softmax_scale = (HEAD_DIM as f32).powf(-0.5);
         let heads = NUM_HEADS as u32;
         let dim = HEAD_DIM as u32;
-        probe_one(&graph.metal, profiler, "isolated.act_quant.hidden", layer_idx, |batch| {
-            dispatch_act_quant(
-                batch,
-                &s.hidden_a,
-                &s.quant_k,
-                &s.quant_scale_k,
-                HIDDEN_SIZE as u32,
-                act_tg,
-                0,
-                0,
-                0,
-            )
-        })?;
-        probe_one(&graph.metal, profiler, "isolated.mla.wq_a", layer_idx, |batch| {
-            dispatch_fp8(
-                batch,
-                &wq_a.weight,
-                &wq_a.scale,
-                &s.quant_k,
-                &s.quant_scale_k,
-                &s.f32_tmp,
-                Q_LORA_RANK as u32,
-                HIDDEN_SIZE as u32,
-                fp8_occ_tg,
-                true,
-                fp8_simd,
-            )
-        })?;
-        probe_one(&graph.metal, profiler, "isolated.cast.q_lora", layer_idx, |batch| {
-            dispatch_cast(batch, &s.f32_tmp, &s.q_lora, Q_LORA_RANK as u32, cast_tg)
-        })?;
-        probe_one(&graph.metal, profiler, "isolated.rmsnorm.q", layer_idx, |batch| {
-            dispatch_rmsnorm(
-                batch,
-                &s.q_lora,
-                q_norm,
-                &s.q_lora,
-                Q_LORA_RANK as u32,
-                eps,
-                rms_tg,
-                rms_simd,
-            )
-        })?;
-        probe_one(&graph.metal, profiler, "isolated.mla.wq_b", layer_idx, |batch| {
-            dispatch_fp8(
-                batch,
-                &wq_b.weight,
-                &wq_b.scale,
-                &s.quant_q,
-                &s.quant_scale_q,
-                &s.f32_tmp,
-                WQ_B_ROWS as u32,
-                Q_LORA_RANK as u32,
-                fp8_tg,
-                false,
-                fp8_simd,
-            )
-        })?;
-        probe_one(&graph.metal, profiler, "isolated.mla.wkv", layer_idx, |batch| {
-            dispatch_fp8(
-                batch,
-                &wkv.weight,
-                &wkv.scale,
-                &s.quant_k,
-                &s.quant_scale_k,
-                &s.f32_tmp,
-                WKV_ROWS as u32,
-                HIDDEN_SIZE as u32,
-                fp8_occ_tg,
-                true,
-                fp8_simd,
-            )
-        })?;
-        probe_one(&graph.metal, profiler, "isolated.mla.wo_a", layer_idx, |batch| {
-            dispatch_wo_a(
-                batch,
-                &wo_a.weight,
-                &wo_a.scale,
-                &s.attn,
-                &s.wo_a,
-                wo_a_tg,
-                wo_a_occ_tg,
-                wo_a_simd,
-            )
-        })?;
-        probe_one(&graph.metal, profiler, "isolated.mla.wo_b", layer_idx, |batch| {
-            dispatch_fp8(
-                batch,
-                &wo_b.weight,
-                &wo_b.scale,
-                &s.quant_wo,
-                &s.quant_scale_wo,
-                &s.f32_tmp,
-                WO_B_ROWS as u32,
-                WO_B_COLS as u32,
-                fp8_occ_tg,
-                true,
-                fp8_simd,
-            )
-        })?;
-        probe_one(&graph.metal, profiler, "isolated.attn.sparse_pos0", layer_idx, |batch| {
-            batch.dispatch_threads(ATTN_KERNEL, (heads, 1, 1), (heads.min(64), 1, 1), |enc| {
-                enc.set_buffer(0, Some(&s.attn), 0);
-                enc.set_buffer(1, Some(&s.wkv), 0);
-                enc.set_buffer(2, Some(sink), 0);
-                enc.set_buffer(3, Some(&s.attn), 0);
-                enc.set_buffer(4, Some(&s.attn_scores), 0);
-                enc.set_buffer(5, Some(&s.attn_denoms), 0);
-                set_u32(enc, 6, &heads);
-                set_u32(enc, 7, &dim);
-                set_f32(enc, 8, &softmax_scale);
-            })
-        })?;
-        probe_one(&graph.metal, profiler, "isolated.kv_qat", layer_idx, |batch| {
-            dispatch_kv_qat(
-                batch,
-                &s.wkv,
-                &s.wkv,
-                &s.kv_qat_bytes,
-                &s.kv_qat_scales,
-                kv_qat_simd,
-            )
-        })?;
-        probe_one(&graph.metal, profiler, "isolated.rmsnorm.kv", layer_idx, |batch| {
-            dispatch_rmsnorm(
-                batch,
-                &s.wkv,
-                kv_norm,
-                &s.wkv,
-                HEAD_DIM as u32,
-                RMS_NORM_EPS,
-                rms_tg,
-                rms_simd,
-            )
-        })?;
-        probe_one(&graph.metal, profiler, "isolated.per_head_rms", layer_idx, |batch| {
-            dispatch_per_head_rms(batch, &s.wq_b, &s.attn, heads, dim, eps, rms_simd)
-        })?;
+        probe_one(
+            &graph.metal,
+            profiler,
+            "isolated.act_quant.hidden",
+            layer_idx,
+            |batch| {
+                dispatch_act_quant(
+                    batch,
+                    &s.hidden_a,
+                    &s.quant_k,
+                    &s.quant_scale_k,
+                    HIDDEN_SIZE as u32,
+                    act_tg,
+                    0,
+                    0,
+                    0,
+                )
+            },
+        )?;
+        probe_one(
+            &graph.metal,
+            profiler,
+            "isolated.mla.wq_a",
+            layer_idx,
+            |batch| {
+                dispatch_fp8(
+                    batch,
+                    &wq_a.weight,
+                    &wq_a.scale,
+                    &s.quant_k,
+                    &s.quant_scale_k,
+                    &s.f32_tmp,
+                    Q_LORA_RANK as u32,
+                    HIDDEN_SIZE as u32,
+                    fp8_occ_tg,
+                    true,
+                    fp8_simd,
+                )
+            },
+        )?;
+        probe_one(
+            &graph.metal,
+            profiler,
+            "isolated.cast.q_lora",
+            layer_idx,
+            |batch| dispatch_cast(batch, &s.f32_tmp, &s.q_lora, Q_LORA_RANK as u32, cast_tg),
+        )?;
+        probe_one(
+            &graph.metal,
+            profiler,
+            "isolated.rmsnorm.q",
+            layer_idx,
+            |batch| {
+                dispatch_rmsnorm(
+                    batch,
+                    &s.q_lora,
+                    q_norm,
+                    &s.q_lora,
+                    Q_LORA_RANK as u32,
+                    eps,
+                    rms_tg,
+                    rms_simd,
+                )
+            },
+        )?;
+        probe_one(
+            &graph.metal,
+            profiler,
+            "isolated.mla.wq_b",
+            layer_idx,
+            |batch| {
+                dispatch_fp8(
+                    batch,
+                    &wq_b.weight,
+                    &wq_b.scale,
+                    &s.quant_q,
+                    &s.quant_scale_q,
+                    &s.f32_tmp,
+                    WQ_B_ROWS as u32,
+                    Q_LORA_RANK as u32,
+                    fp8_tg,
+                    false,
+                    fp8_simd,
+                )
+            },
+        )?;
+        probe_one(
+            &graph.metal,
+            profiler,
+            "isolated.mla.wkv",
+            layer_idx,
+            |batch| {
+                dispatch_fp8(
+                    batch,
+                    &wkv.weight,
+                    &wkv.scale,
+                    &s.quant_k,
+                    &s.quant_scale_k,
+                    &s.f32_tmp,
+                    WKV_ROWS as u32,
+                    HIDDEN_SIZE as u32,
+                    fp8_occ_tg,
+                    true,
+                    fp8_simd,
+                )
+            },
+        )?;
+        probe_one(
+            &graph.metal,
+            profiler,
+            "isolated.mla.wo_a",
+            layer_idx,
+            |batch| {
+                dispatch_wo_a(
+                    batch,
+                    &wo_a.weight,
+                    &wo_a.scale,
+                    &s.attn,
+                    &s.wo_a,
+                    wo_a_tg,
+                    wo_a_occ_tg,
+                    wo_a_simd,
+                )
+            },
+        )?;
+        probe_one(
+            &graph.metal,
+            profiler,
+            "isolated.mla.wo_b",
+            layer_idx,
+            |batch| {
+                dispatch_fp8(
+                    batch,
+                    &wo_b.weight,
+                    &wo_b.scale,
+                    &s.quant_wo,
+                    &s.quant_scale_wo,
+                    &s.f32_tmp,
+                    WO_B_ROWS as u32,
+                    WO_B_COLS as u32,
+                    fp8_occ_tg,
+                    true,
+                    fp8_simd,
+                )
+            },
+        )?;
+        probe_one(
+            &graph.metal,
+            profiler,
+            "isolated.attn.sparse_pos0",
+            layer_idx,
+            |batch| {
+                batch.dispatch_threads(ATTN_KERNEL, (heads, 1, 1), (heads.min(64), 1, 1), |enc| {
+                    enc.set_buffer(0, Some(&s.attn), 0);
+                    enc.set_buffer(1, Some(&s.wkv), 0);
+                    enc.set_buffer(2, Some(sink), 0);
+                    enc.set_buffer(3, Some(&s.attn), 0);
+                    enc.set_buffer(4, Some(&s.attn_scores), 0);
+                    enc.set_buffer(5, Some(&s.attn_denoms), 0);
+                    set_u32(enc, 6, &heads);
+                    set_u32(enc, 7, &dim);
+                    set_f32(enc, 8, &softmax_scale);
+                })
+            },
+        )?;
+        probe_one(
+            &graph.metal,
+            profiler,
+            "isolated.kv_qat",
+            layer_idx,
+            |batch| {
+                dispatch_kv_qat(
+                    batch,
+                    &s.wkv,
+                    &s.wkv,
+                    &s.kv_qat_bytes,
+                    &s.kv_qat_scales,
+                    kv_qat_simd,
+                )
+            },
+        )?;
+        probe_one(
+            &graph.metal,
+            profiler,
+            "isolated.rmsnorm.kv",
+            layer_idx,
+            |batch| {
+                dispatch_rmsnorm(
+                    batch,
+                    &s.wkv,
+                    kv_norm,
+                    &s.wkv,
+                    HEAD_DIM as u32,
+                    RMS_NORM_EPS,
+                    rms_tg,
+                    rms_simd,
+                )
+            },
+        )?;
+        probe_one(
+            &graph.metal,
+            profiler,
+            "isolated.per_head_rms",
+            layer_idx,
+            |batch| dispatch_per_head_rms(batch, &s.wq_b, &s.attn, heads, dim, eps, rms_simd),
+        )?;
         Ok(())
     }
 
@@ -5362,169 +5416,229 @@ mod macos {
         let zero = 0u32;
         let one = 1u32;
         let experts_u = ROUTED_EXPERTS as u32;
-        probe_one(&graph.metal, profiler, "isolated.router.gate", layer_idx, |batch| {
-            let rows = ROUTED_EXPERTS as u32;
-            let cols = HIDDEN_SIZE as u32;
-            let tg = gate_tg.min(rows);
-            batch.dispatch_threads(GATE_KERNEL, (rows, 1, 1), (tg, 1, 1), |enc| {
-                enc.set_buffer(0, Some(gate_w), 0);
-                enc.set_buffer(1, Some(&s.hidden_a), 0);
-                enc.set_buffer(2, Some(&s.gate_logits), 0);
-                set_u32(enc, 3, &rows);
-                set_u32(enc, 4, &cols);
-            })
-        })?;
+        probe_one(
+            &graph.metal,
+            profiler,
+            "isolated.router.gate",
+            layer_idx,
+            |batch| {
+                let rows = ROUTED_EXPERTS as u32;
+                let cols = HIDDEN_SIZE as u32;
+                let tg = gate_tg.min(rows);
+                batch.dispatch_threads(GATE_KERNEL, (rows, 1, 1), (tg, 1, 1), |enc| {
+                    enc.set_buffer(0, Some(gate_w), 0);
+                    enc.set_buffer(1, Some(&s.hidden_a), 0);
+                    enc.set_buffer(2, Some(&s.gate_logits), 0);
+                    set_u32(enc, 3, &rows);
+                    set_u32(enc, 4, &cols);
+                })
+            },
+        )?;
         if is_hash {
             if let Some(table) = tid2eid {
-                probe_one(&graph.metal, profiler, "isolated.router.hash", layer_idx, |batch| {
-                    batch.dispatch_threads(HASH_ROUTE_KERNEL, (1, 1, 1), (1, 1, 1), |enc| {
+                probe_one(
+                    &graph.metal,
+                    profiler,
+                    "isolated.router.hash",
+                    layer_idx,
+                    |batch| {
+                        batch.dispatch_threads(HASH_ROUTE_KERNEL, (1, 1, 1), (1, 1, 1), |enc| {
+                            enc.set_buffer(0, Some(&s.gate_logits), 0);
+                            enc.set_buffer(1, Some(table), 0);
+                            enc.set_buffer(2, Some(&s.route_ids), 0);
+                            enc.set_buffer(3, Some(&s.route_weights), 0);
+                            enc.set_buffer(4, Some(&s.original_scores), 0);
+                            enc.set_buffer(5, Some(&s.route_valid), 0);
+                            set_u32(enc, 6, &token_u);
+                            set_u32(enc, 7, &experts_u);
+                            set_u32(enc, 8, &top_k);
+                            set_f32(enc, 9, &ROUTE_SCALE);
+                        })
+                    },
+                )?;
+            }
+        } else if let Some(bias) = bias {
+            probe_one(
+                &graph.metal,
+                profiler,
+                "isolated.router.learned",
+                layer_idx,
+                |batch| {
+                    batch.dispatch_threads(LEARNED_ROUTE_KERNEL, (1, 1, 1), (1, 1, 1), |enc| {
                         enc.set_buffer(0, Some(&s.gate_logits), 0);
-                        enc.set_buffer(1, Some(table), 0);
+                        enc.set_buffer(1, Some(bias), 0);
                         enc.set_buffer(2, Some(&s.route_ids), 0);
                         enc.set_buffer(3, Some(&s.route_weights), 0);
                         enc.set_buffer(4, Some(&s.original_scores), 0);
                         enc.set_buffer(5, Some(&s.route_valid), 0);
-                        set_u32(enc, 6, &token_u);
-                        set_u32(enc, 7, &experts_u);
-                        set_u32(enc, 8, &top_k);
-                        set_f32(enc, 9, &ROUTE_SCALE);
+                        set_u32(enc, 6, &experts_u);
+                        set_u32(enc, 7, &top_k);
+                        set_f32(enc, 8, &ROUTE_SCALE);
                     })
-                })?;
-            }
-        } else if let Some(bias) = bias {
-            probe_one(&graph.metal, profiler, "isolated.router.learned", layer_idx, |batch| {
-                batch.dispatch_threads(LEARNED_ROUTE_KERNEL, (1, 1, 1), (1, 1, 1), |enc| {
-                    enc.set_buffer(0, Some(&s.gate_logits), 0);
-                    enc.set_buffer(1, Some(bias), 0);
-                    enc.set_buffer(2, Some(&s.route_ids), 0);
-                    enc.set_buffer(3, Some(&s.route_weights), 0);
-                    enc.set_buffer(4, Some(&s.original_scores), 0);
-                    enc.set_buffer(5, Some(&s.route_valid), 0);
-                    set_u32(enc, 6, &experts_u);
-                    set_u32(enc, 7, &top_k);
-                    set_f32(enc, 8, &ROUTE_SCALE);
-                })
-            })?;
+                },
+            )?;
         }
-        probe_one(&graph.metal, profiler, "isolated.routed.w1", layer_idx, |batch| {
-            dispatch_worklist_fp4(
-                batch,
-                &s.worklist,
-                &experts.w1_refs,
-                &experts.w1_resources,
-                &s.quant_ffn,
-                &s.quant_scale_ffn,
-                &s.expert_gate_f32,
-                rows_w1,
-                packed,
-                scale_cols,
-                top_k,
-                zero,
-                fp4_tg,
-                graph.controls.fp4_occupancy,
-                graph.controls.decode_family,
-            )
-        })?;
-        probe_one(&graph.metal, profiler, "isolated.routed.w3", layer_idx, |batch| {
-            dispatch_worklist_fp4(
-                batch,
-                &s.worklist,
-                &experts.w3_refs,
-                &experts.w3_resources,
-                &s.quant_ffn,
-                &s.quant_scale_ffn,
-                &s.expert_up_f32,
-                rows_w1,
-                packed,
-                scale_cols,
-                top_k,
-                zero,
-                fp4_tg,
-                graph.controls.fp4_occupancy,
-                graph.controls.decode_family,
-            )
-        })?;
+        probe_one(
+            &graph.metal,
+            profiler,
+            "isolated.routed.w1",
+            layer_idx,
+            |batch| {
+                dispatch_worklist_fp4(
+                    batch,
+                    &s.worklist,
+                    &experts.w1_refs,
+                    &experts.w1_resources,
+                    &s.quant_ffn,
+                    &s.quant_scale_ffn,
+                    &s.expert_gate_f32,
+                    rows_w1,
+                    packed,
+                    scale_cols,
+                    top_k,
+                    zero,
+                    fp4_tg,
+                    graph.controls.fp4_occupancy,
+                    graph.controls.decode_family,
+                )
+            },
+        )?;
+        probe_one(
+            &graph.metal,
+            profiler,
+            "isolated.routed.w3",
+            layer_idx,
+            |batch| {
+                dispatch_worklist_fp4(
+                    batch,
+                    &s.worklist,
+                    &experts.w3_refs,
+                    &experts.w3_resources,
+                    &s.quant_ffn,
+                    &s.quant_scale_ffn,
+                    &s.expert_up_f32,
+                    rows_w1,
+                    packed,
+                    scale_cols,
+                    top_k,
+                    zero,
+                    fp4_tg,
+                    graph.controls.fp4_occupancy,
+                    graph.controls.decode_family,
+                )
+            },
+        )?;
         let rows_w2 = HIDDEN_SIZE as u32;
         let packed_w2 = (MOE_INTER_DIM / 2) as u32;
         let scale_w2 = (MOE_INTER_DIM / FP4_BLOCK) as u32;
-        probe_one(&graph.metal, profiler, "isolated.routed.w2", layer_idx, |batch| {
-            dispatch_worklist_fp4(
-                batch,
-                &s.worklist,
-                &experts.w2_refs,
-                &experts.w2_resources,
-                &s.expert_down_quant,
-                &s.expert_down_scales,
-                &s.expert_down_f32,
-                rows_w2,
-                packed_w2,
-                scale_w2,
-                top_k,
-                one,
-                fp4_tg,
-                graph.controls.fp4_occupancy,
-                graph.controls.decode_family,
-            )
-        })?;
-        probe_one(&graph.metal, profiler, "isolated.shared.w1", layer_idx, |batch| {
-            dispatch_fp8(
-                batch,
-                &sh_w1.weight,
-                &sh_w1.scale,
-                &s.quant_ffn,
-                &s.quant_scale_ffn,
-                &s.shared_gate_f32,
-                MOE_INTER_DIM as u32,
-                HIDDEN_SIZE as u32,
-                fp8_tg,
-                false,
-                graph.controls.mla_fp8_simd,
-            )
-        })?;
-        probe_one(&graph.metal, profiler, "isolated.shared.w3", layer_idx, |batch| {
-            dispatch_fp8(
-                batch,
-                &sh_w3.weight,
-                &sh_w3.scale,
-                &s.quant_ffn,
-                &s.quant_scale_ffn,
-                &s.shared_up_f32,
-                MOE_INTER_DIM as u32,
-                HIDDEN_SIZE as u32,
-                fp8_tg,
-                false,
-                graph.controls.mla_fp8_simd,
-            )
-        })?;
-        probe_one(&graph.metal, profiler, "isolated.shared.w2", layer_idx, |batch| {
-            dispatch_fp8(
-                batch,
-                &sh_w2.weight,
-                &sh_w2.scale,
-                &s.shared_down_quant,
-                &s.shared_down_scales,
-                &s.shared_down_f32,
-                HIDDEN_SIZE as u32,
-                MOE_INTER_DIM as u32,
-                fp8_tg,
-                false,
-                graph.controls.mla_fp8_simd,
-            )
-        })?;
-        probe_one(&graph.metal, profiler, "isolated.moe_combine", layer_idx, |batch| {
-            batch.dispatch_threads(
-                worklist_combine_kernel(graph.controls.decode_family),
-                (HIDDEN_SIZE as u32, 1, 1),
-                (graph.cast_tg.min(HIDDEN_SIZE as u32), 1, 1),
-                |enc| {
-                    enc.set_buffer(0, Some(&s.expert_down_bf16), 0);
-                    enc.set_buffer(1, Some(&s.shared_down_bf16), 0);
-                    enc.set_buffer(2, Some(&s.moe_out), 0);
-                    set_u32(enc, 3, &(HIDDEN_SIZE as u32));
-                    set_u32(enc, 4, &top_k);
-                },
-            )
-        })?;
+        probe_one(
+            &graph.metal,
+            profiler,
+            "isolated.routed.w2",
+            layer_idx,
+            |batch| {
+                dispatch_worklist_fp4(
+                    batch,
+                    &s.worklist,
+                    &experts.w2_refs,
+                    &experts.w2_resources,
+                    &s.expert_down_quant,
+                    &s.expert_down_scales,
+                    &s.expert_down_f32,
+                    rows_w2,
+                    packed_w2,
+                    scale_w2,
+                    top_k,
+                    one,
+                    fp4_tg,
+                    graph.controls.fp4_occupancy,
+                    graph.controls.decode_family,
+                )
+            },
+        )?;
+        probe_one(
+            &graph.metal,
+            profiler,
+            "isolated.shared.w1",
+            layer_idx,
+            |batch| {
+                dispatch_fp8(
+                    batch,
+                    &sh_w1.weight,
+                    &sh_w1.scale,
+                    &s.quant_ffn,
+                    &s.quant_scale_ffn,
+                    &s.shared_gate_f32,
+                    MOE_INTER_DIM as u32,
+                    HIDDEN_SIZE as u32,
+                    fp8_tg,
+                    false,
+                    graph.controls.mla_fp8_simd,
+                )
+            },
+        )?;
+        probe_one(
+            &graph.metal,
+            profiler,
+            "isolated.shared.w3",
+            layer_idx,
+            |batch| {
+                dispatch_fp8(
+                    batch,
+                    &sh_w3.weight,
+                    &sh_w3.scale,
+                    &s.quant_ffn,
+                    &s.quant_scale_ffn,
+                    &s.shared_up_f32,
+                    MOE_INTER_DIM as u32,
+                    HIDDEN_SIZE as u32,
+                    fp8_tg,
+                    false,
+                    graph.controls.mla_fp8_simd,
+                )
+            },
+        )?;
+        probe_one(
+            &graph.metal,
+            profiler,
+            "isolated.shared.w2",
+            layer_idx,
+            |batch| {
+                dispatch_fp8(
+                    batch,
+                    &sh_w2.weight,
+                    &sh_w2.scale,
+                    &s.shared_down_quant,
+                    &s.shared_down_scales,
+                    &s.shared_down_f32,
+                    HIDDEN_SIZE as u32,
+                    MOE_INTER_DIM as u32,
+                    fp8_tg,
+                    false,
+                    graph.controls.mla_fp8_simd,
+                )
+            },
+        )?;
+        probe_one(
+            &graph.metal,
+            profiler,
+            "isolated.moe_combine",
+            layer_idx,
+            |batch| {
+                batch.dispatch_threads(
+                    worklist_combine_kernel(graph.controls.decode_family),
+                    (HIDDEN_SIZE as u32, 1, 1),
+                    (graph.cast_tg.min(HIDDEN_SIZE as u32), 1, 1),
+                    |enc| {
+                        enc.set_buffer(0, Some(&s.expert_down_bf16), 0);
+                        enc.set_buffer(1, Some(&s.shared_down_bf16), 0);
+                        enc.set_buffer(2, Some(&s.moe_out), 0);
+                        set_u32(enc, 3, &(HIDDEN_SIZE as u32));
+                        set_u32(enc, 4, &top_k);
+                    },
+                )
+            },
+        )?;
         Ok(())
     }
 }

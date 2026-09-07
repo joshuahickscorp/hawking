@@ -995,7 +995,7 @@ design, not by neglect: simulated is not measured.
     STATUS              VERIFIED_INTEGRATED
     defining property   absent
     implementation      tools/future/vmcp.py, tools/future/vmcp.py:827
-    real caller         tools/audit/reachability_triage.py:2097
+    historical inventory receipts/future/REACHABILITY_TRIAGE.json; current analyzer tools/roadmap/capability_reachability.py
     verifier            tools/future/test_vmcp.py:16, tools/future/test_vmcp.py:172
     negative control    tools/future/test_vmcp.py
     receipt             absent
@@ -1132,4 +1132,3 @@ design, not by neglect: simulated is not measured.
     evidence level      STATIC
     limitations         browser/CDP, HTML/DOM capture and CSS parsing are PARKED on the visionmcp web extra plus a host Chrome; no Hawking code is missing. Wake: VISIONMCP_WEB_EXTRA_INSTALLED. | acceptance not demonstrated: acceptance verdict BLOCKED: {'also_missing': ['host Chrome/CDP (playwright or visionmcp web extra)', 'network/resource manifest from a real navigation', 'comput
     integration         wired=False accepted=False
-

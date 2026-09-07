@@ -1,0 +1,5 @@
+ROUND 2. You cited no file:line. Every claim about this codebase must name where. Go find it and quote it.
+
+Read receipts/runtime/CENSUS_2026_09_05.md for the measured state.
+Do not summarise it back. Change something and measure the change.
+Report: what you ran, the exact output, and what it refutes.

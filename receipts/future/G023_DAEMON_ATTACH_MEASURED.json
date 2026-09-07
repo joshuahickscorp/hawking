@@ -1,0 +1,55 @@
+{
+ "date": "2026-09-06",
+ "obligation": "G023 / S010",
+ "test": "daemon-path attach semantics, isolated workspace",
+ "MEASURED": {
+  "start_1": {
+   "supervisor_pid": 6483,
+   "worker_pid": 6490,
+   "generation": 1,
+   "supervisor_launch_ppid": 1,
+   "worker_start_token": "1788732900.479134"
+  },
+  "start_2_same_workspace": {
+   "result": "REFUSED ResidentAlreadyRunning existing_pid=6483",
+   "supervisor_pid_after": 6483,
+   "worker_pid_after": 6490,
+   "generation_after": 1,
+   "live_supervisors": 1
+  },
+  "sigkill_recovery": {
+   "killed": [
+    6483,
+    6490
+   ],
+   "both_gone": true,
+   "stale_record_still_claimed": [
+    6483,
+    6490
+   ],
+   "fresh_start": "SUCCEEDED, new supervisor_pid 6644"
+  }
+ },
+ "G023_REQUIREMENTS_DEMONSTRATED": [
+  "ONE OWNER: a second start is refused with ResidentAlreadyRunning naming the existing pid, mission and goal, and stating 'The requested configuration was NOT applied.'",
+  "NO DOUBLE RESIDENT: exactly one live supervisor after two starts; pids and generation unchanged.",
+  "DETERMINISTIC DECISION: the refusal names the remedy (status | stop | replace --goal).",
+  "RECOVERY AFTER SIGKILL: both processes killed, the record still claimed them, and a fresh start succeeded over the stale claim with a new supervisor pid.",
+  "INTENTIONAL DETACHMENT: supervisor_launch_ppid == 1, so orphan_exit_reason will not self-exit.",
+  "PID-REUSE DEFENCE IS LIVE: worker_start_token is populated, not merely defined."
+ ],
+ "STILL_NOT_DEMONSTRATED": "Model REUSE timing. body_pid was None and the body never loaded a model in this probe (idle behaviour: model_load_allowed false), so the 211.3 s -> under 60 s second-round figure is NOT shown. That is the remaining piece of G023 and its pre-committed kill is unchanged.",
+ "AN_OBSERVATION_WORTH_KEEPING": "generation stayed 1 across the SIGKILL and the recovery start. A stale claim and a fresh one are therefore not distinguishable by generation alone, which is exactly why the adoption record carries owner_generation and a start token rather than trusting a pid.",
+ "SAFETY_NOTE": "The daemon also refused to start in the repo workspace because a durable mission with a different goal already existed ('keep its goal or archive it explicitly'). That refusal is correct and the existing mission was left untouched; this probe ran in a scratch workspace.",
+ "teardown": {
+  "supervise_processes_after_stop": 0,
+  "free_gb_before_test": 51.6,
+  "free_gb_mid_test": 30.5,
+  "free_gb_after_teardown": 41.59,
+  "compressor_gb_after": 0.0,
+  "swapfiles_after": 0,
+  "multi_gb_bodies_left": 0,
+  "NO_SILENT_LEAK": "demonstrated: nothing over 2 GB RSS survived, compressor and swapfiles at zero"
+ },
+ "A_MISCOUNT_I_MADE_AND_CORRECTED": "I first reported '1 live supervisor after stop'. That count came from `ps -Ao command | grep -c '[s]upervise.*attach_ws'`, which matched THIS SHELL'S OWN pipeline -- the two pids had 0.0 GB RSS and 00:00 elapsed. Excluding awk/grep from the match gives 0 supervise processes. Same trap already recorded in my notes as 'pgrep -f matches the watcher's own argv'; I walked into it again and the RSS and elapsed columns are what exposed it."
+}

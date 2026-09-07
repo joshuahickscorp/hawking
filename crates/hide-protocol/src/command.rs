@@ -159,16 +159,14 @@ pub enum UndoStrategy {
 /// How a surface reaches the backend for this command.
 ///
 /// - [`BackendBinding::Intent`] names a real `hide-core` `Intent` variant
-///   (`crates/hide-core/src/api.rs`); the shipped FE already posts these to
-///   `/v1/hide/intent`.
-/// - [`BackendBinding::Custom`] names an `Intent::Custom{name}` the host already
-///   handles AND `wire.ts` `CUSTOM_NAMES` exposes, mirrored here as
-///   [`WIRE_CUSTOM_NAMES`]. There is no pending tier: a name the host does not
-///   handle is not on the contract at all.
+///   (`crates/hide-core/src/api.rs`) for the HCLI backend bridge.
+/// - [`BackendBinding::Custom`] names an `Intent::Custom{name}` the HCLI host
+///   handles and exposes through [`WIRE_CUSTOM_NAMES`]. There is no pending
+///   tier: a name the host does not handle is not on the contract at all.
 /// - [`BackendBinding::Rpc`] names an elevated capability: either a real
 ///   [`Method`](crate::protocol::Method) string or a census-confirmed host
 ///   capability in [`HOST_CAPABILITIES`].
-/// - [`BackendBinding::LocalOnly`] is a pure FE action with no backend call.
+/// - [`BackendBinding::LocalOnly`] is a client-local action with no backend call.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(tag = "kind", content = "target", rename_all = "snake_case")]
 pub enum BackendBinding {
@@ -218,7 +216,7 @@ pub struct CommandSpec {
     pub telemetry: Option<String>,
 }
 
-/// The `Intent` variant tags the shipped FE already posts to `/v1/hide/intent`.
+/// The `Intent` variant tags the HCLI backend bridge accepts.
 /// Mirror of the snake_case `#[serde(tag = "type")]` names in
 /// `crates/hide-core/src/api.rs` (the `custom` escape hatch is excluded; custom
 /// names are validated separately). Kept as a mirror the way `wire.ts` mirrors
@@ -236,11 +234,9 @@ pub const INTENT_NAMES: &[&str] = &[
     "run_command",
 ];
 
-/// The live custom names, an EXACT mirror of `app/src/wire.ts` `CUSTOM_NAMES`
-/// (the `wire_custom_names_mirror_wire_ts` test reads that file and compares, so
-/// this cannot silently go stale again). Every `Custom` binding must be in here,
-/// and every name in here has an arm in `crates/hide-backend/src/host.rs`
-/// `HANDLED_CUSTOM_NAMES` (asserted there).
+/// The canonical custom names for the HCLI/HIDE protocol. Every `Custom`
+/// binding must be in here, and every name in here has an arm in
+/// `crates/hide-backend/src/host.rs` `HANDLED_CUSTOM_NAMES` (asserted there).
 pub const WIRE_CUSTOM_NAMES: &[&str] = &[
     "pty_input",
     "pty_resize",
@@ -294,7 +290,7 @@ pub const WIRE_CUSTOM_NAMES: &[&str] = &[
     "attach_process",
     "stop_process",
     "capture_process_artifact",
-    // The sealed diff review receipt over a diff the app itself produced.
+    // The sealed diff review receipt over a diff the HCLI backend produced.
     "export_review_receipt",
     // YOU / CHAT / IDE shared session graph (claim-only handoffs).
     "switch_surface",
@@ -306,9 +302,10 @@ pub const WIRE_CUSTOM_NAMES: &[&str] = &[
 /// are NOT also a [`Method`](crate::protocol::Method) string. An `Rpc` binding
 /// must be a real `Method` OR one of these. No command binds `Rpc` at all any
 /// more: `run_static_analysis` was the last bound to one of THESE and is now
-/// `Custom`, dispatched over `/v1/hide/intent` by `handle_static_analysis_intent`,
-/// and `goal_get` (the last `Rpc` row of any kind) is retired because this
-/// frontend has no `/rpc` client to dispatch it with. This list stays as the
+/// `Custom`, dispatched over the HCLI backend bridge by
+/// `handle_static_analysis_intent`, and `goal_get` (the last `Rpc` row of any
+/// kind) is retired because HCLI has no `/rpc` client to dispatch it with. This
+/// list stays as the
 /// census record of the elevated surface.
 /// Host refs inline:
 /// - `run_static_analysis`     host.rs:1373
@@ -858,26 +855,9 @@ mod tests {
         }
     }
     #[test]
-    fn wire_custom_names_mirror_wire_ts() {
-        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../../app/src/wire.ts")
-            .canonicalize()
-            .expect("app/src/wire.ts must sit at the workspace root");
-        let src = std::fs::read_to_string(&path).expect("read wire.ts");
-        let body = src
-            .split_once("export const CUSTOM_NAMES = [")
-            .expect("wire.ts declares CUSTOM_NAMES")
-            .1
-            .split_once("] as const;")
-            .expect("CUSTOM_NAMES is a closed array")
-            .0;
-        let names: Vec<&str> = body
-            .lines()
-            .filter_map(|l| l.trim().strip_prefix('"'))
-            .filter_map(|l| l.split_once('"'))
-            .map(|(name, _)| name)
-            .collect();
-        assert_eq!(names, WIRE_CUSTOM_NAMES);
+    fn wire_custom_names_are_canonical_and_unique() {
+        let names: BTreeSet<&str> = WIRE_CUSTOM_NAMES.iter().copied().collect();
+        assert_eq!(names.len(), WIRE_CUSTOM_NAMES.len());
     }
     #[test]
     fn every_writing_command_declares_the_write_and_its_undo() {

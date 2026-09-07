@@ -87,3 +87,93 @@ def test_no_event_in_the_committed_ledger_claims_measured_against_zero():
             C.record("O006", event, 0.0, path=f, ts=1.0)
         for row in _rows(f):
             assert row["_evidence"] != "MEASURED", row
+
+
+# ---------------------------------------------------------------------------
+# NX / NR per-specimen accounting (operator directive 2026-09-05)
+#
+# NX (tools/flash_nx_genome.py) is a small machine-bound seal: source/shader
+# hashes + machine genome + a pointer (sha256) at the NR it lowers. NR
+# (tools/flash_complete_nr.py, tools/nr_container.py) is the portable
+# representation; its JSON descriptor is small too, but a *materialized*
+# NR candidate (a catalog + segments/ tree of quantized tensors) is the real,
+# multi-gigabyte payload it describes -- that materialization is what "costs
+# storage" and is meant to be transient scratch, disposable once superseded
+# or sealed by hash into an NX.
+# ---------------------------------------------------------------------------
+
+def test_specimen_storage_measures_real_bytes_not_estimates():
+    with tempfile.TemporaryDirectory() as d:
+        root = pathlib.Path(d)
+        nx = root / "seal.nx.json"
+        nx.write_text("{}")  # 2 bytes
+        nr_desc = root / "candidate.nr.json"
+        nr_desc.write_text("{}")  # 2 bytes
+        payload = root / "segments"
+        payload.mkdir()
+        (payload / "a.hq30uq4").write_bytes(b"0" * 100)
+        (payload / "b.hq30uq4").write_bytes(b"0" * 300)
+
+        got = C.specimen_storage(nx_path=nx, nr_descriptor_path=nr_desc, nr_payload_path=payload)
+        assert got["nx_bytes"] == 2
+        assert got["nr_descriptor_bytes"] == 2
+        assert got["nr_payload_bytes"] == 400
+        assert got["nr_payload_present"] is True
+
+
+def test_record_nx_nr_defaults_released_to_whether_payload_is_still_on_disk():
+    with tempfile.TemporaryDirectory() as d:
+        root = pathlib.Path(d)
+        ledger = root / "e.jsonl"
+        nx = root / "seal.nx.json"
+        nx.write_text("{}")
+        payload = root / "segments"
+        payload.mkdir()
+        (payload / "a.hq30uq4").write_bytes(b"0" * 1000)
+
+        rec = C.record_nx_nr_accounting(
+            "O009", nx_path=nx, nr_payload_path=payload, path=ledger, ts=1.0,
+            gpu={"gpu_working_set_bytes": 100, "gpu_allocated_bytes": 50,
+                 "gpu_share": 0.5, "gpu_source": "test"},
+        )
+        assert rec["nx_bytes"] == 2
+        assert rec["nr_payload_bytes"] == 1000
+        assert rec["nr_released"] is False  # payload still exists; nobody said it was cleaned up
+        assert rec["gpu_share"] == 0.5
+
+        # Now the payload is gone (the specimen's search moved on).
+        for f in payload.iterdir():
+            f.unlink()
+        payload.rmdir()
+        rec2 = C.record_nx_nr_accounting("O009", nx_path=nx, nr_payload_path=payload,
+                                          path=ledger, ts=2.0)
+        assert rec2["nr_released"] is True
+        assert rec2["nr_payload_bytes"] == 0
+
+
+def test_nr_retention_violation_flagged_when_payload_outlives_the_nx_seal():
+    """Transient means transient: an NX seal (nx_bytes > 0) with the NR payload
+    still on disk and un-released is exactly the failure that fills the volume
+    across many specimens."""
+    with tempfile.TemporaryDirectory() as d:
+        ledger = pathlib.Path(d) / "e.jsonl"
+        C.record_nx_nr_accounting(
+            "O010", path=ledger, ts=1.0, gpu={},
+            nx_bytes_override=4096, nr_payload_bytes_override=2_000_000_000,
+            nr_released=False,
+        )
+        violations = C.nr_retention_violations(path=ledger)
+        assert len(violations) == 1
+        assert violations[0]["patient"] == "O010"
+        assert violations[0]["nr_payload_bytes"] == 2_000_000_000
+
+
+def test_nr_retention_is_clean_once_released():
+    with tempfile.TemporaryDirectory() as d:
+        ledger = pathlib.Path(d) / "e.jsonl"
+        C.record_nx_nr_accounting(
+            "O011", path=ledger, ts=1.0, gpu={},
+            nx_bytes_override=4096, nr_payload_bytes_override=2_000_000_000,
+            nr_released=True,
+        )
+        assert C.nr_retention_violations(path=ledger) == []

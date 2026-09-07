@@ -8,7 +8,6 @@ import pathlib
 import pytest
 
 from tools.future import contamination as C
-from tools.future import status_causality as sc
 from tools.future._common import HARDWARE_FIELDS, RECEIPTS
 
 
@@ -63,6 +62,23 @@ def _snap(**kwargs):
 def _ok_stats():
     return C.paired_ab_stats(C.SYNTHETIC_PAIRS)
 
+
+
+# TRIMMED during the Event Horizon integration, 2026-09-06.
+#
+# This file was RESTORED because tools/future/contamination.py survives the
+# compression while its test did not -- an implementation kept without its
+# verification is a silent epistemic loss.
+#
+# But the restore must be the MINIMUM. 3 of the original 31 tests
+# exercised tools/future/status_causality, which Event Horizon deleted, and
+# restoring the test whole would have dragged that module back with it:
+#     test_build_records_the_five_causality_fields
+#     test_unsupplied_observation_records_untested_not_a_restatement
+#     test_overreaching_does_not_override_contamination_class
+#
+# Those are gone with their subject. The 28 tests below cover
+# contamination.py, which is still here and still needs proving.
 
 def test_build_emits_sealed_receipt():
     out = C.build()
@@ -362,67 +378,71 @@ def test_gpu_process_list_is_enumeration_not_a_name_filter():
 # ---------------------------------------------------------------------------
 
 
-def test_build_records_the_five_causality_fields():
-    """A coverage number no test defends will drift back to zero."""
-    out = C.build()
-    doc = json.loads(out.read_text())
-    assert C.records_five_fields(doc)
-    src = pathlib.Path(C.__file__).read_text()
-    assert "sc.emit(" in src
-    assert doc["contamination_class"] in C.CONTAMINATION_CLASSES
-    assert "snapshot" in doc["probe_performed"] or "classify_contamination" in doc["probe_performed"]
-    assert doc["direct_observation"] != doc["contamination_class"]
-    assert "contamination_class=" in doc["direct_observation"]
-    assert doc["causality_verdict"] in {sc.SUPPORTED, sc.OVERREACHING, sc.UNTESTED}
-
-
-def test_unsupplied_observation_records_untested_not_a_restatement():
-    result = {"contamination_class": "HEAVY", "contamination_reason": "rss"}
-    rec = C.record_contamination_causality(
-        result, probe_performed="", direct_observation=""
-    )
-    assert rec["verdict"] == sc.UNTESTED
-    assert rec["direct_observation"] in ("", None)
-    assert rec["direct_observation"] != "HEAVY"
-    assert "HEAVY" not in str(rec["direct_observation"] or "")
-    assert result["contamination_class"] == "HEAVY"
-    assert rec["interpretation"] != rec["direct_observation"]
-
-
-def test_overreaching_does_not_override_contamination_class(monkeypatch):
-    def overreach(status, **kwargs):
-        return {
-            "probe_performed": kwargs.get("probe_performed") or "p",
-            "direct_observation": kwargs.get("direct_observation") or "o",
-            "interpretation": kwargs.get("interpretation") or status,
-            "confidence": {
-                "level": "LOW",
-                "about": "a",
-                "would_raise": "b",
-                "would_lower": "c",
-            },
-            "alternatives": [
-                {
-                    "hypothetical": "h",
-                    "consistent_with_observation": True,
-                    "consistent_with_claim": False,
-                }
-            ],
-            "verdict": sc.OVERREACHING,
-            "falsifier": "f",
-            "probe_kind": sc.PROBE_MEASURED_FLAGS,
-            "claim_kind": sc.CLAIM_OBJECT_ABSENCE,
-        }
-
-    monkeypatch.setattr(C.sc, "emit", overreach)
-    out = C.build()
-    doc = json.loads(out.read_text())
-    assert doc["contamination_class"] in C.CONTAMINATION_CLASSES
-    assert doc["causality_verdict"] == sc.OVERREACHING
-
-
 def test_coverage_receipt_names_contamination_as_recording():
     path = RECEIPTS / "STATUS_CAUSALITY_COVERAGE.json"
     doc = json.loads(path.read_text())
     assert "contamination" in doc["recording_five_fields"]
     assert doc["n_gates"] == 18
+
+
+# ---------------------------------------------------------------------------
+# gravity-run utilization sampler (G-UTIL): GPU occupancy + disk + working set
+# over time, for a running gravity specimen.
+# ---------------------------------------------------------------------------
+
+def test_sample_gravity_run_classifies_gpu_bound(monkeypatch):
+    monkeypatch.setattr(C, "probe_gpu_occupancy", lambda: {"status": "OK", "device_utilization_pct": 85})
+    monkeypatch.setattr(C, "_iostat_sample", lambda interval_s: {"status": "OK", "mb_s_total": 4.0})
+    monkeypatch.setattr(C, "probe_processes", lambda: {"status": "OK", "all": []})
+    run = C.sample_gravity_run(duration_s=0.3, interval_s=0.1)
+    assert run["n_samples"] == 3
+    assert run["gpu_device_utilization_pct"] == {"mean": 85, "peak": 85}
+    assert run["disk_mb_s"] == {"mean": 4.0, "peak": 4.0}
+    assert run["bound_class"] == "GPU_BOUND"
+
+
+def test_sample_gravity_run_classifies_io_bound_when_gpu_quiet(monkeypatch):
+    monkeypatch.setattr(C, "probe_gpu_occupancy", lambda: {"status": "OK", "device_utilization_pct": 3})
+    monkeypatch.setattr(C, "_iostat_sample", lambda interval_s: {"status": "OK", "mb_s_total": 150.0})
+    monkeypatch.setattr(C, "probe_processes", lambda: {"status": "OK", "all": []})
+    run = C.sample_gravity_run(duration_s=0.2, interval_s=0.1)
+    assert run["bound_class"] == "IO_BOUND"
+    assert run["disk_mb_s"]["peak"] == 150.0
+
+
+def test_sample_gravity_run_unknown_when_every_probe_fails(monkeypatch):
+    monkeypatch.setattr(C, "probe_gpu_occupancy", lambda: {"status": "FAILED", "device_utilization_pct": None})
+    monkeypatch.setattr(C, "_iostat_sample", lambda interval_s: {"status": "FAILED", "mb_s_total": None})
+    monkeypatch.setattr(C, "probe_processes", lambda: {"status": "OK", "all": []})
+    run = C.sample_gravity_run(duration_s=0.1, interval_s=0.1)
+    assert run["bound_class"] == "UNKNOWN"
+
+
+def test_sample_gravity_run_stops_polling_a_dead_pid(monkeypatch):
+    monkeypatch.setattr(C, "probe_gpu_occupancy", lambda: {"status": "OK", "device_utilization_pct": 1})
+    monkeypatch.setattr(C, "_iostat_sample", lambda interval_s: {"status": "OK", "mb_s_total": 0.0})
+    monkeypatch.setattr(C, "probe_processes", lambda: {"status": "OK", "all": []})
+    monkeypatch.setattr(C, "_pid_rss_bytes", lambda pid: None)
+    run = C.sample_gravity_run(pid=999999, duration_s=1.0, interval_s=0.1)
+    assert run["n_samples"] == 1
+
+
+def test_specimen_utilization_record_distinguishes_20pct_from_95pct(monkeypatch):
+    def canned(mean, peak):
+        return {
+            "pid": None,
+            "bound_class": "GPU_BOUND",
+            "bound_class_reason": "x",
+            "gpu_device_utilization_pct": {"mean": mean, "peak": peak},
+            "disk_mb_s": {"mean": 1.0, "peak": 2.0},
+            "working_set_bytes": {"mean": None, "peak": None, "source": "UNKNOWN (no pid given)"},
+            "contaminated_by": [],
+            "n_samples": 5,
+            "duration_s": 5.0,
+        }
+
+    light = C.specimen_utilization_record("specimen-light", canned(20.0, 22.0))
+    heavy = C.specimen_utilization_record("specimen-heavy", canned(95.0, 98.0))
+    assert light["specimen"] == "specimen-light"
+    assert heavy["specimen"] == "specimen-heavy"
+    assert light["gpu_device_utilization_pct"]["peak"] < heavy["gpu_device_utilization_pct"]["peak"]

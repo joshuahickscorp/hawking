@@ -1,0 +1,5 @@
+MISSION: raise the usable context on this resident as far as physics allows, without swap and without capability loss.
+
+Read receipts/runtime/CENSUS_2026_09_05.md first — it holds the measured blockers, including the one that decides this.
+
+Build your own plan, DAG, experiments and repairs. Measure before and after. Report what you measured, not what you expected. If a limit is physical, prove the refusal and record it.

@@ -268,9 +268,7 @@ impl ArtifactIndex {
         };
         Ok(ArtifactMeta {
             schema: get("schema")?,
-            schema_version: get("schema_version")?
-                .parse()
-                .unwrap_or(0),
+            schema_version: get("schema_version")?.parse().unwrap_or(0),
             source_path: get("source_path")?,
             source_sha256: get("source_sha256")?,
             source_size: get("source_size")?.parse().unwrap_or(0),
@@ -375,9 +373,7 @@ impl ArtifactIndex {
                 )))
             }
         };
-        let sql = format!(
-            "SELECT key FROM entity WHERE map_name = ?1 AND {col} = ?2 ORDER BY key"
-        );
+        let sql = format!("SELECT key FROM entity WHERE map_name = ?1 AND {col} = ?2 ORDER BY key");
         let mut stmt = self.conn.prepare(&sql).map_err(map_err)?;
         let rows = stmt
             .query_map(params![map, value], |r| r.get::<_, String>(0))
@@ -430,9 +426,7 @@ fn extract_fields(slice: &[u8]) -> Fields {
         return Fields::default();
     };
     let s = |key: &str| -> Option<String> {
-        v.get(key)
-            .and_then(|x| x.as_str())
-            .map(|s| s.to_string())
+        v.get(key).and_then(|x| x.as_str()).map(|s| s.to_string())
     };
     Fields {
         classification: s("classification"),
@@ -774,10 +768,7 @@ mod tests {
             capability_id("tools/future/capacity_inference_rule.py"),
             "future.capacity_inference_rule"
         );
-        assert_eq!(
-            capability_id("tools/accelerator/c.py"),
-            "accelerator.c"
-        );
+        assert_eq!(capability_id("tools/accelerator/c.py"), "accelerator.c");
         assert_eq!(capability_id("tools/future/__init__.py"), "future.__init__");
     }
 
@@ -830,10 +821,7 @@ mod tests {
             .unwrap()
             .unwrap();
         let v: serde_json::Value = serde_json::from_str(&raw).unwrap();
-        assert_eq!(
-            v["summary"].as_str().unwrap(),
-            "say \"hi\" and a brace {"
-        );
+        assert_eq!(v["summary"].as_str().unwrap(), "say \"hi\" and a brace {");
     }
 
     #[test]

@@ -200,9 +200,13 @@ mod macos {
 
     fn gpu_span(cmd: &metal::CommandBufferRef, label: &str) -> Result<GpuSpan, BoxErr> {
         if cmd.status() != MTLCommandBufferStatus::Completed {
-            return Err(fail(format!("{label}: command buffer status {:?}", cmd.status())));
+            return Err(fail(format!(
+                "{label}: command buffer status {:?}",
+                cmd.status()
+            )));
         }
-        let (start, end): (f64, f64) = unsafe { (msg_send![cmd, GPUStartTime], msg_send![cmd, GPUEndTime]) };
+        let (start, end): (f64, f64) =
+            unsafe { (msg_send![cmd, GPUStartTime], msg_send![cmd, GPUEndTime]) };
         if !(start.is_finite() && end.is_finite() && start > 0.0 && end > start) {
             return Err(fail(format!(
                 "{label}: GPUStartTime/GPUEndTime unavailable start={start:?} end={end:?}"
@@ -276,8 +280,8 @@ mod macos {
     }
 
     fn make_slab(device: &metal::Device, cap: u64) -> Result<Slab, BoxErr> {
-        let priv_opts =
-            MTLResourceOptions::StorageModePrivate | MTLResourceOptions::HazardTrackingModeUntracked;
+        let priv_opts = MTLResourceOptions::StorageModePrivate
+            | MTLResourceOptions::HazardTrackingModeUntracked;
         let shared_opts = MTLResourceOptions::StorageModeShared;
         let idx_bytes = INDEXED_NIDX as u64 * 4;
         let out_bytes = MAX_THREADS as u64 * 4;
@@ -289,7 +293,12 @@ mod macos {
         let shared_a = alloc(device, cap, shared_opts, "n017.shared_a")?;
         // Shared dest is only a placeholder: no shared read+write config is launched
         // at full cap (that would double the unified-memory footprint).
-        let shared_b = alloc(device, (64 * 1024 * 1024).min(cap), shared_opts, "n017.shared_b")?;
+        let shared_b = alloc(
+            device,
+            (64 * 1024 * 1024).min(cap),
+            shared_opts,
+            "n017.shared_b",
+        )?;
         let out = alloc(device, out_bytes, shared_opts, "n017.out")?;
         let indices = alloc(device, idx_bytes, shared_opts, "n017.indices")?;
         unsafe {
@@ -329,7 +338,12 @@ mod macos {
         enc.set_bytes(index, 8, &v as *const u64 as *const _);
     }
 
-    fn maybe_use(enc: &metal::ComputeCommandEncoderRef, buf: &metal::Buffer, usage: MTLResourceUsage, untracked: bool) {
+    fn maybe_use(
+        enc: &metal::ComputeCommandEncoderRef,
+        buf: &metal::Buffer,
+        usage: MTLResourceUsage,
+        untracked: bool,
+    ) {
         if untracked {
             enc.use_resource(buf, usage);
         }
@@ -391,7 +405,10 @@ mod macos {
         set_params(&enc, 2, &params);
         maybe_use(&enc, &slab.priv_a, MTLResourceUsage::Read, slab.untracked);
         maybe_use(&enc, &slab.out, MTLResourceUsage::Write, false);
-        enc.dispatch_thread_groups(MTLSize::new(groups as u64, 1, 1), MTLSize::new(tg as u64, 1, 1));
+        enc.dispatch_thread_groups(
+            MTLSize::new(groups as u64, 1, 1),
+            MTLSize::new(tg as u64, 1, 1),
+        );
         enc.end_encoding();
         cmd.commit();
         cmd.wait_until_completed();
@@ -449,15 +466,16 @@ mod macos {
             match self.rw.as_str() {
                 "write" => 0,
                 "readwrite" => self.nbytes.saturating_mul(self.iters as u64),
-                _ if self.pattern == "multi" => {
-                    self.nbytes
-                        .saturating_mul(self.nbufs as u64)
-                        .saturating_mul(self.iters as u64)
-                }
+                _ if self.pattern == "multi" => self
+                    .nbytes
+                    .saturating_mul(self.nbufs as u64)
+                    .saturating_mul(self.iters as u64),
                 _ if self.pattern == "stride" || self.pattern == "gather" => {
                     self.nthreads() as u64 * self.iters as u64 * 16
                 }
-                _ if self.pattern == "gather_indexed" => INDEXED_NIDX as u64 * 16 * self.iters as u64,
+                _ if self.pattern == "gather_indexed" => {
+                    INDEXED_NIDX as u64 * 16 * self.iters as u64
+                }
                 _ if self.bad => self.nthreads() as u64 * self.iters as u64 * 16,
                 _ => self.nbytes.saturating_mul(self.iters as u64),
             }
@@ -543,8 +561,18 @@ mod macos {
                 enc.set_buffer(1, Some(dst_buf(launch, slab)), byte_offset);
                 enc.set_buffer(2, Some(&slab.out), 0);
                 set_params(enc, 3, &params);
-                maybe_use(enc, src_buf(launch, slab), MTLResourceUsage::Read, untracked);
-                maybe_use(enc, dst_buf(launch, slab), MTLResourceUsage::Write, untracked);
+                maybe_use(
+                    enc,
+                    src_buf(launch, slab),
+                    MTLResourceUsage::Read,
+                    untracked,
+                );
+                maybe_use(
+                    enc,
+                    dst_buf(launch, slab),
+                    MTLResourceUsage::Write,
+                    untracked,
+                );
                 maybe_use(enc, &slab.out, MTLResourceUsage::Write, false);
             }
             "roof_gather_indexed_f4" => {
@@ -559,26 +587,44 @@ mod macos {
                     nbufs: 1,
                 };
                 set_params(enc, 3, &idx_params);
-                maybe_use(enc, src_buf(launch, slab), MTLResourceUsage::Read, untracked);
+                maybe_use(
+                    enc,
+                    src_buf(launch, slab),
+                    MTLResourceUsage::Read,
+                    untracked,
+                );
                 maybe_use(enc, &slab.out, MTLResourceUsage::Write, false);
             }
             "roof_write_f4" => {
                 enc.set_buffer(0, Some(src_buf(launch, slab)), byte_offset);
                 enc.set_buffer(1, Some(&slab.out), 0);
                 set_params(enc, 2, &params);
-                maybe_use(enc, src_buf(launch, slab), MTLResourceUsage::Write, untracked);
+                maybe_use(
+                    enc,
+                    src_buf(launch, slab),
+                    MTLResourceUsage::Write,
+                    untracked,
+                );
                 maybe_use(enc, &slab.out, MTLResourceUsage::Write, false);
             }
             _ => {
                 enc.set_buffer(0, Some(src_buf(launch, slab)), byte_offset);
                 enc.set_buffer(1, Some(&slab.out), 0);
                 set_params(enc, 2, &params);
-                maybe_use(enc, src_buf(launch, slab), MTLResourceUsage::Read, untracked);
+                maybe_use(
+                    enc,
+                    src_buf(launch, slab),
+                    MTLResourceUsage::Read,
+                    untracked,
+                );
                 maybe_use(enc, &slab.out, MTLResourceUsage::Write, false);
             }
         }
         let groups = (nthreads / launch.tg).max(1) as u64;
-        enc.dispatch_thread_groups(MTLSize::new(groups, 1, 1), MTLSize::new(launch.tg as u64, 1, 1));
+        enc.dispatch_thread_groups(
+            MTLSize::new(groups, 1, 1),
+            MTLSize::new(launch.tg as u64, 1, 1),
+        );
         Ok(())
     }
 
@@ -594,7 +640,13 @@ mod macos {
             let cmd = q.new_command_buffer();
             cmd.set_label(label);
             let blit = cmd.new_blit_command_encoder();
-            blit.copy_from_buffer(src_buf(launch, slab), 0, dst_buf(launch, slab), 0, launch.nbytes);
+            blit.copy_from_buffer(
+                src_buf(launch, slab),
+                0,
+                dst_buf(launch, slab),
+                0,
+                launch.nbytes,
+            );
             blit.end_encoding();
             cmd.commit();
             cmd.wait_until_completed();
@@ -724,9 +776,21 @@ mod macos {
         }
         let bytes_read = launch.bytes_moved_read();
         let bytes_write = launch.bytes_moved_write();
-        let cold = time_one(queues, pipes, slab, launch, &format!("cold.{}", launch.id()))?;
+        let cold = time_one(
+            queues,
+            pipes,
+            slab,
+            launch,
+            &format!("cold.{}", launch.id()),
+        )?;
         for i in 0..WARMUP {
-            let _ = time_one(queues, pipes, slab, launch, &format!("warmup{i}.{}", launch.id()))?;
+            let _ = time_one(
+                queues,
+                pipes,
+                slab,
+                launch,
+                &format!("warmup{i}.{}", launch.id()),
+            )?;
         }
         let mut warm = Vec::with_capacity(warm_reps);
         for i in 0..warm_reps {
@@ -754,7 +818,9 @@ mod macos {
             launch.id(),
             gb_s(bytes_read, cold.0.dur_ns),
             med_read,
-            spread_pct(&warm_read).map(|p| format!("{p:.2}")).unwrap_or_else(|| "n/a".into()),
+            spread_pct(&warm_read)
+                .map(|p| format!("{p:.2}"))
+                .unwrap_or_else(|| "n/a".into()),
             med_ns
         );
         Ok(json!({
@@ -969,7 +1035,10 @@ mod macos {
             let it = iters_for(nbytes, bytes4);
             v.push(seq("roof_seq_f4", "f4", t0, g0, nbytes, it, "private"));
         }
-        for (rw, k) in [("write", "roof_write_f4"), ("readwrite", "roof_readwrite_f4")] {
+        for (rw, k) in [
+            ("write", "roof_write_f4"),
+            ("readwrite", "roof_readwrite_f4"),
+        ] {
             v.push(Launch {
                 kernel: k.into(),
                 pattern: "sequential".into(),
@@ -1126,7 +1195,8 @@ mod macos {
             if r.get("rw").and_then(|v| v.as_str()) != Some("read") {
                 continue;
             }
-            if dram_only && r.get("working_set_class").and_then(|v| v.as_str()) != Some("dram_streaming")
+            if dram_only
+                && r.get("working_set_class").and_then(|v| v.as_str()) != Some("dram_streaming")
             {
                 continue;
             }
@@ -1150,7 +1220,9 @@ mod macos {
         let device = Device::system_default().ok_or_else(|| fail("no Metal-capable GPU"))?;
         let device_name = device.name().to_string();
         if !device_name.contains("M3") {
-            return Err(fail(format!("restricted to Apple M3; found {device_name:?}")));
+            return Err(fail(format!(
+                "restricted to Apple M3; found {device_name:?}"
+            )));
         }
         let queues: Vec<metal::CommandQueue> = (0..4).map(|_| device.new_command_queue()).collect();
         eprintln!("n017 compile bandwidth_roof.metal on {device_name}");
@@ -1167,8 +1239,22 @@ mod macos {
         eprintln!("n017 allocate slab cap={cap}");
         let slab = make_slab(&device, cap)?;
         eprintln!("n017 fill private+shared slabs");
-        fill_buffer(&queues[0], &pipes, &slab.priv_a, cap, true, "n017.fill.priv_a")?;
-        fill_buffer(&queues[0], &pipes, &slab.priv_b, cap, true, "n017.fill.priv_b")?;
+        fill_buffer(
+            &queues[0],
+            &pipes,
+            &slab.priv_a,
+            cap,
+            true,
+            "n017.fill.priv_a",
+        )?;
+        fill_buffer(
+            &queues[0],
+            &pipes,
+            &slab.priv_b,
+            cap,
+            true,
+            "n017.fill.priv_b",
+        )?;
         fill_buffer(
             &queues[0],
             &pipes,
@@ -1185,7 +1271,14 @@ mod macos {
             true,
             "n017.fill.priv_d",
         )?;
-        fill_buffer(&queues[0], &pipes, &slab.shared_a, cap, false, "n017.fill.shared_a")?;
+        fill_buffer(
+            &queues[0],
+            &pipes,
+            &slab.shared_a,
+            cap,
+            false,
+            "n017.fill.shared_a",
+        )?;
         fill_buffer(
             &queues[0],
             &pipes,
@@ -1257,14 +1350,19 @@ mod macos {
             }
         }
 
-        let bad = rows.iter().find(|r| r.get("bad_control") == Some(&json!(true)));
+        let bad = rows
+            .iter()
+            .find(|r| r.get("bad_control") == Some(&json!(true)));
         let bad_json = if let Some(b) = bad {
             let actual = b
                 .pointer("/warm/median_read_gb_s")
                 .and_then(|v| v.as_f64())
                 .unwrap_or(0.0);
             let claimed_bytes = b.get("claimed_bytes").and_then(|v| v.as_u64()).unwrap_or(0);
-            let med_ns = b.pointer("/warm/median_gpu_ns").and_then(|v| v.as_u64()).unwrap_or(1);
+            let med_ns = b
+                .pointer("/warm/median_gpu_ns")
+                .and_then(|v| v.as_u64())
+                .unwrap_or(1);
             let claimed_gb = gb_s(claimed_bytes, med_ns);
             json!({
                 "present": true,
@@ -1313,7 +1411,11 @@ mod macos {
             fs::create_dir_all(parent)?;
         }
         fs::write(&args.out, serde_json::to_string_pretty(&doc)? + "\n")?;
-        eprintln!("n017 wrote {} ({} configs)", args.out.display(), doc["configs"].as_array().map(|a| a.len()).unwrap_or(0));
+        eprintln!(
+            "n017 wrote {} ({} configs)",
+            args.out.display(),
+            doc["configs"].as_array().map(|a| a.len()).unwrap_or(0)
+        );
         Ok(())
     }
 }

@@ -48,7 +48,15 @@ def read_bf16_slice(loc, expert: int, rows: int, cols: int) -> np.ndarray:
     return (u16 << 16).view("<f4").reshape(rows, cols)
 
 
-def quant_error(w: np.ndarray, bits: int, group: int) -> tuple[float, float]:
+def quant_error(w: np.ndarray, bits: int, group: int) -> tuple[float, float, float]:
+    """Returns (cosine, mae, rel_fro).
+
+    Cosine is scale-invariant: a candidate that keeps every direction but
+    scales every magnitude by 0.01x (or 100x) scores cosine == 1.0 -- this
+    is the campaign's own magnitude-blindness scar, reproduced here. rel_fro
+    (relative Frobenius error, ||a-b||/||a||) is not: the same 0.01x scale
+    scores rel_fro ~= 0.99. Doctor's early_rejection reads both.
+    """
     flat = w.reshape(-1, w.shape[-1])
     n = flat.shape[1] // group * group
     x = flat[:, :n].reshape(flat.shape[0], n // group, group)
@@ -58,7 +66,8 @@ def quant_error(w: np.ndarray, bits: int, group: int) -> tuple[float, float]:
     y = (q.astype(np.float32) * scale).reshape(flat.shape[0], n)
     a = flat[:, :n].ravel(); b = y.ravel()
     cosine = float(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)))
-    return cosine, float(np.mean(np.abs(a - b)))
+    rel_fro = float(np.linalg.norm(a - b) / np.linalg.norm(a))
+    return cosine, float(np.mean(np.abs(a - b))), rel_fro
 
 
 def main() -> int:
@@ -92,12 +101,12 @@ def main() -> int:
     for label, sample in (("gate_up_proj", gate_samples[0]), ("down_proj", down_samples[0])):
         for bits, group in ((16, 0), (4, 64), (4, 128), (3, 64), (3, 128)):
             if bits == 16:
-                cosine_score, mae = 1.0, 0.0
+                cosine_score, mae, rel_fro_score = 1.0, 0.0, 0.0
                 bpw = 16.0
             else:
-                cosine_score, mae = quant_error(sample, bits, group)
+                cosine_score, mae, rel_fro_score = quant_error(sample, bits, group)
                 bpw = bits + 16 / group
-            candidates.append({"tensor": label, "candidate": f"uniform_q{bits}_g{group}" if bits < 16 else "source_bf16_exact", "sample_cosine": cosine_score, "sample_mae": mae, "active_bpw": bpw, "native_ready": False})
+            candidates.append({"tensor": label, "candidate": f"uniform_q{bits}_g{group}" if bits < 16 else "source_bf16_exact", "sample_cosine": cosine_score, "sample_rel_fro": rel_fro_score, "sample_mae": mae, "active_bpw": bpw, "native_ready": False})
     doc = {
         "schema": "hawking.flash.doctor_expert_bank_screen.v1",
         "status": "REAL_WEIGHT_STAGE_A_SCREEN",
@@ -105,7 +114,7 @@ def main() -> int:
         "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
         "source": {"root": str(root), "layer": a.layer, "gate_up_tensor": gate_name, "down_tensor": down_name, "expert_count": n_experts, "experts_sampled": experts, "rows": a.rows, "cols": a.cols},
         "population": {"cross_expert_gate_up_mean_cosine": float(np.mean(pairwise)) if pairwise else None, "cross_expert_gate_up_min_cosine": float(np.min(pairwise)) if pairwise else None, "sampled_population_rank": {"rank_1_energy": float(energy[0]) if len(energy) else None, "rank_4_energy": float(energy[min(3, len(energy)-1)]) if len(energy) else None, "rank_8_energy": float(energy[min(7, len(energy)-1)]) if len(energy) else None, "singular_values": sv.tolist()}}, "candidate_rows": candidates,
-        "doctor_funnel": {"stage": "A", "next": "fit shared-basis/archetype candidates over the bank, then native-organ qualify only survivors", "early_rejection": "any candidate below 0.99 sampled cosine or requiring dense rematerialization is not promoted"},
+        "doctor_funnel": {"stage": "A", "next": "fit shared-basis/archetype candidates over the bank, then native-organ qualify only survivors", "early_rejection": "any candidate below 0.99 sampled cosine, above 0.05 sampled rel_fro (cosine alone is scale-invariant -- a candidate that scales every magnitude by 0.01x still scores 1.0 -- rel_fro is the magnitude term), or requiring dense rematerialization is not promoted"},
         "bench": {"state": "UNKNOWN", "recorded_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "recorded_by": "tools/flash_doctor_bank_screen.py", "machine": "Apple M3 Ultra (CPU/header/range-read screen)", "rule": "S032 §3 -- no native timing or capability claim"},
         "claim_boundary": "Stage-A sampled real-weight population screen across a bounded expert subset. It does not establish all-expert similarity, activation fidelity, native compact execution, complete EBPW, TPS, capability, or promotion.",
         "promotion_allowed": False,

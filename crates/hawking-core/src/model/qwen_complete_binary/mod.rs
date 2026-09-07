@@ -27,11 +27,11 @@ mod qwen80_uniform_q4;
 mod uniform_q4;
 mod uniform_qn;
 pub use activation_weighted_svd::*;
-pub use q80_codec_activity::*;
-pub use q80_mixed_decode::*;
 pub use admission_warm_receipt::{
     receipt_path_for_seal, warm_receipt_enabled, ADMISSION_WARM_RECEIPT_SCHEMA,
 };
+pub use q80_codec_activity::*;
+pub use q80_mixed_decode::*;
 pub use qwen80_uniform_q4::*;
 pub use uniform_q4::*;
 pub use uniform_qn::*;
@@ -629,8 +629,10 @@ mod qwen30_base_variant_tests {
     fn the_qwen80_variant_is_untouched() {
         let q80 = QwenCompleteBinaryModel::Qwen80CoderNext;
         assert_eq!(q80.source_repository(), "Qwen/Qwen3-Coder-Next");
-        assert_ne!(q80.manifest_schema(),
-                   QwenCompleteBinaryModel::Qwen30Base.manifest_schema());
+        assert_ne!(
+            q80.manifest_schema(),
+            QwenCompleteBinaryModel::Qwen30Base.manifest_schema()
+        );
     }
 }
 
@@ -3146,10 +3148,9 @@ fn try_warm_payload_admission(
     if !admission_warm_receipt::receipt_covers_manifest_rows(&receipt, rows, root, source)? {
         return Ok(None);
     }
-    let identity_ok =
-        crate::startup_timing::time_ms_result("admit_warm_identity_recheck", || {
-            admission_warm_receipt::receipt_identities_still_match(&receipt)
-        })?;
+    let identity_ok = crate::startup_timing::time_ms_result("admit_warm_identity_recheck", || {
+        admission_warm_receipt::receipt_identities_still_match(&receipt)
+    })?;
     if !identity_ok {
         return Ok(None);
     }
@@ -3262,8 +3263,7 @@ fn load_warm_payloads_bounded_parallel(
     BTreeMap<String, CompleteBinaryTensor>,
     BTreeMap<String, Arc<[u8]>>,
 )> {
-    let entries: Vec<&admission_warm_receipt::ReceiptEntry> =
-        receipt.entries.values().collect();
+    let entries: Vec<&admission_warm_receipt::ReceiptEntry> = receipt.entries.values().collect();
     if entries.is_empty() {
         return Ok((BTreeMap::new(), BTreeMap::new()));
     }
@@ -3282,8 +3282,7 @@ fn load_warm_payloads_bounded_parallel(
             handles.push(scope.spawn(move || {
                 let mut lane_outcomes = Vec::with_capacity(lane.len());
                 for &idx in lane {
-                    let outcome =
-                        admission_warm_receipt::load_payload_warm_skip_hash(entries[idx]);
+                    let outcome = admission_warm_receipt::load_payload_warm_skip_hash(entries[idx]);
                     lane_outcomes.push((idx, outcome));
                 }
                 lane_outcomes

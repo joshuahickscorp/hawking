@@ -1359,7 +1359,9 @@ impl DeepSeekV4FullStreamReader {
                 .map_err(|_| gravity("chunk slice start exceeds usize"))?;
             let local_end = usize::try_from(take_end - segment.tensor_start)
                 .map_err(|_| gravity("chunk slice end exceeds usize"))?;
-            self.host_read.mapped_windows.fetch_add(1, Ordering::Relaxed);
+            self.host_read
+                .mapped_windows
+                .fetch_add(1, Ordering::Relaxed);
             self.host_read
                 .mapped_window_bytes
                 .fetch_add(requested, Ordering::Relaxed);
@@ -1475,10 +1477,9 @@ impl DeepSeekV4FullStreamReader {
         self.host_read.mmap_calls.fetch_add(1, Ordering::Relaxed);
         let cache_started = Instant::now();
         let cached = self.verified_digests.lock().contains(&binding.sha256);
-        self.host_read.digest_cache_ns.fetch_add(
-            cache_started.elapsed().as_nanos() as u64,
-            Ordering::Relaxed,
-        );
+        self.host_read
+            .digest_cache_ns
+            .fetch_add(cache_started.elapsed().as_nanos() as u64, Ordering::Relaxed);
         self.host_read
             .digest_cache_probes
             .fetch_add(1, Ordering::Relaxed);

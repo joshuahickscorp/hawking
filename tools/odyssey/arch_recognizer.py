@@ -185,6 +185,12 @@ def recognize(repo, rev, cfg=None, names=None):
         "novelty": novelty_score(cfg, organs, unknown),
         "analysis_wall_s": round(time.time() - t0, 3),
         "loaded_weights": False,
+        # tools.odyssey PROBE_CLASS_STATIC_STREAMABLE / specimen_open.py's
+        # census_specimen convention (literal, not imported: this module is
+        # also loaded as a bare top-level `arch_recognizer` without the repo
+        # root on sys.path -- see modellake_lineage._recognize's fallback).
+        # config.json + tensor names only; loaded_weights above is always False.
+        "classification": "STATIC_STREAMABLE",
     }
 
 

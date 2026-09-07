@@ -5,7 +5,7 @@ Nothing queried that corpus before a new experiment was proposed, so
 rediscovery was free. This module is the keyed index and the refusal path.
 
 It extends the existing stores (tools/headless/negative_science.py,
-noetic_negative_science.py, foundry/doctor atlases, campaign JSONL) — it
+foundry/doctor atlases, campaign JSONL) — it
 does not restate them and it does not write onto the Codex surface.
 
     python3 tools/future/negative_index.py --build
@@ -46,7 +46,6 @@ UNPARSED = "UNPARSED"
 # sweep found. discover() unions this with a git ls-tree name scan.
 SEED_SOURCES: tuple[str, ...] = (
     "tools/headless/negative_science.py",
-    "tools/headless/noetic_negative_science.py",
     "tools/foundry/NEGATIVE_TRANSFER_ATLAS.json",
     "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
     "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json",
@@ -56,7 +55,7 @@ SEED_SOURCES: tuple[str, ...] = (
     "workspace/campaign/odyssey/NEGATIVE_SCIENCE.json",
     "workspace/campaign/records/ascension-sandbox/knowledge-plane/ASCENSION_NEGATIVE_SCIENCE.jsonl",
     "workspace/campaign/evidence/research/doctor/DOCTOR_NEGATIVE_TRANSFER_ATLAS.json",
-    "research/hawking-experiments/superwave/g1/g1-arch-negative.md",
+    "research/hawking-experiments/superwave/g1/G1_ARCHIVE_LEDGER.md",
     "workspace/campaign/evidence/systems/hawking/HAWKING_EXPERT_WAVE_NEGATIVE.json",
     "workspace/campaign/evidence/systems/hawking/HAWKING_RESIDENT_STATE_NEGATIVE.json",
     "workspace/campaign/records/ascension-sandbox/physical/qwen-family/dual-gravity/ASCENSION_NEGATIVE_SCIENCE.jsonl",
@@ -710,46 +709,6 @@ def _parse_register(rel: str, obj: dict[str, Any], origin: str) -> list[Scar]:
     return out or [_unparsed(rel, "register had no entries", origin)]
 
 
-def _parse_noetic(rel: str, obj: dict[str, Any], origin: str) -> list[Scar]:
-    out = []
-    for rec in obj.get("entries") or []:
-        if not isinstance(rec, dict):
-            continue
-        scope = rec.get("scope") if isinstance(rec.get("scope"), dict) else {}
-        oid = rec.get("id") or rec.get("seed") or "NNS"
-        kind = _pick(rec, "kind")
-        reopen_today = rec.get("reopen_satisfied_today")
-        verd = kind or "NEGATIVE"
-        # PROPERTY_OF_IDEA stays refuse-eligible unless reopen already holds.
-        eligible_override = None
-        if reopen_today is True:
-            eligible_override = False
-            verd = "LIVE_REOPEN_HOLDS"
-        scar = _scar(
-            rel,
-            origin,
-            str(oid),
-            model_text=_pick(scope, "model") or _pick(rec, "model"),
-            organ_text=_pick(scope, "organ") or _pick(rec, "organ"),
-            representation_text=_pick(scope, "codec", "regime") or _pick(rec, "representation"),
-            family_text=_pick(rec, "seed", "id") + " " + _pick(rec, "claim_refuted"),
-            mechanism=_pick(rec, "seed") or _pick(rec, "claim_refuted"),
-            verdict=verd,
-            status=kind,
-            reopen=_pick(rec, "reopen_condition"),
-            claim=_pick(rec, "claim_refuted", "kind_reasoning"),
-        )
-        if eligible_override is False:
-            scar.refuse_eligible = False
-        elif kind == "PROPERTY_OF_IDEA" and reopen_today is not True:
-            scar.refuse_eligible = True
-        elif kind == "ARTIFACT_OF_METHOD":
-            # The idea is not dead; the method is. Do not blanket-refuse the idea.
-            scar.refuse_eligible = False
-        out.append(scar)
-    return out or [_unparsed(rel, "noetic receipt had no entries", origin)]
-
-
 def _parse_odyssey(rel: str, obj: dict[str, Any], origin: str) -> list[Scar]:
     out = []
     for rec in obj.get("entries") or []:
@@ -926,8 +885,6 @@ def parse_json(rel: str, text: str, origin: str) -> list[Scar]:
             return _parse_foundry(rel, obj, origin)
     if schema.endswith("negative_science_register.v1"):
         return _parse_register(rel, obj, origin)
-    if schema.endswith("noetic_negative_science.v1"):
-        return _parse_noetic(rel, obj, origin)
     if schema.endswith("negative_science.v2") and "entries" in obj:
         return _parse_negative_science_v2(rel, obj, origin)
     if schema.endswith("odyssey.negative_science.v1") or rel.endswith("odyssey/NEGATIVE_SCIENCE.json"):
@@ -1407,12 +1364,6 @@ def recovered_implementation() -> list[dict[str, str]]:
             "gap": "query is organ/technique substring only; no representation/family keys; no refuse_if_dead; writes receipts/headless (Codex surface)",
         },
         {
-            "path": "tools/headless/noetic_negative_science.py",
-            "role": "32-entry archaeology catalog + sweep; writes receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
-            "adequate": "no",
-            "gap": "hand catalog, not a keyed retrieval API a generator can call before proposing",
-        },
-        {
             "path": "tools/foundry/NEGATIVE_TRANSFER_ATLAS.json",
             "role": "14 killed levers with reopen_condition (schema hawking.foundry.negative_transfer_atlas.v1)",
             "adequate": "no",
@@ -1459,7 +1410,7 @@ def gaps_closed() -> list[str]:
 
 def negative_findings() -> list[str]:
     return [
-        "tools/headless/negative_science.py QWEN entries are not in the v1 NOETIC receipt; they are extracted from the Python catalog so they are not lost. Rebuilding the Codex receipt was out of scope.",
+            "tools/headless/negative_science.py QWEN entries are retained in the v2 receipt; the index extracts them from the canonical generator catalog so they are not lost.",
         ".hcli-legacy/bootstrap-director-v6/negative-science.jsonl is not in git HEAD; cited by noetic as HCLI tactic fingerprints, not representation science.",
         "The dual-gravity JSONL duplicates many qwen80/evolution JSONL records (same record_id). Both sources are kept; they are not merged.",
         "No FAMILY or GENERAL_PHYSICAL promotion was performed. Counts of distinct parents per family are visible in coverage.by_model but are not a promotion.",

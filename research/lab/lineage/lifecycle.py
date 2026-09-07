@@ -46,7 +46,7 @@ from lab.qwen38_protected_run_verifier import verify_qwen38_capture
 from lab.receipts import seal, verify
 
 
-REPO = Path(__file__).resolve().parents[2]
+REPO = Path(__file__).resolve().parents[3]
 
 CANDIDATE_SCHEMA = "hawking.genesis.candidate_request.v1"
 CANDIDATE_SUBMISSION_SCHEMA = "hawking.genesis.candidate_submission.v1"

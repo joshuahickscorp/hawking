@@ -1,1 +1,0 @@
-{"default":{"identifier":"default","description":"HIDE webview capabilities: core APIs plus the native folder picker for Add folder.","local":true,"windows":["main"],"permissions":["core:default","dialog:allow-open"]}}

@@ -1,0 +1,37 @@
+{
+ "date": "2026-09-06",
+ "obligation": "G004",
+ "result": "SATISFIED",
+ "unit": "add down_proj_scale_overhead_bpw() to tools/future/gravity_outlier_eval.py",
+ "authored_by": "the resident (sealed-3.14, via HCLI). The supervisor supplied the measured science and the required return value; the resident wrote the function, chose the test file, wrote the test, and named it in an admissible form.",
+ "HCLI_VERDICT": {
+  "ok": true,
+  "rolled_back": false,
+  "red_before_green": true,
+  "checks": [
+   {
+    "kind": "py_compile",
+    "exit_code": 0
+   },
+   {
+    "kind": "py_compile",
+    "exit_code": 0
+   },
+   {
+    "kind": "test",
+    "exit_code": 0,
+    "admitted": true,
+    "collected": 2
+   }
+  ]
+ },
+ "SUPERVISOR_VERIFIED_INDEPENDENTLY": {
+  "test_passes_when_I_run_it": "2 passed",
+  "red_before_green_is_REAL": "amputating down_proj_scale_overhead_bpw from the module makes the test fail at COLLECTION (ImportError). The gate's True is not merely recorded, it is true.",
+  "value_is_physically_correct": "the 1-bit grammar's asymptote is 1.0416666667 bits/weight and f(128) = 0.0416666667 is exactly its excess over 1.0 -- down_proj's irreducible share.",
+  "existing_suite_unaffected": "hcli/test_gravity_outlier.py 9 passed"
+ },
+ "A_VERIFICATION_ERROR_I_MADE_AND_CORRECTED": "My first correctness check compared f(128) against the gap between the uniform-g128 rate (1.125) and the asymptote (1.0417), which is 0.0833, and reported a mismatch. That 0.0833 is GATE/UP's share -- the part group growth can remove -- not down_proj's. The right comparison is the asymptote's excess over 1.0 bits/weight, which matches to 1e-12. I nearly recorded a false discrepancy against correct work.",
+ "WHY_THIS_IS_SCIENTIFIC_AND_NOT_A_PROBE": "The constant is the measured bound that explains why the 1-bit grammar bottoms out at 1.3457 complete EBPW instead of reaching the 1.0 target. It encodes a physical fact about this specimen: down_proj is 1408 = 2^7*11, so no group above 128 divides it, and its scale overhead is irreducible under every uniform setting.",
+ "WHAT_THIS_DOES_NOT_SATISFY": "G009 requires THREE consecutive accepted units with NO supervisor target engineering between them. I wrote this goal and specified the return value, so it counts for G004 and not for G009."
+}

@@ -52,6 +52,15 @@ hawking is a Rust workspace compiling to a single CLI binary that wraps a Metal-
 
 **Shaders are embedded.** `.metal` sources are compiled into the binary via `include_str!` and compiled at runtime through `MTLDevice newLibraryWithSource:`. No `metallib` artifact; no `xcrun` needed to build.
 
+**HCLI is the current headless HIDE product boundary.** `hide-backend` owns
+durable sessions, receipts, tools, runtime supervision, managed process
+lifecycle, and the native `hcli` command surface. Its `process_inspector`
+module also owns host-wide Hawking process classification, footprint
+observation, owner claims, and startup-only orphan reaping. The Python `hcli`
+package is an orchestration/resident compatibility skin where AgentOS and
+provider-specific behavior is still not parity-ported. Visual/IDE surfaces
+remain deferred until the external VMCP boundary is hardened.
+
 ## Workspace layout
 
 ```
@@ -79,10 +88,10 @@ hawking/
 │   │   │   └── tokenizer/        # wrapper over tokenizers crate
 │   │   └── shaders/              # .metal source, embedded at build
 │   ├── hawking-serve/          # axum HTTP server
-│   ├── hawking-bench/          # benchmark suites
+│   ├── hawking/src/bench/      # benchmark suites owned by the CLI
 │   ├── hawking-adapters/       # model-family registry; generated/ is codegen output
-│   └── hide-*/                 # HIDE product crates (backend, protocol, acp, ...)
-├── app/                          # HIDE front end (Vite + React + Tauri)
+│   └── hide-*/                 # HIDE product crates (backend, protocol, kernel, fleet, ...)
+├── (visual/IDE surface deferred until the external VMCP boundary is hardened)
 ├── tools/                        # Python + shell instruments
 │   ├── bench/                    # shell bench harness + oracle scripts
 │   ├── graph/                    # semantic-graph extractor, analyses, viewer
@@ -135,8 +144,8 @@ re-filed without breaking a seal.
 | `hawking-core::tokenizer` | Tokenize / detokenize | `tokenizers` crate |
 | `hawking-core::model` | Per-architecture forward passes | everything above |
 | `hawking-serve` | HTTP, SSE, continuous batching | `hawking-core` |
-| `hawking-bench` | Benchmark suites | `hawking-core` |
-| `hawking` (umbrella) | CLI dispatch | `hawking-serve`, `hawking-bench`, `hawking-core` |
+| `hawking/src/bench` | Benchmark suites | `hawking-core` |
+| `hawking` | CLI dispatch and benchmark lifecycle | `hawking-serve`, `hawking-core` |
 
 ## Invariants
 

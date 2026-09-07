@@ -22,7 +22,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from hcli.backends import StructuredOutputExhausted
+from hcli.backends import CompletionResult, SchemaViolation, StructuredOutputExhausted
+from hcli.backends import StructuredOutputContract, schema_instruction
 from hcli.config import Config
 from hcli.engine import Engine
 from hcli.events import EventBus
@@ -89,6 +90,47 @@ def _engine(root: Path) -> Engine:
 
 
 class TestStructuredOutputTruncationRetry(unittest.TestCase):
+    def test_structured_retry_is_local_not_a_full_context_replay(self):
+        schema = {
+            "type": "object",
+            "required": ["kind"],
+            "properties": {"kind": {"type": "string"}},
+            "additionalProperties": False,
+        }
+        contract = StructuredOutputContract(
+            schema=schema, instruction=schema_instruction(schema), max_attempts=2
+        )
+        original = {
+            "model": "local",
+            "messages": [
+                {"role": "system", "content": "stable system prefix"},
+                {"role": "user", "content": "ODYSSEY EVIDENCE " * 1200},
+            ],
+            "max_tokens": 2048,
+        }
+        sent = []
+
+        def complete(payload, _timeout):
+            sent.append(payload)
+            if len(sent) == 1:
+                raise SchemaViolation(
+                    "missing required property 'kind'",
+                    text='{"content":"rejected scientific fragment"}',
+                )
+            return CompletionResult(
+                raw={"choices": []}, text=json.dumps({"kind": "answer"})
+            )
+
+        result = contract.enforce(complete, original)
+
+        self.assertEqual(result.schema_attempts, 2)
+        self.assertEqual(sent[1]["messages"][0], sent[0]["messages"][0])
+        retry_prompt = sent[1]["messages"][-1]["content"]
+        self.assertLess(len(retry_prompt), len(sent[0]["messages"][-1]["content"]) // 4)
+        self.assertIn("missing required property 'kind'", retry_prompt)
+        self.assertIn("rejected scientific fragment", retry_prompt)
+        self.assertLess(sent[1]["max_tokens"], sent[0]["max_tokens"])
+
     def test_length_truncation_is_retried_and_counted(self):
         sent = []
         replies = [
@@ -116,6 +158,9 @@ class TestStructuredOutputTruncationRetry(unittest.TestCase):
         self.assertEqual(so["attempts"], 2)
         self.assertEqual(so["retries"], 1)
         self.assertFalse(so["exhausted"])
+        assert len(so["structured_attempt_budgets"]) == 2
+        assert so["structured_attempt_budgets"][0]["requested_max_tokens"] > 0
+        assert so["structured_attempt_budgets"][1]["completion_tokens"] == 2048
 
         # The model was TOLD it was truncated and asked for less, not simply
         # asked again. A retry that repeats the same request repeats the same

@@ -28,7 +28,6 @@ from pathlib import Path
 from typing import Any, Callable, Iterable, Mapping
 
 from tools.future._common import REPO, git, write_receipt
-from tools.future.cuda_lowbit_hypotheses import REQUIRED_HYPOTHESIS_FIELDS
 from tools.future.experiment_policy import apply_deterministic_belief_update
 from tools.future.odyssey2_law_store import LAW_FIELDS
 
@@ -65,6 +64,25 @@ RECORD_KEYS = (
     "evidence_tier",
     "source_evidence_class",
     "key_fields",
+)
+
+# Stable field vocabulary for the retained CUDA hypothesis receipt. The
+# one-shot literature generator that originally declared this tuple is
+# retired; the corpus adapter must remain able to read its sealed output
+# without resurrecting that execution machinery.
+REQUIRED_HYPOTHESIS_FIELDS = (
+    "id",
+    "physical_invariant",
+    "hawking_primitive",
+    "target_organ",
+    "cheapest_falsifier",
+    "expected_removed_cost",
+    "backend_candidate",
+    "transfer_scope",
+    "knowledge_source",
+    "hypothesis_family",
+    "behavior_id",
+    "candidate",
 )
 
 # Named historical receipts this corpus actually loads. Absence of one

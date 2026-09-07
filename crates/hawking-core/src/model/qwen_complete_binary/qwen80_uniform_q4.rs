@@ -243,8 +243,7 @@ pub fn pack_uniform_q4_group64(
             let quantized = if reconstructed_scale == 0.0 {
                 0i32
             } else {
-                rint_ties_even(value / reconstructed_scale)
-                    .clamp(-8.0, 7.0) as i32
+                rint_ties_even(value / reconstructed_scale).clamp(-8.0, 7.0) as i32
             };
             let code = (quantized + 8) as u8;
             if local & 1 == 0 {
@@ -328,12 +327,9 @@ pub fn decode_uniform_q4_group64(payload: &[u8]) -> Result<Vec<f32>> {
     for element in 0..header.elements {
         let group = element / UNIFORM_Q4_GROUP_SIZE;
         let local = element % UNIFORM_Q4_GROUP_SIZE;
-        let scale = f16::from_bits(read_u16(
-            payload,
-            header.scale_offset + group * 2,
-        )?)
-        .to_f32();
-        let packed = payload[header.sign_offset + group * UNIFORM_Q4_CODE_BYTES_PER_GROUP + local / 2];
+        let scale = f16::from_bits(read_u16(payload, header.scale_offset + group * 2)?).to_f32();
+        let packed =
+            payload[header.sign_offset + group * UNIFORM_Q4_CODE_BYTES_PER_GROUP + local / 2];
         let nibble = if local & 1 == 0 {
             packed & 0x0f
         } else {
@@ -346,12 +342,8 @@ pub fn decode_uniform_q4_group64(payload: &[u8]) -> Result<Vec<f32>> {
 
 fn expected_q80_q4_tensor_path(root: &Path, tensor_name: &str) -> Result<PathBuf> {
     let tensors = root.join("tensors");
-    let metadata = fs::symlink_metadata(&tensors).map_err(|error| {
-        q80_error(format!(
-            "cannot stat {}: {error}",
-            tensors.display()
-        ))
-    })?;
+    let metadata = fs::symlink_metadata(&tensors)
+        .map_err(|error| q80_error(format!("cannot stat {}: {error}", tensors.display())))?;
     if metadata.file_type().is_symlink() || !metadata.is_dir() {
         return Err(q80_error(format!(
             "{} must be a non-symlink tensors directory",
@@ -413,13 +405,12 @@ fn widen_source_to_f32(raw: &[u8], dtype: &str, elements: usize) -> Result<Vec<f
             let mut out = vec![0.0f32; elements];
             for (index, slot) in out.iter_mut().enumerate() {
                 let base = index * 4;
-                *slot = f32::from_le_bytes([raw[base], raw[base + 1], raw[base + 2], raw[base + 3]]);
+                *slot =
+                    f32::from_le_bytes([raw[base], raw[base + 1], raw[base + 2], raw[base + 3]]);
             }
             Ok(out)
         }
-        other => Err(q80_error(format!(
-            "unsupported source dtype {other:?}"
-        ))),
+        other => Err(q80_error(format!("unsupported source dtype {other:?}"))),
     }
 }
 
@@ -427,9 +418,8 @@ fn atomic_write_bytes(path: &Path, bytes: &[u8]) -> Result<()> {
     let parent = path
         .parent()
         .ok_or_else(|| q80_error("payload path has no parent"))?;
-    fs::create_dir_all(parent).map_err(|error| {
-        q80_error(format!("cannot create {}: {error}", parent.display()))
-    })?;
+    fs::create_dir_all(parent)
+        .map_err(|error| q80_error(format!("cannot create {}: {error}", parent.display())))?;
     let tmp = parent.join(format!(
         ".{}.tmp-{}",
         path.file_name()
@@ -438,15 +428,12 @@ fn atomic_write_bytes(path: &Path, bytes: &[u8]) -> Result<()> {
         std::process::id()
     ));
     let write_result = (|| -> Result<()> {
-        let mut file = File::create(&tmp).map_err(|error| {
-            q80_error(format!("cannot create {}: {error}", tmp.display()))
-        })?;
-        file.write_all(bytes).map_err(|error| {
-            q80_error(format!("cannot write {}: {error}", tmp.display()))
-        })?;
-        file.sync_all().map_err(|error| {
-            q80_error(format!("cannot fsync {}: {error}", tmp.display()))
-        })?;
+        let mut file = File::create(&tmp)
+            .map_err(|error| q80_error(format!("cannot create {}: {error}", tmp.display())))?;
+        file.write_all(bytes)
+            .map_err(|error| q80_error(format!("cannot write {}: {error}", tmp.display())))?;
+        file.sync_all()
+            .map_err(|error| q80_error(format!("cannot fsync {}: {error}", tmp.display())))?;
         Ok(())
     })();
     if let Err(error) = write_result {
@@ -494,9 +481,8 @@ struct SafetensorsTensorMeta {
 }
 
 fn read_safetensors_meta(path: &Path) -> Result<HashMap<String, SafetensorsTensorMeta>> {
-    let mut file = File::open(path).map_err(|error| {
-        q80_error(format!("cannot open {}: {error}", path.display()))
-    })?;
+    let mut file = File::open(path)
+        .map_err(|error| q80_error(format!("cannot open {}: {error}", path.display())))?;
     let mut len_buf = [0u8; 8];
     file.read_exact(&mut len_buf).map_err(|error| {
         q80_error(format!(
@@ -535,9 +521,9 @@ fn read_safetensors_meta(path: &Path) -> Result<HashMap<String, SafetensorsTenso
         if name == "__metadata__" {
             continue;
         }
-        let info = info_value.as_object().ok_or_else(|| {
-            q80_error(format!("tensor {name} header is not an object"))
-        })?;
+        let info = info_value
+            .as_object()
+            .ok_or_else(|| q80_error(format!("tensor {name} header is not an object")))?;
         let dtype = info
             .get("dtype")
             .and_then(Value::as_str)
@@ -610,12 +596,10 @@ fn range_read_tensor(file: &File, meta: &SafetensorsTensorMeta, name: &str) -> R
         let mut file = file
             .try_clone()
             .map_err(|error| q80_error(format!("cannot clone shard handle: {error}")))?;
-        file.seek(SeekFrom::Start(offset)).map_err(|error| {
-            q80_error(format!("seek {name} @ {offset}: {error}"))
-        })?;
-        file.read_exact(&mut buf).map_err(|error| {
-            q80_error(format!("range-read {name} ({nbytes} bytes): {error}"))
-        })?;
+        file.seek(SeekFrom::Start(offset))
+            .map_err(|error| q80_error(format!("seek {name} @ {offset}: {error}")))?;
+        file.read_exact(&mut buf)
+            .map_err(|error| q80_error(format!("range-read {name} ({nbytes} bytes): {error}")))?;
     }
     Ok(buf)
 }
@@ -629,12 +613,8 @@ struct PackJob {
 }
 
 fn pack_one_job(job: &PackJob, tensor_dir: &Path) -> Result<Qwen80UniformQ4PackedTensor> {
-    let file = File::open(&job.shard_path).map_err(|error| {
-        q80_error(format!(
-            "cannot open {}: {error}",
-            job.shard_path.display()
-        ))
-    })?;
+    let file = File::open(&job.shard_path)
+        .map_err(|error| q80_error(format!("cannot open {}: {error}", job.shard_path.display())))?;
     let raw = range_read_tensor(&file, &job.meta, &job.tensor_name)?;
     drop(file);
     let elements = job.meta.shape.iter().try_fold(1usize, |total, dimension| {
@@ -671,15 +651,14 @@ fn pack_one_job(job: &PackJob, tensor_dir: &Path) -> Result<Qwen80UniformQ4Packe
 fn load_source_for_pack(revalidation_path: &Path) -> Result<SourceChain> {
     let revalidation_path =
         canonical_regular_path(revalidation_path, "qwen80 uniform Q4 revalidation")?;
-    let revalidation_raw =
-        read_regular_file(&revalidation_path, "qwen80 uniform Q4 revalidation")?;
+    let revalidation_raw = read_regular_file(&revalidation_path, "qwen80 uniform Q4 revalidation")?;
     let revalidation =
         parse_json_no_duplicate_keys(&revalidation_raw, "qwen80 uniform Q4 revalidation")?;
     let revalidation_seal =
         verify_sealed_document(&revalidation, "qwen80 uniform Q4 revalidation")?;
-    let revalidation_object = revalidation.as_object().ok_or_else(|| {
-        q80_error("revalidation root must be an object")
-    })?;
+    let revalidation_object = revalidation
+        .as_object()
+        .ok_or_else(|| q80_error("revalidation root must be an object"))?;
     let audit_seal = required_sha256(
         revalidation_object,
         "source_audit_seal_sha256",
@@ -765,24 +744,24 @@ pub fn pack_qwen80_uniform_q4(
             source.weight_map.len()
         )));
     }
-    let model_dir = source.source_index_path.parent().ok_or_else(|| {
-        q80_error("source index has no parent model directory")
-    })?;
+    let model_dir = source
+        .source_index_path
+        .parent()
+        .ok_or_else(|| q80_error("source index has no parent model directory"))?;
     let output_root = request.output_root.clone();
     let tensor_dir = output_root.join("tensors");
-    fs::create_dir_all(&tensor_dir).map_err(|error| {
-        q80_error(format!(
-            "cannot create {}: {error}",
-            tensor_dir.display()
-        ))
-    })?;
+    fs::create_dir_all(&tensor_dir)
+        .map_err(|error| q80_error(format!("cannot create {}: {error}", tensor_dir.display())))?;
 
     let mut shard_meta: HashMap<String, HashMap<String, SafetensorsTensorMeta>> = HashMap::new();
     for shard in source.weight_map.values() {
         if shard_meta.contains_key(shard) {
             continue;
         }
-        shard_meta.insert(shard.clone(), read_safetensors_meta(&model_dir.join(shard))?);
+        shard_meta.insert(
+            shard.clone(),
+            read_safetensors_meta(&model_dir.join(shard))?,
+        );
     }
 
     let mut jobs = Vec::with_capacity(source.weight_map.len());
@@ -795,9 +774,11 @@ pub fn pack_qwen80_uniform_q4(
                     "source shard {shard} has no header for tensor {name}"
                 ))
             })?;
-        let shard_sha256 = source.shard_hashes.get(shard).cloned().ok_or_else(|| {
-            q80_error(format!("revalidation has no hash for shard {shard}"))
-        })?;
+        let shard_sha256 = source
+            .shard_hashes
+            .get(shard)
+            .cloned()
+            .ok_or_else(|| q80_error(format!("revalidation has no hash for shard {shard}")))?;
         jobs.push(PackJob {
             tensor_name: name.clone(),
             shard_name: shard.clone(),
@@ -827,22 +808,24 @@ pub fn pack_qwen80_uniform_q4(
         for _ in 0..workers {
             let queue = Arc::clone(&job_queue);
             let tensor_dir = tensor_dir.clone();
-            handles.push(thread::spawn(move || -> Result<Vec<Qwen80UniformQ4PackedTensor>> {
-                let mut local = Vec::new();
-                loop {
-                    let job = {
-                        let mut guard = queue.lock().map_err(|_| {
-                            q80_error("packer worker queue poisoned")
-                        })?;
-                        guard.next()
-                    };
-                    match job {
-                        Some(job) => local.push(pack_one_job(&job, &tensor_dir)?),
-                        None => break,
+            handles.push(thread::spawn(
+                move || -> Result<Vec<Qwen80UniformQ4PackedTensor>> {
+                    let mut local = Vec::new();
+                    loop {
+                        let job = {
+                            let mut guard = queue
+                                .lock()
+                                .map_err(|_| q80_error("packer worker queue poisoned"))?;
+                            guard.next()
+                        };
+                        match job {
+                            Some(job) => local.push(pack_one_job(&job, &tensor_dir)?),
+                            None => break,
+                        }
                     }
-                }
-                Ok(local)
-            }));
+                    Ok(local)
+                },
+            ));
         }
         let mut rows = Vec::new();
         for handle in handles {
@@ -878,8 +861,7 @@ pub fn pack_qwen80_uniform_q4(
 
     let revalidation_path =
         canonical_regular_path(&request.revalidation_path, "qwen80 uniform Q4 revalidation")?;
-    let revalidation_raw =
-        read_regular_file(&revalidation_path, "qwen80 uniform Q4 revalidation")?;
+    let revalidation_raw = read_regular_file(&revalidation_path, "qwen80 uniform Q4 revalidation")?;
     let revalidation =
         parse_json_no_duplicate_keys(&revalidation_raw, "qwen80 uniform Q4 revalidation")?;
     let revalidation_seal =
@@ -961,9 +943,8 @@ pub fn pack_qwen80_uniform_q4(
         let actual = u64::try_from(
             format!(
                 "{}\n",
-                serde_json::to_string_pretty(&sealed).map_err(|error| {
-                    q80_error(format!("cannot render catalog: {error}"))
-                })?
+                serde_json::to_string_pretty(&sealed)
+                    .map_err(|error| { q80_error(format!("cannot render catalog: {error}")) })?
             )
             .len(),
         )
@@ -1172,9 +1153,9 @@ fn admit_qwen80_uniform_q4_inner(
     })?;
     let manifest_raw = read_regular_file(&manifest_path, "qwen80 uniform Q4 manifest")?;
     let manifest = parse_json_no_duplicate_keys(&manifest_raw, "qwen80 uniform Q4 manifest")?;
-    let manifest_object = manifest.as_object().ok_or_else(|| {
-        Error::Model("qwen80 uniform Q4 manifest: root must be an object".into())
-    })?;
+    let manifest_object = manifest
+        .as_object()
+        .ok_or_else(|| Error::Model("qwen80 uniform Q4 manifest: root must be an object".into()))?;
     let manifest_seal = verify_sealed_document(&manifest, "qwen80 uniform Q4 manifest")?;
     if manifest_seal != admission.expected_manifest_seal_sha256 {
         return Err(Error::Model(
@@ -1210,7 +1191,8 @@ fn admit_qwen80_uniform_q4_inner(
         "qwen80 uniform Q4 terminal receipt",
     )?;
     let terminal_raw = read_regular_file(&terminal_path, "qwen80 uniform Q4 terminal receipt")?;
-    let terminal = parse_json_no_duplicate_keys(&terminal_raw, "qwen80 uniform Q4 terminal receipt")?;
+    let terminal =
+        parse_json_no_duplicate_keys(&terminal_raw, "qwen80 uniform Q4 terminal receipt")?;
     let terminal_seal = verify_sealed_document(&terminal, "qwen80 uniform Q4 terminal receipt")?;
     if terminal_seal != admission.expected_terminal_seal_sha256 {
         return Err(Error::Model(
@@ -1222,8 +1204,10 @@ fn admit_qwen80_uniform_q4_inner(
         &admission.expected_revalidation_path,
         "qwen80 uniform Q4 source revalidation receipt",
     )?;
-    let revalidation_raw =
-        read_regular_file(&revalidation_path, "qwen80 uniform Q4 source revalidation receipt")?;
+    let revalidation_raw = read_regular_file(
+        &revalidation_path,
+        "qwen80 uniform Q4 source revalidation receipt",
+    )?;
     let revalidation = parse_json_no_duplicate_keys(
         &revalidation_raw,
         "qwen80 uniform Q4 source revalidation receipt",
@@ -1251,7 +1235,8 @@ fn admit_qwen80_uniform_q4_inner(
         let declared_canon = absolute_path(declared_revalidation, "declared revalidation")?;
         if declared_canon != revalidation_path {
             return Err(Error::Model(
-                "qwen80 uniform Q4 manifest revalidation path differs from protected handoff".into(),
+                "qwen80 uniform Q4 manifest revalidation path differs from protected handoff"
+                    .into(),
             ));
         }
     }
@@ -1283,16 +1268,22 @@ fn admit_qwen80_uniform_q4_inner(
         &manifest_audit_seal,
     )?;
 
-    let representation =
-        required_object(manifest_object, "representation", "qwen80 uniform Q4 manifest")?;
+    let representation = required_object(
+        manifest_object,
+        "representation",
+        "qwen80 uniform Q4 manifest",
+    )?;
     require_exact_string(
         representation,
         "family",
         "uniform_q4_group64_fp16_scale",
         "qwen80 uniform Q4 representation",
     )?;
-    if required_u64(representation, "group_size", "qwen80 uniform Q4 representation")?
-        != u64::try_from(UNIFORM_Q4_GROUP_SIZE).unwrap()
+    if required_u64(
+        representation,
+        "group_size",
+        "qwen80 uniform Q4 representation",
+    )? != u64::try_from(UNIFORM_Q4_GROUP_SIZE).unwrap()
         || !required_bool(
             representation,
             "physical_direct_layout",
@@ -1316,7 +1307,12 @@ fn admit_qwen80_uniform_q4_inner(
     let mut tensors = BTreeMap::new();
     let mut verified_payloads = BTreeMap::new();
     let parallel = match std::env::var("HAWKING_ADMISSION_PARALLEL") {
-        Ok(value) if matches!(value.as_str(), "0" | "false" | "FALSE" | "no" | "NO" | "off" | "OFF") => {
+        Ok(value)
+            if matches!(
+                value.as_str(),
+                "0" | "false" | "FALSE" | "no" | "NO" | "off" | "OFF"
+            ) =>
+        {
             false
         }
         _ => true,
@@ -1350,9 +1346,9 @@ fn admit_qwen80_uniform_q4_inner(
             }));
         }
         for handle in handles {
-            let (local_tensors, local_payloads) = handle
-                .join()
-                .map_err(|_| Error::Model("qwen80 uniform Q4 admission worker panicked".into()))??;
+            let (local_tensors, local_payloads) = handle.join().map_err(|_| {
+                Error::Model("qwen80 uniform Q4 admission worker panicked".into())
+            })??;
             for (name, tensor) in local_tensors {
                 let payload = local_payloads.get(&name).cloned().ok_or_else(|| {
                     Error::Model("qwen80 uniform Q4 admission lane missing payload".into())
@@ -1395,8 +1391,7 @@ fn admit_qwen80_uniform_q4_inner(
         ));
     }
 
-    let (elements, payload_bytes) =
-        validate_ledger(manifest_object, &tensors, manifest_raw.len())?;
+    let (elements, payload_bytes) = validate_ledger(manifest_object, &tensors, manifest_raw.len())?;
 
     Ok(CompleteBinaryArtifact {
         model: QwenCompleteBinaryModel::Qwen80CoderNext,
@@ -1608,7 +1603,10 @@ mod tests {
         assert_eq!(report.source_weight_elements, 192);
         assert_eq!(report.packed.len(), 2);
         for row in &report.packed {
-            assert_eq!(row.quality.groups * 64, row.quality.elements.max(1).div_ceil(64) * 64);
+            assert_eq!(
+                row.quality.groups * 64,
+                row.quality.elements.max(1).div_ceil(64) * 64
+            );
             assert!(
                 (row.quality.codec_bpw - 4.25).abs() < 1e-12,
                 "{} codec_bpw={}",
@@ -1684,8 +1682,16 @@ mod tests {
         .unwrap();
         let quality_a = pack_quality(&a_f32, &decoded_a, 128, 2, 0);
         let quality_b = pack_quality(&b_f32, &decoded_b, 64, 1, 0);
-        assert!(quality_a.cosine > 0.99, "admitted A cosine={}", quality_a.cosine);
-        assert!(quality_b.cosine > 0.99, "admitted B cosine={}", quality_b.cosine);
+        assert!(
+            quality_a.cosine > 0.99,
+            "admitted A cosine={}",
+            quality_a.cosine
+        );
+        assert!(
+            quality_b.cosine > 0.99,
+            "admitted B cosine={}",
+            quality_b.cosine
+        );
     }
 
     #[test]
@@ -1727,9 +1733,6 @@ mod tests {
             workers: 1,
         })
         .unwrap_err();
-        assert!(
-            error.to_string().contains("74391"),
-            "{error}"
-        );
+        assert!(error.to_string().contains("74391"), "{error}");
     }
 }

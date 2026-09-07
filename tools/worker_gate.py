@@ -31,7 +31,7 @@ measurement.
   ./tools/worker_gate.py --sweep 6
 """
 from __future__ import annotations
-import argparse, json, pathlib, re, subprocess, sys
+import argparse, json, pathlib, re, subprocess, sys, time
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 
@@ -123,11 +123,87 @@ def sweep(upto: int, obs: dict) -> list[dict]:
     return rows
 
 
+# --- lifecycle step 10: verify memory release -------------------------------
+# gate() only ever runs BEFORE a worker loads. Nothing observes AFTER a
+# worker exits -- the patient runner relies entirely on process exit to
+# reclaim, and no receipt records whether that actually happened. Judged on
+# WIRED, not RSS or free pages, for the same reason gate() is: wired memory
+# cannot be compressed or swapped (see module docstring), so anything a
+# worker fails to release stays wired even after its process is gone.
+
+def verify_release(before: dict, after: dict, tol_gb: float = 2.0) -> dict:
+    """Did wired memory return after a worker's process boundary?
+
+    `before`/`after` are two observe() snapshots taken by the caller around
+    the boundary (spawn -> wait -> re-observe). tol_gb absorbs ordinary
+    system drift (other processes, compressor churn) between the snapshots.
+    """
+    wired_delta = after["wired_gb"] - before["wired_gb"]
+    released = wired_delta <= tol_gb
+    return {
+        "before_wired_gb": round(before["wired_gb"], 2),
+        "after_wired_gb": round(after["wired_gb"], 2),
+        "wired_delta_gb": round(wired_delta, 2),
+        "tolerance_gb": tol_gb,
+        "decision": "RELEASED" if released else "LEAK",
+        "released": released,
+        "note": (
+            f"wired grew {wired_delta:.2f} GB across the process boundary, over "
+            f"the {tol_gb:.1f} GB tolerance -- memory was not returned"
+            if not released else
+            f"wired delta {wired_delta:+.2f} GB, within the {tol_gb:.1f} GB tolerance"
+        ),
+    }
+
+
+def run_with_release_check(
+    argv: list[str], tol_gb: float = 2.0,
+    settle_s: float = 5.0, poll_interval_s: float = 0.5,
+    **popen_kw,
+) -> dict:
+    """Run argv to completion, observing wired memory across its lifetime.
+
+    This is the missing other half of gate(): admission already checks
+    BEFORE load; this checks AFTER release, making a specimen transition
+    that fails to return memory visible instead of silently assumed.
+
+    macOS does not unwire pages the instant a process exits: measured on
+    this machine, an 8.6 GB mlx allocation read +8.66 GB wired immediately
+    after subprocess.run() returned, then settled to +/-0.8 GB within 2s.
+    A single instantaneous re-observe would call that a LEAK. So poll for
+    up to settle_s after exit and keep the last reading -- reclaim lag
+    resolves within the poll window; a real leak does not.
+    """
+    before = observe()
+    proc = subprocess.run(argv, **popen_kw)
+    after = observe()
+    deadline = time.monotonic() + settle_s
+    while not verify_release(before, after, tol_gb)["released"] and time.monotonic() < deadline:
+        time.sleep(poll_interval_s)
+        after = observe()
+    return {
+        "returncode": proc.returncode,
+        "before": before,
+        "after": after,
+        "release": verify_release(before, after, tol_gb=tol_gb),
+    }
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--sweep", type=int, default=6)
     ap.add_argument("--out", type=pathlib.Path)
+    ap.add_argument("--verify-release", nargs=argparse.REMAINDER, metavar="CMD",
+                     help="run CMD to completion, observe wired memory before "
+                          "and after, and report whether it came back "
+                          "(lifecycle step 10)")
+    ap.add_argument("--release-tol-gb", type=float, default=2.0)
     a = ap.parse_args()
+
+    if a.verify_release:
+        result = run_with_release_check(a.verify_release, tol_gb=a.release_tol_gb)
+        print(json.dumps(result, indent=2))
+        sys.exit(0 if result["release"]["released"] else 1)
 
     obs = observe()
     print(f"MEASURED NOW: total {obs['total_gb']:.2f} GB, wired {obs['wired_gb']:.2f}, "

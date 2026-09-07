@@ -1,0 +1,58 @@
+{
+ "specimen": "O003",
+ "date": "2026-09-06",
+ "measured_by": "Claude directly",
+ "new_class": "BINARY_SCALED \u2014 W_hat = s_g * sign(W), s_g = mean(|W|) over the group. 1 bit/weight + 16 bits per group scale, no zero point. NOT expressible in MLX: mx.quantize floors at 2 bits. This is the rung the resident asked for in ladder round 1 (q1-g64-experts) and was refused.",
+ "arms": [
+  {
+   "spec": "binary-g128",
+   "complete_ebpw": 1.4187604971899312,
+   "ppl": 12.2917,
+   "median_4gram": 0.8925,
+   "worst_max_run": 18,
+   "magnitude_ratio": 0.7994817529461875,
+   "cosine": 0.7994817535303975,
+   "capability_ok": false
+  },
+  {
+   "spec": "binary-g64",
+   "complete_ebpw": 1.528426144814053,
+   "ppl": 12.2678,
+   "median_4gram": 0.9333,
+   "worst_max_run": 18,
+   "magnitude_ratio": 0.8012566886093581,
+   "cosine": 0.8012566886093581,
+   "capability_ok": false
+  },
+  {
+   "spec": "binary0.005-g128",
+   "complete_ebpw": 1.5548856552406436,
+   "ppl": 10.9562,
+   "median_4gram": 0.8817,
+   "worst_max_run": 18,
+   "magnitude_ratio": 0.8123733330012757,
+   "cosine": 0.8163282290392229,
+   "capability_ok": false
+  },
+  {
+   "spec": "binary0.02-g128",
+   "complete_ebpw": 1.9727508777850074,
+   "ppl": 9.2066,
+   "median_4gram": 0.8636,
+   "worst_max_run": 23,
+   "magnitude_ratio": 0.8306334963545744,
+   "cosine": 0.8439938042275854,
+   "capability_ok": false
+  }
+ ],
+ "RESULT_below_the_grammar_floor": "binary-g128 reaches 1.4188 complete EBPW against an executable-grammar floor of ~2.19. That is inside the <=1.5 fallback target ON BYTES. Capability is destroyed: ppl 12.29 against bf16's 2.894, median 4-gram 0.8925 against 0.0538. Bytes are reachable; the model at those bytes is not a model.",
+ "IDENTITY_cosine_equals_magnitude_for_this_quantiser": "Every binary arm reported magnitude_ratio == direction_similarity to ~9 digits. That is not a coincidence, it is exact: with s = mean(|W|) per group, <W,What> = s*sum|W| = s*(g*s) = ||What||^2, so cos = ||What||^2/(||W||*||What||) = ||What||/||W|| = the ratio. Verified numerically at delta 0.00e+00 (g=128) and 5.96e-08 (g=64). NEGATIVE CONTROL: swapping to a max-|W| scale breaks it immediately (ratio 3.353 vs cos 0.685). Two consequences: the two gates carry IDENTICAL information for this class so one is redundant, and the identity holding confirms the implementation uses the L2-optimal scale.",
+ "HELD_OUT_TEST_OF_THE_COSINE_HYPOTHESIS": "O003_GAUNTLET_DEEP proposed cosine >= ~0.96 as a cheap predictor of the expensive generation gate, drawn from 8 points. These 4 binary arms are held-out data from a class that did not exist when it was formed: cosines 0.799, 0.801, 0.812, 0.831 -- all predicted FAIL, all observed FAIL. 4/4. The hypothesis SURVIVES its first falsification attempt, but only on the negative side: no held-out PASS has ever been tested, so the threshold's position is still unvalidated.",
+ "outlier_channel_helps_monotonically_and_insufficiently": "frac 0 -> 0.005 -> 0.02 moves ppl 12.29 -> 10.96 -> 9.21 and cosine 0.799 -> 0.812 -> 0.831, while EBPW rises 1.4188 -> 1.5549 -> 1.9728. The direction is real and reproduces the OUTLIER_SPLIT result, but it buys nowhere near the gate and costs the byte advantage.",
+ "WHAT_THIS_CLOSES_FOR_G010": "Capability requires >= 3.5024 EBPW (q3-g64-experts). Bytes reach 1.4188. The entire interval between them is measured and every point in it is collapsed or destroyed, across THREE classes (affine, outlier-split, binary). The plateau is not a search-budget artefact.",
+ "CAVEATS": [
+  "Uncalibrated: sign+mean-scale uses no activation data. Activation-aware binarisation (e.g. per-channel scales fitted to real inputs) is untested and is the obvious next attack.",
+  "No sparsity, no codebook, no cross-expert sharing tested here.",
+  "TPS unmeasured for this class: it reconstructs to dense bf16 and has no 1-bit kernel."
+ ]
+}

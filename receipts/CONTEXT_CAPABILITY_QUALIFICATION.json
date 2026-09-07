@@ -1,0 +1,60 @@
+{
+  "arms": [
+    {
+      "capability_survives": true,
+      "content": "",
+      "facts_correct": 3,
+      "facts_total": 3,
+      "json_parsed": true,
+      "prompt_tokens_exact": 1025,
+      "target": 1000,
+      "wall_s": 21.18
+    },
+    {
+      "capability_survives": true,
+      "content": "{\"reactor_code\": \"QX88\", \"coolant_litres\": 417, \"shift_lead\": \"Mirembe\"}",
+      "content_chars": 72,
+      "fact_coolant_litres": "OK",
+      "fact_reactor_code": "OK",
+      "fact_shift_lead": "OK",
+      "facts_correct": 3,
+      "facts_total": 3,
+      "json_parsed": true,
+      "prompt_tokens_exact": 7773,
+      "target": 8000,
+      "wall_s": 163.95
+    },
+    {
+      "capability_survives": true,
+      "content": "{\"reactor_code\": \"QX88\", \"coolant_litres\": 417, \"shift_lead\": \"Mirembe\"}",
+      "content_chars": 72,
+      "fact_coolant_litres": "OK",
+      "fact_reactor_code": "OK",
+      "fact_shift_lead": "OK",
+      "facts_correct": 3,
+      "facts_total": 3,
+      "json_parsed": true,
+      "prompt_tokens_exact": 15501,
+      "target": 16000,
+      "wall_s": 453.59
+    }
+  ],
+  "command": "python3 capability_at_length.py <target_tokens>",
+  "control_note": "the 1K arm is the matched control. Without it a failure at length could not be told apart from the model being unable to do the task at all.",
+  "disposition_16K": "SEMANTICALLY_USABLE. Not SERVABLE: 453.6 s to read one prompt.",
+  "envelope_max_seq_len_committed": 9728,
+  "five_part_qualification_16K": {
+    "capability_survives": "YES -- structured output valid and 3/3 facts correct from three different depths at 15,501 tokens",
+    "generation_works": "YES -- 72 chars of clean JSON, no markdown fence",
+    "latency_resource_cost_recorded": "YES -- 453.6 s wall, 34.2 tok/s fresh prefill, fresh process",
+    "memory_fits": "YES -- 15,501 tokens admitted and generated with max_seq_len raised in process; swapouts delta 0 during the decode measurement",
+    "retrieval_works": "YES -- 9 of 9 needle cells at 8K/16K/32K x 25/50/90 (CONTEXT_RETRIEVAL_9CELL.json)"
+  },
+  "max_seq_len_used": 34000,
+  "produced_at": "2026-09-05T14:38:19Z",
+  "produced_by": "scratchpad/capability_at_length.py (fresh process per length)",
+  "renderer": "enable_thinking=False, temperature 0, exact tokenizer",
+  "schema": "hawking.context.capability_qualification.v1",
+  "scoring": "deterministic: JSON must parse, and all three values must match exactly",
+  "task": "three facts placed at 20%, 55% and 85% depth, combined into ONE JSON object with three named keys -- structured output AND multi-fact synthesis, not a needle"
+}

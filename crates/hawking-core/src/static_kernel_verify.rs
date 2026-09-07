@@ -59,10 +59,8 @@ static DISPATCH_RE: Lazy<Regex> = Lazy::new(|| {
         .unwrap()
 });
 static CFG_FEATURE_RE: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(
-        r#"#\[cfg\((?:feature\s*=\s*"([^"]+)"|all\([^]]*feature\s*=\s*"([^"]+)"[^]]*)\)\]"#,
-    )
-    .unwrap()
+    Regex::new(r#"#\[cfg\((?:feature\s*=\s*"([^"]+)"|all\([^]]*feature\s*=\s*"([^"]+)"[^]]*)\)\]"#)
+        .unwrap()
 });
 static CONST_STR_RE: Lazy<Regex> = Lazy::new(|| {
     Regex::new(
@@ -75,11 +73,14 @@ static CONST_U32_RE: Lazy<Regex> =
 static ARGLAYOUT_RE: Lazy<Regex> =
     Lazy::new(|| Regex::new(r"KernelArgBuffer::new\s*\([^,]+,\s*&\[([^\]]+)\]").unwrap());
 static REPR_C_STRUCT_RE: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r"#\[repr\(C[^\]]*\)\](?:\s*#\[[^\]]+\])*\s*(?:pub(?:\([^)]+\))?\s+)?struct\s+(\w+)\s*\{")
-        .unwrap()
+    Regex::new(
+        r"#\[repr\(C[^\]]*\)\](?:\s*#\[[^\]]+\])*\s*(?:pub(?:\([^)]+\))?\s+)?struct\s+(\w+)\s*\{",
+    )
+    .unwrap()
 });
 static INCLUDE_STR_SHADER_RE: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r#"include_str!\s*\(\s*(?:concat!\([^)]*\))?\s*[^)]*shaders/([^"\)]+\.metal)"#).unwrap()
+    Regex::new(r#"include_str!\s*\(\s*(?:concat!\([^)]*\))?\s*[^)]*shaders/([^"\)]+\.metal)"#)
+        .unwrap()
 });
 static SHADERS_METAL_RE: Lazy<Regex> =
     Lazy::new(|| Regex::new(r"shaders/([A-Za-z0-9_]+\.metal)").unwrap());
@@ -100,9 +101,8 @@ static METHOD_BIND_RE: Lazy<Regex> = Lazy::new(|| {
     )
     .unwrap()
 });
-static RUST_FIELD_RE: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r"(?s)(?:pub(?:\([^)]+\))?\s+)?([A-Za-z_]\w*)\s*:\s*(.+)$").unwrap()
-});
+static RUST_FIELD_RE: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r"(?s)(?:pub(?:\([^)]+\))?\s+)?([A-Za-z_]\w*)\s*:\s*(.+)$").unwrap());
 static AS_U32_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"\s+as\s+u32$").unwrap());
 static AS_U_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"\s+as\s+u(?:32|64)$").unwrap());
 static INT_LIT_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"^(\d+)(?:u32|u64|usize)?$").unwrap());
@@ -150,7 +150,6 @@ struct ShaderParam {
     type_s: String,
     space: String,
     index: Option<i64>,
-    attr: String,
     kind: String,
 }
 
@@ -193,7 +192,6 @@ struct LayoutRow {
     type_s: String,
     offset: i64,
     size: i64,
-    align: i64,
 }
 
 #[derive(Clone, Debug)]
@@ -327,7 +325,11 @@ fn py_bool(b: bool) -> &'static str {
 }
 
 fn py_list_str(xs: &[String]) -> String {
-    let inner = xs.iter().map(|s| py_repr_str(s)).collect::<Vec<_>>().join(", ");
+    let inner = xs
+        .iter()
+        .map(|s| py_repr_str(s))
+        .collect::<Vec<_>>()
+        .join(", ");
     format!("[{inner}]")
 }
 
@@ -628,7 +630,6 @@ fn layout_fields(
             type_s: ty.clone(),
             offset: off,
             size: sz,
-            align: al,
         });
         off += sz;
         max_a = max_a.max(al);
@@ -641,7 +642,12 @@ fn classify_shader_param(type_s: &str, attr: &str) -> (String, String, Option<i6
     let mut space = "builtin".to_string();
     let mut index = None;
     let attr_s = attr.trim();
-    let head = attr_s.split('(').next().unwrap_or(attr_s).trim().to_string();
+    let head = attr_s
+        .split('(')
+        .next()
+        .unwrap_or(attr_s)
+        .trim()
+        .to_string();
     if attr_s.contains("buffer(") {
         let lead_split = type_s.split('*').next().unwrap_or(type_s);
         space = if lead_split.contains("constant") {
@@ -670,7 +676,10 @@ fn classify_shader_param(type_s: &str, attr: &str) -> (String, String, Option<i6
     } else if space == "device" {
         kind = KIND_DEVICE.into();
     } else if space == "constant" {
-        let t = type_s.replace("constant", "").replace('&', "").replace("const", "");
+        let t = type_s
+            .replace("constant", "")
+            .replace('&', "")
+            .replace("const", "");
         let t = WS_RE.replace_all(t.trim(), " ").into_owned();
         if t == "uint" || t == "int" {
             kind = KIND_CONSTANT_U32.into();
@@ -707,7 +716,10 @@ fn parse_metal(src: &str, path: &str) -> (Vec<MetalKernel>, Vec<StructDef>) {
                 continue;
             };
             let attr = am.get(1).unwrap().as_str();
-            let before = chunk[..am.get(0).unwrap().start()].trim().trim_end_matches(',').trim();
+            let before = chunk[..am.get(0).unwrap().start()]
+                .trim()
+                .trim_end_matches(',')
+                .trim();
             let (pname, type_s) = if let Some(nm) = PARAM_NAME_RE.captures(before) {
                 let p = nm.get(1).unwrap().as_str().to_string();
                 let t = before[..nm.get(0).unwrap().start()].trim().to_string();
@@ -715,18 +727,12 @@ fn parse_metal(src: &str, path: &str) -> (Vec<MetalKernel>, Vec<StructDef>) {
             } else {
                 (String::new(), before.to_string())
             };
-            let (space, kind, index, head) = classify_shader_param(&type_s, attr);
-            let attr_out = if space == "builtin" {
-                head
-            } else {
-                attr.to_string()
-            };
+            let (space, kind, index, _head) = classify_shader_param(&type_s, attr);
             params.push(ShaderParam {
                 name: pname,
                 type_s,
                 space,
                 index,
-                attr: attr_out,
                 kind,
             });
         }
@@ -814,7 +820,10 @@ fn generated_kernel_names(
             let mut rec = BTreeMap::new();
             rec.insert("path".into(), path.clone());
             rec.insert("macro".into(), "QWEN_UNIFORM_Q4_MATMUL_K".into());
-            rec.insert("invocation".into(), m.get(0).unwrap().as_str().trim().to_string());
+            rec.insert(
+                "invocation".into(),
+                m.get(0).unwrap().as_str().trim().to_string(),
+            );
             rec.insert(
                 "verification".into(),
                 "NAME_RECOVERED_FROM_MACRO; body binding and PSO geometry remain compiler/runtime checks".into(),
@@ -830,7 +839,10 @@ fn generated_kernel_names(
             let mut rec = BTreeMap::new();
             rec.insert("path".into(), path.clone());
             rec.insert("macro".into(), "QWEN_UNIFORM_Q4_MATMUL_RK".into());
-            rec.insert("invocation".into(), m.get(0).unwrap().as_str().trim().to_string());
+            rec.insert(
+                "invocation".into(),
+                m.get(0).unwrap().as_str().trim().to_string(),
+            );
             rec.insert(
                 "verification".into(),
                 "NAME_RECOVERED_FROM_MACRO; body binding and PSO geometry remain compiler/runtime checks".into(),
@@ -845,7 +857,10 @@ fn generated_kernel_names(
             let mut rec = BTreeMap::new();
             rec.insert("path".into(), path.clone());
             rec.insert("macro".into(), "QWEN_BINARY_PLANES".into());
-            rec.insert("invocation".into(), m.get(0).unwrap().as_str().trim().to_string());
+            rec.insert(
+                "invocation".into(),
+                m.get(0).unwrap().as_str().trim().to_string(),
+            );
             rec.insert(
                 "verification".into(),
                 "NAME_RECOVERED_FROM_MACRO; body binding and PSO geometry remain compiler/runtime checks".into(),
@@ -888,7 +903,10 @@ fn enclosing_fn(src: &str, pos: usize) -> (usize, usize, String, Option<String>)
     (0, src.len(), src.to_string(), None)
 }
 
-fn parse_triple(expr: &str, consts: &HashMap<String, i64>) -> (Option<i64>, Option<i64>, Option<i64>) {
+fn parse_triple(
+    expr: &str,
+    consts: &HashMap<String, i64>,
+) -> (Option<i64>, Option<i64>, Option<i64>) {
     let e = expr.trim();
     if !(e.starts_with('(') && e.ends_with(')')) {
         return (None, None, None);
@@ -922,7 +940,10 @@ fn resolve_kernel_expr(
 ) -> (Vec<String>, String) {
     let e = expr.trim().trim_end_matches(',').trim();
     if let Some(c) = KERNEL_NAME_LIT_RE.captures(e) {
-        return (vec![c.get(1).unwrap().as_str().to_string()], "resolved".into());
+        return (
+            vec![c.get(1).unwrap().as_str().to_string()],
+            "resolved".into(),
+        );
     }
     if let Some(c) = DECODE_FAMILY_CALL_RE.captures(e) {
         let fn_name = c.get(1).unwrap().as_str();
@@ -951,7 +972,10 @@ fn resolve_kernel_expr(
     if UPPER_IDENT_RE.is_match(e) {
         for cm in CONST_STR_RE.captures_iter(fn_src) {
             if cm.get(1).unwrap().as_str() == e {
-                return (vec![cm.get(2).unwrap().as_str().to_string()], "resolved".into());
+                return (
+                    vec![cm.get(2).unwrap().as_str().to_string()],
+                    "resolved".into(),
+                );
             }
         }
         if let Some(v) = file_const_str.get(e) {
@@ -961,7 +985,10 @@ fn resolve_kernel_expr(
     if IDENT_RE.is_match(e) {
         for cm in CONST_STR_RE.captures_iter(fn_src) {
             if cm.get(1).unwrap().as_str() == e {
-                return (vec![cm.get(2).unwrap().as_str().to_string()], "resolved".into());
+                return (
+                    vec![cm.get(2).unwrap().as_str().to_string()],
+                    "resolved".into(),
+                );
             }
         }
         let pat = format!(
@@ -986,7 +1013,11 @@ fn resolve_kernel_expr(
         assigned.sort();
         assigned.dedup();
         if !assigned.is_empty() {
-            let status = if assigned.len() > 1 { "dual" } else { "resolved" };
+            let status = if assigned.len() > 1 {
+                "dual"
+            } else {
+                "resolved"
+            };
             return (assigned, status.into());
         }
         return (vec![], "unverifiable".into());
@@ -1002,11 +1033,7 @@ fn index_from_raw(raw: &str) -> Option<i64> {
         .and_then(|c| c.get(1).unwrap().as_str().parse().ok())
 }
 
-fn extract_binds(
-    closure_src: &str,
-    closure_abs_start: usize,
-    src: &str,
-) -> (Vec<HostBind>, bool) {
+fn extract_binds(closure_src: &str, closure_abs_start: usize, src: &str) -> (Vec<HostBind>, bool) {
     let mut binds = Vec::new();
     let mut unverifiable = false;
     for m in METHOD_BIND_RE.captures_iter(closure_src) {
@@ -1028,7 +1055,9 @@ fn extract_binds(
             KIND_THREADGROUP
         };
         let mut hint = String::new();
-        let open_paren = closure_src[m.get(0).unwrap().start()..].find('(').map(|i| m.get(0).unwrap().start() + i);
+        let open_paren = closure_src[m.get(0).unwrap().start()..]
+            .find('(')
+            .map(|i| m.get(0).unwrap().start() + i);
         if let Some(op) = open_paren {
             let close_paren = match_paren(closure_src, op);
             if close_paren >= 0 {
@@ -1060,11 +1089,10 @@ fn extract_binds(
         let mut search_from = 0;
         while let Some(rel) = closure_src[search_from..].find(meth) {
             let abs = search_from + rel;
-            let prev_ok = abs == 0
-                || {
-                    let p = closure_src.as_bytes()[abs - 1];
-                    !(p == b'.' || p.is_ascii_alphanumeric() || p == b'_')
-                };
+            let prev_ok = abs == 0 || {
+                let p = closure_src.as_bytes()[abs - 1];
+                !(p == b'.' || p.is_ascii_alphanumeric() || p == b'_')
+            };
             search_from = abs + meth.len();
             if !prev_ok {
                 continue;
@@ -1202,7 +1230,13 @@ fn parse_rust_host(
 
     let mut dispatches = Vec::new();
     for m in DISPATCH_RE.find_iter(src) {
-        let method_raw = m.as_str().trim_start_matches('.').split('(').next().unwrap_or("").trim();
+        let method_raw = m
+            .as_str()
+            .trim_start_matches('.')
+            .split('(')
+            .next()
+            .unwrap_or("")
+            .trim();
         let method = method_raw.to_string();
         let open_p = m.end() - 1;
         let close_p = match_paren(src, open_p);
@@ -1241,9 +1275,9 @@ fn parse_rust_host(
         let prefix_end = floor_char(src, (fn_start + 1).min(src.len()));
         let window_start = floor_char(src, prefix_end.saturating_sub(4000));
         for c in CONST_U32_RE.captures_iter(&src[window_start..prefix_end]) {
-            local_consts.entry(c.get(1).unwrap().as_str().to_string()).or_insert_with(|| {
-                c.get(2).unwrap().as_str().parse().unwrap_or(0)
-            });
+            local_consts
+                .entry(c.get(1).unwrap().as_str().to_string())
+                .or_insert_with(|| c.get(2).unwrap().as_str().parse().unwrap_or(0));
         }
         let arglayouts = arglayouts_in(&fn_src);
         for g in groups {
@@ -1264,13 +1298,8 @@ fn parse_rust_host(
                 continue;
             }
             let fn_prefix = &src[fn_start..m.start()];
-            let (resolved, status) = resolve_kernel_expr(
-                kexpr,
-                fn_prefix,
-                file_const_str,
-                pick_fns,
-                metal_names,
-            );
+            let (resolved, status) =
+                resolve_kernel_expr(kexpr, fn_prefix, file_const_str, pick_fns, metal_names);
             if status == "plumbing" {
                 continue;
             }
@@ -1288,7 +1317,10 @@ fn parse_rust_host(
                 } else {
                     encode_arg.to_string()
                 };
-                let abs_start = src[open_p..].find(encode_arg).map(|i| open_p + i).unwrap_or(m.start());
+                let abs_start = src[open_p..]
+                    .find(encode_arg)
+                    .map(|i| open_p + i)
+                    .unwrap_or(m.start());
                 let (b, uv) = extract_binds(&body, abs_start, src);
                 binds = b;
                 binds_uv = uv;
@@ -1390,7 +1422,10 @@ fn parse_decode_family(
 pub fn parse_cfg_modules(lib_src: &str) -> HashMap<String, String> {
     let mut out = HashMap::new();
     for m in CFG_MOD_RE.captures_iter(lib_src) {
-        let feat = m.get(1).or_else(|| m.get(2)).map(|g| g.as_str().to_string());
+        let feat = m
+            .get(1)
+            .or_else(|| m.get(2))
+            .map(|g| g.as_str().to_string());
         let name = m.get(3).unwrap().as_str().to_string();
         if let Some(f) = feat {
             out.insert(name, f);
@@ -1410,11 +1445,19 @@ pub fn parse_library_membership(metal_mod_src: &str) -> BTreeMap<String, String>
         })
         .collect();
     let Some(fn_m) = ALL_SHADER_FN_RE.find(metal_mod_src) else {
-        return const_to_file.into_iter().map(|(_, f)| (f, "default".into())).collect();
+        return const_to_file
+            .into_iter()
+            .map(|(_, f)| (f, "default".into()))
+            .collect();
     };
     let brace = match metal_mod_src[fn_m.end().saturating_sub(1)..].find('{') {
         Some(off) => fn_m.end().saturating_sub(1) + off,
-        None => return const_to_file.into_iter().map(|(_, f)| (f, "default".into())).collect(),
+        None => {
+            return const_to_file
+                .into_iter()
+                .map(|(_, f)| (f, "default".into()))
+                .collect()
+        }
     };
     let end = match_paren(metal_mod_src, brace);
     if end < 0 {
@@ -1481,14 +1524,25 @@ fn arglayout_width(x: &str) -> Option<i64> {
     }
 }
 
-fn abi_field_names_compatible(metal_name: &str, rust_name: &str, metal_ty: &str, rust_ty: &str) -> bool {
+fn abi_field_names_compatible(
+    metal_name: &str,
+    rust_name: &str,
+    metal_ty: &str,
+    rust_ty: &str,
+) -> bool {
     if metal_name == rust_name {
         return true;
     }
     if metal_name.contains(rust_name) || rust_name.contains(metal_name) {
         return true;
     }
-    if metal_ty.contains('*') || metal_ty.replace("const", " ").split('*').next().unwrap_or("").contains("device")
+    if metal_ty.contains('*')
+        || metal_ty
+            .replace("const", " ")
+            .split('*')
+            .next()
+            .unwrap_or("")
+            .contains("device")
     {
         let last = rust_ty.split("::").last().unwrap_or(rust_ty);
         if last == "u64" || last == "usize" {
@@ -1512,8 +1566,11 @@ fn compute_struct_layouts(structs: &mut [StructDef]) {
                 if st.size.is_some() {
                     continue;
                 }
-                let pairs: Vec<(String, String)> =
-                    st.fields.iter().map(|f| (f.name.clone(), f.type_s.clone())).collect();
+                let pairs: Vec<(String, String)> = st
+                    .fields
+                    .iter()
+                    .map(|f| (f.name.clone(), f.type_s.clone()))
+                    .collect();
                 if let Some((rows, total, al)) = layout_fields(&pairs, rust_lang, &nested) {
                     st.layout = Some(rows);
                     st.size = Some(total);
@@ -1568,7 +1625,11 @@ pub fn analyze(
             findings.push(Finding::new(
                 "WARNING",
                 "duplicate_kernel_name",
-                format!("kernel {} is defined in {} shader files", py_repr_str(name), ks.len()),
+                format!(
+                    "kernel {} is defined in {} shader files",
+                    py_repr_str(name),
+                    ks.len()
+                ),
                 None,
                 Some(shader),
                 Some(name.clone()),
@@ -1839,14 +1900,10 @@ pub fn analyze(
                             ));
                         }
                         Some(ms) => {
-                            let host_w: Vec<i64> = layout.iter().filter_map(|x| arglayout_width(x)).collect();
-                            let sh_w: Vec<i64> = ms
-                                .layout
-                                .as_ref()
-                                .unwrap()
-                                .iter()
-                                .map(|r| r.size)
-                                .collect();
+                            let host_w: Vec<i64> =
+                                layout.iter().filter_map(|x| arglayout_width(x)).collect();
+                            let sh_w: Vec<i64> =
+                                ms.layout.as_ref().unwrap().iter().map(|r| r.size).collect();
                             if host_w != sh_w {
                                 findings.push(Finding::new(
                                     "ERROR",
@@ -1883,9 +1940,11 @@ pub fn analyze(
                 .filter(|b| b.kind == KIND_THREADGROUP && b.index.is_some())
                 .filter_map(|b| b.index)
                 .collect();
-            let shader_tg_slots: HashSet<i64> = shader.threadgroup_indices.keys().copied().collect();
+            let shader_tg_slots: HashSet<i64> =
+                shader.threadgroup_indices.keys().copied().collect();
             if !shader_tg_slots.is_empty() && !d.binds_unverifiable {
-                if host_tg_slots != shader_tg_slots && !host_tg_slots.is_superset(&shader_tg_slots) {
+                if host_tg_slots != shader_tg_slots && !host_tg_slots.is_superset(&shader_tg_slots)
+                {
                     let mut s_slots: Vec<i64> = shader_tg_slots.iter().copied().collect();
                     s_slots.sort();
                     let mut h_slots: Vec<i64> = host_tg_slots.iter().copied().collect();
@@ -1946,10 +2005,8 @@ pub fn analyze(
                     ));
                 }
             } else {
-                let extra = extra_map(&[
-                    ("tg_raw", json!(d.tg_raw)),
-                    ("grid_raw", json!(d.grid_raw)),
-                ]);
+                let extra =
+                    extra_map(&[("tg_raw", json!(d.tg_raw)), ("grid_raw", json!(d.grid_raw))]);
                 findings.push(
                     Finding::new(
                         "UNVERIFIABLE",
@@ -1962,14 +2019,22 @@ pub fn analyze(
                     .extra(extra),
                 );
             }
-            if gx.is_some() && gy.is_some() && gz.is_some() && tx.is_some() && ty.is_some() && tz.is_some()
+            if gx.is_some()
+                && gy.is_some()
+                && gz.is_some()
+                && tx.is_some()
+                && ty.is_some()
+                && tz.is_some()
             {
                 let gprod = gx.unwrap() * gy.unwrap() * gz.unwrap();
                 if gprod == 0 {
                     findings.push(Finding::new(
                         "ERROR",
                         "dispatch_geometry",
-                        format!("grid {:?} has a zero axis (would launch no threads)", d.grid),
+                        format!(
+                            "grid {:?} has a zero axis (would launch no threads)",
+                            d.grid
+                        ),
                         Some(host_loc.clone()),
                         Some(shader_loc.clone()),
                         Some(kname.clone()),
@@ -1979,10 +2044,14 @@ pub fn analyze(
         }
     }
 
-    let rust_by: HashMap<String, StructDef> =
-        rust_structs.iter().map(|s| (s.name.clone(), s.clone())).collect();
-    let metal_by: BTreeMap<String, StructDef> =
-        metal_structs.iter().map(|s| (s.name.clone(), s.clone())).collect();
+    let rust_by: HashMap<String, StructDef> = rust_structs
+        .iter()
+        .map(|s| (s.name.clone(), s.clone()))
+        .collect();
+    let metal_by: BTreeMap<String, StructDef> = metal_structs
+        .iter()
+        .map(|s| (s.name.clone(), s.clone()))
+        .collect();
     let mut paired = 0i64;
     for (mname, ms) in &metal_by {
         let mut rs = rust_by.get(mname).cloned();
@@ -2005,7 +2074,9 @@ pub fn analyze(
                 Finding::new(
                     "UNVERIFIABLE",
                     "host_shader_abi",
-                    format!("struct {mname} exists on both sides but a nested field could not be sized"),
+                    format!(
+                        "struct {mname} exists on both sides but a nested field could not be sized"
+                    ),
                     Some(loc(&rs.path, rs.line)),
                     Some(loc(&ms.path, ms.line)),
                     None,
@@ -2019,11 +2090,7 @@ pub fn analyze(
         let ml = ms.layout.as_ref().unwrap();
         let rl = rs.layout.as_ref().unwrap();
         if ml.len() != rl.len() {
-            mismatches.push(format!(
-                "field count metal={} rust={}",
-                ml.len(),
-                rl.len()
-            ));
+            mismatches.push(format!("field count metal={} rust={}", ml.len(), rl.len()));
         }
         let n = ml.len().min(rl.len());
         for i in 0..n {
@@ -2037,7 +2104,9 @@ pub fn analyze(
             } else if !abi_field_names_compatible(&mf.name, &rf.name, &mf.type_s, &rf.type_s) {
                 mismatches.push(format!(
                     "field[{i}] order/name metal {} vs rust {} (same width {}; field order is ABI)",
-                    py_repr_str(&mf.name), py_repr_str(&rf.name), mf.size
+                    py_repr_str(&mf.name),
+                    py_repr_str(&rf.name),
+                    mf.size
                 ));
             }
         }
@@ -2055,7 +2124,12 @@ pub fn analyze(
                     "host_shader_abi",
                     format!(
                         "ABI drift in {mname}: {}",
-                        mismatches.iter().take(6).cloned().collect::<Vec<_>>().join("; ")
+                        mismatches
+                            .iter()
+                            .take(6)
+                            .cloned()
+                            .collect::<Vec<_>>()
+                            .join("; ")
                     ),
                     Some(loc(&rs.path, rs.line)),
                     Some(loc(&ms.path, ms.line)),
@@ -2083,7 +2157,9 @@ pub fn analyze(
 
     let tq_kernels: Vec<MetalKernel> = kernels
         .iter()
-        .filter(|k| Path::new(&k.path).file_name().and_then(|s| s.to_str()) == Some("strand_bitslice.metal"))
+        .filter(|k| {
+            Path::new(&k.path).file_name().and_then(|s| s.to_str()) == Some("strand_bitslice.metal")
+        })
         .cloned()
         .collect();
     for k in &tq_kernels {
@@ -2098,7 +2174,10 @@ pub fn analyze(
             findings.push(Finding::new(
                 "WARNING",
                 "feature_gate",
-                format!("tq kernel {} has no statically resolved host dispatch", k.name),
+                format!(
+                    "tq kernel {} has no statically resolved host dispatch",
+                    k.name
+                ),
                 None,
                 Some(loc(&k.path, k.line)),
                 Some(k.name.clone()),
@@ -2177,7 +2256,10 @@ pub fn analyze(
         pick_items.sort_by(|a, b| a.0.cmp(b.0));
         for (fn_name, (a, b)) in pick_items {
             for key in [a.as_str(), b.as_str()] {
-                let name = decode_consts.get(key).cloned().unwrap_or_else(|| key.to_string());
+                let name = decode_consts
+                    .get(key)
+                    .cloned()
+                    .unwrap_or_else(|| key.to_string());
                 if !metal_names.contains(&name) {
                     findings.push(Finding::new(
                         "ERROR",
@@ -2266,7 +2348,10 @@ pub fn analyze(
         .count() as i64;
     let n_error = findings.iter().filter(|f| f.severity == "ERROR").count() as i64;
     let n_warn = findings.iter().filter(|f| f.severity == "WARNING").count() as i64;
-    let n_uv = findings.iter().filter(|f| f.severity == "UNVERIFIABLE").count() as i64;
+    let n_uv = findings
+        .iter()
+        .filter(|f| f.severity == "UNVERIFIABLE")
+        .count() as i64;
 
     let mut shaders_not_in_library = Vec::new();
     if !membership.is_empty() {
@@ -2378,7 +2463,11 @@ fn git_query(repo: &Path, args: &[&str]) -> String {
 }
 
 pub fn report_from_analyze(raw: &AnalyzeRaw, repo: &Path) -> Value {
-    let errors: Vec<&Finding> = raw.findings.iter().filter(|f| f.severity == "ERROR").collect();
+    let errors: Vec<&Finding> = raw
+        .findings
+        .iter()
+        .filter(|f| f.severity == "ERROR")
+        .collect();
     let generated_json: BTreeMap<String, BTreeMap<String, String>> =
         raw.generated_kernel_names.clone();
     let membership_files: Vec<Value> = raw
@@ -2542,12 +2631,7 @@ pub fn analyze_maps(
     rust: BTreeMap<String, String>,
     membership: Option<BTreeMap<String, String>>,
 ) -> AnalyzeRaw {
-    analyze(
-        &metal,
-        &rust,
-        membership.as_ref(),
-        PRODUCTION_HOST_PREFIX,
-    )
+    analyze(&metal, &rust, membership.as_ref(), PRODUCTION_HOST_PREFIX)
 }
 
 impl AnalyzeRaw {
@@ -2618,7 +2702,12 @@ fn go(ctx: &MetalContext, x: &Buffer, out: &Buffer) {
         m.insert("synth.rs".into(), src.into());
         m
     }
-    fn find<'a>(raw: &'a AnalyzeRaw, sev: &str, check: &str, kernel: Option<&str>) -> Vec<&'a Finding> {
+    fn find<'a>(
+        raw: &'a AnalyzeRaw,
+        sev: &str,
+        check: &str,
+        kernel: Option<&str>,
+    ) -> Vec<&'a Finding> {
         raw.findings
             .iter()
             .filter(|f| {
@@ -2643,7 +2732,10 @@ fn go(ctx: &MetalContext, x: &Buffer, out: &Buffer) {
         let hits = find(&raw, "ERROR", "binding_index", Some("demo_k"));
         assert!(!hits.is_empty(), "NEGATIVE CONTROL FAILED");
         let extra = &hits[0].extra;
-        let off = extra.get("off_by_one").and_then(|v| v.as_bool()).unwrap_or(false);
+        let off = extra
+            .get("off_by_one")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false);
         assert!(off || extra.get("extra_on_host").is_some());
     }
 

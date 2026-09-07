@@ -33,19 +33,21 @@ from hcli.mutation import apply_mutation_operations
 
 
 def test_the_mutation_example_teaches_the_escape_free_form():
-    prompt = eng.HCLI_SYSTEM_PROMPT if hasattr(eng, "HCLI_SYSTEM_PROMPT") else None
-    if prompt is None:
-        import inspect
-        prompt = inspect.getsource(eng)
+    # The real prompt, not the module source. Scraping the source let this test
+    # find `"kind": "mutation"` in unrelated engine dicts, so it could pass while
+    # the prompt the resident actually reads taught nothing.
+    prompt = eng._SYSTEM_PROMPT
     assert "new_lines" in prompt, (
         "the schema offers new_lines but no prompt text does; a field the model "
         "is never shown is a field the model never uses"
     )
     # And it must appear in the worked mutation EXAMPLE, not only in a schema
     # comment the model never sees.
-    example_start = prompt.index('"kind": "mutation"')
-    example_end = prompt.index('"kind": "tool_use"')
-    example = prompt[example_start:example_end]
+    import re
+    compact = re.sub(r"\s+", "", prompt)
+    example_start = compact.index('"kind":"mutation"')
+    example_end = compact.index('"kind":"tool_use"')
+    example = compact[example_start:example_end]
     assert "new_lines" in example, (
         "new_lines is mentioned somewhere but not in the worked mutation example, "
         "which is the only part the resident actually imitates"

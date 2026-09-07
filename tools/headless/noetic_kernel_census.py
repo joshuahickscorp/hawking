@@ -1116,9 +1116,9 @@ def watched_fail(classified: list[dict], bound: list[str], compiled: dict) -> li
             "id": 6,
             "what": "five shader files are not in all_shader_sources()",
             "detail": (
-                f"{not_in_mod}. They compile from examples (or a path-join in "
-                "ascension_qwen30_packed_matvec_exactness.rs). Callable on this machine when those "
-                "examples run; not in the default decode library."
+                f"{not_in_mod}. They compile from examples; the historical "
+                "ascension_qwen30_packed_matvec_exactness producer is receipt-only and retired. "
+                "They are not in the default decode library."
             ),
         },
         {

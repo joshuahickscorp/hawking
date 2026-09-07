@@ -34,7 +34,7 @@ class TestReceiptDiagnostics(unittest.TestCase):
         return list(receipt_dir.glob("*.json")) if receipt_dir.is_dir() else []
 
     def test_failed_receipt_has_error_fields(self):
-        def boom(prompt, evidence, compiled):
+        def boom(prompt, evidence, compiled, **kwargs):
             raise RuntimeError("runtime unreachable")
 
         self.engine._call_model = boom
@@ -51,7 +51,7 @@ class TestReceiptDiagnostics(unittest.TestCase):
         self.assertIn("RuntimeError", receipt["error_traceback"])
 
     def test_empty_str_exc_still_records_type(self):
-        def interrupt(prompt, evidence, compiled):
+        def interrupt(prompt, evidence, compiled, **kwargs):
             raise KeyboardInterrupt()
 
         self.engine._call_model = interrupt
@@ -64,7 +64,7 @@ class TestReceiptDiagnostics(unittest.TestCase):
         self.assertTrue(receipt["error_traceback"])
 
     def test_successful_receipt_has_no_error_key(self):
-        self.engine._call_model = lambda p, e, c: {
+        self.engine._call_model = lambda p, e, c, **kwargs: {
             "kind": "answer",
             "content": "ok",
             "operations": [],

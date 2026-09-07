@@ -176,27 +176,27 @@ GATES: dict[str, dict[str, Any]] = {
     "HCLI_SELF_OPTIMIZATION_BOOTSTRAP": _p(
         era="I", gene=IA, acc=(7678, 7680),
         deps=("HCLI_SELF_SUPPLEMENT", "HCLI_STATUS_PHYSICAL", "AGENTOS_RESTART_COHERENCE"),
-        paths=("hcli/agentos/autonomy_gate.py", "tools/future/resident_optimizer.py"),
-        modules=("hcli.agentos.autonomy_gate", "tools.future.resident_optimizer"),
+        paths=("hcli/agentos/autonomy_gate.py",),
+        modules=("hcli.agentos.autonomy_gate",),
         symbols=(("hcli.agentos.autonomy_gate", "run_autonomy_gate"),),
     ),
     "VMCP_STATE_LATTICE": _p(
         era="I", gene=IA, acc=(7706, 7738),
-        paths=("tools/headless/vmcp_lattice_disposition.py", "hcli/vmcp_adapter.py"),
-        modules=("tools.headless.vmcp_lattice_disposition", "hcli.vmcp_adapter"),
+        paths=("hcli/agentos/vmcp/lattice_disposition.py", "hcli/vmcp_adapter.py"),
+        modules=("hcli.agentos.vmcp.lattice_disposition", "hcli.vmcp_adapter"),
         receipts=("receipts/headless/VMCP_LATTICE_DISPOSITION.json",),
     ),
     "VMCP_DEEP_DIGEST": _p(
         era="I", gene=IA, acc=(7706, 7738),
         deps=("VMCP_STATE_LATTICE",),
-        paths=("tools/headless/vmcp_lattice_disposition.py",),
-        modules=("tools.headless.vmcp_lattice_disposition",),
+        paths=("hcli/agentos/vmcp/lattice_disposition.py",),
+        modules=("hcli.agentos.vmcp.lattice_disposition",),
     ),
     "VMCP_TRUTH_LEDGER": _p(
         era="I", gene=IA, acc=(7706, 7738),
         deps=("VMCP_DEEP_DIGEST",),
-        paths=("tools/headless/vmcp_forgery_canary.py",),
-        modules=("tools.headless.vmcp_forgery_canary",),
+        paths=("hcli/agentos/vmcp/forgery_canary.py",),
+        modules=("hcli.agentos.vmcp.forgery_canary",),
         receipts=("receipts/headless/VMCP_FORGERY_CANARY.json",),
     ),
     "VMCP_RECEIPT_LAW": _p(
@@ -208,39 +208,39 @@ GATES: dict[str, dict[str, Any]] = {
     ),
     "VMCP_TOOL_DOCTOR": _p(
         era="I", gene=IA, acc=(7741, 7767),
-        paths=("tools/headless/vmcp_capability_probe.py",),
-        modules=("tools.headless.vmcp_capability_probe",),
+        paths=("hcli/agentos/vmcp/capability_probe.py",),
+        modules=("hcli.agentos.vmcp.capability_probe",),
         receipts=("receipts/headless/VMCP_CAPABILITY_SURFACE.json",),
     ),
     "VMCP_FILE_CLASSIFIER": _p(
         era="I", gene=IA, acc=(7793, 7806),
         deps=("VMCP_TOOL_DOCTOR",),
-        paths=("tools/headless/vmcp_capability_probe.py",),
-        modules=("tools.headless.vmcp_capability_probe",),
+        paths=("hcli/agentos/vmcp/capability_probe.py",),
+        modules=("hcli.agentos.vmcp.capability_probe",),
     ),
     "VMCP_WEB_CAPTURE": _p(
         era="I", gene=IA, acc=(7827, 7840),
         deps=("VMCP_TOOL_DOCTOR",),
-        paths=("tools/headless/vmcp_capability_probe.py",),
-        modules=("tools.headless.vmcp_capability_probe",),
+        paths=("hcli/agentos/vmcp/capability_probe.py",),
+        modules=("hcli.agentos.vmcp.capability_probe",),
     ),
     "VMCP_VISUAL_DIFF": _p(
         era="I", gene=IA, acc=(7841, 7854),
         deps=("VMCP_TOOL_DOCTOR",),
-        paths=("tools/headless/vmcp_capability_probe.py",),
-        modules=("tools.headless.vmcp_capability_probe",),
+        paths=("hcli/agentos/vmcp/capability_probe.py",),
+        modules=("hcli.agentos.vmcp.capability_probe",),
     ),
     "VMCP_SPATIAL_VALIDATE": _p(
         era="I", gene=IA, acc=(7855, 7865),
         deps=("VMCP_TOOL_DOCTOR",),
-        paths=("tools/headless/vmcp_capability_probe.py",),
-        modules=("tools.headless.vmcp_capability_probe",),
+        paths=("hcli/agentos/vmcp/capability_probe.py",),
+        modules=("hcli.agentos.vmcp.capability_probe",),
     ),
     "VMCP_PTY_CAPTURE": _p(
         era="I", gene=IA, acc=(7866, 7881),
         deps=("VMCP_TOOL_DOCTOR",),
-        paths=("tools/headless/vmcp_capability_probe.py",),
-        modules=("tools.headless.vmcp_capability_probe",),
+        paths=("hcli/agentos/vmcp/capability_probe.py",),
+        modules=("hcli.agentos.vmcp.capability_probe",),
     ),
     "AGENTOS_BEHAVIOR_LAB": _p(
         era="I", gene=IA, acc=(7882, 7910),
@@ -250,14 +250,14 @@ GATES: dict[str, dict[str, Any]] = {
     ),
     "VMCP_COMPACT_SURFACE": _p(
         era="I", gene=IA, acc=(7954, 7980),
-        paths=("tools/future/vmcp.py",),
-        modules=("tools.future.vmcp",),
+        paths=("hcli/agentos/vmcp/disposition.py",),
+        modules=("hcli.agentos.vmcp.disposition",),
     ),
     "VMCP_AGENTOS_INTEGRATION": _p(
         era="I", gene=IA, acc=(7628, 7630),
         deps=("VMCP_RECEIPT_LAW", "VMCP_COMPACT_SURFACE"),
-        paths=("hcli/agentos/vmcp_gate.py", "tools/headless/hcli_vmcp_integration.py"),
-        modules=("hcli.agentos.vmcp_gate", "tools.headless.hcli_vmcp_integration"),
+        paths=("hcli/agentos/vmcp_gate.py", "hcli/agentos/vmcp/hcli_integration.py"),
+        modules=("hcli.agentos.vmcp_gate", "hcli.agentos.vmcp.hcli_integration"),
         receipts=("receipts/headless/VMCP_AGENTOS_INTEGRATION.json",),
     ),
     "AGENTOS_DETERMINISTIC_OFFLOAD": _p(
@@ -428,14 +428,14 @@ GATES: dict[str, dict[str, Any]] = {
     "U50_DMA_HBM": _p(
         era="I", gene=ID, acc=(8942, 8959), hw="U50_PRESENT",
         deps=("U50_DEVICE_PROFILE",),
-        paths=("tools/future/hbm_doctor.py",),
-        modules=("tools.future.hbm_doctor",),
+        paths=(),
+        modules=(),
     ),
     "U50_FIRST_NATIVE_ENGINE": _p(
         era="I", gene=ID, acc=(8962, 8976), hw="U50_PRESENT",
         deps=("U50_DMA_HBM",),
-        paths=("tools/future/fpga_engines.py",),
-        modules=("tools.future.fpga_engines",),
+        paths=(),
+        modules=(),
     ),
     "U50_MIXED_APPLE_FPGA_GRAPH": _p(
         era="I", gene=ID, acc=(8984, 8987), hw="U50_PRESENT",
@@ -549,16 +549,13 @@ DISK_TRUTH_MODULES: tuple[str, ...] = (
     "tools/accelerator/machine_genome.py",
     "tools/odyssey/device_profiles.py",
     "tools/future/autonomy_scars.py",
-    "tools/future/scar_reevaluator.py",
-    "tools/odyssey/pareto_archive.py",
     "tools/accelerator/device_ascension.py",
     "tools/future/tabula.py",
-    "tools/future/green_machine.py",
     "tools/accelerator/fusion_planner.py",
     "tools/accelerator/repatriation_audit.py",
     "tools/odyssey/noetic_compiler.py",
     "tools/future/complete_ebpw.py",
-    "tools/future/capability_reachability.py",
+    "tools/roadmap/capability_reachability.py",
 )
 
 
@@ -591,8 +588,7 @@ GENES: dict[str, dict[str, Any]] = {
             paths=("tools/kv_residency.py", "hcli/agentos/flash_executable.py"),
             modules=("tools.kv_residency", "hcli.agentos.flash_executable")),
     IIE: _p(era="II", gene=IIE, acc=(642, 661),
-            paths=("tools/future/green_machine.py",),
-            modules=("tools.future.green_machine",)),
+           paths=(), modules=()),
     IIIA: _p(era="III", gene=IIIA, acc=(663, 682),
              paths=("tools/future/repro_science.py", "tools/future/autonomy_scars.py"),
              modules=("tools.future.repro_science", "tools.future.autonomy_scars")),
@@ -600,14 +596,13 @@ GENES: dict[str, dict[str, Any]] = {
              paths=("tools/future/lpc_dataset.py",),
              modules=("tools.future.lpc_dataset",)),
     IIIC: _p(era="III", gene=IIIC, acc=(705, 724),
-             paths=("tools/future/resident_optimizer.py",),
-             modules=("tools.future.resident_optimizer",)),
+             paths=(), modules=()),
     IIID: _p(era="III", gene=IIID, acc=(726, 747),
-             paths=("tools/future/tabula.py", "tools/future/abliteration.py"),
-             modules=("tools.future.tabula", "tools.future.abliteration")),
+             paths=("tools/future/tabula.py",),
+             modules=("tools.future.tabula",)),
     IIIE: _p(era="III", gene=IIIE, acc=(749, 769),
-             paths=("tools/future/repro_science.py", "tools/future/scar_reevaluator.py"),
-             modules=("tools.future.repro_science", "tools.future.scar_reevaluator")),
+             paths=("tools/future/repro_science.py",),
+             modules=("tools.future.repro_science",)),
     IVA: _p(era="IV", gene=IVA, acc=(771, 793),
             paths=("tools/accelerator/fusion_planner.py", "tools/future/fusion_sim.py"),
             modules=("tools.accelerator.fusion_planner", "tools.future.fusion_sim")),
@@ -619,27 +614,23 @@ GENES: dict[str, dict[str, Any]] = {
             paths=("tools/accelerator/fusion_planner.py",),
             modules=("tools.accelerator.fusion_planner",)),
     IVE: _p(era="IV", gene=IVE, acc=(864, 884),
-            paths=("tools/accelerator/device_ascension.py", "tools/future/device_ascension_pipeline.py"),
-            modules=("tools.accelerator.device_ascension", "tools.future.device_ascension_pipeline")),
+            paths=("tools/accelerator/device_ascension.py",),
+            modules=("tools.accelerator.device_ascension",)),
     VA: _p(era="V", gene=VA, acc=(886, 906),
-           paths=("tools/future/devplatform.py",),
-           modules=("tools.future.devplatform",)),
+           paths=(), modules=()),
     VB: _p(era="V", gene=VB, acc=(908, 930),
-           paths=("tools/future/devplatform.py",),
-           modules=("tools.future.devplatform",)),
+           paths=(), modules=()),
     VC: _p(era="V", gene=VC, acc=(932, 951),
            paths=("tools/future/qualification_pipeline.py",),
            modules=("tools.future.qualification_pipeline",)),
-    VD: _p(era="V", gene=VD, acc=(953, 974),
-           paths=("tools/odyssey/pareto_archive.py", "tools/future/tournament.py"),
-           modules=("tools.odyssey.pareto_archive", "tools.future.tournament")),
+    VD: _p(era="V", gene=VD, acc=(953, 974), paths=(), modules=()),
     VE: _p(era="V", gene=VE, acc=(976, 996), paths=(), modules=()),
 }
 
 
 ABSENT_CLAIMS: tuple[tuple[str, str], ...] = (
     ("theia", "no path whose basename or directory component is theia"),
-    ("transport", "no PhysicalGraph transport-edge compiler (hide-acp transport.rs is ACP, not II-C)"),
+    ("transport", "no PhysicalGraph transport-edge compiler (visual/ACP transport is deferred behind VMCP)"),
     ("placement", "no standalone placement compiler (hide-fleet fabric_placement.rs is fleet, not II-C)"),
 )
 
@@ -681,40 +672,40 @@ for _gate, _blocker in _THEIA_EXTERNAL_BLOCKERS.items():
 # ---------------------------------------------------------------------------
 # VMCP organs: cite what implements the capability, not what probes a vendor.
 #
-# Six VMCP gates pointed at tools/headless/vmcp_capability_probe.py. That file
+# Six VMCP gates pointed at hcli/agentos/vmcp/capability_probe.py. That file
 # MEASURES the external visionmcp package -- it is a probe of somebody else's
 # tool, run rather than called -- so the auditor correctly found no call site and
 # correctly read six capabilities as unwired scaffolding. Hawking's own organs
-# live in tools/vmcp/ and ARE reachable: tools/future/vmcp.py calls all four, and
+# live in hcli/agentos/vmcp/ and ARE reachable: hcli/agentos/vmcp/disposition.py calls all four, and
 # tools/acceptance/vmcp/gates.py calls that in turn.
 #
-# tools/vmcp/tool_doctor.report() already probes PTY at runtime rather than
+# hcli/agentos/vmcp/tool_doctor.report() already probes PTY at runtime rather than
 # trusting its own E3_CLASSES literal, and on this host it reports PTY capture
-# CONNECTED via tools.vmcp.pty_eye.capture. Verified directly: pty_eye.probe()
+# CONNECTED via hcli.agentos.vmcp.pty_eye.capture. Verified directly: pty_eye.probe()
 # returns used_real_pty=True, method=libutil.openpty, blocker=None, and
 # capture(argv=["/bin/echo", ...]) returns argv, cwd, pid, exit_code, signal and
 # terminal text with CRLF from a genuine PTY. The module docstring's flat claim
 # that "this sandbox has been measured to deny the slave (EPERM)" is STALE for
 # this execution context -- it is a per-context fact stated as a permanent one.
 _VMCP_ORGANS: dict[str, tuple[str, ...]] = {
-    "VMCP_TOOL_DOCTOR": ("tools/vmcp/tool_doctor.py",),
-    "VMCP_FILE_CLASSIFIER": ("tools/vmcp/file_eye.py",),
-    "VMCP_PTY_CAPTURE": ("tools/vmcp/pty_eye.py",),
+    "VMCP_TOOL_DOCTOR": ("hcli/agentos/vmcp/tool_doctor.py",),
+    "VMCP_FILE_CLASSIFIER": ("hcli/agentos/vmcp/file_eye.py",),
+    "VMCP_PTY_CAPTURE": ("hcli/agentos/vmcp/pty_eye.py",),
 }
 
 # The gate must NAME the symbol whose call counts, or no call can ever match it.
 # VMCP_RECEIPT_LAW carries symbols= and reads BUILT; these three carried none, so
 # `runtime_caller` could never populate and they read as unwired scaffolding no
-# matter how many production callers existed. tools/future/vmcp.py calls every one
+# matter how many production callers existed. hcli/agentos/vmcp/disposition.py calls every one
 # of these -- pty_capture(...), file_observe(...), doctor_report(...),
 # doctor_profile(...) -- through `from X import Y as Z` aliases.
 _VMCP_ORGAN_SYMBOLS: dict[str, tuple[tuple[str, str], ...]] = {
     "VMCP_TOOL_DOCTOR": (
-        ("tools.vmcp.tool_doctor", "profile"),
-        ("tools.vmcp.tool_doctor", "report"),
+        ("hcli.agentos.vmcp.tool_doctor", "profile"),
+        ("hcli.agentos.vmcp.tool_doctor", "report"),
     ),
-    "VMCP_FILE_CLASSIFIER": (("tools.vmcp.file_eye", "observe"),),
-    "VMCP_PTY_CAPTURE": (("tools.vmcp.pty_eye", "capture"),),
+    "VMCP_FILE_CLASSIFIER": (("hcli.agentos.vmcp.file_eye", "observe"),),
+    "VMCP_PTY_CAPTURE": (("hcli.agentos.vmcp.pty_eye", "capture"),),
 }
 
 for _gate, _syms in _VMCP_ORGAN_SYMBOLS.items():
@@ -761,19 +752,19 @@ for _gate, _blocker in _VMCP_EXTERNAL_BLOCKERS.items():
 #
 # tools/acceptance/vmcp/gates.py:237-241 calls prove_deep_digest,
 # prove_truth_ledger, prove_asset_lattice and prove_decode_lattice directly.
-# All four live in tools/headless/vmcp_lattice_disposition.py -- including
+# All four live in hcli/agentos/vmcp/lattice_disposition.py -- including
 # prove_truth_ledger, which is why VMCP_TRUTH_LEDGER also gets that module
 # rather than only the forgery canary its catalogue row pointed at.
 _VMCP_LATTICE_SYMBOLS: dict[str, tuple[tuple[str, str], ...]] = {
     "VMCP_STATE_LATTICE": (
-        ("tools.headless.vmcp_lattice_disposition", "prove_asset_lattice"),
-        ("tools.headless.vmcp_lattice_disposition", "prove_decode_lattice"),
+        ("hcli.agentos.vmcp.lattice_disposition", "prove_asset_lattice"),
+        ("hcli.agentos.vmcp.lattice_disposition", "prove_decode_lattice"),
     ),
     "VMCP_DEEP_DIGEST": (
-        ("tools.headless.vmcp_lattice_disposition", "prove_deep_digest"),
+        ("hcli.agentos.vmcp.lattice_disposition", "prove_deep_digest"),
     ),
     "VMCP_TRUTH_LEDGER": (
-        ("tools.headless.vmcp_lattice_disposition", "prove_truth_ledger"),
+        ("hcli.agentos.vmcp.lattice_disposition", "prove_truth_ledger"),
     ),
 }
 
@@ -783,8 +774,8 @@ for _gate, _syms in _VMCP_LATTICE_SYMBOLS.items():
     ] + list(GATES[_gate].get("symbols") or [])
     _mods = {_m for _m, _ in _syms}
     GATES[_gate]["modules"] = sorted(_mods | set(GATES[_gate].get("modules") or []))
-    if "tools/headless/vmcp_lattice_disposition.py" not in (GATES[_gate].get("code_paths") or []):
-        GATES[_gate]["code_paths"] = ["tools/headless/vmcp_lattice_disposition.py"] + list(
+    if "hcli/agentos/vmcp/lattice_disposition.py" not in (GATES[_gate].get("code_paths") or []):
+        GATES[_gate]["code_paths"] = ["hcli/agentos/vmcp/lattice_disposition.py"] + list(
             GATES[_gate].get("code_paths") or []
         )
 
@@ -879,9 +870,8 @@ GATES["STABLE_PREFIX_CONTEXT_ALIGNMENT"]["runtime_note"] = (
 # Its wake condition is recorded on the gate so nobody has to remember it.
 GATES["MODELLAKE_LIFECYCLE"] = _p(
     era="I", gene="I-E_ODYSSEY_I",
-    paths=("tools/future/modellake_lifecycle.py",),
-    modules=("tools.future.modellake_lifecycle",),
-    symbols=(("tools.future.modellake_lifecycle", "lifecycle"),),
+    paths=(),
+    modules=(),
     receipts=("receipts/future/MODELLAKE_LIFECYCLE.json",),
     acc=(478, 505),
 )
@@ -967,12 +957,12 @@ _DECLARATION_SWEEP: dict[str, tuple[tuple[str, str], ...]] = {
     # H-ROADMAP E.14 -- nine VERBS (see hold open know make check fix keep prove)
     # each returning one fixed 8-field envelope. Different capability, same count.
     #
-    # tools/acceptance/vmcp/gates.py:1690 exercises tools.future.vmcp.compact_surface,
-    # and tools/audit/reachability_triage.py:2097 calls it from production. That is
+    # tools/acceptance/vmcp/gates.py:1690 exercises hcli.agentos.vmcp.disposition.compact_surface,
+    # and the retired reachability-triage adapter once called it from production. That is
     # the symbol the acceptance is about AND the symbol something really calls, so
     # wiring and acceptance now describe the same artifact.
     "VMCP_COMPACT_SURFACE": (
-        ("tools.future.vmcp", "compact_surface"),
+        ("hcli.agentos.vmcp.disposition", "compact_surface"),
     ),
     "HCLI_CONTEXT_INVALIDATION": (("hcli.goal", "assert_evidence_fresh"),),
     # This lane's own.

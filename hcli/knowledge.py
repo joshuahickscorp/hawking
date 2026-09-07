@@ -44,6 +44,122 @@ _FOCUS_STOPWORDS = frozenset(
     }
 )
 
+# Control-plane tokens that, when pasted into a worker prompt as prior
+# knowledge, steer some residents into a reasoning-only reply. Neutralise
+# them with readable markers so the record stays diagnostic. Marker strings
+# are themselves in the match list so a second pass is a no-op.
+_SANITISED_MARKERS = (
+    "[chat-template-kwargs]",
+    "[hidden-thought-field]",
+    "[thought-chain-field]",
+    "[reasoning-field]",
+    "[/reasoning-tag]",
+    "[reasoning-tag]",
+    "[thinking-flag]",
+    "[/thinking-tag]",
+    "[thinking-tag]",
+    "[special-token]",
+    "[/thought-tag]",
+    "[thought-tag]",
+    "[/think-tag]",
+    "[think-tag]",
+    "[reasoning]",
+)
+_MARKER_ALT = "|".join(
+    re.escape(marker) for marker in sorted(_SANITISED_MARKERS, key=len, reverse=True)
+)
+_CONTROL_TOKEN_RE = re.compile(
+    rf"(?P<marker>{_MARKER_ALT})"
+    rf"|(?P<special><\|[^|]{{0,80}}\|>)"
+    rf"|(?P<tag></?(?:[a-z0-9_-]*think[a-z0-9_-]*|[a-z0-9_-]*reasoning[a-z0-9_-]*|thought)"
+    rf"(?:\s[^>]*)?>)"
+    rf"|(?P<reasoning_content>reasoning[_]?content)"
+    rf"|(?P<hidden_reasoning>hidden[_]?reasoning)"
+    rf"|(?P<chain_of_thought>chain[_-]?of[_-]?thought)"
+    rf"|(?P<enable_thinking>enable[_]?thinking)"
+    rf"|(?P<chat_template_kwargs>chat[_]?template[_]?kwargs)"
+    rf"|(?P<reasoning>\breasoning\b)",
+    re.IGNORECASE,
+)
+_GROUP_MARKERS = {
+    "reasoning_content": "[reasoning-field]",
+    "hidden_reasoning": "[hidden-thought-field]",
+    "chain_of_thought": "[thought-chain-field]",
+    "enable_thinking": "[thinking-flag]",
+    "chat_template_kwargs": "[chat-template-kwargs]",
+    "reasoning": "[reasoning]",
+    "special": "[special-token]",
+}
+
+
+def _marker_for_tag(raw: str) -> str:
+    close = raw.startswith("</")
+    body = raw[2:] if close else raw[1:]
+    name = body.rstrip(">").split(None, 1)[0].lower() if body else ""
+    if "reason" in name:
+        family = "reasoning-tag"
+    elif "thought" in name:
+        family = "thought-tag"
+    else:
+        family = "think-tag"
+    return f"[{'/' if close else ''}{family}]"
+
+
+def _replace_control_token(match: re.Match[str]) -> str:
+    if match.group("marker"):
+        return match.group("marker")
+    if match.group("tag"):
+        return _marker_for_tag(match.group("tag"))
+    for name, marker in _GROUP_MARKERS.items():
+        if match.group(name):
+            return marker
+    return match.group(0)
+
+
+def _sanitise_text(text: str) -> str:
+    return _CONTROL_TOKEN_RE.sub(_replace_control_token, text)
+
+
+def _sanitise_value(value: Any, *, depth: int) -> Any:
+    if depth > 20:
+        return value
+    if value is None or isinstance(value, (bool, int, float)):
+        return value
+    if isinstance(value, str):
+        return _sanitise_text(value)
+    if isinstance(value, bytes):
+        decoded = value.decode("utf-8", errors="replace")
+        sanitised = _sanitise_text(decoded)
+        if sanitised == decoded:
+            return value
+        return sanitised.encode("utf-8", errors="replace")
+    if isinstance(value, (bytearray, memoryview)):
+        return _sanitise_value(bytes(value), depth=depth)
+    if isinstance(value, Mapping):
+        out: Dict[Any, Any] = {}
+        for key, child in value.items():
+            new_key = _sanitise_text(key) if isinstance(key, str) else key
+            out[new_key] = _sanitise_value(child, depth=depth + 1)
+        return out
+    if isinstance(value, list):
+        return [_sanitise_value(child, depth=depth + 1) for child in value]
+    if isinstance(value, tuple):
+        return tuple(_sanitise_value(child, depth=depth + 1) for child in value)
+    return value
+
+
+def sanitise_knowledge(value: Any) -> Any:
+    """Replace model-steering control tokens with readable markers.
+
+    Applied on the way into the store and on the way out of snapshot/recall
+    so already-poisoned on-disk records cannot steer the next prompt.
+    Idempotent, total over odd types, and never raises.
+    """
+    try:
+        return _sanitise_value(value, depth=0)
+    except Exception:
+        return value
+
 
 class KnowledgeError(RuntimeError):
     """The workspace knowledge index exists but cannot be trusted."""
@@ -245,14 +361,18 @@ class KnowledgeStore:
         verified: bool = False,
     ) -> Dict[str, Any]:
         """Record one bounded semantic fact, deduplicating identical facts."""
-        data_value = _bound(payload)
-        fingerprint = hashlib.sha256(_canonical({"kind": kind, "data": data_value}).encode("utf-8")).hexdigest()[:20]
+        kind_value = sanitise_knowledge(_clip(kind, 80))
+        source_value = sanitise_knowledge(_clip(source, 120))
+        data_value = sanitise_knowledge(_bound(payload))
+        fingerprint = hashlib.sha256(
+            _canonical({"kind": kind_value, "data": data_value}).encode("utf-8")
+        ).hexdigest()[:20]
         now = time.time()
         record = {
             "id": f"knowledge-{uuid.uuid4().hex[:12]}",
             "at": now,
-            "kind": _clip(kind, 80),
-            "source": _clip(source, 120),
+            "kind": kind_value,
+            "source": source_value,
             "priority": max(0, min(100, int(priority))),
             "verified": bool(verified),
             "fingerprint": fingerprint,
@@ -389,7 +509,7 @@ class KnowledgeStore:
                 if len(_canonical({"records": chosen + [candidate]})) > max_chars:
                     continue
             chosen.append(candidate)
-        return {
+        return sanitise_knowledge({
             "schema": KNOWLEDGE_SCHEMA,
             "available": True,
             "path": str(self.path),
@@ -405,7 +525,7 @@ class KnowledgeStore:
                 "compression": "gzip",
                 "cold": True,
             },
-        }
+        })
 
     def recall(
         self,
@@ -500,7 +620,7 @@ class KnowledgeStore:
         }
         if archive_error:
             retrieval["cold_error"] = archive_error
-        return {
+        return sanitise_knowledge({
             "schema": KNOWLEDGE_SCHEMA,
             "available": True,
             "path": str(self.path),
@@ -512,7 +632,7 @@ class KnowledgeStore:
                 "compression": "gzip",
                 "cold": True,
             },
-        }
+        })
 
 
 __all__ = [
@@ -521,4 +641,5 @@ __all__ = [
     "KnowledgeError",
     "KnowledgeStore",
     "MAX_ARCHIVE_SCAN_BYTES",
+    "sanitise_knowledge",
 ]

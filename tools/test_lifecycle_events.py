@@ -42,8 +42,12 @@ def test_six_named_lifecycle_events_are_audited():
         assert row["status"] in {"live_consumer", "no consumer"}, event
         assert row["consumer"], event
         assert row["call_site"], event
-        # Import-only rows are forbidden: a call site must name an invocation.
-        assert "(" in row["call_site"] or "->" in row["call_site"], event
+        # Import-only rows are forbidden: live rows must name an invocation.
+        # Receipt-only rows must say explicitly that there is no call site.
+        if row["status"] == "live_consumer":
+            assert "(" in row["call_site"] or "->" in row["call_site"], event
+        else:
+            assert "no production call site" in row["call_site"], event
 
 
 def test_specimen_sealed_live_consumer_is_modellake_events_consume():
@@ -61,35 +65,23 @@ def test_specimen_sealed_live_consumer_is_modellake_events_consume():
     assert "consume" in row["consumer"]
 
 
-def test_experiment_completed_live_consumer_is_wakeup_dispatch():
-    trial = _read("tools/future/detached_trial.py")
-    wakeup = _read("tools/future/wakeup.py")
-    assert "watcher.harvest()" in trial
-    assert "watcher.dispatch(ev)" in trial
-    assert "def dispatch(" in wakeup
+def test_experiment_completed_receipt_only_trial_has_no_product_consumer():
     row = next(r for r in subscriber_table() if r["event"] == EXPERIMENT_COMPLETED)
-    assert row["status"] == "live_consumer"
-    assert "dispatch" in row["consumer"]
+    assert row["status"] == "no consumer"
+    assert "no production call site" in row["call_site"]
 
 
-def test_law_updated_live_consumer_is_phase_listeners_listen():
-    src = _read("tools/future/phase_listeners.py")
-    assert "def listen(" in src
-    assert "live = listen()" in src
-    assert "result = listen()" in src
+def test_law_updated_receipt_only_trigger_has_no_product_consumer():
     row = next(r for r in subscriber_table() if r["event"] == LAW_UPDATED)
-    assert row["status"] == "live_consumer"
-    assert "listen" in row["consumer"]
+    assert row["status"] == "no consumer"
+    assert "no production call site" in row["call_site"]
 
 
-def test_resource_available_live_consumer_is_supervisor_wake_sleeping():
-    src = _read("tools/future/resident_supervisor.py")
-    assert "def wake_sleeping(" in src
-    assert "def _resource_available(" in src
-    assert "self._resource_available(" in src
+def test_resource_available_uses_existing_profile_router():
     row = next(r for r in subscriber_table() if r["event"] == RESOURCE_AVAILABLE)
     assert row["status"] == "live_consumer"
-    assert "wake_sleeping" in row["consumer"]
+    assert "on_hardware_profile_changed" in row["consumer"]
+    assert "route(RESOURCE_AVAILABLE" in row["call_site"]
 
 
 def test_child_qualified_consumer_calls_successor_gate():

@@ -1,0 +1,9 @@
+MISSION: build the FrontierEngine.
+
+Read receipts/runtime/FRONTIER_INPUT_2026_09_05.md. It is the measured state.
+
+Emit ranked candidate WorkUnits. Each carries: hypothesis, affected wall fraction, plausible multiplier, expected complete-wall effect, confidence, experiment cost, verification method, rollback plan, dependencies, reopen conditions, information value.
+
+Rank by measured share, not by interest. Refuse to emit when the input is missing or stale rather than inventing a candidate.
+
+Build it, run it against that file, and report the ranking it produced.

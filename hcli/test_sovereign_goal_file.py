@@ -1,4 +1,4 @@
-"""`sovereign-goal.txt` is what launches the daemon. It must carry every gate.
+"""`civilization/sovereign-goal.txt` is what launches the daemon. It must carry every gate.
 
 The file on disk was a 2810-char variant with no G001-G015 in it at all, while
 the live daemon config held a 5444-char goal that had them. A launch from the
@@ -20,7 +20,7 @@ import pytest
 from hcli.agentos.resident import build_parser
 
 REPO = Path(__file__).resolve().parents[1]
-GOAL_FILE = REPO / "sovereign-goal.txt"
+GOAL_FILE = REPO / "civilization" / "sovereign-goal.txt"
 
 
 @pytest.fixture(scope="module")
@@ -32,7 +32,7 @@ def goal_text():
 @pytest.mark.parametrize("gate", [f"G{n:03d}" for n in range(1, 16)])
 def test_every_gate_is_named(goal_text, gate):
     assert gate in goal_text, (
-        f"{gate} is absent from sovereign-goal.txt; launching from this file "
+        f"{gate} is absent from civilization/sovereign-goal.txt; launching from this file "
         "would drop that obligation without saying so"
     )
 

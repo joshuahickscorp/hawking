@@ -36,6 +36,16 @@ def _specs():
 
 
 class TestOneVocabulary(unittest.TestCase):
+    def test_aliases_are_callable_but_not_separate_capabilities(self):
+        registry = _registry()
+        canonical = {entry["name"]: entry for entry in registry.discover()}
+        self.assertEqual(canonical["fs.read"]["aliases"], ["filesystem.read"])
+        self.assertNotIn("filesystem.read", canonical)
+        self.assertEqual(registry.get("filesystem.read").alias_of, "fs.read")
+        self.assertTrue(
+            registry.invoke("filesystem.read", {"path": "hcli/__init__.py"}).ok
+        )
+
     def test_every_fs_tool_accepts_path(self):
         specs = _specs()
         for name, spec in specs.items():

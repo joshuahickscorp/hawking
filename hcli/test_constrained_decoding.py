@@ -142,6 +142,14 @@ class TestNativeWireProtocolCannotCarryConstrainedDecoding(unittest.TestCase):
 # ---------------------------------------------------------------------------
 
 class TestDeterministicTruncationRepair(unittest.TestCase):
+    def test_short_answer_can_omit_mode_specific_empty_arrays(self):
+        contract = StructuredOutputContract(
+            schema=HCLI_RESULT_SCHEMA,
+            instruction=schema_instruction(HCLI_RESULT_SCHEMA),
+        )
+        result = contract.validate('{"kind":"answer","content":"ok"}')
+        self.assertEqual(result, {"kind": "answer", "content": "ok"})
+
     def test_trailing_unterminated_string_is_closed_without_a_retry(self):
         """content is the LAST field written; everything else is complete."""
         text = (
@@ -225,7 +233,7 @@ class TestDecodeAwareRetryPrompt(unittest.TestCase):
         retry_prompt = sent[1]["messages"][-1]["content"]
         self.assertIn("broke JSON syntax", retry_prompt)
         self.assertIn("Escape every quote", retry_prompt)
-        self.assertIn("kind, content, operations, tests, tool_calls", retry_prompt)
+        self.assertIn("kind, content", retry_prompt)
         self.assertNotIn(
             "Return exactly one JSON object that satisfies the "
             "schema and nothing else",

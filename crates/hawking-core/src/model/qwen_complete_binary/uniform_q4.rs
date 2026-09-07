@@ -38,8 +38,7 @@ pub const QWEN30_UNIFORM_Q4_SCHEMA: &str =
     "hawking.ascension.qwen30_uniform_q4_group64_candidate.v1";
 pub const QWEN30_UNIFORM_Q4_CANDIDATE_STATUS: &str =
     "CANDIDATE_UNIFORM_Q4_GROUP64_DIAGNOSTIC_UNQUALIFIED";
-pub const QWEN30_UNIFORM_Q4_MODEL_ID: &str =
-    "Qwen3-Coder-30B-A3B-Instruct-uniform-q4-group64-v1";
+pub const QWEN30_UNIFORM_Q4_MODEL_ID: &str = "Qwen3-Coder-30B-A3B-Instruct-uniform-q4-group64-v1";
 
 /// Admission bindings for the Lane-N uniform-Q4 diagnostic candidate.
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -57,9 +56,7 @@ pub struct Qwen30UniformQ4Admission {
 /// The manifest seal is protected by the caller's admission binding, while
 /// the source-chain validator independently checks this repository against
 /// the source audit and revalidation receipt.
-fn model_for_manifest_source(
-    manifest: &Map<String, Value>,
-) -> Result<QwenCompleteBinaryModel> {
+fn model_for_manifest_source(manifest: &Map<String, Value>) -> Result<QwenCompleteBinaryModel> {
     let source = required_object(manifest, "source", "uniform Q4 manifest")?;
     match required_string(source, "repository", "uniform Q4 manifest source")? {
         "Qwen/Qwen3-Coder-30B-A3B-Instruct" => Ok(QwenCompleteBinaryModel::Qwen30Coder),
@@ -214,7 +211,9 @@ fn validate_q4_tensor_row(
     let label = "uniform Q4 manifest tensor";
     let tensor_name = required_string(row, "tensor_name", label)?;
     if tensor_name.contains('\0') {
-        return Err(Error::Model(format!("{label}: tensor_name contains a NUL byte")));
+        return Err(Error::Model(format!(
+            "{label}: tensor_name contains a NUL byte"
+        )));
     }
     let source_shard = required_string(row, "source_shard", label)?;
     require_safe_filename(source_shard, label)?;
@@ -282,7 +281,8 @@ fn validate_q4_tensor_row(
     let layout = required_object(row, "layout", label)?;
     require_exact_string(layout, "magic", "HQ30UQ4\0", label)?;
     if required_u64(layout, "version", label)? != u64::from(UNIFORM_Q4_VERSION)
-        || required_u64(layout, "group_size", label)? != u64::try_from(UNIFORM_Q4_GROUP_SIZE).unwrap()
+        || required_u64(layout, "group_size", label)?
+            != u64::try_from(UNIFORM_Q4_GROUP_SIZE).unwrap()
     {
         return Err(Error::Model(format!(
             "{label}: tensor {tensor_name:?} layout does not identify version-1 64-value Q4 groups"
@@ -342,11 +342,10 @@ fn admit_qwen30_uniform_q4_artifact_inner(
                 .into(),
         ));
     }
-    let manifest_path =
-        canonical_regular_path(manifest_path.as_ref(), "uniform Q4 manifest")?;
-    let root = manifest_path.parent().ok_or_else(|| {
-        Error::Model("uniform Q4 manifest has no parent artifact root".into())
-    })?;
+    let manifest_path = canonical_regular_path(manifest_path.as_ref(), "uniform Q4 manifest")?;
+    let root = manifest_path
+        .parent()
+        .ok_or_else(|| Error::Model("uniform Q4 manifest has no parent artifact root".into()))?;
     let manifest_raw = read_regular_file(&manifest_path, "uniform Q4 manifest")?;
     let manifest = parse_json_no_duplicate_keys(&manifest_raw, "uniform Q4 manifest")?;
     let manifest_object = manifest
@@ -455,9 +454,9 @@ fn admit_qwen30_uniform_q4_artifact_inner(
     // inner validators by reconstructing SourceChain from the revalidation
     // receipt the same way baseline does, using the receipt's parent as the
     // authority root for the path check only.
-    let revalidation_parent = revalidation_path.parent().ok_or_else(|| {
-        Error::Model("uniform Q4 revalidation receipt has no parent".into())
-    })?;
+    let revalidation_parent = revalidation_path
+        .parent()
+        .ok_or_else(|| Error::Model("uniform Q4 revalidation receipt has no parent".into()))?;
     let source = validate_source_chain(
         &revalidation,
         &revalidation_path,
@@ -467,8 +466,7 @@ fn admit_qwen30_uniform_q4_artifact_inner(
     )?;
 
     // Representation must identify uniform Q4 group-64.
-    let representation =
-        required_object(manifest_object, "representation", "uniform Q4 manifest")?;
+    let representation = required_object(manifest_object, "representation", "uniform Q4 manifest")?;
     require_exact_string(
         representation,
         "family",
@@ -499,7 +497,12 @@ fn admit_qwen30_uniform_q4_artifact_inner(
     let mut verified_payloads = BTreeMap::new();
     // Bounded parallel by source-shard lanes, same shape as baseline cold path.
     let parallel = match std::env::var("HAWKING_ADMISSION_PARALLEL") {
-        Ok(v) if matches!(v.as_str(), "0" | "false" | "FALSE" | "no" | "NO" | "off" | "OFF") => {
+        Ok(v)
+            if matches!(
+                v.as_str(),
+                "0" | "false" | "FALSE" | "no" | "NO" | "off" | "OFF"
+            ) =>
+        {
             false
         }
         _ => true,
@@ -574,8 +577,7 @@ fn admit_qwen30_uniform_q4_artifact_inner(
         ));
     }
 
-    let (elements, payload_bytes) =
-        validate_ledger(manifest_object, &tensors, manifest_raw.len())?;
+    let (elements, payload_bytes) = validate_ledger(manifest_object, &tensors, manifest_raw.len())?;
 
     Ok(CompleteBinaryArtifact {
         model,
@@ -665,7 +667,8 @@ mod parse_group_size_tests {
         bad_source.insert("repository".into(), Value::String("Qwen/Qwen3-8B".into()));
         let mut bad_manifest = Map::new();
         bad_manifest.insert("source".into(), Value::Object(bad_source));
-        let error = model_for_manifest_source(&bad_manifest).expect_err("unknown source must refuse");
+        let error =
+            model_for_manifest_source(&bad_manifest).expect_err("unknown source must refuse");
         assert!(format!("{error}").contains("not an admitted Qwen30 family variant"));
     }
 }

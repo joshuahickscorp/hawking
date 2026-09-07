@@ -960,16 +960,6 @@ impl MixtralEngine {
     }
 
     #[cfg(target_os = "macos")]
-    fn debug_slice(label: &str, xs: &[f32], first: usize) {
-        eprintln!(
-            "[mixtral-debug] {label} l2={:.6} first{}={:?}",
-            Self::l2_norm(xs),
-            first,
-            Self::debug_first(xs, first)
-        );
-    }
-
-    #[cfg(target_os = "macos")]
     fn debug_top_logits(&self, logits: &[f32]) {
         let mut idx: Vec<usize> = (0..logits.len()).collect();
         idx.sort_by(|&a, &b| {

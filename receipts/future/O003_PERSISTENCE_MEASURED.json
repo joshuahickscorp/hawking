@@ -1,0 +1,24 @@
+{
+ "specimen": "O003",
+ "date": "2026-09-06",
+ "obligation": "G022 / S009",
+ "method": "Two complete_payload calls inside ONE process, forced by a task requiring a tool call. A genuine difference of arms, unlike the earlier --max-cycles comparison whose two arms did identical work.",
+ "MEASURED": {
+  "call_1_s": 241.1,
+  "call_2_s": 29.8,
+  "lazy_weight_load_s": 211.3,
+  "spawn_plus_tokenizer_s": 7.7,
+  "total_wall_2_calls_s": 280.01,
+  "complete_payload_share": 0.968
+ },
+ "RESULT": "The resident's 9.9 GB weight load is LAZY inside the first complete_payload and costs 211.3 s. Every subsequent call in the same process costs 29.8 s.",
+ "PROJECTION": {
+  "current_23_round_ladder_s": 5545,
+  "with_persistent_resident_s": 897,
+  "speedup": 6.2,
+  "note": "Each ladder round is a fresh process today, so each pays the 211 s load."
+ },
+ "THIS_RESTORES_A_CONCLUSION_I_KILLED": "I claimed persistence was worth 2.7x, then refuted it because the supporting test compared --max-cycles 1 against 3 on a task that closes after one model call -- two arms doing identical work. The CONCLUSION was right and the EVIDENCE was invalid. Measured properly it is 6.2x, larger than the number I withdrew.",
+ "THE_LESSON_IS_ABOUT_METHOD_NOT_LUCK": "Being right for a bad reason is not being right. The invalid test would have produced the same headline whether or not the load was lazy, so it carried no information. What settled it was instrumenting inside the process and comparing call 1 against call 2 -- arms that genuinely differ.",
+ "STILL_UNEXPLAINED": "29.8 s per call for a short answer is slow for a 9.9 GB resident. That is generation cost and it is now the largest remaining per-round item; it is not addressed by persistence."
+}

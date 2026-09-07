@@ -583,20 +583,16 @@ def zeros_controls() -> dict[str, Any]:
 def _found_prior() -> list[dict[str, str]]:
     return [
         {
-            "path": "tools/headless/doctor_diagnosis.py",
-            "what": "N047 organ diagnosis on parent tensors. Not called: it streams BF16 weights.",
+            "path": "receipts/headless/DOCTOR_DIAGNOSIS.json",
+            "what": "Historical N047 organ diagnosis evidence on parent tensors; the producer is retired because it was not called by the product path.",
         },
         {
-            "path": "tools/headless/doctor_transfer.py",
-            "what": "CANONICAL_ORDER + THREE_ZEROS as documentation. Extended here as fail-able checks.",
+            "path": "receipts/headless/DOCTOR_TRANSFER.json",
+            "what": "Historical CANONICAL_ORDER + THREE_ZEROS evidence retained as a receipt; the redundant producer is retired.",
         },
         {
-            "path": "tools/odyssey/doctor_tournament.py",
-            "what": "9.1-like order with safetensors probes. probes() is not called.",
-        },
-        {
-            "path": "tools/future/specimen_events.py",
-            "what": "fingerprint_from_config (config+index, weights_opened=False). Algorithm reused; module not imported (hcli.persist absent in this sparse cone).",
+            "path": "receipts/future/SPECIMEN_EVENTS.json",
+            "what": "Historical specimen-event transition evidence retained; its one-shot producer is retired and Doctor keeps only the small fingerprint rule it needs.",
         },
         {
             "path": "tools/future/negative_index.py",
@@ -607,8 +603,8 @@ def _found_prior() -> list[dict[str, str]]:
             "what": "validate() calls doctor_zeros_for_doc → check_three_zeros.",
         },
         {
-            "path": "tools/future/flash_schools.py",
-            "what": "THREE_ZEROS as school questions. This lane makes them FAIL-able checks.",
+            "path": "receipts/headless/FLASH_ORGAN_SCHOOLS.json",
+            "what": "Historical representation-school findings retained as a receipt; the static generator was retired after its generic falsifier contract moved into adaptive verification.",
         },
         {
             "path": "tools/doctor_seal.py",
@@ -732,8 +728,7 @@ def build(repo: Path | None = None) -> Path:
             "AccessLog refuses weight shards; receipt records weight_bytes_loaded=0.",
         ],
         "negative_findings": [
-            "tools/headless/doctor_diagnosis.py still requires parent tensors; this lane does not call it.",
-            "tools/odyssey/doctor_tournament.py.probes() opens safetensors; not called.",
+            "Historical parent-tensor diagnosis is receipt-only; this lane does not load parent weights.",
             "Activation/logit/hidden-state probes and Hessian are ABSENT (named, not invented).",
             "FPGA/U50, DGX, eGPU are ABSENT hardware; DEVICE COMPILE stays STATIC_ONLY.",
         ],

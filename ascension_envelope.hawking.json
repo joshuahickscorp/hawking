@@ -1,0 +1,43 @@
+{
+  "architecture": "unknown",
+  "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+  "binary": "/Users/scammermike/Downloads/hawking/.worktrees/ascension/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
+  "capabilities": {
+    "features": {
+      "grammar": "supported",
+      "response_format": "unsupported"
+    },
+    "grammar_note": "SYNTAX only: the resident masks logits so a reply cannot break JSON. It does NOT enforce the schema -- no required keys, no types, no enums -- so the structured-output contract still validates and retries. grammar_enforced in the reply is true only when the mask actually ran."
+  },
+  "family": "qwen3.8",
+  "fusion_env": {
+    "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+    "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+    "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+    "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+  },
+  "generation": {
+    "do_sample": false,
+    "enable_thinking": false,
+    "max_new_tokens": 2048,
+    "temperature": 0.0,
+    "top_k": 1,
+    "top_p": 1.0
+  },
+  "max_seq_len": 9728,
+  "mode": "auto",
+  "param_class": "?B",
+  "prompt_contract": {
+    "fallback_template": "qwen_closed_think",
+    "renderer": "qwen-chat-template-or-closed-think-fallback",
+    "supports_thinking": true,
+    "thinking_parameter": "enable_thinking",
+    "token_count_authority": "native-resident"
+  },
+  "quantisation": "unknown",
+  "require_fusion_env": true,
+  "resident_binary": "/Users/scammermike/Downloads/hawking/.worktrees/ascension/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+  "resident_identity": "sealed-3.14",
+  "runtime": "hawking-native",
+  "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json"
+}

@@ -49,7 +49,9 @@ def test_a_syntax_error_quotes_the_line_it_names():
 def test_the_quoted_window_carries_line_numbers_from_the_resulting_file():
     broken = ANCHOR + '    total = len(raw.splitlines()\n'
     message = _python_syntax_violation(_op(broken))
-    assert "582:" in message or "583:" in message, message
+    source = pathlib.Path(TARGET).read_text()
+    anchor_line = source[: source.index(ANCHOR)].count("\n") + 1
+    assert f"{anchor_line + 1}:" in message, message
 
 
 def test_a_valid_operation_still_says_nothing():

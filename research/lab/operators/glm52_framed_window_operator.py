@@ -25,7 +25,7 @@ from typing import Any, BinaryIO, Callable, Mapping, Protocol
 from lab.lease import FixtureHeavyLease, FixtureLeaseError
 from lab.operators.glm52_common import atomic_bytes, atomic_json, canonical, read_sealed_json, seal, sha256_file
 from lab.operators.glm52_range_stream_executor import FramedMessage, RangeExecutorError, read_frame
-from ramanujan.restream_guard import ACCOUNTING_COMPONENTS, ALIGNMENT_BYTES
+from tools.verify.restream_guard import ACCOUNTING_COMPONENTS, ALIGNMENT_BYTES
 
 
 FIXTURE_PROTOCOL = "hawking.glm52.window_stream.framed.fixture.v2"

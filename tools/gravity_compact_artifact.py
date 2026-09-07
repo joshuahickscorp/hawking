@@ -20,14 +20,69 @@ artifact is still the model. Nothing is claimed until it does.
 """
 from __future__ import annotations
 import argparse, os, shutil, struct, sys
+import hashlib
 from pathlib import Path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from lab.operators.qwen38_mlp_not_r160_pack import write_catalog, sha256_hex  # noqa: E402
 
 RUNS = "workspace/campaign/records/runs/qwen38-27b"
 SOURCE_PARAM_COUNT = 26_895_998_464
 RECORD_SIZE = 128
+CATALOG_MAGIC = b"HQ38M20\0"
+CATALOG_VERSION = 1
+
+
+def sha256_hex(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
+
+
+def write_catalog(path: Path, records: list[dict], segments: list[dict]) -> None:
+    """Serialize the fixed HQ38M20 catalog owned by this compactor."""
+    names = bytearray()
+    offsets = []
+    for rec in records:
+        raw = rec["name"].encode()
+        offsets.append(len(names))
+        names.extend(raw)
+
+    table = bytearray()
+    for rec, offset in zip(records, offsets):
+        raw_name = rec["name"].encode()
+        dims = [0, 0, 0, 0]
+        shape = rec["shape"]
+        if len(shape) > 4:
+            raise ValueError(f"{rec['name']} rank {len(shape)} exceeds catalog")
+        for i, dim in enumerate(shape):
+            dims[i] = int(dim)
+        digest = bytes.fromhex(rec["sha256"])
+        if len(digest) != 32:
+            raise ValueError("catalog sha256 is not 32 bytes")
+        row = struct.pack(
+            "<IHBBBB", offset, len(raw_name), rec["codec"], rec["organ"], len(shape), 0
+        ) + b"\x00\x00"
+        row += struct.pack(
+            "<IIIIQHHQQ32sIIf",
+            dims[0], dims[1], dims[2], dims[3], rec["elements"], rec["segment_id"],
+            rec["achieved_rank"], rec["offset"], rec["nbytes"], digest,
+            rec["flags"], rec["n_fit_rows"], float(rec["codec_bpw"]),
+        )
+        table.extend(row + b"\x00" * (RECORD_SIZE - len(row)))
+
+    segment_blob = bytearray()
+    for seg in segments:
+        name = str(seg["filename"]).encode()
+        segment_blob.extend(
+            struct.pack("<HHQ32s", int(seg["id"]), len(name), int(seg["bytes"]), bytes.fromhex(seg["sha256"]))
+        )
+        segment_blob.extend(name)
+
+    blob = (
+        CATALOG_MAGIC
+        + struct.pack("<IIIIII", CATALOG_VERSION, len(records), len(segments), 0, len(names), 0)
+        + bytes(segment_blob) + bytes(table) + bytes(names)
+    )
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_bytes(blob)
+    os.replace(tmp, path)
 
 
 def parse(path):

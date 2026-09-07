@@ -64,9 +64,7 @@ mod macos {
     }
 
     fn deterministic_input(cols: usize) -> Vec<f32> {
-        (0..cols)
-            .map(|i| (i % 17) as f32 * 0.125 - 1.0)
-            .collect()
+        (0..cols).map(|i| (i % 17) as f32 * 0.125 - 1.0).collect()
     }
 
     pub fn run() -> Result<(), Box<dyn Error>> {

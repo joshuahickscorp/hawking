@@ -1,8 +1,8 @@
 """Repo-root pytest path shim for hawking-experiments modules.
 
 ``hawking-experiments`` contains a dash and is not a valid Python package.
-Frankenstein operators/condense and prometheus tools are importable by bare
-module name once their directories are on ``sys.path``.
+Frankenstein operators and condense tools are importable by bare module name
+once their directories are on ``sys.path``.
 """
 from __future__ import annotations
 
@@ -16,7 +16,6 @@ for _p in (
     # over a thousand sites and moving the tree under research/ without this
     # leaves every one of them unresolvable.
     _REPO / "research",
-    _REPO / "research/hawking-experiments" / "prometheus" / "tools",
     _REPO / "research/hawking-experiments" / "frankenstein" / "condense",
     _REPO / "research/hawking-experiments" / "frankenstein" / "operators",
 ):

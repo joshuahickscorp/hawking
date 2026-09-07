@@ -126,7 +126,10 @@ pub fn flag_receipt(path: &str, root: &Value) -> Vec<ReceiptFlag> {
     }
 
     if path.ends_with("dsv-cb-collapse.json") {
-        if let Some(arr) = root.pointer("/spread_body_ns/A_baseline").and_then(|v| v.as_array()) {
+        if let Some(arr) = root
+            .pointer("/spread_body_ns/A_baseline")
+            .and_then(|v| v.as_array())
+        {
             let vals: Vec<f64> = arr.iter().filter_map(|v| v.as_f64()).collect();
             if vals.len() >= 3 && vals[0] > 2.0 * vals[1] {
                 flags.push(ReceiptFlag {

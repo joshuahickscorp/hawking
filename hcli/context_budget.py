@@ -156,6 +156,22 @@ def _round_up(n: int, pad: int = LLAMA_KV_PAD) -> int:
     return ((n + pad - 1) // pad) * pad
 
 
+def _spendable_ceiling() -> Optional[int]:
+    """The largest completion the engine will ever request, or None if unknown.
+
+    Imported lazily and guarded: the budget must not fail to resolve because a
+    consumer module could not be imported. Unknown means no clamp, never a
+    guessed one.
+    """
+    try:
+        from .engine import _MAX_TOKENS_CEILING
+
+        value = int(_MAX_TOKENS_CEILING)
+    except Exception:
+        return None
+    return value if value > 0 else None
+
+
 def _generation_reserve(explicit: Optional[int]) -> int:
     if explicit is not None:
         try:
@@ -175,6 +191,25 @@ def _generation_reserve(explicit: Optional[int]) -> int:
             if value >= 0:
                 return value
     return DEFAULT_GENERATION_RESERVE
+
+
+def _clamp_generation_reserve(reserve: int) -> int:
+    """Never withhold window for completions the engine cannot request.
+
+    THE DEFECT: the budget withheld DEFAULT_GENERATION_RESERVE (4096) while
+    `engine._MAX_TOKENS_CEILING` caps every request at 2048. On an 8192-token
+    resident that stranded 2048 tokens -- a quarter of the whole window -- and
+    with the 512 framing reserve left usable_input 3584 against a measured
+    packet floor of 6501. Nothing could be admitted.
+
+    Reserving headroom the requester is structurally incapable of spending is
+    not safety. A caller asking for LESS is still honoured; only the excess
+    above what can ever be spent is returned to input.
+    """
+    ceiling = _spendable_ceiling()
+    if ceiling is None:
+        return reserve
+    return min(int(reserve), ceiling)
 
 
 def _profile_genome_path() -> Path:
@@ -389,6 +424,23 @@ def native_profile_limits(
     return ceiling, new_tokens, meta
 
 
+def _native_artifact_ceiling(model_path: Optional[str]) -> Optional[int]:
+    """The resident's own max_seq_len for a native artifact, or None.
+
+    Never raises: a budget that cannot learn the ceiling must fall through to
+    the documented fallback, not take the whole mission down.
+    """
+    if not model_path:
+        return None
+    try:
+        from .hawking_native import config_for_model_path
+
+        ceiling = int(getattr(config_for_model_path(model_path), "max_seq_len", 0) or 0)
+    except Exception:
+        return None
+    return ceiling if ceiling > 0 else None
+
+
 def _discover_ceiling(
     model_path: Optional[str], port: Optional[int]
 ) -> tuple[Optional[int], Optional[str], Dict[str, Any]]:
@@ -397,6 +449,25 @@ def _discover_ceiling(
     if native_ceiling:
         meta["hawking_native"] = native_meta
         return native_ceiling, "discovered:hawking_native_profile", meta
+    # A Hawking native artifact DIRECTORY is neither a .json profile, a GGUF,
+    # nor a served port, so every branch below misses it and the caller falls
+    # through to DEFAULT_PER_SLOT_CTX -- 32768 claimed against a resident that
+    # enforces 8192, a 3x overstatement that lets a packet pass preflight and
+    # be rejected by the runtime with "no generation token fits".
+    #
+    # The authority was never missing: config_for_model_path() returns the real
+    # max_seq_len for the same path this function is handed. Imported lazily and
+    # guarded, because the module's contract is not to pull in the runtime graph
+    # merely to learn a number -- asking for one integer, only when the cheaper
+    # sources have already lost, keeps that bargain.
+    artifact_ceiling = _native_artifact_ceiling(model_path)
+    if artifact_ceiling:
+        meta["hawking_native_artifact"] = {
+            "model_path": model_path,
+            "max_seq_len": artifact_ceiling,
+            "source": "config_for_model_path",
+        }
+        return artifact_ceiling, "discovered:hawking_native_artifact", meta
     gguf = None
     if model_path:
         gguf = gguf_context_length(model_path)
@@ -492,12 +563,19 @@ def resolve(
     # profile is what we are about to post to. An explicit caller argument or
     # HCLI_MODEL_TOKENS still wins, which is what `_generation_reserve` checks.
     native_ceiling, native_new_tokens, _native_meta = native_profile_limits(model_path)
+    # The same reasoning holds for a native artifact DIRECTORY, which
+    # `native_profile_limits` does not recognise. Without this the fixed
+    # ceiling is right and the budget is still useless: 8192 - 4096 - 4096
+    # leaves ZERO usable input, so every packet is refused instead of merely
+    # the oversized ones. Getting the ceiling right and the reserves wrong
+    # trades one wrong answer for another.
+    native_transport = bool(native_ceiling) or _native_artifact_ceiling(model_path) is not None
     framing_reserve = (
-        NATIVE_FRAMING_RESERVE if native_ceiling else DEFAULT_FRAMING_RESERVE
+        NATIVE_FRAMING_RESERVE if native_transport else DEFAULT_FRAMING_RESERVE
     )
     if generation_reserve is None and native_ceiling and native_new_tokens:
         generation_reserve = native_new_tokens
-    generation_reserve = _generation_reserve(generation_reserve)
+    generation_reserve = _clamp_generation_reserve(_generation_reserve(generation_reserve))
 
     override_val: Optional[int] = None
     override_source: Optional[str] = None

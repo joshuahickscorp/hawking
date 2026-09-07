@@ -1,0 +1,19 @@
+{
+ "date": "2026-09-06",
+ "subject": "two consecutive contract fixes changed nothing measurable",
+ "FIX_6": {
+  "defect": "the contract demanded a test 'as part of the same mutation' while saying 'emit exactly one operation'; a function plus its test is two files",
+  "real": true,
+  "outcome": "3 rounds after == 3 rounds before, identical reason and operation"
+ },
+ "FIX_7": {
+  "defect": "the contract advertised `python path/to/script.py`, but all three admissible forms are rewritten to `python -m pytest <path>`, so a module-level-assert file collects nothing (exit 5) and is recorded NO_EVIDENCE",
+  "real": true,
+  "verified": "resolved all three forms through _admit_test; every argv contains pytest",
+  "outcome": "the resident wrote the SAME file byte-for-byte: 'from probe import VALUE / assert VALUE == 7'. No behavioural change."
+ },
+ "THE_EPISTEMIC_UPDATE": "Five earlier failures this session were explained by the harness scoring the model on an unpublished rule, and publishing the rule fixed each one -- the scorer regex, the cost function, rejection feedback, tensor shapes, and the admissible test forms. Fixes 6 and 7 addressed defects of exactly the same shape and changed NOTHING. That pattern has been exhausted as a lever: the remaining gap is not what the contract says.",
+ "WHY_THIS_MATTERS_FOR_THE_LEDGER": "It would have been easy to keep finding real contract defects and keep reporting them as progress. They ARE real and the fixes stay. But two in a row with a null measured effect is the signal to stop attributing the model's behaviour to the harness.",
+ "WHAT_IS_ACTUALLY_LEFT": "The resident writes correct implementation code when told exactly what to write (G004, accepted with red-before-green independently confirmed). It does not select novel targets, and it does not write pytest-collectible tests unprompted even when told to. Both are model capability limits measured across 20+ rounds, not communication failures.",
+ "HARNESS_STATE": "Every fix made today stands on its own merits and is mutation-checked: the failure reason is carried, failing checks and the refused command are surfaced, admissible forms and pytest semantics are published, an answer can no longer be counted as accepted work, and the campaign guard is complete. The harness is materially better even where the model's behaviour did not move."
+}

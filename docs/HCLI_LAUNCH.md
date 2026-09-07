@@ -26,6 +26,18 @@ hcli "keep working on sub-2 and tell me only if the capability cliff changes"
 
 ## Which code does `hcli` actually run
 
+There is one HCLI product name with two deliberately different layers:
+
+* Python `hcli` is the orchestration/resident skin. It owns the long-lived
+  AgentOS loop and provider-specific campaign work.
+* Rust `hcli` (`cargo run -p hide-backend --bin hcli`) is the current HIDE
+  backend authority. It owns durable backend sessions, receipts, tools,
+  JSONL control, and runtime-facing composition.
+
+The visual/IDE/ACP surface is not active. Rebuild it only behind the hardened
+VMCP boundary; it must consume the Rust backend contract instead of creating a
+second state or command authority.
+
 Two different install paths exist, and they are not the same code:
 
 | how you installed | what `hcli` runs |

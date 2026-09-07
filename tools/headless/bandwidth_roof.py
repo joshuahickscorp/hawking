@@ -48,10 +48,8 @@ DERIVED = "DERIVED"
 ABSENT = "ABSENT"
 ANCHOR_FILES = [
     "tools/headless/noetic_operation_census.py",
-    "tools/headless/c1sharedbasis_design.py",
     "tools/headless/c2tensorop_design.py",
     "tools/headless/c3lowranksparse_design.py",
-    "tools/headless/c4codebook_design.py",
     "tools/headless/c5structtransform_design.py",
     "tools/headless/noetic_mlx_anatomy.py",
     "tools/headless/noetic_native_operator.py",

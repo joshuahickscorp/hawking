@@ -1,0 +1,44 @@
+{
+ "specimen": "O003",
+ "date": "2026-09-06",
+ "why": "Every arm in this campaign pinned the non-expert organ at 4 bits / group 64. It costs 0.4318 complete EBPW alone -- 43% of a 1.0 target -- so it put an unexamined floor under every result. This probes it.",
+ "arms": [
+  {
+   "non_expert": "4b/g64 (baseline)",
+   "spec": "q3-g128-experts",
+   "complete_ebpw": 3.2831,
+   "ppl": 3.135,
+   "median_4gram": 0.1075,
+   "passes": true
+  },
+  {
+   "non_expert": "4b/g128",
+   "spec": "q3-g128-experts+o4g128",
+   "complete_ebpw": 3.2593,
+   "ppl": 3.0866,
+   "median_4gram": 0.2903,
+   "passes": false
+  },
+  {
+   "non_expert": "3b/g128",
+   "spec": "q3-g128-experts+o3g128",
+   "complete_ebpw": 3.1641,
+   "ppl": 3.714,
+   "median_4gram": 0.5484,
+   "passes": false
+  },
+  {
+   "non_expert": "2b/g128",
+   "spec": "q3-g128-experts+o2g128",
+   "complete_ebpw": 3.0689,
+   "ppl": 19398.4354,
+   "median_4gram": 0.3043,
+   "passes": false
+  }
+ ],
+ "RESULT_the_non_expert_organ_CANNOT_be_cheapened": "Not by bits: 3b/g128 gives ppl 3.714 (gate 3.617) and 4-gram 0.5484 (gate 0.1614); 2b/g128 destroys the model at ppl 19398. Not by group either: 4b/g128 IMPROVES perplexity to 3.087 -- better than the passing baseline's 3.135 -- and still FAILS on generation at 0.2903. Every reduction attempted fails, so 0.4318 EBPW is a MEASURED hard floor, not an assumption.",
+ "THE_STRUCTURAL_ASYMMETRY": "Experts are 90.2% of the weights and tolerate 16 -> 3.25 bits (4.9x) while still passing. Non-experts are 9.8% and break on a further 4.5 -> 3.25 (1.4x). Precision sensitivity runs OPPOSITE to byte share on this specimen. Attention, router, embed and lm_head are the fragile organ and they are the one nobody was compressing.",
+ "CONSEQUENCE_FOR_THE_1p0_TARGET": "With the non-expert organ fixed at its floor of 0.4318, a 1.0 complete EBPW target leaves 0.5682 for 14.4B expert weights = 0.3157 bits/weight. Not 1 bit. Not 0.65. About 0.32 -- which no quantiser reaches, and which requires removing weights (sparsity), sharing them, or replacing them with a generator.",
+ "PERPLEXITY_AND_GENERATION_DISSOCIATE_AGAIN": "4b/g128 has BETTER perplexity than the passing baseline and fails on generation. That is the FOURTH instance on this specimen, after q2-g128 (ppl 4.085 with 87 identical tokens), q4-g128 vs q3-g128, and residual-binary vs affine. Perplexity alone would have accepted at least three of these. The generation term is not a refinement of the gate, it is load-bearing.",
+ "lowest_passing_unchanged": "q3-g128-experts at 3.2831 with non-experts at 4b/g64"
+}

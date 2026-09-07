@@ -4,8 +4,8 @@
 Do not create a second EventBus. The in-process bus is hcli.events.EventBus
 (session/UI). Disk-backed completion is tools.future.wakeup. Specimen seals
 already flow through tools.future.modellake_events.consume, invoked by
-tools.odyssey.modellake_watch.emit_modellake_events_once. Law updates already
-flow through tools.future.phase_listeners.listen.
+tools.odyssey.modellake_watch.emit_modellake_events_once. Receipt-only trials
+must not be reported as live consumers merely because their source still exists.
 
 This module (1) publishes the subscriber table the audit asked for, and
 (2) connects the two named events that had no live consumer:
@@ -64,24 +64,18 @@ def subscriber_table() -> list[dict[str, Any]]:
         },
         {
             "event": EXPERIMENT_COMPLETED,
-            "bus": "tools.future.wakeup.Watcher (receipt-completion bus)",
-            "consumer": "tools.future.wakeup.Watcher.dispatch",
-            "call_site": (
-                "tools.future.detached_trial harvest loop: "
-                "watcher.harvest(); watcher.dispatch(ev)"
-            ),
-            "status": "live_consumer",
+            "bus": "none (receipt-only historical trial)",
+            "consumer": "none; tools.future.detached_trial was retired",
+            "call_site": "no production call site; historical receipt retained",
+            "status": "no consumer",
             "evidence_tier": "STATIC",
         },
         {
             "event": LAW_UPDATED,
-            "bus": "tools.future.phase_listeners (law-store trigger)",
-            "consumer": "tools.future.phase_listeners.listen",
-            "call_site": (
-                "tools.future.phase_listeners.build() -> listen(); "
-                "CLI --listen -> listen()"
-            ),
-            "status": "live_consumer",
+            "bus": "none (receipt-only historical trigger)",
+            "consumer": "none; tools.future.phase_listeners was retired",
+            "call_site": "no production call site; historical receipt retained",
+            "status": "no consumer",
             "evidence_tier": "STATIC",
         },
         {
@@ -97,12 +91,9 @@ def subscriber_table() -> list[dict[str, Any]]:
         },
         {
             "event": RESOURCE_AVAILABLE,
-            "bus": "tools.future.resident_supervisor (SLEEPING units)",
-            "consumer": "tools.future.resident_supervisor.ResidentSupervisor.wake_sleeping",
-            "call_site": (
-                "wake_sleeping -> _wake_satisfied -> _resource_available; "
-                "also on_hardware_profile_changed when a wake id is present"
-            ),
+            "bus": "existing lifecycle router",
+            "consumer": "tools.lifecycle_events.on_hardware_profile_changed",
+            "call_site": "route(RESOURCE_AVAILABLE, payload) -> on_hardware_profile_changed",
             "status": "live_consumer",
             "evidence_tier": "STATIC",
         },
@@ -191,19 +182,8 @@ def on_hardware_profile_changed(
     woken: list[Any] = []
     if activable and wake_sleeping is not None:
         woken = list(wake_sleeping() or [])
-    elif activable:
-        # Optional future WorkGraph — only imported when a device is actually
-        # present, so an absent FPGA does not load that stack.
-        try:
-            from tools.future.workgraph import WorkGraph
-            from tools.future._common import RECEIPTS
-            ledger = RECEIPTS / "WORKGRAPH.json"
-            if ledger.is_file():
-                wg = WorkGraph.load(ledger) if hasattr(WorkGraph, "load") else None
-                if wg is not None:
-                    woken = list(wg.wake_sleeping(hardware_qualified=True) or [])
-        except Exception:
-            woken = []
+    # HCLI's scheduler/DAG store is the execution owner. Arrival graphs are
+    # payloads only; this router does not revive a parallel future scheduler.
 
     return {
         "schema": SCHEMA,
@@ -217,7 +197,8 @@ def on_hardware_profile_changed(
         "evidence_tier": "STATIC",
         "note": (
             "activable is empty unless a wake_condition_detail.present is true; "
-            "absent FPGA/DGX/eGPU is a model of this host, not a measurement "
+            "absent FPGA/DGX/eGPU is a model of this host, not a measurement; "
+            "HCLI owns any eventual wake/schedule operation, "
             "of those boards"
         ),
     }
@@ -239,16 +220,18 @@ def route(kind: str, payload: Mapping[str, Any] | None = None) -> dict[str, Any]
         return on_hardware_profile_changed(payload.get("graph"))
     if kind not in LIFECYCLE_KINDS:
         raise ValueError(f"unknown lifecycle kind {kind!r}; known={list(LIFECYCLE_KINDS)}")
-    # The other four already have live consumers on their own buses; routing
-    # them again from here would be a second bus. Report, don't re-emit.
+    # Existing consumers stay on their own buses; receipt-only events are
+    # reported as such rather than being promoted by this router.
     row = next(r for r in subscriber_table() if r["event"] == kind)
     return {
         "schema": SCHEMA,
         "event": kind,
         "routed": False,
         "reason": (
-            "already has a live consumer on an existing bus; this router "
-            "does not re-emit"
+            "already has a live consumer on an existing bus; this router does "
+            "not re-emit"
+            if row["status"] == "live_consumer"
+            else "no live consumer; historical receipt is retained and this router does not invent one"
         ),
         "consumer": row["consumer"],
         "call_site": row["call_site"],

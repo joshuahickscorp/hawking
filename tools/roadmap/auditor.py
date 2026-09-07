@@ -1055,7 +1055,7 @@ def _audit_uncached(
             "STATIC source analysis. Definitions via git cat-file; callers via "
             "hawking-index python-facts (schema hawking.index.python_facts.v1) "
             "built once from HEAD blobs (sparse-checkout safe), falling back to "
-            "tools.future.capability_reachability AST Call/subprocess helpers when "
+            "tools.roadmap.capability_reachability AST Call/subprocess helpers when "
             "the index binary is absent. kind=import never justifies "
             "wired (SCAFFOLDED at most). Name-only matches are weak_signal and never "
             "move status. Subprocess counts only an exact CLI path, not a suffix of "

@@ -78,7 +78,7 @@ class TestParallelEngine(unittest.TestCase):
     def test_workers_cannot_race_overlapping_writers(self):
         target = self.engine.root / "a.py"
         target.write_text("x = 0\n", encoding="utf-8")
-        self.engine._call_model = lambda p, e, c: {
+        self.engine._call_model = lambda p, e, c, **kwargs: {
             "kind": "mutation",
             "content": "two ordered writes",
             "operations": [
@@ -105,7 +105,7 @@ class TestParallelEngine(unittest.TestCase):
     def test_workers_return_proposals_rather_than_directly_mutating_disk(self):
         seen = {"during_call": None}
 
-        def mock_call(prompt, evidence, compiled):
+        def mock_call(prompt, evidence, compiled, **kwargs):
             seen["during_call"] = (self.engine.root / "new.py").exists()
             return {
                 "kind": "mutation",
@@ -129,7 +129,7 @@ class TestParallelEngine(unittest.TestCase):
         self.assertEqual(created.read_text(encoding="utf-8"), "print(1)\n")
 
     def test_coordinator_combines_compatible_results(self):
-        self.engine._call_model = lambda p, e, c: {
+        self.engine._call_model = lambda p, e, c, **kwargs: {
             "kind": "answer",
             "content": "combined",
             "operations": [],
@@ -145,7 +145,7 @@ class TestParallelEngine(unittest.TestCase):
         (self.engine.root / "a.py").write_text("x = 1\n", encoding="utf-8")
         events: list[str] = []
         self.engine.event_bus.subscribe(lambda ev: events.append(ev.type))
-        self.engine._call_model = lambda p, e, c: {
+        self.engine._call_model = lambda p, e, c, **kwargs: {
             "kind": "mutation",
             "content": "change x",
             "operations": [
@@ -179,7 +179,7 @@ class TestParallelEngine(unittest.TestCase):
     def test_verified_repair_is_completed_and_red_before_green(self):
         (self.engine.root / "calc.py").write_text(WRONG_ADD, encoding="utf-8")
         (self.engine.root / "test_calc.py").write_text(TEST_ADD, encoding="utf-8")
-        self.engine._call_model = lambda p, e, c: {
+        self.engine._call_model = lambda p, e, c, **kwargs: {
             "kind": "mutation",
             "content": "fix add",
             "operations": [

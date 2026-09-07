@@ -108,7 +108,6 @@ pub trait ConnectorWrite: ConnectorRead {
             return Err(ConnectorError::WriteNotDeclared(self.family_id().clone()));
         }
         let guard = InFlightGuard::begin(store, handle, self.family_id())?;
-        let kind = kind;
         let effect = match kind {
             crate::connector_abi::effects::WriteKind::Delete => {
                 crate::connector_abi::abi::EffectClass::Delete

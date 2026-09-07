@@ -1,0 +1,166 @@
+{
+  "authority": "HCLI single writer; verifier decides target status",
+  "best_candidate_id": "O001-q3-g64-attn-mlp",
+  "budget": {
+    "max_evaluations": 2,
+    "used": 2
+  },
+  "candidate_space": {
+    "O001-q3-g64-attn-mlp": {
+      "expected_effect": "test q3 / group64 storage frontier",
+      "id": "O001-q3-g64-attn-mlp",
+      "mutation": "frontier_candidate",
+      "parent_id": null,
+      "representation_class": "candidate",
+      "spec": "q3-g64-attn-mlp",
+      "specimen": "O001"
+    },
+    "O001-q4-g64-attn-mlp": {
+      "expected_effect": "test q4 / group64 storage frontier",
+      "id": "O001-q4-g64-attn-mlp",
+      "mutation": "initial_representation",
+      "parent_id": null,
+      "representation_class": "candidate",
+      "spec": "q4-g64-attn-mlp",
+      "specimen": "O001"
+    }
+  },
+  "cost": {
+    "candidate_evaluations": 2,
+    "resource_cost": {},
+    "verification_wall_s": 0.0,
+    "wall_s": 29.148
+  },
+  "created_at": 1788645563.091072,
+  "frontier": [
+    "O001-q4-g64-attn-mlp",
+    "O001-q3-g64-attn-mlp"
+  ],
+  "iterations": [
+    {
+      "candidate": {
+        "expected_effect": "test q4 / group64 storage frontier",
+        "id": "O001-q4-g64-attn-mlp",
+        "mutation": "initial_representation",
+        "parent_id": null,
+        "representation_class": "candidate",
+        "spec": "q4-g64-attn-mlp",
+        "specimen": "O001"
+      },
+      "decision": {
+        "next_candidate_id": "O001-q3-g64-attn-mlp",
+        "reason": "capability signal preserved; descend bits/group for information gain"
+      },
+      "observation": {
+        "accounting_reason": "complete accounting reconciles",
+        "capability_signal": true,
+        "capability_status": "CANDIDATE_PASS",
+        "complete_accounting": true,
+        "complete_ebpw": 6.5006,
+        "complete_ebpw_measured": true,
+        "execution_complete": false,
+        "magnitude_adequacy": {
+          "adequate": false,
+          "direction_similarity": null,
+          "magnitude_ratio": null,
+          "reason": "magnitude adequacy was not measured",
+          "verdict": "UNVALIDATED"
+        },
+        "nr_release_verified": false,
+        "persistent_bytes": 6163508800,
+        "receipt": "/Users/scammermike/Downloads/hawking/receipts/odyssey-i/O001_GRAVITY_q4-g64-attn-mlp.json",
+        "reject_reasons": [
+          "magnitude adequacy was not measured"
+        ],
+        "resource_measurements": null,
+        "source_sha256": "35e528f0f17d37e475da5cc033985062889b427b1055b12fbda53b636deec18c",
+        "target_eligible": false,
+        "utilization_measured": false,
+        "verification_wall_s": null,
+        "verifier_independent": false,
+        "wall_s": 14.025
+      },
+      "wall_s": 0.000247
+    },
+    {
+      "candidate": {
+        "expected_effect": "test q3 / group64 storage frontier",
+        "id": "O001-q3-g64-attn-mlp",
+        "mutation": "evidence_guided_precision_step",
+        "parent_id": "O001-q4-g64-attn-mlp",
+        "representation_class": "candidate",
+        "spec": "q3-g64-attn-mlp",
+        "specimen": "O001"
+      },
+      "decision": {
+        "next_candidate_id": null,
+        "reason": "capability signal weak/absent; prefer higher-precision survivor"
+      },
+      "observation": {
+        "accounting_reason": "complete accounting reconciles",
+        "capability_signal": false,
+        "capability_status": "DEGRADED",
+        "complete_accounting": true,
+        "complete_ebpw": 5.6745,
+        "complete_ebpw_measured": true,
+        "execution_complete": false,
+        "magnitude_adequacy": {
+          "adequate": false,
+          "direction_similarity": null,
+          "magnitude_ratio": null,
+          "reason": "magnitude adequacy was not measured",
+          "verdict": "UNVALIDATED"
+        },
+        "nr_release_verified": false,
+        "persistent_bytes": 5380221760,
+        "receipt": "/Users/scammermike/Downloads/hawking/receipts/odyssey-i/O001_GRAVITY_q3-g64-attn-mlp.json",
+        "reject_reasons": [
+          "magnitude adequacy was not measured"
+        ],
+        "resource_measurements": null,
+        "source_sha256": "f20498e76523bdbf2a45d836e3b7abf31620cd12a9a9032f8f2046fe107e83a0",
+        "target_eligible": false,
+        "utilization_measured": false,
+        "verification_wall_s": null,
+        "verifier_independent": false,
+        "wall_s": 15.123
+      },
+      "wall_s": 0.000195
+    }
+  ],
+  "nr": {
+    "current_candidate_id": "O001-q3-g64-attn-mlp",
+    "release_verified": false,
+    "released_candidate_ids": [
+      "O001-q4-g64-attn-mlp"
+    ]
+  },
+  "schema": "hawking.hcli.odyssey.gravity_gauntlet.v1",
+  "specimen": "O001",
+  "target": {
+    "complete_ebpw_lte": 1.0,
+    "requires": [
+      "complete accounting",
+      "capability",
+      "execution",
+      "independent verifier",
+      "magnitude adequacy",
+      "validated utilization"
+    ]
+  },
+  "terminal": {
+    "best_candidate_id": "O001-q3-g64-attn-mlp",
+    "best_capability_status": "DEGRADED",
+    "best_complete_ebpw": 5.6745,
+    "best_execution_complete": false,
+    "best_verifier_independent": false,
+    "disposition": "BUDGET_EXHAUSTED",
+    "reason": "allocated search ended before target hit",
+    "remaining_frontier": []
+  },
+  "updated_at": 1788645563.092015,
+  "writer": {
+    "mode": "single_writer",
+    "pid": 34897
+  }
+}

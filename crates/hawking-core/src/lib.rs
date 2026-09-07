@@ -14,16 +14,16 @@ pub mod gravity_deepseek;
 /// full source stream.  This intentionally has no Engine, serving, Metal, or
 /// forward integration: admitting bytes is not permission to execute a model.
 pub mod gravity_deepseek_v4;
+/// CPU-only source-algorithm oracle for DeepSeek-V4 FP8 activation
+/// quantization and the bounded layer-0 WQ-A checkpoint.  This has no engine,
+/// Metal, forward, or serving integration.
+pub mod gravity_deepseek_v4_act_quant;
 /// Sealed admission-time trust receipt for the DeepSeek-V4 full stream.
 /// Storage/verification only; not an Engine, Metal, or forward surface.
 pub mod gravity_deepseek_v4_admission_trust;
 /// Compact mmap-able artifact index for DeepSeek-V4-Flash startup.
 /// Built at admission; not an Engine, Metal, or forward surface.
 pub mod gravity_deepseek_v4_artifact_index;
-/// CPU-only source-algorithm oracle for DeepSeek-V4 FP8 activation
-/// quantization and the bounded layer-0 WQ-A checkpoint.  This has no engine,
-/// Metal, forward, or serving integration.
-pub mod gravity_deepseek_v4_act_quant;
 /// Parameterized ratio-zero attention device plan (layer/position/growing KV).
 /// Resolves source tensor names and refuses ratio-4/128 cleanly.
 pub mod gravity_deepseek_v4_attention_device;
@@ -79,6 +79,9 @@ pub mod gravity_deepseek_v4_layer_scheduler;
 /// Compact, source-bound per-layer tensor anchors for every DeepSeek-V4-Flash
 /// base layer (0..42). Metadata-only; no Engine, Metal, or forward surface.
 pub mod gravity_deepseek_v4_layer_source_anchors;
+/// Minimum complete native BOS token graph: device-resident top-6 worklist,
+/// batched Metal command buffers, streaming residency. Not an Engine or TPS claim.
+pub mod gravity_deepseek_v4_native_token_graph;
 /// Bounded verifier for the opt-in, source-bound Torch F32 Gate calibration
 /// target used by the position-zero diagnostic. It has no Metal, runtime,
 /// route-default, or TPS surface.
@@ -114,10 +117,6 @@ pub mod gravity_deepseek_v4_runtime_binding;
 /// plane.  This is intentionally non-Engine/non-servable until a complete
 /// 43-layer causal runtime is implemented and parity-gated.
 pub mod gravity_deepseek_v4_runtime_spine;
-/// Byte-bounded authenticated cache of source-native DeepSeek-V4 tensor
-/// ranges for a future Metal executor. It is storage-only: no device upload,
-/// forward, Engine, serving, or TPS surface exists here.
-pub mod gravity_deepseek_v4_verified_tensor_cache;
 /// Memory-bounded, restartable host streamed BOS forward over the sealed
 /// DeepSeek-V4-Flash 43-layer source stream. Operator-streamed CPU oracle;
 /// not native, not Engine, not a TPS or coherence claim.
@@ -125,15 +124,18 @@ pub mod gravity_deepseek_v4_streamed_forward;
 /// Opt-in Metal operators for the streamed DeepSeek-V4-Flash BOS decode.
 /// Default-off; the CPU oracle remains the parity reference.
 pub mod gravity_deepseek_v4_streamed_native;
-/// Minimum complete native BOS token graph: device-resident top-6 worklist,
-/// batched Metal command buffers, streaming residency. Not an Engine or TPS claim.
-pub mod gravity_deepseek_v4_native_token_graph;
 /// Per-token nanosecond ledger for the native BOS graph body.
 pub mod gravity_deepseek_v4_token_ns_ledger;
+/// Byte-bounded authenticated cache of source-native DeepSeek-V4 tensor
+/// ranges for a future Metal executor. It is storage-only: no device upload,
+/// forward, Engine, serving, or TPS surface exists here.
+pub mod gravity_deepseek_v4_verified_tensor_cache;
 /// Unified TOKEN_NS schema + adapters + closure + lane reconciler.
 /// Does not sit on a runtime hot path; both existing ledgers stay as-is.
 pub mod token_ns;
 
+/// G023 shared decode family (Q80 + Qwen3.8 + DSV4F).
+pub mod decode_family;
 pub mod gravity_glm;
 #[cfg(target_os = "macos")]
 pub mod gravity_glm_resident;
@@ -141,8 +143,6 @@ pub mod gravity_llama;
 pub mod json_constrain;
 pub mod kernel_bench;
 pub mod kernels;
-/// G023 shared decode family (Q80 + Qwen3.8 + DSV4F).
-pub mod decode_family;
 pub mod metal;
 pub mod mixed_quant_store;
 pub mod model;
@@ -150,9 +150,6 @@ pub mod moe;
 /// Numeric Parity Contract V2.1 — condition-aware hybrid metrics + FP64 authority.
 /// See root `NUMERIC_PARITY_V2_1.md`.
 pub mod numeric_parity;
-/// STATIC_ONLY host/shader ABI preflight. Port of `tools/future/static_kernel_verify.py`.
-/// Not an Engine, Metal runtime, or speed claim.
-pub mod static_kernel_verify;
 pub mod profile;
 pub mod q4k_fast;
 pub mod quant;
@@ -161,6 +158,9 @@ pub mod sample;
 pub mod sidecar;
 /// Process-local startup phase timers (`HAWKING_STARTUP_TIMING=1`).
 pub mod startup_timing;
+/// STATIC_ONLY host/shader ABI preflight. Port of `tools/future/static_kernel_verify.py`.
+/// Not an Engine, Metal runtime, or speed claim.
+pub mod static_kernel_verify;
 // speculate extracted to the hawking-speculate crate (NUCLEAR PASTA).
 // Re-export so integration tests (and any in-tree callers) that still path
 // through `hawking_core::speculate::…` keep compiling.
@@ -225,7 +225,3 @@ pub fn env_usize(name: &str, default: usize) -> usize {
         .and_then(|v| v.parse().ok())
         .unwrap_or(default)
 }
-
-/// Persistent local research harness: keeps Metal + one admitted model
-/// resident so a dirty Tier-1 loop does not re-pay startup. DIRTY_TIER1 only.
-pub mod research_server;

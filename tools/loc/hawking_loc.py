@@ -2,7 +2,9 @@
 """The single LOC authority for the Hawking 300k semantic-density arc.
 
 One tool, one policy. Every checkpoint in the ladder is measured with this and
-nothing else, so a number is comparable to the number before it.
+nothing else, so a number is comparable to the number before it. The report
+keeps the broad total active LOC separate from the narrower minimum-product
+boundary required by Phase IV.
 
 What counts as *active* LOC: every physical line, including blanks and comments,
 of a tracked source file that is not archived, not generated, and not vendored.
@@ -94,6 +96,30 @@ def is_test(path: str) -> bool:
     )
 
 
+def is_product(path: str) -> bool:
+    """Return whether an active source file belongs to the minimum product.
+
+    Product LOC is deliberately conservative and mechanical: HCLI Python,
+    Rust/shader implementation under crate ``src``/``shaders`` trees, and the
+    retained VMCP boundary adapters. Research, experiments, acceptance/oracle
+    harnesses, examples, tests, documentation, and receipts remain in total
+    active LOC but are not counted as product implementation.
+    """
+    if path.startswith("hcli/"):
+        return not is_test(path)
+    if path.startswith("crates/"):
+        return (
+            ("/src/" in path or "/shaders/" in path)
+            and "/tests/" not in path
+            and "/examples/" not in path
+            and "/benches/" not in path
+            and not is_test(path)
+        )
+    if path.startswith("hcli/agentos/vmcp/"):
+        return not is_test(path)
+    return False
+
+
 def git(args: list[str]) -> str:
     return subprocess.run(
         ["git", "-C", str(REPO), *args], capture_output=True, text=True, check=True
@@ -132,6 +158,9 @@ def measure(rev: str | None, *, include_untracked: bool = False) -> dict:
     subs: dict[str, int] = {}
     test_loc = 0
     runtime_loc = 0
+    product_loc = 0
+    product_files = 0
+    product_langs: dict[str, int] = {}
     n_active = 0
 
     for path in files:
@@ -154,6 +183,10 @@ def measure(rev: str | None, *, include_untracked: bool = False) -> dict:
             test_loc += n
         else:
             runtime_loc += n
+        if is_product(path):
+            product_loc += n
+            product_files += 1
+            product_langs[lang] = product_langs.get(lang, 0) + n
 
     combined = sum(langs.values())
     return {
@@ -169,6 +202,9 @@ def measure(rev: str | None, *, include_untracked: bool = False) -> dict:
         "laboratory_LOC": subs.get("laboratory", 0),
         "test_LOC": test_loc,
         "runtime_LOC": runtime_loc,
+        "product_LOC": product_loc,
+        "product_files": product_files,
+        "product_by_language": dict(sorted(product_langs.items())),
         "generated_LOC": buckets.get("generated", 0),
         "archived_LOC": buckets.get("archived", 0),
         "vendored_LOC": buckets.get("vendored", 0),
@@ -212,6 +248,7 @@ def main() -> int:
     r = result
     print(f"rev {r['rev']}  ({r['commit'][:12]})")
     print(f"combined active LOC: {r['combined_active_monorepo_LOC']:,}  in {r['active_files']:,} files")
+    print(f"minimum product LOC: {r['product_LOC']:,}  in {r['product_files']:,} files")
     for k, v in r["by_language"].items():
         print(f"  {k:<12} {v:>9,}")
     print("subsystem:")
@@ -238,6 +275,11 @@ def _selfcheck() -> None:
     assert is_test("workspace/quality/tests/fixtures/test_x.py")
     assert is_test("tools/condense/tests/test_x.py")
     assert not is_test("crates/hawking-core/src/lib.rs")
+    assert is_product("crates/hawking-core/src/lib.rs")
+    assert is_product("hcli/engine.py")
+    assert is_product("hcli/agentos/vmcp/file_eye.py")
+    assert not is_product("crates/hawking-core/examples/flash_fast_chain.rs")
+    assert not is_product("research/lab/runtime.py")
     print("selfcheck ok")
 
 

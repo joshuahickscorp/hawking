@@ -250,7 +250,7 @@ def inventory(n: int, include_cold: bool) -> list[dict[str, Any]]:
             "bench-q4k-shapes --iters 50 (no model)", unit="us")
 
     add("kernel.bench_kernel_dispatch", "kernel", "unavailable",
-        "hawking bench-kernel not on CLI (extracted to hawking-bench pack); use bench-q4k-shapes")
+        "hawking bench-kernel is not on the CLI; use bench-q4k-shapes")
     add("transform.gravity_format_selftest_s", "transform",
         "measurable" if fmt.is_file() else "unavailable",
         "artifact_client performance-smoke (equal-work vs old gravity_format selftest)"
@@ -540,7 +540,7 @@ def cap_transform(n: int) -> list[dict[str, Any]]:
 
 def cap_kernel(n: int) -> list[dict[str, Any]]:
     out = [metric("kernel.bench_kernel_dispatch", "kernel", "unavailable",
-                  "hawking bench-kernel not on CLI (extracted to hawking-bench pack)")]
+                  "hawking bench-kernel is not on the CLI; use bench-q4k-shapes")]
     b = find_hawking_bin()
     mok, mwhy = metal_ok(b)
     if not mok:

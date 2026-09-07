@@ -21,6 +21,10 @@ pub const QWEN38_LAYERS: usize = 64;
 pub const QWEN38_DELTANET_LAYERS: usize = 48;
 pub const QWEN38_GQA_LAYERS: usize = 16;
 pub const QWEN38_FULL_ATTENTION_INTERVAL: usize = 4;
+/// Prefill GEMM / mixer chunk. Matches the MMA N-tile and the GDN scan
+/// chunk used by `qwen38_prefill_*` kernels. Not a free parameter: a C×C
+/// fp32 tile at 128 exceeds Metal's 32 KiB threadgroup memory.
+pub const QWEN38_PREFILL_CHUNK: usize = 64;
 pub const QWEN38_HIDDEN: usize = 5_120;
 pub const QWEN38_INTERMEDIATE: usize = 17_408;
 /// Threadgroups for the two-pass argmax. 240 = four waves over 60 GPU cores.
@@ -151,9 +155,7 @@ pub fn qwen38_accept_config(config: &Value) -> Result<Qwen38AcceptedConfig> {
             )));
         }
         _ => {
-            return Err(Error::Model(
-                "qwen38 config is missing model_type".into(),
-            ));
+            return Err(Error::Model("qwen38 config is missing model_type".into()));
         }
     }
     let text = config.get("text_config").unwrap_or(config);
@@ -494,6 +496,7 @@ mod tests {
         assert_eq!(qwen38_deltanet_state_slot(62).unwrap(), 47);
         assert_eq!(qwen38_gqa_state_slot(3).unwrap(), 0);
         assert_eq!(qwen38_gqa_state_slot(63).unwrap(), 15);
+        assert_eq!(QWEN38_PREFILL_CHUNK, 64);
     }
 
     #[test]

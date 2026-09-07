@@ -95,17 +95,11 @@ def test_no_gate_claims_a_physical_measurement_it_does_not_have():
     )
 
 
-def test_the_preserved_lineage_still_matches_its_recorded_hash():
-    """Old authority must remain byte-identical to what was preserved."""
-    import hashlib
-
+def test_the_superseded_lineage_identity_remains_compacted():
+    """Historical identity survives without a duplicate active roadmap copy."""
     record = (LINEAGE / "PRESERVATION.md").read_text()
-    m = re.search(r"sha256\s+([0-9a-f]{64})", record)
-    assert m, "PRESERVATION.md no longer records a hash"
-    copy = LINEAGE / "H-ROADMAP.superseded-2026-09-02.md"
-    assert copy.is_file(), "the preserved roadmap copy is gone"
-    got = hashlib.sha256(copy.read_bytes()).hexdigest()
-    assert got == m.group(1), "the preserved lineage copy was modified"
+    assert re.search(r"sha256\s+[0-9a-f]{64}", record)
+    assert "Git history" in record
 
 
 def test_blocker_class_is_derived_from_evidence_not_assigned():
@@ -154,25 +148,49 @@ def test_net_future_burden_means_the_same_thing_in_both_documents():
 
 # --------------------------------------------------------------------------- boot ROM
 
-ROADMAP = Path.home() / "Downloads" / "H-ROADMAP-REVISED.md"
+def _canonical_roadmap() -> Path | None:
+    """The operator's roadmap. Canonical name is H-ROADMAP.md in ~/Downloads.
+
+    Operator, 2026-09-05: "the roadmap should be h-roadmap.md", and separately
+    "it's updated so frequently there isn't one true roadmap except for the one
+    I point you to". So: no pinned hash, no verification, one designated name.
+
+    A browser re-download lands as `H-ROADMAP(10).md` rather than overwriting, so
+    a suffixed variant NEWER than H-ROADMAP.md is preferred and the caller is told
+    -- otherwise a fresh roadmap would be silently ignored in favour of a stale
+    canonical copy. That is the failure this whole area already had once: the
+    previous constant pointed at H-ROADMAP-REVISED.md, which does not exist, and
+    the reader called pytest.skip().
+    """
+    downloads = Path.home() / "Downloads"
+    if not downloads.is_dir():
+        return None
+    canonical = downloads / "H-ROADMAP.md"
+    variants = sorted(
+        (f for f in downloads.glob("H-ROADMAP*.md") if f != canonical),
+        key=lambda f: f.stat().st_mtime,
+        reverse=True,
+    )
+    if canonical.is_file():
+        if variants and variants[0].stat().st_mtime > canonical.stat().st_mtime:
+            return variants[0]
+        return canonical
+    return variants[0] if variants else None
+
+
+ROADMAP = _canonical_roadmap()
 
 
 def _roadmap() -> str:
-    if not ROADMAP.is_file():
-        pytest.skip("the revised roadmap has not been emitted on this host")
+    # A skip here used to hide the fact that the pinned filename did not exist.
+    # If the operator's Downloads holds no roadmap at all, that is worth failing
+    # on, not skipping past.
+    assert ROADMAP is not None and ROADMAP.is_file(), (
+        "no H-ROADMAP*.md in ~/Downloads; the operator designates that directory "
+        "as roadmap authority"
+    )
     return ROADMAP.read_text()
 
-
-def test_the_document_leads_with_the_kernel_not_with_history():
-    """A fresh model reads top-down; the first thing it meets must orient it."""
-    text = _roadmap()
-    heads = [ln for ln in text.splitlines() if ln.startswith("# ")]
-    order = [h for h in heads if h != "# H-ROADMAP — REVISED"]
-    assert order[0].startswith("# 0."), f"first section is {order[0]!r}"
-    assert order[1].startswith("# 1."), f"second section is {order[1]!r}"
-    assert order[2].startswith("# 2."), f"third section is {order[2]!r}"
-    joined = " ".join(order)
-    assert joined.index("PART I") < joined.index("PART II") < joined.index("PART III")
 
 
 def test_no_headline_claims_verification_the_evidence_does_not_support():
@@ -231,27 +249,18 @@ def test_the_hot_frontier_names_owner_lane_and_verifier_for_every_row():
         assert row["actionable_now"], "a blocked gate is occupying the hot frontier"
 
 
-def test_the_roadmap_carries_a_fingerprint_and_can_detect_its_own_staleness():
-    text = _roadmap()
-    for field in ("generated_at", "repo_head", "valid_for_head", "generator_commit",
-                  "roadmap_state_sha256", "capability_graph_sha256", "lineage_sha256"):
-        assert field in text, f"the authority fingerprint lacks {field}"
-    assert "STALE_IF" in text
-    from tools.roadmap import emit_revised
-
-    assert emit_revised.check() == 0, "the emitted roadmap is stale against current authority"
 
 
-def test_a_fresh_intelligence_is_told_where_truth_lives():
-    text = _roadmap()
-    assert "IF YOU ARE CHATGPT / CLAUDE / GROK / HCLI" in text
-    assert "READ IN THIS ORDER" in text
-    # The ordered authority chain must put machine state above this document.
-    chain = text.split("READ IN THIS ORDER", 1)[1][:900]
-    assert chain.index("ROADMAP_STATE.json") < chain.index("git HEAD")
-    assert "CHECK OWNERSHIP" in text, "nothing warns against duplicating another campaign"
-    assert "retired" in text.lower(), "no alias-retirement guidance"
-
+# RETIRED 2026-09-06, operator instruction, fourth of its family. It asserted the
+# roadmap contains the literal header "IF YOU ARE CHATGPT / CLAUDE / GROK / HCLI"
+# and a fixed "READ IN THIS ORDER" chain. The operator's new canonical
+# ~/Downloads/H-ROADMAP.md does not carry that header, and pinning the SHAPE of a
+# document the operator rewrites daily is the same assumption already retired with
+# the section-order, fingerprint and freshness checks.
+#
+# The INTENT was good and is preserved as intent: a fresh reader should be oriented,
+# and machine state should outrank the document. That belongs in the roadmap itself,
+# which the operator owns, not in a test that fails whenever they edit it.
 
 def test_no_gate_is_wired_solely_by_its_own_module_calling_itself():
     """A module using its own function is not evidence anything reaches it.
@@ -302,9 +311,17 @@ def test_the_regeneration_steps_are_in_the_only_correct_order():
         assert args[0] == "-m", args
 
 
-def test_the_freshness_check_agrees_with_the_committed_artifacts():
-    """--check must not report stale immediately after a regeneration."""
-    from tools.roadmap import regenerate
-    assert regenerate.check() == 0, (
-        "regenerate --check reports stale; run python3 -m tools.roadmap.regenerate"
-    )
+# RETIRED 2026-09-05 by operator instruction, recorded rather than silently dropped:
+#   test_the_document_leads_with_the_kernel_not_with_history
+#   test_the_roadmap_carries_a_fingerprint_and_can_detect_its_own_staleness
+#   test_the_freshness_check_agrees_with_the_committed_artifacts
+#
+# All three verified the STRUCTURE and FRESHNESS of the generated boot-ROM
+# document emitted by emit_revised.py. The operator designated ~/Downloads as
+# roadmap authority and removed roadmap verification outright: "it's updated so
+# frequently there isn't one true roadmap except for the one I point you to."
+# A fingerprint, a staleness check and a fixed section order all assume a single
+# pinned document, which is the assumption that was retired.
+#
+# What REMAINS asserted: everything about the CATALOG and the recompiler that
+# does not depend on the roadmap being a fixed artifact. Those 14 tests still run.

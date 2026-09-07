@@ -306,7 +306,6 @@
       "metadata": {
         "controllers_restored_as_live": [
           "glm52_activation_aware_pack",
-          "glm52_activation_aware_pack_v2",
           "glm52_functional_gauntlet",
           "glm52_moe_student",
           "glm52_shard_probe",
@@ -342,7 +341,6 @@
           "glm52_functional_auction",
           "glm52_functional_cascade",
           "glm52_functional_controller",
-          "glm52_functional_gauntlet",
           "glm52_functional_integration",
           "glm52_functional_roofline",
           "glm52_functional_student",
@@ -353,7 +351,6 @@
           "glm52_lowrank",
           "glm52_maturity",
           "glm52_metric_correction",
-          "glm52_moe_student",
           "glm52_moe_student_fit",
           "glm52_notifications",
           "glm52_pilot",
@@ -371,7 +368,6 @@
           "glm52_runtime_parity_gate",
           "glm52_runtime_speed_gate",
           "glm52_schedule_freeze",
-          "glm52_shard_probe",
           "glm52_source_release",
           "glm52_teacher_rechain",
           "glm52_window_execution",

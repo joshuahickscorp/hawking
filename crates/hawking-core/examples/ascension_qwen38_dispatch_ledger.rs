@@ -230,10 +230,7 @@ fn generate_arm(
 }
 
 #[cfg(target_os = "macos")]
-fn probe_dispatches(
-    session: &mut Qwen38HybridDecodeSession,
-    token: u32,
-) -> Result<Value, String> {
+fn probe_dispatches(session: &mut Qwen38HybridDecodeSession, token: u32) -> Result<Value, String> {
     session.reset();
     let theoretical = session.theoretical_dispatches();
     let (sampled, dispatches, timing) = session
@@ -379,18 +376,10 @@ fn run(args: Args) {
         .unwrap_or_else(|e| fail(e));
     }
 
-    let parent_n = qwen38_fused_dispatches_per_token_ex(
-        Qwen38MlpFusion::GateUpSwiglu,
-        true,
-        true,
-        false,
-    );
-    let candidate_n = qwen38_fused_dispatches_per_token_ex(
-        Qwen38MlpFusion::GateUpSwiglu,
-        true,
-        true,
-        true,
-    );
+    let parent_n =
+        qwen38_fused_dispatches_per_token_ex(Qwen38MlpFusion::GateUpSwiglu, true, true, false);
+    let candidate_n =
+        qwen38_fused_dispatches_per_token_ex(Qwen38MlpFusion::GateUpSwiglu, true, true, true);
     let body = json!({
         "schema": "hawking.headless.dispatch_ledger_raw.v1",
         "generated_at": now_iso(),

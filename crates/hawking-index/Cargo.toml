@@ -41,5 +41,9 @@ path = "src/bin/hawking-index.rs"
 name = "hawking-artifact"
 path = "src/bin/hawking-artifact.rs"
 
+[[bin]]
+name = "hawking-index-query"
+path = "src/bin/hawking-index-query.rs"
+
 [dev-dependencies]
 tempfile = "3"

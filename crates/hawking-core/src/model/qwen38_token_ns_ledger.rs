@@ -11,11 +11,11 @@
 //! Residual is named. Silent zeros are a measurement bug.
 
 use super::qwen38_64_layer_execution_schedule::{
-    QWEN38_DENSE_MLP_SUFFIX_DISPATCHES, QWEN38_FULL_LAYER_DISPATCHES, QWEN38_MIXER_PREFIX_DISPATCHES,
-    QWEN38_TERMINAL_HEAD_KERNELS,
+    QWEN38_DENSE_MLP_SUFFIX_DISPATCHES, QWEN38_FULL_LAYER_DISPATCHES,
+    QWEN38_MIXER_PREFIX_DISPATCHES, QWEN38_TERMINAL_HEAD_KERNELS,
 };
 use super::qwen38_geometry::{
-    Qwen38DeltaNetLayout, QWEN38_DELTANET_LAYERS, QWEN38_GQA_HEAD_DIM, QWEN38_GQA_HEADS,
+    Qwen38DeltaNetLayout, QWEN38_DELTANET_LAYERS, QWEN38_GQA_HEADS, QWEN38_GQA_HEAD_DIM,
     QWEN38_GQA_KV_HEADS, QWEN38_GQA_LAYERS, QWEN38_HIDDEN, QWEN38_INTERMEDIATE, QWEN38_LAYERS,
     QWEN38_VOCAB,
 };
@@ -50,7 +50,8 @@ pub const REQUIRED_COMPONENTS: &[&str] = &[
 
 pub fn q4_matrix_bytes(rows: u64, cols: u64) -> u64 {
     let groups_per_row = cols.div_ceil(UNIFORM_Q4_GROUP_SIZE as u64);
-    rows.saturating_mul(groups_per_row).saturating_mul(Q4_BYTES_PER_GROUP)
+    rows.saturating_mul(groups_per_row)
+        .saturating_mul(Q4_BYTES_PER_GROUP)
 }
 
 pub fn production_dispatches_per_token() -> u64 {

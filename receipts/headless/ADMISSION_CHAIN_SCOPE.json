@@ -9,8 +9,8 @@
   "what_I_did": "relaxed QWEN30_REPOSITORY to an allowlist in qwen30_complete_runtime.rs, at 3 equality sites",
   "what_I_missed": "a SECOND repository binding inside the admission path: admission.model.source_repository(), which is bound to the QwenCompleteBinaryModel enum VARIANT, not to a string I relaxed",
   "sites": [
-   "crates/hawking-core/src/model/qwen_complete_binary/mod.rs:1564",
-   "crates/hawking-core/src/model/qwen_complete_binary/mod.rs:1626"
+   "crates/hawking-core/src/model/qwen_complete_binary/mod.rs:1635",
+   "crates/hawking-core/src/model/qwen_complete_binary/mod.rs:1697"
   ],
   "enum_variant_is_hardcoded": true,
   "consequence": "admission would still refuse model #2 on the repository, one layer below where I looked. Relaxing a constant is not the same as relaxing a binding."
@@ -57,8 +57,8 @@
  "pass": true,
  "CORRECTION_THE_PRODUCER_EXISTS": {
   "what_I_said_minutes_ago": "nothing in this repository emits the manifest the routed runtime admits",
-  "why_that_was_wrong": "I searched tools/ and receipts/ and did not search lab/. The qwen80 wrapper in tools/condense is 70 lines and imports CompleteBinaryGravity from lab.operators.",
-  "the_producer": "lab/operators/ascension_qwen30_complete_gravity.py",
+  "why_that_was_wrong": "I searched tools/ and receipts/ and did not search research/lab/. The qwen80 wrapper in tools/condense is 70 lines and imports CompleteBinaryGravity from lab.operators.",
+  "the_producer": "research/lab/operators/ascension_qwen30_complete_gravity.py",
   "lines": 1895,
   "emits": {
    "manifest": "hawking.ascension.qwen30_complete_binary_gravity.v1",

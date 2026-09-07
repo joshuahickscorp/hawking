@@ -120,15 +120,16 @@ const SURFACE: [SurfaceEndpoint; 15] = [
     },
     SurfaceEndpoint {
         endpoint: "ACP",
-        status: EndpointStatus::Partial,
-        entry_path: "crates/hide-acp (DeferredTurnHandler / capability negotiate)",
+        status: EndpointStatus::NotImplemented,
+        entry_path: "deferred VMCP boundary (no active ACP server)",
         tests: &[],
     },
     SurfaceEndpoint {
-        endpoint: "SDK Transport -> hide-serve",
+        endpoint: "SDK Transport -> HCLI",
         status: EndpointStatus::NotImplemented,
-        entry_path: "crates/hide-sdk/src/client.rs (MockTransport only; real transport deferred)",
-        tests: &["crates/hide-sdk/tests/client.rs"],
+        entry_path:
+            "hide-protocol::sdk::client::Transport (MockTransport only; real transport deferred)",
+        tests: &["crates/hide-protocol/tests/sdk_golden.rs"],
     },
 ];
 

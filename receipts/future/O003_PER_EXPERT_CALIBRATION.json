@@ -1,0 +1,82 @@
+{
+ "specimen": "O003",
+ "date": "2026-09-06",
+ "measured_by": "Claude directly",
+ "experiment": "Three scale-fitting objectives for 1-bit experts at IDENTICAL byte cost: plain mean|W|; pooled activation moments; per-EXPERT activation moments accumulated by routed expert id.",
+ "arms": [
+  {
+   "group": "g128",
+   "complete_ebpw": 1.4187604971899312,
+   "arm": "uncalibrated",
+   "ppl": 12.2917,
+   "ppl_delta_vs_uncal_pct": 0.0,
+   "cosine": 0.7994817535303975,
+   "magnitude_ratio": 0.7994817529461875,
+   "median_4gram": 0.8925,
+   "capability_ok": false
+  },
+  {
+   "group": "g128",
+   "complete_ebpw": 1.4187604971899312,
+   "arm": "pooled-cal",
+   "ppl": 12.5221,
+   "ppl_delta_vs_uncal_pct": 1.87,
+   "cosine": 0.7970431544520048,
+   "magnitude_ratio": 0.8024640582044813,
+   "median_4gram": 0.9032,
+   "capability_ok": false
+  },
+  {
+   "group": "g128",
+   "complete_ebpw": 1.4187604971899312,
+   "arm": "PER-EXPERT-cal",
+   "ppl": 11.414,
+   "ppl_delta_vs_uncal_pct": -7.14,
+   "cosine": 0.7846685702111309,
+   "magnitude_ratio": 0.791693986594291,
+   "median_4gram": 0.9032,
+   "capability_ok": false
+  },
+  {
+   "group": "g64",
+   "complete_ebpw": 1.528426144814053,
+   "arm": "uncalibrated",
+   "ppl": 12.2678,
+   "ppl_delta_vs_uncal_pct": 0.0,
+   "cosine": 0.8012566886093581,
+   "magnitude_ratio": 0.8012566886093581,
+   "median_4gram": 0.9333,
+   "capability_ok": false
+  },
+  {
+   "group": "g64",
+   "complete_ebpw": 1.528426144814053,
+   "arm": "pooled-cal",
+   "ppl": 12.3965,
+   "ppl_delta_vs_uncal_pct": 1.05,
+   "cosine": 0.7991280532413696,
+   "magnitude_ratio": 0.8039411128710603,
+   "median_4gram": 0.9333,
+   "capability_ok": false
+  },
+  {
+   "group": "g64",
+   "complete_ebpw": 1.528426144814053,
+   "arm": "PER-EXPERT-cal",
+   "ppl": 11.0054,
+   "ppl_delta_vs_uncal_pct": -10.29,
+   "cosine": 0.7849146768145724,
+   "magnitude_ratio": 0.7950375413732904,
+   "median_4gram": 0.9032,
+   "capability_ok": false
+  }
+ ],
+ "RESULT_the_diagnosis_was_correct": "Per-expert calibration beats BOTH the uncalibrated baseline and the pooled version: ppl -7.1% at g128 (12.292 -> 11.414) and -10.3% at g64 (12.268 -> 11.005), while pooled was WORSE than uncalibrated (+1.9%, +1.0%). The predicted cause of the pooled failure -- a statistic shared across all 64 experts weighting a parameter fitted per expert -- is confirmed by fixing exactly that and recovering the win. Activation-awareness works here; POOLING was the defect.",
+ "FALSIFIES_MY_OWN_COSINE_HYPOTHESIS_AS_A_QUALITY_RANKING": "Per-expert calibration LOWERS weight-space cosine while IMPROVING perplexity: 0.7995 -> 0.7847 with ppl 12.292 -> 11.414 at g128, and 0.8013 -> 0.7849 with ppl 12.268 -> 11.005 at g64. Cosine and capability move in OPPOSITE directions. That is expected in hindsight -- an activation-weighted fit deliberately trades weight-space fidelity for function-space fidelity -- but it kills any use of cosine as a monotone proxy for representation QUALITY. It survives only as a coarse PASS/FAIL screen across classes, which is a much weaker claim than the one I recorded, and it is the weight-space-proxy trap this project has hit before.",
+ "STILL_NOWHERE_NEAR_THE_GATE": "Best per-expert arm is ppl 11.005 against a gate of 3.617 and a bf16 reference of 2.894, with median 4-gram 0.9032 against 0.0538. A 10% improvement on a number that must fall by 3.8x is real evidence about mechanism and not progress toward the target.",
+ "CAVEATS": [
+  "1024 calibration tokens; per-expert counts are therefore thin for rarely-routed experts (64 experts, top-6, so each expert sees roughly 9.4% of token-slots).",
+  "Diagonal E[xx^T] only. No correlation structure, no error feedback, no iterative refit.",
+  "ppl is a deterministic single forward pass, so these deltas carry no run-to-run noise, unlike the TPS figures elsewhere in this campaign."
+ ]
+}

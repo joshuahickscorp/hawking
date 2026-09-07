@@ -136,3 +136,31 @@ def test_a_referenced_file_the_unit_never_re_mentions_is_still_shown():
         "the goal's own referenced_files named the target and the packet still "
         f"could not show it: {packet.evidence_paths!r}"
     )
+
+
+def test_implementation_source_is_first_when_engine_and_test_are_declared():
+    unit = WorkUnit(
+        id="implement.followup.2",
+        role="implementation",
+        description=(
+            "Use hcli/test_engine_tool_loop.py to prove the next executable "
+            "step in hcli/engine.py."
+        ),
+    )
+    packet = compile_worker_context(
+        unit,
+        {
+            "goal": "build FrontierEngine",
+            "invariants": [],
+            "acceptance_criteria": [],
+            "referenced_files": [
+                "hcli/engine.py",
+                "hcli/test_engine_tool_loop.py",
+            ],
+        },
+        phase="running",
+        units={},
+        steering=[],
+        root_goal="build FrontierEngine",
+    )
+    assert packet.evidence_paths[0] == "hcli/engine.py"

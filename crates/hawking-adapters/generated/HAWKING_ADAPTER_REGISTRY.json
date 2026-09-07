@@ -355,9 +355,9 @@
         },
         "parity_evidence": [
           {
-            "claim": "M04_SEALED: Rust adapter vs oracle on real flagship .gravity shards",
+            "claim": "GLM adapter receipt; parity remains bounded",
             "kind": "small_checkpoint_run",
-            "path": "research/evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json"
+            "path": "adapters/receipts/ADAPTER_GLM_RECEIPT.json"
           },
           {
             "claim": "GravityEngine dispatches glm_moe_dsa",
@@ -430,9 +430,9 @@
       "display_name": "GLM (gravity glm_moe_dsa)",
       "evidence": [
         {
-          "claim": "M04_SEALED: Rust adapter vs oracle on real flagship .gravity shards",
+          "claim": "GLM adapter receipt; parity remains bounded",
           "kind": "small_checkpoint_run",
-          "path": "research/evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json"
+          "path": "adapters/receipts/ADAPTER_GLM_RECEIPT.json"
         },
         {
           "claim": "GravityEngine dispatches glm_moe_dsa",
@@ -502,9 +502,9 @@
         },
         "parity_evidence": [
           {
-            "claim": "synthetic CPU reference + bound real-source metal K1 twin",
+            "claim": "Kimi source registry entry; adapter twin remains synthetic and not serve-registered",
             "kind": "synthetic_parity",
-            "path": "research/evidence/kimi-k26/KIMI_K26_ADAPTER_TWIN.json"
+            "path": "workspace/campaign/odyssey/watch-manifests/moonshotai--Kimi-K3@9f62e4e9fffb.json"
           },
           {
             "claim": "load_engine has no kimi arch arm (not serve-registered)",
@@ -567,9 +567,9 @@
       "display_name": "Kimi K2.x",
       "evidence": [
         {
-          "claim": "synthetic CPU reference + bound real-source metal K1 twin",
+          "claim": "Kimi source registry entry; adapter twin remains synthetic and not serve-registered",
           "kind": "synthetic_parity",
-          "path": "research/evidence/kimi-k26/KIMI_K26_ADAPTER_TWIN.json"
+          "path": "workspace/campaign/odyssey/watch-manifests/moonshotai--Kimi-K3@9f62e4e9fffb.json"
         },
         {
           "claim": "load_engine has no kimi arch arm (not serve-registered)",
@@ -787,9 +787,9 @@
         },
         "parity_evidence": [
           {
-            "claim": "family listed in bridge archaeology; no serve path found",
+            "claim": "fabrication-control receipt; MiniMax remains declared and has no serve path",
             "kind": "description",
-            "path": "research/evidence/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md"
+            "path": "workspace/campaign/evidence/systems/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md"
           }
         ],
         "positional_encoding": {
@@ -844,9 +844,9 @@
       "display_name": "MiniMax",
       "evidence": [
         {
-          "claim": "family listed in bridge archaeology; no serve path found",
+          "claim": "fabrication-control receipt; MiniMax remains declared and has no serve path",
           "kind": "description",
-          "path": "research/evidence/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md"
+          "path": "workspace/campaign/evidence/systems/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md"
         }
       ],
       "executes": false,

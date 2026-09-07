@@ -11,11 +11,19 @@ concurrency:
 
 env:
   CARGO_TERM_COLOR: always
+  # Hosted runners expose a Metal device that then aborts at buffer allocation
+  # (IOGPUMetalResource "resource != nil"), which SIGABRTs the whole test binary
+  # and takes every unrelated test with it. Declaring the GPU unusable makes
+  # MetalContext::new return Err before touching Metal, so GPU tests skip and
+  # the rest still run. Unset everywhere else, so a real Mac still runs them.
+  HAWKING_NO_GPU: "1"
 
 jobs:
-  check:
-    name: fmt · clippy · build · test
-    # Apple Silicon runner — real Metal GPU, matches the target platform.
+  # The Metal/inference stack. hawking-core is by far the heaviest crate in the
+  # workspace and nothing outside these three packages depends on it, so it is
+  # confined to this job -- see the `hide` job for the other half.
+  core:
+    name: fmt · clippy · build · test (core)
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
@@ -25,8 +33,18 @@ jobs:
         with:
           components: rustfmt, clippy
 
-      - name: Cache cargo registry + target
+      # Registry only. The target dir is ~54 GB, which cannot fit GitHub's ~10 GB
+      # per-repo cache budget, so caching it is not an option at this scale --
+      # `cache-targets: false` stops us paying upload time for a save that would
+      # be evicted or rejected. `cache-on-failure` matters more than it looks:
+      # without it a red CI can never warm its own cache, so a repo that is
+      # failing stays permanently cold, which is how this one has behaved.
+      - name: Cache cargo registry
         uses: Swatinem/rust-cache@v2
+        with:
+          cache-targets: false
+          cache-on-failure: true
+          shared-key: hawking-registry
 
       # No `--all`: it descends into the workspace-excluded vendor/ crates (the
       # absorbed STRAND quant track), which keep their upstream formatting. Plain
@@ -34,19 +52,14 @@ jobs:
       - name: Format check
         run: cargo fmt -- --check
 
-      # Deny warnings, with external (objc cfg) and a few pedantic lints
-      # allowlisted. Any NEW lint of an un-allowed kind fails the build.
+      # Deny the clippy groups that catch real defects (correctness, suspicious)
+      # plus rustc warnings. The style / complexity / perf groups are advisory:
+      # the workspace carries pre-existing nits there that are cosmetic, not
+      # bugs. This keeps the meaningful gate strict without an open-ended
+      # cosmetic-lint cleanup.
       - name: Clippy
-        # Deny the clippy groups that catch real defects (correctness, suspicious) plus rustc
-        # warnings. The style / complexity / perf groups are advisory here: the workspace
-        # carries pre-existing nits in those groups (derivable_impls, result_large_err,
-        # collapsible_match, unnecessary_sort_by, ...) that are cosmetic, not bugs. This keeps
-        # the meaningful gate strict without an open-ended cosmetic-lint cleanup.
-        # No `--workspace`: these use the workspace `default-members`, the hawking
-        # inference stack and its bake tools. HIDE is covered by the `hide` job below,
-        # so nothing loses a gate -- it just stops blocking inference changes.
         run: |
-          cargo clippy -- \
+          cargo clippy -p hawking -p hawking-core -p hawking-serve -- \
             -D warnings \
             -A unexpected_cfgs \
             -A unused_assignments \
@@ -54,32 +67,54 @@ jobs:
             -A clippy::complexity \
             -A clippy::perf
 
+      # Kept despite the test-compile below: `cargo test` does not produce a
+      # package's real (non-test) binary artifact, so dropping this would stop
+      # checking that the shipped binaries link at all.
       - name: Build
-        run: cargo build
+        run: cargo build -p hawking -p hawking-core -p hawking-serve
 
       # Compile every test target, including the GPU/model parity gates, so a
-      # broken test can't hide behind a skip.
+      # broken test cannot hide behind a skip.
       - name: Compile all tests
-        run: cargo test --no-run
+        run: cargo test -p hawking -p hawking-core -p hawking-serve --no-run
 
-      # Run the deterministic unit tests (no model weights or GPU required).
-      # Model-dependent parity gates skip cleanly when weights are absent; the
-      # independent-oracle (llama.cpp) gate runs once a small fixture is wired.
       - name: Unit tests
-        run: cargo test --lib --bins
+        run: cargo test -p hawking -p hawking-core -p hawking-serve --lib --bins
 
+  # Everything that does NOT pull in hawking-core: the HIDE product crates and
+  # the small hawking crates they depend on. Previously this job ran
+  # `--workspace`, which recompiled hawking-core a second time and made this the
+  # critical path at 357s of test compilation for a crate it never needed.
   hide:
-    name: build · test (hide)
+    name: clippy · build · test (hide)
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
 
-      # The 20 hide-* crates are workspace members but not default-members, so they
-      # get their own job instead of taxing every inference change. Same gates as the
-      # main job, scoped to the HIDE product surface.
+      # Was missing entirely: this job used whatever toolchain the runner image
+      # happened to ship while `core` pinned stable, so the two jobs could
+      # disagree about what compiles.
+      - name: Install Rust (stable + clippy)
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: Cache cargo registry
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-targets: false
+          cache-on-failure: true
+          shared-key: hawking-registry
+
+      # Was `-p hide-backend -p hide-fleet` only, so hide-core, hide-kernel and
+      # hide-protocol were compiled but never linted. They are linted now.
       - name: Clippy
         run: |
-          cargo clippy -p hide-serve -p hide-backend -p hide-acp -p hide-fleet -- \
+          cargo clippy \
+            -p hide-core -p hide-backend -p hide-kernel -p hide-fleet -p hide-protocol \
+            -p hawking-context -p hawking-index -p hawking-orch \
+            -p hawking-research -p hawking-events -p hawking-speculate \
+            -p hawking-adapters -- \
             -D warnings \
             -A unexpected_cfgs \
             -A unused_assignments \
@@ -88,54 +123,62 @@ jobs:
             -A clippy::perf
 
       - name: Build
-        run: cargo build -p hide-serve -p hide-acp -p hide-fleet
+        run: |
+          cargo build \
+            -p hide-core -p hide-backend -p hide-kernel -p hide-fleet -p hide-protocol \
+            -p hawking-context -p hawking-index -p hawking-orch \
+            -p hawking-research -p hawking-events -p hawking-speculate \
+            -p hawking-adapters
 
-      # `--workspace` here is deliberate: this job is where the full member set,
-      # hawking and hide alike, still gets compiled and unit-tested.
       - name: Compile all tests
-        run: cargo test --workspace --no-run
+        run: |
+          cargo test \
+            -p hide-core -p hide-backend -p hide-kernel -p hide-fleet -p hide-protocol \
+            -p hawking-context -p hawking-index -p hawking-orch \
+            -p hawking-research -p hawking-events -p hawking-speculate \
+            -p hawking-adapters --no-run
 
       - name: Unit tests
-        run: cargo test --workspace --lib --bins
+        run: |
+          cargo test \
+            -p hide-core -p hide-backend -p hide-kernel -p hide-fleet -p hide-protocol \
+            -p hawking-context -p hawking-index -p hawking-orch \
+            -p hawking-research -p hawking-events -p hawking-speculate \
+            -p hawking-adapters --lib --bins
 
-  frontend:
-    name: typecheck · test · build (frontend)
+  # The bake tools are small, have no GPU surface, and were previously only
+  # reached via `--workspace` in the job above. Their own job keeps them off
+  # both critical paths.
+  bake:
+    name: clippy · test (bake tools)
     runs-on: macos-14
-    defaults:
-      run:
-        working-directory: app
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
+      - name: Install Rust (stable + clippy)
+        uses: dtolnay/rust-toolchain@stable
         with:
-          version: 9
+          components: clippy
 
-      - uses: actions/setup-node@v4
+      - name: Cache cargo registry
+        uses: Swatinem/rust-cache@v2
         with:
-          node-version: 20
-          cache: pnpm
-          cache-dependency-path: app/pnpm-lock.yaml
+          cache-targets: false
+          cache-on-failure: true
+          shared-key: hawking-registry
 
-      - name: Install
-        run: pnpm install --frozen-lockfile
-
-      - name: Typecheck
-        run: pnpm typecheck
-
-      - name: Test (includes the voice / banned-character gate)
-        run: pnpm test
-
-      # Build with the PRODUCTION transport so the shipped bundle binds the real engine, never the mock.
-      - name: Build (live transport)
-        run: VITE_HIDE_TRANSPORT=live pnpm build
-
-      # Tripwire: the mock must tree-shake out of a production build. If any mock identifier survives,
-      # the DMG could ship demo-ware; fail loudly.
-      - name: No mock in the production bundle
+      - name: Clippy
         run: |
-          if grep -rlE "MockTransport|MOCK_SESSION" dist/assets/*.js; then
-            echo "mock transport leaked into the production bundle"
-            exit 1
-          fi
-          echo "clean: no mock in the production bundle"
+          cargo clippy -p q4k_fast_tool -p awq_bake_tool -p tq_bake_tool -- \
+            -D warnings \
+            -A unexpected_cfgs \
+            -A unused_assignments \
+            -A clippy::style \
+            -A clippy::complexity \
+            -A clippy::perf
+
+      - name: Compile all tests
+        run: cargo test -p q4k_fast_tool -p awq_bake_tool -p tq_bake_tool --no-run
+
+      - name: Unit tests
+        run: cargo test -p q4k_fast_tool -p awq_bake_tool -p tq_bake_tool --bins

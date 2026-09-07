@@ -263,10 +263,6 @@ def gemm(w: np.ndarray, x: np.ndarray) -> np.ndarray:
         return x @ w.T
 
 
-def mean_or_none(xs: list[float]) -> float | None:
-    return float(np.mean(xs)) if xs else None
-
-
 # ---------------------------------------------------------------------------
 # StateGenome — sizes from the workspace formula / PREFILL_KV
 # ---------------------------------------------------------------------------

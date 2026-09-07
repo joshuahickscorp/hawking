@@ -243,3 +243,43 @@ def test_main_calls_index_symbols():
     assert "out = update_lake_specimen(" in src
     assert "out = lake_index(" in src
     assert "out = express_lineage(" in src
+
+
+# --- execution-class size tiering (operator decision 2026-09-05) ----------
+
+def test_size_tier_for_boundaries():
+    gib = 1024 ** 3
+    assert lin.size_tier_for(0) == "A_TINY"
+    assert lin.size_tier_for(8 * gib) == "A_TINY"
+    assert lin.size_tier_for(8 * gib + 1) == "B_MID"
+    assert lin.size_tier_for(40 * gib) == "B_MID"
+    assert lin.size_tier_for(40 * gib + 1) == "C_LARGE"
+    assert lin.size_tier_for(80 * gib) == "C_LARGE"
+    assert lin.size_tier_for(80 * gib + 1) == "D_GIANT"
+    assert lin.size_tier_for(2_000 * gib) == "D_GIANT"
+
+
+def test_deferred_giants_are_named_and_ineligible():
+    """Exactly the three operator-named giants, each with its own reason."""
+    assert len(lin.DEFERRED_GIANTS) == 3
+    for repo in (
+        "moonshotai/Kimi-K3",
+        "thinkingmachines/Inkling-Small",
+        "windowsxp811203/Qwen3.8-Flash-Next-Abliterated",
+    ):
+        assert repo in lin.DEFERRED_GIANTS
+        assert lin.DEFERRED_GIANTS[repo]
+        assert lin.execution_eligible_for(repo) is False
+        assert lin.deferred_reason_for(repo)
+
+
+def test_non_deferred_specimen_is_eligible():
+    assert lin.execution_eligible_for("Qwen/Qwen3-0.6B") is True
+    assert lin.deferred_reason_for("Qwen/Qwen3-0.6B") is None
+
+
+def test_deferred_does_not_mean_dropped():
+    """The operator's distinction -- deferred, not dropped -- is in the code."""
+    note = lin.DEFERRED_NOTE.lower()
+    assert "not" in note and "dropped" in note
+    assert "census" in note and "later pass" in note

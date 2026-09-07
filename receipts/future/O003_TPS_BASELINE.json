@@ -1,0 +1,40 @@
+{
+ "specimen": "O003",
+ "model": "moonshotai/Kimi-VL-A3B-Instruct",
+ "revision": "398eede0903cd983a2bfa0cc634e9ac1d843f375",
+ "host": "M3 Ultra 96GB, MLX Metal",
+ "runtime": "mlx_lm, bf16 as shipped, no quantization",
+ "measured_by": "Claude directly (not HCLI, not a model claim)",
+ "date": "2026-09-06",
+ "BASELINE_TPS": {
+  "decode_tok_s": 69.97,
+  "decode_method": "marginal (80-16)/(w80-w16), min of 2 repeats, mlx_lm.generate",
+  "prefill_tok_s_marginal_576_64": 2502.07,
+  "prefill_tok_s_marginal_1024_256": 2755.92,
+  "prefill_tok_s_absolute_1024": 2287.49,
+  "prefill_method": "marginal two-point on real logits, min of 3, mx.eval(y) not a decoy",
+  "prefill_walls_ms": {
+   "64": 104.1,
+   "256": 169.0,
+   "576": 308.8,
+   "1024": 447.7
+  },
+  "agreement": "two disjoint marginal windows agree to 10%; walls repeat to ~1%"
+ },
+ "RESIDENCY": {
+  "active_gb": 29.73,
+  "peak_gb": 31.46,
+  "load_wall_s": 5.66,
+  "note": "active 29.73GB vs 32.82GB on disk: mmap, not all pages resident"
+ },
+ "BYTES": {
+  "total": 32815315552,
+  "expert_organ": 28789702656,
+  "expert_frac": 0.8773,
+  "bf16_bytes_per_param_equiv": 16.0,
+  "decode_bytes_per_token_upper_bound": "NOT MEASURED - dispatch/traffic counters still open (G008)"
+ },
+ "WHY_THIS_MATTERS": "S006: TPS is the only terminal metric that correlates. Before this receipt NO file in the corpus recorded TPS for any specimen. Every EBPW claim was byte-arithmetic with no execution anchor. 69.97 tok/s decode at 16.0 bpw is the denominator every NR/NX candidate must beat.",
+ "FALSIFIED_THIS_RUN": "First prefill attempt reported 7,061,969 tok/s. mx.eval was called on mx.zeros(1) instead of the model output, so MLX's lazy graph was timed at construction, not execution. A timing harness that never forces its own result measures nothing. Discriminator: logits shape (1,64,163840) now proves the vocab head ran.",
+ "NEGATIVE_CONTROL": "n=64 prefill wall is 104.1ms; if the graph were still lazy it would be sub-millisecond as it was before the fix. The 68x jump between the broken and fixed harness IS the control."
+}

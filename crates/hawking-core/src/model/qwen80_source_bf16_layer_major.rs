@@ -1284,12 +1284,11 @@ pub fn gemv_f32_rows(
 }
 
 #[derive(Clone, Debug)]
-struct TensorLoc {
+pub(crate) struct TensorLoc {
     shard: PathBuf,
     data_offset: u64,
     nbytes: usize,
     shape: Vec<usize>,
-    dtype: String,
 }
 
 /// Index over the source BF16 safetensors shards. Headers only; payloads range-read.
@@ -1362,7 +1361,6 @@ impl SourceBf16Index {
                         data_offset: 8 + header_len + begin,
                         nbytes,
                         shape: info.shape.clone(),
-                        dtype: info.dtype.clone(),
                     },
                 );
             }
@@ -1383,7 +1381,7 @@ impl SourceBf16Index {
         *self.bytes_read.lock().unwrap_or_else(|e| e.into_inner())
     }
 
-    pub fn require(&self, name: &str) -> Result<&TensorLoc> {
+    pub(crate) fn require(&self, name: &str) -> Result<&TensorLoc> {
         self.map
             .get(name)
             .ok_or_else(|| model_err(format!("source index lacks tensor {name}")))
@@ -1427,7 +1425,9 @@ impl SourceBf16Index {
             .ok_or_else(|| model_err(format!("shard offset overflow for tensor {name}")))?;
         slice.nbytes = len;
         let mut buf = Vec::with_capacity(len);
-        unsafe { buf.set_len(len); }
+        unsafe {
+            buf.set_len(len);
+        }
         self.read_raw_into(&slice, name, &mut buf)?;
         Ok(buf)
     }

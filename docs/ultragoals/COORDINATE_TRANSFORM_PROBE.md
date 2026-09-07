@@ -6,8 +6,9 @@ not necessarily the floor of the function. This is the cheap CPU
 discriminator that decides whether a GPU reopening of
 `QWEN_MLP_ROTATED_TERNARY` is worth it.
 
-Source: `tools/headless/coordinate_transform_probe.py`
-Receipt: `receipts/headless/COORDINATE_TRANSFORM_PROBE.json`
+The one-shot source harness was retired in the Event Horizon compaction after
+its negative result was sealed. The retained authority is the receipt:
+`receipts/headless/COORDINATE_TRANSFORM_PROBE.json`
 
 ## Verdict
 

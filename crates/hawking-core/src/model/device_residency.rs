@@ -99,9 +99,7 @@ impl AddressTableGeometry {
                 self.n_experts
             )));
         }
-        Ok(layer
-            .saturating_mul(self.n_experts)
-            .saturating_add(expert))
+        Ok(layer.saturating_mul(self.n_experts).saturating_add(expert))
     }
 
     pub fn slot_byte_offset(&self, layer: usize, expert: usize) -> Result<usize> {
@@ -249,7 +247,12 @@ impl PersistentAddressTable {
         self.generation
     }
 
-    pub fn write_slot<P: ResidentPayload>(&mut self, layer: usize, expert: u32, payload: &P) -> Result<()> {
+    pub fn write_slot<P: ResidentPayload>(
+        &mut self,
+        layer: usize,
+        expert: u32,
+        payload: &P,
+    ) -> Result<()> {
         let offset = self.geometry.slot_byte_offset(layer, expert as usize)?;
         let entry_bytes = self.geometry.layout.entry_bytes;
         if self.entry_scratch.len() != entry_bytes {
@@ -321,12 +324,7 @@ impl<P: ResidentPayload> ResidencyPool<P> {
         self.slots.contains_key(&(layer, expert))
     }
 
-    pub fn ensure_selected<F>(
-        &mut self,
-        layer: usize,
-        experts: &[u32],
-        mut upload: F,
-    ) -> Result<()>
+    pub fn ensure_selected<F>(&mut self, layer: usize, experts: &[u32], mut upload: F) -> Result<()>
     where
         F: FnMut(usize, u32) -> Result<P>,
     {
@@ -471,7 +469,10 @@ mod tests {
         assert_eq!(geometry.table_bytes(), 3_145_728);
         assert_eq!(geometry.slot_index(0, 0).unwrap(), 0);
         assert_eq!(geometry.slot_index(1, 0).unwrap(), 512);
-        assert_eq!(geometry.slot_byte_offset(2, 7).unwrap(), (2 * 512 + 7) * 128);
+        assert_eq!(
+            geometry.slot_byte_offset(2, 7).unwrap(),
+            (2 * 512 + 7) * 128
+        );
         assert_eq!(geometry.layer_byte_offset(7).unwrap(), 7 * 512 * 128);
         assert!(geometry.slot_index(48, 0).is_err());
         assert!(geometry.slot_index(0, 512).is_err());

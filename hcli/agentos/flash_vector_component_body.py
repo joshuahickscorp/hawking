@@ -12,7 +12,6 @@ import hashlib
 import json
 import os
 import time
-import uuid
 from pathlib import Path
 from typing import Any, Dict, Mapping, Optional
 
@@ -20,7 +19,7 @@ from hcli.agentos import flash_component_body as component_body
 from hcli.agentos import flash_tensor_probe
 from hcli.flash_next import PINNED_REVISION, REPO_ID
 from hcli.nomenclature import NOMENCLATURE_VERSION
-from hcli.persist import atomic_write_json
+from hcli.persist import atomic_write_bytes, atomic_write_json
 
 
 SCHEMA = "hcli.agentos.flash_noetic_vector_body.v1"
@@ -34,34 +33,6 @@ MAX_BODY_BYTES = 4 * 1024 * 1024
 
 def _sha256_bytes(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
-
-
-def _sha256_file(path: Path) -> Optional[str]:
-    try:
-        digest = hashlib.sha256()
-        with path.open("rb") as handle:
-            for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-                digest.update(chunk)
-        return digest.hexdigest()
-    except OSError:
-        return None
-
-
-def _atomic_write_bytes(path: Path, payload: bytes) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_name(f".{path.name}.{os.getpid()}.{uuid.uuid4().hex}.tmp")
-    try:
-        with temporary.open("wb") as handle:
-            handle.write(payload)
-            handle.flush()
-            os.fsync(handle.fileno())
-        os.replace(temporary, path)
-    except Exception:
-        try:
-            temporary.unlink()
-        except OSError:
-            pass
-        raise
 
 
 def _final_root(value: Optional[str | os.PathLike[str]]) -> Path:
@@ -138,7 +109,7 @@ def run_flash_vector_body(
         guard_after = component_body.transform._source_guard(shard)
         if guard_after != guard_before:
             raise RuntimeError("source shard changed while persisting the vector")
-        _atomic_write_bytes(body_path, raw)
+        atomic_write_bytes(body_path, raw)
         body_sha256 = _sha256_bytes(raw)
         report.update({
             "status": "PASSED",

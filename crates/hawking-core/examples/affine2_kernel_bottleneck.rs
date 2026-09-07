@@ -331,14 +331,14 @@ mod isolated {
     }
 
     fn packed_half_bufs(packed: &AffineFactorPacked) -> (Vec<u8>, Vec<u16>, Vec<u16>) {
-        (packed.codes.clone(), packed.scales_f16.clone(), packed.biases_f16.clone())
+        (
+            packed.codes.clone(),
+            packed.scales_f16.clone(),
+            packed.biases_f16.clone(),
+        )
     }
 
-    fn dispatch(
-        enc: &metal::ComputeCommandEncoderRef,
-        arm: &Arm,
-        rows: u32,
-    ) {
+    fn dispatch(enc: &metal::ComputeCommandEncoderRef, arm: &Arm, rows: u32) {
         let groups = u64::from(rows.div_ceil(arm.rows_per_tg).max(1));
         enc.dispatch_thread_groups(MTLSize::new(groups, 1, 1), MTLSize::new(arm.tg, 1, 1));
     }
@@ -491,8 +491,10 @@ mod isolated {
                 as_bytes_f32(&input).len() as u64,
                 MTLResourceOptions::StorageModeShared,
             );
-            let y_buf =
-                device.new_buffer((rows as usize * 4) as u64, MTLResourceOptions::StorageModeShared);
+            let y_buf = device.new_buffer(
+                (rows as usize * 4) as u64,
+                MTLResourceOptions::StorageModeShared,
+            );
             let mut arms_json = Vec::new();
             for (arm, pipe) in ARMS.iter().zip(pipes.iter()) {
                 let run = |n: usize| -> Vec<u64> {
@@ -627,8 +629,8 @@ mod production {
 
     pub fn measure(args: &Args, root: &Path, tokenizer: &Path) -> Result<Value, String> {
         eprintln!("production: load {}", root.display());
-        let mut session = Qwen38HybridDecodeSession::open(root, args.max_seq_len)
-            .map_err(|e| e.to_string())?;
+        let mut session =
+            Qwen38HybridDecodeSession::open(root, args.max_seq_len).map_err(|e| e.to_string())?;
         session.apply_fusion(Qwen38MlpFusion::GateUpSwiglu, true, true);
         let tok = load_qwen38_tokenizer(tokenizer).map_err(|e| e.to_string())?;
         let prompt_ids = if args.raw_prompt {
@@ -689,10 +691,9 @@ mod production {
             let role = match geo {
                 Affine2Geo::Tpr64 => "no_op_control",
                 Affine2Geo::RuntimeDiv => "deliberately_bad_control",
-                Affine2Geo::Tgsb
-                | Affine2Geo::Pipe
-                | Affine2Geo::SplitK4
-                | Affine2Geo::AccFuse => "lever",
+                Affine2Geo::Tgsb | Affine2Geo::Pipe | Affine2Geo::SplitK4 | Affine2Geo::AccFuse => {
+                    "lever"
+                }
                 _ => "lever",
             };
             arms.push(json!({

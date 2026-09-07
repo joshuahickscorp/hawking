@@ -185,8 +185,7 @@ pub fn theoretical_temp_bytes(max_seq_len: usize) -> TheoreticalTempBytes {
         + (QWEN80_VOCAB as u64) * f
         + f;
     let workspace = scratch + conv + rec + gqa_cache;
-    let readback = (QWEN80_EXPERTS as u64) * f * (QWEN80_LAYERS as u64)
-        + (QWEN80_VOCAB as u64) * f;
+    let readback = (QWEN80_EXPERTS as u64) * f * (QWEN80_LAYERS as u64) + (QWEN80_VOCAB as u64) * f;
     TheoreticalTempBytes {
         workspace_bytes: workspace,
         readback_bytes_per_token: readback,
@@ -530,18 +529,30 @@ impl Qwen80TokenNsSession {
                 .copied()
                 .unwrap_or(0)
                 .saturating_add(ns);
-            *cur.phase_calls.entry(name).or_insert(0) =
-                cur.phase_calls.get(name).copied().unwrap_or(0).saturating_add(1);
+            *cur.phase_calls.entry(name).or_insert(0) = cur
+                .phase_calls
+                .get(name)
+                .copied()
+                .unwrap_or(0)
+                .saturating_add(1);
         }
     }
 
     /// Test / synthetic: add `ns` to an identity phase without using Instant.
     pub fn record_phase_ns(&mut self, name: &'static str, ns: u64) {
         if let Some(cur) = self.current.as_mut() {
-            *cur.phases.entry(name).or_insert(0) =
-                cur.phases.get(name).copied().unwrap_or(0).saturating_add(ns);
-            *cur.phase_calls.entry(name).or_insert(0) =
-                cur.phase_calls.get(name).copied().unwrap_or(0).saturating_add(1);
+            *cur.phases.entry(name).or_insert(0) = cur
+                .phases
+                .get(name)
+                .copied()
+                .unwrap_or(0)
+                .saturating_add(ns);
+            *cur.phase_calls.entry(name).or_insert(0) = cur
+                .phase_calls
+                .get(name)
+                .copied()
+                .unwrap_or(0)
+                .saturating_add(1);
         }
     }
 
@@ -932,9 +943,8 @@ fn totals_of(token: &Qwen80TokenNsToken) -> TokenTotals {
 
 fn mean_totals(tokens: &[&Qwen80TokenNsToken]) -> TokenTotals {
     let n = tokens.len().max(1) as u64;
-    let sum = |f: fn(&Qwen80TokenNsToken) -> u64| -> u64 {
-        tokens.iter().map(|t| f(t)).sum::<u64>() / n
-    };
+    let sum =
+        |f: fn(&Qwen80TokenNsToken) -> u64| -> u64 { tokens.iter().map(|t| f(t)).sum::<u64>() / n };
     TokenTotals {
         total_token_ns: sum(|t| t.totals.total_token_ns),
         total_gpu_busy_ns: sum(|t| t.totals.total_gpu_busy_ns),
@@ -1029,7 +1039,10 @@ fn substage_mean(tokens: &[&Qwen80TokenNsToken], stage: &str, sub: &str) -> (f64
     (ns, calls)
 }
 
-fn mixed_gpu(tokens: &[&Qwen80TokenNsToken], pred: impl Fn(&CommandBufferRecord) -> bool) -> Option<f64> {
+fn mixed_gpu(
+    tokens: &[&Qwen80TokenNsToken],
+    pred: impl Fn(&CommandBufferRecord) -> bool,
+) -> Option<f64> {
     if tokens.is_empty() {
         return None;
     }
@@ -1129,7 +1142,8 @@ fn build_stage_table(
         substage_mean(tokens, "activation", "shared_mlp_sandwich_encode");
     let (conv_ns, conv_calls) = substage_mean(tokens, "activation", "deltanet_conv_encode");
     let (rec_ns, rec_calls) = substage_mean(tokens, "activation", "deltanet_recurrent_encode");
-    let (gqa_ln_ns, gqa_ln_calls) = substage_mean(tokens, "activation", "gqa_input_layernorm_encode");
+    let (gqa_ln_ns, gqa_ln_calls) =
+        substage_mean(tokens, "activation", "gqa_input_layernorm_encode");
     let (rope_ns, rope_calls) = substage_mean(tokens, "activation", "gqa_norm_rope_encode");
     let (other_ns, other_calls) = substage_mean(tokens, "activation", "other_host_activation");
     let (q4_enc_ns, q4_enc_calls) = substage_mean(tokens, "q4_matvec", "encode");
@@ -1582,9 +1596,11 @@ fn catalog_is_complete(rows: &[StageLedgerRow]) -> bool {
         .map(|r| (r.stage.as_str(), r.substage.as_str()))
         .collect();
     NAMED_STAGES.iter().all(|s| stages.contains(s))
-        && ACTIVATION_CLASSES
-            .iter()
-            .all(|c| substages.iter().any(|(st, sub)| *st == "activation" && sub == c))
+        && ACTIVATION_CLASSES.iter().all(|c| {
+            substages
+                .iter()
+                .any(|(st, sub)| *st == "activation" && sub == c)
+        })
         && [
             "router_readback",
             "host_topk",
@@ -1775,11 +1791,10 @@ fn diagnose(
     let wait = mean.cpu_wait_ns;
     let submit = mean.submit_ns;
     let gpu_frac = if wall > 0.0 { gpu / wall } else { 0.0 };
-    let wait_minus_gpu = if tokens.iter().all(|t| {
-        t.command_buffers
-            .iter()
-            .all(|cb| cb.gpu_ns.is_some())
-    }) {
+    let wait_minus_gpu = if tokens
+        .iter()
+        .all(|t| t.command_buffers.iter().all(|cb| cb.gpu_ns.is_some()))
+    {
         Some((wait - gpu) as i64)
     } else {
         None
@@ -2031,7 +2046,11 @@ mod tests {
             compact.silent_zero_stages
         );
         assert!(compact.silent_zero_stages.is_empty());
-        let names: Vec<&str> = compact.stage_table.iter().map(|r| r.stage.as_str()).collect();
+        let names: Vec<&str> = compact
+            .stage_table
+            .iter()
+            .map(|r| r.stage.as_str())
+            .collect();
         for stage in NAMED_STAGES {
             assert!(names.contains(stage), "missing named stage {stage}");
         }
@@ -2084,7 +2103,10 @@ mod tests {
     fn identity_phases_sum_to_wall() {
         let s = closed_session();
         let token = &s.finished[0];
-        assert_eq!(token.identity.wall_ns, token.identity.sum_identity_phases_ns);
+        assert_eq!(
+            token.identity.wall_ns,
+            token.identity.sum_identity_phases_ns
+        );
         assert_eq!(token.identity.residual_ns, 0);
         assert!(token.identity.identity_holds);
         let compact = s.compact_receipt();
@@ -2125,7 +2147,11 @@ mod tests {
             "compact receipt must not dump per-CB records"
         );
         assert!(text.contains("stage_table"));
-        assert!(text.len() < 200_000, "compact receipt grew to {}", text.len());
+        assert!(
+            text.len() < 200_000,
+            "compact receipt grew to {}",
+            text.len()
+        );
     }
 
     #[test]

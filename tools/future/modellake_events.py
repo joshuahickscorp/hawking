@@ -12,8 +12,8 @@ seal. The watcher log must still exist: a missing log would read as
 "nothing is downloading" rather than "the watcher is not running".
 
 On a newly observed seal, the six S027 §22 triggers are emitted as
-WorkUnits through frontiers._item. A unit belonging to a dead school is
-refused rather than created. Seeing the same seal twice emits once.
+WorkUnits through the canonical HCLI WorkUnit emitter. Seeing the same seal
+twice emits once.
 
     python3 tools/future/modellake_events.py --build
     python3 -m pytest tools/future/test_modellake_events.py -q
@@ -35,18 +35,37 @@ import re
 from pathlib import Path
 from typing import Any
 
-from tools.future._common import REPO, write_receipt
-from tools.future import frontiers as fr
+from tools.future._common import REPO, git, write_receipt
 from tools.future import modellake_scheduler_view as mv
 from tools.future import negative_index as ni
 from tools.future import specimen_load_cost as lc
 from tools.future import specimen_registry as sr
+from tools.future.workunit_species import emit_hcli_workunit
 
 
 RECORDED_BY = "tools/future/modellake_events.py"
 RECEIPT_NAME = "MODELLAKE_EVENTS.json"
 SCHEMA = "hawking.future.modellake_events.v1"
 VERSION = 1
+SCAR_INDEX_REL = "receipts/future/NEGATIVE_SCIENCE_INDEX.json"
+LANE_CPU = "CPU"
+LANE_ANALYSIS = "ANALYSIS"
+INFO_HIGH = 3
+
+
+def _checkout_roots() -> list[Path]:
+    roots = [REPO]
+    for line in git("worktree", "list", "--porcelain").splitlines():
+        if line.startswith("worktree "):
+            roots.append(Path(line.split(" ", 1)[1]))
+    out: list[Path] = []
+    seen: set[str] = set()
+    for root in roots:
+        key = str(root.resolve())
+        if key not in seen:
+            seen.add(key)
+            out.append(root)
+    return out
 
 # S027 §22, in order. Imported so a drift in the view is a drift here.
 SEAL_TRIGGERS: tuple[str, ...] = tuple(mv.SEAL_TRIGGERS)
@@ -90,7 +109,7 @@ def _discover_watch_log() -> Path:
     declared = mv.WATCH_LOG
     if declared.is_file():
         return declared
-    for root in fr._checkout_roots():
+    for root in _checkout_roots():
         cand = root / WATCH_LOG_REL
         if cand.is_file():
             return cand
@@ -270,15 +289,15 @@ def _trigger_kwargs(
         "receipts/future/MODELLAKE_SCHEDULER_VIEW.json",
     ]
     if trigger == "law and scar lookup":
-        evidence.append(fr.SCAR_INDEX_REL)
+        evidence.append(SCAR_INDEX_REL)
     return {
         "id": _unit_id(frontier, sid, trigger),
         "frontier": frontier,
         "kind": "NEXT_WORK",
         "title": title,
         "detail": detail,
-        "required_lanes": (fr.LANE_CPU, fr.LANE_ANALYSIS),
-        "gain": fr.INFO_HIGH,
+        "required_lanes": (LANE_CPU, LANE_ANALYSIS),
+        "gain": INFO_HIGH,
         "species": SEAL_SPECIES,
         "verifier": "tools.future.modellake_events.consume",
         "evidence": tuple(evidence),
@@ -378,6 +397,36 @@ def _trigger_copy(
     raise LakeEventRefused(f"unhandled trigger {trigger!r}")
 
 
+def _item(**kwargs: Any) -> dict[str, Any]:
+    """Construct the same proposal through the canonical HCLI WorkUnit shape."""
+    return emit_hcli_workunit(
+        id=str(kwargs["id"]),
+        role=str(kwargs["species"]),
+        description=f"{kwargs['title']}: {kwargs['detail']}",
+        dependencies=list(kwargs.get("evidence") or ()),
+        resource_class=str(kwargs.get("resource_class") or "STATIC_ANALYSIS"),
+        verifier=str(kwargs["verifier"]),
+        provider="tools.future.modellake_events",
+        effect_class=str(kwargs.get("effect_class") or "READ_ONLY"),
+        status="pending" if str(kwargs.get("kind")) == "NEXT_WORK" else "blocked",
+        extras={
+            "frontier": kwargs.get("frontier"),
+            "kind": kwargs.get("kind"),
+            "required_lanes": list(kwargs.get("required_lanes") or ()),
+            "expected_information_gain": kwargs.get("gain"),
+            "species": kwargs.get("species"),
+            "evidence": list(kwargs.get("evidence") or ()),
+            "hypothesis_family": kwargs.get("hypothesis_family"),
+            "wake_all_of": list(kwargs.get("wake_all_of") or ()),
+            "wake_never": list(kwargs.get("wake_never") or ()),
+            "candidate_id": kwargs.get("candidate_id"),
+            "source_f": kwargs.get("source_f"),
+            "evidence_class": "STATIC_ONLY",
+            "bench_state": "UNKNOWN",
+        },
+    )
+
+
 def emit_trigger(
     specimen: dict[str, Any],
     trigger: str,
@@ -387,10 +436,10 @@ def emit_trigger(
     scars: dict[str, Any] | None = None,
     **overrides: Any,
 ) -> dict[str, Any]:
-    """One S027 trigger as a WorkUnit. Always constructed by frontiers._item."""
+    """One S027 trigger as a canonical HCLI WorkUnit proposal."""
     kwargs = _trigger_kwargs(specimen, trigger, cost=cost, family=family, scars=scars)
     kwargs.update(overrides)
-    return fr._item(**kwargs)
+    return _item(**kwargs)
 
 
 def emit_for_seal(
@@ -509,7 +558,7 @@ def build() -> dict[str, Any]:
         "question": "When a model seals, does anything happen without a human noticing?",
         "answer": (
             "yes, now: a lake manifest appearing emits the six S027 §22 "
-            "triggers as WorkUnits through frontiers._item, with no "
+            "triggers as HCLI WorkUnit proposals, with no "
             "conversational boundary. Before this consumer, MODEL_SEALED "
             "triggered nothing."
         ),

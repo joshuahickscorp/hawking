@@ -23,18 +23,10 @@ a result that has no receipt did not happen.
 
 ## Architecture
 
-```text
-  model artifact
-        |
-   hawking-core ......... runtime, attention/decode, quantized matmul,
-        |                  KV cache, Metal kernels
-        +--> hawking ..... command line: generate, serve, bench, gravity ops
-        +--> hawking-serve  HTTP: /v1/chat/completions, /v1/completions,
-        |                   /v1/embeddings, /v1/models, /healthz, /metrics
-        |
-      HCLI ............... control plane: providers, work units, tools,
-                           verifiers, receipts, resident supervision
-```
+The detailed, current ownership map is [docs/CURRENT_ARCHITECTURE.md](docs/CURRENT_ARCHITECTURE.md).
+In short, HCLI/AgentOS owns planning, typed tool calls, lifecycle, and
+verification; the Hawking Rust crates own execution and serving. Receipts are
+evidence, not an additional source of architecture.
 
 ## Current state
 
@@ -51,6 +43,9 @@ Work in progress, stated plainly because the distinction matters:
 - No Odyssey campaign has been run end to end, and no Odyssey wall time has
   ever been measured. Figures in the ledgers are budgets, not measurements.
 - FPGA work is pre-board. There are no hardware results.
+- The Event Horizon structural refactor does not alter live ascension state or
+  perform physical optimization; it only consolidates source authorities and
+  moves generated/operator state to owned roots.
 
 ## Build and run
 
@@ -61,6 +56,10 @@ cargo run -p hawking-serve
 
 pip install -e .
 hcli --help
+
+# verification
+python3 -m pytest
+cargo check --workspace
 ```
 
 Model weights are local inputs and are not part of this repository.
@@ -69,15 +68,18 @@ Model weights are local inputs and are not part of this repository.
 
 | path | contents |
 | --- | --- |
-| `crates/` | Rust workspace: runtime, CLI, serving, benchmarks, HIDE crates |
+| `crates/` | Rust workspace: runtime, CLI, serving, benchmarks, and HCLI backend crates |
 | `hcli/` | Python control plane, resident supervision, tools and verifiers |
 | `tools/` | Campaign, evaluation and analysis tooling |
-| `app/` | Desktop application and frontend |
-| `docs/` | Architecture, control plane, hardware, specifications |
+| `docs/` | Current architecture, control-plane boundaries, specifications |
 | `research/` | Experiments, lab operators, archived work, evidence |
 | `receipts/` | Acceptance and provenance records |
 | `workspace/` | Local build and campaign working tree |
 | `civilization/` | Roadmap and capability-graph state read by the control plane |
+
+The visual HIDE/IDE surface is intentionally deferred. HCLI is the current
+product surface; the visual client and its transport boundary will be rebuilt
+against hardened VMCP rather than kept as a second active control plane.
 
 ## License
 

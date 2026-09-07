@@ -1,1 +1,0 @@
-{"module": "mutation_engine.py", "entry_point": "build", "receipt": "receipts/future/MUTATION_ENGINE.json", "routed_to_frontier": "FT.HCLI_SELF.emit-workunits", "species": "MUTATION_ENGINE", "wall_seconds": 0.006, "evidence_class": "STATIC_ONLY"}

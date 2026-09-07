@@ -57,7 +57,11 @@ def test_the_ladder_sheds_evidence_before_observations(tmp_path):
     import inspect
 
     src = inspect.getsource(Engine._fit_payload_to_budget)
-    ev_at = src.index("evidence 0 + no checkpoint")
+    # Anchor on the stable part of each rung's label. The evidence rung used to
+    # read "evidence 0 + no checkpoint"; it now keeps a floor and reads
+    # "evidence {keep_floor} + no checkpoint", which is a stronger ladder, not a
+    # reordered one. The ORDER is the invariant under test, not the wording.
+    ev_at = src.index("+ no checkpoint")
     obs_at = src.index("observations {keep_n}")
     assert ev_at < obs_at, "observations must be the LAST thing shed"
 

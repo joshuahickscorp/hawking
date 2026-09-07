@@ -29,6 +29,7 @@ VALID = {
     "content": "ok",
     "operations": [],
     "tests": [],
+    "tool_calls": [],
 }
 
 
@@ -145,6 +146,28 @@ class TestEngineSchemaDegrade(unittest.TestCase):
             self.assertEqual(so["retries"], 1)
             self.assertFalse(so["exhausted"])
             self.assertEqual(len(receipt["model_calls"]), 2)
+
+    def test_grammar_degraded_receipt_distinguishes_syntax_from_schema(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            engine = _engine(Path(tmp), backend=_Backend(grammar=True))
+            captured = []
+
+            def stub(endpoint, payload, timeout):
+                captured.append(payload)
+                return _openai(json.dumps(VALID))
+
+            engine._post_completion = stub
+            parsed = engine._call_model("say ok")
+
+        self.assertEqual(parsed["kind"], "answer")
+        self.assertEqual(captured[0]["grammar"], "json")
+        self.assertNotIn("response_format", captured[0])
+        so = engine._last_call_plan["structured_output"]
+        self.assertEqual(so["constrained_decoding"], "grammar_syntax")
+        self.assertEqual(so["grammar_requested"], "json")
+        self.assertIn("syntax only", so["constrained_decoding_reason"])
+        self.assertNotIn("grammar", so["degraded_features"])
+        self.assertEqual(len(so["structured_attempt_budgets"]), 1)
 
     def test_extra_properties_are_rejected_not_sanitized_away(self):
         with tempfile.TemporaryDirectory() as tmp:

@@ -96,14 +96,24 @@ fn set_mtime_ns(path: &Path, mtime_ns: i128) {
     ];
     let c_path = CString::new(path.as_os_str().as_bytes()).expect("path cstring");
     let rc = unsafe { utimensat(AT_FDCWD, c_path.as_ptr(), times.as_ptr(), 0) };
-    assert_eq!(rc, 0, "utimensat failed: {}", std::io::Error::last_os_error());
+    assert_eq!(
+        rc,
+        0,
+        "utimensat failed: {}",
+        std::io::Error::last_os_error()
+    );
 }
 
 #[test]
 fn valid_receipt_fast_path_skips_hash() {
     let tmp = tempfile::tempdir().expect("tempdir");
     let payload: Vec<u8> = (0u8..=255).cycle().take(4096).collect();
-    let sealer = bind(tmp.path(), "probe.weight", &payload, DeepSeekV4VerifyMode::Full);
+    let sealer = bind(
+        tmp.path(),
+        "probe.weight",
+        &payload,
+        DeepSeekV4VerifyMode::Full,
+    );
     let seal = sealer.seal_admission_trust().expect("seal");
     assert!(seal.path.ends_with(ADMISSION_TRUST_RECEIPT_NAME));
     assert_eq!(seal.chunk_count, 1);
@@ -153,7 +163,12 @@ fn missing_receipt_falls_back_to_hash() {
 fn corrupted_receipt_is_rejected_and_hashes() {
     let tmp = tempfile::tempdir().expect("tempdir");
     let payload = b"receipt will be corrupted".to_vec();
-    let sealer = bind(tmp.path(), "probe.weight", &payload, DeepSeekV4VerifyMode::Full);
+    let sealer = bind(
+        tmp.path(),
+        "probe.weight",
+        &payload,
+        DeepSeekV4VerifyMode::Full,
+    );
     sealer.seal_admission_trust().expect("seal");
     let path = tmp.path().join(ADMISSION_TRUST_RECEIPT_NAME);
     let mut raw = fs::read(&path).expect("read receipt");
@@ -196,7 +211,12 @@ fn corrupted_receipt_is_rejected_and_hashes() {
 fn per_chunk_invariant_mismatch_falls_back_to_hash() {
     let tmp = tempfile::tempdir().expect("tempdir");
     let payload = vec![0x11u8; 2048];
-    let sealer = bind(tmp.path(), "probe.weight", &payload, DeepSeekV4VerifyMode::Full);
+    let sealer = bind(
+        tmp.path(),
+        "probe.weight",
+        &payload,
+        DeepSeekV4VerifyMode::Full,
+    );
     let (segment, _) = {
         // Re-discover the written segment from a trusted read path.
         let first = sealer
@@ -232,7 +252,12 @@ fn per_chunk_invariant_mismatch_falls_back_to_hash() {
 fn tamper_after_seal_is_detected() {
     let tmp = tempfile::tempdir().expect("tempdir");
     let payload = b"flip one byte after seal".to_vec();
-    let sealer = bind(tmp.path(), "probe.weight", &payload, DeepSeekV4VerifyMode::Full);
+    let sealer = bind(
+        tmp.path(),
+        "probe.weight",
+        &payload,
+        DeepSeekV4VerifyMode::Full,
+    );
     sealer.seal_admission_trust().expect("seal");
     let (segment, _) =
         DeepSeekV4FullStreamReader::write_isolated_content_addressed_chunk(tmp.path(), &payload)
@@ -262,7 +287,12 @@ fn tamper_after_seal_is_detected() {
 fn delete_and_truncate_hard_fail() {
     let tmp = tempfile::tempdir().expect("tempdir");
     let payload = vec![0x5au8; 1024];
-    let sealer = bind(tmp.path(), "probe.weight", &payload, DeepSeekV4VerifyMode::Full);
+    let sealer = bind(
+        tmp.path(),
+        "probe.weight",
+        &payload,
+        DeepSeekV4VerifyMode::Full,
+    );
     sealer.seal_admission_trust().expect("seal");
     let (segment, spec) =
         DeepSeekV4FullStreamReader::write_isolated_content_addressed_chunk(tmp.path(), &payload)
@@ -299,7 +329,8 @@ fn delete_and_truncate_hard_fail() {
         .read_verified_full("probe.weight", payload.len())
         .expect_err("delete must hard-fail");
     assert!(
-        format!("{err}").contains("cannot inspect") || format!("{err}").contains("must be a regular"),
+        format!("{err}").contains("cannot inspect")
+            || format!("{err}").contains("must be a regular"),
         "unexpected delete error: {err}"
     );
 }
@@ -308,9 +339,19 @@ fn delete_and_truncate_hard_fail() {
 fn full_mode_hashes_even_with_valid_receipt() {
     let tmp = tempfile::tempdir().expect("tempdir");
     let payload = b"full mode ignores receipt".to_vec();
-    let sealer = bind(tmp.path(), "probe.weight", &payload, DeepSeekV4VerifyMode::Full);
+    let sealer = bind(
+        tmp.path(),
+        "probe.weight",
+        &payload,
+        DeepSeekV4VerifyMode::Full,
+    );
     sealer.seal_admission_trust().expect("seal");
-    let reader = bind(tmp.path(), "probe.weight", &payload, DeepSeekV4VerifyMode::Full);
+    let reader = bind(
+        tmp.path(),
+        "probe.weight",
+        &payload,
+        DeepSeekV4VerifyMode::Full,
+    );
     let bytes = reader
         .read_verified_full("probe.weight", payload.len())
         .expect("full read");
@@ -325,7 +366,12 @@ fn full_mode_hashes_even_with_valid_receipt() {
 fn stale_receipt_wrong_digest_is_rejected() {
     let tmp = tempfile::tempdir().expect("tempdir");
     let payload = b"stale digest".to_vec();
-    let sealer = bind(tmp.path(), "probe.weight", &payload, DeepSeekV4VerifyMode::Full);
+    let sealer = bind(
+        tmp.path(),
+        "probe.weight",
+        &payload,
+        DeepSeekV4VerifyMode::Full,
+    );
     sealer.seal_admission_trust().expect("seal");
     let loaded = load_admission_receipt(
         tmp.path(),
@@ -350,7 +396,12 @@ fn clone_view_remaps_to_sealed_inode() {
     let src = tempfile::tempdir().expect("src");
     let view = tempfile::tempdir().expect("view");
     let payload: Vec<u8> = (0..2048).map(|i| (i % 251) as u8).collect();
-    let sealer = bind(src.path(), "probe.weight", &payload, DeepSeekV4VerifyMode::Full);
+    let sealer = bind(
+        src.path(),
+        "probe.weight",
+        &payload,
+        DeepSeekV4VerifyMode::Full,
+    );
     sealer.seal_admission_trust().expect("seal");
     let (segment, spec) =
         DeepSeekV4FullStreamReader::write_isolated_content_addressed_chunk(src.path(), &payload)
@@ -395,7 +446,12 @@ fn clone_view_remaps_to_sealed_inode() {
 fn metadata_preserving_bitflip_is_the_residual_window() {
     let tmp = tempfile::tempdir().expect("tempdir");
     let payload = b"mtime-preserving flip".to_vec();
-    let sealer = bind(tmp.path(), "probe.weight", &payload, DeepSeekV4VerifyMode::Full);
+    let sealer = bind(
+        tmp.path(),
+        "probe.weight",
+        &payload,
+        DeepSeekV4VerifyMode::Full,
+    );
     sealer.seal_admission_trust().expect("seal");
     let (segment, _) =
         DeepSeekV4FullStreamReader::write_isolated_content_addressed_chunk(tmp.path(), &payload)
@@ -426,7 +482,12 @@ fn metadata_preserving_bitflip_is_the_residual_window() {
     );
     assert_eq!(trusted.chunk_verification_stats().hash_invocations, 0);
 
-    let full = rebind(tmp.path(), "probe.weight", segment, DeepSeekV4VerifyMode::Full);
+    let full = rebind(
+        tmp.path(),
+        "probe.weight",
+        segment,
+        DeepSeekV4VerifyMode::Full,
+    );
     let err = full
         .read_verified_full("probe.weight", payload.len())
         .expect_err("VERIFY=full must close the residual window");
@@ -437,7 +498,12 @@ fn metadata_preserving_bitflip_is_the_residual_window() {
 fn receipt_schema_is_the_v1_contract() {
     let tmp = tempfile::tempdir().expect("tempdir");
     let payload = b"schema contract".to_vec();
-    let sealer = bind(tmp.path(), "probe.weight", &payload, DeepSeekV4VerifyMode::Full);
+    let sealer = bind(
+        tmp.path(),
+        "probe.weight",
+        &payload,
+        DeepSeekV4VerifyMode::Full,
+    );
     sealer.seal_admission_trust().expect("seal");
     let raw = fs::read(tmp.path().join(ADMISSION_TRUST_RECEIPT_NAME)).expect("read");
     let value: serde_json::Value = serde_json::from_slice(&raw).expect("json");

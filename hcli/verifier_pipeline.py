@@ -63,6 +63,8 @@ confirmation exits 0.
 """
 from __future__ import annotations
 
+from .wall_profile import phase as _wall_phase
+
 import ast
 import json
 import re
@@ -386,6 +388,7 @@ def execute(
     return "\n\n---\n\n".join(chunks)
 
 
+@_wall_phase("verifier")
 def verify(
     obligation: Obligation,
     evidence: str,

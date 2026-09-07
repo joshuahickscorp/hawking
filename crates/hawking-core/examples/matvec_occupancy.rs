@@ -83,7 +83,8 @@ mod macos {
             .map(|row| {
                 (0..Q80_GATE_COLS)
                     .map(|col| {
-                        q4_weight_from_split(&q4_scales, &q4_codes, Q80_GATE_COLS, row, col) * x[col]
+                        q4_weight_from_split(&q4_scales, &q4_codes, Q80_GATE_COLS, row, col)
+                            * x[col]
                     })
                     .sum()
             })
@@ -909,7 +910,10 @@ mod macos {
             set_u32(enc, 6, groups_per_row);
         };
         if timed {
-            gpu_ns(ctx.dispatch_threads_timed(v.kernel, grid, tg, encode)?, v.kernel)
+            gpu_ns(
+                ctx.dispatch_threads_timed(v.kernel, grid, tg, encode)?,
+                v.kernel,
+            )
         } else {
             ctx.dispatch_threads(v.kernel, grid, tg, encode)?;
             Ok(0)
@@ -968,7 +972,10 @@ mod macos {
             set_u32(enc, 7, groups_per_row);
         };
         if timed {
-            gpu_ns(ctx.dispatch_threads_timed(v.kernel, grid, tg, encode)?, v.kernel)
+            gpu_ns(
+                ctx.dispatch_threads_timed(v.kernel, grid, tg, encode)?,
+                v.kernel,
+            )
         } else {
             ctx.dispatch_threads(v.kernel, grid, tg, encode)?;
             Ok(0)
@@ -1028,7 +1035,10 @@ mod macos {
             set_u32(enc, 7, scale_cols);
         };
         if timed {
-            gpu_ns(ctx.dispatch_threads_timed(v.kernel, grid, tg, encode)?, v.kernel)
+            gpu_ns(
+                ctx.dispatch_threads_timed(v.kernel, grid, tg, encode)?,
+                v.kernel,
+            )
         } else {
             ctx.dispatch_threads(v.kernel, grid, tg, encode)?;
             Ok(0)
@@ -1049,7 +1059,18 @@ mod macos {
         zeros: &[f32],
     ) -> Result<u64, Box<dyn Error>> {
         dispatch_fp4(
-            ctx, v, rows, packed_cols, scale_cols, packed, scales, quant, act, out, zeros, true,
+            ctx,
+            v,
+            rows,
+            packed_cols,
+            scale_cols,
+            packed,
+            scales,
+            quant,
+            act,
+            out,
+            zeros,
+            true,
         )
     }
 
@@ -1069,7 +1090,15 @@ mod macos {
         for (i, b) in quant.iter_mut().enumerate() {
             *b = (i as u8).wrapping_mul(3);
         }
-        let oracle = fp4_cpu_oracle(&packed, &scales, &quant, &act, rows, packed_cols, scale_cols);
+        let oracle = fp4_cpu_oracle(
+            &packed,
+            &scales,
+            &quant,
+            &act,
+            rows,
+            packed_cols,
+            scale_cols,
+        );
         (packed, scales, quant, act, oracle)
     }
 

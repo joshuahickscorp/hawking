@@ -175,11 +175,11 @@
       "support_level": "SMALL_REAL_CHECKPOINT",
       "tests": [
         {
-          "claim": "M04_SEALED: Rust adapter vs oracle on real flagship .gravity shards",
+          "claim": "GLM adapter receipt; parity remains bounded",
           "exists": true,
           "is_test": false,
           "kind": "small_checkpoint_run",
-          "path": "research/evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json",
+          "path": "adapters/receipts/ADAPTER_GLM_RECEIPT.json",
           "role": "evidence",
           "status": "present"
         },
@@ -237,11 +237,11 @@
       "support_level": "SYNTHETIC_PARITY",
       "tests": [
         {
-          "claim": "synthetic CPU reference + bound real-source metal K1 twin",
+          "claim": "Kimi source registry entry; adapter twin remains synthetic and not serve-registered",
           "exists": true,
           "is_test": false,
           "kind": "synthetic_parity",
-          "path": "research/evidence/kimi-k26/KIMI_K26_ADAPTER_TWIN.json",
+          "path": "workspace/campaign/odyssey/watch-manifests/moonshotai--Kimi-K3@9f62e4e9fffb.json",
           "role": "evidence",
           "status": "present"
         },
@@ -397,11 +397,11 @@
       "support_level": "DECLARED",
       "tests": [
         {
-          "claim": "family listed in bridge archaeology; no serve path found",
+          "claim": "fabrication-control receipt; MiniMax remains declared and has no serve path",
           "exists": true,
           "is_test": false,
           "kind": "description",
-          "path": "research/evidence/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md",
+          "path": "workspace/campaign/evidence/systems/fabric/FABRIC_BRIDGE_ARCHAEOLOGY.md",
           "role": "evidence",
           "status": "present"
         },

@@ -117,8 +117,7 @@ crates/hawking-core/reports/
 # local Mac Studio go-prompt
 /workspace/docs/guides/GO.md
 
-# Tauri sidecar build output and design masters
-app/src-tauri/binaries/
+# Design masters
 *.psd
 
 # AI-session handoff notes (not documentation)
@@ -276,3 +275,9 @@ docs/HCLI_SCHOOL.md
 
 # Campaign goal text: development input, not product source.
 directive-goal.txt
+.cargo-target/
+.anevenv/
+.anevenv39/
+
+# Vendored python deps for running HCLI without system packages (36M, reproducible)
+.hcli-deps/

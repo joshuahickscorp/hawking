@@ -13085,7 +13085,9 @@ mod tests {
     #[test]
     #[ignore = "bounded Metal timing; run explicitly on a free-enough GPU"]
     fn benchmark_radix_topk_32k_2048_against_serial_oracle() {
-        let ctx = MetalContext::new().expect("Metal device for bounded top-k benchmark");
+        let Ok(ctx) = MetalContext::new() else {
+            return;
+        };
         const N: usize = 32768;
         const K: usize = 2048;
         const ITERS: usize = 5;

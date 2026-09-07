@@ -1,0 +1,40 @@
+{
+  "agreement_rss_vs_arithmetic_pct": 0.083160400390625,
+  "arithmetic_bytes_per_token_f32": 131072,
+  "arithmetic_source": "QWEN38_GQA_LAYERS 16 x QWEN38_GQA_KV_HEADS 4 x QWEN38_GQA_HEAD_DIM 256 x 4 B x 2 (K and V)",
+  "arms": [
+    {
+      "gpu_alloc_bytes": 16245473280,
+      "gpu_inuse_bytes": 1810939904,
+      "max_seq_len": 4096,
+      "resident_rss_bytes": 11448762368
+    },
+    {
+      "gpu_alloc_bytes": 17984782336,
+      "gpu_inuse_bytes": 1809760256,
+      "max_seq_len": 20480,
+      "resident_rss_bytes": 13598031872
+    }
+  ],
+  "bytes_per_token_at_bf16": 65536,
+  "command": "python3 state_census.py <max_seq_len>",
+  "delta_tokens": 16384,
+  "measured_bytes_per_token_gpu_alloc": 106159.0,
+  "measured_bytes_per_token_rss": 131181.0,
+  "method": "bytes/token by DIFFERENCE between two max_seq_len allocations. Everything that does not scale with context -- weights, the fixed recurrent+conv state -- cancels exactly, so no assumption about the base is needed.",
+  "note_gpu_vs_rss": "the GPU driver's Alloc delta gives 106,158 B/token, below RSS's 131,180. RSS is the figure that matches the geometry; the driver counter is not used for the claim.",
+  "produced_at": "2026-09-05T14:45:53Z",
+  "produced_by": "scratchpad/state_census.py (fresh process per max_seq_len)",
+  "projection_bytes": {
+    "131072_bf16": 8589934592,
+    "131072_f32": 17179869184,
+    "262144_bf16": 17179869184,
+    "262144_f32": 34359738368,
+    "32768_bf16": 2147483648,
+    "32768_f32": 4294967296,
+    "9728_bf16": 637534208,
+    "9728_f32": 1275068416
+  },
+  "resident_base_bytes_excluding_kv": 10911891456,
+  "schema": "hawking.state.census.v1"
+}

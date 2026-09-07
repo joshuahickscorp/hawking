@@ -114,14 +114,8 @@ pub fn execute_layer_tile(
         }
     }
     let mut metal = metal;
-    let attn_hc = execute_attention_tile(
-        reader,
-        layer,
-        hc_in,
-        ledger,
-        profile,
-        metal.as_deref_mut(),
-    )?;
+    let attn_hc =
+        execute_attention_tile(reader, layer, hc_in, ledger, profile, metal.as_deref_mut())?;
     execute_moe_tile(reader, layer, &attn_hc, token_ids, ledger, profile, metal)
 }
 
@@ -368,10 +362,7 @@ fn execute_attention_tile(
     for t in 0..n {
         let row = &wo_b_out[t * WO_B_ROWS..(t + 1) * WO_B_ROWS];
         out.push(hc_attn_post_source_algorithm(
-            row,
-            &hc_in[t],
-            &posts[t],
-            &combs[t],
+            row, &hc_in[t], &posts[t], &combs[t],
         )?);
     }
     profile.add("mhc_attn_post", t_post.elapsed());
@@ -521,15 +512,8 @@ fn execute_moe_tile(
         }
     }
 
-    let shared = shared_expert_batched_tracked(
-        reader,
-        ledger,
-        profile,
-        metal,
-        layer,
-        &ffn_norm_packed,
-        n,
-    )?;
+    let shared =
+        shared_expert_batched_tracked(reader, ledger, profile, metal, layer, &ffn_norm_packed, n)?;
     let t_combine = Instant::now();
     for t in 0..n {
         let src = &shared[t * HIDDEN_SIZE..(t + 1) * HIDDEN_SIZE];
@@ -563,12 +547,7 @@ fn execute_moe_tile(
                 layer.layer
             )));
         }
-        let next_hc = hc_attn_post_source_algorithm(
-            &moe_bf16,
-            &attn_hc[t],
-            &posts[t],
-            &combs[t],
-        )?;
+        let next_hc = hc_attn_post_source_algorithm(&moe_bf16, &attn_hc[t], &posts[t], &combs[t])?;
         let selected_expert_ids = selected_ids[t]
             .iter()
             .map(|&id| {
@@ -853,8 +832,7 @@ fn wo_a_einsum_batched_tracked(
     profile.add("streaming_io", t_io.elapsed());
     if let Some(session) = metal {
         let t_metal = Instant::now();
-        match session.wo_a_einsum_batched(attention, weights.as_bytes(), scales.as_bytes(), batch)
-        {
+        match session.wo_a_einsum_batched(attention, weights.as_bytes(), scales.as_bytes(), batch) {
             Ok(output) => {
                 profile.add("mla_wo_a", t_metal.elapsed());
                 ledger.release(weight_name)?;

@@ -2216,14 +2216,40 @@ def active_bytes_from_organs(
     return int(round(active_b)), int(active_params or params or 0)
 
 
-def convert_gravity(hf_path: Path, dest: Path, spec: str,
-                    protected: list[str] | None = None) -> Path:
+def convert_gravity(
+    hf_path: Path,
+    dest: Path,
+    spec: str,
+    protected: list[str] | None = None,
+    conversion_telemetry: dict | None = None,
+) -> Path:
     """mlx_lm.convert with a per-module quant_predicate. Never touches hf_path."""
+    measurement = conversion_telemetry
+    started = time.perf_counter()
+    if measurement is not None:
+        measurement.clear()
+
+    def finish(*, reused: bool, convert_wall_s: float | None = None) -> None:
+        if measurement is None:
+            return
+        measurement.update(
+            {
+                "conversion_performed": not reused,
+                "conversion_reused": reused,
+                "mlx_convert_wall_s": (
+                    round(convert_wall_s, 4) if convert_wall_s is not None else None
+                ),
+                "wall_s": round(time.perf_counter() - started, 4),
+                "_label": "MEASURED (conversion lifecycle wall time)",
+            }
+        )
+
     prot = list(protected or [])
     mix_marker = dest / "odyssey_gravity_mix.json"
     if (dest / "config.json").exists() and any(dest.glob("*.safetensors")):
         if not str(spec).startswith("mixed-"):
             log(f"reusing gravity {spec} mlx at {dest}")
+            finish(reused=True)
             return dest
         prev = None
         if mix_marker.is_file():
@@ -2233,6 +2259,7 @@ def convert_gravity(hf_path: Path, dest: Path, spec: str,
                 prev = None
         if prev == prot:
             log(f"reusing gravity {spec} mlx at {dest} protected={prot}")
+            finish(reused=True)
             return dest
         log(f"protected set changed ({prev} -> {prot}); reconverting {dest}")
         subprocess.run(["rm", "-rf", str(dest)], check=True)
@@ -2249,6 +2276,7 @@ def convert_gravity(hf_path: Path, dest: Path, spec: str,
     from mlx_lm.convert import convert as mlx_convert
 
     q_group, q_bits = gravity_convert_defaults(spec)
+    convert_started = time.perf_counter()
     mlx_convert(
         hf_path=str(hf_path),
         mlx_path=str(dest),
@@ -2258,9 +2286,11 @@ def convert_gravity(hf_path: Path, dest: Path, spec: str,
         quant_predicate=gravity_quant_predicate(spec, protected=prot),
         trust_remote_code=True,
     )
+    convert_wall_s = time.perf_counter() - convert_started
     if not (dest / "config.json").exists() or not any(dest.glob("*.safetensors")):
         raise RuntimeError(f"gravity convert produced no weights at {dest}")
     atomic_write_text(mix_marker, json.dumps({"spec": spec, "protected": prot}, indent=2) + "\n")
+    finish(reused=False, convert_wall_s=convert_wall_s)
     return dest
 
 
@@ -2572,7 +2602,14 @@ def run_gravity_mode(
     parsed = parse_gravity_grammar(spec) or {}
     if spec.endswith("-attn-mlp") or parsed.get("target") == "attn-mlp":
         protected = ["ssm", "norm"]
-    dest = convert_gravity(weights, dest, spec, protected=protected)
+    conversion = {}
+    dest = convert_gravity(
+        weights,
+        dest,
+        spec,
+        protected=protected,
+        conversion_telemetry=conversion,
+    )
     n_src_after = len(list(weights.glob("model-*.safetensors")))
     if n_src_after < 1:
         n_src_after = len(list(weights.glob("*.safetensors")))
@@ -2607,10 +2644,12 @@ def run_gravity_mode(
     # arrays live in unified memory, so the Doctor battery + complete-accounting
     # run from RAM plus the captured disk figures. This is what stops parallel
     # lanes from filling the disk — concurrency becomes RAM-bound, not disk-bound.
+    nr_release_verified = False
     if os.environ.get("ODYSSEY_KEEP_SPEC_CACHE") != "1":
         try:
             mx.eval(model.parameters())
             shutil.rmtree(dest, ignore_errors=True)
+            nr_release_verified = not dest.exists()
             log(f"freed spec cache {dest} ({stored_bytes/1e9:.1f}GB) — Doctor runs from RAM")
         except (OSError, Exception) as exc:  # noqa: BLE001 — deletion must never break the run
             log(f"spec-cache free skipped: {exc}")
@@ -2702,6 +2741,13 @@ def run_gravity_mode(
         "active_params_per_token": active_params,
         "organs_bytes_quantized": organs_b,
         "disk_tensors": disk_info,
+        "gravity_conversion": conversion,
+        "nr_release_verified": nr_release_verified,
+        "nr_lifecycle": {
+            "working_representation": str(dest),
+            "released_after_materialization": nr_release_verified,
+            "release_evidence": "dest path absent after mx.eval and cache release" if nr_release_verified else "release not verified",
+        },
         "live_nbytes": live_total,
         "battery": doc["battery"],
         "refusals": doc["refusals"],
@@ -2751,6 +2797,7 @@ def run_gravity_mode(
             "delta_hits": "DERIVED (this MEASURED minus EXTERNAL MEASURED)",
             "verdict": "DERIVED",
             "failure_localization": "DERIVED (rank organs by MEASURED sensitivity delta)",
+            "gravity_conversion": "MEASURED conversion lifecycle wall time",
         },
         "commit": git_head(),
         "python": sys.executable,

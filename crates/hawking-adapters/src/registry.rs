@@ -153,7 +153,10 @@ mod tests {
         let r = builtin_registry();
         let g = r.get("glm").unwrap();
         assert_eq!(g.level, SupportLevel::SmallRealCheckpoint);
-        assert!(g.evidence.iter().any(|e| e.path.contains("GLM52_FLAGSHIP")));
+        assert!(g
+            .evidence
+            .iter()
+            .any(|e| e.path.contains("ADAPTER_GLM_RECEIPT")));
     }
     #[test]
     fn kimi_is_synthetic_not_serve_registered() {

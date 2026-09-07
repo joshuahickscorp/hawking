@@ -106,7 +106,9 @@ pub fn reconcile(claims: &[LaneClaim], measured: &MeasuredToken) -> ModelReconci
         lanes,
         honesty: format!(
             "sum_claimed={} ns, measured_token_delta={} ns, discrepancy={} ns",
-            sum_claimed_ns, measured_delta_ns, sum_claimed_ns - measured_delta_ns
+            sum_claimed_ns,
+            measured_delta_ns,
+            sum_claimed_ns - measured_delta_ns
         ),
     }
 }
@@ -142,7 +144,9 @@ pub fn ascent_2026_08_16_claims() -> Vec<LaneClaim> {
             lane: "dsv-cb-collapse".into(),
             model: "dsv4f".into(),
             claimed_ns_saved: 300_000_000,
-            claim_source: "ASCENT_STATE recoverable_ns_per_token; receipt also asserts 2264→1464 ms body".into(),
+            claim_source:
+                "ASCENT_STATE recoverable_ns_per_token; receipt also asserts 2264→1464 ms body"
+                    .into(),
             claim_kind: "recoverable_hypothesis_and_receipt_result".into(),
         },
         LaneClaim {
@@ -156,14 +160,16 @@ pub fn ascent_2026_08_16_claims() -> Vec<LaneClaim> {
             lane: "dsv-mla".into(),
             model: "dsv4f".into(),
             claimed_ns_saved: 150_000_000,
-            claim_source: "ASCENT_STATE recoverable_ns_per_token; receipt attention GPU 198→128 ms".into(),
+            claim_source: "ASCENT_STATE recoverable_ns_per_token; receipt attention GPU 198→128 ms"
+                .into(),
             claim_kind: "recoverable_hypothesis_and_component".into(),
         },
         LaneClaim {
             lane: "dsv-expert".into(),
             model: "dsv4f".into(),
             claimed_ns_saved: 200_000_000,
-            claim_source: "ASCENT_STATE recoverable_ns_per_token; receipt slab_io 481→262 ms".into(),
+            claim_source: "ASCENT_STATE recoverable_ns_per_token; receipt slab_io 481→262 ms"
+                .into(),
             claim_kind: "recoverable_hypothesis_and_component".into(),
         },
         LaneClaim {
@@ -212,7 +218,8 @@ pub fn ascent_2026_08_16_claims() -> Vec<LaneClaim> {
             lane: "q80-decode-kernels".into(),
             model: "q80".into(),
             claimed_ns_saved: 211_000_000,
-            claim_source: "q80-decode-kernels.json result_ns_per_token=192ms vs baseline 403ms".into(),
+            claim_source: "q80-decode-kernels.json result_ns_per_token=192ms vs baseline 403ms"
+                .into(),
             claim_kind: "receipt_result_not_a_token".into(),
         },
     ]

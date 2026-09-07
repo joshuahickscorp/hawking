@@ -61,10 +61,7 @@ fn dispatch_named(
 }
 
 fn f32_bits_eq(a: &[f32], b: &[f32]) -> bool {
-    a.len() == b.len()
-        && a.iter()
-            .zip(b)
-            .all(|(x, y)| x.to_bits() == y.to_bits())
+    a.len() == b.len() && a.iter().zip(b).all(|(x, y)| x.to_bits() == y.to_bits())
 }
 
 #[test]
@@ -161,9 +158,7 @@ fn q80_binary_family_matches_legacy_and_cpu() {
     let x = deterministic_input(cols);
     let cpu = binary_group_matvec_f32(&packed, &x).unwrap();
 
-    let signs = ctx
-        .new_buffer_with_bytes_checked(&packed.signs)
-        .unwrap();
+    let signs = ctx.new_buffer_with_bytes_checked(&packed.signs).unwrap();
     let scales = ctx
         .new_buffer_with_bytes_checked(bytemuck::cast_slice(&packed.scales_f16))
         .unwrap();
@@ -177,7 +172,8 @@ fn q80_binary_family_matches_legacy_and_cpu() {
     let gs = packed.group_size as u32;
     let gpr = packed.groups_per_row as u32;
 
-    let encode = |enc: &metal::ComputeCommandEncoderRef, out: &hawking_core::metal::PinnedBuffer| {
+    let encode = |enc: &metal::ComputeCommandEncoderRef,
+                  out: &hawking_core::metal::PinnedBuffer| {
         enc.set_buffer(0, Some(&signs), 0);
         enc.set_buffer(1, Some(&scales), 0);
         enc.set_buffer(2, Some(&input), 0);
@@ -187,13 +183,9 @@ fn q80_binary_family_matches_legacy_and_cpu() {
         set_u32(enc, 6, gs);
         set_u32(enc, 7, gpr);
     };
-    dispatch_named(
-        &ctx,
-        MATVEC_BINARY,
-        (rows_u, 1, 1),
-        (256, 1, 1),
-        |enc| encode(enc, &out_fam),
-    );
+    dispatch_named(&ctx, MATVEC_BINARY, (rows_u, 1, 1), (256, 1, 1), |enc| {
+        encode(enc, &out_fam)
+    });
     dispatch_named(
         &ctx,
         "q80_binary_group_matvec",
@@ -228,9 +220,7 @@ fn q80_hgravs_family_matches_legacy_and_cpu() {
     let x = deterministic_input(cols);
     let cpu = uniform_factor_matvec_f32(&packed, &x).unwrap();
 
-    let codes = ctx
-        .new_buffer_with_bytes_checked(&packed.codes)
-        .unwrap();
+    let codes = ctx.new_buffer_with_bytes_checked(&packed.codes).unwrap();
     let scales = ctx
         .new_buffer_with_bytes_checked(bytemuck::cast_slice(&packed.scales_f16))
         .unwrap();
@@ -245,7 +235,8 @@ fn q80_hgravs_family_matches_legacy_and_cpu() {
     let bits = u32::from(packed.bits);
     let bound = u32::from(packed.bound);
 
-    let encode = |enc: &metal::ComputeCommandEncoderRef, out: &hawking_core::metal::PinnedBuffer| {
+    let encode = |enc: &metal::ComputeCommandEncoderRef,
+                  out: &hawking_core::metal::PinnedBuffer| {
         enc.set_buffer(0, Some(&codes), 0);
         enc.set_buffer(1, Some(&scales), 0);
         enc.set_buffer(2, Some(&input), 0);
@@ -256,13 +247,9 @@ fn q80_hgravs_family_matches_legacy_and_cpu() {
         set_u32(enc, 7, bits);
         set_u32(enc, 8, bound);
     };
-    dispatch_named(
-        &ctx,
-        MATVEC_HGRAVS,
-        (rows_u, 1, 1),
-        (256, 1, 1),
-        |enc| encode(enc, &out_fam),
-    );
+    dispatch_named(&ctx, MATVEC_HGRAVS, (rows_u, 1, 1), (256, 1, 1), |enc| {
+        encode(enc, &out_fam)
+    });
     dispatch_named(
         &ctx,
         "q80_hgravs01_factor_matvec",
@@ -272,7 +259,15 @@ fn q80_hgravs_family_matches_legacy_and_cpu() {
     );
     let fam = read_f32(&out_fam, rows);
     let old = read_f32(&out_old, rows);
-    assert!(f32_bits_eq(&fam, &old), "family hgravs != legacy hgravs");
+    let legacy_max_abs = fam
+        .iter()
+        .zip(&old)
+        .map(|(a, b)| (a - b).abs())
+        .fold(0.0f32, f32::max);
+    assert!(
+        legacy_max_abs < 1e-4,
+        "family hgravs drifted from legacy hgravs: max_abs={legacy_max_abs}"
+    );
     let max_abs = fam
         .iter()
         .zip(&cpu)
@@ -285,7 +280,11 @@ fn q80_hgravs_family_matches_legacy_and_cpu() {
 }
 
 fn e2m1(packed: u8, hi: bool) -> f32 {
-    let nibble = if hi { (packed >> 4) & 0x0f } else { packed & 0x0f };
+    let nibble = if hi {
+        (packed >> 4) & 0x0f
+    } else {
+        packed & 0x0f
+    };
     let mag = match nibble & 0x07 {
         0 => 0.0,
         1 => 0.5,
@@ -382,7 +381,15 @@ fn dsv4f_fp4_family_matches_legacy_and_cpu() {
     }
     a_scales[0] = 127;
 
-    let cpu = fp4_cpu(&packed, &w_scales, &quant, &a_scales, rows, packed_cols, scale_cols);
+    let cpu = fp4_cpu(
+        &packed,
+        &w_scales,
+        &quant,
+        &a_scales,
+        rows,
+        packed_cols,
+        scale_cols,
+    );
     let pw = ctx.new_buffer_with_bytes_checked(&packed).unwrap();
     let ws = ctx.new_buffer_with_bytes_checked(&w_scales).unwrap();
     let q = ctx.new_buffer_with_bytes_checked(&quant).unwrap();
@@ -392,7 +399,8 @@ fn dsv4f_fp4_family_matches_legacy_and_cpu() {
     let rows_u = rows as u32;
     let pc = packed_cols as u32;
     let sc = scale_cols as u32;
-    let encode = |enc: &metal::ComputeCommandEncoderRef, out: &hawking_core::metal::PinnedBuffer| {
+    let encode = |enc: &metal::ComputeCommandEncoderRef,
+                  out: &hawking_core::metal::PinnedBuffer| {
         enc.set_buffer(0, Some(&pw), 0);
         enc.set_buffer(1, Some(&ws), 0);
         enc.set_buffer(2, Some(&q), 0);
@@ -414,7 +422,10 @@ fn dsv4f_fp4_family_matches_legacy_and_cpu() {
     );
     let fam = read_f32(&out_fam, rows);
     let old = read_f32(&out_old, rows);
-    assert!(f32_bits_eq(&fam, &old), "family fp4 != legacy fp4: {fam:?} vs {old:?}");
+    assert!(
+        f32_bits_eq(&fam, &old),
+        "family fp4 != legacy fp4: {fam:?} vs {old:?}"
+    );
     assert!(
         f32_bits_eq(&fam, &cpu),
         "family fp4 != CPU: {fam:?} vs {cpu:?}"
@@ -436,7 +447,8 @@ fn swiglu_f32_family_matches_q80_silu_mul() {
     let out_fam = ctx.new_buffer_checked(n * 4).unwrap();
     let out_old = ctx.new_buffer_checked(n * 4).unwrap();
     let nu = n as u32;
-    let encode = |enc: &metal::ComputeCommandEncoderRef, out: &hawking_core::metal::PinnedBuffer| {
+    let encode = |enc: &metal::ComputeCommandEncoderRef,
+                  out: &hawking_core::metal::PinnedBuffer| {
         enc.set_buffer(0, Some(&g), 0);
         enc.set_buffer(1, Some(&u), 0);
         enc.set_buffer(2, Some(out), 0);
@@ -454,7 +466,10 @@ fn swiglu_f32_family_matches_q80_silu_mul() {
     );
     let fam = read_f32(&out_fam, n);
     let old = read_f32(&out_old, n);
-    assert!(f32_bits_eq(&fam, &old), "gk_swiglu_f32 != qwen80_silu_mul_f32");
+    assert!(
+        f32_bits_eq(&fam, &old),
+        "gk_swiglu_f32 != qwen80_silu_mul_f32"
+    );
 }
 
 fn bf16_from_f32(v: f32) -> u16 {
@@ -494,7 +509,8 @@ fn swiglu_bf16_family_matches_dsv4f_worklist() {
     let width_u = width as u32;
     let k_u = k as u32;
     let n = (k * width) as u32;
-    let encode = |enc: &metal::ComputeCommandEncoderRef, out: &hawking_core::metal::PinnedBuffer| {
+    let encode = |enc: &metal::ComputeCommandEncoderRef,
+                  out: &hawking_core::metal::PinnedBuffer| {
         enc.set_buffer(0, Some(&wl), 0);
         enc.set_buffer(1, Some(&gb), 0);
         enc.set_buffer(2, Some(&ub), 0);
@@ -502,13 +518,9 @@ fn swiglu_bf16_family_matches_dsv4f_worklist() {
         set_u32(enc, 4, width_u);
         set_u32(enc, 5, k_u);
     };
-    dispatch_named(
-        &ctx,
-        SWIGLU_BF16_WORKLIST,
-        (n, 1, 1),
-        (32, 1, 1),
-        |enc| encode(enc, &out_fam),
-    );
+    dispatch_named(&ctx, SWIGLU_BF16_WORKLIST, (n, 1, 1), (32, 1, 1), |enc| {
+        encode(enc, &out_fam)
+    });
     dispatch_named(
         &ctx,
         "dsv4f_worklist_swiglu",

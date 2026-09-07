@@ -1,5 +1,9 @@
 //! Native Qwen3.8 greedy generate on the language-only Q4 catalog.
 //!
+//! Prompt processing uses batched GEMM (`generate_greedy` default). Set
+//! `HAWKING_QWEN38_BATCH_PREFILL=0` to restore the historical per-token
+//! `step` loop. Decode is unchanged.
+//!
 //! ```text
 //! ./tools/gpu_lane_lock.sh qwen38-native-bringup \
 //!   workspace/ops/build/rust/release/examples/ascension_qwen38_hybrid_greedy \
@@ -154,7 +158,10 @@ fn spread_u64(values: &[u64]) -> Value {
     })
 }
 
-fn collect_field(steps: &[&Qwen38CompleteToken], f: impl Fn(&Qwen38CompleteToken) -> u64) -> Vec<u64> {
+fn collect_field(
+    steps: &[&Qwen38CompleteToken],
+    f: impl Fn(&Qwen38CompleteToken) -> u64,
+) -> Vec<u64> {
     steps.iter().map(|s| f(s)).collect()
 }
 
@@ -348,21 +355,14 @@ fn run_complete_wall(args: &Args, tokenizer: &Tokenizer, rendered: &str, prompt_
     eprintln!("qwen38 session open {:.3}s", session_open_ns as f64 / 1e9);
 
     eprintln!("qwen38 complete-wall COLD generate (discard from authority except first-step)");
-    let cold = generate_greedy_complete_wall(
-        &mut session,
-        tokenizer,
-        prompt_ids,
-        args.max_new_tokens,
-    )
-    .unwrap_or_else(|e| fail(e));
+    let cold =
+        generate_greedy_complete_wall(&mut session, tokenizer, prompt_ids, args.max_new_tokens)
+            .unwrap_or_else(|e| fail(e));
     if cold.fallbacks != 0 {
         fail(format!("cold generate fallbacks={}", cold.fallbacks));
     }
     let cold_summary = summarize_complete(&cold, tokenizer);
-    let cold_first_gpu = cold
-        .first_step()
-        .and_then(|s| s.step.gpu_ns)
-        .unwrap_or(0);
+    let cold_first_gpu = cold.first_step().and_then(|s| s.step.gpu_ns).unwrap_or(0);
     eprintln!(
         "qwen38 COLD first step wall={} ns gpu={} ns prefill={} ns",
         cold.first_step().map(|s| s.complete_wall_ns).unwrap_or(0),
@@ -393,9 +393,7 @@ fn run_complete_wall(args: &Args, tokenizer: &Tokenizer, rendered: &str, prompt_
             let ids = result.new_tokens().to_vec();
             if let Some(prev) = &last_ids {
                 if prev != &ids {
-                    fail(format!(
-                        "{label} greedy ids drifted vs previous warm rep"
-                    ));
+                    fail(format!("{label} greedy ids drifted vs previous warm rep"));
                 }
             }
             last_ids = Some(ids);
@@ -403,7 +401,9 @@ fn run_complete_wall(args: &Args, tokenizer: &Tokenizer, rendered: &str, prompt_
             let steady_median = summary["steady_decode"]["complete_wall_ns"]["median"]
                 .as_u64()
                 .unwrap_or(0);
-            let gpu_median = summary["steady_decode"]["gpu_ns"]["median"].as_u64().unwrap_or(0);
+            let gpu_median = summary["steady_decode"]["gpu_ns"]["median"]
+                .as_u64()
+                .unwrap_or(0);
             eprintln!(
                 "qwen38 WARM {label} complete-wall median={} ns ({:.3} ms) gpu median={} ns decode_steps={}",
                 steady_median,
@@ -430,8 +430,8 @@ fn run_complete_wall(args: &Args, tokenizer: &Tokenizer, rendered: &str, prompt_
     }
 
     eprintln!("qwen38 complete-wall CONTROL uninstrumented generate_greedy");
-    let control = generate_greedy(&mut session, prompt_ids, args.max_new_tokens)
-        .unwrap_or_else(|e| fail(e));
+    let control =
+        generate_greedy(&mut session, prompt_ids, args.max_new_tokens).unwrap_or_else(|e| fail(e));
     if control.fallbacks != 0 {
         fail(format!("control fallbacks={}", control.fallbacks));
     }
@@ -447,10 +447,7 @@ fn run_complete_wall(args: &Args, tokenizer: &Tokenizer, rendered: &str, prompt_
     let pooled_gpu = median_u64(&all_steady_gpus).unwrap_or(0);
     let control_decode_ns_per_token = control.steady_decode_wall_ns_per_token().unwrap_or(0);
 
-    let first_warm = pair_reps
-        .first()
-        .cloned()
-        .unwrap_or_else(|| json!({}));
+    let first_warm = pair_reps.first().cloned().unwrap_or_else(|| json!({}));
     let warm_components = first_warm
         .get("summary")
         .and_then(|s| s.get("closure"))
@@ -568,14 +565,8 @@ fn run_complete_wall(args: &Args, tokenizer: &Tokenizer, rendered: &str, prompt_
         },
     });
 
-    println!(
-        "COMPLETE_WALL_NS_PER_TOKEN: {}",
-        authority_median
-    );
-    println!(
-        "COMPLETE_WALL_MS_PER_TOKEN: {:.6}",
-        authority_wall_ms
-    );
+    println!("COMPLETE_WALL_NS_PER_TOKEN: {}", authority_median);
+    println!("COMPLETE_WALL_MS_PER_TOKEN: {:.6}", authority_wall_ms);
     println!(
         "COMPLETE_WALL_TPS: {:.4}",
         if authority_median > 0 {
@@ -585,13 +576,9 @@ fn run_complete_wall(args: &Args, tokenizer: &Tokenizer, rendered: &str, prompt_
         }
     );
     println!("GPU_NS_PER_TOKEN: {authority_gpu}");
-    println!(
-        "WALL_MINUS_GPU_NS: {wall_minus_gpu}"
-    );
+    println!("WALL_MINUS_GPU_NS: {wall_minus_gpu}");
     println!("REP_MEDIANS_NS: {authority_rep_medians:?}");
-    println!(
-        "CONTROL_DECODE_WALL_NS_PER_TOKEN: {control_decode_ns_per_token}"
-    );
+    println!("CONTROL_DECODE_WALL_NS_PER_TOKEN: {control_decode_ns_per_token}");
     println!(
         "GENERATED_TEXT_VERBATIM: {}",
         control.decode_new(tokenizer).unwrap_or_else(|e| fail(e))

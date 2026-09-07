@@ -1,21 +1,21 @@
-//! hide-sdk: the generated client SDK and codegen for the HIDE Agent Server.
+//! hide-sdk: the generated protocol SDK and codegen for the HCLI backend.
 //!
 //! Bible sec 15.7 states the rule this crate exists to enforce: "One source
 //! must generate Rust types, TypeScript types, JSON Schema, OpenAPI
 //! projections, protocol documentation, compatibility tests, event fixtures. No
-//! handwritten frontend mirror types." That one source is `hide-protocol`.
+//! handwritten client mirror types." That one source is `hide-protocol`.
 //! hide-sdk reads its schemars-derived schemas and projects them, so nothing
 //! downstream re-declares the protocol by hand.
 //!
 //! Three surfaces, all model-free:
 //!
 //! - [`schema`]: emit the protocol JSON Schema bundle from the ONE source.
-//! - [`ts`]: a deterministic JSON-Schema-to-TypeScript emitter. The frontend's
-//!   `.d.ts` types come from here, not from a handwritten mirror.
+//! - [`ts`]: a deterministic JSON-Schema-to-TypeScript emitter. External
+//!   clients' `.d.ts` types come from here, not from a handwritten mirror.
 //! - [`client`]: a thin async client over a [`client::Transport`] trait, with a
 //!   [`client::MockTransport`] for tests and typed helper methods that build
 //!   `hide-protocol` [`Method`](crate::Method) requests and parse typed
-//!   results.
+//!   results for HCLI or future external clients.
 //! - [`fixtures`]: canonical Notification/Item JSON fixtures the compatibility
 //!   tests round-trip through `hide-protocol` serde.
 //!
@@ -23,7 +23,7 @@
 //!
 //! Everything here is deterministic codegen and in-memory transport plumbing
 //! over fixtures. It never runs a model or opens a socket. The real transport
-//! that carries these requests to a live server is DEFERRED_MODEL_REQUIRED
+//! that carries these requests to a live HCLI backend is DEFERRED_MODEL_REQUIRED
 //! -adjacent (a running agent server is required to exercise it end to end) and
 //! is deliberately out of scope; see [`client::Transport`] for the seam and
 //! [`client::MockTransport`] for the deterministic stand-in used in tests.
@@ -35,13 +35,13 @@ pub mod client {
     //! [`Method`] values, sends them through a [`Transport`], and decodes the typed
     //! result. The typed helpers ([`Client::session_start`], [`Client::turn_start`],
     //! [`Client::item_subscribe`], [`Client::thread_fork`]) are the ergonomic
-    //! surface a frontend or an integration would call.
+    //! surface an external client or integration would call.
     //!
     //! # DEFERRED_MODEL_REQUIRED
     //!
     //! The [`Transport`] trait is the seam to a live agent server. The real
-    //! loopback / HTTP transport that carries these requests to a running
-    //! `hide-serve` and streams notifications back needs a model-bearing server to
+    //! loopback / HTTP transport that carries these requests to a running HCLI
+    //! backend and streams notifications back needs a model-bearing server to
     //! answer them, so it is out of scope here and not implemented. Everything in
     //! this crate exercises the client over [`MockTransport`], a deterministic
     //! in-memory stand-in with a fixed routing table and a preloaded notification
@@ -296,15 +296,15 @@ pub mod client {
 }
 
 pub mod command {
-    //! Project the ONE command registry from `hide-protocol` into the artifacts the
-    //! frontend consumes: the serialized catalog (`command_catalog.json`) and the
+    //! Project the ONE command registry from `hide-protocol` into artifacts an
+    //! external client can consume: the serialized catalog (`command_catalog.json`) and the
     //! TypeScript that exposes the `CommandSpec` type plus the catalog array
     //! (`commands.d.ts`).
     //!
-    //! Same guarantee as the protocol codegen (Bible sec 15.7): the FE does not
+    //! Same guarantee as the protocol codegen (Bible sec 15.7): clients do not
     //! hand-declare the command table. It comes from `crate::command_catalog`
     //! through this deterministic emitter, so a catalog change flows into the golden
-    //! and fails the build until the FE artifact is regenerated.
+    //! and fails the build until the artifact is regenerated.
     //!
     //! Model-free: pure deterministic codegen over a static table.
 
@@ -322,7 +322,7 @@ pub mod command {
     /// The command TypeScript: the `CommandSpec` interface (and every enum it
     /// references) generated from the schemars schema, plus a declare-only catalog
     /// binding. Checked in at `goldens/commands.d.ts` (counted active source).
-    /// Runtime values live in `command_catalog.json` (loaded by the FE).
+    /// Runtime values live in `command_catalog.json` (loaded by a client).
     pub fn command_typescript() -> String {
         let (_roots, defs) = crate::sdk::schema::collect_root::<CommandSpec>();
 
@@ -336,7 +336,7 @@ pub mod command {
 
         out.push_str(&crate::sdk::ts::emit_definitions(&defs));
 
-        // Runtime catalog values are command_catalog.json (FE loads that file).
+        // Runtime catalog values are command_catalog.json (clients load that file).
         // Types-only here: the table is already the counted Rust authority.
         out.push_str("// Runtime values: import command_catalog.json (generated sibling).\n");
         out.push_str("export declare const COMMAND_CATALOG: CommandSpec[];\n");
@@ -351,7 +351,7 @@ pub mod fixtures {
     //! from `hide-protocol` types, that the compatibility tests round-trip through
     //! serde. Because the fixtures are typed hide-protocol values, they cannot
     //! encode a shape the protocol does not accept, and [`events_json`] renders them
-    //! into the golden artifact the frontend and external clients can pin against.
+    //! into the golden artifact external clients can pin against.
     //!
     //! One source: the typed fixtures below are the origin; the JSON bundle and its
     //! golden are serialized from them, never maintained by hand.
@@ -577,7 +577,7 @@ pub mod schema {
     };
 
     /// The top protocol types the bundle roots at, in a fixed order. These are the
-    /// entry points a frontend or an external client cares about; every other type
+    /// entry points an external client cares about; every other type
     /// they reference is pulled into `definitions` transitively.
     ///
     /// "Initialize" from the Bible list expands to both halves of the handshake:
@@ -701,11 +701,11 @@ pub mod schema {
 pub mod ts {
     //! Deterministic JSON-Schema-to-TypeScript emitter.
     //!
-    //! This is the "no handwritten frontend mirror types" guarantee (Bible sec
-    //! 15.7): the frontend's protocol types are generated here, from the same
+    //! This is the "no handwritten client mirror types" guarantee (Bible sec
+    //! 15.7): client protocol types are generated here, from the same
     //! schemars schemas [`crate::sdk::schema`] exports, so they cannot drift from the
     //! Rust wire types. A protocol change reshapes this output, and the golden-file
-    //! test then fails until the frontend types are regenerated.
+    //! test then fails until the client types are regenerated.
     //!
     //! # Covered subset
     //!
@@ -741,7 +741,7 @@ pub mod ts {
     use crate::sdk::schema::collect_definitions;
 
     /// Emit the full protocol TypeScript declarations as a stable string. This is
-    /// the exact artifact the golden-file test pins and the frontend consumes.
+    /// the exact artifact the golden-file test pins and external clients consume.
     pub fn protocol_typescript() -> String {
         let (roots, defs) = collect_definitions();
         emit(&roots, &defs)
@@ -761,7 +761,7 @@ pub mod ts {
     fn emit(roots: &[String], defs: &Map<String, Value>) -> String {
         let mut out = String::new();
         out.push_str("// Generated by hide-sdk from hide-protocol. DO NOT EDIT BY HAND.\n");
-        out.push_str("// Bible sec 15.7: one schema source generates the frontend types.\n");
+        out.push_str("// Bible sec 15.7: one schema source generates client types.\n");
         out.push_str("// Regenerate with `cargo run -p hide-sdk --bin hide-sdk-codegen`.\n");
         out.push_str("// A drift from the Rust wire types is caught by the golden-file test.\n");
         out.push_str("// Protocol version: hide.agent.v1\n");

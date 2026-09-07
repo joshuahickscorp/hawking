@@ -265,10 +265,7 @@ fn median_f64(v: &[f64]) -> Option<f64> {
 }
 
 #[cfg(target_os = "macos")]
-fn probe_dispatches(
-    session: &mut Qwen38HybridDecodeSession,
-    token: u32,
-) -> Result<Value, String> {
+fn probe_dispatches(session: &mut Qwen38HybridDecodeSession, token: u32) -> Result<Value, String> {
     session.reset();
     let theoretical = session.theoretical_dispatches();
     let (sampled, dispatches, timing) = session
@@ -318,13 +315,19 @@ fn measure_organs(session: &Qwen38HybridDecodeSession, reps: usize) -> Result<Va
                 .map_err(|e| e.to_string())?;
             match t.gpu_ns {
                 Some(g) => {
-                    eprintln!("  noop_empty rep{i} gpu={g} wait={} disp={}", t.wait_ns, t.dispatches);
+                    eprintln!(
+                        "  noop_empty rep{i} gpu={g} wait={} disp={}",
+                        t.wait_ns, t.dispatches
+                    );
                     gpu.push(g);
                     wait.push(t.wait_ns);
                 }
                 None => {
                     no_timestamp += 1;
-                    eprintln!("  noop_empty rep{i} gpu=<below timestamp resolution> wait={}", t.wait_ns);
+                    eprintln!(
+                        "  noop_empty rep{i} gpu=<below timestamp resolution> wait={}",
+                        t.wait_ns
+                    );
                     wait.push(t.wait_ns);
                 }
             }
@@ -364,7 +367,10 @@ fn measure_organs(session: &Qwen38HybridDecodeSession, reps: usize) -> Result<Va
             let g = t
                 .gpu_ns
                 .ok_or_else(|| format!("{organ}: driver did not expose GPUEndTime-GPUStartTime"))?;
-            eprintln!("  {organ} rep{i} gpu={g} wait={} disp={}", t.wait_ns, t.dispatches);
+            eprintln!(
+                "  {organ} rep{i} gpu={g} wait={} disp={}",
+                t.wait_ns, t.dispatches
+            );
             gpu.push(g);
             wait.push(t.wait_ns);
             disp = t.dispatches;
@@ -444,10 +450,7 @@ fn run(args: Args) {
     let bad_parity = session
         .measure_ba_delta_fusion_parity(0, true)
         .unwrap_or_else(|e| fail(e));
-    eprintln!(
-        "  bad max_abs rec_out={}",
-        bad_parity.max_abs_diff_act
-    );
+    eprintln!("  bad max_abs rec_out={}", bad_parity.max_abs_diff_act);
 
     eprintln!("isolated organs (parent 756 graph)");
     let isolated = measure_organs(&session, args.reps).unwrap_or_else(|e| fail(e));
@@ -542,18 +545,10 @@ fn run(args: Args) {
         .unwrap_or_else(|e| fail(e));
     }
 
-    let parent_n = qwen38_fused_dispatches_per_token_ex(
-        Qwen38MlpFusion::GateUpSwiglu,
-        true,
-        true,
-        false,
-    );
-    let baseline_n = qwen38_fused_dispatches_per_token_ex(
-        Qwen38MlpFusion::GateUpSwiglu,
-        true,
-        true,
-        true,
-    );
+    let parent_n =
+        qwen38_fused_dispatches_per_token_ex(Qwen38MlpFusion::GateUpSwiglu, true, true, false);
+    let baseline_n =
+        qwen38_fused_dispatches_per_token_ex(Qwen38MlpFusion::GateUpSwiglu, true, true, true);
     let candidate_n = qwen38_fused_dispatches_per_token_full(
         Qwen38MlpFusion::GateUpSwiglu,
         true,

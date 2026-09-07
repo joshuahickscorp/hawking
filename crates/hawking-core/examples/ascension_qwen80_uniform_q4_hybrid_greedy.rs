@@ -250,8 +250,11 @@ fn run() -> Result<(), String> {
                     "bit_identical_mmap_vs_fresh_read": true,
                 },
             });
-            fs::write(&out, serde_json::to_string_pretty(&receipt).map_err(|e| e.to_string())?)
-                .map_err(|e| e.to_string())?;
+            fs::write(
+                &out,
+                serde_json::to_string_pretty(&receipt).map_err(|e| e.to_string())?,
+            )
+            .map_err(|e| e.to_string())?;
             eprintln!("wrote {}", out.display());
         }
         return Ok(());

@@ -15,9 +15,14 @@ from .config import Config
 from .engine import Engine
 from .events import EventBus
 from .goal_bank import GoalBank, GoalBankError
-from .knowledge import KnowledgeStore
+from .knowledge import KnowledgeStore, _sanitise_text
 from .max_policy import grok_pool_snapshot
-from .mission import Mission
+from .mission import (
+    TERMINAL_MISSION_PHASES,
+    Mission,
+    load_state,
+    mission_state_path,
+)
 from .models import ModelInfo, ModelRegistry
 from .resources import MutationLock, can_admit, normalize_resource_class, occupancy_of
 from .runtime import RuntimePool, load_observed_overlap
@@ -66,6 +71,27 @@ def _http_json(url: str, timeout: float = 0.4) -> Any:
 _AUTO_COMPACT_MESSAGES = 32
 _MEMORY_LIST_LIMIT = 12
 _MEMORY_TEXT_LIMIT = 600
+
+
+def _live_mission_identity(workspace_root: Any) -> Optional[Dict[str, Any]]:
+    """The running mission's id and session_id from disk, or None.
+
+    Disk is authority. A supervising process that did not start the mission has
+    no mission object, but the mission's own state file names the session whose
+    steering queue it polls.
+    """
+    try:
+        path = Path(str(workspace_root)) / ".hcli" / "mission" / "state.json"
+        if not path.is_file():
+            return None
+        data = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(data, dict):
+            return None
+        if str(data.get("phase") or "").lower() not in ("running", "paused"):
+            return None
+        return {"id": data.get("id"), "session_id": data.get("session_id")}
+    except Exception:
+        return None
 
 
 class Controller:
@@ -1221,11 +1247,24 @@ class Controller:
                 except Exception:
                     pass
         else:
-            queue = SteeringQueue(
-                self.workspace_root,
-                self.session.id,
+            # No mission object attached -- the DETACHED SUPERVISOR case, which the
+            # Odyssey contract treats as normal: Claude attaches, injects, detaches.
+            # Keying the queue on THIS process's session id wrote the steer to a file
+            # the running mission never reads, and the CLI still printed a success
+            # tick. Measured: mission session 3f254d6d..., steer landed in
+            # c22b3aa4..., no file for the mission at all.
+            #
+            # Target the LIVE mission's session when one is on disk, so the steer
+            # reaches the queue the mission actually polls.
+            live = _live_mission_identity(self.workspace_root)
+            target_session = (live or {}).get("session_id") or self.session.id
+            queue = SteeringQueue(self.workspace_root, target_session)
+            event = queue.enqueue(
+                body,
+                kind=token,
+                mission_id=(live or {}).get("id"),
+                source_session_id=self.session.id,
             )
-            event = queue.enqueue(body, kind=token)
         self.session.steering.append(body)
         try:
             self.knowledge.record_note(body, kind=token)
@@ -1249,17 +1288,65 @@ class Controller:
             if goal is not None
             else self.session.goal
         )
-        self.mission = Mission(
-            self.workspace_root,
-            engine=engine if engine is not None else self.engine,
-            units=units,
-            goal=text or "",
-            runtime_count=self.runtime_count,
-            runtime_pool=self.runtime_pool,
-            session_id=self.session.id,
-            context_memory=kwargs.pop("context_memory", self._context_memory_for_turn()),
-            **kwargs,
-        )
+        # Popped once, before the fork: both branches pass the same value, and
+        # a failed adopt must not consume it on its way to the replace path.
+        if "context_memory" in kwargs:
+            memory = kwargs.pop("context_memory")
+        else:
+            memory = self._context_memory_for_turn()
+        # Reissuing a goal used to MINT a new mission over the old one: the
+        # constructor's Scheduler._persist() rewrites dag.json, and because
+        # content_identity() ignores status, a content-identical graph is not
+        # an IdentityConflict and is not retired -- completed units came back
+        # `pending` and the prior id survived only in mission.log. Adopt
+        # instead, but only on a verified match: same goal text, and a phase
+        # the mission can still be advanced from. Agent.run() already forks
+        # this way (runtime.py); it just never had the identity check because
+        # its resume path is the one that passes no goal at all.
+        adopt = False
+        if units is None:
+            try:
+                prior = load_state(mission_state_path(self.workspace_root))
+            except Exception:
+                prior = {}
+            adopt = (
+                str(prior.get("goal") or "") == (text or "")
+                and str(prior.get("phase") or "") not in TERMINAL_MISSION_PHASES
+            )
+        if adopt:
+            # A corrupt state.json, a retired dag, a WorkUnit schema that moved
+            # -- any of these raise in from_workspace. None of them may make
+            # /mission unusable: restoring is the optimisation, minting a fresh
+            # mission is still a correct answer, so fall through on failure.
+            try:
+                self.mission = Mission.from_workspace(
+                    self.workspace_root,
+                    engine=engine if engine is not None else self.engine,
+                    goal=text or "",
+                    runtime_count=self.runtime_count,
+                    runtime_pool=self.runtime_pool,
+                    session_id=self.session.id,
+                    context_memory=memory,
+                    **kwargs,
+                )
+            except Exception:
+                adopt = False
+            else:
+                # An adopted mission inherits the on-disk obligations too. Without
+                # this, /steer against a resumed mission reads a None ledger.
+                self._reload_ledger()
+        if not adopt:
+            self.mission = Mission(
+                self.workspace_root,
+                engine=engine if engine is not None else self.engine,
+                units=units,
+                goal=text or "",
+                runtime_count=self.runtime_count,
+                runtime_pool=self.runtime_pool,
+                session_id=self.session.id,
+                context_memory=memory,
+                **kwargs,
+            )
         self.session.mission_id = self.mission.id
         self._persist_session()
         result = self.mission.run()
@@ -1277,7 +1364,14 @@ class Controller:
 
     @staticmethod
     def _memory_text(value: Any, limit: int = _MEMORY_TEXT_LIMIT) -> str:
-        text = str(value or "").strip()
+        # Every compaction-memory string reaches a worker prompt through here, so
+        # this is where control tokens have to die. HCLI's own error text names
+        # `<think>` and `reasoning_content`; pasting that into the next prompt
+        # steers the resident into a reasoning-only reply, which trips the guard
+        # that rejects reasoning, which records the same text again. Sanitising
+        # only the knowledge store missed this path -- receipts carry `error` and
+        # `blocker` straight from disk.
+        text = _sanitise_text(str(value or "").strip())
         if len(text) > limit:
             return text[: limit - 1].rstrip() + "…"
         return text
@@ -1931,6 +2025,16 @@ class Controller:
         self.session.mission_id = mission.id
         if mission.goal and not self.session.goal:
             self.session.goal = mission.goal
+        self._reload_ledger()
+        return mission
+
+    def _reload_ledger(self) -> None:
+        """Re-read the on-disk GOAL.md into `_ledger`.
+
+        Any path that adopts a mission off disk must also adopt its ledger:
+        `_steer` reads `self._ledger`, so a restored mission with a None
+        ledger silently drops every constraint the operator files against it.
+        """
         goal_md = Path(self.workspace_root) / ".hcli" / "GOAL.md"
         if goal_md.is_file():
             try:
@@ -1939,7 +2043,6 @@ class Controller:
                 self._ledger = Ledger.parse(goal_md)
             except Exception:
                 pass
-        return mission
 
     def request_exit(
         self,

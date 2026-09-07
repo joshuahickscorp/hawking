@@ -794,7 +794,7 @@ def harvest_sealed_specimens(
     when tools.future.sleeping_specimens.sealed_source_ready(tag) is true.
     Disk is authority; this never mints a synthetic COMPLETED.
     """
-    from tools.future.sleeping_specimens import (
+    from tools.odyssey.modellake_watch import (
         WAKE_SEALED_SOURCE_READY,
         sealed_source_ready,
     )
@@ -972,7 +972,7 @@ def negative_findings(recovered: Mapping[str, Any]) -> list[str]:
             "hcli.events.EventBus cannot be the completion path: it is in-memory and bound to the launching process",
             "Codex physical blockers (no Metal GPU, no Metal compiler, unproven bench locks, HEAVY quiescence, Flash NX SCAFFOLD_ONLY, teacher capture 0/256) stay SLEEPING; wakeup will not mint a synthetic qualification receipt",
             "this sidecar produces neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE; every emission is STATIC_ONLY / bench UNKNOWN",
-            "named consumers workgraph.py / frontiers.py / detached.py are this-wave siblings and are not imported; Watcher is the local interface until they land",
+            "former future workgraph/frontiers runtimes are retired; HCLI scheduler and Watcher are the active interfaces",
         ]
     )
     return findings
@@ -1431,7 +1431,7 @@ def build(*, tmp: Path | None = None) -> Path:
         "resident_callable": callable_block,
         "integration_points": {
             "workgraph.py": "swap Watcher._apply_graph for the landed dependency graph",
-            "frontiers.py": "swap the named frontier consumer for the landed frontier refill",
+            "frontier_scheduler.py": "HCLI owns frontier selection; Watcher only applies disk wake events",
             "detached.py": "supervisor that harvests after a detached worker exits",
             "evidence_dag.py": "completion events are DAG edges once that module lands",
             "resident_api.py": "resident discovers this via --selftest / run_once",

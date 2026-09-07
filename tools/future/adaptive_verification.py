@@ -5,8 +5,8 @@ refusal to launch a later meta-funnel gate after an earlier stage has
 already killed the candidate, and the ledger that names the funnel work
 that was therefore not done.
 
-It does not fork `meta_funnel.Funnel`, `negative_index.refuse_if_dead`, or
-`flash_schools.cheapest_falsifier`. It sequences them. A cheap screen that
+It does not fork `meta_funnel.Funnel` or `negative_index.refuse_if_dead`.
+It sequences the canonical ``cheapest_falsifier`` candidate field. A cheap screen that
 kills is a refusal to spend later gates. A cheap screen that PASSES proves
 nothing except "not yet dead" and is never reportable as verification.
 Missing input is a recorded refusal, never a silent pass. A candidate the
@@ -42,7 +42,7 @@ FALSIFIER_STAGE_ID = "F"
 FALSIFIER_NAME = "cheapest_falsifier"
 FALSIFIER_COST_CLASS = "CHEAP_FALSIFIER"
 FALSIFIER_WORKUNIT = "future.adaptive_verification.cheapest_falsifier"
-FALSIFIER_ORIGIN = "tools/future/flash_schools.py:CANDIDATE_FIELDS.cheapest_falsifier"
+FALSIFIER_ORIGIN = "tools/future/adaptive_verification.py:cheapest_falsifier"
 FUNNEL_ORIGIN = "tools/future/meta_funnel.py:GATES"
 
 CLAIM_BOUNDARY = (
@@ -741,8 +741,6 @@ def prove_ladder_states_what_it_cannot_decide() -> dict[str, Any]:
 
 
 def build() -> Path:
-    from tools.future import flash_schools as fs
-
     families, provenance = mf.recover_families()
     scars: list[Any] | None
     index_state = "CLEAR"
@@ -775,7 +773,7 @@ def build() -> Path:
     recovered_implementation = [
         "tools/future/meta_funnel.py GATES / Funnel.advance / Funnel.run / input_state / is_absent — composed, not forked; saved() names these gates",
         "tools/future/negative_index.py refuse_if_dead — consulted before any stage",
-        "tools/future/flash_schools.py CANDIDATE_FIELDS.cheapest_falsifier — first ladder stage when the candidate names one",
+        "canonical candidate field `cheapest_falsifier` — first ladder stage when the candidate names one",
         "tools/future/candidate_planner.py descendants_of — lineage invalidation already exists; this module names funnel child work, not queue descendants",
         "tools/future/qualification_pipeline.py STAGES — GPU sequencer; not forked (this ladder has no lease and no GPU)",
         "tools/future/evidence_dag.py V0–V9 — evidence-level hierarchy, a different ladder; not forked",
@@ -790,9 +788,9 @@ def build() -> Path:
         "missing required input is REFUSED, never silently PASSED",
     ]
     negative_findings = [
-        "this module is not in tools/future/orchestration.py BINDINGS; invoke() will raise UnknownBinding until the connector is extended. Naming a frontier here is not a binding",
+            "this module is not a resident-callable binding. Naming a frontier here is not a binding",
         "saved() names funnel gates, not candidate_planner descendants — queue lineage is a different child-work graph and was not merged",
-        "flash_schools cheapest_falsifier is a prose kill criterion; without falsifier_observation the cheapest stage REFUSES rather than inventing a measurement",
+        "cheapest_falsifier is a prose kill criterion; without falsifier_observation the cheapest stage REFUSES rather than inventing a measurement",
         f"negative-index consult during recovered-family screens: {index_state}",
         "passing cheapest_falsifier or any funnel gate is not evidence of teacher fit, tokens, capability, NR, NX, EBPW, or promotion",
         "this sidecar produces neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE",
@@ -815,7 +813,7 @@ def build() -> Path:
             "saved": "tools.future.adaptive_verification.saved(candidate)",
         },
         "funnel_child_workunits": list(funnel_child_workunits()),
-        "flash_schools_cheapest_falsifier_field": "cheapest_falsifier" in fs.CANDIDATE_FIELDS,
+        "cheapest_falsifier_field": True,
         "proofs": proofs,
         "recovered_family_screens": [
             {

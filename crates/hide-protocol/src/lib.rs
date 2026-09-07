@@ -441,7 +441,7 @@ mod tests {
     fn sample_initialize_result() -> InitializeResult {
         InitializeResult {
             server: PeerInfo {
-                name: "hide-serve".into(),
+                name: "hcli".into(),
                 version: "0.2.2".into(),
             },
             protocol_version: PROTOCOL_VERSION.to_string(),

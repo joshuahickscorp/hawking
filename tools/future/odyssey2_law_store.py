@@ -21,7 +21,7 @@ from dataclasses import asdict, dataclass, replace
 from typing import Any
 
 from tools.future._common import REPO, git, load_json, write_receipt
-from tools.future import status_causality as sc
+from tools.verify import status_causality as sc
 
 RECEIPT = "ODYSSEY2_LAW_STORE.json"
 SCHEMA = "hawking.future.odyssey2_law_store.v1"

@@ -1,0 +1,34 @@
+{
+ "specimen": "O003",
+ "date": "2026-09-06",
+ "obligation": "G022 / S009 - systemic latency",
+ "THE_LARGEST_LATENCY_IN_THE_CAMPAIGN_IS_NOT_DECODE": {
+  "hcli_round_median_s": 274.1,
+  "minimal_round_floor_s": 237.3,
+  "floor_share_of_a_round": 0.866,
+  "one_fully_evaluated_arm_s": 21.35,
+  "round_over_arm": 12.8,
+  "ladder_total_wall_s": 6129.0,
+  "actual_measurement_within_it_s": 64,
+  "measurement_share_pct": 1.04,
+  "reading": "A trivial task whose entire answer is the word OK costs 237.3 s. That is 87% of a real 274 s round. A COMPLETE arm -- load a 30 GB model, quantise 78 expert tensors, run a 512-token forward and 8 generations of 96 tokens -- costs 21.35 s. The loop spends 12.8x more wall asking what to measure than measuring it. Across the whole ladder, 99.0% of 6129 s went to the resident deciding and 1.0% to the machine measuring."
+ },
+ "WHY_I_MISSED_IT": "I spent this campaign optimising decode tok/s, which is 8.816 ms. The thing actually consuming the campaign's hours is a 237 s per-round fixed cost I never measured because it was outside the model I was studying.",
+ "ARM_BREAKDOWN_s": {
+  "python_import": 3.2,
+  "model_load": 3.34,
+  "quantise": 3.79,
+  "nll_forward": 0.43,
+  "eight_prompt_generation": 10.59,
+  "total": 21.35,
+  "note": "My first hypothesis was that repeated 30 GB model loads dominated. They do not: setup is 48.4% of an arm but only 4.2 minutes across all 39 arms. Wrong by two orders of magnitude against the 107 minutes the ladder spent in resident rounds."
+ },
+ "INDEPENDENT_AGREEMENT_FROM_THE_RESIDENT": {
+  "raw": "W: 2043 s per experiment (280 s per round) in the 23-run loop; A; 15 min: 1 run with 8 prompts x 96 tokens in 1 batch vs 8 sequential; 1.2",
+  "reading": "Asked to find the largest avoidable wall and to attack a supervisor claim, the resident named the SAME target -- the loop's per-round wall -- and attacked claim A, the 1.2-1.6x physical ceiling. It proposed batching the 8-prompt evaluation with a pre-committed kill of 1.2x.",
+  "verdict_on_its_proposal": "Its experiment was already run: batching gives 3.38x, so it clears its own 1.2x threshold. But it does not know the blocker -- 8 identical copies of one prompt give 0/8 outputs matching sequential, so batching re-baselines every capability number (receipts/future/O003_BATCH_EQUIVALENCE.json). Right target, right direction, and it lacked the equivalence result that refuses it.",
+  "ITS_ATTACK_ON_CLAIM_A_IS_PARTLY_CORRECT": "I stated a 1.2-1.6x ceiling. That bound is for SINGLE-STREAM DECODE and I let it read as a bound on going faster generally. The campaign's WALL has much more available -- 3.38x from batching evaluations, and far more from removing a 237 s per-round floor. The ceiling was true and its scope was too narrow to carry the weight I put on it."
+ },
+ "THE_FIX": "A persistent resident process. The 237 s floor is paid per ROUND because every HCLI invocation is a fresh process that reloads a 9.9 GB resident. Amortised across a 23-round ladder that is roughly 90 minutes of the 102 spent.",
+ "PRE_COMMITTED_KILL_FOR_THAT_FIX": "If a second round inside one already-warm process still costs >150 s, the floor is not load and a persistent resident does not fix it."
+}

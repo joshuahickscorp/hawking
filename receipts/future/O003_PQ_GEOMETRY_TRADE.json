@@ -1,0 +1,32 @@
+{
+ "date": "2026-09-06",
+ "obligation": "G010",
+ "finding": "sub-vector dimension is a TRADE AXIS between perplexity and output diversity, and neither end passes both gate conditions",
+ "measured_at_matched_calibration": [
+  {
+   "spec": "pqpercal4k512",
+   "ebpw": 2.4059,
+   "ppl": 3.5128,
+   "r4": 0.6667,
+   "levels_per_dim": 4.76,
+   "verdict": "ppl PASS (3.5128<=3.617), r4 FAIL 4.1x"
+  },
+  {
+   "spec": "pqpercal2k16",
+   "ebpw": 2.1864,
+   "ppl": 4.3945,
+   "r4": 0.3226,
+   "levels_per_dim": 4.0,
+   "verdict": "ppl fail, r4 FAIL 2.0x -- but the LOWEST repetition of any sub-2.5 arm"
+  }
+ ],
+ "THE_AXIS": "Going from 4-dimensional cells to 2-dimensional ones HALVES the repeat rate (0.6667 -> 0.3226) at FEWER bytes (2.4059 -> 2.1864), and costs perplexity (3.5128 -> 4.3945). The two gate conditions move in opposite directions along the same knob.",
+ "MECHANISM": "A 2-D cell partitions the weight space more finely in shape while covering it more coarsely in magnitude at K=16. Finer shape preserves the distinctness of expert outputs, which is what suppresses repetition; coarser magnitude costs likelihood, which is what perplexity measures. They are not the same quantity and this specimen keeps proving it.",
+ "FOURTH_INSTANCE_OF_THE_DISAGREEMENT": "residual binary beat affine on repetition and lost on perplexity; PQ d=4 cleared perplexity and failed repetition; PQ d=2 reverses it again. Any single-number capability proxy would misrank at least two of these four.",
+ "WHAT_THIS_MEANS_FOR_G010": "The sub-2.5 frontier is two-dimensional, not a single threshold. No arm yet satisfies both conditions below 2.5 EBPW, and the best on each axis are different representations. The obvious next construction is a MIXED geometry -- finer cells where diversity matters, coarser where likelihood does -- which is now motivated by measurement rather than guessed.",
+ "BEST_ON_EACH_AXIS_BELOW_2.5": {
+  "perplexity": "pqpercal4k512 3.5128 (passes)",
+  "repetition": "pqpercal2k16 0.3226 (2.0x from the 0.1614 limit)"
+ },
+ "UNCHANGED": "Lowest capability-preserving point remains q3-g128-experts at 3.2831 EBPW."
+}

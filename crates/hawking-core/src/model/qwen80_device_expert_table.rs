@@ -771,7 +771,9 @@ pub fn write_top10_address_table(
     table: Option<crate::metal::PinnedBuffer>,
 ) -> Result<Qwen80DeviceExpertTableLease> {
     if selected.len() != QWEN80_EXPERT_TABLE_TOP_K {
-        return Err(table_error("top-10 address table requires exactly 10 experts"));
+        return Err(table_error(
+            "top-10 address table requires exactly 10 experts",
+        ));
     }
     let generation = u32::try_from(layer.saturating_add(1))
         .map_err(|_| table_error("layer generation overflows u32"))?;
@@ -1260,7 +1262,7 @@ mod tests {
         assert_eq!(QWEN80_EXPERT_SCALE_BYTES, 32_768);
         assert_eq!(QWEN80_EXPERT_TRIPLET_PAYLOAD_BYTES, 1_671_168);
         assert_eq!(qwen80_q4_address_geometry().table_bytes(), 3_145_728);
-        assert_eq!(QWEN80_EXPERT_TABLE_KERNELS.len(), 5);
+        assert_eq!(QWEN80_EXPERT_TABLE_KERNELS.len(), 6);
     }
 
     #[test]

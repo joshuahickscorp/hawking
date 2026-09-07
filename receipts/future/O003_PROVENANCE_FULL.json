@@ -1,0 +1,90 @@
+{
+ "specimen": "O003",
+ "model": "moonshotai/Kimi-VL-A3B-Instruct",
+ "revision": "398eede0903cd983a2bfa0cc634e9ac1d843f375",
+ "date": "2026-09-06",
+ "host": "Apple M3 Ultra 96GB, MLX Metal",
+ "measured_by": "Claude directly",
+ "anatomy": {
+  "total_bytes": 32815315552,
+  "expert_organ_bytes": 28789702656,
+  "expert_frac": 0.8773,
+  "expert_weights": 14394851328,
+  "expert_frac_of_loaded_params": 0.902,
+  "layers": 27,
+  "moe_layers": 26,
+  "dense_layers": 1,
+  "routed_experts": 64,
+  "top_k": 6,
+  "shared_experts": 2,
+  "hidden": 2048,
+  "moe_intermediate": 1408,
+  "vocab": 163840,
+  "attention": "MLA with kv_b_proj, requires a custom mlx_lm sanitize patch"
+ },
+ "reference": {
+  "bf16_ppl": 2.8936,
+  "bf16_median_4gram": 0.0538,
+  "bf16_decode_tok_s": 87.67,
+  "bf16_active_bytes_per_token": 5158467840,
+  "bf16_achieved_GB_s": 452.2,
+  "bf16_bandwidth_utilization": 0.565
+ },
+ "gate": {
+  "ppl_max": 3.617,
+  "median_4gram_max": 0.1614,
+  "basis": "<=1.25x and <=3x the measured bf16 reference; controls in hcli/test_gravity_outlier.py"
+ },
+ "CLASSES_KILLED_WITH_THE_NUMBER_THAT_KILLED_EACH": [
+  {
+   "class": "AFFINE_QUANT below q3",
+   "killed_by": "ppl 3.522 / median 4-gram 0.7527 at q2-g64 (2.6251 EBPW) vs gate 3.617 / 0.1614. Lowest PASSING is q3-g64-experts at 3.5024.",
+   "verdict": "BOUNDED, not dead - it passes at 3.5024 and fails below"
+  },
+  {
+   "class": "OUTLIER_SPLIT (sparse fp16 side-channel + coarse affine base)",
+   "killed_by": "best arm outlier0.01-g128, ppl 3.340 / 4-gram 0.3978 at 2.6815 EBPW. Raising frac 0.005->0.02 RAISES bytes 2.5419->2.9597 (32 bits per retained weight) without reaching the gate.",
+   "verdict": "DOMINATES affine at equal bytes, never crosses the gate; saturates"
+  },
+  {
+   "class": "BINARY_SCALED (1 bit + mean|W| scale per group)",
+   "killed_by": "ppl 12.292 / 4-gram 0.8925 at 1.4188 EBPW. 4.2x the gate.",
+   "verdict": "DEAD as capability"
+  },
+  {
+   "class": "BINARY + POOLED activation calibration",
+   "killed_by": "WORSE than uncalibrated on 3/3 pairs: ppl +1.9%, +1.0%, +1.9%.",
+   "verdict": "DEAD, and the cause is identified (statistic pooled across 64 experts)"
+  },
+  {
+   "class": "BINARY + PER-EXPERT activation calibration",
+   "killed_by": "best ppl 11.005 at 1.5284 EBPW vs gate 3.617. Best 1-bit result measured, still 3.0x the gate.",
+   "verdict": "BEST sub-2-bit arm; not viable"
+  }
+ ],
+ "WHAT_A_NEXT_MoE_SPECIMEN_INHERITS": [
+  "Per-EXPERT activation statistics beat pooled ones for any routed architecture. Pooled weighting made 1-bit WORSE (+1.9%/+1.0%) while per-expert made it BETTER (-7.1%/-10.3%) at identical bytes. This is a property of routing, not of Kimi-VL, and should transfer to every MoE in the lake (qwen3_moe x2, qwen3_vl_moe, lfm2_moe, granitemoehybrid x2, glm4_moe).",
+  "Perplexity ALONE will pass a model that cannot generate. q2-g128-experts scored ppl 4.085, only 41% above bf16, while emitting 87 consecutive identical tokens. Any capability gate needs a generation-coherence term, and n=1 generation is not enough - n=1 verdicts were overturned by n=8.",
+  "A capability gate must be calibrated against the SOURCE model measured on the same prompts. Without a bf16 arm every quantized config scores 0.50-0.75 on 4-gram repetition and they look mutually comparable; the reference is what supplies the scale.",
+  "Weight-space cosine is NOT a monotone proxy for capability. Per-expert calibration lowers cosine while improving perplexity. It survives only as a coarse cross-class pass/fail screen.",
+  "The magnitude-adequacy gate is BLIND to quantization failure: every arm scores 0.994-1.042 because affine fitting preserves magnitude by construction. It still catches 0.01*W, so keep it, but never use it as the capability proxy.",
+  "For the mean-|W| sign quantizer, cosine == magnitude ratio EXACTLY (proved and verified at delta 0.00e+00). Two gates, one number. Do not count them as independent evidence.",
+  "mx.quantize supports bits 2,3,4,5,6,8 and groups 32,64,128 ONLY. Any search grammar built on it floors around 2.19 EBPW, above a 1.0 target, so sub-bit work needs a hand-written class.",
+  "Decode is bandwidth-bound only near bf16 (56.5% of peak). Quantized configs run at 18-23% of peak, so below roughly q4 removing bytes buys no decode speed - the ceiling is per-token fixed cost. Expect the EBPW/TPS correlation to break at the same place on other specimens.",
+  "Measure TPS with >=6 warm repeats. Two repeats and one warmup under-reported decode by up to 35% here (q4: 98.24 vs 127.48) while preserving the ranking."
+ ],
+ "WHAT_A_NEXT_MoE_SPECIMEN_MUST_RE_MEASURE": [
+  "The gate thresholds themselves - they are 1.25x/3x of THIS model's bf16 numbers.",
+  "Where the affine class stops passing. O003 breaks between q3 and q2; that boundary depends on expert width (1408x2048 here) and top-k (6 of 64) and cannot be assumed.",
+  "The bandwidth knee. It is a function of active bytes/token, which depends on top_k/n_experts and the dense fraction, all specimen-specific.",
+  "Whether MLA-style attention needs a custom sanitize patch to load at all (O003 did, for kv_b_proj).",
+  "Absolute EBPW of every class: they depend on the expert/non-expert byte split, 90.2% here."
+ ],
+ "NOT_YET_ATTACKED_on_this_specimen": [
+  "Codebook / product quantization of expert weights.",
+  "Structured sparsity or pruning before binarisation.",
+  "Cross-layer or cross-expert weight sharing (killed in weight space per O003_PROV.json, untested under activation weighting).",
+  "Error-feedback / iterative refit (GPTQ-style) rather than one-shot fitting.",
+  "Any kernel for the sparse or binary forms - so no TPS exists for them."
+ ]
+}

@@ -17,7 +17,7 @@ synthetic result.
     python3 tools/future/tabula.py --build
     python3 tools/future/tabula.py --selftest
     python3 tools/future/tabula.py --disposition
-    python3 tools/audit/reachability_triage.py --invoke future.tabula --args '{"scores":{"behavioral":0.7,"capability":0.05,"tool_use":0.02,"reasoning":0.01,"instruction_following":0.0}}'
+    python3 tools/roadmap/capability_reachability.py --selftest
     python3 -m pytest tools/future/test_tabula.py -q
 
 A Tabula transformation is one method of CHILD generation (see
@@ -200,13 +200,9 @@ RECOVERY_CANDIDATES: tuple[tuple[str, str], ...] = (
         "container.tabula.variant is required behavioural identity; empty variant fails",
     ),
     (
-        "research/hawking-experiments/superwave/g1/g1-tabula-baseline.md",
-        "G1 doctrine: lower refusal rate is not Tabula success; behavioral "
-        "freedom and external authority are different systems",
-    ),
-    (
-        "research/hawking-experiments/superwave/g1/g1-tabula-genome.md",
-        "G1 genome: Tabula/Gravity must be separate sealed content-hashed documents",
+        "research/hawking-experiments/superwave/g1/G1_ARCHIVE_LEDGER.md",
+        "G1 compact contract: doctrine, separate Tabula/Gravity identity, and "
+        "architecture negative-science closure",
     ),
     (
         "receipts/ascent-2026-08-16/G123_TABULA_DRIFT.json",
@@ -226,14 +222,14 @@ RECOVERY_CANDIDATES: tuple[tuple[str, str], ...] = (
         "child-generation economy; Tabula is one method of CHILD generation and must carry lineage",
     ),
     (
-        "tools/vmcp/behavior_lab.py",
+        "hcli/agentos/vmcp/behavior_lab.py",
         "VMCP E.11 fixture matrix scores through evaluate(); zero-refusal is still refused",
     ),
 )
 
 TEACHER_CORPUS_REL = "receipts/future/TEACHER_CORPUS_CONTRACT.json"
 FRONTIER_REL = "receipts/future/CLAUDE_GLOBAL_FRONTIER.json"
-G1_BASELINE_REL = "research/hawking-experiments/superwave/g1/g1-tabula-baseline.md"
+G1_BASELINE_REL = "research/hawking-experiments/superwave/g1/G1_ARCHIVE_LEDGER.md"
 
 DOCTRINE = (
     "Gravity finds the cheapest faithful physical realization. Tabula finds "
@@ -264,18 +260,18 @@ FLOOR_CALL_SITES: tuple[dict[str, str], ...] = (
         "kind": "call",
     },
     {
-        "file": "tools/audit/reachability_triage.py",
+        "file": "tools/roadmap/capability_reachability.py",
         "symbol": "tools.future.tabula.evaluate",
         "kind": "call",
         "via": "WIRED future.tabula",
     },
     {
-        "file": "tools/vmcp/behavior_lab.py",
+        "file": "hcli/agentos/vmcp/behavior_lab.py",
         "symbol": "tools.future.tabula.evaluate",
         "kind": "call",
     },
     {
-        "file": "tools/vmcp/behavior_lab.py",
+        "file": "hcli/agentos/vmcp/behavior_lab.py",
         "symbol": "tools.future.tabula.scores_from_behavior_lab",
         "kind": "call",
     },
@@ -1634,7 +1630,7 @@ def frontier_proposal() -> dict[str, Any]:
         "feeds": FRONTIER_REL,
         "owner_module": "tools/future/global_frontier.py",
         "this_lane_writes_frontier": False,
-        "integration_point": "tools/future/frontiers.py (this-wave sibling; not imported)",
+        "integration_point": "hcli/frontier_scheduler.py (canonical scheduler owner)",
         "detail": (
             "Contracts, vector scorer, lineage and authority lattice are sealed. "
             "Fitting stays SLEEPING until hardware qualifies. Zero-refusal collapse "
@@ -1655,7 +1651,7 @@ def resident_callable(
         "module": "tools.future.tabula",
         "callable": "build",
         "invoke": (
-            "python3 tools/audit/reachability_triage.py --invoke future.tabula "
+                    "python3 tools/roadmap/capability_reachability.py --selftest "
             "--args '{\"scores\":{\"behavioral\":0.7,\"capability\":0.05,"
             "\"tool_use\":0.02,\"reasoning\":0.01,\"instruction_following\":0.0}}'"
         ),
@@ -1859,7 +1855,7 @@ def disposition() -> dict[str, Any]:
                 "call_sites": [dict(s) for s in FLOOR_CALL_SITES],
                 "test": "tools/future/test_tabula.py",
                 "invoke": (
-                    "python3 tools/audit/reachability_triage.py --invoke "
+                    "python3 tools/roadmap/capability_reachability.py --selftest "
                     "future.tabula --args '{\"scores\":{...}}'"
                 ),
                 "evidence_tier": "FUNCTIONAL_SIM",

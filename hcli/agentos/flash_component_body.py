@@ -12,14 +12,13 @@ import hashlib
 import json
 import os
 import time
-import uuid
 from pathlib import Path
 from typing import Any, Dict, Mapping, Optional
 
 from hcli.agentos import flash_transform_parity as transform
 from hcli.flash_next import PINNED_REVISION, REPO_ID
 from hcli.nomenclature import NOMENCLATURE_VERSION
-from hcli.persist import atomic_write_json
+from hcli.persist import atomic_write_bytes, atomic_write_json
 
 
 SCHEMA = "hcli.agentos.flash_noetic_component_body.v1"
@@ -54,23 +53,6 @@ def _sha256_file(path: Path) -> Optional[str]:
         return digest.hexdigest()
     except OSError:
         return None
-
-
-def _atomic_write_bytes(path: Path, payload: bytes) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_name(f".{path.name}.{os.getpid()}.{uuid.uuid4().hex}.tmp")
-    try:
-        with temporary.open("wb") as handle:
-            handle.write(payload)
-            handle.flush()
-            os.fsync(handle.fileno())
-        os.replace(temporary, path)
-    except Exception:
-        try:
-            temporary.unlink()
-        except OSError:
-            pass
-        raise
 
 
 def _final_root(value: Optional[str | os.PathLike[str]]) -> Path:
@@ -210,7 +192,7 @@ def run_flash_component_body(
         guard_after = transform._source_guard(shard)
         if guard_after != guard_before:
             raise RuntimeError("source shard changed while building the component body")
-        _atomic_write_bytes(body_path, encoded_body)
+        atomic_write_bytes(body_path, encoded_body)
         body_sha256 = _sha256_bytes(encoded_body)
         descriptor_bytes = json.dumps(descriptor, sort_keys=True, separators=(",", ":")).encode("utf-8")
         report.update({

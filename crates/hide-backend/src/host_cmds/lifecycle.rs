@@ -1,61 +1,4 @@
-use crate::approval::{ApprovalDecision, ApprovalHub};
-use crate::commands::CommandRouter;
-use crate::connectors::{register_backend_connectors, ConnectorRegistry, ConnectorStatus};
-use crate::initialize::{ClientCapabilities, ClientInfo, ConnectionRegistry, InitializeResponse};
-use crate::interrupt::InterruptHub;
-use crate::live_thread::LiveThread;
-use crate::memory::{
-    MemoryDraft, MemoryLedger, MemoryRecord, MemoryRevalidation, MemoryScope, MemoryStatus,
-    PrivacyClass, RevalidateTarget,
-};
-use crate::policy::{
-    derive_policy_decision, tool_declared_effects, PolicyDecision, PolicyDecisionRecord,
-};
-use crate::process::{ProcessState, ProcessSupervisor, StartSpec};
-use crate::replay::BackendReplayService;
-use crate::rewind::{self, CheckpointCoverage, FileChange, ForkPoint, RewindTarget, StateRef};
-use crate::security::SecurityServices;
-use crate::services::{
-    BackendCapabilities, BackendServices, Budget, CheckpointRecord, CheckpointStore,
-    EnvironmentNode, EnvironmentSwitch, GoalOutcome, GoalRecord, GoalStatus, GoalStore,
-    GoalVerdict, JobRecord, JobStatus, JobStore, RepoNode, SharedBackend, Trigger, TriggerEvent,
-    TrustState, WorkspaceEdge, WorkspaceEdgeKind, WorkspaceGraph, WorkspaceStore,
-};
-use crate::supervisor::{RuntimeSupervisor, SupervisorConfig};
-use crate::surfaces::SurfaceGraphService;
-use crate::tools::{build_default_tool_dispatcher, build_default_tool_registry};
-use crate::ui_bus::UiEventBus;
-use hide_core::api::{Intent, IntentAck, UiEvent, UiEventKind};
-use hide_core::event::{Event, NewEvent, ToolCallEvent, ToolResultEvent};
-use hide_core::ids::{EventId, RunId, SessionId, StepId};
-use hide_core::observability::{HealthCheck, HealthReport, HealthStatus};
-use hide_core::runtime::{ModelRole, RuntimeSupervisorState};
-use hide_core::tool::{ToolCall, ToolDispatcher, ToolRegistry, ToolResult, ToolSpec, ToolStatus};
-use hide_core::Result;
-use hide_fleet::manager::KernelRunLauncher;
-use hide_fleet::{
-    AgentJob, ConcurrencyClass, FleetConfig, FleetGovernor, FleetManager, OsResourceProbe,
-    PriorityClass,
-};
-use hide_kernel::govern::{Autonomy, Interrupt};
-use hide_kernel::machine::state::{AgentState, ApprovalRequest, Phase};
-use hide_kernel::session::SessionProjection;
-use hide_kernel::{AgentKernel, Grounding};
-// Bible Book IX sec 28-29 / sec 78.1 #6: the deterministic verification plane.
-// The colliding names (`Verdict`, `VerificationInput`, `Oracle`) are qualified
-// as `hide_kernel::verify_plane::*` at their (few) use sites so the function-local
-// `hide_kernel::verify::oracle::*` imports in the goal path and the tests keep
-// their meaning; only the non-colliding types are imported here.
 use super::*;
-use hide_kernel::verify_plane::{
-    Finding, GateDecision, ReviewRole, ReviewRoleProfile, SourceFile, StaticAnalysisOracle,
-    TieredVerdict, VerificationReceipt, VerificationTier,
-};
-use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
-use std::path::{Path, PathBuf};
-use std::sync::Arc;
-
 impl BackendHost {
     pub fn open_workspace(workspace_root: impl Into<PathBuf>) -> Result<Self> {
         Self::from_services(BackendServices::open_workspace(workspace_root)?)
@@ -134,8 +77,7 @@ impl BackendHost {
     /// leaves the supervisor in `Failed`/`Booting`; the host is still returned
     /// and fully usable (it will report "model offline" rather than fake a
     /// token). Related env:
-    /// * `HIDE_MODEL_ADDR` — bind (default `127.0.0.1:8745`, distinct from
-    ///   hide-serve's 8744)
+    /// * `HIDE_MODEL_ADDR` — bind (default `127.0.0.1:8745`)
     /// * `HIDE_HAWKING_BIN` — path to the `hawking` binary (default: `hawking`
     ///   on `PATH`)
     /// * `HIDE_MODEL_BOOT_TIMEOUT_SECS` — wait for `/healthz` (default 300)

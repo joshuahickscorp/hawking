@@ -442,7 +442,6 @@ def capture_glm_trajectory(
         example_id=example_id, prompt_text=prompt_text, membership=membership
     )
 
-
 def capture_paired_evidence(
     *,
     example_id: str,

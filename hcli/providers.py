@@ -31,7 +31,6 @@ CAPABILITY_SCHEMA = "hcli.provider.capabilities.v1"
 ROLE_SCHEMA = "hcli.provider.roles.v1"
 GENERATION_REQUEST_SCHEMA = "hcli.provider.generation_request.v1"
 GENERATION_RESPONSE_SCHEMA = "hcli.provider.generation_response.v1"
-RUNTIME_GENOME_SCHEMA = "hcli.provider.runtime_genome.v1"
 HEALTH_SCHEMA = "hcli.provider.health.v1"
 FAILURE_SCHEMA = "hcli.provider.failure.v1"
 RECEIPT_SCHEMA = "hcli.provider.receipt.v1"
@@ -221,37 +220,6 @@ class GenerationResponse:
             "request_id": self.request_id,
             "degraded_features": list(self.degraded_features),
         }
-
-
-@dataclass(frozen=True)
-class RuntimeGenome:
-    """Machine/runtime identity used to close a reproducibility profile."""
-
-    provider: str
-    model_id: str
-    runtime: Mapping[str, Any] = field(default_factory=dict)
-    compiler: Mapping[str, Any] = field(default_factory=dict)
-    representation: Mapping[str, Any] = field(default_factory=dict)
-    machine: Mapping[str, Any] = field(default_factory=dict)
-    limits: Mapping[str, Any] = field(default_factory=dict)
-    schema: str = RUNTIME_GENOME_SCHEMA
-
-    def to_dict(self) -> Dict[str, Any]:
-        return {
-            "schema": self.schema,
-            "provider": self.provider,
-            "model_id": self.model_id,
-            "runtime": _copy(dict(self.runtime)),
-            "compiler": _copy(dict(self.compiler)),
-            "representation": _copy(dict(self.representation)),
-            "machine": _copy(dict(self.machine)),
-            "limits": _copy(dict(self.limits)),
-        }
-
-    def fingerprint(self) -> str:
-        return hashlib.sha256(
-            json.dumps(self.to_dict(), sort_keys=True, separators=(",", ":")).encode()
-        ).hexdigest()
 
 
 @dataclass(frozen=True)
@@ -930,7 +898,6 @@ __all__ = [
     "RECEIPT_SCHEMA",
     "ROLES",
     "ROLE_SCHEMA",
-    "RUNTIME_GENOME_SCHEMA",
     "Capability",
     "CapabilityContract",
     "GenerationRequest",
@@ -943,7 +910,6 @@ __all__ = [
     "ResidentProvider",
     "RolePolicy",
     "RoleRouter",
-    "RuntimeGenome",
     "host_profile",
     "profile_from_backend",
 ]

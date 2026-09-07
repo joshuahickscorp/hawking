@@ -157,7 +157,6 @@ impl DeepSeekV4FullseqAttentionDeviceOutput {
 }
 
 struct VerifiedTensor {
-    name: String,
     bytes: Vec<u8>,
 }
 
@@ -870,10 +869,7 @@ fn read_tensor(
         )));
     }
     let bytes = reader.read_verified_full(name, meta.bytes as usize)?;
-    Ok(VerifiedTensor {
-        name: name.to_owned(),
-        bytes,
-    })
+    Ok(VerifiedTensor { bytes })
 }
 
 fn read_fp8(

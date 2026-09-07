@@ -18,7 +18,7 @@ from lab.operators.gravity_range_scheduler import (
     RANGE_ALIGNMENT_BYTES,
     plan_glm52_organ_windows,
 )
-from ramanujan.restream_guard import ACCOUNTING_COMPONENTS, validate_bounded_restream
+from tools.verify.restream_guard import ACCOUNTING_COMPONENTS, validate_bounded_restream
 
 
 REPO_ID = "zai-org/GLM-5.2"

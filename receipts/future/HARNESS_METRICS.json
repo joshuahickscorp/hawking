@@ -1,0 +1,64 @@
+{
+ "session": "2026-09-06",
+ "specimen": "O003",
+ "verified_progress_receipts": 18,
+ "receipts": [
+  "O003_ACT_CALIBRATION.json",
+  "O003_BINARY_SCALED.json",
+  "O003_BYTES_PER_TOKEN.json",
+  "O003_G010_BOUND.json",
+  "O003_G017_DECOMPOSITION.json",
+  "O003_GAP_PROBE.json",
+  "O003_GAUNTLET_DEEP.json",
+  "O003_HOT_COLD.json",
+  "O003_NON_EXPERT_FLOOR.json",
+  "O003_OUTLIER_SPLIT.json",
+  "O003_PARETO_COMPLETE.json",
+  "O003_PARETO_MEASURED.json",
+  "O003_PER_EXPERT_CALIBRATION.json",
+  "O003_PROVENANCE_FULL.json",
+  "O003_RESIDENT_GROUP_LEVER.json",
+  "O003_RESIDUAL_BINARY.json",
+  "O003_SPARSE_BINARY.json",
+  "O003_WHY_THE_BYTES_EXIST.json"
+ ],
+ "supervisor": {
+  "harness_repair": 3,
+  "authored_experiment": 16,
+  "correction": 0,
+  "other": 1,
+  "commits": 20
+ },
+ "ladder": {
+  "rounds": 23,
+  "REFUSED_UNRUNNABLE": 4,
+  "EXECUTED": 3,
+  "REPEATED_A_SPEC_ALREADY_ON_THE_TABLE": 7,
+  "WRONG_DIRECTION": 9,
+  "executed": 3,
+  "resident_originated_executions": 3,
+  "distinct_specs_proposed": 9,
+  "wall_s": 6129.4,
+  "wall_s_per_execution": 2043.1
+ },
+ "SESSION_PRODUCTIVITY": {
+  "verified_progress": 18,
+  "supervisor_interventions": 20,
+  "progress_per_intervention": 0.9,
+  "reading": "below 1.0 means the supervisor is producing the science, not the harness"
+ },
+ "AUTONOMY_S008_CRITICAL_METRIC": {
+  "verified_progress": 1,
+  "supervisor_interventions": 20,
+  "progress_per_intervention": 0.05,
+  "reading": "below 1.0 means the supervisor is producing the science, not the harness",
+  "note": "numerator counts ONLY frontier moves the harness originated. Exactly one: the resident proposed binarypercal-g256, which my validator refused three times for an inapplicable reason; once fixed it produced the campaign-low EBPW. Everything else on the frontier was a target I chose."
+ },
+ "BASELINE_READING": "0.05. The supervisor produced ~95% of this session's science. That is the honest starting point for S008 and the number that must rise. It is deliberately computed so narration cannot move it: the numerator counts resident-originated frontier moves only.",
+ "WHAT_WOULD_RAISE_IT": [
+  "The ladder executed 3 of 23 rounds. 9 were WRONG_DIRECTION and 7 repeats -- both now have harness fixes (cost function in prompt, rejection feedback) whose effect is UNMEASURED because the last run predates them for the repeat case.",
+  "wall_s_per_execution is 2043s. Most of that is model calls that produced no executable spec.",
+  "Only 1 of 3 executions moved a frontier; the other 2 went the wrong way on bytes."
+ ],
+ "HONESTY_NOTE": "supervisor_interventions is counted from git commits, which UNDERCOUNTS: a single commit often carries several authored experiments. The true autonomy ratio is therefore LOWER than 0.05."
+}

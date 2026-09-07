@@ -1,0 +1,199 @@
+{
+  "aggregate_vs_single": {
+    "aggregate_delta_tokens": 1024,
+    "aggregate_delta_wall_s": 25.613618499948643,
+    "aggregate_scaling_vs_single": 0.9951557476353875,
+    "aggregate_tok_s": 39.97873240760782,
+    "aggregate_tok_s_per_stream": 19.98936620380391,
+    "both_arms_fresh": true,
+    "single_tok_s": 40.17334221563028,
+    "streams": 2
+  },
+  "arms": {
+    "aggregate": {
+      "delta_tokens": 1024,
+      "delta_wall_s": 25.613618499948643,
+      "hi": {
+        "calls": [
+          {
+            "completion_tokens": 576,
+            "decode_wall_s": null,
+            "prefill_wall_ns": 0,
+            "prompt_tokens": 32,
+            "wall_s": 22.54174920800142
+          },
+          {
+            "completion_tokens": 576,
+            "decode_wall_s": null,
+            "prefill_wall_ns": 0,
+            "prompt_tokens": 32,
+            "wall_s": 37.47824441699777
+          }
+        ],
+        "completion_tokens": 1152,
+        "streams": 2,
+        "tok_s": 30.737235905048795,
+        "wall_s": 37.47897187498165
+      },
+      "lo": {
+        "calls": [
+          {
+            "completion_tokens": 64,
+            "decode_wall_s": null,
+            "prefill_wall_ns": 0,
+            "prompt_tokens": 32,
+            "wall_s": 9.67659912497038
+          },
+          {
+            "completion_tokens": 64,
+            "decode_wall_s": null,
+            "prefill_wall_ns": 0,
+            "prompt_tokens": 32,
+            "wall_s": 11.864667791989632
+          }
+        ],
+        "completion_tokens": 128,
+        "streams": 2,
+        "tok_s": 10.787710736819408,
+        "wall_s": 11.86535337503301
+      },
+      "ns_per_token": 25013299.316356096,
+      "tok_s": 39.97873240760782
+    },
+    "single": {
+      "delta_tokens": 512,
+      "delta_wall_s": 12.74476983398199,
+      "hi": {
+        "calls": [
+          {
+            "completion_tokens": 576,
+            "decode_wall_s": null,
+            "prefill_wall_ns": 0,
+            "prompt_tokens": 32,
+            "wall_s": 21.019808750017546
+          }
+        ],
+        "completion_tokens": 576,
+        "streams": 1,
+        "tok_s": 27.402686871444377,
+        "wall_s": 21.019836583989672
+      },
+      "lo": {
+        "calls": [
+          {
+            "completion_tokens": 64,
+            "decode_wall_s": null,
+            "prefill_wall_ns": 0,
+            "prompt_tokens": 32,
+            "wall_s": 8.275048332987353
+          }
+        ],
+        "completion_tokens": 64,
+        "streams": 1,
+        "tok_s": 7.734076586142413,
+        "wall_s": 8.275066750007682
+      },
+      "ns_per_token": 24892128.581996076,
+      "tok_s": 40.17334221563028
+    },
+    "single_repeat": {
+      "delta_tokens": 512,
+      "delta_wall_s": 12.753614332934376,
+      "hi": {
+        "calls": [
+          {
+            "completion_tokens": 576,
+            "decode_wall_s": null,
+            "prefill_wall_ns": 0,
+            "prompt_tokens": 32,
+            "wall_s": 20.979785042000003
+          }
+        ],
+        "completion_tokens": 576,
+        "streams": 1,
+        "tok_s": 27.4549598404181,
+        "wall_s": 20.97981579095358
+      },
+      "lo": {
+        "calls": [
+          {
+            "completion_tokens": 64,
+            "decode_wall_s": null,
+            "prefill_wall_ns": 0,
+            "prompt_tokens": 32,
+            "wall_s": 8.22618312499253
+          }
+        ],
+        "completion_tokens": 64,
+        "streams": 1,
+        "tok_s": 7.780018557363489,
+        "wall_s": 8.226201458019204
+      },
+      "ns_per_token": 24909402.994012453,
+      "tok_s": 40.14548242044874
+    }
+  },
+  "command": "python3 tools/sovereign/g012_resident_perf.py --tokens 96 --samples 3 --streams 2",
+  "complete_token_ns": 24892128.581996076,
+  "complete_token_ns_repeat": 24909402.994012453,
+  "conditions": {
+    "background_contamination": [
+      {
+        "command": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer -daemon",
+        "cpu_pct": 22.8
+      },
+      {
+        "command": "/System/Applications/Utilities/Activity Monitor.app/Contents/MacOS/Activity Monitor",
+        "cpu_pct": 12.4
+      },
+      {
+        "command": "/System/Library/ExtensionKit/Extensions/WallpaperAerialsExtension.appex/Contents/MacOS/WallpaperAerialsExtensi",
+        "cpu_pct": 10.7
+      },
+      {
+        "command": "/opt/homebrew/opt/tailscale/bin/tailscaled",
+        "cpu_pct": 9.9
+      },
+      {
+        "command": "/Users/scammermike/Library/Application Support/Claude/claude-code/2.1.260/claude.app/Contents/MacOS/claude --o",
+        "cpu_pct": 3.8
+      },
+      {
+        "command": "powermetrics --samplers cpu_power gpu_power -i",
+        "cpu_pct": 3.0
+      },
+      {
+        "command": "/System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/MacOS/ScreensharingAgent",
+        "cpu_pct": 2.8
+      },
+      {
+        "command": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTDecoderXPCService.xpc/Contents/MacO",
+        "cpu_pct": 2.7
+      }
+    ],
+    "free_bytes": 41931653120,
+    "free_bytes_after": 18291228672,
+    "swap_used_bytes": "total = 2048.00M  used = 450.75M  free = 1597.25M  (encrypted)",
+    "swap_used_bytes_is_boot_high_water": true,
+    "swapouts_cumulative_after": 80461992,
+    "swapouts_cumulative_before": 80461992,
+    "swapouts_delta_during_measurement": 0
+  },
+  "decode_tok_s": 40.17334221563028,
+  "decode_tok_s_repeat": 40.14548242044874,
+  "envelope": "ascension_envelope.hawking.json",
+  "evidence": {
+    "arm_protocol": "single, single_repeat and aggregate each in a FRESH interpreter; the resident degrades ~4.5x across requests in one process, so arms must not share one",
+    "fresh_arms_run": 3,
+    "note": "complete-token wall divided by tokens actually produced; no kernel time, no synthetic loop"
+  },
+  "fresh_process_per_arm": true,
+  "measured_at": "2026-09-05T19:10:08.346729+00:00",
+  "method": "marginal: (wall(576) - wall(64)) / 512 decoded tokens, each arm a fresh process; cancels model load and prompt prefill exactly",
+  "produced_at": "2026-09-05T19:10:08.346551+00:00",
+  "produced_by": "tools/sovereign/g012_resident_perf.py",
+  "resident_identity": "sealed-3.14",
+  "reused_historical_figure": false,
+  "run_to_run_spread_pct": 0.06939708655077031,
+  "schema": "hawking.sovereign.g012_resident_perf.v1"
+}

@@ -88,7 +88,9 @@ pub fn qwen38_layer_execution_schedule(layer: usize) -> Result<Qwen38LayerExecut
 }
 
 pub fn qwen38_all_64_layer_execution_schedules() -> Result<Vec<Qwen38LayerExecutionSchedule>> {
-    (0..QWEN38_LAYERS).map(qwen38_layer_execution_schedule).collect()
+    (0..QWEN38_LAYERS)
+        .map(qwen38_layer_execution_schedule)
+        .collect()
 }
 
 pub fn qwen38_assert_schedule_intact() -> Result<()> {
@@ -176,13 +178,12 @@ mod tests {
         assert!(!layer0
             .mlp_suffix_kernel_names
             .iter()
-            .any(|name| name.contains("expert") || name.contains("router") || name.contains("moe")));
+            .any(|name| name.contains("expert")
+                || name.contains("router")
+                || name.contains("moe")));
         let layer3 = qwen38_layer_execution_schedule(3).unwrap();
         assert_eq!(layer3.mixer, Qwen38MixerKind::Gqa);
         assert_eq!(layer3.state_slot, 0);
-        assert_eq!(
-            qwen38_layer_execution_schedule(63).unwrap().state_slot,
-            15
-        );
+        assert_eq!(qwen38_layer_execution_schedule(63).unwrap().state_slot, 15);
     }
 }

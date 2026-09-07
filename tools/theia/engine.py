@@ -45,7 +45,7 @@ REUSE = {
         "complete_ebpw missing-input doctrine — H.1 refuses a missing/zero factor rather than defaulting it to 1",
     ],
     "could_not_reuse": [
-        "tools/odyssey/pareto_archive.py dominates()/composite_wus_per_hour_per_GB — axes are complete_ebpw, TPOT, TTFT, capability_passed, hcli_wus_per_hour for resident-body selection, not H.1 bounty factors",
+        "historical PARETO_ARCHIVE receipt — axes were complete_ebpw, TPOT, TTFT, capability_passed, hcli_wus_per_hour for resident-body selection, not H.1 bounty factors",
         "tools/future/complete_ebpw.py cost() — bills representation parts in bytes/ms/bpw, not verified_reward/information_gain/risk",
         "tools/future/scar_reevaluator.py FAMILY_IMPL_COST_RANK — ordinal ranks over codec families, not H.1 cost terms",
         "tools/gravity_cost_vector.py / tools/cost_vector_t.py — B/M/F/L/R/T representation vectors, not bounty value",
