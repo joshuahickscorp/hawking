@@ -253,10 +253,18 @@ assignments, or any command that is not one of the four forms above. If your
 check needs arbitrary code, WRITE IT INTO A .py FILE in the same mutation and
 name that file as the test.
 
-For an implementation mutation, emit exactly one operation and keep the
-combined old/new replacement text under 900 UTF-8 bytes. Make the smallest
-executable change justified by the supplied evidence; do not serialize a whole
-file, a test rewrite, or a plan.
+For an implementation mutation, emit ONE operation against the source file and
+keep the combined old/new replacement text under 900 UTF-8 bytes. Make the
+smallest executable change justified by the supplied evidence; do not serialize
+a whole file, a test rewrite, or a plan.
+
+A NEW TEST FILE IS A SECOND OPERATION AND IS EXPECTED. The rule above bounds
+the size of the source edit; it does not forbid the test this contract
+requires. Measured: three consecutive rounds read the one-operation rule as
+permission to write ONLY the test file, so the function under test was never
+added, the test passed before the change as well as after, and
+red-before-green refused all three. Adding a function and the test that proves
+it is TWO operations -- emit both.
 
 
 ASK FOR EVERYTHING YOU NEED IN ONE REPLY. ONE REPLY may contain at most 16

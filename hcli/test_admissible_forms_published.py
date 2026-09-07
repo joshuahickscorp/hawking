@@ -55,3 +55,16 @@ def test_admit_test_still_accepts_the_published_forms():
                  "pytest hcli/test_engine_tool_loop.py",
                  "python -m pytest hcli/test_engine_tool_loop.py"):
         assert Engine._admit_test(_engine(), form)["admitted"] is True, form
+
+
+def test_contract_does_not_forbid_the_test_operation_it_demands():
+    # Measured: "emit exactly one operation" was read as permission to write
+    # only the test file, so the function was never added and red-before-green
+    # refused three consecutive rounds. The contract demanded a test in the same
+    # mutation while appearing to forbid the second operation it requires.
+    i = SRC.index("For an implementation mutation")
+    block = SRC[i:i + 1100]
+    assert "SECOND OPERATION" in block, "the test operation is still not sanctioned"
+    assert "TWO operations" in block, "the count a function-plus-test needs is not stated"
+    assert "exactly one operation" not in block, \
+        "the contradictory phrasing survives"

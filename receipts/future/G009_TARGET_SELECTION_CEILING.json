@@ -1,0 +1,16 @@
+{
+ "date": "2026-09-06",
+ "obligation": "G009 third attempt",
+ "result": "NOT progressed; 0 of 3 accepted",
+ "MY_HYPOTHESIS_WAS_WRONG": "I diagnosed the failure as a contract contradiction -- the contract demanded a test in the same mutation while saying 'emit exactly one operation', which makes adding a function AND its test impossible. I fixed the contradiction and re-ran. Behaviour was IDENTICAL across all three rounds: same reason, same single test-file operation, same NOT_RED_BEFORE. The hypothesis was plausible and it was not the cause.",
+ "THE_ACTUAL_CAUSE": "The model chose a function that ALREADY EXISTS. Its own summary says 'Added down_proj_scale_overhead_bpw and test file'. That function was added by the accepted G004 unit earlier today, it is present in the module (hasattr True, f(128)=0.041666666666666664), and it appears at line 22 of the very 'complete list of functions that exist right now' the task supplied with the instruction to add one NOT in that list.",
+ "SO_THE_LIMIT_IS_TARGET_SELECTION": "Given an explicit exclusion list, the resident selected an item FROM the list. It then emitted only the test operation -- correctly, since the function it intended was already there -- and the test passed before the mutation, so red-before-green refused it. Every part of that chain is the model failing to choose a novel target, and every part of the harness behaved correctly.",
+ "WHAT_I_KEPT_ANYWAY": "The contract contradiction was real even though it was not this failure's cause: 'write the test as part of the same mutation' and 'emit exactly one operation' cannot both be satisfied when the test needs its own file. The clarification stays, recorded as a fix that did NOT change the measured outcome.",
+ "AUTONOMY_LADDER_MEASURED_FOR_THIS_RESIDENT": [
+  "exact target + return value -> verified, accepted (G004)",
+  "open target, no visibility -> fabricates completion (5 rounds)",
+  "open target + module surface -> writes a test for existing behaviour (3 rounds)",
+  "open target + surface + explicit exclusion list -> picks an item FROM the list (3 rounds)"
+ ],
+ "READING": "Four distinct behaviours, none of them target selection. Adding evidence changes the failure mode each time without producing the capability G009 requires. That is a measured ceiling on this resident, not a harness defect -- and the harness caught every attempt."
+}
