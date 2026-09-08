@@ -1,0 +1,251 @@
+{
+  "obligation": "HIGGS-DESCENT",
+  "question": "Is sens-e (2.398 GB) a floor, or just the first allocation that came out clean?",
+  "answer": "Not a floor. Bounded coordinate descent reached 2.225 GB still clean, a 7.2% cut.",
+  "method": "One change per step from the current NR, only changes that SHRINK the artifact, accept the smallest that gates clean, repeat. Not a combinatorial sweep -- LAW012 and the one-off both warn that independently-safe reductions do not compose. LAW025 forbids reusing the loo sensitivity map here: it was measured against a uniform 4-bit base, not against sens-e's, so every neighbour was re-measured.",
+  "screen": "tools/future/tts_gate.stuck_run for the fixed point, plus energy and duration. No ASR in the loop -- the fixed-point detector is what makes an ASR-free screen possible, so an arm costs a render and nothing else. ASR is spent only on the finalist.",
+  "path": [
+    {
+      "step": 0,
+      "arm": "sens-e",
+      "alloc": "b4 g64 down_proj:2,embed_tokens:2",
+      "gb": 2.398,
+      "ebpw": 4.497,
+      "fails": "0/8"
+    },
+    {
+      "step": 1,
+      "arm": "o3",
+      "alloc": "+ o_proj:3",
+      "gb": 2.351,
+      "ebpw": 4.4,
+      "fails": "0/8",
+      "note": "only clean neighbour of 7"
+    },
+    {
+      "step": 2,
+      "arm": "g128",
+      "alloc": "group 64 -> 128",
+      "gb": 2.225,
+      "ebpw": 4.195,
+      "fails": "0/8",
+      "note": "only clean neighbour of 6"
+    },
+    {
+      "step": 3,
+      "arm": null,
+      "result": "exhausted: all 5 neighbours rendered and were dirty"
+    }
+  ],
+  "final": {
+    "recipe": "awq_fold.py --bits 4 --group-size 128 --alloc down_proj:2,embed_tokens:2,o_proj:3",
+    "gb": 2.225,
+    "complete_ebpw": 4.195,
+    "logical_params": "4.22B",
+    "gate": "0/8 at n=8",
+    "validation": "n=32 on a different seed QUEUED; not sealed until it lands"
+  },
+  "why_ebpw_exceeds_4": "A '4-bit' checkpoint is not 4 bits per weight. Complete EBPW bills every byte the loader reads -- scales and biases included -- which is 0.195 bits/weight of overhead here. Group 128 cut it from 4.497 by halving the number of scale groups.",
+  "corrected": "The EBPW printed during the run (~29) was wrong: it counted packed uint32 ELEMENTS as logical params instead of recovering 32/bits per element. Ranking was on GB and is unaffected; the EBPW column in the run log should be ignored in favour of these recomputed values.",
+  "what_the_descent_refutes": "The single-organ map measured against a uniform 4-bit base said only down_proj and embed_tokens tolerate 2 bits. It did NOT predict that o_proj tolerates 3 bits on top of that base, nor that group 128 is free there while it jams 6/8 on a 3-bit base. Both were found only by re-measuring around the current NR, which is exactly what LAW025 requires.",
+  "history": [
+    {
+      "arm": "desc1-gateup2",
+      "tag": "gateup2",
+      "bits": 4,
+      "group": 64,
+      "alloc": "down_proj:2,embed_tokens:2,gate_proj:2,up_proj:2",
+      "gb": 1.9499,
+      "ebpw": 29.0907,
+      "fails": 8,
+      "clean": false
+    },
+    {
+      "arm": "desc1-gateup3",
+      "tag": "gateup3",
+      "bits": 4,
+      "group": 64,
+      "alloc": "down_proj:2,embed_tokens:2,gate_proj:3,up_proj:3",
+      "gb": 2.174,
+      "ebpw": 29.3674,
+      "fails": 3,
+      "clean": false
+    },
+    {
+      "arm": "desc1-qkv2",
+      "tag": "qkv2",
+      "bits": 4,
+      "group": 64,
+      "alloc": "down_proj:2,embed_tokens:2,q_proj:2,k_proj:2,v_proj:2",
+      "gb": 2.2566,
+      "ebpw": 29.4566,
+      "fails": 8,
+      "clean": false
+    },
+    {
+      "arm": "desc1-qkv3",
+      "tag": "qkv3",
+      "bits": 4,
+      "group": 64,
+      "alloc": "down_proj:2,embed_tokens:2,q_proj:3,k_proj:3,v_proj:3",
+      "gb": 2.3274,
+      "ebpw": 29.5283,
+      "fails": 3,
+      "clean": false
+    },
+    {
+      "arm": "desc1-o2",
+      "tag": "o2",
+      "bits": 4,
+      "group": 64,
+      "alloc": "down_proj:2,embed_tokens:2,o_proj:2",
+      "gb": 2.3038,
+      "ebpw": 29.5049,
+      "fails": 8,
+      "clean": false
+    },
+    {
+      "arm": "desc1-o3",
+      "tag": "o3",
+      "bits": 4,
+      "group": 64,
+      "alloc": "down_proj:2,embed_tokens:2,o_proj:3",
+      "gb": 2.351,
+      "ebpw": 29.5513,
+      "fails": 0,
+      "clean": true
+    },
+    {
+      "arm": "desc1-g128",
+      "tag": "g128",
+      "bits": 4,
+      "group": 128,
+      "alloc": "down_proj:2,embed_tokens:2",
+      "gb": 2.2724,
+      "ebpw": 28.0372,
+      "fails": 1,
+      "clean": false
+    },
+    {
+      "arm": "desc2-gateup2",
+      "tag": "gateup2",
+      "bits": 4,
+      "group": 64,
+      "alloc": "down_proj:2,embed_tokens:2,gate_proj:2,up_proj:2,o_proj:3",
+      "gb": 1.9027,
+      "ebpw": 29.0248,
+      "fails": 8,
+      "clean": false
+    },
+    {
+      "arm": "desc2-gateup3",
+      "tag": "gateup3",
+      "bits": 4,
+      "group": 64,
+      "alloc": "down_proj:2,embed_tokens:2,gate_proj:3,up_proj:3,o_proj:3",
+      "gb": 2.1268,
+      "ebpw": 29.3136,
+      "fails": 2,
+      "clean": false
+    },
+    {
+      "arm": "desc2-qkv2",
+      "tag": "qkv2",
+      "bits": 4,
+      "group": 64,
+      "alloc": "down_proj:2,embed_tokens:2,o_proj:3,q_proj:2,k_proj:2,v_proj:2",
+      "gb": 2.2094,
+      "ebpw": 29.4064,
+      "fails": 8,
+      "clean": false
+    },
+    {
+      "arm": "desc2-qkv3",
+      "tag": "qkv3",
+      "bits": 4,
+      "group": 64,
+      "alloc": "down_proj:2,embed_tokens:2,o_proj:3,q_proj:3,k_proj:3,v_proj:3",
+      "gb": 2.2802,
+      "ebpw": 29.481,
+      "fails": 2,
+      "clean": false
+    },
+    {
+      "arm": "desc2-o2",
+      "tag": "o2",
+      "bits": 4,
+      "group": 64,
+      "alloc": "down_proj:2,embed_tokens:2,o_proj:2",
+      "gb": 2.3038,
+      "ebpw": 29.5049,
+      "fails": 8,
+      "clean": false
+    },
+    {
+      "arm": "desc2-g128",
+      "tag": "g128",
+      "bits": 4,
+      "group": 128,
+      "alloc": "down_proj:2,embed_tokens:2,o_proj:3",
+      "gb": 2.2253,
+      "ebpw": 27.9634,
+      "fails": 0,
+      "clean": true
+    },
+    {
+      "arm": "desc3-gateup2",
+      "tag": "gateup2",
+      "bits": 4,
+      "group": 128,
+      "alloc": "down_proj:2,embed_tokens:2,gate_proj:2,up_proj:2,o_proj:3",
+      "gb": 1.777,
+      "ebpw": 27.0955,
+      "fails": 8,
+      "clean": false
+    },
+    {
+      "arm": "desc3-gateup3",
+      "tag": "gateup3",
+      "bits": 4,
+      "group": 128,
+      "alloc": "down_proj:2,embed_tokens:2,gate_proj:3,up_proj:3,o_proj:3",
+      "gb": 2.0011,
+      "ebpw": 27.5716,
+      "fails": 7,
+      "clean": false
+    },
+    {
+      "arm": "desc3-qkv2",
+      "tag": "qkv2",
+      "bits": 4,
+      "group": 128,
+      "alloc": "down_proj:2,embed_tokens:2,o_proj:3,q_proj:2,k_proj:2,v_proj:2",
+      "gb": 2.0837,
+      "ebpw": 27.7245,
+      "fails": 7,
+      "clean": false
+    },
+    {
+      "arm": "desc3-qkv3",
+      "tag": "qkv3",
+      "bits": 4,
+      "group": 128,
+      "alloc": "down_proj:2,embed_tokens:2,o_proj:3,q_proj:3,k_proj:3,v_proj:3",
+      "gb": 2.1545,
+      "ebpw": 27.8474,
+      "fails": 5,
+      "clean": false
+    },
+    {
+      "arm": "desc3-o2",
+      "tag": "o2",
+      "bits": 4,
+      "group": 128,
+      "alloc": "down_proj:2,embed_tokens:2,o_proj:2",
+      "gb": 2.1781,
+      "ebpw": 27.8868,
+      "fails": 8,
+      "clean": false
+    }
+  ]
+}
