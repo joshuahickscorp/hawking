@@ -1,24 +1,17 @@
 {
-  "objective": "Global Odyssey. VMCP is sublated and its coupled half deleted. The autonomy facet is the live front and the one the steer calls most important.",
-  "active_specimen": "HCLI itself -- the resident daemon",
-  "why_this_specimen": "hcli_owned is 0 of 25 laws. That flag is true only when the writer shares the live worker's session id, so it can only change by the resident actually completing a unit. Two runs this session got the loop turning; neither reached an ACCEPTED terminal.",
-  "active_workunit": "AUTONOMY-3: an accepted unit, hence the campaign's first hcli_owned law",
-  "hypothesis": "The blocker is no longer machinery. Wake-from-checkpoint, goal compilation, worker spawn, model calls, file writes and self-repair all happened unprompted. What failed twice is the model emitting a VALID STRUCTURED MUTATION against a real source file -- 'structured output rejected after 3 attempts'. That is a capability gap at 4B, not an architecture gap.",
-  "next_action": "Do not give the resident a source mutation again until the structured-output path is understood. Instead: (1) read hcli/engine.py's structured-output rejection to find what shape it demands and why a 4B model cannot produce it -- the error text names hcli/perception/store.py, so the rejected payload is recoverable from .hcli/mission/events.jsonl; (2) if the demanded shape is unnecessarily strict, loosen it and mutation-test the loosening; (3) only then retry AUTONOMY-2's task. A larger model is the lazy answer and does not tell us whether the contract is reasonable.",
+  "objective": "Close the autonomy loop: one accepted unit, hence the first hcli_owned law.",
+  "active_specimen": "hcli/perception/store.py",
+  "why_this_specimen": "Small and new, with a gap I verified is genuinely RED before the change.",
+  "active_workunit": "AUTONOMY-4",
+  "hypothesis": "Both prior units died on a HARNESS defect, not a model one: insert/append fragments were compiled standalone and falsely rejected as syntax errors. That is fixed. The previous task was also ill-posed -- its test passed before any change. This one is verified red.",
+  "next_action": "ProjectStore.create in hcli/perception/store.py accepts an empty project name, so a project can be created whose name is the empty string. 1. Write hcli/tests/test_project_name_must_not_be_empty.py asserting that ProjectStore.create(tmp_path/'p', '') raises ValueError. 2. Run it. It MUST fail -- the guard does not exist yet. 3. Add the guard using op='insert_after' with old_lines copied VERBATIM from the file (the 'store = cls(root)' line inside create), raising ValueError when the name is empty or whitespace. Do not use replace_file. 4. Run the test again and confirm it passes. Report both runs as your evidence.",
   "evidence_refs": [
-    "receipts/future/AUTONOMY_FIRST_WORKER_RUN.json",
-    "receipts/future/AUTONOMY_SECOND_RUN.json",
-    "docs/VMCP_SUBLATION_CONTRACT.md"
+    "hcli/perception/store.py"
   ],
-  "open_jobs": [
-    "an isolation-pass agent is mapping hcli's remaining external couplings"
-  ],
+  "open_jobs": [],
   "resource_deps": [
-    "--model now works; HCLI_MODEL_PATH no longer needed as a crutch"
+    "--model"
   ],
-  "representations_ruled_out": [
-    "giving the resident a judgement task with no mechanical evidence -- fails NO_EVIDENCE",
-    "giving it a source mutation at 4B -- fails structured-output rejection"
-  ],
-  "written_at": 1788889966
+  "representations_ruled_out": [],
+  "written_at": 1788892941
 }

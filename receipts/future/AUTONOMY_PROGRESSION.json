@@ -1,0 +1,39 @@
+{
+  "obligation": "AUTONOMY-PROGRESSION",
+  "claim": "Every autonomy failure this session was a HARNESS defect, not a model one.",
+  "runs": [
+    {
+      "n": "1-2",
+      "reached": "no worker at all",
+      "blocker": "--model was advertised by the CLI and never reached the worker; controller read HCLI_MODEL_PATH which nothing set",
+      "fixed": "_spawn_worker sets it from config.model"
+    },
+    {
+      "n": "3-4",
+      "reached": "worker + model calls + a written test file",
+      "blocker": "insert/append fragments compiled STANDALONE and falsely rejected as 'unexpected indent at line 1' -- the same false rejection already fixed for op=replace, never extended to the splicing family. The model was holding a correct guard and was told it had made a syntax error it had not made.",
+      "fixed": "splicing ops rebuild the resulting file from their anchor and judge THAT"
+    },
+    {
+      "n": "5",
+      "reached": "9-10 mutations APPLIED and judged",
+      "blocker": "every test command came back as the bare string NOT_ADMITTED, which names no accepted form, so the model alternated between two rejected shapes forever",
+      "fixed": "the refusal now names the three accepted forms"
+    },
+    {
+      "n": "6",
+      "reached": "a test command ADMITTED and EXECUTED, rc=1 -- a genuine RED",
+      "blocker": "not yet isolated; the unit still did not reach an accepted terminal",
+      "fixed": null
+    }
+  ],
+  "hcli_owned": "0 of 25, unchanged. The bar is an ACCEPTED unit and none was reached.",
+  "what_the_model_actually_did_well": [
+    "took its goal from disk with no human typing one",
+    "decomposed a four-step instruction into its own obligations",
+    "wrote a correct, well-formed pytest with a fixture and pytest.raises",
+    "found an accepted test-command form once the refusal named one",
+    "had the RIGHT fix for a real path traversal, and lost it to a false rejection"
+  ],
+  "honest_reading": "The campaign's story was 'HCLI cannot carry a unit'. The measured story is that three harness defects stood between it and a terminal, each one making a correct action look like a model error. Two are fixed and demonstrated; the third moved the failure one stage later. That is not autonomy achieved, but it is a different diagnosis than the one this session started with."
+}
