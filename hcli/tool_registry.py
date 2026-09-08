@@ -1533,7 +1533,6 @@ def _context_recall(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any
 
 _RECEIPT_TARGETS = {
     "roadmap.read": "civilization/ROADMAP_STATE.json",
-    "vmcp.capabilities": "receipts/headless/VMCP_CAPABILITY_SURFACE.json",
     "doctor.inspect": "receipts/headless/DOCTOR_TOURNAMENT.json",
     "gravity.inspect": "receipts/headless/GRAVITY_COMPILER_SEARCH.json",
     "accelerator.inspect": "receipts/headless/ACCELERATOR_MACHINE_GENOME.json",
@@ -1832,6 +1831,21 @@ def _campaign_state(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any
             "choosing the next move is the operator's decision, not this tool's"),
     }
     return out
+
+
+def _vmcp_capabilities(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """The LIVE perception surface, not a frozen receipt.
+
+    This verb used to read receipts/headless/VMCP_CAPABILITY_SURFACE.json, a
+    240 KB snapshot of the foreign package's tool surface produced by
+    capability_probe.py. That producer is gone with the sublation, so the
+    receipt could never be refreshed again -- a tool serving permanently stale
+    evidence, which is worse than one that does not exist. It now reports what
+    this host can actually do, computed at call time.
+    """
+    from .vmcp_adapter import inspect_vmcp
+
+    return inspect_vmcp(context.repo_root)
 
 
 def _vmcp_tools(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
@@ -3940,7 +3954,6 @@ def default_tool_registry(
     registry.register(ToolSpec("receipt.inspect", "Inspect a JSON/text receipt under the repository or mission state roots.", path_schema, alias_of="receipt.read", handler=_receipt_read))
     for name, description in (
         ("roadmap.read", "Read the persisted civilization roadmap."),
-        ("vmcp.capabilities", "Read the latest VMCP capability census."),
         ("doctor.inspect", "Read the latest Doctor tournament receipt."),
         ("gravity.inspect", "Read the latest Gravity compiler/search receipt."),
         ("accelerator.inspect", "Read the latest accelerator machine receipt."),
@@ -4335,6 +4348,13 @@ def default_tool_registry(
          "required": ["objective", "hypothesis", "next_action"]},
         mutation=WORKSPACE_WRITE,
         handler=_campaign_checkpoint,
+    ))
+    registry.register(ToolSpec(
+        "vmcp.capabilities",
+        "The live perception surface this host implements natively: tool names, "
+        "profiles, and which dependencies it deliberately does not need.",
+        {"type": "object", "additionalProperties": False, "properties": {}},
+        handler=_vmcp_capabilities,
     ))
     registry.register(ToolSpec(
         "vmcp.tools",
