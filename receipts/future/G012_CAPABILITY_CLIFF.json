@@ -1,0 +1,931 @@
+{
+ "obligation": "G012",
+ "question": "G012_SELECTION_CANNOT_REACH licensed exactly one next question: which representation CLASS has ever produced sub-1.5 complete EBPW WITH CAPABILITY INTACT?",
+ "answer": "NONE -- and not for want of reaching the bytes.",
+ "method": "swept every JSON under receipts/future for any object carrying BOTH a complete-EBPW field and a capability verdict field; deduplicated on (ebpw, verdict, source, ppl); then grouped by EBPW value so that verdict disagreement and rate collisions are visible rather than averaged away",
+ "evidence_tier": "CAMPAIGN_RECEIPT_SURVEY",
+ "gpu_authority": false,
+ "caveat": "this is a survey of what the campaign has already recorded, not a new measurement. It inherits each source receipt's own evidence tier. It is authority on COVERAGE -- what has and has not been reached -- not on any individual candidate's capability.",
+ "n_rows": 59,
+ "n_distinct_ebpw": 22,
+ "n_pass": 5,
+ "n_fail": 16,
+ "n_contested": 1,
+ "lowest_capability_passing": {
+  "complete_ebpw": 3.2831,
+  "verdict": "PASS",
+  "n_rows": 1,
+  "ppl_reported": [
+   3.135
+  ],
+  "r4_reported": [
+   0.1075
+  ],
+  "sources": [
+   "REPRESENTATION_VOCABULARY.json"
+  ]
+ },
+ "lowest_bytes_ever_reached": {
+  "complete_ebpw": 1.3639,
+  "verdict": "fail",
+  "n_rows": 3,
+  "ppl_reported": [
+   11.5089,
+   11.509
+  ],
+  "r4_reported": [
+   0.8925
+  ],
+  "sources": [
+   "O003_PARETO_COMPLETE.json",
+   "O003_RESIDENT_GROUP_LEVER.json",
+   "REPRESENTATION_VOCABULARY.json"
+  ]
+ },
+ "dead_span": {
+  "from": 1.3639,
+  "to": 3.2831,
+  "ratio": 2.407,
+  "n_failing_candidates_inside": 16,
+  "note": "every distinct EBPW value in this span carries a failing verdict and no passing one"
+ },
+ "what_the_conjunction_is_doing": "The failures are not all the same failure. Around 2.33-2.46 the perplexity is close to the passing point's 3.135 -- 3.3454, 3.5128, 4.4601 -- while median_4gram_repeat is 0.7312, 0.6667, 0.5591 against the passing point's 0.1075. Those candidates die on DIVERSITY with likelihood nearly intact. Below 2.0 likelihood goes too: 9.2066, 10.9562, 11.4941, 11.5089. The directive's 'likelihood and diversity are separate capability axes' is not a caution here, it is the measured shape of the frontier.",
+ "rate_collisions": "An EBPW value does NOT identify a candidate. 2.4058 is reported by four receipts with perplexities 4.085, 4.79 and 27.7692 -- these are different representations that happen to bill the same rate. Any future comparison keyed on EBPW alone will silently merge them.",
+ "contested_points": [
+  {
+   "complete_ebpw": 9.2619,
+   "verdict": "CONTESTED",
+   "n_rows": 3,
+   "ppl_reported": [
+    12.84
+   ],
+   "r4_reported": [
+    0.8224
+   ],
+   "sources": [
+    "G017_ORGAN_ALLOCATION.json"
+   ]
+  }
+ ],
+ "collisions": [
+  {
+   "complete_ebpw": 1.3639,
+   "verdict": "fail",
+   "n_rows": 3,
+   "ppl_reported": [
+    11.5089,
+    11.509
+   ],
+   "r4_reported": [
+    0.8925
+   ],
+   "sources": [
+    "O003_PARETO_COMPLETE.json",
+    "O003_RESIDENT_GROUP_LEVER.json",
+    "REPRESENTATION_VOCABULARY.json"
+   ]
+  },
+  {
+   "complete_ebpw": 1.3822,
+   "verdict": "fail",
+   "n_rows": 2,
+   "ppl_reported": [
+    11.494,
+    11.4941
+   ],
+   "r4_reported": null,
+   "sources": [
+    "O003_PARETO_COMPLETE.json",
+    "O003_RESIDENT_GROUP_LEVER.json"
+   ]
+  },
+  {
+   "complete_ebpw": 1.4188,
+   "verdict": "fail",
+   "n_rows": 8,
+   "ppl_reported": [
+    11.414,
+    12.2917,
+    12.292,
+    12.522,
+    12.5221
+   ],
+   "r4_reported": null,
+   "sources": [
+    "O003_BINARY_SCALED.json",
+    "O003_PARETO_COMPLETE.json",
+    "O003_PER_EXPERT_CALIBRATION.json",
+    "O003_RESIDENT_GROUP_LEVER.json"
+   ]
+  },
+  {
+   "complete_ebpw": 1.5284,
+   "verdict": "fail",
+   "n_rows": 7,
+   "ppl_reported": [
+    11.005,
+    11.0054,
+    12.2678,
+    12.268,
+    12.396,
+    12.3965
+   ],
+   "r4_reported": null,
+   "sources": [
+    "O003_BINARY_SCALED.json",
+    "O003_PARETO_COMPLETE.json",
+    "O003_PER_EXPERT_CALIBRATION.json"
+   ]
+  },
+  {
+   "complete_ebpw": 1.5549,
+   "verdict": "fail",
+   "n_rows": 3,
+   "ppl_reported": [
+    10.956,
+    10.9562,
+    11.163
+   ],
+   "r4_reported": null,
+   "sources": [
+    "O003_BINARY_SCALED.json",
+    "O003_PARETO_COMPLETE.json"
+   ]
+  },
+  {
+   "complete_ebpw": 1.9728,
+   "verdict": "fail",
+   "n_rows": 2,
+   "ppl_reported": [
+    9.2066,
+    9.207
+   ],
+   "r4_reported": null,
+   "sources": [
+    "O003_BINARY_SCALED.json",
+    "O003_PARETO_COMPLETE.json"
+   ]
+  },
+  {
+   "complete_ebpw": 2.4058,
+   "verdict": "fail",
+   "n_rows": 7,
+   "ppl_reported": [
+    4.085,
+    4.79,
+    5.425,
+    27.7692
+   ],
+   "r4_reported": [
+    0.7634,
+    0.9892
+   ],
+   "sources": [
+    "O003_GAUNTLET_DEEP.json",
+    "O003_PARETO_COMPLETE.json",
+    "O003_SHAREDBASIS_MEASURED.json",
+    "REPRESENTATION_VOCABULARY.json"
+   ]
+  }
+ ],
+ "implication": "The Noetic problem is NOT byte reduction. Bytes have been driven to 1.3639, past both the <=1.5 tolerance and near the <=1.0 objective. Capability has never survived below 3.2831. Every future representation class is competing inside a span that measured candidates have entered repeatedly and none has left alive.",
+ "ladder": [
+  {
+   "complete_ebpw": 1.3639,
+   "verdict": "fail",
+   "n_rows": 3,
+   "ppl_reported": [
+    11.5089,
+    11.509
+   ],
+   "r4_reported": [
+    0.8925
+   ],
+   "sources": [
+    "O003_PARETO_COMPLETE.json",
+    "O003_RESIDENT_GROUP_LEVER.json",
+    "REPRESENTATION_VOCABULARY.json"
+   ]
+  },
+  {
+   "complete_ebpw": 1.3822,
+   "verdict": "fail",
+   "n_rows": 2,
+   "ppl_reported": [
+    11.494,
+    11.4941
+   ],
+   "r4_reported": null,
+   "sources": [
+    "O003_PARETO_COMPLETE.json",
+    "O003_RESIDENT_GROUP_LEVER.json"
+   ]
+  },
+  {
+   "complete_ebpw": 1.4188,
+   "verdict": "fail",
+   "n_rows": 8,
+   "ppl_reported": [
+    11.414,
+    12.2917,
+    12.292,
+    12.522,
+    12.5221
+   ],
+   "r4_reported": null,
+   "sources": [
+    "O003_BINARY_SCALED.json",
+    "O003_PARETO_COMPLETE.json",
+    "O003_PER_EXPERT_CALIBRATION.json",
+    "O003_RESIDENT_GROUP_LEVER.json"
+   ]
+  },
+  {
+   "complete_ebpw": 1.5284,
+   "verdict": "fail",
+   "n_rows": 7,
+   "ppl_reported": [
+    11.005,
+    11.0054,
+    12.2678,
+    12.268,
+    12.396,
+    12.3965
+   ],
+   "r4_reported": null,
+   "sources": [
+    "O003_BINARY_SCALED.json",
+    "O003_PARETO_COMPLETE.json",
+    "O003_PER_EXPERT_CALIBRATION.json"
+   ]
+  },
+  {
+   "complete_ebpw": 1.5549,
+   "verdict": "fail",
+   "n_rows": 3,
+   "ppl_reported": [
+    10.956,
+    10.9562,
+    11.163
+   ],
+   "r4_reported": null,
+   "sources": [
+    "O003_BINARY_SCALED.json",
+    "O003_PARETO_COMPLETE.json"
+   ]
+  },
+  {
+   "complete_ebpw": 1.9728,
+   "verdict": "fail",
+   "n_rows": 2,
+   "ppl_reported": [
+    9.2066,
+    9.207
+   ],
+   "r4_reported": null,
+   "sources": [
+    "O003_BINARY_SCALED.json",
+    "O003_PARETO_COMPLETE.json"
+   ]
+  },
+  {
+   "complete_ebpw": 2.304,
+   "verdict": "fail",
+   "n_rows": 1,
+   "ppl_reported": [
+    11.4773
+   ],
+   "r4_reported": [
+    0.9333
+   ],
+   "sources": [
+    "REPRESENTATION_VOCABULARY.json"
+   ]
+  },
+  {
+   "complete_ebpw": 2.3327,
+   "verdict": "fail",
+   "n_rows": 1,
+   "ppl_reported": [
+    4.4601
+   ],
+   "r4_reported": [
+    0.5591
+   ],
+   "sources": [
+    "O003_PQMIX_REFUTED.json"
+   ]
+  },
+  {
+   "complete_ebpw": 2.4058,
+   "verdict": "fail",
+   "n_rows": 7,
+   "ppl_reported": [
+    4.085,
+    4.79,
+    5.425,
+    27.7692
+   ],
+   "r4_reported": [
+    0.7634,
+    0.9892
+   ],
+   "sources": [
+    "O003_GAUNTLET_DEEP.json",
+    "O003_PARETO_COMPLETE.json",
+    "O003_SHAREDBASIS_MEASURED.json",
+    "REPRESENTATION_VOCABULARY.json"
+   ]
+  },
+  {
+   "complete_ebpw": 2.4059,
+   "verdict": "fail",
+   "n_rows": 2,
+   "ppl_reported": [
+    3.5128
+   ],
+   "r4_reported": [
+    0.6667
+   ],
+   "sources": [
+    "O003_PQ_PERCAL_NEAR_MISS.json",
+    "REPRESENTATION_VOCABULARY.json"
+   ]
+  },
+  {
+   "complete_ebpw": 2.4639,
+   "verdict": "fail",
+   "n_rows": 2,
+   "ppl_reported": [
+    3.3454
+   ],
+   "r4_reported": [
+    0.7312
+   ],
+   "sources": [
+    "O003_PQ_SPARSE_AND_ACCOUNTING_FIX.json",
+    "REPRESENTATION_VOCABULARY.json"
+   ]
+  },
+  {
+   "complete_ebpw": 2.5419,
+   "verdict": "fail",
+   "n_rows": 2,
+   "ppl_reported": [
+    3.358
+   ],
+   "r4_reported": null,
+   "sources": [
+    "O003_GAUNTLET_DEEP.json",
+    "O003_PARETO_COMPLETE.json"
+   ]
+  },
+  {
+   "complete_ebpw": 2.6251,
+   "verdict": "fail",
+   "n_rows": 2,
+   "ppl_reported": [
+    3.522
+   ],
+   "r4_reported": null,
+   "sources": [
+    "O003_GAUNTLET_DEEP.json",
+    "O003_PARETO_COMPLETE.json"
+   ]
+  },
+  {
+   "complete_ebpw": 2.6815,
+   "verdict": "fail",
+   "n_rows": 2,
+   "ppl_reported": [
+    3.34
+   ],
+   "r4_reported": null,
+   "sources": [
+    "O003_GAUNTLET_DEEP.json",
+    "O003_PARETO_COMPLETE.json"
+   ]
+  },
+  {
+   "complete_ebpw": 2.7612,
+   "verdict": "fail",
+   "n_rows": 2,
+   "ppl_reported": [
+    3.33
+   ],
+   "r4_reported": null,
+   "sources": [
+    "O003_GAUNTLET_DEEP.json",
+    "O003_PARETO_COMPLETE.json"
+   ]
+  },
+  {
+   "complete_ebpw": 2.9597,
+   "verdict": "fail",
+   "n_rows": 2,
+   "ppl_reported": [
+    3.536
+   ],
+   "r4_reported": null,
+   "sources": [
+    "O003_GAUNTLET_DEEP.json",
+    "O003_PARETO_COMPLETE.json"
+   ]
+  },
+  {
+   "complete_ebpw": 3.2831,
+   "verdict": "PASS",
+   "n_rows": 1,
+   "ppl_reported": [
+    3.135
+   ],
+   "r4_reported": [
+    0.1075
+   ],
+   "sources": [
+    "REPRESENTATION_VOCABULARY.json"
+   ]
+  },
+  {
+   "complete_ebpw": 3.5024,
+   "verdict": "PASS",
+   "n_rows": 2,
+   "ppl_reported": [
+    3.082
+   ],
+   "r4_reported": null,
+   "sources": [
+    "O003_GAUNTLET_DEEP.json",
+    "O003_PARETO_COMPLETE.json"
+   ]
+  },
+  {
+   "complete_ebpw": 4.3797,
+   "verdict": "PASS",
+   "n_rows": 2,
+   "ppl_reported": [
+    3.044
+   ],
+   "r4_reported": null,
+   "sources": [
+    "O003_GAUNTLET_DEEP.json",
+    "O003_PARETO_COMPLETE.json"
+   ]
+  },
+  {
+   "complete_ebpw": 8.1989,
+   "verdict": "PASS",
+   "n_rows": 2,
+   "ppl_reported": [
+    3.6711
+   ],
+   "r4_reported": [
+    0.0278
+   ],
+   "sources": [
+    "G008_ORGAN_ALLOCATION_SECOND_BODY.json"
+   ]
+  },
+  {
+   "complete_ebpw": 9.2619,
+   "verdict": "CONTESTED",
+   "n_rows": 3,
+   "ppl_reported": [
+    12.84
+   ],
+   "r4_reported": [
+    0.8224
+   ],
+   "sources": [
+    "G017_ORGAN_ALLOCATION.json"
+   ]
+  },
+  {
+   "complete_ebpw": 15.5636,
+   "verdict": "PASS",
+   "n_rows": 1,
+   "ppl_reported": [
+    2.894
+   ],
+   "r4_reported": null,
+   "sources": [
+    "O003_PARETO_COMPLETE.json"
+   ]
+  }
+ ],
+ "rows": [
+  {
+   "complete_ebpw": 1.3639,
+   "capability_ok": false,
+   "source": "O003_PARETO_COMPLETE.json",
+   "ppl": 11.509,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 1.3639,
+   "capability_ok": false,
+   "source": "O003_RESIDENT_GROUP_LEVER.json",
+   "ppl": 11.5089,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 1.3639,
+   "capability_ok": false,
+   "source": "REPRESENTATION_VOCABULARY.json",
+   "ppl": 11.5089,
+   "median_4gram_repeat": 0.8925
+  },
+  {
+   "complete_ebpw": 1.3822,
+   "capability_ok": false,
+   "source": "O003_PARETO_COMPLETE.json",
+   "ppl": 11.494,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 1.3822,
+   "capability_ok": false,
+   "source": "O003_RESIDENT_GROUP_LEVER.json",
+   "ppl": 11.4941,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 1.4188,
+   "capability_ok": false,
+   "source": "O003_BINARY_SCALED.json",
+   "ppl": 12.2917,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 1.4188,
+   "capability_ok": false,
+   "source": "O003_PARETO_COMPLETE.json",
+   "ppl": 12.292,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 1.4188,
+   "capability_ok": false,
+   "source": "O003_PARETO_COMPLETE.json",
+   "ppl": 12.522,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 1.4188,
+   "capability_ok": false,
+   "source": "O003_PARETO_COMPLETE.json",
+   "ppl": 11.414,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 1.4188,
+   "capability_ok": false,
+   "source": "O003_PER_EXPERT_CALIBRATION.json",
+   "ppl": 12.2917,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 1.4188,
+   "capability_ok": false,
+   "source": "O003_PER_EXPERT_CALIBRATION.json",
+   "ppl": 12.5221,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 1.4188,
+   "capability_ok": false,
+   "source": "O003_PER_EXPERT_CALIBRATION.json",
+   "ppl": 11.414,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 1.4188,
+   "capability_ok": false,
+   "source": "O003_RESIDENT_GROUP_LEVER.json",
+   "ppl": 11.414,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 1.5284,
+   "capability_ok": false,
+   "source": "O003_BINARY_SCALED.json",
+   "ppl": 12.2678,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 1.5284,
+   "capability_ok": false,
+   "source": "O003_PARETO_COMPLETE.json",
+   "ppl": 12.268,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 1.5284,
+   "capability_ok": false,
+   "source": "O003_PARETO_COMPLETE.json",
+   "ppl": 12.396,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 1.5284,
+   "capability_ok": false,
+   "source": "O003_PARETO_COMPLETE.json",
+   "ppl": 11.005,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 1.5284,
+   "capability_ok": false,
+   "source": "O003_PER_EXPERT_CALIBRATION.json",
+   "ppl": 12.2678,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 1.5284,
+   "capability_ok": false,
+   "source": "O003_PER_EXPERT_CALIBRATION.json",
+   "ppl": 12.3965,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 1.5284,
+   "capability_ok": false,
+   "source": "O003_PER_EXPERT_CALIBRATION.json",
+   "ppl": 11.0054,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 1.5549,
+   "capability_ok": false,
+   "source": "O003_BINARY_SCALED.json",
+   "ppl": 10.9562,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 1.5549,
+   "capability_ok": false,
+   "source": "O003_PARETO_COMPLETE.json",
+   "ppl": 10.956,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 1.5549,
+   "capability_ok": false,
+   "source": "O003_PARETO_COMPLETE.json",
+   "ppl": 11.163,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 1.9728,
+   "capability_ok": false,
+   "source": "O003_BINARY_SCALED.json",
+   "ppl": 9.2066,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 1.9728,
+   "capability_ok": false,
+   "source": "O003_PARETO_COMPLETE.json",
+   "ppl": 9.207,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 2.304,
+   "capability_ok": false,
+   "source": "REPRESENTATION_VOCABULARY.json",
+   "ppl": 11.4773,
+   "median_4gram_repeat": 0.9333
+  },
+  {
+   "complete_ebpw": 2.3327,
+   "capability_ok": false,
+   "source": "O003_PQMIX_REFUTED.json",
+   "ppl": 4.4601,
+   "median_4gram_repeat": 0.5591
+  },
+  {
+   "complete_ebpw": 2.4058,
+   "capability_ok": false,
+   "source": "O003_GAUNTLET_DEEP.json",
+   "ppl": null,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 2.4058,
+   "capability_ok": false,
+   "source": "O003_PARETO_COMPLETE.json",
+   "ppl": 4.085,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 2.4058,
+   "capability_ok": false,
+   "source": "O003_PARETO_COMPLETE.json",
+   "ppl": 5.425,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 2.4058,
+   "capability_ok": false,
+   "source": "O003_PARETO_COMPLETE.json",
+   "ppl": 4.79,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 2.4058,
+   "capability_ok": false,
+   "source": "O003_SHAREDBASIS_MEASURED.json",
+   "ppl": 27.7692,
+   "median_4gram_repeat": 0.9892
+  },
+  {
+   "complete_ebpw": 2.4058,
+   "capability_ok": false,
+   "source": "REPRESENTATION_VOCABULARY.json",
+   "ppl": 4.79,
+   "median_4gram_repeat": 0.7634
+  },
+  {
+   "complete_ebpw": 2.4058,
+   "capability_ok": false,
+   "source": "REPRESENTATION_VOCABULARY.json",
+   "ppl": 27.7692,
+   "median_4gram_repeat": 0.9892
+  },
+  {
+   "complete_ebpw": 2.4059,
+   "capability_ok": false,
+   "source": "O003_PQ_PERCAL_NEAR_MISS.json",
+   "ppl": 3.5128,
+   "median_4gram_repeat": 0.6667
+  },
+  {
+   "complete_ebpw": 2.4059,
+   "capability_ok": false,
+   "source": "REPRESENTATION_VOCABULARY.json",
+   "ppl": 3.5128,
+   "median_4gram_repeat": 0.6667
+  },
+  {
+   "complete_ebpw": 2.4639,
+   "capability_ok": false,
+   "source": "O003_PQ_SPARSE_AND_ACCOUNTING_FIX.json",
+   "ppl": 3.3454,
+   "median_4gram_repeat": 0.7312
+  },
+  {
+   "complete_ebpw": 2.4639,
+   "capability_ok": false,
+   "source": "REPRESENTATION_VOCABULARY.json",
+   "ppl": 3.3454,
+   "median_4gram_repeat": 0.7312
+  },
+  {
+   "complete_ebpw": 2.5419,
+   "capability_ok": false,
+   "source": "O003_GAUNTLET_DEEP.json",
+   "ppl": null,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 2.5419,
+   "capability_ok": false,
+   "source": "O003_PARETO_COMPLETE.json",
+   "ppl": 3.358,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 2.6251,
+   "capability_ok": false,
+   "source": "O003_GAUNTLET_DEEP.json",
+   "ppl": null,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 2.6251,
+   "capability_ok": false,
+   "source": "O003_PARETO_COMPLETE.json",
+   "ppl": 3.522,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 2.6815,
+   "capability_ok": false,
+   "source": "O003_GAUNTLET_DEEP.json",
+   "ppl": null,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 2.6815,
+   "capability_ok": false,
+   "source": "O003_PARETO_COMPLETE.json",
+   "ppl": 3.34,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 2.7612,
+   "capability_ok": false,
+   "source": "O003_GAUNTLET_DEEP.json",
+   "ppl": null,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 2.7612,
+   "capability_ok": false,
+   "source": "O003_PARETO_COMPLETE.json",
+   "ppl": 3.33,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 2.9597,
+   "capability_ok": false,
+   "source": "O003_GAUNTLET_DEEP.json",
+   "ppl": null,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 2.9597,
+   "capability_ok": false,
+   "source": "O003_PARETO_COMPLETE.json",
+   "ppl": 3.536,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 3.2831,
+   "capability_ok": true,
+   "source": "REPRESENTATION_VOCABULARY.json",
+   "ppl": 3.135,
+   "median_4gram_repeat": 0.1075
+  },
+  {
+   "complete_ebpw": 3.5024,
+   "capability_ok": true,
+   "source": "O003_GAUNTLET_DEEP.json",
+   "ppl": null,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 3.5024,
+   "capability_ok": true,
+   "source": "O003_PARETO_COMPLETE.json",
+   "ppl": 3.082,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 4.3797,
+   "capability_ok": true,
+   "source": "O003_GAUNTLET_DEEP.json",
+   "ppl": null,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 4.3797,
+   "capability_ok": true,
+   "source": "O003_PARETO_COMPLETE.json",
+   "ppl": 3.044,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 8.1989,
+   "capability_ok": true,
+   "source": "G008_ORGAN_ALLOCATION_SECOND_BODY.json",
+   "ppl": null,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 8.1989,
+   "capability_ok": true,
+   "source": "G008_ORGAN_ALLOCATION_SECOND_BODY.json",
+   "ppl": 3.6711,
+   "median_4gram_repeat": 0.0278
+  },
+  {
+   "complete_ebpw": 9.2619,
+   "capability_ok": false,
+   "source": "G017_ORGAN_ALLOCATION.json",
+   "ppl": null,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 9.2619,
+   "capability_ok": true,
+   "source": "G017_ORGAN_ALLOCATION.json",
+   "ppl": null,
+   "median_4gram_repeat": null
+  },
+  {
+   "complete_ebpw": 9.2619,
+   "capability_ok": false,
+   "source": "G017_ORGAN_ALLOCATION.json",
+   "ppl": 12.84,
+   "median_4gram_repeat": 0.8224
+  },
+  {
+   "complete_ebpw": 15.5636,
+   "capability_ok": true,
+   "source": "O003_PARETO_COMPLETE.json",
+   "ppl": 2.894,
+   "median_4gram_repeat": null
+  }
+ ]
+}
