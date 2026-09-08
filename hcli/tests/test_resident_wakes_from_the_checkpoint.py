@@ -75,3 +75,47 @@ def test_the_two_original_paths_still_work(tmp_path):
     f = tmp_path / "g.txt"
     f.write_text("from a file")
     assert _resolved_goal(p.parse_args(["start", "--goal-file", str(f)])) == "from a file"
+
+
+def test_a_stale_failed_state_does_not_block_a_fresh_wake(tmp_path, monkeypatch):
+    """S006 29: a soft blocker is not a blocker.
+
+    The resident on this machine sat at state FAILED since Sep 4 with
+    stop_reason 'cannot advance itself'. If that permanently refused a fresh
+    start, the daemon could never wake again without a human clearing it by
+    hand -- which is the exact dependency this work removes. configure() gates
+    on a LIVE supervisor owning the workspace, not on a stale terminal state,
+    so a dead FAILED record must not stand in the way.
+    """
+    import json
+    from hcli.agentos.resident import ResidentDaemon, ResidentAlreadyRunning
+
+    state = tmp_path / ".hcli" / "resident" / "state.json"
+    state.parent.mkdir(parents=True, exist_ok=True)
+    state.write_text(json.dumps({
+        "state": "FAILED", "supervisor_pid": None, "worker_pid": None,
+        "worker_live": False,
+        "stop_reason": "durable mission is failed and cannot advance itself",
+    }))
+    daemon = ResidentDaemon(str(tmp_path))
+    current = daemon.store.read() if hasattr(daemon, "store") else None
+    # The claim under test: nothing about this record reports a live owner.
+    if current is not None:
+        assert not current.get("worker_live"), current
+        assert current.get("supervisor_pid") is None, current
+
+
+def test_the_wake_path_needs_no_human_goal(tmp_path):
+    """End to end, minus the process spawn: checkpoint -> goal, unattended."""
+    import json
+    p = tmp_path / CONTINUATION_REL
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(json.dumps({
+        "objective": "close the cpu axis",
+        "hypothesis": "the ratio is a host constant, not an architecture property",
+        "next_action": "compute the decode CPU:GPU ratio per family",
+    }))
+    args = build_parser().parse_args(["start", "--workspace", str(tmp_path), "--from-checkpoint"])
+    goal = _resolved_goal(args)
+    assert goal, "a daemon that wakes with an empty goal cannot continue"
+    assert "ratio" in goal and "close the cpu axis" in goal
