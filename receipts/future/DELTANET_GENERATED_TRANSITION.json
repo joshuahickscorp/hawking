@@ -20,7 +20,7 @@
   "gpu_authority": false,
   "machine": "Apple host; CPU operator fit / rollout, no GPU lease",
   "measurement_state": "DIAGNOSTIC_RELATIVE",
-  "recorded_at": "2026-09-03T06:53:51Z",
+  "recorded_at": "2026-09-08T00:52:13Z",
   "recorded_by": "tools/future/deltanet_generated_transition.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -202,7 +202,7 @@
   "extra_flops_per_output_element": 0.0,
   "extra_flops_per_token_recorded": -7523794944,
   "id": "generated_transition_coefficients",
-  "live": true,
+  "live": false,
   "n_output_elements": 1036800,
   "net_bytes": -2134548400,
   "ok": true,
@@ -239,7 +239,7 @@
    "latency_delta": 0,
    "note": "S geometry is unchanged. The generator replaces the qkvz GEMV; gated-delta still consumes generated q,k,v in-register."
   },
-  "status": "OPEN",
+  "status": "MEASURED_NEGATIVE",
   "stream_class": "weight_codes",
   "terms": {
    "byte_added_ms": 0.0024893471467428486,
@@ -248,10 +248,9 @@
    "dispatch_ms_delta": 0.138432,
    "flop_ms_delta": 0.0
   },
-  "verdict": "MATERIAL",
+  "verdict": "IMMATERIAL",
   "verdict_reasons": [
-   "clears_s020_section_20_time_bar",
-   "reusable_representation_family"
+   "not_live:MEASURED_NEGATIVE"
   ]
  },
  "era_vocabulary": {
@@ -259,7 +258,309 @@
   "evidence_class": "DIAGNOSTIC_RELATIVE"
  },
  "evidence_class": "DIAGNOSTIC_RELATIVE",
- "fit": null,
+ "fit": {
+  "consume": "DIRECT_CONSUME",
+  "dense_rematerialization": "DIRECT_CONSUME",
+  "fit_elapsed_s": 10.065300374997605,
+  "held_out_error": {
+   "layers": [
+    0,
+    21,
+    42
+   ],
+   "one_step_cosine": -0.010030716445619143,
+   "one_step_state_relfro": 3.1692143611559063,
+   "prompt_ids": [
+    "code:14"
+   ],
+   "source": "hold",
+   "split": "hold"
+  },
+  "layers": [
+   0,
+   21,
+   42
+  ],
+  "multistep": {
+   "checkpoints": [
+    1,
+    4,
+    16,
+    64,
+    256
+   ],
+   "crossings": {
+    "0.01": 1,
+    "0.03": 1,
+    "0.1": 1
+   },
+   "kind": "captured",
+   "layer": 0,
+   "n_steps": 256,
+   "one_step_output_cosine": -0.02195993289468074,
+   "one_step_qkvz_cosine": 0.0038480282578542686,
+   "one_step_state_relfro": 3.1692143611559063,
+   "output_cosine": {
+    "1": -0.02195993289468074,
+    "16": -0.0962284968570271,
+    "256": 0.056679474136219515,
+    "4": -0.08865154228116374,
+    "64": -0.0922130957915223
+   },
+   "output_relfro": {
+    "1": 1.8737197747149748,
+    "16": 3.5604776615973495,
+    "256": 3.4982270619496036,
+    "4": 9.172280929355425,
+    "64": 2.802972740213246
+   },
+   "prompt_id": "code:14",
+   "split": "hold",
+   "state_relfro": {
+    "1": 3.1692143611559063,
+    "16": 5.196342025474113,
+    "256": 3.7690286800825112,
+    "4": 7.8171673423806975,
+    "64": 4.291163504437835
+   }
+  },
+  "multistep_per_layer": [
+   {
+    "checkpoints": [
+     1,
+     4,
+     16,
+     64,
+     256
+    ],
+    "crossings": {
+     "0.01": 1,
+     "0.03": 1,
+     "0.1": 1
+    },
+    "layer": 0,
+    "n_steps": 256,
+    "one_step_qkvz_cosine": 0.0038480282578542686,
+    "output_cosine": {
+     "1": -0.02195993289468074,
+     "16": -0.0962284968570271,
+     "256": 0.056679474136219515,
+     "4": -0.08865154228116374,
+     "64": -0.0922130957915223
+    },
+    "output_relfro": {
+     "1": 1.8737197747149748,
+     "16": 3.5604776615973495,
+     "256": 3.4982270619496036,
+     "4": 9.172280929355425,
+     "64": 2.802972740213246
+    },
+    "prompt_id": "code:14",
+    "split": "hold",
+    "state_relfro": {
+     "1": 3.1692143611559063,
+     "16": 5.196342025474113,
+     "256": 3.7690286800825112,
+     "4": 7.8171673423806975,
+     "64": 4.291163504437835
+    }
+   },
+   {
+    "checkpoints": [
+     1,
+     4,
+     16,
+     64,
+     256
+    ],
+    "crossings": {
+     "0.01": 1,
+     "0.03": 1,
+     "0.1": 1
+    },
+    "layer": 21,
+    "n_steps": 256,
+    "one_step_qkvz_cosine": 0.5605880714748621,
+    "output_cosine": {
+     "1": 0.5217835820906681,
+     "16": 0.7935919566890965,
+     "256": 0.8451137734788788,
+     "4": 0.6734761010304333,
+     "64": 0.6037555875591555
+    },
+    "output_relfro": {
+     "1": 0.8560470348426255,
+     "16": 0.625836689114648,
+     "256": 0.6645452213603288,
+     "4": 0.7445661148037779,
+     "64": 0.8063035035473336
+    },
+    "prompt_id": "code:14",
+    "split": "hold",
+    "state_relfro": {
+     "1": 0.9069889581792623,
+     "16": 0.9543585615566794,
+     "256": 0.908847323977645,
+     "4": 0.9064062025168608,
+     "64": 0.9106666225145528
+    }
+   },
+   {
+    "checkpoints": [
+     1,
+     4,
+     16,
+     64,
+     256
+    ],
+    "crossings": {
+     "0.01": 1,
+     "0.03": 1,
+     "0.1": 1
+    },
+    "layer": 42,
+    "n_steps": 256,
+    "one_step_qkvz_cosine": -0.010030716445619143,
+    "output_cosine": {
+     "1": -0.133369248399615,
+     "16": -0.016714133806358333,
+     "256": -0.008315669129309264,
+     "4": -0.02903168290895601,
+     "64": -0.02466459931943991
+    },
+    "output_relfro": {
+     "1": 1.5451095536264097,
+     "16": 1.697892935002769,
+     "256": 1.4561204714718607,
+     "4": 2.796618537788897,
+     "64": 1.5371656948927648
+    },
+    "prompt_id": "code:14",
+    "split": "hold",
+    "state_relfro": {
+     "1": 2.8643467734608143,
+     "16": 3.0948722674337317,
+     "256": 2.1476470356059694,
+     "4": 4.4941743754174714,
+     "64": 2.6455330346091577
+    }
+   }
+  ],
+  "rank": 256,
+  "schema": "hawking.future.deltanet_generated_transition.fit.v1",
+  "singular_values_head": [
+   9.54276180267334,
+   4.768731594085693,
+   4.609182357788086,
+   4.296925067901611,
+   3.932034730911255,
+   3.8999640941619873,
+   3.7858235836029053,
+   3.7004456520080566
+  ],
+  "split": {
+   "hold_frac": 0.25,
+   "hold_prompt_ids": [
+    "code:14",
+    "code:15",
+    "code:16",
+    "code:17",
+    "dialogue:06",
+    "dialogue:07",
+    "instruction:06",
+    "instruction:07",
+    "math:08",
+    "math:09",
+    "prose:07",
+    "prose:08",
+    "prose:09",
+    "prose:10",
+    "prose:11"
+   ],
+   "train_prompt_ids": [
+    "code:00",
+    "code:01",
+    "code:02",
+    "code:03",
+    "code:04",
+    "code:05",
+    "code:06",
+    "code:07",
+    "code:08",
+    "code:09",
+    "code:10",
+    "code:11",
+    "code:12",
+    "code:13",
+    "dialogue:00",
+    "dialogue:01",
+    "dialogue:02",
+    "dialogue:03",
+    "dialogue:04",
+    "dialogue:05",
+    "instruction:00",
+    "instruction:01",
+    "instruction:02",
+    "instruction:03",
+    "instruction:04",
+    "instruction:05",
+    "math:00",
+    "math:01",
+    "math:02",
+    "math:03",
+    "math:04",
+    "math:05",
+    "math:06",
+    "math:07",
+    "multilingual:00",
+    "multilingual:01",
+    "multilingual:02",
+    "multilingual:03",
+    "multilingual:04",
+    "multilingual:05",
+    "multilingual:06",
+    "multilingual:07",
+    "prose:00",
+    "prose:01",
+    "prose:02",
+    "prose:03",
+    "prose:04",
+    "prose:05",
+    "prose:06"
+   ]
+  },
+  "status": "MEASURED_NEGATIVE",
+  "typical_layer": 21,
+  "verdict": {
+   "authority": "multi_step_state_and_output",
+   "checkpoints": [
+    1,
+    4,
+    16,
+    64,
+    256
+   ],
+   "crossings": {
+    "0.01": 1,
+    "0.03": 1,
+    "0.1": 1
+   },
+   "held_out_split": "hold",
+   "max_step": 256,
+   "mechanism": "The shared rank-256 map T2 T1 does not emit this layer's qkvz coefficients. The residual in q/k/v is integrated by the rank-1 Householder (I - beta k k^T) plus the write beta k v^T, so S diverges at step 1 rather than after a long horizon. A one-step cosine is not a stay of execution.",
+   "n_unstable": 1,
+   "one_step_cosine": -0.010030716445619143,
+   "reason": "relative state error crossed 1% at step 1; multi-step stability is the authority",
+   "scar_id": "DELTANET_REPLACEMENT_UNSTABLE_AT_N",
+   "status": "MEASURED_NEGATIVE",
+   "verdict": "FAIL"
+  },
+  "weight_cosine_after_diag": {
+   "0": 0.014059503073488244,
+   "21": 0.288886224851251,
+   "42": 0.015194822715408335
+  }
+ },
  "fusion_env": {
   "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
   "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
@@ -323,7 +624,7 @@
   "total_bytes_eliminated": 0
  },
  "schema": "hawking.future.deltanet_generated_transition.v1",
- "seal_sha256": "1c15b09542645b520e8a234ef5ebfc61ccafa356bd8924a964dd41c344dccd1b",
+ "seal_sha256": "c311f0f94f79d369c2947bf67067255e41f443f96b380b2cbdd65d565dcddf22",
  "selftest": {
   "bytes_added_total": 4548560,
   "bytes_removed_total": 2139096960,
@@ -372,7 +673,7 @@
   },
   "model_id": "qwen3.8-27b-sealed-3.14",
   "organ": "attention.linear_qkvz",
-  "pinned_revision": "b34f9e294a7a585fe57a449bff62304e361a5d02",
+  "pinned_revision": "bd691a15e79bb759396e11289e33aeec41a15d84",
   "protocol": "hawking.qwen38.resident.v1",
   "require_fusion_env": true,
   "resident_binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release/examples/ascension_qwen38_resident",
@@ -381,7 +682,35 @@
   "seal_source": "hcli/hawking-native.sealed-3.14.json",
   "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json"
  },
- "verdict": null,
+ "verdict": {
+  "authority": "multi_step_state_and_output",
+  "checkpoints": [
+   1,
+   4,
+   16,
+   64,
+   256
+  ],
+  "crossings": {
+   "0.01": 1,
+   "0.03": 1,
+   "0.1": 1
+  },
+  "held_out_split": "hold",
+  "max_step": 256,
+  "mechanism": "The shared rank-256 map T2 T1 does not emit this layer's qkvz coefficients. The residual in q/k/v is integrated by the rank-1 Householder (I - beta k k^T) plus the write beta k v^T, so S diverges at step 1 rather than after a long horizon. A one-step cosine is not a stay of execution. Weight-space cosine after the per-layer diagonal is 0.289 on the fit layer (L21) and near 0 on the other representatives; the 256-wide bottleneck does not span W_qkvz.",
+  "n_unstable": 1,
+  "one_step_cosine": -0.010030716445619143,
+  "reason": "relative state error crossed 1% at step 1; multi-step stability is the authority",
+  "scar_id": "DELTANET_REPLACEMENT_UNSTABLE_AT_N",
+  "status": "MEASURED_NEGATIVE",
+  "verdict": "FAIL",
+  "weight_cosine_after_diag": {
+   "0": 0.014059503073488244,
+   "21": 0.288886224851251,
+   "42": 0.015194822715408335
+  }
+ },
  "version": 1,
  "what_this_does_not_prove": [
   "A generate-identity gate on the sealed residual stream.",
