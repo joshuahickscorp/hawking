@@ -732,6 +732,14 @@ def build_server(model: str, *, host: str = DEFAULT_HOST, port: int = DEFAULT_PO
             stores["engine"] = Engine(Workspace(workspace),
                                       runtime_provider=lambda: resident)
         health["authority"] = "write" if write else "read"
+    # The body's own capability surface, so the model and the operator can both
+    # see what it can do -- named as capability (INSPECT, BUILD, ...) rather
+    # than as package, and probed against live machinery rather than asserted.
+    try:
+        from .capabilities import capability_map
+        health["capabilities"] = capability_map()["can"]
+    except Exception:
+        pass
     httpd = ThreadingHTTPServer(
         (host, port), make_handler(resident, identity, greedy=greedy,
                                    health=health, repo=repo, registry=registry,
