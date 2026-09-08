@@ -1,0 +1,26 @@
+{
+ "axis": "state",
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-07T09:56:15Z",
+  "recorded_by": "tools/future/state_axis.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "epistemic": "architecturally_supported",
+ "evidence": "each specimen own config.json (nested text_config/llm_cfg/decoder when that is the decoder body); dtype from torch_dtype/dtype or a floating safetensors HEADER, never a payload",
+ "n_comparable_on_harvest": 48,
+ "not_measured": "GPU-resident KV, quantized cache dtypes other than the config dtype, indexer caches, vision-encoder KV during prefills",
+ "odyssey_ledger_axes_unchanged": "G034 ledger axes stay anatomy/ebpw/gpu/cpu/tps/nr_candidate/nx_disposition. state is a campaign-Pareto axis, not an eighth Odyssey axis; adding it would change the 392-count G009 contract.",
+ "pareto_ingest": "tools/future/campaign_pareto.py:harvest_state_axis",
+ "producer": "tools/future/state_axis.py",
+ "receipt": "receipts/future/G016_STATE_AXIS.json",
+ "recorded_by": "tools/future/state_axis.py",
+ "refusal_rule": "missing field is a named key plus the path read; unknown is not a refusal",
+ "schema": "hawking.future.g016_state_contract.v1",
+ "seal_sha256": "ef1e9cee40adb0e9df5f26640a2239f954f487742ab121c149fd95bf999bbd49",
+ "what_is_measured": "Bytes of persistent decode state. state_bytes_per_token is the comparable Pareto value (lower is better): KV/MLA bytes added per generated token while the cache is still growing; 0 for recurrent/DeltaNet/Mamba layers. state_bytes_fixed is mixer state that does not grow with position. state_bytes_at_ctx evaluates the same at max_position_embeddings, bounded by sliding_window when the config declares one that is smaller than context."
+}

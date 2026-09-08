@@ -1,0 +1,14 @@
+{
+ "obligation": "G006",
+ "round": 21,
+ "verdict": "INVALID TRIAL -- NO VERDICT. Not a round failure; a launch defect.",
+ "what_happened": "the round read odyssey.ledger, correctly identified that all 12 shown specimens owe the same 5 axes, broke the tie by size, chose Qwen3-Embedding-0.6B, and stated its next three steps: campaign.guard, lake.census, dense_anatomy. Then the tool loop closed with closure_reason observation_budget_1 after ONE observation.",
+ "cause": "HCLI_MAX_TOOL_OBSERVATIONS defaults to 1 and I launched round 21 without setting it. Rounds 14 through 20 ran with 4-6 observations. The round was handed a four-step plan and a one-step budget. It did not fail to execute; it was not permitted to.",
+ "not_a_regression": "MAX_TOOL_OBSERVATIONS has defaulted to 1 since commit 32d4aff9f, deliberately, so that behaviour is unchanged until a measurement says otherwise. Nothing in the harness broke. The launch command was wrong.",
+ "what_it_does_show": "the census repair from round 20 HELD. Round 20 read a value and called it 'worst owed'. Round 21 read the ledger's actual owed axes -- gpu, cpu, tps, nr_candidate, nx_disposition -- and never mentioned ebpw. The instrument no longer offers the wrong affordance. That is evidence about the FIX, not about the round's autonomy.",
+ "and_a_second_thing": "it noticed and reported the truncation: '34 hidden (1.4-1453.8 GiB) so the 12 shown are not the full picture'. The challenge asks for exactly that and the round did it unprompted.",
+ "streak": 0,
+ "streak_effect": "UNCHANGED. An invalid trial neither advances nor resets it.",
+ "rerun": "the same challenge, unchanged, with the observation budget prior rounds had.",
+ "scar": "CHECK THE LAUNCH ENVIRONMENT AGAINST THE PREVIOUS RUN, NOT AGAINST THE DEFAULTS."
+}

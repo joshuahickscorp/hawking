@@ -20,9 +20,11 @@ heavy work until pressure falls and the cause is classified.
 """
 from __future__ import annotations
 
+import os
 import re
 import subprocess
 import threading
+import time
 from contextlib import contextmanager
 from dataclasses import dataclass, asdict
 from typing import Any
@@ -34,6 +36,19 @@ GB = 1 << 30
 SWAPFILE_CAP = 100          # macOS segment cap; the panic hit exactly this
 SWAPFILE_WARN = 40
 SWAPFILE_STOP = 60
+
+# [S008 3, 4] THE CAMPAIGN SWAP CEILING IS 30 GB, in bytes, in THIS guard -- the single
+# resource authority. Swap MAY be used all the way to the ceiling when science earns it;
+# optimising for zero swap is explicitly not the goal.
+#   under 24  NORMAL        use the machine aggressively
+#   24 - 27   PRESSURE AWARE  no new large speculative workload
+#   27 - 30   PROTECT         checkpoint, shed low-value background work
+#   30+       HARD STOP       no new heavy Hawking allocation
+# The swapfile COUNT axis below stays; it is a different signal (macOS segment cap) and
+# cannot answer "are we under 30 GB", because swapfiles are not a fixed size.
+SWAP_GB_WARN = 24.0
+SWAP_GB_PROTECT = 27.0
+SWAP_GB_CEILING = 30.0
 
 COMPRESSOR_WARN_GB = 16.0   # S010: 20 GB is the ceiling, warn before it
 COMPRESSOR_STOP_GB = 20.0
@@ -53,7 +68,10 @@ class Snapshot:
     residents: int = 0          # S010 §5: resident COUNT, not just host memory
     resident_rss_gb: float = 0.0
     expected_gb: float = 0.0    # what the experiment says it will take
-    headroom_gb: float = 0.0    # free - expected, the number that decides
+    headroom_gb: float = 0.0    # available - expected, the number that decides
+    strictly_free_gb: float = 0.0   # "Pages free" alone -- kept VISIBLE so the
+    reclaimable_gb: float = 0.0     # gap between free and available is auditable
+    swap_gb: float = 0.0            # [S008 3] measured swap bytes against the 30 GB ceiling
 
     def as_dict(self) -> dict:
         d = asdict(self)
@@ -80,7 +98,20 @@ def _parse_residents(out: str) -> tuple:
     """
     n, rss = 0, 0
     for line in out.splitlines()[1:]:
-        if not ("resident-body" in line or "--supervise" in line or "hawkingd" in line):
+        parts0 = line.split(None, 2)
+        exe = ""
+        if len(parts0) >= 3 and parts0[2].strip():
+            exe = os.path.basename(parts0[2].split()[0])
+        # A resident is named by its EXECUTABLE, not by a phrase that happens to
+        # appear somewhere in an argv. The three phrases below were the whole
+        # matcher, and the resident actually carrying this campaign --
+        # workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident,
+        # 12 GB RSS, live -- matched none of them. The guard reported
+        # residents=0 while it ran. Found by recording a contention decision
+        # against the guard and noticing the count could not be true.
+        if not (exe.endswith("_resident") or exe == "hawkingd"
+                or "resident-body" in line or "--supervise" in line
+                or "hawkingd" in line):
             continue
         # `ps` output is data, and this process's own matcher appears in it --
         # already walked into once this campaign.
@@ -115,15 +146,94 @@ def _residents() -> tuple:
     return _parse_residents(out)
 
 
+# macOS moved the swap store. On Darwin 27 /private/var/vm is EMPTY and the real
+# swapfiles live under /System/Volumes/VM. Reading only the old path made
+# _swapfiles() return 0 unconditionally, so SWAPFILE_WARN 40 and SWAPFILE_STOP 60
+# were unreachable and this guard's swapfile axis was structurally dead -- in the
+# guard written BECAUSE the panic hit exactly SWAPFILE_CAP 100.
+SWAP_DIRS = ("/System/Volumes/VM", "/private/var/vm")
+
+
+LAKE_ROOTS = ("/Volumes",)
+
+
+def refuse_volumes_write(path: str) -> None:
+    """The lake is READ-ONLY BY POLICY, not by mount. This is what actually enforces it.
+
+    Verified on this host: /Volumes/corpdrive mounts apfs with no `read-only` flag, while
+    / carries one. Nothing in the kernel stops a write to 4.29 TiB of irreplaceable source
+    weights, and the policy has already failed once -- a detached drive let the lake
+    catalog be rewritten as "empty and under budget".
+
+    REALPATH, not abspath. abspath normalises `..` and does not follow links, so a symlink
+    named outside /Volumes pointing inside it walked straight through the two copies of
+    this check that used to exist in dense_sweep and state_axis.
+
+    One implementation on purpose. [S008 3] ONE OWNER, ONE GUARD: two copies of a guard
+    become two future truths and only one of them gets fixed.
+    """
+    real = os.path.realpath(os.path.abspath(path))
+    for root in LAKE_ROOTS:
+        if real == root or real.startswith(root.rstrip("/") + "/"):
+            raise RuntimeError(
+                f"refusing to write under {root}: {path} resolves to {real}. The lake is "
+                f"read-only by policy and the mount does not enforce it.")
+
+
+def _swap_gb() -> float:
+    """Swap actually allocated on disk, in GB.
+
+    NOT `sysctl vm.swapusage used`. That field is a BOOT HIGH-WATER MARK, and this campaign
+    already paid for reading it as live: compared against a ceiling it latched the gate off
+    permanently, holding the resident at cycles=0 with 42.6 GB free and swapouts flat. A
+    high-water mark cannot go down, so a ceiling built on it is a one-way door.
+
+    Summing the swapfiles the kernel currently has open is live, auditable, and falls when
+    the kernel removes them. Same directories as the swapfile COUNT axis, so the two agree
+    about where swap lives.
+    """
+    total = 0
+    for d in SWAP_DIRS:
+        try:
+            for entry in Path(d).iterdir():
+                if entry.name.startswith("swapfile"):
+                    try:
+                        total += entry.stat().st_size
+                    except OSError:
+                        continue
+        except (FileNotFoundError, PermissionError, NotADirectoryError):
+            continue
+    return total / GB
+
+
+def classify_swap_gb(swap_gb: float) -> str:
+    """The band this much swap falls in. Pure, so every boundary is testable."""
+    if swap_gb >= SWAP_GB_CEILING:
+        return "STOP"
+    if swap_gb >= SWAP_GB_WARN:
+        return "WARN"
+    return "OK"
+
+
 def _swapfiles() -> int:
-    try:
-        return len([p for p in Path("/private/var/vm").iterdir()
-                    if p.name.startswith("swapfile")])
-    except Exception:
-        return 0
+    """Count swapfiles across every known store.
+
+    Returns -1, never 0, when no store could be read at all. A count of zero is a
+    real and reassuring measurement; an unreadable store is not, and the two must
+    not share an encoding -- that equivalence is what kept this axis silent.
+    """
+    seen, readable = 0, False
+    for d in SWAP_DIRS:
+        try:
+            seen += len([p for p in Path(d).iterdir() if p.name.startswith("swapfile")])
+            readable = True
+        except Exception:
+            continue
+    return seen if readable else -1
 
 
-def classify(free_gb: float, compressor_gb: float, swapfiles: int) -> tuple:
+def classify(free_gb: float, compressor_gb: float, swapfiles: int,
+             swap_gb: float = 0.0) -> tuple:
     """Pure, so the panic's recorded numbers can be replayed through it."""
     reasons = []
     state = "OK"
@@ -144,6 +254,15 @@ def classify(free_gb: float, compressor_gb: float, swapfiles: int) -> tuple:
         esc("STOP", f"compressor {compressor_gb:.1f} GB >= {COMPRESSOR_STOP_GB} GB ceiling")
     elif compressor_gb >= COMPRESSOR_WARN_GB:
         esc("WARN", f"compressor {compressor_gb:.1f} GB approaching {COMPRESSOR_STOP_GB} GB")
+    if swapfiles < 0:
+        return "STOP", ("swapfile store unreadable: the swap axis of this guard is "
+                        "BLIND, and a blind guard must not report OK",)
+    swap_band = classify_swap_gb(swap_gb)
+    if swap_band == "STOP":
+        esc("STOP", f"swap {swap_gb:.1f} GB >= the {SWAP_GB_CEILING:.0f} GB campaign ceiling")
+    elif swap_band == "WARN":
+        esc("WARN", (f"swap {swap_gb:.1f} GB in the "
+                     f"{SWAP_GB_WARN:.0f}-{SWAP_GB_CEILING:.0f} GB pressure band"))
     if swapfiles >= SWAPFILE_STOP:
         esc("STOP", f"{swapfiles} swapfiles >= {SWAPFILE_STOP} (cap {SWAPFILE_CAP})")
     elif swapfiles >= SWAPFILE_WARN:
@@ -153,14 +272,33 @@ def classify(free_gb: float, compressor_gb: float, swapfiles: int) -> tuple:
 
 def sample(expected_gb: float = 0.0) -> Snapshot:
     v = _vm_stat()
+    # AVAILABLE, not FREE. "Pages free" was 0.44 GB while 17.34 GB sat inactive
+    # and 16.64 GB was file-backed page cache from streaming the lake -- clean
+    # pages the kernel hands to the next allocation on demand. The guard read the
+    # 0.44 and refused the campaign's authoritative experiment three times over a
+    # machine that had ~18 GB available. That is the same error class as reading
+    # vm.swapusage's boot high-water mark as live swap: a number whose NAME is not
+    # what it MEASURES.
+    #
+    # Available = free + speculative + purgeable + the file-backed part of
+    # inactive. File-backed inactive pages are clean and evictable. Dirty
+    # anonymous inactive pages are NOT counted -- they must be compressed or
+    # swapped first, so claiming them would be the opposite mistake.
     free_pages = v.get("Pages free", 0) + v.get("Pages speculative", 0)
+    reclaimable = v.get("Pages purgeable", 0) + min(
+        v.get("Pages inactive", 0), v.get("File-backed pages", 0)
+    )
+    available_pages = free_pages + reclaimable
     comp = v.get("Pages occupied by compressor", 0)
     wired = v.get("Pages wired down", 0)
     sf = _swapfiles()
-    free_gb, comp_gb = free_pages * PAGE / GB, comp * PAGE / GB
+    swap_gb = _swap_gb()
+    free_gb, comp_gb = available_pages * PAGE / GB, comp * PAGE / GB
+    strictly_free_gb = free_pages * PAGE / GB
+    reclaimable_gb = reclaimable * PAGE / GB
     n_res, rss_gb = _residents()
     headroom = free_gb - expected_gb
-    state, why = classify(free_gb, comp_gb, sf)
+    state, why = classify(free_gb, comp_gb, sf, swap_gb=swap_gb)
     if expected_gb and headroom < FREE_STOP_GB:
         state = "STOP"
         why = why + (f"expected {expected_gb:.1f} GB leaves {headroom:.1f} GB headroom, "
@@ -171,7 +309,10 @@ def sample(expected_gb: float = 0.0) -> Snapshot:
     return Snapshot(round(free_gb, 2), round(comp_gb, 2), sf,
                     round(wired * PAGE / GB, 2), state, why,
                     residents=n_res, resident_rss_gb=round(rss_gb, 2),
-                    expected_gb=expected_gb, headroom_gb=round(headroom, 2))
+                    expected_gb=expected_gb, headroom_gb=round(headroom, 2),
+                    strictly_free_gb=round(strictly_free_gb, 2),
+                    reclaimable_gb=round(reclaimable_gb, 2),
+                    swap_gb=round(swap_gb, 2))
 
 
 class Abort(RuntimeError):
@@ -196,6 +337,61 @@ class Watch:
         """
         if self.state == "STOP":
             raise Abort(f"campaign guard STOP mid-experiment: {'; '.join(self.reasons)}")
+
+
+@contextmanager
+def resource_cost(interval_s: float = 2.0, label: str = ""):
+    """Bracket an experiment and yield its measured resource cost.
+
+    G026's metric is progress per wall per RESOURCE per intervention, and the
+    resource term was unmeasurable: watch() tracks the WORST STATE seen but
+    records no delta and no peak, so nothing could say what a run actually cost.
+
+    Peak is reported as None, never as the entry reading, when the sampler got
+    no observations -- a run shorter than one interval has an UNKNOWN peak, and
+    quoting its starting value as the peak would understate every fast
+    experiment while looking like a measurement.
+    """
+    start = sample()
+    t0 = time.time()
+    peak_comp, peak_rss, low_free, n = start.compressor_gb, start.resident_rss_gb, start.free_gb, 0
+    stop = threading.Event()
+
+    def loop():
+        nonlocal peak_comp, peak_rss, low_free, n
+        while not stop.wait(interval_s):
+            try:
+                s2 = sample()
+            except Exception:
+                continue
+            n += 1
+            peak_comp = max(peak_comp, s2.compressor_gb)
+            peak_rss = max(peak_rss, s2.resident_rss_gb)
+            low_free = min(low_free, s2.free_gb)
+    t = threading.Thread(target=loop, daemon=True, name="campaign-resource")
+    t.start()
+    cost: dict = {"label": label}
+    try:
+        yield cost
+    finally:
+        stop.set()
+        t.join(timeout=interval_s * 2)
+        end = sample()
+        cost.update({
+            "wall_s": round(time.time() - t0, 2),
+            "samples": n,
+            "free_gb_start": start.free_gb, "free_gb_end": end.free_gb,
+            "free_gb_low": low_free if n else None,
+            "compressor_gb_start": start.compressor_gb,
+            "compressor_gb_peak": peak_comp if n else None,
+            "resident_rss_gb_peak": peak_rss if n else None,
+            "swapfiles_start": start.swapfiles, "swapfiles_end": end.swapfiles,
+            "swapfiles_delta": end.swapfiles - start.swapfiles,
+            "peak_unknown_reason": (None if n else
+                f"the sampler observed nothing in {round(time.time() - t0, 2)}s at a "
+                f"{interval_s}s interval, so the peak is UNKNOWN; the entry reading is "
+                f"not a peak and is not reported as one"),
+        })
 
 
 @contextmanager
@@ -268,6 +464,22 @@ def checkpoint_and_release(what: str, checkpoint: Any = None,
 
 
 def _selftest() -> None:
+    # The resident matcher must find a resident by its EXECUTABLE NAME. This is
+    # the verbatim `ps -Ao pid,rss,command` line of the body that was live while
+    # the guard reported residents=0, and an argv-phrase matcher scores it zero.
+    live = ("  PID    RSS COMMAND\n"
+            "45305 12039792 /Users/x/hawking/workspace/ops/build/rust/"
+            "release-fast/examples/ascension_qwen38_resident --artifact-root /Users/x/n\n")
+    n, rss = _parse_residents(live)
+    assert n == 1, f"resident matcher missed a live resident: n={n}"
+    assert 11.0 < rss < 12.0, f"resident RSS wrong: {rss} GB"
+    # and it must still refuse its own scaffolding
+    noise = ("  PID    RSS COMMAND\n"
+             "111 100 /bin/sh -c ps -Ao pid,rss,command | grep resident\n"
+             "112 100 grep _resident\n"
+             "113 100 /usr/bin/awk {print}\n")
+    assert _parse_residents(noise) == (0, 0.0), "matcher counted its own scaffolding"
+
     # NEGATIVE CONTROL: the real numbers from the 2026-09-06 panic. If the guard
     # does not say STOP on the state that actually crashed the machine, it is
     # not a guard.

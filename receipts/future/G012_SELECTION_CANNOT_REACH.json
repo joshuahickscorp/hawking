@@ -1,0 +1,66 @@
+{
+ "obligation": "G012",
+ "question": "Can a FINALIST NR be found by SELECTING a body from the lake, or must one be BUILT?",
+ "method": "read the 49 MEASURED complete_ebpw cells from the committed ledger; no new measurement",
+ "n_measured": 49,
+ "distribution": {
+  "3.908": 1,
+  "4.492": 1,
+  "8.174": 1,
+  "8.558": 1,
+  "16.0": 35,
+  "16.198": 1,
+  "32.0": 9
+ },
+ "min": {
+  "slug": "microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361",
+  "gib": 1.1,
+  "complete_ebpw": 3.908
+ },
+ "median": 16.0,
+ "max": {
+  "slug": "facebook--sam2.1-hiera-large@665f8e2ad61c",
+  "gib": 0.8,
+  "complete_ebpw": 32.0
+ },
+ "below_1_5": 0,
+ "below_1_0": 0,
+ "lowest_five": [
+  {
+   "slug": "microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361",
+   "gib": 1.1,
+   "complete_ebpw": 3.908
+  },
+  {
+   "slug": "moonshotai--Kimi-K3@9f62e4e9fffb",
+   "gib": 1453.8,
+   "complete_ebpw": 4.492
+  },
+  {
+   "slug": "zai-org--GLM-5.3-Flash@04c4e9e95c5d",
+   "gib": 305.8,
+   "complete_ebpw": 8.174
+  },
+  {
+   "slug": "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+   "gib": 148.7,
+   "complete_ebpw": 8.558
+  },
+  {
+   "slug": "thinkingmachines--Inkling-Small@8cc5877b44d3",
+   "gib": 495.4,
+   "complete_ebpw": 16.0
+  }
+ ],
+ "sealed_resident_complete_ebpw": 3.139301,
+ "sealed_realistic_floor": 2.508137,
+ "finding": "NOT ONE of the 49 measured bodies ships below 1.5 complete EBPW, and none below 1.0. The minimum across the whole 4.29 TiB lake is 3.908 (microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361), and the median is 16.0 -- dense bf16, one stored value per source parameter. The sealed resident at 3.139301 is ALREADY BETTER THAN EVERY SHIPPED BODY IN THE LAKE, by 21% against the best of them.",
+ "implication": "A finalist NR cannot be found by SELECTING a specimen. Nothing in the surveyed lake is within 2.6x of the <=1.5 tolerance, so selection cannot produce a qualifying candidate at any effort. The finalist must be BUILT, and the incumbent it must beat is the sealed resident at 3.139301 -- whose own realistic floor across every known move is 2.508137, itself above both gates.",
+ "what_this_does_not_say": [
+  "That the gates are wrong. The directive states them as OBJECTIVES, not claims.",
+  "That no body could be compressed below 1.5 -- only that none SHIPS there and the one body whose move set is fully enumerated cannot get there with it.",
+  "Anything about capability. This is a byte statement; the conjunction gate is separate.",
+  "That the 7 REFUSED ebpw cells hide a better candidate -- they are refusals with mechanisms, not unmeasured hope."
+ ],
+ "next_question_this_licenses": "Not 'which body do we promote' but 'which representation CLASS has ever produced sub-1.5 complete EBPW with capability intact'. If the answer is none on this campaign's evidence, that is the Noetic frontier stated exactly."
+}

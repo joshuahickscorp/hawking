@@ -1,0 +1,61 @@
+{
+ "schema": "hawking.gravity.allocation_table.v1",
+ "date": "2026-09-06",
+ "specimen": "O003",
+ "obligation": "G025 [S011]",
+ "method": "Controlled: uniform PQ d=4 K=512 with per-expert calibration is the baseline; each arm changes ONE projection group to d=2 K=16 and holds the other at d=4. Same class, same calibration, same gate, so the difference is attributable to the projection.",
+ "baseline": {
+  "spec": "pqpercal4k512",
+  "ppl": 3.5128,
+  "median_4gram": 0.6667,
+  "ebpw": 2.4059
+ },
+ "ORGANS": [
+  {
+   "organ": "down_proj",
+   "weight_share": 0.3333,
+   "shape": [
+    1408,
+    2048
+   ],
+   "likelihood_sensitivity": 0.9473,
+   "diversity_sensitivity": -0.1076,
+   "likelihood_density": 2.8419,
+   "diversity_density": -0.3228,
+   "byte_cost_note": "1408 = 2^7*11 pins its group at 128 and contributes 0.0417 b/w of irreducible scale overhead in the 1-bit grammar",
+   "execution_frequency": "every routed token, top-6 of 64 experts",
+   "allocation_reading": "MOST likelihood-sensitive per weight. Coarsening it costs 0.947 ppl from a third of the weights. Spend bits here for likelihood."
+  },
+  {
+   "organ": "gate_proj + up_proj",
+   "weight_share": 0.6667,
+   "shape": [
+    1408,
+    2048
+   ],
+   "likelihood_sensitivity": 0.4782,
+   "diversity_sensitivity": 0.0752,
+   "likelihood_density": 0.7173,
+   "diversity_density": 0.1128,
+   "execution_frequency": "every routed token, top-6 of 64 experts",
+   "allocation_reading": "Half the likelihood sensitivity per weight, and coarsening it moves diversity the OTHER way (+0.075 vs -0.108). Two thirds of the bytes sit here."
+  },
+  {
+   "organ": "router (mlp.gate)",
+   "weight_share": 0.0002,
+   "shape": [
+    64,
+    2048
+   ],
+   "likelihood_sensitivity": null,
+   "diversity_sensitivity": null,
+   "execution_frequency": "every token, every MoE layer",
+   "allocation_reading": "ALREADY bf16 and never quantized by the evaluator -- verified by inspection, which refuted the router-corruption hypothesis in seconds. 0.0025 EBPW to keep exact. An exact island by default."
+  }
+ ],
+ "DEMOTIONS_ENFORCED": {
+  "reconstruction_error": "cheap filter and local diagnostic ONLY; may not rank final candidates. PQ had 45% lower error than affine at fewer bits and worse capability.",
+  "distinct_ratio": "diagnostic phenotype explaining WHY a candidate fails; may not replace the conjunction gate."
+ },
+ "ALLOCATION_RULE_DERIVED": "Spend bits on down_proj for likelihood and on geometry (finer cells) for diversity, and note they conflict: no single geometry on down_proj satisfies both, which is what the PQ Scar records."
+}

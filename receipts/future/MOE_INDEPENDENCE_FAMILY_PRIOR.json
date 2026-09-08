@@ -1,0 +1,38 @@
+{
+ "date": "2026-09-06",
+ "obligation": "G029 transfer + G031 first validated prior",
+ "specimens": [
+  "O003 Kimi-VL-A3B-Instruct (64 experts, 1408x2048)",
+  "Qwen3-30B-A3B-Instruct-2507 (128 experts, 768x2048)"
+ ],
+ "MEASURED": {
+  "O003": {
+   "cross_expert_participation": 62.88,
+   "of": 64,
+   "ratio": 0.9825,
+   "within_expert_participation": 867.6,
+   "full_rank": 1408,
+   "ratio_within": 0.6162,
+   "top1_over_uniform": 1.32
+  },
+  "Qwen3_30B_A3B": {
+   "cross_expert_participation": 125.39,
+   "of": 128,
+   "ratio": 0.9796,
+   "within_expert_participation": 467.3,
+   "full_rank": 768,
+   "ratio_within": 0.6085,
+   "top1_over_uniform": 1.29,
+   "per_projection": {
+    "down_proj": 125.39,
+    "gate_proj": 123.44,
+    "up_proj": 122.35
+   }
+  }
+ },
+ "TRANSFER_VERDICT": "CONFIRMED. Cross-expert independence 0.9825 vs 0.9796 of maximum; within-expert 0.6162 vs 0.6085. Two different MoE architectures -- twice the expert count, different matrix shape, different vendor -- produce the same structural signature to within half a percent.",
+ "PROMOTION": "This was recorded as specimen-specific after O003. It is now an ARCHITECTURE-FAMILY PRIOR: MoE expert organs are near-maximally independent across experts and roughly 60% effective rank within each matrix. Linear sharing classes -- shared basis, common+delta, clustering, alignment, low-rank -- can be SKIPPED ON SIGHT for this family unless a specimen's spectrum contradicts it.",
+ "WHAT_IT_COST": "Five minutes on the second specimen, read straight from safetensors. It replaces, for every future MoE, the multi-hour build that O003 needed to reach the same conclusion.",
+ "A_PARTIAL_DOWNLOAD_DID_NOT_BLOCK_IT": "The Qwen snapshot is missing a few expert groups and mlx_lm's loader refuses it outright. The spectra need one complete expert group rather than a runnable model, so reading the shards directly worked where loading the model could not.",
+ "HOW_TO_FALSIFY": "A MoE specimen whose cross-expert participation ratio falls materially below ~0.95, or whose within-expert ratio falls below ~0.4, breaks this prior and makes sharing live for that architecture. Run the screen first on every new MoE."
+}

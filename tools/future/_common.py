@@ -169,6 +169,79 @@ def write_receipt(name: str, doc: dict[str, Any], recorded_by: str) -> Path:
     return out
 
 
+class MeasurementContractError(ValueError):
+    """Raised when a receipt states a RATE without saying what was measured, on what,
+    with which representation, runtime, context, path and concurrency."""
+
+
+def write_measurement_receipt(
+    name: str,
+    doc: dict[str, Any],
+    *,
+    contract: dict[str, Any] | None,
+    recorded_by: str,
+    lock_held: bool = False,
+    lane: str | None = None,
+    measured_at: str | None = None,
+) -> Path:
+    """The writer physical receipts never had.
+
+    `write_receipt` above is for STATIC sidecars and REFUSES hardware fields by design,
+    so every measurement receipt in this campaign hand-rolled its own json.dumps and
+    inherited neither a bench block nor a contract. An audit of 443 receipts found 77
+    carrying a measured rate and exactly ONE identifying all six fields S006 14 requires.
+
+    That is not bookkeeping. O003 carried two decode figures 25% apart and the
+    disagreement could not be settled by re-reading them, because NEITHER recorded its
+    mlx_lm version and the slower one's compute path was therefore unreconstructable.
+
+    A doc that states no rate passes straight through: this must not become a tax on
+    every static artifact. A doc that states one MUST name all six, and the refusal
+    names the fields it is missing rather than saying "invalid".
+    """
+    from tps_contract import REQUIRED, _is_rate_key   # same directory, stdlib only
+
+    def _rates(node, depth=0):
+        if depth > 8:
+            return False
+        if isinstance(node, dict):
+            for k, v in node.items():
+                if _is_rate_key(str(k).lower()) and isinstance(v, (int, float)) \
+                        and not isinstance(v, bool):
+                    return True
+                if _rates(v, depth + 1):
+                    return True
+        elif isinstance(node, list):
+            for v in node[:200]:
+                if _rates(v, depth + 1):
+                    return True
+        return False
+
+    states_a_rate = _rates(doc) or _rates(contract or {})
+    if states_a_rate:
+        given = {k for k, v in (contract or {}).items() if v not in (None, "", [], {})}
+        missing = [f for f in REQUIRED if f not in given]
+        if missing:
+            raise MeasurementContractError(
+                f"{name} states a measured rate but does not identify: "
+                f"{', '.join(missing)}. A number whose conditions were not written down "
+                f"cannot be reproduced or compared to any other number."
+            )
+        doc = dict(doc)
+        doc["measurement_contract"] = dict(contract or {})
+        doc.setdefault("measurement_provenance", measurement_provenance(
+            lock_held=lock_held, lane=lane, measured_at=measured_at))
+    doc.setdefault("bench", bench_block(recorded_by))
+    RECEIPTS.mkdir(parents=True, exist_ok=True)
+    out = RECEIPTS / name
+    _refuse_foreign_overwrite(out, doc, recorded_by)
+    if _same_but_for_bookkeeping(out, doc):
+        return out
+    seal(doc)
+    out.write_text(json.dumps(doc, indent=1, sort_keys=True) + "\n")
+    return out
+
+
 class MeasurementProvenanceError(ValueError):
     """Raised when a receipt asserts a hardware number without saying when, under
     what load, and whether the GPU lane lock was held."""

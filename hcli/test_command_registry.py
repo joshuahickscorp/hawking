@@ -85,6 +85,22 @@ def test_authority_uses_the_tool_registry_vocabulary():
     assert unknown == [], unknown
 
 
+def test_anatomy_is_registered_and_refuses_without_crashing(tmp_path):
+    """G036: HCLI owns OI. A body with no weights is a named refusal, exit-path 2."""
+    from hcli.command_registry import handler_name
+
+    handler = CommandHandler(None)
+    assert handler_name("/anatomy") == "_cmd_anatomy"
+    assert callable(getattr(handler, "_cmd_anatomy"))
+    (tmp_path / "weights.bin").write_bytes(b"not-safetensors")
+    text = handler.handle(f"/anatomy {tmp_path}")
+    assert text.startswith("ANATOMY UNAVAILABLE"), text
+    assert "no .safetensors" in text and ".bin" in text
+    assert handler.last_value["refused"] is True
+    usage = handler.handle("/anatomy")
+    assert usage.startswith("usage: /anatomy")
+
+
 def test_read_only_commands_do_not_claim_to_mutate():
     for command in COMMANDS:
         if command.authority == "read_only":

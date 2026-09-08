@@ -1,0 +1,2028 @@
+{
+ "acceptance_predicate": {
+  "docstring_head": "True only for a mutation that applied AND passed a real check.\n\n    The ok flag alone is not that predicate: an ANSWER also sets ok=True, and\n    five consecutive fabricated completions were recorded that way. Counting\n    accepted work by ",
+  "file": "/Users/scammermike/Downloads/hawking/hcli/engine.py",
+  "imported_not_copied": true,
+  "module": "hcli.engine",
+  "name": "is_accepted_work",
+  "source_sha256_16": "02bf11251b77e115"
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-07T10:06:02Z",
+  "recorded_by": "tools/future/reliability_axis.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static derivation from receipts already on disk. No hardware measurement. No interpolated rate. An absent field is null with the missing key named.",
+ "controls": {
+  "known_result": {
+   "accepted_via_is_accepted_work": 0,
+   "agrees_with_is_accepted_work": true,
+   "agrees_with_naive_ok": false,
+   "files": [
+    "1067baef-df96-4981-8749-916caa283775.json",
+    "426f15e5-e565-497e-813e-f034fbe98a04.json",
+    "44132867-59d2-4539-aab3-dad3ab689971.json",
+    "a0e7194a-b7f3-4468-b115-474aeff0ba0b.json",
+    "c8fb0f07-ce2c-406d-afdc-c867b65ddabe.json"
+   ],
+   "n_receipts": 5,
+   "naive_validation_ok": 5,
+   "note": "steer cited naive_ok=2; live disk now has 5. All window receipts are validation.ok=True kind=read_only answers. is_accepted_work scores 0 on every one. The axis agrees with is_accepted_work, not with naive ok. The count grew because .hcli/receipts is a live directory.",
+   "steer_cited_naive_ok": 2,
+   "window_is": "receipt file mtime, local time, same cutoff as tools/future/autonomy_ratio.py GOAL_START",
+   "window_start": "2026-09-07 02:00:00"
+  },
+  "mutation_check": {
+   "acceptance": {
+    "after_sha256": "1088b4c7f60e50253c7ff42eac127381217459d2cf796449577f69761a4061f1",
+    "anchor": "reliability_axis.py:234:return is_accepted_work(receipt.get(\"validation\"), receipt.get(\"result_envelope\"))  # LOAD_BEARING_ACCEPTANCE",
+    "before_sha256": "b258d564b3d565a78ed7bb10d9525ff0fe41f7b77e6b71771cc191ec5da0e01e",
+    "probe_failed_as_required": true,
+    "probe_returncode": 1,
+    "replacement": "return receipt_naive_ok(receipt)  # MUTATION_ACTIVE acceptance",
+    "stderr_tail": "aive_validation_ok': 5, 'steer_cited_naive_ok': 2, 'agrees_with_is_accepted_work': False, 'agrees_with_naive_ok': True, 'note': 'steer cited naive_ok=2; live disk now has 5. All window receipts are validation.ok=True kind=read_only answers. is_accepted_work scores 0 on every one. The axis agrees with is_accepted_work, not with naive ok. The count grew because .hcli/receipts is a live directory.'}\n"
+   },
+   "recovery": {
+    "after_sha256": "c756040a5cb60988c8c52f0176b6704130e76d01d788ffe7eaa4ccb483b1a558",
+    "anchor": "reliability_axis.py:306:return receipt_hit_failure(receipt) and receipt_is_accepted(receipt)  # LOAD_BEARING_RECOVERY",
+    "before_sha256": "b258d564b3d565a78ed7bb10d9525ff0fe41f7b77e6b71771cc191ec5da0e01e",
+    "probe_failed_as_required": true,
+    "probe_returncode": 1,
+    "replacement": "return receipt_hit_failure(receipt)  # MUTATION_ACTIVE recovery",
+    "stderr_tail": "line 6, in <module>\nAssertionError: {'value': 1.0, 'n': 2, 'd': 2, 'keys': ['structured_output.retries', 'structured_output.exhausted', 'structured_output.errors', 'structured_output.last_violation', 'error', 'error_type', 'rolled_back', 'validation.ok', 'status', 'observations', 'tool_observations'], 'predicate': 'receipt_hit_failure AND is_accepted_work; denominator is runs that hit a failure'}\n"
+   },
+   "restored": true,
+   "restored_sha256": "b258d564b3d565a78ed7bb10d9525ff0fe41f7b77e6b71771cc191ec5da0e01e"
+  },
+  "negative_control": {
+   "all_failed": {
+    "accepted_rate": 0.0,
+    "recovery_rate": 0.0,
+    "rolled_back_rate": 0.0,
+    "structured_action_failure_rate": 1.0,
+    "tool_failure_rate": 1.0
+   },
+   "all_passed": {
+    "accepted_rate": 1.0,
+    "recovery_rate": null,
+    "rolled_back_rate": 0.0,
+    "structured_action_failure_rate": 0.0,
+    "tool_failure_rate": 0.0
+   },
+   "failed_checks": [],
+   "passed": true,
+   "recovered": {
+    "accepted_rate": 1.0,
+    "recovery_rate": 1.0,
+    "structured_action_failure_rate": 0.0,
+    "tool_failure_rate": 0.5
+   }
+  },
+  "pareto_harvest": {
+   "n_serving_points": 9,
+   "n_with_reliability": 9,
+   "sample": [
+    {
+     "id": "serving:http://127.0.0.1:8082/v1#model=Qwen%2FQwen3-4B-Instruct-2507:http://127.0.0.1:8082/v1#model=Qwen%2FQwen3-4B-Instruct-2507",
+     "n_runs": 28,
+     "reliability": 0.07142857142857142
+    },
+    {
+     "id": "serving:ascension_envelope_sampled.hawking.json:ascension_envelope_sampled.hawking.json",
+     "n_runs": 30,
+     "reliability": 0.03333333333333333
+    },
+    {
+     "id": "serving:ascension_envelope.hawking.json:ascension_envelope.hawking.json",
+     "n_runs": 102,
+     "reliability": 0.0196078431372549
+    },
+    {
+     "id": "serving:hawking-native.sealed-3.14.json:hawking-native.sealed-3.14.json",
+     "n_runs": 312,
+     "reliability": 0.01282051282051282
+    },
+    {
+     "id": "serving:http://127.0.0.1:8083/v1#model=Qwen%2FQwen3-4B-Instruct-2507:http://127.0.0.1:8083/v1#model=Qwen%2FQwen3-4B-Instruct-2507",
+     "n_runs": 7,
+     "reliability": 0.0
+    }
+   ],
+   "unmeasured_for_everyone": [
+    "state",
+    "role_suitability"
+   ]
+  }
+ },
+ "drive_rounds": {
+  "has_model_field": false,
+  "keys": [
+   "round",
+   "elapsed_s",
+   "weaknesses",
+   "stalled",
+   "chars",
+   "tail"
+  ],
+  "n": 6,
+  "not_joined_to_models": "drive_rounds.jsonl has no model/endpoint field; weakness tags cannot be attributed to a model identity and are not a rate",
+  "path": "/Users/scammermike/Downloads/hawking/tools/drive_rounds.jsonl",
+  "weakness_counts": {
+   "NOTHING_MEASURED": 5,
+   "NO_FILE_LINE": 6,
+   "NO_NEGATIVE_CONTROL": 5,
+   "NO_NUMBERS": 4
+  }
+ },
+ "field_keys": {
+  "accepted_rate": {
+   "keys": [
+    "validation",
+    "result_envelope"
+   ],
+   "not": "validation.ok",
+   "predicate": "hcli.engine.is_accepted_work"
+  },
+  "identity": {
+   "keys": [
+    "model",
+    "endpoint"
+   ]
+  },
+  "n_runs": "count of engine-run receipts in the identity group",
+  "recovery_rate": {
+   "keys": [
+    "structured_output.retries",
+    "structured_output.exhausted",
+    "structured_output.errors",
+    "structured_output.last_violation",
+    "error",
+    "error_type",
+    "rolled_back",
+    "validation.ok",
+    "status",
+    "observations",
+    "tool_observations"
+   ],
+   "predicate": "hit_failure AND is_accepted_work"
+  },
+  "rolled_back_rate": {
+   "keys": [
+    "rolled_back"
+   ]
+  },
+  "structured_action_failure_rate": {
+   "keys": [
+    "structured_output.exhausted",
+    "structured_output.errors",
+    "structured_output.last_violation",
+    "error_type"
+   ],
+   "predicate": "error_type == StructuredOutputExhausted OR structured_output.exhausted is True"
+  },
+  "tool_failure_rate": {
+   "keys": [
+    "observations",
+    "tool_observations"
+   ],
+   "predicate": "observation.ok is False / n observations"
+  },
+  "variance": {
+   "keys": [
+    "goal",
+    "validation"
+   ],
+   "never": "mean",
+   "reports": "min/median/max of accepted_work 0/1 over repeated goal text"
+  },
+  "window": [
+   "timestamps.started_at",
+   "timestamps.finished_at"
+  ]
+ },
+ "models": [
+  {
+   "accepted_rate": {
+    "d": 313,
+    "keys": [
+     "validation",
+     "result_envelope"
+    ],
+    "n": 4,
+    "predicate": "hcli.engine.is_accepted_work(validation, result_envelope)",
+    "value": 0.012779552715654952
+   },
+   "counts": {
+    "accepted": 4,
+    "hit_failure": 275,
+    "naive_validation_ok": 61,
+    "recovered": 2,
+    "recovered_receipts": [
+     "069d1308-c37e-4971-9078-bcad09354bca.json",
+     "ecf6d616-d7ee-404b-8b13-85f81396f323.json"
+    ],
+    "rolled_back": 39,
+    "structured_action_failed": 89,
+    "structured_action_scored": 262,
+    "structured_output_absent": 51
+   },
+   "endpoint": null,
+   "endpoint_missing": "receipt.endpoint is not a field on these receipts; grouping is by receipt.model",
+   "identity_keys": [
+    "model",
+    "endpoint"
+   ],
+   "model": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
+   "model_calls_endpoint": "hawking-native://sealed-3.14/resident",
+   "n_runs": 313,
+   "naive_validation_ok_rate": {
+    "d": 313,
+    "keys": [
+     "validation.ok"
+    ],
+    "n": 61,
+    "predicate": "validation['ok'] is True \u2014 control only, not the axis",
+    "value": 0.19488817891373802
+   },
+   "recovery_rate": {
+    "d": 275,
+    "keys": [
+     "structured_output.retries",
+     "structured_output.exhausted",
+     "structured_output.errors",
+     "structured_output.last_violation",
+     "error",
+     "error_type",
+     "rolled_back",
+     "validation.ok",
+     "status",
+     "observations",
+     "tool_observations"
+    ],
+    "n": 2,
+    "predicate": "receipt_hit_failure AND is_accepted_work; denominator is runs that hit a failure",
+    "value": 0.007272727272727273
+   },
+   "rolled_back_rate": {
+    "d": 313,
+    "keys": [
+     "rolled_back"
+    ],
+    "n": 39,
+    "predicate": "rolled_back is True",
+    "value": 0.12460063897763578
+   },
+   "structured_action_failure_rate": {
+    "d": 262,
+    "keys": [
+     "structured_output.exhausted",
+     "structured_output.errors",
+     "structured_output.last_violation",
+     "error_type"
+    ],
+    "n": 89,
+    "predicate": "error_type == StructuredOutputExhausted OR structured_output.exhausted is True",
+    "value": 0.33969465648854963
+   },
+   "tool_failure_rate": {
+    "d": null,
+    "keys": [
+     "observations",
+     "tool_observations"
+    ],
+    "missing": "receipts do not persist `observations` or `tool_observations`; the engine records those only in-memory during the tool loop",
+    "n": null,
+    "predicate": "item.ok is False over observations",
+    "value": null
+   },
+   "variance": {
+    "keys": [
+     "goal",
+     "validation"
+    ],
+    "max": 1,
+    "median": 0.0,
+    "min": 0,
+    "mixed_goals": [
+     {
+      "goal_head": "PHASE: running /  / WORKUNIT: implement.repair.1 / ROLE: implementation / OBJECTIVE: repair of implement: obligations=G001 In hc",
+      "goal_sha256_16": "f06a3dbc3d7c67b1",
+      "max": 1,
+      "median": 0.0,
+      "min": 0,
+      "n": 3,
+      "n_accepted": 1
+     }
+    ],
+    "n_goals_run_more_than_once": 41,
+    "n_mixed_goals": 1,
+    "n_runs_in_repeated_goals": 146,
+    "n_unique_goals": 208,
+    "note": "spread of 0/1 accepted_work over runs of goals executed more than once; a mean is not reported",
+    "outcome": "accepted_work as 0/1"
+   },
+   "window": {
+    "first": "2026-08-27T00:14:18.642526+00:00",
+    "keys": [
+     "timestamps.started_at",
+     "timestamps.finished_at"
+    ],
+    "last": "2026-09-07T09:56:15.964233+00:00",
+    "n_missing_timestamps": 0
+   }
+  },
+  {
+   "accepted_rate": {
+    "d": 102,
+    "keys": [
+     "validation",
+     "result_envelope"
+    ],
+    "n": 2,
+    "predicate": "hcli.engine.is_accepted_work(validation, result_envelope)",
+    "value": 0.0196078431372549
+   },
+   "counts": {
+    "accepted": 2,
+    "hit_failure": 62,
+    "naive_validation_ok": 50,
+    "recovered": 0,
+    "recovered_receipts": [],
+    "rolled_back": 20,
+    "structured_action_failed": 27,
+    "structured_action_scored": 102,
+    "structured_output_absent": 0
+   },
+   "endpoint": null,
+   "endpoint_missing": "receipt.endpoint is not a field on these receipts; grouping is by receipt.model",
+   "identity_keys": [
+    "model",
+    "endpoint"
+   ],
+   "model": "/Users/scammermike/Downloads/hawking/ascension_envelope.hawking.json",
+   "model_calls_endpoint": "hawking-native://sealed-3.14/resident",
+   "n_runs": 102,
+   "naive_validation_ok_rate": {
+    "d": 102,
+    "keys": [
+     "validation.ok"
+    ],
+    "n": 50,
+    "predicate": "validation['ok'] is True \u2014 control only, not the axis",
+    "value": 0.49019607843137253
+   },
+   "recovery_rate": {
+    "d": 62,
+    "keys": [
+     "structured_output.retries",
+     "structured_output.exhausted",
+     "structured_output.errors",
+     "structured_output.last_violation",
+     "error",
+     "error_type",
+     "rolled_back",
+     "validation.ok",
+     "status",
+     "observations",
+     "tool_observations"
+    ],
+    "n": 0,
+    "predicate": "receipt_hit_failure AND is_accepted_work; denominator is runs that hit a failure",
+    "value": 0.0
+   },
+   "rolled_back_rate": {
+    "d": 102,
+    "keys": [
+     "rolled_back"
+    ],
+    "n": 20,
+    "predicate": "rolled_back is True",
+    "value": 0.19607843137254902
+   },
+   "structured_action_failure_rate": {
+    "d": 102,
+    "keys": [
+     "structured_output.exhausted",
+     "structured_output.errors",
+     "structured_output.last_violation",
+     "error_type"
+    ],
+    "n": 27,
+    "predicate": "error_type == StructuredOutputExhausted OR structured_output.exhausted is True",
+    "value": 0.2647058823529412
+   },
+   "tool_failure_rate": {
+    "d": null,
+    "keys": [
+     "observations",
+     "tool_observations"
+    ],
+    "missing": "receipts do not persist `observations` or `tool_observations`; the engine records those only in-memory during the tool loop",
+    "n": null,
+    "predicate": "item.ok is False over observations",
+    "value": null
+   },
+   "variance": {
+    "keys": [
+     "goal",
+     "validation"
+    ],
+    "max": 0,
+    "median": 0.0,
+    "min": 0,
+    "mixed_goals": [],
+    "n_goals_run_more_than_once": 9,
+    "n_mixed_goals": 0,
+    "n_runs_in_repeated_goals": 42,
+    "n_unique_goals": 69,
+    "note": "spread of 0/1 accepted_work over runs of goals executed more than once; a mean is not reported",
+    "outcome": "accepted_work as 0/1"
+   },
+   "window": {
+    "first": "2026-09-06T11:33:55.078667+00:00",
+    "keys": [
+     "timestamps.started_at",
+     "timestamps.finished_at"
+    ],
+    "last": "2026-09-07T00:49:51.215038+00:00",
+    "n_missing_timestamps": 0
+   }
+  },
+  {
+   "accepted_rate": {
+    "d": 30,
+    "keys": [
+     "validation",
+     "result_envelope"
+    ],
+    "n": 1,
+    "predicate": "hcli.engine.is_accepted_work(validation, result_envelope)",
+    "value": 0.03333333333333333
+   },
+   "counts": {
+    "accepted": 1,
+    "hit_failure": 24,
+    "naive_validation_ok": 10,
+    "recovered": 0,
+    "recovered_receipts": [],
+    "rolled_back": 17,
+    "structured_action_failed": 2,
+    "structured_action_scored": 30,
+    "structured_output_absent": 0
+   },
+   "endpoint": null,
+   "endpoint_missing": "receipt.endpoint is not a field on these receipts; grouping is by receipt.model",
+   "identity_keys": [
+    "model",
+    "endpoint"
+   ],
+   "model": "/Users/scammermike/Downloads/hawking/ascension_envelope_sampled.hawking.json",
+   "model_calls_endpoint": "hawking-native://sealed-3.14/resident",
+   "n_runs": 30,
+   "naive_validation_ok_rate": {
+    "d": 30,
+    "keys": [
+     "validation.ok"
+    ],
+    "n": 10,
+    "predicate": "validation['ok'] is True \u2014 control only, not the axis",
+    "value": 0.3333333333333333
+   },
+   "recovery_rate": {
+    "d": 24,
+    "keys": [
+     "structured_output.retries",
+     "structured_output.exhausted",
+     "structured_output.errors",
+     "structured_output.last_violation",
+     "error",
+     "error_type",
+     "rolled_back",
+     "validation.ok",
+     "status",
+     "observations",
+     "tool_observations"
+    ],
+    "n": 0,
+    "predicate": "receipt_hit_failure AND is_accepted_work; denominator is runs that hit a failure",
+    "value": 0.0
+   },
+   "rolled_back_rate": {
+    "d": 30,
+    "keys": [
+     "rolled_back"
+    ],
+    "n": 17,
+    "predicate": "rolled_back is True",
+    "value": 0.5666666666666667
+   },
+   "structured_action_failure_rate": {
+    "d": 30,
+    "keys": [
+     "structured_output.exhausted",
+     "structured_output.errors",
+     "structured_output.last_violation",
+     "error_type"
+    ],
+    "n": 2,
+    "predicate": "error_type == StructuredOutputExhausted OR structured_output.exhausted is True",
+    "value": 0.06666666666666667
+   },
+   "tool_failure_rate": {
+    "d": null,
+    "keys": [
+     "observations",
+     "tool_observations"
+    ],
+    "missing": "receipts do not persist `observations` or `tool_observations`; the engine records those only in-memory during the tool loop",
+    "n": null,
+    "predicate": "item.ok is False over observations",
+    "value": null
+   },
+   "variance": {
+    "keys": [
+     "goal",
+     "validation"
+    ],
+    "max": null,
+    "median": null,
+    "min": null,
+    "missing": "no goal text was run more than once for this identity",
+    "n_goals_run_more_than_once": 0,
+    "n_unique_goals": 30,
+    "outcome": "accepted_work as 0/1"
+   },
+   "window": {
+    "first": "2026-09-06T13:39:51.515445+00:00",
+    "keys": [
+     "timestamps.started_at",
+     "timestamps.finished_at"
+    ],
+    "last": "2026-09-06T15:48:56.475567+00:00",
+    "n_missing_timestamps": 0
+   }
+  },
+  {
+   "accepted_rate": {
+    "d": 28,
+    "keys": [
+     "validation",
+     "result_envelope"
+    ],
+    "n": 2,
+    "predicate": "hcli.engine.is_accepted_work(validation, result_envelope)",
+    "value": 0.07142857142857142
+   },
+   "counts": {
+    "accepted": 2,
+    "hit_failure": 26,
+    "naive_validation_ok": 10,
+    "recovered": 0,
+    "recovered_receipts": [],
+    "rolled_back": 9,
+    "structured_action_failed": 3,
+    "structured_action_scored": 28,
+    "structured_output_absent": 0
+   },
+   "endpoint": null,
+   "endpoint_missing": "receipt.endpoint is not a field on these receipts; grouping is by receipt.model",
+   "identity_keys": [
+    "model",
+    "endpoint"
+   ],
+   "model": "http://127.0.0.1:8082/v1#model=Qwen%2FQwen3-4B-Instruct-2507",
+   "model_calls_endpoint": "http://127.0.0.1:8082/v1/chat/completions",
+   "n_runs": 28,
+   "naive_validation_ok_rate": {
+    "d": 28,
+    "keys": [
+     "validation.ok"
+    ],
+    "n": 10,
+    "predicate": "validation['ok'] is True \u2014 control only, not the axis",
+    "value": 0.35714285714285715
+   },
+   "recovery_rate": {
+    "d": 26,
+    "keys": [
+     "structured_output.retries",
+     "structured_output.exhausted",
+     "structured_output.errors",
+     "structured_output.last_violation",
+     "error",
+     "error_type",
+     "rolled_back",
+     "validation.ok",
+     "status",
+     "observations",
+     "tool_observations"
+    ],
+    "n": 0,
+    "predicate": "receipt_hit_failure AND is_accepted_work; denominator is runs that hit a failure",
+    "value": 0.0
+   },
+   "rolled_back_rate": {
+    "d": 28,
+    "keys": [
+     "rolled_back"
+    ],
+    "n": 9,
+    "predicate": "rolled_back is True",
+    "value": 0.32142857142857145
+   },
+   "structured_action_failure_rate": {
+    "d": 28,
+    "keys": [
+     "structured_output.exhausted",
+     "structured_output.errors",
+     "structured_output.last_violation",
+     "error_type"
+    ],
+    "n": 3,
+    "predicate": "error_type == StructuredOutputExhausted OR structured_output.exhausted is True",
+    "value": 0.10714285714285714
+   },
+   "tool_failure_rate": {
+    "d": null,
+    "keys": [
+     "observations",
+     "tool_observations"
+    ],
+    "missing": "receipts do not persist `observations` or `tool_observations`; the engine records those only in-memory during the tool loop",
+    "n": null,
+    "predicate": "item.ok is False over observations",
+    "value": null
+   },
+   "variance": {
+    "keys": [
+     "goal",
+     "validation"
+    ],
+    "max": 0,
+    "median": 0.0,
+    "min": 0,
+    "mixed_goals": [],
+    "n_goals_run_more_than_once": 2,
+    "n_mixed_goals": 0,
+    "n_runs_in_repeated_goals": 12,
+    "n_unique_goals": 18,
+    "note": "spread of 0/1 accepted_work over runs of goals executed more than once; a mean is not reported",
+    "outcome": "accepted_work as 0/1"
+   },
+   "window": {
+    "first": "2026-09-06T10:44:32.906281+00:00",
+    "keys": [
+     "timestamps.started_at",
+     "timestamps.finished_at"
+    ],
+    "last": "2026-09-06T11:29:40.417465+00:00",
+    "n_missing_timestamps": 0
+   }
+  },
+  {
+   "accepted_rate": {
+    "d": 7,
+    "keys": [
+     "validation",
+     "result_envelope"
+    ],
+    "n": 0,
+    "predicate": "hcli.engine.is_accepted_work(validation, result_envelope)",
+    "value": 0.0
+   },
+   "counts": {
+    "accepted": 0,
+    "hit_failure": 7,
+    "naive_validation_ok": 0,
+    "recovered": 0,
+    "recovered_receipts": [],
+    "rolled_back": 1,
+    "structured_action_failed": 1,
+    "structured_action_scored": 7,
+    "structured_output_absent": 0
+   },
+   "endpoint": null,
+   "endpoint_missing": "receipt.endpoint is not a field on these receipts; grouping is by receipt.model",
+   "identity_keys": [
+    "model",
+    "endpoint"
+   ],
+   "model": "http://127.0.0.1:8083/v1#model=Qwen%2FQwen3-4B-Instruct-2507",
+   "model_calls_endpoint": "http://127.0.0.1:8083/v1/chat/completions",
+   "n_runs": 7,
+   "naive_validation_ok_rate": {
+    "d": 7,
+    "keys": [
+     "validation.ok"
+    ],
+    "n": 0,
+    "predicate": "validation['ok'] is True \u2014 control only, not the axis",
+    "value": 0.0
+   },
+   "recovery_rate": {
+    "d": 7,
+    "keys": [
+     "structured_output.retries",
+     "structured_output.exhausted",
+     "structured_output.errors",
+     "structured_output.last_violation",
+     "error",
+     "error_type",
+     "rolled_back",
+     "validation.ok",
+     "status",
+     "observations",
+     "tool_observations"
+    ],
+    "n": 0,
+    "predicate": "receipt_hit_failure AND is_accepted_work; denominator is runs that hit a failure",
+    "value": 0.0
+   },
+   "rolled_back_rate": {
+    "d": 7,
+    "keys": [
+     "rolled_back"
+    ],
+    "n": 1,
+    "predicate": "rolled_back is True",
+    "value": 0.14285714285714285
+   },
+   "structured_action_failure_rate": {
+    "d": 7,
+    "keys": [
+     "structured_output.exhausted",
+     "structured_output.errors",
+     "structured_output.last_violation",
+     "error_type"
+    ],
+    "n": 1,
+    "predicate": "error_type == StructuredOutputExhausted OR structured_output.exhausted is True",
+    "value": 0.14285714285714285
+   },
+   "tool_failure_rate": {
+    "d": null,
+    "keys": [
+     "observations",
+     "tool_observations"
+    ],
+    "missing": "receipts do not persist `observations` or `tool_observations`; the engine records those only in-memory during the tool loop",
+    "n": null,
+    "predicate": "item.ok is False over observations",
+    "value": null
+   },
+   "variance": {
+    "keys": [
+     "goal",
+     "validation"
+    ],
+    "max": 0,
+    "median": 0.0,
+    "min": 0,
+    "mixed_goals": [],
+    "n_goals_run_more_than_once": 1,
+    "n_mixed_goals": 0,
+    "n_runs_in_repeated_goals": 6,
+    "n_unique_goals": 2,
+    "note": "spread of 0/1 accepted_work over runs of goals executed more than once; a mean is not reported",
+    "outcome": "accepted_work as 0/1"
+   },
+   "window": {
+    "first": "2026-09-06T10:46:59.597310+00:00",
+    "keys": [
+     "timestamps.started_at",
+     "timestamps.finished_at"
+    ],
+    "last": "2026-09-06T11:20:30.940770+00:00",
+    "n_missing_timestamps": 0
+   }
+  },
+  {
+   "accepted_rate": {
+    "d": 5,
+    "keys": [
+     "validation",
+     "result_envelope"
+    ],
+    "n": 0,
+    "predicate": "hcli.engine.is_accepted_work(validation, result_envelope)",
+    "value": 0.0
+   },
+   "counts": {
+    "accepted": 0,
+    "hit_failure": 5,
+    "naive_validation_ok": 0,
+    "recovered": 0,
+    "recovered_receipts": [],
+    "rolled_back": 0,
+    "structured_action_failed": 0,
+    "structured_action_scored": 3,
+    "structured_output_absent": 2
+   },
+   "endpoint": null,
+   "endpoint_missing": "receipt.endpoint is not a field on these receipts; grouping is by receipt.model",
+   "identity_keys": [
+    "model",
+    "endpoint"
+   ],
+   "model": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+   "model_calls_endpoint": "hawking-native://sealed-3.14/resident",
+   "n_runs": 5,
+   "naive_validation_ok_rate": {
+    "d": 5,
+    "keys": [
+     "validation.ok"
+    ],
+    "n": 0,
+    "predicate": "validation['ok'] is True \u2014 control only, not the axis",
+    "value": 0.0
+   },
+   "recovery_rate": {
+    "d": 5,
+    "keys": [
+     "structured_output.retries",
+     "structured_output.exhausted",
+     "structured_output.errors",
+     "structured_output.last_violation",
+     "error",
+     "error_type",
+     "rolled_back",
+     "validation.ok",
+     "status",
+     "observations",
+     "tool_observations"
+    ],
+    "n": 0,
+    "predicate": "receipt_hit_failure AND is_accepted_work; denominator is runs that hit a failure",
+    "value": 0.0
+   },
+   "rolled_back_rate": {
+    "d": 5,
+    "keys": [
+     "rolled_back"
+    ],
+    "n": 0,
+    "predicate": "rolled_back is True",
+    "value": 0.0
+   },
+   "structured_action_failure_rate": {
+    "d": 3,
+    "keys": [
+     "structured_output.exhausted",
+     "structured_output.errors",
+     "structured_output.last_violation",
+     "error_type"
+    ],
+    "n": 0,
+    "predicate": "error_type == StructuredOutputExhausted OR structured_output.exhausted is True",
+    "value": 0.0
+   },
+   "tool_failure_rate": {
+    "d": null,
+    "keys": [
+     "observations",
+     "tool_observations"
+    ],
+    "missing": "receipts do not persist `observations` or `tool_observations`; the engine records those only in-memory during the tool loop",
+    "n": null,
+    "predicate": "item.ok is False over observations",
+    "value": null
+   },
+   "variance": {
+    "keys": [
+     "goal",
+     "validation"
+    ],
+    "max": 0,
+    "median": 0.0,
+    "min": 0,
+    "mixed_goals": [],
+    "n_goals_run_more_than_once": 1,
+    "n_mixed_goals": 0,
+    "n_runs_in_repeated_goals": 3,
+    "n_unique_goals": 3,
+    "note": "spread of 0/1 accepted_work over runs of goals executed more than once; a mean is not reported",
+    "outcome": "accepted_work as 0/1"
+   },
+   "window": {
+    "first": "2026-09-04T18:55:44.715019+00:00",
+    "keys": [
+     "timestamps.started_at",
+     "timestamps.finished_at"
+    ],
+    "last": "2026-09-04T19:22:49.713887+00:00",
+    "n_missing_timestamps": 0
+   }
+  },
+  {
+   "accepted_rate": {
+    "d": 3,
+    "keys": [
+     "validation",
+     "result_envelope"
+    ],
+    "n": 0,
+    "predicate": "hcli.engine.is_accepted_work(validation, result_envelope)",
+    "value": 0.0
+   },
+   "counts": {
+    "accepted": 0,
+    "hit_failure": 1,
+    "naive_validation_ok": 2,
+    "recovered": 0,
+    "recovered_receipts": [],
+    "rolled_back": 0,
+    "structured_action_failed": 0,
+    "structured_action_scored": 0,
+    "structured_output_absent": 3
+   },
+   "endpoint": null,
+   "endpoint_missing": "receipt.endpoint is not a field on these receipts; grouping is by receipt.model",
+   "identity_keys": [
+    "model",
+    "endpoint"
+   ],
+   "model": "/Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+   "model_calls_endpoint": null,
+   "n_runs": 3,
+   "naive_validation_ok_rate": {
+    "d": 3,
+    "keys": [
+     "validation.ok"
+    ],
+    "n": 2,
+    "predicate": "validation['ok'] is True \u2014 control only, not the axis",
+    "value": 0.6666666666666666
+   },
+   "recovery_rate": {
+    "d": 1,
+    "keys": [
+     "structured_output.retries",
+     "structured_output.exhausted",
+     "structured_output.errors",
+     "structured_output.last_violation",
+     "error",
+     "error_type",
+     "rolled_back",
+     "validation.ok",
+     "status",
+     "observations",
+     "tool_observations"
+    ],
+    "n": 0,
+    "predicate": "receipt_hit_failure AND is_accepted_work; denominator is runs that hit a failure",
+    "value": 0.0
+   },
+   "rolled_back_rate": {
+    "d": 3,
+    "keys": [
+     "rolled_back"
+    ],
+    "n": 0,
+    "predicate": "rolled_back is True",
+    "value": 0.0
+   },
+   "structured_action_failure_rate": {
+    "d": 0,
+    "keys": [
+     "structured_output.exhausted",
+     "structured_output.errors",
+     "structured_output.last_violation",
+     "error_type"
+    ],
+    "missing": "structured_output (and error_type StructuredOutputExhausted) absent; the rate is not estimated from other fields",
+    "n": 0,
+    "predicate": "error_type == StructuredOutputExhausted OR structured_output.exhausted is True",
+    "value": null
+   },
+   "tool_failure_rate": {
+    "d": null,
+    "keys": [
+     "observations",
+     "tool_observations"
+    ],
+    "missing": "receipts do not persist `observations` or `tool_observations`; the engine records those only in-memory during the tool loop",
+    "n": null,
+    "predicate": "item.ok is False over observations",
+    "value": null
+   },
+   "variance": {
+    "keys": [
+     "goal",
+     "validation"
+    ],
+    "max": 0,
+    "median": 0.0,
+    "min": 0,
+    "mixed_goals": [],
+    "n_goals_run_more_than_once": 1,
+    "n_mixed_goals": 0,
+    "n_runs_in_repeated_goals": 2,
+    "n_unique_goals": 2,
+    "note": "spread of 0/1 accepted_work over runs of goals executed more than once; a mean is not reported",
+    "outcome": "accepted_work as 0/1"
+   },
+   "window": {
+    "first": "2026-08-21T19:16:41.538976+00:00",
+    "keys": [
+     "timestamps.started_at",
+     "timestamps.finished_at"
+    ],
+    "last": "2026-08-21T19:53:41.176426+00:00",
+    "n_missing_timestamps": 0
+   }
+  },
+  {
+   "accepted_rate": {
+    "d": 2,
+    "keys": [
+     "validation",
+     "result_envelope"
+    ],
+    "n": 0,
+    "predicate": "hcli.engine.is_accepted_work(validation, result_envelope)",
+    "value": 0.0
+   },
+   "counts": {
+    "accepted": 0,
+    "hit_failure": 2,
+    "naive_validation_ok": 0,
+    "recovered": 0,
+    "recovered_receipts": [],
+    "rolled_back": 0,
+    "structured_action_failed": 0,
+    "structured_action_scored": 2,
+    "structured_output_absent": 0
+   },
+   "endpoint": null,
+   "endpoint_missing": "receipt.endpoint is not a field on these receipts; grouping is by receipt.model",
+   "identity_keys": [
+    "model",
+    "endpoint"
+   ],
+   "model": "http://127.0.0.1:9999",
+   "model_calls_endpoint": "http://127.0.0.1:9999/v1/chat/completions",
+   "n_runs": 2,
+   "naive_validation_ok_rate": {
+    "d": 2,
+    "keys": [
+     "validation.ok"
+    ],
+    "n": 0,
+    "predicate": "validation['ok'] is True \u2014 control only, not the axis",
+    "value": 0.0
+   },
+   "recovery_rate": {
+    "d": 2,
+    "keys": [
+     "structured_output.retries",
+     "structured_output.exhausted",
+     "structured_output.errors",
+     "structured_output.last_violation",
+     "error",
+     "error_type",
+     "rolled_back",
+     "validation.ok",
+     "status",
+     "observations",
+     "tool_observations"
+    ],
+    "n": 0,
+    "predicate": "receipt_hit_failure AND is_accepted_work; denominator is runs that hit a failure",
+    "value": 0.0
+   },
+   "rolled_back_rate": {
+    "d": 2,
+    "keys": [
+     "rolled_back"
+    ],
+    "n": 0,
+    "predicate": "rolled_back is True",
+    "value": 0.0
+   },
+   "structured_action_failure_rate": {
+    "d": 2,
+    "keys": [
+     "structured_output.exhausted",
+     "structured_output.errors",
+     "structured_output.last_violation",
+     "error_type"
+    ],
+    "n": 0,
+    "predicate": "error_type == StructuredOutputExhausted OR structured_output.exhausted is True",
+    "value": 0.0
+   },
+   "tool_failure_rate": {
+    "d": null,
+    "keys": [
+     "observations",
+     "tool_observations"
+    ],
+    "missing": "receipts do not persist `observations` or `tool_observations`; the engine records those only in-memory during the tool loop",
+    "n": null,
+    "predicate": "item.ok is False over observations",
+    "value": null
+   },
+   "variance": {
+    "keys": [
+     "goal",
+     "validation"
+    ],
+    "max": null,
+    "median": null,
+    "min": null,
+    "missing": "no goal text was run more than once for this identity",
+    "n_goals_run_more_than_once": 0,
+    "n_unique_goals": 2,
+    "outcome": "accepted_work as 0/1"
+   },
+   "window": {
+    "first": "2026-09-05T23:00:46.007612+00:00",
+    "keys": [
+     "timestamps.started_at",
+     "timestamps.finished_at"
+    ],
+    "last": "2026-09-05T23:22:24.327037+00:00",
+    "n_missing_timestamps": 0
+   }
+  },
+  {
+   "accepted_rate": {
+    "d": 2,
+    "keys": [
+     "validation",
+     "result_envelope"
+    ],
+    "n": 0,
+    "predicate": "hcli.engine.is_accepted_work(validation, result_envelope)",
+    "value": 0.0
+   },
+   "counts": {
+    "accepted": 0,
+    "hit_failure": 2,
+    "naive_validation_ok": 0,
+    "recovered": 0,
+    "recovered_receipts": [],
+    "rolled_back": 0,
+    "structured_action_failed": 1,
+    "structured_action_scored": 2,
+    "structured_output_absent": 0
+   },
+   "endpoint": null,
+   "endpoint_missing": "receipt.endpoint is not a field on these receipts; grouping is by receipt.model",
+   "identity_keys": [
+    "model",
+    "endpoint"
+   ],
+   "model": "http://127.0.0.1:8081/v1#model=Qwen%2FQwen3-0.6B",
+   "model_calls_endpoint": "http://127.0.0.1:8081/v1/chat/completions",
+   "n_runs": 2,
+   "naive_validation_ok_rate": {
+    "d": 2,
+    "keys": [
+     "validation.ok"
+    ],
+    "n": 0,
+    "predicate": "validation['ok'] is True \u2014 control only, not the axis",
+    "value": 0.0
+   },
+   "recovery_rate": {
+    "d": 2,
+    "keys": [
+     "structured_output.retries",
+     "structured_output.exhausted",
+     "structured_output.errors",
+     "structured_output.last_violation",
+     "error",
+     "error_type",
+     "rolled_back",
+     "validation.ok",
+     "status",
+     "observations",
+     "tool_observations"
+    ],
+    "n": 0,
+    "predicate": "receipt_hit_failure AND is_accepted_work; denominator is runs that hit a failure",
+    "value": 0.0
+   },
+   "rolled_back_rate": {
+    "d": 2,
+    "keys": [
+     "rolled_back"
+    ],
+    "n": 0,
+    "predicate": "rolled_back is True",
+    "value": 0.0
+   },
+   "structured_action_failure_rate": {
+    "d": 2,
+    "keys": [
+     "structured_output.exhausted",
+     "structured_output.errors",
+     "structured_output.last_violation",
+     "error_type"
+    ],
+    "n": 1,
+    "predicate": "error_type == StructuredOutputExhausted OR structured_output.exhausted is True",
+    "value": 0.5
+   },
+   "tool_failure_rate": {
+    "d": null,
+    "keys": [
+     "observations",
+     "tool_observations"
+    ],
+    "missing": "receipts do not persist `observations` or `tool_observations`; the engine records those only in-memory during the tool loop",
+    "n": null,
+    "predicate": "item.ok is False over observations",
+    "value": null
+   },
+   "variance": {
+    "keys": [
+     "goal",
+     "validation"
+    ],
+    "max": 0,
+    "median": 0.0,
+    "min": 0,
+    "mixed_goals": [],
+    "n_goals_run_more_than_once": 1,
+    "n_mixed_goals": 0,
+    "n_runs_in_repeated_goals": 2,
+    "n_unique_goals": 1,
+    "note": "spread of 0/1 accepted_work over runs of goals executed more than once; a mean is not reported",
+    "outcome": "accepted_work as 0/1"
+   },
+   "window": {
+    "first": "2026-09-06T10:39:24.469016+00:00",
+    "keys": [
+     "timestamps.started_at",
+     "timestamps.finished_at"
+    ],
+    "last": "2026-09-06T10:41:08.847266+00:00",
+    "n_missing_timestamps": 0
+   }
+  },
+  {
+   "accepted_rate": {
+    "d": 1,
+    "keys": [
+     "validation",
+     "result_envelope"
+    ],
+    "n": 0,
+    "predicate": "hcli.engine.is_accepted_work(validation, result_envelope)",
+    "value": 0.0
+   },
+   "counts": {
+    "accepted": 0,
+    "hit_failure": 0,
+    "naive_validation_ok": 1,
+    "recovered": 0,
+    "recovered_receipts": [],
+    "rolled_back": 0,
+    "structured_action_failed": 0,
+    "structured_action_scored": 1,
+    "structured_output_absent": 0
+   },
+   "endpoint": null,
+   "endpoint_missing": "receipt.endpoint is not a field on these receipts; grouping is by receipt.model",
+   "identity_keys": [
+    "model",
+    "endpoint"
+   ],
+   "model": "/private/tmp/prof_128.json",
+   "model_calls_endpoint": "hawking-native://sealed-3.14/resident",
+   "n_runs": 1,
+   "naive_validation_ok_rate": {
+    "d": 1,
+    "keys": [
+     "validation.ok"
+    ],
+    "n": 1,
+    "predicate": "validation['ok'] is True \u2014 control only, not the axis",
+    "value": 1.0
+   },
+   "recovery_rate": {
+    "d": 0,
+    "keys": [
+     "structured_output.retries",
+     "structured_output.exhausted",
+     "structured_output.errors",
+     "structured_output.last_violation",
+     "error",
+     "error_type",
+     "rolled_back",
+     "validation.ok",
+     "status",
+     "observations",
+     "tool_observations"
+    ],
+    "missing": "no run hit a failure visible on the receipt; 0/0 is not 0.0",
+    "n": 0,
+    "predicate": "receipt_hit_failure AND is_accepted_work",
+    "value": null
+   },
+   "rolled_back_rate": {
+    "d": 1,
+    "keys": [
+     "rolled_back"
+    ],
+    "n": 0,
+    "predicate": "rolled_back is True",
+    "value": 0.0
+   },
+   "structured_action_failure_rate": {
+    "d": 1,
+    "keys": [
+     "structured_output.exhausted",
+     "structured_output.errors",
+     "structured_output.last_violation",
+     "error_type"
+    ],
+    "n": 0,
+    "predicate": "error_type == StructuredOutputExhausted OR structured_output.exhausted is True",
+    "value": 0.0
+   },
+   "tool_failure_rate": {
+    "d": null,
+    "keys": [
+     "observations",
+     "tool_observations"
+    ],
+    "missing": "receipts do not persist `observations` or `tool_observations`; the engine records those only in-memory during the tool loop",
+    "n": null,
+    "predicate": "item.ok is False over observations",
+    "value": null
+   },
+   "variance": {
+    "keys": [
+     "goal",
+     "validation"
+    ],
+    "max": null,
+    "median": null,
+    "min": null,
+    "missing": "no goal text was run more than once for this identity",
+    "n_goals_run_more_than_once": 0,
+    "n_unique_goals": 1,
+    "outcome": "accepted_work as 0/1"
+   },
+   "window": {
+    "first": "2026-09-06T20:47:29.024675+00:00",
+    "keys": [
+     "timestamps.started_at",
+     "timestamps.finished_at"
+    ],
+    "last": "2026-09-06T20:51:55.058476+00:00",
+    "n_missing_timestamps": 0
+   }
+  },
+  {
+   "accepted_rate": {
+    "d": 1,
+    "keys": [
+     "validation",
+     "result_envelope"
+    ],
+    "n": 0,
+    "predicate": "hcli.engine.is_accepted_work(validation, result_envelope)",
+    "value": 0.0
+   },
+   "counts": {
+    "accepted": 0,
+    "hit_failure": 1,
+    "naive_validation_ok": 0,
+    "recovered": 0,
+    "recovered_receipts": [],
+    "rolled_back": 0,
+    "structured_action_failed": 0,
+    "structured_action_scored": 1,
+    "structured_output_absent": 0
+   },
+   "endpoint": null,
+   "endpoint_missing": "receipt.endpoint is not a field on these receipts; grouping is by receipt.model",
+   "identity_keys": [
+    "model",
+    "endpoint"
+   ],
+   "model": "http://127.0.0.1:8081/v1",
+   "model_calls_endpoint": "http://127.0.0.1:8081/v1/chat/completions",
+   "n_runs": 1,
+   "naive_validation_ok_rate": {
+    "d": 1,
+    "keys": [
+     "validation.ok"
+    ],
+    "n": 0,
+    "predicate": "validation['ok'] is True \u2014 control only, not the axis",
+    "value": 0.0
+   },
+   "recovery_rate": {
+    "d": 1,
+    "keys": [
+     "structured_output.retries",
+     "structured_output.exhausted",
+     "structured_output.errors",
+     "structured_output.last_violation",
+     "error",
+     "error_type",
+     "rolled_back",
+     "validation.ok",
+     "status",
+     "observations",
+     "tool_observations"
+    ],
+    "n": 0,
+    "predicate": "receipt_hit_failure AND is_accepted_work; denominator is runs that hit a failure",
+    "value": 0.0
+   },
+   "rolled_back_rate": {
+    "d": 1,
+    "keys": [
+     "rolled_back"
+    ],
+    "n": 0,
+    "predicate": "rolled_back is True",
+    "value": 0.0
+   },
+   "structured_action_failure_rate": {
+    "d": 1,
+    "keys": [
+     "structured_output.exhausted",
+     "structured_output.errors",
+     "structured_output.last_violation",
+     "error_type"
+    ],
+    "n": 0,
+    "predicate": "error_type == StructuredOutputExhausted OR structured_output.exhausted is True",
+    "value": 0.0
+   },
+   "tool_failure_rate": {
+    "d": null,
+    "keys": [
+     "observations",
+     "tool_observations"
+    ],
+    "missing": "receipts do not persist `observations` or `tool_observations`; the engine records those only in-memory during the tool loop",
+    "n": null,
+    "predicate": "item.ok is False over observations",
+    "value": null
+   },
+   "variance": {
+    "keys": [
+     "goal",
+     "validation"
+    ],
+    "max": null,
+    "median": null,
+    "min": null,
+    "missing": "no goal text was run more than once for this identity",
+    "n_goals_run_more_than_once": 0,
+    "n_unique_goals": 1,
+    "outcome": "accepted_work as 0/1"
+   },
+   "window": {
+    "first": "2026-09-06T10:38:45.396447+00:00",
+    "keys": [
+     "timestamps.started_at",
+     "timestamps.finished_at"
+    ],
+    "last": "2026-09-06T10:38:50.832105+00:00",
+    "n_missing_timestamps": 0
+   }
+  },
+  {
+   "accepted_rate": {
+    "d": 1,
+    "keys": [
+     "validation",
+     "result_envelope"
+    ],
+    "n": 0,
+    "predicate": "hcli.engine.is_accepted_work(validation, result_envelope)",
+    "value": 0.0
+   },
+   "counts": {
+    "accepted": 0,
+    "hit_failure": 0,
+    "naive_validation_ok": 1,
+    "recovered": 0,
+    "recovered_receipts": [],
+    "rolled_back": 0,
+    "structured_action_failed": 0,
+    "structured_action_scored": 1,
+    "structured_output_absent": 0
+   },
+   "endpoint": null,
+   "endpoint_missing": "receipt.endpoint is not a field on these receipts; grouping is by receipt.model",
+   "identity_keys": [
+    "model",
+    "endpoint"
+   ],
+   "model": "/private/tmp/prof_512.json",
+   "model_calls_endpoint": "hawking-native://sealed-3.14/resident",
+   "n_runs": 1,
+   "naive_validation_ok_rate": {
+    "d": 1,
+    "keys": [
+     "validation.ok"
+    ],
+    "n": 1,
+    "predicate": "validation['ok'] is True \u2014 control only, not the axis",
+    "value": 1.0
+   },
+   "recovery_rate": {
+    "d": 0,
+    "keys": [
+     "structured_output.retries",
+     "structured_output.exhausted",
+     "structured_output.errors",
+     "structured_output.last_violation",
+     "error",
+     "error_type",
+     "rolled_back",
+     "validation.ok",
+     "status",
+     "observations",
+     "tool_observations"
+    ],
+    "missing": "no run hit a failure visible on the receipt; 0/0 is not 0.0",
+    "n": 0,
+    "predicate": "receipt_hit_failure AND is_accepted_work",
+    "value": null
+   },
+   "rolled_back_rate": {
+    "d": 1,
+    "keys": [
+     "rolled_back"
+    ],
+    "n": 0,
+    "predicate": "rolled_back is True",
+    "value": 0.0
+   },
+   "structured_action_failure_rate": {
+    "d": 1,
+    "keys": [
+     "structured_output.exhausted",
+     "structured_output.errors",
+     "structured_output.last_violation",
+     "error_type"
+    ],
+    "n": 0,
+    "predicate": "error_type == StructuredOutputExhausted OR structured_output.exhausted is True",
+    "value": 0.0
+   },
+   "tool_failure_rate": {
+    "d": null,
+    "keys": [
+     "observations",
+     "tool_observations"
+    ],
+    "missing": "receipts do not persist `observations` or `tool_observations`; the engine records those only in-memory during the tool loop",
+    "n": null,
+    "predicate": "item.ok is False over observations",
+    "value": null
+   },
+   "variance": {
+    "keys": [
+     "goal",
+     "validation"
+    ],
+    "max": null,
+    "median": null,
+    "min": null,
+    "missing": "no goal text was run more than once for this identity",
+    "n_goals_run_more_than_once": 0,
+    "n_unique_goals": 1,
+    "outcome": "accepted_work as 0/1"
+   },
+   "window": {
+    "first": "2026-09-06T20:51:56.075095+00:00",
+    "keys": [
+     "timestamps.started_at",
+     "timestamps.finished_at"
+    ],
+    "last": "2026-09-06T20:55:40.976025+00:00",
+    "n_missing_timestamps": 0
+   }
+  }
+ ],
+ "n_engine_runs": 495,
+ "n_skipped": 1,
+ "nulls": {
+  "overall": [
+   {
+    "field": "tool_failure_rate",
+    "keys": [
+     "observations",
+     "tool_observations"
+    ],
+    "missing": "receipts do not persist `observations` or `tool_observations`; the engine records those only in-memory during the tool loop"
+   },
+   {
+    "field": "endpoint",
+    "keys": [
+     "endpoint"
+    ],
+    "missing": "receipt.endpoint is not a field on these receipts; grouping is by receipt.model"
+   }
+  ],
+  "per_model": [
+   {
+    "model": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
+    "nulls": [
+     {
+      "field": "tool_failure_rate",
+      "keys": [
+       "observations",
+       "tool_observations"
+      ],
+      "missing": "receipts do not persist `observations` or `tool_observations`; the engine records those only in-memory during the tool loop"
+     }
+    ]
+   },
+   {
+    "model": "/Users/scammermike/Downloads/hawking/ascension_envelope.hawking.json",
+    "nulls": [
+     {
+      "field": "tool_failure_rate",
+      "keys": [
+       "observations",
+       "tool_observations"
+      ],
+      "missing": "receipts do not persist `observations` or `tool_observations`; the engine records those only in-memory during the tool loop"
+     }
+    ]
+   },
+   {
+    "model": "/Users/scammermike/Downloads/hawking/ascension_envelope_sampled.hawking.json",
+    "nulls": [
+     {
+      "field": "tool_failure_rate",
+      "keys": [
+       "observations",
+       "tool_observations"
+      ],
+      "missing": "receipts do not persist `observations` or `tool_observations`; the engine records those only in-memory during the tool loop"
+     },
+     {
+      "field": "variance",
+      "keys": [
+       "goal",
+       "validation"
+      ],
+      "missing": "no goal text was run more than once for this identity"
+     }
+    ]
+   },
+   {
+    "model": "http://127.0.0.1:8082/v1#model=Qwen%2FQwen3-4B-Instruct-2507",
+    "nulls": [
+     {
+      "field": "tool_failure_rate",
+      "keys": [
+       "observations",
+       "tool_observations"
+      ],
+      "missing": "receipts do not persist `observations` or `tool_observations`; the engine records those only in-memory during the tool loop"
+     }
+    ]
+   },
+   {
+    "model": "http://127.0.0.1:8083/v1#model=Qwen%2FQwen3-4B-Instruct-2507",
+    "nulls": [
+     {
+      "field": "tool_failure_rate",
+      "keys": [
+       "observations",
+       "tool_observations"
+      ],
+      "missing": "receipts do not persist `observations` or `tool_observations`; the engine records those only in-memory during the tool loop"
+     }
+    ]
+   },
+   {
+    "model": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+    "nulls": [
+     {
+      "field": "tool_failure_rate",
+      "keys": [
+       "observations",
+       "tool_observations"
+      ],
+      "missing": "receipts do not persist `observations` or `tool_observations`; the engine records those only in-memory during the tool loop"
+     }
+    ]
+   },
+   {
+    "model": "/Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+    "nulls": [
+     {
+      "field": "structured_action_failure_rate",
+      "keys": [
+       "structured_output.exhausted",
+       "structured_output.errors",
+       "structured_output.last_violation",
+       "error_type"
+      ],
+      "missing": "structured_output (and error_type StructuredOutputExhausted) absent; the rate is not estimated from other fields"
+     },
+     {
+      "field": "tool_failure_rate",
+      "keys": [
+       "observations",
+       "tool_observations"
+      ],
+      "missing": "receipts do not persist `observations` or `tool_observations`; the engine records those only in-memory during the tool loop"
+     }
+    ]
+   },
+   {
+    "model": "http://127.0.0.1:9999",
+    "nulls": [
+     {
+      "field": "tool_failure_rate",
+      "keys": [
+       "observations",
+       "tool_observations"
+      ],
+      "missing": "receipts do not persist `observations` or `tool_observations`; the engine records those only in-memory during the tool loop"
+     },
+     {
+      "field": "variance",
+      "keys": [
+       "goal",
+       "validation"
+      ],
+      "missing": "no goal text was run more than once for this identity"
+     }
+    ]
+   },
+   {
+    "model": "http://127.0.0.1:8081/v1#model=Qwen%2FQwen3-0.6B",
+    "nulls": [
+     {
+      "field": "tool_failure_rate",
+      "keys": [
+       "observations",
+       "tool_observations"
+      ],
+      "missing": "receipts do not persist `observations` or `tool_observations`; the engine records those only in-memory during the tool loop"
+     }
+    ]
+   },
+   {
+    "model": "/private/tmp/prof_128.json",
+    "nulls": [
+     {
+      "field": "tool_failure_rate",
+      "keys": [
+       "observations",
+       "tool_observations"
+      ],
+      "missing": "receipts do not persist `observations` or `tool_observations`; the engine records those only in-memory during the tool loop"
+     },
+     {
+      "field": "recovery_rate",
+      "keys": [
+       "structured_output.retries",
+       "structured_output.exhausted",
+       "structured_output.errors",
+       "structured_output.last_violation",
+       "error",
+       "error_type",
+       "rolled_back",
+       "validation.ok",
+       "status",
+       "observations",
+       "tool_observations"
+      ],
+      "missing": "no run hit a failure visible on the receipt; 0/0 is not 0.0"
+     },
+     {
+      "field": "variance",
+      "keys": [
+       "goal",
+       "validation"
+      ],
+      "missing": "no goal text was run more than once for this identity"
+     }
+    ]
+   },
+   {
+    "model": "http://127.0.0.1:8081/v1",
+    "nulls": [
+     {
+      "field": "tool_failure_rate",
+      "keys": [
+       "observations",
+       "tool_observations"
+      ],
+      "missing": "receipts do not persist `observations` or `tool_observations`; the engine records those only in-memory during the tool loop"
+     },
+     {
+      "field": "variance",
+      "keys": [
+       "goal",
+       "validation"
+      ],
+      "missing": "no goal text was run more than once for this identity"
+     }
+    ]
+   },
+   {
+    "model": "/private/tmp/prof_512.json",
+    "nulls": [
+     {
+      "field": "tool_failure_rate",
+      "keys": [
+       "observations",
+       "tool_observations"
+      ],
+      "missing": "receipts do not persist `observations` or `tool_observations`; the engine records those only in-memory during the tool loop"
+     },
+     {
+      "field": "recovery_rate",
+      "keys": [
+       "structured_output.retries",
+       "structured_output.exhausted",
+       "structured_output.errors",
+       "structured_output.last_violation",
+       "error",
+       "error_type",
+       "rolled_back",
+       "validation.ok",
+       "status",
+       "observations",
+       "tool_observations"
+      ],
+      "missing": "no run hit a failure visible on the receipt; 0/0 is not 0.0"
+     },
+     {
+      "field": "variance",
+      "keys": [
+       "goal",
+       "validation"
+      ],
+      "missing": "no goal text was run more than once for this identity"
+     }
+    ]
+   }
+  ],
+  "rule": "a null with a named missing field is evidence; a constructed number is not"
+ },
+ "overall": {
+  "accepted_rate": {
+   "d": 495,
+   "keys": [
+    "validation",
+    "result_envelope"
+   ],
+   "n": 9,
+   "predicate": "hcli.engine.is_accepted_work(validation, result_envelope)",
+   "value": 0.01818181818181818
+  },
+  "counts": {
+   "accepted": 9,
+   "hit_failure": 405,
+   "naive_validation_ok": 135,
+   "recovered": 2,
+   "recovered_receipts": [
+    "069d1308-c37e-4971-9078-bcad09354bca.json",
+    "ecf6d616-d7ee-404b-8b13-85f81396f323.json"
+   ],
+   "rolled_back": 86,
+   "structured_action_failed": 123,
+   "structured_action_scored": 439,
+   "structured_output_absent": 56
+  },
+  "endpoint": null,
+  "endpoint_missing": "receipt.endpoint is not a field on these receipts; grouping is by receipt.model",
+  "identity_keys": [
+   "model",
+   "endpoint"
+  ],
+  "model": "*all*",
+  "model_calls_endpoint": "hawking-native://sealed-3.14/resident",
+  "n_runs": 495,
+  "naive_validation_ok_rate": {
+   "d": 495,
+   "keys": [
+    "validation.ok"
+   ],
+   "n": 135,
+   "predicate": "validation['ok'] is True \u2014 control only, not the axis",
+   "value": 0.2727272727272727
+  },
+  "recovery_rate": {
+   "d": 405,
+   "keys": [
+    "structured_output.retries",
+    "structured_output.exhausted",
+    "structured_output.errors",
+    "structured_output.last_violation",
+    "error",
+    "error_type",
+    "rolled_back",
+    "validation.ok",
+    "status",
+    "observations",
+    "tool_observations"
+   ],
+   "n": 2,
+   "predicate": "receipt_hit_failure AND is_accepted_work; denominator is runs that hit a failure",
+   "value": 0.0049382716049382715
+  },
+  "rolled_back_rate": {
+   "d": 495,
+   "keys": [
+    "rolled_back"
+   ],
+   "n": 86,
+   "predicate": "rolled_back is True",
+   "value": 0.17373737373737375
+  },
+  "structured_action_failure_rate": {
+   "d": 439,
+   "keys": [
+    "structured_output.exhausted",
+    "structured_output.errors",
+    "structured_output.last_violation",
+    "error_type"
+   ],
+   "n": 123,
+   "predicate": "error_type == StructuredOutputExhausted OR structured_output.exhausted is True",
+   "value": 0.28018223234624146
+  },
+  "tool_failure_rate": {
+   "d": null,
+   "keys": [
+    "observations",
+    "tool_observations"
+   ],
+   "missing": "receipts do not persist `observations` or `tool_observations`; the engine records those only in-memory during the tool loop",
+   "n": null,
+   "predicate": "item.ok is False over observations",
+   "value": null
+  },
+  "variance": {
+   "keys": [
+    "goal",
+    "validation"
+   ],
+   "max": 1,
+   "median": 0.0,
+   "min": 0,
+   "mixed_goals": [
+    {
+     "goal_head": "PHASE: running /  / WORKUNIT: implement.repair.1 / ROLE: implementation / OBJECTIVE: repair of implement: obligations=G001 In hc",
+     "goal_sha256_16": "f06a3dbc3d7c67b1",
+     "max": 1,
+     "median": 0.0,
+     "min": 0,
+     "n": 3,
+     "n_accepted": 1
+    }
+   ],
+   "n_goals_run_more_than_once": 57,
+   "n_mixed_goals": 1,
+   "n_runs_in_repeated_goals": 220,
+   "n_unique_goals": 332,
+   "note": "spread of 0/1 accepted_work over runs of goals executed more than once; a mean is not reported",
+   "outcome": "accepted_work as 0/1"
+  },
+  "window": {
+   "first": "2026-08-21T19:16:41.538976+00:00",
+   "keys": [
+    "timestamps.started_at",
+    "timestamps.finished_at"
+   ],
+   "last": "2026-09-07T09:56:15.964233+00:00",
+   "n_missing_timestamps": 0
+  }
+ },
+ "pareto_axis": {
+  "comparable_value": "accepted_rate",
+  "comparable_value_is": "hcli.engine.is_accepted_work / n_runs, harvested onto serving-identity points. Not a blend of the vector.",
+  "higher_is_better": true,
+  "name": "reliability",
+  "vector_stays": "recovery_rate, structured_action_failure_rate, tool_failure_rate, rolled_back_rate, variance min/median/max"
+ },
+ "purpose": "Fill the campaign Pareto reliability axis from HCLI receipts. Reliability is a vector of rates, not a grade and not a blend.",
+ "receipts_dir": "/Users/scammermike/Downloads/hawking/.hcli/receipts",
+ "recorded_by": "tools/future/reliability_axis.py",
+ "schema": "hawking.future.reliability_axis.v1",
+ "seal_sha256": "a3412c9f8235e4786315b7b8c017ccbb5283cd3d0bb93fa097324b34a20b389a",
+ "skipped": [
+  {
+   "path": "research-gate.json",
+   "reason": "not an HCLI engine run receipt",
+   "schema": "hcli.agentos.research_gate.v1"
+  }
+ ],
+ "version": 1
+}

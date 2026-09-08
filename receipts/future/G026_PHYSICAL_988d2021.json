@@ -1,0 +1,79 @@
+{
+ "schema": "hawking.future.physical.v1",
+ "obligation": "G026",
+ "emitted_by": "tools/future/physical_emitter.py",
+ "source_receipt": ".hcli/receipts/988d2021-d6aa-4507-9721-5e054dd78ab3.json",
+ "goal_id": "988d2021-d6aa-4507-9721-5e054dd78ab3",
+ "specimen": "sealed-3.14 resident",
+ "nr": "native-packed, artifact_bytes 10554328856 (MIX_REPORT.json:payload_bytes)",
+ "runtime": "native endpoint hawking-native://sealed-3.14/resident, 64 layers",
+ "context": 3343,
+ "path": "the engine's agentic tool loop: the round's own production model calls, prefill stepped one token at a time, decode sampled",
+ "concurrency": 1,
+ "measurement_contract": {
+  "not_a_benchmark": "these are the round's OWN production calls against the live resident, not a synthetic workload",
+  "runtime_count": 1,
+  "n_model_calls": 3,
+  "started_at": "2026-09-07T00:38:33.362736+00:00",
+  "finished_at": "2026-09-07T00:42:17.704773+00:00"
+ },
+ "prefill_tps": 31.8913,
+ "decode_tps": 19.1929,
+ "gpu_share_of_prefill_wall_mean": 0.9707,
+ "totals": {
+  "prefill_tokens": 5026,
+  "prefill_wall_s": 157.598,
+  "decode_tokens": 1140,
+  "decode_wall_s": 59.397
+ },
+ "per_call": [
+  {
+   "call": 1,
+   "prompt_tokens": 3343,
+   "prefill_steps": 3343,
+   "prefill_wall_s": 113.5138,
+   "prefill_tok_per_s": 29.4502,
+   "completion_tokens": 380,
+   "decode_wall_s": 26.2832,
+   "decode_tok_per_s": 14.4579,
+   "call_wall_s": 139.797,
+   "gpu_share_of_prefill_wall": 0.9758,
+   "dispatches_per_step": 580.0,
+   "prefix_source": "cold",
+   "prefix_reused_tokens": 0
+  },
+  {
+   "call": 2,
+   "prompt_tokens": 970,
+   "prefill_steps": 970,
+   "prefill_wall_s": 25.0409,
+   "prefill_tok_per_s": 38.7366,
+   "completion_tokens": 380,
+   "decode_wall_s": 16.5101,
+   "decode_tok_per_s": 23.0163,
+   "call_wall_s": 41.551,
+   "gpu_share_of_prefill_wall": 0.9677,
+   "dispatches_per_step": 580.0,
+   "prefix_source": "cold",
+   "prefix_reused_tokens": 0
+  },
+  {
+   "call": 3,
+   "prompt_tokens": 977,
+   "prefill_steps": 713,
+   "prefill_wall_s": 19.0432,
+   "prefill_tok_per_s": 37.4412,
+   "completion_tokens": 380,
+   "decode_wall_s": 16.6038,
+   "decode_tok_per_s": 22.8863,
+   "call_wall_s": 35.647,
+   "gpu_share_of_prefill_wall": 0.9687,
+   "dispatches_per_step": 580.0,
+   "prefix_source": "checkpoint_restore",
+   "prefix_reused_tokens": 264
+  }
+ ],
+ "evidence_tier": "PRODUCTION_WORKLOAD",
+ "gpu_authority": true,
+ "claim_boundary": "Real hardware, real resident, pinned runtime, concurrency 1. It is NOT a controlled sweep: prompt length varies call to call because the round chose what to ask, and prefix reuse differs between calls. Comparable to another receipt from the same emitter; NOT comparable to a synthetic fixed-length benchmark."
+}

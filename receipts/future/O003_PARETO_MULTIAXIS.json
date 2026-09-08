@@ -1,0 +1,81 @@
+{
+ "axes": [
+  "capability_passes",
+  "complete_ebpw",
+  "decode_tok_s",
+  "active_bytes_per_token",
+  "representation_complexity",
+  "transfer_value"
+ ],
+ "points": [
+  {
+   "name": "bf16 source",
+   "capability_passes": true,
+   "complete_ebpw": 16.0,
+   "decode_tok_s": 87.67,
+   "active_bytes_per_token": 5158467840,
+   "representation_complexity": 0,
+   "transfer_value": 0
+  },
+  {
+   "name": "q3-g128-experts",
+   "capability_passes": true,
+   "complete_ebpw": 3.2831,
+   "decode_tok_s": 132.12,
+   "active_bytes_per_token": 1287212416,
+   "representation_complexity": 1,
+   "transfer_value": 2
+  },
+  {
+   "name": "q4-g64-experts",
+   "capability_passes": true,
+   "complete_ebpw": 4.3797,
+   "decode_tok_s": 127.48,
+   "active_bytes_per_token": 1455902080,
+   "representation_complexity": 1,
+   "transfer_value": 2
+  },
+  {
+   "name": "pqpercal4k512",
+   "capability_passes": false,
+   "complete_ebpw": 2.4059,
+   "decode_tok_s": null,
+   "active_bytes_per_token": null,
+   "representation_complexity": 3,
+   "transfer_value": 1
+  },
+  {
+   "name": "pqpercal2k16",
+   "capability_passes": false,
+   "complete_ebpw": 2.1864,
+   "decode_tok_s": null,
+   "active_bytes_per_token": null,
+   "representation_complexity": 3,
+   "transfer_value": 1
+  },
+  {
+   "name": "sharedbasis8",
+   "capability_passes": false,
+   "complete_ebpw": 2.4058,
+   "decode_tok_s": null,
+   "active_bytes_per_token": null,
+   "representation_complexity": 4,
+   "transfer_value": 3
+  },
+  {
+   "name": "binarypercal-g512",
+   "capability_passes": false,
+   "complete_ebpw": 1.3639,
+   "decode_tok_s": null,
+   "active_bytes_per_token": null,
+   "representation_complexity": 2,
+   "transfer_value": 1
+  }
+ ],
+ "frontier": [
+  "bf16 source",
+  "q3-g128-experts",
+  "sharedbasis8",
+  "binarypercal-g512"
+ ]
+}

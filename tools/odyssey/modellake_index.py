@@ -1117,6 +1117,49 @@ def update_specimen(
     }
 
 
+class LakeNotMounted(RuntimeError):
+    """The lake is not attached, so nothing may be inferred from its emptiness."""
+
+
+def _require_mounted(lake_p: Path) -> None:
+    """An absent volume must not be readable as an empty lake.
+
+    list_dir_slugs() returns [] for a missing directory, so with the drive
+    detached every catalogued slug fell out of live_slugs, the catalog was
+    rewritten as n_specimens 0 / tier2_used_bytes 0 / over_budget FALSE, and
+    every by-slug record was unlinked -- at exit code 0. Measured against a copy
+    of the live index: 56 specimens and over_budget True became 0 and False, and
+    55 records were deleted. The real lake is 852 GB OVER budget, so the
+    destroyed artifact was the only thing recording the overage.
+
+    tools/future/specimen_registry.py:72 has carried exactly this guard for the
+    same reason. This module did not.
+    """
+    if not (lake_p / "specimens").is_dir() and not (lake_p / "partial").is_dir():
+        raise LakeNotMounted(
+            f"{lake_p} has neither specimens/ nor partial/; the volume is not mounted. "
+            f"Refusing to rebuild -- an empty scan here would be recorded as 'the lake "
+            f"is empty and under budget' and would unlink every existing record."
+        )
+
+
+def _refuse_mass_drop(dropped: list, catalog: dict, lake_p: Path, force: bool = False) -> None:
+    """A drop of EVERY known specimen is a mount failure, not a deletion event.
+
+    The mount check above is necessary but not sufficient: a remounted-but-empty
+    volume, or a stale mountpoint directory, presents real directories holding no
+    specimens and would pass it. Losing the entire inventory in one call is never
+    a legitimate incremental rebuild, so it must be asserted deliberately.
+    """
+    known = len(catalog.get("specimens") or [])
+    if known and len(dropped) == known and not force:
+        raise LakeNotMounted(
+            f"every one of {known} catalogued specimens is absent from {lake_p}. "
+            f"That is a mount or path failure, not {known} deletions. Refusing to "
+            f"unlink the whole index; pass force=True only if the lake really was emptied."
+        )
+
+
 def build(
     *,
     lake: str | Path | None = None,
@@ -1129,6 +1172,7 @@ def build(
     """Build or refresh the catalog. Unchanged specimen dirs are not re-walked."""
     t0 = time.perf_counter()
     lake_p = Path(lake) if lake else _default_lake()
+    _require_mounted(lake_p)
     idx, placement = resolve_index_dir(lake=lake_p, index_dir=index_dir, create=True)
     refuse_specimens_write(idx, lake_p)
     budget_n = _tier2_budget() if budget is None else int(budget)
@@ -1165,6 +1209,7 @@ def build(
         scanned.append(slug)
     dropped = [r["slug"] for r in list(catalog.get("specimens") or [])
                if r["slug"] not in live_slugs]
+    _refuse_mass_drop(dropped, catalog, lake_p, force=force)
     if dropped:
         catalog["specimens"] = [r for r in catalog["specimens"] if r["slug"] in live_slugs]
         for slug in dropped:

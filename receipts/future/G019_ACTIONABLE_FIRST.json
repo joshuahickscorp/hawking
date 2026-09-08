@@ -1,0 +1,147 @@
+{
+  "schema": "g019.actionable-first.v1",
+  "obligation": "G019",
+  "produced_at": "2026-09-07T09:35:00Z",
+  "worktree": "grok/g019-actionable-first-20260907-052558",
+  "landed_on_main": false,
+  "budget_chars": 500,
+  "discover_count": 69,
+  "selector": "python3 -m pytest hcli/tests/ -q -k actionable",
+  "fresh_verify": {
+    "command": "python3 -m pytest hcli/tests/ -q -k actionable",
+    "result": "20 passed, 853 deselected",
+    "exit_code": 0
+  },
+  "engine_py": {
+    "modified": false,
+    "hash_object": "fd9a3e195e63f59c92f8fa5a55709fa04bc11063",
+    "matches_HEAD": true
+  },
+  "paths": {
+    "git_diff_name_only": ["hcli/tool_registry.py"],
+    "untracked": ["hcli/tests/test_actionable_first_output.py", "tools/future/G019_ACTIONABLE_FIRST.json"]
+  },
+  "green_sha256": {
+    "hcli/tool_registry.py": "8bdabba840b66fe9e11df780a0abf706a75c7c43498426212ea5c67514546dbd",
+    "hcli/tests/test_actionable_first_output.py": "abca684773735b5301667fe162b3e5b5225ea268cb0c5f56e937180e87342bf8"
+  },
+  "red_before_fix": {
+    "passed": 10,
+    "failed": 10,
+    "note": "Nine were real survival failures. test_git_status_fits_or_stdout_survives compared raw newlines to JSON-escaped stdout; git.status already fit and was not changed."
+  },
+  "fixed": [
+    {"tool": "lake.census", "actionable": "slug/klass", "before": "1 slug in 500-char head", "after": "rows-first compact entries, shown/n/truncated, 2+ slugs, payload 3158"},
+    {"tool": "specimens.registry", "actionable": "id", "before": "1 id", "after": "compact id-first rows, shown/n_specimens/truncated"},
+    {"tool": "tools.catalog", "actionable": "name", "before": "1 name", "after": "names[] first, then full matches"},
+    {"tool": "processes.list", "actionable": "pid", "before": "1 pid", "after": "compact index first; full to_dict list retained"},
+    {"tool": "processes.orphaned", "actionable": "pid", "before": "1 pid", "after": "compact index first; full orphaned list retained"},
+    {"tool": "acquisition.propose", "actionable": "recommended.oxx", "before": "absent", "after": "recommended + bounded ranked first"},
+    {"tool": "git.log", "actionable": "commit hash", "before": "1 hash", "after": "commits[{hash,line}] first; stdout retained"},
+    {"tool": "tests.run", "actionable": "verified", "before": "absent under stdout", "after": "verified/returncode first"},
+    {"tool": "odyssey.anatomy", "actionable": "hypotheses", "before": "absent under spectra", "after": "hypotheses first; refusal leads with refused"}
+  ],
+  "already_compliant": [
+    "accelerator.benchmark", "accelerator.inspect", "architecture.inspect", "benchmark.run",
+    "campaign.guard", "context.recall", "doctor.inspect", "doctor.query", "filesystem.write",
+    "forbidden_fruit.lab", "frontier.decide", "frontier.escalate", "fs.list", "fs.read",
+    "fs.search", "git.checkout-safe", "git.diff", "git.land.propose", "git.status",
+    "github.fetch", "github.search", "gravity.experiment", "gravity.inspect",
+    "grok.swarm.launch", "grok.swarm.propose", "huggingface.download", "huggingface.fetch_file",
+    "huggingface.history", "huggingface.resolve", "modellake.status",
+    "odyssey.add_to_eligibility", "odyssey.completions", "odyssey.create_adversarial_probe",
+    "odyssey.create_transfer_probe", "odyssey.cycle", "odyssey.economics",
+    "odyssey.gravity_gauntlet", "odyssey.harvest", "odyssey.ingest", "odyssey.ledger",
+    "odyssey.park_specimen", "odyssey.patient", "odyssey.queue", "odyssey.record_law",
+    "odyssey.record_scar", "odyssey.retire", "odyssey.status", "odyssey.value",
+    "odyssey.write_packet", "processes.summary", "receipt.read", "roadmap.read",
+    "shell.exec", "shell.readonly", "tests.list", "vmcp.capabilities", "vmcp.inspect",
+    "vmcp.query", "web.fetch", "web.search"
+  ],
+  "mutations": [
+    {"tool": "lake.census", "anchor": "MUTATION_ANCHOR_lake_census", "before": "8bdabba840b66fe9e11df780a0abf706a75c7c43498426212ea5c67514546dbd", "mutated": "45ec24151b213eec565f7254a0dd1c7860ed555e17992f5faaccd30000da9d9f", "after": "8bdabba840b66fe9e11df780a0abf706a75c7c43498426212ea5c67514546dbd", "rc_while_mutated": 1},
+    {"tool": "specimens.registry", "anchor": "MUTATION_ANCHOR_specimens_registry", "before": "8bdabba840b66fe9e11df780a0abf706a75c7c43498426212ea5c67514546dbd", "mutated": "4907fd80e3f0d64dbef339eb94856b7b48df74a4495a2f89397a048ca478b0a5", "after": "8bdabba840b66fe9e11df780a0abf706a75c7c43498426212ea5c67514546dbd", "rc_while_mutated": 1},
+    {"tool": "tools.catalog", "anchor": "MUTATION_ANCHOR_tools_catalog", "before": "8bdabba840b66fe9e11df780a0abf706a75c7c43498426212ea5c67514546dbd", "mutated": "9ab7f196871cb66f84dda058fa72cc722ad3a7da8c916dba6fd7728528bb2f5e", "after": "8bdabba840b66fe9e11df780a0abf706a75c7c43498426212ea5c67514546dbd", "rc_while_mutated": 1},
+    {"tool": "processes.list", "anchor": "MUTATION_ANCHOR_processes_list", "before": "8bdabba840b66fe9e11df780a0abf706a75c7c43498426212ea5c67514546dbd", "mutated": "a6954baabdedb683213bd1691011b3ff0c76ab82b89080115b6fb3a3c269c969", "after": "8bdabba840b66fe9e11df780a0abf706a75c7c43498426212ea5c67514546dbd", "rc_while_mutated": 1},
+    {"tool": "processes.orphaned", "anchor": "MUTATION_ANCHOR_processes_orphaned", "before": "8bdabba840b66fe9e11df780a0abf706a75c7c43498426212ea5c67514546dbd", "mutated": "ddba8a63a8a30070356bc76ba88d83be8f8281dfd3a51b721e7d9aca40ba8f73", "after": "8bdabba840b66fe9e11df780a0abf706a75c7c43498426212ea5c67514546dbd", "rc_while_mutated": 1},
+    {"tool": "acquisition.propose", "anchor": "MUTATION_ANCHOR_acquisition_propose", "before": "8bdabba840b66fe9e11df780a0abf706a75c7c43498426212ea5c67514546dbd", "mutated": "7c255d03ea136ce22f82046ffb708a0cc94361ccd2eb9fe88a807908819dec24", "after": "8bdabba840b66fe9e11df780a0abf706a75c7c43498426212ea5c67514546dbd", "rc_while_mutated": 1},
+    {"tool": "git.log", "anchor": "MUTATION_ANCHOR_git_log", "before": "8bdabba840b66fe9e11df780a0abf706a75c7c43498426212ea5c67514546dbd", "mutated": "1b45f699d51c16eed06fd5a4de4a3725c1794d0c52e694330f62a5ca3d48c35a", "after": "8bdabba840b66fe9e11df780a0abf706a75c7c43498426212ea5c67514546dbd", "rc_while_mutated": 1},
+    {"tool": "tests.run", "anchor": "MUTATION_ANCHOR_tests_run", "before": "8bdabba840b66fe9e11df780a0abf706a75c7c43498426212ea5c67514546dbd", "mutated": "1b8dd59010f67cb7f5dc545eee4e132225e0bbce6ab35f4174e7e43b98db09a0", "after": "8bdabba840b66fe9e11df780a0abf706a75c7c43498426212ea5c67514546dbd", "rc_while_mutated": 1},
+    {"tool": "odyssey.anatomy", "anchor": "MUTATION_ANCHOR_odyssey_anatomy", "before": "8bdabba840b66fe9e11df780a0abf706a75c7c43498426212ea5c67514546dbd", "mutated": "29dbb1d4c091de8edf68f5b012f54ab5dbbc362e458f0b5674ce409da94c7d5a", "after": "8bdabba840b66fe9e11df780a0abf706a75c7c43498426212ea5c67514546dbd", "rc_while_mutated": 1}
+  ],
+  "anchors_left_in_source": [],
+  "ledger_snapshot_via_git_show": {
+    "specimens": 56,
+    "MEASURED": 57,
+    "REFUSED": 121,
+    "OWED": 214,
+    "note": "G009 axes_owed is 214; this lane did not measure axes."
+  },
+  "out_of_lane": {
+    "GOAL.md": "EPERM from this sandbox (touch rc=1); supervisor must mark G019 VERIFIED from this evidence",
+    "G004": "capability conjunction gate on Kimi-VL-A3B needs unsandboxed Metal and ~34 GB free RAM",
+    "G005": "S005: RuntimePool.start wiring is an HCLI WorkUnit, not this lane",
+    "G006": "HCLI autonomy streak; this lane must not name a specimen",
+    "G007": "Metal blocked inside Grok sandbox; GPU work stays with Claude",
+    "G008": "sharedbasis wall_s needs Metal, currently held",
+    "G009": "178 axes still OWED on the live parent ledger; discovery authority is not this lane"
+  },
+  "frontier_probe_2026_09_07T09_40Z": {
+    "host": {
+      "free_gb": 19.95,
+      "wired_gb": 16.45,
+      "compressor_gb": 0.45,
+      "mlx_default_device": "Device(gpu, 0)",
+      "metal_load_device": "RuntimeError: No Metal device available (sandboxed/headless session)"
+    },
+    "G004": {
+      "status_on_disk": "capability NOT_MEASURED (Metal blocked)",
+      "receipt": "/Users/scammermike/Downloads/hawking/receipts/future/G004_O003_ORGAN_PANEL.json",
+      "free_ram_now_gb": 19.95,
+      "needed_gb": 34,
+      "metal": "unavailable in this sandbox",
+      "can_run_here": false
+    },
+    "G005": {
+      "red_test": "hcli/test_resident_ownership.py::test_serving_layer_calls_adopt_or_spawn",
+      "fresh_result": "FAILED: adopt_or_spawn( not in RuntimePool.start",
+      "must_not_wire_from_this_lane": true
+    },
+    "G006": {
+      "latest_receipt": "/Users/scammermike/Downloads/hawking/.hcli/receipts/a0e7194a-b7f3-4468-b115-474aeff0ba0b.json",
+      "window": "2026-09-07T09:22:39Z .. 09:35:36Z",
+      "model_calls": 7,
+      "accepted_work": false,
+      "validation_kind": "read_only",
+      "tool_catalog_mode_on_receipt": "none",
+      "tool_catalog_chars": 0,
+      "note": "receipt records FINAL-TURN catalog mode; _prompt_with_observations(tools_allowed=False) writes none after the loop closes, so this is not by itself proof the first call lacked a catalog",
+      "verified_facts_quote": "Tool access is closed for this round; no tool calls are emitted.",
+      "claim": "echo of the goal prompt, not a measurement",
+      "native_tool_calling_feature": "unsupported (enforcement degraded)",
+      "streak": 0,
+      "class_hypothesis": "D/F: seven grammar-enforced calls, zero operations, closed-turn instruction echoed as the answer",
+      "must_not_name_a_specimen_from_this_lane": true
+    },
+    "G007": {
+      "metal": "unavailable",
+      "can_run_here": false
+    },
+    "G008": {
+      "metal": "unavailable",
+      "can_run_here": false
+    },
+    "G009": {
+      "live_ledger": "/Users/scammermike/Downloads/hawking/receipts/future/G034_ODYSSEY_LEDGER.json",
+      "specimens": 56,
+      "MEASURED": 91,
+      "REFUSED": 123,
+      "OWED": 178,
+      "anatomy_OWED": [
+        "thinkingmachines--Inkling-Small@8cc5877b44d3 MOE-FLOAT 495.4 GiB",
+        "Qwen--Qwen3.8-Flash-Next@34567a4712bc MOE-FLOAT 335.3 GiB"
+      ],
+      "gpu_cpu_tps_OWED": 28
+    }
+  }
+}

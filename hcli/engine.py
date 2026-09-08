@@ -586,6 +586,30 @@ def is_accepted_work(validation: Any, result: Any = None) -> bool:
     )
 
 
+def is_accepted_measurement(validation: Any) -> bool:
+    """True for a round that MEASURED something, which is not the same as mutating.
+
+    `is_accepted_work` is the mutation gate and stays exactly as strict as it is: it
+    demands an applied mutation and a passing test, because five autonomous rounds once
+    returned answers claiming a function was "already present ... the test passes as
+    expected" when the name existed nowhere.
+
+    But the campaign also asks HCLI to be a scientist, and a scientist MEASURES. Under
+    the mutation gate alone a measurement WorkUnit is unscoreable by construction --
+    four autonomous science rounds ran and none of them could ever have been accepted,
+    whatever they found. This is the separate predicate, and it is deliberately NOT
+    reachable by a model claim: it requires observations the ENGINE produced by running
+    a tool, so the thing being trusted is tool output, not text.
+
+    A mutation validation is not a measurement; the two are counted apart on purpose.
+    """
+    if not isinstance(validation, dict) or validation.get("ok") is not True:
+        return False
+    if validation.get("kind") != "read_only":
+        return False
+    return int(validation.get("observations_ok") or 0) >= 1
+
+
 def validation_failure_message(validation: Any) -> str:
     """Say WHY deterministic validation failed.
 
@@ -1656,6 +1680,116 @@ class Engine:
     # whose bytes were already in the goal.
     MAX_TOOL_ROUNDS = int(os.environ.get("HCLI_MAX_TOOL_ROUNDS", "6"))
     MAX_TOOL_CALLS_PER_ROUND = 16
+    # How many SUCCESSFUL observations a unit may accumulate before the catalog
+    # closes. This was the literal `len(observations) >= 1` below, which made the
+    # loop single-round no matter how well it was going: a unit could batch calls
+    # within one round but could never CONDITION a second round on the first's
+    # results. MAX_TOOL_ROUNDS 6 was therefore unreachable in practice.
+    #
+    # That bound is fatal for campaign work. "Call odyssey.ledger owed_only, read
+    # what is owed, choose a specimen, guard it, anatomise it" is four steps where
+    # each depends on the last, and it cannot be expressed as one batch.
+    #
+    # Default stays 1 so behaviour is UNCHANGED until a measurement says
+    # otherwise; raise it per run with HCLI_MAX_TOOL_OBSERVATIONS. The failed-call
+    # and all-repeat closers below are untouched and still fire first.
+    MAX_TOOL_OBSERVATIONS = int(os.environ.get("HCLI_MAX_TOOL_OBSERVATIONS", "1"))
+    # How many ROUNDS containing a failed call are forgiven before the catalog
+    # closes. It was effectively 0: any failed call ended the round.
+    #
+    # That is correct for a repair unit, where a path miss means the plan is
+    # confused. It is wrong for an exploration unit, which is told to CHOOSE ITS
+    # OWN TARGET and whose first move is necessarily a guess. The registry
+    # answers a wrong guess usefully -- lake.census on an unknown slug returns
+    # "... is not in receipts/future/modellake-index/catalog.json", which names
+    # the file to read next -- and the old rule threw that error away instead of
+    # handing it back. Three consecutive autonomous science rounds ended with
+    # tool_catalog_mode "none" and zero measurements this way.
+    #
+    # One forgiven round, not more: a model that cannot use the error it was just
+    # handed is exactly the confused plan the original closer was written for.
+    TOOL_FAILURE_TOLERANCE = int(os.environ.get("HCLI_TOOL_FAILURE_TOLERANCE", "1"))
+
+    # The one wording, used by both closing paths. It lived only inside
+    # _prompt_with_observations, which the budget-exhausted path never calls --
+    # that path reuses the stable cognition_prompt on purpose, because rebuilding
+    # it would lose the prefix and prefill is 93% of an autonomous round's wall.
+    # So the instruction travels in the mutable tail there instead.
+    REPORT_THE_FINDING = (
+        "REPORT THE FINDING. The observations above are what you measured. "
+        "State what you measured, on which specimen, the numbers you got, "
+        "and what it means for the campaign. DO NOT DESCRIBE THE TOOL STATE "
+        "and do not restate your plan: the tools already ran and their "
+        "output is above. If an observation was a refusal, report the "
+        "refusal and its named mechanism -- that is a finding too."
+    )
+
+    @staticmethod
+    def _answer_validation(observations, rounds: int, failed_rounds: int, closure):
+        """What an ANSWER's receipt should say, given what the round actually did.
+
+        This was four hardcoded fields -- ok, kind, evidence "none", accepted_work
+        False -- written on the answer path regardless of whether the round had made
+        ten successful tool calls or none at all. `evidence: "none"` is simply false
+        when the engine ran a tool and got output back, and it made every autonomous
+        science round indistinguishable from a fabricated completion in its own receipt.
+
+        `accepted_work` stays False here always: an answer is not a mutation and must
+        never pass the mutation gate. What changes is that the receipt now says what
+        happened, and WHY THE TOOL LOOP CLOSED -- four rounds ended closed and not one
+        could say which of the three closers fired.
+
+        Observations that only ever FAILED are still evidence "none": a round that got
+        errors back measured nothing.
+        """
+        obs = list(observations or [])
+        ok = [o for o in obs if isinstance(o, dict) and o.get("ok")]
+        failed = [o for o in obs if isinstance(o, dict) and not o.get("ok")]
+        return {
+            "ok": True,
+            "kind": "read_only",
+            "evidence": "tool_observations" if ok else "none",
+            "accepted_work": False,
+            "observations_ok": len(ok),
+            "observations_failed": len(failed),
+            "tools_used": sorted({str(o.get("tool")) for o in ok}),
+            "tool_rounds": int(rounds),
+            "failed_rounds": int(failed_rounds),
+            "closure_reason": closure,
+        }
+
+    @staticmethod
+    def _tool_loop_closure(
+        round_observations,
+        total_observations: int,
+        failed_rounds: int,
+        max_observations: int,
+        failure_tolerance: int,
+    ):
+        """Why the tool catalog should close now, or None to keep it open.
+
+        Pure, so the policy can be tested without a model, a resident or a
+        registry -- the previous version was an inline boolean nothing could
+        reach except by running a full round.
+
+        `failed_rounds` counts rounds containing a failure INCLUDING this one,
+        so tolerance 1 forgives the first and closes on the second, and
+        tolerance 0 restores the original any-failure rule exactly.
+        """
+        if not round_observations:
+            return None
+        failed = any(not item.get("ok") for item in round_observations)
+        # The budget is checked FIRST: forgiving a failure must not reopen the
+        # bound the budget exists to enforce.
+        if total_observations >= max_observations:
+            return f"observation_budget_{max_observations}"
+        if failed:
+            if failed_rounds > failure_tolerance:
+                return "failed_call"
+            return None
+        if all(item.get("repeat") for item in round_observations):
+            return "bounded_observation_round"
+        return None
     # Kept as an alias: external callers and tests referenced the old name for
     # the per-round cap, and silently changing what it means is worse than
     # carrying it.
@@ -2150,6 +2284,16 @@ class Engine:
         final: bool = False,
         compact_catalog: bool = False,
         tools_allowed: bool = True,
+        # Whether the round MEASURED anything, passed separately from the
+        # observations themselves. Both closing paths build their prompt with an
+        # EMPTY observation list and supply the observations as `trailing`, so a
+        # guard reading `observations` was evaluated against [] every time and the
+        # report request never fired -- round 6 measured six things across five
+        # tools and still answered with the closing instruction. Rendering and
+        # deciding are separate concerns; conflating them either duplicates the
+        # observations in a prompt that already carries them or loses the fact
+        # that they exist.
+        measured: bool = False,
     ) -> str:
         """Tool output rides beside the goal, NOT inside `evidence`.
 
@@ -2177,6 +2321,23 @@ class Engine:
                 "Use the observations already present and return the shortest "
                 "valid answer or mutation now.",
             ]
+            # A round that MEASURED must be asked for the finding, not for brevity.
+            # Round 5 made 5 tool rounds and 7 successful observations across all four
+            # campaign tools, closed on the observation BUDGET rather than a failure --
+            # and answered "Tool access is closed for this round; no tool calls are
+            # emitted." That string was then recorded in its receipt as a verified_fact.
+            # Seven real measurements were taken and not one reached the report, because
+            # the instruction above asks for the shortest valid answer and a sentence
+            # about the closure is the shortest valid answer.
+            #
+            # Only when at least one observation SUCCEEDED. A round that observed nothing,
+            # or whose every observation failed, has nothing to report, and asking it to
+            # report anyway invites the invention this whole discipline exists to stop.
+            if measured or any(
+                isinstance(item, dict) and item.get("ok")
+                for item in (observations or [])
+            ):
+                parts.append(self.REPORT_THE_FINDING)
             if (
                 "ROLE: implementation" in str(prompt)
                 or "OBJECTIVE: repair" in str(prompt)
@@ -2432,6 +2593,9 @@ class Engine:
             # fed back, bounded, until the model answers or the budget runs out.
             observations: List[Dict[str, Any]] = []
             conversation_history: List[Dict[str, Any]] = []
+            failed_rounds = 0
+            closure_reason = None
+            tool_rounds = 0
             self._agentic_execution = True
             # An evidence-complete resident lane must enter the closed-turn budget
             # path on its FIRST call. HCLI_NO_TOOLS used to suppress the catalog
@@ -2487,6 +2651,7 @@ class Engine:
                         {"role": "assistant", "content": assistant_text}
                     )
                 round_observations = self._run_tool_calls(calls, goal_id)
+                tool_rounds += 1
                 observations.extend(round_observations)
                 conversation_history.append(
                     {
@@ -2501,27 +2666,23 @@ class Engine:
                 # several minutes on a mixed success/failure loop. The post-loop
                 # block below still gives it one final no-tools call, so this
                 # break does not discard its remaining chance to act.
-                if round_observations and (
-                    any(not item.get("ok") for item in round_observations)
-                    or all(
-                        item.get("repeat") or not item.get("ok")
-                        for item in round_observations
-                    )
-                    or len(observations) >= 1
-                ):
+                if any(not item.get("ok") for item in round_observations):
+                    failed_rounds += 1
+                closure = self._tool_loop_closure(
+                    round_observations,
+                    len(observations),
+                    failed_rounds,
+                    self.MAX_TOOL_OBSERVATIONS,
+                    self.TOOL_FAILURE_TOLERANCE,
+                )
+                if closure is not None:
+                    closure_reason = closure
                     self._emit(
                         "tool_loop_closed",
                         {
                             "goal_id": goal_id,
-                            "reason": (
-                                "failed_call"
-                                if any(not item.get("ok") for item in round_observations)
-                                else (
-                                    "bounded_observation_round"
-                                    if len(observations) >= 1
-                                    else "repeated_or_failed"
-                                )
-                            ),
+                            "reason": closure,
+                            "failed_rounds": failed_rounds,
                             "observation_count": len(round_observations),
                             "successful": sum(
                                 bool(item.get("ok")) for item in round_observations
@@ -2536,6 +2697,16 @@ class Engine:
                 # the SAME stable cognition_prompt, so the closing call still
                 # reuses the prefix; only the history tail differs.
                 self._tools_closed_for_round = True
+                _measured = any(
+                    isinstance(item, dict) and item.get("ok")
+                    for item in observations
+                )
+                _tail = self._observations_block(
+                    self._compact_closed_observations(observations),
+                    final=True,
+                )
+                if _measured:
+                    _tail = _tail + "\n\n" + self.REPORT_THE_FINDING
                 try:
                     result = self._sanitize_result(
                         self._call_model(
@@ -2544,17 +2715,7 @@ class Engine:
                             compiled,
                             context_memory=context_memory,
                             history=conversation_history
-                            + [
-                                {
-                                    "role": "user",
-                                    "content": self._observations_block(
-                                        self._compact_closed_observations(
-                                            observations
-                                        ),
-                                        final=True,
-                                    ),
-                                }
-                            ],
+                            + [{"role": "user", "content": _tail}],
                         )
                     )
                 finally:
@@ -2569,11 +2730,16 @@ class Engine:
                 # start another expensive duplicate round.
                 self._tools_closed_for_round = True
                 try:
+                    _measured = any(
+                        isinstance(item, dict) and item.get("ok")
+                        for item in observations
+                    )
                     final_prompt = self._prompt_with_observations(
                         prompt,
                         [],
                         compact_catalog=False,
                         tools_allowed=False,
+                        measured=_measured,
                     )
                     self._emit(
                         "final_turn_prepared",
@@ -2593,10 +2759,18 @@ class Engine:
                             final_prompt,
                             evidence,
                             compiled,
-                            # Preserve the bounded observations that caused
-                            # closure; the fit ladder sheds older blocks when
-                            # the mutation contract needs more room.
+                            # Observations travel as HISTORY, the same channel the
+                            # budget-exhausted closing path already uses. They were sent
+                            # on `trailing` alone, which the fit ladder's own comment
+                            # calls "the legacy field" that real tool rounds no longer
+                            # read -- so this turn was handed nothing. Two rounds with
+                            # DIFFERENT observations produced a byte-identical closing
+                            # prompt, 1,553 tokens and 6,292 chars, and both answered
+                            # "No observations were provided". A prompt that does not
+                            # vary with the observations it reports on does not have them.
                             trailing=final_trailing,
+                            history=conversation_history
+                            + [{"role": "user", "content": final_trailing}],
                             context_memory=context_memory,
                         )
                     )
@@ -2621,12 +2795,9 @@ class Engine:
                     goal=prompt,
                     result=result,
                     evidence=evidence,
-                    validation={
-                        "ok": True,
-                        "kind": "read_only",
-                        "evidence": "none",
-                        "accepted_work": False,
-                    },
+                    validation=self._answer_validation(
+                        observations, tool_rounds, failed_rounds, closure_reason
+                    ),
                     rolled_back=False,
                     started=started,
                 )
@@ -4430,6 +4601,28 @@ class Engine:
     # on disk. Nothing is truncated mid-token; whole items are dropped.
     EVIDENCE_REDUCTION_STEPS = (1.0, 0.5, 0.25, 0.0)
 
+    def _observation_start(self, blocks: List[str]) -> int:
+        """Which observation the prompt starts at.
+
+        The floor is forward-only so each RETRIEVAL turn is the previous turn plus an
+        append, which is the shape a KV prefix can reuse -- without it five consecutive
+        calls sat pinned at 1,398 reused tokens while the prompts grew past 4,700.
+
+        But the CLOSING turn is a decision turn, not another retrieval turn. Its job is
+        to report on everything the round measured, and it runs once. Applying the
+        advanced floor there meant a round with five successful observations was handed
+        the tail of them and answered "No observations were provided; no measurement was
+        made or recorded" -- 1,553 prompt tokens against 4,700-5,800 on every earlier
+        call. The observations are already compacted to CLOSED_OBSERVATION_CHARS each,
+        so the full tail is small, and one call's worth of prefix is worth less than the
+        round's only product.
+        """
+        if not blocks:
+            return 0
+        if bool(getattr(self, "_tools_closed_for_round", False)):
+            return 0
+        return min(getattr(self, "_observation_floor", 0), len(blocks) - 1)
+
     def _fit_payload_to_budget(
         self,
         build: Callable[..., Dict[str, Any]],
@@ -4492,7 +4685,7 @@ class Engine:
         # prompts grew past 4700, every later token re-stepped at 580 dispatches
         # each. A floor that only advances makes each turn the previous turn
         # plus an append, which is exactly what a prefix cache can reuse.
-        floor = min(getattr(self, "_observation_floor", 0), max(len(blocks) - 1, 0))
+        floor = self._observation_start(blocks)
 
         attempts: List[Tuple[Any, ...]] = []
         for fraction in self.EVIDENCE_REDUCTION_STEPS:
@@ -6538,17 +6731,96 @@ class Engine:
             if post_producer:
                 self._restore(post_producer)
 
+    #: The evidence partition. A file here is DATA the campaign recorded, never code it
+    #: executes, so nothing under it can be imported, run, or linked.
+    EVIDENCE_ROOTS = ("receipts/",)
+
+    @staticmethod
+    def _is_evidence_only(paths) -> bool:
+        """True when every operation writes a RECEIPT and nothing else.
+
+        Round 18 selected a specimen, guarded, measured, and wrote a real receipt --
+        specimen, axis, value, source tool, organ, deficit, stderr. Writing a file made the
+        engine classify the round as a CODE MUTATION, so it demanded red-before-green with
+        an admissible pytest; `odyssey.record_measurement` is NOT_ADMITTED as a test form,
+        validation failed, and the receipt was ROLLED BACK off disk. The harness told it to
+        write a receipt, then treated the receipt as a code change, then demanded a proving
+        test for a JSON file, then deleted the measurement.
+
+        Deliberately strict, because this is exactly where a bypass would be built: EVERY
+        path must be under the evidence partition AND end in .json. One source file anywhere
+        in the operation set and the whole unit stays on the mutation contract. An empty set
+        is not evidence either -- a round that wrote nothing has recorded nothing.
+        """
+        items = [Path(p) for p in (paths or [])]
+        if not items:
+            return False
+        for item in items:
+            try:
+                rel = item.resolve().relative_to(Path(__file__).resolve().parents[1])
+            except (ValueError, OSError):
+                rel = item
+            text = str(rel).lstrip("./")
+            if not any(text.startswith(root) for root in Engine.EVIDENCE_ROOTS):
+                return False
+            if item.suffix != ".json":
+                return False
+        return True
+
+    @staticmethod
+    def _validate_evidence(paths) -> Dict[str, Any]:
+        """What actually validates a receipt: is it well formed and does it say anything.
+
+        Not a pytest. Red-before-green is the right contract for a source edit and a
+        meaningless one for "I wrote down what I measured".
+        """
+        checks: List[Dict[str, Any]] = []
+        ok = True
+        for item in (paths or []):
+            path = Path(item)
+            rel = str(path)
+            try:
+                raw = path.read_text()
+            except OSError as exc:
+                checks.append({"kind": "receipt_unreadable", "path": rel, "error": str(exc)})
+                ok = False
+                continue
+            try:
+                doc = json.loads(raw)
+            except ValueError as exc:
+                checks.append({"kind": "receipt_malformed_json", "path": rel,
+                               "error": str(exc)})
+                ok = False
+                continue
+            # An empty object is a file, not a finding.
+            if not isinstance(doc, (dict, list)) or not doc:
+                checks.append({"kind": "receipt_empty", "path": rel,
+                               "reason": "a receipt with no content records nothing"})
+                ok = False
+                continue
+            checks.append({"kind": "receipt_wellformed", "path": rel,
+                           "bytes": len(raw), "top_level_keys":
+                           sorted(doc)[:12] if isinstance(doc, dict) else len(doc)})
+        return {"ok": ok, "checks": checks, "kind": "evidence"}
+
     def _validate(
         self,
         paths: Iterable[Path],
         tests: Optional[List[str]] = None,
         pre_mutation: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
+        path_list = list(paths)
+        if self._is_evidence_only(path_list):
+            # A receipt is EVIDENCE, not code. The mutation contract below -- admissible
+            # pytest, red before green -- cannot apply to a JSON file, and applying it
+            # rolled a real measurement off disk.
+            return self._validate_evidence(path_list)
+
         checks: List[Dict[str, Any]] = []
         ok = True
         test_list = list(tests) if tests is not None else []
 
-        for raw_path in paths:
+        for raw_path in path_list:
             path = Path(raw_path)
             if path.exists():
                 path = path.resolve()

@@ -1,0 +1,60 @@
+{
+ "already_done": "structure and matched-EBPW bytes on both real organs; best cell saves 6.3% of bytes; cheap filter goes to the incumbent affine; capability NOT substituted by cosine/rel_fro",
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-07T10:18:06Z",
+  "recorded_by": "tools/future/organ_allocation.py (G017 lane, frontier wait check)",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "g017_does_not_substitute": "This worktree measured G017 on Qwen3-0.6B CPU affine at matched 9.2619 EBPW; that is a dense-body organ-allocation result, not O003 low-rank capability. Reconstruction/cosine is still not a substitute for the O003 conjunction gate.",
+ "host_now": {
+  "expected_gb_for_evaluate": 32.0,
+  "guard": {
+   "compressor_gb": 0.47,
+   "expected_gb": 32.0,
+   "free_gb": 62.03,
+   "headroom_gb": 30.03,
+   "reasons": [],
+   "reclaimable_gb": 11.91,
+   "resident_rss_gb": 0.0,
+   "residents": 0,
+   "state": "OK",
+   "strictly_free_gb": 50.12,
+   "swapfiles": 2,
+   "wired_gb": 17.3
+  },
+  "ledger_said_free_gb": "9-11 GB across five lanes",
+  "measured_free_gb": 62.03,
+  "ram_wait_cleared": true
+ },
+ "metal": {
+  "capability_path_runnable": false,
+  "detail": "mlx.core reports Device(gpu, 0) and metal.is_available True, but mlx_lm.sample_utils dies at import on mx.compile(mx.random.state) with metal::load_device. This session is sandboxed; unsandboxed Metal (gate profile) is still the missing input named in GOAL.md.",
+  "mlx_core": {
+   "default_device": "Device(gpu, 0)",
+   "metal_is_available": true
+  },
+  "mlx_lm": {
+   "error": "RuntimeError: [metal::load_device] No Metal device available. This typically occurs in headless, sandboxed, or virtualized macOS sessions where the GPU is not accessible.",
+   "imported": false
+  }
+ },
+ "not_blocked": true,
+ "obligation": "G004",
+ "owed": "capability conjunction gate on Kimi-VL-A3B, D vs E vs a deliberately broken arm",
+ "recorded_by": "tools/future/organ_allocation.py (G017 lane, frontier wait check)",
+ "schema": "hawking.future.g004_capability_resource_wait.v1",
+ "seal_sha256": "4f6c90023e261da72e14a3daeecff78a937d41c244084248574d98247fca54ce",
+ "status": "RESOURCE_WAIT",
+ "what_this_lane_will_not_do": [
+  "Invent a CPU/transformers scorer for Kimi-VL-A3B and call it the G004 gate -- lowrank_nr.capability_record refuses a parallel scorer, and gravity_outlier_eval.evaluate is the named evaluator.",
+  "Mark G004 BLOCKED -- RAM is now sufficient; only Metal compile is missing.",
+  "Write hcli/runtime.py for G005 -- that wiring is an HCLI workunit; Claude/Grok closing it resets G006.",
+  "Measure gpu/cpu/tps for G009 under this sandbox -- same Metal miss, and those numbers would join the 76 incomparable rates."
+ ],
+ "why_not_blocked": "GOAL.md says this is a RESOURCE WAIT, not a permanent blocker -- do not mark BLOCKED. The owed work is still the conjunction gate on Kimi-VL-A3B (D vs E vs broken) via gravity_outlier_eval.evaluate. That path imports mlx_lm.generate, which compiles a Metal sampler at import time."
+}

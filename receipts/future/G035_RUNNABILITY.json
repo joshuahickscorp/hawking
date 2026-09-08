@@ -1,0 +1,72 @@
+{
+ "obligation": "G034/G035 \u2014 which specimens can produce GPU/CPU/TPS evidence at all",
+ "method": "model_type from each config.json checked against the 118 model modules mlx_lm 0.31.3 actually ships, plus the MEASURED 72 GiB Metal wired ceiling on this host (not the 96 GB nominal RAM). No model was loaded.",
+ "runnable_now": {
+  "n": 24,
+  "gib": 441.7,
+  "slugs": [
+   "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+   "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+   "Qwen--Qwen3-Coder-30B-A3B-Instruct@b2cff646eb4b",
+   "LiquidAI--LFM2-24B-A2B@a3bbacd91a67",
+   "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+   "Qwen--Qwen3-14B@40c069824f42",
+   "microsoft--Phi-4-reasoning-plus@69baf8528e1b",
+   "RWKV--RWKV7-13.3B-20260805@64ffe5934178",
+   "Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8",
+   "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+   "allenai--Olmo-3-1025-7B@a81bae42db39",
+   "bigcode--starcoder2-7b@bb9afde76d79",
+   "ibm-granite--granite-4.0-h-tiny@791e0d3d28c8",
+   "Qwen--Qwen3-4B-Instruct-2507@cdbee75f17c0",
+   "microsoft--Phi-4-mini-instruct@cfbefacb9925",
+   "ai21labs--AI21-Jamba2-3B@525c6c8e1d9f",
+   "ibm-granite--granite-4.0-h-micro@d5f01a3ea75f",
+   "LiquidAI--LFM2.5-2.6B-Base@c57bdaed1ef1",
+   "microsoft--bitnet-b1.58-2B-4T-bf16@276681394656",
+   "tiiuae--Falcon3-1B-Instruct@28ba2251970a",
+   "LiquidAI--LFM2.5-1.2B-Instruct@0f604ada3f76",
+   "Qwen--Qwen3-0.6B@c1899de289a0",
+   "Qwen--Qwen3-Embedding-0.6B@97b0c614be4d",
+   "microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361"
+  ]
+ },
+ "blocked": {
+  "no mlx_lm module": 18,
+  "exceeds the 72 GiB wired ceiling": 4,
+  "no model_type in config": 3,
+  "no safetensors": 7
+ },
+ "blocked_gib": {
+  "no mlx_lm module": 3154.7,
+  "no safetensors": 125.2,
+  "no model_type in config": 145.3,
+  "exceeds the 72 GiB wired ceiling": 522.2
+ },
+ "the_g035_targets": {
+  "claim": "four bodies are blocked ONLY by size and DO have mlx_lm modules",
+  "bodies": [
+   {
+    "slug": "zai-org--GLM-4.5-Air@a24ceef6ce4f",
+    "gib": 205.7865092502907,
+    "model_type": "glm4_moe"
+   },
+   {
+    "slug": "Qwen--Qwen2.5-72B-Instruct@495f39366efe",
+    "gib": 135.43674871698022,
+    "model_type": "qwen2"
+   },
+   {
+    "slug": "moonshotai--Kimi-Linear-48B-A3B-Instruct@e1df551a4471",
+    "gib": 91.50576932169497,
+    "model_type": "kimi_linear"
+   },
+   {
+    "slug": "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+    "gib": 89.47940311580896,
+    "model_type": "mistral3"
+   }
+  ],
+  "consequence": "these are the specimens streaming actually unlocks. Everything else blocked is blocked by FORMAT or ARCHITECTURE SUPPORT, which no amount of shard streaming fixes -- a distinction G035's text did not draw."
+ }
+}

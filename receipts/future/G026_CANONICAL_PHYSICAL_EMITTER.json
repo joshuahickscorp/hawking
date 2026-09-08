@@ -1,0 +1,43 @@
+{
+ "obligation": "G026",
+ "artifact": "tools/future/physical_emitter.py",
+ "finding": "THE CONTROLLED EXECUTION WAS ALREADY RUNNING; NOBODY WAS WRITING DOWN WHO IT WAS",
+ "before": {
+  "physical": 79,
+  "COMPARABLE": 1,
+  "INCOMPARABLE": 78
+ },
+ "after": {
+  "physical": 109,
+  "COMPARABLE": 31,
+  "INCOMPARABLE": 78
+ },
+ "contract_untouched": true,
+ "how": "Every HCLI round already writes .hcli/receipts/<goal_id>.json carrying, per model call, the prefill step count, per-bucket GPU/encode/wait/wall nanoseconds, dispatch counts, GPU share of wall, completion tokens and total call wall -- against a resident whose artifact bytes and mix identity sit in the same file. Real hardware, pinned runtime, concurrency 1. What was missing was never the measurement. It was the six contract fields beside it.",
+ "the_six_fields_and_where_they_come_from": {
+  "specimen": "runtime_provenance[0].identity.mix_id",
+  "nr": "identity.artifact_inventory.artifact_bytes with its source",
+  "runtime": "provider + endpoint + layer count",
+  "context": "max prompt_tokens across the round's calls",
+  "path": "the agentic tool loop -- the round's own production calls",
+  "concurrency": "max_model_in_flight"
+ },
+ "placement_matters": "emitted at the TOP LEVEL: tps_contract walks for the FIRST occurrence of each alias, so a nested field competes with every other dict in the file.",
+ "measurements_from_the_newest_round": {
+  "prefill_tps": 26.9092,
+  "decode_tps": 16.5989,
+  "gpu_share_of_prefill_wall": 0.977,
+  "note": "one round; per-receipt numbers vary with prompt length and prefix reuse"
+ },
+ "verification": {
+  "unit": "tools/future/test_physical_emitter.py -- PASS",
+  "mutation": "all SIX contract fields mutation-tested: strip every alias of one and the emitter's own output must go INCOMPARABLE. All six are load-bearing.",
+  "contract_guard": "the test asserts tools/future/tps_contract.py has no uncommitted changes -- comparability is earned by emitting, never bought by widening the ruler.",
+  "a_wrong_assertion_was_removed": "the first test checked a.get('physical'); audit() returns a VERDICT and no such key, so it failed a correct emitter while reporting 'no rate key' about a receipt carrying four."
+ },
+ "a_flood_was_reverted": "running the emitter over every historical round wrote 467 receipts and took COMPARABLE to 375. Real, and also noise. Deleted; re-emitted for the 30 rounds in the current campaign window only. 375 is recorded as a CAPABILITY measurement, not as progress.",
+ "what_it_does_not_do": "not a controlled sweep -- prompt length and prefix reuse vary because the round chose what to ask. Receipts from this emitter are comparable TO EACH OTHER, not to a synthetic fixed-length benchmark. Every receipt says so in its claim_boundary.",
+ "still_owed": "the gpu/cpu/tps ledger axes are NOT filled by this. This makes measurements comparable; recording them against specimens is a separate step.",
+ "a_bug_in_this_receipt_s_own_producer": "the first attempt to write this file crashed inside tps_contract.audit_all -- relative_to(ROOT) on a relative path -- and wrote nothing while the ledger had already been updated. Same class as the emitter's own path bug ten minutes earlier. Recorded because the ledger briefly cited a receipt that did not exist.",
+ "scar": "THE INSTRUMENT WAS RUNNING ALL ALONG. Before building a measurement rig, check what the system already writes down."
+}

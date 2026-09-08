@@ -1,0 +1,975 @@
+{
+ "obligation": "G023 / G025",
+ "what": "receipts whose named producer tool no longer exists on disk",
+ "finding": "Two commits titled 'refactor: delete unreferenced future research leaves' (ce7f0fc58, cbde7eda7, both 2026-09-04) removed 444 files and ~295,500 lines from tools/future. 236 receipts still name a producer that is gone.",
+ "n_orphaned_receipts": 236,
+ "deletion_commits": [
+  "ce7f0fc58",
+  "cbde7eda7",
+  "15de11179",
+  "07865c8bc"
+ ],
+ "restored_for_the_frontier": [
+  "deltanet_generated_transition",
+  "deltanet_multistep",
+  "deltanet_qkvz_precision",
+  "deltanet_representation",
+  "deltanet_state_function",
+  "deltanet_organ_decompose",
+  "deltanet_widen_ab",
+  "executable_economics",
+  "mlp_auxiliary_information",
+  "mlp_byte_census",
+  "mlp_code_information",
+  "causal_budget_71",
+  "mlp_teacher_corpus",
+  "deltanet_teacher_corpus"
+ ],
+ "not_restored": "the other ~430 files. Restoring everything would be the opposite error; these fourteen were restored because the frontier needs them NOW.",
+ "orphans": [
+  {
+   "receipt": "ABI_VERDICT_HARNESS.json",
+   "producer": "tools/future/abi_verdicts.py"
+  },
+  {
+   "receipt": "ABLITERATION.json",
+   "producer": "tools/future/abliteration.py"
+  },
+  {
+   "receipt": "ABLITERATION_RUN.json",
+   "producer": "tools/future/abliteration_run.py"
+  },
+  {
+   "receipt": "ACCELERATOR_WORKUNITS.json",
+   "producer": "tools/future/accelerator_workunits.py"
+  },
+  {
+   "receipt": "ADDRESSING_ATTRIBUTION.json",
+   "producer": "tools/future/addressing_attribution.py"
+  },
+  {
+   "receipt": "ADDRESSING_GAP.json",
+   "producer": "tools/future/addressing_gap.py"
+  },
+  {
+   "receipt": "ANE_PREBOARD.json",
+   "producer": "tools/future/ane_preboard.py"
+  },
+  {
+   "receipt": "ANE_PROBE_LAB.json",
+   "producer": "tools/future/ane_probe_lab.py"
+  },
+  {
+   "receipt": "ARTIFACT_IDENTITY.json",
+   "producer": "tools/future/artifact_identity.py"
+  },
+  {
+   "receipt": "ATTRIBUTION_AUDIT.json",
+   "producer": "tools/future/attribution_audit.py"
+  },
+  {
+   "receipt": "AUTONOMY_DEGENERACY.json",
+   "producer": "tools/future/autonomy_degeneracy.py"
+  },
+  {
+   "receipt": "AUTONOMY_MISSION_STATE.json",
+   "producer": "tools/future/autonomy_run.py"
+  },
+  {
+   "receipt": "AUTONOMY_RUN.json",
+   "producer": "tools/future/autonomy_run.py"
+  },
+  {
+   "receipt": "AUTONOMY_TIMELINE_1h.json",
+   "producer": "tools/future/autonomy_run.py"
+  },
+  {
+   "receipt": "AUTONOMY_TIMELINE_30m.json",
+   "producer": "tools/future/autonomy_run.py"
+  },
+  {
+   "receipt": "AUTONOMY_TRIALS.json",
+   "producer": "tools/future/autonomy_trial.py"
+  },
+  {
+   "receipt": "AUX_CAPABILITY_SCREEN.json",
+   "producer": "tools/future/aux_capability_screen.py"
+  },
+  {
+   "receipt": "AUX_U8_LUT.json",
+   "producer": "tools/future/aux_u8_lut.py"
+  },
+  {
+   "receipt": "AUX_U8_NATIVE.json",
+   "producer": "tools/future/aux_u8_native.py"
+  },
+  {
+   "receipt": "BASELINE_STALENESS.json",
+   "producer": "tools/future/baseline_staleness.py"
+  },
+  {
+   "receipt": "BA_DELTA_AB.json",
+   "producer": "tools/future/ba_delta_ab.py"
+  },
+  {
+   "receipt": "BITCAST_DEQUANT_AB.json",
+   "producer": "tools/future/bitcast_dequant_ab.py"
+  },
+  {
+   "receipt": "CAPABILITY_BYTE_ELIMINATION.json",
+   "producer": "tools/future/capability_byte_elimination.py"
+  },
+  {
+   "receipt": "CAPABILITY_CURVE.json",
+   "producer": "tools/future/capability_curve.py"
+  },
+  {
+   "receipt": "CAPABILITY_INFORMATION_MAP.json",
+   "producer": "tools/future/capability_information_map.py"
+  },
+  {
+   "receipt": "CAPABILITY_STAGES.json",
+   "producer": "tools/future/capability_stages.py"
+  },
+  {
+   "receipt": "CATALOG_ADDRESSING.json",
+   "producer": "tools/future/catalog_addressing.py"
+  },
+  {
+   "receipt": "CAUSAL_PATTERN_LIBRARY.json",
+   "producer": "tools/future/causal_pattern_library.py"
+  },
+  {
+   "receipt": "CHOICE_JSON_PROBE.json",
+   "producer": "tools/future/choice_json_probe.py"
+  },
+  {
+   "receipt": "CLAIM_SCOPE.json",
+   "producer": "tools/future/claim_scope.py"
+  },
+  {
+   "receipt": "CLAUDE_GLOBAL_FRONTIER.json",
+   "producer": "tools/future/global_frontier.py"
+  },
+  {
+   "receipt": "CLAUDE_INTERVENTIONS.json",
+   "producer": "tools/future/claude_interventions.py"
+  },
+  {
+   "receipt": "CLAUDE_SIDECAR_ABI_ADJUDICATION.json",
+   "producer": "tools/future/claude_abi_adjudication.py"
+  },
+  {
+   "receipt": "CODEX_INGEST_STATE.json",
+   "producer": "tools/future/codex_ingest.py"
+  },
+  {
+   "receipt": "CODEX_MUTATION_SURFACE.json",
+   "producer": "tools/future/mutation_surface.py"
+  },
+  {
+   "receipt": "CODEX_WORKUNIT_SPECIES.json",
+   "producer": "tools/future/codex_behaviors.py"
+  },
+  {
+   "receipt": "COMPONENT_PERTURBATION.json",
+   "producer": "tools/future/perturbation_workunit.py"
+  },
+  {
+   "receipt": "CUDA_LOWBIT_HYPOTHESES.json",
+   "producer": "tools/future/cuda_lowbit_hypotheses.py"
+  },
+  {
+   "receipt": "DEBUGGER_LAB.json",
+   "producer": "tools/future/debugger.py"
+  },
+  {
+   "receipt": "DECODE_CIVILIZATION.json",
+   "producer": "tools/future/decode_civilization.py"
+  },
+  {
+   "receipt": "DECODE_TAX_TARGET.json",
+   "producer": "tools/future/decode_tax_target.py"
+  },
+  {
+   "receipt": "DELTANET_PROGRAM_ORACLES.json",
+   "producer": "tools/future/deltanet_program_oracles.py"
+  },
+  {
+   "receipt": "DELTANET_STATE_MACHINE_ECONOMICS.json",
+   "producer": "tools/future/deltanet_state_machine_economics.py"
+  },
+  {
+   "receipt": "DEQUANT_HOIST_AB.json",
+   "producer": "tools/future/dequant_hoist_ab.py"
+  },
+  {
+   "receipt": "DEQUANT_HOIST_CANDIDATE.json",
+   "producer": "tools/future/dequant_hoist_candidate.py"
+  },
+  {
+   "receipt": "DERIVED_FRESHNESS.json",
+   "producer": "tools/future/freshness.py"
+  },
+  {
+   "receipt": "DETACHED_EXECUTION.json",
+   "producer": "tools/future/detached.py"
+  },
+  {
+   "receipt": "DETACHED_WORK_TRIAL.json",
+   "producer": "tools/future/detached_trial.py"
+  },
+  {
+   "receipt": "DEVELOPER_PLATFORM.json",
+   "producer": "tools/future/devplatform.py"
+  },
+  {
+   "receipt": "DEVICE_ASCENSION_PIPELINE.json",
+   "producer": "tools/future/device_ascension_pipeline.py"
+  },
+  {
+   "receipt": "DIRTY_MEASUREMENT.json",
+   "producer": "tools/future/dirty_measure.py"
+  },
+  {
+   "receipt": "DIRTY_SOURCE_SEAL.json",
+   "producer": "tools/future/dirty_source_seal.py"
+  },
+  {
+   "receipt": "DISPATCH_CEREMONY.json",
+   "producer": "tools/future/dispatch_ceremony.py"
+  },
+  {
+   "receipt": "DISPATCH_MOTIFS.json",
+   "producer": "tools/future.dispatch_motifs.py"
+  },
+  {
+   "receipt": "DISPATCH_SIZE_SWEEP.json",
+   "producer": "tools/future/dispatch_size_sweep.py"
+  },
+  {
+   "receipt": "EVIDENCE_DAG.json",
+   "producer": "tools/future/evidence_dag.py"
+  },
+  {
+   "receipt": "EVIDENCE_SNAPSHOT.json",
+   "producer": "tools/future/evidence_snapshot.py"
+  },
+  {
+   "receipt": "EXAM_A_OPTION_TREE.json",
+   "producer": "tools/future/exam_a_option_tree.py"
+  },
+  {
+   "receipt": "EXPERIMENT_TURNAROUND.json",
+   "producer": "tools/future/turnaround.py"
+  },
+  {
+   "receipt": "EXPERT_BANK_SCHOOL.json",
+   "producer": "tools/future/expert_bank_school.py"
+  },
+  {
+   "receipt": "EXTERNAL_SPECIMEN_SEAL.json",
+   "producer": "tools/future/external_specimen_seal.py"
+  },
+  {
+   "receipt": "FALLBACK_RESIDENT.json",
+   "producer": "tools/future/fallback_resident.py"
+  },
+  {
+   "receipt": "FIDELITY_HIERARCHY.json",
+   "producer": "tools/future/fidelity_hierarchy.py"
+  },
+  {
+   "receipt": "FLASH_BPW_LADDER.json",
+   "producer": "tools/future/flash_bpw_ladder.py"
+  },
+  {
+   "receipt": "FLASH_EBPW_BAR_REACHABILITY.json",
+   "producer": "tools/future/complete_ebpw.py:bar_reachability"
+  },
+  {
+   "receipt": "FLASH_META_REPLAN.json",
+   "producer": "tools/future/flash_meta_replan.py"
+  },
+  {
+   "receipt": "FLASH_NR_COMPLETE.json",
+   "producer": "tools/future/flash_nr_complete.py"
+  },
+  {
+   "receipt": "FLASH_NX_COMPLETENESS_AUDIT.json",
+   "producer": "tools/future/flash_nx_audit.py"
+  },
+  {
+   "receipt": "FLASH_ORGAN_PIVOT.json",
+   "producer": "tools/future/flash_organ_pivot.py"
+  },
+  {
+   "receipt": "FLASH_ORGAN_SCHOOLS.json",
+   "producer": "tools/future/flash_schools.py"
+  },
+  {
+   "receipt": "FLASH_ORGAN_WORKGRAPHS.json",
+   "producer": "tools/future/flash_organ_workgraphs.py"
+  },
+  {
+   "receipt": "FOLD_ADDQX_AB.json",
+   "producer": "tools/future/fold_addqx_ab.py"
+  },
+  {
+   "receipt": "FPGA_ENGINE_SCHOOL.json",
+   "producer": "tools/future/fpga_engines.py"
+  },
+  {
+   "receipt": "FPGA_MULTIFIDELITY.json",
+   "producer": "tools/future/fpga_fidelity.py"
+  },
+  {
+   "receipt": "FPGA_PARTITION_ENVELOPE.json",
+   "producer": "tools/future/fpga_partition.py"
+  },
+  {
+   "receipt": "FRONTIER_STATE.json",
+   "producer": "tools/future/frontiers.py"
+  },
+  {
+   "receipt": "FUNCTIONAL_ROLE_PROBE.json",
+   "producer": "tools/future/functional_role_probe.py"
+  },
+  {
+   "receipt": "FUTURE_SUBSTRATE_HANDOFF.json",
+   "producer": "tools/future/handoff.py"
+  },
+  {
+   "receipt": "G004_CAPABILITY_RESOURCE_WAIT.json",
+   "producer": "tools/future/organ_allocation.py (G017 lane, frontier wait check)"
+  },
+  {
+   "receipt": "GAP_LEDGER_60.json",
+   "producer": "tools/future/gap_ledger_60.py"
+  },
+  {
+   "receipt": "GEOMETRY_TABLE.json",
+   "producer": "tools/future/geometry_table.py"
+  },
+  {
+   "receipt": "GIT_LOCK_DURABILITY_REPORT.json",
+   "producer": "tools/future/git_lock_doctor.py"
+  },
+  {
+   "receipt": "GREEN_MACHINE.json",
+   "producer": "tools/future/green_machine.py"
+  },
+  {
+   "receipt": "HARDWARE_DOCTOR.json",
+   "producer": "tools/future/hardware_doctor.py"
+  },
+  {
+   "receipt": "HARNESS_RECONCILIATION.json",
+   "producer": "tools/future/harness_reconciliation.py"
+  },
+  {
+   "receipt": "HBM_DOCTOR.json",
+   "producer": "tools/future/hbm_doctor.py"
+  },
+  {
+   "receipt": "HCLI_AUTONOMY_BUILD.json",
+   "producer": "tools/future/trial_freeze.py"
+  },
+  {
+   "receipt": "HCLI_CAPABILITY_REACHABILITY.json",
+   "producer": "tools/future/capability_reachability.py"
+  },
+  {
+   "receipt": "HCLI_COMPACTOR.json",
+   "producer": "tools/future/hcli_compactor.py"
+  },
+  {
+   "receipt": "HCLI_FAST_THOUGHT.json",
+   "producer": "tools/future/fast_thought.py"
+  },
+  {
+   "receipt": "HCLI_SELF_HOSTING_LAUNCH.json",
+   "producer": "tools/future/hcli_self_hosting_launch.py"
+  },
+  {
+   "receipt": "HCLI_SELF_PROFILE.json",
+   "producer": "tools/future/hcli_self_profile.py"
+  },
+  {
+   "receipt": "IMPROVEMENT_METABOLISM.json",
+   "producer": "tools/future/improvement_metabolism.py"
+  },
+  {
+   "receipt": "IMPROVEMENT_TRIAL.json",
+   "producer": "tools/future/improvement_trial.py"
+  },
+  {
+   "receipt": "IMPROVEMENT_VELOCITY.json",
+   "producer": "tools/future/improvement_trial.py"
+  },
+  {
+   "receipt": "INDEX_PROVENANCE.json",
+   "producer": "tools/future/index_provenance.py"
+  },
+  {
+   "receipt": "INTEGRATION_ATTACK.json",
+   "producer": "tools/future/integration_attack.py"
+  },
+  {
+   "receipt": "INTEGRATION_GATE.json",
+   "producer": "tools/future/integration_gate.py"
+  },
+  {
+   "receipt": "INTRA_TOKEN_CONCURRENCY_AB.json",
+   "producer": "tools/future/intra_token_concurrency_ab.py"
+  },
+  {
+   "receipt": "KERNEL_GEOMETRY.json",
+   "producer": "tools/future/kernel_geometry.py"
+  },
+  {
+   "receipt": "LEGACY_ODYSSEY_DRIVER_RETIREMENT.json",
+   "producer": "tools/future/legacy_driver_retirement.py"
+  },
+  {
+   "receipt": "LEVER_PROMOTION_GATE.json",
+   "producer": "tools/future/lever_promotion_gate.py"
+  },
+  {
+   "receipt": "MAX_RESIDENT_PHYSICAL_ROOF.json",
+   "producer": "tools/future/terminal_speed_artifact.py"
+  },
+  {
+   "receipt": "MEASUREMENT_PROVENANCE.json",
+   "producer": "tools/future/measurement_provenance.py"
+  },
+  {
+   "receipt": "MEASUREMENT_PROVENANCE_AUDIT.json",
+   "producer": "tools/future/measurement_provenance_audit.py"
+  },
+  {
+   "receipt": "MEMORY_TRAFFIC_PROBE.json",
+   "producer": "tools/future/memory_traffic_probe.py"
+  },
+  {
+   "receipt": "METAL_REACHABILITY.json",
+   "producer": "tools/future/metal_reachability.py"
+  },
+  {
+   "receipt": "META_DOWNSTREAM_READY.json",
+   "producer": "tools/future/meta_ready.py"
+  },
+  {
+   "receipt": "MISSION_CLASS.json",
+   "producer": "tools/future/mission_class.py"
+  },
+  {
+   "receipt": "MLP_ALU_ROOFLINE.json",
+   "producer": "tools/future/mlp_alu_roofline.py"
+  },
+  {
+   "receipt": "MLP_AUX_MERGE_AB.json",
+   "producer": "tools/future/mlp_aux_merge_ab.py"
+  },
+  {
+   "receipt": "MLP_DECODE_CHEAPEN.json",
+   "producer": "tools/future/mlp_decode_cheapen.py"
+  },
+  {
+   "receipt": "MLP_ERROR_BUDGET.json",
+   "producer": "tools/future/mlp_error_budget.py"
+  },
+  {
+   "receipt": "MLP_FUNCTIONAL_RANK.json",
+   "producer": "tools/future/mlp_functional_rank.py"
+  },
+  {
+   "receipt": "MLP_ISSUE_RATE_LADDER.json",
+   "producer": "tools/future/mlp_issue_rate_ladder.py"
+  },
+  {
+   "receipt": "MLP_NONLINEAR_PROGRAM.json",
+   "producer": "tools/future/mlp_nonlinear_program.py"
+  },
+  {
+   "receipt": "MLP_REGION_FALSIFIER.json",
+   "producer": "tools/future/mlp_region_falsifier.py"
+  },
+  {
+   "receipt": "MLP_SHARED_PROGRAM.json",
+   "producer": "tools/future/mlp_shared_program.py"
+  },
+  {
+   "receipt": "MLP_SPARSE_RESIDUAL.json",
+   "producer": "tools/future/mlp_sparse_residual.py"
+  },
+  {
+   "receipt": "MLP_STREAM_COUNT.json",
+   "producer": "tools/future/mlp_stream_count.py"
+  },
+  {
+   "receipt": "MLP_STRUCTURED_OPERATOR.json",
+   "producer": "tools/future/mlp_structured_operator.py"
+  },
+  {
+   "receipt": "MODELLAKE_LIFECYCLE.json",
+   "producer": "tools.future.modellake_lifecycle"
+  },
+  {
+   "receipt": "MODEL_BEARING.json",
+   "producer": "tools/future/model_bearing.py"
+  },
+  {
+   "receipt": "MODEL_BEARING_TIMELINE.json",
+   "producer": "tools/future/model_bearing_torture.py"
+  },
+  {
+   "receipt": "MODEL_BEARING_TORTURE_30M.json",
+   "producer": "tools/future/model_bearing_torture.py"
+  },
+  {
+   "receipt": "MOE_PHYSICAL_SCHOOL.json",
+   "producer": "tools/future/moe_physical_school.py"
+  },
+  {
+   "receipt": "MULTISTREAM_CAPACITY_TREE.json",
+   "producer": "tools/future/multistream_capacity_tree.py"
+  },
+  {
+   "receipt": "MULTI_MODEL_TRIAL.json",
+   "producer": "tools/future/multi_model_trial.py"
+  },
+  {
+   "receipt": "MUTATION_ENGINE.json",
+   "producer": "tools/future/mutation_trial.py"
+  },
+  {
+   "receipt": "MUTATION_TRIAL.json",
+   "producer": "tools/future/mutation_trial.py"
+  },
+  {
+   "receipt": "NEGATIVE_SCIENCE_CAMPAIGN.json",
+   "producer": "claude/non-hcli-campaign"
+  },
+  {
+   "receipt": "NGRAM_SCHOOL.json",
+   "producer": "tools/future/ngram_school.py"
+  },
+  {
+   "receipt": "NO_WAIT_ORCHESTRATION.json",
+   "producer": "tools/future/no_wait_orchestration.py"
+  },
+  {
+   "receipt": "NO_WAIT_SCHEDULER.json",
+   "producer": "tools/future/no_wait_scheduler.py"
+  },
+  {
+   "receipt": "NR_NX_GENERIC.json",
+   "producer": "tools/future/nr_nx_generic.py"
+  },
+  {
+   "receipt": "NR_NX_PATH.json",
+   "producer": "tools/future/nr_nx_path.py"
+  },
+  {
+   "receipt": "NX_PACKER.json",
+   "producer": "tools/future/nx_packer.py"
+  },
+  {
+   "receipt": "ODYSSEY2_TRANSFER.json",
+   "producer": "tools/future/odyssey2_transfer.py"
+  },
+  {
+   "receipt": "ODYSSEY3_ATTACK.json",
+   "producer": "tools/future/odyssey3_attack.py"
+  },
+  {
+   "receipt": "ODYSSEY_BOOTSTRAP_GOLDEN.json",
+   "producer": "tools/future/bootstrap_golden.py"
+  },
+  {
+   "receipt": "ODYSSEY_CONSOLIDATED_RUN.json",
+   "producer": "tools/future/consolidated_run.py"
+  },
+  {
+   "receipt": "ODYSSEY_II_III_ACTIVATION.json",
+   "producer": "tools/future/scar_reevaluator.py"
+  },
+  {
+   "receipt": "ODYSSEY_I_LAUNCH.json",
+   "producer": "tools/future/odyssey_launch.py"
+  },
+  {
+   "receipt": "ODYSSEY_LAUNCH_GATE.json",
+   "producer": "tools/future/odyssey_launch.py"
+  },
+  {
+   "receipt": "ODYSSEY_LAUNCH_SPRINT_PROFILE.json",
+   "producer": "tools/future/sprint_profile.py"
+  },
+  {
+   "receipt": "ODYSSEY_MISSION_CONTROLLER.json",
+   "producer": "tools/future/odyssey_mission_controller.py"
+  },
+  {
+   "receipt": "ODYSSEY_TOOL_DRIVER.json",
+   "producer": "tools/future/odyssey_tool_driver.py"
+  },
+  {
+   "receipt": "ODYSSEY_WALL_INSTRUMENTATION.json",
+   "producer": "tools/odyssey_costmodel.py:record provenance audit"
+  },
+  {
+   "receipt": "ODYSSEY_WALL_MODEL.json",
+   "producer": "tools/future/odyssey_wall.py"
+  },
+  {
+   "receipt": "OP_CLASS_ABLATION.json",
+   "producer": "tools/future/op_class_ablation.py"
+  },
+  {
+   "receipt": "ORCHESTRATION_BINDINGS.json",
+   "producer": "tools/future/orchestration.py"
+  },
+  {
+   "receipt": "ORGAN_BANDWIDTH.json",
+   "producer": "tools/future/organ_bandwidth.py"
+  },
+  {
+   "receipt": "ORGAN_DECOMPOSITION_SEALED.json",
+   "producer": "tools/future/organ_decomposition_sealed.py"
+  },
+  {
+   "receipt": "P6_PRIMITIVE_PROJECTION.json",
+   "producer": "tools.future.p6_projection.py"
+  },
+  {
+   "receipt": "PARITY_LADDER.json",
+   "producer": "tools/future/parity_ladder.py"
+  },
+  {
+   "receipt": "PATH_TO_71.json",
+   "producer": "tools/future/path_to_71.py"
+  },
+  {
+   "receipt": "PER_GENERATED_TOKEN_INFLATION.json",
+   "producer": "tools/future/per_generated_token_inflation.py"
+  },
+  {
+   "receipt": "PHASE_LISTENERS.json",
+   "producer": "tools/future/phase_listeners.py"
+  },
+  {
+   "receipt": "POWER_TORTURE.json",
+   "producer": "tools/future/power_torture.py"
+  },
+  {
+   "receipt": "POWER_TORTURE_30M.json",
+   "producer": "tools/future/power_torture.py"
+  },
+  {
+   "receipt": "POWER_TORTURE_TIMELINE.json",
+   "producer": "tools/future/power_torture.py"
+  },
+  {
+   "receipt": "PRESERVED_RECOVERY_SOURCE.json",
+   "producer": "tools/future/source_safety.py"
+  },
+  {
+   "receipt": "PRODUCTIVE_SEARCH.json",
+   "producer": "tools/future/productive_search.py"
+  },
+  {
+   "receipt": "PROPAGATION_STATE.json",
+   "producer": "tools/future/propagate.py"
+  },
+  {
+   "receipt": "PROTECTED_BENCH_LEASE.json",
+   "producer": "tools/future/protected_bench_lease.py"
+  },
+  {
+   "receipt": "PROTECTED_BITCAST_ABSOLUTE.json",
+   "producer": "tools/future/protected_bitcast_absolute.py"
+  },
+  {
+   "receipt": "PROTECTED_SCHEDULER.json",
+   "producer": "tools/future/protected_scheduler.py"
+  },
+  {
+   "receipt": "PROTECTED_WINDOW_PLAN.json",
+   "producer": "tools.future.protected_window.py"
+  },
+  {
+   "receipt": "Q4_BITCAST_AB.json",
+   "producer": "tools/future/q4_bitcast_ab.py"
+  },
+  {
+   "receipt": "QUALIFICATION_PIPELINE.json",
+   "producer": "tools.future.qualification_pipeline.py"
+  },
+  {
+   "receipt": "QWEN27_ACCELERATOR_PROFILE_SCHEMA.json",
+   "producer": "tools/future/qwen27_profile_schema.py"
+  },
+  {
+   "receipt": "REACHABILITY_TRIAGE.json",
+   "producer": "tools/audit/reachability_triage.py"
+  },
+  {
+   "receipt": "REACHABILITY_TRIAGE_SPOTCHECKS.json",
+   "producer": "tools/audit/reachability_triage.py"
+  },
+  {
+   "receipt": "RECURRING_OPERATIONS.json",
+   "producer": "tools/future/recurring_operations.py"
+  },
+  {
+   "receipt": "REPRESENTATION_DECODE_FUSION.json",
+   "producer": "tools/future/representation_decode_fusion.py"
+  },
+  {
+   "receipt": "REPRESENTATION_FLOOR.json",
+   "producer": "tools/future/representation_floor.py"
+  },
+  {
+   "receipt": "REPRESENTATION_LAB.json",
+   "producer": "tools/future/representation_lab.py"
+  },
+  {
+   "receipt": "RESIDENT_71TPS_BUDGET_STATIC.json",
+   "producer": "tools/future/tps_budget.py"
+  },
+  {
+   "receipt": "RESIDENT_API_AUDIT.json",
+   "producer": "tools/future/resident_api.py"
+  },
+  {
+   "receipt": "RESIDENT_BINARY_DRIFT.json",
+   "producer": "tools/future/resident_binary_drift.py"
+  },
+  {
+   "receipt": "RESIDENT_CODE_TOOLS.json",
+   "producer": "tools/future/resident_code_tools.py"
+  },
+  {
+   "receipt": "RESIDENT_CONCURRENCY_DOCTOR.json",
+   "producer": "tools/future/concurrency_doctor.py"
+  },
+  {
+   "receipt": "RESIDENT_CONCURRENCY_MEASURED.json",
+   "producer": "tools/future/concurrency_measure.py"
+  },
+  {
+   "receipt": "RESIDENT_HEALTH.json",
+   "producer": "tools/future/resident_health.py"
+  },
+  {
+   "receipt": "RESIDENT_IDENTITY.json",
+   "producer": "tools/future/resident_identity.py"
+  },
+  {
+   "receipt": "RESIDENT_INSTALL_CONTRACT.json",
+   "producer": "tools/future/resident_install.py"
+  },
+  {
+   "receipt": "RESIDENT_OPTIMIZER.json",
+   "producer": "tools/future/resident_optimizer.py"
+  },
+  {
+   "receipt": "RESIDENT_OUTPUT_CONTRACT.json",
+   "producer": "tools/future/resident_output_contract.py"
+  },
+  {
+   "receipt": "RESIDENT_PROVIDER.json",
+   "producer": "tools/future/resident_provider.py"
+  },
+  {
+   "receipt": "RESIDENT_SANDBOX.json",
+   "producer": "tools/future/sandbox.py"
+  },
+  {
+   "receipt": "RESIDENT_SUPERVISOR.json",
+   "producer": "tools/future/resident_supervisor.py"
+  },
+  {
+   "receipt": "RESIDENT_TOKEN_BUDGET.json",
+   "producer": "tools/future/resident_token_budget.py"
+  },
+  {
+   "receipt": "RESIDENT_TOKEN_BUDGET_POST_WIDEN_F4.json",
+   "producer": "tools/future/resident_reprofile.py"
+  },
+  {
+   "receipt": "RESIDENT_TOKEN_ROOF_DECOMPOSITION.json",
+   "producer": "tools/future/token_roof_decomposition.py"
+  },
+  {
+   "receipt": "RESTART_SUPERVISOR.json",
+   "producer": "tools/future/restart_supervisor.py"
+  },
+  {
+   "receipt": "RIVAL_CODEC_SCREEN.json",
+   "producer": "tools/future/rival_codec_screen.py"
+  },
+  {
+   "receipt": "ROADMAP_AUTHORITY_REPAIR.json",
+   "producer": "claude/roadmap-authority-repair"
+  },
+  {
+   "receipt": "ROOF_ANCHOR.json",
+   "producer": "tools/future/roof_anchor.py"
+  },
+  {
+   "receipt": "ROUTER_SENSITIVE_ALLOCATION.json",
+   "producer": "tools/future/router_science.py"
+  },
+  {
+   "receipt": "RUNNABILITY_SNAPSHOT.json",
+   "producer": "tools/future/runnability_snapshot.py"
+  },
+  {
+   "receipt": "SCAR_REEVALUATOR.json",
+   "producer": "tools/future/scar_reevaluator.py"
+  },
+  {
+   "receipt": "SCAR_SCHEDULING.json",
+   "producer": "tools/future/scar_scheduling.py"
+  },
+  {
+   "receipt": "SEALED_DEFAULT_ABSOLUTE.json",
+   "producer": "tools/future/sealed_default_absolute.py"
+  },
+  {
+   "receipt": "SEALED_DEFAULT_VERIFIED.json",
+   "producer": "tools/future/sealed_default_verified.py"
+  },
+  {
+   "receipt": "SINGLE_TOKEN_PARALLEL_SLACK.json",
+   "producer": "tools/future/single_token_dag.py"
+  },
+  {
+   "receipt": "SLEEPING_SPECIMENS.json",
+   "producer": "tools/future/sleeping_specimens.py"
+  },
+  {
+   "receipt": "SOVEREIGN_ATTACKS.json",
+   "producer": "tools/future/sovereign_attack_report.py"
+  },
+  {
+   "receipt": "SOVEREIGN_TRIAL.json",
+   "producer": "tools/future/sovereign_trial.py"
+  },
+  {
+   "receipt": "SPECIMEN_CURRICULUM.json",
+   "producer": "tools/future/specimen_curriculum.py"
+  },
+  {
+   "receipt": "SPECIMEN_EVENTS.json",
+   "producer": "tools/future/specimen_events.py"
+  },
+  {
+   "receipt": "SPECIMEN_SCHEDULER.json",
+   "producer": "tools/future/specimen_scheduler.py"
+  },
+  {
+   "receipt": "SPECIMEN_VERIFICATION.json",
+   "producer": "tools/future/specimen_verify.py"
+  },
+  {
+   "receipt": "STATIC_SKELETON.json",
+   "producer": "tools/future/static_skeleton.py"
+  },
+  {
+   "receipt": "STATUS_CAUSALITY_CHALLENGE.json",
+   "producer": "tools/future/status_causality.py"
+  },
+  {
+   "receipt": "STATUS_CAUSALITY_COVERAGE.json",
+   "producer": "tools/future/status_causality.py"
+  },
+  {
+   "receipt": "SUB2_TOOLING_READINESS.json",
+   "producer": "SUB2 tooling-readiness lane"
+  },
+  {
+   "receipt": "SUB2_UNIFIED_PLAN.json",
+   "producer": "tools/future/sub2_unified_plan.py"
+  },
+  {
+   "receipt": "SUCCESSION.json",
+   "producer": "tools/future/succession.py"
+  },
+  {
+   "receipt": "SUCCESSION_TRIAL.json",
+   "producer": "tools/future/succession_trial.py"
+  },
+  {
+   "receipt": "SUPER_RESIDENT_FLOOR.json",
+   "producer": "tools/future/super_resident.py"
+  },
+  {
+   "receipt": "TEACHER_CORPUS_CONTRACT.json",
+   "producer": "tools/future/teacher_corpus.py"
+  },
+  {
+   "receipt": "TEACHER_CORPUS_EXPANSION.json",
+   "producer": "tools/future/teacher_corpus_expansion.py"
+  },
+  {
+   "receipt": "TOKEN_NS_OBJECTIVE.json",
+   "producer": "tools/future/token_ns_objective.py"
+  },
+  {
+   "receipt": "TOOL_FRICTION.json",
+   "producer": "tools/future/tool_friction.py"
+  },
+  {
+   "receipt": "TOURNAMENT_READINESS.json",
+   "producer": "tools/future/tournament.py"
+  },
+  {
+   "receipt": "TPS_FALSIFICATIONS.json",
+   "producer": "tools/future/tps_falsifications.py"
+  },
+  {
+   "receipt": "TPS_GAP.json",
+   "producer": "tools/future/tps_gap.py"
+  },
+  {
+   "receipt": "TPS_METRICS.json",
+   "producer": "tools/future/tps_metrics.py"
+  },
+  {
+   "receipt": "TRIAL_NEGATIVE_CONTROLS.json",
+   "producer": "tools/future/trial_negative_controls.py"
+  },
+  {
+   "receipt": "TRIAL_WORKLOAD.json",
+   "producer": "tools/future/trial_workload.py"
+  },
+  {
+   "receipt": "UMA_RESOURCE_LEDGER.json",
+   "producer": "tools/future/uma_resource_ledger.py"
+  },
+  {
+   "receipt": "VMCP_DISPOSITION.json",
+   "producer": "tools/future/vmcp.py"
+  },
+  {
+   "receipt": "VMCP_PERCEPTION_DEPTH.json",
+   "producer": "tools/future/vmcp.py"
+  },
+  {
+   "receipt": "WALL_GPU_RECONCILIATION.json",
+   "producer": "tools/future/wall_gpu_reconciliation.py"
+  },
+  {
+   "receipt": "WORKGRAPH_STATE.json",
+   "producer": "tools/future/workgraph.py"
+  },
+  {
+   "receipt": "WORK_EVENT_CONTRACT.json",
+   "producer": "tools/future/work_events.py"
+  }
+ ]
+}

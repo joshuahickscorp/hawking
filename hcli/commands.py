@@ -1099,6 +1099,67 @@ class CommandHandler:
             f"qualification={profile['qualification']['status']}"
         )
 
+    def _cmd_anatomy(self, arg: str) -> str:
+        """OI anatomy. A named refusal is a successful answer, not a crash."""
+        tokens = arg.split()
+        if not tokens:
+            text = "usage: /anatomy <snapshot-or-specimen> [layer|auto]"
+            self.last_value = text
+            return text
+        snap = tokens[0]
+        layer: Optional[int] = None
+        if len(tokens) >= 2 and tokens[1].lower() not in ("auto", "none"):
+            try:
+                layer = int(tokens[1])
+            except ValueError:
+                text = (
+                    "usage: /anatomy <snapshot-or-specimen> [layer|auto] "
+                    f"(got layer={tokens[1]!r})"
+                )
+                self.last_value = text
+                return text
+        path = Path(snap)
+        if not path.is_dir():
+            lake = Path("/Volumes/corpdrive/hawking-modellake/specimens") / snap
+            if lake.is_dir():
+                path = lake
+            elif not path.exists():
+                text = f"not a snapshot directory: {snap}"
+                self.last_value = text
+                return text
+        import sys
+
+        future = str(find_repo_root() / "tools" / "future")
+        if future not in sys.path:
+            sys.path.insert(0, future)
+        from representational_anatomy import AnatomyUnavailable, anatomy_from_safetensors
+
+        try:
+            out = anatomy_from_safetensors(str(path), layer=layer)
+        except AnatomyUnavailable as exc:
+            self.last_value = {"refused": True, "reason": str(exc)}
+            return f"ANATOMY UNAVAILABLE: {exc}"
+        self.last_value = out
+        lines = [
+            f"{path} scheme={out.get('scheme')} {out.get('storage')} "
+            f"layer={out.get('layer')} range={out.get('layers_with_experts')} "
+            f"shared={out.get('shared_expert_present')}"
+        ]
+        for row in out.get("cross_expert") or []:
+            lines.append(
+                f"  {row['tensor']} n={row['n']} ratio={row['ratio']} "
+                f"rank_90={row['rank_90']}"
+            )
+        we = out.get("within_expert") or {}
+        if we:
+            lines.append(
+                f"  within {we.get('shape')} ratio={we.get('ratio')} "
+                f"rank_90={we.get('rank_90')}"
+            )
+        for hyp in out.get("hypotheses") or []:
+            lines.append(f"  H: {hyp}")
+        return "\n".join(lines)
+
     def _cmd_goal(self, arg: str) -> str:
         if not arg:
             session = getattr(self.controller, "session", None)

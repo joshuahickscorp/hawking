@@ -1,0 +1,380 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-07T10:29:45Z",
+  "recorded_by": "tools/future/role_suitability.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "candidates": [
+  {
+   "comparable_value": 5.0,
+   "comparable_value_is": "n_measured_requirements when the covered set is non-empty; null (not 0) when nothing was measured. Not a blend of the requirement magnitudes, not a weighted sum, not a letter grade.",
+   "covered": [
+    "instruction_following",
+    "repair_behaviour",
+    "context_economy",
+    "latency",
+    "scientific_target_selection"
+   ],
+   "endpoint": "hawking-native://sealed-3.14/resident",
+   "kind": "serving_identity",
+   "model": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
+   "n_measured_requirements": 5,
+   "n_requirements": 6,
+   "n_runs": 313,
+   "name": "hawking-native.sealed-3.14.json",
+   "not_a_blend": true,
+   "organism": "serving:hawking-native.sealed-3.14.json",
+   "requirements": {
+    "context_economy": {
+     "cause": null,
+     "source_field": "totals.prompt_tokens_per_generated_token and totals.prefill_share_of_model_wall",
+     "source_fields": {
+      "prefill_share_of_model_wall": "totals.prefill_share_of_model_wall",
+      "prompt_tokens_per_generated_token": "totals.prompt_tokens_per_generated_token"
+     },
+     "source_receipt": "receipts/future/G007_ROUND_PREFILL_ECONOMICS.json",
+     "value": {
+      "prefill_share_of_model_wall": 0.9308,
+      "prompt_tokens_per_generated_token": 23.5
+     }
+    },
+    "instruction_following": {
+     "also_known_as": "structured_output_failure_rate",
+     "cause": null,
+     "d": 262,
+     "keys": [
+      "structured_output.exhausted",
+      "structured_output.errors",
+      "structured_output.last_violation",
+      "error_type"
+     ],
+     "n": 89,
+     "predicate": "error_type == StructuredOutputExhausted OR structured_output.exhausted is True",
+     "receipt_field_name": "structured_action_failure_rate",
+     "source_field": "models[model=/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json].structured_action_failure_rate.value",
+     "source_receipt": "receipts/future/G016_RELIABILITY_AXIS.json",
+     "value": 0.33969465648854963
+    },
+    "latency": {
+     "cause": null,
+     "source_field": "totals.prefill_tok_per_s, per_call[].prefill_tok_per_s, per_call[].call_wall_s; min/max are min() and max() of per_call[].call_wall_s, not an interpolated spread",
+     "source_fields": {
+      "per_call_prefill_tok_per_s": "per_call[].prefill_tok_per_s",
+      "per_call_wall_s": "per_call[].call_wall_s",
+      "per_call_wall_s_max": "max(per_call[].call_wall_s)",
+      "per_call_wall_s_min": "min(per_call[].call_wall_s)",
+      "prefill_tok_per_s": "totals.prefill_tok_per_s"
+     },
+     "source_receipt": "receipts/future/G007_ROUND_PREFILL_ECONOMICS.json",
+     "value": {
+      "per_call_prefill_tok_per_s": [
+       24.47,
+       34.02,
+       27.91,
+       22.56,
+       31.93,
+       36.62
+      ],
+      "per_call_wall_s": [
+       226.579,
+       61.772,
+       92.799,
+       121.11,
+       84.923,
+       43.399
+      ],
+      "per_call_wall_s_max": 226.579,
+      "per_call_wall_s_min": 43.399,
+      "prefill_tok_per_s": 27.24
+     }
+    },
+    "repair_behaviour": {
+     "cause": null,
+     "d": 275,
+     "keys": [
+      "structured_output.retries",
+      "structured_output.exhausted",
+      "structured_output.errors",
+      "structured_output.last_violation",
+      "error",
+      "error_type",
+      "rolled_back",
+      "validation.ok",
+      "status",
+      "observations",
+      "tool_observations"
+     ],
+     "n": 2,
+     "predicate": "receipt_hit_failure AND is_accepted_work; denominator is runs that hit a failure",
+     "source_field": "models[model=/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json].recovery_rate.value",
+     "source_receipt": "receipts/future/G016_RELIABILITY_AXIS.json",
+     "value": 0.007272727272727273
+    },
+    "scientific_target_selection": {
+     "cause": null,
+     "n_rounds": 6,
+     "predicate": "self_selected_target = count of engine receipts in the goal window whose goal contains 'CHOOSE YOUR OWN TARGET'; selected_AND_measured = that conjunct hcli.engine.is_accepted_measurement. The two are never divided.",
+     "receipts_dir": "/Users/scammermike/Downloads/hawking/.hcli/receipts",
+     "source_field": "report()['hcli_autonomy']['self_selected_target'] and report()['hcli_autonomy']['selected_AND_measured']",
+     "source_fields": {
+      "selected_AND_measured": "report()['hcli_autonomy']['selected_AND_measured']",
+      "self_selected_target": "report()['hcli_autonomy']['self_selected_target']"
+     },
+     "source_receipt": "tools/future/autonomy_ratio.py",
+     "value": {
+      "selected_AND_measured": 2,
+      "self_selected_target": 6
+     },
+     "window_start": "2026-09-07 02:00:00"
+    },
+    "tool_reliability": {
+     "cause": "receipts do not persist `observations` or `tool_observations`; the engine records those only in-memory during the tool loop",
+     "d": null,
+     "keys": [
+      "observations",
+      "tool_observations"
+     ],
+     "n": null,
+     "predicate": "item.ok is False over observations",
+     "source_field": "models[model=/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json].tool_failure_rate.value",
+     "source_receipt": "receipts/future/G016_RELIABILITY_AXIS.json",
+     "value": null
+    }
+   },
+   "role": "hcli_resident",
+   "status": "MEASURED",
+   "uncovered": [
+    {
+     "cause": "receipts do not persist `observations` or `tool_observations`; the engine records those only in-memory during the tool loop",
+     "requirement": "tool_reliability",
+     "source_field": "models[model=/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json].tool_failure_rate.value",
+     "source_receipt": "receipts/future/G016_RELIABILITY_AXIS.json"
+    }
+   ]
+  }
+ ],
+ "claim_boundary": "Static derivation from receipts and counters already on disk. No hardware measurement. No ModelLake specimen. No interpolated value. An absent field is null with the missing key named. A blended score is a reject even if every input to it was measured.",
+ "controls": {
+  "mutation_check": {
+   "harvest": {
+    "after_sha256": "c399428247dbea17c90154229fc1e94d5d7f95ef1badd7ee6765a55c61b006f7",
+    "anchor": "campaign_pareto.py:989:        _set_axis(point, \"role_suitability\", float(value), epistemic=\"accepted\", source=src)  # LOAD_BEARING_HARVEST",
+    "before_sha256": "d69a5b5ca7d8336e8875eb869a0ddfbafce5a7f32cd9f23a9b2a1df30ad72e9f",
+    "probe_failed_as_required": true,
+    "probe_returncode": 1,
+    "replacement": "pass  # MUTATION_ACTIVE harvest",
+    "stderr_tail": "Traceback (most recent call last):\n  File \"<string>\", line 9, in <module>\nAssertionError: {'n': 0, 'ids': ['serving:hawking-native.sealed-3.14.json:hawking-native.sealed-3.14.json']}\n"
+   },
+   "null_vs_zero": {
+    "after_sha256": "fcf4504a64858809c8c1741a154b1b09f1849d1096758e9630f7cadcc8c876ad",
+    "anchor": "role_suitability.py:150:        return cell  # LOAD_BEARING_NULL",
+    "before_sha256": "c799bde804605029b9f3265ae73f5e3978f6058fc244a02028a2c6ccc9046634",
+    "probe_failed_as_required": true,
+    "probe_returncode": 1,
+    "replacement": "return {\"value\": 0, \"cause\": None, \"source_receipt\": source_receipt, \"source_field\": source_field}  # MUTATION_ACTIVE null",
+    "stderr_tail": "<string>:9: SyntaxWarning: \"is not\" with 'int' literal. Did you mean \"!=\"?\nTraceback (most recent call last):\n  File \"<string>\", line 8, in <module>\nAssertionError: ('tool_reliability', {'value': 0, 'cause': None, 'source_receipt': 'receipts/future/G016_RELIABILITY_AXIS.json', 'source_field': 'models[model ends with hawking-native.sealed-3.14.json].tool_failure_rate.value'})\n"
+   },
+   "restored": true,
+   "restored_sha256_campaign_pareto": "d69a5b5ca7d8336e8875eb869a0ddfbafce5a7f32cd9f23a9b2a1df30ad72e9f",
+   "restored_sha256_role_suitability": "c799bde804605029b9f3265ae73f5e3978f6058fc244a02028a2c6ccc9046634"
+  },
+  "negative_control": {
+   "all_failed": {
+    "comparable_value": 6.0,
+    "covered": [
+     "tool_reliability",
+     "instruction_following",
+     "repair_behaviour",
+     "context_economy",
+     "latency",
+     "scientific_target_selection"
+    ],
+    "n_measured_requirements": 6,
+    "repair_behaviour": 0.0,
+    "self_selected_target": 0
+   },
+   "failed_checks": [],
+   "no_evidence": {
+    "all_values_null": true,
+    "causes_named": true,
+    "comparable_value": null,
+    "covered": [],
+    "n_measured_requirements": 0
+   },
+   "partial": {
+    "comparable_value": 2.0,
+    "covered": [
+     "instruction_following",
+     "repair_behaviour"
+    ],
+    "n_measured_requirements": 2,
+    "uncovered": [
+     "tool_reliability",
+     "context_economy",
+     "latency",
+     "scientific_target_selection"
+    ]
+   },
+   "passed": true
+  },
+  "pareto_harvest": {
+   "n_points": 1,
+   "n_with_role_suitability": 1,
+   "sample": [
+    {
+     "covered": [
+      "instruction_following",
+      "repair_behaviour",
+      "context_economy",
+      "latency",
+      "scientific_target_selection"
+     ],
+     "id": "serving:hawking-native.sealed-3.14.json:hawking-native.sealed-3.14.json",
+     "role_suitability": 5.0
+    }
+   ],
+   "unmeasured_for_everyone": []
+  }
+ },
+ "field_keys": {
+  "context_economy": {
+   "fields": [
+    "totals.prompt_tokens_per_generated_token",
+    "totals.prefill_share_of_model_wall"
+   ],
+   "receipt": "receipts/future/G007_ROUND_PREFILL_ECONOMICS.json"
+  },
+  "instruction_following": {
+   "field": "models[].structured_action_failure_rate.value",
+   "receipt": "receipts/future/G016_RELIABILITY_AXIS.json"
+  },
+  "latency": {
+   "fields": [
+    "totals.prefill_tok_per_s",
+    "per_call[].call_wall_s",
+    "per_call[].prefill_tok_per_s"
+   ],
+   "receipt": "receipts/future/G007_ROUND_PREFILL_ECONOMICS.json"
+  },
+  "repair_behaviour": {
+   "field": "models[].recovery_rate.value",
+   "receipt": "receipts/future/G016_RELIABILITY_AXIS.json"
+  },
+  "scientific_target_selection": {
+   "fields": [
+    "hcli_autonomy.self_selected_target",
+    "hcli_autonomy.selected_AND_measured"
+   ],
+   "receipt": "tools/future/autonomy_ratio.py"
+  },
+  "tool_reliability": {
+   "field": "models[].tool_failure_rate.value",
+   "receipt": "receipts/future/G016_RELIABILITY_AXIS.json"
+  }
+ },
+ "pareto_axis": {
+  "comparable_value": "n_measured_requirements",
+  "comparable_value_is": "count of contract requirements that carry a measured value (0 is a value). Harvested onto the matching serving-identity point. Null, not 0, when the covered set is empty. Not a blend of the requirement magnitudes.",
+  "higher_is_better": true,
+  "name": "role_suitability",
+  "not_a_blend": true,
+  "vector_stays": [
+   "tool_reliability",
+   "instruction_following",
+   "repair_behaviour",
+   "context_economy",
+   "latency",
+   "scientific_target_selection"
+  ]
+ },
+ "purpose": "Fill the campaign Pareto role_suitability axis from evidence already on disk. Role suitability is a per-role requirements vector, not a grade and not a blend. Different role: different frontier.",
+ "recorded_by": "tools/future/role_suitability.py",
+ "roles": {
+  "hcli_resident": {
+   "name": "hcli_resident",
+   "not": [
+    "a 1-10 score",
+    "a weighted sum of the requirements",
+    "a letter grade",
+    "a blend of MAGNETAR or PULSAR (those roles have no contract on disk)"
+   ],
+   "requirements": [
+    {
+     "direction": "lower_is_better",
+     "if_null": "use the named missing cause from that field; never 0",
+     "name": "tool_reliability",
+     "source_field": "models[model ends with hawking-native.sealed-3.14.json].tool_failure_rate.value",
+     "source_receipt": "receipts/future/G016_RELIABILITY_AXIS.json"
+    },
+    {
+     "also_known_as": "structured_output_failure_rate",
+     "direction": "lower_is_better",
+     "name": "instruction_following",
+     "receipt_field_name": "structured_action_failure_rate",
+     "source_field": "models[model ends with hawking-native.sealed-3.14.json].structured_action_failure_rate.value",
+     "source_receipt": "receipts/future/G016_RELIABILITY_AXIS.json"
+    },
+    {
+     "direction": "higher_is_better",
+     "name": "repair_behaviour",
+     "source_field": "models[model ends with hawking-native.sealed-3.14.json].recovery_rate.value",
+     "source_receipt": "receipts/future/G016_RELIABILITY_AXIS.json"
+    },
+    {
+     "direction": "lower_is_better_per_component",
+     "name": "context_economy",
+     "not_a_blend": true,
+     "source_fields": {
+      "prefill_share_of_model_wall": "totals.prefill_share_of_model_wall",
+      "prompt_tokens_per_generated_token": "totals.prompt_tokens_per_generated_token"
+     },
+     "source_receipt": "receipts/future/G007_ROUND_PREFILL_ECONOMICS.json"
+    },
+    {
+     "direction": "components_not_combined",
+     "name": "latency",
+     "not_a_blend": true,
+     "source_fields": {
+      "per_call_wall_s": "per_call[].call_wall_s",
+      "prefill_tok_per_s": "totals.prefill_tok_per_s"
+     },
+     "source_receipt": "receipts/future/G007_ROUND_PREFILL_ECONOMICS.json"
+    },
+    {
+     "name": "scientific_target_selection",
+     "never": "a ratio of the two counters",
+     "not_a_blend": true,
+     "source_fields": {
+      "selected_AND_measured": "report()['hcli_autonomy']['selected_AND_measured']",
+      "self_selected_target": "report()['hcli_autonomy']['self_selected_target']"
+     },
+     "source_receipt": "tools/future/autonomy_ratio.py"
+    }
+   ],
+   "why_this_role": "this campaign can measure it today from evidence already on disk"
+  }
+ },
+ "roles_without_contracts": [
+  {
+   "cause": "no role contract found on disk; git grep -i magnetar over HEAD returned 0 hits. An invented contract is worse than an absent one.",
+   "hits": [],
+   "requirements": null,
+   "role": "magnetar",
+   "search": "git grep -i -l 'magnetar|pulsar' HEAD"
+  },
+  {
+   "cause": "no role contract found on disk; git grep -i pulsar over HEAD returned 0 hits. An invented contract is worse than an absent one.",
+   "hits": [],
+   "requirements": null,
+   "role": "pulsar",
+   "search": "git grep -i -l 'magnetar|pulsar' HEAD"
+  }
+ ],
+ "schema": "hawking.future.role_suitability.v1",
+ "seal_sha256": "32642a8fc508f9ce69b5b9eaf740dc4f967f833fe0dce8a84c77645e3d7ae8e6",
+ "version": 1
+}

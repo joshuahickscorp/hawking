@@ -1,0 +1,138 @@
+{
+ "obligation": "G009",
+ "what": "the two remaining MOE-FLOAT anatomy axes, CPU streaming, named refusal if unavailable",
+ "rows": [
+  {
+   "slug": "thinkingmachines--Inkling-Small@8cc5877b44d3",
+   "status": "ANATOMY",
+   "wall_s": 232.32,
+   "swapfile_delta": 0,
+   "guard": {
+    "free_gb": 53.08,
+    "compressor_gb": 0.45,
+    "swapfiles": 2,
+    "wired_gb": 17.31,
+    "state": "OK",
+    "reasons": [],
+    "residents": 0,
+    "resident_rss_gb": 0.0,
+    "expected_gb": 8.0,
+    "headroom_gb": 45.08
+   },
+   "refusal": null,
+   "layer": 2,
+   "scheme": "C",
+   "n_shards": 33,
+   "cross_expert": [
+    {
+     "n": 256,
+     "participation": 254.06,
+     "ratio": 0.9924,
+     "rank_90": 224,
+     "top1_share": 0.0047,
+     "noise_floor_ratio": 0.9961,
+     "null_ratio": 0.9924,
+     "deficit_pct": -0.0,
+     "tensor": "w13_weight",
+     "n_experts_total": 256
+    },
+    {
+     "n": 256,
+     "participation": 254.75,
+     "ratio": 0.9951,
+     "rank_90": 227,
+     "top1_share": 0.0041,
+     "noise_floor_ratio": 0.9961,
+     "null_ratio": 0.9951,
+     "deficit_pct": 0.0,
+     "tensor": "w2_weight",
+     "n_experts_total": 256
+    }
+   ],
+   "within_expert": {
+    "shape": [
+     4096,
+     4096
+    ],
+    "full_rank": 4096,
+    "participation": 2385.3,
+    "ratio": 0.5823,
+    "rank_90": 2030,
+    "null_ratio": 0.6067,
+    "null_rank_90": 2089,
+    "deficit_pct": 4.016
+   },
+   "hypotheses": [
+    "cross-expert sharing is DEAD (-0.00% from a norm-matched null, n=256; the old ratio rule's noise floor here is 0.9961): skip shared basis, common+delta, clustering, alignment",
+    "low-rank structure is ABSENT (4.02% from a matched null): the spectrum is what a random matrix of this shape gives, so a rank-2030 factor at 0.991x dense would be compressing noise",
+    "NO LINEAR STRUCTURE AVAILABLE: go non-linear (generated coefficients, procedural reconstruction, router-conditioned representation) or accept quantization as the ceiling for this organism"
+   ]
+  },
+  {
+   "slug": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+   "status": "ANATOMY",
+   "wall_s": 55.48,
+   "swapfile_delta": 0,
+   "guard": {
+    "free_gb": 51.45,
+    "compressor_gb": 0.45,
+    "swapfiles": 2,
+    "wired_gb": 6.44,
+    "state": "OK",
+    "reasons": [],
+    "residents": 0,
+    "resident_rss_gb": 0.0,
+    "expected_gb": 8.0,
+    "headroom_gb": 43.45
+   },
+   "refusal": null,
+   "layer": 0,
+   "scheme": "B",
+   "n_shards": 131,
+   "cross_expert": [
+    {
+     "n": 512,
+     "participation": 510.06,
+     "ratio": 0.9962,
+     "rank_90": 454,
+     "top1_share": 0.0028,
+     "noise_floor_ratio": 0.998,
+     "null_ratio": 0.9962,
+     "deficit_pct": 0.003,
+     "tensor": "gate_up_proj",
+     "n_experts_total": 512
+    },
+    {
+     "n": 512,
+     "participation": 510.16,
+     "ratio": 0.9964,
+     "rank_90": 456,
+     "top1_share": 0.0026,
+     "noise_floor_ratio": 0.998,
+     "null_ratio": 0.9964,
+     "deficit_pct": 0.003,
+     "tensor": "down_proj",
+     "n_experts_total": 512
+    }
+   ],
+   "within_expert": {
+    "shape": [
+     1280,
+     2560
+    ],
+    "full_rank": 1280,
+    "participation": 921.1,
+    "ratio": 0.7196,
+    "rank_90": 812,
+    "null_ratio": 0.7781,
+    "null_rank_90": 850,
+    "deficit_pct": 7.524
+   },
+   "hypotheses": [
+    "cross-expert sharing is DEAD (0.00% from a norm-matched null, n=512; the old ratio rule's noise floor here is 0.998): skip shared basis, common+delta, clustering, alignment",
+    "low-rank structure is ABSENT (7.52% from a matched null): the spectrum is what a random matrix of this shape gives, so a rank-812 factor at 0.952x dense would be compressing noise",
+    "NO LINEAR STRUCTURE AVAILABLE: go non-linear (generated coefficients, procedural reconstruction, router-conditioned representation) or accept quantization as the ceiling for this organism"
+   ]
+  }
+ ]
+}

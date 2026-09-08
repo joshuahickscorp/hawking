@@ -2184,6 +2184,7 @@ class OpenAICompatibleBackend(RuntimeBackend):
         self.pid = None
         self.start_time = None
         self._started = False
+        self._capability_proven = False
 
     def _completion_url(self) -> str:
         if self.base_url.endswith("/v1/chat/completions"):
@@ -2290,20 +2291,67 @@ class OpenAICompatibleBackend(RuntimeBackend):
             url = origin + (suffix or "/")
             if url not in candidates:
                 candidates.append(url)
+        reachable = False
         for url in candidates:
             request = urllib.request.Request(url, headers=self._headers(), method="GET")
             try:
                 with urllib.request.urlopen(request, timeout=max(0.1, min(3.0, float(timeout)))) as response:
                     if 200 <= response.status < 500:
-                        return True
+                        reachable = True
             except urllib.error.HTTPError as exc:
                 # 401/403 proves a reachable provider; the completion call
                 # will report the missing/invalid credential explicitly.
                 if exc.code in {401, 403, 404, 405}:
-                    return True
+                    reachable = True
             except Exception:
                 continue
-        return False
+            if reachable:
+                break
+        if not reachable:
+            return False
+        return self._capability_proven or self._prove_capability(timeout)
+
+    def _prove_capability(self, timeout: float) -> bool:
+        """Reachability is not readiness. Prove the endpoint can GENERATE.
+
+        An orphaned mlx_lm.server whose model directory had been deleted answered
+        /v1/models with HTTP 200 in 0.004s while /v1/chat/completions returned
+        nothing at all after 45 seconds, holding 127.0.0.1:9999. The loop above
+        accepts any status from 200 to 499 -- 404 and 405 included -- so it
+        declared that corpse READY, and every caller would then hang on its first
+        real call.
+
+        One token is the discriminator. It runs only for loopback endpoints,
+        where the cost is negligible and the orphan trap is real, and only ONCE
+        per connector: ready() is called repeatedly, twice with timeout 0.0, so a
+        probe per call would put a generation behind every status query.
+        """
+        if os.environ.get("HCLI_REMOTE_SKIP_CAPABILITY_PROBE", "").strip() == "1":
+            self._capability_proven = True
+            return True
+        host = (urllib.parse.urlparse(self.base_url).hostname or "").lower()
+        if host not in {"127.0.0.1", "localhost", "::1", "0.0.0.0"}:
+            self._capability_proven = True      # a remote round trip is the caller's to pay
+            return True
+        body = json.dumps({
+            "model": self.model_name if self.model_name != "remote" else "default",
+            "messages": [{"role": "user", "content": "1"}],
+            "max_tokens": 1, "stream": False,
+        }).encode()
+        headers = dict(self._headers())
+        headers["Content-Type"] = "application/json"
+        req = urllib.request.Request(self._completion_url(), data=body,
+                                     headers=headers, method="POST")
+        try:
+            with urllib.request.urlopen(req, timeout=max(5.0, float(timeout))) as resp:
+                ok = 200 <= resp.status < 300
+        except urllib.error.HTTPError as exc:
+            # The server answered with an opinion, so it is alive and serving.
+            ok = exc.code in {400, 401, 403, 422}
+        except Exception:
+            ok = False
+        self._capability_proven = ok
+        return ok
 
     def endpoint(self) -> str:
         return self._completion_url()

@@ -106,7 +106,15 @@ _MAX_SEARCH_FILES = 5_000
 _MAX_LIST_DIRECTORIES = 20_000
 
 
-def _redact(value: Any, *, limit: int = 4000) -> Any:
+#: Every string in a ToolResult is clipped to this before it reaches a caller, in
+#: `to_dict`. It is the LAST truncation and for a long time the only undisclosed one:
+#: fs.read clipped a 299,504-byte ledger to 65,536 and reported that, and then this
+#: clipped the content to 4,001 and reported nothing. A round read the ledger, received
+#: 1.3% of it, and was told it had 21.9%.
+_RESULT_STRING_LIMIT = 4000
+
+
+def _redact(value: Any, *, limit: int = _RESULT_STRING_LIMIT) -> Any:
     """Redact likely credentials before anything enters a result/receipt."""
     if isinstance(value, dict):
         out: Dict[str, Any] = {}
@@ -434,12 +442,16 @@ class ToolRegistry:
             scored.sort(key=lambda item: (-item[0], item[1]))
         else:
             scored.sort(key=lambda item: item[1])
-        matches = [spec.to_dict() for _score, _name, spec in scored[:limit]]
+        chosen = [spec for _score, _name, spec in scored[:limit]]
+        matches = [spec.to_dict() for spec in chosen]
+        names = [spec.name for spec in chosen]
         return {
-            "focus": query,
+            "names": names,
             "matches": matches,
+            "shown": len(matches),
             "match_count": len(scored),
             "truncated": len(scored) > limit,
+            "focus": query,
             "provenance": "hcli.tool_registry.ToolRegistry.describe",
         }
 
@@ -539,6 +551,31 @@ def _text_limit(value: Any, default: int = 64 * 1024, maximum: int = _MAX_READ_B
         return default
 
 
+#: Default number of decision-relevant entries a list tool emits. The closed-turn
+#: observation budget is 500 characters; twelve compact rows fit, an unbounded
+#: lake or process table does not.
+_ACTIONABLE_SHOW_DEFAULT = 12
+
+
+def _shown_limit(value: Any, default: int = _ACTIONABLE_SHOW_DEFAULT, maximum: int = 32) -> int:
+    try:
+        return max(1, min(maximum, int(value if value is not None else default)))
+    except (TypeError, ValueError):
+        return default
+
+
+def _lead_with(payload: Mapping[str, Any], *first: str) -> Dict[str, Any]:
+    """Rebuild a dict so json.dumps emits decision-relevant keys first."""
+    out: Dict[str, Any] = {}
+    for key in first:
+        if key in payload:
+            out[key] = payload[key]
+    for key, value in payload.items():
+        if key not in out:
+            out[key] = value
+    return out
+
+
 def _read_file(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
     path = context.resolve_read_path(args.get("path"))
     if path.is_dir():
@@ -601,7 +638,7 @@ def _read_file(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
             "start_line": first,
             "end_line": last,
             "total_lines": len(lines),
-            "truncated": len(body) > limit,
+            **_truncation_fields(len(clipped), len(body)),
             "sha256": _sha256_bytes(raw),
             "content": clipped.decode(encoding, errors="replace"),
             "artifact": {"kind": "file", "path": str(path), "sha256": _sha256_bytes(raw), "bytes": len(raw)},
@@ -611,10 +648,37 @@ def _read_file(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
     return {
         "path": str(path),
         "bytes": len(raw),
-        "truncated": len(raw) > limit,
+        **_truncation_fields(len(clipped), len(raw)),
         "sha256": _sha256_bytes(raw),
         "content": clipped.decode(encoding, errors="replace"),
         "artifact": {"kind": "file", "path": str(path), "sha256": _sha256_bytes(raw), "bytes": len(raw)},
+    }
+
+
+def _truncation_fields(shown: int, total: int) -> Dict[str, Any]:
+    """Say HOW MUCH survived, not merely that a cut happened.
+
+    `truncated: True` is technically honest and operationally useless: it cannot tell a
+    caller 99% from 1.3%. A round read the 299,504-byte Odyssey ledger through fs.read,
+    received 4,001 characters, reasoned soundly over the handful of specimens in that
+    1.3%, and never learned that the two bodies still owing anatomy were outside it.
+    """
+    # What the caller RECEIVES, not what this handler clipped to. `to_dict` redacts
+    # every string down to _RESULT_STRING_LIMIT afterwards, so reporting the handler's
+    # own limit overstates it by 16x on a large file -- which is exactly the failure
+    # this function exists to stop, one layer up.
+    delivered = min(shown, _RESULT_STRING_LIMIT)
+    if delivered >= total:
+        return {"truncated": False, "shown_bytes": delivered}
+    pct = (delivered / total * 100.0) if total else 0.0
+    return {
+        "truncated": True,
+        "shown_bytes": delivered,
+        "truncation_note": (
+            f"TRUNCATED: you are seeing {delivered} of {total} bytes ({pct:.1f}%). "
+            f"Do not conclude anything about what is NOT shown. Narrow with "
+            f"start/end lines, or use the purpose-built tool for this file if one exists."
+        ),
     }
 
 
@@ -805,7 +869,22 @@ def _git_log(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
         limit = max(1, min(100, int(args.get("limit") or 10)))
     except (TypeError, ValueError):
         limit = 10
-    return _run_readonly(["git", "-C", str(cwd), "log", f"-{limit}", "--oneline", "--decorate"], cwd=cwd)
+    raw = _run_readonly(["git", "-C", str(cwd), "log", f"-{limit}", "--oneline", "--decorate"], cwd=cwd)
+    commits: List[Dict[str, Any]] = []
+    for line in str(raw.get("stdout") or "").splitlines():
+        token = line.split(None, 1)
+        if token:
+            commits.append({"hash": token[0], "line": line[:160]})
+    return {
+        "commits": commits,
+        "n": len(commits),
+        "shown": len(commits),
+        "returncode": raw.get("returncode"),
+        "stdout": raw.get("stdout"),
+        "stderr": raw.get("stderr"),
+        "argv": raw.get("argv"),
+        "cwd": raw.get("cwd"),
+    }
 
 
 def _shell_readonly(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
@@ -1554,15 +1633,21 @@ def _tests_run(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
         raise ValueError("runner must be pytest, unittest, or cargo")
     timeout = min(900.0, max(0.1, float(args.get("timeout_s") or 300.0)))
     started = time.time()
-    result = _run_readonly(argv, cwd=root, timeout=timeout)
-    result.update({
+    raw = _run_readonly(argv, cwd=root, timeout=timeout)
+    stdout = str(raw.get("stdout") or "")
+    return {
+        "verified": raw.get("returncode") == 0,
+        "returncode": raw.get("returncode"),
         "runner": runner,
         "root": str(root),
+        "n_stdout_chars": len(stdout),
+        "stdout": stdout,
+        "stderr": raw.get("stderr"),
+        "argv": raw.get("argv"),
+        "cwd": raw.get("cwd"),
         "started_at": started,
         "finished_at": time.time(),
-        "verified": result.get("returncode") == 0,
-    })
-    return result
+    }
 
 
 def _vmcp_inspect(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
@@ -1800,6 +1885,388 @@ def _frontier_decide(context: ToolContext, args: Dict[str, Any]) -> Dict[str, An
     return frontier_scheduler.decide().to_dict()
 
 
+def _future(name: str):
+    """Import a tools/future module without putting the REPO ROOT on sys.path.
+
+    tools/future itself IS placed on sys.path, once, and that is the narrow part of the
+    original intent that had to give. Modules there import their siblings by plain name --
+    dense_anatomy imports lake_scheme_census, dense_sweep imports both dense_anatomy and
+    campaign_memory_guard -- and registering under a private `_hcli_future_` key means
+    those plain-name imports resolve against nothing. Every sidecar module with a sibling
+    was therefore unreachable through this loader, which is the same
+    built-but-not-connected shape this session has now hit five times.
+
+    The repo root stays off: that would expose `hcli`, `tools`, `receipts` and the rest.
+    The sidecar partition is a much narrower surface, and it is the one these modules were
+    written to import from.
+    """
+    import importlib.util
+    import pathlib
+    import sys as _sys
+    future_dir = pathlib.Path(__file__).resolve().parents[1] / "tools" / "future"
+    if str(future_dir) not in _sys.path:
+        _sys.path.append(str(future_dir))
+    here = future_dir / f"{name}.py"
+    if not here.is_file():
+        raise FileNotFoundError(
+            f"{here} is missing: this tool names a module that does not exist, which is "
+            f"how a registered capability becomes unreachable without anyone noticing")
+    key = f"_hcli_future_{name}"
+    cached = _sys.modules.get(key)
+    if cached is not None:
+        return cached
+    spec = importlib.util.spec_from_file_location(key, here)
+    mod = importlib.util.module_from_spec(spec)
+    # Register BEFORE executing: @dataclass resolves cls.__module__ through
+    # sys.modules, and without this campaign_memory_guard's Snapshot raised
+    # "AttributeError: 'NoneType' object has no attribute '__dict__'" at import.
+    _sys.modules[key] = mod
+    try:
+        spec.loader.exec_module(mod)
+    except Exception:
+        _sys.modules.pop(key, None)
+        raise
+    return mod
+
+
+def _lake_census(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """Reachability and complete EBPW for every specimen, from headers only.
+
+    Reads no payload bytes: the whole 4.29 TiB lake classifies in about twelve
+    seconds. Answers, per body, whether an expert organ exists, whether it is
+    pre-quantized on disk, and what it actually costs in bits per source
+    parameter.
+    """
+    m = _future("lake_scheme_census")
+    catalog = str(args.get("catalog") or "receipts/future/modellake-index/catalog.json")
+    slug = str(args.get("slug") or "").strip()
+    if slug:
+        import json as _json
+        cat = _json.load(open(catalog))
+        row = next((x for x in cat["specimens"] if x["slug"] == slug), None)
+        if row is None:
+            raise KeyError(f"{slug} is not in {catalog}")
+        out = m.classify(row["path"])
+        # The catalog knew the path all along and the census kept it to itself. A round
+        # that selects a body here and reaches for an anatomy tool needs a DIRECTORY, and
+        # a slug is not one -- rounds 13 and 15 both handed the anatomy tool the ledger's
+        # own path because it was the only path they had.
+        out["snapshot"] = row["path"]
+        try:
+            out.update(m.accounting(row["path"], m.confirm_pack_factor(row["path"])))
+        except Exception as exc:
+            out["accounting_error"] = f"{type(exc).__name__}: {exc}"
+        out["slug"] = slug
+        return _lead_with(out, "slug", "klass", "complete_ebpw", "pack_factor", "blocked_by")
+    census = m.census(catalog)
+    rows = list(census.get("rows") or [])
+    # A VALUE IS NOT AN OWED CELL. Round 20 read `complete_ebpw: 16.0` here,
+    # concluded "16.0 EBPW is worst owed", re-derived a number the ledger had
+    # already recorded as MEASURED, and closed having moved nothing: MEASURED
+    # stayed at 94. Nothing in this row said the axis was already resolved, so
+    # the round inferred owed-ness from the only thing it could see -- the
+    # magnitude. Carry the ledger state beside the value so the two cannot be
+    # confused. Missing or unreadable ledger degrades to None, never to a
+    # cheerful default that would recreate the same mistake.
+    owed_by_slug: Dict[str, Any] = {}
+    try:
+        import json as _json
+        _led = _json.load(open("receipts/future/G034_ODYSSEY_LEDGER.json"))
+        owed_by_slug = {
+            r["slug"]: sorted(a for a, v in r["axes"].items() if v["state"] == "OWED")
+            for r in _led["specimens"]
+        }
+    except Exception:
+        owed_by_slug = {}
+    compact = [
+        {
+            "slug": row.get("slug"),
+            "klass": row.get("klass"),
+            "gib": row.get("gib"),
+            "complete_ebpw": row.get("complete_ebpw"),
+            "ebpw_axis_state": (
+                "OWED" if "ebpw" in owed_by_slug.get(row.get("slug"), [])
+                else ("RESOLVED" if row.get("slug") in owed_by_slug else None)
+            ),
+            "owed_axes": owed_by_slug.get(row.get("slug")),
+            "pack_factor": row.get("pack_factor"),
+            "blocked_by": row.get("blocked_by"),
+            "family": row.get("family"),
+        }
+        for row in rows
+    ]
+    top = _shown_limit(args.get("limit"))
+    return {
+        "rows": compact[:top],
+        "n": census.get("n", len(rows)),
+        "shown": min(top, len(compact)),
+        "truncated": len(compact) > top,
+        "tally": census.get("tally"),
+        "expert_anatomy_reachable": census.get("expert_anatomy_reachable"),
+        "reachable_gib": census.get("reachable_gib"),
+        "blocked_gib": census.get("blocked_gib"),
+    }
+
+
+def _odyssey_ledger(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """What each specimen has measured, refused, or still owes.
+
+    Every specimen owes seven axes or an explicit recorded reason. This is the
+    state HCLI needs to choose what to work on next without a human naming it.
+    """
+    m = _future("odyssey_ledger")
+    import json as _json
+    path = str(args.get("path") or "receipts/future/G034_ODYSSEY_LEDGER.json")
+    led = _json.load(open(path))
+    prog = m.progress(led)
+    slug = str(args.get("slug") or "").strip()
+    if slug:
+        rec = next((r for r in led["specimens"] if r["slug"] == slug), None)
+        if rec is None:
+            raise KeyError(f"{slug} is not in {path}")
+        # `path` travels with the answer so a round can chain ledger -> record without
+        # anyone pasting the literal file in. Round 7 read the ledger with fs.read --
+        # and got 1.3% of it -- because the record tool's example in its prompt carried
+        # the raw path, which put a file in front of it.
+        snap = None
+        try:
+            with open("receipts/future/modellake-index/catalog.json") as fh:
+                snap = next((x["path"] for x in _json.load(fh)["specimens"]
+                             if x["slug"] == slug), None)
+        except Exception:
+            snap = None
+        return {"specimen": rec, "progress": prog, "path": path, "snapshot": snap}
+    if args.get("owed_only"):
+        # Carry the SNAPSHOT PATH, not just the slug. Every anatomy tool takes a directory
+        # and every discovery tool returned a name, with nothing in the registry converting
+        # one to the other -- so a round that selected correctly still had to guess, and
+        # twice guessed the ledger's own path.
+        paths = {}
+        try:
+            with open("receipts/future/modellake-index/catalog.json") as fh:
+                paths = {x["slug"]: x["path"] for x in _json.load(fh)["specimens"]}
+        except Exception:
+            paths = {}
+        owed = [{"slug": r["slug"], "gib": r["gib"], "class": r["class"],
+                 "owed": [a for a, v in r["axes"].items() if v["state"] == "OWED"],
+                 "snapshot": paths.get(r["slug"])}
+                for r in led["specimens"]
+                if any(v["state"] == "OWED" for v in r["axes"].values())]
+        owed.sort(key=lambda r: (-len(r["owed"]), r["gib"]))
+        # ACTIONABLE FIRST, AND BOUNDED. The full list is 8091 characters and the
+        # closed-turn compactor keeps 500 -- so with `progress` emitted first, the
+        # resident received the aggregate summary and NONE of the specimen names.
+        # It called this tool four times and could not choose a target, because the
+        # only part that names one was in the truncated tail. A tool whose useful
+        # half does not survive the caller's budget is a tool that does not work.
+        top = int(args.get("limit") or 12)
+        shown = min(top, len(owed))
+        tail = owed[shown:]
+        # DESCRIBE THE TAIL, do not make the caller go and find it. Bounding the view
+        # fixed the original defect -- an 8 KB summary naming not one specimen -- and
+        # created a new one: a careful caller told that 34 items are hidden goes looking
+        # for them. Two consecutive rounds spent their entire observation budget on that
+        # search. Round 11 correctly DERIVED that the hidden bodies must all be >= the
+        # largest visible one, because this list is sorted smallest-first within an owed
+        # count, and then read the 301 KB ledger in ten windows to confirm it. It should
+        # not have had to do either.
+        hidden = {
+            "n": len(tail),
+            "gib_min": min((r["gib"] for r in tail), default=None),
+            "gib_max": max((r["gib"] for r in tail), default=None),
+        }
+        return {
+            "owed": owed[:top],
+            "n_owed": len(owed),
+            "shown": shown,
+            "hidden": hidden,
+            # The list IS sorted and never said how, so "the worst" was ambiguous: most
+            # axes owed, or the largest body? Say it, in the view itself.
+            "ordering": ("most axes owed first, then smallest GiB first "
+                         "(cheapest to measure among equals)"),
+            "path": path,
+            "summary": (f"{prog['axes_resolved']}/{prog['axes_total']} axes resolved "
+                        f"({prog['pct']}%), {prog['specimens_complete']} specimens complete"),
+        }
+    return {"progress": prog, "n": len(led["specimens"]), "path": path}
+
+
+def _odyssey_anatomy(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """Representational anatomy of one specimen's expert organ.
+
+    Refuses with a named mechanism rather than returning an empty anatomy: a
+    body with no safetensors, no expert organ, or a pre-quantized payload is
+    recorded as measured-and-impossible, never as measured-and-silent.
+    """
+    m = _future("representational_anatomy")
+    snapshot = str(args.get("snapshot") or "").strip()
+    if not snapshot:
+        raise ValueError("snapshot path is required")
+    layer = args.get("layer", 0)
+    try:
+        out = m.anatomy_from_safetensors(snapshot, layer=layer)
+    except m.AnatomyUnavailable as exc:
+        return {"refused": str(exc), "anatomy": None, "snapshot": snapshot}
+    return _lead_with(out, "hypotheses", "layer", "scheme", "storage", "snapshot")
+
+
+def _odyssey_record_measurement(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """Move one ledger axis from OWED to MEASURED or REFUSED. The write door.
+
+    odyssey.anatomy RETURNS an anatomy and persists nothing; odyssey.ingest is
+    read_only; record_law and record_scar record Laws and Scars, not axis cells.
+    So a round that measured something correctly saw the ledger unchanged and
+    asked again -- which is what closed round 6 on the all-repeat closer after six
+    successful observations and zero failures.
+
+    The guards are odyssey_ledger's own, imported rather than restated: a value
+    without a receipt is not evidence, and a refusal under 20 characters is how an
+    unmeasured axis disguises itself as a finding. Those two functions existed with
+    ZERO callers anywhere in the repo -- built and never connected.
+
+    `path` is REQUIRED and has no default. A write tool whose default target is the
+    campaign's own live ledger is a foot-gun, and the caller has to name what it is
+    writing to.
+    """
+    m = _future("odyssey_ledger")
+    import json as _json
+    # The schema makes `path` REQUIRED, which stops a caller omitting it. It does not
+    # stop an EMPTY string, and that is the case this check owns -- deleting it is
+    # detectable, deleting a restatement of the schema was not.
+    path = str(args.get("path") or "").strip()
+    if not path:
+        raise ValueError(
+            "path is empty: this tool WRITES, and it will not guess which ledger")
+    target = context.resolve_write_path(path) if hasattr(context, "resolve_write_path") \
+        else Path(path)
+    led = _json.loads(Path(target).read_text())
+    slug = str(args.get("slug") or "").strip()
+    rec = next((r for r in led["specimens"] if r["slug"] == slug), None)
+    if rec is None:
+        raise KeyError(f"{slug!r} is not a specimen in {path}")
+    axis = str(args.get("axis") or "").strip()
+    reason = args.get("reason")
+    if reason not in (None, ""):
+        text = str(reason)
+        # A refusal is EVIDENCE ABOUT A SPECIMEN. The ledger being written to is never
+        # evidence about anything inside it, and self-reference is how a bad tool call
+        # gets stored as a scientific finding. Round 13 passed this very file to
+        # odyssey.dense_anatomy as a snapshot, got a correct complaint about that
+        # argument, and wrote it onto a specimen's nr_candidate axis. The existing guard
+        # could not see it: the reason is long and does name a mechanism -- just not one
+        # about the body.
+        #
+        # Deliberately narrow. "Is this reason RELEVANT" cannot be checked, and demanding
+        # the slug would reject both legitimate refusals already on disk, neither of which
+        # names its own.
+        target_name = Path(path).name
+        if target_name in text or str(target) in text or path in text:
+            raise m.LedgerError(
+                f"{slug}/{axis}: this refusal is about {target_name}, the ledger being "
+                f"written to, not about the specimen. A tool-call error is not a finding. "
+                f"Record what the BODY refuses, with the mechanism the body gave you."
+            )
+        m.refused(rec, axis, text)
+    else:
+        receipt = str(args.get("receipt") or "").strip()
+        # SAME invariant as the refusal guard above, other field: a cell's evidence cannot
+        # be the file the cell lives in. Round 16 closed the loop and wrote
+        # nr_candidate = "16.0" citing receipts/future/G034_ODYSSEY_LEDGER.json -- circular,
+        # and both existing guards let it through, because the refusal guard only inspects
+        # `reason` and the existence check passes on a file that obviously exists.
+        if receipt and (Path(receipt).name == Path(path).name
+                        or os.path.realpath(receipt) == os.path.realpath(str(target))):
+            raise m.LedgerError(
+                f"{slug}/{axis}: the ledger cannot be its own receipt. A cell's evidence "
+                f"must be a file that records the MEASUREMENT, not the file the cell lives "
+                f"in. Write one first with filesystem.write, then cite it here.")
+        # Existence is enforced by odyssey_ledger.measured, but its message cannot know
+        # about tools. A round that has no way to MAKE a receipt will cite whatever file it
+        # already knows -- so the failure names the write path rather than adding a second
+        # one. [S008 3] ONE OWNER, ONE GUARD, ONE WRITE PATH.
+        if receipt and not Path(receipt).exists():
+            raise m.LedgerError(
+                f"{slug}/{axis}: receipt {receipt!r} does not exist yet. Write the finding "
+                f"with filesystem.write (path under receipts/future/), then record the cell "
+                f"citing that path.")
+        # No receipt-EMPTY check here on purpose: odyssey_ledger.measured already refuses a
+        # value without one, and restating a guard is how two copies drift apart. A
+        # mutation that deleted a duplicate check here stayed green, which is the tell.
+        m.measured(rec, axis, args.get("value"), receipt)
+    tmp = Path(str(target) + ".tmp")
+    tmp.write_text(_json.dumps(led, indent=1) + "\n")
+    tmp.replace(target)
+    prog = m.progress(led)
+    return _lead_with(
+        {"recorded": {"slug": slug, "axis": axis, **rec["axes"][axis]},
+         "axes_resolved": prog.get("axes_resolved"),
+         "axes_owed": prog.get("axes_owed"),
+         "path": path},
+        "recorded", "axes_owed", "axes_resolved")
+
+
+def _odyssey_dense_anatomy(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """Within-tensor anatomy of one DENSE specimen's organs, against a same-shape null.
+
+    odyssey.anatomy measures the EXPERT organ and refuses a dense body by saying so:
+    "no key contains 'expert'; this looks dense, not MoE". A round that read that refusal
+    correctly then had nowhere to go, because dense anatomy had no door -- the capability
+    measured 34 bodies for G002 through dense_anatomy.anatomy_from_safetensors and was
+    simply unreachable from here. Use odyssey.anatomy for a MoE body and this for a dense
+    one; each refusal names the other.
+
+    The guard is asked BEFORE the body is opened, from a header-only size estimate. Dense
+    anatomy ran 796 s at 6.59 GiB peak on the largest body in the sweep, so a STOP verdict
+    has to be a refusal with its numbers rather than a machine at risk.
+    """
+    cmg = _future("campaign_memory_guard")
+    da = _future("dense_anatomy")
+    sweep = _future("dense_sweep")
+    snapshot = str(args.get("snapshot") or "").strip()
+    if not snapshot:
+        raise ValueError("snapshot path is required")
+    est = sweep.estimate_from_headers(snapshot)
+    snap = cmg.sample(expected_gb=float(est.get("expected_gb") or 0.0))
+    if snap.state == "STOP":
+        return _lead_with({
+            "refused": (f"{snapshot}: campaign guard says STOP before any payload was read "
+                        f"-- free {snap.free_gb} GB, compressor {snap.compressor_gb} GB, "
+                        f"swapfiles {snap.swapfiles}, this body needs about "
+                        f"{est.get('expected_gb')} GB. Refusal, not a crash."),
+            "anatomy": None, "guard": snap.as_dict(), "snapshot": snapshot,
+        }, "refused", "guard", "snapshot")
+    try:
+        out = da.anatomy_from_safetensors(snapshot)
+    except da.DenseAnatomyUnavailable as exc:
+        return _lead_with({"refused": str(exc), "anatomy": None, "snapshot": snapshot,
+                           "guard": snap.as_dict()},
+                          "refused", "snapshot")
+    ordering = sweep.organ_ordering_from_anatomy(out)
+    return _lead_with({
+        "organ_ordering": ordering,
+        "hypotheses": out.get("hypotheses"),
+        "n_organs": len(ordering),
+        "snapshot": snapshot,
+        "guard": snap.as_dict(),
+        "anatomy": out,
+    }, "organ_ordering", "hypotheses", "n_organs", "snapshot")
+
+
+def _campaign_guard(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """Host memory and swap headroom before an expensive run.
+
+    Reads free pages, compressor size, swapfile count and resident RSS. The
+    swapfile count is the live signal: vm.swapusage used is a boot high-water
+    mark, not a current reading.
+    """
+    m = _future("campaign_memory_guard")
+    snap = m.sample(expected_gb=float(args.get("expected_gb") or 0.0))
+    return {"state": snap.state, "reasons": list(snap.reasons),
+            "free_gb": snap.free_gb, "compressor_gb": snap.compressor_gb,
+            "swapfiles": snap.swapfiles, "wired_gb": snap.wired_gb,
+            "expected_gb": snap.expected_gb, "headroom_gb": snap.headroom_gb}
+
+
 def _specimens_registry(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
     """Every sealed specimen, enumerated from disk. SEALED != LOAD NOW."""
     from . import specimens
@@ -1808,7 +2275,30 @@ def _specimens_registry(context: ToolContext, args: Dict[str, Any]) -> Dict[str,
     if name:
         found = specimens.get(name)
         return {"name": name, "specimen": found, "found": found is not None}
-    return specimens.registry()
+    data = specimens.registry()
+    rows = list(data.get("specimens") or [])
+    compact = [
+        {
+            "id": row.get("id"),
+            "size_bytes": row.get("size_bytes"),
+            "model_type": (row.get("architecture") or {}).get("model_type"),
+            "verified_complete": row.get("verified_complete"),
+        }
+        for row in rows
+    ]
+    top = _shown_limit(args.get("limit"))
+    return {
+        "specimens": compact[:top],
+        "n_specimens": data.get("n_specimens"),
+        "shown": min(top, len(compact)),
+        "truncated": len(compact) > top,
+        "mounted": data.get("mounted"),
+        "lake": data.get("lake"),
+        "specimens_dir": data.get("specimens_dir"),
+        "schema": data.get("schema"),
+        "reason": data.get("reason"),
+        "sealed_does_not_mean_resident": data.get("sealed_does_not_mean_resident"),
+    }
 
 
 def _acquisition_propose(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
@@ -1816,7 +2306,27 @@ def _acquisition_propose(context: ToolContext, args: Dict[str, Any]) -> Dict[str
     download - that stays behind explicit confirmation elsewhere."""
     from . import acquisition
 
-    return acquisition.propose()
+    raw = acquisition.propose()
+    if not isinstance(raw, dict):
+        return raw
+    ranked = list(raw.get("ranked") or [])
+    top = _shown_limit(None)
+    leading = {
+        "recommended": raw.get("recommended"),
+        "recommendation_reason": raw.get("recommendation_reason"),
+        "ranked": ranked[:top],
+        "n_ranked": len(ranked),
+        "shown": min(top, len(ranked)),
+        "truncated": len(ranked) > top,
+        "list_order_pick": raw.get("list_order_pick"),
+        "list_order_would_redownload_sealed": raw.get("list_order_would_redownload_sealed"),
+    }
+    rest = {
+        key: value for key, value in raw.items()
+        if key not in leading
+    }
+    leading.update(rest)
+    return leading
 
 
 def _odyssey_read_verb(name: str, required: Sequence[str] = ()):
@@ -1881,11 +2391,23 @@ def _processes_list(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any
     del args
     from . import processes
 
+    procs = list(processes.live_processes(workspace=context.workspace))
+    index = [
+        {
+            "pid": p.pid,
+            "role": p.role,
+            "rss_gib": round(p.rss_bytes / 1024 ** 3, 3),
+            "safe_to_stop": p.safe_to_stop,
+        }
+        for p in procs
+    ]
+    top = _shown_limit(None)
     return {
-        "processes": [
-            p.to_dict()
-            for p in processes.live_processes(workspace=context.workspace)
-        ]
+        "index": index[:top],
+        "n_processes": len(procs),
+        "shown": min(top, len(index)),
+        "truncated": len(index) > top,
+        "processes": [p.to_dict() for p in procs],
     }
 
 
@@ -1908,11 +2430,23 @@ def _processes_orphaned(context: ToolContext, args: Dict[str, Any]) -> Dict[str,
     del args
     from . import processes
 
+    procs = list(processes.orphaned_resident_bodies(workspace=context.workspace))
+    index = [
+        {
+            "pid": p.pid,
+            "role": p.role,
+            "rss_gib": round(p.rss_bytes / 1024 ** 3, 3),
+            "safe_to_stop": p.safe_to_stop,
+        }
+        for p in procs
+    ]
+    top = _shown_limit(None)
     return {
-        "orphaned": [
-            p.to_dict()
-            for p in processes.orphaned_resident_bodies(workspace=context.workspace)
-        ]
+        "index": index[:top],
+        "n_orphaned": len(procs),
+        "shown": min(top, len(index)),
+        "truncated": len(index) > top,
+        "orphaned": [p.to_dict() for p in procs],
     }
 
 
@@ -1953,6 +2487,65 @@ def default_tool_registry(
         handler=lambda _context, args: registry.describe(
             args.get("focus"), max_results=args.get("max_results", 12)
         ),
+    ))
+    registry.register(ToolSpec(
+        "lake.census",
+        "Reachability and complete EBPW for every ModelLake specimen, from safetensors headers only; reads no payload bytes.",
+        {"type": "object", "additionalProperties": False,
+         "properties": {"catalog": {"type": "string"}, "slug": {"type": "string"},
+                        "limit": {"type": "integer"}}},
+        resources=("filesystem",), timeout_s=300.0,
+        handler=_lake_census,
+    ))
+    registry.register(ToolSpec(
+        "odyssey.ledger",
+        "Per-specimen Odyssey axis state: what is measured, what is refused with a reason, and what is still owed.",
+        {"type": "object", "additionalProperties": False,
+         "properties": {"path": {"type": "string"}, "slug": {"type": "string"},
+                        "owed_only": {"type": "boolean"},
+                        "limit": {"type": "integer"}}},
+        resources=("filesystem",),
+        handler=_odyssey_ledger,
+    ))
+    registry.register(ToolSpec(
+        "odyssey.anatomy",
+        "Representational anatomy of one specimen's expert organ; refuses with a named mechanism rather than returning an empty result.",
+        {"type": "object", "required": ["snapshot"], "additionalProperties": False,
+         "properties": {"snapshot": {"type": "string"},
+                        "layer": {"type": ["integer", "null"]}}},
+        resources=("filesystem",), timeout_s=1800.0, deterministic=False,
+        handler=_odyssey_anatomy,
+    ))
+    registry.register(ToolSpec(
+        "odyssey.dense_anatomy",
+        "Within-tensor organ anatomy of one DENSE specimen against a same-shape null. Use odyssey.anatomy instead for a MoE body; each refuses toward the other by name.",
+        {"type": "object", "required": ["snapshot"], "additionalProperties": False,
+         "properties": {"snapshot": {"type": "string"}}},
+        resources=("filesystem",), timeout_s=1800.0, deterministic=False,
+        handler=_odyssey_dense_anatomy,
+    ))
+    registry.register(ToolSpec(
+        "odyssey.record_measurement",
+        "Record one specimen/axis result into the Odyssey ledger: a value WITH a receipt, or a refusal whose reason names a mechanism. This is how a measured round closes.",
+        {"type": "object", "required": ["path", "slug", "axis"],
+         "additionalProperties": False,
+         "properties": {"path": {"type": "string"},
+                        "slug": {"type": "string"},
+                        "axis": {"type": "string"},
+                        "value": {},
+                        "receipt": {"type": ["string", "null"]},
+                        "reason": {"type": ["string", "null"]}}},
+        mutation=REVERSIBLE_REPO,
+        resources=("filesystem",), deterministic=False,
+        handler=_odyssey_record_measurement,
+    ))
+    registry.register(ToolSpec(
+        "campaign.guard",
+        "Host memory and swap headroom before an expensive run; the swapfile count is the live signal, not vm.swapusage.",
+        {"type": "object", "additionalProperties": False,
+         "properties": {"expected_gb": {"type": "number"}}},
+        resources=("processes",), deterministic=False,
+        handler=_campaign_guard,
     ))
     registry.register(ToolSpec(
         "context.recall",
@@ -2262,7 +2855,7 @@ def default_tool_registry(
         "specimens.registry",
         "Every sealed specimen enumerated from disk. Sealed does not mean loadable.",
         {"type": "object", "additionalProperties": False,
-         "properties": {"name": {"type": "string"}}},
+         "properties": {"name": {"type": "string"}, "limit": {"type": "integer"}}},
         handler=_specimens_registry,
     ))
     registry.register(ToolSpec(

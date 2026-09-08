@@ -1,0 +1,33 @@
+{
+ "date": "2026-09-07",
+ "obligation": "G026",
+ "result": "NULL -- measurement unstable, no claim made",
+ "measurements_of_the_same_arm": [
+  {
+   "wall_s": 1020.2,
+   "condition": "no forced eval",
+   "note": "function-wrapper instrumentation, 99.8% unattributed"
+  },
+  {
+   "wall_s": 131.1,
+   "condition": "forced eval in k-means assignment",
+   "note": "generate 9.32s, argmin 107.52s"
+  },
+  {
+   "wall_s": 1391.2,
+   "condition": "forced eval, isolated process",
+   "note": "same condition as the 131.1s run"
+  }
+ ],
+ "spread": "10.6x on identical work",
+ "HYPOTHESIS_UNSUPPORTED": "Forcing eager evaluation inside the PQ assignment loop appeared to give 7.8x (1020 -> 131). Repeated in an isolated process the SAME condition gave 1391.2s -- slower than the lazy run it was supposed to beat. The condition produced both the fastest and the slowest measurement, so it explains nothing.",
+ "WHAT_I_AM_NOT_CLAIMING": "No throughput improvement. A 7.8x number existed in my hand and it does not survive repetition, which is exactly the shape of the persistence claim I withdrew earlier in this campaign -- a difference between two runs that were not doing the same thing.",
+ "WHAT_IS_ACTUALLY_KNOWN": {
+  "kmeans_assignment_share": "82.0% of one instrumented arm (107.52s of 131.1s)",
+  "generate_share": "7.1% (9.32s)",
+  "activation_moments": "0.31s, negligible -- caching it would buy nothing",
+  "model_load": "1.41s warm"
+ },
+ "WHAT_WOULD_SETTLE_IT": "Per-arm wall on an otherwise idle machine, 5+ alternated repetitions per condition in isolated processes, reporting min/median/max rather than a point estimate. The runs so far shared a host with a 4-agent workflow and earlier arms' memory.",
+ "THE_GUARD_EARNED_ITS_KEEP_HERE": "The first A/B attempt ran four arms in one process and the campaign guard REFUSED the second: 'expected 32.0 GB leaves 0.2 GB headroom, below 1.5 GB'. That is the exact resource state that produced the 2026-09-06 kernel panic, caught before launch instead of by the OS."
+}

@@ -1,0 +1,49 @@
+{
+ "obligation": "G004",
+ "what": "capability conjunction gate on the matched D/E pair plus a deliberately broken magnitude arm, Kimi-VL-A3B",
+ "result": "NOT_MEASURED",
+ "decision": "INCOMPLETE",
+ "broken_arm_failed_the_gate": null,
+ "reconstruction_is_not_capability": true,
+ "nr_not_nx": true,
+ "runtime": {
+  "python": "3.12.6",
+  "mlx": "0.32.1",
+  "mlx_lm": "0.31.3",
+  "numpy": "2.2.6",
+  "default_device": "Device(gpu, 0)",
+  "snap": "/Users/scammermike/.cache/huggingface/hub/models--moonshotai--Kimi-VL-A3B-Instruct/snapshots/398eede0903cd983a2bfa0cc634e9ac1d843f375",
+  "loader": "gravity_outlier_eval._load (kimi_vl kv_b_proj split)"
+ },
+ "matched_bytes_organ": {
+  "D": 811028,
+  "E": 811032,
+  "source": "receipts/future/G004_LOWRANK_MATCHED.json one 2048x1408 down_proj"
+ },
+ "attempted": [
+  {
+   "how": "mx.default_device() in the parent Grok bash process",
+   "saw": "Device(gpu, 0)",
+   "note": "this is not a Metal availability check. It names the default, it does not load the device."
+  },
+  {
+   "how": "mx.eval(mx.ones((8,8))) on the default gpu device, same process",
+   "saw": "RuntimeError: [metal::load_device] No Metal device available. This typically occurs in headless, sandboxed, or virtualized macOS sessions where the GPU is not accessible."
+  },
+  {
+   "how": "import mlx_lm (pulls mx.random.state at import)",
+   "saw": "same RuntimeError [metal::load_device]"
+  },
+  {
+   "how": "subprocess children of this process running --one-arm E/D/broken",
+   "saw": "same RuntimeError inside mlx_lm.sample_utils at import, before G._load"
+  },
+  {
+   "how": "in-process _run_arm('E') then _run_arm('D')",
+   "saw": "E: RuntimeError [metal::load_device] at G._load / mlx_lm import. D: process died SIGSEGV (exit 139) after that failure."
+  }
+ ],
+ "missing_input": "unsandboxed Metal (--profile gate). Free RAM was 37-53 GB, above the 32 GB launch check; the blocker is the GPU, not headroom.",
+ "campaign_memory_guard_at_attempt": "OK, free 50-53 GB, compressor 0.45 GB, swapfiles 2, expected_gb 32 would not STOP",
+ "scar": "mx.default_device() returning Device(gpu, 0) is not evidence the GPU is usable. lowrank_nr.metal_status() tests mx.cpu and would also report OK here. Both would have licensed a fake 'Metal is up' and then died inside mlx_lm."
+}

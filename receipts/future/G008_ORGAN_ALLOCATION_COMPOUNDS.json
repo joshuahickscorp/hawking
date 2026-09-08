@@ -1,0 +1,51 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-07T10:32:38Z",
+  "recorded_by": "tools/future/organ_allocation.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "first_body": {
+  "anatomy_wall_s": 6.83,
+  "capability_wall_s": 166.752,
+  "complete_ebpw": 9.2619,
+  "inverted_won": false,
+  "receipt": "receipts/future/G017_ORGAN_ALLOCATION.json",
+  "slug": "Qwen--Qwen3-0.6B@c1899de289a0",
+  "unequal_beats_uniform": false
+ },
+ "honest_limits": [
+  "Capability wall ROSE (166.8s -> 324.0s) because Falcon3-1B is larger; compounding is the skipped anatomy, not end-to-end cheapness. That is the same distinction G008_CHEAP_SCIENCE_DOES_NOT_COMPOUND.json already made.",
+  "This does NOT pay G008's still-owed sharedbasis wall_s on O003 (that needs Metal).",
+  "On the second body INVERTED won the conjunction ranking (ppl 3.6711 / r4 0.0278 vs weighted 3.7982 / 0.0377). The organ prior did not transfer. Skipping anatomy did not skip that negative.",
+  "All three Falcon3 arms passed the gate; the Qwen3-0.6B first body had only UNIFORM passing. Two bodies, two different capability pictures, same allocator."
+ ],
+ "obligation": "G008",
+ "recorded_by": "tools/future/organ_allocation.py",
+ "schema": "hawking.future.g008_organ_allocation_compounds.v1",
+ "seal_sha256": "1dde497a0cbede72ff338cf7323034a6205d4c7200fd57159597fe0e0042dfad",
+ "second_body": {
+  "all_three_arms_capability_ok": true,
+  "anatomy_re_run": false,
+  "anatomy_wall_s_already_paid": 97.0,
+  "capability_wall_s": 323.961,
+  "complete_ebpw": 8.1989,
+  "inverted_won": true,
+  "receipt": "receipts/future/G008_ORGAN_ALLOCATION_SECOND_BODY.json",
+  "slug": "tiiuae--Falcon3-1B-Instruct@28ba2251970a",
+  "unequal_beats_uniform": false
+ },
+ "skipped": {
+  "class": "dense anatomy of the second body",
+  "evidence_that_licensed_the_skip": "G002_DENSE_ANATOMY_SWEEP.json already has tiiuae--Falcon3-1B-Instruct ANATOMY with all seven standard organs and the three 100% prior laws; G002_ORGAN_PRIOR.json supplies the allocation order. The G017 allocator is specimen-agnostic over those seven names.",
+  "measured_cost_avoided_s": 97.0,
+  "unit": "seconds of dense_anatomy on this body, already paid in G002, not repeated"
+ },
+ "status": "MEASURED",
+ "verdict_sentence": "COMPOUNDS on skipped anatomy: Falcon3-1B anatomy (97.0s) was not re-run. Does NOT compound as cheaper capability. Prior does NOT transfer: INVERTED won on the second body.",
+ "what_compounded": "The G002 organ prior plus the G017 allocator were reused on a SECOND dense causal LM without re-running dense anatomy and without rewriting the allocator."
+}

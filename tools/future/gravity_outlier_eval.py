@@ -167,6 +167,21 @@ def _parse_expert_spec(spec: str) -> dict[str, Any]:
     # centroid, narrowing expert output RANGE, and the repetition gate is what
     # measures that narrowing. The extremes are exactly what a centroid map
     # destroys and what a sparse channel can give back.
+    # sharedbasis<R>: a genuine NR that does NOT store 64 experts independently.
+    # Per tensor the 64 experts are projected onto R shared components; the NR
+    # holds the basis (R x out x in) plus per-expert coefficients (64 x R).
+    # Storage stops being one object per parent weight, which is the boundary
+    # S012 §90 asks to cross.
+    #
+    # The spectra predict this fails: participation 62.88/64, rank90 = 57. R=8
+    # captures well under half the variance. Building it anyway is the point --
+    # a measured end-to-end failure that MATCHES the spectral prediction is what
+    # licenses using the cheap spectrum as a discriminator on every future
+    # specimen instead of paying for the build each time.
+    m = re.fullmatch(r"sharedbasis(\d+)", s, re.I)
+    if m:
+        return {"form": "sharedbasis", "rank": int(m.group(1)),
+                "frac": 0.0, "group": 128, "bits": 2}
     m = re.fullmatch(r"pqsparse([0-9.]+)(percal)?", s, re.I)
     if m:
         return {"form": "pq", "sub_dim": 4, "codebook": 512,
@@ -265,7 +280,9 @@ def predict_ebpw(spec: str) -> float:
     direction check -- it never lets an upward proposal look downward."""
     p = parse_spec(spec)
     g = p["group"]
-    if p["form"] == "pq":
+    if p["form"] == "sharedbasis":
+        per_w = 16.0 * p["rank"] / 64.0
+    elif p["form"] == "pq":
         per_w = math.log2(p["codebook"]) / p["sub_dim"]
     elif p["form"] == "hotcold":
         per_w = (p["hot_frac"] * p["hot_bits"] + (1 - p["hot_frac"]) * p["cold_bits"]
@@ -406,6 +423,30 @@ def collect_activation_moments(model, tok, per_expert: bool = False) -> dict[int
     return stats
 
 
+def _representation_class(plan: dict[str, Any]) -> str:
+    """Name the class. Flat lookup, not a nested conditional chain."""
+    form = plan.get("form")
+    if form == "sharedbasis":
+        return "SHARED_BASIS_NO_INDEPENDENT_EXPERTS"
+    if form == "pq":
+        return ("PRODUCT_QUANTIZATION_PER_EXPERT" if plan.get("per_expert")
+                else "PRODUCT_QUANTIZATION")
+    if form == "binary":
+        if plan.get("per_expert"):
+            return "BINARY_ACT_PER_EXPERT"
+        if plan.get("calibrated"):
+            return "BINARY_ACT_CALIBRATED"
+        return "BINARY_SCALED"
+    return {
+        "hotcold": "HOT_COLD_ROUTED",
+        "binary_ef": "BINARY_ERROR_FEEDBACK",
+        "sparse": "SPARSE_BINARY",
+        "resbinary": "RESIDUAL_BINARY",
+        "outlier_split": "OUTLIER_SPLIT",
+        "affine": "AFFINE_QUANT",
+    }.get(form, "SOURCE_BF16")
+
+
 def evaluate(candidate) -> dict[str, Any]:
     # S010 §5: the OS must never be the first component to discover Hawking
     # exceeded its budget. The 2026-09-06 watchdog panic happened during this
@@ -434,6 +475,8 @@ def evaluate(candidate) -> dict[str, Any]:
     RES = plan["form"] == "resbinary"
     SPARSE = plan["form"] == "sparse"
     PQ = plan["form"] == "pq"
+    SB = plan["form"] == "sharedbasis"
+    sb_values = 0
     pq_cb_values = 0
     EF = plan["form"] == "binary_ef"
     act = (collect_activation_moments(model, tok, per_expert=plan.get("per_expert", False))
@@ -465,7 +508,24 @@ def evaluate(candidate) -> dict[str, Any]:
                 kept += int(mx.sum(mask).item())
             else:
                 mask, base = None, W
-            if PQ:
+            if SB:
+                R = plan["rank"]
+                n_exp = base.shape[0]
+                X = base.reshape(n_exp, -1)                  # experts as vectors
+                mu = mx.mean(X, axis=0, keepdims=True)
+                Xc = X - mu
+                # right singular vectors of the 64 x D matrix, via the 64x64 Gram
+                Gm = (Xc @ Xc.T).astype(mx.float32)
+                w, V = mx.linalg.eigh(Gm, stream=mx.cpu)
+                idx = mx.argsort(w)[::-1][:R]
+                Vr = V[:, idx]                               # [64, R]
+                B = (Vr.T @ Xc)                              # [R, D] shared basis
+                C = Xc @ B.T                                 # [64, R] coefficients
+                nrm = mx.sum(B * B, axis=1, keepdims=True)
+                C = C / mx.maximum(nrm.T, 1e-9)
+                rec = (mu + C @ B).reshape(base.shape)
+                sb_values += int(B.size + C.size + mu.size)
+            elif PQ:
                 d, K = plan["sub_dim"], plan["codebook"]
                 if plan.get("mixed") and "down_proj" in name:
                     d, K = plan["down_sub_dim"], plan["down_codebook"]
@@ -640,7 +700,9 @@ def evaluate(candidate) -> dict[str, Any]:
         expert_bits = n_tot * 16.0
     else:
         # binary stores 1 bit/weight + ONE fp16 scale per group (no zero point).
-        if plan["form"] == "pq":
+        if plan["form"] == "sharedbasis":
+            expert_bits = sb_values * 16     # basis + coefficients + mean, bf16
+        elif plan["form"] == "pq":
             # Summed per tensor, so a mixed geometry is counted honestly rather
             # than by a single nominal rate. `kept * 32` is the sparse
             # correction: MEASURED once as 2.4059 with the outlier channel
@@ -694,19 +756,9 @@ def evaluate(candidate) -> dict[str, Any]:
         "specimen": getattr(candidate, "specimen", "O003"),
         "spec": getattr(candidate, "spec", str(candidate)),
         "non_expert_bits": plan["ne_bits"], "non_expert_group": plan["ne_group"],
-        "representation_class": (("PRODUCT_QUANTIZATION_PER_EXPERT"
-                                  if plan.get("per_expert") else "PRODUCT_QUANTIZATION")
-                                 if plan["form"] == "pq"
-                                 else "HOT_COLD_ROUTED" if plan["form"] == "hotcold"
-                                 else "BINARY_ERROR_FEEDBACK" if plan["form"] == "binary_ef"
-                                 else "SPARSE_BINARY" if plan["form"] == "sparse"
-                                 else "RESIDUAL_BINARY" if plan["form"] == "resbinary"
-                                 else "BINARY_ACT_PER_EXPERT" if plan.get("per_expert")
-                                 else "BINARY_ACT_CALIBRATED" if plan.get("calibrated")
-                                 else "BINARY_SCALED" if plan["form"] == "binary"
-                                 else "OUTLIER_SPLIT" if plan["form"] == "outlier_split"
-                                 else "AFFINE_QUANT" if plan["form"] == "affine"
-                                 else "SOURCE_BF16"),
+        # A flat table beats a fifteen-deep conditional chain; the nesting had
+        # already been broken once by an edit to it.
+        "representation_class": _representation_class(plan),
         "_evidence": "MEASURED (executed in-process on MLX Metal)",
         "complete_bpw": complete_ebpw,
         "complete_ebpw": complete_ebpw,

@@ -1,0 +1,60 @@
+{
+ "obligation": "G008 [S006 35] -- does CHEAP global science get cheaper as it accumulates?",
+ "question": "S006 35 asks for expensive experiments AVOIDED by prior evidence to be MEASURED. The dense sweep's own per-body wall is the obvious place to look for it, and the obvious reading is wrong.",
+ "n_bodies": 34,
+ "total_gib_inspected": 631.3,
+ "naive_reading": {
+  "s_per_gib_first_half_median": 11.34,
+  "s_per_gib_second_half_median": 6.14,
+  "spearman_order_vs_s_per_gib": -0.6,
+  "would_have_claimed": "the sweep got 1.85x cheaper per GiB as it went, so cheap science compounds"
+ },
+ "the_confound": {
+  "spearman_order_vs_size": 1.0,
+  "why": "the sweep runs in EXACT ascending size order, so sweep position and body size are the same variable. Any size effect masquerades as a learning effect.",
+  "size_law": {
+   "fit": "log(wall_s) = 2.683 + 0.741*log(gib)",
+   "r2": 0.794,
+   "exponent": 0.741,
+   "consequence": "wall scales as size^0.74, so seconds-per-GiB falls as size^-0.26 BY CONSTRUCTION -- fixed per-body overhead amortising, not knowledge accumulating."
+  }
+ },
+ "controlled_result": {
+  "spearman_order_vs_residual": -0.05,
+  "permutation_p_two_sided": 0.7824,
+  "permutations": 20000,
+  "verdict": "NO ORDER EFFECT. Once size is removed the sweep position explains nothing."
+ },
+ "finding": "THE CHEAP SWEEP DOES NOT COMPOUND. Every body pays full price for its own header scan, its own null seeds and its own spectra. What compounds is the skipping of EXPENSIVE builds (G008's seven avoided shared-basis build-and-evaluates), not the cost of the cheap scan itself. The 11.34 -> 6.14 s/GiB drop is amortisation and would have been reported as learning.",
+ "static_streaming_across_34_bodies": {
+  "total_body_gib": 631.3,
+  "peak_rss_gib_min": 0.3,
+  "peak_rss_gib_median": 7.19,
+  "peak_rss_gib_max": 9.94,
+  "spearman_size_vs_rss": 0.462,
+  "largest_body": {
+   "gib": 135.4,
+   "peak_rss_gib": 6.588,
+   "ratio": 20.6
+  },
+  "bodies_over_20gib": {
+   "n": 6,
+   "rss_range_gib": [
+    6.3,
+    8.19
+   ],
+   "ratios": [
+    3.8,
+    3.9,
+    3.9,
+    10.9,
+    18.0,
+    20.6
+   ]
+  },
+  "swapfile_delta_nonzero": 0,
+  "reading": "RSS is nearly DECOUPLED from body size: 0.8-135.4 GiB of body against a 6.30-8.19 GiB working set for every body over 20 GiB, spearman +0.46 not +1.0, and zero swapfile growth anywhere. Directive 21's STATIC_STREAMABLE now holds across 34 bodies, not one.",
+  "honest_limit": "For the 8 smallest bodies (<=2.5 GiB) RSS EXCEEDS the body in 7 of 8 cases. That is the null machinery -- 5 same-shape null seeds per organ -- not the body, so the ratio is a measure of the INSTRUMENT at small sizes and only of streaming at large ones."
+ },
+ "does_not_claim": "This does NOT measure the unit price of an avoided expensive build. G008's owed piece is unchanged: no sharedbasis arm on disk carries a wall_s, so 'seven builds avoided' still multiplies a known count by an unknown unit price. That needs Metal, currently held."
+}

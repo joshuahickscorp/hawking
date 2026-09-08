@@ -1,0 +1,89 @@
+{
+ "obligation": "G009 / [S006 14] -- can any two physical numbers in this campaign be compared?",
+ "rule": "S006 14: every physical receipt must identify specimen, NR, runtime, context, path, concurrency, and numbers across mismatched contracts must not be compared.",
+ "instrument": "tools/future/tps_contract.py -- a validator, not a measurer.",
+ "classifier_note": "PHYSICAL means the receipt carries a NUMERIC rate key. Substring matching on the serialized text was tried first and called 282 of 443 receipts physical, including a namespace audit and a dead-callsite sweep, because 'decode' and 'toks' appear in prose. That inflated denominator would have made the result look far worse than it is.",
+ "n_json": 443,
+ "n_physical": 77,
+ "n_comparable": 1,
+ "n_incomparable": 76,
+ "finding": "77 physical receipts carry a measured rate. 1 of them identify all six fields. The campaign cannot legitimately compare any two of its own physical numbers under its own rule.",
+ "missing_field_frequency": {
+  "concurrency": 75,
+  "context": 72,
+  "nr": 67,
+  "runtime": 66,
+  "specimen": 52,
+  "path": 38
+ },
+ "closest_to_compliant": [
+  {
+   "receipt": "LPC_DATASET.json",
+   "missing": [
+    "runtime",
+    "context",
+    "concurrency"
+   ]
+  },
+  {
+   "receipt": "RESIDENT_BINARY_DRIFT.json",
+   "missing": [
+    "specimen",
+    "nr",
+    "concurrency"
+   ]
+  },
+  {
+   "receipt": "RESIDENT_TPS_RECON.json",
+   "missing": [
+    "nr",
+    "path",
+    "concurrency"
+   ]
+  },
+  {
+   "receipt": "_G075_greedy_baseline.json",
+   "missing": [
+    "runtime",
+    "context",
+    "concurrency"
+   ]
+  },
+  {
+   "receipt": "_G075_greedy_widen_f4.json",
+   "missing": [
+    "runtime",
+    "context",
+    "concurrency"
+   ]
+  },
+  {
+   "receipt": "_G083_concurrent.json",
+   "missing": [
+    "runtime",
+    "context",
+    "concurrency"
+   ]
+  },
+  {
+   "receipt": "_G083_serial.json",
+   "missing": [
+    "runtime",
+    "context",
+    "concurrency"
+   ]
+  },
+  {
+   "receipt": "G013_O003_DECODE_SETTLED.json",
+   "missing": [
+    "specimen",
+    "nr",
+    "context",
+    "concurrency"
+   ]
+  }
+ ],
+ "already_paid_for_this": "O003 carried two decode figures 25% apart, 87.67 and 69.97. The disagreement could not be resolved by re-reading them because NEITHER recorded its mlx_lm version, so 69.97's compute path was unreconstructable. It had to be settled by internal consistency instead: 87.67 x 5.158 GB/token = 452.2 GB/s matched that receipt's own recorded bandwidth exactly. A recorded `runtime` field would have settled it in one line.",
+ "does_not_claim": "that these 77 numbers are WRONG. They are unreproducible and mutually incomparable, which is a different and narrower charge. Each may be perfectly correct for the conditions it was taken under; those conditions were simply not written down.",
+ "next": "New physical receipts carry the six fields. Old ones are not retrofitted from memory -- a contract reconstructed after the fact is a guess wearing a receipt's clothes."
+}

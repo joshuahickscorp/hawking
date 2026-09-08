@@ -1,0 +1,19 @@
+{
+ "date": "2026-09-06",
+ "obligation": "G032 [S012 \u00a764]",
+ "specimen": "O003",
+ "QUESTION": "Is the gate/up tensor boundary an implementation artifact hiding shared structure?",
+ "ANSWER": "No. Refuted with a control.",
+ "measured": {
+  "same_expert_gate_up_rank90": 1144,
+  "diff_experts_gate_gate_rank90": 1166,
+  "diff_experts_up_up_rank90": 1168,
+  "same_expert_gate_up_repeat_e2": 1160,
+  "control_mean": 1167,
+  "difference_pct": 2.0
+ },
+ "MY_FIRST_READING_WAS_WRONG": "I compared the stacked rank90 of 1144 against the SUM of the two separate rank90s, 1627, and the script printed 'SHARED structure'. That comparison has no null: two matrices stacked in a shared 2048-dimensional column space cannot exceed 2048 whatever their relationship, so a stacked rank below the naive sum is guaranteed and means nothing.",
+ "THE_CONTROL_THAT_SETTLED_IT": "Stack two matrices ALREADY MEASURED to be near-independent -- gate_proj from two different experts, cross-expert participation 62.88/64. If the same-expert gate/up stack shared structure it would rank materially lower than that control. It ranks 2.0% lower, which is noise, and a repeat on a third expert gives 1160.",
+ "CONSEQUENCE": "The parent's tensor boundaries are NOT hiding redundancy on this specimen. Representation search is permitted to cross them (S012 \u00a764 is right as policy) but for O003 there is nothing on the other side. This closes the last cheap structural hypothesis.",
+ "PATTERN": "Second time today a control overturned my own first reading -- the other was a metric census that credited a roster file naming all 14 specimens for a single mention of EBPW. Both were caught before they reached a claim. A comparison without a null is not a measurement."
+}
