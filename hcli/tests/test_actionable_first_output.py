@@ -47,6 +47,7 @@ AUDITED_TOOLS = {
     "claim.attack": "compliant",
     "experiment.confound": "compliant",
     "nr.complete_ebpw": "compliant",
+    "odyssey.attack_law": "compliant",
     "odyssey.priors": "compliant",
     "tool.reachable": "compliant",
     "wall.avoided": "compliant",
@@ -241,6 +242,13 @@ def test_auditor_tools_lead_with_the_verdict(tmp_path):
     assert '"callable"' in _head(reach.value)
     assert reach.value["callable"] is True
     assert "physical.rounds" in reach.value["likely_producers"]["round_id"]
+
+    # OIII closes the loop from the side that writes laws.
+    oiii = reg.invoke("odyssey.attack_law", {"law_id": "LAW-COMPETENT-KERNEL-FIRST",
+                                             "show": 3})
+    assert oiii.ok, oiii.error
+    head = _head(oiii.value)
+    assert '"attacks"' in head or '"refused"' in head
 
     attack = reg.invoke("claim.attack", {"claim": "expert"})
     assert attack.ok, attack.error

@@ -100,6 +100,17 @@
       "source_oxx": null,
       "text": "Organ structure -- global prior OR local anatomy -- is a WEAK predictor of behavioural tolerance. Two independent probes on Qwen3-0.6B agree on every pair they both decide, and together they put the global prior at 3/5 and local anatomy at 2/5 on which organ of a pair tolerates being crushed; chance is 2.5/5. Kendall tau between measured per-organ sensitivity and the structural ordering is 0.238 (global) and 0.048 (local), and once the delta is normalised per megabyte saved the signal INVERTS to -0.048 and -0.238 -- i.e. most of the apparent structural signal is organ SIZE. Two organs (o_proj, gate_proj) have NEGATIVE sensitivity: crushing them to q3-g64 lowered perplexity below the q4-g64 base. Use measured behavioural sensitivity, not anatomy, to allocate.",
       "writer_pid": 8285
+    },
+    {
+      "counterexample_requirement": "a shipped body whose embedding and other non-linear payload are themselves compressed, or a tied/factored vocabulary that removes the embedding as the dominant term",
+      "evidence": "receipts/future/G034_ODYSSEY_LEDGER.json, receipts/future/G012_SELECTION_CANNOT_REACH.json",
+      "hcli_owned": false,
+      "id": "LAW010",
+      "recorded_at": "2026-09-08T05:54:20.824628+00:00",
+      "scope": "ARCHITECTURE_FAMILY",
+      "source_oxx": null,
+      "text": "A shipped purpose-built low-bit body independently confirms G012's shape. microsoft/bitnet-b1.58-2B-4T stores its linears at 2.000 bits per weight -- packed [640,6912] against a logical [2560,6912], four ternary values per byte plus a bf16 per-tensor scale; 1.58 is the information content of a ternary value, not the storage. Its complete EBPW is 3.908, and 55.7% of every persistent byte is ONE bf16 embedding tensor at 16 bpw, against 44.2% for all the ternary linears combined. Driving every linear to zero bytes still leaves ~2.18 complete EBPW; driving the embedding to zero still leaves ~1.73. A dedicated ternary design by a major lab does not reach <=1.0 complete EBPW, and the binding constraint is the same non-linear payload G012 identified.",
+      "writer_pid": 9213
     }
   ],
   "parked": [],

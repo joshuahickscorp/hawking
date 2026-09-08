@@ -2605,6 +2605,104 @@ def _odyssey_priors(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any
 # caller, and a law store with two write doors and no read door.
 # ---------------------------------------------------------------------------
 
+def _odyssey_attack_law(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """OIII: generate ranked executable attacks against one recorded law.
+
+    The adversary was reachable only from an acceptance runner, so the loop
+    LAW -> ATTACK -> RESULT -> SCOPE UPDATE had no entry point from the side
+    that writes the laws. It does now: HCLI records a law through
+    odyssey.record_law, reads it back through odyssey.priors, and attacks it
+    here. A law that emits no attack is refused rather than quietly published.
+
+    These are SPECS, not measurements -- static, bench UNKNOWN. Running one is
+    a separate act.
+    """
+    _future_tools_on_path(context)
+    law_id = str(args.get("law_id") or "").strip()
+    if not law_id:
+        return {"refused": "law_id is required; odyssey.priors lists them"}
+    rows = (_odyssey_priors(context, {"focus": law_id.lower(), "show": 20})
+            .get("priors") or [])
+    match = next((r for r in rows if str(r.get("id")) == law_id), None)
+    if match is None:
+        return {"refused": f"{law_id} is not a recorded law or scar",
+                "hint": "odyssey.priors lists what is recorded"}
+    if not match.get("domain"):
+        return {"refused": f"{law_id} has no domain; a law with no stated scope "
+                           "cannot be attacked on scope, and attacking it on "
+                           "anything else would be attacking a guess",
+                "fix": "re-record it with a domain"}
+    # The campaign runs TWO scope vocabularies: the law store writes
+    # ARCHITECTURE_FAMILY / GENERIC_CANDIDATE, and the adversary's ladder
+    # accepts neither. Map conservatively -- never UPGRADE a scope, because a
+    # law attacked at a broader scope than it was recorded at gets refuted for
+    # a claim nobody made -- and refuse anything with no conservative mapping.
+    ladder = {"GENERIC_VERIFIED", "FAMILY_VERIFIED", "MODEL_LOCAL",
+              "ORGAN_LOCAL", "DEVICE_LOCAL", "MACHINE_LOCAL"}
+    downgrade = {"ARCHITECTURE_FAMILY": "FAMILY_VERIFIED",
+                 "GENERIC_CANDIDATE": "MODEL_LOCAL"}
+    raw_domain = str(match["domain"])
+    scope = raw_domain if raw_domain in ladder else downgrade.get(raw_domain)
+    if scope is None:
+        return {"refused": f"{law_id} has domain {raw_domain!r}, which is on neither "
+                           "the law store's vocabulary nor the adversary's scope "
+                           "ladder; attacking it would mean inventing its scope",
+                "ladder": sorted(ladder), "known_mappings": downgrade}
+    law = {
+        "law_id": match["id"],
+        "statement": match["says"],
+        "scope": scope,
+        "evidence_refs": (match.get("evidence") if isinstance(match.get("evidence"), list)
+                          else [match.get("evidence")] if match.get("evidence") else []),
+        "counterexample_requirement": match.get("reopen") or "",
+        "source_model": args.get("source_model") or "UNKNOWN",
+        "source_device": "UNKNOWN",
+        "architecture_family": args.get("architecture_family") or "UNKNOWN",
+        "organ_class": args.get("organ_class") or "UNKNOWN",
+        "backend": "UNKNOWN",
+        "evidence_strength": "DIAGNOSTIC_RELATIVE",
+        "transfer_candidates": [],
+        # Neutral default, NOT a measurement: laws recorded through
+        # odyssey.record_law carry no confidence figure, and inventing a
+        # confident one would bias which attacks the ranker prefers.
+        "transfer_confidence": 0.5,
+    }
+    try:
+        from tools.future import odyssey3_adversary as o3  # type: ignore
+        ranked = o3.rank_attacks(o3.generate_attacks(law))
+    except Exception as exc:
+        return {"experiment_failed": f"{type(exc).__name__}: {exc}",
+                "not_a_specimen_property": True, "law_id": law_id}
+    if not ranked:
+        return {"refused": f"{law_id} emitted no attack; an unattackable law is "
+                           "not a published law"}
+    shown = _shown_limit(args.get("show"), default=5, maximum=20)
+    # Field names are the adversary's own ATTACK_SPEC_FIELDS. Guessing them
+    # produced a row of nulls that looked like a working tool.
+    lead = [{"attack_id": a.get("attack_id"), "family": a.get("family"),
+             "cost_units": a.get("cost_units"),
+             "p_refutation": a.get("p_refutation"),
+             "selection_score": a.get("selection_score"),
+             "falsifier": str(a.get("falsifier") or "")[:200],
+             "adversarial_target": str(a.get("adversarial_target") or "")[:160],
+             "scope_if_refuted": a.get("target_scope_if_refuted"),
+             "command": a.get("command")}
+            for a in ranked[:shown]]
+    return {
+        "law_id": law_id,
+        "domain": raw_domain,
+        "scope_used": scope,
+        "scope_note": (None if scope == raw_domain else
+                       f"recorded domain {raw_domain} mapped DOWN to {scope} for the "
+                       "adversary's ladder; attacks are judged at the narrower scope"),
+        "transfer_confidence_is_a_neutral_default": 0.5,
+        "n_attacks": len(ranked),
+        "attacks": lead,
+        "evidence_class": "STATIC_ONLY",
+        "note": "specs, not measurements; running one is a separate act",
+    }
+
+
 def _capability_gate(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
     """THE capability authority: perplexity AND n-gram diversity, G020 bars.
 
@@ -3710,6 +3808,20 @@ def default_tool_registry(
     ))
     # NR->NX doors: the single biller and the single physical emitter, made
     # reachable. [S010 35, 37, 49]
+    registry.register(ToolSpec(
+        "odyssey.attack_law",
+        "OIII: generate ranked executable attacks against one recorded law -- "
+        "negative transfer, blind holdout, measurement trap, goodhart, scope. "
+        "Closes the loop LAW -> ATTACK -> RESULT -> SCOPE UPDATE from the side "
+        "that writes laws. A law with no domain, or one that emits no attack, "
+        "is refused rather than published.",
+        {"type": "object", "required": ["law_id"], "additionalProperties": False,
+         "properties": {"law_id": {"type": "string"}, "show": {"type": "integer"},
+                        "source_model": {"type": "string"},
+                        "architecture_family": {"type": "string"},
+                        "organ_class": {"type": "string"}}},
+        handler=_odyssey_attack_law,
+    ))
     registry.register(ToolSpec(
         "capability.gate",
         "THE capability authority: does this candidate pass perplexity AND "
