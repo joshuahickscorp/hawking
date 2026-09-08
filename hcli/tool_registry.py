@@ -2772,6 +2772,18 @@ def _experiment_confound(context: ToolContext, args: Dict[str, Any]) -> Dict[str
     arms = doc.get("arms") or {}
     if not isinstance(arms, Mapping) or not arms:
         return {"refused": f"{Path(path).name} has no `arms` object to compare"}
+    # A design may deliberately include an arm that is NOT depth-matched -- a
+    # uniform reference cannot be, since uniform means one spec everywhere.
+    # Let the caller scope the audit to the arms actually being compared rather
+    # than have the whole receipt reported confounded because of a reference arm.
+    only = args.get("arms")
+    if only:
+        want = [str(x) for x in only]
+        unknown = [x for x in want if x not in arms]
+        if unknown:
+            return {"refused": f"{Path(path).name} has no arms {unknown}",
+                    "available": sorted(arms)}
+        arms = {k: v for k, v in arms.items() if k in want}
     rows = {}
     for name, arm in arms.items():
         if not isinstance(arm, Mapping):
@@ -3843,7 +3855,8 @@ def default_tool_registry(
         "depths. If any of those differ, the capability difference belongs to "
         "whichever moved, not to the ordering.",
         {"type": "object", "required": ["receipt"], "additionalProperties": False,
-         "properties": {"receipt": {"type": "string"}}},
+         "properties": {"receipt": {"type": "string"},
+                        "arms": {"type": "array", "items": {"type": "string"}}}},
         handler=_experiment_confound,
     ))
     registry.register(ToolSpec(

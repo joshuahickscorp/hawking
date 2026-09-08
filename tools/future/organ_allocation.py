@@ -1433,6 +1433,199 @@ def ingest_g017_into_ledger(
     return {"slug": slug, "actions": actions, "progress": progress(led)}
 
 
+ALLOC_SCHEMA = "hawking.future.g012_sensitivity_allocation.v1"
+ALLOC_RECEIPT = "G012_SENSITIVITY_ALLOCATION.json"
+
+# The tilt. Chosen so a pair {cheap, mid} and a triple {cheap, mid, rich} each
+# reproduce all-RICH's byte total EXACTLY on this specimen's equal-parameter
+# groups -- verified, delta 0 bytes. Every arm below is therefore byte-exact,
+# and the three TILTED arms additionally share one bit-depth multiset, which is
+# the confound LAW003 says destroys an ordering claim.
+ALLOC_CHEAP = (3, 32)
+ALLOC_MID = (4, 32)
+ALLOC_RICH = (4, 64)
+
+
+def allocation_arms(sensitivity: dict[str, float]) -> dict[str, dict[str, tuple[int, int]]]:
+    """UNIFORM plus three permutations of ONE multiset over the equal-size groups.
+
+    Within {q,o}, {k,v} and {down,gate,up} any permutation is byte-identical, so
+    the only thing that varies between the tilted arms is WHICH organ is
+    protected. SENSITIVITY spends the cheapest spec on the organ measured least
+    sensitive; ANTI_SENSITIVITY is its negative control and must do WORSE, or
+    the map has no predictive power; GLOBAL_ANATOMY spends it on the organ the
+    structural prior calls most redundant.
+    """
+    pairs = (("o_proj", "q_proj"), ("k_proj", "v_proj"))
+    triple = ("down_proj", "gate_proj", "up_proj")
+
+    def order_by(score: dict[str, float], names, reverse: bool):
+        return sorted(names, key=lambda n: score[n], reverse=reverse)
+
+    glob = dict(PRIOR_DEFICIT)
+    arms: dict[str, dict[str, tuple[int, int]]] = {}
+    arms["UNIFORM"] = {f: ALLOC_RICH for f in STANDARD_ORGANS}
+
+    def build(score: dict[str, float], reverse: bool) -> dict[str, tuple[int, int]]:
+        # reverse=False: LOWEST score first == cheapest spec to the lowest score.
+        a: dict[str, tuple[int, int]] = {}
+        for grp in pairs:
+            lo, hi = order_by(score, grp, reverse)
+            a[lo], a[hi] = ALLOC_CHEAP, ALLOC_MID
+        lo, mid, hi = order_by(score, triple, reverse)
+        a[lo], a[mid], a[hi] = ALLOC_CHEAP, ALLOC_MID, ALLOC_RICH
+        return a
+
+    # Least sensitive gets the cheapest spec.
+    arms["SENSITIVITY"] = build(sensitivity, reverse=False)
+    # Negative control: most sensitive gets the cheapest spec.
+    arms["ANTI_SENSITIVITY"] = build(sensitivity, reverse=True)
+    # Highest structural deficit gets the cheapest spec -- the prior's own rule.
+    arms["GLOBAL_ANATOMY"] = build(glob, reverse=True)
+    return arms
+
+
+def run_allocation_experiment(
+    *,
+    snapshot: str | None = None,
+    slug: str | None = None,
+    expected_gb: float = 8.0,
+    sensitivity_receipt: str = "receipts/future/G011_ORGAN_SENSITIVITY.json",
+) -> dict[str, Any]:
+    """Does allocating by MEASURED sensitivity beat allocating by anatomy?"""
+    from campaign_memory_guard import require_ok, resource_cost, sample
+
+    snapshot = snapshot or SPECIMEN_PATH
+    slug = slug or SPECIMEN_SLUG
+    src = _REPO / sensitivity_receipt
+    if not src.is_file():
+        raise FileNotFoundError(
+            f"{sensitivity_receipt} is required: this arm allocates by MEASURED "
+            "sensitivity and will not fall back to a structural proxy")
+    sdoc = json.loads(src.read_text())
+    sens = {r["organ"]: float(r["delta_ppl"]) for r in sdoc["sensitivity"]}
+    missing = sorted(set(STANDARD_ORGANS) - set(sens))
+    if missing:
+        raise ValueError(f"{sensitivity_receipt} has no measured sensitivity for {missing}")
+
+    guard = sample(expected_gb=expected_gb)
+    if guard.state == "STOP":
+        return {"schema": ALLOC_SCHEMA, "status": "GUARD_STOP", "guard": guard.as_dict(),
+                "verdict_sentence": "NO RESULT: campaign_memory_guard STOP before load"}
+    require_ok("G012 sensitivity allocation", expected_gb=expected_gb)
+
+    inv = inventory(snapshot)
+    assigns = allocation_arms(sens)
+    plans = {n: plan_arm(inv, n, assignment=a) for n, a in assigns.items()}
+    names = list(plans)
+    byte_set = {p["organ_bytes"] for p in plans.values()}
+    depth_sets = {n: tuple(sorted(v["bits"] for v in plans[n]["per_organ"].values()))
+                  for n in names}
+    tilted = [n for n in names if n != "UNIFORM"]
+
+    caps: dict[str, Any] = {}
+    gates: dict[str, Any] = {}
+    applied: dict[str, Any] = {}
+    with resource_cost(interval_s=2.0, label="G012_ALLOC") as cost:
+        weights = _load_bf16_payloads(inv)
+        model, tok = _load_model(snapshot)
+        dense_cap = measure_capability(model, tok)
+        for nm in names:
+            rec = reconstruct_arm(inv, weights, plans[nm]["specs"])
+            applied[nm] = _apply_recs(model, rec)
+            del rec
+            caps[nm] = measure_capability(model, tok)
+            gates[nm] = gate_from_reference(caps[nm], dense_cap)
+        del model, weights
+
+    arms_pub = {n: _public_arm({k: v for k, v in plans[n].items() if k != "specs"},
+                               caps[n], gates[n]) for n in names}
+    sens_p = arms_pub["SENSITIVITY"]["capability"]["ppl_full"]
+    anti_p = arms_pub["ANTI_SENSITIVITY"]["capability"]["ppl_full"]
+    glob_p = arms_pub["GLOBAL_ANATOMY"]["capability"]["ppl_full"]
+    uni_p = arms_pub["UNIFORM"]["capability"]["ppl_full"]
+
+    # CAPABILITY decides, not perplexity. Ranking these arms on likelihood alone
+    # reported "anatomy not beaten" while missing that the anatomy arm was the
+    # only one to survive the conjunction -- the exact one-metric trap LAW008
+    # exists to prevent, walked into by the verdict function itself.
+    passing = [n for n in names if bool(arms_pub[n].get("capability_ok"))]
+    winners = [n for n in passing
+               if not any(m != n and _pareto_better(arms_pub[m], arms_pub[n]) == "a"
+                          for m in passing)]
+    # The control is about the MAP, and is judged on the continuous axes because
+    # neither it nor its mirror may survive the gate at a given budget.
+    control_holds = sens_p < anti_p
+    if len(winners) == 1:
+        outcome = f"{winners[0]}_WINS"
+        note = (f"{winners[0]} is the only allocation to survive the conjunction at "
+                f"identical bytes; likelihood alone would have ranked it differently")
+    elif not passing:
+        outcome = "NONE_PASSES_GATE"
+        note = ("no allocation survived the conjunction at this budget; the "
+                "comparison between them is unresolved, not a win for the best ppl")
+    else:
+        outcome = "UNDECIDED"
+        note = ("more than one allocation passes and none Pareto-dominates the "
+                "others at this budget")
+    if not control_holds:
+        outcome = "MAP_HAS_NO_PREDICTIVE_POWER"
+        note = ("the anti-sensitivity control matched or beat the sensitivity arm at "
+                "identical bytes and identical bit depths; the measured map does not "
+                "predict allocation tolerance and must not be used as one. " + note)
+
+    return {
+        "schema": ALLOC_SCHEMA,
+        "obligation": "G012",
+        "status": "MEASURED",
+        "question": ("does allocating by MEASURED behavioural sensitivity beat "
+                     "allocating by structural anatomy, at identical bytes and "
+                     "identical bit depths?"),
+        "specimen": slug,
+        "specimen_path": snapshot,
+        "sensitivity_source": sensitivity_receipt,
+        "measured_sensitivity": sens,
+        "specs": {"cheap": f"q{ALLOC_CHEAP[0]}-g{ALLOC_CHEAP[1]}",
+                  "mid": f"q{ALLOC_MID[0]}-g{ALLOC_MID[1]}",
+                  "rich": f"q{ALLOC_RICH[0]}-g{ALLOC_RICH[1]}"},
+        "assignments": {n: {f: f"q{c[0]}-g{c[1]}" for f, c in a.items()}
+                        for n, a in assigns.items()},
+        "byte_exact_across_all_arms": len(byte_set) == 1,
+        "organ_bytes": sorted(byte_set),
+        "depth_multisets": {n: list(v) for n, v in depth_sets.items()},
+        "depth_exact_across_tilted_arms": len({depth_sets[n] for n in tilted}) == 1,
+        "uniform_depth_differs_by_design": True,
+        "outcome": outcome,
+        "winners": winners,
+        "passing_gate": passing,
+        "control_holds": control_holds,
+        "control_gap_ppl": round(anti_p - sens_p, 6),
+        "decided_by": "the capability conjunction, not perplexity alone",
+        "dense_parent_capability": dense_cap,
+        "arms": arms_pub,
+        "applied": applied,
+        "guard_at_start": guard.as_dict(),
+        "resource": cost,
+        "device": "cpu",
+        "nr_not_nx": True,
+        "weaker_than_it_looks": [
+            "The sensitivity map was measured at ONE perturbation size on THIS body; "
+            "allocating by it is an out-of-sample use of an in-sample measurement.",
+            "UNIFORM is byte-matched but NOT depth-matched -- it cannot be, since "
+            "uniform means one spec everywhere. Only the three tilted arms are a "
+            "clean ordering comparison.",
+            "Capability is 8 greedy prompts x 96 tokens plus 512-token NLL on CPU "
+            "fp32 -- the existing gate's budget, not a large eval.",
+        ],
+        "verdict_sentence": (
+            f"G012 {outcome} on {slug} at complete EBPW "
+            f"{arms_pub['UNIFORM']['complete_ebpw']:.4f}, all arms byte-exact: "
+            f"SENSITIVITY ppl {sens_p:.4f}, ANTI_SENSITIVITY (control) {anti_p:.4f}, "
+            f"GLOBAL_ANATOMY {glob_p:.4f}, UNIFORM {uni_p:.4f}; gate PASS = "
+            f"{passing or 'none'}. {note}."),
+    }
+
+
 SENS_SCHEMA = "hawking.future.g011_organ_sensitivity.v1"
 SENS_RECEIPT = "G011_ORGAN_SENSITIVITY.json"
 
@@ -1757,6 +1950,10 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--alloc-only", action="store_true")
     p.add_argument("--mutation-check", action="store_true")
     p.add_argument("--run", action="store_true")
+    p.add_argument("--allocate", action="store_true",
+                   help="allocate by MEASURED sensitivity vs structural anatomy vs "
+                        "uniform, byte-exact and depth-exact, with an "
+                        "anti-sensitivity negative control")
     p.add_argument("--sensitivity", action="store_true",
                    help="per-organ behavioural sensitivity: one organ crushed at "
                         "a time, everything else held at base")
@@ -1808,6 +2005,13 @@ def main(argv: list[str] | None = None) -> int:
         out = run_mutation_check()
         print(json.dumps(out, indent=2, sort_keys=True))
         print("MUTATION_CHECK_OK")
+        return 0
+    if args.allocate:
+        doc = run_allocation_experiment(
+            snapshot=args.snapshot, slug=args.slug, expected_gb=args.expected_gb)
+        path = write_doc(doc, args.receipt or ALLOC_RECEIPT)
+        print(path)
+        print(doc["verdict_sentence"])
         return 0
     if args.sensitivity:
         doc = run_sensitivity_experiment(

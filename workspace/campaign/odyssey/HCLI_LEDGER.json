@@ -111,10 +111,41 @@
       "source_oxx": null,
       "text": "A shipped purpose-built low-bit body independently confirms G012's shape. microsoft/bitnet-b1.58-2B-4T stores its linears at 2.000 bits per weight -- packed [640,6912] against a logical [2560,6912], four ternary values per byte plus a bf16 per-tensor scale; 1.58 is the information content of a ternary value, not the storage. Its complete EBPW is 3.908, and 55.7% of every persistent byte is ONE bf16 embedding tensor at 16 bpw, against 44.2% for all the ternary linears combined. Driving every linear to zero bytes still leaves ~2.18 complete EBPW; driving the embedding to zero still leaves ~1.73. A dedicated ternary design by a major lab does not reach <=1.0 complete EBPW, and the binding constraint is the same non-linear payload G012 identified.",
       "writer_pid": 9213
+    },
+    {
+      "counterexample_requirement": "a second body where a gentle depth-controlled tilt along the global order fails the conjunction while uniform passes, or a budget on this body where uniform also passes and the tilt buys nothing",
+      "evidence": "receipts/future/G012_SENSITIVITY_ALLOCATION.json",
+      "hcli_owned": false,
+      "id": "LAW011",
+      "recorded_at": "2026-09-08T06:19:47.392012+00:00",
+      "scope": "MODEL_LOCAL",
+      "source_oxx": null,
+      "text": "The GLOBAL organ-structure order IS a usable allocation prior when the tilt is gentle and depth-controlled. Four arms at 247,730,784 organ bytes each, the three tilted ones sharing one bit-depth multiset: GLOBAL_ANATOMY is the ONLY arm to survive the capability conjunction (ppl 5.5520, r4 0.4135), beating UNIFORM on the gate (ppl 5.2278 but r4 0.7103, FAIL) despite losing to it on likelihood. The earlier G017/G021 failures were the RAMP'S DEPTH, not the ordering: those arms reached q2 and q3-g128, this tilt is q3-g32 on three organs and q4 on four. Diversity is where the tilt pays -- r4 0.7103 -> 0.4135 against a dense 0.3619.",
+      "writer_pid": 22056
+    },
+    {
+      "counterexample_requirement": "a body where the one-at-a-time ordering and the measured full-allocation ordering agree, or a joint/interaction-aware sensitivity probe that does compose",
+      "evidence": "receipts/future/G012_SENSITIVITY_ALLOCATION.json, receipts/future/G011_ORGAN_SENSITIVITY.json",
+      "hcli_owned": false,
+      "id": "LAW012",
+      "recorded_at": "2026-09-08T06:19:47.393864+00:00",
+      "scope": "GENERIC_CANDIDATE",
+      "source_oxx": null,
+      "text": "One-organ-at-a-time behavioural sensitivity does NOT compose into a multi-organ allocation. The map is real -- allocating by it beats allocating AGAINST it by 0.6712 ppl at identical bytes and identical bit depths, so the negative control holds -- yet the anatomy-ordered arm still beat the sensitivity-ordered arm and was the only one to pass the gate. Measuring each organ alone misses interaction: o_proj measured LESS sensitive than q_proj in isolation (-0.112 vs +0.239) and crushing it cost more inside a full allocation. Use a one-at-a-time map to rank candidates, never to build an allocation additively.",
+      "writer_pid": 22056
     }
   ],
   "parked": [],
-  "scars": [],
+  "scars": [
+    {
+      "description": "G012 damaged this law's PRESCRIPTION while leaving its measurement intact. LAW009 concluded 'use measured behavioural sensitivity, not anatomy, to allocate'. At matched bytes and matched bit depths the anatomy-ordered arm beat the sensitivity-ordered arm and was the only one to pass the conjunction. What survives: structure is a weak PAIRWISE predictor (3/5) and the per-MB tau inverts. What is refuted: the recommendation to allocate by the one-at-a-time map.",
+      "hcli_owned": false,
+      "law_id": "LAW009",
+      "recorded_at": "2026-09-08T06:19:47.394607+00:00",
+      "reopen_when": "an interaction-aware sensitivity measurement that beats the global order in a byte-exact, depth-exact allocation",
+      "writer_pid": 22056
+    }
+  ],
   "schema": "hcli.odyssey.ledger.v1",
   "transfer_probes": []
 }
