@@ -1,17 +1,24 @@
 {
-  "objective": "Close the autonomy loop once: an HCLI worker takes a unit to an ACCEPTED terminal and writes a law, so hcli_owned stops being 0 of 25.",
-  "active_specimen": "hcli/perception -- the freshly sublated package",
-  "why_this_specimen": "It is new, small, and has an obvious untested edge. Evidence here is mechanically producible: a test that is RED before the change and GREEN after, which is exactly what _validate accepts. The previous attempt failed NO_EVIDENCE because the task required judgement it could not evidence in one unit.",
-  "active_workunit": "AUTONOMY-2: one red-before-green mutation in hcli/perception",
-  "hypothesis": "The machinery works -- wake, compile, spawn, model call all verified. What was missing was a task whose evidence is a passing test rather than a claim.",
-  "next_action": "In hcli/perception/store.py, ProjectStore.artifact_path raises ValueError for a digest shorter than 3 characters but does not reject a digest containing a path separator, so a crafted digest could escape the artifacts directory. 1. Write hcli/tests/test_artifact_path_cannot_escape.py asserting that ProjectStore.artifact_path('../../etc/passwd') raises ValueError. 2. Run it and confirm it FAILS (red). 3. Add the guard to artifact_path so the test passes (green). 4. Run the test again and confirm it passes. Report the test file path and both run results as your evidence.",
+  "objective": "Global Odyssey. VMCP is sublated and its coupled half deleted. The autonomy facet is the live front and the one the steer calls most important.",
+  "active_specimen": "HCLI itself -- the resident daemon",
+  "why_this_specimen": "hcli_owned is 0 of 25 laws. That flag is true only when the writer shares the live worker's session id, so it can only change by the resident actually completing a unit. Two runs this session got the loop turning; neither reached an ACCEPTED terminal.",
+  "active_workunit": "AUTONOMY-3: an accepted unit, hence the campaign's first hcli_owned law",
+  "hypothesis": "The blocker is no longer machinery. Wake-from-checkpoint, goal compilation, worker spawn, model calls, file writes and self-repair all happened unprompted. What failed twice is the model emitting a VALID STRUCTURED MUTATION against a real source file -- 'structured output rejected after 3 attempts'. That is a capability gap at 4B, not an architecture gap.",
+  "next_action": "Do not give the resident a source mutation again until the structured-output path is understood. Instead: (1) read hcli/engine.py's structured-output rejection to find what shape it demands and why a 4B model cannot produce it -- the error text names hcli/perception/store.py, so the rejected payload is recoverable from .hcli/mission/events.jsonl; (2) if the demanded shape is unnecessarily strict, loosen it and mutation-test the loosening; (3) only then retry AUTONOMY-2's task. A larger model is the lazy answer and does not tell us whether the contract is reasonable.",
   "evidence_refs": [
-    "hcli/perception/store.py"
+    "receipts/future/AUTONOMY_FIRST_WORKER_RUN.json",
+    "receipts/future/AUTONOMY_SECOND_RUN.json",
+    "docs/VMCP_SUBLATION_CONTRACT.md"
   ],
-  "open_jobs": [],
+  "open_jobs": [
+    "an isolation-pass agent is mapping hcli's remaining external couplings"
+  ],
   "resource_deps": [
-    "a model path in HCLI_MODEL_PATH or --model"
+    "--model now works; HCLI_MODEL_PATH no longer needed as a crutch"
   ],
-  "representations_ruled_out": [],
-  "written_at": 1788889622
+  "representations_ruled_out": [
+    "giving the resident a judgement task with no mechanical evidence -- fails NO_EVIDENCE",
+    "giving it a source mutation at 4B -- fails structured-output rejection"
+  ],
+  "written_at": 1788889966
 }
