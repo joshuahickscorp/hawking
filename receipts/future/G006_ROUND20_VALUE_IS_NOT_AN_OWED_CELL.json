@@ -1,0 +1,25 @@
+{
+ "obligation": "G006",
+ "round": 20,
+ "verdict": "NO CREDIT -- failure class C, chose low-information",
+ "what_it_did": "selected Qwen3-Embedding-0.6B itself with no Claude target engineering, read lake.census, and reported: 'Measured Qwen--Qwen3-Embedding-0.6B: 1.1 GiB, 16.0 EBPW, 595.776M params ... Chose over 2.2-7.2 GiB alternatives; 16.0 EBPW is worst owed.'",
+ "why_it_does_not_count": "the ebpw axis for that specimen was ALREADY MEASURED. The round re-derived a number the ledger already held and recorded nothing: MEASURED was 94 before the round and 94 after. Selection was autonomous; the target was already resolved.",
+ "ledger_before_and_after": {
+  "MEASURED": 94,
+  "REFUSED": 142,
+  "OWED": 156,
+  "delta": 0
+ },
+ "streak": 0,
+ "classification": "C -- chose low-information experiment",
+ "root_cause": "A VALUE IS NOT AN OWED CELL, and lake.census gave the round no way to tell them apart. Its rows carried complete_ebpw with no axis state, so the only signal available for 'what is owed' was the magnitude of a number -- and the round duly picked the largest one and called it 'worst owed'. This is not a reasoning failure; it is the harness offering exactly one affordance and the round using it.",
+ "minimum_general_mechanism_repaired": "lake.census rows now carry ebpw_axis_state and owed_axes, read from the ledger, so a value and an owed cell can no longer be confused. Applies to every specimen and every future round, not to the one cell that failed. A missing or unreadable ledger degrades to None rather than to a cheerful default that would recreate the defect.",
+ "verification": {
+  "unit": "tools/future/test_census_carries_axis_state.py -- PASS, 32 rows, 32 cross-checked against the ledger",
+  "cross_check": "owed_axes must equal the ledger's OWED set for every specimen, not merely exist",
+  "mutation": "ledger read replaced with a raise -> ebpw_axis_state None on every row, owed_axes identical across all rows, 0 rows cross-checkable, suite FAILED. Restored green, marker grep 0.",
+  "a_wrong_bar_was_removed": "the first version of the test demanded ebpw_axis_state take at least two distinct values. Every specimen's ebpw IS resolved, so the constant was the truth and the test failed a correct implementation. The variation check moved to owed_axes, which genuinely differs body to body; ebpw_axis_state is pinned by the exact per-row cross-check instead."
+ },
+ "no_target_was_named": "the same challenge is rerun unchanged. Claude repaired the instrument's affordance, not the round's answer, and named no specimen, axis or experiment.",
+ "scar": "AN AFFORDANCE IS AN INSTRUCTION. A round will select on whatever the tool makes visible."
+}

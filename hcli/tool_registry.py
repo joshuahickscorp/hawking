@@ -1960,12 +1960,35 @@ def _lake_census(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
         return _lead_with(out, "slug", "klass", "complete_ebpw", "pack_factor", "blocked_by")
     census = m.census(catalog)
     rows = list(census.get("rows") or [])
+    # A VALUE IS NOT AN OWED CELL. Round 20 read `complete_ebpw: 16.0` here,
+    # concluded "16.0 EBPW is worst owed", re-derived a number the ledger had
+    # already recorded as MEASURED, and closed having moved nothing: MEASURED
+    # stayed at 94. Nothing in this row said the axis was already resolved, so
+    # the round inferred owed-ness from the only thing it could see -- the
+    # magnitude. Carry the ledger state beside the value so the two cannot be
+    # confused. Missing or unreadable ledger degrades to None, never to a
+    # cheerful default that would recreate the same mistake.
+    owed_by_slug: Dict[str, Any] = {}
+    try:
+        import json as _json
+        _led = _json.load(open("receipts/future/G034_ODYSSEY_LEDGER.json"))
+        owed_by_slug = {
+            r["slug"]: sorted(a for a, v in r["axes"].items() if v["state"] == "OWED")
+            for r in _led["specimens"]
+        }
+    except Exception:
+        owed_by_slug = {}
     compact = [
         {
             "slug": row.get("slug"),
             "klass": row.get("klass"),
             "gib": row.get("gib"),
             "complete_ebpw": row.get("complete_ebpw"),
+            "ebpw_axis_state": (
+                "OWED" if "ebpw" in owed_by_slug.get(row.get("slug"), [])
+                else ("RESOLVED" if row.get("slug") in owed_by_slug else None)
+            ),
+            "owed_axes": owed_by_slug.get(row.get("slug")),
             "pack_factor": row.get("pack_factor"),
             "blocked_by": row.get("blocked_by"),
             "family": row.get("family"),
