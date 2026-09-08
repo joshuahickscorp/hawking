@@ -12,7 +12,7 @@ import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from hcli.debug_capability import Failure, diagnose
+from hcli.capabilities import Failure, diagnose
 
 PYTEST_FAIL = '''============================= test session starts ==============================
 collected 1 item

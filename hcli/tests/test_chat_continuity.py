@@ -16,7 +16,7 @@ import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from hcli.chat_continuity import (
+from hcli.chat_state import (
     checkpoint,
     compact,
     estimate_tokens,

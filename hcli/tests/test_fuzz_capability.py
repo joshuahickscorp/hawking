@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import unittest
 
-from hcli.fuzz_capability import fuzz
+from hcli.capabilities import fuzz
 
 
 def _buggy(s):

@@ -7,8 +7,183 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-from .command_registry import command_names, help_text
 from .paths import find_repo_root
+from dataclasses import dataclass
+
+
+# --- command table (merged from command_registry). SINGLE SOURCE: completion
+# lists and help text generate from COMMANDS; do not re-fragment into hand-kept lists. ---
+@dataclass(frozen=True)
+class Command:
+    """One slash command. ``aliases`` are extra spellings of the same handler."""
+
+    name: str
+    help: str
+    mutates: bool
+    authority: str
+    example: str
+    aliases: Tuple[str, ...] = ()
+
+
+COMMANDS: Tuple[Command, ...] = (
+    Command("/help", "show this help", False, "read_only", "/help"),
+    Command(
+        "/status",
+        "show session and machine status",
+        False,
+        "read_only",
+        "/status",
+    ),
+    Command("/models", "list available models", False, "read_only", "/models"),
+    Command(
+        "/model",
+        "select model",
+        True,
+        "reversible_runtime",
+        "/model 2",
+    ),
+    Command("/tools", "list typed AgentOS tools", False, "read_only", "/tools"),
+    Command(
+        "/provider",
+        "show the selected provider profile",
+        False,
+        "read_only",
+        "/provider",
+    ),
+    Command(
+        "/flash-next",
+        "show the pinned Flash-Next acquisition identity",
+        False,
+        "read_only",
+        "/flash-next",
+    ),
+    Command(
+        "/anatomy",
+        "Odyssey-I representational anatomy of a snapshot or lake specimen",
+        False,
+        "read_only",
+        "/anatomy SNAPSHOT auto",
+    ),
+    Command(
+        "/receipts",
+        "list durable run receipts newest first",
+        False,
+        "read_only",
+        "/receipts 5",
+    ),
+    Command(
+        "/processes",
+        "what every live Hawking process is, and which are safe to stop",
+        False,
+        "read_only",
+        "/processes",
+    ),
+    Command("/goal", "set active goal", True, "workspace_write", "/goal ship X"),
+    Command(
+        "/bank",
+        "queue a future goal; it starts after the active goal completes",
+        True,
+        "workspace_write",
+        "/bank prepare the overnight production report",
+        aliases=("\\bank",),
+    ),
+    Command(
+        "/ultragoal",
+        "create or show the durable Goal + ledger + DAG",
+        True,
+        "workspace_write",
+        "/ultragoal ship X with evidence",
+    ),
+    Command(
+        "/mission",
+        "run a persistent mission",
+        True,
+        "repo_write",
+        "/mission ship X",
+    ),
+    Command(
+        "/steer",
+        "queue steering instruction",
+        True,
+        "workspace_write",
+        "/steer prefer the smaller diff",
+    ),
+    Command(
+        "/grok",
+        "delegate, audit, consult, or inspect a Grok task",
+        True,
+        "repo_write",
+        "/grok consult is this contract testable",
+    ),
+    Command(
+        "/cancel",
+        "cancel the active mission",
+        True,
+        "reversible_runtime",
+        "/cancel",
+        aliases=("/stop",),
+    ),
+    Command(
+        "/context",
+        "show context and prior knowledge; manage cached pastes",
+        True,
+        "destructive",
+        "/context list",
+    ),
+    Command("/compact", "compact context", True, "workspace_write", "/compact"),
+    Command(
+        "/clear",
+        "clear transcript (does not forget the mission)",
+        True,
+        "workspace_write",
+        "/clear",
+    ),
+    Command("/resume", "resume session", True, "workspace_write", "/resume"),
+    Command(
+        "/quit",
+        "exit HCLI",
+        True,
+        "reversible_runtime",
+        "/quit",
+        aliases=("/exit",),
+    ),
+    Command(
+        "/land",
+        "commit accumulated work via the governed landing service "
+        "(push/merge are separate: /land push, /land merge <branch>)",
+        True,
+        "repo_write",
+        "/land",
+    ),
+)
+
+
+def command_names() -> Tuple[str, ...]:
+    """Every spelling the dispatcher must answer, aliases included."""
+    names = []
+    for command in COMMANDS:
+        names.append(command.name)
+        names.extend(command.aliases)
+    return tuple(names)
+
+
+def handler_name(name: str) -> str:
+    """The ``CommandHandler`` attribute a command name dispatches to.
+
+    Identical to the lookup in ``CommandHandler.handle``, so a test over this
+    is a test of the real dispatch path.
+    """
+    return f"_cmd_{name.lstrip('/\\')}"
+
+
+def help_text() -> str:
+    """The body of ``/help``. The only place command help is worded."""
+    width = max(len(command.name) for command in COMMANDS)
+    lines = ["Commands:"]
+    for command in COMMANDS:
+        alias = f"  (also {' '.join(command.aliases)})" if command.aliases else ""
+        lines.append(f"  {command.name:<{width}} - {command.help}{alias}")
+    return "\n".join(lines)
 
 # A per-hour rate from a window much shorter than an hour is sampling noise.
 # 4 accepts in 12.4s annualises to 1164/h — the documented lie. Five minutes

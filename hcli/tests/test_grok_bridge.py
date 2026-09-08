@@ -536,13 +536,5 @@ class TestStatusParserIndependentOfSubprocess(unittest.TestCase):
         self.assertEqual(spawned, [])
 
 
-@unittest.skip(
-    "live grok-run audit spends a real Grok session; this lane uses "
-    "GROK_DRYRUN=1. The live bridge contract is covered by this suite."
-)
-def test_live_audit_skipped():
-    raise AssertionError("this test must stay skipped")
-
-
 if __name__ == "__main__":
     unittest.main()

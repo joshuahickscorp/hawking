@@ -491,7 +491,7 @@ def make_handler(backend: Any, identity: str, *, greedy: bool,
                 # RESUME BEFORE ANYTHING ELSE. A checkpoint means a previous
                 # invocation yielded mid-objective; the resuming turn must see
                 # where it stands and whether the repository moved under it.
-                from .chat_continuity import compact, resume, resume_block
+                from .chat_state import compact, resume, resume_block
                 revived = resume(session)
                 durable = working_set(session)
                 revival = resume_block(revived) if (
@@ -526,7 +526,7 @@ def make_handler(backend: Any, identity: str, *, greedy: bool,
                     checkpoint_note = (
                         f"compacted {compaction.evicted_turns} turns "
                         f"({compaction.before_tokens}->{compaction.after_tokens} tok)")
-                    from .chat_continuity import checkpoint as _ckpt
+                    from .chat_state import checkpoint as _ckpt
                     _ckpt(session, resident=session.resident, note=checkpoint_note)
             payload = {k: v for k, v in body.items() if k != "stream"}
             payload.setdefault("model", identity)

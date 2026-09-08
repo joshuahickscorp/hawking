@@ -11,7 +11,7 @@ import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from hcli.forensics_capability import capture, identify
+from hcli.capabilities import capture, identify
 
 
 class TestCapture(unittest.TestCase):

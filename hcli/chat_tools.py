@@ -656,7 +656,7 @@ def run_local_tool(name: str, arguments: Dict[str, Any], *,
         except (KeyError, ValueError) as exc:
             return _R(False, error=f"cannot read observation {paste_id!r}: {exc}")
         from pathlib import Path as _Path
-        from .debug_capability import diagnose as _diagnose
+        from .capabilities import diagnose as _diagnose
         exit_code = arguments.get("exit_code")
         try:
             exit_code = int(exit_code) if exit_code is not None else 1
@@ -665,24 +665,24 @@ def run_local_tool(name: str, arguments: Dict[str, Any], *,
         failure = _diagnose(output, command=str(arguments.get("command") or "?"),
                             exit_code=exit_code, root=_Path.cwd(), cache=cache)
         return _R(True, value=failure.to_dict(),
-                  provenance={"source": "hcli.debug_capability", "paste": paste_id})
+                  provenance={"source": "hcli.capabilities", "paste": paste_id})
 
     if name == "reverse.identify":
-        from .forensics_capability import identify
+        from .capabilities import identify
         target = str(arguments.get("path") or "").strip()
         if not target:
             return _R(False, error='reverse.identify needs {"path": "<file>"}')
         result = identify(target)
         return _R("error" not in result, value=result,
                   error=result.get("error"),
-                  provenance={"source": "hcli.forensics_capability"})
+                  provenance={"source": "hcli.capabilities"})
 
     if name == "forensics.snapshot":
-        from .forensics_capability import capture
+        from .capabilities import capture
         import os as _os
         snap = capture(_os.getcwd(), note=str(arguments.get("note") or ""))
         return _R(True, value=snap.to_dict(),
-                  provenance={"source": "hcli.forensics_capability",
+                  provenance={"source": "hcli.capabilities",
                               "preserved": snap.path})
 
     return _R(False, error=f"{name} is not a local tool")

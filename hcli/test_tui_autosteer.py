@@ -17,7 +17,7 @@ from __future__ import annotations
 import json
 import sys
 
-from hcli.command_registry import COMMANDS, handler_name
+from hcli.commands import COMMANDS, handler_name
 from hcli.commands import CommandHandler
 from hcli.events import Event, EventBus
 from hcli.mission import mission_state_path
