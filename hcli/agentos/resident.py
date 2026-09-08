@@ -2149,14 +2149,61 @@ def _add_goal_arguments(parser: argparse.ArgumentParser) -> None:
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--goal", help="the goal text, inline")
     group.add_argument(
+        "--from-checkpoint", action="store_true",
+        help="take the goal from the campaign checkpoint's NEXT ACTION "
+             "(workspace/campaign/odyssey/CONTINUATION.json), so a restart "
+             "continues the campaign instead of needing a human to retype it")
+    group.add_argument(
         "--goal-file",
         default=None,
         help="read the goal from a file (use - for stdin)",
     )
 
 
+CONTINUATION_REL = "workspace/campaign/odyssey/CONTINUATION.json"
+
+
+def _goal_from_checkpoint(workspace: Path) -> str:
+    """The campaign's own NEXT ACTION, so waking up does not need a human. [S006 34]
+
+    campaign.checkpoint records the part of the campaign a restart cannot
+    rebuild from receipts -- objective, hypothesis, and an explicit next
+    action. Reading it here is what closes the loop: the resident had no way to
+    obtain a goal except a human typing one, which is the whole reason it could
+    not continue on its own.
+
+    Refuses loudly rather than inventing a goal. A daemon that starts on a
+    guessed objective is worse than one that will not start.
+    """
+    path = workspace / CONTINUATION_REL
+    if not path.is_file():
+        raise SystemExit(
+            f"--from-checkpoint: no checkpoint at {CONTINUATION_REL}. Write one with "
+            f"the campaign.checkpoint tool, or pass --goal/--goal-file.")
+    try:
+        doc = json.loads(path.read_text())
+    except Exception as exc:
+        raise SystemExit(f"--from-checkpoint: {CONTINUATION_REL} is unreadable: {exc}")
+    nxt = str(doc.get("next_action") or "").strip()
+    if not nxt:
+        raise SystemExit(
+            f"--from-checkpoint: the checkpoint has no next_action. It cannot say what "
+            f"to continue, so there is nothing to resume.")
+    obj = str(doc.get("objective") or "").strip()
+    spec = str(doc.get("active_specimen") or "").strip()
+    parts = [nxt]
+    if obj:
+        parts.append(f"\n\nStanding objective: {obj}")
+    if spec:
+        parts.append(f"\nActive specimen: {spec}")
+    return "".join(parts)
+
+
 def _resolved_goal(args: argparse.Namespace) -> str:
     """The goal text, whichever way it was supplied. Empty is refused upstream."""
+    if getattr(args, "from_checkpoint", False):
+        ws = Path(getattr(args, "workspace", None) or os.getcwd())
+        return _goal_from_checkpoint(ws)
     path = getattr(args, "goal_file", None)
     if not path:
         return str(args.goal or "")

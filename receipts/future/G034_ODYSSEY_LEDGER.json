@@ -4027,10 +4027,11 @@
      "receipt": "receipts/future/G034_LAKE_CENSUS_FULL.json"
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
-     "receipt": null
+     "reason": "a 512-token prefill in one Metal command buffer exceeds this host's GPU watchdog for this architecture; reproduced in two independent runs with the body alone in its own process, so it is not the memory pressure that caused the first round's timeouts",
+     "receipt": null,
+     "reopen_when": "a chunked-prefill path that splits the command buffer, or a host with a longer GPU watchdog. Do NOT shrink prompt_tokens to make it pass: every measured body used 512 and changing it makes the axis incomparable"
     },
     "cpu": {
      "state": "OWED",
@@ -4771,10 +4772,11 @@
      "receipt": "receipts/future/G034_LAKE_CENSUS_FULL.json"
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
-     "receipt": null
+     "reason": "a 512-token prefill in one Metal command buffer exceeds this host's GPU watchdog for this architecture; reproduced in two independent runs with the body alone in its own process, so it is not the memory pressure that caused the first round's timeouts",
+     "receipt": null,
+     "reopen_when": "a chunked-prefill path that splits the command buffer, or a host with a longer GPU watchdog. Do NOT shrink prompt_tokens to make it pass: every measured body used 512 and changing it makes the axis incomparable"
     },
     "cpu": {
      "state": "OWED",
@@ -6434,10 +6436,11 @@
      "receipt": "receipts/future/G034_LAKE_CENSUS_FULL.json"
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
-     "receipt": null
+     "reason": "a 512-token prefill in one Metal command buffer exceeds this host's GPU watchdog for this architecture; reproduced in two independent runs with the body alone in its own process, so it is not the memory pressure that caused the first round's timeouts",
+     "receipt": null,
+     "reopen_when": "a chunked-prefill path that splits the command buffer, or a host with a longer GPU watchdog. Do NOT shrink prompt_tokens to make it pass: every measured body used 512 and changing it makes the axis incomparable"
     },
     "cpu": {
      "state": "OWED",

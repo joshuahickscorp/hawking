@@ -5,7 +5,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-08T13:25:00Z",
+  "recorded_at": "2026-09-08T16:26:10Z",
   "recorded_by": "tools/future/modellake_events.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -24606,7 +24606,7 @@
   "claims_without_seal": [],
   "n_claims_without_seal": 0,
   "n_completion_claims": 47,
-  "n_parseable_events": 1345
+  "n_parseable_events": 1344
  },
  "n_emitted_specimens": 55,
  "n_emitted_units": 330,
@@ -24615,7 +24615,7 @@
  "obligation": "G101",
  "question": "When a model seals, does anything happen without a human noticing?",
  "schema": "hawking.future.modellake_events.v1",
- "seal_sha256": "503a4e4b72ce66e628337b2e3d2ccda8d151a4d5a2059b2e3a291f1dc5881687",
+ "seal_sha256": "24fa8bda0c38dc3c76e97b3ba7f6050c3679e5019d95892b777f70ce1252d1ba",
  "seal_triggers": [
   "fingerprint",
   "role evaluation",
