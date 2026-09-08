@@ -199,6 +199,72 @@
       "source_oxx": null,
       "text": "EXTERNAL CONTENTION SILENTLY UNDERSTATES A PHYSICAL MEASUREMENT, and the campaign has now measured by how much. The same body on the same backend measured 831.7 prefill / 10.65 decode tok/s while an unrelated job held the host, and 946.5 / 14.20 on a quiet machine -- 14% prefill and 33% decode, from contention alone. Spread also collapses: 47.4% prefill spread under load against 17.8% quiet on CPU, and 1.2% on Metal. A qualification measurement taken beside another workload is an operating measurement wearing a qualification label.",
       "writer_pid": 28098
+    },
+    {
+      "counterexample_requirement": "a compensating quantizer where compensated-W scale matches or beats original-W scale",
+      "evidence": "reported by the Higgs/audio one-off session (S006 sections 6-19, 87); NOT independently reproduced in this campaign",
+      "hcli_owned": false,
+      "id": "LAW019",
+      "recorded_at": "2026-09-08T15:08:28.701460+00:00",
+      "scope": "GENERIC_CANDIDATE",
+      "source_oxx": null,
+      "text": "QUANTIZER SCALE AUTHORITY MUST BE TESTED AGAINST THE ORIGINAL SIGNAL when compensation mutates the working tensor. In the tested GPTQ path, a group scale derived from the COMPENSATED W was worse than plain RTN (0.505 vs 0.470 relative error) while a scale derived from the ORIGINAL W was materially better (0.407). Mechanism offered: compensation pushes later columns outside a range derived from the mutated tensor, increasing clipping. REPORTED, not reproduced here.",
+      "writer_pid": 28278
+    },
+    {
+      "counterexample_requirement": "a body where activation ordering does not beat fixed ordering at matched bytes",
+      "evidence": "reported by the Higgs/audio one-off session (S006 sections 6-19, 87); NOT independently reproduced in this campaign",
+      "hcli_owned": false,
+      "id": "LAW020",
+      "recorded_at": "2026-09-08T15:08:28.702794+00:00",
+      "scope": "GENERIC_CANDIDATE",
+      "source_oxx": null,
+      "text": "ACTIVATION ORDERING improved the tested GPTQ reconstruction frontier from ~1.15x over RTN (fixed scale) to ~1.35x. Behavioural/use ordering can improve representation quality beyond static weight treatment -- an independent second line of evidence for function-aware Gravity alongside this campaign's own organ perturbation work. REPORTED, not reproduced here.",
+      "writer_pid": 28278
+    },
+    {
+      "counterexample_requirement": "an architecture where the permutation cannot be folded and must run per token",
+      "evidence": "reported by the Higgs/audio one-off session (S006 sections 6-19, 87); NOT independently reproduced in this campaign",
+      "hcli_owned": false,
+      "id": "LAW021",
+      "recorded_at": "2026-09-08T15:08:28.703656+00:00",
+      "scope": "GENERIC_CANDIDATE",
+      "source_oxx": null,
+      "text": "FOLDABLE TRANSFORMS: the per-layer input permutation that activation ordering introduces can be folded through normalization/weight organization, giving the ordering benefit at ZERO runtime cost. Generic search target: representation transforms that improve quantization but can be absorbed into static model state once rather than executed every token -- permutations, sign flips, scalings, basis transforms. Free runtime does NOT mean capability-safe: semantic equivalence, complete accounting and capability validation are still required. REPORTED.",
+      "writer_pid": 28278
+    },
+    {
+      "counterexample_requirement": "a representation class whose cost survives a serious blocked/GPU implementation",
+      "evidence": "reported by the Higgs/audio one-off session (S006 sections 6-19, 87); NOT independently reproduced in this campaign",
+      "hcli_owned": false,
+      "id": "LAW022",
+      "recorded_at": "2026-09-08T15:08:28.704394+00:00",
+      "scope": "GENERIC_CANDIDATE",
+      "source_oxx": null,
+      "text": "NAIVE IMPLEMENTATION COST IS NOT ALGORITHMIC DESTINY. The one-off's GPTQ Hessian path fell from ~120 s per calibration chunk to ~1.8 s -- roughly two orders of magnitude -- by blocking the expensive operation and moving it GPU-side. Law candidate: PROFILE A SLOW SCIENTIFIC METHOD BEFORE DECLARING ITS REPRESENTATION CLASS PHYSICALLY DEAD. Separate algorithmic cost from implementation cost; look for serial column loops, repeated host/device transfers, Hessian construction, dequant/requant loops, matrix solves, gather/scatter. REPORTED.",
+      "writer_pid": 28278
+    },
+    {
+      "counterexample_requirement": "a sensitivity map whose TOLERANT end reproduces across both a second corpus and a more compressed base; that would make allocate-by-map safe and would retire the protect-the-top rule",
+      "evidence": "receipts/future/G011_ORGAN_SENSITIVITY.json, receipts/future/G017_SENSITIVITY_CORPUS_B.json, receipts/future/G012_SENSITIVITY_ALLOCATION.json, receipts/future/G019_ALLOCATION_CORPUS_B.json, receipts/future/G022_GROUP_ISOLATION.json, plus the one-off's reported base-state failure",
+      "hcli_owned": false,
+      "id": "LAW023",
+      "recorded_at": "2026-09-08T15:08:28.705069+00:00",
+      "scope": "MODEL_LOCAL",
+      "source_oxx": null,
+      "text": "A SENSITIVITY MAP IS A FUNCTION OF (ORGAN, BASE REPRESENTATION, CORPUS), and it fails on TWO INDEPENDENT AXES -- both of which hit the end that allocation actually uses. AXIS 1, base state (one-off, reported): down_proj at 2 bits survived against a 4-bit base and broke against a 3-bit base, so tolerance measured around one base does not predict tolerance around a more compressed one. AXIS 2, corpus at FIXED base (this campaign, measured): the map built on corpus A predicts corpus B's ordering at tau 0.4286 while static global anatomy predicts it at 0.619, and in a byte-exact depth-exact allocation the map's negative control REVERSES sign, +0.6712 on A and -0.5145 on B. These are NOT the same failure -- one varies the base and holds the corpus, the other varies the corpus and holds the base. LAW016 supplies the shape common to both: the SENSITIVE end is stable (down_proj 0.963/0.934 and v_proj 0.747/0.796 are top two on both corpora) while the TOLERANT end moves. Allocation decisions consume the tolerant end -- they choose what to crush -- which is why allocating BY the map failed and why protecting the stable top carried 100% of the GLOBAL_ANATOMY win. OPERATIONAL CONSEQUENCE: allocate by PROTECTING the reliably sensitive organs; never by crushing the apparently tolerant ones. Refresh the map after material compression AND when the workload changes.",
+      "writer_pid": 28278
+    },
+    {
+      "counterexample_requirement": "a stuck unit emits EOS near its expected duration, which would silence the duration gate and leave the fixed point undetected by every member of the set",
+      "evidence": "receipts/future/HIGGS_STUCK_GATE.json",
+      "hcli_owned": false,
+      "id": "LAW024",
+      "recorded_at": "2026-09-08T15:26:56.842300+00:00",
+      "scope": "output gates over generated media where a failure can be both non-silent and non-transcribable; established on Higgs audio v3 4B sensitivity rungs a/b/c, 24 rendered units",
+      "source_oxx": null,
+      "text": "A gate set's cheapest member can be the sole detector of the dominant failure. In the Higgs sensitivity rungs, 18 of 24 units end in a decoder fixed point -- a constant-rms buzz -- and the two gates built to catch bad output are blind to it by construction: it sits four orders above the 1e-4 silence threshold so energy never flags it (silent_frac 0.0 on 23 of 24 units), and it is not speech so ASR transcribes no extra words and word error stays low (sens_c holds spoken_med 1.0 and wer_med 0.1143 while 7 of its 8 units are stuck). Only duration fires, and only as a side effect of the unit running to the token cap. Before trusting a gate set, ask of each member what failure it is BLIND to, not what it catches.",
+      "writer_pid": 32394
     }
   ],
   "parked": [],

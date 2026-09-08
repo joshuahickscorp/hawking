@@ -4742,8 +4742,9 @@
     "gpu": {
      "state": "REFUSED",
      "value": null,
-     "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
-     "receipt": null
+     "reason": "the body is not stored in safetensors; mlx has no loader for the format on disk: FileNotFoundError: No safetensors found in /Volumes/corpdrive/hawking-modellake/specimens/arcinstitute--evo2_7b@bda0089f9258",
+     "receipt": null,
+     "reopen_when": "the body is re-acquired in safetensors, or a converter is run against the stored format"
     },
     "cpu": {
      "state": "REFUSED",
@@ -5518,8 +5519,9 @@
     "gpu": {
      "state": "REFUSED",
      "value": null,
-     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"phi4mm\"",
-     "receipt": null
+     "reason": "mlx_lm has no module for this architecture: ValueError: Model type phi4mm not supported.",
+     "receipt": null,
+     "reopen_when": "an mlx_lm release, or a hawking-native path, that builds this architecture"
     },
     "cpu": {
      "state": "REFUSED",
@@ -5800,8 +5802,9 @@
     "gpu": {
      "state": "REFUSED",
      "value": null,
-     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"smolvlm\"",
-     "receipt": null
+     "reason": "mlx_lm has no module for this architecture: ValueError: Model type smolvlm not supported.",
+     "receipt": null,
+     "reopen_when": "an mlx_lm release, or a hawking-native path, that builds this architecture"
     },
     "cpu": {
      "state": "REFUSED",
@@ -5980,10 +5983,21 @@
      "receipt": "receipts/future/G034_LAKE_CENSUS_FULL.json"
     },
     "gpu": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "device": "gpu (Metal via mlx)",
+      "runtime": "mlx_lm 0.32.1, device Device(gpu, 0), weights mlx.core.bfloat16",
+      "prefill_tps_median": 1706.4356,
+      "decode_tps_median": 67.0047,
+      "prefill_spread_pct": 0.41,
+      "decode_spread_pct": 0.4,
+      "context": 512,
+      "concurrency": 1,
+      "repeats": 3,
+      "warmup_discarded": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_Qwen--Qwen3-4B-Instruct-2507_cdbee75f17c0__mlx.json"
     },
     "cpu": {
      "state": "OWED",
@@ -5992,10 +6006,16 @@
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "prefill_tps": 1706.4356,
+      "decode_tps": 67.0047,
+      "backend": "mlx/Metal",
+      "context": 512,
+      "concurrency": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_Qwen--Qwen3-4B-Instruct-2507_cdbee75f17c0__mlx.json"
     },
     "nr_candidate": {
      "state": "OWED",
@@ -6110,10 +6130,21 @@
      "receipt": "receipts/future/G034_LAKE_CENSUS_FULL.json"
     },
     "gpu": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "device": "gpu (Metal via mlx)",
+      "runtime": "mlx_lm 0.32.1, device Device(gpu, 0), weights mlx.core.bfloat16",
+      "prefill_tps_median": 1973.3476,
+      "decode_tps_median": 69.2452,
+      "prefill_spread_pct": 0.27,
+      "decode_spread_pct": 0.34,
+      "context": 512,
+      "concurrency": 1,
+      "repeats": 3,
+      "warmup_discarded": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_microsoft--Phi-4-mini-instruct_cfbefacb9925__mlx.json"
     },
     "cpu": {
      "state": "OWED",
@@ -6122,10 +6153,16 @@
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "prefill_tps": 1973.3476,
+      "decode_tps": 69.2452,
+      "backend": "mlx/Metal",
+      "context": 512,
+      "concurrency": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_microsoft--Phi-4-mini-instruct_cfbefacb9925__mlx.json"
     },
     "nr_candidate": {
      "state": "OWED",
@@ -6514,10 +6551,21 @@
      "receipt": "receipts/future/G034_LAKE_CENSUS_FULL.json"
     },
     "gpu": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "device": "gpu (Metal via mlx)",
+      "runtime": "mlx_lm 0.32.1, device Device(gpu, 0), weights mlx.core.bfloat16",
+      "prefill_tps_median": 2011.2231,
+      "decode_tps_median": 74.5599,
+      "prefill_spread_pct": 0.33,
+      "decode_spread_pct": 0.13,
+      "context": 512,
+      "concurrency": 1,
+      "repeats": 3,
+      "warmup_discarded": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_ibm-granite--granite-4.0-h-micro_d5f01a3ea75f__mlx.json"
     },
     "cpu": {
      "state": "OWED",
@@ -6526,10 +6574,16 @@
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "prefill_tps": 2011.2231,
+      "decode_tps": 74.5599,
+      "backend": "mlx/Metal",
+      "context": 512,
+      "concurrency": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_ibm-granite--granite-4.0-h-micro_d5f01a3ea75f__mlx.json"
     },
     "nr_candidate": {
      "state": "OWED",
@@ -6729,10 +6783,11 @@
      "receipt": "receipts/future/G034_LAKE_CENSUS_FULL.json"
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
-     "receipt": null
+     "reason": "mlx_lm's ModelArgs for this family predates this config's fields: TypeError: ModelArgs.__init__() missing 1 required positional argument: 'block_ff_dim'",
+     "receipt": null,
+     "reopen_when": "an mlx_lm release whose ModelArgs accepts this config"
     },
     "cpu": {
      "state": "OWED",
@@ -6909,10 +6964,11 @@
      "receipt": "receipts/future/G034_LAKE_CENSUS_FULL.json"
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
-     "receipt": null
+     "reason": "the checkpoint's parameter set does not match what mlx_lm builds for this family: ValueError: Missing 210 parameters: \nmodel.layers.0.mlp.down_proj.weight_scale,\nmodel.layers.0.mlp.gate_proj.weight_scale,\nmodel.layers.0.mlp.up_proj.",
+     "receipt": null,
+     "reopen_when": "an mlx_lm release matching this checkpoint variant, or a converted variant of the body"
     },
     "cpu": {
      "state": "OWED",
@@ -6961,8 +7017,9 @@
     "gpu": {
      "state": "REFUSED",
      "value": null,
-     "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
-     "receipt": null
+     "reason": "the snapshot carries no config.json, so it is not a transformers-format checkpoint: FileNotFoundError: [Errno 2] No such file or directory: '/Volumes/corpdrive/hawking-modellake/specimens/boltz-community--boltz-2@6fdef46d763f/config.json'",
+     "receipt": null,
+     "reopen_when": "a transformers-format snapshot of this body is acquired"
     },
     "cpu": {
      "state": "REFUSED",
@@ -7225,8 +7282,9 @@
     "gpu": {
      "state": "REFUSED",
      "value": null,
-     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"vjepa2\"",
-     "receipt": null
+     "reason": "mlx_lm has no module for this architecture: ValueError: Model type vjepa2 not supported.",
+     "receipt": null,
+     "reopen_when": "an mlx_lm release, or a hawking-native path, that builds this architecture"
     },
     "cpu": {
      "state": "REFUSED",
@@ -7403,10 +7461,21 @@
      "receipt": "receipts/future/G034_LAKE_CENSUS_FULL.json"
     },
     "gpu": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "device": "gpu (Metal via mlx)",
+      "runtime": "mlx_lm 0.32.1, device Device(gpu, 0), weights mlx.core.bfloat16",
+      "prefill_tps_median": 4958.4356,
+      "decode_tps_median": 160.1033,
+      "prefill_spread_pct": 0.34,
+      "decode_spread_pct": 0.08,
+      "context": 512,
+      "concurrency": 1,
+      "repeats": 3,
+      "warmup_discarded": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_tiiuae--Falcon3-1B-Instruct_28ba2251970a__mlx.json"
     },
     "cpu": {
      "state": "OWED",
@@ -7415,10 +7484,16 @@
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "prefill_tps": 4958.4356,
+      "decode_tps": 160.1033,
+      "backend": "mlx/Metal",
+      "context": 512,
+      "concurrency": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_tiiuae--Falcon3-1B-Instruct_28ba2251970a__mlx.json"
     },
     "nr_candidate": {
      "state": "OWED",
@@ -7781,8 +7856,9 @@
     "gpu": {
      "state": "REFUSED",
      "value": null,
-     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"t5\"",
-     "receipt": null
+     "reason": "mlx_lm has no module for this architecture: ValueError: Model type t5 not supported.",
+     "receipt": null,
+     "reopen_when": "an mlx_lm release, or a hawking-native path, that builds this architecture"
     },
     "cpu": {
      "state": "REFUSED",
@@ -7831,8 +7907,9 @@
     "gpu": {
      "state": "REFUSED",
      "value": null,
-     "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
-     "receipt": null
+     "reason": "the body is not stored in safetensors; mlx has no loader for the format on disk: FileNotFoundError: No safetensors found in /Volumes/corpdrive/hawking-modellake/specimens/state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994",
+     "receipt": null,
+     "reopen_when": "the body is re-acquired in safetensors, or a converter is run against the stored format"
     },
     "cpu": {
      "state": "REFUSED",
@@ -7881,8 +7958,9 @@
     "gpu": {
      "state": "REFUSED",
      "value": null,
-     "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
-     "receipt": null
+     "reason": "the body is not stored in safetensors; mlx has no loader for the format on disk: FileNotFoundError: No safetensors found in /Volumes/corpdrive/hawking-modellake/specimens/state-spaces--mamba3-siso-1.5b@5cfc721542ec",
+     "receipt": null,
+     "reopen_when": "the body is re-acquired in safetensors, or a converter is run against the stored format"
     },
     "cpu": {
      "state": "REFUSED",
@@ -8090,10 +8168,21 @@
      "receipt": "receipts/future/G034_LAKE_CENSUS_FULL.json"
     },
     "gpu": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "device": "gpu (Metal via mlx)",
+      "runtime": "mlx_lm 0.32.1, device Device(gpu, 0), weights mlx.core.bfloat16",
+      "prefill_tps_median": 6271.7973,
+      "decode_tps_median": 208.2904,
+      "prefill_spread_pct": 1.42,
+      "decode_spread_pct": 1.34,
+      "context": 512,
+      "concurrency": 1,
+      "repeats": 3,
+      "warmup_discarded": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_LiquidAI--LFM2.5-1.2B-Instruct_0f604ada3f76__mlx.json"
     },
     "cpu": {
      "state": "OWED",
@@ -8102,10 +8191,16 @@
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "prefill_tps": 6271.7973,
+      "decode_tps": 208.2904,
+      "backend": "mlx/Metal",
+      "context": 512,
+      "concurrency": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_LiquidAI--LFM2.5-1.2B-Instruct_0f604ada3f76__mlx.json"
     },
     "nr_candidate": {
      "state": "OWED",
@@ -8252,8 +8347,9 @@
     "gpu": {
      "state": "REFUSED",
      "value": null,
-     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"timesfm\"",
-     "receipt": null
+     "reason": "mlx_lm has no module for this architecture: ValueError: Model type timesfm not supported.",
+     "receipt": null,
+     "reopen_when": "an mlx_lm release, or a hawking-native path, that builds this architecture"
     },
     "cpu": {
      "state": "REFUSED",
@@ -8582,8 +8678,9 @@
     "gpu": {
      "state": "REFUSED",
      "value": null,
-     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"whisper\"",
-     "receipt": null
+     "reason": "mlx_lm has no module for this architecture: ValueError: Model type whisper not supported.",
+     "receipt": null,
+     "reopen_when": "an mlx_lm release, or a hawking-native path, that builds this architecture"
     },
     "cpu": {
      "state": "REFUSED",
@@ -8708,8 +8805,9 @@
     "gpu": {
      "state": "REFUSED",
      "value": null,
-     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"modernbert\"",
-     "receipt": null
+     "reason": "mlx_lm has no module for this architecture: ValueError: Model type modernbert not supported.",
+     "receipt": null,
+     "reopen_when": "an mlx_lm release, or a hawking-native path, that builds this architecture"
     },
     "cpu": {
      "state": "REFUSED",
@@ -9085,8 +9183,9 @@
     "gpu": {
      "state": "REFUSED",
      "value": null,
-     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"depth_anything\"",
-     "receipt": null
+     "reason": "mlx_lm has no module for this architecture: ValueError: Model type depth_anything not supported.",
+     "receipt": null,
+     "reopen_when": "an mlx_lm release, or a hawking-native path, that builds this architecture"
     },
     "cpu": {
      "state": "REFUSED",
@@ -9260,10 +9359,11 @@
      "receipt": "receipts/future/G034_LAKE_CENSUS_FULL.json"
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
-     "receipt": null
+     "reason": "the checkpoint's parameter set does not match what mlx_lm builds for this family: ValueError: Received 310 parameters not in model: \nembed_tokens.weight,\nlayers.0.input_layernorm.weight,\nlayers.0.mlp.down_proj.weight,\nlayers.0.mlp.g",
+     "receipt": null,
+     "reopen_when": "an mlx_lm release matching this checkpoint variant, or a converted variant of the body"
     },
     "cpu": {
      "state": "OWED",
@@ -9310,10 +9410,21 @@
      "receipt": "receipts/future/G034_LAKE_CENSUS_FULL.json"
     },
     "gpu": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "device": "gpu (Metal via mlx)",
+      "runtime": "mlx_lm 0.32.1, device Device(gpu, 0), weights mlx.core.bfloat16",
+      "prefill_tps_median": 643.702,
+      "decode_tps_median": 133.1422,
+      "prefill_spread_pct": 0.19,
+      "decode_spread_pct": 0.45,
+      "context": 512,
+      "concurrency": 1,
+      "repeats": 3,
+      "warmup_discarded": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_microsoft--bitnet-b1.58-2B-4T_04c3b9ad9361__mlx.json"
     },
     "cpu": {
      "state": "OWED",
@@ -9322,10 +9433,16 @@
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "prefill_tps": 643.702,
+      "decode_tps": 133.1422,
+      "backend": "mlx/Metal",
+      "context": 512,
+      "concurrency": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_microsoft--bitnet-b1.58-2B-4T_04c3b9ad9361__mlx.json"
     },
     "nr_candidate": {
      "state": "OWED",
@@ -9708,8 +9825,9 @@
     "gpu": {
      "state": "REFUSED",
      "value": null,
-     "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"sam2_video\"",
-     "receipt": null
+     "reason": "mlx_lm has no module for this architecture: ValueError: Model type sam2_video not supported.",
+     "receipt": null,
+     "reopen_when": "an mlx_lm release, or a hawking-native path, that builds this architecture"
     },
     "cpu": {
      "state": "REFUSED",

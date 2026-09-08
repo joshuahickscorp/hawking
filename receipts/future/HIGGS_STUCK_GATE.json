@@ -1,0 +1,294 @@
+{
+  "obligation": "HIGGS-GATE",
+  "claim": "The dominant failure in the Higgs sensitivity rungs is a decoder fixed point that two of the three output gates cannot see.",
+  "method": "Measured the 24 rendered units directly. 250 ms frame rms; a run of consecutive frames flat within 6% relative, above a 1e-3 floor, is a fixed point.",
+  "stuck_units": 18,
+  "total_units": 24,
+  "stuck_by_rung": {
+    "a": 5,
+    "b": 6,
+    "c": 7
+  },
+  "why_gates_miss_it": {
+    "silent_dropout": "the fixed point sits at rms 0.22-0.55, four orders above the 1e-4 silence threshold; silent_frac is 0.000 and longest_silence_s is 0.00 on every one of the 24 units",
+    "looped_wer": "it is not speech, so ASR transcribes no extra words; sens_c holds spoken_med 1.0 and wer_med 0.1143 while 7 of its 8 units are stuck",
+    "long": "fires, but only as a side effect of a stuck unit running to max_new_tokens; it stops firing the moment a stuck unit emits EOS near the expected length"
+  },
+  "refuted_hypothesis": "that the duration gate was miscalibrated and sens_c was closer to shippable than 1/8 pass suggested. The duration gate is the only member of the set that detects this failure at all.",
+  "reversal": "sens_c's better WER and spoken fraction are not evidence it is closer to usable. sens_a/b truncate and lose words; sens_c speaks the text and then jams. Both are broken, differently.",
+  "detector": "tools/future/tts_gate.py stuck_run(), with negative controls for speech, silence and a slow fade, and a mutation control on the flatness test",
+  "rows": [
+    {
+      "rung": "sens_a",
+      "item": 0,
+      "dur_s": 35.72,
+      "stuck_s": 22.0,
+      "onset_s": 13.0,
+      "rms": 0.2604,
+      "silent_frac": 0.0,
+      "longest_silence_s": 0.0
+    },
+    {
+      "rung": "sens_a",
+      "item": 1,
+      "dur_s": 35.72,
+      "stuck_s": 26.0,
+      "onset_s": 9.5,
+      "rms": 0.4243,
+      "silent_frac": 0.0,
+      "longest_silence_s": 0.0
+    },
+    {
+      "rung": "sens_a",
+      "item": 2,
+      "dur_s": 9.84,
+      "stuck_s": 0.5,
+      "onset_s": 0.25,
+      "rms": 0.1145,
+      "silent_frac": 0.0,
+      "longest_silence_s": 0.0
+    },
+    {
+      "rung": "sens_a",
+      "item": 3,
+      "dur_s": 35.72,
+      "stuck_s": 0.5,
+      "onset_s": 0.25,
+      "rms": 0.1098,
+      "silent_frac": 0.0,
+      "longest_silence_s": 0.0
+    },
+    {
+      "rung": "sens_a",
+      "item": 4,
+      "dur_s": 35.72,
+      "stuck_s": 22.25,
+      "onset_s": 3.0,
+      "rms": 0.5043,
+      "silent_frac": 0.0,
+      "longest_silence_s": 0.0
+    },
+    {
+      "rung": "sens_a",
+      "item": 5,
+      "dur_s": 35.72,
+      "stuck_s": 30.25,
+      "onset_s": 5.25,
+      "rms": 0.1278,
+      "silent_frac": 0.0,
+      "longest_silence_s": 0.0
+    },
+    {
+      "rung": "sens_a",
+      "item": 6,
+      "dur_s": 35.72,
+      "stuck_s": 27.75,
+      "onset_s": 7.75,
+      "rms": 0.4082,
+      "silent_frac": 0.0,
+      "longest_silence_s": 0.0
+    },
+    {
+      "rung": "sens_a",
+      "item": 7,
+      "dur_s": 5.68,
+      "stuck_s": 0.5,
+      "onset_s": 3.75,
+      "rms": 0.107,
+      "silent_frac": 0.0,
+      "longest_silence_s": 0.0
+    },
+    {
+      "rung": "sens_b",
+      "item": 0,
+      "dur_s": 35.72,
+      "stuck_s": 20.5,
+      "onset_s": 8.0,
+      "rms": 0.0978,
+      "silent_frac": 0.0,
+      "longest_silence_s": 0.0
+    },
+    {
+      "rung": "sens_b",
+      "item": 1,
+      "dur_s": 35.72,
+      "stuck_s": 22.0,
+      "onset_s": 13.5,
+      "rms": 0.1478,
+      "silent_frac": 0.0,
+      "longest_silence_s": 0.0
+    },
+    {
+      "rung": "sens_b",
+      "item": 2,
+      "dur_s": 35.72,
+      "stuck_s": 22.5,
+      "onset_s": 6.75,
+      "rms": 0.2361,
+      "silent_frac": 0.0,
+      "longest_silence_s": 0.0
+    },
+    {
+      "rung": "sens_b",
+      "item": 3,
+      "dur_s": 35.72,
+      "stuck_s": 27.5,
+      "onset_s": 7.75,
+      "rms": 0.1366,
+      "silent_frac": 0.0,
+      "longest_silence_s": 0.0
+    },
+    {
+      "rung": "sens_b",
+      "item": 4,
+      "dur_s": 35.72,
+      "stuck_s": 22.5,
+      "onset_s": 13.0,
+      "rms": 0.2301,
+      "silent_frac": 0.0,
+      "longest_silence_s": 0.0
+    },
+    {
+      "rung": "sens_b",
+      "item": 5,
+      "dur_s": 35.72,
+      "stuck_s": 14.25,
+      "onset_s": 14.5,
+      "rms": 0.2657,
+      "silent_frac": 0.0,
+      "longest_silence_s": 0.0
+    },
+    {
+      "rung": "sens_b",
+      "item": 6,
+      "dur_s": 17.8,
+      "stuck_s": 0.75,
+      "onset_s": 11.25,
+      "rms": 0.1011,
+      "silent_frac": 0.014084507042253521,
+      "longest_silence_s": 0.25
+    },
+    {
+      "rung": "sens_b",
+      "item": 7,
+      "dur_s": 5.56,
+      "stuck_s": 0.75,
+      "onset_s": 1.25,
+      "rms": 0.1212,
+      "silent_frac": 0.0,
+      "longest_silence_s": 0.0
+    },
+    {
+      "rung": "sens_c",
+      "item": 0,
+      "dur_s": 35.72,
+      "stuck_s": 22.25,
+      "onset_s": 13.25,
+      "rms": 0.4532,
+      "silent_frac": 0.0,
+      "longest_silence_s": 0.0
+    },
+    {
+      "rung": "sens_c",
+      "item": 1,
+      "dur_s": 35.72,
+      "stuck_s": 17.0,
+      "onset_s": 17.5,
+      "rms": 0.3546,
+      "silent_frac": 0.0,
+      "longest_silence_s": 0.0
+    },
+    {
+      "rung": "sens_c",
+      "item": 2,
+      "dur_s": 35.72,
+      "stuck_s": 26.25,
+      "onset_s": 9.25,
+      "rms": 0.3492,
+      "silent_frac": 0.0,
+      "longest_silence_s": 0.0
+    },
+    {
+      "rung": "sens_c",
+      "item": 3,
+      "dur_s": 35.72,
+      "stuck_s": 19.25,
+      "onset_s": 16.25,
+      "rms": 0.5036,
+      "silent_frac": 0.0,
+      "longest_silence_s": 0.0
+    },
+    {
+      "rung": "sens_c",
+      "item": 4,
+      "dur_s": 35.72,
+      "stuck_s": 22.25,
+      "onset_s": 13.25,
+      "rms": 0.4022,
+      "silent_frac": 0.0,
+      "longest_silence_s": 0.0
+    },
+    {
+      "rung": "sens_c",
+      "item": 5,
+      "dur_s": 19.88,
+      "stuck_s": 0.5,
+      "onset_s": 0.5,
+      "rms": 0.1698,
+      "silent_frac": 0.0,
+      "longest_silence_s": 0.0
+    },
+    {
+      "rung": "sens_c",
+      "item": 6,
+      "dur_s": 35.72,
+      "stuck_s": 24.5,
+      "onset_s": 11.0,
+      "rms": 0.4977,
+      "silent_frac": 0.0,
+      "longest_silence_s": 0.0
+    },
+    {
+      "rung": "sens_c",
+      "item": 7,
+      "dur_s": 35.72,
+      "stuck_s": 17.5,
+      "onset_s": 14.25,
+      "rms": 0.4235,
+      "silent_frac": 0.0,
+      "longest_silence_s": 0.0
+    }
+  ],
+  "expected_s_at_159wpm": [
+    15.47,
+    19.25,
+    13.21,
+    10.94,
+    22.64,
+    22.26,
+    22.26,
+    7.55
+  ],
+  "time_to_jam": {
+    "sens_a": {
+      "n_jam": 5,
+      "median_onset_s": 7.75,
+      "median_onset_over_expected": 0.348,
+      "units_jamming_after_text_ends": 0
+    },
+    "sens_b": {
+      "n_jam": 6,
+      "median_onset_s": 13.0,
+      "median_onset_over_expected": 0.651,
+      "units_jamming_after_text_ends": 0
+    },
+    "sens_c": {
+      "n_jam": 7,
+      "median_onset_s": 13.25,
+      "median_onset_over_expected": 0.856,
+      "units_jamming_after_text_ends": 2
+    }
+  },
+  "metric_finding": "Time-to-jam separates the rungs monotonically where the pass count cannot. median onset/expected goes 0.35 -> 0.65 -> 0.86 across sens_a/b/c and agrees with both ASR metrics (wer_med 0.4146 -> 0.3667 -> 0.1143; spoken_med 0.706 -> 0.712 -> 1.0), while the pass count reads 2, 2, 1 and therefore ranks the best rung last. On n=8 the pass count has almost no resolution: it is a count of a disjunction of six gates, and one gate firing hides every other difference. Time-to-jam also costs nothing: it needs the audio envelope and the reference word count, no ASR and no GPU, so it is cheap enough to run on every candidate in a sensitivity sweep rather than on a sample.",
+  "caveat": "n=8 units per rung and a single seed. The ORDERING is supported by three independent metrics agreeing, not by any one of them. The magnitudes are not."
+}
