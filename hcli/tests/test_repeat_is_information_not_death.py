@@ -60,6 +60,15 @@ def main() -> int:
     if C([REP], 8, 0, 8, 1, repeat_rounds=1) != "observation_budget_8":
         fails.append("an all-repeat round at the budget ceiling was allowed to continue")
 
+    # THE CALL SITE, and the RESET. A counter that never resets turns the second
+    # confirmation of a long round into loop death even when fresh work happened
+    # in between -- which is the same defect in a slower form.
+    src = (REPO / "hcli" / "engine.py").read_text()
+    if "repeat_rounds=repeat_rounds" not in src:
+        fails.append("no call site passes repeat_rounds -- the allowance is computed and never sent")
+    if "repeat_rounds = 0" not in src.split("repeat_rounds += 1", 1)[-1][:400]:
+        fails.append("repeat_rounds is never reset by a round containing a fresh call")
+
     for f in fails:
         print("FAIL:", f)
     print(f"{'FAILED' if fails else 'PASS'} — one confirmatory repeat survives, two in a row "

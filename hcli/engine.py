@@ -1765,6 +1765,7 @@ class Engine:
         failed_rounds: int,
         max_observations: int,
         failure_tolerance: int,
+        repeat_rounds: int = 0,
     ):
         """Why the tool catalog should close now, or None to keep it open.
 
@@ -1787,8 +1788,21 @@ class Engine:
             if failed_rounds > failure_tolerance:
                 return "failed_call"
             return None
+        # ONE CONFIRMATORY REPEAT IS NOT A RUNAWAY LOOP. Closing on the first
+        # all-repeat round made a correct verification instinct fatal: rounds
+        # 22, 24 and 25 each measured real dense anatomy, re-read the ledger to
+        # confirm it, and that confirmation ended the loop before they could
+        # write. All three closed here with observations still in budget.
+        #
+        # Runaway protection survives, because the thing being prevented is a
+        # no-progress CYCLE, not a single check. `repeat_rounds` counts
+        # CONSECUTIVE all-repeat rounds -- it resets the moment any round makes
+        # a fresh call -- so one confirmation is allowed and a second in a row
+        # closes. The observation budget above still bounds everything.
         if all(item.get("repeat") for item in round_observations):
-            return "bounded_observation_round"
+            if repeat_rounds > 1:
+                return "bounded_observation_round"
+            return None
         return None
     # Kept as an alias: external callers and tests referenced the old name for
     # the per-round cap, and silently changing what it means is worse than
@@ -2631,6 +2645,7 @@ class Engine:
             observations: List[Dict[str, Any]] = []
             conversation_history: List[Dict[str, Any]] = []
             failed_rounds = 0
+            repeat_rounds = 0
             closure_reason = None
             tool_rounds = 0
             self._agentic_execution = True
@@ -2712,12 +2727,22 @@ class Engine:
                 # break does not discard its remaining chance to act.
                 if any(not item.get("ok") for item in round_observations):
                     failed_rounds += 1
+                # CONSECUTIVE all-repeat rounds. Reset by any round that makes a
+                # fresh call, so this counts a no-progress CYCLE and not the
+                # total number of confirmations a round happened to make.
+                if round_observations and all(
+                    item.get("repeat") for item in round_observations
+                ):
+                    repeat_rounds += 1
+                else:
+                    repeat_rounds = 0
                 closure = self._tool_loop_closure(
                     round_observations,
                     len(observations),
                     failed_rounds,
                     self.MAX_TOOL_OBSERVATIONS,
                     self.TOOL_FAILURE_TOLERANCE,
+                    repeat_rounds=repeat_rounds,
                 )
                 if closure is not None:
                     closure_reason = closure

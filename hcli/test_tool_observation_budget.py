@@ -78,8 +78,19 @@ def test_the_failure_closers_are_untouched():
     # tolerance 1: the first failing round is forgiven, the second is not
     assert Engine._tool_loop_closure(failed, 0, 1, 8, 1) is None
     assert Engine._tool_loop_closure(failed, 0, 2, 8, 1) == "failed_call"
-    # the all-repeat closer is unchanged
-    assert Engine._tool_loop_closure(repeated, 0, 0, 8, 1) == "bounded_observation_round"
+    # The all-repeat closer CHANGED, deliberately, under [S010 10-11]: closing on
+    # the FIRST all-repeat round made a correct verification instinct fatal.
+    # Rounds 22, 24 and 25 each measured real dense anatomy, re-read the ledger
+    # to confirm it, and that confirmation ended the loop before they could
+    # write -- all three with observations still in budget. One confirmation is
+    # now allowed; two CONSECUTIVE all-repeat rounds still close, so a
+    # no-progress cycle stays bounded.
+    assert Engine._tool_loop_closure(repeated, 0, 0, 8, 1, repeat_rounds=1) is None
+    assert (Engine._tool_loop_closure(repeated, 0, 0, 8, 1, repeat_rounds=2)
+            == "bounded_observation_round")
+    # and the repeat allowance must never outrank the budget
+    assert (Engine._tool_loop_closure(repeated, 8, 0, 8, 1, repeat_rounds=1)
+            == "observation_budget_8")
     # and forgiving a failure must never outrank the budget
     assert Engine._tool_loop_closure(failed, 8, 1, 8, 1) == "observation_budget_8"
 
