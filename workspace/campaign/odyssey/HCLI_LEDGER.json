@@ -133,6 +133,39 @@
       "source_oxx": null,
       "text": "One-organ-at-a-time behavioural sensitivity does NOT compose into a multi-organ allocation. The map is real -- allocating by it beats allocating AGAINST it by 0.6712 ppl at identical bytes and identical bit depths, so the negative control holds -- yet the anatomy-ordered arm still beat the sensitivity-ordered arm and was the only one to pass the gate. Measuring each organ alone misses interaction: o_proj measured LESS sensitive than q_proj in isolation (-0.112 vs +0.239) and crushing it cost more inside a full allocation. Use a one-at-a-time map to rank candidates, never to build an allocation additively.",
       "writer_pid": 22056
+    },
+    {
+      "counterexample_requirement": "a negative delta that survives two corpora of different domain on the same organ, or a mechanism predicting WHICH corpus should show it",
+      "evidence": "receipts/future/G011_ORGAN_SENSITIVITY.json, receipts/future/G017_SENSITIVITY_CORPUS_B.json",
+      "hcli_owned": false,
+      "id": "LAW013",
+      "recorded_at": "2026-09-08T06:33:45.335981+00:00",
+      "scope": "MODEL_LOCAL",
+      "source_oxx": null,
+      "text": "NEGATIVE SENSITIVITY IS DEAD -- it was a corpus artifact. On the ML-domain corpus A, crushing o_proj (-0.1115) and gate_proj (-0.1010) from q4-g64 to q3-g64 IMPROVED perplexity. On corpus B (narrative/historical/biological, sharing only 8 function words with A) both flip firmly positive: o_proj +0.3837, gate_proj +0.6710, and NO organ has negative sensitivity. 'Beneficial Gravity' -- the hypothesis that stronger compression can improve the organism -- has no support from this evidence.",
+      "writer_pid": 26130
+    },
+    {
+      "counterexample_requirement": "a sensitivity probe measured across multiple corpora whose consensus ordering beats the global anatomy order in a byte-exact depth-exact allocation on a corpus none of them was measured on",
+      "evidence": "receipts/future/G011_ORGAN_SENSITIVITY.json, receipts/future/G017_SENSITIVITY_CORPUS_B.json, receipts/future/G012_SENSITIVITY_ALLOCATION.json, receipts/future/G019_ALLOCATION_CORPUS_B.json",
+      "hcli_owned": false,
+      "id": "LAW014",
+      "recorded_at": "2026-09-08T06:33:45.337365+00:00",
+      "scope": "MODEL_LOCAL",
+      "source_oxx": null,
+      "text": "One-at-a-time behavioural sensitivity DOES NOT TRANSFER ACROSS CORPORA, and is therefore not an allocation authority. The map measured on corpus A predicts the corpus B ordering at tau 0.4286 -- while the STATIC global anatomy order predicts corpus B sensitivity at tau 0.619, i.e. BETTER than the measured map does. Worse, in a byte-exact depth-exact allocation the map's negative control REVERSES SIGN between corpora: ANTI minus SENS is +0.6712 on A (map predicts) and -0.5145 on B (map predicts BACKWARDS). The apparent predictive power on the corpus it was measured on is in-sample fit. Note the structure of the failure: the SENSITIVE end is stable across corpora (down_proj 0.963/0.934 and v_proj 0.747/0.796 are top-two on both) while the TOLERANT end is what moves -- and allocation decisions hinge on the tolerant end, on what to crush.",
+      "writer_pid": 26130
+    },
+    {
+      "counterexample_requirement": "a third corpus or a second body where a gentle depth-controlled tilt along the global order fails the conjunction while uniform passes; also owed is a per-group mirror at this budget, since GLOBAL and ANTI agree on {q,o} yet differ by 0.21 r4 on corpus B, so the mechanism is NOT isolated to one group",
+      "evidence": "receipts/future/G012_SENSITIVITY_ALLOCATION.json, receipts/future/G019_ALLOCATION_CORPUS_B.json",
+      "hcli_owned": false,
+      "id": "LAW015",
+      "recorded_at": "2026-09-08T06:33:45.338087+00:00",
+      "scope": "MODEL_LOCAL",
+      "source_oxx": null,
+      "text": "The GLOBAL structural anatomy order TRANSFERS as an allocation policy. Across two corpora of different domain, at identical bytes (247,730,784) and an identical bit-depth multiset, GLOBAL_ANATOMY is the ONLY arm to pass the capability conjunction on BOTH: corpus A ppl 5.5520 r4 0.4135, corpus B ppl 4.9438 r4 0.4000. Its advantage is diversity and it is stable -- r4 ~0.40 on both corpora against UNIFORM's 0.7103 and 0.7308, a gap near 0.30 each time -- while UNIFORM holds the best likelihood on both and fails the gate on both. The tilt must be gentle and depth-controlled: arms whose ramp reached q2 landed at ppl 6.76-12.84.",
+      "writer_pid": 26130
     }
   ],
   "parked": [],
@@ -144,6 +177,22 @@
       "recorded_at": "2026-09-08T06:19:47.394607+00:00",
       "reopen_when": "an interaction-aware sensitivity measurement that beats the global order in a byte-exact, depth-exact allocation",
       "writer_pid": 22056
+    },
+    {
+      "description": "Corpus B refutes this law's premise as well as its prescription: the sensitivity map does not transfer, and on corpus B the static global order predicts measured sensitivity BETTER (tau 0.619) than the corpus-A map does (tau 0.4286). The 'structure barely predicts tolerance' reading was itself corpus-A-specific.",
+      "hcli_owned": false,
+      "law_id": "LAW009",
+      "recorded_at": "2026-09-08T06:33:45.338723+00:00",
+      "reopen_when": "a multi-corpus consensus sensitivity map that beats the global order out of sample",
+      "writer_pid": 26130
+    },
+    {
+      "description": "Corpus B strengthens and supersedes the scope of this law. The failure is not only that the one-at-a-time map does not COMPOSE -- it does not TRANSFER: its negative control reverses sign between corpora.",
+      "hcli_owned": false,
+      "law_id": "LAW012",
+      "recorded_at": "2026-09-08T06:33:45.339278+00:00",
+      "reopen_when": "a multi-corpus consensus sensitivity map that beats the global order out of sample",
+      "writer_pid": 26130
     }
   ],
   "schema": "hcli.odyssey.ledger.v1",

@@ -108,6 +108,39 @@ NLL_TEXT = (
     "while remaining dense in memory, which is why storage dominates the cost."
 ) * 3
 
+# CORPUS B. Every capability number this campaign has is from CORPUS A above,
+# which is ML-shop English: MoE routing, quantization scales, transformer
+# bandwidth, one arithmetic trick, one translation. Two results now rest on it --
+# GLOBAL_ANATOMY's r4 0.4135 win, and the NEGATIVE sensitivity of gate_proj and
+# o_proj -- and neither can be believed until it reproduces on prompts that do
+# not share that vocabulary. B is deliberately a different register and domain:
+# narrative, historical, biological, culinary, legal. No transformer words.
+PROMPTS_B = [
+    "Describe what a lighthouse keeper does during a winter storm.",
+    "Why did medieval towns build walls, and what ended the practice?",
+    "Write a short recipe for lentil soup for four people.",
+    "Explain how photosynthesis turns sunlight into sugar.",
+    "A baker sells 40 loaves on Monday and half that on Tuesday. How many in total?",
+    "What is the difference between a lease and a licence?",
+    "Name three reasons a bridge might be closed for repair.",
+    "Translate to Spanish: The library opens at nine in the morning.",
+]
+NLL_TEXT_B = (
+    "The great auk was a flightless seabird of the North Atlantic that stood about "
+    "seventy centimetres tall and nested on remote rocky islands. It swam well and "
+    "walked poorly, which made the breeding colonies easy for sailors to raid for "
+    "meat, eggs and down. The last confirmed pair was killed in Iceland in 1844, and "
+    "the species is now the standard example of a bird hunted to extinction."
+) * 3
+
+CORPORA = {
+    "A": {"prompts": PROMPTS, "nll": NLL_TEXT,
+          "note": "ML-shop English: MoE routing, quantization, transformer decoding"},
+    "B": {"prompts": PROMPTS_B, "nll": NLL_TEXT_B,
+          "note": "narrative/historical/biological/culinary/legal; no transformer vocabulary"},
+}
+ACTIVE_CORPUS = "A"
+
 WHY_THIS_SPECIMEN = (
     "Cheapest DENSE causal LM in G002_DENSE_ANATOMY_SWEEP.json that still "
     "carries all seven standard organs and can run the conjunction gate "
@@ -771,7 +804,8 @@ def measure_capability(model, tokenizer, *, device: str = "cpu") -> dict[str, An
     """Same axes as gravity_outlier_eval.evaluate: NLL ppl + greedy 4-gram r4."""
     import torch
     model.eval()
-    nll_ids = tokenizer.encode(NLL_TEXT)[:NLL_TOKENS]
+    corpus = CORPORA[ACTIVE_CORPUS]
+    nll_ids = tokenizer.encode(corpus["nll"])[:NLL_TOKENS]
     if len(nll_ids) < 2:
         raise RuntimeError("NLL text tokenised to <2 tokens")
     x = torch.tensor([nll_ids], device=device)
@@ -788,7 +822,7 @@ def measure_capability(model, tokenizer, *, device: str = "cpu") -> dict[str, An
     pad_id = tokenizer.pad_token_id
     if pad_id is None:
         pad_id = tokenizer.eos_token_id
-    for prompt in PROMPTS:
+    for prompt in corpus["prompts"]:
         ids = tokenizer(prompt, return_tensors="pt")
         ids = {k: v.to(device) for k, v in ids.items()}
         with torch.inference_mode():
@@ -821,7 +855,9 @@ def measure_capability(model, tokenizer, *, device: str = "cpu") -> dict[str, An
         "median_4gram_repeat": round(med_r4, 4),
         "median_distinct_ratio": round(med_dis, 4),
         "worst_max_repeat_run": int(worst),
-        "n_prompts": len(PROMPTS),
+        "n_prompts": len(corpus["prompts"]),
+        "corpus": ACTIVE_CORPUS,
+        "corpus_note": corpus["note"],
         "nll_tokens": len(nll_ids),
         "gen_tokens": GEN_TOKENS,
         "r4s": [round(x, 6) for x in r4s],
@@ -1950,6 +1986,10 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--alloc-only", action="store_true")
     p.add_argument("--mutation-check", action="store_true")
     p.add_argument("--run", action="store_true")
+    p.add_argument("--corpus", default="A", choices=sorted(CORPORA),
+                   help="which capability corpus to evaluate on. Every number in "
+                        "the campaign so far is corpus A; B exists to test whether "
+                        "a result survives a different domain and register.")
     p.add_argument("--allocate", action="store_true",
                    help="allocate by MEASURED sensitivity vs structural anatomy vs "
                         "uniform, byte-exact and depth-exact, with an "
@@ -1975,6 +2015,7 @@ def main(argv: list[str] | None = None) -> int:
                    help="BITSxGROUP for the UNIFORM arm, e.g. 4x32. UNIFORM "
                         "defines the matched byte budget every arm is held to.")
     args = p.parse_args(argv)
+    globals()["ACTIVE_CORPUS"] = args.corpus
     if args.receipt:
         # Validate the write path BEFORE the model load. This exact call used
         # to fail on the last line of the run, after every arm was measured.
