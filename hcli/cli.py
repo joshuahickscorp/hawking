@@ -32,6 +32,32 @@ DELEGATE_VERBS = ("run", "status", "steer", "result", "abort")
 DELEGATE_EXEC_VERB = "__delegate_exec"
 
 
+VERB_HELP = """\
+commands (each takes its own --help):
+
+  chat and models
+    web         open a browser chat (Open WebUI) on the current resident
+    serve       the OpenAI-compatible endpoint only, no browser
+    use         list every Hawking body, or switch which one answers
+    stop        stop what web/serve started
+    report      measure the loaded resident: cold, warm, decode
+
+  work
+    run         start a delegated task        status   how a task is doing
+    steer       redirect a running task       result   fetch its result
+    abort       stop a task
+
+  system
+    agentos     tools, checkpoints, background jobs
+    resident    the long-running daemon (alias: daemon)
+    connectivity, flash-next, install-shims
+
+  with no verb, the first argument is a prompt:
+    hcli "explain DeltaNet"
+    hcli 4 "explain DeltaNet"      (4 runtimes)
+"""
+
+
 def _prog_name() -> str:
     base = os.path.basename(sys.argv[0] if sys.argv else "hcli")
     if base in ("hcli", "jhcli"):
@@ -80,6 +106,13 @@ def parse_hcli_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog=_prog_name(),
         description="HCLI — autonomous local model engineering",
+        # Every verb main() dispatches, listed. `hcli --help` used to advertise
+        # only the positional prompt form, so `web`, `use`, `serve`, `report`,
+        # `agentos`, `resident` and the delegation verbs were undiscoverable
+        # from the tool itself -- a command that exists and is unfindable is
+        # the same defect as one that is advertised and does not work.
+        epilog=VERB_HELP,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument("n_or_prompt", nargs="?", type=str, default=None,
                         help="Number of runtimes (1-8), 'max', or immediate mission prompt")
@@ -148,7 +181,19 @@ def parse_hcli_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
 
 
 def _shim_python() -> str:
-    """Reuse the interpreter the existing hcli shim already execs, if any."""
+    """The interpreter the shims will exec.
+
+    PREFER THE ONE RUNNING THIS INSTALL. Reusing whatever the previous shim
+    execed sounds conservative and is not: the shim on this machine pointed at a
+    venv with no `mlx`, so every MLX body in the catalog -- 53 of the 54 -- would
+    have failed at load through `hcli` while working perfectly through
+    `python -m hcli`. The person running install-shims chose an interpreter by
+    running it; honour that choice, and fall back to the old shim's only when
+    this one cannot be located.
+    """
+    current = sys.executable
+    if current and os.path.isfile(current) and os.access(current, os.X_OK):
+        return current
     existing = Path.home() / ".local" / "bin" / "hcli"
     if existing.is_file():
         try:
@@ -354,6 +399,14 @@ def main(argv: Optional[List[str]] = None) -> int:
         from .report import main as report_main
 
         return report_main(raw[1:])
+    if raw and raw[0] in ("use", "models"):
+        from .use import main as use_main
+
+        return use_main(raw[1:])
+    if raw and raw[0] == "stop":
+        from .web import stop_main
+
+        return stop_main(raw[1:])
 
     args = parse_hcli_args(raw)
     if args.debug:

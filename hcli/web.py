@@ -165,8 +165,12 @@ def main(argv: Optional[list] = None) -> int:
     ap = argparse.ArgumentParser(
         prog="hcli web",
         description="Open a browser chat connected to the Hawking resident.")
-    ap.add_argument("--model", default=None,
-                    help="model artifact or native profile (default: the sealed profile)")
+    # POSITIONAL, because `hcli web Qwen3-14B` is what a person types. --model
+    # stays as an alias so existing scripts keep working.
+    ap.add_argument("model", nargs="?", default=None,
+                    help="which body to load: a name from `hcli use`, or a path")
+    ap.add_argument("--model", dest="model_flag", default=None,
+                    help=argparse.SUPPRESS)
     ap.add_argument("--port", type=int, default=DEFAULT_PORT,
                     help=f"port for the OpenAI surface (default {DEFAULT_PORT})")
     ap.add_argument("--webui-port", type=int, default=WEBUI_PORT)
@@ -176,6 +180,7 @@ def main(argv: Optional[list] = None) -> int:
                     help="start only the OpenAI surface and print its URL")
     ap.add_argument("--ready-timeout", type=float, default=900.0)
     a = ap.parse_args(list(argv or []))
+    a.model = a.model or a.model_flag
 
     model = a.model or str(
         Path(__file__).resolve().parent / "hawking-native.sealed-3.14.json")
@@ -249,3 +254,45 @@ def main(argv: Optional[list] = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main(sys.argv[1:]))
+
+
+def stop_main(argv: Optional[list] = None) -> int:
+    """`hcli stop` -- put down what `hcli web` or `hcli serve` started.
+
+    Scoped ON PURPOSE. It matches this session's own surface and web interface
+    and nothing else: the repo has an orphan reaper whose job is unowned
+    residents, and a stop command that shoots anything resembling a Hawking
+    process would eventually kill somebody's overnight campaign.
+    """
+    import signal as _signal
+    import subprocess as _subprocess
+
+    ap = argparse.ArgumentParser(
+        prog="hcli stop", description="Stop the browser chat and its endpoint.")
+    ap.add_argument("--port", type=int, default=DEFAULT_PORT)
+    ap.add_argument("--webui-port", type=int, default=WEBUI_PORT)
+    a = ap.parse_args(list(argv or []))
+
+    stopped = []
+    for label, pattern in (("endpoint", f"hcli serve .*--port {a.port}"),
+                           ("endpoint", "hcli serve"),
+                           ("web interface", f"open-webui serve --port {a.webui_port}")):
+        found = _subprocess.run(["pgrep", "-f", pattern],
+                                capture_output=True, text=True)
+        for pid in [p for p in found.stdout.split() if p.isdigit()]:
+            if int(pid) == os.getpid():
+                continue
+            try:
+                os.kill(int(pid), _signal.SIGTERM)
+                stopped.append(f"{label} pid {pid}")
+            except ProcessLookupError:
+                pass
+        if stopped and label == "endpoint":
+            break
+
+    if not stopped:
+        print("nothing of ours was running.")
+        return 0
+    for line in stopped:
+        print(f"stopped {line}")
+    return 0

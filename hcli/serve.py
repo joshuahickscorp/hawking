@@ -37,14 +37,19 @@ import argparse
 import json
 import os
 import sys
+import threading
 import time
 import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
+
+if TYPE_CHECKING:  # the catalog import is deferred so a menu is never
+    from .catalog import Body as CatalogBody  # built just to import this module
 
 DEFAULT_PORT = 8011
 DEFAULT_HOST = "127.0.0.1"
+DEFAULT_BASE_URL = f"http://{DEFAULT_HOST}:{DEFAULT_PORT}"
 
 #: Values that mean "do not sample", per parameter. A greedy profile accepts
 #: these and refuses everything else. `True == 1` in Python, so membership is
@@ -184,6 +189,123 @@ def stream_frames(result: Any, identity: str, *, request_id: str):
     yield b"data: [DONE]\n\n"
 
 
+class Resident:
+    """The one loaded body, and the ability to become a different one.
+
+    Open WebUI sends `model` on every request and reads `/v1/models` for its
+    dropdown, so honouring both is all switching needs -- no reconnection, no
+    second endpoint, no restart. That is why this lives behind the OpenAI shape
+    rather than beside it.
+
+    ONE BODY AT A TIME, AND THE OLD ONE STOPS FIRST. These are 8-150 GB
+    artifacts on a 103 GB machine; spawning the new resident before stopping the
+    old one would page the box into the ground and violate the campaign's swap
+    ceiling. So a switch is stop-then-start, serialised under a lock, and a
+    request that arrives mid-switch waits rather than racing a half-loaded body.
+
+    A BODY THAT CANNOT FIT IS REFUSED, NOT ATTEMPTED. Qwen2.5-72B is 145 GB and
+    this machine has 103 GB. Starting it would thrash for many minutes and then
+    fail; the refusal names the two numbers instead.
+    """
+
+    def __init__(self, body: "CatalogBody", backend: Any, *, ready_timeout: float = 900.0):
+        self.body = body
+        self.backend = backend
+        self.ready_timeout = ready_timeout
+        self.state = "ready"
+        self.error: Optional[str] = None
+        self._lock = threading.RLock()
+
+    @property
+    def identity(self) -> str:
+        return self.body.name
+
+    @property
+    def greedy(self) -> bool:
+        return profile_is_greedy(self.body.path)
+
+    def catalog(self) -> List[Dict[str, Any]]:
+        from .catalog import catalog as _catalog
+        return [b.to_openai(loaded=(b.name == self.body.name)) for b in _catalog()]
+
+    def admits(self, body: "CatalogBody") -> Optional[str]:
+        if not body.bytes:
+            return None
+        try:
+            total = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
+        except (ValueError, OSError, AttributeError):
+            return None
+        if body.bytes > total * 0.92:
+            return (f"{body.name} is {body.bytes / 1e9:.0f} GB and this machine has "
+                    f"{total / 1e9:.0f} GB. Loading it would page the box into swap "
+                    f"rather than run, so it is refused here. Bodies that fit are "
+                    f"listed by `hcli use`.")
+        return None
+
+    def switch(self, name: str) -> Dict[str, Any]:
+        from .catalog import resolve
+        with self._lock:
+            target = resolve(name)
+            if target is None:
+                raise LookupError(
+                    f"no body named {name!r}. `hcli use` lists what is available.")
+            if target.name == self.body.name and self.state == "ready":
+                return {"switched": False, "resident": self.body.name}
+            refusal = self.admits(target)
+            if refusal:
+                raise MemoryError(refusal)
+            from .runtime_iface import make_backend_for_model
+            previous = self.body.name
+            self.state = "switching"
+            try:
+                try:
+                    self.backend.stop()
+                except Exception:
+                    pass
+                backend = make_backend_for_model(target.path)
+                backend.spawn()
+                if not backend.ready(self.ready_timeout):
+                    raise RuntimeError(
+                        f"{target.name} did not become ready within "
+                        f"{self.ready_timeout:.0f}s")
+                self.backend = backend
+                self.body = target
+                self.state = "ready"
+                self.error = None
+                return {"switched": True, "from": previous, "resident": target.name}
+            except Exception as exc:
+                self.state = "failed"
+                self.error = f"{type(exc).__name__}: {exc}"
+                raise
+
+    def complete(self, payload: Dict[str, Any], timeout: Optional[float] = None) -> Any:
+        wanted = str(payload.get("model") or "").strip()
+        with self._lock:
+            if wanted and wanted != self.body.name:
+                from .catalog import resolve
+                try:
+                    target = resolve(wanted)
+                except LookupError:
+                    target = None
+                # An unknown model name is NOT a silent fallback to whatever is
+                # loaded: answering as a different body than the caller selected
+                # is the same lie as serving a different sampler.
+                if target is None:
+                    raise LookupError(
+                        f"no body named {wanted!r} -- the loaded resident is "
+                        f"{self.body.name}. `hcli use` lists what is available.")
+                if target.name != self.body.name:
+                    self.switch(target.name)
+            # The `model` field is OURS -- a catalog name that selects which body
+            # is loaded. It must not reach the backend: mlx_lm.server reads it as
+            # a HuggingFace repo id and goes to the network for it, which turned
+            # a correct switch into "Repository Not Found for Qwen3-0.6B". The
+            # backend serves the one body it has loaded and needs no name for it.
+            inner = {k: v for k, v in payload.items() if k != "model"}
+            return self.backend.complete(inner, timeout) if timeout is not None \
+                else self.backend.complete(inner)
+
+
 def make_handler(backend: Any, identity: str, *, greedy: bool, health: Dict[str, Any]):
     class Handler(BaseHTTPRequestHandler):
         protocol_version = "HTTP/1.1"
@@ -208,19 +330,60 @@ def make_handler(backend: Any, identity: str, *, greedy: bool, health: Dict[str,
             self.send_header("Content-Length", "0")
             self.end_headers()
 
+        def _identity(self) -> str:
+            return getattr(backend, "identity", None) or identity
+
         def do_GET(self) -> None:  # noqa: N802
             path = self.path.rstrip("/") or "/"
             if path in ("/v1/models", "/models"):
+                # Every body a person could pick, so Open WebUI's dropdown is
+                # the model picker rather than a one-entry label.
+                rows = getattr(backend, "catalog", None)
+                if callable(rows):
+                    return self._send(200, {"object": "list", "data": rows()})
                 return self._send(200, models_payload(identity))
             if path in ("/health", "/"):
-                return self._send(200, health)
+                live = dict(health)
+                if hasattr(backend, "body"):
+                    live.update(resident=backend.identity,
+                                model=backend.body.path,
+                                state=backend.state,
+                                sampling=("greedy-argmax" if backend.greedy
+                                          else "profile-default"))
+                    if backend.error:
+                        live["error"] = backend.error
+                return self._send(200, live)
             self._send(404, {"error": {"message": f"no route {self.path}"}})
 
         def do_POST(self) -> None:  # noqa: N802
-            if self.path.rstrip("/") not in ("/v1/chat/completions", "/chat/completions"):
+            route = self.path.rstrip("/")
+            if route in ("/v1/switch", "/switch"):
+                # The control door `hcli use` knocks on. Switching is also
+                # reachable by naming a model in a chat request; this exists so
+                # a person can pay the load cost deliberately instead of
+                # discovering it inside their first message.
+                length = int(self.headers.get("Content-Length") or 0)
+                try:
+                    body = json.loads(self.rfile.read(length) or b"{}")
+                except Exception as exc:
+                    return self._send(400, {"error": {"message": f"bad json: {exc}"}})
+                switch = getattr(backend, "switch", None)
+                if not callable(switch):
+                    return self._send(409, {"error": {
+                        "message": "this surface serves a single fixed body"}})
+                try:
+                    return self._send(200, switch(str(body.get("model") or "")))
+                except LookupError as exc:
+                    return self._send(404, {"error": {"message": str(exc)}})
+                except MemoryError as exc:
+                    return self._send(507, {"error": {"message": str(exc)}})
+                except Exception as exc:
+                    return self._send(502, {"error": {
+                        "message": f"{type(exc).__name__}: {exc}"}})
+            if route not in ("/v1/chat/completions", "/chat/completions"):
                 return self._send(404, {"error": {
                     "message": f"no route {self.path}; this server serves "
-                               f"/v1/models and /v1/chat/completions"}})
+                               f"/v1/models, /v1/chat/completions and /v1/switch"}})
             length = int(self.headers.get("Content-Length") or 0)
             try:
                 body = json.loads(self.rfile.read(length) or b"{}")
@@ -228,7 +391,8 @@ def make_handler(backend: Any, identity: str, *, greedy: bool, health: Dict[str,
                 return self._send(400, {"error": {"message": f"bad json: {exc}"}})
             if not isinstance(body, dict):
                 return self._send(400, {"error": {"message": "body must be an object"}})
-            if greedy:
+            live_greedy = getattr(backend, "greedy", greedy)
+            if live_greedy:
                 refusal = sampler_refusal(body)
                 if refusal is not None:
                     return self._send(400, refusal)
@@ -242,12 +406,20 @@ def make_handler(backend: Any, identity: str, *, greedy: bool, health: Dict[str,
             request_id = f"chatcmpl-{uuid.uuid4().hex[:24]}"
             try:
                 result = backend.complete(payload)
+            except LookupError as exc:
+                return self._send(404, {"error": {
+                    "message": str(exc), "type": "model_not_found"}})
+            except MemoryError as exc:
+                return self._send(507, {"error": {
+                    "message": str(exc), "type": "insufficient_storage"}})
             except Exception as exc:
                 return self._send(502, {"error": {
                     "message": f"{type(exc).__name__}: {exc}",
                     "type": "resident_error"}})
             if not body.get("stream"):
-                return self._send(200, chat_payload(result, identity, request_id=request_id))
+                answered = getattr(backend, "identity", identity)
+                return self._send(200, chat_payload(
+                    result, answered, request_id=request_id))
             # An SSE body has no Content-Length, so under HTTP/1.1 keep-alive a
             # client cannot tell where it ends and waits until it times out --
             # which is exactly what a browser chat looks like when it hangs
@@ -260,7 +432,9 @@ def make_handler(backend: Any, identity: str, *, greedy: bool, health: Dict[str,
             self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
             self.close_connection = True
-            for chunk in stream_frames(result, identity, request_id=request_id):
+            for chunk in stream_frames(
+                    result, getattr(backend, "identity", identity),
+                    request_id=request_id):
                 self.wfile.write(chunk)
                 self.wfile.flush()
 
@@ -270,9 +444,20 @@ def make_handler(backend: Any, identity: str, *, greedy: bool, health: Dict[str,
 def build_server(model: str, *, host: str = DEFAULT_HOST, port: int = DEFAULT_PORT,
                  ready_timeout: float = 600.0):
     """Spawn the resident, wait for it, and return (httpd, identity, health)."""
-    from .runtime_iface import make_backend_for_model
+    from .catalog import Body, catalog, resolve
+    from .runtime_iface import classify_backend, make_backend_for_model
 
-    backend = make_backend_for_model(model)
+    try:
+        body = resolve(model)
+    except LookupError:
+        body = None
+    if body is None:
+        # A path that is not in the catalog is still servable; it just has no
+        # menu entry. Naming it after its own file keeps identity honest.
+        body = Body(name=Path(str(model)).stem, path=str(model),
+                    kind=classify_backend(str(model)), source="user")
+
+    backend = make_backend_for_model(body.path)
     backend.spawn()
     if not backend.ready(ready_timeout):
         raise RuntimeError(
@@ -280,24 +465,24 @@ def build_server(model: str, *, host: str = DEFAULT_HOST, port: int = DEFAULT_PO
             f"Its log tail is the evidence: "
             f"{getattr(backend, 'log_tail', lambda *_: '(no log)')()!s:.400}"
         )
-    ident = backend.identity() if hasattr(backend, "identity") else {}
-    identity = str(ident.get("resident_identity") or ident.get("model")
-                   or Path(str(model)).stem)
-    greedy = profile_is_greedy(model)
+    resident = Resident(body, backend, ready_timeout=ready_timeout)
+    identity = resident.identity
+    greedy = resident.greedy
+    del catalog
     health = {
         "status": "ok",
         "resident": identity,
-        "model": str(model),
+        "model": body.path,
         "sampling": "greedy-argmax" if greedy else "profile-default",
         "streaming": "single-chunk (the connector returns a completed string; "
                      "SSE shape is provided so browser clients render, not as "
                      "evidence of incremental decode)",
         "endpoints": ["/v1/models", "/v1/chat/completions", "/health"],
-        "pid": ident.get("pid"),
+        "switchable": True,
     }
     httpd = ThreadingHTTPServer(
-        (host, port), make_handler(backend, identity, greedy=greedy, health=health))
-    httpd.backend = backend  # type: ignore[attr-defined]
+        (host, port), make_handler(resident, identity, greedy=greedy, health=health))
+    httpd.backend = resident  # type: ignore[attr-defined]
     return httpd, identity, health
 
 
@@ -305,12 +490,17 @@ def main(argv: Optional[list] = None) -> int:
     ap = argparse.ArgumentParser(
         prog="hcli serve",
         description="OpenAI-compatible endpoint over the persistent Hawking resident.")
-    ap.add_argument("--model", default=None,
-                    help="model artifact or native profile (default: the sealed profile)")
+    # POSITIONAL, because `hcli serve Qwen3-14B` is what a person types. --model
+    # stays as an alias so existing scripts keep working.
+    ap.add_argument("model", nargs="?", default=None,
+                    help="which body to load: a name from `hcli use`, or a path")
+    ap.add_argument("--model", dest="model_flag", default=None,
+                    help=argparse.SUPPRESS)
     ap.add_argument("--port", type=int, default=DEFAULT_PORT)
     ap.add_argument("--host", default=DEFAULT_HOST)
     ap.add_argument("--ready-timeout", type=float, default=600.0)
     a = ap.parse_args(list(argv or []))
+    a.model = a.model or a.model_flag
 
     model = a.model or str(Path(__file__).resolve().parent / "hawking-native.sealed-3.14.json")
     httpd, identity, health = build_server(

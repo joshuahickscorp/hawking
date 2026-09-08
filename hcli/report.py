@@ -210,8 +210,11 @@ def main(argv: Optional[list] = None) -> int:
     ap = argparse.ArgumentParser(
         prog="hcli report",
         description="Measure the resident that is running right now.")
-    ap.add_argument("--base", default=DEFAULT_BASE,
-                    help=f"the OpenAI surface to measure (default {DEFAULT_BASE})")
+    # POSITIONAL, so `hcli report Qwen3-14B` measures that body: it switches to
+    # it first, then runs. Omit it to measure whatever is answering.
+    ap.add_argument("model", nargs="?", default=None,
+                    help="body to measure; omit for the one already loaded")
+    ap.add_argument("--base", default=DEFAULT_BASE, help=argparse.SUPPRESS)
     ap.add_argument("--sizes", default="100,500,2000",
                     help="cold-prefill prompt sizes in tokens, comma separated")
     ap.add_argument("--warm-size", type=int, default=700)
@@ -223,6 +226,12 @@ def main(argv: Optional[list] = None) -> int:
     ap.add_argument("--skip", default="", help="comma list of: cold,warm,decode")
     a = ap.parse_args(list(argv or []))
 
+    if a.model:
+        # Measuring a body you have to switch to by hand is two commands where
+        # one will do, and the switch is the same door `hcli use` knocks on.
+        from .use import main as use_main
+        if use_main([a.model, "--base", a.base]) != 0:
+            return 2
     resident = health(a.base)
     if resident is None:
         print(f"nothing is answering on {a.base}/health.\n"

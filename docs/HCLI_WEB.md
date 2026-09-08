@@ -1,61 +1,43 @@
 # Hawking in a browser
 
-`hcli web` puts the sealed resident behind [Open WebUI](https://github.com/open-webui/open-webui).
+`hcli web` puts any Hawking body behind
+[Open WebUI](https://github.com/open-webui/open-webui), and the dropdown in that
+browser page switches which one answers -- over the same connection, with no
+reconnect and no restart.
 
 ## Cheat sheet
 
-Every command below was run and is real. All of them need the repo as the
-working directory (see *Known limitations*).
+No flags needed for any of it. Works from any directory.
 
 ```bash
-cd ~/Downloads/hawking
+hcli web                    # browser chat, opens the tab
+hcli web Qwen3-14B          # ... starting on a particular body
+hcli use                    # every body, * marks the one answering
+hcli use Qwen3-14B          # switch; open browser sessions follow
+hcli serve                  # endpoint only, no browser
+hcli report                 # measure the loaded body, writes a receipt
+hcli report Qwen3-14B       # switch to it, then measure
+hcli stop                   # put down what web/serve started
+hcli --help                 # the verbs, grouped
+hcli                        # interactive session in the terminal
 ```
 
-**Open the browser chat** — starts the resident, starts Open WebUI, opens the tab:
+A body is named by any unambiguous prefix, so `hcli use qwen3-14` is enough.
+An ambiguous one is refused with the candidates rather than resolved to a guess.
+
+If `hcli` is not on your PATH, or prints a STALE warning, reinstall the shims
+with the interpreter you want them to use:
 
 ```bash
-/usr/local/bin/python3.12 -m hcli web
+cd ~/Downloads/hawking && /usr/local/bin/python3.12 -m hcli install-shims
 ```
 
-**Just the endpoint**, to point your own client (or another UI) at it:
+That interpreter matters: the shims previously pointed at a venv with no `mlx`,
+which would have failed 53 of the 54 bodies at load while `python -m hcli` from
+the repo worked perfectly.
 
-```bash
-/usr/local/bin/python3.12 -m hcli serve --port 8011
-```
-
-**Ask one question from the shell:**
-
-```bash
-curl -s http://127.0.0.1:8011/v1/chat/completions -H 'Content-Type: application/json' -d '{"messages":[{"role":"user","content":"Explain DeltaNet in three sentences."}]}'
-```
-
-**Is it up, and what is it running?**
-
-```bash
-curl -s http://127.0.0.1:8011/health
-```
-
-**Measure whatever resident is loaded right now** -- writes a receipt under
-`~/.hcli/reports/`:
-
-```bash
-/usr/local/bin/python3.12 -m hcli report
-```
-
-**Serve a different body** (any ModelLake specimen, not only the sealed one):
-
-```bash
-/usr/local/bin/python3.12 -m hcli web --model /Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-4B-Instruct-2507@cdbee75f17c0
-```
-
-**Stop it** — Ctrl-C in the `hcli web` terminal stops what that command started.
-To stop a surface left running in the background:
-
-```bash
-pkill -f "hcli serve"; pkill -f "open-webui serve"
-```
-
-Logs: `~/.hcli/web/serve.log` and `~/.hcli/web/webui.log`.
+Logs: `~/.hcli/web/serve.log`, `~/.hcli/web/webui.log`. Reports:
+`~/.hcli/reports/`.
 
 ## What talks to what
 
@@ -74,6 +56,30 @@ Two OpenAI surfaces already existed and neither can drive a chat:
 * `tools/hcli_resident/serve_sealed.py` is seal-verified and correct, and its
   own docstring says the binary **reloads the model per call**. That is a
   measurement instrument, not a chat surface. It is unchanged.
+
+## Switching bodies
+
+`/v1/models` lists every body the catalog can find -- the native profiles in the
+repo plus every ModelLake specimen -- so Open WebUI's dropdown *is* the model
+picker. Selecting one sends `model` on the next request and the surface swaps to
+it. Measured: `sealed-3.14` to `Qwen3-0.6B` in 1.4 s, and back again inside a
+single chat request.
+
+Three rules the switch keeps:
+
+* **One body at a time, old one stopped first.** These are 8-150 GB artifacts on
+  a 103 GB machine. Spawning before stopping would page the box into swap, so a
+  switch is stop-then-start under a lock, and a request arriving mid-switch
+  waits rather than racing a half-loaded body.
+* **A body that cannot fit is refused, not attempted.** `Qwen2.5-72B-Instruct is
+  145 GB and this machine has 103 GB` -- named, with both numbers, instead of
+  thrashing for ten minutes and then failing.
+* **An unknown model name is never a silent fallback.** Asking for `gpt-4o`
+  returns a 404 saying which body *is* loaded. Answering as a different model
+  than the caller selected is the same lie as serving a different sampler.
+
+The sampler policy follows the loaded body: sealed-3.14 refuses `temperature`,
+and an MLX specimen that samples accepts it.
 
 ## Things this deliberately refuses
 
