@@ -36,9 +36,9 @@
   },
   "matched_resource_controls": {
    "required": "the candidate is compared under matched resources, not against a freer baseline",
-   "found": null,
-   "state": "ABSENT",
-   "detail": "grep for matched_resource / matched-resource across tools/ and hcli/ returns NOTHING. This is the piece with no implementation anywhere, and it is the one that decides whether an NX win is real or bought with headroom the parent was denied."
+   "found": "tools/future/matched_resource_control.py",
+   "state": "BUILT AND MUTATION-TESTED",
+   "detail": "alternating order, condition matching with tolerances, and an absent condition refused as agreement"
   }
  },
  "by_state": {
@@ -57,7 +57,8 @@
   "EXISTS, ZERO CALLERS": [
    "capability_attacks"
   ],
-  "ABSENT": [
+  "ABSENT": [],
+  "BUILT_THIS_PASS": [
    "matched_resource_controls"
   ]
  },
@@ -65,5 +66,23 @@
  "the_gap_that_matters_most": "MATCHED-RESOURCE CONTROLS ARE ABSENT ENTIRELY. Every other piece is at least built. This one decides whether an NX win is real: a candidate measured with more memory, a warmer cache or a freer GPU than its parent has not beaten the parent. The campaign has already been bitten by the unmatched-arm shape -- arm A always running first biased a measurement 1.472x to 1.404x until the order was alternated.",
  "verify_respected": "[S009 27] preparation is parallel, EXECUTION is earned. Nothing was executed here and no candidate was promoted to OIII. Running it on a weak candidate to move nx_disposition off zero is a REJECT and was not done. nx_disposition remains 0 MEASURED across all 56.",
  "not_built_here": "the missing runner and the matched-resource control are not written in this pass. Writing an adversarial runner for an artifact that does not exist yet risks building it around the candidate we imagine rather than the one that arrives -- and G027 says the representation CLASS still has to change, so its shape is not yet known.",
- "scar": "TWO THINGS SHARING A NAME WILL EVENTUALLY SATISFY EACH OTHER'S CONTRACT."
+ "scar": "TWO THINGS SHARING A NAME WILL EVENTUALLY SATISFY EACH OTHER'S CONTRACT.",
+ "the_absent_piece_is_now_built": {
+  "module": "tools/future/matched_resource_control.py",
+  "why_this_one_and_not_the_runner": "the runner was left unwritten because shaping an adversarial harness around an artifact that does not exist builds it for the candidate we imagine. The matched-resource CONTROL has the opposite property: it is a measurement discipline that does not depend on what the candidate turns out to be, and it is the piece that decides whether any win is real.",
+  "what_it_does": {
+   "alternating_order": "ABBA per repeat, alternating between repeats, so each arm averages the same position. Position effects here are MONOTONE -- a DVFS ramp, a warming cache, KV growth -- so a plain ABAB leaves the first arm permanently earlier and does not correct anything.",
+   "check_matched": "prompt_tokens, concurrency, max_seq_len, runtime, machine, workload exact; free memory within 4 GB and resident RSS within 1 GB. Returns a verdict rather than raising, so an UNMATCHED comparison is recordable as a finding instead of lost.",
+   "require_matched": "the raising form, for a caller that must not proceed unmatched."
+  },
+  "the_rule_that_matters_most": "AN UNRECORDED CONDITION IS NOT A MATCHED CONDITION. A missing field yields UNVERIFIABLE, never agreement. That is the same shape as nx_promotion's 'absence of a field is not absence of a parent', and it is how an unmatched comparison would otherwise pass for a matched one.",
+  "why_the_campaign_needs_it": "measured, on this machine: arm A always ran first and the ratio read 1.472x; alternating the order took it to 1.404x and the baseline spread from 28% to 2%. The bias was worth 5% of the headline number, in the direction of the claim.",
+  "verification": {
+   "selftest": "PASS -- matching, tolerances, absent conditions, position balance, and the raising form",
+   "mutation_A": "absent condition treated as agreement -> the UNRECORDED case FAILS",
+   "mutation_B": "ABBA replaced by plain ABAB -> position balance A 3.0 vs B 4.0, FAILED. The selftest also asserts that AABB and ABAB do NOT balance, so it cannot pass by being unable to detect bias at all.",
+   "markers": "grep 0"
+  },
+  "still_absent": "the OIII runner itself, and restart_recovery_qualification has a contract slot and no producer. Both wait on a candidate."
+ }
 }
