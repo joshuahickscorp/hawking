@@ -1,8 +1,8 @@
 {
  "limit": 500,
  "tally": {
-  "OK": 12,
-  "NO_SCOPE_FIELD": 15,
+  "OK": 20,
+  "NO_SCOPE_FIELD": 13,
   "REFUSED": 1
  },
  "failures": [],
@@ -24,6 +24,14 @@
    ]
   },
   {
+   "tool": "architecture.inspect",
+   "verdict": "NO_SCOPE_FIELD",
+   "full_chars": 10135,
+   "was_cut": true,
+   "scope_present": [],
+   "scope_survived": []
+  },
+  {
    "tool": "campaign.guard",
    "verdict": "NO_SCOPE_FIELD",
    "full_chars": 147,
@@ -32,12 +40,24 @@
    "scope_survived": []
   },
   {
-   "tool": "doctor.inspect",
+   "tool": "context.recall",
    "verdict": "NO_SCOPE_FIELD",
-   "full_chars": 12578,
+   "full_chars": 8097,
    "was_cut": true,
    "scope_present": [],
    "scope_survived": []
+  },
+  {
+   "tool": "doctor.inspect",
+   "verdict": "OK",
+   "full_chars": 12578,
+   "was_cut": true,
+   "scope_present": [
+    "bytes"
+   ],
+   "scope_survived": [
+    "bytes"
+   ]
   },
   {
    "tool": "frontier.decide",
@@ -60,9 +80,37 @@
    ]
   },
   {
+   "tool": "fs.read",
+   "verdict": "OK",
+   "full_chars": 5086,
+   "was_cut": true,
+   "scope_present": [
+    "truncated",
+    "truncation_note",
+    "bytes"
+   ],
+   "scope_survived": [
+    "truncated",
+    "truncation_note",
+    "bytes"
+   ]
+  },
+  {
+   "tool": "fs.search",
+   "verdict": "OK",
+   "full_chars": 7818,
+   "was_cut": true,
+   "scope_present": [
+    "truncated"
+   ],
+   "scope_survived": [
+    "truncated"
+   ]
+  },
+  {
    "tool": "git.diff",
    "verdict": "NO_SCOPE_FIELD",
-   "full_chars": 4345,
+   "full_chars": 4380,
    "was_cut": true,
    "scope_present": [],
    "scope_survived": []
@@ -84,18 +132,22 @@
   {
    "tool": "git.status",
    "verdict": "NO_SCOPE_FIELD",
-   "full_chars": 430,
+   "full_chars": 322,
    "was_cut": false,
    "scope_present": [],
    "scope_survived": []
   },
   {
    "tool": "gravity.inspect",
-   "verdict": "NO_SCOPE_FIELD",
+   "verdict": "OK",
    "full_chars": 55203,
    "was_cut": true,
-   "scope_present": [],
-   "scope_survived": []
+   "scope_present": [
+    "bytes"
+   ],
+   "scope_survived": [
+    "bytes"
+   ]
   },
   {
    "tool": "lake.census",
@@ -115,11 +167,15 @@
   },
   {
    "tool": "modellake.status",
-   "verdict": "NO_SCOPE_FIELD",
+   "verdict": "OK",
    "full_chars": 4309,
    "was_cut": true,
-   "scope_present": [],
-   "scope_survived": []
+   "scope_present": [
+    "bytes"
+   ],
+   "scope_survived": [
+    "bytes"
+   ]
   },
   {
    "tool": "odyssey.completions",
@@ -254,6 +310,18 @@
    ]
   },
   {
+   "tool": "receipt.read",
+   "verdict": "OK",
+   "full_chars": 16922,
+   "was_cut": true,
+   "scope_present": [
+    "bytes"
+   ],
+   "scope_survived": [
+    "bytes"
+   ]
+  },
+  {
    "tool": "roadmap.read",
    "verdict": "REFUSED"
   },
@@ -288,12 +356,30 @@
    ]
   },
   {
+   "tool": "tools.catalog",
+   "verdict": "OK",
+   "full_chars": 7942,
+   "was_cut": true,
+   "scope_present": [
+    "shown",
+    "truncated"
+   ],
+   "scope_survived": [
+    "shown",
+    "truncated"
+   ]
+  },
+  {
    "tool": "vmcp.capabilities",
-   "verdict": "NO_SCOPE_FIELD",
+   "verdict": "OK",
    "full_chars": 163661,
    "was_cut": true,
-   "scope_present": [],
-   "scope_survived": []
+   "scope_present": [
+    "bytes"
+   ],
+   "scope_survived": [
+    "bytes"
+   ]
   },
   {
    "tool": "vmcp.inspect",

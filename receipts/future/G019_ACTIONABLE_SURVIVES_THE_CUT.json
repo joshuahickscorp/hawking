@@ -46,5 +46,36 @@
   "why_only_3_of_5_return_under_mutation": "two of the five now route through the shared odyssey factories, whose ordering the mutation does not reach in the same way -- the fix there is structural rather than per-call."
  },
  "the_15_with_no_scope_field": "NOT counted as defects. They return no row list, so there is no 'how many' to lose. The earlier sweep established that separately.",
- "scar": "THE BUDGET WAS NOT AN ARGUMENT, IT WAS A LAYER. When a test says a thing cannot be squeezed, check what actually squeezes it in production."
+ "scar": "THE BUDGET WAS NOT AN ARGUMENT, IT WAS A LAYER. When a test says a thing cannot be squeezed, check what actually squeezes it in production.",
+ "coverage_was_widened": {
+  "why": "the verify says 'for EACH such tool'. The first sweep covered 28 zero-argument tools of 72 and excluded every read-only tool that takes an argument -- which is not the same as covering them.",
+  "added": [
+   "fs.read",
+   "receipt.read",
+   "architecture.inspect",
+   "fs.search",
+   "tools.catalog",
+   "context.recall"
+  ],
+  "how": "real, harmless arguments: a file that exists, a pattern that matches, a catalog focus. Not synthetic fixtures -- the point is what the tool actually returns.",
+  "result": {
+   "tools": 34,
+   "exceeding_budget": 30,
+   "tally": {
+    "OK": 20,
+    "NO_SCOPE_FIELD": 13,
+    "REFUSED": 1
+   }
+  },
+  "finding": "the argumented tools ALREADY lead with their scope -- _truncation_fields was applied there long ago. Widening found no new defect, which is itself worth recording: the file-reading path had this right and the collection-returning path did not."
+ },
+ "final_state": {
+  "tools_exercised": 34,
+  "OK": 20,
+  "NO_SCOPE_FIELD": 13,
+  "REFUSED": 1,
+  "SCOPE_LOST_TO_THE_CUT": 0,
+  "mutation_on_the_wider_set": "_scope_first neutered -> 3 regress, OK 20 -> 17"
+ },
+ "what_remains_uncovered": "mutating, costly and networked tools are not exercised by an automated sweep, and tools whose required arguments cannot be synthesized safely (shell.readonly, vmcp.query, odyssey.patient, the anatomy tools which need a real snapshot directory) are excluded by name rather than silently. 34 of 72 registered tools are covered."
 }

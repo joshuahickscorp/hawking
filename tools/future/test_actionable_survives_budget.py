@@ -32,8 +32,22 @@ LIMIT = int(Engine.CLOSED_OBSERVATION_CHARS)
 SKIP_PREFIX = ("web.", "github.", "huggingface.", "grok.", "benchmark", "accelerator")
 
 # What a caller needs to still see after the cut.
-SCOPE_FIELDS = ("n", "total", "shown", "truncated", "n_owed", "n_processes",
-                "n_orphaned", "n_ranked", "n_specimens", "specimen_count", "count")
+SCOPE_FIELDS = ("n", "total", "shown", "truncated", "truncation_note", "n_owed",
+                "n_processes", "n_orphaned", "n_ranked", "n_specimens",
+                "specimen_count", "count", "bytes", "delivered_chars")
+
+# Read-only tools that take arguments. "for each such tool" means these too, and
+# excluding them because they need an argument was how the first version of this
+# sweep covered 28 of 72 and called it done. Arguments are chosen to be real and
+# harmless: a file that exists, a pattern that matches, a catalog focus.
+ARGUMENTED = {
+    "fs.read": {"path": "receipts/future/G034_ODYSSEY_LEDGER.json"},
+    "receipt.read": {"path": "receipts/future/G012_CAPABILITY_CLIFF.json"},
+    "architecture.inspect": {"path": "receipts/future/modellake-index/catalog.json"},
+    "fs.search": {"pattern": "def ", "root": "tools/future", "max_results": 50},
+    "tools.catalog": {"focus": "odyssey"},
+    "context.recall": {"focus": "odyssey"},
+}
 
 
 def compact(text: str, limit: int = LIMIT) -> str:
@@ -53,15 +67,18 @@ def main() -> int:
     targets = sorted(
         n for n, d in specs.items()
         if (d.get("mutation") or "read_only") == "read_only"
-        and not (d.get("input_schema") or {}).get("required")
         and not any(p in n for p in SKIP_PREFIX)
+        and (not (d.get("input_schema") or {}).get("required") or n in ARGUMENTED)
     )
 
     fails, rows = [], []
     for name in targets:
         props = ((specs[name].get("input_schema") or {}).get("properties") or {})
+        args = dict(ARGUMENTED.get(name, {}))
+        if "limit" in props and "limit" not in args:
+            args["limit"] = 200
         try:
-            res = reg.invoke(name, {"limit": 200} if "limit" in props else {})
+            res = reg.invoke(name, args)
         except Exception as exc:
             rows.append({"tool": name, "verdict": "ERROR", "detail": str(exc)[:100]})
             continue
