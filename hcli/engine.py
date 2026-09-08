@@ -6731,17 +6731,96 @@ class Engine:
             if post_producer:
                 self._restore(post_producer)
 
+    #: The evidence partition. A file here is DATA the campaign recorded, never code it
+    #: executes, so nothing under it can be imported, run, or linked.
+    EVIDENCE_ROOTS = ("receipts/",)
+
+    @staticmethod
+    def _is_evidence_only(paths) -> bool:
+        """True when every operation writes a RECEIPT and nothing else.
+
+        Round 18 selected a specimen, guarded, measured, and wrote a real receipt --
+        specimen, axis, value, source tool, organ, deficit, stderr. Writing a file made the
+        engine classify the round as a CODE MUTATION, so it demanded red-before-green with
+        an admissible pytest; `odyssey.record_measurement` is NOT_ADMITTED as a test form,
+        validation failed, and the receipt was ROLLED BACK off disk. The harness told it to
+        write a receipt, then treated the receipt as a code change, then demanded a proving
+        test for a JSON file, then deleted the measurement.
+
+        Deliberately strict, because this is exactly where a bypass would be built: EVERY
+        path must be under the evidence partition AND end in .json. One source file anywhere
+        in the operation set and the whole unit stays on the mutation contract. An empty set
+        is not evidence either -- a round that wrote nothing has recorded nothing.
+        """
+        items = [Path(p) for p in (paths or [])]
+        if not items:
+            return False
+        for item in items:
+            try:
+                rel = item.resolve().relative_to(Path(__file__).resolve().parents[1])
+            except (ValueError, OSError):
+                rel = item
+            text = str(rel).lstrip("./")
+            if not any(text.startswith(root) for root in Engine.EVIDENCE_ROOTS):
+                return False
+            if item.suffix != ".json":
+                return False
+        return True
+
+    @staticmethod
+    def _validate_evidence(paths) -> Dict[str, Any]:
+        """What actually validates a receipt: is it well formed and does it say anything.
+
+        Not a pytest. Red-before-green is the right contract for a source edit and a
+        meaningless one for "I wrote down what I measured".
+        """
+        checks: List[Dict[str, Any]] = []
+        ok = True
+        for item in (paths or []):
+            path = Path(item)
+            rel = str(path)
+            try:
+                raw = path.read_text()
+            except OSError as exc:
+                checks.append({"kind": "receipt_unreadable", "path": rel, "error": str(exc)})
+                ok = False
+                continue
+            try:
+                doc = json.loads(raw)
+            except ValueError as exc:
+                checks.append({"kind": "receipt_malformed_json", "path": rel,
+                               "error": str(exc)})
+                ok = False
+                continue
+            # An empty object is a file, not a finding.
+            if not isinstance(doc, (dict, list)) or not doc:
+                checks.append({"kind": "receipt_empty", "path": rel,
+                               "reason": "a receipt with no content records nothing"})
+                ok = False
+                continue
+            checks.append({"kind": "receipt_wellformed", "path": rel,
+                           "bytes": len(raw), "top_level_keys":
+                           sorted(doc)[:12] if isinstance(doc, dict) else len(doc)})
+        return {"ok": ok, "checks": checks, "kind": "evidence"}
+
     def _validate(
         self,
         paths: Iterable[Path],
         tests: Optional[List[str]] = None,
         pre_mutation: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
+        path_list = list(paths)
+        if self._is_evidence_only(path_list):
+            # A receipt is EVIDENCE, not code. The mutation contract below -- admissible
+            # pytest, red before green -- cannot apply to a JSON file, and applying it
+            # rolled a real measurement off disk.
+            return self._validate_evidence(path_list)
+
         checks: List[Dict[str, Any]] = []
         ok = True
         test_list = list(tests) if tests is not None else []
 
-        for raw_path in paths:
+        for raw_path in path_list:
             path = Path(raw_path)
             if path.exists():
                 path = path.resolve()
