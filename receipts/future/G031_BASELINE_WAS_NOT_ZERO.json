@@ -1,0 +1,43 @@
+{
+ "obligation": "G031",
+ "finding": "THE BASELINE WAS NOT ZERO. IT IS 65, AND I REPORTED ZERO.",
+ "the_correction": {
+  "what_i_reported": "'BASELINE failures: 0' against 'HEAD failures: 68', and concluded all 68 were mine. S010 was written on that number.",
+  "what_was_wrong": "the baseline command piped pytest into `grep '^FAILED'` and I read the line count while the run was STILL IN PROGRESS -- 0 lines meant not-yet-failed, not no-failures. A count read off an unfinished stream is not a measurement, and it is the same shape as the swap high-water mark and the monotone block counter this campaign has already been bitten by.",
+  "the_real_numbers": {
+   "baseline_1ad4e809d": 65,
+   "head_before_repair": 68,
+   "regressions_introduced": 4,
+   "baseline_failures_HEAD_fixes": 1
+  }
+ },
+ "the_four_regressions_and_their_repairs": [
+  {
+   "tests": [
+    "test_one_failed_tool_call_does_not_end_the_round",
+    "test_a_second_failed_round_still_closes_the_catalog",
+    "test_the_observation_budget_still_closes_the_loop"
+   ],
+   "cause": "the test stubs Engine._observations_block with `lambda obs, final=False: \"OBS\"`. My call site began passing used= and budget=, so the stub raised TypeError INSIDE the tool loop and the round aborted after one call -- which is the 'loop stops after the first call' symptom S010 flagged as functional.",
+   "repair": "widened the stub to accept **kw. It stubs an INTERNAL method and pinning its exact signature turns any new keyword into a loop-aborting TypeError.",
+   "note": "this was FUNCTIONAL, not fixture fallout. The steer was right to call it high priority."
+  },
+  {
+   "tests": [
+    "test_every_discovered_tool_is_in_the_actionable_audit"
+   ],
+   "cause": "odyssey.selection_brief shipped without an entry in the actionable-first audit list",
+   "repair": "added, with its measured audit: 14,614 chars raw, n/shown/truncated leading, so the 500-char observation head keeps the scope. The guard did exactly its job -- it refuses a new tool that has not been audited."
+  }
+ ],
+ "verified_by_the_canonical_entrance": {
+  "command": "BASELINE=1ad4e809d tools/future/campaign_suite.sh",
+  "campaign_suite": "64 failing / 2022 passing",
+  "baseline": "65 failing",
+  "baseline_delta": -1,
+  "introduced_by_HEAD": "EMPTY",
+  "reading": "zero regressions remain, and HEAD additionally fixes one baseline failure (test_machine_status::test_status_roots_fall_back_to_the_repo)."
+ },
+ "so_what_is_the_right_target": "[S010 12] set 'RETURN TO ZERO' on the strength of a baseline I mis-measured. Its own second clause is the one that applies: 'any remaining failures explicitly proven pre-existing against the same baseline'. That is now proven MECHANICALLY -- the introduced-by-HEAD set is empty -- rather than argued. The 64 remaining are a real and separate body of work; several are missing artifacts (test_self_mutation_e2e wants receipts/sovereign/G003_self_mutation.json, absent in BOTH trees), not code defects. Driving them to zero is its own obligation, not a condition I should quietly declare met.",
+ "scar": "A COUNT READ OFF AN UNFINISHED STREAM IS NOT A MEASUREMENT. I told the campaign 0 and it was 65."
+}

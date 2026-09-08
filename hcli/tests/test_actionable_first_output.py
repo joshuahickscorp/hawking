@@ -90,6 +90,11 @@ AUDITED_TOOLS = {
     # 16.7 s, k_proj 41.09% first.
     "odyssey.dense_anatomy": "compliant",
     "odyssey.record_measurement": "compliant",
+    # Audited 2026-09-08 when it shipped: 14,614 chars raw, and n / shown / truncated
+    # LEAD, so the 500-char observation head keeps the scope even though almost every
+    # row is elided. It shipped WITHOUT that ordering an hour earlier and the budget
+    # sweep caught it -- this entry exists because two separate audits had to.
+    "odyssey.selection_brief": "compliant",
     "odyssey.queue": "compliant",
     "odyssey.record_law": "compliant",
     "odyssey.record_scar": "compliant",
