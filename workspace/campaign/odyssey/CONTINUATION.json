@@ -1,27 +1,25 @@
 {
-  "objective": "Global Odyssey: find the strongest Hawking executable organism. Two threads live -- the ModelLake gpu/tps axis sweep, and the adopted Higgs one-off (S007) built beside it.",
-  "active_specimen": "higgs-audio-v3 4B (adopted one-off, not an Odyssey candidate)",
-  "why_this_specimen": "S007 directs adopting Higgs development into this pipeline before the Odyssey. It is for study audio, not for disposition, but it is the only live arm where an allocation prior can be tested against a non-text modality.",
-  "active_workunit": "HIGGS-LADDER: attribute the jam and decide whether any rung is sealable as study audio",
-  "hypothesis": "The Higgs jam is a fixed point introduced by awq_fold, not by the model or by quantization -- bf16/q8/q4 jam 0/8. Attribution is settled: down_proj:2 breaks against a 3-bit base and is free against a 4-bit base (LAW025). The open question is whether a 4-bit-base allocation reaches the size and speed the study-audio job needs while staying jam-free.",
-  "next_action": "Build and render an arm at bits=4 group=64 AWQ with the cheap organs tilted to 2, since 4 is the base where down_proj:2 is free. Score it with tools/future/tts_gate.stuck_run and compare disk_gb and aggregate_rt against sens_c (1.986 GB, 15.6x rt). The speed target is already met at 15-15.6x rt versus the handoff's assumed 2.03-2.16x, so the binding constraint is jam-free output, not throughput.",
+  "objective": "Global Odyssey. Higgs adoption (S007) reached a sealed artifact; machine reclaimed for the gpu/tps axis.",
+  "active_specimen": "ModelLake gpu axis sweep, bodies 17-60 GiB",
+  "why_this_specimen": "The gpu axis had 9 MEASURED and 15 OWED. Per-body subprocess isolation is what makes the larger bodies attemptable at all -- v1 leaked every body into one process and reached 31.3 GB RSS with 165 MB free.",
+  "active_workunit": "G034 gpu/tps axis: sweep the owed bodies up to 60 GiB",
+  "hypothesis": "Bodies above ~60 GiB will not admit on this host (Metal working set, not free RAM, is the admission gate). Three bodies -- jamba, granite-4.0-h-tiny, falcon_h1 -- time out with a Metal command buffer watchdog error REPRODUCIBLY in isolation, so that is a real condition of the 512-token prefill contract on this host and not the memory leak that caused the earlier timeouts.",
+  "next_action": "When the sweep ends, classify any body that timed out in BOTH isolated runs as a refusal with mechanism 'a 512-token prefill in one command buffer exceeds this host's GPU watchdog for this architecture' and reopen_when 'a chunked-prefill path, or a host with a longer watchdog'. Do NOT shrink prompt_tokens to make them pass -- every measured body used 512 and changing it makes the axis incomparable.",
   "evidence_refs": [
-    "receipts/future/HIGGS_STUCK_GATE.json",
-    "receipts/future/HIGGS_LADDER_TIME_TO_JAM.json",
     "receipts/future/G034_ODYSSEY_LEDGER.json",
-    "LAW024 (a gate set's cheapest member can be its only working detector)",
-    "LAW025 (tolerance is a property of the base, not the organ)"
+    "receipts/future/HIGGS_SENS_E_SEAL.json",
+    "LAW024",
+    "LAW025"
   ],
   "open_jobs": [
-    "gpu sweep v2 finished: measured=5 refused=2 experiment_failures=3"
+    "gpu_sweep3 running, 11 bodies, MAX_GIB=60, swap guard armed at 30 GB"
   ],
   "resource_deps": [
-    "GPU free -- the sweep and the Higgs renders must never run concurrently, both are timed"
+    "GPU exclusive: never run a Higgs render against a timing sweep"
   ],
   "representations_ruled_out": [
-    "awq_fold bits=3 group=64 with down_proj:2 -- jams, on any embed setting",
-    "awq_fold bits=3 group=128 -- jams 6/8 even with no organ tilt",
-    "stock mlx b2 at every group size -- runs to the cap with rms 0.006-0.07, not usable"
+    "Higgs awq_fold bits=3 any group -- jams; bits=4 group=64 with down_proj:2,embed_tokens:2 is sealed at 0/40 jams",
+    "Higgs bits=4 with attention at 3 (sens-f) -- 6/8, two silence dropouts"
   ],
-  "written_at": 1788881694
+  "written_at": 1788882169
 }
