@@ -365,6 +365,14 @@ _CTX_ESTIMATE_MARGIN = 96
 #: Being over by one token costs the whole call. Reserving too much only
 #: shortens a reply.
 _CTX_ESTIMATE_ERROR = 0.30
+_NOT_ADMITTED_REASON = (
+    "NOT_ADMITTED: a test command must be a pytest invocation or a bare path. "
+    "Accepted: 'hcli/tests/test_x.py', 'pytest hcli/tests/test_x.py', "
+    "'python -m pytest hcli/tests/test_x.py'. NOT accepted: a tool call such as "
+    "tests.run([...]), 'python -m unittest ...', a shell pipeline, or extra flags "
+    "beyond -q/-v/-x/-s/--tb=/--color=no."
+)
+
 _MAX_TOKENS_FLOOR = 512
 # A valid mutation reply is usually 800 to 1500 tokens, but a create operation
 # can legitimately carry a small new module and its verifier in one structured
@@ -6383,7 +6391,7 @@ class Engine:
         if not raw:
             return {
                 "admitted": False,
-                "reason": "NOT_ADMITTED",
+                "reason": _NOT_ADMITTED_REASON,
                 "argv": None,
             }
 
@@ -6396,14 +6404,14 @@ class Engine:
             except Exception:
                 return {
                     "admitted": False,
-                    "reason": "NOT_ADMITTED",
+                    "reason": _NOT_ADMITTED_REASON,
                     "argv": None,
                 }
 
         if not tokens:
             return {
                 "admitted": False,
-                "reason": "NOT_ADMITTED",
+                "reason": _NOT_ADMITTED_REASON,
                 "argv": None,
             }
 
@@ -6431,7 +6439,7 @@ class Engine:
         else:
             return {
                 "admitted": False,
-                "reason": "NOT_ADMITTED",
+                "reason": _NOT_ADMITTED_REASON,
                 "argv": None,
             }
 
@@ -6458,7 +6466,7 @@ class Engine:
                     continue
                 return {
                     "admitted": False,
-                    "reason": "NOT_ADMITTED",
+                    "reason": _NOT_ADMITTED_REASON,
                     "argv": None,
                 }
             extras.append(tok)
@@ -6467,14 +6475,14 @@ class Engine:
             if len(extras) != 1:
                 return {
                     "admitted": False,
-                    "reason": "NOT_ADMITTED",
+                    "reason": _NOT_ADMITTED_REASON,
                     "argv": None,
                 }
             path_token = extras[0]
         elif extras:
             return {
                 "admitted": False,
-                "reason": "NOT_ADMITTED",
+                "reason": _NOT_ADMITTED_REASON,
                 "argv": None,
             }
 
@@ -6486,7 +6494,7 @@ class Engine:
         except EngineError:
             return {
                 "admitted": False,
-                "reason": "NOT_ADMITTED",
+                "reason": _NOT_ADMITTED_REASON,
                 "argv": None,
             }
 
@@ -6494,7 +6502,7 @@ class Engine:
             if not wants_pytest:
                 return {
                     "admitted": False,
-                    "reason": "NOT_ADMITTED",
+                    "reason": _NOT_ADMITTED_REASON,
                     "argv": None,
                 }
             if not self._pytest_importable():
@@ -6514,7 +6522,7 @@ class Engine:
         if path.suffix != ".py":
             return {
                 "admitted": False,
-                "reason": "NOT_ADMITTED",
+                "reason": _NOT_ADMITTED_REASON,
                 "argv": None,
             }
 
