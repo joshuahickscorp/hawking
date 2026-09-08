@@ -150,6 +150,15 @@ def brief(limit: int = 12) -> Dict[str, Any]:
     rows.sort(key=lambda r: r["slug"])
     shown = rows[:max(1, limit)]
     return {
+        # SCOPE FIRST. Engine._compact_closed_observations cuts an observation to
+        # 500 chars as head 250 + tail 208, eliding the middle. This brief
+        # serializes to ~14,600 chars, so anything after the first ~250 is
+        # invisible to the round that called it. n / shown / truncated lead so a
+        # caller still learns how many specimens exist and whether it has them
+        # all -- the single thing it cannot reconstruct from the rows it can see.
+        "n": len(rows),
+        "shown": len(shown),
+        "truncated": len(rows) > len(shown),
         "schema": "hawking.future.selection_brief.v1",
         "purpose": ("the five inputs G018 requires, assembled and NOT ranked. The choice and its "
                     "reason are yours."),

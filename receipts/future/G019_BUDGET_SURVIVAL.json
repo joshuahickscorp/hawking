@@ -1,0 +1,307 @@
+{
+ "limit": 500,
+ "tally": {
+  "OK": 12,
+  "NO_SCOPE_FIELD": 15,
+  "REFUSED": 1
+ },
+ "failures": [],
+ "rows": [
+  {
+   "tool": "acquisition.propose",
+   "verdict": "OK",
+   "full_chars": 3963,
+   "was_cut": true,
+   "scope_present": [
+    "shown",
+    "truncated",
+    "n_ranked"
+   ],
+   "scope_survived": [
+    "shown",
+    "truncated",
+    "n_ranked"
+   ]
+  },
+  {
+   "tool": "campaign.guard",
+   "verdict": "NO_SCOPE_FIELD",
+   "full_chars": 147,
+   "was_cut": false,
+   "scope_present": [],
+   "scope_survived": []
+  },
+  {
+   "tool": "doctor.inspect",
+   "verdict": "NO_SCOPE_FIELD",
+   "full_chars": 12578,
+   "was_cut": true,
+   "scope_present": [],
+   "scope_survived": []
+  },
+  {
+   "tool": "frontier.decide",
+   "verdict": "NO_SCOPE_FIELD",
+   "full_chars": 3030,
+   "was_cut": true,
+   "scope_present": [],
+   "scope_survived": []
+  },
+  {
+   "tool": "fs.list",
+   "verdict": "OK",
+   "full_chars": 2419,
+   "was_cut": true,
+   "scope_present": [
+    "truncated"
+   ],
+   "scope_survived": [
+    "truncated"
+   ]
+  },
+  {
+   "tool": "git.diff",
+   "verdict": "NO_SCOPE_FIELD",
+   "full_chars": 4345,
+   "was_cut": true,
+   "scope_present": [],
+   "scope_survived": []
+  },
+  {
+   "tool": "git.log",
+   "verdict": "OK",
+   "full_chars": 9716,
+   "was_cut": true,
+   "scope_present": [
+    "n",
+    "shown"
+   ],
+   "scope_survived": [
+    "n",
+    "shown"
+   ]
+  },
+  {
+   "tool": "git.status",
+   "verdict": "NO_SCOPE_FIELD",
+   "full_chars": 430,
+   "was_cut": false,
+   "scope_present": [],
+   "scope_survived": []
+  },
+  {
+   "tool": "gravity.inspect",
+   "verdict": "NO_SCOPE_FIELD",
+   "full_chars": 55203,
+   "was_cut": true,
+   "scope_present": [],
+   "scope_survived": []
+  },
+  {
+   "tool": "lake.census",
+   "verdict": "OK",
+   "full_chars": 10572,
+   "was_cut": true,
+   "scope_present": [
+    "n",
+    "shown",
+    "truncated"
+   ],
+   "scope_survived": [
+    "n",
+    "shown",
+    "truncated"
+   ]
+  },
+  {
+   "tool": "modellake.status",
+   "verdict": "NO_SCOPE_FIELD",
+   "full_chars": 4309,
+   "was_cut": true,
+   "scope_present": [],
+   "scope_survived": []
+  },
+  {
+   "tool": "odyssey.completions",
+   "verdict": "NO_SCOPE_FIELD",
+   "full_chars": 4150,
+   "was_cut": true,
+   "scope_present": [],
+   "scope_survived": []
+  },
+  {
+   "tool": "odyssey.economics",
+   "verdict": "NO_SCOPE_FIELD",
+   "full_chars": 4466,
+   "was_cut": true,
+   "scope_present": [],
+   "scope_survived": []
+  },
+  {
+   "tool": "odyssey.harvest",
+   "verdict": "NO_SCOPE_FIELD",
+   "full_chars": 530,
+   "was_cut": true,
+   "scope_present": [],
+   "scope_survived": []
+  },
+  {
+   "tool": "odyssey.ingest",
+   "verdict": "OK",
+   "full_chars": 2010,
+   "was_cut": true,
+   "scope_present": [
+    "specimen_count"
+   ],
+   "scope_survived": [
+    "specimen_count"
+   ]
+  },
+  {
+   "tool": "odyssey.ledger",
+   "verdict": "OK",
+   "full_chars": 585,
+   "was_cut": true,
+   "scope_present": [
+    "n"
+   ],
+   "scope_survived": [
+    "n"
+   ]
+  },
+  {
+   "tool": "odyssey.queue",
+   "verdict": "NO_SCOPE_FIELD",
+   "full_chars": 1196,
+   "was_cut": true,
+   "scope_present": [],
+   "scope_survived": []
+  },
+  {
+   "tool": "odyssey.selection_brief",
+   "verdict": "OK",
+   "full_chars": 14614,
+   "was_cut": true,
+   "scope_present": [
+    "n",
+    "shown",
+    "truncated"
+   ],
+   "scope_survived": [
+    "n",
+    "shown",
+    "truncated"
+   ]
+  },
+  {
+   "tool": "odyssey.status",
+   "verdict": "NO_SCOPE_FIELD",
+   "full_chars": 1148,
+   "was_cut": true,
+   "scope_present": [],
+   "scope_survived": []
+  },
+  {
+   "tool": "odyssey.value",
+   "verdict": "NO_SCOPE_FIELD",
+   "full_chars": 1231,
+   "was_cut": true,
+   "scope_present": [],
+   "scope_survived": []
+  },
+  {
+   "tool": "processes.list",
+   "verdict": "OK",
+   "full_chars": 1396,
+   "was_cut": true,
+   "scope_present": [
+    "shown",
+    "truncated",
+    "n_processes"
+   ],
+   "scope_survived": [
+    "shown",
+    "truncated",
+    "n_processes"
+   ]
+  },
+  {
+   "tool": "processes.orphaned",
+   "verdict": "OK",
+   "full_chars": 78,
+   "was_cut": false,
+   "scope_present": [
+    "shown",
+    "truncated",
+    "n_orphaned"
+   ],
+   "scope_survived": [
+    "shown",
+    "truncated",
+    "n_orphaned"
+   ]
+  },
+  {
+   "tool": "processes.summary",
+   "verdict": "OK",
+   "full_chars": 1303,
+   "was_cut": true,
+   "scope_present": [
+    "count"
+   ],
+   "scope_survived": [
+    "count"
+   ]
+  },
+  {
+   "tool": "roadmap.read",
+   "verdict": "REFUSED"
+  },
+  {
+   "tool": "specimens.registry",
+   "verdict": "OK",
+   "full_chars": 4633,
+   "was_cut": true,
+   "scope_present": [
+    "shown",
+    "truncated",
+    "n_specimens"
+   ],
+   "scope_survived": [
+    "shown",
+    "truncated",
+    "n_specimens"
+   ]
+  },
+  {
+   "tool": "tests.list",
+   "verdict": "OK",
+   "full_chars": 10355,
+   "was_cut": true,
+   "scope_present": [
+    "truncated",
+    "count"
+   ],
+   "scope_survived": [
+    "truncated",
+    "count"
+   ]
+  },
+  {
+   "tool": "vmcp.capabilities",
+   "verdict": "NO_SCOPE_FIELD",
+   "full_chars": 163661,
+   "was_cut": true,
+   "scope_present": [],
+   "scope_survived": []
+  },
+  {
+   "tool": "vmcp.inspect",
+   "verdict": "NO_SCOPE_FIELD",
+   "full_chars": 14005,
+   "was_cut": true,
+   "scope_present": [],
+   "scope_survived": []
+  }
+ ]
+}

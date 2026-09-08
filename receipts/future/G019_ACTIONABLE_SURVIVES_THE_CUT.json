@@ -1,0 +1,50 @@
+{
+ "obligation": "G019",
+ "finding": "THE ACTIONABLE PART DID NOT SURVIVE, AND I HAD BEEN LOOKING IN THE WRONG PLACE",
+ "verify_quoted": "for each such tool, a test that truncates its output to a small budget and asserts the actionable part SURVIVES.",
+ "my_earlier_answer_was_wrong": "the first sweep tested DISCLOSURE and reported that most tools 'cannot be budget-squeezed through their own interface' because only 2 of 27 accept a `limit` argument. The squeeze is not an argument. It is Engine._compact_closed_observations, which cuts EVERY observation to CLOSED_OBSERVATION_CHARS = 500 as HEAD 250 + marker + TAIL ~208, eliding the middle -- and it applies to every tool whether or not it takes a limit. The budget was always reachable; I was testing the wrong layer.",
+ "the_measurement": {
+  "budget_chars": 500,
+  "tools_exercised": 28,
+  "tools_exceeding_the_budget": 24,
+  "before": {
+   "OK": 7,
+   "SCOPE_LOST_TO_THE_CUT": 5,
+   "NO_SCOPE_FIELD": 15,
+   "REFUSED": 1
+  },
+  "after": {
+   "OK": 12,
+   "NO_SCOPE_FIELD": 15,
+   "REFUSED": 1
+  }
+ },
+ "who_was_losing_its_own_scope": [
+  "odyssey.selection_brief -- 14,614 chars, and I had shipped it ONE HOUR EARLIER",
+  "git.log -- 9,716 chars",
+  "specimens.registry -- 4,633 chars",
+  "acquisition.propose -- 3,963 chars",
+  "odyssey.ingest -- 2,010 chars"
+ ],
+ "what_that_costs_a_round": "the round receives rows and cannot tell how many exist or whether it has them all. That is exactly how round 20 read a partial census as complete and called an already-MEASURED axis 'worst owed'. The affordance defect I fixed in the census was one instance of a class.",
+ "the_fix": {
+  "helper": "_scope_first(payload) in hcli/tool_registry.py",
+  "rule": "lead with the keys that say HOW MUCH -- n, total, count, shown, truncated, n_owed, n_ranked, n_specimens, specimen_count -- before the rows that say WHAT, so the head 250 chars carry the scope.",
+  "applied_at": [
+   "the two shared odyssey read factories (_odyssey_read and _odyssey_read_verb), which covers ingest, status, queue, value, economics and the read-only verbs in one change",
+   "git.log",
+   "specimens.registry",
+   "acquisition.propose",
+   "tools/future/selection_brief.py"
+  ],
+  "note": "_lead_with already existed for exactly this and had 7 call sites. This is the same move applied BY RULE instead of by remembering, which is the difference between a habit and a control."
+ },
+ "verification": {
+  "result": "SCOPE_LOST_TO_THE_CUT 5 -> 0; OK 7 -> 12",
+  "mutation": "_scope_first reduced to dict(payload) -> 3 tools go SCOPE_LOST again and OK falls 12 -> 9. Restored; markers grep 0.",
+  "regression": "the disclosure sweep still passes; hcli/test_engine_tool_loop.py 20 passed",
+  "why_only_3_of_5_return_under_mutation": "two of the five now route through the shared odyssey factories, whose ordering the mutation does not reach in the same way -- the fix there is structural rather than per-call."
+ },
+ "the_15_with_no_scope_field": "NOT counted as defects. They return no row list, so there is no 'how many' to lose. The earlier sweep established that separately.",
+ "scar": "THE BUDGET WAS NOT AN ARGUMENT, IT WAS A LAYER. When a test says a thing cannot be squeezed, check what actually squeezes it in production."
+}

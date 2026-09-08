@@ -576,6 +576,27 @@ def _lead_with(payload: Mapping[str, Any], *first: str) -> Dict[str, Any]:
     return out
 
 
+_SCOPE_KEYS = ("n", "total", "count", "shown", "truncated", "truncation_note",
+               "n_owed", "n_processes", "n_orphaned", "n_ranked", "n_specimens",
+               "specimen_count")
+
+
+def _scope_first(payload: Mapping[str, Any]) -> Dict[str, Any]:
+    """Lead with the keys that say HOW MUCH, before the rows that say WHAT.
+
+    Engine._compact_closed_observations cuts every observation to 500 chars as
+    head 250 + marker + tail 208, eliding the middle. A result that leads with
+    its rows therefore delivers rows and loses its own scope: the round sees
+    some entries and cannot tell how many exist or whether it has them all --
+    which is exactly how round 20 read a partial census as complete.
+
+    `_lead_with` already existed for this and had 7 call sites. This is the same
+    move applied by rule instead of by remembering.
+    """
+    present = [k for k in _SCOPE_KEYS if k in payload]
+    return _lead_with(payload, *present) if present else dict(payload)
+
+
 def _read_file(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
     path = context.resolve_read_path(args.get("path"))
     if path.is_dir():
@@ -875,7 +896,7 @@ def _git_log(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
         token = line.split(None, 1)
         if token:
             commits.append({"hash": token[0], "line": line[:160]})
-    return {
+    return _scope_first({
         "commits": commits,
         "n": len(commits),
         "shown": len(commits),
@@ -884,7 +905,7 @@ def _git_log(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
         "stderr": raw.get("stderr"),
         "argv": raw.get("argv"),
         "cwd": raw.get("cwd"),
-    }
+    })
 
 
 def _shell_readonly(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
@@ -1829,7 +1850,8 @@ def _odyssey_read(name: str):
     def handler(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
         from . import odyssey
 
-        return getattr(odyssey, name)()
+        out = getattr(odyssey, name)()
+        return _scope_first(out) if isinstance(out, dict) else out
 
     return handler
 
@@ -2300,7 +2322,10 @@ def _specimens_registry(context: ToolContext, args: Dict[str, Any]) -> Dict[str,
         for row in rows
     ]
     top = _shown_limit(args.get("limit"))
-    return {
+    # SCOPE FIRST. The observation budget cuts this to 500 chars as head+tail,
+    # and with `specimens` leading, n_specimens / shown / truncated fell in the
+    # elided middle -- the round saw rows and could not tell how many existed.
+    return _lead_with({
         "specimens": compact[:top],
         "n_specimens": data.get("n_specimens"),
         "shown": min(top, len(compact)),
@@ -2311,7 +2336,7 @@ def _specimens_registry(context: ToolContext, args: Dict[str, Any]) -> Dict[str,
         "schema": data.get("schema"),
         "reason": data.get("reason"),
         "sealed_does_not_mean_resident": data.get("sealed_does_not_mean_resident"),
-    }
+    }, "n_specimens", "shown", "truncated")
 
 
 def _acquisition_propose(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
@@ -2339,7 +2364,10 @@ def _acquisition_propose(context: ToolContext, args: Dict[str, Any]) -> Dict[str
         if key not in leading
     }
     leading.update(rest)
-    return leading
+    # Its own leading block already puts the recommendation first, which is the
+    # right instinct -- but n_ranked / shown / truncated sat behind the ranked
+    # rows and did not survive the 500-char observation cut.
+    return _scope_first(leading)
 
 
 def _odyssey_read_verb(name: str, required: Sequence[str] = ()):
@@ -2350,7 +2378,8 @@ def _odyssey_read_verb(name: str, required: Sequence[str] = ()):
     def handler(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
         from . import odyssey
 
-        return getattr(odyssey, name)(*(str(args[key]) for key in required))
+        out = getattr(odyssey, name)(*(str(args[key]) for key in required))
+        return _scope_first(out) if isinstance(out, dict) else out
 
     return handler
 
