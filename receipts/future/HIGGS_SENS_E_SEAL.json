@@ -1,0 +1,29 @@
+{
+  "obligation": "HIGGS-SEAL",
+  "artifact": "higgs-audio-v3-sens-e",
+  "recipe": "awq_fold.py --bits 4 --group-size 64 --alloc down_proj:2,embed_tokens:2",
+  "why_this_recipe": "LAW025: down_proj:2 is free against a 4-bit base and breaks against a 3-bit one. sens-a is this same allocation on a 3-bit base and fails 5/8. Moving it to the base where its tilt is free was a prediction, and it held.",
+  "measured": {
+    "disk_gb": 2.398,
+    "resident_gb": 6.55,
+    "wall_s": 12.0,
+    "audio_s": 116.0,
+    "gate_pass": "8/8",
+    "wer_med": 0.0,
+    "wer_max": 0.0345,
+    "spoken_med": 1.0,
+    "spoken_min": 1.0,
+    "stuck_run_jam": "0/8",
+    "silence_dropout": "0/8",
+    "median_duration_over_expected": 0.83
+  },
+  "reference": {
+    "bf16_audio_s_same_8_chunks": 120.4,
+    "sens_e_fraction_of_bf16": 0.963,
+    "note": "emitting far more audio than bf16 for the same text is garbage, not speed"
+  },
+  "realtime_factor_was_corrupted_by_the_jam": "A jamming rung produces MORE audio per wall second and therefore scores a HIGHER realtime factor. sens_c's headline 15.60x came from emitting 269.9 s for chunks bf16 renders in 120.4 s -- 2.24x the correct length, nearly all of it a constant-rms buzz. sens_e's 9.67x is over 116.0 s of audio that matches the reference text at wer_med 0.0. Throughput on generated media must be normalised to the reference's output length, or the worst model wins the speed comparison.",
+  "against_the_handoff": "HANDOFF-from-audioresearch.md assumed Higgs v3 4B at 2.03-2.16x realtime unquantized and framed overnight rendering of the 93.1 h library as the open problem. At 9.67x on usable audio the library projects to about 9.6 h, so the speed target was already met and the binding constraint was jam-free output all along.",
+  "projection_caveat": "9.67x is measured on 8 chunks of <=60 words rendered as one batch, including model load. It is not a measurement of a 93.1 h run and the projection inherits that.",
+  "what_is_NOT_sealed": "sens_f, which adds attention at 3 bits on the same 4-bit base, is 6/8 with two 25-30 s silence dropouts. Attention below the base costs more than the MLP tilt does."
+}
