@@ -1188,6 +1188,19 @@ class ResidentSupervisor:
         env["PYTHONPATH"] = os.pathsep.join(
             [source_root] + ([env["PYTHONPATH"]] if env.get("PYTHONPATH") else [])
         )
+        # `--model` was advertised by the CLI and never reached the code that
+        # reads it. config.model does travel as far as AgentOS(model=...), but
+        # hcli/controller.py selects on self.model_info.path or, failing that,
+        # HCLI_MODEL_PATH -- and neither was being set from the flag, so three
+        # start attempts died on "No model selected" while a valid path sat in
+        # config. Setting the env the controller already documents as its
+        # fallback makes the flag mean what the help text says.
+        #
+        # An explicit environment value still wins: an operator who exported
+        # HCLI_MODEL_PATH is making a deliberate choice this should not silently
+        # override.
+        if config.model and not env.get("HCLI_MODEL_PATH"):
+            env["HCLI_MODEL_PATH"] = str(config.model)
         proc = subprocess.Popen(
             daemon_argv("--worker", str(self.state_path)),
             cwd=config.workspace,
