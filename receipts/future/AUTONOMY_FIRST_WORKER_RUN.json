@@ -1,0 +1,31 @@
+{
+  "obligation": "AUTONOMY-1",
+  "question": "Can HCLI wake from a checkpoint and carry a WorkUnit without Claude issuing each step?",
+  "answer": "The loop runs end to end. The WorkUnit did not pass validation, so no law was written.",
+  "what_ran": {
+    "trigger": "hcli resident start --from-checkpoint (no goal typed by a human)",
+    "goal_source": "workspace/campaign/odyssey/CONTINUATION.json next_action, 691 chars",
+    "supervisor": "spawned, start_new_session=True",
+    "worker": "pid 11111, spawned and completed",
+    "mission_events": {
+      "workunit_started": 4,
+      "workunit_completed": 4,
+      "model_call_started": 4,
+      "model_call_finished": 4,
+      "goal_compiled": 4,
+      "goal_completed": 4,
+      "heartbeat": 16
+    }
+  },
+  "why_no_law_was_written": "The implementation unit reported status_claimed=completed with validation {ok: false, reason: NO_EVIDENCE, checks: []}. The verifier refused an unevidenced claim, which is the gate working, not failing. No accepted unit means no law, and hcli_owned stays 0 of 25.",
+  "the_blocker_that_was_real_and_is_now_fixed": "Two prior attempts died before spawning a worker at all: 'No model selected. Use /models or /model <number|path>.' hcli/controller.py reads self.model_info.path, else HCLI_MODEL_PATH, else HCLI_HAWKING_NATIVE_CONFIG. The --model flag passed to `hcli resident start` does NOT reach that read -- setting HCLI_MODEL_PATH does, and a worker spawned on the first attempt with it set. That flag-to-worker gap is a real defect, not a configuration mistake.",
+  "honest_status": {
+    "wake_from_disk_without_a_human": "WORKS",
+    "compile_a_goal_into_workunits": "WORKS",
+    "spawn_a_worker_and_call_a_model": "WORKS",
+    "carry_a_unit_to_an_ACCEPTED_terminal": "NOT YET -- refused on NO_EVIDENCE",
+    "write_a_law_as_hcli_owned": "NOT YET -- 0 of 25, unchanged"
+  },
+  "why_this_is_not_the_daemonic_claim_yet": "S006's bar is carrying a multi-WorkUnit objective without routine next-action prompts. One unit reaching a REFUSED terminal is the loop turning, not the bar being met. The honest reading: the machinery is no longer the blocker; the task the model was given was beyond what it could evidence in one unit.",
+  "next": "Give it a unit whose evidence is mechanically producible -- a tool call whose output IS the evidence -- rather than one requiring it to author and pass its own tests."
+}

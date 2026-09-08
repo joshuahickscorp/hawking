@@ -1,25 +1,19 @@
 {
-  "objective": "Global Odyssey. Higgs adoption (S007) reached a sealed artifact; machine reclaimed for the gpu/tps axis.",
-  "active_specimen": "ModelLake gpu axis sweep, bodies 17-60 GiB",
-  "why_this_specimen": "The gpu axis had 9 MEASURED and 15 OWED. Per-body subprocess isolation is what makes the larger bodies attemptable at all -- v1 leaked every body into one process and reached 31.3 GB RSS with 165 MB free.",
-  "active_workunit": "G034 gpu/tps axis: sweep the owed bodies up to 60 GiB",
-  "hypothesis": "Bodies above ~60 GiB will not admit on this host (Metal working set, not free RAM, is the admission gate). Three bodies -- jamba, granite-4.0-h-tiny, falcon_h1 -- time out with a Metal command buffer watchdog error REPRODUCIBLY in isolation, so that is a real condition of the 512-token prefill contract on this host and not the memory leak that caused the earlier timeouts.",
-  "next_action": "When the sweep ends, classify any body that timed out in BOTH isolated runs as a refusal with mechanism 'a 512-token prefill in one command buffer exceeds this host's GPU watchdog for this architecture' and reopen_when 'a chunked-prefill path, or a host with a longer watchdog'. Do NOT shrink prompt_tokens to make them pass -- every measured body used 512 and changing it makes the axis incomparable.",
+  "objective": "Demonstrate that HCLI can carry a real WorkUnit to a terminal without Claude issuing each step. Not a toy loop (S006 41 forbids that): the work below is genuine owed campaign work with a verifiable terminal.",
+  "active_specimen": "G034 ledger, cpu/gpu axis cross-analysis",
+  "why_this_specimen": "All 25 laws carry hcli_owned:false. That flag is true only when the writer shares the live resident worker's session id, so no law this campaign has ever recorded was written by an autonomously running HCLI. The only way to change it is for the resident to actually run and write one.",
+  "active_workunit": "AUTONOMY-1: read the cpu/gpu ratio evidence and record what it supports",
+  "hypothesis": "The CPU:GPU decode ratio is a host constant (11.63-14.94x across five families) while prefill spans 6.0-50.85x with one hybrid-SSM outlier. With only qwen3 at n=2, neither axis supports a family-level prior yet.",
+  "next_action": "Run tools/future/cpu_gpu_ratio.py. Read receipts/future/G034_CPU_GPU_RATIO.json. If the tool's verdict and the receipt's stated reading agree, record a law saying the ratio does not yet support a family prior and naming the reopen condition (a second body in any family other than qwen3). If they disagree, record the disagreement instead and stop. Do not invent a separation that the n does not support.",
   "evidence_refs": [
-    "receipts/future/G034_ODYSSEY_LEDGER.json",
-    "receipts/future/HIGGS_SENS_E_SEAL.json",
-    "LAW024",
-    "LAW025"
+    "receipts/future/G034_CPU_GPU_RATIO.json",
+    "tools/future/cpu_gpu_ratio.py",
+    "receipts/future/G034_ODYSSEY_LEDGER.json"
   ],
-  "open_jobs": [
-    "gpu_sweep3 running, 11 bodies, MAX_GIB=60, swap guard armed at 30 GB"
-  ],
+  "open_jobs": [],
   "resource_deps": [
-    "GPU exclusive: never run a Higgs render against a timing sweep"
+    "a model backend on 127.0.0.1:9999 (launchd-owned, shared)"
   ],
-  "representations_ruled_out": [
-    "Higgs awq_fold bits=3 any group -- jams; bits=4 group=64 with down_proj:2,embed_tokens:2 is sealed at 0/40 jams",
-    "Higgs bits=4 with attention at 3 (sens-f) -- 6/8, two silence dropouts"
-  ],
-  "written_at": 1788882169
+  "representations_ruled_out": [],
+  "written_at": 1788888806
 }
