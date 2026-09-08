@@ -63,5 +63,28 @@
  },
  "what_is_NOT_done": "the threshold is not re-chosen here. Deriving a new multiplier needs healthy dense generations, known-acceptable compressed generations and repeated seeds per G020's acceptance, and the GPU is held by the authoritative round. What IS settled: the current rule produces an ABSENT gate above dense_r4 = 1/3, and the cliff does not depend on the multiplier.",
  "minimum_repair_named": "cap the bar below the metric's ceiling -- min(multiplier x dense_r4, some absolute) -- so a repeating dense parent cannot buy an unfailable gate. Not applied here: it changes a capability verdict surface and belongs with the calibration G020 actually asks for.",
- "scar": "A THRESHOLD OUTSIDE ITS METRIC'S RANGE IS NOT LOOSE, IT IS ABSENT. Check the bar against the metric's ceiling, not against intuition."
+ "scar": "A THRESHOLD OUTSIDE ITS METRIC'S RANGE IS NOT LOOSE, IT IS ABSENT. Check the bar against the metric's ceiling, not against intuition.",
+ "the_gate_is_now_capped": {
+  "applied_to": "tools/future/organ_allocation.py::gate_from_reference, the live per-specimen gate",
+  "rule": "r4_bar(dense) = min(R4_MULT * dense, midpoint(dense, 1.0))",
+  "where_the_rule_comes_from": "the two fixed points the problem already has -- the reference the specimen is judged against, and the ceiling median_4gram_repeat cannot exceed. A bar may not sit more than HALFWAY from a parent to total collapse. It is derived from the metric's own range, not chosen to produce a wanted verdict, and it is not a tightening: below dense_r4 = 1/3 it changes nothing.",
+  "effect": {
+   "O003 (dense 0.0538)": "bar 0.1614 -> 0.1614, UNCHANGED. Every verdict in the capability cliff stands, and the lowest passing candidate (r4 0.1075) still passes.",
+   "Qwen3-0.6B (dense 0.3619)": "bar 1.0857 -> 0.6809",
+   "G017 arms": {
+    "dense parent 0.3619": "PASSES",
+    "arm 0.6923": "now REJECTED",
+    "arm 0.7103": "now REJECTED",
+    "inverted control 0.8224": "now REJECTED -- it was recorded diversity_ok TRUE"
+   }
+  },
+  "the_gate_reports_its_own_capping": "gate_r4_uncapped, gate_r4_capped and gate_r4_cap_rule are emitted alongside gate_r4_max, so a receipt says whether the cap bound and by how much. A silent cap would be the same class of problem as the silent overflow.",
+  "verification": {
+   "red_before_green": "tools/future/test_diversity_gate_bar.py was RED against the live gate -- three arms passing at bar 1.0857 -- before the cap and green after.",
+   "mutation_A": "cap removed -> the inverted control passes again and the bar exceeds the ceiling, FAILED",
+   "mutation_B": "cap set to a flat 0.10 -> the DENSE PARENT is rejected and O003's bar moves off 0.1614, FAILED. Both directions guarded: the cap must bind where it should and nowhere else.",
+   "markers": "grep 0"
+  },
+  "what_is_still_not_done": "G020's acceptance also asks for repeated seeds where affordable. That needs live generation on the GPU the authoritative round holds, and is not done. The multiplier itself is also untouched -- 3.0 remains, and the sensitivity analysis showed every campaign verdict is identical for any multiplier in [2.00, 10.39], so it was never the deciding number."
+ }
 }

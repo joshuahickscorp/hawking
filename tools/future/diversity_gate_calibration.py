@@ -31,6 +31,27 @@ MULTIPLIER = 3.0
 VACUOUS_ABOVE = R4_CEILING / MULTIPLIER
 
 
+def r4_bar(dense_r4: float, multiplier: float = MULTIPLIER) -> float:
+    """The diversity bar for a specimen, capped so it stays inside the metric.
+
+    THE RULE, and where it comes from: a bar may not sit more than HALFWAY from
+    the reference to total collapse. `multiplier x dense` alone is unbounded and
+    lands above 1.0 -- outside median_4gram_repeat's range -- for any parent
+    repeating more than a third of its 4-grams, which is how Qwen3-0.6B got a
+    bar of 1.0857 and an axis that could not reject anything.
+
+    The midpoint is derived from the two fixed points the problem already has:
+    the reference the specimen is judged against, and the ceiling the metric
+    cannot exceed. It is not a number chosen to produce a wanted verdict, and it
+    is not a tightening -- for any parent below dense_r4 = 1/3 it changes
+    nothing at all, so every O003 verdict in this campaign is untouched.
+
+    What it does change is that a candidate more than halfway from its own
+    parent to total repetition can no longer pass, whatever the multiplier says.
+    """
+    return min(multiplier * dense_r4, (dense_r4 + R4_CEILING) / 2.0)
+
+
 def gate_is_vacuous(dense_r4: float, multiplier: float = MULTIPLIER) -> Dict[str, Any]:
     bar = multiplier * dense_r4
     return {
@@ -68,6 +89,21 @@ def sensitivity(points: List[Dict[str, Any]], dense_r4: float) -> Dict[str, Any]
 
 def _selftest() -> List[str]:
     fails = []
+    # THE BAR, capped. O003 must be untouched; Qwen3-0.6B must stop being vacuous
+    # and must reject the G017 arms it passed.
+    if abs(r4_bar(0.0538) - 0.1614) > 1e-6:
+        fails.append(f"O003's bar moved: {r4_bar(0.0538)} != 0.1614 -- the cap must not tighten a sound gate")
+    q = r4_bar(0.3619)
+    if q >= R4_CEILING:
+        fails.append(f"Qwen3-0.6B's capped bar {q} is still at or above the metric ceiling")
+    if not (0.3619 <= q < 0.8224):
+        fails.append(f"capped bar {q} must accept the dense parent (0.3619) and reject the "
+                     f"G017 inverted control (0.8224)")
+    # G017's four arms, from receipts/future/G017_ORGAN_ALLOCATION.json
+    for r4, must_pass in ((0.3619, True), (0.6923, False), (0.7103, False), (0.8224, False)):
+        passes = r4 <= q
+        if passes != must_pass:
+            fails.append(f"G017 arm r4={r4}: passes={passes}, want {must_pass}")
     # The G017 specimen: dense median r4 0.3619 -> bar 1.0857, above the ceiling.
     v = gate_is_vacuous(0.3619)
     if not v["vacuous"]:

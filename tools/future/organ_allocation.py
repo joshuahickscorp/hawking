@@ -677,8 +677,31 @@ def measure_capability(model, tokenizer, *, device: str = "cpu") -> dict[str, An
     }
 
 
+# median_4gram_repeat is a FRACTION of 4-grams that repeat, so its range is
+# [0, 1]. `R4_MULT x dense` is unbounded: for any parent repeating more than a
+# third of its 4-grams the bar lands ABOVE the highest value the metric can take,
+# and the diversity axis cannot reject anything. Qwen3-0.6B's dense median is
+# 0.3619, its bar was 1.0857, and G017_ORGAN_ALLOCATION.json records the
+# deliberately INVERTED control -- 82% of 4-grams repeating -- as
+# diversity_ok: TRUE. The conjunction had quietly become perplexity alone, which
+# is the single-proxy failure the gate exists to prevent.
+#
+# THE CAP, and where it comes from: a bar may not sit more than halfway from the
+# reference to total collapse. Both fixed points already belong to the problem --
+# the parent the specimen is judged against, and the ceiling the metric cannot
+# exceed -- so this is derived, not chosen to produce a wanted verdict. For any
+# parent below dense_r4 = 1/3 it changes NOTHING: O003's bar stays 0.1614 and
+# every verdict in the capability cliff is untouched.
+R4_CEILING = 1.0
+
+
+def r4_bar(dense_r4: float) -> float:
+    """The diversity bar, capped so it stays inside the metric it measures."""
+    return min(R4_MULT * float(dense_r4), (float(dense_r4) + R4_CEILING) / 2.0)
+
+
 def gate_from_reference(cap: dict[str, Any], ref: dict[str, Any]) -> dict[str, Any]:
-    r4_max = R4_MULT * float(ref["r4_full"])
+    r4_max = r4_bar(float(ref["r4_full"]))
     ppl_max = PPL_MULT * float(ref["ppl_full"])
     ppl_ok = float(cap["ppl_full"]) <= ppl_max
     r4_ok = float(cap["r4_full"]) <= r4_max
@@ -692,6 +715,9 @@ def gate_from_reference(cap: dict[str, Any], ref: dict[str, Any]) -> dict[str, A
         "gate_r4_max": round(r4_max, 4),
         "gate_ppl_max": round(ppl_max, 4),
         "gate_r4_mult": R4_MULT,
+        "gate_r4_capped": bool(R4_MULT * float(ref["r4_full"]) > r4_max),
+        "gate_r4_uncapped": round(R4_MULT * float(ref["r4_full"]), 4),
+        "gate_r4_cap_rule": "min(mult x dense, midpoint(dense, 1.0)) -- a bar may not exceed the metric's range",
         "gate_ppl_mult": PPL_MULT,
         "evaluator": "tools/future/organ_allocation.py::measure_capability",
         "evaluator_copied_from": "tools/future/gravity_outlier_eval.py::evaluate",
