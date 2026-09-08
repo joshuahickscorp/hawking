@@ -1203,6 +1203,30 @@ def structured_output_record(
     return rec
 
 
+def doomed_retry(
+    attempt: int,
+    last_finish_reason: Optional[str],
+    requested: Optional[int],
+    prev_requested: Optional[int],
+) -> bool:
+    """Would this retry have LESS room than the attempt that ran out of room?
+
+    Pure, so the policy is testable without a provider, a payload or the
+    contract's own budget arithmetic -- which itself shrinks the number twice
+    (apply() reserves for the schema instruction, and the repair payload derives
+    again), independently of anything the caller sets.
+
+    Only a LENGTH truncation qualifies. A schema violation with a flat budget is
+    a legitimate retry: more room would not have helped and less room does not
+    hurt.
+    """
+    if attempt <= 1 or last_finish_reason != "length":
+        return False
+    if requested is None or prev_requested is None:
+        return False
+    return int(requested) <= int(prev_requested)
+
+
 @dataclass
 class StructuredOutputContract:
     """Prompt-side schema instruction + validator + bounded retry.
@@ -1311,6 +1335,8 @@ class StructuredOutputContract:
         working = self.apply(payload)
         errors: List[str] = []
         last_text: Optional[str] = None
+        last_finish_reason: Optional[str] = None
+        prev_requested: Optional[int] = None
         attempts = max(1, int(self.max_attempts))
         for attempt in range(1, attempts + 1):
             to_send = working
@@ -1362,10 +1388,44 @@ class StructuredOutputContract:
                 budget: Dict[str, Any] = {"attempt": attempt}
                 if to_send.get("max_tokens") is not None:
                     budget["requested_max_tokens"] = to_send.get("max_tokens")
+                # A RETRY WITH LESS ROOM THAN THE ATTEMPT THAT RAN OUT OF ROOM
+                # CANNOT SUCCEED. The engine re-derives the completion budget
+                # against the POSTED prompt and only ever shrinks it, and every
+                # retry appends its error note to that prompt -- so a
+                # length-truncation is answered with a smaller budget each time.
+                # Round 23 measured it exactly: granted 2474 -> 990 -> 990
+                # against prompts of 5571 -> 5876 -> 5959, all three ending
+                # finish_reason "length". Two of those three attempts were spent
+                # on an arithmetic that guaranteed their failure.
+                #
+                # Stop instead, and say so. Burning the remaining attempts hides
+                # a budget defect behind what reads as a model that cannot
+                # follow a schema.
+                if doomed_retry(attempt, last_finish_reason,
+                                budget.get("requested_max_tokens"), prev_requested):
+                    budget["refused"] = "budget_did_not_grow_after_length_truncation"
+                    self.attempt_budgets.append(budget)
+                    raise StructuredOutputExhausted(
+                        f"attempt {attempt - 1} was truncated for length with "
+                        f"{prev_requested} completion tokens, and attempt {attempt} would be "
+                        f"granted {budget['requested_max_tokens']} -- retrying with less room "
+                        f"than the attempt that ran out of room cannot succeed. The prompt grew "
+                        f"because each retry appends its own error note. Shorten the prompt or "
+                        f"raise the budget; do not spend the remaining attempts.",
+                        attempts=attempt - 1,
+                        last_text=last_text,
+                        errors=list(errors),
+                    )
+                prev_requested = budget.get("requested_max_tokens")
                 self.attempt_budgets.append(budget)
                 result = complete_fn(to_send, timeout)
                 if not isinstance(result, CompletionResult):
                     result = CompletionResult(raw=result, text=str(result))
+                # Remembered across attempts so the guard above can tell a
+                # length truncation from a schema violation. Without it the
+                # guard would refuse retries after any failure, including the
+                # ones where a smaller budget is irrelevant.
+                last_finish_reason = result.finish_reason
                 for key, value in (
                     ("prompt_tokens", result.prompt_tokens),
                     ("completion_tokens", result.completion_tokens),
