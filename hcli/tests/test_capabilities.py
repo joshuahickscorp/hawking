@@ -58,12 +58,22 @@ class TestSurfaceIsProbed(unittest.TestCase):
         self.assertIsNotNone(cap)
         self.assertTrue(cap.reachable())
 
-    def test_fuzz_and_reverse_are_honestly_absent(self):
-        # The steer asks for these; claiming them before they exist would be the
-        # false-affordance defect this whole session has been fixing.
-        self.assertIsNone(capability("FUZZ"))
-        self.assertIsNone(capability("REVERSE"))
-        self.assertIsNone(capability("FORENSICS"))
+    def test_fuzz_is_owned_now_that_it_has_an_implementation(self):
+        cap = capability("FUZZ")
+        self.assertIsNotNone(cap)
+        self.assertTrue(cap.reachable())
+
+    def test_forensics_and_reverse_are_owned_now(self):
+        for domain in ("FORENSICS", "REVERSE"):
+            cap = capability(domain)
+            self.assertIsNotNone(cap, f"{domain} lost its owner")
+            self.assertTrue(cap.reachable())
+
+    def test_report_remains_the_last_unowned_domain(self):
+        # REPORT has two real paths (receipts + hcli report) but no single owned
+        # capability yet; named unowned rather than pretended.
+        m = capability_map()
+        self.assertEqual(m["not_yet_owned"], ["REPORT"])
 
     def test_every_capability_has_an_escalation_ladder(self):
         # S036 s11: cheapest sufficient rung first, deeper when evidence demands.

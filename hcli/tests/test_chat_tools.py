@@ -591,3 +591,33 @@ class TestDebugIsAChatDoor(unittest.TestCase):
         got = run_local_tool("debug.diagnose", {"id": "nope", "command": "x"},
                              cache=self.cache)
         self.assertFalse(got.ok)
+
+
+class TestCapabilityDoorsAreServedLocally(unittest.TestCase):
+    """reverse.identify and forensics.snapshot are HCLI-served, one owner each."""
+
+    def setUp(self):
+        self.registry = build_registry(".", ".")
+
+    def test_they_are_local_not_registry(self):
+        from hcli.chat_tools import LOCAL_TOOLS
+        for name in ("reverse.identify", "forensics.snapshot", "debug.diagnose"):
+            self.assertIn(name, LOCAL_TOOLS)
+            self.assertIsNone(self.registry.get(name),
+                              f"{name} is claimed by both owners")
+
+    def test_reverse_identify_reads_a_file(self):
+        import tempfile
+        from pathlib import Path
+        from hcli.chat_tools import run_local_tool
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / "b").write_bytes(b"\x7fELF\x02")
+            got = run_local_tool("reverse.identify", {"path": str(Path(tmp) / "b")})
+            self.assertTrue(got.ok)
+            self.assertEqual(got.value["kind"], "ELF executable")
+
+    def test_reverse_identify_needs_a_path(self):
+        from hcli.chat_tools import run_local_tool
+        got = run_local_tool("reverse.identify", {})
+        self.assertFalse(got.ok)
+        self.assertIn("path", got.error)

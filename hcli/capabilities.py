@@ -114,6 +114,22 @@ def _debug_reachable() -> bool:
         return False
 
 
+def _fuzz_reachable() -> bool:
+    try:
+        from .fuzz_capability import fuzz
+        return callable(fuzz)
+    except Exception:
+        return False
+
+
+def _forensics_reachable() -> bool:
+    try:
+        from .forensics_capability import capture, identify
+        return callable(capture) and callable(identify)
+    except Exception:
+        return False
+
+
 def capabilities() -> List[Capability]:
     """The body's capability surface, probed against live machinery."""
     return [
@@ -201,6 +217,44 @@ def capabilities() -> List[Capability]:
                      "narrowing between competing causes not yet an owned rung"),
             ]),
         Capability(
+            domain="FUZZ", verb="throw malformed input at a boundary and keep crashes",
+            probe=_fuzz_reachable,
+            tools=[],
+            ladder=[
+                Rung("classic corpus", "fuzz_capability.fuzz", "moderate",
+                     "empty/huge/control-byte/nesting/encoding-edge inputs"),
+                Rung("seed mutation", "fuzz_capability._mutations", "moderate",
+                     "byte-level mutations of a caller-supplied seed"),
+                Rung("minimize", "fuzz_capability._minimize", "cheap",
+                     "shrink a crash to a reproducer; noise never enters context"),
+                Rung("process / coverage-guided", "MISSING", "expensive",
+                     "native fuzzer with coverage feedback not yet owned"),
+            ]),
+        Capability(
+            domain="FORENSICS", verb="preserve failure evidence before cleanup",
+            probe=_forensics_reachable,
+            tools=[],
+            ladder=[
+                Rung("triage snapshot", "forensics_capability.capture", "cheap",
+                     "HEAD, dirty files with hashes, recent commits, event tail"),
+                Rung("persist", "forensics_capability.capture", "cheap",
+                     "written before it returns, so cleanup cannot lose it"),
+                Rung("timeline reconstruction", "MISSING", "expensive",
+                     "cross-source incident timeline not yet an owned rung"),
+            ]),
+        Capability(
+            domain="REVERSE", verb="identify a file without running it",
+            probe=_forensics_reachable,
+            tools=[],
+            ladder=[
+                Rung("magic / format", "forensics_capability.identify", "cheap",
+                     "ELF/Mach-O/PE/archive/image/text by header"),
+                Rung("classification", "file_eye.classify_bytes", "cheap",
+                     "the perception package's deeper classifier when present"),
+                Rung("disassembly / symbols", "MISSING", "expensive",
+                     "objdump/nm equivalence not yet owned"),
+            ]),
+        Capability(
             domain="RECOVER", verb="checkpoint, resume and roll back",
             probe=lambda: _engine_can_mutate(),
             tools=[],
@@ -217,7 +271,7 @@ def capabilities() -> List[Capability]:
 
 #: Domains named in the steer that have NO owned rung yet. Named honestly rather
 #: than pretended into existence, so the frontier is visible instead of implied.
-UNOWNED_DOMAINS = ("REVERSE", "FUZZ", "FORENSICS", "REPORT")
+UNOWNED_DOMAINS = ("REPORT",)
 
 
 def capability_map() -> Dict[str, Any]:

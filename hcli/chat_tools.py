@@ -53,6 +53,8 @@ CHAT_TOOLS: Dict[str, str] = {
     "observation.expand": "read more of an earlier large result by its [PASTE id]",
     "context.recall": "recall facts this workspace learned earlier",
     "debug.diagnose": "localize a failure from a test/command output handle",
+    "reverse.identify": "identify what a file is by its bytes, without running it",
+    "forensics.snapshot": "preserve the failure context of this project before cleanup",
 }
 
 MAX_CALLS = 3
@@ -74,6 +76,8 @@ _XML_PARAM = re.compile(r"<parameter=([\w.\-]+)\s*>(.*?)</parameter>", re.S)
 LOCAL_SHAPES = {
     "observation.expand": '{"id": <string>}   optional: query, start, end',
     "debug.diagnose": '{"id": <string>, "command": <string>}   optional: exit_code',
+    "reverse.identify": '{"path": <string>}',
+    "forensics.snapshot": '{}   optional: note',
 }
 
 
@@ -600,7 +604,8 @@ def coerce_arguments(registry: Any, name: str,
 #: implementation of one door and let a hand-written shape ('limit')
 #: override the real schema (max_results/max_chars) -- the same
 #: transcribed-shape defect this module already fixed once.
-LOCAL_TOOLS = ("observation.expand", "debug.diagnose")
+LOCAL_TOOLS = ("observation.expand", "debug.diagnose",
+               "reverse.identify", "forensics.snapshot")
 
 
 def run_local_tool(name: str, arguments: Dict[str, Any], *,
@@ -661,6 +666,24 @@ def run_local_tool(name: str, arguments: Dict[str, Any], *,
                             exit_code=exit_code, root=_Path.cwd(), cache=cache)
         return _R(True, value=failure.to_dict(),
                   provenance={"source": "hcli.debug_capability", "paste": paste_id})
+
+    if name == "reverse.identify":
+        from .forensics_capability import identify
+        target = str(arguments.get("path") or "").strip()
+        if not target:
+            return _R(False, error='reverse.identify needs {"path": "<file>"}')
+        result = identify(target)
+        return _R("error" not in result, value=result,
+                  error=result.get("error"),
+                  provenance={"source": "hcli.forensics_capability"})
+
+    if name == "forensics.snapshot":
+        from .forensics_capability import capture
+        import os as _os
+        snap = capture(_os.getcwd(), note=str(arguments.get("note") or ""))
+        return _R(True, value=snap.to_dict(),
+                  provenance={"source": "hcli.forensics_capability",
+                              "preserved": snap.path})
 
     return _R(False, error=f"{name} is not a local tool")
 
