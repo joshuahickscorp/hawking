@@ -1,0 +1,54 @@
+{
+ "obligation": "G021",
+ "finding": "THE PRECONDITION HOLDS, ON TWO BODIES, WITH THE SAME TWO INVERSIONS",
+ "verify_quoted": "the local and global orders must actually DIFFER for the chosen body, shown from its own anatomy row, or the experiment cannot discriminate.",
+ "why_this_first": "G021's experiment needs GPU. Its precondition does not. If local and global agreed, the allocation run could not distinguish them and the hours would buy nothing -- this is the cheap discriminator the campaign keeps being paid by.",
+ "body_1": {
+  "specimen": "Qwen--Qwen3-0.6B@c1899de289a0",
+  "source": "receipts/future/G017_ORGAN_ALLOCATION.json, its own local_vs_global field",
+  "verbatim": "local k>q (global q>k) and local down>gate (global gate>down); the three 100% laws hold; allocation uses the GLOBAL prior",
+  "local_order": [
+   "k_proj",
+   "q_proj",
+   "o_proj",
+   "v_proj",
+   "down_proj",
+   "gate_proj",
+   "up_proj"
+  ],
+  "global_prior_deficits": {
+   "q_proj": 48.1,
+   "k_proj": 39.22,
+   "o_proj": 27.29,
+   "v_proj": 19.35,
+   "gate_proj": 18.37,
+   "down_proj": 12.3,
+   "up_proj": 9.46
+  },
+  "note": "G017 RAN THE GLOBAL PRIOR. The local ordering has never been the allocation driver."
+ },
+ "body_2": {
+  "specimen": "Qwen--Qwen3-Embedding-0.6B@97b0c614be4d",
+  "source": ".hcli/receipts/843bfae7 (round 23), corroborated by 4d0384ca (round 22) and ac4a2fd8 (round 24)",
+  "local_deficits": {
+   "k_proj": 41.09,
+   "q_proj": 39.19,
+   "o_proj": 23.53,
+   "v_proj": 21.7,
+   "down_proj": 21.32,
+   "gate_proj": 20.29
+  },
+  "local_order": "k > q > o > v > down > gate",
+  "inversions_vs_global": [
+   "k > q, against the global q > k",
+   "down > gate, against the global gate > down"
+  ],
+  "measured_three_times_independently": true
+ },
+ "the_result": "TWO OF TWO independently measured bodies inverT the global prior on the SAME TWO adjacent pairs. Both put k above q where the aggregate puts q above k, and both put down above gate where the aggregate puts gate above down. A prior that no measured specimen matches on those pairs is not a prior over specimens; it is an artifact of the aggregate.",
+ "what_this_licenses": "the G021 experiment CAN discriminate -- local and global give different allocations on a named body, shown from its own anatomy row, which is exactly what the verify demands before the run. It also raises the prior odds: the hypothesis is no longer 'one body disagreed' but 'both bodies we have measured disagree the same way'.",
+ "what_this_is_NOT": "not the experiment. Nothing here allocates, quantizes or measures capability. Local ordering predicting its own allocation BETTER than the global prior is unproven, and [S007 9] forbids widening to a 50-model sweep on the strength of two bodies agreeing -- the correct next step is the discriminating run on ONE of them, not more anatomy.",
+ "an_uncomfortable_detail": "body 2's anatomy is NOT IN THE LEDGER. It was measured three times, by rounds 22, 24 and 25, and every one of them ended without calling record_measurement. The evidence for this finding lives in .hcli round receipts rather than in G034, which is the G006 story stated from the other side: the science happened and the campaign's own ledger does not know it.",
+ "evidence_tier": "RECEIPT_SURVEY -- no new measurement, no GPU",
+ "scar": "CHECK THE EXPERIMENT CAN DISCRIMINATE BEFORE BUYING THE HOURS. It cost one grep here."
+}
