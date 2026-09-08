@@ -1376,10 +1376,30 @@ def _python_syntax_violation(content: str) -> Optional[str]:
                         f"{lo + i + 1}: {line}" for i, line in enumerate(window)
                     )
                     quoted = f"\nthe resulting file reads there:\n{numbered}"
+            # Teach the correction, not just the diagnosis. An indent error at
+            # LINE 1 of a whole-file operation has exactly one cause: the model
+            # supplied the CHANGED LINES where the ENTIRE FILE was required.
+            # Measured on a real run -- the model had the right fix
+            # ("if '..' in digest") and lost the unit three times to this,
+            # because "fix that operation and keep it short" does not say which
+            # way it is wrong. A rejection that names the wrong operation and
+            # the right one converts a dead end into a retry that can succeed.
+            op_kind = str(op.get("op") or "")
+            hint = "\nfix that operation and keep it short"
+            if (op_kind in {"replace_file", "create"}
+                    and "indent" in (exc.msg or "").lower()
+                    and getattr(exc, "lineno", 0) == 1):
+                hint = (
+                    f"\nop={op_kind!r} replaces the ENTIRE file, and you supplied an "
+                    f"indented fragment -- so the file now BEGINS mid-block. To change "
+                    f"PART of a file use op='replace' with old_lines (the exact existing "
+                    f"lines, copied verbatim including their indentation) and new_lines. "
+                    f"Reserve replace_file for a whole file you are rewriting top to bottom."
+                )
             return (
                 f"applying your operation to {path} would not compile: "
                 f"{exc.msg} at {where} of the resulting file{quoted}"
-                f"\nfix that operation and keep it short"
+                f"{hint}"
             )
         except ValueError as exc:
             return f"operation on {path} could not be compiled: {exc}"
