@@ -1,0 +1,30 @@
+{
+ "obligation": "G006",
+ "round": 22,
+ "verdict": "NO CREDIT -- but the failure is the MODEL's, and that is the outcome G029 defines as PROGRESS.",
+ "why_this_round_is_different": "every previous round in this streak failed on the instrument or the launch. This one was given everything: the correct interpreter, an 8-observation budget, a working dense_anatomy (numpy present for the first time), a reachable write door, and a census that no longer confuses a value with an owed cell. It used 5 of 8 observations and stopped with 679 of 3866 tokens granted -- finish_reason 'stop', not truncation. Nothing was withheld from it.",
+ "what_it_actually_did": {
+  "tools_used": [
+   "campaign.guard",
+   "fs.read",
+   "odyssey.dense_anatomy",
+   "odyssey.ledger"
+  ],
+  "tool_rounds": 6,
+  "observations_ok": 5,
+  "observations_failed": 1,
+  "science": "odyssey.dense_anatomy RAN for the first time in this streak and returned real structure on Qwen3-Embedding-0.6B: k_proj deficit 41.09% (stderr 0.0225), q_proj 39.19% (0.0151), o_proj 23.53% (0.0151). It read the ordering correctly -- k > q > o, all above 20% -- and drew a hypothesis from it.",
+  "guard": "OK, free 60.94 GiB, headroom 59.84 against 1.1 expected -- 54x what it needed"
+ },
+ "the_two_failures": {
+  "1_did_not_record": "odyssey.record_measurement was never called. The measurement exists in the round's own report and nowhere else. MEASURED was 94 before this round and 94 after. The challenge states the rule in its own text: 'a measurement you do not RECORD does not exist.' The door was open and it walked past.",
+  "2_the_report_collapsed": "the closing summary degenerated: 'the 1.1 GiB Qwen3-Embedding-0.6B is the 1.1 GiB Qwen3-Embedding-0.6B', then the phrase repeats until the token budget ends. finish_reason 'stop' at 679 of 3866 tokens, so this is generation collapse, not a cut-off."
+ },
+ "classification": "F -- structured action. It had the evidence and did not take the recording action.",
+ "attribution": "MODEL",
+ "why_that_matters": "G029's terminal defines PROGRESS as a round whose failure is attributed to the MODEL, pass or fail, because that is the only outcome that moves the experiment. Before this round the attribution was HARNESS 17 | CLAUDE 3 | MODEL 2 | INVALID 1. This is the third MODEL data point in 24 rounds and the cleanest of them: the previous two came from rounds where the instrument was still under repair.",
+ "the_uncomfortable_symmetry": "the resident produced VISIBLY COLLAPSED TEXT in production -- a phrase repeating until the budget ran out. That is precisely the failure mode G020's diversity axis exists to detect, and G020 established today that the axis was VACUOUS on a specimen whose dense parent repeats. The gate is measuring a real phenomenon: the campaign has now observed it in its own resident, not only in compressed arms.",
+ "no_repair_is_indicated": "there is no instrument defect to fix here, and inventing one would be target engineering. The correct response under G029 is to RERUN THE SAME CHALLENGE UNCHANGED and see whether the failure repeats on an unchanged instrument -- which is what made round 11 the strongest model evidence in the campaign.",
+ "streak": 0,
+ "scar": "THE ROUND MEASURED, AND THEN TALKED INSTEAD OF WRITING. An open door is not a taken action."
+}
