@@ -1355,6 +1355,39 @@ def _python_syntax_violation(content: str) -> Optional[str]:
                 return _anchor_violation(path, anchor, current, hits)
             candidate = current.replace(anchor, body, 1)
 
+        # SPLICING OPS CARRY FRAGMENTS BY DESIGN. insert_before, insert_after
+        # and append put `body` INTO an existing file, so an indented block is
+        # correct exactly as `replace`'s is -- but only `replace` reconstructed
+        # the resulting file above. Everything else fell through with
+        # candidate = body and was compiled standalone, which reports
+        # "unexpected indent at line 1" for a perfectly good patch.
+        #
+        # This is the same false rejection the comment above records for
+        # `replace`, never fixed for the insert/append family. Measured: two
+        # autonomy runs died here, the second holding a correct guard, retrying
+        # the same shape three times because the message accused it of a syntax
+        # error it had not made.
+        #
+        # Rebuild the real file where an anchor makes that possible; where it
+        # does not, DO NOT judge -- a check that cannot see the result has
+        # nothing to say about it.
+        op_kind = str(op.get("op") or "")
+        if op_kind in {"insert_before", "insert_after", "append"}:
+            try:
+                current = Path(path).read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                continue
+            anchor = _operation_text(op, "old_text")
+            if op_kind == "append":
+                candidate = current + ("" if current.endswith("\n") else "\n") + body
+            elif isinstance(anchor, str) and current.count(anchor) == 1:
+                candidate = (current.replace(anchor, anchor + body, 1)
+                             if op_kind == "insert_after"
+                             else current.replace(anchor, body + anchor, 1))
+            else:
+                # No usable anchor: the resulting file is not knowable here.
+                continue
+
         try:
             compile(candidate, path or "<operation>", "exec")
         except SyntaxError as exc:
