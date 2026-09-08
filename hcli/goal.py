@@ -1334,6 +1334,37 @@ def _bullet_section(title: str, lines: Sequence[str]) -> str:
     return title + ":\n" + "\n".join(f"- {line}" for line in lines)
 
 
+_FAILURE_CONTEXT_CHARS = 1200
+
+
+def _failure_context_blob(context: Any) -> str:
+    """Render a failed unit's context actionable-first, then bound it.
+
+    `error` is the only field that says what to do next. sort_keys put
+    `description` and `failed_id` in front of it and the whole dump was then
+    cut at 400 characters, so a real failing test reached the worker with the
+    assertion sliced off -- it retried the same command because it had never
+    been shown a result. Ordering is still derived from the key set alone, so
+    two dicts with the same items render identically and the packet cache holds.
+    """
+    if not isinstance(context, dict):
+        blob = str(context)
+    else:
+        ordered = {}
+        if "error" in context:
+            ordered["error"] = context["error"]
+        for key in sorted(context):
+            if key != "error":
+                ordered[key] = context[key]
+        try:
+            blob = json.dumps(ordered, default=str)
+        except TypeError:
+            blob = str(ordered)
+    if len(blob) > _FAILURE_CONTEXT_CHARS:
+        blob = blob[:_FAILURE_CONTEXT_CHARS - 3].rstrip() + "..."
+    return blob
+
+
 def _workunit_block(
     wu: WorkUnit,
     description: str,
@@ -1349,13 +1380,9 @@ def _workunit_block(
         "do not restate the evidence history or write a complete research essay.",
     ]
     if failure_context:
-        try:
-            blob = json.dumps(failure_context, default=str, sort_keys=True)
-        except TypeError:
-            blob = str(failure_context)
-        blob = _sanitize_goal_header(blob, root_goal)
-        if len(blob) > 400:
-            blob = blob[:397].rstrip() + "..."
+        blob = _sanitize_goal_header(
+            _failure_context_blob(failure_context), root_goal
+        )
         lines.append(f"FAILURE_CONTEXT: {blob}")
     return "\n".join(lines)
 

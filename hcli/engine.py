@@ -368,7 +368,8 @@ _CTX_ESTIMATE_ERROR = 0.30
 _NOT_ADMITTED_REASON = (
     "NOT_ADMITTED: a test command must be a pytest invocation or a bare path. "
     "Accepted: 'hcli/tests/test_x.py', 'pytest hcli/tests/test_x.py', "
-    "'python -m pytest hcli/tests/test_x.py'. NOT accepted: a tool call such as "
+    "'python -m pytest hcli/tests/test_x.py', 'python hcli/tests/test_x.py'. "
+    "NOT accepted: a tool call such as "
     "tests.run([...]), 'python -m unittest ...', a shell pipeline, or extra flags "
     "beyond -q/-v/-x/-s/--tb=/--color=no."
 )
@@ -618,6 +619,33 @@ def is_accepted_measurement(validation: Any) -> bool:
     return int(validation.get("observations_ok") or 0) >= 1
 
 
+_FAILURE_BANNER_RE = re.compile(r"^=+ (?:FAILURES|ERRORS) =+$", re.M)
+
+
+def failed_run_detail(stdout: Any, stderr: Any, limit: int = 420) -> str:
+    """The part of a failed command's output a reader can act on.
+
+    pytest writes the assertion and the traceback to STDOUT; only a tail of
+    STDERR was ever carried, so a genuinely failing test reached the worker as
+    `TEST_FAILED exit_code 1` with the one line that says what to fix dropped.
+    It re-ran the same command instead of diagnosing, which is what a scientist
+    shown no result would do.
+
+    Start at the FAILURES banner when pytest printed one -- the session header
+    above it is noise -- otherwise keep the TAIL, because the informative end of
+    a traceback is its last line.
+    """
+    text = "\n".join(
+        t for t in (str(stdout or ""), str(stderr or "")) if t.strip()
+    )
+    if not text.strip():
+        return ""
+    match = _FAILURE_BANNER_RE.search(text)
+    if match:
+        return text[match.end():].strip()[:limit]
+    return text.strip()[-limit:]
+
+
 def validation_failure_message(validation: Any) -> str:
     """Say WHY deterministic validation failed.
 
@@ -634,16 +662,14 @@ def validation_failure_message(validation: Any) -> str:
     if not isinstance(validation, dict):
         return f"{head}: validation={str(validation)[:300]}"
     bits = []
-    for key in ("reason", "failed", "failures", "returncode",
-                "command", "stderr", "tests", "files"):
-        value = validation.get(key)
-        if value in (None, "", [], {}):
-            continue
-        bits.append(f"{key}={str(value)[:300]}")
     # The per-test reasons live in `checks`, not at the top level. Omitting it
     # produced a message that named the file the model wrote and nothing about
     # why the run was rejected -- true, useless, and it cost a full diagnostic
     # cycle to notice.
+    #
+    # Actionable FIRST. `files=[{sha256_before..., sha256_after...}]` is ~200
+    # characters of hex nothing can act on, and it used to be emitted ahead of
+    # the failure, so the downstream cut kept the hashes and dropped the reason.
     checks = validation.get("checks")
     if isinstance(checks, list):
         bad = []
@@ -657,12 +683,18 @@ def validation_failure_message(validation: Any) -> str:
                 keep = {k: c[k] for k in ("kind", "path", "reason", "exit_code",
                                           "cmd", "requested")
                         if c.get(k) not in (None, "")}
-                stderr = str(c.get("stderr") or "")[-200:]
-                if stderr:
-                    keep["stderr_tail"] = stderr
+                detail = failed_run_detail(c.get("stdout"), c.get("stderr"))
+                if detail:
+                    keep["output_tail"] = detail
                 bad.append(keep)
         if bad:
-            bits.append(f"failing_checks={str(bad)[:600]}")
+            bits.append(f"failing_checks={str(bad)[:900]}")
+    for key in ("reason", "failed", "failures", "returncode",
+                "command", "stderr", "tests", "files"):
+        value = validation.get(key)
+        if value in (None, "", [], {}):
+            continue
+        bits.append(f"{key}={str(value)[:300]}")
     if not bits:
         return f"{head}: validation={str(validation)[:300]}"
     return f"{head}: " + "; ".join(bits)
@@ -1427,7 +1459,19 @@ def _python_syntax_violation(content: str) -> Optional[str]:
             # the right one converts a dead end into a retry that can succeed.
             op_kind = str(op.get("op") or "")
             hint = "\nfix that operation and keep it short"
-            if (op_kind in {"replace_file", "create"}
+            # A body whose "newlines" are the two characters backslash-n is one
+            # physical line, and the quoted file above shows it with the escapes
+            # intact -- which reads exactly like a normally rendered multi-line
+            # file, so the diagnosis is invisible. Measured: three attempts died
+            # on it. Name the form that has nothing to escape.
+            if "\\n" in candidate and "\n" not in candidate.strip():
+                hint = (
+                    "\nyour body is ONE line whose newlines are the two characters "
+                    "backslash and n, so Python reads a line continuation. Send the "
+                    "body as new_lines (or old_lines): a JSON array of plain source "
+                    "lines with no newline characters in them and nothing to escape."
+                )
+            elif (op_kind in {"replace_file", "create"}
                     and "indent" in (exc.msg or "").lower()
                     and getattr(exc, "lineno", 0) == 1):
                 hint = (

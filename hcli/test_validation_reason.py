@@ -85,3 +85,43 @@ def test_rejected_test_command_is_named():
         {"kind": "test", "reason": "NOT_ADMITTED", "admitted": False,
          "requested": 'python -c "import probe; assert probe.VALUE == 7"'}]})
     assert "import probe" in out, f"the refused command is not in the message: {out}"
+
+
+def test_pytest_failure_detail_reaches_the_message():
+    # pytest writes the assertion and the traceback to STDOUT. The message kept
+    # a tail of stderr only, so a real failing run reached the worker as
+    # "TEST_FAILED exit_code 1" with nothing to diagnose: it re-ran the same
+    # command instead of reading the failure, because it had never been shown one.
+    stdout = (
+        "============================= test session starts ====================\n"
+        "collected 1 item\n\n"
+        "hcli/tests/test_x.py F                                          [100%]\n\n"
+        "=================================== FAILURES =========================\n"
+        "______________ TestProjectNameEmpty.test_create_empty_name ___________\n"
+        "hcli/tests/test_x.py:6: in test_create_empty_name\n"
+        "    with self.assertRaises(ValueError):\n"
+        "E   AssertionError: ValueError not raised\n"
+        "=========================== short test summary info ==================\n"
+        "FAILED hcli/tests/test_x.py::TestProjectNameEmpty::test_create_empty_name\n"
+    )
+    out = msg({"ok": False, "checks": [
+        {"kind": "test", "reason": "TEST_FAILED", "exit_code": 1, "runner": "pytest",
+         "requested": "python hcli/tests/test_x.py", "stdout": stdout, "stderr": ""}]})
+    assert "AssertionError: ValueError not raised" in out, (
+        f"the only line that says what to fix was dropped: {out}"
+    )
+    assert "test session starts" not in out, (
+        "kept the banner instead of the failure"
+    )
+
+
+def test_the_actionable_check_is_reported_before_the_file_hashes():
+    # files=[{sha256_before...sha256_after...}] is ~200 characters of hex that
+    # nothing can act on, and it was emitted first -- so the downstream cut kept
+    # the hashes and dropped the failure.
+    out = msg({"ok": False,
+               "files": [{"path": "a.py", "sha256_before": "0" * 64,
+                          "sha256_after": "1" * 64, "changed": True}],
+               "checks": [{"kind": "test", "reason": "TEST_FAILED", "exit_code": 1,
+                           "stderr": "E   assert 1 == 2"}]})
+    assert out.index("failing_checks") < out.index("files="), out

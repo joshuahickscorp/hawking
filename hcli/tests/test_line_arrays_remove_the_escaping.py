@@ -98,3 +98,25 @@ def test_the_PREFLIGHT_still_catches_a_bad_anchor_given_as_lines(tmp_path, monke
     message = _python_syntax_violation(payload)
     assert message is not None
     assert "does not appear" in message or "matches nothing" in message
+
+
+def test_a_body_of_LITERAL_backslash_n_names_the_line_array_form(tmp_path, monkeypatch):
+    """Measured on the daemon: the model double-escaped and got no way out.
+
+    The reply carried "import unittest\\nfrom hcli..." -- one physical line whose
+    newlines are the two characters backslash and n. The rejection said
+    "unexpected character after line continuation character at line 1" and
+    printed the file back with the escapes still in it, which reads exactly like
+    a normally rendered multi-line file. Three attempts died on it. The escape
+    is not required at all: new_lines exists.
+    """
+    monkeypatch.chdir(tmp_path)
+    payload = json.dumps({"kind": "mutation", "operations": [{
+        "op": "create", "path": "t.py",
+        "new_text": "import unittest\\nclass T(unittest.TestCase):\\n    pass\\n",
+    }]})
+    message = _python_syntax_violation(payload)
+    assert message is not None, "a body of literal backslash-n was waved through"
+    assert "new_lines" in message, (
+        f"the rejection does not name the form that has nothing to escape: {message}"
+    )

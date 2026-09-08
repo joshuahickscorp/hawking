@@ -582,3 +582,43 @@ class TestPacketDeterminism(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestFailureContextIsActionable(unittest.TestCase):
+    """A failed unit's next attempt has to be able to read why it failed.
+
+    Measured on the daemon: a real RED reached the worker as
+    `TEST_FAILED exit_code 1`. The assertion existed in the check record and
+    was cut away twice -- once by the message builder, once here, where a
+    sort_keys dump put `description` and `failed_id` ahead of `error` and then
+    truncated the whole blob at 400 characters.
+    """
+
+    def _prompt(self, ctx):
+        wu = _wu(description="rerun the proving test", failure_context=ctx)
+        return compile_worker_context(
+            wu, _compiled(goal="short task must pass"),
+            phase="running", units={wu.id: wu}, steering=[],
+        ).prompt
+
+    def test_the_error_survives_a_long_sibling_field(self):
+        prompt = self._prompt({
+            "description": "d" * 300,
+            "failed_id": "G003.work.repair.1",
+            "failure_signature": "e" * 64,
+            "status": "failed",
+            "error": ("Deterministic validation failed: failing_checks=["
+                      "{'kind': 'test', 'reason': 'TEST_FAILED', 'output_tail': "
+                      "'E   AssertionError: ValueError not raised'}]"),
+        })
+        self.assertIn("AssertionError: ValueError not raised", prompt)
+
+    def test_key_order_still_does_not_change_the_prompt(self):
+        a = self._prompt({"z": 1, "a": 2, "error": "boom"})
+        b = self._prompt({"error": "boom", "a": 2, "z": 1})
+        self.assertEqual(a, b)
+
+    def test_failure_context_stays_bounded(self):
+        prompt = self._prompt({"error": "x" * 20000, "other": "y" * 20000})
+        line = [l for l in prompt.splitlines() if l.startswith("FAILURE_CONTEXT")][0]
+        self.assertLess(len(line), 1400, "unbounded failure context reached the prompt")
