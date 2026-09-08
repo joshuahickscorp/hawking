@@ -1,0 +1,69 @@
+{
+ "obligation": "G028",
+ "finding": "FIVE OF SIX OIII PIECES EXIST; ONE HAS NO IMPLEMENTATION AND MOST ARE UNREACHABLE",
+ "acceptance_quoted": "tool reachability, adversarial contracts, parent-removal tests, restart tests, capability attacks and matched-resource controls all EXIST and are callable before a finalist waits on them.",
+ "pieces": {
+  "tool_reachability": {
+   "required": "OIII callable from HCLI's tool surface",
+   "found": "odyssey.create_adversarial_probe (mutation costly, requires confirm + law_id)",
+   "state": "PARTIAL",
+   "detail": "the registered tool creates a probe against a LAW. tools/future/odyssey3_adversary.py -- 1294 lines, 9 attack families, a 7-rung scope ladder -- is NOT registered. Its only callers are tools/verify/status_causality.py and tools/acceptance/odyssey/run.py, neither reachable from a round."
+  },
+  "adversarial_contracts": {
+   "required": "contracts an attack must satisfy",
+   "found": "odyssey3_adversary: ATTACK_FAMILIES (9), SCOPE_LADDER (7 rungs GENERIC_VERIFIED -> REFUTED), ATTACK_SPEC_FIELDS, FAMILY_COST, REFUTING_VERDICTS, PAST_FAILURE_SHAPES, and typed errors for a no-attack or unmoved-scope outcome",
+   "state": "EXISTS",
+   "detail": "substantial and specific. Unreachable from a round, but built."
+  },
+  "parent_removal_tests": {
+   "required": "removal of the parent safetensors does not break execution",
+   "found": "nx_promotion.check_no_hidden_parent",
+   "state": "EXISTS AND VERIFIED TODAY",
+   "detail": "exercised directly: external_references naming the resident's parent directory is REFUSED, and an ABSENT external_references field is refused too on the grounds that 'absence of a field is not absence of a parent'. See G012_THE_GATE_IS_READY."
+  },
+  "restart_tests": {
+   "required": "the artifact survives a process restart",
+   "found": "nx_promotion condition `restart_recovery_qualification`; nrnx_discipline lists it",
+   "state": "CONTRACT ONLY",
+   "detail": "it is one of the seven conditions that require a NAMED RECEIPT rather than a mechanical check. There is no runner that performs a restart and produces that receipt. The slot exists; the test does not."
+  },
+  "capability_attacks": {
+   "required": "capability attacked, not merely measured",
+   "found": "tools/future/g004_capability_gate.py",
+   "state": "EXISTS, ZERO CALLERS",
+   "detail": "no caller and no test at all -- recorded under G023.",
+   "callers": []
+  },
+  "matched_resource_controls": {
+   "required": "the candidate is compared under matched resources, not against a freer baseline",
+   "found": null,
+   "state": "ABSENT",
+   "detail": "grep for matched_resource / matched-resource across tools/ and hcli/ returns NOTHING. This is the piece with no implementation anywhere, and it is the one that decides whether an NX win is real or bought with headroom the parent was denied."
+  }
+ },
+ "by_state": {
+  "PARTIAL": [
+   "tool_reachability"
+  ],
+  "EXISTS": [
+   "adversarial_contracts"
+  ],
+  "EXISTS AND VERIFIED TODAY": [
+   "parent_removal_tests"
+  ],
+  "CONTRACT ONLY": [
+   "restart_tests"
+  ],
+  "EXISTS, ZERO CALLERS": [
+   "capability_attacks"
+  ],
+  "ABSENT": [
+   "matched_resource_controls"
+  ]
+ },
+ "there_are_TWO_things_called_OIII": "odyssey3_adversary attacks the campaign's LAWS -- it demotes a law's scope down a 7-rung ladder toward REFUTED. That is Odyssey III as epistemic self-attack, and it is well built. What G012 needs is different: OIII against an NX ARTIFACT with the parent removed. The second reuses nx_promotion's conditions and has no runner. Conflating them would let a law-attack receipt satisfy an artifact-attack condition.",
+ "the_gap_that_matters_most": "MATCHED-RESOURCE CONTROLS ARE ABSENT ENTIRELY. Every other piece is at least built. This one decides whether an NX win is real: a candidate measured with more memory, a warmer cache or a freer GPU than its parent has not beaten the parent. The campaign has already been bitten by the unmatched-arm shape -- arm A always running first biased a measurement 1.472x to 1.404x until the order was alternated.",
+ "verify_respected": "[S009 27] preparation is parallel, EXECUTION is earned. Nothing was executed here and no candidate was promoted to OIII. Running it on a weak candidate to move nx_disposition off zero is a REJECT and was not done. nx_disposition remains 0 MEASURED across all 56.",
+ "not_built_here": "the missing runner and the matched-resource control are not written in this pass. Writing an adversarial runner for an artifact that does not exist yet risks building it around the candidate we imagine rather than the one that arrives -- and G027 says the representation CLASS still has to change, so its shape is not yet known.",
+ "scar": "TWO THINGS SHARING A NAME WILL EVENTUALLY SATISFY EACH OTHER'S CONTRACT."
+}
