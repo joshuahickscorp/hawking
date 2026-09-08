@@ -1,0 +1,79 @@
+{
+ "obligation": "G030",
+ "claim_boundary": "MEASURED from git commit timestamps over one continuous working session. It is NOT a controlled experiment: there is no serial arm to compare against, so the 'serial estimated wall' below is an ESTIMATE and is labelled as one.",
+ "window": {
+  "commits": 16,
+  "hours": 0.84,
+  "commits_per_hour": 19.0
+ },
+ "obligations_touched_this_window": [
+  "G005",
+  "G006",
+  "G009",
+  "G010",
+  "G012",
+  "G014",
+  "G023",
+  "G025",
+  "G026",
+  "G027"
+ ],
+ "rates": {
+  "obligations_given_evidence_per_hour": 11.9,
+  "obligations_VERIFIED_this_window": [
+   "G010",
+   "G014",
+   "G029"
+  ],
+  "Gs_closed_per_hour": 3.6,
+  "receipts_written": 106
+ },
+ "ledger_state_now": {
+  "VERIFIED": 11,
+  "unresolved": 19,
+  "note": "of 30 obligations; this window took it from 8 to 11"
+ },
+ "what_actually_compressed_the_wall": "NOT parallelism. Grok capacity is EXHAUSTED and zero lanes ran in this window. Every result came from one serial worker while the authoritative autonomy round held the GPU. The compression came from three things instead: (1) reading the sealed receipts rather than re-measuring -- G012's cliff and G027's arithmetic are both surveys of data already on disk; (2) checking the PREMISE before implementing -- G023's complete_ebpw clause was already satisfied and one grep replaced hours of wiring; (3) discovering that the instrument for G026 was already running and only needed six fields written down.",
+ "the_honest_comparison": {
+  "superwave_1": "20 Grok lanes, 17.88M tokens, 8 dead on HTTP 402, 11 THIN, 1 USABLE. Measured yield 1/20. Parallelism bought concurrency, not information.",
+  "this_window": "0 lanes, 16 commits, 3 obligations VERIFIED, 11 receipts, in 0.84 h. The binding resource was never lane count.",
+  "conclusion": "S009 39 said measure the benefit of parallelism rather than assume it. Measured: in this campaign's current state, search WIDTH has produced less than reading what is already on disk. That is a statement about the campaign's state -- it has a large unread evidence base -- not a general claim about parallelism."
+ },
+ "live_critical_path": {
+  "CRITICAL": [
+   "G006 -- the streak gates 4 open obligations and is at 0 after 23 rounds",
+   "G012 -- no candidate reaches the byte+capability frontier; gate is ready, caller absent"
+  ],
+  "PARALLELIZABLE": [
+   "G020 diversity-gate calibration",
+   "G021 local vs global anatomy",
+   "G028 OIII preparation",
+   "G019 actionable-first audit"
+  ],
+  "BLOCKED": [
+   "G010 superwave 2 -- Grok Build balance EXHAUSTED, external resource",
+   "G024 -- HCLI cannot dispatch width while capacity is gone",
+   "G009 -- 121 refusals need reopen conditions from whoever owns each cell"
+  ],
+  "PREFETCH": [
+   "G028 OIII contracts",
+   "G023 NR->NX wiring design"
+  ],
+  "HARDWARE_GATED": [
+   "G004 capability arm -- needs Metal on the single GPU the resident holds",
+   "G007 compressed GPU path",
+   "G008 compounding on a second body",
+   "gpu/cpu/tps axes -- 0 MEASURED of 56 specimens"
+  ]
+ },
+ "verify_clause_S009_47": {
+  "MEASURED": 94,
+  "REFUSED": 142,
+  "OWED": 156,
+  "total": 392,
+  "measured_pct": 24.0,
+  "resolved_pct": 60.2,
+  "statement": "60.2% RESOLVED is not 60.2% measured and is never written as such. Only 94/392 = 24.0% are measurements. The audit under G009 sharpens this further: 121 of the 142 refusals name no reopen condition, so most of the gap between 24.0% and 60.2% is unrevisitable by any stated condition."
+ },
+ "scar": "WIDTH IS NOT THE ONLY COMPRESSION. Reading what the campaign already wrote down beat twenty lanes."
+}
