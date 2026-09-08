@@ -342,6 +342,14 @@ def main(argv: Optional[List[str]] = None) -> int:
         from .agentos.resident import main as resident_main
 
         return resident_main(raw[1:])
+    if raw and raw[0] == "serve":
+        from .serve import main as serve_main
+
+        return serve_main(raw[1:])
+    if raw and raw[0] == "web":
+        from .web import main as web_main
+
+        return web_main(raw[1:])
 
     args = parse_hcli_args(raw)
     if args.debug:
