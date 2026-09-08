@@ -550,3 +550,44 @@ class TestRecallIsADoor(unittest.TestCase):
         self.assertIn('"focus"', shape)
         self.assertNotIn("limit", shape,
                          "the menu advertises a field the tool rejects")
+
+
+class TestDebugIsAChatDoor(unittest.TestCase):
+    """The model can turn a stored failure into a localized fact.
+
+    Recon confirmed no reproduce/localize tool existed on any surface. This is
+    the disk-first loop closed: a large failure goes to a handle, and
+    debug.diagnose reads the handle and returns the cause -- the deepest project
+    frame and the assertion -- not the dump.
+    """
+
+    def setUp(self):
+        import tempfile
+        from hcli.paste_cache import PasteCache
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        self.cache = PasteCache(self._tmp.name)
+
+    def test_a_stored_failure_is_localized(self):
+        from hcli.chat_tools import run_local_tool
+        fail = ("test_x.py:6: in test_value\n    assert compute() == 5\n"
+                "E   AssertionError: assert 3 == 5\n") + "noise\n" * 200
+        ref = self.cache.store(fail)
+        got = run_local_tool("debug.diagnose",
+                             {"id": ref.id, "command": "pytest", "exit_code": 1},
+                             cache=self.cache)
+        self.assertTrue(got.ok, got.error)
+        self.assertTrue(got.value["reproduced"])
+        self.assertEqual(got.value["kind"], "AssertionError")
+
+    def test_a_missing_id_says_what_it_needs(self):
+        from hcli.chat_tools import run_local_tool
+        got = run_local_tool("debug.diagnose", {"command": "x"}, cache=self.cache)
+        self.assertFalse(got.ok)
+        self.assertIn('"id"', got.error)
+
+    def test_an_unknown_handle_refuses(self):
+        from hcli.chat_tools import run_local_tool
+        got = run_local_tool("debug.diagnose", {"id": "nope", "command": "x"},
+                             cache=self.cache)
+        self.assertFalse(got.ok)

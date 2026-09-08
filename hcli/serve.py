@@ -482,6 +482,11 @@ def make_handler(backend: Any, identity: str, *, greedy: bool,
                                       explicit=body.get("session_id")
                                       or body.get("chat_id")))
                 session.resident = getattr(backend, "identity", identity)
+                # The session inherits the surface's authority. A session record
+                # defaulting to "read" while the surface was started --write left
+                # the working set and the response both claiming read on a build
+                # session -- true of a fresh record, wrong for this surface.
+                session.authority = "write" if stores.get("engine") is not None else "read"
                 session.turns += 1
                 # RESUME BEFORE ANYTHING ELSE. A checkpoint means a previous
                 # invocation yielded mid-objective; the resuming turn must see

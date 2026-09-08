@@ -106,6 +106,14 @@ def _profiler_reachable() -> bool:
         return False
 
 
+def _debug_reachable() -> bool:
+    try:
+        from .debug_capability import diagnose
+        return callable(diagnose)
+    except Exception:
+        return False
+
+
 def capabilities() -> List[Capability]:
     """The body's capability surface, probed against live machinery."""
     return [
@@ -179,6 +187,20 @@ def capabilities() -> List[Capability]:
                      "startup-only, never blind kill; provenance first"),
             ]),
         Capability(
+            domain="DEBUG", verb="reproduce, localize and diagnose a failure",
+            probe=_debug_reachable,
+            tools=[],
+            ladder=[
+                Rung("reproduce", "engine admitted-test path", "moderate",
+                     "a failure you cannot reproduce is a story, not a fact"),
+                Rung("localize", "debug_capability.diagnose", "cheap",
+                     "the deepest PROJECT frame, the assertion, the function"),
+                Rung("source window", "debug_capability", "cheap",
+                     "the failing line marked, not a 200-line dump"),
+                Rung("discriminate / bisect", "MISSING", "expensive",
+                     "narrowing between competing causes not yet an owned rung"),
+            ]),
+        Capability(
             domain="RECOVER", verb="checkpoint, resume and roll back",
             probe=lambda: _engine_can_mutate(),
             tools=[],
@@ -195,7 +217,7 @@ def capabilities() -> List[Capability]:
 
 #: Domains named in the steer that have NO owned rung yet. Named honestly rather
 #: than pretended into existence, so the frontier is visible instead of implied.
-UNOWNED_DOMAINS = ("DEBUG", "REVERSE", "FUZZ", "FORENSICS", "REPORT")
+UNOWNED_DOMAINS = ("REVERSE", "FUZZ", "FORENSICS", "REPORT")
 
 
 def capability_map() -> Dict[str, Any]:

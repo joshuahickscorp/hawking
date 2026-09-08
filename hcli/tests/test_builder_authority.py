@@ -235,3 +235,31 @@ class TestToolsAreNeverSilentlyDropped(unittest.TestCase):
         message = str(caught.exception)
         self.assertIn("cannot declare tools", message)
         self.assertIn("invent", message, "the refusal does not say why it matters")
+
+
+class TestSessionInheritsSurfaceAuthority(unittest.TestCase):
+    """A build session must report write, not the record's default read.
+
+    Measured: a --write surface answered a real repo.edit correctly, but the
+    session block in the response said authority "read" -- the record loaded
+    with its default and nothing lifted it to match the surface. The working
+    set advertises authority to the model, so a wrong value there is a wrong
+    contract.
+    """
+
+    def test_working_set_shows_write_when_the_session_has_it(self):
+        from hcli.chat_state import ChatSession, working_set
+        from tempfile import TemporaryDirectory
+        with TemporaryDirectory() as tmp:
+            session = ChatSession.load(tmp, "s1")
+            session.objective = "fix the parser"
+            session.authority = "write"
+            self.assertIn("AUTHORITY write", working_set(session))
+
+    def test_a_read_session_does_not_advertise_write(self):
+        from hcli.chat_state import ChatSession, working_set
+        from tempfile import TemporaryDirectory
+        with TemporaryDirectory() as tmp:
+            session = ChatSession.load(tmp, "s1")
+            session.objective = "look at the parser"
+            self.assertNotIn("AUTHORITY write", working_set(session))

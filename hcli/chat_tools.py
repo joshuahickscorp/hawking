@@ -52,6 +52,7 @@ CHAT_TOOLS: Dict[str, str] = {
     "fs.search": "find text in this project's source",
     "observation.expand": "read more of an earlier large result by its [PASTE id]",
     "context.recall": "recall facts this workspace learned earlier",
+    "debug.diagnose": "localize a failure from a test/command output handle",
 }
 
 MAX_CALLS = 3
@@ -72,6 +73,7 @@ _XML_PARAM = re.compile(r"<parameter=([\w.\-]+)\s*>(.*?)</parameter>", re.S)
 
 LOCAL_SHAPES = {
     "observation.expand": '{"id": <string>}   optional: query, start, end',
+    "debug.diagnose": '{"id": <string>, "command": <string>}   optional: exit_code',
 }
 
 
@@ -598,7 +600,7 @@ def coerce_arguments(registry: Any, name: str,
 #: implementation of one door and let a hand-written shape ('limit')
 #: override the real schema (max_results/max_chars) -- the same
 #: transcribed-shape defect this module already fixed once.
-LOCAL_TOOLS = ("observation.expand",)
+LOCAL_TOOLS = ("observation.expand", "debug.diagnose")
 
 
 def run_local_tool(name: str, arguments: Dict[str, Any], *,
@@ -633,6 +635,32 @@ def run_local_tool(name: str, arguments: Dict[str, Any], *,
             return _R(False, error=f"no observation {paste_id!r} is kept in this session")
         except (TypeError, ValueError) as exc:
             return _R(False, error=f"{exc}")
+
+    if name == "debug.diagnose":
+        # Turn a captured failure into a localized fact: the deepest project
+        # frame, the assertion, the enclosing function -- so the model reasons
+        # about a cause, not a 200-line dump (S036 s21).
+        if cache is None:
+            return _R(False, error="no observation store in this session")
+        paste_id = str(arguments.get("id") or "").strip()
+        if not paste_id:
+            return _R(False, error='debug.diagnose needs {"id": "<output handle>", '
+                                   '"command": "<what produced it>"}')
+        try:
+            output = cache.get(paste_id)
+        except (KeyError, ValueError) as exc:
+            return _R(False, error=f"cannot read observation {paste_id!r}: {exc}")
+        from pathlib import Path as _Path
+        from .debug_capability import diagnose as _diagnose
+        exit_code = arguments.get("exit_code")
+        try:
+            exit_code = int(exit_code) if exit_code is not None else 1
+        except (TypeError, ValueError):
+            exit_code = 1
+        failure = _diagnose(output, command=str(arguments.get("command") or "?"),
+                            exit_code=exit_code, root=_Path.cwd(), cache=cache)
+        return _R(True, value=failure.to_dict(),
+                  provenance={"source": "hcli.debug_capability", "paste": paste_id})
 
     return _R(False, error=f"{name} is not a local tool")
 

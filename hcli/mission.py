@@ -408,6 +408,7 @@ class Mission:
         self.last_checkpoint: float = 0.0
         self.accepted_count = 0
         self.no_progress_warning: Optional[str] = None
+        self.replan_target: Optional[Dict[str, Any]] = None
         self.cancel_reason: Optional[str] = None
         self.evacuation_reason: Optional[str] = None
         self.child_pids: set = set()
@@ -1524,20 +1525,51 @@ class Mission:
                 self._fail_without_repair(wu)
 
     def _on_no_progress(self, exc: NO_PROGRESS) -> None:
+        # STALL IS A SIGNAL TO CHANGE METHOD, NOT A DEAD HALT (S036 s36/s68).
+        # The frontier scheduler was built to answer "what else could run" and
+        # was never consulted by the daemon -- its own header says so. Consult
+        # it here: a stalled objective that has another READY frontier records a
+        # replan target instead of only demanding a human. The human-escalation
+        # path is preserved: if the scheduler parks everything too, this is
+        # still a halt, just an EXPLAINED one.
         self.strategy = "halt_no_progress"
         self.phase = "no_progress"
         self.no_progress_warning = str(exc)
         self._stop_reason = "no_progress"
-        self._term(f"no-progress: {exc}")
-        self._log(
-            {
-                "event": "no_progress",
-                "fingerprint": exc.fingerprint,
-                "count": exc.count,
-                "threshold": exc.threshold,
-            }
-        )
+        replan = self._frontier_replan()
+        log_entry = {
+            "event": "no_progress",
+            "fingerprint": exc.fingerprint,
+            "count": exc.count,
+            "threshold": exc.threshold,
+        }
+        if replan is not None:
+            self.strategy = "replan_frontier"
+            self.replan_target = replan
+            log_entry["replan"] = replan
+            self._term(f"no-progress: {exc} -- replanning to {replan.get('frontier')}")
+        else:
+            self._term(f"no-progress: {exc}")
+        self._log(log_entry)
         self.checkpoint()
+
+    def _frontier_replan(self) -> Optional[Dict[str, Any]]:
+        """What the frontier scheduler says to switch to, if anything is ready.
+
+        Returns the decision only when a DIFFERENT frontier can run; None when
+        everything is parked (the genuine human-escalation case). Never raises
+        into the stall handler -- a scheduler failure must not turn a stall into
+        a crash.
+        """
+        try:
+            from .frontier_scheduler import decide
+            decision = decide()
+        except Exception as exc:  # noqa: BLE001
+            self._log({"event": "frontier_replan_unavailable", "error": str(exc)})
+            return None
+        if getattr(decision, "action", None) == "RUN" and decision.frontier:
+            return {"frontier": decision.frontier, "reason": decision.reason}
+        return None
 
     def _note_occupancy(self) -> None:
         n = sum(

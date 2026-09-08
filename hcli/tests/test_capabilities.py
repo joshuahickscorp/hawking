@@ -51,11 +51,19 @@ class TestSurfaceIsProbed(unittest.TestCase):
             self.assertNotIn(domain, m["reachable"],
                              f"{domain} is claimed reachable but has no owner")
 
-    def test_debug_and_fuzz_are_honestly_absent(self):
+    def test_debug_is_owned_now_that_it_has_an_implementation(self):
+        # DEBUG earned an owner (reproduce + localize). It is claimed only
+        # because debug_capability.diagnose exists and probes reachable.
+        cap = capability("DEBUG")
+        self.assertIsNotNone(cap)
+        self.assertTrue(cap.reachable())
+
+    def test_fuzz_and_reverse_are_honestly_absent(self):
         # The steer asks for these; claiming them before they exist would be the
         # false-affordance defect this whole session has been fixing.
-        self.assertIsNone(capability("DEBUG"))
         self.assertIsNone(capability("FUZZ"))
+        self.assertIsNone(capability("REVERSE"))
+        self.assertIsNone(capability("FORENSICS"))
 
     def test_every_capability_has_an_escalation_ladder(self):
         # S036 s11: cheapest sufficient rung first, deeper when evidence demands.
