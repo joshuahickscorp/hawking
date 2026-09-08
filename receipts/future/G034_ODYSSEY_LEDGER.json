@@ -8269,10 +8269,21 @@
      "receipt": "receipts/future/PHYSICAL_DIRECT_LiquidAI--LFM2.5-1.2B-Instruct_0f604ada3f76__mlx.json"
     },
     "cpu": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "device": "cpu",
+      "runtime": "transformers AutoModelForCausalLM, torch float32, device cpu",
+      "prefill_tps_median": 885.3998,
+      "decode_tps_median": 17.9134,
+      "prefill_spread_pct": 21.26,
+      "decode_spread_pct": 2.94,
+      "context": 512,
+      "concurrency": 1,
+      "repeats": 3,
+      "warmup_discarded": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_LiquidAI--LFM2.5-1.2B-Instruct_0f604ada3f76__torch.json"
     },
     "tps": {
      "state": "MEASURED",
@@ -9450,10 +9461,21 @@
      "reopen_when": "an mlx_lm release matching this checkpoint variant, or a converted variant of the body"
     },
     "cpu": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "device": "cpu",
+      "runtime": "transformers AutoModelForCausalLM, torch float32, device cpu",
+      "prefill_tps_median": 965.8068,
+      "decode_tps_median": 15.2378,
+      "prefill_spread_pct": 9.2,
+      "decode_spread_pct": 8.69,
+      "context": 512,
+      "concurrency": 1,
+      "repeats": 3,
+      "warmup_discarded": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_Qwen--Qwen3-Embedding-0.6B_97b0c614be4d__torch.json"
     },
     "tps": {
      "state": "OWED",
