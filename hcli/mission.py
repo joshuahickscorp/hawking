@@ -36,6 +36,7 @@ from .workunit import (
     identify_ready,
     mark_interrupted,
     transition_status,
+    gpu_lane_externally_held,
 )
 
 MISSION_DIRNAME = "mission"
@@ -1100,6 +1101,19 @@ class Mission:
 
             ready = identify_ready(self.scheduler.units)
             if ready:
+                # WAITING ON AN EXTERNAL GPU LANE IS NOT A BLOCKER. [S006 29, 35]
+                # This branch fails a mission after 50 spins at 10 ms -- about
+                # half a second. That is right for "the scheduler can never
+                # admit this", and catastrophically wrong for "a background
+                # sweep holds the GPU and will release it in an hour", which is
+                # precisely the condition S006 35 says to WAIT through and
+                # return from. Deferring is not failing, so an externally-held
+                # lane does not accumulate toward the blocked verdict, and the
+                # poll backs off to POLL_S instead of hot-spinning at 10 ms for
+                # the duration of someone else's benchmark.
+                if gpu_lane_externally_held():
+                    time.sleep(POLL_S)
+                    continue
                 idle_spins += 1
                 if idle_spins > 50:
                     self.phase = "failed"

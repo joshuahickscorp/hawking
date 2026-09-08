@@ -1434,8 +1434,14 @@ def ingest_g017_into_ledger(
     row = next((r for r in led["specimens"] if r["slug"] == slug), None)
     if row is None:
         raise RuntimeError(f"{slug} is not in the ledger")
+    # capability_ok is the CONJUNCTION (perplexity AND 4-gram diversity). The one
+    # row written by hand recorded ppl_ok here instead, so a UNIFORM arm that
+    # FAILS diversity was published as a capability pass -- the ledger's only
+    # nr_candidate row contradicting its own receipt. Read the conjunction, and
+    # emit matched_complete_ebpw under the name the ledger actually stores.
     value = {
         "form": "organ-unequal affine NR",
+        "matched_complete_ebpw": rec["arms"]["UNIFORM"]["complete_ebpw"],
         "complete_ebpw": rec["arms"]["UNIFORM"]["complete_ebpw"],
         "unequal_beats_uniform": rec["verdict"]["unequal_beats_uniform"],
         "uniform_capability_ok": rec["arms"]["UNIFORM"]["capability_ok"],

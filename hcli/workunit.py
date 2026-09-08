@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import time
+from pathlib import Path
 from dataclasses import dataclass, field
 from typing import Any, Dict, Iterable, List, Optional
 
@@ -519,6 +521,29 @@ def identify_ready(units: Dict[str, WorkUnit]) -> List[WorkUnit]:
     return ready
 
 
+
+GPU_CLASSES = frozenset({"GPU_DECODE", "GPU_EXCLUSIVE", "GPU_DIRTY_OK"})
+
+
+def gpu_lane_externally_held() -> bool:
+    """Is a GPU/memory-exclusive job outside this scheduler holding the lane? [S006 21-25]
+
+    Admission has always counted only THIS scheduler's own running units, so a
+    background sweep, a render, or another session was invisible to it -- the
+    scheduler would happily start a GPU measurement on top of one already
+    running and contaminate both. S006 25 forbids exactly that.
+
+    Reuses tools/gpu_lane_lock.sh's existing lock rather than inventing a second
+    protocol. This is a READ: a plain existence check that never mkdirs, so it
+    can never contend for the lane or starve the holder. A missing lock reads as
+    free, which is the honest default -- the lock is opt-in and bypassable by
+    direct invocation, so this narrows the contamination window without
+    pretending to close it.
+    """
+    return Path(os.environ.get("HAWKING_GPU_LANE_LOCK",
+                               "/tmp/hawking-gpu-lane.lock")).is_dir()
+
+
 def assign_ready(
     ready_units: List[WorkUnit],
     runtime_count: int,
@@ -556,6 +581,13 @@ def assign_ready(
         if wu.status != "ready":
             continue
         rc = normalize_resource_class(wu.resource_class)
+        # An externally-held GPU lane defers, it does not fail. The unit stays
+        # `ready`, so the next dispatch tick reconsiders it automatically --
+        # that is S006 23 (notice without being told) and 35 (return when the
+        # condition clears) without a scheduler rewrite. Every other ready unit
+        # is still tried in this same pass, which is 36's independent branches.
+        if rc in GPU_CLASSES and gpu_lane_externally_held():
+            continue
         if not can_admit(rc, occupied, limits):
             continue
         if rc == "MUTATION" and mutation_lock is not None:
