@@ -1,0 +1,1048 @@
+{
+ "obligation": "G025",
+ "artifact": "tools/future/hcli_reachability.py",
+ "graph": "receipts/future/G025_HCLI_REACHABILITY_GRAPH.json",
+ "source_of_truth": "hcli.tool_registry.default_tool_registry(...).discover()",
+ "built_from": "the LIVE registry for the tool table plus a static AST of tool_registry.py for handler return keys. NOT from the twenty round logs: harvesting observed outputs would reproduce those rounds' defects by construction and prove nothing about the ones nobody has hit yet.",
+ "scale": {
+  "tools": 71,
+  "callable_from_nothing": 44,
+  "handler_coverage": 0.676,
+  "handlers_unresolved": 23,
+  "shown_in_agentic_catalog": 9,
+  "not_in_agentic_catalog": 62
+ },
+ "the_graph_was_wrong_first": "The first build walked ToolSpec(...) calls in the AST and found 56 tools. discover() returns 71. Twenty-two register inside `for name, description in (...)` loops where the first argument is a loop variable, invisible to any literal scan -- including odyssey.status, odyssey.queue, odyssey.value, odyssey.economics, odyssey.record_law, odyssey.record_scar, odyssey.retire and odyssey.write_packet. An audit blind to 22 of 71 tools is not an audit. Rebuilt on the live registry, which is the same object HCLI calls.",
+ "and_the_test_went_vacuous_when_it_was_fixed": "Rebuilding on the live registry made build() ignore the scratch tree the verify harness mutates, so all three cases passed against the real repo no matter what was reverted. The repo root is now a parameter. Caught by asking why a test stayed green after a change that should have moved it.",
+ "verify_reproduces_known_history": {
+  "harness": "tools/future/test_hcli_reachability.py",
+  "result": "PASS -- 3 historical defects, 0 unreproduced",
+  "case_1": "Round 19, 'the round reached the measurement and there was no door to make it'. Drop odyssey.record_measurement -> OUTPUT_THAT_CANNOT_BE_RECORDED fires on odyssey.ledger and records that generic write doors were present and insufficient.",
+  "case_2": "Round 15, dense_anatomy wanted a directory and got the ledger JSON. Drop odyssey.ledger -> `snapshot` has no origin.",
+  "case_3": "negative control: `slug` lives inside a ledger ROW and must NOT be called absent.",
+  "mutation_test": "two mutations, both caught: (a) ledger-door check forced to never fire -> CASE 1 FAILS; (b) build() forced to ignore the injected repo root -> CASES 1 and 2 FAIL. Restored green, marker grep 0."
+ },
+ "measured_precision": {
+  "claim": "ARGUMENT_WITH_NO_ORIGIN is ranked suspicion, NOT a defect list.",
+  "ground_truth_case": "odyssey.record_measurement / axis",
+  "graph_says": "no tool originates `axis`",
+  "reality": "Round 16 called odyssey.record_measurement successfully and wrote nr_candidate=16.0. The ledger's owed rows carry axis names under the key `owed` (a LIST) and the model bridged `owed` -> `axis` itself.",
+  "verdict": "KNOWN FALSE POSITIVE -- a naming gap that costs discovery, not a structural block.",
+  "why_recorded": "a graph whose precision is unknown cannot be trusted to prune future rounds."
+ },
+ "findings_counts": {
+  "REQUIRED_ARGUMENT_WITH_NO_SOURCE": 48,
+  "ORPHAN_PRODUCER": 3,
+  "CAPABILITY_WITH_ZERO_CALLER": 31,
+  "OUTPUT_THAT_CANNOT_BE_RECORDED": 0,
+  "ARGUMENT_ONLY_REACHABLE_BY_DIGGING": 1,
+  "CIRCULAR_ARGUMENT_SOURCE": 4,
+  "ARGUMENT_WITH_NO_ORIGIN": 6,
+  "HANDLER_UNRESOLVED": 23,
+  "_model_authored_by_design": 21,
+  "_recordable": 3
+ },
+ "headline": {
+  "finding": "THE CAPABILITY S009 ASKED FOR EXISTS AND NOTHING REACHES FOR IT",
+  "tools": [
+   "grok.swarm.launch",
+   "grok.swarm.propose"
+  ],
+  "detail": "S009 sections 10, 42 and 11 require that HCLI dispatch its own Grok search width rather than have Claude translate every uncertainty into a fan-out. Both tools are REGISTERED and DISCOVERABLE via discover(). Neither appears in the agentic catalog, in any prompt, in any task file or in any round challenge, and neither was invoked in any of the twenty autonomy rounds. The capability is built and unconnected -- the same disease this campaign has now recorded fourteen times.",
+  "qualification": "'zero caller' here means no prompt or task text names it and no round has used it. It is reachable via tools.catalog if the model guesses the name exists."
+ },
+ "capability_with_zero_caller": [
+  "accelerator.inspect",
+  "context.recall",
+  "doctor.inspect",
+  "doctor.query",
+  "forbidden_fruit.lab",
+  "frontier.decide",
+  "frontier.escalate",
+  "gravity.experiment",
+  "gravity.inspect",
+  "grok.swarm.launch",
+  "grok.swarm.propose",
+  "huggingface.history",
+  "odyssey.add_to_eligibility",
+  "odyssey.create_adversarial_probe",
+  "odyssey.create_transfer_probe",
+  "odyssey.harvest",
+  "odyssey.park_specimen",
+  "odyssey.queue",
+  "odyssey.record_law",
+  "odyssey.record_scar",
+  "odyssey.retire",
+  "odyssey.status",
+  "odyssey.value",
+  "odyssey.write_packet",
+  "processes.list",
+  "processes.orphaned",
+  "processes.summary",
+  "roadmap.read",
+  "shell.readonly",
+  "tests.list",
+  "vmcp.capabilities"
+ ],
+ "the_slug_repo_gap": {
+  "verified_by_hand": true,
+  "lake_census_row_keys": [
+   "blocked_by",
+   "complete_ebpw",
+   "family",
+   "gib",
+   "klass",
+   "pack_factor",
+   "slug"
+  ],
+  "huggingface_family_demands": "repo",
+  "consequence": "lake.census is the ONLY tool that enumerates specimens and names each one `slug`. Every acquisition tool -- download, fetch_file, history, manifest, resolve -- demands `repo`. HCLI can SEE a body and cannot ASK for it with anything the census gave it.",
+  "status": "OPEN -- reported, not fixed"
+ },
+ "a_category_was_deleted": "A VOCABULARY_MISMATCH check was written, fired on 9 tools, and was removed: its rule fired on every unoriginatable argument including `pattern` for a text search, which is not an identifier. A category that fires on everything discriminates nothing.",
+ "live_findings": {
+  "REQUIRED_ARGUMENT_WITH_NO_SOURCE": [
+   {
+    "tool": "accelerator.benchmark",
+    "arg": "confirm",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "benchmark.run",
+    "arg": "confirm",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "context.recall",
+    "arg": "focus",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "frontier.escalate",
+    "arg": "confirm",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "frontier.escalate",
+    "arg": "question",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "frontier.escalate",
+    "arg": "mission_kernel",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "fs.search",
+    "arg": "pattern",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "git.land.propose",
+    "arg": "branch",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "git.land.propose",
+    "arg": "allowed_paths",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "git.land.propose",
+    "arg": "test_command",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "git.land.propose",
+    "arg": "message",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "grok.swarm.launch",
+    "arg": "confirm",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "grok.swarm.launch",
+    "arg": "problem_statement",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "grok.swarm.launch",
+    "arg": "lanes",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "grok.swarm.propose",
+    "arg": "problem_statement",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "grok.swarm.propose",
+    "arg": "lanes",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "huggingface.download",
+    "arg": "repo",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "huggingface.download",
+    "arg": "destination",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "huggingface.download",
+    "arg": "confirm",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "huggingface.fetch_file",
+    "arg": "repo",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "huggingface.history",
+    "arg": "repo",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "huggingface.resolve",
+    "arg": "repo",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.add_to_eligibility",
+    "arg": "confirm",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.add_to_eligibility",
+    "arg": "oxx",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.create_adversarial_probe",
+    "arg": "confirm",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.create_adversarial_probe",
+    "arg": "law_id",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.create_transfer_probe",
+    "arg": "confirm",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.create_transfer_probe",
+    "arg": "law_id",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.create_transfer_probe",
+    "arg": "target_oxx",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.cycle",
+    "arg": "confirm",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.gravity_gauntlet",
+    "arg": "oxx",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.gravity_gauntlet",
+    "arg": "candidate_specs",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.gravity_gauntlet",
+    "arg": "confirm",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.park_specimen",
+    "arg": "confirm",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.park_specimen",
+    "arg": "oxx",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.patient",
+    "arg": "oxx",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.record_law",
+    "arg": "confirm",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.record_law",
+    "arg": "text",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.record_measurement",
+    "arg": "axis",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.record_scar",
+    "arg": "confirm",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.record_scar",
+    "arg": "law_id",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.retire",
+    "arg": "confirm",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.retire",
+    "arg": "oxx",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.write_packet",
+    "arg": "confirm",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.write_packet",
+    "arg": "oxx",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "shell.readonly",
+    "arg": "command",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "tools.catalog",
+    "arg": "focus",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "vmcp.query",
+    "arg": "tool",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   }
+  ],
+  "ORPHAN_PRODUCER": [
+   {
+    "tool": "lake.census",
+    "produces": [
+     "blocked_gib",
+     "expert_anatomy_reachable",
+     "n",
+     "reachable_gib",
+     "rows",
+     "shown",
+     "tally",
+     "truncated"
+    ],
+    "note": "nothing takes any of these as an argument"
+   },
+   {
+    "tool": "processes.list",
+    "produces": [
+     "index",
+     "n_processes",
+     "processes",
+     "shown",
+     "truncated"
+    ],
+    "note": "nothing takes any of these as an argument"
+   },
+   {
+    "tool": "processes.orphaned",
+    "produces": [
+     "index",
+     "n_orphaned",
+     "orphaned",
+     "shown",
+     "truncated"
+    ],
+    "note": "nothing takes any of these as an argument"
+   }
+  ],
+  "CAPABILITY_WITH_ZERO_CALLER": [
+   {
+    "tool": "accelerator.inspect",
+    "mutation": "READ_ONLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "context.recall",
+    "mutation": "READ_ONLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "doctor.inspect",
+    "mutation": "READ_ONLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "doctor.query",
+    "mutation": "RESEARCH",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "forbidden_fruit.lab",
+    "mutation": "REVERSIBLE_RUNTIME",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "frontier.decide",
+    "mutation": "READ_ONLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "frontier.escalate",
+    "mutation": "COSTLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "gravity.experiment",
+    "mutation": "REVERSIBLE_RUNTIME",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "gravity.inspect",
+    "mutation": "READ_ONLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "grok.swarm.launch",
+    "mutation": "COSTLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "grok.swarm.propose",
+    "mutation": "READ_ONLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "huggingface.history",
+    "mutation": "RESEARCH",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "odyssey.add_to_eligibility",
+    "mutation": "COSTLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "odyssey.create_adversarial_probe",
+    "mutation": "COSTLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "odyssey.create_transfer_probe",
+    "mutation": "COSTLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "odyssey.harvest",
+    "mutation": "READ_ONLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "odyssey.park_specimen",
+    "mutation": "COSTLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "odyssey.queue",
+    "mutation": "READ_ONLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "odyssey.record_law",
+    "mutation": "COSTLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "odyssey.record_scar",
+    "mutation": "COSTLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "odyssey.retire",
+    "mutation": "COSTLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "odyssey.status",
+    "mutation": "READ_ONLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "odyssey.value",
+    "mutation": "READ_ONLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "odyssey.write_packet",
+    "mutation": "COSTLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "processes.list",
+    "mutation": "READ_ONLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "processes.orphaned",
+    "mutation": "READ_ONLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "processes.summary",
+    "mutation": "READ_ONLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "roadmap.read",
+    "mutation": "READ_ONLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "shell.readonly",
+    "mutation": "READ_ONLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "tests.list",
+    "mutation": "READ_ONLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "vmcp.capabilities",
+    "mutation": "READ_ONLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   }
+  ],
+  "ARGUMENT_ONLY_REACHABLE_BY_DIGGING": [
+   {
+    "tool": "odyssey.record_measurement",
+    "arg": "slug",
+    "buried_in": [
+     "lake.census",
+     "odyssey.ledger"
+    ],
+    "note": "produced only inside a nested row, not at the top level of any result; reachable, but the round must know to dig"
+   }
+  ],
+  "CIRCULAR_ARGUMENT_SOURCE": [
+   {
+    "tool": "huggingface.download",
+    "arg": "repo",
+    "circular_producers": [
+     "huggingface.fetch_file",
+     "huggingface.history",
+     "huggingface.resolve"
+    ],
+    "note": "every tool that emits this key also demands one, so none of them can originate it"
+   },
+   {
+    "tool": "huggingface.fetch_file",
+    "arg": "repo",
+    "circular_producers": [
+     "huggingface.download",
+     "huggingface.history",
+     "huggingface.resolve"
+    ],
+    "note": "every tool that emits this key also demands one, so none of them can originate it"
+   },
+   {
+    "tool": "huggingface.history",
+    "arg": "repo",
+    "circular_producers": [
+     "huggingface.download",
+     "huggingface.fetch_file",
+     "huggingface.resolve"
+    ],
+    "note": "every tool that emits this key also demands one, so none of them can originate it"
+   },
+   {
+    "tool": "huggingface.resolve",
+    "arg": "repo",
+    "circular_producers": [
+     "huggingface.download",
+     "huggingface.fetch_file",
+     "huggingface.history"
+    ],
+    "note": "every tool that emits this key also demands one, so none of them can originate it"
+   }
+  ],
+  "ARGUMENT_WITH_NO_ORIGIN": [
+   {
+    "tool": "fs.search",
+    "unoriginatable_args": [
+     "pattern"
+    ],
+    "model_authored_args": [],
+    "enumerator_vocabulary": [
+     "authority",
+     "blocked_by",
+     "bytes",
+     "capability_claim",
+     "class",
+     "complete_ebpw",
+     "external_research_used",
+     "family",
+     "gib",
+     "gib_max",
+     "gib_min",
+     "hash",
+     "id",
+     "kind",
+     "klass",
+     "line",
+     "list_order_pick",
+     "list_order_would_redownload_sealed",
+     "max_results",
+     "model",
+     "model_type",
+     "n_ranked",
+     "negative_controls_required",
+     "next_action",
+     "operation",
+     "organ",
+     "pack_factor",
+     "path",
+     "physical_execution",
+     "pid",
+     "query",
+     "ranked",
+     "recommendation_reason",
+     "recommended",
+     "representation",
+     "role",
+     "rss_gib",
+     "safe_to_stop",
+     "schema",
+     "shown",
+     "size_bytes",
+     "slug",
+     "status",
+     "truncated",
+     "verified_complete"
+    ],
+    "note": "the registry emits keys of these names, so the model has seen values that look like them, but no tool can ORIGINATE one -- every emitter also demands one. Whether that is a defect depends on the argument: a search `pattern` is the model's to compose, an identifier that must match something on disk is not. The enumerator vocabulary is listed so the reader can tell which is which."
+   },
+   {
+    "tool": "huggingface.download",
+    "unoriginatable_args": [
+     "repo",
+     "destination"
+    ],
+    "model_authored_args": [
+     "confirm"
+    ],
+    "enumerator_vocabulary": [
+     "authority",
+     "blocked_by",
+     "bytes",
+     "capability_claim",
+     "class",
+     "complete_ebpw",
+     "external_research_used",
+     "family",
+     "gib",
+     "gib_max",
+     "gib_min",
+     "hash",
+     "id",
+     "kind",
+     "klass",
+     "line",
+     "list_order_pick",
+     "list_order_would_redownload_sealed",
+     "max_results",
+     "model",
+     "model_type",
+     "n_ranked",
+     "negative_controls_required",
+     "next_action",
+     "operation",
+     "organ",
+     "pack_factor",
+     "path",
+     "physical_execution",
+     "pid",
+     "query",
+     "ranked",
+     "recommendation_reason",
+     "recommended",
+     "representation",
+     "role",
+     "rss_gib",
+     "safe_to_stop",
+     "schema",
+     "shown",
+     "size_bytes",
+     "slug",
+     "status",
+     "truncated",
+     "verified_complete"
+    ],
+    "note": "the registry emits keys of these names, so the model has seen values that look like them, but no tool can ORIGINATE one -- every emitter also demands one. Whether that is a defect depends on the argument: a search `pattern` is the model's to compose, an identifier that must match something on disk is not. The enumerator vocabulary is listed so the reader can tell which is which."
+   },
+   {
+    "tool": "huggingface.fetch_file",
+    "unoriginatable_args": [
+     "repo"
+    ],
+    "model_authored_args": [],
+    "enumerator_vocabulary": [
+     "authority",
+     "blocked_by",
+     "bytes",
+     "capability_claim",
+     "class",
+     "complete_ebpw",
+     "external_research_used",
+     "family",
+     "gib",
+     "gib_max",
+     "gib_min",
+     "hash",
+     "id",
+     "kind",
+     "klass",
+     "line",
+     "list_order_pick",
+     "list_order_would_redownload_sealed",
+     "max_results",
+     "model",
+     "model_type",
+     "n_ranked",
+     "negative_controls_required",
+     "next_action",
+     "operation",
+     "organ",
+     "pack_factor",
+     "path",
+     "physical_execution",
+     "pid",
+     "query",
+     "ranked",
+     "recommendation_reason",
+     "recommended",
+     "representation",
+     "role",
+     "rss_gib",
+     "safe_to_stop",
+     "schema",
+     "shown",
+     "size_bytes",
+     "slug",
+     "status",
+     "truncated",
+     "verified_complete"
+    ],
+    "note": "the registry emits keys of these names, so the model has seen values that look like them, but no tool can ORIGINATE one -- every emitter also demands one. Whether that is a defect depends on the argument: a search `pattern` is the model's to compose, an identifier that must match something on disk is not. The enumerator vocabulary is listed so the reader can tell which is which."
+   },
+   {
+    "tool": "huggingface.history",
+    "unoriginatable_args": [
+     "repo"
+    ],
+    "model_authored_args": [],
+    "enumerator_vocabulary": [
+     "authority",
+     "blocked_by",
+     "bytes",
+     "capability_claim",
+     "class",
+     "complete_ebpw",
+     "external_research_used",
+     "family",
+     "gib",
+     "gib_max",
+     "gib_min",
+     "hash",
+     "id",
+     "kind",
+     "klass",
+     "line",
+     "list_order_pick",
+     "list_order_would_redownload_sealed",
+     "max_results",
+     "model",
+     "model_type",
+     "n_ranked",
+     "negative_controls_required",
+     "next_action",
+     "operation",
+     "organ",
+     "pack_factor",
+     "path",
+     "physical_execution",
+     "pid",
+     "query",
+     "ranked",
+     "recommendation_reason",
+     "recommended",
+     "representation",
+     "role",
+     "rss_gib",
+     "safe_to_stop",
+     "schema",
+     "shown",
+     "size_bytes",
+     "slug",
+     "status",
+     "truncated",
+     "verified_complete"
+    ],
+    "note": "the registry emits keys of these names, so the model has seen values that look like them, but no tool can ORIGINATE one -- every emitter also demands one. Whether that is a defect depends on the argument: a search `pattern` is the model's to compose, an identifier that must match something on disk is not. The enumerator vocabulary is listed so the reader can tell which is which."
+   },
+   {
+    "tool": "huggingface.resolve",
+    "unoriginatable_args": [
+     "repo"
+    ],
+    "model_authored_args": [],
+    "enumerator_vocabulary": [
+     "authority",
+     "blocked_by",
+     "bytes",
+     "capability_claim",
+     "class",
+     "complete_ebpw",
+     "external_research_used",
+     "family",
+     "gib",
+     "gib_max",
+     "gib_min",
+     "hash",
+     "id",
+     "kind",
+     "klass",
+     "line",
+     "list_order_pick",
+     "list_order_would_redownload_sealed",
+     "max_results",
+     "model",
+     "model_type",
+     "n_ranked",
+     "negative_controls_required",
+     "next_action",
+     "operation",
+     "organ",
+     "pack_factor",
+     "path",
+     "physical_execution",
+     "pid",
+     "query",
+     "ranked",
+     "recommendation_reason",
+     "recommended",
+     "representation",
+     "role",
+     "rss_gib",
+     "safe_to_stop",
+     "schema",
+     "shown",
+     "size_bytes",
+     "slug",
+     "status",
+     "truncated",
+     "verified_complete"
+    ],
+    "note": "the registry emits keys of these names, so the model has seen values that look like them, but no tool can ORIGINATE one -- every emitter also demands one. Whether that is a defect depends on the argument: a search `pattern` is the model's to compose, an identifier that must match something on disk is not. The enumerator vocabulary is listed so the reader can tell which is which."
+   },
+   {
+    "tool": "odyssey.record_measurement",
+    "unoriginatable_args": [
+     "axis"
+    ],
+    "model_authored_args": [],
+    "enumerator_vocabulary": [
+     "authority",
+     "blocked_by",
+     "bytes",
+     "capability_claim",
+     "class",
+     "complete_ebpw",
+     "external_research_used",
+     "family",
+     "gib",
+     "gib_max",
+     "gib_min",
+     "hash",
+     "id",
+     "kind",
+     "klass",
+     "line",
+     "list_order_pick",
+     "list_order_would_redownload_sealed",
+     "max_results",
+     "model",
+     "model_type",
+     "n_ranked",
+     "negative_controls_required",
+     "next_action",
+     "operation",
+     "organ",
+     "pack_factor",
+     "path",
+     "physical_execution",
+     "pid",
+     "query",
+     "ranked",
+     "recommendation_reason",
+     "recommended",
+     "representation",
+     "role",
+     "rss_gib",
+     "safe_to_stop",
+     "schema",
+     "shown",
+     "size_bytes",
+     "slug",
+     "status",
+     "truncated",
+     "verified_complete"
+    ],
+    "note": "the registry emits keys of these names, so the model has seen values that look like them, but no tool can ORIGINATE one -- every emitter also demands one. Whether that is a defect depends on the argument: a search `pattern` is the model's to compose, an identifier that must match something on disk is not. The enumerator vocabulary is listed so the reader can tell which is which."
+   }
+  ],
+  "HANDLER_UNRESOLVED": [
+   {
+    "tool": "accelerator.inspect",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "doctor.inspect",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "git.checkout-safe",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "gravity.inspect",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "modellake.status",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "odyssey.add_to_eligibility",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "odyssey.completions",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "odyssey.create_adversarial_probe",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "odyssey.create_transfer_probe",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "odyssey.economics",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "odyssey.harvest",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "odyssey.park_specimen",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "odyssey.patient",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "odyssey.queue",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "odyssey.record_law",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "odyssey.record_scar",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "odyssey.retire",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "odyssey.status",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "odyssey.value",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "odyssey.write_packet",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "roadmap.read",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "tools.catalog",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "vmcp.capabilities",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   }
+  ]
+ },
+ "scar": "A REACHABILITY AUDIT THAT ONLY DESCRIBES SOUND WIRING IS WORTHLESS, AND AN AUDIT BUILT FROM LITERALS IS BLIND TO EVERY LOOP. Test it by reverting the fixes it was built to have caught, and check its tool count against the registry HCLI actually calls."
+}

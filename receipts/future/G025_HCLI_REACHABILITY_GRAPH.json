@@ -1,0 +1,3385 @@
+{
+ "source_of_truth": "hcli.tool_registry.default_tool_registry(...).discover()",
+ "n_tools": 71,
+ "n_handlers_unresolved": 23,
+ "handler_coverage": 0.676,
+ "n_aliases": 0,
+ "agentic_catalog": [
+  "filesystem.write",
+  "fs.list",
+  "fs.read",
+  "fs.search",
+  "git.diff",
+  "git.status",
+  "receipt.read",
+  "tests.run",
+  "tools.catalog"
+ ],
+ "n_shown_in_agentic_catalog": 9,
+ "n_registered_not_in_agentic_catalog": 62,
+ "write_doors": [
+  "accelerator.benchmark",
+  "benchmark.run",
+  "doctor.query",
+  "filesystem.write",
+  "forbidden_fruit.lab",
+  "frontier.escalate",
+  "git.checkout-safe",
+  "git.land.propose",
+  "github.fetch",
+  "github.search",
+  "gravity.experiment",
+  "grok.swarm.launch",
+  "huggingface.download",
+  "huggingface.fetch_file",
+  "huggingface.history",
+  "huggingface.resolve",
+  "odyssey.add_to_eligibility",
+  "odyssey.create_adversarial_probe",
+  "odyssey.create_transfer_probe",
+  "odyssey.cycle",
+  "odyssey.gravity_gauntlet",
+  "odyssey.park_specimen",
+  "odyssey.record_law",
+  "odyssey.record_measurement",
+  "odyssey.record_scar",
+  "odyssey.retire",
+  "odyssey.write_packet",
+  "shell.exec",
+  "tests.run",
+  "web.fetch",
+  "web.search"
+ ],
+ "usable_write_doors": [
+  "doctor.query",
+  "filesystem.write",
+  "forbidden_fruit.lab",
+  "git.checkout-safe",
+  "github.fetch",
+  "github.search",
+  "gravity.experiment",
+  "huggingface.fetch_file",
+  "huggingface.history",
+  "huggingface.resolve",
+  "odyssey.record_measurement",
+  "shell.exec",
+  "tests.run",
+  "web.fetch",
+  "web.search"
+ ],
+ "ledger_doors": [
+  "odyssey.record_measurement"
+ ],
+ "measurers": [
+  "lake.census",
+  "odyssey.anatomy",
+  "odyssey.ledger"
+ ],
+ "n_callable": 44,
+ "unreachable_tools": [
+  "accelerator.benchmark",
+  "benchmark.run",
+  "context.recall",
+  "frontier.escalate",
+  "fs.search",
+  "git.land.propose",
+  "grok.swarm.launch",
+  "grok.swarm.propose",
+  "huggingface.download",
+  "huggingface.fetch_file",
+  "huggingface.history",
+  "huggingface.resolve",
+  "odyssey.add_to_eligibility",
+  "odyssey.create_adversarial_probe",
+  "odyssey.create_transfer_probe",
+  "odyssey.cycle",
+  "odyssey.gravity_gauntlet",
+  "odyssey.park_specimen",
+  "odyssey.patient",
+  "odyssey.record_law",
+  "odyssey.record_measurement",
+  "odyssey.record_scar",
+  "odyssey.retire",
+  "odyssey.write_packet",
+  "shell.readonly",
+  "tools.catalog",
+  "vmcp.query"
+ ],
+ "enumerator_vocabulary": [
+  "authority",
+  "blocked_by",
+  "bytes",
+  "capability_claim",
+  "class",
+  "complete_ebpw",
+  "external_research_used",
+  "family",
+  "gib",
+  "gib_max",
+  "gib_min",
+  "hash",
+  "id",
+  "kind",
+  "klass",
+  "line",
+  "list_order_pick",
+  "list_order_would_redownload_sealed",
+  "max_results",
+  "model",
+  "model_type",
+  "n_ranked",
+  "negative_controls_required",
+  "next_action",
+  "operation",
+  "organ",
+  "pack_factor",
+  "path",
+  "physical_execution",
+  "pid",
+  "query",
+  "ranked",
+  "recommendation_reason",
+  "recommended",
+  "representation",
+  "role",
+  "rss_gib",
+  "safe_to_stop",
+  "schema",
+  "shown",
+  "size_bytes",
+  "slug",
+  "status",
+  "truncated",
+  "verified_complete"
+ ],
+ "nested_producers": {
+  "Accept": [
+   "github.search"
+  ],
+  "Authorization": [
+   "huggingface.fetch_file",
+   "huggingface.history",
+   "huggingface.resolve"
+  ],
+  "User-Agent": [
+   "github.fetch",
+   "huggingface.download",
+   "web.fetch"
+  ],
+  "anatomy": [
+   "odyssey.dense_anatomy"
+  ],
+  "authority": [
+   "doctor.query"
+  ],
+  "axes_owed": [
+   "odyssey.record_measurement"
+  ],
+  "axes_resolved": [
+   "odyssey.record_measurement"
+  ],
+  "axis": [
+   "odyssey.record_measurement"
+  ],
+  "blocked_by": [
+   "lake.census"
+  ],
+  "bytes": [
+   "fs.list"
+  ],
+  "capability_claim": [
+   "gravity.experiment"
+  ],
+  "claim_ceiling": [
+   "accelerator.benchmark"
+  ],
+  "class": [
+   "odyssey.ledger"
+  ],
+  "code": [
+   "github.search"
+  ],
+  "commits": [
+   "github.search"
+  ],
+  "complete_ebpw": [
+   "lake.census"
+  ],
+  "error": [
+   "web.search"
+  ],
+  "external_research_used": [
+   "doctor.query"
+  ],
+  "family": [
+   "lake.census"
+  ],
+  "gib": [
+   "lake.census",
+   "odyssey.ledger"
+  ],
+  "gib_max": [
+   "odyssey.ledger"
+  ],
+  "gib_min": [
+   "odyssey.ledger"
+  ],
+  "guard": [
+   "odyssey.dense_anatomy"
+  ],
+  "hash": [
+   "git.log"
+  ],
+  "hypotheses": [
+   "odyssey.dense_anatomy"
+  ],
+  "id": [
+   "specimens.registry"
+  ],
+  "issues": [
+   "github.search"
+  ],
+  "kind": [
+   "fs.list",
+   "fs.read"
+  ],
+  "klass": [
+   "lake.census"
+  ],
+  "line": [
+   "fs.search",
+   "git.log"
+  ],
+  "list_order_pick": [
+   "acquisition.propose"
+  ],
+  "list_order_would_redownload_sealed": [
+   "acquisition.propose"
+  ],
+  "max_bytes": [
+   "github.search",
+   "huggingface.fetch_file",
+   "huggingface.history",
+   "huggingface.resolve",
+   "web.search"
+  ],
+  "max_results": [
+   "doctor.query"
+  ],
+  "model": [
+   "gravity.experiment"
+  ],
+  "model_type": [
+   "specimens.registry"
+  ],
+  "n_organs": [
+   "odyssey.dense_anatomy"
+  ],
+  "n_ranked": [
+   "acquisition.propose"
+  ],
+  "negative_controls_required": [
+   "gravity.experiment"
+  ],
+  "next_action": [
+   "gravity.experiment"
+  ],
+  "operation": [
+   "doctor.query"
+  ],
+  "organ": [
+   "gravity.experiment"
+  ],
+  "organ_ordering": [
+   "odyssey.dense_anatomy"
+  ],
+  "pack_factor": [
+   "lake.census"
+  ],
+  "path": [
+   "accelerator.benchmark",
+   "doctor.query",
+   "fs.list",
+   "fs.search",
+   "gravity.experiment",
+   "odyssey.record_measurement"
+  ],
+  "paths": [
+   "benchmark.run"
+  ],
+  "per_page": [
+   "github.search"
+  ],
+  "physical_execution": [
+   "accelerator.benchmark",
+   "doctor.query",
+   "gravity.experiment"
+  ],
+  "pid": [
+   "processes.list",
+   "processes.orphaned"
+  ],
+  "q": [
+   "github.search"
+  ],
+  "query": [
+   "doctor.query"
+  ],
+  "ranked": [
+   "acquisition.propose"
+  ],
+  "recommendation_reason": [
+   "acquisition.propose"
+  ],
+  "recommended": [
+   "acquisition.propose"
+  ],
+  "recorded": [
+   "odyssey.record_measurement"
+  ],
+  "refused": [
+   "odyssey.dense_anatomy"
+  ],
+  "repositories": [
+   "github.search"
+  ],
+  "representation": [
+   "gravity.experiment"
+  ],
+  "retrieved_at": [
+   "github.fetch",
+   "web.fetch"
+  ],
+  "role": [
+   "processes.list",
+   "processes.orphaned"
+  ],
+  "root": [
+   "benchmark.run"
+  ],
+  "rows": [
+   "web.search"
+  ],
+  "rss_gib": [
+   "processes.list",
+   "processes.orphaned"
+  ],
+  "runner": [
+   "benchmark.run"
+  ],
+  "safe_to_stop": [
+   "processes.list",
+   "processes.orphaned"
+  ],
+  "schema": [
+   "accelerator.benchmark",
+   "doctor.query",
+   "gravity.experiment"
+  ],
+  "shown": [
+   "acquisition.propose"
+  ],
+  "size_bytes": [
+   "specimens.registry"
+  ],
+  "slug": [
+   "lake.census",
+   "odyssey.ledger",
+   "odyssey.record_measurement"
+  ],
+  "snapshot": [
+   "odyssey.dense_anatomy"
+  ],
+  "snippet": [
+   "web.search"
+  ],
+  "source_url": [
+   "github.fetch",
+   "web.fetch"
+  ],
+  "status": [
+   "accelerator.benchmark",
+   "doctor.query",
+   "gravity.experiment",
+   "web.search"
+  ],
+  "text": [
+   "fs.search"
+  ],
+  "timeout_s": [
+   "benchmark.run",
+   "github.search",
+   "huggingface.fetch_file",
+   "huggingface.history",
+   "web.search"
+  ],
+  "title": [
+   "web.search"
+  ],
+  "truncated": [
+   "acquisition.propose"
+  ],
+  "type": [
+   "frontier.escalate"
+  ],
+  "url": [
+   "github.search",
+   "huggingface.fetch_file",
+   "huggingface.history",
+   "huggingface.resolve",
+   "web.search"
+  ],
+  "verified_complete": [
+   "specimens.registry"
+  ]
+ },
+ "producers": {
+  "anatomy": [
+   "odyssey.anatomy"
+  ],
+  "argv": [
+   "git.log",
+   "tests.run"
+  ],
+  "artifact": [
+   "fs.read"
+  ],
+  "atomic_publish": [
+   "filesystem.write",
+   "huggingface.download"
+  ],
+  "attempted": [
+   "web.search"
+  ],
+  "auth_available": [
+   "github.search"
+  ],
+  "authenticated": [
+   "github.search",
+   "huggingface.download",
+   "huggingface.fetch_file",
+   "huggingface.resolve"
+  ],
+  "before_sha256": [
+   "filesystem.write"
+  ],
+  "blocked_gib": [
+   "lake.census"
+  ],
+  "bytes": [
+   "filesystem.write",
+   "fs.read",
+   "huggingface.download",
+   "receipt.read"
+  ],
+  "bytes_read": [
+   "github.fetch",
+   "huggingface.fetch_file",
+   "web.fetch"
+  ],
+  "changed": [
+   "filesystem.write"
+  ],
+  "commits": [
+   "git.log",
+   "huggingface.history"
+  ],
+  "compressor_gb": [
+   "campaign.guard"
+  ],
+  "confidence": [
+   "web.search"
+  ],
+  "content": [
+   "fs.read",
+   "github.fetch",
+   "huggingface.fetch_file",
+   "web.fetch"
+  ],
+  "content_type": [
+   "github.fetch",
+   "web.fetch"
+  ],
+  "count": [
+   "github.search",
+   "huggingface.history",
+   "tests.list",
+   "web.search"
+  ],
+  "credential_values_recorded": [
+   "github.search",
+   "huggingface.download",
+   "huggingface.fetch_file",
+   "huggingface.resolve"
+  ],
+  "cwd": [
+   "git.log",
+   "tests.run"
+  ],
+  "destination": [
+   "huggingface.download"
+  ],
+  "directories": [
+   "fs.list"
+  ],
+  "directories_seen": [
+   "fs.list"
+  ],
+  "document": [
+   "receipt.read"
+  ],
+  "download_performed": [
+   "huggingface.download"
+  ],
+  "end_line": [
+   "fs.read"
+  ],
+  "expected_gb": [
+   "campaign.guard"
+  ],
+  "expert_anatomy_reachable": [
+   "lake.census"
+  ],
+  "file_count": [
+   "huggingface.resolve"
+  ],
+  "files": [
+   "fs.list",
+   "huggingface.resolve"
+  ],
+  "files_seen": [
+   "fs.search"
+  ],
+  "final_url": [
+   "github.fetch",
+   "web.fetch"
+  ],
+  "finished_at": [
+   "tests.run"
+  ],
+  "found": [
+   "specimens.registry"
+  ],
+  "free_gb": [
+   "campaign.guard"
+  ],
+  "glob": [
+   "fs.list"
+  ],
+  "headroom_gb": [
+   "campaign.guard"
+  ],
+  "hidden": [
+   "odyssey.ledger"
+  ],
+  "index": [
+   "processes.list",
+   "processes.orphaned"
+  ],
+  "kind": [
+   "github.search"
+  ],
+  "lake": [
+   "specimens.registry"
+  ],
+  "matches": [
+   "fs.search"
+  ],
+  "mounted": [
+   "specimens.registry"
+  ],
+  "n": [
+   "git.log",
+   "lake.census",
+   "odyssey.ledger"
+  ],
+  "n_orphaned": [
+   "processes.orphaned"
+  ],
+  "n_owed": [
+   "odyssey.ledger"
+  ],
+  "n_processes": [
+   "processes.list"
+  ],
+  "n_specimens": [
+   "specimens.registry"
+  ],
+  "n_stdout_chars": [
+   "tests.run"
+  ],
+  "name": [
+   "specimens.registry"
+  ],
+  "ordering": [
+   "odyssey.ledger"
+  ],
+  "orphaned": [
+   "processes.orphaned"
+  ],
+  "owed": [
+   "odyssey.ledger"
+  ],
+  "path": [
+   "filesystem.write",
+   "fs.read",
+   "huggingface.fetch_file",
+   "odyssey.ledger",
+   "receipt.read"
+  ],
+  "paths": [
+   "tests.list"
+  ],
+  "pattern": [
+   "fs.search"
+  ],
+  "private": [
+   "huggingface.resolve"
+  ],
+  "processes": [
+   "processes.list"
+  ],
+  "progress": [
+   "odyssey.ledger"
+  ],
+  "provenance": [
+   "github.fetch",
+   "web.fetch"
+  ],
+  "provider": [
+   "web.search"
+  ],
+  "query": [
+   "github.search",
+   "web.search"
+  ],
+  "reachable_gib": [
+   "lake.census"
+  ],
+  "reason": [
+   "specimens.registry"
+  ],
+  "reasons": [
+   "campaign.guard"
+  ],
+  "refused": [
+   "odyssey.anatomy"
+  ],
+  "repo": [
+   "huggingface.download",
+   "huggingface.fetch_file",
+   "huggingface.history",
+   "huggingface.resolve"
+  ],
+  "requested_revision": [
+   "huggingface.download",
+   "huggingface.fetch_file",
+   "huggingface.resolve"
+  ],
+  "resolved_revision": [
+   "huggingface.resolve"
+  ],
+  "results": [
+   "github.search",
+   "web.search"
+  ],
+  "resumed": [
+   "huggingface.download"
+  ],
+  "retrieved_at": [
+   "github.search",
+   "huggingface.download",
+   "huggingface.fetch_file",
+   "huggingface.history",
+   "huggingface.resolve",
+   "web.search"
+  ],
+  "returncode": [
+   "git.log",
+   "tests.run"
+  ],
+  "revision": [
+   "huggingface.history"
+  ],
+  "root": [
+   "fs.list",
+   "fs.search",
+   "tests.list",
+   "tests.run"
+  ],
+  "rows": [
+   "lake.census"
+  ],
+  "runner": [
+   "tests.run"
+  ],
+  "schema": [
+   "specimens.registry"
+  ],
+  "sealed_does_not_mean_resident": [
+   "specimens.registry"
+  ],
+  "sha256": [
+   "filesystem.write",
+   "fs.read",
+   "github.fetch",
+   "huggingface.download",
+   "huggingface.fetch_file",
+   "receipt.read",
+   "web.fetch"
+  ],
+  "shown": [
+   "git.log",
+   "lake.census",
+   "odyssey.ledger",
+   "processes.list",
+   "processes.orphaned",
+   "specimens.registry"
+  ],
+  "skipped_large": [
+   "fs.search"
+  ],
+  "snapshot": [
+   "odyssey.anatomy",
+   "odyssey.ledger"
+  ],
+  "source_url": [
+   "github.search",
+   "huggingface.download",
+   "huggingface.fetch_file",
+   "huggingface.history",
+   "huggingface.resolve",
+   "web.search"
+  ],
+  "specimen": [
+   "odyssey.ledger",
+   "specimens.registry"
+  ],
+  "specimens": [
+   "specimens.registry"
+  ],
+  "specimens_dir": [
+   "specimens.registry"
+  ],
+  "start_line": [
+   "fs.read"
+  ],
+  "started_at": [
+   "tests.run"
+  ],
+  "state": [
+   "campaign.guard"
+  ],
+  "status": [
+   "github.fetch",
+   "web.fetch"
+  ],
+  "stderr": [
+   "git.log",
+   "tests.run"
+  ],
+  "stdout": [
+   "git.log",
+   "tests.run"
+  ],
+  "summary": [
+   "odyssey.ledger"
+  ],
+  "swapfiles": [
+   "campaign.guard"
+  ],
+  "tally": [
+   "lake.census"
+  ],
+  "total_count": [
+   "github.search"
+  ],
+  "total_lines": [
+   "fs.read"
+  ],
+  "truncated": [
+   "fs.list",
+   "fs.search",
+   "github.fetch",
+   "huggingface.fetch_file",
+   "lake.census",
+   "processes.list",
+   "processes.orphaned",
+   "specimens.registry",
+   "tests.list",
+   "web.fetch"
+  ],
+  "unresolved": [
+   "web.search"
+  ],
+  "url": [
+   "github.fetch",
+   "web.fetch"
+  ],
+  "verified": [
+   "tests.run"
+  ],
+  "wired_gb": [
+   "campaign.guard"
+  ]
+ },
+ "findings": {
+  "REQUIRED_ARGUMENT_WITH_NO_SOURCE": [
+   {
+    "tool": "accelerator.benchmark",
+    "arg": "confirm",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "benchmark.run",
+    "arg": "confirm",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "context.recall",
+    "arg": "focus",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "frontier.escalate",
+    "arg": "confirm",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "frontier.escalate",
+    "arg": "question",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "frontier.escalate",
+    "arg": "mission_kernel",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "fs.search",
+    "arg": "pattern",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "git.land.propose",
+    "arg": "branch",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "git.land.propose",
+    "arg": "allowed_paths",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "git.land.propose",
+    "arg": "test_command",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "git.land.propose",
+    "arg": "message",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "grok.swarm.launch",
+    "arg": "confirm",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "grok.swarm.launch",
+    "arg": "problem_statement",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "grok.swarm.launch",
+    "arg": "lanes",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "grok.swarm.propose",
+    "arg": "problem_statement",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "grok.swarm.propose",
+    "arg": "lanes",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "huggingface.download",
+    "arg": "repo",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "huggingface.download",
+    "arg": "destination",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "huggingface.download",
+    "arg": "confirm",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "huggingface.fetch_file",
+    "arg": "repo",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "huggingface.history",
+    "arg": "repo",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "huggingface.resolve",
+    "arg": "repo",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.add_to_eligibility",
+    "arg": "confirm",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.add_to_eligibility",
+    "arg": "oxx",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.create_adversarial_probe",
+    "arg": "confirm",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.create_adversarial_probe",
+    "arg": "law_id",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.create_transfer_probe",
+    "arg": "confirm",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.create_transfer_probe",
+    "arg": "law_id",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.create_transfer_probe",
+    "arg": "target_oxx",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.cycle",
+    "arg": "confirm",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.gravity_gauntlet",
+    "arg": "oxx",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.gravity_gauntlet",
+    "arg": "candidate_specs",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.gravity_gauntlet",
+    "arg": "confirm",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.park_specimen",
+    "arg": "confirm",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.park_specimen",
+    "arg": "oxx",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.patient",
+    "arg": "oxx",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.record_law",
+    "arg": "confirm",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.record_law",
+    "arg": "text",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.record_measurement",
+    "arg": "axis",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.record_scar",
+    "arg": "confirm",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.record_scar",
+    "arg": "law_id",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.retire",
+    "arg": "confirm",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.retire",
+    "arg": "oxx",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.write_packet",
+    "arg": "confirm",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "odyssey.write_packet",
+    "arg": "oxx",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "shell.readonly",
+    "arg": "command",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "tools.catalog",
+    "arg": "focus",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   },
+   {
+    "tool": "vmcp.query",
+    "arg": "tool",
+    "note": "no reachable tool emits a key of this name at any depth; HCLI must invent it or read it from a prompt"
+   }
+  ],
+  "ORPHAN_PRODUCER": [
+   {
+    "tool": "lake.census",
+    "produces": [
+     "blocked_gib",
+     "expert_anatomy_reachable",
+     "n",
+     "reachable_gib",
+     "rows",
+     "shown",
+     "tally",
+     "truncated"
+    ],
+    "note": "nothing takes any of these as an argument"
+   },
+   {
+    "tool": "processes.list",
+    "produces": [
+     "index",
+     "n_processes",
+     "processes",
+     "shown",
+     "truncated"
+    ],
+    "note": "nothing takes any of these as an argument"
+   },
+   {
+    "tool": "processes.orphaned",
+    "produces": [
+     "index",
+     "n_orphaned",
+     "orphaned",
+     "shown",
+     "truncated"
+    ],
+    "note": "nothing takes any of these as an argument"
+   }
+  ],
+  "CAPABILITY_WITH_ZERO_CALLER": [
+   {
+    "tool": "accelerator.inspect",
+    "mutation": "READ_ONLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "context.recall",
+    "mutation": "READ_ONLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "doctor.inspect",
+    "mutation": "READ_ONLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "doctor.query",
+    "mutation": "RESEARCH",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "forbidden_fruit.lab",
+    "mutation": "REVERSIBLE_RUNTIME",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "frontier.decide",
+    "mutation": "READ_ONLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "frontier.escalate",
+    "mutation": "COSTLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "gravity.experiment",
+    "mutation": "REVERSIBLE_RUNTIME",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "gravity.inspect",
+    "mutation": "READ_ONLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "grok.swarm.launch",
+    "mutation": "COSTLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "grok.swarm.propose",
+    "mutation": "READ_ONLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "huggingface.history",
+    "mutation": "RESEARCH",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "odyssey.add_to_eligibility",
+    "mutation": "COSTLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "odyssey.create_adversarial_probe",
+    "mutation": "COSTLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "odyssey.create_transfer_probe",
+    "mutation": "COSTLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "odyssey.harvest",
+    "mutation": "READ_ONLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "odyssey.park_specimen",
+    "mutation": "COSTLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "odyssey.queue",
+    "mutation": "READ_ONLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "odyssey.record_law",
+    "mutation": "COSTLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "odyssey.record_scar",
+    "mutation": "COSTLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "odyssey.retire",
+    "mutation": "COSTLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "odyssey.status",
+    "mutation": "READ_ONLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "odyssey.value",
+    "mutation": "READ_ONLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "odyssey.write_packet",
+    "mutation": "COSTLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "processes.list",
+    "mutation": "READ_ONLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "processes.orphaned",
+    "mutation": "READ_ONLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "processes.summary",
+    "mutation": "READ_ONLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "roadmap.read",
+    "mutation": "READ_ONLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "shell.readonly",
+    "mutation": "READ_ONLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "tests.list",
+    "mutation": "READ_ONLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   },
+   {
+    "tool": "vmcp.capabilities",
+    "mutation": "READ_ONLY",
+    "note": "registered, absent from the agentic catalog, and its name appears in no prompt, task file, round challenge or engine path -- nothing can reach for it except by the model guessing the name exists"
+   }
+  ],
+  "OUTPUT_THAT_CANNOT_BE_RECORDED": [],
+  "ARGUMENT_ONLY_REACHABLE_BY_DIGGING": [
+   {
+    "tool": "odyssey.record_measurement",
+    "arg": "slug",
+    "buried_in": [
+     "lake.census",
+     "odyssey.ledger"
+    ],
+    "note": "produced only inside a nested row, not at the top level of any result; reachable, but the round must know to dig"
+   }
+  ],
+  "CIRCULAR_ARGUMENT_SOURCE": [
+   {
+    "tool": "huggingface.download",
+    "arg": "repo",
+    "circular_producers": [
+     "huggingface.fetch_file",
+     "huggingface.history",
+     "huggingface.resolve"
+    ],
+    "note": "every tool that emits this key also demands one, so none of them can originate it"
+   },
+   {
+    "tool": "huggingface.fetch_file",
+    "arg": "repo",
+    "circular_producers": [
+     "huggingface.download",
+     "huggingface.history",
+     "huggingface.resolve"
+    ],
+    "note": "every tool that emits this key also demands one, so none of them can originate it"
+   },
+   {
+    "tool": "huggingface.history",
+    "arg": "repo",
+    "circular_producers": [
+     "huggingface.download",
+     "huggingface.fetch_file",
+     "huggingface.resolve"
+    ],
+    "note": "every tool that emits this key also demands one, so none of them can originate it"
+   },
+   {
+    "tool": "huggingface.resolve",
+    "arg": "repo",
+    "circular_producers": [
+     "huggingface.download",
+     "huggingface.fetch_file",
+     "huggingface.history"
+    ],
+    "note": "every tool that emits this key also demands one, so none of them can originate it"
+   }
+  ],
+  "ARGUMENT_WITH_NO_ORIGIN": [
+   {
+    "tool": "fs.search",
+    "unoriginatable_args": [
+     "pattern"
+    ],
+    "model_authored_args": [],
+    "enumerator_vocabulary": [
+     "authority",
+     "blocked_by",
+     "bytes",
+     "capability_claim",
+     "class",
+     "complete_ebpw",
+     "external_research_used",
+     "family",
+     "gib",
+     "gib_max",
+     "gib_min",
+     "hash",
+     "id",
+     "kind",
+     "klass",
+     "line",
+     "list_order_pick",
+     "list_order_would_redownload_sealed",
+     "max_results",
+     "model",
+     "model_type",
+     "n_ranked",
+     "negative_controls_required",
+     "next_action",
+     "operation",
+     "organ",
+     "pack_factor",
+     "path",
+     "physical_execution",
+     "pid",
+     "query",
+     "ranked",
+     "recommendation_reason",
+     "recommended",
+     "representation",
+     "role",
+     "rss_gib",
+     "safe_to_stop",
+     "schema",
+     "shown",
+     "size_bytes",
+     "slug",
+     "status",
+     "truncated",
+     "verified_complete"
+    ],
+    "note": "the registry emits keys of these names, so the model has seen values that look like them, but no tool can ORIGINATE one -- every emitter also demands one. Whether that is a defect depends on the argument: a search `pattern` is the model's to compose, an identifier that must match something on disk is not. The enumerator vocabulary is listed so the reader can tell which is which."
+   },
+   {
+    "tool": "huggingface.download",
+    "unoriginatable_args": [
+     "repo",
+     "destination"
+    ],
+    "model_authored_args": [
+     "confirm"
+    ],
+    "enumerator_vocabulary": [
+     "authority",
+     "blocked_by",
+     "bytes",
+     "capability_claim",
+     "class",
+     "complete_ebpw",
+     "external_research_used",
+     "family",
+     "gib",
+     "gib_max",
+     "gib_min",
+     "hash",
+     "id",
+     "kind",
+     "klass",
+     "line",
+     "list_order_pick",
+     "list_order_would_redownload_sealed",
+     "max_results",
+     "model",
+     "model_type",
+     "n_ranked",
+     "negative_controls_required",
+     "next_action",
+     "operation",
+     "organ",
+     "pack_factor",
+     "path",
+     "physical_execution",
+     "pid",
+     "query",
+     "ranked",
+     "recommendation_reason",
+     "recommended",
+     "representation",
+     "role",
+     "rss_gib",
+     "safe_to_stop",
+     "schema",
+     "shown",
+     "size_bytes",
+     "slug",
+     "status",
+     "truncated",
+     "verified_complete"
+    ],
+    "note": "the registry emits keys of these names, so the model has seen values that look like them, but no tool can ORIGINATE one -- every emitter also demands one. Whether that is a defect depends on the argument: a search `pattern` is the model's to compose, an identifier that must match something on disk is not. The enumerator vocabulary is listed so the reader can tell which is which."
+   },
+   {
+    "tool": "huggingface.fetch_file",
+    "unoriginatable_args": [
+     "repo"
+    ],
+    "model_authored_args": [],
+    "enumerator_vocabulary": [
+     "authority",
+     "blocked_by",
+     "bytes",
+     "capability_claim",
+     "class",
+     "complete_ebpw",
+     "external_research_used",
+     "family",
+     "gib",
+     "gib_max",
+     "gib_min",
+     "hash",
+     "id",
+     "kind",
+     "klass",
+     "line",
+     "list_order_pick",
+     "list_order_would_redownload_sealed",
+     "max_results",
+     "model",
+     "model_type",
+     "n_ranked",
+     "negative_controls_required",
+     "next_action",
+     "operation",
+     "organ",
+     "pack_factor",
+     "path",
+     "physical_execution",
+     "pid",
+     "query",
+     "ranked",
+     "recommendation_reason",
+     "recommended",
+     "representation",
+     "role",
+     "rss_gib",
+     "safe_to_stop",
+     "schema",
+     "shown",
+     "size_bytes",
+     "slug",
+     "status",
+     "truncated",
+     "verified_complete"
+    ],
+    "note": "the registry emits keys of these names, so the model has seen values that look like them, but no tool can ORIGINATE one -- every emitter also demands one. Whether that is a defect depends on the argument: a search `pattern` is the model's to compose, an identifier that must match something on disk is not. The enumerator vocabulary is listed so the reader can tell which is which."
+   },
+   {
+    "tool": "huggingface.history",
+    "unoriginatable_args": [
+     "repo"
+    ],
+    "model_authored_args": [],
+    "enumerator_vocabulary": [
+     "authority",
+     "blocked_by",
+     "bytes",
+     "capability_claim",
+     "class",
+     "complete_ebpw",
+     "external_research_used",
+     "family",
+     "gib",
+     "gib_max",
+     "gib_min",
+     "hash",
+     "id",
+     "kind",
+     "klass",
+     "line",
+     "list_order_pick",
+     "list_order_would_redownload_sealed",
+     "max_results",
+     "model",
+     "model_type",
+     "n_ranked",
+     "negative_controls_required",
+     "next_action",
+     "operation",
+     "organ",
+     "pack_factor",
+     "path",
+     "physical_execution",
+     "pid",
+     "query",
+     "ranked",
+     "recommendation_reason",
+     "recommended",
+     "representation",
+     "role",
+     "rss_gib",
+     "safe_to_stop",
+     "schema",
+     "shown",
+     "size_bytes",
+     "slug",
+     "status",
+     "truncated",
+     "verified_complete"
+    ],
+    "note": "the registry emits keys of these names, so the model has seen values that look like them, but no tool can ORIGINATE one -- every emitter also demands one. Whether that is a defect depends on the argument: a search `pattern` is the model's to compose, an identifier that must match something on disk is not. The enumerator vocabulary is listed so the reader can tell which is which."
+   },
+   {
+    "tool": "huggingface.resolve",
+    "unoriginatable_args": [
+     "repo"
+    ],
+    "model_authored_args": [],
+    "enumerator_vocabulary": [
+     "authority",
+     "blocked_by",
+     "bytes",
+     "capability_claim",
+     "class",
+     "complete_ebpw",
+     "external_research_used",
+     "family",
+     "gib",
+     "gib_max",
+     "gib_min",
+     "hash",
+     "id",
+     "kind",
+     "klass",
+     "line",
+     "list_order_pick",
+     "list_order_would_redownload_sealed",
+     "max_results",
+     "model",
+     "model_type",
+     "n_ranked",
+     "negative_controls_required",
+     "next_action",
+     "operation",
+     "organ",
+     "pack_factor",
+     "path",
+     "physical_execution",
+     "pid",
+     "query",
+     "ranked",
+     "recommendation_reason",
+     "recommended",
+     "representation",
+     "role",
+     "rss_gib",
+     "safe_to_stop",
+     "schema",
+     "shown",
+     "size_bytes",
+     "slug",
+     "status",
+     "truncated",
+     "verified_complete"
+    ],
+    "note": "the registry emits keys of these names, so the model has seen values that look like them, but no tool can ORIGINATE one -- every emitter also demands one. Whether that is a defect depends on the argument: a search `pattern` is the model's to compose, an identifier that must match something on disk is not. The enumerator vocabulary is listed so the reader can tell which is which."
+   },
+   {
+    "tool": "odyssey.record_measurement",
+    "unoriginatable_args": [
+     "axis"
+    ],
+    "model_authored_args": [],
+    "enumerator_vocabulary": [
+     "authority",
+     "blocked_by",
+     "bytes",
+     "capability_claim",
+     "class",
+     "complete_ebpw",
+     "external_research_used",
+     "family",
+     "gib",
+     "gib_max",
+     "gib_min",
+     "hash",
+     "id",
+     "kind",
+     "klass",
+     "line",
+     "list_order_pick",
+     "list_order_would_redownload_sealed",
+     "max_results",
+     "model",
+     "model_type",
+     "n_ranked",
+     "negative_controls_required",
+     "next_action",
+     "operation",
+     "organ",
+     "pack_factor",
+     "path",
+     "physical_execution",
+     "pid",
+     "query",
+     "ranked",
+     "recommendation_reason",
+     "recommended",
+     "representation",
+     "role",
+     "rss_gib",
+     "safe_to_stop",
+     "schema",
+     "shown",
+     "size_bytes",
+     "slug",
+     "status",
+     "truncated",
+     "verified_complete"
+    ],
+    "note": "the registry emits keys of these names, so the model has seen values that look like them, but no tool can ORIGINATE one -- every emitter also demands one. Whether that is a defect depends on the argument: a search `pattern` is the model's to compose, an identifier that must match something on disk is not. The enumerator vocabulary is listed so the reader can tell which is which."
+   }
+  ],
+  "HANDLER_UNRESOLVED": [
+   {
+    "tool": "accelerator.inspect",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "doctor.inspect",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "git.checkout-safe",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "gravity.inspect",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "modellake.status",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "odyssey.add_to_eligibility",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "odyssey.completions",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "odyssey.create_adversarial_probe",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "odyssey.create_transfer_probe",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "odyssey.economics",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "odyssey.harvest",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "odyssey.park_specimen",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "odyssey.patient",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "odyssey.queue",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "odyssey.record_law",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "odyssey.record_scar",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "odyssey.retire",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "odyssey.status",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "odyssey.value",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "odyssey.write_packet",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "roadmap.read",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "tools.catalog",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   },
+   {
+    "tool": "vmcp.capabilities",
+    "handler": null,
+    "note": "registered from a loop variable or factory the AST cannot follow; its produced keys are UNKNOWN, so every origin conclusion about this tool is an upper bound on what it can supply, not a measurement"
+   }
+  ],
+  "_model_authored_by_design": [
+   {
+    "tool": "accelerator.benchmark",
+    "args": [
+     "confirm"
+    ]
+   },
+   {
+    "tool": "benchmark.run",
+    "args": [
+     "confirm"
+    ]
+   },
+   {
+    "tool": "context.recall",
+    "args": [
+     "focus"
+    ]
+   },
+   {
+    "tool": "frontier.escalate",
+    "args": [
+     "confirm",
+     "question",
+     "mission_kernel"
+    ]
+   },
+   {
+    "tool": "git.land.propose",
+    "args": [
+     "branch",
+     "allowed_paths",
+     "test_command",
+     "message"
+    ]
+   },
+   {
+    "tool": "grok.swarm.launch",
+    "args": [
+     "confirm",
+     "problem_statement",
+     "lanes"
+    ]
+   },
+   {
+    "tool": "grok.swarm.propose",
+    "args": [
+     "problem_statement",
+     "lanes"
+    ]
+   },
+   {
+    "tool": "odyssey.add_to_eligibility",
+    "args": [
+     "confirm",
+     "oxx"
+    ]
+   },
+   {
+    "tool": "odyssey.create_adversarial_probe",
+    "args": [
+     "confirm",
+     "law_id"
+    ]
+   },
+   {
+    "tool": "odyssey.create_transfer_probe",
+    "args": [
+     "confirm",
+     "law_id",
+     "target_oxx"
+    ]
+   },
+   {
+    "tool": "odyssey.cycle",
+    "args": [
+     "confirm"
+    ]
+   },
+   {
+    "tool": "odyssey.gravity_gauntlet",
+    "args": [
+     "oxx",
+     "candidate_specs",
+     "confirm"
+    ]
+   },
+   {
+    "tool": "odyssey.park_specimen",
+    "args": [
+     "confirm",
+     "oxx"
+    ]
+   },
+   {
+    "tool": "odyssey.patient",
+    "args": [
+     "oxx"
+    ]
+   },
+   {
+    "tool": "odyssey.record_law",
+    "args": [
+     "confirm",
+     "text"
+    ]
+   },
+   {
+    "tool": "odyssey.record_scar",
+    "args": [
+     "confirm",
+     "law_id"
+    ]
+   },
+   {
+    "tool": "odyssey.retire",
+    "args": [
+     "confirm",
+     "oxx"
+    ]
+   },
+   {
+    "tool": "odyssey.write_packet",
+    "args": [
+     "confirm",
+     "oxx"
+    ]
+   },
+   {
+    "tool": "shell.readonly",
+    "args": [
+     "command"
+    ]
+   },
+   {
+    "tool": "tools.catalog",
+    "args": [
+     "focus"
+    ]
+   },
+   {
+    "tool": "vmcp.query",
+    "args": [
+     "tool"
+    ]
+   }
+  ],
+  "_recordable": [
+   {
+    "tool": "lake.census",
+    "via": [
+     "odyssey.record_measurement"
+    ]
+   },
+   {
+    "tool": "odyssey.anatomy",
+    "via": [
+     "odyssey.record_measurement"
+    ]
+   },
+   {
+    "tool": "odyssey.ledger",
+    "via": [
+     "odyssey.record_measurement"
+    ]
+   }
+  ]
+ },
+ "tools": [
+  {
+   "name": "accelerator.benchmark",
+   "required_args": [
+    "confirm"
+   ],
+   "optional_args": [
+    "receipt"
+   ],
+   "handler": "_accelerator_benchmark",
+   "handler_kind": "ast",
+   "produced_keys": [],
+   "nested_keys": [
+    "claim_ceiling",
+    "path",
+    "physical_execution",
+    "schema",
+    "status"
+   ],
+   "alias_of": null,
+   "mutation": "COSTLY"
+  },
+  {
+   "name": "accelerator.inspect",
+   "required_args": [],
+   "optional_args": [
+    "path"
+   ],
+   "handler": null,
+   "handler_kind": "unresolved",
+   "produced_keys": [],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "READ_ONLY"
+  },
+  {
+   "name": "acquisition.propose",
+   "required_args": [],
+   "optional_args": [],
+   "handler": "_acquisition_propose",
+   "handler_kind": "ast",
+   "produced_keys": [],
+   "nested_keys": [
+    "list_order_pick",
+    "list_order_would_redownload_sealed",
+    "n_ranked",
+    "ranked",
+    "recommendation_reason",
+    "recommended",
+    "shown",
+    "truncated"
+   ],
+   "alias_of": null,
+   "mutation": "READ_ONLY"
+  },
+  {
+   "name": "architecture.inspect",
+   "required_args": [
+    "path"
+   ],
+   "optional_args": [
+    "max_tensors",
+    "backend"
+   ],
+   "handler": "_architecture_inspect",
+   "handler_kind": "ast",
+   "produced_keys": [],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "READ_ONLY"
+  },
+  {
+   "name": "benchmark.run",
+   "required_args": [
+    "confirm"
+   ],
+   "optional_args": [
+    "runner",
+    "root",
+    "paths",
+    "timeout_s"
+   ],
+   "handler": "_benchmark_run",
+   "handler_kind": "ast",
+   "produced_keys": [],
+   "nested_keys": [
+    "paths",
+    "root",
+    "runner",
+    "timeout_s"
+   ],
+   "alias_of": null,
+   "mutation": "COSTLY"
+  },
+  {
+   "name": "campaign.guard",
+   "required_args": [],
+   "optional_args": [
+    "expected_gb"
+   ],
+   "handler": "_campaign_guard",
+   "handler_kind": "ast",
+   "produced_keys": [
+    "compressor_gb",
+    "expected_gb",
+    "free_gb",
+    "headroom_gb",
+    "reasons",
+    "state",
+    "swapfiles",
+    "wired_gb"
+   ],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "READ_ONLY"
+  },
+  {
+   "name": "context.recall",
+   "required_args": [
+    "focus"
+   ],
+   "optional_args": [
+    "max_results",
+    "max_chars"
+   ],
+   "handler": "_context_recall",
+   "handler_kind": "ast",
+   "produced_keys": [],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "READ_ONLY"
+  },
+  {
+   "name": "doctor.inspect",
+   "required_args": [],
+   "optional_args": [
+    "path"
+   ],
+   "handler": null,
+   "handler_kind": "unresolved",
+   "produced_keys": [],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "READ_ONLY"
+  },
+  {
+   "name": "doctor.query",
+   "required_args": [],
+   "optional_args": [
+    "operation",
+    "model",
+    "organ",
+    "receipt",
+    "research_query",
+    "max_results"
+   ],
+   "handler": "_doctor_query",
+   "handler_kind": "ast",
+   "produced_keys": [],
+   "nested_keys": [
+    "authority",
+    "external_research_used",
+    "max_results",
+    "operation",
+    "path",
+    "physical_execution",
+    "query",
+    "schema",
+    "status"
+   ],
+   "alias_of": null,
+   "mutation": "RESEARCH"
+  },
+  {
+   "name": "filesystem.write",
+   "required_args": [
+    "path",
+    "content"
+   ],
+   "optional_args": [
+    "overwrite",
+    "encoding"
+   ],
+   "handler": "_filesystem_write",
+   "handler_kind": "ast",
+   "produced_keys": [
+    "atomic_publish",
+    "before_sha256",
+    "bytes",
+    "changed",
+    "path",
+    "sha256"
+   ],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "REVERSIBLE_REPO"
+  },
+  {
+   "name": "forbidden_fruit.lab",
+   "required_args": [],
+   "optional_args": [
+    "sdk"
+   ],
+   "handler": "_forbidden_fruit_lab",
+   "handler_kind": "ast",
+   "produced_keys": [],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "REVERSIBLE_RUNTIME"
+  },
+  {
+   "name": "frontier.decide",
+   "required_args": [],
+   "optional_args": [],
+   "handler": "_frontier_decide",
+   "handler_kind": "ast",
+   "produced_keys": [],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "READ_ONLY"
+  },
+  {
+   "name": "frontier.escalate",
+   "required_args": [
+    "confirm",
+    "question",
+    "mission_kernel"
+   ],
+   "optional_args": [
+    "artifacts",
+    "output_schema",
+    "model",
+    "timeout_s"
+   ],
+   "handler": "_frontier_escalate",
+   "handler_kind": "ast",
+   "produced_keys": [],
+   "nested_keys": [
+    "type"
+   ],
+   "alias_of": null,
+   "mutation": "COSTLY"
+  },
+  {
+   "name": "fs.list",
+   "required_args": [],
+   "optional_args": [
+    "path",
+    "glob",
+    "recursive",
+    "max_results"
+   ],
+   "handler": "_list_files",
+   "handler_kind": "ast",
+   "produced_keys": [
+    "directories",
+    "directories_seen",
+    "files",
+    "glob",
+    "root",
+    "truncated"
+   ],
+   "nested_keys": [
+    "bytes",
+    "kind",
+    "path"
+   ],
+   "alias_of": null,
+   "mutation": "READ_ONLY"
+  },
+  {
+   "name": "fs.read",
+   "required_args": [
+    "path"
+   ],
+   "optional_args": [
+    "max_bytes",
+    "encoding",
+    "start_line",
+    "end_line"
+   ],
+   "handler": "_read_file",
+   "handler_kind": "ast",
+   "produced_keys": [
+    "artifact",
+    "bytes",
+    "content",
+    "end_line",
+    "path",
+    "sha256",
+    "start_line",
+    "total_lines"
+   ],
+   "nested_keys": [
+    "kind"
+   ],
+   "alias_of": null,
+   "mutation": "READ_ONLY"
+  },
+  {
+   "name": "fs.search",
+   "required_args": [
+    "pattern"
+   ],
+   "optional_args": [
+    "root",
+    "path",
+    "glob",
+    "max_results"
+   ],
+   "handler": "_search_files",
+   "handler_kind": "ast",
+   "produced_keys": [
+    "files_seen",
+    "matches",
+    "pattern",
+    "root",
+    "skipped_large",
+    "truncated"
+   ],
+   "nested_keys": [
+    "line",
+    "path",
+    "text"
+   ],
+   "alias_of": null,
+   "mutation": "READ_ONLY"
+  },
+  {
+   "name": "git.checkout-safe",
+   "required_args": [],
+   "optional_args": [
+    "path",
+    "paths"
+   ],
+   "handler": null,
+   "handler_kind": "unresolved",
+   "produced_keys": [],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "DESTRUCTIVE"
+  },
+  {
+   "name": "git.diff",
+   "required_args": [],
+   "optional_args": [
+    "path",
+    "paths"
+   ],
+   "handler": "_git_diff",
+   "handler_kind": "ast",
+   "produced_keys": [],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "READ_ONLY"
+  },
+  {
+   "name": "git.land.propose",
+   "required_args": [
+    "branch",
+    "allowed_paths",
+    "test_command",
+    "message"
+   ],
+   "optional_args": [
+    "timeout_s"
+   ],
+   "handler": "_git_land_propose",
+   "handler_kind": "ast",
+   "produced_keys": [],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "REVERSIBLE_REPO"
+  },
+  {
+   "name": "git.log",
+   "required_args": [],
+   "optional_args": [
+    "path",
+    "limit"
+   ],
+   "handler": "_git_log",
+   "handler_kind": "ast",
+   "produced_keys": [
+    "argv",
+    "commits",
+    "cwd",
+    "n",
+    "returncode",
+    "shown",
+    "stderr",
+    "stdout"
+   ],
+   "nested_keys": [
+    "hash",
+    "line"
+   ],
+   "alias_of": null,
+   "mutation": "READ_ONLY"
+  },
+  {
+   "name": "git.status",
+   "required_args": [],
+   "optional_args": [
+    "path"
+   ],
+   "handler": "_git_status",
+   "handler_kind": "ast",
+   "produced_keys": [],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "READ_ONLY"
+  },
+  {
+   "name": "github.fetch",
+   "required_args": [
+    "url"
+   ],
+   "optional_args": [
+    "max_bytes",
+    "timeout_s"
+   ],
+   "handler": "_fetch",
+   "handler_kind": "ast",
+   "produced_keys": [
+    "bytes_read",
+    "content",
+    "content_type",
+    "final_url",
+    "provenance",
+    "sha256",
+    "status",
+    "truncated",
+    "url"
+   ],
+   "nested_keys": [
+    "User-Agent",
+    "retrieved_at",
+    "source_url"
+   ],
+   "alias_of": null,
+   "mutation": "RESEARCH"
+  },
+  {
+   "name": "github.search",
+   "required_args": [
+    "query"
+   ],
+   "optional_args": [
+    "kind",
+    "max_results",
+    "timeout_s"
+   ],
+   "handler": "_github_search",
+   "handler_kind": "ast",
+   "produced_keys": [
+    "auth_available",
+    "authenticated",
+    "count",
+    "credential_values_recorded",
+    "kind",
+    "query",
+    "results",
+    "retrieved_at",
+    "source_url",
+    "total_count"
+   ],
+   "nested_keys": [
+    "Accept",
+    "code",
+    "commits",
+    "issues",
+    "max_bytes",
+    "per_page",
+    "q",
+    "repositories",
+    "timeout_s",
+    "url"
+   ],
+   "alias_of": null,
+   "mutation": "RESEARCH"
+  },
+  {
+   "name": "gravity.experiment",
+   "required_args": [],
+   "optional_args": [
+    "model",
+    "organ",
+    "representation",
+    "receipt",
+    "execute"
+   ],
+   "handler": "_gravity_experiment",
+   "handler_kind": "ast",
+   "produced_keys": [],
+   "nested_keys": [
+    "capability_claim",
+    "model",
+    "negative_controls_required",
+    "next_action",
+    "organ",
+    "path",
+    "physical_execution",
+    "representation",
+    "schema",
+    "status"
+   ],
+   "alias_of": null,
+   "mutation": "REVERSIBLE_RUNTIME"
+  },
+  {
+   "name": "gravity.inspect",
+   "required_args": [],
+   "optional_args": [
+    "path"
+   ],
+   "handler": null,
+   "handler_kind": "unresolved",
+   "produced_keys": [],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "READ_ONLY"
+  },
+  {
+   "name": "grok.swarm.launch",
+   "required_args": [
+    "confirm",
+    "problem_statement",
+    "lanes"
+   ],
+   "optional_args": [
+    "mode",
+    "dry_run"
+   ],
+   "handler": "_grok_swarm_launch",
+   "handler_kind": "ast",
+   "produced_keys": [],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "COSTLY"
+  },
+  {
+   "name": "grok.swarm.propose",
+   "required_args": [
+    "problem_statement",
+    "lanes"
+   ],
+   "optional_args": [],
+   "handler": "_grok_swarm_propose",
+   "handler_kind": "ast",
+   "produced_keys": [],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "READ_ONLY"
+  },
+  {
+   "name": "huggingface.download",
+   "required_args": [
+    "repo",
+    "path",
+    "destination",
+    "confirm"
+   ],
+   "optional_args": [
+    "revision",
+    "max_bytes",
+    "expected_sha256",
+    "timeout_s"
+   ],
+   "handler": "_huggingface_download",
+   "handler_kind": "ast",
+   "produced_keys": [
+    "atomic_publish",
+    "authenticated",
+    "bytes",
+    "credential_values_recorded",
+    "destination",
+    "download_performed",
+    "repo",
+    "requested_revision",
+    "resumed",
+    "retrieved_at",
+    "sha256",
+    "source_url"
+   ],
+   "nested_keys": [
+    "User-Agent"
+   ],
+   "alias_of": null,
+   "mutation": "COSTLY"
+  },
+  {
+   "name": "huggingface.fetch_file",
+   "required_args": [
+    "repo",
+    "path"
+   ],
+   "optional_args": [
+    "revision",
+    "max_bytes",
+    "timeout_s"
+   ],
+   "handler": "_huggingface_fetch_file",
+   "handler_kind": "ast",
+   "produced_keys": [
+    "authenticated",
+    "bytes_read",
+    "content",
+    "credential_values_recorded",
+    "path",
+    "repo",
+    "requested_revision",
+    "retrieved_at",
+    "sha256",
+    "source_url",
+    "truncated"
+   ],
+   "nested_keys": [
+    "Authorization",
+    "max_bytes",
+    "timeout_s",
+    "url"
+   ],
+   "alias_of": null,
+   "mutation": "RESEARCH"
+  },
+  {
+   "name": "huggingface.history",
+   "required_args": [
+    "repo"
+   ],
+   "optional_args": [
+    "revision",
+    "timeout_s"
+   ],
+   "handler": "_huggingface_history",
+   "handler_kind": "ast",
+   "produced_keys": [
+    "commits",
+    "count",
+    "repo",
+    "retrieved_at",
+    "revision",
+    "source_url"
+   ],
+   "nested_keys": [
+    "Authorization",
+    "max_bytes",
+    "timeout_s",
+    "url"
+   ],
+   "alias_of": null,
+   "mutation": "RESEARCH"
+  },
+  {
+   "name": "huggingface.resolve",
+   "required_args": [
+    "repo"
+   ],
+   "optional_args": [
+    "revision"
+   ],
+   "handler": "_huggingface_resolve",
+   "handler_kind": "ast",
+   "produced_keys": [
+    "authenticated",
+    "credential_values_recorded",
+    "file_count",
+    "files",
+    "private",
+    "repo",
+    "requested_revision",
+    "resolved_revision",
+    "retrieved_at",
+    "source_url"
+   ],
+   "nested_keys": [
+    "Authorization",
+    "max_bytes",
+    "url"
+   ],
+   "alias_of": null,
+   "mutation": "RESEARCH"
+  },
+  {
+   "name": "lake.census",
+   "required_args": [],
+   "optional_args": [
+    "catalog",
+    "slug",
+    "limit"
+   ],
+   "handler": "_lake_census",
+   "handler_kind": "ast",
+   "produced_keys": [
+    "blocked_gib",
+    "expert_anatomy_reachable",
+    "n",
+    "reachable_gib",
+    "rows",
+    "shown",
+    "tally",
+    "truncated"
+   ],
+   "nested_keys": [
+    "blocked_by",
+    "complete_ebpw",
+    "family",
+    "gib",
+    "klass",
+    "pack_factor",
+    "slug"
+   ],
+   "alias_of": null,
+   "mutation": "READ_ONLY"
+  },
+  {
+   "name": "modellake.status",
+   "required_args": [],
+   "optional_args": [
+    "path"
+   ],
+   "handler": null,
+   "handler_kind": "unresolved",
+   "produced_keys": [],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "READ_ONLY"
+  },
+  {
+   "name": "odyssey.add_to_eligibility",
+   "required_args": [
+    "confirm",
+    "oxx"
+   ],
+   "optional_args": [
+    "text",
+    "law_id",
+    "target_oxx",
+    "note",
+    "reason",
+    "evidence",
+    "source_oxx",
+    "attack",
+    "description"
+   ],
+   "handler": null,
+   "handler_kind": "unresolved",
+   "produced_keys": [],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "COSTLY"
+  },
+  {
+   "name": "odyssey.anatomy",
+   "required_args": [
+    "snapshot"
+   ],
+   "optional_args": [
+    "layer"
+   ],
+   "handler": "_odyssey_anatomy",
+   "handler_kind": "ast",
+   "produced_keys": [
+    "anatomy",
+    "refused",
+    "snapshot"
+   ],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "READ_ONLY"
+  },
+  {
+   "name": "odyssey.completions",
+   "required_args": [],
+   "optional_args": [],
+   "handler": null,
+   "handler_kind": "unresolved",
+   "produced_keys": [],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "READ_ONLY"
+  },
+  {
+   "name": "odyssey.create_adversarial_probe",
+   "required_args": [
+    "confirm",
+    "law_id"
+   ],
+   "optional_args": [
+    "oxx",
+    "text",
+    "target_oxx",
+    "note",
+    "reason",
+    "evidence",
+    "source_oxx",
+    "attack",
+    "description"
+   ],
+   "handler": null,
+   "handler_kind": "unresolved",
+   "produced_keys": [],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "COSTLY"
+  },
+  {
+   "name": "odyssey.create_transfer_probe",
+   "required_args": [
+    "confirm",
+    "law_id",
+    "target_oxx"
+   ],
+   "optional_args": [
+    "oxx",
+    "text",
+    "note",
+    "reason",
+    "evidence",
+    "source_oxx",
+    "attack",
+    "description"
+   ],
+   "handler": null,
+   "handler_kind": "unresolved",
+   "produced_keys": [],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "COSTLY"
+  },
+  {
+   "name": "odyssey.cycle",
+   "required_args": [
+    "confirm"
+   ],
+   "optional_args": [
+    "max_lanes"
+   ],
+   "handler": "_odyssey_cycle",
+   "handler_kind": "ast",
+   "produced_keys": [],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "COSTLY"
+  },
+  {
+   "name": "odyssey.dense_anatomy",
+   "required_args": [
+    "snapshot"
+   ],
+   "optional_args": [],
+   "handler": "_odyssey_dense_anatomy",
+   "handler_kind": "ast",
+   "produced_keys": [],
+   "nested_keys": [
+    "anatomy",
+    "guard",
+    "hypotheses",
+    "n_organs",
+    "organ_ordering",
+    "refused",
+    "snapshot"
+   ],
+   "alias_of": null,
+   "mutation": "READ_ONLY"
+  },
+  {
+   "name": "odyssey.economics",
+   "required_args": [],
+   "optional_args": [],
+   "handler": null,
+   "handler_kind": "unresolved",
+   "produced_keys": [],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "READ_ONLY"
+  },
+  {
+   "name": "odyssey.gravity_gauntlet",
+   "required_args": [
+    "oxx",
+    "candidate_specs",
+    "confirm"
+   ],
+   "optional_args": [
+    "budget",
+    "state_path",
+    "receipt_dir"
+   ],
+   "handler": "_odyssey_gravity_gauntlet",
+   "handler_kind": "ast",
+   "produced_keys": [],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "COSTLY"
+  },
+  {
+   "name": "odyssey.harvest",
+   "required_args": [],
+   "optional_args": [],
+   "handler": null,
+   "handler_kind": "unresolved",
+   "produced_keys": [],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "READ_ONLY"
+  },
+  {
+   "name": "odyssey.ingest",
+   "required_args": [],
+   "optional_args": [],
+   "handler": "_odyssey_read_verb",
+   "handler_kind": "ast",
+   "produced_keys": [],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "READ_ONLY"
+  },
+  {
+   "name": "odyssey.ledger",
+   "required_args": [],
+   "optional_args": [
+    "path",
+    "slug",
+    "owed_only",
+    "limit"
+   ],
+   "handler": "_odyssey_ledger",
+   "handler_kind": "ast",
+   "produced_keys": [
+    "hidden",
+    "n",
+    "n_owed",
+    "ordering",
+    "owed",
+    "path",
+    "progress",
+    "shown",
+    "snapshot",
+    "specimen",
+    "summary"
+   ],
+   "nested_keys": [
+    "class",
+    "gib",
+    "gib_max",
+    "gib_min",
+    "slug"
+   ],
+   "alias_of": null,
+   "mutation": "READ_ONLY"
+  },
+  {
+   "name": "odyssey.park_specimen",
+   "required_args": [
+    "confirm",
+    "oxx"
+   ],
+   "optional_args": [
+    "text",
+    "law_id",
+    "target_oxx",
+    "note",
+    "reason",
+    "evidence",
+    "source_oxx",
+    "attack",
+    "description"
+   ],
+   "handler": null,
+   "handler_kind": "unresolved",
+   "produced_keys": [],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "COSTLY"
+  },
+  {
+   "name": "odyssey.patient",
+   "required_args": [
+    "oxx"
+   ],
+   "optional_args": [],
+   "handler": null,
+   "handler_kind": "unresolved",
+   "produced_keys": [],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "READ_ONLY"
+  },
+  {
+   "name": "odyssey.queue",
+   "required_args": [],
+   "optional_args": [],
+   "handler": null,
+   "handler_kind": "unresolved",
+   "produced_keys": [],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "READ_ONLY"
+  },
+  {
+   "name": "odyssey.record_law",
+   "required_args": [
+    "confirm",
+    "text"
+   ],
+   "optional_args": [
+    "oxx",
+    "law_id",
+    "target_oxx",
+    "note",
+    "reason",
+    "evidence",
+    "source_oxx",
+    "attack",
+    "description"
+   ],
+   "handler": null,
+   "handler_kind": "unresolved",
+   "produced_keys": [],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "COSTLY"
+  },
+  {
+   "name": "odyssey.record_measurement",
+   "required_args": [
+    "path",
+    "slug",
+    "axis"
+   ],
+   "optional_args": [
+    "value",
+    "receipt",
+    "reason"
+   ],
+   "handler": "_odyssey_record_measurement",
+   "handler_kind": "ast",
+   "produced_keys": [],
+   "nested_keys": [
+    "axes_owed",
+    "axes_resolved",
+    "axis",
+    "path",
+    "recorded",
+    "slug"
+   ],
+   "alias_of": null,
+   "mutation": "REVERSIBLE_REPO"
+  },
+  {
+   "name": "odyssey.record_scar",
+   "required_args": [
+    "confirm",
+    "law_id"
+   ],
+   "optional_args": [
+    "oxx",
+    "text",
+    "target_oxx",
+    "note",
+    "reason",
+    "evidence",
+    "source_oxx",
+    "attack",
+    "description"
+   ],
+   "handler": null,
+   "handler_kind": "unresolved",
+   "produced_keys": [],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "COSTLY"
+  },
+  {
+   "name": "odyssey.retire",
+   "required_args": [
+    "confirm",
+    "oxx"
+   ],
+   "optional_args": [],
+   "handler": null,
+   "handler_kind": "unresolved",
+   "produced_keys": [],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "COSTLY"
+  },
+  {
+   "name": "odyssey.status",
+   "required_args": [],
+   "optional_args": [],
+   "handler": null,
+   "handler_kind": "unresolved",
+   "produced_keys": [],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "READ_ONLY"
+  },
+  {
+   "name": "odyssey.value",
+   "required_args": [],
+   "optional_args": [],
+   "handler": null,
+   "handler_kind": "unresolved",
+   "produced_keys": [],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "READ_ONLY"
+  },
+  {
+   "name": "odyssey.write_packet",
+   "required_args": [
+    "confirm",
+    "oxx"
+   ],
+   "optional_args": [],
+   "handler": null,
+   "handler_kind": "unresolved",
+   "produced_keys": [],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "COSTLY"
+  },
+  {
+   "name": "processes.list",
+   "required_args": [],
+   "optional_args": [],
+   "handler": "_processes_list",
+   "handler_kind": "ast",
+   "produced_keys": [
+    "index",
+    "n_processes",
+    "processes",
+    "shown",
+    "truncated"
+   ],
+   "nested_keys": [
+    "pid",
+    "role",
+    "rss_gib",
+    "safe_to_stop"
+   ],
+   "alias_of": null,
+   "mutation": "READ_ONLY"
+  },
+  {
+   "name": "processes.orphaned",
+   "required_args": [],
+   "optional_args": [],
+   "handler": "_processes_orphaned",
+   "handler_kind": "ast",
+   "produced_keys": [
+    "index",
+    "n_orphaned",
+    "orphaned",
+    "shown",
+    "truncated"
+   ],
+   "nested_keys": [
+    "pid",
+    "role",
+    "rss_gib",
+    "safe_to_stop"
+   ],
+   "alias_of": null,
+   "mutation": "READ_ONLY"
+  },
+  {
+   "name": "processes.summary",
+   "required_args": [],
+   "optional_args": [],
+   "handler": "_processes_summary",
+   "handler_kind": "ast",
+   "produced_keys": [],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "READ_ONLY"
+  },
+  {
+   "name": "receipt.read",
+   "required_args": [
+    "path"
+   ],
+   "optional_args": [
+    "max_bytes",
+    "encoding",
+    "start_line",
+    "end_line"
+   ],
+   "handler": "_receipt_read",
+   "handler_kind": "ast",
+   "produced_keys": [
+    "bytes",
+    "document",
+    "path",
+    "sha256"
+   ],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "READ_ONLY"
+  },
+  {
+   "name": "roadmap.read",
+   "required_args": [],
+   "optional_args": [
+    "path"
+   ],
+   "handler": null,
+   "handler_kind": "unresolved",
+   "produced_keys": [],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "READ_ONLY"
+  },
+  {
+   "name": "shell.exec",
+   "required_args": [
+    "argv"
+   ],
+   "optional_args": [
+    "cwd",
+    "timeout_s"
+   ],
+   "handler": "_shell_exec",
+   "handler_kind": "ast",
+   "produced_keys": [],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "REVERSIBLE_RUNTIME"
+  },
+  {
+   "name": "shell.readonly",
+   "required_args": [
+    "command"
+   ],
+   "optional_args": [],
+   "handler": "_shell_readonly",
+   "handler_kind": "ast",
+   "produced_keys": [],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "READ_ONLY"
+  },
+  {
+   "name": "specimens.registry",
+   "required_args": [],
+   "optional_args": [
+    "name",
+    "limit"
+   ],
+   "handler": "_specimens_registry",
+   "handler_kind": "ast",
+   "produced_keys": [
+    "found",
+    "lake",
+    "mounted",
+    "n_specimens",
+    "name",
+    "reason",
+    "schema",
+    "sealed_does_not_mean_resident",
+    "shown",
+    "specimen",
+    "specimens",
+    "specimens_dir",
+    "truncated"
+   ],
+   "nested_keys": [
+    "id",
+    "model_type",
+    "size_bytes",
+    "verified_complete"
+   ],
+   "alias_of": null,
+   "mutation": "READ_ONLY"
+  },
+  {
+   "name": "tests.list",
+   "required_args": [],
+   "optional_args": [
+    "root"
+   ],
+   "handler": "_list_tests",
+   "handler_kind": "ast",
+   "produced_keys": [
+    "count",
+    "paths",
+    "root",
+    "truncated"
+   ],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "READ_ONLY"
+  },
+  {
+   "name": "tests.run",
+   "required_args": [],
+   "optional_args": [
+    "runner",
+    "root",
+    "paths",
+    "timeout_s"
+   ],
+   "handler": "_tests_run",
+   "handler_kind": "ast",
+   "produced_keys": [
+    "argv",
+    "cwd",
+    "finished_at",
+    "n_stdout_chars",
+    "returncode",
+    "root",
+    "runner",
+    "started_at",
+    "stderr",
+    "stdout",
+    "verified"
+   ],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "REVERSIBLE_RUNTIME"
+  },
+  {
+   "name": "tools.catalog",
+   "required_args": [
+    "focus"
+   ],
+   "optional_args": [
+    "max_results"
+   ],
+   "handler": null,
+   "handler_kind": "unresolved",
+   "produced_keys": [],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "READ_ONLY"
+  },
+  {
+   "name": "vmcp.capabilities",
+   "required_args": [],
+   "optional_args": [
+    "path"
+   ],
+   "handler": null,
+   "handler_kind": "unresolved",
+   "produced_keys": [],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "READ_ONLY"
+  },
+  {
+   "name": "vmcp.inspect",
+   "required_args": [],
+   "optional_args": [
+    "profile"
+   ],
+   "handler": "_vmcp_inspect",
+   "handler_kind": "ast",
+   "produced_keys": [],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "READ_ONLY"
+  },
+  {
+   "name": "vmcp.query",
+   "required_args": [
+    "tool"
+   ],
+   "optional_args": [
+    "profile",
+    "arguments"
+   ],
+   "handler": "_vmcp_query",
+   "handler_kind": "ast",
+   "produced_keys": [],
+   "nested_keys": [],
+   "alias_of": null,
+   "mutation": "READ_ONLY"
+  },
+  {
+   "name": "web.fetch",
+   "required_args": [
+    "url"
+   ],
+   "optional_args": [
+    "max_bytes",
+    "timeout_s"
+   ],
+   "handler": "_fetch",
+   "handler_kind": "ast",
+   "produced_keys": [
+    "bytes_read",
+    "content",
+    "content_type",
+    "final_url",
+    "provenance",
+    "sha256",
+    "status",
+    "truncated",
+    "url"
+   ],
+   "nested_keys": [
+    "User-Agent",
+    "retrieved_at",
+    "source_url"
+   ],
+   "alias_of": null,
+   "mutation": "RESEARCH"
+  },
+  {
+   "name": "web.search",
+   "required_args": [
+    "query"
+   ],
+   "optional_args": [
+    "max_results",
+    "timeout_s"
+   ],
+   "handler": "_web_search",
+   "handler_kind": "ast",
+   "produced_keys": [
+    "attempted",
+    "confidence",
+    "count",
+    "provider",
+    "query",
+    "results",
+    "retrieved_at",
+    "source_url",
+    "unresolved"
+   ],
+   "nested_keys": [
+    "error",
+    "max_bytes",
+    "rows",
+    "snippet",
+    "status",
+    "timeout_s",
+    "title",
+    "url"
+   ],
+   "alias_of": null,
+   "mutation": "RESEARCH"
+  }
+ ]
+}
