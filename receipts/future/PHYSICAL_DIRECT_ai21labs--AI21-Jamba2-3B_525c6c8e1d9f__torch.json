@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "Real hardware, real forward passes, fixed prompt length, concurrency 1, fresh prefill every repeat. CPU float32 -- this is NOT the body's best achievable speed and must not be read as one. Comparable to another receipt from the SAME backend on this machine.",
+  "concurrency": 1,
+  "context": 512,
+  "decode_tps": 6.5143,
+  "decode_tps_spread": {
+    "in_run_order": [
+      6.6888,
+      6.0315,
+      6.5143
+    ],
+    "max": 6.6888,
+    "median": 6.5143,
+    "min": 6.0315,
+    "monotone_drift": "NONE",
+    "spread_pct": 10.9
+  },
+  "device": "cpu",
+  "emitted_by": "tools/future/physical_emitter.py::emit_direct",
+  "evidence_tier": "CONTROLLED_SWEEP",
+  "gpu_authority": false,
+  "gpu_share_of_prefill_wall_mean": null,
+  "gpu_share_unavailable_because": "executed on cpu; no GPU work was dispatched",
+  "measurement_contract": {
+    "backend_device": "cpu",
+    "decode_tokens": 64,
+    "fresh_prefill": true,
+    "model_load_s": 162.294,
+    "not_comparable_to": "emit() receipts, which measure the resident's own production traffic with prefix reuse; nor to a receipt from the other direct backend -- CPU float32 and Metal are different machines for this purpose. `runtime` and `device` are what distinguish them.",
+    "prefix_reuse": false,
+    "prompt_tokens": 512,
+    "repeats": 3,
+    "snapshot": "/Volumes/corpdrive/hawking-modellake/specimens/ai21labs--AI21-Jamba2-3B@525c6c8e1d9f",
+    "warmup_repeats_discarded": 0
+  },
+  "nr": "source body as stored on disk, unmodified; torch float32 on CPU",
+  "obligation": "G026",
+  "path": "controlled fixed-length sweep: one fresh prefill of the whole prompt followed by greedy single-token decode, no prefix reuse, concurrency 1",
+  "prefill_tps": 67.0824,
+  "prefill_tps_spread": {
+    "drift_note": "the series only moves one way: this is drift, not scatter, and a single-order comparison against it is invalid -- reverse the order or pair the arms",
+    "in_run_order": [
+      84.2274,
+      67.0824,
+      36.2699
+    ],
+    "max": 84.2274,
+    "median": 67.0824,
+    "min": 36.2699,
+    "monotone_drift": "FALLING",
+    "spread_pct": 132.22
+  },
+  "runtime": "transformers AutoModelForCausalLM, torch float32, device cpu",
+  "schema": "hawking.future.physical.v1",
+  "specimen": "ai21labs--AI21-Jamba2-3B@525c6c8e1d9f",
+  "totals": {
+    "decode_tokens": 192,
+    "decode_wall_s": 30.0038,
+    "prefill_tokens": 1536,
+    "prefill_wall_s": 27.8276
+  }
+}

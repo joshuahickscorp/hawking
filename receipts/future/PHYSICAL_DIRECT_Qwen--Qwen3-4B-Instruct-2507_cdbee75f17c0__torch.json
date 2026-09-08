@@ -1,0 +1,63 @@
+{
+  "claim_boundary": "Real hardware, real forward passes, fixed prompt length, concurrency 1, fresh prefill every repeat. CPU float32 -- this is NOT the body's best achievable speed and must not be read as one. Comparable to another receipt from the SAME backend on this machine.",
+  "concurrency": 1,
+  "context": 512,
+  "decode_tps": 4.4861,
+  "decode_tps_spread": {
+    "drift_note": "the series only moves one way: this is drift, not scatter, and a single-order comparison against it is invalid -- reverse the order or pair the arms",
+    "in_run_order": [
+      4.5041,
+      4.4861,
+      4.4272
+    ],
+    "max": 4.5041,
+    "median": 4.4861,
+    "min": 4.4272,
+    "monotone_drift": "FALLING",
+    "spread_pct": 1.74
+  },
+  "device": "cpu",
+  "emitted_by": "tools/future/physical_emitter.py::emit_direct",
+  "evidence_tier": "CONTROLLED_SWEEP",
+  "gpu_authority": false,
+  "gpu_share_of_prefill_wall_mean": null,
+  "gpu_share_unavailable_because": "executed on cpu; no GPU work was dispatched",
+  "measurement_contract": {
+    "backend_device": "cpu",
+    "decode_tokens": 64,
+    "fresh_prefill": true,
+    "model_load_s": 277.265,
+    "not_comparable_to": "emit() receipts, which measure the resident's own production traffic with prefix reuse; nor to a receipt from the other direct backend -- CPU float32 and Metal are different machines for this purpose. `runtime` and `device` are what distinguish them.",
+    "prefix_reuse": false,
+    "prompt_tokens": 512,
+    "repeats": 3,
+    "snapshot": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-4B-Instruct-2507@cdbee75f17c0",
+    "warmup_repeats_discarded": 0
+  },
+  "nr": "source body as stored on disk, unmodified; torch float32 on CPU",
+  "obligation": "G026",
+  "path": "controlled fixed-length sweep: one fresh prefill of the whole prompt followed by greedy single-token decode, no prefix reuse, concurrency 1",
+  "prefill_tps": 227.8936,
+  "prefill_tps_spread": {
+    "drift_note": "the series only moves one way: this is drift, not scatter, and a single-order comparison against it is invalid -- reverse the order or pair the arms",
+    "in_run_order": [
+      181.2808,
+      227.8936,
+      237.2313
+    ],
+    "max": 237.2313,
+    "median": 227.8936,
+    "min": 181.2808,
+    "monotone_drift": "RISING",
+    "spread_pct": 30.86
+  },
+  "runtime": "transformers AutoModelForCausalLM, torch float32, device cpu",
+  "schema": "hawking.future.physical.v1",
+  "specimen": "Qwen--Qwen3-4B-Instruct-2507@cdbee75f17c0",
+  "totals": {
+    "decode_tokens": 192,
+    "decode_wall_s": 42.9315,
+    "prefill_tokens": 1536,
+    "prefill_wall_s": 7.2292
+  }
+}

@@ -50,5 +50,48 @@
   "still_open": [
     "the 1-in-32 silence dropout has no attributed mechanism; it may be seed-specific or systematic",
     "9.45-10.68x is measured on batches of 32 short chunks, not on a 93 h run"
-  ]
+  ],
+  "final_artifact": {
+    "recipe": "awq_fold.py --bits 4 --group-size 128 --alloc down_proj:2,embed_tokens:2,o_proj:3",
+    "checkpoint": "higgs-audio-v3-desc2-g128",
+    "disk_gb": 2.225,
+    "complete_ebpw": 4.195,
+    "logical_params": "4.22B",
+    "resident_gb": 10.43,
+    "n": 32,
+    "seed": 91,
+    "gate_pass": "30/32",
+    "wer_med": 0.0,
+    "wer_max": 0.825,
+    "spoken_med": 1.0,
+    "spoken_min": 0.978,
+    "independent_gate": "tts_gate.stuck_run: 0/32 jam, 0/32 silence dropout",
+    "aggregate_rt": 14.0,
+    "audio_s": 587.4,
+    "wall_s": 42.0,
+    "the_two_failures": {
+      "item_13": "35.7 s against 13.6 s expected (2.63x). Ran to the token cap but stuck_s=0.5 -- over-generation, NOT the fixed point.",
+      "item_18": "23.4 s against 15.1 s (1.55x), spoken_frac 1.43 -- ASR transcribed 43% MORE words than the reference. A word-level repetition loop, caught by the looped gate."
+    },
+    "failure_class_changed": "The decoder fixed point that defined every earlier rung is absent: 0/32 jam here, and 0/40 across the sens-e runs. What remains is a different, milder class that the existing ASR gates already catch.",
+    "vs_sens_e": {
+      "sens_e": {
+        "gb": 2.398,
+        "ebpw": 4.497,
+        "pass": "31/32"
+      },
+      "final": {
+        "gb": 2.225,
+        "ebpw": 4.195,
+        "pass": "30/32"
+      },
+      "honest_reading": "7.2% smaller and 0.30 bits/weight cheaper for one additional failure on n=32. That difference is NOT distinguishable: 1/32 gives a 95% upper bound of 14.0% and 2/32 gives 18.4%, intervals that overlap heavily. Treat the two as equal on quality and take the smaller one, not as evidence the descent cost quality."
+    },
+    "operating_protocol": "render, gate with verify.check AND tts_gate.stuck_run, retry flagged units on a different seed",
+    "expected_retries_253_units": 15.8,
+    "still_open": [
+      "neither remaining failure has an attributed mechanism",
+      "14.0x rt is measured on batches of 32 short chunks, not a 93 h run"
+    ]
+  }
 }

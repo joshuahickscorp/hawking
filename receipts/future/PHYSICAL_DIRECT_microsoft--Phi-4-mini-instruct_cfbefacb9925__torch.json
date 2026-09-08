@@ -1,0 +1,63 @@
+{
+  "claim_boundary": "Real hardware, real forward passes, fixed prompt length, concurrency 1, fresh prefill every repeat. CPU float32 -- this is NOT the body's best achievable speed and must not be read as one. Comparable to another receipt from the SAME backend on this machine.",
+  "concurrency": 1,
+  "context": 512,
+  "decode_tps": 4.7778,
+  "decode_tps_spread": {
+    "first_cell_note": "the slowest repeat is the FIRST one: a cold cell, not a property of the body; the median excludes it but the spread does not",
+    "in_run_order": [
+      4.7752,
+      4.7893,
+      4.7778
+    ],
+    "max": 4.7893,
+    "median": 4.7778,
+    "min": 4.7752,
+    "monotone_drift": "NONE",
+    "spread_pct": 0.3
+  },
+  "device": "cpu",
+  "emitted_by": "tools/future/physical_emitter.py::emit_direct",
+  "evidence_tier": "CONTROLLED_SWEEP",
+  "gpu_authority": false,
+  "gpu_share_of_prefill_wall_mean": null,
+  "gpu_share_unavailable_because": "executed on cpu; no GPU work was dispatched",
+  "measurement_contract": {
+    "backend_device": "cpu",
+    "decode_tokens": 64,
+    "fresh_prefill": true,
+    "model_load_s": 262.743,
+    "not_comparable_to": "emit() receipts, which measure the resident's own production traffic with prefix reuse; nor to a receipt from the other direct backend -- CPU float32 and Metal are different machines for this purpose. `runtime` and `device` are what distinguish them.",
+    "prefix_reuse": false,
+    "prompt_tokens": 512,
+    "repeats": 3,
+    "snapshot": "/Volumes/corpdrive/hawking-modellake/specimens/microsoft--Phi-4-mini-instruct@cfbefacb9925",
+    "warmup_repeats_discarded": 0
+  },
+  "nr": "source body as stored on disk, unmodified; torch float32 on CPU",
+  "obligation": "G026",
+  "path": "controlled fixed-length sweep: one fresh prefill of the whole prompt followed by greedy single-token decode, no prefix reuse, concurrency 1",
+  "prefill_tps": 328.8648,
+  "prefill_tps_spread": {
+    "first_cell_note": "the slowest repeat is the FIRST one: a cold cell, not a property of the body; the median excludes it but the spread does not",
+    "in_run_order": [
+      212.6783,
+      332.9555,
+      328.8648
+    ],
+    "max": 332.9555,
+    "median": 328.8648,
+    "min": 212.6783,
+    "monotone_drift": "NONE",
+    "spread_pct": 56.55
+  },
+  "runtime": "transformers AutoModelForCausalLM, torch float32, device cpu",
+  "schema": "hawking.future.physical.v1",
+  "specimen": "microsoft--Phi-4-mini-instruct@cfbefacb9925",
+  "totals": {
+    "decode_tokens": 192,
+    "decode_wall_s": 40.1609,
+    "prefill_tokens": 1536,
+    "prefill_wall_s": 5.502
+  }
+}

@@ -58,9 +58,18 @@ def _separation(rs, key):
                if len(meds) > 1 else None)
     multi = {f: d for f, d in per.items() if d["n"] > 1}
     within = max((d["spread_pct"] for d in multi.values()), default=None)
+    # One family with two bodies is not a within-family estimate, it is a
+    # single pair. The rule used to accept it and reported SEPARATES on data
+    # where four of five families had n=1 and the whole spread came from one
+    # outlier. Require the within term to rest on at least TWO families before
+    # a separation claim is allowed.
     if not multi:
         verdict = ("UNDECIDABLE: no family has two bodies, so there is no within-family "
                    "spread to compare against")
+    elif len(multi) < 2:
+        only = next(iter(multi))
+        verdict = (f"UNDECIDABLE: only {only} has more than one body, so the within-family "
+                   f"term is a single pair ({within}%), not an estimate. between={between:.0f}%")
     elif between is not None and within is not None and between > 2 * within:
         verdict = f"SEPARATES: between {between:.0f}% vs worst within {within:.0f}%"
     else:
@@ -72,39 +81,25 @@ def _separation(rs, key):
 
 
 def report(rs):
+    """Decode and prefill judged by the SAME rule in _separation().
+
+    report() used to carry its own copy of the verdict logic. Tightening the
+    rule in one place then left the other loose, which is how a claim can
+    survive a fix -- so there is one authority now and report() defers to it.
+
+    Decode is memory-bandwidth-bound and its ratio tends toward a host
+    constant; prefill is compute-bound and is where an architecture prior could
+    actually live. Report both and let the axis with separation earn it.
+    """
     if not rs:
         return {"verdict": "NO BODY IS MEASURED ON BOTH AXES YET", "n": 0}
-    fams: dict[str, list] = {}
-    for r in rs:
-        fams.setdefault(r["family"] or "unknown", []).append(r["decode_ratio"])
-    per = {}
-    for f, v in sorted(fams.items()):
-        per[f] = {"n": len(v), "median": round(statistics.median(v), 2),
-                  "spread_pct": (round((max(v) - min(v)) / statistics.median(v) * 100, 1)
-                                 if len(v) > 1 else None)}
-    multi = {f: d for f, d in per.items() if d["n"] > 1}
-    meds = [d["median"] for d in per.values()]
-    between = (max(meds) - min(meds)) / statistics.median(meds) * 100 if len(meds) > 1 else None
-    within = max((d["spread_pct"] for d in multi.values()), default=None)
-    if not multi:
-        verdict = ("UNDECIDABLE: no family has two bodies, so there is no within-family "
-                   "spread to compare the between-family gap against. Ratios below are "
-                   "single observations, not family properties.")
-    elif between is not None and within is not None and between > 2 * within:
-        verdict = (f"SEPARATES: between-family spread {between:.0f}% exceeds the worst "
-                   f"within-family spread {within:.0f}% by more than 2x")
-    else:
-        verdict = (f"DOES NOT SEPARATE: between-family {between:.0f}% vs worst "
-                   f"within-family {within}% -- the families overlap")
-    # Decode is bandwidth-bound, so its ratio is close to a HOST constant and
-    # carries little architecture signal. Prefill is compute-bound and does not
-    # have to behave the same way. Judging only decode would have reported "no
-    # family prior exists" while the prefill numbers were already spanning 7x.
-    # Report both and let the axis with separation be the one that earns a prior.
-    return {"verdict": verdict, "n": len(rs), "per_family": per,
-            "between_family_spread_pct": between, "worst_within_family_spread_pct": within,
-            "decode": _separation(rs, "decode_ratio"),
-            "prefill": _separation(rs, "prefill_ratio"),
+    dec = _separation(rs, "decode_ratio")
+    pre = _separation(rs, "prefill_ratio")
+    return {"verdict": dec["verdict"], "n": len(rs),
+            "per_family": dec["per_family"],
+            "between_family_spread_pct": dec["between_family_spread_pct"],
+            "worst_within_family_spread_pct": dec["worst_within_family_spread_pct"],
+            "decode": dec, "prefill": pre,
             "why_two_axes": ("decode is memory-bandwidth-bound and its ratio tends toward a "
                              "host constant; prefill is compute-bound and is where an "
                              "architecture prior can actually live"),
@@ -113,6 +108,7 @@ def report(rs):
 
 def _demo():
     """Self-check: the verdict must actually depend on the numbers."""
+    # two families, three bodies each: the within term rests on both
     tight = [{"slug": f"a{i}", "family": "x", "gib": 1, "gpu_decode": 100,
               "cpu_decode": 10, "decode_ratio": 10 + i * 0.1, "prefill_ratio": None}
              for i in range(3)]
@@ -124,6 +120,15 @@ def _demo():
     assert report(overlap)["verdict"].startswith("DOES NOT SEPARATE"), report(overlap)["verdict"]
     single = [dict(tight[0]), dict(tight[3])]
     assert report(single)["verdict"].startswith("UNDECIDABLE")
+
+    # one multi-body family beside singletons is NOT enough for a claim
+    thin = [dict(tight[0]), dict(tight[1]),
+            {"slug": "c0", "family": "z", "gib": 1, "gpu_decode": 100, "cpu_decode": 2,
+             "decode_ratio": 50.0, "prefill_ratio": None},
+            {"slug": "d0", "family": "w", "gib": 1, "gpu_decode": 100, "cpu_decode": 3,
+             "decode_ratio": 33.0, "prefill_ratio": None}]
+    v = report(thin)["verdict"]
+    assert v.startswith("UNDECIDABLE") and "single pair" in v, v
     assert report([])["n"] == 0
 
     # The two axes must be judged INDEPENDENTLY. The live data has a tight
