@@ -1,0 +1,248 @@
+{
+ "limit": 3,
+ "tally": {
+  "OK": 8,
+  "NO_LIST_PAYLOAD": 18,
+  "REFUSED": 1
+ },
+ "failures": [],
+ "rows": [
+  {
+   "tool": "acquisition.propose",
+   "verdict": "OK",
+   "bytes": 3963,
+   "shown": 2,
+   "payload_key": "ranked",
+   "disclosure_fields": [
+    "truncated",
+    "shown",
+    "n_ranked"
+   ],
+   "total_keys": [
+    "n_ranked"
+   ],
+   "has_truncation_flag": true,
+   "limit_applied": false
+  },
+  {
+   "tool": "campaign.guard",
+   "verdict": "NO_LIST_PAYLOAD",
+   "bytes": 147,
+   "detail": "returns no row list; the law is about row truncation"
+  },
+  {
+   "tool": "doctor.inspect",
+   "verdict": "NO_LIST_PAYLOAD",
+   "bytes": 12593,
+   "detail": "returns no row list; the law is about row truncation"
+  },
+  {
+   "tool": "frontier.decide",
+   "verdict": "NO_LIST_PAYLOAD",
+   "bytes": 3030,
+   "detail": "returns no row list; the law is about row truncation"
+  },
+  {
+   "tool": "fs.list",
+   "verdict": "OK",
+   "bytes": 2419,
+   "shown": 22,
+   "payload_key": "files",
+   "disclosure_fields": [
+    "truncated"
+   ],
+   "total_keys": [],
+   "has_truncation_flag": true,
+   "limit_applied": false
+  },
+  {
+   "tool": "git.diff",
+   "verdict": "NO_LIST_PAYLOAD",
+   "bytes": 169,
+   "detail": "returns no row list; the law is about row truncation"
+  },
+  {
+   "tool": "git.log",
+   "verdict": "NO_LIST_PAYLOAD",
+   "bytes": 937,
+   "detail": "returns no row list; the law is about row truncation"
+  },
+  {
+   "tool": "git.status",
+   "verdict": "NO_LIST_PAYLOAD",
+   "bytes": 318,
+   "detail": "returns no row list; the law is about row truncation"
+  },
+  {
+   "tool": "gravity.inspect",
+   "verdict": "NO_LIST_PAYLOAD",
+   "bytes": 55438,
+   "detail": "returns no row list; the law is about row truncation"
+  },
+  {
+   "tool": "lake.census",
+   "verdict": "OK",
+   "bytes": 1085,
+   "shown": 3,
+   "payload_key": "rows",
+   "disclosure_fields": [
+    "truncated",
+    "shown",
+    "n"
+   ],
+   "total_keys": [
+    "n"
+   ],
+   "has_truncation_flag": true,
+   "limit_applied": true
+  },
+  {
+   "tool": "modellake.status",
+   "verdict": "NO_LIST_PAYLOAD",
+   "bytes": 4339,
+   "detail": "returns no row list; the law is about row truncation"
+  },
+  {
+   "tool": "odyssey.completions",
+   "verdict": "NO_LIST_PAYLOAD",
+   "bytes": 4155,
+   "detail": "returns no row list; the law is about row truncation"
+  },
+  {
+   "tool": "odyssey.economics",
+   "verdict": "NO_LIST_PAYLOAD",
+   "bytes": 4471,
+   "detail": "returns no row list; the law is about row truncation"
+  },
+  {
+   "tool": "odyssey.harvest",
+   "verdict": "NO_LIST_PAYLOAD",
+   "bytes": 530,
+   "detail": "returns no row list; the law is about row truncation"
+  },
+  {
+   "tool": "odyssey.ingest",
+   "verdict": "OK",
+   "bytes": 2010,
+   "shown": 14,
+   "payload_key": "specimens",
+   "disclosure_fields": [],
+   "total_keys": [
+    "specimen_count"
+   ],
+   "has_truncation_flag": false,
+   "limit_applied": false
+  },
+  {
+   "tool": "odyssey.ledger",
+   "verdict": "NO_LIST_PAYLOAD",
+   "bytes": 585,
+   "detail": "returns no row list; the law is about row truncation"
+  },
+  {
+   "tool": "odyssey.queue",
+   "verdict": "NO_LIST_PAYLOAD",
+   "bytes": 1246,
+   "detail": "returns no row list; the law is about row truncation"
+  },
+  {
+   "tool": "odyssey.status",
+   "verdict": "NO_LIST_PAYLOAD",
+   "bytes": 1158,
+   "detail": "returns no row list; the law is about row truncation"
+  },
+  {
+   "tool": "odyssey.value",
+   "verdict": "NO_LIST_PAYLOAD",
+   "bytes": 1236,
+   "detail": "returns no row list; the law is about row truncation"
+  },
+  {
+   "tool": "processes.list",
+   "verdict": "OK",
+   "bytes": 1396,
+   "shown": 2,
+   "payload_key": "processes",
+   "disclosure_fields": [
+    "truncated",
+    "shown",
+    "n_processes"
+   ],
+   "total_keys": [
+    "n_processes"
+   ],
+   "has_truncation_flag": true,
+   "limit_applied": false
+  },
+  {
+   "tool": "processes.orphaned",
+   "verdict": "OK",
+   "bytes": 78,
+   "shown": 0,
+   "payload_key": "orphaned",
+   "disclosure_fields": [
+    "truncated",
+    "shown",
+    "n_orphaned"
+   ],
+   "total_keys": [
+    "n_orphaned"
+   ],
+   "has_truncation_flag": true,
+   "limit_applied": false
+  },
+  {
+   "tool": "processes.summary",
+   "verdict": "OK",
+   "bytes": 1303,
+   "shown": 2,
+   "payload_key": "processes",
+   "disclosure_fields": [],
+   "total_keys": [
+    "count",
+    "total_rss_bytes"
+   ],
+   "has_truncation_flag": false,
+   "limit_applied": false
+  },
+  {
+   "tool": "roadmap.read",
+   "verdict": "REFUSED",
+   "detail": "PermissionError: receipt path must be under receipts or .hcli state"
+  },
+  {
+   "tool": "specimens.registry",
+   "verdict": "OK",
+   "bytes": 895,
+   "shown": 3,
+   "payload_key": "specimens",
+   "disclosure_fields": [
+    "truncated",
+    "shown"
+   ],
+   "total_keys": [
+    "n_specimens"
+   ],
+   "has_truncation_flag": true,
+   "limit_applied": true
+  },
+  {
+   "tool": "tests.list",
+   "verdict": "NO_LIST_PAYLOAD",
+   "bytes": 10355,
+   "detail": "returns no row list; the law is about row truncation"
+  },
+  {
+   "tool": "vmcp.capabilities",
+   "verdict": "NO_LIST_PAYLOAD",
+   "bytes": 163696,
+   "detail": "returns no row list; the law is about row truncation"
+  },
+  {
+   "tool": "vmcp.inspect",
+   "verdict": "NO_LIST_PAYLOAD",
+   "bytes": 14006,
+   "detail": "returns no row list; the law is about row truncation"
+  }
+ ]
+}
