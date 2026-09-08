@@ -1417,10 +1417,11 @@
      "receipt": "receipts/future/G034_LAKE_CENSUS_FULL.json"
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
-     "receipt": null
+     "reason": "mlx_lm's ModelArgs for this family predates this config's fields: TypeError: ModelArgs.__init__() missing 1 required positional argument: 'tie_word_embeddings'",
+     "receipt": null,
+     "reopen_when": "an mlx_lm release whose ModelArgs accepts this config"
     },
     "cpu": {
      "state": "OWED",
@@ -1585,10 +1586,19 @@
      "receipt": "receipts/future/G034_LAKE_CENSUS_FULL.json"
     },
     "gpu": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "device": "gpu (Metal via mlx)",
+      "runtime": "mlx_lm 0.32.1, device Device(gpu, 0), weights mlx.core.bfloat16",
+      "prefill_tps_median": 2165.1372,
+      "decode_tps_median": 73.558,
+      "context": 512,
+      "concurrency": 1,
+      "repeats": 3,
+      "warmup_discarded": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_LiquidAI--LFM2-24B-A2B_a3bbacd91a67__mlx.json"
     },
     "cpu": {
      "state": "OWED",
@@ -1597,10 +1607,16 @@
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "prefill_tps": 2165.1372,
+      "decode_tps": 73.558,
+      "backend": "mlx/Metal",
+      "context": 512,
+      "concurrency": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_LiquidAI--LFM2-24B-A2B_a3bbacd91a67__mlx.json"
     },
     "nr_candidate": {
      "state": "OWED",
@@ -1823,10 +1839,19 @@
      "receipt": "receipts/future/G034_LAKE_CENSUS_FULL.json"
     },
     "gpu": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "device": "gpu (Metal via mlx)",
+      "runtime": "mlx_lm 0.32.1, device Device(gpu, 0), weights mlx.core.bfloat16",
+      "prefill_tps_median": 522.593,
+      "decode_tps_median": 22.9537,
+      "context": 512,
+      "concurrency": 1,
+      "repeats": 3,
+      "warmup_discarded": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_Qwen--Qwen3-14B_40c069824f42__mlx.json"
     },
     "cpu": {
      "state": "OWED",
@@ -1835,10 +1860,16 @@
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "prefill_tps": 522.593,
+      "decode_tps": 22.9537,
+      "backend": "mlx/Metal",
+      "context": 512,
+      "concurrency": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_Qwen--Qwen3-14B_40c069824f42__mlx.json"
     },
     "nr_candidate": {
      "state": "OWED",
@@ -1953,10 +1984,19 @@
      "receipt": "receipts/future/G034_LAKE_CENSUS_FULL.json"
     },
     "gpu": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "device": "gpu (Metal via mlx)",
+      "runtime": "mlx_lm 0.32.1, device Device(gpu, 0), weights mlx.core.bfloat16",
+      "prefill_tps_median": 535.3749,
+      "decode_tps_median": 23.0722,
+      "context": 512,
+      "concurrency": 1,
+      "repeats": 3,
+      "warmup_discarded": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_microsoft--Phi-4-reasoning-plus_69baf8528e1b__mlx.json"
     },
     "cpu": {
      "state": "OWED",
@@ -1965,10 +2005,16 @@
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "prefill_tps": 535.3749,
+      "decode_tps": 23.0722,
+      "backend": "mlx/Metal",
+      "context": 512,
+      "concurrency": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_microsoft--Phi-4-reasoning-plus_69baf8528e1b__mlx.json"
     },
     "nr_candidate": {
      "state": "OWED",
