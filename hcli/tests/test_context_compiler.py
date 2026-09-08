@@ -254,7 +254,12 @@ class TestRootGoalCannotReachWorker(unittest.TestCase):
             phase="running",
             units=units,
             steering=["[knowledge] " + long_goal],
-            char_cap=400,
+            # 700, not 400. The irreducible packet here is ~592 chars, so 400
+            # can only REFUSE -- and a refusal proves nothing about whether the
+            # root goal leaks, which is what this test exists to check. Above
+            # the floor the compaction path actually runs and the assertions
+            # below get to mean something.
+            char_cap=700,
         )
         self.assertNotIn(long_goal, packet.prompt)
         self.assertNotIn("GOAL:", packet.prompt)
@@ -310,9 +315,17 @@ class TestVisibleTruncationOrRefuse(unittest.TestCase):
             phase="running",
             units=units,
             steering=[constraint],
-            char_cap=800,
+            # 1100, not 800. With every droppable section gone the irreducible
+            # packet -- workunit block, headers, the constraint itself -- is
+            # ~1018 chars, so an 800 cap can only ever REFUSE. Refusal is the
+            # contract and its own test
+            # (test_last_resort_slice_is_refused_not_silent) already pins it.
+            # THIS test is about the other property: when truncation does
+            # happen, it is visible rather than silent. That needs a cap above
+            # the floor or it tests the wrong branch.
+            char_cap=1100,
         )
-        self.assertLessEqual(len(packet.prompt), 800)
+        self.assertLessEqual(len(packet.prompt), 1100)
         self.assertIn("CONSTRAINT_MUST_SURVIVE", packet.prompt)
         self.assertNotIn("status=failed", packet.prompt)
         self.assertTrue(packet.truncated)

@@ -136,7 +136,17 @@ class TestEngineSchemaDegrade(unittest.TestCase):
             self.assertEqual(len(captured), 2)
             self.assertNotIn("response_format", captured[0])
             self.assertNotIn("response_format", captured[1])
-            self.assertIn("MUST satisfy this JSON Schema", captured[0]["messages"][-1]["content"])
+            # The agentic worker path now overrides the full JSON-Schema dump
+            # with a compact instruction (_AGENTIC_SCHEMA_INSTRUCTION) -- a
+            # deliberate token saving. What must hold is that the SCHEMA
+            # CONTRACT still travels in the prompt when response_format is
+            # dropped, not that it travels in one particular sentence. Pinning
+            # the old wording tested the phrasing, not the property.
+            sent = captured[0]["messages"][-1]["content"]
+            self.assertTrue(
+                "MUST satisfy this JSON Schema" in sent
+                or ("JSON only: kind=" in sent and "operations is an ARRAY" in sent),
+                f"the degraded call carried no schema contract at all: {sent[:200]}")
             self.assertIn("Attempt 1 was rejected", captured[1]["messages"][-1]["content"])
             receipt = _receipt(result)
             so = receipt["structured_output"]

@@ -17,6 +17,7 @@ over by one token costs the entire call, while being under only shortens a reply
 from __future__ import annotations
 
 import unittest
+from unittest import mock
 
 from hcli.engine import (
     _CHARS_PER_TOKEN,
@@ -35,9 +36,32 @@ def _engine():
 
 class TestCalibration(unittest.TestCase):
     def test_the_default_is_used_before_anything_is_measured(self):
+        """The chars-per-token DEFAULT, which is the fallback path only.
+
+        _estimate_prompt_tokens now prefers the resident's real tokenizer when
+        one is importable, and on a machine that has one it returns an exact
+        count -- 38 for 300 repeated characters, which a real BPE merges. That
+        supersedes the ratio entirely and is the point of the exact path.
+
+        So this pins what it is actually about: with no tokenizer available,
+        the untuned ratio is what gets used. Asserting the ratio while an exact
+        tokenizer is present tested nothing but the host's package list.
+        """
         eng = _engine()
         msgs = [{"role": "user", "content": "x" * 300}]
-        self.assertEqual(eng._estimate_prompt_tokens(msgs), 300 // _CHARS_PER_TOKEN)
+        with mock.patch("hcli.engine._exact_tokenizer", return_value=None):
+            self.assertEqual(eng._estimate_prompt_tokens(msgs), 300 // _CHARS_PER_TOKEN)
+            self.assertFalse(eng._last_estimate_exact)
+
+    def test_the_exact_tokenizer_wins_when_one_exists(self):
+        """The other half: an available tokenizer must actually be preferred."""
+        eng = _engine()
+        msgs = [{"role": "user", "content": "x" * 300}]
+        fake = mock.Mock()
+        fake.encode.return_value = mock.Mock(ids=[0] * 7)
+        with mock.patch("hcli.engine._exact_tokenizer", return_value=fake):
+            self.assertEqual(eng._estimate_prompt_tokens(msgs), 7)
+            self.assertTrue(eng._last_estimate_exact)
 
     def test_a_denser_real_count_lowers_the_ratio(self):
         """The live failure: 15,900 chars really tokenized to 6,605."""
@@ -52,7 +76,9 @@ class TestCalibration(unittest.TestCase):
         eng = _engine()
         eng._last_rendered_prompt = "x" * 15900
         eng._calibrate_chars_per_token(6605)
-        estimate = eng._estimate_prompt_tokens([{"role": "user", "content": "x" * 15900}])
+        with mock.patch("hcli.engine._exact_tokenizer", return_value=None):
+            estimate = eng._estimate_prompt_tokens(
+                [{"role": "user", "content": "x" * 15900}])
         self.assertGreaterEqual(
             estimate, 6605, "the calibrated estimate still under-counts the real prompt"
         )

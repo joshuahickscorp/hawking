@@ -327,6 +327,7 @@ class TestWorkerPacketCompiler(unittest.TestCase):
             )
 
     def test_knowledge_steers_are_excluded_constraints_kept(self):
+        from hcli.context_budget import PacketBudgetError
         from hcli.goal import compile_worker_context
         from hcli.steering import SteerEvent
 
@@ -376,6 +377,7 @@ class TestWorkerPacketCompiler(unittest.TestCase):
         self.assertEqual(packet.evidence_paths, ("foo.py",))
 
     def test_over_cap_drops_neighborhood_before_constraints(self):
+        from hcli.context_budget import PacketBudgetError
         from hcli.goal import compile_worker_context
 
         wu = WorkUnit(
@@ -396,16 +398,30 @@ class TestWorkerPacketCompiler(unittest.TestCase):
             "acceptance_criteria": ["tests pass " + ("A" * 40) for _ in range(20)],
             "referenced_files": ["target.py"],
         }
+        # 800 is BELOW the irreducible floor. With neighborhood, acceptance,
+        # evidence paths and invariants all dropped, the packet that remains --
+        # workunit block, headers, and the constraint itself -- is ~1018 chars.
+        # Refusing there is the contract ("silent truncation is not allowed"),
+        # not a bug, so the old assertion could never pass on this scaffolding.
+        with self.assertRaises(PacketBudgetError) as refused:
+            compile_worker_context(wu, compiled, phase="running", units=units,
+                                   steering=[constraint], char_cap=800)
+        self.assertIn("neighborhood", refused.exception.omitted)
+
+        # Above the floor, the property this test is actually about: the
+        # neighborhood goes first and the constraint survives.
         packet = compile_worker_context(
             wu,
             compiled,
             phase="running",
             units=units,
             steering=[constraint],
-            char_cap=800,
+            char_cap=1100,
         )
-        self.assertLessEqual(len(packet.prompt), 800 + 8)
+        self.assertLessEqual(len(packet.prompt), 1100 + 8)
         self.assertIn("CONSTRAINT_MUST_SURVIVE", packet.prompt)
+        self.assertIn("neighborhood", packet.omitted)
+        self.assertNotIn("steering", packet.omitted)
         self.assertIn("never drop this constraint", packet.prompt)
         # Neighborhood details (status + receipt) are the first casualty.
         self.assertNotIn("status=failed", packet.prompt)
