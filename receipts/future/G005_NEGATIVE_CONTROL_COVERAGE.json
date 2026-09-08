@@ -1,0 +1,60 @@
+{
+ "obligation": "G005",
+ "scope": "AUDIT ONLY. S005 reserves the final wiring into RuntimePool.start for HCLI; this does not touch hcli/runtime.py, does not name an anchor, and does not write the patch. It asks whether the 15 green tests would survive a broken implementation.",
+ "suite": {
+  "passed": 15,
+  "failed": 1,
+  "the_one_red": "test_serving_layer_calls_adopt_or_spawn -- asserts adopt_or_spawn( appears in hcli/runtime.py. It is red BY DESIGN and stays red until HCLI closes it. Confirmed still red on this run.",
+  "runner_note": "python3.12 has no pytest on this host; the suite runs under python3 (pytest 9.1.1)"
+ },
+ "why_this_audit": "'15 of 16 green' says nothing about whether those 15 constrain anything. G005's verify names NINE negative controls, each of which must REAP rather than adopt. A control that passes against a broken adopter is not a control.",
+ "method": "five mutations of the real mechanisms, each reverted, markers grepped to zero after each",
+ "coverage_map": {
+  "decide() decision core forced to always ADOPT": {
+   "newly_red": [
+    "stale_pid",
+    "pid_reuse",
+    "wrong_model",
+    "wrong_config",
+    "dead_process_endpoint_refuses",
+    "partial_startup_listens_but_cannot_generate"
+   ],
+   "reading": "six of the nine controls are enforced by the decision core and prove it"
+  },
+  "the `rec is not None` guard on the ADOPT branch removed": {
+   "newly_red": [
+    "corrupted_ownership_record",
+    "truncated_record_missing_fields",
+    "no_record_spawns",
+    "and the six above"
+   ],
+   "reading": "the corrupted and truncated controls survive the decide() mutation because a record that cannot be parsed never reaches decide -- _core.load returns None and the ADOPT branch refuses. Defence in depth, not vacuity, and this mutation proves it"
+  },
+  "_acquire_claim forced to always succeed": {
+   "newly_red": [
+    "two_simultaneous_adopters_exactly_one_wins",
+    "owner_crash_during_transfer"
+   ],
+   "reading": "the exclusive claim is what makes exactly one adopter win"
+  },
+  "transfer_interrupted override removed": {
+   "newly_red": [
+    "owner_crash_during_transfer"
+   ],
+   "reading": "a crash mid-transfer is caught by an override AFTER decide, not by the core"
+  },
+  "_foreign_owner_live forced to always return False": {
+   "newly_red": [],
+   "reading": "NOTHING FAILS. This is the finding."
+  }
+ },
+ "the_finding": {
+  "guard": "_foreign_owner_live",
+  "what_it_does": "raises CompetingOwnerError when the ownership record names a DIFFERENT live process as owner -- the 'absence of a competing owner' clause named in G005's acceptance",
+  "coverage": "ZERO. Neutering it turns no test red.",
+  "why_it_hid": "test_two_simultaneous_adopters passes through _acquire_claim, the exclusive claim lock. So the competing-owner clause has TWO mechanisms and the suite exercises only one. If _foreign_owner_live regressed, an adopter would take a resident already owned by a live foreign process and no test would notice.",
+  "status": "REPORTED, NOT FIXED. Writing that test is authoring G005's evidence, and G005's closure is HCLI's under S005."
+ },
+ "verdict": "all nine negative controls are load-bearing on at least one real mechanism -- none is vacuous. The acceptance clause they do NOT fully cover is 'absence of a competing owner', which has an untested second guard.",
+ "scar": "A SUITE THAT IS GREEN ON A BROKEN IMPLEMENTATION IS A CATALOGUE. Mutate the mechanism, not the test."
+}
