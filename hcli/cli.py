@@ -37,6 +37,7 @@ commands (each takes its own --help):
 
   chat and models
     web         open a browser chat (Open WebUI) on the current resident
+    build       the same chat, with repo-scoped write authority
     serve       the OpenAI-compatible endpoint only, no browser
     use         list every Hawking body, or switch which one answers
     stop        stop what web/serve started
@@ -415,6 +416,14 @@ def main(argv: Optional[List[str]] = None) -> int:
         from .web import main as web_main
 
         return web_main(raw[1:])
+    if raw and raw[0] == "build":
+        # `hcli build` is `hcli web` with hands. A separate verb rather than a
+        # flag, because granting write authority is a decision a person should
+        # make by naming it, and S035 s2 asks for one HCLI with different
+        # authority -- not a separate builder product.
+        from .web import main as web_main
+
+        return web_main([*raw[1:], "--write"])
     if raw and raw[0] == "report":
         from .report import main as report_main
 

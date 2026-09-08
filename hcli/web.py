@@ -85,13 +85,14 @@ def open_webui_command() -> Optional[str]:
         if (Path.home() / ".local/bin/open-webui").is_file() else None)
 
 
-def start_surface(model: str, host: str, port: int, log_dir: Path) -> tuple:
+def start_surface(model: str, host: str, port: int, log_dir: Path,
+                  write: bool = False) -> tuple:
     log_dir.mkdir(parents=True, exist_ok=True)
     log = log_dir / "serve.log"
     handle = log.open("w")
     proc = subprocess.Popen(
         [sys.executable, "-m", "hcli", "serve", "--model", model,
-         "--host", host, "--port", str(port)],
+         "--host", host, "--port", str(port), *(["--write"] if write else [])],
         # The surface inherits the directory the USER ran `hcli web` in, not the
         # repo this file happens to live in -- otherwise every session would
         # claim Hawking as its context no matter where it was opened.
@@ -182,6 +183,8 @@ def main(argv: Optional[list] = None) -> int:
     ap.add_argument("--no-webui", action="store_true",
                     help="start only the OpenAI surface and print its URL")
     ap.add_argument("--ready-timeout", type=float, default=900.0)
+    ap.add_argument("--write", action="store_true",
+                    help="grant repo-scoped write authority (see `hcli build`)")
     a = ap.parse_args(list(argv or []))
     a.model = a.model or a.model_flag
 
@@ -198,7 +201,8 @@ def main(argv: Optional[list] = None) -> int:
         serve_log = log_dir / "serve.log"
     else:
         print(f"starting resident {Path(model).stem} ...", flush=True)
-        surface_proc, serve_log = start_surface(model, a.host, a.port, log_dir)
+        surface_proc, serve_log = start_surface(model, a.host, a.port, log_dir,
+                                                write=bool(a.write))
         try:
             existing = wait_for_surface(a.host, a.port, timeout=a.ready_timeout,
                                         proc=surface_proc, log=serve_log)
@@ -239,7 +243,8 @@ def main(argv: Optional[list] = None) -> int:
                   file=sys.stderr)
             return 2
 
-    print(f"\n  {ui}\n  resident {existing.get('resident')}  via {base_url}")
+    banner = "  BUILD MODE -- repo-scoped write authority\n" if a.write else ""
+    print(f"\n{banner}  {ui}\n  resident {existing.get('resident')}  via {base_url}")
     print(f"  logs: {serve_log}  {webui_log}")
     if not a.no_browser:
         webbrowser.open(ui)

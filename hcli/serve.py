@@ -42,6 +42,7 @@ import time
 import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from .context_budget import resolve
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 
 if TYPE_CHECKING:  # the catalog import is deferred so a menu is never
@@ -50,6 +51,10 @@ if TYPE_CHECKING:  # the catalog import is deferred so a menu is never
 DEFAULT_PORT = 8011
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_BASE_URL = f"http://{DEFAULT_HOST}:{DEFAULT_PORT}"
+#: Small on purpose. If window resolution ever fails again, the effect
+#: is eager compaction that someone notices -- not a plausible constant
+#: that silently replaces the measurement.
+_WINDOW_UNKNOWN = 2048
 
 #: Values that mean "do not sample", per parameter. A greedy profile accepts
 #: these and refuses everything else. `True == 1` in Python, so membership is
@@ -465,6 +470,38 @@ def make_handler(backend: Any, identity: str, *, greedy: bool,
                 return self._send(400, {"error": {
                     "message": "no messages: send {'messages':[{'role':'user',"
                                "'content':'...'}]}"}})
+            # DURABLE SESSION. Open WebUI sends no id and resends the whole
+            # conversation, so the first user turn's digest is the key: stable
+            # for the life of that conversation, no protocol change needed.
+            session = None
+            if stores.get("state_root"):
+                from .chat_state import ChatSession, session_key, working_set
+                root = stores["state_root"]
+                session = ChatSession.load(
+                    root, session_key(messages, root,
+                                      explicit=body.get("session_id")
+                                      or body.get("chat_id")))
+                session.resident = getattr(backend, "identity", identity)
+                session.turns += 1
+                # RESUME BEFORE ANYTHING ELSE. A checkpoint means a previous
+                # invocation yielded mid-objective; the resuming turn must see
+                # where it stands and whether the repository moved under it.
+                from .chat_continuity import compact, resume, resume_block
+                revived = resume(session)
+                durable = working_set(session)
+                revival = resume_block(revived) if (
+                    revived and session.turns <= 1) else ""
+                if revival:
+                    durable = (durable + "\n\n" + revival) if durable else revival
+                if durable:
+                    # AFTER the tool contract and repo identity, BEFORE the
+                    # conversation: it changes as the plan advances, so it must
+                    # not sit in front of the material the prefix cache reuses.
+                    messages = [*messages[:1], {"role": "system",
+                                                "content": durable},
+                                *messages[1:]] if (
+                        messages and messages[0].get("role") == "system") else [
+                        {"role": "system", "content": durable}, *messages]
             if repo is not None:
                 # The folder HCLI was opened in, in front of the conversation.
                 # Stable block first so the resident's prefix cache keeps it
@@ -473,6 +510,19 @@ def make_handler(backend: Any, identity: str, *, greedy: bool,
                 from .repo_context import inject
                 messages = inject(messages, repo)
                 body = {**body, "messages": messages}
+            if session is not None:
+                # COMPACT WHEN THE CONVERSATION OUTGROWS ITS SHARE. Turns leave
+                # the working set into the session archive; the invariant
+                # leading region is untouched so the prefix cache still hits.
+                window = int(health.get("context_window") or 8192)
+                messages, compaction = compact(messages, session, window=window)
+                if compaction.compacted:
+                    body = {**body, "messages": messages}
+                    checkpoint_note = (
+                        f"compacted {compaction.evicted_turns} turns "
+                        f"({compaction.before_tokens}->{compaction.after_tokens} tok)")
+                    from .chat_continuity import checkpoint as _ckpt
+                    _ckpt(session, resident=session.resident, note=checkpoint_note)
             payload = {k: v for k, v in body.items() if k != "stream"}
             payload.setdefault("model", identity)
             request_id = f"chatcmpl-{uuid.uuid4().hex[:24]}"
@@ -485,11 +535,14 @@ def make_handler(backend: Any, identity: str, *, greedy: bool,
                     # the same one `hcli agentos research-gate` uses, with its
                     # read/research permission set, so a browser session cannot
                     # reach a tool that writes.
-                    from .chat_tools import (openai_schemas, prepend_system,
-                                              run_with_tools, system_block)
+                    from .chat_tools import (builder_menu, openai_schemas,
+                                              prepend_system, run_with_tools,
+                                              system_block)
 
                     native = bool(getattr(backend, "native_tools", False))
-                    schemas = openai_schemas(registry) if native else None
+                    schemas = openai_schemas(
+                        registry, list(builder_menu(
+                            stores.get("engine") is not None))) if native else None
 
                     def _complete(convo):
                         inner = {**payload, "messages": convo}
@@ -497,12 +550,15 @@ def make_handler(backend: Any, identity: str, *, greedy: bool,
                             inner["tools"] = schemas
                         return _text_of(backend.complete(inner))
 
+                    writing = stores.get("engine") is not None
                     with_contract = (messages if native else prepend_system(
-                        messages, system_block(registry=registry)))
+                        messages, system_block(registry=registry,
+                                               write=writing)))
                     answer, trace = run_with_tools(
                         _complete, with_contract, registry, native=native,
                         cache=stores.get("cache"),
-                        knowledge=stores.get("knowledge"))
+                        knowledge=stores.get("knowledge"),
+                        engine=stores.get("engine"))
                     result = type("R", (), {
                         "text": answer, "finish_reason": "stop", "degraded": [],
                         "prompt_tokens": None, "completion_tokens": None,
@@ -524,6 +580,18 @@ def make_handler(backend: Any, identity: str, *, greedy: bool,
                 body_out = chat_payload(result, answered, request_id=request_id)
                 if trace:
                     body_out["hawking"]["tools_used"] = trace
+                if session is not None:
+                    from .chat_state import remember_turn
+                    remember_turn(session, messages, _text_of(result),
+                                  knowledge=stores.get("knowledge"))
+                    session.save()
+                    body_out["hawking"]["session"] = {
+                        "id": session.id, "turns": session.turns,
+                        "active_plan": session.active_plan,
+                        "authority": session.authority,
+                        "checkpoint": session.last_checkpoint or None}
+                    if locals().get("compaction") is not None and compaction.compacted:
+                        body_out["hawking"]["compaction"] = compaction.to_dict()
                 return self._send(200, body_out)
             # An SSE body has no Content-Length, so under HTTP/1.1 keep-alive a
             # client cannot tell where it ends and waits until it times out --
@@ -546,9 +614,30 @@ def make_handler(backend: Any, identity: str, *, greedy: bool,
     return Handler
 
 
+def _context_window(model: str) -> int:
+    """The loaded body's usable input budget, from the existing authority.
+
+    `context_budget.resolve` is the repo's single authority on window
+    arithmetic. It is KEYWORD-ONLY, and calling it positionally raised a
+    TypeError that a bare `except` swallowed -- returning a fallback that
+    happened to equal the real value for this profile, so the broken path was
+    invisible. The fallback is now deliberately NOT a plausible real number, so
+    the next such failure shows up instead of hiding.
+    """
+    try:
+        budget = resolve(model_path=str(model))
+    except Exception:
+        return _WINDOW_UNKNOWN
+    for attr in ("usable_input_tokens", "per_request_ctx", "model_ceiling"):
+        value = getattr(budget, attr, None)
+        if isinstance(value, int) and value > 0:
+            return value
+    return _WINDOW_UNKNOWN
+
+
 def build_server(model: str, *, host: str = DEFAULT_HOST, port: int = DEFAULT_PORT,
                  ready_timeout: float = 600.0, repo: Any = None,
-                 registry: Any = None):
+                 registry: Any = None, write: bool = False):
     """Spawn the resident, wait for it, and return (httpd, identity, health)."""
     from .catalog import Body, catalog, resolve
     from .runtime_iface import classify_backend, make_backend_for_model
@@ -585,6 +674,10 @@ def build_server(model: str, *, host: str = DEFAULT_HOST, port: int = DEFAULT_PO
                      "evidence of incremental decode)",
         "endpoints": ["/v1/models", "/v1/chat/completions", "/health"],
         "switchable": True,
+        # The body's real window, so compaction triggers on the actual ceiling
+        # rather than a constant. resolve() is the repo's existing authority on
+        # this and already reads native profiles and GGUF headers.
+        "context_window": _context_window(body.path),
     }
     if repo is not None:
         health["repo"] = {"name": repo.name, "root": str(repo.root),
@@ -628,6 +721,17 @@ def build_server(model: str, *, host: str = DEFAULT_HOST, port: int = DEFAULT_PO
             stores["knowledge"] = None
         health["observation_store"] = stores.get("cache") is not None
         health["knowledge_store"] = stores.get("knowledge") is not None
+        stores["state_root"] = workspace
+        health["sessions"] = True
+        if write:
+            # HANDS, ONLY WHEN ASKED FOR. The engine is what makes repo.edit
+            # reachable; a read session simply has none, so the door is absent
+            # from the menu rather than refused by persuasion.
+            from .engine import Engine
+            from .workspace import Workspace
+            stores["engine"] = Engine(Workspace(workspace),
+                                      runtime_provider=lambda: resident)
+        health["authority"] = "write" if write else "read"
     httpd = ThreadingHTTPServer(
         (host, port), make_handler(resident, identity, greedy=greedy,
                                    health=health, repo=repo, registry=registry,
@@ -651,6 +755,8 @@ def main(argv: Optional[list] = None) -> int:
     ap.add_argument("--ready-timeout", type=float, default=600.0)
     ap.add_argument("--no-repo", action="store_true", help=argparse.SUPPRESS)
     ap.add_argument("--no-tools", action="store_true", help=argparse.SUPPRESS)
+    ap.add_argument("--write", action="store_true",
+                    help="grant repo-scoped write authority to this session")
     a = ap.parse_args(list(argv or []))
     a.model = a.model or a.model_flag
 
@@ -666,7 +772,7 @@ def main(argv: Optional[list] = None) -> int:
         registry = build_registry(root, root)
     httpd, identity, health = build_server(
         model, host=a.host, port=a.port, ready_timeout=a.ready_timeout,
-        repo=repo, registry=registry)
+        repo=repo, registry=registry, write=bool(getattr(a, "write", False)))
     print(json.dumps({"listening": f"http://{a.host}:{a.port}",
                       "openai_base_url": f"http://{a.host}:{a.port}/v1",
                       **health}), flush=True)

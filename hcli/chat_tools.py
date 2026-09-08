@@ -521,16 +521,17 @@ def openai_schemas(registry: Any,
     seal ships with.
     """
     out: List[Dict[str, Any]] = []
+    menu = {**CHAT_TOOLS, **BUILDER_TOOLS}
     for name in (names or CHAT_TOOLS):
-        if name not in CHAT_TOOLS:
+        if name not in menu:
             continue
         spec = registry.get(name) if registry is not None else None
         schema = getattr(spec, "input_schema", None) or getattr(spec, "schema", None)
         if not isinstance(schema, dict):
-            schema = {"type": "object", "properties": {}}
+            schema = _declared_schema(name)
         out.append({"type": "function", "function": {
             "name": name,
-            "description": CHAT_TOOLS[name],
+            "description": menu[name],
             "parameters": schema,
         }})
     return out
@@ -703,3 +704,34 @@ def run_builder_tool(name: str, arguments: Dict[str, Any], *,
         "paths": verdict.get("paths"),
     }, provenance={"source": "hcli.engine.apply_typed_mutation",
                    "status": status})
+
+
+def _declared_schema(name: str) -> Dict[str, Any]:
+    """A JSON-Schema for a door HCLI serves itself.
+
+    Written once, here, next to the shape string the contract shows, so the two
+    cannot drift the way a transcribed shape did.
+    """
+    if name == "repo.edit":
+        return {
+            "type": "object",
+            "required": ["operations"],
+            "properties": {
+                "operations": {"type": "array", "items": {
+                    "type": "object",
+                    "required": ["op", "path"],
+                    "properties": {
+                        "op": {"type": "string",
+                               "enum": ["create", "replace", "insert_after"]},
+                        "path": {"type": "string"},
+                        "old_lines": {"type": "array", "items": {"type": "string"}},
+                        "new_lines": {"type": "array", "items": {"type": "string"}},
+                    }}},
+                "tests": {"type": "array", "items": {"type": "string"}},
+            },
+        }
+    if name == "observation.expand":
+        return {"type": "object", "required": ["id"], "properties": {
+            "id": {"type": "string"}, "query": {"type": "string"},
+            "start": {"type": "integer"}, "end": {"type": "integer"}}}
+    return {"type": "object", "properties": {}}
