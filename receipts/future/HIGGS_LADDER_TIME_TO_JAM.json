@@ -1,0 +1,236 @@
+{
+  "obligation": "HIGGS-LADDER",
+  "metric": "time-to-jam: fraction of units ending in a decoder fixed point (tools/future/tts_gate.stuck_run), and median jam onset over expected duration at 159 wpm",
+  "chunking": "max_words=60, n=8, seed 4242 (gravity_eval defaults)",
+  "three_classes": {
+    "healthy": "median duration/expected 0.87-0.95, no jam. bf16, q8, q4, loo-down2, loo-emb2, awq-b3g64, awq-b3g64-e2",
+    "jam": "envelope locks to constant rms and the unit runs to max_new_tokens. sens_a/b/c, b3plain, b3g64, awq-b3g128, awq-b3g128-e2, mx-b2-d3/d4/d4o4, loo-qkv2, loo-o2, loo-gu2, b2awq",
+    "run_to_cap_noise": "duration/expected exactly 2.31 (the cap) with varying envelope, so NOT a fixed point. b2g32 rms 0.019, b2g128 rms 0.006, b2g64 and b2plain rms 0.070. The original gate set scores these the same way it scores a jam."
+  },
+  "the_jam_is_not_a_model_property": "bf16 jams 0/8. So do q8 and q4. Every jamming arm comes from the awq_fold.py allocation path; stock mlx quantization at 8 and 4 bits never produces it.",
+  "non_composition": {
+    "claim": "At bits=3 group=64 AWQ, embed_tokens:2 alone is healthy and down_proj:2 alone is healthy against a 4-bit base, but the two together jam.",
+    "arms": {
+      "awq-b3g64 (no tilt)": "0/8 jam",
+      "awq-b3g64-e2 (embed_tokens:2)": "0/8 jam",
+      "sens-a (embed_tokens:2 + down_proj:2)": "5/8 jam",
+      "loo-down2 (down_proj:2 on a 4-bit g64 base)": "0/8 jam"
+    },
+    "MISSING_CONTROL": "awq-b3g64 + down_proj:2 alone. Without it the result is confounded: the jam may be the COMPOSITION of the two organ tilts, or it may be that down_proj:2 simply does not survive a 3-bit base at all, independent of embed_tokens. This is the same confound the one-off already hit (2-bit down_proj survives a q4 base and breaks against q3).",
+    "status": "NOT ATTRIBUTED until that arm is built and rendered"
+  },
+  "group_size": "awq-b3g64 is healthy 0/8 while awq-b3g128 jams 6/8. At 3 bits, group 64 vs 128 is the difference between a working model and a jamming one, with the allocation held identical.",
+  "caveat": "n=8 units per arm, one seed. Class membership is robust (a jam is a 14-30 s flat run, not a marginal number); the orderings within a class are not.",
+  "arms": [
+    {
+      "arm": "b2awq",
+      "jam": 6,
+      "trunc": 0,
+      "med_onset_over_exp": 1.049,
+      "n": 8
+    },
+    {
+      "arm": "d3",
+      "jam": 8,
+      "trunc": 0,
+      "med_onset_over_exp": 0.965,
+      "n": 8
+    },
+    {
+      "arm": "sens_c",
+      "jam": 7,
+      "trunc": 0,
+      "med_onset_over_exp": 0.856,
+      "n": 8
+    },
+    {
+      "arm": "sens_b",
+      "jam": 6,
+      "trunc": 0,
+      "med_onset_over_exp": 0.651,
+      "n": 8
+    },
+    {
+      "arm": "b3g128e2",
+      "jam": 6,
+      "trunc": 0,
+      "med_onset_over_exp": 0.598,
+      "n": 8
+    },
+    {
+      "arm": "b3g128awq",
+      "jam": 6,
+      "trunc": 1,
+      "med_onset_over_exp": 0.584,
+      "n": 8
+    },
+    {
+      "arm": "d4",
+      "jam": 8,
+      "trunc": 0,
+      "med_onset_over_exp": 0.533,
+      "n": 8
+    },
+    {
+      "arm": "d4o4",
+      "jam": 7,
+      "trunc": 0,
+      "med_onset_over_exp": 0.427,
+      "n": 8
+    },
+    {
+      "arm": "qkv2",
+      "jam": 8,
+      "trunc": 0,
+      "med_onset_over_exp": 0.427,
+      "n": 8
+    },
+    {
+      "arm": "sens_a",
+      "jam": 5,
+      "trunc": 0,
+      "med_onset_over_exp": 0.348,
+      "n": 8
+    },
+    {
+      "arm": "b3plain",
+      "jam": 8,
+      "trunc": 0,
+      "med_onset_over_exp": 0.284,
+      "n": 8
+    },
+    {
+      "arm": "b3g64",
+      "jam": 8,
+      "trunc": 0,
+      "med_onset_over_exp": 0.284,
+      "n": 8
+    },
+    {
+      "arm": "o2",
+      "jam": 7,
+      "trunc": 1,
+      "med_onset_over_exp": 0.284,
+      "n": 8
+    },
+    {
+      "arm": "b3g128",
+      "jam": 4,
+      "trunc": 4,
+      "med_onset_over_exp": 0.166,
+      "n": 8
+    },
+    {
+      "arm": "gu2",
+      "jam": 4,
+      "trunc": 4,
+      "med_onset_over_exp": 0.048,
+      "n": 8
+    },
+    {
+      "arm": "down2",
+      "jam": 0,
+      "trunc": 0,
+      "med_onset_over_exp": null,
+      "n": 8
+    },
+    {
+      "arm": "emb2",
+      "jam": 0,
+      "trunc": 0,
+      "med_onset_over_exp": null,
+      "n": 8
+    },
+    {
+      "arm": "b2g64",
+      "jam": 0,
+      "trunc": 0,
+      "med_onset_over_exp": null,
+      "n": 8
+    },
+    {
+      "arm": "rot_b2g64",
+      "jam": 0,
+      "trunc": 2,
+      "med_onset_over_exp": null,
+      "n": 8
+    },
+    {
+      "arm": "rot_b3g64",
+      "jam": 0,
+      "trunc": 2,
+      "med_onset_over_exp": null,
+      "n": 8
+    },
+    {
+      "arm": "b3awq",
+      "jam": 0,
+      "trunc": 0,
+      "med_onset_over_exp": null,
+      "n": 8
+    },
+    {
+      "arm": "rot_b2g128",
+      "jam": 0,
+      "trunc": 1,
+      "med_onset_over_exp": null,
+      "n": 8
+    },
+    {
+      "arm": "q8",
+      "jam": 0,
+      "trunc": 0,
+      "med_onset_over_exp": null,
+      "n": 8
+    },
+    {
+      "arm": "b2g128",
+      "jam": 0,
+      "trunc": 0,
+      "med_onset_over_exp": null,
+      "n": 8
+    },
+    {
+      "arm": "rot_b2d3",
+      "jam": 0,
+      "trunc": 3,
+      "med_onset_over_exp": null,
+      "n": 8
+    },
+    {
+      "arm": "bf16",
+      "jam": 0,
+      "trunc": 0,
+      "med_onset_over_exp": null,
+      "n": 8
+    },
+    {
+      "arm": "b2plain",
+      "jam": 0,
+      "trunc": 0,
+      "med_onset_over_exp": null,
+      "n": 8
+    },
+    {
+      "arm": "q4",
+      "jam": 0,
+      "trunc": 0,
+      "med_onset_over_exp": null,
+      "n": 8
+    },
+    {
+      "arm": "b3g64e2",
+      "jam": 0,
+      "trunc": 0,
+      "med_onset_over_exp": null,
+      "n": 8
+    },
+    {
+      "arm": "b2g32",
+      "jam": 0,
+      "trunc": 0,
+      "med_onset_over_exp": null,
+      "n": 8
+    }
+  ]
+}

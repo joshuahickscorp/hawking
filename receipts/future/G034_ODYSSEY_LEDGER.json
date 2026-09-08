@@ -4328,10 +4328,21 @@
      "receipt": "receipts/future/G034_LAKE_CENSUS_FULL.json"
     },
     "gpu": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "device": "gpu (Metal via mlx)",
+      "runtime": "mlx_lm 0.32.1, device Device(gpu, 0), weights mlx.core.bfloat16",
+      "prefill_tps_median": 1066.2484,
+      "decode_tps_median": 42.8726,
+      "prefill_spread_pct": 0.27,
+      "decode_spread_pct": 0.07,
+      "context": 512,
+      "concurrency": 1,
+      "repeats": 3,
+      "warmup_discarded": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_bigcode--starcoder2-7b_bb9afde76d79__mlx.json"
     },
     "cpu": {
      "state": "OWED",
@@ -4340,10 +4351,16 @@
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "prefill_tps": 1066.2484,
+      "decode_tps": 42.8726,
+      "backend": "mlx/Metal",
+      "context": 512,
+      "concurrency": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_bigcode--starcoder2-7b_bb9afde76d79__mlx.json"
     },
     "nr_candidate": {
      "state": "OWED",
