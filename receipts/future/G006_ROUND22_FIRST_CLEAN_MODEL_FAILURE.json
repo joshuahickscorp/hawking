@@ -1,7 +1,7 @@
 {
  "obligation": "G006",
  "round": 22,
- "verdict": "NO CREDIT -- but the failure is the MODEL's, and that is the outcome G029 defines as PROGRESS.",
+ "verdict": "SUPERSEDED -- see SUPERSEDED. Originally recorded as the first clean model failure; that attribution was wrong.",
  "why_this_round_is_different": "every previous round in this streak failed on the instrument or the launch. This one was given everything: the correct interpreter, an 8-observation budget, a working dense_anatomy (numpy present for the first time), a reachable write door, and a census that no longer confuses a value with an owed cell. It used 5 of 8 observations and stopped with 679 of 3866 tokens granted -- finish_reason 'stop', not truncation. Nothing was withheld from it.",
  "what_it_actually_did": {
   "tools_used": [
@@ -37,5 +37,12 @@
    "guard": "a first attempt against a path in the session scratchpad was correctly REFUSED: 'path is outside the AgentOS write roots'. The write confinement is live."
   },
   "conclusion": "the door is open, functional on both the value and refusal paths, and confined to the write partition. Round 22 measured real structure and walked past it. The MODEL attribution stands."
+ },
+ "SUPERSEDED": {
+  "by": "receipts/future/G006_ROUND24_THE_ROUND_DID_NOT_KNOW_ITS_HORIZON.json",
+  "what_was_wrong": "this receipt attributes the failure to the MODEL. It verified that the write door works and did not check whether the round knows how many turns it has. It does not -- the budget is stated once, after it is gone.",
+  "revised_attribution": "HARNESS (affordance)",
+  "what_survives": "the write-door probe is still valid: both paths work and the real ledger was untouched. The science the round produced is still real. Only the attribution changes.",
+  "why_left_in_place": "a superseded receipt is not deleted. The campaign's rule is that a wrong conclusion is recorded as superseded with its reason, so the reasoning that produced it stays auditable."
  }
 }
