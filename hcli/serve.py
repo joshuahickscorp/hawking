@@ -306,7 +306,8 @@ class Resident:
                 else self.backend.complete(inner)
 
 
-def make_handler(backend: Any, identity: str, *, greedy: bool, health: Dict[str, Any]):
+def make_handler(backend: Any, identity: str, *, greedy: bool,
+                 health: Dict[str, Any], repo: Any = None):
     class Handler(BaseHTTPRequestHandler):
         protocol_version = "HTTP/1.1"
 
@@ -401,6 +402,14 @@ def make_handler(backend: Any, identity: str, *, greedy: bool, health: Dict[str,
                 return self._send(400, {"error": {
                     "message": "no messages: send {'messages':[{'role':'user',"
                                "'content':'...'}]}"}})
+            if repo is not None:
+                # The folder HCLI was opened in, in front of the conversation.
+                # Stable block first so the resident's prefix cache keeps it
+                # across turns -- see hcli/repo_context.py for why the obvious
+                # order would cost 20s per follow-up instead of 0.5s.
+                from .repo_context import inject
+                messages = inject(messages, repo)
+                body = {**body, "messages": messages}
             payload = {k: v for k, v in body.items() if k != "stream"}
             payload.setdefault("model", identity)
             request_id = f"chatcmpl-{uuid.uuid4().hex[:24]}"
@@ -442,7 +451,7 @@ def make_handler(backend: Any, identity: str, *, greedy: bool, health: Dict[str,
 
 
 def build_server(model: str, *, host: str = DEFAULT_HOST, port: int = DEFAULT_PORT,
-                 ready_timeout: float = 600.0):
+                 ready_timeout: float = 600.0, repo: Any = None):
     """Spawn the resident, wait for it, and return (httpd, identity, health)."""
     from .catalog import Body, catalog, resolve
     from .runtime_iface import classify_backend, make_backend_for_model
@@ -480,8 +489,12 @@ def build_server(model: str, *, host: str = DEFAULT_HOST, port: int = DEFAULT_PO
         "endpoints": ["/v1/models", "/v1/chat/completions", "/health"],
         "switchable": True,
     }
+    if repo is not None:
+        health["repo"] = {"name": repo.name, "root": str(repo.root),
+                          "git": repo.is_git, "branch": repo.branch}
     httpd = ThreadingHTTPServer(
-        (host, port), make_handler(resident, identity, greedy=greedy, health=health))
+        (host, port), make_handler(resident, identity, greedy=greedy,
+                                   health=health, repo=repo))
     httpd.backend = resident  # type: ignore[attr-defined]
     return httpd, identity, health
 
@@ -499,12 +512,17 @@ def main(argv: Optional[list] = None) -> int:
     ap.add_argument("--port", type=int, default=DEFAULT_PORT)
     ap.add_argument("--host", default=DEFAULT_HOST)
     ap.add_argument("--ready-timeout", type=float, default=600.0)
+    ap.add_argument("--no-repo", action="store_true", help=argparse.SUPPRESS)
     a = ap.parse_args(list(argv or []))
     a.model = a.model or a.model_flag
 
     model = a.model or str(Path(__file__).resolve().parent / "hawking-native.sealed-3.14.json")
+    repo = None
+    if not a.no_repo:
+        from .repo_context import RepoContext
+        repo = RepoContext.detect(os.getcwd())
     httpd, identity, health = build_server(
-        model, host=a.host, port=a.port, ready_timeout=a.ready_timeout)
+        model, host=a.host, port=a.port, ready_timeout=a.ready_timeout, repo=repo)
     print(json.dumps({"listening": f"http://{a.host}:{a.port}",
                       "openai_base_url": f"http://{a.host}:{a.port}/v1",
                       **health}), flush=True)

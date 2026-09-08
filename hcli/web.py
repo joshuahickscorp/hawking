@@ -92,7 +92,10 @@ def start_surface(model: str, host: str, port: int, log_dir: Path) -> tuple:
     proc = subprocess.Popen(
         [sys.executable, "-m", "hcli", "serve", "--model", model,
          "--host", host, "--port", str(port)],
-        cwd=str(Path(__file__).resolve().parents[1]),
+        # The surface inherits the directory the USER ran `hcli web` in, not the
+        # repo this file happens to live in -- otherwise every session would
+        # claim Hawking as its context no matter where it was opened.
+        cwd=os.getcwd(),
         stdout=handle, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
         start_new_session=True)
     return proc, log
