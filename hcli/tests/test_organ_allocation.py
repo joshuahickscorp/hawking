@@ -160,8 +160,17 @@ def test_g017_is_on_the_odyssey_ledger_as_nr_not_nx():
     assert nr["state"] == "MEASURED"
     assert nr["receipt"] == "receipts/future/G017_ORGAN_ALLOCATION.json"
     assert nr["value"]["unequal_beats_uniform"] is False
-    assert nr["value"]["uniform_capability_ok"] is True
+    # This asserted True until 2026-09-08, pinning a value the cited receipt
+    # refutes: G017_ORGAN_ALLOCATION.json records capability_ok=False for EVERY
+    # arm. UNIFORM passes perplexity and fails 4-gram diversity, so it fails the
+    # conjunction. The ledger had recorded ppl_ok in a field meaning the whole
+    # gate, and this test enforced that reading -- a test can hold a defect in
+    # place as firmly as the code can.
+    assert nr["value"]["uniform_capability_ok"] is False
     assert nr["value"]["organ_weighted_capability_ok"] is False
+    # and the numbers the receipt carries must actually be here
+    assert nr["value"]["uniform_ppl"] == 5.2278
+    assert nr["value"]["organ_weighted_ppl"] == 6.1738
     assert nx["state"] == "REFUSED"
     assert "Reopen" in nx["reason"]
     assert "kernel" in nx["reason"]

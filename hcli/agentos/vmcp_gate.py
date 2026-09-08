@@ -279,21 +279,27 @@ def run_vmcp_gate(
     external = call("web.search", {"query": search_query, "max_results": 5, "timeout_s": timeout_s})
     inspected = call("vmcp.inspect", {"profile": "core"})
     queried = call("vmcp.query", {"profile": "core", "tool": "vision.capabilities", "arguments": {}})
-    api_file = repo / "visionmcp" / "src" / "visionmcp" / "api.py"
+    # SUBLATED. These two checks used to assert that the FOREIGN visionmcp
+    # source tree was on disk and importable -- reading its api.py and
+    # requiring its core surface to construct. After the port that is exactly
+    # backwards: the gate should pass with the foreign package absent, and a
+    # gate that still demanded it would fail the very state we want.
+    api_file = repo / "hcli" / "perception" / "tools.py"
     local = call("filesystem.read", {"path": str(api_file), "max_bytes": 64 * 1024})
     local_validated = bool(
         local
         and local.ok
         and isinstance(local.value, dict)
         and isinstance(local.value.get("sha256"), str)
-        and "visionmcp.tools/v1" in str(local.value.get("content") or "")
+        and "hcli.perception" in str(local.value.get("content") or "")
     )
     vmcp_live = bool(
         inspected
         and inspected.ok
         and isinstance(inspected.value, dict)
-        and isinstance(inspected.value.get("api"), dict)
-        and inspected.value["api"].get("live_core_surface", {}).get("constructed") is True
+        and inspected.value.get("sublated") is True
+        and inspected.value.get("foreign_package_required") is False
+        and len(inspected.value.get("tools") or []) == 9
     )
     vmcp_observed = bool(
         queried

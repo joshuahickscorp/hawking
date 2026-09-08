@@ -7661,22 +7661,23 @@
      "value": {
       "form": "organ-unequal affine NR",
       "matched_complete_ebpw": 8.1989,
+      "complete_ebpw": 8.1989,
       "unequal_beats_uniform": false,
       "uniform_capability_ok": true,
       "organ_weighted_capability_ok": true,
       "inverted_capability_ok": true,
-      "uniform_ppl": null,
-      "organ_weighted_ppl": null,
-      "inverted_ppl": null,
-      "note": "capability_ok is the ppl AND diversity conjunction, read from the receipt"
+      "uniform_ppl": 3.7994,
+      "organ_weighted_ppl": 3.7982,
+      "inverted_ppl": 3.6711,
+      "verdict": "NO: unequal ORGAN_WEIGHTED does not beat UNIFORM at matched complete EBPW 8.1989 \u2014 ppl 3.7982 vs 3.7994 (delta +0.0012, negative means weighted worse), median_4gram_repeat 0.0377 vs 0.0280 (delta -0.0097). INVERTED ppl 3.6711 r4 0.0278 (INVERTED won or tied ORGAN_WEIGHTED; the prior did not transfer)."
      },
      "reason": null,
      "receipt": "receipts/future/G008_ORGAN_ALLOCATION_SECOND_BODY.json"
     },
     "nx_disposition": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "G017 arms are NR, not NX: encode_affine rematerializes dense W_hat (execution_complete is false; there is no organ-unequal affine kernel). Reopen when a kernel consumes the packed affine codes directly at the matched 9.2619 complete EBPW without a dense parent.",
      "receipt": null
     }
    }
@@ -9217,14 +9218,15 @@
      "value": {
       "form": "organ-unequal affine NR",
       "matched_complete_ebpw": 9.2619,
+      "complete_ebpw": 9.2619,
       "unequal_beats_uniform": false,
       "uniform_capability_ok": false,
       "organ_weighted_capability_ok": false,
       "inverted_capability_ok": false,
-      "uniform_ppl": null,
-      "organ_weighted_ppl": null,
-      "inverted_ppl": null,
-      "note": "capability_ok is the ppl AND diversity conjunction, read from the receipt"
+      "uniform_ppl": 5.2278,
+      "organ_weighted_ppl": 6.1738,
+      "inverted_ppl": 12.84,
+      "verdict": "NO: unequal ORGAN_WEIGHTED does not beat UNIFORM at matched complete EBPW 9.2619 \u2014 ppl 6.1738 vs 5.2278 (delta -0.9460, negative means weighted worse), median_4gram_repeat 0.6923 vs 0.7103 (delta +0.0180). INVERTED ppl 12.8400 r4 0.8224 (ORGAN_WEIGHTED did not Pareto-beat UNIFORM at matched EBPW)."
      },
      "reason": null,
      "receipt": "receipts/future/G017_ORGAN_ALLOCATION.json"

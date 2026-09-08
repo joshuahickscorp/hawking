@@ -74,3 +74,44 @@ def test_a_capability_pass_is_never_recorded_from_ppl_alone():
                         f"{spec['slug']} {arm}: passes ppl, fails diversity, so the "
                         f"conjunction is False -- but the ledger records {field}="
                         f"{cell['value'][field]}")
+
+
+PPL_FOR = {
+    "uniform_ppl": "UNIFORM",
+    "organ_weighted_ppl": "ORGAN_WEIGHTED",
+    "inverted_ppl": "INVERTED",
+}
+
+
+def test_a_row_does_not_discard_numbers_its_receipt_carries():
+    """The boolean check passed while three ppl fields were null.
+
+    The row was hand-assembled by a script that read arms[X]["ppl"], but the
+    receipt nests it at arms[X]["capability"]["ppl"]. So every ppl came back
+    None and the ledger published nulls where 5.2278 / 6.1738 / 12.84 existed.
+    Nothing failed, because the guard only compared capability booleans.
+
+    Silent data loss is the same disease as a contradicted boolean: the row
+    stops being a faithful reading of the evidence it cites.
+    """
+    checked = 0
+    for spec in _measured_nr_rows():
+        cell = spec["axes"]["nr_candidate"]
+        rp = cell.get("receipt")
+        if not rp or not Path(rp).is_file():
+            continue
+        arms = (json.loads(Path(rp).read_text()).get("arms") or {})
+        for field, arm in PPL_FOR.items():
+            if field not in cell["value"] or arm not in arms:
+                continue
+            want = (arms[arm].get("capability") or {}).get("ppl", arms[arm].get("ppl"))
+            if want is None:
+                continue
+            got = cell["value"][field]
+            assert got is not None, (
+                f"{spec['slug']}: ledger {field} is null but {rp} carries "
+                f"{arm} ppl={want}. The row discarded a number its own receipt has.")
+            assert abs(float(got) - float(want)) < 1e-9, (
+                f"{spec['slug']}: ledger {field}={got} but receipt says {want}")
+            checked += 1
+    assert checked, "no ppl field was compared; this guard is vacuous"

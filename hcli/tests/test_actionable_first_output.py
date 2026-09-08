@@ -41,6 +41,7 @@ AUDITED_TOOLS = {
     "accelerator.inspect": "compliant",
     "audit": "compliant",
     "benchmark.run": "compliant",
+    "campaign.checkpoint": "compliant",
     "campaign.guard": "compliant",
     "campaign.state": "compliant",
     "context.recall": "compliant",

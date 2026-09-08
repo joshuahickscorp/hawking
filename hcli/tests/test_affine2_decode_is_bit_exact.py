@@ -83,3 +83,42 @@ def test_an_unnamed_codec_is_refused_before_the_decode():
     with pytest.raises(PackError) as e:
         check_codec_known(5)
     assert "before decode" in str(e.value)
+
+
+def test_the_SHIPPED_decoder_round_trips_a_real_container():
+    """Exercise decode_mixed_payload itself, not a copy of it.
+
+    The tests above compare a hand-written `_vectorised` helper against the
+    scalar oracle. That proves the ALGORITHM, and proves nothing about the
+    function that actually ships: if production drifts from this file, every
+    test above keeps passing while the real path diverges. So build a real
+    HGRAVF01 container and push it through the production entry point.
+    """
+    import json
+    import struct
+
+    import numpy as np
+
+    from tools.qwen38_sub15_pack import CODEC_AFFINE, decode_mixed_payload
+
+    rows, cols = 8, 64
+    gpr = cols // 32
+    groups = rows * gpr
+    n = rows * cols
+    rng = np.random.default_rng(11)
+    codes = rng.integers(0, 256, size=(n * 2 + 7) // 8, dtype=np.uint8)
+    scales = rng.normal(size=groups).astype(np.float16)
+    biases = rng.normal(size=groups).astype(np.float16)
+
+    body = scales.tobytes() + biases.tobytes() + codes.tobytes()
+    header = {"shape": [rows, cols], "groups": groups,
+              "scale_bytes": scales.nbytes, "bias_bytes": biases.nbytes}
+    head = json.dumps(header).encode()
+    payload = b"HGRAVF01" + struct.pack("<I", len(head)) + head + body
+
+    got = decode_mixed_payload(CODEC_AFFINE, payload)
+    want = _scalar_reference(codes, scales.astype(np.float32),
+                            biases.astype(np.float32), rows, cols)
+    assert got.shape == (rows, cols), got.shape
+    assert np.array_equal(got.view(np.uint32), want.view(np.uint32)), (
+        "the SHIPPED decoder disagrees with the scalar oracle")

@@ -43,7 +43,7 @@ def test_they_import_with_the_package_made_unreachable(tmp_path):
         f"sys.path.insert(0, {str(REPO)!r})\n"
         # Make any attempt to import the foreign package fail loudly.
         "class Blocker:\n"
-        "    def find_module(self, name, path=None):\n"
+        "    def find_spec(self, name, path=None, target=None):\n"
         "        if name == 'visionmcp' or name.startswith('visionmcp.'):\n"
         "            raise ImportError('visionmcp is blocked by this test')\n"
         "        return None\n"
@@ -58,20 +58,46 @@ def test_they_import_with_the_package_made_unreachable(tmp_path):
 
 
 def test_the_blocker_actually_blocks():
-    """Negative control: without this, the test above proves nothing."""
-    code = (
-        "import sys\n"
-        "class Blocker:\n"
-        "    def find_module(self, name, path=None):\n"
-        "        if name == 'visionmcp' or name.startswith('visionmcp.'):\n"
-        "            raise ImportError('blocked')\n"
-        "        return None\n"
-        "sys.meta_path.insert(0, Blocker())\n"
-        "try:\n"
-        "    import visionmcp\n"
-        "    print('NOT_BLOCKED')\n"
-        "except ImportError:\n"
-        "    print('BLOCKED')\n"
-    )
-    p = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True)
-    assert "BLOCKED" in p.stdout, f"the blocker does not block: {p.stdout} {p.stderr[-400:]}"
+    """Negative control, with a BASELINE -- without one this proves nothing.
+
+    An earlier version of this test only showed that `import visionmcp` fails
+    with the blocker installed. But the package is a separate gitignored
+    checkout that is not on sys.path anyway, so it fails either way: the test
+    could not distinguish "the blocker worked" from "the package was never
+    reachable". A control that cannot fail for the reason it claims is not a
+    control.
+
+    So: put the real source root on sys.path, prove the import SUCCEEDS, then
+    install the blocker and prove it stops. If the checkout is absent the
+    baseline is unavailable and the test skips loudly rather than passing on a
+    vacuous half.
+    """
+    src = REPO / "visionmcp" / "src"
+    if not (src / "visionmcp" / "__init__.py").is_file():
+        pytest.skip(f"no visionmcp checkout at {src}; baseline unavailable")
+
+    baseline = subprocess.run(
+        [sys.executable, "-c",
+         f"import sys; sys.path.insert(0, {str(src)!r}); import visionmcp; print('IMPORTED')"],
+        capture_output=True, text=True)
+    assert "IMPORTED" in baseline.stdout, (
+        f"baseline failed: visionmcp is not importable even unblocked, so the "
+        f"blocker below would prove nothing.\n{baseline.stderr[-600:]}")
+
+    blocked = subprocess.run(
+        [sys.executable, "-c",
+         f"import sys; sys.path.insert(0, {str(src)!r})\n"
+         "class B:\n"
+         "    def find_spec(self, name, path=None, target=None):\n"
+         "        if name == 'visionmcp' or name.startswith('visionmcp.'):\n"
+         "            raise ImportError('blocked')\n"
+         "        return None\n"
+         "sys.meta_path.insert(0, B())\n"
+         "try:\n"
+         "    import visionmcp; print('NOT_BLOCKED')\n"
+         "except ImportError:\n"
+         "    print('BLOCKED')\n"],
+        capture_output=True, text=True)
+    assert "BLOCKED" in blocked.stdout, (
+        f"the blocker does not block a REACHABLE package: {blocked.stdout} "
+        f"{blocked.stderr[-400:]}")

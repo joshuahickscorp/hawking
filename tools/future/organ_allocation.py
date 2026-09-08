@@ -1453,11 +1453,26 @@ def ingest_g017_into_ledger(
         "verdict": rec["verdict_sentence"],
     }
     actions = []
-    if row["axes"]["nr_candidate"]["state"] == "OWED":
+    # REFRESH, not just first-write. The guard used to skip any row that was
+    # already MEASURED, which made this function structurally incapable of
+    # correcting a bad row -- and a row hand-assembled around it published
+    # nulls for three ppl fields the receipt actually carries. A producer that
+    # cannot overwrite its own output is not the authority for that output.
+    # Refuse only when the row cites a DIFFERENT receipt, since that is someone
+    # else's evidence, not a stale copy of ours.
+    cell = row["axes"]["nr_candidate"]
+    cited = cell.get("receipt")
+    if cell["state"] == "OWED":
         measured(row, "nr_candidate", value, receipt_path)
         actions.append("nr_candidate MEASURED")
+    elif cited in (None, receipt_path):
+        before = dict(cell.get("value") or {})
+        measured(row, "nr_candidate", value, receipt_path)
+        changed = sorted(k for k in set(before) | set(value) if before.get(k) != value.get(k))
+        actions.append(f"nr_candidate REFRESHED from its own receipt; changed={changed}"
+                       if changed else "nr_candidate already matches its receipt")
     else:
-        actions.append(f"nr_candidate already {row['axes']['nr_candidate']['state']}")
+        actions.append(f"nr_candidate cites a different receipt ({cited}); refusing to overwrite")
     if row["axes"]["nx_disposition"]["state"] == "OWED":
         refused(
             row,
