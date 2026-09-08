@@ -26,7 +26,10 @@ def registry():
 
 
 def test_every_campaign_tool_is_discoverable(registry):
-    names = {t["name"] if isinstance(t, dict) else getattr(t, "name") for t in registry.discover()}
+    # Reachability, not primary-surface membership. Consolidation moved several
+    # campaign tools behind merged doors (odyssey.ledger -> odyssey.read op=ledger);
+    # they are still callable and still advertised, which is what this asserts.
+    names = registry.capability_names()
     missing = [t for t in CAMPAIGN_TOOLS if t not in names]
     assert not missing, f"not registered: {missing}"
 

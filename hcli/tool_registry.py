@@ -388,10 +388,26 @@ class ToolRegistry:
         are not independent model-facing capabilities. ``include_aliases``
         is available for diagnostics and migration audits.
         """
+        # Resolve alias CHAINS to their canonical root. Consolidation can make an
+        # alias point at a name that is itself now an alias -- filesystem.read ->
+        # fs.read -> fs -- and crediting only the direct target would leave the
+        # outer name callable but advertised by nothing. A capability nobody can
+        # find is the defect this campaign keeps paying for.
+        def _root(name: str) -> str:
+            seen = {name}
+            spec = self._tools.get(name)
+            while spec is not None and spec.alias_of:
+                if spec.alias_of in seen:  # a cycle is a bug, not a loop to ride
+                    break
+                seen.add(spec.alias_of)
+                name = spec.alias_of
+                spec = self._tools.get(name)
+            return name
+
         aliases: Dict[str, List[str]] = {}
         for item in self._tools.values():
             if item.alias_of:
-                aliases.setdefault(item.alias_of, []).append(item.name)
+                aliases.setdefault(_root(item.name), []).append(item.name)
         result = []
         for spec in sorted(self._tools.values(), key=lambda item: item.name):
             if spec.alias_of and not include_aliases:
@@ -403,6 +419,22 @@ class ToolRegistry:
                 item["aliases"] = sorted(aliases[spec.name])
             result.append(item)
         return result
+
+    def capability_names(self, *, role: Optional[str] = None) -> set:
+        """Every name a caller can REACH, canonical or absorbed. [S004]
+
+        discover() answers "what are the primary tools" -- the smaller surface a
+        model chooses from. This answers a different question: "can I get to X
+        at all", where X may now live as an op behind a merged tool. Both are
+        needed. A reachability check written against discover() alone will call
+        a capability missing the moment it is consolidated, which is how a
+        surface reduction gets mistaken for a capability loss.
+        """
+        names = set()
+        for item in self.discover(role=role):
+            names.add(item["name"])
+            names.update(item.get("aliases") or [])
+        return names
 
     def describe(self, focus: str = "", *, max_results: int = 12) -> Dict[str, Any]:
         """Return the smallest useful slice of the registry for one question.
@@ -1675,6 +1707,103 @@ def _vmcp_inspect(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
     from .vmcp_adapter import inspect_vmcp
 
     return inspect_vmcp(context.repo_root, profile=str(args.get("profile") or "core"))
+
+
+def _campaign_state(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """The campaign in one read: what is being advanced, and what blocks it. [S003 3]
+
+    A campaign operator that must call eight tools to learn where it is will
+    spend its round learning where it is. This assembles the answer from disk --
+    axis coverage, the most recent evidence, the live priors -- and leads with
+    the two things that decide the next move: the dominant bottleneck and how
+    many priors would remove an experiment before it is run.
+
+    It ASSEMBLES; it does not judge. Choosing the next move is the operator's job.
+    """
+    root = context.repo_root
+    out: Dict[str, Any] = {}
+    led = root / "receipts" / "future" / "G034_ODYSSEY_LEDGER.json"
+    axes: Dict[str, Any] = {}
+    owed_depth: List[str] = []
+    if led.is_file():
+        try:
+            doc = json.loads(led.read_text())
+            counts: Dict[str, Dict[str, int]] = {}
+            for row in doc.get("specimens") or []:
+                for axis, cell in (row.get("axes") or {}).items():
+                    counts.setdefault(axis, {})
+                    st = str(cell.get("state"))
+                    counts[axis][st] = counts[axis].get(st, 0) + 1
+            axes = counts
+            # The depth axes are where the campaign is thin; name them first.
+            for axis in ("nr_candidate", "cpu", "gpu", "tps", "nx_disposition"):
+                c = counts.get(axis) or {}
+                if c.get("MEASURED", 0) == 0:
+                    owed_depth.append(axis)
+        except Exception as exc:
+            axes = {"unreadable": f"{type(exc).__name__}: {exc}"}
+    priors = _odyssey_priors(context, {"show": 1})
+    n_priors = priors.get("total")
+    recent: List[Dict[str, Any]] = []
+    rdir = root / "receipts" / "future"
+    if rdir.is_dir():
+        newest = sorted(rdir.glob("*.json"), key=lambda q: q.stat().st_mtime,
+                        reverse=True)[:6]
+        for q in newest:
+            recent.append({"receipt": q.name, "mtime": int(q.stat().st_mtime)})
+    out = {
+        "bottleneck": (
+            f"depth axes with ZERO measurements: {owed_depth}" if owed_depth else
+            "no depth axis is entirely unmeasured; the bottleneck is elsewhere"),
+        "depth_axes_never_measured": owed_depth,
+        "axis_coverage": axes,
+        "n_priors": n_priors,
+        "priors_note": ("read them with odyssey.read op=priors BEFORE proposing an "
+                        "experiment; a prior that already answers a question "
+                        "removes it"),
+        "recent_evidence": recent,
+        "ledger": str(led.relative_to(root)) if led.is_file() else None,
+        "this_tool_assembles_it_does_not_judge": (
+            "choosing the next move is the operator's decision, not this tool's"),
+    }
+    return out
+
+
+def _vmcp_tools(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """WHICH VMCP tools can HCLI actually call, and what is refused, and why. [S004]
+
+    VisionMCP ships 303 tools; the HCLI bridge allowlists a read-only subset.
+    Without this, a resident holding `vmcp` has a door and no idea what is
+    behind it -- the same built-but-unreachable shape the campaign keeps
+    finding, one level down. Callable names lead; the refusal for everything
+    else names its mechanism rather than pretending the rest do not exist.
+    """
+    from .vmcp_adapter import VMCP_READ_ONLY_TOOLS, _candidate_source_roots, _source_tools
+
+    callable_names = sorted(VMCP_READ_ONLY_TOOLS)
+    total = None
+    for root in _candidate_source_roots(context.repo_root):
+        pkg = root / "visionmcp"
+        if pkg.exists():
+            try:
+                total = len(_source_tools(pkg))
+            except Exception:
+                total = None
+            break
+    return {
+        "callable": callable_names,
+        "n_callable": len(callable_names),
+        "n_in_visionmcp": total,
+        "how": "vmcp op=query tool=<name> arguments={...}",
+        "refused_mechanism": (
+            "everything outside this list raises PermissionError from "
+            "hcli/vmcp_adapter.py::call_vmcp -- HCLI does not expose the full "
+            "VisionMCP laboratory as an untyped escape hatch; mutations and "
+            "experimental tools stay behind VMCP's own governed interfaces"),
+        "reopen_when": (
+            "a specific VMCP tool earns a read-only case and is added to "
+            "VMCP_READ_ONLY_TOOLS; the allowlist is the mechanism, not a bug"),
+    }
 
 
 def _vmcp_query(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
@@ -3198,6 +3327,207 @@ def _nr_complete_ebpw(context: ToolContext, args: Dict[str, Any]) -> Dict[str, A
     return lead
 
 
+
+# ---------------------------------------------------------------------------
+# SURFACE CONSOLIDATION. [S004]
+#
+# 60 tools became 81 became 91. Tool COUNT was already a declared non-goal, and
+# a resident that must choose among 83 schemas every turn is paying a selection
+# tax for a capability it could reach through a dozen doors. So: merge the
+# families behind one dispatching tool each, keep EVERY old name callable as an
+# alias, and let discover() show the smaller surface.
+#
+# The one hard rule is permission. A tool has ONE mutation class, so folding a
+# destructive op into a read_only tool would silently widen what a "read" can
+# do. _merge_group therefore REFUSES to merge members that disagree on
+# mutation class, at registry-build time, where it cannot be missed. That is
+# why git keeps land.propose and checkout-safe outside git, and why odyssey
+# splits into read / record / drive rather than one god-tool.
+# ---------------------------------------------------------------------------
+
+CONSOLIDATION: Dict[str, Dict[str, Any]] = {
+    "odyssey.read": {
+        "summary": "Read Odyssey campaign state. One door, many views.",
+        "ops": {
+            "status": "odyssey.status", "ledger": "odyssey.ledger",
+            "queue": "odyssey.queue", "priors": "odyssey.priors",
+            "value": "odyssey.value", "economics": "odyssey.economics",
+            "harvest": "odyssey.harvest", "ingest": "odyssey.ingest",
+            "completions": "odyssey.completions",
+            "selection_brief": "odyssey.selection_brief",
+            "patient": "odyssey.patient", "anatomy": "odyssey.anatomy",
+            "dense_anatomy": "odyssey.dense_anatomy",
+            "attack_law": "odyssey.attack_law",
+        },
+    },
+    "odyssey.record": {
+        "summary": "Write one Odyssey result: a Law, a Scar, or a ledger axis.",
+        "ops": {"law": "odyssey.record_law", "scar": "odyssey.record_scar"},
+    },
+    "odyssey.drive": {
+        "summary": "Advance the Odyssey driver. Every op is COSTLY and needs confirm.",
+        "ops": {
+            "cycle": "odyssey.cycle", "retire": "odyssey.retire",
+            "park_specimen": "odyssey.park_specimen",
+            "add_to_eligibility": "odyssey.add_to_eligibility",
+            "write_packet": "odyssey.write_packet",
+            "gravity_gauntlet": "odyssey.gravity_gauntlet",
+            "transfer_probe": "odyssey.create_transfer_probe",
+            "adversarial_probe": "odyssey.create_adversarial_probe",
+        },
+    },
+    "audit": {
+        "summary": ("Adversarial audit. Is this verdict stale, is this experiment "
+                    "confounded, is this tool actually callable, what would falsify "
+                    "this claim?"),
+        "ops": {"gate": "capability.gate", "confound": "experiment.confound",
+                "reachable": "tool.reachable", "attack": "claim.attack"},
+    },
+    "fs": {
+        "summary": "Read the filesystem: one file, a listing, or a search.",
+        "ops": {"read": "fs.read", "list": "fs.list", "search": "fs.search"},
+    },
+    "git": {
+        "summary": ("Inspect the repository without mutating it. Landing and "
+                    "checkout stay OUTSIDE this tool because they are not reads."),
+        "ops": {"status": "git.status", "log": "git.log", "diff": "git.diff"},
+    },
+    "processes": {
+        "summary": "Live Hawking processes: a listing, a roll-up, or the orphans.",
+        "ops": {"list": "processes.list", "summary": "processes.summary",
+                "orphaned": "processes.orphaned"},
+    },
+    "physical": {
+        "summary": ("Physical measurement under the ONE contract. Measuring a body "
+                    "that was never a resident is physical.measure -- COSTLY, so it "
+                    "stays outside."),
+        "ops": {"rounds": "physical.rounds", "emit": "physical.emit"},
+    },
+    "lake": {
+        "summary": "The ModelLake: census, mount status, specimen registry, acquisition.",
+        "ops": {"census": "lake.census", "status": "modellake.status",
+                "specimens": "specimens.registry", "acquire": "acquisition.propose"},
+    },
+    "receipt": {
+        "summary": "Read a named receipt: campaign evidence, roadmap, or architecture.",
+        "ops": {"read": "receipt.read", "roadmap": "roadmap.read",
+                "architecture": "architecture.inspect"},
+    },
+    "vmcp": {
+        "summary": ("Vision MCP. `tools` says what is callable and what is refused, "
+                    "`query` calls one. VisionMCP ships 303 tools; the bridge "
+                    "allowlists a read-only subset and names the mechanism for the rest."),
+        "ops": {"tools": "vmcp.tools", "capabilities": "vmcp.capabilities",
+                "inspect": "vmcp.inspect", "query": "vmcp.query"},
+    },
+    "web": {
+        "summary": "The open web: search for pages, or fetch one.",
+        "ops": {"search": "web.search", "fetch": "web.fetch"},
+    },
+    "github": {
+        "summary": "GitHub: search, or fetch a specific object.",
+        "ops": {"search": "github.search", "fetch": "github.fetch"},
+    },
+    "huggingface": {
+        "summary": ("Hugging Face metadata. Downloading is COSTLY and stays outside "
+                    "as huggingface.download."),
+        "ops": {"resolve": "huggingface.resolve", "history": "huggingface.history",
+                "fetch_file": "huggingface.fetch_file"},
+    },
+}
+
+
+def _merge_group(registry: "ToolRegistry", name: str, spec: Mapping[str, Any]) -> Optional[ToolSpec]:
+    """Register one dispatching tool over an existing family, or refuse.
+
+    Refuses -- loudly, at build time -- if the members disagree on mutation
+    class. A merged tool has one class; a quiet merge across classes would let
+    a read-permissioned caller reach a write.
+    """
+    members = {op: registry.get(target) for op, target in spec["ops"].items()}
+    missing = sorted(op for op, sp in members.items() if sp is None)
+    if missing:
+        raise RuntimeError(f"consolidation {name}: no such tool for ops {missing}")
+    classes = {sp.mutation for sp in members.values()}
+    if len(classes) != 1:
+        raise RuntimeError(
+            f"consolidation {name}: members span mutation classes {sorted(classes)}; "
+            "merging them would widen what the weakest permission can reach")
+    mutation = classes.pop()
+    resources = tuple(sorted({r for sp in members.values() for r in sp.resources}))
+    deterministic = all(sp.deterministic for sp in members.values())
+    timeout = max(sp.timeout_s for sp in members.values())
+
+    def handler(context: ToolContext, args: Dict[str, Any]) -> Any:
+        op = str(args.get("op") or "").strip()
+        target = members.get(op)
+        if target is None:
+            return {"refused": f"unknown op {op!r} for {name}",
+                    "ops": sorted(members), "hint": "pass one of ops as `op`"}
+        sub = {k: v for k, v in args.items() if k != "op"}
+        # Keep the ORIGINAL tool's own validation. The merged schema has to be
+        # permissive because ops take different arguments; the per-op contract
+        # must not be lost with it.
+        problem = validate_input(sub, target.input_schema)
+        if problem is not None:
+            return {"refused": problem, "op": op, "resolves_to": target.name,
+                    "required": (target.input_schema or {}).get("required") or []}
+        return target.handler(context, sub)
+
+    lines = []
+    for op in sorted(members):
+        sp = members[op]
+        req = (sp.input_schema or {}).get("required") or []
+        lines.append(f"{op}" + (f"({','.join(req)})" if req else "") + f" -> {sp.name}")
+    description = spec["summary"] + " ops: " + "; ".join(lines)
+    # The merged schema carries the UNION of its members' properties, not just
+    # `op`. The catalog renders a signature from the SCHEMA, so a merged tool
+    # advertising only op:string would show the model a door and hide every
+    # argument behind it -- the same unreachable-argument defect this campaign
+    # keeps finding, reintroduced by the consolidation itself. Each property
+    # says which ops accept it, so the union does not read as a free-for-all.
+    props: Dict[str, Any] = {
+        "op": {"type": "string", "enum": sorted(members),
+               "description": "which operation; see per-op required args below"}}
+    used_by: Dict[str, List[str]] = {}
+    for op, sp in sorted(members.items()):
+        for field, schema in ((sp.input_schema or {}).get("properties") or {}).items():
+            used_by.setdefault(field, []).append(op)
+            if field not in props:
+                props[field] = dict(schema)
+    for field, ops in used_by.items():
+        req_for = sorted(o for o in ops
+                         if field in ((members[o].input_schema or {}).get("required") or []))
+        note = "ops: " + ",".join(sorted(ops))
+        if req_for:
+            note += "; REQUIRED for " + ",".join(req_for)
+        existing = props[field].get("description")
+        props[field]["description"] = f"{existing} ({note})" if existing else note
+    merged = registry.register(ToolSpec(
+        name, description,
+        {"type": "object", "required": ["op"], "additionalProperties": True,
+         "properties": props},
+        mutation=mutation, deterministic=deterministic, resources=resources,
+        timeout_s=timeout, handler=handler,
+    ))
+    # Absorbed names stay CALLABLE -- alias_of only hides them from discover().
+    # Nothing that worked before this consolidation stops working. ToolSpec is
+    # frozen, so the marker goes on a replacement carrying the same handler
+    # rather than by mutating a spec other code may already hold.
+    from dataclasses import replace as _replace
+    for target in members.values():
+        if target.name != name:
+            registry._tools[target.name] = _replace(target, alias_of=name)
+    return merged
+
+
+def _consolidate(registry: "ToolRegistry") -> Dict[str, Any]:
+    before = len(registry.discover())
+    for name, spec in CONSOLIDATION.items():
+        _merge_group(registry, name, spec)
+    return {"before": before, "after": len(registry.discover())}
+
+
 def default_tool_registry(
     workspace: str | os.PathLike[str],
     *,
@@ -3890,6 +4220,22 @@ def default_tool_registry(
         handler=_wall_avoided,
     ))
     registry.register(ToolSpec(
+        "campaign.state",
+        "The campaign in one read: which depth axes have ZERO measurements (the "
+        "bottleneck), axis coverage across every specimen, how many priors are "
+        "live, and the most recent evidence. Call this FIRST when deciding what "
+        "to do next. It assembles; it does not choose.",
+        {"type": "object", "additionalProperties": False, "properties": {}},
+        handler=_campaign_state,
+    ))
+    registry.register(ToolSpec(
+        "vmcp.tools",
+        "Which VisionMCP tools HCLI can actually call, and the named mechanism "
+        "that refuses the rest. Read this before vmcp op=query.",
+        {"type": "object", "additionalProperties": False, "properties": {}},
+        handler=_vmcp_tools,
+    ))
+    registry.register(ToolSpec(
         "odyssey.priors",
         "What the campaign already knows: recorded Laws and Scars, each with the "
         "DOMAIN it was measured on and the condition that would REOPEN it. Read "
@@ -3969,6 +4315,7 @@ def default_tool_registry(
         [(i["name"], registry.get(i["name"])) for i in registry.discover()]
         if sp is not None
     }
+    _consolidate(registry)
     return registry
 
 

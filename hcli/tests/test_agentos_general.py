@@ -166,7 +166,8 @@ class AgentOSGeneralTest(unittest.TestCase):
             root = Path(tmp)
             (root / "note.txt").write_text("alpha\nbeta\n", encoding="utf-8")
             registry = default_tool_registry(root, repo_root=root)
-            names = {item["name"] for item in registry.discover()}
+            # capability_names covers merged doors as well as primary tools.
+            names = registry.capability_names()
             self.assertIn("fs.read", names)
             self.assertIn("huggingface.resolve", names)
             read = registry.invoke("fs.read", {"path": "note.txt"})
