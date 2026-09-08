@@ -2201,7 +2201,12 @@ def _odyssey_record_measurement(context: ToolContext, args: Dict[str, Any]) -> D
                 f"written to, not about the specimen. A tool-call error is not a finding. "
                 f"Record what the BODY refuses, with the mechanism the body gave you."
             )
-        m.refused(rec, axis, text)
+        # OPTIONAL, and recorded when given. 121 of 142 refusals on the live
+        # ledger name a mechanism and no way back, which makes them permanent by
+        # accident. Required would reject the next refusal a round writes for a
+        # field it has never been asked for; accepted lets the gap close and be
+        # measured while it does.
+        m.refused(rec, axis, text, reopen_when=args.get("reopen_when"))
     else:
         receipt = str(args.get("receipt") or "").strip()
         # SAME invariant as the refusal guard above, other field: a cell's evidence cannot
@@ -2568,7 +2573,12 @@ def default_tool_registry(
     ))
     registry.register(ToolSpec(
         "odyssey.record_measurement",
-        "Record one specimen/axis result into the Odyssey ledger: a value WITH a receipt, or a refusal whose reason names a mechanism. This is how a measured round closes.",
+        "Record one specimen/axis result into the Odyssey ledger: a value WITH a receipt, or a "
+        "refusal whose reason names a mechanism. This is how a measured round closes. With a "
+        "refusal, also give reopen_when -- the condition that would make this measurable (a float "
+        "copy of the body, a runtime that supports the architecture, a machine with the memory). "
+        "121 of the ledger's 142 refusals name a mechanism and no way back, which makes them "
+        "permanent by accident.",
         {"type": "object", "required": ["path", "slug", "axis"],
          "additionalProperties": False,
          "properties": {"path": {"type": "string"},
@@ -2576,7 +2586,8 @@ def default_tool_registry(
                         "axis": {"type": "string"},
                         "value": {},
                         "receipt": {"type": ["string", "null"]},
-                        "reason": {"type": ["string", "null"]}}},
+                        "reason": {"type": ["string", "null"]},
+                        "reopen_when": {"type": ["string", "null"]}}},
         mutation=REVERSIBLE_REPO,
         resources=("filesystem",), deterministic=False,
         handler=_odyssey_record_measurement,

@@ -51,11 +51,16 @@ def audit() -> dict:
             if cell.get("state") != "REFUSED":
                 continue
             reason = (cell.get("reason") or "").strip()
+            # A STRUCTURED reopen_when beats a regex over prose. The field did
+            # not exist when this audit was written -- it was added because the
+            # audit found 121 refusals with no way back -- so the text heuristic
+            # stays as a fallback for the cells recorded before it.
+            reopen_field = str(cell.get("reopen_when") or "").strip()
             checks = {
                 "non_empty": bool(reason),
                 "not_a_placeholder": bool(reason) and not PLACEHOLDER.match(reason),
                 "has_a_mechanism": bool(reason) and bool(MECHANISM_HINT.search(reason)),
-                "has_reopen": bool(reason) and bool(REOPEN_HINT.search(reason)),
+                "has_reopen": bool(reopen_field) or (bool(reason) and bool(REOPEN_HINT.search(reason))),
             }
             verdict = ("STRONG" if all(checks.values())
                        else "NO_REOPEN" if (checks["has_a_mechanism"] and not checks["has_reopen"])
@@ -63,8 +68,11 @@ def audit() -> dict:
             tally[verdict] += 1
             rows.append({"slug": rec["slug"], "axis": axis, "verdict": verdict,
                          "checks": checks, "reason": reason[:220],
+                         "reopen_when": reopen_field or None,
+                         "reopen_is_structured": bool(reopen_field),
                          "has_receipt": bool(cell.get("receipt"))})
     return {"n_refused": len(rows), "tally": dict(tally), "rows": rows,
+            "with_structured_reopen": sum(1 for r in rows if r["reopen_is_structured"]),
             "distinct_reasons": len({r["reason"] for r in rows}),
             "with_receipt": sum(1 for r in rows if r["has_receipt"])}
 

@@ -33,5 +33,21 @@
  "effect_on_the_headline_number": "the ledger reads 60.2% resolved. That figure counts 142 refusals, 121 of which cannot be revisited by any stated condition. It remains the honest resolved count -- but 'resolved' and 'settled' are not the same word, and per S009 47 only MEASURED (94, 24.0%) is quoted as measured.",
  "status": "G009 IS NOT SATISFIABLE AS WRITTEN. Measured, not asserted; reported, not repaired.",
  "why_not_repaired_here": "writing 121 reopen conditions is authoring scientific content for cells Claude did not measure. Several belong to the autonomy round's own territory, and inventing a reopen condition for a refusal someone else recorded is exactly the target engineering G006 forbids. The gap is stated so it can be closed by whoever owns each cell.",
- "scar": "A REFUSAL WITHOUT A REOPEN CONDITION IS PERMANENT BY ACCIDENT."
+ "scar": "A REFUSAL WITHOUT A REOPEN CONDITION IS PERMANENT BY ACCIDENT.",
+ "the_producer_is_fixed_going_forward": {
+  "finding_restated": "121 of 142 refusals name a mechanism and no way back. I declined to author 121 reopen conditions for cells I did not measure -- that stands. What was left unaddressed is that nothing stopped the 122nd from being recorded the same way.",
+  "change": {
+   "ledger": "odyssey_ledger.refused() accepts an optional reopen_when, stores it in the cell, and REFUSES a value under 12 characters -- 'soon' is not a condition, and a token gesture recorded as one is worse than an honest absence.",
+   "tool": "odyssey.record_measurement takes reopen_when, and its description now names the field and the 121/142 number, so a round asking what a refusal owes is told.",
+   "audit": "refusal_audit reads the STRUCTURED field first and keeps the prose heuristic as a fallback for the 142 cells recorded before the field existed."
+  },
+  "deliberately_NOT_required": "making it required would reject the next refusal an autonomous round writes, mid-streak, for a field the round has never been asked for -- converting an accounting improvement into a round failure attributable to me. Three rounds have already been lost to my launches and affordances. It is accepted, stored and audited instead, so the gap closes going forward and is measured while it does.",
+  "verification": {
+   "end_to_end": "through the registered tool on a scratch ledger copy: the cell gains reopen_when; a 4-character value is refused with its reason; the copy is deleted and the real ledger is untouched.",
+   "mutation": "the store line removed -> reopen_when absent from the cell, caught. Markers grep 0.",
+   "regression": "test_engine_tool_loop 20 passed; the G019 survival sweep still 20 OK / 0 lost.",
+   "current_count": "with_structured_reopen 0 -- nothing has used it yet, which is the honest state."
+  },
+  "scar": "I CANNOT FAIRLY WRITE 121 PAST REOPEN CONDITIONS. I CAN STOP THE 122nd FROM LACKING ONE."
+ }
 }

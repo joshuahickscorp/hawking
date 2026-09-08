@@ -16,6 +16,8 @@
     "has_reopen": false
    },
    "reason": "expert organ is pre-quantized on disk: expert payload is ['U8'] with ['weight_scale'] scale tensors -- a spectrum over quantization codes measures the codebook, not the organism. A spectrum over quantization codes measur",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -29,6 +31,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"kimi_k3\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -42,6 +46,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"kimi_k3\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -55,6 +61,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"kimi_k3\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -68,6 +76,8 @@
     "has_reopen": false
    },
    "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"kimi_k3\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture re",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -81,6 +91,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"inkling_mm_model\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -94,6 +106,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"inkling_mm_model\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -107,6 +121,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"inkling_mm_model\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -120,6 +136,8 @@
     "has_reopen": false
    },
    "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"inkling_mm_model\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this archit",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -133,6 +151,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"qwen4_exp\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -146,6 +166,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"qwen4_exp\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -159,6 +181,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"qwen4_exp\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -172,6 +196,8 @@
     "has_reopen": false
    },
    "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"qwen4_exp\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture ",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -185,6 +211,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"qwen4_exp\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -198,6 +226,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"qwen4_exp\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -211,6 +241,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"qwen4_exp\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -224,6 +256,8 @@
     "has_reopen": false
    },
    "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"qwen4_exp\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture ",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -237,6 +271,8 @@
     "has_reopen": false
    },
    "reason": "expert organ is pre-quantized on disk: expert payload is ['F8_E4M3'] with ['weight_scale_inv'] scale tensors -- a spectrum over quantization codes measures the codebook, not the organism. A spectrum over quantization cod",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -250,6 +286,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"glm5_next\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -263,6 +301,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"glm5_next\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -276,6 +316,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"glm5_next\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -289,6 +331,8 @@
     "has_reopen": false
    },
    "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"glm5_next\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture ",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -302,6 +346,8 @@
     "has_reopen": false
    },
    "reason": "expert organ is pre-quantized on disk: expert payload is ['F8_E4M3', 'I8'] with ['scale'] scale tensors -- a spectrum over quantization codes measures the codebook, not the organism. A spectrum over quantization codes me",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -315,6 +361,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"deepseek_v4\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -328,6 +376,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"deepseek_v4\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -341,6 +391,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"deepseek_v4\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -354,6 +406,8 @@
     "has_reopen": false
    },
    "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"deepseek_v4\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architectur",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -367,6 +421,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: no model_type in config (<no config: FileNotFoundError>)",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -380,6 +436,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: no model_type in config (<no config: FileNotFoundError>)",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -393,6 +451,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: no model_type in config (<no config: FileNotFoundError>)",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -406,6 +466,8 @@
     "has_reopen": true
    },
    "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type (absent), architectures (absent): not a text sequence model. That gate is undefined",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -419,6 +481,8 @@
     "has_reopen": true
    },
    "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type (absent), architectures (absent): not a text sequence model. That gate is undefined",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -432,6 +496,8 @@
     "has_reopen": false
    },
    "reason": "no safetensors under the snapshot: weights are 5x.lock, 5x.metadata, 2x<noext>, 1x.json",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -445,6 +511,8 @@
     "has_reopen": false
    },
    "reason": "no safetensors to account: weights are 5x.lock, 5x.metadata, 2x<noext>, 1x.json",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -458,6 +526,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -471,6 +541,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -484,6 +556,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -497,6 +571,8 @@
     "has_reopen": true
    },
    "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type (absent), architectures (absent): not a text sequence model. That gate is undefined",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -510,6 +586,8 @@
     "has_reopen": true
    },
    "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type (absent), architectures (absent): not a text sequence model. That gate is undefined",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -523,6 +601,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"llava_llama\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -536,6 +616,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"llava_llama\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -549,6 +631,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"llava_llama\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -562,6 +646,8 @@
     "has_reopen": false
    },
    "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"llava_llama\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architectur",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -575,6 +661,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"illada\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -588,6 +676,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"illada\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -601,6 +691,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"illada\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -614,6 +706,8 @@
     "has_reopen": false
    },
    "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"illada\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture reo",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -627,6 +721,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: no model_type in config (<no config: FileNotFoundError>)",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -640,6 +736,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: no model_type in config (<no config: FileNotFoundError>)",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -653,6 +751,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: no model_type in config (<no config: FileNotFoundError>)",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -666,6 +766,8 @@
     "has_reopen": false
    },
    "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"unknown\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture re",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -679,6 +781,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"Dream\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -692,6 +796,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"Dream\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -705,6 +811,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"Dream\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -718,6 +826,8 @@
     "has_reopen": false
    },
    "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"Dream\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture reop",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -731,6 +841,8 @@
     "has_reopen": false
    },
    "reason": "no safetensors under the snapshot: weights are 6x.metadata, 6x.lock, 3x.pt, 2x.json",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -744,6 +856,8 @@
     "has_reopen": false
    },
    "reason": "no safetensors to account: weights are 6x.metadata, 6x.lock, 3x.pt, 2x.json",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -757,6 +871,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -770,6 +886,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -783,6 +901,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -796,6 +916,8 @@
     "has_reopen": true
    },
    "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type (absent), architectures (absent): not a text sequence model. That gate is undefined",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -809,6 +931,8 @@
     "has_reopen": true
    },
    "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type (absent), architectures (absent): not a text sequence model. That gate is undefined",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -822,6 +946,8 @@
     "has_reopen": false
    },
    "reason": "dense sweep REFUSED: /Volumes/corpdrive/hawking-modellake/specimens/lerobot--pi0_base@25c379b52ba2: body HAS expert tensors (767 keys, e.g. paligemma_with_expert.gemma_expert.lm_head.weight). representational_anatomy.py ",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -835,6 +961,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: no model_type in config (None)",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -848,6 +976,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: no model_type in config (None)",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -861,6 +991,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: no model_type in config (None)",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -874,6 +1006,8 @@
     "has_reopen": false
    },
    "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"unknown\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture re",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -887,6 +1021,8 @@
     "has_reopen": false
    },
    "reason": "no safetensors under the snapshot: weights are 9x.metadata, 9x.lock, 6x.json, 3x.bin",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -900,6 +1036,8 @@
     "has_reopen": false
    },
    "reason": "no safetensors to account: weights are 9x.metadata, 9x.lock, 6x.json, 3x.bin",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -913,6 +1051,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -926,6 +1066,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -939,6 +1081,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -952,6 +1096,8 @@
     "has_reopen": true
    },
    "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type musicgen, architectures MusicgenForConditionalGeneration: not a text sequence model",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -965,6 +1111,8 @@
     "has_reopen": true
    },
    "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type musicgen, architectures MusicgenForConditionalGeneration: not a text sequence model",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -978,6 +1126,8 @@
     "has_reopen": false
    },
    "reason": "no safetensors under the snapshot: weights are 4x.metadata, 4x.lock, 2x<noext>, 1x.json",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -991,6 +1141,8 @@
     "has_reopen": false
    },
    "reason": "no safetensors to account: weights are 4x.metadata, 4x.lock, 2x<noext>, 1x.json",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1004,6 +1156,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1017,6 +1171,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1030,6 +1186,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1043,6 +1201,8 @@
     "has_reopen": true
    },
    "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type (absent), architectures (absent): not a text sequence model. That gate is undefined",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1056,6 +1216,8 @@
     "has_reopen": true
    },
    "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type (absent), architectures (absent): not a text sequence model. That gate is undefined",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1069,6 +1231,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"phi4mm\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1082,6 +1246,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"phi4mm\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1095,6 +1261,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"phi4mm\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1108,6 +1276,8 @@
     "has_reopen": false
    },
    "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"phi4mm\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture reo",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1121,6 +1291,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"smolvlm\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1134,6 +1306,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"smolvlm\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1147,6 +1321,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"smolvlm\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1160,6 +1336,8 @@
     "has_reopen": false
    },
    "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"smolvlm\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture re",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1173,6 +1351,8 @@
     "has_reopen": false
    },
    "reason": "no safetensors under the snapshot: weights are 4x.metadata, 4x.lock, 2x.ckpt, 2x<noext>",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1186,6 +1366,8 @@
     "has_reopen": false
    },
    "reason": "no safetensors to account: weights are 4x.metadata, 4x.lock, 2x.ckpt, 2x<noext>",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1199,6 +1381,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1212,6 +1396,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1225,6 +1411,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1238,6 +1426,8 @@
     "has_reopen": true
    },
    "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type (absent), architectures (absent): not a text sequence model. That gate is undefined",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1251,6 +1441,8 @@
     "has_reopen": true
    },
    "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type (absent), architectures (absent): not a text sequence model. That gate is undefined",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1264,6 +1456,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"vjepa2\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1277,6 +1471,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"vjepa2\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1290,6 +1486,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"vjepa2\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1303,6 +1501,8 @@
     "has_reopen": true
    },
    "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type vjepa2, architectures VJEPA2Model: not a text sequence model. That gate is undefine",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1316,6 +1516,8 @@
     "has_reopen": true
    },
    "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type vjepa2, architectures VJEPA2Model: not a text sequence model. That gate is undefine",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1329,6 +1531,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"t5\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1342,6 +1546,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"t5\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1355,6 +1561,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"t5\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1368,6 +1576,8 @@
     "has_reopen": false
    },
    "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"t5\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture reopens",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1381,6 +1591,8 @@
     "has_reopen": false
    },
    "reason": "no safetensors under the snapshot: weights are 4x.metadata, 4x.lock, 2x<noext>, 1x.json",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1394,6 +1606,8 @@
     "has_reopen": false
    },
    "reason": "no safetensors to account: weights are 4x.metadata, 4x.lock, 2x<noext>, 1x.json",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1407,6 +1621,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1420,6 +1636,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1433,6 +1651,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1446,6 +1666,8 @@
     "has_reopen": false
    },
    "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"unknown\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture re",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1459,6 +1681,8 @@
     "has_reopen": false
    },
    "reason": "no safetensors under the snapshot: weights are 4x.metadata, 4x.lock, 2x<noext>, 1x.json",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1472,6 +1696,8 @@
     "has_reopen": false
    },
    "reason": "no safetensors to account: weights are 4x.metadata, 4x.lock, 2x<noext>, 1x.json",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1485,6 +1711,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1498,6 +1726,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1511,6 +1741,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1524,6 +1756,8 @@
     "has_reopen": false
    },
    "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"unknown\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture re",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1537,6 +1771,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"timesfm\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1550,6 +1786,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"timesfm\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1563,6 +1801,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"timesfm\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1576,6 +1816,8 @@
     "has_reopen": true
    },
    "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type timesfm, architectures TimesFmModelForPrediction: not a text sequence model. That g",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1589,6 +1831,8 @@
     "has_reopen": true
    },
    "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type timesfm, architectures TimesFmModelForPrediction: not a text sequence model. That g",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1602,6 +1846,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"whisper\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1615,6 +1861,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"whisper\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1628,6 +1876,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"whisper\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1641,6 +1891,8 @@
     "has_reopen": false
    },
    "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"whisper\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture re",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1654,6 +1906,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"modernbert\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1667,6 +1921,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"modernbert\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1680,6 +1936,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"modernbert\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1693,6 +1951,8 @@
     "has_reopen": false
    },
    "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"modernbert\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1706,6 +1966,8 @@
     "has_reopen": true
    },
    "reason": "no NX candidate here: the only arm that passes the conjunction is UNIFORM affine q4-g64 at 9.2619 complete EBPW, which is not smaller than the parent in any sense that earns a frozen executable. Reopen when a representat",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1719,6 +1981,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"depth_anything\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1732,6 +1996,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"depth_anything\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1745,6 +2011,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"depth_anything\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1758,6 +2026,8 @@
     "has_reopen": true
    },
    "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type depth_anything, architectures DepthAnythingForDepthEstimation: not a text sequence ",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1771,6 +2041,8 @@
     "has_reopen": true
    },
    "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type depth_anything, architectures DepthAnythingForDepthEstimation: not a text sequence ",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1784,6 +2056,8 @@
     "has_reopen": false
    },
    "reason": "dense sweep REFUSED: /Volumes/corpdrive/hawking-modellake/specimens/microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361: weights are pre-quantized (payload dtype ['U8'] not in BF16/F16/F32/F64) -- a spectrum over quantization cod",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1797,6 +2071,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"sam2_video\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1810,6 +2086,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"sam2_video\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1823,6 +2101,8 @@
     "has_reopen": false
    },
    "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"sam2_video\"",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1836,6 +2116,8 @@
     "has_reopen": true
    },
    "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type sam2_video, architectures Sam2VideoModel: not a text sequence model. That gate is u",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   },
   {
@@ -1849,9 +2131,12 @@
     "has_reopen": true
    },
    "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type sam2_video, architectures Sam2VideoModel: not a text sequence model. That gate is u",
+   "reopen_when": null,
+   "reopen_is_structured": false,
    "has_receipt": false
   }
  ],
+ "with_structured_reopen": 0,
  "distinct_reasons": 56,
  "with_receipt": 0
 }
