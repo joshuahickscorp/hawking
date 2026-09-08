@@ -1,0 +1,51 @@
+{
+ "obligation": "G027 / G012",
+ "what": "the REALISTIC floor for the sealed body, and a correction to a claim I made from an absurd bound",
+ "specimen": "sealed-3.14 / qwen3.8-27b, NOETIC_PARENT_A (incumbent_bytes 10,554,328,856 and incumbent_bpw 3.139301 match FLASH_EBPW_BAR_REACHABILITY exactly)",
+ "source": "receipts/future/REPRESENTATION_FLOOR.json, which asks 'HOW MUCH SMALLER CAN THE INCUMBENT GET, and is another compression effort worth running?'",
+ "incumbent": {
+  "bpw": 3.139301,
+  "bytes": 10554328856
+ },
+ "measured_safe": {
+  "bpw": 3.056702,
+  "bytes_removed": 277697891,
+  "moves": [
+   "entropy_code_mlp_codes"
+  ]
+ },
+ "if_every_untested_move_worked": {
+  "bpw": 2.508137,
+  "bytes": 8432354933,
+  "bytes_removed": 2121973923,
+  "moves": [
+   "pack_headers",
+   "mlp_to_2_25_coherent_floor",
+   "entropy_code_mlp_codes",
+   "larger_q4_group_128",
+   "q4_uniform_q3_all_q4_codes"
+  ]
+ },
+ "refuted_and_excluded": [
+  "larger_affine_group_256",
+  "larger_affine_group_1024",
+  "composite_mlp_simple_linear_low_rank",
+  "mlp_uniform_below_q2"
+ ],
+ "byte_surfaces": {
+  "mlp_weight_codes": 4278190080,
+  "attention_storage_bytes": 3852952064,
+  "attention_q4_code_bytes": 3618897920,
+  "broadcast_aux": 1377977752,
+  "weight_codes_total": 9176351104
+ },
+ "CORRECTION": {
+  "what_I_said": "'1.1446 sits comfortably inside the <=1.5 strong qualification tolerance'",
+  "why_it_was_wrong": "1.1446 came from a bound that puts the ENTIRE MLP at ZERO BYTES. That is not a move anyone possesses; it is an upper bound on what removal could ever buy. Reading a tolerance as satisfied from an impossible bound is the same error class as reading a high-water mark as a live measurement.",
+  "the_real_number": "With EVERY untested move working, the floor is 2.508137 bpw. That fails <=1.5 by a wide margin and fails <=1.0 by more. The only MEASURED-SAFE move set gives 3.056702.",
+  "what_survives": "The G027 arithmetic itself stands -- <=1.0 is unreachable even by the absurd bound, which is a stronger statement than the floor needs. What does not survive is my gloss that <=1.5 was therefore in range."
+ },
+ "verdict": "BOTH GATES UNREACHABLE BY THE KNOWN MOVE SET on this body",
+ "attention_is_not_the_escape_hatch": "I expected attention to be the unpriced surface with room in it. It is priced: 3,852,952,064 bytes of storage, 3,618,897,920 of that already q4 codes. Removing ALL attention storage still leaves 1.993271 bpw.",
+ "implication": "A new lever CLASS remains required and the search space does not include a cheaper packing of what is already there. The moves are enumerated, five of them, and their best joint outcome is 2.508."
+}
