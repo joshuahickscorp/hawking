@@ -13,12 +13,15 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import sqlite3
 import uuid
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterator
+
+_HEX64 = re.compile(r"[0-9a-f]{64}")
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS project_meta (
@@ -114,10 +117,25 @@ class ProjectStore:
 
     # -- artifacts -------------------------------------------------------
     def artifact_path(self, digest: str) -> Path:
-        """Content-addressed: artifacts/<first2>/<rest>."""
-        if len(digest) < 3:
-            raise ValueError(f"implausible digest {digest!r}")
-        return self.root / "artifacts" / digest[:2] / digest[2:]
+        """Content-addressed: artifacts/<first2>/<rest>.
+
+        The digest is attacker-influenced -- it arrives from tool arguments --
+        so it is validated as a digest, not merely as a non-empty string. The
+        length check alone let `../../etc/passwd` through and returned a path
+        outside the project entirely.
+        """
+        if not isinstance(digest, str) or not _HEX64.fullmatch(digest):
+            raise ValueError(
+                f"not a sha256 digest: {digest!r}. A digest is 64 hex characters; "
+                f"anything else could name a path outside the artifact tree.")
+        out = (self.root / "artifacts" / digest[:2] / digest[2:]).resolve()
+        # Belt and braces: even a digest that passed the pattern must land
+        # inside the tree. A guard that only checks the input shape is one
+        # regex edit away from being a guard that checks nothing.
+        artifacts = (self.root / "artifacts").resolve()
+        if artifacts != out and artifacts not in out.parents:
+            raise ValueError(f"artifact path escapes the project: {out}")
+        return out
 
     def ingest_file(self, src: Path, *, media_type: str,
                     source_name: str | None = None) -> dict[str, Any]:

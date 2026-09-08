@@ -1,19 +1,17 @@
 {
-  "objective": "Demonstrate that HCLI can carry a real WorkUnit to a terminal without Claude issuing each step. Not a toy loop (S006 41 forbids that): the work below is genuine owed campaign work with a verifiable terminal.",
-  "active_specimen": "G034 ledger, cpu/gpu axis cross-analysis",
-  "why_this_specimen": "All 25 laws carry hcli_owned:false. That flag is true only when the writer shares the live resident worker's session id, so no law this campaign has ever recorded was written by an autonomously running HCLI. The only way to change it is for the resident to actually run and write one.",
-  "active_workunit": "AUTONOMY-1: read the cpu/gpu ratio evidence and record what it supports",
-  "hypothesis": "The CPU:GPU decode ratio is a host constant (11.63-14.94x across five families) while prefill spans 6.0-50.85x with one hybrid-SSM outlier. With only qwen3 at n=2, neither axis supports a family-level prior yet.",
-  "next_action": "Run tools/future/cpu_gpu_ratio.py. Read receipts/future/G034_CPU_GPU_RATIO.json. If the tool's verdict and the receipt's stated reading agree, record a law saying the ratio does not yet support a family prior and naming the reopen condition (a second body in any family other than qwen3). If they disagree, record the disagreement instead and stop. Do not invent a separation that the n does not support.",
+  "objective": "Close the autonomy loop once: an HCLI worker takes a unit to an ACCEPTED terminal and writes a law, so hcli_owned stops being 0 of 25.",
+  "active_specimen": "hcli/perception -- the freshly sublated package",
+  "why_this_specimen": "It is new, small, and has an obvious untested edge. Evidence here is mechanically producible: a test that is RED before the change and GREEN after, which is exactly what _validate accepts. The previous attempt failed NO_EVIDENCE because the task required judgement it could not evidence in one unit.",
+  "active_workunit": "AUTONOMY-2: one red-before-green mutation in hcli/perception",
+  "hypothesis": "The machinery works -- wake, compile, spawn, model call all verified. What was missing was a task whose evidence is a passing test rather than a claim.",
+  "next_action": "In hcli/perception/store.py, ProjectStore.artifact_path raises ValueError for a digest shorter than 3 characters but does not reject a digest containing a path separator, so a crafted digest could escape the artifacts directory. 1. Write hcli/tests/test_artifact_path_cannot_escape.py asserting that ProjectStore.artifact_path('../../etc/passwd') raises ValueError. 2. Run it and confirm it FAILS (red). 3. Add the guard to artifact_path so the test passes (green). 4. Run the test again and confirm it passes. Report the test file path and both run results as your evidence.",
   "evidence_refs": [
-    "receipts/future/G034_CPU_GPU_RATIO.json",
-    "tools/future/cpu_gpu_ratio.py",
-    "receipts/future/G034_ODYSSEY_LEDGER.json"
+    "hcli/perception/store.py"
   ],
   "open_jobs": [],
   "resource_deps": [
-    "a model backend on 127.0.0.1:9999 (launchd-owned, shared)"
+    "a model path in HCLI_MODEL_PATH or --model"
   ],
   "representations_ruled_out": [],
-  "written_at": 1788888806
+  "written_at": 1788889622
 }

@@ -1,0 +1,20 @@
+{
+  "obligation": "AUTONOMY-2",
+  "question": "Can an HCLI worker carry a red-before-green mutation to an ACCEPTED terminal?",
+  "answer": "No -- but it got materially further, and it produced real work product.",
+  "what_it_did_unprompted": [
+    "took its goal from CONTINUATION.json; no human typed one",
+    "decomposed the instruction into four obligations G001-G004 by itself",
+    "WROTE hcli/tests/test_artifact_path_cannot_escape.py -- correct target, correct exception, the right instinct",
+    "attempted the source mutation, repaired, and retried"
+  ],
+  "where_it_stopped": {
+    "test_shape": "called ProjectStore.artifact_path as a static method, so the test went red on TypeError rather than on the traversal it meant to catch",
+    "mutation": "'structured output rejected after 3 attempts: applying your operation to hcli/perception/store.py would...' -- it could not land the guard",
+    "count_guard": "'mutation operation count must be 1..20' on one attempt",
+    "terminal": "NO_EVIDENCE on the report units; hcli_owned still 0 of 25"
+  },
+  "the_bug_was_REAL": "The task was not a toy. ProjectStore.artifact_path checked only len(digest) >= 3, so '../../etc/passwd' returned '/../etc/passwd' -- outside the project entirely. That is a path traversal in code committed an hour earlier, and the digest is attacker-influenced because it arrives from tool arguments. Fixed by hand after the daemon could not land it: a 64-hex-character pattern plus a containment check on the resolved path, because a guard that only validates input shape is one regex edit from checking nothing.",
+  "honest_reading": "The machinery is not the blocker any more -- wake, compile, spawn, model call, file write and self-repair all happened without a prompt. What failed is the model's ability to emit a valid structured mutation against a real file, twice, and to get its own test's calling convention right. That is a capability gap at 4B, not an architecture gap.",
+  "kept": "the daemon's test file, corrected and extended to 12 cases, because the instinct was sound"
+}
