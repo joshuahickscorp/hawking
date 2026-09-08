@@ -247,5 +247,11 @@
       "fails": 8,
       "clean": false
     }
-  ]
+  ],
+  "exhaustion_is_complete": {
+    "group_size": "mx.quantize refuses group_size 256 and 512 -- 'The requested group size is not supported'. 128 is the maximum, so the descent's cap at 128 did not cut the search short; the group-size lever is genuinely exhausted at the accepted value.",
+    "bit_width": "Every organ group was offered every mlx bit width below its current one. At step 3 all five survivors rendered dirty and none was marginal (gateup3 7/8, qkv3 5/8, o2 8/8, gateup2 8/8, qkv2 7/8), so there is no near-miss to revisit.",
+    "multi_organ": "S006 53 licenses a two-change step only after single-step evidence exists. It now does, and it argues against: the step-3 failures are not marginal, so combining two of them has no path to clean. Not attempted, and that is the reason.",
+    "verdict": "2.225 GB / complete EBPW 4.195 is the floor for this method and this bit-and-group lever set. Going lower needs a different representation gene, not a further search of this one."
+  }
 }
