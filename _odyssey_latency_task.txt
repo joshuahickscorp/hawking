@@ -1,0 +1,21 @@
+ODYSSEY-WIDE LATENCY. Attack the supervisor, not the model.
+
+Measured wall in THIS campaign:
+  2043 s per executed experiment; 280 s per your own round (3 of 23 executed)
+  5.7 s model load, paid per process, dozens of times; 30 GB resident, reloaded each arm
+  8 prompts x 96 tokens per capability eval, SEQUENTIAL; 512-token forward on top
+  decode 8.816 ms/token q3; 83.3% of that is fixed cost (wall = 7.320 + 1.348*B)
+
+Supervisor claims you should try to BREAK:
+  A. the physical path is capped at 1.2-1.6x
+  B. attention (3.488 ms) is the largest stage of an 8.816 ms step
+  C. byte reduction cannot buy decode speed below q4
+  D. batching is refused because it changes outputs
+
+The campaign optimised DECODE. Decode is a small part of Odyssey's wall.
+
+Answer in EXACTLY these four lines, nothing else:
+WASTE: the single largest avoidable wall in the loop above, and where it lives.
+CLAIM_ATTACKED: A, B, C, D, or NONE.
+DISCRIMINATOR: one measurement under 15 minutes that settles it.
+KILL: the number that means you are wrong. State it now.

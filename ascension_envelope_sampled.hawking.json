@@ -17,12 +17,12 @@
   "HAWKING_QWEN38_FUSE_MLP": "swiglu"
  },
  "generation": {
-  "do_sample": false,
+  "do_sample": true,
   "enable_thinking": false,
   "max_new_tokens": 2048,
-  "temperature": 0.0,
-  "top_k": 1,
-  "top_p": 1.0
+  "temperature": 0.35,
+  "top_k": 40,
+  "top_p": 0.95
  },
  "max_seq_len": 9728,
  "mode": "auto",

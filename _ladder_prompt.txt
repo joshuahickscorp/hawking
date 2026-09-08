@@ -1,0 +1,43 @@
+O003 Kimi-VL MoE. 26 MoE layers, 64 experts, top-6. Expert organ = 90.2% of weights.
+Expert tensor shapes, which bound the group size:
+  gate_proj, up_proj  [64, 1408, 2048]  last dim 2048 -> group up to 2048
+  down_proj           [64, 2048, 1408]  last dim 1408 = 2^7*11 -> group CAPPED at 128
+  A group must DIVIDE the last dim. down_proj admits no group above 128, so a larger
+  group only helps the 2/3 of expert weights in gate/up.
+Complete EBPW measured, capability gated against the bf16 source:
+  q4-g64-experts       4.3797 PASS
+  binary-g128          1.4188 FAIL
+  binarypercal-g128    1.4188 FAIL
+  binarypercal-g64     1.5284 FAIL
+  binarypercal-g256    1.3822 FAIL
+  binarypercal-g512    1.3639 FAIL
+  q3-g64-experts       3.5024 PASS
+  q2-g64-experts       2.6251 FAIL
+  q2-g128-experts      2.4058 FAIL
+  outlier0.005-g128    2.5419 FAIL
+  outlier0.01-g128     2.6815 FAIL
+  outlier0.02-g128     2.9597 FAIL
+
+Lowest PASSING: q3-g64-experts at 3.5024. Target is <=1.0.
+Grammar you can execute (group is 32, 64 or 128):
+  q<bits>-g<group>-experts   bits 2..8, plain affine
+  outlier<frac>-g<group>     2-bit base + top-|w| frac kept at full precision
+  binary-g<group>            1 bit/weight, scale = mean|W| per group
+  binarypercal-g<group>      1 bit, scale fitted to per-expert activations (best at 1 bit)
+  binarypercal<frac>-g<group>  the same, plus an outlier channel
+COST, so you can compute your own proposal before making it:
+  complete EBPW = (14394851328 * bits_per_weight / 8 + 885541120) * 8 / 16407657776
+  bits_per_weight: affine = bits + 32/group;  binary = 1 + 16/group;
+                   an outlier channel ADDS frac * 32 bits per weight.
+  So a larger outlier frac RAISES EBPW. A larger group LOWERS it.
+Propose a rung whose computed EBPW is LOWER than the lowest one above.
+Do not repeat any spec above.
+ALREADY REJECTED this session, do not propose again:
+  binarypercal0.005-g128 -> 1.5591 EBPW, which is HIGHER than 1.3639. An outlier channel ADDS bytes.
+  binarypercal0.001-g128 -> 1.4468 EBPW, which is HIGHER than 1.3639. An outlier channel ADDS bytes.
+  binarypercal-g64 -> already measured, do not repeat.
+  binarypercal-g256 -> already measured, do not repeat.
+
+Reply with EXACTLY two lines and nothing else:
+SPEC: <one spec from the grammar>
+PLAN: <one sentence: a mechanism OUTSIDE this grammar that could reach 1.0 EBPW, and which measured number above it must beat>

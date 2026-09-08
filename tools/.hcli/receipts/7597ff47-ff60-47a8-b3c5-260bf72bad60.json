@@ -1,0 +1,70 @@
+{
+  "context_efficiency": {
+    "bytes_re_read_stale": 0,
+    "duplicated_bytes_avoided": 0,
+    "evidence_bytes_inlined": 0,
+    "evidence_identity": [],
+    "root_tokens": 2275,
+    "tool_catalog_chars": 284,
+    "tool_catalog_mode": "agentic-minimal",
+    "worker_tokens": 2275
+  },
+  "error": "model path /Users/scammermike/Downloads/hawking/tools/ascension_envelope.hawking.json is not a Hawking-native profile; use MLX/llama.cpp discovery or set HCLI_HAWKING_NATIVE_CONFIG",
+  "error_traceback": "File \"/Users/scammermike/Downloads/hawking/hcli/engine.py\", line 2351, in execute\n    raw = self._call_model(\n        cognition_prompt,\n    ...<3 lines>...\n        history=conversation_history,\n    )\n  File \"/Users/scammermike/Downloads/hawking/hcli/wall_profile.py\", line 231, in wrapper\n    return fn(*a, **kw)\n  File \"/Users/scammermike/Downloads/hawking/hcli/engine.py\", line 5081, in _call_model\n    endpoint, provenance = self._runtime_endpoint()\n                           ~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"/Users/scammermike/Downloads/hawking/hcli/engine.py\", line 3330, in _runtime_endpoint\n    pool = self.runtime_provider()\n  File \"/Users/scammermike/Downloads/hawking/hcli/controller.py\", line 1075, in ensure_runtime_pool\n    pool = RuntimePool(\n        model_path,\n    ...<3 lines>...\n        observed_overlap=load_observed_overlap(self.workspace_root),\n    )\n  File \"/Users/scammermike/Downloads/hawking/hcli/runtime.py\", line 577, in __init__\n    inventory = config_for_model_path(self.model_path).identity().get(\n                ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/hcli/hawking_native.py\", line 630, in config_for_model_path\n    raise HawkingNativeConfigError(\n    ...<2 lines>...\n    )\nhcli.hawking_native.HawkingNativeConfigError: model path /Users/scammermike/Downloads/hawking/tools/ascension_envelope.hawking.json is not a Hawking-native profile; use MLX/llama.cpp discovery or set HCLI_HAWKING_NATIVE_CONFIG",
+  "error_type": "HawkingNativeConfigError",
+  "evidence_files": [],
+  "goal": "ROUND 2. Your answer contains ZERO numbers. An engineering answer without a number is an opinion. Measure something and give the figure.\n\nRead receipts/runtime/CENSUS_2026_09_05.md for the measured state.\nDo not summarise it back. Change something and measure the change.\nReport: what you ran, the exact output, and what it refutes.",
+  "goal_id": "7597ff47-ff60-47a8-b3c5-260bf72bad60",
+  "kind": "error",
+  "max_model_in_flight": 0,
+  "model": "/Users/scammermike/Downloads/hawking/tools/ascension_envelope.hawking.json",
+  "model_calls": [],
+  "operations": [],
+  "result_envelope": {
+    "artifacts": [],
+    "blocker": "model path /Users/scammermike/Downloads/hawking/tools/ascension_envelope.hawking.json is not a Hawking-native profile; use MLX/llama.cpp discovery or set HCLI_HAWKING_NATIVE_CONFIG",
+    "claim": "ROUND 2. Your answer contains ZERO numbers. An engineering answer without a number is an opinion. Measure something and give the figure.\n\nRead receipts/runtime/CENSUS_2026_09_05.md for the measured state.\nDo not summarise it back. Change something and measure the change.\nReport: what you ran, the exact output, and what it refutes.",
+    "evidence": [],
+    "failures": [
+      {
+        "kind": "HawkingNativeConfigError",
+        "message": "model path /Users/scammermike/Downloads/hawking/tools/ascension_envelope.hawking.json is not a Hawking-native profile; use MLX/llama.cpp discovery or set HCLI_HAWKING_NATIVE_CONFIG"
+      }
+    ],
+    "hypotheses": [],
+    "negative_controls": null,
+    "next_action": "supply or repair a deterministic verifier before accepting",
+    "receipt_paths": [
+      "/Users/scammermike/Downloads/hawking/tools/.hcli/receipts/7597ff47-ff60-47a8-b3c5-260bf72bad60.json"
+    ],
+    "resource_usage": {
+      "model_calls": [],
+      "runtime_provenance": []
+    },
+    "resource_use": {
+      "model_calls": [],
+      "runtime_provenance": []
+    },
+    "schema": "hcli.agentos.result.v1",
+    "tests": null,
+    "uncertainty": [
+      "model output is not a verified fact"
+    ],
+    "verdict": "BLOCKED",
+    "verified_facts": []
+  },
+  "rolled_back": false,
+  "runtime_count": 1,
+  "runtime_provenance": [],
+  "status": "failed",
+  "structured_output": {
+    "mode": "enforced",
+    "response_format_sent": true
+  },
+  "tests": [],
+  "timestamps": {
+    "finished_at": "2026-09-06T13:48:48.078933+00:00",
+    "started_at": "2026-09-06T13:48:48.071919+00:00"
+  },
+  "validation": null
+}
