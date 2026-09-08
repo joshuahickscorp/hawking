@@ -1,0 +1,26 @@
+{
+  "obligation": "G034-CHAIN-BLOCKER",
+  "question": "Why is nx_disposition 0 of 27 while nr_candidate is now 2?",
+  "the_easy_wrong_answer": "nx_promotion.py has zero callers, so wire it as a tool. That is the shape this campaign keeps finding, and it is not what is happening here.",
+  "the_actual_blocker": "nx_promotion.evaluate(manifest, artifact) requires an ARTIFACT on disk and lists standalone_execution first among its 10 conditions. The nr_candidate rows are not artifacts. organ_allocation reconstructs each arm's weights IN MEMORY to score perplexity and diversity, then discards them -- the row records a verdict about a representation, not a representation. A measurement cannot satisfy standalone_execution, so wiring the tool would change nothing.",
+  "what_would_unblock_it": "Materialize one candidate as a file. hcli/gravity_gauntlet.py already calls mlx_lm.convert() and writes real quantized weights, so the capability exists; it is just not connected to the ledger. The missing step is NR-as-artifact, not NX-as-tool.",
+  "evidence": {
+    "nx_promotion_conditions": [
+      "standalone_execution",
+      "complete_persistent_accounting",
+      "no_hidden_dense_parent",
+      "capability_qualification",
+      "oiii_adversarial_qualification",
+      "physical_qualification",
+      "restart_recovery_qualification",
+      "machine_runtime_contract",
+      "independent_verification",
+      "immutable_artifact_identity"
+    ],
+    "mechanically_settleable": 3,
+    "requires_a_receipt": 7,
+    "nr_candidate_rows_are": "verdict dicts citing an experiment receipt, no artifact path"
+  },
+  "a_correction_to_the_audit": "tools/future/g004_capability_gate.py was reported as 'the CAPABILITY gate every NR candidate passes through, with zero callers'. Reading it, that is wrong: it is a one-off experiment hardcoded to Kimi-VL-A3B with fixed arms D/E/broken and a hardcoded absolute path to another worktree. It has no callers because it is a script that was run once, which is not the registered-but-unreachable disease. The reusable capability evaluator is tools/future/gravity_outlier_eval.py::evaluate, which organ_allocation already copies.",
+  "one_artifact_that_DOES_qualify_on_form": "The Higgs descent winner is a materialized checkpoint: 2.225 GB, complete EBPW 4.195, gate-clean 0/8. It has the artifact shape NX asks for. It is not an Odyssey specimen, so it cannot fill an nx_disposition row -- but it is the proof that this campaign can produce the artifact form, not only verdicts about it."
+}
