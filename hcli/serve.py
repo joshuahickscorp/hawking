@@ -215,6 +215,12 @@ class Resident:
         self.state = "ready"
         self.error: Optional[str] = None
         self._lock = threading.RLock()
+        # Tool capability belongs to the BODY, not to the server. Qualifying
+        # once at startup left a 0.6B's verdict standing after a switch to a
+        # different body -- the new model inheriting an old model's unverified
+        # action capability, which is the precise failure S034 s15 names.
+        self.tools_verdict: Dict[str, Any] = {"qualified": False,
+                                              "reason": "not yet qualified"}
 
     @property
     def identity(self) -> str:
@@ -223,6 +229,17 @@ class Resident:
     @property
     def greedy(self) -> bool:
         return profile_is_greedy(self.body.path)
+
+    @property
+    def native_tools(self) -> bool:
+        """Does this body's own artifact template declare tools?
+
+        The sealed artifact's chat_template.jinja has a `tools` slot and states
+        the call format the body was trained on. When it does, the template is
+        the authority on the tool contract and a hand-written system message is
+        both redundant and worse -- it is what made the body invent `shell`.
+        """
+        return self.body.kind == "noetic_native"
 
     def catalog(self) -> List[Dict[str, Any]]:
         from .catalog import catalog as _catalog
@@ -272,11 +289,42 @@ class Resident:
                 self.body = target
                 self.state = "ready"
                 self.error = None
-                return {"switched": True, "from": previous, "resident": target.name}
+                self.qualify_tools()
+                return {"switched": True, "from": previous,
+                        "resident": target.name,
+                        "tools": dict(self.tools_verdict)}
             except Exception as exc:
                 self.state = "failed"
                 self.error = f"{type(exc).__name__}: {exc}"
                 raise
+
+    def qualify_tools(self, prefix: Any = None, registry: Any = None) -> Dict[str, Any]:
+        """Can THIS body emit a typed action, under its real conditions?
+
+        Same contract the traffic uses: a native body is probed with its own
+        template `tools` slot populated, because that is what it will see.
+        """
+        from .chat_tools import openai_schemas, qualify, system_block
+        self.qualify_prefix = prefix if prefix is not None else getattr(
+            self, "qualify_prefix", None)
+        self.qualify_registry = registry if registry is not None else getattr(
+            self, "qualify_registry", None)
+        schemas = (openai_schemas(self.qualify_registry)
+                   if self.native_tools and self.qualify_registry else None)
+        prefix_messages = list(self.qualify_prefix or [])
+        if not self.native_tools and self.qualify_registry is not None:
+            from .chat_tools import prepend_system
+            prefix_messages = prepend_system(
+                prefix_messages, system_block(registry=self.qualify_registry))
+
+        def _complete(convo):
+            payload: Dict[str, Any] = {"messages": convo, "max_tokens": 96}
+            if schemas:
+                payload["tools"] = schemas
+            return _text_of(self.backend.complete(payload))
+
+        self.tools_verdict = qualify(_complete, prefix=prefix_messages)
+        return self.tools_verdict
 
     def complete(self, payload: Dict[str, Any], timeout: Optional[float] = None) -> Any:
         wanted = str(payload.get("model") or "").strip()
@@ -307,7 +355,9 @@ class Resident:
 
 
 def make_handler(backend: Any, identity: str, *, greedy: bool,
-                 health: Dict[str, Any], repo: Any = None):
+                 health: Dict[str, Any], repo: Any = None,
+                 registry: Any = None, stores: Optional[Dict[str, Any]] = None):
+    stores = stores or {}
     class Handler(BaseHTTPRequestHandler):
         protocol_version = "HTTP/1.1"
 
@@ -351,6 +401,19 @@ def make_handler(backend: Any, identity: str, *, greedy: bool,
                                 state=backend.state,
                                 sampling=("greedy-argmax" if backend.greedy
                                           else "profile-default"))
+                    verdict = getattr(backend, "tools_verdict", None)
+                    if verdict is not None and "tools" in live:
+                        from .chat_tools import CHAT_TOOLS
+                        live["tools"] = {
+                            "qualified": bool(verdict.get("qualified")),
+                            "names": sorted(CHAT_TOOLS) if verdict.get("qualified") else [],
+                            "reason": verdict.get("reason"),
+                            # The reply that failed. A verdict without the
+                            # evidence behind it cannot be argued with -- and
+                            # this gate has already produced one false negative
+                            # against sealed-3.14.
+                            "reply_excerpt": verdict.get("reply_excerpt"),
+                        }
                     if backend.error:
                         live["error"] = backend.error
                 return self._send(200, live)
@@ -413,8 +476,39 @@ def make_handler(backend: Any, identity: str, *, greedy: bool,
             payload = {k: v for k, v in body.items() if k != "stream"}
             payload.setdefault("model", identity)
             request_id = f"chatcmpl-{uuid.uuid4().hex[:24]}"
+            trace: list = []
+            live_tools = getattr(backend, "tools_verdict", None)
+            tools_ok = bool((live_tools or {}).get("qualified")) if live_tools is not None else True
             try:
-                result = backend.complete(payload)
+                if registry is not None and tools_ok:
+                    # The chat can look things up. One backend, one registry --
+                    # the same one `hcli agentos research-gate` uses, with its
+                    # read/research permission set, so a browser session cannot
+                    # reach a tool that writes.
+                    from .chat_tools import (openai_schemas, prepend_system,
+                                              run_with_tools, system_block)
+
+                    native = bool(getattr(backend, "native_tools", False))
+                    schemas = openai_schemas(registry) if native else None
+
+                    def _complete(convo):
+                        inner = {**payload, "messages": convo}
+                        if schemas:
+                            inner["tools"] = schemas
+                        return _text_of(backend.complete(inner))
+
+                    with_contract = (messages if native else prepend_system(
+                        messages, system_block(registry=registry)))
+                    answer, trace = run_with_tools(
+                        _complete, with_contract, registry, native=native,
+                        cache=stores.get("cache"),
+                        knowledge=stores.get("knowledge"))
+                    result = type("R", (), {
+                        "text": answer, "finish_reason": "stop", "degraded": [],
+                        "prompt_tokens": None, "completion_tokens": None,
+                        "total_tokens": None, "raw": {}})()
+                else:
+                    result = backend.complete(payload)
             except LookupError as exc:
                 return self._send(404, {"error": {
                     "message": str(exc), "type": "model_not_found"}})
@@ -427,8 +521,10 @@ def make_handler(backend: Any, identity: str, *, greedy: bool,
                     "type": "resident_error"}})
             if not body.get("stream"):
                 answered = getattr(backend, "identity", identity)
-                return self._send(200, chat_payload(
-                    result, answered, request_id=request_id))
+                body_out = chat_payload(result, answered, request_id=request_id)
+                if trace:
+                    body_out["hawking"]["tools_used"] = trace
+                return self._send(200, body_out)
             # An SSE body has no Content-Length, so under HTTP/1.1 keep-alive a
             # client cannot tell where it ends and waits until it times out --
             # which is exactly what a browser chat looks like when it hangs
@@ -451,7 +547,8 @@ def make_handler(backend: Any, identity: str, *, greedy: bool,
 
 
 def build_server(model: str, *, host: str = DEFAULT_HOST, port: int = DEFAULT_PORT,
-                 ready_timeout: float = 600.0, repo: Any = None):
+                 ready_timeout: float = 600.0, repo: Any = None,
+                 registry: Any = None):
     """Spawn the resident, wait for it, and return (httpd, identity, health)."""
     from .catalog import Body, catalog, resolve
     from .runtime_iface import classify_backend, make_backend_for_model
@@ -492,9 +589,49 @@ def build_server(model: str, *, host: str = DEFAULT_HOST, port: int = DEFAULT_PO
     if repo is not None:
         health["repo"] = {"name": repo.name, "root": str(repo.root),
                           "git": repo.is_git, "branch": repo.branch}
+    if registry is not None:
+        # CAPABILITY IS EARNED PER BODY. A body that cannot emit a typed action
+        # must not be handed a tool contract: it answers in prose that sounds
+        # like it searched, and a reader cannot tell that from an answer that
+        # did. One cheap probe at load, and again after every switch.
+        from .chat_tools import CHAT_TOOLS
+
+        prefix = None
+        if repo is not None:
+            from .repo_context import inject
+            prefix = inject([], repo)
+        verdict = resident.qualify_tools(prefix, registry)
+        health["tools"] = {
+            "qualified": bool(verdict.get("qualified")),
+            "names": sorted(CHAT_TOOLS) if verdict.get("qualified") else [],
+            "reason": verdict.get("reason"),
+            "reply_excerpt": verdict.get("reply_excerpt"),
+        }
+
+    stores: Dict[str, Any] = {}
+    if registry is not None:
+        # DISK-FIRST OBSERVATIONS AND BIDIRECTIONAL EXPANSION, from stores that
+        # already exist: PasteCache is a content-addressed text store whose
+        # store() had no caller outside its own tests, and KnowledgeStore is a
+        # bounded hot index over a gzip cold archive with a real recall() valve.
+        # Neither is a new architecture; both were built and left unwired.
+        workspace = str(repo.root) if repo is not None else os.getcwd()
+        try:
+            from .paste_cache import PasteCache
+            stores["cache"] = PasteCache(workspace)
+        except Exception:
+            stores["cache"] = None
+        try:
+            from .knowledge import KnowledgeStore
+            stores["knowledge"] = KnowledgeStore(workspace)
+        except Exception:
+            stores["knowledge"] = None
+        health["observation_store"] = stores.get("cache") is not None
+        health["knowledge_store"] = stores.get("knowledge") is not None
     httpd = ThreadingHTTPServer(
         (host, port), make_handler(resident, identity, greedy=greedy,
-                                   health=health, repo=repo))
+                                   health=health, repo=repo, registry=registry,
+                                   stores=stores))
     httpd.backend = resident  # type: ignore[attr-defined]
     return httpd, identity, health
 
@@ -513,6 +650,7 @@ def main(argv: Optional[list] = None) -> int:
     ap.add_argument("--host", default=DEFAULT_HOST)
     ap.add_argument("--ready-timeout", type=float, default=600.0)
     ap.add_argument("--no-repo", action="store_true", help=argparse.SUPPRESS)
+    ap.add_argument("--no-tools", action="store_true", help=argparse.SUPPRESS)
     a = ap.parse_args(list(argv or []))
     a.model = a.model or a.model_flag
 
@@ -521,14 +659,40 @@ def main(argv: Optional[list] = None) -> int:
     if not a.no_repo:
         from .repo_context import RepoContext
         repo = RepoContext.detect(os.getcwd())
+    registry = None
+    if not a.no_tools:
+        from .chat_tools import build_registry
+        root = str(repo.root) if repo is not None else os.getcwd()
+        registry = build_registry(root, root)
     httpd, identity, health = build_server(
-        model, host=a.host, port=a.port, ready_timeout=a.ready_timeout, repo=repo)
+        model, host=a.host, port=a.port, ready_timeout=a.ready_timeout,
+        repo=repo, registry=registry)
     print(json.dumps({"listening": f"http://{a.host}:{a.port}",
                       "openai_base_url": f"http://{a.host}:{a.port}/v1",
                       **health}), flush=True)
+    # A MODEL SERVER MUST NOT SURVIVE ITS SURFACE. `hcli stop` sends SIGTERM,
+    # whose default handler exits WITHOUT running the finally below, so every
+    # stop and every switch orphaned the spawned mlx_lm.server. Measured: 11
+    # orphans accumulated across one session, oldest 1h28m, holding ~7 GB of
+    # swap-backed state -- swap fell from 9.7 GB to 2.5 GB when they were
+    # reaped. Handle the signal so shutdown is shutdown.
+    import signal as _signal
+
+    def _shutdown(signum, _frame):  # noqa: ANN001
+        try:
+            httpd.backend.stop()  # type: ignore[attr-defined]
+        except Exception:
+            pass
+        raise SystemExit(0)
+
+    for _sig in (_signal.SIGTERM, _signal.SIGHUP, _signal.SIGINT):
+        try:
+            _signal.signal(_sig, _shutdown)
+        except (ValueError, OSError):
+            pass
     try:
         httpd.serve_forever()
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, SystemExit):
         pass
     finally:
         try:

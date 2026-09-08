@@ -17,6 +17,7 @@ import difflib
 import hashlib
 import html
 import ipaddress
+import base64
 import json
 import os
 import re
@@ -1101,6 +1102,36 @@ class _SearchResultParser(HTMLParser):
             self._current[self._field] = (self._current.get(self._field) or "") + data
 
 
+def _bing_destination(url: str) -> str:
+    """The SOURCE a Bing result points at, not Bing's click wrapper.
+
+    Every result url came back as
+    `https://www.bing.com/ck/a?!&&p=...&u=a1<base64>` while the payload claimed
+    `confidence: "source-links-extracted"`. Nothing downstream could cite a
+    source or dedupe by domain, and web research provenance was a hostname
+    belonging to the search engine.
+
+    Falls back to the original wrapper when it cannot be decoded: an
+    undecodable redirect is still the honest answer, and inventing a
+    destination would be worse than an ugly one.
+    """
+    text = str(url or "")
+    if "bing.com/ck/" not in text:
+        return text
+    try:
+        raw = urllib.parse.parse_qs(urllib.parse.urlparse(text).query).get("u") or []
+        token = raw[0] if raw else ""
+        if token.startswith("a1"):
+            token = token[2:]
+        if not token:
+            return text
+        decoded = base64.urlsafe_b64decode(token + "=" * (-len(token) % 4))
+        candidate = decoded.decode("utf-8", "strict")
+    except Exception:
+        return text
+    return candidate if candidate.startswith(("http://", "https://")) else text
+
+
 class _BingSearchResultParser(HTMLParser):
     """Bounded parser for Bing's server-rendered ``b_algo`` result list."""
 
@@ -1132,6 +1163,7 @@ class _BingSearchResultParser(HTMLParser):
     def handle_endtag(self, tag: str) -> None:
         if tag == "li" and self._in_result and self._current is not None:
             if self._current.get("url") and self._current.get("title"):
+                self._current["url"] = _bing_destination(self._current["url"])
                 self.rows.append(self._current)
             self._current = None
             self._field = None

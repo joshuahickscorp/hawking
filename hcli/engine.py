@@ -1302,14 +1302,29 @@ def _rejected_excerpt(text: str) -> str:
     return f"{text[:half]}\n[... {dropped} characters elided ...]\n{text[-half:]}"
 
 
-def _python_syntax_violation(content: str) -> Optional[str]:
+def _python_syntax_violation(content: str,
+                             root: Optional[Path] = None) -> Optional[str]:
     """The reply's Python operations must compile, or say why they do not.
 
     Returns a retry instruction naming the file, line and error, or None when
     every Python operation parses. Non-Python paths are not checked here: the
     verifier owns them and this is only about giving the model back the one
     error it can act on.
+
+    `root` anchors relative operation paths. Without it these resolve against
+    the PROCESS working directory, which is the repository only by luck: the
+    engine happens to run there. Called from a server that serves a repo it is
+    not sitting in, every anchor read missed, the preflight found nothing to
+    complain about, and source that does not compile was written to disk --
+    "the preflight silently did nothing", which is the defect the paragraph
+    above was written for.
     """
+    base = Path(root) if root is not None else None
+
+    def _resolve(candidate: str) -> Path:
+        path = Path(candidate)
+        return path if path.is_absolute() or base is None else base / path
+
     # Parse the reply the way the ENGINE parses it. A bare json.loads returned
     # None for any reply the model wrapped in a markdown fence or prefaced with
     # a sentence -- both of which the engine's own extractor tolerates and then
@@ -1361,7 +1376,7 @@ def _python_syntax_violation(content: str) -> Optional[str]:
         # that false rejection, having been told to fix code that was not
         # broken. A check that refuses correct work is worse than no check.
         candidate = body
-        if str(op.get("op") or "") == "create" and Path(path).exists():
+        if str(op.get("op") or "") == "create" and _resolve(path).exists():
             # CORRECTABLE, and it was terminal: _apply_operations runs after
             # the contract accepts, so a unit that offered to create a file
             # already on disk died holding whatever else it had proposed.
@@ -1376,7 +1391,7 @@ def _python_syntax_violation(content: str) -> Optional[str]:
         if str(op.get("op") or "") == "replace":
             anchor = _operation_text(op, "old_text")
             try:
-                current = (Path(path)).read_text(encoding="utf-8", errors="replace")
+                current = _resolve(path).read_text(encoding="utf-8", errors="replace")
             except OSError:
                 continue
             if not isinstance(anchor, str):
@@ -1414,7 +1429,7 @@ def _python_syntax_violation(content: str) -> Optional[str]:
         op_kind = str(op.get("op") or "")
         if op_kind in {"insert_before", "insert_after", "append"}:
             try:
-                current = Path(path).read_text(encoding="utf-8", errors="replace")
+                current = _resolve(path).read_text(encoding="utf-8", errors="replace")
             except OSError:
                 continue
             anchor = _operation_text(op, "old_text")
@@ -1543,6 +1558,28 @@ def check_rust_file(path: Path, root: Path) -> Dict[str, Any]:
     except subprocess.TimeoutExpired:
         return {"package": package, "exit_code": 124, "stdout": "",
                 "stderr": "cargo check timed out"}
+
+
+def _unified_diff(before: Dict[str, Optional[str]],
+                  after: Dict[str, Optional[str]],
+                  root: Path) -> str:
+    """What actually changed on disk, for a human to read in a chat reply."""
+    import difflib
+
+    chunks: List[str] = []
+    for key in sorted(set(before) | set(after)):
+        old = before.get(key) or ""
+        new = after.get(key) or ""
+        if old == new:
+            continue
+        try:
+            label = str(Path(key).relative_to(root))
+        except ValueError:
+            label = key
+        chunks.extend(difflib.unified_diff(
+            old.splitlines(True), new.splitlines(True),
+            fromfile=f"a/{label}", tofile=f"b/{label}", n=3))
+    return "".join(chunks)[:8000]
 
 
 class Engine:
@@ -5952,6 +5989,96 @@ class Engine:
 
         return paths
 
+    def apply_typed_mutation(
+        self,
+        operations: List[Dict[str, Any]],
+        tests: Optional[List[str]] = None,
+    ) -> Dict[str, Any]:
+        """Run ONE mutation transaction for operations somebody else chose.
+
+        THE SAME TRANSACTION `execute()` RUNS, WITHOUT ITS MODEL LOOP. General
+        HCLI (the browser surface) already has its own loop and its own tool
+        dialect; what it lacks is hands. This is the seam: snapshot -> apply ->
+        pre-mutation proving run -> validate -> accept or roll back, calling the
+        very same private helpers, so patch application, result-file validation,
+        red-before-green, and rollback keep exactly one implementation.
+
+        Returns the verdict rather than raising, because the caller is a chat
+        turn that must be able to say "mutation rejected" without the
+        conversation dying -- and the distinction between PROPOSED, APPLIED,
+        VALIDATED and ACCEPTED is the thing a builder must never blur.
+        """
+        operations = list(operations or [])
+        tests = list(tests or [])
+        if not operations:
+            return {"status": "rejected", "reason": "no operations proposed",
+                    "applied": False, "rolled_back": False}
+
+        # Refuse the same shapes the engine refuses, with the same message, so a
+        # fragment that would not compile in its resulting file is caught before
+        # anything is written.
+        violation = _python_syntax_violation(
+            json.dumps({"kind": "mutation", "operations": operations}),
+            root=self.root)
+        if violation:
+            return {"status": "rejected", "reason": violation,
+                    "applied": False, "rolled_back": False}
+
+        try:
+            paths = self._operation_paths(operations)
+        except Exception as exc:
+            return {"status": "rejected", "reason": f"{type(exc).__name__}: {exc}",
+                    "applied": False, "rolled_back": False}
+
+        snapshot = self._snapshot(paths)
+        before = {str(p): (p.read_text(encoding="utf-8", errors="replace")
+                           if p.is_file() else None) for p in paths}
+        applied = False
+        try:
+            apply_result = self._apply_operations(operations)
+            applied = True
+            pre_validation = None
+            if tests:
+                try:
+                    pre_validation = (
+                        self._run_proving_tests_against_pre_mutation_producers(
+                            snapshot, paths, tests))
+                except Exception as exc:
+                    pre_validation = {
+                        "ok": False,
+                        "reason": f"pre_mutation_exception:{type(exc).__name__}",
+                        "error": str(exc), "checks": []}
+            validation = self._validate(paths, tests, pre_mutation=pre_validation)
+            if apply_result and apply_result.get("files"):
+                validation["files"] = apply_result["files"]
+            ok = bool(validation.get("ok")) if isinstance(validation, dict) else False
+            reason = str((validation or {}).get("reason") or "")
+            # NO_EVIDENCE keeps the mutation, exactly as execute() does: an edit
+            # with no test to prove it is unproven, not wrong.
+            if ok or reason == "NO_EVIDENCE":
+                after = {str(p): (p.read_text(encoding="utf-8", errors="replace")
+                                  if p.is_file() else None) for p in paths}
+                return {
+                    "status": "accepted" if ok else "unproven",
+                    "applied": True, "rolled_back": False,
+                    "validation": validation,
+                    "reason": None if ok else reason,
+                    "diff": _unified_diff(before, after, self.root),
+                    "paths": [str(p) for p in paths],
+                }
+            self._restore(snapshot)
+            return {"status": "rejected", "applied": True, "rolled_back": True,
+                    "validation": validation,
+                    "reason": validation_failure_message(validation),
+                    "paths": [str(p) for p in paths]}
+        except BaseException as exc:
+            if applied:
+                self._restore(snapshot)
+            return {"status": "rejected", "applied": applied,
+                    "rolled_back": applied,
+                    "reason": f"{type(exc).__name__}: {exc}",
+                    "paths": [str(p) for p in paths]}
+
     def _snapshot(
         self,
         paths: Iterable[Path],
@@ -6341,6 +6468,18 @@ class Engine:
 
         container = str(Path(_hcli_pkg.__file__).resolve().parent.parent)
         env["PYTHONPATH"] = container + os.pathsep + str(self.root)
+        # A VALIDATION RUN MUST NOT LEAVE BYTECODE THAT A LATER RUN TRUSTS.
+        # Python invalidates a .pyc on (mtime, size) of its source. Red-before-
+        # green runs the proving test against the RESTORED original, then again
+        # against the mutation -- and a mutation that changes no bytes of length
+        # inside the same mtime second leaves both invariants intact, so the
+        # second run imports bytecode compiled from the FIRST run's source.
+        # Measured exactly: `VALUE = 1` -> `VALUE = 2` (same length, same
+        # second) made a correct mutation fail its own proving test with
+        # "assert 1 == 2", and the engine rolled back a change that was right.
+        # A harness that fabricates model failure is the defect this campaign
+        # keeps finding; here it would silently reject correct work.
+        env["PYTHONDONTWRITEBYTECODE"] = "1"
         return env
 
     def _kill_process_group(self, proc: subprocess.Popen[Any]) -> None:

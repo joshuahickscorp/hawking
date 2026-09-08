@@ -784,6 +784,7 @@ class _TokenizerRenderer:
         messages: List[Dict[str, Any]],
         *,
         thinking_requested: bool,
+        tools: Optional[List[Dict[str, Any]]] = None,
     ) -> _RenderedPrompt:
         contract = dict(self.config.prompt_contract or {})
         tokenizer = self._load()
@@ -793,6 +794,16 @@ class _TokenizerRenderer:
             thinking_key = contract.get("thinking_parameter")
             if thinking_key and _coerce_bool(contract.get("supports_thinking"), False):
                 template_kwargs[str(thinking_key)] = thinking_requested
+            # THE ARTIFACT'S OWN TOOL CONTRACT. chat_template.jinja carries a
+            # `tools` slot that renders "# Tools ... <tools>{schemas}</tools>"
+            # and then states the exact call format this body was trained on:
+            #   <tool_call><function=name><parameter=k>v</parameter></function>
+            # Leaving the slot empty and describing tools in a plain system
+            # message instead is what made sealed-3.14 reach for a `shell`
+            # function nobody offered -- it followed its training faithfully and
+            # its training says tools live here.
+            if tools:
+                template_kwargs["tools"] = list(tools)
             try:
                 text = tokenizer.apply_chat_template(
                     messages,
@@ -1232,6 +1243,9 @@ class HawkingNativeConnector:
 
     def _render(self, payload: Dict[str, Any]) -> _RenderedPrompt:
         messages = _messages_from_payload(payload)
+        tools = payload.get("tools")
+        if not isinstance(tools, list):
+            tools = None
         kwargs = payload.get("chat_template_kwargs")
         if not isinstance(kwargs, dict):
             kwargs = {}
@@ -1239,10 +1253,30 @@ class HawkingNativeConnector:
             "enable_thinking",
             self.config.generation.get("enable_thinking", False),
         )
-        return self.renderer.render(
-            messages,
-            thinking_requested=_coerce_bool(requested, False),
-        )
+        # Pass `tools` ONLY when there are tools. Forcing the keyword broke
+        # every renderer that does not take it -- including the test stub and
+        # the fallback path -- for requests that declared no tools at all.
+        if not tools:
+            return self.renderer.render(
+                messages,
+                thinking_requested=_coerce_bool(requested, False),
+            )
+        try:
+            return self.renderer.render(
+                messages,
+                thinking_requested=_coerce_bool(requested, False),
+                tools=tools,
+            )
+        except TypeError as exc:
+            # Tools WERE requested and this renderer cannot declare them.
+            # Silently dropping them would hand the body a tool contract it
+            # never saw and then blame it for inventing a function -- which is
+            # exactly how sealed-3.14 came to reach for `shell`. Fail loudly.
+            raise HawkingNativeError(
+                f"{type(self.renderer).__name__} cannot declare tools to the "
+                f"model ({exc}); refusing to drop {len(tools)} tool "
+                f"declaration(s) and let the body invent its own"
+            ) from exc
 
     def _limits(
         self,

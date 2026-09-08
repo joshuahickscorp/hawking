@@ -281,3 +281,5 @@ directive-goal.txt
 
 # Vendored python deps for running HCLI without system packages (36M, reproducible)
 .hcli-deps/
+.webui_secret_key
+scratchpad/
