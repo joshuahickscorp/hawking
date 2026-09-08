@@ -39,5 +39,12 @@
  "counterfactual": {
   "if_generated_coefficients_had_survived": 0.508308,
   "note": "That single candidate was the difference between reachable and unreachable: with it alive the best case is 0.508, half the target. Its death is what makes the <=1.0 gate unreachable by this lever set, which is why killing it cheaply mattered."
+ },
+ "specimen_identity": {
+  "body": "sealed-3.14 / qwen3.8-27b, artifact_root /Users/scammermike/noetic/NOETIC_PARENT_A",
+  "geometry": "hidden 5120, 64 layers of which 48 are DeltaNet",
+  "how_pinned": "FLASH_EBPW_BAR_REACHABILITY.json carries NO specimen field. Identity was established by matching its measured_complete_ebpw 3.139301 against the sealed resident's recorded physical_ebpw 3.1393, and by deriving 26,895,997,182 source params from its own payload_bytes and EBPW -- the 27B body. DELTANET_GENERATED_TRANSITION names NOETIC_PARENT_A explicitly, so all three receipts in this arithmetic are the same organism.",
+  "near_miss_worth_recording": "FLASH_ORGAN_PIVOT.json shares the FLASH_ prefix and is a DIFFERENT organism: its family inventory totals 359,999,963,128 bytes = 360 GB, with routed_experts at 246.6 GB and ngram_embedding at 102.4 GB. That is the Flash-Next PARENT, not the sealed 10.55 GB body. Using its organ breakdown here would have priced the wrong organism by a factor of 34.",
+  "contract_gap": "A receipt that carries the number a search-space decision rests on should name its specimen. This one does not, and the prefix it shares with a 360 GB sibling is exactly how that becomes a silent error."
  }
 }
