@@ -1,0 +1,86 @@
+{
+ "obligation": "G023",
+ "finding": "THE TERMINAL STEP OF THE CAMPAIGN HAS NO CALLER",
+ "premise_check_first": {
+  "s009_18_said": "complete_ebpw.py has ZERO importer and must be wired before any NX claim",
+  "measured_now": "33 non-test importers, including hcli/tool_registry.py",
+  "verdict": "THE PREMISE IS STALE. complete_ebpw is wired and reachable from the tool registry.",
+  "why_this_matters": "S009 35 requires asking whether a G is still asking the right question BEFORE implementing it. This one was not. Roadmap prose is not runtime truth and it aged out between the steer and the work.",
+  "importers": [
+   "hcli/gravity_gauntlet.py",
+   "hcli/tool_registry.py",
+   "tools/accelerator/bytes_atlas.py",
+   "tools/accelerator/qwen27_token_budget.py",
+   "tools/accelerator/scoreboard.py",
+   "tools/acceptance/flash/run_gates.py",
+   "tools/flash_complete_byte_ledger.py",
+   "tools/flash_meta_representation.py",
+   "tools/future/campaign_pareto.py",
+   "tools/future/capability_eval.py",
+   "tools/future/ebpw_categories.py",
+   "tools/future/ebpw_reachability.py",
+   "tools/future/experiment_policy.py",
+   "tools/future/gravity_outlier_eval.py",
+   "tools/future/hcli_ladder.py",
+   "tools/future/lake_scheme_census.py",
+   "tools/future/lowrank_nr.py",
+   "tools/future/odyssey_ledger.py",
+   "tools/future/organ_allocation.py",
+   "tools/future/pareto_disposition.py",
+   "tools/future/physical_compiler_predict.py",
+   "tools/future/science_corpus.py",
+   "tools/gravity_allocator.py",
+   "tools/headless/prefill_kv.py",
+   "tools/odyssey/families/toy_mean_residual.py",
+   "tools/odyssey/families/toy_xor_codes.py",
+   "tools/odyssey/noetic_compiler.py",
+   "tools/roadmap/catalog.py",
+   "tools/roadmap/saturation.py",
+   "tools/theia/engine.py",
+   "tools/theia/math_lab.py",
+   "tools/theia/self_bounty.py",
+   "tools/theia/value.py"
+  ]
+ },
+ "what_is_actually_orphaned": {
+  "g004_capability_gate": {
+   "callers": [],
+   "only_its_own_test": true,
+   "n_real_callers": 0
+  },
+  "nonlinear_probe": {
+   "callers": [
+    "hcli/test_nonlinear_probe.py"
+   ],
+   "only_its_own_test": true,
+   "n_real_callers": 0
+  },
+  "nx_promotion": {
+   "callers": [
+    "hcli/test_nx_promotion.py"
+   ],
+   "only_its_own_test": true,
+   "n_real_callers": 0
+  }
+ },
+ "the_one_that_matters": {
+  "module": "tools/future/nx_promotion.py",
+  "offers": [
+   "check_accounting",
+   "check_no_hidden_parent",
+   "check_identity",
+   "evaluate"
+  ],
+  "callers": [
+   "hcli/test_nx_promotion.py"
+  ],
+  "reading": "the only file that mentions it is hcli/test_nx_promotion.py -- its own test. NX promotion is the terminal step of the entire campaign: the moment an NR becomes the frozen, standalone, machine-qualified executable that is the stated final object. Nothing in the campaign can invoke it. It is not registered as a tool, so HCLI cannot reach it either; it is not imported by any pipeline, so Claude's own path does not run it. A capability with zero caller does not exist.",
+  "same_for": [
+   "g004_capability_gate (no caller and no test at all)",
+   "nonlinear_probe (only hcli/test_nonlinear_probe.py)"
+  ]
+ },
+ "coverage_boundary_of_the_g025_graph": "G025's reachability graph audits the TOOL REGISTRY -- 71 registered tools -- and would never have found these. nx_promotion, nonlinear_probe and g004_capability_gate are MODULES that were never registered, so they are invisible to a graph whose universe is the registry. Two layers, two audits. Stated so the graph is not mistaken for whole-repo coverage.",
+ "status": "REPORTED, NOT FIXED -- registering or wiring these is a change with its own review",
+ "scar": "CHECK WHETHER THE OBLIGATION IS STILL ASKING THE RIGHT QUESTION BEFORE IMPLEMENTING IT. One of the two premises here had already been fixed; the other is worse than stated."
+}
