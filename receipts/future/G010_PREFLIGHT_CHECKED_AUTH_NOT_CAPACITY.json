@@ -1,0 +1,15 @@
+{
+ "obligation": "G010",
+ "finding": "THE GROK PREFLIGHT CHECKED AUTH AND CALLED IT CAPACITY",
+ "mechanism": "grok-run doctor reported 'auth: You are logged in with grok.com.' from `grok models`. That is a LISTING call: it returns 200 with a fully exhausted balance. Balance is only observable from a call that would actually consume it, which doctor never made.",
+ "consequence": "superwave-1 launched 20 lanes against a doctor that reported healthy. 8 of them died on HTTP 402 after 17.88M tokens had already been spent by the other 12. The lanes did not fail on their contracts; they failed on a resource the preflight was structurally unable to see.",
+ "fix": "doctor now makes one minimal real completion and classifies its stderr through grok_capacity_verdict, printing capacity separately from auth. The classifier is a pure text-to-verdict function so it is testable without spending balance.",
+ "verification": {
+  "unit": "tools/future/test_grok_capacity_preflight.sh -- 5/5 (EXHAUSTED, UNAUTHENTICATED, RATE_LIMITED, OK, UNKNOWN)",
+  "mutation": "402 branch reverted to a never-matching pattern -> EXHAUSTED input classified UNKNOWN, suite FAILED; restored, suite PASS; marker grep 0",
+  "end_to_end": "live doctor on the current host prints auth OK and capacity EXHAUSTED in the same run -- the two lines that were previously one"
+ },
+ "current_capacity": "EXHAUSTED",
+ "blocks": "S009 requires >=20 Grok lanes per superwave. That is NOT SATISFIABLE right now. Superwave 2 is BLOCKED on Grok Build balance, an external resource this campaign cannot provision. Per S009 47 this is recorded as a refusal with its mechanism and does not count as progress.",
+ "scar": "AN AUTH CHECK IS NOT A CAPACITY CHECK. Ask what a probe would still return after the resource is gone."
+}
