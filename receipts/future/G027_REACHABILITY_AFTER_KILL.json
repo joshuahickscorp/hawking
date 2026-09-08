@@ -1,0 +1,43 @@
+{
+ "obligation": "G027 / G012",
+ "what": "reachability of FLASH_COMPLETE_EBPW_LE_1 after generated_coefficients was measured DEAD",
+ "method": "static arithmetic over committed receipts; no new measurement",
+ "sources": [
+  "receipts/future/FLASH_EBPW_BAR_REACHABILITY.json",
+  "receipts/future/DELTANET_REPRESENTATION.json",
+  "receipts/future/DELTANET_GENERATED_TRANSITION.json"
+ ],
+ "source_params_derived": 26895997182,
+ "payload_bytes": 10554328856,
+ "budget_bytes_at_threshold": 3361999808,
+ "must_remove_bytes": 7192329048,
+ "levers": {
+  "mlp_entirely_zero": 5358380616,
+  "deltanet_generated_coefficients": {
+   "bytes": 2139096960,
+   "status": "DEAD",
+   "why": "one_step_cosine -0.0100 against a 0.99 bar; state relfro 3.169 at step 1; the rank-1 Householder integrates the residual immediately"
+  },
+  "all_other_deltanet_levers_if_every_one_succeeds": 1347919872
+ },
+ "best_case_removable_bytes": 6706300488,
+ "shortfall_bytes": 486028560,
+ "best_reachable_complete_ebpw": 1.144565,
+ "verdict": "UNREACHABLE",
+ "finding": "Even with the ENTIRE MLP at zero bytes AND every remaining open DeltaNet lever succeeding in full, the <=1.0 gate is missed by 0.486 GB. FLASH_EBPW_BAR_REACHABILITY already showed the MLP alone cannot reach it; the death of generated_coefficients removes the only lever large enough to close the rest.",
+ "what_this_does_not_prove": [
+  "That <=1.0 is unreachable in principle -- it bounds THIS lever set on THIS body.",
+  "That <=1.5 is unreachable; that is a separate and much closer arithmetic.",
+  "Anything about attention/GQA, embeddings or norms, which are outside both lever sets."
+ ],
+ "implication": "A new lever CLASS is required, not a better fit within these. The remaining unpriced surfaces on this body are attention/GQA, embeddings, norms, and representations that do not preserve the parent topology at all.",
+ "tolerance_le_1_5": {
+  "reachable": true,
+  "best_reachable_complete_ebpw": 1.144565,
+  "note": "The directive's STRONG QUALIFICATION TOLERANCE is <=1.5 and the best case here is 1.1446, comfortably inside it. Only the <=1.0 TARGET is out of reach for this lever set. This is a bound on one lever set, not a verdict on the campaign."
+ },
+ "counterfactual": {
+  "if_generated_coefficients_had_survived": 0.508308,
+  "note": "That single candidate was the difference between reachable and unreachable: with it alive the best case is 0.508, half the target. Its death is what makes the <=1.0 gate unreachable by this lever set, which is why killing it cheaply mattered."
+ }
+}
