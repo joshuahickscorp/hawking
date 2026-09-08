@@ -17,7 +17,7 @@
       "loo-down2 (down_proj:2 on a 4-bit g64 base)": "0/8 jam"
     },
     "MISSING_CONTROL": "awq-b3g64 + down_proj:2 alone. Without it the result is confounded: the jam may be the COMPOSITION of the two organ tilts, or it may be that down_proj:2 simply does not survive a 3-bit base at all, independent of embed_tokens. This is the same confound the one-off already hit (2-bit down_proj survives a q4 base and breaks against q3).",
-    "status": "NOT ATTRIBUTED until that arm is built and rendered"
+    "status": "REFUTED by the deciding arm; see attribution below"
   },
   "group_size": "awq-b3g64 is healthy 0/8 while awq-b3g128 jams 6/8. At 3 bits, group 64 vs 128 is the difference between a working model and a jamming one, with the allocation held identical.",
   "caveat": "n=8 units per arm, one seed. Class membership is robust (a jam is a 14-30 s flat run, not a marginal number); the orderings within a class are not.",
@@ -232,5 +232,13 @@
       "med_onset_over_exp": null,
       "n": 8
     }
-  ]
+  ],
+  "attribution": {
+    "arm_built": "sens-d = awq_fold bits=3 group=64 alloc down_proj:2 ONLY",
+    "result": "3/8 jam (median onset/expected 0.77) plus 2/8 with a 31.8-32.0 s silence dropout and spoken 0.29/0.37 -- 5/8 broken",
+    "verdict": "Composition explains nothing. down_proj:2 alone against the 3-bit base is already broken; adding embed_tokens:2 (sens-a, 5/8 jam) does not make it meaningfully worse, and embed_tokens:2 alone against the same base is clean 0/8. The tilt that breaks the model is down_proj:2, and it breaks only because the BASE dropped from 4 bits to 3 -- loo-down2 applies the identical tilt to a 4-bit base and jams 0/8.",
+    "confirms": "LAW023 -- a sensitivity map is a function of (organ, base representation, corpus). This is the base-representation axis, reproduced in a second modality (audio TTS) on a different architecture family, with the single-organ control present on both bases.",
+    "correction": "The previous commit framed this as two safe organs being unsafe together. That was wrong: the control that would have distinguished the two readings had not been built yet, which the receipt did record as NOT ATTRIBUTED. It is now attributed against composition.",
+    "third_failure_class": "sens-d introduces a failure none of a/b/c showed: 31.8-32.0 s of near-silence at rms 0.019-0.027. That one the dropout gate DOES catch -- so the gate set is not uniformly blind, it is blind specifically to the non-silent fixed point."
+  }
 }

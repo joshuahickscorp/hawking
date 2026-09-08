@@ -265,6 +265,17 @@
       "source_oxx": null,
       "text": "A gate set's cheapest member can be the sole detector of the dominant failure. In the Higgs sensitivity rungs, 18 of 24 units end in a decoder fixed point -- a constant-rms buzz -- and the two gates built to catch bad output are blind to it by construction: it sits four orders above the 1e-4 silence threshold so energy never flags it (silent_frac 0.0 on 23 of 24 units), and it is not speech so ASR transcribes no extra words and word error stays low (sens_c holds spoken_med 1.0 and wer_med 0.1143 while 7 of its 8 units are stuck). Only duration fires, and only as a side effect of the unit running to the token cap. Before trusting a gate set, ask of each member what failure it is BLIND to, not what it catches.",
       "writer_pid": 32394
+    },
+    {
+      "counterexample_requirement": "an organ is found whose 2-bit tolerance holds across a base change of a full bit, which would make tolerance a property of the organ after all and restore one-shot sensitivity maps as an allocation authority",
+      "evidence": "receipts/future/HIGGS_LADDER_TIME_TO_JAM.json",
+      "hcli_owned": false,
+      "id": "LAW025",
+      "recorded_at": "2026-09-08T15:34:26.686999+00:00",
+      "scope": "low-bit allocation where a per-organ tilt is applied on top of a uniform base. Measured on Qwen3-0.6B text (LAW023) and now Higgs audio v3 4B TTS via awq_fold, 8 units per arm",
+      "source_oxx": null,
+      "text": "CONFIRMS AND WIDENS LAW023 on the base-representation axis, in a second modality. On Higgs audio v3 4B, down_proj at 2 bits is free against a 4-bit base (0/8 units fail) and breaks against a 3-bit base (5/8 fail), with the tilt, group size, chunks and seed held identical. The paired control rules out composition: embed_tokens:2 on the same 3-bit base is clean 0/8, and down_proj:2 ALONE on that base is already broken, so combining them explains nothing. An organ's measured tolerance is a property of the base it was measured against, not of the organ.",
+      "writer_pid": 34220
     }
   ],
   "parked": [],

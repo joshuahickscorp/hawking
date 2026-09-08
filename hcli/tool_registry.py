@@ -1709,6 +1709,58 @@ def _vmcp_inspect(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
     return inspect_vmcp(context.repo_root, profile=str(args.get("profile") or "core"))
 
 
+CONTINUATION = "workspace/campaign/odyssey/CONTINUATION.json"
+
+# What a restart cannot rebuild from receipts. Coverage, evidence and priors are
+# all derivable -- campaign.state already derives them. Intent is not: no
+# receipt records WHY this specimen was chosen over the others, what the live
+# hypothesis is, or what the operator meant to do next. Those are the fields.
+_CONT_FIELDS = ("objective", "active_specimen", "why_this_specimen", "active_workunit",
+                "hypothesis", "next_action", "evidence_refs", "open_jobs",
+                "resource_deps", "representations_ruled_out")
+_CONT_REQUIRED = ("objective", "hypothesis", "next_action")
+
+
+def _campaign_checkpoint(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """Write the part of the campaign a restart cannot rebuild from disk. [S006 33-36]
+
+    A checkpoint that records what receipts already record is a second copy that
+    goes stale. This records only intent, and refuses a checkpoint missing the
+    three fields that make it worth reading: what is being pursued, what is
+    believed, and what to do next. A checkpoint with no next_action costs a
+    restart exactly as much as no checkpoint.
+    """
+    if WORKSPACE_WRITE not in getattr(context, "permissions", frozenset()):
+        return {"refused": "campaign.checkpoint needs workspace_write"}
+    missing = [f for f in _CONT_REQUIRED if not str(args.get(f) or "").strip()]
+    if missing:
+        return {"refused": f"a checkpoint without {missing} does not shorten a restart",
+                "required": list(_CONT_REQUIRED)}
+    doc = {f: args.get(f) for f in _CONT_FIELDS if args.get(f) is not None}
+    doc["written_at"] = int(time.time())
+    path = context.repo_root / CONTINUATION
+    path.parent.mkdir(parents=True, exist_ok=True)
+    prior = None
+    if path.is_file():
+        try:
+            prior = json.loads(path.read_text()).get("written_at")
+        except Exception:
+            prior = None
+    path.write_text(json.dumps(doc, indent=2) + "\n")
+    return {"wrote": CONTINUATION, "fields": sorted(doc), "supersedes": prior,
+            "note": "campaign.state now leads with this on reattach"}
+
+
+def _read_continuation(root) -> Optional[Dict[str, Any]]:
+    path = root / CONTINUATION
+    if not path.is_file():
+        return None
+    try:
+        return json.loads(path.read_text())
+    except Exception as exc:
+        return {"unreadable": f"{type(exc).__name__}: {exc}"}
+
+
 def _campaign_state(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
     """The campaign in one read: what is being advanced, and what blocks it. [S003 3]
 
@@ -1751,7 +1803,11 @@ def _campaign_state(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any
                         reverse=True)[:6]
         for q in newest:
             recent.append({"receipt": q.name, "mtime": int(q.stat().st_mtime)})
+    cont = _read_continuation(root)
     out = {
+        "continuation": cont or (
+            "no checkpoint on disk; this restart costs a re-planned campaign. "
+            "Write one with campaign.checkpoint at the next transition."),
         "bottleneck": (
             f"depth axes with ZERO measurements: {owed_depth}" if owed_depth else
             "no depth axis is entirely unmeasured; the bottleneck is elsewhere"),
@@ -4234,6 +4290,27 @@ def default_tool_registry(
         "to do next. It assembles; it does not choose.",
         {"type": "object", "additionalProperties": False, "properties": {}},
         handler=_campaign_state,
+    ))
+    registry.register(ToolSpec(
+        "campaign.checkpoint",
+        "Write the part of the campaign a restart cannot rebuild from receipts: "
+        "the objective, why this specimen, the live hypothesis, and the explicit "
+        "NEXT ACTION. Call it at transitions, not every turn. campaign.state "
+        "reads it back first on reattach.",
+        {"type": "object", "additionalProperties": False, "properties": {
+            "objective": {"type": "string"},
+            "active_specimen": {"type": "string"},
+            "why_this_specimen": {"type": "string"},
+            "active_workunit": {"type": "string"},
+            "hypothesis": {"type": "string"},
+            "next_action": {"type": "string"},
+            "evidence_refs": {"type": "array", "items": {"type": "string"}},
+            "open_jobs": {"type": "array", "items": {"type": "string"}},
+            "resource_deps": {"type": "array", "items": {"type": "string"}},
+            "representations_ruled_out": {"type": "array", "items": {"type": "string"}}},
+         "required": ["objective", "hypothesis", "next_action"]},
+        mutation=WORKSPACE_WRITE,
+        handler=_campaign_checkpoint,
     ))
     registry.register(ToolSpec(
         "vmcp.tools",

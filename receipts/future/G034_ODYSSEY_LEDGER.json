@@ -2897,10 +2897,11 @@
      "receipt": "receipts/future/G034_LAKE_CENSUS_FULL.json"
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
-     "receipt": null
+     "reason": "mlx_lm's ModelArgs for this family predates this config's fields: TypeError: ModelArgs.__init__() missing 1 required positional argument: 'tie_word_embeddings'",
+     "receipt": null,
+     "reopen_when": "an mlx_lm release whose ModelArgs accepts this config"
     },
     "cpu": {
      "state": "OWED",
@@ -4164,10 +4165,21 @@
      "receipt": "receipts/future/G034_LAKE_CENSUS_FULL.json"
     },
     "gpu": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "device": "gpu (Metal via mlx)",
+      "runtime": "mlx_lm 0.32.1, device Device(gpu, 0), weights mlx.core.bfloat16",
+      "prefill_tps_median": 1107.0591,
+      "decode_tps_median": 42.1811,
+      "prefill_spread_pct": 0.8,
+      "decode_spread_pct": 0.79,
+      "context": 512,
+      "concurrency": 1,
+      "repeats": 3,
+      "warmup_discarded": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_allenai--Olmo-3-1025-7B_a81bae42db39__mlx.json"
     },
     "cpu": {
      "state": "OWED",
@@ -4176,10 +4188,16 @@
      "receipt": null
     },
     "tps": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "prefill_tps": 1107.0591,
+      "decode_tps": 42.1811,
+      "backend": "mlx/Metal",
+      "context": 512,
+      "concurrency": 1
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_allenai--Olmo-3-1025-7B_a81bae42db39__mlx.json"
     },
     "nr_candidate": {
      "state": "OWED",
