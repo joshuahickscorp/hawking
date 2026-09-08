@@ -2083,6 +2083,21 @@ def start_resident(
     replace: bool = False,
 ) -> Dict[str, Any]:
     daemon = ResidentDaemon(workspace)
+    if model:
+        # A model path that resolves to nothing must fail HERE, with the value
+        # the caller typed, not three subprocess boundaries later inside a
+        # backend. resolve_model() returns None for a typo, for a path that is
+        # not an MLX/native/remote shape, and for a relative path -- the worker
+        # runs with cwd=workspace, so a path relative to the caller's shell is
+        # a different path by the time it is read.
+        from ..models import resolve_model as _resolve
+
+        if _resolve(str(model)) is None:
+            raise SystemExit(
+                f"--model {model!r} does not resolve to a usable model. Expected an "
+                f"MLX directory (config.json + *.safetensors), a hawking-native "
+                f"profile, an http(s) endpoint, or an existing file. Relative paths "
+                f"are resolved against the workspace, not your shell.")
     if replace:
         retire_incumbent(daemon)
     config = ResidentConfig(
