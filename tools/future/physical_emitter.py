@@ -180,6 +180,203 @@ DIRECT_PATH = ("controlled fixed-length sweep: one fresh prefill of the whole pr
                "concurrency 1")
 
 
+
+
+def _stat(xs: List[float], n: int) -> Dict[str, Any]:
+    ordered = [round(n / x, 4) for x in xs if x > 0]
+    rates = sorted(ordered)
+    if not rates:
+        return {"min": None, "median": None, "max": None, "spread_pct": None,
+                "in_run_order": [], "monotone_drift": None}
+    med = rates[len(rates) // 2]
+    # THE DISCRIMINATOR. A sorted min/median/max cannot tell a clock ramp
+    # from noise, and the first cells of a sweep on this machine sit on a
+    # DVFS ramp. Report the series IN RUN ORDER and say whether it is
+    # monotone: a spread that only ever increases is drift, and comparing
+    # cells from one ordering is then invalid.
+    rising = all(b >= a for a, b in zip(ordered, ordered[1:]))
+    falling = all(b <= a for a, b in zip(ordered, ordered[1:]))
+    out = {
+        "min": rates[0],
+        "median": med,
+        "max": rates[-1],
+        # Spread first-class: a bare median is not a measurement.
+        "spread_pct": round(100.0 * (rates[-1] - rates[0]) / rates[0], 2),
+        "in_run_order": ordered,
+        "monotone_drift": ("RISING" if rising and len(ordered) > 1 and
+                           ordered[0] != ordered[-1] else
+                           "FALLING" if falling and len(ordered) > 1 and
+                           ordered[0] != ordered[-1] else "NONE"),
+    }
+    if out["monotone_drift"] != "NONE":
+        # Only say it when it is true. A drift warning printed beside
+        # "monotone_drift: NONE" trains the reader to ignore the field.
+        out["drift_note"] = ("the series only moves one way: this is drift, not "
+                             "scatter, and a single-order comparison against it "
+                             "is invalid -- reverse the order or pair the arms")
+    elif len(ordered) > 2 and ordered[0] == rates[0]:
+        out["first_cell_note"] = ("the slowest repeat is the FIRST one: a cold "
+                                  "cell, not a property of the body; the median "
+                                  "excludes it but the spread does not")
+    return out
+
+
+def _direct_receipt(*, specimen: str, nr: str, snapshot: str,
+                    prefills: List[float], decodes: List[float],
+                    n_prompt: int, n_decoded: int, load_s: float,
+                    device: str, runtime: str, repeats: int,
+                    warmup_discarded: int) -> Dict[str, Any]:
+    """ONE receipt shape for every direct backend. [S010 37]
+
+    torch-on-CPU and mlx-on-Metal are two FRONT-ENDS, not two contracts. They
+    fill the same six comparability fields with the same names at the same top
+    level; `runtime` and `device` are what say which produced a given number,
+    and the claim boundary forbids comparing across them.
+    """
+    pre = _stat(prefills, n_prompt)
+    dec = _stat(decodes, n_decoded)
+    gpu = device.startswith("gpu")
+    return {
+        "schema": "hawking.future.physical.v1",
+        "obligation": "G026",
+        "emitted_by": "tools/future/physical_emitter.py::emit_direct",
+
+        # THE SIX CONTRACT FIELDS, same names and placement as emit().
+        "specimen": specimen,
+        "nr": nr,
+        "runtime": runtime,
+        "context": n_prompt,
+        "path": DIRECT_PATH,
+        "concurrency": 1,
+
+        "measurement_contract": {
+            "fresh_prefill": True,
+            "prefix_reuse": False,
+            "repeats": int(repeats),
+            "warmup_repeats_discarded": warmup_discarded,
+            "prompt_tokens": n_prompt,
+            "decode_tokens": n_decoded,
+            "model_load_s": round(load_s, 3),
+            "snapshot": str(snapshot),
+            "backend_device": device,
+            "not_comparable_to": ("emit() receipts, which measure the resident's own "
+                                  "production traffic with prefix reuse; nor to a "
+                                  "receipt from the other direct backend -- CPU float32 "
+                                  "and Metal are different machines for this purpose. "
+                                  "`runtime` and `device` are what distinguish them."),
+        },
+        "prefill_tps": pre["median"],
+        "prefill_tps_spread": pre,
+        "decode_tps": dec["median"],
+        "decode_tps_spread": dec,
+        "gpu_share_of_prefill_wall_mean": None,
+        "gpu_share_unavailable_because": (
+            "mlx does not expose a per-op GPU/CPU split; the whole forward ran on "
+            "Metal, which is what `device` records"
+            if gpu else
+            f"executed on {device}; no GPU work was dispatched"),
+        "device": device,
+        "totals": {
+            "prefill_tokens": n_prompt * len(prefills),
+            "prefill_wall_s": round(sum(prefills), 4),
+            "decode_tokens": n_decoded * len(decodes),
+            "decode_wall_s": round(sum(decodes), 4),
+        },
+        "evidence_tier": "CONTROLLED_SWEEP",
+        "gpu_authority": bool(gpu),
+        "claim_boundary": (
+            "Real hardware, real forward passes, fixed prompt length, concurrency 1, "
+            "fresh prefill every repeat. "
+            + ("Metal via mlx, with every timed region forced through mx.eval() -- mlx "
+               "is lazy and an unevaluated forward would time graph construction, not "
+               "execution. The first repeat is discarded as kernel-compile warm-up."
+               if gpu else
+               "CPU float32 -- this is NOT the body's best achievable speed and must "
+               "not be read as one.")
+            + " Comparable to another receipt from the SAME backend on this machine."),
+    }
+
+
+def _emit_direct_mlx(
+    snapshot: str, specimen: str, nr: str,
+    prompt_tokens: int, decode_tokens: int, repeats: int,
+) -> Dict[str, Any]:
+    """Same contract, executed on METAL through mlx_lm. [S004]
+
+    The gpu axis was 0 MEASURED / 29 REFUSED campaign-wide, refused as "torch
+    MPS unavailable" -- which names the wrong runtime. MLX runs on Metal, is a
+    campaign_suite dependency, and supports qwen3. So the refusal was about
+    torch, not about the machine.
+
+    THE TRAP THIS CODE EXISTS TO AVOID: mlx is LAZY. Timing a forward pass
+    without mx.eval() measures graph construction, not execution, and would
+    report a spectacular and entirely fake tok/s. Every timed region below ends
+    in an explicit eval, and the first repeat is discarded as a warm-up because
+    Metal compiles kernels on first use.
+    """
+    import time as _t
+
+    import mlx.core as mx  # type: ignore
+    import mlx_lm  # type: ignore
+    from mlx_lm.models import cache as _cache  # type: ignore
+
+    t0 = _t.perf_counter()
+    model, tok = mlx_lm.load(snapshot)
+    load_s = _t.perf_counter() - t0
+    # Record the PRECISION. mlx loads the checkpoint's native dtype (bfloat16
+    # here) while the torch path forces float32, so a cross-backend comparison
+    # mixes device with precision. Putting the dtype in the receipt is what stops
+    # someone reading a 20x as "Metal is 20x faster than CPU".
+    dtype = None
+    for _n, _mod in model.named_modules():
+        if getattr(_mod, "weight", None) is not None:
+            dtype = str(_mod.weight.dtype)
+            break
+
+    base = ("the mixture of experts architecture routes each token to a small "
+            "subset of feed forward networks so the number of parameters "
+            "activated per token is much smaller than the total ")
+    ids = tok.encode(base * 64)[:prompt_tokens]
+    n_prompt = len(ids)
+
+    prefills: List[float] = []
+    decodes: List[float] = []
+    n_decoded = 0
+    # repeats + 1: the extra pass is a discarded warm-up, because Metal compiles
+    # its kernels on first use and that cost is not the body's decode rate.
+    for rep in range(int(repeats) + 1):
+        prompt = mx.array([ids])
+        kv = _cache.make_prompt_cache(model)
+        mx.eval(prompt)
+        t1 = _t.perf_counter()
+        logits = model(prompt, cache=kv)
+        nxt = mx.argmax(logits[:, -1, :], axis=-1, keepdims=True)
+        mx.eval(nxt)                       # force the graph to actually run
+        pre = _t.perf_counter() - t1
+
+        t2 = _t.perf_counter()
+        k = 0
+        for _ in range(int(decode_tokens)):
+            logits = model(nxt, cache=kv)
+            nxt = mx.argmax(logits[:, -1, :], axis=-1, keepdims=True)
+            mx.eval(nxt)                   # per step: no lazy accumulation
+            k += 1
+        dec = _t.perf_counter() - t2
+        if rep == 0:
+            continue                       # warm-up discarded, and said so
+        prefills.append(pre)
+        decodes.append(dec)
+        n_decoded = k
+    del model
+    return {
+        "_prefills": prefills, "_decodes": decodes, "_n_prompt": n_prompt,
+        "_n_decoded": n_decoded, "_load_s": load_s, "_device": "gpu (Metal via mlx)",
+        "_runtime": (f"mlx_lm {getattr(mx, '__version__', 'unknown')}, device "
+                     f"{mx.default_device()}, weights {dtype}"),
+        "_warmup_discarded": 1,
+    }
+
+
 def emit_direct(
     snapshot: str,
     *,
@@ -188,6 +385,7 @@ def emit_direct(
     prompt_tokens: int = 512,
     decode_tokens: int = 64,
     repeats: int = 3,
+    backend: str = "torch",
 ) -> Dict[str, Any]:
     """Measure one body's fresh prefill and decode under the canonical contract.
 
@@ -197,6 +395,16 @@ def emit_direct(
     already shipped one wrong answer off a median that hid a monotone drift.
     """
     import time as _t
+
+    if str(backend).lower() == "mlx":
+        raw = _emit_direct_mlx(snapshot, specimen, nr,
+                               prompt_tokens, decode_tokens, repeats)
+        return _direct_receipt(
+            specimen=specimen, nr=nr, snapshot=snapshot,
+            prefills=raw["_prefills"], decodes=raw["_decodes"],
+            n_prompt=raw["_n_prompt"], n_decoded=raw["_n_decoded"],
+            load_s=raw["_load_s"], device=raw["_device"], runtime=raw["_runtime"],
+            repeats=repeats, warmup_discarded=raw["_warmup_discarded"])
 
     import torch  # type: ignore
     from transformers import AutoModelForCausalLM, AutoTokenizer  # type: ignore
@@ -243,92 +451,9 @@ def emit_direct(
             n_decoded = k
     del model
 
-    def _stat(xs: List[float], n: int) -> Dict[str, Any]:
-        ordered = [round(n / x, 4) for x in xs if x > 0]
-        rates = sorted(ordered)
-        if not rates:
-            return {"min": None, "median": None, "max": None, "spread_pct": None,
-                    "in_run_order": [], "monotone_drift": None}
-        med = rates[len(rates) // 2]
-        # THE DISCRIMINATOR. A sorted min/median/max cannot tell a clock ramp
-        # from noise, and the first cells of a sweep on this machine sit on a
-        # DVFS ramp. Report the series IN RUN ORDER and say whether it is
-        # monotone: a spread that only ever increases is drift, and comparing
-        # cells from one ordering is then invalid.
-        rising = all(b >= a for a, b in zip(ordered, ordered[1:]))
-        falling = all(b <= a for a, b in zip(ordered, ordered[1:]))
-        out = {
-            "min": rates[0],
-            "median": med,
-            "max": rates[-1],
-            # Spread first-class: a bare median is not a measurement.
-            "spread_pct": round(100.0 * (rates[-1] - rates[0]) / rates[0], 2),
-            "in_run_order": ordered,
-            "monotone_drift": ("RISING" if rising and len(ordered) > 1 and
-                               ordered[0] != ordered[-1] else
-                               "FALLING" if falling and len(ordered) > 1 and
-                               ordered[0] != ordered[-1] else "NONE"),
-        }
-        if out["monotone_drift"] != "NONE":
-            # Only say it when it is true. A drift warning printed beside
-            # "monotone_drift: NONE" trains the reader to ignore the field.
-            out["drift_note"] = ("the series only moves one way: this is drift, not "
-                                 "scatter, and a single-order comparison against it "
-                                 "is invalid -- reverse the order or pair the arms")
-        elif len(ordered) > 2 and ordered[0] == rates[0]:
-            out["first_cell_note"] = ("the slowest repeat is the FIRST one: a cold "
-                                      "cell, not a property of the body; the median "
-                                      "excludes it but the spread does not")
-        return out
-
-    pre = _stat(prefills, n_prompt)
-    dec = _stat(decodes, n_decoded)
-    device = "cpu"
-    return {
-        "schema": "hawking.future.physical.v1",
-        "obligation": "G026",
-        "emitted_by": "tools/future/physical_emitter.py::emit_direct",
-
-        # THE SIX CONTRACT FIELDS, same names and same top-level placement as emit().
-        "specimen": specimen,
-        "nr": nr,
-        "runtime": f"transformers AutoModelForCausalLM, torch float32, device {device}",
-        "context": n_prompt,
-        "path": DIRECT_PATH,
-        "concurrency": 1,
-
-        "measurement_contract": {
-            "fresh_prefill": True,
-            "prefix_reuse": False,
-            "repeats": int(repeats),
-            "prompt_tokens": n_prompt,
-            "decode_tokens": n_decoded,
-            "model_load_s": round(load_s, 3),
-            "snapshot": str(snapshot),
-            "not_comparable_to": ("emit() receipts, which measure the resident's own "
-                                  "production traffic with prefix reuse; the path "
-                                  "field distinguishes them"),
-        },
-        "prefill_tps": pre["median"],
-        "prefill_tps_spread": pre,
-        "decode_tps": dec["median"],
-        "decode_tps_spread": dec,
-        # Honest absence, not a fabricated zero: this path runs on CPU, so there
-        # is no GPU share to report and none is invented.
-        "gpu_share_of_prefill_wall_mean": None,
-        "gpu_share_unavailable_because": f"executed on {device}; no GPU work was dispatched",
-        "device": device,
-        "totals": {
-            "prefill_tokens": n_prompt * int(repeats),
-            "prefill_wall_s": round(sum(prefills), 4),
-            "decode_tokens": n_decoded * int(repeats),
-            "decode_wall_s": round(sum(decodes), 4),
-        },
-        "evidence_tier": "CONTROLLED_SWEEP",
-        "gpu_authority": False,
-        "claim_boundary": (
-            "Real hardware, real forward passes, fixed prompt length, concurrency 1, "
-            "fresh prefill every repeat. CPU float32 -- this is NOT the body's best "
-            "achievable speed and must not be read as one; it is a comparable number "
-            "against other emit_direct receipts on this machine."),
-    }
+    return _direct_receipt(
+        specimen=specimen, nr=nr, snapshot=snapshot,
+        prefills=prefills, decodes=decodes, n_prompt=n_prompt,
+        n_decoded=n_decoded, load_s=load_s, device="cpu",
+        runtime="transformers AutoModelForCausalLM, torch float32, device cpu",
+        repeats=repeats, warmup_discarded=0)

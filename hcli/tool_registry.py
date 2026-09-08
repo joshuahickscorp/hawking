@@ -3253,7 +3253,8 @@ def _physical_measure(context: ToolContext, args: Dict[str, Any]) -> Dict[str, A
             nr=str(args.get("nr") or "source body as stored on disk, unmodified"),
             prompt_tokens=int(args.get("prompt_tokens") or 512),
             decode_tokens=int(args.get("decode_tokens") or 64),
-            repeats=int(args.get("repeats") or 3))
+            repeats=int(args.get("repeats") or 3),
+            backend=str(args.get("backend") or "torch"))
     except Exception as exc:
         return {"experiment_failed": f"{type(exc).__name__}: {exc}",
                 "not_a_specimen_property": True, "specimen": specimen}
@@ -3267,7 +3268,13 @@ def _physical_measure(context: ToolContext, args: Dict[str, Any]) -> Dict[str, A
             lead["receipt_refused"] = "write_receipt needs workspace_write permission"
         else:
             safe = re.sub(r"[^A-Za-z0-9_.-]", "_", specimen)[:80]
-            dest = context.repo_root / "receipts" / "future" / f"PHYSICAL_DIRECT_{safe}.json"
+            # The BACKEND belongs in the filename. Without it the Metal receipt
+            # silently overwrote the CPU one for the same body -- two different
+            # machines' numbers competing for one path, and the first measurement
+            # simply vanished.
+            back = re.sub(r"[^A-Za-z0-9_.-]", "_", str(args.get("backend") or "torch"))
+            dest = (context.repo_root / "receipts" / "future"
+                    / f"PHYSICAL_DIRECT_{safe}__{back}.json")
             dest.parent.mkdir(parents=True, exist_ok=True)
             dest.write_text(json.dumps(measured, indent=2, sort_keys=True) + "\n")
             written = str(dest.relative_to(context.repo_root))
@@ -4285,9 +4292,15 @@ def default_tool_registry(
                         "prompt_tokens": {"type": "integer"},
                         "decode_tokens": {"type": "integer"},
                         "repeats": {"type": "integer"},
+                        "backend": {"type": "string", "enum": ["torch", "mlx"],
+                                    "description": "torch = CPU float32 reference; "
+                                                   "mlx = METAL at the checkpoint's "
+                                                   "native dtype. Different device AND "
+                                                   "different precision, so receipts "
+                                                   "from the two are not comparable."},
                         "write_receipt": {"type": "boolean"}}},
         mutation=COSTLY, deterministic=False,
-        resources=("cpu", "exclusive_benchmark_window"),
+        resources=("cpu", "gpu", "exclusive_benchmark_window"),
         timeout_s=1800.0,
         handler=_physical_measure,
     ))

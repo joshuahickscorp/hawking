@@ -8883,39 +8883,53 @@
      "receipt": "receipts/future/G034_LAKE_CENSUS_FULL.json"
     },
     "gpu": {
-     "state": "REFUSED",
-     "value": null,
-     "reason": "no GPU work was dispatched: the only working execution path for this body on this host is transformers/torch float32 on CPU, and torch MPS is unavailable in this environment. A CPU number is not a GPU measurement and inventing a zero would be worse.",
-     "receipt": null,
-     "reopen_when": "a working Metal or MPS execution path for this architecture on this host"
+     "state": "MEASURED",
+     "value": {
+      "device": "Metal via mlx_lm 0.32.1",
+      "weights_dtype": "bfloat16",
+      "prefill_tps_median": 10032.5845,
+      "decode_tps_median": 196.2655,
+      "prefill_spread_pct": 1.22,
+      "decode_spread_pct": 3.11,
+      "repeats": 5,
+      "warmup_discarded": 1,
+      "context": 512,
+      "concurrency": 1,
+      "note": "first GPU measurement in the campaign; mx.eval() forced on every timed region because mlx is lazy"
+     },
+     "reason": null,
+     "receipt": "receipts/future/PHYSICAL_DIRECT_Qwen--Qwen3-0.6B_c1899de289a0__mlx.json"
     },
     "cpu": {
      "state": "MEASURED",
      "value": {
       "device": "cpu",
       "runtime": "transformers/torch float32",
-      "decode_tps_on_cpu": 10.6528,
-      "prefill_tps_on_cpu": 831.7007,
-      "note": "whole-model CPU execution; this is the CPU contribution because no GPU work was dispatched"
+      "prefill_tps_median": 946.5177,
+      "decode_tps_median": 14.2041,
+      "prefill_spread_pct": 17.84,
+      "decode_spread_pct": 15.86,
+      "note": "re-measured on a QUIET machine; the earlier 831.7/10.65 was taken while an external job held the host, so it understated the body by 14% prefill and 33% decode"
      },
      "reason": null,
-     "receipt": "receipts/future/PHYSICAL_DIRECT_Qwen--Qwen3-0.6B_c1899de289a0.json"
+     "receipt": "receipts/future/PHYSICAL_DIRECT_Qwen--Qwen3-0.6B_c1899de289a0__torch.json"
     },
     "tps": {
      "state": "MEASURED",
      "value": {
-      "prefill_tps_median": 831.7007,
-      "decode_tps_median": 10.6528,
-      "prefill_spread_pct": 47.44,
-      "decode_spread_pct": 5.01,
-      "repeats": 5,
+      "best_measured_prefill_tps": 10032.5845,
+      "best_measured_decode_tps": 196.2655,
+      "backend": "mlx/Metal/bf16",
       "context": 512,
       "concurrency": 1,
-      "device": "cpu fp32",
-      "monotone_drift": "NONE"
+      "supersedes": "the earlier torch/CPU/fp32 figure, which was ALSO measured under external contention",
+      "cpu_fp32_quiet_machine": {
+       "prefill_tps": 946.5177,
+       "decode_tps": 14.2041
+      }
      },
      "reason": null,
-     "receipt": "receipts/future/PHYSICAL_DIRECT_Qwen--Qwen3-0.6B_c1899de289a0.json"
+     "receipt": "receipts/future/PHYSICAL_DIRECT_Qwen--Qwen3-0.6B_c1899de289a0__mlx.json"
     },
     "nr_candidate": {
      "state": "MEASURED",

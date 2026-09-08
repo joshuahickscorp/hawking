@@ -1469,6 +1469,123 @@ def ingest_g017_into_ledger(
     return {"slug": slug, "actions": actions, "progress": progress(led)}
 
 
+ISOLATE_SCHEMA = "hawking.future.g022_group_isolation.v1"
+ISOLATE_RECEIPT = "G022_GROUP_ISOLATION.json"
+
+
+def run_isolation_experiment(
+    *,
+    snapshot: str | None = None,
+    slug: str | None = None,
+    expected_gb: float = 8.0,
+) -> dict[str, Any]:
+    """WHICH organ group makes the winning allocation win?
+
+    GLOBAL_ANATOMY is the only arm to pass the conjunction on two corpora, but
+    the mechanism is unattributed: GLOBAL and ANTI_SENSITIVITY agree on {q,o}
+    and still differ by 0.21 r4, so the win is not one organ's doing. Each arm
+    here changes GLOBAL in EXACTLY ONE equal-parameter group and leaves the
+    other two identical, so every arm is byte-exact and depth-exact against the
+    base and the capability delta is that group's contribution and nothing else.
+    """
+    from campaign_memory_guard import require_ok, resource_cost, sample
+
+    snapshot = snapshot or SPECIMEN_PATH
+    slug = slug or SPECIMEN_SLUG
+    guard = sample(expected_gb=expected_gb)
+    if guard.state == "STOP":
+        return {"schema": ISOLATE_SCHEMA, "status": "GUARD_STOP",
+                "guard": guard.as_dict(),
+                "verdict_sentence": "NO RESULT: campaign_memory_guard STOP before load"}
+    require_ok("G022 group isolation", expected_gb=expected_gb)
+
+    C, M, R = ALLOC_CHEAP, ALLOC_MID, ALLOC_RICH
+    base = {"q_proj": C, "o_proj": M, "k_proj": C, "v_proj": M,
+            "gate_proj": C, "down_proj": M, "up_proj": R}
+    arms: dict[str, dict[str, tuple[int, int]]] = {"GLOBAL_BASE": dict(base)}
+    # One group changed per arm. Nothing else moves.
+    a = dict(base); a["q_proj"], a["o_proj"] = M, C
+    arms["SWAP_qo"] = a
+    a = dict(base); a["k_proj"], a["v_proj"] = M, C
+    arms["SWAP_kv"] = a
+    a = dict(base); a["gate_proj"], a["down_proj"] = M, C     # crush down instead of gate
+    arms["MLP_crush_down"] = a
+    a = dict(base); a["gate_proj"], a["up_proj"] = R, C       # crush up, protect gate
+    arms["MLP_crush_up"] = a
+
+    inv = inventory(snapshot)
+    plans = {n: plan_arm(inv, n, assignment=asg) for n, asg in arms.items()}
+    names = list(plans)
+    caps: dict[str, Any] = {}
+    gates: dict[str, Any] = {}
+    applied: dict[str, Any] = {}
+    with resource_cost(interval_s=2.0, label="G022_ISO") as cost:
+        weights = _load_bf16_payloads(inv)
+        model, tok = _load_model(snapshot)
+        dense_cap = measure_capability(model, tok)
+        for nm in names:
+            rec = reconstruct_arm(inv, weights, plans[nm]["specs"])
+            applied[nm] = _apply_recs(model, rec)
+            del rec
+            caps[nm] = measure_capability(model, tok)
+            gates[nm] = gate_from_reference(caps[nm], dense_cap)
+        del model, weights
+
+    pub = {n: _public_arm({k: v for k, v in plans[n].items() if k != "specs"},
+                          caps[n], gates[n]) for n in names}
+    b_ppl = pub["GLOBAL_BASE"]["capability"]["ppl_full"]
+    b_r4 = pub["GLOBAL_BASE"]["capability"]["r4_full"]
+    rows = []
+    for n in names:
+        if n == "GLOBAL_BASE":
+            continue
+        changed = sorted(k for k in base if arms[n][k] != base[k])
+        rows.append({
+            "arm": n, "group_changed": changed,
+            "delta_ppl": round(pub[n]["capability"]["ppl_full"] - b_ppl, 6),
+            "delta_r4": round(pub[n]["capability"]["r4_full"] - b_r4, 6),
+            "ppl": round(pub[n]["capability"]["ppl_full"], 6),
+            "r4": round(pub[n]["capability"]["r4_full"], 6),
+            "gate_ok": bool(pub[n]["capability_ok"]),
+        })
+    rows.sort(key=lambda r: -abs(r["delta_r4"]))
+    byte_set = {p["organ_bytes"] for p in plans.values()}
+    depth_set = {tuple(sorted(v["bits"] for v in plans[n]["per_organ"].values()))
+                 for n in names}
+    dominant = rows[0] if rows else None
+    return {
+        "schema": ISOLATE_SCHEMA, "obligation": "G022", "status": "MEASURED",
+        "question": ("which equal-parameter organ group is responsible for the "
+                     "GLOBAL_ANATOMY allocation win?"),
+        "specimen": slug, "specimen_path": snapshot,
+        "base_assignment": {k: f"q{v[0]}-g{v[1]}" for k, v in base.items()},
+        "assignments": {n: {k: f"q{v[0]}-g{v[1]}" for k, v in asg.items()}
+                        for n, asg in arms.items()},
+        "byte_exact_across_all_arms": len(byte_set) == 1,
+        "depth_exact_across_all_arms": len(depth_set) == 1,
+        "organ_bytes": sorted(byte_set),
+        "base_ppl": round(b_ppl, 6), "base_r4": round(b_r4, 6),
+        "base_gate_ok": bool(pub["GLOBAL_BASE"]["capability_ok"]),
+        "per_group": rows,
+        "dominant_group": dominant["group_changed"] if dominant else None,
+        "dense_parent_capability": dense_cap,
+        "arms": pub, "applied": applied,
+        "guard_at_start": guard.as_dict(), "resource": cost, "device": "cpu",
+        "nr_not_nx": True,
+        "weaker_than_it_looks": [
+            "Single-group swaps measure each group AGAINST THIS BASE. They do not "
+            "prove the groups are independent; a different base could reorder them.",
+            "One specimen, one budget, one corpus.",
+        ],
+        "verdict_sentence": (
+            f"G022 on {slug}: base GLOBAL_ANATOMY ppl {b_ppl:.4f} r4 {b_r4:.4f} "
+            f"({'PASS' if pub['GLOBAL_BASE']['capability_ok'] else 'FAIL'}), all arms "
+            f"byte-exact and depth-exact. Group effect on diversity, largest first: "
+            + "; ".join(f"{r['arm']} d_r4 {r['delta_r4']:+.4f} d_ppl {r['delta_ppl']:+.4f}"
+                        for r in rows) + "."),
+    }
+
+
 ALLOC_SCHEMA = "hawking.future.g012_sensitivity_allocation.v1"
 ALLOC_RECEIPT = "G012_SENSITIVITY_ALLOCATION.json"
 
@@ -1990,6 +2107,9 @@ def main(argv: list[str] | None = None) -> int:
                    help="which capability corpus to evaluate on. Every number in "
                         "the campaign so far is corpus A; B exists to test whether "
                         "a result survives a different domain and register.")
+    p.add_argument("--isolate", action="store_true",
+                   help="which organ group makes the winning allocation win: one "
+                        "group changed per arm, everything else identical")
     p.add_argument("--allocate", action="store_true",
                    help="allocate by MEASURED sensitivity vs structural anatomy vs "
                         "uniform, byte-exact and depth-exact, with an "
@@ -2046,6 +2166,13 @@ def main(argv: list[str] | None = None) -> int:
         out = run_mutation_check()
         print(json.dumps(out, indent=2, sort_keys=True))
         print("MUTATION_CHECK_OK")
+        return 0
+    if args.isolate:
+        doc = run_isolation_experiment(
+            snapshot=args.snapshot, slug=args.slug, expected_gb=args.expected_gb)
+        path = write_doc(doc, args.receipt or ISOLATE_RECEIPT)
+        print(path)
+        print(doc["verdict_sentence"])
         return 0
     if args.allocate:
         doc = run_allocation_experiment(

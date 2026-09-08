@@ -166,6 +166,39 @@
       "source_oxx": null,
       "text": "The GLOBAL structural anatomy order TRANSFERS as an allocation policy. Across two corpora of different domain, at identical bytes (247,730,784) and an identical bit-depth multiset, GLOBAL_ANATOMY is the ONLY arm to pass the capability conjunction on BOTH: corpus A ppl 5.5520 r4 0.4135, corpus B ppl 4.9438 r4 0.4000. Its advantage is diversity and it is stable -- r4 ~0.40 on both corpora against UNIFORM's 0.7103 and 0.7308, a gap near 0.30 each time -- while UNIFORM holds the best likelihood on both and fails the gate on both. The tilt must be gentle and depth-controlled: arms whose ramp reached q2 landed at ppl 6.76-12.84.",
       "writer_pid": 26130
+    },
+    {
+      "counterexample_requirement": "a body where protecting the top-sensitivity organ does NOT account for most of the allocation win, or a second corpus where the down_proj effect does not reproduce",
+      "evidence": "receipts/future/G022_GROUP_ISOLATION.json, receipts/future/G012_SENSITIVITY_ALLOCATION.json, receipts/future/G011_ORGAN_SENSITIVITY.json, receipts/future/G017_SENSITIVITY_CORPUS_B.json",
+      "hcli_owned": false,
+      "id": "LAW016",
+      "recorded_at": "2026-09-08T12:48:17.781826+00:00",
+      "scope": "MODEL_LOCAL",
+      "source_oxx": null,
+      "text": "ONE ORGAN CARRIES THE ENTIRE ALLOCATION WIN. Single-group swaps from the GLOBAL_ANATOMY arm, each changing exactly one equal-parameter group and byte-exact and depth-exact against the base, attribute the win completely: crushing down_proj instead of gate_proj costs d_r4 +0.2968 -- EXACTLY the 0.2968 gap between GLOBAL_ANATOMY (r4 0.4135) and UNIFORM (r4 0.7103), landing on 0.7103. The other two groups move r4 by 0.096 and -0.117. So the allocation policy that matters is not an ORDERING at all: it is the single decision to protect the most behaviourally sensitive organ. down_proj is the most sensitive organ on BOTH corpora (delta ppl 0.963 and 0.934), which is the one part of the sensitivity map LAW014 found stable. This reconciles LAW014 and LAW015: the map's SENSITIVE end is reliable and is what predicts the win; its TOLERANT end is corpus-bound, and allocating by the tolerant end is what failed.",
+      "writer_pid": 3662
+    },
+    {
+      "counterexample_requirement": "a matched-precision comparison (bf16 on both backends, or fp32 on both) that separates device from dtype; until then the ratio is an upper bound on the device effect, not a measurement of it",
+      "evidence": "receipts/future/PHYSICAL_DIRECT_Qwen--Qwen3-0.6B_c1899de289a0__mlx.json, receipts/future/PHYSICAL_DIRECT_Qwen--Qwen3-0.6B_c1899de289a0__torch.json",
+      "hcli_owned": false,
+      "id": "LAW017",
+      "recorded_at": "2026-09-08T15:07:46.757028+00:00",
+      "scope": "MACHINE_LOCAL",
+      "source_oxx": null,
+      "text": "The gpu axis was empty for a RUNTIME reason, not a machine reason. Every gpu cell was REFUSED as 'torch MPS unavailable', which names torch, not Metal. mlx 0.32.1 runs on Metal, is a campaign_suite dependency, and supports qwen3 -- so the refusal's own reopen condition was already met on this host. First GPU measurement in the campaign: Qwen3-0.6B, 10032.58 prefill tok/s (spread 1.22%) and 196.27 decode tok/s (spread 3.11%) at 512 context, concurrency 1. CAUTION: the CPU comparison is confounded -- mlx loads the checkpoint's native bfloat16 while the torch path forces float32, so the 10.6x prefill / 13.8x decode ratio mixes DEVICE with PRECISION and is not a clean device measurement. Also: mlx is LAZY, so every timed region must end in mx.eval() or the number is graph construction, not execution, and the first repeat must be discarded as kernel-compile warm-up.",
+      "writer_pid": 28098
+    },
+    {
+      "counterexample_requirement": "a scheduler that can prove isolation (pinned cores, exclusive GPU queue) under which a contended run reproduces the quiet number",
+      "evidence": "receipts/future/PHYSICAL_DIRECT_Qwen--Qwen3-0.6B_c1899de289a0__torch.json, receipts/future/G034_ODYSSEY_LEDGER.json",
+      "hcli_owned": false,
+      "id": "LAW018",
+      "recorded_at": "2026-09-08T15:07:46.758391+00:00",
+      "scope": "MACHINE_LOCAL",
+      "source_oxx": null,
+      "text": "EXTERNAL CONTENTION SILENTLY UNDERSTATES A PHYSICAL MEASUREMENT, and the campaign has now measured by how much. The same body on the same backend measured 831.7 prefill / 10.65 decode tok/s while an unrelated job held the host, and 946.5 / 14.20 on a quiet machine -- 14% prefill and 33% decode, from contention alone. Spread also collapses: 47.4% prefill spread under load against 17.8% quiet on CPU, and 1.2% on Metal. A qualification measurement taken beside another workload is an operating measurement wearing a qualification label.",
+      "writer_pid": 28098
     }
   ],
   "parked": [],
@@ -193,6 +226,14 @@
       "recorded_at": "2026-09-08T06:33:45.339278+00:00",
       "reopen_when": "a multi-corpus consensus sensitivity map that beats the global order out of sample",
       "writer_pid": 26130
+    },
+    {
+      "description": "G022 attributes this law's own result to a single organ, not to the ordering it credits. The GLOBAL order wins because it happens to protect down_proj; its {q,o} choice is actively WRONG -- flipping it (SWAP_qo) improves diversity to r4 0.2963, better than the dense parent's 0.3619, and still passes. 'The global order transfers' overstates what transferred.",
+      "hcli_owned": false,
+      "law_id": "LAW015",
+      "recorded_at": "2026-09-08T12:48:17.783429+00:00",
+      "reopen_when": "a body where the global ORDER beats protect-the-sensitive-organ",
+      "writer_pid": 3662
     }
   ],
   "schema": "hcli.odyssey.ledger.v1",
