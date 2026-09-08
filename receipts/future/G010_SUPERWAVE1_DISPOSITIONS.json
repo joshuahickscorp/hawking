@@ -1,0 +1,220 @@
+{
+ "obligation": "G010",
+ "wave": "superwave1",
+ "launched": "2026-09-07T19:54Z",
+ "n_lanes": 20,
+ "profile": "consult (read-only; S009 12 -- Grok gets no write authority by default)",
+ "tally": {
+  "402_DEAD": 8,
+  "THIN": 11,
+  "USABLE": 1
+ },
+ "audit_method": "contract headings present, file:line citations, and a degeneracy score -- NOT byte size. Grading by byte size first reported 10 substantive lanes; the content audit says 1.",
+ "claude_errors_in_this_wave": [
+  "preflight checked AUTH but not BALANCE; grok-run doctor reports one and not the other, and S009 33 asked for both",
+  "acceptance told read-only consult lanes to write receipts/future/SW1_<lane>.md into a worktree consult never gets",
+  "first reported lane quality by byte size"
+ ],
+ "lanes": [
+  {
+   "task": "sw1-ebpw1-20260907-195404",
+   "lane": "ebpw1",
+   "status": "done",
+   "exit_code": "1",
+   "report_bytes": 1225,
+   "contract_headings": 0,
+   "file_line_citations": 0,
+   "verdict": "402_DEAD"
+  },
+  {
+   "task": "sw1-ebpw2-20260907-195404",
+   "lane": "ebpw2",
+   "status": "done",
+   "exit_code": "1",
+   "report_bytes": 246820,
+   "contract_headings": 1,
+   "file_line_citations": 30,
+   "verdict": "THIN"
+  },
+  {
+   "task": "sw1-g006a-20260907-195404",
+   "lane": "g006a",
+   "status": "done",
+   "exit_code": "1",
+   "report_bytes": 167679,
+   "contract_headings": 1,
+   "file_line_citations": 3,
+   "verdict": "THIN"
+  },
+  {
+   "task": "sw1-g006b-20260907-195404",
+   "lane": "g006b",
+   "status": "done",
+   "exit_code": "1",
+   "report_bytes": 1239,
+   "contract_headings": 0,
+   "file_line_citations": 0,
+   "verdict": "402_DEAD"
+  },
+  {
+   "task": "sw1-g012a-20260907-195404",
+   "lane": "g012a",
+   "status": "done",
+   "exit_code": "1",
+   "report_bytes": 1219,
+   "contract_headings": 0,
+   "file_line_citations": 0,
+   "verdict": "402_DEAD"
+  },
+  {
+   "task": "sw1-g012b-20260907-195407",
+   "lane": "g012b",
+   "status": "done",
+   "exit_code": "1",
+   "report_bytes": 75519,
+   "contract_headings": 8,
+   "file_line_citations": 43,
+   "verdict": "USABLE"
+  },
+  {
+   "task": "sw1-g012c-20260907-195407",
+   "lane": "g012c",
+   "status": "done",
+   "exit_code": "1",
+   "report_bytes": 22401,
+   "contract_headings": 1,
+   "file_line_citations": 17,
+   "verdict": "THIN"
+  },
+  {
+   "task": "sw1-g012d-20260907-195407",
+   "lane": "g012d",
+   "status": "done",
+   "exit_code": "1",
+   "report_bytes": 1228,
+   "contract_headings": 0,
+   "file_line_citations": 0,
+   "verdict": "402_DEAD"
+  },
+  {
+   "task": "sw1-g023a-20260907-195407",
+   "lane": "g023a",
+   "status": "done",
+   "exit_code": "1",
+   "report_bytes": 1235,
+   "contract_headings": 0,
+   "file_line_citations": 0,
+   "verdict": "402_DEAD"
+  },
+  {
+   "task": "sw1-g023b-20260907-195407",
+   "lane": "g023b",
+   "status": "done",
+   "exit_code": "1",
+   "report_bytes": 139971,
+   "contract_headings": 0,
+   "file_line_citations": 0,
+   "verdict": "THIN"
+  },
+  {
+   "task": "sw1-g023c-20260907-195410",
+   "lane": "g023c",
+   "status": "done",
+   "exit_code": "1",
+   "report_bytes": 185096,
+   "contract_headings": 0,
+   "file_line_citations": 0,
+   "verdict": "THIN"
+  },
+  {
+   "task": "sw1-graph1-20260907-195410",
+   "lane": "graph1",
+   "status": "done",
+   "exit_code": "1",
+   "report_bytes": 1242,
+   "contract_headings": 0,
+   "file_line_citations": 0,
+   "verdict": "402_DEAD"
+  },
+  {
+   "task": "sw1-graph2-20260907-195410",
+   "lane": "graph2",
+   "status": "done",
+   "exit_code": "1",
+   "report_bytes": 1290,
+   "contract_headings": 0,
+   "file_line_citations": 0,
+   "verdict": "THIN"
+  },
+  {
+   "task": "sw1-nrcpu-20260907-195410",
+   "lane": "nrcpu",
+   "status": "done",
+   "exit_code": "1",
+   "report_bytes": 135081,
+   "contract_headings": 0,
+   "file_line_citations": 0,
+   "verdict": "THIN"
+  },
+  {
+   "task": "sw1-oiii1-20260907-195410",
+   "lane": "oiii1",
+   "status": "done",
+   "exit_code": "1",
+   "report_bytes": 1225,
+   "contract_headings": 0,
+   "file_line_citations": 0,
+   "verdict": "402_DEAD"
+  },
+  {
+   "task": "sw1-oiii2-20260907-195413",
+   "lane": "oiii2",
+   "status": "done",
+   "exit_code": "1",
+   "report_bytes": 1290,
+   "contract_headings": 0,
+   "file_line_citations": 0,
+   "verdict": "THIN"
+  },
+  {
+   "task": "sw1-phys1-20260907-195413",
+   "lane": "phys1",
+   "status": "done",
+   "exit_code": "1",
+   "report_bytes": 449700,
+   "contract_headings": 0,
+   "file_line_citations": 3,
+   "verdict": "THIN"
+  },
+  {
+   "task": "sw1-phys2-20260907-195413",
+   "lane": "phys2",
+   "status": "done",
+   "exit_code": "1",
+   "report_bytes": 116188,
+   "contract_headings": 0,
+   "file_line_citations": 0,
+   "verdict": "THIN"
+  },
+  {
+   "task": "sw1-road1-20260907-195413",
+   "lane": "road1",
+   "status": "done",
+   "exit_code": "1",
+   "report_bytes": 760120,
+   "contract_headings": 2,
+   "file_line_citations": 0,
+   "verdict": "THIN"
+  },
+  {
+   "task": "sw1-road2-20260907-195413",
+   "lane": "road2",
+   "status": "done",
+   "exit_code": "1",
+   "report_bytes": 1230,
+   "contract_headings": 0,
+   "file_line_citations": 0,
+   "verdict": "402_DEAD"
+  }
+ ]
+}
