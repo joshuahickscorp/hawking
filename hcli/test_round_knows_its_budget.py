@@ -23,6 +23,7 @@ sys.path.insert(0, str(REPO))
 from hcli.engine import Engine  # noqa: E402
 
 OBS = [{"tool": "odyssey.dense_anatomy", "ok": True, "text": "k_proj 41.09%"}]
+REPEATED = [{"tool": "odyssey.ledger", "ok": True, "text": "94 measured", "repeat": True}]
 
 
 def main() -> int:
@@ -52,11 +53,33 @@ def main() -> int:
     fin = block(OBS, final=True, used=8, budget=8)
     if "EXHAUSTED" not in fin:
         fails.append("the exhausted turn lost its TOOL BUDGET EXHAUSTED notice")
+    # ONCE. An edit that adds a branch beside the exhaustion notice can leave
+    # two copies, and a test that only asserts presence will not see it -- which
+    # is exactly what happened here.
+    if fin.count("TOOL BUDGET EXHAUSTED") != 1:
+        fails.append(f"the exhaustion notice appears {fin.count('TOOL BUDGET EXHAUSTED')} times")
+    if fin.count("OBSERVATIONS (tool results") != 1:
+        fails.append("the observations header is duplicated")
 
     # And an unknown budget must not invent one.
     unk = block(OBS)
     if "remain" in unk.lower():
         fails.append("a block with no budget information claims a remaining count")
+
+    # THE HORIZON THAT ACTUALLY BINDS. Rounds 22, 24 and 25 all ended on
+    # closure_reason bounded_observation_round with observations still in
+    # budget: the loop closes when EVERY call in a round is a repeat. The
+    # engine marks the observation `repeat` and uses it to close, and the text
+    # the round sees says only [ok]. So the round is told a budget that never
+    # binds and not told the rule that does.
+    rep = block(REPEATED, used=6, budget=8)
+    if "repeat" not in rep.lower():
+        fails.append(f"a repeated observation is not marked as one: {rep[:200]!r}")
+    if "end" not in rep.lower() and "close" not in rep.lower():
+        fails.append("the round is not told that repeating every call ends its loop")
+    # a NON-repeat must not carry the warning
+    if "repeat" in block(OBS, used=1, budget=8).lower():
+        fails.append("a fresh observation is marked as a repeat")
 
     # THE CALL SITE. A block that can carry the horizon and is never given it is
     # the same defect wearing a fix. Every helper test in this campaign that

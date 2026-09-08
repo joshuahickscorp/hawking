@@ -2450,11 +2450,27 @@ class Engine:
         """
         parts: List[str] = []
         if observations:
+            # `repeat` is set on the observation and USED TO CLOSE THE LOOP,
+            # and the round was never shown it. Rounds 22, 24 and 25 all ended
+            # on bounded_observation_round with observations still in budget --
+            # the loop closes when every call in a round repeats one already
+            # made. The round saw [ok], was told how much budget remained, and
+            # never learned the rule that actually ended it.
             rendered = "\n\n".join(
-                f"----- {o['tool']} [{'ok' if o['ok'] else 'FAILED'}] -----\n{o['text']}"
+                f"----- {o['tool']} "
+                f"[{'ok' if o.get('ok') else 'FAILED'}"
+                f"{', REPEAT of a call you already made' if o.get('repeat') else ''}] "
+                f"-----\n{o['text']}"
                 for o in observations
             )
             parts.append(f"OBSERVATIONS (tool results, this goal):\n{rendered}")
+        if observations and any(o.get("repeat") for o in observations):
+            parts.append(
+                "One or more calls above REPEAT a call you already made and returned what you "
+                "already have. A round in which EVERY call is a repeat ENDS THE LOOP IMMEDIATELY, "
+                "whatever budget is left. If you have a result, record it now; do not re-read to "
+                "confirm it."
+            )
         if final:
             parts.append(
                 "TOOL BUDGET EXHAUSTED. Answer from the observations above. "

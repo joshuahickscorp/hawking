@@ -1,0 +1,30 @@
+{
+ "obligation": "G006",
+ "round": 25,
+ "verdict": "NO CREDIT -- and it shows I FIXED THE WRONG HORIZON after round 24.",
+ "what_happened": "6 observations, 0 failures, real dense anatomy on the same specimen, and it ended 'Next: record measurement.' record_measurement never called. MEASURED 94 before, 94 after. Third consecutive round with the identical omission.",
+ "the_horizon_fix_was_live_and_did_not_bind": {
+  "what_i_added_after_round_24": "'N of M tool observations used; K remain', with a LAST CHANCE warning at K<=1.",
+  "what_round_25_saw": "'6 of 8 tool observations used; 2 remain.' -- accurate, and never the warning.",
+  "why": "the loop did not end on the budget. closure_reason was bounded_observation_round, which fires when EVERY call in a round REPEATS one already made -- whatever budget is left. Rounds 22, 24 and 25 all closed that way, all with observations still in hand.",
+  "so": "I diagnosed an unstated horizon correctly and then stated the wrong one. The budget was never what ended these rounds."
+ },
+ "the_horizon_that_actually_binds": {
+  "mechanism": "hcli/engine.py:1790 -- all(item.get('repeat') for item in round_observations)",
+  "the_gap": "the engine SETS `repeat` on the observation and CLOSES THE LOOP with it, and the text the round sees renders only [ok] or [FAILED]. The round is told a budget that does not bind and not told the rule that does.",
+  "the_round_s_behaviour_is_then_reasonable": "it re-reads the ledger to confirm what it measured -- a sound instinct -- and that confirmation is what ends its loop before it can write."
+ },
+ "the_repair": {
+  "what": "observations now render as [ok, REPEAT of a call you already made], and a round containing any repeat is told: 'A round in which EVERY call is a repeat ENDS THE LOOP IMMEDIATELY, whatever budget is left. If you have a result, record it now; do not re-read to confirm it.'",
+  "the_budget_message_stays": "it is correct and it will bind on a round that spends its observations rather than repeating. Wrong-target, not wrong."
+ },
+ "verification": {
+  "red_before_green": "the repeat assertions failed against the live block before the change",
+  "and_the_fix_introduced_a_defect_the_test_did_not_see": "the first patch left TWO copies of the TOOL BUDGET EXHAUSTED notice, and the test passed because it only asserted PRESENCE. Tightened to assert it appears exactly ONCE, and to check the observations header is not duplicated; the tightened test catches an injected duplicate.",
+  "regression": "23 passed across test_engine_tool_loop and test_structured_output_retry; the doomed-retry guard still passes",
+  "markers": "grep 0"
+ },
+ "attribution": "HARNESS (affordance), for the third time in the same place",
+ "streak": 0,
+ "scar": "I STATED A HORIZON THAT DID NOT BIND. Find which rule actually ended the run before explaining it to anyone."
+}
