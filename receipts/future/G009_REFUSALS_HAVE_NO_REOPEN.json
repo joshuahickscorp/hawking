@@ -1,0 +1,37 @@
+{
+ "obligation": "G009",
+ "finding": "THE REFUSALS ARE MECHANISM-BACKED AND ALMOST NONE OF THEM SAY HOW TO REOPEN",
+ "acceptance_quoted": "392 axes each MEASURED or REFUSED-with-mechanism; EVERY REFUSAL NAMES ITS REOPEN CONDITION.",
+ "verify_quoted": "a SAMPLED refusal is checked to name a real mechanism, not 'n/a'.",
+ "why_sampling_was_not_enough": "142 of 392 cells are REFUSED -- 36% of the ledger's authority rests on them. Sampling one would have returned STRONG or NO_REOPEN by luck. Every refusal was checked instead.",
+ "result": {
+  "n_refused": 142,
+  "distinct_reasons": 56,
+  "tally": {
+   "NO_REOPEN": 121,
+   "STRONG": 21
+  },
+  "carrying_a_receipt": 0
+ },
+ "the_good_half": "ZERO placeholders. Not one refusal says n/a, none, unknown or tbd. Every single one names a mechanism -- pre-quantized expert payload, absent model_type, a capability gate defined against text, a body that exceeds the machine. The 'not n/a' half of the verify PASSES outright, across all 142, not across a sample.",
+ "the_failing_half": {
+  "count": 121,
+  "of": 142,
+  "share": 85.2,
+  "meaning": "121 refusals state WHY the measurement cannot be made and never state what would make it possible. A refusal with no reopen condition is PERMANENT BY ACCIDENT: nothing in the ledger will ever cause it to be revisited, and it is indistinguishable from a settled negative.",
+  "concrete": "'expert organ is pre-quantized on disk ... a spectrum over quantization codes measures the codebook, not the organism' is a correct and useful mechanism. The reopen condition it does not state is real: re-acquire the body in float, or measure the codebook as the object of study rather than the organism. Neither is written down, so neither will happen.",
+  "by_axis": {
+   "anatomy": 12,
+   "gpu": 28,
+   "cpu": 28,
+   "tps": 28,
+   "nx_disposition": 18,
+   "ebpw": 7
+  }
+ },
+ "and_none_carry_a_receipt": "0 of 142 refusals cite a receipt path. The mechanism lives as prose inside the ledger cell. The campaign's own rule is that a measurement without a receipt does not exist; a refusal is a finding, and the same rule should bind it.",
+ "effect_on_the_headline_number": "the ledger reads 60.2% resolved. That figure counts 142 refusals, 121 of which cannot be revisited by any stated condition. It remains the honest resolved count -- but 'resolved' and 'settled' are not the same word, and per S009 47 only MEASURED (94, 24.0%) is quoted as measured.",
+ "status": "G009 IS NOT SATISFIABLE AS WRITTEN. Measured, not asserted; reported, not repaired.",
+ "why_not_repaired_here": "writing 121 reopen conditions is authoring scientific content for cells Claude did not measure. Several belong to the autonomy round's own territory, and inventing a reopen condition for a refusal someone else recorded is exactly the target engineering G006 forbids. The gap is stated so it can be closed by whoever owns each cell.",
+ "scar": "A REFUSAL WITHOUT A REOPEN CONDITION IS PERMANENT BY ACCIDENT."
+}

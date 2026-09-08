@@ -1,0 +1,1857 @@
+{
+ "n_refused": 142,
+ "tally": {
+  "NO_REOPEN": 121,
+  "STRONG": 21
+ },
+ "rows": [
+  {
+   "slug": "moonshotai--Kimi-K3@9f62e4e9fffb",
+   "axis": "anatomy",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "expert organ is pre-quantized on disk: expert payload is ['U8'] with ['weight_scale'] scale tensors -- a spectrum over quantization codes measures the codebook, not the organism. A spectrum over quantization codes measur",
+   "has_receipt": false
+  },
+  {
+   "slug": "moonshotai--Kimi-K3@9f62e4e9fffb",
+   "axis": "gpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"kimi_k3\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "moonshotai--Kimi-K3@9f62e4e9fffb",
+   "axis": "cpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"kimi_k3\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "moonshotai--Kimi-K3@9f62e4e9fffb",
+   "axis": "tps",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"kimi_k3\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "moonshotai--Kimi-K3@9f62e4e9fffb",
+   "axis": "nx_disposition",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"kimi_k3\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture re",
+   "has_receipt": false
+  },
+  {
+   "slug": "thinkingmachines--Inkling-Small@8cc5877b44d3",
+   "axis": "gpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"inkling_mm_model\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "thinkingmachines--Inkling-Small@8cc5877b44d3",
+   "axis": "cpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"inkling_mm_model\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "thinkingmachines--Inkling-Small@8cc5877b44d3",
+   "axis": "tps",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"inkling_mm_model\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "thinkingmachines--Inkling-Small@8cc5877b44d3",
+   "axis": "nx_disposition",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"inkling_mm_model\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this archit",
+   "has_receipt": false
+  },
+  {
+   "slug": "windowsxp811203--Qwen3.8-Flash-Next-Abliterated@deb02632504b",
+   "axis": "gpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"qwen4_exp\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "windowsxp811203--Qwen3.8-Flash-Next-Abliterated@deb02632504b",
+   "axis": "cpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"qwen4_exp\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "windowsxp811203--Qwen3.8-Flash-Next-Abliterated@deb02632504b",
+   "axis": "tps",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"qwen4_exp\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "windowsxp811203--Qwen3.8-Flash-Next-Abliterated@deb02632504b",
+   "axis": "nx_disposition",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"qwen4_exp\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture ",
+   "has_receipt": false
+  },
+  {
+   "slug": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+   "axis": "gpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"qwen4_exp\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+   "axis": "cpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"qwen4_exp\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+   "axis": "tps",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"qwen4_exp\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+   "axis": "nx_disposition",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"qwen4_exp\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture ",
+   "has_receipt": false
+  },
+  {
+   "slug": "zai-org--GLM-5.3-Flash@04c4e9e95c5d",
+   "axis": "anatomy",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "expert organ is pre-quantized on disk: expert payload is ['F8_E4M3'] with ['weight_scale_inv'] scale tensors -- a spectrum over quantization codes measures the codebook, not the organism. A spectrum over quantization cod",
+   "has_receipt": false
+  },
+  {
+   "slug": "zai-org--GLM-5.3-Flash@04c4e9e95c5d",
+   "axis": "gpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"glm5_next\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "zai-org--GLM-5.3-Flash@04c4e9e95c5d",
+   "axis": "cpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"glm5_next\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "zai-org--GLM-5.3-Flash@04c4e9e95c5d",
+   "axis": "tps",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"glm5_next\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "zai-org--GLM-5.3-Flash@04c4e9e95c5d",
+   "axis": "nx_disposition",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"glm5_next\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture ",
+   "has_receipt": false
+  },
+  {
+   "slug": "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+   "axis": "anatomy",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "expert organ is pre-quantized on disk: expert payload is ['F8_E4M3', 'I8'] with ['scale'] scale tensors -- a spectrum over quantization codes measures the codebook, not the organism. A spectrum over quantization codes me",
+   "has_receipt": false
+  },
+  {
+   "slug": "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+   "axis": "gpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"deepseek_v4\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+   "axis": "cpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"deepseek_v4\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+   "axis": "tps",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"deepseek_v4\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+   "axis": "nx_disposition",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"deepseek_v4\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architectur",
+   "has_receipt": false
+  },
+  {
+   "slug": "Wan-AI--Wan2.2-T2V-A14B@c8c270b13ee0",
+   "axis": "gpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: no model_type in config (<no config: FileNotFoundError>)",
+   "has_receipt": false
+  },
+  {
+   "slug": "Wan-AI--Wan2.2-T2V-A14B@c8c270b13ee0",
+   "axis": "cpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: no model_type in config (<no config: FileNotFoundError>)",
+   "has_receipt": false
+  },
+  {
+   "slug": "Wan-AI--Wan2.2-T2V-A14B@c8c270b13ee0",
+   "axis": "tps",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: no model_type in config (<no config: FileNotFoundError>)",
+   "has_receipt": false
+  },
+  {
+   "slug": "Wan-AI--Wan2.2-T2V-A14B@c8c270b13ee0",
+   "axis": "nr_candidate",
+   "verdict": "STRONG",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": true
+   },
+   "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type (absent), architectures (absent): not a text sequence model. That gate is undefined",
+   "has_receipt": false
+  },
+  {
+   "slug": "Wan-AI--Wan2.2-T2V-A14B@c8c270b13ee0",
+   "axis": "nx_disposition",
+   "verdict": "STRONG",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": true
+   },
+   "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type (absent), architectures (absent): not a text sequence model. That gate is undefined",
+   "has_receipt": false
+  },
+  {
+   "slug": "arcinstitute--evo2_40b@d529aa57c307",
+   "axis": "anatomy",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "no safetensors under the snapshot: weights are 5x.lock, 5x.metadata, 2x<noext>, 1x.json",
+   "has_receipt": false
+  },
+  {
+   "slug": "arcinstitute--evo2_40b@d529aa57c307",
+   "axis": "ebpw",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "no safetensors to account: weights are 5x.lock, 5x.metadata, 2x<noext>, 1x.json",
+   "has_receipt": false
+  },
+  {
+   "slug": "arcinstitute--evo2_40b@d529aa57c307",
+   "axis": "gpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
+   "has_receipt": false
+  },
+  {
+   "slug": "arcinstitute--evo2_40b@d529aa57c307",
+   "axis": "cpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
+   "has_receipt": false
+  },
+  {
+   "slug": "arcinstitute--evo2_40b@d529aa57c307",
+   "axis": "tps",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
+   "has_receipt": false
+  },
+  {
+   "slug": "arcinstitute--evo2_40b@d529aa57c307",
+   "axis": "nr_candidate",
+   "verdict": "STRONG",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": true
+   },
+   "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type (absent), architectures (absent): not a text sequence model. That gate is undefined",
+   "has_receipt": false
+  },
+  {
+   "slug": "arcinstitute--evo2_40b@d529aa57c307",
+   "axis": "nx_disposition",
+   "verdict": "STRONG",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": true
+   },
+   "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type (absent), architectures (absent): not a text sequence model. That gate is undefined",
+   "has_receipt": false
+  },
+  {
+   "slug": "nvidia--audio-flamingo-3@ee26c5842398",
+   "axis": "gpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"llava_llama\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "nvidia--audio-flamingo-3@ee26c5842398",
+   "axis": "cpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"llava_llama\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "nvidia--audio-flamingo-3@ee26c5842398",
+   "axis": "tps",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"llava_llama\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "nvidia--audio-flamingo-3@ee26c5842398",
+   "axis": "nx_disposition",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"llava_llama\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architectur",
+   "has_receipt": false
+  },
+  {
+   "slug": "GSAI-ML--iLLaDA-8B-Base@a1b5b5f8a31a",
+   "axis": "gpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"illada\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "GSAI-ML--iLLaDA-8B-Base@a1b5b5f8a31a",
+   "axis": "cpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"illada\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "GSAI-ML--iLLaDA-8B-Base@a1b5b5f8a31a",
+   "axis": "tps",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"illada\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "GSAI-ML--iLLaDA-8B-Base@a1b5b5f8a31a",
+   "axis": "nx_disposition",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"illada\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture reo",
+   "has_receipt": false
+  },
+  {
+   "slug": "kyutai--moshika-pytorch-bf16@a49141e28b3d",
+   "axis": "gpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: no model_type in config (<no config: FileNotFoundError>)",
+   "has_receipt": false
+  },
+  {
+   "slug": "kyutai--moshika-pytorch-bf16@a49141e28b3d",
+   "axis": "cpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: no model_type in config (<no config: FileNotFoundError>)",
+   "has_receipt": false
+  },
+  {
+   "slug": "kyutai--moshika-pytorch-bf16@a49141e28b3d",
+   "axis": "tps",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: no model_type in config (<no config: FileNotFoundError>)",
+   "has_receipt": false
+  },
+  {
+   "slug": "kyutai--moshika-pytorch-bf16@a49141e28b3d",
+   "axis": "nx_disposition",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"unknown\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture re",
+   "has_receipt": false
+  },
+  {
+   "slug": "Dream-org--Dream-v0-Instruct-7B@05334cb9faaf",
+   "axis": "gpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"Dream\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "Dream-org--Dream-v0-Instruct-7B@05334cb9faaf",
+   "axis": "cpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"Dream\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "Dream-org--Dream-v0-Instruct-7B@05334cb9faaf",
+   "axis": "tps",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"Dream\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "Dream-org--Dream-v0-Instruct-7B@05334cb9faaf",
+   "axis": "nx_disposition",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"Dream\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture reop",
+   "has_receipt": false
+  },
+  {
+   "slug": "tencent--HunyuanVideo@6204ad6aea1a",
+   "axis": "anatomy",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "no safetensors under the snapshot: weights are 6x.metadata, 6x.lock, 3x.pt, 2x.json",
+   "has_receipt": false
+  },
+  {
+   "slug": "tencent--HunyuanVideo@6204ad6aea1a",
+   "axis": "ebpw",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "no safetensors to account: weights are 6x.metadata, 6x.lock, 3x.pt, 2x.json",
+   "has_receipt": false
+  },
+  {
+   "slug": "tencent--HunyuanVideo@6204ad6aea1a",
+   "axis": "gpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
+   "has_receipt": false
+  },
+  {
+   "slug": "tencent--HunyuanVideo@6204ad6aea1a",
+   "axis": "cpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
+   "has_receipt": false
+  },
+  {
+   "slug": "tencent--HunyuanVideo@6204ad6aea1a",
+   "axis": "tps",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
+   "has_receipt": false
+  },
+  {
+   "slug": "tencent--HunyuanVideo@6204ad6aea1a",
+   "axis": "nr_candidate",
+   "verdict": "STRONG",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": true
+   },
+   "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type (absent), architectures (absent): not a text sequence model. That gate is undefined",
+   "has_receipt": false
+  },
+  {
+   "slug": "tencent--HunyuanVideo@6204ad6aea1a",
+   "axis": "nx_disposition",
+   "verdict": "STRONG",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": true
+   },
+   "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type (absent), architectures (absent): not a text sequence model. That gate is undefined",
+   "has_receipt": false
+  },
+  {
+   "slug": "lerobot--pi0_base@25c379b52ba2",
+   "axis": "anatomy",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "dense sweep REFUSED: /Volumes/corpdrive/hawking-modellake/specimens/lerobot--pi0_base@25c379b52ba2: body HAS expert tensors (767 keys, e.g. paligemma_with_expert.gemma_expert.lm_head.weight). representational_anatomy.py ",
+   "has_receipt": false
+  },
+  {
+   "slug": "lerobot--pi0_base@25c379b52ba2",
+   "axis": "gpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: no model_type in config (None)",
+   "has_receipt": false
+  },
+  {
+   "slug": "lerobot--pi0_base@25c379b52ba2",
+   "axis": "cpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: no model_type in config (None)",
+   "has_receipt": false
+  },
+  {
+   "slug": "lerobot--pi0_base@25c379b52ba2",
+   "axis": "tps",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: no model_type in config (None)",
+   "has_receipt": false
+  },
+  {
+   "slug": "lerobot--pi0_base@25c379b52ba2",
+   "axis": "nx_disposition",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"unknown\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture re",
+   "has_receipt": false
+  },
+  {
+   "slug": "facebook--musicgen-large@15ccdc920998",
+   "axis": "anatomy",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "no safetensors under the snapshot: weights are 9x.metadata, 9x.lock, 6x.json, 3x.bin",
+   "has_receipt": false
+  },
+  {
+   "slug": "facebook--musicgen-large@15ccdc920998",
+   "axis": "ebpw",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "no safetensors to account: weights are 9x.metadata, 9x.lock, 6x.json, 3x.bin",
+   "has_receipt": false
+  },
+  {
+   "slug": "facebook--musicgen-large@15ccdc920998",
+   "axis": "gpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
+   "has_receipt": false
+  },
+  {
+   "slug": "facebook--musicgen-large@15ccdc920998",
+   "axis": "cpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
+   "has_receipt": false
+  },
+  {
+   "slug": "facebook--musicgen-large@15ccdc920998",
+   "axis": "tps",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
+   "has_receipt": false
+  },
+  {
+   "slug": "facebook--musicgen-large@15ccdc920998",
+   "axis": "nr_candidate",
+   "verdict": "STRONG",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": true
+   },
+   "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type musicgen, architectures MusicgenForConditionalGeneration: not a text sequence model",
+   "has_receipt": false
+  },
+  {
+   "slug": "facebook--musicgen-large@15ccdc920998",
+   "axis": "nx_disposition",
+   "verdict": "STRONG",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": true
+   },
+   "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type musicgen, architectures MusicgenForConditionalGeneration: not a text sequence model",
+   "has_receipt": false
+  },
+  {
+   "slug": "arcinstitute--evo2_7b@bda0089f9258",
+   "axis": "anatomy",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "no safetensors under the snapshot: weights are 4x.metadata, 4x.lock, 2x<noext>, 1x.json",
+   "has_receipt": false
+  },
+  {
+   "slug": "arcinstitute--evo2_7b@bda0089f9258",
+   "axis": "ebpw",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "no safetensors to account: weights are 4x.metadata, 4x.lock, 2x<noext>, 1x.json",
+   "has_receipt": false
+  },
+  {
+   "slug": "arcinstitute--evo2_7b@bda0089f9258",
+   "axis": "gpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
+   "has_receipt": false
+  },
+  {
+   "slug": "arcinstitute--evo2_7b@bda0089f9258",
+   "axis": "cpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
+   "has_receipt": false
+  },
+  {
+   "slug": "arcinstitute--evo2_7b@bda0089f9258",
+   "axis": "tps",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
+   "has_receipt": false
+  },
+  {
+   "slug": "arcinstitute--evo2_7b@bda0089f9258",
+   "axis": "nr_candidate",
+   "verdict": "STRONG",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": true
+   },
+   "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type (absent), architectures (absent): not a text sequence model. That gate is undefined",
+   "has_receipt": false
+  },
+  {
+   "slug": "arcinstitute--evo2_7b@bda0089f9258",
+   "axis": "nx_disposition",
+   "verdict": "STRONG",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": true
+   },
+   "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type (absent), architectures (absent): not a text sequence model. That gate is undefined",
+   "has_receipt": false
+  },
+  {
+   "slug": "microsoft--Phi-4-multimodal-instruct@93f923e1a772",
+   "axis": "gpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"phi4mm\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "microsoft--Phi-4-multimodal-instruct@93f923e1a772",
+   "axis": "cpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"phi4mm\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "microsoft--Phi-4-multimodal-instruct@93f923e1a772",
+   "axis": "tps",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"phi4mm\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "microsoft--Phi-4-multimodal-instruct@93f923e1a772",
+   "axis": "nx_disposition",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"phi4mm\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture reo",
+   "has_receipt": false
+  },
+  {
+   "slug": "HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02",
+   "axis": "gpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"smolvlm\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02",
+   "axis": "cpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"smolvlm\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02",
+   "axis": "tps",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"smolvlm\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02",
+   "axis": "nx_disposition",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"smolvlm\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture re",
+   "has_receipt": false
+  },
+  {
+   "slug": "boltz-community--boltz-2@6fdef46d763f",
+   "axis": "anatomy",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "no safetensors under the snapshot: weights are 4x.metadata, 4x.lock, 2x.ckpt, 2x<noext>",
+   "has_receipt": false
+  },
+  {
+   "slug": "boltz-community--boltz-2@6fdef46d763f",
+   "axis": "ebpw",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "no safetensors to account: weights are 4x.metadata, 4x.lock, 2x.ckpt, 2x<noext>",
+   "has_receipt": false
+  },
+  {
+   "slug": "boltz-community--boltz-2@6fdef46d763f",
+   "axis": "gpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
+   "has_receipt": false
+  },
+  {
+   "slug": "boltz-community--boltz-2@6fdef46d763f",
+   "axis": "cpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
+   "has_receipt": false
+  },
+  {
+   "slug": "boltz-community--boltz-2@6fdef46d763f",
+   "axis": "tps",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
+   "has_receipt": false
+  },
+  {
+   "slug": "boltz-community--boltz-2@6fdef46d763f",
+   "axis": "nr_candidate",
+   "verdict": "STRONG",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": true
+   },
+   "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type (absent), architectures (absent): not a text sequence model. That gate is undefined",
+   "has_receipt": false
+  },
+  {
+   "slug": "boltz-community--boltz-2@6fdef46d763f",
+   "axis": "nx_disposition",
+   "verdict": "STRONG",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": true
+   },
+   "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type (absent), architectures (absent): not a text sequence model. That gate is undefined",
+   "has_receipt": false
+  },
+  {
+   "slug": "facebook--vjepa2-vitg-fpc64-256@875c192b7b70",
+   "axis": "gpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"vjepa2\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "facebook--vjepa2-vitg-fpc64-256@875c192b7b70",
+   "axis": "cpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"vjepa2\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "facebook--vjepa2-vitg-fpc64-256@875c192b7b70",
+   "axis": "tps",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"vjepa2\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "facebook--vjepa2-vitg-fpc64-256@875c192b7b70",
+   "axis": "nr_candidate",
+   "verdict": "STRONG",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": true
+   },
+   "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type vjepa2, architectures VJEPA2Model: not a text sequence model. That gate is undefine",
+   "has_receipt": false
+  },
+  {
+   "slug": "facebook--vjepa2-vitg-fpc64-256@875c192b7b70",
+   "axis": "nx_disposition",
+   "verdict": "STRONG",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": true
+   },
+   "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type vjepa2, architectures VJEPA2Model: not a text sequence model. That gate is undefine",
+   "has_receipt": false
+  },
+  {
+   "slug": "google--flan-t5-large@0613663d0d48",
+   "axis": "gpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"t5\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "google--flan-t5-large@0613663d0d48",
+   "axis": "cpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"t5\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "google--flan-t5-large@0613663d0d48",
+   "axis": "tps",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"t5\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "google--flan-t5-large@0613663d0d48",
+   "axis": "nx_disposition",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"t5\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture reopens",
+   "has_receipt": false
+  },
+  {
+   "slug": "state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994",
+   "axis": "anatomy",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "no safetensors under the snapshot: weights are 4x.metadata, 4x.lock, 2x<noext>, 1x.json",
+   "has_receipt": false
+  },
+  {
+   "slug": "state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994",
+   "axis": "ebpw",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "no safetensors to account: weights are 4x.metadata, 4x.lock, 2x<noext>, 1x.json",
+   "has_receipt": false
+  },
+  {
+   "slug": "state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994",
+   "axis": "gpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
+   "has_receipt": false
+  },
+  {
+   "slug": "state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994",
+   "axis": "cpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
+   "has_receipt": false
+  },
+  {
+   "slug": "state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994",
+   "axis": "tps",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
+   "has_receipt": false
+  },
+  {
+   "slug": "state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994",
+   "axis": "nx_disposition",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"unknown\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture re",
+   "has_receipt": false
+  },
+  {
+   "slug": "state-spaces--mamba3-siso-1.5b@5cfc721542ec",
+   "axis": "anatomy",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "no safetensors under the snapshot: weights are 4x.metadata, 4x.lock, 2x<noext>, 1x.json",
+   "has_receipt": false
+  },
+  {
+   "slug": "state-spaces--mamba3-siso-1.5b@5cfc721542ec",
+   "axis": "ebpw",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "no safetensors to account: weights are 4x.metadata, 4x.lock, 2x<noext>, 1x.json",
+   "has_receipt": false
+  },
+  {
+   "slug": "state-spaces--mamba3-siso-1.5b@5cfc721542ec",
+   "axis": "gpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
+   "has_receipt": false
+  },
+  {
+   "slug": "state-spaces--mamba3-siso-1.5b@5cfc721542ec",
+   "axis": "cpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
+   "has_receipt": false
+  },
+  {
+   "slug": "state-spaces--mamba3-siso-1.5b@5cfc721542ec",
+   "axis": "tps",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: no safetensors; mlx cannot load any format here",
+   "has_receipt": false
+  },
+  {
+   "slug": "state-spaces--mamba3-siso-1.5b@5cfc721542ec",
+   "axis": "nx_disposition",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"unknown\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture re",
+   "has_receipt": false
+  },
+  {
+   "slug": "google--timesfm-2.0-500m-pytorch@dc2443792ce5",
+   "axis": "gpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"timesfm\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "google--timesfm-2.0-500m-pytorch@dc2443792ce5",
+   "axis": "cpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"timesfm\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "google--timesfm-2.0-500m-pytorch@dc2443792ce5",
+   "axis": "tps",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"timesfm\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "google--timesfm-2.0-500m-pytorch@dc2443792ce5",
+   "axis": "nr_candidate",
+   "verdict": "STRONG",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": true
+   },
+   "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type timesfm, architectures TimesFmModelForPrediction: not a text sequence model. That g",
+   "has_receipt": false
+  },
+  {
+   "slug": "google--timesfm-2.0-500m-pytorch@dc2443792ce5",
+   "axis": "nx_disposition",
+   "verdict": "STRONG",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": true
+   },
+   "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type timesfm, architectures TimesFmModelForPrediction: not a text sequence model. That g",
+   "has_receipt": false
+  },
+  {
+   "slug": "openai--whisper-large-v3-turbo@41f01f3fe87f",
+   "axis": "gpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"whisper\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "openai--whisper-large-v3-turbo@41f01f3fe87f",
+   "axis": "cpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"whisper\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "openai--whisper-large-v3-turbo@41f01f3fe87f",
+   "axis": "tps",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"whisper\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "openai--whisper-large-v3-turbo@41f01f3fe87f",
+   "axis": "nx_disposition",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"whisper\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture re",
+   "has_receipt": false
+  },
+  {
+   "slug": "answerdotai--ModernBERT-large@45bb4654a4d5",
+   "axis": "gpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"modernbert\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "answerdotai--ModernBERT-large@45bb4654a4d5",
+   "axis": "cpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"modernbert\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "answerdotai--ModernBERT-large@45bb4654a4d5",
+   "axis": "tps",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"modernbert\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "answerdotai--ModernBERT-large@45bb4654a4d5",
+   "axis": "nx_disposition",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"modernbert\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture",
+   "has_receipt": false
+  },
+  {
+   "slug": "Qwen--Qwen3-0.6B@c1899de289a0",
+   "axis": "nx_disposition",
+   "verdict": "STRONG",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": true
+   },
+   "reason": "no NX candidate here: the only arm that passes the conjunction is UNIFORM affine q4-g64 at 9.2619 complete EBPW, which is not smaller than the parent in any sense that earns a frozen executable. Reopen when a representat",
+   "has_receipt": false
+  },
+  {
+   "slug": "depth-anything--Depth-Anything-V2-Large-hf@7581137eff8d",
+   "axis": "gpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"depth_anything\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "depth-anything--Depth-Anything-V2-Large-hf@7581137eff8d",
+   "axis": "cpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"depth_anything\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "depth-anything--Depth-Anything-V2-Large-hf@7581137eff8d",
+   "axis": "tps",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"depth_anything\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "depth-anything--Depth-Anything-V2-Large-hf@7581137eff8d",
+   "axis": "nr_candidate",
+   "verdict": "STRONG",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": true
+   },
+   "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type depth_anything, architectures DepthAnythingForDepthEstimation: not a text sequence ",
+   "has_receipt": false
+  },
+  {
+   "slug": "depth-anything--Depth-Anything-V2-Large-hf@7581137eff8d",
+   "axis": "nx_disposition",
+   "verdict": "STRONG",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": true
+   },
+   "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type depth_anything, architectures DepthAnythingForDepthEstimation: not a text sequence ",
+   "has_receipt": false
+  },
+  {
+   "slug": "microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361",
+   "axis": "anatomy",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "dense sweep REFUSED: /Volumes/corpdrive/hawking-modellake/specimens/microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361: weights are pre-quantized (payload dtype ['U8'] not in BF16/F16/F32/F64) -- a spectrum over quantization cod",
+   "has_receipt": false
+  },
+  {
+   "slug": "facebook--sam2.1-hiera-large@665f8e2ad61c",
+   "axis": "gpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"sam2_video\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "facebook--sam2.1-hiera-large@665f8e2ad61c",
+   "axis": "cpu",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"sam2_video\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "facebook--sam2.1-hiera-large@665f8e2ad61c",
+   "axis": "tps",
+   "verdict": "NO_REOPEN",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": false
+   },
+   "reason": "cannot be executed on this host: mlx_lm has no module for model_type \"sam2_video\"",
+   "has_receipt": false
+  },
+  {
+   "slug": "facebook--sam2.1-hiera-large@665f8e2ad61c",
+   "axis": "nr_candidate",
+   "verdict": "STRONG",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": true
+   },
+   "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type sam2_video, architectures Sam2VideoModel: not a text sequence model. That gate is u",
+   "has_receipt": false
+  },
+  {
+   "slug": "facebook--sam2.1-hiera-large@665f8e2ad61c",
+   "axis": "nx_disposition",
+   "verdict": "STRONG",
+   "checks": {
+    "non_empty": true,
+    "not_a_placeholder": true,
+    "has_a_mechanism": true,
+    "has_reopen": true
+   },
+   "reason": "NR/NX are defined against this campaign's capability gate, which is a CONJUNCTION of perplexity and n-gram diversity on TEXT. model_type sam2_video, architectures Sam2VideoModel: not a text sequence model. That gate is u",
+   "has_receipt": false
+  }
+ ],
+ "distinct_reasons": 56,
+ "with_receipt": 0
+}
