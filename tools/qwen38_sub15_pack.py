@@ -144,6 +144,23 @@ def decode_binary(payload: bytes) -> np.ndarray:
     return np.ascontiguousarray(rebuilt.reshape(header["shape"]), dtype=np.float32)
 
 
+CODEC_NAMES = {0: "binary_g128", 1: "rice_q1_rms_2pct", 2: "hgravs01_r160_b3"}
+
+
+def check_codec_known(codec: int) -> None:
+    """Refuse an unnamed codec BEFORE decoding it, not after.
+
+    materialize_mlp decoded the payload and only then looked the codec name up
+    in a dict literal covering {0,1,2}. A codec-5 record therefore paid the
+    entire decode -- 89M elements on a 27B MLP tensor -- and raised KeyError on
+    the last line. Fail on the cheap check first.
+    """
+    if int(codec) not in CODEC_NAMES:
+        raise PackError(
+            f"codec {codec} has no name in CODEC_NAMES; refusing before decode "
+            f"rather than after. Known: {sorted(CODEC_NAMES)}")
+
+
 def decode_mixed_payload(codec: int, payload: bytes) -> np.ndarray:
     if codec == CODEC_BINARY:
         return decode_binary(payload)
@@ -170,17 +187,22 @@ def decode_mixed_payload(codec: int, payload: bytes) -> np.ndarray:
             body[scale_bytes : scale_bytes + bias_bytes], dtype="<f2", count=groups
         ).astype(np.float32)
         codes = np.frombuffer(body[scale_bytes + bias_bytes :], dtype=np.uint8)
-        out = np.empty((rows, cols), dtype=np.float32)
+        # Vectorised. The scalar version ran one Python loop body PER ELEMENT:
+        # at Qwen3.8-27B's [17408, 5120] that is 89.1M interpreter iterations
+        # for one tensor, and the cost is interpreter overhead, not arithmetic.
+        # pack_hq30uq4() in this same file already packs this layout with whole
+        # array ops -- the idiom was here, this path just did not use it.
+        # Bit-exact with the scalar form: same 2-bit little-endian order, same
+        # row-major group index, same float32 accumulate.
         gpr = cols // 32
-        for row in range(rows):
-            for col in range(cols):
-                group = row * gpr + col // 32
-                element = row * cols + col
-                bit0 = element * 2
-                byte = int(codes[bit0 >> 3])
-                q = (byte >> (bit0 & 7)) & 3
-                out[row, col] = float(q) * scales[group] + biases[group]
-        return out
+        n = rows * cols
+        bit0 = np.arange(n, dtype=np.int64) * 2
+        q = (codes[bit0 >> 3] >> (bit0 & 7).astype(np.uint8)) & 3
+        col_ix = np.arange(n, dtype=np.int64) % cols
+        row_ix = np.arange(n, dtype=np.int64) // cols
+        group = row_ix * gpr + col_ix // 32
+        out = (q.astype(np.float32) * scales[group] + biases[group])
+        return out.reshape(rows, cols)
     raise PackError(f"unknown mixed codec {codec}")
 
 
@@ -440,9 +462,7 @@ def materialize_mlp(root: Path, mixed: MixedReader, layers: range) -> list[dict[
                 "name": name,
                 "organ": int(rec["organ"]),
                 "codec": int(rec["codec"]),
-                "codec_name": {0: "binary_g128", 1: "rice_q1_rms_2pct", 2: "hgravs01_r160_b3"}[
-                    int(rec["codec"])
-                ],
+                "codec_name": CODEC_NAMES[int(rec["codec"])],
                 "shape": shape,
                 "elements": int(rec["elements"]),
                 "packed_bytes": int(rec["nbytes"]),
