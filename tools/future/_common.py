@@ -154,8 +154,39 @@ def _refuse_foreign_overwrite(out: Path, doc: dict[str, Any], recorded_by: str) 
     )
 
 
+def receipt_name(raw: str) -> str:
+    """The bare filename write_receipt wants, from what a caller actually typed.
+
+    `--receipt receipts/future/X.json` is the natural thing to type and it used
+    to produce receipts/future/receipts/future/X.json -- a FileNotFoundError
+    raised on the LAST line of a ten-minute capability run, after the model was
+    loaded and every arm measured. The science was done and thrown away.
+
+    So: accept a bare name or a path that already lands inside RECEIPTS, and
+    refuse anything that escapes it. Callers should run this at argument-parse
+    time so a bad name costs zero seconds instead of a whole run.
+    """
+    raw = str(raw).strip()
+    if not raw:
+        raise ValueError("receipt name is empty")
+    q = Path(raw)
+    if not q.is_absolute() and len(q.parts) == 1:
+        return q.name
+    resolved = (RECEIPTS / q).resolve() if not q.is_absolute() else q.resolve()
+    if resolved.parent != RECEIPTS.resolve():
+        # Second chance: the caller gave a repo-relative path to RECEIPTS.
+        alt = (REPO / q).resolve()
+        if alt.parent == RECEIPTS.resolve():
+            return alt.name
+        raise ValueError(
+            f"receipt {raw!r} resolves to {resolved}, which is not directly "
+            f"inside {RECEIPTS}; receipts do not live outside the sidecar dir")
+    return resolved.name
+
+
 def write_receipt(name: str, doc: dict[str, Any], recorded_by: str) -> Path:
     """Validate, seal and write a sidecar receipt. Returns its path."""
+    name = receipt_name(name)
     doc.setdefault("bench", bench_block(recorded_by))
     doc.setdefault("claim_boundary", "Static sidecar artifact. No hardware measurement.")
     _assert_no_hardware_claims(doc)

@@ -1,0 +1,109 @@
+{
+  "adversarial_probes": [],
+  "eligible": [],
+  "laws": [
+    {
+      "counterexample_requirement": "a byte-exact and depth-exact comparison (equal-parameter organs exchanging the same two specs) that still separates the policies",
+      "evidence": "receipts/future/G017_ORGAN_ALLOCATION.json, receipts/future/G021_BUDGET_LADDER_4x32.json",
+      "hcli_owned": false,
+      "id": "LAW001",
+      "recorded_at": "2026-09-08T05:19:43.014915+00:00",
+      "scope": "MODEL_LOCAL",
+      "source_oxx": null,
+      "text": "On Qwen3-0.6B at matched complete EBPW, the monotone-ramp allocation arms do not share a bit-depth multiset, so a UNIFORM/GLOBAL/LOCAL difference is not attributable to organ ordering.",
+      "writer_pid": 94799
+    },
+    {
+      "counterexample_requirement": "a second body where local anatomy's margin on the disagreeing pair is LARGE (local lost here with a 1.42-point margin against global's 6.07, i.e. local was near-random exactly where it disagreed), or any equal-parameter pair where local wins against a large global margin. Also reopens on the two undecided pairs (o_proj|q_proj, down_proj|up_proj) separating at another cheap/rich spec.",
+      "evidence": "receipts/future/G021_MIRROR_SWAP.json",
+      "hcli_owned": false,
+      "id": "LAW002",
+      "recorded_at": "2026-09-08T05:22:18.324753+00:00",
+      "scope": "MODEL_LOCAL",
+      "source_oxx": null,
+      "text": "G021, byte-exact and depth-exact: on Qwen3-0.6B the GLOBAL organ-structure prior predicted which organ of an equal-parameter pair tolerates being crushed on 3 of 3 decided pairs; this body's own LOCAL anatomy got 2 of 3. On the single pair where they disagree (down_proj vs gate_proj) GLOBAL was right: crushing gate_proj costs ppl 5.0099 and PASSES the conjunction, crushing down_proj costs 5.9605 and fails on diversity r4 0.798. Local measurement did NOT earn authority over the global prior here.",
+      "writer_pid": 95435
+    },
+    {
+      "counterexample_requirement": "an architecture with no two organs of equal parameter count, where the mirror design cannot be built and some other equalisation is needed",
+      "evidence": "receipts/future/G021_MIRROR_SWAP.json, receipts/future/G021_BUDGET_LADDER_4x32.json",
+      "hcli_owned": false,
+      "id": "LAW003",
+      "recorded_at": "2026-09-08T05:22:18.326075+00:00",
+      "scope": "GENERIC_CANDIDATE",
+      "source_oxx": null,
+      "text": "Comparing allocation POLICIES through a monotone bit/group search is confounded: each policy takes whatever bit-depth multiset hits the byte budget under its own monotonicity constraint, and on Qwen3-0.6B minimum bit depth separates perplexity almost completely (min=2 arms 6.76-12.84, min=3 arms 5.43-6.17, min=4 arms 5.23-5.45). Compare organs of IDENTICAL parameter count exchanging the same two specs instead: byte-exact, EBPW-exact, depth-exact, assignment the only variable.",
+      "writer_pid": 95435
+    },
+    {
+      "counterexample_requirement": "a MoE family whose per-expert spectrum is materially below its matched null, i.e. a negative deficit outside measurement scatter",
+      "evidence": "receipts/future/G034_MOE_ANATOMY_NULL_CALIBRATED.json, receipts/future/O003_EXPERT_SHARE.json",
+      "hcli_owned": false,
+      "id": "LAW004",
+      "recorded_at": "2026-09-08T05:43:11.917724+00:00",
+      "scope": "ARCHITECTURE_FAMILY",
+      "source_oxx": null,
+      "text": "Cross-expert LINEAR sharing is matched-null: per-expert spectra are indistinguishable from their same-shape null across six MoE families, 64 to 512 experts, in both storage layouts (kimi_vl +0.000%, lfm2_moe -0.007%, qwen3_moe +0.0%). SKIP RULE: do not build a cross-expert shared linear basis by default. Run the cheap null-calibrated expert-stack anatomy first and only build if a family sits materially BELOW its null.",
+      "writer_pid": 4628
+    },
+    {
+      "counterexample_requirement": "a representation family where weight-space error predicts held-out capability better than random ranking AND better than static anatomy, measured with those two controls present",
+      "evidence": "receipts/future/O003_PQ_SCAR.json",
+      "hcli_owned": false,
+      "id": "LAW005",
+      "recorded_at": "2026-09-08T05:43:11.919350+00:00",
+      "scope": "GENERIC_CANDIDATE",
+      "source_oxx": null,
+      "text": "Weight reconstruction error MISRANKS capability. On O003, PQ achieved 45% lower reconstruction error than affine at fewer bits and WORSE capability. Demote reconstruction error, weight cosine and norm statistics to cheap filters and diagnostics: they may prioritise candidates, they may never accept one. Only the capability conjunction accepts.",
+      "writer_pid": 4628
+    },
+    {
+      "counterexample_requirement": "a body where a monotone organ-weighted ramp beats uniform at matched complete EBPW and passes the conjunction, with the arms sharing a bit-depth multiset so the comparison is not the confound in LAW003",
+      "evidence": "receipts/future/G017_ORGAN_ALLOCATION.json, receipts/future/G021_MIRROR_SWAP.json",
+      "hcli_owned": false,
+      "id": "LAW006",
+      "recorded_at": "2026-09-08T05:43:11.920037+00:00",
+      "scope": "GENERIC_CANDIDATE",
+      "source_oxx": null,
+      "text": "The global organ-structure prior is NOT a universal allocation weighting. Spending a matched complete-EBPW budget unequally along the global deficit order did not beat spending it uniformly and did not pass the conjunction. Structural redundancy is not behavioural compressibility. Note the refinement from the mirror swap: the global ORDER still predicts pairwise organ tolerance 3/3, so what failed is the RAMP, not the ranking.",
+      "writer_pid": 4628
+    },
+    {
+      "counterexample_requirement": "a body whose non-MLP persistent payload is small enough that zeroing the MLP crosses 1.0, or a representation that reduces the non-MLP payload itself",
+      "evidence": "receipts/future/G012_SELECTION_CANNOT_REACH.json",
+      "hcli_owned": false,
+      "id": "LAW007",
+      "recorded_at": "2026-09-08T05:43:11.920771+00:00",
+      "scope": "MODEL_LOCAL",
+      "source_oxx": null,
+      "text": "MLP-only Gravity cannot reach <=1.0 complete EBPW. Driving the ENTIRE MLP to zero persistent bytes still leaves approximately 1.545 complete EBPW. The <=1.0 target is outside the MLP-only search space as a matter of arithmetic, so attention, DeltaNet, state and cross-organ representation are not optional if that target is serious.",
+      "writer_pid": 4628
+    },
+    {
+      "counterexample_requirement": "a diversity metric whose range makes 3 x dense a reachable bar, where the cap would then be doing nothing",
+      "evidence": "receipts/future/G020_DIVERSITY_GATE_WAS_VACUOUS.json, receipts/future/G017_ORGAN_ALLOCATION.json",
+      "hcli_owned": false,
+      "id": "LAW008",
+      "recorded_at": "2026-09-08T05:43:11.921464+00:00",
+      "scope": "GENERIC_CANDIDATE",
+      "source_oxx": null,
+      "text": "The diversity half of the capability gate must be capped inside the metric's own range: min(3 x dense, midpoint(dense, 1.0)). The uncapped 3 x dense bar was 1.0857 for a median 4-gram repeat bounded at 1.0 -- nothing could fail it, so the conjunction was perplexity wearing a second name and visibly repetitive arms were recorded as passing. Any receipt whose stored verdict predates this is STALE and must be re-derived, not cited.",
+      "writer_pid": 4628
+    },
+    {
+      "counterexample_requirement": "a body where the structural ordering predicts measured per-organ sensitivity with tau that survives per-byte normalisation, or a perturbation size at which the negative-sensitivity organs turn positive",
+      "evidence": "receipts/future/G011_ORGAN_SENSITIVITY.json, receipts/future/G021_MIRROR_SWAP.json",
+      "hcli_owned": false,
+      "id": "LAW009",
+      "recorded_at": "2026-09-08T05:50:21.321224+00:00",
+      "scope": "MODEL_LOCAL",
+      "source_oxx": null,
+      "text": "Organ structure -- global prior OR local anatomy -- is a WEAK predictor of behavioural tolerance. Two independent probes on Qwen3-0.6B agree on every pair they both decide, and together they put the global prior at 3/5 and local anatomy at 2/5 on which organ of a pair tolerates being crushed; chance is 2.5/5. Kendall tau between measured per-organ sensitivity and the structural ordering is 0.238 (global) and 0.048 (local), and once the delta is normalised per megabyte saved the signal INVERTS to -0.048 and -0.238 -- i.e. most of the apparent structural signal is organ SIZE. Two organs (o_proj, gate_proj) have NEGATIVE sensitivity: crushing them to q3-g64 lowered perplexity below the q4-g64 base. Use measured behavioural sensitivity, not anatomy, to allocate.",
+      "writer_pid": 8285
+    }
+  ],
+  "parked": [],
+  "scars": [],
+  "schema": "hcli.odyssey.ledger.v1",
+  "transfer_probes": []
+}

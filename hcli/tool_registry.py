@@ -2497,6 +2497,597 @@ def _processes_orphaned(context: ToolContext, args: Dict[str, Any]) -> Dict[str,
     }
 
 
+
+# ---------------------------------------------------------------------------
+# NR->NX doors. [S010 22, 35, 37, 49, 51]
+#
+# complete_ebpw.py, physical_emitter.py and nx_promotion.py were all built and
+# then reachable from nothing but their own tests. A capability nothing calls
+# does not exist, and the campaign has now been bitten by that four times. The
+# three handlers below are DOORS, not new subsystems: each one calls the single
+# existing authority and refuses rather than substituting a guess. No second
+# biller and no second emitter is written here.
+#
+# A51 -- every required argument has a reachable source: physical.emit takes a
+# round id that physical.rounds enumerates; nr.complete_ebpw takes either the
+# sealed incumbent (no arguments) or a candidate the caller declares in full,
+# which is exactly the contract complete_ebpw already refuses to guess at.
+# ---------------------------------------------------------------------------
+
+_PRIOR_SOURCES = (
+    ("law_store", "receipts/future/ODYSSEY2_LAW_STORE.json", "laws"),
+    ("scars", "receipts/future/CAMPAIGN_SCARS.json", "scars"),
+    ("hcli_ledger", "workspace/campaign/odyssey/HCLI_LEDGER.json", "laws"),
+    ("hcli_scars", "workspace/campaign/odyssey/HCLI_LEDGER.json", "scars"),
+)
+
+
+def _prior_row(kind: str, source: str, rec: Mapping[str, Any]) -> Dict[str, Any]:
+    """One prior, actionable first: what it says, where it holds, what reopens it."""
+    statement = (rec.get("statement") or rec.get("text") or rec.get("description")
+                 or rec.get("scar") or "")
+    # DOMAIN first, then the claim. A 400-char statement in front of the domain
+    # means the domain is what the observation budget cuts -- and a law quoted
+    # without its domain is how a model-local result gets applied to an
+    # architecture nobody tested. Statements are clipped here on purpose; the
+    # full text is one receipt.read away and the id says which.
+    return {
+        "id": rec.get("law_id") or rec.get("id") or rec.get("scar_id") or "?",
+        "domain": rec.get("scope") or rec.get("architecture_family") or rec.get("organ_class"),
+        "kind": kind,
+        "says": str(statement)[:150],
+        # REOPEN. What would make this false again, or measurable again.
+        "reopen": str(rec.get("counterexample_requirement") or rec.get("reopen_when")
+                      or rec.get("cheapest_check") or "")[:150] or None,
+        "evidence": rec.get("evidence_refs") or rec.get("evidence") or rec.get("caught_by"),
+        "source": source,
+    }
+
+
+def _odyssey_priors(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """What the campaign already knows, so a round does not re-buy it. [S001 47, 119]
+
+    HCLI has had odyssey.record_law and odyssey.record_scar -- two WRITE doors --
+    and no way to read either back. A memory you can only write to is not a
+    memory, and its ledger (workspace/campaign/odyssey/HCLI_LEDGER.json) had never
+    been created, so nothing had ever been recorded through it either.
+
+    Every row leads with what the prior SAYS, then where it HOLDS (domain) and
+    what would REOPEN it. A law quoted without its domain is how a
+    model-local result gets applied to an architecture nobody tested.
+    """
+    focus = str(args.get("focus") or "").strip().lower()
+    shown = _shown_limit(args.get("show"), default=10, maximum=40)
+    rows: List[Dict[str, Any]] = []
+    missing: List[str] = []
+    for source, rel, key in _PRIOR_SOURCES:
+        path = context.repo_root / rel
+        if not path.is_file():
+            missing.append(rel)
+            continue
+        try:
+            doc = json.loads(path.read_text())
+        except Exception as exc:
+            missing.append(f"{rel} ({type(exc).__name__})")
+            continue
+        for rec in (doc.get(key) or []):
+            if isinstance(rec, Mapping):
+                rows.append(_prior_row(key.rstrip("s"), source, rec))
+    if focus:
+        rows = [r for r in rows
+                if focus in json.dumps(r, default=str).lower()]
+    no_domain = [r["id"] for r in rows if not r["domain"]]
+    # Deliberately NOT _truncation_fields: its note is 179 characters of prose
+    # about file bytes, which is both wrong here and enough on its own to push
+    # the first prior's domain past the observation budget.
+    return {
+        "n": len(rows[:shown]),
+        "total": len(rows),
+        "priors": rows[:shown],
+        "focus": focus or None,
+        "without_domain": no_domain[:8],
+        "sources_missing": missing,
+        "truncated": len(rows) > shown,
+        "how_to_use": ("a prior REMOVES search. Check domain before applying one "
+                       "to a different architecture; check reopen before treating "
+                       "it as permanent."),
+    }
+
+
+
+# ---------------------------------------------------------------------------
+# HCLI AS ADVERSARIAL AUDITOR. [S002]
+#
+# These are the checks the supervisor was running by hand this session, made
+# callable. Each one found a real defect the first time it was run manually:
+# an experiment whose arms never shared a bit-depth multiset, a receipt whose
+# verdict was written under a superseded gate, a capability authority with no
+# caller, and a law store with two write doors and no read door.
+# ---------------------------------------------------------------------------
+
+def _capability_gate(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """THE capability authority: perplexity AND n-gram diversity, G020 bars.
+
+    Also answers "is this receipt's stored verdict still true?" -- pass the
+    numbers a receipt recorded and compare. A receipt written under the
+    pre-G020 bar recorded a diversity bar of 3 x dense, which for a dense r4
+    of 0.3619 is 1.0857 -- ABOVE the metric's own [0,1] range, so nothing could
+    fail it and the conjunction was perplexity wearing a second name.
+    """
+    _future_tools_on_path(context)
+    try:
+        need = ("ppl", "r4", "dense_ppl", "dense_r4")
+        vals = {}
+        for k in need:
+            if args.get(k) is None:
+                return {"refused": f"{k} is required; the gate is measured against "
+                                   "the specimen's OWN dense parent, not a constant"}
+            vals[k] = float(args[k])
+        import organ_allocation as oa  # type: ignore
+    except Exception as exc:
+        return {"experiment_failed": f"{type(exc).__name__}: {exc}",
+                "not_a_specimen_property": True}
+    live = oa.gate_from_reference(
+        {"ppl_full": vals["ppl"], "r4_full": vals["r4"]},
+        {"ppl_full": vals["dense_ppl"], "r4_full": vals["dense_r4"]})
+    out = {
+        "capability_ok": live["capability_ok"],
+        "ppl_ok": live["ppl_ok"],
+        "diversity_ok": live["diversity_ok"],
+        "gate_ppl_max": live["gate_ppl_max"],
+        "gate_r4_max": live["gate_r4_max"],
+        "gate_r4_capped": live["gate_r4_capped"],
+        "rule": live["gate_r4_cap_rule"],
+        "authority": live["evaluator"],
+    }
+    claimed = args.get("recorded_capability_ok")
+    if claimed is not None:
+        stale = bool(claimed) != bool(live["capability_ok"])
+        out["stale_verdict"] = stale
+        out["recorded_capability_ok"] = bool(claimed)
+        out["why"] = ("the stored verdict disagrees with the live gate; the "
+                      "evidence was written under a superseded bar and must be "
+                      "re-derived, not cited" if stale else
+                      "the stored verdict still holds under the live gate")
+    return out
+
+
+def _experiment_confound(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """Before believing an ORDERING result, check the arms were otherwise equal.
+
+    Reads a receipt's `arms` and reports, per arm, the total organ bytes, the
+    complete EBPW and the MULTISET of bit depths. If those differ between arms,
+    a difference in capability is not attributable to the ordering -- it is
+    attributable to whichever of them moved. This is the check that showed
+    G021's monotone arms never shared a depth multiset.
+    """
+    raw = args.get("receipt")
+    if not raw:
+        return {"refused": "receipt path is required"}
+    path = context.resolve_read_path(raw) if hasattr(context, "resolve_read_path") \
+        else Path(raw)
+    try:
+        doc = json.loads(Path(path).read_text())
+    except Exception as exc:
+        return {"experiment_failed": f"{type(exc).__name__}: {exc}",
+                "not_a_specimen_property": True}
+    arms = doc.get("arms") or {}
+    if not isinstance(arms, Mapping) or not arms:
+        return {"refused": f"{Path(path).name} has no `arms` object to compare"}
+    rows = {}
+    for name, arm in arms.items():
+        if not isinstance(arm, Mapping):
+            continue
+        per = arm.get("per_organ") or {}
+        bits = sorted(int(v.get("bits")) for v in per.values()
+                      if isinstance(v, Mapping) and v.get("bits") is not None)
+        rows[name] = {
+            "organ_bytes": arm.get("organ_bytes"),
+            "complete_ebpw": arm.get("complete_ebpw"),
+            "bit_depths": bits,
+            "min_bits": min(bits) if bits else None,
+        }
+    # An experiment can declare its own comparison GROUPS. A mirror-swap
+    # receipt is not one big comparison: only the two arms sharing a `pair` are
+    # meant to be compared, and arms from different pairs legitimately differ in
+    # total bytes because their organs differ in size. Comparing everything to
+    # everything would report a correctly-designed experiment as confounded, and
+    # a checker that cries wolf on a sound design gets ignored.
+    groups: Dict[str, List[str]] = {}
+    for name, arm in arms.items():
+        if isinstance(arm, Mapping) and arm.get("pair"):
+            groups.setdefault("|".join(str(x) for x in arm["pair"]), []).append(name)
+    grouped = {g: names for g, names in groups.items() if len(names) > 1}
+
+    def _uniq(key, names=None):
+        pick = rows if names is None else {k: rows[k] for k in names if k in rows}
+        return {json.dumps(r[key], sort_keys=True) for r in pick.values()}
+
+    if grouped:
+        per_group = {}
+        for g, names in sorted(grouped.items()):
+            per_group[g] = {
+                "arms": sorted(names),
+                "bytes_matched": len(_uniq("organ_bytes", names)) <= 1,
+                "ebpw_matched": len(_uniq("complete_ebpw", names)) <= 1,
+                "depth_multiset_matched": len(_uniq("bit_depths", names)) <= 1,
+            }
+        bad = sorted(g for g, v in per_group.items() if not all(
+            (v["bytes_matched"], v["ebpw_matched"], v["depth_multiset_matched"])))
+        return {
+            "confounded": bool(bad),
+            "compared_within_groups": True,
+            "confounded_groups": bad,
+            "safe_to_claim": (
+                "each declared group is byte-exact, EBPW-exact and depth-exact, so a "
+                "difference inside a group is attributable to the assignment alone"
+                if not bad else
+                "these groups are not internally matched; equalise them first"),
+            "n_groups": len(per_group),
+            "groups": per_group,
+            "note": ("arms carry a `pair`, so only same-pair arms were compared; "
+                     "across groups the organs differ in size and unequal bytes are "
+                     "expected, not a defect"),
+            "receipt": str(raw),
+        }
+
+    bytes_matched = len(_uniq("organ_bytes")) <= 1
+    ebpw_matched = len(_uniq("complete_ebpw")) <= 1
+    depth_matched = len(_uniq("bit_depths")) <= 1
+    confounds = []
+    if not bytes_matched:
+        confounds.append("total organ bytes differ between arms")
+    if not ebpw_matched:
+        confounds.append("complete EBPW differs between arms")
+    if not depth_matched:
+        confounds.append(
+            "bit-depth multiset differs between arms: an arm's result mixes its "
+            "ORDERING with how deep its ramp went")
+    return {
+        "confounded": bool(confounds),
+        "confounds": confounds,
+        "safe_to_claim": ("a difference between these arms is attributable to the "
+                          "assignment alone" if not confounds else
+                          "NOT an ordering claim; equalise the listed dimensions first"),
+        "bytes_matched": bytes_matched,
+        "ebpw_matched": ebpw_matched,
+        "depth_multiset_matched": depth_matched,
+        "arms": rows,
+        "receipt": str(raw),
+    }
+
+
+def _tool_reachable(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """Can this tool actually be CALLED, or does an argument have no source?
+
+    A required argument with no reachable producer is a door to nowhere, and the
+    campaign has burned whole autonomous rounds discovering one at the critical
+    path. For each required argument this reports whether another registered
+    tool plausibly produces it, so the gap is found before it costs a round.
+    """
+    name = str(args.get("name") or "").strip()
+    reg = _REACHABILITY_REGISTRY.get("registry")
+    if reg is None:
+        return {"refused": "no registry in scope"}
+    spec = reg.get(name)
+    if spec is None:
+        return {"refused": f"{name!r} is not registered",
+                "hint": "tools.catalog lists what is"}
+    required = list((spec.input_schema or {}).get("required") or [])
+    others = [s for n, s in _REACHABILITY_REGISTRY["specs"].items() if n != name]
+    sources: Dict[str, Any] = {}
+    for arg in required:
+        producers = []
+        for other in others:
+            blob = (other.description or "").lower() + " " + json.dumps(
+                other.output_schema or {}).lower()
+            if arg.lower() in blob or arg.replace("_", " ") in blob:
+                producers.append(other.name)
+        sources[arg] = producers[:4]
+    orphans = [a for a, p in sources.items() if not p]
+    return {
+        "name": name,
+        "callable": not orphans,
+        "arguments_without_a_source": orphans,
+        "required": required,
+        "likely_producers": sources,
+        "mutation": spec.mutation,
+        "note": ("every required argument has a plausible producer" if not orphans
+                 else "these arguments have no producing tool; either they are "
+                      "literal-derivable or this door cannot be opened"),
+    }
+
+
+def _claim_attack(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """What would make this claim FALSE? The cheapest refutation, not a defence.
+
+    Every recorded law already carries its own counterexample_requirement. This
+    surfaces it for one claim and, where the claim names a receipt, the
+    comparability fields whose absence would sink it.
+    """
+    focus = str(args.get("claim") or "").strip().lower()
+    if not focus:
+        return {"refused": "claim text or law id is required"}
+    priors = _odyssey_priors(context, {"focus": focus, "show": 6})
+    rows = priors.get("priors") or []
+    attacks = [
+        {"id": r["id"], "domain": r["domain"],
+         "falsifier": r["reopen"] or "NONE RECORDED -- a law with no counterexample "
+                                     "requirement cannot be attacked and should not "
+                                     "be trusted as permanent"}
+        for r in rows
+    ]
+    generic = [
+        "is the evidence about the SPECIMEN, or about a tool invocation?",
+        "were the compared arms equal in everything except the named variable?",
+        "was the verdict written under the gate that is live now?",
+        "is a missing measurement being read as a zero cost?",
+        "does the claim's domain cover the body it is being applied to?",
+    ]
+    return {
+        "claim": focus,
+        "recorded_falsifiers": attacks,
+        "n_recorded": len(attacks),
+        "generic_attacks": generic,
+        "note": "attack before adopting; a prior with no falsifier is not a prior",
+    }
+
+
+def _wall_avoided(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """Record science NOT run because a prior already answered it.
+
+    Compounding is work avoided, and the campaign's earlier attempt to show it
+    (rho = -0.050, p = 0.78) measured the wrong thing. This is the right thing:
+    an append-only log of experiments a prior removed.
+    """
+    prior = str(args.get("prior") or "").strip()
+    skipped = str(args.get("skipped") or "").strip()
+    if not prior or not skipped:
+        return {"refused": "both `prior` and `skipped` are required; an unattributed "
+                           "skip is not evidence of compounding"}
+    entry = {
+        "prior": prior,
+        "skipped": skipped,
+        "saved_wall_estimate_s": args.get("saved_wall_estimate_s"),
+        "confirmation": args.get("confirmation"),
+        "recorded_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "estimate_not_measurement": True,
+    }
+    dest = context.repo_root / "receipts" / "future" / "WALL_AVOIDED.jsonl"
+    if WORKSPACE_WRITE not in getattr(context, "permissions", frozenset()):
+        return {"refused": "recording a skip needs workspace_write permission",
+                "entry": entry}
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    with dest.open("a") as fh:
+        fh.write(json.dumps(entry, sort_keys=True) + "\n")
+    return {"recorded": True, "entry": entry,
+            "log": str(dest.relative_to(context.repo_root))}
+
+
+_REACHABILITY_REGISTRY: Dict[str, Any] = {}
+
+
+def _future_tools_on_path(context: ToolContext) -> Path:
+    future = context.repo_root / "tools" / "future"
+    if str(future) not in sys.path:
+        sys.path.insert(0, str(future))
+    if str(context.repo_root) not in sys.path:
+        sys.path.insert(0, str(context.repo_root))
+    return future
+
+
+def _round_receipt_dir(context: ToolContext) -> Path:
+    return context.repo_root / ".hcli" / "receipts"
+
+
+def _physical_rounds(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """Round receipts the canonical physical emitter can turn into a measurement.
+
+    A round with no model_calls had nothing physical happen in it; the emitter
+    refuses those, so they are reported as not emittable rather than hidden.
+    """
+    shown = _shown_limit(args.get("show"))
+    root = _round_receipt_dir(context)
+    if not root.is_dir():
+        return {
+            "n": 0, "total": 0, "shown": 0, "rounds": [],
+            "refused": f"no round receipts at {root}; nothing physical to emit",
+        }
+    paths = sorted(root.glob("*.json"), key=lambda q: q.stat().st_mtime, reverse=True)
+    rows: List[Dict[str, Any]] = []
+    for q in paths[: max(shown * 4, 40)]:
+        try:
+            d = json.loads(q.read_text())
+        except Exception as exc:
+            rows.append({"round_id": q.stem, "emittable": False,
+                         "why": f"unreadable: {type(exc).__name__}"})
+            continue
+        calls = d.get("model_calls") or []
+        prov = (d.get("runtime_provenance") or [{}])[0]
+        rows.append({
+            "round_id": q.stem,
+            "emittable": bool(calls),
+            "n_model_calls": len(calls),
+            "goal_id": d.get("goal_id"),
+            "resident": ((prov.get("identity") or {}).get("resident_identity")
+                         or (prov.get("identity") or {}).get("model")),
+            "mtime": int(q.stat().st_mtime),
+            "why": None if calls else "no model_calls -- nothing physical happened",
+        })
+    emittable = [r for r in rows if r.get("emittable")]
+    out = {
+        "rounds": emittable[:shown],
+        "n": len(emittable[:shown]),
+        "total": len(paths),
+        "shown": len(emittable[:shown]),
+        "n_emittable_scanned": len(emittable),
+        "n_scanned": len(rows),
+        "next": "physical.emit with one of these round_id values",
+    }
+    out.update(_truncation_fields(len(emittable[:shown]), len(paths)))
+    return _scope_first(out)
+
+
+def _physical_emit(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """THE canonical physical measurement path. tools/future/physical_emitter.py.
+
+    Not a benchmark and not an estimate: it reads the per-call prefill/decode
+    nanoseconds a real round already recorded against a real resident, and
+    attaches the six comparability fields (specimen, nr, runtime, context,
+    path, concurrency) whose absence made 78 of 79 historical physical
+    receipts incomparable. Writing a second emitter is what this forbids.
+    """
+    _future_tools_on_path(context)
+    raw = args.get("round_id") or args.get("round")
+    if not raw:
+        return {"refused": "round_id is required; physical.rounds enumerates them"}
+    name = str(raw).strip()
+    if "/" in name or name.startswith("."):
+        return {"refused": f"round_id must be a bare receipt id, got {name!r}"}
+    path = _round_receipt_dir(context) / (name if name.endswith(".json") else name + ".json")
+    if not path.is_file():
+        return {"refused": f"no round receipt {name}; physical.rounds lists what exists"}
+    try:
+        import physical_emitter  # type: ignore
+        measured = physical_emitter.emit(path)
+    except Exception as exc:
+        # A tool failure is not a specimen refusal. [S010 A20]
+        return {"experiment_failed": f"{type(exc).__name__}: {exc}",
+                "not_a_specimen_property": True, "round_id": name}
+    lead = {k: measured.get(k) for k in (
+        "specimen", "nr", "runtime", "context", "path", "concurrency",
+        "prefill_tps", "decode_tps", "gpu_share_of_prefill_wall_mean",
+        "evidence_tier", "gpu_authority")}
+    written = None
+    if args.get("write_receipt"):
+        # Reading a measurement is read-only; only PERSISTING it is a write. The
+        # tool is declared read_only so a reader is not forced to hold write
+        # permission to see prefill/decode tok-s, and the write is refused here
+        # instead -- the permission check belongs to the byte that lands on disk.
+        if WORKSPACE_WRITE not in getattr(context, "permissions", frozenset()):
+            lead_refusal = "write_receipt needs workspace_write permission; " \
+                           "returning the measurement without persisting it"
+        else:
+            lead_refusal = None
+        out_dir = context.repo_root / "receipts" / "future"
+        if lead_refusal is None:
+            out_dir.mkdir(parents=True, exist_ok=True)
+            dest = out_dir / f"PHYSICAL_{name}.json"
+            dest.write_text(json.dumps(measured, indent=2, sort_keys=True) + "\n")
+            written = str(dest.relative_to(context.repo_root))
+        else:
+            lead["receipt_refused"] = lead_refusal
+    lead["receipt"] = written
+    lead["round_id"] = name
+    lead["totals"] = measured.get("totals")
+    lead["n_model_calls"] = len(measured.get("per_call") or [])
+    lead["claim_boundary"] = measured.get("claim_boundary")
+    return lead
+
+
+def _physical_measure(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """Measure a body that has never been a resident, under the SAME contract.
+
+    physical.emit reads a round receipt, which only ever exists for the
+    resident. That is why 28 ModelLake bodies still owe gpu/cpu/tps. This runs
+    a controlled fixed-length sweep -- fresh prefill from an empty cache every
+    repeat, greedy decode, concurrency 1 -- and fills the same six contract
+    fields. Timings are reported as min/median/max with the spread, never as a
+    bare median.
+
+    COSTLY: it loads and runs a model. Do not launch it beside another timing
+    measurement; shared CPU invalidates both.
+    """
+    _future_tools_on_path(context)
+    snapshot = str(args.get("snapshot") or "").strip()
+    specimen = str(args.get("specimen") or "").strip()
+    if not snapshot or not specimen:
+        return {"refused": "snapshot and specimen are both required; a physical "
+                           "receipt that cannot say WHAT it measured is not comparable"}
+    root = Path(snapshot)
+    if not root.is_dir():
+        return {"refused": f"{snapshot} is not a directory on this host"}
+    try:
+        import physical_emitter  # type: ignore
+        measured = physical_emitter.emit_direct(
+            snapshot, specimen=specimen,
+            nr=str(args.get("nr") or "source body as stored on disk, unmodified"),
+            prompt_tokens=int(args.get("prompt_tokens") or 512),
+            decode_tokens=int(args.get("decode_tokens") or 64),
+            repeats=int(args.get("repeats") or 3))
+    except Exception as exc:
+        return {"experiment_failed": f"{type(exc).__name__}: {exc}",
+                "not_a_specimen_property": True, "specimen": specimen}
+    lead = {k: measured.get(k) for k in (
+        "specimen", "nr", "runtime", "context", "path", "concurrency",
+        "prefill_tps", "decode_tps", "prefill_tps_spread", "decode_tps_spread",
+        "device", "evidence_tier", "gpu_authority")}
+    written = None
+    if args.get("write_receipt"):
+        if WORKSPACE_WRITE not in getattr(context, "permissions", frozenset()):
+            lead["receipt_refused"] = "write_receipt needs workspace_write permission"
+        else:
+            safe = re.sub(r"[^A-Za-z0-9_.-]", "_", specimen)[:80]
+            dest = context.repo_root / "receipts" / "future" / f"PHYSICAL_DIRECT_{safe}.json"
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            dest.write_text(json.dumps(measured, indent=2, sort_keys=True) + "\n")
+            written = str(dest.relative_to(context.repo_root))
+    lead["receipt"] = written
+    lead["claim_boundary"] = measured.get("claim_boundary")
+    return lead
+
+
+def _nr_complete_ebpw(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """Bill a representation through the ONE accounting authority.
+
+    tools/future/complete_ebpw.py counts every persistent part -- payload,
+    codebooks, generators, bases, coefficients, indices, metadata. It REFUSES
+    an unreconciled candidate rather than billing a flattering subtotal, and
+    it flags a candidate that stores small but rematerializes the dense parent
+    to execute. Passing a partial candidate here gets a refusal, which is the
+    correct answer, not a smaller number.
+    """
+    _future_tools_on_path(context)
+    try:
+        from tools.future import complete_ebpw as ce  # type: ignore
+    except Exception as exc:
+        return {"experiment_failed": f"cannot import complete_ebpw: {exc}",
+                "not_a_specimen_property": True}
+    cand = args.get("candidate")
+    if not cand:
+        if not args.get("incumbent"):
+            return {"refused": "pass a declared candidate, or incumbent=true to "
+                               "bill the sealed resident from MIX_REPORT"}
+        try:
+            cand = ce.incumbent_candidate()
+        except Exception as exc:
+            return {"experiment_failed": f"{type(exc).__name__}: {exc}",
+                    "not_a_specimen_property": True}
+    try:
+        billed = ce.cost(cand)
+    except ce.CompleteEbpwRefused as exc:
+        return {"refused": str(exc), "billed_by": ce.RECORDED_BY,
+                "mechanism": "declared parts did not reconcile, or a part-like "
+                             "key was undeclared; a guess is not a bill"}
+    except Exception as exc:
+        return {"experiment_failed": f"{type(exc).__name__}: {exc}",
+                "not_a_specimen_property": True}
+    lead = {
+        "id": billed.get("id"),
+        "complete_ebpw": billed.get("complete_ebpw"),
+        "stated_total_bytes": billed.get("stated_total_bytes"),
+        "parent_params": billed.get("parent_params"),
+        "billed_by": ce.RECORDED_BY,
+        "evidence_class": ce.EVIDENCE_CLASS,
+        "claim_boundary": ce.CLAIM_BOUNDARY,
+    }
+    for k in ("dense_parent_rematerialization", "flag", "flags", "parts",
+              "ms_total", "by_category"):
+        if k in billed:
+            lead[k] = billed[k]
+    return lead
+
+
 def default_tool_registry(
     workspace: str | os.PathLike[str],
     *,
@@ -2970,14 +3561,17 @@ def default_tool_registry(
     for verb, required in (
         ("add_to_eligibility", ("oxx",)),
         ("park_specimen", ("oxx",)),
-        ("record_law", ("text",)),
-        ("record_scar", ("law_id",)),
+        ("record_law", ("text", "domain", "reopen_when")),
+        ("record_scar", ("law_id", "reopen_when")),
         ("create_transfer_probe", ("law_id", "target_oxx")),
         ("create_adversarial_probe", ("law_id",)),
     ):
         props = {"confirm": {"type": "boolean"}}
         for field in ("oxx", "text", "law_id", "target_oxx", "note", "reason",
-                      "evidence", "source_oxx", "attack", "description"):
+                      "evidence", "source_oxx", "attack", "description",
+                      # A law without a domain is applied where nobody tested it;
+                      # one without a reopen condition is permanent by accident.
+                      "domain", "reopen_when"):
             props[field] = {"type": "string"}
         registry.register(ToolSpec(
             "odyssey." + verb,
@@ -3114,6 +3708,142 @@ def default_tool_registry(
         verifier_expectations=("each lane's grok status/report must be checked before its output counts as fact",),
         handler=_grok_swarm_launch,
     ))
+    # NR->NX doors: the single biller and the single physical emitter, made
+    # reachable. [S010 35, 37, 49]
+    registry.register(ToolSpec(
+        "capability.gate",
+        "THE capability authority: does this candidate pass perplexity AND "
+        "n-gram diversity against its own dense parent, under the live G020 "
+        "bars? Pass recorded_capability_ok to ask whether a receipt's stored "
+        "verdict is STALE -- evidence written under a superseded bar is not "
+        "evidence.",
+        {"type": "object", "additionalProperties": False,
+         "required": ["ppl", "r4", "dense_ppl", "dense_r4"],
+         "properties": {"ppl": {"type": "number"}, "r4": {"type": "number"},
+                        "dense_ppl": {"type": "number"}, "dense_r4": {"type": "number"},
+                        "recorded_capability_ok": {"type": "boolean"}}},
+        handler=_capability_gate,
+    ))
+    registry.register(ToolSpec(
+        "experiment.confound",
+        "Before believing an ORDERING result, check the arms were equal in "
+        "everything else: total bytes, complete EBPW and the multiset of bit "
+        "depths. If any of those differ, the capability difference belongs to "
+        "whichever moved, not to the ordering.",
+        {"type": "object", "required": ["receipt"], "additionalProperties": False,
+         "properties": {"receipt": {"type": "string"}}},
+        handler=_experiment_confound,
+    ))
+    registry.register(ToolSpec(
+        "tool.reachable",
+        "Can a named tool actually be called, or does one of its required "
+        "arguments have no producing tool? Run this BEFORE planning work around "
+        "a door, not after a round has burned turns discovering it is shut.",
+        {"type": "object", "required": ["name"], "additionalProperties": False,
+         "properties": {"name": {"type": "string"}}},
+        handler=_tool_reachable,
+    ))
+    registry.register(ToolSpec(
+        "claim.attack",
+        "What would make this claim FALSE? Returns each matching law's own "
+        "recorded counterexample requirement plus the standing attacks. A prior "
+        "with no falsifier is not a prior.",
+        {"type": "object", "required": ["claim"], "additionalProperties": False,
+         "properties": {"claim": {"type": "string"}}},
+        handler=_claim_attack,
+    ))
+    registry.register(ToolSpec(
+        "wall.avoided",
+        "Record an experiment NOT run because a prior already answered it. "
+        "Compounding is work avoided; this is the log that measures it.",
+        {"type": "object", "required": ["prior", "skipped"],
+         "additionalProperties": False,
+         "properties": {"prior": {"type": "string"}, "skipped": {"type": "string"},
+                        "saved_wall_estimate_s": {"type": "number"},
+                        "confirmation": {"type": "string"}}},
+        mutation=WORKSPACE_WRITE,
+        handler=_wall_avoided,
+    ))
+    registry.register(ToolSpec(
+        "odyssey.priors",
+        "What the campaign already knows: recorded Laws and Scars, each with the "
+        "DOMAIN it was measured on and the condition that would REOPEN it. Read "
+        "this before proposing an experiment -- a prior that already answers the "
+        "question removes the experiment. odyssey.record_law and "
+        "odyssey.record_scar write here; this is how they are read back.",
+        {"type": "object", "additionalProperties": False,
+         "properties": {"focus": {"type": "string"}, "show": {"type": "integer"}}},
+        handler=_odyssey_priors,
+    ))
+    registry.register(ToolSpec(
+        "physical.rounds",
+        "Round receipts that the canonical physical emitter can turn into a "
+        "measurement, newest first. Use this to get a round_id for "
+        "physical.emit; rounds with no model calls are excluded because "
+        "nothing physical happened in them.",
+        {"type": "object", "additionalProperties": False,
+         "properties": {"show": {"type": "integer"}}},
+        handler=_physical_rounds,
+    ))
+    registry.register(ToolSpec(
+        "physical.emit",
+        "THE canonical physical measurement for one round: fresh prefill "
+        "tok/s, decode tok/s, GPU share of prefill wall, plus the six "
+        "comparability fields (specimen, nr, runtime, context, path, "
+        "concurrency). Real production calls against the live resident, not a "
+        "synthetic benchmark and not an estimate. Set write_receipt to "
+        "persist it under receipts/future/.",
+        {"type": "object", "required": ["round_id"], "additionalProperties": False,
+         "properties": {"round_id": {"type": "string"},
+                        "write_receipt": {"type": "boolean"}}},
+        timeout_s=120.0,
+        handler=_physical_emit,
+    ))
+    registry.register(ToolSpec(
+        "physical.measure",
+        "Measure a ModelLake body that has never been a resident, under the "
+        "SAME physical contract as physical.emit: fresh prefill tok/s and decode "
+        "tok/s with min/median/max spread, plus specimen, nr, runtime, context, "
+        "path and concurrency. This is how gpu/cpu/tps stop being OWED on bodies "
+        "the resident never ran. COSTLY -- never run it beside another timing "
+        "measurement.",
+        {"type": "object", "required": ["snapshot", "specimen"],
+         "additionalProperties": False,
+         "properties": {"snapshot": {"type": "string"}, "specimen": {"type": "string"},
+                        "nr": {"type": "string"},
+                        "prompt_tokens": {"type": "integer"},
+                        "decode_tokens": {"type": "integer"},
+                        "repeats": {"type": "integer"},
+                        "write_receipt": {"type": "boolean"}}},
+        mutation=COSTLY, deterministic=False,
+        resources=("cpu", "exclusive_benchmark_window"),
+        timeout_s=1800.0,
+        handler=_physical_measure,
+    ))
+    registry.register(ToolSpec(
+        "nr.complete_ebpw",
+        "Complete executable bits-per-weight of a representation, billing "
+        "EVERY persistent part: payload, codebooks, generators, bases, "
+        "coefficients, indices, residuals, metadata. Pass incumbent=true for "
+        "the sealed resident, or a fully declared candidate. An unreconciled "
+        "candidate is REFUSED rather than billed low -- that refusal is the "
+        "answer. This is the only accounting authority; do not compute a bpw "
+        "yourself.",
+        {"type": "object", "additionalProperties": False,
+         "properties": {"incumbent": {"type": "boolean"},
+                        "candidate": {"type": "object"}}},
+        timeout_s=60.0,
+        handler=_nr_complete_ebpw,
+    ))
+    # Snapshot AFTER every registration: taken earlier, tool.reachable would
+    # report a door unreachable purely because its producer had not been
+    # registered yet at snapshot time.
+    _REACHABILITY_REGISTRY["registry"] = registry
+    _REACHABILITY_REGISTRY["specs"] = {
+        n: sp for n, sp in
+        [(i["name"], registry.get(i["name"])) for i in registry.discover()]
+        if sp is not None
+    }
     return registry
 
 

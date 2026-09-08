@@ -378,11 +378,18 @@ def park_specimen(oxx: str, reason: str, confirm: bool = False) -> dict:
     return {"schema": "hcli.odyssey.ledger.v1", "list": "parked", "entry": entry}
 
 
-def record_law(text: str, evidence: str = "", source_oxx: Optional[str] = None, confirm: bool = False) -> dict:
+def record_law(text: str, evidence: str = "", source_oxx: Optional[str] = None,
+               domain: str = "", reopen_when: str = "", confirm: bool = False) -> dict:
     """Record a claimed compiler/architecture law. HCLI decides what counts
     as a law worth claiming; this only appends it so a transfer probe (II)
     or an adversarial probe (III) has something to target -- immediately,
-    with no phase barrier."""
+    with no phase barrier.
+
+    `domain` and `reopen_when` are what make an entry a usable PRIOR instead of
+    a sentence. A law without a domain gets applied to an architecture nobody
+    tested it on; a law without a reopen condition becomes permanent by
+    accident, which is how 121 of the ledger's refusals ended up unrevisitable.
+    Both are read back by the odyssey.priors door."""
     _require_confirm(confirm, "record a law")
     if not text:
         raise ValueError("record_law requires text")
@@ -391,13 +398,15 @@ def record_law(text: str, evidence: str = "", source_oxx: Optional[str] = None, 
     ledger = _load_ledger()
     law_id = f"LAW{len(ledger['laws']) + 1:03d}"
     entry = {"id": law_id, "text": text, "evidence": evidence, "source_oxx": source_oxx,
+             "scope": domain or None, "counterexample_requirement": reopen_when or None,
              "recorded_at": _now(), **_writer_identity()}
     ledger["laws"].append(entry)
     _save_ledger(ledger)
     return {"schema": "hcli.odyssey.ledger.v1", "list": "laws", "entry": entry}
 
 
-def record_scar(law_id: str, description: str, confirm: bool = False) -> dict:
+def record_scar(law_id: str, description: str, reopen_when: str = "",
+                confirm: bool = False) -> dict:
     """Record that a claimed law took damage -- a failed transfer, a
     successful attack. Does not delete the law: a scar is evidence against
     it, not a retraction of it."""
@@ -407,7 +416,9 @@ def record_scar(law_id: str, description: str, confirm: bool = False) -> dict:
     ledger = _load_ledger()
     if not any(law["id"] == law_id for law in ledger["laws"]):
         raise ValueError(f"{law_id} is not a recorded law")
-    entry = {"law_id": law_id, "description": description, "recorded_at": _now(), **_writer_identity()}
+    entry = {"law_id": law_id, "description": description,
+             "reopen_when": reopen_when or None,
+             "recorded_at": _now(), **_writer_identity()}
     ledger["scars"].append(entry)
     _save_ledger(ledger)
     return {"schema": "hcli.odyssey.ledger.v1", "list": "scars", "entry": entry}

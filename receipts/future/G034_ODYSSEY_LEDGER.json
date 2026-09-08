@@ -8883,22 +8883,39 @@
      "receipt": "receipts/future/G034_LAKE_CENSUS_FULL.json"
     },
     "gpu": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
-     "receipt": null
+     "reason": "no GPU work was dispatched: the only working execution path for this body on this host is transformers/torch float32 on CPU, and torch MPS is unavailable in this environment. A CPU number is not a GPU measurement and inventing a zero would be worse.",
+     "receipt": null,
+     "reopen_when": "a working Metal or MPS execution path for this architecture on this host"
     },
     "cpu": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "device": "cpu",
+      "runtime": "transformers/torch float32",
+      "decode_tps_on_cpu": 10.6528,
+      "prefill_tps_on_cpu": 831.7007,
+      "note": "whole-model CPU execution; this is the CPU contribution because no GPU work was dispatched"
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_Qwen--Qwen3-0.6B_c1899de289a0.json"
     },
     "tps": {
-     "state": "OWED",
-     "value": null,
+     "state": "MEASURED",
+     "value": {
+      "prefill_tps_median": 831.7007,
+      "decode_tps_median": 10.6528,
+      "prefill_spread_pct": 47.44,
+      "decode_spread_pct": 5.01,
+      "repeats": 5,
+      "context": 512,
+      "concurrency": 1,
+      "device": "cpu fp32",
+      "monotone_drift": "NONE"
+     },
      "reason": null,
-     "receipt": null
+     "receipt": "receipts/future/PHYSICAL_DIRECT_Qwen--Qwen3-0.6B_c1899de289a0.json"
     },
     "nr_candidate": {
      "state": "MEASURED",

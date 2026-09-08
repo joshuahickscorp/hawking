@@ -52,8 +52,12 @@ def test_organ_weighted_gives_up_proj_more_bits_per_param_than_q_proj():
 def test_mutation_anchor_still_orders_by_descending_deficit():
     """A mutation left live in the source is not a mutation test."""
     text = SRC.read_text()
-    live = "key=lambda name: -PRIOR_DEFICIT[name]))  # MUTATION_ANCHOR_ORDER_BY_DEFICIT"
-    mutated = "key=lambda name: PRIOR_DEFICIT[name]))  # MUTATION_ANCHOR_ORDER_BY_DEFICIT"
+    # The anchor tracks the SOURCE line, which became `src[name]` when
+    # order_organs_by_deficit learned to take a specimen's own deficits for the
+    # LOCAL policy. Pinning the stale text would leave the live mutation check
+    # unable to find its target and the ordering with no negative control.
+    live = "key=lambda name: -src[name]))  # MUTATION_ANCHOR_ORDER_BY_DEFICIT"
+    mutated = "key=lambda name: src[name]))  # MUTATION_ANCHOR_ORDER_BY_DEFICIT"
     assert live in text
     assert mutated not in text
 
@@ -84,7 +88,12 @@ def test_inverted_control_ran_and_did_not_win():
     assert inv["capability"]["ppl"] == 12.84
     assert inv["capability"]["median_4gram_repeat"] == 0.8224
     assert inv["ppl_ok"] is False
-    assert inv["diversity_ok"] is True
+    # r4 0.8224 is four-gram repetition, i.e. visibly degenerate text. The old
+    # bar was 1.0857 -- ABOVE the metric's own range, so nothing could ever fail
+    # it and this assertion used to read True. G020 capped the bar inside the
+    # metric (min(3 x dense, midpoint(dense, 1.0)) = 0.681) and the control now
+    # fails diversity, which is the whole point of having a control.
+    assert inv["diversity_ok"] is False
     assert inv["capability_ok"] is False
     assert ctrl["ppl"] == 12.84
     assert ctrl["median_4gram_repeat"] == 0.8224
@@ -95,25 +104,41 @@ def test_inverted_control_ran_and_did_not_win():
     assert rec["verdict"]["prior_transferred"] is False
 
 
-def test_uniform_passes_conjunction_organ_weighted_fails_ppl():
+def test_under_the_g020_bar_uniform_is_a_false_survivor_on_diversity():
+    """UNIFORM used to "pass". It passed a bar no arm could fail.
+
+    The pre-G020 diversity bar was 3 x dense = 1.0857, and median 4-gram repeat
+    lives in [0, 1] -- so the bar sat outside the metric and the conjunction was
+    perplexity alone wearing a second name. Under G020's capped bar (0.681)
+    UNIFORM's r4 of 0.7103 fails, which is exactly the false-Pareto-survivor
+    class G020 exists to kill.
+
+    The likelihood numbers are unchanged from the pre-G020 receipt to four
+    decimal places -- 5.2278 / 6.1738 / 12.8400 -- so nothing about the arms
+    moved. Only the ruler did.
+    """
     rec = _receipt()
     uni = rec["arms"]["UNIFORM"]
     ow = rec["arms"]["ORGAN_WEIGHTED"]
     assert uni["capability"]["ppl"] == 5.2278
     assert uni["capability"]["median_4gram_repeat"] == 0.7103
-    assert uni["ppl_ok"] is True
-    assert uni["diversity_ok"] is True
-    assert uni["capability_ok"] is True
-    assert uni["capability_status"] == "CANDIDATE_PASS"
+    assert uni["ppl_ok"] is True          # likelihood was never the problem
+    assert uni["diversity_ok"] is False   # the repetition always was
+    assert uni["capability_ok"] is False
+    assert uni["capability_status"] == "CAPABILITY_LOSS"
     assert ow["capability"]["ppl"] == 6.1738
     assert ow["capability"]["median_4gram_repeat"] == 0.6923
     assert ow["ppl_ok"] is False
-    assert ow["diversity_ok"] is True
+    assert ow["diversity_ok"] is False
     assert ow["capability_ok"] is False
     assert ow["capability_status"] == "CAPABILITY_LOSS"
     gate = uni["gate"]
     assert gate["gate_ppl_max"] == 5.9178
-    assert gate["gate_r4_max"] == 1.0857
+    # The capped bar, and the fact that it IS capped. A bar back above 1.0 here
+    # means the vacuous ruler came back.
+    assert gate["gate_r4_max"] == 0.681
+    assert gate["gate_r4_capped"] is True
+    assert gate["gate_r4_max"] < 1.0
     assert rec["dense_parent_capability"]["ppl"] == 4.7342
     assert rec["dense_parent_capability"]["median_4gram_repeat"] == 0.3619
 
@@ -154,6 +179,11 @@ def test_mutation_check_recorded_a_real_hash_move():
     assert m["no_mutation_left_live"] is True
     assert m["sha256_before"] == m["sha256_restored"]
     assert m["sha256_before"] != m["sha256_mutated"]
-    assert m["sha256_before"] == "32e315b456a66ab93daeff17c59a9dcaa5effe6b0714e6326f1e84f7cc71282c"
-    assert m["sha256_mutated"] == "1c106e58d408218de63dbc8b4fd8ec98a94e95f03e8a32acbe356865ea19e3f4"
-    assert "-PRIOR_DEFICIT[name]" in m["anchor_line"]
+    # The two absolute digests that used to sit here pinned the CONTENT of a
+    # source file that legitimately changes whenever the module is edited, and
+    # they carried nothing the three relations above do not already prove: the
+    # mutation landed, it moved the hash, and the file came back byte-identical.
+    # They only ever failed on honest edits. What must not drift is the anchor
+    # itself -- a checker that cannot find its target has no negative control.
+    assert "-src[name]" in m["anchor_line"]
+    assert "MUTATION_ANCHOR_ORDER_BY_DEFICIT" in m["anchor_line"]

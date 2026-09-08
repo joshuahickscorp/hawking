@@ -1,0 +1,312 @@
+{
+ "agreement_per_mb_vs_global": {
+  "concordant": 10,
+  "discordant": 11,
+  "kendall_tau": -0.0476
+ },
+ "agreement_per_mb_vs_local": {
+  "concordant": 8,
+  "discordant": 13,
+  "kendall_tau": -0.2381
+ },
+ "agreement_raw_vs_global": {
+  "concordant": 13,
+  "discordant": 8,
+  "kendall_tau": 0.2381
+ },
+ "agreement_raw_vs_local": {
+  "concordant": 11,
+  "discordant": 10,
+  "kendall_tau": 0.0476
+ },
+ "applied": {
+  "BASE": 196,
+  "down_proj": 196,
+  "gate_proj": 196,
+  "k_proj": 196,
+  "o_proj": 196,
+  "q_proj": 196,
+  "up_proj": 196,
+  "v_proj": 196
+ },
+ "base_ppl": 5.227824,
+ "base_r4": 0.71028,
+ "base_spec": "q4-g64",
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-08T05:48:51Z",
+  "recorded_by": "tools/future/organ_allocation.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "cheap_spec": "q3-g64",
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "control": "structure is never consulted in producing the measured ordering, so agreement with the deficit ordering is a finding and not an artefact of construction",
+ "dense_parent_capability": {
+  "distincts": [
+   0.09434,
+   0.209091,
+   0.27027,
+   0.37037,
+   0.383178,
+   0.456897,
+   0.563636,
+   0.59633
+  ],
+  "gen_tokens": 96,
+  "generations": [
+   {
+    "distinct": 0.563636,
+    "n_new": 96,
+    "n_tokens": 110,
+    "prompt": "Explain how a mixture-of-experts layer routes tokens to experts.",
+    "r4": 0.084112,
+    "text": "Explain how a mixture-of-experts layer routes tokens to experts. What are the benefits of using a mixture-of-experts layer in the context of a neural network? What are the challenges in implementing such a layer? What are the potential appl"
+   },
+   {
+    "distinct": 0.27027,
+    "n_new": 96,
+    "n_tokens": 111,
+    "prompt": "What is the capital of France, and why did it become the capital?",
+    "r4": 0.407407,
+    "text": "What is the capital of France, and why did it become the capital? Also, what is the capital of the United States, and what is the capital of the United Kingdom? Additionally, what is the capital of the Netherlands, and what is the capital o"
+   },
+   {
+    "distinct": 0.37037,
+    "n_new": 96,
+    "n_tokens": 108,
+    "prompt": "Write a short Python function that reverses a linked list.",
+    "r4": 0.361905,
+    "text": "Write a short Python function that reverses a linked list. The function should take a head node of the linked list and return the new head node of the reversed list. The linked list is a singly linked list, and the nodes are not necessarily"
+   },
+   {
+    "distinct": 0.59633,
+    "n_new": 96,
+    "n_tokens": 109,
+    "prompt": "Summarize why bandwidth, not compute, limits transformer decoding.",
+    "r4": 0.009434,
+    "text": "Summarize why bandwidth, not compute, limits transformer decoding. \n\nTransformer decoding is a process that uses the transformer architecture to generate text from a source. It is a multi-step process that involves multiple layers of self-a"
+   },
+   {
+    "distinct": 0.456897,
+    "n_new": 96,
+    "n_tokens": 116,
+    "prompt": "A farmer has 17 sheep and all but 9 run away. How many are left?",
+    "r4": 0.20354,
+    "text": "A farmer has 17 sheep and all but 9 run away. How many are left? Let's see, the farmer has 17 sheep, and all but 9 run away. So, the number of sheep that are left is 17 minus 9, which is 8. That seems straightforward. But wait, maybe there'"
+   },
+   {
+    "distinct": 0.209091,
+    "n_new": 96,
+    "n_tokens": 110,
+    "prompt": "Describe the difference between a scale and a zero point in quantization.",
+    "r4": 0.616822,
+    "text": "Describe the difference between a scale and a zero point in quantization. Also, explain the role of the zero point in the quantization process. Additionally, explain the role of the zero point in the quantization of a quantum system. Additi"
+   },
+   {
+    "distinct": 0.383178,
+    "n_new": 96,
+    "n_tokens": 107,
+    "prompt": "List three reasons a neural network might fail to converge.",
+    "r4": 0.355769,
+    "text": "List three reasons a neural network might fail to converge. Also, explain what a neural network is. What is the role of the input, hidden, and output layers? What is the difference between a perceptron and a multi-layer perceptron (MLP)? Wh"
+   },
+   {
+    "distinct": 0.09434,
+    "n_new": 96,
+    "n_tokens": 106,
+    "prompt": "Translate to French: The weather is cold today.",
+    "r4": 0.902913,
+    "text": "Translate to French: The weather is cold today. The weather is cold today. The weather is cold today. The weather is cold today. The weather is cold today. The weather is cold today. The weather is cold today. The weather is cold today. The"
+   }
+  ],
+  "median_4gram_repeat": 0.3619,
+  "median_distinct_ratio": 0.3832,
+  "n_prompts": 8,
+  "nll": 1.55482,
+  "nll_tokens": 211,
+  "ppl": 4.7342,
+  "ppl_full": 4.734215949798867,
+  "r4_full": 0.36190476190476195,
+  "r4s": [
+   0.009434,
+   0.084112,
+   0.20354,
+   0.355769,
+   0.361905,
+   0.407407,
+   0.616822,
+   0.902913
+  ],
+  "worst_max_repeat_run": 2
+ },
+ "device": "cpu",
+ "guard_at_start": {
+  "compressor_gb": 0.45,
+  "expected_gb": 8.0,
+  "free_gb": 82.91,
+  "headroom_gb": 74.91,
+  "reasons": [],
+  "reclaimable_gb": 8.12,
+  "resident_rss_gb": 0.0,
+  "residents": 0,
+  "state": "OK",
+  "strictly_free_gb": 74.79,
+  "swap_gb": 5.0,
+  "swapfiles": 5,
+  "wired_gb": 5.17
+ },
+ "nr_not_nx": true,
+ "obligation": "G011",
+ "ordering_by_global_deficit_desc": [
+  "q_proj",
+  "k_proj",
+  "o_proj",
+  "v_proj",
+  "gate_proj",
+  "down_proj",
+  "up_proj"
+ ],
+ "ordering_by_local_deficit_desc": [
+  "k_proj",
+  "q_proj",
+  "o_proj",
+  "v_proj",
+  "down_proj",
+  "gate_proj",
+  "up_proj"
+ ],
+ "ordering_least_to_most_sensitive_per_mb": [
+  "o_proj",
+  "gate_proj",
+  "up_proj",
+  "q_proj",
+  "down_proj",
+  "k_proj",
+  "v_proj"
+ ],
+ "ordering_least_to_most_sensitive_raw": [
+  "o_proj",
+  "gate_proj",
+  "q_proj",
+  "up_proj",
+  "k_proj",
+  "v_proj",
+  "down_proj"
+ ],
+ "question": "which organs actually carry behaviour? one organ dropped to the cheap spec at a time, everything else held at base",
+ "resource": {
+  "compressor_gb_peak": 0.48,
+  "compressor_gb_start": 0.45,
+  "free_gb_end": 80.64,
+  "free_gb_low": 31.19,
+  "free_gb_start": 82.9,
+  "label": "G011_SENS",
+  "peak_unknown_reason": null,
+  "resident_rss_gb_peak": 0.0,
+  "samples": 187,
+  "swapfiles_delta": 0,
+  "swapfiles_end": 5,
+  "swapfiles_start": 5,
+  "wall_s": 400.53
+ },
+ "schema": "hawking.future.g011_organ_sensitivity.v1",
+ "seal_sha256": "19f6eecf2bde624e8adb89dc2f47af12863422f77047b009b3d7987cb1b5d0be",
+ "sensitivity": [
+  {
+   "bytes_saved": 11010048,
+   "delta_ppl": 0.96328,
+   "delta_ppl_per_mb_saved": 0.087491,
+   "delta_r4": 0.093458,
+   "gate_ok": false,
+   "global_deficit": 12.3,
+   "local_deficit": 21.58,
+   "organ": "down_proj",
+   "ppl": 6.191104,
+   "r4": 0.803738
+  },
+  {
+   "bytes_saved": 3670016,
+   "delta_ppl": 0.746715,
+   "delta_ppl_per_mb_saved": 0.203464,
+   "delta_r4": 0.046729,
+   "gate_ok": false,
+   "global_deficit": 19.35,
+   "local_deficit": 22.24,
+   "organ": "v_proj",
+   "ppl": 5.974539,
+   "r4": 0.757009
+  },
+  {
+   "bytes_saved": 3670016,
+   "delta_ppl": 0.378744,
+   "delta_ppl_per_mb_saved": 0.103199,
+   "delta_r4": 0.009346,
+   "gate_ok": false,
+   "global_deficit": 39.22,
+   "local_deficit": 41.27,
+   "organ": "k_proj",
+   "ppl": 5.606568,
+   "r4": 0.719626
+  },
+  {
+   "bytes_saved": 11010048,
+   "delta_ppl": 0.350168,
+   "delta_ppl_per_mb_saved": 0.031804,
+   "delta_r4": 0.053871,
+   "gate_ok": false,
+   "global_deficit": 9.46,
+   "local_deficit": 11.59,
+   "organ": "up_proj",
+   "ppl": 5.577992,
+   "r4": 0.764151
+  },
+  {
+   "bytes_saved": 7340032,
+   "delta_ppl": 0.238682,
+   "delta_ppl_per_mb_saved": 0.032518,
+   "delta_r4": 0.059631,
+   "gate_ok": false,
+   "global_deficit": 48.1,
+   "local_deficit": 38.82,
+   "organ": "q_proj",
+   "ppl": 5.466506,
+   "r4": 0.769912
+  },
+  {
+   "bytes_saved": 11010048,
+   "delta_ppl": -0.100967,
+   "delta_ppl_per_mb_saved": -0.00917,
+   "delta_r4": 0.059631,
+   "gate_ok": false,
+   "global_deficit": 18.37,
+   "local_deficit": 20.16,
+   "organ": "gate_proj",
+   "ppl": 5.126857,
+   "r4": 0.769912
+  },
+  {
+   "bytes_saved": 7340032,
+   "delta_ppl": -0.111519,
+   "delta_ppl_per_mb_saved": -0.015193,
+   "delta_r4": 0.028037,
+   "gate_ok": false,
+   "global_deficit": 27.29,
+   "local_deficit": 23.66,
+   "organ": "o_proj",
+   "ppl": 5.116305,
+   "r4": 0.738318
+  }
+ ],
+ "specimen": "Qwen--Qwen3-0.6B@c1899de289a0",
+ "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0",
+ "status": "MEASURED",
+ "verdict_sentence": "G011 sensitivity on Qwen--Qwen3-0.6B@c1899de289a0: crushing one organ at a time from q4-g64 to q3-g64. Least to most sensitive by raw ppl delta: o_proj, gate_proj, q_proj, up_proj, k_proj, v_proj, down_proj. Global structural prior would predict q_proj, k_proj, o_proj, v_proj, gate_proj, down_proj, up_proj (tau 0.2381); local anatomy would predict k_proj, q_proj, o_proj, v_proj, down_proj, gate_proj, up_proj (tau 0.0476).",
+ "weaker_than_it_looks": [
+  "One specimen, one perturbation size (base -> cheap), one direction.",
+  "Sensitivity measured at ONE point is a local slope, not a curve; an organ flat here may cliff at a deeper spec.",
+  "Capability is 8 greedy prompts x 96 tokens plus 512-token NLL on CPU fp32 -- deterministic given the weights, but not robust to a different prompt set."
+ ]
+}
