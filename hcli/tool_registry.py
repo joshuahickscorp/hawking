@@ -1929,6 +1929,19 @@ def _future(name: str):
     return mod
 
 
+def _selection_brief(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """G018's five inputs, assembled and deliberately unranked.
+
+    Only ONE of the five was reachable from the tool surface before this:
+    odyssey.ledger carries measurement debt. campaign_pareto.py computes a
+    210-candidate frontier and was imported by two sidecar modules and no tool.
+    A selection obligation whose inputs the selector cannot see is not a
+    selection obligation.
+    """
+    m = _future("selection_brief")
+    return m.brief(limit=_shown_limit(args.get("limit")))
+
+
 def _lake_census(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
     """Reachability and complete EBPW for every specimen, from headers only.
 
@@ -2796,6 +2809,17 @@ def default_tool_registry(
             {"type": "object", "additionalProperties": False, "properties": {}},
             handler=_odyssey_read(name.split(".", 1)[1]),
         ))
+    registry.register(ToolSpec(
+        "odyssey.selection_brief",
+        "The five selection inputs G018 requires -- measurement debt, cost, architecture novelty, "
+        "capability state and Pareto state -- assembled per specimen and NOT RANKED. Rows come "
+        "back in slug order, which carries no opinion. field_discrimination says how much each "
+        "input actually separates these bodies; read_this_first names the inputs that do not. "
+        "The choice, and the reason, are yours.",
+        {"type": "object", "additionalProperties": False,
+         "properties": {"limit": {"type": "integer"}}},
+        handler=_selection_brief,
+    ))
     registry.register(ToolSpec(
         "odyssey.cycle",
         "Advance the LIVE Odyssey by one cycle. Mutating; requires confirm=True.",

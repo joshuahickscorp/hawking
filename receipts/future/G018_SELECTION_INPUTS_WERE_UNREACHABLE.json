@@ -1,0 +1,114 @@
+{
+ "obligation": "G018",
+ "finding": "FOUR OF THE FIVE INPUTS G018 REQUIRES WERE UNREACHABLE FROM THE THING THAT MUST SELECT",
+ "acceptance_quoted": "HCLI is given Pareto state, measurement debt, architecture novelty, capability and expected information gain, and chooses -- with its reason.",
+ "before": {
+  "measurement_debt": "reachable via odyssey.ledger",
+  "pareto_state": "NOT REACHABLE. campaign_pareto.py computes a 210-candidate, 70-point frontier and is imported by reliability_axis.py and role_suitability.py -- two sidecar modules -- and by NO registered tool.",
+  "architecture_novelty": "not surfaced anywhere; family lives in the catalog and is never counted",
+  "capability": "no registered capability tool at all",
+  "expected_information_gain": "does not exist",
+  "reading": "a selection obligation whose selector cannot see four of its five inputs is not a selection obligation. This is the G025 disease again, in the criteria rather than the tools."
+ },
+ "what_was_built": {
+  "tool": "odyssey.selection_brief (registered; the registry went 71 -> 72)",
+  "module": "tools/future/selection_brief.py",
+  "supplies": [
+   "measurement debt: owed and refused axes per specimen",
+   "cost: gib, complete_ebpw, blocked_by",
+   "architecture novelty: family and family_siblings, a COUNT not a score",
+   "capability: the nr_candidate axis state",
+   "pareto: points scored and points surviving domination"
+  ]
+ },
+ "it_does_not_rank_and_that_is_the_point": "G018 exists because Claude must stop naming which organism goes next. A brief that sorted by desirability would name it in a different font. Rows return in SLUG ORDER, every field is a measured fact or an explicit absence, and expected information gain is NOT computed -- it is a judgement over the other four, and computing it here would be the ranking this refuses.",
+ "the_field_that_would_have_misled": {
+  "field": "pareto_points_on_frontier",
+  "distribution": "2 distinct values across 56 specimens: 1 (40 bodies) and 0 (16)",
+  "why": "every scored organism contributes exactly ONE point and every one of those points is non-dominated, because with 11 axes and mostly-missing values almost nothing dominates anything. 70 of 210 points survive by INCOMPARABILITY, not by excellence.",
+  "risk": "read as 'on the Pareto frontier' it looks like a quality signal. It marks WHETHER a body has been scored and nothing more.",
+  "handling": "the brief carries a field_discrimination block giving distinct-value counts per input, and a read_this_first naming this field and the 24 bodies the census has not classified. Presenting a non-discriminating field beside discriminating ones lets it borrow their authority."
+ },
+ "field_discrimination": {
+  "n_owed": {
+   "distinct_values": 4,
+   "most_common": [
+    5,
+    1,
+    0
+   ],
+   "informative": true
+  },
+  "gib": {
+   "distinct_values": 49,
+   "most_common": [
+    335.3,
+    56.9,
+    13.0
+   ],
+   "informative": true
+  },
+  "klass": {
+   "distinct_values": 5,
+   "most_common": [
+    null,
+    "DENSE",
+    "MOE-FLOAT"
+   ],
+   "informative": true
+  },
+  "family": {
+   "distinct_values": 41,
+   "most_common": [
+    "UNKNOWN",
+    "qwen3",
+    "qwen4_exp"
+   ],
+   "informative": true
+  },
+  "family_siblings": {
+   "distinct_values": 4,
+   "most_common": [
+    0,
+    1,
+    4
+   ],
+   "informative": true
+  },
+  "capability_axis_state": {
+   "distinct_values": 3,
+   "most_common": [
+    "OWED",
+    "REFUSED",
+    "MEASURED"
+   ],
+   "informative": true
+  },
+  "pareto_points_on_frontier": {
+   "distinct_values": 2,
+   "most_common": [
+    1,
+    0
+   ],
+   "informative": false
+  },
+  "complete_ebpw": {
+   "distinct_values": 7,
+   "most_common": [
+    null,
+    16.0,
+    32.0
+   ],
+   "informative": true
+  }
+ },
+ "verification": {
+  "selftest": "PASS",
+  "mutation_A": "rows sorted by -n_owed instead of slug -> 'rows are not in neutral slug order -- an ordering is a recommendation', FAILED. The anti-ranking guard is live.",
+  "mutation_B": "the lake.census lookup returned {} -> 'klass is empty on every row', FAILED. This is the defect the brief ACTUALLY HAD on its first run: it read family and gib from the raw catalog, which carries architecture_family and bytes and knows nothing about klass or complete EBPW, so two of five inputs came back blank for all 56 bodies and a weaker selftest passed anyway.",
+  "g019_compliance": "passes the actionable-first sweep: bounded, n/shown/truncated disclosed",
+  "markers": "grep 0 after both mutations"
+ },
+ "G018_IS_NOT_CLOSED": "the verify requires that THE CHOICE and its reason be on disk before a trial starts, and that Claude audit after, never before. No choice has been made here and none will be made by me. What changed is that the inputs G018 names are now reachable from HCLI's tool surface. The obligation is unblocked, not satisfied.",
+ "scar": "A SELECTION OBLIGATION WHOSE SELECTOR CANNOT SEE THE CRITERIA IS UNSATISFIABLE BY CONSTRUCTION."
+}
