@@ -40,6 +40,37 @@ def rows(path: Path = LEDGER):
     return out
 
 
+def _separation(rs, key):
+    """Between-family spread against the worst within-family spread, on one axis."""
+    fams: dict[str, list] = {}
+    for r in rs:
+        v = r.get(key)
+        if v:
+            fams.setdefault(r["family"] or "unknown", []).append(v)
+    if not fams:
+        return None
+    per = {f: {"n": len(v), "median": round(statistics.median(v), 2),
+               "spread_pct": (round((max(v) - min(v)) / statistics.median(v) * 100, 1)
+                              if len(v) > 1 else None)}
+           for f, v in sorted(fams.items())}
+    meds = [d["median"] for d in per.values()]
+    between = ((max(meds) - min(meds)) / statistics.median(meds) * 100
+               if len(meds) > 1 else None)
+    multi = {f: d for f, d in per.items() if d["n"] > 1}
+    within = max((d["spread_pct"] for d in multi.values()), default=None)
+    if not multi:
+        verdict = ("UNDECIDABLE: no family has two bodies, so there is no within-family "
+                   "spread to compare against")
+    elif between is not None and within is not None and between > 2 * within:
+        verdict = f"SEPARATES: between {between:.0f}% vs worst within {within:.0f}%"
+    else:
+        verdict = f"DOES NOT SEPARATE: between {between:.0f}% vs worst within {within}%"
+    return {"verdict": verdict, "per_family": per,
+            "between_family_spread_pct": between,
+            "worst_within_family_spread_pct": within,
+            "range": [round(min(meds), 2), round(max(meds), 2)] if meds else None}
+
+
 def report(rs):
     if not rs:
         return {"verdict": "NO BODY IS MEASURED ON BOTH AXES YET", "n": 0}
@@ -65,8 +96,18 @@ def report(rs):
     else:
         verdict = (f"DOES NOT SEPARATE: between-family {between:.0f}% vs worst "
                    f"within-family {within}% -- the families overlap")
+    # Decode is bandwidth-bound, so its ratio is close to a HOST constant and
+    # carries little architecture signal. Prefill is compute-bound and does not
+    # have to behave the same way. Judging only decode would have reported "no
+    # family prior exists" while the prefill numbers were already spanning 7x.
+    # Report both and let the axis with separation be the one that earns a prior.
     return {"verdict": verdict, "n": len(rs), "per_family": per,
             "between_family_spread_pct": between, "worst_within_family_spread_pct": within,
+            "decode": _separation(rs, "decode_ratio"),
+            "prefill": _separation(rs, "prefill_ratio"),
+            "why_two_axes": ("decode is memory-bandwidth-bound and its ratio tends toward a "
+                             "host constant; prefill is compute-bound and is where an "
+                             "architecture prior can actually live"),
             "bodies": sorted(rs, key=lambda r: -r["decode_ratio"])}
 
 
@@ -84,6 +125,28 @@ def _demo():
     single = [dict(tight[0]), dict(tight[3])]
     assert report(single)["verdict"].startswith("UNDECIDABLE")
     assert report([])["n"] == 0
+
+    # The two axes must be judged INDEPENDENTLY. The live data has a tight
+    # decode band (11.6-13.8x, a host constant) sitting beside a 7x prefill
+    # spread, so a tool that judged only decode would report "no family prior
+    # exists" while the prefill signal was already there.
+    mixed = []
+    for i in range(3):                      # decode flat, prefill separated
+        mixed.append({"slug": f"x{i}", "family": "x", "gib": 1, "gpu_decode": 100,
+                      "cpu_decode": 8, "decode_ratio": 12.0 + i * 0.1,
+                      "prefill_ratio": 7.0 + i * 0.1})
+        mixed.append({"slug": f"y{i}", "family": "y", "gib": 1, "gpu_decode": 100,
+                      "cpu_decode": 8, "decode_ratio": 12.0 + i * 0.1,
+                      "prefill_ratio": 50.0 + i * 0.1})
+    rep = report(mixed)
+    assert rep["decode"]["verdict"].startswith("DOES NOT SEPARATE"), rep["decode"]
+    assert rep["prefill"]["verdict"].startswith("SEPARATES"), rep["prefill"]
+    # and the reverse, so neither axis is hard-coded to an answer
+    flipped = [dict(r, decode_ratio=r["prefill_ratio"], prefill_ratio=r["decode_ratio"])
+               for r in mixed]
+    rep2 = report(flipped)
+    assert rep2["decode"]["verdict"].startswith("SEPARATES"), rep2["decode"]
+    assert rep2["prefill"]["verdict"].startswith("DOES NOT SEPARATE"), rep2["prefill"]
     print("cpu_gpu_ratio: verdict tracks the data (separates / overlaps / undecidable / empty)")
 
 
