@@ -87,7 +87,16 @@ _SAFE_SHELL_COMMANDS = frozenset(
         "more",
         "realpath",
         "rg",
-        "sed",
+        # `sed` is DELIBERATELY absent. Its `w` flag writes a file from inside
+        # the script argument -- `sed 's/a/b/w out' in` -- so the option
+        # blocklist below never sees it and the path check skips the token
+        # (it is not absolute and does not start with "." or "/"). A registry
+        # holding only READ_ONLY wrote both a relative and an absolute path
+        # through this tool before it was removed. hcli/delegate.py's
+        # READ_ONLY_VERBS had already excluded it for exactly this reason,
+        # after its own negative control wrote a protected file; the two lists
+        # had drifted. Same reasoning excludes awk, sort -o, find -delete and
+        # any interpreter.
         "shasum",
         "sha256sum",
         "stat",
@@ -3558,10 +3567,25 @@ def _merge_group(registry: "ToolRegistry", name: str, spec: Mapping[str, Any]) -
             used_by.setdefault(field, []).append(op)
             if field not in props:
                 props[field] = dict(schema)
+    # Naming every accepting op costs more than it informs once a field is
+    # shared: 11 fields of odyssey.drive carried the SAME 107-char op list,
+    # ~44% of that tool's schema spent restating one string. The complement is
+    # lossless and short, so say what a field does NOT apply to once it applies
+    # to most. REQUIRED-for stays exact -- that is the load-bearing half.
+    all_ops = set(members)
     for field, ops in used_by.items():
         req_for = sorted(o for o in ops
                          if field in ((members[o].input_schema or {}).get("required") or []))
-        note = "ops: " + ",".join(sorted(ops))
+        taken = set(ops)
+        missing = sorted(all_ops - taken)
+        # Pick on CHARACTERS, not on op count: "all except cycle" is longer
+        # than "a,b" whenever the prefix costs more than the names it drops.
+        cands = ["ops: " + ",".join(sorted(ops))]
+        if not missing:
+            cands.append("ops: all")
+        else:
+            cands.append("ops: all except " + ",".join(missing))
+        note = min(cands, key=len)
         if req_for:
             note += "; REQUIRED for " + ",".join(req_for)
         existing = props[field].get("description")
