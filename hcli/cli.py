@@ -350,6 +350,10 @@ def main(argv: Optional[List[str]] = None) -> int:
         from .web import main as web_main
 
         return web_main(raw[1:])
+    if raw and raw[0] == "report":
+        from .report import main as report_main
+
+        return report_main(raw[1:])
 
     args = parse_hcli_args(raw)
     if args.debug:
