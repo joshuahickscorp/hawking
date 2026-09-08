@@ -529,6 +529,87 @@ def _resolve_import_targets_rel(
     return targets
 
 
+def _wrapper_dispatch_literals(tree: ast.AST) -> list[tuple[str, int]]:
+    """Tool names dispatched through local forwarding wrappers.
+
+    A DEFINITION IS NOT A CAPABILITY -- and a missed call site is not a dead
+    one. hcli/agentos/research.py forwards TWICE:
+
+        def _run(registry, name, arguments):        # name is parameter 1
+            result = registry.invoke(name, arguments)
+        def call(name, arguments):                  # name is parameter 0
+            result, row = _run(registry, name, arguments)
+        search = call("web.search", {...})
+
+    The line matcher sees `invoke(name` -- a variable -- and nothing else, so
+    nine live tools read as DEAD while being exercised on every research-gate
+    run. A reachability checker that reports live capabilities as dead is worse
+    than no checker: it is the instrument used to decide what to delete.
+
+    So a wrapper is tracked BY PARAMETER POSITION, and the set is closed to a
+    fixed point: f dispatches at index i if it passes its own parameter i into
+    invoke's first argument, or into the dispatch position of another wrapper.
+    Precision comes from requiring that forwarding at every hop -- a helper that
+    merely accepts a `name` does not turn every string handed to it into a tool.
+    """
+    functions = [n for n in ast.walk(tree)
+                 if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
+    params: dict[str, list[str]] = {}
+    for node in functions:
+        names = [a.arg for a in node.args.posonlyargs] + [a.arg for a in node.args.args]
+        params[node.name] = names
+
+    wrappers: dict[str, int] = {}
+    for _ in range(4):  # depth bound: forwarding chains here are 2 deep
+        changed = False
+        for node in functions:
+            if node.name in wrappers:
+                continue
+            names = params.get(node.name) or []
+            hit = None
+            for inner in ast.walk(node):
+                if not isinstance(inner, ast.Call) or not inner.args:
+                    continue
+                func = inner.func
+                called = func.attr if isinstance(func, ast.Attribute) else (
+                    func.id if isinstance(func, ast.Name) else "")
+                # position in the callee that decides the tool name
+                if called == "invoke":
+                    slot = 0
+                elif called in wrappers:
+                    slot = wrappers[called]
+                else:
+                    continue
+                if slot >= len(inner.args):
+                    continue
+                target = inner.args[slot]
+                if isinstance(target, ast.Name) and target.id in names:
+                    hit = names.index(target.id)
+                    break
+            if hit is not None:
+                wrappers[node.name] = hit
+                changed = True
+        if not changed:
+            break
+    if not wrappers:
+        return []
+
+    found: list[tuple[str, int]] = []
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call) or not node.args:
+            continue
+        func = node.func
+        called = func.id if isinstance(func, ast.Name) else (
+            func.attr if isinstance(func, ast.Attribute) else "")
+        slot = wrappers.get(called)
+        if slot is None or slot >= len(node.args):
+            continue
+        arg = node.args[slot]
+        if isinstance(arg, ast.Constant) and isinstance(arg.value, str):
+            found.append((arg.value, node.lineno))
+    return found
+
+
 def _extract_file_facts(
     rp: str, text: str, py_rels: frozenset[str]
 ) -> dict[str, Any]:
@@ -589,6 +670,7 @@ def _extract_file_facts(
                 token = m.group(2) or m.group(4)
                 if token:
                     literals.append((token, lineno))
+    literals.extend(_wrapper_dispatch_literals(tree))
     return {
         "rp": rp,
         "imports": imports,
@@ -1505,7 +1587,46 @@ def repo_index_from_facts(facts: Mapping[str, Any]) -> RepoIndex:
         idx.literal_table.setdefault(tok, []).append(
             Site(str(lit["file"]), int(lit["line"]), "literal")
         )
+    _augment_with_wrapper_dispatch(idx)
     return idx
+
+
+def _augment_with_wrapper_dispatch(idx: "RepoIndex") -> None:
+    """Add the dispatch sites a LINE-ORIENTED indexer structurally cannot see.
+
+    hawking-index precomputes the literal table by matching dispatch-shaped
+    lines, so `call("web.search", ...)` -- where `call` forwards into
+    registry.invoke through one or two hops -- is invisible to it, exactly as it
+    was to the Python matcher. Fixing only the Python scanner changed NOTHING in
+    the receipt, because when the Rust index is present it supplies the table and
+    the Python scanner never runs. Measured: 83 typed tools dead before the
+    Python fix, 83 after.
+
+    So this runs regardless of facts_source and MERGES. It is a small AST pass
+    over the files that mention `invoke(`, which is a few dozen of them, not the
+    whole tree.
+    """
+    if idx.literal_table is None:
+        return
+    for path in idx.files:
+        try:
+            rp = str(path.relative_to(REPO))
+        except ValueError:
+            rp = str(path)
+        try:
+            text = read_text(path)
+        except Exception:
+            continue
+        if not text or "invoke(" not in text:
+            continue
+        try:
+            tree = ast.parse(text)
+        except SyntaxError:
+            continue
+        for token, lineno in _wrapper_dispatch_literals(tree):
+            sites = idx.literal_table.setdefault(str(token), [])
+            if not any(s.file == rp and s.line == lineno for s in sites):
+                sites.append(Site(rp, int(lineno), "literal"))
 
 
 def _load_rust_facts() -> dict[str, Any] | None:

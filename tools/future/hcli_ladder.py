@@ -82,7 +82,7 @@ def ask(prompt: str, timeout: int = 1800) -> str:
     pf.write_text(prompt, encoding="utf-8")
     r = subprocess.run(
         [sys.executable, "-u", "-m", "hcli", "1", "--task-file", str(pf),
-         "--model", str(PROFILE), "--max-cycles", "2"],
+         "--model", str(PROFILE)],
         cwd=str(W), capture_output=True, text=True, timeout=timeout)
     return (r.stdout or "") + (r.stderr or "")
 

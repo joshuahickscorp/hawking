@@ -132,11 +132,31 @@ def parse_hcli_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
         help="Run provider text-only cognition without the HCLI result schema",
     )
     parser.add_argument("--debug", action="store_true", help="Enable debug output")
-    parser.add_argument("--max-turns", type=int, default=10, help="Max observation turns")
-    parser.add_argument("--max-cycles", type=int, default=3, help="Max mission cycles")
+    # THESE BOUND NOTHING, AND SAYING SO IS THE POINT. Both were parsed and read
+    # by no code anywhere in the package: the headless path calls
+    # controller.execute() exactly once, and there is no cycle loop or turn loop
+    # to cap. Two unattended tools passed --max-cycles believing it was a
+    # ceiling, which is the dangerous direction of this bug -- a caller that
+    # thinks a run is capped at 2 cycles and is in fact uncapped. Kept in the
+    # parser ONLY so the refusal can explain itself instead of argparse saying
+    # "unrecognized arguments".
+    parser.add_argument("--max-turns", type=int, default=None,
+                        help=argparse.SUPPRESS)
+    parser.add_argument("--max-cycles", type=int, default=None,
+                        help=argparse.SUPPRESS)
     parser.add_argument("--workspace", type=str, default=None, help="Workspace root")
 
     args = parser.parse_args(argv)
+    dead = [name for name, value in (("--max-turns", args.max_turns),
+                                     ("--max-cycles", args.max_cycles))
+            if value is not None]
+    if dead:
+        parser.error(
+            f"{' and '.join(dead)} bound nothing and never did: this path runs "
+            f"one mission, once, and no cycle or turn loop exists to cap. "
+            f"Accepting the flag would tell you a run is bounded when it is not. "
+            f"For a bounded long run use `hcli resident start` (--max-restarts, "
+            f"--interval-s, --swap-ceiling), or bound the work itself in the goal.")
 
     n = 1
     prompt = None

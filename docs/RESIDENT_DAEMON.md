@@ -95,19 +95,22 @@ the resident untimed token loop and plain Metal fence, so per-token GPU timing
 vectors are intentionally absent; health and propose responses report
 `untimed_resident_fast`. Leave it unset for measured qualification runs.
 
-The guarded production-path smoke is
-`tools/headless/hcli_resident_native_smoke.py`. It validates the sealed Qwen3.8
-profile and performs a dry host/runtime admission first. On a packed host it
-proves that native work remains queued and emits a passing safety-guard receipt
-without opening weights. Only when both gates pass does it run one bounded
-resident mission in a disposable workspace. It emits
-`receipts/headless/HCLI_RESIDENT_NATIVE_DAEMON_SMOKE.json` and never overrides a
-memory refusal.
+Both headless qualification scripts named in earlier versions of this document
+-- `tools/headless/hcli_resident_native_smoke.py` and
+`tools/headless/hcli_resident_qualification.py` -- were **deleted** in
+`1baee5464` ("retire caller-free headless scripts"). Their receipts survive
+under `receipts/headless/`, which is evidence that they once ran, not that they
+can be run now. This document instructed the reader to execute one of them for
+two more days after it stopped existing.
 
-Run the deeper qualification goal with:
+The live equivalents:
 
-```text
-python3 tools/headless/hcli_resident_qualification.py
+```bash
+# is the sealed profile still what the seal binds?
+python3 tools/hcli_resident/serve_sealed.py --check-only
+
+# what is this resident actually like to use, right now?
+hcli report
 ```
 
 This runs a real source/test AgentOS mission, verifies evidence-derived child

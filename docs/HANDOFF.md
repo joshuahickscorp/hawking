@@ -197,7 +197,7 @@ under `tools/sovereign/`; the measurement does not.
   ultragoal run. One goal has been sitting queued for hours. Fixing it properly
   means compiling a banked goal into work units and `scheduler.replan()`-ing
   them into the *running* mission, not starting a new one.
-- `hcli/checkpoint.py` has **no call site yet** — real, tested, unreachable.
+- `hcli/agentos/checkpoint.py` is reachable: `hcli agentos checkpoint` dispatches to it (agentos_cli.py). The earlier note here claimed `hcli/checkpoint.py` had no call site -- wrong path and, since the agentos wiring landed, wrong claim.
   Registration is not reachability.
 
 ## Unfinished
