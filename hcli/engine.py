@@ -2436,6 +2436,8 @@ class Engine:
         observations: List[Dict[str, Any]],
         *,
         final: bool = False,
+        used: Optional[int] = None,
+        budget: Optional[int] = None,
     ) -> str:
         """The APPEND-ONLY tail. Nothing stable may follow it.
 
@@ -2458,6 +2460,25 @@ class Engine:
                 "TOOL BUDGET EXHAUSTED. Answer from the observations above. "
                 "Do not request more tools."
             )
+        elif used is not None and budget is not None:
+            # THE HORIZON, ON EVERY TURN. The prompt says "you are asked again"
+            # and never said how often, so the budget was only ever mentioned
+            # once it was gone. Rounds 22 and 24 each measured real anatomy,
+            # reported it, and ended with "Next: record ..." -- deferring the
+            # write to an iteration that did not exist. That is correct
+            # reasoning about a horizon nobody described, not an ignored
+            # instruction, and the harness is the side that knows the number.
+            remaining = max(0, int(budget) - int(used))
+            if remaining <= 1:
+                parts.append(
+                    f"{remaining} tool observation remains of {budget}. THIS IS YOUR LAST "
+                    "CHANCE TO ACT. Anything you plan to do 'next' will not happen -- do it "
+                    "now or it is lost."
+                )
+            else:
+                parts.append(
+                    f"{used} of {budget} tool observations used; {remaining} remain."
+                )
         return "\n\n".join(parts)
 
     def _compact_closed_observations(
@@ -2656,7 +2677,14 @@ class Engine:
                 conversation_history.append(
                     {
                         "role": "user",
-                        "content": self._observations_block(observations),
+                        # The numbers, not just the block. A horizon the harness
+                        # knows and does not say is a horizon the round cannot
+                        # plan against.
+                        "content": self._observations_block(
+                            observations,
+                            used=len(observations),
+                            budget=self.MAX_TOOL_OBSERVATIONS,
+                        ),
                     }
                 )
                 # A round containing a failed call has already identified a
