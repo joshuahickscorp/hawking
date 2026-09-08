@@ -1,0 +1,83 @@
+{
+ "obligation": "G009",
+ "axis": "nx_disposition",
+ "mechanism": "NX is EXECUTABLE BY DEFINITION (directive 4: frozen, standalone, EXECUTABLE Noetic result). A body with no runtime path on this host cannot be qualified as an NX here, so nx_disposition is refusable on the same evidence that refused gpu/cpu/tps.",
+ "host_scoped": "This refusal is HOST-SCOPED, not a permanent property of the specimen. NX qualification is machine-qualified per the directive. A host or runtime that gains a module for these model_types REOPENS every cell below.",
+ "what_this_does_NOT_refuse": "nr_candidate. Directive 3: NR is the MUTABLE UNEXECUTED representation and is 'NOT necessarily executable by itself'. An unrunnable body can still hold a buildable NR, so refusing nr_candidate on 'no runtime' would fabricate 18 cells of coverage. Those stay OWED.",
+ "source_evidence": "the gpu/cpu/tps refusal already recorded on each specimen, quoted per row",
+ "n": 18,
+ "rows": [
+  {
+   "slug": "moonshotai--Kimi-K3@9f62e4e9fffb",
+   "gpu_refusal": "cannot be executed on this host: mlx_lm has no module for model_type \"kimi_k3\""
+  },
+  {
+   "slug": "thinkingmachines--Inkling-Small@8cc5877b44d3",
+   "gpu_refusal": "cannot be executed on this host: mlx_lm has no module for model_type \"inkling_mm_model\""
+  },
+  {
+   "slug": "windowsxp811203--Qwen3.8-Flash-Next-Abliterated@deb02632504b",
+   "gpu_refusal": "cannot be executed on this host: mlx_lm has no module for model_type \"qwen4_exp\""
+  },
+  {
+   "slug": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+   "gpu_refusal": "cannot be executed on this host: mlx_lm has no module for model_type \"qwen4_exp\""
+  },
+  {
+   "slug": "zai-org--GLM-5.3-Flash@04c4e9e95c5d",
+   "gpu_refusal": "cannot be executed on this host: mlx_lm has no module for model_type \"glm5_next\""
+  },
+  {
+   "slug": "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+   "gpu_refusal": "cannot be executed on this host: mlx_lm has no module for model_type \"deepseek_v4\""
+  },
+  {
+   "slug": "nvidia--audio-flamingo-3@ee26c5842398",
+   "gpu_refusal": "cannot be executed on this host: mlx_lm has no module for model_type \"llava_llama\""
+  },
+  {
+   "slug": "GSAI-ML--iLLaDA-8B-Base@a1b5b5f8a31a",
+   "gpu_refusal": "cannot be executed on this host: mlx_lm has no module for model_type \"illada\""
+  },
+  {
+   "slug": "kyutai--moshika-pytorch-bf16@a49141e28b3d",
+   "gpu_refusal": "cannot be executed on this host: no model_type in config (<no config: FileNotFoundError>)"
+  },
+  {
+   "slug": "Dream-org--Dream-v0-Instruct-7B@05334cb9faaf",
+   "gpu_refusal": "cannot be executed on this host: mlx_lm has no module for model_type \"Dream\""
+  },
+  {
+   "slug": "lerobot--pi0_base@25c379b52ba2",
+   "gpu_refusal": "cannot be executed on this host: no model_type in config (None)"
+  },
+  {
+   "slug": "microsoft--Phi-4-multimodal-instruct@93f923e1a772",
+   "gpu_refusal": "cannot be executed on this host: mlx_lm has no module for model_type \"phi4mm\""
+  },
+  {
+   "slug": "HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02",
+   "gpu_refusal": "cannot be executed on this host: mlx_lm has no module for model_type \"smolvlm\""
+  },
+  {
+   "slug": "google--flan-t5-large@0613663d0d48",
+   "gpu_refusal": "cannot be executed on this host: mlx_lm has no module for model_type \"t5\""
+  },
+  {
+   "slug": "state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994",
+   "gpu_refusal": "cannot be executed on this host: no safetensors; mlx cannot load any format here"
+  },
+  {
+   "slug": "state-spaces--mamba3-siso-1.5b@5cfc721542ec",
+   "gpu_refusal": "cannot be executed on this host: no safetensors; mlx cannot load any format here"
+  },
+  {
+   "slug": "openai--whisper-large-v3-turbo@41f01f3fe87f",
+   "gpu_refusal": "cannot be executed on this host: mlx_lm has no module for model_type \"whisper\""
+  },
+  {
+   "slug": "answerdotai--ModernBERT-large@45bb4654a4d5",
+   "gpu_refusal": "cannot be executed on this host: mlx_lm has no module for model_type \"modernbert\""
+  }
+ ]
+}

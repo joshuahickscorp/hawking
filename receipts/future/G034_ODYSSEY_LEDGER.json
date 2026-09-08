@@ -45,9 +45,9 @@
      "receipt": null
     },
     "nx_disposition": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"kimi_k3\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture reopens it. See receipts/future/G009_NX_DISPOSITION_NO_RUNTIME.json.",
      "receipt": null
     }
    }
@@ -103,9 +103,9 @@
      "receipt": null
     },
     "nx_disposition": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"inkling_mm_model\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture reopens it. See receipts/future/G009_NX_DISPOSITION_NO_RUNTIME.json.",
      "receipt": null
     }
    }
@@ -160,9 +160,9 @@
      "receipt": null
     },
     "nx_disposition": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"qwen4_exp\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture reopens it. See receipts/future/G009_NX_DISPOSITION_NO_RUNTIME.json.",
      "receipt": null
     }
    }
@@ -218,9 +218,9 @@
      "receipt": null
     },
     "nx_disposition": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"qwen4_exp\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture reopens it. See receipts/future/G009_NX_DISPOSITION_NO_RUNTIME.json.",
      "receipt": null
     }
    }
@@ -268,9 +268,9 @@
      "receipt": null
     },
     "nx_disposition": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"glm5_next\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture reopens it. See receipts/future/G009_NX_DISPOSITION_NO_RUNTIME.json.",
      "receipt": null
     }
    }
@@ -375,9 +375,9 @@
      "receipt": null
     },
     "nx_disposition": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"deepseek_v4\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture reopens it. See receipts/future/G009_NX_DISPOSITION_NO_RUNTIME.json.",
      "receipt": null
     }
    }
@@ -2671,9 +2671,9 @@
      "receipt": null
     },
     "nx_disposition": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"llava_llama\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture reopens it. See receipts/future/G009_NX_DISPOSITION_NO_RUNTIME.json.",
      "receipt": null
     }
    }
@@ -3103,9 +3103,9 @@
      "receipt": null
     },
     "nx_disposition": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"illada\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture reopens it. See receipts/future/G009_NX_DISPOSITION_NO_RUNTIME.json.",
      "receipt": null
     }
    }
@@ -3606,9 +3606,9 @@
      "receipt": null
     },
     "nx_disposition": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"unknown\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture reopens it. See receipts/future/G009_NX_DISPOSITION_NO_RUNTIME.json.",
      "receipt": null
     }
    }
@@ -3788,9 +3788,9 @@
      "receipt": null
     },
     "nx_disposition": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"Dream\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture reopens it. See receipts/future/G009_NX_DISPOSITION_NO_RUNTIME.json.",
      "receipt": null
     }
    }
@@ -4452,9 +4452,9 @@
      "receipt": null
     },
     "nx_disposition": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"unknown\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture reopens it. See receipts/future/G009_NX_DISPOSITION_NO_RUNTIME.json.",
      "receipt": null
     }
    }
@@ -5540,9 +5540,9 @@
      "receipt": null
     },
     "nx_disposition": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"phi4mm\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture reopens it. See receipts/future/G009_NX_DISPOSITION_NO_RUNTIME.json.",
      "receipt": null
     }
    }
@@ -5822,9 +5822,9 @@
      "receipt": null
     },
     "nx_disposition": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"smolvlm\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture reopens it. See receipts/future/G009_NX_DISPOSITION_NO_RUNTIME.json.",
      "receipt": null
     }
    }
@@ -7803,9 +7803,9 @@
      "receipt": null
     },
     "nx_disposition": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"t5\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture reopens it. See receipts/future/G009_NX_DISPOSITION_NO_RUNTIME.json.",
      "receipt": null
     }
    }
@@ -7853,9 +7853,9 @@
      "receipt": null
     },
     "nx_disposition": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"unknown\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture reopens it. See receipts/future/G009_NX_DISPOSITION_NO_RUNTIME.json.",
      "receipt": null
     }
    }
@@ -7903,9 +7903,9 @@
      "receipt": null
     },
     "nx_disposition": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"unknown\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture reopens it. See receipts/future/G009_NX_DISPOSITION_NO_RUNTIME.json.",
      "receipt": null
     }
    }
@@ -8604,9 +8604,9 @@
      "receipt": null
     },
     "nx_disposition": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"whisper\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture reopens it. See receipts/future/G009_NX_DISPOSITION_NO_RUNTIME.json.",
      "receipt": null
     }
    }
@@ -8730,9 +8730,9 @@
      "receipt": null
     },
     "nx_disposition": {
-     "state": "OWED",
+     "state": "REFUSED",
      "value": null,
-     "reason": null,
+     "reason": "no NX on this host: NX is executable by definition and mlx_lm has no module for model_type \"modernbert\", the same mechanism that refused this body's gpu/cpu/tps axes. HOST-SCOPED -- a runtime that gains this architecture reopens it. See receipts/future/G009_NX_DISPOSITION_NO_RUNTIME.json.",
      "receipt": null
     }
    }
