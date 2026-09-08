@@ -1,0 +1,205 @@
+{
+ "obligation": "G027",
+ "artifact": "tools/future/ebpw_reachability.py",
+ "what_it_is": "the reachability calculation S009 24 requires BEFORE any long search: fixed-cost floor, mutable budget, best-case zeroing bound, for any target and any lever set.",
+ "evidence_tier": "STATIC_ARITHMETIC",
+ "gpu_authority": false,
+ "inputs": [
+  "receipts/future/REPRESENTATION_FLOOR.json",
+  "receipts/future/FLASH_EBPW_BAR_REACHABILITY.json"
+ ],
+ "selftest": {
+  "result": "PASS",
+  "reproduces": [
+   "payload*8/parent == sealed 3.139301",
+   "MLP entirely free at target 1.0 == sealed 1.545, UNREACHABLE",
+   "solver inverts the bound and agrees with it"
+  ],
+  "negative_control": "with EVERY class free the calculator must say REACHABLE, or it is a function that can only ever answer no"
+ },
+ "resident": {
+  "complete_ebpw": 3.139301,
+  "payload_bytes": 10554328856,
+  "parent_params": 26895998464,
+  "classes": [
+   {
+    "name": "mlp",
+    "bytes": 5358380616,
+    "params": 17112760320,
+    "bpw": 2.504975
+   },
+   {
+    "name": "attention+deltanet+other",
+    "bytes": 5195948240,
+    "params": 9783238144,
+    "bpw": 4.248858
+   }
+  ],
+  "classes_sum_to_payload": true,
+  "note": "the two classes' params sum EXACTLY to parent_params, so complete EBPW is the param-weighted mean bpw. A uniform X bpw across the organism bills exactly X."
+ },
+ "f32_bookkeeping": {
+  "flash_mlp_minus_floor_mlp_storage": 10584840,
+  "floor_f32_bytes": 10584840,
+  "equal": true,
+  "note": "FLASH counts the f32 organs inside its mlp term; REPRESENTATION_FLOOR keeps them as their own class"
+ },
+ "headline": "THE <=1.5 TOLERANCE IS ALSO OUT OF REACH FOR ANY SINGLE-ORGAN LEVER, which the campaign had only established for <=1.0. MLP entirely free bounds at 1.5455; attention+DeltaNet entirely free bounds at 1.5938. Both exceed 1.5. Neither organ can be zeroed into the qualification tolerance, let alone the objective.",
+ "bounds": {
+  "mlp_free@1.0": {
+   "bound": 1.545493,
+   "reachable": false
+  },
+  "attention_deltanet_free@1.0": {
+   "bound": 1.593808,
+   "reachable": false
+  },
+  "mlp_free@1.5": {
+   "bound": 1.545493,
+   "reachable": false
+  },
+  "attention_deltanet_free@1.5": {
+   "bound": 1.593808,
+   "reachable": false
+  }
+ },
+ "the_actionable_form": "At the CURRENT MLP rate of 2.505 bpw the required attention rate for 1.5 is NEGATIVE (-0.2579): a free attention organ does not close it. Holding attention at its current Q4 4.2489, the MLP would need -0.0715 bpw. Every single-lever corner is impossible. The only feasible corners for <=1.5 put BOTH organs deep below Q4: attention 2.0 with MLP 1.2142, or MLP 1.5 with attention 1.5.",
+ "solved_corners": [
+  {
+   "target_complete_ebpw": 1.0,
+   "held": "mlp",
+   "held_bpw": 2.504975,
+   "held_bytes": 5358379597,
+   "solve_for": "attention+deltanet+other",
+   "current_bpw": 4.248858,
+   "required_bpw": -1.63249,
+   "feasible": false,
+   "note": "negative required rate: the held class alone already exceeds the whole budget"
+  },
+  {
+   "target_complete_ebpw": 1.0,
+   "held": "mlp",
+   "held_bpw": 1.5,
+   "held_bytes": 3208642560,
+   "solve_for": "attention+deltanet+other",
+   "current_bpw": 4.248858,
+   "required_bpw": 0.125404,
+   "feasible": true,
+   "note": "attention+deltanet+other must fall from 4.2489 to 0.1254 bpw"
+  },
+  {
+   "target_complete_ebpw": 1.0,
+   "held": "mlp",
+   "held_bpw": 1.0,
+   "held_bytes": 2139095040,
+   "solve_for": "attention+deltanet+other",
+   "current_bpw": 4.248858,
+   "required_bpw": 1.0,
+   "feasible": true,
+   "note": "attention+deltanet+other must fall from 4.2489 to 1.0000 bpw"
+  },
+  {
+   "target_complete_ebpw": 1.0,
+   "held": "attention+deltanet+other",
+   "held_bpw": 4.248858,
+   "held_bytes": 5195948706,
+   "solve_for": "mlp",
+   "current_bpw": 2.504975,
+   "required_bpw": -0.857348,
+   "feasible": false,
+   "note": "negative required rate: the held class alone already exceeds the whole budget"
+  },
+  {
+   "target_complete_ebpw": 1.0,
+   "held": "attention+deltanet+other",
+   "held_bpw": 2.0,
+   "held_bytes": 2445809536,
+   "solve_for": "mlp",
+   "current_bpw": 2.504975,
+   "required_bpw": 0.428307,
+   "feasible": true,
+   "note": "mlp must fall from 2.5050 to 0.4283 bpw"
+  },
+  {
+   "target_complete_ebpw": 1.0,
+   "held": "attention+deltanet+other",
+   "held_bpw": 1.0,
+   "held_bytes": 1222904768,
+   "solve_for": "mlp",
+   "current_bpw": 2.504975,
+   "required_bpw": 1.0,
+   "feasible": true,
+   "note": "mlp must fall from 2.5050 to 1.0000 bpw"
+  },
+  {
+   "target_complete_ebpw": 1.5,
+   "held": "mlp",
+   "held_bpw": 2.504975,
+   "held_bytes": 5358379597,
+   "solve_for": "attention+deltanet+other",
+   "current_bpw": 4.248858,
+   "required_bpw": -0.257894,
+   "feasible": false,
+   "note": "negative required rate: the held class alone already exceeds the whole budget"
+  },
+  {
+   "target_complete_ebpw": 1.5,
+   "held": "mlp",
+   "held_bpw": 1.5,
+   "held_bytes": 3208642560,
+   "solve_for": "attention+deltanet+other",
+   "current_bpw": 4.248858,
+   "required_bpw": 1.5,
+   "feasible": true,
+   "note": "attention+deltanet+other must fall from 4.2489 to 1.5000 bpw"
+  },
+  {
+   "target_complete_ebpw": 1.5,
+   "held": "mlp",
+   "held_bpw": 1.0,
+   "held_bytes": 2139095040,
+   "solve_for": "attention+deltanet+other",
+   "current_bpw": 4.248858,
+   "required_bpw": 2.374596,
+   "feasible": true,
+   "note": "attention+deltanet+other must fall from 4.2489 to 2.3746 bpw"
+  },
+  {
+   "target_complete_ebpw": 1.5,
+   "held": "attention+deltanet+other",
+   "held_bpw": 4.248858,
+   "held_bytes": 5195948706,
+   "solve_for": "mlp",
+   "current_bpw": 2.504975,
+   "required_bpw": -0.071502,
+   "feasible": false,
+   "note": "negative required rate: the held class alone already exceeds the whole budget"
+  },
+  {
+   "target_complete_ebpw": 1.5,
+   "held": "attention+deltanet+other",
+   "held_bpw": 2.0,
+   "held_bytes": 2445809536,
+   "solve_for": "mlp",
+   "current_bpw": 2.504975,
+   "required_bpw": 1.214154,
+   "feasible": true,
+   "note": "mlp must fall from 2.5050 to 1.2142 bpw"
+  },
+  {
+   "target_complete_ebpw": 1.5,
+   "held": "attention+deltanet+other",
+   "held_bpw": 1.0,
+   "held_bytes": 1222904768,
+   "solve_for": "mlp",
+   "current_bpw": 2.504975,
+   "required_bpw": 1.785846,
+   "feasible": true,
+   "note": "mlp must fall from 2.5050 to 1.7858 bpw"
+  }
+ ],
+ "joined_to_the_capability_cliff": "G012_CAPABILITY_CLIFF measured the lowest capability-PASSING point in the entire campaign at 3.2831 complete EBPW. Reaching 1.5 requires a param-weighted mean of 1.5 bpw across all 26.9B parameters. So the target is not 2.2x away in one organ -- it is 2.2x away in the ORGANISM, and every candidate that has entered that region has failed the conjunction.",
+ "what_this_licenses": "search must change class, not tighten. No allocation of Q4-and-above rates between these two organs reaches either gate, so the levers that remain are the ones that stop preserving the parent topology: generated organs, procedural representation, functional substitution, shared nonlinear structure, exact islands with generated remainder.",
+ "what_this_does_not_say": "that the gates are wrong -- the directive states them as objectives. That any particular sub-Q4 representation preserves capability; this is byte arithmetic and the conjunction gate is separate and, per the cliff, unforgiving. That the resident is the only candidate.",
+ "scar": "COMPUTE THE FLOOR BEFORE SEARCHING THE SPACE. A negative required rate is an impossibility proof and it costs one division."
+}
