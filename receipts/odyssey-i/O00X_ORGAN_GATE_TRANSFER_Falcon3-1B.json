@@ -1,0 +1,183 @@
+{
+ "obligation": "G054 transfer test of the per-organ activation-aware gate",
+ "date": "2026-09-09",
+ "specimen": "Falcon3-1B-Instruct",
+ "verdict": "THE RULE'S STATED FORM IS REFUTED. A weaker form survives, and is labelled as post-hoc.",
+ "what_was_predicted_before_the_arms_ran": {
+  "predictor": "r99 of H as a fraction of input dim, per organ, from 6 sampled layers",
+  "measured": {
+   "down_proj": 0.09434000651041667,
+   "gate_proj": 0.2869466145833333,
+   "up_proj": 0.2869466145833333
+  },
+  "per_layer_range": {
+   "down_proj": [
+    0.064,
+    0.109
+   ],
+   "gate_proj": [
+    0.22,
+    0.321
+   ],
+   "up_proj": [
+    0.22,
+    0.321
+   ]
+  },
+  "prediction": "down_proj gains, up_proj does not"
+ },
+ "results": [
+  {
+   "bits": 4,
+   "arm": "rtn",
+   "organs": [],
+   "hessians_needing_extra_damping": 0,
+   "perplexity": 10.4735,
+   "top1_agreement_vs_fp32": 0.9286,
+   "kl_from_fp32": 25.20191
+  },
+  {
+   "bits": 4,
+   "arm": "gptq_predicted_gainer",
+   "organs": [
+    "down_proj"
+   ],
+   "hessians_needing_extra_damping": 0,
+   "perplexity": 10.4591,
+   "top1_agreement_vs_fp32": 0.9365,
+   "kl_from_fp32": 23.257
+  },
+  {
+   "bits": 4,
+   "arm": "gptq_predicted_loser",
+   "organs": [
+    "up_proj"
+   ],
+   "hessians_needing_extra_damping": 0,
+   "perplexity": 10.5297,
+   "top1_agreement_vs_fp32": 0.9257,
+   "kl_from_fp32": 25.598553
+  },
+  {
+   "bits": 4,
+   "arm": "gptq_all",
+   "organs": [
+    "down_proj",
+    "gate_proj",
+    "up_proj"
+   ],
+   "hessians_needing_extra_damping": 0,
+   "perplexity": 10.4911,
+   "top1_agreement_vs_fp32": 0.9413,
+   "kl_from_fp32": 19.725407
+  },
+  {
+   "bits": 3,
+   "arm": "rtn",
+   "organs": [],
+   "hessians_needing_extra_damping": 0,
+   "perplexity": 10.8335,
+   "top1_agreement_vs_fp32": 0.8397,
+   "kl_from_fp32": 128.900726
+  },
+  {
+   "bits": 3,
+   "arm": "gptq_predicted_gainer",
+   "organs": [
+    "down_proj"
+   ],
+   "hessians_needing_extra_damping": 0,
+   "perplexity": 10.9375,
+   "top1_agreement_vs_fp32": 0.8416,
+   "kl_from_fp32": 111.247078
+  },
+  {
+   "bits": 3,
+   "arm": "gptq_predicted_loser",
+   "organs": [
+    "up_proj"
+   ],
+   "hessians_needing_extra_damping": 0,
+   "perplexity": 10.9977,
+   "top1_agreement_vs_fp32": 0.8534,
+   "kl_from_fp32": 125.588547
+  },
+  {
+   "bits": 3,
+   "arm": "gptq_all",
+   "organs": [
+    "down_proj",
+    "gate_proj",
+    "up_proj"
+   ],
+   "hessians_needing_extra_damping": 0,
+   "perplexity": 10.8418,
+   "top1_agreement_vs_fp32": 0.8729,
+   "kl_from_fp32": 93.472473
+  }
+ ],
+ "verdict_by_bits": {
+  "4b": {
+   "gain_predicted_gainer": 0.0079,
+   "gain_predicted_loser": -0.0029,
+   "rule_transfers": true
+  },
+  "3b": {
+   "gain_predicted_gainer": 0.0019,
+   "gain_predicted_loser": 0.0137,
+   "rule_transfers": false
+  }
+ },
+ "the_refutation": "At 4 bits the ordering holds: the predicted gainer (down_proj) is +0.0079 held-out top-1 and the predicted loser (up_proj) is -0.0029. At 3 bits it INVERTS -- the predicted loser gains +0.0137 against the predicted gainer's +0.0019. A rule that reverses at a bit width is not the rule as stated.",
+ "and_the_opposite_configuration_wins_here": "On Qwen3-0.6B, writer-only beat all-MLP at 3 bits on both ppl and KL. On Falcon3-1B all-MLP is best at BOTH widths (4b top-1 0.9413 / KL 19.7; 3b 0.8729 / 93.5), beating every single-organ arm. The practical advice the rule gave for one body is wrong for the other.",
+ "the_weaker_form_that_survives": {
+  "claim": "the gate may be an ABSOLUTE threshold on r99 rather than a within-model ranking. Every organ measured below ~0.3 gains and the one measured at 0.605 loses:",
+  "all_four_measurements": {
+   "Qwen3-0.6B down_proj": {
+    "r99": 0.402,
+    "4b": "+0.0216",
+    "3b": "+0.0215"
+   },
+   "Qwen3-0.6B gate/up": {
+    "r99": 0.605,
+    "4b": "-0.0107",
+    "3b": "-0.0166"
+   },
+   "Falcon3-1B down_proj": {
+    "r99": 0.094,
+    "4b": "+0.0079",
+    "3b": "+0.0019"
+   },
+   "Falcon3-1B gate/up": {
+    "r99": 0.287,
+    "4b": "-0.0029",
+    "3b": "+0.0137"
+   }
+  },
+  "consistency": "a threshold between 0.287 and 0.605 fits all four. Falcon's organs are BOTH concentrated by Qwen's standard, which is why both gain there and all-MLP wins.",
+  "STATUS": "POST-HOC. This threshold was fitted to four points AFTER seeing them; it is not what was predicted. It is a hypothesis for a third specimen, and the threshold must be declared in advance of that run or the test is worthless.",
+  "the_honest_alternative": "the r99 signal may simply be weak and the Falcon differences (-0.0029 to +0.0137) small enough to be run-to-run noise on one corpus. A third specimen decides between 'threshold' and 'no rule'."
+ },
+ "instrument_defects_found_and_fixed_during_this_run": [
+  {
+   "defect": "one d x d Hessian allocated PER ORGAN rather than per input site",
+   "cost": "38.7 GiB; fixed by keying on (layer, input_dim)"
+  },
+  {
+   "defect": "the fix also dropped accumulation to float32, which was unnecessary",
+   "cost": "no memory was needed; reverted to float64"
+  },
+  {
+   "defect": "GPTQ's Cholesky failed on Falcon's ill-conditioned Hessians at 1% damping -- at leading minor 2039 on the 2048-dim site and 8180 on the 8192-dim one, identically under float32 and float64, so not a precision problem",
+   "fix": "escalating damping 1% -> 5% -> 20% -> 100%, with a COUNTED fallback. A silent fallback to round-to-nearest would have made the treated arm identical to the control and the experiment would have reported 'no difference' from two identical arms.",
+   "recorded_count": 0,
+   "counter_reads_zero": "The escalation counter recorded ZERO Hessians needing extra damping on the run that succeeded -- yet the identical call crashed on the two runs before it, under both float32 and float64. So the factorisation sits right at the positive-definite boundary and succeeds or fails depending on accumulation order across LAPACK threads. The escalation makes it robust either way; the counter says it was not needed THIS time, not that it never is.",
+   "consequence_for_the_earlier_numbers": "The 4-bit and 3-bit rtn/gainer/loser figures from the crashed run are BYTE-IDENTICAL to this one's (0.9286/0.9365/0.9257 and 0.8397/0.8416/0.8534). Only gptq_all was missing. The earlier distrust was over-cautious rather than wrong, and the conclusion is unchanged."
+  },
+  {
+   "defect": "18 float64 eigendecompositions of an 8192x8192 matrix for a shape statistic",
+   "cost": "~30 minutes single-threaded; now 6 sampled layers in float32, with the per-layer range reported so the sample is auditable"
+  }
+ ],
+ "cost": "543.9s CPU per specimen end to end"
+}
