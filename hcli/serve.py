@@ -605,7 +605,8 @@ def make_handler(backend: Any, identity: str, *, greedy: bool,
                 # COMPACT WHEN THE CONVERSATION OUTGROWS ITS SHARE. Turns leave
                 # the working set into the session archive; the invariant
                 # leading region is untouched so the prefix cache still hits.
-                window = int(health.get("context_window") or 8192)
+                window = int(health.get("prompt_window")
+                              or health.get("context_window") or 8192)
                 messages, compaction = compact(messages, session, window=window)
                 if compaction.compacted:
                     body = {**body, "messages": messages}
@@ -660,7 +661,8 @@ def make_handler(backend: Any, identity: str, *, greedy: bool,
                     # backend raised a bare 502. Same window, same headroom
                     # share compact() already uses -- not a new policy.
                     from .chat_state import CHARS_PER_TOKEN, CONTEXT_SHARE
-                    window_tokens = int(health.get("context_window") or 8192)
+                    window_tokens = int(health.get("prompt_window")
+                                        or health.get("context_window") or 8192)
                     answer, trace = run_with_tools(
                         _complete, with_contract, registry, native=native,
                         cache=stores.get("cache"),
@@ -744,6 +746,32 @@ def _context_window(model: str) -> int:
     return _WINDOW_UNKNOWN
 
 
+def _prompt_window(model: str) -> int:
+    """The window CONTEXT_SHARE is a share OF: the body's ceiling.
+
+    `_context_window` reports `usable_input_tokens`, which `context_budget`
+    already computed as ceiling - generation_reserve - framing_reserve. That is
+    the right answer to "how much input may I send" and the wrong input to
+    CONTEXT_SHARE, whose whole job is to leave room for the answer -- room
+    subtracted once already. Multiplying the two reserves the same tokens
+    twice: 5632 * 0.55 = 3097 where the design intends 8192 * 0.55 = 4505.
+
+    The self-development campaign ran 74 cycles against a body holding 31% less
+    context than the arithmetic allows, on a path whose failures were all shaped
+    like running out of room. Taking the reserve once still leaves it: 4505
+    prompt + 2048 generation + 512 framing = 7065 of 8192.
+    """
+    try:
+        budget = resolve(model_path=str(model))
+    except Exception:
+        return _WINDOW_UNKNOWN
+    for attr in ("model_ceiling", "total_ctx", "per_request_ctx"):
+        value = getattr(budget, attr, None)
+        if isinstance(value, int) and value > 0:
+            return value
+    return _context_window(model)
+
+
 def build_server(model: str, *, host: str = DEFAULT_HOST, port: int = DEFAULT_PORT,
                  ready_timeout: float = 600.0, repo: Any = None,
                  registry: Any = None, write: bool = False):
@@ -787,6 +815,10 @@ def build_server(model: str, *, host: str = DEFAULT_HOST, port: int = DEFAULT_PO
         # rather than a constant. resolve() is the repo's existing authority on
         # this and already reads native profiles and GGUF headers.
         "context_window": _context_window(body.path),
+        # The ceiling, for callers that must take the answer's reserve
+        # THEMSELVES. context_window has already had it taken; a share applied
+        # to that number reserves the same tokens twice.
+        "prompt_window": _prompt_window(body.path),
     }
     if repo is not None:
         health["repo"] = {"name": repo.name, "root": str(repo.root),

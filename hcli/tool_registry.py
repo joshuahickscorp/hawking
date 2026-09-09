@@ -4180,6 +4180,16 @@ def default_tool_registry(
         "tests.run", "Run a bounded pytest/unittest/cargo verification command under reversible runtime permission.",
         {"type": "object", "additionalProperties": False, "properties": {"runner": {"type": "string", "enum": ["pytest", "unittest", "cargo"]}, "root": {"type": "string"}, "paths": {"type": "array", "items": {"type": "string"}}, "timeout_s": {"type": "number"}}},
         mutation=REVERSIBLE_RUNTIME, deterministic=False, resources=("cpu",),
+        # THE SPEC MUST BE ABLE TO HONOUR THE KNOB IT ADVERTISES. `_tests_run`
+        # takes timeout_s, defaults to 300s and caps itself at 900s; this spec
+        # left timeout_s at the 30.0 dataclass default, and `invoke` clamps every
+        # request down to the spec's value before the handler sees it. So a
+        # 900-second contract could not exceed 30 seconds. Measured, campaign
+        # cycle 75: the body tried to check neighbours across hcli/tests -- step
+        # 8 of the arc it is asked to run -- and reported "the tool timed out at
+        # 30s". That suite takes 167 seconds. Matched to the handler's own cap,
+        # which is where the real bound belongs and already exists.
+        timeout_s=900.0,
         verifier_expectations=("verified is true only for exit code zero",), handler=_tests_run,
     ))
     registry.register(ToolSpec(
