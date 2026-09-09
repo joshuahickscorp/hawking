@@ -878,6 +878,24 @@ def run_builder_tool(name: str, arguments: Dict[str, Any], *,
     operations = arguments.get("operations")
     if isinstance(operations, dict):
         operations = [operations]
+    if isinstance(operations, str):
+        # SAY WHICH FAILURE IT WAS. The shape string is correct for a wrong TYPE
+        # and actively misleading for a payload that failed to PARSE -- which is
+        # what a body emitting a whole file inline actually produces, since one
+        # unterminated string in the generated content invalidates everything.
+        # Measured: four consecutive cycles sent a repo.edit and got the same
+        # shape string back, so the body re-sent the same broken payload each
+        # time. It could not tell "wrong kind of thing" from "your JSON broke at
+        # character 812". This does not accept bad JSON; it names the failure.
+        try:
+            operations = json.loads(operations)
+        except ValueError as exc:
+            return _R(False, error=(
+                f"repo.edit's `operations` was a string that is not valid JSON: {exc}. "
+                f"Emit a SMALLER payload -- a long inline file is where this breaks. "
+                f"Expected {BUILDER_SHAPES['repo.edit']}"))
+        if isinstance(operations, dict):
+            operations = [operations]
     if not isinstance(operations, list) or not operations:
         return _R(False, error=f"repo.edit needs {BUILDER_SHAPES['repo.edit']}")
     tests = arguments.get("tests")
