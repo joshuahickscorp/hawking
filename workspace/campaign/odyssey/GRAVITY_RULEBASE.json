@@ -330,6 +330,49 @@
    "statement": "GPTQ-style error compensation helps at 4 and 3 bits and is actively harmful at 2 (held-out top-1 0.0029 vs RTN 0.0459). Do not carry an activation-aware win down the bit ladder on the assumption it holds.",
    "mechanism": "Compensation assumes a small perturbation and a locally quadratic loss. At 2 bits the residual is comparable to the weight, so propagated error is injected rather than absorbed.",
    "evidence": "receipts/odyssey-i/O00X_ACTIVATION_AWARE_G047.json"
+  },
+  {
+   "id": "R-residual-readers-align-writers-do-not",
+   "status": "MEASURED (5 architecture families)",
+   "specimens": [
+    "Qwen3-0.6B",
+    "ModernBERT-large",
+    "bitnet-b1.58-2B",
+    "LFM2.5-2.6B",
+    "mamba3-mimo-1.5b"
+   ],
+   "statement": "Cross-layer subspace alignment splits by RESIDUAL-STREAM SIDE. Organs that READ the residual stream align 1.37-5.62x above a matched random null; organs that read a per-layer space and WRITE into the residual sit at 0.98-1.43x. Within every specimen scored, every reader beats every writer (5/5).",
+   "mechanism": "The residual stream is one shared object every layer reads, so it carries a preferred basis its readers partially align to. Per-layer spaces are not shared and have no common basis to align to.",
+   "falsifier": "a specimen whose writers align as well as its readers",
+   "cost_to_test": "weights only, no forward pass, 28-109s CPU",
+   "evidence": "receipts/odyssey-i/O00X_CROSS_LAYER_TRANSFER_G054.json",
+   "superseded_form": "The first form said the split was input DIMENSION (in_dim == hidden_size). Refuted by its own transfer test: o_proj's input is n_heads*head_dim which usually EQUALS hidden_size, and those organs sit at chance on three of four new specimens."
+  },
+  {
+   "id": "R-shared-basis-breakeven-is-set-by-dimensions-not-alignment",
+   "status": "MEASURED (derivation + 7 organs across 4 specimens)",
+   "specimens": [
+    "Qwen3-0.6B",
+    "bitnet-b1.58-2B",
+    "mamba3-mimo-1.5b",
+    "ModernBERT-large"
+   ],
+   "kind": "SEARCH POLICY -- removes an experiment class from future specimens",
+   "statement": "Sharing one input basis V (d x R) across n same-role layers of shape (m, d) costs d*R + n*m*R against a dense n*m*d, so break-even is R* = n*m*d/(d + n*m). Since every realistic body has n*m >> d, R* -> d: measured at 0.86-0.99 of full rank across 7 organs. Cross-layer alignment strength does not enter the formula, so a 5.6x-aligned organ is exactly as unpayable as a 1.0x one.",
+   "consequence": "Shared-input-basis cross-layer factorisation can be ruled out on any specimen by one line of arithmetic, before any SVD, calibration set or GPU window. Do not spend a search on it again.",
+   "does_not_rule_out": "forms whose cost is not governed by n*m/(d + n*m): a shared codebook (cost independent of layer count), cross-layer weight prediction (no basis stored), or alignment used as a prior to narrow an activation-aware search.",
+   "evidence": "receipts/odyssey-i/O00X_CROSS_LAYER_TRANSFER_G054.json"
+  },
+  {
+   "id": "R-a-format-gap-is-not-a-negative-result",
+   "status": "MEASURED",
+   "specimens": [
+    "mamba3-mimo-1.5b"
+   ],
+   "kind": "METHOD",
+   "statement": "A prober that cannot OPEN a specimen reports the same thing as a specimen with no structure. mamba3-mimo returned zero roles because it ships pytorch_model.bin and the prober only opened safetensors; recorded as a negative it would have said 'the SSM family has no cross-layer structure'. Re-run after closing the format gap it gave the STRONGEST reader alignment of any specimen (5.26-5.38x).",
+   "rule": "an empty measurement is UNMEASURED until the instrument is shown to work on that input",
+   "evidence": "receipts/odyssey-i/O00X_CROSS_LAYER_TRANSFER_G054.json"
   }
  ]
 }
