@@ -195,6 +195,23 @@
    "reopen_if": "a specimen with tie_word_embeddings=true is found where the on-disk tensors are NOT byte-identical (the flag would be vestigial there, the way Dream-v0s use_cache=true turned out to be vestigial this same session -- ALWAYS VERIFY, never trust the config flag alone) -- OR a loader/runtime is found that already dedups tied weights transparently, making this a known-solved problem rather than a live opportunity.",
    "physical_rationale": "tie_word_embeddings is a common HF transformers setting (NOT specific to diffusion LMs -- Dream-v0 in the same census has the flag FALSE, so this is a general checkpoint-packaging question, not an architecture-family one). A checkpoint author may still ship a materialized lm_head.weight for loader compatibility with code that expects it as a distinct tensor, even though the two are logically one weight -- pure storage waste recoverable with zero risk to capability.",
    "_evidence": "DISCOVERY-PHASE ONLY (single candidate, not yet an admitted O0XX Odyssey patient) -- full byte-exact SHA256 verification, not a shape-only inference. Not yet added to TRANSFER_MATRIX.json (that instrument tracks the 14 formal O000-O013 curriculum patients; this finding has no O0XX support yet, so a matrix row would be unearned). Re-evaluate once a second tied-embedding specimen is discovered or one of O000-O013 is found to have the flag. UPDATE: now 2 independent specimens across 2 unrelated model families (GSAI-ML/LLaDA, Qwen) both confirm the wasteful-duplicate pattern, while pi0_base (also tied) stored its equivalent weight only once -- a real per-checkpoint choice, not universal either way, but no longer single-specimen evidence. Still discovery-phase only, no O0XX patient support, so still no TRANSFER_MATRIX row. FOURTH DATA POINT: the rule now stands at 4 tied-embedding specimens, 2 wasteful (iLLaDA-8B, Qwen3-0.6B -- verified byte-identical duplicates on disk) and 2 clean (pi0_base, ModernBERT-large -- stored once). That 2/2 split is the real finding: this is a per-checkpoint PACKAGING choice, not a family, framework or format property, so the config flag alone predicts NOTHING. The rule earns its keep entirely through its VERIFY step. DECISIVE WITHIN-VENDOR COUNTER-EXAMPLE: Qwen3-0.6B physically DUPLICATES its tied matrix (byte-identical lm_head, 10.9% of its checkpoint) while Qwen3-Embedding-0.6B -- same vendor, same 0.6B class, same qwen3 model_type -- stores it ONCE. Two checkpoints from one lab at one scale land on opposite sides, which forecloses any explanation by family, framework, format or scale. It is a per-export packaging accident. Confidence raised INFERRED -> MEASURED: the rule is now a measurement procedure with 8 data points, and its entire value is the verify step, because the config flag has zero predictive power."
+  },
+  {
+   "id": "R-specialist-body-single-organ",
+   "conditions": [
+    "body is a non-language-decoder specialist (vision / video / depth / audio / time-series)",
+    "measured parameter share shows one backbone/encoder >= 90% of total params"
+   ],
+   "then": "do NOT spend search budget on organ-heterogeneity levers -- there is only one organ. Attack the backbone directly, and take the free bf16 cast first if the checkpoint ships F32.",
+   "supporting_patients": [],
+   "negative_patients": [],
+   "discovery_phase_evidence": [
+    "Measured this session across 5 specialist bodies: Depth-Anything-V2-L backbone 90.8%, SmolVLM2-2.2B model 95.5%, sam2.1-hiera-large vision_encoder 94.8%, vjepa2-vitg encoder 97.8%, timesfm-2.0-500m decoder 99.0%. All 5 also ship F32 while every decoder LM surveyed ships BF16/F16 -- 7 non-decoder-LM specimens now, all F32. See receipts/odyssey-i/CAND_SPECIALIST_COHORT_ODYSSEY_I.json and CAND_sam2.1-hiera-large_ODYSSEY_I.json."
+   ],
+   "confidence": "INFERRED",
+   "reopen_if": "a specialist body is found whose parameters are NOT backbone-concentrated -- musicgen-large is the live candidate (three sub-models incl. a full audio codec) and could not be measured because it ships legacy pickle rather than safetensors. Also reopen if a bf16 cast is shown to cost capability on any of these, since the 'F32 is convention' half rests on zero capability measurement.",
+   "physical_rationale": "specialist heads are tiny by construction: a depth head is 0.1% of the body, a JEPA predictor 2.2%. Compressing them cannot move the total however aggressive the codec, so any budget spent there is wasted regardless of result.",
+   "_evidence": "MEASURED per-component parameter shares from safetensors headers, 5 bodies, no GPU. DISCOVERY-PHASE ONLY: no O0XX patient support, so no TRANSFER_MATRIX row."
   }
  ]
 }

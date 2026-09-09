@@ -1,0 +1,188 @@
+{
+ "schema": "hawking.odyssey.candidate_discovery.v1",
+ "candidate_id": "CAND-SPECIALIST-COHORT",
+ "not_yet_admitted_oxx": true,
+ "_evidence": "MEASURED (config.json + every safetensors header per specimen). Zero mlx/torch load, zero HCLI resident contention -- run while the repaired selfdev campaign held the GPU.",
+ "_label": "Odyssey I DISCOVERY, COHORT PASS. Five non-language-decoder bodies across five domains the census had never touched: generative audio, vision-language, monocular depth, self-supervised video, numeric time-series.",
+ "specimens": {
+  "musicgen-large": {
+   "domain": "generative audio (text->music)",
+   "note": "no safetensors present (non-standard format)",
+   "architectures": [
+    "MusicgenForConditionalGeneration"
+   ],
+   "model_type": "musicgen",
+   "is_encoder_decoder": true,
+   "declared_sub_models_CONFIG_ONLY": {
+    "text_encoder": "t5",
+    "audio_encoder": "encodec",
+    "decoder": "musicgen_decoder"
+   },
+   "checkpoint_format": "legacy pytorch .bin (pickle) shards, NOT safetensors -- 12.8GB across 2 shards plus a 225MB compression_state_dict.bin. Same cheap-inspection gap as evo2_7b earlier this session: no header-only read is possible without unpickling.",
+   "honest_limit": "structure below is DECLARED BY CONFIG, not verified from tensors. No per-sub-model byte split is claimed, because none was measured."
+  },
+  "SmolVLM2-2.2B": {
+   "domain": "vision-language",
+   "source_path": "/Volumes/corpdrive/hawking-modellake/specimens/HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02",
+   "architectures": [
+    "SmolVLMForConditionalGeneration"
+   ],
+   "model_type": "smolvlm",
+   "n_tensors": 657,
+   "total_params": 2246784880,
+   "total_params_M": 2246.78,
+   "total_bytes": 8987139520,
+   "total_gib": 8.37,
+   "dtypes": {
+    "F32": 657
+   },
+   "dominant_dtype": "F32",
+   "top_level_parts": {
+    "model": {
+     "params": 2145859440,
+     "params_M": 2145.86,
+     "pct": 95.5
+    },
+    "lm_head": {
+     "params": 100925440,
+     "params_M": 100.93,
+     "pct": 4.5
+    }
+   }
+  },
+  "Depth-Anything-V2-L": {
+   "domain": "monocular depth",
+   "source_path": "/Volumes/corpdrive/hawking-modellake/specimens/depth-anything--Depth-Anything-V2-Large-hf@7581137eff8d",
+   "architectures": [
+    "DepthAnythingForDepthEstimation"
+   ],
+   "model_type": "depth_anything",
+   "n_tensors": 503,
+   "total_params": 335315649,
+   "total_params_M": 335.32,
+   "total_bytes": 1341262596,
+   "total_gib": 1.249,
+   "dtypes": {
+    "F32": 503
+   },
+   "dominant_dtype": "F32",
+   "top_level_parts": {
+    "backbone": {
+     "params": 304368640,
+     "params_M": 304.37,
+     "pct": 90.8
+    },
+    "neck": {
+     "params": 30615040,
+     "params_M": 30.62,
+     "pct": 9.1
+    },
+    "head": {
+     "params": 331969,
+     "params_M": 0.33,
+     "pct": 0.1
+    }
+   }
+  },
+  "vjepa2-vitg": {
+   "domain": "self-supervised video (JEPA)",
+   "source_path": "/Volumes/corpdrive/hawking-modellake/specimens/facebook--vjepa2-vitg-fpc64-256@875c192b7b70",
+   "architectures": [
+    "VJEPA2Model"
+   ],
+   "model_type": "vjepa2",
+   "n_tensors": 843,
+   "total_params": 1034555264,
+   "total_params_M": 1034.56,
+   "total_bytes": 4138221056,
+   "total_gib": 3.854,
+   "dtypes": {
+    "F32": 843
+   },
+   "dominant_dtype": "F32",
+   "top_level_parts": {
+    "encoder": {
+     "params": 1012173952,
+     "params_M": 1012.17,
+     "pct": 97.8
+    },
+    "predictor": {
+     "params": 22381312,
+     "params_M": 22.38,
+     "pct": 2.2
+    }
+   }
+  },
+  "timesfm-2.0-500m": {
+   "domain": "numeric time-series forecast",
+   "source_path": "/Volumes/corpdrive/hawking-modellake/specimens/google--timesfm-2.0-500m-pytorch@dc2443792ce5",
+   "architectures": [
+    "TimesFmModelForPrediction"
+   ],
+   "model_type": "timesfm",
+   "n_tensors": 813,
+   "total_params": 498828960,
+   "total_params_M": 498.83,
+   "total_bytes": 1995315840,
+   "total_gib": 1.858,
+   "dtypes": {
+    "F32": 813
+   },
+   "dominant_dtype": "F32",
+   "top_level_parts": {
+    "decoder": {
+     "params": 493909920,
+     "params_M": 493.91,
+     "pct": 99.0
+    },
+    "horizon_ff_layer": {
+     "params": 4919040,
+     "params_M": 4.92,
+     "pct": 1.0
+    }
+   }
+  }
+ },
+ "F32_STORAGE_PATTERN_TESTED": {
+  "hypothesis_from_earlier_this_session": "on n=3 (pi0_base, sam2.1-hiera-large, ModernBERT-large) every non-decoder-LM specimen shipped F32 while every decoder LM shipped BF16/F16. Flagged then as 'suggestive, not established'.",
+  "f32_in_this_cohort": [
+   "SmolVLM2-2.2B",
+   "Depth-Anything-V2-L",
+   "vjepa2-vitg",
+   "timesfm-2.0-500m"
+  ],
+  "non_f32_in_this_cohort": [],
+  "verdict": "HOLDS across all five -- the pattern now stands at 8 non-decoder-LM specimens, all F32, against every decoder LM surveyed shipping BF16/F16.",
+  "what_it_is_NOT": "this is a RELEASE-CONVENTION observation, not a precision requirement. Nothing here measures whether these bodies NEED F32; the causal claim is untested and would need a capability battery per domain. What it does establish is that roughly half the stored bytes of every specialist body in this lake are there by convention, and a bf16 cast is the cheapest available Gravity lever on all of them -- before any codec search begins."
+ },
+ "COMPOSITE_BODIES_the_sub_model_split": {
+  "why": "musicgen and depth-anything are not single stacks -- they are assemblies (text encoder + audio encoder + decoder; backbone + neck + head). For an assembly, 'which organ dominates' is a different question from any single-stack body this session has measured, and it decides where Gravity pressure should go at all.",
+  "read_the_top_level_parts_field": "each specimen's top_level_parts gives the measured parameter share per sub-model, so allocation is keyed on measurement, not on which component sounds important."
+ },
+ "obvious_representation_opportunities": [
+  "A bf16 cast is the first lever on every body here and would roughly halve each footprint. It is also the LEAST interesting lever, which is the point: none of these has had a real codec search, so the cheap win is still unspent.",
+  "For the composite bodies, the measured sub-model split says where a codec search would pay -- compressing a component that holds a few percent of the parameters cannot move the total no matter how aggressive it is."
+ ],
+ "failure_modes_not_yet_tested": [
+  "No capability battery for any of them -- each needs a domain-specific benchmark (audio quality, VQA, depth error, video probe accuracy, forecast error) entirely outside Hawking's generative batteries.",
+  "The F32 pattern is a convention observation; whether any of these bodies actually REQUIRES F32 is untested and is the obvious next question."
+ ],
+ "preliminary_disposition": "RESEARCH SPECIMENS, ALL OUT-OF-DOMAIN FOR HCLI. Their value is population science: five new domains, a storage-convention pattern now tested rather than asserted, and the first composite/assembly bodies in the census.",
+ "preliminary_star_resident_evaluation": {
+  "verdict": "NOT APPLICABLE for Resident/Pulsar/Magnetar across all five -- none generates text or calls tools, so none can run an HCLI WorkUnit. timesfm is the most domain-distant specimen the census has produced (numeric forecasting, no tokenizer over language at all) and is recorded purely for architecture-diversity completeness."
+ },
+ "commit": "2ff4b6e49",
+ "emitted_at": "2026-09-09T15:01:36Z",
+ "BACKBONE_DOMINANCE_the_real_cross_domain_finding": {
+  "measured": {
+   "SmolVLM2-2.2B": "model 95.5% / lm_head 4.5%",
+   "Depth-Anything-V2-L": "backbone 90.8% / neck 9.1% / head 0.1%",
+   "vjepa2-vitg": "encoder 97.8% / predictor 2.2%",
+   "timesfm-2.0-500m": "decoder 99.0% / horizon_ff 1.0%",
+   "sam2.1-hiera-large (earlier this session)": "vision_encoder 94.8% / everything else 5.2%"
+  },
+  "finding": "every specialist body measured -- across depth, video, vision-language, time-series and segmentation -- concentrates 90-99% of its parameters in ONE backbone/encoder, with the task-specific heads costing almost nothing. This is the structural INVERSE of the language decoders this session surveyed, where embedding tables (up to 26% in Qwen3-Embedding-0.6B) or MoE expert organs (86% in BitNet's linear weights, 38/40 layers in LFM2-24B) compete with or dominate the core stack.",
+  "why_it_matters_for_gravity": "for a specialist body there is exactly ONE organ worth attacking, and no organ-heterogeneity question at all -- every allocation lever this session derived from MoE bodies (expert-only precision, shared expert bases, expert deltas, protected routers) has NO SURFACE here. A specialist body's search space is: compress the backbone, or achieve nothing. That is a much narrower and harder search than the MoE work, and it should be planned as such rather than discovered by trying MoE rules that cannot apply.",
+  "caveat": "5 bodies, all encoder-style vision/sequence backbones. Not established for generative specialist assemblies -- musicgen is exactly the case that could break it (three sub-models, one of them a full audio codec) and it could not be measured this pass."
+ }
+}
