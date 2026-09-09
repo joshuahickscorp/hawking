@@ -81,12 +81,14 @@
     "P(E_t | E_{t-1}) peaked"
    ],
    "then": "candidate prefetch of the next hot expert set",
-   "supporting_patients": [],
+   "supporting_patients": [
+    "O003"
+   ],
    "negative_patients": [],
-   "confidence": "HYPOTHESIS",
+   "confidence": "MEASURED",
    "reopen_if": "transitions are near-uniform (A1 on O005 may confirm or kill)",
    "physical_rationale": "bible \u00a764 / \u00a757. Frequency being uniform does not imply transitions are memoryless.",
-   "_evidence": "HYPOTHESIS (bible \u00a764; O005 P(E_t|E_t-1) UNKNOWN \u2014 A1)"
+   "_evidence": "HYPOTHESIS (bible \u00a764; O005 P(E_t|E_t-1) UNKNOWN \u2014 A1) | O003 MEASURED: transition_stability=0.4049 (4.32x chance 0.0938), p_e_t_given_e_t_minus_1=0.3819 (4.07x chance), 2340 transition-events -- see receipts/odyssey-i/O003_ROUTE_PREDICTABILITY_TEST.json"
   },
   {
    "id": "R-organ-inversion",

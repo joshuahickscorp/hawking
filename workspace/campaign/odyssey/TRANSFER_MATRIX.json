@@ -139,13 +139,13 @@
   },
   {
    "rule": "R-predictable-route-prefetch",
-   "note": "MoE-only. Untested. A1 on O005 is the first discriminator.",
+   "note": "MoE-only. Untested. A1 on O005 is the first discriminator. | O003: CONFIRMED, transition_stability 4.3x chance, p_e_t_given_e_t_minus_1 4.1x chance -- see receipts/odyssey-i/O003_ROUTE_PREDICTABILITY_TEST.json",
    "_evidence": "HYPOTHESIS",
    "cells": {
     "O000": "ARCHITECTURE_SPECIFIC",
     "O001": "ARCHITECTURE_SPECIFIC",
     "O002": "ARCHITECTURE_SPECIFIC",
-    "O003": "NOT_TESTED",
+    "O003": "TRANSFERRED_UNCHANGED",
     "O004": "ARCHITECTURE_SPECIFIC",
     "O005": "NOT_TESTED",
     "O006": "PATIENT_SPECIFIC",
