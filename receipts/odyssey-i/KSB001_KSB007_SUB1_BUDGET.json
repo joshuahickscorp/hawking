@@ -1,0 +1,70 @@
+{
+ "schema": "hawking.odyssey.budget.v1",
+ "obligation": ["KSB001", "KSB007"],
+ "steer": "S013",
+ "question": "Is <=1.0 COMPLETE EBPW arithmetically reachable on Kimi, and if so what is actually binding?",
+
+ "KSB001_byte_anatomy": {
+  "status": "CLOSES EXACTLY",
+  "file_bytes": 32816098528,
+  "tensor_payload_bytes": 32815315552,
+  "safetensors_header_bytes": 782976,
+  "residual_bytes": 0,
+  "unclassified_tensors": 0,
+  "tool": "tools/future/organ_byte_anatomy.py",
+  "note": "The header is charged as real bytes on disk. A partition that does not close is a partition with a category nobody thought of, and dropping the remainder is how a denominator shrinks by accident."
+ },
+
+ "named_objects": {
+  "FULL": {"params": 16407657776, "bytes": 32816098528,
+           "note": "everything including the vision tower and its projector"},
+  "LANGUAGE": {"params": 15960111936, "bytes": 31920223872, "source_bits_per_weight": 16.0,
+               "note": "the language tower ONLY. Vision tower (416,866,032 params) and multi_modal_projector (30,679,808) are removed from BOTH numerator and denominator. Every EBPW number below is against THIS object and is not comparable to a FULL-model rate."}
+ },
+
+ "organ_shares_of_the_language_tower": {
+  "routed_experts": {"params": 14394851328, "pct": 90.19},
+  "shared_experts": {"params": 449839104, "pct": 2.82},
+  "attention_mla": {"params": 371589120, "pct": 2.33},
+  "embeddings": {"params": 335544320, "pct": 2.10},
+  "lm_head": {"params": 335544320, "pct": 2.10},
+  "dense_mlp": {"params": 69206016, "pct": 0.43},
+  "router": {"params": 3409536, "pct": 0.02},
+  "norms_and_buffers": {"params": 128192, "pct": 0.0008}
+ },
+
+ "finding": "ROUTED EXPERTS ARE 90.19% OF THE LANGUAGE TOWER. That single number decides the campaign's arithmetic: the whole-organism rate is dominated by the expert codec, and the remaining 9.81% can be spent generously without breaking a sub-1 budget.",
+
+ "budget_table": {
+  "units": "COMPLETE EBPW over the LANGUAGE object (S013's number 3, not payload and not organ representation rate)",
+  "codebooks_charged": 32,
+  "rows": [
+   {"expert_codec": "d=8 K=1024",   "expert_rel_error": 0.5064, "non_expert_bits": 4.0, "complete_ebpw": 1.5200, "under_1": false},
+   {"expert_codec": "d=8 K=1024",   "expert_rel_error": 0.5064, "non_expert_bits": 3.0, "complete_ebpw": 1.4219, "under_1": false},
+   {"expert_codec": "d=8 K=1024",   "expert_rel_error": 0.5064, "non_expert_bits": 2.5, "complete_ebpw": 1.3729, "under_1": false},
+   {"expert_codec": "d=16 K=1024",  "expert_rel_error": 0.7268, "non_expert_bits": 4.0, "complete_ebpw": 0.9565, "under_1": true, "track": "A"},
+   {"expert_codec": "d=16 K=1024",  "expert_rel_error": 0.7268, "non_expert_bits": 3.0, "complete_ebpw": 0.8584, "under_1": true, "track": "A"},
+   {"expert_codec": "d=16 K=1024",  "expert_rel_error": 0.7268, "non_expert_bits": 2.5, "complete_ebpw": 0.8094, "under_1": true, "track": "A"},
+   {"expert_codec": "d=32 K=65536", "expert_rel_error": 0.7418, "non_expert_bits": 4.0, "complete_ebpw": 0.9105, "under_1": true, "track": "B"},
+   {"expert_codec": "d=32 K=65536", "expert_rel_error": 0.7418, "non_expert_bits": 3.0, "complete_ebpw": 0.8125, "under_1": true, "track": "B"},
+   {"expert_codec": "d=32 K=65536", "expert_rel_error": 0.7418, "non_expert_bits": 2.5, "complete_ebpw": 0.7634, "under_1": true, "track": "B"},
+   {"expert_codec": "d=64 K=65536", "expert_rel_error": 0.8466, "non_expert_bits": 3.0, "complete_ebpw": 0.6543, "under_1": true, "track": "probe"}
+  ]
+ },
+
+ "what_this_changes": [
+  "THE RATE IS NOT THE BINDING CONSTRAINT. Both primary tracks clear <=1.0 complete EBPW even when non-experts are given a generous 4 bits. What decides the campaign is whether capability survives an expert relative error of ~0.73, not whether the arithmetic closes.",
+  "The d=8 K=1024 artifact already built CANNOT reach 1.0 -- its best row is 1.3729. The 1.454 rung was correctly characterised as a rung, and <=1.0 requires d>=16. That artifact stays as the low-error reference point, not as a candidate.",
+  "Track A and Track B are genuinely different bets and neither dominates: A is 0.0150 better on expert relative error, B is 0.046 EBPW cheaper. S013's instruction not to declare A the winner early is supported by the numbers rather than merely by caution.",
+  "The non-expert 9.81% is where the campaign has slack it did not know it had. Embeddings and lm_head are 671,088,640 of the 1,565,260,608 non-expert params -- the two organs most known to resent aggressive quantization -- and the budget can afford to leave them alone."
+ ],
+
+ "not_yet_established": [
+  "Every complete_ebpw above assumes the non-expert organs reach the stated bits with a real codec. None of them has been fitted yet.",
+  "The 32 codebooks figure comes from the d=8 build's actual layer/shard fragmentation. A different d or a different shard layout changes the codebook count, and at K=65536 the codebook is 15% of the payload, so this is not a rounding detail.",
+  "Reconstruction error is not capability (CANON L17.9). No row above has been through a magnitude-sensitive battery, and the destructive control has not yet been rejected by that battery (KSB006).",
+  "This is the BASE body. S013's target is the abliterated OPERATOR at <=1.0, refitted (KSB009, KSB010)."
+ ],
+ "recorded_by": "claude, Front O supervisor",
+ "date": "2026-09-09"
+}
