@@ -477,7 +477,7 @@ def run_with_tools(
                     break
                 continue
             seen[sig] = 1
-            if name in BUILDER_TOOLS:
+            if name in MUTATION_TOOLS:
                 result = run_builder_tool(name, arguments, engine=engine)
             elif name in LOCAL_TOOLS:
                 result = run_local_tool(name, arguments, cache=cache,
@@ -799,7 +799,25 @@ BUILDER_TOOLS: Dict[str, str] = {
     "repo.edit": ("change this project's source. Typed operations only, each "
                   "validated in its resulting file, rolled back if a named test "
                   "fails"),
+    # THE BODY MUST BE ABLE TO RUN ITS OWN DISCRIMINATOR. The capability map
+    # advertises TEST ("run admitted tests") and the registry carries a bounded
+    # runner, but the chat surface offered 11 doors out of 109 registry tools
+    # and not one of them ran anything: debug.diagnose localizes a failure from
+    # output it cannot produce, and repo.edit runs tests only as a rollback gate
+    # on a mutation already written. So "form a hypothesis, then write a RED
+    # discriminator" had no executable middle step -- the step that decides
+    # whether a repair is needed at all. A write session gets the runner; a read
+    # session does not, because this executes code on the host.
+    "tests.run": ("run admitted tests to settle a question BEFORE changing "
+                  "anything: pytest/unittest/cargo over given paths"),
 }
+
+#: The subset of the builder menu that run_builder_tool itself serves, i.e. the
+#: doors that go through the mutation transaction. Everything else in the menu
+#: is an ordinary registry tool and must be dispatched as one -- keeping these
+#: separate is what lets a builder door exist without pretending to be a
+#: mutation.
+MUTATION_TOOLS = ("repo.edit",)
 
 BUILDER_SHAPES = {
     "repo.edit": (

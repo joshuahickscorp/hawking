@@ -135,8 +135,61 @@ class TestAuthorityIsStructural(unittest.TestCase):
             self.assertNotIn("shell", names)
             self.assertNotIn("exec", names)
 
-    def test_the_builder_door_count_is_deliberately_one(self):
-        self.assertEqual(list(BUILDER_TOOLS), ["repo.edit"])
+    def test_the_builder_door_set_is_deliberate(self):
+        """A tripwire, on purpose: adding a builder door must never be casual.
+
+        It was `== ["repo.edit"]` and it caught exactly what it was built to
+        catch -- a second door being added. The door stays added, and here is
+        the reasoning, because a guard that is edited without one is just an
+        obstacle someone routed around.
+
+        `tests.run` was admitted because the body could not otherwise EARN RED.
+        The capability map advertises TEST ("run admitted tests") and the
+        registry carries a bounded runner, but the chat surface offered 11 doors
+        out of 109 registry tools and not one of them ran anything: a body told
+        to "write a RED discriminator" had no way to run one, so the DISCRIMINATE
+        step -- the step that decides whether a repair is needed at all -- was
+        structurally missing.
+
+        It does NOT weaken the standing prohibition. The rule is that a typed
+        operation can be refused with a reason and an arbitrary command string
+        cannot; tests.run is typed and enum-bounded, and `shell.exec` /
+        `shell.readonly` exist in the registry and remain deliberately unexposed.
+        The substantive guard is test_there_is_no_shell_door_at_any_authority,
+        which is untouched and still passes.
+        """
+        self.assertEqual(list(BUILDER_TOOLS), ["repo.edit", "tests.run"])
+
+    def test_no_builder_door_takes_a_free_form_command(self):
+        """Teeth for the tripwire above: bound the SHAPE, not just the count.
+
+        A door count is a weak invariant -- it says nothing about what a door
+        lets through. What actually matters is that no builder door accepts an
+        arbitrary command string, so this pins the runner to an enum and refuses
+        any door offering a `command`/`cmd`/`argv`/`script` parameter.
+
+        The schema is taken from the REGISTRY, not from `_declared_schema`: the
+        latter returns empty properties for tests.run, which would make every
+        assertion below pass against `{}` and prove nothing. So the test first
+        insists it actually found a schema.
+        """
+        from hcli.chat_tools import _declared_schema, build_registry
+
+        registry = build_registry(".", ".")
+        for name in BUILDER_TOOLS:
+            spec = registry.get(name)
+            schema = (getattr(spec, "input_schema", None)
+                      or getattr(spec, "schema", None)
+                      or _declared_schema(name) or {})
+            props = schema.get("properties") or {}
+            self.assertTrue(props, f"no schema found for {name} -- this check would be vacuous")
+            for banned in ("command", "cmd", "argv", "script", "shell"):
+                self.assertNotIn(banned, props,
+                                 f"{name} would accept a free-form {banned}")
+            runner = props.get("runner")
+            if runner is not None:
+                self.assertIn("enum", runner,
+                              "a runner must be chosen from a fixed set, not supplied as text")
 
 
 if __name__ == "__main__":
