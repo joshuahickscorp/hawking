@@ -1,0 +1,26 @@
+{
+ "obligation": "G044 interval 2 (after the manifesto fix)",
+ "status": "INTERVAL OPEN",
+ "opened_at": "2026-09-09T14:11:02",
+ "opened_at_cycle": 77,
+ "what_changed_since_interval_1": "H-MANIFESTO.md now exists in the worktree (0f0fc7039). For the whole of experiment 2 the body has been told to develop toward a file it could not open, and its first tool call each orientation cycle failed. This is the first interval in which the objective's named authority is actually readable.",
+ "rule_for_the_interval": "unchanged: Claude does not steer HCLI engineering. Odyssey science on CPU continues. Reading the campaign log, evidence and TOOL TRACES is observation.",
+ "start_conditions": {
+  "cycle": 77,
+  "phase": "ORIENT",
+  "hypothesis": null,
+  "accepted_changes": 0,
+  "worktree_HEAD": "0f0fc7039",
+  "soft_terminals": 20
+ },
+ "the_question_now": "Interval 1 answered 'substrate, again' -- seven times in a row the body named a real defect and was blamed for the consequence. Interval 2 asks it with the north star finally readable. If orientation still cannot produce a hypothesis now, the explanation stops being 'it cannot see its objective'.",
+ "known_and_deliberately_NOT_fixed": {
+  "RESULT_CHARS": "still 3000, sized against a 3097-token conversation budget that is now 4505. The body named this too ('only 4 KB of 308 KB'). Held back so this interval tests ONE change, and so that if orientation succeeds now the credit is unambiguous.",
+  "REQ_TIMEOUT": "still 1200s. Cycle 77 needed three attempts. Chronic since cycle 9, so not attributable to anything recent, and raising it would change the measurement mid-interval."
+ },
+ "close_conditions": {
+  "SUCCESS": "an accepted, landed HCLI-authored change with no Claude intervention in the interval",
+  "INFORMATIVE_FAILURE": "a NEW defect named that nobody had found",
+  "NEGATIVE": "orientation still fails with the manifesto readable and no new defect surfaces -- which would point at the body, and is the answer that matters most"
+ }
+}
