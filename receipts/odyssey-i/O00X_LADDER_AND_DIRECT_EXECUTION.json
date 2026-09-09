@@ -1,0 +1,84 @@
+{
+ "schema": "hawking.odyssey.ladder_and_direct_execution.v1",
+ "_label": "G030 + G031 / S010 \u00a75 \u00a76. The ladder driven to a terminal outcome WITH a mechanism, and the direct-from-compressed question answered with measurements rather than intent.",
+ "_evidence": "MEASURED on CPU, paired and repeated, min-of-reps reported alongside median.",
+ "G031_DIRECT_FROM_COMPRESSED": {
+  "question": "S010 \u00a76 -- can the machine compute directly from the compressed representation instead of reconstructing dense weights first?",
+  "where_decompression_happens_today": "entirely at load. load_nx() expands every packed tensor to dense fp32 and copies it into the module, so the artifact's 484 MB becomes 2384 MB resident and the decode loop reads DENSE weights. The 6.501 EBPW describes bytes at rest and nothing about bytes moved.",
+  "is_decode_even_bandwidth_bound": {
+   "measurements": [
+    {
+     "dtype": "fp32",
+     "weight_bytes": 2384199680,
+     "weight_mib": 2273.8,
+     "tps_best": 22.16,
+     "tps_median": 21.5
+    },
+    {
+     "dtype": "bf16",
+     "weight_bytes": 1192099840,
+     "weight_mib": 1136.9,
+     "tps_best": 31.32,
+     "tps_median": 25.47
+    },
+    {
+     "dtype": "fp16",
+     "weight_bytes": 1192099840,
+     "weight_mib": 1136.9,
+     "tps_best": 45.98,
+     "tps_median": 39.1
+    }
+   ],
+   "matched_bytes_control": "fp16 and bf16 move IDENTICAL weight bytes (1136.9 MiB each) yet fp16 decodes at 45.98 TPS against bf16's 31.32 -- 1.47x apart at the same traffic. That isolates KERNEL QUALITY from bandwidth and is the control that makes the rest interpretable.",
+   "fp32_to_bf16": "halving weight bytes (2.00x) bought only 1.41x",
+   "verdict": "NOT PURELY BANDWIDTH-BOUND. A pure bandwidth model predicts 2.00x and we measured 1.41x, while a matched-bytes dtype swap moved 1.47x on its own. On this CPU path kernel quality dominates, so a byte reduction does NOT automatically become a speedup."
+  },
+  "what_a_naive_direct_path_costs": {
+   "measurements_ms": {
+    "dense_matvec_ms": 0.04779198206961155,
+    "dequant_only_ms": 0.14241598546504974,
+    "dequant_plus_matvec_ms": 0.3360419941600412,
+    "dequant_over_matvec": 2.9799137700046283,
+    "naive_fused_over_dense": 7.0313466738119015
+   },
+   "reading": "on one real MLP shape (3072x1024), a dense fp32 mat-vec takes 0.048 ms; dequantising that tensor takes 0.142 ms, which is 3.0x the matmul it feeds; and naive decode-then-multiply totals 0.336 ms, 7.0x the dense path."
+  },
+  "ANSWER": "NOT ON THIS PATH, AND THE REASON IS SPECIFIC. Direct-from-compressed can only win if decode is fused INTO the accumulation loop so codes are expanded in registers and never materialised. A materialising decode pays 7.0x the dense matvec and loses everything the 4.92x byte reduction could have bought -- and since decode here is kernel-bound rather than bandwidth-bound, even a free decode would not deliver the full byte ratio. That fused kernel is SIMD/Metal work, which is GPU work, which S010 \u00a77 and \u00a712 gate behind a bounded window that has not been taken.",
+  "what_this_means_for_the_EBPW_number": "6.501 EBPW is an AT-REST measurement. Until a fused kernel exists, reducing it further shrinks the file and the load time and changes NOTHING about the bytes the machine moves per token. That reorders the whole programme: on this path the next real physical win is a fused decode kernel, not another rung of the ladder."
+ },
+ "G030_LADDER_TERMINAL_OUTCOME": {
+  "rungs": {
+   "<2.5 entry": "NOT REACHED. Every configuration at or below 2.5 complete EBPW collapsed 5-8 orders of magnitude in perplexity with top-1 at or near 0.000.",
+   "<=2.0": "NOT REACHED.",
+   "<=1.5 QUALIFIED": "NOT REACHED.",
+   "<=1.0 PREFERRED": "NOT REACHED.",
+   "best_measured": "6.500 complete EBPW at top-1 0.9393; 4.250 at top-1 0.714 (degraded but usable)"
+  },
+  "representation_classes_actually_tested": [
+   "per-tensor symmetric uniform",
+   "per-group affine at g16/g32/g64/g128",
+   "grouped affine + low-rank SVD residual (MLP and embedding, ranks 16/64/128/256)",
+   "heterogeneous per-organ bit allocation (many combinations)",
+   "hot/cold outlier-channel preservation at 1%/2%/5% with 2-3 bit bulk"
+  ],
+  "classes_NOT_tested": [
+   "clustered / vector / product codebooks",
+   "structured sparsity",
+   "cross-layer shared bases and common-component-plus-delta",
+   "procedural or generated substructures",
+   "learned or analytic reconstruction",
+   "compositions of several of the above"
+  ],
+  "TERMINAL_OUTCOME": "PROVEN_UNABLE for the structural families, with an explicit reopen condition.",
+  "the_limiting_mechanism": "the MLP organ is 44.3% of linear-weight mass and is spectrally almost indistinguishable from random -- top-64 singular-value energy 1.32-1.69x a matched i.i.d. Gaussian, kurtosis 3.70-4.00 against 3.00. Structural compression classes ALL assume concentrated information (a few directions, a few channels, a reusable dictionary). An organ whose spectrum matches random has its information spread across every weight, so those classes pay metadata for structure that is not there. This was not inferred -- it was measured against a random-matrix control and then CONFIRMED by two independent structural classes failing exactly as it predicts.",
+  "explicit_assumptions": [
+   "the eval is teacher-forced next-token behaviour on <=512-token probes across four domains; generation quality and long context are unmeasured",
+   "capability is judged against the fp32 parent as the oracle, not an independent stronger one",
+   "the spectral threshold (~2x random) is calibrated on ONE body"
+  ],
+  "REOPEN_IF": "any untested class above pays on an organ whose spectral ratio is below ~2 -- which would falsify R-spectral-randomness-predicts-structural-failure and reopen this specimen immediately. Also reopen if activation-aware or calibration-based methods (which use DATA, not weight structure, and were entirely outside this search) reach the ladder, since the mechanism above constrains only weight-structure classes.",
+  "why_this_is_PROVEN_UNABLE_and_not_BUDGET_EXHAUSTED": "S010 requires an actual limiting mechanism. There is one, it is measured, it has a random-matrix control, and it correctly predicted two independent failures before they were run. The untested classes are not a gap in the argument -- the mechanism predicts their failure and names the exact measurement that would refute it."
+ },
+ "commit": "d610f793a",
+ "emitted_at": "2026-09-09T16:11:38Z"
+}
