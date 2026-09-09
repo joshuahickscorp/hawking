@@ -605,8 +605,24 @@ def make_handler(backend: Any, identity: str, *, greedy: bool,
                 # COMPACT WHEN THE CONVERSATION OUTGROWS ITS SHARE. Turns leave
                 # the working set into the session archive; the invariant
                 # leading region is untouched so the prefix cache still hits.
-                window = int(health.get("prompt_window")
-                              or health.get("context_window") or 8192)
+                # `context_window`, NOT `prompt_window`. Using the ceiling here
+                # was a REGRESSION and it took the campaign down: cycle 82 got
+                # "prompt is 8807 tokens and native max_seq_len is 8192; no
+                # generation token fits", repeatedly, as a 502.
+                #
+                # The double-reserve diagnosis was right and the fix was wrong.
+                # `usable_input_tokens` (5632) was reserving generation room a
+                # second time AND, unknowingly, absorbing a ~2x error in the
+                # CHARS_PER_TOKEN=4 estimate: 0.55 * 8192 = 4505 ESTIMATED tokens
+                # measured 8807 REAL ones, because code and JSON tokenise far
+                # worse than the prose that heuristic was tuned on. Removing the
+                # slack exposed the estimator, and the estimator is the thing
+                # that is actually wrong.
+                #
+                # Until the budget is computed from a real token count, the
+                # conservative window is the correct one. `prompt_window` stays
+                # in /health as information; it is not an admission bound.
+                window = int(health.get("context_window") or 8192)
                 messages, compaction = compact(messages, session, window=window)
                 if compaction.compacted:
                     body = {**body, "messages": messages}
@@ -661,8 +677,9 @@ def make_handler(backend: Any, identity: str, *, greedy: bool,
                     # backend raised a bare 502. Same window, same headroom
                     # share compact() already uses -- not a new policy.
                     from .chat_state import CHARS_PER_TOKEN, CONTEXT_SHARE
-                    window_tokens = int(health.get("prompt_window")
-                                        or health.get("context_window") or 8192)
+                    # Same regression, same fix: the conservative window until
+                    # the estimate is replaced by a real count.
+                    window_tokens = int(health.get("context_window") or 8192)
                     answer, trace = run_with_tools(
                         _complete, with_contract, registry, native=native,
                         cache=stores.get("cache"),
