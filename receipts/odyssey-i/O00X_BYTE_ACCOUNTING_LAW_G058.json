@@ -1,0 +1,53 @@
+{
+ "obligation": "G058 \u2014 BYTE-ACCOUNTING LAW",
+ "date": "2026-09-09",
+ "law": "Complete-system EBPW counts EVERY byte the artifact requires to run: payload, scales, zeros, norms, embeddings, manifest, and any index a codec needs to find its own corrections. A rate quoted over one component is not the rate of the system, and the gap between the two has been large enough to invert conclusions.",
+ "why_it_is_a_law_and_not_a_preference": "every clause below was earned by a measurement that was wrong first",
+ "instances": [
+  {
+   "case": "BitNet b1.58 -- the founding lesson",
+   "claim": "2-bit linear weights",
+   "complete_system": "~3.91 EBPW",
+   "gap": "1.96x",
+   "what_the_missing_bytes_were": "everything that is not a linear layer -- embeddings, norms, and the non-ternary tensors the body still needs to run"
+  },
+  {
+   "case": "Mistral 24B double-count (caught this session's census)",
+   "defect": "a *.safetensors glob summed consolidated.safetensors AND its 10-shard twin, reporting 48.02B for a 24B model",
+   "how_it_was_caught": "an exact factor of two is a counting bug until proven otherwise",
+   "verification": "585 tensors in each container, zero name overlap, identical shape and dtype multisets",
+   "fix": "shard preference plus an assertion, in the producer"
+  },
+  {
+   "case": "F8_E8M0 absent from the dtype width table",
+   "defect": "an unknown dtype silently defaulted to 2 bytes",
+   "cost": "DeepSeek-V4 inflated by 8 GiB",
+   "fix": "the width table now RAISES on an unknown dtype rather than defaulting. A guess that looks like a measurement is worse than a crash."
+  },
+  {
+   "case": "NX artifact vs running working set",
+   "measured": "462 MiB artifact against a 2384 MB dense fp32 working set, 4.92x",
+   "consequence": "the 3.10x file-size win does not survive contact with execution; the running set is LARGER than the bf16 parent. File size and resident size are different numbers and must be reported separately."
+  },
+  {
+   "case": "sparse residual (G049, this session)",
+   "applied": "index bytes counted at full ceil(log2(N)) = 25 bits per correction plus 16 payload, no delta coding or run-length that would need its own decoder to be honest",
+   "consequence": "with honest indices the class is refuted by construction; with the indices omitted it would have looked like a free 2.6% repair"
+  },
+  {
+   "case": "activation-aware placement (G047, this session)",
+   "applied": "both arms write the SAME per-group affine format, so payload, scale and zero bytes are identical by construction",
+   "consequence": "the comparison cannot be explained away by byte accounting at all -- which is what makes a +0.02 top-1 difference meaningful"
+  }
+ ],
+ "operational_rules": [
+  "count at the artifact, not at the tensor a codec happens to touch",
+  "an unknown dtype raises; it never defaults",
+  "an exact factor of two between two counts is a counting bug until proven otherwise",
+  "report file size and resident working set as separate numbers, never one as the other",
+  "any index, offset or side table a decoder needs is payload",
+  "prefer arms whose byte counts are identical BY CONSTRUCTION, so accounting cannot be the explanation",
+  "fix the producer, not the receipt -- a corrected number leaves the thing that wrote it still wrong"
+ ],
+ "enforcement_in_this_campaign": "gravity_lib.apply_codec returns complete accounting (payload + every scrap of metadata) rather than a payload rate; mlp_bytes in the G047 harness computes the figure once and both arms assert against it; anatomy_from_bytes raises on an unknown dtype and reports tensor bytes and on-disk bytes side by side."
+}
