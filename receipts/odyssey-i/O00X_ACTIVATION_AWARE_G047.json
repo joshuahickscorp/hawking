@@ -222,5 +222,7 @@
   "verdict": "MECHANISM HOLDS AT BOTH BIT WIDTHS. Held out on a disjoint corpus: activation-aware on down_proj alone gains +0.0216 top-1 at 4 bits and +0.0215 at 3; on gate/up alone it LOSES 0.0107 and 0.0166. The whole MLP number was a blend of a real win on one organ and a real loss on two.",
   "and_it_is_the_better_configuration": "At 3 bits, writer-only scores ppl 19.906 / KL 557.3 against all-MLP's 20.887 / 591.2 -- better on both, at identical bytes and a third of the compute, because two thirds of the GPTQ passes were making things worse.",
   "compiler_rule": "Apply error-compensating quantization per ORGAN, gated on the concentration of that organ's input covariance. Measure r99 of H first; on this body the useful side of the line is below ~50% of the input dimension and the harmful side is above ~60%. The measurement is one eigendecomposition per input site and costs seconds."
- }
+ },
+ "odyssey_stage": "5 DEEP GRAVITY ENTERED",
+ "odyssey_stage_note": "declared by the receipt that earned it. Stages are not inferred from filenames -- two attempts at that produced confident wrong counts."
 }

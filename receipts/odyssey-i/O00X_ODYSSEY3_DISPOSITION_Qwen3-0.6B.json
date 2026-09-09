@@ -82,5 +82,8 @@
   "gated_on": "GPU. 30B does not fit the CPU path this chain used, and the HCLI resident holds the device."
  },
  "commit": "2e573f3b6",
- "emitted_at": "2026-09-09T15:55:12Z"
+ "emitted_at": "2026-09-09T15:55:12Z",
+ "odyssey_stage": "10 ODYSSEY III ATTACKED",
+ "specimen": "Qwen3-0.6B",
+ "odyssey_stage_note": "declared by the receipt that earned it. Stages are not inferred from filenames -- two attempts at that produced confident wrong counts."
 }

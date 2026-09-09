@@ -201,5 +201,16 @@
   "iLLaDA-8B": "HOLDS: readers 2.76-7.23x, writers 1.00-1.08x."
  },
  "classification_caveat": "Roles are classified by NAME informed by architecture, not by a mechanical suffix rule, and RWKV is why: it names BOTH a reader and a writer 'value'. att.value takes the residual (d=4096) and ffn.value is the FFN's down-projection (d=16384). A bare-suffix classifier gets one of them wrong. The earlier dimension-based classifier (in_dim == hidden_size) is wrong for a different reason and was refuted by this same transfer test.",
- "cost": "28-544s CPU per specimen, weights only, no forward pass, no tokenizer, no GPU"
+ "cost": "28-544s CPU per specimen, weights only, no forward pass, no tokenizer, no GPU",
+ "odyssey_stage": "4 ODYSSEY II / TRANSFER TESTED",
+ "odyssey_stage_specimens": [
+  "Qwen3-0.6B",
+  "ModernBERT-large",
+  "bitnet-b1.58-2B-4T-bf16",
+  "LFM2.5-2.6B-Base",
+  "mamba3-mimo-1.5b",
+  "RWKV7-13.3B-20260805",
+  "iLLaDA-8B-Base"
+ ],
+ "odyssey_stage_note": "declared by the receipt that earned it. Stages are not inferred from filenames -- two attempts at that produced confident wrong counts."
 }

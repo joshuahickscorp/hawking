@@ -33,5 +33,7 @@
  "mechanism": "The near-randomness result says the second-order structure is UNEXPLOITABLE. It does not say the tensor is random. The values are doing precise work that 4 bits of resolution preserves and a matched draw does not, which is exactly what a body with spread information should look like: no summary of the tensor reproduces it, but a coarse quantization of every entry does.",
  "consequence_for_the_class": "Procedural generation without a correction is dead at the tensor level on this specimen. Procedural WITH a correction reduces to storing the correction, which is the sparse/residual class already refuted at matched EBPW (G049). The class closes without needing a further search.",
  "reopen_condition": "A specimen with tensors that are genuinely generated -- fixed positional tables, sinusoidal or otherwise deterministic bases, tied or repeated blocks. Those are found by byte-identity checks, not by spectral arguments, and cost nothing to look for.",
- "artifacts": "procedural.py / procedural.json"
+ "artifacts": "procedural.py / procedural.json",
+ "odyssey_stage": "5 DEEP GRAVITY ENTERED",
+ "odyssey_stage_note": "declared by the receipt that earned it. Stages are not inferred from filenames -- two attempts at that produced confident wrong counts."
 }

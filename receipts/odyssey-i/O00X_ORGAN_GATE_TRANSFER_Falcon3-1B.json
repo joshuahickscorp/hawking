@@ -179,5 +179,7 @@
    "cost": "~30 minutes single-threaded; now 6 sampled layers in float32, with the per-layer range reported so the sample is auditable"
   }
  ],
- "cost": "543.9s CPU per specimen end to end"
+ "cost": "543.9s CPU per specimen end to end",
+ "odyssey_stage": "4 ODYSSEY II / TRANSFER TESTED",
+ "odyssey_stage_note": "declared by the receipt that earned it. Stages are not inferred from filenames -- two attempts at that produced confident wrong counts."
 }

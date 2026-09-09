@@ -71,29 +71,53 @@ def collect():
         if meta["family"] is not None:
             stage["2 CHEAPLY CENSUSED"].add(key)
 
-    # Everything else is evidence-driven: a stage is claimed only if a receipt
-    # mentions the specimen AND the receipt is of the right kind.
-    RULES = [
-        ("3 ODYSSEY I COMPLETE",          r"ODYSSEY_I|DISPOSITION|_ANATOMY|CENSUS"),
-        ("4 ODYSSEY II / TRANSFER TESTED", r"CROSS_LAYER|TRANSFER|ORGAN_GATE"),
-        ("5 DEEP GRAVITY ENTERED",         r"GRAVITY|ACTIVATION_AWARE|SPARSE_RESIDUAL|PROCEDURAL|STRUCTURAL_CLASSES"),
-        ("6 NR CREATED",                   r"\bNR\b|NOETIC_REPRESENT"),
-        ("7 NOETIC EXECUTABLE",            r"NOETIC"),
-        ("8 NX EXECUTED",                  r"\bNX\b"),
-        ("9 PHYSICALLY OPTIMIZED",         r"PHYSICAL|DIRECT_EXECUTION|FUSED"),
-        ("10 ODYSSEY III ATTACKED",        r"ODYSSEY3|OIII|ODYSSEY_III"),
-        ("11 SEALED / DISPOSITIONED",      r"DISPOSITION|SEAL"),
-    ]
+    # STAGES ARE DECLARED, NOT GUESSED.
+    #
+    # Two attempts at inferring them from filenames produced confident wrong
+    # numbers: `\bNX\b` never matches `_NX_` (underscore is a word character, so
+    # there is no boundary) and reported ZERO NX specimens while one exists; and
+    # a "PHYSICAL" filename match promoted fifteen bodies because one receipt
+    # DISCUSSES direct execution and names them all in its prose. Tightening the
+    # patterns moved the errors around rather than removing them.
+    #
+    # A counter that is wrong is worse than no counter, because it gets quoted.
+    # So the deep stages are now DECLARED by the receipt that earned them --
+    # `"odyssey_stage": "8 NX EXECUTED"` -- and anything not declared is counted
+    # as UNDECLARED rather than inferred. Backfilling those declarations is
+    # work; pretending to know without them is a fabricated measurement.
+    DECLARED = 0
     for path, text in _texts():
-        hay = f"{path.name}\n{text}"
-        low = text.lower()
-        hits = [st for st, pat in RULES if re.search(pat, path.name, re.I)]
-        if not hits:
+        try:
+            rec = json.loads(text)
+        except Exception:
+            continue
+        if not isinstance(rec, dict):
+            continue
+        st_name = rec.get("odyssey_stage")
+        spec = rec.get("specimen") or rec.get("model") or ""
+        many = rec.get("odyssey_stage_specimens")
+        # A receipt covering SEVERAL specimens has no single `specimen` key, and
+        # requiring one silently dropped the cross-layer transfer receipt --
+        # seven bodies declared, two counted.
+        if not st_name or not (spec or many):
+            continue
+        for one in (many if isinstance(many, list) and many else [spec]):
+            key = _norm(one)
+            if key in registered and st_name in STAGES:
+                stage[st_name].add(key)
+        DECLARED += 1
+
+    # Stage 3 is the one exception, and only because its evidence is
+    # unambiguous: a disposition receipt whose FILENAME carries the specimen.
+    for path, _text in _texts():
+        n = path.name.lower()
+        if "disposition" not in n and "odyssey_i" not in n:
             continue
         for key in registered:
-            if key in low or key in path.name.lower():
-                for st in hits:
-                    stage[st].add(key)
+            if key in n:
+                stage["3 ODYSSEY I COMPLETE"].add(key)
+                stage["11 SEALED / DISPOSITIONED"].add(key)
+    stage["_declared_receipts"] = DECLARED  # type: ignore[index]
     return registered, stage
 
 
@@ -106,6 +130,14 @@ def report(registered, stage, verbose=False):
         drop = "" if prev is None else f"  ({n - prev:+d} vs previous stage)"
         print(f"  {st:32s} {n:3d}  {bar}{drop}")
         prev = n
+    declared = len(stage.get("_declared_receipts", ())) if not isinstance(
+        stage.get("_declared_receipts"), int) else stage["_declared_receipts"]
+    print(f"\n  stages 4-10 are DECLARED by receipts, not inferred. "
+          f"{declared} receipt(s) currently declare one.")
+    if not declared:
+        print("  -> every deep stage reads 0 because no receipt declares "
+              "`odyssey_stage` yet. That is UNDECLARED, not zero progress, and "
+              "backfilling it is real work rather than a heuristic.")
     print("\nCENSUSED is not ODYSSEY'D: stage 2 minus stage 4 is the untouched population.")
     gap = len(stage.get("2 CHEAPLY CENSUSED", ())) - len(stage.get("4 ODYSSEY II / TRANSFER TESTED", ()))
     print(f"  {gap} specimens censused but never transfer-tested.")
