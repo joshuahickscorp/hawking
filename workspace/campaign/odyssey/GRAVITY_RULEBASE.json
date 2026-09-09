@@ -323,13 +323,15 @@
   },
   {
    "id": "R-error-compensation-inverts-below-three-bits",
-   "status": "MEASURED",
+   "status": "MEASURED, and SPECIMEN-DEPENDENT (2 specimens)",
    "specimens": [
-    "Qwen3-0.6B"
+    "Qwen3-0.6B",
+    "LFM2.5-1.2B-Instruct"
    ],
    "statement": "GPTQ-style error compensation helps at 4 and 3 bits and is actively harmful at 2 (held-out top-1 0.0029 vs RTN 0.0459). Do not carry an activation-aware win down the bit ladder on the assumption it holds.",
    "mechanism": "Compensation assumes a small perturbation and a locally quadratic loss. At 2 bits the residual is comparable to the weight, so propagated error is injected rather than absorbed.",
-   "evidence": "receipts/odyssey-i/O00X_ACTIVATION_AWARE_G047.json"
+   "evidence": "receipts/odyssey-i/O00X_ACTIVATION_AWARE_G047.json",
+   "amendment": "the inversion point is not fixed at 2 bits. On Qwen3-0.6B compensation helps at 4 and 3 and inverts at 2. On LFM2.5-1.2B EVERY arm is already worse than round-to-nearest at 3 bits (-0.0147, -0.0714, -0.0948). A whole bit earlier. Treat 'where it inverts' as a per-specimen measurement, not a constant."
   },
   {
    "id": "R-residual-readers-align-writers-do-not",
@@ -402,21 +404,26 @@
   },
   {
    "id": "R-error-compensation-is-per-organ-gated-on-input-concentration",
-   "status": "REFUTED IN ITS STATED FORM (2 specimens); weaker form is post-hoc and untested",
+   "status": "THRESHOLD REFUTED BY PRE-REGISTERED TEST (3 specimens). Ordering survives as a RANKING only.",
    "specimens": [
     "Qwen3-0.6B",
-    "Falcon3-1B-Instruct"
+    "Falcon3-1B-Instruct",
+    "LFM2.5-1.2B-Instruct"
    ],
    "kind": "COMPILER RULE -- changes what the codec does, not just what is known",
    "statement": "Error-compensating quantization helps only where the ORGAN'S INPUT COVARIANCE IS CONCENTRATED, and hurts where it is not. On Qwen3-0.6B, down_proj (input r99 = 40.2% of its dimension) gains +0.0216 held-out top-1 at 4 bits and +0.0215 at 3; gate/up (input r99 = 60.5%, the residual stream) LOSE 0.0107 and 0.0166. Applying it everywhere averages a win and a loss together and is strictly worse than applying it where it belongs.",
    "how_to_use": "Eigendecompose H per input site, take r99 as a fraction of the input dimension, and run the compensating pass only on organs below the line (~50% here). Costs one eigendecomposition per site, seconds.",
    "payoff": "At 3 bits, writer-only scores ppl 19.906 / KL 557.3 vs all-MLP's 20.887 / 591.2 -- better at identical bytes and a third of the compute.",
    "why_it_is_evidence_and_not_a_story": "The prediction was derived from the stage-1 anisotropy measurement and written down BEFORE the arms were run, and it points the opposite way to the intuitive 'the residual stream is the structured object'.",
-   "evidence": "receipts/odyssey-i/O00X_ACTIVATION_AWARE_G047.json + receipts/odyssey-i/O00X_ORGAN_GATE_TRANSFER_Falcon3-1B.json",
+   "evidence": "receipts/odyssey-i/O00X_PREREG_ORGAN_GATE_THRESHOLD.json + receipts/odyssey-i/O00X_ORGAN_GATE_THRESHOLD_REFUTED_LFM2.json",
    "refutation": "Carried to Falcon3-1B the WITHIN-MODEL ORDERING holds at 4 bits (predicted gainer +0.0079, predicted loser -0.0029) and INVERTS at 3 (+0.0019 against +0.0137). And the practical advice reverses: on Qwen3-0.6B writer-only beat all-MLP at 3 bits, while on Falcon3-1B all-MLP is best at both widths. A rule that reverses at a bit width and gives opposite advice on two bodies is not the rule as stated.",
    "weaker_form_NOT_YET_TESTED": "an ABSOLUTE threshold on r99 rather than a within-model ranking fits all four measurements: Qwen down_proj 0.402 gains, Qwen gate/up 0.605 loses, Falcon down_proj 0.094 gains, Falcon gate/up 0.287 gains -- so a threshold between 0.287 and 0.605. Falcon's organs are BOTH concentrated by Qwen's standard, which would explain why both gain and all-MLP wins there. FITTED AFTER SEEING THE POINTS. It is a hypothesis for a third specimen and the threshold must be declared before that run or the test is worthless.",
    "the_honest_alternative": "the r99 signal may simply be weak, with Falcon's -0.0029 to +0.0137 inside run-to-run noise on one corpus. A third specimen decides between 'threshold' and 'no rule'.",
-   "what_still_stands": "activation-aware placement beats round-to-nearest at byte-identical cost on BOTH bodies -- that is unaffected. What is refuted is the claim about WHICH ORGANS to apply it to."
+   "what_still_stands": "activation-aware placement beats round-to-nearest at byte-identical cost on BOTH bodies -- that is unaffected. What is refuted is the claim about WHICH ORGANS to apply it to.",
+   "prereg_outcome": "A threshold of 0.35 was DECLARED IN ADVANCE and committed (50a5559d8) before the LFM2.5-1.2B run. LFM2's w1/w3 sit at r99 0.345 -- below the threshold, so predicted to gain -- and LOST 0.0117 held-out top-1 at 4 bits. Refuted by 0.005 of r99. A threshold of 0.30 would have passed, which is precisely why it was pre-registered; it is NOT being moved.",
+   "what_survives": "the within-model ORDERING only: the organ with lower r99 gains more than the organ with higher r99. Holds 3/3 at 4 bits, 2/3 at 3 bits (Falcon inverts at 3b). It ranks organs; it does not decide whether to treat any of them.",
+   "configuration_does_not_transfer_at_all": "three specimens, three answers to 'which organs to treat': Qwen writer-only wins at 3b, Falcon all-MLP wins at both widths, LFM2 all-MLP is WORST at both widths.",
+   "prescribed_procedure": "compute r99 per organ as a cheap RANKING (seconds), then run a 4-arm matched-EBPW sweep per specimen to decide what to treat. Do not inherit another body's configuration, and do not spend a GPU window on organ selection."
   },
   {
    "id": "R-a-near-random-spectrum-does-not-license-a-random-draw",

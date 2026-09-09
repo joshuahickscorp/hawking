@@ -1,0 +1,160 @@
+{
+ "obligation": "test of the PRE-REGISTERED organ-gate threshold (receipts/odyssey-i/O00X_PREREG_ORGAN_GATE_THRESHOLD.json)",
+ "date": "2026-09-09",
+ "specimen": "LFM2.5-1.2B-Instruct",
+ "VERDICT": "THE PRE-REGISTERED THRESHOLD IS REFUTED. The weaker ordering claim survives.",
+ "what_was_declared_in_advance": {
+  "threshold": 0.35,
+  "prediction": "at 4 bits, every MLP organ with r99 below 0.35 gains; every organ above 0.35 does not",
+  "committed_as": "50a5559d8, before the run"
+ },
+ "what_was_measured": {
+  "w2": {
+   "r99": 0.099,
+   "predicted": "GAIN (below 0.35)",
+   "measured_4b": 0.0196,
+   "outcome": "GAINED -- prediction correct"
+  },
+  "w1_w3": {
+   "r99": 0.345,
+   "predicted": "GAIN (0.345 is BELOW the declared 0.35)",
+   "measured_4b": -0.0117,
+   "outcome": "LOST -- PREDICTION WRONG"
+  }
+ },
+ "the_refutation_in_one_line": "w1/w3 sit at r99 0.345, which is below the declared threshold of 0.35, so the threshold predicted they would gain. They lost 0.0117 held-out top-1 at 4 bits. That is a refutation by 0.005 of r99.",
+ "why_the_near_miss_is_the_point_and_not_an_excuse": "A threshold of 0.30 would have passed. That is EXACTLY why it was pre-registered. Moving it now to accommodate the result would convert a refutation into the same post-hoc fit the pre-registration existed to prevent, and the fitted value would once again predict nothing. The threshold is refuted at 0.35 and is not being moved.",
+ "what_survives": {
+  "claim": "the WITHIN-MODEL ORDERING -- the organ with lower r99 gains more than the organ with higher r99",
+  "status_across_three_specimens": {
+   "Qwen3-0.6B": "holds at 4b and 3b",
+   "Falcon3-1B": "holds at 4b, INVERTS at 3b",
+   "LFM2.5-1.2B": "holds at 4b and 3b"
+  },
+  "so": "3/3 at 4 bits, 2/3 at 3 bits. Real but not universal, and it orders organs rather than deciding whether to treat any of them."
+ },
+ "and_the_practical_advice_still_does_not_transfer": {
+  "gptq_all_vs_best_single_organ": {
+   "Qwen3-0.6B": "writer-only beats all-MLP at 3b",
+   "Falcon3-1B": "all-MLP is BEST at both widths",
+   "LFM2.5-1.2B": "all-MLP is WORST at both widths (4b 0.7869 vs rtn 0.7947; 3b 0.5484 vs rtn 0.6432)"
+  },
+  "conclusion": "three specimens, three different answers to 'which organs should be treated'. There is no transferable configuration rule yet."
+ },
+ "a_further_negative": "On LFM2.5 at 3 bits EVERY activation-aware arm is WORSE than round-to-nearest (gainer -0.0147, loser -0.0714, all -0.0948). The 2-bit inversion found on Qwen3-0.6B arrives a whole bit earlier here, so 'compensation inverts below three bits' is itself specimen-dependent.",
+ "verifier": {
+  "destroyed_control_top1": 0.0108,
+  "note": "0.0108, under the 0.05 bar, so the verifier rejects a destroyed body on this specimen too"
+ },
+ "full_results": [
+  {
+   "bits": 4,
+   "arm": "rtn",
+   "organs": [],
+   "hessians_needing_extra_damping": 0,
+   "perplexity": 36.4857,
+   "top1_agreement_vs_fp32": 0.7947,
+   "kl_from_fp32": 205.59375
+  },
+  {
+   "bits": 4,
+   "arm": "gptq_predicted_gainer",
+   "organs": [
+    "w2"
+   ],
+   "hessians_needing_extra_damping": 1,
+   "perplexity": 33.0848,
+   "top1_agreement_vs_fp32": 0.8143,
+   "kl_from_fp32": 178.315186
+  },
+  {
+   "bits": 4,
+   "arm": "gptq_predicted_loser",
+   "organs": [
+    "w3"
+   ],
+   "hessians_needing_extra_damping": 1,
+   "perplexity": 35.9605,
+   "top1_agreement_vs_fp32": 0.783,
+   "kl_from_fp32": 248.062958
+  },
+  {
+   "bits": 4,
+   "arm": "gptq_all",
+   "organs": [
+    "w1",
+    "w2",
+    "w3"
+   ],
+   "hessians_needing_extra_damping": 2,
+   "perplexity": 36.9799,
+   "top1_agreement_vs_fp32": 0.7869,
+   "kl_from_fp32": 248.694962
+  },
+  {
+   "bits": 3,
+   "arm": "rtn",
+   "organs": [],
+   "hessians_needing_extra_damping": 2,
+   "perplexity": 30.1268,
+   "top1_agreement_vs_fp32": 0.6432,
+   "kl_from_fp32": 811.746948
+  },
+  {
+   "bits": 3,
+   "arm": "gptq_predicted_gainer",
+   "organs": [
+    "w2"
+   ],
+   "hessians_needing_extra_damping": 3,
+   "perplexity": 37.1964,
+   "top1_agreement_vs_fp32": 0.6285,
+   "kl_from_fp32": 872.437622
+  },
+  {
+   "bits": 3,
+   "arm": "gptq_predicted_loser",
+   "organs": [
+    "w3"
+   ],
+   "hessians_needing_extra_damping": 3,
+   "perplexity": 52.0043,
+   "top1_agreement_vs_fp32": 0.5718,
+   "kl_from_fp32": 1099.068237
+  },
+  {
+   "bits": 3,
+   "arm": "gptq_all",
+   "organs": [
+    "w1",
+    "w2",
+    "w3"
+   ],
+   "hessians_needing_extra_damping": 3,
+   "perplexity": 66.1285,
+   "top1_agreement_vs_fp32": 0.5484,
+   "kl_from_fp32": 1462.834717
+  }
+ ],
+ "r99": {
+  "w1": 0.3447265625,
+  "w2": 0.099365234375,
+  "w3": 0.3447265625
+ },
+ "r99_per_layer_range": {
+  "w1": [
+   0.259,
+   0.375
+  ],
+  "w2": [
+   0.073,
+   0.11
+  ],
+  "w3": [
+   0.259,
+   0.375
+  ]
+ },
+ "cost": "607.2s CPU",
+ "what_hawking_does_differently_next": "Do NOT spend a GPU window or a deep search on activation-aware organ selection for a new body on the strength of a prior body's configuration. The r99 ordering is worth computing (seconds) as a RANKING, but which organs to treat, and whether to treat any at 3 bits, must be measured per specimen with a matched-EBPW control. That is a cheap 4-arm sweep and it is now the prescribed procedure rather than an inherited setting."
+}
