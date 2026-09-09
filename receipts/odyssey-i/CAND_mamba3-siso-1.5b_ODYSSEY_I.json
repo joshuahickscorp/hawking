@@ -1,0 +1,85 @@
+{
+ "schema": "hawking.odyssey.candidate_discovery.v1",
+ "candidate_id": "CAND-mamba3-siso-1.5b",
+ "not_yet_admitted_oxx": true,
+ "_evidence": "MEASURED (config.json + HF download metadata, on-disk, read-only ModelLake) + DERIVED (byte accounting validated against the model card's stated param count)",
+ "_label": "Odyssey I DISCOVERY ONLY -- no Doctor/battery/Gravity/NX yet (those need mlx load, gated per S002/S003 while HCLI's resident is active; this is a static/CPU-only pass)",
+ "identity": {
+  "name": "state-spaces/mamba3-siso-1.5b",
+  "commit": "5cfc721542ec9ccee768088b2fd6b7e8101219d8",
+  "weight_blob_sha256_or_etag": "3deee40f7496390b344997d26a2fcc84897b0406b36c50978b90248177254075",
+  "source_path": "/Volumes/corpdrive/hawking-modellake/specimens/state-spaces--mamba3-siso-1.5b@5cfc721542ec",
+  "weights_file": "pytorch_model.bin",
+  "format": "pytorch pickled state_dict",
+  "tokenizer": "meta-llama/Llama-3.1-8B (per model card, not co-located -- external dependency)",
+  "license": "apache-2.0",
+  "training_corpus": "100B tokens, FineWeb-Edu (per model card)",
+  "paper": "arXiv:2603.15569 'Mamba-3: Improved Sequence Modeling using State Space Principles' (2026 -- published after this session's knowledge cutoff; architectural claims below are config-derived, not paper-verified)"
+ },
+ "architecture": {
+  "family": "pure SSM (Mamba-3), ZERO attention layers -- attn_layer_idx=[] in config, confirmed",
+  "kind": "dense-recurrent (not MoE, not hybrid)",
+  "d_model": 2048,
+  "n_layer": 24,
+  "d_intermediate": 4096,
+  "vocab_size": 128256,
+  "tie_embeddings": true,
+  "ssm": {
+   "variant": "Mamba3 SISO (single-in-single-out, per model card -- distinguishes from a MIMO variant the same paper apparently also describes; ssm_cfg.is_mimo=false confirms)",
+   "d_state": 128,
+   "expand": 2,
+   "headdim": 64,
+   "n_heads": 64,
+   "ngroups": 1,
+   "chunk_size": 64,
+   "rope_fraction": 0.5,
+   "rope_fraction_caveat": "config declares rope_fraction=0.5 -- some fraction of the SSM path mixes in rotary position information. NOT independently verified what this changes in the recurrence (the source paper postdates this session's knowledge; not guessing at semantics without reading it)."
+  },
+  "mlp": "gated MLP per block (d_model<->d_intermediate, exact gate/up/down split not read from a safetensors index -- this specimen ships as a single pickled state_dict, not sharded safetensors, so no per-tensor manifest was cheaply available for this pass)"
+ },
+ "byte_accounting": {
+  "stored_bytes": 2989539307,
+  "stored_gib": 2.784,
+  "params_from_filesize_bf16": 1494769654,
+  "params_from_filesize_B": 1.4948,
+  "model_card_stated_params_B": 1.49,
+  "cross_check_rel_err_pct": 0.32
+ },
+ "state_structure": {
+  "kv_cache": "NONE -- zero attention layers, no KV concept applies at all",
+  "ssm_head_state_bytes_total_CONFIRMED": 25165824,
+  "ssm_head_state_bytes_total_CONFIRMED_MiB": 24.0,
+  "ssm_head_state_bytes_per_layer_CONFIRMED": 1048576,
+  "conv_state_contribution": "NOT COMPUTED -- config.json's ssm_cfg has NO d_conv key (has_d_conv=False). Mamba2-family models typically declare one; Mamba3-SISO here does not, so either the short-conv step is architecturally absent/changed in Mamba3, or it uses an undeclared default this pass does not assume. SCAR: an EARLIER computation this same session (the A5 SSM-crossover transfer test) silently hardcoded d_conv=4 for this exact specimen without checking -- that number was UNVERIFIED and should be treated as such if referenced.",
+  "note": "the CONFIRMED (conv-free) state is constant regardless of context length (the defining SSM property, per this session's A5/O001 finding, R-ssm-state-vs-kv-crossover -- this specimen is the rule's limit case: crossover is infinite since there is no KV term at all). Total state (with whatever conv contribution actually exists) would be somewhat larger than the confirmed figure but is still expected to be a small fraction of the 2.78GB weight store either way."
+ },
+ "context_capability": {
+  "stated_context_length": 2048,
+  "assessment": "SHORT by current standards (most 2026 models: 8K-128K+). A real, notable bottleneck -- not something Gravity/quantization fixes; it is a training-time property. Relevant directly to Star/Resident evaluation below: HCLI's own working-set prompts (objective + plan + evidence, measured this session at several hundred to a few thousand chars even after compaction) would plausibly not fit comfortably, let alone a real multi-file repo context. Disqualifying for Resident candidacy AS-IS without a context-extension pass."
+ },
+ "execution_feasibility_this_machine": {
+  "stored_footprint_GiB": 2.784,
+  "machine": "M3 Ultra 96GB (per prior session memory)",
+  "assessment": "trivially small footprint (2.78 GiB) vs 96GB unified memory -- loading this specimen would not remotely approach the swap/memory-pressure concerns that gated other campaign work. No GPU/mlx load attempted this pass (S002/S003: do not contend with the active HCLI resident for cheap Odyssey work; this specimen is small enough that a future load would be a short, low-risk YIELD window when one is next taken for a real reason)."
+ },
+ "obvious_representation_opportunities": [
+  "Pure-SSM state (~24 MiB confirmed, conv contribution unverified but plausibly similar order) is already tiny relative to the 2.78GB weight store (<1%) -- Gravity leverage here is almost entirely in the WEIGHT bytes (dense SSM projections + gated MLP), not the state. This is the OPPOSITE profile from a hybrid/MoE specimen where organ-heterogeneous allocation (this session's new rule) has a large lever -- there is no 'protect one organ, push another' split available since there is no MoE/attention organ to differentiate against.",
+  "The gated MLP (d_model<->d_intermediate, 2048<->4096) is architecturally IDENTICAL in shape to a standard dense-transformer MLP block -- existing dense-architecture Gravity priors (cross-layer/cross-block structure search, per S005) plausibly transfer here more directly than any MoE-derived rule."
+ ],
+ "failure_modes_not_yet_tested": [
+  "No Doctor capability battery run yet (needs mlx/torch load -- gated).",
+  "No baseline TPS/prefill/decode measurement yet (same gate).",
+  "Tokenizer is an EXTERNAL dependency (meta-llama/Llama-3.1-8B, gated HF repo) not co-located with the weights -- acquisition of a servable copy needs that tokenizer resolved first, a genuine acquisition step distinct from the weights already being on disk."
+ ],
+ "preliminary_disposition": "RESEARCH SPECIMEN (Odyssey I only, not yet a Gravity/NX/Odyssey III candidate). Genuinely fills an architecture-diversity gap (pure SSM, zero attention -- the R-ssm-state-vs-kv-crossover rule's own limit case, now with a real specimen instead of just the formula's degenerate branch). Small footprint makes a future capability-battery pass cheap WHEN a GPU window opens. Context length (2048) is a real, honest limitation for Resident candidacy specifically -- flagged, not hidden.",
+ "preliminary_star_resident_evaluation": {
+  "resident_candidate": "UNLIKELY AS-IS: 2048 context is very plausibly too short for HCLI's own working-set prompts (objective+plan+evidence already ran several hundred to several thousand chars this session even after compaction). Would need context-extension evidence before being seriously evaluated -- not ruled out, but not promoted on speed/size alone either (matches S003's explicit 'do not promote merely because it is faster' rule).",
+  "pulsar_candidate": "PLAUSIBLE, UNTESTED: 1.49B pure-SSM constant-state inference is architecturally well-suited to fast, cheap, repetitive execution IF context-length is not the binding constraint for the task (e.g. short, bounded code/tool tasks). Needs a real capability battery before any claim beyond 'plausible'.",
+  "magnetar_candidate": "UNLIKELY: 1.49B is small for deep-reasoning claims; no evidence either way yet.",
+  "cepheid_candidate": "NOT EVALUATED -- calibrator role needs a real battery run first.",
+  "verdict": "NO CLAIM BEYOND 'WORTH A FUTURE CAPABILITY BATTERY' -- this is Odyssey I discovery, not Odyssey II/III. Per S005: explicit judgment recorded honestly as PRELIMINARY, not asserted as a real Resident/Star verdict, which requires the still-gated GPU pass."
+ },
+ "next_justified_step": "Doctor capability battery + baseline TPS, when a GPU window opens (deliberate YIELD or post-G004/G005) -- needs the external Llama-3.1-8B tokenizer resolved first as a real acquisition step, not assumed available.",
+ "commit": "e371cecf5",
+ "emitted_at": "2026-09-09T13:32:08Z"
+}

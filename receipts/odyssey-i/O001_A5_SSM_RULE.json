@@ -111,5 +111,6 @@
   "lake": "/Volumes/corpdrive/hawking-modellake/specimens (read-only)"
  },
  "commit": "c2b04cf5d",
- "emitted_at": "2026-09-09T03:22:40Z"
+ "emitted_at": "2026-09-09T03:22:40Z",
+ "_scar_correction": "This receipt hardcoded d_conv=4 for mamba3-siso-1.5b in the Mamba2-style formula without checking its config -- config.json/ssm_cfg has NO d_conv key at all. The core SSM-state-vs-KV crossover FINDING is unaffected (its discriminator only asserted against O001/Falcon-H1s MEASURED numbers, which do declare mamba_d_conv=4 and are correct), but the mamba3-siso row/accounting in this receipt used an UNVERIFIED assumption. Corrected in receipts/odyssey-i/CAND_mamba3-siso-1.5b_ODYSSEY_I.json, which computes only the confirmed (conv-free) SSM-head state for this specimen and flags the gap explicitly rather than assume Mamba2s convention carries over to Mamba3-SISO."
 }
