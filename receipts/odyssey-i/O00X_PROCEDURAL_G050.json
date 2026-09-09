@@ -1,0 +1,37 @@
+{
+ "obligation": "G050",
+ "specimen": "Qwen3-0.6B",
+ "date": "2026-09-09",
+ "verdict": "REFUTED, and it refutes a tempting inference from the spectral result",
+ "the_fallacy_this_experiment_exists_to_kill": "MLP weights on this body are spectrally near-random (top-64 SV energy 1.32-1.69x a matched Gaussian). The tempting next step is: therefore a matched random draw is as good as the real thing and costs a seed. That argument is wrong. A near-random SPECTRUM is a statement about second-order structure; it does not say the VALUES are arbitrary. Two matrices can share a spectrum exactly and compute different functions.",
+ "method": "Replace tensors with a seeded draw carrying their own per-group mean and standard deviation -- CHEAPER than the grouped-affine control, which pays the same scales plus 4 bits per weight. Single-tensor arm included on purpose: a whole-body failure can be blamed on compounding, a single-tensor failure cannot.",
+ "results": {
+  "rtn_4bit_reference": {
+   "perplexity": 54.222,
+   "top1_agreement_vs_fp32": 0.8231,
+   "kl_from_fp32": 136.641235
+  },
+  "procedural_ONE_tensor": {
+   "perplexity": 56.9324,
+   "top1_agreement_vs_fp32": 0.7312,
+   "kl_from_fp32": 300.390778
+  },
+  "procedural_ONE_normed": {
+   "perplexity": 56.7141,
+   "top1_agreement_vs_fp32": 0.7312,
+   "kl_from_fp32": 294.81189
+  },
+  "procedural_ALL_mlp": {
+   "perplexity": 41582025.7419,
+   "top1_agreement_vs_fp32": 0.0,
+   "kl_from_fp32": 15142.943359
+  }
+ },
+ "the_decisive_number": "Replacing ONE tensor of 84 -- layer 14's gate_proj, about 1.2% of MLP mass -- costs MORE quality than 4-bit quantizing ALL 84. top-1 0.7312 against the 4-bit control's 0.8231, KL 300.4 against 136.6. One spectrum-matched substitution is worse than eighty-four lossy compressions.",
+ "magnitude_is_not_the_explanation": "The Frobenius-norm-matched arm scores identically (top-1 0.7312, KL 294.8 vs 300.4), so the damage is not a scale artefact. It is the values.",
+ "whole_body_arm": "Replacing every MLP tensor destroys the model outright: top-1 0.0000, ppl 4.16e7 -- indistinguishable from the 0.01xW destructive control. Included to show the single-tensor result is not a threshold effect.",
+ "mechanism": "The near-randomness result says the second-order structure is UNEXPLOITABLE. It does not say the tensor is random. The values are doing precise work that 4 bits of resolution preserves and a matched draw does not, which is exactly what a body with spread information should look like: no summary of the tensor reproduces it, but a coarse quantization of every entry does.",
+ "consequence_for_the_class": "Procedural generation without a correction is dead at the tensor level on this specimen. Procedural WITH a correction reduces to storing the correction, which is the sparse/residual class already refuted at matched EBPW (G049). The class closes without needing a further search.",
+ "reopen_condition": "A specimen with tensors that are genuinely generated -- fixed positional tables, sinusoidal or otherwise deterministic bases, tied or repeated blocks. Those are found by byte-identity checks, not by spectral arguments, and cost nothing to look for.",
+ "artifacts": "procedural.py / procedural.json"
+}
