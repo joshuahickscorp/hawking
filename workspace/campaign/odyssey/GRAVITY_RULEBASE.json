@@ -435,6 +435,18 @@
    "statement": "A near-random SPECTRUM says the second-order structure is unexploitable. It does NOT say the values are arbitrary. Measured: replacing ONE of 84 MLP tensors with a seeded draw matched on per-group mean and standard deviation costs MORE quality (top-1 0.7312, KL 300.4) than 4-bit quantizing all 84 (0.8231, 136.6). Norm-matching changes nothing (0.7312), so it is not a magnitude artefact.",
    "why_it_matters": "The spectral-randomness rule is the most reusable finding on this body and its most natural misreading is 'so the weights are noise'. They are not. A coarse quantization of every entry preserves the function; any summary that reproduces only the statistics does not.",
    "evidence": "receipts/odyssey-i/O00X_PROCEDURAL_G050.json"
+  },
+  {
+   "id": "R-prior-knowledge-injection-can-make-a-small-body-worse",
+   "status": "MEASURED (1 agent, 2 conditions)",
+   "specimens": [
+    "Phi-4-mini-instruct as agent"
+   ],
+   "kind": "AGENT / WORKUNIT DESIGN",
+   "statement": "Handing a small instruct body a block of general prior rules made its classification accuracy go DOWN, 1/4 to 0/4. The rules named no specimen. It applied the most salient one indiscriminately, answering 'iterative diffusion denoising' for a ternary decoder and a bidirectional encoder.",
+   "consequence": "Do not assume knowledge transfer into the prompt is free. On a small body it acts as a prior strong enough to override the evidence in the same prompt. Test the injected version against the bare one on a calibration set before adopting it.",
+   "does_not_generalise_to": "larger bodies, or tasks with a closed answer set",
+   "evidence": "receipts/hcli-census/AGENT_QUALIFICATION.json"
   }
  ]
 }

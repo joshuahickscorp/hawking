@@ -41,6 +41,33 @@ REQUIRED = (
     "next_experiment",         # highest-information next step, or "none, dominated"
 )
 
+#: GENERAL signals, not answers. Two agents failed calibration identically by
+#: echoing the config's `architectures` string -- "DreamModel", "ILLaDA" -- and
+#: calling the execution class autoregressive, while the config itself carried
+#: `mask_token_id` and `ForMaskedLM`. The knowledge was on disk and unused.
+#:
+#: This is the Epoch II thesis in its smallest form: hand over what was already
+#: learned so the next classification is cheaper. None of these name a specimen;
+#: they are rules the agent applies itself, and an agent that still gets the
+#: answer wrong with these in hand is genuinely unfit.
+ARCHITECTURE_SIGNALS = """PRIOR KNOWLEDGE -- rules Hawking has already earned. Apply them; they are not
+about any one specimen:
+  * a config exposing `mask_token_id`, or an architecture ending `ForMaskedLM`,
+    is NOT autoregressive. Masked/denoising objectives mean the execution class
+    is iterative denoising or a bidirectional encoder pass, never decode.
+  * `ForCausalLM` in the architecture name is NOT proof of autoregression --
+    some diffusion language models reuse that class name. Trust mask/diffusion
+    signals and the model_type over the class suffix when they disagree.
+  * `num_experts` / `num_local_experts` mean MoE: stored bytes and ACTIVE bytes
+    differ, and complete accounting must say which it is quoting.
+  * `state_size` / a recurrent mixer means the persistent state is not a KV
+    cache; state cost is per-layer and constant in context, not linear.
+  * an encoder body has no KV cache to grow and its bottleneck is the single
+    forward pass, not decode bandwidth.
+  * complete EBPW counts EVERY required byte -- payload, scales, zeros, norms,
+    embeddings. A headline precision is not a system rate.
+"""
+
 DISPOSITIONS = {
     "REJECTED", "DOMINATED", "DATA-ONLY", "RESEARCH SPECIMEN", "PARETO CANDIDATE",
     "HCLI RESIDENT CANDIDATE", "PULSAR CANDIDATE", "MAGNETAR CANDIDATE",
@@ -81,7 +108,9 @@ def build_prompt(u: Unit) -> str:
         f"  repeated blocks    : {list((f.get('repeated_blocks') or {}))[:8]}\n"
         f"  config model_type  : {f.get('config_model_type')}\n"
         f"  config architectures: {f.get('config_architectures')}\n"
-        f"  config signals     : {f.get('config_signals')}\n\n"
+        f"  config signals     : {f.get('config_signals')}\n"
+        f"  config keys of note: {f.get('config_notable')}\n\n"
+        + ARCHITECTURE_SIGNALS + "\n"
         "Reply with ONLY a JSON object, no prose before or after, with exactly "
         "these keys:\n"
         + "".join(f"  {k}\n" for k in REQUIRED)
@@ -250,6 +279,12 @@ def measure(repo: Path, specimen: str) -> Dict[str, Any]:
                     continue
                 facts["config_model_type"] = c.get("model_type")
                 facts["config_architectures"] = c.get("architectures")
+                facts["config_notable"] = {
+                    k: v for k, v in c.items()
+                    if any(w in k.lower() for w in
+                           ("diffus", "mask", "denois", "encoder", "decoder",
+                            "expert", "state_size", "bidirect", "recurrent"))
+                    and not isinstance(v, (list, dict))}
                 facts["config_signals"] = {
                     k: c.get(k) for k in
                     ("num_hidden_layers", "hidden_size", "num_experts",
