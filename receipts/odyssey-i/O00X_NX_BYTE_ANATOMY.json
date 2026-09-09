@@ -1,0 +1,89 @@
+{
+ "schema": "hawking.odyssey.nx_anatomy.v1",
+ "_label": "G027 + G032 / S010 \u00a72 \u00a78 \u00a711. Complete byte anatomy of the NX -- the parts SUM TO THE ACTUAL FILE with zero unaccounted bytes -- and what transfers to the next specimen.",
+ "_evidence": "MEASURED from the artifact's own manifest and byte extents; the reconciliation is exact.",
+ "reconciliation": {
+  "accounted_bytes": 484411191,
+  "actual_file_bytes": 484411191,
+  "unaccounted_bytes": 0,
+  "note": "0 unaccounted. An anatomy whose parts do not sum to the file is not an anatomy."
+ },
+ "split": {
+  "payload_mib": 426.3,
+  "payload_pct": 92.3,
+  "metadata_and_norms_and_manifest_mib": 35.7,
+  "metadata_pct": 7.7
+ },
+ "per_organ": {
+  "attention": {
+   "tensors": 112,
+   "params": 176160768,
+   "codes_mib": 126.0,
+   "scales_mib": 5.25,
+   "zeros_mib": 5.25,
+   "bits_per_weight": 6.5
+  },
+  "mlp": {
+   "tensors": 84,
+   "params": 264241152,
+   "codes_mib": 189.0,
+   "scales_mib": 7.88,
+   "zeros_mib": 7.88,
+   "bits_per_weight": 6.5
+  },
+  "embedding": {
+   "tensors": 1,
+   "params": 155582464,
+   "codes_mib": 111.3,
+   "scales_mib": 4.64,
+   "zeros_mib": 4.64,
+   "bits_per_weight": 6.5
+  }
+ },
+ "WHY_EACH_SURVIVING_BYTE_EXISTS": {
+  "codes": "426.3 MiB, 92.3% of the artifact -- the representation itself at 6 bits/weight over groups of 64. This is the only part a better representation class could attack.",
+  "scales": "17.76 MiB, one fp16 per group. NOT removable: dropping to per-tensor scaling is exactly the uniform control, which measured 6,325,960x worse perplexity at 4 bits. This metadata is the cheapest thing in the artifact per unit of capability it buys.",
+  "zeros": "17.76 MiB, one fp16 per group. Asymmetric weight ranges need an offset; the symmetric-only variant is the same catastrophic control.",
+  "norms": "0.125 MiB, 65,536 params (0.011% of the model) kept raw fp16. Quantising them would save essentially nothing and they are disproportionately sensitive.",
+  "manifest": "0.041 MiB of tensor names, shapes, byte extents and the tie record. Without it the payload is unaddressable -- this is the difference between an artifact and a blob."
+ },
+ "RANKED_BY_bytes_x_reducibility_x_leverage": [
+  {
+   "organ": "mlp",
+   "bytes_mib": 189.0,
+   "rank": 1,
+   "expected_reducibility": "LOWEST",
+   "reason": "largest organ AND the least reducible -- spectrally within 1.32-1.69x of random, so structural classes cannot pay and only bit-width moves it, which collapses below 4 bits. The biggest pile of bytes is the one with the least to give."
+  },
+  {
+   "organ": "attention",
+   "bytes_mib": 126.0,
+   "rank": 2,
+   "expected_reducibility": "HIGHEST UNTESTED",
+   "reason": "q_proj carries the heaviest tail measured anywhere in this body (kurtosis 6.76 against the MLP's 3.7-4.0). Outlier-aware classes were tested ON THE MLP, where they failed for the measured reason that it has no outliers -- they were NEVER tested on the organ that actually has them. This is the clearest remaining experiment on this specimen."
+  },
+  {
+   "organ": "embedding",
+   "bytes_mib": 111.3,
+   "rank": 3,
+   "expected_reducibility": "MODERATE",
+   "reason": "the most structured organ (3.15x random) and the most tolerant of aggressive bit reduction, but low-rank on it was only NEUTRAL, and 2-bit embeddings impose a ~1.95x perplexity floor no matter what the other organs get."
+  },
+  {
+   "organ": "scales+zeros",
+   "bytes_mib": 35.5,
+   "rank": 4,
+   "expected_reducibility": "NEGATIVE",
+   "reason": "7.7% of the artifact, and the measured cost of reducing it is catastrophic. Coarser groups were tested: g128 lowers EBPW to 4.250 but drops top-1 to 0.714. This metadata is load-bearing."
+  }
+ ],
+ "G032_WHAT_TRANSFERS_TO_THE_NEXT_SPECIMEN": {
+  "pre_flight_diagnostic": "compute top-k singular-value energy against a matched random Gaussian BEFORE choosing any representation class. Ratio <~2 predicts structural classes fail. Costs seconds and would have predicted both failures on this body before either was implemented.",
+  "organ_ordering_rule": "rank organs by MEASURED spectral structure and kurtosis, never by mass. On this body the largest organ was the least compressible and the most outlier-heavy organ was never tested.",
+  "metadata_is_not_overhead": "per-group scale+zero is 7.7% of the artifact and buys a ~6-million-fold perplexity difference against per-tensor scaling. Counting it as waste to be minimised is exactly backwards.",
+  "at_rest_vs_in_flight": "EBPW measures bytes at rest. Unless decode is FUSED into the accumulation loop, a smaller artifact reconstructs to the same dense working set and moves the same bytes per token. Measure the reconstruction blow-up before promising a physical win.",
+  "kernel_before_bandwidth": "on this machine's CPU path, matched-byte dtype swaps moved decode 1.47x, so byte reduction does not automatically become speed. Establish whether the path is bandwidth-bound BEFORE valuing a compression result in wall-time terms."
+ },
+ "commit": "3c5a24627",
+ "emitted_at": "2026-09-09T16:17:26Z"
+}
