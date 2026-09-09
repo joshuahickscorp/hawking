@@ -157,7 +157,21 @@
    "claim": "Recurrent-state organs (Mamba/SSM, linear/delta attention) hold a CONSTANT cache independent of context length; full-attention organs hold a KV cache that grows linearly. Resident-memory crossover = state_bytes_constant / kv_bytes_per_token. Below it the SSM state floor dominates; above it KV dominates. The hybrid layer ratio (n_attn : n_ssm), not model size, sets where the crossover falls.",
    "family": "hybrid/SSM",
    "origin": "O001 (Falcon-H1-7B), measured O001_NX_state.json",
-   "_evidence": "INFERRED from A5 multi-arch config accounting; see receipts/odyssey-i/O001_A5_SSM_RULE.json"
+   "_evidence": "INFERRED from A5 multi-arch config accounting; see receipts/odyssey-i/O001_A5_SSM_RULE.json",
+   "conditions": [
+    "architecture is hybrid or pure recurrent (Mamba/SSM, linear or delta attention)",
+    "the body mixes constant-size recurrent state with growing attention KV",
+    "context length is known or bounded"
+   ],
+   "then": "compute the resident-memory crossover as state_bytes_constant / kv_bytes_per_token. Below it the constant SSM state floor dominates and weight-quant levers do not touch it; above it KV dominates and eviction/KV compression is the target. The hybrid layer ratio (n_attn : n_ssm), not model size, sets where the crossover falls.",
+   "confidence": "INFERRED",
+   "supporting_patients": [
+    "O001"
+   ],
+   "negative_patients": [],
+   "reopen_if": "a hybrid body is found whose recurrent state is NOT context-independent, or where measured resident memory diverges from the crossover this predicts",
+   "physical_rationale": "Recurrent-state organs (Mamba/SSM, linear/delta attention) hold a CONSTANT cache independent of context length; full-attention organs hold a KV cache that grows linearly. Resident-memory crossover = state_bytes_constant / kv_bytes_per_token. Below it the SSM state floor dominates; above it KV dominates. The hybrid layer ratio (n_attn : n_ssm), not model size, sets where the crossover falls.",
+   "_schema_note": "normalised into the rulebase's own conditions/then/confidence schema. It was authored with title/claim/family/origin instead, so any consumer iterating rule['conditions'] raised KeyError on this one entry -- found by exactly that crash. Original fields retained; nothing dropped."
   },
   {
    "id": "R-heterogeneous-organ-allocation-aggressive-only",
