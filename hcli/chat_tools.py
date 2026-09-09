@@ -674,7 +674,20 @@ def coerce_arguments(registry: Any, name: str,
     spec = registry.get(name) if registry is not None else None
     schema = getattr(spec, "input_schema", None) or getattr(spec, "schema", None)
     props = (schema or {}).get("properties") if isinstance(schema, dict) else None
-    if not isinstance(props, dict):
+    if not isinstance(props, dict) or not props:
+        # BUILDER DOORS ARE NOT REGISTRY DOORS. repo.edit has no registry spec,
+        # so props was empty and every argument was passed through as the text
+        # the XML dialect produced -- leaving `operations` a string, which
+        # run_builder_tool refuses on an isinstance(list) check. Measured live:
+        # after 68 cycles of never reaching for the tool at all, the body
+        # finally called repo.edit in cycles 69 and 70 with full new_lines,
+        # old_lines and tests, and BOTH were rejected for malformed operations.
+        # It was doing exactly what it was asked; the substrate was dropping
+        # its arguments. The declared shapes carry the same schema, so fall
+        # back to them rather than leaving builder calls uncoercible.
+        declared = _declared_schema(name)
+        props = (declared or {}).get("properties") if isinstance(declared, dict) else None
+    if not isinstance(props, dict) or not props:
         return arguments
     out = dict(arguments)
     for key, value in list(out.items()):
@@ -690,7 +703,18 @@ def coerce_arguments(registry: Any, name: str,
             elif want == "boolean" and text.lower() in ("true", "false"):
                 out[key] = text.lower() == "true"
             elif want == "array":
-                out[key] = json.loads(text) if text.startswith("[") else [text]
+                if text.startswith("["):
+                    out[key] = json.loads(text)
+                elif ((props.get(key) or {}).get("items") or {}).get("type") == "string":
+                    # A bare path where a list of paths was wanted: wrapping it
+                    # is unambiguous. NOT done for object-item arrays like
+                    # repo.edit's `operations` -- wrapping a garbage string into
+                    # a one-element list would satisfy run_builder_tool's
+                    # isinstance(list) check and hand the engine a list of
+                    # strings where it expects operation dicts. Leaving it
+                    # untouched keeps the refusal with the validator that can
+                    # explain it.
+                    out[key] = [text]
         except (TypeError, ValueError):
             continue  # leave it; the tool's validator owns the refusal
     return out
