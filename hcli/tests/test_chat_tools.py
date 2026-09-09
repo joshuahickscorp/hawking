@@ -396,6 +396,21 @@ class TestTheXmlDialect(unittest.TestCase):
     def test_the_xml_form_is_parsed(self):
         self.assertEqual(parse_call(self.OBSERVED), ("shell", {"command": "ls -a"}))
 
+    def test_the_opener_missing_its_leading_bracket_still_parses(self):
+        # SCAR: under greedy-argmax the body reliably drops the `<` of the
+        # opener, emitting `=function=fs.read>` while every other tag stays
+        # intact (od -c confirmed in .hcli/selfdev evidence, 3x in one reply).
+        # That one byte made every tool call unparseable and stalled the
+        # self-development loop at zero executed actions.
+        observed = ("<tool_call>\n=function=fs.read>\n<parameter=path>\n"
+                    "H-MANIFESTO.md\n</parameter>\n<parameter=start_line>\n1\n"
+                    "</parameter>\n<parameter=end_line>\n200\n</parameter>\n"
+                    "</function>\n</tool_call>")
+        self.assertEqual(
+            parse_call(observed),
+            ("fs.read", {"path": "H-MANIFESTO.md",
+                         "start_line": "1", "end_line": "200"}))
+
     def test_an_unoffered_tool_from_it_is_still_refused(self):
         got = qualify(_scripted([self.OBSERVED]))
         self.assertFalse(got["qualified"])
