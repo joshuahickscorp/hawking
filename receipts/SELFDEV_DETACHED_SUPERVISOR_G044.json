@@ -34,7 +34,8 @@
    "event": "cycle 77 soft-terminal (TimeoutError) at the 1200s REQ_TIMEOUT",
    "significance": "the FIRST cycle to run entirely on the new substrate. Not acted on: one timeout is a data point, two consecutive is a pattern, and raising REQ_TIMEOUT on one sample would be fixing a guess.",
    "resident_state_when_checked": "1.2-1.7% CPU, idle -- so not still generating",
-   "cause": "UNDETERMINED. Recorded as unexplained rather than attributed."
+   "cause": "NOT the new substrate. Checked the full soft-terminal history rather than reasoning from one sample: TimeoutError at REQ_TIMEOUT is CHRONIC and long predates today's changes -- cycle 9 timed out three times consecutively (23:25, 23:34, 23:42), cycle 34 twice (05:03, 05:24), and both recovered and the campaign continued past cycle 65. A single timeout at cycle 77 sits inside the established pattern and is not evidence about the new substrate at all.",
+   "why_this_matters_for_the_interval": "The working hypothesis was that the fixes made cycles too slow -- tests.run can now run a 154s suite and the prompt budget rose 45%, so a cycle needing >1200s was plausible. The history refutes it. Had REQ_TIMEOUT been raised on that reasoning it would have been a change made against a real pattern that the change had nothing to do with."
   },
   {
    "at": "~13:32",
@@ -45,5 +46,10 @@
    "kept_fix": "the per-organ Hessian was still a real bug and is fixed regardless"
   }
  ],
- "interval_status": "OPEN. Neither event is a Claude intervention in HCLI engineering: one is an unexplained timeout left unacted-on, the other is a defect in an Odyssey tool. The next cycle decides whether the timeout is a pattern."
+ "interval_status": "OPEN. Neither event is a Claude intervention in HCLI engineering: one is an unexplained timeout left unacted-on, the other is a defect in an Odyssey tool. The next cycle decides whether the timeout is a pattern.",
+ "hypotheses_withdrawn_in_this_interval": [
+  "the Odyssey job's 38.7 GiB starved the resident -- withdrawn, the memory reading was a 4x page-size undercount",
+  "the new substrate made cycles exceed 1200s -- withdrawn, timeouts are chronic across cycles 9, 34 and 77"
+ ],
+ "standing": "Two intervention-shaped impulses examined and neither acted on. The interval remains OPEN and clean: no Claude change to HCLI engineering since it was declared."
 }
