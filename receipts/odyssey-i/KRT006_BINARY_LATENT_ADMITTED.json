@@ -1,0 +1,56 @@
+{
+ "schema": "hawking.odyssey.family_screen.v1",
+ "obligation": ["KRT006", "KRT003", "KRT011"],
+ "steer": "S014",
+ "family": "D — BINARY LATENT FACTORIZATION (LittleBit / NanoQuant class)",
+ "verdict": "ADMITTED. Not rejected by arithmetic. Its theoretical ceiling at matched rate BEATS PQ's measured error by a wide margin, so it earns the fitting effort S014 asks for.",
+
+ "method": {
+  "breakeven_rank": "W ~ U_b S V_b^T costs m*r + n*r + r*scale_bits bits, so at rate R over m*n weights, r* = m*n*R/(m+n+scale_bits). Pure arithmetic, no fitting.",
+  "why_the_bound_is_valid": "A rank-r factorization of ANY kind cannot beat the best rank-r approximation, and the best is the truncated SVD. So sqrt(1 - SVD energy at r*) is a LOWER BOUND on the relative error this family can achieve at that rate -- reachable only with real singular vectors, never with sign-only factors.",
+  "why_it_is_generous": "Binary factors carry sign plus one shared scale per component. A family that fails its own upper bound cannot be rescued by a better fitter. This admits, it does not promise.",
+  "tool": "tools/future/latent_rank_breakeven.py"
+ },
+
+ "measured_layer_11": {
+  "routed_down": {"shape": [2048, 1408], "effective_rank": 622, "full_rank": 1408, "stable_rank": 97.2},
+  "routed_gate": {"shape": [1408, 2048], "effective_rank": 598, "full_rank": 1408, "stable_rank": 100.7},
+  "routed_up": {"shape": [1408, 2048], "effective_rank": 728, "full_rank": 1408, "stable_rank": 257.4},
+  "shared_down": {"shape": [2048, 2816], "effective_rank": 627, "full_rank": 2048, "stable_rank": 81.6},
+  "attn_o": {"shape": [2048, 2048], "effective_rank": 566, "full_rank": 2048, "stable_rank": 124.1}
+ },
+
+ "best_possible_rel_error_by_rate": {
+  "note": "BEST POSSIBLE for any rank-r* factorization. Binary latent will be worse.",
+  "routed_down": {"2.0": 0.0000, "1.0": 0.2807, "0.75": 0.4075, "0.5": 0.5561, "0.25": 0.7362},
+  "routed_gate": {"2.0": 0.0000, "1.0": 0.2858, "0.75": 0.4116, "0.5": 0.5577, "0.25": 0.7339},
+  "routed_up":   {"2.0": 0.0000, "1.0": 0.2981, "0.75": 0.4291, "0.5": 0.5805, "0.25": 0.7604},
+  "shared_down": {"2.0": 0.0000, "1.0": 0.2387, "0.75": 0.3680, "0.5": 0.5212, "0.25": 0.7017},
+  "attn_o":      {"2.0": 0.0001, "1.0": 0.2005, "0.75": 0.3165, "0.5": 0.4678, "0.25": 0.6691}
+ },
+
+ "matched_rate_comparison_against_family_A": {
+  "at_roughly_0.5_to_0.63_expert_bits_per_weight": {
+   "PQ d=16 K=1024": {"complete_expert_bits_per_weight": 0.6256, "rel_error_MEASURED": 0.7268},
+   "PQ d=32 K=65536": {"complete_expert_bits_per_weight": 0.5746, "rel_error_MEASURED": 0.7418},
+   "BINARY LATENT at 0.50": {"rel_error_BOUND_not_achieved": "0.556 to 0.581 across the three routed projections"}
+  },
+  "reading": "The binary-latent CEILING at 0.50 bits/weight is 0.556-0.581, while PQ's MEASURED error at a comparable-or-higher rate is 0.727-0.742. That is a gap of roughly 0.17 in relative error at matched rate. The gap is large enough that even a binary fitter losing a substantial fraction of the ideal could still beat PQ.",
+  "what_would_falsify_this": "A binary-latent fit that lands near 0.73 or worse at 0.50 bits/weight. Then the sign-only penalty consumes the entire headroom and Family A stands."
+ },
+
+ "other_findings": [
+  "ATTENTION IS MORE LOW-RANK THAN THE EXPERTS. attn_o has effective rank 566 of 2048 (0.28) against routed_down's 622 of 1408 (0.44), and its bound at 1.0 bits/weight is 0.2005 versus the experts' 0.28-0.30. If any organ should get a low-rank representation it is the attention writer -- which is also only 2.33% of the language tower, so the EBPW prize there is small even though the fit would be good.",
+  "routed_up IS THE OUTLIER AMONG THE EXPERT PROJECTIONS. Stable rank 257.4 against gate's 100.7 and down's 97.2, and the worst bound at every rate. gravity_potency's organ_inversion prior says gate/up is the SENSITIVE organ and down tolerates more; this is an independent structural reason to treat up separately, though it is a different statement -- that prior is about capability damage, this is about representability.",
+  "AT 2.0 BITS/WEIGHT THE FAMILY IS DEGENERATE ON EXPERTS. r*/full reaches 1.18, meaning the rate buys more rank than the matrix has. Binary latent is a SUB-BIT-REGIME family here, not a general-purpose codec -- which is the regime this campaign is in."
+ ],
+
+ "not_established": [
+  "No binary latent has been FITTED. Every number above is a bound, and the whole point of a bound is that it is not a result.",
+  "The bound assumes one scale per component (16 bits). Per-row scales, rotations or ITQ alignment change the arithmetic and must be re-derived, not assumed to be free.",
+  "Measured on ONE layer (11) and expert 0. gravity_potency records that expert statistics vary; a single specimen is not the bank.",
+  "Reconstruction error is not capability (CANON L17.9)."
+ ],
+ "recorded_by": "claude, Front O supervisor",
+ "date": "2026-09-09"
+}
