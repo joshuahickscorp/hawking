@@ -2,7 +2,7 @@
  "schema": "hawking.odyssey.modellake_march_progress.v1",
  "_label": "Bookkeeping snapshot, not a new measurement -- tallies existing receipts per S005's MODELLAKE MARCH record-keeping requirement.",
  "total_lake_specimens": 55,
- "n_deep_discovery_this_session": 12,
+ "n_deep_discovery_this_session": 16,
  "deep_discovery_this_session": {
   "state-spaces--mamba3-siso-1.5b@5cfc721542ec": "CAND_mamba3-siso-1.5b_ODYSSEY_I.json",
   "RWKV--RWKV7-13.3B-20260805@64ffe5934178": "CAND_RWKV7-13.3B_ODYSSEY_I.json",
@@ -15,7 +15,11 @@
   "facebook--sam2.1-hiera-large@665f8e2ad61c": "CAND_sam2.1-hiera-large_ODYSSEY_I.json",
   "openai--whisper-large-v3-turbo@41f01f3fe87f": "CAND_whisper-large-v3-turbo_ODYSSEY_I.json",
   "Qwen--Qwen3-0.6B@c1899de289a0": "CAND_Qwen3-0.6B_ODYSSEY_I.json",
-  "answerdotai--ModernBERT-large@45bb4654a4d5": "CAND_ModernBERT-large_ODYSSEY_I.json"
+  "answerdotai--ModernBERT-large@45bb4654a4d5": "CAND_ModernBERT-large_ODYSSEY_I.json",
+  "tiiuae--Falcon3-1B-Instruct@28ba2251970a": "CAND_SMALL_BODY_COHORT_ODYSSEY_I.json",
+  "LiquidAI--LFM2.5-1.2B-Instruct@0f604ada3f76": "CAND_SMALL_BODY_COHORT_ODYSSEY_I.json",
+  "LiquidAI--LFM2.5-2.6B-Base@c57bdaed1ef1": "CAND_SMALL_BODY_COHORT_ODYSSEY_I.json",
+  "Qwen--Qwen3-Embedding-0.6B@97b0c614be4d": "CAND_SMALL_BODY_COHORT_ODYSSEY_I.json"
  },
  "n_prior_full_odyssey_patients": 4,
  "prior_full_odyssey_patients": {
@@ -32,24 +36,12 @@
   "Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8": "config read, not used in a receipt"
  },
  "n_censused_survey_only": 45,
- "n_untouched_beyond_survey_classification": 33,
+ "n_untouched_beyond_survey_classification": 29,
  "untouched_specimens": [
   {
    "name": "HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02",
    "model_type": "smolvlm",
    "dir_size_gib": 8.375,
-   "diffusion_signal": false
-  },
-  {
-   "name": "LiquidAI--LFM2.5-1.2B-Instruct@0f604ada3f76",
-   "model_type": "lfm2",
-   "dir_size_gib": 2.184,
-   "diffusion_signal": false
-  },
-  {
-   "name": "LiquidAI--LFM2.5-2.6B-Base@c57bdaed1ef1",
-   "model_type": "lfm2",
-   "dir_size_gib": 5.041,
    "diffusion_signal": false
   },
   {
@@ -74,12 +66,6 @@
    "name": "Qwen--Qwen3-Coder-30B-A3B-Instruct@b2cff646eb4b",
    "model_type": "qwen3_moe",
    "dir_size_gib": 56.885,
-   "diffusion_signal": false
-  },
-  {
-   "name": "Qwen--Qwen3-Embedding-0.6B@97b0c614be4d",
-   "model_type": "qwen3",
-   "dir_size_gib": 1.125,
    "diffusion_signal": false
   },
   {
@@ -209,12 +195,6 @@
    "diffusion_signal": false
   },
   {
-   "name": "tiiuae--Falcon3-1B-Instruct@28ba2251970a",
-   "model_type": "llama",
-   "dir_size_gib": 3.119,
-   "diffusion_signal": false
-  },
-  {
    "name": "windowsxp811203--Qwen3.8-Flash-Next-Abliterated@deb02632504b",
    "model_type": "qwen4_exp",
    "dir_size_gib": 335.298,
@@ -248,19 +228,20 @@
   "pure vision/video segmentation, backbone-dominated budget (sam2.1-hiera-large, THIS session)",
   "audio (speech-to-text), first encoder-decoder architecture, 8:1 layer asymmetry (whisper-large-v3-turbo, THIS session)",
   "smallest language specimen in the lake, second confirmed tied-embedding-waste transfer test (Qwen3-0.6B, THIS session)",
-  "encoder-ONLY masked LM; local/global attention heterogeneity that costs ZERO bytes, unlike LFM2's which is paid for in weights (ModernBERT-large, THIS session)"
+  "encoder-ONLY masked LM; local/global attention heterogeneity that costs ZERO bytes, unlike LFM2's which is paid for in weights (ModernBERT-large, THIS session)",
+  "small-body cohort for S003's Resident framework: Falcon3-1B, LFM2.5-1.2B/2.6B, Qwen3-Embedding-0.6B -- corrected the LFM2 family rule (conv+attention transfers, MoE does NOT) and found a small body advertising 15x the current resident's context (THIS session)"
  ],
  "architecture_families_in_the_census_NOT_yet_given_a_real_discovery_pass": [
   "next-gen linear-attn (GLM-5.3-Flash, Kimi-K3) -- both very large (305GB/1.45TB), untouched",
   "vision/audio/multimodal specialists beyond SAM2/Whisper (SmolVLM2, audio-flamingo-3, musicgen, depth-anything, vjepa2) -- musicgen would be a second, generative (not transcriptive) audio point",
   "the 3 census-skipped specimens (boltz-2 protein-structure, moshika audio, HunyuanVideo -- non-standard config format, would need a dedicated reader)",
-  "remaining small Resident/Pulsar candidates per S003's evaluation framework (Falcon3-1B, LFM2.5-1.2B/2.6B, Qwen3-Embedding-0.6B) -- discovery-only anatomy in-scope now, qualification battery still gated until G004/G005 land"
+  "the very large bodies (GLM-4.5-Air 205GB, GLM-5.3-Flash 305GB, Kimi-K3 1.45TB, Qwen3.8-Flash-Next 335GB x2, DeepSeek-V4-Flash 148GB, Inkling-Small 495GB, Qwen2.5-72B 135GB, Mistral-Small-24B 89GB, Wan2.2-T2V 117GB) -- cheap static anatomy is still possible on all of them; only GPU work is gated"
  ],
  "next_justified_specimens_if_continuing": [
   "GLM-4.5-Air (205GB, MoE 8/128) -- large but a real MoE data point at a different scale than O005/O006's 30B tier",
   "musicgen-large (13GB) -- a second audio point, GENERATIVE rather than transcriptive, which whisper cannot answer for",
-  "Falcon3-1B / LFM2.5-1.2B -- remaining cheap small-body anatomy for S003's Resident framework"
+  "SmolVLM2-2.2B / audio-flamingo-3 / depth-anything / vjepa2 -- remaining multimodal specialists"
  ],
- "commit": "a00ea4048",
- "emitted_at": "2026-09-09T14:49:12Z"
+ "commit": "bdb3f3aa0",
+ "emitted_at": "2026-09-09T14:58:49Z"
 }
