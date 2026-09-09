@@ -373,6 +373,28 @@
    "statement": "A prober that cannot OPEN a specimen reports the same thing as a specimen with no structure. mamba3-mimo returned zero roles because it ships pytorch_model.bin and the prober only opened safetensors; recorded as a negative it would have said 'the SSM family has no cross-layer structure'. Re-run after closing the format gap it gave the STRONGEST reader alignment of any specimen (5.26-5.38x).",
    "rule": "an empty measurement is UNMEASURED until the instrument is shown to work on that input",
    "evidence": "receipts/odyssey-i/O00X_CROSS_LAYER_TRANSFER_G054.json"
+  },
+  {
+   "id": "R-sparse-correction-must-buy-its-budget-from-the-bulk",
+   "status": "MEASURED",
+   "specimens": [
+    "Qwen3-0.6B"
+   ],
+   "kind": "SEARCH POLICY -- removes an experiment class",
+   "statement": "At a matched EBPW equal to the bulk codec's own rate, a sparse correction has no budget except what it takes from the bulk. Buying 2.6% fp16 corrections (41 bits each with honest indices) costs a full bit on the other 97.4%. Measured: top-1 0.6266 vs 0.8231 at 4.5 EBPW, 0.0557 vs 0.5904 at 3.5. Independent of index encoding, because the budget can only come from the bulk.",
+   "consequence": "Do not search bulk+sparse at a target equal to the bulk rate. It is only worth testing where the budget EXCEEDS the bulk codec's rate, or where weight error is measurably concentrated.",
+   "cheap_precheck": "top-k error mass vs a matched random control; flat means do not bother",
+   "evidence": "receipts/odyssey-i/O00X_SPARSE_RESIDUAL_G049.json"
+  },
+  {
+   "id": "R-concentration-searches-fail-together-reallocation-does-not",
+   "status": "MEASURED",
+   "specimens": [
+    "Qwen3-0.6B"
+   ],
+   "statement": "Four representation classes failed on one body for one reason. Low-rank, activation-aware low-rank, cross-layer shared basis and sparse residual each look for CONCENTRATION in a different basis -- weight spectrum, activation eigenbasis, cross-layer basis, individual weight magnitude -- and the information is spread in all four. The only method that won never looks for concentration: error-compensating quantization reallocates the error it is already forced to make.",
+   "consequence": "When one concentration search fails on a specimen with a near-random spectrum, expect the others to fail too, and go straight to reallocation methods.",
+   "evidence": "receipts/odyssey-i/O00X_SPARSE_RESIDUAL_G049.json"
   }
  ]
 }
