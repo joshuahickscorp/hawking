@@ -57,5 +57,42 @@
    "finding": "hcli/runtime_iface.py names `Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf` under models/qwen3.8-27b-abliterated/, and ~/models/serve-abliterated.sh exists.",
    "conclusion": "sealed-3.14 is a THIRD-PARTY abliterated checkpoint (Huihui). Hawking did not abliterate it and owns no abliteration implementation -- no refusal-direction, orthogonalisation or harmful/harmless contrast code anywhere in hcli/, tools/ or crates/. So K3 has no in-house procedure to recover, and the external references in S007 are the honest starting point, with the GPL caution observed."
   }
+ },
+ "K1_RESULT": {
+  "verdict": "KIMI EXECUTES. The base organism runs.",
+  "what_fixed_it": "converting offline to an MLX-native 8-bit artifact. The Metal GPU timeout was the ON-LOAD bf16 conversion building one oversized command buffer -- which was the first hypothesis on S007's list, and it is now confirmed by the fix rather than by argument.",
+  "artifact": {
+   "path": "/Users/scammermike/hawking-agents/kimi-vl-a3b-q8 (INTERNAL storage)",
+   "stored_gib": 17,
+   "from_gib": 30.56,
+   "shrink": "1.80x",
+   "reported_bits_per_weight": 8.706
+  },
+  "BYTE_ACCOUNTING_NOTE": "the converter reports 8.706 bits per weight for an '8-bit' quantisation. That is the complete rate including scales and zeros, and it is the BitNet lesson again in a new place: a headline precision is not a system rate. Recorded at 8.706, never as 8."
+ },
+ "K6_FIRST_TPS": {
+  "measured": {
+   "min": 86.0,
+   "median": 88.6,
+   "max": 88.9,
+   "unit": "decode TPS"
+  },
+  "runs": "3 timed runs of 121 completion tokens each, after a discarded warm-up that absorbs kernel compilation",
+  "WHAT_THIS_IS_NOT": "NOT a like-for-like beat of the 51.6 TPS on record. That figure was measured on a different representation; this is the 8-bit converted body. And the prompt is trivial -- 'count from 1 to 60' -- which is low-entropy generation with a 22-token prompt. Real HCLI work has long prompts and harder content.",
+  "hygiene_S004": "sealed-3.14 was resident throughout at 11.58 GiB and IDLE (1.2-1.6% CPU) before and after, recorded by gpu_attribution.py. Two foreign servers held nothing. This is NOT a quiesced single-process measurement and is not reported as one.",
+  "band": "above the ~70 'strong workhorse' band. Per S007 that means stop chasing TPS and go verify capability, which is what happened next."
+ },
+ "K2_CAPABILITY_FIRST_RESULT": {
+  "verdict": "FAST AND NOT YET QUALIFIED. 1 of 4 on the calibration set.",
+  "kimi_answers": "DENSE_DECODER for Dream-v0, iLLaDA and ModernBERT alike; passed only BitNet",
+  "four_agents_now_measured": {
+   "Qwen3-4B-Instruct (open vocabulary)": "2/4",
+   "Phi-4-mini (open vocabulary)": "1/4",
+   "Phi-4-mini + injected prior rules": "0/4 -- strictly worse",
+   "Kimi-VL-A3B-q8 (closed vocabulary)": "1/4"
+  },
+  "INSTRUMENT_VERIFIED_BEFORE_BLAMING_THE_BODIES": "the prompt was dumped and checked. It DOES show `config keys of note: {'mask_token_id': 151666}` and it DOES state the rule 'a config exposing mask_token_id, or an architecture ending ForMaskedLM, is NOT autoregressive'. Kimi had the evidence and the rule in front of it and still answered DENSE_DECODER. The failure is the body's, not the harness's.",
+  "THE_CORRECTION_IS_MINE": "I chose the wrong task for a workhorse. S007's own list for Kimi is mechanical -- bounded WorkUnits, tests, reproduction, inspection, ordinary debugging, ModelLake FIRST-PASS work, Doctor probes, receipt generation, straightforward repairs. Open-vocabulary architecture classification is on none of it. It is judgement-heavy and knowledge-bound, and four bodies across three prompt designs have now failed it. Narrowing the vocabulary did not help; it converted 'wrong words' into 'wrong choice'.",
+  "next": "redesign the WorkUnit around what the steer actually asked for: work whose answer is CHECKABLE FROM THE MACHINE rather than recalled from pretraining. Running a test and reporting the returncode is that shape. Classifying a diffusion LM is not."
  }
 }
