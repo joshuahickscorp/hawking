@@ -1,0 +1,81 @@
+{
+ "schema": "hawking.future.attention_geometry.v1",
+ "obligation": "KRT001",
+ "steer": "S014",
+ "law": "an attention backend must return num_heads * v_head_dim. Measured per implementation, never assumed from a successful call.",
+ "geometry": {
+  "qk_head_dim": 192,
+  "v_head_dim": 128,
+  "num_heads": 16
+ },
+ "affects": [
+  "DeepSeek-V2 family",
+  "DeepSeek-V3 family",
+  "Kimi-VL MLA bodies",
+  "any architecture with asymmetric QK/V head dims"
+ ],
+ "measured": [
+  {
+   "device": "cpu",
+   "dtype": "float32",
+   "implementation": "eager",
+   "expected_dim": 2048,
+   "observed_dim": 2048,
+   "safe": true
+  },
+  {
+   "device": "cpu",
+   "dtype": "float32",
+   "implementation": "sdpa",
+   "expected_dim": 2048,
+   "observed_dim": 2048,
+   "safe": true
+  },
+  {
+   "device": "mps",
+   "dtype": "float32",
+   "implementation": "eager",
+   "expected_dim": 2048,
+   "observed_dim": 2048,
+   "safe": true
+  },
+  {
+   "device": "mps",
+   "dtype": "float32",
+   "implementation": "sdpa",
+   "expected_dim": 2048,
+   "observed_dim": 3072,
+   "safe": false
+  },
+  {
+   "device": "mps",
+   "dtype": "bfloat16",
+   "implementation": "eager",
+   "expected_dim": 2048,
+   "observed_dim": 2048,
+   "safe": true
+  },
+  {
+   "device": "mps",
+   "dtype": "bfloat16",
+   "implementation": "sdpa",
+   "expected_dim": 2048,
+   "observed_dim": 3072,
+   "safe": false
+  }
+ ],
+ "safe_implementations_by_device": {
+  "cpu": [
+   "eager",
+   "sdpa"
+  ],
+  "mps": [
+   "eager"
+  ]
+ },
+ "unsafe": [
+  "mps/float32/sdpa",
+  "mps/bfloat16/sdpa"
+ ],
+ "note": "This is measured directly from the tensor handed to o_proj. It does NOT depend on a shape error being raised -- on a body whose v_head_dim equalled its qk_head_dim the same defect would return wrong numbers in silence and no exception would appear."
+}
